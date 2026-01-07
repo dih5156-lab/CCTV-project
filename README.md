@@ -206,32 +206,6 @@ python main.py --help
 | `--collect-dataset` | 데이터 수집 | False |
 | `--zone-detection` | 위험 구역 감지 | False |
 
-## 프로젝트 구조
-
-```
-Project/
-├── main.py                  # 메인 실행 파일
-├── config.py                # 중앙 설정 관리
-├── processor.py             # 비디오 처리 및 워커 관리
-├── ai_analysis.py           # AI 모델 추론
-├── camera_input.py          # RTSP 카메라 관리
-├── visualizer.py            # 시각화 및 UI
-├── events.py                # 이벤트 타입 정의
-├── server_comm.py           # 서버 통신
-├── zone_detection.py        # 구역 감지
-├── dataset_collector.py     # 데이터셋 자동 수집
-├── test_video.py            # 비디오 파일 테스트
-├── zones_config.json        # 위험 구역 설정
-├── data.yaml                # YOLO 데이터셋 설정
-├── utils/
-│   ├── geometry.py          # 기하학 연산 유틸리티
-│   └── logger.py            # 로깅 유틸리티
-├── test_video/              # 테스트 비디오 파일
-├── recorded_video/          # 녹화 파일 저장
-├── dataset/                 # 자동 수집 데이터셋
-└── README.md                # 프로젝트 문서
-```
-
 ## 주요 클래스 및 모듈
 
 ### AppConfig (config.py)
