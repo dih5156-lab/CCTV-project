@@ -10,7 +10,7 @@
   - 머리 높이 비율 분석 (기본: 바운딩 박스 하단 30% 이내면 낙상)
 - **사람 감지**: YOLOv8-pose로 통합 (관절 정보 포함)
 - **다중 카메라 지원**: 여러 RTSP 카메라 동시 처리
-- **객체 추적**: 프레임 간 객체 ID 유지 및 추적
+- **객체 추적**: 프레임 간 객체 ID 유지 및 추적 (tracking 실패 시 자동 임시 ID 생성)
 - **위험 구역 감지**: 지정된 구역 내 침입 감지
 - **자동 데이터셋 수집**: YOLO 포맷으로 학습 데이터 자동 저장
 - **서버 연동**: 감지된 이벤트 자동 전송
@@ -34,8 +34,8 @@
 
 ### 1. 저장소 클론
 ```bash
-git clone <repository-url>
-cd Project
+git clone https://github.com/dih5156-lab/CCTV-project.git
+cd CCTV-project
 ```
 
 ### 2. 가상 환경 생성 (권장)
@@ -62,14 +62,19 @@ pip install -r requirements.txt
 ## 설정 방법
 
 ### 1. 환경 변수 설정 (권장)
-```bash
-# .env.example을 복사하여 .env 생성
-cp .env.example .env
 
-# .env 파일 수정
-HELMET_MODEL_PATH=runs/detect/train/weights/best.pt
-SERVER_URL=http://your-server.com/api/events
-DEVICE=cuda  # GPU 사용 시
+프로젝트는 `config.py`에서 설정을 중앙 관리합니다. 환경 변수로 설정을 오버라이드할 수 있습니다:
+
+```bash
+# Windows
+set SERVER_URL=http://your-server.com/api/events
+set DEVICE=cuda
+python main.py
+
+# Linux/Mac
+export SERVER_URL=http://your-server.com/api/events
+export DEVICE=cuda
+python main.py
 ```
 
 ### 2. 카메라 설정
@@ -90,14 +95,21 @@ cp cameras.json.example cameras.json
 
 ### 3. 코드에서 직접 설정 (config.py)
 ```python
-# config.py 파일 수정
-DETECTION_CONFIG = {
-    'helmet_confidence': 0.5,    # 헬멧 감지 신뢰도 (0.0-1.0)
-    'person_confidence': 0.25,   # 사람 감지 신뢰도
-    'fall_confidence': 0.7,      # 낙상 감지 신뢰도
-    'imgsz': 1280,               # YOLO 입력 이미지 크기
-    'iou_threshold': 0.3         # NMS IoU 임계값
-}
+# config.py 파일에서 기본값 수정
+@dataclass
+class DetectionConfig:
+    helmet_confidence: float = 0.45   # 헬멧 감지 신뢰도
+    pose_confidence: float = 0.5      # 사람 감지 신뢰도
+    device: str = "cpu"               # "cuda" 또는 "cpu"
+    target_fps: int = 30              # 목표 FPS
+    iou_threshold: float = 0.3        # NMS IoU 임계값
+    fall_angle_threshold: float = 45.0  # 낙상 각도 임계값
+
+@dataclass
+class ServerConfig:
+    url: str = "http://localhost:8000/api/events"
+    timeout: int = 5
+    retry_count: int = 3
 ```
 
 ### 4. 위험 구역 설정 (zones_config.json)
@@ -169,7 +181,6 @@ Project/
 ├── ai_analysis.py           # AI 모델 추론
 ├── camera_input.py          # RTSP 카메라 관리
 ├── visualizer.py            # 시각화 및 UI
-├── tracker.py               # 객체 추적
 ├── events.py                # 이벤트 타입 정의
 ├── server_comm.py           # 서버 통신
 ├── zone_detection.py        # 구역 감지
@@ -188,16 +199,26 @@ Project/
 
 ## 주요 클래스 및 모듈
 
+### AppConfig (config.py)
+중앙화된 설정 관리:
+- **ModelPaths**: 모델 파일 경로 자동 탐지
+- **ServerConfig**: 서버 통신 설정
+- **DetectionConfig**: AI 감지 파라미터
+- **EventConfig**: 이벤트 처리 설정
+- **CameraConfig**: RTSP 카메라 설정
+
 ### VideoProcessor (processor.py)
 비디오 처리의 핵심 클래스로 다음 워커를 관리:
 - **카메라 처리 워커**: 각 카메라별 독립 처리
 - **이벤트 전송 워커**: 서버로 이벤트 비동기 전송
 - **메모리 정리 워커**: 24시간 이상 된 이벤트 자동 삭제
+- `AppConfig`를 받아 모든 설정 적용
 
 ### AIAnalyzer (ai_analysis.py)
 다중 모델 AI 추론:
 - `run_inference()`: 헬멧, 사람, 낙상 모델 동시 실행
 - `_remove_duplicate_helmets()`: IoU 기반 중복 박스 제거
+- `_generate_temp_id()`: tracking 실패 시 bbox 기반 임시 ID 생성
 - 모델별 독립적인 confidence threshold 적용
 
 ### CameraInput (camera_input.py)
@@ -205,28 +226,28 @@ RTSP 카메라 관리:
 - `get_frame()`: 프레임 획득 및 재연결
 - Exponential backoff: 5s → 10s → 20s → 40s → 60s (max)
 
-### SimpleTracker (tracker.py)
-객체 추적:
-- 프레임 간 객체 ID 유지
-- IoU 기반 매칭
 
 ## 설정 파라미터 상세
 
 ### 감지 설정
 | 파라미터 | 기본값 | 설명 |
 |---------|-------|------|
-| `helmet_confidence` | 0.5 | 헬멧 감지 최소 신뢰도 (높이면 false positive 감소) |
-| `person_confidence` | 0.25 | 사람 감지 최소 신뢰도 |
-| `fall_confidence` | 0.7 | 낙상 감지 최소 신뢰도 |
-| `imgsz` | 1280 | YOLO 입력 크기 (작은 객체 감지 시 1280 권장) |
+| `helmet_confidence` | 0.45 | 헬멧 감지 최소 신뢰도 (높이면 false positive 감소) |
+| `pose_confidence` | 0.5 | 사람 감지 최소 신뢰도 (pose 모델) |
+| `device` | cpu | 실행 디바이스 ("cpu" 또는 "cuda") |
+| `target_fps` | 30 | 목표 FPS |
 | `iou_threshold` | 0.3 | NMS IoU 임계값 (낮추면 중복 감소) |
+| `fall_angle_threshold` | 45.0 | 낙상 각도 임계값 (도) |
+| `fall_height_ratio` | 0.3 | 낙상 머리 높이 비율 |
+| `max_helmet_size` | 500 | 헬멧 박스 최대 크기 (픽셀) |
 
 ### 시스템 설정
 | 파라미터 | 기본값 | 설명 |
 |---------|-------|------|
-| `FALL_INFERENCE_INTERVAL` | 7 | 낙상 추론 프레임 간격 |
-| `EVENT_RETENTION_HOURS` | 24 | 이벤트 보관 시간 |
-| `CLEANUP_INTERVAL` | 3600 | 메모리 정리 간격 (초) |
+| `event_retention_hours` | 24 | 이벤트 보관 시간 |
+| `debounce_enabled` | True | 이벤트 디바운싱 활성화 |
+| `debounce_seconds` | 3.0 | 동일 이벤트 재전송 간격 (초) |
+| `queue_max_size` | 500 | 이벤트 큐 최대 크기 |
 | `CONSECUTIVE_FAILURE_THRESHOLD` | 5 | 서버 전송 실패 허용 횟수 |
 
 ## 성능 최적화
@@ -355,11 +376,20 @@ cp runs/detect/train/weights/best.pt helmet_model.pt
 
 ## 연락처
 
-- 프로젝트 관리자: [이름]
-- 이메일: [이메일]
-- 이슈 트래커: [URL]
+- 프로젝트 관리자: [Hangibum]
+- 이메일: [dih5156@gmail.com]
+- 이슈 트래커: [dih5156@gmail.com]
 
 ## 변경 이력
+
+### v1.1.0 (2026-01-07)
+- 설정 관리 중앙화 (config.py)
+- ProcessorConfig 제거 및 AppConfig 통합
+- 객체 추적 개선 (tracking 실패 시 자동 임시 ID 생성)
+- server_comm.py config 기반으로 개선
+- object_id null 문제 해결
+- 디바운싱 로직 개선
+- README.md 및 문서 업데이트
 
 ### v1.0.0 (2025-12-22)
 - 초기 릴리스
