@@ -19,13 +19,14 @@ runs/
 
 # YOLO 모델 파일 (용량 큼)
 *.pt
-!yolov8n-pose.pt  # 작은 모델은 포함
+!yolov8n-pose.pt
 
 # 테스트/백업 폴더
 test and backup/
 Device/
 Changetxt/
 MD/
+Local Test Server/
 
 # IDE
 .vscode/
