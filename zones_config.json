@@ -1,0 +1,57 @@
+{
+  "dwelling_threshold_seconds": 3.0,
+  "cameras": {
+    "webcam": {
+      "id": "webcam",
+      "name": "웹캠",
+      "zones": [
+        {
+          "id": "zone_1",
+          "name": "위험 구역 1",
+          "polygon": [
+            [100, 100],
+            [300, 100],
+            [300, 300],
+            [100, 300]
+          ]
+        },
+        {
+          "id": "zone_2",
+          "name": "위험 구역 2",
+          "polygon": [
+            [400, 150],
+            [550, 150],
+            [550, 350],
+            [400, 350]
+          ]
+        }
+      ]
+    },
+    "nvr_camera_1": {
+      "id": "nvr_camera_1",
+      "name": "NVR 카메라 1",
+      "zones": [
+        {
+          "id": "zone_electrical",
+          "name": "전기설비",
+          "polygon": [
+            [50, 50],
+            [250, 50],
+            [250, 250],
+            [50, 250]
+          ]
+        },
+        {
+          "id": "zone_entrance",
+          "name": "출입구",
+          "polygon": [
+            [300, 100],
+            [450, 100],
+            [450, 300],
+            [300, 300]
+          ]
+        }
+      ]
+    }
+  }
+}

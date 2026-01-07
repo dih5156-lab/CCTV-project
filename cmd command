@@ -1,0 +1,50 @@
+1. 단일 카메라 실행 커멘드
+python main.py --mode single --display
+
+2. 다중 카메라 실행 커멘드
+python main.py --cameras cameras.json --display
+
+3. 위험구역 탐지만 활성화
+python main.py --mode single --display --zone-detection
+
+4. 데이터셋 수집만 활성화
+python main.py --mode single --display --collect-dataset
+
+5. 위험구역 + 데이터셋 둘 다 활성화
+python main.py --mode single --display --zone-detection --collect-dataset
+
+6. 커스텀 위험구역 설정 사용
+python main.py --mode single --display --zone-detection --zones-config my_zones.json
+
+7. 데이터셋 저장 폴더 지정
+python main.py --mode single --collect-dataset --dataset-dir ./my_collected_data
+
+8. 모든 옵션 활성화(전체 기능)
+python main.py --mode single --display --zone-detection --collect-dataset --device cpu --fps 30 --confidence 0.5
+
+YOLO 학습 커멘드
+
+# model 옵션 : 사전학습된 모델 선택 (예: yolov8n.pt, yolov8s.pt 등)
+# data 옵션 : 데이터셋 설정 파일 (예: data.yaml)
+
+1. CPU 학습
+yolo detect train model=yolov8n.pt data=data.yaml epochs=50 imgsz=640 batch=4 device=cpu  # helmet_missing, helmet_waering, danger_zone, fall
+
+yolo detect train model=yolov8n.pt data=fall_data.yaml epochs=50 imgsz=640 batch=4 device=cpu name="fall_model"
+
+2. GPU 학습
+yolo detect train model=yolov8n.pt data=data.yaml epochs=50 imgsz=640 batch=4 device=0    # helmet_missing, helmet_waering, danger_zone, fall
+
+yolo detect train model=yolov8n.pt data=fall_data.yaml epochs=50 imgsz=640 batch=4 device=0 name="fall_model"
+
+# 학습 중 중간에 멈추고 싶을때는 Ctrl + C 를 누르면 됩니다.
+
+# 중간에 멈춘 후 이어서 학습할 때
+yolo detect train model=runs/detect/train/weights/last.pt data=data.yaml epochs=50 imgsz=640 batch=4 device=0
+
+
+"C:/Users/dih51/Desktop/Project/runs/detect/train/weights/test.pt"
+
+"C:/Users/dih51/Desktop/Project/runs/detect/helmet_model/weights/best.pt"
+
+"C:/Users/dih51/Desktop/Project/dataset/images/train/bPartA_00000.jpg"

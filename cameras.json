@@ -1,0 +1,23 @@
+[
+  {
+    "id": "camera_1",
+    "name": "테스트_1",
+    "source": "rtsp://admin:sawwaveap@192.168.0.100:554/stream1",
+    "location": "1",
+    "enabled": true
+  },
+  {
+    "id": "camera_2",
+    "name": "테스트_2 (비활성화)",
+    "source": "rtsp://admin:password@192.168.1.101:554/stream1",
+    "location": "2",
+    "enabled": false
+  },
+  {
+    "id": "webcam",
+    "name": "웹캠",
+    "source": 0,
+    "location": "로컬",
+    "enabled": true
+  }
+]

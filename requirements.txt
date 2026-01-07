@@ -1,0 +1,37 @@
+# CCTV 헬멧 착용 및 낙상 감지 시스템 - 필수 패키지
+
+# 딥러닝 프레임워크
+ultralytics>=8.0.0  # YOLOv8 (헬멧, 낙상, 사람 감지)
+torch>=2.0.0  # PyTorch (YOLO 백엔드)
+torchvision>=0.15.0
+
+# 컴퓨터 비전
+opencv-python>=4.8.0  # OpenCV (영상 처리, RTSP)
+opencv-contrib-python>=4.8.0  # OpenCV 추가 기능
+
+# 이미지 처리
+numpy>=1.24.0
+Pillow>=10.0.0
+
+# 서버 통신
+requests>=2.31.0  # HTTP 통신
+urllib3>=2.0.0
+
+# 데이터 처리
+pandas>=2.0.0  # 데이터 분석 (선택사항)
+
+# 설정 관리
+python-dotenv>=1.0.0  # 환경 변수 관리
+
+# 로깅
+colorlog>=6.7.0  # 컬러 로그 (선택사항)
+
+# 유틸리티
+tqdm>=4.66.0  # 진행률 표시
+psutil>=5.9.0  # 시스템 모니터링
+
+# 개발 도구 (선택사항)
+pytest>=7.4.0  # 단위 테스트
+black>=23.0.0  # 코드 포맷팅
+flake8>=6.0.0  # 린트
+mypy>=1.5.0  # 타입 체크
