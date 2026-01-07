@@ -37,7 +37,8 @@ def load_camera_list(path: str) -> List[Dict[str, Any]]:
         return []
 
 
-def start_processor(camera_list: List[Dict[str, Any]], cfg: AppConfig):
+def start_processor(camera_list: List[Dict[str, Any]], cfg: AppConfig) -> None:
+    """Start video processor with cameras"""
     processor = VideoProcessor(cfg)
     # 카메라 등록 (enabled=true인 것만)
     for cam in camera_list:
@@ -73,7 +74,7 @@ def start_processor(camera_list: List[Dict[str, Any]], cfg: AppConfig):
         processor.stop()
 
 
-def apply_args_to_config(args, config: AppConfig) -> AppConfig:
+def apply_args_to_config(args: argparse.Namespace, config: AppConfig) -> AppConfig:
     """명령행 인자를 config에 적용"""
     # 모델 경로
     if args.helmet_model:
@@ -104,7 +105,8 @@ def apply_args_to_config(args, config: AppConfig) -> AppConfig:
     return config
 
 
-def main():
+def main() -> None:
+    """Main entry point"""
     parser = argparse.ArgumentParser(
         description='CCTV 헬멧 착용 및 낙상 감지 시스템',
         formatter_class=argparse.RawDescriptionHelpFormatter,

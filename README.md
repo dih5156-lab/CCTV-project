@@ -20,7 +20,9 @@ Project/
 │   │   ├── bbox_utils.py      # 바운딩 박스 유틸리티
 │   │   ├── geometry.py        # 기하학 계산
 │   │   ├── visualizer.py      # 시각화
-│   │   └── camera_input.py    # 카메라 입력 관리
+│   │   ├── camera_input.py    # 카메라 입력 관리
+│   │   ├── zone_detection.py  # 위험 구역 감지
+│   │   └── dataset_collector.py # 데이터셋 수집 모듈
 │   └── services/              # 외부 서비스 연동
 │       ├── __init__.py
 │       └── server_comm.py     # 서버 통신
@@ -28,8 +30,6 @@ Project/
 │   ├── yolov8n.pt
 │   └── yolov8n-pose.pt
 ├── main.py                    # 진입점
-├── dataset_collector.py       # 데이터셋 수집 모듈
-├── zone_detection.py          # 위험 구역 감지
 ├── test_video.py              # 비디오 테스트
 ├── cameras.json               # 카메라 설정
 ├── zones_config.json          # 위험 구역 설정
@@ -363,11 +363,25 @@ cp runs/detect/train/weights/best.pt helmet_model.pt
 
 ## 변경 이력
 
+### v1.2.1 (2026-01-07) - 코드 품질 개선
+- **리팩토링**: 코드 품질 및 유지보수성 향상
+  - 하드코딩된 상수를 `ProcessingConfig`로 중앙화
+  - `zone_detection`, `dataset_collector`를 `src/utils/`로 이동
+  - 모든 import 경로를 패키지 구조에 맞게 정리
+- **타입 안정성**: 주요 함수에 타입 힌팅 추가 (PEP 484)
+- **에러 처리**: ValueError, RuntimeError 등 구체적인 예외 처리
+- **설정 확장**: ProcessingConfig 추가로 처리 관련 설정 통합
+  - `thread_join_timeout`: 스레드 종료 대기 시간
+  - `camera_reconnect_delay`: 카메라 재연결 지연
+  - `consecutive_failure_threshold`: 연속 실패 임계값
+  - `queue_warning_threshold`: 큐 경고 임계값
+  - `fall_inference_interval`: 낙상 추론 간격
+
 ### v1.2.0 (2026-01-07) - 프로젝트 구조 개선
 - **모듈화**: 전체 코드베이스를 `src/` 폴더로 재구조화
   - `src/config/`: 설정 관리
   - `src/core/`: 핵심 처리 로직 (processor, ai_analysis, events)
-  - `src/utils/`: 유틸리티 함수들 (visualizer, camera_input, bbox_utils, geometry)
+  - `src/utils/`: 유틸리티 함수들 (visualizer, camera_input, bbox_utils, geometry, zone_detection, dataset_collector)
   - `src/services/`: 외부 서비스 연동 (server_comm)
 - **Import 경로**: 모든 모듈의 import 경로를 패키지 구조에 맞게 업데이트
 - **패키지화**: 각 하위 모듈에 `__init__.py` 추가로 패키지화
@@ -401,16 +415,3 @@ Pull Request와 Issue는 언제나 환영합니다!
 
 - GitHub: https://github.com/dih5156-lab/CCTV-project
 - Issues: https://github.com/dih5156-lab/CCTV-project/issues
-## 라이선스
-
-이 프로젝트는 [라이선스 종류]에 따라 배포됩니다.
-
-## 기여
-
-버그 리포트 및 개선 제안은 이슈 트래커를 통해 제출해주세요.
-
-## 연락처
-
-- 프로젝트 관리자: [Hangibum]
-- 이메일: [dih5156@gmail.com]
-- 이슈 트래커: [dih5156@gmail.com]

@@ -7,6 +7,7 @@ from .config import (
     CameraConfig,
     DetectionConfig,
     EventConfig,
+    ProcessingConfig,
     default_config,
     PROJECT_ROOT
 )
@@ -18,6 +19,7 @@ __all__ = [
     'CameraConfig',
     'DetectionConfig',
     'EventConfig',
+    'ProcessingConfig',
     'default_config',
     'PROJECT_ROOT'
 ]

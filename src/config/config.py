@@ -86,6 +86,17 @@ class EventConfig:
     debounce_seconds: float = 3.0  # 동일 이벤트 재전송 간격
     queue_max_size: int = 500
     event_retention_hours: int = 24  # 이벤트 기록 보관 시간
+    cleanup_interval: int = 3600  # 이벤트 정리 간격 (초)
+
+
+@dataclass
+class ProcessingConfig:
+    """비디오 처리 설정"""
+    thread_join_timeout: int = 5  # 스레드 종료 대기 시간 (초)
+    camera_reconnect_delay: float = 0.1  # 카메라 재연결 지연 (초)
+    consecutive_failure_threshold: int = 5  # 연속 실패 임계값
+    queue_warning_threshold: float = 0.8  # 큐 경고 임계값 (80%)
+    fall_inference_interval: int = 7  # 낙상 추론 간격 (프레임)
 
 
 @dataclass
@@ -96,6 +107,7 @@ class AppConfig:
     camera: CameraConfig = None
     detection: DetectionConfig = None
     events: EventConfig = None
+    processing: ProcessingConfig = None
     
     # 기능 토글
     display: bool = False
@@ -118,6 +130,8 @@ class AppConfig:
             self.detection = DetectionConfig()
         if self.events is None:
             self.events = EventConfig()
+        if self.processing is None:
+            self.processing = ProcessingConfig()
     
     @classmethod
     def from_env(cls) -> 'AppConfig':

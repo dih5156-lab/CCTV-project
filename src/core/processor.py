@@ -11,15 +11,15 @@ import os
 from dataclasses import dataclass, field, asdict
 from threading import Thread, Lock, Event
 from queue import Queue, Empty
-from typing import Dict, List, Union, Tuple, Any
+from typing import Dict, List, Union, Tuple, Any, Optional
 
 from ..config import AppConfig
 from .ai_analysis import AIAnalyzer
 from ..utils.visualizer import draw_events
 from ..services.server_comm import send_event
 from ..utils.camera_input import RTSPCamera
-from zone_detection import ZoneManager, ZoneEvent
-from dataset_collector import DatasetCollector
+from ..utils.zone_detection import ZoneManager, ZoneEvent
+from ..utils.dataset_collector import DatasetCollector
 from .events import DetectionEvent
 
 # 로깅 설정
@@ -28,16 +28,6 @@ logging.basicConfig(
     format="%(asctime)s - [%(name)s] - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
-
-# Processing Constants
-FALL_INFERENCE_INTERVAL = 7
-DEFAULT_EVENT_QUEUE_SIZE = 500
-DEFAULT_CLEANUP_INTERVAL = 3600
-EVENT_RETENTION_HOURS = 24
-THREAD_JOIN_TIMEOUT = 5
-CAMERA_RECONNECT_DELAY = 0.1
-CONSECUTIVE_FAILURE_THRESHOLD = 5
-QUEUE_WARNING_THRESHOLD = 0.8
 
 
 @dataclass
@@ -113,7 +103,7 @@ class VideoProcessor:
         self.camera_threads: Dict[str, Thread] = {}
         
         # 이벤트 관리
-        self.event_queue = Queue(maxsize=500)
+        self.event_queue = Queue(maxsize=config.events.queue_max_size)
         self.last_events: Dict[Tuple[str, str, int], float] = {}  # (camera_id, type, object_id) -> timestamp
         self._event_lock = Lock()
         
@@ -134,7 +124,7 @@ class VideoProcessor:
         
         # 클린업 스레드
         self.cleanup_thread = None
-        self.cleanup_interval = 3600  # 1시간마다 정리
+        self.cleanup_interval = config.events.cleanup_interval
         
         # 데이터셋 저장 (deprecated)
         if hasattr(config, 'save_dataset') and config.save_dataset:
@@ -162,8 +152,10 @@ class VideoProcessor:
                 logger.warning(f"⚠️ 데이터셋 수집 초기화 실패: {e}")
                        
     
-    def _cleanup_old_events(self, max_age_hours: int = EVENT_RETENTION_HOURS) -> int:
+    def _cleanup_old_events(self, max_age_hours: Optional[int] = None) -> int:
         """Remove old event records beyond retention period."""
+        if max_age_hours is None:
+            max_age_hours = self.config.events.event_retention_hours
         current_time = time.time()
         cutoff = current_time - (max_age_hours * 3600)
         before_count = len(self.last_events)
@@ -487,7 +479,7 @@ class VideoProcessor:
         while self.running and not self.stop_event.is_set():
             ret, frame = camera.get_frame()
             if not ret or frame is None:
-                time.sleep(CAMERA_RECONNECT_DELAY)
+                time.sleep(self.config.processing.camera_reconnect_delay)
                 continue
 
             frame_count += 1
@@ -521,9 +513,17 @@ class VideoProcessor:
                 if not self._display_frame(camera_id, frame, events):
                     self.running = False
 
+            except ValueError as e:
+                logger.error(f"[{camera_id}] 데이터 처리 오류: {e}")
+                self.stats.frames_dropped += 1
+                self.stats.inference_errors += 1
+            except RuntimeError as e:
+                logger.error(f"[{camera_id}] 모델 실행 오류: {e}")
+                self.stats.frames_dropped += 1
+                self.stats.inference_errors += 1
             except Exception as e:
                 import traceback
-                logger.error(f"[{camera_id}] 추론 오류: {e}")
+                logger.error(f"[{camera_id}] 예상치 못한 오류: {e}")
                 logger.error(f"Traceback:\n{traceback.format_exc()}")
                 self.stats.frames_dropped += 1
                 self.stats.inference_errors += 1
@@ -557,7 +557,7 @@ class VideoProcessor:
                         logger.warning(f"⚠️ 이벤트 전송 실패: {event_data}")
                         
                         # 연속 실패 시 경고
-                        if consecutive_failures >= CONSECUTIVE_FAILURE_THRESHOLD:
+                        if consecutive_failures >= self.config.processing.consecutive_failure_threshold:
                             logger.error(f"🚨 서버 전송 연속 {consecutive_failures}회 실패 - 서버 상태 확인 필요")
                             
                 except Exception as e:
@@ -581,15 +581,15 @@ class VideoProcessor:
                 logger.info("🧹 메모리 정리 시작...")
                 
                 # 1. 오래된 이벤트 기록 정리
-                removed = self._cleanup_old_events(max_age_hours=EVENT_RETENTION_HOURS)
+                removed = self._cleanup_old_events()
                 
                 if removed > 0:
                     logger.info(f"  - last_events: {removed}개 정리 (남은: {len(self.last_events)}개)")
                 
                 # 2. 이벤트 큐 크기 체크
                 queue_size = self.event_queue.qsize()
-                queue_max = DEFAULT_EVENT_QUEUE_SIZE
-                if queue_size > queue_max * QUEUE_WARNING_THRESHOLD:
+                queue_max = self.config.events.queue_max_size
+                if queue_size > queue_max * self.config.processing.queue_warning_threshold:
                     logger.warning(f"⚠️ 이벤트 큐 포화 상태: {queue_size}/{queue_max}")
                 
                 logger.info("✅ 메모리 정리 완료")
@@ -655,17 +655,18 @@ class VideoProcessor:
         self.stop_event.set()
 
         # 모든 스레드 대기
+        timeout = self.config.processing.thread_join_timeout
         for camera_id, thread in self.camera_threads.items():
             if thread.is_alive():
-                thread.join(timeout=THREAD_JOIN_TIMEOUT)
+                thread.join(timeout=timeout)
                 if thread.is_alive():
                     logger.warning(f"[{camera_id}] 스레드 종료 시간 초과")
 
         if self.sender_thread and self.sender_thread.is_alive():
-            self.sender_thread.join(timeout=THREAD_JOIN_TIMEOUT)
+            self.sender_thread.join(timeout=timeout)
         
         if self.cleanup_thread and self.cleanup_thread.is_alive():
-            self.cleanup_thread.join(timeout=THREAD_JOIN_TIMEOUT)
+            self.cleanup_thread.join(timeout=timeout)
 
         # 카메라 해제
         for camera in self.cameras.values():
