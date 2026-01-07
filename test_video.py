@@ -3,31 +3,27 @@ Test script for video file processing
 """
 
 import sys
-from processor import VideoProcessor, ProcessorConfig
-from config import ModelPaths
+import time
+from src.core import VideoProcessor
+from src.config import AppConfig
 
 # Video file path
 VIDEO_PATH = "C:/Users/dih51/Desktop/Project/test_video/ai_test_video5.mp4"
 
-# Load model paths from config
-models = ModelPaths()
-
-config = ProcessorConfig(
-    helmet_model_path=models.helmet_model,
-    pose_model_path=models.pose_model,
-    display=True,
-    target_fps=30,
-    collect_dataset=False,
-    helmet_confidence_threshold=0.45,  # 오탐지 방지를 위해 적절히 상향
-    pose_confidence_threshold=0.35
-)
+# 설정 생성
+config = AppConfig()
+config.display = True
+config.detection.device = "cpu"
+config.detection.helmet_confidence = 0.45  # 오탐지 방지를 위해 적절히 상향
+config.detection.pose_confidence = 0.35
+config.detection.target_fps = 30
+config.collect_dataset = False
 
 processor = VideoProcessor(config)
 processor.add_camera("video_test", VIDEO_PATH)
 
 try:
     processor.start()
-    import time
     while processor.running:
         time.sleep(10)
         processor.print_stats()
