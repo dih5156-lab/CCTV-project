@@ -3,8 +3,8 @@ import json
 import logging
 from typing import Union, Dict, Optional
 from dataclasses import dataclass
-from events import DetectionEvent
-from config import default_config
+from ..core.events import DetectionEvent
+from ..config import default_config
 
 logger = logging.getLogger(__name__)
 

@@ -3,7 +3,7 @@ utils/geometry.py - 기하학 관련 유틸리티 함수
 """
 
 from typing import Tuple
-from events import DetectionEvent
+from ..core.events import DetectionEvent
 
 
 def calculate_iou(box1: DetectionEvent, box2: DetectionEvent) -> float:

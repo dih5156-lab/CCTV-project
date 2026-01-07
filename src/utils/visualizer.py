@@ -3,7 +3,7 @@ visualizer.py - Detection result visualization
 """
 
 from typing import List, Union, Dict, Tuple, Optional, Any
-from events import EventType, DetectionEvent
+from ..core.events import EventType, DetectionEvent
 import cv2
 import logging
 

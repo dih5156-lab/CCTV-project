@@ -8,8 +8,8 @@ from dataclasses import dataclass
 from typing import Optional
 
 
-# 프로젝트 루트 디렉토리
-PROJECT_ROOT = Path(__file__).parent
+# 프로젝트 루트 디렉토리 (src/config에서 2단계 상위)
+PROJECT_ROOT = Path(__file__).parent.parent.parent
 
 
 @dataclass

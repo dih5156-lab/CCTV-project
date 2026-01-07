@@ -2,6 +2,41 @@
 
 건설 현장 안전 관리를 위한 실시간 CCTV 기반 AI 감지 시스템입니다. 헬멧 착용 여부와 낙상 사고를 자동으로 감지하고 서버로 이벤트를 전송합니다.
 
+## 프로젝트 구조
+
+```
+Project/
+├── src/                        # 소스 코드 모듈
+│   ├── config/                # 설정 관리
+│   │   ├── __init__.py
+│   │   └── config.py          # 중앙화된 설정
+│   ├── core/                  # 핵심 분석 및 처리 로직
+│   │   ├── __init__.py
+│   │   ├── events.py          # 이벤트 데이터 모델
+│   │   ├── ai_analysis.py     # AI 추론 엔진
+│   │   └── processor.py       # 비디오 처리 파이프라인
+│   ├── utils/                 # 유틸리티 함수
+│   │   ├── __init__.py
+│   │   ├── bbox_utils.py      # 바운딩 박스 유틸리티
+│   │   ├── geometry.py        # 기하학 계산
+│   │   ├── visualizer.py      # 시각화
+│   │   └── camera_input.py    # 카메라 입력 관리
+│   └── services/              # 외부 서비스 연동
+│       ├── __init__.py
+│       └── server_comm.py     # 서버 통신
+├── models/                    # AI 모델 파일
+│   ├── yolov8n.pt
+│   └── yolov8n-pose.pt
+├── main.py                    # 진입점
+├── dataset_collector.py       # 데이터셋 수집 모듈
+├── zone_detection.py          # 위험 구역 감지
+├── test_video.py              # 비디오 테스트
+├── cameras.json               # 카메라 설정
+├── zones_config.json          # 위험 구역 설정
+├── requirements.txt           # 의존성 목록
+└── README.md                  # 프로젝트 문서
+```
+
 ## 주요 기능
 
 - **헬멧 착용 감지**: 작업자의 헬멧 착용(helmet_wearing) 및 미착용(helmet_missing) 상태 감지
@@ -93,9 +128,9 @@ cp cameras.json.example cameras.json
 ]
 ```
 
-### 3. 코드에서 직접 설정 (config.py)
+### 3. 코드에서 직접 설정 (src/config/config.py)
 ```python
-# config.py 파일에서 기본값 수정
+# src/config/config.py 파일에서 기본값 수정
 @dataclass
 class DetectionConfig:
     helmet_confidence: float = 0.45   # 헬멧 감지 신뢰도
@@ -352,20 +387,46 @@ cp runs/detect/train/weights/best.pt helmet_model.pt
 - 카메라 연결 상태
 - 이벤트 큐 크기
 
-## 알려진 이슈
+## 변경 이력
 
-1. **헬멧 모델 False Positive**: 
-   - 원인: 학습 데이터 불균형 (helmet_wearing 80%, helmet_missing 20%)
-   - 해결: 1500개 이상의 helmet_missing 이미지 추가 학습 필요
+### v1.2.0 (2026-01-07) - 프로젝트 구조 개선
+- **모듈화**: 전체 코드베이스를 `src/` 폴더로 재구조화
+  - `src/config/`: 설정 관리
+  - `src/core/`: 핵심 처리 로직 (processor, ai_analysis, events)
+  - `src/utils/`: 유틸리티 함수들 (visualizer, camera_input, bbox_utils, geometry)
+  - `src/services/`: 외부 서비스 연동 (server_comm)
+- **Import 경로**: 모든 모듈의 import 경로를 패키지 구조에 맞게 업데이트
+- **패키지화**: 각 하위 모듈에 `__init__.py` 추가로 패키지화
+- **모델 관리**: YOLO 모델 파일을 `models/` 폴더로 통합 관리
+- **코드 정리**: 루트 디렉토리의 중복 파일 제거로 프로젝트 구조 단순화
 
-2. **작은 헬멧 감지 한계**:
-   - 18-26px 크기의 헬멧은 낮은 신뢰도 (0.11-0.67)
-   - `imgsz=1280` 유지 필요
+### v1.1.0 (2026-01-07) - 설정 관리 개선
+- **Config 중앙화**: ProcessorConfig 제거, AppConfig로 통합
+- **Object Tracking 개선**: YOLO tracking 실패 시 bbox 기반 임시 ID 생성 (1000000-9999999 범위)
+- **Server 통신 개선**: config 기반 설정으로 변경 (하위 호환성 유지)
+- **Detection Config**: helmet_confidence 0.5 → 0.45 변경
+- **문서화**: README.md에 정확한 설정값 반영
 
-3. **RTSP 재연결 지연**:
-   - Exponential backoff로 최대 60초 지연 발생 가능
-   - 네트워크 안정성 확인 필요
+### v1.0.0 (2025-11-12) - 초기 버전
+- 헬멧 착용/미착용 감지
+- 낙상 감지 (pose 기반)
+- 다중 카메라 지원
+- 서버 연동
+- 위험 구역 감지
+- 데이터셋 수집 기능
 
+## 라이선스
+
+이 프로젝트는 MIT 라이선스를 따릅니다.
+
+## 기여
+
+Pull Request와 Issue는 언제나 환영합니다!
+
+## 문의
+
+- GitHub: https://github.com/dih5156-lab/CCTV-project
+- Issues: https://github.com/dih5156-lab/CCTV-project/issues
 ## 라이선스
 
 이 프로젝트는 [라이선스 종류]에 따라 배포됩니다.

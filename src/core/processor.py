@@ -13,14 +13,14 @@ from threading import Thread, Lock, Event
 from queue import Queue, Empty
 from typing import Dict, List, Union, Tuple, Any
 
-from config import AppConfig
-from ai_analysis import AIAnalyzer
-from visualizer import draw_events
-from server_comm import send_event
-from camera_input import RTSPCamera
+from ..config import AppConfig
+from .ai_analysis import AIAnalyzer
+from ..utils.visualizer import draw_events
+from ..services.server_comm import send_event
+from ..utils.camera_input import RTSPCamera
 from zone_detection import ZoneManager, ZoneEvent
 from dataset_collector import DatasetCollector
-from events import DetectionEvent
+from .events import DetectionEvent
 
 # 로깅 설정
 logging.basicConfig(

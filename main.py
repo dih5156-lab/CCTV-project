@@ -9,8 +9,8 @@ import os
 from pathlib import Path
 from typing import List, Dict, Any
 
-from processor import VideoProcessor
-from config import default_config, AppConfig
+from src.core import VideoProcessor
+from src.config import default_config, AppConfig
 
 # FFMPEG 경고 메시지 숨기기 (RTSP 스트리밍 노이즈 제거)
 os.environ['OPENCV_FFMPEG_CAPTURE_OPTIONS'] = 'rtsp_transport;udp'

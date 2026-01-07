@@ -10,9 +10,9 @@ from typing import List, Dict, Optional, Tuple
 
 import numpy as np
 
-from utils.bbox_utils import is_helmet_worn
-from utils.geometry import boxes_overlap
-from events import EventType, DetectionEvent
+from ..utils.bbox_utils import is_helmet_worn
+from ..utils.geometry import boxes_overlap
+from .events import EventType, DetectionEvent
 
 # 로깅 설정
 logger = logging.getLogger(__name__)
