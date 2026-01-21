@@ -48,24 +48,6 @@ class AIAnalyzer:
     Uses YOLOv8-pose for person detection with keypoint-based fall detection.
     """
 
-    HELMET_CLASS_MAPPING = {
-        "helmet_missing": EventType.HEAD,
-        "no_helmet": EventType.HEAD,
-        "helmet": EventType.HELMET,
-        "helmet_wearing": EventType.HELMET,
-        "head": EventType.HEAD,
-    }
-
-    COMMON_CLASS_MAPPING = {
-        "danger_zone": EventType.DANGER_ZONE,
-        "unsafe_behavior": EventType.UNSAFE_BEHAVIOR,
-        "unsafe": EventType.UNSAFE_BEHAVIOR,
-        "person": EventType.PERSON,
-    }
-
-    # 병합된 매핑 (내부에서 사용)
-    CLASS_MAPPING = {**HELMET_CLASS_MAPPING, **COMMON_CLASS_MAPPING}
-
     def __init__(
         self,
         model_path: Optional[str] = None,  # 기존 호환성용
@@ -76,6 +58,25 @@ class AIAnalyzer:
         fall_angle_threshold: float = 0.45,
         fall_height_ratio: float = 0.3,
     ):
+        # 클래스 매핑 (순환 import 방지를 위해 인스턴스 변수로)
+        self.HELMET_CLASS_MAPPING = {
+            "helmet_missing": EventType.HEAD,
+            "no_helmet": EventType.HEAD,
+            "helmet": EventType.HELMET,
+            "helmet_wearing": EventType.HELMET,
+            "head": EventType.HEAD,
+        }
+
+        self.COMMON_CLASS_MAPPING = {
+            "danger_zone": EventType.DANGER_ZONE,
+            "unsafe_behavior": EventType.UNSAFE_BEHAVIOR,
+            "unsafe": EventType.UNSAFE_BEHAVIOR,
+            "person": EventType.PERSON,
+        }
+
+        # 병합된 매핑 (내부에서 사용)
+        self.CLASS_MAPPING = {**self.HELMET_CLASS_MAPPING, **self.COMMON_CLASS_MAPPING}
+        
         # 기존 호환성: model_path가 주어지면 pose_model_path로 사용
         if model_path and not pose_model_path:
             pose_model_path = model_path
