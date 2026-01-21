@@ -10,8 +10,9 @@ from typing import List, Dict, Optional, Tuple
 
 import numpy as np
 
-from ..utils.geometry import is_helmet_worn, boxes_overlap
+# events를 먼저 import (순환 참조 방지)
 from .events import EventType, DetectionEvent
+from ..utils.geometry import is_helmet_worn, boxes_overlap
 
 # 로깅 설정
 logger = logging.getLogger(__name__)
@@ -58,24 +59,24 @@ class AIAnalyzer:
         fall_angle_threshold: float = 0.45,
         fall_height_ratio: float = 0.3,
     ):
-        # 클래스 매핑 (순환 import 방지를 위해 인스턴스 변수로)
-        self.HELMET_CLASS_MAPPING = {
-            "helmet_missing": EventType.HEAD,
-            "no_helmet": EventType.HEAD,
-            "helmet": EventType.HELMET,
-            "helmet_wearing": EventType.HELMET,
-            "head": EventType.HEAD,
+        # 클래스 매핑 (문자열로 저장하여 순환 import 방지)
+        self.HELMET_CLASS_MAPPING_STR = {
+            "helmet_missing": "head",
+            "no_helmet": "head",
+            "helmet": "helmet",
+            "helmet_wearing": "helmet",
+            "head": "head",
         }
 
-        self.COMMON_CLASS_MAPPING = {
-            "danger_zone": EventType.DANGER_ZONE,
-            "unsafe_behavior": EventType.UNSAFE_BEHAVIOR,
-            "unsafe": EventType.UNSAFE_BEHAVIOR,
-            "person": EventType.PERSON,
+        self.COMMON_CLASS_MAPPING_STR = {
+            "danger_zone": "danger_zone",
+            "unsafe_behavior": "unsafe_behavior",
+            "unsafe": "unsafe_behavior",
+            "person": "person",
         }
 
-        # 병합된 매핑 (내부에서 사용)
-        self.CLASS_MAPPING = {**self.HELMET_CLASS_MAPPING, **self.COMMON_CLASS_MAPPING}
+        # 병합된 매핑
+        self.CLASS_MAPPING_STR = {**self.HELMET_CLASS_MAPPING_STR, **self.COMMON_CLASS_MAPPING_STR}
         
         # 기존 호환성: model_path가 주어지면 pose_model_path로 사용
         if model_path and not pose_model_path:
@@ -224,7 +225,7 @@ class AIAnalyzer:
     # ---------------------------
     # 유틸리티: 클래스 매핑
     # ---------------------------
-    def _map_class_to_event_type(self, class_name: str, model_type: str) -> EventType:
+    def _map_class_to_event_type(self, class_name: str, model_type: str):
         """클래스 이름을 EventType으로 매핑
         
         Args:
@@ -234,13 +235,28 @@ class AIAnalyzer:
         Returns:
             매핑된 EventType
         """
+        from .events import EventType
+        
         if not class_name:
             return EventType.OTHER
 
         normalized = class_name.lower().strip().replace(" ", "_")
 
         if model_type == "helmet":
-            return self.HELMET_CLASS_MAPPING.get(normalized, EventType.OTHER)
+            # 문자열 매핑을 EventType으로 변환
+            mapped_str = self.HELMET_CLASS_MAPPING_STR.get(normalized)
+            if mapped_str == "head":
+                return EventType.HEAD
+            elif mapped_str == "helmet":
+                return EventType.HELMET
+            elif mapped_str == "danger_zone":
+                return EventType.DANGER_ZONE
+            elif mapped_str == "unsafe_behavior":
+                return EventType.UNSAFE_BEHAVIOR
+            elif mapped_str == "person":
+                return EventType.PERSON
+            else:
+                return EventType.OTHER
         
         # pose 모델은 _run_pose_model에서 직접 EventType 지정하므로 여기서는 OTHER 반환
         return EventType.OTHER
@@ -284,7 +300,7 @@ class AIAnalyzer:
         temp_id = (center_x * 1000 + center_y * 100 + size_hash) % 8999999 + 1000000
         return temp_id
 
-    def _filter_helmet_boxes(self, helmet_events: List[DetectionEvent]) -> List[DetectionEvent]:
+    def _filter_helmet_boxes(self, helmet_events: List) -> List:
         """헬멧 박스 필터링: 크기 검증 + 중복 제거
         
         Args:
@@ -306,7 +322,7 @@ class AIAnalyzer:
         logger.debug(f"헬멧 필터링: {len(helmet_events)}개 → {len(filtered)}개 (크기/중복 제거)")
         return filtered
     
-    def _remove_duplicates(self, events: List[DetectionEvent], iou_threshold: float = DUPLICATE_IOU_THRESHOLD) -> List[DetectionEvent]:
+    def _remove_duplicates(self, events: List, iou_threshold: float = DUPLICATE_IOU_THRESHOLD) -> List:
         """중복 박스 제거 - IoU가 높은 박스들 중 confidence 높은 것만 남김
         
         Args:
@@ -338,11 +354,12 @@ class AIAnalyzer:
     # ---------------------------
     # 단일 모델 추론 헬퍼
     # ---------------------------
-    def _run_single_model(self, model, frame) -> List[DetectionEvent]:
+    def _run_single_model(self, model, frame) -> List:
         """단일 YOLO 모델 결과를 DetectionEvent 리스트로 변환"""
+        from .events import EventType, DetectionEvent
         import numpy as _np
 
-        events: List[DetectionEvent] = []
+        events: List = []
         if model is None or frame is None:
             return events
 
@@ -450,12 +467,14 @@ class AIAnalyzer:
 
         return events
         
-    def _run_pose_model(self, model, frame) -> List[DetectionEvent]:
+    def _run_pose_model(self, model, frame) -> List:
         """
         YOLOv8-pose 모델 추론 (사람 + 관절 감지)
         관절 정보를 이용해 낙상 여부를 판단
         """
-        events: List[DetectionEvent] = []
+        from .events import EventType, DetectionEvent
+        
+        events: List = []
         if model is None or frame is None:
             return events
         
@@ -639,7 +658,7 @@ class AIAnalyzer:
         except Exception as e:
             return False
     
-    def split_events(self, events: List[DetectionEvent]) -> Tuple[List[DetectionEvent], List[DetectionEvent], List[DetectionEvent]]:
+    def split_events(self, events: List) -> Tuple[List, List, List]:
         """이벤트를 사람, 헬멧, 기타로 분류
         
         Args:
@@ -648,13 +667,15 @@ class AIAnalyzer:
         Returns:
             (사람 이벤트, 헬멧 이벤트, 기타 이벤트) 튜플
         """
+        from .events import EventType
+        
         persons = [ev for ev in events if ev.event_type == EventType.PERSON]
         helmets = [ev for ev in events if ev.event_type in (EventType.HELMET, EventType.HEAD)]
         others = [ev for ev in events if ev.event_type not in (EventType.PERSON, EventType.HELMET, EventType.HEAD)]
         
         return persons, helmets, others
     
-    def check_helmet_compliance(self, events: List[DetectionEvent]) -> List[Dict]:
+    def check_helmet_compliance(self, events: List) -> List[Dict]:
         """
         사람 객체와 헬멧 객체를 매칭하여 착용 여부 판단
         헬멧은 사람의 상단 35% 영역에서만 인정
@@ -730,7 +751,7 @@ class AIAnalyzer:
         use_helmet: bool = True,
         use_pose: bool = True,
         check_compliance: bool = True,
-    ) -> List[DetectionEvent]:
+    ) -> List:
         """
         프레임 추론 및 헬멧 착용 여부 판단
         
@@ -742,11 +763,14 @@ class AIAnalyzer:
             
         Returns: 사람+헬멧+낙상 이벤트 리스트
         """
+        from .events import EventType
+        
         if frame is None or not isinstance(frame, (np.ndarray,)):
             return []
 
         person_and_fall_events = []
         helmet_events = []
+        small_helmet_events = []  # 초기화
         
         # Pose 모델 (사람 + 낙상 감지)
         if use_pose and self.pose_model:
@@ -763,7 +787,10 @@ class AIAnalyzer:
             # 헬멧 박스 필터링 (크기 검증 + 중복 제거)
             small_helmet_events = self._filter_helmet_boxes(helmet_events)
         elif use_helmet and not self.helmet_model:
-            logger.warning("헬멧 모델이 로드되지 않았습니다")
+            # 한 번만 경고 (반복 방지)
+            if not hasattr(self, '_helmet_warning_shown'):
+                logger.warning("헬멧 모델이 로드되지 않았습니다")
+                self._helmet_warning_shown = True
         
         # 사람 이벤트만 추출 (낙상은 제외)
         person_events = [e for e in person_and_fall_events if e.event_type == EventType.PERSON]

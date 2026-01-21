@@ -42,30 +42,29 @@ class RTSPCamera:
         """카메라 연결 (타임아웃 적용)"""
         with self._lock:
             try:
-                logger.info(f"[{self.camera_id}] RTSP 연결 시도: {self.source}")
+                logger.info(f"[{self.camera_id}] 카메라 연결 시도: {self.source}")
                 
-                # 타임아웃 설정 (기본 10초)
-                timeout = getattr(self.config, 'rtsp_read_timeout', 10)
-                
-                # RTSP over TCP 사용 (UDP보다 안정적, 패킷 손실 방지)
+                # RTSP 스트림인 경우
                 if isinstance(self.source, str) and self.source.startswith('rtsp://'):
+                    timeout = getattr(self.config, 'rtsp_read_timeout', 10)
                     self.cap = cv2.VideoCapture(self.source, cv2.CAP_FFMPEG, [
                         cv2.CAP_PROP_OPEN_TIMEOUT_MSEC, timeout * 1000,
                         cv2.CAP_PROP_READ_TIMEOUT_MSEC, timeout * 1000,
                     ])
                     # TCP 전송 강제 (패킷 순서 보장)
                     self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'H264'))
+                    self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)  # 최신 프레임만 유지
                 else:
+                    # 로컬 카메라 (정수 인덱스) 또는 비디오 파일
                     self.cap = cv2.VideoCapture(self.source)
-                
-                self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)  # 최신 프레임만 유지
+                    # 로컬 카메라는 BUFFERSIZE 설정하지 않음 (호환성 문제)
 
                 # 연결 확인 (타임아웃 내에 프레임 수신)
                 ret, frame = self.cap.read()
                 if ret and frame is not None:
                     self.connected = True
                     self.reconnect_attempts = 0
-                    logger.info(f"[{self.camera_id}] ✅ 연결 성공")
+                    logger.info(f"[{self.camera_id}] ✅ 연결 성공 (해상도: {frame.shape[1]}x{frame.shape[0]})")
                     return True
                 else:
                     self.connected = False
