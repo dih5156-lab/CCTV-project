@@ -97,6 +97,7 @@ class ProcessingConfig:
     consecutive_failure_threshold: int = 5  # 연속 실패 임계값
     queue_warning_threshold: float = 0.8  # 큐 경고 임계값 (80%)
     fall_inference_interval: int = 7  # 낙상 추론 간격 (프레임)
+    frame_skip: int = 2  # AI 추론 프레임 스킵 (2=매 2프레임마다 추론)
 
 
 @dataclass

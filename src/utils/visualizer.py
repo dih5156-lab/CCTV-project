@@ -18,8 +18,8 @@ BBOX_THICKNESS = 2
 
 # 이벤트 타입별 색상 (BGR)
 EVENT_COLORS: Dict[EventType, Tuple[int, int, int]] = {
-    EventType.HELMET_WEARING: (255, 0, 0),      # 파란색
-    EventType.HELMET_MISSING: (0, 0, 255),      # 빨간색
+    EventType.HELMET: (255, 0, 0),      # 파란색
+    EventType.HEAD: (0, 0, 255),      # 빨간색
     EventType.FALL_DETECTED: (0, 100, 100),     # 갈색
     EventType.DANGER_ZONE: (0, 255, 255),       # 노란색
     EventType.PERSON: (0, 255, 0),              # 초록색
@@ -138,7 +138,7 @@ def draw_events(frame, events: List[Union[Dict, DetectionEvent]]):
         event_type = parsed["type_str"]
         if event_type == "person":
             person_events.append((event, parsed))
-        elif event_type in ["helmet_wearing", "helmet_missing"]:
+        elif event_type in ["helmet", "head"]:
             helmet_events.append((event, parsed))
         elif event_type == "fall_detected":
             fall_events.append((event, parsed))

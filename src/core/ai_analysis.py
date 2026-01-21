@@ -10,8 +10,7 @@ from typing import List, Dict, Optional, Tuple
 
 import numpy as np
 
-from ..utils.bbox_utils import is_helmet_worn
-from ..utils.geometry import boxes_overlap
+from ..utils.geometry import is_helmet_worn, boxes_overlap
 from .events import EventType, DetectionEvent
 
 # 로깅 설정
@@ -50,19 +49,11 @@ class AIAnalyzer:
     """
 
     HELMET_CLASS_MAPPING = {
-        "helmet_missing": EventType.HELMET_MISSING,
-        "no_helmet": EventType.HELMET_MISSING,
-        "helmet": EventType.HELMET_WEARING,
-        "helmet_wearing": EventType.HELMET_WEARING,
-        "on_helmet": EventType.HELMET_WEARING,
-    }
-
-    FALL_CLASS_MAPPING = {
-        "not_fall": EventType.NOT_FALL,
-        "fall_detected": EventType.FALL_DETECTED,
-        "fall": EventType.FALL_DETECTED,
-        "falling": EventType.FALL_DETECTED,
-        "stand": EventType.NOT_FALL,
+        "helmet_missing": EventType.HEAD,
+        "no_helmet": EventType.HEAD,
+        "helmet": EventType.HELMET,
+        "helmet_wearing": EventType.HELMET,
+        "head": EventType.HEAD,
     }
 
     COMMON_CLASS_MAPPING = {
@@ -73,7 +64,7 @@ class AIAnalyzer:
     }
 
     # 병합된 매핑 (내부에서 사용)
-    CLASS_MAPPING = {**HELMET_CLASS_MAPPING, **FALL_CLASS_MAPPING, **COMMON_CLASS_MAPPING}
+    CLASS_MAPPING = {**HELMET_CLASS_MAPPING, **COMMON_CLASS_MAPPING}
 
     def __init__(
         self,
@@ -233,6 +224,15 @@ class AIAnalyzer:
     # 유틸리티: 클래스 매핑
     # ---------------------------
     def _map_class_to_event_type(self, class_name: str, model_type: str) -> EventType:
+        """클래스 이름을 EventType으로 매핑
+        
+        Args:
+            class_name: YOLO 모델의 클래스 이름
+            model_type: 모델 종류 ("helmet", "pose")
+            
+        Returns:
+            매핑된 EventType
+        """
         if not class_name:
             return EventType.OTHER
 
@@ -240,15 +240,8 @@ class AIAnalyzer:
 
         if model_type == "helmet":
             return self.HELMET_CLASS_MAPPING.get(normalized, EventType.OTHER)
-
-        if model_type == "fall":
-            return self.FALL_CLASS_MAPPING.get(normalized, EventType.OTHER)
-
-        if model_type == "person":
-            if normalized == "person":
-                return EventType.PERSON
-            return EventType.OTHER
-
+        
+        # pose 모델은 _run_pose_model에서 직접 EventType 지정하므로 여기서는 OTHER 반환
         return EventType.OTHER
 
     # ---------------------------
@@ -290,6 +283,28 @@ class AIAnalyzer:
         temp_id = (center_x * 1000 + center_y * 100 + size_hash) % 8999999 + 1000000
         return temp_id
 
+    def _filter_helmet_boxes(self, helmet_events: List[DetectionEvent]) -> List[DetectionEvent]:
+        """헬멧 박스 필터링: 크기 검증 + 중복 제거
+        
+        Args:
+            helmet_events: 헬멧 이벤트 리스트
+            
+        Returns:
+            필터링된 헬멧 이벤트 리스트
+        """
+        # 크기 필터링 (너무 크거나 작은 박스 제외)
+        valid_helmets = [
+            h for h in helmet_events 
+            if MIN_HELMET_SIZE <= h.width <= MAX_HELMET_WIDTH 
+            and MIN_HELMET_SIZE <= h.height <= MAX_HELMET_HEIGHT
+        ]
+        
+        # 중복 제거 (IoU 높은 박스 중 confidence 높은 것만)
+        filtered = self._remove_duplicates(valid_helmets)
+        
+        logger.debug(f"헬멧 필터링: {len(helmet_events)}개 → {len(filtered)}개 (크기/중복 제거)")
+        return filtered
+    
     def _remove_duplicates(self, events: List[DetectionEvent], iou_threshold: float = DUPLICATE_IOU_THRESHOLD) -> List[DetectionEvent]:
         """중복 박스 제거 - IoU가 높은 박스들 중 confidence 높은 것만 남김
         
@@ -333,10 +348,6 @@ class AIAnalyzer:
         # 모델별 confidence threshold 선택
         if self.current_model_type == "helmet":
             conf_threshold = getattr(self, 'helmet_threshold', self.confidence_threshold)
-        elif self.current_model_type == "fall":
-            conf_threshold = getattr(self, 'fall_threshold', self.confidence_threshold)
-        elif self.current_model_type == "person":
-            conf_threshold = getattr(self, 'person_threshold', self.confidence_threshold)
         else:
             conf_threshold = self.confidence_threshold
 
@@ -539,6 +550,7 @@ class AIAnalyzer:
                     events.append(ev)
                     
                 except Exception as e:
+                    logger.debug(f"Pose 박스 처리 실패 (idx={idx}): {e}")
                     continue
         
         # 중복 person/fall 박스 제거 (IoU 높은 박스 중 confidence 높은 것만)
@@ -607,17 +619,19 @@ class AIAnalyzer:
                     return True
             
             # 방법 2: 무릎과 발목이 머리보다 높이 있으면 넘어진 것 (다리가 위로)
-            if (kpts[13][2] > MIN_HIP_CONFIDENCE or kpts[14][2] > MIN_HIP_CONFIDENCE) and \
-               (kpts[15][2] > MIN_HIP_CONFIDENCE or kpts[16][2] > MIN_HIP_CONFIDENCE):
-                knee_y_min = min(left_knee[1], right_knee[1]) if kpts[13][2] > 0.3 and kpts[14][2] > 0.3 else \
-                             (left_knee[1] if kpts[13][2] > 0.3 else right_knee[1])
-                ankle_y_min = min(left_ankle[1], right_ankle[1]) if kpts[15][2] > 0.3 and kpts[16][2] > 0.3 else \
-                              (left_ankle[1] if kpts[15][2] > 0.3 else right_ankle[1])
-                head_y = nose[1]
-                
-                # 무릎이나 발목이 머리보다 위에 있으면 넘어진 것
-                if knee_y_min < head_y or ankle_y_min < head_y:
-                    return True
+            valid_knees = [left_knee[1] if kpts[13][2] > MIN_HIP_CONFIDENCE else float('inf'),
+                          right_knee[1] if kpts[14][2] > MIN_HIP_CONFIDENCE else float('inf')]
+            valid_ankles = [left_ankle[1] if kpts[15][2] > MIN_HIP_CONFIDENCE else float('inf'),
+                           right_ankle[1] if kpts[16][2] > MIN_HIP_CONFIDENCE else float('inf')]
+            
+            knee_y_min = min(valid_knees)
+            ankle_y_min = min(valid_ankles)
+            head_y = nose[1]
+            
+            # 무릎이나 발목이 머리보다 위에 있으면 넘어진 것
+            if (knee_y_min != float('inf') and knee_y_min < head_y) or \
+               (ankle_y_min != float('inf') and ankle_y_min < head_y):
+                return True
             
             return False
             
@@ -634,8 +648,8 @@ class AIAnalyzer:
             (사람 이벤트, 헬멧 이벤트, 기타 이벤트) 튜플
         """
         persons = [ev for ev in events if ev.event_type == EventType.PERSON]
-        helmets = [ev for ev in events if ev.event_type in (EventType.HELMET_WEARING, EventType.HELMET_MISSING)]
-        others = [ev for ev in events if ev.event_type not in (EventType.PERSON, EventType.HELMET_WEARING, EventType.HELMET_MISSING)]
+        helmets = [ev for ev in events if ev.event_type in (EventType.HELMET, EventType.HEAD)]
+        others = [ev for ev in events if ev.event_type not in (EventType.PERSON, EventType.HELMET, EventType.HEAD)]
         
         return persons, helmets, others
     
@@ -744,19 +758,11 @@ class AIAnalyzer:
             self.current_model_type = "helmet"
             helmet_events = self._run_single_model(self.helmet_model, frame)
             logger.debug(f"헬멧 모델: {len(helmet_events)}개 감지 (threshold={getattr(self, 'helmet_threshold', self.confidence_threshold)})")
+            
+            # 헬멧 박스 필터링 (크기 검증 + 중복 제거)
+            small_helmet_events = self._filter_helmet_boxes(helmet_events)
         elif use_helmet and not self.helmet_model:
             logger.warning("헬멧 모델이 로드되지 않았습니다")
-        
-        # 헬멧 박스 크기 필터링 (너무 큰 박스 제외)
-        small_helmet_events = []
-        if helmet_events:
-            for h in helmet_events:
-                if h.height <= MAX_HELMET_HEIGHT and h.width <= MAX_HELMET_WIDTH:
-                    small_helmet_events.append(h)
-        
-        # 중복 헬멧 박스 제거 (IoU > 0.3인 박스 중 confidence 높은 것만 남김)
-        small_helmet_events = self._remove_duplicates(small_helmet_events)
-        logger.debug(f"헬멧 필터링 후: {len(small_helmet_events)}개 (크기/중복 제거)")
         
         # 사람 이벤트만 추출 (낙상은 제외)
         person_events = [e for e in person_and_fall_events if e.event_type == EventType.PERSON]

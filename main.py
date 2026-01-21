@@ -91,6 +91,9 @@ def apply_args_to_config(args: argparse.Namespace, config: AppConfig) -> AppConf
     config.detection.device = args.device
     config.detection.target_fps = args.fps
     
+    # 처리 설정
+    config.processing.frame_skip = args.frame_skip
+    
     # 이벤트 설정
     config.events.debounce_enabled = not args.no_debounce
     config.events.debounce_seconds = args.debounce

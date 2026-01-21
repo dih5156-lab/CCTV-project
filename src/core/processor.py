@@ -20,6 +20,7 @@ from ..services.server_comm import send_event
 from ..utils.camera_input import RTSPCamera
 from ..utils.zone_detection import ZoneManager, ZoneEvent
 from ..utils.dataset_collector import DatasetCollector
+from ..utils.geometry import calculate_iou
 from .events import DetectionEvent
 
 # 로깅 설정
@@ -235,7 +236,6 @@ class VideoProcessor:
         inference_time = time.time() - start_time
         self.stats.total_inference_time += inference_time
         self.stats.inference_count += 1
-        self.stats.inference_count = frame_count
         
         return events
     
@@ -276,8 +276,9 @@ class VideoProcessor:
                 if existing_id == track_id:
                     continue
                 
-                # IoU 계산
-                iou = self._calculate_iou(event, existing_event)
+                # IoU 계산 (geometry 모듈 사용)
+                # DetectionEvent를 dict로 변환하지 않고 직접 calculate_iou 호출
+                iou = calculate_iou(event, existing_event)
                 if iou > self.track_iou_threshold:  # 설정된 임계값 이상 겹치면 중복으로 판단
                     # 최신 것(현재 프레임)을 유지하고 이전 것 제거
                     to_remove.append(existing_id)
@@ -301,39 +302,6 @@ class VideoProcessor:
             del self.active_tracks[camera_id][track_id]
         
         return filtered_events
-    
-    def _calculate_iou(self, event1: DetectionEvent, event2: DetectionEvent) -> float:
-        """두 이벤트의 IoU 계산"""
-        x1_min = event1.x
-        y1_min = event1.y
-        x1_max = event1.x + event1.width
-        y1_max = event1.y + event1.height
-        
-        x2_min = event2.x
-        y2_min = event2.y
-        x2_max = event2.x + event2.width
-        y2_max = event2.y + event2.height
-        
-        # 교집합 영역
-        inter_x_min = max(x1_min, x2_min)
-        inter_y_min = max(y1_min, y2_min)
-        inter_x_max = min(x1_max, x2_max)
-        inter_y_max = min(y1_max, y2_max)
-        
-        if inter_x_max <= inter_x_min or inter_y_max <= inter_y_min:
-            return 0.0
-        
-        inter_area = (inter_x_max - inter_x_min) * (inter_y_max - inter_y_min)
-        
-        # 합집합 영역
-        area1 = event1.width * event1.height
-        area2 = event2.width * event2.height
-        union_area = area1 + area2 - inter_area
-        
-        if union_area == 0:
-            return 0.0
-        
-        return inter_area / union_area
     
     def _collect_dataset(
         self, 
@@ -487,7 +455,7 @@ class VideoProcessor:
 
             try:
                 # 1. AI 추론 (프레임 스킵으로 성능 향상)
-                frame_skip = 2  # 기본값
+                frame_skip = self.config.processing.frame_skip
                 if frame_count % frame_skip == 1 or not last_events:  # frame_skip마다 추론
                     events = self._run_ai_inference(frame, frame_count)
                     last_events = events  # 결과 캐싱

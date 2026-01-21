@@ -139,7 +139,7 @@ class CameraInput:
             self.cap = cv2.VideoCapture(0)              # 기본 카메라
             
         if not self.cap.isOpened():
-            raise RecursionError("카메라나 비디오 파일을 열 수 없습니다.")
+            raise RuntimeError("카메라나 비디오 파일을 열 수 없습니다.")
             
     def get_frame(self):
         ret, frame = self.cap.read()
