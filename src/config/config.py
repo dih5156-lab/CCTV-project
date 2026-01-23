@@ -16,7 +16,7 @@ PROJECT_ROOT = Path(__file__).parent.parent.parent
 class ModelPaths:
     """모델 파일 경로 관리"""
     helmet_model: str = None
-    pose_model: str = "yolov8n-pose.pt"  # 사람 감지 + 관절 감지 (낙상 판단용)
+    pose_model: str = None
     
     def __post_init__(self):
         """기본 모델 경로 자동 탐지"""
@@ -31,6 +31,22 @@ class ModelPaths:
             for path in helmet_candidates:
                 if path.exists():
                     self.helmet_model = str(path)
+                    break
+        
+        # Pose 모델 자동 탐지
+        if self.pose_model is None:
+            pose_candidates = [
+                PROJECT_ROOT / "models/yolov8n-pose.pt",
+                PROJECT_ROOT / "yolov8n-pose.pt",
+                "yolov8n-pose.pt",  # ultralytics 자동 다운로드
+            ]
+            for path in pose_candidates:
+                if isinstance(path, Path) and path.exists():
+                    self.pose_model = str(path)
+                    break
+                elif isinstance(path, str):
+                    # 문자열 경로는 마지막 fallback (ultralytics 자동 다운로드)
+                    self.pose_model = path
                     break
     
     def validate(self) -> bool:
@@ -63,8 +79,8 @@ class CameraConfig:
 @dataclass
 class DetectionConfig:
     """객체 탐지 설정"""
-    helmet_confidence: float = 0.45
-    pose_confidence: float = 0.5  # pose 모델 신뢰도 (사람 + 관절)
+    helmet_confidence: float = 0.5  # 헬멧 감지 (패딩 오감지 방지)
+    pose_confidence: float = 0.55  # pose 모델 신뢰도 (FPS 개선)
     device: str = "cpu"  # "cuda" or "cpu"
     target_fps: int = 30
     
@@ -97,7 +113,7 @@ class ProcessingConfig:
     consecutive_failure_threshold: int = 5  # 연속 실패 임계값
     queue_warning_threshold: float = 0.8  # 큐 경고 임계값 (80%)
     fall_inference_interval: int = 7  # 낙상 추론 간격 (프레임)
-    frame_skip: int = 2  # AI 추론 프레임 스킵 (2=매 2프레임마다 추론)
+    frame_skip: int = 5  # AI 추론 프레임 스킵 (5=매 5프레임마다 추론, FPS 개선)
 
 
 @dataclass

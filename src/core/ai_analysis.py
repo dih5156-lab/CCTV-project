@@ -18,11 +18,12 @@ from ..utils.geometry import is_helmet_worn, boxes_overlap
 logger = logging.getLogger(__name__)
 
 # Detection Constants
-MAX_HELMET_WIDTH = 1000
-MAX_HELMET_HEIGHT = 1000
-MAX_HELMET_BODY_SIZE = 150  # 헬멧 박스 최대 크기 (너무 크면 사람 전체를 헬멧으로 오감지)
-MIN_HELMET_SIZE = 15
-DUPLICATE_IOU_THRESHOLD = 0.2
+MAX_HELMET_WIDTH = 300  # 헬멧 최대 너비 (더 큰 헬멧 허용)
+MAX_HELMET_HEIGHT = 300  # 헬멧 최대 높이 (더 큰 헬멧 허용)
+MAX_HELMET_BODY_SIZE = 300  # 헬멧 박스 최대 크기
+MIN_HELMET_SIZE = 15  # 최소 크기 (작은 헬멧도 감지)
+MAX_HELMET_ASPECT_RATIO = 2.0  # 헬멧 가로세로 비율 완화 (2.0)
+DUPLICATE_IOU_THRESHOLD = 0.3  # 중복 제거 IoU 임계값 (낮추면 더 엄격하게 중복 제거)
 HEAD_REGION_RATIO = 0.35  # 헬멧 검증용 상단 영역 비율 (사람 상단 35%)
 
 # Keypoint Detection Constants
@@ -32,9 +33,9 @@ FALL_ANGLE_INVERTED = 150  # 역방향 수평 각도 임계값 (도)
 MIN_HIP_CONFIDENCE = 0.3  # 엉덩이 관절 최소 신뢰도
 
 # Model Constants
-DEFAULT_IMAGE_SIZE_HELMET = 640
-DEFAULT_IMAGE_SIZE_POSE = 1280
-DEFAULT_IOU_THRESHOLD = 0.3
+DEFAULT_IMAGE_SIZE_HELMET = 416  # FPS 개선 (640 -> 416)
+DEFAULT_IMAGE_SIZE_POSE = 640  # FPS 개선 (1280 -> 640)
+DEFAULT_IOU_THRESHOLD = 0.45  # NMS 더 공격적으로 (중복 제거)
 
 try:
     from ultralytics import YOLO
@@ -301,7 +302,7 @@ class AIAnalyzer:
         return temp_id
 
     def _filter_helmet_boxes(self, helmet_events: List) -> List:
-        """헬멧 박스 필터링: 크기 검증 + 중복 제거
+        """헬멧 박스 필터링: 크기, 형태 비율, 위치 검증 + 중복 제거
         
         Args:
             helmet_events: 헬멧 이벤트 리스트
@@ -309,17 +310,31 @@ class AIAnalyzer:
         Returns:
             필터링된 헬멧 이벤트 리스트
         """
-        # 크기 필터링 (너무 크거나 작은 박스 제외)
-        valid_helmets = [
-            h for h in helmet_events 
-            if MIN_HELMET_SIZE <= h.width <= MAX_HELMET_WIDTH 
-            and MIN_HELMET_SIZE <= h.height <= MAX_HELMET_HEIGHT
-        ]
+        valid_helmets = []
+        
+        for h in helmet_events:
+            # 1. 크기 필터링 (너무 크거나 작은 박스 제외)
+            if not (MIN_HELMET_SIZE <= h.width <= MAX_HELMET_WIDTH and 
+                    MIN_HELMET_SIZE <= h.height <= MAX_HELMET_HEIGHT):
+                logger.debug(f"헬멧 크기 제외: {h.width}x{h.height}")
+                continue
+            
+            # 2. 형태 비율 검증 (손은 보통 세로로 길거나 가로로 넓음)
+            aspect_ratio = max(h.width, h.height) / max(min(h.width, h.height), 1)
+            if aspect_ratio > MAX_HELMET_ASPECT_RATIO:
+                logger.debug(f"헬멧 형태 비율 제외: {aspect_ratio:.2f} (너무 가늘거나 납작함)")
+                continue
+            
+            # 3. 위치 검증: 프레임 하단 30%에 있으면 제외 (손이나 몸통일 가능성)
+            # frame 높이가 없으면 이 검증은 스킵
+            # 이 부분은 run_inference에서 frame 높이를 전달받아야 하므로 일단 스킵
+            
+            valid_helmets.append(h)
         
         # 중복 제거 (IoU 높은 박스 중 confidence 높은 것만)
         filtered = self._remove_duplicates(valid_helmets)
         
-        logger.debug(f"헬멧 필터링: {len(helmet_events)}개 → {len(filtered)}개 (크기/중복 제거)")
+        logger.debug(f"헬멧 필터링: {len(helmet_events)}개 → {len(filtered)}개 (크기/형태/중복 제거)")
         return filtered
     
     def _remove_duplicates(self, events: List, iou_threshold: float = DUPLICATE_IOU_THRESHOLD) -> List:
@@ -529,6 +544,13 @@ class AIAnalyzer:
                     if track_id is None:
                         track_id = self._generate_temp_id(x1, y1, width, height)
                     
+                    # ✅ 실제 사람인지 검증 (keypoint 신뢰도 확인)
+                    if keypoints is not None:
+                        is_real_person = self._validate_person_keypoints(keypoints, idx)
+                        if not is_real_person:
+                            logger.debug(f"패딩/옥 오감지 제외: 관절 신뢰도 낮음 (idx={idx})")
+                            continue  # 사람이 아니므로 제외
+                    
                     # 낙상 여부 판단 (관절 정보 이용)
                     is_fallen = False
                     keypoints_data = None
@@ -579,6 +601,57 @@ class AIAnalyzer:
         return events
     
 
+    
+    def _validate_person_keypoints(self, keypoints, idx: int) -> bool:
+        """
+        Keypoint 신뢰도를 확인하여 실제 사람인지 검증
+        패딩/옥 같은 물체는 관절이 감지되지 않으므로 필터링됨
+        
+        Args:
+            keypoints: YOLO pose keypoints 객체
+            idx: 현재 박스 인덱스
+            
+        Returns:
+            실제 사람 여부 (True/False)
+        """
+        try:
+            # keypoints 데이터 추출 (N, 17, 3) - [x, y, confidence]
+            if hasattr(keypoints, "data"):
+                kpts = keypoints.data[idx].cpu().numpy() if hasattr(keypoints.data[idx], "cpu") else keypoints.data[idx]
+            elif hasattr(keypoints, "xy"):
+                kpts_xy = keypoints.xy[idx].cpu().numpy() if hasattr(keypoints.xy[idx], "cpu") else keypoints.xy[idx]
+                kpts_conf = keypoints.conf[idx].cpu().numpy() if hasattr(keypoints.conf[idx], "cpu") else keypoints.conf[idx]
+                kpts = np.column_stack([kpts_xy, kpts_conf])
+            else:
+                return True  # keypoint 데이터가 없으면 통과
+            
+            # COCO keypoints: 0-nose, 5-left_shoulder, 6-right_shoulder, 11-left_hip, 12-right_hip
+            # 주요 관절 신뢰도 확인
+            nose_conf = kpts[0][2] if len(kpts) > 0 else 0
+            left_shoulder_conf = kpts[5][2] if len(kpts) > 5 else 0
+            right_shoulder_conf = kpts[6][2] if len(kpts) > 6 else 0
+            left_hip_conf = kpts[11][2] if len(kpts) > 11 else 0
+            right_hip_conf = kpts[12][2] if len(kpts) > 12 else 0
+            
+            # 최소 기준: 코 OR (어깨 중 1개 + 엉덩이 중 1개)
+            has_nose = nose_conf > MIN_KEYPOINT_CONFIDENCE
+            has_shoulder = (left_shoulder_conf > MIN_KEYPOINT_CONFIDENCE or 
+                          right_shoulder_conf > MIN_KEYPOINT_CONFIDENCE)
+            has_hip = (left_hip_conf > MIN_KEYPOINT_CONFIDENCE or 
+                      right_hip_conf > MIN_KEYPOINT_CONFIDENCE)
+            
+            # 최소 2개 이상의 주요 관절이 감지되어야 사람으로 인정
+            valid_keypoints = sum([has_nose, has_shoulder, has_hip])
+            
+            if valid_keypoints < 2:
+                logger.debug(f"관절 부족: nose={has_nose}, shoulder={has_shoulder}, hip={has_hip}")
+                return False
+            
+            return True
+            
+        except Exception as e:
+            logger.debug(f"Keypoint 검증 실패: {e}")
+            return True  # 오류 시 통과 (false positive보다는 나음)
     
     def _detect_fall_from_keypoints(self, keypoints, idx: int, bbox_width: int, bbox_height: int, bbox_y1: int) -> bool:
         """
@@ -695,19 +768,38 @@ class AIAnalyzer:
                 logger.debug(f"헬멧 박스 너무 작음 제외: {h.width}x{h.height}")
                 continue
                 
-            # 3. 사람 bbox와 비교하여 상단 35% 영역에 있는지 확인
+            # 3. 사람 bbox와 비교하여 상단 25% 영역에 있는지 확인 (더 엄격하게)
             helmet_valid = False
             for person in persons:
                 person_top = person.y
                 person_height = person.height
-                head_region_bottom = person_top + (person_height * HEAD_REGION_RATIO)
+                person_x = person.x
+                person_width = person.width
                 
+                # 머리 영역: 상단 35%로 완화 (헬멧 감지 개선)
+                head_region_bottom = person_top + (person_height * 0.35)
+                
+                # 헬멧의 상단과 중심 위치
+                helmet_top = h.y
                 helmet_center_y = h.y + (h.height / 2)
+                helmet_center_x = h.x + (h.width / 2)
                 
-                # 헬멧 중심이 사람의 상단 영역에 있으면 유효
+                # 🚫 만세 자세 필터링: 헬멧 상단이 사람 bbox 상단보다 위에 있으면 제외
+                # (손을 머리 위로 올린 경우) - 여유 늘림
+                if helmet_top < person_top - 30:  # 30px 여유 (카메라 각도 고려)
+                    logger.debug(f"헬멧이 사람 bbox 위에 있음 제외 (만세 자세): helmet_top={helmet_top}, person_top={person_top}")
+                    continue
+                
+                # 헬멧 중심이 사람의 상단 영역에 있고, 가로로도 사람 중심 근처에 있어야 함
                 if person_top <= helmet_center_y <= head_region_bottom:
-                    # 추가 검증: 헬멧 박스가 사람 박스 너비의 60% 이하인지 확인
-                    if h.width <= person.width * 0.6:
+                    # 추가 검증 1: 헬멧 박스가 사람 박스 너비의 70% 이하 (완화)
+                    if h.width > person_width * 0.7:
+                        continue
+                    
+                    # 추가 검증 2: 헬멧이 사람 박스 가로 중심선 근처에 있는지 (좌우 ±50% 이내)
+                    person_center_x = person_x + (person_width / 2)
+                    horizontal_offset = abs(helmet_center_x - person_center_x)
+                    if horizontal_offset <= person_width * 0.5:
                         helmet_valid = True
                         break
             

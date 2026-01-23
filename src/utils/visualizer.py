@@ -2,13 +2,10 @@
 visualizer.py - Detection result visualization
 """
 
-from typing import List, Union, Dict, Tuple, Optional, Any, TYPE_CHECKING
+from typing import List, Union, Dict, Tuple, Optional, Any
+from ..core.events import EventType, DetectionEvent
 import cv2
 import logging
-
-# TYPE_CHECKING을 사용하여 순환 import 방지
-if TYPE_CHECKING:
-    from ..core.events import EventType, DetectionEvent
 
 logger = logging.getLogger(__name__)
 
@@ -19,27 +16,21 @@ LABEL_FONT_THICKNESS = 1
 LABEL_OFFSET_Y = 20  # 레이블을 박스 위로 올리는 거리
 BBOX_THICKNESS = 2
 
+# 이벤트 타입별 색상 (BGR)
+EVENT_COLORS: Dict[EventType, Tuple[int, int, int]] = {
+    EventType.HELMET: (255, 0, 0),      # 파란색
+    EventType.HEAD: (0, 0, 255),      # 빨간색
+    EventType.FALL_DETECTED: (0, 100, 100),     # 갈색
+    EventType.DANGER_ZONE: (0, 255, 255),       # 노란색
+    EventType.PERSON: (0, 255, 0),              # 초록색
+    EventType.OTHER: (200, 200, 200),           # 회색
+}
+
 DEFAULT_COLOR = (255, 255, 255)  # 흰색
 
 
-def _get_event_colors() -> Dict:
-    """이벤트 타입별 색상 매핑 (지연 로딩)"""
-    from ..core.events import EventType
-    return {
-        EventType.HELMET: (255, 0, 0),      # 파란색
-        EventType.HEAD: (0, 0, 255),        # 빨간색
-        EventType.FALL_DETECTED: (0, 100, 100),     # 갈색
-        EventType.DANGER_ZONE: (0, 255, 255),       # 노란색
-        EventType.PERSON: (0, 255, 0),              # 초록색
-        EventType.OTHER: (200, 200, 200),           # 회색
-    }
-
-
-def _parse_event_data(event: Union[Dict, 'DetectionEvent']) -> Optional[Dict]:
+def _parse_event_data(event: Union[Dict, DetectionEvent]) -> Optional[Dict]:
     """Parse event data to standardized dictionary format."""
-    from ..core.events import EventType, DetectionEvent
-    EVENT_COLORS = _get_event_colors()
-    
     if isinstance(event, dict):
         event_type_str = event.get("type", "unknown")
         if event_type_str == "other":
@@ -125,7 +116,7 @@ def _draw_bbox_with_label(
         logger.warning(f"바운딩 박스 그리기 실패: {e}")
 
 
-def draw_events(frame, events: List[Union[Dict, Any]]):
+def draw_events(frame, events: List[Union[Dict, DetectionEvent]]):
     """Draw detection events with bounding boxes and labels on frame."""
     if frame is None:
         return frame

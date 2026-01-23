@@ -8,13 +8,13 @@ from src.core import VideoProcessor
 from src.config import AppConfig
 
 # Video file path
-VIDEO_PATH = "C:/Users/dih51/Desktop/Project/test_video/ai_test_video5.mp4"
+VIDEO_PATH = "C:\\Users\\dih51\\OneDrive\\Desktop\\test_video\\video1.mp4"
 
 # 설정 생성
 config = AppConfig()
 config.display = True
 config.detection.device = "cpu"
-config.detection.helmet_confidence = 0.45  # 오탐지 방지를 위해 적절히 상향
+config.detection.helmet_confidence = 0.35  # 헬멧 감지 임계값 낮춤 (더 많이 감지)
 config.detection.pose_confidence = 0.35
 config.detection.target_fps = 30
 config.collect_dataset = False

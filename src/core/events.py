@@ -7,8 +7,8 @@ from typing import Optional, Dict
 from enum import Enum
 
 class EventType(Enum):
-    HELMET_WEARING = "helmet_wearing"
-    HELMET_MISSING = "helmet_missing"
+    HELMET = "helmet"
+    HEAD = "head"
     DANGER_ZONE = "danger_zone"
     FALL_DETECTED = "fall_detected"
     NOT_FALL = "not_fall"
