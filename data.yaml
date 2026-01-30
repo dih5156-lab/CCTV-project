@@ -3,4 +3,4 @@ val: C:\Users\dih51\Desktop\Project\dataset\images\val
 
 nc: 2
 names:
- ['helmet_wearing', 'helmet_missing']
+ ['helmet', 'head']
