@@ -1,5 +1,5 @@
 """
-main.py - 멀티 카메라 CCTV 시스템 실행 진입점
+main.py - 다중 카메라 CCTV 시스템 진입점
 """
 
 import argparse
@@ -12,93 +12,125 @@ from typing import List, Dict, Any
 from src.core import VideoProcessor
 from src.config import default_config, AppConfig
 
-# FFMPEG 경고 메시지 숨기기 (RTSP 스트리밍 노이즈 제거)
 os.environ['OPENCV_FFMPEG_CAPTURE_OPTIONS'] = 'rtsp_transport;udp'
-os.environ['OPENCV_LOG_LEVEL'] = 'ERROR'  # OpenCV 로그 레벨 설정
+os.environ['OPENCV_LOG_LEVEL'] = 'ERROR'
 
 
 def load_camera_list(path: str) -> List[Dict[str, Any]]:
-    """JSON 파일에서 카메라 리스트 로드"""
+    """JSON 파일에서 카메라 목록 로드"""
     try:
+        if not Path(path).exists():
+            print(f"ERROR: 카메라 설정 파일을 찾을 수 없습니다: {path}")
+            return []
+        
+        if Path(path).stat().st_size == 0:
+            print(f"ERROR: 카메라 설정 파일이 비어있습니다: {path}")
+            return []
+        
         with open(path, 'r', encoding='utf-8') as f:
             cameras = json.load(f)
-            if not isinstance(cameras, list):
-                print(f"❌ 잘못된 카메라 설정 형식: {path} (리스트 형식이어야 함)")
-                return []
-            return cameras
+            
+        if not isinstance(cameras, list):
+            print(f"ERROR: 잘못된 카메라 설정 형식 (리스트 필요): {path}")
+            return []
+        
+        # 각 카메라 항목 검증
+        valid_cameras = []
+        for idx, cam in enumerate(cameras):
+            if not isinstance(cam, dict):
+                print(f"WARN: 인덱스 {idx}의 잘못된 카메라 항목 건너뜀 (딕셔너리가 아님)")
+                continue
+            if 'id' not in cam or 'source' not in cam:
+                print(f"WARN: 인덱스 {idx}의 카메라 건너뜀 ('id' 또는 'source' 누락)")
+                continue
+            valid_cameras.append(cam)
+        
+        print(f"{path}에서 {len(valid_cameras)}개 카메라 로드됨")
+        return valid_cameras
+        
     except FileNotFoundError:
-        print(f"❌ 카메라 설정 파일을 찾을 수 없습니다: {path}")
+        print(f"ERROR: 카메라 설정 파일을 찾을 수 없습니다: {path}")
         return []
     except json.JSONDecodeError as e:
-        print(f"❌ JSON 파싱 오류: {path} - {e}")
+        print(f"ERROR: {path}의 JSON 파싱 오류: {e}")
         return []
     except Exception as e:
-        print(f"❌ 카메라 리스트 로드 실패: {e}")
+        print(f"ERROR: 카메라 목록 로드 실패: {e}")
         return []
 
 
 def start_processor(camera_list: List[Dict[str, Any]], cfg: AppConfig) -> None:
-    """Start video processor with cameras"""
+    """카메라와 함께 비디오 프로세서 시작"""
+    if not camera_list:
+        print("ERROR: 카메라가 제공되지 않았습니다. 프로세서를 시작할 수 없습니다.")
+        return
+    
     processor = VideoProcessor(cfg)
-    # 카메라 등록 (enabled=true인 것만)
+    
+    added_count = 0
     for cam in camera_list:
-        # enabled 필드가 false이면 건너뛰기
         if not cam.get('enabled', True):
-            print(f"⏭️  카메라 비활성화됨 (건너뛰기): {cam.get('id')} - {cam.get('name', 'N/A')}")
+            print(f"SKIP: 카메라 비활성화됨: {cam.get('id')} - {cam.get('name', 'N/A')}")
             continue
             
         cam_id = cam.get('id')
         source = cam.get('source')
+        
+        if not cam_id or not source:
+            print(f"WARN: id 또는 source가 누락된 카메라 건너뜀: {cam}")
+            continue
+        
+        # 웹캠 인덱스를 위한 숫자 문자열을 정수로 변환
         if isinstance(source, int) or (isinstance(source, str) and source.isdigit()):
-            # 숫자 문자열이면 정수로 변환
             try:
                 source = int(source)
-            except Exception:
+            except (ValueError, TypeError):
                 pass
+        
         added = processor.add_camera(cam_id, source)
-        if not added:
-            print(f"⚠️  카메라 등록 실패: {cam_id} ({source})")
+        if added:
+            added_count += 1
+            print(f"카메라 추가됨: {cam_id} ({source})")
+        else:
+            print(f"WARN: 카메라 추가 실패: {cam_id} ({source})")
 
-    if not processor.cameras:
-        print("❌ 등록된 카메라가 없습니다. 종료합니다.")
+    if added_count == 0:
+        print("ERROR: 성공적으로 등록된 카메라가 없습니다. 종료합니다.")
         return
+    
+    print(f"\n{added_count}개 카메라로 프로세서 시작 중...")
 
     try:
         processor.start()
+        print("프로세서가 성공적으로 시작되었습니다. 중지하려면 Ctrl+C를 누르세요.\n")
         while processor.running:
             time.sleep(10)
             processor.print_stats()
     except KeyboardInterrupt:
-        print("사용자 중단 (Ctrl+C)")
+        print("\n사용자가 중단함 (Ctrl+C)")
+    except Exception as e:
+        print(f"\n처리 중 오류 발생: {e}")
     finally:
+        print("프로세서 중지 중...")
         processor.stop()
+        print("프로세서가 중지되었습니다.")
 
 
 def apply_args_to_config(args: argparse.Namespace, config: AppConfig) -> AppConfig:
-    """명령행 인자를 config에 적용"""
-    # 모델 경로
+    """명령줄 인자를 설정에 적용"""
     if args.helmet_model:
         config.models.helmet_model = args.helmet_model
     if args.pose_model:
         config.models.pose_model = args.pose_model
     
-    # 서버 설정
     config.server.url = args.server
-    
-    # 탐지 설정
     config.detection.helmet_confidence = args.confidence
     config.detection.pose_confidence = args.pose_confidence
     config.detection.device = args.device
     config.detection.target_fps = args.fps
-    
-    # 처리 설정
     config.processing.frame_skip = args.frame_skip
-    
-    # 이벤트 설정
     config.events.debounce_enabled = not args.no_debounce
     config.events.debounce_seconds = args.debounce
-    
-    # 표시 및 기능
     config.display = args.display
     config.zone_detection = args.zone_detection
     config.zones_config = args.zones_config
@@ -109,7 +141,7 @@ def apply_args_to_config(args: argparse.Namespace, config: AppConfig) -> AppConf
 
 
 def main() -> None:
-    """Main entry point"""
+    """메인 진입점"""
     parser = argparse.ArgumentParser(
         description='CCTV 헬멧 착용 및 낙상 감지 시스템',
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -181,7 +213,6 @@ def main() -> None:
     
     args = parser.parse_args()
     
-    # 설정 검증
     if args.confidence < 0.0 or args.confidence > 1.0:
         parser.error("--confidence 값은 0.0에서 1.0 사이여야 합니다")
     
@@ -191,35 +222,28 @@ def main() -> None:
     if args.video and not Path(args.video).exists():
         parser.error(f"비디오 파일을 찾을 수 없습니다: {args.video}")
     
-    # config에 명령행 인자 적용
     cfg = apply_args_to_config(args, default_config)
     
-    # 모델 검증
-    print("=" * 60)
-    print("🚀 CCTV 헬멧 착용 감지 시스템 시작")
-    print("=" * 60)
-    if not cfg.models.helmet_model:
-        print("⚠️  경고: 헬멧 모델 파일이 없습니다. config.py에서 경로를 확인하세요.")
-    else:
-        print(f"✅ 헬멧 모델: {cfg.models.helmet_model}")
+    # 설정 검증
+    if not cfg.validate():
+        print("\nWARN: 설정 검증 실패. 일부 기능이 작동하지 않을 수 있습니다.")
     
-    print(f"✅ Pose 모델: {cfg.models.pose_model} (사람 + 관절 감지)")
-    print(f"🔧 디바이스: {cfg.detection.device}")
-    print(f"🎯 신뢰도 임계값: {cfg.detection.helmet_confidence}")
+    print("=" * 60)
+    print("CCTV 헬멧 감지 시스템")
+    print("=" * 60)
+    print(cfg.summary())
     print("=" * 60)
 
     if args.cameras:
         cams = load_camera_list(args.cameras)
     else:
         if args.mode == 'single':
-            # --video 옵션이 있으면 동영상 파일 사용
             source = args.video if args.video else 0
             source_name = 'video' if args.video else 'webcam'
             cams = [{'id': source_name, 'source': source}]
-            print(f"📹 소스: {source_name} ({source})")
+            print(f"소스: {source_name} ({source})")
         else:
-            # 기본 예시(사용자 수정 필요)
-            print("⚠️  다중 카메라 모드: cameras.json 파일을 생성하거나 --cameras 옵션을 사용하세요")
+            print("WARN: 다중 카메라 모드는 cameras.json 파일이 필요합니다")
             cams = [
                 {'id': 'nvr_camera_1', 'source': 'rtsp://admin:password@192.168.1.100:554/stream1'},
                 {'id': 'nvr_camera_2', 'source': 'rtsp://admin:password@192.168.1.100:554/stream2'},

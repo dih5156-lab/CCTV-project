@@ -1,6 +1,6 @@
 """
-processor.py - 실시간 CCTV 객체 탐지 프로세서
-설명: 멀티 카메라 동시 처리, RTSP 재연결, 이벤트 필터링 및 서버 전송
+processor.py - Real-time CCTV Object Detection Processor
+Multi-camera processing, RTSP reconnection, event filtering and server transmission
 """
 
 import logging
@@ -23,7 +23,6 @@ from ..utils.dataset_collector import DatasetCollector
 from ..utils.geometry import calculate_iou
 from .events import DetectionEvent
 
-# 로깅 설정
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - [%(name)s] - %(levelname)s - %(message)s"
@@ -53,21 +52,21 @@ class ProcessorStats:
     frames_dropped: int = 0
     events_detected: int = 0
     events_sent: int = 0
-    events_filtered: int = 0  # 디바운싱으로 필터된 이벤트
+    events_filtered: int = 0
     events_failed: int = 0
-    inference_errors: int = 0  # 추론 오류 카운터
-    camera_errors: int = 0  # 카메라 오류 카운터
+    inference_errors: int = 0
+    camera_errors: int = 0
     start_time: float = field(default_factory=time.time)
     camera_count: int = 0
-    total_inference_time: float = 0.0  # 총 추론 시간
-    inference_count: int = 0  # 추론 횟수
+    total_inference_time: float = 0.0
+    inference_count: int = 0
 
     def get_fps(self) -> float:
         elapsed = time.time() - self.start_time
         return self.frames_processed / elapsed if elapsed > 0 else 0
     
     def get_avg_inference_time(self) -> float:
-        """평균 추론 시간 (ms)"""
+        """Average inference time (ms)"""
         if self.inference_count == 0:
             return 0.0
         return (self.total_inference_time / self.inference_count) * 1000
@@ -84,63 +83,43 @@ class VideoProcessor:
     def __init__(self, config: AppConfig):
         self.config = config
         
-        # 멀티 모델 AI 분석기 (헬멧 + Pose)
         self.analyzer = AIAnalyzer(
             helmet_model_path=config.models.helmet_model,
             pose_model_path=config.models.pose_model,
-            confidence_threshold=config.detection.pose_confidence,  # 기본 threshold
+            confidence_threshold=config.detection.pose_confidence,
             device=config.detection.device,
             fall_angle_threshold=config.detection.fall_angle_threshold,
             fall_height_ratio=config.detection.fall_height_ratio
         )
-        # 각 모델별 threshold 설정
         self.analyzer.helmet_threshold = config.detection.helmet_confidence
         self.analyzer.pose_threshold = config.detection.pose_confidence
         
-        # 모델 자동 로딩 (ai_analysis.py에서 처리)
-        
-        # 카메라 관리
         self.cameras: Dict[str, RTSPCamera] = {}
         self.camera_threads: Dict[str, Thread] = {}
-        
-        # 이벤트 관리
         self.event_queue = Queue(maxsize=config.events.queue_max_size)
-        self.last_events: Dict[Tuple[str, str, int], float] = {}  # (camera_id, type, object_id) -> timestamp
+        self.last_events: Dict[Tuple[str, str, int], float] = {}
         self._event_lock = Lock()
-        
-        # Track 관리 (클래스 변경 시 중복 제거용)
-        self.active_tracks: Dict[str, Dict[int, Tuple[float, DetectionEvent]]] = {}  # camera_id -> {track_id: (last_seen, event)}
-        self.track_timeout = 0.5  # track 만료 시간 (초)
-        self.track_iou_threshold = 0.5  # 중복 판단 IoU 임계값
-          
-        # 통계
+        self.active_tracks: Dict[str, Dict[int, Tuple[float, DetectionEvent]]] = {}
+        self.track_timeout = 0.5
+        self.track_iou_threshold = 0.5
         self.stats = ProcessorStats()
-        
-        # 제어
         self.running = False
         self.stop_event = Event()
-        
-        # 서버 전송 스레드
         self.sender_thread = None
-        
-        # 클린업 스레드
         self.cleanup_thread = None
         self.cleanup_interval = config.events.cleanup_interval
         
-        # 데이터셋 저장 (deprecated)
         if hasattr(config, 'save_dataset') and config.save_dataset:
             os.makedirs(config.dataset_dir, exist_ok=True)
         
-        # 위험 구역 관리
         self.zone_manager = None
         if config.zone_detection:
             try:
                 self.zone_manager = ZoneManager(config.zones_config)
-                logger.info("✅ 위험 구역 탐지 활성화")
+                logger.info("Zone detection enabled")
             except Exception as e:
-                logger.warning(f"⚠️ 위험 구역 로드 실패: {e}")
+                logger.warning(f"Zone loading failed: {e}")
         
-        # 데이터셋 수집기
         self.dataset_collector = None
         if config.collect_dataset:
             try:
@@ -148,9 +127,9 @@ class VideoProcessor:
                     output_dir=config.dataset_dir,
                     format='yolo'
                 )
-                logger.info("✅ 데이터셋 수집 활성화")
+                logger.info("Dataset collection enabled")
             except Exception as e:
-                logger.warning(f"⚠️ 데이터셋 수집 초기화 실패: {e}")
+                logger.warning(f"Dataset collector init failed: {e}")
                        
     
     def _cleanup_old_events(self, max_age_hours: Optional[int] = None) -> int:
@@ -171,25 +150,24 @@ class VideoProcessor:
     def add_camera(self, camera_id: str, source: Union[str, int]) -> bool:
         """Add camera to processing pipeline."""
         if camera_id in self.cameras:
-            logger.warning(f"[{camera_id}] 이미 등록된 카메라입니다")
+            logger.warning(f"[{camera_id}] Camera already registered")
             return False
 
         camera = RTSPCamera(camera_id, source, self.config)
         if camera.connect():
             self.cameras[camera_id] = camera
             self.stats.camera_count = len(self.cameras)
-            logger.info(f"✅ 카메라 추가: {camera_id}")
+            logger.info(f"Camera added: {camera_id}")
             
-            # 위험 구역 로드
             if self.zone_manager:
                 try:
                     self.zone_manager.load_zones(camera_id)
                 except Exception as e:
-                    logger.warning(f"[{camera_id}] 위험 구역 로드 실패: {e}")
+                    logger.warning(f"[{camera_id}] Zone loading failed: {e}")
             
             return True
         else:
-            logger.error(f"❌ 카메라 연결 실패: {camera_id}")
+            logger.error(f"Camera connection failed: {camera_id}")
             return False
 
     def remove_camera(self, camera_id: str):
@@ -200,7 +178,7 @@ class VideoProcessor:
             if camera_id in self.active_tracks:
                 del self.active_tracks[camera_id]
             self.stats.camera_count = len(self.cameras)
-            logger.info(f"카메라 제거: {camera_id}")
+            logger.info(f"Camera removed: {camera_id}")
 
     def _should_send_event(self, camera_id: str, event_type: str, object_id: int) -> bool:
         """Check event debouncing to prevent duplicate sends."""
@@ -221,10 +199,8 @@ class VideoProcessor:
     
     def _run_ai_inference(self, frame: Any, frame_count: int) -> List[DetectionEvent]:
         """Run AI inference on frame."""
-        # 추론 시간 측정
         start_time = time.time()
         
-        # 헬멧 + Pose 모델 추론 (사람 + 낙상 동시 감지)
         events = self.analyzer.run_inference(
             frame, 
             use_helmet=True, 
@@ -232,7 +208,6 @@ class VideoProcessor:
             check_compliance=True
         )
         
-        # 추론 시간 기록
         inference_time = time.time() - start_time
         self.stats.total_inference_time += inference_time
         self.stats.inference_count += 1
@@ -244,19 +219,12 @@ class VideoProcessor:
         events: List[DetectionEvent], 
         camera_id: str
     ) -> List[DetectionEvent]:
-        """
-        Track 관리: 중복 제거 및 만료된 track 정리
-        
-        - 같은 위치(IoU 높음)에 다른 클래스의 객체가 있으면 최신 것만 유지
-        - 일정 시간 보이지 않은 track은 제거
-        """
+        """Track management: deduplication and expired track cleanup"""
         current_time = time.time()
         
-        # 카메라별 active tracks 초기화
         if camera_id not in self.active_tracks:
             self.active_tracks[camera_id] = {}
         
-        # 현재 프레임에서 탐지된 track ID 집합
         current_track_ids = set()
         filtered_events = []
         
@@ -267,8 +235,6 @@ class VideoProcessor:
             
             track_id = event.object_id
             current_track_ids.add(track_id)
-            
-            # 같은 위치에 다른 track ID가 있는지 확인 (IoU > 0.5)
             should_add = True
             to_remove = []
             
@@ -276,14 +242,10 @@ class VideoProcessor:
                 if existing_id == track_id:
                     continue
                 
-                # IoU 계산 (geometry 모듈 사용)
-                # DetectionEvent를 dict로 변환하지 않고 직접 calculate_iou 호출
                 iou = calculate_iou(event, existing_event)
-                if iou > self.track_iou_threshold:  # 설정된 임계값 이상 겹치면 중복으로 판단
-                    # 최신 것(현재 프레임)을 유지하고 이전 것 제거
+                if iou > self.track_iou_threshold:
                     to_remove.append(existing_id)
             
-            # 중복 제거
             for old_id in to_remove:
                 del self.active_tracks[camera_id][old_id]
             
@@ -291,7 +253,6 @@ class VideoProcessor:
                 self.active_tracks[camera_id][track_id] = (current_time, event)
                 filtered_events.append(event)
         
-        # 만료된 track 제거 (현재 프레임에 없고 일정 시간 지난 것)
         expired_ids = []
         for track_id, (last_seen, _) in self.active_tracks[camera_id].items():
             if track_id not in current_track_ids:
@@ -309,23 +270,16 @@ class VideoProcessor:
         events: List[DetectionEvent], 
         camera_id: str
     ) -> None:
-        """
-        데이터셋 수집 및 저장
-        
-        Args:
-            frame: OpenCV 이미지 프레임
-            events: 감지된 이벤트 리스트
-            camera_id: 카메라 ID
-        """
+        """Collect and save dataset"""
         if not self.dataset_collector:
             return
         
         try:
             self.dataset_collector.save_frame(frame, events, camera_id=camera_id)
         except IOError as e:
-            logger.error(f"[{camera_id}] 데이터셋 파일 저장 실패: {e}")
+            logger.error(f"[{camera_id}] Dataset file save failed: {e}")
         except Exception as e:
-            logger.warning(f"[{camera_id}] 데이터셋 저장 오류: {e}")
+            logger.warning(f"[{camera_id}] Dataset save error: {e}")
     
     def _check_danger_zones(
         self, 
@@ -333,27 +287,16 @@ class VideoProcessor:
         events: List[DetectionEvent], 
         frame: Any
     ) -> Tuple[List[ZoneEvent], Any]:
-        """
-        위험 구역 침입 탐지
-        
-        Args:
-            camera_id: 카메라 ID
-            events: 감지된 이벤트 리스트
-            frame: OpenCV 이미지 프레임
-            
-        Returns:
-            (위험 구역 이벤트 리스트, 구역이 그려진 프레임)
-        """
+        """Danger zone intrusion detection"""
         zone_events = []
         if not self.zone_manager:
             return zone_events, frame
         
         try:
             zone_events = self.zone_manager.check_zones(camera_id, events, frame.shape[:2])
-            # 구역 그리기
             frame = self.zone_manager.draw_zones(frame, camera_id)
         except Exception as e:
-            logger.warning(f"[{camera_id}] 위험 구역 탐지 오류: {e}")
+            logger.warning(f"[{camera_id}] Zone detection error: {e}")
         
         return zone_events, frame
     
@@ -363,17 +306,8 @@ class VideoProcessor:
         events: List[DetectionEvent], 
         zone_events: List[ZoneEvent]
     ) -> None:
-        """
-        이벤트 큐에 추가 (디바운싱 적용)
-        
-        Args:
-            camera_id: 카메라 ID
-            events: 감지된 이벤트 리스트
-            zone_events: 위험 구역 이벤트 리스트
-        """
-        # 객체 탐지 이벤트 처리
+        """Add events to queue with debouncing"""
         for event in events:
-            # object_id가 None인 경우는 이제 발생하지 않지만, 안전장치로 유지
             event_id = event.object_id if event.object_id is not None else 0
             
             if self._should_send_event(
@@ -386,7 +320,6 @@ class VideoProcessor:
                 self.event_queue.put(event_data)
                 self.stats.events_detected += 1
         
-        # 위험 구역 이벤트 처리
         for zone_event in zone_events:
             zone_event_data = zone_event.to_dict()
             self.event_queue.put(zone_event_data)
@@ -398,24 +331,12 @@ class VideoProcessor:
         frame: Any, 
         events: List[DetectionEvent]
     ) -> bool:
-        """
-        프레임 화면 표시 (OpenCV 윈도우)
-        
-        Args:
-            camera_id: 카메라 ID
-            frame: OpenCV 이미지 프레임
-            events: 감지된 이벤트 리스트
-            
-        Returns:
-            계속 실행 여부 (False면 종료)
-        """
+        """Display frame on OpenCV window"""
         if not self.config.display or frame is None:
             return True
         
-        # 바운딩 박스 그리기
         frame = draw_events(frame, events)
         
-        # 카메라 정보 표시
         cv2.putText(
             frame,
             f"[{camera_id}] Objects: {len(events)} | FPS: {self.stats.get_fps():.1f}",
@@ -428,7 +349,7 @@ class VideoProcessor:
         
         cv2.imshow(f"Camera: {camera_id}", frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
-            return False  # 종료 신호
+            return False
         return True
 
     def _process_camera(self, camera_id: str, camera: RTSPCamera) -> None:
@@ -505,85 +426,75 @@ class VideoProcessor:
     
 
     def _send_events_worker(self):
-        """이벤트 전송 워커"""
-        consecutive_failures = 0  # 연속 실패 카운터
+        """Event transmission worker"""
+        consecutive_failures = 0
         
         while self.running and not self.stop_event.is_set():
             try:
                 event_data = self.event_queue.get(timeout=1.0)
                 
                 try:
-                    # config에서 자동으로 server URL 가져옴
                     result = send_event(event_data)
                     if result:
                         self.stats.events_sent += 1
-                        consecutive_failures = 0  # 성공하면 리셋
-                        logger.info(f"✅ 이벤트 전송: {event_data.get('camera_id')} - {event_data.get('type')}")
+                        consecutive_failures = 0
+                        logger.info(f"Event sent: {event_data.get('camera_id')} - {event_data.get('type')}")
                     else:
                         self.stats.events_failed += 1
                         consecutive_failures += 1
-                        logger.warning(f"⚠️ 이벤트 전송 실패: {event_data}")
+                        logger.warning(f"Event send failed: {event_data}")
                         
-                        # 연속 실패 시 경고
                         if consecutive_failures >= self.config.processing.consecutive_failure_threshold:
-                            logger.error(f"🚨 서버 전송 연속 {consecutive_failures}회 실패 - 서버 상태 확인 필요")
+                            logger.error(f"Consecutive send failures: {consecutive_failures} times - Check server status")
                             
                 except Exception as e:
-                    logger.error(f"❌ 전송 오류: {e}")
+                    logger.error(f"Send error: {e}")
                     self.stats.events_failed += 1
                     consecutive_failures += 1
                     
             except Empty:
                 pass
             except Exception as e:
-                logger.error(f"워커 오류: {e}")
+                logger.error(f"Worker error: {e}")
     
     def _cleanup_worker(self):
-        """주기적 메모리 정리 워커"""
+        """Periodic memory cleanup worker"""
         while self.running and not self.stop_event.is_set():
             try:
-                # cleanup_interval 초 대기
                 if self.stop_event.wait(timeout=self.cleanup_interval):
-                    break  # stop 신호 받으면 종료
+                    break
                 
-                logger.info("🧹 메모리 정리 시작...")
+                logger.info("Memory cleanup started...")
                 
-                # 1. 오래된 이벤트 기록 정리
                 removed = self._cleanup_old_events()
                 
                 if removed > 0:
-                    logger.info(f"  - last_events: {removed}개 정리 (남은: {len(self.last_events)}개)")
+                    logger.info(f"  - last_events: {removed} cleaned (remaining: {len(self.last_events)})")
                 
-                # 2. 이벤트 큐 크기 체크
                 queue_size = self.event_queue.qsize()
                 queue_max = self.config.events.queue_max_size
                 if queue_size > queue_max * self.config.processing.queue_warning_threshold:
-                    logger.warning(f"⚠️ 이벤트 큐 포화 상태: {queue_size}/{queue_max}")
+                    logger.warning(f"Event queue saturation: {queue_size}/{queue_max}")
                 
-                logger.info("✅ 메모리 정리 완료")
+                logger.info("Memory cleanup completed")
                 
             except Exception as e:
-                logger.error(f"❌ 정리 워커 오류: {e}")
+                logger.error(f"Cleanup worker error: {e}")
 
     def start(self) -> None:
-        """
-        비디오 프로세서 시작
-        
-        카메라 스레드, 이벤트 전송 스레드, 메모리 정리 스레드를 시작합니다.
-        """
+        """Start video processor"""
         if self.running:
-            logger.warning("이미 실행 중입니다")
+            logger.warning("Already running")
             return
 
         if not self.cameras:
-            logger.error("등록된 카메라가 없습니다")
+            logger.error("No cameras registered")
             return
 
         self.running = True
         self.stop_event.clear()
         self.stats.start_time = time.time()
 
-        # 카메라 스레드 시작
         for camera_id, camera in self.cameras.items():
             thread = Thread(
                 target=self._process_camera,
@@ -594,7 +505,6 @@ class VideoProcessor:
             self.camera_threads[camera_id] = thread
             thread.start()
 
-        # 이벤트 전송 스레드 시작
         self.sender_thread = Thread(
             target=self._send_events_worker,
             daemon=True,
@@ -602,7 +512,6 @@ class VideoProcessor:
         )
         self.sender_thread.start()
         
-        # 클린업 스레드 시작
         self.cleanup_thread = Thread(
             target=self._cleanup_worker,
             daemon=True,
@@ -610,25 +519,20 @@ class VideoProcessor:
         )
         self.cleanup_thread.start()
 
-        logger.info(f"✅ 프로세서 시작 (카메라 {len(self.cameras)}개)")
+        logger.info(f"Processor started ({len(self.cameras)} cameras)")
 
     def stop(self) -> None:
-        """
-        비디오 프로세서 정지
-        
-        모든 스레드를 안전하게 종료하고 리소스를 해제합니다.
-        """
-        logger.info("프로세서 정지 중...")
+        """Stop video processor"""
+        logger.info("Stopping processor...")
         self.running = False
         self.stop_event.set()
 
-        # 모든 스레드 대기
         timeout = self.config.processing.thread_join_timeout
         for camera_id, thread in self.camera_threads.items():
             if thread.is_alive():
                 thread.join(timeout=timeout)
                 if thread.is_alive():
-                    logger.warning(f"[{camera_id}] 스레드 종료 시간 초과")
+                    logger.warning(f"[{camera_id}] Thread termination timeout")
 
         if self.sender_thread and self.sender_thread.is_alive():
             self.sender_thread.join(timeout=timeout)
@@ -636,30 +540,29 @@ class VideoProcessor:
         if self.cleanup_thread and self.cleanup_thread.is_alive():
             self.cleanup_thread.join(timeout=timeout)
 
-        # 카메라 해제
         for camera in self.cameras.values():
             camera.release()
 
         cv2.destroyAllWindows()
-        logger.info("✅ 프로세서 정지 완료")
+        logger.info("Processor stopped")
 
     def get_stats(self) -> Dict:
-        """통계 조회"""
+        """Get statistics"""
         return self.stats.to_dict()
 
     def print_stats(self):
-        """통계 출력"""
+        """Print statistics"""
         stats = self.get_stats()
         logger.info(
             f"\n{'='*70}\n"
-            f"📊 처리 통계\n"
+            f"Processing Statistics\n"
             f"{'='*70}\n"
-            f"프레임: {stats['frames_processed']} | 드롭: {stats['frames_dropped']} | FPS: {stats['fps']}\n"
-            f"이벤트: 감지 {stats['events_detected']} | 전송 {stats['events_sent']} | "
-            f"필터됨 {stats['events_filtered']} | 실패 {stats['events_failed']}\n"
-            f"오류: 추론 {stats['inference_errors']} | 카메라 {stats['camera_errors']}\n"
-            f"성능: 평균 추론 {stats['avg_inference_ms']:.1f}ms\n"
-            f"카메라: {stats['camera_count']}개 | 가동시간: {stats['uptime_seconds']}초\n"
+            f"Frames: {stats['frames_processed']} | Dropped: {stats['frames_dropped']} | FPS: {stats['fps']}\n"
+            f"Events: Detected {stats['events_detected']} | Sent {stats['events_sent']} | "
+            f"Filtered {stats['events_filtered']} | Failed {stats['events_failed']}\n"
+            f"Errors: Inference {stats['inference_errors']} | Camera {stats['camera_errors']}\n"
+            f"Performance: Avg inference {stats['avg_inference_ms']:.1f}ms\n"
+            f"Cameras: {stats['camera_count']} | Uptime: {stats['uptime_seconds']}s\n"
             f"{'='*70}\n"
         )
 

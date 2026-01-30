@@ -11,7 +11,6 @@ from typing import Optional
 # 프로젝트 루트 디렉토리 (src/config에서 2단계 상위)
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 
-
 @dataclass
 class ModelPaths:
     """모델 파일 경로 관리"""
@@ -20,42 +19,49 @@ class ModelPaths:
     
     def __post_init__(self):
         """기본 모델 경로 자동 탐지"""
-        # 헬멧 모델 자동 탐지
         if self.helmet_model is None:
             helmet_candidates = [
-                PROJECT_ROOT / "runs/detect/train/weights/test.pt",
-                PROJECT_ROOT / "runs/detect/helmet_model/weights/best.pt",
-                PROJECT_ROOT / "helmet_model.pt",
-                PROJECT_ROOT / "models/helmet_model.pt",
+                PROJECT_ROOT / "models/helmet_model_ver0.5.pt",
+                PROJECT_ROOT / "helmet_model_ver0.5.pt"
             ]
             for path in helmet_candidates:
                 if path.exists():
                     self.helmet_model = str(path)
                     break
         
-        # Pose 모델 자동 탐지
         if self.pose_model is None:
             pose_candidates = [
                 PROJECT_ROOT / "models/yolov8n-pose.pt",
                 PROJECT_ROOT / "yolov8n-pose.pt",
-                "yolov8n-pose.pt",  # ultralytics 자동 다운로드
+                "yolov8n-pose.pt",
             ]
             for path in pose_candidates:
                 if isinstance(path, Path) and path.exists():
                     self.pose_model = str(path)
                     break
                 elif isinstance(path, str):
-                    # 문자열 경로는 마지막 fallback (ultralytics 자동 다운로드)
                     self.pose_model = path
                     break
     
     def validate(self) -> bool:
-        """모델 파일 존재 여부 확인"""
+        """모델 파일 존재 및 크기 검증"""
         valid = True
-        if self.helmet_model and not os.path.exists(self.helmet_model):
-            print(f"⚠️ 헬멧 모델 없음: {self.helmet_model}")
-            valid = False
-        # pose 모델은 ultralytics가 자동 다운로드하므로 검증 제외
+        if self.helmet_model:
+            if not os.path.exists(self.helmet_model):
+                print(f"WARN: 헬멧 모델을 찾을 수 없습니다: {self.helmet_model}")
+                valid = False
+            elif os.path.getsize(self.helmet_model) == 0:
+                print(f"ERROR: 헬멧 모델 파일이 비어있습니다: {self.helmet_model}")
+                valid = False
+        
+        if self.pose_model:
+            if not os.path.exists(self.pose_model):
+                print(f"WARN: Pose 모델을 찾을 수 없습니다: {self.pose_model}")
+                valid = False
+            elif os.path.getsize(self.pose_model) == 0:
+                print(f"ERROR: Pose 모델 파일이 비어있습니다: {self.pose_model}")
+                valid = False
+        
         return valid
 
 
@@ -70,55 +76,62 @@ class ServerConfig:
 @dataclass
 class CameraConfig:
     """카메라/RTSP 설정"""
-    reconnect_interval: int = 5  # 재연결 대기 시간 (초)
-    max_retries: int = 5  # 최대 재시도 횟수
-    read_timeout: int = 10  # 읽기 타임아웃 (초)
-    buffer_size: int = 1  # 프레임 버퍼 크기
+    reconnect_interval: int = 5
+    max_retries: int = 5
+    read_timeout: int = 10
+    buffer_size: int = 1
 
 
 @dataclass
 class DetectionConfig:
-    """객체 탐지 설정"""
-    helmet_confidence: float = 0.5  # 헬멧 감지 (패딩 오감지 방지)
-    pose_confidence: float = 0.55  # pose 모델 신뢰도 (FPS 개선)
-    device: str = "cpu"  # "cuda" or "cpu"
+    """객체 감지 설정"""
+    helmet_confidence: float = 0.5
+    pose_confidence: float = 0.5
+    device: str = "cpu"
     target_fps: int = 30
+    iou_threshold: float = 0.3
+    max_helmet_size: int = 500
+    fall_angle_threshold: float = 45.0
+    fall_height_ratio: float = 0.3
     
-    # NMS 설정
-    iou_threshold: float = 0.3  # 중복 박스 제거 임계값
-    
-    # 헬멧 박스 크기 제한 (픽셀)
-    max_helmet_size: int = 500  # 이보다 크면 오탐지로 간주
-    
-    # 낙상 감지 설정 (관절 기반)
-    fall_angle_threshold: float = 45.0  # 몸 각도가 이보다 작으면 낙상 (도 단위)
-    fall_height_ratio: float = 0.3  # 머리 높이가 박스 높이의 30% 이하면 낙상
+    def __post_init__(self):
+        """설정 값 검증"""
+        if not 0.0 <= self.helmet_confidence <= 1.0:
+            raise ValueError(f"helmet_confidence는 0.0~1.0 사이여야 합니다. 입력값: {self.helmet_confidence}")
+        if not 0.0 <= self.pose_confidence <= 1.0:
+            raise ValueError(f"pose_confidence는 0.0~1.0 사이여야 합니다. 입력값: {self.pose_confidence}")
+        if not 0.0 <= self.iou_threshold <= 1.0:
+            raise ValueError(f"iou_threshold는 0.0~1.0 사이여야 합니다. 입력값: {self.iou_threshold}")
+        if self.target_fps <= 0:
+            raise ValueError(f"target_fps는 양수여야 합니다. 입력값: {self.target_fps}")
+        if self.device not in ["cpu", "cuda"]:
+            raise ValueError(f"device는 'cpu' 또는 'cuda'여야 합니다. 입력값: {self.device}")
 
 
 @dataclass
 class EventConfig:
     """이벤트 처리 설정"""
     debounce_enabled: bool = True
-    debounce_seconds: float = 3.0  # 동일 이벤트 재전송 간격
+    debounce_seconds: float = 3.0
     queue_max_size: int = 500
-    event_retention_hours: int = 24  # 이벤트 기록 보관 시간
-    cleanup_interval: int = 3600  # 이벤트 정리 간격 (초)
+    event_retention_hours: int = 24
+    cleanup_interval: int = 3600
 
 
 @dataclass
 class ProcessingConfig:
     """비디오 처리 설정"""
-    thread_join_timeout: int = 5  # 스레드 종료 대기 시간 (초)
-    camera_reconnect_delay: float = 0.1  # 카메라 재연결 지연 (초)
-    consecutive_failure_threshold: int = 5  # 연속 실패 임계값
-    queue_warning_threshold: float = 0.8  # 큐 경고 임계값 (80%)
-    fall_inference_interval: int = 7  # 낙상 추론 간격 (프레임)
-    frame_skip: int = 5  # AI 추론 프레임 스킵 (5=매 5프레임마다 추론, FPS 개선)
+    thread_join_timeout: int = 5
+    camera_reconnect_delay: float = 0.1
+    consecutive_failure_threshold: int = 5
+    queue_warning_threshold: float = 0.8
+    fall_inference_interval: int = 7
+    frame_skip: int = 5
 
 
 @dataclass
 class AppConfig:
-    """전체 애플리케이션 설정"""
+    """애플리케이션 설정"""
     models: ModelPaths = None
     server: ServerConfig = None
     camera: CameraConfig = None
@@ -126,12 +139,10 @@ class AppConfig:
     events: EventConfig = None
     processing: ProcessingConfig = None
     
-    # 기능 토글
     display: bool = False
     zone_detection: bool = False
     collect_dataset: bool = False
     
-    # 디렉토리
     dataset_dir: str = str(PROJECT_ROOT / "collected_data")
     zones_config: str = str(PROJECT_ROOT / "zones_config.json")
     
@@ -152,29 +163,42 @@ class AppConfig:
     
     @classmethod
     def from_env(cls) -> 'AppConfig':
-        """환경변수에서 설정 로드"""
+        """환경 변수에서 설정 로드"""
         config = cls()
         
-        # 모델 경로 오버라이드
         if os.getenv("HELMET_MODEL_PATH"):
             config.models.helmet_model = os.getenv("HELMET_MODEL_PATH")
         if os.getenv("POSE_MODEL_PATH"):
             config.models.pose_model = os.getenv("POSE_MODEL_PATH")
-        
-        # 서버 URL
         if os.getenv("SERVER_URL"):
             config.server.url = os.getenv("SERVER_URL")
-        
-        # 디바이스 설정
         if os.getenv("DEVICE"):
             config.detection.device = os.getenv("DEVICE")
         
         return config
     
     def validate(self) -> bool:
-        """설정 유효성 검증"""
+        """설정 검증"""
         return self.models.validate()
+    
+    def summary(self) -> str:
+        """설정 요약 생성"""
+        lines = [
+            "설정 요약:",
+            f"  헬멧 모델: {self.models.helmet_model or '설정되지 않음'}",
+            f"  Pose 모델: {self.models.pose_model or '설정되지 않음'}",
+            f"  디바이스: {self.detection.device}",
+            f"  헬멧 신뢰도: {self.detection.helmet_confidence}",
+            f"  Pose 신뢰도: {self.detection.pose_confidence}",
+            f"  목표 FPS: {self.detection.target_fps}",
+            f"  프레임 스킵: {self.processing.frame_skip}",
+            f"  화면 표시: {self.display}",
+            f"  구역 감지: {self.zone_detection}",
+            f"  데이터셋 수집: {self.collect_dataset}",
+            f"  서버 URL: {self.server.url}",
+            f"  디바운싱: {'활성화' if self.events.debounce_enabled else '비활성화'} ({self.events.debounce_seconds}초)",
+        ]
+        return "\n".join(lines)
 
 
-# 전역 설정 인스턴스
 default_config = AppConfig()

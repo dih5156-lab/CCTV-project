@@ -1,5 +1,5 @@
 """
-visualizer.py - Detection result visualization
+visualizer.py - 감지 결과 시각화
 """
 
 from typing import List, Union, Dict, Tuple, Optional, Any
@@ -30,7 +30,7 @@ DEFAULT_COLOR = (255, 255, 255)  # 흰색
 
 
 def _parse_event_data(event: Union[Dict, DetectionEvent]) -> Optional[Dict]:
-    """Parse event data to standardized dictionary format."""
+    """이벤트 데이터를 표준화된 딕셔너리 형식으로 파싱"""
     if isinstance(event, dict):
         event_type_str = event.get("type", "unknown")
         if event_type_str == "other":
@@ -72,7 +72,7 @@ def _draw_bbox_with_label(
     label: str,
     color: Tuple[int, int, int]
 ) -> None:
-    """Draw bounding box with label on frame."""
+    """프레임에 레이블이 있는 바운딩 박스 그리기"""
     try:
         # 바운딩 박스 그리기
         cv2.rectangle(
@@ -117,7 +117,7 @@ def _draw_bbox_with_label(
 
 
 def draw_events(frame, events: List[Union[Dict, DetectionEvent]]):
-    """Draw detection events with bounding boxes and labels on frame."""
+    """프레임에 바운딩 박스와 레이블로 감지 이벤트 그리기"""
     if frame is None:
         return frame
     
@@ -181,26 +181,23 @@ def draw_events(frame, events: List[Union[Dict, DetectionEvent]]):
 
 
 def _draw_keypoints(frame, keypoints):
-    """Draw YOLOv8-pose keypoints skeleton on frame (COCO 17 keypoints)."""
+    """프레임에 YOLOv8-pose 키포인트 스켈레톤 그리기 (COCO 17 키포인트)"""
     if keypoints is None or len(keypoints) != 17:
         return
     
-    # COCO keypoints skeleton (연결선)
     skeleton = [
-        [16, 14], [14, 12], [17, 15], [15, 13], [12, 13],  # 다리
-        [6, 12], [7, 13],  # 몸통
-        [6, 8], [7, 9], [8, 10], [9, 11],  # 팔
-        [2, 3], [1, 2], [1, 3], [2, 4], [3, 5], [4, 6], [5, 7]  # 얼굴 + 어깨
+        [16, 14], [14, 12], [17, 15], [15, 13], [12, 13],
+        [6, 12], [7, 13],
+        [6, 8], [7, 9], [8, 10], [9, 11],
+        [2, 3], [1, 2], [1, 3], [2, 4], [3, 5], [4, 6], [5, 7]
     ]
     
-    # 관절 그리기
     for i, (x, y, conf) in enumerate(keypoints):
-        if conf > 0.3:  # 신뢰도 임계값
-            cv2.circle(frame, (int(x), int(y)), 3, (0, 255, 255), -1)  # 노란색 점
+        if conf > 0.3:
+            cv2.circle(frame, (int(x), int(y)), 3, (0, 255, 255), -1)
     
-    # 연결선 그리기
     for pt1_idx, pt2_idx in skeleton:
-        pt1_idx -= 1  # COCO는 1-based, 배열은 0-based
+        pt1_idx -= 1
         pt2_idx -= 1
         
         if pt1_idx < 0 or pt1_idx >= 17 or pt2_idx < 0 or pt2_idx >= 17:
@@ -210,6 +207,6 @@ def _draw_keypoints(frame, keypoints):
         x2, y2, conf2 = keypoints[pt2_idx]
         
         if conf1 > 0.3 and conf2 > 0.3:
-            cv2.line(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 255), 2)  # 노란색 선
+            cv2.line(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 255), 2)
 
 
