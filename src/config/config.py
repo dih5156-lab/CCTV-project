@@ -88,7 +88,7 @@ class CameraConfig:
 @dataclass
 class DetectionConfig:
     """객체 감지 설정"""
-    helmet_confidence: float = 0.5  # 헬멧 감지 신뢰도 (0.0~1.0)
+    helmet_confidence: float = 0.7  # 헬멧 감지 신뢰도 (0.0~1.0)
     pose_confidence: float = 0.5  # 사람 감지 신뢰도 (0.0~1.0)
     device: str = "cpu"  # 계산 장치 (cpu 또는 cuda)
     target_fps: int = 30  # 목표 프레임율

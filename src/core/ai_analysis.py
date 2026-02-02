@@ -384,14 +384,15 @@ class AIAnalyzer:
         else:
             conf_threshold = self.confidence_threshold
 
-        # YOLO 실행: ultralytics 모델 호출 (predict 사용, 더 안정적)
+        # YOLO 실행: track() 사용 (실제 추적 ID 생성)
         try:
-            results = model.predict(
+            results = model.track(
                 frame, 
                 conf=conf_threshold, 
                 iou=DEFAULT_IOU_THRESHOLD, 
                 imgsz=DEFAULT_IMAGE_SIZE_HELMET, 
-                verbose=False
+                verbose=False,
+                persist=True  # 프레임 간 ID 지속
             )
         except Exception as e:
             logger.error(f"모델 추론 실패 ({self.current_model_type}): {e}")
@@ -503,13 +504,14 @@ class AIAnalyzer:
         conf_threshold = getattr(self, 'pose_threshold', self.confidence_threshold)
         
         try:
-            # track() 대신 predict() 사용 (더 안정적)
-            results = model.predict(
+            # track() 사용 (실제 추적 ID 생성, 같은 사람 ID 유지)
+            results = model.track(
                 frame, 
                 conf=conf_threshold, 
                 iou=DEFAULT_IOU_THRESHOLD, 
                 imgsz=DEFAULT_IMAGE_SIZE_POSE, 
-                verbose=False
+                verbose=False,
+                persist=True  # 프레임 간 ID 지속
             )
         except Exception as e:
             logger.error(f"Pose 모델 추론 실패: {e}")

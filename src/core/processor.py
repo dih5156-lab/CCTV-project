@@ -11,7 +11,7 @@ import numpy as np
 
 from dataclasses import dataclass, field, asdict
 from threading import Thread, Lock, Event
-from queue import Queue, Empty
+from queue import Queue, Empty, Full
 from typing import Dict, List, Union, Tuple, Any, Optional
 
 from ..config import AppConfig
@@ -52,6 +52,7 @@ class ProcessorStats:
     frames_processed: int = 0
     frames_dropped: int = 0
     events_detected: int = 0
+    events_dropped: int = 0
     events_sent: int = 0
     events_filtered: int = 0
     events_failed: int = 0
@@ -393,13 +394,21 @@ class VideoProcessor:
             ):
                 event_data = event.to_dict()
                 event_data["camera_id"] = camera_id
-                self.event_queue.put(event_data)
-                self.stats.events_detected += 1
+                try:
+                    self.event_queue.put_nowait(event_data)
+                    self.stats.events_detected += 1
+                except Full:
+                    self.stats.events_dropped += 1
+                    logger.warning(f"[{camera_id}] 이벤트 큐 가득 참: 이벤트 드롭됨")
         
         for zone_event in zone_events:
             zone_event_data = zone_event.to_dict()
-            self.event_queue.put(zone_event_data)
-            self.stats.events_detected += 1
+            try:
+                self.event_queue.put_nowait(zone_event_data)
+                self.stats.events_detected += 1
+            except Full:
+                self.stats.events_dropped += 1
+                logger.warning(f"[{camera_id}] 이벤트 큐 가득 참: 구역 이벤트 드롭됨")
     
     def _update_camera_frame(
         self, 
@@ -743,7 +752,7 @@ class VideoProcessor:
             f"{'='*70}\n"
             f"Frames: {stats['frames_processed']} | Dropped: {stats['frames_dropped']} | FPS: {stats['fps']}\n"
             f"Events: Detected {stats['events_detected']} | Sent {stats['events_sent']} | "
-            f"Filtered {stats['events_filtered']} | Failed {stats['events_failed']}\n"
+            f"Filtered {stats['events_filtered']} | Dropped {stats['events_dropped']} | Failed {stats['events_failed']}\n"
             f"Errors: Inference {stats['inference_errors']} | Camera {stats['camera_errors']}\n"
             f"Performance: Avg inference {stats['avg_inference_ms']:.1f}ms\n"
             f"Cameras: {stats['camera_count']} | Uptime: {stats['uptime_seconds']}s\n"
