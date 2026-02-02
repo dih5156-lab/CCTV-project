@@ -142,14 +142,18 @@ python main.py --display
 
 ### AIAnalyzer (ai_analysis.py)
 다중 모델 AI 추론:
-- 헬멧, 사람, 낙상 모델 동시 실행
+- 헬멧(416→640px), 사람 포즈(640px) 모델 동시 실행
+- YOLOv8 track() 활성화: 프레임 간 객체 ID 지속 (persistent tracking)
+- 키포인트 기준 완화: 가림/후면 사람도 감지 (1개 키포인트 이상)
 - IoU 기반 중복 박스 제거
-- 트래킹 실패 시 bbox 기반 임시 ID 생성
+- 낙상 감지: 어깨-엉덩이 각도 + 다리 높이 분석
 
 ### VideoProcessor (processor.py)
 비디오 처리 파이프라인:
-- 다중 카메라 독립 처리
-- 이벤트 큐 관리 및 서버 전송
+- **분리된 스레드 아키텍처**: 카메라 스레드(프레임 획득) + AI 추론 스레드(분석)
+- **프레임 큐**: 최신 프레임만 유지, 오래된 프레임 자동 드롭 (지연 최소화)
+- **이벤트 큐**: 모든 이벤트 보존, 큐 가득 시 로컬 백업 (손실 방지)
+- **누적 판정**: 위반 이벤트(head, fall_detected) 5프레임 누적 후 경고
 - 메모리 자동 정리
 
 ### CameraInput (camera_input.py)
@@ -165,15 +169,20 @@ RTSP 카메라 관리:
 | helmet_confidence | 0.45 | 헬멧 감지 최소 신뢰도 |
 | pose_confidence | 0.5 | 사람 감지 최소 신뢰도 |
 | iou_threshold | 0.3 | NMS IoU 임계값 |
-| fall_angle_threshold | 45.0 | 낙상 각도 임계값 (도) |
+| fall_angle_threshold | 30 | 낙상 감지 수평 각도 임계값 (도) |
 | fall_height_ratio | 0.3 | 낙상 머리 높이 비율 |
+| min_keypoint_confidence | 0.2 | 키포인트 최소 신뢰도 |
+| detection_history_size | 5 | 누적 판정 프레임 수 |
+| violation_threshold | 4 | 누적 판정 위반 임계값 |
 
 ### 시스템 설정
 | 파라미터 | 기본값 | 설명 |
 |---------|-------|------|
 | event_retention_hours | 24 | 이벤트 보관 시간 |
 | debounce_seconds | 3.0 | 동일 이벤트 재전송 간격 |
-| queue_max_size | 500 | 이벤트 큐 최대 크기 |
+| queue_max_size | 500 | 이벤트 큐 최대 크기 (3배 확대 설정) |
+| frame_queue_size | 1 | 카메라당 프레임 큐 크기 (지연 최소화) |
+| cumulative_detection_enabled | True | 누적 판정 활성화 |
 
 ## 데이터셋 수집
 
@@ -238,6 +247,22 @@ cp runs/detect/train/weights/best.pt models/helmet_model.pt
   - config.py, ai_analysis.py, main.py 주석 한글화
   - services 폴더 및 utils 폴더 전체 주석 한글화
   
+- **멀티스레드 아키텍처 재설계**
+  - 카메라 프레임 수집용 스레드 + AI 추론용 스레드 분리
+  - 프레임 큐 (최소 크기, 자동 드롭) + 이벤트 큐 (3배 확장, 타임아웃 백업)
+  - 이벤트 손실 방지를 위한 로컬 JSON 백업 시스템
+  - FPS 안정화 (30초 후 드롭 문제 해결)
+
+- **객체 트래킹 개선**
+  - `predict()` → `track(persist=True)` 전환
+  - 프레임 간 일관된 객체 ID 유지
+  - 헬멧 감지 및 자세 분석에 지속적 트래킹 적용
+
+- **감지 성능 최적화**
+  - 헬멧 감지 해상도: 416px → 640px
+  - 자세 감지 해상도: 640px 유지
+  - 키포인트 검증 완화 (2개 → 1개): 가려진/뒤돌아선 사람도 감지
+
 - **AI 모델 업데이트**
   - ai_analysis.py 전면 리팩토링 (908 줄)
   - 다중 모델 추론 로직 최적화

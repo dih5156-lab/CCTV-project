@@ -33,8 +33,8 @@ FALL_ANGLE_INVERTED = 150  # 역방향 수평 각도 임계값 (도)
 MIN_HIP_CONFIDENCE = 0.3  # 엉덩이 키포인트 최소 신뢰도
 
 # 모델 상수
-DEFAULT_IMAGE_SIZE_HELMET = 416  # FPS 최적화
-DEFAULT_IMAGE_SIZE_POSE = 640  # FPS 최적화
+DEFAULT_IMAGE_SIZE_HELMET = 640  # 헬멧 감지 개선
+DEFAULT_IMAGE_SIZE_POSE = 640  # 기본 해상도
 DEFAULT_IOU_THRESHOLD = 0.45  # 중복 제거를 위한 NMS 임계값
 
 try:
@@ -654,10 +654,10 @@ class AIAnalyzer:
             has_hip = (left_hip_conf > MIN_KEYPOINT_CONFIDENCE or 
                       right_hip_conf > MIN_KEYPOINT_CONFIDENCE)
             
-            # 최소 2개의 주요 키포인트가 감지되어야 사람으로 인정
+            # 최소 1개의 주요 키포인트만 있어도 사람으로 인정 (가림/후면 보정)
             valid_keypoints = sum([has_nose, has_shoulder, has_hip])
             
-            if valid_keypoints < 2:
+            if valid_keypoints < 1:
                 logger.debug(f"키포인트 부족: nose={has_nose}, shoulder={has_shoulder}, hip={has_hip}")
                 return False
             

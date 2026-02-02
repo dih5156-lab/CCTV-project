@@ -195,7 +195,7 @@ class VideoProcessor:
         camera = RTSPCamera(camera_id, source, self.config)
         if camera.connect():
             self.cameras[camera_id] = camera
-            # 프레임 큐 생성 (최대 2개만 유지 - 최신 프레임 우선)
+            # 프레임 큐 생성 (최대 1개만 유지 - 지연 최소화)
             self.frame_queues[camera_id] = Queue(maxsize=2)
             self.stats.camera_count = len(self.cameras)
             logger.info(f"카메라 추가됨: {camera_id}")
