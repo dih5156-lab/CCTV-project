@@ -98,7 +98,14 @@ class VideoProcessor:
         
         self.cameras: Dict[str, RTSPCamera] = {}
         self.camera_threads: Dict[str, Thread] = {}
-        self.event_queue = Queue(maxsize=config.events.queue_max_size)
+        self.inference_threads: Dict[str, Thread] = {}  # AI 추론 전용 스레드
+        
+        # 프레임 큐: 카메라 → AI 추론 (최신 프레임만 유지, 오래된 것 자동 드롭)
+        self.frame_queues: Dict[str, Queue] = {}  # camera_id -> Queue[frame]
+        
+        # 이벤트 큐: AI 추론 → 서버 전송 (모든 이벤트 보존, 드롭 금지)
+        self.event_queue = Queue(maxsize=config.events.queue_max_size * 3)  # 큐 크기 3배 확대
+        
         self.last_events: Dict[Tuple[str, str, int], float] = {}
         self._event_lock = Lock()
         self.active_tracks: Dict[str, Dict[int, Tuple[float, DetectionEvent]]] = {}
@@ -160,6 +167,24 @@ class VideoProcessor:
         }
         
         return before_count - len(self.last_events)            
+    
+    def _save_event_locally(self, event_data: Dict) -> None:
+        """이벤트를 로컬 파일로 저장 (큐 가득 참 시 백업용)"""
+        try:
+            backup_dir = os.path.join(os.getcwd(), "event_backup")
+            os.makedirs(backup_dir, exist_ok=True)
+            
+            timestamp = time.strftime("%Y%m%d_%H%M%S")
+            filename = f"event_{timestamp}_{event_data.get('camera_id', 'unknown')}.json"
+            filepath = os.path.join(backup_dir, filename)
+            
+            import json
+            with open(filepath, 'w', encoding='utf-8') as f:
+                json.dump(event_data, f, ensure_ascii=False, indent=2)
+            
+            logger.debug(f"이벤트 로컬 저장: {filepath}")
+        except Exception as e:
+            logger.error(f"로컬 저장 실패: {e}")
                 
     def add_camera(self, camera_id: str, source: Union[str, int]) -> bool:
         """처리 파이프라인에 카메라 추가"""
@@ -170,6 +195,8 @@ class VideoProcessor:
         camera = RTSPCamera(camera_id, source, self.config)
         if camera.connect():
             self.cameras[camera_id] = camera
+            # 프레임 큐 생성 (최대 2개만 유지 - 최신 프레임 우선)
+            self.frame_queues[camera_id] = Queue(maxsize=2)
             self.stats.camera_count = len(self.cameras)
             logger.info(f"카메라 추가됨: {camera_id}")
             
@@ -189,6 +216,8 @@ class VideoProcessor:
         if camera_id in self.cameras:
             self.cameras[camera_id].release()
             del self.cameras[camera_id]
+            if camera_id in self.frame_queues:
+                del self.frame_queues[camera_id]
             if camera_id in self.active_tracks:
                 del self.active_tracks[camera_id]
             self.stats.camera_count = len(self.cameras)
@@ -395,20 +424,24 @@ class VideoProcessor:
                 event_data = event.to_dict()
                 event_data["camera_id"] = camera_id
                 try:
-                    self.event_queue.put_nowait(event_data)
+                    # 블로킹 put 사용 - 이벤트 손실 방지 (큐가 가득 차면 대기)
+                    self.event_queue.put(event_data, timeout=5.0)
                     self.stats.events_detected += 1
                 except Full:
+                    # 5초 대기 후에도 큐가 가득 차면 로컬 저장 (재전송용)
                     self.stats.events_dropped += 1
-                    logger.warning(f"[{camera_id}] 이벤트 큐 가득 참: 이벤트 드롭됨")
+                    self._save_event_locally(event_data)
+                    logger.warning(f"[{camera_id}] 이벤트 큐 타임아웃: 로컬 저장됨")
         
         for zone_event in zone_events:
             zone_event_data = zone_event.to_dict()
             try:
-                self.event_queue.put_nowait(zone_event_data)
+                self.event_queue.put(zone_event_data, timeout=5.0)
                 self.stats.events_detected += 1
             except Full:
                 self.stats.events_dropped += 1
-                logger.warning(f"[{camera_id}] 이벤트 큐 가득 참: 구역 이벤트 드롭됨")
+                self._save_event_locally(zone_event_data)
+                logger.warning(f"[{camera_id}] 구역 이벤트 큐 타임아웃: 로컬 저장됨")
     
     def _update_camera_frame(
         self, 
@@ -504,16 +537,15 @@ class VideoProcessor:
 
     def _process_camera(self, camera_id: str, camera: RTSPCamera) -> None:
         """
-        카메라별 처리 메인 루프
+        카메라별 프레임 획득 루프 (경량화)
         
-        프레임 획득 → AI 추론 → 추적 → 데이터 수집 → 구역 탐지 → 이벤트 전송 → 화면 표시
+        프레임 획득 → 프레임 큐에 추가 (AI 추론은 별도 스레드에서 처리)
         
         매개변수:
             camera_id: 카메라 ID
             camera: RTSPCamera 인스턴스
         """
         frame_count = 0
-        last_events = []  # 이전 프레임 결과 캐싱
         
         while self.running and not self.stop_event.is_set():
             ret, frame = camera.get_frame()
@@ -525,13 +557,54 @@ class VideoProcessor:
             self.stats.frames_processed += 1
 
             try:
-                # 1. AI 추론 (프레임 스킵으로 성능 향상)
-                frame_skip = self.config.processing.frame_skip
-                if frame_count % frame_skip == 1 or not last_events:  # frame_skip마다 추론
-                    events = self._run_ai_inference(frame, frame_count)
-                    last_events = events  # 결과 캐싱
-                else:
-                    events = last_events  # 이전 결과 재사용
+                # 프레임 큐에 추가 (가득 차면 오래된 프레임 자동 제거)
+                frame_queue = self.frame_queues.get(camera_id)
+                if frame_queue is not None:
+                    # 큐가 가득 차면 오래된 프레임 제거 후 추가
+                    while frame_queue.full():
+                        try:
+                            frame_queue.get_nowait()
+                            self.stats.frames_dropped += 1
+                        except Empty:
+                            break
+                    
+                    frame_queue.put_nowait(frame.copy())
+                
+            except Exception as e:
+                logger.error(f"[{camera_id}] 프레임 큐 추가 실패: {e}")
+                self.stats.frames_dropped += 1
+
+            # FPS 제어
+            time.sleep(1.0 / self.config.detection.target_fps)
+    
+    def _process_inference(self, camera_id: str) -> None:
+        """
+        AI 추론 전용 스레드
+        
+        프레임 큐에서 프레임 가져오기 → AI 추론 → 추적 → 이벤트 생성 → 화면 표시
+        
+        매개변수:
+            camera_id: 카메라 ID
+        """
+        frame_count = 0
+        
+        while self.running and not self.stop_event.is_set():
+            try:
+                # 프레임 큐에서 프레임 가져오기
+                frame_queue = self.frame_queues.get(camera_id)
+                if frame_queue is None:
+                    time.sleep(0.1)
+                    continue
+                
+                try:
+                    frame = frame_queue.get(timeout=1.0)
+                except Empty:
+                    continue
+                
+                frame_count += 1
+                
+                # 1. AI 추론
+                events = self._run_ai_inference(frame, frame_count)
                 
                 # 2. 데이터셋 수집용 백업
                 events_for_dataset = events.copy()
@@ -551,30 +624,24 @@ class VideoProcessor:
                 # 7. 이벤트 큐에 추가
                 self._queue_events(camera_id, events, zone_events)
                 
-                # 7. 화면 표시용 프레임 업데이트
+                # 8. 화면 표시용 프레임 업데이트
                 self._update_camera_frame(camera_id, frame, events)
 
             except ValueError as e:
                 logger.error(f"[{camera_id}] 데이터 처리 오류: {e}")
-                self.stats.frames_dropped += 1
                 self.stats.inference_errors += 1
             except RuntimeError as e:
                 logger.error(f"[{camera_id}] 모델 실행 오류: {e}")
-                self.stats.frames_dropped += 1
                 self.stats.inference_errors += 1
             except Exception as e:
                 import traceback
                 logger.error(f"[{camera_id}] 예상치 못한 오류: {e}")
                 logger.error(f"Traceback:\n{traceback.format_exc()}")
-                self.stats.frames_dropped += 1
                 self.stats.inference_errors += 1
                 
                 # 연속 에러 경고
                 if self.stats.inference_errors % 10 == 0:
-                    logger.warning(f"🚨 [{camera_id}] 추론 오류 {self.stats.inference_errors}회 발생")
-
-            # FPS 제어
-            time.sleep(1.0 / self.config.detection.target_fps)        
+                    logger.warning(f"🚨 [{camera_id}] 추론 오류 {self.stats.inference_errors}회 발생")        
     
 
     def _send_events_worker(self):
@@ -676,6 +743,7 @@ class VideoProcessor:
         self.stop_event.clear()
         self.stats.start_time = time.time()
 
+        # 카메라 스레드 시작 (프레임 획득만)
         for camera_id, camera in self.cameras.items():
             thread = Thread(
                 target=self._process_camera,
@@ -685,6 +753,16 @@ class VideoProcessor:
             )
             self.camera_threads[camera_id] = thread
             thread.start()
+            
+            # AI 추론 스레드 시작 (프레임 큐에서 가져와서 처리)
+            inference_thread = Thread(
+                target=self._process_inference,
+                args=(camera_id,),
+                daemon=True,
+                name=f"Inference-{camera_id}"
+            )
+            self.inference_threads[camera_id] = inference_thread
+            inference_thread.start()
 
         self.sender_thread = Thread(
             target=self._send_events_worker,
@@ -709,7 +787,7 @@ class VideoProcessor:
             )
             self.display_thread.start()
 
-        logger.info(f"Processor started ({len(self.cameras)} cameras)")
+        logger.info(f"Processor started ({len(self.cameras)} cameras, 분리된 추론 스레드)")
 
     def stop(self) -> None:
         """비디오 프로세서 중지"""
@@ -718,11 +796,20 @@ class VideoProcessor:
         self.stop_event.set()
 
         timeout = self.config.processing.thread_join_timeout
+        
+        # 카메라 스레드 종료
         for camera_id, thread in self.camera_threads.items():
             if thread.is_alive():
                 thread.join(timeout=timeout)
                 if thread.is_alive():
-                    logger.warning(f"[{camera_id}] Thread termination timeout")
+                    logger.warning(f"[{camera_id}] Camera thread termination timeout")
+        
+        # AI 추론 스레드 종료
+        for camera_id, thread in self.inference_threads.items():
+            if thread.is_alive():
+                thread.join(timeout=timeout)
+                if thread.is_alive():
+                    logger.warning(f"[{camera_id}] Inference thread termination timeout")
 
         if self.sender_thread and self.sender_thread.is_alive():
             self.sender_thread.join(timeout=timeout)
