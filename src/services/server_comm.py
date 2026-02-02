@@ -1,15 +1,15 @@
-import requests
 import json
 import logging
-from typing import Union, Dict, Optional
+import time
 from dataclasses import dataclass
-from ..core.events import DetectionEvent
+from typing import Union, Dict, Optional
+
+import requests
+
 from ..config import default_config
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_TIMEOUT = 5
-DEFAULT_RETRY_COUNT = 3
 RETRY_DELAY = 1
 
 
@@ -35,16 +35,16 @@ def send_event(
     """
     서버로 이벤트 전송 (JSON 형식, 재시도 로직 포함)
     
-    Args:
+    매개변수:
         event: 이벤트 딕셔너리 또는 DetectionEvent 객체
         server_url: 서버 URL (None이면 config 사용)
         timeout: 요청 타임아웃 (초, None이면 config 사용)
         retry_count: 실패 시 재시도 횟수 (None이면 config 사용)
         
-    Returns:
+    반환값:
         ServerResponse: 전송 결과 객체
     
-    Example:
+    예시:
         # config 사용 (권장)
         result = send_event(event)
         
@@ -82,8 +82,6 @@ def send_event(
         error_msg = f"잘못된 retry_count: {retry_count} (음수가 아니어야 함)"
         logger.error(error_msg)
         return ServerResponse(success=False, error_message=error_msg)
-    
-    import time
     
     # DetectionEvent 객체를 딕셔너리로 변환
     if hasattr(event, 'to_dict'):
@@ -129,7 +127,7 @@ def send_event(
                 if response.status_code == 405:
                     error_msg = "405 Method Not Allowed: 서버가 POST를 허용하지 않음"
                 
-                logger.warning(f"WARN: {error_msg}")
+                logger.warning(f"경고: {error_msg}")
                 last_error = error_msg
                 
                 if attempt < retry_count - 1:

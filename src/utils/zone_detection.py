@@ -10,7 +10,7 @@
 사용 예시:
     zone_mgr = ZoneManager(zones_config='zones_config.json')
     zone_mgr.load_zones('cam1')
-    events = zone_mgr.check_zones('cam1', detections, tracking_ids)
+    events = zone_mgr.check_zones('cam1', detections)
 """
 
 import json
@@ -53,7 +53,7 @@ class Zone:
     
     def __init__(self, zone_id: str, polygon: List[Tuple[int, int]], name: str = ""):
         """
-        Args:
+        매개변수:
             zone_id: 구역 ID (예: 'zone_1')
             polygon: 폴리곤 좌표 [(x1, y1), (x2, y2), ...]
             name: 구역 이름 (예: '전기설비')
@@ -69,7 +69,7 @@ class Zone:
     def intersects_bbox(self, bbox: Dict) -> bool:
         """바운딩박스와 폴리곤이 교차하는지 확인
         
-        Args:
+        매개변수:
             bbox: {'x', 'y', 'width', 'height'} (좌상단 기준)
         """
         x, y, w, h = bbox['x'], bbox['y'], bbox['width'], bbox['height']
@@ -104,13 +104,13 @@ class ZoneManager:
     
     def __init__(self, zones_config: str = 'zones_config.json'):
         """
-        Args:
+        매개변수:
             zones_config: 구역 설정 JSON 파일 경로
         """
         self.zones_config_path = zones_config
         self.zones: Dict[str, Dict[str, Zone]] = {}  # camera_id -> {zone_id -> Zone}
-        self.object_states: Dict[str, Dict[str, bool]] = {}  # camera_id -> {object_id -> in_zone}
-        self.object_enter_time: Dict[str, Dict[str, float]] = {}  # camera_id -> {object_id -> timestamp}
+        self.object_states: Dict[str, Dict[int, bool]] = {}  # camera_id -> {object_id -> in_zone}
+        self.object_enter_time: Dict[str, Dict[int, float]] = {}  # camera_id -> {object_id -> timestamp}
         self.dwelling_threshold: float = 3.0  # 체류 시간 임계값 (초)
         self.sent_dwelling_events: Dict[Tuple[str, int], float] = {}  # (camera_id, object_id) -> last_event_time
         
@@ -128,7 +128,7 @@ class ZoneManager:
     def load_zones(self, camera_id: str, zones_data: Optional[List[Dict]] = None):
         """카메라의 구역 로드
         
-        Args:
+        매개변수:
             camera_id: 카메라 ID
             zones_data: [{'id': 'zone_1', 'name': '전기설비', 'polygon': [[x1,y1], ...]}]
         """
@@ -156,17 +156,15 @@ class ZoneManager:
     def check_zones(
         self,
         camera_id: str,
-        detections: List,  # ai_analysis.DetectionEvent 리스트
-        frame_shape: Tuple[int, int] = None  # (height, width)
+        detections: List  # ai_analysis.DetectionEvent 리스트
     ) -> List[ZoneEvent]:
         """구역과 탐지 객체 교차 검사
         
-        Args:
+        매개변수:
             camera_id: 카메라 ID
             detections: 현재 프레임의 탐지 결과 리스트
-            frame_shape: 프레임 크기 (폴리곤 스케일 조정용)
-        
-        Returns:
+
+        반환값:
             ZoneEvent 리스트
         """
         events = []

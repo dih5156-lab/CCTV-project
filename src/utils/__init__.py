@@ -1,6 +1,6 @@
-"""Utils module - 유틸리티 함수들"""
+"""유틸리티 모듈"""
 
-# Import 순서 중요: visualizer가 EventType을 사용하므로 나중에 import
+# import 순서 중요: visualizer가 EventType을 사용하므로 나중에 import
 from .camera_input import RTSPCamera
 from .geometry import (
     is_helmet_worn, 

@@ -2,7 +2,7 @@
 visualizer.py - 감지 결과 시각화
 """
 
-from typing import List, Union, Dict, Tuple, Optional, Any
+from typing import List, Union, Dict, Tuple, Optional
 from ..core.events import EventType, DetectionEvent
 import cv2
 import logging

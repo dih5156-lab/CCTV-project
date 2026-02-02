@@ -1,5 +1,5 @@
 """
-events.py - AI inference result data model
+events.py - AI 추론 결과 데이터 모델
 """
 
 from dataclasses import dataclass
@@ -7,7 +7,7 @@ from typing import Optional, Dict, List
 from enum import Enum
 
 class EventType(Enum):
-    """Event type enumeration for detection results"""
+    """감지 결과 이벤트 타입 열거형"""
     HELMET = "helmet"
     HEAD = "head"
     DANGER_ZONE = "danger_zone"
@@ -19,7 +19,7 @@ class EventType(Enum):
     
     @classmethod
     def from_string(cls, value: str) -> 'EventType':
-        """Convert string to EventType"""
+        """문자열을 EventType으로 변환"""
         try:
             return cls(value.lower())
         except ValueError:
@@ -28,7 +28,7 @@ class EventType(Enum):
 
 @dataclass
 class DetectionEvent:
-    """Detection event data class"""
+    """감지 이벤트 데이터 클래스"""
     event_type: EventType
     x: int
     y: int
@@ -38,10 +38,10 @@ class DetectionEvent:
     timestamp: float
     object_id: Optional[int] = None
     class_idx: Optional[int] = None
-    keypoints: Optional[list] = None  # YOLOv8-pose keypoint info (saved only for falls)
+    keypoints: Optional[list] = None  # YOLOv8-pose 키포인트 정보 (낙상 이벤트에만 저장)
 
     def to_dict(self) -> Dict:
-        """Convert event to dictionary format"""
+        """이벤트를 딕셔너리 형식으로 변환"""
         return {
             "type": self.event_type.value,
             "bbox": {"x": self.x, "y": self.y, "width": self.width, "height": self.height},
@@ -51,38 +51,6 @@ class DetectionEvent:
             "class_idx": self.class_idx,
             "keypoints": self.keypoints if self.keypoints else None
         }
-    
-    @property
-    def center(self) -> tuple:
-        """Get bounding box center coordinates"""
-        return (self.x + self.width // 2, self.y + self.height // 2)
-    
-    @property
-    def area(self) -> int:
-        """Get bounding box area"""
-        return self.width * self.height
-    
-    @property
-    def aspect_ratio(self) -> float:
-        """Get bounding box aspect ratio"""
-        return self.width / max(self.height, 1)
-    
-    def overlaps_with(self, other: 'DetectionEvent', threshold: float = 0.5) -> bool:
-        """Check if this event overlaps with another event"""
-        # Calculate intersection
-        x1 = max(self.x, other.x)
-        y1 = max(self.y, other.y)
-        x2 = min(self.x + self.width, other.x + other.width)
-        y2 = min(self.y + self.height, other.y + other.height)
-        
-        if x2 <= x1 or y2 <= y1:
-            return False
-        
-        intersection = (x2 - x1) * (y2 - y1)
-        union = self.area + other.area - intersection
-        iou = intersection / max(union, 1)
-        
-        return iou >= threshold
     
     def __repr__(self) -> str:
         return (f"DetectionEvent(type={self.event_type.value}, "

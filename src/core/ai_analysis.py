@@ -101,7 +101,7 @@ class AIAnalyzer:
 
         # ultralytics 설치 확인
         if YOLO is None:
-            logger.error("오ultralytics 패키지가 설치되지 않았습니다. `pip install ultralytics`를 실행하세요.")
+            logger.error("ultralytics 패키지가 설치되지 않았습니다. `pip install ultralytics`를 실행하세요.")
             raise ImportError("ultralytics 패키지가 필요합니다")
         
         # 모델 자동 로딩
@@ -229,11 +229,11 @@ class AIAnalyzer:
     def _map_class_to_event_type(self, class_name: str, model_type: str):
         """클래스명을 EventType으로 매핑
         
-        Args:
+        매개변수:
             class_name: YOLO 모델 클래스명
             model_type: 모델 타입 ("helmet", "pose")
             
-        Returns:
+        반환값:
             매핑된 EventType
         """
         from .events import EventType
@@ -268,10 +268,10 @@ class AIAnalyzer:
     def _extract_track_id(self, box) -> Optional[int]:
         """YOLOv8 track() 결과에서 추적 ID 추출
         
-        Args:
+        매개변수:
             box: YOLO box 객체
             
-        Returns:
+        반환값:
             추적 ID (없으면 None)
         """
         if not hasattr(box, 'id') or box.id is None:
@@ -304,10 +304,10 @@ class AIAnalyzer:
     def _filter_helmet_boxes(self, helmet_events: List) -> List:
         """헬멧 박스 필터링: 크기, 종횡비, 위치 검증 + 중복 제거
         
-        Args:
+        매개변수:
             helmet_events: 헬멧 이벤트 리스트
             
-        Returns:
+        반환값:
             필터링된 헬멧 이벤트 리스트
         """
         valid_helmets = []
@@ -340,11 +340,11 @@ class AIAnalyzer:
     def _remove_duplicates(self, events: List, iou_threshold: float = DUPLICATE_IOU_THRESHOLD) -> List:
         """중복 박스 제거 - IoU가 높은 박스들 중 가장 높은 신뢰도만 유지
         
-        Args:
+        매개변수:
             events: 감지된 이벤트 리스트
             iou_threshold: IoU 임계값 (기본값: 0.2)
             
-        Returns:
+        반환값:
             중복 제거된 이벤트 리스트
         """
         if len(events) <= 1:
@@ -384,26 +384,32 @@ class AIAnalyzer:
         else:
             conf_threshold = self.confidence_threshold
 
-        # YOLO 실행: ultralytics 모델 호출 (track=True로 자동 객체 ID 부여)
+        # YOLO 실행: ultralytics 모델 호출 (predict 사용, 더 안정적)
         try:
-            results = model.track(
+            results = model.predict(
                 frame, 
                 conf=conf_threshold, 
                 iou=DEFAULT_IOU_THRESHOLD, 
                 imgsz=DEFAULT_IMAGE_SIZE_HELMET, 
-                verbose=False, 
-                persist=True, 
-                tracker="bytetrack.yaml"
+                verbose=False
             )
         except Exception as e:
             logger.error(f"모델 추론 실패 ({self.current_model_type}): {e}")
+            import traceback
+            logger.debug(f"트레이스백: {traceback.format_exc()}")
             return events
 
+        logger.info(f"[{self.current_model_type}] 추론 완료: {len(results)}개 결과")
+        
         for result in results:
             boxes = getattr(result, "boxes", None)
             names = getattr(result, "names", None) or {}
+            
             if boxes is None:
+                logger.debug(f"[{self.current_model_type}] boxes 없음")
                 continue
+            
+            logger.info(f"[{self.current_model_type}] 감지된 박스: {len(boxes)}개")
 
             # boxes는 iterable of box objects
             for box in boxes:
@@ -497,25 +503,31 @@ class AIAnalyzer:
         conf_threshold = getattr(self, 'pose_threshold', self.confidence_threshold)
         
         try:
-            results = model.track(
+            # track() 대신 predict() 사용 (더 안정적)
+            results = model.predict(
                 frame, 
                 conf=conf_threshold, 
                 iou=DEFAULT_IOU_THRESHOLD, 
                 imgsz=DEFAULT_IMAGE_SIZE_POSE, 
-                verbose=False, 
-                persist=True, 
-                tracker="bytetrack.yaml"
+                verbose=False
             )
         except Exception as e:
             logger.error(f"Pose 모델 추론 실패: {e}")
+            import traceback
+            logger.debug(f"트레이스백: {traceback.format_exc()}")
             return events
+        
+        logger.info(f"[Pose] 추론 완료: {len(results)}개 결과")
         
         for result in results:
             boxes = getattr(result, "boxes", None)
             keypoints = getattr(result, "keypoints", None)  # 키포인트 정보
             
             if boxes is None:
+                logger.debug(f"[Pose] boxes 없음")
                 continue
+            
+            logger.info(f"[Pose] 감지된 박스: {len(boxes)}개")
             
             for idx, box in enumerate(boxes):
                 try:
@@ -607,11 +619,11 @@ class AIAnalyzer:
         키포인트 신뢰도를 확인하여 실제 사람인지 검증
         키포인트가 전혀 감지되지 않은 패딩/거짓 감지를 필터링
         
-        Args:
+        매개변수:
             keypoints: YOLO pose 키포인트 객체
             idx: 현재 박스 인덱스
             
-        Returns:
+        반환값:
             실제 사람 여부 (True/False)
         """
         try:
@@ -657,14 +669,14 @@ class AIAnalyzer:
         """
         키포인트 정보를 사용한 넘어짐 감지
         
-        Args:
+        매개변수:
             keypoints: YOLO pose 키포인트 객체
             idx: 현재 박스 인덱스
             bbox_width: 바운딩 박스 너비
             bbox_height: 바운딩 박스 높이
             bbox_y1: 바운딩 박스 상단 Y 좌표
             
-        Returns:
+        반환값:
             넘어짐 감지 여부 (True/False)
         """
         try:
@@ -734,10 +746,10 @@ class AIAnalyzer:
     def split_events(self, events: List) -> Tuple[List, List, List]:
         """이벤트를 사람, 헬멧, 기타 카테고리로 분리
         
-        Args:
+        매개변수:
             events: 전체 이벤트 리스트
             
-        Returns:
+        반환값:
             (사람 이벤트, 헬멧 이벤트, 기타 이벤트) 튜플
         """
         from .events import EventType
@@ -847,13 +859,13 @@ class AIAnalyzer:
         """
         프레임 추론 및 헬멧 착용 준수 확인
         
-        Args:
+        매개변수:
             frame: 입력 프레임
             use_helmet: 헬멧 모델 사용 여부
             use_pose: pose 모델 사용 여부 (사람 + 넘어짐 감지)
             check_compliance: 헬멧 착용 준수 확인 여부
             
-        Returns: 사람+헬멧+넘어짐 이벤트 리스트
+        반환값: 사람+헬멧+넘어짐 이벤트 리스트
         """
         from .events import EventType
         

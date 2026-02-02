@@ -1,6 +1,5 @@
 """
 camera_input.py - 카메라/비디오 입력 모듈
-AI 분석 카메라/비디오 입력 모듈
 """
 
 import cv2
@@ -41,6 +40,9 @@ class RTSPCamera:
                     # TCP 전송 강제 (패킷 순서 보장)
                     self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'H264'))
                     self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)  # 최신 프레임만 유지
+                    # 성능 향상을 위해 해상도 제한 (옵션)
+                    # self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+                    # self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
                 else:
                     # 로컬 카메라 (정수 인덱스) 또는 비디오 파일
                     logger.info(f"[{self.camera_id}] 로컬 카메라 또는 파일 소스: {self.source}")
@@ -111,7 +113,7 @@ class RTSPCamera:
                 self.connected = False
                 return False, None
         except Exception as e:
-            logger.error(f"[{self.camera_id}] 프레임 획듍 오류: {e}")
+            logger.error(f"[{self.camera_id}] 프레임 획득 오류: {e}")
             self.connected = False
             return False, None
 

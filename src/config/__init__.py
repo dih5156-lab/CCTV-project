@@ -1,4 +1,4 @@
-"""Config module - 중앙화된 설정 관리"""
+"""설정 모듈 - 중앙화된 설정 관리"""
 
 from .config import (
     AppConfig,

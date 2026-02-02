@@ -16,13 +16,6 @@ def calculate_iou(box1: DetectionEvent, box2: DetectionEvent) -> float:
     return calculate_bbox_iou(bbox1, bbox2)
 
 
-def calculate_box_area(box: DetectionEvent) -> int:
-    """박스 면적 계산"""
-    if not isinstance(box, DetectionEvent):
-        raise TypeError("인자는 DetectionEvent 객체여야 함")
-    return box.width * box.height
-
-
 def boxes_overlap(box1: DetectionEvent, box2: DetectionEvent, threshold: float = 0.3) -> bool:
     """두 박스가 겹치는지 확인"""
     if not isinstance(box1, DetectionEvent) or not isinstance(box2, DetectionEvent):
@@ -37,10 +30,10 @@ def boxes_overlap(box1: DetectionEvent, box2: DetectionEvent, threshold: float =
 def get_center(bbox: dict) -> Tuple[float, float]:
     """바운딩 박스의 중심점 계산"""
     if not isinstance(bbox, dict):
-        raise TypeError("bbox must be a dictionary")
+        raise TypeError("bbox는 딕셔너리여야 함")
     required_keys = ['x', 'y', 'width', 'height']
     if not all(k in bbox for k in required_keys):
-        raise ValueError(f"bbox must contain keys: {required_keys}")
+        raise ValueError(f"bbox는 다음 키를 포함해야 함: {required_keys}")
     
     cx = bbox['x'] + bbox['width'] / 2
     cy = bbox['y'] + bbox['height'] / 2

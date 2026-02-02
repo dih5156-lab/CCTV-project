@@ -3,7 +3,6 @@ dataset_collector.py - 탐지 데이터 자동 수집 및 YOLO 라벨링
 설명: 탐지 결과를 이미지 + YOLO 포맷 라벨로 자동 저장
 """
 
-import os
 import json
 import time
 from pathlib import Path
@@ -36,7 +35,7 @@ class DatasetCollector:
         image_quality: int = 95
     ):
         """
-        Args:
+        매개변수:
             output_dir: 저장 디렉터리
             format: 'yolo' (텍스트) 또는 'coco' (JSON)
             save_images: 이미지 파일 저장 여부
@@ -75,8 +74,16 @@ class DatasetCollector:
                     self.class_name_to_id[class_name] = idx
                     self.id_to_class_name[idx] = class_name
         else:
-            # 기본 클래스 설정 (ai_analysis.py의 EventType 참조)
-            default_classes = ['person','fall_detected','helmet_wearing', 'helmet_missing', 'fall_detected', 'no_fall']
+            # 기본 클래스 설정 (events.py의 EventType 기준)
+            default_classes = [
+                'person',
+                'helmet',
+                'head',
+                'fall_detected',
+                'not_fall',
+                'danger_zone',
+                'unsafe_behavior'
+            ]
             for idx, class_name in enumerate(default_classes):
                 self.class_name_to_id[class_name] = idx
                 self.id_to_class_name[idx] = class_name
@@ -106,7 +113,7 @@ class DatasetCollector:
     ):
         """프레임 및 탐지 결과 저장
         
-        Args:
+        매개변수:
             frame: 입력 이미지
             detections: 탐지 결과 리스트
             image_name: 이미지 파일명 (None이면 자동 생성)

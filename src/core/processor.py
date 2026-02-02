@@ -118,9 +118,9 @@ class VideoProcessor:
         if config.zone_detection:
             try:
                 self.zone_manager = ZoneManager(config.zones_config)
-                logger.info("Zone detection enabled")
+                logger.info("구역 감지 활성화됨")
             except Exception as e:
-                logger.warning(f"Zone loading failed: {e}")
+                logger.warning(f"구역 로딩 실패: {e}")
         
         self.dataset_collector = None
         if config.collect_dataset:
@@ -129,9 +129,9 @@ class VideoProcessor:
                     output_dir=config.dataset_dir,
                     format='yolo'
                 )
-                logger.info("Dataset collection enabled")
+                logger.info("데이터셋 수집 활성화됨")
             except Exception as e:
-                logger.warning(f"Dataset collector init failed: {e}")
+                    logger.warning(f"데이터셋 수집기 초기화 실패: {e}")
         
         # 다중 카메라 통합 디스플레이
         self.camera_frames: Dict[str, Any] = {}
@@ -163,24 +163,24 @@ class VideoProcessor:
     def add_camera(self, camera_id: str, source: Union[str, int]) -> bool:
         """처리 파이프라인에 카메라 추가"""
         if camera_id in self.cameras:
-            logger.warning(f"[{camera_id}] Camera already registered")
+            logger.warning(f"[{camera_id}] 이미 등록된 카메라입니다")
             return False
 
         camera = RTSPCamera(camera_id, source, self.config)
         if camera.connect():
             self.cameras[camera_id] = camera
             self.stats.camera_count = len(self.cameras)
-            logger.info(f"Camera added: {camera_id}")
+            logger.info(f"카메라 추가됨: {camera_id}")
             
             if self.zone_manager:
                 try:
                     self.zone_manager.load_zones(camera_id)
                 except Exception as e:
-                    logger.warning(f"[{camera_id}] Zone loading failed: {e}")
+                    logger.warning(f"[{camera_id}] 구역 로딩 실패: {e}")
             
             return True
         else:
-            logger.error(f"Camera connection failed: {camera_id}")
+            logger.error(f"카메라 연결 실패: {camera_id}")
             return False
 
     def remove_camera(self, camera_id: str):
@@ -191,7 +191,7 @@ class VideoProcessor:
             if camera_id in self.active_tracks:
                 del self.active_tracks[camera_id]
             self.stats.camera_count = len(self.cameras)
-            logger.info(f"Camera removed: {camera_id}")
+            logger.info(f"카메라 제거됨: {camera_id}")
 
     def _should_send_event(self, camera_id: str, event_type: str, object_id: int) -> bool:
         """중복 전송 방지를 위한 이벤트 디바운싱 확인"""
@@ -213,10 +213,10 @@ class VideoProcessor:
     def _apply_cumulative_detection(self, events: List[DetectionEvent], camera_id: str) -> List[DetectionEvent]:
         """
         누적 판정 방식: 최근 N번의 추론 결과 중 임계값 이상이 위반이면 경고
-        목적: 위반 이벤트(NO_HELMET, FALL 등)에만 누적 판정 적용
+        목적: 위반 이벤트(head, fall_detected 등)에만 누적 판정 적용
         
         규칙:
-        - 위반 이벤트(NO_HELMET, FALL 등)만 누적 판정 적용
+        - 위반 이벤트(head, fall_detected 등)만 누적 판정 적용
         - 일반 객체 이벤트(PERSON, HELMET 등)는 항상 표시
         """
         if not self.cumulative_enabled:
@@ -353,9 +353,9 @@ class VideoProcessor:
         try:
             self.dataset_collector.save_frame(frame, events, camera_id=camera_id)
         except IOError as e:
-            logger.error(f"[{camera_id}] Dataset file save failed: {e}")
+            logger.error(f"[{camera_id}] 데이터셋 파일 저장 실패: {e}")
         except Exception as e:
-            logger.warning(f"[{camera_id}] Dataset save error: {e}")
+            logger.warning(f"[{camera_id}] 데이터셋 저장 오류: {e}")
     
     def _check_danger_zones(
         self, 
@@ -369,10 +369,10 @@ class VideoProcessor:
             return zone_events, frame
         
         try:
-            zone_events = self.zone_manager.check_zones(camera_id, events, frame.shape[:2])
+            zone_events = self.zone_manager.check_zones(camera_id, events)
             frame = self.zone_manager.draw_zones(frame, camera_id)
         except Exception as e:
-            logger.warning(f"[{camera_id}] Zone detection error: {e}")
+            logger.warning(f"[{camera_id}] 구역 감지 오류: {e}")
         
         return zone_events, frame
     
@@ -499,7 +499,7 @@ class VideoProcessor:
         
         프레임 획득 → AI 추론 → 추적 → 데이터 수집 → 구역 탐지 → 이벤트 전송 → 화면 표시
         
-        Args:
+        매개변수:
             camera_id: 카메라 ID
             camera: RTSPCamera 인스턴스
         """
@@ -581,24 +581,24 @@ class VideoProcessor:
                     if result:
                         self.stats.events_sent += 1
                         consecutive_failures = 0
-                        logger.info(f"Event sent: {event_data.get('camera_id')} - {event_data.get('type')}")
+                        logger.info(f"이벤트 전송 성공: {event_data.get('camera_id')} - {event_data.get('type')}")
                     else:
                         self.stats.events_failed += 1
                         consecutive_failures += 1
-                        logger.warning(f"Event send failed: {event_data}")
+                        logger.warning(f"이벤트 전송 실패: {event_data}")
                         
                         if consecutive_failures >= self.config.processing.consecutive_failure_threshold:
-                            logger.error(f"Consecutive send failures: {consecutive_failures} times - Check server status")
+                            logger.error(f"연속 전송 실패: {consecutive_failures}회 - 서버 상태 확인 필요")
                             
                 except Exception as e:
-                    logger.error(f"Send error: {e}")
+                    logger.error(f"전송 오류: {e}")
                     self.stats.events_failed += 1
                     consecutive_failures += 1
                     
             except Empty:
                 pass
             except Exception as e:
-                logger.error(f"Worker error: {e}")
+                logger.error(f"워커 오류: {e}")
     
     def _cleanup_worker(self):
         """주기적 메모리 정리 워커"""
@@ -607,22 +607,22 @@ class VideoProcessor:
                 if self.stop_event.wait(timeout=self.cleanup_interval):
                     break
                 
-                logger.info("Memory cleanup started...")
+                logger.info("메모리 정리 시작...")
                 
                 removed = self._cleanup_old_events()
                 
                 if removed > 0:
-                    logger.info(f"  - last_events: {removed} cleaned (remaining: {len(self.last_events)})")
+                    logger.info(f"  - last_events: {removed}개 정리됨 (남은 개수: {len(self.last_events)})")
                 
                 queue_size = self.event_queue.qsize()
                 queue_max = self.config.events.queue_max_size
                 if queue_size > queue_max * self.config.processing.queue_warning_threshold:
-                    logger.warning(f"Event queue saturation: {queue_size}/{queue_max}")
+                    logger.warning(f"이벤트 큐 포화 경고: {queue_size}/{queue_max}")
                 
-                logger.info("Memory cleanup completed")
+                logger.info("메모리 정리 완료")
                 
             except Exception as e:
-                logger.error(f"Cleanup worker error: {e}")
+                logger.error(f"정리 워커 오류: {e}")
     
     def _display_worker(self):
         """통합 디스플레이 워커 - 모든 카메라를 하나의 그리드 창에 표시"""
@@ -641,22 +641,22 @@ class VideoProcessor:
                 
                 key = cv2.waitKey(30) & 0xFF
                 if key == ord('q'):
-                    logger.info("User pressed 'q' - stopping")
+                    logger.info("'q' 입력 감지 - 중지합니다")
                     self.running = False
                     break
                     
             except Exception as e:
-                logger.error(f"Display worker error: {e}")
+                logger.error(f"디스플레이 워커 오류: {e}")
                 time.sleep(0.1)
 
     def start(self) -> None:
         """비디오 프로세서 시작"""
         if self.running:
-            logger.warning("Already running")
+            logger.warning("이미 실행 중입니다")
             return
 
         if not self.cameras:
-            logger.error("No cameras registered")
+            logger.error("등록된 카메라가 없습니다")
             return
 
         # 기존 OpenCV 창 모두 닫기
