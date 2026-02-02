@@ -31,9 +31,11 @@ class ModelPaths:
         
         if self.pose_model is None:
             pose_candidates = [
+                PROJECT_ROOT / "models/yolov8n-pose.pt",  # 나노 모델로 변경 (빠름)
                 PROJECT_ROOT / "models/yolov8m-pose.pt",
+                PROJECT_ROOT / "yolov8n-pose.pt",
                 PROJECT_ROOT / "yolov8m-pose.pt",
-                "yolov8m-pose.pt",
+                "yolov8n-pose.pt",
             ]
             for path in pose_candidates:
                 if isinstance(path, Path) and path.exists():
@@ -126,7 +128,12 @@ class ProcessingConfig:
     consecutive_failure_threshold: int = 5
     queue_warning_threshold: float = 0.8
     fall_inference_interval: int = 7
-    frame_skip: int = 5
+    frame_skip: int = 8  # 8프레임마다 1번 추론 (기존 5에서 증가)
+    
+    # 누적 판정 방식 (오탐 필터링)
+    cumulative_detection_enabled: bool = True  # 누적 판정 활성화
+    detection_history_size: int = 5  # 최근 5번의 추론 결과 저장
+    violation_threshold: int = 4  # 5개 중 4개 이상이 위반이면 경고
 
 
 @dataclass

@@ -137,6 +137,12 @@ class VideoProcessor:
         self.camera_frames: Dict[str, Any] = {}
         self.frame_lock = Lock()
         self.unified_window = "CCTV Multi-Camera View"
+        
+        # 누적 판정 방식: 최근 N개의 추론 결과를 저장
+        self.detection_history: Dict[Tuple[str, int], list] = {}  # (camera_id, object_id) -> [결과, 결과, ...]
+        self.history_max_size = config.processing.detection_history_size
+        self.violation_threshold = config.processing.violation_threshold
+        self.cumulative_enabled = config.processing.cumulative_detection_enabled
                        
     
     def _cleanup_old_events(self, max_age_hours: Optional[int] = None) -> int:
@@ -203,6 +209,57 @@ class VideoProcessor:
             else:
                 self.stats.events_filtered += 1
                 return False
+    
+    def _apply_cumulative_detection(self, events: List[DetectionEvent], camera_id: str) -> List[DetectionEvent]:
+        """
+        누적 판정 방식: 최근 N번의 추론 결과 중 임계값 이상이 위반이면 경고
+        목적: 일시적인 고개 움직임이나 모델 오류로 인한 오탐 필터링
+        """
+        if not self.cumulative_enabled:
+            return events
+        
+        filtered_events = []
+        
+        for event in events:
+            if event.object_id is None:
+                # ID가 없으면 그대로 추가
+                filtered_events.append(event)
+                continue
+            
+            key = (camera_id, event.object_id)
+            
+            # 히스토리 초기화
+            if key not in self.detection_history:
+                self.detection_history[key] = []
+            
+            # 이벤트 추가 (True: 위반, False: 정상)
+            is_violation = event.event_type.value in ["no_helmet", "fall"]  # 위반 이벤트인지 확인
+            self.detection_history[key].append(is_violation)
+            
+            # 히스토리 크기 제한
+            if len(self.detection_history[key]) > self.history_max_size:
+                self.detection_history[key].pop(0)
+            
+            # 누적 판정: 최근 결과 중 위반 횟수 계산
+            violation_count = sum(self.detection_history[key])
+            
+            # 임계값 이상이면 경고 발생
+            if violation_count >= self.violation_threshold:
+                filtered_events.append(event)
+                logger.info(
+                    f"[{camera_id}] 객체 {event.object_id}: "
+                    f"누적 판정 결과 위반 ({violation_count}/{len(self.detection_history[key])}) "
+                    f"-> {event.event_type.value}"
+                )
+            else:
+                # 아직 임계값에 도달하지 않음 (불필요한 이벤트 전송 방지)
+                logger.debug(
+                    f"[{camera_id}] 객체 {event.object_id}: "
+                    f"누적 판정 진행 중 ({violation_count}/{len(self.detection_history[key])}) "
+                    f"- 아직 경고 아님"
+                )
+        
+        return filtered_events
     
     def _run_ai_inference(self, frame: Any, frame_count: int) -> List[DetectionEvent]:
         """프레임에 대한 AI 추론 실행"""
@@ -461,13 +518,16 @@ class VideoProcessor:
                 # 3. 객체 추적
                 events = self._apply_tracking(events, camera_id)
                 
-                # 4. 데이터셋 수집
+                # 4. 누적 판정 방식 적용 (오탐 필터링)
+                events = self._apply_cumulative_detection(events, camera_id)
+                
+                # 5. 데이터셋 수집
                 self._collect_dataset(frame, events_for_dataset, camera_id)
                 
-                # 5. 위험 구역 탐지
+                # 6. 위험 구역 탐지
                 zone_events, frame = self._check_danger_zones(camera_id, events, frame)
                 
-                # 6. 이벤트 큐에 추가
+                # 7. 이벤트 큐에 추가
                 self._queue_events(camera_id, events, zone_events)
                 
                 # 7. 화면 표시용 프레임 업데이트
