@@ -196,7 +196,7 @@ class VideoProcessor:
         if camera.connect():
             self.cameras[camera_id] = camera
             # 프레임 큐 생성 (최대 1개만 유지 - 지연 최소화)
-            self.frame_queues[camera_id] = Queue(maxsize=2)
+            self.frame_queues[camera_id] = Queue(maxsize=1)
             self.stats.camera_count = len(self.cameras)
             logger.info(f"카메라 추가됨: {camera_id}")
             
@@ -412,7 +412,7 @@ class VideoProcessor:
         events: List[DetectionEvent], 
         zone_events: List[ZoneEvent]
     ) -> None:
-        """디바운싱과 함께 이벤트를 큐에 추가"""
+        """디바운싱과 함께 이벤트를 큐에 추가 (비블로킹 - 추론 차단 방지)"""
         for event in events:
             event_id = event.object_id if event.object_id is not None else 0
             
@@ -424,24 +424,24 @@ class VideoProcessor:
                 event_data = event.to_dict()
                 event_data["camera_id"] = camera_id
                 try:
-                    # 블로킹 put 사용 - 이벤트 손실 방지 (큐가 가득 차면 대기)
-                    self.event_queue.put(event_data, timeout=5.0)
+                    # 비블로킹으로 변경: 큐가 가득 차도 추론 스레드 멈추지 않음
+                    self.event_queue.put_nowait(event_data)
                     self.stats.events_detected += 1
                 except Full:
-                    # 5초 대기 후에도 큐가 가득 차면 로컬 저장 (재전송용)
+                    # 큐가 가득 차면 즉시 로컬 저장 (추론 차단 방지)
                     self.stats.events_dropped += 1
                     self._save_event_locally(event_data)
-                    logger.warning(f"[{camera_id}] 이벤트 큐 타임아웃: 로컬 저장됨")
+                    logger.warning(f"[{camera_id}] 이벤트 큐 가득 참: 로컬 저장 (추론 계속)")
         
         for zone_event in zone_events:
             zone_event_data = zone_event.to_dict()
             try:
-                self.event_queue.put(zone_event_data, timeout=5.0)
+                self.event_queue.put_nowait(zone_event_data)
                 self.stats.events_detected += 1
             except Full:
                 self.stats.events_dropped += 1
                 self._save_event_locally(zone_event_data)
-                logger.warning(f"[{camera_id}] 구역 이벤트 큐 타임아웃: 로컬 저장됨")
+                logger.warning(f"[{camera_id}] 구역 이벤트 큐 가득 참: 로컬 저장")
     
     def _update_camera_frame(
         self, 
