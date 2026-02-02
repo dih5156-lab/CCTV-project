@@ -554,7 +554,7 @@ class VideoProcessor:
                 continue
 
             frame_count += 1
-            self.stats.frames_processed += 1
+            # FPS 카운트는 _process_inference에서 처리 (실제 추론된 프레임만 카운트)
 
             try:
                 # 프레임 큐에 추가 (가득 차면 오래된 프레임 자동 제거)
@@ -602,6 +602,7 @@ class VideoProcessor:
                     continue
                 
                 frame_count += 1
+                self.stats.frames_processed += 1  # 실제 추론된 프레임만 카운트
                 
                 # 1. AI 추론
                 events = self._run_ai_inference(frame, frame_count)
