@@ -32,9 +32,7 @@ class ModelPaths:
         if self.pose_model is None:
             pose_candidates = [
                 PROJECT_ROOT / "models/yolov8n-pose.pt",  # 나노 모델로 변경 (빠름)
-                PROJECT_ROOT / "models/yolov8m-pose.pt",
                 PROJECT_ROOT / "yolov8n-pose.pt",
-                PROJECT_ROOT / "yolov8m-pose.pt",
                 "yolov8n-pose.pt",
             ]
             for path in pose_candidates:

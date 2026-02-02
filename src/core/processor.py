@@ -213,7 +213,11 @@ class VideoProcessor:
     def _apply_cumulative_detection(self, events: List[DetectionEvent], camera_id: str) -> List[DetectionEvent]:
         """
         누적 판정 방식: 최근 N번의 추론 결과 중 임계값 이상이 위반이면 경고
-        목적: 일시적인 고개 움직임이나 모델 오류로 인한 오탐 필터링
+        목적: 위반 이벤트(NO_HELMET, FALL 등)에만 누적 판정 적용
+        
+        규칙:
+        - 위반 이벤트(NO_HELMET, FALL 등)만 누적 판정 적용
+        - 일반 객체 이벤트(PERSON, HELMET 등)는 항상 표시
         """
         if not self.cumulative_enabled:
             return events
@@ -221,6 +225,15 @@ class VideoProcessor:
         filtered_events = []
         
         for event in events:
+            # 위반 이벤트인지 확인 (판정이 필요한 경우)
+            is_violation_type = event.event_type.value in ["no_helmet", "fall_detected"]
+            
+            if not is_violation_type:
+                # 일반 객체 이벤트는 그대로 추가 (필터링 안함)
+                filtered_events.append(event)
+                continue
+            
+            # 위반 이벤트에만 누적 판정 적용
             if event.object_id is None:
                 # ID가 없으면 그대로 추가
                 filtered_events.append(event)
@@ -232,9 +245,8 @@ class VideoProcessor:
             if key not in self.detection_history:
                 self.detection_history[key] = []
             
-            # 이벤트 추가 (True: 위반, False: 정상)
-            is_violation = event.event_type.value in ["no_helmet", "fall"]  # 위반 이벤트인지 확인
-            self.detection_history[key].append(is_violation)
+            # 이벤트 추가 (위반 이벤트는 True)
+            self.detection_history[key].append(True)
             
             # 히스토리 크기 제한
             if len(self.detection_history[key]) > self.history_max_size:
