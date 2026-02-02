@@ -226,7 +226,7 @@ class VideoProcessor:
         
         for event in events:
             # 위반 이벤트인지 확인 (판정이 필요한 경우)
-            is_violation_type = event.event_type.value in ["no_helmet", "fall_detected"]
+            is_violation_type = event.event_type.value in ["head", "fall_detected"]
             
             if not is_violation_type:
                 # 일반 객체 이벤트는 그대로 추가 (필터링 안함)
