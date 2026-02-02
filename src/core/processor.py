@@ -1,12 +1,13 @@
 """
-processor.py - Real-time CCTV Object Detection Processor
-Multi-camera processing, RTSP reconnection, event filtering and server transmission
+processor.py - 실시간 CCTV 객체 감지 프로세서
+다중 카메라 처리, RTSP 재연결, 이벤트 필터링 및 서버 전송
 """
 
 import logging
 import time
 import cv2
 import os
+import numpy as np
 
 from dataclasses import dataclass, field, asdict
 from threading import Thread, Lock, Event
@@ -32,7 +33,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class EventRecord:
-    """Event record for tracking and deduplication."""
+    """추적 및 중복 제거를 위한 이벤트 레코드"""
     event_type: str
     object_id: int
     bbox: Dict
@@ -47,7 +48,7 @@ class EventRecord:
 
 @dataclass
 class ProcessorStats:
-    """Processing statistics tracker."""
+    """처리 통계 추적기"""
     frames_processed: int = 0
     frames_dropped: int = 0
     events_detected: int = 0
@@ -66,7 +67,7 @@ class ProcessorStats:
         return self.frames_processed / elapsed if elapsed > 0 else 0
     
     def get_avg_inference_time(self) -> float:
-        """Average inference time (ms)"""
+        """평균 추론 시간 (ms)"""
         if self.inference_count == 0:
             return 0.0
         return (self.total_inference_time / self.inference_count) * 1000
@@ -79,7 +80,7 @@ class ProcessorStats:
         return stats
 
 class VideoProcessor:
-    """Multi-camera video processing pipeline with AI inference."""
+    """AI 추론을 사용한 다중 카메라 비디오 처리 파이프라인"""
     def __init__(self, config: AppConfig):
         self.config = config
         
@@ -107,6 +108,7 @@ class VideoProcessor:
         self.stop_event = Event()
         self.sender_thread = None
         self.cleanup_thread = None
+        self.display_thread = None
         self.cleanup_interval = config.events.cleanup_interval
         
         if hasattr(config, 'save_dataset') and config.save_dataset:
@@ -130,10 +132,15 @@ class VideoProcessor:
                 logger.info("Dataset collection enabled")
             except Exception as e:
                 logger.warning(f"Dataset collector init failed: {e}")
+        
+        # 다중 카메라 통합 디스플레이
+        self.camera_frames: Dict[str, Any] = {}
+        self.frame_lock = Lock()
+        self.unified_window = "CCTV Multi-Camera View"
                        
     
     def _cleanup_old_events(self, max_age_hours: Optional[int] = None) -> int:
-        """Remove old event records beyond retention period."""
+        """보존 기간이 지난 오래된 이벤트 레코드 제거"""
         if max_age_hours is None:
             max_age_hours = self.config.events.event_retention_hours
         current_time = time.time()
@@ -148,7 +155,7 @@ class VideoProcessor:
         return before_count - len(self.last_events)            
                 
     def add_camera(self, camera_id: str, source: Union[str, int]) -> bool:
-        """Add camera to processing pipeline."""
+        """처리 파이프라인에 카메라 추가"""
         if camera_id in self.cameras:
             logger.warning(f"[{camera_id}] Camera already registered")
             return False
@@ -171,7 +178,7 @@ class VideoProcessor:
             return False
 
     def remove_camera(self, camera_id: str):
-        """Remove camera from processing pipeline."""
+        """처리 파이프라인에서 카메라 제거"""
         if camera_id in self.cameras:
             self.cameras[camera_id].release()
             del self.cameras[camera_id]
@@ -181,7 +188,7 @@ class VideoProcessor:
             logger.info(f"Camera removed: {camera_id}")
 
     def _should_send_event(self, camera_id: str, event_type: str, object_id: int) -> bool:
-        """Check event debouncing to prevent duplicate sends."""
+        """중복 전송 방지를 위한 이벤트 디바운싱 확인"""
         if not self.config.events.debounce_enabled:
             return True
 
@@ -198,7 +205,7 @@ class VideoProcessor:
                 return False
     
     def _run_ai_inference(self, frame: Any, frame_count: int) -> List[DetectionEvent]:
-        """Run AI inference on frame."""
+        """프레임에 대한 AI 추론 실행"""
         start_time = time.time()
         
         events = self.analyzer.run_inference(
@@ -219,7 +226,7 @@ class VideoProcessor:
         events: List[DetectionEvent], 
         camera_id: str
     ) -> List[DetectionEvent]:
-        """Track management: deduplication and expired track cleanup"""
+        """추적 관리: 중복 제거 및 만료된 트랙 정리"""
         current_time = time.time()
         
         if camera_id not in self.active_tracks:
@@ -270,7 +277,7 @@ class VideoProcessor:
         events: List[DetectionEvent], 
         camera_id: str
     ) -> None:
-        """Collect and save dataset"""
+        """데이터셋 수집 및 저장"""
         if not self.dataset_collector:
             return
         
@@ -287,7 +294,7 @@ class VideoProcessor:
         events: List[DetectionEvent], 
         frame: Any
     ) -> Tuple[List[ZoneEvent], Any]:
-        """Danger zone intrusion detection"""
+        """위험 구역 침입 감지"""
         zone_events = []
         if not self.zone_manager:
             return zone_events, frame
@@ -306,7 +313,7 @@ class VideoProcessor:
         events: List[DetectionEvent], 
         zone_events: List[ZoneEvent]
     ) -> None:
-        """Add events to queue with debouncing"""
+        """디바운싱과 함께 이벤트를 큐에 추가"""
         for event in events:
             event_id = event.object_id if event.object_id is not None else 0
             
@@ -325,32 +332,97 @@ class VideoProcessor:
             self.event_queue.put(zone_event_data)
             self.stats.events_detected += 1
     
-    def _display_frame(
+    def _update_camera_frame(
         self, 
         camera_id: str, 
         frame: Any, 
         events: List[DetectionEvent]
-    ) -> bool:
-        """Display frame on OpenCV window"""
+    ) -> None:
+        """공유 프레임 버퍼에서 카메라 프레임 업데이트"""
         if not self.config.display or frame is None:
-            return True
+            return
         
         frame = draw_events(frame, events)
         
         cv2.putText(
             frame,
-            f"[{camera_id}] Objects: {len(events)} | FPS: {self.stats.get_fps():.1f}",
+            f"[{camera_id}] Objects: {len(events)}",
             (10, 30),
             cv2.FONT_HERSHEY_SIMPLEX,
-            0.7,
+            0.6,
             (0, 255, 0),
             2
         )
         
-        cv2.imshow(f"Camera: {camera_id}", frame)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            return False
-        return True
+        with self.frame_lock:
+            self.camera_frames[camera_id] = frame.copy()
+    
+    def _create_grid_display(self) -> Optional[Any]:
+        """모든 카메라 프레임으로부터 통합 그리드 디스플레이 생성"""
+        with self.frame_lock:
+            if not self.camera_frames:
+                return None
+            
+            frames_list = list(self.camera_frames.items())
+            num_cameras = len(frames_list)
+            
+            if num_cameras == 0:
+                return None
+            
+            # 그리드 레이아웃 계산 (행 x 열)
+            cols = int(num_cameras ** 0.5) + (1 if num_cameras > 1 else 0)
+            rows = (num_cameras + cols - 1) // cols
+            
+            # FHD 해상도 기준으로 각 카메라 프레임 크기 계산
+            total_width = 1920
+            total_height = 1080
+            target_width = total_width // cols
+            target_height = total_height // rows
+            
+            resized_frames = []
+            for cam_id, frame in frames_list:
+                if frame is not None:
+                    resized = cv2.resize(frame, (target_width, target_height))
+                    resized_frames.append((cam_id, resized))
+            
+            if not resized_frames:
+                return None
+            
+            # 빈 그리드 생성
+            grid_rows = []
+            for row_idx in range(rows):
+                row_frames = []
+                for col_idx in range(cols):
+                    frame_idx = row_idx * cols + col_idx
+                    if frame_idx < len(resized_frames):
+                        row_frames.append(resized_frames[frame_idx][1])
+                    else:
+                        # 빈 슬롯을 검은색 프레임으로 채우기
+                        black_frame = np.zeros((target_height, target_width, 3), dtype=np.uint8)
+                        row_frames.append(black_frame)
+                
+                if row_frames:
+                    row_img = cv2.hconcat(row_frames)
+                    grid_rows.append(row_img)
+            
+            if not grid_rows:
+                return None
+            
+            # 모든 행 연결
+            grid = cv2.vconcat(grid_rows)
+            
+            # 전역 통계 추가
+            cv2.putText(
+                grid,
+                f"FPS: {self.stats.get_fps():.1f} | Cameras: {num_cameras}",
+                (10, grid.shape[0] - 20),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.7,
+                (0, 255, 255),
+                2
+            )
+            
+            return grid
 
     def _process_camera(self, camera_id: str, camera: RTSPCamera) -> None:
         """
@@ -398,9 +470,8 @@ class VideoProcessor:
                 # 6. 이벤트 큐에 추가
                 self._queue_events(camera_id, events, zone_events)
                 
-                # 7. 화면 표시
-                if not self._display_frame(camera_id, frame, events):
-                    self.running = False
+                # 7. 화면 표시용 프레임 업데이트
+                self._update_camera_frame(camera_id, frame, events)
 
             except ValueError as e:
                 logger.error(f"[{camera_id}] 데이터 처리 오류: {e}")
@@ -426,7 +497,7 @@ class VideoProcessor:
     
 
     def _send_events_worker(self):
-        """Event transmission worker"""
+        """이벤트 전송 워커"""
         consecutive_failures = 0
         
         while self.running and not self.stop_event.is_set():
@@ -458,7 +529,7 @@ class VideoProcessor:
                 logger.error(f"Worker error: {e}")
     
     def _cleanup_worker(self):
-        """Periodic memory cleanup worker"""
+        """주기적 메모리 정리 워커"""
         while self.running and not self.stop_event.is_set():
             try:
                 if self.stop_event.wait(timeout=self.cleanup_interval):
@@ -480,9 +551,34 @@ class VideoProcessor:
                 
             except Exception as e:
                 logger.error(f"Cleanup worker error: {e}")
+    
+    def _display_worker(self):
+        """통합 디스플레이 워커 - 모든 카메라를 하나의 그리드 창에 표시"""
+        if not self.config.display:
+            return
+        
+        cv2.namedWindow(self.unified_window, cv2.WINDOW_NORMAL)
+        cv2.resizeWindow(self.unified_window, 1920, 1080)
+        
+        while self.running and not self.stop_event.is_set():
+            try:
+                grid_frame = self._create_grid_display()
+                
+                if grid_frame is not None:
+                    cv2.imshow(self.unified_window, grid_frame)
+                
+                key = cv2.waitKey(30) & 0xFF
+                if key == ord('q'):
+                    logger.info("User pressed 'q' - stopping")
+                    self.running = False
+                    break
+                    
+            except Exception as e:
+                logger.error(f"Display worker error: {e}")
+                time.sleep(0.1)
 
     def start(self) -> None:
-        """Start video processor"""
+        """비디오 프로세서 시작"""
         if self.running:
             logger.warning("Already running")
             return
@@ -490,6 +586,10 @@ class VideoProcessor:
         if not self.cameras:
             logger.error("No cameras registered")
             return
+
+        # 기존 OpenCV 창 모두 닫기
+        cv2.destroyAllWindows()
+        time.sleep(0.1)
 
         self.running = True
         self.stop_event.clear()
@@ -518,11 +618,20 @@ class VideoProcessor:
             name="MemoryCleanup"
         )
         self.cleanup_thread.start()
+        
+        # 통합 디스플레이 스레드 시작
+        if self.config.display:
+            self.display_thread = Thread(
+                target=self._display_worker,
+                daemon=True,
+                name="UnifiedDisplay"
+            )
+            self.display_thread.start()
 
         logger.info(f"Processor started ({len(self.cameras)} cameras)")
 
     def stop(self) -> None:
-        """Stop video processor"""
+        """비디오 프로세서 중지"""
         logger.info("Stopping processor...")
         self.running = False
         self.stop_event.set()
@@ -539,6 +648,9 @@ class VideoProcessor:
         
         if self.cleanup_thread and self.cleanup_thread.is_alive():
             self.cleanup_thread.join(timeout=timeout)
+        
+        if self.display_thread and self.display_thread.is_alive():
+            self.display_thread.join(timeout=timeout)
 
         for camera in self.cameras.values():
             camera.release()
@@ -547,11 +659,11 @@ class VideoProcessor:
         logger.info("Processor stopped")
 
     def get_stats(self) -> Dict:
-        """Get statistics"""
+        """통계 가져오기"""
         return self.stats.to_dict()
 
     def print_stats(self):
-        """Print statistics"""
+        """통계 출력"""
         stats = self.get_stats()
         logger.info(
             f"\n{'='*70}\n"

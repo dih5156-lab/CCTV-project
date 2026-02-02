@@ -69,6 +69,8 @@ def start_processor(camera_list: List[Dict[str, Any]], cfg: AppConfig) -> None:
     
     added_count = 0
     for cam in camera_list:
+        print(f"\n[DEBUG] 카메라 처리 중: {cam}")
+        
         if not cam.get('enabled', True):
             print(f"SKIP: 카메라 비활성화됨: {cam.get('id')} - {cam.get('name', 'N/A')}")
             continue
@@ -76,7 +78,9 @@ def start_processor(camera_list: List[Dict[str, Any]], cfg: AppConfig) -> None:
         cam_id = cam.get('id')
         source = cam.get('source')
         
-        if not cam_id or not source:
+        print(f"[DEBUG] cam_id={cam_id}, source={source} (type={type(source).__name__})")
+        
+        if not cam_id or source is None:
             print(f"WARN: id 또는 source가 누락된 카메라 건너뜀: {cam}")
             continue
         
@@ -84,15 +88,17 @@ def start_processor(camera_list: List[Dict[str, Any]], cfg: AppConfig) -> None:
         if isinstance(source, int) or (isinstance(source, str) and source.isdigit()):
             try:
                 source = int(source)
+                print(f"[DEBUG] source를 정수로 변환: {source}")
             except (ValueError, TypeError):
                 pass
         
+        print(f"[DEBUG] 카메라 추가 시도: {cam_id}, source={source}")
         added = processor.add_camera(cam_id, source)
         if added:
             added_count += 1
-            print(f"카메라 추가됨: {cam_id} ({source})")
+            print(f"✓ 카메라 추가 성공: {cam_id} ({source})")
         else:
-            print(f"WARN: 카메라 추가 실패: {cam_id} ({source})")
+            print(f"✗ 카메라 추가 실패: {cam_id} ({source})")
 
     if added_count == 0:
         print("ERROR: 성공적으로 등록된 카메라가 없습니다. 종료합니다.")

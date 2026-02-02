@@ -31,9 +31,9 @@ class ModelPaths:
         
         if self.pose_model is None:
             pose_candidates = [
-                PROJECT_ROOT / "models/yolov8n-pose.pt",
-                PROJECT_ROOT / "yolov8n-pose.pt",
-                "yolov8n-pose.pt",
+                PROJECT_ROOT / "models/yolov8m-pose.pt",
+                PROJECT_ROOT / "yolov8m-pose.pt",
+                "yolov8m-pose.pt",
             ]
             for path in pose_candidates:
                 if isinstance(path, Path) and path.exists():

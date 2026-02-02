@@ -43,8 +43,15 @@ class RTSPCamera:
                     self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)  # 최신 프레임만 유지
                 else:
                     # 로컬 카메라 (정수 인덱스) 또는 비디오 파일
+                    logger.info(f"[{self.camera_id}] 로컬 카메라 또는 파일 소스: {self.source}")
                     self.cap = cv2.VideoCapture(self.source)
                     # 로컬 카메라의 경우 BUFFERSIZE 설정 안함 (호환성 문제)
+                    if isinstance(self.source, int):
+                        # 웹캠 해상도 설정
+                        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+                        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+                        # 약간의 대기 시간 (카메라 초기화)
+                        time.sleep(0.5)
 
                 # 연결 확인 (타임아웃 내에 프레임 수신)
                 ret, frame = self.cap.read()
@@ -55,7 +62,8 @@ class RTSPCamera:
                     return True
                 else:
                     self.connected = False
-                    logger.warning(f"[{self.camera_id}] 첫 번째 프레임 수신 실패")
+                    logger.warning(f"[{self.camera_id}] 첫 번째 프레임 수신 실패 (ret={ret}, frame={'None' if frame is None else 'exists'})")
+                    logger.warning(f"[{self.camera_id}] VideoCapture.isOpened() = {self.cap.isOpened() if self.cap else 'N/A'}")
                     if self.cap:
                         self.cap.release()
                     return False
