@@ -466,7 +466,7 @@ class VideoProcessor:
         )
         
         with self.frame_lock:
-            self.camera_frames[camera_id] = frame.copy()
+            self.camera_frames[camera_id] = frame  # frame.copy() 제거하여 메모리 절약
     
     def _create_grid_display(self) -> Optional[Any]:
         """모든 카메라 프레임으로부터 통합 그리드 디스플레이 생성"""
@@ -714,6 +714,8 @@ class VideoProcessor:
                 
                 if grid_frame is not None:
                     cv2.imshow(self.unified_window, grid_frame)
+                    # 메모리 누수 방지: 자주 그려서 OpenCV 내부 메모리 누적 최소화
+                    grid_frame = None
                 
                 key = cv2.waitKey(30) & 0xFF
                 if key == ord('q'):
