@@ -6,6 +6,7 @@ from typing import Union, Dict, Optional
 
 import requests
 
+from src.core.events import DetectionEvent
 from ..config import default_config
 
 logger = logging.getLogger(__name__)
@@ -30,7 +31,8 @@ def send_event(
     event: Union[Dict, 'DetectionEvent'],
     server_url: Optional[str] = None,
     timeout: Optional[int] = None,
-    retry_count: Optional[int] = None
+    retry_count: Optional[int] = None,
+    use_edgex: bool = False
 ) -> ServerResponse:
     """
     서버로 이벤트 전송 (JSON 형식, 재시도 로직 포함)
@@ -40,6 +42,7 @@ def send_event(
         server_url: 서버 URL (None이면 config 사용)
         timeout: 요청 타임아웃 (초, None이면 config 사용)
         retry_count: 실패 시 재시도 횟수 (None이면 config 사용)
+        use_edgex: EdgeX 사용 여부 (True면 HTTP 전송 스킵)
         
     반환값:
         ServerResponse: 전송 결과 객체
@@ -48,12 +51,20 @@ def send_event(
         # config 사용 (권장)
         result = send_event(event)
         
+        # EdgeX 사용 (HTTP 전송 안함)
+        result = send_event(event, use_edgex=True)
+        
         # 직접 지정 (하위 호환성)
         result = send_event(event, server_url="http://...", retry_count=3)
         
         if result.success:
             print("전송 성공!")
     """
+    # EdgeX 사용 시 HTTP 전송 스킵
+    if use_edgex:
+        logger.debug("EdgeX 사용 중 - HTTP 직접 전송 스킵")
+        return ServerResponse(success=True, data={"message": "EdgeX에서 처리됨"})
+    
     # config에서 기본값 가져오기
     if server_url is None:
         server_url = default_config.server.url

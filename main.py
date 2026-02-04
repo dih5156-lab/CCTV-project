@@ -59,8 +59,15 @@ def load_camera_list(path: str) -> List[Dict[str, Any]]:
         return []
 
 
-def start_processor(camera_list: List[Dict[str, Any]], cfg: AppConfig) -> None:
-    """카메라와 함께 비디오 프로세서 시작"""
+def start_processor(camera_list: List[Dict[str, Any]], cfg: AppConfig, use_edgex: bool = False, edgex_config: Dict = None) -> None:
+    """카메라와 함께 비디오 프로세서 시작
+    
+    매개변수:
+        camera_list: 카메라 목록
+        cfg: 애플리케이션 설정
+        use_edgex: EdgeX 사용 여부
+        edgex_config: EdgeX 설정
+    """
     if not camera_list:
         print("ERROR: 카메라가 제공되지 않았습니다. 프로세서를 시작할 수 없습니다.")
         return
@@ -107,7 +114,19 @@ def start_processor(camera_list: List[Dict[str, Any]], cfg: AppConfig) -> None:
     print(f"\n{added_count}개 카메라로 프로세서 시작 중...")
 
     try:
-        processor.start()
+        # EdgeX 연동 여부에 따라 시작
+        if use_edgex and edgex_config:
+            from src.edgex import EdgeXCCTVProcessor
+            
+            print("=" * 60)
+            print("EdgeX Foundry 연동 모드로 시작합니다")
+            print("=" * 60)
+            
+            edgex_processor = EdgeXCCTVProcessor(processor, edgex_config)
+            edgex_processor.start()
+        else:
+            processor.start()
+        
         print("프로세서가 성공적으로 시작되었습니다. 중지하려면 Ctrl+C를 누르세요.\n")
         while processor.running:
             time.sleep(10)
@@ -116,6 +135,8 @@ def start_processor(camera_list: List[Dict[str, Any]], cfg: AppConfig) -> None:
         print("\n사용자가 중단함 (Ctrl+C)")
     except Exception as e:
         print(f"\n처리 중 오류 발생: {e}")
+        import traceback
+        traceback.print_exc()
     finally:
         print("프로세서 중지 중...")
         processor.stop()
@@ -217,6 +238,17 @@ def main() -> None:
     dataset_group.add_argument('--dataset-dir', default='./collected_data', 
                               help='데이터셋 저장 디렉터리')
     
+    # EdgeX 연동
+    edgex_group = parser.add_argument_group('EdgeX Foundry 연동')
+    edgex_group.add_argument('--edgex', action='store_true',
+                            help='EdgeX Foundry 연동 활성화')
+    edgex_group.add_argument('--edgex-metadata-url', default='http://localhost:48081',
+                            help='EdgeX Core Metadata URL')
+    edgex_group.add_argument('--edgex-data-url', default='http://localhost:48080',
+                            help='EdgeX Core Data URL')
+    edgex_group.add_argument('--edgex-service-name', default='cctv-device-service',
+                            help='EdgeX Device Service 이름')
+    
     args = parser.parse_args()
     
     if args.confidence < 0.0 or args.confidence > 1.0:
@@ -256,7 +288,18 @@ def main() -> None:
             ]
     
     print("=" * 60)
-    start_processor(cams, cfg)
+    
+    # EdgeX 설정
+    edgex_config = None
+    if args.edgex:
+        edgex_config = {
+            "coreMetadataUrl": args.edgex_metadata_url,
+            "coreDataUrl": args.edgex_data_url,
+            "deviceServiceName": args.edgex_service_name,
+            "baseUrl": "http://localhost:59999"
+        }
+    
+    start_processor(cams, cfg, use_edgex=args.edgex, edgex_config=edgex_config)
 
 
 if __name__ == '__main__':

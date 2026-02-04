@@ -100,6 +100,10 @@ class VideoProcessor:
         self.camera_threads: Dict[str, Thread] = {}
         self.inference_threads: Dict[str, Thread] = {}  # AI 추론 전용 스레드
         
+        # EdgeX 관련
+        self.use_edgex = False
+        self.edgex_processor = None
+        
         # 프레임 큐: 카메라 → AI 추론 (최신 프레임만 유지, 오래된 것 자동 드롭)
         self.frame_queues: Dict[str, Queue] = {}  # camera_id -> Queue[frame]
         
@@ -654,11 +658,16 @@ class VideoProcessor:
                 event_data = self.event_queue.get(timeout=1.0)
                 
                 try:
-                    result = send_event(event_data)
+                    # EdgeX 사용 여부에 따라 send_event() 호출
+                    result = send_event(event_data, use_edgex=self.use_edgex)
                     if result:
                         self.stats.events_sent += 1
                         consecutive_failures = 0
-                        logger.info(f"이벤트 전송 성공: {event_data.get('camera_id')} - {event_data.get('type')}")
+                        
+                        if self.use_edgex:
+                            logger.debug(f"EdgeX 전송: {event_data.get('camera_id')} - {event_data.get('type')}")
+                        else:
+                            logger.info(f"이벤트 전송 성공: {event_data.get('camera_id')} - {event_data.get('type')}")
                     else:
                         self.stats.events_failed += 1
                         consecutive_failures += 1
