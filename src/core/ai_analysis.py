@@ -763,74 +763,23 @@ class AIAnalyzer:
         return persons, helmets, others
     
     def check_helmet_compliance(self, events: List) -> List[Dict]:
-        """
-        사람 객체와 헬멧 객체를 매칭하여 준수 여부 판단
-        사람의 상단 35% 영역 내 헬멧만 인정
+        """사람 객체와 헬멧 객체를 매칭하여 준수 여부 판단
+        
+        매개변수:
+            events: 전체 이벤트 리스트
+            
+        반환값:
+            [{"person": DetectionEvent, "is_wearing": bool}, ...]
         """
         persons, helmets, _ = self.split_events(events)
         
-        # 헬멧 bbox 필터링: 사람 머리 영역(상단 35%)에 있고 적절한 크기인 것만 사용
-        valid_helmets = []
-        for h in helmets:
-            # 1. 헬멧 박스가 너무 크면 제외 (전신을 헬멧으로 오감지한 경우)
-            if h.height > MAX_HELMET_BODY_SIZE or h.width > MAX_HELMET_BODY_SIZE:
-                logger.debug(f"헬멧 박스가 너무 큼: {h.width}x{h.height}")
-                continue
-            
-            # 2. 헬멧이 너무 작으면 제외
-            if h.height < MIN_HELMET_SIZE or h.width < MIN_HELMET_SIZE:
-                logger.debug(f"헬멧 박스가 너무 작음: {h.width}x{h.height}")
-                continue
-                
-            # 3. 사람 bbox와 비교하여 상단 25% 영역에 있는지 확인 (더 엄격)
-            helmet_valid = False
-            for person in persons:
-                person_top = person.y
-                person_height = person.height
-                person_x = person.x
-                person_width = person.width
-                
-                # 머리 영역: 상단 35%로 완화 (헬멧 감지 개선)
-                head_region_bottom = person_top + (person_height * 0.35)
-                
-                # 헬멧 상단과 중심 위치
-                helmet_top = h.y
-                helmet_center_y = h.y + (h.height / 2)
-                helmet_center_x = h.x + (h.width / 2)
-                
-                # 손을 위로 든 자세 필터링: 헬멧 상단이 사람 bbox 상단보다 위에 있으면 제외
-                # (손을 머리 위로 올린 경우) - 여유를 늘림
-                if helmet_top < person_top - 30:  # 30px 여유 (카메라 각도 고려)
-                    logger.debug(f"헬멧이 사람 bbox 위에 있음 (손을 든 자세): helmet_top={helmet_top}, person_top={person_top}")
-                    continue
-                
-                # 헬멧 중심이 사람의 상단 영역에 있고 사람의 가로 중심 근처에 있어야 함
-                if person_top <= helmet_center_y <= head_region_bottom:
-                    # 추가 검증 1: 헬멧 박스가 사람 박스 가로 너비의 70% 이하여야 함 (완화)
-                    if h.width > person_width * 0.7:
-                        continue
-                    
-                    # 추가 검증 2: 헬멧이 사람 박스의 가로 중심선 근처에 있어야 함 (±50% 범위)
-                    person_center_x = person_x + (person_width / 2)
-                    horizontal_offset = abs(helmet_center_x - person_center_x)
-                    if horizontal_offset <= person_width * 0.5:
-                        helmet_valid = True
-                        break
-            
-            if helmet_valid:
-                valid_helmets.append({
-                    'x': h.x,
-                    'y': h.y,
-                    'width': h.width,
-                    'height': h.height
-                })
-            else:
-                logger.debug(f"헬멧 박스가 머리 영역 밖: center_y={h.y + h.height/2}")
-
-        logger.debug(f"헬멧 필터링: {len(helmets)} -> {len(valid_helmets)} valid")
+        # 헬멧 이벤트를 bbox dict로 변환 (is_helmet_worn 호환)
+        helmet_bboxes = [
+            {'x': h.x, 'y': h.y, 'width': h.width, 'height': h.height}
+            for h in helmets
+        ]
         
         results = []
-
         for person in persons:
             person_bbox = {
                 'x': person.x,
@@ -838,9 +787,10 @@ class AIAnalyzer:
                 'width': person.width,
                 'height': person.height
             }
-
-            wearing = is_helmet_worn(person_bbox, valid_helmets)
-
+            
+            # is_helmet_worn이 모든 위치/겹침 검증 수행 (IoU, overlap, 중심점)
+            wearing = is_helmet_worn(person_bbox, helmet_bboxes)
+            
             results.append({
                 "person": person,
                 "is_wearing": wearing
