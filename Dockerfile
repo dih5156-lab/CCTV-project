@@ -2,7 +2,7 @@
 # EdgeX Foundry v3 호환
 
 # Stage 1: Builder
-FROM python:3.11-slim as builder
+FROM python:3.10-slim as builder
 
 WORKDIR /build
 
@@ -11,7 +11,7 @@ COPY requirements.txt .
 RUN pip install --user --no-cache-dir -r requirements.txt
 
 # Stage 2: Runtime
-FROM python:3.11-slim
+FROM python:3.10-slim
 
 # 보안 설정
 RUN groupadd -r cctv && useradd -r -g cctv cctv
