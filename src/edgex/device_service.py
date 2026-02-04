@@ -38,8 +38,9 @@ class CCTVDeviceService:
     async def initialize(self):
         """EdgeX 연결 확인 (비동기 호환)"""
         try:
-            # Metadata 서비스 헬스체크 (v2 → v1 폴백)
+            # Metadata 서비스 헬스체크 (v3 → v2 → v1 폴백)
             metadata_endpoints = [
+                f"{self.metadata_url}/api/v3/ping",
                 f"{self.metadata_url}/api/v2/ping",
                 f"{self.metadata_url}/api/v1/ping",
                 f"{self.metadata_url}/ping"
@@ -61,8 +62,9 @@ class CCTVDeviceService:
                 for ep in metadata_endpoints:
                     logger.warning(f"  - {ep}")
             
-            # Data 서비스 헬스체크 (v2 → v1 폴백)
+            # Data 서비스 헬스체크 (v3 → v2 → v1 폴백)
             data_endpoints = [
+                f"{self.data_url}/api/v3/ping",
                 f"{self.data_url}/api/v2/ping",
                 f"{self.data_url}/api/v1/ping",
                 f"{self.data_url}/ping"
@@ -125,8 +127,9 @@ class CCTVDeviceService:
                 }
             }
             
-            # Device 등록 (v2 → v1 폴백)
+            # Device 등록 (v3 → v2 → v1 폴백)
             endpoints = [
+                f"{self.metadata_url}/api/v3/device",
                 f"{self.metadata_url}/api/v2/device",
                 f"{self.metadata_url}/api/v1/device"
             ]
@@ -213,8 +216,9 @@ class CCTVDeviceService:
                     }
                 }
                 
-                # EdgeX Core Data로 전송 (v2 → v1 폴백)
+                # EdgeX Core Data로 전송 (v3 → v2 → v1 폴백)
                 endpoints = [
+                    f"{self.data_url}/api/v3/event",
                     f"{self.data_url}/api/v2/event",
                     f"{self.data_url}/api/v1/event"
                 ]
@@ -298,8 +302,9 @@ class CCTVDeviceService:
                 }
             }
             
-            # Profile 생성 (v2 → v1 폴백)
+            # Profile 생성 (v3 → v2 → v1 폴백)
             endpoints = [
+                f"{self.metadata_url}/api/v3/deviceprofile",
                 f"{self.metadata_url}/api/v2/deviceprofile",
                 f"{self.metadata_url}/api/v1/deviceprofile"
             ]
