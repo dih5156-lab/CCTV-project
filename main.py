@@ -242,10 +242,10 @@ def main() -> None:
     edgex_group = parser.add_argument_group('EdgeX Foundry 연동')
     edgex_group.add_argument('--edgex', action='store_true',
                             help='EdgeX Foundry 연동 활성화')
-    edgex_group.add_argument('--edgex-metadata-url', default='http://localhost:48081',
-                            help='EdgeX Core Metadata URL')
-    edgex_group.add_argument('--edgex-data-url', default='http://localhost:48080',
-                            help='EdgeX Core Data URL')
+    edgex_group.add_argument('--edgex-metadata-url', default='http://localhost:59881',
+                            help='EdgeX Core Metadata URL (기본: localhost:59881)')
+    edgex_group.add_argument('--edgex-data-url', default='http://localhost:59880',
+                            help='EdgeX Core Data URL (기본: localhost:59880)')
     edgex_group.add_argument('--edgex-service-name', default='cctv-device-service',
                             help='EdgeX Device Service 이름')
     

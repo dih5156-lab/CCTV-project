@@ -19,14 +19,14 @@ class CCTVDeviceService:
         """
         매개변수:
             config: {
-                "coreMetadataUrl": "http://localhost:48081",
-                "coreDataUrl": "http://localhost:48080",
+                "coreMetadataUrl": "http://localhost:59881",
+                "coreDataUrl": "http://localhost:59880",
                 "deviceServiceName": "cctv-device-service",
                 "baseUrl": "http://localhost:59999"
             }
         """
-        self.metadata_url = config.get("coreMetadataUrl", "http://localhost:48081")
-        self.data_url = config.get("coreDataUrl", "http://localhost:48080")
+        self.metadata_url = config.get("coreMetadataUrl", "http://localhost:59881")
+        self.data_url = config.get("coreDataUrl", "http://localhost:59880")
         self.service_name = config.get("deviceServiceName", "cctv-device-service")
         self.base_url = config.get("baseUrl", "http://localhost:59999")
         self.devices: Dict[str, str] = {}  # camera_id -> device_id 매핑
@@ -38,21 +38,54 @@ class CCTVDeviceService:
     async def initialize(self):
         """EdgeX 연결 확인 (비동기 호환)"""
         try:
-            # Metadata 서비스 헬스체크
-            response = requests.get(f"{self.metadata_url}/api/v2/ping", timeout=5)
-            if response.status_code == 200:
-                logger.info("✓ EdgeX Core Metadata 연결됨")
-            else:
-                logger.warning(f"EdgeX Metadata 상태: {response.status_code}")
+            # Metadata 서비스 헬스체크 (v2 → v1 폴백)
+            metadata_endpoints = [
+                f"{self.metadata_url}/api/v2/ping",
+                f"{self.metadata_url}/api/v1/ping",
+                f"{self.metadata_url}/ping"
+            ]
             
-            # Data 서비스 헬스체크
-            response = requests.get(f"{self.data_url}/api/v2/ping", timeout=5)
-            if response.status_code == 200:
-                logger.info("✓ EdgeX Core Data 연결됨")
-            else:
-                logger.warning(f"EdgeX Data 상태: {response.status_code}")
+            metadata_ok = False
+            for endpoint in metadata_endpoints:
+                try:
+                    response = requests.get(endpoint, timeout=5)
+                    if response.status_code == 200:
+                        logger.info(f"✓ EdgeX Core Metadata 연결됨 ({endpoint})")
+                        metadata_ok = True
+                        break
+                except:
+                    continue
+            
+            if not metadata_ok:
+                logger.warning(f"EdgeX Metadata 연결 실패 - 시도한 엔드포인트:")
+                for ep in metadata_endpoints:
+                    logger.warning(f"  - {ep}")
+            
+            # Data 서비스 헬스체크 (v2 → v1 폴백)
+            data_endpoints = [
+                f"{self.data_url}/api/v2/ping",
+                f"{self.data_url}/api/v1/ping",
+                f"{self.data_url}/ping"
+            ]
+            
+            data_ok = False
+            for endpoint in data_endpoints:
+                try:
+                    response = requests.get(endpoint, timeout=5)
+                    if response.status_code == 200:
+                        logger.info(f"✓ EdgeX Core Data 연결됨 ({endpoint})")
+                        data_ok = True
+                        break
+                except:
+                    continue
+            
+            if not data_ok:
+                logger.warning(f"EdgeX Data 연결 실패 - 시도한 엔드포인트:")
+                for ep in data_endpoints:
+                    logger.warning(f"  - {ep}")
+                    
         except Exception as e:
-            logger.error(f"EdgeX 연결 실패: {e}")
+            logger.error(f"EdgeX 연결 오류: {e}")
     
     async def add_camera(self, camera_id: str, rtsp_source: str) -> Optional[str]:
         """
@@ -92,24 +125,41 @@ class CCTVDeviceService:
                 }
             }
             
-            # Device 등록
-            response = requests.post(
+            # Device 등록 (v2 → v1 폴백)
+            endpoints = [
                 f"{self.metadata_url}/api/v2/device",
-                json=device_payload,
-                timeout=10,
-                headers={"Content-Type": "application/json"}
-            )
+                f"{self.metadata_url}/api/v1/device"
+            ]
             
-            if response.status_code in [200, 201]:
-                device_id = response.json().get("id") or device_name
-                self.devices[camera_id] = device_id
-                logger.info(f"✓ 카메라 등록 성공: {camera_id} -> {device_name} (ID: {device_id})")
-                logger.debug(f"  RTSP: {rtsp_source}")
-                return device_id
-            else:
-                logger.warning(f"Device 등록 실패 ({camera_id}): {response.status_code}")
-                logger.debug(f"응답: {response.text}")
-                return None
+            for endpoint in endpoints:
+                try:
+                    response = requests.post(
+                        endpoint,
+                        json=device_payload,
+                        timeout=10,
+                        headers={"Content-Type": "application/json"}
+                    )
+                    
+                    if response.status_code in [200, 201]:
+                        device_id = response.json().get("id") or device_name
+                        self.devices[camera_id] = device_id
+                        logger.info(f"✓ 카메라 등록 성공: {camera_id} -> {device_name} (ID: {device_id})")
+                        logger.debug(f"  RTSP: {rtsp_source}")
+                        logger.debug(f"  엔드포인트: {endpoint}")
+                        return device_id
+                    elif response.status_code == 404:
+                        logger.debug(f"엔드포인트 없음: {endpoint}")
+                        continue
+                    else:
+                        logger.warning(f"Device 등록 실패 ({camera_id}): {response.status_code}")
+                        logger.debug(f"응답: {response.text}")
+                        continue
+                except Exception as e:
+                    logger.debug(f"엔드포인트 {endpoint} 시도 실패: {e}")
+                    continue
+            
+            logger.error(f"카메라 등록 실패: {camera_id} - 모든 엔드포인트 시도 완료")
+            return None
                 
         except Exception as e:
             logger.error(f"카메라 등록 오류 ({camera_id}): {e}")
@@ -163,19 +213,39 @@ class CCTVDeviceService:
                     }
                 }
                 
-                # EdgeX Core Data로 전송
-                response = requests.post(
+                # EdgeX Core Data로 전송 (v2 → v1 폴백)
+                endpoints = [
                     f"{self.data_url}/api/v2/event",
-                    json=event_data,
-                    timeout=10,
-                    headers={"Content-Type": "application/json"}
-                )
+                    f"{self.data_url}/api/v1/event"
+                ]
                 
-                if response.status_code in [200, 201]:
-                    logger.debug(f"✓ [{camera_id}] EdgeX 이벤트 전송: {event.event_type.value if hasattr(event, 'event_type') else 'detection'}")
-                else:
-                    logger.warning(f"Event 전송 실패 ({camera_id}): {response.status_code}")
-                    logger.debug(f"응답: {response.text}")
+                success = False
+                for endpoint in endpoints:
+                    try:
+                        response = requests.post(
+                            endpoint,
+                            json=event_data,
+                            timeout=10,
+                            headers={"Content-Type": "application/json"}
+                        )
+                        
+                        if response.status_code in [200, 201]:
+                            logger.debug(f"✓ [{camera_id}] EdgeX 이벤트 전송: {event.event_type.value if hasattr(event, 'event_type') else 'detection'}")
+                            success = True
+                            break
+                        elif response.status_code == 404:
+                            logger.debug(f"엔드포인트 없음: {endpoint}")
+                            continue
+                        else:
+                            logger.debug(f"Event 전송 실패 ({camera_id}): {response.status_code}")
+                            logger.debug(f"응답: {response.text}")
+                            continue
+                    except Exception as e:
+                        logger.debug(f"엔드포인트 {endpoint} 시도 실패: {e}")
+                        continue
+                
+                if not success:
+                    logger.warning(f"이벤트 전송 실패 ({camera_id}) - 모든 엔드포인트 시도 완료")
                     return False
             
             return True
@@ -228,19 +298,40 @@ class CCTVDeviceService:
                 }
             }
             
-            response = requests.post(
+            # Profile 생성 (v2 → v1 폴백)
+            endpoints = [
                 f"{self.metadata_url}/api/v2/deviceprofile",
-                json=profile_payload,
-                timeout=10,
-                headers={"Content-Type": "application/json"}
-            )
+                f"{self.metadata_url}/api/v1/deviceprofile"
+            ]
             
-            if response.status_code in [200, 201]:
-                logger.info("✓ Device Profile 생성: CCTV-Camera-Profile")
-                return True
-            else:
-                logger.warning(f"Profile 생성 실패: {response.status_code}")
-                return False
+            for endpoint in endpoints:
+                try:
+                    response = requests.post(
+                        endpoint,
+                        json=profile_payload,
+                        timeout=10,
+                        headers={"Content-Type": "application/json"}
+                    )
+                    
+                    if response.status_code in [200, 201]:
+                        logger.info(f"✓ Device Profile 생성: CCTV-Camera-Profile (엔드포인트: {endpoint})")
+                        return True
+                    elif response.status_code == 404:
+                        logger.debug(f"엔드포인트 없음: {endpoint}")
+                        continue
+                    elif response.status_code == 409:
+                        logger.info(f"✓ Device Profile 이미 존재: CCTV-Camera-Profile (엔드포인트: {endpoint})")
+                        return True
+                    else:
+                        logger.warning(f"Profile 생성 실패: {response.status_code}")
+                        logger.debug(f"응답: {response.text}")
+                        continue
+                except Exception as e:
+                    logger.debug(f"엔드포인트 {endpoint} 시도 실패: {e}")
+                    continue
+            
+            logger.warning("Profile 생성 실패 - 모든 엔드포인트 시도 완료")
+            return False
                 
         except Exception as e:
             logger.error(f"Profile 생성 오류: {e}")
