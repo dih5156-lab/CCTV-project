@@ -28,6 +28,10 @@ build/
 .vscode
 .idea
 *.swp
+
+# Config (마운트로 주입)
+cameras.json
+zones_config.json
 *.swo
 *~
 .DS_Store

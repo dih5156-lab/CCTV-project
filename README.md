@@ -103,7 +103,40 @@ pip install -r requirements.txt
 
 ## 실행
 
-### 기본 실행
+### EdgeX Foundry와 함께 실행 (권장)
+
+#### 1. EdgeX 스택 시작
+```bash
+cd C:\Users\dih51\OneDrive\Desktop\edgex
+docker-compose up -d --build
+```
+
+#### 2. CCTV 서비스 상태 확인
+```bash
+docker-compose ps
+```
+모든 서비스가 "UP" 상태인지 확인
+
+#### 3. EdgeX UI에서 모니터링
+```
+http://localhost:4000
+```
+- Device Center > Device List에서 `camera-camera_1` 선택
+- 실시간 이벤트 모니터링
+
+#### 4. REST API로 이벤트 조회
+```bash
+# 모든 이벤트 조회
+curl http://localhost:59880/api/v3/event/all?limit=10
+
+# 특정 디바이스 이벤트 조회
+curl http://localhost:59880/api/v3/event/device/camera-camera_1?limit=10
+
+# 특정 리소스 이벤트 조회
+curl http://localhost:59880/api/v3/event/device/camera-camera_1/resource/person_detection?limit=5
+```
+
+### 기본 실행 (EdgeX 없이)
 ```bash
 python main.py --cameras cameras.json --device cuda
 ```
@@ -118,11 +151,17 @@ python main.py --cameras cameras.json --device cuda
 | `--server` | 서버 URL | localhost:8000 |
 | `--zone-detection` | 위험 구역 감지 활성화 | False |
 | `--collect-dataset` | 데이터셋 수집 활성화 | False |
+| `--edgex` | EdgeX Foundry 통합 활성화 | False |
+| `--edgex-metadata-url` | EdgeX Core Metadata URL | http://localhost:59881 |
+| `--edgex-data-url` | EdgeX Core Data URL | http://localhost:59880 |
 
 ### 예제
 ```bash
 # 다중 카메라 + 위험 구역 감지
 python main.py --cameras cameras.json --zone-detection --device cuda
+
+# EdgeX Foundry와 통합 (MQTT를 통한 Core Data 저장)
+python main.py --cameras cameras.json --edgex --edgex-metadata-url http://localhost:59881 --edgex-data-url http://localhost:59880
 
 # 데이터셋 수집 모드
 python main.py --cameras cameras.json --collect-dataset
@@ -132,6 +171,17 @@ python main.py --display
 ```
 
 ## 주요 모듈
+
+### EdgeX Device Service (src/edgex/device_service.py)
+EdgeX Foundry v3 MQTT 연동:
+- MQTT 브로커와의 자동 연결 및 재연결 관리
+- 표준 EdgeX v3 메시지 형식으로 이벤트 발행
+- MQTT 토픽: `edgex/events/device/{service-name}/{profile-name}/{device-name}/{resource-name}`
+- 이벤트 페이로드 구조:
+  - Envelope: apiVersion, requestId, correlationId, errorCode
+  - Event: 감지 데이터 (confidence, bbox, object_id, timestamp)
+- Core Metadata에서 디바이스/프로필 정보 자동 로드
+- Core Data에 이벤트 자동 저장 (MQTT 구독)
 
 ### AppConfig (config.py)
 중앙화된 설정 관리:
@@ -233,6 +283,49 @@ cp runs/detect/train/weights/best.pt models/helmet_model.pt
 - 네트워크 연결 상태 확인
 
 ## 변경 이력
+
+### v1.4.0 (2026-02-05) - EdgeX Foundry v3 통합 완성
+- **EdgeX Foundry 통합 완료**
+  - EdgeX Core Metadata, Core Data, MQTT Broker와의 완벽한 통합
+  - CCTV 디바이스를 EdgeX Metadata에 등록 (`camera-camera_1`)
+  - CCTV-Camera-Profile 디바이스 프로필 생성 및 적용
+  
+- **MQTT 이벤트 발행 시스템 구현**
+  - MQTT 토픽 포맷: `edgex/events/device/cctv-device-service/CCTV-Camera-Profile/{device-name}/{resource-name}`
+  - 표준 EdgeX v3 이벤트 메시지 형식 준수 (envelope + payload 구조)
+  - 다중 UUID 기반 요청 추적 (requestId, correlationId 포함)
+  - 감지 데이터 상세 정보 포함: confidence, bbox, object_id, timestamp
+  
+- **Docker 컨테이너 통합**
+  - docker-compose.yml에 cctv-device-service 정의
+  - EdgeX 네트워크 (edgex-network)와 자동 연결
+  - 환경 변수를 통한 동적 설정 (EDGEX_MQTT_BROKER_URL 등)
+  
+- **Core Data 이벤트 저장 성공**
+  - 49,934개의 CCTV 이벤트가 PostgreSQL 데이터베이스에 저장
+  - Profile name mismatch 오류 완전 해결 (전체 도커 스택 재시작으로 해결)
+  - REST API를 통한 이벤트 조회 가능:
+    - `/api/v3/event/all` - 모든 이벤트 조회
+    - `/api/v3/event/device/{device-name}` - 특정 디바이스 이벤트 조회
+  
+- **EdgeX UI 통합**
+  - EdgeX 대시보드에서 CCTV 카메라 디바이스 시각화
+  - Device Center > Device List에서 실시간 이벤트 모니터링 가능
+  - 포트 4000에서 웹 UI 접근 가능
+  
+- **문제 해결 이력**
+  - 문제: MQTT 페이로드 형식 불일치 (base64 encoding 오류)
+    - 해결: 표준 EdgeX envelope 형식으로 수정 (apiVersion, requestId, correlationId 추가)
+  - 문제: 서비스명 불일치 (device-virtual vs cctv-device-service)
+    - 해결: device_service.py에서 service_name을 "cctv-device-service"로 변경
+  - 문제: Profile name mismatch - Core Data 검증 오류
+    - 해결: 전체 도커 스택 재시작 (docker-compose down → up -d --build)
+  
+- **배포 검증**
+  - 모든 17개 EdgeX 서비스 정상 실행 확인
+  - MQTT 브로커 (Mosquitto) 포트 1883에서 이벤트 수신 확인
+  - PostgreSQL 데이터베이스에 이벤트 정상 저장 확인
+  - CCTV 서비스 healthy 상태 유지
 
 ### v1.3.0 (2026-01-30) - 코드베이스 전면 개선
 - **코드 품질 개선**

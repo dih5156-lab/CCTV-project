@@ -5,6 +5,7 @@ processor.py - 실시간 CCTV 객체 감지 프로세서
 
 import logging
 import time
+import asyncio
 import cv2
 import os
 import numpy as np
@@ -658,8 +659,15 @@ class VideoProcessor:
                 event_data = self.event_queue.get(timeout=1.0)
                 
                 try:
-                    # EdgeX 사용 여부에 따라 send_event() 호출
-                    result = send_event(event_data, use_edgex=self.use_edgex)
+                    # EdgeX 사용 시 EdgeX로 전송
+                    if self.use_edgex and self.edgex_processor:
+                        camera_id = event_data.get("camera_id")
+                        result = asyncio.run(
+                            self.edgex_processor.send_events_to_edgex(camera_id, [event_data])
+                        )
+                    else:
+                        result = send_event(event_data, use_edgex=self.use_edgex)
+
                     if result:
                         self.stats.events_sent += 1
                         consecutive_failures = 0

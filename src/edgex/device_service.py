@@ -6,8 +6,13 @@ CCTV 카메라를 EdgeX Foundry 장치로 관리
 import json
 import logging
 import requests
+import time
+import uuid
 from typing import Dict, Optional, List
 from datetime import datetime
+
+import base64
+import paho.mqtt.client as mqtt
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +32,11 @@ class CCTVDeviceService:
         """
         self.metadata_url = config.get("coreMetadataUrl", "http://localhost:59881")
         self.data_url = config.get("coreDataUrl", "http://localhost:59880")
-        self.service_name = config.get("deviceServiceName", "cctv-device-service")
+        self.service_name = "cctv-device-service"  # CCTV Device Service
+        self.mqtt_broker = config.get("mqttBroker", "localhost")
+        self.mqtt_port = int(config.get("mqttPort", 1883))
+        self.mqtt_topic_prefix = config.get("mqttTopicPrefix", "edgex/events/device")
+        self._mqtt_client: Optional[mqtt.Client] = None
         self.base_url = config.get("baseUrl", "http://localhost:59999")
         self.devices: Dict[str, str] = {}  # camera_id -> device_id 매핑
         
@@ -136,9 +145,11 @@ class CCTVDeviceService:
             
             for endpoint in endpoints:
                 try:
+                    # EdgeX v3는 배열 형식 필요
+                    payload = [device_payload] if "/v3/" in endpoint else device_payload
                     response = requests.post(
                         endpoint,
-                        json=device_payload,
+                        json=payload,
                         timeout=10,
                         headers={"Content-Type": "application/json"}
                     )
@@ -150,12 +161,38 @@ class CCTVDeviceService:
                         logger.debug(f"  RTSP: {rtsp_source}")
                         logger.debug(f"  엔드포인트: {endpoint}")
                         return device_id
+                    elif response.status_code == 207:  # Multi-Status (v3 배열 응답)
+                        result = response.json()
+                        if isinstance(result, list) and len(result) > 0:
+                            item_status = result[0].get("statusCode", 0)
+                            if item_status in [200, 201]:
+                                device_id = result[0].get("id") or device_name
+                                self.devices[camera_id] = device_id
+                                logger.info(f"✓ 카메라 등록 성공: {camera_id} -> {device_name} (ID: {device_id})")
+                                logger.debug(f"  RTSP: {rtsp_source}")
+                                logger.debug(f"  엔드포인트: {endpoint}")
+                                return device_id
+                            elif item_status == 409:
+                                self.devices[camera_id] = device_name
+                                logger.info(f"✓ 카메라 이미 존재: {camera_id} -> {device_name}")
+                                logger.debug(f"  RTSP: {rtsp_source}")
+                                logger.debug(f"  엔드포인트: {endpoint}")
+                                return device_name
+                        logger.warning(f"Device 등록 실패 ({camera_id}): 207 응답 - {response.text}")
+                        continue
                     elif response.status_code == 404:
                         logger.debug(f"엔드포인트 없음: {endpoint}")
                         continue
+                    elif response.status_code == 409:
+                        self.devices[camera_id] = device_name
+                        logger.info(f"✓ 카메라 이미 존재: {camera_id} -> {device_name}")
+                        logger.debug(f"  RTSP: {rtsp_source}")
+                        logger.debug(f"  엔드포인트: {endpoint}")
+                        return device_name
                     else:
                         logger.warning(f"Device 등록 실패 ({camera_id}): {response.status_code}")
-                        logger.debug(f"응답: {response.text}")
+                        logger.warning(f"응답 내용: {response.text}")
+                        logger.warning(f"엔드포인트: {endpoint}")
                         continue
                 except Exception as e:
                     logger.debug(f"엔드포인트 {endpoint} 시도 실패: {e}")
@@ -187,28 +224,60 @@ class CCTVDeviceService:
         
         try:
             for event in events:
-                # Event 데이터 구성
-                event_data = {
-                    "apiVersion": "v2",
+                # 이벤트 데이터 추출 (DetectionEvent 또는 dict 지원)
+                if isinstance(event, dict):
+                    event_type = event.get("type", "unknown")
+                    confidence = event.get("confidence", 0.0)
+                    bbox = event.get("bbox", {}) or {}
+                    x = bbox.get("x", 0)
+                    y = bbox.get("y", 0)
+                    width = bbox.get("width", 0)
+                    height = bbox.get("height", 0)
+                    object_id = event.get("object_id")
+                    timestamp = event.get("timestamp", datetime.now().isoformat())
+                else:
+                    event_type = event.event_type.value if hasattr(event, "event_type") else "unknown"
+                    confidence = event.confidence if hasattr(event, "confidence") else 0.0
+                    x = event.x if hasattr(event, "x") else 0
+                    y = event.y if hasattr(event, "y") else 0
+                    width = event.width if hasattr(event, "width") else 0
+                    height = event.height if hasattr(event, "height") else 0
+                    object_id = event.object_id if hasattr(event, "object_id") else None
+                    timestamp = event.timestamp if hasattr(event, "timestamp") else datetime.now().isoformat()
+
+                # EdgeX Device Profile 리소스에 맞게 매핑
+                if event_type in ["helmet", "head", "unsafe_behavior"]:
+                    resource_name = "helmet_detection"
+                elif event_type in ["fall_detected", "not_fall"]:
+                    resource_name = "fall_detection"
+                elif event_type == "person":
+                    resource_name = "person_detection"
+                else:
+                    resource_name = "helmet_detection"
+
+                event_id = str(uuid.uuid4())
+                base_event = {
                     "event": {
+                        "apiVersion": "v3",
+                        "id": event_id,
                         "deviceName": device_name,
                         "profileName": "CCTV-Camera-Profile",
-                        "sourceName": event.event_type.value if hasattr(event, 'event_type') else "detection",
+                        "sourceName": resource_name,
                         "readings": [
                             {
                                 "deviceName": device_name,
-                                "resourceName": event.event_type.value if hasattr(event, 'event_type') else "detection",
+                                "resourceName": resource_name,
                                 "value": json.dumps({
-                                    "type": event.event_type.value if hasattr(event, 'event_type') else "unknown",
-                                    "confidence": event.confidence if hasattr(event, 'confidence') else 0.0,
+                                    "type": event_type,
+                                    "confidence": confidence,
                                     "bbox": {
-                                        "x": event.x if hasattr(event, 'x') else 0,
-                                        "y": event.y if hasattr(event, 'y') else 0,
-                                        "width": event.width if hasattr(event, 'width') else 0,
-                                        "height": event.height if hasattr(event, 'height') else 0
+                                        "x": x,
+                                        "y": y,
+                                        "width": width,
+                                        "height": height
                                     },
-                                    "object_id": event.object_id if hasattr(event, 'object_id') else None,
-                                    "timestamp": event.timestamp if hasattr(event, 'timestamp') else datetime.now().isoformat()
+                                    "object_id": object_id,
+                                    "timestamp": timestamp
                                 }),
                                 "valueType": "String"
                             }
@@ -224,38 +293,240 @@ class CCTVDeviceService:
                 ]
                 
                 success = False
+                last_status = None
+                last_text = None
+                last_endpoint = None
                 for endpoint in endpoints:
                     try:
+                        last_endpoint = endpoint
+                        api_version = "v3" if "/v3/" in endpoint else "v2"
+                        event_data = {"apiVersion": api_version, **base_event}
+                        payload = [event_data] if api_version == "v3" else event_data
                         response = requests.post(
                             endpoint,
-                            json=event_data,
+                            json=payload,
                             timeout=10,
                             headers={"Content-Type": "application/json"}
                         )
                         
+                        last_status = response.status_code
+                        last_text = response.text
+
                         if response.status_code in [200, 201]:
-                            logger.debug(f"✓ [{camera_id}] EdgeX 이벤트 전송: {event.event_type.value if hasattr(event, 'event_type') else 'detection'}")
+                            logger.debug(f"✓ [{camera_id}] EdgeX 이벤트 전송: {event_type}")
                             success = True
                             break
+                        elif response.status_code == 207:
+                            result = response.json()
+                            if isinstance(result, list) and len(result) > 0:
+                                item_status = result[0].get("statusCode", 0)
+                                if item_status in [200, 201]:
+                                    logger.debug(f"✓ [{camera_id}] EdgeX 이벤트 전송: {event_type}")
+                                    success = True
+                                    break
+                            logger.warning(f"Event 전송 실패 ({camera_id}): 207 응답 - {response.text}")
+                            continue
                         elif response.status_code == 404:
-                            logger.debug(f"엔드포인트 없음: {endpoint}")
+                            logger.warning(f"엔드포인트 없음: {endpoint}")
                             continue
                         else:
-                            logger.debug(f"Event 전송 실패 ({camera_id}): {response.status_code}")
-                            logger.debug(f"응답: {response.text}")
+                            logger.warning(f"Event 전송 실패 ({camera_id}): {response.status_code}")
+                            logger.warning(f"응답: {response.text}")
+                            logger.warning(f"엔드포인트: {endpoint}")
                             continue
                     except Exception as e:
-                        logger.debug(f"엔드포인트 {endpoint} 시도 실패: {e}")
+                        last_text = str(e)
+                        logger.warning(f"엔드포인트 {endpoint} 시도 실패: {e}")
                         continue
                 
                 if not success:
                     logger.warning(f"이벤트 전송 실패 ({camera_id}) - 모든 엔드포인트 시도 완료")
+                    if last_endpoint:
+                        logger.warning(f"마지막 엔드포인트: {last_endpoint}")
+                    if last_status is not None:
+                        logger.warning(f"마지막 상태 코드: {last_status}")
+                    if last_text:
+                        logger.warning(f"마지막 응답: {last_text}")
+                    # REST 실패 시 MQTT로 폴백
+                    if self._publish_event_mqtt(device_name, resource_name, event_type, confidence, x, y, width, height, object_id, timestamp):
+                        logger.info(f"✓ [{camera_id}] MQTT 이벤트 전송: {event_type}")
+                        return True
                     return False
             
             return True
             
         except Exception as e:
             logger.error(f"이벤트 전송 오류 ({camera_id}): {e}")
+            return False
+
+    def _ensure_mqtt_client(self) -> bool:
+        if self._mqtt_client:
+            return True
+        try:
+            client = mqtt.Client()
+            client.connect(self.mqtt_broker, self.mqtt_port, 60)
+            client.loop_start()
+            self._mqtt_client = client
+            logger.info(f"✓ MQTT 연결됨: {self.mqtt_broker}:{self.mqtt_port}")
+            return True
+        except Exception as e:
+            logger.warning(f"MQTT 연결 실패: {e}")
+            self._mqtt_client = None
+            return False
+
+    def _publish_event_mqtt(
+        self,
+        device_name: str,
+        resource_name: str,
+        event_type: str,
+        confidence: float,
+        x: int,
+        y: int,
+        width: int,
+        height: int,
+        object_id: Optional[int],
+        timestamp: str
+    ) -> bool:
+        if not self._ensure_mqtt_client():
+            return False
+
+        try:
+            logger.info(f"MQTT 이벤트 발행 시작: device={device_name}, resource={resource_name}, type={event_type}")
+            
+            try:
+                origin = int(float(timestamp) * 1_000_000_000)
+            except Exception:
+                origin = int(time.time() * 1_000_000_000)
+
+            event_id = str(uuid.uuid4())
+            request_id = str(uuid.uuid4())
+            correlation_id = str(uuid.uuid4())
+            
+            event_payload = {
+                "apiVersion": "v3",
+                "requestId": request_id,
+                "event": {
+                    "apiVersion": "v3",
+                    "id": event_id,
+                    "deviceName": device_name,
+                    "profileName": "CCTV-Camera-Profile",
+                    "sourceName": resource_name,
+                    "origin": origin,
+                    "readings": [
+                        {
+                            "origin": origin,
+                            "deviceName": device_name,
+                            "resourceName": resource_name,
+                            "profileName": "CCTV-Camera-Profile",
+                            "valueType": "String",
+                            "value": json.dumps({
+                                "type": event_type,
+                                "confidence": confidence,
+                                "bbox": {
+                                    "x": x,
+                                    "y": y,
+                                    "width": width,
+                                    "height": height
+                                },
+                                "object_id": object_id,
+                                "timestamp": timestamp
+                            })
+                        }
+                    ]
+                }
+            }
+
+            envelope = {
+                "apiVersion": "v3",
+                "receivedTopic": "",
+                "correlationID": correlation_id,
+                "requestID": "",
+                "errorCode": 0,
+                "payload": event_payload,
+                "contentType": "application/json"
+            }
+
+            topic = f"{self.mqtt_topic_prefix}/{self.service_name}/CCTV-Camera-Profile/{device_name}/{resource_name}"
+            logger.info(f"MQTT 토픽: {topic}")
+
+            result = self._mqtt_client.publish(topic, json.dumps(envelope), qos=0)
+            
+            if result.rc == 0:
+                logger.info(f"✓ MQTT 발행 성공: {topic} (mid={result.mid})")
+                return True
+            else:
+                logger.error(f"MQTT 발행 실패: {topic} (rc={result.rc})")
+                return False
+        except Exception as e:
+            logger.error(f"MQTT 전송 오류: {e}", exc_info=True)
+            return False
+    
+    async def register_device_service(self) -> bool:
+        """
+        Device Service를 EdgeX에 등록
+        """
+        try:
+            service_payload = {
+                "apiVersion": "v2",
+                "service": {
+                    "name": self.service_name,
+                    "description": "CCTV Detection Device Service",
+                    "labels": ["cctv", "detection"],
+                    "baseAddress": "http://edgex-device-virtual:59900",  # EdgeX 기본 서비스 사용
+                    "adminState": "UNLOCKED"
+                }
+            }
+            
+            endpoints = [
+                f"{self.metadata_url}/api/v3/deviceservice",
+                f"{self.metadata_url}/api/v2/deviceservice",
+                f"{self.metadata_url}/api/v1/deviceservice"
+            ]
+            
+            for endpoint in endpoints:
+                try:
+                    payload = [service_payload] if "/v3/" in endpoint else service_payload
+                    response = requests.post(
+                        endpoint,
+                        json=payload,
+                        timeout=10,
+                        headers={"Content-Type": "application/json"}
+                    )
+                    
+                    if response.status_code in [200, 201]:
+                        logger.info(f"✓ Device Service 등록: {self.service_name}")
+                        return True
+                    elif response.status_code == 207:
+                        result = response.json()
+                        if isinstance(result, list) and len(result) > 0:
+                            item_status = result[0].get("statusCode", 0)
+                            if item_status in [200, 201]:
+                                logger.info(f"✓ Device Service 등록: {self.service_name}")
+                                return True
+                            elif item_status == 409:
+                                logger.info(f"✓ Device Service 이미 존재: {self.service_name}")
+                                return True
+                        logger.warning(f"Service 등록 실패: 207 응답 - {response.text}")
+                        continue
+                    elif response.status_code == 409:
+                        logger.info(f"✓ Device Service 이미 존재: {self.service_name}")
+                        return True
+                    elif response.status_code == 404:
+                        logger.debug(f"엔드포인트 없음: {endpoint}")
+                        continue
+                    else:
+                        logger.warning(f"Service 등록 실패: {response.status_code}")
+                        logger.debug(f"응답: {response.text}")
+                        continue
+                except Exception as e:
+                    logger.debug(f"엔드포인트 {endpoint} 시도 실패: {e}")
+                    continue
+            
+            logger.warning("Service 등록 실패 - 모든 엔드포인트 시도 완료")
+            return False
+            
+        except Exception as e:
+            logger.error(f"Service 등록 오류: {e}")
             return False
     
     async def create_device_profile(self) -> bool:
@@ -311,9 +582,11 @@ class CCTVDeviceService:
             
             for endpoint in endpoints:
                 try:
+                    # EdgeX v3는 배열 형식 필요
+                    payload = [profile_payload] if "/v3/" in endpoint else profile_payload
                     response = requests.post(
                         endpoint,
-                        json=profile_payload,
+                        json=payload,
                         timeout=10,
                         headers={"Content-Type": "application/json"}
                     )
@@ -321,6 +594,18 @@ class CCTVDeviceService:
                     if response.status_code in [200, 201]:
                         logger.info(f"✓ Device Profile 생성: CCTV-Camera-Profile (엔드포인트: {endpoint})")
                         return True
+                    elif response.status_code == 207:  # Multi-Status (v3 배열 응답)
+                        result = response.json()
+                        if isinstance(result, list) and len(result) > 0:
+                            item_status = result[0].get("statusCode", 0)
+                            if item_status in [200, 201]:
+                                logger.info(f"✓ Device Profile 생성: CCTV-Camera-Profile (엔드포인트: {endpoint})")
+                                return True
+                            elif item_status == 409:
+                                logger.info(f"✓ Device Profile 이미 존재: CCTV-Camera-Profile (엔드포인트: {endpoint})")
+                                return True
+                        logger.warning(f"Profile 생성 실패: 207 응답 - {response.text}")
+                        continue
                     elif response.status_code == 404:
                         logger.debug(f"엔드포인트 없음: {endpoint}")
                         continue

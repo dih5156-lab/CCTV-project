@@ -39,7 +39,7 @@ class EdgeXCCTVProcessor:
             self.edgex_service = CCTVDeviceService(self.edgex_config)
             await self.edgex_service.initialize()
             
-            # Device Profile 생성
+            # Device Profile 생성 (device-virtual 서비스 사용)
             await self.edgex_service.create_device_profile()
             
             # 모든 카메라를 EdgeX에 등록

@@ -148,7 +148,7 @@ def is_helmet_worn(person_bbox: dict, helmet_bboxes: list,
     
     for helmet_bbox in helmet_bboxes:
         if not isinstance(helmet_bbox, dict):
-            continue  # 잘못된 헬멧 박스는 건너띠
+            continue  # 잘못된 헬멧 박스는 넘김
         
         try:
             cx, cy = get_center(helmet_bbox)
@@ -163,6 +163,6 @@ def is_helmet_worn(person_bbox: dict, helmet_bboxes: list,
             if overlap_ratio >= overlap_threshold:
                 return True
         except (KeyError, ValueError, TypeError):
-            continue  # 잘못된 헬멧 박스는 건너띠
+            continue  # 잘못된 헬멧 박스는 넘김
     
     return False

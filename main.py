@@ -12,7 +12,7 @@ from typing import List, Dict, Any
 from src.core import VideoProcessor
 from src.config import default_config, AppConfig
 
-os.environ['OPENCV_FFMPEG_CAPTURE_OPTIONS'] = 'rtsp_transport;udp'
+os.environ.setdefault('OPENCV_FFMPEG_CAPTURE_OPTIONS', 'rtsp_transport;udp')
 os.environ['OPENCV_LOG_LEVEL'] = 'ERROR'
 
 
@@ -292,11 +292,17 @@ def main() -> None:
     # EdgeX 설정
     edgex_config = None
     if args.edgex:
+        # 환경변수에서 MQTT broker URL 읽기
+        mqtt_broker_url = os.environ.get('EDGEX_MQTT_BROKER_URL', 'localhost:1883')
+        mqtt_broker, mqtt_port = mqtt_broker_url.split(':') if ':' in mqtt_broker_url else (mqtt_broker_url, '1883')
+        
         edgex_config = {
             "coreMetadataUrl": args.edgex_metadata_url,
             "coreDataUrl": args.edgex_data_url,
             "deviceServiceName": args.edgex_service_name,
-            "baseUrl": "http://localhost:59999"
+            "baseUrl": "http://localhost:59999",
+            "mqttBroker": mqtt_broker,
+            "mqttPort": mqtt_port
         }
     
     start_processor(cams, cfg, use_edgex=args.edgex, edgex_config=edgex_config)
