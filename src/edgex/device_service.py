@@ -11,7 +11,6 @@ import uuid
 from typing import Dict, Optional, List
 from datetime import datetime
 
-import base64
 import paho.mqtt.client as mqtt
 
 logger = logging.getLogger(__name__)
@@ -43,6 +42,156 @@ class CCTVDeviceService:
         logger.info(f"EdgeX Device Service 초기화: {self.service_name}")
         logger.info(f"  - Metadata URL: {self.metadata_url}")
         logger.info(f"  - Data URL: {self.data_url}")
+
+    def _describe_http_status(self, status_code: int) -> str:
+        """HTTP 상태 코드에 대한 설명 반환"""
+        status_map = {
+            200: "OK: 요청 성공",
+            201: "Created: 리소스 생성 성공",
+            202: "Accepted: 요청 수락, 처리 중",
+            204: "No Content: 성공적으로 처리됨 (본문 없음)",
+            207: "Multi-Status: 부분 성공/실패 혼재",
+            400: "Bad Request: 잘못된 요청 (데이터 형식 오류 또는 잘못된 데이터)",
+            401: "Unauthorized: 인증 실패 (JWT 토큰 누락 또는 유효하지 않음)",
+            403: "Forbidden: 접근 권한 없음",
+            404: "Not Found: 요청한 리소스를 찾을 수 없음",
+            405: "Method Not Allowed: 허용되지 않은 메서드",
+            408: "Request Timeout: 요청 시간 초과",
+            409: "Conflict: 리소스 충돌 (이미 존재 등)",
+            415: "Unsupported Media Type: 지원되지 않는 콘텐츠 타입",
+            422: "Unprocessable Entity: 의미 오류 (검증 실패)",
+            423: "Locked: 디바이스 잠금 또는 운영 상태 비활성화",
+            429: "Too Many Requests: 요청 과다",
+            500: "Internal Server Error: 서비스 내부 오류",
+            502: "Bad Gateway: 게이트웨이 오류",
+            503: "Service Unavailable: 서비스 사용 불가 또는 연결 제한",
+            504: "Gateway Timeout: 게이트웨이 시간 초과",
+        }
+        return status_map.get(status_code, "알 수 없는 오류")
+
+    def _map_event_type_to_resource(self, event_type: str) -> str:
+        if event_type in ["helmet", "head", "unsafe_behavior", "wearing_helmet"]:
+            return "helmet_detection"
+        if event_type in ["fall_detected", "not_fall"]:
+            return "fall_detection"
+        if event_type == "person":
+            return "person_detection"
+        return "helmet_detection"
+
+    def _extract_event_fields(self, event: object) -> Dict[str, object]:
+        if isinstance(event, dict):
+            event_type = event.get("type", "unknown")
+            confidence = event.get("confidence", 0.0)
+            bbox = event.get("bbox", {}) or {}
+            x = bbox.get("x", 0)
+            y = bbox.get("y", 0)
+            width = bbox.get("width", 0)
+            height = bbox.get("height", 0)
+            object_id = event.get("object_id")
+            timestamp = event.get("timestamp", datetime.now().isoformat())
+        else:
+            event_type = event.event_type.value if hasattr(event, "event_type") else "unknown"
+            confidence = event.confidence if hasattr(event, "confidence") else 0.0
+            x = event.x if hasattr(event, "x") else 0
+            y = event.y if hasattr(event, "y") else 0
+            width = event.width if hasattr(event, "width") else 0
+            height = event.height if hasattr(event, "height") else 0
+            object_id = event.object_id if hasattr(event, "object_id") else None
+            timestamp = event.timestamp if hasattr(event, "timestamp") else datetime.now().isoformat()
+
+        return {
+            "event_type": event_type,
+            "confidence": confidence,
+            "x": x,
+            "y": y,
+            "width": width,
+            "height": height,
+            "object_id": object_id,
+            "timestamp": timestamp,
+        }
+
+    def _build_value_payload(
+        self,
+        event_type: str,
+        confidence: float,
+        x: int,
+        y: int,
+        width: int,
+        height: int,
+        object_id: Optional[int],
+        timestamp: str,
+        device_name: str,
+        resource_name: str,
+    ) -> Dict[str, object]:
+        return {
+            "type": event_type,
+            "device": device_name,
+            "resource": resource_name,
+            "confidence": confidence,
+            "bbox": {
+                "x": x,
+                "y": y,
+                "width": width,
+                "height": height,
+            },
+            "object_id": object_id,
+            "timestamp": timestamp,
+            "metadata": {
+                "profile": "CCTV-Camera-Profile",
+                "service": self.service_name,
+                "version": "v1",
+            },
+        }
+
+    def _build_event_payload(
+        self,
+        device_name: str,
+        resource_name: str,
+        origin: int,
+        value_payload: Dict[str, object],
+    ) -> Dict[str, object]:
+        event_id = str(uuid.uuid4())
+        request_id = str(uuid.uuid4())
+        return {
+            "apiVersion": "v3",
+            "requestId": request_id,
+            "event": {
+                "apiVersion": "v3",
+                "id": event_id,
+                "deviceName": device_name,
+                "profileName": "CCTV-Camera-Profile",
+                "sourceName": resource_name,
+                "origin": origin,
+                "readings": [
+                    {
+                        "origin": origin,
+                        "deviceName": device_name,
+                        "resourceName": resource_name,
+                        "profileName": "CCTV-Camera-Profile",
+                        "valueType": "String",
+                        "value": json.dumps(value_payload),
+                    }
+                ],
+            },
+        }
+
+    def _build_envelope(self, event_payload: Dict[str, object]) -> Dict[str, object]:
+        return {
+            "apiVersion": "v3",
+            "receivedTopic": "",
+            "correlationID": str(uuid.uuid4()),
+            "requestID": event_payload.get("requestId", ""),
+            "errorCode": 0,
+            "payload": event_payload,
+            "contentType": "application/json",
+        }
+    
+    @property
+    def mqtt_client(self) -> Optional[mqtt.Client]:
+        """MQTT 클라이언트 프로퍼티 (자동 초기화)"""
+        if not self._mqtt_client:
+            self._ensure_mqtt_client()
+        return self._mqtt_client
     
     async def initialize(self):
         """EdgeX 연결 확인 (비동기 호환)"""
@@ -190,7 +339,10 @@ class CCTVDeviceService:
                         logger.debug(f"  엔드포인트: {endpoint}")
                         return device_name
                     else:
-                        logger.warning(f"Device 등록 실패 ({camera_id}): {response.status_code}")
+                        logger.warning(
+                            f"Device 등록 실패 ({camera_id}): {response.status_code} - "
+                            f"{self._describe_http_status(response.status_code)}"
+                        )
                         logger.warning(f"응답 내용: {response.text}")
                         logger.warning(f"엔드포인트: {endpoint}")
                         continue
@@ -204,6 +356,61 @@ class CCTVDeviceService:
         except Exception as e:
             logger.error(f"카메라 등록 오류 ({camera_id}): {e}")
             return None
+    
+    def send_mqtt_event(self, camera_id: str, event_type: str, event_data: dict) -> bool:
+        """
+        이벤트를 MQTT로 직접 발행 (동기 메서드)
+        EdgeX v3 형식으로 발행 (envelope + payload 구조)
+        
+        매개변수:
+            camera_id: 카메라 ID
+            event_type: 이벤트 타입 (person, head, fall_detected 등)
+            event_data: 이벤트 데이터 딕셔너리
+            
+        반환값:
+            발행 성공 여부
+        """
+        logger.info(f"[send_mqtt_event] 호출됨: camera_id={camera_id}, event_type={event_type}")
+        
+        try:
+            device_name = f"camera-{camera_id}"
+            
+            resource_name = self._map_event_type_to_resource(event_type)
+
+            event_fields = self._extract_event_fields(event_data)
+            confidence = event_fields["confidence"]
+            x = event_fields["x"]
+            y = event_fields["y"]
+            width = event_fields["width"]
+            height = event_fields["height"]
+            object_id = event_fields["object_id"]
+            timestamp = event_fields["timestamp"]
+            
+            # _publish_event_mqtt()를 사용하여 발행
+            # 이 메서드가 올바른 envelope 형식을 생성합니다
+            result = self._publish_event_mqtt(
+                device_name,
+                resource_name,
+                event_type,
+                confidence,
+                x,
+                y,
+                width,
+                height,
+                object_id,
+                timestamp
+            )
+            
+            if result:
+                logger.info(f"✓ MQTT 이벤트 발행 성공: {device_name}/{resource_name} ({event_type})")
+                return True
+            else:
+                logger.error(f"✗ MQTT 이벤트 발행 실패: {device_name}/{resource_name} ({event_type})")
+                return False
+                
+        except Exception as e:
+            logger.error(f"✗ MQTT 이벤트 발행 오류: {e}", exc_info=True)
+            return False
     
     async def send_detection_event(self, camera_id: str, events: List) -> bool:
         """
@@ -224,66 +431,42 @@ class CCTVDeviceService:
         
         try:
             for event in events:
-                # 이벤트 데이터 추출 (DetectionEvent 또는 dict 지원)
-                if isinstance(event, dict):
-                    event_type = event.get("type", "unknown")
-                    confidence = event.get("confidence", 0.0)
-                    bbox = event.get("bbox", {}) or {}
-                    x = bbox.get("x", 0)
-                    y = bbox.get("y", 0)
-                    width = bbox.get("width", 0)
-                    height = bbox.get("height", 0)
-                    object_id = event.get("object_id")
-                    timestamp = event.get("timestamp", datetime.now().isoformat())
-                else:
-                    event_type = event.event_type.value if hasattr(event, "event_type") else "unknown"
-                    confidence = event.confidence if hasattr(event, "confidence") else 0.0
-                    x = event.x if hasattr(event, "x") else 0
-                    y = event.y if hasattr(event, "y") else 0
-                    width = event.width if hasattr(event, "width") else 0
-                    height = event.height if hasattr(event, "height") else 0
-                    object_id = event.object_id if hasattr(event, "object_id") else None
-                    timestamp = event.timestamp if hasattr(event, "timestamp") else datetime.now().isoformat()
+                event_fields = self._extract_event_fields(event)
+                event_type = event_fields["event_type"]
+                confidence = event_fields["confidence"]
+                x = event_fields["x"]
+                y = event_fields["y"]
+                width = event_fields["width"]
+                height = event_fields["height"]
+                object_id = event_fields["object_id"]
+                timestamp = event_fields["timestamp"]
 
-                # EdgeX Device Profile 리소스에 맞게 매핑
-                if event_type in ["helmet", "head", "unsafe_behavior"]:
-                    resource_name = "helmet_detection"
-                elif event_type in ["fall_detected", "not_fall"]:
-                    resource_name = "fall_detection"
-                elif event_type == "person":
-                    resource_name = "person_detection"
-                else:
-                    resource_name = "helmet_detection"
+                resource_name = self._map_event_type_to_resource(event_type)
 
-                event_id = str(uuid.uuid4())
-                base_event = {
-                    "event": {
-                        "apiVersion": "v3",
-                        "id": event_id,
-                        "deviceName": device_name,
-                        "profileName": "CCTV-Camera-Profile",
-                        "sourceName": resource_name,
-                        "readings": [
-                            {
-                                "deviceName": device_name,
-                                "resourceName": resource_name,
-                                "value": json.dumps({
-                                    "type": event_type,
-                                    "confidence": confidence,
-                                    "bbox": {
-                                        "x": x,
-                                        "y": y,
-                                        "width": width,
-                                        "height": height
-                                    },
-                                    "object_id": object_id,
-                                    "timestamp": timestamp
-                                }),
-                                "valueType": "String"
-                            }
-                        ]
-                    }
-                }
+                try:
+                    origin = int(float(timestamp) * 1_000_000_000)
+                except Exception:
+                    origin = int(time.time() * 1_000_000_000)
+
+                value_payload = self._build_value_payload(
+                    event_type,
+                    confidence,
+                    x,
+                    y,
+                    width,
+                    height,
+                    object_id,
+                    timestamp,
+                    device_name,
+                    resource_name,
+                )
+                event_payload = self._build_event_payload(
+                    device_name,
+                    resource_name,
+                    origin,
+                    value_payload,
+                )
+                base_event = {"event": event_payload["event"]}
                 
                 # EdgeX Core Data로 전송 (v3 → v2 → v1 폴백)
                 endpoints = [
@@ -330,7 +513,10 @@ class CCTVDeviceService:
                             logger.warning(f"엔드포인트 없음: {endpoint}")
                             continue
                         else:
-                            logger.warning(f"Event 전송 실패 ({camera_id}): {response.status_code}")
+                            logger.warning(
+                                f"Event 전송 실패 ({camera_id}): {response.status_code} - "
+                                f"{self._describe_http_status(response.status_code)}"
+                            )
                             logger.warning(f"응답: {response.text}")
                             logger.warning(f"엔드포인트: {endpoint}")
                             continue
@@ -344,7 +530,9 @@ class CCTVDeviceService:
                     if last_endpoint:
                         logger.warning(f"마지막 엔드포인트: {last_endpoint}")
                     if last_status is not None:
-                        logger.warning(f"마지막 상태 코드: {last_status}")
+                        logger.warning(
+                            f"마지막 상태 코드: {last_status} - {self._describe_http_status(last_status)}"
+                        )
                     if last_text:
                         logger.warning(f"마지막 응답: {last_text}")
                     # REST 실패 시 MQTT로 폴백
@@ -398,55 +586,27 @@ class CCTVDeviceService:
             except Exception:
                 origin = int(time.time() * 1_000_000_000)
 
-            event_id = str(uuid.uuid4())
-            request_id = str(uuid.uuid4())
-            correlation_id = str(uuid.uuid4())
-            
-            event_payload = {
-                "apiVersion": "v3",
-                "requestId": request_id,
-                "event": {
-                    "apiVersion": "v3",
-                    "id": event_id,
-                    "deviceName": device_name,
-                    "profileName": "CCTV-Camera-Profile",
-                    "sourceName": resource_name,
-                    "origin": origin,
-                    "readings": [
-                        {
-                            "origin": origin,
-                            "deviceName": device_name,
-                            "resourceName": resource_name,
-                            "profileName": "CCTV-Camera-Profile",
-                            "valueType": "String",
-                            "value": json.dumps({
-                                "type": event_type,
-                                "confidence": confidence,
-                                "bbox": {
-                                    "x": x,
-                                    "y": y,
-                                    "width": width,
-                                    "height": height
-                                },
-                                "object_id": object_id,
-                                "timestamp": timestamp
-                            })
-                        }
-                    ]
-                }
-            }
+            value_payload = self._build_value_payload(
+                event_type,
+                confidence,
+                x,
+                y,
+                width,
+                height,
+                object_id,
+                timestamp,
+                device_name,
+                resource_name,
+            )
+            event_payload = self._build_event_payload(
+                device_name,
+                resource_name,
+                origin,
+                value_payload,
+            )
+            envelope = self._build_envelope(event_payload)
 
-            envelope = {
-                "apiVersion": "v3",
-                "receivedTopic": "",
-                "correlationID": correlation_id,
-                "requestID": "",
-                "errorCode": 0,
-                "payload": event_payload,
-                "contentType": "application/json"
-            }
-
-            topic = f"{self.mqtt_topic_prefix}/{self.service_name}/CCTV-Camera-Profile/{device_name}/{resource_name}"
+            topic = f"{self.mqtt_topic_prefix}/{self.service_name}/{device_name}/{resource_name}"
             logger.info(f"MQTT 토픽: {topic}")
 
             result = self._mqtt_client.publish(topic, json.dumps(envelope), qos=0)
@@ -515,7 +675,10 @@ class CCTVDeviceService:
                         logger.debug(f"엔드포인트 없음: {endpoint}")
                         continue
                     else:
-                        logger.warning(f"Service 등록 실패: {response.status_code}")
+                        logger.warning(
+                            f"Service 등록 실패: {response.status_code} - "
+                            f"{self._describe_http_status(response.status_code)}"
+                        )
                         logger.debug(f"응답: {response.text}")
                         continue
                 except Exception as e:
@@ -613,7 +776,10 @@ class CCTVDeviceService:
                         logger.info(f"✓ Device Profile 이미 존재: CCTV-Camera-Profile (엔드포인트: {endpoint})")
                         return True
                     else:
-                        logger.warning(f"Profile 생성 실패: {response.status_code}")
+                        logger.warning(
+                            f"Profile 생성 실패: {response.status_code} - "
+                            f"{self._describe_http_status(response.status_code)}"
+                        )
                         logger.debug(f"응답: {response.text}")
                         continue
                 except Exception as e:
@@ -625,4 +791,114 @@ class CCTVDeviceService:
                 
         except Exception as e:
             logger.error(f"Profile 생성 오류: {e}")
+            return False
+
+    def publish_device_event(
+        self,
+        device_id: str,
+        device_type: str,
+        resource_name: str,
+        event_data: Dict
+    ) -> bool:
+        """
+        범용 디바이스 이벤트 발행 메서드
+        
+        다양한 디바이스 타입 (CCTV, 열화상, 센서 등)을 지원하는 통합 인터페이스
+        
+        매개변수:
+            device_id: 디바이스 ID (예: camera-1, thermal-1, sensor-1)
+            device_type: 디바이스 타입 (예: cctv, thermal, sensor)
+            resource_name: 리소스명 (예: helmet_detection, temperature, motion)
+            event_data: 이벤트 데이터 딕셔너리
+                {
+                    "type": "detection type",
+                    "confidence": 0.95,
+                    "value": "measurement value",
+                    "bbox": {"x": 100, "y": 200, "width": 300, "height": 400},  # 선택사항
+                    "object_id": 1,  # 선택사항
+                    "timestamp": "2026-02-05T06:00:00Z"
+                }
+        
+        반환값:
+            발행 성공 여부
+        """
+        if not self._ensure_mqtt_client():
+            return False
+
+        try:
+            logger.info(f"범용 디바이스 이벤트 발행: {device_id}/{resource_name}")
+            
+            try:
+                timestamp = event_data.get("timestamp", datetime.now().isoformat())
+                origin = int(float(timestamp) * 1_000_000_000) if isinstance(timestamp, (int, float)) else int(time.time() * 1_000_000_000)
+            except Exception:
+                origin = int(time.time() * 1_000_000_000)
+
+            event_id = str(uuid.uuid4())
+            request_id = str(uuid.uuid4())
+            correlation_id = str(uuid.uuid4())
+            
+            # 📊 표준화된 메시지 포맷 (모든 디바이스 타입에 공통)
+            payload_value = {
+                "type": event_data.get("type", "unknown"),
+                "device": device_id,
+                "device_type": device_type,
+                "resource": resource_name,
+                "confidence": event_data.get("confidence", 0.0),
+                "value": event_data.get("value"),
+                "bbox": event_data.get("bbox"),  # 선택사항 (detection 타입만 해당)
+                "object_id": event_data.get("object_id"),  # 선택사항
+                "timestamp": timestamp,
+                "metadata": {
+                    "service": self.service_name,
+                    "version": "v1",
+                    "device_type": device_type
+                }
+            }
+            
+            event_payload = {
+                "apiVersion": "v3",
+                "requestId": request_id,
+                "event": {
+                    "apiVersion": "v3",
+                    "id": event_id,
+                    "deviceName": device_id,
+                    "sourceName": resource_name,
+                    "origin": origin,
+                    "readings": [
+                        {
+                            "origin": origin,
+                            "deviceName": device_id,
+                            "resourceName": resource_name,
+                            "valueType": "String",
+                            "value": json.dumps(payload_value)
+                        }
+                    ]
+                }
+            }
+
+            envelope = {
+                "apiVersion": "v3",
+                "receivedTopic": "",
+                "correlationID": correlation_id,
+                "requestID": request_id,
+                "errorCode": 0,
+                "payload": event_payload,
+                "contentType": "application/json"
+            }
+
+            # 확장성 있는 토픽 구조: edgex/events/device/{service}/{device_type}/{device_id}/{resource}
+            topic = f"{self.mqtt_topic_prefix}/{self.service_name}/{device_type}/{device_id}/{resource_name}"
+            logger.info(f"MQTT 토픽: {topic}")
+
+            result = self._mqtt_client.publish(topic, json.dumps(envelope), qos=0)
+            
+            if result.rc == 0:
+                logger.info(f"✓ 범용 디바이스 이벤트 발행 성공: {topic} (mid={result.mid})")
+                return True
+            else:
+                logger.error(f"범용 디바이스 이벤트 발행 실패: {topic} (rc={result.rc})")
+                return False
+        except Exception as e:
+            logger.error(f"범용 디바이스 이벤트 발행 오류: {e}", exc_info=True)
             return False

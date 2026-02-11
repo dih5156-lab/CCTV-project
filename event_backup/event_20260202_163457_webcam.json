@@ -1,0 +1,15 @@
+{
+  "type": "head",
+  "bbox": {
+    "x": 297,
+    "y": 228,
+    "width": 57,
+    "height": 63
+  },
+  "confidence": 0.7535766363143921,
+  "timestamp": 1770017697.6319602,
+  "object_id": 1006503,
+  "class_idx": 1,
+  "keypoints": null,
+  "camera_id": "webcam"
+}

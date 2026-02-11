@@ -6,8 +6,8 @@ VideoProcessor를 EdgeX와 연동
 import asyncio
 import logging
 from typing import Dict, Optional
+
 from src.core.processor import VideoProcessor
-from src.core.events import DetectionEvent
 from .device_service import CCTVDeviceService
 
 logger = logging.getLogger(__name__)

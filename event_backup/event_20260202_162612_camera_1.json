@@ -1,0 +1,15 @@
+{
+  "type": "person",
+  "bbox": {
+    "x": 957,
+    "y": 257,
+    "width": 297,
+    "height": 529
+  },
+  "confidence": 0.8816561102867126,
+  "timestamp": 1770017172.5676317,
+  "object_id": 6994,
+  "class_idx": 0,
+  "keypoints": null,
+  "camera_id": "camera_1"
+}

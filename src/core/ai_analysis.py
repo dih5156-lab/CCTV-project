@@ -325,7 +325,7 @@ class AIAnalyzer:
                 logger.debug(f"헬멧 종횡비 거부됨: {aspect_ratio:.2f} (너무 얇거나 평평함)")
                 continue
             
-            # 3. 위치 검증: 프레임 하단 30% 영역이면 제외 (손이나 몸통일 가능성)
+            # 3. 위치 검증: 프레임 하단 35% 영역이면 제외 (손이나 몸통일 가능성)
             # 프레임 높이 정보가 없으므로 이 검증은 스킵
             # run_inference에서 프레임 높이를 전달받아야 함
             
@@ -369,7 +369,7 @@ class AIAnalyzer:
     # ---------------------------
     # 단일 모델 추론 헬퍼
     # ---------------------------
-    def _run_single_model(self, model, frame) -> List:
+    def _run_single_model(self, model, frame, use_tracking: bool = True) -> List:
         """단일 YOLO 모델 결과를 DetectionEvent 리스트로 변환"""
         from .events import EventType, DetectionEvent
         import numpy as _np
@@ -384,16 +384,24 @@ class AIAnalyzer:
         else:
             conf_threshold = self.confidence_threshold
 
-        # YOLO 실행: track() 사용 (실제 추적 ID 생성)
         try:
-            results = model.track(
-                frame, 
-                conf=conf_threshold, 
-                iou=DEFAULT_IOU_THRESHOLD, 
-                imgsz=DEFAULT_IMAGE_SIZE_HELMET, 
-                verbose=False,
-                persist=True  # 프레임 간 ID 지속
-            )
+            if use_tracking:
+                results = model.track(
+                    frame,
+                    conf=conf_threshold,
+                    iou=DEFAULT_IOU_THRESHOLD,
+                    imgsz=DEFAULT_IMAGE_SIZE_HELMET,
+                    verbose=False,
+                    persist=True  # 프레임 간 ID 지속
+                )
+            else:
+                results = model.predict(
+                    frame,
+                    conf=conf_threshold,
+                    iou=DEFAULT_IOU_THRESHOLD,
+                    imgsz=DEFAULT_IMAGE_SIZE_HELMET,
+                    verbose=False,
+                )
         except Exception as e:
             logger.error(f"모델 추론 실패 ({self.current_model_type}): {e}")
             import traceback
@@ -488,6 +496,39 @@ class AIAnalyzer:
                 events.append(ev)
 
         return events
+
+    def _run_helmet_on_person_rois(self, frame, person_events: List) -> List:
+        """사람 영역(머리 비율) 안에서만 헬멧 모델을 실행하고 좌표를 복원"""
+        if frame is None or not person_events:
+            return []
+
+        frame_h, frame_w = frame.shape[:2]
+        helmet_events: List = []
+
+        for person in person_events:
+            x1 = max(int(person.x), 0)
+            y1 = max(int(person.y), 0)
+            x2 = min(int(person.x + person.width), frame_w)
+            head_h = int(person.height * HEAD_REGION_RATIO)
+            y2 = min(int(person.y + max(head_h, 1)), frame_h)
+
+            if x2 <= x1 or y2 <= y1:
+                continue
+
+            roi = frame[y1:y2, x1:x2]
+            if roi.size == 0:
+                continue
+
+            self.current_model_type = "helmet"
+            roi_events = self._run_single_model(self.helmet_model, roi, use_tracking=False)
+
+            for ev in roi_events:
+                ev.x += x1
+                ev.y += y1
+
+            helmet_events.extend(roi_events)
+
+        return helmet_events
         
     def _run_pose_model(self, model, frame) -> List:
         """
@@ -834,12 +875,19 @@ class AIAnalyzer:
             person_and_fall_events = self._run_pose_model(self.pose_model, frame)
             logger.debug(f"Pose 모델: {len(person_and_fall_events)} 감지됨")
 
-        # 헬멧 모델 (준수 확인용, 화면 표시)
+        # 사람 이벤트만 추출 (넘어짐 제외)
+        person_events = [e for e in person_and_fall_events if e.event_type == EventType.PERSON]
+
+        # 헬멧 모델 (사람 영역 기준)
         if use_helmet and self.helmet_model:
-            self.current_model_type = "helmet"
-            helmet_events = self._run_single_model(self.helmet_model, frame)
+            if person_events:
+                helmet_events = self._run_helmet_on_person_rois(frame, person_events)
+            else:
+                self.current_model_type = "helmet"
+                helmet_events = self._run_single_model(self.helmet_model, frame)
+
             logger.debug(f"헬멧 모델: {len(helmet_events)} 감지됨 (threshold={getattr(self, 'helmet_threshold', self.confidence_threshold)})")
-            
+
             # 헬멧 박스 필터링 (크기 검증 + 중복 제거)
             small_helmet_events = self._filter_helmet_boxes(helmet_events)
         elif use_helmet and not self.helmet_model:
@@ -847,9 +895,6 @@ class AIAnalyzer:
             if not hasattr(self, '_helmet_warning_shown'):
                 logger.warning("헬멧 모델이 로드되지 않음")
                 self._helmet_warning_shown = True
-        
-        # 사람 이벤트만 추출 (넘어짐 제외)
-        person_events = [e for e in person_and_fall_events if e.event_type == EventType.PERSON]
                 
         # 헬멧 착용 준수 확인 (사람과 헬멧이 모두 있을 때만)
         if check_compliance and person_events and small_helmet_events:
@@ -857,7 +902,7 @@ class AIAnalyzer:
             compliance_results = self.check_helmet_compliance(all_events)
             self.compliance_result = compliance_results
                 
-        # 화면 표시용: 사람 + 헬멧 박스 + 넘어짐 반환
+        # 화면 표시용: 사람 + 헬멧 박스 + 넘어짐 반환 (각각 독립적으로)
         return person_and_fall_events + small_helmet_events
 
     # 하위 호환성 (processor.py 등에서 _run_inference를 호출할 때 동작)

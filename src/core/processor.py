@@ -9,6 +9,7 @@ import asyncio
 import cv2
 import os
 import numpy as np
+import concurrent.futures
 
 from dataclasses import dataclass, field, asdict
 from threading import Thread, Lock, Event
@@ -231,6 +232,10 @@ class VideoProcessor:
     def _should_send_event(self, camera_id: str, event_type: str, object_id: int) -> bool:
         """중복 전송 방지를 위한 이벤트 디바운싱 확인"""
         if not self.config.events.debounce_enabled:
+            return True
+
+        # head/fall_detected 같은 위반 이벤트는 디바운싱 없이 항상 전송
+        if event_type in ["head", "fall_detected"]:
             return True
 
         key = (camera_id, event_type, object_id)
@@ -657,15 +662,35 @@ class VideoProcessor:
         while self.running and not self.stop_event.is_set():
             try:
                 event_data = self.event_queue.get(timeout=1.0)
+                logger.info(f"[_send_events_worker] 이벤트 큐에서 꺼냄: {event_data.get('camera_id')} - {event_data.get('type')}")
                 
                 try:
                     # EdgeX 사용 시 EdgeX로 전송
                     if self.use_edgex and self.edgex_processor:
                         camera_id = event_data.get("camera_id")
-                        result = asyncio.run(
-                            self.edgex_processor.send_events_to_edgex(camera_id, [event_data])
-                        )
+                        event_type = event_data.get("type", "unknown")
+                        
+                        logger.info(f"[_send_events_worker] EdgeX 전송 시도: {camera_id} - {event_type}")
+                        
+                        # 비동기 함수를 동기적으로 호출
+                        try:
+                            # 간단하게: 이벤트를 직접 MQTT로 발행
+                            if self.edgex_processor.edgex_service:
+                                logger.info(f"[_send_events_worker] EdgeX 서비스 존재, send_mqtt_event 호출")
+                                result = self.edgex_processor.edgex_service.send_mqtt_event(
+                                    camera_id, 
+                                    event_type,
+                                    event_data
+                                )
+                                logger.info(f"[_send_events_worker] send_mqtt_event 반환: {result}")
+                            else:
+                                logger.warning("[_send_events_worker] EdgeX 서비스가 준비되지 않음")
+                                result = False
+                        except Exception as e:
+                            logger.error(f"[_send_events_worker] EdgeX MQTT 발행 실패: {e}", exc_info=True)
+                            result = False
                     else:
+                        logger.info(f"[_send_events_worker] EdgeX 미사용 또는 processor 없음 (use_edgex={self.use_edgex}, processor={self.edgex_processor})")
                         result = send_event(event_data, use_edgex=self.use_edgex)
 
                     if result:
@@ -673,9 +698,9 @@ class VideoProcessor:
                         consecutive_failures = 0
                         
                         if self.use_edgex:
-                            logger.debug(f"EdgeX 전송: {event_data.get('camera_id')} - {event_data.get('type')}")
+                            logger.info(f"✓ EdgeX 이벤트 전송: {event_data.get('camera_id')} - {event_data.get('type')}")
                         else:
-                            logger.info(f"이벤트 전송 성공: {event_data.get('camera_id')} - {event_data.get('type')}")
+                            logger.info(f"✓ 이벤트 전송 성공: {event_data.get('camera_id')} - {event_data.get('type')}")
                     else:
                         self.stats.events_failed += 1
                         consecutive_failures += 1
@@ -685,14 +710,14 @@ class VideoProcessor:
                             logger.error(f"연속 전송 실패: {consecutive_failures}회 - 서버 상태 확인 필요")
                             
                 except Exception as e:
-                    logger.error(f"전송 오류: {e}")
+                    logger.error(f"전송 오류: {e}", exc_info=True)
                     self.stats.events_failed += 1
                     consecutive_failures += 1
                     
             except Empty:
                 pass
             except Exception as e:
-                logger.error(f"워커 오류: {e}")
+                logger.error(f"워커 오류: {e}", exc_info=True)
     
     def _cleanup_worker(self):
         """주기적 메모리 정리 워커"""
