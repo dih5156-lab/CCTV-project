@@ -15,6 +15,7 @@ PROJECT_ROOT = Path(__file__).parent.parent.parent
 class ModelPaths:
     """모델 파일 경로 관리"""
     helmet_model: str = None
+    person_model: str = None
     pose_model: str = None
     
     def __post_init__(self):
@@ -42,6 +43,20 @@ class ModelPaths:
                 elif isinstance(path, str):
                     self.pose_model = path
                     break
+
+        if self.person_model is None:
+            person_candidates = [
+                PROJECT_ROOT / "models/yolov8n.pt",
+                PROJECT_ROOT / "yolov8n.pt",
+                "yolov8n.pt",
+            ]
+            for path in person_candidates:
+                if isinstance(path, Path) and path.exists():
+                    self.person_model = str(path)
+                    break
+                elif isinstance(path, str):
+                    self.person_model = path
+                    break
     
     def validate(self) -> bool:
         """모델 파일 존재 여부 및 크기 검증"""
@@ -63,6 +78,15 @@ class ModelPaths:
                 valid = False
             elif os.path.getsize(self.pose_model) == 0:
                 print(f"오류: Pose 모델 파일이 비어있습니다: {self.pose_model}")
+                valid = False
+
+        # Person 모델 검증
+        if self.person_model:
+            if not os.path.exists(self.person_model):
+                print(f"경고: Person 모델을 찾을 수 없습니다: {self.person_model}")
+                valid = False
+            elif os.path.getsize(self.person_model) == 0:
+                print(f"오류: Person 모델 파일이 비어있습니다: {self.person_model}")
                 valid = False
         
         return valid
@@ -89,6 +113,7 @@ class CameraConfig:
 class DetectionConfig:
     """객체 감지 설정"""
     helmet_confidence: float = 0.7  # 헬멧 감지 신뢰도 (0.0~1.0)
+    person_confidence: float = 0.5  # 사람 감지 신뢰도 (0.0~1.0)
     pose_confidence: float = 0.5  # 사람 감지 신뢰도 (0.0~1.0)
     device: str = "cpu"  # 계산 장치 (cpu 또는 cuda)
     target_fps: int = 30  # 목표 프레임율
@@ -102,6 +127,8 @@ class DetectionConfig:
         # 신뢰도 검증 (0.0~1.0)
         if not 0.0 <= self.helmet_confidence <= 1.0:
             raise ValueError(f"헬멧 신뢰도는 0.0~1.0 사이여야 합니다. 입력값: {self.helmet_confidence}")
+        if not 0.0 <= self.person_confidence <= 1.0:
+            raise ValueError(f"사람 신뢰도는 0.0~1.0 사이여야 합니다. 입력값: {self.person_confidence}")
         if not 0.0 <= self.pose_confidence <= 1.0:
             raise ValueError(f"Pose 신뢰도는 0.0~1.0 사이여야 합니다. 입력값: {self.pose_confidence}")
         
@@ -189,6 +216,8 @@ class AppConfig:
         # 모델 경로 환경 변수
         if os.getenv("HELMET_MODEL_PATH"):
             config.models.helmet_model = os.getenv("HELMET_MODEL_PATH")
+        if os.getenv("PERSON_MODEL_PATH"):
+            config.models.person_model = os.getenv("PERSON_MODEL_PATH")
         if os.getenv("POSE_MODEL_PATH"):
             config.models.pose_model = os.getenv("POSE_MODEL_PATH")
         
@@ -210,10 +239,12 @@ class AppConfig:
             "============ 설정 요약 ============",
             "[모델 경로]",
             f"  헬멧 모델: {self.models.helmet_model or '설정되지 않음'}",
+            f"  Person 모델: {self.models.person_model or '설정되지 않음'}",
             f"  Pose 모델: {self.models.pose_model or '설정되지 않음'}",
             "[감지 설정]",
             f"  장치: {self.detection.device}",
             f"  헬멧 신뢰도: {self.detection.helmet_confidence}",
+            f"  사람 신뢰도: {self.detection.person_confidence}",
             f"  Pose 신뢰도: {self.detection.pose_confidence}",
             "[성능 설정]",
             f"  목표 FPS: {self.detection.target_fps}",

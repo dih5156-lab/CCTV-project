@@ -1,7 +1,6 @@
-"""
-ai_analysis.py - 멀티 모델 객체 탐지 시스템
+"""AI 분석 모듈: YOLO 기반 멀티 모델 객체 탐지
 
-YOLO 기반 헬멧/낙상/사람 감지 및 헬멧 착용 여부 판단
+Top-down 방식으로 사람(검증) → 낙상(포즈) → 헬멧(헬멧) 모델을 순차 적용
 """
 
 import os
@@ -17,7 +16,11 @@ from ..utils.geometry import is_helmet_worn, boxes_overlap
 
 logger = logging.getLogger(__name__)
 
-# 감지 상수
+# ====================
+# 상수 정의
+# ====================
+
+# 헬멧 감지 임계값
 MAX_HELMET_WIDTH = 300  # 헬멧 최대 너비
 MAX_HELMET_HEIGHT = 300  # 헬멧 최대 높이
 MAX_HELMET_BODY_SIZE = 300  # 헬멧 박스 최대 크기
@@ -26,13 +29,13 @@ MAX_HELMET_ASPECT_RATIO = 2.0  # 헬멧 최대 가로세로 비율
 DUPLICATE_IOU_THRESHOLD = 0.3  # 중복 제거를 위한 IoU 임계값
 HEAD_REGION_RATIO = 0.35  # 헬멧 검증용 머리 영역 비율 (사람 상단 35%)
 
-# 키포인트 감지 상수
+# 키포인트 감지 임계값
 MIN_KEYPOINT_CONFIDENCE = 0.2
 FALL_ANGLE_HORIZONTAL = 30  # 수평 각도 임계값 (도)
 FALL_ANGLE_INVERTED = 150  # 역방향 수평 각도 임계값 (도)
 MIN_HIP_CONFIDENCE = 0.3  # 엉덩이 키포인트 최소 신뢰도
 
-# 모델 상수
+# YOLO 모델 설정
 DEFAULT_IMAGE_SIZE_HELMET = 640  # 헬멧 감지 개선
 DEFAULT_IMAGE_SIZE_POSE = 640  # 기본 해상도
 DEFAULT_IOU_THRESHOLD = 0.45  # 중복 제거를 위한 NMS 임계값
@@ -44,16 +47,19 @@ except Exception:
 
 
 class AIAnalyzer:
-    """
-    헬멧 및 낙상 감지를 위한 멀티 모델 AI 분석 시스템
+    """멀티 모델 AI 분석 시스템
     
-    사람 감지 및 키포인트 기반 낙상 감지를 위해 YOLOv8-pose 사용
+    모델 구성:
+    - Person 모델 (yolov8n): 사람 감지 전용
+    - Pose 모델 (yolov8n-pose): 낙상 감지 (사람 ROI 내)
+    - Helmet 모델 (커스텀): 헬멧 감지 (사람 머리 ROI 내)
     """
 
     def __init__(
         self,
         model_path: Optional[str] = None,  # 하위 호환성을 위한 파라미터
         helmet_model_path: Optional[str] = None,
+        person_model_path: Optional[str] = None,
         pose_model_path: Optional[str] = None,  # YOLOv8-pose (사람 + 키포인트)
         confidence_threshold: float = 0.5,
         device: str = "cpu",
@@ -83,23 +89,26 @@ class AIAnalyzer:
         if model_path and not pose_model_path:
             pose_model_path = model_path
         
+        # 모델 경로 및 설정
         self.helmet_model_path = helmet_model_path
+        self.person_model_path = person_model_path
         self.pose_model_path = pose_model_path
         self.confidence_threshold = confidence_threshold
         self.device = device
         self.fall_angle_threshold = fall_angle_threshold
         self.fall_height_ratio = fall_height_ratio
 
-        # 모델 객체
+        # 모델 객체 초기화
         self.helmet_model = None
+        self.person_model = None
         self.pose_model = None  # YOLOv8-pose 모델
-        self.current_model_type = None
+        self.current_model_type = None  # 현재 실행 중인 모델 타입
 
-        # 마지막 로드 에러 메시지
+        # 기타 상태
         self.last_load_errors = []
         self.compliance_result = []  # 헬멧 착용 검사 결과
 
-        # ultralytics 설치 확인
+        # YOLO 라이브러리 확인
         if YOLO is None:
             logger.error("ultralytics 패키지가 설치되지 않았습니다. `pip install ultralytics`를 실행하세요.")
             raise ImportError("ultralytics 패키지가 필요합니다")
@@ -107,18 +116,22 @@ class AIAnalyzer:
         # 모델 자동 로딩
         self.load_models()
 
+    # ====================
+    # 공개 API 메소드
+    # ====================
+
     def run_helmet_model(self, frame):
         self.current_model_type = "helmet"
         return self._run_single_model(self.helmet_model, frame)
 
-    def run_pose_model(self, frame):
-        """Pose 모델 실행 (사람 + 키포인트 감지)"""
-        self.current_model_type = "pose"
-        return self._run_pose_model(self.pose_model, frame)
+    def run_person_model(self, frame):
+        self.current_model_type = "person"
+        return self._run_single_model(self.person_model, frame)
 
-    # ---------------------------
-    # 모델 로딩
-    # ---------------------------
+    # ====================
+    # 모델 관리
+    # ====================
+
     def _load_model(self, model_path: str):
         """단일 YOLO 모델 로드"""
         if YOLO is None:
@@ -153,7 +166,7 @@ class AIAnalyzer:
             raise RuntimeError(f"모델 로드 실패 ({model_path}): {e}")
 
     def load_models(self) -> None:
-        """헬멧 및 pose 모델 로드"""
+        """헬멧, Person, Pose 모델 로드"""
         self.last_load_errors.clear()
         
         # 헬멧 모델 로드
@@ -168,6 +181,18 @@ class AIAnalyzer:
         else:
             logger.warning("헬멧 모델 경로가 지정되지 않음")
 
+        # Person 모델 로드
+        if self.person_model_path:
+            try:
+                self.person_model = self._load_model(self.person_model_path)
+                logger.info(f"Person 모델 로드 완료: {self.person_model_path}")
+            except Exception as e:
+                self.person_model = None
+                self.last_load_errors.append(("person", str(e)))
+                logger.warning(f"Person 모델 로드 실패: {e}")
+        else:
+            logger.warning("Person 모델 경로가 지정되지 않음")
+
         # Pose 모델 로드 (사람 + 키포인트 감지)
         if self.pose_model_path:
             try:
@@ -178,22 +203,26 @@ class AIAnalyzer:
                 self.last_load_errors.append(("pose", str(e)))
                 logger.warning(f"Pose 모델 로드 실패: {e}")
 
-        if not any([self.helmet_model, self.pose_model]):
+        if not any([self.helmet_model, self.person_model, self.pose_model]):
             logger.error("로드된 모델이 없습니다. 경로/라이브러리/파일을 확인하세요.")
         else:
-            logger.info(f"로드된 모델: Helmet={bool(self.helmet_model)}, Pose={bool(self.pose_model)}")
+            logger.info(
+                f"로드된 모델: Helmet={bool(self.helmet_model)}, Person={bool(self.person_model)}, Pose={bool(self.pose_model)}"
+            )
 
     def get_loaded_model_names(self) -> Dict[str, Optional[Dict[int, str]]]:
-        """
-        로드된 모델의 클래스명 조회 (디버깅용)
-        반환값: {"helmet": {0: "helmet_wearing", 1: "helmet_missing"}, "pose": {0: "person"}}
-        """
-        res = {"helmet": None, "pose": None}
+        """로드된 모델의 클래스명 조회 (디버깅용)"""
+        res = {"helmet": None, "person": None, "pose": None}
         if self.helmet_model:
             try:
                 res["helmet"] = getattr(self.helmet_model, "names", None)
             except Exception:
                 res["helmet"] = None
+        if self.person_model:
+            try:
+                res["person"] = getattr(self.person_model, "names", None)
+            except Exception:
+                res["person"] = None
         if self.pose_model:
             try:
                 res["pose"] = getattr(self.pose_model, "names", None)
@@ -201,13 +230,14 @@ class AIAnalyzer:
                 res["pose"] = None
         return res
 
-    # ---------------------------
-    # 디바이스 / 임계값 설정
-    # ---------------------------
+    # ====================
+    # 설정 메소드
+    # ====================
+
     def set_device(self, device: str = "cpu") -> None:
         """디바이스 설정 (cpu 또는 cuda). 모델이 이미 로드된 경우 .to() 시도"""
         self.device = device
-        for m in (self.helmet_model, self.pose_model):
+        for m in (self.helmet_model, self.person_model, self.pose_model):
             if m is not None:
                 try:
                     m.to(device)
@@ -223,9 +253,9 @@ class AIAnalyzer:
         self.confidence_threshold = threshold
         logger.info(f"신뢰도 임계값 업데이트: {threshold}")
 
-    # ---------------------------
-    # 유틸리티: 클래스 매핑
-    # ---------------------------
+    # ====================
+    # YOLO 결과 추출 헬퍼
+    # ====================
     def _map_class_to_event_type(self, class_name: str, model_type: str):
         """클래스명을 EventType으로 매핑
         
@@ -258,13 +288,64 @@ class AIAnalyzer:
                 return EventType.PERSON
             else:
                 return EventType.OTHER
+
+        if model_type == "person":
+            return EventType.PERSON if normalized == "person" else EventType.OTHER
         
-        # Pose 모델의 EventType은 _run_pose_model에서 직접 설정하므로 여기서는 OTHER 반환
+        # Pose 모델의 EventType은 _run_pose_on_person_rois에서 직접 설정
         return EventType.OTHER
 
-    # ---------------------------
-    # 유틸리티 헬퍼 메소드
-    # ---------------------------
+    # ====================
+    # YOLO 결과 추출 헬퍼 메소드
+    # ====================
+    def _extract_bbox(self, box) -> Optional[Tuple[int, int, int, int]]:
+        """YOLO box에서 bbox 좌표 추출 (x1, y1, x2, y2)"""
+        try:
+            xyxy_tensor = box.xyxy[0]
+            if hasattr(xyxy_tensor, "cpu"):
+                xyxy = xyxy_tensor.cpu().numpy().astype(int)
+            else:
+                xyxy = np.array(xyxy_tensor).astype(int)
+            return int(xyxy[0]), int(xyxy[1]), int(xyxy[2]), int(xyxy[3])
+        except (ValueError, TypeError, IndexError) as e:
+            logger.debug(f"bbox 추출 실패: {e}")
+            return None
+
+    def _extract_confidence(self, box) -> float:
+        """YOLO box에서 신뢰도 추출"""
+        try:
+            conf_tensor = box.conf[0]
+            if hasattr(conf_tensor, "cpu"):
+                return float(conf_tensor.cpu().numpy())
+            else:
+                return float(conf_tensor)
+        except (ValueError, TypeError, IndexError):
+            return 0.0
+
+    def _extract_keypoints(self, keypoints, idx: int) -> Optional[np.ndarray]:
+        """YOLO pose 결과에서 키포인트 배열 추출 (N, 3) - [x, y, confidence]"""
+        try:
+            if hasattr(keypoints, "data"):
+                kpts = keypoints.data[idx]
+                if hasattr(kpts, "cpu"):
+                    return kpts.cpu().numpy()
+                return kpts
+            elif hasattr(keypoints, "xy"):
+                kpts_xy = keypoints.xy[idx]
+                kpts_conf = keypoints.conf[idx]
+                if hasattr(kpts_xy, "cpu"):
+                    kpts_xy = kpts_xy.cpu().numpy()
+                    kpts_conf = kpts_conf.cpu().numpy()
+                return np.column_stack([kpts_xy, kpts_conf])
+            return None
+        except Exception as e:
+            logger.debug(f"키포인트 추출 실패: {e}")
+            return None
+
+    # ====================
+    # 유틸리티 메소드
+    # ====================
+
     def _extract_track_id(self, box) -> Optional[int]:
         """YOLOv8 track() 결과에서 추적 ID 추출
         
@@ -366,9 +447,10 @@ class AIAnalyzer:
         
         return keep
 
-    # ---------------------------
-    # 단일 모델 추론 헬퍼
-    # ---------------------------
+    # ====================
+    # 모델 추론 메소드
+    # ====================
+
     def _run_single_model(self, model, frame, use_tracking: bool = True) -> List:
         """단일 YOLO 모델 결과를 DetectionEvent 리스트로 변환"""
         from .events import EventType, DetectionEvent
@@ -381,6 +463,8 @@ class AIAnalyzer:
         # 모델 타입에 따라 신뢰도 임계값 선택
         if self.current_model_type == "helmet":
             conf_threshold = getattr(self, 'helmet_threshold', self.confidence_threshold)
+        elif self.current_model_type == "person":
+            conf_threshold = getattr(self, 'person_threshold', self.confidence_threshold)
         else:
             conf_threshold = self.confidence_threshold
 
@@ -422,29 +506,16 @@ class AIAnalyzer:
 
             # boxes는 iterable of box objects
             for box in boxes:
-                try:
-                    # xyxy와 conf, cls 추출 (tensor -> numpy)
-                    xyxy_tensor = box.xyxy[0]
-                    if hasattr(xyxy_tensor, "cpu"):
-                        xyxy = xyxy_tensor.cpu().numpy().astype(int)
-                    else:
-                        xyxy = np.array(xyxy_tensor).astype(int)
-                    x1, y1, x2, y2 = int(xyxy[0]), int(xyxy[1]), int(xyxy[2]), int(xyxy[3])
-                    width = x2 - x1
-                    height = y2 - y1
-                except (ValueError, TypeError, IndexError) as e:
-                    logger.debug(f"bbox 추출 실패: {e}")
+                # bbox 추출
+                bbox = self._extract_bbox(box)
+                if bbox is None:
                     continue
+                x1, y1, x2, y2 = bbox
+                width = x2 - x1
+                height = y2 - y1
 
-                # confidence
-                try:
-                    conf_tensor = box.conf[0]
-                    if hasattr(conf_tensor, "cpu"):
-                        conf = float(conf_tensor.cpu().numpy())
-                    else:
-                        conf = float(conf_tensor)
-                except (ValueError, TypeError, IndexError):
-                    conf = 0.0
+                # confidence 추출
+                conf = self._extract_confidence(box)
 
                 # class index & name
                 cls_idx = None
@@ -529,159 +600,119 @@ class AIAnalyzer:
             helmet_events.extend(roi_events)
 
         return helmet_events
-        
-    def _run_pose_model(self, model, frame) -> List:
-        """
-        YOLOv8-pose 모델 추론 (사람 + 키포인트 감지)
-        키포인트 정보를 사용하여 넘어짐을 감지
-        """
+
+    def _run_pose_on_person_rois(self, frame, person_events: List) -> List:
+        """사람 ROI에서 pose 모델로 낙상만 감지 (Top-down 방식)"""
         from .events import EventType, DetectionEvent
-        
-        events: List = []
-        if model is None or frame is None:
-            return events
-        
-        # Pose 모델 신뢰도 임계값
+
+        if frame is None or not person_events or self.pose_model is None:
+            return []
+
+        frame_h, frame_w = frame.shape[:2]
         conf_threshold = getattr(self, 'pose_threshold', self.confidence_threshold)
-        
-        try:
-            # track() 사용 (실제 추적 ID 생성, 같은 사람 ID 유지)
-            results = model.track(
-                frame, 
-                conf=conf_threshold, 
-                iou=DEFAULT_IOU_THRESHOLD, 
-                imgsz=DEFAULT_IMAGE_SIZE_POSE, 
-                verbose=False,
-                persist=True  # 프레임 간 ID 지속
-            )
-        except Exception as e:
-            logger.error(f"Pose 모델 추론 실패: {e}")
-            import traceback
-            logger.debug(f"트레이스백: {traceback.format_exc()}")
-            return events
-        
-        logger.info(f"[Pose] 추론 완료: {len(results)}개 결과")
-        
-        for result in results:
-            boxes = getattr(result, "boxes", None)
-            keypoints = getattr(result, "keypoints", None)  # 키포인트 정보
-            
-            if boxes is None:
-                logger.debug(f"[Pose] boxes 없음")
+        fall_events: List = []
+
+        for person in person_events:
+            x1 = max(int(person.x), 0)
+            y1 = max(int(person.y), 0)
+            x2 = min(int(person.x + person.width), frame_w)
+            y2 = min(int(person.y + person.height), frame_h)
+
+            if x2 <= x1 or y2 <= y1:
                 continue
-            
-            logger.info(f"[Pose] 감지된 박스: {len(boxes)}개")
-            
-            for idx, box in enumerate(boxes):
-                try:
+
+            roi = frame[y1:y2, x1:x2]
+            if roi.size == 0:
+                continue
+
+            try:
+                results = self.pose_model.predict(
+                    roi,
+                    conf=conf_threshold,
+                    iou=DEFAULT_IOU_THRESHOLD,
+                    imgsz=DEFAULT_IMAGE_SIZE_POSE,
+                    verbose=False,
+                )
+            except Exception as e:
+                logger.debug(f"Pose ROI 추론 실패: {e}")
+                continue
+
+            best_fall = None
+            for result in results:
+                boxes = getattr(result, "boxes", None)
+                keypoints = getattr(result, "keypoints", None)
+
+                if boxes is None:
+                    continue
+
+                for idx, box in enumerate(boxes):
                     # bbox 추출
-                    xyxy_tensor = box.xyxy[0]
-                    if hasattr(xyxy_tensor, "cpu"):
-                        xyxy = xyxy_tensor.cpu().numpy().astype(int)
-                    else:
-                        xyxy = np.array(xyxy_tensor).astype(int)
-                    
-                    x1, y1, x2, y2 = int(xyxy[0]), int(xyxy[1]), int(xyxy[2]), int(xyxy[3])
-                    width = x2 - x1
-                    height = y2 - y1
-                    
-                    # confidence
-                    conf_tensor = box.conf[0]
-                    if hasattr(conf_tensor, "cpu"):
-                        conf = float(conf_tensor.cpu().numpy())
-                    else:
-                        conf = float(conf_tensor)
-                    
-                    # YOLOv8 track()에서 ID 추출
-                    track_id = self._extract_track_id(box)
-                    
-                    # 추적 실패 시 임시 ID 생성 (bbox 기반)
-                    if track_id is None:
-                        track_id = self._generate_temp_id(x1, y1, width, height)
-                    
-                    # 실제 사람인지 검증 (키포인트 신뢰도 확인)
+                    bbox = self._extract_bbox(box)
+                    if bbox is None:
+                        continue
+                    bx1, by1, bx2, by2 = bbox
+                    width = bx2 - bx1
+                    height = by2 - by1
+
+                    # confidence 추출
+                    conf = self._extract_confidence(box)
+
                     if keypoints is not None:
                         is_real_person = self._validate_person_keypoints(keypoints, idx)
                         if not is_real_person:
-                            logger.debug(f"패딩/거짓 감지 제외: 낮은 키포인트 신뢰도 (idx={idx})")
-                            continue  # 사람이 아님, 제외
-                    
-                    # 넘어짐 감지 (키포인트 정보 사용)
+                            continue
+
                     is_fallen = False
                     keypoints_data = None
                     if keypoints is not None:
-                        is_fallen = self._detect_fall_from_keypoints(keypoints, idx, width, height, y1)
-                        
-                        # 넘어짐 감지 시 키포인트 데이터 추출 (시각화용)
-                        if is_fallen:
-                            try:
-                                if hasattr(keypoints, "data"):
-                                    kpts = keypoints.data[idx].cpu().numpy() if hasattr(keypoints.data[idx], "cpu") else keypoints.data[idx]
-                                elif hasattr(keypoints, "xy"):
-                                    kpts_xy = keypoints.xy[idx].cpu().numpy() if hasattr(keypoints.xy[idx], "cpu") else keypoints.xy[idx]
-                                    kpts_conf = keypoints.conf[idx].cpu().numpy() if hasattr(keypoints.conf[idx], "cpu") else keypoints.conf[idx]
-                                    kpts = np.column_stack([kpts_xy, kpts_conf])
-                                else:
-                                    kpts = None
-                                
-                                if kpts is not None:
-                                    keypoints_data = kpts.tolist()  # numpy -> list 변환
-                            except:
-                                pass
-                    
-                    # 이벤트 타입 결정
-                    event_type = EventType.FALL_DETECTED if is_fallen else EventType.PERSON
-                    
-                    ev = DetectionEvent(
-                        event_type=event_type,
-                        x=x1,
-                        y=y1,
-                        width=width,
-                        height=height,
-                        confidence=conf,
-                        timestamp=time.time(),
-                        object_id=track_id,  # YOLOv8 추적 ID
-                        class_idx=0,  # person 클래스
-                        keypoints=keypoints_data,  # 넘어짐 감지 시에만 키포인트 저장
-                    )
-                    events.append(ev)
-                    
-                except Exception as e:
-                    logger.debug(f"Pose box 처리 실패 (idx={idx}): {e}")
-                    continue
-        
-        # 중복 person/fall 박스 제거 (IoU가 높은 박스들 중 가장 높은 신뢰도만 유지)
-        events = self._remove_duplicates(events)
-        
-        return events
-    
+                        is_fallen = self._detect_fall_from_keypoints(keypoints, idx, width, height, by1)
 
-    
+                        if is_fallen:
+                            kpts = self._extract_keypoints(keypoints, idx)
+                            if kpts is not None:
+                                # ROI 좌표를 전체 프레임 좌표로 변환
+                                kpts[:, 0] += x1
+                                kpts[:, 1] += y1
+                                keypoints_data = kpts.tolist()
+
+                    if not is_fallen:
+                        continue
+
+                    if best_fall is None or conf > best_fall["confidence"]:
+                        best_fall = {
+                            "confidence": conf,
+                            "keypoints": keypoints_data,
+                        }
+
+            if best_fall is not None:
+                fall_events.append(
+                    DetectionEvent(
+                        event_type=EventType.FALL_DETECTED,
+                        x=person.x,
+                        y=person.y,
+                        width=person.width,
+                        height=person.height,
+                        confidence=best_fall["confidence"],
+                        timestamp=time.time(),
+                        object_id=person.object_id,
+                        class_idx=0,
+                        keypoints=best_fall["keypoints"],
+                    )
+                )
+
+        return fall_events
+
+    # ====================
+    # 키포인트 기반 검증 및 낙상 감지
+    # ====================
     def _validate_person_keypoints(self, keypoints, idx: int) -> bool:
-        """
-        키포인트 신뢰도를 확인하여 실제 사람인지 검증
-        키포인트가 전혀 감지되지 않은 패딩/거짓 감지를 필터링
-        
-        매개변수:
-            keypoints: YOLO pose 키포인트 객체
-            idx: 현재 박스 인덱스
-            
-        반환값:
-            실제 사람 여부 (True/False)
-        """
+        """키포인트 신뢰도를 확인하여 실제 사람인지 검증"""
         try:
-            # 키포인트 데이터 추출 (N, 17, 3) - [x, y, confidence]
-            if hasattr(keypoints, "data"):
-                kpts = keypoints.data[idx].cpu().numpy() if hasattr(keypoints.data[idx], "cpu") else keypoints.data[idx]
-            elif hasattr(keypoints, "xy"):
-                kpts_xy = keypoints.xy[idx].cpu().numpy() if hasattr(keypoints.xy[idx], "cpu") else keypoints.xy[idx]
-                kpts_conf = keypoints.conf[idx].cpu().numpy() if hasattr(keypoints.conf[idx], "cpu") else keypoints.conf[idx]
-                kpts = np.column_stack([kpts_xy, kpts_conf])
-            else:
-                return True  # 키포인트 데이터가 없으면 통과
+            kpts = self._extract_keypoints(keypoints, idx)
+            if kpts is None:
+                return True  # 키포인트 없으면 통과
             
             # COCO 키포인트: 0-코, 5-왼쪽어깨, 6-오른쪽어깨, 11-왼쪽엉덩이, 12-오른쪽엉덩이
-            # 주요 키포인트의 신뢰도 확인
             nose_conf = kpts[0][2] if len(kpts) > 0 else 0
             left_shoulder_conf = kpts[5][2] if len(kpts) > 5 else 0
             right_shoulder_conf = kpts[6][2] if len(kpts) > 6 else 0
@@ -695,7 +726,7 @@ class AIAnalyzer:
             has_hip = (left_hip_conf > MIN_KEYPOINT_CONFIDENCE or 
                       right_hip_conf > MIN_KEYPOINT_CONFIDENCE)
             
-            # 최소 1개의 주요 키포인트만 있어도 사람으로 인정 (가림/후면 보정)
+            # 최소 1개의 주요 키포인트만 있어도 사람으로 인정
             valid_keypoints = sum([has_nose, has_shoulder, has_hip])
             
             if valid_keypoints < 1:
@@ -703,35 +734,17 @@ class AIAnalyzer:
                 return False
             
             return True
-            
         except Exception as e:
             logger.debug(f"키포인트 검증 실패: {e}")
-            return True  # 오류 시 통과 (거짓 양성보다 나음)
+            return True
     
     def _detect_fall_from_keypoints(self, keypoints, idx: int, bbox_width: int, bbox_height: int, bbox_y1: int) -> bool:
-        """
-        키포인트 정보를 사용한 넘어짐 감지
-        
-        매개변수:
-            keypoints: YOLO pose 키포인트 객체
-            idx: 현재 박스 인덱스
-            bbox_width: 바운딩 박스 너비
-            bbox_height: 바운딩 박스 높이
-            bbox_y1: 바운딩 박스 상단 Y 좌표
-            
-        반환값:
-            넘어짐 감지 여부 (True/False)
-        """
+        """키포인트 정보를 사용한 넘어짐 감지"""
+        kpts = self._extract_keypoints(keypoints, idx)
+        if kpts is None:
+            return False
+
         try:
-            # 키포인트 데이터 추출 (N, 17, 3) - [x, y, confidence]
-            if hasattr(keypoints, "data"):
-                kpts = keypoints.data[idx].cpu().numpy() if hasattr(keypoints.data[idx], "cpu") else keypoints.data[idx]
-            elif hasattr(keypoints, "xy"):
-                kpts_xy = keypoints.xy[idx].cpu().numpy() if hasattr(keypoints.xy[idx], "cpu") else keypoints.xy[idx]
-                kpts_conf = keypoints.conf[idx].cpu().numpy() if hasattr(keypoints.conf[idx], "cpu") else keypoints.conf[idx]
-                kpts = np.column_stack([kpts_xy, kpts_conf])
-            else:
-                return False
             
             # COCO 키포인트: 0-코, 5-왼쪽어깨, 6-오른쪽어깨,
             #                 11-왼쪽엉덩이, 12-오른쪽엉덩이, 13-왼쪽무릎, 14-오른쪽무릎,
@@ -786,6 +799,10 @@ class AIAnalyzer:
         except Exception as e:
             return False
     
+    # ====================
+    # 공개 API: 이벤트 분류 및 준수 확인
+    # ====================
+
     def split_events(self, events: List) -> Tuple[List, List, List]:
         """이벤트를 사람, 헬멧, 기타 카테고리로 분리
         
@@ -839,15 +856,17 @@ class AIAnalyzer:
 
         return results
 
-    # ---------------------------
-    # 공통 추론 인터페이스
-    # ---------------------------
+    # ====================
+    # 공개 API: 통합 추론 인터페이스
+    # ====================
+
     def run_inference(
         self,
         frame,
         use_helmet: bool = True,
         use_pose: bool = True,
         check_compliance: bool = True,
+        use_person: bool = True,
     ) -> List:
         """
         프레임 추론 및 헬멧 착용 준수 확인
@@ -855,8 +874,9 @@ class AIAnalyzer:
         매개변수:
             frame: 입력 프레임
             use_helmet: 헬멧 모델 사용 여부
-            use_pose: pose 모델 사용 여부 (사람 + 넘어짐 감지)
+            use_pose: pose 모델 사용 여부 (넘어짐 감지)
             check_compliance: 헬멧 착용 준수 확인 여부
+            use_person: person 모델 사용 여부
             
         반환값: 사람+헬멧+넘어짐 이벤트 리스트
         """
@@ -865,18 +885,23 @@ class AIAnalyzer:
         if frame is None or not isinstance(frame, (np.ndarray,)):
             return []
 
-        person_and_fall_events = []
+        person_events = []
+        fall_events = []
         helmet_events = []
         small_helmet_events = []  # 초기화
-        
-        # Pose 모델 (사람 + 넘어짐 감지)
-        if use_pose and self.pose_model:
-            self.current_model_type = "pose"
-            person_and_fall_events = self._run_pose_model(self.pose_model, frame)
-            logger.debug(f"Pose 모델: {len(person_and_fall_events)} 감지됨")
 
-        # 사람 이벤트만 추출 (넘어짐 제외)
-        person_events = [e for e in person_and_fall_events if e.event_type == EventType.PERSON]
+        # Person 모델 (사람 감지 전용 - 필수)
+        if use_person and self.person_model:
+            self.current_model_type = "person"
+            person_events = self._run_single_model(self.person_model, frame)
+            logger.debug(f"Person 모델: {len(person_events)} 감지됨")
+        else:
+            logger.warning("Person 모델이 없거나 비활성화됨. 사람 감지 불가.")
+            return []
+
+        # Pose 모델 (사람 ROI 기반 넘어짐 감지)
+        if use_pose and self.pose_model and person_events:
+            fall_events = self._run_pose_on_person_rois(frame, person_events)
 
         # 헬멧 모델 (사람 영역 기준)
         if use_helmet and self.helmet_model:
@@ -903,7 +928,7 @@ class AIAnalyzer:
             self.compliance_result = compliance_results
                 
         # 화면 표시용: 사람 + 헬멧 박스 + 넘어짐 반환 (각각 독립적으로)
-        return person_and_fall_events + small_helmet_events
+        return person_events + fall_events + small_helmet_events
 
     # 하위 호환성 (processor.py 등에서 _run_inference를 호출할 때 동작)
     def _run_inference(self, frame):
@@ -911,6 +936,7 @@ class AIAnalyzer:
         return self.run_inference(
             frame, 
             use_helmet=bool(self.helmet_model),
-            use_pose=bool(self.pose_model)
+            use_pose=bool(self.pose_model),
+            use_person=bool(self.person_model)
         )
 

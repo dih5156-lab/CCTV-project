@@ -89,6 +89,7 @@ class VideoProcessor:
         
         self.analyzer = AIAnalyzer(
             helmet_model_path=config.models.helmet_model,
+            person_model_path=config.models.person_model,
             pose_model_path=config.models.pose_model,
             confidence_threshold=config.detection.pose_confidence,
             device=config.detection.device,
@@ -96,6 +97,7 @@ class VideoProcessor:
             fall_height_ratio=config.detection.fall_height_ratio
         )
         self.analyzer.helmet_threshold = config.detection.helmet_confidence
+        self.analyzer.person_threshold = config.detection.person_confidence
         self.analyzer.pose_threshold = config.detection.pose_confidence
         
         self.cameras: Dict[str, RTSPCamera] = {}
@@ -473,7 +475,7 @@ class VideoProcessor:
             0.6,
             (0, 255, 0),
             2
-        )
+        ) 
         
         with self.frame_lock:
             self.camera_frames[camera_id] = frame  # frame.copy() 제거하여 메모리 절약
