@@ -26,7 +26,7 @@ MAX_HELMET_HEIGHT = 300  # 헬멧 최대 높이
 MAX_HELMET_BODY_SIZE = 300  # 헬멧 박스 최대 크기
 MIN_HELMET_SIZE = 15  # 최소 감지 크기
 MAX_HELMET_ASPECT_RATIO = 2.0  # 헬멧 최대 가로세로 비율
-DUPLICATE_IOU_THRESHOLD = 0.3  # 중복 제거를 위한 IoU 임계값
+DUPLICATE_IOU_THRESHOLD = 0.3  # 검증된 이벤트 중복 제거 임계값 (후처리 단계)
 HEAD_REGION_RATIO = 0.35  # 헬멧 검증용 머리 영역 비율 (사람 상단 35%)
 
 # 키포인트 감지 임계값
@@ -38,7 +38,8 @@ MIN_HIP_CONFIDENCE = 0.3  # 엉덩이 키포인트 최소 신뢰도
 # YOLO 모델 설정
 DEFAULT_IMAGE_SIZE_HELMET = 640  # 헬멧 감지 개선
 DEFAULT_IMAGE_SIZE_POSE = 640  # 기본 해상도
-DEFAULT_IOU_THRESHOLD = 0.45  # 중복 제거를 위한 NMS 임계값
+DEFAULT_IMAGE_SIZE_PERSON = 800  # 사람 감지 - 원거리 사람 단기 위해 800으로 업그레이드
+DEFAULT_IOU_THRESHOLD = 0.45  # YOLO NMS 임계값 (모델 추론 단계)
 
 try:
     from ultralytics import YOLO
@@ -275,7 +276,7 @@ class AIAnalyzer:
 
         if model_type == "helmet":
             # 문자열 매핑을 EventType으로 변환
-            mapped_str = self.HELMET_CLASS_MAPPING_STR.get(normalized)
+            mapped_str = self.CLASS_MAPPING_STR.get(normalized)
             if mapped_str == "head":
                 return EventType.HEAD
             elif mapped_str == "helmet":
@@ -474,7 +475,7 @@ class AIAnalyzer:
                     frame,
                     conf=conf_threshold,
                     iou=DEFAULT_IOU_THRESHOLD,
-                    imgsz=DEFAULT_IMAGE_SIZE_HELMET,
+                    imgsz=DEFAULT_IMAGE_SIZE_PERSON if self.current_model_type == "person" else DEFAULT_IMAGE_SIZE_HELMET,
                     verbose=False,
                     persist=True  # 프레임 간 ID 지속
                 )
@@ -483,7 +484,7 @@ class AIAnalyzer:
                     frame,
                     conf=conf_threshold,
                     iou=DEFAULT_IOU_THRESHOLD,
-                    imgsz=DEFAULT_IMAGE_SIZE_HELMET,
+                    imgsz=DEFAULT_IMAGE_SIZE_PERSON if self.current_model_type == "person" else DEFAULT_IMAGE_SIZE_HELMET,
                     verbose=False,
                 )
         except Exception as e:
@@ -884,6 +885,9 @@ class AIAnalyzer:
         
         if frame is None or not isinstance(frame, (np.ndarray,)):
             return []
+
+        # 프레임 단위 결과만 유지하도록 항상 초기화
+        self.compliance_result = []
 
         person_events = []
         fall_events = []

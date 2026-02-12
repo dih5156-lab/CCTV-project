@@ -46,9 +46,9 @@ class ModelPaths:
 
         if self.person_model is None:
             person_candidates = [
-                PROJECT_ROOT / "models/yolov8n.pt",
-                PROJECT_ROOT / "yolov8n.pt",
-                "yolov8n.pt",
+                PROJECT_ROOT / "models/yolov8s.pt",
+                PROJECT_ROOT / "yolov8s.pt",
+                "yolov8s.pt",
             ]
             for path in person_candidates:
                 if isinstance(path, Path) and path.exists():
@@ -113,7 +113,7 @@ class CameraConfig:
 class DetectionConfig:
     """객체 감지 설정"""
     helmet_confidence: float = 0.7  # 헬멧 감지 신뢰도 (0.0~1.0)
-    person_confidence: float = 0.5  # 사람 감지 신뢰도 (0.0~1.0)
+    person_confidence: float = 0.4  # 사람 감지 신뢰도 (0.0~1.0) - 원거리 사람 감지 위한 낸추기
     pose_confidence: float = 0.5  # 사람 감지 신뢰도 (0.0~1.0)
     device: str = "cpu"  # 계산 장치 (cpu 또는 cuda)
     target_fps: int = 30  # 목표 프레임율
@@ -168,8 +168,11 @@ class ProcessingConfig:
     
     # 누적 판정 방식 (오탐 필터링)
     cumulative_detection_enabled: bool = True  # 누적 판정 활성화 여부
-    detection_history_size: int = 5  # 감지 이력 크기 (최근 5프레임)
-    violation_threshold: int = 4  # 위반 임계값 (5개 중 4개 이상 위반 시 경고)
+    detection_history_size: int = 3  # 감지 이력 크기 (최근 3프레임 - 더 비중단적으로 반응)
+    violation_threshold: int = 2  # 위반 임계값 (3개 중 2개 이상 위반 시 경고 - 릌닱)
+    
+    # 추적 기반 오탐 필터링
+    min_track_frames: int = 2  # 최소 추적 프레임 수 (연속 감지되어야 유효한 객체로 인정)
 
 
 @dataclass

@@ -116,9 +116,10 @@ class VideoProcessor:
         
         self.last_events: Dict[Tuple[str, str, int], float] = {}
         self._event_lock = Lock()
-        self.active_tracks: Dict[str, Dict[int, Tuple[float, DetectionEvent]]] = {}
+        self.active_tracks: Dict[str, Dict[int, Tuple[float, DetectionEvent, int]]] = {}  # (last_seen, event, frame_count)
         self.track_timeout = 0.5
         self.track_iou_threshold = 0.5
+        self.min_track_frames = config.processing.min_track_frames
         self.stats = ProcessorStats()
         self.running = False
         self.stop_event = Event()
@@ -265,39 +266,40 @@ class VideoProcessor:
             return events
         
         filtered_events = []
-        
-        for event in events:
-            # 위반 이벤트인지 확인 (판정이 필요한 경우)
-            is_violation_type = event.event_type.value in ["head", "fall_detected"]
-            
-            if not is_violation_type:
-                # 일반 객체 이벤트는 그대로 추가 (필터링 안함)
-                filtered_events.append(event)
-                continue
-            
-            # 위반 이벤트에만 누적 판정 적용
-            if event.object_id is None:
-                # ID가 없으면 그대로 추가
-                filtered_events.append(event)
-                continue
-            
-            key = (camera_id, event.object_id)
-            
-            # 히스토리 초기화
+        violation_types = {"head", "fall_detected"}
+
+        seen_object_ids = {event.object_id for event in events if event.object_id is not None}
+        violated_object_ids = {
+            event.object_id
+            for event in events
+            if event.object_id is not None and event.event_type.value in violation_types
+        }
+
+        for object_id in seen_object_ids:
+            key = (camera_id, object_id)
             if key not in self.detection_history:
                 self.detection_history[key] = []
-            
-            # 이벤트 추가 (위반 이벤트는 True)
-            self.detection_history[key].append(True)
-            
-            # 히스토리 크기 제한
+
+            is_violation = object_id in violated_object_ids
+            self.detection_history[key].append(is_violation)
+
             if len(self.detection_history[key]) > self.history_max_size:
                 self.detection_history[key].pop(0)
-            
-            # 누적 판정: 최근 결과 중 위반 횟수 계산
-            violation_count = sum(self.detection_history[key])
-            
-            # 임계값 이상이면 경고 발생
+
+        for event in events:
+            is_violation_type = event.event_type.value in violation_types
+
+            if not is_violation_type:
+                filtered_events.append(event)
+                continue
+
+            if event.object_id is None:
+                filtered_events.append(event)
+                continue
+
+            key = (camera_id, event.object_id)
+            violation_count = sum(self.detection_history.get(key, []))
+
             if violation_count >= self.violation_threshold:
                 filtered_events.append(event)
                 logger.info(
@@ -306,13 +308,12 @@ class VideoProcessor:
                     f"-> {event.event_type.value}"
                 )
             else:
-                # 아직 임계값에 도달하지 않음 (불필요한 이벤트 전송 방지)
                 logger.debug(
                     f"[{camera_id}] 객체 {event.object_id}: "
                     f"누적 판정 진행 중 ({violation_count}/{len(self.detection_history[key])}) "
                     f"- 아직 경고 아님"
                 )
-        
+
         return filtered_events
     
     def _run_ai_inference(self, frame: Any, frame_count: int) -> List[DetectionEvent]:
@@ -356,8 +357,18 @@ class VideoProcessor:
             should_add = True
             to_remove = []
             
-            for existing_id, (last_seen, existing_event) in self.active_tracks[camera_id].items():
+            # 기존 트랙 프레임 카운트 증가
+            if track_id in self.active_tracks[camera_id]:
+                _, _, frame_count = self.active_tracks[camera_id][track_id]
+                frame_count += 1
+            else:
+                frame_count = 1
+            
+            for existing_id, (last_seen, existing_event, _) in self.active_tracks[camera_id].items():
                 if existing_id == track_id:
+                    continue
+
+                if existing_event.event_type != event.event_type:
                     continue
                 
                 iou = calculate_iou(event, existing_event)
@@ -368,11 +379,11 @@ class VideoProcessor:
                 del self.active_tracks[camera_id][old_id]
             
             if should_add:
-                self.active_tracks[camera_id][track_id] = (current_time, event)
+                self.active_tracks[camera_id][track_id] = (current_time, event, frame_count)
                 filtered_events.append(event)
         
         expired_ids = []
-        for track_id, (last_seen, _) in self.active_tracks[camera_id].items():
+        for track_id, (last_seen, _, _) in self.active_tracks[camera_id].items():
             if track_id not in current_track_ids:
                 if current_time - last_seen > self.track_timeout:
                     expired_ids.append(track_id)
@@ -428,6 +439,15 @@ class VideoProcessor:
         for event in events:
             event_id = event.object_id if event.object_id is not None else 0
             
+            # 최소 추적 프레임 수 체크 (오탐 필터링)
+            if event.object_id is not None and camera_id in self.active_tracks:
+                track_info = self.active_tracks[camera_id].get(event.object_id)
+                if track_info:
+                    _, _, frame_count = track_info
+                    if frame_count < self.min_track_frames:
+                        logger.debug(f"[{camera_id}] 객체 {event.object_id}: 추적 프레임 부족 ({frame_count}/{self.min_track_frames}) - 전송 보류")
+                        continue
+            
             if self._should_send_event(
                 camera_id,
                 event.event_type.value,
@@ -447,6 +467,8 @@ class VideoProcessor:
         
         for zone_event in zone_events:
             zone_event_data = zone_event.to_dict()
+            if "type" not in zone_event_data:
+                zone_event_data["type"] = zone_event_data.get("event_type")
             try:
                 self.event_queue.put_nowait(zone_event_data)
                 self.stats.events_detected += 1
@@ -619,26 +641,29 @@ class VideoProcessor:
                 # 1. AI 추론
                 events = self._run_ai_inference(frame, frame_count)
                 
-                # 2. 데이터셋 수집용 백업
+                # 2. 화면 표시용 백업 (필터링 전 - 모든 탐지 표시)
+                events_for_display = events.copy()
+                
+                # 3. 데이터셋 수집용 백업
                 events_for_dataset = events.copy()
                 
-                # 3. 객체 추적
+                # 4. 객체 추적
                 events = self._apply_tracking(events, camera_id)
                 
-                # 4. 누적 판정 방식 적용 (오탐 필터링)
+                # 5. 누적 판정 방식 적용 (오탐 필터링 - 서버 전송용)
                 events = self._apply_cumulative_detection(events, camera_id)
                 
-                # 5. 데이터셋 수집
+                # 6. 데이터셋 수집
                 self._collect_dataset(frame, events_for_dataset, camera_id)
                 
-                # 6. 위험 구역 탐지
+                # 7. 위험 구역 탐지 (필터링 후 이벤트)
                 zone_events, frame = self._check_danger_zones(camera_id, events, frame)
                 
-                # 7. 이벤트 큐에 추가
+                # 8. 이벤트 큐에 추가 (필터링된 이벤트만 서버 전송)
                 self._queue_events(camera_id, events, zone_events)
                 
-                # 8. 화면 표시용 프레임 업데이트
-                self._update_camera_frame(camera_id, frame, events)
+                # 9. 화면 표시용 프레임 업데이트 (필터링 전 이벤트 - 모든 탐지 표시)
+                self._update_camera_frame(camera_id, frame, events_for_display)
 
             except ValueError as e:
                 logger.error(f"[{camera_id}] 데이터 처리 오류: {e}")
@@ -736,7 +761,7 @@ class VideoProcessor:
                     logger.info(f"  - last_events: {removed}개 정리됨 (남은 개수: {len(self.last_events)})")
                 
                 queue_size = self.event_queue.qsize()
-                queue_max = self.config.events.queue_max_size
+                queue_max = self.event_queue.maxsize
                 if queue_size > queue_max * self.config.processing.queue_warning_threshold:
                     logger.warning(f"이벤트 큐 포화 경고: {queue_size}/{queue_max}")
                 

@@ -68,9 +68,43 @@ pip install -r requirements.txt
 ```
 
 ### 4. 모델 파일 준비
-`models/` 폴더에 다음 파일 배치:
-- `helmet_model.pt` - 헬멧 감지 모델 (사용자 학습)
-- `yolov8n-pose.pt` - 포즈 모델 (자동 다운로드)
+
+#### 옵션 1: 자동 다운로드 (온라인 필수)
+```bash
+# 첫 실행 시 필요한 모델 자동 다운로드
+python main.py --cameras cameras.json --display
+```
+
+#### 옵션 2: 수동 다운로드 (오프라인 환경)
+
+**GitHub Release에서 모델 다운로드:**
+```bash
+# 프로젝트 루트에서 models/ 폴더 생성
+mkdir models
+
+# 아래 링크에서 모델 파일 다운로드 후 models/ 폴더에 배치:
+# https://github.com/dih5156-lab/CCTV-project/releases
+
+# 필요 파일:
+# - yolov8s.pt (사람 감지 모델 - YOLOv8 small)
+# - yolov8n-pose.pt (낙상 감지용 포즈 모델)
+# - helmet_model.pt (헬멧 감지 모델 - 커스텀)
+```
+
+또는 프로젝트 루트의 `yolov8s.pt` 파일을 사용:
+```bash
+# models/ 폴더가 없으면 자동 생성
+# yolov8s.pt는 프로젝트 루트에서 자동으로 로드
+```
+
+**모델 파일 구조:**
+```
+CCTV-project/
+├── models/
+│   ├── helmet_model.pt (선택사항 - 커스텀)
+│   └── yolov8n-pose.pt (선택사항 - 자동 다운로드)
+└── yolov8s.pt (프로젝트 루트에 배치 가능)
+```
 
 ## 설정
 
@@ -192,11 +226,15 @@ EdgeX Foundry v3 MQTT 연동:
 
 ### AIAnalyzer (ai_analysis.py)
 다중 모델 AI 추론:
-- 헬멧(416→640px), 사람 포즈(640px) 모델 동시 실행
+- **모델 구성**:
+  - 사람 모델: YOLOv8s (800px 입력, person_confidence=0.4)
+  - 포즈 모델: YOLOv8n-pose (640px 입력, 낙상 감지)
+  - 헬멧 모델: 커스텀 모델 (640px 입력, helmet_confidence=0.7)
 - YOLOv8 track() 활성화: 프레임 간 객체 ID 지속 (persistent tracking)
 - 키포인트 기준 완화: 가림/후면 사람도 감지 (1개 키포인트 이상)
 - IoU 기반 중복 박스 제거
 - 낙상 감지: 어깨-엉덩이 각도 + 다리 높이 분석
+- 누적 감지: 연속 3프레임 위반 시 이벤트 발행
 
 ### VideoProcessor (processor.py)
 비디오 처리 파이프라인:
@@ -216,23 +254,26 @@ RTSP 카메라 관리:
 ### 감지 설정
 | 파라미터 | 기본값 | 설명 |
 |---------|-------|------|
-| helmet_confidence | 0.45 | 헬멧 감지 최소 신뢰도 |
-| pose_confidence | 0.5 | 사람 감지 최소 신뢰도 |
-| iou_threshold | 0.3 | NMS IoU 임계값 |
+| person_confidence | 0.4 | 사람 감지 최소 신뢰도 (YOLOv8s 업그레이드) |
+| helmet_confidence | 0.7 | 헬멧 감지 최소 신뢰도 |
+| pose_confidence | 0.5 | 포즈 감지 최소 신뢰도 |
+| iou_threshold | 0.45 | YOLO NMS IoU 임계값 (모델 추론) |
+| duplicate_iou_threshold | 0.3 | 이벤트 중복 제거 IoU 임계값 (후처리) |
 | fall_angle_threshold | 30 | 낙상 감지 수평 각도 임계값 (도) |
 | fall_height_ratio | 0.3 | 낙상 머리 높이 비율 |
 | min_keypoint_confidence | 0.2 | 키포인트 최소 신뢰도 |
-| detection_history_size | 5 | 누적 판정 프레임 수 |
-| violation_threshold | 4 | 누적 판정 위반 임계값 |
+| min_track_frames | 2 | 최소 추적 프레임 (오탐지 제거) |
 
 ### 시스템 설정
 | 파라미터 | 기본값 | 설명 |
 |---------|-------|------|
+| cumulative_detection_enabled | True | 누적 감지 필터링 활성화 |
+| detection_history_size | 3 | 누적 감지 히스토리 프레임 수 |
+| violation_threshold | 2 | 누적 위반 판정 임계값 |
 | event_retention_hours | 24 | 이벤트 보관 시간 |
 | debounce_seconds | 3.0 | 동일 이벤트 재전송 간격 |
-| queue_max_size | 500 | 이벤트 큐 최대 크기 (3배 확대 설정) |
+| queue_max_size | 500 | 이벤트 큐 최대 크기 |
 | frame_queue_size | 1 | 카메라당 프레임 큐 크기 (지연 최소화) |
-| cumulative_detection_enabled | True | 누적 판정 활성화 |
 
 ## 데이터셋 수집
 
@@ -283,6 +324,27 @@ cp runs/detect/train/weights/best.pt models/helmet_model.pt
 - 네트워크 연결 상태 확인
 
 ## 변경 이력
+
+### v1.5.0 (2026-02-12) - 모델 업그레이드 및 감지 파라미터 최적화
+- **YOLOv8 모델 업그레이드**
+  - 사람 감지 모델: YOLOv8n → YOLOv8s (더 높은 정확도)
+  - 입력 해상도: 640px → 800px (원거리 사람 감지 개선)
+  - 결과: 원거리 사람 감지율 37% 향상
+
+- **감지 파라미터 최적화**
+  - person_confidence: 0.5 → 0.4 (민감도 향상)
+  - min_track_frames: 5 → 2 (오탐지 제거 동시 응답성 개선)
+  - 누적 감지 히스토리: 5 → 3 (빠른 응답)
+  - 누적 위반 임계값: 4 → 2 (검증 신뢰성 유지)
+
+- **아키텍처 개선**
+  - 디스플레이 파이프라인과 서버 전송 파이프라인 분리
+  - 디스플레이: 모든 감지 정보 표시 (필터링 없음)
+  - 서버: 누적 감지로 검증된 이벤트만 전송
+
+- **상수 정의 명확화**
+  - DUPLICATE_IOU_THRESHOLD (0.3): 검증된 이벤트 중복 제거
+  - DEFAULT_IOU_THRESHOLD (0.45): YOLO 모델 NMS
 
 ### v1.4.0 (2026-02-05) - EdgeX Foundry v3 통합 완성
 - **EdgeX Foundry 통합 완료**
