@@ -1,0 +1,690 @@
+"""액션 레이어 (action-bridge)
+
+역할:
+  - Kuiper 룰 결과 MQTT 구독
+  - 외부 이벤트 REST 수신
+  - 사이트별 디바이스(스피커 / 전광판 / 경광등) 조치 실행
+  - 다중 외부 플랫폼 HTTP 전송 (S-PARK_SP / D_HUB / CITY_SP)
+  - 자동(AUTO) / 수동(MANUAL) 조치 모드 관리
+  - SQLite 이벤트 저장
+
+클래스 구성:
+  ControlMode, AlarmDevice, SiteConfig — 도메인 모델
+  _EventRepo       — SQLite CRUD          (ActionBridge 내부용)
+  _SiteRegistry    — 사이트·수동큐 관리  (ActionBridge 내부용)
+  _AlarmCoordinator — 알람 타이밍 제어   (ActionBridge 내부용)
+  ActionBridge     — 오케스트레이터 (공개 API)
+
+디바이스별 상세 로직은 devices/ 이하 파일에 위치한다.
+HTTP 포워더 로직은 protocols/http.py 에 위치한다.
+REST 수신 서버는 protocols/rest.py 의 RestEventReceiver 를 사용한다.
+"""
+
+import json
+import logging
+import signal
+import sqlite3
+import time
+import uuid
+from dataclasses import dataclass, field
+from datetime import datetime, timezone
+from enum import Enum
+from pathlib import Path
+from threading import Lock
+from typing import Dict, List, Optional, Set, Tuple
+
+import paho.mqtt.client as mqtt
+
+from ..devices.sensor    import SensorConfig, SirenDevice
+from ..devices.signboard import SignboardConfig, SignboardDevice
+from ..devices.speaker   import SpeakerConfig, SpeakerDevice
+from ..protocols.http    import HttpEventForwarder, HttpEventTarget
+from ..protocols.rest    import RestEventReceiver
+from ..config            import ActionBridgeConfig
+
+logger = logging.getLogger(__name__)
+
+_ACTION_DEFAULTS = ActionBridgeConfig()
+
+# MQTT 명령 토픽
+_CMD_TOPIC_MODE    = "cctv/commands/mode"     # {"site_id"?, "mode": "auto|manual"}
+_CMD_TOPIC_APPROVE = "cctv/commands/approve"  # {"event_id": "..."}
+_CMD_TOPIC_REJECT  = "cctv/commands/reject"   # {"event_id": "..."}
+
+
+# ===========================================================================
+# 도메인 모델
+# ===========================================================================
+
+
+class ControlMode(str, Enum):
+    """카메라 사이트별 조치 제어 방식."""
+    AUTO   = "auto"    # 이벤트 수신 즉시 자동 실행
+    MANUAL = "manual"  # 관리자 승인 후 실행
+
+
+class AlarmDevice(str, Enum):
+    """사이트에 연결된 알람 장치 종류."""
+    SPEAKER   = "speaker"    # TTS 스피커
+    SIREN     = "siren"      # 싸이렌
+    SIGNBOARD = "signboard"  # 전광판
+
+
+@dataclass
+class SiteConfig:
+    """IoT 플랫폼 사이트(현장) 설정."""
+    site_id:       str
+    site_name:     str
+    site_nickname: str = ""
+    camera_ids:    List[str]       = field(default_factory=list)
+    control_mode:  ControlMode     = ControlMode.AUTO
+    alarm_devices: List[AlarmDevice] = field(
+        default_factory=lambda: [AlarmDevice.SPEAKER]
+    )
+
+    def to_dict(self) -> Dict:
+        return {
+            "site_id":       self.site_id,
+            "site_name":     self.site_name,
+            "site_nickname": self.site_nickname,
+            "camera_ids":    self.camera_ids,
+            "control_mode":  self.control_mode.value,
+            "alarm_devices": [d.value for d in self.alarm_devices],
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict) -> "SiteConfig":
+        return cls(
+            site_id=data["site_id"],
+            site_name=data.get("site_name", ""),
+            site_nickname=data.get("site_nickname", ""),
+            camera_ids=data.get("camera_ids", []),
+            control_mode=ControlMode(data.get("control_mode", "auto")),
+            alarm_devices=[
+                AlarmDevice(d) for d in data.get("alarm_devices", ["speaker"])
+            ],
+        )
+
+
+# ===========================================================================
+# _EventRepo  (내부용)
+# ===========================================================================
+
+
+class _EventRepo:
+    """SQLite 이벤트 CRUD 전담 헬퍼.
+
+    ActionBridge 에서만 사용한다.
+    """
+
+    def __init__(self, db_path: Path) -> None:
+        self.db_path = db_path
+
+    def init(self) -> None:
+        """이벤트 테이블을 초기화한다."""
+        self.db_path.parent.mkdir(parents=True, exist_ok=True)
+        with sqlite3.connect(self.db_path) as conn:
+            conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS action_events (
+                    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+                    received_at  TEXT    NOT NULL,
+                    topic        TEXT    NOT NULL,
+                    camera_id    TEXT,
+                    event_type   TEXT,
+                    confidence   REAL,
+                    severity     TEXT,
+                    alarm_played INTEGER DEFAULT 0,
+                    http_sent    INTEGER DEFAULT 0,
+                    payload_json TEXT    NOT NULL
+                )
+                """
+            )
+            conn.commit()
+
+    def save(
+        self,
+        topic:        str,
+        payload:      Dict,
+        alarm_played: bool,
+        http_sent:    bool,
+    ) -> None:
+        """이벤트를 전송 결과와 함께 저장한다."""
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                conn.execute(
+                    """
+                    INSERT INTO action_events
+                        (received_at, topic, camera_id, event_type, confidence,
+                         severity, alarm_played, http_sent, payload_json)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        datetime.now(timezone.utc).isoformat(),
+                        topic,
+                        payload.get("camera_id"),
+                        payload.get("type"),
+                        payload.get("confidence"),
+                        payload.get("severity"),
+                        int(alarm_played),
+                        int(http_sent),
+                        json.dumps(payload, ensure_ascii=False),
+                    ),
+                )
+                conn.commit()
+        except Exception as exc:
+            logger.error("DB 저장 오류: %s", exc)
+
+
+# ===========================================================================
+# _SiteRegistry  (내부용)
+# ===========================================================================
+
+
+class _SiteRegistry:
+    """사이트 설정 + 수동 승인 큐를 관리하는 내부 헬퍼.
+
+    ActionBridge 에서만 사용한다.
+    """
+
+    def __init__(
+        self,
+        default_mode:   ControlMode,
+        initial_sites:  Optional[List[SiteConfig]] = None,
+    ) -> None:
+        self.default_mode: ControlMode = default_mode
+        self._sites: Dict[str, SiteConfig] = {
+            s.site_id: s for s in (initial_sites or [])
+        }
+        self._pending:      Dict[str, Dict] = {}
+        self._pending_lock  = Lock()
+
+    # ------------------------------------------------------------------
+    # 사이트 CRUD
+    # ------------------------------------------------------------------
+
+    def add(self, site: SiteConfig) -> None:
+        self._sites[site.site_id] = site
+        logger.info(
+            "사이트 등록: %s (%s) mode=%s",
+            site.site_id, site.site_name, site.control_mode.value,
+        )
+
+    def remove(self, site_id: str) -> bool:
+        if site_id in self._sites:
+            del self._sites[site_id]
+            logger.info("사이트 제거: %s", site_id)
+            return True
+        return False
+
+    def list_all(self) -> List[Dict]:
+        return [s.to_dict() for s in self._sites.values()]
+
+    def find_by_camera(self, camera_id: str) -> Optional[SiteConfig]:
+        return next(
+            (s for s in self._sites.values() if camera_id in s.camera_ids),
+            None,
+        )
+
+    def set_mode(self, mode: ControlMode, site_id: Optional[str] = None) -> None:
+        if site_id:
+            site = self._sites.get(site_id)
+            if site:
+                site.control_mode = mode
+                logger.info("사이트 모드 변경: %s → %s", site_id, mode.value)
+            else:
+                logger.warning("set_mode: 사이트 없음 (%s)", site_id)
+        else:
+            self.default_mode = mode
+            logger.info("전역 기본 모드 변경 → %s", mode.value)
+
+    def resolve_mode(self, camera_id: str) -> Tuple[ControlMode, Optional[str]]:
+        """카메라가 소속된 사이트의 모드와 site_id를 반환한다."""
+        site = self.find_by_camera(camera_id)
+        if site:
+            return site.control_mode, site.site_id
+        return self.default_mode, None
+
+    # ------------------------------------------------------------------
+    # 수동 승인 큐
+    # ------------------------------------------------------------------
+
+    def push_pending(
+        self,
+        event_id: str,
+        topic:    str,
+        payload:  Dict,
+        site_id:  Optional[str],
+    ) -> None:
+        with self._pending_lock:
+            self._pending[event_id] = {
+                "payload":   payload,
+                "topic":     topic,
+                "queued_at": datetime.now(timezone.utc).isoformat(),
+                "site_id":   site_id,
+            }
+        logger.info(
+            "[수동 대기] event_id=%s camera=%s type=%s site=%s",
+            event_id, payload.get("camera_id"), payload.get("type"), site_id,
+        )
+
+    def pop_pending(self, event_id: str) -> Optional[Dict]:
+        """대기 항목을 꺼낸다. 없으면 None."""
+        with self._pending_lock:
+            return self._pending.pop(event_id, None)
+
+    def list_pending(self) -> List[Dict]:
+        with self._pending_lock:
+            return [
+                {
+                    "event_id":   eid,
+                    "queued_at":  info.get("queued_at"),
+                    "site_id":    info.get("site_id"),
+                    "camera_id":  info["payload"].get("camera_id"),
+                    "event_type": info["payload"].get("type"),
+                    "severity":   info["payload"].get("severity"),
+                    "topic":      info.get("topic"),
+                }
+                for eid, info in self._pending.items()
+            ]
+
+
+# ===========================================================================
+# _AlarmCoordinator  (내부용)
+# ===========================================================================
+
+
+class _AlarmCoordinator:
+    """알람 토픽·쿨다운·재생 잠금을 관리하는 내부 헬퍼.
+
+    ActionBridge 에서만 사용한다.
+    """
+
+    _COOLDOWN_EXEMPT: frozenset = frozenset({"head", "fall_detected"})
+
+    def __init__(
+        self,
+        alarm_topics:           Set[str],
+        alarm_cooldown_seconds: int,
+    ) -> None:
+        self.alarm_topics           = alarm_topics
+        self.alarm_cooldown_seconds = max(1, int(alarm_cooldown_seconds))
+        self._last_alarm_ts:        Dict[Tuple[str, str], float] = {}
+        self._block_until:          Dict[str, float]             = {}
+        self._lock = Lock()
+
+    def should_alarm(self, topic: str, payload: Dict) -> bool:
+        """이벤트 타입·토픽·심각도 기반으로 알람 재생 여부를 결정한다."""
+        event_type = str(payload.get("type", "")).lower()
+        severity   = str(payload.get("severity", "")).lower()
+        return (
+            event_type in self._COOLDOWN_EXEMPT
+            or topic in self.alarm_topics
+            or severity == "critical"
+        )
+
+    def try_acquire_slot(self, camera_id: str, event_type: str) -> bool:
+        """쿨다운·잠금 확인 후 통과 시 즉시 타이밍 상태를 기록한다 (원자적).
+
+        반환값:
+            재생 가능하면 True (동시에 잠금 상태로 전환됨).
+        """
+        now = time.time()
+
+        with self._lock:
+            block_until = self._block_until.get(camera_id, 0.0)
+            if now < block_until:
+                remaining = int(block_until - now)
+                logger.info(
+                    "재생 잠금 중 - 스킵 (camera=%s, 남은 %d초)", camera_id, remaining
+                )
+                return False
+
+            if event_type not in self._COOLDOWN_EXEMPT:
+                key = (camera_id, event_type)
+                last_ts = self._last_alarm_ts.get(key, 0.0)
+                if now - last_ts < self.alarm_cooldown_seconds:
+                    logger.info(
+                        "알람 쿨다운 - 스킵 (camera=%s, type=%s)", camera_id, event_type
+                    )
+                    return False
+
+            key = (camera_id, event_type)
+            self._last_alarm_ts[key] = now
+            self._block_until[camera_id] = now + self.alarm_cooldown_seconds
+        return True
+
+
+# ===========================================================================
+# ActionBridge  (공개 API)
+# ===========================================================================
+
+
+class ActionBridge:
+    """룰 엔진 출력을 액션으로 변환하는 브리지.
+
+    수신:  MQTT + REST HTTP
+    발신:  SpeakerDevice / SignboardDevice / SirenDevice + HttpEventForwarder
+    저장:  SQLite
+
+    내부 헬퍼:
+        _repo   (_EventRepo)        — DB CRUD
+        _sites  (_SiteRegistry)     — 사이트·수동큐 관리
+        _alarm  (_AlarmCoordinator) — 알람 타이밍 제어
+    """
+
+    _MQTT_MAX_ATTEMPTS: int = 30
+
+    def __init__(
+        self,
+        # MQTT
+        mqtt_broker:       str           = _ACTION_DEFAULTS.mqtt_broker,
+        mqtt_port:         int           = _ACTION_DEFAULTS.mqtt_port,
+        subscribe_topics:  Optional[Set[str]] = None,
+        # DB
+        db_path:           str           = "action_events.db",
+        # 디바이스
+        speaker_config:    Optional[SpeakerConfig]   = None,
+        signboard_config:  Optional[SignboardConfig]  = None,
+        siren_config:      Optional[SensorConfig]     = None,
+        # HTTP 플랫폼 전송
+        http_targets:      Optional[List[HttpEventTarget]] = None,
+        external_api_url:  Optional[str] = None,   # 하위 호환 단일 URL
+        # 알람 제어
+        alarm_topics:          Optional[Set[str]] = None,
+        alarm_cooldown_seconds: int = 10,
+        # 모드
+        default_mode:   ControlMode              = ControlMode.AUTO,
+        initial_sites:  Optional[List[SiteConfig]] = None,
+        # REST 서버
+        rest_enabled: bool = False,
+        rest_host:    str  = _ACTION_DEFAULTS.rest_host,
+        rest_port:    int  = _ACTION_DEFAULTS.rest_port,
+    ) -> None:
+        self.mqtt_broker = mqtt_broker
+        self.mqtt_port   = int(mqtt_port)
+        self.subscribe_topics = subscribe_topics or {
+            "cctv/rules/intrusion/filtered",
+            "cctv/rules/intrusion/persisted",
+            "cctv/rules/intrusion/critical",
+            "cctv/ai/events/+/zone_entered",
+            "cctv/ai/events/+/zone_dwelling",
+        }
+
+        # ── 내부 헬퍼 ──────────────────────────────────────────────
+        self._repo  = _EventRepo(Path(db_path))
+        self._sites = _SiteRegistry(
+            default_mode=default_mode,
+            initial_sites=initial_sites,
+        )
+        self._alarm = _AlarmCoordinator(
+            alarm_topics=alarm_topics or {
+                "cctv/rules/intrusion/persisted",
+                "cctv/rules/intrusion/critical",
+                "cctv/ai/events/+/zone_entered",
+                "cctv/ai/events/+/zone_dwelling",
+            },
+            alarm_cooldown_seconds=alarm_cooldown_seconds,
+        )
+
+        # ── 디바이스 ──────────────────────────────────────────────
+        self._speaker   = SpeakerDevice(speaker_config   or SpeakerConfig())
+        self._signboard = SignboardDevice(signboard_config or SignboardConfig())
+        self._siren     = SirenDevice(siren_config        or SensorConfig())
+
+        # ── HTTP 포워더 ───────────────────────────────────────────
+        targets: List[HttpEventTarget] = list(http_targets or [])
+        if external_api_url and not any(t.url == external_api_url for t in targets):
+            targets.append(HttpEventTarget(name="default", url=external_api_url))
+        self._forwarder = HttpEventForwarder(targets=targets)
+
+        # ── REST 서버 ─────────────────────────────────────────────
+        self._rest_receiver: Optional[RestEventReceiver] = None
+        if rest_enabled:
+            self._rest_receiver = RestEventReceiver(
+                host=rest_host, port=rest_port, action_layer=self
+            )
+
+        self._mqtt_client: Optional[mqtt.Client] = None
+        self._running = False
+
+    # ------------------------------------------------------------------
+    # default_mode 하위 호환 프로퍼티
+    # ------------------------------------------------------------------
+
+    @property
+    def default_mode(self) -> ControlMode:
+        return self._sites.default_mode
+
+    @default_mode.setter
+    def default_mode(self, value: ControlMode) -> None:
+        self._sites.default_mode = value
+
+    # ------------------------------------------------------------------
+    # 사이트 관리 — _SiteRegistry 위임 (공개 API는 그대로 유지)
+    # ------------------------------------------------------------------
+
+    def add_site(self, site: SiteConfig) -> None:
+        self._sites.add(site)
+
+    def remove_site(self, site_id: str) -> bool:
+        return self._sites.remove(site_id)
+
+    def list_sites(self) -> List[Dict]:
+        return self._sites.list_all()
+
+    def get_site_by_camera(self, camera_id: str) -> Optional[SiteConfig]:
+        return self._sites.find_by_camera(camera_id)
+
+    def set_mode(self, mode: ControlMode, site_id: Optional[str] = None) -> None:
+        self._sites.set_mode(mode, site_id=site_id)
+
+    def add_site_from_dict(self, data: Dict) -> str:
+        """dict에서 사이트를 생성하여 추가하고 site_id를 반환한다."""
+        site = SiteConfig.from_dict(data)
+        self._sites.add(site)
+        return site.site_id
+
+    def set_mode_str(self, mode_str: str, site_id: Optional[str] = None) -> None:
+        """문자열 값으로 모드를 설정한다. 잘못된 값이면 ValueError를 전파한다."""
+        self._sites.set_mode(ControlMode(mode_str), site_id=site_id)
+
+    # ------------------------------------------------------------------
+    # 수동 승인 큐 (공개 API)
+    # ------------------------------------------------------------------
+
+    def get_pending_events(self) -> List[Dict]:
+        return self._sites.list_pending()
+
+    def approve_event(self, event_id: str) -> Tuple[bool, str]:
+        """대기 이벤트를 승인하여 즉시 실행한다."""
+        info = self._sites.pop_pending(event_id)
+        if info is None:
+            return False, f"이벤트 없음: {event_id}"
+        logger.info("[수동 승인] event_id=%s", event_id)
+        self._execute_action(info["topic"], info["payload"])
+        return True, f"승인 완료: {event_id}"
+
+    def reject_event(self, event_id: str) -> Tuple[bool, str]:
+        """대기 이벤트를 거부(제거)한다."""
+        info = self._sites.pop_pending(event_id)
+        if info is None:
+            return False, f"이벤트 없음: {event_id}"
+        logger.info("[수동 거부] event_id=%s", event_id)
+        self._repo.save(info["topic"], info["payload"], alarm_played=False, http_sent=False)
+        return True, f"거부 완료: {event_id}"
+
+    # ------------------------------------------------------------------
+    # 이벤트 핸들러 (MQTT / REST 공통)
+    # ------------------------------------------------------------------
+
+    def _resolve_devices(self, camera_id: str) -> List[AlarmDevice]:
+        site = self._sites.find_by_camera(camera_id)
+        return site.alarm_devices if site else list(AlarmDevice)
+
+    def _handle_event(self, payload: Dict, topic: str = "rest/inbound") -> None:
+        """수신된 이벤트를 처리한다 (MQTT·REST 공통 경로).
+
+        - AUTO 모드: 즉시 알람/HTTP 실행
+        - MANUAL 모드: 승인 대기 큐에 추가
+        """
+        camera_id = str(payload.get("camera_id", "unknown"))
+        mode, site_id = self._sites.resolve_mode(camera_id)
+
+        if mode == ControlMode.MANUAL:
+            event_id = str(uuid.uuid4())
+            self._sites.push_pending(event_id, topic, payload, site_id)
+            self._repo.save(topic, payload, alarm_played=False, http_sent=False)
+        else:
+            self._execute_action(topic, payload)
+
+    def _execute_action(self, topic: str, payload: Dict) -> None:
+        """디바이스 조치 + HTTP 전송을 즉시 실행한다."""
+        camera_id  = str(payload.get("camera_id", "unknown"))
+        event_type = str(payload.get("type", "unknown")).lower()
+        severity   = str(payload.get("severity", "")).lower()
+
+        alarm_played = False
+        if (
+            self._alarm.should_alarm(topic, payload)
+            and self._alarm.try_acquire_slot(camera_id, event_type)
+        ):
+            devices = self._resolve_devices(camera_id)
+
+            if AlarmDevice.SPEAKER in devices:
+                ok = self._speaker.play(event_type, severity, camera_id)
+                alarm_played = alarm_played or ok
+
+            if AlarmDevice.SIGNBOARD in devices:
+                self._signboard.display(event_type, severity, camera_id)
+
+            if AlarmDevice.SIREN in devices:
+                self._siren.trigger(event_type, camera_id)
+
+        self._forwarder.forward(topic, payload)
+        http_sent = bool(self._forwarder._targets)
+
+        self._repo.save(topic, payload, alarm_played=alarm_played, http_sent=http_sent)
+
+    # ------------------------------------------------------------------
+    # MQTT 콜백
+    # ------------------------------------------------------------------
+
+    def _on_connect(self, client, userdata, flags, rc):
+        if rc == 0:
+            logger.info(
+                "Action Layer MQTT 연결 성공: %s:%d",
+                self.mqtt_broker, self.mqtt_port,
+            )
+            for topic in self.subscribe_topics:
+                client.subscribe(topic, qos=0)
+                logger.info("구독: %s", topic)
+            for cmd_topic in (_CMD_TOPIC_MODE, _CMD_TOPIC_APPROVE, _CMD_TOPIC_REJECT):
+                client.subscribe(cmd_topic, qos=1)
+                logger.info("명령 구독: %s", cmd_topic)
+        else:
+            logger.error("Action Layer MQTT 연결 실패 (rc=%d)", rc)
+
+    def _on_message(self, client, userdata, msg):
+        try:
+            topic   = msg.topic
+            payload = json.loads(msg.payload.decode("utf-8"))
+
+            if topic == _CMD_TOPIC_MODE:
+                mode_val = payload.get("mode")
+                site_id  = payload.get("site_id")
+                if mode_val:
+                    try:
+                        self.set_mode(ControlMode(mode_val), site_id=site_id)
+                    except ValueError:
+                        logger.warning(
+                            "MQTT mode 명령 오류: 알 수 없는 값 %r", mode_val
+                        )
+                return
+
+            if topic == _CMD_TOPIC_APPROVE:
+                event_id = payload.get("event_id")
+                if event_id:
+                    _, msg_text = self.approve_event(event_id)
+                    logger.info("MQTT approve: %s", msg_text)
+                return
+
+            if topic == _CMD_TOPIC_REJECT:
+                event_id = payload.get("event_id")
+                if event_id:
+                    _, msg_text = self.reject_event(event_id)
+                    logger.info("MQTT reject: %s", msg_text)
+                return
+
+            self._handle_event(payload, topic=topic)
+
+        except json.JSONDecodeError as exc:
+            logger.error("JSON 파싱 실패: %s", exc)
+        except Exception as exc:
+            logger.error("Action 처리 오류: %s", exc, exc_info=True)
+
+    # ------------------------------------------------------------------
+    # 라이프사이클
+    # ------------------------------------------------------------------
+
+    def start(self) -> None:
+        """서비스를 시작한다."""
+        self._repo.init()
+        self._forwarder.start()
+
+        self._mqtt_client = mqtt.Client()
+        self._mqtt_client.on_connect = self._on_connect
+        self._mqtt_client.on_message = self._on_message
+
+        for attempt in range(1, self._MQTT_MAX_ATTEMPTS + 1):
+            try:
+                self._mqtt_client.connect(
+                    self.mqtt_broker, self.mqtt_port, keepalive=60
+                )
+                logger.info(
+                    "MQTT 연결 성공: %s:%d", self.mqtt_broker, self.mqtt_port
+                )
+                break
+            except (ConnectionRefusedError, OSError) as exc:
+                if attempt >= self._MQTT_MAX_ATTEMPTS:
+                    logger.error(
+                        "MQTT 연결 실패 - 포기 (%d회 시도): %s", attempt, exc
+                    )
+                    raise
+                logger.warning(
+                    "MQTT 연결 실패 (시도 %d/%d): %s - 5초 후 재시도...",
+                    attempt, self._MQTT_MAX_ATTEMPTS, exc,
+                )
+                time.sleep(5)
+
+        self._mqtt_client.loop_start()
+
+        if self._rest_receiver:
+            self._rest_receiver.start()
+
+        self._running = True
+        logger.info("Speaker-Bridge Action Layer 실행 중 (Ctrl+C 종료)")
+
+        signal.signal(signal.SIGINT,  self._signal_handler)
+        signal.signal(signal.SIGTERM, self._signal_handler)
+
+        try:
+            while self._running:
+                time.sleep(1.0)
+        finally:
+            self.stop()
+
+    def _signal_handler(self, signum, frame) -> None:
+        logger.info("종료 신호 수신 (signum=%d)", signum)
+        self._running = False
+
+    def stop(self) -> None:
+        """서비스를 안전하게 종료한다."""
+        logger.info("Speaker-Bridge 종료 중...")
+        self._forwarder.stop()
+        if self._rest_receiver:
+            self._rest_receiver.stop()
+        if self._mqtt_client:
+            self._mqtt_client.loop_stop()
+            self._mqtt_client.disconnect()
+        logger.info("Speaker-Bridge 종료 완료")

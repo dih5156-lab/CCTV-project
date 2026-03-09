@@ -3,7 +3,7 @@ events.py - AI 추론 결과 데이터 모델
 """
 
 from dataclasses import dataclass
-from typing import Optional, Dict, List
+from typing import Optional, Dict
 from enum import Enum
 
 class EventType(Enum):

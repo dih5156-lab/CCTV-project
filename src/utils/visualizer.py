@@ -2,10 +2,12 @@
 visualizer.py - 감지 결과 시각화
 """
 
-from typing import List, Union, Dict, Tuple, Optional
-from ..core.events import EventType, DetectionEvent
-import cv2
 import logging
+from typing import Dict, List, Optional, Tuple, Union
+
+import cv2
+
+from ..core.events import DetectionEvent, EventType
 
 logger = logging.getLogger(__name__)
 
@@ -21,13 +23,19 @@ EVENT_COLORS: Dict[EventType, Tuple[int, int, int]] = {
     EventType.HELMET: (255, 0, 0),      # 파란색
     EventType.HEAD: (0, 0, 255),      # 빨간색
     EventType.FALL_DETECTED: (0, 100, 100),     # 갈색
-    EventType.DANGER_ZONE: (0, 255, 255),       # 노란색
+    EventType.DANGER_ZONE: (255, 0, 255),       # 자주색
     EventType.PERSON: (0, 255, 0),              # 초록색
     EventType.OTHER: (200, 200, 200),           # 회색
 }
 
-DEFAULT_COLOR = (255, 255, 255)  # 흰색
-
+# 이벤트 타입별 그리기 순서 (0=먼저, 큰 박스 먼저 그리기)
+_DRAW_PRIORITY: Dict[str, int] = {
+    "person":       0,
+    "fall_detected": 1,
+    "danger_zone":  2,
+    "helmet":       3,
+    "head":         3,
+}
 
 def _parse_event_data(event: Union[Dict, DetectionEvent]) -> Optional[Dict]:
     """이벤트 데이터를 표준화된 딕셔너리 형식으로 파싱"""
@@ -38,7 +46,7 @@ def _parse_event_data(event: Union[Dict, DetectionEvent]) -> Optional[Dict]:
         
         return {
             "type_str": event_type_str,
-            "color": DEFAULT_COLOR,
+            "color": EVENT_COLORS.get(EventType(event_type_str.upper()), EVENT_COLORS[EventType.OTHER]),
             "confidence": event.get('confidence', 0),
             "bbox": event.get("bbox", {}),
             "keypoints": event.get("keypoints", None),
@@ -52,14 +60,14 @@ def _parse_event_data(event: Union[Dict, DetectionEvent]) -> Optional[Dict]:
         data = event.to_dict()
         return {
             "type_str": event.event_type.value,
-            "color": EVENT_COLORS.get(event.event_type, DEFAULT_COLOR),
+            "color": EVENT_COLORS.get(event.event_type, EVENT_COLORS[EventType.OTHER]),
             "confidence": event.confidence,
             "bbox": data.get("bbox", {}),
             "keypoints": event.keypoints,
         }
     
     else:
-        logger.warning(f"알 수 없는 이벤트 타입: {type(event)}")
+        logger.warning("알 수 없는 이벤트 타입: %s", type(event))
         return None
 
 
@@ -113,69 +121,39 @@ def _draw_bbox_with_label(
         )
         
     except Exception as e:
-        logger.warning(f"바운딩 박스 그리기 실패: {e}")
+        logger.warning("바운딩 박스 그리기 실패: %s", e)
 
 
 def draw_events(frame, events: List[Union[Dict, DetectionEvent]]):
     """프레임에 바운딩 박스와 레이블로 감지 이벤트 그리기"""
-    if frame is None:
-        return frame
-    
-    if not events:
+    if frame is None or not events:
         return frame
 
-    # 그리기 순서: 1) person (큰 박스) 먼저, 2) 헬멧 (작은 박스) 나중에
-    person_events = []
-    helmet_events = []
-    fall_events = []
-    other_events = []
-    
+    # _DRAW_PRIORITY 순서로 정렬: 큰 박스(사람) 먼저, 헬멧/head 나중
+    ordered: List = []
     for event in events:
         parsed = _parse_event_data(event)
         if parsed is None:
             continue
-        
-        event_type = parsed["type_str"]
-        if event_type == "person":
-            person_events.append((event, parsed))
-        elif event_type in ["helmet", "head"]:
-            helmet_events.append((event, parsed))
-        elif event_type == "fall_detected":
-            fall_events.append((event, parsed))
-        else:
-            other_events.append((event, parsed))
-    
-    # 그리기 순서: person → fall → helmet → others
-    for event, parsed in person_events + fall_events + other_events:
+        priority = _DRAW_PRIORITY.get(parsed["type_str"], 2)
+        ordered.append((priority, event, parsed))
+    ordered.sort(key=lambda t: t[0])
+
+    for _, event, parsed in ordered:
         bbox = parsed["bbox"]
         x = bbox.get("x", 0)
         y = bbox.get("y", 0)
         w = bbox.get("width", 0)
         h = bbox.get("height", 0)
-        
+
         if w <= 0 or h <= 0:
             continue
-        
+
         label = f"{parsed['type_str']} {parsed['confidence']:.2f}"
         _draw_bbox_with_label(frame, x, y, w, h, label, parsed["color"])
-        
-        # 낙상 감지 시 관절 표시
+
         if parsed["type_str"] == "fall_detected" and parsed["keypoints"] is not None:
             _draw_keypoints(frame, parsed["keypoints"])
-    
-    # 헬멧은 마지막에 그려서 person 박스 위에 표시
-    for event, parsed in helmet_events:
-        bbox = parsed["bbox"]
-        x = bbox.get("x", 0)
-        y = bbox.get("y", 0)
-        w = bbox.get("width", 0)
-        h = bbox.get("height", 0)
-        
-        if w <= 0 or h <= 0:
-            continue
-        
-        label = f"{parsed['type_str']} {parsed['confidence']:.2f}"
-        _draw_bbox_with_label(frame, x, y, w, h, label, parsed["color"])
 
     return frame
 
@@ -192,7 +170,7 @@ def _draw_keypoints(frame, keypoints):
         [2, 3], [1, 2], [1, 3], [2, 4], [3, 5], [4, 6], [5, 7]
     ]
     
-    for i, (x, y, conf) in enumerate(keypoints):
+    for _, (x, y, conf) in enumerate(keypoints):
         if conf > 0.3:
             cv2.circle(frame, (int(x), int(y)), 3, (0, 255, 255), -1)
     

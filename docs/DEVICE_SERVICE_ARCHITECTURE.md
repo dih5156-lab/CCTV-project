@@ -35,32 +35,25 @@
 
 ## 계층 구조
 
-### 1. **BaseDeviceService** (기반 클래스)
-```python
-class BaseDeviceService:
-    - device_id: 디바이스 ID
-    - device_type: 디바이스 타입 (cctv, thermal, sensor, ...)
-    - publish_event(): 기본 발행 메서드
-    - MQTT 연결 관리
-```
+### 1. **CCTV AI Engine**
+- RTSP 수신
+- 객체 감지
+- JSON 이벤트 생성
+- MQTT 발행 (`cctv/ai/events/...`)
 
-### 2. **특화 Device Service** (상속 클래스)
-```
-CCTVDeviceService (헬멧, 사람, 낙상 감지)
-├── publish_detection_event()
-├── publish_detection_events()
-└── AI 분석 결과 발행
+### 2. **EdgeX Device Adapter**
+- AI 이벤트 구독
+- EdgeX 메타데이터(DeviceService/Profile/Device) 관리
+- EdgeX 토픽 재발행 (`edgex/events/device/...`)
 
-ThermalDeviceService (온도, 이상 감지)
-├── publish_temperature_event()
-├── publish_anomaly_event()
-└── 열화상 데이터 발행
+### 3. **Rule Engine (Kuiper)**
+- intrusion/지속 감지/confidence 룰 적용
+- 결과 라우팅 (`cctv/rules/...`)
 
-SensorDeviceService (동작, 환경 센서)
-├── publish_motion_event()
-├── publish_environment_event()
-└── 센서 데이터 발행
-```
+### 4. **Action Layer (speaker-bridge)**
+- 알람 재생
+- DB 저장
+- 외부 API 호출
 
 ## MQTT 토픽 구조
 
@@ -164,129 +157,36 @@ sensor_service.publish_environment_event(
 )
 ```
 
-## Docker 컨테이너 구조
+## 실행 단위
 
-각 Device Service는 **독립적인 컨테이너**로 배포:
+현재 권장 실행 단위는 4개 프로세스입니다.
 
-```dockerfile
-# CCTV Device Service
-FROM python:3.9
-COPY cctv_device_service.py /app/
-CMD ["python", "/app/cctv_device_service.py"]
-
-# Thermal Device Service
-FROM python:3.9
-COPY thermal_device_service.py /app/
-CMD ["python", "/app/thermal_device_service.py"]
-
-# Sensor Device Service
-FROM python:3.9
-COPY sensor_device_service.py /app/
-CMD ["python", "/app/sensor_device_service.py"]
-```
-
-## docker-compose.yml 예시
-
-```yaml
-services:
-  # CCTV Device Service
-  cctv-device-service:
-    build: ./cctv
-    depends_on:
-      - edgex-mqtt-broker
-    environment:
-      MQTT_BROKER: edgex-mqtt-broker
-      MQTT_PORT: 1883
-      DEVICE_ID: camera-1
-
-  # Thermal Device Service
-  thermal-device-service:
-    build: ./thermal
-    depends_on:
-      - edgex-mqtt-broker
-    environment:
-      MQTT_BROKER: edgex-mqtt-broker
-      MQTT_PORT: 1883
-      DEVICE_ID: thermal-1
-
-  # Sensor Device Service
-  sensor-device-service:
-    build: ./sensor
-    depends_on:
-      - edgex-mqtt-broker
-    environment:
-      MQTT_BROKER: edgex-mqtt-broker
-      MQTT_PORT: 1883
-      DEVICE_ID: sensor-1
-
-  # EdgeX MQTT Broker
-  edgex-mqtt-broker:
-    image: eclipse-mosquitto:2.0
-    ports:
-      - "1883:1883"
-
-  # EdgeX Core Data (MQTT 구독)
-  core-data:
-    image: nexus3.edgexfoundry.org:10004/core-data:latest
-    depends_on:
-      - edgex-mqtt-broker
-      - edgex-postgres
-    environment:
-      MESSAGEBUS_TYPE: mqtt
-      MESSAGEBUS_HOST: edgex-mqtt-broker
-      MESSAGEBUS_PORT: 1883
-```
+1. AI Engine (`main.py`)
+2. EdgeX Adapter (`run_edgex_adapter.py`)
+3. Rule Engine 배포 (`run_kuiper_rules.py`)
+4. Action Layer (`run_action_bridge.py`)
 
 ## 데이터 흐름
 
 ```
-1. AI 추론 (CCTV Device Service)
-   └─→ 헬멧/사람/낙상 감지
-        └─→ DetectionEvent 생성
+1. AI Engine
+   └─→ cctv/ai/events/{camera_id}/{event_type}
 
-2. 이벤트 발행
-   └─→ publish_detection_event()
-       └─→ BaseDeviceService.publish_event()
-           └─→ MQTT 발행
+2. EdgeX Adapter
+   └─→ 메타데이터(DeviceService/Profile/Device) 보장
+   └─→ edgex/events/device/{service}/{device}/{resource}
 
-3. MQTT 전송
-   └─→ Topic: edgex/events/device/cctv/camera-1/helmet_detection
-       └─→ EdgeX v3 Envelope 포맷
+3. Rule Engine (Kuiper)
+   └─→ intrusion 필터/지속 감지/confidence 룰
+   └─→ cctv/rules/intrusion/{filtered|persisted|critical}
 
-4. EdgeX 수신
-   └─→ Core Data MQTT 구독
-       └─→ PostgreSQL 저장
-           └─→ REST API 조회 가능
-```
-
-## 확장성
-
-새로운 디바이스 추가는 매우 간단:
-
-```python
-# 1. BaseDeviceService 상속
-class CustomDeviceService(BaseDeviceService):
-    def __init__(self, device_id, mqtt_broker="localhost"):
-        super().__init__(
-            device_id=device_id,
-            device_type="custom",
-            mqtt_broker=mqtt_broker
-        )
-    
-    # 2. 특화 메서드 추가
-    def publish_custom_event(self, data):
-        return self.publish_event("custom_resource", data)
-
-# 3. 사용
-custom_service = CustomDeviceService("custom-1")
-custom_service.publish_custom_event({"value": 123})
+4. Action Layer
+   └─→ DB 저장 + 외부 API 호출 + 스피커 알람
 ```
 
 ## 장점
 
-✅ **독립성**: 각 디바이스가 자신의 서비스를 가짐  
-✅ **확장성**: 새로운 디바이스 추가 쉬움  
-✅ **표준화**: 모든 디바이스가 같은 메시지 포맷 사용  
-✅ **분산화**: 마이크로서비스 패턴  
-✅ **유지보수**: 각 서비스를 독립적으로 관리  
-✅ **스케일링**: 필요에 따라 인스턴스 추가 가능
+✅ **책임 분리**: 분석/어댑터/룰/액션이 독립적임  
+✅ **운영 안정성**: 특정 계층 장애가 전체 파이프라인을 즉시 멈추지 않음  
+✅ **확장성**: 룰/액션을 별도 증설 가능  
+✅ **유지보수성**: 계층별 수정 범위가 명확함

@@ -4,12 +4,15 @@ dataset_collector.py - 탐지 데이터 자동 수집 및 YOLO 라벨링
 """
 
 import json
+import logging
 import time
 from pathlib import Path
 from dataclasses import dataclass
 from typing import List, Dict, Optional, Tuple
 import cv2
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -26,6 +29,15 @@ class FrameMetadata:
 
 class DatasetCollector:
     """탐지 결과 자동 수집"""
+
+    _ANNOTATE_COLORS = {
+        'helmet_wearing': (0, 255, 0),
+        'helmet_missing': (0, 0, 255),
+        'fall_detected':  (255, 0, 255),
+        'no_fall':        (255, 255, 0),
+        'person':         (255, 255, 255),
+    }
+    _DEFAULT_ANNOTATE_COLOR = (128, 128, 128)
     
     def __init__(
         self,
@@ -47,15 +59,13 @@ class DatasetCollector:
         self.image_quality = image_quality
         
         # 디렉터리 구조 생성
-        self.images_dir = self.output_dir / "images"
-        self.labels_dir = self.output_dir / "labels"
+        self.images_dir   = self.output_dir / "images"
+        self.labels_dir   = self.output_dir / "labels"
         self.metadata_dir = self.output_dir / "metadata"
-        self.annotated_dir = self.output_dir / "annotated"  # 박스 그려진 이미지
-        
-        self.images_dir.mkdir(parents=True, exist_ok=True)
-        self.labels_dir.mkdir(parents=True, exist_ok=True)
-        self.metadata_dir.mkdir(parents=True, exist_ok=True)
-        self.annotated_dir.mkdir(parents=True, exist_ok=True)
+        self.annotated_dir = self.output_dir / "annotated"
+
+        for d in (self.images_dir, self.labels_dir, self.metadata_dir, self.annotated_dir):
+            d.mkdir(parents=True, exist_ok=True)
         
         # 메타데이터 저장
         self.frame_metadata: List[FrameMetadata] = []
@@ -169,14 +179,7 @@ class DatasetCollector:
             confidence = detection.confidence
             
             # 클래스별 색상
-            color_map = {
-                'helmet_wearing': (0, 255, 0),      # 녹색
-                'helmet_missing': (0, 0, 255),      # 빨강
-                'fall_detected': (255, 0, 255),     # 보라
-                'no_fall': (255, 255, 0),           # 청록
-                'person': (255, 255, 255),          # 흰색
-            }
-            color = color_map.get(class_name.lower(), (128, 128, 128))  # 기본: 회색
+            color = self._ANNOTATE_COLORS.get(class_name.lower(), self._DEFAULT_ANNOTATE_COLOR)
             
             # 박스 그리기
             cv2.rectangle(frame, (int(x), int(y)), (int(x+w), int(y+h)), color, 2)
@@ -296,7 +299,7 @@ class DatasetCollector:
         with open(output_path, 'w', encoding='utf-8') as f:
             json.dump(coco_data, f, indent=2, ensure_ascii=False)
         
-        print(f"✅ COCO 형식 내보내기: {output_path}")
+        logger.info("COCO 형식 내보내기: %s", output_path)
 
     def get_statistics(self) -> Dict:
         """수집 통계 반환"""
@@ -316,14 +319,19 @@ class DatasetCollector:
     def print_statistics(self):
         """통계 출력"""
         stats = self.get_statistics()
-        print(f"\n{'='*60}")
-        print(f"📊 데이터셋 수집 통계")
-        print(f"{'='*60}")
-        print(f"총 프레임: {stats['total_frames']}")
-        print(f"총 탐지: {stats['total_detections']}")
-        print(f"클래스 분포: {stats['class_distribution']}")
-        print(f"저장 위치: {stats['output_dir']}")
-        print(f"{'='*60}\n")
+        logger.info(
+            "\n%s\n\ud0d0\uc9c0 \ub370\uc774\ud130\uc14b \uc218\uc9d1 \ud1b5\uacc4\n%s\n"
+            "\uc804\uccb4 \ud504\ub808\uc784: %s\n"
+            "\uc804\uccb4 \ud0d0\uc9c0: %s\n"
+            "\ud074\ub798\uc2a4 \ubd84\ud3ec: %s\n"
+            "\uc800\uc7a5 \uc704\uce58: %s\n%s",
+            "=" * 60, "=" * 60,
+            stats['total_frames'],
+            stats['total_detections'],
+            stats['class_distribution'],
+            stats['output_dir'],
+            "=" * 60,
+        )
 
 
 __all__ = ["DatasetCollector", "FrameMetadata"]

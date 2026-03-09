@@ -1,25 +1,26 @@
-"""
-[zone_detection.py] 위험구역 진입/체류 탐지 모듈
-제작일: 2025-11-20
-설명:
-  - 카메라별 위험 구역(폴리곤) 정의
-  - 객체 바운딩박스와 위험 구역 교차 검사
-  - 진입/퇴장/체류 이벤트 생성
-  - 추적 ID 기반 중복 이벤트 방지
+"""위험구역 진입/체류 탐지 모듈.
 
-사용 예시:
+카메라별 폴리곤 상 위험 구역을 정의하고, 객체 바운딩박스와의
+교차 여부를 구해 진입/퇴장/체류 이벤트를 생성한다.
+다중 주시::
+
     zone_mgr = ZoneManager(zones_config='zones_config.json')
     zone_mgr.load_zones('cam1')
     events = zone_mgr.check_zones('cam1', detections)
 """
 
 import json
+import logging
 import time
-from dataclasses import dataclass, field, asdict
-from typing import Dict, List, Tuple, Optional
+from dataclasses import asdict, dataclass, field
+from enum import Enum
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
+
 import cv2
 import numpy as np
-from enum import Enum
+
+logger = logging.getLogger(__name__)
 
 
 class ZoneEventType(str, Enum):
@@ -68,27 +69,18 @@ class Zone:
 
     def intersects_bbox(self, bbox: Dict) -> bool:
         """바운딩박스와 폴리곤이 교차하는지 확인
-        
+
         매개변수:
             bbox: {'x', 'y', 'width', 'height'} (좌상단 기준)
         """
         x, y, w, h = bbox['x'], bbox['y'], bbox['width'], bbox['height']
-        # bbox 좌상단 기준으로 코너 계산
-        x1 = int(x)
-        y1 = int(y)
-        x2 = int(x + w)
-        y2 = int(y + h)
-        
-        # 바운딩박스의 4개 코너 중 하나라도 폴리곤 내부에 있으면 교차
+        x1, y1, x2, y2 = int(x), int(y), int(x + w), int(y + h)
+
         corners = [(x1, y1), (x2, y1), (x1, y2), (x2, y2)]
-        for corner in corners:
-            if self.contains_point(corner):
-                return True
-        
-        # 또는 중심점 확인
-        center_x = int(x + w / 2)
-        center_y = int(y + h / 2)
-        return self.contains_point((center_x, center_y))
+        if any(self.contains_point(c) for c in corners):
+            return True
+
+        return self.contains_point((int(x + w / 2), int(y + h / 2)))
 
     def draw(self, frame: np.ndarray, color: Tuple[int, int, int] = (0, 255, 0), thickness: int = 2):
         """프레임에 폴리곤 그리기"""
@@ -119,11 +111,10 @@ class ZoneManager:
     def _load_config(self):
         """JSON 설정 파일 로드"""
         try:
-            with open(self.zones_config_path, 'r', encoding='utf-8') as f:
-                config = json.load(f)
+            config = json.loads(Path(self.zones_config_path).read_text(encoding='utf-8'))
             self.dwelling_threshold = config.get('dwelling_threshold_seconds', 3.0)
         except FileNotFoundError:
-            print(f"⚠️ {self.zones_config_path} 파일을 찾을 수 없습니다. 빈 설정으로 시작합니다.")
+            logger.warning("%s 파일을 찾을 수 없습니다. 빈 설정으로 시작합니다.", self.zones_config_path)
 
     def load_zones(self, camera_id: str, zones_data: Optional[List[Dict]] = None):
         """카메라의 구역 로드
@@ -134,11 +125,10 @@ class ZoneManager:
         """
         if zones_data is None:
             try:
-                with open(self.zones_config_path, 'r', encoding='utf-8') as f:
-                    config = json.load(f)
+                config = json.loads(Path(self.zones_config_path).read_text(encoding='utf-8'))
                 zones_data = config.get('cameras', {}).get(camera_id, {}).get('zones', [])
             except Exception as e:
-                print(f"❌ 구역 로드 오류 ({camera_id}): {e}")
+                logger.error("구역 로드 오류 (%s): %s", camera_id, e)
                 zones_data = []
 
         self.zones[camera_id] = {}
@@ -150,8 +140,75 @@ class ZoneManager:
         
         self.object_states[camera_id] = {}
         self.object_enter_time[camera_id] = {}
-        
-        print(f"✅ {camera_id}에 {len(self.zones[camera_id])}개 구역 로드됨")
+
+        logger.info("%s에 %s개 구역 로드됨", camera_id, len(self.zones[camera_id]))
+
+    def save_zones(
+        self,
+        camera_id: str,
+        zones_data: List[Dict],
+        cameras_config_path: Optional[str] = None,
+    ) -> None:
+        """카메라 구역을 파일에 저장하고 메모리를 즉시 갱신한다.
+
+        cameras_config_path가 주어지면 cameras.json에 저장하고,
+        없으면 zones_config.json 형식으로 저장한다.
+
+        매개변수:
+            camera_id: 카메라 ID
+            zones_data: [{'id': ..., 'name': ..., 'polygon': [[x,y], ...]}]
+            cameras_config_path: cameras.json 경로 (없으면 zones_config.json 사용)
+        """
+        if cameras_config_path:
+            self._save_to_cameras_json(camera_id, zones_data, cameras_config_path)
+        else:
+            self._save_to_zones_config(camera_id, zones_data)
+        self.load_zones(camera_id, zones_data)
+
+    def _save_to_cameras_json(
+        self, camera_id: str, zones_data: List[Dict], path: str
+    ) -> None:
+        """cameras.json의 해당 카메라 zones 필드를 업데이트한다."""
+        p = Path(path)
+        cameras = json.loads(p.read_text(encoding='utf-8'))
+        for cam in cameras:
+            if cam.get('id') == camera_id:
+                cam['zones'] = zones_data
+                break
+        else:
+            logger.warning("[%s] cameras.json에서 카메라를 찾을 수 없습니다", camera_id)
+        tmp = p.with_suffix('.tmp')
+        tmp.write_text(
+            json.dumps(cameras, ensure_ascii=False, indent=2),
+            encoding='utf-8',
+        )
+        tmp.replace(p)
+        logger.info(
+            "[%s] zones를 cameras.json에 저장했습니다 (%d개)", camera_id, len(zones_data)
+        )
+
+    def _save_to_zones_config(self, camera_id: str, zones_data: List[Dict]) -> None:
+        """zones_config.json의 해당 카메라 zones 필드를 업데이트한다."""
+        p = Path(self.zones_config_path)
+        try:
+            config = json.loads(p.read_text(encoding='utf-8'))
+        except (FileNotFoundError, json.JSONDecodeError):
+            config = {
+                "dwelling_threshold_seconds": self.dwelling_threshold,
+                "cameras": {},
+            }
+        cam_entry = config.setdefault('cameras', {}).setdefault(camera_id, {})
+        cam_entry['id'] = camera_id
+        cam_entry['zones'] = zones_data
+        tmp = p.with_suffix('.tmp')
+        tmp.write_text(
+            json.dumps(config, ensure_ascii=False, indent=2),
+            encoding='utf-8',
+        )
+        tmp.replace(p)
+        logger.info(
+            "[%s] zones를 zones_config.json에 저장했습니다 (%d개)", camera_id, len(zones_data)
+        )
 
     def check_zones(
         self,
@@ -222,12 +279,13 @@ class ZoneManager:
                     # 체류 중: 임계값 초과 시 이벤트
                     enter_time = self.object_enter_time[camera_id].get(object_id)
                     if enter_time:
-                        dwelling_time = time.time() - enter_time
+                        now_ts = time.time()
+                        dwelling_time = now_ts - enter_time
                         if dwelling_time >= self.dwelling_threshold:
                             # 중복 이벤트 방지 (동일 객체/카메라에서 1초마다만 전송)
                             key = (camera_id, object_id)
                             last_event_time = self.sent_dwelling_events.get(key, 0)
-                            if time.time() - last_event_time >= 1.0:
+                            if now_ts - last_event_time >= 1.0:
                                 event = ZoneEvent(
                                     event_type=ZoneEventType.DWELLING,
                                     zone_id=zone_id,
@@ -238,7 +296,7 @@ class ZoneManager:
                                     dwelling_seconds=dwelling_time
                                 )
                                 events.append(event)
-                                self.sent_dwelling_events[key] = time.time()
+                                self.sent_dwelling_events[key] = now_ts
         
         # 사라진 객체 정리
         for object_id in list(self.object_states[camera_id].keys()):
@@ -254,7 +312,7 @@ class ZoneManager:
             return frame
         
         for zone in self.zones[camera_id].values():
-            zone.draw(frame, color=(0, 255, 0), thickness=2)
+            zone.draw(frame, color=(0, 255, 255), thickness=2)
         
         return frame
 

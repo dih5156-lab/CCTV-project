@@ -23,6 +23,10 @@ Device/
 Changetxt/
 MD/
 Local Test Server/
+Local Test Sever/
+
+# 런타임 생성 데이터
+event_backup/
 
 # IDE
 .vscode/
@@ -41,3 +45,15 @@ desktop.ini
 
 # 환경설정 (개인정보)
 .env
+
+# 임시 출력 파일
+temp_output.txt
+test_out.txt
+_debug_out.txt
+_test_results.txt
+
+# pytest 캐시
+.pytest_cache/
+
+# 모델 캐시 (TensorRT 변환 결과는 로컬 전용)
+*.engine

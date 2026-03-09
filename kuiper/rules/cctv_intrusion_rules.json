@@ -1,0 +1,53 @@
+{
+  "stream": {
+    "name": "ai_events_stream",
+    "sql": "CREATE STREAM ai_events_stream (camera_id STRING, type STRING, confidence FLOAT, timestamp STRING, object_id BIGINT) WITH (DATASOURCE=\"cctv/ai/events/+/+\", TYPE=\"mqtt\", FORMAT=\"json\", SHARED=\"true\")"
+  },
+  "rules": [
+    {
+      "id": "intrusion_confidence_filter",
+      "description": "intrusion 이벤트 confidence 필터링",
+      "sql": "SELECT camera_id, type, confidence, timestamp, object_id FROM ai_events_stream WHERE type = 'danger_zone' AND confidence >= {{INTRUSION_CONFIDENCE}}",
+      "actions": [
+        {
+          "mqtt": {
+            "server": "tcp://{{MQTT_BROKER}}:{{MQTT_PORT}}",
+            "topic": "cctv/rules/intrusion/filtered",
+            "qos": 0,
+            "retain": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "intrusion_5s_persist",
+      "description": "5초 이상 지속 감지 조건",
+      "sql": "SELECT camera_id, MAX(confidence) AS max_confidence, COUNT(*) AS hit_count, window_end() AS detected_until FROM ai_events_stream WHERE type = 'danger_zone' AND confidence >= {{INTRUSION_CONFIDENCE}} GROUP BY camera_id, TUMBLINGWINDOW(ss, 5) HAVING COUNT(*) >= {{PERSIST_HIT_COUNT}}",
+      "actions": [
+        {
+          "mqtt": {
+            "server": "tcp://{{MQTT_BROKER}}:{{MQTT_PORT}}",
+            "topic": "cctv/rules/intrusion/persisted",
+            "qos": 0,
+            "retain": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "intrusion_high_confidence_routing",
+      "description": "고신뢰 intrusion 라우팅",
+      "sql": "SELECT camera_id, type, confidence, timestamp, object_id, 'critical' AS severity FROM ai_events_stream WHERE type = 'danger_zone' AND confidence >= {{CRITICAL_CONFIDENCE}}",
+      "actions": [
+        {
+          "mqtt": {
+            "server": "tcp://{{MQTT_BROKER}}:{{MQTT_PORT}}",
+            "topic": "cctv/rules/intrusion/critical",
+            "qos": 0,
+            "retain": false
+          }
+        }
+      ]
+    }
+  ]
+}

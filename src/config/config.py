@@ -1,103 +1,193 @@
-"""
-config.py - 중앙화된 설정 관리
-"""
+"""중앙화된 애플리케이션 설정 모듈"""
 
+import logging
 import os
-from pathlib import Path
 from dataclasses import dataclass
-from typing import Optional
+from pathlib import Path
+from typing import Callable, Mapping, Optional, Sequence, Union
 
 
 # 프로젝트 루트 디렉토리 (src/config에서 2단계 상위)
 PROJECT_ROOT = Path(__file__).parent.parent.parent
+logger = logging.getLogger(__name__)
+
+
+def _identity(value: str) -> str:
+    return value
+
+
+def _parse_bool(value: str) -> bool:
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+@dataclass(frozen=True)
+class EnvOverride:
+    key: str
+    path: tuple[str, ...]
+    parser: Callable[[str], object] = _identity
+
+
+MODEL_CANDIDATES: dict[str, tuple[str, tuple[Union[str, Path], ...]]] = {
+    "helmet_model": (
+        "helmet",
+        (
+            # TensorRT (Jetson 우선)
+            PROJECT_ROOT / "models/helmet_model_ver0.5.engine",
+            PROJECT_ROOT / "models/helmet_model_ver0.5.pt",
+            PROJECT_ROOT / "helmet_model_ver0.5.pt",
+        ),
+    ),
+    "pose_model": (
+        "pose",
+        (
+            # TensorRT (Jetson 우선)
+            PROJECT_ROOT / "models/yolov8n-pose.engine",
+            PROJECT_ROOT / "models/yolov8n-pose.pt",
+            PROJECT_ROOT / "yolov8n-pose.pt",
+            "yolov8n-pose.pt",
+        ),
+    ),
+    "person_model": (
+        "person",
+        (
+            # TensorRT (Jetson 우선)
+            PROJECT_ROOT / "models/yolov8n.engine",
+            PROJECT_ROOT / "models/yolov8s.engine",
+            PROJECT_ROOT / "models/yolov8n.pt",
+            PROJECT_ROOT / "models/yolov8s.pt",
+            PROJECT_ROOT / "yolov8n.pt",
+            PROJECT_ROOT / "yolov8s.pt",
+            "yolov8n.pt",
+            "yolov8s.pt",
+        ),
+    ),
+}
+
+
+ENV_OVERRIDES: tuple[EnvOverride, ...] = (
+    EnvOverride("HELMET_MODEL_PATH", ("models", "helmet_model")),
+    EnvOverride("PERSON_MODEL_PATH", ("models", "person_model")),
+    EnvOverride("POSE_MODEL_PATH", ("models", "pose_model")),
+    EnvOverride("DEVICE", ("detection", "device")),
+    EnvOverride("MQTT_BROKER", ("mqtt", "broker")),
+    EnvOverride("MQTT_PORT", ("mqtt", "port"), parser=lambda v: int(v.strip())),
+    EnvOverride("MQTT_TOPIC_PREFIX", ("mqtt", "topic_prefix")),
+    EnvOverride("DISPLAY_ENABLED", ("display",), parser=_parse_bool),
+    EnvOverride("ZONE_DETECTION_ENABLED", ("zone_detection",), parser=_parse_bool),
+    EnvOverride("COLLECT_DATASET", ("collect_dataset",), parser=_parse_bool),
+    # EdgeX
+    EnvOverride("EDGEX_METADATA_URL", ("edgex", "metadata_url")),
+    EnvOverride("EDGEX_DATA_URL", ("edgex", "data_url")),
+    EnvOverride("EDGEX_MQTT_BROKER", ("edgex", "mqtt_broker")),
+    EnvOverride("EDGEX_MQTT_PORT", ("edgex", "mqtt_port"), parser=lambda v: int(v.strip())),
+    EnvOverride("EDGEX_REDIS_HOST", ("edgex", "redis_host")),
+    EnvOverride("EDGEX_REDIS_PORT", ("edgex", "redis_port"), parser=lambda v: int(v.strip())),
+    EnvOverride("EDGEX_SERVICE_BASE_URL", ("edgex", "service_base_url")),
+    # ActionBridge
+    EnvOverride("ACTION_MQTT_BROKER", ("action", "mqtt_broker")),
+    EnvOverride("ACTION_MQTT_PORT", ("action", "mqtt_port"), parser=lambda v: int(v.strip())),
+    EnvOverride("ACTION_REST_HOST", ("action", "rest_host")),
+    EnvOverride("ACTION_REST_PORT", ("action", "rest_port"), parser=lambda v: int(v.strip())),
+)
 
 @dataclass
 class ModelPaths:
     """모델 파일 경로 관리"""
-    helmet_model: str = None
-    person_model: str = None
-    pose_model: str = None
-    
-    def __post_init__(self):
-        """기본 모델 경로 자동 탐지"""
-        if self.helmet_model is None:
-            helmet_candidates = [
-                PROJECT_ROOT / "models/helmet_model_ver0.5.pt",
-                PROJECT_ROOT / "helmet_model_ver0.5.pt"
-            ]
-            for path in helmet_candidates:
-                if path.exists():
-                    self.helmet_model = str(path)
-                    break
-        
-        if self.pose_model is None:
-            pose_candidates = [
-                PROJECT_ROOT / "models/yolov8n-pose.pt",  # 나노 모델로 변경 (빠름)
-                PROJECT_ROOT / "yolov8n-pose.pt",
-                "yolov8n-pose.pt",
-            ]
-            for path in pose_candidates:
-                if isinstance(path, Path) and path.exists():
-                    self.pose_model = str(path)
-                    break
-                elif isinstance(path, str):
-                    self.pose_model = path
-                    break
 
-        if self.person_model is None:
-            person_candidates = [
-                PROJECT_ROOT / "models/yolov8s.pt",
-                PROJECT_ROOT / "yolov8s.pt",
-                "yolov8s.pt",
-            ]
-            for path in person_candidates:
-                if isinstance(path, Path) and path.exists():
-                    self.person_model = str(path)
-                    break
-                elif isinstance(path, str):
-                    self.person_model = path
-                    break
+    helmet_model: Optional[str] = None
+    person_model: Optional[str] = None
+    pose_model: Optional[str] = None
+
+    def __post_init__(self) -> None:
+        """누락된 모델 경로를 자동으로 보강"""
+
+        for attr, (label, candidates) in MODEL_CANDIDATES.items():
+            if getattr(self, attr) is None:
+                setattr(self, attr, self._resolve_path(label, candidates))
+
+    @staticmethod
+    def _resolve_path(label: str, candidates: Sequence[Union[str, Path]]) -> Optional[str]:
+        """후보 경로 중 존재하는 첫 번째를 반환하고, 없으면 첫 문자열을 보존"""
+
+        fallback: Optional[str] = None
+        for candidate in candidates:
+            if candidate is None:
+                continue
+
+            if isinstance(candidate, Path):
+                candidate_path = candidate.expanduser()
+                if candidate_path.exists():
+                    logger.debug("모델 경로 감지 - %s: %s", label, candidate_path)
+                    return str(candidate_path)
+                continue
+
+            candidate_path = Path(candidate).expanduser()
+            if candidate_path.exists():
+                logger.debug("모델 경로 감지 - %s: %s", label, candidate_path)
+                return str(candidate_path)
+
+            if fallback is None:
+                fallback = candidate
+
+        if fallback:
+            logger.debug("모델 경로 Fallback 사용 - %s: %s", label, fallback)
+        return fallback
     
     def validate(self) -> bool:
         """모델 파일 존재 여부 및 크기 검증"""
-        valid = True
-        
-        # 헬멧 모델 검증
-        if self.helmet_model:
-            if not os.path.exists(self.helmet_model):
-                print(f"경고: 헬멧 모델을 찾을 수 없습니다: {self.helmet_model}")
-                valid = False
-            elif os.path.getsize(self.helmet_model) == 0:
-                print(f"오류: 헬멧 모델 파일이 비어있습니다: {self.helmet_model}")
-                valid = False
-        
-        # Pose 모델 검증
-        if self.pose_model:
-            if not os.path.exists(self.pose_model):
-                print(f"경고: Pose 모델을 찾을 수 없습니다: {self.pose_model}")
-                valid = False
-            elif os.path.getsize(self.pose_model) == 0:
-                print(f"오류: Pose 모델 파일이 비어있습니다: {self.pose_model}")
-                valid = False
 
-        # Person 모델 검증
-        if self.person_model:
-            if not os.path.exists(self.person_model):
-                print(f"경고: Person 모델을 찾을 수 없습니다: {self.person_model}")
-                valid = False
-            elif os.path.getsize(self.person_model) == 0:
-                print(f"오류: Person 모델 파일이 비어있습니다: {self.person_model}")
-                valid = False
-        
-        return valid
+        def _validate(label: str, path: Optional[str]) -> bool:
+            if not path:
+                logger.warning("%s 모델 경로가 설정되지 않았습니다", label)
+                return False
+
+            candidate = Path(path).expanduser()
+            if not candidate.exists():
+                logger.warning("%s 모델을 찾을 수 없습니다: %s", label, candidate)
+                return False
+            if candidate.stat().st_size <= 0:
+                logger.error("%s 모델 파일이 비어 있습니다: %s", label, candidate)
+                return False
+            return True
+
+        results = [
+            _validate("헬멧", self.helmet_model),
+            _validate("Pose", self.pose_model),
+            _validate("Person", self.person_model),
+        ]
+        return all(results)
 
 
 @dataclass
-class ServerConfig:
-    """서버 통신 설정"""
-    url: str = "http://localhost:8000/api/events"
-    timeout: int = 5
-    retry_count: int = 3
+class EdgeXConfig:
+    """EdgeX Foundry 연동 설정"""
+    metadata_url: str = "http://localhost:59881"
+    data_url: str = "http://localhost:59880"
+    mqtt_broker: str = "localhost"
+    mqtt_port: int = 1883
+    redis_host: str = "edgex-redis"
+    redis_port: int = 6379
+    service_base_url: str = "http://cctv-device-service:59986"
+
+
+@dataclass
+class ActionBridgeConfig:
+    """ActionBridge 서비스 연결 설정"""
+    mqtt_broker: str = "localhost"
+    mqtt_port: int = 1883
+    rest_host: str = "0.0.0.0"
+    rest_port: int = 8080
+
+
+@dataclass
+class MqttConfig:
+    """MQTT 발행 설정 (AI 엔진 출력 채널)"""
+    broker: str = "localhost"
+    port: int = 1883
+    topic_prefix: str = "cctv/ai/events"
+    client_id_prefix: str = "cctv-ai-engine"
+    qos: int = 0
+    retain: bool = False
 
 
 @dataclass
@@ -113,7 +203,7 @@ class CameraConfig:
 class DetectionConfig:
     """객체 감지 설정"""
     helmet_confidence: float = 0.7  # 헬멧 감지 신뢰도 (0.0~1.0)
-    person_confidence: float = 0.4  # 사람 감지 신뢰도 (0.0~1.0) - 원거리 사람 감지 위한 낸추기
+    person_confidence: float = 0.4  # 사람 감지 신뢰도 (0.0~1.0) - 원거리 사람 감지 위한 낮은 임계값
     pose_confidence: float = 0.5  # 사람 감지 신뢰도 (0.0~1.0)
     device: str = "cpu"  # 계산 장치 (cpu 또는 cuda)
     target_fps: int = 30  # 목표 프레임율
@@ -139,8 +229,9 @@ class DetectionConfig:
         # FPS 및 장치 검증
         if self.target_fps <= 0:
             raise ValueError(f"목표 FPS는 양수여야 합니다. 입력값: {self.target_fps}")
-        if self.device not in ["cpu", "cuda"]:
-            raise ValueError(f"장치는 'cpu' 또는 'cuda'여야 합니다. 입력값: {self.device}")
+        # "cpu", "cuda", "cuda:0", "cuda:1" ... 모두 허용 (Jetson 다중 GPU 지원)
+        if not (self.device in ["cpu", "cuda"] or self.device.startswith("cuda:")):
+            raise ValueError(f"장치는 'cpu', 'cuda', 'cuda:N' 형식이어야 합니다. 입력값: {self.device}")
 
 
 @dataclass
@@ -169,7 +260,7 @@ class ProcessingConfig:
     # 누적 판정 방식 (오탐 필터링)
     cumulative_detection_enabled: bool = True  # 누적 판정 활성화 여부
     detection_history_size: int = 3  # 감지 이력 크기 (최근 3프레임 - 더 비중단적으로 반응)
-    violation_threshold: int = 2  # 위반 임계값 (3개 중 2개 이상 위반 시 경고 - 릌닱)
+    violation_threshold: int = 2  # 위반 임계값 (3개 중 2개 이상 위반 시 경고)
     
     # 추적 기반 오탐 필터링
     min_track_frames: int = 2  # 최소 추적 프레임 수 (연속 감지되어야 유효한 객체로 인정)
@@ -178,13 +269,15 @@ class ProcessingConfig:
 @dataclass
 class AppConfig:
     """애플리케이션 메인 설정"""
-    # 주요 설정 객체
-    models: ModelPaths = None  # 모델 경로 설정
-    server: ServerConfig = None  # 서버 통신 설정
-    camera: CameraConfig = None  # 카메라 설정
-    detection: DetectionConfig = None  # 감지 설정
-    events: EventConfig = None  # 이벤트 처리 설정
-    processing: ProcessingConfig = None  # 처리 설정
+
+    models: Optional[ModelPaths] = None
+    mqtt: Optional[MqttConfig] = None
+    camera: Optional[CameraConfig] = None
+    detection: Optional[DetectionConfig] = None
+    events: Optional[EventConfig] = None
+    processing: Optional[ProcessingConfig] = None
+    edgex: Optional[EdgeXConfig] = None
+    action: Optional[ActionBridgeConfig] = None
     
     # 기능 활성화 플래그
     display: bool = False  # 화면 표시 여부
@@ -195,42 +288,48 @@ class AppConfig:
     dataset_dir: str = str(PROJECT_ROOT / "collected_data")  # 데이터셋 디렉토리
     zones_config: str = str(PROJECT_ROOT / "zones_config.json")  # 구역 설정 파일
     
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """기본 설정 객체 초기화"""
-        # 각 설정 모듈이 None이면 기본값으로 초기화
-        if self.models is None:
-            self.models = ModelPaths()
-        if self.server is None:
-            self.server = ServerConfig()
-        if self.camera is None:
-            self.camera = CameraConfig()
-        if self.detection is None:
-            self.detection = DetectionConfig()
-        if self.events is None:
-            self.events = EventConfig()
-        if self.processing is None:
-            self.processing = ProcessingConfig()
+
+        self.models = self.models or ModelPaths()
+        self.mqtt = self.mqtt or MqttConfig()
+        self.camera = self.camera or CameraConfig()
+        self.detection = self.detection or DetectionConfig()
+        self.events = self.events or EventConfig()
+        self.processing = self.processing or ProcessingConfig()
+        self.edgex = self.edgex or EdgeXConfig()
+        self.action = self.action or ActionBridgeConfig()
     
     @classmethod
-    def from_env(cls) -> 'AppConfig':
+    def from_env(cls, env: Optional[Mapping[str, str]] = None) -> "AppConfig":
         """환경 변수에서 설정값 로드"""
+
         config = cls()
-        
-        # 모델 경로 환경 변수
-        if os.getenv("HELMET_MODEL_PATH"):
-            config.models.helmet_model = os.getenv("HELMET_MODEL_PATH")
-        if os.getenv("PERSON_MODEL_PATH"):
-            config.models.person_model = os.getenv("PERSON_MODEL_PATH")
-        if os.getenv("POSE_MODEL_PATH"):
-            config.models.pose_model = os.getenv("POSE_MODEL_PATH")
-        
-        # 서버 및 장치 환경 변수
-        if os.getenv("SERVER_URL"):
-            config.server.url = os.getenv("SERVER_URL")
-        if os.getenv("DEVICE"):
-            config.detection.device = os.getenv("DEVICE")
-        
+        config.apply_env_overrides(env)
         return config
+
+    def apply_env_overrides(self, env: Optional[Mapping[str, str]] = None) -> None:
+        """ENV_OVERRIDES 정의에 따라 설정값을 덮어쓴다"""
+
+        env_data = env or os.environ
+        for override in ENV_OVERRIDES:
+            raw_value = env_data.get(override.key)
+            if raw_value is None:
+                continue
+
+            try:
+                parsed_value = override.parser(raw_value)
+            except Exception as exc:  # 사용자가 잘못된 값을 넣은 경우 무시
+                logger.warning("환경 변수 파싱 실패: %s (%s)", override.key, exc)
+                continue
+
+            self._set_nested_attr(override.path, parsed_value)
+
+    def _set_nested_attr(self, path: tuple[str, ...], value: object) -> None:
+        target = self
+        for attr in path[:-1]:
+            target = getattr(target, attr)
+        setattr(target, path[-1], value)
     
     def validate(self) -> bool:
         """모든 설정값 검증"""
@@ -238,6 +337,7 @@ class AppConfig:
     
     def summary(self) -> str:
         """현재 설정값 요약 정보 생성"""
+
         lines = [
             "============ 설정 요약 ============",
             "[모델 경로]",
@@ -260,8 +360,9 @@ class AppConfig:
             f"  화면 표시: {self.display}",
             f"  구역 감지: {self.zone_detection}",
             f"  데이터셋 수집: {self.collect_dataset}",
-            "[서버]",
-            f"  URL: {self.server.url}",
+            "[MQTT]",
+            f"  Broker: {self.mqtt.broker}:{self.mqtt.port}",
+            f"  Topic Prefix: {self.mqtt.topic_prefix}",
             f"  디바운싱: {'활성화' if self.events.debounce_enabled else '비활성화'} ({self.events.debounce_seconds}초)",
             "=================================",
         ]

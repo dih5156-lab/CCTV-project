@@ -1,0 +1,60 @@
+Writable:
+  LogLevel: "INFO"
+  StoreAndForward:
+    Enabled: false
+
+  Pipeline:
+    ExecutionOrder: "HTTPExport"
+
+    Functions:
+      HTTPExport:
+        Parameters:
+          Method: "post"
+          MimeType: "application/json"
+          Url: "http://cctv-alert-api:8000/api/alerts"
+          PersistOnError: "false"
+          ContinueOnSendError: "false"
+          ReturnInputData: "false"
+          HeaderName: ""
+          SecretValueKey: ""
+          SecretName: ""
+
+  InsecureSecrets:
+    http:
+      SecretName: "http"
+      SecretData:
+        headervalue: ""
+
+Service:
+  Host: "localhost"
+  Port: 59707
+  StartupMsg: "app-cctv-external-http has Started"
+
+Telemetry:
+  Metrics:
+    Enable: false
+
+MessageBus:
+  Disabled: false
+
+Trigger:
+  Type: "external-mqtt"
+  SubscribeTopics: "cctv/rules/intrusion/persisted,cctv/rules/intrusion/critical"
+  PublishTopic: ""
+  ExternalMqtt:
+    Url: "tcp://edgex-mqtt-broker:1883"
+    ClientId: "app-rules-engine-cctv-trigger"
+    ConnectTimeout: "5s"
+    AutoReconnect: true
+    KeepAlive: 10
+    QoS: 0
+    Retain: true
+    SkipCertVerify: false
+    SecretName: "mqtt"
+    AuthMode: "none"
+    Will:
+      Enabled: false
+      Payload: ""
+      Qos: 0
+      Retained: false
+      Topic: ""

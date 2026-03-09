@@ -1,451 +1,463 @@
 # CCTV 헬멧 착용 및 낙상 감지 시스템
 
 YOLOv8 기반 실시간 안전 관리 시스템으로, 다중 카메라 환경에서 헬멧 착용 여부, 낙상 사고, 위험 구역 침입을 자동 감지합니다.
+Windows PC와 NVIDIA Jetson Orin 모두 동작합니다.
 
 ## 주요 기능
 
-- **헬멧 착용 감지**: 사용자 정의 YOLOv8 모델로 헬멧 착용/미착용 실시간 탐지
+- **헬멧 착용 감지**: 커스텀 YOLOv8 모델로 헬멧 착용/미착용 실시간 탐지
 - **낙상 감지**: YOLOv8-pose 모델 기반 사람 자세 분석으로 낙상 사고 탐지
 - **다중 카메라**: RTSP/웹캠 동시 처리 및 자동 재연결
-- **위험 구역 감지**: 폴리곤 기반 위험 구역 침입 모니터링
-- **서버 연동**: 실시간 이벤트 전송 및 재시도 로직
+- **위험 구역 관리**: 실시간 폴리곤 그리기·저장·삭제 (GUI 인터랙션 지원)
+- **Zone API**: REST API로 외부에서 구역 설정 조회·수정
+- **EdgeX Foundry 연동**: MQTT 기반 표준 EdgeX v3 이벤트 발행
+- **Action Layer**: 스피커 알람·외부 API 호출·SQLite 이벤트 저장
 - **데이터셋 수집**: YOLO 형식 자동 라벨링 및 학습 데이터 생성
+- **Jetson 가속**: GStreamer NVDec 하드웨어 디코딩 + TensorRT `.engine` 모델 자동 인식
 
 ## 프로젝트 구조
 
 ```
 CCTV-project/
-├── src/                          # 소스 코드
-│   ├── config/                  # 설정 관리
-│   │   └── config.py
-│   ├── core/                    # 핵심 로직
-│   │   ├── events.py
-│   │   ├── ai_analysis.py
-│   │   └── processor.py
-│   ├── utils/                   # 유틸리티
-│   │   ├── camera_input.py
-│   │   ├── geometry.py
-│   │   ├── visualizer.py
-│   │   ├── zone_detection.py
-│   │   └── dataset_collector.py
-│   └── services/                # 외부 서비스
-│       └── server_comm.py
-├── models/                       # AI 모델
-│   ├── helmet_model.pt          # 헬멧 감지 모델
-│   └── yolov8n-pose.pt          # 포즈 추정 모델
-├── main.py                       # 진입점
-├── cameras.json                  # 카메라 설정
-├── zones_config.json             # 위험 구역 설정
-└── requirements.txt              # 의존성
+├── src/
+│   ├── config/
+│   │   └── config.py              # 중앙화된 설정 (ENV 오버라이드 지원)
+│   ├── core/
+│   │   ├── events.py              # 이벤트 타입 정의
+│   │   ├── event_filters.py       # 누적 감지 필터 / 트랙 관리
+│   │   ├── ai_analysis.py         # 다중 YOLO 모델 추론
+│   │   └── processor.py           # 비디오 파이프라인 오케스트레이터
+│   ├── utils/
+│   │   ├── camera_input.py        # RTSP/웹캠 연결 (GStreamer 지원)
+│   │   ├── geometry.py            # 좌표 변환 유틸리티
+│   │   ├── visualizer.py          # 감지 결과 시각화
+│   │   ├── zone_detection.py      # 폴리곤 구역 침입 판정
+│   │   ├── zone_drawer.py         # GUI 구역 그리기 / 삭제
+│   │   ├── zone_presets.py        # 구역 프리셋 저장소
+│   │   └── dataset_collector.py   # YOLO 형식 데이터셋 수집
+│   ├── services/
+│   │   ├── zone_api.py            # 위험구역 REST API 서버
+│   │   └── action_bridge.py       # 스피커·외부 API·DB 액션 레이어
+│   ├── protocols/
+│   │   ├── mqtt.py                # MQTT 이벤트 발행
+│   │   ├── http.py                # HTTP 이벤트 전송
+│   │   └── rest.py                # REST 클라이언트 공통
+│   ├── edgex/
+│   │   ├── device_service.py      # EdgeX Foundry v3 디바이스 서비스
+│   │   └── adapter_service.py     # EdgeX 어댑터 (AI→EdgeX 브릿지)
+│   └── devices/
+│       ├── speaker.py             # TCP 스피커 제어
+│       ├── signboard.py           # 전광판 제어
+│       └── sensor.py              # 센서 추상화
+├── main.py                        # 메인 진입점
+├── run_edgex_adapter.py           # EdgeX 어댑터 단독 실행
+├── run_action_bridge.py           # Action Layer 단독 실행
+├── run_kuiper_rules.py            # Kuiper 룰 배포
+├── run_alert_api.py               # Alert REST API 서버
+├── cameras.json                   # 카메라 목록 및 구역 설정
+├── zones_config.json              # 전역 위험 구역 설정
+├── Dockerfile                     # 컨테이너 빌드 (x86)
+├── requirements.txt               # Python 의존성
+└── docs/
+    ├── ACTION_LAYER_SPEAKER_BRIDGE.md
+    ├── ASC_RULE_ENGINE.md
+    ├── DEVICE_SERVICE_ARCHITECTURE.md
+    └── KUIPER_RULE_ENGINE.md
 ```
 
-## 시스템 요구사항
+## 지원 플랫폼
 
-- Python 3.8+
-- GPU (권장): CUDA 지원 GPU
-- CPU: 다중 카메라 처리 가능 (성능 저하 있음)
+| 플랫폼 | Python | CUDA | 비고 |
+|--------|--------|------|------|
+| Windows 10/11 | 3.10+ | 선택 | 개발·테스트 환경 |
+| Ubuntu 22.04 | 3.10+ | 선택 | 서버 배포 |
+| NVIDIA Jetson Orin | 3.10 (L4T) | 필수 | `USE_GSTREAMER=1` 설정 필요 |
 
 ## 설치
 
 ### 1. 저장소 클론
+
 ```bash
 git clone https://github.com/dih5156-lab/CCTV-project.git
 cd CCTV-project
 ```
 
 ### 2. 가상 환경 생성
+
 ```bash
-python -m venv venv
+python -m venv .venv
+
 # Windows
-venv\Scripts\activate
-# Linux/Mac
-source venv/bin/activate
+.venv\Scripts\activate
+
+# Linux / Jetson
+source .venv/bin/activate
 ```
 
 ### 3. 의존성 설치
+
 ```bash
 pip install -r requirements.txt
 ```
 
+> **Jetson Orin**: PyTorch/OpenCV는 L4T 이미지에 이미 포함되어 있어 별도 설치 불필요.
+> `torch`, `torchvision`, `opencv-python*` 라인은 설치를 건너뛰세요.
+
 ### 4. 모델 파일 준비
 
-#### 옵션 1: 자동 다운로드 (온라인 필수)
-```bash
-# 첫 실행 시 필요한 모델 자동 다운로드
-python main.py --cameras cameras.json --display
+`models/` 폴더에 아래 파일을 배치합니다. 없으면 YOLOv8 공식 모델이 자동 다운로드됩니다.
+
+```
+models/
+├── helmet_model_ver0.5.pt   # 헬멧 감지 (커스텀)
+├── yolov8n-pose.pt          # 낙상 감지 (포즈)
+└── yolov8n.pt               # 사람 감지
 ```
 
-#### 옵션 2: 수동 다운로드 (오프라인 환경)
+**Jetson TensorRT 가속 (선택사항):**
 
-**GitHub Release에서 모델 다운로드:**
-```bash
-# 프로젝트 루트에서 models/ 폴더 생성
-mkdir models
-
-# 아래 링크에서 모델 파일 다운로드 후 models/ 폴더에 배치:
-# https://github.com/dih5156-lab/CCTV-project/releases
-
-# 필요 파일:
-# - yolov8s.pt (사람 감지 모델 - YOLOv8 small)
-# - yolov8n-pose.pt (낙상 감지용 포즈 모델)
-# - helmet_model.pt (헬멧 감지 모델 - 커스텀)
-```
-
-또는 프로젝트 루트의 `yolov8s.pt` 파일을 사용:
-```bash
-# models/ 폴더가 없으면 자동 생성
-# yolov8s.pt는 프로젝트 루트에서 자동으로 로드
-```
-
-**모델 파일 구조:**
-```
-CCTV-project/
-├── models/
-│   ├── helmet_model.pt (선택사항 - 커스텀)
-│   └── yolov8n-pose.pt (선택사항 - 자동 다운로드)
-└── yolov8s.pt (프로젝트 루트에 배치 가능)
+```python
+# 모델을 TensorRT .engine으로 변환 (Jetson에서 1회 실행)
+from ultralytics import YOLO
+YOLO("models/yolov8n.pt").export(format="engine", device=0)
+# → models/yolov8n.engine 자동 생성 후 우선 사용됨
 ```
 
 ## 설정
 
 ### 카메라 설정 (cameras.json)
+
 ```json
-{
-  "cameras": [
-    {
-      "name": "Camera 1",
-      "url": "rtsp://username:password@192.168.1.100:554/stream",
-      "enabled": true
-    }
-  ]
-}
+[
+  {
+    "id": "camera_1",
+    "name": "현장 카메라 1",
+    "source": "rtsp://user:pass@192.168.1.100:554/stream",
+    "enabled": true,
+    "detections": ["person", "helmet", "fall"],
+    "zones": [
+      {
+        "id": "zone_1",
+        "name": "위험 구역",
+        "polygon": [[100,100],[500,100],[500,400],[100,400]]
+      }
+    ]
+  },
+  {
+    "id": "webcam",
+    "source": 0,
+    "enabled": true
+  }
+]
 ```
 
-### 위험 구역 설정 (zones_config.json)
-```json
-{
-  "zones": [
-    {
-      "id": "zone1",
-      "name": "위험 구역 1",
-      "polygon": [[100, 100], [500, 100], [500, 400], [100, 400]],
-      "enabled": true
-    }
-  ]
-}
-```
+### 환경 변수 오버라이드
+
+주요 설정은 환경변수로 재정의할 수 있습니다.
+
+| 환경변수 | 설명 | 예시 |
+|---------|------|------|
+| `DEVICE` | 추론 장치 | `cuda`, `cuda:0`, `cpu` |
+| `HELMET_MODEL_PATH` | 헬멧 모델 경로 | `/models/helmet.pt` |
+| `PERSON_MODEL_PATH` | 사람 모델 경로 | `/models/yolov8n.pt` |
+| `POSE_MODEL_PATH` | 포즈 모델 경로 | `/models/yolov8n-pose.pt` |
+| `DISPLAY_ENABLED` | 화면 출력 | `true` / `false` |
+| `MQTT_BROKER` | MQTT 브로커 호스트 | `localhost` |
+| `USE_GSTREAMER` | Jetson NVDec 하드웨어 디코딩 | `1` (Jetson 전용) |
 
 ## 실행
 
-### EdgeX Foundry와 함께 실행 (권장)
+### 기본 실행 (Windows)
 
-#### 1. EdgeX 스택 시작
 ```bash
-cd C:\Users\dih51\OneDrive\Desktop\edgex
-docker-compose up -d --build
+# 웹캠 + 화면 표시
+python main.py --display
+
+# 다중 RTSP 카메라 + Zone API
+python main.py --cameras cameras.json --display --api-port 8765
+
+# CUDA 사용
+python main.py --cameras cameras.json --device cuda --display
 ```
 
-#### 2. CCTV 서비스 상태 확인
+### Jetson Orin
+
 ```bash
-docker-compose ps
-```
-모든 서비스가 "UP" 상태인지 확인
+# GStreamer 하드웨어 디코딩 + CUDA 추론
+USE_GSTREAMER=1 DEVICE=cuda:0 python main.py --cameras cameras.json
 
-#### 3. EdgeX UI에서 모니터링
+# TensorRT 모델 자동 사용 (models/*.engine 파일이 있으면 우선 로드)
+USE_GSTREAMER=1 DEVICE=cuda:0 python main.py --cameras cameras.json
 ```
-http://localhost:4000
-```
-- Device Center > Device List에서 `camera-camera_1` 선택
-- 실시간 이벤트 모니터링
 
-#### 4. REST API로 이벤트 조회
+### EdgeX 전체 파이프라인
+
 ```bash
-# 모든 이벤트 조회
-curl http://localhost:59880/api/v3/event/all?limit=10
+# 1) AI 엔진 (MQTT 이벤트 발행)
+python main.py --cameras cameras.json \
+  --mqtt-broker localhost --mqtt-port 1883 \
+  --mqtt-topic-prefix cctv/ai/events
 
-# 특정 디바이스 이벤트 조회
-curl http://localhost:59880/api/v3/event/device/camera-camera_1?limit=10
+# 2) EdgeX 어댑터 (AI 이벤트 → EdgeX Core Data)
+python run_edgex_adapter.py \
+  --ai-mqtt-broker localhost --ai-topic-prefix cctv/ai/events \
+  --edgex-metadata-url http://localhost:59881 \
+  --edgex-data-url http://localhost:59880
 
-# 특정 리소스 이벤트 조회
-curl http://localhost:59880/api/v3/event/device/camera-camera_1/resource/person_detection?limit=5
+# 3) Kuiper 룰 배포 (침입 필터링 / 고신뢰 라우팅)
+python run_kuiper_rules.py \
+  --kuiper-api http://localhost:9081 \
+  --intrusion-confidence 0.7 --critical-confidence 0.9
+
+# 4) Action Layer (스피커 알람 + 외부 API + DB)
+python run_action_bridge.py \
+  --mqtt-broker localhost \
+  --external-api-url http://localhost:8000/api/alerts \
+  --speaker-host 192.168.88.92 --speaker-port 5000 \
+  --speaker-user admin --speaker-password YOUR_PASSWORD
 ```
 
-### 기본 실행 (EdgeX 없이)
+### Docker (EdgeX 통합)
+
 ```bash
-python main.py --cameras cameras.json --device cuda
+docker compose up -d --build
+
+# 로그 확인
+docker compose logs -f cctv-device-service
+
+# 중지
+docker compose down
 ```
 
-### 주요 옵션
+필수 환경값:
+- `ACTION_SPEAKER_PASSWORD` — 스피커 인증 비밀번호
+- `EDGEX_METADATA_URL`, `EDGEX_DATA_URL` — EdgeX 외부 연결 시
+
+### 주요 CLI 옵션
+
 | 옵션 | 설명 | 기본값 |
 |------|------|--------|
-| `--cameras` | 카메라 JSON 파일 경로 | None |
-| `--device` | 실행 디바이스 (cpu/cuda) | cpu |
-| `--confidence` | 감지 신뢰도 임계값 | 0.45 |
-| `--display` | 화면 표시 활성화 | False |
-| `--server` | 서버 URL | localhost:8000 |
-| `--zone-detection` | 위험 구역 감지 활성화 | False |
-| `--collect-dataset` | 데이터셋 수집 활성화 | False |
-| `--edgex` | EdgeX Foundry 통합 활성화 | False |
-| `--edgex-metadata-url` | EdgeX Core Metadata URL | http://localhost:59881 |
-| `--edgex-data-url` | EdgeX Core Data URL | http://localhost:59880 |
+| `--cameras FILE` | 카메라 목록 JSON | 없음 (웹캠 0번) |
+| `--video FILE` | 비디오 파일 경로 | 없음 |
+| `--device` | 추론 장치 (`cpu`/`cuda`) | `cpu` |
+| `--confidence` | 헬멧 감지 신뢰도 | `0.5` |
+| `--pose-confidence` | 포즈/사람 감지 신뢰도 | `0.3` |
+| `--fps` | 목표 FPS | `30` |
+| `--frame-skip N` | 매 N프레임마다 AI 추론 | `3` |
+| `--display` | GUI 화면 표시 | off |
+| `--api-port PORT` | Zone REST API 포트 | off |
+| `--zone-presets FILE` | 구역 프리셋 저장 파일 | `zone_presets.json` |
+| `--zone-detection` | 위험 구역 감지 활성화 | off |
+| `--mqtt-broker HOST` | MQTT 브로커 | `localhost` |
+| `--mqtt-port PORT` | MQTT 포트 | `1883` |
+| `--mqtt-topic-prefix` | MQTT 토픽 prefix | `cctv/ai/events` |
+| `--no-debounce` | 이벤트 디바운싱 비활성화 | off |
+| `--debounce SEC` | 디바운싱 간격(초) | `3.0` |
+| `--collect-dataset` | 데이터셋 자동 수집 | off |
+| `--dataset-dir DIR` | 수집 데이터 저장 경로 | `./collected_data` |
 
-### 예제
+## 위험 구역 GUI 조작 (`--display` 모드)
+
+| 키 / 동작 | 기능 |
+|-----------|------|
+| `d` | 구역 그리기 모드 ON/OFF |
+| 마우스 좌클릭 | 구역 꼭짓점 추가 |
+| `Enter` 또는 `c` | 현재 구역 완성 및 저장 |
+| `z` | 마지막 꼭짓점 삭제 |
+| `ESC` | 현재 그리기 취소 |
+| 마우스 hover | 기존 구역 위에 올리면 주황색 하이라이트 |
+| `x` (hover 중) | hover 중인 구역 삭제 |
+
+저장된 구역은 `cameras.json`에 자동으로 반영됩니다.
+
+## Zone REST API
+
+`--api-port 8765` 실행 시 아래 엔드포인트를 사용할 수 있습니다.
+
+| 메서드 | 경로 | 설명 |
+|--------|------|------|
+| `GET` | `/cameras` | 전체 카메라 + 구역 목록 |
+| `GET` | `/cameras/{id}/zones` | 특정 카메라 구역 목록 |
+| `POST` | `/cameras/{id}/zones` | 구역 전체 교체 |
+| `DELETE` | `/cameras/{id}/zones/{zone_id}` | 특정 구역 삭제 |
+| `GET` | `/zone-presets` | 저장된 프리셋 목록 |
+| `POST` | `/zone-presets` | 새 프리셋 저장 |
+| `DELETE` | `/zone-presets/{preset_id}` | 프리셋 삭제 |
+| `POST` | `/cameras/{id}/zones/from-preset/{pid}` | 프리셋 적용 |
+
+## EdgeX Foundry 연동
+
+EdgeX UI: `http://localhost:4000`
+- Device Center > Device List → `camera-camera_1` 선택 후 실시간 이벤트 확인
+
+EdgeX REST API:
 ```bash
-# 다중 카메라 + 위험 구역 감지
-python main.py --cameras cameras.json --zone-detection --device cuda
+# 최근 이벤트 조회
+curl http://localhost:59880/api/v3/event/all?limit=10
 
-# EdgeX Foundry와 통합 (MQTT를 통한 Core Data 저장)
-python main.py --cameras cameras.json --edgex --edgex-metadata-url http://localhost:59881 --edgex-data-url http://localhost:59880
-
-# 데이터셋 수집 모드
-python main.py --cameras cameras.json --collect-dataset
-
-# 웹캠 테스트
-python main.py --display
+# 특정 카메라 이벤트
+curl http://localhost:59880/api/v3/event/device/camera-camera_1?limit=10
 ```
+
+MQTT 토픽 구조:
+```
+edgex/events/device/cctv-device-service/CCTV-Camera-Profile/{device}/{resource}
+```
+
+상세 내용: `docs/DEVICE_SERVICE_ARCHITECTURE.md`, `docs/ASC_RULE_ENGINE.md`
 
 ## 주요 모듈
 
-### EdgeX Device Service (src/edgex/device_service.py)
-EdgeX Foundry v3 MQTT 연동:
-- MQTT 브로커와의 자동 연결 및 재연결 관리
-- 표준 EdgeX v3 메시지 형식으로 이벤트 발행
-- MQTT 토픽: `edgex/events/device/{service-name}/{profile-name}/{device-name}/{resource-name}`
-- 이벤트 페이로드 구조:
-  - Envelope: apiVersion, requestId, correlationId, errorCode
-  - Event: 감지 데이터 (confidence, bbox, object_id, timestamp)
-- Core Metadata에서 디바이스/프로필 정보 자동 로드
-- Core Data에 이벤트 자동 저장 (MQTT 구독)
+### `config.py` — 중앙화된 설정
 
-### AppConfig (config.py)
-중앙화된 설정 관리:
-- ModelPaths: 모델 파일 경로 자동 탐지
-- ServerConfig: 서버 통신 설정
-- DetectionConfig: AI 감지 파라미터
-- EventConfig: 이벤트 처리 설정
+- `ModelPaths`: `.engine` (TensorRT) → `.pt` 우선순위로 자동 탐지
+- `DetectionConfig`: `device` 필드가 `cpu`, `cuda`, `cuda:0` 등 모두 허용
+- `ENV_OVERRIDES`: 환경변수로 모든 설정 재정의 가능
 
-### AIAnalyzer (ai_analysis.py)
-다중 모델 AI 추론:
-- **모델 구성**:
-  - 사람 모델: YOLOv8s (800px 입력, person_confidence=0.4)
-  - 포즈 모델: YOLOv8n-pose (640px 입력, 낙상 감지)
-  - 헬멧 모델: 커스텀 모델 (640px 입력, helmet_confidence=0.7)
-- YOLOv8 track() 활성화: 프레임 간 객체 ID 지속 (persistent tracking)
-- 키포인트 기준 완화: 가림/후면 사람도 감지 (1개 키포인트 이상)
+### `ai_analysis.py` — 다중 모델 AI 추론
+
+- **사람 모델** (YOLOv8s): 800px 입력, `person_confidence=0.4`
+- **포즈 모델** (YOLOv8n-pose): 낙상 감지, 어깨-엉덩이 각도 분석
+- **헬멧 모델** (커스텀): 640px, `helmet_confidence=0.7`
+- `track(persist=True)`로 프레임 간 객체 ID 유지
 - IoU 기반 중복 박스 제거
-- 낙상 감지: 어깨-엉덩이 각도 + 다리 높이 분석
-- 누적 감지: 연속 3프레임 위반 시 이벤트 발행
 
-### VideoProcessor (processor.py)
-비디오 처리 파이프라인:
-- **분리된 스레드 아키텍처**: 카메라 스레드(프레임 획득) + AI 추론 스레드(분석)
-- **프레임 큐**: 최신 프레임만 유지, 오래된 프레임 자동 드롭 (지연 최소화)
-- **이벤트 큐**: 모든 이벤트 보존, 큐 가득 시 로컬 백업 (손실 방지)
-- **누적 판정**: 위반 이벤트(head, fall_detected) 5프레임 누적 후 경고
-- 메모리 자동 정리
+### `processor.py` — 파이프라인 오케스트레이터
 
-### CameraInput (camera_input.py)
-RTSP 카메라 관리:
-- 프레임 획득 및 재연결
-- Exponential backoff 재시도
+- 카메라 스레드(프레임 획득) ↔ AI 추론 스레드 분리
+- 최신 프레임만 유지하는 프레임 큐 (지연 최소화)
+- 이벤트 큐 가득 시 로컬 JSON 백업 (손실 방지)
+- 연결 실패 카메라 자동 백그라운드 재시도
+
+### `camera_input.py` — RTSP/웹캠 관리
+
+| 환경 | 방식 | 활성화 |
+|------|------|--------|
+| Windows / Linux | `cv2.CAP_FFMPEG` + TCP transport | 기본 |
+| Jetson Orin | GStreamer `nvv4l2decoder` NVDec | `USE_GSTREAMER=1` |
+
+### `zone_drawer.py` — GUI 구역 편집기
+
+`_DisplayGrid`의 디스플레이 루프와 연동. `cameras.json`에 폴리곤 자동 저장.
+
+### `zone_api.py` — 구역 REST API
+
+표준 라이브러리(`http.server`)만 사용하는 경량 HTTP 서버. 데몬 스레드로 동작.
+
+### `action_bridge.py` — Action Layer
+
+MQTT 알람 수신 → 스피커 TCP 전송 + 외부 REST API 호출 + SQLite 이벤트 저장.
 
 ## 주요 설정 파라미터
 
 ### 감지 설정
+
 | 파라미터 | 기본값 | 설명 |
 |---------|-------|------|
-| person_confidence | 0.4 | 사람 감지 최소 신뢰도 (YOLOv8s 업그레이드) |
-| helmet_confidence | 0.7 | 헬멧 감지 최소 신뢰도 |
-| pose_confidence | 0.5 | 포즈 감지 최소 신뢰도 |
-| iou_threshold | 0.45 | YOLO NMS IoU 임계값 (모델 추론) |
-| duplicate_iou_threshold | 0.3 | 이벤트 중복 제거 IoU 임계값 (후처리) |
-| fall_angle_threshold | 30 | 낙상 감지 수평 각도 임계값 (도) |
-| fall_height_ratio | 0.3 | 낙상 머리 높이 비율 |
-| min_keypoint_confidence | 0.2 | 키포인트 최소 신뢰도 |
-| min_track_frames | 2 | 최소 추적 프레임 (오탐지 제거) |
+| `person_confidence` | 0.4 | 사람 감지 최소 신뢰도 |
+| `helmet_confidence` | 0.7 | 헬멧 감지 최소 신뢰도 |
+| `pose_confidence` | 0.5 | 포즈 감지 최소 신뢰도 |
+| `iou_threshold` | 0.3 | YOLO NMS IoU |
+| `fall_angle_threshold` | 45.0 | 낙상 감지 수평 각도 임계값 (도) |
+| `fall_height_ratio` | 0.3 | 낙상 머리 높이 비율 |
 
 ### 시스템 설정
+
 | 파라미터 | 기본값 | 설명 |
 |---------|-------|------|
-| cumulative_detection_enabled | True | 누적 감지 필터링 활성화 |
-| detection_history_size | 3 | 누적 감지 히스토리 프레임 수 |
-| violation_threshold | 2 | 누적 위반 판정 임계값 |
-| event_retention_hours | 24 | 이벤트 보관 시간 |
-| debounce_seconds | 3.0 | 동일 이벤트 재전송 간격 |
-| queue_max_size | 500 | 이벤트 큐 최대 크기 |
-| frame_queue_size | 1 | 카메라당 프레임 큐 크기 (지연 최소화) |
+| `debounce_seconds` | 3.0 | 동일 이벤트 재전송 간격 |
+| `queue_max_size` | 500 | 이벤트 큐 최대 크기 |
+| `frame_queue_size` | 1 | 카메라당 프레임 큐 크기 |
+| `event_retention_hours` | 24 | 이벤트 보관 시간 |
 
 ## 데이터셋 수집
 
-### 수집 활성화
 ```bash
-python main.py --cameras cameras.json --collect-dataset
+python main.py --cameras cameras.json --collect-dataset --dataset-dir ./my_data
 ```
 
-### 수집 데이터 구조
+수집 구조:
 ```
-dataset/
-├── images/
-│   ├── train/          # 학습 이미지 (80%)
-│   └── val/            # 검증 이미지 (20%)
-└── labels/
-    ├── train/          # 학습 라벨
-    └── val/            # 검증 라벨
-```
-
-### YOLO 포맷 라벨
-```
-class_id center_x center_y width height
+collected_data/
+├── images/train/   ← 학습 이미지 (80%)
+├── images/val/     ← 검증 이미지 (20%)
+├── labels/train/   ← YOLO 라벨
+└── labels/val/
 ```
 
 ## 모델 재학습
 
-### YOLOv8 학습
 ```bash
 yolo train model=yolov8n.pt data=data.yaml epochs=100 imgsz=640
-```
-
-### 모델 교체
-```bash
-cp runs/detect/train/weights/best.pt models/helmet_model.pt
+cp runs/detect/train/weights/best.pt models/helmet_model_ver0.5.pt
 ```
 
 ## 문제 해결
 
-### 헬멧이 감지되지 않는 경우
-- `helmet_confidence` 값을 0.3으로 낮추기
-- 모델 재학습 검토
-
-### 중복 박스 표시
-- `iou_threshold`를 0.4로 증가
-
-### 카메라 연결 실패
-- RTSP URL 및 인증 정보 확인
-- 네트워크 연결 상태 확인
+| 증상 | 해결 방법 |
+|------|-----------|
+| 헬멧이 감지되지 않음 | `--confidence 0.3`으로 낮추기 |
+| 중복 박스 표시 | `iou_threshold`를 0.4로 증가 |
+| 카메라 연결 실패 | RTSP URL 및 네트워크 확인 |
+| Jetson에서 FFMPEG 오류 | `USE_GSTREAMER=1` 환경변수 추가 |
+| `cuda:0` 인식 안 됨 | `DEVICE=cuda:0` 환경변수로 지정 |
+| Windows 로그 한글 깨짐 | `chcp 65001` 후 실행, 또는 `PYTHONUTF8=1` |
 
 ## 변경 이력
 
+### v1.7.0 (2026-03-09) - 크로스 플랫폼 지원 (Windows + Jetson Orin)
+
+- **Jetson Orin 지원**
+  - `camera_input.py`: `USE_GSTREAMER=1` 환경변수로 GStreamer NVDec 하드웨어 디코딩 선택
+  - `config.py` `MODEL_CANDIDATES`: `.engine` (TensorRT) 경로를 `.pt` 앞에 우선 배치 → Jetson에서 자동 가속
+  - `DetectionConfig.device` 검증 완화: `"cpu"`, `"cuda"`, `"cuda:0"`, `"cuda:1"` 모두 허용
+
+- **Windows 로그 한글 깨짐 수정**
+  - `main.py`: `SetConsoleOutputCP(65001)` + `SetConsoleCP(65001)` + `reconfigure(encoding='utf-8')` 조합
+
+### v1.6.0 (2026-03-09) - 위험 구역 GUI 완성
+
+- **zone_drawer.py 기능 추가**
+  - 재시작 후 저장된 구역 폴리곤 화면 자동 복원 (그리드 좌표 변환)
+  - 마우스 hover로 구역 주황색 하이라이트 + `[x=delete]` 라벨 표시
+  - `x` 키로 hover 중인 구역 즉시 삭제 → `cameras.json` 자동 저장
+  - `_zone_counter` 초기화를 `cameras.json` 기존 최대 번호 기준으로 변경 (중복 방지)
+  - 이중 렌더링 제거: `draw_zones()` 호출 제거, `overlay()`로 시각화 일원화
+  - Zone 이름 라벨 중복 표시 버그 수정
+
+- **Zone 프리셋 시스템 추가** (`zone_presets.py`)
+  - 구역 폴리곤을 이름 있는 프리셋으로 저장·재사용
+
+- **Zone REST API 확장** (`zone_api.py`)
+  - 프리셋 관련 엔드포인트 추가: `/zone-presets`, `/cameras/{id}/zones/from-preset/{pid}`
+  - `--api-port`, `--zone-presets` CLI 옵션 추가
+
 ### v1.5.0 (2026-02-12) - 모델 업그레이드 및 감지 파라미터 최적화
-- **YOLOv8 모델 업그레이드**
-  - 사람 감지 모델: YOLOv8n → YOLOv8s (더 높은 정확도)
-  - 입력 해상도: 640px → 800px (원거리 사람 감지 개선)
-  - 결과: 원거리 사람 감지율 37% 향상
 
-- **감지 파라미터 최적화**
-  - person_confidence: 0.5 → 0.4 (민감도 향상)
-  - min_track_frames: 5 → 2 (오탐지 제거 동시 응답성 개선)
-  - 누적 감지 히스토리: 5 → 3 (빠른 응답)
-  - 누적 위반 임계값: 4 → 2 (검증 신뢰성 유지)
-
-- **아키텍처 개선**
-  - 디스플레이 파이프라인과 서버 전송 파이프라인 분리
-  - 디스플레이: 모든 감지 정보 표시 (필터링 없음)
-  - 서버: 누적 감지로 검증된 이벤트만 전송
-
-- **상수 정의 명확화**
-  - DUPLICATE_IOU_THRESHOLD (0.3): 검증된 이벤트 중복 제거
-  - DEFAULT_IOU_THRESHOLD (0.45): YOLO 모델 NMS
+- 사람 감지 모델: YOLOv8n → YOLOv8s, 입력 해상도 800px
+- `person_confidence` 0.5 → 0.4, 누적 감지 히스토리 5 → 3
+- 디스플레이 파이프라인과 서버 전송 파이프라인 분리
 
 ### v1.4.0 (2026-02-05) - EdgeX Foundry v3 통합 완성
-- **EdgeX Foundry 통합 완료**
-  - EdgeX Core Metadata, Core Data, MQTT Broker와의 완벽한 통합
-  - CCTV 디바이스를 EdgeX Metadata에 등록 (`camera-camera_1`)
-  - CCTV-Camera-Profile 디바이스 프로필 생성 및 적용
-  
-- **MQTT 이벤트 발행 시스템 구현**
-  - MQTT 토픽 포맷: `edgex/events/device/cctv-device-service/CCTV-Camera-Profile/{device-name}/{resource-name}`
-  - 표준 EdgeX v3 이벤트 메시지 형식 준수 (envelope + payload 구조)
-  - 다중 UUID 기반 요청 추적 (requestId, correlationId 포함)
-  - 감지 데이터 상세 정보 포함: confidence, bbox, object_id, timestamp
-  
-- **Docker 컨테이너 통합**
-  - docker-compose.yml에 cctv-device-service 정의
-  - EdgeX 네트워크 (edgex-network)와 자동 연결
-  - 환경 변수를 통한 동적 설정 (EDGEX_MQTT_BROKER_URL 등)
-  
-- **Core Data 이벤트 저장 성공**
-  - 49,934개의 CCTV 이벤트가 PostgreSQL 데이터베이스에 저장
-  - Profile name mismatch 오류 완전 해결 (전체 도커 스택 재시작으로 해결)
-  - REST API를 통한 이벤트 조회 가능:
-    - `/api/v3/event/all` - 모든 이벤트 조회
-    - `/api/v3/event/device/{device-name}` - 특정 디바이스 이벤트 조회
-  
-- **EdgeX UI 통합**
-  - EdgeX 대시보드에서 CCTV 카메라 디바이스 시각화
-  - Device Center > Device List에서 실시간 이벤트 모니터링 가능
-  - 포트 4000에서 웹 UI 접근 가능
-  
-- **문제 해결 이력**
-  - 문제: MQTT 페이로드 형식 불일치 (base64 encoding 오류)
-    - 해결: 표준 EdgeX envelope 형식으로 수정 (apiVersion, requestId, correlationId 추가)
-  - 문제: 서비스명 불일치 (device-virtual vs cctv-device-service)
-    - 해결: device_service.py에서 service_name을 "cctv-device-service"로 변경
-  - 문제: Profile name mismatch - Core Data 검증 오류
-    - 해결: 전체 도커 스택 재시작 (docker-compose down → up -d --build)
-  
-- **배포 검증**
-  - 모든 17개 EdgeX 서비스 정상 실행 확인
-  - MQTT 브로커 (Mosquitto) 포트 1883에서 이벤트 수신 확인
-  - PostgreSQL 데이터베이스에 이벤트 정상 저장 확인
-  - CCTV 서비스 healthy 상태 유지
+
+- EdgeX Core Metadata / Core Data MQTT 연동
+- 표준 EdgeX v3 envelope 형식 (requestId, correlationId)
+- Action Layer (speaker-bridge) 구현: TCP 스피커 + 외부 REST API + SQLite
 
 ### v1.3.0 (2026-01-30) - 코드베이스 전면 개선
-- **코드 품질 개선**
-  - 모든 로깅에서 이모지/이모티콘 제거로 로그 가독성 향상
-  - 전체 코드베이스 리팩토링 (중복 함수 제거, 불필요한 주석 정리)
-  - 타입 힌팅 강화 및 에러 처리 개선
-  - 코드 검증 로직 추가 (입력값 검증, 범위 체크)
-  
-- **문서화 개선**
-  - 하이브리드 접근 방식 적용: 영어 코드 + 한글 주석
-  - 모든 함수 및 클래스에 한글 docstring 추가
-  - config.py, ai_analysis.py, main.py 주석 한글화
-  - services 폴더 및 utils 폴더 전체 주석 한글화
-  
-- **멀티스레드 아키텍처 재설계**
-  - 카메라 프레임 수집용 스레드 + AI 추론용 스레드 분리
-  - 프레임 큐 (최소 크기, 자동 드롭) + 이벤트 큐 (3배 확장, 타임아웃 백업)
-  - 이벤트 손실 방지를 위한 로컬 JSON 백업 시스템
-  - FPS 안정화 (30초 후 드롭 문제 해결)
 
-- **객체 트래킹 개선**
-  - `predict()` → `track(persist=True)` 전환
-  - 프레임 간 일관된 객체 ID 유지
-  - 헬멧 감지 및 자세 분석에 지속적 트래킹 적용
-
-- **감지 성능 최적화**
-  - 헬멧 감지 해상도: 416px → 640px
-  - 자세 감지 해상도: 640px 유지
-  - 키포인트 검증 완화 (2개 → 1개): 가려진/뒤돌아선 사람도 감지
-
-- **AI 모델 업데이트**
-  - ai_analysis.py 전면 리팩토링 (908 줄)
-  - 다중 모델 추론 로직 최적화
-  - IoU 기반 중복 제거 알고리즘 개선
-  - 트래킹 안정성 향상
-
-- **유지보수성 향상**
-  - 코드 구조 개선으로 가독성 증대
-  - 일관된 코딩 스타일 적용
-  - 에러 메시지 명확화
-
-### v1.2.1 (2026-01-07) - 코드 품질 개선
-- 코드 품질 및 유지보수성 향상
-- 타입 힌팅 추가
-- 에러 처리 강화
-- 설정 중앙화
+- 멀티스레드 아키텍처 재설계 (카메라 / AI 스레드 분리)
+- `predict()` → `track(persist=True)` 전환
+- 이벤트 손실 방지 로컬 JSON 백업 시스템
 
 ### v1.2.0 (2026-01-07) - 프로젝트 구조 개선
-- 프로젝트 구조 개선 (src/ 모듈화)
-- 패키지화
 
-### v1.1.0 (2026-01-07) - 설정 관리 개선
-- Config 중앙화
-- Object Tracking 개선
-- Server 통신 개선
+- `src/` 모듈화 패키지 구조 도입
+- `config.py` 중앙화된 설정 관리
 
 ### v1.0.0 (2025-11-12) - 초기 버전
-- 초기 릴리스
+
+- YOLOv8 기반 헬멧·낙상·구역 감지 초기 구현
 
 ## 라이선스
 

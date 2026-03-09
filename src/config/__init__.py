@@ -3,11 +3,13 @@
 from .config import (
     AppConfig,
     ModelPaths,
-    ServerConfig,
+    MqttConfig,
     CameraConfig,
     DetectionConfig,
     EventConfig,
     ProcessingConfig,
+    EdgeXConfig,
+    ActionBridgeConfig,
     default_config,
     PROJECT_ROOT
 )
@@ -15,11 +17,13 @@ from .config import (
 __all__ = [
     'AppConfig',
     'ModelPaths',
-    'ServerConfig',
+    'MqttConfig',
     'CameraConfig',
     'DetectionConfig',
     'EventConfig',
     'ProcessingConfig',
+    'EdgeXConfig',
+    'ActionBridgeConfig',
     'default_config',
     'PROJECT_ROOT'
 ]

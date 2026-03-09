@@ -1,0 +1,745 @@
+#  * Copyright 2023 Intel Corporation.
+#  *
+#  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+#  * in compliance with the License. You may obtain a copy of the License at
+#  *
+#  * http://www.apache.org/licenses/LICENSE-2.0
+#  *
+#  * Unless required by applicable law or agreed to in writing, software distributed under the License
+#  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+#  * or implied. See the License for the specific language governing permissions and limitations under
+#  * the License.
+#  *
+#  * EdgeX Foundry, Napa release
+#  *******************************************************************************/
+#
+#
+#
+# ************************ This is a generated compose file ****************************
+#
+# DO NOT MAKE CHANGES that are intended to be permanent to EdgeX edgex-compose repo.
+#
+# Permanent changes can be made to the source compose files located in the compose-builder folder
+# at the top level of the edgex-compose repo.
+#
+# From the compose-builder folder use `make build` to regenerate all standard compose files variations
+#
+name: edgex
+services:
+  edgex-mqtt-broker:
+    container_name: edgex-mqtt-broker
+    hostname: edgex-mqtt-broker
+    image: eclipse-mosquitto:2.0
+    networks:
+      edgex-network: null
+    ports:
+    - mode: ingress
+      host_ip: 127.0.0.1
+      target: 1883
+      published: "1883"
+      protocol: tcp
+    restart: always
+    volumes:
+    - type: bind
+      source: C:/Users/dih51/OneDrive/문서/GitHub/CCTV-project/mosquitto/mosquitto.conf
+      target: /mosquitto/config/mosquitto.conf
+      read_only: true
+      bind:
+        create_host_path: true
+
+  app-rules-engine:
+    container_name: edgex-app-rules-engine
+    depends_on:
+      consul:
+        condition: service_started
+      core-data:
+        condition: service_started
+    env_file:
+    - C:/Users/dih51/OneDrive/문서/GitHub/CCTV-project/edgex/asc/cctv_asc.env
+    environment:
+      EDGEX_PROFILE: cctv-external-http
+      EDGEX_SECURITY_SECRET_STORE: "false"
+      SERVICE_HOST: edgex-app-rules-engine
+      MESSAGEBUS_DISABLED: "false"
+      TELEMETRY_METRICS_ENABLE: "false"
+      WRITABLE_PIPELINE_EXECUTIONORDER: HTTPExport
+      WRITABLE_PIPELINE_FUNCTIONS_HTTPEXPORT_PARAMETERS_METHOD: post
+      WRITABLE_PIPELINE_FUNCTIONS_HTTPEXPORT_PARAMETERS_MIMETYPE: application/json
+      WRITABLE_PIPELINE_FUNCTIONS_HTTPEXPORT_PARAMETERS_URL: http://cctv-alert-api:8000/api/alerts
+      WRITABLE_PIPELINE_FUNCTIONS_HTTPEXPORT_PARAMETERS_PERSISTONERROR: "false"
+      WRITABLE_PIPELINE_FUNCTIONS_HTTPEXPORT_PARAMETERS_CONTINUEONSENDERROR: "false"
+    hostname: edgex-app-rules-engine
+    image: edgexfoundry/app-service-configurable:3.1.0
+    networks:
+      edgex-network: null
+    ports:
+    - mode: ingress
+      host_ip: 127.0.0.1
+      target: 59707
+      published: "59701"
+      protocol: tcp
+    read_only: true
+    restart: always
+    security_opt:
+    - no-new-privileges:true
+    user: 2002:2001
+    volumes:
+    - type: bind
+      source: /etc/localtime
+      target: /etc/localtime
+      read_only: true
+      bind:
+        create_host_path: true
+    - type: bind
+      source: C:/Users/dih51/OneDrive/문서/GitHub/CCTV-project/edgex/asc/cctv-external-http
+      target: /res/cctv-external-http
+      read_only: true
+      bind:
+        create_host_path: true
+  consul:
+    command:
+    - agent
+    - -ui
+    - -bootstrap
+    - -server
+    - -client
+    - 0.0.0.0
+    container_name: edgex-core-consul
+    hostname: edgex-core-consul
+    image: hashicorp/consul:1.16.2
+    networks:
+      edgex-network: null
+    ports:
+    - mode: ingress
+      host_ip: 127.0.0.1
+      target: 8500
+      published: "8500"
+      protocol: tcp
+    read_only: true
+    restart: always
+    security_opt:
+    - no-new-privileges:true
+    user: root:root
+    volumes:
+    - type: volume
+      source: consul-config
+      target: /consul/config
+      volume: {}
+    - type: volume
+      source: consul-data
+      target: /consul/data
+      volume: {}
+  core-command:
+    container_name: edgex-core-command
+    depends_on:
+      consul:
+        condition: service_started
+      core-metadata:
+        condition: service_started
+      database:
+        condition: service_started
+    environment:
+      EDGEX_SECURITY_SECRET_STORE: "false"
+      EXTERNALMQTT_URL: tcp://edgex-mqtt-broker:1883
+      SERVICE_HOST: edgex-core-command
+    hostname: edgex-core-command
+    image: edgexfoundry/core-command:3.1.0
+    networks:
+      edgex-network: null
+    ports:
+    - mode: ingress
+      host_ip: 127.0.0.1
+      target: 59882
+      published: "59882"
+      protocol: tcp
+    read_only: true
+    restart: always
+    security_opt:
+    - no-new-privileges:true
+    user: 2002:2001
+    volumes:
+    - type: bind
+      source: /etc/localtime
+      target: /etc/localtime
+      read_only: true
+      bind:
+        create_host_path: true
+  core-common-config-bootstrapper:
+    container_name: edgex-core-common-config-bootstrapper
+    depends_on:
+      consul:
+        condition: service_started
+    environment:
+      ALL_SERVICES_DATABASE_HOST: edgex-redis
+      ALL_SERVICES_MESSAGEBUS_HOST: edgex-redis
+      ALL_SERVICES_REGISTRY_HOST: edgex-core-consul
+      APP_SERVICES_CLIENTS_CORE_METADATA_HOST: edgex-core-metadata
+      DEVICE_SERVICES_CLIENTS_CORE_METADATA_HOST: edgex-core-metadata
+      EDGEX_SECURITY_SECRET_STORE: "false"
+    hostname: edgex-core-common-config-bootstrapper
+    image: edgexfoundry/core-common-config-bootstrapper:3.1.0
+    networks:
+      edgex-network: null
+    read_only: true
+    security_opt:
+    - no-new-privileges:true
+    user: 2002:2001
+    volumes:
+    - type: bind
+      source: /etc/localtime
+      target: /etc/localtime
+      read_only: true
+      bind:
+        create_host_path: true
+  core-data:
+    container_name: edgex-core-data
+    depends_on:
+      consul:
+        condition: service_started
+      core-metadata:
+        condition: service_started
+      database:
+        condition: service_started
+    environment:
+      EDGEX_SECURITY_SECRET_STORE: "false"
+      SERVICE_HOST: edgex-core-data
+    hostname: edgex-core-data
+    image: edgexfoundry/core-data:3.1.0
+    networks:
+      edgex-network: null
+    ports:
+    - mode: ingress
+      host_ip: 127.0.0.1
+      target: 59880
+      published: "59880"
+      protocol: tcp
+    read_only: true
+    restart: always
+    security_opt:
+    - no-new-privileges:true
+    user: 2002:2001
+    volumes:
+    - type: bind
+      source: /etc/localtime
+      target: /etc/localtime
+      read_only: true
+      bind:
+        create_host_path: true
+  core-metadata:
+    container_name: edgex-core-metadata
+    depends_on:
+      consul:
+        condition: service_started
+      database:
+        condition: service_started
+    environment:
+      EDGEX_SECURITY_SECRET_STORE: "false"
+      SERVICE_HOST: edgex-core-metadata
+    hostname: edgex-core-metadata
+    image: edgexfoundry/core-metadata:3.1.0
+    networks:
+      edgex-network: null
+    ports:
+    - mode: ingress
+      host_ip: 127.0.0.1
+      target: 59881
+      published: "59881"
+      protocol: tcp
+    read_only: true
+    restart: always
+    security_opt:
+    - no-new-privileges:true
+    user: 2002:2001
+    volumes:
+    - type: bind
+      source: /etc/localtime
+      target: /etc/localtime
+      read_only: true
+      bind:
+        create_host_path: true
+  database:
+    container_name: edgex-redis
+    hostname: edgex-redis
+    image: redis:7.0.14-alpine
+    networks:
+      edgex-network: null
+    ports:
+    - mode: ingress
+      host_ip: 127.0.0.1
+      target: 6379
+      published: "6379"
+      protocol: tcp
+    read_only: true
+    restart: always
+    security_opt:
+    - no-new-privileges:true
+    user: root:root
+    volumes:
+    - type: volume
+      source: db-data
+      target: /data
+      volume: {}
+  device-rest:
+    container_name: edgex-device-rest
+    depends_on:
+      consul:
+        condition: service_started
+      core-data:
+        condition: service_started
+      core-metadata:
+        condition: service_started
+    environment:
+      EDGEX_SECURITY_SECRET_STORE: "false"
+      SERVICE_HOST: edgex-device-rest
+    hostname: edgex-device-rest
+    image: edgexfoundry/device-rest:3.1.0
+    networks:
+      edgex-network: null
+    ports:
+    - mode: ingress
+      host_ip: 127.0.0.1
+      target: 59986
+      published: "59986"
+      protocol: tcp
+    read_only: true
+    restart: always
+    security_opt:
+    - no-new-privileges:true
+    user: 2002:2001
+    volumes:
+    - type: bind
+      source: /etc/localtime
+      target: /etc/localtime
+      read_only: true
+      bind:
+        create_host_path: true
+  cctv-device-service:
+    container_name: cctv-device-service
+    # 확장: edgex-device-rest로 향대(문서만 유지, 실제 시작 안 함)
+    image: edgexfoundry/device-rest:3.1.0
+    profiles:
+    - disabled
+    restart: "no"
+  device-virtual:
+    container_name: edgex-device-virtual
+    depends_on:
+      consul:
+        condition: service_started
+      core-data:
+        condition: service_started
+      core-metadata:
+        condition: service_started
+    environment:
+      EDGEX_SECURITY_SECRET_STORE: "false"
+      SERVICE_HOST: edgex-device-virtual
+    hostname: edgex-device-virtual
+    image: edgexfoundry/device-virtual:3.1.0
+    networks:
+      edgex-network: null
+    ports:
+    - mode: ingress
+      host_ip: 127.0.0.1
+      target: 59900
+      published: "59900"
+      protocol: tcp
+    read_only: true
+    restart: always
+    security_opt:
+    - no-new-privileges:true
+    user: 2002:2001
+    volumes:
+    - type: bind
+      source: /etc/localtime
+      target: /etc/localtime
+      read_only: true
+      bind:
+        create_host_path: true
+  rules-engine:
+    container_name: edgex-kuiper
+    depends_on:
+      database:
+        condition: service_started
+    environment:
+      CONNECTION__EDGEX__REDISMSGBUS__PORT: "6379"
+      CONNECTION__EDGEX__REDISMSGBUS__PROTOCOL: redis
+      CONNECTION__EDGEX__REDISMSGBUS__SERVER: edgex-redis
+      CONNECTION__EDGEX__REDISMSGBUS__TYPE: redis
+      EDGEX__DEFAULT__PORT: "6379"
+      EDGEX__DEFAULT__PROTOCOL: redis
+      EDGEX__DEFAULT__SERVER: edgex-redis
+      EDGEX__DEFAULT__TOPIC: edgex/rules-events
+      EDGEX__DEFAULT__TYPE: redis
+      KUIPER__BASIC__CONSOLELOG: "true"
+      KUIPER__BASIC__RESTPORT: "59720"
+    hostname: edgex-kuiper
+    image: lfedge/ekuiper:1.11.4-alpine
+    networks:
+      edgex-network: null
+    ports:
+    - mode: ingress
+      host_ip: 127.0.0.1
+      target: 59720
+      published: "59720"
+      protocol: tcp
+    read_only: true
+    restart: always
+    security_opt:
+    - no-new-privileges:true
+    user: kuiper:kuiper
+    volumes:
+    - type: bind
+      source: /etc/localtime
+      target: /etc/localtime
+      read_only: true
+      bind:
+        create_host_path: true
+    - type: volume
+      source: kuiper-data
+      target: /kuiper/data
+      volume: {}
+    - type: volume
+      source: kuiper-etc
+      target: /kuiper/etc
+      volume: {}
+    - type: volume
+      source: kuiper-log
+      target: /kuiper/log
+      volume: {}
+    - type: volume
+      source: kuiper-plugins
+      target: /kuiper/plugins
+      volume: {}
+
+  cctv-ai-engine:
+    container_name: cctv-ai-engine
+    build:
+      context: C:/Users/dih51/OneDrive/문서/GitHub/CCTV-project
+      dockerfile: Dockerfile
+    environment:
+      PYTHONIOENCODING: utf-8
+      PYTHONUTF8: "1"
+    command:
+    - python
+    - main.py
+    - --cameras
+    - /app/cameras.json
+    - --mqtt-broker
+    - edgex-mqtt-broker
+    - --mqtt-port
+    - "1883"
+    - --mqtt-topic-prefix
+    - cctv/ai/events
+    depends_on:
+      edgex-mqtt-broker:
+        condition: service_started
+    networks:
+      edgex-network: null
+    restart: always
+    volumes:
+    - type: bind
+      source: C:/Users/dih51/OneDrive/문서/GitHub/CCTV-project/cameras.json
+      target: /app/cameras.json
+      read_only: true
+      bind:
+        create_host_path: true
+    - type: bind
+      source: C:/Users/dih51/OneDrive/문서/GitHub/CCTV-project/zones_config.json
+      target: /app/zones_config.json
+      read_only: true
+      bind:
+        create_host_path: true
+    - type: bind
+      source: C:/Users/dih51/OneDrive/문서/GitHub/CCTV-project/models
+      target: /app/models
+      bind:
+        create_host_path: true
+
+  cctv-edgex-adapter:
+    container_name: cctv-edgex-adapter
+    build:
+      context: C:/Users/dih51/OneDrive/문서/GitHub/CCTV-project
+      dockerfile: Dockerfile
+    environment:
+      PYTHONIOENCODING: utf-8
+      PYTHONUTF8: "1"
+    command:
+    - python
+    - runners/run_edgex_adapter.py
+    - --ai-mqtt-broker
+    - edgex-mqtt-broker
+    - --ai-mqtt-port
+    - "1883"
+    - --ai-topic-prefix
+    - cctv/ai/events
+    - --edgex-metadata-url
+    - http://edgex-core-metadata:59881
+    - --edgex-data-url
+    - http://edgex-core-data:59880
+    - --edgex-mqtt-broker
+    - edgex-mqtt-broker
+    - --edgex-mqtt-port
+    - "1883"
+    - --service-name
+    - device-rest
+    depends_on:
+      edgex-mqtt-broker:
+        condition: service_started
+      core-metadata:
+        condition: service_started
+      core-data:
+        condition: service_started
+      device-rest:
+        condition: service_started
+    networks:
+      edgex-network: null
+    restart: always
+
+  cctv-kuiper-rule-loader:
+    container_name: cctv-kuiper-rule-loader
+    build:
+      context: C:/Users/dih51/OneDrive/문서/GitHub/CCTV-project
+      dockerfile: Dockerfile
+    environment:
+      PYTHONIOENCODING: utf-8
+      PYTHONUTF8: "1"
+    command:
+    - python
+    - runners/run_kuiper_rules.py
+    - --kuiper-api
+    - http://edgex-kuiper:59720
+    - --mqtt-broker
+    - edgex-mqtt-broker
+    - --mqtt-port
+    - "1883"
+    - --intrusion-confidence
+    - "0.7"
+    - --critical-confidence
+    - "0.9"
+    - --persist-hit-count
+    - "5"
+    - --retry-count
+    - "20"
+    - --retry-delay
+    - "2"
+    depends_on:
+      rules-engine:
+        condition: service_started
+      edgex-mqtt-broker:
+        condition: service_started
+    networks:
+      edgex-network: null
+    restart: on-failure
+
+  cctv-alert-api:
+    container_name: cctv-alert-api
+    build:
+      context: C:/Users/dih51/OneDrive/문서/GitHub/CCTV-project
+      dockerfile: Dockerfile
+    depends_on:
+      edgex-mqtt-broker:
+        condition: service_started
+    environment:
+      PYTHONIOENCODING: utf-8
+      PYTHONUTF8: "1"
+    command:
+    - python
+    - runners/run_alert_api.py
+    - --host
+    - 0.0.0.0
+    - --port
+    - "8000"
+    - --log-path
+    - /app/alert_api_events.jsonl
+    networks:
+      edgex-network: null
+    ports:
+    - mode: ingress
+      host_ip: 127.0.0.1
+      target: 8000
+      published: "8000"
+      protocol: tcp
+    restart: always
+
+  cctv-action-layer:
+    container_name: cctv-action-layer
+    build:
+      context: C:/Users/dih51/OneDrive/문서/GitHub/CCTV-project
+      dockerfile: Dockerfile
+    command:
+    - python
+    - /app/runners/run_action_bridge.py
+    environment:
+      MQTT_BROKER: edgex-mqtt-broker
+      MQTT_PORT: "1883"
+      DB_PATH: /app/action_events.db
+      EXTERNAL_API_URL: http://cctv-alert-api:8000/api/alerts
+      ALARM_COOLDOWN: ${ACTION_ALARM_COOLDOWN:-10}
+      # Speaker (InterM HTTP REST + Digest auth)
+      SPEAKER_HOST: ${SPEAKER_HOST:-192.168.88.92}
+      SPEAKER_PORT: ${SPEAKER_PORT:-80}
+      SPEAKER_USER: ${SPEAKER_USER:-admin}
+      SPEAKER_PASSWORD: ${SPEAKER_PASSWORD:-sawwaveap123@}
+      SPEAKER_VOLUME: ${SPEAKER_VOLUME:-10}
+      SPEAKER_TTS_LANGUAGE: kor
+      SPEAKER_TTS_GENDER: female
+      SPEAKER_TTS_PITCH: "100"
+      SPEAKER_TTS_SPEED: "100"
+      SPEAKER_TTS_VOLUME: "1"
+      # Signboard (Dabit TCP socket) - leave host empty to disable
+      SIGNBOARD_HOST: ${SIGNBOARD_HOST:-}
+      SIGNBOARD_PORT: ${SIGNBOARD_PORT:-5000}
+      SIGNBOARD_BRIGHTNESS: "10"
+      SIGNBOARD_TEXT_COLOR: "7"
+      SIGNBOARD_BACK_COLOR: "1"
+      SIGNBOARD_TEXT_SIZE: "2"
+      SIGNBOARD_TEXT_SPEED: "10"
+      # Siren (InterM HTTP REST + Digest auth) - leave host empty to disable
+      SIREN_HOST: ${SIREN_HOST:-}
+      SIREN_PORT: ${SIREN_PORT:-80}
+      SIREN_USER: ${SIREN_USER:-}
+      SIREN_PASSWORD: ${SIREN_PASSWORD:-}
+      SIREN_AUTO_STOP: "10"
+      # REST server for manual approve/reject
+      REST_ENABLED: "true"
+      REST_HOST: "0.0.0.0"
+      REST_PORT: "8080"
+      PYTHONIOENCODING: utf-8
+      PYTHONUTF8: "1"
+    ports:
+    - mode: ingress
+      host_ip: 127.0.0.1
+      target: 8080
+      published: "8080"
+      protocol: tcp
+    depends_on:
+      edgex-mqtt-broker:
+        condition: service_started
+      cctv-alert-api:
+        condition: service_started
+    networks:
+      edgex-network: null
+    restart: always
+    volumes:
+    - type: bind
+      source: C:/Users/dih51/OneDrive/문서/GitHub/CCTV-project/src
+      target: /app/src
+      read_only: true
+      bind:
+        create_host_path: true
+    - type: bind
+      source: C:/Users/dih51/OneDrive/문서/GitHub/CCTV-project/runners
+      target: /app/runners
+      read_only: true
+      bind:
+        create_host_path: true
+  support-notifications:
+    container_name: edgex-support-notifications
+    depends_on:
+      consul:
+        condition: service_started
+      database:
+        condition: service_started
+    environment:
+      EDGEX_SECURITY_SECRET_STORE: "false"
+      SERVICE_HOST: edgex-support-notifications
+    hostname: edgex-support-notifications
+    image: edgexfoundry/support-notifications:3.1.0
+    networks:
+      edgex-network: null
+    ports:
+    - mode: ingress
+      host_ip: 127.0.0.1
+      target: 59860
+      published: "59860"
+      protocol: tcp
+    read_only: true
+    restart: always
+    security_opt:
+    - no-new-privileges:true
+    user: 2002:2001
+    volumes:
+    - type: bind
+      source: /etc/localtime
+      target: /etc/localtime
+      read_only: true
+      bind:
+        create_host_path: true
+  support-scheduler:
+    container_name: edgex-support-scheduler
+    depends_on:
+      consul:
+        condition: service_started
+      database:
+        condition: service_started
+    environment:
+      EDGEX_SECURITY_SECRET_STORE: "false"
+      INTERVALACTIONS_SCRUBAGED_HOST: edgex-core-data
+      INTERVALACTIONS_SCRUBPUSHED_HOST: edgex-core-data
+      SERVICE_HOST: edgex-support-scheduler
+    hostname: edgex-support-scheduler
+    image: edgexfoundry/support-scheduler:3.1.0
+    networks:
+      edgex-network: null
+    ports:
+    - mode: ingress
+      host_ip: 127.0.0.1
+      target: 59861
+      published: "59861"
+      protocol: tcp
+    read_only: true
+    restart: always
+    security_opt:
+    - no-new-privileges:true
+    user: 2002:2001
+    volumes:
+    - type: bind
+      source: /etc/localtime
+      target: /etc/localtime
+      read_only: true
+      bind:
+        create_host_path: true
+  ui:
+    container_name: edgex-ui-go
+    environment:
+      EDGEX_SECURITY_SECRET_STORE: "false"
+      SERVICE_HOST: edgex-ui-go
+    hostname: edgex-ui-go
+    image: edgexfoundry/edgex-ui:3.1.0
+    networks:
+      edgex-network: null
+    ports:
+    - mode: ingress
+      target: 4000
+      published: "4000"
+      protocol: tcp
+    read_only: true
+    restart: always
+    security_opt:
+    - no-new-privileges:true
+    user: 2002:2001
+    volumes:
+    - type: bind
+      source: /etc/localtime
+      target: /etc/localtime
+      read_only: true
+      bind:
+        create_host_path: true
+networks:
+  edgex-network:
+    name: edgex_edgex-network
+    driver: bridge
+volumes:
+  consul-config:
+    name: edgex_consul-config
+  consul-data:
+    name: edgex_consul-data
+  db-data:
+    name: edgex_db-data
+  kuiper-data:
+    name: edgex_kuiper-data
+  kuiper-etc:
+    name: edgex_kuiper-etc
+  kuiper-log:
+    name: edgex_kuiper-log
+  kuiper-plugins:
+    name: edgex_kuiper-plugins

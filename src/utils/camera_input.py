@@ -1,181 +1,206 @@
-"""
-camera_input.py - 카메라/비디오 입력 모듈
+"""???/??? ?? ??.
+
+RTSP ?? ???? ???? `RTSPCamera`?
+?? ?? ??? `CameraInput`? ????.
 """
 
-import cv2
+import logging
 import time
 from threading import Lock
-import logging
-from typing import Tuple
+from typing import Any, Optional, Tuple
+
+import cv2
 
 logger = logging.getLogger(__name__)
 
 
 class RTSPCamera:
-    """자동 재연결 기능을 갖춘 RTSP 카메라 관리"""
+    """?? ??? ? ?? ?? RTSP ??? ?? ???."""
 
-    def __init__(self, camera_id: str, source: str, config):
+    def __init__(self, camera_id: str, source: Any, config: Any):
         self.camera_id = camera_id
         self.source = source
         self.config = config
-        self.cap = None
+        self.cap: Optional[cv2.VideoCapture] = None
         self.connected = False
-        self.last_frame_time = 0
+        self.last_frame_time = 0.0
         self.reconnect_attempts = 0
+        self._consecutive_read_failures = 0
         self._lock = Lock()
 
+    @property
+    def is_rtsp(self) -> bool:
+        return isinstance(self.source, str) and self.source.startswith("rtsp://")
+
+    def _camera_option(self, key: str, default: Any) -> Any:
+        camera_cfg = getattr(self.config, "camera", None)
+        if camera_cfg is not None and hasattr(camera_cfg, key):
+            value = getattr(camera_cfg, key)
+            if value is not None:
+                return value
+        return getattr(self.config, key, default)
+
+    def _safe_release(self) -> None:
+        if self.cap is not None:
+            try:
+                self.cap.release()
+            except Exception:
+                pass
+        self.cap = None
+
+    def _create_capture(self) -> Optional[cv2.VideoCapture]:
+        if self.is_rtsp:
+            timeout = int(self._camera_option("read_timeout", 10))
+            buffer_size = int(self._camera_option("buffer_size", 1))
+            cap = cv2.VideoCapture(
+                self.source,
+                cv2.CAP_FFMPEG,
+                [
+                    cv2.CAP_PROP_OPEN_TIMEOUT_MSEC,
+                    timeout * 1000,
+                    cv2.CAP_PROP_READ_TIMEOUT_MSEC,
+                    timeout * 1000,
+                ],
+            )
+            cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"H264"))
+            cap.set(cv2.CAP_PROP_BUFFERSIZE, buffer_size)
+            return cap
+
+        logger.info("[%s] ?? ??? ?? ?? ??: %s", self.camera_id, self.source)
+        cap = cv2.VideoCapture(self.source)
+        if isinstance(self.source, int):
+            cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+            cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+            time.sleep(0.5)
+        return cap
+
     def connect(self) -> bool:
-        """타임아웃을 적용하여 카메라 연결"""
+        """??? ?? ? ?? ??? ??? ??."""
         with self._lock:
             try:
-                logger.info(f"[{self.camera_id}] 카메라 연결 중: {self.source}")
-                
-                # RTSP 스트림의 경우
-                if isinstance(self.source, str) and self.source.startswith('rtsp://'):
-                    timeout = getattr(self.config, 'rtsp_read_timeout', 10)
-                    self.cap = cv2.VideoCapture(self.source, cv2.CAP_FFMPEG, [
-                        cv2.CAP_PROP_OPEN_TIMEOUT_MSEC, timeout * 1000,
-                        cv2.CAP_PROP_READ_TIMEOUT_MSEC, timeout * 1000,
-                    ])
-                    # TCP 전송 강제 (패킷 순서 보장)
-                    self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'H264'))
-                    self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)  # 최신 프레임만 유지
-                    # 성능 향상을 위해 해상도 제한 (옵션)
-                    # self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-                    # self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
-                else:
-                    # 로컬 카메라 (정수 인덱스) 또는 비디오 파일
-                    logger.info(f"[{self.camera_id}] 로컬 카메라 또는 파일 소스: {self.source}")
-                    self.cap = cv2.VideoCapture(self.source)
-                    # 로컬 카메라의 경우 BUFFERSIZE 설정 안함 (호환성 문제)
-                    if isinstance(self.source, int):
-                        # 웹캠 해상도 설정
-                        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-                        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-                        # 약간의 대기 시간 (카메라 초기화)
-                        time.sleep(0.5)
+                logger.info("[%s] ??? ?? ??: %s", self.camera_id, self.source)
 
-                # 연결 확인 (타임아웃 내에 프레임 수신)
-                ret, frame = self.cap.read()
-                if ret and frame is not None:
+                self._safe_release()
+                self.cap = self._create_capture()
+                if self.cap is None:
+                    self.connected = False
+                    return False
+
+                retry_seconds = float(getattr(self.config, "rtsp_connect_retry_seconds", 5))
+                retry_interval = float(getattr(self.config, "rtsp_connect_retry_interval", 0.2))
+                retry_interval = max(0.01, retry_interval)
+                max_attempts = max(1, int(retry_seconds / retry_interval))
+
+                ret, frame = False, None
+                for attempt in range(max_attempts):
+                    ret, frame = self.cap.read()
+                    if ret and frame is not None:
+                        self.connected = True
+                        self.reconnect_attempts = 0
+                        self._consecutive_read_failures = 0
+                        logger.info(
+                            f"[{self.camera_id}] ?? ?? (???: {frame.shape[1]}x{frame.shape[0]}, "
+                            f"?? {attempt + 1}/{max_attempts})"
+                        )
+                        return True
+                    time.sleep(retry_interval)
+
+                self.connected = False
+                logger.warning(
+                    f"[{self.camera_id}] ?? ??? ?? ?? (?? {max_attempts}?, "
+                    f"??? ret={ret}, frame={'None' if frame is None else 'exists'})"
+                )
+
+                is_opened = self.cap.isOpened() if self.cap else False
+                logger.warning("[%s] VideoCapture.isOpened() = %s", self.camera_id, is_opened)
+
+                if self.is_rtsp and is_opened:
                     self.connected = True
                     self.reconnect_attempts = 0
-                    logger.info(f"[{self.camera_id}] 연결 성공 (해상도: {frame.shape[1]}x{frame.shape[0]})")
+                    self._consecutive_read_failures = 0
+                    logger.warning(
+                        f"[{self.camera_id}] RTSP ?? ??? ????? ?? ??? ?? ?????. "
+                        "????? ??? ???? ??? ?? ?????."
+                    )
                     return True
-                else:
-                    self.connected = False
-                    logger.warning(f"[{self.camera_id}] 첫 번째 프레임 수신 실패 (ret={ret}, frame={'None' if frame is None else 'exists'})")
-                    logger.warning(f"[{self.camera_id}] VideoCapture.isOpened() = {self.cap.isOpened() if self.cap else 'N/A'}")
-                    if self.cap:
-                        self.cap.release()
-                    return False
+
+                self._safe_release()
+                return False
             except KeyboardInterrupt:
-                raise  # Ctrl+C 전파
+                raise
             except Exception as e:
-                logger.error(f"[{self.camera_id}] 연결 오류: {e}")
+                logger.error("[%s] ?? ??: %s", self.camera_id, e)
                 self.connected = False
-                if self.cap:
-                    self.cap.release()
+                self._safe_release()
                 return False
 
-    def get_frame(self) -> Tuple[bool, any]:
-        """프레임 가져오기 (지수 백오프를 사용한 자동 재연결)"""
+    def _try_reconnect(self) -> bool:
+        max_retries = int(self._camera_option("max_retries", 5))
+        if self.reconnect_attempts >= max_retries:
+            logger.error("[%s] ?? ??? ?? ?? (%s)", self.camera_id, max_retries)
+            return False
+
+        self.reconnect_attempts += 1
+        base_interval = float(self._camera_option("reconnect_interval", 5))
+        delay = min(base_interval * (2 ** (self.reconnect_attempts - 1)), 60)
+
+        logger.info(
+            f"[{self.camera_id}] ??? ?? {self.reconnect_attempts}/{max_retries} ({delay}? ??)"
+        )
+        time.sleep(delay)
+
+        ok = self.connect()
+        if ok:
+            logger.info("[%s] ??? ??", self.camera_id)
+        else:
+            logger.warning("[%s] ??? ??", self.camera_id)
+        return ok
+
+    def get_frame(self) -> Tuple[bool, Optional[Any]]:
+        """??? ???? (?? ??? ?? ???)."""
         if not self.connected:
-            max_retries = getattr(self.config, 'rtsp_max_retries', 5)
-            
-            if self.reconnect_attempts < max_retries:
-                self.reconnect_attempts += 1
-                
-                # 지수 백오프: 5초 -> 10초 -> 20초 -> 40초 -> 60초(최대)
-                base_interval = getattr(self.config, 'rtsp_reconnect_interval', 5)
-                delay = min(base_interval * (2 ** (self.reconnect_attempts - 1)), 60)
-                
-                logger.info(f"[{self.camera_id}] 재연결 시도 {self.reconnect_attempts}/{max_retries} ({delay}초 대기 중)")
-                time.sleep(delay)
-                
-                if self.connect():
-                    logger.info(f"[{self.camera_id}] 재연결 성공!")
-                else:
-                    logger.warning(f"[{self.camera_id}] 재연결 실패")
-            else:
-                logger.error(f"[{self.camera_id}] 최대 재시도 횟수 초과 ({max_retries})")
-            
+            self._try_reconnect()
             return False, None
 
         try:
-            ret, frame = self.cap.read()
-            if ret and frame is not None:
-                self.last_frame_time = time.time()
-                self.reconnect_attempts = 0  # 성공 시 카운터 초기화
-                return True, frame
-            else:
-                logger.warning(f"[{self.camera_id}] 프레임 수신 실패, 재연결 대기 중...")
-                self.connected = False
-                return False, None
+            frame_retry_count = max(1, int(getattr(self.config, "rtsp_frame_retry_count", 5)))
+            frame_retry_interval = float(getattr(self.config, "rtsp_frame_retry_interval", 0.05))
+
+            ret, frame = False, None
+            for _ in range(frame_retry_count):
+                with self._lock:
+                    if not self.connected or self.cap is None:
+                        return False, None
+                    ret, frame = self.cap.read()
+
+                if ret and frame is not None:
+                    self.last_frame_time = time.time()
+                    self.reconnect_attempts = 0
+                    self._consecutive_read_failures = 0
+                    return True, frame
+                time.sleep(frame_retry_interval)
+
+            self._consecutive_read_failures += 1
+
+            if self.is_rtsp:
+                max_failures = int(getattr(self.config, "rtsp_max_read_failures", 20))
+                if self._consecutive_read_failures < max_failures:
+                    return False, None
+
+            logger.warning("[%s] ??? ?? ??, ??? ?? ?...", self.camera_id)
+            self.connected = False
+            return False, None
         except Exception as e:
-            logger.error(f"[{self.camera_id}] 프레임 획득 오류: {e}")
+            logger.error("[%s] ??? ?? ??: %s", self.camera_id, e)
             self.connected = False
             return False, None
 
-    def release(self):
-        """연결 해제"""
+    def release(self) -> None:
+        """??? ?? ?? ? ??? ??."""
         with self._lock:
-            if self.cap is not None:
-                self.cap.release()
-                self.connected = False
-                logger.info(f"[{self.camera_id}] 연결 해제됨")
-
-class CameraInput:
-    """하위 호환성을 위한 간단한 카메라 입력 래퍼"""
-    
-    def __init__(self, video_path=None):
-        self.video_path = video_path
-        self.cap = None
-        self.opened = False
-        
-        try:
-            if video_path:
-                self.cap = cv2.VideoCapture(video_path)
-            else:
-                self.cap = cv2.VideoCapture(0)
-                
-            if not self.cap.isOpened():
-                raise RuntimeError(f"{'비디오 파일을 열 수 없음: ' + video_path if video_path else '카메라를 열 수 없음'}")
-            
-            self.opened = True
-        except Exception as e:
-            logger.error(f"카메라 입력 초기화 실패: {e}")
-            raise
-            
-    def get_frame(self):
-        """단일 프레임 가져오기"""
-        if not self.opened or self.cap is None:
-            logger.warning("카메라가 열려있지 않음, 프레임을 가져올 수 없음")
-            return None
-            
-        try:
-            ret, frame = self.cap.read()
-            if not ret or frame is None:
-                logger.warning("프레임 읽기 실패")
-                return None
-            return frame
-        except Exception as e:
-            logger.error(f"프레임 읽기 오류: {e}")
-            return None
-        
-    def release(self):
-        """카메라 리소스 해제"""
-        if self.cap is not None:
-            self.cap.release()
-            self.opened = False
-            logger.debug("카메라 해제됨")
-            
-    def __enter__(self):
-        return self
-    
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.release()
-        return False
+            self._safe_release()
+            self.connected = False
+            logger.info("[%s] ?? ???", self.camera_id)
 
 
-__all__ = ["CameraInput", "RTSPCamera"]
+__all__ = ["RTSPCamera"]
