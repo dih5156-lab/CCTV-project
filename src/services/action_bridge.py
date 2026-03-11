@@ -36,7 +36,7 @@ from typing import Dict, List, Optional, Set, Tuple
 import paho.mqtt.client as mqtt
 
 from ..devices.sensor    import SensorConfig, SirenDevice
-from ..devices.signboard import SignboardConfig, SignboardDevice
+from ..devices.signboard import SignboardConfig, SignboardDevice, build_display_text
 from ..devices.speaker   import SpeakerConfig, SpeakerDevice
 from ..protocols.http    import HttpEventForwarder, HttpEventTarget
 from ..protocols.rest    import RestEventReceiver
@@ -552,11 +552,14 @@ class ActionBridge:
             devices = self._resolve_devices(camera_id)
 
             if AlarmDevice.SPEAKER in devices:
-                ok = self._speaker.play(event_type, severity, camera_id)
-                alarm_played = alarm_played or ok
+                alarm_played = self._speaker.play(event_type, severity, camera_id)
 
             if AlarmDevice.SIGNBOARD in devices:
-                self._signboard.display(event_type, severity, camera_id)
+                self._signboard.display(
+                    text=build_display_text(event_type, severity, camera_id),
+                    title="경고!",
+                    class_name=event_type,
+                )
 
             if AlarmDevice.SIREN in devices:
                 self._siren.trigger(event_type, camera_id)
@@ -570,54 +573,60 @@ class ActionBridge:
     # MQTT 콜백
     # ------------------------------------------------------------------
 
-    def _on_connect(self, client, userdata, flags, rc):
-        if rc == 0:
-            logger.info(
-                "Action Layer MQTT 연결 성공: %s:%d",
-                self.mqtt_broker, self.mqtt_port,
-            )
-            for topic in self.subscribe_topics:
-                client.subscribe(topic, qos=0)
-                logger.info("구독: %s", topic)
-            for cmd_topic in (_CMD_TOPIC_MODE, _CMD_TOPIC_APPROVE, _CMD_TOPIC_REJECT):
-                client.subscribe(cmd_topic, qos=1)
-                logger.info("명령 구독: %s", cmd_topic)
-        else:
+    def _on_connect(
+        self,
+        client: mqtt.Client,
+        userdata: object,
+        flags: dict,
+        rc: int,
+    ) -> None:
+        if rc != 0:
             logger.error("Action Layer MQTT 연결 실패 (rc=%d)", rc)
+            return
+        logger.info("Action Layer MQTT 연결 성공: %s:%d", self.mqtt_broker, self.mqtt_port)
+        all_topics = [
+            *((t, 0) for t in self.subscribe_topics),
+            *((t, 1) for t in (_CMD_TOPIC_MODE, _CMD_TOPIC_APPROVE, _CMD_TOPIC_REJECT)),
+        ]
+        for topic, qos in all_topics:
+            client.subscribe(topic, qos=qos)
+            logger.info("구독: %s (qos=%d)", topic, qos)
 
-    def _on_message(self, client, userdata, msg):
+    def _dispatch_command(self, topic: str, payload: Dict) -> None:
+        """MQTT 명령 토픽을 처리한다."""
+        if topic == _CMD_TOPIC_MODE:
+            mode_val = payload.get("mode")
+            if mode_val:
+                try:
+                    self.set_mode(ControlMode(mode_val), site_id=payload.get("site_id"))
+                except ValueError:
+                    logger.warning("MQTT mode 명령 오류: 알 수 없는 값 %r", mode_val)
+
+        elif topic == _CMD_TOPIC_APPROVE:
+            event_id = payload.get("event_id")
+            if event_id:
+                _, msg = self.approve_event(event_id)
+                logger.info("MQTT approve: %s", msg)
+
+        elif topic == _CMD_TOPIC_REJECT:
+            event_id = payload.get("event_id")
+            if event_id:
+                _, msg = self.reject_event(event_id)
+                logger.info("MQTT reject: %s", msg)
+
+    def _on_message(
+        self,
+        client: mqtt.Client,
+        userdata: object,
+        msg: mqtt.MQTTMessage,
+    ) -> None:
         try:
             topic   = msg.topic
             payload = json.loads(msg.payload.decode("utf-8"))
-
-            if topic == _CMD_TOPIC_MODE:
-                mode_val = payload.get("mode")
-                site_id  = payload.get("site_id")
-                if mode_val:
-                    try:
-                        self.set_mode(ControlMode(mode_val), site_id=site_id)
-                    except ValueError:
-                        logger.warning(
-                            "MQTT mode 명령 오류: 알 수 없는 값 %r", mode_val
-                        )
-                return
-
-            if topic == _CMD_TOPIC_APPROVE:
-                event_id = payload.get("event_id")
-                if event_id:
-                    _, msg_text = self.approve_event(event_id)
-                    logger.info("MQTT approve: %s", msg_text)
-                return
-
-            if topic == _CMD_TOPIC_REJECT:
-                event_id = payload.get("event_id")
-                if event_id:
-                    _, msg_text = self.reject_event(event_id)
-                    logger.info("MQTT reject: %s", msg_text)
-                return
-
-            self._handle_event(payload, topic=topic)
-
+            if topic in (_CMD_TOPIC_MODE, _CMD_TOPIC_APPROVE, _CMD_TOPIC_REJECT):
+                self._dispatch_command(topic, payload)
+            else:
+                self._handle_event(payload, topic=topic)
         except json.JSONDecodeError as exc:
             logger.error("JSON 파싱 실패: %s", exc)
         except Exception as exc:

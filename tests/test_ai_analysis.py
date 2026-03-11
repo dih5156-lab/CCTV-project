@@ -473,18 +473,53 @@ class TestValidatePersonKeypoints:
         keypoints = MockKeypoints(kpts)
         assert analyzer._validate_person_keypoints(keypoints, 0) is False
 
-    def test_nose_only_valid(self, analyzer):
+    def test_nose_only_not_enough(self, analyzer):
+        """코만 신뢰도 있으면 2/3 기준 미달 → False (옷 오탐 방지)."""
         kpts = np.zeros((17, 3), dtype=float)
         kpts[0] = [100, 50, 0.9]  # nose만 신뢰도 있음
         keypoints = MockKeypoints(kpts)
+        assert analyzer._validate_person_keypoints(keypoints, 0) is False
+
+    def test_nose_and_shoulder_valid(self, analyzer):
+        """코 + 어깨 2개 체크 → 유효한 사람."""
+        kpts = np.zeros((17, 3), dtype=float)
+        kpts[0] = [100, 50, 0.9]   # nose
+        kpts[5] = [90,  100, 0.9]  # left shoulder
+        keypoints = MockKeypoints(kpts)
         assert analyzer._validate_person_keypoints(keypoints, 0) is True
 
-    def test_shoulder_and_hip_valid(self, analyzer):
+    def test_shoulder_hip_knee_valid(self, analyzer):
+        """어깨 + 엉덩이 + 무릎 조합 → 유효한 사람 (뒤돌아선 자세)."""
+        kpts = np.zeros((17, 3), dtype=float)
+        kpts[5]  = [90,  100, 0.9]  # left shoulder
+        kpts[11] = [90,  200, 0.9]  # left hip
+        kpts[13] = [90,  280, 0.9]  # left knee
+        keypoints = MockKeypoints(kpts)
+        assert analyzer._validate_person_keypoints(keypoints, 0) is True
+
+    def test_shoulder_hip_only_no_face_leg_returns_false(self, analyzer):
+        """어깨 + 엉덩이만 있고 코·무릎·발목 없음 → 옷걸이/의류 오탐 → False."""
         kpts = np.zeros((17, 3), dtype=float)
         kpts[5]  = [90,  100, 0.9]  # left shoulder
         kpts[11] = [90,  200, 0.9]  # left hip
         keypoints = MockKeypoints(kpts)
-        assert analyzer._validate_person_keypoints(keypoints, 0) is True
+        assert analyzer._validate_person_keypoints(keypoints, 0) is False
+
+    def test_nose_below_shoulder_returns_false(self, analyzer):
+        """코가 어깨보다 아래(큰 y)이면 옷걸이/의류 오탐 → False."""
+        kpts = np.zeros((17, 3), dtype=float)
+        kpts[0] = [100, 150, 0.9]   # nose y=150 (아래)
+        kpts[5] = [90,  100, 0.9]   # left shoulder y=100 (위)
+        keypoints = MockKeypoints(kpts)
+        assert analyzer._validate_person_keypoints(keypoints, 0) is False
+
+    def test_shoulder_below_hip_returns_false(self, analyzer):
+        """어깨가 엉덩이보다 아래(큰 y)이면 비정상 자세 → False."""
+        kpts = np.zeros((17, 3), dtype=float)
+        kpts[5]  = [90, 250, 0.9]   # shoulder y=250 (아래)
+        kpts[11] = [90, 100, 0.9]   # hip y=100 (위)
+        keypoints = MockKeypoints(kpts)
+        assert analyzer._validate_person_keypoints(keypoints, 0) is False
 
     def test_none_keypoints_returns_true_default(self, analyzer):
         """_extract_keypoints가 None 반환 시 기본값 True 반환."""

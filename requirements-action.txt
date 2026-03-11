@@ -1,0 +1,22 @@
+# 액션 레이어 (cctv-action-layer / cctv-alert-api / cctv-edgex-adapter) 의존성
+# docker-compose.yml 의 CCTV 커스텀 서비스들에서 사용
+# (AI 추론 불필요 - torch/ultralytics 제외)
+
+# HTTP 통신
+requests>=2.31.0
+urllib3>=2.0.0
+
+# MQTT (EdgeX MessageBus)
+paho-mqtt>=1.6.1
+
+# Redis 메시지버스 (EdgeX 내부 이벤트)
+redis>=5.0.0
+
+# Pydantic (DTO 검증)
+pydantic>=2.5.0
+
+# 설정 관리
+python-dotenv>=1.0.0
+
+# 로깅
+colorlog>=6.7.0

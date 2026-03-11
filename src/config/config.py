@@ -134,26 +134,38 @@ class ModelPaths:
         return fallback
     
     def validate(self) -> bool:
-        """모델 파일 존재 여부 및 크기 검증"""
+        """모델 파일 존재 여부 및 크기 검증
+        
+        pose_model이 있으면 person_model은 선택 사항으로 취급합니다.
+        """
 
-        def _validate(label: str, path: Optional[str]) -> bool:
+        def _validate(label: str, path: Optional[str], required: bool = True) -> bool:
             if not path:
-                logger.warning("%s 모델 경로가 설정되지 않았습니다", label)
-                return False
+                if required:
+                    logger.warning("%s 모델 경로가 설정되지 않았습니다", label)
+                else:
+                    logger.debug("%s 모델 미설정 (선택 사항)", label)
+                return not required
 
             candidate = Path(path).expanduser()
             if not candidate.exists():
-                logger.warning("%s 모델을 찾을 수 없습니다: %s", label, candidate)
-                return False
+                if required:
+                    logger.warning("%s 모델을 찾을 수 없습니다: %s", label, candidate)
+                else:
+                    logger.debug("%s 모델 파일 없음 (선택 사항): %s", label, candidate)
+                return not required
             if candidate.stat().st_size <= 0:
                 logger.error("%s 모델 파일이 비어 있습니다: %s", label, candidate)
                 return False
             return True
 
+        # pose_model이 있으면 person_model은 선택 사항
+        pose_ok = _validate("Pose", self.pose_model, required=True)
+        person_required = not pose_ok
         results = [
             _validate("헬멧", self.helmet_model),
-            _validate("Pose", self.pose_model),
-            _validate("Person", self.person_model),
+            pose_ok,
+            _validate("Person", self.person_model, required=person_required),
         ]
         return all(results)
 
@@ -242,6 +254,13 @@ class EventConfig:
     queue_max_size: int = 500
     event_retention_hours: int = 24
     cleanup_interval: int = 3600
+    # 낙상 지속 감지 설정
+    fall_sustained_seconds: float = 10.0   # 낙상 상태가 이 시간(초) 이상 유지되어야 전송
+    fall_resend_cooldown: float = 60.0     # 낙상 알림 전송 후 재전송 대기 시간(초)
+    fall_gap_reset_seconds: float = 2.0    # 이 시간 이상 낙상 미감지 시 지속 타이머 초기화
+    # 헬멧 미착용(head) 감지 설정
+    head_resend_cooldown: float = 30.0     # 동일 객체 head 재전송 최소 간격(초)
+    head_gap_reset_seconds: float = 5.0    # 이 시간 이상 미감지 시 상태 리셋 → 재등장은 즉시 전송
 
 
 @dataclass

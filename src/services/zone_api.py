@@ -150,6 +150,13 @@ class ZoneApiHandler(BaseHTTPRequestHandler):
         elif m := _RE_CAMERA_ZONES.match(path):
             self._post_camera_zones(m.group(1))
         else:
+            # 요청 본문을 먼저 소비해야 Windows에서 연결 리셋(WinError 10053) 방지
+            try:
+                length = int(self.headers.get("Content-Length", 0))
+                if length > 0:
+                    self.rfile.read(length)
+            except Exception:
+                pass
             self._respond(404, {"error": "Not Found"})
 
     def do_DELETE(self):  # noqa: N802

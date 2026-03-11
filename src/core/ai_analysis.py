@@ -1,6 +1,9 @@
 ﻿"""AI 분석 모듈: YOLO 기반 멀티 모델 객체 탐지
 
-상향식 검증 흐름으로 사람(검증) → 낙상(포즈) → 헬멧 모델을 순차 적용
+포즈 모델(yolov8-pose)이 있으면 전체 프레임에서 사람 탐지 + 낙상 감지를
+한 번의 추론으로 처리한다. (person 모델 불필요)
+포즈 모델이 없을 때만 person 모델을 fallback으로 사용한다.
+헬멧 모델은 항상 사람 머리 ROI 기반으로 동작한다.
 """
 
 import os
@@ -18,9 +21,9 @@ from ..utils.geometry import is_helmet_worn, boxes_overlap
 logger = logging.getLogger(__name__)
 
 
-# ====================
+# ==================================================================
 # 상수 정의
-# ====================
+# ==================================================================
 
 
 # 헬멧 감지 임계값
@@ -28,15 +31,25 @@ MAX_HELMET_WIDTH = 300  # 헬멧 최대 너비
 MAX_HELMET_HEIGHT = 300  # 헬멧 최대 높이
 MIN_HELMET_SIZE = 15  # 최소 감지 크기
 MAX_HELMET_ASPECT_RATIO = 2.0  # 헬멧 최대 가로세로 비율
-DUPLICATE_IOU_THRESHOLD = 0.3  # 검증된 이벤트 중복 제거 임계값 (후처리 단계)
+DUPLICATE_IOU_THRESHOLD = 0.3       # 헬멧 이벤트 중복 제거 임계값 (후처리 단계)
+PERSON_DUPLICATE_IOU_THRESHOLD = 0.4  # 사람 이벤트 중복 제거 임계값
 HEAD_REGION_RATIO = 0.35  # 헬멧 검증용 머리 영역 비율 (사람 상단 35%)
+
+# 사람 탐지 최소 크기 (픽셀) — 너무 작은 박스는 잡음/오탐 가능성 높음
+MIN_PERSON_WIDTH = 30
+MIN_PERSON_HEIGHT = 60
 
 
 # 키포인트 감지 임계값
-MIN_KEYPOINT_CONFIDENCE = 0.2
+MIN_KEYPOINT_CONFIDENCE = 0.3  # 0.2 → 0.3: 낮은 값은 옷/배경 키포인트 할루시네이션이 통과할 수 있음
 FALL_ANGLE_HORIZONTAL = 30  # 수평 각도 임계값 (도)
 FALL_ANGLE_INVERTED = 150  # 역방향 수평 각도 임계값 (도)
 MIN_HIP_CONFIDENCE = 0.3  # 엉덩이 키포인트 최소 신뢰도
+
+# 어깨 위치 검증: 어깨가 bbox 상단에서 이 비율 이상 아래에 위치해야 사람으로 인정
+# 실제 사람은 머리가 위에 있으므로 어깨는 상단 15% 이상 아래
+# 옷걸이·행거 의류는 어깨 키포인트가 bbox 최상단 근처에 찍힘
+SHOULDER_TOP_MIN_RATIO = 0.15
 
 
 # YOLO 모델 설정
@@ -55,8 +68,8 @@ class AIAnalyzer:
     """멀티 모델 AI 분석 시스템
     
     모델 구성:
-    - 사람 모델 (yolov8n): 사람 감지 전용
-    - 포즈 모델 (yolov8n-pose): 낙상 감지 (사람 ROI 내부)
+    - 포즈 모델 (yolov8n-pose): 사람 탐지 + 낙상 감지 (전체 프레임, 기본)
+    - 사람 모델 (yolov8n): 포즈 모델 없을 때 fallback 전용 (선택)
     - 헬멧 모델(커스텀): 헬멧 감지 (사람 머리 ROI 내부)
     """
 
@@ -576,8 +589,139 @@ class AIAnalyzer:
 
         return helmet_events
 
+    def _run_pose_full_frame(self, frame) -> Tuple[List, List]:
+        """포즈 모델을 전체 프레임에서 실행하여 사람 이벤트와 낙상 이벤트를 동시에 반환
+
+        yolov8-pose는 사람 bbox + 키포인트를 함께 출력하므로
+        person 모델 없이도 사람 탐지 + 낙상 감지를 한 번의 추론으로 처리합니다.
+
+        반환:
+            (person_events, fall_events)
+        """
+        person_events: List[DetectionEvent] = []
+        fall_events: List[DetectionEvent] = []
+
+        if frame is None or self.pose_model is None:
+            return person_events, fall_events
+
+        conf_threshold = getattr(self, "pose_threshold", self.confidence_threshold)
+
+        try:
+            results = self.pose_model.track(
+                frame,
+                conf=conf_threshold,
+                iou=DEFAULT_IOU_THRESHOLD,
+                imgsz=DEFAULT_IMAGE_SIZE_POSE,
+                verbose=False,
+                persist=True,
+            )
+        except Exception as e:
+            logger.error("포즈 모델 전체 프레임 추론 실패: %s", e, exc_info=True)
+            return person_events, fall_events
+
+        for result in results:
+            boxes = getattr(result, "boxes", None)
+            keypoints = getattr(result, "keypoints", None)
+
+            if boxes is None:
+                continue
+
+            for idx, box in enumerate(boxes):
+                bbox = self._extract_bbox(box)
+                if bbox is None:
+                    continue
+                x1, y1, x2, y2 = bbox
+                width = x2 - x1
+                height = y2 - y1
+
+                # 최소 크기 필터: 너무 작은 박스는 잡음/오탐 가능성 높음
+                if width < MIN_PERSON_WIDTH or height < MIN_PERSON_HEIGHT:
+                    logger.debug("사람 bbox 크기 미달 거부: %sx%s", width, height)
+                    continue
+
+                conf = self._extract_confidence(box)
+
+                # persist=True 트래킹으로 ghost track이 저신뢰도로 유지될 수 있음
+                # 직접 신뢰도 게이트를 적용하여 ghost track 필터링
+                if conf < conf_threshold:
+                    logger.debug(
+                        "저신뢰도 ghost track 거부: conf=%.2f < threshold=%.2f", conf, conf_threshold
+                    )
+                    continue
+
+                track_id = self._extract_track_id(box)
+                if track_id is None:
+                    track_id = self._generate_temp_id(x1, y1, width, height)
+
+                # 키포인트 기반 사람 검증 (노이즈 bbox 제거)
+                if keypoints is not None and not self._validate_person_keypoints(keypoints, idx):
+                    continue
+
+                # 어깨 위치 검증: 어깨가 bbox 상단에 너무 가까우면 옷걸이·행거 의류 오탐
+                # 실제 사람은 머리가 bbox 최상단을 차지하므로 어깨는 bbox 상단 15% 이상 아래에 있어야 함
+                if keypoints is not None:
+                    _kpts = self._extract_keypoints(keypoints, idx)
+                    if _kpts is not None and len(_kpts) > 6:
+                        _ls_conf = _kpts[5][2]
+                        _rs_conf = _kpts[6][2]
+                        _shoulder_ys = []
+                        if _ls_conf > MIN_KEYPOINT_CONFIDENCE:
+                            _shoulder_ys.append(_kpts[5][1])
+                        if _rs_conf > MIN_KEYPOINT_CONFIDENCE:
+                            _shoulder_ys.append(_kpts[6][1])
+                        if _shoulder_ys:
+                            _avg_shoulder_y = sum(_shoulder_ys) / len(_shoulder_ys)
+                            _ratio = (_avg_shoulder_y - y1) / max(height, 1)
+                            if _ratio < SHOULDER_TOP_MIN_RATIO:
+                                logger.debug(
+                                    "어깨 bbox 상단 치우침 거부(옷걸이 오탐): ratio=%.2f", _ratio
+                                )
+                                continue
+
+                person_ev = DetectionEvent(
+                    event_type=EventType.PERSON,
+                    x=x1,
+                    y=y1,
+                    width=width,
+                    height=height,
+                    confidence=conf,
+                    timestamp=time.time(),
+                    object_id=track_id,
+                    class_idx=0,
+                )
+                person_events.append(person_ev)
+
+                # 낙상 감지
+                if keypoints is not None:
+                    is_fallen = self._detect_fall_from_keypoints(keypoints, idx, width, height)
+                    if is_fallen:
+                        kpts = self._extract_keypoints(keypoints, idx)
+                        keypoints_data = kpts.tolist() if kpts is not None else None
+                        fall_events.append(
+                            DetectionEvent(
+                                event_type=EventType.FALL_DETECTED,
+                                x=x1,
+                                y=y1,
+                                width=width,
+                                height=height,
+                                confidence=conf,
+                                timestamp=time.time(),
+                                object_id=track_id,
+                                class_idx=0,
+                                keypoints=keypoints_data,
+                            )
+                        )
+
+        # 사후 중복 제거: YOLO NMS 이후에도 부분 겹침 박스가 남는 경우 처리
+        person_events = self._remove_duplicates(person_events, iou_threshold=PERSON_DUPLICATE_IOU_THRESHOLD)
+        logger.debug(
+            "포즈 전체 프레임: 사람 %d명 (중복 제거 후), 낙상 %d건",
+            len(person_events), len(fall_events),
+        )
+        return person_events, fall_events
+
     def _run_pose_on_person_rois(self, frame, person_events: List) -> List:
-        """사람 ROI 영역에서 포즈 모델을 실행하고 좌표 복원 (ROI 기반 방식)"""
+        """사람 ROI 영역에서 포즈 모델을 실행하고 좌표 복원 (ROI 기반 방식, 레거시)"""
         if frame is None or not person_events or self.pose_model is None:
             return []
 
@@ -679,33 +823,83 @@ class AIAnalyzer:
     # 포즈 기반 사람 검증
     # ====================
     def _validate_person_keypoints(self, keypoints, idx: int) -> bool:
-        """키포인트 신뢰도를 확인하여 실제 사람인지 검증"""
+        """키포인트 신뢰도 및 수직 체형 순서로 실제 사람인지 검증
+
+        두 가지 검사를 순차 수행:
+        1. 주요 키포인트(코·어깨·엉덩이) 중 2개 이상 신뢰도 충족
+        2. 감지된 키포인트가 해부학적 수직 순서를 만족 (코 < 어깨 < 엉덩이)
+           이를 위반하면 옷걸이·의류 오탐으로 판단
+        """
         try:
             kpts = self._extract_keypoints(keypoints, idx)
             if kpts is None:
                 return True  # 키포인트 추출 실패 시
-            
+
             # COCO 키포인트: 0-코, 5-왼쪽어깨, 6-오른쪽어깨, 11-왼쪽엉덩이, 12-오른쪽엉덩이
             nose_conf = kpts[0][2] if len(kpts) > 0 else 0
             left_shoulder_conf = kpts[5][2] if len(kpts) > 5 else 0
             right_shoulder_conf = kpts[6][2] if len(kpts) > 6 else 0
             left_hip_conf = kpts[11][2] if len(kpts) > 11 else 0
             right_hip_conf = kpts[12][2] if len(kpts) > 12 else 0
-            
-            # 최소 기준: 코 OR (어깨 1개 + 엉덩이 1개)
+
             has_nose = nose_conf > MIN_KEYPOINT_CONFIDENCE
-            has_shoulder = (left_shoulder_conf > MIN_KEYPOINT_CONFIDENCE or 
-                          right_shoulder_conf > MIN_KEYPOINT_CONFIDENCE)
-            has_hip = (left_hip_conf > MIN_KEYPOINT_CONFIDENCE or 
-                      right_hip_conf > MIN_KEYPOINT_CONFIDENCE)
-            
-            # 최소 1개의 주요 키포인트가 있어야 사람으로 간주
+            has_shoulder = (left_shoulder_conf > MIN_KEYPOINT_CONFIDENCE or
+                            right_shoulder_conf > MIN_KEYPOINT_CONFIDENCE)
+            has_hip = (left_hip_conf > MIN_KEYPOINT_CONFIDENCE or
+                       right_hip_conf > MIN_KEYPOINT_CONFIDENCE)
+
+            # 검사 1: 주요 키포인트 2개 이상 필요
             valid_keypoints = sum([has_nose, has_shoulder, has_hip])
-            
-            if valid_keypoints < 1:
+            if valid_keypoints < 2:
                 logger.debug("키포인트 부족: nose=%s, shoulder=%s, hip=%s", has_nose, has_shoulder, has_hip)
                 return False
-            
+
+            # 검사 2: 수직 순서 검증 (코 위 → 어깨 → 엉덩이 아래)
+            # 이미지 좌표계: y 값이 클수록 아래 → nose_y < shoulder_y < hip_y 이어야 함
+            if has_nose and has_shoulder:
+                nose_y = kpts[0][1]
+                shoulder_y_vals = []
+                if left_shoulder_conf > MIN_KEYPOINT_CONFIDENCE:
+                    shoulder_y_vals.append(kpts[5][1])
+                if right_shoulder_conf > MIN_KEYPOINT_CONFIDENCE:
+                    shoulder_y_vals.append(kpts[6][1])
+                min_shoulder_y = min(shoulder_y_vals)
+                if nose_y >= min_shoulder_y:
+                    # 코가 어깨보다 아래에 있음 → 옷걸이/의류 오탐
+                    logger.debug("수직 순서 위반(코>=어깨): nose_y=%.1f, shoulder_y=%.1f", nose_y, min_shoulder_y)
+                    return False
+
+            if has_shoulder and has_hip:
+                shoulder_y_vals = []
+                if left_shoulder_conf > MIN_KEYPOINT_CONFIDENCE:
+                    shoulder_y_vals.append(kpts[5][1])
+                if right_shoulder_conf > MIN_KEYPOINT_CONFIDENCE:
+                    shoulder_y_vals.append(kpts[6][1])
+                hip_y_vals = []
+                if left_hip_conf > MIN_KEYPOINT_CONFIDENCE:
+                    hip_y_vals.append(kpts[11][1])
+                if right_hip_conf > MIN_KEYPOINT_CONFIDENCE:
+                    hip_y_vals.append(kpts[12][1])
+                avg_shoulder_y = sum(shoulder_y_vals) / len(shoulder_y_vals)
+                avg_hip_y = sum(hip_y_vals) / len(hip_y_vals)
+                if avg_shoulder_y >= avg_hip_y:
+                    # 어깨가 엉덩이보다 아래·같은 위치 → 자세 비정상
+                    logger.debug("수직 순서 위반(어깨>=엉덩이): shoulder_y=%.1f, hip_y=%.1f", avg_shoulder_y, avg_hip_y)
+                    return False
+
+            # 검사 3: 얼굴(코)도 없고 무릎·발목도 없으면 옷걸이/행거 의류 오탐
+            # 실제 사람은 반드시 얼굴 또는 다리(무릎·발목) 키포인트 중 하나는 감지됨
+            # 옷걸이에 걸린 패딩은 코도 없고 다리도 없음
+            has_lower_leg = (
+                (len(kpts) > 13 and kpts[13][2] > MIN_KEYPOINT_CONFIDENCE) or  # 왼쪽 무릎
+                (len(kpts) > 14 and kpts[14][2] > MIN_KEYPOINT_CONFIDENCE) or  # 오른쪽 무릎
+                (len(kpts) > 15 and kpts[15][2] > MIN_KEYPOINT_CONFIDENCE) or  # 왼쪽 발목
+                (len(kpts) > 16 and kpts[16][2] > MIN_KEYPOINT_CONFIDENCE)     # 오른쪽 발목
+            )
+            if not has_nose and not has_lower_leg:
+                logger.debug("얼굴(코)·다리 키포인트 모두 부재: 옷걸이/의류 오탐 판단")
+                return False
+
             return True
         except Exception as e:
             logger.debug("키포인트 검증 실패: %s", e)
@@ -850,8 +1044,8 @@ class AIAnalyzer:
         매개변수
             frame: 입력 프레임
             use_helmet: 헬멧 모델 사용 여부
-            use_pose: pose 모델 사용 여부 (낙상 감지)
-            use_person: person 모델 사용 여부
+            use_pose: pose 모델 사용 여부 (사람 탐지 + 낙상 감지, 기본 경로)
+            use_person: pose 모델 없을 때 person 모델 fallback 허용 여부
             
         반환값
             이벤트 리스트 (사람 이벤트, 헬멧 이벤트, 기타 이벤트)
@@ -865,18 +1059,21 @@ class AIAnalyzer:
         fall_events: List[DetectionEvent] = []
         small_helmet_events: List[DetectionEvent] = []
 
-        # 사람 모델
-        if use_person:
+        # 포즈 모델 우선: 전체 프레임 한 번 추론으로 사람 탐지 + 낙상 감지 동시 처리
+        if use_pose and self.pose_model:
+            person_events, fall_events = self._run_pose_full_frame(frame)
+            logger.debug(
+                "포즈 모델(전체 프레임): 사람 %s명, 낙상 %s건 감지됨",
+                len(person_events), len(fall_events),
+            )
+        elif use_person:
+            # 포즈 모델이 없을 때만 person 모델 fallback
             if self.person_model:
                 person_events = self._run_single_model(self.person_model, frame, model_type="person")
-                logger.debug("사람 모델: %s 감지됨", len(person_events))
+                logger.debug("사람 모델(fallback): %s 감지됨", len(person_events))
             elif not self._person_warning_shown:
-                logger.warning("사람 모델이 비활성화되어 사람 감지가 불가합니다.")
+                logger.warning("포즈 모델과 사람 모델이 모두 없어 사람 감지가 불가합니다.")
                 self._person_warning_shown = True
-
-        # 포즈 모델 (사람 ROI 기반 낙상 감지)
-        if use_pose and self.pose_model and person_events:
-            fall_events = self._run_pose_on_person_rois(frame, person_events)
 
         # 헬멧 모델 (사람 ROI 기반)
         if use_helmet and self.helmet_model and person_events:

@@ -219,15 +219,73 @@ python run_action_bridge.py \
 
 ### Docker (EdgeX 통합)
 
+#### Compose 파일 구성
+
+| 파일 | 용도 |
+|------|------|
+| `docker-compose.yml` | **기본 구성** — AI 엔진이 같은 PC에서 실행될 때 사용 |
+| `docker-compose.server.yml` | **서버 모드 override** — Jetson Orin이 AI를 담당하고 Windows PC가 EdgeX 서버 역할을 할 때 기본 파일 위에 덧씌움 |
+
+#### 기본 실행 (Windows PC에서 모두 실행)
+
 ```bash
+# 환경변수 파일 생성 (.env.example 복사 후 편집)
+copy .env.example .env
+# .env 에서 SPEAKER_HOST, SPEAKER_PASSWORD 등 설정
+
 docker compose up -d --build
 
 # 로그 확인
-docker compose logs -f cctv-device-service
+docker compose logs -f cctv-action-layer
 
 # 중지
 docker compose down
 ```
+
+#### 서버 모드 실행 (Jetson Orin + Windows PC 분리)
+
+```bash
+# Windows PC (EdgeX 서버 + Action Layer)
+docker compose -f docker-compose.yml -f docker-compose.server.yml up -d --build
+
+# Jetson Orin (AI 엔진만 실행, 이 PC의 IP를 MQTT 브로커로 지정)
+USE_GSTREAMER=1 DEVICE=cuda:0 python main.py \
+  --cameras cameras.json \
+  --mqtt-broker <Windows_PC_IP> \   # ipconfig 로 확인 (예: 192.168.0.10)
+  --mqtt-port 1883 \
+  --mqtt-topic-prefix cctv/ai/events
+```
+
+#### 개별 서비스 확인
+
+```bash
+# 실행 중인 서비스 확인
+docker compose ps
+
+# 특정 서비스 로그
+docker compose logs -f cctv-ai-engine
+docker compose logs -f cctv-action-layer
+docker compose logs -f edgex-app-rules-engine
+
+# 서비스 재시작
+docker compose restart cctv-action-layer
+```
+
+#### 필수 환경변수 (.env 파일)
+
+`.env.example`을 복사하여 `.env`를 만들고 아래 값을 설정합니다.
+
+| 변수 | 설명 | 예시 |
+|------|------|------|
+| `SPEAKER_HOST` | 스피커 IP | `192.168.0.100` |
+| `SPEAKER_USER` | 스피커 인증 사용자명 | `admin` |
+| `SPEAKER_PASSWORD` | 스피커 인증 비밀번호 | _(보안상 직접 입력)_ |
+| `SIGNBOARD_HOST` | 전광판 IP (없으면 비활성화) | `192.168.0.101` |
+| `SIREN_HOST` | 경광등 IP (없으면 비활성화) | `192.168.0.102` |
+| `ACTION_ALARM_COOLDOWN` | 알람 재발生 억제 간격(초) | `10` |
+
+> **주의**: `.env` 파일은 `.gitignore`에 포함되어 Git에 커밋되지 않습니다.
+> 실제 비밀번호를 `.env.example`에 직접 쓰지 마세요.
 
 필수 환경값:
 - `ACTION_SPEAKER_PASSWORD` — 스피커 인증 비밀번호

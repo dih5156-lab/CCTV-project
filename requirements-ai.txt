@@ -1,0 +1,26 @@
+# AI 엔진 (cctv-ai-engine) 의존성
+# docker-compose.yml 의 cctv-ai-engine 서비스에서 사용
+
+# 딥러닝 프레임워크
+ultralytics>=8.0.0
+torch>=2.0.0
+torchvision>=0.15.0
+
+# 컴퓨터 비전
+opencv-python>=4.8.0
+opencv-contrib-python>=4.8.0
+
+# 이미지 처리
+numpy>=1.24.0
+Pillow>=10.0.0
+
+# 서버 통신
+requests>=2.31.0
+urllib3>=2.0.0
+paho-mqtt>=1.6.1
+
+# 설정 관리
+python-dotenv>=1.0.0
+
+# 로깅
+colorlog>=6.7.0

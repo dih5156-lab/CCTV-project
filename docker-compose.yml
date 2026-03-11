@@ -41,7 +41,7 @@ services:
     restart: always
     volumes:
     - type: bind
-      source: C:/Users/dih51/OneDrive/문서/GitHub/CCTV-project/mosquitto/mosquitto.conf
+      source: ./mosquitto/mosquitto.conf
       target: /mosquitto/config/mosquitto.conf
       read_only: true
       bind:
@@ -51,11 +51,11 @@ services:
     container_name: edgex-app-rules-engine
     depends_on:
       consul:
-        condition: service_started
+        condition: service_healthy
       core-data:
         condition: service_started
     env_file:
-    - C:/Users/dih51/OneDrive/문서/GitHub/CCTV-project/edgex/asc/cctv_asc.env
+    - ./edgex/asc/cctv_asc.env
     environment:
       EDGEX_PROFILE: cctv-external-http
       EDGEX_SECURITY_SECRET_STORE: "false"
@@ -91,7 +91,7 @@ services:
       bind:
         create_host_path: true
     - type: bind
-      source: C:/Users/dih51/OneDrive/문서/GitHub/CCTV-project/edgex/asc/cctv-external-http
+      source: ./edgex/asc/cctv-external-http
       target: /res/cctv-external-http
       read_only: true
       bind:
@@ -120,6 +120,12 @@ services:
     security_opt:
     - no-new-privileges:true
     user: root:root
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8500/v1/status/leader"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
     volumes:
     - type: volume
       source: consul-config
@@ -133,11 +139,11 @@ services:
     container_name: edgex-core-command
     depends_on:
       consul:
-        condition: service_started
+        condition: service_healthy
       core-metadata:
         condition: service_started
       database:
-        condition: service_started
+        condition: service_healthy
     environment:
       EDGEX_SECURITY_SECRET_STORE: "false"
       EXTERNALMQTT_URL: tcp://edgex-mqtt-broker:1883
@@ -168,7 +174,7 @@ services:
     container_name: edgex-core-common-config-bootstrapper
     depends_on:
       consul:
-        condition: service_started
+        condition: service_healthy
     environment:
       ALL_SERVICES_DATABASE_HOST: edgex-redis
       ALL_SERVICES_MESSAGEBUS_HOST: edgex-redis
@@ -195,11 +201,11 @@ services:
     container_name: edgex-core-data
     depends_on:
       consul:
-        condition: service_started
+        condition: service_healthy
       core-metadata:
         condition: service_started
       database:
-        condition: service_started
+        condition: service_healthy
     environment:
       EDGEX_SECURITY_SECRET_STORE: "false"
       SERVICE_HOST: edgex-core-data
@@ -229,9 +235,9 @@ services:
     container_name: edgex-core-metadata
     depends_on:
       consul:
-        condition: service_started
+        condition: service_healthy
       database:
-        condition: service_started
+        condition: service_healthy
     environment:
       EDGEX_SECURITY_SECRET_STORE: "false"
       SERVICE_HOST: edgex-core-metadata
@@ -274,6 +280,12 @@ services:
     security_opt:
     - no-new-privileges:true
     user: root:root
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     volumes:
     - type: volume
       source: db-data
@@ -283,7 +295,7 @@ services:
     container_name: edgex-device-rest
     depends_on:
       consul:
-        condition: service_started
+        condition: service_healthy
       core-data:
         condition: service_started
       core-metadata:
@@ -324,7 +336,7 @@ services:
     container_name: edgex-device-virtual
     depends_on:
       consul:
-        condition: service_started
+        condition: service_healthy
       core-data:
         condition: service_started
       core-metadata:
@@ -358,7 +370,7 @@ services:
     container_name: edgex-kuiper
     depends_on:
       database:
-        condition: service_started
+        condition: service_healthy
     environment:
       CONNECTION__EDGEX__REDISMSGBUS__PORT: "6379"
       CONNECTION__EDGEX__REDISMSGBUS__PROTOCOL: redis
@@ -413,7 +425,7 @@ services:
   cctv-ai-engine:
     container_name: cctv-ai-engine
     build:
-      context: C:/Users/dih51/OneDrive/문서/GitHub/CCTV-project
+      context: .
       dockerfile: Dockerfile
     environment:
       PYTHONIOENCODING: utf-8
@@ -437,19 +449,19 @@ services:
     restart: always
     volumes:
     - type: bind
-      source: C:/Users/dih51/OneDrive/문서/GitHub/CCTV-project/cameras.json
+      source: ./cameras.json
       target: /app/cameras.json
       read_only: true
       bind:
         create_host_path: true
     - type: bind
-      source: C:/Users/dih51/OneDrive/문서/GitHub/CCTV-project/zones_config.json
+      source: ./zones_config.json
       target: /app/zones_config.json
       read_only: true
       bind:
         create_host_path: true
     - type: bind
-      source: C:/Users/dih51/OneDrive/문서/GitHub/CCTV-project/models
+      source: ./models
       target: /app/models
       bind:
         create_host_path: true
@@ -457,7 +469,7 @@ services:
   cctv-edgex-adapter:
     container_name: cctv-edgex-adapter
     build:
-      context: C:/Users/dih51/OneDrive/문서/GitHub/CCTV-project
+      context: .
       dockerfile: Dockerfile
     environment:
       PYTHONIOENCODING: utf-8
@@ -497,7 +509,7 @@ services:
   cctv-kuiper-rule-loader:
     container_name: cctv-kuiper-rule-loader
     build:
-      context: C:/Users/dih51/OneDrive/문서/GitHub/CCTV-project
+      context: .
       dockerfile: Dockerfile
     environment:
       PYTHONIOENCODING: utf-8
@@ -533,7 +545,7 @@ services:
   cctv-alert-api:
     container_name: cctv-alert-api
     build:
-      context: C:/Users/dih51/OneDrive/문서/GitHub/CCTV-project
+      context: .
       dockerfile: Dockerfile
     depends_on:
       edgex-mqtt-broker:
@@ -563,7 +575,7 @@ services:
   cctv-action-layer:
     container_name: cctv-action-layer
     build:
-      context: C:/Users/dih51/OneDrive/문서/GitHub/CCTV-project
+      context: .
       dockerfile: Dockerfile
     command:
     - python
@@ -575,10 +587,10 @@ services:
       EXTERNAL_API_URL: http://cctv-alert-api:8000/api/alerts
       ALARM_COOLDOWN: ${ACTION_ALARM_COOLDOWN:-10}
       # Speaker (InterM HTTP REST + Digest auth)
-      SPEAKER_HOST: ${SPEAKER_HOST:-192.168.88.92}
+      SPEAKER_HOST: ${SPEAKER_HOST:-}
       SPEAKER_PORT: ${SPEAKER_PORT:-80}
-      SPEAKER_USER: ${SPEAKER_USER:-admin}
-      SPEAKER_PASSWORD: ${SPEAKER_PASSWORD:-sawwaveap123@}
+      SPEAKER_USER: ${SPEAKER_USER:-}
+      SPEAKER_PASSWORD: ${SPEAKER_PASSWORD:-}
       SPEAKER_VOLUME: ${SPEAKER_VOLUME:-10}
       SPEAKER_TTS_LANGUAGE: kor
       SPEAKER_TTS_GENDER: female
@@ -590,7 +602,7 @@ services:
       SIGNBOARD_PORT: ${SIGNBOARD_PORT:-5000}
       SIGNBOARD_BRIGHTNESS: "10"
       SIGNBOARD_TEXT_COLOR: "7"
-      SIGNBOARD_BACK_COLOR: "1"
+      SIGNBOARD_BACK_COLOR: "0"
       SIGNBOARD_TEXT_SIZE: "2"
       SIGNBOARD_TEXT_SPEED: "10"
       # Siren (InterM HTTP REST + Digest auth) - leave host empty to disable
@@ -621,13 +633,13 @@ services:
     restart: always
     volumes:
     - type: bind
-      source: C:/Users/dih51/OneDrive/문서/GitHub/CCTV-project/src
+      source: ./src
       target: /app/src
       read_only: true
       bind:
         create_host_path: true
     - type: bind
-      source: C:/Users/dih51/OneDrive/문서/GitHub/CCTV-project/runners
+      source: ./runners
       target: /app/runners
       read_only: true
       bind:
@@ -636,9 +648,9 @@ services:
     container_name: edgex-support-notifications
     depends_on:
       consul:
-        condition: service_started
+        condition: service_healthy
       database:
-        condition: service_started
+        condition: service_healthy
     environment:
       EDGEX_SECURITY_SECRET_STORE: "false"
       SERVICE_HOST: edgex-support-notifications
@@ -668,9 +680,9 @@ services:
     container_name: edgex-support-scheduler
     depends_on:
       consul:
-        condition: service_started
+        condition: service_healthy
       database:
-        condition: service_started
+        condition: service_healthy
     environment:
       EDGEX_SECURITY_SECRET_STORE: "false"
       INTERVALACTIONS_SCRUBAGED_HOST: edgex-core-data

@@ -112,13 +112,27 @@ class _EventDebouncer:
         self._increment_stat = increment_stat
         self._last_events: Dict[Tuple[str, str, int], float] = {}
         self._lock = Lock()
+        # 낙상 지속 감지용 상태 추적 (camera_id, object_id) 기준
+        self._fall_first_seen: Dict[Tuple[str, int], float] = {}  # 낙상 최초 감지 시각
+        self._fall_last_seen: Dict[Tuple[str, int], float] = {}   # 낙상 마지막 감지 시각
+        self._fall_alerted: Dict[Tuple[str, int], float] = {}     # 낙상 알림 마지막 전송 시각
+        # 헬멧 미착용(head) 상태 추적 (camera_id, object_id) 기준
+        self._head_last_seen: Dict[Tuple[str, int], float] = {}   # head 마지막 감지 시각
+        self._head_alerted: Dict[Tuple[str, int], float] = {}     # head 마지막 전송 시각
 
     def should_send(self, camera_id: str, event_type: str, object_id: int) -> bool:
         """중복 전송을 방지하기 위해 이벤트를 보내야 하는지 반환한다."""
         if not self._config.events.debounce_enabled:
             return True
-        if event_type in {"head", "fall_detected"}:
-            return True
+
+        # 낙상: 10초 이상 지속 감지되어야 전송 (매 프레임 전송 방지)
+        if event_type == "fall_detected":
+            return self._should_send_fall(camera_id, object_id)
+
+        # 헬멧 미착용: 상태 변화 감지 + 최소 재전송 간격 적용
+        if event_type == "head":
+            return self._should_send_head(camera_id, object_id)
+
         key = (camera_id, event_type, object_id)
         now = time.time()
         with self._lock:
@@ -129,14 +143,83 @@ class _EventDebouncer:
             self._increment_stat("events_filtered")
             return False
 
+    def _should_send_head(self, camera_id: str, object_id: int) -> bool:
+        """헬멧 미착용(head) 이벤트 전송 여부 판단.
+
+        - gap_reset_seconds 이상 미감지 후 재등장 → 상태 변화로 보고 즉시 전송
+        - 연속 감지 중에는 resend_cooldown 간격으로만 재전송
+        """
+        cfg = self._config.events
+        key = (camera_id, object_id)
+        now = time.time()
+        with self._lock:
+            last_seen = self._head_last_seen.get(key, 0)
+            last_alert = self._head_alerted.get(key, 0)
+            is_state_change = (now - last_seen) > cfg.head_gap_reset_seconds
+            self._head_last_seen[key] = now
+
+            if is_state_change or (now - last_alert) >= cfg.head_resend_cooldown:
+                self._head_alerted[key] = now
+                if is_state_change:
+                    logger.info(
+                        "[%s] 헬멧 미착용 재등장 감지 → 즉시 전송 (object_id=%s)",
+                        camera_id, object_id,
+                    )
+                return True
+
+            self._increment_stat("events_filtered")
+            return False
+
+    def _should_send_fall(self, camera_id: str, object_id: int) -> bool:
+        """낙상이 sustained_seconds 이상 지속될 때만 True 반환.
+
+        - gap_reset_seconds 이상 낙상이 끊기면 지속 타이머 초기화
+        - 전송 후 resend_cooldown 동안 재전송 억제
+        """
+        cfg = self._config.events
+        key = (camera_id, object_id)
+        now = time.time()
+        with self._lock:
+            last_seen = self._fall_last_seen.get(key, 0)
+            # 낙상이 gap_reset_seconds 이상 끊겼으면 타이머 리셋
+            if now - last_seen > cfg.fall_gap_reset_seconds:
+                self._fall_first_seen[key] = now
+            self._fall_last_seen[key] = now
+
+            duration = now - self._fall_first_seen.get(key, now)
+            if duration < cfg.fall_sustained_seconds:
+                # 아직 지속 시간 미달
+                self._increment_stat("events_filtered")
+                return False
+
+            # 지속 시간 충족 — 재전송 쿨다운 확인
+            last_alert = self._fall_alerted.get(key, 0)
+            if now - last_alert < cfg.fall_resend_cooldown:
+                self._increment_stat("events_filtered")
+                return False
+
+            self._fall_alerted[key] = now
+            logger.info(
+                "[%s] 낙상 지속 %.1f초 확인 → 이벤트 전송 (object_id=%s)",
+                camera_id, duration, object_id,
+            )
+            return True
+
     def cleanup(self, max_age_hours: Optional[int] = None) -> int:
         """보존 기간이 지난 이벤트 키를 제거하고 제거 수를 반환한다."""
         if max_age_hours is None:
             max_age_hours = self._config.events.event_retention_hours
         cutoff = time.time() - max_age_hours * 3600
+        # 낙상/헬멧 추적 딕셔너리 정리 (1시간 이상 갱신 없는 항목 제거)
+        old_cutoff = time.time() - 3600
         with self._lock:
             before = len(self._last_events)
-            self._last_events = {k: v for k, v in self._last_events.items() if v > cutoff}
+            self._last_events     = {k: v for k, v in self._last_events.items()     if v > cutoff}
+            self._fall_first_seen = {k: v for k, v in self._fall_first_seen.items() if v > old_cutoff}
+            self._fall_last_seen  = {k: v for k, v in self._fall_last_seen.items()  if v > old_cutoff}
+            self._fall_alerted    = {k: v for k, v in self._fall_alerted.items()    if v > old_cutoff}
+            self._head_last_seen  = {k: v for k, v in self._head_last_seen.items()  if v > old_cutoff}
+            self._head_alerted    = {k: v for k, v in self._head_alerted.items()    if v > old_cutoff}
             return before - len(self._last_events)
 
     def save_locally(self, event_data: Dict) -> None:
@@ -400,6 +483,11 @@ class _CameraRegistry:
             self._pending = remaining
         return ready
 
+    def pending_camera_ids(self) -> List[str]:
+        """재연결 대기 중인 카메라 ID 목록을 반환한다 (읽기 전용)."""
+        with self._pending_lock:
+            return [cid for cid, _, _ in self._pending]
+
 
 # ===========================================================================
 # VideoProcessor  (공개 API)
@@ -489,6 +577,10 @@ class VideoProcessor:
         # ── 구역 점유 상태 (카메라별 object_id 집합) ──────────────────
         # 플리커링 방지: zone_entered/dwelling 시 추가, zone_exited 시 제거
         self._zone_in_objects: Dict[str, set] = {}
+
+        # ── 탐지 스냅샷 (카메라별 최신 탐지 결과 + 타임스탬프) ──────────
+        self._latest_snapshots: Dict[str, dict] = {}
+        self._snapshot_lock = Lock()
 
         # ── 워커 스레드 핸들 ─────────────────────────────────────────
         self.sender_thread:        Optional[Thread] = None
@@ -867,6 +959,12 @@ class VideoProcessor:
                 events = self._run_ai_inference(camera_id, frame)
                 events_for_display = events.copy()
                 events_for_dataset = events.copy()
+                # 최신 탐지 스냅샷 저장 (트래킹·필터링 전 원본 이벤트)
+                with self._snapshot_lock:
+                    self._latest_snapshots[camera_id] = {
+                        "timestamp": time.time(),
+                        "detections": [e.to_dict() for e in events],
+                    }
                 events, removed_ids = self.track_manager.update(camera_id, events)
                 if removed_ids:
                     self.violation_filter.purge(camera_id, removed_ids)
@@ -877,11 +975,21 @@ class VideoProcessor:
 
                 # ── 구역 점유 상태 영속 업데이트 ────────────────────────────
                 zone_set = self._zone_in_objects.setdefault(camera_id, set())
-                for ze in zone_events:
-                    if ze.event_type.value in ("zone_entered", "zone_dwelling"):
-                        zone_set.add(ze.object_id)
-                    elif ze.event_type.value == "zone_exited":
-                        zone_set.discard(ze.object_id)
+
+                # 활성 존이 없으면 zone_set을 즉시 클리어
+                # (존 삭제 시 zone_exited 이벤트가 발생하지 않아 zone_set이 잔류하는 문제 방지)
+                has_active_zones = bool(
+                    self.zone_manager
+                    and self.zone_manager.zones.get(camera_id)
+                )
+                if not has_active_zones:
+                    zone_set.clear()
+                else:
+                    for ze in zone_events:
+                        if ze.event_type.value in ("zone_entered", "zone_dwelling"):
+                            zone_set.add(ze.object_id)
+                        elif ze.event_type.value == "zone_exited":
+                            zone_set.discard(ze.object_id)
                 # 트랙에서 사라진 객체는 zone 집합에서도 제거
                 for rid in removed_ids:
                     zone_set.discard(rid)
@@ -1074,6 +1182,73 @@ class VideoProcessor:
         with self._stats_lock:
             snapshot = self.stats.snapshot()
         return ProcessorStats.with_derived_stats(snapshot)
+
+    def get_camera_status(self) -> Dict[str, dict]:
+        """카메라별 연결 상태·재시도 횟수·마지막 프레임 시간을 반환한다.
+
+        반환 예시::
+
+            {
+                "camera-1": {
+                    "status": "online",
+                    "connected": True,
+                    "reconnect_attempts": 0,
+                    "last_frame_time": 1741600000.5,
+                    "last_frame_age_sec": 0.3,
+                },
+                "camera-2": {
+                    "status": "reconnecting",
+                    "connected": False,
+                    "reconnect_attempts": 2,
+                    "last_frame_time": 1741599800.0,
+                    "last_frame_age_sec": 200.5,
+                },
+            }
+        """
+        now = time.time()
+        result: Dict[str, dict] = {}
+        for cam_id, cam in self._cams.cameras.items():
+            if cam.connected:
+                status = "online"
+            elif cam.reconnect_attempts > 0:
+                status = "reconnecting"
+            else:
+                status = "offline"
+            last_ft = cam.last_frame_time
+            result[cam_id] = {
+                "status": status,
+                "connected": cam.connected,
+                "reconnect_attempts": cam.reconnect_attempts,
+                "last_frame_time": last_ft if last_ft else None,
+                "last_frame_age_sec": round(now - last_ft, 1) if last_ft else None,
+            }
+        for cam_id in self._cams.pending_camera_ids():
+            if cam_id not in result:
+                result[cam_id] = {
+                    "status": "reconnecting",
+                    "connected": False,
+                    "reconnect_attempts": -1,
+                    "last_frame_time": None,
+                    "last_frame_age_sec": None,
+                }
+        return result
+
+    def get_detection_snapshot(self) -> Dict[str, dict]:
+        """카메라별 최신 탐지 스냅샷을 반환한다.
+
+        반환 예시::
+
+            {
+                "camera-1": {
+                    "timestamp": 1741600000.8,
+                    "detections": [
+                        {"type": "person", "bbox": {...}, "confidence": 0.87, ...},
+                    ],
+                },
+            }
+        """
+        with self._snapshot_lock:
+            return dict(self._latest_snapshots)
 
     def print_stats(self) -> None:
         s = self.get_stats()

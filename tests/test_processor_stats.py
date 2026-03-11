@@ -85,11 +85,18 @@ class TestProcessorStats:
 
 
 class TestEventDebouncer:
-    def _make_config(self, debounce_enabled=True, debounce_seconds=5.0, retention_hours=24):
+    def _make_config(self, debounce_enabled=True, debounce_seconds=5.0, retention_hours=24,
+                      fall_sustained_seconds=10.0, fall_resend_cooldown=60.0, fall_gap_reset_seconds=2.0,
+                      head_resend_cooldown=30.0, head_gap_reset_seconds=5.0):
         cfg = MagicMock()
         cfg.events.debounce_enabled = debounce_enabled
         cfg.events.debounce_seconds = debounce_seconds
         cfg.events.event_retention_hours = retention_hours
+        cfg.events.fall_sustained_seconds = fall_sustained_seconds
+        cfg.events.fall_resend_cooldown = fall_resend_cooldown
+        cfg.events.fall_gap_reset_seconds = fall_gap_reset_seconds
+        cfg.events.head_resend_cooldown = head_resend_cooldown
+        cfg.events.head_gap_reset_seconds = head_gap_reset_seconds
         return cfg
 
     def test_should_send_when_debounce_disabled(self):
@@ -118,18 +125,61 @@ class TestEventDebouncer:
         time.sleep(0.05)
         assert d.should_send("cam1", "helmet", 1) is True
 
-    def test_head_event_always_passes(self):
-        """head / fall_detected 타입은 디바운스 면제."""
-        cfg = self._make_config(debounce_seconds=9999.0)
+    def test_head_event_state_change_sends_immediately(self):
+        """head 이벤트: 재등장(상태 변화) 시 즉시 전송."""
+        cfg = self._make_config(head_resend_cooldown=9999.0, head_gap_reset_seconds=0.02)
         d = _EventDebouncer(cfg, MagicMock())
+        # 첫 감지 → gap이 길었으므로 상태 변화 → 즉시 전송
         assert d.should_send("cam1", "head", 1) is True
+        # 연속 감지 → cooldown(9999s) 이내 → 억제
+        assert d.should_send("cam1", "head", 1) is False
+        time.sleep(0.03)  # gap_reset 이상 경과
+        # 재등장 → 상태 변화 → 즉시 전송
         assert d.should_send("cam1", "head", 1) is True
 
-    def test_fall_detected_always_passes(self):
-        cfg = self._make_config(debounce_seconds=9999.0)
+    def test_head_event_resend_cooldown(self):
+        """head 이벤트: cooldown 경과 후 재전송 허용."""
+        cfg = self._make_config(head_resend_cooldown=0.02, head_gap_reset_seconds=9999.0)
         d = _EventDebouncer(cfg, MagicMock())
+        assert d.should_send("cam1", "head", 1) is True   # 첫 전송
+        assert d.should_send("cam1", "head", 1) is False  # cooldown 이내
+        time.sleep(0.03)
+        assert d.should_send("cam1", "head", 1) is True   # cooldown 경과 후 재전송
+
+    def test_fall_detected_requires_sustained_duration(self):
+        """낙상은 sustained_seconds 이상 지속되어야 전송된다 (연속 감지 시뮬레이션)."""
+        cfg = self._make_config(fall_sustained_seconds=0.05, fall_resend_cooldown=9999.0, fall_gap_reset_seconds=0.1)
+        d = _EventDebouncer(cfg, MagicMock())
+        # 첫 감지 (t≈0): first_seen 설정, duration=0 → False
+        assert d.should_send("cam1", "fall_detected", 1) is False
+        time.sleep(0.01)
+        # gap(0.01) < gap_reset(0.1) → 리셋 안 됨, duration≈0.01 < sustained(0.05) → False
+        assert d.should_send("cam1", "fall_detected", 1) is False
+        time.sleep(0.06)
+        # gap(0.06) < gap_reset(0.1) → 리셋 안 됨, duration≈0.07 > sustained(0.05) → True
         assert d.should_send("cam1", "fall_detected", 1) is True
+
+    def test_fall_detected_resend_cooldown(self):
+        """낙상 전송 후 cooldown 동안 재전송 억제"""
+        cfg = self._make_config(fall_sustained_seconds=0.01, fall_resend_cooldown=9999.0, fall_gap_reset_seconds=0.1)
+        d = _EventDebouncer(cfg, MagicMock())
+        # 첫 감지 (t≈0): first_seen 설정
+        d.should_send("cam1", "fall_detected", 1)
+        time.sleep(0.02)
+        # gap(0.02) < gap_reset(0.1) → 리셋 안 됨, duration≈0.02 > sustained(0.01) → True
         assert d.should_send("cam1", "fall_detected", 1) is True
+        # 즉시 재호출 → cooldown(9999s) 이내 → False
+        assert d.should_send("cam1", "fall_detected", 1) is False
+
+    def test_fall_detected_timer_resets_on_gap(self):
+        """낙상이 gap_reset_seconds 이상 끊기면 타이머 리셋"""
+        cfg = self._make_config(fall_sustained_seconds=0.05, fall_resend_cooldown=9999.0, fall_gap_reset_seconds=0.02)
+        d = _EventDebouncer(cfg, MagicMock())
+        d.should_send("cam1", "fall_detected", 1)   # 첫 감지 (t≈0)
+        time.sleep(0.03)  # gap(0.03) > gap_reset(0.02) → 타이머 리셋
+        d.should_send("cam1", "fall_detected", 1)   # 리셋 후 first_seen 재설정
+        time.sleep(0.01)  # duration≈0.01 < sustained(0.05)
+        assert d.should_send("cam1", "fall_detected", 1) is False  # 리셋 때문에 미전송
 
     def test_different_cameras_independent(self):
         cfg = self._make_config(debounce_seconds=9999.0)
