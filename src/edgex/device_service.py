@@ -16,7 +16,10 @@ from datetime import datetime, timezone
 from urllib.parse import urlparse
 
 import paho.mqtt.client as mqtt
-import redis
+try:
+    import redis
+except ImportError:
+    redis = None  # type: ignore[assignment]
 
 logger = logging.getLogger(__name__)
 
@@ -126,10 +129,12 @@ class CCTVDeviceService:
             endpoints.append(f"{base}/{resource}")
         return endpoints
 
-    def _payload_for_endpoint(self, endpoint: str, payload: Dict[str, object]): # 엔드포인트 버전에 따라 페이로드 형식 조정 (v3는 배열, v2/v1은 객체)
+    def _payload_for_endpoint(self, endpoint: str, payload: Dict[str, object]):
+        # 엔드포인트 버전에 따라 페이로드 형식 조정 (v3는 배열, v2/v1은 객체)
         return [payload] if "/v3/" in endpoint else payload
 
-    def _extract_multistatus_item(self, response: requests.Response) -> Optional[Dict[str, object]]: # 207 복합 상태 응답에서 첫 번째 항목 추출 (유연한 형식 지원)
+    def _extract_multistatus_item(self, response: requests.Response) -> Optional[Dict[str, object]]:
+        # 207 복합 상태 응답에서 첫 번째 항목 추출 (유연한 형식 지원)
         try:
             result = response.json()
         except ValueError:
@@ -590,8 +595,8 @@ class CCTVDeviceService:
             await self._probe_service_health(self.metadata_url, "Core Metadata")
             await self._probe_service_health(self.data_url, "Core Data")
                     
-        except Exception as e:
-            logger.error("EdgeX 연결 오류: %s", e)
+        except Exception  as exc:
+            logger.error("EdgeX 연결 오류: %s", exc)
     
     async def add_camera(self, camera_id: str, rtsp_source: str) -> Optional[str]: # 카메라를 EdgeX 장치로 등록 (비동기 메서드)
         """
@@ -703,15 +708,15 @@ class CCTVDeviceService:
                         logger.warning("응답 내용: %s", response.text)
                         logger.warning("엔드포인트: %s", endpoint)
                         continue
-                except Exception as e:
-                    logger.debug("엔드포인트 %s 시도 실패: %s", endpoint, e)
+                except Exception  as exc:
+                    logger.debug("엔드포인트 %s 시도 실패: %s", endpoint, exc)
                     continue
             
             logger.error("카메라 등록 실패: %s - 모든 엔드포인트 시도 완료", camera_id)
             return None
                 
-        except Exception as e:
-            logger.error("카메라 등록 오류 (%s): %s", camera_id, e)
+        except Exception  as exc:
+            logger.error("카메라 등록 오류 (%s): %s", camera_id, exc)
             return None
 
     async def _get_device_by_name(self, device_name: str) -> Optional[Dict[str, object]]:
@@ -814,8 +819,8 @@ class CCTVDeviceService:
 
             return True
 
-        except Exception as e:
-            logger.error("이벤트 전송 오류 (%s): %s", camera_id, e)
+        except Exception  as exc:
+            logger.error("이벤트 전송 오류 (%s): %s", camera_id, exc)
             return False
 
     # Redis 클라이언트를 초기화하고 연결을 확인합니다 (지수 백오프 재시도).
@@ -927,8 +932,8 @@ class CCTVDeviceService:
 
             logger.error("Redis 발행 실패: %s", channel)
             return False
-        except Exception as e:
-            logger.error("Redis 전송 오류: %s", e, exc_info=True)
+        except Exception  as exc:
+            logger.error("Redis 전송 오류: %s", exc, exc_info=True)
             return False
 
     # MQTT 클라이언트를 초기화하고 연결을 확인합니다 (지수 백오프 재시도).
@@ -1018,8 +1023,8 @@ class CCTVDeviceService:
             else:
                 logger.error("MQTT 발행 실패: %s (rc=%s)", topic, result.rc)
                 return False
-        except Exception as e:
-            logger.error("MQTT 전송 오류: %s", e, exc_info=True)
+        except Exception  as exc:
+            logger.error("MQTT 전송 오류: %s", exc, exc_info=True)
             return False
     
     async def register_device_service(self) -> bool:
@@ -1058,11 +1063,12 @@ class CCTVDeviceService:
             )
             return result in {"success", "exists"}
             
-        except Exception as e:
-            logger.error("Service 등록 오류: %s", e)
+        except Exception  as exc:
+            logger.error("Service 등록 오류: %s", exc)
             return False
 
-    async def _get_device_service_by_name(self, service_name: str) -> Optional[Dict[str, object]]: # 이름으로 Device Service 조회
+    async def _get_device_service_by_name(self, service_name: str) -> Optional[Dict[str, object]]:
+        # 이름으로 Device Service 조회
         return await self._get_entity_by_name(f"deviceservice/name/{service_name}", "service")
 
     async def _delete_device_service_by_name(self, service_name: str) -> bool: # 이름으로 Device Service 삭제
@@ -1120,8 +1126,8 @@ class CCTVDeviceService:
             )
             return result in {"success", "exists"}
                 
-        except Exception as e:
-            logger.error("Profile 생성 오류: %s", e)
+        except Exception  as exc:
+            logger.error("Profile 생성 오류: %s", exc)
             return False
 
     def publish_device_event(
@@ -1195,8 +1201,8 @@ class CCTVDeviceService:
             else:
                 logger.error("범용 디바이스 이벤트 발행 실패: %s (rc=%s)", topic, result.rc)
                 return False
-        except Exception as e:
-            logger.error("범용 디바이스 이벤트 발행 오류: %s", e, exc_info=True)
+        except Exception as exc:
+            logger.error("범용 디바이스 이벤트 발행 오류: %s", exc, exc_info=True)
             return False
 
     def close(self) -> None:

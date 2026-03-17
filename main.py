@@ -1,25 +1,31 @@
 """main.py - 다중 카메라 CCTV 시스템 진입점"""
 
 import argparse
+import atexit
 import json
 import logging
 import os
+import signal
+import sys
 import threading
 import time
 import traceback
 from pathlib import Path
+
+# ── OpenCV 환경 설정 (모든 import보다 먼저) ───────────────────────
+os.environ.setdefault('OPENCV_FFMPEG_CAPTURE_OPTIONS', 'rtsp_transport;tcp')
+os.environ['OPENCV_LOG_LEVEL'] = 'ERROR'
+# Windows에서 MSMF 백엔드 비활성화 (cap_msmf.cpp 에러 및 프리즈 방지)
+# OpenCV import 전에 설정해야 효과 있음
+if sys.platform == 'win32':
+    os.environ.setdefault('OPENCV_VIDEOIO_PRIORITY_MSMF', '0')
 
 from src.core import VideoProcessor
 from src.config import AppConfig
 from src.services.zone_api import start_zone_api_server
 from src.utils.zone_drawer import ZoneDrawer
 
-# ── OpenCV 환경 설정 ───────────────────────────────────────────────
-os.environ.setdefault('OPENCV_FFMPEG_CAPTURE_OPTIONS', 'rtsp_transport;tcp')
-os.environ['OPENCV_LOG_LEVEL'] = 'ERROR'
-
 # ── 로거 설정 ──────────────────────────────────────────────────────
-import sys
 import io
 
 # Windows 콘솔 코드페이지를 UTF-8(65001)로 변경 + Python 스트림 인코딩 통일
@@ -121,14 +127,28 @@ def _connect_cameras_parallel(active_cams: list[tuple], processor: VideoProcesso
         with lock:
             results[cam_id] = ok
 
+    CONNECT_TIMEOUT = 30  # 카메라 1대당 최대 연결 대기 시간 (초)
+
     threads = [
         threading.Thread(target=_try_add, args=(cid, src, det, mp, zones), daemon=True)
         for cid, src, det, mp, zones in active_cams
     ]
     for t in threads:
         t.start()
-    for t in threads:
-        t.join()
+    try:
+        for t in threads:
+            t.join(timeout=CONNECT_TIMEOUT)
+            if t.is_alive():
+                cam_id = active_cams[threads.index(t)][0]
+                logger.error(
+                    "[%s] 카메라 연결이 %d초 초과 → 건너뜀 (RTSP 응답 없음)",
+                    cam_id, CONNECT_TIMEOUT,
+                )
+                with lock:
+                    results.setdefault(cam_id, False)
+    except KeyboardInterrupt:
+        logger.info("카메라 연결 중단 (Ctrl+C)")
+        raise
 
     return results
 
@@ -141,7 +161,11 @@ def _initial_retry(active_cams: list[tuple], processor: VideoProcessor, max_atte
     """
     for attempt in range(1, max_attempts + 1):
         logger.info("초기 연결 재시도 %d/%d (30초 대기)...", attempt, max_attempts)
-        time.sleep(30)
+        try:
+            time.sleep(30)
+        except KeyboardInterrupt:
+            logger.info("초기 재시도 중단 (Ctrl+C)")
+            raise
         for cam_id, source, detections, model_paths, zones_data in active_cams:
             if cam_id not in processor.cameras and processor.add_camera(
                 cam_id, source,
@@ -158,6 +182,7 @@ def start_processor(
     cameras_json_path: str = 'cameras.json',
     api_port: int = 0,
     zone_presets_path: str = 'zone_presets.json',
+    _proc_ref: list | None = None,
 ) -> None:
     """카메라와 함께 비디오 프로세서를 시작
 
@@ -167,12 +192,15 @@ def start_processor(
         cameras_json_path: cameras.json 경로 (구역 API 저장용)
         api_port: Zone API HTTP 포트 (0이면 비활성화)
         zone_presets_path: 구역 프리셋 저장 파일 경로 (기본: zone_presets.json)
+        _proc_ref: atexit 강제 해제용 processor 참조 컨테이너 (내부용)
     """
     if not camera_list:
         logger.error("카메라가 제공되지 않았습니다. 프로세서를 시작할 수 없습니다.")
         return
 
     processor = VideoProcessor(cfg)
+    if _proc_ref is not None:
+        _proc_ref.append(processor)  # atexit 핸들러에서 참조할 수 있도록 저장
 
     active_cams = _collect_active_cameras(camera_list, processor)
     if not active_cams:
@@ -212,9 +240,15 @@ def start_processor(
     try:
         processor.start()
         logger.info("프로세서가 시작되었습니다. 중지하려면 Ctrl+C를 누르세요.")
-        while processor.running:
-            time.sleep(10)
-            processor.print_stats()
+        _last_stats = time.time()
+        while processor.running and not processor.stop_event.is_set():
+            time.sleep(0.5)
+            if time.time() - _last_stats >= 10:
+                processor.print_stats()
+                _last_stats = time.time()
+        # 디스플레이 단에서 'q' 키 또는 창 닫기로 stop_event가 세트된 경우
+        if processor.stop_event.is_set() and processor.running:
+            logger.info("디스플레이 종료 감지 → 프로세서 중지")
     except KeyboardInterrupt:
         logger.info("사용자가 중단함 (Ctrl+C)")
     except Exception as e:
@@ -390,9 +424,38 @@ def main() -> None:
         cams = [{'id': source_name, 'source': source}]
         logger.info("단일 소스 모드: %s (%s)", source_name, source)
 
+    # 프로세서 참조를 보관해 atexit/signal에서 강제 해제
+    _proc_ref: list = []
+
+    def _release_all():
+        """프로세스가 어떤 경로로 종료되든 카메라를 반드시 해제한다."""
+        import cv2
+        if _proc_ref:
+            try:
+                for cam in _proc_ref[0]._cams.cameras.values():
+                    try:
+                        cam.release()
+                    except Exception:
+                        pass
+            except Exception:
+                pass
+        cv2.destroyAllWindows()
+
+    atexit.register(_release_all)
+
+    def _sig_handler(signum, frame):
+        logger.info("시그널 %s 수신 → 종료", signum)
+        _release_all()
+        sys.exit(0)
+
+    signal.signal(signal.SIGTERM, _sig_handler)
+    if sys.platform != 'win32':
+        signal.signal(signal.SIGHUP, _sig_handler)
+
     cameras_json_path = args.cameras or 'cameras.json'
     start_processor(cams, cfg, cameras_json_path=cameras_json_path,
-                    api_port=args.api_port, zone_presets_path=args.zone_presets)
+                    api_port=args.api_port, zone_presets_path=args.zone_presets,
+                    _proc_ref=_proc_ref)
 
 
 if __name__ == '__main__':

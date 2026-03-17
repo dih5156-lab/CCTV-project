@@ -42,8 +42,11 @@ class DetectionEvent:
 
     def to_dict(self) -> Dict:
         """이벤트를 딕셔너리 형식으로 변환"""
+        # 낙상은 always critical — ActionBridge 알람 우선처리에 사용됨
+        severity = "critical" if self.event_type == EventType.FALL_DETECTED else "normal"
         return {
             "type": self.event_type.value,
+            "severity": severity,
             "bbox": {"x": self.x, "y": self.y, "width": self.width, "height": self.height},
             "confidence": self.confidence,
             "timestamp": self.timestamp,

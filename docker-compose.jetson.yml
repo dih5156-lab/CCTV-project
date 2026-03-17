@@ -1,0 +1,756 @@
+# ==============================================================================
+# docker-compose.jetson.yml — NVIDIA Jetson Orin AGX 통합 배포
+#
+# [아키텍처]
+#   Jetson Orin AGX 단일 보드에서 EdgeX Foundry + CCTV AI 엔진 동시 운영
+#   GPU(CUDA/TensorRT) → AI 추론
+#   EdgeX              → 이벤트 파이프라인 / 룰 엔진 / 알림 API
+#
+# [사전 요구사항]
+#   - JetPack 6.x (L4T R36.x) 설치 완료
+#   - Docker + NVIDIA Container Toolkit 설치
+#     $ sudo apt-get install -y nvidia-container-toolkit
+#     $ sudo systemctl restart docker
+#   - NVIDIA Docker runtime 기본값 설정:
+#     /etc/docker/daemon.json 에 "default-runtime": "nvidia" 추가,
+#     또는 각 서비스의 runtime: nvidia 를 그대로 사용
+#
+# [JetPack 5.x 사용 시]
+#   cctv-ai-engine → build → args → L4T_TAG 를
+#   r35.4.1-pth2.1-py3 으로 변경
+#
+# [실행 방법]
+#   # 첫 실행 (이미지 빌드 포함)
+#   docker compose -f docker-compose.jetson.yml up -d --build
+#
+#   # 이후 실행
+#   docker compose -f docker-compose.jetson.yml up -d
+#
+#   # AI 엔진 로그 확인
+#   docker compose -f docker-compose.jetson.yml logs -f cctv-ai-engine
+#
+# [환경 변수 오버라이드]
+#   .env.jetson 파일을 복사하여 (cp .env.jetson .env) 수정하거나
+#   docker compose --env-file .env.jetson -f docker-compose.jetson.yml up -d
+# ==============================================================================
+
+name: edgex-jetson
+
+# ── 공통 환경 변수 앵커 ─────────────────────────────────────────────────────
+x-edgex-common: &edgex-common
+  EDGEX_SECURITY_SECRET_STORE: "false"
+
+x-localtime: &localtime
+  type: bind
+  source: /etc/localtime
+  target: /etc/localtime
+  read_only: true
+
+x-edgex-security: &edgex-security
+  security_opt:
+    - no-new-privileges:true
+
+# ── 서비스 정의 ──────────────────────────────────────────────────────────────
+services:
+
+  # ============================================================================
+  # 인프라: MQTT 브로커
+  # ============================================================================
+  edgex-mqtt-broker:
+    container_name: edgex-mqtt-broker
+    hostname: edgex-mqtt-broker
+    image: eclipse-mosquitto:2.0
+    networks:
+      edgex-network: null
+    ports:
+      # 외부 카메라 / 대시보드에서 접근 가능하도록 0.0.0.0 바인딩
+      - target: 1883
+        published: "1883"
+        protocol: tcp
+    restart: always
+    volumes:
+      - type: bind
+        source: ./mosquitto/mosquitto.conf
+        target: /mosquitto/config/mosquitto.conf
+        read_only: true
+
+  # ============================================================================
+  # 인프라: Consul (서비스 레지스트리)
+  # ============================================================================
+  consul:
+    command:
+      - agent
+      - -ui
+      - -bootstrap
+      - -server
+      - -client
+      - 0.0.0.0
+    container_name: edgex-core-consul
+    hostname: edgex-core-consul
+    image: hashicorp/consul:1.16.2
+    networks:
+      edgex-network: null
+    ports:
+      - target: 8500
+        host_ip: 127.0.0.1
+        published: "8500"
+        protocol: tcp
+    read_only: true
+    restart: always
+    <<: *edgex-security
+    user: root:root
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8500/v1/status/leader"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    volumes:
+      - type: volume
+        source: consul-config
+        target: /consul/config
+      - type: volume
+        source: consul-data
+        target: /consul/data
+
+  # ============================================================================
+  # 인프라: Redis (MetadataStore / MessageBus)
+  # ============================================================================
+  database:
+    container_name: edgex-redis
+    hostname: edgex-redis
+    image: redis:7.0.14-alpine
+    networks:
+      edgex-network: null
+    ports:
+      - target: 6379
+        host_ip: 127.0.0.1
+        published: "6379"
+        protocol: tcp
+    read_only: true
+    restart: always
+    <<: *edgex-security
+    user: root:root
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    volumes:
+      - type: volume
+        source: db-data
+        target: /data
+
+  # ============================================================================
+  # EdgeX Core 서비스
+  # ============================================================================
+  core-common-config-bootstrapper:
+    container_name: edgex-core-common-config-bootstrapper
+    depends_on:
+      consul:
+        condition: service_healthy
+    environment:
+      <<: *edgex-common
+      ALL_SERVICES_DATABASE_HOST: edgex-redis
+      ALL_SERVICES_MESSAGEBUS_HOST: edgex-redis
+      ALL_SERVICES_REGISTRY_HOST: edgex-core-consul
+      APP_SERVICES_CLIENTS_CORE_METADATA_HOST: edgex-core-metadata
+      DEVICE_SERVICES_CLIENTS_CORE_METADATA_HOST: edgex-core-metadata
+    hostname: edgex-core-common-config-bootstrapper
+    image: edgexfoundry/core-common-config-bootstrapper:3.1.0
+    networks:
+      edgex-network: null
+    read_only: true
+    <<: *edgex-security
+    user: 2002:2001
+    volumes:
+      - <<: *localtime
+
+  core-metadata:
+    container_name: edgex-core-metadata
+    depends_on:
+      consul:
+        condition: service_healthy
+      database:
+        condition: service_healthy
+    environment:
+      <<: *edgex-common
+      SERVICE_HOST: edgex-core-metadata
+    hostname: edgex-core-metadata
+    image: edgexfoundry/core-metadata:3.1.0
+    networks:
+      edgex-network: null
+    ports:
+      - target: 59881
+        host_ip: 127.0.0.1
+        published: "59881"
+        protocol: tcp
+    read_only: true
+    restart: always
+    <<: *edgex-security
+    user: 2002:2001
+    volumes:
+      - <<: *localtime
+
+  core-data:
+    container_name: edgex-core-data
+    depends_on:
+      consul:
+        condition: service_healthy
+      core-metadata:
+        condition: service_started
+      database:
+        condition: service_healthy
+    environment:
+      <<: *edgex-common
+      SERVICE_HOST: edgex-core-data
+    hostname: edgex-core-data
+    image: edgexfoundry/core-data:3.1.0
+    networks:
+      edgex-network: null
+    ports:
+      - target: 59880
+        host_ip: 127.0.0.1
+        published: "59880"
+        protocol: tcp
+    read_only: true
+    restart: always
+    <<: *edgex-security
+    user: 2002:2001
+    volumes:
+      - <<: *localtime
+
+  core-command:
+    container_name: edgex-core-command
+    depends_on:
+      consul:
+        condition: service_healthy
+      core-metadata:
+        condition: service_started
+      database:
+        condition: service_healthy
+    environment:
+      <<: *edgex-common
+      EXTERNALMQTT_URL: tcp://edgex-mqtt-broker:1883
+      SERVICE_HOST: edgex-core-command
+    hostname: edgex-core-command
+    image: edgexfoundry/core-command:3.1.0
+    networks:
+      edgex-network: null
+    ports:
+      - target: 59882
+        host_ip: 127.0.0.1
+        published: "59882"
+        protocol: tcp
+    read_only: true
+    restart: always
+    <<: *edgex-security
+    user: 2002:2001
+    volumes:
+      - <<: *localtime
+
+  # ============================================================================
+  # EdgeX Support 서비스
+  # ============================================================================
+  support-notifications:
+    container_name: edgex-support-notifications
+    depends_on:
+      consul:
+        condition: service_healthy
+      database:
+        condition: service_healthy
+    environment:
+      <<: *edgex-common
+      SERVICE_HOST: edgex-support-notifications
+    hostname: edgex-support-notifications
+    image: edgexfoundry/support-notifications:3.1.0
+    networks:
+      edgex-network: null
+    ports:
+      - target: 59860
+        host_ip: 127.0.0.1
+        published: "59860"
+        protocol: tcp
+    read_only: true
+    restart: always
+    <<: *edgex-security
+    user: 2002:2001
+    volumes:
+      - <<: *localtime
+
+  support-scheduler:
+    container_name: edgex-support-scheduler
+    depends_on:
+      consul:
+        condition: service_healthy
+      database:
+        condition: service_healthy
+    environment:
+      <<: *edgex-common
+      INTERVALACTIONS_SCRUBAGED_HOST: edgex-core-data
+      INTERVALACTIONS_SCRUBPUSHED_HOST: edgex-core-data
+      SERVICE_HOST: edgex-support-scheduler
+    hostname: edgex-support-scheduler
+    image: edgexfoundry/support-scheduler:3.1.0
+    networks:
+      edgex-network: null
+    ports:
+      - target: 59861
+        host_ip: 127.0.0.1
+        published: "59861"
+        protocol: tcp
+    read_only: true
+    restart: always
+    <<: *edgex-security
+    user: 2002:2001
+    volumes:
+      - <<: *localtime
+
+  # ============================================================================
+  # EdgeX Device 서비스
+  # ============================================================================
+  device-rest:
+    container_name: edgex-device-rest
+    depends_on:
+      consul:
+        condition: service_healthy
+      core-data:
+        condition: service_started
+      core-metadata:
+        condition: service_started
+    environment:
+      <<: *edgex-common
+      SERVICE_HOST: edgex-device-rest
+    hostname: edgex-device-rest
+    image: edgexfoundry/device-rest:3.1.0
+    networks:
+      edgex-network: null
+    ports:
+      - target: 59986
+        host_ip: 127.0.0.1
+        published: "59986"
+        protocol: tcp
+    read_only: true
+    restart: always
+    <<: *edgex-security
+    user: 2002:2001
+    volumes:
+      - <<: *localtime
+
+  device-virtual:
+    container_name: edgex-device-virtual
+    depends_on:
+      consul:
+        condition: service_healthy
+      core-data:
+        condition: service_started
+      core-metadata:
+        condition: service_started
+    environment:
+      <<: *edgex-common
+      SERVICE_HOST: edgex-device-virtual
+    hostname: edgex-device-virtual
+    image: edgexfoundry/device-virtual:3.1.0
+    networks:
+      edgex-network: null
+    ports:
+      - target: 59900
+        host_ip: 127.0.0.1
+        published: "59900"
+        protocol: tcp
+    read_only: true
+    restart: always
+    <<: *edgex-security
+    user: 2002:2001
+    volumes:
+      - <<: *localtime
+
+  # ============================================================================
+  # eKuiper 룰 엔진
+  # ============================================================================
+  rules-engine:
+    container_name: edgex-kuiper
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      CONNECTION__EDGEX__REDISMSGBUS__PORT: "6379"
+      CONNECTION__EDGEX__REDISMSGBUS__PROTOCOL: redis
+      CONNECTION__EDGEX__REDISMSGBUS__SERVER: edgex-redis
+      CONNECTION__EDGEX__REDISMSGBUS__TYPE: redis
+      EDGEX__DEFAULT__PORT: "6379"
+      EDGEX__DEFAULT__PROTOCOL: redis
+      EDGEX__DEFAULT__SERVER: edgex-redis
+      EDGEX__DEFAULT__TOPIC: edgex/rules-events
+      EDGEX__DEFAULT__TYPE: redis
+      KUIPER__BASIC__CONSOLELOG: "true"
+      KUIPER__BASIC__RESTPORT: "59720"
+    hostname: edgex-kuiper
+    image: lfedge/ekuiper:1.11.4-alpine
+    networks:
+      edgex-network: null
+    ports:
+      - target: 59720
+        host_ip: 127.0.0.1
+        published: "59720"
+        protocol: tcp
+    read_only: true
+    restart: always
+    <<: *edgex-security
+    user: kuiper:kuiper
+    volumes:
+      - <<: *localtime
+      - type: volume
+        source: kuiper-data
+        target: /kuiper/data
+      - type: volume
+        source: kuiper-etc
+        target: /kuiper/etc
+      - type: volume
+        source: kuiper-log
+        target: /kuiper/log
+      - type: volume
+        source: kuiper-plugins
+        target: /kuiper/plugins
+
+  # ============================================================================
+  # App Service Configurable (HTTP Export 파이프라인)
+  # ============================================================================
+  app-rules-engine:
+    container_name: edgex-app-rules-engine
+    depends_on:
+      consul:
+        condition: service_healthy
+      core-data:
+        condition: service_started
+    env_file:
+      - ./edgex/asc/cctv_asc.env
+    environment:
+      <<: *edgex-common
+      EDGEX_PROFILE: cctv-external-http
+      SERVICE_HOST: edgex-app-rules-engine
+      MESSAGEBUS_DISABLED: "false"
+      TELEMETRY_METRICS_ENABLE: "false"
+      WRITABLE_PIPELINE_EXECUTIONORDER: HTTPExport
+      WRITABLE_PIPELINE_FUNCTIONS_HTTPEXPORT_PARAMETERS_METHOD: post
+      WRITABLE_PIPELINE_FUNCTIONS_HTTPEXPORT_PARAMETERS_MIMETYPE: application/json
+      WRITABLE_PIPELINE_FUNCTIONS_HTTPEXPORT_PARAMETERS_URL: http://cctv-alert-api:8000/api/alerts
+      WRITABLE_PIPELINE_FUNCTIONS_HTTPEXPORT_PARAMETERS_PERSISTONERROR: "false"
+      WRITABLE_PIPELINE_FUNCTIONS_HTTPEXPORT_PARAMETERS_CONTINUEONSENDERROR: "false"
+    hostname: edgex-app-rules-engine
+    image: edgexfoundry/app-service-configurable:3.1.0
+    networks:
+      edgex-network: null
+    ports:
+      - target: 59707
+        host_ip: 127.0.0.1
+        published: "59701"
+        protocol: tcp
+    read_only: true
+    restart: always
+    <<: *edgex-security
+    user: 2002:2001
+    volumes:
+      - <<: *localtime
+      - type: bind
+        source: ./edgex/asc/cctv-external-http
+        target: /res/cctv-external-http
+        read_only: true
+
+  # ============================================================================
+  # EdgeX UI (선택사항: 브라우저를 통한 EdgeX 관리)
+  # ============================================================================
+  ui:
+    container_name: edgex-ui-go
+    environment:
+      <<: *edgex-common
+      SERVICE_HOST: edgex-ui-go
+    hostname: edgex-ui-go
+    image: edgexfoundry/edgex-ui:3.1.0
+    networks:
+      edgex-network: null
+    ports:
+      # 외부에서 http://<Jetson-IP>:4000 으로 EdgeX UI 접근
+      - target: 4000
+        published: "4000"
+        protocol: tcp
+    read_only: true
+    restart: always
+    <<: *edgex-security
+    user: 2002:2001
+    volumes:
+      - <<: *localtime
+
+  # ============================================================================
+  # CCTV 커스텀 서비스들
+  # ============================================================================
+
+  # ── AI 추론 엔진 (GPU 가속) ──────────────────────────────────────────────────
+  cctv-ai-engine:
+    container_name: cctv-ai-engine
+    build:
+      context: .
+      dockerfile: Dockerfile.jetson
+      args:
+        # .env.jetson 의 L4T_TAG 로 JetPack 버전 지정
+        # JetPack 6.x: r36.2.0-pth2.1-py3 / JetPack 5.x: r35.4.1-pth2.1-py3
+        L4T_TAG: ${L4T_TAG:-r36.2.0-pth2.1-py3}
+    # NVIDIA Container Toolkit runtime (GPU 접근 활성화)
+    runtime: nvidia
+    environment:
+      PYTHONIOENCODING: utf-8
+      PYTHONUTF8: "1"
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,video,utility
+      # GStreamer 하드웨어 디코딩 (.env.jetson USE_GSTREAMER=1)
+      USE_GSTREAMER: ${USE_GSTREAMER:-1}
+    command:
+      - python
+      - main.py
+      - --cameras
+      - /app/cameras.json
+      - --mqtt-broker
+      - edgex-mqtt-broker          # 올인원: 내부 컨테이너명 고정
+      - --mqtt-port
+      - "1883"
+      - --mqtt-topic-prefix
+      - cctv/ai/events
+      - --device
+      - ${AI_DEVICE:-cuda}
+      - --confidence
+      - ${CONFIDENCE:-0.5}
+      - --pose-confidence
+      - ${POSE_CONFIDENCE:-0.3}
+      - --frame-skip
+      - ${FRAME_SKIP:-2}
+      - --fps
+      - ${FPS:-30}
+      - --debounce
+      - ${DEBOUNCE:-3.0}
+      - --api-port
+      - ${ZONE_API_PORT:-0}
+      # --display 는 헤드리스 환경이므로 사용 금지
+    depends_on:
+      edgex-mqtt-broker:
+        condition: service_started
+    networks:
+      edgex-network: null
+    restart: always
+    volumes:
+      - type: bind
+        source: ./cameras.json
+        target: /app/cameras.json
+        read_only: true
+      - type: bind
+        source: ./zones_config.json
+        target: /app/zones_config.json
+        read_only: true
+      - type: bind
+        source: ./models
+        target: /app/models
+      # TensorRT 엔진 캐시 보존 (재시작 시 재변환 방지)
+      - type: volume
+        source: trt-cache
+        target: /app/models/trt_cache
+
+  # ── EdgeX 어댑터 (AI 이벤트 → EdgeX 파이프라인 브릿지) ──────────────────────
+  cctv-edgex-adapter:
+    container_name: cctv-edgex-adapter
+    build:
+      context: .
+      dockerfile: Dockerfile.action
+    environment:
+      PYTHONIOENCODING: utf-8
+      PYTHONUTF8: "1"
+      NVIDIA_VISIBLE_DEVICES: ""
+    command:
+      - python
+      - runners/run_edgex_adapter.py
+      - --ai-mqtt-broker
+      - edgex-mqtt-broker
+      - --ai-mqtt-port
+      - "1883"
+      - --ai-topic-prefix
+      - cctv/ai/events
+      - --edgex-metadata-url
+      - http://edgex-core-metadata:59881
+      - --edgex-data-url
+      - http://edgex-core-data:59880
+      - --edgex-mqtt-broker
+      - edgex-mqtt-broker
+      - --edgex-mqtt-port
+      - "1883"
+      - --service-name
+      - device-rest
+    depends_on:
+      edgex-mqtt-broker:
+        condition: service_started
+      core-metadata:
+        condition: service_started
+      core-data:
+        condition: service_started
+      device-rest:
+        condition: service_started
+    networks:
+      edgex-network: null
+    restart: always
+
+  # ── Kuiper 룰 로더 ────────────────────────────────────────────────────────
+  cctv-kuiper-rule-loader:
+    container_name: cctv-kuiper-rule-loader
+    build:
+      context: .
+      dockerfile: Dockerfile.action
+    environment:
+      PYTHONIOENCODING: utf-8
+      PYTHONUTF8: "1"
+      NVIDIA_VISIBLE_DEVICES: ""
+    command:
+      - python
+      - runners/run_kuiper_rules.py
+      - --kuiper-api
+      - http://edgex-kuiper:59720
+      - --mqtt-broker
+      - edgex-mqtt-broker
+      - --mqtt-port
+      - "1883"
+      - --intrusion-confidence
+      - "0.7"
+      - --critical-confidence
+      - "0.9"
+      - --persist-hit-count
+      - "5"
+      - --retry-count
+      - "20"
+      - --retry-delay
+      - "2"
+    depends_on:
+      rules-engine:
+        condition: service_started
+      edgex-mqtt-broker:
+        condition: service_started
+    networks:
+      edgex-network: null
+    restart: on-failure
+
+  # ── Alert API ─────────────────────────────────────────────────────────────
+  cctv-alert-api:
+    container_name: cctv-alert-api
+    build:
+      context: .
+      dockerfile: Dockerfile.action
+    depends_on:
+      edgex-mqtt-broker:
+        condition: service_started
+    environment:
+      PYTHONIOENCODING: utf-8
+      PYTHONUTF8: "1"
+      NVIDIA_VISIBLE_DEVICES: ""
+    command:
+      - python
+      - runners/run_alert_api.py
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8000"
+      - --log-path
+      - /app/alert_api_events.jsonl
+    networks:
+      edgex-network: null
+    ports:
+      # 외부 대시보드에서 http://<Jetson-IP>:8000 으로 접근
+      - target: 8000
+        published: "8000"
+        protocol: tcp
+    restart: always
+
+  # ── Action Layer (스피커 / 전광판 / 사이렌 연동) ────────────────────────────
+  cctv-action-layer:
+    container_name: cctv-action-layer
+    build:
+      context: .
+      dockerfile: Dockerfile.action
+    command:
+      - python
+      - /app/runners/run_action_bridge.py
+    environment:
+      MQTT_BROKER: edgex-mqtt-broker
+      MQTT_PORT: "1883"
+      DB_PATH: /app/action_events.db
+      EXTERNAL_API_URL: http://cctv-alert-api:8000/api/alerts
+      ALARM_COOLDOWN: ${ACTION_ALARM_COOLDOWN:-10}
+      SPEAKER_HOST: ${SPEAKER_HOST:-}
+      SPEAKER_PORT: ${SPEAKER_PORT:-80}
+      SPEAKER_USER: ${SPEAKER_USER:-}
+      SPEAKER_PASSWORD: ${SPEAKER_PASSWORD:-}
+      SPEAKER_VOLUME: ${SPEAKER_VOLUME:-10}
+      SPEAKER_TTS_LANGUAGE: kor
+      SPEAKER_TTS_GENDER: female
+      SPEAKER_TTS_PITCH: "100"
+      SPEAKER_TTS_SPEED: "100"
+      SPEAKER_TTS_VOLUME: "1"
+      SIGNBOARD_HOST: ${SIGNBOARD_HOST:-}
+      SIGNBOARD_PORT: ${SIGNBOARD_PORT:-5000}
+      SIGNBOARD_BRIGHTNESS: "10"
+      SIGNBOARD_TEXT_COLOR: "7"
+      SIGNBOARD_BACK_COLOR: "0"
+      SIGNBOARD_TEXT_SIZE: "2"
+      SIGNBOARD_TEXT_SPEED: "10"
+      SIREN_HOST: ${SIREN_HOST:-}
+      SIREN_PORT: ${SIREN_PORT:-80}
+      SIREN_USER: ${SIREN_USER:-}
+      SIREN_PASSWORD: ${SIREN_PASSWORD:-}
+      SIREN_AUTO_STOP: "10"
+      REST_ENABLED: "true"
+      REST_HOST: "0.0.0.0"
+      REST_PORT: "8080"
+      PYTHONIOENCODING: utf-8
+      PYTHONUTF8: "1"
+      NVIDIA_VISIBLE_DEVICES: ""
+    ports:
+      - target: 8080
+        published: "8080"
+        protocol: tcp
+    depends_on:
+      edgex-mqtt-broker:
+        condition: service_started
+      cctv-alert-api:
+        condition: service_started
+    networks:
+      edgex-network: null
+    restart: always
+    volumes:
+      - type: bind
+        source: ./src
+        target: /app/src
+        read_only: true
+      - type: bind
+        source: ./runners
+        target: /app/runners
+        read_only: true
+
+# ── 네트워크 ──────────────────────────────────────────────────────────────────
+networks:
+  edgex-network:
+    name: edgex-jetson_edgex-network
+    driver: bridge
+
+# ── 영구 볼륨 ─────────────────────────────────────────────────────────────────
+volumes:
+  consul-config:
+    name: edgex-jetson_consul-config
+  consul-data:
+    name: edgex-jetson_consul-data
+  db-data:
+    name: edgex-jetson_db-data
+  kuiper-data:
+    name: edgex-jetson_kuiper-data
+  kuiper-etc:
+    name: edgex-jetson_kuiper-etc
+  kuiper-log:
+    name: edgex-jetson_kuiper-log
+  kuiper-plugins:
+    name: edgex-jetson_kuiper-plugins
+  trt-cache:
+    name: edgex-jetson_trt-cache

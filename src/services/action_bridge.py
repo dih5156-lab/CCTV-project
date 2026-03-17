@@ -473,8 +473,6 @@ class ActionBridge:
     def list_sites(self) -> List[Dict]:
         return self._sites.list_all()
 
-    def get_site_by_camera(self, camera_id: str) -> Optional[SiteConfig]:
-        return self._sites.find_by_camera(camera_id)
 
     def set_mode(self, mode: ControlMode, site_id: Optional[str] = None) -> None:
         self._sites.set_mode(mode, site_id=site_id)

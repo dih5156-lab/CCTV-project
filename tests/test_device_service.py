@@ -4,10 +4,17 @@ test_device_service.py — CCTVDeviceService 순수 유틸리티 메서드 단�
 외부 연결(Redis / MQTT / HTTP)이 필요한 메서드는
 mock 을 통해 격리하거나 빠른 타임아웃으로 실패 경로를 테스트합니다.
 """
+import importlib
 import time
 import pytest
 from unittest.mock import MagicMock, patch
 from src.edgex.device_service import CCTVDeviceService
+
+# redis 설치 여부 확인 — 없으면 관련 테스트를 skip
+_redis_available = importlib.util.find_spec("redis") is not None
+redis_required = pytest.mark.skipif(
+    not _redis_available, reason="redis 패키지가 설치되지 않아 건너뜀"
+)
 
 
 # ---------------------------------------------------------------------------
@@ -218,6 +225,7 @@ class TestEnsureConnectionBackoff:
         CCTVDeviceService._mqtt_last_fail_time = 0
         svc._mqtt_client = None
 
+    @redis_required
     def test_redis_fails_and_increments_fail_count(self, svc):
         """Redis 연결 실패 → fail_count 증가."""
         self._reset_redis(svc)
@@ -254,6 +262,7 @@ class TestEnsureConnectionBackoff:
         result = svc._ensure_mqtt_client()
         assert result is False
 
+    @redis_required
     def test_redis_success_resets_fail_count(self, svc):
         """Redis 연결 성공 시 fail_count 가 0으로 초기화."""
         CCTVDeviceService._redis_fail_count = 5

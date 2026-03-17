@@ -107,7 +107,8 @@ class HttpEventForwarder:
                 logger.debug("[%s] 전송 성공: %s", target.name, resp.status_code)
                 return
             logger.warning(
-                f"[{target.name}] 전송 실패 ({resp.status_code}): {resp.text[:200]}"
+                "[%s] 전송 실패 (%s): %s",
+                target.name, resp.status_code, resp.text[:200],
             )
         except Exception as exc:
             logger.error("[%s] 전송 오류: %s", target.name, exc)
@@ -127,8 +128,8 @@ class HttpEventForwarder:
                 target, topic, payload, attempt = item
                 delay = _RETRY_BACKOFF_BASE ** (attempt - 1)
                 logger.debug(
-                    f"[{target.name}] 재시도 대기 {delay:.1f}s "
-                    f"(시도 {attempt}/{_RETRY_MAX_ATTEMPTS})"
+                    "[%s] 재시도 대기 %.1fs (시도 %s/%s)",
+                    target.name, delay, attempt, _RETRY_MAX_ATTEMPTS,
                 )
                 time.sleep(delay)
                 self._send(target, topic, payload, attempt)

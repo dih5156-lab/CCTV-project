@@ -81,7 +81,7 @@ class ZoneApiHandler(BaseHTTPRequestHandler):
 
     def _read_json(self):
         try:
-            length = int(self.headers.get("Content-Length", 0))
+            length = max(0, int(self.headers.get("Content-Length", 0)))
             return json.loads(self.rfile.read(length).decode("utf-8"))
         except Exception as exc:
             logger.warning("[ZoneAPI] JSON 파싱 실패: %s", exc)
