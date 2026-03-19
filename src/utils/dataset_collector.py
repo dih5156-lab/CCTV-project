@@ -5,12 +5,16 @@ dataset_collector.py - 탐지 데이터 자동 수집 및 YOLO 라벨링
 
 import json
 import logging
+import shutil
 import time
 from pathlib import Path
 from dataclasses import dataclass
 from typing import List, Dict, Optional, Tuple
 import cv2
 import numpy as np
+
+# 데이터셋 저장 디렉터리의 최소 여유 공간 (기본 500MB)
+_MIN_FREE_DISK_BYTES = 500 * 1024 * 1024
 
 logger = logging.getLogger(__name__)
 
@@ -114,6 +118,25 @@ class DatasetCollector:
             self._save_class_mapping(self.output_dir / "classes.txt")
         return self.class_name_to_id[class_name]
 
+    def _check_disk_space(self) -> bool:
+        """저장 디렉터리의 여유 공간이 최소 기준 이상인지 확인한다.
+
+        Returns:
+            여유 공간이 충분하면 True, 부족하면 False.
+        """
+        try:
+            usage = shutil.disk_usage(self.output_dir)
+            if usage.free < _MIN_FREE_DISK_BYTES:
+                logger.warning(
+                    "디스크 여유 공간 부족 (%.0fMB 남음, 최소 %.0fMB 필요) — 프레임 저장 건너뜀",
+                    usage.free / 1024 / 1024,
+                    _MIN_FREE_DISK_BYTES / 1024 / 1024,
+                )
+                return False
+        except OSError as exc:
+            logger.error("디스크 용량 확인 실패: %s", exc)
+        return True
+
     def save_frame(
         self,
         frame: np.ndarray,
@@ -129,6 +152,9 @@ class DatasetCollector:
             image_name: 이미지 파일명 (None이면 자동 생성)
             camera_id: 카메라 ID
         """
+        if not self._check_disk_space():
+            return
+
         if image_name is None:
             image_name = f"frame_{self.frame_counter:06d}.jpg"
         

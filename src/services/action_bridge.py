@@ -124,6 +124,10 @@ class _EventRepo:
         """이벤트 테이블을 초기화한다."""
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         with sqlite3.connect(self.db_path) as conn:
+            # WAL 모드: 다중 스레드 동시 쓰기 성능 향상, 읽기-쓰기 충돌 방지
+            conn.execute("PRAGMA journal_mode=WAL")
+            # NORMAL: WAL 모드에서 안전하면서도 빠른 동기화 수준
+            conn.execute("PRAGMA synchronous=NORMAL")
             conn.execute(
                 """
                 CREATE TABLE IF NOT EXISTS action_events (
@@ -139,6 +143,13 @@ class _EventRepo:
                     payload_json TEXT    NOT NULL
                 )
                 """
+            )
+            # 이벤트 조회 성능 향상 인덱스
+            conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_action_events_camera_id ON action_events(camera_id)"
+            )
+            conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_action_events_received_at ON action_events(received_at)"
             )
             conn.commit()
 

@@ -38,11 +38,31 @@ for _stream in (sys.stdout, sys.stderr):
     if hasattr(_stream, 'reconfigure'):
         _stream.reconfigure(encoding='utf-8', errors='replace')
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
+import logging.handlers as _log_handlers
+
+_LOG_DIR = Path('logs')
+_LOG_DIR.mkdir(exist_ok=True)
+
+_root_logger = logging.getLogger()
+_root_logger.setLevel(logging.INFO)
+_log_fmt = logging.Formatter(
+    '%(asctime)s [%(levelname)s] %(name)s: %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S',
 )
+# 콘솔 핸들러
+_console_handler = logging.StreamHandler()
+_console_handler.setFormatter(_log_fmt)
+_root_logger.addHandler(_console_handler)
+# 파일 핸들러 (로테이션: 10MB × 5개 보관)
+_file_handler = _log_handlers.RotatingFileHandler(
+    _LOG_DIR / 'cctv.log',
+    maxBytes=10 * 1024 * 1024,  # 10MB
+    backupCount=5,
+    encoding='utf-8',
+)
+_file_handler.setFormatter(_log_fmt)
+_root_logger.addHandler(_file_handler)
+
 logger = logging.getLogger(__name__)
 
 SEPARATOR = "=" * 60
@@ -79,6 +99,31 @@ def load_camera_list(path: str) -> list[dict]:
             continue
         if 'id' not in cam or 'source' not in cam:
             logger.warning("인덱스 %d의 카메라 건너뜀 ('id' 또는 'source' 누락)", idx)
+            continue
+        # source 타입 및 값 검증
+        source = cam['source']
+        cam_id = cam['id']
+        if isinstance(source, str):
+            if source.isdigit():
+                pass  # 웹캠 인덱스 (문자열 형태)
+            elif source.startswith(('rtsp://', 'rtmp://', 'http://', 'https://')):
+                pass  # 유효한 스트림 URL
+            elif Path(source).suffix.lower() in {'.mp4', '.avi', '.mkv', '.mov', '.m4v'}:
+                if not Path(source).exists():
+                    logger.warning(
+                        "[%s] 비디오 파일을 찾을 수 없습니다: %s — 건너뜀", cam_id, source
+                    )
+                    continue
+            else:
+                logger.warning(
+                    "[%s] 알 수 없는 source 형식: %s — 그대로 사용 (로컬 장치일 수 있음)",
+                    cam_id, source,
+                )
+        elif not isinstance(source, int):
+            logger.warning(
+                "[%s] source는 문자열 또는 정수여야 합니다 (받은 타입: %s) — 건너뜀",
+                cam_id, type(source).__name__,
+            )
             continue
         valid_cameras.append(cam)
 
