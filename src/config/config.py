@@ -32,9 +32,9 @@ MODEL_CANDIDATES: dict[str, tuple[str, tuple[Union[str, Path], ...]]] = {
         "helmet",
         (
             # TensorRT (Jetson 우선)
-            PROJECT_ROOT / "models/helmet_model_ver0.5.engine",
-            PROJECT_ROOT / "models/helmet_model_ver0.5.pt",
-            PROJECT_ROOT / "helmet_model_ver0.5.pt",
+            PROJECT_ROOT / "models/helmet_model_ver0.6.engine",
+            PROJECT_ROOT / "models/helmet_model_ver0.6.pt",
+            PROJECT_ROOT / "helmet_model_ver0.6.pt",
         ),
     ),
     "pose_model": (
@@ -88,6 +88,8 @@ ENV_OVERRIDES: tuple[EnvOverride, ...] = (
     EnvOverride("ACTION_MQTT_PORT", ("action", "mqtt_port"), parser=lambda v: int(v.strip())),
     EnvOverride("ACTION_REST_HOST", ("action", "rest_host")),
     EnvOverride("ACTION_REST_PORT", ("action", "rest_port"), parser=lambda v: int(v.strip())),
+    # 카메라 / RTSP
+    EnvOverride("RTSP_BUFFER_SIZE", ("camera", "buffer_size"), parser=lambda v: int(v.strip())),
 )
 
 @dataclass
@@ -208,7 +210,9 @@ class CameraConfig:
     reconnect_interval: int = 5
     max_retries: int = 5
     read_timeout: int = 10
-    buffer_size: int = 1
+    buffer_size: int = 2  # RTSP 프레임 버퍼 크기
+                          # 1: 최신 프레임 유지 (지연 최소화, 단 지터 환경에서 드롭 증가)
+                          # 2~3: 네트워크 지터 완충 권장 (일반 CCTV 환경 기본값)
 
 
 @dataclass

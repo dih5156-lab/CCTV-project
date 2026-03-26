@@ -7,8 +7,10 @@ torch>=2.0.0
 torchvision>=0.15.0
 
 # 컴퓨터 비전
-opencv-python>=4.8.0
-opencv-contrib-python>=4.8.0
+# [주의] opencv-python과 opencv-contrib-python 동시 설치 금지 (충돌)
+# Jetson 헤드리스 환경: opencv-python-headless
+# 일반 리눅스: opencv-python (보다 가벼운 기본 패키지)
+openCV-python>=4.8.0
 
 # 이미지 처리
 numpy>=1.24.0

@@ -1,7 +1,7 @@
-"""???/??? ?? ??.
+"""카메라/비디오 입력 모듈.
 
-RTSP ?? ???? ???? `RTSPCamera`?
-?? ?? ??? `CameraInput`? ????.
+RTSP 연결을 처리하는 `RTSPCamera`를
+일반 입력용 `CameraInput`과 제공한다.
 """
 
 import logging
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 class RTSPCamera:
-    """?? ??? ? ?? ?? RTSP ??? ?? ???."""
+    """재연결 지원과 프레임 획득 기능을 갖춘 RTSP 카메라 입력 클래스."""
 
     def __init__(self, camera_id: str, source: Any, config: Any):
         self.camera_id = camera_id
@@ -66,7 +66,7 @@ class RTSPCamera:
             cap.set(cv2.CAP_PROP_BUFFERSIZE, buffer_size)
             return cap
 
-        logger.info("[%s] ?? ??? ?? ?? ??: %s", self.camera_id, self.source)
+        logger.info("[%s] 로컬 소스 연결 시도 중: %s", self.camera_id, self.source)
         cap = cv2.VideoCapture(self.source)
         if isinstance(self.source, int):
             cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
@@ -75,10 +75,10 @@ class RTSPCamera:
         return cap
 
     def connect(self) -> bool:
-        """??? ?? ? ?? ??? ??? ??."""
+        """카메라 연결 후 첫 프레임 획득 시도."""
         with self._lock:
             try:
-                logger.info("[%s] ??? ?? ??: %s", self.camera_id, self.source)
+                logger.info("[%s] 카메라 연결 시도 중: %s", self.camera_id, self.source)
 
                 self._safe_release()
                 self.cap = self._create_capture()
@@ -99,16 +99,16 @@ class RTSPCamera:
                         self.reconnect_attempts = 0
                         self._consecutive_read_failures = 0
                         logger.info(
-                            f"[{self.camera_id}] ?? ?? (???: {frame.shape[1]}x{frame.shape[0]}, "
-                            f"?? {attempt + 1}/{max_attempts})"
+                            f"[{self.camera_id}] 연결 성공 (해상도: {frame.shape[1]}x{frame.shape[0]}, "
+                            f"시도 {attempt + 1}/{max_attempts})"
                         )
                         return True
                     time.sleep(retry_interval)
 
                 self.connected = False
                 logger.warning(
-                    f"[{self.camera_id}] ?? ??? ?? ?? (?? {max_attempts}?, "
-                    f"??? ret={ret}, frame={'None' if frame is None else 'exists'})"
+                    f"[{self.camera_id}] 프레임 읽기 실패 (최대 {max_attempts}회, "
+                    f"결과 ret={ret}, frame={'None' if frame is None else 'exists'})"
                 )
 
                 is_opened = self.cap.isOpened() if self.cap else False
@@ -119,8 +119,8 @@ class RTSPCamera:
                     self.reconnect_attempts = 0
                     self._consecutive_read_failures = 0
                     logger.warning(
-                        f"[{self.camera_id}] RTSP ?? ??? ????? ?? ??? ?? ?????. "
-                        "????? ??? ???? ??? ?? ?????."
+                        f"[{self.camera_id}] RTSP 초기 프레임 없지만 스트림 연결은 확인됨. "
+                        "캡처를 계속 진행하므로 첫 프레임은 추후 도착할 수 있습니다."
                     )
                     return True
 
@@ -129,7 +129,7 @@ class RTSPCamera:
             except KeyboardInterrupt:
                 raise
             except Exception as e:
-                logger.error("[%s] ?? ??: %s", self.camera_id, e)
+                logger.error("[%s] 연결 오류: %s", self.camera_id, e)
                 self.connected = False
                 self._safe_release()
                 return False
@@ -137,7 +137,7 @@ class RTSPCamera:
     def _try_reconnect(self) -> bool:
         max_retries = int(self._camera_option("max_retries", 5))
         if self.reconnect_attempts >= max_retries:
-            logger.error("[%s] ?? ??? ?? ?? (%s)", self.camera_id, max_retries)
+            logger.error("[%s] 최대 재연결 횟수 초과 (%s)", self.camera_id, max_retries)
             return False
 
         self.reconnect_attempts += 1
@@ -145,19 +145,19 @@ class RTSPCamera:
         delay = min(base_interval * (2 ** (self.reconnect_attempts - 1)), 60)
 
         logger.info(
-            f"[{self.camera_id}] ??? ?? {self.reconnect_attempts}/{max_retries} ({delay}? ??)"
+            f"[{self.camera_id}] 재연결 시도 {self.reconnect_attempts}/{max_retries} ({delay}초 후)"
         )
         time.sleep(delay)
 
         ok = self.connect()
         if ok:
-            logger.info("[%s] ??? ??", self.camera_id)
+            logger.info("[%s] 재연결 성공", self.camera_id)
         else:
-            logger.warning("[%s] ??? ??", self.camera_id)
+            logger.warning("[%s] 재연결 실패", self.camera_id)
         return ok
 
     def get_frame(self) -> Tuple[bool, Optional[Any]]:
-        """??? ???? (?? ??? ?? ???)."""
+        """프레임 획득 (재연결 로직 내장)."""
         if not self.connected:
             self._try_reconnect()
             return False, None
@@ -187,20 +187,20 @@ class RTSPCamera:
                 if self._consecutive_read_failures < max_failures:
                     return False, None
 
-            logger.warning("[%s] ??? ?? ??, ??? ?? ?...", self.camera_id)
+            logger.warning("[%s] 프레임 획득 실패, 재연결 시도 중...", self.camera_id)
             self.connected = False
             return False, None
         except Exception as e:
-            logger.error("[%s] ??? ?? ??: %s", self.camera_id, e)
+            logger.error("[%s] 프레임 읽기 오류: %s", self.camera_id, e)
             self.connected = False
             return False, None
 
     def release(self) -> None:
-        """??? ?? ?? ? ??? ??."""
+        """카메라 장치 해제 후 리소스 정리."""
         with self._lock:
             self._safe_release()
             self.connected = False
-            logger.info("[%s] ?? ???", self.camera_id)
+            logger.info("[%s] 카메라 해제됨", self.camera_id)
 
 
 __all__ = ["RTSPCamera"]

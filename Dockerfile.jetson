@@ -2,28 +2,44 @@
 # Jetson Orin AGX 전용 CCTV 파이프라인 Dockerfile
 #
 # 대상 환경: NVIDIA Jetson Orin AGX
-#            JetPack 6.x (L4T R36.2.0) / CUDA 12.2 / Python 3.10
+#            JetPack 6.2 (L4T R36.4.x) / CUDA 12.6 / TensorRT 10.3.0 / Python 3.10
 #
-# JetPack 5.x 사용 시: L4T_TAG 빌드 인수를 변경
-#   --build-arg L4T_TAG=r35.4.1-pth2.1-py3
+# 베이스 이미지: nvcr.io/nvidia/l4t-jetpack:r36.4.0
+#   - CUDA 12.6, cuDNN 9.x, TensorRT 10.3.0, VPI 포함 (JetPack 6.2 공식 컨테이너)
+#   - Ubuntu 22.04 aarch64 기반
+#
+# JetPack 버전별 베이스 이미지 매핑:
+#   JetPack 6.2 (L4T R36.4.x): nvcr.io/nvidia/l4t-jetpack:r36.4.0  ← 현재 사용
+#   JetPack 6.1 (L4T R36.3.x): nvcr.io/nvidia/l4t-jetpack:r36.3.0
+#   JetPack 6.0 (L4T R36.2.x): nvcr.io/nvidia/l4t-jetpack:r36.2.0
+#   JetPack 5.1 (L4T R35.4.x): nvcr.io/nvidia/l4t-jetpack:r35.4.1
 # ==============================================================================
 
-ARG L4T_TAG=r36.2.0-pth2.1-py3
-FROM nvcr.io/nvidia/l4t-pytorch:${L4T_TAG}
+FROM nvcr.io/nvidia/l4t-jetpack:r36.4.0
 
 LABEL maintainer="CCTV-project" \
-      description="Jetson Orin AGX CCTV AI engine (CUDA/TensorRT 가속)"
+      description="Jetson Orin AGX CCTV AI engine (CUDA 12.6 / TensorRT 10.3.0 가속)" \
+      jetpack="6.2" \
+      l4t="r36.4.0" \
+      cuda="12.6" \
+      tensorrt="10.3.0"
 
 # ── 환경 변수 ─────────────────────────────────────────────────────────────────
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PATH=/usr/local/cuda/bin:${PATH} \
-    LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/local/lib/python3.10/dist-packages/torch/lib:${LD_LIBRARY_PATH:-}
+    PATH=/usr/local/cuda-12.6/bin:/usr/local/cuda/bin:${PATH} \
+    LD_LIBRARY_PATH=/usr/local/cuda-12.6/lib64:/usr/local/cuda/lib64:/usr/local/lib/python3.10/dist-packages/torch/lib:${LD_LIBRARY_PATH:-} \
+    CUDA_HOME=/usr/local/cuda-12.6
 
 # ── 시스템 의존성 ──────────────────────────────────────────────────────────────
-# OpenCV 헤드리스 런타임 + GStreamer 하드웨어 디코더 플러그인
+# Python 3.10 + pip + OpenCV 헤드리스 런타임 + GStreamer 하드웨어 디코더
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    python3-pip \
+    python3-dev \
+    python3-setuptools \
+    python3-wheel \
     # OpenCV 런타임 라이브러리
     libglib2.0-0 \
     libgomp1 \
@@ -39,23 +55,61 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgstreamer-plugins-base1.0-dev \
     # 네트워크 / 유틸
     curl \
+    wget \
+    # PyTorch 호스트 마운트 시 필요한 공유 라이브러리
+    libopenblas-dev \
+    libopenblas0 \
     && rm -rf /var/lib/apt/lists/*
 
+# pip 최신화 및 python3 → python 심링크
+RUN pip3 install --no-cache-dir --upgrade pip setuptools wheel && \
+    ln -sf /usr/bin/python3 /usr/local/bin/python
+
+# ── PyTorch 2.5 설치 (JetPack 6.2 / CUDA 12.6 전용 NVIDIA 공식 빌드) ──────────
+# 우선순위:
+# 1차: jetson-ai-lab 공식 JP6/cu126 PyPI (권장, 가장 안정적)
+# 2차: NVIDIA NGC 공식 wheel 직접 다운로드 (JP6.2 전용 aarch64 빌드)
+# 3차: NVIDIA NGC PyPI (사전 릴리스 포함)
+RUN pip3 install --no-cache-dir \
+        --extra-index-url https://pypi.jetson-ai-lab.dev/jp6/cu126 \
+        "torch>=2.5.0" "torchvision>=0.20.0" \
+    || pip3 install --no-cache-dir \
+        "https://developer.download.nvidia.com/compute/redist/jp/v62/pytorch/torch-2.5.0a0+872d972e41.nv24.08-cp310-cp310-linux_aarch64.whl" \
+    || pip3 install --no-cache-dir \
+        --pre --extra-index-url https://pypi.ngc.nvidia.com \
+        "torch>=2.5.0"
+
 # ── Python 의존성 설치 ─────────────────────────────────────────────────────────
-# requirements-ai.txt 사용: AI 추론에 필요한 패키지만 포함
-# torch / torchvision 은 L4T 이미지에 이미 설치되어 있으므로 제외
-# (재설치 시 ARM64 CUDA 빌드가 덮어씌워져 GPU 가속 손실 위험)
+# torch / torchvision / torchaudio 는 위에서 설치 완료 → requirements에서 제외
+# opencv-python → opencv-python-headless (Jetson 헤드리스 환경)
 WORKDIR /build
 COPY requirements-ai.txt .
 
-RUN grep -vE '^(torch|torchvision|torchaudio)([>=<!~ ]|$)' requirements-ai.txt \
+RUN grep -vE '^(torch|torchvision|torchaudio|opencv-python)([>=<!~ ]|$)' requirements-ai.txt \
     > requirements-ai-jetson.txt && \
-    pip install --no-cache-dir \
+    pip3 install --no-cache-dir \
+        --extra-index-url https://pypi.jetson-ai-lab.dev/jp6/cu126 \
         --extra-index-url https://pypi.ngc.nvidia.com \
-        -r requirements-ai-jetson.txt
+        -r requirements-ai-jetson.txt && \
+    pip3 install --no-cache-dir "opencv-python-headless>=4.8.0"
 
 # pydantic 버전 보장 (speaker-edgex dtos 의존성)
-RUN pip install --no-cache-dir "pydantic>=2.5.0,<3.0.0"
+RUN pip3 install --no-cache-dir "pydantic>=2.5.0,<3.0.0"
+
+# NumPy 1.x 고정 (PyTorch JP6.2 빌드는 NumPy 1.x 기준으로 컴파일됨)
+# NumPy 2.x 사용 시 ImportError: _ARRAY_API not found 발생
+RUN pip3 install --no-cache-dir "numpy<2.0.0"
+
+# ── libcusparseLt 심링크 설정 ──────────────────────────────────────
+# l4t-jetpack 베이스에 libcusparseLt가 /usr/lib/aarch64-linux-gnu/libcusparseLt/13/ 에 있지만
+# PyTorch torch._C가 libcusparseLt.so.0 를 /usr/local/cuda/lib64 에서 탐색
+RUN CUSPARSELT_SRC=$(find /usr/lib/aarch64-linux-gnu/libcusparseLt -name "libcusparseLt.so.0" 2>/dev/null | head -1); \
+    if [ -n "$CUSPARSELT_SRC" ]; then \
+        ln -sf "$CUSPARSELT_SRC" /usr/local/cuda/lib64/libcusparseLt.so.0; \
+        echo "libcusparseLt.so.0 심링크 생성: $CUSPARSELT_SRC → /usr/local/cuda/lib64/libcusparseLt.so.0"; \
+    else \
+        echo "WARNING: libcusparseLt.so.0 를 찾지 못했습니다"; \
+    fi
 
 # ── 보안 사용자 ───────────────────────────────────────────────────────────────
 RUN id cctv 2>/dev/null \
@@ -74,4 +128,4 @@ RUN mkdir -p /app/models /app/event_backup \
     && chown -R cctv:cctv /app
 
 # ── 기본 진입점 ───────────────────────────────────────────────────────────────
-CMD ["python", "main.py", "--help"]
+CMD ["python3", "main.py", "--help"]

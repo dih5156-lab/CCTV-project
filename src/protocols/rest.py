@@ -59,7 +59,25 @@ class _RestHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):  # noqa: N802
         layer = self._layer()
-        if self.path == "/sites":
+        if self.path in ("/health", "/ping"):
+            mqtt_ok = False
+            try:
+                mc = getattr(layer, "_mqtt_client", None)
+                mqtt_ok = bool(mc and mc.is_connected())
+            except Exception:
+                pass
+            status = "up" if (getattr(layer, "_running", False) and mqtt_ok) else "degraded"
+            self._respond(
+                200 if status == "up" else 503,
+                {
+                    "status": status,
+                    "mqtt": "connected" if mqtt_ok else "disconnected",
+                    "mode": layer.default_mode.value,
+                    "sites": len(layer.list_sites()),
+                    "pending": len(layer.get_pending_events()),
+                },
+            )
+        elif self.path == "/sites":
             self._respond(200, layer.list_sites())
         elif self.path == "/pending":
             self._respond(200, layer.get_pending_events())

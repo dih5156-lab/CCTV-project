@@ -31,6 +31,7 @@ WORKDIR /app
 
 COPY --chown=cctv:cctv src         /app/src
 COPY --chown=cctv:cctv runners     /app/runners
+COPY --chown=cctv:cctv kuiper      /app/kuiper
 COPY --chown=cctv:cctv requirements-action.txt /app/
 
 RUN mkdir -p /app/event_backup && chown -R cctv:cctv /app

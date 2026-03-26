@@ -56,15 +56,94 @@ SHOULDER_TOP_MIN_RATIO = 0.15
 
 
 # YOLO 모델 설정
-DEFAULT_IMAGE_SIZE_HELMET = 640  # 헬멧 감지 개선
-DEFAULT_IMAGE_SIZE_POSE = 640  # 기본 해상도
-DEFAULT_IMAGE_SIZE_PERSON = 800  # 사람 감지 - 원거리 사람 단기 위해 800으로 업그레이드
+# ※ TensorRT .engine 파일은 컴파일 시 고정된 imgsz와 정확히 일치해야 함
+#   .pt 파일은 runtime에 자동 리사이즈되므로 640 사용 가능
+# ※ 로드 후 _detect_engine_imgsz()로 실제 입력 크기를 자동 감지하여 덮어씀
+DEFAULT_IMAGE_SIZE_HELMET = 480  # 폴백: .engine 자동 감지 실패 시 사용
+DEFAULT_IMAGE_SIZE_POSE = 416    # 폴백: .engine 자동 감지 실패 시 사용
+DEFAULT_IMAGE_SIZE_PERSON = 640  # .pt 파일 사용, 640 유지
 DEFAULT_IOU_THRESHOLD = 0.45  # YOLO NMS 임계값 (모델 추론 단계)
+
+# model_type → imgsz 매핑 테이블 (로드 후 _apply_engine_imgsz()로 자동 갱신됨)
+_MODEL_IMGSZ: Dict[str, int] = {
+    "helmet": DEFAULT_IMAGE_SIZE_HELMET,
+    "pose":   DEFAULT_IMAGE_SIZE_POSE,
+    "person": DEFAULT_IMAGE_SIZE_PERSON,
+}
+
+
+def _detect_engine_imgsz(model, fallback: int) -> int:
+    """로드된 YOLO 모델에서 실제 입력 이미지 크기를 자동 감지한다.
+
+    TensorRT .engine 파일은 컴파일 시 입력 shape이 고정되므로
+    ultralytics가 노출하는 메타데이터에서 imgsz를 읽어 인적 오류를 방지한다.
+    .pt 파일이거나 감지 실패 시 fallback 값을 반환한다.
+
+    탐색 우선순위:
+      1. model.model.imgsz  (ultralytics TensorRT 래퍼)
+      2. model.overrides["imgsz"]  (저장된 학습 설정)
+      3. 첫 번째 바인딩의 입력 shape  (tensorrt.ICudaEngine 직접 접근)
+    """
+    if model is None:
+        return fallback
+    try:
+        # 1순위: ultralytics TensorRT 래퍼가 imgsz 속성 노출
+        inner = getattr(model, "model", None)
+        imgsz_attr = getattr(inner, "imgsz", None)
+        if imgsz_attr is not None:
+            if isinstance(imgsz_attr, (list, tuple)):
+                size = int(imgsz_attr[0])
+            else:
+                size = int(imgsz_attr)
+            if size > 0:
+                logger.info("엔진 imgsz 자동 감지 (model.model.imgsz): %d", size)
+                return size
+    except Exception:
+        pass
+    try:
+        # 2순위: overrides 딕셔너리 (학습/내보내기 시 저장된 값)
+        overrides = getattr(model, "overrides", {}) or {}
+        val = overrides.get("imgsz")
+        if val is not None:
+            if isinstance(val, (list, tuple)):
+                size = int(val[0])
+            else:
+                size = int(val)
+            if size > 0:
+                logger.info("엔진 imgsz 자동 감지 (overrides): %d", size)
+                return size
+    except Exception:
+        pass
+    try:
+        # 3순위: TensorRT ICudaEngine 직접 접근 (tensorrt 패키지 필요)
+        import tensorrt as trt  # type: ignore
+        engine = getattr(getattr(model, "model", None), "engine", None)
+        if engine is not None and isinstance(engine, trt.ICudaEngine):
+            binding_name = engine.get_binding_name(0)
+            shape = engine.get_binding_shape(binding_name)
+            # shape: (batch, channels, H, W) 또는 (batch, H, W)
+            size = int(shape[-1])  # 마지막 차원 = width = height (정사각형 가정)
+            if size > 0:
+                logger.info("엔진 imgsz 자동 감지 (TRT binding[0]): %d", size)
+                return size
+    except Exception:
+        pass
+    logger.debug("엔진 imgsz 자동 감지 실패 → 폴백 값 사용: %d", fallback)
+    return fallback
 
 try:
     from ultralytics import YOLO
 except Exception:
     YOLO = None
+
+# Jetson Orin nvgpu cuDNN 안정화 설정
+# "GET was unable to find an engine" 에러 방지
+try:
+    import torch
+    torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.deterministic = True
+except Exception:
+    pass
 
 
 class AIAnalyzer:
@@ -203,7 +282,7 @@ class AIAnalyzer:
             logger.warning("%s 모델 로드 실패: %s", name, exc)
 
     def load_models(self) -> None:
-        """헬멧, Person, Pose 모델 로드"""
+        """헬멧, Person, Pose 모델 로드 후 TensorRT 엔진의 실제 imgsz를 자동 감지한다."""
         self.last_load_errors.clear()
         self._try_load("helmet", self.helmet_model_path)
         self._try_load("person", self.person_model_path)
@@ -216,6 +295,20 @@ class AIAnalyzer:
                 "로드된 모델: Helmet=%s, Person=%s, Pose=%s",
                 bool(self.helmet_model), bool(self.person_model), bool(self.pose_model),
             )
+
+        # TensorRT .engine 파일의 실제 입력 크기를 자동 감지하여 _MODEL_IMGSZ 갱신
+        # .pt 파일은 자동 리사이즈되므로 감지 실패 시 기존 기본값 유지
+        _MODEL_IMGSZ["helmet"] = _detect_engine_imgsz(
+            self.helmet_model, DEFAULT_IMAGE_SIZE_HELMET
+        )
+        _MODEL_IMGSZ["pose"] = _detect_engine_imgsz(
+            self.pose_model, DEFAULT_IMAGE_SIZE_POSE
+        )
+        # person 모델은 .pt 전용이므로 자동 감지 불필요 (640 고정)
+        logger.info(
+            "imgsz 설정 → helmet=%d, pose=%d, person=%d",
+            _MODEL_IMGSZ["helmet"], _MODEL_IMGSZ["pose"], _MODEL_IMGSZ["person"],
+        )
 
     def get_loaded_model_names(self) -> Dict[str, Optional[Dict[int, str]]]:
         """로드된 모델의 클래스명 조회 (디버깅용)"""
@@ -471,7 +564,7 @@ class AIAnalyzer:
                     frame,
                     conf=conf_threshold,
                     iou=DEFAULT_IOU_THRESHOLD,
-                    imgsz=DEFAULT_IMAGE_SIZE_PERSON if model_type == "person" else DEFAULT_IMAGE_SIZE_HELMET,
+                    imgsz=_MODEL_IMGSZ.get(model_type, DEFAULT_IMAGE_SIZE_HELMET),
                     verbose=False,
                     persist=True  # 추적 결과 유지 (ID 추출 위해)
                 )
@@ -480,7 +573,7 @@ class AIAnalyzer:
                     frame,
                     conf=conf_threshold,
                     iou=DEFAULT_IOU_THRESHOLD,
-                    imgsz=DEFAULT_IMAGE_SIZE_PERSON if model_type == "person" else DEFAULT_IMAGE_SIZE_HELMET,
+                    imgsz=_MODEL_IMGSZ.get(model_type, DEFAULT_IMAGE_SIZE_HELMET),
                     verbose=False,
                 )
         except Exception as exc:
@@ -594,8 +687,8 @@ class AIAnalyzer:
             roi_events = self._run_single_model(self.helmet_model, roi, use_tracking=False, model_type="helmet")
 
             for ev in roi_events:
-                ev.x += x1
-                ev.y += y1
+                ev.x = int(ev.x) + x1
+                ev.y = int(ev.y) + y1
 
             helmet_events.extend(roi_events)
 
@@ -623,7 +716,7 @@ class AIAnalyzer:
                 frame,
                 conf=conf_threshold,
                 iou=DEFAULT_IOU_THRESHOLD,
-                imgsz=DEFAULT_IMAGE_SIZE_POSE,
+                imgsz=_MODEL_IMGSZ.get("pose", DEFAULT_IMAGE_SIZE_POSE),
                 verbose=False,
                 persist=True,
             )

@@ -7,7 +7,7 @@
 #   EdgeX              → 이벤트 파이프라인 / 룰 엔진 / 알림 API
 #
 # [사전 요구사항]
-#   - JetPack 6.x (L4T R36.x) 설치 완료
+#   - JetPack 6.2 (L4T R36.4.x) 설치 완료 — CUDA 12.6 / TensorRT 10.3.0
 #   - Docker + NVIDIA Container Toolkit 설치
 #     $ sudo apt-get install -y nvidia-container-toolkit
 #     $ sudo systemctl restart docker
@@ -15,9 +15,9 @@
 #     /etc/docker/daemon.json 에 "default-runtime": "nvidia" 추가,
 #     또는 각 서비스의 runtime: nvidia 를 그대로 사용
 #
-# [JetPack 5.x 사용 시]
-#   cctv-ai-engine → build → args → L4T_TAG 를
-#   r35.4.1-pth2.1-py3 으로 변경
+# [환경 정보]
+#   JetPack 6.2 (L4T R36.4.x) / CUDA 12.6 / TensorRT 10.3.0 / Python 3.10
+#   베이스: nvcr.io/nvidia/l4t-jetpack:r36.4.0
 #
 # [실행 방법]
 #   # 첫 실행 (이미지 빌드 포함)
@@ -158,7 +158,8 @@ services:
       APP_SERVICES_CLIENTS_CORE_METADATA_HOST: edgex-core-metadata
       DEVICE_SERVICES_CLIENTS_CORE_METADATA_HOST: edgex-core-metadata
     hostname: edgex-core-common-config-bootstrapper
-    image: edgexfoundry/core-common-config-bootstrapper:3.1.0
+    image: edgexfoundry/core-common-config-bootstrapper:3.1.1
+    platform: linux/arm64
     networks:
       edgex-network: null
     read_only: true
@@ -178,7 +179,8 @@ services:
       <<: *edgex-common
       SERVICE_HOST: edgex-core-metadata
     hostname: edgex-core-metadata
-    image: edgexfoundry/core-metadata:3.1.0
+    image: edgexfoundry/core-metadata:3.1.1
+    platform: linux/arm64
     networks:
       edgex-network: null
     ports:
@@ -206,7 +208,8 @@ services:
       <<: *edgex-common
       SERVICE_HOST: edgex-core-data
     hostname: edgex-core-data
-    image: edgexfoundry/core-data:3.1.0
+    image: edgexfoundry/core-data:3.1.1
+    platform: linux/arm64
     networks:
       edgex-network: null
     ports:
@@ -235,7 +238,8 @@ services:
       EXTERNALMQTT_URL: tcp://edgex-mqtt-broker:1883
       SERVICE_HOST: edgex-core-command
     hostname: edgex-core-command
-    image: edgexfoundry/core-command:3.1.0
+    image: edgexfoundry/core-command:3.1.1
+    platform: linux/arm64
     networks:
       edgex-network: null
     ports:
@@ -264,7 +268,8 @@ services:
       <<: *edgex-common
       SERVICE_HOST: edgex-support-notifications
     hostname: edgex-support-notifications
-    image: edgexfoundry/support-notifications:3.1.0
+    image: edgexfoundry/support-notifications:3.1.1
+    platform: linux/arm64
     networks:
       edgex-network: null
     ports:
@@ -292,7 +297,8 @@ services:
       INTERVALACTIONS_SCRUBPUSHED_HOST: edgex-core-data
       SERVICE_HOST: edgex-support-scheduler
     hostname: edgex-support-scheduler
-    image: edgexfoundry/support-scheduler:3.1.0
+    image: edgexfoundry/support-scheduler:3.1.1
+    platform: linux/arm64
     networks:
       edgex-network: null
     ports:
@@ -323,7 +329,8 @@ services:
       <<: *edgex-common
       SERVICE_HOST: edgex-device-rest
     hostname: edgex-device-rest
-    image: edgexfoundry/device-rest:3.1.0
+    image: edgexfoundry/device-rest:3.1.1
+    platform: linux/arm64
     networks:
       edgex-network: null
     ports:
@@ -351,7 +358,8 @@ services:
       <<: *edgex-common
       SERVICE_HOST: edgex-device-virtual
     hostname: edgex-device-virtual
-    image: edgexfoundry/device-virtual:3.1.0
+    image: edgexfoundry/device-virtual:3.1.1
+    platform: linux/arm64
     networks:
       edgex-network: null
     ports:
@@ -439,7 +447,8 @@ services:
       WRITABLE_PIPELINE_FUNCTIONS_HTTPEXPORT_PARAMETERS_PERSISTONERROR: "false"
       WRITABLE_PIPELINE_FUNCTIONS_HTTPEXPORT_PARAMETERS_CONTINUEONSENDERROR: "false"
     hostname: edgex-app-rules-engine
-    image: edgexfoundry/app-service-configurable:3.1.0
+    image: edgexfoundry/app-service-configurable:3.1.1
+    platform: linux/arm64
     networks:
       edgex-network: null
     ports:
@@ -467,7 +476,8 @@ services:
       <<: *edgex-common
       SERVICE_HOST: edgex-ui-go
     hostname: edgex-ui-go
-    image: edgexfoundry/edgex-ui:3.1.0
+    image: edgexfoundry/edgex-ui:4.0.1
+    platform: linux/arm64
     networks:
       edgex-network: null
     ports:
@@ -492,10 +502,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.jetson
-      args:
-        # .env.jetson 의 L4T_TAG 로 JetPack 버전 지정
-        # JetPack 6.x: r36.2.0-pth2.1-py3 / JetPack 5.x: r35.4.1-pth2.1-py3
-        L4T_TAG: ${L4T_TAG:-r36.2.0-pth2.1-py3}
+      # 베이스 이미지: nvcr.io/nvidia/l4t-jetpack:r36.4.0
+      # JetPack 6.2 / CUDA 12.6 / TensorRT 10.3.0 (Dockerfile.jetson에 고정)
     # NVIDIA Container Toolkit runtime (GPU 접근 활성화)
     runtime: nvidia
     environment:
@@ -505,8 +513,16 @@ services:
       NVIDIA_DRIVER_CAPABILITIES: compute,video,utility
       # GStreamer 하드웨어 디코딩 (.env.jetson USE_GSTREAMER=1)
       USE_GSTREAMER: ${USE_GSTREAMER:-1}
+      # Jetson Orin nvgpu cuDNN v8 API 비활성화 (GET engine 에러 방지)
+      TORCH_CUDNN_V8_API_ENABLED: "0"
+      # cuDNN 벤치마크 비활성화 (Jetson 통합 GPU 안정성)
+      TORCH_CUDNN_BENCHMARK: "0"
+      # RTSP 프레임 버퍼 크기 (1: 지연 최소화, 2~3: 네트워크 지터 완충)
+      RTSP_BUFFER_SIZE: ${RTSP_BUFFER_SIZE:-2}
+      # torch lib의 CUDA 공유 라이브러리 경로 추가 (cusparseLt 등)
+      LD_LIBRARY_PATH: "/usr/local/lib/python3.10/dist-packages/torch/lib:/usr/local/lib/python3.10/dist-packages/nvidia/cusparselt/lib:/usr/local/cuda-12.6/lib64:/usr/local/cuda/lib64:/usr/lib/aarch64-linux-gnu"
     command:
-      - python
+      - python3
       - main.py
       - --cameras
       - /app/cameras.json
@@ -536,6 +552,12 @@ services:
         condition: service_started
     networks:
       edgex-network: null
+    healthcheck:
+      test: ["CMD-SHELL", "kill -0 1 2>/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
     restart: always
     volumes:
       - type: bind
@@ -553,6 +575,22 @@ services:
       - type: volume
         source: trt-cache
         target: /app/models/trt_cache
+      # ── Jetson 전용 PyTorch (호스트의 NVIDIA JP6.2 빌드를 컨테이너에 마운트) ──
+      # Docker 빌드 중 외부 네트워크 차단으로 Jetson wheel 설치 불가한 경우 사용
+      - type: bind
+        source: /home/sawwave/.local/lib/python3.10/site-packages/torch
+        target: /usr/local/lib/python3.10/dist-packages/torch
+        read_only: true
+      - type: bind
+        # egg 내부의 torchvision 패키지 디렉토리를 직접 마운트
+        source: /home/sawwave/.local/lib/python3.10/site-packages/torchvision-0.20.0-py3.10-linux-aarch64.egg/torchvision
+        target: /usr/local/lib/python3.10/dist-packages/torchvision
+        read_only: true
+      # NVIDIA CUDA 라이브러리 패키지 (cusparseLt만 마운트: torch 의존성)
+      - type: bind
+        source: /home/sawwave/.local/lib/python3.10/site-packages/nvidia/cusparselt
+        target: /usr/local/lib/python3.10/dist-packages/nvidia/cusparselt
+        read_only: true
 
   # ── EdgeX 어댑터 (AI 이벤트 → EdgeX 파이프라인 브릿지) ──────────────────────
   cctv-edgex-adapter:
@@ -594,6 +632,12 @@ services:
         condition: service_started
     networks:
       edgex-network: null
+    healthcheck:
+      test: ["CMD-SHELL", "kill -0 1 2>/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
     restart: always
 
   # ── Kuiper 룰 로더 ────────────────────────────────────────────────────────
@@ -663,6 +707,12 @@ services:
       - target: 8000
         published: "8000"
         protocol: tcp
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     restart: always
 
   # ── Action Layer (스피커 / 전광판 / 사이렌 연동) ────────────────────────────
@@ -685,23 +735,23 @@ services:
       SPEAKER_USER: ${SPEAKER_USER:-}
       SPEAKER_PASSWORD: ${SPEAKER_PASSWORD:-}
       SPEAKER_VOLUME: ${SPEAKER_VOLUME:-10}
-      SPEAKER_TTS_LANGUAGE: kor
-      SPEAKER_TTS_GENDER: female
-      SPEAKER_TTS_PITCH: "100"
-      SPEAKER_TTS_SPEED: "100"
-      SPEAKER_TTS_VOLUME: "1"
+      SPEAKER_TTS_LANGUAGE: ${SPEAKER_TTS_LANGUAGE:-kor}
+      SPEAKER_TTS_GENDER: ${SPEAKER_TTS_GENDER:-female}
+      SPEAKER_TTS_PITCH: ${SPEAKER_TTS_PITCH:-100}
+      SPEAKER_TTS_SPEED: ${SPEAKER_TTS_SPEED:-100}
+      SPEAKER_TTS_VOLUME: ${SPEAKER_TTS_VOLUME:-1}
       SIGNBOARD_HOST: ${SIGNBOARD_HOST:-}
       SIGNBOARD_PORT: ${SIGNBOARD_PORT:-5000}
-      SIGNBOARD_BRIGHTNESS: "10"
-      SIGNBOARD_TEXT_COLOR: "7"
-      SIGNBOARD_BACK_COLOR: "0"
-      SIGNBOARD_TEXT_SIZE: "2"
-      SIGNBOARD_TEXT_SPEED: "10"
+      SIGNBOARD_BRIGHTNESS: ${SIGNBOARD_BRIGHTNESS:-10}
+      SIGNBOARD_TEXT_COLOR: ${SIGNBOARD_TEXT_COLOR:-7}
+      SIGNBOARD_BACK_COLOR: ${SIGNBOARD_BACK_COLOR:-0}
+      SIGNBOARD_TEXT_SIZE: ${SIGNBOARD_TEXT_SIZE:-2}
+      SIGNBOARD_TEXT_SPEED: ${SIGNBOARD_TEXT_SPEED:-10}
       SIREN_HOST: ${SIREN_HOST:-}
       SIREN_PORT: ${SIREN_PORT:-80}
       SIREN_USER: ${SIREN_USER:-}
       SIREN_PASSWORD: ${SIREN_PASSWORD:-}
-      SIREN_AUTO_STOP: "10"
+      SIREN_AUTO_STOP: ${SIREN_AUTO_STOP:-10}
       REST_ENABLED: "true"
       REST_HOST: "0.0.0.0"
       REST_PORT: "8080"
@@ -719,6 +769,12 @@ services:
         condition: service_started
     networks:
       edgex-network: null
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
     restart: always
     volumes:
       - type: bind

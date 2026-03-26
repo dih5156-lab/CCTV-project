@@ -1,0 +1,77 @@
+# ==============================================================================
+# Jetson Orin AGX 전용 CCTV 파이프라인 Dockerfile
+#
+# 대상 환경: NVIDIA Jetson Orin AGX
+#            JetPack 6.x (L4T R36.2.0) / CUDA 12.2 / Python 3.10
+#
+# JetPack 5.x 사용 시: L4T_TAG 빌드 인수를 변경
+#   --build-arg L4T_TAG=r35.4.1-pth2.1-py3
+# ==============================================================================
+
+ARG L4T_TAG=r36.2.0-pth2.1-py3
+FROM nvcr.io/nvidia/l4t-pytorch:${L4T_TAG}
+
+LABEL maintainer="CCTV-project" \
+      description="Jetson Orin AGX CCTV AI engine (CUDA/TensorRT 가속)"
+
+# ── 환경 변수 ─────────────────────────────────────────────────────────────────
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PATH=/usr/local/cuda/bin:${PATH} \
+    LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/local/lib/python3.10/dist-packages/torch/lib:${LD_LIBRARY_PATH:-}
+
+# ── 시스템 의존성 ──────────────────────────────────────────────────────────────
+# OpenCV 헤드리스 런타임 + GStreamer 하드웨어 디코더 플러그인
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # OpenCV 런타임 라이브러리
+    libglib2.0-0 \
+    libgomp1 \
+    libgl1 \
+    libgles2 \
+    # GStreamer (Jetson 하드웨어 디코딩: nvv4l2decoder, nvivafilter)
+    gstreamer1.0-tools \
+    gstreamer1.0-plugins-good \
+    gstreamer1.0-plugins-bad \
+    gstreamer1.0-plugins-ugly \
+    gstreamer1.0-libav \
+    libgstreamer1.0-dev \
+    libgstreamer-plugins-base1.0-dev \
+    # 네트워크 / 유틸
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# ── Python 의존성 설치 ─────────────────────────────────────────────────────────
+# requirements-ai.txt 사용: AI 추론에 필요한 패키지만 포함
+# torch / torchvision 은 L4T 이미지에 이미 설치되어 있으므로 제외
+# (재설치 시 ARM64 CUDA 빌드가 덮어씌워져 GPU 가속 손실 위험)
+WORKDIR /build
+COPY requirements-ai.txt .
+
+RUN grep -vE '^(torch|torchvision|torchaudio)([>=<!~ ]|$)' requirements-ai.txt \
+    > requirements-ai-jetson.txt && \
+    pip install --no-cache-dir \
+        --extra-index-url https://pypi.ngc.nvidia.com \
+        -r requirements-ai-jetson.txt
+
+# pydantic 버전 보장 (speaker-edgex dtos 의존성)
+RUN pip install --no-cache-dir "pydantic>=2.5.0,<3.0.0"
+
+# ── 보안 사용자 ───────────────────────────────────────────────────────────────
+RUN id cctv 2>/dev/null \
+    || (groupadd -r -g 2001 cctv && useradd -r -u 2002 -g cctv cctv)
+
+# ── 앱 코드 복사 ──────────────────────────────────────────────────────────────
+WORKDIR /app
+
+COPY --chown=cctv:cctv src         /app/src
+COPY --chown=cctv:cctv main.py     /app/main.py
+COPY --chown=cctv:cctv runners     /app/runners
+COPY --chown=cctv:cctv kuiper      /app/kuiper
+COPY --chown=cctv:cctv requirements.txt /app/
+
+RUN mkdir -p /app/models /app/event_backup \
+    && chown -R cctv:cctv /app
+
+# ── 기본 진입점 ───────────────────────────────────────────────────────────────
+CMD ["python", "main.py", "--help"]

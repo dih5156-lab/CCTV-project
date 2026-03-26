@@ -3,11 +3,17 @@ processor.py - 실시간 CCTV 객체 감지 프로세서
 다중 카메라 처리, RTSP 재연결, 이벤트 필터링 및 서버 전송
 
 클래스 구성:
-  ProcessorStats   - 처리 통계 DTO
-  _EventDebouncer  - 이벤트 디바운싱 + 로컬 백업  (VideoProcessor 내부용)
-  _DisplayGrid     - 다중 카메라 그리드 디스플레이 (VideoProcessor 내부용)
-  _CameraRegistry  - 카메라·스레드·재시도 큐 관리  (VideoProcessor 내부용)
-  VideoProcessor   - 파이프라인 오케스트레이터 (공개 API)
+  ProcessorStats      - 처리 통계 DTO
+  _EventDebouncer     - 이벤트 디바운싱 + 로컬 백업  (VideoProcessor 내부용)
+  _DisplayGrid        - 다중 카메라 그리드 디스플레이 (VideoProcessor 내부용)
+  _CameraRegistry     - 카메라·스레드·재시도 큐 관리  (VideoProcessor 내부용)
+  _InferencePipeline  - AI 추론·구역 탐지·이벤트 큐 처리 (VideoProcessor 내부용)
+  VideoProcessor      - 파이프라인 오케스트레이터 (공개 API)
+
+[God Class 대응]
+  VideoProcessor 가 담당하던 추론/이벤트 로직을 _InferencePipeline 으로 분리.
+  VideoProcessor 는 라이프사이클(start/stop), 카메라 관리(add/remove),
+  공개 API(get_stats/get_camera_status 등) 만 담당한다.
 """
 
 import json
@@ -223,12 +229,17 @@ class _EventDebouncer:
             return before - len(self._last_events)
 
     def save_locally(self, event_data: Dict) -> None:
-        """큐 포화 시 이벤트를 로컬 JSON 파일로 백업한다."""
+        """큐 포화 시 이벤트를 로컬 JSON 파일로 백업한다.
+
+        파일명에 나노초 타임스탬프를 사용하여 같은 초에 여러 이벤트가
+        도착해도 덮어쓰기가 발생하지 않도록 한다.
+        """
         try:
             backup_dir = os.path.join(os.getcwd(), "event_backup")
             os.makedirs(backup_dir, exist_ok=True)
-            timestamp = time.strftime("%Y%m%d_%H%M%S")
-            filename = f"event_{timestamp}_{event_data.get('camera_id', 'unknown')}.json"
+            ts_ns = time.time_ns()          # 나노초 — 충돌 확률 사실상 0
+            cam_id = event_data.get('camera_id', 'unknown')
+            filename = f"event_{ts_ns}_{cam_id}.json"
             filepath = os.path.join(backup_dir, filename)
             with open(filepath, "w", encoding="utf-8") as fp:
                 json.dump(event_data, fp, ensure_ascii=False, indent=2)
@@ -490,6 +501,203 @@ class _CameraRegistry:
 
 
 # ===========================================================================
+# _InferencePipeline  (내부용)
+# ===========================================================================
+
+
+class _InferencePipeline:
+    """AI 추론·구역 탐지·이벤트 큐 처리를 담당하는 내부 파이프라인.
+
+    VideoProcessor 의 God Class 문제를 완화하기 위해 분리한 클래스다.
+    VideoProcessor 가 담당하던 다음 책임을 이관한다:
+
+        - run()           : 추론 → 트래킹 → 필터링 → 구역탐지 → 큐잉 한 사이클 실행
+        - _infer()        : AIAnalyzer 호출 + 추론 시간 측정
+        - _collect()      : 데이터셋 프레임 저장
+        - _check_zones()  : ZoneManager 호출
+        - _enqueue()      : 이벤트 큐 put_nowait (디바운싱 포함)
+
+    VideoProcessor 는 이 클래스 인스턴스(_pipeline)를 보유하고
+    추론 스레드(_process_inference)에서 pipeline.run()을 호출한다.
+    """
+
+    def __init__(
+        self,
+        analyzers: Dict[str, "AIAnalyzer"],
+        camera_ai_flags: Dict[str, Dict[str, bool]],
+        track_manager: "TrackManager",
+        violation_filter: "CumulativeViolationFilter",
+        debouncer: "_EventDebouncer",
+        event_queue: "Queue",
+        zone_manager,
+        dataset_collector,
+        display: "_DisplayGrid",
+        snapshot_store: Dict[str, dict],
+        snapshot_lock: "Lock",
+        zone_in_objects: Dict[str, set],
+        increment_stat,
+        add_inference_metrics,
+        display_enabled: bool,
+        queue_warning_threshold: float = 0.8,
+    ) -> None:
+        self._analyzers            = analyzers
+        self._camera_ai_flags      = camera_ai_flags
+        self._track_manager        = track_manager
+        self._violation_filter     = violation_filter
+        self._debouncer            = debouncer
+        self._event_queue          = event_queue
+        self._zone_manager         = zone_manager
+        self._dataset_collector    = dataset_collector
+        self._display              = display
+        self._snapshots            = snapshot_store
+        self._snapshot_lock        = snapshot_lock
+        self._zone_in_objects      = zone_in_objects
+        self._increment_stat       = increment_stat
+        self._add_inference_metrics = add_inference_metrics
+        self.display_enabled       = display_enabled
+
+    # ── 단일 사이클 ────────────────────────────────────────────────
+
+    def run(self, camera_id: str, frame: Any) -> None:
+        """프레임 한 장에 대해 전체 추론 파이프라인을 실행한다."""
+        self._increment_stat("frames_processed")
+        events = self._infer(camera_id, frame)
+
+        events_for_display  = events.copy()
+        events_for_dataset  = events.copy()
+
+        with self._snapshot_lock:
+            self._snapshots[camera_id] = {
+                "timestamp": time.time(),
+                "detections": [e.to_dict() for e in events],
+            }
+
+        events, removed_ids = self._track_manager.update(camera_id, events)
+        if removed_ids:
+            self._violation_filter.purge(camera_id, removed_ids)
+        events = self._violation_filter.filter(camera_id, events)
+
+        self._collect(frame, events_for_dataset, camera_id)
+        zone_events, frame = self._check_zones(camera_id, events, frame)
+        self._enqueue(camera_id, events, zone_events)
+
+        # ── 구역 점유 상태 업데이트 ────────────────────────────────
+        zone_set = self._zone_in_objects.setdefault(camera_id, set())
+        has_active_zones = bool(
+            self._zone_manager
+            and self._zone_manager.zones.get(camera_id)
+        )
+        if not has_active_zones:
+            zone_set.clear()
+        else:
+            for ze in zone_events:
+                if ze.event_type.value in ("zone_entered", "zone_dwelling"):
+                    zone_set.add(ze.object_id)
+                elif ze.event_type.value == "zone_exited":
+                    zone_set.discard(ze.object_id)
+        for rid in removed_ids:
+            zone_set.discard(rid)
+
+        # ── 디스플레이 업데이트 ────────────────────────────────────
+        if self.display_enabled:
+            display_evts = [
+                replace(ev, event_type=EventType.DANGER_ZONE)
+                if (
+                    ev.event_type == EventType.PERSON
+                    and getattr(ev, "object_id", None) in zone_set
+                )
+                else ev
+                for ev in events_for_display
+            ]
+            self._display.update_frame(camera_id, frame, display_evts)
+
+    # ── 내부 헬퍼 ──────────────────────────────────────────────────
+
+    def _infer(self, camera_id: str, frame: Any) -> List[DetectionEvent]:
+        """AIAnalyzer 를 호출하고 추론 시간을 기록한다."""
+        analyzer = self._analyzers.get(camera_id)
+        if analyzer is None:
+            logger.error("[%s] 분석기 인스턴스를 찾을 수 없습니다", camera_id)
+            self._increment_stat("inference_errors")
+            return []
+        flags = self._camera_ai_flags.get(
+            camera_id, {"use_helmet": True, "use_pose": True, "use_person": True}
+        )
+        t0 = time.time()
+        try:
+            return analyzer.run_inference(frame, **flags)
+        except Exception as exc:
+            logger.error("[%s] AI 추론 실패: %s", camera_id, exc, exc_info=True)
+            self._increment_stat("inference_errors")
+            return []
+        finally:
+            self._add_inference_metrics(time.time() - t0)
+
+    def _collect(
+        self, frame: Any, events: List[DetectionEvent], camera_id: str
+    ) -> None:
+        """데이터셋 프레임을 저장한다 (수집기 비활성 시 무동작)."""
+        if not self._dataset_collector:
+            return
+        try:
+            self._dataset_collector.save_frame(frame, events, camera_id=camera_id)
+        except IOError as exc:
+            logger.error("[%s] 데이터셋 파일 저장 실패: %s", camera_id, exc)
+        except Exception as exc:
+            logger.warning("[%s] 데이터셋 저장 오류: %s", camera_id, exc)
+
+    def _check_zones(
+        self, camera_id: str, events: List[DetectionEvent], frame: Any
+    ) -> Tuple[List[ZoneEvent], Any]:
+        """ZoneManager 를 호출하여 위험 구역 침입을 감지한다."""
+        if not self._zone_manager:
+            return [], frame
+        try:
+            return self._zone_manager.check_zones(camera_id, events), frame
+        except Exception as exc:
+            logger.warning("[%s] 구역 감지 오류: %s", camera_id, exc)
+            return [], frame
+
+    def _enqueue(
+        self,
+        camera_id: str,
+        events: List[DetectionEvent],
+        zone_events: List[ZoneEvent],
+    ) -> None:
+        """디바운싱과 함께 이벤트를 큐에 넣는다 (비블로킹)."""
+        for event in events:
+            event_id = event.object_id if event.object_id is not None else 0
+            if event.object_id is not None:
+                frame_count = self._track_manager.get_frame_count(
+                    camera_id, event.object_id
+                )
+                if frame_count < self._track_manager.min_track_frames:
+                    continue
+            if self._debouncer.should_send(camera_id, event.event_type.value, event_id):
+                event_data = event.to_dict()
+                event_data["camera_id"] = camera_id
+                try:
+                    self._event_queue.put_nowait(event_data)
+                    self._increment_stat("events_detected")
+                except Full:
+                    self._increment_stat("events_dropped")
+                    self._debouncer.save_locally(event_data)
+                    logger.warning("[%s] 이벤트 큐 가득 참: 로컬 저장", camera_id)
+
+        for zone_event in zone_events:
+            evt_dict = zone_event.to_dict()
+            if "type" not in evt_dict:
+                evt_dict["type"] = evt_dict.get("event_type")
+            try:
+                self._event_queue.put_nowait(evt_dict)
+                self._increment_stat("events_detected")
+            except Full:
+                self._increment_stat("events_dropped")
+                self._debouncer.save_locally(evt_dict)
+                logger.warning("[%s] 구역 이벤트 큐 가득 참: 로컬 저장", camera_id)
+
+
+# ===========================================================================
 # VideoProcessor  (공개 API)
 # ===========================================================================
 
@@ -501,6 +709,12 @@ class VideoProcessor:
         _debouncer (_EventDebouncer) - 이벤트 디바운싱
         _display   (_DisplayGrid)    - 그리드 디스플레이
         _cams      (_CameraRegistry) - 카메라 생명주기
+
+    모델 공유:
+        _model_pool  -  (helmet_path, person_path, pose_path) 튜플 키로
+                        로드된 YOLO 모델 객체를 캐시한다.
+                        동일 모델 경로를 사용하는 카메라들은 GPU 메모리를
+                        공유하여 중복 로드를 방지한다.
     """
 
     def __init__(self, config: AppConfig) -> None:
@@ -508,6 +722,13 @@ class VideoProcessor:
         self._analyzers: Dict[str, AIAnalyzer] = {}
         # 카메라별 AI 모델 플래그 (ai_models 설정 딕셔너리에서 파싱)
         self._camera_ai_flags: Dict[str, Dict[str, bool]] = {}
+
+        # ── 모델 공유 풀 ─────────────────────────────────────────────
+        # key: (helmet_path, person_path, pose_path) 정규화 튜플
+        # value: {"helmet": model|None, "person": model|None, "pose": model|None}
+        # 같은 경로 조합의 카메라들은 동일 모델 객체를 참조 → GPU 메모리 절약
+        self._model_pool: Dict[tuple, Dict[str, object]] = {}
+        self._model_pool_lock = Lock()
 
         # ── 라이프사이클 ─────────────────────────────────────────────
         self.running    = False
@@ -582,6 +803,25 @@ class VideoProcessor:
         self._latest_snapshots: Dict[str, dict] = {}
         self._snapshot_lock = Lock()
 
+        # ── 추론 파이프라인 (God Class 분리) ─────────────────────────
+        self._pipeline = _InferencePipeline(
+            analyzers=self._analyzers,
+            camera_ai_flags=self._camera_ai_flags,
+            track_manager=self.track_manager,
+            violation_filter=self.violation_filter,
+            debouncer=self._debouncer,
+            event_queue=self.event_queue,
+            zone_manager=self.zone_manager,
+            dataset_collector=self.dataset_collector,
+            display=self._display,
+            snapshot_store=self._latest_snapshots,
+            snapshot_lock=self._snapshot_lock,
+            zone_in_objects=self._zone_in_objects,
+            increment_stat=self._increment_stat,
+            add_inference_metrics=self._add_inference_metrics,
+            display_enabled=config.display,
+        )
+
         # ── 워커 스레드 핸들 ─────────────────────────────────────────
         self.sender_thread:        Optional[Thread] = None
         self.cleanup_thread:       Optional[Thread] = None
@@ -650,16 +890,65 @@ class VideoProcessor:
         없는 항목은 전역 설정(config.models)로 폴백한다.
 
         model_paths 키: "helmet" | "person" | "pose"
+
+        동일한 모델 경로 조합은 _model_pool에서 캐시된 모델 객체를 재사용하여
+        GPU 메모리 중복 로드를 방지한다.
         """
         mp = model_paths or {}
-        analyzer = AIAnalyzer(
-            helmet_model_path=mp.get("helmet") or self.config.models.helmet_model,
-            person_model_path=mp.get("person") or self.config.models.person_model,
-            pose_model_path=mp.get("pose")   or self.config.models.pose_model,
-            confidence_threshold=self.config.detection.pose_confidence,
-            device=self.config.detection.device,
-            fall_height_ratio=self.config.detection.fall_height_ratio,
-        )
+        helmet_path = mp.get("helmet") or self.config.models.helmet_model or ""
+        person_path = mp.get("person") or self.config.models.person_model or ""
+        pose_path   = mp.get("pose")   or self.config.models.pose_model   or ""
+
+        # 정규화 키: 절대 경로 기준으로 동일 파일 여부 판단
+        def _norm(p: str) -> str:
+            return str(os.path.abspath(p)) if p else ""
+
+        pool_key = (_norm(helmet_path), _norm(person_path), _norm(pose_path))
+
+        with self._model_pool_lock:
+            cached = self._model_pool.get(pool_key)
+
+        if cached is not None:
+            # 동일 경로 조합 → 캐시된 모델 객체 재사용 (GPU 메모리 공유)
+            logger.info(
+                "모델 풀 캐시 히트 — 동일 모델 공유 (helmet=%s, pose=%s)",
+                os.path.basename(helmet_path) if helmet_path else "없음",
+                os.path.basename(pose_path)   if pose_path   else "없음",
+            )
+            analyzer = AIAnalyzer(
+                helmet_model_path=helmet_path or None,
+                person_model_path=person_path or None,
+                pose_model_path=pose_path or None,
+                confidence_threshold=self.config.detection.pose_confidence,
+                device=self.config.detection.device,
+                fall_height_ratio=self.config.detection.fall_height_ratio,
+            )
+            # 새 모델 로드 없이 캐시된 모델 객체를 직접 주입
+            analyzer.helmet_model = cached["helmet"]
+            analyzer.person_model = cached["person"]
+            analyzer.pose_model   = cached["pose"]
+        else:
+            # 최초 로드 → 모델 풀에 저장
+            analyzer = AIAnalyzer(
+                helmet_model_path=helmet_path or None,
+                person_model_path=person_path or None,
+                pose_model_path=pose_path or None,
+                confidence_threshold=self.config.detection.pose_confidence,
+                device=self.config.detection.device,
+                fall_height_ratio=self.config.detection.fall_height_ratio,
+            )
+            with self._model_pool_lock:
+                self._model_pool[pool_key] = {
+                    "helmet": analyzer.helmet_model,
+                    "person": analyzer.person_model,
+                    "pose":   analyzer.pose_model,
+                }
+            logger.info(
+                "모델 풀 신규 등록 (helmet=%s, pose=%s)",
+                os.path.basename(helmet_path) if helmet_path else "없음",
+                os.path.basename(pose_path)   if pose_path   else "없음",
+            )
+
         analyzer.helmet_threshold = self.config.detection.helmet_confidence
         analyzer.person_threshold = self.config.detection.person_confidence
         analyzer.pose_threshold   = self.config.detection.pose_confidence
@@ -816,101 +1105,6 @@ class VideoProcessor:
             time.sleep(5.0)
 
     # ------------------------------------------------------------------
-    # AI 추론
-    # ------------------------------------------------------------------
-
-    def _run_ai_inference(
-        self, camera_id: str, frame: Any
-    ) -> List[DetectionEvent]:
-        """카메라별 AI 분석기를 사용해 프레임을 추론한다."""
-        analyzer = self._analyzers.get(camera_id)
-        if analyzer is None:
-            logger.error("[%s] 분석기 인스턴스를 찾을 수 없습니다", camera_id)
-            self._increment_stat("inference_errors")
-            return []
-        start = time.time()
-        flags = self._camera_ai_flags.get(
-            camera_id, {"use_helmet": True, "use_pose": True, "use_person": True}
-        )
-        try:
-            events = analyzer.run_inference(frame, **flags)
-        except Exception as exc:
-            logger.error("[%s] AI 추론 실패: %s", camera_id, exc, exc_info=True)
-            self._increment_stat("inference_errors")
-            return []
-        finally:
-            self._add_inference_metrics(time.time() - start)
-        return events
-
-    # ------------------------------------------------------------------
-    # 데이터셋 수집 / 구역 탐지 / 이벤트 큐
-    # ------------------------------------------------------------------
-
-    def _collect_dataset(
-        self, frame: Any, events: List[DetectionEvent], camera_id: str
-    ) -> None:
-        if not self.dataset_collector:
-            return
-        try:
-            self.dataset_collector.save_frame(frame, events, camera_id=camera_id)
-        except IOError as exc:
-            logger.error("[%s] 데이터셋 파일 저장 실패: %s", camera_id, exc)
-        except Exception as exc:
-            logger.warning("[%s] 데이터셋 저장 오류: %s", camera_id, exc)
-
-    def _check_danger_zones(
-        self, camera_id: str, events: List[DetectionEvent], frame: Any
-    ) -> Tuple[List[ZoneEvent], Any]:
-        """위험 구역 침입 감지."""
-        zone_events: List[ZoneEvent] = []
-        if not self.zone_manager:
-            return zone_events, frame
-        try:
-            zone_events = self.zone_manager.check_zones(camera_id, events)
-            # 시각화는 ZoneDrawer.overlay()에서 위임하므로 draw_zones 호출 제거
-        except Exception as exc:
-            logger.warning("[%s] 구역 감지 오류: %s", camera_id, exc)
-        return zone_events, frame
-
-    def _queue_events(
-        self,
-        camera_id: str,
-        events: List[DetectionEvent],
-        zone_events: List[ZoneEvent],
-    ) -> None:
-        """디바운싱과 함께 이벤트를 큐에 추가한다 (비블로킹)."""
-        for event in events:
-            event_id = event.object_id if event.object_id is not None else 0
-            if event.object_id is not None:
-                frame_count = self.track_manager.get_frame_count(
-                    camera_id, event.object_id
-                )
-                if frame_count < self.track_manager.min_track_frames:
-                    continue
-            if self._debouncer.should_send(camera_id, event.event_type.value, event_id):
-                event_data = event.to_dict()
-                event_data["camera_id"] = camera_id
-                try:
-                    self.event_queue.put_nowait(event_data)
-                    self._increment_stat("events_detected")
-                except Full:
-                    self._increment_stat("events_dropped")
-                    self._debouncer.save_locally(event_data)
-                    logger.warning("[%s] 이벤트 큐 가득 참: 로컬 저장", camera_id)
-
-        for zone_event in zone_events:
-            evt_dict = zone_event.to_dict()
-            if "type" not in evt_dict:
-                evt_dict["type"] = evt_dict.get("event_type")
-            try:
-                self.event_queue.put_nowait(evt_dict)
-                self._increment_stat("events_detected")
-            except Full:
-                self._increment_stat("events_dropped")
-                self._debouncer.save_locally(evt_dict)
-                logger.warning("[%s] 구역 이벤트 큐 가득 참: 로컬 저장", camera_id)
-
-    # ------------------------------------------------------------------
     # 카메라 스레드 / 추론 스레드
     # ------------------------------------------------------------------
 
@@ -938,7 +1132,7 @@ class VideoProcessor:
             time.sleep(max(0.0, 1.0 / self.config.detection.target_fps - elapsed))
 
     def _process_inference(self, camera_id: str) -> None:
-        """AI 추론 스레드 — 프레임 큐에서 가져와 전체 파이프라인 실행."""
+        """AI 추론 스레드 — 프레임 큐에서 가져와 _InferencePipeline 1사이클 실행."""
         consecutive_errors = 0
         max_errors = self.config.processing.consecutive_failure_threshold
 
@@ -955,58 +1149,7 @@ class VideoProcessor:
             except Empty:
                 continue
             try:
-                self._increment_stat("frames_processed")
-                events = self._run_ai_inference(camera_id, frame)
-                events_for_display = events.copy()
-                events_for_dataset = events.copy()
-                # 최신 탐지 스냅샷 저장 (트래킹·필터링 전 원본 이벤트)
-                with self._snapshot_lock:
-                    self._latest_snapshots[camera_id] = {
-                        "timestamp": time.time(),
-                        "detections": [e.to_dict() for e in events],
-                    }
-                events, removed_ids = self.track_manager.update(camera_id, events)
-                if removed_ids:
-                    self.violation_filter.purge(camera_id, removed_ids)
-                events = self.violation_filter.filter(camera_id, events)
-                self._collect_dataset(frame, events_for_dataset, camera_id)
-                zone_events, frame = self._check_danger_zones(camera_id, events, frame)
-                self._queue_events(camera_id, events, zone_events)
-
-                # ── 구역 점유 상태 영속 업데이트 ────────────────────────────
-                zone_set = self._zone_in_objects.setdefault(camera_id, set())
-
-                # 활성 존이 없으면 zone_set을 즉시 클리어
-                # (존 삭제 시 zone_exited 이벤트가 발생하지 않아 zone_set이 잔류하는 문제 방지)
-                has_active_zones = bool(
-                    self.zone_manager
-                    and self.zone_manager.zones.get(camera_id)
-                )
-                if not has_active_zones:
-                    zone_set.clear()
-                else:
-                    for ze in zone_events:
-                        if ze.event_type.value in ("zone_entered", "zone_dwelling"):
-                            zone_set.add(ze.object_id)
-                        elif ze.event_type.value == "zone_exited":
-                            zone_set.discard(ze.object_id)
-                # 트랙에서 사라진 객체는 zone 집합에서도 제거
-                for rid in removed_ids:
-                    zone_set.discard(rid)
-
-                if self.config.display:
-                    # person 타입만 DANGER_ZONE으로 표시 (head/helmet은 그대로 유지)
-                    # zone_set을 사용하므로 zone_exited 전까지 flickering 없음
-                    display_evts = [
-                        replace(ev, event_type=EventType.DANGER_ZONE)
-                        if (
-                            ev.event_type == EventType.PERSON
-                            and getattr(ev, 'object_id', None) in zone_set
-                        )
-                        else ev
-                        for ev in events_for_display
-                    ]
-                    self._display.update_frame(camera_id, frame, display_evts)
+                self._pipeline.run(camera_id, frame)
                 consecutive_errors = 0
             except Exception as exc:
                 logger.error("[%s] 추론 루프 오류: %s", camera_id, exc, exc_info=True)
@@ -1025,7 +1168,6 @@ class VideoProcessor:
                     self._cams.unregister(camera_id)
                     break
 
-                # 연속 오류 횟수에 비례한 백오프 (최대 30초)
                 backoff = min(2 ** consecutive_errors, 30)
                 logger.warning(
                     "[%s] 추론 오류 %d/%d회 — %.0f초 대기 후 재시도",
@@ -1099,7 +1241,10 @@ class VideoProcessor:
             logger.error("등록된 카메라가 없습니다")
             return
 
-        cv2.destroyAllWindows()
+        try:
+            cv2.destroyAllWindows()
+        except cv2.error:
+            pass  # 헤드리스 환경에서는 GUI 함수 무시
         time.sleep(0.1)
 
         self.running = True
@@ -1171,7 +1316,10 @@ class VideoProcessor:
             cam.release()
 
         self.event_publisher.disconnect()
-        cv2.destroyAllWindows()
+        try:
+            cv2.destroyAllWindows()
+        except cv2.error:
+            pass  # 헤드리스 환경에서는 GUI 함수 무시
         logger.info("프로세서 종료 완료")
 
     # ------------------------------------------------------------------

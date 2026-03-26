@@ -20,6 +20,24 @@ os.environ['OPENCV_LOG_LEVEL'] = 'ERROR'
 if sys.platform == 'win32':
     os.environ.setdefault('OPENCV_VIDEOIO_PRIORITY_MSMF', '0')
 
+# ── Jetson Orin 통합 GPU cuDNN 비활성화 ────────────────────────────
+# Jetson Orin nvgpu(통합 GPU)는 cuDNN v8/v9 conv2d 엔진을 찾지 못하는
+# PyTorch 호환성 문제가 있음. cuDNN을 끄고 native CUDA 커널을 사용.
+# 해당 에러: RuntimeError: GET was unable to find an engine to execute this computation
+# ※ TensorRT .engine 파일 사용 시에는 cuDNN을 거치지 않으므로 비활성화 불필요
+try:
+    import torch
+    if torch.cuda.is_available():
+        device_name = torch.cuda.get_device_name(0).lower()
+        if "orin" in device_name or "tegra" in device_name or "nvgpu" in device_name:
+            torch.backends.cudnn.enabled = False
+            import logging as _log
+            _log.getLogger(__name__).info(
+                "Jetson Orin 통합 GPU 감지 → cuDNN 비활성화 (TensorRT .engine 사용 권장)"
+            )
+except Exception:
+    pass
+
 from src.core import VideoProcessor
 from src.config import AppConfig
 from src.services.zone_api import start_zone_api_server
@@ -40,32 +58,43 @@ for _stream in (sys.stdout, sys.stderr):
 
 import logging.handlers as _log_handlers
 
-_LOG_DIR = Path('logs')
-_LOG_DIR.mkdir(exist_ok=True)
-
-_root_logger = logging.getLogger()
-_root_logger.setLevel(logging.INFO)
-_log_fmt = logging.Formatter(
-    '%(asctime)s [%(levelname)s] %(name)s: %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S',
-)
-# 콘솔 핸들러
-_console_handler = logging.StreamHandler()
-_console_handler.setFormatter(_log_fmt)
-_root_logger.addHandler(_console_handler)
-# 파일 핸들러 (로테이션: 10MB × 5개 보관)
-_file_handler = _log_handlers.RotatingFileHandler(
-    _LOG_DIR / 'cctv.log',
-    maxBytes=10 * 1024 * 1024,  # 10MB
-    backupCount=5,
-    encoding='utf-8',
-)
-_file_handler.setFormatter(_log_fmt)
-_root_logger.addHandler(_file_handler)
-
 logger = logging.getLogger(__name__)
 
 SEPARATOR = "=" * 60
+
+
+def _setup_logging(log_dir: str = "logs") -> None:
+    """루트 로거에 콘솔 + 로테이팅 파일 핸들러를 등록한다.
+
+    main() 내부에서 단 한 번만 호출해야 한다.
+    import 시점에 실행되면 테스트 등 다른 진입점에서도
+    logs/ 디렉토리와 핸들러가 부작용으로 생성된다.
+    """
+    log_path = Path(log_dir)
+    log_path.mkdir(exist_ok=True)
+
+    root = logging.getLogger()
+    # 이미 핸들러가 등록된 경우 중복 추가 방지 (pytest 등 재진입 시)
+    if root.handlers:
+        return
+
+    root.setLevel(logging.INFO)
+    fmt = logging.Formatter(
+        '%(asctime)s [%(levelname)s] %(name)s: %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S',
+    )
+    console = logging.StreamHandler()
+    console.setFormatter(fmt)
+    root.addHandler(console)
+
+    file_handler = _log_handlers.RotatingFileHandler(
+        log_path / 'cctv.log',
+        maxBytes=10 * 1024 * 1024,  # 10MB
+        backupCount=5,
+        encoding='utf-8',
+    )
+    file_handler.setFormatter(fmt)
+    root.addHandler(file_handler)
 
 
 # ──────────────────────────────────────────────────────────────────
@@ -446,6 +475,8 @@ def _validate_args(args: argparse.Namespace, parser: argparse.ArgumentParser) ->
 
 def main() -> None:
     """메인 진입점"""
+    _setup_logging()          # ← import-time 부작용 제거: 여기서만 로거 초기화
+
     parser = _build_parser()
     args = parser.parse_args()
     _validate_args(args, parser)
@@ -484,7 +515,10 @@ def main() -> None:
                         pass
             except Exception:
                 pass
-        cv2.destroyAllWindows()
+        try:
+            cv2.destroyAllWindows()
+        except cv2.error:
+            pass  # 헤드리스 환경에서는 GUI 함수 무시
 
     atexit.register(_release_all)
 
