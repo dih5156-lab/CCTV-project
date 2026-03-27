@@ -1,6 +1,6 @@
 """위험구역 진입/체류 탐지 모듈.
 
-카메라별 폴리곤 상 위험 구역을 정의하고, 객체 바운딩박스와의
+카메라별 폴리곤/라인 기반 위험 구역을 정의하고, 객체 바운딩박스와의
 교차 여부를 구해 진입/퇴장/체류 이벤트를 생성한다.
 다중 주시::
 
@@ -50,8 +50,34 @@ class ZoneEvent:
 
 
 class Zone:
-    """위험 구역 정의"""
-    
+    """위험 구역 정의 베이스 클래스."""
+
+    zone_type = "polygon"
+
+    def __init__(self, zone_id: str, name: str = ""):
+        self.zone_id = zone_id
+        self.name = name or zone_id
+
+    def to_dict(self) -> Dict:
+        raise NotImplementedError
+
+    def intersects_bbox(self, bbox: Dict) -> bool:
+        raise NotImplementedError
+
+    def draw(
+        self,
+        frame: np.ndarray,
+        color: Tuple[int, int, int] = (0, 255, 0),
+        thickness: int = 2,
+    ):
+        raise NotImplementedError
+
+
+class PolygonZone(Zone):
+    """폴리곤 기반 위험 구역."""
+
+    zone_type = "polygon"
+
     def __init__(self, zone_id: str, polygon: List[Tuple[int, int]], name: str = ""):
         """
         매개변수:
@@ -59,9 +85,8 @@ class Zone:
             polygon: 폴리곤 좌표 [(x1, y1), (x2, y2), ...]
             name: 구역 이름 (예: '전기설비')
         """
-        self.zone_id = zone_id
+        super().__init__(zone_id, name)
         self.polygon = np.array(polygon, dtype=np.int32)
-        self.name = name or zone_id
 
     def contains_point(self, point: Tuple[float, float]) -> bool:
         """점이 폴리곤 내부에 있는지 확인"""
@@ -90,6 +115,59 @@ class Zone:
             x, y = self.polygon[0]
             cv2.putText(frame, self.name, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
 
+    def to_dict(self) -> Dict:
+        return {
+            "id": self.zone_id,
+            "name": self.name,
+            "type": self.zone_type,
+            "polygon": self.polygon.tolist(),
+        }
+
+
+class LineZone(Zone):
+    """선분 교차 기반 위험 구역."""
+
+    zone_type = "line"
+
+    def __init__(
+        self,
+        zone_id: str,
+        points: List[Tuple[int, int]],
+        name: str = "",
+        direction: str = "both",
+    ):
+        super().__init__(zone_id, name)
+        self.points = np.array(points, dtype=np.int32)
+        self.direction = direction or "both"
+
+    def intersects_bbox(self, bbox: Dict) -> bool:
+        """라인 구역은 bbox 점유 개념이 없어 항상 False를 반환한다."""
+        return False
+
+    def draw(
+        self,
+        frame: np.ndarray,
+        color: Tuple[int, int, int] = (0, 255, 0),
+        thickness: int = 2,
+    ):
+        if len(self.points) < 2:
+            return
+        start = tuple(int(v) for v in self.points[0])
+        end = tuple(int(v) for v in self.points[1])
+        cv2.line(frame, start, end, color, thickness)
+        label_x = int((start[0] + end[0]) / 2)
+        label_y = int((start[1] + end[1]) / 2) - 10
+        cv2.putText(frame, self.name, (label_x, label_y), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+
+    def to_dict(self) -> Dict:
+        return {
+            "id": self.zone_id,
+            "name": self.name,
+            "type": self.zone_type,
+            "points": self.points.tolist(),
+            "direction": self.direction,
+        }
+
 
 class ZoneManager:
     """구역 관리 및 이벤트 감지"""
@@ -101,10 +179,11 @@ class ZoneManager:
         """
         self.zones_config_path = zones_config
         self.zones: Dict[str, Dict[str, Zone]] = {}  # camera_id -> {zone_id -> Zone}
-        self.object_states: Dict[str, Dict[int, bool]] = {}  # camera_id -> {object_id -> in_zone}
-        self.object_enter_time: Dict[str, Dict[int, float]] = {}  # camera_id -> {object_id -> timestamp}
+        self.object_states: Dict[str, Dict[Tuple[str, int], bool]] = {}  # camera_id -> {(zone_id, object_id) -> in_zone}
+        self.object_enter_time: Dict[str, Dict[Tuple[str, int], float]] = {}  # camera_id -> {(zone_id, object_id) -> timestamp}
+        self.object_positions: Dict[str, Dict[Tuple[str, int], Tuple[float, float]]] = {}  # camera_id -> {(zone_id, object_id) -> point}
         self.dwelling_threshold: float = 3.0  # 체류 시간 임계값 (초)
-        self.sent_dwelling_events: Dict[Tuple[str, int], float] = {}  # (camera_id, object_id) -> last_event_time
+        self.sent_dwelling_events: Dict[Tuple[str, str, int], float] = {}  # (camera_id, zone_id, object_id) -> last_event_time
         
         self._load_config()
 
@@ -134,12 +213,19 @@ class ZoneManager:
         self.zones[camera_id] = {}
         for zone_def in zones_data:
             zone_id = zone_def['id']
-            polygon = zone_def['polygon']
             name = zone_def.get('name', zone_id)
-            self.zones[camera_id][zone_id] = Zone(zone_id, polygon, name)
+            zone_type = zone_def.get('type', 'polygon')
+            if zone_type == 'line':
+                points = zone_def.get('points', [])
+                direction = zone_def.get('direction', 'both')
+                self.zones[camera_id][zone_id] = LineZone(zone_id, points, name, direction)
+            else:
+                polygon = zone_def['polygon']
+                self.zones[camera_id][zone_id] = PolygonZone(zone_id, polygon, name)
         
         self.object_states[camera_id] = {}
         self.object_enter_time[camera_id] = {}
+        self.object_positions[camera_id] = {}
 
         logger.info("%s에 %s개 구역 로드됨", camera_id, len(self.zones[camera_id]))
 
@@ -236,19 +322,36 @@ class ZoneManager:
             object_id = detection.object_id or 0
             bbox_dict = detection.to_dict().get('bbox', {})
             current_object_ids.add(object_id)
+            anchor_point = self._get_anchor_point(bbox_dict)
             
             # 각 구역과 교차 검사
             for zone_id, zone in self.zones[camera_id].items():
+                zone_key = (zone_id, object_id)
+                if isinstance(zone, LineZone):
+                    prev_point = self.object_positions[camera_id].get(zone_key)
+                    event_type = self._check_line_crossing(zone, prev_point, anchor_point)
+                    if event_type is not None:
+                        events.append(
+                            ZoneEvent(
+                                event_type=event_type,
+                                zone_id=zone_id,
+                                object_id=object_id,
+                                camera_id=camera_id,
+                                bbox=bbox_dict,
+                                confidence=detection.confidence,
+                            )
+                        )
+                    self.object_positions[camera_id][zone_key] = anchor_point
+                    continue
+
                 in_zone = zone.intersects_bbox(bbox_dict)
-                
-                # 진입 감지
-                if in_zone and object_id not in self.object_states[camera_id]:
-                    self.object_states[camera_id][object_id] = False
-                
-                prev_in_zone = self.object_states[camera_id].get(object_id, False)
-                
+
+                if in_zone and zone_key not in self.object_states[camera_id]:
+                    self.object_states[camera_id][zone_key] = False
+
+                prev_in_zone = self.object_states[camera_id].get(zone_key, False)
+
                 if in_zone and not prev_in_zone:
-                    # 진입 이벤트
                     event = ZoneEvent(
                         event_type=ZoneEventType.ENTERED,
                         zone_id=zone_id,
@@ -258,11 +361,10 @@ class ZoneManager:
                         confidence=detection.confidence
                     )
                     events.append(event)
-                    self.object_states[camera_id][object_id] = True
-                    self.object_enter_time[camera_id][object_id] = time.time()
-                
+                    self.object_states[camera_id][zone_key] = True
+                    self.object_enter_time[camera_id][zone_key] = time.time()
+
                 elif not in_zone and prev_in_zone:
-                    # 퇴장 이벤트
                     event = ZoneEvent(
                         event_type=ZoneEventType.EXITED,
                         zone_id=zone_id,
@@ -272,18 +374,16 @@ class ZoneManager:
                         confidence=detection.confidence
                     )
                     events.append(event)
-                    self.object_states[camera_id][object_id] = False
-                    self.object_enter_time[camera_id].pop(object_id, None)
-                
+                    self.object_states[camera_id][zone_key] = False
+                    self.object_enter_time[camera_id].pop(zone_key, None)
+
                 elif in_zone and prev_in_zone:
-                    # 체류 중: 임계값 초과 시 이벤트
-                    enter_time = self.object_enter_time[camera_id].get(object_id)
+                    enter_time = self.object_enter_time[camera_id].get(zone_key)
                     if enter_time:
                         now_ts = time.time()
                         dwelling_time = now_ts - enter_time
                         if dwelling_time >= self.dwelling_threshold:
-                            # 중복 이벤트 방지 (동일 객체/카메라에서 1초마다만 전송)
-                            key = (camera_id, object_id)
+                            key = (camera_id, zone_id, object_id)
                             last_event_time = self.sent_dwelling_events.get(key, 0)
                             if now_ts - last_event_time >= 1.0:
                                 event = ZoneEvent(
@@ -299,12 +399,84 @@ class ZoneManager:
                                 self.sent_dwelling_events[key] = now_ts
         
         # 사라진 객체 정리
-        for object_id in list(self.object_states[camera_id].keys()):
+        for zone_key in list(self.object_states[camera_id].keys()):
+            _, object_id = zone_key
             if object_id not in current_object_ids:
-                self.object_states[camera_id].pop(object_id, None)
-                self.object_enter_time[camera_id].pop(object_id, None)
+                self.object_states[camera_id].pop(zone_key, None)
+                self.object_enter_time[camera_id].pop(zone_key, None)
+        for zone_key in list(self.object_positions[camera_id].keys()):
+            _, object_id = zone_key
+            if object_id not in current_object_ids:
+                self.object_positions[camera_id].pop(zone_key, None)
         
         return events
+
+    def _get_anchor_point(self, bbox: Dict) -> Tuple[float, float]:
+        """객체의 발 위치에 가까운 기준점(bottom-center)을 반환한다."""
+        x = float(bbox.get('x', 0))
+        y = float(bbox.get('y', 0))
+        w = float(bbox.get('width', 0))
+        h = float(bbox.get('height', 0))
+        return (x + (w / 2.0), y + h)
+
+    def _check_line_crossing(
+        self,
+        zone: LineZone,
+        prev_point: Optional[Tuple[float, float]],
+        curr_point: Tuple[float, float],
+    ) -> Optional[ZoneEventType]:
+        """이전/현재 기준점이 선분을 가로질렀는지 판정한다."""
+        if prev_point is None or len(zone.points) < 2:
+            return None
+
+        line_start = tuple(float(v) for v in zone.points[0])
+        line_end = tuple(float(v) for v in zone.points[1])
+        prev_side = self._point_side(prev_point, line_start, line_end)
+        curr_side = self._point_side(curr_point, line_start, line_end)
+
+        if abs(prev_side) < 1e-6 or abs(curr_side) < 1e-6:
+            return None
+        if prev_side * curr_side >= 0:
+            return None
+        if not self._segments_intersect(prev_point, curr_point, line_start, line_end):
+            return None
+
+        moving_to_positive = prev_side < 0 < curr_side
+        direction = zone.direction.lower()
+        if direction in ("both", "bidirectional", "any"):
+            return ZoneEventType.ENTERED if moving_to_positive else ZoneEventType.EXITED
+        if direction in ("outside_to_inside", "forward"):
+            return ZoneEventType.ENTERED if moving_to_positive else None
+        if direction in ("inside_to_outside", "backward"):
+            return ZoneEventType.EXITED if not moving_to_positive else None
+        return ZoneEventType.ENTERED if moving_to_positive else ZoneEventType.EXITED
+
+    def _point_side(
+        self,
+        point: Tuple[float, float],
+        line_start: Tuple[float, float],
+        line_end: Tuple[float, float],
+    ) -> float:
+        return (
+            (line_end[0] - line_start[0]) * (point[1] - line_start[1])
+            - (line_end[1] - line_start[1]) * (point[0] - line_start[0])
+        )
+
+    def _segments_intersect(
+        self,
+        p1: Tuple[float, float],
+        p2: Tuple[float, float],
+        q1: Tuple[float, float],
+        q2: Tuple[float, float],
+    ) -> bool:
+        def orientation(a, b, c) -> float:
+            return (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0])
+
+        o1 = orientation(p1, p2, q1)
+        o2 = orientation(p1, p2, q2)
+        o3 = orientation(q1, q2, p1)
+        o4 = orientation(q1, q2, p2)
+        return o1 * o2 <= 0 and o3 * o4 <= 0
 
     def draw_zones(self, frame: np.ndarray, camera_id: str) -> np.ndarray:
         """프레임에 모든 구역 그리기"""
@@ -317,4 +489,4 @@ class ZoneManager:
         return frame
 
 
-__all__ = ["Zone", "ZoneManager", "ZoneEvent"]
+__all__ = ["Zone", "PolygonZone", "LineZone", "ZoneManager", "ZoneEvent"]

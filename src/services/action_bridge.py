@@ -50,6 +50,7 @@ _ACTION_DEFAULTS = ActionBridgeConfig()
 _CMD_TOPIC_MODE    = "cctv/commands/mode"     # {"site_id"?, "mode": "auto|manual"}
 _CMD_TOPIC_APPROVE = "cctv/commands/approve"  # {"event_id": "..."}
 _CMD_TOPIC_REJECT  = "cctv/commands/reject"   # {"event_id": "..."}
+_STATUS_TOPIC_PREFIX = "cctv/status/action"
 
 
 # ===========================================================================
@@ -505,6 +506,20 @@ class ActionBridge:
     def get_pending_events(self) -> List[Dict]:
         return self._sites.list_pending()
 
+    def _publish_status(self, suffix: str, payload: Dict) -> None:
+        """Action Layer 상태/명령 결과를 MQTT로 발행한다."""
+        if not self._mqtt_client:
+            return
+        try:
+            topic = f"{_STATUS_TOPIC_PREFIX}/{suffix.lstrip('/')}"
+            body = {
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                **payload,
+            }
+            self._mqtt_client.publish(topic, json.dumps(body, ensure_ascii=False), qos=0)
+        except Exception as exc:
+            logger.warning("Action status 발행 실패: %s", exc)
+
     def approve_event(self, event_id: str) -> Tuple[bool, str]:
         """대기 이벤트를 승인하여 즉시 실행한다."""
         info = self._sites.pop_pending(event_id)
@@ -512,6 +527,15 @@ class ActionBridge:
             return False, f"이벤트 없음: {event_id}"
         logger.info("[수동 승인] event_id=%s", event_id)
         self._execute_action(info["topic"], info["payload"])
+        self._publish_status(
+            "events/approved",
+            {
+                "event_id": event_id,
+                "camera_id": info["payload"].get("camera_id"),
+                "site_id": info.get("site_id"),
+                "status": "approved",
+            },
+        )
         return True, f"승인 완료: {event_id}"
 
     def reject_event(self, event_id: str) -> Tuple[bool, str]:
@@ -521,6 +545,15 @@ class ActionBridge:
             return False, f"이벤트 없음: {event_id}"
         logger.info("[수동 거부] event_id=%s", event_id)
         self._repo.save(info["topic"], info["payload"], alarm_played=False, http_sent=False)
+        self._publish_status(
+            "events/rejected",
+            {
+                "event_id": event_id,
+                "camera_id": info["payload"].get("camera_id"),
+                "site_id": info.get("site_id"),
+                "status": "rejected",
+            },
+        )
         return True, f"거부 완료: {event_id}"
 
     # ------------------------------------------------------------------
@@ -544,6 +577,16 @@ class ActionBridge:
             event_id = str(uuid.uuid4())
             self._sites.push_pending(event_id, topic, payload, site_id)
             self._repo.save(topic, payload, alarm_played=False, http_sent=False)
+            self._publish_status(
+                "events/pending",
+                {
+                    "event_id": event_id,
+                    "camera_id": camera_id,
+                    "site_id": site_id,
+                    "event_type": payload.get("type"),
+                    "status": "pending",
+                },
+            )
         else:
             self._execute_action(topic, payload)
 
@@ -574,9 +617,21 @@ class ActionBridge:
                 self._siren.trigger(event_type, camera_id)
 
         self._forwarder.forward(topic, payload)
-        http_sent = bool(self._forwarder._targets)
+        http_sent = self._forwarder.has_targets
 
         self._repo.save(topic, payload, alarm_played=alarm_played, http_sent=http_sent)
+        self._publish_status(
+            "events/executed",
+            {
+                "camera_id": camera_id,
+                "event_type": event_type,
+                "severity": severity,
+                "status": "executed",
+                "alarm_played": alarm_played,
+                "http_sent": http_sent,
+                "devices": [d.value for d in self._resolve_devices(camera_id)],
+            },
+        )
 
     # ------------------------------------------------------------------
     # MQTT 콜백
@@ -603,25 +658,49 @@ class ActionBridge:
 
     def _dispatch_command(self, topic: str, payload: Dict) -> None:
         """MQTT 명령 토픽을 처리한다."""
+        command_id = str(payload.get("command_id", uuid.uuid4()))
+        command_status = "ignored"
+        message = ""
+
         if topic == _CMD_TOPIC_MODE:
             mode_val = payload.get("mode")
             if mode_val:
                 try:
                     self.set_mode(ControlMode(mode_val), site_id=payload.get("site_id"))
+                    command_status = "success"
+                    message = f"mode set to {mode_val}"
                 except ValueError:
                     logger.warning("MQTT mode 명령 오류: 알 수 없는 값 %r", mode_val)
+                    command_status = "error"
+                    message = f"invalid mode: {mode_val!r}"
 
         elif topic == _CMD_TOPIC_APPROVE:
             event_id = payload.get("event_id")
             if event_id:
-                _, msg = self.approve_event(event_id)
+                ok, msg = self.approve_event(event_id)
                 logger.info("MQTT approve: %s", msg)
+                command_status = "success" if ok else "error"
+                message = msg
 
         elif topic == _CMD_TOPIC_REJECT:
             event_id = payload.get("event_id")
             if event_id:
-                _, msg = self.reject_event(event_id)
+                ok, msg = self.reject_event(event_id)
                 logger.info("MQTT reject: %s", msg)
+                command_status = "success" if ok else "error"
+                message = msg
+
+        self._publish_status(
+            "commands/result",
+            {
+                "command_id": command_id,
+                "topic": topic,
+                "status": command_status,
+                "message": message,
+                "site_id": payload.get("site_id"),
+                "event_id": payload.get("event_id"),
+            },
+        )
 
     def _on_message(
         self,

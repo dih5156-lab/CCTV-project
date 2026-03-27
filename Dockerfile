@@ -34,13 +34,14 @@ RUN groupadd -r cctv && useradd -r -g cctv cctv
 WORKDIR /app
 
 # Builder에서 Python 패키지 복사
-COPY --from=builder /root/.local /root/.local
+COPY --from=builder /root/.local /home/cctv/.local
 
 # 외부 speaker-edgex 모듈 런타임 의존성 보강
-RUN pip install --no-cache-dir "pydantic>=2.5.0"
+RUN pip install --no-cache-dir "pydantic>=2.5.0" \
+    && chown -R cctv:cctv /home/cctv/.local
 
 # 환경 변수 설정
-ENV PATH=/root/.local/bin:$PATH
+ENV PATH=/home/cctv/.local/bin:$PATH
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 
@@ -53,6 +54,8 @@ COPY --chown=cctv:cctv requirements.txt /app/
 
 # 모델 디렉터리 생성
 RUN mkdir -p /app/models /app/event_backup && chown -R cctv:cctv /app
+
+USER cctv
 
 # 기본 진입점 (서비스별로 docker-compose에서 command override)
 CMD ["python", "main.py", "--help"]

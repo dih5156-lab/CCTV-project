@@ -55,6 +55,9 @@ class EdgeXDeviceAdapterService:
         self._async_loop: Optional[asyncio.AbstractEventLoop] = None
         self._async_loop_thread: Optional[Thread] = None
         self._async_loop_ready = Event()
+        self._outbox_stop = Event()
+        self._outbox_thread: Optional[Thread] = None
+        self._outbox_poll_interval_seconds = 5.0
         self._coro_timeout_seconds = 10.0
 
         self.edgex_service = CCTVDeviceService(
@@ -252,6 +255,47 @@ class EdgeXDeviceAdapterService:
             logger.error("카메라 등록 실패 (%s): %s", camera_id, error)
             return False
 
+    def _replay_outbox_once(self) -> None:
+        pending = self.edgex_service.get_pending_detection_events()
+        if not pending:
+            return
+
+        replayed = 0
+        for row in pending:
+            camera_id = str(row.get("camera_id") or "unknown")
+            event_data = row.get("event_data") or {}
+            outbox_id = int(row["id"])
+            rtsp_source = event_data.get("source") if isinstance(event_data, dict) else None
+
+            if not self._ensure_camera_registered(camera_id, rtsp_source=rtsp_source):
+                logger.debug("Outbox 재전송 보류: 카메라 등록 실패 (%s)", camera_id)
+                continue
+
+            sent = self._run_coro(
+                self.edgex_service.replay_detection_event(outbox_id, camera_id, event_data)
+            )
+            if sent:
+                replayed += 1
+
+        if replayed:
+            logger.info("EdgeX outbox 재전송 완료: %d건", replayed)
+
+    def _start_outbox_replay_worker(self) -> None:
+        if self._outbox_thread and self._outbox_thread.is_alive():
+            return
+
+        def _run() -> None:
+            while not self._outbox_stop.is_set():
+                try:
+                    self._replay_outbox_once()
+                except Exception as error:
+                    logger.error("EdgeX outbox 재전송 워커 오류: %s", error, exc_info=True)
+                self._outbox_stop.wait(self._outbox_poll_interval_seconds)
+
+        self._outbox_stop.clear()
+        self._outbox_thread = Thread(target=_run, daemon=True, name="edgex-outbox-replay")
+        self._outbox_thread.start()
+
     def _on_connect(self, client, userdata, flags, rc):
         if rc == 0:
             logger.info("AI MQTT 구독 연결 성공: %s:%s", self.ai_mqtt_broker, self.ai_mqtt_port)
@@ -291,6 +335,7 @@ class EdgeXDeviceAdapterService:
         self._start_async_loop()
         self._run_coro(self.initialize())
         self._start_validation_responder()
+        self._start_outbox_replay_worker()
 
         self._subscriber = mqtt.Client()
         self._subscriber.on_connect = self._on_connect
@@ -310,6 +355,10 @@ class EdgeXDeviceAdapterService:
             self.stop()
 
     def stop(self) -> None:
+        self._outbox_stop.set()
+        if self._outbox_thread and self._outbox_thread.is_alive():
+            self._outbox_thread.join(timeout=2)
+        self._outbox_thread = None
         self._validation_stop.set()
         if self._validation_thread and self._validation_thread.is_alive():
             self._validation_thread.join(timeout=2)

@@ -57,6 +57,11 @@ class HttpEventForwarder:
         self._running = False
         self._worker: Optional[Thread] = None
 
+    @property
+    def has_targets(self) -> bool:
+        """등록된 HTTP 전송 대상이 하나 이상 있으면 True."""
+        return bool(self._targets)
+
     # ------------------------------------------------------------------
 
     def add_target(self, target: HttpEventTarget) -> None:

@@ -23,7 +23,7 @@ import time
 from dataclasses import dataclass, field, asdict, replace
 from queue import Empty, Full, Queue
 from threading import Event, Lock, Thread
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
 
 import cv2
 import numpy as np
@@ -499,6 +499,11 @@ class _CameraRegistry:
         with self._pending_lock:
             return [cid for cid, _, _ in self._pending]
 
+    def set_all_stop_flags(self) -> None:
+        """등록된 모든 카메라의 정지 플래그를 활성화한다."""
+        for flag in self._stop_flags.values():
+            flag.set()
+
 
 # ===========================================================================
 # _InferencePipeline  (내부용)
@@ -621,7 +626,7 @@ class _InferencePipeline:
             self._increment_stat("inference_errors")
             return []
         flags = self._camera_ai_flags.get(
-            camera_id, {"use_helmet": True, "use_pose": True, "use_person": True}
+            camera_id, {"use_helmet": True, "use_pose": True, "use_person": False, "use_face": False}
         )
         t0 = time.time()
         try:
@@ -898,6 +903,8 @@ class VideoProcessor:
         helmet_path = mp.get("helmet") or self.config.models.helmet_model or ""
         person_path = mp.get("person") or self.config.models.person_model or ""
         pose_path   = mp.get("pose")   or self.config.models.pose_model   or ""
+        if pose_path:
+            person_path = ""
 
         # 정규화 키: 절대 경로 기준으로 동일 파일 여부 판단
         def _norm(p: str) -> str:
@@ -955,8 +962,47 @@ class VideoProcessor:
         return analyzer
 
     @staticmethod
-    def _parse_detections(detections: Optional[List[str]]) -> Dict[str, bool]:
-        """cameras.json 의 detections 리스트를 run_inference 플래그 딕셔너리로 변환한다.
+    def _normalize_model_flags(flags: Mapping[str, object]) -> Dict[str, bool]:
+        """모델 on/off 플래그를 정규화한다.
+
+        helmet 모델은 사람 ROI가 필요하므로 pose 모델이 자동으로 함께 활성화된다.
+        """
+        use_pose = bool(flags.get("use_pose", flags.get("pose", False)))
+        use_helmet = bool(flags.get("use_helmet", flags.get("helmet", False)))
+        use_person = bool(flags.get("use_person", flags.get("person", False)))
+        use_face = bool(flags.get("use_face", flags.get("face", False)))
+
+        if use_helmet or use_face:
+            use_pose = True
+
+        return {
+            "use_helmet": use_helmet,
+            "use_pose": use_pose,
+            "use_person": use_person,
+            "use_face": use_face,
+        }
+
+    @classmethod
+    def _flags_to_detection_modes(cls, flags: Mapping[str, object]) -> List[str]:
+        """모델 플래그를 cameras.json 호환 detections 리스트로 변환한다."""
+        normalized = cls._normalize_model_flags(flags)
+        modes: List[str] = []
+        if normalized["use_pose"]:
+            modes.extend(["fall", "person"])
+        if normalized["use_helmet"]:
+            modes.append("helmet")
+        if normalized["use_face"]:
+            modes.append("face")
+        if normalized["use_person"] and "person" not in modes:
+            modes.append("person")
+        return modes
+
+    @classmethod
+    def _parse_detections(
+        cls,
+        detections: Optional[Union[List[str], Mapping[str, object]]],
+    ) -> Dict[str, bool]:
+        """cameras.json 의 detections/model_settings 값을 run_inference 플래그로 변환한다.
 
         None 또는 비어있으면 전체 모델 활성화 (하위 호환 유지).
 
@@ -965,15 +1011,128 @@ class VideoProcessor:
             "fall"      →  낙상 감지 (pose 모델)
             "intrusion" →  무단침입 / 좌리 감지
             "person"    →  사람 감지만
+            "face"      →  얼굴 인식 (사람 ROI 기반)
         """
+        if isinstance(detections, Mapping):
+            return cls._normalize_model_flags(detections)
+
         if not detections:
-            return {"use_helmet": True, "use_pose": True, "use_person": True}
+            return {"use_helmet": True, "use_pose": True, "use_person": False, "use_face": False}
 
         modes = {d.lower() for d in detections}
-        use_pose   = "fall" in modes
+        use_pose   = bool(modes & {"fall", "intrusion", "person"}) or bool(modes & {"helmet", "face"})
         use_helmet = "helmet" in modes
-        use_person = bool(modes & {"intrusion", "person"}) or use_pose or use_helmet
-        return {"use_helmet": use_helmet, "use_pose": use_pose, "use_person": use_person}
+        use_person = False
+        use_face = "face" in modes
+        return {"use_helmet": use_helmet, "use_pose": use_pose, "use_person": use_person, "use_face": use_face}
+
+    def get_camera_model_settings(self, camera_id: str) -> Optional[Dict[str, bool]]:
+        """카메라의 현재 모델 on/off 상태를 반환한다."""
+        flags = self._camera_ai_flags.get(camera_id)
+        if flags is None:
+            return None
+        return {
+            "use_helmet": bool(flags.get("use_helmet", False)),
+            "use_pose": bool(flags.get("use_pose", False)),
+            "use_person": bool(flags.get("use_person", False)),
+            "use_face": bool(flags.get("use_face", False)),
+        }
+
+    def list_registered_faces(self) -> List[Dict[str, str]]:
+        """등록 얼굴 목록을 반환한다."""
+        analyzer = next(iter(self._analyzers.values()), None)
+        if analyzer is None:
+            from ..utils.face_recognition import FaceRecognitionEngine
+
+            return FaceRecognitionEngine().list_faces()
+        return analyzer.face_recognizer.list_faces()
+
+    def register_face(
+        self,
+        name: str,
+        image_base64: str,
+        filename: Optional[str] = None,
+    ) -> Dict[str, str]:
+        """새 얼굴을 등록하고 모든 분석기의 얼굴 갤러리를 갱신한다."""
+        analyzer = next(iter(self._analyzers.values()), None)
+        if analyzer is None:
+            from ..utils.face_recognition import FaceRecognitionEngine
+
+            entry = FaceRecognitionEngine().register_face(name, image_base64, filename)
+        else:
+            entry = analyzer.face_recognizer.register_face(name, image_base64, filename)
+
+        self.reload_face_gallery()
+        return entry
+
+    def delete_face(self, face_id: str) -> bool:
+        """등록 얼굴을 삭제하고 모든 분석기의 얼굴 갤러리를 갱신한다."""
+        analyzer = next(iter(self._analyzers.values()), None)
+        if analyzer is None:
+            from ..utils.face_recognition import FaceRecognitionEngine
+
+            deleted = FaceRecognitionEngine().delete_face(face_id)
+        else:
+            deleted = analyzer.face_recognizer.delete_face(face_id)
+
+        if deleted:
+            self.reload_face_gallery()
+        return deleted
+
+    def reload_face_gallery(self) -> None:
+        """모든 분석기의 등록 얼굴 갤러리를 다시 읽는다."""
+        for analyzer in self._analyzers.values():
+            try:
+                analyzer.face_recognizer.reload_gallery()
+            except Exception as exc:
+                logger.warning("얼굴 갤러리 리로드 실패: %s", exc)
+
+    def update_camera_model_settings(
+        self,
+        camera_id: str,
+        model_settings: Mapping[str, object],
+        cameras_config_path: Optional[str] = None,
+    ) -> Optional[Dict[str, bool]]:
+        """카메라의 모델 on/off 상태를 갱신하고 필요 시 cameras.json 에 저장한다."""
+        if camera_id not in self._camera_ai_flags:
+            return None
+
+        normalized = self._normalize_model_flags(model_settings)
+        self._camera_ai_flags[camera_id] = normalized
+
+        if cameras_config_path:
+            self._save_camera_model_settings(camera_id, normalized, cameras_config_path)
+
+        logger.info("[%s] 모델 설정 업데이트: %s", camera_id, normalized)
+        return dict(normalized)
+
+    def _save_camera_model_settings(
+        self,
+        camera_id: str,
+        model_settings: Mapping[str, object],
+        cameras_config_path: str,
+    ) -> None:
+        """cameras.json 에 모델 설정과 detections 목록을 함께 저장한다."""
+        normalized = self._normalize_model_flags(model_settings)
+        detections = self._flags_to_detection_modes(normalized)
+
+        with open(cameras_config_path, "r", encoding="utf-8") as f:
+            cameras = json.load(f)
+
+        updated = False
+        for cam in cameras:
+            if cam.get("id") != camera_id:
+                continue
+            cam["model_settings"] = normalized
+            cam["detections"] = detections
+            updated = True
+            break
+
+        if not updated:
+            raise KeyError(f"camera_id '{camera_id}' not found in cameras config")
+
+        with open(cameras_config_path, "w", encoding="utf-8") as f:
+            json.dump(cameras, f, ensure_ascii=False, indent=2)
 
     # ------------------------------------------------------------------
     # 카메라 관리 (공개 API)
@@ -1108,6 +1267,32 @@ class VideoProcessor:
     # 카메라 스레드 / 추론 스레드
     # ------------------------------------------------------------------
 
+    def _run_ai_inference(self, camera_id: str, frame: Any) -> List[DetectionEvent]:
+        """하위 호환용 추론 래퍼."""
+        return self._pipeline._infer(camera_id, frame)
+
+    def _collect_dataset(self, frame: Any, events: List[DetectionEvent], camera_id: str) -> None:
+        """하위 호환용 데이터셋 수집 래퍼."""
+        self._pipeline._collect(frame, events, camera_id)
+
+    def _check_danger_zones(
+        self,
+        camera_id: str,
+        events: List[DetectionEvent],
+        frame: Any,
+    ) -> Tuple[List[ZoneEvent], Any]:
+        """하위 호환용 구역 이벤트 래퍼."""
+        return self._pipeline._check_zones(camera_id, events, frame)
+
+    def _queue_events(
+        self,
+        camera_id: str,
+        events: List[DetectionEvent],
+        zone_events: List[ZoneEvent],
+    ) -> None:
+        """하위 호환용 이벤트 큐잉 래퍼."""
+        self._pipeline._enqueue(camera_id, events, zone_events)
+
     def _process_camera(self, camera_id: str, camera: RTSPCamera) -> None:
         """프레임 획득 루프 — AI 추론은 별도 스레드에서 처리한다."""
         while self.running and not self.stop_event.is_set():
@@ -1149,7 +1334,53 @@ class VideoProcessor:
             except Empty:
                 continue
             try:
-                self._pipeline.run(camera_id, frame)
+                self._increment_stat("frames_processed")
+                events = self._run_ai_inference(camera_id, frame)
+                events_for_display = events.copy()
+                events_for_dataset = events.copy()
+
+                with self._snapshot_lock:
+                    self._latest_snapshots[camera_id] = {
+                        "timestamp": time.time(),
+                        "detections": [e.to_dict() for e in events],
+                    }
+
+                events, removed_ids = self.track_manager.update(camera_id, events)
+                if removed_ids:
+                    self.violation_filter.purge(camera_id, removed_ids)
+                events = self.violation_filter.filter(camera_id, events)
+
+                self._collect_dataset(frame, events_for_dataset, camera_id)
+                zone_events, frame = self._check_danger_zones(camera_id, events, frame)
+                self._queue_events(camera_id, events, zone_events)
+
+                zone_set = self._zone_in_objects.setdefault(camera_id, set())
+                has_active_zones = bool(
+                    self.zone_manager
+                    and self.zone_manager.zones.get(camera_id)
+                )
+                if not has_active_zones:
+                    zone_set.clear()
+                else:
+                    for ze in zone_events:
+                        if ze.event_type.value in ("zone_entered", "zone_dwelling"):
+                            zone_set.add(ze.object_id)
+                        elif ze.event_type.value == "zone_exited":
+                            zone_set.discard(ze.object_id)
+                for rid in removed_ids:
+                    zone_set.discard(rid)
+
+                if self.config.display:
+                    display_evts = [
+                        replace(ev, event_type=EventType.DANGER_ZONE)
+                        if (
+                            ev.event_type == EventType.PERSON
+                            and getattr(ev, "object_id", None) in zone_set
+                        )
+                        else ev
+                        for ev in events_for_display
+                    ]
+                    self._display.update_frame(camera_id, frame, display_evts)
                 consecutive_errors = 0
             except Exception as exc:
                 logger.error("[%s] 추론 루프 오류: %s", camera_id, exc, exc_info=True)
@@ -1292,8 +1523,7 @@ class VideoProcessor:
         self.running = False
         self.stop_event.set()
 
-        for flag in self._cams._stop_flags.values():
-            flag.set()
+        self._cams.set_all_stop_flags()
 
         timeout = self.config.processing.thread_join_timeout
         for thread_map in (self._cams.camera_threads, self._cams.inference_threads):
@@ -1312,8 +1542,7 @@ class VideoProcessor:
             if t and t.is_alive():
                 t.join(timeout=timeout)
 
-        for cam in self._cams.cameras.values():
-            cam.release()
+        self.release_all_cameras()
 
         self.event_publisher.disconnect()
         try:
@@ -1321,6 +1550,14 @@ class VideoProcessor:
         except cv2.error:
             pass  # 헤드리스 환경에서는 GUI 함수 무시
         logger.info("프로세서 종료 완료")
+
+    def release_all_cameras(self) -> None:
+        """등록된 모든 카메라 리소스를 해제한다."""
+        for cam in self._cams.cameras.values():
+            try:
+                cam.release()
+            except Exception:
+                pass
 
     # ------------------------------------------------------------------
     # 통계

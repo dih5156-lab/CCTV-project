@@ -184,49 +184,94 @@ class TestCameraRegistryRetry:
 class TestParseDetections:
     def test_none_enables_all(self):
         flags = VideoProcessor._parse_detections(None)
-        assert flags == {"use_helmet": True, "use_pose": True, "use_person": True}
+        assert flags == {"use_helmet": True, "use_pose": True, "use_person": False}
 
     def test_empty_list_enables_all(self):
         flags = VideoProcessor._parse_detections([])
-        assert flags == {"use_helmet": True, "use_pose": True, "use_person": True}
+        assert flags == {"use_helmet": True, "use_pose": True, "use_person": False}
 
     def test_fall_enables_pose_and_person_not_helmet(self):
         flags = VideoProcessor._parse_detections(["fall"])
         assert flags["use_pose"] is True
-        assert flags["use_person"] is True
+        assert flags["use_person"] is False
         assert flags["use_helmet"] is False
 
-    def test_helmet_enables_helmet_and_person_not_pose(self):
+    def test_helmet_enables_helmet_and_pose(self):
         flags = VideoProcessor._parse_detections(["helmet"])
         assert flags["use_helmet"] is True
-        assert flags["use_person"] is True
-        assert flags["use_pose"] is False
+        assert flags["use_person"] is False
+        assert flags["use_pose"] is True
 
-    def test_intrusion_enables_person_only(self):
+    def test_intrusion_enables_pose_only(self):
         flags = VideoProcessor._parse_detections(["intrusion"])
-        assert flags["use_person"] is True
+        assert flags["use_person"] is False
         assert flags["use_helmet"] is False
-        assert flags["use_pose"] is False
+        assert flags["use_pose"] is True
 
-    def test_person_enables_person_only(self):
+    def test_person_enables_pose_only(self):
         flags = VideoProcessor._parse_detections(["person"])
-        assert flags["use_person"] is True
+        assert flags["use_person"] is False
         assert flags["use_helmet"] is False
-        assert flags["use_pose"] is False
+        assert flags["use_pose"] is True
 
     def test_fall_and_helmet_enables_all(self):
         flags = VideoProcessor._parse_detections(["fall", "helmet"])
-        assert flags == {"use_helmet": True, "use_pose": True, "use_person": True}
+        assert flags == {"use_helmet": True, "use_pose": True, "use_person": False}
 
     def test_case_insensitive(self):
         flags = VideoProcessor._parse_detections(["FALL", "HELMET"])
         assert flags["use_pose"] is True
         assert flags["use_helmet"] is True
 
+    def test_model_settings_mapping_supported(self):
+        flags = VideoProcessor._parse_detections({"use_pose": False, "use_helmet": True})
+        assert flags == {"use_helmet": True, "use_pose": True, "use_person": False}
+
     def test_unknown_mode_treated_as_person(self):
         flags = VideoProcessor._parse_detections(["unknown_mode"])
         # unknown은 modes 집합에 있으나 특정 분기에 안 걸림 → person 비활성
         assert isinstance(flags, dict)  # 최소한 dict 형태를 반환
+
+
+class TestModelSettingsHelpers:
+    def test_flags_to_detection_modes(self):
+        result = VideoProcessor._flags_to_detection_modes(
+            {"use_pose": True, "use_helmet": True, "use_person": False}
+        )
+        assert result == ["fall", "person", "helmet"]
+
+    def test_update_camera_model_settings_updates_memory(self, minimal_processor):
+        minimal_processor._camera_ai_flags["cam1"] = {
+            "use_helmet": True,
+            "use_pose": True,
+            "use_person": False,
+        }
+        updated = minimal_processor.update_camera_model_settings(
+            "cam1",
+            {"use_pose": False, "use_helmet": True},
+        )
+        assert updated == {"use_helmet": True, "use_pose": True, "use_person": False}
+        assert minimal_processor.get_camera_model_settings("cam1") == updated
+
+    def test_update_camera_model_settings_persists_json(self, minimal_processor, tmp_path):
+        minimal_processor._camera_ai_flags["cam1"] = {
+            "use_helmet": True,
+            "use_pose": True,
+            "use_person": False,
+        }
+        path = tmp_path / "cameras.json"
+        path.write_text(
+            '[{"id":"cam1","detections":["helmet"],"model_settings":{"use_pose":true,"use_helmet":true,"use_person":false}}]',
+            encoding="utf-8",
+        )
+        minimal_processor.update_camera_model_settings(
+            "cam1",
+            {"use_pose": False, "use_helmet": False},
+            str(path),
+        )
+        saved = path.read_text(encoding="utf-8")
+        assert '"use_pose": false' in saved
+        assert '"use_helmet": false' in saved
 
 
 # ===========================================================================

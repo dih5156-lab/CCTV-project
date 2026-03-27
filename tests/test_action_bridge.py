@@ -1,9 +1,11 @@
 """
-test_action_bridge.py — _SiteRegistry / _AlarmCoordinator / SiteConfig 단위 테스트
+test_action_bridge.py — _SiteRegistry / _AlarmCoordinator / SiteConfig / ActionBridge 단위 테스트
 """
 import time
 import pytest
+from unittest.mock import MagicMock
 from src.services.action_bridge import (
+    ActionBridge,
     ControlMode,
     AlarmDevice,
     SiteConfig,
@@ -289,3 +291,58 @@ class TestAlarmCoordinator:
         for t in threads:
             t.join()
         assert errors == []
+
+
+class TestActionBridgeStatusPublishing:
+    def _make_bridge(self) -> ActionBridge:
+        bridge = ActionBridge(rest_enabled=False)
+        bridge._mqtt_client = MagicMock()
+        bridge._repo = MagicMock()
+        bridge._forwarder = MagicMock()
+        bridge._forwarder.has_targets = True
+        bridge._speaker = MagicMock()
+        bridge._speaker.play.return_value = True
+        bridge._signboard = MagicMock()
+        bridge._siren = MagicMock()
+        bridge._resolve_devices = MagicMock(return_value=[AlarmDevice.SPEAKER])
+        bridge._alarm = MagicMock()
+        bridge._alarm.should_alarm.return_value = True
+        bridge._alarm.try_acquire_slot.return_value = True
+        return bridge
+
+    def test_manual_event_publishes_pending_status(self):
+        bridge = self._make_bridge()
+        bridge.set_mode(ControlMode.MANUAL)
+
+        bridge._handle_event({"camera_id": "cam1", "type": "fall_detected"}, topic="t")
+
+        published = bridge._mqtt_client.publish.call_args_list
+        assert any("cctv/status/action/events/pending" in call.args[0] for call in published)
+
+    def test_approve_event_publishes_approved_status(self):
+        bridge = self._make_bridge()
+        bridge._sites.push_pending("evt1", "topic", {"camera_id": "cam1", "type": "head"}, "site1")
+
+        ok, _ = bridge.approve_event("evt1")
+
+        assert ok is True
+        published = bridge._mqtt_client.publish.call_args_list
+        assert any("cctv/status/action/events/approved" in call.args[0] for call in published)
+
+    def test_reject_event_publishes_rejected_status(self):
+        bridge = self._make_bridge()
+        bridge._sites.push_pending("evt2", "topic", {"camera_id": "cam2", "type": "head"}, "site2")
+
+        ok, _ = bridge.reject_event("evt2")
+
+        assert ok is True
+        published = bridge._mqtt_client.publish.call_args_list
+        assert any("cctv/status/action/events/rejected" in call.args[0] for call in published)
+
+    def test_dispatch_command_publishes_command_result(self):
+        bridge = self._make_bridge()
+
+        bridge._dispatch_command("cctv/commands/mode", {"command_id": "cmd1", "mode": "auto"})
+
+        published = bridge._mqtt_client.publish.call_args_list
+        assert any("cctv/status/action/commands/result" in call.args[0] for call in published)

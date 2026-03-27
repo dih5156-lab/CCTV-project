@@ -10,6 +10,8 @@ class EventType(Enum):
     """감지 결과 이벤트 타입 열거형"""
     HELMET = "helmet"
     HEAD = "head"
+    FACE_RECOGNIZED = "face_recognized"
+    FACE_UNKNOWN = "face_unknown"
     DANGER_ZONE = "danger_zone"
     FALL_DETECTED = "fall_detected"
     NOT_FALL = "not_fall"
@@ -39,6 +41,7 @@ class DetectionEvent:
     object_id: Optional[int] = None
     class_idx: Optional[int] = None
     keypoints: Optional[list] = None  # YOLOv8-pose 키포인트 정보 (낙상 이벤트에만 저장)
+    metadata: Optional[Dict] = None
 
     def __post_init__(self) -> None:
         """bbox 좌표를 int로 강제 변환한다.
@@ -64,7 +67,8 @@ class DetectionEvent:
             "timestamp": self.timestamp,
             "object_id": self.object_id,
             "class_idx": self.class_idx,
-            "keypoints": self.keypoints if self.keypoints else None
+            "keypoints": self.keypoints if self.keypoints else None,
+            "metadata": self.metadata if self.metadata else None,
         }
     
     def __repr__(self) -> str:

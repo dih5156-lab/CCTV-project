@@ -9,7 +9,6 @@
 import os
 import time
 import logging
-import hashlib
 from typing import List, Dict, Optional, Tuple
 
 import numpy as np
@@ -17,6 +16,7 @@ import numpy as np
 # 순환 참조 방지를 위해 events를 먼저 import
 from .events import EventType, DetectionEvent
 from ..utils.geometry import is_helmet_worn, boxes_overlap
+from ..utils.face_recognition import FaceRecognitionEngine
 
 logger = logging.getLogger(__name__)
 
@@ -70,6 +70,14 @@ _MODEL_IMGSZ: Dict[str, int] = {
     "pose":   DEFAULT_IMAGE_SIZE_POSE,
     "person": DEFAULT_IMAGE_SIZE_PERSON,
 }
+
+_TEMP_TRACK_ID_START = 1_500_000_000
+_TEMP_TRACK_ID_END = 1_999_999_999
+_TEMP_TRACK_TTL_SEC = 2.0
+_TEMP_TRACK_MIN_IOU = 0.35
+_TEMP_TRACK_MAX_CENTER_RATIO = 0.6
+_TEMP_TRACK_MAX_AREA_RATIO_DELTA = 0.75
+_FACE_TRACK_COOLDOWN_SEC = 2.0
 
 
 def _detect_engine_imgsz(model, fallback: int) -> int:
@@ -175,6 +183,8 @@ class AIAnalyzer:
         "unsafe_behavior": "unsafe_behavior",
         "unsafe": "unsafe_behavior",
         "person": "person",
+        "face_recognized": "face_recognized",
+        "face_unknown": "face_unknown",
     }
     _CLASS_MAP: Dict[str, str] = {**_HELMET_CLASS_MAP, **_COMMON_CLASS_MAP}
 
@@ -209,6 +219,10 @@ class AIAnalyzer:
         self.last_load_errors = []
         self._person_warning_shown = False
         self._helmet_warning_shown = False
+        self._next_temp_track_id = _TEMP_TRACK_ID_START
+        self._temp_track_cache: Dict[int, Dict[str, object]] = {}
+        self.face_recognizer = FaceRecognitionEngine()
+        self._face_identity_cache: Dict[int, Dict[str, object]] = {}
 
         # YOLO 라이브러리 확인
         if YOLO is None:
@@ -227,7 +241,11 @@ class AIAnalyzer:
         return self._run_single_model(self.helmet_model, frame, model_type="helmet")
 
     def run_person_model(self, frame) -> List[DetectionEvent]:
-        """사람 모델로 추론 실행"""
+        """사람 모델로 추론 실행.
+
+        기본 운영 경로는 pose 모델이며, person 모델은 pose 모델이 없을 때만
+        제한적으로 fallback 용도로 사용한다.
+        """
         return self._run_single_model(self.person_model, frame, model_type="person")
     
     # ====================
@@ -282,11 +300,14 @@ class AIAnalyzer:
             logger.warning("%s 모델 로드 실패: %s", name, exc)
 
     def load_models(self) -> None:
-        """헬멧, Person, Pose 모델 로드 후 TensorRT 엔진의 실제 imgsz를 자동 감지한다."""
+        """헬멧과 pose 모델을 우선 로드하고 필요 시에만 person fallback을 로드한다."""
         self.last_load_errors.clear()
         self._try_load("helmet", self.helmet_model_path)
-        self._try_load("person", self.person_model_path)
         self._try_load("pose", self.pose_model_path)
+        if self.pose_model is None:
+            self._try_load("person", self.person_model_path)
+        elif self.person_model_path:
+            logger.info("pose 모델이 활성화되어 person 모델 로드는 건너뜁니다.")
 
         if not any([self.helmet_model, self.person_model, self.pose_model]):
             logger.error("로드된 모델이 없습니다. 경로/라이브러리/파일을 확인하세요.")
@@ -466,21 +487,116 @@ class AIAnalyzer:
         except (ValueError, TypeError, IndexError, AttributeError) as exc:
             logger.debug("추적 ID 추출 실패: %s", exc)
             return None
-    
-    def _generate_temp_id(self, x1: int, y1: int, width: int, height: int) -> int:
-        """추적 실패 시 bbox 기반 임시 ID 생성
-        
-        임시 ID는 객체가 추적되지 않을 때 사용 (임시 기반 추적)
-        범위: 1500000000 ~ 1999999999 (일반 추적 ID와 충돌 최소화)
-        """
-        # 중심 좌표 계산 (50픽셀 단위 그리드로 묶음)
-        center_x = (x1 + width // 2) // 50
-        center_y = (y1 + height // 2) // 50
-        wq = max(width, 0) // 10
-        hq = max(height, 0) // 10
-        payload = f"{center_x}:{center_y}:{wq}:{hq}".encode("utf-8")
-        digest = hashlib.blake2b(payload, digest_size=4).digest()
-        return 1_500_000_000 + (int.from_bytes(digest, "big") % 500_000_000)
+
+    def _allocate_temp_track_id(self) -> int:
+        """충돌 가능성을 낮추기 위해 단조 증가 임시 ID를 발급한다."""
+        track_id = self._next_temp_track_id
+        self._next_temp_track_id += 1
+        if self._next_temp_track_id > _TEMP_TRACK_ID_END:
+            self._next_temp_track_id = _TEMP_TRACK_ID_START
+        return track_id
+
+    @staticmethod
+    def _bbox_iou_from_coords(
+        bbox1: Tuple[int, int, int, int],
+        bbox2: Tuple[int, int, int, int],
+    ) -> float:
+        x1 = max(bbox1[0], bbox2[0])
+        y1 = max(bbox1[1], bbox2[1])
+        x2 = min(bbox1[0] + bbox1[2], bbox2[0] + bbox2[2])
+        y2 = min(bbox1[1] + bbox1[3], bbox2[1] + bbox2[3])
+        inter_w = max(0, x2 - x1)
+        inter_h = max(0, y2 - y1)
+        inter_area = inter_w * inter_h
+        if inter_area <= 0:
+            return 0.0
+        area1 = max(0, bbox1[2]) * max(0, bbox1[3])
+        area2 = max(0, bbox2[2]) * max(0, bbox2[3])
+        union_area = area1 + area2 - inter_area
+        if union_area <= 0:
+            return 0.0
+        return inter_area / union_area
+
+    @staticmethod
+    def _center_distance_ratio(
+        bbox1: Tuple[int, int, int, int],
+        bbox2: Tuple[int, int, int, int],
+    ) -> float:
+        c1x = bbox1[0] + (bbox1[2] / 2.0)
+        c1y = bbox1[1] + (bbox1[3] / 2.0)
+        c2x = bbox2[0] + (bbox2[2] / 2.0)
+        c2y = bbox2[1] + (bbox2[3] / 2.0)
+        dist = ((c1x - c2x) ** 2 + (c1y - c2y) ** 2) ** 0.5
+        scale = max(
+            1.0,
+            bbox1[2],
+            bbox1[3],
+            bbox2[2],
+            bbox2[3],
+        )
+        return dist / scale
+
+    def _cleanup_temp_track_cache(self, now_ts: float) -> None:
+        expired_ids = [
+            track_id
+            for track_id, state in self._temp_track_cache.items()
+            if now_ts - float(state["last_seen"]) > _TEMP_TRACK_TTL_SEC
+        ]
+        for track_id in expired_ids:
+            self._temp_track_cache.pop(track_id, None)
+
+    def _resolve_object_id(
+        self,
+        box,
+        x1: int,
+        y1: int,
+        width: int,
+        height: int,
+        track_group: str,
+        now_ts: Optional[float] = None,
+    ) -> int:
+        """YOLO track ID가 없을 때 최근 bbox와 매칭해 안정적인 임시 ID를 유지한다."""
+        track_id = self._extract_track_id(box)
+        if track_id is not None:
+            return track_id
+
+        now_ts = time.time() if now_ts is None else now_ts
+        self._cleanup_temp_track_cache(now_ts)
+
+        bbox = (x1, y1, width, height)
+        area = max(width, 0) * max(height, 0)
+        best_track_id: Optional[int] = None
+        best_score = -1.0
+
+        for cached_track_id, state in self._temp_track_cache.items():
+            if state["group"] != track_group:
+                continue
+
+            cached_bbox = state["bbox"]
+            iou = self._bbox_iou_from_coords(bbox, cached_bbox)
+            center_ratio = self._center_distance_ratio(bbox, cached_bbox)
+            cached_area = max(cached_bbox[2], 0) * max(cached_bbox[3], 0)
+            area_ratio_delta = abs(area - cached_area) / max(area, cached_area, 1)
+
+            if iou < _TEMP_TRACK_MIN_IOU and center_ratio > _TEMP_TRACK_MAX_CENTER_RATIO:
+                continue
+            if area_ratio_delta > _TEMP_TRACK_MAX_AREA_RATIO_DELTA:
+                continue
+
+            score = iou - (center_ratio * 0.1) - (area_ratio_delta * 0.05)
+            if score > best_score:
+                best_score = score
+                best_track_id = cached_track_id
+
+        if best_track_id is None:
+            best_track_id = self._allocate_temp_track_id()
+
+        self._temp_track_cache[best_track_id] = {
+            "group": track_group,
+            "bbox": bbox,
+            "last_seen": now_ts,
+        }
+        return best_track_id
 
     def _filter_helmet_boxes(self, helmet_events: List) -> List:
         """헬멧 박스 필터링: 크기, 종횡비, 위치 + 중복 제거"""
@@ -640,12 +756,14 @@ class AIAnalyzer:
                 if event_type == EventType.OTHER:
                     continue
 
-                # YOLOv8 track()에서 ID 추출
-                track_id = self._extract_track_id(box)
-                
-                # 추적 실패 시 ID 생성 (bbox 기반)
-                if track_id is None:
-                    track_id = self._generate_temp_id(x1, y1, width, height)
+                track_id = self._resolve_object_id(
+                    box,
+                    x1,
+                    y1,
+                    width,
+                    height,
+                    track_group=f"{model_type}:{event_type.value}",
+                )
                 
                 ev = DetectionEvent(
                     event_type=event_type,
@@ -754,9 +872,14 @@ class AIAnalyzer:
                     )
                     continue
 
-                track_id = self._extract_track_id(box)
-                if track_id is None:
-                    track_id = self._generate_temp_id(x1, y1, width, height)
+                track_id = self._resolve_object_id(
+                    box,
+                    x1,
+                    y1,
+                    width,
+                    height,
+                    track_group="pose:person",
+                )
 
                 # 낙상 감지를 먼저 실행: 누워있는 사람은 기립 자세 전제의 검증을 건너뛰어야 함
                 # (_validate_person_keypoints의 코>어깨>엉덩이 Y순서 검증이
@@ -1118,7 +1241,8 @@ class AIAnalyzer:
         frame,
         use_helmet: bool = True,
         use_pose: bool = True,
-        use_person: bool = True,
+        use_person: bool = False,
+        use_face: bool = False,
     ) -> List:
         """
         프레임에 대한 종합 추론을 수행하고 헬멧 착용 여부를 판단
@@ -1130,7 +1254,7 @@ class AIAnalyzer:
             frame: 입력 프레임
             use_helmet: 헬멧 모델 사용 여부
             use_pose: pose 모델 사용 여부 (사람 탐지 + 낙상 감지, 기본 경로)
-            use_person: pose 모델 없을 때 person 모델 fallback 허용 여부
+            use_person: pose 모델이 없을 때 person 모델 fallback 허용 여부
 
         반환값
             이벤트 리스트 — 낙상 이벤트를 맨 앞에 배치
@@ -1143,6 +1267,7 @@ class AIAnalyzer:
         person_events: List[DetectionEvent] = []
         fall_events: List[DetectionEvent] = []
         small_helmet_events: List[DetectionEvent] = []
+        face_events: List[DetectionEvent] = []
 
         # 포즈 모델 우선: 전체 프레임 한 번 추론으로 사람 탐지 + 낙상 감지 동시 처리
         if use_pose and self.pose_model:
@@ -1182,8 +1307,78 @@ class AIAnalyzer:
             logger.warning("헬멧 모델이 로드되지 않았습니다.")
             self._helmet_warning_shown = True
 
+        if use_face and person_events:
+            face_events = self._run_face_recognition(frame, person_events)
+
         # 최종 반환: 낙상(최우선) → 사람 → 헬멧
-        return fall_events + person_events + small_helmet_events
+        return fall_events + person_events + face_events + small_helmet_events
+
+    def _run_face_recognition(
+        self,
+        frame,
+        person_events: List[DetectionEvent],
+    ) -> List[DetectionEvent]:
+        """사람 ROI 상단에서 얼굴 검출/인식을 수행한다."""
+        if frame is None or not person_events or not self.face_recognizer.enabled:
+            return []
+
+        face_events: List[DetectionEvent] = []
+        now = time.time()
+
+        for person in person_events:
+            object_id = person.object_id
+            if object_id is None:
+                continue
+
+            cached = self._face_identity_cache.get(object_id)
+            if cached and now - float(cached.get("timestamp", 0.0)) < _FACE_TRACK_COOLDOWN_SEC:
+                cached_event = cached.get("event")
+                if cached_event is not None:
+                    face_events.append(cached_event)
+                continue
+
+            results = self.face_recognizer.detect_and_recognize(
+                frame,
+                {
+                    "x": person.x,
+                    "y": person.y,
+                    "width": person.width,
+                    "height": person.height,
+                },
+            )
+            if not results:
+                self._face_identity_cache.pop(object_id, None)
+                continue
+
+            best = max(results, key=lambda item: item.confidence)
+            event_type = EventType.FACE_RECOGNIZED if best.matched else EventType.FACE_UNKNOWN
+            event = DetectionEvent(
+                event_type=event_type,
+                x=best.bbox["x"],
+                y=best.bbox["y"],
+                width=best.bbox["width"],
+                height=best.bbox["height"],
+                confidence=best.confidence,
+                timestamp=now,
+                object_id=object_id,
+                metadata={
+                    "person_object_id": object_id,
+                    "face_name": best.label,
+                    "face_score": round(best.confidence, 4),
+                    "recognizer": "opencv_haar_baseline",
+                },
+            )
+            face_events.append(event)
+            self._face_identity_cache[object_id] = {"timestamp": now, "event": event}
+
+        stale_ids = [
+            obj_id for obj_id, item in self._face_identity_cache.items()
+            if now - float(item.get("timestamp", 0.0)) > (_FACE_TRACK_COOLDOWN_SEC * 5)
+        ]
+        for obj_id in stale_ids:
+            self._face_identity_cache.pop(obj_id, None)
+
+        return face_events
 
     def run_inference_with_compliance(
         self,
@@ -1191,7 +1386,8 @@ class AIAnalyzer:
         use_helmet: bool = True,
         use_pose: bool = True,
         check_compliance: bool = True,
-        use_person: bool = True,
+        use_person: bool = False,
+        use_face: bool = False,
     ) -> Dict[str, List]:
         """이벤트 리스트와 헬멧 착용 준수 여부를 함께 반환"""
         events = self.run_inference(
@@ -1199,6 +1395,7 @@ class AIAnalyzer:
             use_helmet=use_helmet,
             use_pose=use_pose,
             use_person=use_person,
+            use_face=use_face,
         )
 
         compliance: List[Dict] = []

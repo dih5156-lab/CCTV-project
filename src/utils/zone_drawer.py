@@ -340,10 +340,7 @@ class ZoneDrawer:
         # 기존 구역 수집
         existing: List[Dict] = []
         if camera_id in proc.zone_manager.zones:
-            existing = [
-                {"id": z.zone_id, "name": z.name, "polygon": z.polygon.tolist()}
-                for z in proc.zone_manager.zones[camera_id].values()
-            ]
+            existing = [z.to_dict() for z in proc.zone_manager.zones[camera_id].values()]
 
         new_zone: Dict = {
             "id": f"zone_{zone_num}",
@@ -402,7 +399,7 @@ class ZoneDrawer:
         if zm is None or cam_id not in zm.zones or zone_id not in zm.zones[cam_id]:
             return
         remaining = [
-            {"id": z.zone_id, "name": z.name, "polygon": z.polygon.tolist()}
+            z.to_dict()
             for z in zm.zones[cam_id].values()
             if z.zone_id != zone_id
         ]

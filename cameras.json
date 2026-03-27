@@ -8,8 +8,15 @@
     "detections": [
       "helmet",
       "fall",
-      "intrusion"
+      "intrusion",
+      "face"
     ],
+    "model_settings": {
+      "use_helmet": true,
+      "use_pose": true,
+      "use_person": false,
+      "use_face": true
+    },
     "model_paths": {
       "helmet": "models/helmet_model_ver0.6.engine",
       "person": "models/yolov8n.pt",
@@ -40,8 +47,15 @@
     "detections": [
       "helmet",
       "fall",
-      "intrusion"
+      "intrusion",
+      "face"
     ],
+    "model_settings": {
+      "use_helmet": true,
+      "use_pose": true,
+      "use_person": false,
+      "use_face": true
+    },
     "model_paths": {},
     "zones": []
   }

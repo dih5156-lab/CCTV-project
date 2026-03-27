@@ -1,0 +1,16 @@
+-r requirements.txt
+
+# 테스트
+pytest>=7.4.0,<9.0.0
+pytest-cov>=4.1.0,<6.0.0
+pytest-asyncio>=0.23.0,<1.0.0
+
+# 포맷팅/린트
+black>=23.0.0,<25.0.0
+flake8>=6.0.0,<8.0.0
+isort>=5.13.0,<6.0.0
+
+# 타입 체크
+mypy>=1.5.0,<2.0.0
+types-requests>=2.31.0.0
+types-redis>=4.6.0.0

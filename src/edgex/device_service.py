@@ -11,7 +11,9 @@ import time
 import uuid
 import base64
 import threading
-from typing import Dict, Optional, List
+import sqlite3
+from pathlib import Path
+from typing import Dict, Optional, List, Any
 from datetime import datetime, timezone
 from urllib.parse import urlparse
 
@@ -32,10 +34,6 @@ class CCTVDeviceService:
     """EdgeX CCTV 장치 서비스"""
     _redis_lock = _redis_lock
     _mqtt_lock = _mqtt_lock
-    _redis_last_fail_time: float = 0
-    _mqtt_last_fail_time: float = 0
-    _redis_fail_count: int = 0       # 연속 실패 횟수 (지수 백오프용)
-    _mqtt_fail_count: int = 0
     _redis_base_cooldown_sec: float = 5
     _mqtt_base_cooldown_sec: float = 5
     _max_cooldown_sec: float = 60    # 대기 상한선
@@ -62,14 +60,158 @@ class CCTVDeviceService:
         self.redis_port = int(config.get("redisPort", 6379))
         self.message_bus_type = str(config.get("messageBusType", "redis")).lower()
         self.enable_rest_event_post = self._to_bool(config.get("enableRestEventPost", False))
+        self.enable_store_and_forward = self._to_bool(config.get("enableStoreAndForward", True))
+        self.outbox_db_path = Path(config.get("outboxDbPath", "data/edgex_outbox.db"))
+        self.outbox_flush_batch_size = int(config.get("outboxFlushBatchSize", 100))
         self._mqtt_client: Optional[mqtt.Client] = None
         self._redis_client: Optional[redis.Redis] = None
+        self._redis_last_fail_time = 0.0
+        self._mqtt_last_fail_time = 0.0
+        self._redis_fail_count = 0
+        self._mqtt_fail_count = 0
+        self._outbox_lock = threading.Lock()
         self.base_url = config.get("baseUrl", "http://cctv-device-service:59986")
         self.devices: Dict[str, str] = {}  # camera_id -> device_id 매핑
         
         logger.info("EdgeX Device Service 초기화: %s", self.service_name)
         logger.info("  - Metadata URL: %s", self.metadata_url)
         logger.info("  - Data URL: %s", self.data_url)
+        if self.enable_store_and_forward:
+            logger.info("  - Store-and-forward DB: %s", self.outbox_db_path)
+
+    def _init_outbox(self) -> None:
+        """Prepare the local SQLite outbox used for store-and-forward delivery."""
+        if not self.enable_store_and_forward:
+            return
+
+        self.outbox_db_path.parent.mkdir(parents=True, exist_ok=True)
+        with sqlite3.connect(self.outbox_db_path) as conn:
+            conn.execute("PRAGMA journal_mode=WAL")
+            conn.execute("PRAGMA synchronous=NORMAL")
+            conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS detection_outbox (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    camera_id TEXT NOT NULL,
+                    payload_json TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    last_attempt_at TEXT,
+                    sent_at TEXT,
+                    retry_count INTEGER NOT NULL DEFAULT 0,
+                    status TEXT NOT NULL DEFAULT 'pending',
+                    last_error TEXT
+                )
+                """
+            )
+            conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_detection_outbox_status_id "
+                "ON detection_outbox(status, id)"
+            )
+            conn.commit()
+
+    @staticmethod
+    def _utc_now_iso() -> str:
+        return datetime.now(timezone.utc).isoformat()
+
+    def _store_failed_detection_event(
+        self,
+        camera_id: str,
+        event_data: Dict[str, Any],
+        last_error: str,
+    ) -> None:
+        """Persist a failed event so Jetson can resend it after EdgeX/server recovery."""
+        if not self.enable_store_and_forward:
+            return
+
+        with self._outbox_lock, sqlite3.connect(self.outbox_db_path) as conn:
+            now = self._utc_now_iso()
+            conn.execute(
+                """
+                INSERT INTO detection_outbox (
+                    camera_id, payload_json, created_at, last_attempt_at, retry_count, status, last_error
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    camera_id,
+                    json.dumps(event_data, ensure_ascii=False),
+                    now,
+                    now,
+                    1,
+                    "pending",
+                    last_error[:1000],
+                ),
+            )
+            conn.commit()
+
+    def get_pending_detection_events(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
+        """Return pending outbox rows in FIFO order for replay."""
+        if not self.enable_store_and_forward:
+            return []
+
+        fetch_limit = int(limit or self.outbox_flush_batch_size)
+        with self._outbox_lock, sqlite3.connect(self.outbox_db_path) as conn:
+            conn.row_factory = sqlite3.Row
+            rows = conn.execute(
+                """
+                SELECT id, camera_id, payload_json, created_at, last_attempt_at, retry_count, status, last_error
+                FROM detection_outbox
+                WHERE status = 'pending'
+                ORDER BY id ASC
+                LIMIT ?
+                """,
+                (fetch_limit,),
+            ).fetchall()
+
+        pending: List[Dict[str, Any]] = []
+        for row in rows:
+            try:
+                payload = json.loads(row["payload_json"])
+            except json.JSONDecodeError:
+                payload = {}
+            pending.append(
+                {
+                    "id": row["id"],
+                    "camera_id": row["camera_id"],
+                    "event_data": payload,
+                    "created_at": row["created_at"],
+                    "last_attempt_at": row["last_attempt_at"],
+                    "retry_count": row["retry_count"],
+                    "status": row["status"],
+                    "last_error": row["last_error"],
+                }
+            )
+        return pending
+
+    def _mark_outbox_sent(self, outbox_id: int) -> None:
+        if not self.enable_store_and_forward:
+            return
+        with self._outbox_lock, sqlite3.connect(self.outbox_db_path) as conn:
+            now = self._utc_now_iso()
+            conn.execute(
+                """
+                UPDATE detection_outbox
+                SET status = 'sent', sent_at = ?, last_attempt_at = ?
+                WHERE id = ?
+                """,
+                (now, now, outbox_id),
+            )
+            conn.commit()
+
+    def _mark_outbox_retry_failed(self, outbox_id: int, last_error: str) -> None:
+        if not self.enable_store_and_forward:
+            return
+        with self._outbox_lock, sqlite3.connect(self.outbox_db_path) as conn:
+            conn.execute(
+                """
+                UPDATE detection_outbox
+                SET retry_count = retry_count + 1,
+                    last_attempt_at = ?,
+                    last_error = ?
+                WHERE id = ?
+                """,
+                (self._utc_now_iso(), last_error[:1000], outbox_id),
+            )
+            conn.commit()
 
     @staticmethod
     def _to_bool(value: object) -> bool:
@@ -592,6 +734,7 @@ class CCTVDeviceService:
     async def initialize(self):
         """EdgeX 연결 확인 (비동기 호환)"""
         try:
+            self._init_outbox()
             await self._probe_service_health(self.metadata_url, "Core Metadata")
             await self._probe_service_health(self.data_url, "Core Data")
                     
@@ -728,6 +871,117 @@ class CCTVDeviceService:
             success_log=f"✓ 기존 디바이스 삭제 완료: {device_name}",
         )
     
+    async def _send_detection_event_payload(
+        self,
+        camera_id: str,
+        event_data: Dict[str, Any],
+        persist_on_failure: bool = True,
+    ) -> bool:
+        if camera_id not in self.devices:
+            error_message = f"camera not registered: {camera_id}"
+            logger.warning("등록되지 않은 카메라: %s", camera_id)
+            if persist_on_failure:
+                self._store_failed_detection_event(camera_id, event_data, error_message)
+            return False
+
+        device_name = f"camera-{camera_id}"
+        event_fields = self._extract_event_fields(event_data)
+        event_type = event_fields["event_type"]
+        confidence = event_fields["confidence"]
+        x = event_fields["x"]
+        y = event_fields["y"]
+        width = event_fields["width"]
+        height = event_fields["height"]
+        object_id = event_fields["object_id"]
+        timestamp = event_fields["timestamp"]
+        resource_name = self._map_event_type_to_resource(event_type)
+
+        if self.message_bus_type == "redis":
+            redis_ok = await asyncio.to_thread(
+                self._publish_event_redis,
+                device_name,
+                resource_name,
+                event_type,
+                confidence,
+                x,
+                y,
+                width,
+                height,
+                object_id,
+                timestamp,
+            )
+            if redis_ok:
+                logger.info("✓[%s] Redis 이벤트 전송: %s", camera_id, event_type)
+                return True
+
+        mqtt_ok = await asyncio.to_thread(
+            self._publish_event_mqtt,
+            device_name,
+            resource_name,
+            event_type,
+            confidence,
+            x,
+            y,
+            width,
+            height,
+            object_id,
+            timestamp,
+        )
+        if mqtt_ok:
+            logger.info("✓[%s] MQTT 이벤트 전송: %s", camera_id, event_type)
+            return True
+
+        if self.enable_rest_event_post:
+            bundle = self._build_detection_payload_bundle(
+                device_name,
+                resource_name,
+                event_type,
+                confidence,
+                x,
+                y,
+                width,
+                height,
+                object_id,
+                timestamp,
+            )
+            base_event = {"event": bundle["event_payload"]["event"]}
+            rest_ok = await self._post_event_via_rest(camera_id, event_type, base_event)
+            if rest_ok:
+                return True
+
+        error_message = (
+            f"EdgeX publish failed: camera={camera_id}, type={event_type}, "
+            f"message_bus={self.message_bus_type}, rest={self.enable_rest_event_post}"
+        )
+        logger.warning(error_message)
+        if persist_on_failure:
+            self._store_failed_detection_event(camera_id, event_data, error_message)
+        return False
+
+    async def replay_detection_event(
+        self,
+        outbox_id: int,
+        camera_id: str,
+        event_data: Dict[str, Any],
+    ) -> bool:
+        """저장된 outbox 이벤트를 EdgeX로 다시 전송한다."""
+        try:
+            sent = await self._send_detection_event_payload(
+                camera_id,
+                event_data,
+                persist_on_failure=False,
+            )
+            if sent:
+                self._mark_outbox_sent(outbox_id)
+                return True
+
+            self._mark_outbox_retry_failed(outbox_id, "replay failed")
+            return False
+        except Exception as exc:
+            self._mark_outbox_retry_failed(outbox_id, str(exc))
+            logger.error("Outbox replay 오류 (%s): %s", outbox_id, exc)
+            return False
+
     async def send_detection_event(self, camera_id: str, events: List) -> bool: # 감지 이벤트를 EdgeX Event로 전송 (비동기 메서드)
         """
         감지 이벤트를 EdgeX Event로 전송
@@ -739,85 +993,13 @@ class CCTVDeviceService:
         반환값:
             전송 성공 여부
         """
-        if camera_id not in self.devices:
-            logger.warning("등록되지 않은 카메라: %s", camera_id)
-            return False
-        
-        device_name = f"camera-{camera_id}"
         try:
+            all_sent = True
             for event in events:
-                event_fields = self._extract_event_fields(event)
-                event_type = event_fields["event_type"]
-                confidence = event_fields["confidence"]
-                x = event_fields["x"]
-                y = event_fields["y"]
-                width = event_fields["width"]
-                height = event_fields["height"]
-                object_id = event_fields["object_id"]
-                timestamp = event_fields["timestamp"]
+                sent = await self._send_detection_event_payload(camera_id, event)
+                all_sent = all_sent and sent
 
-                resource_name = self._map_event_type_to_resource(event_type)
-
-                if self.message_bus_type == "redis":
-                    redis_ok = await asyncio.to_thread(
-                        self._publish_event_redis,
-                        device_name,
-                        resource_name,
-                        event_type,
-                        confidence,
-                        x,
-                        y,
-                        width,
-                        height,
-                        object_id,
-                        timestamp,
-                    )
-                    if redis_ok:
-                        logger.info("✓ [%s] Redis 이벤트 전송: %s", camera_id, event_type)
-                        continue
-
-                mqtt_ok = await asyncio.to_thread(
-                    self._publish_event_mqtt,
-                    device_name,
-                    resource_name,
-                    event_type,
-                    confidence,
-                    x,
-                    y,
-                    width,
-                    height,
-                    object_id,
-                    timestamp,
-                )
-                if mqtt_ok:
-                    logger.info("✓ [%s] MQTT 이벤트 전송: %s", camera_id, event_type)
-                    continue
-
-                if not self.enable_rest_event_post:
-                    logger.warning(
-                        f"이벤트 전송 실패 (Redis/MQTT 실패, REST 비활성화): camera={camera_id}, type={event_type}"
-                    )
-                    return False
-
-                bundle = self._build_detection_payload_bundle(
-                    device_name,
-                    resource_name,
-                    event_type,
-                    confidence,
-                    x,
-                    y,
-                    width,
-                    height,
-                    object_id,
-                    timestamp,
-                )
-                base_event = {"event": bundle["event_payload"]["event"]}
-
-                success = await self._post_event_via_rest(camera_id, event_type, base_event)
-                if not success:
-                    return False
-
-            return True
+            return all_sent
 
         except Exception  as exc:
             logger.error("이벤트 전송 오류 (%s): %s", camera_id, exc)
@@ -831,14 +1013,14 @@ class CCTVDeviceService:
             now = time.time()
             cooldown = min(
                 CCTVDeviceService._redis_base_cooldown_sec
-                * (2 ** CCTVDeviceService._redis_fail_count),
+                * (2 ** self._redis_fail_count),
                 CCTVDeviceService._max_cooldown_sec,
             )
-            if now - CCTVDeviceService._redis_last_fail_time < cooldown:
+            if now - self._redis_last_fail_time < cooldown:
                 logger.debug(
                     "Redis 재연결 쿨다운 중 (%.1f초 대기, 실패 횟수=%d)",
-                    cooldown - (now - CCTVDeviceService._redis_last_fail_time),
-                    CCTVDeviceService._redis_fail_count,
+                    cooldown - (now - self._redis_last_fail_time),
+                    self._redis_fail_count,
                 )
                 return False
             try:
@@ -852,20 +1034,20 @@ class CCTVDeviceService:
                 )
                 client.ping()
                 self._redis_client = client
-                CCTVDeviceService._redis_fail_count = 0   # 성공 시 초기화
+                self._redis_fail_count = 0   # 성공 시 초기화
                 logger.info("✓ Redis 연결됨: %s:%s", self.redis_host, self.redis_port)
                 return True
             except Exception as exc:
-                CCTVDeviceService._redis_fail_count += 1
-                CCTVDeviceService._redis_last_fail_time = now
+                self._redis_fail_count += 1
+                self._redis_last_fail_time = now
                 next_cooldown = min(
                     CCTVDeviceService._redis_base_cooldown_sec
-                    * (2 ** CCTVDeviceService._redis_fail_count),
+                    * (2 ** self._redis_fail_count),
                     CCTVDeviceService._max_cooldown_sec,
                 )
                 logger.warning(
                     "Redis 연결 실패 (횟수=%d, 다음 재시도 %.0f초 후): %s",
-                    CCTVDeviceService._redis_fail_count,
+                    self._redis_fail_count,
                     next_cooldown,
                     exc,
                 )
@@ -944,14 +1126,14 @@ class CCTVDeviceService:
             now = time.time()
             cooldown = min(
                 CCTVDeviceService._mqtt_base_cooldown_sec
-                * (2 ** CCTVDeviceService._mqtt_fail_count),
+                * (2 ** self._mqtt_fail_count),
                 CCTVDeviceService._max_cooldown_sec,
             )
-            if now - CCTVDeviceService._mqtt_last_fail_time < cooldown:
+            if now - self._mqtt_last_fail_time < cooldown:
                 logger.debug(
                     "MQTT 재연결 쿨다운 중 (%.1f초 대기, 실패 횟수=%d)",
-                    cooldown - (now - CCTVDeviceService._mqtt_last_fail_time),
-                    CCTVDeviceService._mqtt_fail_count,
+                    cooldown - (now - self._mqtt_last_fail_time),
+                    self._mqtt_fail_count,
                 )
                 return False
             try:
@@ -959,20 +1141,20 @@ class CCTVDeviceService:
                 client.connect(self.mqtt_broker, self.mqtt_port, 60)
                 client.loop_start()
                 self._mqtt_client = client
-                CCTVDeviceService._mqtt_fail_count = 0   # 성공 시 초기화
+                self._mqtt_fail_count = 0   # 성공 시 초기화
                 logger.info("✓ MQTT 연결됨: %s:%d", self.mqtt_broker, self.mqtt_port)
                 return True
             except Exception as exc:
-                CCTVDeviceService._mqtt_fail_count += 1
-                CCTVDeviceService._mqtt_last_fail_time = now
+                self._mqtt_fail_count += 1
+                self._mqtt_last_fail_time = now
                 next_cooldown = min(
                     CCTVDeviceService._mqtt_base_cooldown_sec
-                    * (2 ** CCTVDeviceService._mqtt_fail_count),
+                    * (2 ** self._mqtt_fail_count),
                     CCTVDeviceService._max_cooldown_sec,
                 )
                 logger.warning(
                     "MQTT 연결 실패 (횟수=%d, 다음 재시도 %.0f초 후): %s",
-                    CCTVDeviceService._mqtt_fail_count,
+                    self._mqtt_fail_count,
                     next_cooldown,
                     exc,
                 )

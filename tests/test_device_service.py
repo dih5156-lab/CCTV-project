@@ -4,6 +4,7 @@ test_device_service.py — CCTVDeviceService 순수 유틸리티 메서드 단�
 외부 연결(Redis / MQTT / HTTP)이 필요한 메서드는
 mock 을 통해 격리하거나 빠른 타임아웃으로 실패 경로를 테스트합니다.
 """
+import asyncio
 import importlib
 import time
 import pytest
@@ -23,7 +24,7 @@ redis_required = pytest.mark.skipif(
 
 
 @pytest.fixture
-def svc() -> CCTVDeviceService:
+def svc(tmp_path) -> CCTVDeviceService:
     """연결 없이 CCTVDeviceService 인스턴스 생성."""
     return CCTVDeviceService({
         "coreMetadataUrl": "http://localhost:59881",
@@ -33,6 +34,8 @@ def svc() -> CCTVDeviceService:
         "mqttPort": "1883",
         "redisHost": "localhost",
         "redisPort": "6379",
+        "enableStoreAndForward": True,
+        "outboxDbPath": str(tmp_path / "edgex_outbox.db"),
     })
 
 
@@ -216,13 +219,13 @@ class TestEnsureConnectionBackoff:
     """Redis / MQTT 연결 시도는 실제 소켓 없이 mock 으로 격리."""
 
     def _reset_redis(self, svc):
-        CCTVDeviceService._redis_fail_count = 0
-        CCTVDeviceService._redis_last_fail_time = 0
+        svc._redis_fail_count = 0
+        svc._redis_last_fail_time = 0
         svc._redis_client = None
 
     def _reset_mqtt(self, svc):
-        CCTVDeviceService._mqtt_fail_count = 0
-        CCTVDeviceService._mqtt_last_fail_time = 0
+        svc._mqtt_fail_count = 0
+        svc._mqtt_last_fail_time = 0
         svc._mqtt_client = None
 
     @redis_required
@@ -234,12 +237,12 @@ class TestEnsureConnectionBackoff:
         with patch("src.edgex.device_service.redis.Redis", return_value=mock_client):
             result = svc._ensure_redis_client()
         assert result is False
-        assert CCTVDeviceService._redis_fail_count >= 1
+        assert svc._redis_fail_count >= 1
 
     def test_redis_cooldown_blocks_retry(self, svc):
         """쿨다운 중에는 즉시 False 반환 (소켓 시도 없음)."""
-        CCTVDeviceService._redis_fail_count = 1
-        CCTVDeviceService._redis_last_fail_time = time.time()
+        svc._redis_fail_count = 1
+        svc._redis_last_fail_time = time.time()
         svc._redis_client = None
         result = svc._ensure_redis_client()
         assert result is False
@@ -252,12 +255,12 @@ class TestEnsureConnectionBackoff:
         with patch("src.edgex.device_service.mqtt.Client", return_value=mock_instance):
             result = svc._ensure_mqtt_client()
         assert result is False
-        assert CCTVDeviceService._mqtt_fail_count >= 1
+        assert svc._mqtt_fail_count >= 1
 
     def test_mqtt_cooldown_blocks_retry(self, svc):
         """MQTT 쿨다운 중에는 즉시 False 반환 (소켓 시도 없음)."""
-        CCTVDeviceService._mqtt_fail_count = 1
-        CCTVDeviceService._mqtt_last_fail_time = time.time()
+        svc._mqtt_fail_count = 1
+        svc._mqtt_last_fail_time = time.time()
         svc._mqtt_client = None
         result = svc._ensure_mqtt_client()
         assert result is False
@@ -265,27 +268,27 @@ class TestEnsureConnectionBackoff:
     @redis_required
     def test_redis_success_resets_fail_count(self, svc):
         """Redis 연결 성공 시 fail_count 가 0으로 초기화."""
-        CCTVDeviceService._redis_fail_count = 5
-        CCTVDeviceService._redis_last_fail_time = 0
+        svc._redis_fail_count = 5
+        svc._redis_last_fail_time = 0
         mock_client = MagicMock()
         mock_client.ping.return_value = True
         with patch("src.edgex.device_service.redis.Redis", return_value=mock_client):
             svc._redis_client = None
             result = svc._ensure_redis_client()
         assert result is True
-        assert CCTVDeviceService._redis_fail_count == 0
+        assert svc._redis_fail_count == 0
 
     def test_mqtt_success_resets_fail_count(self, svc):
         """MQTT 연결 성공 시 fail_count 가 0으로 초기화."""
-        CCTVDeviceService._mqtt_fail_count = 3
-        CCTVDeviceService._mqtt_last_fail_time = 0
+        svc._mqtt_fail_count = 3
+        svc._mqtt_last_fail_time = 0
         mock_instance = MagicMock()
         mock_instance.connect.return_value = None
         with patch("src.edgex.device_service.mqtt.Client", return_value=mock_instance):
             svc._mqtt_client = None
             result = svc._ensure_mqtt_client()
         assert result is True
-        assert CCTVDeviceService._mqtt_fail_count == 0
+        assert svc._mqtt_fail_count == 0
 
 
 # ---------------------------------------------------------------------------
@@ -333,3 +336,50 @@ class TestClose:
         svc._redis_client = None
         svc.close()
         svc.close()
+
+
+class TestEdgeXOutbox:
+    def test_failed_send_is_persisted_to_outbox(self, svc):
+        svc._init_outbox()
+        svc.devices["cam1"] = "device-1"
+
+        sample_event = {
+            "camera_id": "cam1",
+            "type": "fall_detected",
+            "confidence": 0.98,
+            "bbox": {"x": 10, "y": 20, "width": 30, "height": 40},
+            "object_id": 7,
+            "timestamp": "2026-03-26T10:00:00Z",
+        }
+
+        with patch.object(svc, "_publish_event_redis", return_value=False), \
+             patch.object(svc, "_publish_event_mqtt", return_value=False):
+            result = asyncio.run(svc.send_detection_event("cam1", [sample_event]))
+
+        assert result is False
+        pending = svc.get_pending_detection_events()
+        assert len(pending) == 1
+        assert pending[0]["camera_id"] == "cam1"
+        assert pending[0]["event_data"]["type"] == "fall_detected"
+
+    def test_replay_marks_outbox_row_sent(self, svc):
+        svc._init_outbox()
+        svc.devices["cam1"] = "device-1"
+        sample_event = {
+            "camera_id": "cam1",
+            "type": "person",
+            "confidence": 0.91,
+            "bbox": {"x": 1, "y": 2, "width": 3, "height": 4},
+            "timestamp": "2026-03-26T10:00:00Z",
+        }
+        svc._store_failed_detection_event("cam1", sample_event, "network down")
+        pending = svc.get_pending_detection_events()
+
+        with patch.object(svc, "_publish_event_redis", return_value=False), \
+             patch.object(svc, "_publish_event_mqtt", return_value=True):
+            result = asyncio.run(
+                svc.replay_detection_event(pending[0]["id"], "cam1", sample_event)
+            )
+
+        assert result is True
+        assert svc.get_pending_detection_events() == []

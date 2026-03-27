@@ -39,6 +39,7 @@ CAMERAS_JSON_DATA = [
         "name": "테스트 카메라",
         "enabled": True,
         "detections": ["helmet"],
+        "model_settings": {"use_pose": True, "use_helmet": True, "use_person": False},
         "model_paths": {},
         "zones": [],
     },
@@ -47,6 +48,7 @@ CAMERAS_JSON_DATA = [
         "name": "카메라 2",
         "enabled": False,
         "detections": [],
+        "model_settings": {"use_pose": False, "use_helmet": False, "use_person": False},
         "model_paths": {},
         "zones": [ZONE_DEF],
     },
@@ -86,6 +88,25 @@ def _build_processor(zone_manager=None, update_zones_ok=True) -> MagicMock:
     proc = MagicMock()
     proc.zone_manager = zone_manager
     proc.update_zones = MagicMock(return_value=update_zones_ok)
+    proc.get_camera_model_settings = MagicMock(
+        side_effect=lambda camera_id: {
+            "camera_1": {"use_pose": True, "use_helmet": True, "use_person": False},
+            "camera_2": {"use_pose": False, "use_helmet": False, "use_person": False},
+        }.get(camera_id)
+    )
+    def _update_model_settings(camera_id, settings, *_):
+        if camera_id != "camera_1":
+            return None
+        use_helmet = bool(settings.get("use_helmet", settings.get("helmet", True)))
+        use_pose = bool(settings.get("use_pose", settings.get("pose", True))) or use_helmet
+        return {
+            "use_pose": use_pose,
+            "use_helmet": use_helmet,
+            "use_person": bool(settings.get("use_person", settings.get("person", False))),
+        }
+    proc.update_camera_model_settings = MagicMock(
+        side_effect=_update_model_settings
+    )
     return proc
 
 
@@ -236,11 +257,29 @@ class TestZoneApiGET:
         cam1 = next(c for c in body if c["id"] == "camera_1")
         assert cam1["zones"] == []
 
+    def test_get_cameras_includes_model_settings(self):
+        code, body = _request("GET", f"{self.base}/cameras")
+        assert code == 200
+        cam1 = next(c for c in body if c["id"] == "camera_1")
+        assert cam1["model_settings"]["use_pose"] is True
+        assert cam1["model_settings"]["use_helmet"] is True
+
     def test_get_specific_camera_zones_from_memory(self):
         code, body = _request("GET", f"{self.base}/cameras/camera_2/zones")
         assert code == 200
         assert body["camera_id"] == "camera_2"
         assert len(body["zones"]) == 1
+
+    def test_get_specific_camera_models(self):
+        code, body = _request("GET", f"{self.base}/cameras/camera_1/models")
+        assert code == 200
+        assert body["camera_id"] == "camera_1"
+        assert body["model_settings"]["use_pose"] is True
+
+    def test_get_specific_camera_models_404(self):
+        code, body = _request("GET", f"{self.base}/cameras/unknown/models")
+        assert code == 404
+        assert "error" in body
 
     def test_get_specific_camera_zones_fallback(self):
         """ZoneManager에 없는 camera_1 은 cameras.json 에서 조회해야 한다."""
@@ -340,6 +379,34 @@ class TestZoneApiPOST:
             {"zones": [ZONE_DEF]},
         )
         assert code == 500
+
+    def test_post_camera_models_updates_settings(self):
+        code, body = _request(
+            "POST",
+            f"{self.base}/cameras/camera_1/models",
+            {"use_pose": False, "use_helmet": True},
+        )
+        assert code == 200
+        assert body["camera_id"] == "camera_1"
+        self.proc.update_camera_model_settings.assert_called()
+
+    def test_post_camera_models_requires_payload(self):
+        code, body = _request(
+            "POST",
+            f"{self.base}/cameras/camera_1/models",
+            {"foo": "bar"},
+        )
+        assert code == 400
+        assert "error" in body
+
+    def test_post_camera_models_unknown_camera(self):
+        code, body = _request(
+            "POST",
+            f"{self.base}/cameras/unknown/models",
+            {"use_pose": True},
+        )
+        assert code == 404
+        assert "error" in body
 
     def test_post_unknown_path_returns_404(self):
         code, _ = _request("POST", f"{self.base}/other", {"zones": []})

@@ -181,7 +181,7 @@ def _collect_active_cameras(camera_list: list[dict], processor: VideoProcessor) 
         active.append((
             cam_id,
             source,
-            cam.get('detections') or cam.get('ai_models'),  # 하위 호환
+            cam.get('model_settings') or cam.get('detections') or cam.get('ai_models'),  # 하위 호환
             cam.get('model_paths') or None,
             cam.get('zones') or None,
         ))
@@ -508,11 +508,7 @@ def main() -> None:
         import cv2
         if _proc_ref:
             try:
-                for cam in _proc_ref[0]._cams.cameras.values():
-                    try:
-                        cam.release()
-                    except Exception:
-                        pass
+                _proc_ref[0].release_all_cameras()
             except Exception:
                 pass
         try:

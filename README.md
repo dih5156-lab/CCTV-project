@@ -9,6 +9,7 @@ Windows PC와 NVIDIA Jetson Orin 모두 동작합니다.
 - **낙상 감지**: YOLOv8-pose 모델 기반 사람 자세 분석으로 낙상 사고 탐지
 - **다중 카메라**: RTSP/웹캠 동시 처리 및 자동 재연결
 - **위험 구역 관리**: 실시간 폴리곤 그리기·저장·삭제 (GUI 인터랙션 지원)
+- **얼굴 인식 확장 구조**: Windows 개발/디버깅, Jetson 운영 배포를 전제로 한 선택형 백엔드
 - **Zone API**: REST API로 외부에서 구역 설정 조회·수정
 - **EdgeX Foundry 연동**: MQTT 기반 표준 EdgeX v3 이벤트 발행
 - **Action Layer**: 스피커 알람·외부 API 호출·SQLite 이벤트 저장
@@ -102,6 +103,19 @@ pip install -r requirements.txt
 
 > **Jetson Orin**: PyTorch/OpenCV는 L4T 이미지에 이미 포함되어 있어 별도 설치 불필요.
 > `torch`, `torchvision`, `opencv-python*` 라인은 설치를 건너뛰세요.
+
+### 얼굴 인식 환경 분리
+
+- Windows: 개발/디버깅용
+- Jetson: 실제 얼굴 인식 운영용
+
+Jetson에서 실사용 얼굴 인식을 켜려면 추가로 아래 파일을 설치합니다.
+
+```bash
+pip install -r requirements-face-jetson.txt
+```
+
+자세한 내용은 [docs/FACE_RECOGNITION_SETUP.md](docs/FACE_RECOGNITION_SETUP.md)를 참고하세요.
 
 ### 4. 모델 파일 준비
 

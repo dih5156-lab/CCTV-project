@@ -14,6 +14,7 @@ from typing import Dict, Optional
 import paho.mqtt.client as mqtt
 
 logger = logging.getLogger(__name__)
+_PAHO_V2 = hasattr(mqtt, "CallbackAPIVersion")
 
 # 재연결 백오프 설정
 _RECONNECT_MIN_DELAY = 1.0    # 최초 재시도 대기 시간 (초)
@@ -73,7 +74,7 @@ class MqttEventPublisher:
     # 콜백
     # ------------------------------------------------------------------
 
-    def _on_connect(self, client, userdata, flags, rc):
+    def _on_connect(self, client, userdata, flags, rc, *args):
         """MQTT 연결 성공/실패 콜백."""
         self._connected = rc == 0
         self._connect_waiter.set()
@@ -83,7 +84,7 @@ class MqttEventPublisher:
         else:
             logger.error("MQTT 연결 실패 (rc=%s): %s:%s", rc, self.broker, self.port)
 
-    def _on_disconnect(self, client, userdata, rc):
+    def _on_disconnect(self, client, userdata, rc, *args):
         """MQTT 연결 해제 콜백."""
         self._connected = False
         if rc != 0:
@@ -113,11 +114,9 @@ class MqttEventPublisher:
 
         if self._client is None:
             try:
-                import paho.mqtt.client as _mqtt_mod
-                # paho-mqtt 2.x: CallbackAPIVersion 필수, 1.x: 없어도 됨
-                if hasattr(_mqtt_mod, "CallbackAPIVersion"):
+                if _PAHO_V2:
                     self._client = mqtt.Client(
-                        mqtt.CallbackAPIVersion.VERSION1,
+                        mqtt.CallbackAPIVersion.VERSION2,
                         client_id=f"{self.client_id_prefix}-{uuid.uuid4().hex[:8]}",
                         clean_session=True,
                     )
