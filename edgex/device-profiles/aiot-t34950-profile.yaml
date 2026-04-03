@@ -1,0 +1,44 @@
+name: "aiot-t34950-river"
+manufacturer: "AIoT"
+model: "T34950"
+description: "LwM2M Object 34950 - River monitoring (water level, flow velocity, rainfall)"
+labels:
+  - "aiot"
+  - "river"
+  - "water-level"
+  - "lora"
+
+deviceResources:
+  - name: "water_level"
+    description: "Water level (m)"
+    properties:
+      valueType: "Float64"
+      readWrite: "R"
+      units: "m"
+  - name: "flow_velocity"
+    description: "Flow velocity (m/s)"
+    properties:
+      valueType: "Float64"
+      readWrite: "R"
+      units: "m/s"
+  - name: "rain_fall"
+    description: "Rainfall (mm)"
+    properties:
+      valueType: "Float64"
+      readWrite: "R"
+      units: "mm"
+  - name: "reporting_period"
+    description: "Reporting period (seconds)"
+    properties:
+      valueType: "Float64"
+      readWrite: "R"
+      units: "second"
+
+deviceCommands:
+  - name: "river_reading"
+    readWrite: "R"
+    resourceOperations:
+      - { deviceResource: "water_level" }
+      - { deviceResource: "flow_velocity" }
+      - { deviceResource: "rain_fall" }
+      - { deviceResource: "reporting_period" }

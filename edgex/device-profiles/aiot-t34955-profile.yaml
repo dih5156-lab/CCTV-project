@@ -1,0 +1,43 @@
+name: "aiot-t34955-inclinometer"
+manufacturer: "AIoT"
+model: "T34955"
+description: "LwM2M Object 34955 - Inclinometer (angle X/Y)"
+labels:
+  - "aiot"
+  - "inclinometer"
+  - "lora"
+
+deviceResources:
+  - name: "angle_x"
+    description: "X-axis angle (degrees)"
+    properties:
+      valueType: "Float64"
+      readWrite: "R"
+      units: "degree"
+  - name: "angle_y"
+    description: "Y-axis angle (degrees)"
+    properties:
+      valueType: "Float64"
+      readWrite: "R"
+      units: "degree"
+  - name: "reporting_period"
+    description: "Reporting period (seconds)"
+    properties:
+      valueType: "Float64"
+      readWrite: "R"
+      units: "second"
+  - name: "reporting_angle_threshold"
+    description: "Angle threshold for reporting (degrees)"
+    properties:
+      valueType: "Float64"
+      readWrite: "R"
+      units: "degree"
+
+deviceCommands:
+  - name: "inclinometer_reading"
+    readWrite: "R"
+    resourceOperations:
+      - { deviceResource: "angle_x" }
+      - { deviceResource: "angle_y" }
+      - { deviceResource: "reporting_period" }
+      - { deviceResource: "reporting_angle_threshold" }

@@ -88,6 +88,16 @@ ENV_OVERRIDES: tuple[EnvOverride, ...] = (
     EnvOverride("ACTION_MQTT_PORT", ("action", "mqtt_port"), parser=lambda v: int(v.strip())),
     EnvOverride("ACTION_REST_HOST", ("action", "rest_host")),
     EnvOverride("ACTION_REST_PORT", ("action", "rest_port"), parser=lambda v: int(v.strip())),
+    # External ingest
+    EnvOverride("EXTERNAL_MQTT_BROKER", ("external_ingest", "mqtt_broker")),
+    EnvOverride("EXTERNAL_MQTT_PORT", ("external_ingest", "mqtt_port"), parser=lambda v: int(v.strip())),
+    EnvOverride("EXTERNAL_MQTT_TOPICS", ("external_ingest", "topics"), parser=lambda v: tuple(item.strip() for item in v.split(",") if item.strip())),
+    EnvOverride("EXTERNAL_MQTT_CLIENT_ID_PREFIX", ("external_ingest", "client_id_prefix")),
+    EnvOverride("EXTERNAL_MQTT_CLIENT_ID", ("external_ingest", "mqtt_client_id")),
+    EnvOverride("EXTERNAL_MQTT_USERNAME", ("external_ingest", "mqtt_username")),
+    EnvOverride("EXTERNAL_MQTT_PASSWORD", ("external_ingest", "mqtt_password")),
+    EnvOverride("EXTERNAL_INGEST_DB_PATH", ("external_ingest", "db_path")),
+    EnvOverride("EXTERNAL_REPUBLISH_ENABLED", ("external_ingest", "republish_enabled"), parser=_parse_bool),
     # 카메라 / RTSP
     EnvOverride("RTSP_BUFFER_SIZE", ("camera", "buffer_size"), parser=lambda v: int(v.strip())),
 )
@@ -191,6 +201,20 @@ class ActionBridgeConfig:
     mqtt_port: int = 1883
     rest_host: str = "0.0.0.0"
     rest_port: int = 8080
+
+
+@dataclass
+class ExternalIngestConfig:
+    """외부 MQTT/NC 수신 MVP 설정"""
+    mqtt_broker: str = "localhost"
+    mqtt_port: int = 1883
+    topics: tuple[str, ...] = ("#",)
+    client_id_prefix: str = "cctv-external-ingest"
+    mqtt_client_id: Optional[str] = None
+    mqtt_username: Optional[str] = None
+    mqtt_password: Optional[str] = None
+    db_path: str = str(PROJECT_ROOT / "ingest_events.db")
+    republish_enabled: bool = False
 
 
 @dataclass
@@ -301,6 +325,7 @@ class AppConfig:
     processing: Optional[ProcessingConfig] = None
     edgex: Optional[EdgeXConfig] = None
     action: Optional[ActionBridgeConfig] = None
+    external_ingest: Optional[ExternalIngestConfig] = None
     
     # 기능 활성화 플래그
     display: bool = False  # 화면 표시 여부
@@ -322,6 +347,7 @@ class AppConfig:
         self.processing = self.processing or ProcessingConfig()
         self.edgex = self.edgex or EdgeXConfig()
         self.action = self.action or ActionBridgeConfig()
+        self.external_ingest = self.external_ingest or ExternalIngestConfig()
     
     @classmethod
     def from_env(cls, env: Optional[Mapping[str, str]] = None) -> "AppConfig":

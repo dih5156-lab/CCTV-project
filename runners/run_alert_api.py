@@ -17,6 +17,7 @@ logger = logging.getLogger("alert-api")
 
 class AlertHandler(BaseHTTPRequestHandler):
     log_path: Path = Path("alert_api_events.jsonl")
+    sensor_log_path: Path = Path("sensor_readings.jsonl")
 
     def _send_json(self, status_code: int, payload: dict) -> None:
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
@@ -33,10 +34,18 @@ class AlertHandler(BaseHTTPRequestHandler):
         self._send_json(404, {"error": "not found"})
 
     def do_POST(self):
+        if self.path == "/api/sensor-readings":
+            self._handle_post(
+                self.sensor_log_path,
+                "Sensor reading 수신 완료: /api/sensor-readings",
+            )
+            return
         if self.path != "/api/alerts":
             self._send_json(404, {"error": "not found"})
             return
+        self._handle_post(self.log_path, "Alert 수신 완료: /api/alerts")
 
+    def _handle_post(self, log_path: Path, log_msg: str) -> None:
         content_length = int(self.headers.get("Content-Length", "0") or "0")
         raw_body = self.rfile.read(content_length) if content_length > 0 else b"{}"
 
@@ -50,11 +59,11 @@ class AlertHandler(BaseHTTPRequestHandler):
             "receivedAt": datetime.utcnow().isoformat(),
             "payload": payload,
         }
-        self.log_path.parent.mkdir(parents=True, exist_ok=True)
-        with self.log_path.open("a", encoding="utf-8") as file:
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+        with log_path.open("a", encoding="utf-8") as file:
             file.write(json.dumps(entry, ensure_ascii=False) + "\n")
 
-        logger.info("Alert 수신 완료: /api/alerts")
+        logger.info(log_msg)
         self._send_json(202, {"accepted": True})
 
     def log_message(self, format, *args):
@@ -66,9 +75,11 @@ def main() -> None:
     parser.add_argument("--host", default="0.0.0.0")
     parser.add_argument("--port", type=int, default=8000)
     parser.add_argument("--log-path", default="/app/alert_api_events.jsonl")
+    parser.add_argument("--sensor-log-path", default="/app/sensor_readings.jsonl")
     args = parser.parse_args()
 
     AlertHandler.log_path = Path(args.log_path)
+    AlertHandler.sensor_log_path = Path(args.sensor_log_path)
 
     server = ThreadingHTTPServer((args.host, args.port), AlertHandler)
     logger.info(f"Alert API 서버 시작: http://{args.host}:{args.port}")

@@ -736,6 +736,34 @@ services:
       read_only: true
       bind:
         create_host_path: true
+
+  # app-aiot-forwarder: removed — EdgeXForwarder in aiot-parser now handles
+  # both alert-api HTTP POST and Core Data HTTP push directly.
+  # Raw MQTT payloads on aiot/sensors/# are not EdgeX Event format,
+  # so ASC external-mqtt trigger cannot process them without re-encoding.
+
+  aiot-parser:
+    container_name: aiot-parser
+    build:
+      context: .
+      dockerfile: Dockerfile.parser
+    env_file:
+      - ./parser-python/.env
+    environment:
+      PYTHONIOENCODING: utf-8
+      PYTHONUTF8: "1"
+      PYTHONUNBUFFERED: "1"
+      # EdgeX MQTT 브로커로 파싱 결과 발행
+      # topic: aiot/sensors/{dev_eui}/{table_name}
+      EDGEX_MQTT_HOST: edgex-mqtt-broker
+      EDGEX_MQTT_PORT: "1883"
+    depends_on:
+      edgex-mqtt-broker:
+        condition: service_started
+    networks:
+      edgex-network: null
+    restart: always
+
 networks:
   edgex-network:
     name: edgex_edgex-network

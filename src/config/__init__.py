@@ -10,6 +10,7 @@ from .config import (
     ProcessingConfig,
     EdgeXConfig,
     ActionBridgeConfig,
+    ExternalIngestConfig,
     default_config,
     PROJECT_ROOT
 )
@@ -24,6 +25,7 @@ __all__ = [
     'ProcessingConfig',
     'EdgeXConfig',
     'ActionBridgeConfig',
+    'ExternalIngestConfig',
     'default_config',
     'PROJECT_ROOT'
 ]

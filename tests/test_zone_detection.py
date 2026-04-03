@@ -14,7 +14,7 @@ import numpy as np
 import pytest
 
 from src.core.events import DetectionEvent, EventType
-from src.utils.zone_detection import Zone, ZoneEvent, ZoneEventType, ZoneManager
+from src.utils.zone_detection import PolygonZone as Zone, ZoneEvent, ZoneEventType, ZoneManager
 
 # ---------------------------------------------------------------------------
 # 헬퍼
@@ -85,7 +85,7 @@ class TestZone:
         assert z.name == "myzone"
 
     def test_name_custom(self):
-        z = Zone("z1", SQUARE_100, name="위험구역")
+        z = Zone("z1", SQUARE_100, "위험구역")
         assert z.name == "위험구역"
 
     # draw (smoke test) -------------------------------------------------------
@@ -244,9 +244,10 @@ class TestZoneManagerCheckZones:
 
     def test_disappeared_object_cleaned_from_state(self, zm):
         zm.check_zones("cam1", [_det(50, 50, oid=5)])
-        assert 5 in zm.object_states["cam1"]
+        # object_states keys are (zone_id, object_id) tuples
+        assert any(oid == 5 for _, oid in zm.object_states["cam1"])
         zm.check_zones("cam1", [])  # 객체 사라짐
-        assert 5 not in zm.object_states["cam1"]
+        assert not any(oid == 5 for _, oid in zm.object_states["cam1"])
 
     def test_dwelling_event_after_threshold(self, tmp_path):
         f = tmp_path / "zones_config.json"

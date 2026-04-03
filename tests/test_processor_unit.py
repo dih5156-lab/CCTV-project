@@ -184,11 +184,11 @@ class TestCameraRegistryRetry:
 class TestParseDetections:
     def test_none_enables_all(self):
         flags = VideoProcessor._parse_detections(None)
-        assert flags == {"use_helmet": True, "use_pose": True, "use_person": False}
+        assert flags == {"use_helmet": True, "use_pose": True, "use_person": False, "use_face": False}
 
     def test_empty_list_enables_all(self):
         flags = VideoProcessor._parse_detections([])
-        assert flags == {"use_helmet": True, "use_pose": True, "use_person": False}
+        assert flags == {"use_helmet": True, "use_pose": True, "use_person": False, "use_face": False}
 
     def test_fall_enables_pose_and_person_not_helmet(self):
         flags = VideoProcessor._parse_detections(["fall"])
@@ -216,7 +216,7 @@ class TestParseDetections:
 
     def test_fall_and_helmet_enables_all(self):
         flags = VideoProcessor._parse_detections(["fall", "helmet"])
-        assert flags == {"use_helmet": True, "use_pose": True, "use_person": False}
+        assert flags == {"use_helmet": True, "use_pose": True, "use_person": False, "use_face": False}
 
     def test_case_insensitive(self):
         flags = VideoProcessor._parse_detections(["FALL", "HELMET"])
@@ -225,7 +225,7 @@ class TestParseDetections:
 
     def test_model_settings_mapping_supported(self):
         flags = VideoProcessor._parse_detections({"use_pose": False, "use_helmet": True})
-        assert flags == {"use_helmet": True, "use_pose": True, "use_person": False}
+        assert flags == {"use_helmet": True, "use_pose": True, "use_person": False, "use_face": False}
 
     def test_unknown_mode_treated_as_person(self):
         flags = VideoProcessor._parse_detections(["unknown_mode"])
@@ -250,7 +250,7 @@ class TestModelSettingsHelpers:
             "cam1",
             {"use_pose": False, "use_helmet": True},
         )
-        assert updated == {"use_helmet": True, "use_pose": True, "use_person": False}
+        assert updated == {"use_helmet": True, "use_pose": True, "use_person": False, "use_face": False}
         assert minimal_processor.get_camera_model_settings("cam1") == updated
 
     def test_update_camera_model_settings_persists_json(self, minimal_processor, tmp_path):

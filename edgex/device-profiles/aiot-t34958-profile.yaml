@@ -1,0 +1,65 @@
+name: "aiot-t34958-imu"
+manufacturer: "AIoT"
+model: "T34958"
+description: "LwM2M Object 34958 - Combined summary (accelerometer + gyroscope + tilt)"
+labels:
+  - "aiot"
+  - "imu"
+  - "accelerometer"
+  - "gyroscope"
+  - "lora"
+
+deviceResources:
+  - name: "acc_x"
+    description: "X-axis acceleration"
+    properties:
+      valueType: "Float64"
+      readWrite: "R"
+      units: "g"
+  - name: "acc_y"
+    description: "Y-axis acceleration"
+    properties:
+      valueType: "Float64"
+      readWrite: "R"
+      units: "g"
+  - name: "acc_z"
+    description: "Z-axis acceleration"
+    properties:
+      valueType: "Float64"
+      readWrite: "R"
+      units: "g"
+  - name: "gyro_x"
+    description: "X-axis angular velocity"
+    properties:
+      valueType: "Float64"
+      readWrite: "R"
+      units: "deg/s"
+  - name: "gyro_y"
+    description: "Y-axis angular velocity"
+    properties:
+      valueType: "Float64"
+      readWrite: "R"
+      units: "deg/s"
+  - name: "gyro_z"
+    description: "Z-axis angular velocity"
+    properties:
+      valueType: "Float64"
+      readWrite: "R"
+      units: "deg/s"
+  - name: "event_code"
+    description: "Event flag (1=event detected)"
+    properties:
+      valueType: "Int32"
+      readWrite: "R"
+
+deviceCommands:
+  - name: "imu_reading"
+    readWrite: "R"
+    resourceOperations:
+      - { deviceResource: "acc_x" }
+      - { deviceResource: "acc_y" }
+      - { deviceResource: "acc_z" }
+      - { deviceResource: "gyro_x" }
+      - { deviceResource: "gyro_y" }
+      - { deviceResource: "gyro_z" }
+      - { deviceResource: "event_code" }

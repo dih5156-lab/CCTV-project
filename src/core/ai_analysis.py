@@ -377,6 +377,21 @@ class AIAnalyzer:
     # ====================
     # YOLO 결과 추출 매핑
     # ====================
+    @staticmethod
+    def _generate_temp_id(x: int, y: int, w: int, h: int) -> int:
+        """위치 기반 임시 객체 ID 생성 (트래커 없이 동일 위치 중복 방지용).
+
+        Args:
+            x, y: 바운딩박스 좌상단 좌표
+            w, h: 바운딩박스 너비/높이 (0 이하는 0으로 처리)
+
+        Returns:
+            1_500_000_000 ~ 1_999_999_999 범위의 결정론적 정수
+        """
+        cx = x + max(w, 0) // 2
+        cy = y + max(h, 0) // 2
+        return 1_500_000_000 + (abs(cx * 10_000 + cy * 17) % 500_000_000)
+
     def _map_class_to_event_type(self, class_name: str, model_type: str) -> EventType:
         """클래스명을 EventType으로 매핑
         

@@ -1,0 +1,4 @@
+interface:
+  display_name: "DevOps Automator"
+  short_description: "CI/CD, Docker, infra, ops"
+  default_prompt: "Use $devops-automator to improve deployment, automation, observability, or runtime setup in this repo."

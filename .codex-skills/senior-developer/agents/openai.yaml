@@ -1,0 +1,4 @@
+interface:
+  display_name: "Senior Developer"
+  short_description: "Feature work, fixes, refactors"
+  default_prompt: "Use $senior-developer to implement or refine application code in this repo."

@@ -22,7 +22,7 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import pytest
 
-from src.utils.zone_detection import Zone, ZoneManager
+from src.utils.zone_detection import PolygonZone, ZoneManager
 from src.services.zone_api import ZoneApiHandler, start_zone_api_server
 
 
@@ -230,7 +230,7 @@ class TestZoneApiGET:
     @pytest.fixture(autouse=True)
     def setup(self, cameras_json: Path):
         zm = _make_zone_manager("nonexistent.json")
-        zm.zones["camera_2"] = {"zone_1": Zone("zone_1", SQUARE_POLYGON, "위험구역")}
+        zm.zones["camera_2"] = {"zone_1": PolygonZone("zone_1", SQUARE_POLYGON, "위험구역")}
         self.proc = _build_processor(zone_manager=zm)
         self.server = _live_server(self.proc, str(cameras_json))
         self.base = f"http://127.0.0.1:{self.server.server_address[1]}"
@@ -419,8 +419,8 @@ class TestZoneApiDELETE:
     def setup(self, cameras_json: Path):
         zm = _make_zone_manager("nonexistent.json")
         zm.zones["camera_1"] = {
-            "zone_1": Zone("zone_1", SQUARE_POLYGON, "구역1"),
-            "zone_2": Zone("zone_2", SQUARE_POLYGON, "구역2"),
+            "zone_1": PolygonZone("zone_1", SQUARE_POLYGON, "구역1"),
+            "zone_2": PolygonZone("zone_2", SQUARE_POLYGON, "구역2"),
         }
         self.proc = _build_processor(zone_manager=zm, update_zones_ok=True)
         self.server = _live_server(self.proc, str(cameras_json))

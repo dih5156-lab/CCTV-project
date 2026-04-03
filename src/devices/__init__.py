@@ -6,9 +6,11 @@
 from .speaker import SpeakerDevice, SpeakerConfig
 from .signboard import SignboardDevice, SignboardConfig
 from .sensor import SirenDevice, SensorConfig
+from .sensor_device import SensorReading
 
 __all__ = [
     "SpeakerDevice", "SpeakerConfig",
     "SignboardDevice", "SignboardConfig",
     "SirenDevice", "SensorConfig",
+    "SensorReading",
 ]

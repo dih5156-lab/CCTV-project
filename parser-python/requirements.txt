@@ -1,0 +1,7 @@
+# parser-python 의존성 패키지
+# Go의 go.mod 에 해당
+
+flask>=3.0.0          # HTTP 서버 (Go: gin-gonic/gin)
+python-dotenv>=1.0.0  # .env 파일 로드 (Go: joho/godotenv)
+psycopg2-binary>=2.9  # PostgreSQL 드라이버 (Go: lib/pq + uptrace/bun)
+paho-mqtt>=1.6.1      # MQTT 클라이언트 (Go: eclipse/paho.mqtt.golang)

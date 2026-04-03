@@ -15,6 +15,7 @@ from src.config.config import (
     DetectionConfig,
     ActionBridgeConfig,
     EdgeXConfig,
+    ExternalIngestConfig,
     MqttConfig,
     _parse_bool,
     _identity,
@@ -157,6 +158,21 @@ class TestAppConfigEnvOverrides:
         cfg = AppConfig.from_env(env)
         assert cfg.action.mqtt_broker == "action-broker"
 
+    def test_external_mqtt_topics_override(self):
+        env = {"EXTERNAL_MQTT_TOPICS": "factory/#, camera/1"}
+        cfg = AppConfig.from_env(env)
+        assert cfg.external_ingest.topics == ("factory/#", "camera/1")
+
+    def test_external_mqtt_client_id_override(self):
+        env = {"EXTERNAL_MQTT_CLIENT_ID": "my-fixed-client"}
+        cfg = AppConfig.from_env(env)
+        assert cfg.external_ingest.mqtt_client_id == "my-fixed-client"
+
+    def test_external_republish_override(self):
+        env = {"EXTERNAL_REPUBLISH_ENABLED": "true"}
+        cfg = AppConfig.from_env(env)
+        assert cfg.external_ingest.republish_enabled is True
+
     def test_no_env_returns_defaults(self):
         cfg = AppConfig.from_env({})
         assert cfg.mqtt.broker == "localhost"
@@ -173,6 +189,7 @@ class TestAppConfigEnvOverrides:
         assert cfg.processing is not None
         assert cfg.edgex is not None
         assert cfg.action is not None
+        assert cfg.external_ingest is not None
 
 
 # ---------------------------------------------------------------------------
@@ -195,3 +212,9 @@ class TestSubConfigs:
         assert cfg.qos == 0
         assert cfg.retain is False
         assert "cctv" in cfg.topic_prefix
+
+    def test_external_ingest_config_defaults(self):
+        cfg = ExternalIngestConfig()
+        assert cfg.mqtt_port == 1883
+        assert cfg.topics == ("#",)
+        assert cfg.republish_enabled is False

@@ -1,0 +1,60 @@
+Writable:
+  LogLevel: "INFO"
+  StoreAndForward:
+    Enabled: false
+
+  Pipeline:
+    ExecutionOrder: "HTTPExport"
+
+    Functions:
+      HTTPExport:
+        Parameters:
+          Method: "post"
+          MimeType: "application/json"
+          Url: "http://cctv-alert-api:8000/api/sensor-readings"
+          PersistOnError: "false"
+          ContinueOnSendError: "false"
+          ReturnInputData: "false"
+          HeaderName: ""
+          SecretValueKey: ""
+          SecretName: ""
+
+  InsecureSecrets:
+    http:
+      SecretName: "http"
+      SecretData:
+        headervalue: ""
+
+Service:
+  Host: "localhost"
+  Port: 59702
+  StartupMsg: "app-aiot-external-http has Started"
+
+Telemetry:
+  Metrics:
+    Enable: false
+
+MessageBus:
+  Disabled: false
+
+Trigger:
+  Type: "external-mqtt"
+  SubscribeTopics: "aiot/sensors/#"
+  PublishTopic: ""
+  ExternalMqtt:
+    Url: "tcp://edgex-mqtt-broker:1883"
+    ClientId: "app-aiot-forwarder-trigger"
+    ConnectTimeout: "5s"
+    AutoReconnect: true
+    KeepAlive: 10
+    QoS: 0
+    Retain: false
+    SkipCertVerify: false
+    SecretName: "mqtt"
+    AuthMode: "none"
+    Will:
+      Enabled: false
+      Payload: ""
+      Qos: 0
+      Retained: false
+      Topic: ""

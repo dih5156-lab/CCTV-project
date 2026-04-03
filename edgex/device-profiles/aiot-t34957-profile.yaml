@@ -1,0 +1,43 @@
+name: "aiot-t34957-tilt-temp"
+manufacturer: "AIoT"
+model: "T34957"
+description: "LwM2M Object 34957 - Combined summary (temperature + tilt)"
+labels:
+  - "aiot"
+  - "tilt"
+  - "temperature"
+  - "lora"
+
+deviceResources:
+  - name: "temperature"
+    description: "Temperature (Celsius)"
+    properties:
+      valueType: "Float64"
+      readWrite: "R"
+      units: "Celsius"
+  - name: "angle_x"
+    description: "X-axis angle (degrees)"
+    properties:
+      valueType: "Float64"
+      readWrite: "R"
+      units: "degree"
+  - name: "angle_y"
+    description: "Y-axis angle (degrees)"
+    properties:
+      valueType: "Float64"
+      readWrite: "R"
+      units: "degree"
+  - name: "event_code"
+    description: "Event flag (1=event detected)"
+    properties:
+      valueType: "Int32"
+      readWrite: "R"
+
+deviceCommands:
+  - name: "tilt_temp_reading"
+    readWrite: "R"
+    resourceOperations:
+      - { deviceResource: "temperature" }
+      - { deviceResource: "angle_x" }
+      - { deviceResource: "angle_y" }
+      - { deviceResource: "event_code" }

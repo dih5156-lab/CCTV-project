@@ -1,0 +1,27 @@
+# AIoT TLV Parser Dockerfile
+# LoRa 센서 MQTT 수신 → TLV 파싱 → DB 저장 + EdgeX MQTT 발행
+
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# PostgreSQL 클라이언트 라이브러리 (psycopg2-binary 는 자체 포함이지만 혹시 모를 OS dep)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    && rm -rf /var/lib/apt/lists/*
+
+# 의존성 먼저 복사 (레이어 캐싱 최적화)
+COPY parser-python/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 소스 복사
+COPY parser-python/ .
+
+ENV PYTHONIOENCODING=utf-8
+ENV PYTHONUTF8=1
+ENV PYTHONUNBUFFERED=1
+
+# Flask health endpoint: 4000 (ROUTER 기본값)
+EXPOSE 4000
+
+CMD ["python", "main.py"]
