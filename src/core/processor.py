@@ -19,6 +19,7 @@ processor.py - 실시간 CCTV 객체 감지 프로세서
 import json
 import logging
 import os
+import re
 import time
 from dataclasses import dataclass, field, asdict, replace
 from queue import Empty, Full, Queue
@@ -994,17 +995,34 @@ class VideoProcessor:
     def register_face(
         self,
         name: str,
+        phone: str,
         image_base64: str,
         filename: Optional[str] = None,
+        department: Optional[str] = None,
+        position: Optional[str] = None,
+        employee_id: Optional[str] = None,
+        hired_at: Optional[str] = None,
+        note: Optional[str] = None,
     ) -> Dict[str, str]:
         """새 얼굴을 등록하고 모든 분석기의 얼굴 갤러리를 갱신한다."""
+        kwargs = dict(
+            name=name,
+            phone=phone,
+            image_base64=image_base64,
+            filename=filename,
+            department=department,
+            position=position,
+            employee_id=employee_id,
+            hired_at=hired_at,
+            note=note,
+        )
         analyzer = next(iter(self._analyzers.values()), None)
         if analyzer is None:
             from ..utils.face_recognition import FaceRecognitionEngine
 
-            entry = FaceRecognitionEngine().register_face(name, image_base64, filename)
+            entry = FaceRecognitionEngine().register_face(**kwargs)
         else:
-            entry = analyzer.face_recognizer.register_face(name, image_base64, filename)
+            entry = analyzer.face_recognizer.register_face(**kwargs)
 
         self.reload_face_gallery()
         return entry
@@ -1272,6 +1290,16 @@ class VideoProcessor:
                 zone_events, frame = self._pipeline._check_zones(camera_id, events, frame)
                 self._pipeline._enqueue(camera_id, events, zone_events)
 
+                # 위험 이벤트 자동 스냅샷
+                if zone_events:
+                    snapshot_dir = getattr(self, "snapshot_dir", "snapshots")
+                    for ze in zone_events:
+                        self.save_event_snapshot(
+                            camera_id,
+                            event_type=ze.event_type.value,
+                            snapshot_dir=snapshot_dir,
+                        )
+
                 zone_set = self._zone_in_objects.setdefault(camera_id, set())
                 has_active_zones = bool(
                     self.zone_manager
@@ -1288,17 +1316,17 @@ class VideoProcessor:
                 for rid in removed_ids:
                     zone_set.discard(rid)
 
-                if self.config.display:
-                    display_evts = [
-                        replace(ev, event_type=EventType.DANGER_ZONE)
-                        if (
-                            ev.event_type == EventType.PERSON
-                            and getattr(ev, "object_id", None) in zone_set
-                        )
-                        else ev
-                        for ev in events_for_display
-                    ]
-                    self._display.update_frame(camera_id, frame, display_evts)
+                display_evts = [
+                    replace(ev, event_type=EventType.DANGER_ZONE)
+                    if (
+                        ev.event_type == EventType.PERSON
+                        and getattr(ev, "object_id", None) in zone_set
+                    )
+                    else ev
+                    for ev in events_for_display
+                ]
+                # 웹 스트리밍을 위해 항상 프레임 저장 (display 모드 여부 무관)
+                self._display.update_frame(camera_id, frame, display_evts)
                 consecutive_errors = 0
             except Exception as exc:
                 logger.error("[%s] 추론 루프 오류: %s", camera_id, exc, exc_info=True)
@@ -1480,6 +1508,52 @@ class VideoProcessor:
     # ------------------------------------------------------------------
     # 통계
     # ------------------------------------------------------------------
+
+    def get_camera_frame(self, camera_id: str) -> Optional[Any]:
+        """특정 카메라의 최신 프레임(numpy ndarray)을 반환한다.
+
+        추론 스레드가 아직 프레임을 등록하지 않았거나 카메라 ID가 없으면 None 반환.
+        반환된 배열은 copy() 되어 있으므로 호출 측에서 안전하게 읽을 수 있다.
+        """
+        with self._display._lock:
+            entry = self._display._frames.get(camera_id)
+        if entry is None:
+            return None
+        frame, _ = entry
+        return frame.copy() if frame is not None else None
+
+    def save_event_snapshot(
+        self,
+        camera_id: str,
+        event_type: str = "event",
+        snapshot_dir: str = "snapshots",
+    ) -> Optional[str]:
+        """현재 프레임을 스냅샷으로 저장하고 파일 경로를 반환한다.
+
+        저장 경로: ``<snapshot_dir>/<camera_id>/<YYYYMMDD_HHMMSS_<event_type>.jpg>``
+        opencv(cv2)가 없으면 None 을 반환한다.
+        """
+        try:
+            import cv2  # 런타임 의존성 — cv2 없는 환경도 graceful 처리
+        except ImportError:
+            return None
+
+        frame = self.get_camera_frame(camera_id)
+        if frame is None:
+            return None
+
+        from pathlib import Path as _Path
+        from datetime import datetime as _dt
+
+        safe_type = re.sub(r"[^\w\-]", "_", event_type)
+        ts = _dt.now().strftime("%Y%m%d_%H%M%S")
+        out_dir = _Path(snapshot_dir) / camera_id
+        out_dir.mkdir(parents=True, exist_ok=True)
+        filename = f"{ts}_{safe_type}.jpg"
+        dest = out_dir / filename
+        cv2.imwrite(str(dest), frame)
+        logger.info("[Snapshot] saved %s", dest)
+        return str(dest)
 
     def get_stats(self) -> Dict:
         with self._stats_lock:

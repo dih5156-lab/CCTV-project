@@ -304,7 +304,8 @@ def start_processor(
 
     if api_port > 0:
         start_zone_api_server(processor, cameras_json_path, api_port,
-                              presets_path=zone_presets_path)
+                              presets_path=zone_presets_path,
+                              event_log_path="alert_api_events.jsonl")
 
     if cfg.display:
         drawer = ZoneDrawer(processor, cameras_json_path)

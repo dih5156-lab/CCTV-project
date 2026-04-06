@@ -6,13 +6,12 @@
     "location": "1",
     "enabled": true,
     "detections": [
-      "helmet",
       "fall",
-      "intrusion",
+      "person",
       "face"
     ],
     "model_settings": {
-      "use_helmet": true,
+      "use_helmet": false,
       "use_pose": true,
       "use_person": false,
       "use_face": true
@@ -45,13 +44,12 @@
     "location": "로컬",
     "enabled": true,
     "detections": [
-      "helmet",
       "fall",
-      "intrusion",
+      "person",
       "face"
     ],
     "model_settings": {
-      "use_helmet": true,
+      "use_helmet": false,
       "use_pose": true,
       "use_person": false,
       "use_face": true

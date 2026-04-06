@@ -29,13 +29,20 @@ Routes:
     DELETE /zone-presets/{preset_id}             → 프리셋 삭제
     DELETE /faces/{face_id}                      → 등록 얼굴 삭제
     POST   /cameras/{id}/zones/from-preset/{pid} → 프리셋을 카메라에 적용
+    GET    /                                     → 웹 대시보드 HTML
+    GET    /events?limit=N                       → 이벤트 로그 (JSONL)
+    GET    /health                               → 시스템 상태
+    GET    /known_faces/{filename}               → 등록 얼굴 이미지
 """
 
 import json
 import logging
 import re
 import threading
+import urllib.parse
+from datetime import datetime
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from socketserver import ThreadingMixIn
 from pathlib import Path
 from typing import TYPE_CHECKING, List, Optional, Tuple
 
@@ -53,6 +60,20 @@ _RE_CAMERA_ZONE_ID    = re.compile(r"^/cameras/([^/]+)/zones/([^/]+)$")
 _RE_CAMERA_FROM_PRESET = re.compile(r"^/cameras/([^/]+)/zones/from-preset/([^/]+)$")
 _RE_PRESET_ID         = re.compile(r"^/zone-presets/([^/]+)$")
 _RE_FACE_ID           = re.compile(r"^/faces/([^/]+)$")
+_RE_KNOWN_FACE_IMG    = re.compile(r"^/known_faces/([\w.\-]+)$")
+
+_DASHBOARD_HTML  = Path(__file__).resolve().parents[2] / "web" / "index.html"
+_KNOWN_FACES_DIR = Path(__file__).resolve().parents[2] / "known_faces"
+_SNAPSHOTS_DIR   = Path(__file__).resolve().parents[2] / "snapshots"
+
+_RE_CAMERA_STREAM    = re.compile(r"^/cameras/([^/]+)/stream$")
+_RE_CAMERA_SNAPSHOT  = re.compile(r"^/cameras/([^/]+)/snapshot$")
+_RE_SNAPSHOT_FILE    = re.compile(r"^/snapshots/([\w.\-/]+)$")
+
+
+class _ThreadingHTTPServer(ThreadingMixIn, HTTPServer):
+    """MJPEG 스트리밍 지원을 위한 멀티스레드 HTTP 서버."""
+    daemon_threads = True
 
 
 # ===========================================================================
@@ -99,6 +120,7 @@ class ZoneApiHandler(BaseHTTPRequestHandler):
         self.send_response(code)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(data)))
+        self.send_header("Access-Control-Allow-Origin", "*")
         self.end_headers()
         self.wfile.write(data)
 
@@ -142,18 +164,41 @@ class ZoneApiHandler(BaseHTTPRequestHandler):
     # 디스패치
     # ------------------------------------------------------------------
 
+    def do_OPTIONS(self):  # noqa: N802
+        self.send_response(200)
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.end_headers()
+
     def do_GET(self):  # noqa: N802
-        path = self.path.rstrip("/")
-        if path == "/cameras":
+        path = self.path.split("?")[0].rstrip("/")
+        if path in ("", "/"):
+            self._serve_dashboard()
+        elif path == "/cameras":
             self._get_cameras()
         elif path == "/faces":
             self._get_faces()
         elif path == "/zone-presets":
             self._get_presets()
+        elif path == "/events":
+            self._get_events()
+        elif path == "/health":
+            self._get_health()
+        elif path == "/snapshots":
+            self._list_snapshots()
+        elif m := _RE_CAMERA_STREAM.match(path):
+            self._stream_mjpeg(m.group(1))
+        elif m := _RE_CAMERA_SNAPSHOT.match(path):
+            self._get_snapshot(m.group(1))
         elif m := _RE_CAMERA_MODELS.match(path):
             self._get_camera_models(m.group(1))
         elif m := _RE_CAMERA_ZONES.match(path):
             self._get_camera_zones(m.group(1))
+        elif m := _RE_KNOWN_FACE_IMG.match(path):
+            self._serve_image(m.group(1))
+        elif m := _RE_SNAPSHOT_FILE.match(path):
+            self._serve_snapshot_file(m.group(1))
         else:
             self._respond(404, {"error": "Not Found"})
 
@@ -193,6 +238,236 @@ class ZoneApiHandler(BaseHTTPRequestHandler):
     # ------------------------------------------------------------------
     # GET 핸들러
     # ------------------------------------------------------------------
+
+    def _get_health(self) -> None:
+        try:
+            cameras = self._load_cameras()
+            total = len(cameras)
+            active = sum(1 for c in cameras if c.get("enabled", True))
+        except Exception:
+            total = active = 0
+        try:
+            faces = self._processor().list_registered_faces()
+            faces_count = len(faces)
+        except Exception:
+            faces_count = 0
+        events_today = 0
+        log_path = getattr(self.server, "event_log_path", None)
+        if log_path:
+            try:
+                today = datetime.now().strftime("%Y-%m-%d")
+                with open(log_path, encoding="utf-8") as fh:
+                    for line in fh:
+                        line = line.strip()
+                        if not line:
+                            continue
+                        try:
+                            entry = json.loads(line)
+                            if entry.get("receivedAt", "").startswith(today):
+                                events_today += 1
+                        except json.JSONDecodeError:
+                            pass
+            except (OSError, FileNotFoundError):
+                pass
+        self._respond(200, {
+            "status": "ok",
+            "cameras": {"total": total, "active": active},
+            "faces_registered": faces_count,
+            "events_today": events_today,
+        })
+
+    def _get_events(self) -> None:
+        qs = urllib.parse.urlparse(self.path).query
+        params = urllib.parse.parse_qs(qs)
+        try:
+            limit = max(1, min(int(params.get("limit", [50])[0]), 500))
+        except (ValueError, IndexError):
+            limit = 50
+        log_path = getattr(self.server, "event_log_path", None)
+        if not log_path:
+            self._respond(200, {"events": []})
+            return
+        try:
+            with open(log_path, encoding="utf-8") as fh:
+                lines = fh.readlines()
+        except (OSError, FileNotFoundError):
+            self._respond(200, {"events": []})
+            return
+        events = []
+        for line in reversed(lines):
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                events.append(json.loads(line))
+            except json.JSONDecodeError:
+                continue
+            if len(events) >= limit:
+                break
+        self._respond(200, {"events": events})
+
+    def _serve_dashboard(self) -> None:
+        try:
+            html = _DASHBOARD_HTML.read_bytes()
+        except FileNotFoundError:
+            self._respond(404, {"error": "dashboard not found"})
+            return
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(html)))
+        self.end_headers()
+        self.wfile.write(html)
+
+    def _serve_image(self, filename: str) -> None:
+        # 경로 조작 방지: 영숫자·마침표·하이픈·밑줄만 허용
+        if not re.match(r"^[\w.\-]+$", filename):
+            self._respond(400, {"error": "invalid filename"})
+            return
+        image_path = (_KNOWN_FACES_DIR / filename).resolve()
+        if _KNOWN_FACES_DIR.resolve() not in image_path.parents:
+            self._respond(403, {"error": "forbidden"})
+            return
+        try:
+            data = image_path.read_bytes()
+        except FileNotFoundError:
+            self._respond(404, {"error": "image not found"})
+            return
+        _MIME = {"jpg": "image/jpeg", "jpeg": "image/jpeg", "png": "image/png",
+                 "gif": "image/gif", "webp": "image/webp"}
+        mime = _MIME.get(image_path.suffix.lower().lstrip("."), "application/octet-stream")
+        self.send_response(200)
+        self.send_header("Content-Type", mime)
+        self.send_header("Content-Length", str(len(data)))
+        self.end_headers()
+        self.wfile.write(data)
+
+    # ------------------------------------------------------------------
+    # 스트리밍 / 스냅샷
+    # ------------------------------------------------------------------
+
+    def _stream_mjpeg(self, camera_id: str) -> None:
+        """MJPEG 스트리밍 -- 브라우저에서 <img src=".../stream"> 로 연결."""
+        try:
+            import cv2  # noqa: F401
+        except ImportError:
+            self._respond(503, {"error": "cv2 not available"})
+            return
+
+        import cv2 as _cv2
+
+        proc = self._processor()
+        self.send_response(200)
+        self.send_header("Content-Type", "multipart/x-mixed-replace; boundary=frame")
+        self.send_header("Cache-Control", "no-cache")
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.end_headers()
+        try:
+            while True:
+                frame = None
+                try:
+                    frame = proc.get_camera_frame(camera_id)
+                except Exception:
+                    pass
+                if frame is None:
+                    # 프레임 없으면 회색 placeholder 영상 전송
+                    import numpy as _np
+                    frame = _np.zeros((360, 640, 3), dtype=_np.uint8)
+                    _cv2.putText(frame, f"No signal: {camera_id}", (20, 180),
+                                 _cv2.FONT_HERSHEY_SIMPLEX, 1.0, (200, 200, 200), 2)
+                ok, buf = _cv2.imencode(".jpg", frame, [_cv2.IMWRITE_JPEG_QUALITY, 75])
+                if not ok:
+                    continue
+                jpg = buf.tobytes()
+                try:
+                    self.wfile.write(
+                        b"--frame\r\n"
+                        b"Content-Type: image/jpeg\r\n"
+                        b"Content-Length: " + str(len(jpg)).encode() + b"\r\n\r\n"
+                        + jpg + b"\r\n"
+                    )
+                    self.wfile.flush()
+                except (BrokenPipeError, ConnectionResetError):
+                    break
+                import time as _t
+                _t.sleep(0.05)  # ~20 fps 상한
+        except Exception:
+            pass
+
+    def _get_snapshot(self, camera_id: str) -> None:
+        """UD604재 프레임을 JPEG 한 장 반환."""
+        try:
+            import cv2 as _cv2
+            import numpy as _np
+        except ImportError:
+            self._respond(503, {"error": "cv2 not available"})
+            return
+        proc = self._processor()
+        frame = None
+        try:
+            frame = proc.get_camera_frame(camera_id)
+        except Exception:
+            pass
+        if frame is None:
+            self._respond(404, {"error": "no frame available"})
+            return
+        ok, buf = _cv2.imencode(".jpg", frame, [_cv2.IMWRITE_JPEG_QUALITY, 90])
+        if not ok:
+            self._respond(500, {"error": "encode failed"})
+            return
+        jpg = buf.tobytes()
+        self.send_response(200)
+        self.send_header("Content-Type", "image/jpeg")
+        self.send_header("Content-Length", str(len(jpg)))
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.end_headers()
+        self.wfile.write(jpg)
+
+    def _list_snapshots(self) -> None:
+        """snapshots/ 디렉토리 안의 파일 목록을 반환."""
+        snap_dir = getattr(self.server, "snapshot_dir", str(_SNAPSHOTS_DIR))
+        base = Path(snap_dir)
+        result = []
+        if base.exists():
+            for cam_dir in sorted(base.iterdir()):
+                if not cam_dir.is_dir():
+                    continue
+                for f in sorted(cam_dir.glob("*.jpg"), reverse=True):
+                    result.append({
+                        "camera_id": cam_dir.name,
+                        "filename": f"{cam_dir.name}/{f.name}",
+                        "name": f.name,
+                        "size": f.stat().st_size,
+                        "mtime": f.stat().st_mtime,
+                        "url": f"/snapshots/{cam_dir.name}/{f.name}",
+                    })
+        self._respond(200, {"snapshots": result})
+
+    def _serve_snapshot_file(self, rel_path: str) -> None:
+        """snapshots/{camera_id}/{filename}.jpg 서빙."""
+        # 경로 조작 방지
+        if ".." in rel_path or rel_path.startswith("/"):
+            self._respond(403, {"error": "forbidden"})
+            return
+        parts = rel_path.split("/")
+        if len(parts) != 2 or not re.match(r"^[\w.\-]+$", parts[0]) or not re.match(r"^[\w.\-]+$", parts[1]):
+            self._respond(400, {"error": "invalid path"})
+            return
+        snap_dir = getattr(self.server, "snapshot_dir", str(_SNAPSHOTS_DIR))
+        image_path = (Path(snap_dir) / parts[0] / parts[1]).resolve()
+        base_resolved = Path(snap_dir).resolve()
+        if base_resolved not in image_path.parents:
+            self._respond(403, {"error": "forbidden"})
+            return
+        try:
+            data = image_path.read_bytes()
+        except FileNotFoundError:
+            self._respond(404, {"error": "not found"})
+            return
+        self.send_response(200)
+        self.send_header("Content-Type", "image/jpeg")
+        self.send_header("Content-Length", str(len(data)))
+        self.end_headers()
+        self.wfile.write(data)
 
     def _get_cameras(self) -> None:
         result = []
@@ -277,17 +552,39 @@ class ZoneApiHandler(BaseHTTPRequestHandler):
             return
 
         name = str(body.get("name", "")).strip()
+        phone = str(body.get("phone", "")).strip()
         image_base64 = str(body.get("image_base64", "")).strip()
         filename = body.get("filename")
+
         if not name:
             self._respond(400, {"error": "'name' field is required"})
+            return
+        if not phone:
+            self._respond(400, {"error": "'phone' field is required"})
             return
         if not image_base64:
             self._respond(400, {"error": "'image_base64' field is required"})
             return
 
+        # 선택 필드
+        department = body.get("department") or None
+        position = body.get("position") or None
+        employee_id = body.get("employee_id") or None
+        hired_at = body.get("hired_at") or None
+        note = body.get("note") or None
+
         try:
-            face = self._processor().register_face(name, image_base64, filename)
+            face = self._processor().register_face(
+                name=name,
+                phone=phone,
+                image_base64=image_base64,
+                filename=filename,
+                department=department,
+                position=position,
+                employee_id=employee_id,
+                hired_at=hired_at,
+                note=note,
+            )
         except ValueError as exc:
             self._respond(400, {"error": str(exc)})
             return
@@ -401,6 +698,8 @@ def start_zone_api_server(
     cameras_json_path: str,
     port: int,
     presets_path: str = "zone_presets.json",
+    event_log_path: Optional[str] = None,
+    snapshot_dir: str = "snapshots",
 ) -> None:
     """Zone API HTTP 서버를 백그라운드 데몬 스레드로 시작한다.
 
@@ -409,11 +708,18 @@ def start_zone_api_server(
         cameras_json_path:  cameras.json 경로 (구역 저장 대상)
         port:               수신 TCP 포트 번호
         presets_path:       zone_presets.json 경로 (기본값: zone_presets.json)
+        event_log_path:     alert_api_events.jsonl 경로 (대시보드 이벤트 로그용)
+        snapshot_dir:       자동 스냅샷 저장 디렉토리 (기본값: snapshots)
     """
-    server = HTTPServer(("0.0.0.0", port), ZoneApiHandler)
+    server = _ThreadingHTTPServer(("0.0.0.0", port), ZoneApiHandler)
     server.processor = processor  # type: ignore[attr-defined]
     server.cameras_json_path = cameras_json_path  # type: ignore[attr-defined]
     server.preset_store = ZonePresetStore(presets_path)  # type: ignore[attr-defined]
+    server.event_log_path = event_log_path  # type: ignore[attr-defined]
+    server.snapshot_dir = snapshot_dir  # type: ignore[attr-defined]
+    # processor에 snapshot_dir 동기화 (자동 스냅샷 저장경로 공유)
+    if processor is not None:
+        processor.snapshot_dir = snapshot_dir  # type: ignore[attr-defined]
     threading.Thread(target=server.serve_forever, daemon=True,
                      name="ZoneApiServer").start()
     logger.info("Zone API 서버 시작: http://0.0.0.0:%d", port)

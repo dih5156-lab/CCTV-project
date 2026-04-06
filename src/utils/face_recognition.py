@@ -79,14 +79,29 @@ class FaceRecognitionEngine:
     def register_face(
         self,
         name: str,
+        phone: str,
         image_base64: str,
         filename: Optional[str] = None,
+        department: Optional[str] = None,
+        position: Optional[str] = None,
+        employee_id: Optional[str] = None,
+        hired_at: Optional[str] = None,
+        note: Optional[str] = None,
     ) -> Dict[str, str]:
         clean_name = str(name).strip()
+        clean_phone = str(phone).strip()
         if not clean_name:
             raise ValueError("'name' is required")
+        if not clean_phone:
+            raise ValueError("'phone' is required")
         if not image_base64:
             raise ValueError("'image_base64' is required")
+
+        # 전화번호 중복 체크
+        existing = self._load_entries()
+        for e in existing:
+            if e.get("phone", "") == clean_phone:
+                raise ValueError(f"이미 등록된 전화번호입니다: {clean_phone}")
 
         image_bytes, ext = self._decode_image_base64(image_base64, filename)
         faces_dir = self.gallery_path.parent / "known_faces"
@@ -95,17 +110,29 @@ class FaceRecognitionEngine:
         stored_path = faces_dir / stored_name
         stored_path.write_bytes(image_bytes)
 
-        entry = {
+        from datetime import datetime, timezone
+        entry: Dict[str, str] = {
             "id": uuid.uuid4().hex[:8],
             "name": clean_name,
+            "phone": clean_phone,
             "image": f"known_faces/{stored_name}",
+            "registered_at": datetime.now(timezone.utc).isoformat(),
         }
+        if department is not None:
+            entry["department"] = str(department).strip()
+        if position is not None:
+            entry["position"] = str(position).strip()
+        if employee_id is not None:
+            entry["employee_id"] = str(employee_id).strip()
+        if hired_at is not None:
+            entry["hired_at"] = str(hired_at).strip()
+        if note is not None:
+            entry["note"] = str(note).strip()
 
-        entries = self._load_entries()
-        entries.append(entry)
-        self._write_entries(entries)
+        existing.append(entry)
+        self._write_entries(existing)
         self.reload_gallery()
-        logger.info("얼굴 등록 완료: %s (%s)", clean_name, entry["image"])
+        logger.info("얼굴 등록 완료: %s / %s (%s)", clean_name, clean_phone, entry["image"])
         return entry
 
     def delete_face(self, face_id: str) -> bool:
@@ -367,6 +394,10 @@ class FaceRecognitionEngine:
             logger.warning("known_faces.json 형식이 올바르지 않습니다. 리스트가 필요합니다.")
             return []
 
+        _OPTIONAL_FIELDS = (
+            "phone", "department", "position", "employee_id",
+            "hired_at", "registered_at", "note",
+        )
         entries: List[Dict[str, str]] = []
         changed = False
         for item in payload:
@@ -376,13 +407,16 @@ class FaceRecognitionEngine:
             image = str(item.get("image", "")).strip()
             if not name or not image:
                 continue
-            entry = {
+            entry: Dict[str, str] = {
                 "id": str(item.get("id") or uuid.uuid4().hex[:8]),
                 "name": name,
                 "image": image,
             }
             if "id" not in item:
                 changed = True
+            for field in _OPTIONAL_FIELDS:
+                if field in item and item[field] is not None:
+                    entry[field] = str(item[field])
             entries.append(entry)
 
         if changed:

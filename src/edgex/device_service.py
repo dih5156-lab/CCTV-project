@@ -13,7 +13,10 @@ import time
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
+
+if TYPE_CHECKING:
+    import redis as redis_module
 from urllib.parse import urlparse
 
 import paho.mqtt.client as mqtt
@@ -75,7 +78,7 @@ class CCTVDeviceService:
         self.outbox_db_path = Path(config.get("outboxDbPath", "data/edgex_outbox.db"))
         self.outbox_flush_batch_size = int(config.get("outboxFlushBatchSize", 100))
         self._mqtt_client: Optional[mqtt.Client] = None
-        self._redis_client: Optional[redis.Redis] = None
+        self._redis_client: Optional["redis_module.Redis"] = None
         self._redis_last_fail_time = 0.0
         self._mqtt_last_fail_time = 0.0
         self._redis_fail_count = 0
@@ -109,8 +112,7 @@ class CCTVDeviceService:
         if not self.enable_store_and_forward:
             return
 
-        self.outbox_db_path.parent.mkdir(parents=True, exist_ok=True)
-        with sqlite3.connect(self.outbox_db_path) as conn:
+        with self._outbox_connect() as conn:
             conn.execute("PRAGMA journal_mode=WAL")
             conn.execute("PRAGMA synchronous=NORMAL")
             conn.execute(
@@ -151,6 +153,11 @@ class CCTVDeviceService:
     def _utc_now_iso() -> str:
         return datetime.now(timezone.utc).isoformat()
 
+    def _outbox_connect(self):
+        """부모 디렉토리를 보장한 뒤 SQLite 연결을 반환하는 컨텍스트 매니저."""
+        self.outbox_db_path.parent.mkdir(parents=True, exist_ok=True)
+        return sqlite3.connect(self.outbox_db_path)
+
     def _classify_event_category(self, event_type: str) -> str:
         """이벤트 타입으로 data_category 분류.
 
@@ -181,7 +188,7 @@ class CCTVDeviceService:
             event_type = str(event_data.get("type") or event_data.get("event_type") or "")
         category = self._classify_event_category(event_type)
 
-        with self._outbox_lock, sqlite3.connect(self.outbox_db_path) as conn:
+        with self._outbox_lock, self._outbox_connect() as conn:
             now = self._utc_now_iso()
             conn.execute(
                 """
@@ -221,7 +228,7 @@ class CCTVDeviceService:
             event_type = str(event_data.get("type") or event_data.get("event_type") or "")
         category = self._classify_event_category(event_type)
 
-        with self._outbox_lock, sqlite3.connect(self.outbox_db_path) as conn:
+        with self._outbox_lock, self._outbox_connect() as conn:
             now = self._utc_now_iso()
             cur = conn.execute(
                 """
@@ -262,7 +269,7 @@ class CCTVDeviceService:
             return []
 
         fetch_limit = int(limit or self.outbox_flush_batch_size)
-        with self._outbox_lock, sqlite3.connect(self.outbox_db_path) as conn:
+        with self._outbox_lock, self._outbox_connect() as conn:
             conn.row_factory = sqlite3.Row
             if data_category:
                 rows = conn.execute(
@@ -313,7 +320,7 @@ class CCTVDeviceService:
     def _mark_outbox_sent(self, outbox_id: int) -> None:
         if not self.enable_store_and_forward:
             return
-        with self._outbox_lock, sqlite3.connect(self.outbox_db_path) as conn:
+        with self._outbox_lock, self._outbox_connect() as conn:
             now = self._utc_now_iso()
             conn.execute(
                 """
@@ -328,7 +335,7 @@ class CCTVDeviceService:
     def _mark_outbox_retry_failed(self, outbox_id: int, last_error: str) -> None:
         if not self.enable_store_and_forward:
             return
-        with self._outbox_lock, sqlite3.connect(self.outbox_db_path) as conn:
+        with self._outbox_lock, self._outbox_connect() as conn:
             conn.execute(
                 """
                 UPDATE detection_outbox
@@ -508,7 +515,7 @@ class CCTVDeviceService:
                 continue
 
             logger.warning(
-                f"{operation_name} 실패: {status_code} - {self._describe_http_status(status_code)}"
+                "%s 실패: %s - %s", operation_name, status_code, self._describe_http_status(status_code)
             )
             logger.debug("응답: %s", response.text)
 
@@ -569,8 +576,8 @@ class CCTVDeviceService:
                 continue
 
             logger.warning(
-                f"Event 전송 실패 ({camera_id}): {status_code} - "
-                f"{self._describe_http_status(status_code)}"
+                "Event 전송 실패 (%s): %s - %s",
+                camera_id, status_code, self._describe_http_status(status_code),
             )
             logger.warning("응답: %s", response.text)
             logger.warning("엔드포인트: %s", endpoint)
@@ -580,7 +587,7 @@ class CCTVDeviceService:
             logger.warning("마지막 엔드포인트: %s", last_endpoint)
         if last_status is not None:
             logger.warning(
-                f"마지막 상태 코드: {last_status} - {self._describe_http_status(last_status)}"
+                "마지막 상태 코드: %s - %s", last_status, self._describe_http_status(last_status)
             )
         if last_text:
             logger.warning("마지막 응답: %s", last_text)
@@ -858,13 +865,6 @@ class CCTVDeviceService:
             "contentType": "application/json",
         }
     
-    @property
-    def mqtt_client(self) -> Optional[mqtt.Client]:
-        """MQTT 클라이언트 프로퍼티 (자동 초기화)"""
-        if not self._mqtt_client:
-            self._ensure_mqtt_client()
-        return self._mqtt_client
-    
     async def initialize(self):
         """EdgeX 연결 확인 (비동기 호환)"""
         try:
@@ -872,7 +872,7 @@ class CCTVDeviceService:
             await self._probe_service_health(self.metadata_url, "Core Metadata")
             await self._probe_service_health(self.data_url, "Core Data")
                     
-        except Exception  as exc:
+        except Exception as exc:
             logger.error("EdgeX 연결 오류: %s", exc)
     
     async def add_camera(self, camera_id: str, rtsp_source: str) -> Optional[str]: # 카메라를 EdgeX 장치로 등록 (비동기 메서드)
@@ -898,7 +898,8 @@ class CCTVDeviceService:
                     return self.devices[camera_id]
 
                 logger.warning(
-                    f"기존 디바이스 서비스 불일치 감지: {device_name} ({existing_service} -> {self.service_name})"
+                    "기존 디바이스 서비스 불일치 감지: %s (%s -> %s)",
+                    device_name, existing_service, self.service_name,
                 )
                 deleted = await self._delete_device_by_name(device_name)
                 if not deleted:
@@ -965,7 +966,8 @@ class CCTVDeviceService:
                             return self.devices[camera_id]
 
                         logger.warning(
-                            f"기존 디바이스 서비스 불일치(충돌 응답): {device_name} ({existing_service} -> {self.service_name})"
+                            "기존 디바이스 서비스 불일치(충돌 응답): %s (%s -> %s)",
+                            device_name, existing_service, self.service_name,
                         )
                         deleted = await self._delete_device_by_name(device_name)
                         if deleted:
@@ -979,20 +981,20 @@ class CCTVDeviceService:
                         continue
                     else:
                         logger.warning(
-                            f"Device 등록 실패 ({camera_id}): {status_code} - "
-                            f"{self._describe_http_status(status_code)}"
+                            "Device 등록 실패 (%s): %s - %s",
+                            camera_id, status_code, self._describe_http_status(status_code),
                         )
                         logger.warning("응답 내용: %s", response.text)
                         logger.warning("엔드포인트: %s", endpoint)
                         continue
-                except Exception  as exc:
+                except Exception as exc:
                     logger.debug("엔드포인트 %s 시도 실패: %s", endpoint, exc)
                     continue
             
             logger.error("카메라 등록 실패: %s - 모든 엔드포인트 시도 완료", camera_id)
             return None
                 
-        except Exception  as exc:
+        except Exception as exc:
             logger.error("카메라 등록 오류 (%s): %s", camera_id, exc)
             return None
 
@@ -1142,7 +1144,7 @@ class CCTVDeviceService:
 
             return all_sent
 
-        except Exception  as exc:
+        except Exception as exc:
             logger.error("이벤트 전송 오류 (%s): %s", camera_id, exc)
             return False
 
@@ -1255,7 +1257,7 @@ class CCTVDeviceService:
 
             logger.error("Redis 발행 실패: %s", channel)
             return False
-        except Exception  as exc:
+        except Exception as exc:
             logger.error("Redis 전송 오류: %s", exc, exc_info=True)
             return False
 
@@ -1346,7 +1348,7 @@ class CCTVDeviceService:
             else:
                 logger.error("MQTT 발행 실패: %s (rc=%s)", topic, result.rc)
                 return False
-        except Exception  as exc:
+        except Exception as exc:
             logger.error("MQTT 전송 오류: %s", exc, exc_info=True)
             return False
     
@@ -1386,7 +1388,7 @@ class CCTVDeviceService:
             )
             return result in {"success", "exists"}
             
-        except Exception  as exc:
+        except Exception as exc:
             logger.error("Service 등록 오류: %s", exc)
             return False
 
@@ -1449,7 +1451,7 @@ class CCTVDeviceService:
             )
             return result in {"success", "exists"}
                 
-        except Exception  as exc:
+        except Exception as exc:
             logger.error("Profile 생성 오류: %s", exc)
             return False
 

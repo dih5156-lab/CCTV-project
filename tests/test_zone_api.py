@@ -477,24 +477,30 @@ class TestZoneApiRouting:
         self.server.shutdown()
 
     @pytest.mark.parametrize("path", [
-        "/",
         "/cameras/camera_1",          # zones 없음
         "/cameras/camera_1/zones/z1/extra",  # 너무 깊은 경로
-        "/health",
     ])
     def test_unknown_get_paths_return_404(self, path: str):
         code, _ = _request("GET", f"{self.base}{path}")
         assert code == 404
 
+    def test_health_returns_200(self):
+        code, body = _request("GET", f"{self.base}/health")
+        assert code == 200
+        assert "status" in body
+
+    def test_root_returns_html(self):
+        import urllib.request
+        resp = urllib.request.urlopen(f"{self.base}/")
+        assert resp.status == 200
+        assert b"text/html" in resp.headers.get("Content-Type", "").encode()
+
     def test_start_zone_api_server_starts_thread(self, cameras_json: Path):
         """start_zone_api_server 가 데몬 스레드를 생성해 서버를 기동해야 한다."""
         proc = _build_processor()
-        before = threading.active_count()
-        server = None
         try:
-            from http.server import HTTPServer
-            # 별도 포트로 기동 (내부 구현이 스레드를 생성하는지 확인)
-            with patch("src.services.zone_api.HTTPServer") as mock_srv_cls:
+            # _ThreadingHTTPServer 를 패치
+            with patch("src.services.zone_api._ThreadingHTTPServer") as mock_srv_cls:
                 mock_srv = MagicMock()
                 mock_srv_cls.return_value = mock_srv
                 start_zone_api_server(proc, str(cameras_json), 19999)

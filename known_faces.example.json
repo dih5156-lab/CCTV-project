@@ -1,10 +1,21 @@
 [
   {
-    "name": "alice",
-    "image": "known_faces/alice.jpg"
+    "id": "abc12345",
+    "name": "홍길동",
+    "phone": "010-1234-5678",
+    "image": "known_faces/hong_gildong.jpg",
+    "registered_at": "2026-01-01T09:00:00+00:00",
+    "department": "경비팀",
+    "position": "팀장",
+    "employee_id": "EMP-001",
+    "hired_at": "2024-03-01",
+    "note": "야간 근무 담당"
   },
   {
-    "name": "bob",
-    "image": "known_faces/bob.jpg"
+    "id": "def67890",
+    "name": "김철수",
+    "phone": "010-9876-5432",
+    "image": "known_faces/kim_cheolsu.jpg",
+    "registered_at": "2026-01-02T09:00:00+00:00"
   }
 ]
