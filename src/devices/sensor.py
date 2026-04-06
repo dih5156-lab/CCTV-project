@@ -52,6 +52,11 @@ class SensorConfig:
 # 경광등 HTTP 클라이언트
 # ===========================================================================
 
+
+class SirenNetworkError(Exception):
+    """경광등 디바이스 네트워크 오류 (연결 불가·타임아웃)."""
+
+
 class _SirenClient:
     """InterM 경광등 디바이스 HTTP 클라이언트."""
 
@@ -73,7 +78,14 @@ class _SirenClient:
             )
             resp.raise_for_status()
             return resp.json()
-        except Exception as exc:
+        except (
+            requests.exceptions.ConnectTimeout,
+            requests.exceptions.ConnectionError,
+            requests.exceptions.Timeout,
+        ) as exc:
+            logger.warning("[Siren] %s %s 네트워크 오류 (경광등 오프라인?): %s", "POST", path, exc)
+            raise SirenNetworkError(str(exc)) from exc
+        except requests.exceptions.RequestException as exc:
             logger.error("[Siren] POST %s 오류: %s", path, exc)
             raise
 
@@ -129,10 +141,16 @@ class SirenDevice:
                 self._stop_timer.daemon = True
                 self._stop_timer.start()
                 logger.debug(
-                    f"[Siren] 자동 정지 예약: {self.config.auto_stop_seconds}초 후"
+                    "[Siren] 자동 정지 예약: %.1f초 후", self.config.auto_stop_seconds
                 )
             return True
 
+        except SirenNetworkError:
+            logger.warning(
+                "[Siren] 경광등 오프라인 (%s:%s) - trigger 건너뜀",
+                self.config.host, self.config.port,
+            )
+            return False
         except Exception as exc:
             logger.error("[Siren] trigger() 오류: %s", exc)
             return False

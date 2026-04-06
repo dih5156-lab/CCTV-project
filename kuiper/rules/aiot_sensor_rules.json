@@ -1,0 +1,99 @@
+{
+  "streams": [
+    {
+      "name": "aiot_tilt_stream",
+      "sql": "CREATE STREAM aiot_tilt_stream (dev_eui STRING, device_id STRING, table STRING, data STRUCT(angle_x FLOAT, angle_y FLOAT, reporting_angle_threshold FLOAT), received_at BIGINT) WITH (DATASOURCE=\"aiot/sensors/+/t34955\", TYPE=\"mqtt\", FORMAT=\"json\", SHARED=\"true\")"
+    },
+    {
+      "name": "aiot_tilt_temp_stream",
+      "sql": "CREATE STREAM aiot_tilt_temp_stream (dev_eui STRING, device_id STRING, table STRING, data STRUCT(temperature FLOAT, angle_x FLOAT, angle_y FLOAT, event_code BIGINT), received_at BIGINT) WITH (DATASOURCE=\"aiot/sensors/+/t34957\", TYPE=\"mqtt\", FORMAT=\"json\", SHARED=\"true\")"
+    },
+    {
+      "name": "aiot_imu_stream",
+      "sql": "CREATE STREAM aiot_imu_stream (dev_eui STRING, device_id STRING, table STRING, data STRUCT(acc_x FLOAT, acc_y FLOAT, acc_z FLOAT, gyro_x FLOAT, gyro_y FLOAT, gyro_z FLOAT, event_code BIGINT), received_at BIGINT) WITH (DATASOURCE=\"aiot/sensors/+/t34958\", TYPE=\"mqtt\", FORMAT=\"json\", SHARED=\"true\")"
+    }
+  ],
+  "rules": [
+    {
+      "id": "sensor_tilt_alert_t34955",
+      "description": "기울기 센서 임계값 초과 경보 (t34955 경사계, 10도 이상)",
+      "sql": "SELECT dev_eui, device_id, table, data->angle_x AS angle_x, data->angle_y AS angle_y, received_at, 'tilt_alert' AS type, 'sensor' AS source FROM aiot_tilt_stream WHERE ABS(data->angle_x) >= {{TILT_THRESHOLD}} OR ABS(data->angle_y) >= {{TILT_THRESHOLD}}",
+      "actions": [
+        {
+          "mqtt": {
+            "server": "tcp://{{MQTT_BROKER}}:{{MQTT_PORT}}",
+            "topic": "aiot/rules/sensor/tilt",
+            "qos": 1,
+            "retain": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "sensor_tilt_alert_t34957",
+      "description": "기울기+온도 센서 기울기 임계값 초과 경보 (t34957, 10도 이상)",
+      "sql": "SELECT dev_eui, device_id, table, data->temperature AS temperature, data->angle_x AS angle_x, data->angle_y AS angle_y, data->event_code AS event_code, received_at, 'tilt_alert' AS type, 'sensor' AS source FROM aiot_tilt_temp_stream WHERE ABS(data->angle_x) >= {{TILT_THRESHOLD}} OR ABS(data->angle_y) >= {{TILT_THRESHOLD}}",
+      "actions": [
+        {
+          "mqtt": {
+            "server": "tcp://{{MQTT_BROKER}}:{{MQTT_PORT}}",
+            "topic": "aiot/rules/sensor/tilt",
+            "qos": 1,
+            "retain": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "sensor_temperature_alert",
+      "description": "온도 임계값 초과 경보 (60도 이상 위험)",
+      "sql": "SELECT dev_eui, device_id, table, data->temperature AS temperature, data->angle_x AS angle_x, data->angle_y AS angle_y, received_at, 'temperature_alert' AS type, 'sensor' AS source FROM aiot_tilt_temp_stream WHERE data->temperature >= {{TEMP_HIGH_THRESHOLD}}",
+      "actions": [
+        {
+          "mqtt": {
+            "server": "tcp://{{MQTT_BROKER}}:{{MQTT_PORT}}",
+            "topic": "aiot/rules/sensor/temperature",
+            "qos": 1,
+            "retain": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "sensor_vibration_alert_t34957",
+      "description": "t34957 event_code 발생 시 진동/충격 경보",
+      "sql": "SELECT dev_eui, device_id, table, data->temperature AS temperature, data->angle_x AS angle_x, data->angle_y AS angle_y, data->event_code AS event_code, received_at, 'vibration_alert' AS type, 'sensor' AS source FROM aiot_tilt_temp_stream WHERE data->event_code = 1",
+      "actions": [
+        {
+          "mqtt": {
+            "server": "tcp://{{MQTT_BROKER}}:{{MQTT_PORT}}",
+            "topic": "aiot/rules/sensor/vibration",
+            "qos": 1,
+            "retain": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "sensor_vibration_alert_t34958",
+      "description": "t34958 IMU event_code 발생 시 진동/충격 경보",
+      "sql": "SELECT dev_eui, device_id, table, data->acc_x AS acc_x, data->acc_y AS acc_y, data->acc_z AS acc_z, data->event_code AS event_code, received_at, 'vibration_alert' AS type, 'sensor' AS source FROM aiot_imu_stream WHERE data->event_code = 1",
+      "actions": [
+        {
+          "mqtt": {
+            "server": "tcp://{{MQTT_BROKER}}:{{MQTT_PORT}}",
+            "topic": "aiot/rules/sensor/vibration",
+            "qos": 1,
+            "retain": false
+          }
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "TILT_THRESHOLD": 10.0,
+    "TEMP_HIGH_THRESHOLD": 60.0,
+    "MQTT_BROKER": "edgex-mqtt-broker",
+    "MQTT_PORT": 1883
+  }
+}

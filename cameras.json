@@ -18,9 +18,9 @@
       "use_face": true
     },
     "model_paths": {
-      "helmet": "models/helmet_model_ver0.6.engine",
+      "helmet": "models/helmet_model_ver0.5.pt",
       "person": "models/yolov8n.pt",
-      "pose": "models/yolov8n-pose.engine"
+      "pose": "models/yolov8n-pose.pt"
     },
     "zones": []
   },
@@ -56,7 +56,11 @@
       "use_person": false,
       "use_face": true
     },
-    "model_paths": {},
+    "model_paths": {
+      "helmet": "models/helmet_model_ver0.5.pt",
+      "person": "models/yolov8n.pt",
+      "pose": "models/yolov8n-pose.pt"
+    },
     "zones": []
   }
 ]

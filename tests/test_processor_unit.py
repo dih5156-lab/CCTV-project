@@ -370,7 +370,7 @@ class TestProcessInferenceErrorHandling:
         # maxsize=1 큐 대신 항상 프레임을 공급하는 mock으로 교체
         proc._cams.frame_queues[cam_id] = self._infinite_frame_queue()
 
-        with patch.object(proc, "_run_ai_inference", side_effect=RuntimeError("GPU 오류")), \
+        with patch.object(proc._pipeline, "_infer", side_effect=RuntimeError("GPU 오류")), \
              patch.object(proc._cams, "enqueue_retry") as mock_retry, \
              patch.object(proc._cams, "unregister") as mock_unreg, \
              patch.object(proc.stop_event, "wait", return_value=False):
@@ -414,10 +414,10 @@ class TestProcessInferenceErrorHandling:
                 proc.stop_event.set()
             return proc.stop_event.is_set()
 
-        with patch.object(proc, "_run_ai_inference", side_effect=side_effect), \
-             patch.object(proc, "_queue_events"), \
-             patch.object(proc, "_check_danger_zones", return_value=([], frame)), \
-             patch.object(proc, "_collect_dataset"), \
+        with patch.object(proc._pipeline, "_infer", side_effect=side_effect), \
+             patch.object(proc._pipeline, "_enqueue"), \
+             patch.object(proc._pipeline, "_check_zones", return_value=([], frame)), \
+             patch.object(proc._pipeline, "_collect"), \
              patch.object(proc, "track_manager") as mock_tm, \
              patch.object(proc, "violation_filter") as mock_vf, \
              patch.object(proc._cams, "enqueue_retry") as mock_retry, \
@@ -442,7 +442,7 @@ class TestProcessInferenceErrorHandling:
         proc._cams.register(cam_id, cam_mock)
         proc._cams.frame_queues[cam_id] = self._infinite_frame_queue()
 
-        with patch.object(proc, "_run_ai_inference", side_effect=RuntimeError("오류")), \
+        with patch.object(proc._pipeline, "_infer", side_effect=RuntimeError("오류")), \
              patch.object(proc._cams, "enqueue_retry"), \
              patch.object(proc._cams, "unregister"), \
              patch.object(proc.stop_event, "wait", return_value=False):

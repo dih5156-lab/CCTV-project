@@ -8,7 +8,7 @@ import logging
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from queue import Empty, Queue
+from queue import Empty, Full, Queue
 from threading import Thread
 from typing import Dict, List, Optional
 
@@ -115,14 +115,18 @@ class HttpEventForwarder:
                 "[%s] 전송 실패 (%s): %s",
                 target.name, resp.status_code, resp.text[:200],
             )
-        except Exception as exc:
-            logger.error("[%s] 전송 오류: %s", target.name, exc)
+        except requests.exceptions.Timeout as exc:
+            logger.error("[%s] 전송 타임아웃: %s", target.name, exc)
+        except requests.exceptions.ConnectionError as exc:
+            logger.error("[%s] 연결 오류: %s", target.name, exc)
+        except requests.exceptions.RequestException as exc:
+            logger.error("[%s] HTTP 오류: %s", target.name, exc)
 
         # 재시도 큐 등록
         if attempt < _RETRY_MAX_ATTEMPTS:
             try:
                 self._retry_queue.put_nowait((target, topic, payload, attempt + 1))
-            except Exception:
+            except Full:
                 logger.warning("[%s] 재시도 큐 가득 참 - 드롭", target.name)
 
     def _retry_worker(self) -> None:

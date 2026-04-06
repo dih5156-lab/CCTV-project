@@ -47,55 +47,6 @@ services:
       bind:
         create_host_path: true
 
-  app-rules-engine:
-    container_name: edgex-app-rules-engine
-    depends_on:
-      consul:
-        condition: service_healthy
-      core-data:
-        condition: service_started
-    env_file:
-    - ./edgex/asc/cctv_asc.env
-    environment:
-      EDGEX_PROFILE: cctv-external-http
-      EDGEX_SECURITY_SECRET_STORE: "false"
-      SERVICE_HOST: edgex-app-rules-engine
-      MESSAGEBUS_DISABLED: "false"
-      TELEMETRY_METRICS_ENABLE: "false"
-      WRITABLE_PIPELINE_EXECUTIONORDER: HTTPExport
-      WRITABLE_PIPELINE_FUNCTIONS_HTTPEXPORT_PARAMETERS_METHOD: post
-      WRITABLE_PIPELINE_FUNCTIONS_HTTPEXPORT_PARAMETERS_MIMETYPE: application/json
-      WRITABLE_PIPELINE_FUNCTIONS_HTTPEXPORT_PARAMETERS_URL: http://cctv-alert-api:8000/api/alerts
-      WRITABLE_PIPELINE_FUNCTIONS_HTTPEXPORT_PARAMETERS_PERSISTONERROR: "false"
-      WRITABLE_PIPELINE_FUNCTIONS_HTTPEXPORT_PARAMETERS_CONTINUEONSENDERROR: "false"
-    hostname: edgex-app-rules-engine
-    image: edgexfoundry/app-service-configurable:3.1.0
-    networks:
-      edgex-network: null
-    ports:
-    - mode: ingress
-      host_ip: 127.0.0.1
-      target: 59707
-      published: "59701"
-      protocol: tcp
-    read_only: true
-    restart: always
-    security_opt:
-    - no-new-privileges:true
-    user: 2002:2001
-    volumes:
-    - type: bind
-      source: /etc/localtime
-      target: /etc/localtime
-      read_only: true
-      bind:
-        create_host_path: true
-    - type: bind
-      source: ./edgex/asc/cctv-external-http
-      target: /res/cctv-external-http
-      read_only: true
-      bind:
-        create_host_path: true
   consul:
     command:
     - agent
@@ -135,41 +86,6 @@ services:
       source: consul-data
       target: /consul/data
       volume: {}
-  core-command:
-    container_name: edgex-core-command
-    depends_on:
-      consul:
-        condition: service_healthy
-      core-metadata:
-        condition: service_started
-      database:
-        condition: service_healthy
-    environment:
-      EDGEX_SECURITY_SECRET_STORE: "false"
-      EXTERNALMQTT_URL: tcp://edgex-mqtt-broker:1883
-      SERVICE_HOST: edgex-core-command
-    hostname: edgex-core-command
-    image: edgexfoundry/core-command:3.1.0
-    networks:
-      edgex-network: null
-    ports:
-    - mode: ingress
-      host_ip: 127.0.0.1
-      target: 59882
-      published: "59882"
-      protocol: tcp
-    read_only: true
-    restart: always
-    security_opt:
-    - no-new-privileges:true
-    user: 2002:2001
-    volumes:
-    - type: bind
-      source: /etc/localtime
-      target: /etc/localtime
-      read_only: true
-      bind:
-        create_host_path: true
   core-common-config-bootstrapper:
     container_name: edgex-core-common-config-bootstrapper
     depends_on:
@@ -332,40 +248,6 @@ services:
     profiles:
     - disabled
     restart: "no"
-  device-virtual:
-    container_name: edgex-device-virtual
-    depends_on:
-      consul:
-        condition: service_healthy
-      core-data:
-        condition: service_started
-      core-metadata:
-        condition: service_started
-    environment:
-      EDGEX_SECURITY_SECRET_STORE: "false"
-      SERVICE_HOST: edgex-device-virtual
-    hostname: edgex-device-virtual
-    image: edgexfoundry/device-virtual:3.1.0
-    networks:
-      edgex-network: null
-    ports:
-    - mode: ingress
-      host_ip: 127.0.0.1
-      target: 59900
-      published: "59900"
-      protocol: tcp
-    read_only: true
-    restart: always
-    security_opt:
-    - no-new-privileges:true
-    user: 2002:2001
-    volumes:
-    - type: bind
-      source: /etc/localtime
-      target: /etc/localtime
-      read_only: true
-      bind:
-        create_host_path: true
   rules-engine:
     container_name: edgex-kuiper
     depends_on:
@@ -471,9 +353,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    environment:
-      PYTHONIOENCODING: utf-8
-      PYTHONUTF8: "1"
     command:
     - python
     - runners/run_edgex_adapter.py
@@ -493,6 +372,11 @@ services:
     - "1883"
     - --service-name
     - device-rest
+    environment:
+      PYTHONIOENCODING: utf-8
+      PYTHONUTF8: "1"
+      EDGEX_OUTBOX_DB: /data/edgex_outbox.db
+      EDGEX_OUTBOX_RETRY_INTERVAL: "30"
     depends_on:
       edgex-mqtt-broker:
         condition: service_started
@@ -505,6 +389,10 @@ services:
     networks:
       edgex-network: null
     restart: always
+    volumes:
+    - type: bind
+      source: ./data
+      target: /data
 
   cctv-kuiper-rule-loader:
     container_name: cctv-kuiper-rule-loader
@@ -514,25 +402,25 @@ services:
     environment:
       PYTHONIOENCODING: utf-8
       PYTHONUTF8: "1"
+      KUIPER_API: http://edgex-kuiper:59720
+      MQTT_BROKER: edgex-mqtt-broker
+      MQTT_PORT: "1883"
+      # ── CCTV AI 임계값 ────────────────────────────────────
+      INTRUSION_CONFIDENCE: "0.7"   # 침입 감지 신뢰도 (0.0~1.0)
+      CRITICAL_CONFIDENCE: "0.9"    # 고위험 라우팅 신뢰도 (0.0~1.0)
+      PERSIST_HIT_COUNT: "5"        # 5초 윈도우 내 최소 검출 횟수
+      # ── IoT 센서 임계값 ───────────────────────────────────
+      TILT_THRESHOLD: "10.0"        # 기울기 경보 임계값 (도)
+      TEMP_HIGH_THRESHOLD: "60.0"   # 고온 경보 임계값 (°C)
+      # ── 배포 재시도 ───────────────────────────────────────
+      KUIPER_RETRY_COUNT: "20"
+      KUIPER_RETRY_DELAY: "2"
     command:
-    - python
-    - runners/run_kuiper_rules.py
-    - --kuiper-api
-    - http://edgex-kuiper:59720
-    - --mqtt-broker
-    - edgex-mqtt-broker
-    - --mqtt-port
-    - "1883"
-    - --intrusion-confidence
-    - "0.7"
-    - --critical-confidence
-    - "0.9"
-    - --persist-hit-count
-    - "5"
-    - --retry-count
-    - "20"
-    - --retry-delay
-    - "2"
+    - sh
+    - -c
+    - |
+      python runners/run_kuiper_rules.py --kuiper-api http://edgex-kuiper:59720 --rules-file kuiper/rules/cctv_intrusion_rules.json &&
+      python runners/run_kuiper_rules.py --kuiper-api http://edgex-kuiper:59720 --rules-file kuiper/rules/aiot_sensor_rules.json
     depends_on:
       rules-engine:
         condition: service_started
@@ -540,6 +428,15 @@ services:
         condition: service_started
     networks:
       edgex-network: null
+    volumes:
+    - type: bind
+      source: ./runners
+      target: /app/runners
+      read_only: true
+    - type: bind
+      source: ./kuiper
+      target: /app/kuiper
+      read_only: true
     restart: on-failure
 
   cctv-alert-api:
@@ -644,72 +541,40 @@ services:
       read_only: true
       bind:
         create_host_path: true
-  support-notifications:
-    container_name: edgex-support-notifications
-    depends_on:
-      consul:
-        condition: service_healthy
-      database:
-        condition: service_healthy
+  # app-aiot-forwarder: removed — EdgeXForwarder in aiot-parser now handles
+  # both alert-api HTTP POST and Core Data HTTP push directly.
+  # Raw MQTT payloads on aiot/sensors/# are not EdgeX Event format,
+  # so ASC external-mqtt trigger cannot process them without re-encoding.
+
+  aiot-parser:
+    container_name: aiot-parser
+    build:
+      context: .
+      dockerfile: Dockerfile.parser
+    env_file:
+      - ./parser-python/.env
     environment:
-      EDGEX_SECURITY_SECRET_STORE: "false"
-      SERVICE_HOST: edgex-support-notifications
-    hostname: edgex-support-notifications
-    image: edgexfoundry/support-notifications:3.1.0
+      PYTHONIOENCODING: utf-8
+      PYTHONUTF8: "1"
+      PYTHONUNBUFFERED: "1"
+      # EdgeX MQTT 브로커로 파싱 결과 발행
+      # topic: aiot/sensors/{dev_eui}/{table_name}
+      EDGEX_MQTT_HOST: edgex-mqtt-broker
+      EDGEX_MQTT_PORT: "1883"
+      # EdgeX Core Data 직접 push (Outbox 저장 경로)
+      EDGEX_CORE_DATA_URL: http://edgex-core-data:59880
+      # 로컬 SQLite Outbox 경로 (컨테이너 재시작 시에도 유지)
+      EDGEX_OUTBOX_DB: /data/edgex_outbox.db
+      EDGEX_OUTBOX_RETRY_INTERVAL: "30"
+    volumes:
+      - ./data:/data
+    depends_on:
+      edgex-mqtt-broker:
+        condition: service_started
     networks:
       edgex-network: null
-    ports:
-    - mode: ingress
-      host_ip: 127.0.0.1
-      target: 59860
-      published: "59860"
-      protocol: tcp
-    read_only: true
     restart: always
-    security_opt:
-    - no-new-privileges:true
-    user: 2002:2001
-    volumes:
-    - type: bind
-      source: /etc/localtime
-      target: /etc/localtime
-      read_only: true
-      bind:
-        create_host_path: true
-  support-scheduler:
-    container_name: edgex-support-scheduler
-    depends_on:
-      consul:
-        condition: service_healthy
-      database:
-        condition: service_healthy
-    environment:
-      EDGEX_SECURITY_SECRET_STORE: "false"
-      INTERVALACTIONS_SCRUBAGED_HOST: edgex-core-data
-      INTERVALACTIONS_SCRUBPUSHED_HOST: edgex-core-data
-      SERVICE_HOST: edgex-support-scheduler
-    hostname: edgex-support-scheduler
-    image: edgexfoundry/support-scheduler:3.1.0
-    networks:
-      edgex-network: null
-    ports:
-    - mode: ingress
-      host_ip: 127.0.0.1
-      target: 59861
-      published: "59861"
-      protocol: tcp
-    read_only: true
-    restart: always
-    security_opt:
-    - no-new-privileges:true
-    user: 2002:2001
-    volumes:
-    - type: bind
-      source: /etc/localtime
-      target: /etc/localtime
-      read_only: true
-      bind:
-        create_host_path: true
+
   ui:
     container_name: edgex-ui-go
     environment:
@@ -737,33 +602,6 @@ services:
       bind:
         create_host_path: true
 
-  # app-aiot-forwarder: removed — EdgeXForwarder in aiot-parser now handles
-  # both alert-api HTTP POST and Core Data HTTP push directly.
-  # Raw MQTT payloads on aiot/sensors/# are not EdgeX Event format,
-  # so ASC external-mqtt trigger cannot process them without re-encoding.
-
-  aiot-parser:
-    container_name: aiot-parser
-    build:
-      context: .
-      dockerfile: Dockerfile.parser
-    env_file:
-      - ./parser-python/.env
-    environment:
-      PYTHONIOENCODING: utf-8
-      PYTHONUTF8: "1"
-      PYTHONUNBUFFERED: "1"
-      # EdgeX MQTT 브로커로 파싱 결과 발행
-      # topic: aiot/sensors/{dev_eui}/{table_name}
-      EDGEX_MQTT_HOST: edgex-mqtt-broker
-      EDGEX_MQTT_PORT: "1883"
-    depends_on:
-      edgex-mqtt-broker:
-        condition: service_started
-    networks:
-      edgex-network: null
-    restart: always
-
 networks:
   edgex-network:
     name: edgex_edgex-network
@@ -783,3 +621,4 @@ volumes:
     name: edgex_kuiper-log
   kuiper-plugins:
     name: edgex_kuiper-plugins
+

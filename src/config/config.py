@@ -100,6 +100,13 @@ ENV_OVERRIDES: tuple[EnvOverride, ...] = (
     EnvOverride("EXTERNAL_REPUBLISH_ENABLED", ("external_ingest", "republish_enabled"), parser=_parse_bool),
     # 카메라 / RTSP
     EnvOverride("RTSP_BUFFER_SIZE", ("camera", "buffer_size"), parser=lambda v: int(v.strip())),
+    # 이벤트 디바운스 / 지속 감지
+    EnvOverride("DEBOUNCE_SECONDS", ("events", "debounce_seconds"), parser=lambda v: float(v.strip())),
+    EnvOverride("FALL_SUSTAINED_SECONDS", ("events", "fall_sustained_seconds"), parser=lambda v: float(v.strip())),
+    EnvOverride("FALL_RESEND_COOLDOWN", ("events", "fall_resend_cooldown"), parser=lambda v: float(v.strip())),
+    EnvOverride("FALL_GAP_RESET_SECONDS", ("events", "fall_gap_reset_seconds"), parser=lambda v: float(v.strip())),
+    EnvOverride("HEAD_RESEND_COOLDOWN", ("events", "head_resend_cooldown"), parser=lambda v: float(v.strip())),
+    EnvOverride("HEAD_GAP_RESET_SECONDS", ("events", "head_gap_reset_seconds"), parser=lambda v: float(v.strip())),
 )
 
 @dataclass

@@ -361,6 +361,8 @@ class TestEdgeXOutbox:
         assert len(pending) == 1
         assert pending[0]["camera_id"] == "cam1"
         assert pending[0]["event_data"]["type"] == "fall_detected"
+        # fall_detected → person 카테고리
+        assert pending[0]["data_category"] == "person"
 
     def test_replay_marks_outbox_row_sent(self, svc):
         svc._init_outbox()
@@ -383,3 +385,66 @@ class TestEdgeXOutbox:
 
         assert result is True
         assert svc.get_pending_detection_events() == []
+
+
+# ---------------------------------------------------------------------------
+# data_category 분류 테스트
+# ---------------------------------------------------------------------------
+
+class TestEventCategoryClassification:
+    """_classify_event_category 와 data_category 저장 검증."""
+
+    def test_person_events_classified_as_person(self, svc):
+        for event_type in ("helmet", "head", "fall_detected", "not_fall",
+                           "face_recognized", "face_unknown", "person",
+                           "unsafe_behavior", "wearing_helmet"):
+            assert svc._classify_event_category(event_type) == "person", \
+                f"{event_type!r} should be 'person'"
+
+    def test_camera_events_classified_as_camera(self, svc):
+        for event_type in ("danger_zone", "intrusion", "other", "unknown_event"):
+            assert svc._classify_event_category(event_type) == "camera", \
+                f"{event_type!r} should be 'camera'"
+
+    def test_empty_event_type_returns_camera(self, svc):
+        assert svc._classify_event_category("") == "camera"
+        assert svc._classify_event_category(None) == "camera"  # type: ignore[arg-type]
+
+    def test_stored_person_event_has_category(self, svc):
+        svc._init_outbox()
+        svc._store_failed_detection_event(
+            "cam1", {"type": "helmet", "confidence": 0.9}, "net error"
+        )
+        pending = svc.get_pending_detection_events()
+        assert pending[0]["data_category"] == "person"
+
+    def test_stored_camera_event_has_category(self, svc):
+        svc._init_outbox()
+        svc._store_failed_detection_event(
+            "cam2", {"type": "intrusion", "confidence": 0.75}, "net error"
+        )
+        pending = svc.get_pending_detection_events()
+        assert pending[0]["data_category"] == "camera"
+
+    def test_filter_by_person_category(self, svc):
+        svc._init_outbox()
+        svc._store_failed_detection_event("cam1", {"type": "helmet"}, "err")
+        svc._store_failed_detection_event("cam1", {"type": "intrusion"}, "err")
+        svc._store_failed_detection_event("cam1", {"type": "fall_detected"}, "err")
+
+        person_rows = svc.get_pending_detection_events(data_category="person")
+        camera_rows = svc.get_pending_detection_events(data_category="camera")
+        all_rows    = svc.get_pending_detection_events()
+
+        assert len(person_rows) == 2   # helmet + fall_detected
+        assert len(camera_rows) == 1   # intrusion
+        assert len(all_rows) == 3
+
+    def test_filter_by_camera_category(self, svc):
+        svc._init_outbox()
+        svc._store_failed_detection_event("cam1", {"type": "danger_zone"}, "err")
+        svc._store_failed_detection_event("cam1", {"type": "person"}, "err")
+
+        camera_only = svc.get_pending_detection_events(data_category="camera")
+        assert len(camera_only) == 1
+        assert camera_only[0]["event_data"]["type"] == "danger_zone"

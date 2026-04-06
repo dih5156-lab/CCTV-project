@@ -45,14 +45,23 @@ def main() -> None:
             "cctv/rules/intrusion/persisted,"
             "cctv/rules/intrusion/critical,"
             "cctv/ai/events/+/head,"
-            "cctv/ai/events/+/fall_detected",
+            "cctv/ai/events/+/fall_detected,"
+            "cctv/ai/events/+/zone_entered,"
+            "cctv/ai/events/+/zone_dwelling,"
+            "aiot/rules/sensor/tilt,"
+            "aiot/rules/sensor/temperature,"
+            "aiot/rules/sensor/vibration",
         ),
     )
     parser.add_argument(
         "--alarm-topics",
         default=_env(
             "ALARM_TOPICS",
-            "cctv/rules/intrusion/persisted,cctv/rules/intrusion/critical",
+            "cctv/rules/intrusion/persisted,"
+            "cctv/rules/intrusion/critical,"
+            "aiot/rules/sensor/tilt,"
+            "aiot/rules/sensor/temperature,"
+            "aiot/rules/sensor/vibration",
         ),
     )
 

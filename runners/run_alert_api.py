@@ -51,7 +51,7 @@ class AlertHandler(BaseHTTPRequestHandler):
 
         try:
             payload = json.loads(raw_body.decode("utf-8"))
-        except Exception:
+        except (json.JSONDecodeError, UnicodeDecodeError):
             self._send_json(400, {"error": "invalid json"})
             return
 

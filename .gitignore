@@ -72,3 +72,5 @@ _test_results.txt
 
 .pytest_tmp/
 *.db
+!data/.gitkeep
+data/*.db

@@ -4,14 +4,14 @@ from __future__ import annotations
 
 import logging
 import time
-import uuid
 from collections.abc import Callable
 from typing import Optional, Sequence
 
 import paho.mqtt.client as mqtt
 
+from ._mqtt_factory import create_mqtt_client
+
 logger = logging.getLogger(__name__)
-_PAHO_V2 = hasattr(mqtt, "CallbackAPIVersion")
 
 _RECONNECT_MIN_DELAY = 1.0
 _RECONNECT_MAX_DELAY = 30.0
@@ -61,25 +61,12 @@ class MqttTopicSubscriber:
         return self._connected
 
     def _build_client(self) -> mqtt.Client:
-        client_id = self.client_id or f"{self.client_id_prefix}-{uuid.uuid4().hex[:8]}"
-        try:
-            if _PAHO_V2:
-                client = mqtt.Client(
-                    mqtt.CallbackAPIVersion.VERSION2,
-                    client_id=client_id,
-                    clean_session=True,
-                )
-            else:
-                client = mqtt.Client(
-                    client_id=client_id,
-                    clean_session=True,
-                )
-        except Exception:
-            client = mqtt.Client(client_id=client_id)
-
-        if self.username:
-            client.username_pw_set(self.username, self.password)
-
+        client = create_mqtt_client(
+            client_id_prefix=self.client_id_prefix,
+            client_id=self.client_id,
+            username=self.username,
+            password=self.password,
+        )
         client.on_connect = self._on_connect
         client.on_disconnect = self._on_disconnect
         client.on_message = self._on_message

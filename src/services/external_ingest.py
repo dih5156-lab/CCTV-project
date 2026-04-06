@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import binascii
 import json
 import logging
 import signal
@@ -38,7 +39,7 @@ def _decode_base64_text(value: Any) -> Optional[str]:
         return None
     try:
         decoded = b64decode(str(value), validate=True)
-    except Exception:
+    except (ValueError, binascii.Error):
         return None
     try:
         return decoded.decode("utf-8")
@@ -158,6 +159,8 @@ class IngestEventRepository:
     def init(self) -> None:
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         with sqlite3.connect(self.db_path) as conn:
+            conn.execute("PRAGMA journal_mode=WAL")
+            conn.execute("PRAGMA synchronous=NORMAL")
             conn.execute(
                 """
                 CREATE TABLE IF NOT EXISTS ingest_events (

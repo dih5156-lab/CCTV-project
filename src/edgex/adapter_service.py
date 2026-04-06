@@ -10,6 +10,7 @@
 import asyncio
 import json
 import logging
+import os
 import time
 from concurrent.futures import TimeoutError as FutureTimeoutError
 from threading import Event, Thread
@@ -40,6 +41,7 @@ class EdgeXDeviceAdapterService:
         edgex_mqtt_port: int = _EDGEX_DEFAULTS.mqtt_port,
         edgex_topic_prefix: str = "edgex/events/device",
         service_name: str = "cctv-device-service",
+        outbox_db_path: Optional[str] = None,
     ):
         self.ai_mqtt_broker = ai_mqtt_broker
         self.ai_mqtt_port = int(ai_mqtt_port)
@@ -60,6 +62,13 @@ class EdgeXDeviceAdapterService:
         self._outbox_poll_interval_seconds = 5.0
         self._coro_timeout_seconds = 10.0
 
+        # 환경변수 우선, 인자값, 기본값 순으로 outbox 경로 결정
+        resolved_outbox = (
+            outbox_db_path
+            or os.environ.get("EDGEX_OUTBOX_DB")
+            or "data/edgex_outbox.db"
+        )
+
         self.edgex_service = CCTVDeviceService(
             {
                 "coreMetadataUrl": metadata_url,
@@ -72,6 +81,7 @@ class EdgeXDeviceAdapterService:
                 "messageBusType": "redis",
                 "redisHost": "edgex-redis",
                 "redisPort": 6379,
+                "outboxDbPath": resolved_outbox,
             }
         )
 

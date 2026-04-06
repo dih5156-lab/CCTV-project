@@ -3,21 +3,22 @@ CCTV용 EdgeX 디바이스 서비스
 CCTV 카메라를 EdgeX Foundry 장치로 관리
 """
 
+import asyncio
+import base64
 import json
 import logging
-import asyncio
-import requests
+import sqlite3
+import threading
 import time
 import uuid
-import base64
-import threading
-import sqlite3
-from pathlib import Path
-from typing import Dict, Optional, List, Any
 from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
 
 import paho.mqtt.client as mqtt
+import requests
+
 try:
     import redis
 except ImportError:
@@ -31,7 +32,17 @@ _mqtt_lock = threading.Lock()
 
 
 class CCTVDeviceService:
-    """EdgeX CCTV 장치 서비스"""
+    """EdgeX CCTV 장치 서비스.
+
+    CCTV 카메라를 EdgeX Foundry 장치로 관리하며, 탐지 이벤트를
+    Redis Message Bus 또는 MQTT 채널로 발행한다.
+    연결 실패 시 SQLite Outbox에 이벤트를 보관하고 복구 후 재전송한다.
+
+    Attributes:
+        metadata_url: EdgeX Core Metadata 서비스 URL
+        data_url:     EdgeX Core Data 서비스 URL
+        service_name: EdgeX 디바이스 서비스 이름
+    """
     _redis_lock = _redis_lock
     _mqtt_lock = _mqtt_lock
     _redis_base_cooldown_sec: float = 5
@@ -78,6 +89,20 @@ class CCTVDeviceService:
         logger.info("  - Data URL: %s", self.data_url)
         if self.enable_store_and_forward:
             logger.info("  - Store-and-forward DB: %s", self.outbox_db_path)
+        self._init_outbox()
+
+    # ── 데이터 카테고리 상수 ─────────────────────────────────
+    # person : 사람 감지 이벤트 (헬멧, 낙상, 얼굴 인식 등)
+    # camera : 카메라 단위 이벤트 (침입, 위험구역, 기타)
+    # sensor : IoT 센서 데이터 (parser-python 쪽에서 발생)
+    _PERSON_EVENT_TYPES = frozenset({
+        "helmet", "head", "unsafe_behavior", "wearing_helmet",
+        "fall_detected", "not_fall",
+        "face_recognized", "face_unknown", "person",
+    })
+    _CAMERA_EVENT_TYPES = frozenset({
+        "danger_zone", "intrusion", "other",
+    })
 
     def _init_outbox(self) -> None:
         """Prepare the local SQLite outbox used for store-and-forward delivery."""
@@ -93,6 +118,7 @@ class CCTVDeviceService:
                 CREATE TABLE IF NOT EXISTS detection_outbox (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     camera_id TEXT NOT NULL,
+                    data_category TEXT NOT NULL DEFAULT 'camera',
                     payload_json TEXT NOT NULL,
                     created_at TEXT NOT NULL,
                     last_attempt_at TEXT,
@@ -103,15 +129,42 @@ class CCTVDeviceService:
                 )
                 """
             )
+            # 기존 DB에 컬럼이 없으면 마이그레이션
+            existing = {row[1] for row in conn.execute("PRAGMA table_info(detection_outbox)")}
+            if "data_category" not in existing:
+                conn.execute(
+                    "ALTER TABLE detection_outbox "
+                    "ADD COLUMN data_category TEXT NOT NULL DEFAULT 'camera'"
+                )
+                logger.info("detection_outbox: data_category 컬럼 추가 완료 (마이그레이션)")
             conn.execute(
                 "CREATE INDEX IF NOT EXISTS idx_detection_outbox_status_id "
                 "ON detection_outbox(status, id)"
+            )
+            conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_detection_outbox_category "
+                "ON detection_outbox(data_category, status)"
             )
             conn.commit()
 
     @staticmethod
     def _utc_now_iso() -> str:
         return datetime.now(timezone.utc).isoformat()
+
+    def _classify_event_category(self, event_type: str) -> str:
+        """이벤트 타입으로 data_category 분류.
+
+        Returns:
+            'person'  — 사람 감지 이벤트 (헬멧/낙상/얼굴 인식 등)
+            'camera'  — 카메라 단위 이벤트 (침입/위험구역 등)
+        """
+        normalized = (event_type or "").lower().strip()
+        if normalized in self._PERSON_EVENT_TYPES:
+            return "person"
+        if normalized in self._CAMERA_EVENT_TYPES:
+            return "camera"
+        # 알 수 없는 타입은 카메라 이벤트로 처리
+        return "camera"
 
     def _store_failed_detection_event(
         self,
@@ -123,16 +176,23 @@ class CCTVDeviceService:
         if not self.enable_store_and_forward:
             return
 
+        event_type = ""
+        if isinstance(event_data, dict):
+            event_type = str(event_data.get("type") or event_data.get("event_type") or "")
+        category = self._classify_event_category(event_type)
+
         with self._outbox_lock, sqlite3.connect(self.outbox_db_path) as conn:
             now = self._utc_now_iso()
             conn.execute(
                 """
                 INSERT INTO detection_outbox (
-                    camera_id, payload_json, created_at, last_attempt_at, retry_count, status, last_error
-                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                    camera_id, data_category, payload_json,
+                    created_at, last_attempt_at, retry_count, status, last_error
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     camera_id,
+                    category,
                     json.dumps(event_data, ensure_ascii=False),
                     now,
                     now,
@@ -142,25 +202,92 @@ class CCTVDeviceService:
                 ),
             )
             conn.commit()
+            logger.debug(
+                "[Outbox] 저장: camera=%s category=%s type=%s",
+                camera_id, category, event_type,
+            )
 
-    def get_pending_detection_events(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
-        """Return pending outbox rows in FIFO order for replay."""
+    def _store_pending_event(
+        self,
+        camera_id: str,
+        event_data: Dict[str, Any],
+    ) -> Optional[int]:
+        """모든 이벤트를 pending으로 먼저 저장하고 row_id 반환."""
+        if not self.enable_store_and_forward:
+            return None
+
+        event_type = ""
+        if isinstance(event_data, dict):
+            event_type = str(event_data.get("type") or event_data.get("event_type") or "")
+        category = self._classify_event_category(event_type)
+
+        with self._outbox_lock, sqlite3.connect(self.outbox_db_path) as conn:
+            now = self._utc_now_iso()
+            cur = conn.execute(
+                """
+                INSERT INTO detection_outbox (
+                    camera_id, data_category, payload_json,
+                    created_at, last_attempt_at, retry_count, status
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    camera_id,
+                    category,
+                    json.dumps(event_data, ensure_ascii=False),
+                    now,
+                    now,
+                    0,
+                    "pending",
+                ),
+            )
+            conn.commit()
+            logger.debug(
+                "[Outbox] pending 저장: camera=%s category=%s type=%s id=%s",
+                camera_id, category, event_type, cur.lastrowid,
+            )
+            return cur.lastrowid
+
+    def get_pending_detection_events(
+        self,
+        limit: Optional[int] = None,
+        data_category: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
+        """Return pending outbox rows in FIFO order for replay.
+
+        Args:
+            limit: 최대 반환 행 수 (기본: outbox_flush_batch_size)
+            data_category: 'person' | 'camera' | None(전체)
+        """
         if not self.enable_store_and_forward:
             return []
 
         fetch_limit = int(limit or self.outbox_flush_batch_size)
         with self._outbox_lock, sqlite3.connect(self.outbox_db_path) as conn:
             conn.row_factory = sqlite3.Row
-            rows = conn.execute(
-                """
-                SELECT id, camera_id, payload_json, created_at, last_attempt_at, retry_count, status, last_error
-                FROM detection_outbox
-                WHERE status = 'pending'
-                ORDER BY id ASC
-                LIMIT ?
-                """,
-                (fetch_limit,),
-            ).fetchall()
+            if data_category:
+                rows = conn.execute(
+                    """
+                    SELECT id, camera_id, data_category, payload_json,
+                           created_at, last_attempt_at, retry_count, status, last_error
+                    FROM detection_outbox
+                    WHERE status = 'pending' AND data_category = ?
+                    ORDER BY id ASC
+                    LIMIT ?
+                    """,
+                    (data_category, fetch_limit),
+                ).fetchall()
+            else:
+                rows = conn.execute(
+                    """
+                    SELECT id, camera_id, data_category, payload_json,
+                           created_at, last_attempt_at, retry_count, status, last_error
+                    FROM detection_outbox
+                    WHERE status = 'pending'
+                    ORDER BY id ASC
+                    LIMIT ?
+                    """,
+                    (fetch_limit,),
+                ).fetchall()
 
         pending: List[Dict[str, Any]] = []
         for row in rows:
@@ -172,6 +299,7 @@ class CCTVDeviceService:
                 {
                     "id": row["id"],
                     "camera_id": row["camera_id"],
+                    "data_category": row["data_category"],
                     "event_data": payload,
                     "created_at": row["created_at"],
                     "last_attempt_at": row["last_attempt_at"],
@@ -271,12 +399,16 @@ class CCTVDeviceService:
             endpoints.append(f"{base}/{resource}")
         return endpoints
 
-    def _payload_for_endpoint(self, endpoint: str, payload: Dict[str, object]):
-        # 엔드포인트 버전에 따라 페이로드 형식 조정 (v3는 배열, v2/v1은 객체)
+    def _payload_for_endpoint(
+        self, endpoint: str, payload: Dict[str, object]
+    ) -> object:
+        """엔드포인트 버전에 따라 페이로드 형식 조정 (v3=배열, v2/v1=객체)."""
         return [payload] if "/v3/" in endpoint else payload
 
-    def _extract_multistatus_item(self, response: requests.Response) -> Optional[Dict[str, object]]:
-        # 207 복합 상태 응답에서 첫 번째 항목 추출 (유연한 형식 지원)
+    def _extract_multistatus_item(
+        self, response: requests.Response
+    ) -> Optional[Dict[str, object]]:
+        """207 복합 상태 응답에서 첫 번째 항목 추출."""
         try:
             result = response.json()
         except ValueError:
@@ -286,7 +418,8 @@ class CCTVDeviceService:
             return result[0]
         return None
 
-    def _response_status_code(self, response: requests.Response) -> int: # 응답에서 실제 상태 코드 추출 (207 복합 상태 지원)
+    def _response_status_code(self, response: requests.Response) -> int:
+        """응답에서 실제 상태 코드 추출 (207 복합 상태 지원)."""
         if response.status_code != 207:
             return response.status_code
 
@@ -295,7 +428,8 @@ class CCTVDeviceService:
             return item["statusCode"]
         return response.status_code
 
-    def _response_id(self, response: requests.Response) -> Optional[str]: # 응답에서 생성된 리소스 ID 추출 (유연한 형식 지원)
+    def _response_id(self, response: requests.Response) -> Optional[str]:
+        """응답에서 생성된 리소스 ID 추출 (유연한 형식 지원)."""
         if response.status_code == 207:
             item = self._extract_multistatus_item(response)
             if item:
@@ -884,6 +1018,9 @@ class CCTVDeviceService:
                 self._store_failed_detection_event(camera_id, event_data, error_message)
             return False
 
+        # 전송 전에 outbox에 pending으로 먼저 저장 (replay=False인 경우만)
+        outbox_row_id = self._store_pending_event(camera_id, event_data) if persist_on_failure else None
+
         device_name = f"camera-{camera_id}"
         event_fields = self._extract_event_fields(event_data)
         event_type = event_fields["event_type"]
@@ -912,6 +1049,7 @@ class CCTVDeviceService:
             )
             if redis_ok:
                 logger.info("✓[%s] Redis 이벤트 전송: %s", camera_id, event_type)
+                self._mark_outbox_sent(outbox_row_id)
                 return True
 
         mqtt_ok = await asyncio.to_thread(
@@ -929,6 +1067,7 @@ class CCTVDeviceService:
         )
         if mqtt_ok:
             logger.info("✓[%s] MQTT 이벤트 전송: %s", camera_id, event_type)
+            self._mark_outbox_sent(outbox_row_id)
             return True
 
         if self.enable_rest_event_post:
@@ -947,6 +1086,7 @@ class CCTVDeviceService:
             base_event = {"event": bundle["event_payload"]["event"]}
             rest_ok = await self._post_event_via_rest(camera_id, event_type, base_event)
             if rest_ok:
+                self._mark_outbox_sent(outbox_row_id)
                 return True
 
         error_message = (
@@ -954,7 +1094,8 @@ class CCTVDeviceService:
             f"message_bus={self.message_bus_type}, rest={self.enable_rest_event_post}"
         )
         logger.warning(error_message)
-        if persist_on_failure:
+        # outbox_row_id가 없는 경우(persist_on_failure=False)에만 _store_failed_detection_event 호출
+        if persist_on_failure and outbox_row_id is None:
             self._store_failed_detection_event(camera_id, event_data, error_message)
         return False
 

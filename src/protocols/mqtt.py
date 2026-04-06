@@ -7,14 +7,14 @@ AI 추론 결과 이벤트를 MQTT 브로커로 발행하는 클라이언트.
 import json
 import logging
 import time
-import uuid
 from threading import Event, Lock
 from typing import Dict, Optional
 
 import paho.mqtt.client as mqtt
 
+from ._mqtt_factory import create_mqtt_client
+
 logger = logging.getLogger(__name__)
-_PAHO_V2 = hasattr(mqtt, "CallbackAPIVersion")
 
 # 재연결 백오프 설정
 _RECONNECT_MIN_DELAY = 1.0    # 최초 재시도 대기 시간 (초)
@@ -113,23 +113,7 @@ class MqttEventPublisher:
         self._last_attempt_time = now
 
         if self._client is None:
-            try:
-                if _PAHO_V2:
-                    self._client = mqtt.Client(
-                        mqtt.CallbackAPIVersion.VERSION2,
-                        client_id=f"{self.client_id_prefix}-{uuid.uuid4().hex[:8]}",
-                        clean_session=True,
-                    )
-                else:
-                    self._client = mqtt.Client(
-                        client_id=f"{self.client_id_prefix}-{uuid.uuid4().hex[:8]}",
-                        clean_session=True,
-                    )
-            except Exception:
-                # 최후 폴백: 키워드 없이 시도
-                self._client = mqtt.Client(
-                    client_id=f"{self.client_id_prefix}-{uuid.uuid4().hex[:8]}",
-                )
+            self._client = create_mqtt_client(self.client_id_prefix)
             self._client.on_connect = self._on_connect
             self._client.on_disconnect = self._on_disconnect
 

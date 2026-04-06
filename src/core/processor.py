@@ -516,14 +516,13 @@ class _InferencePipeline:
     VideoProcessor 의 God Class 문제를 완화하기 위해 분리한 클래스다.
     VideoProcessor 가 담당하던 다음 책임을 이관한다:
 
-        - run()           : 추론 → 트래킹 → 필터링 → 구역탐지 → 큐잉 한 사이클 실행
         - _infer()        : AIAnalyzer 호출 + 추론 시간 측정
         - _collect()      : 데이터셋 프레임 저장
         - _check_zones()  : ZoneManager 호출
         - _enqueue()      : 이벤트 큐 put_nowait (디바운싱 포함)
 
     VideoProcessor 는 이 클래스 인스턴스(_pipeline)를 보유하고
-    추론 스레드(_process_inference)에서 pipeline.run()을 호출한다.
+    추론 스레드(_process_inference)에서 각 메서드를 직접 호출한다.
     """
 
     def __init__(
@@ -560,61 +559,6 @@ class _InferencePipeline:
         self._increment_stat       = increment_stat
         self._add_inference_metrics = add_inference_metrics
         self.display_enabled       = display_enabled
-
-    # ── 단일 사이클 ────────────────────────────────────────────────
-
-    def run(self, camera_id: str, frame: Any) -> None:
-        """프레임 한 장에 대해 전체 추론 파이프라인을 실행한다."""
-        self._increment_stat("frames_processed")
-        events = self._infer(camera_id, frame)
-
-        events_for_display  = events.copy()
-        events_for_dataset  = events.copy()
-
-        with self._snapshot_lock:
-            self._snapshots[camera_id] = {
-                "timestamp": time.time(),
-                "detections": [e.to_dict() for e in events],
-            }
-
-        events, removed_ids = self._track_manager.update(camera_id, events)
-        if removed_ids:
-            self._violation_filter.purge(camera_id, removed_ids)
-        events = self._violation_filter.filter(camera_id, events)
-
-        self._collect(frame, events_for_dataset, camera_id)
-        zone_events, frame = self._check_zones(camera_id, events, frame)
-        self._enqueue(camera_id, events, zone_events)
-
-        # ── 구역 점유 상태 업데이트 ────────────────────────────────
-        zone_set = self._zone_in_objects.setdefault(camera_id, set())
-        has_active_zones = bool(
-            self._zone_manager
-            and self._zone_manager.zones.get(camera_id)
-        )
-        if not has_active_zones:
-            zone_set.clear()
-        else:
-            for ze in zone_events:
-                if ze.event_type.value in ("zone_entered", "zone_dwelling"):
-                    zone_set.add(ze.object_id)
-                elif ze.event_type.value == "zone_exited":
-                    zone_set.discard(ze.object_id)
-        for rid in removed_ids:
-            zone_set.discard(rid)
-
-        # ── 디스플레이 업데이트 ────────────────────────────────────
-        if self.display_enabled:
-            display_evts = [
-                replace(ev, event_type=EventType.DANGER_ZONE)
-                if (
-                    ev.event_type == EventType.PERSON
-                    and getattr(ev, "object_id", None) in zone_set
-                )
-                else ev
-                for ev in events_for_display
-            ]
-            self._display.update_frame(camera_id, frame, display_evts)
 
     # ── 내부 헬퍼 ──────────────────────────────────────────────────
 
@@ -1267,32 +1211,6 @@ class VideoProcessor:
     # 카메라 스레드 / 추론 스레드
     # ------------------------------------------------------------------
 
-    def _run_ai_inference(self, camera_id: str, frame: Any) -> List[DetectionEvent]:
-        """하위 호환용 추론 래퍼."""
-        return self._pipeline._infer(camera_id, frame)
-
-    def _collect_dataset(self, frame: Any, events: List[DetectionEvent], camera_id: str) -> None:
-        """하위 호환용 데이터셋 수집 래퍼."""
-        self._pipeline._collect(frame, events, camera_id)
-
-    def _check_danger_zones(
-        self,
-        camera_id: str,
-        events: List[DetectionEvent],
-        frame: Any,
-    ) -> Tuple[List[ZoneEvent], Any]:
-        """하위 호환용 구역 이벤트 래퍼."""
-        return self._pipeline._check_zones(camera_id, events, frame)
-
-    def _queue_events(
-        self,
-        camera_id: str,
-        events: List[DetectionEvent],
-        zone_events: List[ZoneEvent],
-    ) -> None:
-        """하위 호환용 이벤트 큐잉 래퍼."""
-        self._pipeline._enqueue(camera_id, events, zone_events)
-
     def _process_camera(self, camera_id: str, camera: RTSPCamera) -> None:
         """프레임 획득 루프 — AI 추론은 별도 스레드에서 처리한다."""
         while self.running and not self.stop_event.is_set():
@@ -1335,7 +1253,7 @@ class VideoProcessor:
                 continue
             try:
                 self._increment_stat("frames_processed")
-                events = self._run_ai_inference(camera_id, frame)
+                events = self._pipeline._infer(camera_id, frame)
                 events_for_display = events.copy()
                 events_for_dataset = events.copy()
 
@@ -1350,9 +1268,9 @@ class VideoProcessor:
                     self.violation_filter.purge(camera_id, removed_ids)
                 events = self.violation_filter.filter(camera_id, events)
 
-                self._collect_dataset(frame, events_for_dataset, camera_id)
-                zone_events, frame = self._check_danger_zones(camera_id, events, frame)
-                self._queue_events(camera_id, events, zone_events)
+                self._pipeline._collect(frame, events_for_dataset, camera_id)
+                zone_events, frame = self._pipeline._check_zones(camera_id, events, frame)
+                self._pipeline._enqueue(camera_id, events, zone_events)
 
                 zone_set = self._zone_in_objects.setdefault(camera_id, set())
                 has_active_zones = bool(

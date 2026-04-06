@@ -3,6 +3,7 @@
 import argparse
 import json
 import logging
+import os
 import re
 import time
 from pathlib import Path
@@ -104,21 +105,38 @@ def upsert_rule(kuiper_api: str, rule: Dict[str, Any]) -> None:
     raise RuntimeError(f"룰 배포 실패 ({rule_id}): {create_resp.status_code} - {create_resp.text}")
 
 
+def _env_float(name: str, default: float) -> float:
+    """환경변수를 float로 읽는다. 설정되지 않으면 default 반환."""
+    val = os.environ.get(name)
+    return float(val) if val is not None else default
+
+
+def _env_int(name: str, default: int) -> int:
+    """환경변수를 int로 읽는다. 설정되지 않으면 default 반환."""
+    val = os.environ.get(name)
+    return int(val) if val is not None else default
+
+
 def main() -> None:
-    parser = argparse.ArgumentParser(description="CCTV Kuiper 규칙 묶음 배포")
-    parser.add_argument("--kuiper-api", default="http://localhost:9081", help="Kuiper REST API 기본 URL")
+    parser = argparse.ArgumentParser(
+        description="CCTV Kuiper 규칙 묶음 배포",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument("--kuiper-api", default=os.environ.get("KUIPER_API", "http://localhost:9081"), help="Kuiper REST API 기본 URL [env: KUIPER_API]")
     parser.add_argument(
         "--rules-file",
-        default="kuiper/rules/cctv_intrusion_rules.json",
-        help="규칙 묶음 JSON 경로",
+        default=os.environ.get("KUIPER_RULES_FILE", "kuiper/rules/cctv_intrusion_rules.json"),
+        help="규칙 묶음 JSON 경로 [env: KUIPER_RULES_FILE]",
     )
-    parser.add_argument("--mqtt-broker", default="localhost", help="MQTT 브로커 호스트")
-    parser.add_argument("--mqtt-port", type=int, default=1883, help="MQTT 브로커 포트")
-    parser.add_argument("--intrusion-confidence", type=float, default=0.7, help="침입 이벤트 신뢰도 임계값")
-    parser.add_argument("--critical-confidence", type=float, default=0.9, help="중요 이벤트 라우팅 임계값")
-    parser.add_argument("--persist-hit-count", type=int, default=5, help="5초 윈도우 내 최소 검출 횟수")
-    parser.add_argument("--retry-count", type=int, default=3, help="Kuiper API 재시도 횟수")
-    parser.add_argument("--retry-delay", type=int, default=2, help="Kuiper API 재시도 간격(초)")
+    parser.add_argument("--mqtt-broker", default=os.environ.get("MQTT_BROKER", "localhost"), help="MQTT 브로커 호스트 [env: MQTT_BROKER]")
+    parser.add_argument("--mqtt-port", type=int, default=_env_int("MQTT_PORT", 1883), help="MQTT 브로커 포트 [env: MQTT_PORT]")
+    parser.add_argument("--intrusion-confidence", type=float, default=_env_float("INTRUSION_CONFIDENCE", 0.7), help="침입 이벤트 신뢰도 임계값 [env: INTRUSION_CONFIDENCE]")
+    parser.add_argument("--critical-confidence", type=float, default=_env_float("CRITICAL_CONFIDENCE", 0.9), help="중요 이벤트 라우팅 임계값 [env: CRITICAL_CONFIDENCE]")
+    parser.add_argument("--persist-hit-count", type=int, default=_env_int("PERSIST_HIT_COUNT", 5), help="5초 윈도우 내 최소 검출 횟수 [env: PERSIST_HIT_COUNT]")
+    parser.add_argument("--tilt-threshold", type=float, default=_env_float("TILT_THRESHOLD", 10.0), help="기울기 임계값 (도) [env: TILT_THRESHOLD]")
+    parser.add_argument("--temp-high-threshold", type=float, default=_env_float("TEMP_HIGH_THRESHOLD", 60.0), help="고온 임계값 (°C) [env: TEMP_HIGH_THRESHOLD]")
+    parser.add_argument("--retry-count", type=int, default=_env_int("KUIPER_RETRY_COUNT", 3), help="Kuiper API 재시도 횟수 [env: KUIPER_RETRY_COUNT]")
+    parser.add_argument("--retry-delay", type=int, default=_env_int("KUIPER_RETRY_DELAY", 2), help="Kuiper API 재시도 간격(초) [env: KUIPER_RETRY_DELAY]")
     args = parser.parse_args()
 
     if not (0.0 <= args.intrusion_confidence <= 1.0):
@@ -149,6 +167,8 @@ def main() -> None:
             "INTRUSION_CONFIDENCE": args.intrusion_confidence,
             "CRITICAL_CONFIDENCE": args.critical_confidence,
             "PERSIST_HIT_COUNT": args.persist_hit_count,
+            "TILT_THRESHOLD": args.tilt_threshold,
+            "TEMP_HIGH_THRESHOLD": args.temp_high_threshold,
         },
     )
 
@@ -157,14 +177,21 @@ def main() -> None:
         raise ValueError(f"치환되지 않은 토큰이 남아 있습니다: {', '.join(unresolved_tokens)}")
 
     pack = json.loads(hydrated)
-    stream = pack["stream"]
+    # stream(단수) 또는 streams(복수) 모두 지원
+    if "streams" in pack:
+        streams = pack["streams"]
+    elif "stream" in pack:
+        streams = [pack["stream"]]
+    else:
+        streams = []
     rules = pack["rules"]
 
     last_error = None
     for attempt in range(1, args.retry_count + 1):
         try:
             ensure_mqtt_source_config(kuiper_api, args.mqtt_broker, args.mqtt_port)
-            ensure_stream(kuiper_api, stream["name"], stream["sql"])
+            for stream in streams:
+                ensure_stream(kuiper_api, stream["name"], stream["sql"])
 
             for rule in rules:
                 upsert_rule(kuiper_api, rule)

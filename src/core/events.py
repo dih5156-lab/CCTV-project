@@ -1,5 +1,7 @@
-"""
-events.py - AI 추론 결과 데이터 모델
+"""AI 추론 결과 이벤트 데이터 모델.
+
+EventType:     감지 이벤트 종류 열거형 (HELMET, HEAD, FALL_DETECTED 등).
+DetectionEvent: YOLO 추론 결과를 담는 핵심 dataclass.
 """
 
 from dataclasses import dataclass

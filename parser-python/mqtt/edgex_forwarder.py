@@ -22,6 +22,7 @@ EdgeX Core Data 전송:
 import json
 import logging
 import os
+import threading
 import time
 import uuid
 import urllib.request
@@ -29,6 +30,7 @@ import urllib.error
 from typing import Optional
 
 from mqtt.base_publisher import BaseMqttPublisher
+from database.edgex_outbox import EdgeXOutbox
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +60,7 @@ class EdgeXForwarder(BaseMqttPublisher):
         port: int = 1883,
         alert_api_url: Optional[str] = None,
         core_data_url: Optional[str] = None,
+        outbox_db_path: Optional[str] = None,
     ):
         super().__init__(
             broker=host,
@@ -71,6 +74,20 @@ class EdgeXForwarder(BaseMqttPublisher):
         self._core_data_url = (core_data_url or os.environ.get(
             "EDGEX_CORE_DATA_URL", "http://edgex-core-data:59880"
         )).rstrip("/")
+
+        # ── 아웃박스(로컬 SQLite) 초기화 ──
+        self._outbox = EdgeXOutbox(outbox_db_path)
+
+        # ── 재전송 워커 ──
+        self._retry_stop = threading.Event()
+        _retry_interval = int(os.environ.get("EDGEX_OUTBOX_RETRY_INTERVAL", "30"))
+        self._retry_interval = max(5, _retry_interval)
+        self._retry_thread = threading.Thread(
+            target=self._retry_worker,
+            daemon=True,
+            name="edgex-outbox-retry",
+        )
+        self._retry_thread.start()
 
     def publish(
         self,
@@ -182,7 +199,11 @@ class EdgeXForwarder(BaseMqttPublisher):
     def _post_to_core_data(
         self, device_id: str, table_name: str, data: dict, received_at: int
     ) -> None:
-        """EdgeX Core Data API에 Event를 POST합니다."""
+        """EdgeX Core Data API에 Event를 POST합니다.
+
+        전송 전 아웃박스에 'pending' 으로 저장하고, 성공 시 'sent' 로 업데이트합니다.
+        실패한 항목은 백그라운드 워커가 주기적으로 재시도합니다.
+        """
         profile_name = _TABLE_PROFILE_MAP.get(table_name)
         if not profile_name:
             return
@@ -192,8 +213,21 @@ class EdgeXForwarder(BaseMqttPublisher):
             return
 
         device_name = f"aiot-{device_id}"
-        # EdgeX v3: POST /api/v3/event/{serviceName}/{profileName}/{deviceName}/{sourceName}
-        url = f"{self._core_data_url}/api/v3/event/device-rest/{profile_name}/{device_name}/{table_name}"
+        url = (
+            f"{self._core_data_url}/api/v3/event/device-rest"
+            f"/{profile_name}/{device_name}/{table_name}"
+        )
+
+        # 아웃박스에 먼저 저장 (pending)
+        row_id = self._outbox.save_pending(device_id, table_name, url, event_body)
+
+        # Core Data 전송 시도
+        if self._do_post_edgex_event(url, event_body):
+            self._outbox.mark_sent(row_id)
+        # 실패 시 pending 유지 → retry_worker 가 재시도
+
+    def _do_post_edgex_event(self, url: str, event_body: dict) -> bool:
+        """EdgeX Core Data POST 실행. 성공 시 True 반환."""
         try:
             body = json.dumps(event_body).encode("utf-8")
             req = urllib.request.Request(
@@ -204,13 +238,66 @@ class EdgeXForwarder(BaseMqttPublisher):
             with urllib.request.urlopen(req, timeout=3) as resp:
                 if resp.status not in (200, 201, 207):
                     logger.warning("[EdgeXForwarder] Core Data POST 응답: %s %s", resp.status, url)
+                    return False
                 else:
-                    logger.debug("[EdgeXForwarder] Core Data push 완료: %s", device_name)
+                    logger.debug("[EdgeXForwarder] Core Data push 완료: %s", url)
+                    return True
         except urllib.error.HTTPError as e:
             err_body = e.read().decode(errors="replace")[:200]
             logger.warning("[EdgeXForwarder] Core Data HTTP 오류 %s: %s | %s", e.code, url, err_body)
         except urllib.error.URLError as e:
             logger.warning("[EdgeXForwarder] Core Data 연결 오류: %s", e)
+        return False
+
+    # ──────────────────────────────────────────────────────────────
+    # 아웃박스 재전송 워커
+    # ──────────────────────────────────────────────────────────────
+
+    def _retry_worker(self) -> None:
+        """백그라운드에서 pending 아웃박스 항목을 주기적으로 재전송합니다."""
+        logger.info("[Outbox] 재전송 워커 시작 (간격: %ds)", self._retry_interval)
+        while not self._retry_stop.wait(self._retry_interval):
+            try:
+                self._retry_pending_once()
+            except Exception as e:
+                logger.error("[Outbox] 재전송 워커 오류: %s", e, exc_info=True)
+
+    def _retry_pending_once(self) -> None:
+        """pending 항목 한 번 순회하여 재전송 시도."""
+        # TTL/최대재시도 초과 항목 정리
+        expired = self._outbox.expire_old_failed()
+        if expired:
+            logger.info("[Outbox] TTL/재시도 초과로 만료 처리: %d건", expired)
+
+        rows = self._outbox.get_pending()
+        if not rows:
+            return
+
+        sent_count = 0
+        for row in rows:
+            row_id    = row["id"]
+            url       = row["core_data_url"]
+            event     = row["edgex_event"]
+            retry_cnt = row["retry_count"]
+
+            self._outbox.increment_retry(row_id)
+            if self._do_post_edgex_event(url, event):
+                self._outbox.mark_sent(row_id)
+                sent_count += 1
+            else:
+                logger.debug(
+                    "[Outbox] 재전송 실패 id=%s, retry=%d", row_id, retry_cnt + 1
+                )
+
+        if sent_count:
+            logger.info("[Outbox] 재전송 성공: %d건 / %d건", sent_count, len(rows))
+
+    def stop(self) -> None:
+        """재전송 워커 및 아웃박스 종료."""
+        self._retry_stop.set()
+        if self._retry_thread and self._retry_thread.is_alive():
+            self._retry_thread.join(timeout=3)
+        self._outbox.close()
 
     # ──────────────────────────────────────────────────────────────
     # Alert API

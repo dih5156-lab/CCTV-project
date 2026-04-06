@@ -184,7 +184,7 @@ class _EventRepo:
                     ),
                 )
                 conn.commit()
-        except Exception as exc:
+        except sqlite3.Error as exc:
             logger.error("DB 저장 오류: %s", exc)
 
 
@@ -421,6 +421,10 @@ class ActionBridge:
             "cctv/rules/intrusion/critical",
             "cctv/ai/events/+/zone_entered",
             "cctv/ai/events/+/zone_dwelling",
+            # 센서 임계값 경보 토픽
+            "aiot/rules/sensor/tilt",
+            "aiot/rules/sensor/temperature",
+            "aiot/rules/sensor/vibration",
         }
 
         # ── 내부 헬퍼 ──────────────────────────────────────────────
@@ -435,6 +439,10 @@ class ActionBridge:
                 "cctv/rules/intrusion/critical",
                 "cctv/ai/events/+/zone_entered",
                 "cctv/ai/events/+/zone_dwelling",
+                # 센서 경보 토픽도 알람 대상
+                "aiot/rules/sensor/tilt",
+                "aiot/rules/sensor/temperature",
+                "aiot/rules/sensor/vibration",
             },
             alarm_cooldown_seconds=alarm_cooldown_seconds,
         )
@@ -714,11 +722,34 @@ class ActionBridge:
             if topic in (_CMD_TOPIC_MODE, _CMD_TOPIC_APPROVE, _CMD_TOPIC_REJECT):
                 self._dispatch_command(topic, payload)
             else:
+                # 센서 경보 토픽: device_id → camera_id, type 필드 정규화
+                if topic.startswith("aiot/rules/sensor/"):
+                    payload = self._normalize_sensor_payload(topic, payload)
                 self._handle_event(payload, topic=topic)
         except json.JSONDecodeError as exc:
             logger.error("JSON 파싱 실패: %s", exc)
         except Exception as exc:
             logger.error("Action 처리 오류: %s", exc, exc_info=True)
+
+    @staticmethod
+    def _normalize_sensor_payload(topic: str, payload: Dict) -> Dict:
+        """센서 경보 페이로드를 Action Bridge 공통 형식으로 변환합니다.
+
+        Kuiper 출력: {"dev_eui":..., "device_id":"factory-24", "type":"tilt_alert", ...}
+        공통 형식 : {"camera_id":"factory-24", "type":"tilt_alert", "source":"sensor", ...}
+        """
+        if not isinstance(payload, dict):
+            return {"type": f"{topic.split('/')[-1]}_alert", "source": "sensor", "camera_id": "unknown"}
+        normalized = dict(payload)
+        # device_id → camera_id 매핑
+        if "camera_id" not in normalized and "device_id" in normalized:
+            normalized["camera_id"] = normalized["device_id"]
+        # type이 없는 경우 토픽에서 추출 (aiot/rules/sensor/tilt → tilt_alert)
+        if "type" not in normalized:
+            sensor_kind = topic.split("/")[-1]
+            normalized["type"] = f"{sensor_kind}_alert"
+        normalized.setdefault("source", "sensor")
+        return normalized
 
     # ------------------------------------------------------------------
     # 라이프사이클

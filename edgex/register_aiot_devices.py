@@ -11,10 +11,15 @@ Device Service / Device Profile / Device 를 일괄 등록합니다.
 
 import argparse
 import json
+import logging
+import re
 import sys
 import urllib.error
 import urllib.request
+import uuid
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 # ── 설정 ─────────────────────────────────────────────────────────────
 # device-rest: already-running EdgeX device service that responds to MQTT validation.
@@ -64,44 +69,48 @@ def _api(url: str, method: str = "GET", body=None):
             return e.code, (json.loads(body) if body else {})
         except Exception:
             return e.code, {"raw": body.decode(errors="replace")}
-    except Exception as exc:
+    except (urllib.error.URLError, OSError) as exc:
         return 0, {"error": str(exc)}
 
 
-def register_device_service(base: str):
+def register_device_service(base: str, service_base_address: str = "http://device-rest:59986"):
+    """EdgeX에 device-rest 서비스를 등록한다.
+
+    *주의*: main()에서는 device-rest가 이미 실행 중인 것으로 간주하고
+    이 함수를 호출하지 않는다. 재등록이 필요한 경우에만 사용한다.
+    """
     url = f"{base}/api/v3/deviceservice"
     status, existing = _api(f"{base}/api/v3/deviceservice/name/{DEVICE_SERVICE_NAME}")
     if status == 200:
         # baseAddress 가 다르면 업데이트
         current_addr = existing.get("service", {}).get("baseAddress", "")
-        if current_addr != BASE_URL:
+        if current_addr != service_base_address:
             patch = [{"apiVersion": "v3", "service": {
                 "name": DEVICE_SERVICE_NAME,
-                "baseAddress": BASE_URL,
+                "baseAddress": service_base_address,
             }}]
             s2, _ = _api(url, "PATCH", patch)
-            print(f"  [UPD]  Device Service baseAddress updated → {BASE_URL} ({s2})")
+            logger.info("Device Service baseAddress updated \u2192 %s (%s)", service_base_address, s2)
         else:
-            print(f"  [SKIP] Device Service already exists: {DEVICE_SERVICE_NAME}")
+            logger.info("Device Service already exists: %s", DEVICE_SERVICE_NAME)
         return
 
     payload = [{ "apiVersion": "v3", "service": {
         "name": DEVICE_SERVICE_NAME,
         "description": "AIoT LoRa TLV Parser Device Service",
         "labels": ["aiot", "lora"],
-        "baseAddress": BASE_URL,
+        "baseAddress": service_base_address,
         "adminState": "UNLOCKED",
     }}]
     status, resp = _api(url, "POST", payload)
     if status in (200, 201, 207):
-        print(f"  [OK]   Device Service registered: {DEVICE_SERVICE_NAME}")
+        logger.info("Device Service registered: %s", DEVICE_SERVICE_NAME)
     else:
-        print(f"  [ERR]  Device Service: {status} {resp}")
+        logger.error("Device Service registration failed: %s %s", status, resp)
 
 
 def register_profiles(base: str):
     for profile_file in PROFILES_DIR.glob("aiot-*.yaml"):
-        import re
         content = profile_file.read_text()
         name_match = re.search(r'^name:\s*"?([^"\n]+)"?', content, re.MULTILINE)
         if not name_match:
@@ -110,11 +119,10 @@ def register_profiles(base: str):
 
         status, _ = _api(f"{base}/api/v3/deviceprofile/name/{profile_name}")
         if status == 200:
-            print(f"  [SKIP] Profile already exists: {profile_name}")
+            logger.info("Profile already exists (skipping): %s", profile_name)
             continue
 
         url = f"{base}/api/v3/deviceprofile/uploadfile"
-        import http.client, mimetypes, os, uuid
         boundary = uuid.uuid4().hex
         body_parts = (
             f"--{boundary}\r\n"
@@ -137,22 +145,22 @@ def register_profiles(base: str):
             resp = json.loads(e.read())
 
         if status in (200, 201, 207):
-            print(f"  [OK]   Profile registered: {profile_name}")
+            logger.info("Profile registered: %s", profile_name)
         else:
-            print(f"  [ERR]  Profile {profile_name}: {status} {resp}")
+            logger.error("Profile registration failed \u2014 %s: %s %s", profile_name, status, resp)
 
 
 def register_devices(base: str):
     for device_id, primary_table in DEVICES:
         profile_name = TABLE_PROFILE_MAP.get(primary_table)
         if not profile_name:
-            print(f"  [WARN] Unknown table {primary_table} for {device_id}")
+            logger.warning("Unknown table %s for device %s \u2014 skipping", primary_table, device_id)
             continue
 
         edgex_device_name = f"aiot-{device_id}"
         status, _ = _api(f"{base}/api/v3/device/name/{edgex_device_name}")
         if status == 200:
-            print(f"  [SKIP] Device already exists: {edgex_device_name}")
+            logger.info("Device already exists (skipping): %s", edgex_device_name)
             continue
 
         payload = [{"apiVersion": "v3", "device": {
@@ -172,9 +180,9 @@ def register_devices(base: str):
         }}]
         status, resp = _api(f"{base}/api/v3/device", "POST", payload)
         if status in (200, 201, 207):
-            print(f"  [OK]   Device registered: {edgex_device_name} ({profile_name})")
+            logger.info("Device registered: %s (%s)", edgex_device_name, profile_name)
         else:
-            print(f"  [ERR]  Device {edgex_device_name}: {status} {resp}")
+            logger.error("Device registration failed \u2014 %s: %s %s", edgex_device_name, status, resp)
 
 
 def main():
@@ -183,24 +191,29 @@ def main():
     args = parser.parse_args()
     base = args.metadata_url.rstrip("/")
 
-    print(f"\n=== EdgeX AIoT Device Registration ===")
-    print(f"Metadata URL: {base}\n")
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)-8s %(message)s",
+    )
 
-    print("[1] Device Service: using existing 'device-rest' (skip registration)")
+    logger.info("=== EdgeX AIoT Device Registration ===")
+    logger.info("Metadata URL: %s", base)
+
+    logger.info("[1] Device Service: using existing 'device-rest' (skip registration)")
     # Verify device-rest is reachable
     s, _ = _api(f"{base}/api/v3/deviceservice/name/device-rest")
     if s != 200:
-        print(f"  [ERR]  device-rest not found in metadata (status {s}) — is the service running?")
+        logger.error("device-rest not found in metadata (status %s) — is the service running?", s)
         sys.exit(1)
-    print("  [OK]   device-rest service confirmed in metadata")
+    logger.info("device-rest service confirmed in metadata")
 
-    print("\n[2] Device Profiles")
+    logger.info("[2] Device Profiles")
     register_profiles(base)
 
-    print("\n[3] Devices")
+    logger.info("[3] Devices")
     register_devices(base)
 
-    print("\n=== Done ===")
+    logger.info("=== Done ===")
 
 
 if __name__ == "__main__":
