@@ -1,489 +1,33 @@
-"""main.py - 다중 카메라 CCTV 시스템 진입점"""
+"""CCTV 시스템 CLI 진입점."""
 
-import argparse
-import atexit
-import json
 import logging
-import os
-import signal
-import sys
-import threading
-import time
-import traceback
-from pathlib import Path
 
-# ── OpenCV 환경 설정 (모든 import보다 먼저) ───────────────────────
-os.environ.setdefault('OPENCV_FFMPEG_CAPTURE_OPTIONS', 'rtsp_transport;tcp')
-os.environ['OPENCV_LOG_LEVEL'] = 'ERROR'
-# Windows에서 MSMF 백엔드 비활성화 (cap_msmf.cpp 에러 및 프리즈 방지)
-# OpenCV import 전에 설정해야 효과 있음
-if sys.platform == 'win32':
-    os.environ.setdefault('OPENCV_VIDEOIO_PRIORITY_MSMF', '0')
-
-# ── Jetson Orin 통합 GPU cuDNN 비활성화 ────────────────────────────
-# Jetson Orin nvgpu(통합 GPU)는 cuDNN v8/v9 conv2d 엔진을 찾지 못하는
-# PyTorch 호환성 문제가 있음. cuDNN을 끄고 native CUDA 커널을 사용.
-# 해당 에러: RuntimeError: GET was unable to find an engine to execute this computation
-# ※ TensorRT .engine 파일 사용 시에는 cuDNN을 거치지 않으므로 비활성화 불필요
-try:
-    import torch
-    if torch.cuda.is_available():
-        device_name = torch.cuda.get_device_name(0).lower()
-        if "orin" in device_name or "tegra" in device_name or "nvgpu" in device_name:
-            torch.backends.cudnn.enabled = False
-            import logging as _log
-            _log.getLogger(__name__).info(
-                "Jetson Orin 통합 GPU 감지 → cuDNN 비활성화 (TensorRT .engine 사용 권장)"
-            )
-except Exception:
-    pass
-
-from src.core import VideoProcessor
+from src.bootstrap.cli import apply_args_to_config, build_parser, validate_args
+from src.bootstrap.runtime import (
+    build_single_source_camera,
+    configure_runtime_environment,
+    load_camera_list,
+    register_shutdown_handlers,
+    setup_logging,
+    start_processor_runtime,
+)
 from src.config import AppConfig
-from src.services.zone_api import start_zone_api_server
-from src.utils.zone_drawer import ZoneDrawer
-
-# ── 로거 설정 ──────────────────────────────────────────────────────
-import io
-
-# Windows 콘솔 코드페이지를 UTF-8(65001)로 변경 + Python 스트림 인코딩 통일
-if sys.platform == 'win32':
-    import ctypes
-    ctypes.windll.kernel32.SetConsoleOutputCP(65001)
-    ctypes.windll.kernel32.SetConsoleCP(65001)
-
-for _stream in (sys.stdout, sys.stderr):
-    if hasattr(_stream, 'reconfigure'):
-        _stream.reconfigure(encoding='utf-8', errors='replace')
-
-import logging.handlers as _log_handlers
 
 logger = logging.getLogger(__name__)
 
 SEPARATOR = "=" * 60
 
 
-def _setup_logging(log_dir: str = "logs") -> None:
-    """루트 로거에 콘솔 + 로테이팅 파일 핸들러를 등록한다.
-
-    main() 내부에서 단 한 번만 호출해야 한다.
-    import 시점에 실행되면 테스트 등 다른 진입점에서도
-    logs/ 디렉토리와 핸들러가 부작용으로 생성된다.
-    """
-    log_path = Path(log_dir)
-    log_path.mkdir(exist_ok=True)
-
-    root = logging.getLogger()
-    # 이미 핸들러가 등록된 경우 중복 추가 방지 (pytest 등 재진입 시)
-    if root.handlers:
-        return
-
-    root.setLevel(logging.INFO)
-    fmt = logging.Formatter(
-        '%(asctime)s [%(levelname)s] %(name)s: %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S',
-    )
-    console = logging.StreamHandler()
-    console.setFormatter(fmt)
-    root.addHandler(console)
-
-    file_handler = _log_handlers.RotatingFileHandler(
-        log_path / 'cctv.log',
-        maxBytes=10 * 1024 * 1024,  # 10MB
-        backupCount=5,
-        encoding='utf-8',
-    )
-    file_handler.setFormatter(fmt)
-    root.addHandler(file_handler)
-
-
-# ──────────────────────────────────────────────────────────────────
-# 카메라 설정 로드
-# ──────────────────────────────────────────────────────────────────
-
-def load_camera_list(path: str) -> list[dict]:
-    """카메라 설정 파일에서 목록 로드"""
-    p = Path(path)
-    if not p.exists():
-        logger.error("카메라 설정 파일을 찾을 수 없습니다: %s", path)
-        return []
-    if p.stat().st_size == 0:
-        logger.error("카메라 설정 파일이 비어있습니다: %s", path)
-        return []
-
-    try:
-        cameras = json.loads(p.read_text(encoding='utf-8'))
-    except json.JSONDecodeError as e:
-        logger.error("%s JSON 파싱 오류: %s", path, e)
-        return []
-
-    if not isinstance(cameras, list):
-        logger.error("잘못된 카메라 설정 형식 (리스트 필요): %s", path)
-        return []
-
-    valid_cameras = []
-    for idx, cam in enumerate(cameras):
-        if not isinstance(cam, dict):
-            logger.warning("인덱스 %d의 카메라 항목 건너뜀 (딕셔너리가 아님)", idx)
-            continue
-        if 'id' not in cam or 'source' not in cam:
-            logger.warning("인덱스 %d의 카메라 건너뜀 ('id' 또는 'source' 누락)", idx)
-            continue
-        # source 타입 및 값 검증
-        source = cam['source']
-        cam_id = cam['id']
-        if isinstance(source, str):
-            if source.isdigit():
-                pass  # 웹캠 인덱스 (문자열 형태)
-            elif source.startswith(('rtsp://', 'rtmp://', 'http://', 'https://')):
-                pass  # 유효한 스트림 URL
-            elif Path(source).suffix.lower() in {'.mp4', '.avi', '.mkv', '.mov', '.m4v'}:
-                if not Path(source).exists():
-                    logger.warning(
-                        "[%s] 비디오 파일을 찾을 수 없습니다: %s — 건너뜀", cam_id, source
-                    )
-                    continue
-            else:
-                logger.warning(
-                    "[%s] 알 수 없는 source 형식: %s — 그대로 사용 (로컬 장치일 수 있음)",
-                    cam_id, source,
-                )
-        elif not isinstance(source, int):
-            logger.warning(
-                "[%s] source는 문자열 또는 정수여야 합니다 (받은 타입: %s) — 건너뜀",
-                cam_id, type(source).__name__,
-            )
-            continue
-        valid_cameras.append(cam)
-
-    logger.info("%s에서 %d개 카메라 로드됨", path, len(valid_cameras))
-    return valid_cameras
-
-
-# ──────────────────────────────────────────────────────────────────
-# 프로세서 실행
-# ──────────────────────────────────────────────────────────────────
-
-def _collect_active_cameras(camera_list: list[dict], processor: VideoProcessor) -> list[tuple]:
-    """활성화된 카메라만 걸러 (cam_id, source, detections, model_paths, zones_data) 튜플 리스트로 반환"""
-    active: list[tuple] = []
-    for cam in camera_list:
-        if not cam.get('enabled', True):
-            logger.info("카메라 비활성화됨: %s (%s)", cam.get('id'), cam.get('name', 'N/A'))
-            continue
-        cam_id = cam.get('id')
-        source = cam.get('source')
-        if not cam_id or source is None:
-            logger.warning("id 또는 source 누락 - 건너뜀: %s", cam)
-            continue
-        if isinstance(source, str) and source.isdigit():
-            source = int(source)
-        active.append((
-            cam_id,
-            source,
-            cam.get('model_settings') or cam.get('detections') or cam.get('ai_models'),  # 하위 호환
-            cam.get('model_paths') or None,
-            cam.get('zones') or None,
-        ))
-    return active
-
-
-def _connect_cameras_parallel(active_cams: list[tuple], processor: VideoProcessor) -> dict[str, bool]:
-    """카메라 연결을 병렬로 수행하고 결과 딕셔너리 반환"""
-    results: dict[str, bool] = {}
-    lock = threading.Lock()
-
-    def _try_add(cam_id: str, source, detections, model_paths, zones_data) -> None:
-        ok = processor.add_camera(
-            cam_id, source,
-            detections=detections, model_paths=model_paths, zones_data=zones_data,
-        )
-        with lock:
-            results[cam_id] = ok
-
-    CONNECT_TIMEOUT = 30  # 카메라 1대당 최대 연결 대기 시간 (초)
-
-    threads = [
-        threading.Thread(target=_try_add, args=(cid, src, det, mp, zones), daemon=True)
-        for cid, src, det, mp, zones in active_cams
-    ]
-    for t in threads:
-        t.start()
-    try:
-        for t in threads:
-            t.join(timeout=CONNECT_TIMEOUT)
-            if t.is_alive():
-                cam_id = active_cams[threads.index(t)][0]
-                logger.error(
-                    "[%s] 카메라 연결이 %d초 초과 → 건너뜀 (RTSP 응답 없음)",
-                    cam_id, CONNECT_TIMEOUT,
-                )
-                with lock:
-                    results.setdefault(cam_id, False)
-    except KeyboardInterrupt:
-        logger.info("카메라 연결 중단 (Ctrl+C)")
-        raise
-
-    return results
-
-
-def _initial_retry(active_cams: list[tuple], processor: VideoProcessor, max_attempts: int = 3) -> int:
-    """연결 성공 카메라가 없을 때 블로킹 재시도 (최대 max_attempts회)
-
-    반환값:
-        추가 성공한 카메라 수
-    """
-    for attempt in range(1, max_attempts + 1):
-        logger.info("초기 연결 재시도 %d/%d (30초 대기)...", attempt, max_attempts)
-        try:
-            time.sleep(30)
-        except KeyboardInterrupt:
-            logger.info("초기 재시도 중단 (Ctrl+C)")
-            raise
-        for cam_id, source, detections, model_paths, zones_data in active_cams:
-            if cam_id not in processor.cameras and processor.add_camera(
-                cam_id, source,
-                detections=detections, model_paths=model_paths, zones_data=zones_data,
-            ):
-                logger.info("재시도 성공: %s", cam_id)
-                return 1
-    return 0
-
-
-def start_processor(
-    camera_list: list[dict],
-    cfg: AppConfig,
-    cameras_json_path: str = 'cameras.json',
-    api_port: int = 0,
-    zone_presets_path: str = 'zone_presets.json',
-    _proc_ref: list | None = None,
-) -> None:
-    """카메라와 함께 비디오 프로세서를 시작
-
-    매개변수:
-        camera_list: 카메라 목록
-        cfg: 애플리케이션 설정
-        cameras_json_path: cameras.json 경로 (구역 API 저장용)
-        api_port: Zone API HTTP 포트 (0이면 비활성화)
-        zone_presets_path: 구역 프리셋 저장 파일 경로 (기본: zone_presets.json)
-        _proc_ref: atexit 강제 해제용 processor 참조 컨테이너 (내부용)
-    """
-    if not camera_list:
-        logger.error("카메라가 제공되지 않았습니다. 프로세서를 시작할 수 없습니다.")
-        return
-
-    processor = VideoProcessor(cfg)
-    if _proc_ref is not None:
-        _proc_ref.append(processor)  # atexit 핸들러에서 참조할 수 있도록 저장
-
-    active_cams = _collect_active_cameras(camera_list, processor)
-    if not active_cams:
-        logger.error("활성화된 카메라가 없습니다.")
-        return
-
-    results = _connect_cameras_parallel(active_cams, processor)
-
-    added_count = 0
-    for cam_id, source, _det, _mp, _zones in active_cams:
-        if results.get(cam_id):
-            added_count += 1
-            logger.info("카메라 추가 성공: %s (%s)", cam_id, source)
-        else:
-            logger.warning("카메라 연결 실패: %s (%s) → 백그라운드 재시도 예약", cam_id, source)
-            processor.enqueue_camera_retry(cam_id, source, delay_seconds=30)
-
-    if added_count == 0:
-        logger.warning("현재 연결된 카메라가 없습니다. 초기 재연결을 시도합니다.")
-        added_count += _initial_retry(active_cams, processor)
-
-    if added_count == 0:
-        logger.error("카메라 연결에 최종 실패했습니다. 종료합니다.")
-        return
-
-    logger.info("%d개 카메라로 프로세서 시작 중...", added_count)
-
-    if api_port > 0:
-        start_zone_api_server(processor, cameras_json_path, api_port,
-                              presets_path=zone_presets_path,
-                              event_log_path="alert_api_events.jsonl")
-
-    if cfg.display:
-        drawer = ZoneDrawer(processor, cameras_json_path)
-        processor.set_zone_drawer(drawer)
-        logger.info("구역 그리기 모드 사용 가능: 디스플레이 창에서 'd' 키를 누르세요")
-
-    try:
-        processor.start()
-        logger.info("프로세서가 시작되었습니다. 중지하려면 Ctrl+C를 누르세요.")
-        _last_stats = time.time()
-        while processor.running and not processor.stop_event.is_set():
-            time.sleep(0.5)
-            if time.time() - _last_stats >= 10:
-                processor.print_stats()
-                _last_stats = time.time()
-        # 디스플레이 단에서 'q' 키 또는 창 닫기로 stop_event가 세트된 경우
-        if processor.stop_event.is_set() and processor.running:
-            logger.info("디스플레이 종료 감지 → 프로세서 중지")
-    except KeyboardInterrupt:
-        logger.info("사용자가 중단함 (Ctrl+C)")
-    except Exception as e:
-        logger.error("처리 중 오류 발생: %s", e)
-        traceback.print_exc()
-    finally:
-        logger.info("프로세서 중지 중...")
-        processor.stop()
-        logger.info("프로세서가 중지되었습니다.")
-
-
-# ──────────────────────────────────────────────────────────────────
-# 인자 → 설정 적용
-# ──────────────────────────────────────────────────────────────────
-
-def apply_args_to_config(args: argparse.Namespace, config: AppConfig) -> AppConfig:
-    """명령줄 인자를 AppConfig에 적용"""
-    if args.helmet_model:
-        config.models.helmet_model = args.helmet_model
-    if args.pose_model:
-        config.models.pose_model = args.pose_model
-
-    config.detection.helmet_confidence = args.confidence
-    config.detection.pose_confidence   = args.pose_confidence
-    config.detection.device            = args.device
-    config.detection.target_fps        = args.fps
-    config.processing.frame_skip       = args.frame_skip
-    config.events.debounce_enabled     = not args.no_debounce
-    config.events.debounce_seconds     = args.debounce
-    config.display                     = args.display
-    config.zone_detection              = args.zone_detection
-    config.zones_config                = args.zones_config
-    config.collect_dataset             = args.collect_dataset
-    config.dataset_dir                 = args.dataset_dir
-    config.mqtt.broker                 = args.mqtt_broker
-    config.mqtt.port                   = args.mqtt_port
-    config.mqtt.topic_prefix           = args.mqtt_topic_prefix
-
-    return config
-
-
-# ──────────────────────────────────────────────────────────────────
-# 인자 파서 구성
-# ──────────────────────────────────────────────────────────────────
-
-def _build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        description='CCTV 헬멧 착용 및 낙상 감지 시스템',
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-사용 예시:
-  # 웹캠으로 실행 (기본)
-  python main.py --display
-
-  # 비디오 파일로 테스트
-  python main.py --video sample.mp4 --display
-
-  # RTSP 다중 카메라 실행
-  python main.py --cameras cameras.json
-
-  # CUDA 사용 및 데이터셋 수집
-  python main.py --device cuda --collect-dataset --dataset-dir ./my_data
-        """,
-    )
-
-    # 입력 소스
-    g = parser.add_argument_group('입력 소스')
-    g.add_argument('--cameras', '-c', default=None,
-                   help='카메라 목록 JSON 파일 경로 (없으면 단일 소스 사용)')
-    g.add_argument('--video', default=None,
-                   help='비디오 파일 경로 (지정하지 않으면 웹캠 0번 사용)')
-
-    # 모델 설정
-    g = parser.add_argument_group('모델 설정')
-    g.add_argument('--helmet-model', default=None,
-                   help='헬멧 감지 모델 경로 (기본: config.py에서 자동 탐지)')
-    g.add_argument('--pose-model', default=None,
-                   help='Pose 모델 경로 (기본: yolov8n-pose.pt)')
-    g.add_argument('--device', default='cpu', choices=['cpu', 'cuda'],
-                   help='실행 디바이스 (기본: cpu)')
-    g.add_argument('--confidence', type=float, default=0.5,
-                   help='헬멧 감지 신뢰도 임계값 0.0-1.0 (기본: 0.5)')
-    g.add_argument('--pose-confidence', type=float, default=0.3,
-                   help='사람 감지 신뢰도 임계값 0.0-1.0 (기본: 0.3)')
-
-    # 성능
-    g = parser.add_argument_group('성능')
-    g.add_argument('--fps', type=int, default=30,
-                   help='목표 FPS (기본: 30)')
-    g.add_argument('--frame-skip', type=int, default=3,
-                   help='AI 추론을 매 N프레임마다 실행 (기본: 3, 권장: 2-5)')
-    g.add_argument('--display', action='store_true',
-                   help='화면 표시 활성화')
-
-    # MQTT
-    g = parser.add_argument_group('MQTT 출력')
-    g.add_argument('--mqtt-broker', default='localhost',
-                   help='MQTT 브로커 호스트 (기본: localhost)')
-    g.add_argument('--mqtt-port', type=int, default=1883,
-                   help='MQTT 브로커 포트 (기본: 1883)')
-    g.add_argument('--mqtt-topic-prefix', default='cctv/ai/events',
-                   help='MQTT 이벤트 토픽 prefix (기본: cctv/ai/events)')
-
-    # 이벤트
-    g = parser.add_argument_group('이벤트 설정')
-    g.add_argument('--no-debounce', action='store_true',
-                   help='이벤트 디바운싱 비활성화')
-    g.add_argument('--debounce', type=float, default=3.0,
-                   help='디바운싱 간격(초) (기본: 3.0)')
-
-    # 위험 구역
-    g = parser.add_argument_group('위험 구역 탐지')
-    g.add_argument('--zone-detection', action='store_true',
-                   help='위험 구역 감지 활성화')
-    g.add_argument('--zones-config', default='zones_config.json',
-                   help='구역 설정 JSON 파일 경로 (기본: zones_config.json)')
-
-    # 데이터셋
-    g = parser.add_argument_group('데이터셋 수집')
-    g.add_argument('--collect-dataset', action='store_true',
-                   help='탐지 데이터 자동 수집')
-    g.add_argument('--dataset-dir', default='./collected_data',
-                   help='데이터셋 저장 디렉터리 (기본: ./collected_data)')
-    # Zone API
-    g = parser.add_argument_group('Zone 설정 API')
-    g.add_argument('--api-port', type=int, default=0,
-                   help='위험구역 설정 REST API 포트 (기본: 비활성화, 예: 8765)')
-    g.add_argument('--zone-presets', default='zone_presets.json', metavar='FILE',
-                   help='구역 프리셋 저장 파일 경로 (기본: zone_presets.json)')
-    return parser
-
-
-def _validate_args(args: argparse.Namespace, parser: argparse.ArgumentParser) -> None:
-    """인자 값 범위 검증"""
-    if not (0.0 <= args.confidence <= 1.0):
-        parser.error("--confidence 값은 0.0에서 1.0 사이여야 합니다")
-    if not (0.0 <= args.pose_confidence <= 1.0):
-        parser.error("--pose-confidence 값은 0.0에서 1.0 사이여야 합니다")
-    if args.fps <= 0:
-        parser.error("--fps 값은 양수여야 합니다")
-    if args.mqtt_port <= 0:
-        parser.error("--mqtt-port 값은 양수여야 합니다")
-    if args.video and not Path(args.video).exists():
-        parser.error(f"비디오 파일을 찾을 수 없습니다: {args.video}")
-
-
-# ──────────────────────────────────────────────────────────────────
-# 메인 진입점
-# ──────────────────────────────────────────────────────────────────
-
 def main() -> None:
-    """메인 진입점"""
-    _setup_logging()          # ← import-time 부작용 제거: 여기서만 로거 초기화
+    """메인 진입점."""
+    configure_runtime_environment()
+    setup_logging()
 
-    parser = _build_parser()
+    parser = build_parser()
     args = parser.parse_args()
-    _validate_args(args, parser)
+    validate_args(args, parser)
 
     cfg = apply_args_to_config(args, AppConfig.from_env())
-
     if not cfg.validate():
         logger.warning("설정 검증 실패. 일부 기능이 작동하지 않을 수 있습니다.")
 
@@ -494,46 +38,22 @@ def main() -> None:
     logger.info(SEPARATOR)
 
     if args.cameras:
-        cams = load_camera_list(args.cameras)
+        cameras = load_camera_list(args.cameras)
     else:
-        source = args.video if args.video else 0
-        source_name = 'video' if args.video else 'webcam'
-        cams = [{'id': source_name, 'source': source}]
-        logger.info("단일 소스 모드: %s (%s)", source_name, source)
+        cameras = build_single_source_camera(args.video)
 
-    # 프로세서 참조를 보관해 atexit/signal에서 강제 해제
-    _proc_ref: list = []
+    processor_refs: list = []
+    register_shutdown_handlers(processor_refs)
 
-    def _release_all():
-        """프로세스가 어떤 경로로 종료되든 카메라를 반드시 해제한다."""
-        import cv2
-        if _proc_ref:
-            try:
-                _proc_ref[0].release_all_cameras()
-            except Exception:
-                pass
-        try:
-            cv2.destroyAllWindows()
-        except cv2.error:
-            pass  # 헤드리스 환경에서는 GUI 함수 무시
-
-    atexit.register(_release_all)
-
-    def _sig_handler(signum, frame):
-        logger.info("시그널 %s 수신 → 종료", signum)
-        _release_all()
-        sys.exit(0)
-
-    signal.signal(signal.SIGTERM, _sig_handler)
-    if sys.platform != 'win32':
-        signal.signal(signal.SIGHUP, _sig_handler)
-
-    cameras_json_path = args.cameras or 'cameras.json'
-    start_processor(cams, cfg, cameras_json_path=cameras_json_path,
-                    api_port=args.api_port, zone_presets_path=args.zone_presets,
-                    _proc_ref=_proc_ref)
+    start_processor_runtime(
+        cameras,
+        cfg,
+        cameras_json_path=args.cameras or "cameras.json",
+        api_port=args.api_port,
+        zone_presets_path=args.zone_presets,
+        processor_refs=processor_refs,
+    )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
-

@@ -1,4 +1,4 @@
-"""센서 uplink를 표준 운영 이벤트로 변환해 MQTT로 발행하는 브리지."""
+"""센서 업링크를 표준 운영 이벤트로 변환해 MQTT로 발행하는 브리지."""
 
 from __future__ import annotations
 
@@ -7,14 +7,14 @@ from typing import Any, Dict, List, Mapping, Optional
 
 from ..core.sensor_detection import SensorAlertEvent, SensorEventDetector
 from ..devices.sensor_device import SensorReading
-from ..protocols.mqtt import MqttEventPublisher
+from ..protocols.mqtt_publisher import MqttEventPublisher
 from ..protocols.tlv_decoder import GoTLVDecoderClient
 
 logger = logging.getLogger(__name__)
 
 
 class SensorBridgeService:
-    """Go TLV decode 결과를 Python 규칙 엔진으로 판정하고 내부 MQTT로 발행한다."""
+    """Go TLV 디코드 결과를 Python 규칙 엔진으로 판정하고 내부 MQTT로 발행한다."""
 
     def __init__(
         self,
@@ -50,14 +50,14 @@ class SensorBridgeService:
             if self.publisher.publish_event(payload):
                 published_events.append(payload)
                 logger.info(
-                    "Sensor event 발행 성공: camera_id=%s type=%s severity=%s",
+                    "센서 이벤트 발행 성공: camera_id=%s type=%s severity=%s",
                     payload["camera_id"],
                     payload["type"],
                     payload["severity"],
                 )
             else:
                 logger.warning(
-                    "Sensor event 발행 실패: camera_id=%s type=%s",
+                    "센서 이벤트 발행 실패: camera_id=%s type=%s",
                     payload["camera_id"],
                     payload["type"],
                 )

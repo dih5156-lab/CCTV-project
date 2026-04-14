@@ -59,6 +59,10 @@ def main() -> None:
             "ALARM_TOPICS",
             "cctv/rules/intrusion/persisted,"
             "cctv/rules/intrusion/critical,"
+            "cctv/ai/events/+/zone_entered,"
+            "cctv/ai/events/+/zone_dwelling,"
+            "cctv/ai/events/+/zone_object_detected,"
+            "cctv/ai/events/+/crowd_warning,"
             "aiot/rules/sensor/tilt,"
             "aiot/rules/sensor/temperature,"
             "aiot/rules/sensor/vibration",

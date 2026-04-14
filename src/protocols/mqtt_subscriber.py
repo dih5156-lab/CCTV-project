@@ -9,13 +9,13 @@ from typing import Optional, Sequence
 
 import paho.mqtt.client as mqtt
 
-from ._mqtt_factory import create_mqtt_client
+from ._mqtt_factory import create_mqtt_client, RECONNECT_MIN_DELAY, RECONNECT_MULTIPLIER
 
 logger = logging.getLogger(__name__)
 
-_RECONNECT_MIN_DELAY = 1.0
-_RECONNECT_MAX_DELAY = 30.0
-_RECONNECT_MULTIPLIER = 2.0
+_RECONNECT_MIN_DELAY = RECONNECT_MIN_DELAY
+_RECONNECT_MAX_DELAY = 30.0           # subscriber: 최대 30초
+_RECONNECT_MULTIPLIER = RECONNECT_MULTIPLIER
 
 
 class MqttTopicSubscriber:

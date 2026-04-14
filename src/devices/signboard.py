@@ -35,6 +35,8 @@ CLASS_COLOR_MAP: Dict[str, int] = {
     "head":          1,   # 안전모 미착용 → 빨강
     "fall_detected": 5,   # 낙상 → 자주
     "danger_zone":   1,   # 위험구역 → 빨강
+    "zone_object":   3,   # 감시구역 객체 → 노랑
+    "crowd_warning": 5,   # 인파 밀집 → 자주
     "intrusion":     1,   # 침입 → 빨강
     "tilt_alert":        1,   # 기울기 이상 → 빨강
     "temperature_alert":  5,   # 온도 이상 → 자주
@@ -155,6 +157,8 @@ _EVENT_MESSAGES: Dict[str, str] = {
     "head":          "안전모 미착용 감지",
     "fall_detected": "낙상 감지 - 즉시 확인",
     "danger_zone":   "위험 구역 침입 감지",
+    "zone_object":   "감시 구역 객체 감지",
+    "crowd_warning": "인파 밀집 경고 - 혼잡 주의",
     "intrusion":     "위험 구역 침입 감지",
     "tilt_alert":        "기울기 이상 감지",
     "temperature_alert":  "온도 이상 감지",

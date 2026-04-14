@@ -88,25 +88,6 @@ def _build_processor(zone_manager=None, update_zones_ok=True) -> MagicMock:
     proc = MagicMock()
     proc.zone_manager = zone_manager
     proc.update_zones = MagicMock(return_value=update_zones_ok)
-    proc.get_camera_model_settings = MagicMock(
-        side_effect=lambda camera_id: {
-            "camera_1": {"use_pose": True, "use_helmet": True, "use_person": False},
-            "camera_2": {"use_pose": False, "use_helmet": False, "use_person": False},
-        }.get(camera_id)
-    )
-    def _update_model_settings(camera_id, settings, *_):
-        if camera_id != "camera_1":
-            return None
-        use_helmet = bool(settings.get("use_helmet", settings.get("helmet", True)))
-        use_pose = bool(settings.get("use_pose", settings.get("pose", True))) or use_helmet
-        return {
-            "use_pose": use_pose,
-            "use_helmet": use_helmet,
-            "use_person": bool(settings.get("use_person", settings.get("person", False))),
-        }
-    proc.update_camera_model_settings = MagicMock(
-        side_effect=_update_model_settings
-    )
     return proc
 
 
@@ -133,18 +114,7 @@ def _live_server(processor, cameras_json_path: str, port: int = 0):
     return server
 
 
-def _request(method: str, url: str, body: dict | None = None):
-    """urllib 래퍼 — (status_code, dict) 반환."""
-    data = json.dumps(body).encode("utf-8") if body is not None else None
-    req = urllib.request.Request(url, data=data, method=method)
-    if data:
-        req.add_header("Content-Type", "application/json")
-        req.add_header("Content-Length", str(len(data)))
-    try:
-        with urllib.request.urlopen(req) as resp:
-            return resp.status, json.loads(resp.read().decode("utf-8"))
-    except urllib.error.HTTPError as e:
-        return e.code, json.loads(e.read().decode("utf-8"))
+from tests.conftest import http_request as _request
 
 
 # ===========================================================================
@@ -257,29 +227,11 @@ class TestZoneApiGET:
         cam1 = next(c for c in body if c["id"] == "camera_1")
         assert cam1["zones"] == []
 
-    def test_get_cameras_includes_model_settings(self):
-        code, body = _request("GET", f"{self.base}/cameras")
-        assert code == 200
-        cam1 = next(c for c in body if c["id"] == "camera_1")
-        assert cam1["model_settings"]["use_pose"] is True
-        assert cam1["model_settings"]["use_helmet"] is True
-
     def test_get_specific_camera_zones_from_memory(self):
         code, body = _request("GET", f"{self.base}/cameras/camera_2/zones")
         assert code == 200
         assert body["camera_id"] == "camera_2"
         assert len(body["zones"]) == 1
-
-    def test_get_specific_camera_models(self):
-        code, body = _request("GET", f"{self.base}/cameras/camera_1/models")
-        assert code == 200
-        assert body["camera_id"] == "camera_1"
-        assert body["model_settings"]["use_pose"] is True
-
-    def test_get_specific_camera_models_404(self):
-        code, body = _request("GET", f"{self.base}/cameras/unknown/models")
-        assert code == 404
-        assert "error" in body
 
     def test_get_specific_camera_zones_fallback(self):
         """ZoneManager에 없는 camera_1 은 cameras.json 에서 조회해야 한다."""
@@ -380,34 +332,6 @@ class TestZoneApiPOST:
         )
         assert code == 500
 
-    def test_post_camera_models_updates_settings(self):
-        code, body = _request(
-            "POST",
-            f"{self.base}/cameras/camera_1/models",
-            {"use_pose": False, "use_helmet": True},
-        )
-        assert code == 200
-        assert body["camera_id"] == "camera_1"
-        self.proc.update_camera_model_settings.assert_called()
-
-    def test_post_camera_models_requires_payload(self):
-        code, body = _request(
-            "POST",
-            f"{self.base}/cameras/camera_1/models",
-            {"foo": "bar"},
-        )
-        assert code == 400
-        assert "error" in body
-
-    def test_post_camera_models_unknown_camera(self):
-        code, body = _request(
-            "POST",
-            f"{self.base}/cameras/unknown/models",
-            {"use_pose": True},
-        )
-        assert code == 404
-        assert "error" in body
-
     def test_post_unknown_path_returns_404(self):
         code, _ = _request("POST", f"{self.base}/other", {"zones": []})
         assert code == 404
@@ -484,23 +408,12 @@ class TestZoneApiRouting:
         code, _ = _request("GET", f"{self.base}{path}")
         assert code == 404
 
-    def test_health_returns_200(self):
-        code, body = _request("GET", f"{self.base}/health")
-        assert code == 200
-        assert "status" in body
-
-    def test_root_returns_html(self):
-        import urllib.request
-        resp = urllib.request.urlopen(f"{self.base}/")
-        assert resp.status == 200
-        assert b"text/html" in resp.headers.get("Content-Type", "").encode()
-
     def test_start_zone_api_server_starts_thread(self, cameras_json: Path):
         """start_zone_api_server 가 데몬 스레드를 생성해 서버를 기동해야 한다."""
         proc = _build_processor()
         try:
             # _ThreadingHTTPServer 를 패치
-            with patch("src.services.zone_api._ThreadingHTTPServer") as mock_srv_cls:
+            with patch("src.services.zone_api.ThreadingApiServer") as mock_srv_cls:
                 mock_srv = MagicMock()
                 mock_srv_cls.return_value = mock_srv
                 start_zone_api_server(proc, str(cameras_json), 19999)

@@ -1,6 +1,7 @@
 """감지 이벤트 추적 및 누적 필터링 공통 헬퍼 모듈."""
 
 import logging
+import math
 import time
 from collections import deque
 from threading import Lock
@@ -10,6 +11,9 @@ from .events import DetectionEvent
 from ..utils.geometry import calculate_iou
 
 logger = logging.getLogger(__name__)
+
+_DIRECTION_HISTORY_SIZE = 5       # 방향 계산에 사용하는 최대 프레임 수
+_DIRECTION_SPEED_THRESHOLD = 2.0  # px/frame 이하이면 「정지」로 판단
 
 
 class TrackManager:
@@ -25,6 +29,8 @@ class TrackManager:
         self.track_iou_threshold = track_iou_threshold
         self.min_track_frames = min_track_frames
         self._tracks: Dict[str, Dict[int, Tuple[float, DetectionEvent, int]]] = {}
+        # (camera_id, object_id) → deque of (timestamp, cx, cy)
+        self._pos_history: Dict[str, Dict[int, deque]] = {}
         self._lock = Lock()
 
     def update(self, camera_id: str, events: List[DetectionEvent]) -> Tuple[List[DetectionEvent], Set[int]]:
@@ -57,8 +63,24 @@ class TrackManager:
                 for old_id in duplicates:
                     tracks.pop(old_id, None)
                     removed_ids.add(old_id)
+                    self._pos_history.get(camera_id, {}).pop(old_id, None)
 
                 tracks[track_id] = (now, event, frame_count)
+
+                # 위치 히스토리 갱신 및 이동 방향 enrichment
+                cx = event.x + event.width // 2
+                cy = event.y + event.height // 2
+                cam_hist = self._pos_history.setdefault(camera_id, {})
+                if track_id not in cam_hist:
+                    cam_hist[track_id] = deque(maxlen=_DIRECTION_HISTORY_SIZE)
+                cam_hist[track_id].append((now, cx, cy))
+                if len(cam_hist[track_id]) >= 2:
+                    direction, speed = self._calc_direction(cam_hist[track_id])
+                    if event.metadata is None:
+                        event.metadata = {}
+                    event.metadata["direction"] = direction
+                    event.metadata["direction_speed_px"] = speed
+
                 filtered.append(event)
 
             expired = [
@@ -69,6 +91,7 @@ class TrackManager:
             for track_id in expired:
                 tracks.pop(track_id, None)
                 removed_ids.add(track_id)
+                self._pos_history.get(camera_id, {}).pop(track_id, None)
 
         return filtered, removed_ids
 
@@ -78,9 +101,34 @@ class TrackManager:
             track_info = camera_tracks.get(object_id)
             return track_info[2] if track_info else 0
 
+    def get_direction(self, camera_id: str, object_id: int) -> Tuple[str, float]:
+        """(방향 레이블, 속도 px/frame) 반환. 히스토리 부족 시 ('stationary', 0.0)."""
+        with self._lock:
+            hist = self._pos_history.get(camera_id, {}).get(object_id)
+            if not hist or len(hist) < 2:
+                return "stationary", 0.0
+            return self._calc_direction(hist)
+
+    @staticmethod
+    def _calc_direction(hist: deque) -> Tuple[str, float]:
+        """deque[(ts, cx, cy)] 에서 방향과 속도를 계산한다."""
+        points = list(hist)
+        x0, y0 = points[0][1], points[0][2]
+        x1, y1 = points[-1][1], points[-1][2]
+        dx = x1 - x0
+        dy = y1 - y0
+        n = len(points) - 1
+        speed = round(math.hypot(dx, dy) / n, 2)
+        if speed < _DIRECTION_SPEED_THRESHOLD:
+            return "stationary", speed
+        if abs(dx) >= abs(dy):
+            return ("right" if dx > 0 else "left"), speed
+        return ("down" if dy > 0 else "up"), speed
+
     def remove_camera(self, camera_id: str) -> None:
         with self._lock:
             self._tracks.pop(camera_id, None)
+            self._pos_history.pop(camera_id, None)
 
 
 class CumulativeViolationFilter:

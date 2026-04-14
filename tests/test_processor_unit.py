@@ -17,6 +17,7 @@ from threading import Event
 from unittest.mock import MagicMock, patch
 
 from src.core.processor import _CameraRegistry, VideoProcessor
+from src.utils.zone_detection import ZoneEvent, ZoneEventType
 
 
 # ---------------------------------------------------------------------------
@@ -184,11 +185,11 @@ class TestCameraRegistryRetry:
 class TestParseDetections:
     def test_none_enables_all(self):
         flags = VideoProcessor._parse_detections(None)
-        assert flags == {"use_helmet": True, "use_pose": True, "use_person": False, "use_face": False}
+        assert flags == {"use_helmet": True, "use_pose": True, "use_person": False, "use_face": False, "use_appearance": False}
 
     def test_empty_list_enables_all(self):
         flags = VideoProcessor._parse_detections([])
-        assert flags == {"use_helmet": True, "use_pose": True, "use_person": False, "use_face": False}
+        assert flags == {"use_helmet": True, "use_pose": True, "use_person": False, "use_face": False, "use_appearance": False}
 
     def test_fall_enables_pose_and_person_not_helmet(self):
         flags = VideoProcessor._parse_detections(["fall"])
@@ -216,7 +217,7 @@ class TestParseDetections:
 
     def test_fall_and_helmet_enables_all(self):
         flags = VideoProcessor._parse_detections(["fall", "helmet"])
-        assert flags == {"use_helmet": True, "use_pose": True, "use_person": False, "use_face": False}
+        assert flags == {"use_helmet": True, "use_pose": True, "use_person": False, "use_face": False, "use_appearance": False}
 
     def test_case_insensitive(self):
         flags = VideoProcessor._parse_detections(["FALL", "HELMET"])
@@ -225,7 +226,7 @@ class TestParseDetections:
 
     def test_model_settings_mapping_supported(self):
         flags = VideoProcessor._parse_detections({"use_pose": False, "use_helmet": True})
-        assert flags == {"use_helmet": True, "use_pose": True, "use_person": False, "use_face": False}
+        assert flags == {"use_helmet": True, "use_pose": True, "use_person": False, "use_face": False, "use_appearance": False}
 
     def test_unknown_mode_treated_as_person(self):
         flags = VideoProcessor._parse_detections(["unknown_mode"])
@@ -250,7 +251,7 @@ class TestModelSettingsHelpers:
             "cam1",
             {"use_pose": False, "use_helmet": True},
         )
-        assert updated == {"use_helmet": True, "use_pose": True, "use_person": False, "use_face": False}
+        assert updated == {"use_helmet": True, "use_pose": True, "use_person": False, "use_face": False, "use_appearance": False}
         assert minimal_processor.get_camera_model_settings("cam1") == updated
 
     def test_update_camera_model_settings_persists_json(self, minimal_processor, tmp_path):
@@ -318,6 +319,65 @@ class TestUpdateZonesNoManager:
         assert minimal_processor.zone_manager is None
         result = minimal_processor.update_zones("cam1", [])
         assert result is False
+
+
+# ===========================================================================
+# VideoProcessor._build_display_events
+# ===========================================================================
+
+
+class TestBuildDisplayEvents:
+    def test_person_in_danger_zone_is_recolored(self, minimal_processor):
+        minimal_processor.zone_manager = MagicMock()
+        minimal_processor.zone_manager.zones = {"cam1": {"z1": object()}}
+        minimal_processor._zone_in_objects["cam1"] = set()
+
+        from tests.conftest import make_event
+
+        events = [make_event(event_type="person", object_id=101)]
+        zone_events = [
+            ZoneEvent(
+                event_type=ZoneEventType.ENTERED,
+                zone_id="z1",
+                object_id=101,
+                camera_id="cam1",
+                bbox={"x": 0, "y": 0, "width": 1, "height": 1},
+                confidence=0.9,
+                metadata={"mode": "danger"},
+            )
+        ]
+
+        display_events = minimal_processor._build_display_events(
+            "cam1", events, zone_events, removed_ids=[]
+        )
+
+        assert display_events[0].event_type.value == "danger_zone"
+
+    def test_person_in_object_watch_zone_maps_to_zone_object(self, minimal_processor):
+        minimal_processor.zone_manager = MagicMock()
+        minimal_processor.zone_manager.zones = {"cam1": {"z1": object()}}
+        minimal_processor._zone_in_objects["cam1"] = set()
+
+        from tests.conftest import make_event
+
+        events = [make_event(event_type="person", object_id=202)]
+        zone_events = [
+            ZoneEvent(
+                event_type=ZoneEventType.OBJECT_DETECTED,
+                zone_id="z1",
+                object_id=202,
+                camera_id="cam1",
+                bbox={"x": 0, "y": 0, "width": 1, "height": 1},
+                confidence=0.9,
+                metadata={"mode": "object_watch"},
+            )
+        ]
+
+        display_events = minimal_processor._build_display_events(
+            "cam1", events, zone_events, removed_ids=[]
+        )
+
+        assert display_events[0].event_type.value == "zone_object"
 
     def test_returns_true_with_zone_manager(self, minimal_processor):
         """zone_manager를 주입하면 True 반환."""

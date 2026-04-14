@@ -1,7 +1,11 @@
 """
 conftest.py — 공통 pytest 픽스처
 """
+import json
 import time
+import urllib.error
+import urllib.request
+
 import pytest
 from src.core.events import DetectionEvent, EventType
 
@@ -32,6 +36,20 @@ def make_event(
         timestamp=timestamp if timestamp is not None else time.time(),
         object_id=object_id,
     )
+
+
+def http_request(method: str, url: str, body: dict | None = None):
+    """urllib 래퍼 — (status_code, dict) 반환."""
+    data = json.dumps(body).encode("utf-8") if body is not None else None
+    req = urllib.request.Request(url, data=data, method=method)
+    if data:
+        req.add_header("Content-Type", "application/json")
+        req.add_header("Content-Length", str(len(data)))
+    try:
+        with urllib.request.urlopen(req) as resp:
+            return resp.status, json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        return e.code, json.loads(e.read().decode("utf-8"))
 
 
 # ---------------------------------------------------------------------------

@@ -43,7 +43,6 @@ services:
     - type: bind
       source: ./mosquitto/mosquitto.conf
       target: /mosquitto/config/mosquitto.conf
-      read_only: true
       bind:
         create_host_path: true
 
@@ -375,7 +374,7 @@ services:
     environment:
       PYTHONIOENCODING: utf-8
       PYTHONUTF8: "1"
-      EDGEX_OUTBOX_DB: /data/edgex_outbox.db
+      EDGEX_OUTBOX_DB: /data/detection_outbox.db
       EDGEX_OUTBOX_RETRY_INTERVAL: "30"
     depends_on:
       edgex-mqtt-broker:
@@ -574,6 +573,71 @@ services:
     networks:
       edgex-network: null
     restart: always
+
+  cctv-public-api:
+    container_name: cctv-public-api
+    build:
+      context: .
+      dockerfile: Dockerfile.action
+    command:
+    - python
+    - runners/run_public_api.py
+    - --host
+    - 0.0.0.0
+    - --port
+    - "9000"
+    environment:
+      PYTHONIOENCODING: utf-8
+      PYTHONUTF8: "1"
+      # 내부 서비스 URL
+      ACTION_LAYER_URL: http://cctv-action-layer:8080
+      ALERT_API_URL: http://cctv-alert-api:8000
+      # 이벤트 로그 경로 (cctv-alert-api와 공유 볼륨)
+      ALERT_LOG_PATH: /app/alert_api_events.jsonl
+      ALERT_FALLBACK_LOG: /app/public_api_fallback.jsonl
+      CAMERAS_JSON: /app/cameras.json
+      # API Key — 프로덕션에서는 반드시 설정할 것
+      PUBLIC_API_KEY: ${PUBLIC_API_KEY:-}
+      # CORS — 서버팀 도메인으로 제한 (예: https://server.example.com)
+      CORS_ORIGINS: ${CORS_ORIGINS:-*}
+    ports:
+    - mode: ingress
+      host_ip: 0.0.0.0
+      target: 9000
+      published: "9000"
+      protocol: tcp
+    depends_on:
+      cctv-alert-api:
+        condition: service_started
+      cctv-action-layer:
+        condition: service_started
+    networks:
+      edgex-network: null
+    restart: always
+    volumes:
+    - type: bind
+      source: ./src
+      target: /app/src
+      read_only: true
+      bind:
+        create_host_path: true
+    - type: bind
+      source: ./runners
+      target: /app/runners
+      read_only: true
+      bind:
+        create_host_path: true
+    - type: bind
+      source: ./cameras.json
+      target: /app/cameras.json
+      read_only: true
+      bind:
+        create_host_path: true
+    - type: bind
+      source: ./data
+      target: /app/data
+      bind:
+        create_host_path: true
 
   ui:
     container_name: edgex-ui-go

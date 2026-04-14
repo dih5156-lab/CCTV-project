@@ -13,7 +13,7 @@ import json
 import pytest
 from unittest.mock import MagicMock, patch
 
-from src.protocols.mqtt import (
+from src.protocols.mqtt_publisher import (
     MqttEventPublisher,
     _RECONNECT_MAX_DELAY,
     _RECONNECT_MIN_DELAY,
@@ -188,7 +188,7 @@ class TestReconnectBackoff:
     @staticmethod
     def _patched_pub(**kwargs) -> MqttEventPublisher:
         """connect() 가 즉시 OSError 를 발생시키는 publisher 반환."""
-        with patch("src.protocols.mqtt.mqtt") as mock_mqtt_mod:
+        with patch("src.protocols.mqtt_publisher.mqtt") as mock_mqtt_mod:
             mock_cli = MagicMock()
             mock_cli.connect.side_effect = OSError("Connection refused")
             mock_mqtt_mod.Client.return_value = mock_cli

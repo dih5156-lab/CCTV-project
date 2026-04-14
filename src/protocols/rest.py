@@ -16,16 +16,16 @@ Routes:
     POST   /events              → 이벤트 수신
 """
 
-import json
 import logging
-from http.server import BaseHTTPRequestHandler, HTTPServer
 from threading import Thread
 from typing import Any, Dict, Optional
+
+from .._http_server import BaseApiHandler, ThreadingApiServer
 
 logger = logging.getLogger(__name__)
 
 
-class _RestHandler(BaseHTTPRequestHandler):
+class _RestHandler(BaseApiHandler):
     """경량 HTTP 핸들러 - 복수 경로 지원.
 
     서버 객체(self.server)에 action_layer 참조가 있어야 한다.
@@ -35,27 +35,10 @@ class _RestHandler(BaseHTTPRequestHandler):
         approve_event(), reject_event(), _handle_event()
     """
 
-    def log_message(self, fmt, *args):  # noqa: A002
-        logger.debug("[REST] " + fmt, *args)
+    _LOG_PREFIX = "[REST]"
 
     def _layer(self):
         return self.server.action_layer  # type: ignore[attr-defined]
-
-    def _read_json(self) -> Optional[Dict]:
-        try:
-            length = max(0, int(self.headers.get("Content-Length", 0)))
-            return json.loads(self.rfile.read(length).decode("utf-8"))
-        except Exception as exc:
-            logger.warning("[REST] JSON 파싱 실패: %s", exc)
-            return None
-
-    def _respond(self, code: int, body: Any) -> None:
-        data = json.dumps(body, ensure_ascii=False).encode("utf-8")
-        self.send_response(code)
-        self.send_header("Content-Type", "application/json; charset=utf-8")
-        self.send_header("Content-Length", str(len(data)))
-        self.end_headers()
-        self.wfile.write(data)
 
     def do_GET(self):  # noqa: N802
         layer = self._layer()
@@ -175,11 +158,11 @@ class RestEventReceiver:
         self.host          = host
         self.port          = port
         self._action_layer = action_layer
-        self._server: Optional[HTTPServer] = None
-        self._thread: Optional[Thread]     = None
+        self._server: Optional[ThreadingApiServer] = None
+        self._thread: Optional[Thread]              = None
 
     def start(self) -> None:
-        self._server = HTTPServer((self.host, self.port), _RestHandler)
+        self._server = ThreadingApiServer((self.host, self.port), _RestHandler)
         self._server.action_layer = self._action_layer  # type: ignore[attr-defined]
         self._thread = Thread(
             target=self._server.serve_forever, daemon=True, name="RestReceiver"

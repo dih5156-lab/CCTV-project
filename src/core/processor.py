@@ -22,21 +22,25 @@ import os
 import re
 import time
 from dataclasses import dataclass, field, asdict, replace
+from pathlib import Path
 from queue import Empty, Full, Queue
 from threading import Event, Lock, Thread
 from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
 
 import cv2
-import numpy as np
 
 from ..config import AppConfig
-from ..protocols.mqtt import MqttEventPublisher
+from ..protocols.mqtt_publisher import MqttEventPublisher
 from ..utils.camera_input import RTSPCamera
 from ..utils.dataset_collector import DatasetCollector
-from ..utils.visualizer import draw_events
 from ..utils.zone_detection import ZoneEvent, ZoneManager
-from ..utils.zone_drawer import GridLayout, ZoneDrawer
+from ..utils.zone_drawer import ZoneDrawer
+from ._display_event_mapper import DisplayEventMapper
+from ._display_grid import _DisplayGrid
+from ._camera_registry import _CameraRegistry
+from ._inference_pipeline import _InferencePipeline
 from .ai_analysis import AIAnalyzer
+from .base_processor import BaseProcessor
 from .event_filters import CumulativeViolationFilter, TrackManager
 from .events import DetectionEvent, EventType
 
@@ -217,16 +221,15 @@ class _EventDebouncer:
         if max_age_hours is None:
             max_age_hours = self._config.events.event_retention_hours
         cutoff = time.time() - max_age_hours * 3600
-        # 낙상/헬멧 추적 딕셔너리 정리 (1시간 이상 갱신 없는 항목 제거)
-        old_cutoff = time.time() - 3600
+        # 낙상/헬멧 추적 딕셔너리 정리: 동일 보존 기준 적용
         with self._lock:
             before = len(self._last_events)
             self._last_events     = {k: v for k, v in self._last_events.items()     if v > cutoff}
-            self._fall_first_seen = {k: v for k, v in self._fall_first_seen.items() if v > old_cutoff}
-            self._fall_last_seen  = {k: v for k, v in self._fall_last_seen.items()  if v > old_cutoff}
-            self._fall_alerted    = {k: v for k, v in self._fall_alerted.items()    if v > old_cutoff}
-            self._head_last_seen  = {k: v for k, v in self._head_last_seen.items()  if v > old_cutoff}
-            self._head_alerted    = {k: v for k, v in self._head_alerted.items()    if v > old_cutoff}
+            self._fall_first_seen = {k: v for k, v in self._fall_first_seen.items() if v > cutoff}
+            self._fall_last_seen  = {k: v for k, v in self._fall_last_seen.items()  if v > cutoff}
+            self._fall_alerted    = {k: v for k, v in self._fall_alerted.items()    if v > cutoff}
+            self._head_last_seen  = {k: v for k, v in self._head_last_seen.items()  if v > cutoff}
+            self._head_alerted    = {k: v for k, v in self._head_alerted.items()    if v > cutoff}
             return before - len(self._last_events)
 
     def save_locally(self, event_data: Dict) -> None:
@@ -248,403 +251,7 @@ class _EventDebouncer:
         except Exception as exc:
             logger.error("로컬 저장 실패: %s", exc)
 
-
-# ===========================================================================
-# _DisplayGrid  (내부용)
-# ===========================================================================
-
-
-class _DisplayGrid:
-    """다중 카메라 통합 그리드 디스플레이.
-
-    VideoProcessor 에서만 사용한다.
-    """
-
-    WIDTH   = 1280
-    HEIGHT  = 720
-    MAX_FPS = 20
-
-    def __init__(self, get_fps) -> None:
-        self._get_fps = get_fps
-        self._frames: Dict[str, Any] = {}
-        self._lock = Lock()
-        self.window_name = "CCTV Multi-Camera View"
-        self._drawer: Optional[ZoneDrawer] = None
-
-    def set_drawer(self, drawer: ZoneDrawer) -> None:
-        """ZoneDrawer 를 등록한다. run_worker 시작 전에 호출해야 한다."""
-        self._drawer = drawer
-
-    def update_frame(
-        self, camera_id: str, frame: Any, events: List[DetectionEvent]
-    ) -> None:
-        """추론 스레드에서 최신 프레임·이벤트를 등록한다."""
-        if frame is None:
-            return
-        with self._lock:
-            self._frames[camera_id] = (frame, list(events))
-
-    def build_grid(self) -> Optional[Any]:
-        """전체 카메라 프레임으로 그리드 이미지를 생성한다."""
-        with self._lock:
-            if not self._frames:
-                return None
-            raw_items = [
-                (cam_id, frame.copy(), list(evts))
-                for cam_id, (frame, evts) in self._frames.items()
-                if frame is not None
-            ]
-        n = len(raw_items)
-        if n == 0:
-            return None
-        cols = max(1, int(n ** 0.5) + (1 if n > 1 else 0))
-        rows = (n + cols - 1) // cols
-        tw = self.WIDTH  // cols
-        th = self.HEIGHT // rows
-
-        # drawer 에 레이아웃 정보 전달
-        if self._drawer is not None:
-            layout = GridLayout(
-                camera_ids=[cam_id for cam_id, _, _ in raw_items],
-                cols=cols,
-                rows=rows,
-                tile_w=tw,
-                tile_h=th,
-                orig_sizes={
-                    cam_id: (frame.shape[1], frame.shape[0])
-                    for cam_id, frame, _ in raw_items
-                },
-            )
-            self._drawer.set_layout(layout)
-
-        resized: List[Any] = []
-        for cam_id, frame, evts in raw_items:
-            annotated = draw_events(frame, evts)
-            cv2.putText(
-                annotated, f"[{cam_id}] {len(evts)}",
-                (6, 22), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 255, 0), 1, cv2.LINE_AA,
-            )
-            resized.append(cv2.resize(annotated, (tw, th)))
-        black = np.zeros((th, tw, 3), dtype=np.uint8)
-        grid_rows = []
-        for r in range(rows):
-            row = [
-                resized[r * cols + c] if r * cols + c < n else black
-                for c in range(cols)
-            ]
-            grid_rows.append(cv2.hconcat(row))
-        grid = cv2.vconcat(grid_rows)
-        cv2.putText(
-            grid, f"FPS: {self._get_fps():.1f} | Cams: {n}",
-            (8, grid.shape[0] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 255, 255), 1, cv2.LINE_AA,
-        )
-        # ZoneDrawer 오버레이
-        if self._drawer is not None:
-            grid = self._drawer.overlay(grid)
-        return grid
-
-    def run_worker(self, stop_event: Event, is_running) -> None:
-        """디스플레이 워커 루프 — 전용 스레드에서 실행된다."""
-        cv2.namedWindow(self.window_name, cv2.WINDOW_NORMAL)
-        cv2.resizeWindow(self.window_name, self.WIDTH, self.HEIGHT)
-        if self._drawer is not None:
-            cv2.setMouseCallback(self.window_name, self._drawer.mouse_callback)
-        interval = 1.0 / self.MAX_FPS
-        last_render = 0.0
-        while is_running() and not stop_event.is_set():
-            try:
-                now = time.monotonic()
-                elapsed = now - last_render
-                if elapsed < interval:
-                    wait_ms = max(1, int((interval - elapsed) * 1000))
-                    key = cv2.waitKey(wait_ms) & 0xFF
-                    if key == 0xFF:
-                        continue
-                    if self._drawer is not None and self._drawer.handle_key(key):
-                        continue
-                    if key == ord("q"):
-                        logger.info("'q' 입력 감지 - 중지합니다")
-                        stop_event.set()
-                        break
-                    continue
-                grid = self.build_grid()
-                last_render = time.monotonic()
-                if grid is not None:
-                    cv2.imshow(self.window_name, grid)
-                    grid = None
-                key = cv2.waitKey(1) & 0xFF
-                if key != 0xFF:
-                    if self._drawer is not None and self._drawer.handle_key(key):
-                        pass
-                    elif key == ord("q"):
-                        logger.info("'q' 입력 감지 - 중지합니다")
-                        stop_event.set()
-                        break
-            except Exception as exc:
-                logger.error("디스플레이 워커 오류: %s", exc)
-                time.sleep(0.1)
-
-
-# ===========================================================================
-# _CameraRegistry  (내부용)
-# ===========================================================================
-
-
-class _CameraRegistry:
-    """카메라 인스턴스·스레드·재시도 큐를 관리하는 내부 레지스트리.
-
-    VideoProcessor 에서만 사용한다.
-    """
-
-    def __init__(
-        self, config: AppConfig, stop_event: Event, is_running
-    ) -> None:
-        self._config = config
-        self._stop_event = stop_event
-        self._is_running = is_running
-
-        self.cameras:           Dict[str, RTSPCamera] = {}
-        self.camera_threads:    Dict[str, Thread]     = {}
-        self.inference_threads: Dict[str, Thread]     = {}
-        self.frame_queues:      Dict[str, Queue]      = {}
-        self._stop_flags:       Dict[str, Event]      = {}
-
-        self._pending:      List[Tuple[str, Any, float]] = []
-        self._pending_lock  = Lock()
-
-    @property
-    def count(self) -> int:
-        return len(self.cameras)
-
-    def register(self, camera_id: str, camera: RTSPCamera) -> None:
-        """이미 연결된 카메라를 레지스트리에 등록한다."""
-        self.cameras[camera_id]     = camera
-        self.frame_queues[camera_id] = Queue(maxsize=1)
-        self._stop_flags[camera_id]  = Event()
-
-    def unregister(self, camera_id: str) -> None:
-        """카메라와 관련 스레드를 레지스트리에서 제거한다."""
-        timeout = self._config.processing.thread_join_timeout
-        flag = self._stop_flags.pop(camera_id, None)
-        if flag:
-            flag.set()
-        for thread_map in (self.camera_threads, self.inference_threads):
-            t = thread_map.pop(camera_id, None)
-            if t and t.is_alive():
-                t.join(timeout=timeout)
-                if t.is_alive():
-                    logger.warning("[%s] 스레드 종료 시간 초과", camera_id)
-        cam = self.cameras.pop(camera_id, None)
-        if cam:
-            cam.release()
-        self.frame_queues.pop(camera_id, None)
-
-    def stop_flag(self, camera_id: str) -> Optional[Event]:
-        return self._stop_flags.get(camera_id)
-
-    def ensure_stop_flag(self, camera_id: str) -> Event:
-        """카메라 정지 플래그를 생성하거나 초기화하여 반환한다."""
-        if camera_id not in self._stop_flags:
-            self._stop_flags[camera_id] = Event()
-        else:
-            self._stop_flags[camera_id].clear()
-        return self._stop_flags[camera_id]
-
-    def start_threads(self, camera_id: str, cam_target, inf_target) -> None:
-        """카메라·추론 스레드를 시작하고 레지스트리에 등록한다."""
-        flag = self._stop_flags.get(camera_id)
-        if flag:
-            flag.clear()
-        cam_t = Thread(
-            target=cam_target,
-            args=(camera_id, self.cameras[camera_id]),
-            daemon=True,
-            name=f"Camera-{camera_id}",
-        )
-        self.camera_threads[camera_id] = cam_t
-        cam_t.start()
-        inf_t = Thread(
-            target=inf_target,
-            args=(camera_id,),
-            daemon=True,
-            name=f"Inference-{camera_id}",
-        )
-        self.inference_threads[camera_id] = inf_t
-        inf_t.start()
-
-    def enqueue_retry(
-        self, camera_id: str, source: Any, delay_seconds: float = 30.0
-    ) -> None:
-        """연결 실패한 카메라를 재시도 큐에 등록한다."""
-        next_ts = time.time() + delay_seconds
-        with self._pending_lock:
-            self._pending = [
-                (cid, src, ts) for cid, src, ts in self._pending if cid != camera_id
-            ]
-            self._pending.append((camera_id, source, next_ts))
-        logger.info("[%s] 재연결 예약: %.0f초 후", camera_id, delay_seconds)
-
-    def poll_ready_retries(self) -> List[Tuple[str, Any, float]]:
-        """만료된 재시도 항목을 꺼내 반환한다 (큐에서 제거)."""
-        now = time.time()
-        ready: List[Tuple[str, Any, float]] = []
-        remaining: List[Tuple[str, Any, float]] = []
-        with self._pending_lock:
-            for item in self._pending:
-                (ready if now >= item[2] else remaining).append(item)
-            self._pending = remaining
-        return ready
-
-    def pending_camera_ids(self) -> List[str]:
-        """재연결 대기 중인 카메라 ID 목록을 반환한다 (읽기 전용)."""
-        with self._pending_lock:
-            return [cid for cid, _, _ in self._pending]
-
-    def set_all_stop_flags(self) -> None:
-        """등록된 모든 카메라의 정지 플래그를 활성화한다."""
-        for flag in self._stop_flags.values():
-            flag.set()
-
-
-# ===========================================================================
-# _InferencePipeline  (내부용)
-# ===========================================================================
-
-
-class _InferencePipeline:
-    """AI 추론·구역 탐지·이벤트 큐 처리를 담당하는 내부 파이프라인.
-
-    VideoProcessor 의 God Class 문제를 완화하기 위해 분리한 클래스다.
-    VideoProcessor 가 담당하던 다음 책임을 이관한다:
-
-        - _infer()        : AIAnalyzer 호출 + 추론 시간 측정
-        - _collect()      : 데이터셋 프레임 저장
-        - _check_zones()  : ZoneManager 호출
-        - _enqueue()      : 이벤트 큐 put_nowait (디바운싱 포함)
-
-    VideoProcessor 는 이 클래스 인스턴스(_pipeline)를 보유하고
-    추론 스레드(_process_inference)에서 각 메서드를 직접 호출한다.
-    """
-
-    def __init__(
-        self,
-        analyzers: Dict[str, "AIAnalyzer"],
-        camera_ai_flags: Dict[str, Dict[str, bool]],
-        track_manager: "TrackManager",
-        violation_filter: "CumulativeViolationFilter",
-        debouncer: "_EventDebouncer",
-        event_queue: "Queue",
-        zone_manager,
-        dataset_collector,
-        display: "_DisplayGrid",
-        snapshot_store: Dict[str, dict],
-        snapshot_lock: "Lock",
-        zone_in_objects: Dict[str, set],
-        increment_stat,
-        add_inference_metrics,
-        display_enabled: bool,
-        queue_warning_threshold: float = 0.8,
-    ) -> None:
-        self._analyzers            = analyzers
-        self._camera_ai_flags      = camera_ai_flags
-        self._track_manager        = track_manager
-        self._violation_filter     = violation_filter
-        self._debouncer            = debouncer
-        self._event_queue          = event_queue
-        self._zone_manager         = zone_manager
-        self._dataset_collector    = dataset_collector
-        self._display              = display
-        self._snapshots            = snapshot_store
-        self._snapshot_lock        = snapshot_lock
-        self._zone_in_objects      = zone_in_objects
-        self._increment_stat       = increment_stat
-        self._add_inference_metrics = add_inference_metrics
-        self.display_enabled       = display_enabled
-
-    # ── 내부 헬퍼 ──────────────────────────────────────────────────
-
-    def _infer(self, camera_id: str, frame: Any) -> List[DetectionEvent]:
-        """AIAnalyzer 를 호출하고 추론 시간을 기록한다."""
-        analyzer = self._analyzers.get(camera_id)
-        if analyzer is None:
-            logger.error("[%s] 분석기 인스턴스를 찾을 수 없습니다", camera_id)
-            self._increment_stat("inference_errors")
-            return []
-        flags = self._camera_ai_flags.get(
-            camera_id, {"use_helmet": True, "use_pose": True, "use_person": False, "use_face": False}
-        )
-        t0 = time.time()
-        try:
-            return analyzer.run_inference(frame, **flags)
-        except Exception as exc:
-            logger.error("[%s] AI 추론 실패: %s", camera_id, exc, exc_info=True)
-            self._increment_stat("inference_errors")
-            return []
-        finally:
-            self._add_inference_metrics(time.time() - t0)
-
-    def _collect(
-        self, frame: Any, events: List[DetectionEvent], camera_id: str
-    ) -> None:
-        """데이터셋 프레임을 저장한다 (수집기 비활성 시 무동작)."""
-        if not self._dataset_collector:
-            return
-        try:
-            self._dataset_collector.save_frame(frame, events, camera_id=camera_id)
-        except IOError as exc:
-            logger.error("[%s] 데이터셋 파일 저장 실패: %s", camera_id, exc)
-        except Exception as exc:
-            logger.warning("[%s] 데이터셋 저장 오류: %s", camera_id, exc)
-
-    def _check_zones(
-        self, camera_id: str, events: List[DetectionEvent], frame: Any
-    ) -> Tuple[List[ZoneEvent], Any]:
-        """ZoneManager 를 호출하여 위험 구역 침입을 감지한다."""
-        if not self._zone_manager:
-            return [], frame
-        try:
-            return self._zone_manager.check_zones(camera_id, events), frame
-        except Exception as exc:
-            logger.warning("[%s] 구역 감지 오류: %s", camera_id, exc)
-            return [], frame
-
-    def _enqueue(
-        self,
-        camera_id: str,
-        events: List[DetectionEvent],
-        zone_events: List[ZoneEvent],
-    ) -> None:
-        """디바운싱과 함께 이벤트를 큐에 넣는다 (비블로킹)."""
-        for event in events:
-            event_id = event.object_id if event.object_id is not None else 0
-            if event.object_id is not None:
-                frame_count = self._track_manager.get_frame_count(
-                    camera_id, event.object_id
-                )
-                if frame_count < self._track_manager.min_track_frames:
-                    continue
-            if self._debouncer.should_send(camera_id, event.event_type.value, event_id):
-                event_data = event.to_dict()
-                event_data["camera_id"] = camera_id
-                try:
-                    self._event_queue.put_nowait(event_data)
-                    self._increment_stat("events_detected")
-                except Full:
-                    self._increment_stat("events_dropped")
-                    self._debouncer.save_locally(event_data)
-                    logger.warning("[%s] 이벤트 큐 가득 참: 로컬 저장", camera_id)
-
-        for zone_event in zone_events:
-            evt_dict = zone_event.to_dict()
-            if "type" not in evt_dict:
-                evt_dict["type"] = evt_dict.get("event_type")
-            try:
-                self._event_queue.put_nowait(evt_dict)
-                self._increment_stat("events_detected")
-            except Full:
-                self._increment_stat("events_dropped")
-                self._debouncer.save_locally(evt_dict)
-                logger.warning("[%s] 구역 이벤트 큐 가득 참: 로컬 저장", camera_id)
+from ._adaptive_governor import _AdaptiveGovernor  # noqa: F401 — 하위 호환 재내보내기
 
 
 # ===========================================================================
@@ -652,7 +259,7 @@ class _InferencePipeline:
 # ===========================================================================
 
 
-class VideoProcessor:
+class VideoProcessor(BaseProcessor):
     """AI 추론을 사용한 다중 카메라 비디오 처리 파이프라인.
 
     내부 헬퍼:
@@ -668,7 +275,7 @@ class VideoProcessor:
     """
 
     def __init__(self, config: AppConfig) -> None:
-        self.config = config
+        super().__init__(config)
         self._analyzers: Dict[str, AIAnalyzer] = {}
         # 카메라별 AI 모델 플래그 (ai_models 설정 딕셔너리에서 파싱)
         self._camera_ai_flags: Dict[str, Dict[str, bool]] = {}
@@ -748,6 +355,7 @@ class VideoProcessor:
         # ── 구역 점유 상태 (카메라별 object_id 집합) ──────────────────
         # 플리커링 방지: zone_entered/dwelling 시 추가, zone_exited 시 제거
         self._zone_in_objects: Dict[str, set] = {}
+        self._display_event_mapper = DisplayEventMapper(self._zone_in_objects)
 
         # ── 탐지 스냅샷 (카메라별 최신 탐지 결과 + 타임스탬프) ──────────
         self._latest_snapshots: Dict[str, dict] = {}
@@ -777,6 +385,11 @@ class VideoProcessor:
         self.cleanup_thread:       Optional[Thread] = None
         self.display_thread:       Optional[Thread] = None
         self._camera_retry_thread: Optional[Thread] = None
+        self._governor_thread:     Optional[Thread] = None
+
+        # ── 동적 성능 조율기 ─────────────────────────────────────────
+        # device를 전달하여 CPU/GPU에 맞는 임계값 및 imgsz 단계를 자동 설정
+        self._governor = _AdaptiveGovernor(config, self.stats, device=config.detection.device)
 
     # ------------------------------------------------------------------
     # 하위 호환 프로퍼티
@@ -853,7 +466,7 @@ class VideoProcessor:
 
         # 정규화 키: 절대 경로 기준으로 동일 파일 여부 판단
         def _norm(p: str) -> str:
-            return str(os.path.abspath(p)) if p else ""
+            return str(Path(p).resolve()) if p else ""
 
         pool_key = (_norm(helmet_path), _norm(person_path), _norm(pose_path))
 
@@ -864,8 +477,8 @@ class VideoProcessor:
             # 동일 경로 조합 → 캐시된 모델 객체 재사용 (GPU 메모리 공유)
             logger.info(
                 "모델 풀 캐시 히트 — 동일 모델 공유 (helmet=%s, pose=%s)",
-                os.path.basename(helmet_path) if helmet_path else "없음",
-                os.path.basename(pose_path)   if pose_path   else "없음",
+                Path(helmet_path).name if helmet_path else "없음",
+                Path(pose_path).name   if pose_path   else "없음",
             )
             analyzer = AIAnalyzer(
                 helmet_model_path=helmet_path or None,
@@ -897,13 +510,22 @@ class VideoProcessor:
                 }
             logger.info(
                 "모델 풀 신규 등록 (helmet=%s, pose=%s)",
-                os.path.basename(helmet_path) if helmet_path else "없음",
-                os.path.basename(pose_path)   if pose_path   else "없음",
+                Path(helmet_path).name if helmet_path else "없음",
+                Path(pose_path).name   if pose_path   else "없음",
             )
 
         analyzer.helmet_threshold = self.config.detection.helmet_confidence
         analyzer.person_threshold = self.config.detection.person_confidence
         analyzer.pose_threshold   = self.config.detection.pose_confidence
+
+        # TRT .engine 사용 시 governor imgsz 자동 조정 잠금
+        # (engine은 컴파일 시 imgsz 고정 → 런타임에 변경 불가)
+        if any(
+            p and str(p).endswith(".engine")
+            for p in (analyzer.pose_model_path, analyzer.helmet_model_path, analyzer.person_model_path)
+        ):
+            self._governor.lock_imgsz()
+
         return analyzer
 
     @staticmethod
@@ -911,13 +533,19 @@ class VideoProcessor:
         """모델 on/off 플래그를 정규화한다.
 
         helmet 모델은 사람 ROI가 필요하므로 pose 모델이 자동으로 함께 활성화된다.
+        appearance 모델은 사람 감지가 필요하므로 pose 또는 person이 함께 활성화된다.
         """
         use_pose = bool(flags.get("use_pose", flags.get("pose", False)))
         use_helmet = bool(flags.get("use_helmet", flags.get("helmet", False)))
         use_person = bool(flags.get("use_person", flags.get("person", False)))
         use_face = bool(flags.get("use_face", flags.get("face", False)))
+        use_appearance = bool(flags.get("use_appearance", flags.get("appearance", False)))
 
         if use_helmet or use_face:
+            use_pose = True
+
+        # appearance는 사람 bbox가 필요 — pose나 person 중 하나는 활성화
+        if use_appearance and not use_pose and not use_person:
             use_pose = True
 
         return {
@@ -925,6 +553,7 @@ class VideoProcessor:
             "use_pose": use_pose,
             "use_person": use_person,
             "use_face": use_face,
+            "use_appearance": use_appearance,
         }
 
     @classmethod
@@ -940,6 +569,8 @@ class VideoProcessor:
             modes.append("face")
         if normalized["use_person"] and "person" not in modes:
             modes.append("person")
+        if normalized["use_appearance"]:
+            modes.append("appearance")
         return modes
 
     @classmethod
@@ -962,14 +593,24 @@ class VideoProcessor:
             return cls._normalize_model_flags(detections)
 
         if not detections:
-            return {"use_helmet": True, "use_pose": True, "use_person": False, "use_face": False}
+            return {"use_helmet": True, "use_pose": True, "use_person": False, "use_face": False, "use_appearance": False}
 
         modes = {d.lower() for d in detections}
         use_pose   = bool(modes & {"fall", "intrusion", "person"}) or bool(modes & {"helmet", "face"})
         use_helmet = "helmet" in modes
         use_person = False
         use_face = "face" in modes
-        return {"use_helmet": use_helmet, "use_pose": use_pose, "use_person": use_person, "use_face": use_face}
+        use_appearance = "appearance" in modes
+
+        # appearance는 사람 bbox가 필요
+        if use_appearance and not use_pose:
+            use_pose = True
+
+        return {
+            "use_helmet": use_helmet, "use_pose": use_pose,
+            "use_person": use_person, "use_face": use_face,
+            "use_appearance": use_appearance,
+        }
 
     def get_camera_model_settings(self, camera_id: str) -> Optional[Dict[str, bool]]:
         """카메라의 현재 모델 on/off 상태를 반환한다."""
@@ -981,16 +622,20 @@ class VideoProcessor:
             "use_pose": bool(flags.get("use_pose", False)),
             "use_person": bool(flags.get("use_person", False)),
             "use_face": bool(flags.get("use_face", False)),
+            "use_appearance": bool(flags.get("use_appearance", False)),
         }
+
+    def _get_face_recognizer(self):
+        """실행 중인 분석기가 있으면 그 face_recognizer를, 없으면 독립 인스턴스를 반환한다."""
+        analyzer = next(iter(self._analyzers.values()), None)
+        if analyzer is not None:
+            return analyzer.face_recognizer
+        from ..utils.face_recognition import FaceRecognitionEngine
+        return FaceRecognitionEngine()
 
     def list_registered_faces(self) -> List[Dict[str, str]]:
         """등록 얼굴 목록을 반환한다."""
-        analyzer = next(iter(self._analyzers.values()), None)
-        if analyzer is None:
-            from ..utils.face_recognition import FaceRecognitionEngine
-
-            return FaceRecognitionEngine().list_faces()
-        return analyzer.face_recognizer.list_faces()
+        return self._get_face_recognizer().list_faces()
 
     def register_face(
         self,
@@ -1016,26 +661,13 @@ class VideoProcessor:
             hired_at=hired_at,
             note=note,
         )
-        analyzer = next(iter(self._analyzers.values()), None)
-        if analyzer is None:
-            from ..utils.face_recognition import FaceRecognitionEngine
-
-            entry = FaceRecognitionEngine().register_face(**kwargs)
-        else:
-            entry = analyzer.face_recognizer.register_face(**kwargs)
-
+        entry = self._get_face_recognizer().register_face(**kwargs)
         self.reload_face_gallery()
         return entry
 
     def delete_face(self, face_id: str) -> bool:
         """등록 얼굴을 삭제하고 모든 분석기의 얼굴 갤러리를 갱신한다."""
-        analyzer = next(iter(self._analyzers.values()), None)
-        if analyzer is None:
-            from ..utils.face_recognition import FaceRecognitionEngine
-
-            deleted = FaceRecognitionEngine().delete_face(face_id)
-        else:
-            deleted = analyzer.face_recognizer.delete_face(face_id)
+        deleted = self._get_face_recognizer().delete_face(face_id)
 
         if deleted:
             self.reload_face_gallery()
@@ -1146,11 +778,14 @@ class VideoProcessor:
             if self.zone_manager is not None:
                 try:
                     self.zone_manager.load_zones(camera_id, zones_data)
+                    # _InferencePipeline에 최신 zone_manager 동기화 (on-demand 생성 시 반영)
+                    self._pipeline._zone_manager = self.zone_manager
                 except Exception as exc:
                     logger.warning("[%s] 구역 로딩 실패: %s", camera_id, exc)
         elif self.zone_manager:
             try:
                 self.zone_manager.load_zones(camera_id, None)
+                self._pipeline._zone_manager = self.zone_manager
             except Exception as exc:
                 logger.warning("[%s] 구역 로딩 실패: %s", camera_id, exc)
 
@@ -1191,6 +826,8 @@ class VideoProcessor:
             return False
         try:
             self.zone_manager.save_zones(camera_id, zones_data, cameras_config_path)
+            # 삭제된 구역의 잔상(zone_in_objects) 즉시 제거
+            self._zone_in_objects.pop(camera_id, None)
             return True
         except Exception as exc:
             logger.error("[%s] 구역 업데이트 실패: %s", camera_id, exc)
@@ -1252,10 +889,58 @@ class VideoProcessor:
             elapsed = time.monotonic() - start
             time.sleep(max(0.0, 1.0 / self.config.detection.target_fps - elapsed))
 
+    def _record_detection_snapshot(
+        self, camera_id: str, events: List[DetectionEvent]
+    ) -> None:
+        """웹/API에서 조회할 최신 탐지 스냅샷을 저장한다."""
+        with self._snapshot_lock:
+            self._latest_snapshots[camera_id] = {
+                "timestamp": time.time(),
+                "detections": [e.to_dict() for e in events],
+            }
+
+    def _save_zone_event_snapshots(
+        self, camera_id: str, zone_events: List[ZoneEvent]
+    ) -> None:
+        """의미 있는 구역 이벤트에 대해서만 스냅샷을 저장한다."""
+        if not zone_events:
+            return
+
+        snapshot_dir = getattr(self, "snapshot_dir", "snapshots")
+        snapshot_event_types = {"zone_entered", "zone_object_detected", "crowd_warning"}
+        for zone_event in zone_events:
+            if zone_event.event_type.value not in snapshot_event_types:
+                continue
+            self.save_event_snapshot(
+                camera_id,
+                event_type=zone_event.event_type.value,
+                zone_id=getattr(zone_event, "zone_id", ""),
+                snapshot_dir=snapshot_dir,
+            )
+
+    def _build_display_events(
+        self,
+        camera_id: str,
+        events_for_display: List[DetectionEvent],
+        zone_events: List[ZoneEvent],
+        removed_ids: List[int],
+    ) -> List[DetectionEvent]:
+        """구역 상태를 반영해 디스플레이용 이벤트 타입을 보정한다."""
+        return self._display_event_mapper.build(
+            camera_id,
+            events_for_display,
+            zone_events,
+            removed_ids,
+            self.zone_manager,
+        )
+
     def _process_inference(self, camera_id: str) -> None:
         """AI 추론 스레드 — 프레임 큐에서 가져와 _InferencePipeline 1사이클 실행."""
         consecutive_errors = 0
         max_errors = self.config.processing.consecutive_failure_threshold
+        # frame_skip: N프레임마다 1회 추론, 나머지는 캐시된 이벤트로 디스플레이만 갱신
+        _frame_counter = 0
+        _cached_display_evts: List = []
 
         while self.running and not self.stop_event.is_set():
             stop_flag = self._cams.stop_flag(camera_id)
@@ -1271,15 +956,16 @@ class VideoProcessor:
                 continue
             try:
                 self._increment_stat("frames_processed")
+                _frame_counter += 1
+                _skip = self.config.processing.frame_skip
+                # 스킵 프레임: 추론 없이 캐시된 이벤트로 디스플레이만 갱신 (부드러운 화면)
+                if _skip > 1 and _frame_counter % _skip != 0:
+                    self._display.update_frame(camera_id, frame, _cached_display_evts)
+                    continue
                 events = self._pipeline._infer(camera_id, frame)
                 events_for_display = events.copy()
                 events_for_dataset = events.copy()
-
-                with self._snapshot_lock:
-                    self._latest_snapshots[camera_id] = {
-                        "timestamp": time.time(),
-                        "detections": [e.to_dict() for e in events],
-                    }
+                self._record_detection_snapshot(camera_id, events)
 
                 events, removed_ids = self.track_manager.update(camera_id, events)
                 if removed_ids:
@@ -1289,43 +975,12 @@ class VideoProcessor:
                 self._pipeline._collect(frame, events_for_dataset, camera_id)
                 zone_events, frame = self._pipeline._check_zones(camera_id, events, frame)
                 self._pipeline._enqueue(camera_id, events, zone_events)
-
-                # 위험 이벤트 자동 스냅샷
-                if zone_events:
-                    snapshot_dir = getattr(self, "snapshot_dir", "snapshots")
-                    for ze in zone_events:
-                        self.save_event_snapshot(
-                            camera_id,
-                            event_type=ze.event_type.value,
-                            snapshot_dir=snapshot_dir,
-                        )
-
-                zone_set = self._zone_in_objects.setdefault(camera_id, set())
-                has_active_zones = bool(
-                    self.zone_manager
-                    and self.zone_manager.zones.get(camera_id)
+                self._save_zone_event_snapshots(camera_id, zone_events)
+                display_evts = self._build_display_events(
+                    camera_id, events_for_display, zone_events, removed_ids
                 )
-                if not has_active_zones:
-                    zone_set.clear()
-                else:
-                    for ze in zone_events:
-                        if ze.event_type.value in ("zone_entered", "zone_dwelling"):
-                            zone_set.add(ze.object_id)
-                        elif ze.event_type.value == "zone_exited":
-                            zone_set.discard(ze.object_id)
-                for rid in removed_ids:
-                    zone_set.discard(rid)
-
-                display_evts = [
-                    replace(ev, event_type=EventType.DANGER_ZONE)
-                    if (
-                        ev.event_type == EventType.PERSON
-                        and getattr(ev, "object_id", None) in zone_set
-                    )
-                    else ev
-                    for ev in events_for_display
-                ]
                 # 웹 스트리밍을 위해 항상 프레임 저장 (display 모드 여부 무관)
+                _cached_display_evts = list(display_evts)  # 스킵 프레임에서 재사용
                 self._display.update_frame(camera_id, frame, display_evts)
                 consecutive_errors = 0
             except Exception as exc:
@@ -1450,14 +1105,16 @@ class VideoProcessor:
         )
         self._camera_retry_thread.start()
 
-        if self.config.display:
-            self.display_thread = Thread(
-                target=self._display.run_worker,
-                args=(self.stop_event, lambda: self.running),
-                daemon=True,
-                name="UnifiedDisplay",
-            )
-            self.display_thread.start()
+        self._governor_thread = Thread(
+            target=self._governor.run,
+            args=(self.stop_event,),
+            daemon=True,
+            name="AdaptiveGovernor",
+        )
+        self._governor_thread.start()
+
+        # display_thread는 메인 스레드에서 직접 start_display_loop()로 실행해야 함
+        # (Windows에서 cv2.imshow는 메인 스레드 전용)
 
         logger.info(
             "프로세서 시작 (%d대 카메라, 분리된 추론 스레드)", self._cams.count
@@ -1483,6 +1140,7 @@ class VideoProcessor:
             self.sender_thread,
             self.cleanup_thread,
             self._camera_retry_thread,
+            self._governor_thread,
             self.display_thread,
         ):
             if t and t.is_alive():
@@ -1504,6 +1162,10 @@ class VideoProcessor:
                 cam.release()
             except Exception:
                 pass
+
+    def start_display_loop(self) -> None:
+        """메인 스레드에서 디스플레이 루프를 실행한다."""
+        self._display.run_worker(self.stop_event, lambda: self.running)
 
     # ------------------------------------------------------------------
     # 통계
@@ -1527,10 +1189,11 @@ class VideoProcessor:
         camera_id: str,
         event_type: str = "event",
         snapshot_dir: str = "snapshots",
+        zone_id: str = "",
     ) -> Optional[str]:
         """현재 프레임을 스냅샷으로 저장하고 파일 경로를 반환한다.
 
-        저장 경로: ``<snapshot_dir>/<camera_id>/<YYYYMMDD_HHMMSS_<event_type>.jpg>``
+        저장 경로: ``<snapshot_dir>/<camera_id>/<YYYYMMDD_HHMMSS_mmm_[zone_id_]<event_type>.jpg>``
         opencv(cv2)가 없으면 None 을 반환한다.
         """
         try:
@@ -1546,10 +1209,12 @@ class VideoProcessor:
         from datetime import datetime as _dt
 
         safe_type = re.sub(r"[^\w\-]", "_", event_type)
-        ts = _dt.now().strftime("%Y%m%d_%H%M%S")
+        now = _dt.now()
+        ts = now.strftime("%Y%m%d_%H%M%S_") + now.strftime("%f")[:3]
+        safe_zone = re.sub(r"[^\w\-]", "_", zone_id) if zone_id else ""
         out_dir = _Path(snapshot_dir) / camera_id
         out_dir.mkdir(parents=True, exist_ok=True)
-        filename = f"{ts}_{safe_type}.jpg"
+        filename = f"{ts}_{safe_zone}_{safe_type}.jpg" if safe_zone else f"{ts}_{safe_type}.jpg"
         dest = out_dir / filename
         cv2.imwrite(str(dest), frame)
         logger.info("[Snapshot] saved %s", dest)

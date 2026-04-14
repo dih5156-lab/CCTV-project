@@ -13,12 +13,17 @@ Controls::
 """
 
 import logging
+import json
+import re
 import threading
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import cv2
 import numpy as np
+
+from .zone_detection import ZoneMode
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +50,19 @@ class GridLayout:
 # ---------------------------------------------------------------------------
 
 
+# 모드별 드로잉 시각화 색상 (BGR)
+_MODE_DRAW_COLORS: Dict[str, Tuple[int, int, int]] = {
+    ZoneMode.DANGER:       (0, 0, 255),    # 빨간 - 위험구역
+    ZoneMode.OBJECT_WATCH: (0, 165, 255),  # 주황 - 객체감시
+    ZoneMode.CROWD_COUNT:  (255, 0, 255),  # 자주 - 인파분석
+}
+_MODE_LABELS: Dict[str, str] = {
+    ZoneMode.DANGER:       "Danger[1]",
+    ZoneMode.OBJECT_WATCH: "Watch[2]",
+    ZoneMode.CROWD_COUNT:  "Crowd[3]",
+}
+
+
 class ZoneDrawer:
     """OpenCV 창에서 마우스로 위험구역 폴리곤을 그리는 인터랙티브 도우미."""
 
@@ -68,6 +86,8 @@ class ZoneDrawer:
         self._zone_counter: int = self._calc_initial_counter()
         # (camera_id, zone_id) 또는 None — hover 중인 저장된 zone
         self._hovered_zone: Optional[Tuple[str, str]] = None
+        # 현재 선택된 구역 모드
+        self._pending_mode: str = ZoneMode.DANGER
 
     # ------------------------------------------------------------------
     # 레이아웃 업데이트 (매 프레임 _DisplayGrid 에서 호출)
@@ -75,8 +95,6 @@ class ZoneDrawer:
 
     def _calc_initial_counter(self) -> int:
         """기존 cameras.json zone id에서 최대 번호를 찾아 counter를 초기화한다."""
-        import json, re
-        from pathlib import Path
         max_num = 0
         try:
             cameras = json.loads(Path(self._cameras_json_path).read_text(encoding='utf-8'))
@@ -142,8 +160,25 @@ class ZoneDrawer:
                     self._hovered_zone = None
             state = "ON" if self._drawing else "OFF"
             logger.info(
-                "Zone drawing mode %s  (left=add point, right=undo, c=finish, ESC=cancel)", state
+                "Zone drawing mode %s  (left=add point, right=undo, c=finish, ESC=cancel, 1/2/3=mode)", state
             )
+            return True
+
+        # 모드 선택: 1=위험 2=객체감시 3=인파분석
+        if key == ord("1"):
+            with self._lock:
+                self._pending_mode = ZoneMode.DANGER
+            logger.info("Zone mode: Danger zone (DANGER)")
+            return True
+        if key == ord("2"):
+            with self._lock:
+                self._pending_mode = ZoneMode.OBJECT_WATCH
+            logger.info("Zone mode: Object watch (OBJECT_WATCH)")
+            return True
+        if key == ord("3"):
+            with self._lock:
+                self._pending_mode = ZoneMode.CROWD_COUNT
+            logger.info("Zone mode: Crowd count (CROWD_COUNT)")
             return True
 
         if key in (ord("c"), 13):          # 'c' 또는 Enter
@@ -183,6 +218,7 @@ class ZoneDrawer:
             hover = self._hover
             layout = self._layout
             hovered_zone = self._hovered_zone
+            pending_mode = self._pending_mode
 
         h, w = grid.shape[:2]
 
@@ -206,66 +242,90 @@ class ZoneDrawer:
                         dtype=np.int32,
                     )
                     is_hovered = (hovered_zone == (cam_id, zone.zone_id))
-                    color      = (0, 140, 255) if is_hovered else (0, 255, 0)
-                    thickness  = 3            if is_hovered else 2
-                    overlay_fc = (0, 100, 200) if is_hovered else (0, 200, 0)
+                    # 모드별 기본 색상, hover 시 밝게
+                    mode_color = _MODE_DRAW_COLORS.get(
+                        getattr(zone, 'mode', ZoneMode.DANGER), (0, 255, 0)
+                    )
+                    color = tuple(min(255, c + 80) for c in mode_color) if is_hovered else mode_color
+                    thickness = 3 if is_hovered else 2
                     overlay_img = grid.copy()
-                    cv2.fillPoly(overlay_img, [grid_pts], overlay_fc)
-                    cv2.addWeighted(overlay_img, 0.18, grid, 0.82, 0, grid)
+                    cv2.fillPoly(overlay_img, [grid_pts], mode_color)
+                    cv2.addWeighted(overlay_img, 0.15, grid, 0.85, 0, grid)
                     cv2.polylines(grid, [grid_pts], True, color, thickness, cv2.LINE_AA)
                     if len(grid_pts) > 0:
                         tx, ty = grid_pts[0]
-                        label = f"{zone.name}  [x=delete]" if is_hovered else zone.name
+                        mode_lbl = _MODE_LABELS.get(
+                            getattr(zone, 'mode', ZoneMode.DANGER), ""
+                        )
+                        label = (
+                            f"{zone.name} {mode_lbl}  [x=del]"
+                            if is_hovered
+                            else f"{zone.name} {mode_lbl}"
+                        )
                         cv2.putText(
                             grid, label,
                             (tx + 4, ty - 6),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 1, cv2.LINE_AA,
                         )
+                        # CROWD_COUNT 모드: 현재 인원 / 임계 표시
+                        if getattr(zone, 'mode', ZoneMode.DANGER) == ZoneMode.CROWD_COUNT:
+                            last_counts = getattr(zm, '_last_crowd_counts', {})
+                            cur_count = last_counts.get(cam_id, {}).get(zone.zone_id, 0)
+                            threshold = getattr(zone, 'count_threshold', 5)
+                            count_label = f"{cur_count}/{threshold}"
+                            count_color = (0, 0, 255) if cur_count >= threshold else (255, 200, 255)
+                            cv2.putText(
+                                grid, count_label,
+                                (tx + 4, ty + 16),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.7, count_color, 2, cv2.LINE_AA,
+                            )
 
         if drawing:
+            mode_lbl = _MODE_LABELS.get(pending_mode, str(pending_mode))
             cam_part = (
                 f" | {active_cam}" if active_cam
                 else " | click to select camera"
             )
             pt_part = f" ({len(points)} pts)" if points else ""
             msg = (
-                f"[DRAWING ON]  d=exit  left=add  right=undo"
-                f"  c=finish  z=undo  ESC=cancel{cam_part}{pt_part}"
+                f"[DRAWING ON] Mode:{mode_lbl}  d=exit  1=Danger 2=Watch 3=Crowd"
+                f"  left=add right=undo  c=finish  z=undo  ESC=cancel{cam_part}{pt_part}"
             )
             cv2.rectangle(grid, (0, 0), (w, 26), (30, 30, 30), -1)
             cv2.putText(
                 grid, msg, (6, 19),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.46, (0, 255, 255), 1, cv2.LINE_AA,
+                cv2.FONT_HERSHEY_SIMPLEX, 0.42, (0, 255, 255), 1, cv2.LINE_AA,
             )
         else:
-            hint = "[ d ] Draw zone  |  Hover over a zone + [ x ] to delete"
+            hint = "[ d ] Draw zone  |  1=Danger  2=Watch  3=Crowd  |  Hover+[ x ] to delete"
             cv2.putText(
                 grid, hint,
-                (6, 19), cv2.FONT_HERSHEY_SIMPLEX, 0.46, (160, 160, 160), 1, cv2.LINE_AA,
+                (6, 19), cv2.FONT_HERSHEY_SIMPLEX, 0.42, (160, 160, 160), 1, cv2.LINE_AA,
             )
 
         if not points:
             return grid
 
         pts_arr = np.array(points, dtype=np.int32)
+        draw_color = _MODE_DRAW_COLORS.get(pending_mode, (0, 255, 255))
 
         # 선분
         for i in range(1, len(pts_arr)):
             cv2.line(grid, tuple(pts_arr[i - 1]), tuple(pts_arr[i]),
-                     (0, 255, 255), 2, cv2.LINE_AA)
+                     draw_color, 2, cv2.LINE_AA)
 
         # 미리보기선 (hover)
         if hover and drawing:
             cv2.line(grid, tuple(pts_arr[-1]), hover,
-                     (0, 200, 255), 1, cv2.LINE_AA)
+                     draw_color, 1, cv2.LINE_AA)
 
         # 닫힘 미리보기 (3점 이상)
         if len(pts_arr) >= self.MIN_POINTS:
-            cv2.polylines(grid, [pts_arr], True, (0, 220, 255), 1)
+            cv2.polylines(grid, [pts_arr], True, draw_color, 1)
 
         # 점들
         for i, pt in enumerate(points):
-            color = (0, 0, 255) if i == 0 else (0, 255, 255)
+            color = (0, 0, 255) if i == 0 else draw_color
             cv2.circle(grid, pt, 6, color, -1)
             cv2.circle(grid, pt, 6, (255, 255, 255), 1)
 
@@ -315,6 +375,7 @@ class ZoneDrawer:
             camera_id = self._active_camera
             layout = self._layout
             zone_num = self._zone_counter
+            pending_mode = self._pending_mode
             self._reset()
 
         if layout is None:
@@ -332,6 +393,9 @@ class ZoneDrawer:
             try:
                 from ..utils.zone_detection import ZoneManager
                 proc.zone_manager = ZoneManager(proc.config.zones_config)
+                # _pipeline 에도 동기화
+                if hasattr(proc, '_pipeline'):
+                    proc._pipeline._zone_manager = proc.zone_manager
                 logger.info("zone_manager initialized on-demand")
             except Exception as exc:
                 logger.error("zone_manager init failed: %s", exc)
@@ -346,12 +410,25 @@ class ZoneDrawer:
             "id": f"zone_{zone_num}",
             "name": f"Zone {zone_num}",
             "polygon": cam_pts,
+            "mode": pending_mode,
         }
+        # 모드별 기본 설정 추가
+        if pending_mode == ZoneMode.OBJECT_WATCH:
+            new_zone["watch_classes"] = ["person"]
+            new_zone["alert_cooldown"] = 30.0
+        elif pending_mode == ZoneMode.CROWD_COUNT:
+            new_zone["count_classes"] = ["person"]
+            new_zone["count_threshold"] = 5
+            new_zone["alert_cooldown"] = 30.0
+
         all_zones = existing + [new_zone]
 
         ok = proc.update_zones(camera_id, all_zones, self._cameras_json_path)
         if ok:
-            logger.info("[%s] zone saved: zone_%d (%d points)", camera_id, zone_num, len(cam_pts))
+            logger.info(
+                "[%s] zone saved: zone_%d (%d points, mode=%s)",
+                camera_id, zone_num, len(cam_pts), pending_mode,
+            )
             with self._lock:
                 self._zone_counter = zone_num + 1
         else:

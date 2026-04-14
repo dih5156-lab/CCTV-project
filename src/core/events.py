@@ -20,7 +20,10 @@ class EventType(Enum):
     UNSAFE_BEHAVIOR = "unsafe_behavior"
     PERSON = "person"
     OTHER = "other"
-    
+    CROWD_WARNING = "crowd_warning"      # 유동인구 임계값 초과 경고
+    ZONE_OBJECT = "zone_object"          # 특정구역 객체 감지
+    APPEARANCE_MATCH = "appearance_match" # 외형 조건 매칭 (색상·속성)
+
     @classmethod
     def from_string(cls, value: str) -> 'EventType':
         """문자열을 EventType으로 변환"""
@@ -28,6 +31,14 @@ class EventType(Enum):
             return cls(value.lower())
         except ValueError:
             return cls.OTHER
+
+
+# 엄중 이벤트 집합 — 새 타입 추가 시 이곳만 수정
+_CRITICAL_EVENT_TYPES: frozenset = frozenset({
+    EventType.FALL_DETECTED,
+    EventType.DANGER_ZONE,
+    EventType.UNSAFE_BEHAVIOR,
+})
 
 
 @dataclass
@@ -42,6 +53,7 @@ class DetectionEvent:
     timestamp: float
     object_id: Optional[int] = None
     class_idx: Optional[int] = None
+    class_name: Optional[str] = None  # YOLO model.names 에서 추출한 클래스 이름 (예: "person", "bicycle")
     keypoints: Optional[list] = None  # YOLOv8-pose 키포인트 정보 (낙상 이벤트에만 저장)
     metadata: Optional[Dict] = None
 
@@ -52,15 +64,15 @@ class DetectionEvent:
         ROI 좌표 복원 연산(ev.x += x1) 시 float가 누적되면
         OpenCV 그리기 함수 및 bbox JSON 직렬화에서 오류가 발생한다.
         """
-        self.x = int(self.x)
-        self.y = int(self.y)
-        self.width = int(self.width)
-        self.height = int(self.height)
+        self.x = int(round(self.x))
+        self.y = int(round(self.y))
+        self.width = int(round(self.width))
+        self.height = int(round(self.height))
 
     def to_dict(self) -> Dict:
         """이벤트를 딕셔너리 형식으로 변환"""
-        # 낙상은 always critical — ActionBridge 알람 우선처리에 사용됨
-        severity = "critical" if self.event_type == EventType.FALL_DETECTED else "normal"
+        # critical 여부 — _CRITICAL_EVENT_TYPES 세트에서 결정
+        severity = "critical" if self.event_type in _CRITICAL_EVENT_TYPES else "normal"
         return {
             "type": self.event_type.value,
             "severity": severity,
@@ -69,6 +81,7 @@ class DetectionEvent:
             "timestamp": self.timestamp,
             "object_id": self.object_id,
             "class_idx": self.class_idx,
+            "class_name": self.class_name if self.class_name else None,
             "keypoints": self.keypoints if self.keypoints else None,
             "metadata": self.metadata if self.metadata else None,
         }

@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock
 
 from src.core.sensor_detection import SensorEventDetector
-from src.protocols.mqtt import MqttEventPublisher
+from src.protocols.mqtt_publisher import MqttEventPublisher
 from src.services.sensor_bridge import SensorBridgeService
 
 

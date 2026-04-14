@@ -48,6 +48,17 @@ logs/
 
 # Dataset (큰 파일)
 collected_data/
+
+# 모델 파일 (빌드 불필요 — bind mount로 주입)
+models/
+*.pt
+*.engine
+*.onnx
+
+# 가상 환경
+.venv/
+venv/
+env/
 dataset/
 
 # 모델 (대용량 - 캐시됨)

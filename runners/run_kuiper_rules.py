@@ -48,9 +48,9 @@ def ensure_mqtt_source_config(kuiper_api: str, mqtt_broker: str, mqtt_port: int)
     }
     resp = _request("PUT", url, json=payload)
     if resp.status_code in (200, 201):
-        logger.info(f"MQTT 소스 기본 설정 완료: tcp://{mqtt_broker}:{mqtt_port}")
+        logger.info("MQTT 소스 기본 설정 완료: tcp://%s:%s", mqtt_broker, mqtt_port)
     else:
-        logger.warning(f"MQTT 소스 설정 응답: {resp.status_code} - {resp.text}")
+        logger.warning("MQTT 소스 설정 응답: %s - %s", resp.status_code, resp.text)
 
 
 def ensure_stream(kuiper_api: str, stream_name: str, stream_sql: str) -> None:
@@ -62,13 +62,13 @@ def ensure_stream(kuiper_api: str, stream_name: str, stream_sql: str) -> None:
         # 항상 재생성하여 최신 소스 설정을 반영
         del_resp = _request("DELETE", stream_url)
         if del_resp.status_code not in (200, 204):
-            logger.warning(f"스트림 삭제 실패 ({stream_name}): {del_resp.status_code} - {del_resp.text}")
+            logger.warning("스트림 삭제 실패 (%s): %s - %s", stream_name, del_resp.status_code, del_resp.text)
         else:
-            logger.info(f"기존 스트림 삭제: {stream_name}")
+            logger.info("기존 스트림 삭제: %s", stream_name)
 
     create_resp = _request("POST", create_stream_url, json={"sql": stream_sql})
     if create_resp.status_code in (200, 201):
-        logger.info(f"스트림 생성 완료: {stream_name}")
+        logger.info("스트림 생성 완료: %s", stream_name)
         return
 
     raise RuntimeError(f"스트림 생성 실패: {create_resp.status_code} - {create_resp.text}")
@@ -86,7 +86,7 @@ def upsert_rule(kuiper_api: str, rule: Dict[str, Any]) -> None:
             raise RuntimeError(
                 f"기존 룰 삭제 실패 ({rule_id}): {delete_resp.status_code} - {delete_resp.text}"
             )
-        logger.info(f"기존 룰 삭제: {rule_id}")
+        logger.info("기존 룰 삭제: %s", rule_id)
 
     create_payload = {
         "id": rule_id,
@@ -99,7 +99,7 @@ def upsert_rule(kuiper_api: str, rule: Dict[str, Any]) -> None:
 
     create_resp = _request("POST", create_rule_url, json=create_payload)
     if create_resp.status_code in (200, 201):
-        logger.info(f"룰 배포 완료: {rule_id}")
+        logger.info("룰 배포 완료: %s", rule_id)
         return
 
     raise RuntimeError(f"룰 배포 실패 ({rule_id}): {create_resp.status_code} - {create_resp.text}")
@@ -200,7 +200,7 @@ def main() -> None:
             return
         except Exception as error:
             last_error = error
-            logger.warning(f"Kuiper 룰 배포 실패 (시도 {attempt}/{args.retry_count}): {error}")
+            logger.warning("Kuiper 룰 배포 실패 (시도 %s/%s): %s", attempt, args.retry_count, error)
             if attempt < args.retry_count:
                 time.sleep(args.retry_delay)
 

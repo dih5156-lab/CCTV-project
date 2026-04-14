@@ -234,7 +234,7 @@ class TestEnsureConnectionBackoff:
         self._reset_redis(svc)
         mock_client = MagicMock()
         mock_client.ping.side_effect = ConnectionRefusedError("연결 거부")
-        with patch("src.edgex.device_service.redis.Redis", return_value=mock_client):
+        with patch("src.edgex._publisher_mixin.redis.Redis", return_value=mock_client):
             result = svc._ensure_redis_client()
         assert result is False
         assert svc._redis_fail_count >= 1
@@ -252,7 +252,7 @@ class TestEnsureConnectionBackoff:
         self._reset_mqtt(svc)
         mock_instance = MagicMock()
         mock_instance.connect.side_effect = ConnectionRefusedError("MQTT 연결 거부")
-        with patch("src.edgex.device_service.mqtt.Client", return_value=mock_instance):
+        with patch("src.edgex._publisher_mixin.mqtt.Client", return_value=mock_instance):
             result = svc._ensure_mqtt_client()
         assert result is False
         assert svc._mqtt_fail_count >= 1
@@ -272,7 +272,7 @@ class TestEnsureConnectionBackoff:
         svc._redis_last_fail_time = 0
         mock_client = MagicMock()
         mock_client.ping.return_value = True
-        with patch("src.edgex.device_service.redis.Redis", return_value=mock_client):
+        with patch("src.edgex._publisher_mixin.redis.Redis", return_value=mock_client):
             svc._redis_client = None
             result = svc._ensure_redis_client()
         assert result is True
@@ -284,7 +284,7 @@ class TestEnsureConnectionBackoff:
         svc._mqtt_last_fail_time = 0
         mock_instance = MagicMock()
         mock_instance.connect.return_value = None
-        with patch("src.edgex.device_service.mqtt.Client", return_value=mock_instance):
+        with patch("src.edgex._publisher_mixin.mqtt.Client", return_value=mock_instance):
             svc._mqtt_client = None
             result = svc._ensure_mqtt_client()
         assert result is True
@@ -379,8 +379,9 @@ class TestEdgeXOutbox:
 
         with patch.object(svc, "_publish_event_redis", return_value=False), \
              patch.object(svc, "_publish_event_mqtt", return_value=True):
+            outbox_ref = (pending[0]["_table"], pending[0]["id"])
             result = asyncio.run(
-                svc.replay_detection_event(pending[0]["id"], "cam1", sample_event)
+                svc.replay_detection_event(outbox_ref, "cam1", sample_event)
             )
 
         assert result is True
@@ -402,9 +403,22 @@ class TestEventCategoryClassification:
                 f"{event_type!r} should be 'person'"
 
     def test_camera_events_classified_as_camera(self, svc):
-        for event_type in ("danger_zone", "intrusion", "other", "unknown_event"):
+        for event_type in ("other", "unknown_event"):
             assert svc._classify_event_category(event_type) == "camera", \
                 f"{event_type!r} should be 'camera'"
+
+    def test_zone_events_classified_as_zone(self, svc):
+        for event_type in ("danger_zone", "intrusion", "zone_entered",
+                           "zone_dwelling", "zone_object_detected",
+                           "crowd_warning"):
+            assert svc._classify_event_category(event_type) == "zone", \
+                f"{event_type!r} should be 'zone'"
+
+    def test_sensor_events_classified_as_sensor(self, svc):
+        for event_type in ("tilt_alert", "temperature_alert",
+                           "vibration_alert", "sensor_data"):
+            assert svc._classify_event_category(event_type) == "sensor", \
+                f"{event_type!r} should be 'sensor'"
 
     def test_empty_event_type_returns_camera(self, svc):
         assert svc._classify_event_category("") == "camera"
@@ -424,7 +438,7 @@ class TestEventCategoryClassification:
             "cam2", {"type": "intrusion", "confidence": 0.75}, "net error"
         )
         pending = svc.get_pending_detection_events()
-        assert pending[0]["data_category"] == "camera"
+        assert pending[0]["data_category"] == "zone"
 
     def test_filter_by_person_category(self, svc):
         svc._init_outbox()
@@ -433,18 +447,58 @@ class TestEventCategoryClassification:
         svc._store_failed_detection_event("cam1", {"type": "fall_detected"}, "err")
 
         person_rows = svc.get_pending_detection_events(data_category="person")
-        camera_rows = svc.get_pending_detection_events(data_category="camera")
+        zone_rows   = svc.get_pending_detection_events(data_category="zone")
         all_rows    = svc.get_pending_detection_events()
 
         assert len(person_rows) == 2   # helmet + fall_detected
-        assert len(camera_rows) == 1   # intrusion
+        assert len(zone_rows) == 1     # intrusion
         assert len(all_rows) == 3
 
-    def test_filter_by_camera_category(self, svc):
+    def test_filter_by_zone_category(self, svc):
         svc._init_outbox()
         svc._store_failed_detection_event("cam1", {"type": "danger_zone"}, "err")
         svc._store_failed_detection_event("cam1", {"type": "person"}, "err")
 
-        camera_only = svc.get_pending_detection_events(data_category="camera")
-        assert len(camera_only) == 1
-        assert camera_only[0]["event_data"]["type"] == "danger_zone"
+        zone_only = svc.get_pending_detection_events(data_category="zone")
+        assert len(zone_only) == 1
+        assert zone_only[0]["event_data"]["type"] == "danger_zone"
+
+    def test_sensor_stored_in_sensor_outbox(self, svc):
+        """sensor 이벤트는 sensor_outbox 테이블에 저장된다."""
+        svc._init_outbox()
+        svc._store_failed_detection_event("s1", {"type": "tilt_alert"}, "err")
+        svc._store_failed_detection_event("s2", {"type": "vibration_alert"}, "err")
+
+        import sqlite3
+        with sqlite3.connect(str(svc.outbox_db_path)) as conn:
+            sensor_count = conn.execute(
+                "SELECT COUNT(*) FROM sensor_outbox"
+            ).fetchone()[0]
+            detection_count = conn.execute(
+                "SELECT COUNT(*) FROM detection_outbox"
+            ).fetchone()[0]
+
+        assert sensor_count == 2
+        assert detection_count == 0
+
+    def test_zone_stored_in_zone_outbox(self, svc):
+        """zone 이벤트는 zone_outbox 테이블에 저장된다."""
+        svc._init_outbox()
+        svc._store_failed_detection_event("cam1", {"type": "intrusion"}, "err")
+        svc._store_failed_detection_event("cam2", {"type": "crowd_warning"}, "err")
+
+        import sqlite3
+        with sqlite3.connect(str(svc.outbox_db_path)) as conn:
+            zone_count = conn.execute("SELECT COUNT(*) FROM zone_outbox").fetchone()[0]
+            detection_count = conn.execute("SELECT COUNT(*) FROM detection_outbox").fetchone()[0]
+
+        assert zone_count == 2
+        assert detection_count == 0
+
+    def test_pending_returns_table_key(self, svc):
+        """get_pending_detection_events 반환값에 _table 키가 포함된다."""
+        svc._init_outbox()
+        svc._store_failed_detection_event("cam1", {"type": "tilt_alert"}, "err")
+        pending = svc.get_pending_detection_events(data_category="sensor")
+        assert len(pending) == 1
+        assert pending[0]["_table"] == "sensor_outbox"

@@ -23,11 +23,20 @@ import numpy as np
 logger = logging.getLogger(__name__)
 
 
+class ZoneMode(str, Enum):
+    """구역 동작 모드"""
+    DANGER      = "danger"        # 위험구역: 객체 진입 즉시 경고
+    OBJECT_WATCH = "object_watch" # 객체감시: 특정 클래스 진입 시 경고
+    CROWD_COUNT  = "crowd_count"  # 인파분석: 구역 내 객체 수 임계값 초과 시 경고
+
+
 class ZoneEventType(str, Enum):
     """구역 이벤트 타입"""
-    ENTERED = "zone_entered"
-    EXITED = "zone_exited"
-    DWELLING = "zone_dwelling"
+    ENTERED       = "zone_entered"
+    EXITED        = "zone_exited"
+    DWELLING      = "zone_dwelling"
+    CROWD_WARNING = "crowd_warning"       # 인파 임계값 초과
+    OBJECT_DETECTED = "zone_object_detected"  # 감시 객체 탐지
 
 
 @dataclass
@@ -41,6 +50,7 @@ class ZoneEvent:
     confidence: float
     timestamp: float = field(default_factory=time.time)
     dwelling_seconds: float = 0.0  # 체류 시간 (dwelling 이벤트일 때만)
+    metadata: Dict = field(default_factory=dict)  # 추가 정보 (count 등)
 
     def to_dict(self) -> Dict:
         data = asdict(self)
@@ -73,20 +83,48 @@ class Zone:
         raise NotImplementedError
 
 
+# 구역 모드별 시각화 색상 (BGR)
+_ZONE_MODE_COLORS: Dict[str, Tuple[int, int, int]] = {
+    ZoneMode.DANGER:       (0, 0, 255),    # 빨강 - 위험구역
+    ZoneMode.OBJECT_WATCH: (0, 165, 255),  # 주황 - 객체감시
+    ZoneMode.CROWD_COUNT:  (255, 0, 255),  # 자주 - 인파분석
+}
+
+
 class PolygonZone(Zone):
     """폴리곤 기반 위험 구역."""
 
     zone_type = "polygon"
 
-    def __init__(self, zone_id: str, polygon: List[Tuple[int, int]], name: str = ""):
+    def __init__(
+        self,
+        zone_id: str,
+        polygon: List[Tuple[int, int]],
+        name: str = "",
+        mode: str = ZoneMode.DANGER,
+        watch_classes: Optional[List[str]] = None,
+        count_classes: Optional[List[str]] = None,
+        count_threshold: int = 5,
+        alert_cooldown: float = 30.0,
+    ):
         """
         매개변수:
-            zone_id: 구역 ID (예: 'zone_1')
-            polygon: 폴리곤 좌표 [(x1, y1), (x2, y2), ...]
-            name: 구역 이름 (예: '전기설비')
+            zone_id:         구역 ID (예: 'zone_1')
+            polygon:         폴리곤 좌표 [(x1, y1), (x2, y2), ...]
+            name:            구역 이름 (예: '전기설비')
+            mode:            ZoneMode (danger / object_watch / crowd_count)
+            watch_classes:   [object_watch] 감시할 이벤트 타입 목록 (예: ['person', 'head'])
+            count_classes:   [crowd_count] 카운트할 이벤트 타입 목록 (기본: ['person'])
+            count_threshold: [crowd_count] 경고 임계값 (기본 5명)
+            alert_cooldown:  [crowd_count/object_watch] 반복 경고 억제 간격(초)
         """
         super().__init__(zone_id, name)
         self.polygon = np.array(polygon, dtype=np.int32)
+        self.mode = ZoneMode(mode) if isinstance(mode, str) else mode
+        self.watch_classes = [c.lower() for c in (watch_classes or ["person"])]
+        self.count_classes = [c.lower() for c in (count_classes or ["person"])]
+        self.count_threshold = int(count_threshold)
+        self.alert_cooldown = float(alert_cooldown)
 
     def contains_point(self, point: Tuple[float, float]) -> bool:
         """점이 폴리곤 내부에 있는지 확인"""
@@ -107,21 +145,39 @@ class PolygonZone(Zone):
 
         return self.contains_point((int(x + w / 2), int(y + h / 2)))
 
-    def draw(self, frame: np.ndarray, color: Tuple[int, int, int] = (0, 255, 0), thickness: int = 2):
-        """프레임에 폴리곤 그리기"""
-        cv2.polylines(frame, [self.polygon], True, color, thickness)
-        # 구역 이름 표시
+    def draw(
+        self,
+        frame: np.ndarray,
+        color: Optional[Tuple[int, int, int]] = None,
+        thickness: int = 2,
+    ):
+        """프레임에 폴리곤 그리기 (모드별 색상 자동 적용)"""
+        c = color if color is not None else _ZONE_MODE_COLORS.get(self.mode, (0, 255, 0))
+        cv2.polylines(frame, [self.polygon], True, c, thickness)
         if len(self.polygon) > 0:
             x, y = self.polygon[0]
-            cv2.putText(frame, self.name, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+            mode_tag = f" [{self.mode.value}]" if self.mode != ZoneMode.DANGER else ""
+            cv2.putText(
+                frame, self.name + mode_tag,
+                (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.55, c, 2,
+            )
 
     def to_dict(self) -> Dict:
-        return {
+        d: Dict = {
             "id": self.zone_id,
             "name": self.name,
             "type": self.zone_type,
             "polygon": self.polygon.tolist(),
+            "mode": self.mode.value,
         }
+        if self.mode == ZoneMode.OBJECT_WATCH:
+            d["watch_classes"] = self.watch_classes
+            d["alert_cooldown"] = self.alert_cooldown
+        elif self.mode == ZoneMode.CROWD_COUNT:
+            d["count_classes"] = self.count_classes
+            d["count_threshold"] = self.count_threshold
+            d["alert_cooldown"] = self.alert_cooldown
+        return d
 
 
 class LineZone(Zone):
@@ -184,7 +240,12 @@ class ZoneManager:
         self.object_positions: Dict[str, Dict[Tuple[str, int], Tuple[float, float]]] = {}  # camera_id -> {(zone_id, object_id) -> point}
         self.dwelling_threshold: float = 3.0  # 체류 시간 임계값 (초)
         self.sent_dwelling_events: Dict[Tuple[str, str, int], float] = {}  # (camera_id, zone_id, object_id) -> last_event_time
-        
+        # 군중/감시 구역 마지막 경보 시각: (camera_id, zone_id) -> timestamp
+        self._crowd_last_alert: Dict[Tuple[str, str], float] = {}
+        self._watch_last_alert: Dict[Tuple[str, str, int], float] = {}  # (cam, zone, obj_id)
+        # 군중 구역 마지막 카운트 (오버레이 표시용): camera_id -> {zone_id -> count}
+        self._last_crowd_counts: Dict[str, Dict[str, int]] = {}
+
         self._load_config()
 
     def _load_config(self):
@@ -221,7 +282,15 @@ class ZoneManager:
                 self.zones[camera_id][zone_id] = LineZone(zone_id, points, name, direction)
             else:
                 polygon = zone_def['polygon']
-                self.zones[camera_id][zone_id] = PolygonZone(zone_id, polygon, name)
+                mode = zone_def.get('mode', ZoneMode.DANGER)
+                self.zones[camera_id][zone_id] = PolygonZone(
+                    zone_id, polygon, name,
+                    mode=mode,
+                    watch_classes=zone_def.get('watch_classes'),
+                    count_classes=zone_def.get('count_classes'),
+                    count_threshold=zone_def.get('count_threshold', 5),
+                    alert_cooldown=zone_def.get('alert_cooldown', 30.0),
+                )
         
         self.object_states[camera_id] = {}
         self.object_enter_time[camera_id] = {}
@@ -311,69 +380,95 @@ class ZoneManager:
             ZoneEvent 리스트
         """
         events = []
-        
+
         if camera_id not in self.zones or not self.zones[camera_id]:
             return events
 
         # 현재 프레임에서 탐지된 객체 ID 집합
         current_object_ids = set()
-        
+
+        # CROWD_COUNT 용: zone_id → zone내 객체 수 누적
+        crowd_counts: Dict[str, int] = {}
+
         for detection in detections:
             object_id = detection.object_id or 0
             bbox_dict = detection.to_dict().get('bbox', {})
             current_object_ids.add(object_id)
             anchor_point = self._get_anchor_point(bbox_dict)
-            
+            # class_name 우선 사용, 없으면 event_type.value 로 fallback
+            det_class = (
+                getattr(detection, 'class_name', None)
+                or detection.event_type.value.lower()
+            )
+
             # 각 구역과 교차 검사
             for zone_id, zone in self.zones[camera_id].items():
                 zone_key = (zone_id, object_id)
+
                 if isinstance(zone, LineZone):
                     prev_point = self.object_positions[camera_id].get(zone_key)
                     event_type = self._check_line_crossing(zone, prev_point, anchor_point)
                     if event_type is not None:
-                        events.append(
-                            ZoneEvent(
-                                event_type=event_type,
-                                zone_id=zone_id,
-                                object_id=object_id,
-                                camera_id=camera_id,
-                                bbox=bbox_dict,
-                                confidence=detection.confidence,
-                            )
-                        )
+                        events.append(ZoneEvent(
+                            event_type=event_type,
+                            zone_id=zone_id,
+                            object_id=object_id,
+                            camera_id=camera_id,
+                            bbox=bbox_dict,
+                            confidence=detection.confidence,
+                        ))
                     self.object_positions[camera_id][zone_key] = anchor_point
                     continue
 
+                # --- PolygonZone ---
                 in_zone = zone.intersects_bbox(bbox_dict)
+                mode = getattr(zone, 'mode', ZoneMode.DANGER)
 
+                # CROWD_COUNT: 해당 클래스가 zone 안에 있으면 카운트만 누적
+                if mode == ZoneMode.CROWD_COUNT:
+                    count_classes = getattr(zone, 'count_classes', ['person'])
+                    if in_zone and det_class in count_classes:
+                        crowd_counts[zone_id] = crowd_counts.get(zone_id, 0) + 1
+                    continue
+
+                # OBJECT_WATCH: watch_classes에 속하지 않으면 무시
+                if mode == ZoneMode.OBJECT_WATCH:
+                    watch_classes = getattr(zone, 'watch_classes', ['person'])
+                    if det_class not in watch_classes:
+                        continue  # 감시 대상 아님 → 스킵
+
+                # DANGER / OBJECT_WATCH 공통 진입·체류·퇴장 로직
                 if in_zone and zone_key not in self.object_states[camera_id]:
                     self.object_states[camera_id][zone_key] = False
 
                 prev_in_zone = self.object_states[camera_id].get(zone_key, False)
 
                 if in_zone and not prev_in_zone:
-                    event = ZoneEvent(
-                        event_type=ZoneEventType.ENTERED,
+                    ev_type = (ZoneEventType.OBJECT_DETECTED
+                               if mode == ZoneMode.OBJECT_WATCH
+                               else ZoneEventType.ENTERED)
+                    events.append(ZoneEvent(
+                        event_type=ev_type,
                         zone_id=zone_id,
                         object_id=object_id,
                         camera_id=camera_id,
                         bbox=bbox_dict,
-                        confidence=detection.confidence
-                    )
-                    events.append(event)
+                        confidence=detection.confidence,
+                        metadata={"mode": mode.value, "class": det_class},
+                    ))
                     self.object_states[camera_id][zone_key] = True
                     self.object_enter_time[camera_id][zone_key] = time.time()
 
                 elif not in_zone and prev_in_zone:
-                    event = ZoneEvent(
+                    events.append(ZoneEvent(
                         event_type=ZoneEventType.EXITED,
                         zone_id=zone_id,
                         object_id=object_id,
                         camera_id=camera_id,
                         bbox=bbox_dict,
-                        confidence=detection.confidence
-                    )
-                    events.append(event)
+                        confidence=detection.confidence,
+                        metadata={"mode": mode.value},
+                    ))
                     self.object_states[camera_id][zone_key] = False
                     self.object_enter_time[camera_id].pop(zone_key, None)
 
@@ -386,18 +481,53 @@ class ZoneManager:
                             key = (camera_id, zone_id, object_id)
                             last_event_time = self.sent_dwelling_events.get(key, 0)
                             if now_ts - last_event_time >= 1.0:
-                                event = ZoneEvent(
+                                events.append(ZoneEvent(
                                     event_type=ZoneEventType.DWELLING,
                                     zone_id=zone_id,
                                     object_id=object_id,
                                     camera_id=camera_id,
                                     bbox=bbox_dict,
                                     confidence=detection.confidence,
-                                    dwelling_seconds=dwelling_time
-                                )
-                                events.append(event)
+                                    dwelling_seconds=dwelling_time,
+                                    metadata={"mode": mode.value, "class": det_class},
+                                ))
                                 self.sent_dwelling_events[key] = now_ts
-        
+
+        # --- CROWD_COUNT 사후 처리 ---
+        now_ts = time.time()
+        cam_counts: Dict[str, int] = {}
+        for zone_id, zone in self.zones[camera_id].items():
+            if not isinstance(zone, PolygonZone):
+                continue
+            if getattr(zone, 'mode', ZoneMode.DANGER) != ZoneMode.CROWD_COUNT:
+                continue
+            count = crowd_counts.get(zone_id, 0)
+            cam_counts[zone_id] = count
+            threshold = getattr(zone, 'count_threshold', 5)
+            cooldown = getattr(zone, 'alert_cooldown', 30.0)
+            if count >= threshold:
+                alert_key = (camera_id, zone_id)
+                last_alert = self._crowd_last_alert.get(alert_key, 0.0)
+                if now_ts - last_alert >= cooldown:
+                    count_classes = getattr(zone, 'count_classes', ['person'])
+                    events.append(ZoneEvent(
+                        event_type=ZoneEventType.CROWD_WARNING,
+                        zone_id=zone_id,
+                        object_id=0,
+                        camera_id=camera_id,
+                        bbox={},
+                        confidence=1.0,
+                        metadata={"count": count, "threshold": threshold, "count_classes": count_classes},
+                    ))
+                    self._crowd_last_alert[alert_key] = now_ts
+                    logger.info(
+                        "[%s] 군중 경고: zone=%s 인원=%d명 (임계=%d)",
+                        camera_id, zone_id, count, threshold,
+                    )
+
+        # 최신 카운트 저장 (오버레이 표시용)
+        self._last_crowd_counts[camera_id] = cam_counts
+
         # 사라진 객체 정리
         for zone_key in list(self.object_states[camera_id].keys()):
             _, object_id = zone_key
@@ -408,7 +538,7 @@ class ZoneManager:
             _, object_id = zone_key
             if object_id not in current_object_ids:
                 self.object_positions[camera_id].pop(zone_key, None)
-        
+
         return events
 
     def _get_anchor_point(self, bbox: Dict) -> Tuple[float, float]:
@@ -489,4 +619,4 @@ class ZoneManager:
         return frame
 
 
-__all__ = ["Zone", "PolygonZone", "LineZone", "ZoneManager", "ZoneEvent"]
+__all__ = ["Zone", "PolygonZone", "LineZone", "ZoneManager", "ZoneEvent", "ZoneMode", "ZoneEventType"]

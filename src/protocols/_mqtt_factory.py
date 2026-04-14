@@ -13,6 +13,11 @@ import paho.mqtt.client as mqtt
 
 _PAHO_V2 = hasattr(mqtt, "CallbackAPIVersion")
 
+# 재연결 백오프 공통 상수 (publisher/subscriber 공유)
+RECONNECT_MIN_DELAY: float = 1.0    # 최초 재시도 대기 시간 (초)
+RECONNECT_MULTIPLIER: float = 2.0   # 대기 시간 배율
+# MAX_DELAY 는 각 클라이언트마다 별도 지정 (publisher: 60s, subscriber: 30s)
+
 
 def create_mqtt_client(
     client_id_prefix: str,

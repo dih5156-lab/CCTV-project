@@ -2,7 +2,7 @@
 
 import logging
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable, Mapping, Optional, Sequence, Union
 
@@ -100,6 +100,10 @@ ENV_OVERRIDES: tuple[EnvOverride, ...] = (
     EnvOverride("EXTERNAL_REPUBLISH_ENABLED", ("external_ingest", "republish_enabled"), parser=_parse_bool),
     # 카메라 / RTSP
     EnvOverride("RTSP_BUFFER_SIZE", ("camera", "buffer_size"), parser=lambda v: int(v.strip())),
+    # 외형 분석
+    EnvOverride("APPEARANCE_ENABLED", ("appearance", "enabled"), parser=_parse_bool),
+    EnvOverride("APPEARANCE_MATCH_THRESHOLD", ("appearance", "match_threshold"), parser=lambda v: float(v.strip())),
+    EnvOverride("APPEARANCE_COOLDOWN_SECONDS", ("appearance", "cooldown_seconds"), parser=lambda v: float(v.strip())),
     # 이벤트 디바운스 / 지속 감지
     EnvOverride("DEBOUNCE_SECONDS", ("events", "debounce_seconds"), parser=lambda v: float(v.strip())),
     EnvOverride("FALL_SUSTAINED_SECONDS", ("events", "fall_sustained_seconds"), parser=lambda v: float(v.strip())),
@@ -308,7 +312,6 @@ class ProcessingConfig:
     queue_warning_threshold: float = 0.8  # 큐 경고 임계값
     
     # 추론 및 성능
-    fall_inference_interval: int = 7  # 낙상 추론 간격
     frame_skip: int = 8  # 프레임 스킵 (8프레임마다 1회 추론)
     
     # 누적 판정 방식 (오탐 필터링)
@@ -321,40 +324,40 @@ class ProcessingConfig:
 
 
 @dataclass
+class AppearanceConfig:
+    """외형 분석 설정"""
+    enabled: bool = False                # 외형 분석 활성화 여부
+    match_threshold: float = 0.8         # 조건 매칭 최소 점수 (0.0~1.0)
+    cooldown_seconds: float = 5.0        # 동일 객체·조건 재매칭 억제 간격 (초)
+
+
+@dataclass
 class AppConfig:
     """애플리케이션 메인 설정"""
 
-    models: Optional[ModelPaths] = None
-    mqtt: Optional[MqttConfig] = None
-    camera: Optional[CameraConfig] = None
-    detection: Optional[DetectionConfig] = None
-    events: Optional[EventConfig] = None
-    processing: Optional[ProcessingConfig] = None
-    edgex: Optional[EdgeXConfig] = None
-    action: Optional[ActionBridgeConfig] = None
-    external_ingest: Optional[ExternalIngestConfig] = None
-    
-    # 기능 활성화 플래그
-    display: bool = False  # 화면 표시 여부
-    zone_detection: bool = False  # 구역 감지 여부
-    collect_dataset: bool = False  # 데이터셋 수집 여부
-    
-    # 파일 경로
-    dataset_dir: str = str(PROJECT_ROOT / "collected_data")  # 데이터셋 디렉토리
-    zones_config: str = str(PROJECT_ROOT / "zones_config.json")  # 구역 설정 파일
-    
-    def __post_init__(self) -> None:
-        """기본 설정 객체 초기화"""
+    models:          ModelPaths          = field(default_factory=ModelPaths)
+    mqtt:            MqttConfig          = field(default_factory=MqttConfig)
+    camera:          CameraConfig        = field(default_factory=CameraConfig)
+    detection:       DetectionConfig     = field(default_factory=DetectionConfig)
+    events:          EventConfig         = field(default_factory=EventConfig)
+    processing:      ProcessingConfig    = field(default_factory=ProcessingConfig)
+    edgex:           EdgeXConfig         = field(default_factory=EdgeXConfig)
+    action:          ActionBridgeConfig  = field(default_factory=ActionBridgeConfig)
+    external_ingest: ExternalIngestConfig = field(default_factory=ExternalIngestConfig)
+    appearance:      AppearanceConfig    = field(default_factory=AppearanceConfig)
 
-        self.models = self.models or ModelPaths()
-        self.mqtt = self.mqtt or MqttConfig()
-        self.camera = self.camera or CameraConfig()
-        self.detection = self.detection or DetectionConfig()
-        self.events = self.events or EventConfig()
-        self.processing = self.processing or ProcessingConfig()
-        self.edgex = self.edgex or EdgeXConfig()
-        self.action = self.action or ActionBridgeConfig()
-        self.external_ingest = self.external_ingest or ExternalIngestConfig()
+    # 기능 활성화 플래그
+    display: bool = False          # 화면 표시 여부
+    zone_detection: bool = False   # 구역 감지 여부
+    collect_dataset: bool = False  # 데이터셋 수집 여부
+
+    # 파일 경로
+    dataset_dir: str = str(PROJECT_ROOT / "collected_data")   # 데이터셋 디렉토리
+    zones_config: str = str(PROJECT_ROOT / "zones_config.json")  # 구역 설정 파일
+
+    def __post_init__(self) -> None:
+        """dataclass 기본값 검증 전용 — 서브코단피그 인스턴스 생성은 field()가 담당."""
+        pass
     
     @classmethod
     def from_env(cls, env: Optional[Mapping[str, str]] = None) -> "AppConfig":

@@ -7,7 +7,7 @@
     {
       "id": "intrusion_confidence_filter",
       "description": "intrusion 이벤트 confidence 필터링",
-      "sql": "SELECT camera_id, type, confidence, timestamp, object_id FROM ai_events_stream WHERE type = 'danger_zone' AND confidence >= {{INTRUSION_CONFIDENCE}}",
+      "sql": "SELECT camera_id, type, confidence, timestamp, object_id FROM ai_events_stream WHERE type IN ('danger_zone', 'person', 'helmet', 'fall_detected', 'unsafe_behavior') AND confidence >= {{INTRUSION_CONFIDENCE}}",
       "actions": [
         {
           "mqtt": {
@@ -22,7 +22,7 @@
     {
       "id": "intrusion_5s_persist",
       "description": "5초 이상 지속 감지 조건",
-      "sql": "SELECT camera_id, MAX(confidence) AS max_confidence, COUNT(*) AS hit_count, window_end() AS detected_until FROM ai_events_stream WHERE type = 'danger_zone' AND confidence >= {{INTRUSION_CONFIDENCE}} GROUP BY camera_id, TUMBLINGWINDOW(ss, 5) HAVING COUNT(*) >= {{PERSIST_HIT_COUNT}}",
+      "sql": "SELECT camera_id, MAX(confidence) AS max_confidence, COUNT(*) AS hit_count, window_end() AS detected_until FROM ai_events_stream WHERE type IN ('danger_zone', 'person', 'helmet', 'fall_detected', 'unsafe_behavior') AND confidence >= {{INTRUSION_CONFIDENCE}} GROUP BY camera_id, TUMBLINGWINDOW(ss, 5) HAVING COUNT(*) >= {{PERSIST_HIT_COUNT}}",
       "actions": [
         {
           "mqtt": {
@@ -37,7 +37,7 @@
     {
       "id": "intrusion_high_confidence_routing",
       "description": "고신뢰 intrusion 라우팅",
-      "sql": "SELECT camera_id, type, confidence, timestamp, object_id, 'critical' AS severity FROM ai_events_stream WHERE type = 'danger_zone' AND confidence >= {{CRITICAL_CONFIDENCE}}",
+      "sql": "SELECT camera_id, type, confidence, timestamp, object_id, 'critical' AS severity FROM ai_events_stream WHERE type IN ('danger_zone', 'fall_detected', 'unsafe_behavior') AND confidence >= {{CRITICAL_CONFIDENCE}}",
       "actions": [
         {
           "mqtt": {

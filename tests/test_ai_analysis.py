@@ -16,13 +16,12 @@ test_ai_analysis.py — AIAnalyzer 단위 테스트
       순수 계산 로직만 검증하므로 실제 모델 추론은 수행하지 않는다.
 """
 
-import time
-
 import numpy as np
 import pytest
 from unittest.mock import MagicMock, patch
 
 from src.core.events import DetectionEvent, EventType
+from tests.conftest import make_event
 
 
 # ---------------------------------------------------------------------------
@@ -37,13 +36,7 @@ def _det(
     conf: float = 0.9,
     oid: int = 1,
 ) -> DetectionEvent:
-    return DetectionEvent(
-        event_type=EventType.from_string(etype),
-        x=x, y=y, width=w, height=h,
-        confidence=conf,
-        timestamp=time.time(),
-        object_id=oid,
-    )
+    return make_event(event_type=etype, x=x, y=y, width=w, height=h, confidence=conf, object_id=oid)
 
 
 class MockKeypoints:

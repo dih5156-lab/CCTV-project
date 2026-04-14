@@ -1,6 +1,4 @@
-"""
-visualizer.py - 감지 결과 시각화
-"""
+"""감지 결과 시각화 유틸리티."""
 
 import logging
 from pathlib import Path
@@ -37,9 +35,17 @@ EVENT_COLORS: Dict[EventType, Tuple[int, int, int]] = {
     EventType.FACE_RECOGNIZED: (0, 200, 255),  # 주황색
     EventType.FACE_UNKNOWN: (80, 80, 255),     # 붉은 주황
     EventType.FALL_DETECTED: (0, 100, 100),     # 갈색
-    EventType.DANGER_ZONE: (255, 0, 255),       # 자주색
+    EventType.DANGER_ZONE: (0, 0, 255),         # 빨간색 - 위험구역
+    EventType.ZONE_OBJECT: (0, 165, 255),       # 주황색 - 객체감시구역
+    EventType.CROWD_WARNING: (128, 0, 255),     # 보라색 - 군중 경고
     EventType.PERSON: (0, 255, 0),              # 초록색
     EventType.OTHER: (200, 200, 200),           # 회색
+}
+
+_EVENT_TYPE_ALIASES = {
+    "zone_object_detected": EventType.ZONE_OBJECT,
+    "zone_entered": EventType.DANGER_ZONE,
+    "zone_dwelling": EventType.DANGER_ZONE,
 }
 
 # 이벤트 타입별 그리기 순서 (0=먼저, 큰 박스 먼저 그리기)
@@ -47,34 +53,48 @@ _DRAW_PRIORITY: Dict[str, int] = {
     "person":       0,
     "fall_detected": 1,
     "danger_zone":  2,
+    "zone_object":  2,
+    "crowd_warning": 2,
     "helmet":       3,
     "head":         3,
     "face_recognized": 4,
     "face_unknown": 4,
 }
 
+def _resolve_event_type(value: object) -> EventType:
+    """문자열 또는 enum 값을 안전하게 EventType으로 변환한다."""
+    if isinstance(value, EventType):
+        return value
+    if value is None:
+        return EventType.OTHER
+    normalized = str(value).strip().lower()
+    if normalized in _EVENT_TYPE_ALIASES:
+        return _EVENT_TYPE_ALIASES[normalized]
+    return EventType.from_string(normalized)
+
+
 def _parse_event_data(event: Union[Dict, DetectionEvent]) -> Optional[Dict]:
-    """이벤트 데이터를 표준화된 딕셔너리 형식으로 파싱"""
+    """이벤트 데이터를 표준화된 딕셔너리 형식으로 변환한다."""
     if isinstance(event, dict):
-        event_type_str = event.get("type", "unknown")
-        if event_type_str == "other":
+        event_type = _resolve_event_type(event.get("type", "unknown"))
+        if event_type == EventType.OTHER:
             return None
-        
+
         return {
-            "type_str": event_type_str,
-            "color": EVENT_COLORS.get(EventType(event_type_str), EVENT_COLORS[EventType.OTHER]),
-            "confidence": event.get('confidence', 0),
+            "type_str": event_type.value,
+            "color": EVENT_COLORS.get(event_type, EVENT_COLORS[EventType.OTHER]),
+            "confidence": event.get("confidence", 0),
             "bbox": event.get("bbox", {}),
-            "keypoints": event.get("keypoints", None),
+            "keypoints": event.get("keypoints"),
             "object_id": event.get("object_id"),
             "metadata": event.get("metadata") or {},
         }
-    
-    elif isinstance(event, DetectionEvent):
+
+    if isinstance(event, DetectionEvent):
         # OTHER 타입 필터링
         if event.event_type == EventType.OTHER:
             return None
-        
+
         data = event.to_dict()
         return {
             "type_str": event.event_type.value,
@@ -85,10 +105,9 @@ def _parse_event_data(event: Union[Dict, DetectionEvent]) -> Optional[Dict]:
             "object_id": event.object_id,
             "metadata": data.get("metadata") or {},
         }
-    
-    else:
-        logger.warning("알 수 없는 이벤트 타입: %s", type(event))
-        return None
+
+    logger.warning("알 수 없는 이벤트 타입: %s", type(event))
+    return None
 
 
 def _draw_bbox_with_label(
@@ -100,7 +119,7 @@ def _draw_bbox_with_label(
     label: str,
     color: Tuple[int, int, int]
 ) -> None:
-    """프레임에 레이블이 있는 바운딩 박스 그리기"""
+    """프레임에 레이블이 포함된 바운딩 박스를 그린다."""
     try:
         # 바운딩 박스 그리기
         cv2.rectangle(
@@ -189,14 +208,14 @@ def _draw_unicode_text(
         )
         return
 
-    pil_image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+    pil_image = Image.fromarray(cv2.cvtColor(np.ascontiguousarray(frame), cv2.COLOR_BGR2RGB))
     draw = ImageDraw.Draw(pil_image)
     draw.text((int(position[0]), int(position[1])), text, font=font, fill=(color[2], color[1], color[0]))
-    frame[:] = cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR)
+    frame[:] = cv2.cvtColor(np.ascontiguousarray(np.array(pil_image)), cv2.COLOR_RGB2BGR)
 
 
 def draw_events(frame, events: List[Union[Dict, DetectionEvent]]):
-    """프레임에 바운딩 박스와 레이블로 감지 이벤트 그리기"""
+    """프레임 위에 감지 이벤트 바운딩 박스와 레이블을 그린다."""
     if frame is None or not events:
         return frame
 
@@ -291,5 +310,3 @@ def _draw_keypoints(frame, keypoints):
         
         if conf1 > 0.3 and conf2 > 0.3:
             cv2.line(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 255), 2)
-
-

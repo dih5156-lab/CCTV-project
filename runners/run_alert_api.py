@@ -16,16 +16,28 @@ logger = logging.getLogger("alert-api")
 
 
 class AlertHandler(BaseHTTPRequestHandler):
-    log_path: Path = Path("alert_api_events.jsonl")
-    sensor_log_path: Path = Path("sensor_readings.jsonl")
+    """``server.log_path`` / ``server.sensor_log_path`` 속성을 읽어 동작한다.
+
+    클래스 속성 대신 서버 인스턴스 속성을 사용하므로
+    멀티스레드 환경에서도 안전하게 여러 서버 인스턴스를 띄울 수 있다.
+    """
+
+    def _log_path(self) -> Path:
+        return self.server.log_path  # type: ignore[attr-defined]
+
+    def _sensor_log_path(self) -> Path:
+        return self.server.sensor_log_path  # type: ignore[attr-defined]
 
     def _send_json(self, status_code: int, payload: dict) -> None:
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
-        self.send_response(status_code)
-        self.send_header("Content-Type", "application/json; charset=utf-8")
-        self.send_header("Content-Length", str(len(body)))
-        self.end_headers()
-        self.wfile.write(body)
+        try:
+            self.send_response(status_code)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+        except BrokenPipeError:
+            logger.debug("클라이언트가 응답 전에 연결을 종료함 (BrokenPipe)")
 
     def do_GET(self):
         if self.path in ["/health", "/ping"]:
@@ -36,14 +48,14 @@ class AlertHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         if self.path == "/api/sensor-readings":
             self._handle_post(
-                self.sensor_log_path,
+                self._sensor_log_path(),
                 "Sensor reading 수신 완료: /api/sensor-readings",
             )
             return
         if self.path != "/api/alerts":
             self._send_json(404, {"error": "not found"})
             return
-        self._handle_post(self.log_path, "Alert 수신 완료: /api/alerts")
+        self._handle_post(self._log_path(), "Alert 수신 완료: /api/alerts")
 
     def _handle_post(self, log_path: Path, log_msg: str) -> None:
         content_length = int(self.headers.get("Content-Length", "0") or "0")
@@ -78,12 +90,11 @@ def main() -> None:
     parser.add_argument("--sensor-log-path", default="/app/sensor_readings.jsonl")
     args = parser.parse_args()
 
-    AlertHandler.log_path = Path(args.log_path)
-    AlertHandler.sensor_log_path = Path(args.sensor_log_path)
-
     server = ThreadingHTTPServer((args.host, args.port), AlertHandler)
+    server.log_path = Path(args.log_path)              # type: ignore[attr-defined]
+    server.sensor_log_path = Path(args.sensor_log_path)  # type: ignore[attr-defined]
     logger.info(f"Alert API 서버 시작: http://{args.host}:{args.port}")
-    logger.info(f"이벤트 로그 경로: {AlertHandler.log_path}")
+    logger.info(f"이벤트 로그 경로: {server.log_path}")
 
     try:
         server.serve_forever()

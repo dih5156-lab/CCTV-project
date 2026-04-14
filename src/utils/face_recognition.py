@@ -29,8 +29,8 @@ except Exception:
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 _DEFAULT_FACE_GALLERY = _PROJECT_ROOT / "known_faces.json"
 _FACE_VECTOR_SIZE = (32, 32)
-_INSIGHTFACE_DET_SIZE = (320, 320)
-_INSIGHTFACE_CTX_ID = -1  # CPU 기본. 추후 GPU 환경이면 0으로 확장 가능
+# det_size: CPU=160×160 (속도 우선), GPU=320×320 (정확도 우선)
+# ctx_id:   CPU=-1, GPU=0 (cuda:N → N)
 
 
 @dataclass
@@ -39,6 +39,8 @@ class FaceRecognitionResult:
     label: str
     confidence: float
     matched: bool
+    age: Optional[float] = None
+    gender: Optional[str] = None
 
 
 class FaceRecognitionEngine:
@@ -49,11 +51,23 @@ class FaceRecognitionEngine:
         gallery_path: Optional[str] = None,
         similarity_threshold: float = 0.40,
         min_face_size: int = 40,
+        device: str = "cpu",
     ) -> None:
         self.gallery_path = Path(gallery_path) if gallery_path else _DEFAULT_FACE_GALLERY
         self.similarity_threshold = similarity_threshold
         self.min_face_size = int(min_face_size)
         self._gallery_mtime: Optional[float] = None
+
+        # device-aware InsightFace 설정
+        # GPU(cuda): ctx_id ≥ 0, det_size 320 (정확도 우선)
+        # CPU:       ctx_id = -1, det_size 160 (속도 우선)
+        _is_gpu = device.lower().startswith("cuda")
+        try:
+            _gpu_idx = int(device.split(":")[1]) if ":" in device else 0
+        except (ValueError, IndexError):
+            _gpu_idx = 0
+        self._ctx_id: int   = _gpu_idx if _is_gpu else -1
+        self._det_size      = (320, 320) if _is_gpu else (160, 160)
 
         self.insight_app = self._load_insightface()
         self.detector = self._load_detector() if self.insight_app is None else None
@@ -218,6 +232,14 @@ class FaceRecognitionEngine:
                 continue
 
             label, score = self._match_embedding(np.asarray(embedding, dtype=np.float32))
+
+            raw_age = getattr(face, "age", None)
+            raw_gender = getattr(face, "gender", None)
+            age: Optional[float] = float(raw_age) if raw_age is not None else None
+            gender_str: Optional[str] = None
+            if raw_gender is not None:
+                gender_str = "female" if int(raw_gender) == 0 else "male"
+
             results.append(
                 FaceRecognitionResult(
                     bbox={
@@ -229,6 +251,8 @@ class FaceRecognitionEngine:
                     label=label,
                     confidence=score,
                     matched=label != "unknown",
+                    age=age,
+                    gender=gender_str,
                 )
             )
         return results
@@ -275,8 +299,11 @@ class FaceRecognitionEngine:
             return None
         try:
             app = FaceAnalysis(name="buffalo_l")
-            app.prepare(ctx_id=_INSIGHTFACE_CTX_ID, det_size=_INSIGHTFACE_DET_SIZE)
-            logger.info("InsightFace 얼굴 인식 활성화됨")
+            app.prepare(ctx_id=self._ctx_id, det_size=self._det_size)
+            logger.info(
+                "InsightFace 얼굴 인식 활성화됨 (ctx_id=%d, det_size=%s)",
+                self._ctx_id, self._det_size,
+            )
             return app
         except Exception as exc:
             logger.warning("InsightFace 초기화 실패, OpenCV 폴백 사용: %s", exc)
