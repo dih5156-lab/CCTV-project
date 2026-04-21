@@ -75,6 +75,7 @@ temp_output.txt
 test_out.txt
 _debug_out.txt
 _test_results.txt
+test-results.xml
 
 # pytest 캐시
 .pytest_cache/

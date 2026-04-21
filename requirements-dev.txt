@@ -1,4 +1,5 @@
 -r requirements.txt
+-r requirements-action.txt
 
 # Testing
 pytest>=7.4.0,<9.0.0
