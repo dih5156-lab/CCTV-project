@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import builtins
 import io
+import sys
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -109,9 +111,15 @@ class TestStreamApiStream:
 
     def test_cv2_import_error_returns_503(self) -> None:
         handler = _make_handler("/stream/cam-1")
-        with patch("builtins.__import__", side_effect=ImportError("No module named 'cv2'")):
-            # cv2 임포트 실패 시뮬레이션을 위해 _stream 내부의 import를 직접 패치
-            with patch.dict("sys.modules", {"cv2": None}):
+        original_import = builtins.__import__
+
+        def _raise_only_for_cv2(name, *args, **kwargs):
+            if name == "cv2":
+                raise ImportError("No module named 'cv2'")
+            return original_import(name, *args, **kwargs)
+
+        with patch("builtins.__import__", side_effect=_raise_only_for_cv2):
+            with patch.dict(sys.modules, {"cv2": None}):
                 handler._stream("cam-1")
         code, body = handler._responses[0]  # type: ignore[attr-defined]
         assert code == 503
