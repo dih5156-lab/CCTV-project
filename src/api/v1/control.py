@@ -12,52 +12,18 @@ POST   /api/v1/control/reject/{eid}      — 이벤트 거부
 from __future__ import annotations
 
 import logging
-import os
 from typing import List
 
-import httpx
-from fastapi import APIRouter, Depends, HTTPException, Path, status
+from fastapi import APIRouter, Depends, Path
 
+from .._action_proxy import proxy_action_request
+from ..dependencies._settings import ACTION_LAYER_URL as _ACTION_URL
 from ..dependencies.auth import verify_api_key
-from ..schemas.common import BaseResponse
+from ..schemas.common import BaseResponse, success_response
 from ..schemas.site import ApprovalOut, ModeOut, ModeSetIn
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/control", tags=["control"])
-
-_ACTION_URL = os.environ.get("ACTION_LAYER_URL", "http://cctv-action-layer:8080")
-
-
-async def _action_get(path: str) -> dict:
-    url = f"{_ACTION_URL.rstrip('/')}{path}"
-    try:
-        async with httpx.AsyncClient(timeout=5.0) as client:
-            resp = await client.get(url)
-            resp.raise_for_status()
-            return resp.json()
-    except httpx.HTTPStatusError as exc:
-        raise HTTPException(status_code=exc.response.status_code, detail=str(exc)) from exc
-    except httpx.HTTPError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail=f"Action Layer 연결 실패: {exc}",
-        ) from exc
-
-
-async def _action_post(path: str, payload: dict) -> dict:
-    url = f"{_ACTION_URL.rstrip('/')}{path}"
-    try:
-        async with httpx.AsyncClient(timeout=5.0) as client:
-            resp = await client.post(url, json=payload)
-            resp.raise_for_status()
-            return resp.json()
-    except httpx.HTTPStatusError as exc:
-        raise HTTPException(status_code=exc.response.status_code, detail=str(exc)) from exc
-    except httpx.HTTPError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail=f"Action Layer 연결 실패: {exc}",
-        ) from exc
 
 
 @router.get(
@@ -66,8 +32,8 @@ async def _action_post(path: str, payload: dict) -> dict:
     summary="현재 제어 모드 조회",
 )
 async def get_mode(_: None = Depends(verify_api_key)) -> BaseResponse[ModeOut]:
-    raw = await _action_get("/mode")
-    return BaseResponse(success=True, data=ModeOut(mode=raw.get("mode", "auto")))
+    raw = await proxy_action_request(_ACTION_URL, "get", "/mode")
+    return success_response(ModeOut(mode=raw.get("mode", "auto")))
 
 
 @router.post(
@@ -87,10 +53,9 @@ async def set_mode(
     payload: dict = {"mode": body.mode.value}
     if body.site_id:
         payload["site_id"] = body.site_id
-    raw = await _action_post("/mode", payload)
-    return BaseResponse(
-        success=True,
-        data=ModeOut(mode=raw.get("mode", body.mode.value), site_id=body.site_id),
+    raw = await proxy_action_request(_ACTION_URL, "post", "/mode", payload)
+    return success_response(
+        ModeOut(mode=raw.get("mode", body.mode.value), site_id=body.site_id)
     )
 
 
@@ -101,9 +66,9 @@ async def set_mode(
     description="control_mode가 manual인 사이트에서 대기 중인 이벤트를 반환합니다.",
 )
 async def list_pending(_: None = Depends(verify_api_key)) -> BaseResponse[List[dict]]:
-    raw = await _action_get("/pending")
+    raw = await proxy_action_request(_ACTION_URL, "get", "/pending")
     items = raw if isinstance(raw, list) else []
-    return BaseResponse(success=True, data=items)
+    return success_response(items)
 
 
 @router.post(
@@ -116,14 +81,13 @@ async def approve_event(
     event_id: str = Path(min_length=1),
     _: None = Depends(verify_api_key),
 ) -> BaseResponse[ApprovalOut]:
-    raw = await _action_post(f"/approve/{event_id}", {})
-    return BaseResponse(
-        success=True,
-        data=ApprovalOut(
+    raw = await proxy_action_request(_ACTION_URL, "post", f"/approve/{event_id}", {})
+    return success_response(
+        ApprovalOut(
             event_id=event_id,
             status="approved",
             message=raw.get("message", "승인 완료"),
-        ),
+        )
     )
 
 
@@ -137,12 +101,11 @@ async def reject_event(
     event_id: str = Path(min_length=1),
     _: None = Depends(verify_api_key),
 ) -> BaseResponse[ApprovalOut]:
-    raw = await _action_post(f"/reject/{event_id}", {})
-    return BaseResponse(
-        success=True,
-        data=ApprovalOut(
+    raw = await proxy_action_request(_ACTION_URL, "post", f"/reject/{event_id}", {})
+    return success_response(
+        ApprovalOut(
             event_id=event_id,
             status="rejected",
             message=raw.get("message", "거부 완료"),
-        ),
+        )
     )

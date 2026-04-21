@@ -189,7 +189,7 @@ class SensorService(SensorDataProcessor):
                 firmware_version=_get_str(d, "firmware_version"),
                 reboot=_get_bool(d, "reboot"),
                 factory_reset=_get_bool(d, "factory_reset"),
-                battery_level=_get_int(d, "battery_level"),
+                battery_level=_get_int(d, "battery_level_pct"),
                 error_code=_get_int(d, "error_code"),
                 reset_error_code=_get_int(d, "reset_error_code"),
                 supported_binding_and_modes=_get_str(d, "supported_binding_and_modes"),
@@ -199,58 +199,58 @@ class SensorService(SensorDataProcessor):
         elif table == "t34950":
             self._data_processor.add_data(T34950(
                 sensor_data=base,
-                water_level=_get_float(d, "water_level"),
-                flow_velocity=_get_float(d, "flow_velocity"),
-                rain_fall=_get_float(d, "rain_fall"),
-                reporting_period=_get_int(d, "reporting_period"),
+                water_level=_get_float(d, "water_level_m"),
+                flow_velocity=_get_float(d, "flow_velocity_mps"),
+                rain_fall=_get_float(d, "rain_fall_mm"),
+                reporting_period=_get_int(d, "reporting_period_s"),
             ))
         elif table == "t34952":
             self._data_processor.add_data(T34952(
                 sensor_data=base,
-                flood_level=_get_float(d, "flood_level"),
-                reporting_period=_get_int(d, "reporting_period"),
+                flood_level=_get_float(d, "flood_level_m"),
+                reporting_period=_get_int(d, "reporting_period_s"),
             ))
         elif table == "t34954":
             self._data_processor.add_data(T34954(
                 sensor_data=base,
-                temperature=_get_float(d, "temperature"),
-                humidity=_get_float(d, "humidity"),
-                reporting_period=_get_int(d, "reporting_period"),
+                temperature=_get_float(d, "temperature_c"),
+                humidity=_get_float(d, "humidity_pct"),
+                reporting_period=_get_int(d, "reporting_period_s"),
             ))
         elif table == "t34955":
             self._data_processor.add_data(T34955(
                 sensor_data=base,
-                angle_x=_get_float(d, "angle_x"),
-                angle_y=_get_float(d, "angle_y"),
-                reporting_angle_threshold=_get_float(d, "reporting_angle_threshold"),
+                angle_x=_get_float(d, "angle_x_deg"),
+                angle_y=_get_float(d, "angle_y_deg"),
+                reporting_angle_threshold=_get_float(d, "reporting_angle_threshold_deg"),
                 relative_angle_value_reset=_get_float(d, "relative_angle_value_reset"),
-                reporting_period=_get_int(d, "reporting_period"),
+                reporting_period=_get_int(d, "reporting_period_s"),
             ))
         elif table == "t34956":
             self._data_processor.add_data(T34956(
                 sensor_data=base,
                 fire_alarm=_get_bool(d, "fire_alarm"),
-                reporting_period=_get_int(d, "reporting_period"),
+                reporting_period=_get_int(d, "reporting_period_s"),
             ))
         elif table == "t34957":
             self._data_processor.add_data(T34957(
                 sensor_data=base,
-                temperature=_get_float(d, "temperature"),
-                angle_x=_get_float(d, "angle_x"),
-                angle_y=_get_float(d, "angle_y"),
+                temperature=_get_float(d, "temperature_c"),
+                angle_x=_get_float(d, "angle_x_deg"),
+                angle_y=_get_float(d, "angle_y_deg"),
                 event_code=_get_bool(d, "event_code"),
             ))
         elif table == "t34958":
             self._data_processor.add_data(T34958(
                 sensor_data=base,
-                acc_x=_get_float(d, "acc_x"),
-                acc_y=_get_float(d, "acc_y"),
-                acc_z=_get_float(d, "acc_z"),
-                gyro_x=_get_float(d, "gyro_x"),
-                gyro_y=_get_float(d, "gyro_y"),
-                gyro_z=_get_float(d, "gyro_z"),
-                angle_x=_get_float(d, "angle_x"),
-                angle_y=_get_float(d, "angle_y"),
+                acc_x=_get_float(d, "acc_x_g"),
+                acc_y=_get_float(d, "acc_y_g"),
+                acc_z=_get_float(d, "acc_z_g"),
+                gyro_x=_get_float(d, "gyro_x_dps"),
+                gyro_y=_get_float(d, "gyro_y_dps"),
+                gyro_z=_get_float(d, "gyro_z_dps"),
+                angle_x=_get_float(d, "angle_x_deg"),
+                angle_y=_get_float(d, "angle_y_deg"),
                 event_code=_get_bool(d, "event_code"),
             ))
         else:

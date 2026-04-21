@@ -173,8 +173,8 @@ class AppConfig:
     # ...
 ```
 
-#### 3.8 `ai_analysis.py` - `_generate_temp_id` 충돌 가능성
-**파일**: `src/core/ai_analysis.py`  
+#### 3.8 AI 분석 모듈 - `_generate_temp_id` 충돌 가능성
+**파일**: `src/core/ai/analyzer.py`  
 **문제**: blake2b 4바이트 해시 기반 임시 ID는 500,000,000 범위 내에서 충돌 가능성 존재. 동일 프레임에서 여러 객체가 같은 임시 ID를 가질 수 있음
 ```python
 # 현재: 50픽셀 그리드 기반 → 같은 그리드 셀의 다른 객체 충돌 가능
@@ -345,7 +345,7 @@ logger.info("카메라 등록: %s", camera_id)
 
 ### 4.3 상수 관리 표준화
 현재 상수가 여러 파일에 분산:
-- `ai_analysis.py`: `MAX_HELMET_WIDTH`, `FALL_ANGLE_HORIZONTAL` 등
+- `src/core/ai/_constants.py`: `MAX_HELMET_WIDTH`, `FALL_ANGLE_HORIZONTAL` 등
 - `processor.py`: `CONNECT_TIMEOUT = 30` (함수 내 지역 상수)
 - `visualizer.py`: `LABEL_FONT`, `BBOX_THICKNESS` 등
 
@@ -382,7 +382,7 @@ logger.error("POST 실패 (%s): %s", endpoint, error)  # 영어
 일부 파일만 `__all__` 정의:
 - `zone_api.py`: `__all__ = ["ZoneApiHandler", "start_zone_api_server"]` ✅
 - `camera_input.py`: `__all__ = ["RTSPCamera"]` ✅
-- `ai_analysis.py`: `__all__` 없음 ❌
+- `src/core/ai/analyzer.py`: 공개 API 성격이 강하므로 `__all__` 또는 패키지 레벨 재노출 기준 명확화 필요
 - `processor.py`: `__all__` 없음 ❌
 
 **제안**: 공개 API가 있는 모든 모듈에 `__all__` 정의
@@ -426,7 +426,7 @@ def func(x: str) -> bool:
 - `AppConfig` 필드 타입 힌트 `Optional` 불필요 (3.7 참조)
 - `default_config = AppConfig()` 모듈 레벨 인스턴스 → 사이드 이펙트 주의
 
-### `src/core/ai_analysis.py` ⭐⭐⭐⭐⭐
+### `src/core/ai/analyzer.py` ⭐⭐⭐⭐⭐
 - 낙상 감지 4가지 방법 조합 설계 우수
 - 포즈 모델 우선 → person 모델 fallback 구조 명확
 - 임시 ID 충돌 가능성 (3.8 참조)
@@ -529,7 +529,7 @@ def func(x: str) -> bool:
 | 14 | 전체 | 상수 분산 | `constants.py` 중앙화 |
 | 15 | 전체 | `__all__` 미정의 | 공개 모듈에 `__all__` 추가 |
 | 16 | 전체 | docstring 스타일 혼용 | Google Style 통일 |
-| 17 | `src/core/ai_analysis.py` | 임시 ID 충돌 | 더 세밀한 ID 생성 |
+| 17 | `src/core/ai/analyzer.py` | 임시 ID 충돌 | 더 세밀한 ID 생성 |
 
 ---
 

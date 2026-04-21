@@ -99,8 +99,8 @@ def _make_kpts(overrides: dict | None = None) -> np.ndarray:
 @pytest.fixture
 def analyzer():
     """YOLO 모델 로딩 없이 순수 로직 테스트용 AIAnalyzer 인스턴스."""
-    from src.core.ai_analysis import AIAnalyzer
-    with patch("src.core.ai_analysis.YOLO", MagicMock()):
+    from src.core.ai.analyzer import AIAnalyzer
+    with patch("src.core.ai.analyzer.YOLO", MagicMock()):
         with patch.object(AIAnalyzer, "load_models"):
             inst = AIAnalyzer(confidence_threshold=0.5)
     return inst
@@ -364,6 +364,26 @@ class TestUpdateThreshold:
     def test_above_one_raises_value_error(self, analyzer):
         with pytest.raises(ValueError):
             analyzer.update_threshold(1.1)
+
+
+class TestAppearanceForwarding:
+    def test_run_appearance_pipeline_forwards_nearby_objects(self, analyzer):
+        frame = np.zeros((32, 32, 3), dtype=np.uint8)
+        person = _det("person", oid=7)
+        analyzer._appearance_pipeline.run = MagicMock(return_value=[])
+        nearby = [{"class_name": "helmet", "x": 1, "y": 2, "width": 3, "height": 4}]
+
+        analyzer._run_appearance_pipeline(
+            frame,
+            [person],
+            [],
+            camera_id="cam01",
+            use_appearance=True,
+            nearby_objects=nearby,
+        )
+
+        analyzer._appearance_pipeline.run.assert_called_once()
+        assert analyzer._appearance_pipeline.run.call_args.kwargs["nearby_objects"] == nearby
 
 
 # ===========================================================================

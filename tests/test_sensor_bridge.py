@@ -43,4 +43,10 @@ def test_process_decoded_uplink_publishes_sensor_event():
     assert len(published) == 1
     assert published[0]["camera_id"] == "0080e11505c9e23c"
     assert published[0]["type"] == "tilt_alert"
+    assert published[0]["schema_version"] == "1.0"
+    assert published[0]["message_type"] == "sensor_event"
+    assert published[0]["device"]["dev_eui"] == "0080e11505c9e23c"
+    assert published[0]["event"]["event_type"] == "tilt_alert"
+    assert published[0]["event"]["display_message"] == "기울기 이상 감지"
+    assert published[0]["decoded"]["angle_x_deg"] == 88.327866
     publisher.publish_event.assert_called_once()

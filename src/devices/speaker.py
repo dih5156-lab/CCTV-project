@@ -82,28 +82,12 @@ class SpeakerConfig:
 # TTS 안내 문구
 # ===========================================================================
 
-_TTS_MESSAGES: Dict[str, str] = {
-    "head":              "안전모 미착용이 감지되었습니다. 즉시 착용 바랍니다.",
-    "fall_detected":     "낙상이 감지되었습니다. 즉시 확인 바랍니다.",
-    "danger_zone":       "위험 구역 침입이 감지되었습니다. 즉시 대피 바랍니다.",
-    "intrusion":         "위험 구역 침입이 감지되었습니다. 즉시 대피 바랍니다.",
-    "tilt_alert":        "기울기 이상이 감지되었습니다. 즉시 현장을 확인 바랍니다.",
-    "temperature_alert": "온도 이상이 감지되었습니다. 즉시 현장을 확인 바랍니다.",
-    "vibration_alert":   "진동 충격이 감지되었습니다. 즉시 현장을 확인 바랍니다.",
-    "sensor_fault":      "센서 이상이 감지되었습니다. 장비 상태를 확인 바랍니다.",
-    "critical":          "중요 위험 이벤트가 감지되었습니다.",
-}
+from ..config.event_type_map import event_type_map as _etm
+
 
 def build_tts_text(event_type: str, severity: str = "") -> str:
     """이벤트 타입·심각도에 따른 TTS 안내 문구를 반환한다."""
-    msg = _TTS_MESSAGES.get(event_type.lower())
-    if msg:
-        return msg
-    if "fall" in event_type.lower():
-        return _TTS_MESSAGES["fall_detected"]
-    if severity.lower() == "critical":
-        return _TTS_MESSAGES["critical"]
-    return "안전 이벤트가 감지되었습니다."
+    return _etm.tts_message(event_type, severity)
 
 
 # ===========================================================================
@@ -617,7 +601,13 @@ class SpeakerDevice:
     # 공개 API
     # ------------------------------------------------------------------
 
-    def play(self, event_type: str, severity: str = "", camera_id: str = "") -> bool:
+    def play(
+        self,
+        event_type: str,
+        severity: str = "",
+        camera_id: str = "",
+        text: Optional[str] = None,
+    ) -> bool:
         """CCTV 이벤트에 대한 TTS 방송을 실행한다.
 
         인수인계 자료의 Speaker.start_broadcast() 흐름:
@@ -635,7 +625,7 @@ class SpeakerDevice:
             self._bgm_cleaned = True
             threading.Thread(target=self.cleanup_old_bgm_files, daemon=True).start()
 
-        text = build_tts_text(event_type, severity)
+        text = text or build_tts_text(event_type, severity)
         # event_type별 고정 title → 파일 1회 생성 후 재사용 (타임스탬프 제거)
         title = f"cctv_{event_type}"
         logger.info("[Speaker] 방송 시작: title=%r, text=%r", title, text)

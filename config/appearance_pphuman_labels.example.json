@@ -1,0 +1,18 @@
+{
+  "labels": [
+    { "index": 0, "field": "gender", "value": "male", "threshold": 0.5 },
+    { "index": 1, "field": "gender", "value": "female", "threshold": 0.5 },
+    { "index": 2, "field": "age_group", "value": "adult", "threshold": 0.5 },
+    { "index": 3, "field": "upper_color", "value": "black", "threshold": 0.4 },
+    { "index": 4, "field": "upper_color", "value": "white", "threshold": 0.4 },
+    { "index": 5, "field": "upper_color", "value": "red", "threshold": 0.4 },
+    { "index": 6, "field": "lower_color", "value": "black", "threshold": 0.4 },
+    { "index": 7, "field": "lower_color", "value": "blue", "threshold": 0.4 },
+    { "index": 8, "field": "has_backpack", "value": true, "threshold": 0.5 },
+    { "index": 9, "field": "has_handbag", "value": true, "threshold": 0.5 },
+    { "index": 10, "field": "has_suitcase", "value": true, "threshold": 0.5 },
+    { "index": 11, "field": "has_helmet", "value": true, "threshold": 0.5 },
+    { "index": 12, "field": "helmet_color", "value": "yellow", "threshold": 0.5 },
+    { "index": 13, "field": "helmet_color", "value": "white", "threshold": 0.5 }
+  ]
+}

@@ -23,6 +23,13 @@ def test_normalize_external_event_maps_common_fields():
     assert event["confidence"] == 0.87
     assert event["metadata"]["topic"] == "factory/line1"
     assert event["metadata"]["image_path"] == "frames/cam-01.jpg"
+    assert event["schema_version"] == "1.0"
+    assert event["event_id"].startswith("evt_")
+    assert event["message_type"] == "external_event"
+    assert event["occurred_at"] == "2026-03-31T01:23:45Z"
+    assert event["device"]["camera_id"] == "cam-01"
+    assert event["event"]["event_type"] == "helmet_missing"
+    assert event["event"]["source"] == "external_mqtt"
 
 
 def test_normalize_external_event_maps_lora_payload():
@@ -71,6 +78,13 @@ def test_normalize_external_event_maps_lora_payload():
     assert event["metadata"]["telemetry"]["snr"] == 13.8
     assert event["metadata"]["spec"]["gateway"]["gw_eui"] == "0016c001f153806a"
     assert event["metadata"]["payload_base64"] == raw["payload"]
+    assert event["message_id"] == "up-1774916301346"
+    assert event["occurred_at"] == "2026-03-31T00:18:21.111Z"
+    assert event["device"]["dev_eui"] == "0080e11505c9e523"
+    assert event["gateway"]["gw_eui"] == "0016c001f153806a"
+    assert event["gateway"]["received_at"] == "2026-03-31T00:18:21.111Z"
+    assert event["raw"]["payload_base64"] == raw["payload"]
+    assert event["raw"]["rx_metadata"] == raw["rx_metadata"]
 
 
 def test_service_saves_normalized_event_to_sqlite(tmp_path):
@@ -87,14 +101,15 @@ def test_service_saves_normalized_event_to_sqlite(tmp_path):
 
     with sqlite3.connect(cfg.external_ingest.db_path) as conn:
         row = conn.execute(
-            "SELECT topic, raw_payload, normalized_payload, republished FROM ingest_events"
+            "SELECT event_id, topic, raw_payload, normalized_payload, republished FROM ingest_events"
         ).fetchone()
 
     assert row is not None
-    assert row[0] == "factory/raw"
-    assert json.loads(row[1])["camera_id"] == "camera-a"
-    assert json.loads(row[2])["type"] == "telemetry"
-    assert row[3] == 0
+    assert row[0].startswith("evt_")
+    assert row[1] == "factory/raw"
+    assert json.loads(row[2])["camera_id"] == "camera-a"
+    assert json.loads(row[3])["type"] == "telemetry"
+    assert row[4] == 0
 
 
 def test_service_republishes_when_enabled(tmp_path):

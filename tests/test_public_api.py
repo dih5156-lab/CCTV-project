@@ -32,8 +32,9 @@ def test_health_up(client: TestClient) -> None:
     resp = client.get("/api/v1/health")
     assert resp.status_code == 200
     data = resp.json()
-    assert data["status"] == "up"
-    assert data["service"] == "cctv-public-api"
+    assert data["success"] is True
+    assert data["data"]["status"] == "up"
+    assert data["data"]["service"] == "cctv-public-api"
 
 
 # ---------------------------------------------------------------------------
@@ -79,12 +80,16 @@ class TestAlerts:
         }
         resp = client.post("/api/v1/alerts", json=payload)
         assert resp.status_code == 422
+        body = resp.json()
+        assert body["success"] is False
+        assert body["error"]
 
     def test_post_alert_missing_required_field(self, client: TestClient) -> None:
         """필수 필드 누락 → 422"""
         payload = {"event_type": "helmet", "confidence": 0.9}
         resp = client.post("/api/v1/alerts", json=payload)
         assert resp.status_code == 422
+        assert resp.json()["success"] is False
 
     def test_post_alert_confidence_out_of_range(self, client: TestClient) -> None:
         """confidence 범위 초과 → 422"""
@@ -96,6 +101,7 @@ class TestAlerts:
         }
         resp = client.post("/api/v1/alerts", json=payload)
         assert resp.status_code == 422
+        assert resp.json()["success"] is False
 
     def test_post_alert_fallback_on_internal_error(self, client: TestClient, tmp_path: Path) -> None:
         """내부 alert-api 실패 시 fallback 파일에 저장되고 202 반환."""
@@ -245,6 +251,83 @@ class TestEvents:
         finally:
             events_module._ALERT_LOG = original
 
+    def test_list_events_time_filter(self, client: TestClient, tmp_path: Path) -> None:
+        """time_from / time_to 필터 동작 확인."""
+        import src.api.v1.events as events_module
+
+        log_file = tmp_path / "test_events_time.jsonl"
+        entries = [
+            {"receivedAt": "2024-01-01T00:00:00", "payload": {"camera_id": "cam-01", "type": "helmet", "severity": "normal", "confidence": 0.9, "timestamp": 1700000000.0}},
+            {"receivedAt": "2024-01-01T00:01:00", "payload": {"camera_id": "cam-01", "type": "helmet", "severity": "normal", "confidence": 0.9, "timestamp": 1700000060.0}},
+            {"receivedAt": "2024-01-01T00:02:00", "payload": {"camera_id": "cam-01", "type": "helmet", "severity": "normal", "confidence": 0.9, "timestamp": 1700000120.0}},
+        ]
+        with log_file.open("w", encoding="utf-8") as f:
+            for entry in entries:
+                f.write(json.dumps(entry) + "\n")
+
+        original = events_module._ALERT_LOG
+        events_module._ALERT_LOG = log_file
+        try:
+            # 중간 구간만 선택 (time_from=1700000030, time_to=1700000090)
+            resp = client.get("/api/v1/events?time_from=1700000030&time_to=1700000090")
+            assert resp.status_code == 200
+            body = resp.json()
+            assert body["total"] == 1
+            assert body["items"][0]["timestamp"] == pytest.approx(1700000060.0)
+        finally:
+            events_module._ALERT_LOG = original
+
+    def test_list_events_event_type_filter(self, client: TestClient, tmp_path: Path) -> None:
+        """event_type 필터 동작 확인."""
+        import src.api.v1.events as events_module
+
+        log_file = tmp_path / "test_events_etype.jsonl"
+        entries = [
+            {"receivedAt": "2024-01-01T00:00:00", "payload": {"camera_id": "cam-01", "type": "helmet", "severity": "normal", "confidence": 0.9, "timestamp": 1700000000.0}},
+            {"receivedAt": "2024-01-01T00:01:00", "payload": {"camera_id": "cam-01", "type": "fall_detected", "severity": "critical", "confidence": 0.99, "timestamp": 1700000060.0}},
+            {"receivedAt": "2024-01-01T00:02:00", "payload": {"camera_id": "cam-01", "type": "helmet", "severity": "normal", "confidence": 0.85, "timestamp": 1700000120.0}},
+        ]
+        with log_file.open("w", encoding="utf-8") as f:
+            for entry in entries:
+                f.write(json.dumps(entry) + "\n")
+
+        original = events_module._ALERT_LOG
+        events_module._ALERT_LOG = log_file
+        try:
+            resp = client.get("/api/v1/events?event_type=fall_detected")
+            assert resp.status_code == 200
+            body = resp.json()
+            assert body["total"] == 1
+            assert body["items"][0]["event_type"] == "fall_detected"
+        finally:
+            events_module._ALERT_LOG = original
+
+    def test_list_events_combined_filters(self, client: TestClient, tmp_path: Path) -> None:
+        """camera_id + event_type + time_from 복합 필터 확인."""
+        import src.api.v1.events as events_module
+
+        log_file = tmp_path / "test_events_combined.jsonl"
+        entries = [
+            {"receivedAt": "2024-01-01T00:00:00", "payload": {"camera_id": "cam-A", "type": "helmet", "severity": "normal", "confidence": 0.9, "timestamp": 1700000000.0}},
+            {"receivedAt": "2024-01-01T00:01:00", "payload": {"camera_id": "cam-A", "type": "helmet", "severity": "normal", "confidence": 0.9, "timestamp": 1700000060.0}},
+            {"receivedAt": "2024-01-01T00:02:00", "payload": {"camera_id": "cam-B", "type": "helmet", "severity": "normal", "confidence": 0.9, "timestamp": 1700000120.0}},
+        ]
+        with log_file.open("w", encoding="utf-8") as f:
+            for entry in entries:
+                f.write(json.dumps(entry) + "\n")
+
+        original = events_module._ALERT_LOG
+        events_module._ALERT_LOG = log_file
+        try:
+            resp = client.get("/api/v1/events?camera_id=cam-A&event_type=helmet&time_from=1700000050")
+            assert resp.status_code == 200
+            body = resp.json()
+            assert body["total"] == 1
+            assert body["items"][0]["camera_id"] == "cam-A"
+            assert body["items"][0]["timestamp"] == pytest.approx(1700000060.0)
+        finally:
+            events_module._ALERT_LOG = original
+
 
 # ---------------------------------------------------------------------------
 # /api/v1/cameras
@@ -286,6 +369,21 @@ class TestCameras:
             url = resp.json()["data"][0]["url"]
             assert "secret" not in url
             assert "admin" not in url
+        finally:
+            cam_module._CAMERAS_JSON = original
+
+    def test_get_camera_not_found_uses_wrapped_error(self, client: TestClient) -> None:
+        import src.api.v1.cameras as cam_module
+
+        original = cam_module._CAMERAS_JSON
+        cam_module._CAMERAS_JSON = Path("/nonexistent/cameras.json")
+        try:
+            resp = client.get("/api/v1/cameras/missing-camera")
+            assert resp.status_code == 404
+            body = resp.json()
+            assert body["success"] is False
+            assert body["error"] == "카메라를 찾을 수 없습니다."
+            assert "timestamp" in body
         finally:
             cam_module._CAMERAS_JSON = original
 
@@ -378,8 +476,11 @@ class TestAuth:
 class TestResponseFormat:
     def test_success_response_has_required_fields(self, client: TestClient) -> None:
         resp = client.get("/api/v1/health")
-        # health는 BaseResponse 래퍼를 쓰지 않지만 다른 엔드포인트는 사용
         assert resp.status_code == 200
+        body = resp.json()
+        assert body["success"] is True
+        assert "data" in body
+        assert "timestamp" in body
 
     def test_cameras_response_format(self, client: TestClient, tmp_path: Path) -> None:
         """BaseResponse 래퍼 형식 (success, data, error, timestamp) 검증."""

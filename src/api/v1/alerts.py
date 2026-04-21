@@ -8,22 +8,24 @@ from __future__ import annotations
 
 import json
 import logging
-import os
 from datetime import datetime, timezone
-from pathlib import Path
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, Request, status
 
+from ..dependencies._settings import ALERT_API_URL as _ALERT_API_URL, ALERT_FALLBACK_LOG as _FALLBACK_LOG
 from ..dependencies.auth import verify_api_key
-from ..schemas.common import BaseResponse
+from ..dependencies.rate_limit import limiter
+from ..dependencies._settings import INTERNAL_SERVICE_TOKEN as _INTERNAL_TOKEN
+from ..schemas.common import BaseResponse, success_response
 from ..schemas.event import AlertAccepted, AlertIn
+
+_INTERNAL_HEADERS: dict[str, str] = (
+    {"X-Internal-Token": _INTERNAL_TOKEN} if _INTERNAL_TOKEN else {}
+)
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/alerts", tags=["alerts"])
-
-_ALERT_API_URL = os.environ.get("ALERT_API_URL", "http://cctv-alert-api:8000")
-_FALLBACK_LOG = Path(os.environ.get("ALERT_FALLBACK_LOG", "/tmp/public_api_alerts.jsonl"))
 
 
 def _save_fallback(payload: dict) -> None:
@@ -47,7 +49,9 @@ def _save_fallback(payload: dict) -> None:
         "내부 cctv-alert-api로 중계되며 감사 로그에 기록됩니다."
     ),
 )
+@limiter.limit("30/minute")
 async def receive_alert(
+    request: Request,
     body: AlertIn,
     _: None = Depends(verify_api_key),
 ) -> BaseResponse[AlertAccepted]:
@@ -56,7 +60,7 @@ async def receive_alert(
     # 내부 alert-api로 중계
     target = f"{_ALERT_API_URL.rstrip('/')}/api/alerts"
     try:
-        async with httpx.AsyncClient(timeout=5.0) as client:
+        async with httpx.AsyncClient(timeout=5.0, headers=_INTERNAL_HEADERS) as client:
             resp = await client.post(target, json=payload)
             resp.raise_for_status()
     except httpx.HTTPError as exc:
@@ -66,11 +70,10 @@ async def receive_alert(
         logger.error("예상치 못한 오류: %s", exc)
         _save_fallback(payload)
 
-    return BaseResponse(
-        success=True,
-        data=AlertAccepted(
+    return success_response(
+        AlertAccepted(
             accepted=True,
             event_type=body.event_type.value,
             camera_id=body.camera_id,
-        ),
+        )
     )

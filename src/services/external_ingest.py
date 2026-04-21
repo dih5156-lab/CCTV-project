@@ -15,6 +15,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+from ..canonical_event import build_canonical_event
+from ..canonical_event import build_event_id
 from ..config import AppConfig, ExternalIngestConfig, MqttConfig
 from ..protocols import MqttEventPublisher, MqttTopicSubscriber
 
@@ -100,6 +102,12 @@ def normalize_external_event(raw_payload: Dict[str, Any], topic: str) -> Dict[st
         or _extract_lora_timestamp(raw_payload)
         or _utc_now_iso()
     )
+    message = (
+        raw_payload.get("message")
+        or raw_payload.get("display_message")
+        or raw_payload.get("label")
+        or raw_payload.get("description")
+    )
 
     normalized = {
         "camera_id": str(camera_id),
@@ -146,6 +154,59 @@ def normalize_external_event(raw_payload: Dict[str, Any], topic: str) -> Dict[st
             "raw_payload": raw_payload,
         },
     }
+    normalized.update(
+        build_canonical_event(
+            camera_id=str(camera_id),
+            event_type=str(event_type),
+            message_type="external_event",
+            message_id=raw_payload.get("message_id"),
+            occurred_at=timestamp,
+            source="external_mqtt",
+            source_type="mqtt",
+            severity=raw_payload.get("severity"),
+            confidence=normalized["confidence"],
+            message=message,
+            display_message=raw_payload.get("display_message") or message,
+            tts_message=raw_payload.get("tts_message") or message,
+            device={
+                "camera_id": str(camera_id),
+                "device_id": raw_payload.get("device_id") or raw_payload.get("deviceId"),
+                "app_eui": raw_payload.get("app_eui"),
+                "dev_eui": raw_payload.get("dev_eui"),
+                "f_port": raw_payload.get("f_port"),
+                "f_cnt_up": raw_payload.get("f_cnt_up"),
+            },
+            gateway={
+                "gw_eui": gateway_info.get("gw_eui") if isinstance(gateway_info, dict) else None,
+                "latitude": gateway_info.get("latitude") if isinstance(gateway_info, dict) else None,
+                "longitude": gateway_info.get("longitude") if isinstance(gateway_info, dict) else None,
+                "altitude": gateway_info.get("altitude") if isinstance(gateway_info, dict) else None,
+                "channel_plan": gateway_info.get("channel_plan") if isinstance(gateway_info, dict) else None,
+                "modulation": first_rx_meta.get("modulation") if isinstance(first_rx_meta, dict) else None,
+                "data_rate": first_rx_meta.get("data_rate") if isinstance(first_rx_meta, dict) else None,
+                "coding_rate": first_rx_meta.get("coding_rate") if isinstance(first_rx_meta, dict) else None,
+                "channel": first_rx_meta.get("channel") if isinstance(first_rx_meta, dict) else None,
+                "frequency": first_rx_meta.get("frequency") if isinstance(first_rx_meta, dict) else None,
+                "rssi": first_rx_meta.get("rssi") if isinstance(first_rx_meta, dict) else None,
+                "snr": first_rx_meta.get("snr") if isinstance(first_rx_meta, dict) else None,
+                "received_at": first_rx_meta.get("gw_recv_time") if isinstance(first_rx_meta, dict) else None,
+            },
+            decoded=raw_payload.get("decoded") or raw_payload.get("telemetry") or {},
+            raw={
+                "payload_base64": raw_payload.get("payload"),
+                "payload_text": payload_text,
+                "rx_metadata": rx_metadata,
+                "raw_payload": raw_payload,
+            },
+        )
+    )
+    normalized["event_id"] = build_event_id(
+        camera_id=str(camera_id),
+        event_type=str(event_type),
+        occurred_at=timestamp,
+        message_id=raw_payload.get("message_id"),
+        payload=raw_payload,
+    )
     return normalized
 
 
@@ -165,6 +226,7 @@ class IngestEventRepository:
                 """
                 CREATE TABLE IF NOT EXISTS ingest_events (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    event_id TEXT NOT NULL,
                     received_at TEXT NOT NULL,
                     topic TEXT NOT NULL,
                     raw_payload TEXT NOT NULL,
@@ -173,17 +235,29 @@ class IngestEventRepository:
                 )
                 """
             )
+            columns = {
+                row[1]
+                for row in conn.execute("PRAGMA table_info(ingest_events)")
+            }
+            if "event_id" not in columns:
+                conn.execute(
+                    "ALTER TABLE ingest_events ADD COLUMN event_id TEXT"
+                )
+            conn.execute(
+                "CREATE UNIQUE INDEX IF NOT EXISTS idx_ingest_events_event_id ON ingest_events(event_id)"
+            )
             conn.commit()
 
     def save(self, *, topic: str, raw_payload: Dict[str, Any], normalized_payload: Dict[str, Any], republished: bool) -> None:
         with self._lock, sqlite3.connect(self.db_path) as conn:
             conn.execute(
                 """
-                INSERT INTO ingest_events (
-                    received_at, topic, raw_payload, normalized_payload, republished
-                ) VALUES (?, ?, ?, ?, ?)
+                INSERT OR IGNORE INTO ingest_events (
+                    event_id, received_at, topic, raw_payload, normalized_payload, republished
+                ) VALUES (?, ?, ?, ?, ?, ?)
                 """,
                 (
+                    normalized_payload.get("event_id"),
                     _utc_now_iso(),
                     topic,
                     json.dumps(raw_payload, ensure_ascii=False),

@@ -39,6 +39,12 @@ services:
       published: "1883"
       protocol: tcp
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "mosquitto_pub -h localhost -p 1883 -t 'health/check' -m 'ping' -q 0 2>/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     volumes:
     - type: bind
       source: ./mosquitto/mosquitto.conf
@@ -302,6 +308,12 @@ services:
       source: kuiper-plugins
       target: /kuiper/plugins
       volume: {}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:59720/ping 2>/dev/null || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
 
   cctv-ai-engine:
     container_name: cctv-ai-engine
@@ -311,6 +323,13 @@ services:
     environment:
       PYTHONIOENCODING: utf-8
       PYTHONUTF8: "1"
+    deploy:
+      resources:
+        limits:
+          memory: 6g
+          cpus: "4.0"
+        reservations:
+          memory: 2g
     command:
     - python
     - main.py
@@ -346,6 +365,12 @@ services:
       target: /app/models
       bind:
         create_host_path: true
+    healthcheck:
+      test: ["CMD-SHELL", "kill -0 1 2>/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
 
   cctv-edgex-adapter:
     container_name: cctv-edgex-adapter
@@ -374,6 +399,7 @@ services:
     environment:
       PYTHONIOENCODING: utf-8
       PYTHONUTF8: "1"
+      PYTHONPATH: /app
       EDGEX_OUTBOX_DB: /data/detection_outbox.db
       EDGEX_OUTBOX_RETRY_INTERVAL: "30"
     depends_on:
@@ -388,6 +414,12 @@ services:
     networks:
       edgex-network: null
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "kill -0 1 2>/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
     volumes:
     - type: bind
       source: ./data
@@ -401,19 +433,20 @@ services:
     environment:
       PYTHONIOENCODING: utf-8
       PYTHONUTF8: "1"
+      PYTHONPATH: /app
       KUIPER_API: http://edgex-kuiper:59720
       MQTT_BROKER: edgex-mqtt-broker
       MQTT_PORT: "1883"
       # ── CCTV AI 임계값 ────────────────────────────────────
-      INTRUSION_CONFIDENCE: "0.7"   # 침입 감지 신뢰도 (0.0~1.0)
-      CRITICAL_CONFIDENCE: "0.9"    # 고위험 라우팅 신뢰도 (0.0~1.0)
-      PERSIST_HIT_COUNT: "5"        # 5초 윈도우 내 최소 검출 횟수
+      INTRUSION_CONFIDENCE: ${INTRUSION_CONFIDENCE:-0.7}
+      CRITICAL_CONFIDENCE: ${CRITICAL_CONFIDENCE:-0.9}
+      PERSIST_HIT_COUNT: ${PERSIST_HIT_COUNT:-5}
       # ── IoT 센서 임계값 ───────────────────────────────────
-      TILT_THRESHOLD: "10.0"        # 기울기 경보 임계값 (도)
-      TEMP_HIGH_THRESHOLD: "60.0"   # 고온 경보 임계값 (°C)
+      TILT_THRESHOLD: ${TILT_THRESHOLD:-10.0}
+      TEMP_HIGH_THRESHOLD: ${TEMP_HIGH_THRESHOLD:-60.0}
       # ── 배포 재시도 ───────────────────────────────────────
-      KUIPER_RETRY_COUNT: "20"
-      KUIPER_RETRY_DELAY: "2"
+      KUIPER_RETRY_COUNT: ${KUIPER_RETRY_COUNT:-20}
+      KUIPER_RETRY_DELAY: ${KUIPER_RETRY_DELAY:-2}
     command:
     - sh
     - -c
@@ -442,13 +475,14 @@ services:
     container_name: cctv-alert-api
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.action
     depends_on:
       edgex-mqtt-broker:
         condition: service_started
     environment:
       PYTHONIOENCODING: utf-8
       PYTHONUTF8: "1"
+      PYTHONPATH: /app
     command:
     - python
     - runners/run_alert_api.py
@@ -457,7 +491,9 @@ services:
     - --port
     - "8000"
     - --log-path
-    - /app/alert_api_events.jsonl
+    - /app/logs/alert_api_events.jsonl
+    - --sensor-log-path
+    - /app/logs/sensor_readings.jsonl
     networks:
       edgex-network: null
     ports:
@@ -467,12 +503,23 @@ services:
       published: "8000"
       protocol: tcp
     restart: always
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    volumes:
+    - type: volume
+      source: alert-logs
+      target: /app/logs
 
   cctv-action-layer:
     container_name: cctv-action-layer
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.action
     command:
     - python
     - /app/runners/run_action_bridge.py
@@ -511,8 +558,11 @@ services:
       REST_ENABLED: "true"
       REST_HOST: "0.0.0.0"
       REST_PORT: "8080"
+      # 내부 서비스 인증 시크릿 (public-api와 동일한 값으로 설정)
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-}
       PYTHONIOENCODING: utf-8
       PYTHONUTF8: "1"
+      PYTHONPATH: /app
     ports:
     - mode: ingress
       host_ip: 127.0.0.1
@@ -523,10 +573,17 @@ services:
       edgex-mqtt-broker:
         condition: service_started
       cctv-alert-api:
-        condition: service_started
+        condition: service_healthy
     networks:
       edgex-network: null
     restart: always
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://localhost:8080/health', timeout=3)"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
     volumes:
     - type: bind
       source: ./src
@@ -537,6 +594,12 @@ services:
     - type: bind
       source: ./runners
       target: /app/runners
+      read_only: true
+      bind:
+        create_host_path: true
+    - type: bind
+      source: ./config/event_type_map.json
+      target: /app/config/event_type_map.json
       read_only: true
       bind:
         create_host_path: true
@@ -573,6 +636,12 @@ services:
     networks:
       edgex-network: null
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "kill -0 1 2>/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
 
   cctv-public-api:
     container_name: cctv-public-api
@@ -586,6 +655,13 @@ services:
     - 0.0.0.0
     - --port
     - "9000"
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://localhost:9000/api/v1/health', timeout=3)"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
     environment:
       PYTHONIOENCODING: utf-8
       PYTHONUTF8: "1"
@@ -593,13 +669,20 @@ services:
       ACTION_LAYER_URL: http://cctv-action-layer:8080
       ALERT_API_URL: http://cctv-alert-api:8000
       # 이벤트 로그 경로 (cctv-alert-api와 공유 볼륨)
-      ALERT_LOG_PATH: /app/alert_api_events.jsonl
-      ALERT_FALLBACK_LOG: /app/public_api_fallback.jsonl
+      ALERT_LOG_PATH: /app/logs/alert_api_events.jsonl
+      ALERT_FALLBACK_LOG: /app/logs/public_api_fallback.jsonl
       CAMERAS_JSON: /app/cameras.json
       # API Key — 프로덕션에서는 반드시 설정할 것
       PUBLIC_API_KEY: ${PUBLIC_API_KEY:-}
       # CORS — 서버팀 도메인으로 제한 (예: https://server.example.com)
       CORS_ORIGINS: ${CORS_ORIGINS:-*}
+      # 외형 검색 조건 DB 경로
+      APPEARANCES_DB: /app/data/appearances.db
+      # Rate limit 비활성화 옵션 (기본 활성화)
+      RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-true}
+      # 내부 서비스 인증 시크릿 (action-layer와 동일한 값으로 설정)
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-}
+      PYTHONPATH: /app
     ports:
     - mode: ingress
       host_ip: 0.0.0.0
@@ -608,9 +691,9 @@ services:
       protocol: tcp
     depends_on:
       cctv-alert-api:
-        condition: service_started
+        condition: service_healthy
       cctv-action-layer:
-        condition: service_started
+        condition: service_healthy
     networks:
       edgex-network: null
     restart: always
@@ -638,6 +721,9 @@ services:
       target: /app/data
       bind:
         create_host_path: true
+    - type: volume
+      source: alert-logs
+      target: /app/logs
 
   ui:
     container_name: edgex-ui-go
@@ -666,6 +752,54 @@ services:
       bind:
         create_host_path: true
 
+  prometheus:
+    container_name: cctv-prometheus
+    image: prom/prometheus:v2.51.2
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=7d
+    volumes:
+      - type: bind
+        source: ./monitoring/prometheus.yml
+        target: /etc/prometheus/prometheus.yml
+        read_only: true
+    ports:
+      - mode: ingress
+        host_ip: 127.0.0.1
+        target: 9090
+        published: "9090"
+        protocol: tcp
+    networks:
+      edgex-network: null
+    restart: always
+
+  grafana:
+    container_name: cctv-grafana
+    image: grafana/grafana:10.4.2
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_SERVER_ROOT_URL: http://localhost:3001
+    volumes:
+      - type: bind
+        source: ./monitoring/grafana/provisioning
+        target: /etc/grafana/provisioning
+        read_only: true
+      - type: volume
+        source: grafana-data
+        target: /var/lib/grafana
+    ports:
+      - mode: ingress
+        host_ip: 127.0.0.1
+        target: 3000
+        published: "3001"
+        protocol: tcp
+    depends_on:
+      - prometheus
+    networks:
+      edgex-network: null
+    restart: always
+
 networks:
   edgex-network:
     name: edgex_edgex-network
@@ -685,4 +819,8 @@ volumes:
     name: edgex_kuiper-log
   kuiper-plugins:
     name: edgex_kuiper-plugins
+  alert-logs:
+    name: cctv_alert-logs
+  grafana-data:
+    name: cctv_grafana-data
 

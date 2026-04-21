@@ -2,9 +2,12 @@
 conftest.py — 공통 pytest 픽스처
 """
 import json
+import shutil
 import time
 import urllib.error
 import urllib.request
+import uuid
+from pathlib import Path
 
 import pytest
 from src.core.events import DetectionEvent, EventType
@@ -87,3 +90,16 @@ def overlapping_bbox() -> dict:
 def non_overlapping_bbox() -> dict:
     """sample_bbox 와 전혀 겹치지 않는 박스."""
     return {"x": 200, "y": 200, "width": 50, "height": 60}
+
+
+@pytest.fixture
+def tmp_path() -> Path:
+    """Windows/sandbox 환경에서 직접 생성한 워크스페이스 임시 디렉터리를 제공한다."""
+    base = Path("tmp_test_dirs").resolve()
+    base.mkdir(exist_ok=True)
+    temp_dir = base / f"cctv_test_{uuid.uuid4().hex[:8]}"
+    temp_dir.mkdir()
+    try:
+        yield temp_dir
+    finally:
+        shutil.rmtree(temp_dir, ignore_errors=True)

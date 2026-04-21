@@ -11,7 +11,9 @@
 import numpy as np
 import pytest
 
+from src.core.ai._attribute_backend import AttributeCrop
 from src.core.ai._appearance_analyzer import AppearanceAnalyzer
+from src.core.ai._attribute_backends import PPHumanAttributeBackend
 
 
 # ── 헬퍼 ─────────────────────────────────────────────────────────────
@@ -36,6 +38,64 @@ def _two_tone_frame(
     frame[:mid, :] = upper_bgr
     frame[mid:, :] = lower_bgr
     return frame
+
+
+def _two_tone_with_transition(
+    upper_bgr: tuple,
+    transition_bgr: tuple,
+    lower_bgr: tuple,
+    h: int = 200,
+    w: int = 100,
+    transition_start_ratio: float = 0.42,
+    transition_end_ratio: float = 0.58,
+) -> np.ndarray:
+    """경계 구간에 다른 색이 섞인 person crop 시뮬레이션."""
+    frame = np.zeros((h, w, 3), dtype=np.uint8)
+    start = int(h * transition_start_ratio)
+    end = int(h * transition_end_ratio)
+    frame[:start, :] = upper_bgr
+    frame[start:end, :] = transition_bgr
+    frame[end:, :] = lower_bgr
+    return frame
+
+
+def _pose_keypoints_for_bbox(
+    x: float = 0.0,
+    y: float = 0.0,
+    w: float = 100.0,
+    h: float = 200.0,
+) -> list[list[float]]:
+    """COCO 17 포즈 키포인트 중 외형 분리에 필요한 점만 채운다."""
+    kpts = [[0.0, 0.0, 0.0] for _ in range(17)]
+    center_x = x + w * 0.5
+    left_x = x + w * 0.35
+    right_x = x + w * 0.65
+    shoulder_y = y + h * 0.22
+    hip_y = y + h * 0.52
+    knee_y = y + h * 0.78
+    kpts[5] = [left_x, shoulder_y, 0.95]
+    kpts[6] = [right_x, shoulder_y, 0.95]
+    kpts[11] = [left_x, hip_y, 0.95]
+    kpts[12] = [right_x, hip_y, 0.95]
+    kpts[13] = [center_x - w * 0.08, knee_y, 0.95]
+    kpts[14] = [center_x + w * 0.08, knee_y, 0.95]
+    return kpts
+
+
+def _upper_only_pose_keypoints_for_bbox(
+    x: float = 0.0,
+    y: float = 0.0,
+    w: float = 100.0,
+    h: float = 200.0,
+) -> list[list[float]]:
+    """상의만 보이는 장면을 흉내 내는 부분 포즈 키포인트."""
+    kpts = [[0.0, 0.0, 0.0] for _ in range(17)]
+    left_x = x + w * 0.35
+    right_x = x + w * 0.65
+    shoulder_y = y + h * 0.22
+    kpts[5] = [left_x, shoulder_y, 0.95]
+    kpts[6] = [right_x, shoulder_y, 0.95]
+    return kpts
 
 
 # ── 색상 분류 테스트 ─────────────────────────────────────────────────
@@ -114,6 +174,144 @@ class TestExtractAttributes:
         assert attrs["upper_color"] in (
             "red", "orange", "unknown",
         )
+
+    def test_transition_band_does_not_flip_upper_lower(self, analyzer):
+        frame = _two_tone_with_transition(
+            upper_bgr=(0, 0, 255),        # red
+            transition_bgr=(255, 255, 255),  # white transition/noise
+            lower_bgr=(255, 0, 0),        # blue
+        )
+        attrs = analyzer.extract_attributes(frame, 0, 0, 100, 200)
+        assert attrs["upper_color"] == "red"
+        assert attrs["lower_color"] == "blue"
+
+    def test_bottom_background_noise_is_ignored(self, analyzer):
+        frame = np.zeros((200, 100, 3), dtype=np.uint8)
+        frame[:90, :] = (0, 0, 255)       # red upper
+        frame[90:180, :] = (0, 0, 0)      # black lower
+        frame[180:, :] = (0, 255, 0)      # green floor/background noise
+        attrs = analyzer.extract_attributes(frame, 0, 0, 100, 200)
+        assert attrs["upper_color"] == "red"
+        assert attrs["lower_color"] == "black"
+
+    def test_pose_keypoints_focus_on_torso_and_legs(self, analyzer):
+        frame = np.zeros((200, 100, 3), dtype=np.uint8)
+        frame[:60, :] = (255, 255, 255)   # white head/neck area
+        frame[60:110, :] = (0, 0, 255)    # red torso
+        frame[110:150, :] = (255, 255, 255)  # bright coat/hand noise
+        frame[150:, :] = (255, 0, 0)      # blue legs
+        attrs = analyzer.extract_attributes(
+            frame,
+            0,
+            0,
+            100,
+            200,
+            keypoints=_pose_keypoints_for_bbox(),
+        )
+        assert attrs["upper_color"] == "red"
+        assert attrs["lower_color"] == "blue"
+
+    def test_only_visible_upper_body_leaves_hat_and_lower_unknown(self, analyzer):
+        frame = np.zeros((200, 100, 3), dtype=np.uint8)
+        frame[:120, :] = (0, 0, 255)      # red torso
+        frame[120:, :] = (255, 0, 0)      # blue noise below
+        attrs = analyzer.extract_attributes(
+            frame,
+            0,
+            0,
+            100,
+            200,
+            keypoints=_upper_only_pose_keypoints_for_bbox(),
+        )
+        assert attrs["upper_color"] == "red"
+        assert attrs["lower_color"] == "unknown"
+        assert attrs["helmet_color"] == "unknown"
+        assert attrs["has_helmet"] is False
+
+    def test_backend_attributes_override_hsv_result(self):
+        class FakeBackend:
+            backend_name = "pphuman"
+
+            def predict(self, crop: AttributeCrop) -> dict:
+                return {"upper_color": "yellow", "has_backpack": True}
+
+        analyzer = AppearanceAnalyzer(backend=FakeBackend())
+        frame = _two_tone_frame(
+            upper_bgr=(0, 0, 255),
+            lower_bgr=(0, 0, 0),
+        )
+        attrs = analyzer.extract_attributes(frame, 0, 0, 100, 200)
+        assert attrs["upper_color"] == "yellow"
+        assert attrs["has_backpack"] is True
+        assert attrs["attribute_backend"] == "pphuman"
+
+    def test_bbox_expand_ratio_feeds_larger_crop_to_backend(self):
+        seen = {}
+
+        class FakeBackend:
+            backend_name = "pphuman"
+
+            def predict(self, crop: AttributeCrop) -> dict:
+                seen["width"] = crop.width
+                seen["height"] = crop.height
+                return {}
+
+        analyzer = AppearanceAnalyzer(
+            backend=FakeBackend(),
+            bbox_expand_ratio=0.2,
+        )
+        frame = _solid_frame((0, 0, 255), h=200, w=100)
+        analyzer.extract_attributes(frame, 10, 20, 50, 100)
+        assert seen["width"] > 50
+        assert seen["height"] > 100
+
+
+class TestPPHumanBackend:
+    def test_decode_multilabel_output(self):
+        backend = PPHumanAttributeBackend(
+            predictor=lambda crop: {},
+            score_threshold=0.5,
+        )
+        backend._label_map = {
+            "labels": [
+                {"index": 0, "field": "upper_color", "value": "red", "threshold": 0.4},
+                {"index": 1, "field": "upper_color", "value": "black", "threshold": 0.4},
+                {"index": 2, "field": "has_backpack", "value": True, "threshold": 0.5},
+                {"index": 3, "field": "helmet_color", "value": "yellow", "threshold": 0.5},
+            ]
+        }
+        attrs = backend._decode([np.array([[0.9, 0.1, 0.7, 0.8]], dtype=np.float32)])
+        assert attrs["upper_color"] == "red"
+        assert attrs["has_backpack"] is True
+        assert attrs["helmet_color"] == "yellow"
+        assert attrs["attribute_scores"]["upper_color"] == pytest.approx(0.9)
+
+    def test_predict_uses_session_when_available(self):
+        class FakeInput:
+            name = "x"
+
+        class FakeSession:
+            def get_inputs(self):
+                return [FakeInput()]
+
+            def run(self, _, feed):
+                assert "x" in feed
+                return [np.array([[0.8]], dtype=np.float32)]
+
+        backend = PPHumanAttributeBackend(
+            model_path=None,
+            session_factory=lambda *args, **kwargs: FakeSession(),
+        )
+        backend._session = FakeSession()
+        backend._input_name = "x"
+        backend._label_map = {
+            "labels": [
+                {"index": 0, "field": "has_backpack", "value": True, "threshold": 0.5},
+            ]
+        }
+        frame = np.zeros((64, 32, 3), dtype=np.uint8)
+        attrs = backend.predict(AttributeCrop(frame=frame, x=0, y=0, width=32, height=64))
+        assert attrs["has_backpack"] is True
 
 
 # ── 조건 매칭 테스트 ─────────────────────────────────────────────────
@@ -252,42 +450,86 @@ class TestFindMatches:
         matches = analyzer.find_matches(frame, 0, 0, 100, 200)
         assert matches == []
 
+    def test_helmet_only_condition_can_match_without_clothing_colors(self):
+        analyzer = AppearanceAnalyzer()
+        analyzer.set_conditions([
+            {
+                "id": "helmet_only",
+                "name": "헬멧착용자",
+                "has_helmet": True,
+                "threshold": 1.0,
+            },
+        ])
+        frame = np.zeros((200, 100, 3), dtype=np.uint8)
+        frame[:30, :] = (0, 255, 255)  # yellow helmet
+        matches = analyzer.find_matches(
+            frame,
+            0,
+            0,
+            100,
+            200,
+            nearby_objects=[{"class_name": "helmet", "x": 20, "y": 0, "width": 60, "height": 25}],
+        )
+        assert len(matches) == 1
+        assert matches[0]["condition_id"] == "helmet_only"
 
-# ── 모자(hat_color) 테스트 ───────────────────────────────────────────
 
+# ── 헬멧 속성 테스트 ────────────────────────────────────────────────
 
-class TestHatColor:
-    """hat_color 추출 및 조건 매칭 테스트."""
+class TestHelmetAttributes:
+    """헬멧 착용 여부 및 helmet_color 테스트."""
 
     @pytest.fixture()
     def analyzer(self):
         return AppearanceAnalyzer()
 
-    def test_hat_color_extracted(self, analyzer):
-        """머리 영역(상단 15%)의 색상이 hat_color로 추출된다."""
+    def test_helmet_color_extracted(self, analyzer):
+        """helmet 근거가 있을 때만 helmet_color가 추출된다."""
         frame = np.zeros((200, 100, 3), dtype=np.uint8)
         head_h = int(200 * 0.15)  # 30px
-        frame[:head_h, :] = (0, 0, 255)    # red hat
+        frame[:head_h, :] = (0, 0, 255)    # red helmet
         frame[head_h:90, :] = (255, 255, 255)  # white upper
         frame[90:, :] = (0, 0, 0)           # black lower
-        attrs = analyzer.extract_attributes(frame, 0, 0, 100, 200)
-        assert attrs["hat_color"] == "red"
+        attrs = analyzer.extract_attributes(
+            frame,
+            0,
+            0,
+            100,
+            200,
+            nearby_objects=[{"class_name": "helmet", "x": 20, "y": 0, "width": 60, "height": 25}],
+        )
+        assert attrs["has_helmet"] is True
+        assert attrs["helmet_color"] == "red"
 
-    def test_hat_color_condition_match(self, analyzer):
-        attrs = {"upper_color": "white", "lower_color": "black", "hat_color": "red"}
-        cond = {"hat_color": "red"}
+    def test_helmet_color_without_helmet_evidence_is_unknown(self, analyzer):
+        frame = np.zeros((200, 100, 3), dtype=np.uint8)
+        head_h = int(200 * 0.15)
+        frame[:head_h, :] = (0, 0, 255)    # red top region
+        frame[head_h:, :] = (255, 255, 255)
+        attrs = analyzer.extract_attributes(frame, 0, 0, 100, 200)
+        assert attrs["has_helmet"] is False
+        assert attrs["helmet_color"] == "unknown"
+
+    def test_helmet_color_condition_match(self, analyzer):
+        attrs = {"upper_color": "white", "lower_color": "black", "has_helmet": True, "helmet_color": "red"}
+        cond = {"helmet_color": "red"}
         assert analyzer.match_conditions(attrs, cond) == 1.0
 
-    def test_hat_color_condition_no_match(self, analyzer):
-        attrs = {"upper_color": "white", "lower_color": "black", "hat_color": "blue"}
-        cond = {"hat_color": "red"}
+    def test_helmet_color_condition_no_match(self, analyzer):
+        attrs = {"upper_color": "white", "lower_color": "black", "has_helmet": True, "helmet_color": "blue"}
+        cond = {"helmet_color": "red"}
         assert analyzer.match_conditions(attrs, cond) == 0.0
 
-    def test_hat_color_partial_match(self, analyzer):
-        """hat_color + upper_color 중 하나만 매칭."""
-        attrs = {"upper_color": "red", "lower_color": "black", "hat_color": "blue"}
-        cond = {"upper_color": "red", "hat_color": "red"}
+    def test_helmet_color_partial_match(self, analyzer):
+        """helmet_color + upper_color 중 하나만 매칭."""
+        attrs = {"upper_color": "red", "lower_color": "black", "has_helmet": True, "helmet_color": "blue"}
+        cond = {"upper_color": "red", "helmet_color": "red"}
         assert analyzer.match_conditions(attrs, cond) == 0.5
+
+    def test_has_helmet_condition_match(self, analyzer):
+        attrs = {"upper_color": "white", "lower_color": "black", "has_helmet": True, "helmet_color": "red"}
+        cond = {"has_helmet": True}
+        assert analyzer.match_conditions(attrs, cond) == 1.0
 
 
 # ── 가방 감지 테스트 ─────────────────────────────────────────────────
@@ -398,4 +640,5 @@ class TestCombinedConditions:
         assert cond["has_backpack"] is True
         assert cond["has_handbag"] is None
         assert cond["has_suitcase"] is None
-        assert cond["hat_color"] is None
+        assert cond["has_helmet"] is None
+        assert cond["helmet_color"] is None

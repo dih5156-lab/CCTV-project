@@ -135,7 +135,8 @@ def api_server(tmp_path):
 
 def _get(port, path) -> tuple[int, dict]:
     url = f"http://127.0.0.1:{port}{path}"
-    with urllib.request.urlopen(url) as resp:
+    req = urllib.request.Request(url, headers={"Connection": "close"})
+    with urllib.request.urlopen(req) as resp:
         return resp.status, json.loads(resp.read())
 
 
@@ -143,7 +144,8 @@ def _post(port, path, body: dict) -> tuple[int, dict]:
     url = f"http://127.0.0.1:{port}{path}"
     data = json.dumps(body).encode()
     req = urllib.request.Request(url, data=data,
-                                 headers={"Content-Type": "application/json"})
+                                 headers={"Content-Type": "application/json",
+                                          "Connection": "close"})
     try:
         with urllib.request.urlopen(req) as resp:
             return resp.status, json.loads(resp.read())
@@ -153,7 +155,8 @@ def _post(port, path, body: dict) -> tuple[int, dict]:
 
 def _delete(port, path) -> tuple[int, dict]:
     url = f"http://127.0.0.1:{port}{path}"
-    req = urllib.request.Request(url, method="DELETE")
+    req = urllib.request.Request(url, method="DELETE",
+                                 headers={"Connection": "close"})
     try:
         with urllib.request.urlopen(req) as resp:
             return resp.status, json.loads(resp.read())

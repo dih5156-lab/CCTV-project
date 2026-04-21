@@ -17,6 +17,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 # 소스 복사
 COPY parser-python/ .
 
+# 비루트 사용자 생성 (보안 강화)
+RUN groupadd -r cctv && useradd -r -g cctv -u 2003 cctv \
+    && mkdir -p /data && chown -R cctv:cctv /app /data
+
+USER cctv
+
 ENV PYTHONIOENCODING=utf-8
 ENV PYTHONUTF8=1
 ENV PYTHONUNBUFFERED=1

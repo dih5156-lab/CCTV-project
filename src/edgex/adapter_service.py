@@ -280,6 +280,10 @@ class EdgeXDeviceAdapterService:
             return False
 
     def _replay_outbox_once(self) -> None:
+        expired = self.edgex_service.expire_pending_detection_events()
+        if expired:
+            logger.info("EdgeX outbox 만료 정리 완료: %d건", expired)
+
         pending = self.edgex_service.get_pending_detection_events()
         if not pending:
             return

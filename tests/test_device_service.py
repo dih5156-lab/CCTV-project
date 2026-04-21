@@ -387,6 +387,33 @@ class TestEdgeXOutbox:
         assert result is True
         assert svc.get_pending_detection_events() == []
 
+    def test_expire_pending_detection_events_marks_ttl_rows(self, svc):
+        svc._init_outbox()
+        row_ref = svc._store_pending_event("cam1", {"type": "person"})
+        assert row_ref is not None
+
+        table, row_id = row_ref
+
+        import sqlite3
+        with sqlite3.connect(str(svc.outbox_db_path)) as conn:
+            conn.execute(
+                f"UPDATE {table} SET expire_at = datetime('now', '-1 day') WHERE id = ?",
+                (row_id,),
+            )
+            conn.commit()
+
+        expired = svc.expire_pending_detection_events()
+
+        assert expired == 1
+        assert svc.get_pending_detection_events() == []
+
+        with sqlite3.connect(str(svc.outbox_db_path)) as conn:
+            status = conn.execute(
+                f"SELECT status FROM {table} WHERE id = ?",
+                (row_id,),
+            ).fetchone()[0]
+        assert status == "expired"
+
 
 # ---------------------------------------------------------------------------
 # data_category 분류 테스트
@@ -502,3 +529,39 @@ class TestEventCategoryClassification:
         pending = svc.get_pending_detection_events(data_category="sensor")
         assert len(pending) == 1
         assert pending[0]["_table"] == "sensor_outbox"
+
+
+class TestEdgeXAdapterOutbox:
+    @redis_required
+    def test_replay_outbox_once_runs_expire_cleanup_first(self, tmp_path):
+        from src.edgex.adapter_service import EdgeXDeviceAdapterService
+
+        service = EdgeXDeviceAdapterService(
+            ai_mqtt_broker="localhost",
+            ai_mqtt_port=1883,
+            metadata_url="http://localhost:59881",
+            data_url="http://localhost:59880",
+            outbox_db_path=str(tmp_path / "adapter_outbox.db"),
+        )
+
+        service.edgex_service._init_outbox()
+        row_ref = service.edgex_service._store_pending_event(
+            "cam1", {"type": "person", "camera_id": "cam1"}
+        )
+        assert row_ref is not None
+
+        table, row_id = row_ref
+
+        import sqlite3
+        with sqlite3.connect(str(service.edgex_service.outbox_db_path)) as conn:
+            conn.execute(
+                f"UPDATE {table} SET expire_at = datetime('now', '-1 day') WHERE id = ?",
+                (row_id,),
+            )
+            conn.commit()
+
+        with patch.object(service, "_run_coro") as run_coro:
+            service._replay_outbox_once()
+
+        run_coro.assert_not_called()
+        assert service.edgex_service.get_pending_detection_events() == []

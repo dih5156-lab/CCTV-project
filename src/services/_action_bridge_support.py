@@ -13,6 +13,17 @@ from pathlib import Path
 from threading import Lock
 from typing import Dict, List, Optional, Set, Tuple
 
+from .cctv_metrics import device_commands as _device_commands
+
+from ..canonical_event import (
+    get_payload_event_id,
+    get_payload_camera_id,
+    get_payload_display_message,
+    get_payload_event_type,
+    get_payload_severity,
+    get_payload_tts_message,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -84,6 +95,7 @@ class _EventRepo:
                 """
                 CREATE TABLE IF NOT EXISTS action_events (
                     id           INTEGER PRIMARY KEY AUTOINCREMENT,
+                    event_id     TEXT    NOT NULL,
                     received_at  TEXT    NOT NULL,
                     topic        TEXT    NOT NULL,
                     camera_id    TEXT,
@@ -95,6 +107,17 @@ class _EventRepo:
                     payload_json TEXT    NOT NULL
                 )
                 """
+            )
+            columns = {
+                row[1]
+                for row in conn.execute("PRAGMA table_info(action_events)")
+            }
+            if "event_id" not in columns:
+                conn.execute(
+                    "ALTER TABLE action_events ADD COLUMN event_id TEXT"
+                )
+            conn.execute(
+                "CREATE UNIQUE INDEX IF NOT EXISTS idx_action_events_event_id ON action_events(event_id)"
             )
             conn.execute(
                 "CREATE INDEX IF NOT EXISTS idx_action_events_camera_id ON action_events(camera_id)"
@@ -112,15 +135,17 @@ class _EventRepo:
         http_sent: bool,
     ) -> None:
         try:
+            event_id = get_payload_event_id(payload)
             with sqlite3.connect(self.db_path) as conn:
                 conn.execute(
                     """
-                    INSERT INTO action_events
-                        (received_at, topic, camera_id, event_type, confidence,
+                    INSERT OR IGNORE INTO action_events
+                        (event_id, received_at, topic, camera_id, event_type, confidence,
                          severity, alarm_played, http_sent, payload_json)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     (
+                        event_id,
                         datetime.now(timezone.utc).isoformat(),
                         topic,
                         payload.get("camera_id"),
@@ -332,9 +357,11 @@ class _ActionExecutor:
 
     def execute(self, topic: str, payload: Dict) -> None:
         """단일 이벤트에 대한 장치 조치와 외부 전송을 수행한다."""
-        camera_id = str(payload.get("camera_id", "unknown"))
-        event_type = str(payload.get("type", "unknown")).lower()
-        severity = str(payload.get("severity", "")).lower()
+        camera_id = get_payload_camera_id(payload)
+        event_type = get_payload_event_type(payload).lower()
+        severity = get_payload_severity(payload).lower()
+        display_message = get_payload_display_message(payload)
+        tts_message = get_payload_tts_message(payload)
 
         alarm_played = False
         if self._alarm.should_alarm(topic, payload) and self._alarm.try_acquire_slot(
@@ -343,17 +370,28 @@ class _ActionExecutor:
             devices = self._resolve_devices(camera_id)
 
             if self._alarm_device_enum.SPEAKER in devices:
-                alarm_played = self._speaker.play(event_type, severity, camera_id)
+                alarm_played = self._speaker.play(
+                    event_type,
+                    severity,
+                    camera_id,
+                    text=tts_message,
+                )
+                _device_commands.labels(
+                    device="speaker", status="ok" if alarm_played else "skip"
+                ).inc()
 
             if self._alarm_device_enum.SIGNBOARD in devices:
                 self._signboard.display(
-                    text=self._build_display_text(event_type, severity, camera_id),
+                    text=display_message
+                    or self._build_display_text(event_type, severity, camera_id),
                     title="경고!",
                     class_name=event_type,
                 )
+                _device_commands.labels(device="signboard", status="ok").inc()
 
             if self._alarm_device_enum.SIREN in devices:
                 self._siren.trigger(event_type, camera_id)
+                _device_commands.labels(device="siren", status="ok").inc()
 
         self._forwarder.forward(topic, payload)
         http_sent = self._forwarder.has_targets

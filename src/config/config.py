@@ -102,6 +102,13 @@ ENV_OVERRIDES: tuple[EnvOverride, ...] = (
     EnvOverride("RTSP_BUFFER_SIZE", ("camera", "buffer_size"), parser=lambda v: int(v.strip())),
     # 외형 분석
     EnvOverride("APPEARANCE_ENABLED", ("appearance", "enabled"), parser=_parse_bool),
+    EnvOverride("APPEARANCE_BACKEND", ("appearance", "backend")),
+    EnvOverride("APPEARANCE_MODEL_PATH", ("appearance", "model_path")),
+    EnvOverride("APPEARANCE_LABEL_MAP_PATH", ("appearance", "label_map_path")),
+    EnvOverride("APPEARANCE_RUNTIME", ("appearance", "runtime")),
+    EnvOverride("APPEARANCE_INPUT_SIZE", ("appearance", "input_size"), parser=lambda v: int(v.strip())),
+    EnvOverride("APPEARANCE_SCORE_THRESHOLD", ("appearance", "score_threshold"), parser=lambda v: float(v.strip())),
+    EnvOverride("APPEARANCE_BBOX_EXPAND_RATIO", ("appearance", "bbox_expand_ratio"), parser=lambda v: float(v.strip())),
     EnvOverride("APPEARANCE_MATCH_THRESHOLD", ("appearance", "match_threshold"), parser=lambda v: float(v.strip())),
     EnvOverride("APPEARANCE_COOLDOWN_SECONDS", ("appearance", "cooldown_seconds"), parser=lambda v: float(v.strip())),
     # 이벤트 디바운스 / 지속 감지
@@ -327,6 +334,13 @@ class ProcessingConfig:
 class AppearanceConfig:
     """외형 분석 설정"""
     enabled: bool = False                # 외형 분석 활성화 여부
+    backend: str = "hsv"                 # hsv | pphuman
+    model_path: Optional[str] = None     # 외형 속성 모델 경로
+    label_map_path: Optional[str] = None # 속성 라벨 매핑 JSON 경로
+    runtime: str = "auto"                # auto | onnxruntime
+    input_size: int = 224                # 속성 모델 입력 해상도 힌트
+    score_threshold: float = 0.5         # 속성 활성화 임계값
+    bbox_expand_ratio: float = 0.15      # 속성 분석용 person bbox 확장 비율
     match_threshold: float = 0.8         # 조건 매칭 최소 점수 (0.0~1.0)
     cooldown_seconds: float = 5.0        # 동일 객체·조건 재매칭 억제 간격 (초)
 
@@ -419,6 +433,7 @@ class AppConfig:
             f"  화면 표시: {self.display}",
             f"  구역 감지: {self.zone_detection}",
             f"  데이터셋 수집: {self.collect_dataset}",
+            f"  외형 분석: {self.appearance.enabled} ({self.appearance.backend})",
             "[MQTT]",
             f"  Broker: {self.mqtt.broker}:{self.mqtt.port}",
             f"  Topic Prefix: {self.mqtt.topic_prefix}",

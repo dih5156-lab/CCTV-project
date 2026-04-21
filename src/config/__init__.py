@@ -14,6 +14,7 @@ from .config import (
     default_config,
     PROJECT_ROOT
 )
+from .event_type_map import EventTypeMap, EventTypeEntry, event_type_map
 
 __all__ = [
     'AppConfig',
@@ -27,5 +28,8 @@ __all__ = [
     'ActionBridgeConfig',
     'ExternalIngestConfig',
     'default_config',
-    'PROJECT_ROOT'
+    'PROJECT_ROOT',
+    'EventTypeMap',
+    'EventTypeEntry',
+    'event_type_map',
 ]

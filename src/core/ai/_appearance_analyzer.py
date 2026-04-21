@@ -6,7 +6,8 @@ person bbox를 상/하체로 분리한 뒤 HSV 히스토그램 기반으로
 지원 속성:
 - upper_color: 상의 색상 (HSV)
 - lower_color: 하의 색상 (HSV)
-- hat_color:   머리 영역 색상 (HSV, 모자 추정)
+- has_helmet:  헬멧 착용 여부
+- helmet_color: 헬멧 영역 색상 (HSV, 헬멧 검출 시에만)
 - has_backpack: 백팩 소지 여부 (YOLO COCO class 24)
 - has_handbag:  핸드백 소지 여부 (YOLO COCO class 26)
 
@@ -23,6 +24,9 @@ from typing import Dict, List, Optional, Tuple
 
 import cv2
 import numpy as np
+
+from ._attribute_backend import AttributeCrop, AttributeBackend
+from ._attribute_backends import build_attribute_backend
 
 logger = logging.getLogger(__name__)
 
@@ -45,14 +49,25 @@ _COLOR_RANGES: Dict[str, List[Tuple[Tuple[int, int, int], Tuple[int, int, int]]]
 # 외형 조건 매칭 기본 임계값
 DEFAULT_MATCH_THRESHOLD = 0.8
 
-# 상/하체 분리 비율 (상체: 상위 45%, 하체: 하위 55%)
-_UPPER_BODY_RATIO = 0.45
-
 # 머리 영역 비율 (person bbox 상단 15%)
 _HEAD_REGION_RATIO = 0.15
 
 # 좌우 배경 제거를 위한 수평 마진 비율 (양쪽 각 30% 제거 → 중앙 40% 사용)
 _HORIZONTAL_MARGIN = 0.30
+
+# 상의/하의 색상 샘플링 밴드.
+# 단순 45/55 분할 대신 중심 구간만 사용해 팔, 가방, 긴 외투, 발쪽 배경이
+# 색상 판별에 섞이는 문제를 줄인다.
+_UPPER_SAMPLE_START_RATIO = 0.18
+_UPPER_SAMPLE_END_RATIO = 0.42
+_LOWER_SAMPLE_START_RATIO = 0.58
+_LOWER_SAMPLE_END_RATIO = 0.90
+
+_POSE_KEYPOINT_MIN_CONFIDENCE = 0.30
+_MIN_FULL_BODY_COVERAGE_RATIO = 0.75
+_MIN_UPPER_BODY_COVERAGE_RATIO = 0.35
+_MIN_COLOR_DOMINANCE_RATIO = 0.20
+_MIN_HELMET_COLOR_DOMINANCE_RATIO = 0.45
 
 # YOLO COCO 클래스 매핑 — 가방/소지품
 BAG_CLASSES: Dict[str, str] = {
@@ -60,9 +75,8 @@ BAG_CLASSES: Dict[str, str] = {
     "handbag":  "has_handbag",
     "suitcase": "has_suitcase",
 }
+HELMET_CLASSES = {"helmet", "helmet_wearing", "hardhat"}
 
-# 가방 bbox와 사람 bbox 겹침 판정 최소 IoU
-_BAG_OVERLAP_MIN_IOU = 0.05
 # 가방 bbox 중심이 사람 bbox 주변 이 비율 이내일 때 소유로 판정
 _BAG_PROXIMITY_RATIO = 0.5
 
@@ -78,9 +92,31 @@ class AppearanceAnalyzer:
     APPEARANCE_MATCH 이벤트를 생성하도록 한다.
     """
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        *,
+        backend: Optional[AttributeBackend] = None,
+        backend_name: str = "hsv",
+        backend_model_path: Optional[str] = None,
+        backend_label_map_path: Optional[str] = None,
+        backend_runtime: str = "auto",
+        backend_device: str = "cpu",
+        backend_input_size: int = 224,
+        backend_score_threshold: float = 0.5,
+        bbox_expand_ratio: float = 0.15,
+    ) -> None:
         self._clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(4, 4))
         self._conditions: List[Dict] = []
+        self._backend = backend or build_attribute_backend(
+            backend_name,
+            model_path=backend_model_path,
+            label_map_path=backend_label_map_path,
+            runtime=backend_runtime,
+            device=backend_device,
+            input_size=backend_input_size,
+            score_threshold=backend_score_threshold,
+        )
+        self._bbox_expand_ratio = max(0.0, float(bbox_expand_ratio))
 
     # ── 조건 관리 ─────────────────────────────────────────────────────
 
@@ -98,7 +134,8 @@ class AppearanceAnalyzer:
                 "name": cond.get("name", ""),
                 "upper_color": cond.get("upper_color"),
                 "lower_color": cond.get("lower_color"),
-                "hat_color": cond.get("hat_color"),
+                "has_helmet": cond.get("has_helmet"),
+                "helmet_color": cond.get("helmet_color"),
                 "has_backpack": cond.get("has_backpack"),
                 "has_handbag": cond.get("has_handbag"),
                 "has_suitcase": cond.get("has_suitcase"),
@@ -117,7 +154,8 @@ class AppearanceAnalyzer:
             "name": condition.get("name", ""),
             "upper_color": condition.get("upper_color"),
             "lower_color": condition.get("lower_color"),
-            "hat_color": condition.get("hat_color"),
+            "has_helmet": condition.get("has_helmet"),
+            "helmet_color": condition.get("helmet_color"),
             "has_backpack": condition.get("has_backpack"),
             "has_handbag": condition.get("has_handbag"),
             "has_suitcase": condition.get("has_suitcase"),
@@ -162,6 +200,7 @@ class AppearanceAnalyzer:
         width: int,
         height: int,
         nearby_objects: Optional[List[Dict]] = None,
+        keypoints: Optional[List[List[float]]] = None,
     ) -> Dict[str, object]:
         """person bbox에서 색상 속성을 추출하고, 주변 객체로 소지품을 판별한다."""
         frame_h, frame_w = frame.shape[:2]
@@ -178,7 +217,8 @@ class AppearanceAnalyzer:
         if crop_w < _MIN_CROP_SIZE or crop_h < _MIN_CROP_SIZE:
             return {
                 "upper_color": "unknown", "lower_color": "unknown",
-                "hat_color": "unknown",
+                "has_helmet": False,
+                "helmet_color": "unknown",
                 "has_backpack": False, "has_handbag": False, "has_suitcase": False,
             }
 
@@ -193,20 +233,282 @@ class AppearanceAnalyzer:
         head_h = max(int(crop_h * _HEAD_REGION_RATIO), 5)
         head_region = crop[:head_h, :]
 
-        # 상/하체 분리
-        mid = int(crop_h * _UPPER_BODY_RATIO)
-        upper = crop[head_h:mid, :]  # 머리 아래 ~ 중간
-        lower = crop[mid:, :]
+        visibility = self._estimate_region_visibility(
+            x=x,
+            y=y,
+            width=width,
+            height=height,
+            x1=x1,
+            y1=y1,
+            x2=x2,
+            y2=y2,
+            head_h=head_h,
+            crop_h=crop_h,
+            keypoints=keypoints,
+        )
+
+        upper, lower = self._split_body_regions(
+            crop,
+            crop_h=crop_h,
+            head_h=head_h,
+            frame_x1=x1 + margin_px,
+            frame_y1=y1,
+            keypoints=keypoints,
+        )
 
         # 소지품 판별
         bag_attrs = self._detect_bags(x, y, width, height, nearby_objects)
+        has_helmet = self._has_helmet_evidence(nearby_objects)
 
-        return {
-            "upper_color": self._dominant_color(upper),
-            "lower_color": self._dominant_color(lower),
-            "hat_color": self._dominant_color(head_region),
+        attrs = {
+            "upper_color": self._dominant_color(upper) if visibility["upper_visible"] else "unknown",
+            "lower_color": self._dominant_color(lower) if visibility["lower_visible"] else "unknown",
+            "has_helmet": has_helmet,
+            "helmet_color": self._dominant_color(
+                head_region,
+                min_ratio=_MIN_HELMET_COLOR_DOMINANCE_RATIO,
+                allow_low_signal_fallback=False,
+            ) if visibility["hat_visible"] and has_helmet else "unknown",
             **bag_attrs,
         }
+        return self._merge_backend_attributes(
+            attrs,
+            frame,
+            x,
+            y,
+            width,
+            height,
+        )
+
+    def _expand_bbox(self, x: int, y: int, width: int, height: int) -> Dict[str, int]:
+        """속성 분석용 person bbox를 약간 확장한다."""
+        if self._bbox_expand_ratio <= 0.0:
+            return {"x": x, "y": y, "width": width, "height": height}
+        pad_x = int(width * self._bbox_expand_ratio)
+        pad_top = int(height * self._bbox_expand_ratio)
+        pad_bottom = int(height * (self._bbox_expand_ratio * 0.5))
+        return {
+            "x": x - pad_x,
+            "y": y - pad_top,
+            "width": width + (pad_x * 2),
+            "height": height + pad_top + pad_bottom,
+        }
+
+    def _merge_backend_attributes(
+        self,
+        attrs: Dict[str, object],
+        frame: np.ndarray,
+        x: int,
+        y: int,
+        width: int,
+        height: int,
+    ) -> Dict[str, object]:
+        """추가 속성 모델 결과를 현재 속성과 병합한다."""
+        backend_attrs = self._backend.predict(
+            AttributeCrop(frame=frame, **self._expand_bbox(x, y, width, height))
+        )
+        if not backend_attrs:
+            return attrs
+        merged = dict(attrs)
+        for key, value in backend_attrs.items():
+            if value in (None, "", "unknown"):
+                continue
+            merged[key] = value
+        merged["attribute_backend"] = getattr(self._backend, "backend_name", "unknown")
+        return merged
+
+    def _estimate_region_visibility(
+        self,
+        *,
+        x: int,
+        y: int,
+        width: int,
+        height: int,
+        x1: int,
+        y1: int,
+        x2: int,
+        y2: int,
+        head_h: int,
+        crop_h: int,
+        keypoints: Optional[List[List[float]]],
+    ) -> Dict[str, bool]:
+        """모자/상의/하의가 실제로 보이는지 보수적으로 추정한다."""
+        top_clipped = y1 > y
+        bottom_clipped = y2 < (y + height)
+        coverage_ratio = crop_h / max(float(height), 1.0)
+
+        result = {
+            "hat_visible": (not top_clipped) and crop_h >= head_h + 5,
+            "upper_visible": coverage_ratio >= _MIN_UPPER_BODY_COVERAGE_RATIO,
+            "lower_visible": (not bottom_clipped) and coverage_ratio >= _MIN_FULL_BODY_COVERAGE_RATIO,
+        }
+
+        if not keypoints:
+            return result
+
+        try:
+            kpts = np.asarray(keypoints, dtype=np.float32)
+        except (TypeError, ValueError):
+            return result
+
+        if kpts.ndim != 2 or kpts.shape[1] < 3:
+            return result
+
+        def has_visible(indices: List[int]) -> bool:
+            for idx in indices:
+                if len(kpts) <= idx or float(kpts[idx][2]) < _POSE_KEYPOINT_MIN_CONFIDENCE:
+                    continue
+                px = float(kpts[idx][0])
+                py = float(kpts[idx][1])
+                if x1 <= px <= x2 and y1 <= py <= y2:
+                    return True
+            return False
+
+        has_face = has_visible([0, 1, 2, 3, 4])
+        has_shoulders = has_visible([5, 6])
+        has_hips = has_visible([11, 12])
+        has_lower_joints = has_visible([13, 14, 15, 16])
+
+        result["hat_visible"] = has_face
+        result["upper_visible"] = has_shoulders
+        result["lower_visible"] = has_hips and has_lower_joints
+        return result
+
+    def _split_body_regions(
+        self,
+        crop: np.ndarray,
+        *,
+        crop_h: int,
+        head_h: int,
+        frame_x1: int,
+        frame_y1: int,
+        keypoints: Optional[List[List[float]]],
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """상의/하의 분석용 ROI를 반환한다.
+
+        키포인트가 있으면 어깨-엉덩이-무릎 기준으로 동적으로 자르고,
+        없거나 신뢰도가 낮으면 비율 기반 폴백을 사용한다.
+        """
+        pose_split = self._split_body_regions_from_keypoints(
+            crop,
+            crop_h=crop_h,
+            head_h=head_h,
+            frame_x1=frame_x1,
+            frame_y1=frame_y1,
+            keypoints=keypoints,
+        )
+        if pose_split is not None:
+            return pose_split
+
+        upper_start = max(head_h, int(crop_h * _UPPER_SAMPLE_START_RATIO))
+        upper_end = max(upper_start + 1, int(crop_h * _UPPER_SAMPLE_END_RATIO))
+        lower_start = max(upper_end + 1, int(crop_h * _LOWER_SAMPLE_START_RATIO))
+        lower_end = max(lower_start + 1, int(crop_h * _LOWER_SAMPLE_END_RATIO))
+
+        upper = crop[upper_start:upper_end, :]
+        lower = crop[lower_start:lower_end, :]
+        return upper, lower
+
+    @staticmethod
+    def _mean_keypoint_axis(kpts: np.ndarray, indices: List[int], axis: int) -> Optional[float]:
+        values = [
+            float(kpts[idx][axis])
+            for idx in indices
+            if len(kpts) > idx and float(kpts[idx][2]) >= _POSE_KEYPOINT_MIN_CONFIDENCE
+        ]
+        if not values:
+            return None
+        return sum(values) / len(values)
+
+    def _split_body_regions_from_keypoints(
+        self,
+        crop: np.ndarray,
+        *,
+        crop_h: int,
+        head_h: int,
+        frame_x1: int,
+        frame_y1: int,
+        keypoints: Optional[List[List[float]]],
+    ) -> Optional[Tuple[np.ndarray, np.ndarray]]:
+        """포즈 키포인트 기반으로 상/하체 ROI를 계산한다."""
+        if not keypoints:
+            return None
+
+        try:
+            kpts = np.asarray(keypoints, dtype=np.float32)
+        except (TypeError, ValueError):
+            return None
+
+        if kpts.ndim != 2 or kpts.shape[1] < 3:
+            return None
+
+        shoulder_y = self._mean_keypoint_axis(kpts, [5, 6], axis=1)
+        hip_y = self._mean_keypoint_axis(kpts, [11, 12], axis=1)
+        knee_y = self._mean_keypoint_axis(kpts, [13, 14], axis=1)
+        center_x = self._mean_keypoint_axis(kpts, [5, 6, 11, 12], axis=0)
+        shoulder_span = None
+        hip_span = None
+
+        if len(kpts) > 6 and float(kpts[5][2]) >= _POSE_KEYPOINT_MIN_CONFIDENCE and float(kpts[6][2]) >= _POSE_KEYPOINT_MIN_CONFIDENCE:
+            shoulder_span = abs(float(kpts[6][0]) - float(kpts[5][0]))
+        if len(kpts) > 12 and float(kpts[11][2]) >= _POSE_KEYPOINT_MIN_CONFIDENCE and float(kpts[12][2]) >= _POSE_KEYPOINT_MIN_CONFIDENCE:
+            hip_span = abs(float(kpts[12][0]) - float(kpts[11][0]))
+
+        if shoulder_y is None or hip_y is None or hip_y <= shoulder_y:
+            return None
+
+        crop_local_h = crop.shape[0]
+        crop_local_w = crop.shape[1]
+        shoulder_local = shoulder_y - frame_y1
+        hip_local = hip_y - frame_y1
+        knee_local = knee_y - frame_y1 if knee_y is not None else None
+
+        torso_h = max(hip_local - shoulder_local, 1.0)
+        upper_start = max(head_h, int(shoulder_local + torso_h * 0.12))
+        upper_end = min(crop_local_h, max(upper_start + 1, int(hip_local - torso_h * 0.10)))
+
+        if knee_local is not None and knee_local > hip_local:
+            thigh_h = max(knee_local - hip_local, 1.0)
+            lower_start = max(
+                upper_end + 1,
+                int(max(hip_local + thigh_h * 0.45, knee_local - thigh_h * 0.25)),
+            )
+            lower_end = min(crop_local_h, max(lower_start + 1, int(knee_local + thigh_h * 0.20)))
+        else:
+            lower_start = max(upper_end + 1, int(crop_h * _LOWER_SAMPLE_START_RATIO))
+            lower_end = min(crop_local_h, max(lower_start + 1, int(crop_h * _LOWER_SAMPLE_END_RATIO)))
+
+        if upper_end - upper_start < 5 or lower_end - lower_start < 5:
+            return None
+
+        x_start = 0
+        x_end = crop_local_w
+        if center_x is not None:
+            center_local_x = center_x - frame_x1
+            body_span = max(v for v in (shoulder_span, hip_span, crop_local_w * 0.30) if v is not None)
+            half_width = max(int(body_span * 0.38), int(crop_local_w * 0.18))
+            x_start = max(0, int(center_local_x - half_width))
+            x_end = min(crop_local_w, int(center_local_x + half_width))
+            if x_end - x_start < 5:
+                x_start = 0
+                x_end = crop_local_w
+
+        upper = crop[upper_start:upper_end, x_start:x_end]
+        lower = crop[lower_start:lower_end, x_start:x_end]
+        if upper.size == 0 or lower.size == 0:
+            return None
+        return upper, lower
+
+    @staticmethod
+    def _has_helmet_evidence(nearby_objects: Optional[List[Dict]]) -> bool:
+        """주변 객체 정보에 헬멧 근거가 있을 때만 True."""
+        if not nearby_objects:
+            return False
+        for obj in nearby_objects:
+            class_name = str(obj.get("class_name", "")).lower().strip()
+            if class_name in HELMET_CLASSES:
+                return True
+        return False
 
     @staticmethod
     def _build_skin_mask(hsv: np.ndarray) -> np.ndarray:
@@ -225,7 +527,13 @@ class AppearanceAnalyzer:
         )
         return mask
 
-    def _dominant_color(self, region: np.ndarray) -> str:
+    def _dominant_color(
+        self,
+        region: np.ndarray,
+        *,
+        min_ratio: float = _MIN_COLOR_DOMINANCE_RATIO,
+        allow_low_signal_fallback: bool = True,
+    ) -> str:
         """HSV 히스토그램에서 가장 비율이 높은 색상명을 반환한다.
 
         피부색 픽셀은 제외하여 옷 색상만 분석한다.
@@ -247,6 +555,8 @@ class AppearanceAnalyzer:
         clothing_mask = cv2.bitwise_not(skin_mask)
         total = float(cv2.countNonZero(clothing_mask))
         if total < 50:
+            if not allow_low_signal_fallback:
+                return "unknown"
             # 피부 제외 후 남은 픽셀이 너무 적으면 전체 사용
             clothing_mask = np.ones(hsv.shape[:2], dtype=np.uint8) * 255
             total = float(hsv.shape[0] * hsv.shape[1])
@@ -270,6 +580,10 @@ class AppearanceAnalyzer:
             if ratio > best_ratio:
                 best_ratio = ratio
                 best_color = color_name
+
+        if best_ratio < min_ratio:
+            logger.debug("색상 분석 근거 부족: %s (비율=%.2f < %.2f)", best_color, best_ratio, min_ratio)
+            return "unknown"
 
         logger.debug("색상 분석 결과: %s (비율=%.2f)", best_color, best_ratio)
         return best_color
@@ -327,17 +641,17 @@ class AppearanceAnalyzer:
         matches = 0
 
         # 색상 조건
-        for color_key in ("upper_color", "lower_color", "hat_color"):
+        for color_key in ("upper_color", "lower_color", "helmet_color"):
             if condition.get(color_key):
                 checks += 1
                 if attributes.get(color_key) == condition[color_key]:
                     matches += 1
 
-        # 소지품 조건 (bool)
-        for bag_key in ("has_backpack", "has_handbag", "has_suitcase"):
-            if condition.get(bag_key) is not None:
+        # bool 조건
+        for bool_key in ("has_helmet", "has_backpack", "has_handbag", "has_suitcase"):
+            if condition.get(bool_key) is not None:
                 checks += 1
-                if bool(attributes.get(bag_key)) == bool(condition[bag_key]):
+                if bool(attributes.get(bool_key)) == bool(condition[bool_key]):
                     matches += 1
 
         if checks == 0:
@@ -353,6 +667,7 @@ class AppearanceAnalyzer:
         height: int,
         camera_id: Optional[str] = None,
         nearby_objects: Optional[List[Dict]] = None,
+        keypoints: Optional[List[List[float]]] = None,
     ) -> List[Dict]:
         """사람 bbox에서 속성을 추출하고, 매칭되는 조건 목록을 반환한다.
 
@@ -364,9 +679,17 @@ class AppearanceAnalyzer:
             return []
 
         attributes = self.extract_attributes(
-            frame, x, y, width, height, nearby_objects=nearby_objects,
+            frame, x, y, width, height, nearby_objects=nearby_objects, keypoints=keypoints,
         )
-        if attributes["upper_color"] == "unknown" and attributes["lower_color"] == "unknown":
+        if (
+            attributes["upper_color"] == "unknown"
+            and attributes["lower_color"] == "unknown"
+            and attributes["helmet_color"] == "unknown"
+            and not bool(attributes.get("has_helmet"))
+            and not bool(attributes.get("has_backpack"))
+            and not bool(attributes.get("has_handbag"))
+            and not bool(attributes.get("has_suitcase"))
+        ):
             return []
 
         results = []

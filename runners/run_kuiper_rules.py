@@ -11,11 +11,8 @@ from typing import Any, Dict
 
 import requests
 
+from runners._shared import setup_runner_logging
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - [%(name)s] - %(levelname)s - %(message)s",
-)
 logger = logging.getLogger(__name__)
 
 
@@ -118,6 +115,8 @@ def _env_int(name: str, default: int) -> int:
 
 
 def main() -> None:
+    setup_runner_logging()
+
     parser = argparse.ArgumentParser(
         description="CCTV Kuiper 규칙 묶음 배포",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -153,6 +152,7 @@ def main() -> None:
         parser.error("--mqtt-port는 양수여야 합니다")
 
     kuiper_api = args.kuiper_api.rstrip("/")
+    logger.info("Kuiper 룰 배포 시작: api=%s rules=%s", kuiper_api, args.rules_file)
 
     rules_path = Path(args.rules_file)
     if not rules_path.exists():

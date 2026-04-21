@@ -1,0 +1,89 @@
+{
+  "_comment": "event_type → 장치별 문구·우선순위·경보 레벨 매핑 테이블\n  tts_message  : 스피커 TTS 안내 문구\n  display_text : 전광판 본문 문구 (display_message 페이로드 없을 때 폴백)\n  color_code   : Dabit 전광판 색상 (0=검정 1=빨강 2=녹색 3=노랑 4=파랑 5=자주 6=하늘 7=흰색)\n  priority     : 1=낮음 2=보통 3=높음 4=긴급\n  alert_level  : info | warning | error | critical",
+  "event_types": {
+    "head": {
+      "tts_message": "안전모 미착용이 감지되었습니다. 즉시 착용 바랍니다.",
+      "display_text": "안전모 미착용 감지",
+      "color_code": 1,
+      "priority": 3,
+      "alert_level": "error"
+    },
+    "fall_detected": {
+      "tts_message": "낙상이 감지되었습니다. 즉시 확인 바랍니다.",
+      "display_text": "낙상 감지 - 즉시 확인",
+      "color_code": 5,
+      "priority": 4,
+      "alert_level": "critical"
+    },
+    "danger_zone": {
+      "tts_message": "위험 구역 침입이 감지되었습니다. 즉시 대피 바랍니다.",
+      "display_text": "위험 구역 침입 감지",
+      "color_code": 1,
+      "priority": 4,
+      "alert_level": "critical"
+    },
+    "intrusion": {
+      "tts_message": "위험 구역 침입이 감지되었습니다. 즉시 대피 바랍니다.",
+      "display_text": "위험 구역 침입 감지",
+      "color_code": 1,
+      "priority": 4,
+      "alert_level": "critical"
+    },
+    "zone_object": {
+      "tts_message": "감시 구역에 객체가 감지되었습니다.",
+      "display_text": "감시 구역 객체 감지",
+      "color_code": 3,
+      "priority": 2,
+      "alert_level": "warning"
+    },
+    "crowd_warning": {
+      "tts_message": "인파 밀집이 감지되었습니다. 혼잡 주의 바랍니다.",
+      "display_text": "인파 밀집 경고 - 혼잡 주의",
+      "color_code": 5,
+      "priority": 3,
+      "alert_level": "error"
+    },
+    "tilt_alert": {
+      "tts_message": "기울기 이상이 감지되었습니다. 즉시 현장을 확인 바랍니다.",
+      "display_text": "기울기 이상 감지",
+      "color_code": 1,
+      "priority": 3,
+      "alert_level": "error"
+    },
+    "temperature_alert": {
+      "tts_message": "온도 이상이 감지되었습니다. 즉시 현장을 확인 바랍니다.",
+      "display_text": "온도 이상 감지",
+      "color_code": 5,
+      "priority": 3,
+      "alert_level": "error"
+    },
+    "vibration_alert": {
+      "tts_message": "진동 충격이 감지되었습니다. 즉시 현장을 확인 바랍니다.",
+      "display_text": "진동 충격 감지",
+      "color_code": 3,
+      "priority": 3,
+      "alert_level": "warning"
+    },
+    "sensor_fault": {
+      "tts_message": "센서 이상이 감지되었습니다. 장비 상태를 확인 바랍니다.",
+      "display_text": "센서 이상 감지",
+      "color_code": 6,
+      "priority": 2,
+      "alert_level": "warning"
+    },
+    "critical": {
+      "tts_message": "중요 위험 이벤트가 감지되었습니다.",
+      "display_text": "위험 이벤트 감지",
+      "color_code": 5,
+      "priority": 4,
+      "alert_level": "critical"
+    }
+  },
+  "defaults": {
+    "tts_message": "안전 이벤트가 감지되었습니다.",
+    "display_text": "안전 이벤트 감지",
+    "color_code": 7,
+    "priority": 1,
+    "alert_level": "info"
+  }
+}

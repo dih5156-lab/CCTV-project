@@ -8,26 +8,13 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+# EventType 을 str,Enum 으로 직접 재사용 — 중복 정의 제거
+from ...core.events import EventType as EventTypeOut  # noqa: F401  (re-export)
+
 
 # ---------------------------------------------------------------------------
 # Enum re-exports (서버팀은 이 값들을 사용한다)
 # ---------------------------------------------------------------------------
-
-
-class EventTypeOut(str, Enum):
-    HELMET = "helmet"
-    HEAD = "head"
-    FACE_RECOGNIZED = "face_recognized"
-    FACE_UNKNOWN = "face_unknown"
-    DANGER_ZONE = "danger_zone"
-    FALL_DETECTED = "fall_detected"
-    NOT_FALL = "not_fall"
-    UNSAFE_BEHAVIOR = "unsafe_behavior"
-    PERSON = "person"
-    OTHER = "other"
-    CROWD_WARNING = "crowd_warning"
-    ZONE_OBJECT = "zone_object"
-    APPEARANCE_MATCH = "appearance_match"
 
 
 class SeverityOut(str, Enum):

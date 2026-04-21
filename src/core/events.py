@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from typing import Optional, Dict
 from enum import Enum
 
-class EventType(Enum):
+class EventType(str, Enum):
     """감지 결과 이벤트 타입 열거형"""
     HELMET = "helmet"
     HEAD = "head"

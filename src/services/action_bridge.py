@@ -31,12 +31,18 @@ from typing import Dict, List, Optional, Set, Tuple
 
 import paho.mqtt.client as mqtt
 
-from ..devices.sensor    import SensorConfig, SirenDevice
+from ..devices.siren     import SensorConfig, SirenDevice
 from ..devices.signboard import SignboardConfig, SignboardDevice, build_display_text
 from ..devices.speaker   import SpeakerConfig, SpeakerDevice
 from ..protocols.http    import HttpEventForwarder, HttpEventTarget
 from ..protocols.rest    import RestEventReceiver
 from ..config            import ActionBridgeConfig
+from .cctv_metrics       import (
+    mqtt_events_received,
+    events_handled,
+    pending_events as _metric_pending,
+    action_bridge_up,
+)
 from ._action_bridge_support import (
     _ActionExecutor,
     AlarmDevice,
@@ -304,9 +310,12 @@ class ActionBridge:
         camera_id = str(payload.get("camera_id", "unknown"))
         mode, site_id = self._sites.resolve_mode(camera_id)
 
+        events_handled.labels(mode=mode.value).inc()
+
         if mode == ControlMode.MANUAL:
             event_id = str(uuid.uuid4())
             self._sites.push_pending(event_id, topic, payload, site_id)
+            _metric_pending.set(len(self._sites.list_pending()))
             self._repo.save(topic, payload, alarm_played=False, http_sent=False)
             self._publish_status(
                 "events/pending",
@@ -408,6 +417,9 @@ class ActionBridge:
             else:
                 # Kuiper sink는 배열 형태로 결과를 발행할 수 있음 → 개별 처리
                 payloads = payload if isinstance(payload, list) else [payload]
+                # MQTT 수신 카운터: 토픽 앞 두 세그먼트만 label로 사용
+                topic_prefix = "/".join(topic.split("/")[:2])
+                mqtt_events_received.labels(topic_prefix=topic_prefix).inc()
                 for single in payloads:
                     if not isinstance(single, dict):
                         continue
@@ -480,6 +492,7 @@ class ActionBridge:
             self._rest_receiver.start()
 
         self._running = True
+        action_bridge_up.set(1)
         logger.info("Speaker-Bridge Action Layer 실행 중 (Ctrl+C 종료)")
 
         signal.signal(signal.SIGINT,  self._signal_handler)
@@ -497,6 +510,7 @@ class ActionBridge:
 
     def stop(self) -> None:
         """서비스를 안전하게 종료한다."""
+        action_bridge_up.set(0)
         logger.info("Speaker-Bridge 종료 중...")
         self._forwarder.stop()
         if self._rest_receiver:

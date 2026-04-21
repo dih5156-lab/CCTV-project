@@ -26,7 +26,7 @@ CCTV-project/
 │   ├── core/
 │   │   ├── events.py              # 이벤트 타입 정의
 │   │   ├── event_filters.py       # 누적 감지 필터 / 트랙 관리
-│   │   ├── ai_analysis.py         # 다중 YOLO 모델 추론
+│   │   ├── ai/                    # AI 추론 패키지 (analyzer, fall, tracker 등)
 │   │   └── processor.py           # 비디오 파이프라인 오케스트레이터
 │   ├── utils/
 │   │   ├── camera_input.py        # RTSP/웹캠 연결 (GStreamer 지원)
@@ -49,12 +49,15 @@ CCTV-project/
 │   └── devices/
 │       ├── speaker.py             # TCP 스피커 제어
 │       ├── signboard.py           # 전광판 제어
-│       └── sensor.py              # 센서 추상화
+│       ├── siren.py               # 경광등/사이렌 제어
+│       └── sensor_device.py       # 센서 읽기 도메인 모델
 ├── main.py                        # 메인 진입점
-├── run_edgex_adapter.py           # EdgeX 어댑터 단독 실행
-├── run_action_bridge.py           # Action Layer 단독 실행
-├── run_kuiper_rules.py            # Kuiper 룰 배포
-├── run_alert_api.py               # Alert REST API 서버
+├── runners/
+│   ├── run_edgex_adapter.py       # EdgeX 어댑터 단독 실행
+│   ├── run_action_bridge.py       # Action Layer 단독 실행
+│   ├── run_kuiper_rules.py        # Kuiper 룰 배포
+│   ├── run_alert_api.py           # Alert REST API 서버
+│   └── run_public_api.py          # 공개 API 서버
 ├── cameras.json                   # 카메라 목록 및 구역 설정
 ├── zones_config.json              # 전역 위험 구역 설정
 ├── Dockerfile                     # 컨테이너 빌드 (x86)
@@ -279,7 +282,8 @@ docker compose ps
 # 특정 서비스 로그
 docker compose logs -f cctv-ai-engine
 docker compose logs -f cctv-action-layer
-docker compose logs -f edgex-app-rules-engine
+docker compose logs -f cctv-public-api
+docker compose logs -f edgex-kuiper
 
 # 서비스 재시작
 docker compose restart cctv-action-layer
@@ -318,6 +322,41 @@ docker compose restart cctv-action-layer
 | `--frame-skip N` | 매 N프레임마다 AI 추론 | `3` |
 | `--display` | GUI 화면 표시 | off |
 | `--api-port PORT` | Zone REST API 포트 | off |
+
+## 공개 API
+
+공개 API는 `runners/run_public_api.py`로 실행합니다.
+
+```bash
+python runners/run_public_api.py --host 0.0.0.0 --port 9000
+```
+
+주요 엔드포인트:
+
+- `GET /api/v1/health`
+- `GET /api/v1/events`
+- `GET /api/v1/cameras`
+- `GET/POST/DELETE /api/v1/sites`
+- `GET/POST /api/v1/control/*`
+
+응답 형식:
+
+- 성공/실패 응답은 `{ success, data, error, timestamp }`
+- 목록 조회는 페이지네이션 응답에서 `{ success, items, total, limit, offset, timestamp }`
+
+## 테스트
+
+공개 API 회귀 테스트:
+
+```bash
+python -m pytest tests/test_public_api.py -q
+```
+
+스트림 API 회귀 테스트:
+
+```bash
+python -m pytest tests/test_stream_api.py -q
+```
 | `--zone-presets FILE` | 구역 프리셋 저장 파일 | `zone_presets.json` |
 | `--zone-detection` | 위험 구역 감지 활성화 | off |
 | `--mqtt-broker HOST` | MQTT 브로커 | `localhost` |
@@ -386,13 +425,16 @@ edgex/events/device/cctv-device-service/CCTV-Camera-Profile/{device}/{resource}
 - `DetectionConfig`: `device` 필드가 `cpu`, `cuda`, `cuda:0` 등 모두 허용
 - `ENV_OVERRIDES`: 환경변수로 모든 설정 재정의 가능
 
-### `ai_analysis.py` — 다중 모델 AI 추론
+### `src/core/ai/analyzer.py` — 다중 모델 AI 추론
 
 - **사람 모델** (YOLOv8s): 800px 입력, `person_confidence=0.4`
 - **포즈 모델** (YOLOv8n-pose): 낙상 감지, 어깨-엉덩이 각도 분석
 - **헬멧 모델** (커스텀): 640px, `helmet_confidence=0.7`
 - `track(persist=True)`로 프레임 간 객체 ID 유지
 - IoU 기반 중복 박스 제거
+
+참고:
+- 기존 `src/core/ai_analysis.py` 경로는 제거되었고, 현재 표준 경로는 `src/core/ai/analyzer.py` 입니다.
 
 ### `processor.py` — 파이프라인 오케스트레이터
 

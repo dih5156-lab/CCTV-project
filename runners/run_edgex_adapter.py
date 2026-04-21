@@ -2,22 +2,18 @@
 
 import argparse
 import logging
-import sys
-from pathlib import Path
+from runners._shared import ensure_project_root, setup_runner_logging
 
-# runners/ 오프라인 실행 시 프로젝트 루트를 sys.path에 등록
-sys.path.insert(0, str(Path(__file__).parent.parent))
+ensure_project_root()
 
 from src.edgex.adapter_service import EdgeXDeviceAdapterService
 
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - [%(name)s] - %(levelname)s - %(message)s"
-)
+logger = logging.getLogger("run-edgex-adapter")
 
 
 def main() -> None:
+    setup_runner_logging()
+
     parser = argparse.ArgumentParser(
         description="경량 EdgeX 디바이스 어댑터 (MQTT 구독 -> EdgeX 발행)"
     )
@@ -48,6 +44,12 @@ def main() -> None:
         edgex_mqtt_port=args.edgex_mqtt_port,
         edgex_topic_prefix=args.edgex_topic_prefix,
         service_name=args.service_name,
+    )
+    logger.info(
+        "EdgeX Adapter 시작: ai-mqtt=%s:%s edgex-data=%s",
+        args.ai_mqtt_broker,
+        args.ai_mqtt_port,
+        args.edgex_data_url,
     )
     service.start()
 

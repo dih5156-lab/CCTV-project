@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from math import isfinite
 from typing import Any, Dict, List, Optional
 
+from ..canonical_event import build_canonical_event
 from ..devices.sensor_device import SensorReading
 
 
@@ -32,7 +33,7 @@ class SensorAlertEvent:
     metadata: Dict[str, Any] = field(default_factory=dict)
 
     def to_payload(self) -> Dict[str, Any]:
-        return {
+        payload = {
             "camera_id": self.camera_id,
             "type": self.event_type,
             "severity": self.severity,
@@ -41,6 +42,46 @@ class SensorAlertEvent:
             "timestamp": self.timestamp,
             "metadata": self.metadata,
         }
+        payload.update(
+            build_canonical_event(
+                camera_id=self.camera_id,
+                event_type=self.event_type,
+                message_type="sensor_event",
+                occurred_at=self.timestamp,
+                message_id=self.metadata.get("message_id"),
+                source=str(self.metadata.get("source", "lora_tlv")),
+                source_type="sensor",
+                severity=self.severity,
+                confidence=self.confidence,
+                message=self.message,
+                display_message=self.message,
+                tts_message=self._default_tts_message(),
+                device={
+                    "camera_id": self.camera_id,
+                    "device_id": self.camera_id,
+                    "app_eui": self.metadata.get("app_eui"),
+                    "dev_eui": self.metadata.get("dev_eui"),
+                    "f_port": self.metadata.get("f_port"),
+                    "f_cnt_up": self.metadata.get("f_cnt_up"),
+                },
+                gateway={
+                    "channel": self.metadata.get("channel"),
+                    "frequency": self.metadata.get("frequency"),
+                    "rssi": self.metadata.get("rssi"),
+                    "snr": self.metadata.get("snr"),
+                },
+                decoded=self.metadata.get("telemetry") or {},
+                raw={"metadata": self.metadata},
+            )
+        )
+        return payload
+
+    def _default_tts_message(self) -> str:
+        if self.severity == "critical":
+            return f"{self.message}. 즉시 현장을 확인 바랍니다."
+        if self.severity == "warning":
+            return f"{self.message}. 현장을 확인 바랍니다."
+        return self.message
 
 
 class SensorEventDetector:
@@ -82,8 +123,8 @@ class SensorEventDetector:
             metadata=self._build_metadata(
                 reading,
                 telemetry={
-                    "angle_x": angle_x,
-                    "angle_y": angle_y,
+                    "angle_x_deg": angle_x,
+                    "angle_y_deg": angle_y,
                 },
             ),
         )
@@ -110,7 +151,7 @@ class SensorEventDetector:
             timestamp=reading.received_at,
             metadata=self._build_metadata(
                 reading,
-                telemetry={"temperature": temperature},
+                telemetry={"temperature_c": temperature},
             ),
         )
 

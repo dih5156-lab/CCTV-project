@@ -41,3 +41,13 @@ class PaginatedResponse(BaseModel, Generic[T]):
     limit: int
     offset: int
     timestamp: datetime = Field(default_factory=_utcnow)
+
+
+def success_response(data: T | None = None) -> BaseResponse[T]:
+    """성공 응답 래퍼를 생성한다."""
+    return BaseResponse(success=True, data=data)
+
+
+def error_response(message: str) -> BaseResponse[Any]:
+    """오류 응답 래퍼를 생성한다."""
+    return BaseResponse(success=False, data=None, error=message)

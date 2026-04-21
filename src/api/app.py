@@ -16,20 +16,25 @@ import os
 from contextlib import asynccontextmanager
 from typing import AsyncIterator
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 
-from .v1 import alerts, appearances, cameras, control, events, health, search, sites
+from .schemas.common import error_response
+from .v1 import alerts, appearances, cameras, control, events, health, metrics, search, sites
+from .dependencies._settings import ACTION_LAYER_URL, ALERT_API_URL
+from .dependencies.rate_limit import limiter
 
 # ---------------------------------------------------------------------------
 # 로깅
 # ---------------------------------------------------------------------------
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-)
+# 라이브러리 모듈에서는 basicConfig를 호출하지 않는다.
+# 로깅 설정은 run_public_api.py (진입점 runner) 에서만 수행한다.
 logger = logging.getLogger("cctv-public-api")
 
 
@@ -42,9 +47,12 @@ logger = logging.getLogger("cctv-public-api")
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     logger.info(
         "CCTV Public API 시작 — Action Layer: %s | Alert API: %s",
-        os.environ.get("ACTION_LAYER_URL", "http://cctv-action-layer:8080"),
-        os.environ.get("ALERT_API_URL", "http://cctv-alert-api:8000"),
+        ACTION_LAYER_URL,
+        ALERT_API_URL,
     )
+    # NOTE: appearances.set_analyzer()는 단일 프로세스(로컬 개발) 모드에서만 사용한다.
+    # Docker 배포 시 ai-engine과 public-api는 별개의 컨테이너이므로
+    # 외형 조건 동기화는 SQLite DB(APPEARANCES_DB)를 통해 이뤄진다.
     yield
     logger.info("CCTV Public API 종료")
 
@@ -64,6 +72,11 @@ app = FastAPI(
     redoc_url="/redoc",
     openapi_url="/openapi.json",
 )
+
+# slowapi — 앱 상태에 limiter 등록 + 미들웨어 + 예외 핸들러
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
 
 # ---------------------------------------------------------------------------
 # CORS — 서버팀 도메인으로 제한 (환경변수로 설정)
@@ -91,17 +104,28 @@ app.add_middleware(
 # ---------------------------------------------------------------------------
 
 
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException) -> JSONResponse:
+    logger.warning("HTTP 예외: %s %s -> %s", request.method, request.url, exc.status_code)
+    body = error_response(str(exc.detail))
+    return JSONResponse(status_code=exc.status_code, content=body.model_dump(mode="json"))
+
+
+@app.exception_handler(RequestValidationError)
+async def request_validation_exception_handler(
+    request: Request, exc: RequestValidationError
+) -> JSONResponse:
+    logger.warning("입력 검증 실패: %s %s", request.method, request.url)
+    details = "; ".join(err.get("msg", "invalid input") for err in exc.errors())
+    body = error_response(details or "잘못된 요청입니다.")
+    return JSONResponse(status_code=422, content=body.model_dump(mode="json"))
+
+
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     logger.exception("처리되지 않은 예외: %s %s", request.method, request.url)
-    return JSONResponse(
-        status_code=500,
-        content={
-            "success": False,
-            "data": None,
-            "error": "내부 서버 오류가 발생했습니다.",
-        },
-    )
+    body = error_response("내부 서버 오류가 발생했습니다.")
+    return JSONResponse(status_code=500, content=body.model_dump(mode="json"))
 
 
 # ---------------------------------------------------------------------------
@@ -118,3 +142,4 @@ app.include_router(sites.router, prefix=_PREFIX)
 app.include_router(control.router, prefix=_PREFIX)
 app.include_router(appearances.router, prefix=_PREFIX)
 app.include_router(search.router, prefix=_PREFIX)
+app.include_router(metrics.router, prefix=_PREFIX)

@@ -1,0 +1,34 @@
+# =============================================================================
+# NvDCF 트래커 YAML 설정 (Jetson Orin 전용 템플릿)
+# config_tracker.txt 의 ll-config-file 경로
+#
+# 참고: deepstream-<version>/samples/configs/deepstream-app/config_tracker_NvDCF_*.yml
+# =============================================================================
+
+BaseConfig:
+  minDetectorConfidence: 0.3        # 감지 신뢰도 임계값 (낮추면 더 많은 객체 트래킹)
+
+TargetManagement:
+  maxTargetsPerStream: 60           # 스트림당 최대 추적 객체 수
+  minIouDiff4NewTarget: 0.5         # 새 객체 판별 IoU 임계값
+  maxShadowTrackingAge: 30          # 미탐지 후 그림자 유지 프레임 수 (FPS 기준)
+  probationAge: 3                   # 신규 트래킹 확정까지 필요 프레임 수
+  earlyTerminationAge: 1            # 조기 종료 프레임 수
+
+TrajectoryManagement:
+  useUniqueID: True                 # 전역 고유 트래킹 ID 사용
+
+DCF:
+  filterLr: 0.15                    # DCF 필터 학습률 (낮을수록 안정적)
+  gaussianSigma: 1.0                # 가우시안 시그마
+  wFourier: 2                       # 푸리에 특징 가중치
+  minAreaRatio: 0.0025              # bbox 최소 면적 비율
+  maxAreaRatio: 0.9                 # bbox 최대 면적 비율 (화면 대비)
+
+  # ---------- Jetson 최적화 ----------
+  useColorNames: False              # ColorNames 특징 비사용 (경량화)
+  useHog: False                     # HOG 특징 비사용 (경량화)
+  featureImgSizeLevel: 2            # 1(빠름) ~ 4(정확) — Jetson 에서는 2~3 권장
+
+  # ---------- Re-ID (선택, DeepSORT 형태) ----------
+  useGpuCuda: True                  # CUDA 기반 DCF 연산 활성화

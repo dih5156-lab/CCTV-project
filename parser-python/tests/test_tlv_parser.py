@@ -45,13 +45,13 @@ HEX_INPUTS = [
 
 # Go: hexStrings2 – 시각 비교용 원본 참조값 (assertions 의 기준)
 EXPECTED_LABELS = [
-    '{"error_code": 0, "manufacturer": "SAW", "model_number": "SA", "battery_level": 100, "battery_status": 0, "firmware_version": "1.02", "supported_binding_and_modes": "A"}',
-    '{"rain_fall": 0, "created_at": 1757462934000, "water_level": 0.3790000081062317, "flow_velocity": 0}',
-    '{"humidity": 80, "created_at": 1757463119000, "temperature": 21, "reporting_period": 120}',
-    '{"angle_x": 83.38153076171875, "angle_y": 0.8591175675392151, "created_at": 1757462926000, "reporting_period": 3600, "reporting_angle_threshold": 15}',
+    '{"error_code": 0, "manufacturer": "SAW", "model_number": "SA", "battery_level_pct": 100, "battery_status": 0, "firmware_version": "1.02", "supported_binding_and_modes": "A"}',
+    '{"rain_fall_mm": 0, "created_at": 1757462934000, "water_level_m": 0.3790000081062317, "flow_velocity_mps": 0}',
+    '{"humidity_pct": 80, "created_at": 1757463119000, "temperature_c": 21, "reporting_period_s": 120}',
+    '{"angle_x_deg": 83.38153076171875, "angle_y_deg": 0.8591175675392151, "created_at": 1757462926000, "reporting_period_s": 3600, "reporting_angle_threshold_deg": 15}',
     '{"created_at": 1757463359000, "fire_alarm": false, "reporting_period": 120}',
-    '{"angle_x": 88.41826629638672, "angle_y": 1.6060813665390015, "created_at": 1757462930000, "temperature": 27.04296875}',
-    '{"acc_x": 0.0058559998869895935, "acc_y": 1.010282039642334, "acc_z": 0.020068999379873276, "gyro_x": 0, "gyro_y": 0, "gyro_z": 0, "created_at": 1757462930000}',
+    '{"angle_x_deg": 88.41826629638672, "angle_y_deg": 1.6060813665390015, "created_at": 1757462930000, "temperature_c": 27.04296875}',
+    '{"acc_x_g": 0.0058559998869895935, "acc_y_g": 1.010282039642334, "acc_z_g": 0.020068999379873276, "gyro_x_dps": 0, "gyro_y_dps": 0, "gyro_z_dps": 0, "created_at": 1757462930000}',
 ]
 
 
@@ -98,7 +98,7 @@ def test_case1_table3_device_info(parser):
     assert d.get("manufacturer") == "SAW"
     assert d.get("model_number") == "SA"
     assert d.get("firmware_version") == "1.02"
-    assert d.get("battery_level") == pytest.approx(100.0, rel=1e-3)
+    assert d.get("battery_level_pct") == pytest.approx(100.0, rel=1e-3)
     # Go: error_code = 0 (int) / Python: False → False == 0 is True
     assert d.get("error_code") == 0
     assert d.get("supported_binding_and_modes") == "A"
@@ -122,9 +122,9 @@ def test_case2_table34950_river(parser):
     assert result.table_name == "t34950"
 
     d = result.data
-    assert d.get("water_level") == pytest.approx(0.3790000081062317, rel=1e-5)
-    assert d.get("flow_velocity") == pytest.approx(0.0, abs=1e-6)
-    assert d.get("rain_fall") == pytest.approx(0.0, abs=1e-6)
+    assert d.get("water_level_m") == pytest.approx(0.3790000081062317, rel=1e-5)
+    assert d.get("flow_velocity_mps") == pytest.approx(0.0, abs=1e-6)
+    assert d.get("rain_fall_mm") == pytest.approx(0.0, abs=1e-6)
 
 
 # ──────────────────────────────────────────────────────────────────
@@ -144,8 +144,8 @@ def test_case3_table34954_temp_humidity(parser):
     assert result.table_name == "t34954"
 
     d = result.data
-    assert d.get("temperature") == pytest.approx(21.0, rel=1e-3)
-    assert d.get("humidity") == pytest.approx(80.0, rel=1e-3)
+    assert d.get("temperature_c") == pytest.approx(21.0, rel=1e-3)
+    assert d.get("humidity_pct") == pytest.approx(80.0, rel=1e-3)
 
 
 # ──────────────────────────────────────────────────────────────────
@@ -165,9 +165,9 @@ def test_case4_table34955_inclinometer(parser):
     assert result.table_name == "t34955"
 
     d = result.data
-    assert d.get("angle_x") == pytest.approx(83.38153076171875, rel=1e-5)
-    assert d.get("angle_y") == pytest.approx(0.8591175675392151, rel=1e-5)
-    assert d.get("reporting_angle_threshold") == 15
+    assert d.get("angle_x_deg") == pytest.approx(83.38153076171875, rel=1e-5)
+    assert d.get("angle_y_deg") == pytest.approx(0.8591175675392151, rel=1e-5)
+    assert d.get("reporting_angle_threshold_deg") == 15
 
 
 # ──────────────────────────────────────────────────────────────────
@@ -208,9 +208,9 @@ def test_case6_table34957_summary1(parser):
     assert result.table_name == "t34957"
 
     d = result.data
-    assert d.get("temperature") == pytest.approx(27.04296875, rel=1e-5)
-    assert d.get("angle_x") == pytest.approx(88.41826629638672, rel=1e-5)
-    assert d.get("angle_y") == pytest.approx(1.6060813665390015, rel=1e-5)
+    assert d.get("temperature_c") == pytest.approx(27.04296875, rel=1e-5)
+    assert d.get("angle_x_deg") == pytest.approx(88.41826629638672, rel=1e-5)
+    assert d.get("angle_y_deg") == pytest.approx(1.6060813665390015, rel=1e-5)
 
 
 # ──────────────────────────────────────────────────────────────────
@@ -231,12 +231,12 @@ def test_case7_table34958_summary2(parser):
     assert result.table_name == "t34958"
 
     d = result.data
-    assert d.get("acc_x") == pytest.approx(0.0058559998869895935, rel=1e-4)
-    assert d.get("acc_y") == pytest.approx(1.010282039642334, rel=1e-5)
-    assert d.get("acc_z") == pytest.approx(0.020068999379873276, rel=1e-4)
-    assert d.get("gyro_x") == pytest.approx(0.0, abs=1e-6)
-    assert d.get("gyro_y") == pytest.approx(0.0, abs=1e-6)
-    assert d.get("gyro_z") == pytest.approx(0.0, abs=1e-6)
+    assert d.get("acc_x_g") == pytest.approx(0.0058559998869895935, rel=1e-4)
+    assert d.get("acc_y_g") == pytest.approx(1.010282039642334, rel=1e-5)
+    assert d.get("acc_z_g") == pytest.approx(0.020068999379873276, rel=1e-4)
+    assert d.get("gyro_x_dps") == pytest.approx(0.0, abs=1e-6)
+    assert d.get("gyro_y_dps") == pytest.approx(0.0, abs=1e-6)
+    assert d.get("gyro_z_dps") == pytest.approx(0.0, abs=1e-6)
 
 
 # ──────────────────────────────────────────────────────────────────

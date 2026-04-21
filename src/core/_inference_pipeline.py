@@ -13,7 +13,7 @@ from .events import DetectionEvent
 if TYPE_CHECKING:
     from threading import Lock
 
-    from .ai_analysis import AIAnalyzer
+    from .ai.analyzer import AIAnalyzer
     from .event_filters import CumulativeViolationFilter, TrackManager
     from .processor import _EventDebouncer
     from ._display_grid import _DisplayGrid

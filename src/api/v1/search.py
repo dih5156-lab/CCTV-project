@@ -48,7 +48,8 @@ class AppearanceRecord(BaseModel):
     track_id: Optional[int] = None
     upper_color: Optional[str] = None
     lower_color: Optional[str] = None
-    hat_color: Optional[str] = None
+    has_helmet: bool = False
+    helmet_color: Optional[str] = None
     has_backpack: bool = False
     has_handbag: bool = False
     has_suitcase: bool = False
@@ -79,7 +80,8 @@ def _to_record(row: dict) -> AppearanceRecord:
         track_id=row.get("track_id"),
         upper_color=row.get("upper_color"),
         lower_color=row.get("lower_color"),
-        hat_color=row.get("hat_color"),
+        has_helmet=row.get("has_helmet", False),
+        helmet_color=row.get("helmet_color"),
         has_backpack=row.get("has_backpack", False),
         has_handbag=row.get("has_handbag", False),
         has_suitcase=row.get("has_suitcase", False),
@@ -107,7 +109,8 @@ def search_appearances(
     camera_id: Optional[str] = Query(None, description="카메라 ID"),
     upper_color: Optional[str] = Query(None, description="상의 색상"),
     lower_color: Optional[str] = Query(None, description="하의 색상"),
-    hat_color: Optional[str] = Query(None, description="모자 색상"),
+    has_helmet: Optional[bool] = Query(None, description="헬멧 착용 여부"),
+    helmet_color: Optional[str] = Query(None, description="헬멧 색상"),
     has_backpack: Optional[bool] = Query(None, description="백팩 소지"),
     has_handbag: Optional[bool] = Query(None, description="핸드백 소지"),
     has_suitcase: Optional[bool] = Query(None, description="캐리어 소지"),
@@ -135,7 +138,8 @@ def search_appearances(
         camera_id=camera_id,
         upper_color=upper_color,
         lower_color=lower_color,
-        hat_color=hat_color,
+        has_helmet=has_helmet,
+        helmet_color=helmet_color,
         has_backpack=has_backpack,
         has_handbag=has_handbag,
         has_suitcase=has_suitcase,
@@ -166,7 +170,7 @@ def _parse_datetime(s: str) -> float:
             return dt.timestamp()
         except ValueError:
             continue
-    raise ValueError(f"지원하지 않는 날짜 형식: {s}")
+    raise HTTPException(status_code=400, detail=f"지원하지 않는 날짜 형식: {s}")
 
 
 # ── crop 이미지 서빙 ─────────────────────────────────────────────────

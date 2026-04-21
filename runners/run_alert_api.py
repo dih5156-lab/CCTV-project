@@ -3,15 +3,12 @@
 import argparse
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
+from runners._shared import setup_runner_logging
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - [%(name)s] - %(levelname)s - %(message)s",
-)
 logger = logging.getLogger("alert-api")
 
 
@@ -28,6 +25,14 @@ class AlertHandler(BaseHTTPRequestHandler):
     def _sensor_log_path(self) -> Path:
         return self.server.sensor_log_path  # type: ignore[attr-defined]
 
+    def _health_payload(self) -> dict:
+        """헬스체크 응답 본문을 생성한다."""
+        return {
+            "service": "cctv-alert-api",
+            "status": "up",
+            "checked_at": datetime.now(timezone.utc).isoformat(),
+        }
+
     def _send_json(self, status_code: int, payload: dict) -> None:
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
         try:
@@ -41,7 +46,7 @@ class AlertHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         if self.path in ["/health", "/ping"]:
-            self._send_json(200, {"status": "up"})
+            self._send_json(200, self._health_payload())
             return
         self._send_json(404, {"error": "not found"})
 
@@ -68,7 +73,7 @@ class AlertHandler(BaseHTTPRequestHandler):
             return
 
         entry = {
-            "receivedAt": datetime.utcnow().isoformat(),
+            "receivedAt": datetime.now(timezone.utc).isoformat(),
             "payload": payload,
         }
         log_path.parent.mkdir(parents=True, exist_ok=True)
@@ -83,6 +88,8 @@ class AlertHandler(BaseHTTPRequestHandler):
 
 
 def main() -> None:
+    setup_runner_logging()
+
     parser = argparse.ArgumentParser(description="CCTV 내부 Alert API 서버")
     parser.add_argument("--host", default="0.0.0.0")
     parser.add_argument("--port", type=int, default=8000)
@@ -93,8 +100,8 @@ def main() -> None:
     server = ThreadingHTTPServer((args.host, args.port), AlertHandler)
     server.log_path = Path(args.log_path)              # type: ignore[attr-defined]
     server.sensor_log_path = Path(args.sensor_log_path)  # type: ignore[attr-defined]
-    logger.info(f"Alert API 서버 시작: http://{args.host}:{args.port}")
-    logger.info(f"이벤트 로그 경로: {server.log_path}")
+    logger.info("Alert API 서버 시작: http://%s:%s", args.host, args.port)
+    logger.info("이벤트 로그 경로: %s", server.log_path)
 
     try:
         server.serve_forever()

@@ -1,0 +1,7 @@
+# nvinfer 클래스 레이블 (한 줄에 하나씩, 인덱스 순서)
+# config_infer_primary.txt 의 num-detected-classes 값과 줄 수가 일치해야 함
+#
+# class-id:  0          1          2
+person
+helmet
+hardhat_off

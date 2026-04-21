@@ -35,6 +35,12 @@ Local Test Sever/
 
 # 런타임 생성 데이터
 event_backup/
+data/crops/
+snapshots/
+logs/
+tmp_probe_dir/
+tmp_test_dirs/
+.pytest_workspace_tmp/
 
 # IDE
 .vscode/
@@ -80,5 +86,8 @@ _test_results.txt
 
 .pytest_tmp/
 *.db
+*.db-shm
+*.db-wal
+*.db-journal
 !data/.gitkeep
 data/*.db

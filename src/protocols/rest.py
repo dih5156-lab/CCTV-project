@@ -17,12 +17,18 @@ Routes:
 """
 
 import logging
+import os
+import secrets
+from datetime import datetime, timezone
 from threading import Thread
 from typing import Any, Dict, Optional
 
 from .._http_server import BaseApiHandler, ThreadingApiServer
 
 logger = logging.getLogger(__name__)
+
+# 내부 서비스 간 공유 시크릿 — 미설정 시 검증 건너뜀 (개발/단일 컨테이너 환경)
+_INTERNAL_TOKEN: str | None = os.environ.get("INTERNAL_SERVICE_TOKEN") or None
 
 
 class _RestHandler(BaseApiHandler):
@@ -40,7 +46,26 @@ class _RestHandler(BaseApiHandler):
     def _layer(self):
         return self.server.action_layer  # type: ignore[attr-defined]
 
+    def _check_internal_token(self) -> bool:
+        """X-Internal-Token 헤더를 검증한다.
+
+        INTERNAL_SERVICE_TOKEN 환경변수가 설정되지 않은 경우(개발 환경)에는
+        검증을 건너뛰고 True를 반환한다.
+        /health, /ping, /metrics 는 토큰 없이 접근 허용한다.
+        """
+        if _INTERNAL_TOKEN is None:
+            return True
+        if self.path in ("/health", "/ping", "/metrics"):
+            return True
+        provided = self.headers.get("X-Internal-Token", "")
+        if not secrets.compare_digest(provided, _INTERNAL_TOKEN):
+            self._respond(401, {"error": "Unauthorized"})
+            return False
+        return True
+
     def do_GET(self):  # noqa: N802
+        if not self._check_internal_token():
+            return
         layer = self._layer()
         if self.path in ("/health", "/ping"):
             mqtt_ok = False
@@ -53,7 +78,9 @@ class _RestHandler(BaseApiHandler):
             self._respond(
                 200 if status == "up" else 503,
                 {
+                    "service": "cctv-action-layer",
                     "status": status,
+                    "checked_at": datetime.now(timezone.utc).isoformat(),
                     "mqtt": "connected" if mqtt_ok else "disconnected",
                     "mode": layer.default_mode.value,
                     "sites": len(layer.list_sites()),
@@ -66,10 +93,14 @@ class _RestHandler(BaseApiHandler):
             self._respond(200, layer.get_pending_events())
         elif self.path == "/mode":
             self._respond(200, {"mode": layer.default_mode.value})
+        elif self.path == "/metrics":
+            self._respond_metrics()
         else:
             self._respond(404, {"error": "Not Found"})
 
     def do_POST(self):  # noqa: N802
+        if not self._check_internal_token():
+            return
         layer = self._layer()
         path  = self.path
 
@@ -124,7 +155,24 @@ class _RestHandler(BaseApiHandler):
         else:
             self._respond(404, {"error": "Not Found"})
 
+    def _respond_metrics(self) -> None:
+        """Prometheus テキスト형식 메트릭을 반환한다."""
+        try:
+            from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
+            from ..services.cctv_metrics import REGISTRY
+            body: bytes = generate_latest(REGISTRY)
+            self.send_response(200)
+            self.send_header("Content-Type", CONTENT_TYPE_LATEST)
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+        except Exception as exc:
+            logger.warning("메트릭 생성 실패: %s", exc)
+            self._respond(500, {"error": "metrics unavailable"})
+
     def do_DELETE(self):  # noqa: N802
+        if not self._check_internal_token():
+            return
         layer = self._layer()
         if self.path.startswith("/sites/"):
             site_id = self.path[len("/sites/"):]

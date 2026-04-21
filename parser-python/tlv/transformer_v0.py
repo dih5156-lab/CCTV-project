@@ -69,7 +69,7 @@ class TransformerV0:
             elif tlv.id == 5:
                 data["factory_reset"] = tlv.value
             elif tlv.id == 9:
-                data["battery_level"] = tlv.value
+                data["battery_level_pct"] = tlv.value
             elif tlv.id == 11:
                 data["error_code"] = tlv.value
             elif tlv.id == 12:
@@ -95,15 +95,15 @@ class TransformerV0:
         """
         for tlv in tlv_items:
             if tlv.id == 0:
-                data["water_level"] = tlv.value
+                data["water_level_m"] = tlv.value
             elif tlv.id == 1:
-                data["flow_velocity"] = tlv.value
+                data["flow_velocity_mps"] = tlv.value
             elif tlv.id == 2:
-                data["rain_fall"] = tlv.value
+                data["rain_fall_mm"] = tlv.value
             elif tlv.id == 26241:
                 # Go: float64(val) / 1000.0  (ms → 초)
                 if isinstance(tlv.value, int):
-                    data["reporting_period"] = tlv.value / 1000.0
+                    data["reporting_period_s"] = tlv.value / 1000.0
         return data
 
     def _parse34952(self, data: Dict[str, Any], tlv_items: list) -> Dict[str, Any]:
@@ -117,10 +117,10 @@ class TransformerV0:
         """
         for tlv in tlv_items:
             if tlv.id == 0:
-                data["flood_level"] = tlv.value
+                data["flood_level_m"] = tlv.value
             elif tlv.id == 26241:
                 if isinstance(tlv.value, int):
-                    data["reporting_period"] = tlv.value / 1000.0
+                    data["reporting_period_s"] = tlv.value / 1000.0
         return data
 
     def _parse34954(self, data: Dict[str, Any], tlv_items: list) -> Dict[str, Any]:
@@ -135,12 +135,12 @@ class TransformerV0:
         """
         for tlv in tlv_items:
             if tlv.id == 0:
-                data["temperature"] = tlv.value
+                data["temperature_c"] = tlv.value
             elif tlv.id == 1:
-                data["humidity"] = tlv.value
+                data["humidity_pct"] = tlv.value
             elif tlv.id == 26241:
                 if isinstance(tlv.value, int):
-                    data["reporting_period"] = tlv.value / 1000.0
+                    data["reporting_period_s"] = tlv.value / 1000.0
         return data
 
     def _parse34955(self, data: Dict[str, Any], tlv_items: list) -> Dict[str, Any]:
@@ -158,16 +158,16 @@ class TransformerV0:
         for tlv in tlv_items:
             if tlv.id == 0:
                 # uint32 비트 → IEEE 754 float32 해석 (Go: math.Float32frombits)
-                data["angle_x"] = struct.unpack(">f", struct.pack(">I", tlv.value))[0] if isinstance(tlv.value, int) else tlv.value
+                data["angle_x_deg"] = struct.unpack(">f", struct.pack(">I", tlv.value))[0] if isinstance(tlv.value, int) else tlv.value
             elif tlv.id == 1:
-                data["angle_y"] = struct.unpack(">f", struct.pack(">I", tlv.value))[0] if isinstance(tlv.value, int) else tlv.value
+                data["angle_y_deg"] = struct.unpack(">f", struct.pack(">I", tlv.value))[0] if isinstance(tlv.value, int) else tlv.value
             elif tlv.id == 2:
-                data["reporting_angle_threshold"] = tlv.value
+                data["reporting_angle_threshold_deg"] = tlv.value
             elif tlv.id == 3:
                 data["relative_angle_value_reset"] = tlv.value
             elif tlv.id == 26241:
                 if isinstance(tlv.value, int):
-                    data["reporting_period"] = tlv.value / 1000.0
+                    data["reporting_period_s"] = tlv.value / 1000.0
         return data
 
     def _parse34956(self, data: Dict[str, Any], tlv_items: list) -> Dict[str, Any]:
@@ -183,7 +183,7 @@ class TransformerV0:
             if tlv.id == 0:
                 data["fire_alarm"] = tlv.value
             elif tlv.id == 26241:
-                data["reporting_period"] = tlv.value
+                data["reporting_period_s"] = tlv.value
         return data
 
     def _parse34957(self, data: Dict[str, Any], tlv_items: list) -> Dict[str, Any]:
@@ -202,16 +202,16 @@ class TransformerV0:
         """
         for tlv in tlv_items:
             if tlv.id == 0:
-                data["temperature"] = tlv.value
+                data["temperature_c"] = tlv.value
             elif tlv.id == 1:
-                data["angle_x"] = tlv.value
+                data["angle_x_deg"] = tlv.value
             elif tlv.id == 2:
-                data["angle_y"] = tlv.value
+                data["angle_y_deg"] = tlv.value
             elif tlv.id == 3:
                 data["event_code"] = tlv.value
 
-        # 특수 로직: angle_x, angle_y 모두 있으면 이벤트 코드 강제 설정
-        if data.get("angle_x") is not None and data.get("angle_y") is not None:
+        # 특수 로직: angle_x_deg, angle_y_deg 모두 있으면 이벤트 코드 강제 설정
+        if data.get("angle_x_deg") is not None and data.get("angle_y_deg") is not None:
             data["event_code"] = 1
 
         return data
@@ -234,21 +234,21 @@ class TransformerV0:
         """
         for tlv in tlv_items:
             if tlv.id == 0:
-                data["acc_x"] = tlv.value
+                data["acc_x_g"] = tlv.value
             elif tlv.id == 1:
-                data["acc_y"] = tlv.value
+                data["acc_y_g"] = tlv.value
             elif tlv.id == 2:
-                data["acc_z"] = tlv.value
+                data["acc_z_g"] = tlv.value
             elif tlv.id == 3:
-                data["gyro_x"] = tlv.value
+                data["gyro_x_dps"] = tlv.value
             elif tlv.id == 4:
-                data["gyro_y"] = tlv.value
+                data["gyro_y_dps"] = tlv.value
             elif tlv.id == 5:
-                data["gyro_z"] = tlv.value
+                data["gyro_z_dps"] = tlv.value
             elif tlv.id == 6:
-                data["angle_x"] = tlv.value
+                data["angle_x_deg"] = tlv.value
             elif tlv.id == 7:
-                data["angle_y"] = tlv.value
+                data["angle_y_deg"] = tlv.value
             elif tlv.id == 8:
                 data["event_code"] = tlv.value
         return data

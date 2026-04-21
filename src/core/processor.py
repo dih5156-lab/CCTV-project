@@ -37,9 +37,10 @@ from ..utils.zone_detection import ZoneEvent, ZoneManager
 from ..utils.zone_drawer import ZoneDrawer
 from ._display_event_mapper import DisplayEventMapper
 from ._display_grid import _DisplayGrid
+from ..utils.visualizer import draw_events
 from ._camera_registry import _CameraRegistry
 from ._inference_pipeline import _InferencePipeline
-from .ai_analysis import AIAnalyzer
+from .ai.analyzer import AIAnalyzer
 from .base_processor import BaseProcessor
 from .event_filters import CumulativeViolationFilter, TrackManager
 from .events import DetectionEvent, EventType
@@ -487,6 +488,13 @@ class VideoProcessor(BaseProcessor):
                 confidence_threshold=self.config.detection.pose_confidence,
                 device=self.config.detection.device,
                 fall_height_ratio=self.config.detection.fall_height_ratio,
+                appearance_backend=self.config.appearance.backend,
+                appearance_model_path=self.config.appearance.model_path,
+                appearance_label_map_path=self.config.appearance.label_map_path,
+                appearance_runtime=self.config.appearance.runtime,
+                appearance_input_size=self.config.appearance.input_size,
+                appearance_score_threshold=self.config.appearance.score_threshold,
+                appearance_bbox_expand_ratio=self.config.appearance.bbox_expand_ratio,
             )
             # 새 모델 로드 없이 캐시된 모델 객체를 직접 주입
             analyzer.helmet_model = cached["helmet"]
@@ -501,6 +509,13 @@ class VideoProcessor(BaseProcessor):
                 confidence_threshold=self.config.detection.pose_confidence,
                 device=self.config.detection.device,
                 fall_height_ratio=self.config.detection.fall_height_ratio,
+                appearance_backend=self.config.appearance.backend,
+                appearance_model_path=self.config.appearance.model_path,
+                appearance_label_map_path=self.config.appearance.label_map_path,
+                appearance_runtime=self.config.appearance.runtime,
+                appearance_input_size=self.config.appearance.input_size,
+                appearance_score_threshold=self.config.appearance.score_threshold,
+                appearance_bbox_expand_ratio=self.config.appearance.bbox_expand_ratio,
             )
             with self._model_pool_lock:
                 self._model_pool[pool_key] = {
@@ -980,8 +995,15 @@ class VideoProcessor(BaseProcessor):
                     camera_id, events_for_display, zone_events, removed_ids
                 )
                 # 웹 스트리밍을 위해 항상 프레임 저장 (display 모드 여부 무관)
-                _cached_display_evts = list(display_evts)  # 스킵 프레임에서 재사용
-                self._display.update_frame(camera_id, frame, display_evts)
+                # 새 이벤트가 있으면 캐시 갱신, 없으면 만료된 트랙만 제거하여 유지
+                if display_evts:
+                    _cached_display_evts = list(display_evts)
+                elif removed_ids:
+                    _cached_display_evts = [
+                        e for e in _cached_display_evts
+                        if getattr(e, "object_id", None) not in removed_ids
+                    ]
+                self._display.update_frame(camera_id, frame, _cached_display_evts)
                 consecutive_errors = 0
             except Exception as exc:
                 logger.error("[%s] 추론 루프 오류: %s", camera_id, exc, exc_info=True)
@@ -1171,18 +1193,41 @@ class VideoProcessor(BaseProcessor):
     # 통계
     # ------------------------------------------------------------------
 
-    def get_camera_frame(self, camera_id: str) -> Optional[Any]:
+    def get_camera_frame(
+        self, camera_id: str, *, annotated: bool = False
+    ) -> Optional[Any]:
         """특정 카메라의 최신 프레임(numpy ndarray)을 반환한다.
 
         추론 스레드가 아직 프레임을 등록하지 않았거나 카메라 ID가 없으면 None 반환.
         반환된 배열은 copy() 되어 있으므로 호출 측에서 안전하게 읽을 수 있다.
+
+        Args:
+            annotated: True 이면 탐지 박스·라벨이 그려진 프레임을 반환한다.
         """
         with self._display._lock:
             entry = self._display._frames.get(camera_id)
         if entry is None:
             return None
-        frame, _ = entry
-        return frame.copy() if frame is not None else None
+        frame, events = entry
+        if frame is None:
+            return None
+        out = frame.copy()
+        if annotated:
+            if events:
+                out = draw_events(out, events)
+            # 디버그: 항상 프레임 카운터 표시로 코드 경로 확인
+            import cv2 as _cv2
+            _cv2.putText(
+                out,
+                f"EVT:{len(events)}",
+                (10, 30),
+                _cv2.FONT_HERSHEY_SIMPLEX,
+                0.8,
+                (0, 255, 255),
+                2,
+                _cv2.LINE_AA,
+            )
+        return out
 
     def save_event_snapshot(
         self,

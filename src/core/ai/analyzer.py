@@ -97,6 +97,13 @@ class AIAnalyzer:
         confidence_threshold: float = 0.5,
         device: str = "cpu",
         fall_height_ratio: float = 0.3,
+        appearance_backend: str = "hsv",
+        appearance_model_path: Optional[str] = None,
+        appearance_label_map_path: Optional[str] = None,
+        appearance_runtime: str = "auto",
+        appearance_input_size: int = 224,
+        appearance_score_threshold: float = 0.5,
+        appearance_bbox_expand_ratio: float = 0.15,
     ) -> None:
         # 하위 호환성: model_path → pose_model_path
         if model_path and not pose_model_path:
@@ -124,7 +131,16 @@ class AIAnalyzer:
         self._tracker      = ObjectTracker()
         self._fall         = FallDetector(fall_height_ratio)
         self.face_recognizer = FaceRecognitionEngine(device=self.device)
-        self._appearance   = AppearanceAnalyzer()
+        self._appearance   = AppearanceAnalyzer(
+            backend_name=appearance_backend,
+            backend_model_path=appearance_model_path,
+            backend_label_map_path=appearance_label_map_path,
+            backend_runtime=appearance_runtime,
+            backend_device=self.device,
+            backend_input_size=appearance_input_size,
+            backend_score_threshold=appearance_score_threshold,
+            bbox_expand_ratio=appearance_bbox_expand_ratio,
+        )
         self._crop_dir = Path("data/crops")
         self._appearance_pipeline = AppearancePipeline(self._appearance, self._crop_dir)
 
@@ -431,11 +447,13 @@ class AIAnalyzer:
                 # (누워있는 사람은 기립 자세 검증을 건너뛰어야 함)
                 is_fallen    = False
                 kpts_for_fall = None
+                person_keypoints = None
                 if keypoints is not None:
+                    _kpts_tmp = extract_keypoints(keypoints, idx)
+                    person_keypoints = _kpts_tmp.tolist() if _kpts_tmp is not None else None
                     is_fallen = self._fall.detect(keypoints, idx, width, height)
                     if is_fallen:
-                        _kpts_tmp = extract_keypoints(keypoints, idx)
-                        kpts_for_fall = _kpts_tmp.tolist() if _kpts_tmp is not None else None
+                        kpts_for_fall = person_keypoints
 
                 if not is_fallen:
                     # 기립 자세 검증 (옷걸이·의류 오탐 제거)
@@ -455,6 +473,7 @@ class AIAnalyzer:
                     object_id=track_id,
                     class_idx=0,
                     class_name="person",
+                    keypoints=person_keypoints,
                 ))
 
                 if is_fallen:
@@ -662,6 +681,26 @@ class AIAnalyzer:
             nearby_objects=nearby_objects,
         )
 
+    @staticmethod
+    def _build_appearance_nearby_objects(
+        bag_objects: Optional[List[Dict]],
+        helmet_events: Optional[List[DetectionEvent]],
+    ) -> List[Dict]:
+        """외형 분석에 필요한 주변 객체 문맥을 합친다."""
+        nearby: List[Dict] = list(bag_objects or [])
+        for event in helmet_events or []:
+            if event.event_type != EventType.HELMET:
+                continue
+            nearby.append({
+                "class_name": str(event.class_name or event.event_type.value).lower(),
+                "x": event.x,
+                "y": event.y,
+                "width": event.width,
+                "height": event.height,
+                "confidence": event.confidence,
+            })
+        return nearby
+
     # ── 공개 API — 이벤트 분류 ───────────────────────────────────────
 
     def split_events(
@@ -738,6 +777,10 @@ class AIAnalyzer:
             face_events,
             camera_id=camera_id,
             use_appearance=use_appearance,
+            nearby_objects=self._build_appearance_nearby_objects(
+                getattr(self, "_last_bag_objects", []),
+                helmet_events,
+            ),
         )
 
         return fall_events + person_events + face_events + helmet_events + appearance_events
@@ -840,6 +883,7 @@ class AIAnalyzer:
         *,
         camera_id: Optional[str],
         use_appearance: bool,
+        nearby_objects: Optional[List[Dict]] = None,
     ) -> List[DetectionEvent]:
         """외형 속성 추출, 로그 저장, 조건 매칭을 순서대로 수행한다."""
         return self._appearance_pipeline.run(
@@ -848,7 +892,7 @@ class AIAnalyzer:
             face_events,
             camera_id=camera_id,
             use_appearance=use_appearance,
-            nearby_objects=getattr(self, "_last_bag_objects", []),
+            nearby_objects=nearby_objects,
         )
 
     def run_inference_with_compliance(

@@ -167,6 +167,8 @@ class CumulativeViolationFilter:
         now = time.time()
 
         with self._lock:
+            # _history 업데이트 및 violation_summary 수집.
+            # violation_summary 는 로컬 변수이므로 락 해제 후에도 안전하게 읽을 수 있음.
             for object_id in seen_ids:
                 key = (camera_id, object_id)
                 if key not in self._history:

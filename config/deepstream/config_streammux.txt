@@ -1,0 +1,41 @@
+# =============================================================================
+# nvstreammux 설정 (Jetson Orin 전용 템플릿)
+# 참고: https://docs.nvidia.com/metropolis/deepstream/dev-guide/text/DS_plugin_gst-nvstreammux.html
+#
+# [중요] batch-size 는 여기서 설정하는 값이 아닌,
+#        _build_pipeline() 에서 len(self._cameras) 로 동적 설정됩니다.
+#        이 파일의 batch-size 는 참고용(fallback)이며 실제로는 코드에서 override됩니다.
+# =============================================================================
+
+[streammux]
+# ---------- 기본 설정 ----------
+gpu-id=0
+
+# batch-size: _build_pipeline() 에서 카메라 수에 맞게 동적으로 설정됨
+# streammux.set_property("batch-size", len(self._cameras))
+# nvinfer.set_property("batch-size", len(self._cameras))
+batch-size=8                        # fallback — 코드에서 동적 override 필요
+
+# 배치 타임아웃 (마이크로초) — 배치가 꽉 차지 않아도 이 시간 후 처리
+# 카메라 수가 적을수록 타임아웃을 낮춰서 지연 최소화
+# 1개: 20000 / 4개: 33000 / 8개 이상: 40000
+batched-push-timeout=40000          # 40ms (25fps, 8카메라 기준)
+
+# 출력 해상도 (모델 입력 크기와 독립적으로 설정 가능)
+width=1920
+height=1080
+
+# ---------- 성능 ----------
+# 비율 유지 리사이즈 (1=letterbox)
+enable-padding=1
+
+# 프레임 처리 방식
+# 0=실시간 (프레임 드롭 허용), 1=버퍼링 (드롭 없음, 지연 증가)
+live-source=1
+
+# 내부 큐 크기 (소스별 최대 버퍼 프레임 수)
+buffer-pool-size=4
+
+# ---------- 메모리 ----------
+# 0=cuda-pinned, 1=cuda-device, 2=cuda-unified, 3=surface-array
+nvbuf-memory-type=3                 # Jetson 에서는 surface-array 권장

@@ -16,6 +16,8 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Callable, Dict, Optional, Tuple
 
+from ..config.event_type_map import event_type_map as _etm
+
 logger = logging.getLogger(__name__)
 
 
@@ -23,27 +25,15 @@ logger = logging.getLogger(__name__)
 # 색상 매핑 (객체 탐지 클래스 → Dabit 색상 코드)
 # ===========================================================================
 
+# 내장 탐지 클래스 전용 색상 맵 (event_type는 config/event_type_map.json 사용)
 CLASS_COLOR_MAP: Dict[str, int] = {
-    # 객체 탐지 클래스
-    "helmet":        2,   # 안전모 착용 → 녹색
-    "no_helmet":     1,   # 안전모 미착용 → 빨강
-    "person":        3,   # 사람 → 노랑
-    "car":           4,   # 차량 → 파랑
-    "fire":          5,   # 화재 → 자주
-    "smoke":         6,   # 연기 → 하늘
-    # 이벤트 타입 (action_bridge에서 사용)
-    "head":          1,   # 안전모 미착용 → 빨강
-    "fall_detected": 5,   # 낙상 → 자주
-    "danger_zone":   1,   # 위험구역 → 빨강
-    "zone_object":   3,   # 감시구역 객체 → 노랑
-    "crowd_warning": 5,   # 인파 밀집 → 자주
-    "intrusion":     1,   # 침입 → 빨강
-    "tilt_alert":        1,   # 기울기 이상 → 빨강
-    "temperature_alert":  5,   # 온도 이상 → 자주
-    "vibration_alert":    3,   # 진동/충격 → 노랑
-    "sensor_fault":       6,   # 센서 이상 → 하늘
-    "critical":      5,   # 위험 → 자주
-    "default":       7,   # 기본 → 흰색
+    "helmet":    2,   # 안전모 착용 → 녹색
+    "no_helmet": 1,   # 안전모 미착용 → 빨강
+    "person":    3,   # 사람 → 노랑
+    "car":       4,   # 차량 → 파랑
+    "fire":      5,   # 화재 → 자주
+    "smoke":     6,   # 연기 → 하늘
+    "default":   7,   # 기본 → 흰색
 }
 
 # 한국어 요일 (월=0 ~ 일=6)
@@ -150,36 +140,13 @@ def _buf_on() -> bytes:
 
 
 # ===========================================================================
-# 이벤트 → 표시 문구
+# 이벤트 → 표시 문구  (설정 파일 위임)
 # ===========================================================================
-
-_EVENT_MESSAGES: Dict[str, str] = {
-    "head":          "안전모 미착용 감지",
-    "fall_detected": "낙상 감지 - 즉시 확인",
-    "danger_zone":   "위험 구역 침입 감지",
-    "zone_object":   "감시 구역 객체 감지",
-    "crowd_warning": "인파 밀집 경고 - 혼잡 주의",
-    "intrusion":     "위험 구역 침입 감지",
-    "tilt_alert":        "기울기 이상 감지",
-    "temperature_alert":  "온도 이상 감지",
-    "vibration_alert":    "진동 충격 감지",
-    "sensor_fault":       "센서 이상 감지",
-    "critical":      "위험 이벤트 감지",
-}
 
 
 def build_display_text(event_type: str, severity: str = "", camera_id: str = "") -> str:
-    """이벤트 타입에 따른 전광판 본문 문구를 반환한다."""
-    key = event_type.lower()
-    base = _EVENT_MESSAGES.get(key)
-    if base is None:
-        if "fall" in key:
-            base = _EVENT_MESSAGES["fall_detected"]
-        elif severity.lower() == "critical":
-            base = _EVENT_MESSAGES["critical"]
-        else:
-            base = "안전 이벤트 감지"
-    return f"[{camera_id}] {base}" if camera_id else base
+    """이벤트 타입에 따른 전광판 본문 문구를 반환한다 (config/event_type_map.json 참조)."""
+    return _etm.display_text(event_type, severity, camera_id)
 
 
 # ===========================================================================
@@ -328,8 +295,11 @@ class SignboardDevice:
 
     @staticmethod
     def get_color_by_class(class_name: str) -> int:
-        """탐지 클래스명으로 Dabit 색상 코드를 반환한다."""
-        return CLASS_COLOR_MAP.get(class_name.lower(), CLASS_COLOR_MAP["default"])
+        """탐지 클래스명 또는 이벤트 타입으로 Dabit 색상 코드를 반환한다."""
+        key = class_name.lower()
+        if key in CLASS_COLOR_MAP:
+            return CLASS_COLOR_MAP[key]
+        return _etm.color_code(key)
 
     # ------------------------------------------------------------------
     # 내부 구현

@@ -97,23 +97,28 @@ class AppearancePipeline:
             person.width,
             person.height,
             nearby_objects=nearby_objects,
+            keypoints=person.keypoints,
         )
         gender = face_meta.get("gender")
         age_group = face_meta.get("age_group")
         face_name = face_meta.get("face_name")
 
-        logger.info(
-            "[외형] track=%s  상의=%s  하의=%s  모자=%s  백팩=%s  핸드백=%s  캐리어=%s  성별=%s  나이=%s",
-            person.object_id,
-            attrs.get("upper_color", "?"),
-            attrs.get("lower_color", "?"),
-            attrs.get("hat_color", "?"),
-            attrs.get("has_backpack", False),
-            attrs.get("has_handbag", False),
-            attrs.get("has_suitcase", False),
-            gender or "?",
-            age_group or "?",
-        )
+        parts = [f"track={person.object_id}"]
+        if attrs.get("upper_color") not in (None, "unknown"):
+            parts.append(f"상의={attrs['upper_color']}")
+        if attrs.get("lower_color") not in (None, "unknown"):
+            parts.append(f"하의={attrs['lower_color']}")
+        parts.append(f"헬멧={bool(attrs.get('has_helmet'))}")
+        if attrs.get("helmet_color") not in (None, "unknown"):
+            parts.append(f"헬멧색={attrs['helmet_color']}")
+        parts.extend([
+            f"백팩={attrs.get('has_backpack', False)}",
+            f"핸드백={attrs.get('has_handbag', False)}",
+            f"캐리어={attrs.get('has_suitcase', False)}",
+            f"성별={gender or '?'}",
+            f"나이={age_group or '?'}",
+        ])
+        logger.info("[외형] %s", "  ".join(parts))
         self._appearance_cooldown[log_key] = now
 
         crop_path = self.save_person_crop(
@@ -123,16 +128,19 @@ class AppearancePipeline:
         if self._appearance_log:
             self._appearance_log.insert(
                 camera_id=camera_id,
+                event_id=f"appearance:{camera_id}:{person.object_id}:{int(now * 1000)}",
                 track_id=person.object_id,
                 upper_color=attrs.get("upper_color"),
                 lower_color=attrs.get("lower_color"),
-                hat_color=attrs.get("hat_color"),
+                has_helmet=bool(attrs.get("has_helmet")),
+                helmet_color=attrs.get("helmet_color"),
                 has_backpack=bool(attrs.get("has_backpack")),
                 has_handbag=bool(attrs.get("has_handbag")),
                 has_suitcase=bool(attrs.get("has_suitcase")),
                 gender=gender,
                 age_group=age_group,
                 face_name=face_name,
+                attribute_backend=attrs.get("attribute_backend"),
                 crop_path=crop_path,
                 bbox_x=person.x,
                 bbox_y=person.y,
@@ -165,6 +173,7 @@ class AppearancePipeline:
                 person.height,
                 camera_id=camera_id,
                 nearby_objects=nearby_objects,
+                keypoints=person.keypoints,
             )
             for match in matches:
                 cooldown_key = f"{person.object_id}:{match['condition_id']}"
@@ -189,7 +198,8 @@ class AppearancePipeline:
                             "condition_name": match["condition_name"],
                             "upper_color": match["attributes"]["upper_color"],
                             "lower_color": match["attributes"]["lower_color"],
-                            "hat_color": match["attributes"].get("hat_color", "unknown"),
+                            "has_helmet": bool(match["attributes"].get("has_helmet")),
+                            "helmet_color": match["attributes"].get("helmet_color", "unknown"),
                             "has_backpack": match["attributes"].get("has_backpack", False),
                             "has_handbag": match["attributes"].get("has_handbag", False),
                             "has_suitcase": match["attributes"].get("has_suitcase", False),

@@ -20,6 +20,7 @@ from ..core import VideoProcessor
 from ..core.base_processor import BaseProcessor
 from ..services.camera_model_api import start_camera_model_api_server
 from ..services.face_api import start_face_api_server
+from ..services.stream_api import start_stream_api_server
 from ..services.zone_api import start_zone_api_server
 from ..utils.zone_drawer import ZoneDrawer
 
@@ -320,6 +321,7 @@ def start_processor_runtime(
         start_zone_api_server(processor, cameras_json_path, api_port, presets_path=zone_presets_path)
         start_camera_model_api_server(processor, cameras_json_path, api_port + 1)
         start_face_api_server(processor, api_port + 2)
+        start_stream_api_server(processor, api_port + 3)
 
     if cfg.display:
         drawer = ZoneDrawer(processor, cameras_json_path)

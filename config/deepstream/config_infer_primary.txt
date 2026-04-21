@@ -1,0 +1,92 @@
+# =============================================================================
+# nvinfer TensorRT 기본 탐지 설정 (Jetson Orin 전용 템플릿)
+# 참고: https://docs.nvidia.com/metropolis/deepstream/dev-guide/text/DS_plugin_gst-nvinfer.html
+#
+# [적용 전 필수 수정 항목]
+#   1. model-engine-file — 빌드된 TensorRT .engine 경로
+#   2. proto-file        — YOLO 모델 파서 .proto 또는 커스텀 파서 경로
+#   3. model-color-format — 모델 전처리 채널 순서 (0=RGB, 1=BGR, 2=GRAY)
+#   4. num-detected-classes — 클래스 수 (YOLO 모델 설정과 일치시켜야 함)
+#   5. network-input-shape — 모델 입력 크기 (C;H;W 형식)
+# =============================================================================
+
+[property]
+# ---------- 엔진 ----------
+gpu-id=0
+net-scale-factor=0.0039215697906911373          # 1/255 (정규화)
+model-engine-file=models/deepstream/yolov8_fp16.engine
+labelfile-path=config/deepstream/labels.txt
+
+# ---------- 파서 ----------
+# custom-lib-path=libs/libnvdsinfer_custom_impl_Yolo.so
+# parse-bbox-func-name=NvDsInferParseCustomYolo
+# config-file=models/deepstream/yolov8.cfg    # ONNX 사용 시 불필요
+
+# ---------- 입력 형식 ----------
+# 0=RGB, 1=BGR, 2=GRAY (YOLOv8 default: RGB)
+model-color-format=0
+
+# 배치 크기 (nvstreammux.batch-size 와 동일하게 설정)
+# _build_pipeline() 에서 nvinfer.set_property("batch-size", len(self._cameras)) 로 동적 설정됨
+batch-size=8
+
+# 네트워크 유형: 0=Detector, 1=Classifier, 2=Segmentation
+network-type=0
+
+# 클래스 수 (labels.txt 줄 수와 일치)
+num-detected-classes=3
+
+# ---------- 네트워크 입력 크기 ----------
+# 형식: C;H;W (C=채널 수)
+network-input-shape=3;640;640
+infer-dims=3;640;640
+
+# ---------- 임계값 ----------
+# 객체 감지 신뢰도 임계값 (0.0 ~ 1.0)
+threshold=0.30
+
+# Non-Maximum Suppression IoU 임계값
+nms-iou-threshold=0.45
+
+# ---------- TRT 빌드 파라미터 ----------
+# 메모리 절약을 위해 fp16 권장 (Jetson Orin)
+# 0=FP32, 1=INT8, 2=FP16
+# net-type가 detector일 때 int8 사용 시 calibration cache 필요
+workspace-size=1024                             # MiB (TRT 빌드 시 작업 공간)
+tlt-model-key=                                  # TAO toolkit 모델만 필요
+
+# ---------- 전처리 ----------
+# maintain-aspect-ratio=1 : letterbox 패딩 적용
+maintain-aspect-ratio=1
+symmetric-padding=1
+
+# ---------- 출력 ----------
+# 1=사용, 0=미사용
+output-tensor-meta=1                            # 커스텀 파서 사용 시 필요
+
+
+[class-attrs-all]
+# 전체 클래스 공통 임계값 (개별 클래스 설정이 우선)
+threshold=0.30
+roi-top-offset=0
+roi-bottom-offset=0
+detected-min-w=10
+detected-min-h=10
+detected-max-w=3840
+detected-max-h=2160
+
+
+# ---------- 개별 클래스 임계값 ----------
+# class-id 는 labels.txt 인덱스 (0부터 시작)
+
+[class-attrs-0]
+# Person: 0
+threshold=0.30
+
+[class-attrs-1]
+# Helmet: 1
+threshold=0.40
+
+[class-attrs-2]
+# Hardhat-off: 2  (미착용 → 경보)
+threshold=0.35

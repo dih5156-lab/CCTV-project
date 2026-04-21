@@ -1,0 +1,125 @@
+{
+  "uid": "cctv-overview",
+  "title": "CCTV 시스템 개요",
+  "tags": ["cctv"],
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "refresh": "15s",
+  "time": { "from": "now-1h", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Action Bridge 상태",
+      "gridPos": { "x": 0, "y": 0, "w": 4, "h": 4 },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } } }
+          ]
+        }
+      },
+      "targets": [
+        {
+          "expr": "cctv_action_bridge_up",
+          "legendFormat": "Action Bridge"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "MQTT 수신 이벤트 (총계)",
+      "gridPos": { "x": 4, "y": 0, "w": 4, "h": 4 },
+      "targets": [
+        {
+          "expr": "sum(cctv_mqtt_events_received_total)",
+          "legendFormat": "수신"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "처리된 이벤트 (총계)",
+      "gridPos": { "x": 8, "y": 0, "w": 4, "h": 4 },
+      "targets": [
+        {
+          "expr": "sum(cctv_events_handled_total)",
+          "legendFormat": "처리"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "대기 이벤트",
+      "gridPos": { "x": 12, "y": 0, "w": 4, "h": 4 },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "steps": [
+              { "value": 0, "color": "green" },
+              { "value": 10, "color": "yellow" },
+              { "value": 50, "color": "red" }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "expr": "cctv_pending_events",
+          "legendFormat": "대기"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "MQTT 수신 이벤트 속도 (topic별)",
+      "gridPos": { "x": 0, "y": 4, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "rate(cctv_mqtt_events_received_total[1m])",
+          "legendFormat": "{{topic}}"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "장치 명령 속도 (device/status별)",
+      "gridPos": { "x": 12, "y": 4, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "rate(cctv_device_commands_total[1m])",
+          "legendFormat": "{{device}} / {{status}}"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Public API HTTP 요청 속도 (method/endpoint별)",
+      "gridPos": { "x": 0, "y": 12, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "rate(cctv_public_api_http_requests_total[1m])",
+          "legendFormat": "{{method}} {{endpoint}}"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "bargauge",
+      "title": "장치 명령 누적 (device별)",
+      "gridPos": { "x": 12, "y": 12, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum by (device) (cctv_device_commands_total)",
+          "legendFormat": "{{device}}"
+        }
+      ]
+    }
+  ]
+}

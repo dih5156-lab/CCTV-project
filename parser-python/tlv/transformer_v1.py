@@ -68,9 +68,9 @@ class TransformerV1:
         """
         for tlv in tlv_items:
             if tlv.id == 1:
-                data["temperature"] = tlv.value
+                data["temperature_c"] = tlv.value
             elif tlv.id == 2:
-                data["reporting_period"] = tlv.value
+                data["reporting_period_s"] = tlv.value
             elif tlv.id == 4:
                 # Go: if val, ok := tlv.Value.(int64); ok { data["created_at"] = val * 1000 }
                 if isinstance(tlv.value, int):
@@ -92,13 +92,13 @@ class TransformerV1:
         """
         for tlv in tlv_items:
             if tlv.id == 1:
-                data["angle_x"] = tlv.value
+                data["angle_x_deg"] = tlv.value
             elif tlv.id == 2:
-                data["angle_y"] = tlv.value
+                data["angle_y_deg"] = tlv.value
             elif tlv.id == 3:
-                data["reporting_period"] = tlv.value
+                data["reporting_period_s"] = tlv.value
             elif tlv.id == 5:
-                data["reporting_angle_threshold"] = tlv.value
+                data["reporting_angle_threshold_deg"] = tlv.value
             elif tlv.id == 7:
                 if isinstance(tlv.value, int):
                     data["created_at"] = tlv.value * 1000
@@ -122,7 +122,7 @@ class TransformerV1:
             elif tlv.id == 26241:
                 # Go: float64(val) / 1000.0
                 if isinstance(tlv.value, int):
-                    data["reporting_period"] = tlv.value / 1000.0
+                    data["reporting_period_s"] = tlv.value / 1000.0
         return data
 
     def _parse34957(self, data: Dict[str, Any], tlv_items: list) -> Dict[str, Any]:
@@ -138,11 +138,11 @@ class TransformerV1:
         """
         for tlv in tlv_items:
             if tlv.id == 1:
-                data["temperature"] = tlv.value
+                data["temperature_c"] = tlv.value
             elif tlv.id == 2:
-                data["angle_x"] = tlv.value
+                data["angle_x_deg"] = tlv.value
             elif tlv.id == 3:
-                data["angle_y"] = tlv.value
+                data["angle_y_deg"] = tlv.value
             elif tlv.id == 4:
                 if isinstance(tlv.value, int):
                     data["created_at"] = tlv.value * 1000
@@ -169,24 +169,24 @@ class TransformerV1:
         """
         for tlv in tlv_items:
             if tlv.id == 1:
-                data["acc_x"] = tlv.value
+                data["acc_x_g"] = tlv.value
             elif tlv.id == 2:
-                data["acc_y"] = tlv.value
+                data["acc_y_g"] = tlv.value
             elif tlv.id == 3:
-                data["acc_z"] = tlv.value
+                data["acc_z_g"] = tlv.value
             elif tlv.id == 4:
-                data["gyro_x"] = tlv.value
+                data["gyro_x_dps"] = tlv.value
             elif tlv.id == 5:
-                data["gyro_y"] = tlv.value
+                data["gyro_y_dps"] = tlv.value
             elif tlv.id == 6:
-                data["gyro_z"] = tlv.value
+                data["gyro_z_dps"] = tlv.value
             elif tlv.id == 7:
                 if isinstance(tlv.value, int):
                     data["created_at"] = tlv.value * 1000
             elif tlv.id == 8:
-                data["angle_x"] = tlv.value
+                data["angle_x_deg"] = tlv.value
             elif tlv.id == 9:
-                data["angle_y"] = tlv.value
+                data["angle_y_deg"] = tlv.value
             elif tlv.id == 10:
                 data["event_code"] = tlv.value
 

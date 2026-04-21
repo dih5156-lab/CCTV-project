@@ -71,7 +71,12 @@ tests/
 
 # 기타
 *.pyc
-.pytest_cache
+.pytest_cache/
+.pytest_tmp/
+.pytest_workspace_tmp/
+tmp_probe_dir/
+tmp_test_dirs/
+tmp_test_dirs
 .mypy_cache
 event_logs/
 event_backup/

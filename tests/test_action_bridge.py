@@ -346,3 +346,33 @@ class TestActionBridgeStatusPublishing:
 
         published = bridge._mqtt_client.publish.call_args_list
         assert any("cctv/status/action/commands/result" in call.args[0] for call in published)
+
+    def test_execute_action_prefers_canonical_output_messages(self):
+        bridge = self._make_bridge()
+        bridge._resolve_devices.return_value = [AlarmDevice.SPEAKER, AlarmDevice.SIGNBOARD]
+        bridge._executor._speaker = bridge._speaker
+        bridge._executor._signboard = bridge._signboard
+
+        bridge._execute_action(
+            "aiot/rules/sensor/tilt",
+            {
+                "camera_id": "cam1",
+                "type": "tilt_alert",
+                "severity": "critical",
+                "event": {
+                    "event_type": "tilt_alert",
+                    "severity": "critical",
+                    "display_message": "기울기 이상 감지",
+                    "tts_message": "기울기 이상이 감지되었습니다. 즉시 현장을 확인 바랍니다.",
+                },
+            },
+        )
+
+        bridge._speaker.play.assert_called_once_with(
+            "tilt_alert",
+            "critical",
+            "cam1",
+            text="기울기 이상이 감지되었습니다. 즉시 현장을 확인 바랍니다.",
+        )
+        assert bridge._signboard.display.call_count == 1
+        assert bridge._signboard.display.call_args.kwargs["text"] == "기울기 이상 감지"

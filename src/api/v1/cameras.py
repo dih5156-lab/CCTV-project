@@ -8,21 +8,19 @@ from __future__ import annotations
 
 import json
 import logging
-import os
-from pathlib import Path
 from typing import List
 from urllib.parse import urlparse, urlunparse
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 
+from ..dependencies._settings import CAMERAS_JSON as _CAMERAS_JSON
 from ..dependencies.auth import verify_api_key
-from ..schemas.common import BaseResponse
+from ..dependencies.rate_limit import limiter
+from ..schemas.common import BaseResponse, success_response
 from ..schemas.site import CameraOut
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/cameras", tags=["cameras"])
-
-_CAMERAS_JSON = Path(os.environ.get("CAMERAS_JSON", "/app/cameras.json"))
 
 
 def _strip_credentials(url: str) -> str:
@@ -64,9 +62,10 @@ def _load_cameras() -> List[CameraOut]:
     summary="카메라 목록 조회",
     description="등록된 CCTV 카메라 목록을 반환합니다. RTSP URL의 자격증명은 제거됩니다.",
 )
-def list_cameras(_: None = Depends(verify_api_key)) -> BaseResponse[List[CameraOut]]:
+@limiter.limit("60/minute")
+def list_cameras(request: Request, _: None = Depends(verify_api_key)) -> BaseResponse[List[CameraOut]]:
     cameras = _load_cameras()
-    return BaseResponse(success=True, data=cameras)
+    return success_response(cameras)
 
 
 @router.get(
@@ -74,9 +73,10 @@ def list_cameras(_: None = Depends(verify_api_key)) -> BaseResponse[List[CameraO
     response_model=BaseResponse[CameraOut],
     summary="카메라 단건 조회",
 )
-def get_camera(camera_id: str, _: None = Depends(verify_api_key)) -> BaseResponse[CameraOut]:
+@limiter.limit("60/minute")
+def get_camera(request: Request, camera_id: str, _: None = Depends(verify_api_key)) -> BaseResponse[CameraOut]:
     cameras = _load_cameras()
     for cam in cameras:
         if cam.id == camera_id:
-            return BaseResponse(success=True, data=cam)
+            return success_response(cam)
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="카메라를 찾을 수 없습니다.")

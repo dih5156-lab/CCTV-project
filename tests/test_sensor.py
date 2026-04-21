@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch, call
 
 import pytest
 
-from src.devices.sensor import SensorConfig, SirenDevice
+from src.devices.siren import SensorConfig, SirenDevice
 
 
 # ---------------------------------------------------------------------------
@@ -71,7 +71,7 @@ class TestSirenDevice:
         device = SirenDevice(SensorConfig())
         assert device.stop() is False
 
-    @patch("src.devices.sensor.requests.post")
+    @patch("src.devices.siren.requests.post")
     def test_trigger_calls_warnbell_control(self, mock_post):
         mock_post.return_value = _mock_resp()
         device = self._make_device(auto_stop=0.0)
@@ -84,7 +84,7 @@ class TestSirenDevice:
         body = call_kwargs[1]["json"]
         assert body["Run"] is True
 
-    @patch("src.devices.sensor.requests.post")
+    @patch("src.devices.siren.requests.post")
     def test_stop_calls_warnbell_control_run_false(self, mock_post):
         mock_post.return_value = _mock_resp()
         device = self._make_device()
@@ -96,14 +96,14 @@ class TestSirenDevice:
         body = call_kwargs[1]["json"]
         assert body["Run"] is False
 
-    @patch("src.devices.sensor.requests.post")
+    @patch("src.devices.siren.requests.post")
     def test_trigger_returns_false_on_exception(self, mock_post):
         mock_post.side_effect = OSError("연결 실패")
         device = self._make_device()
         result = device.trigger()
         assert result is False
 
-    @patch("src.devices.sensor.requests.post")
+    @patch("src.devices.siren.requests.post")
     def test_auto_stop_timer_scheduled(self, mock_post):
         mock_post.return_value = _mock_resp()
         device = self._make_device(auto_stop=60.0)
@@ -113,7 +113,7 @@ class TestSirenDevice:
         assert device._stop_timer.is_alive()
         device._stop_timer.cancel()  # 타이머 정리
 
-    @patch("src.devices.sensor.requests.post")
+    @patch("src.devices.siren.requests.post")
     def test_no_auto_stop_timer_when_disabled(self, mock_post):
         mock_post.return_value = _mock_resp()
         device = self._make_device(auto_stop=0.0)
@@ -121,7 +121,7 @@ class TestSirenDevice:
         device.trigger()
         assert device._stop_timer is None
 
-    @patch("src.devices.sensor.requests.post")
+    @patch("src.devices.siren.requests.post")
     def test_trigger_cancels_previous_timer(self, mock_post):
         mock_post.return_value = _mock_resp()
         device = self._make_device(auto_stop=60.0)

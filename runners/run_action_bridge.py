@@ -7,21 +7,16 @@ Docker 배포 시 docker-compose.yml 의 environment 섹션으로 모든 값을 
 import argparse
 import logging
 import os
-import sys
-from pathlib import Path
+from runners._shared import ensure_project_root, setup_runner_logging
 
-# runners/ 오프라인 실행 시 프로젝트 루트를 sys.path에 등록
-sys.path.insert(0, str(Path(__file__).parent.parent))
+ensure_project_root()
 
 from src.services.action_bridge import ActionBridge
 from src.devices.speaker   import SpeakerConfig
 from src.devices.signboard import SignboardConfig
-from src.devices.sensor    import SensorConfig
+from src.devices.siren     import SensorConfig
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - [%(name)s] - %(levelname)s - %(message)s",
-)
+logger = logging.getLogger("run-action-bridge")
 
 
 def _env(key: str, default: str = "") -> str:
@@ -30,6 +25,8 @@ def _env(key: str, default: str = "") -> str:
 
 
 def main() -> None:
+    setup_runner_logging()
+
     parser = argparse.ArgumentParser(
         description="Action-Bridge 액션 레이어 (알람 디바이스 + 외부 API + DB)"
     )
@@ -164,6 +161,12 @@ def main() -> None:
         rest_enabled=args.rest_enabled,
         rest_host=args.rest_host,
         rest_port=args.rest_port,
+    )
+    logger.info(
+        "Action Bridge 시작: mqtt=%s:%s rest=%s",
+        args.mqtt_broker,
+        args.mqtt_port,
+        f"{args.rest_host}:{args.rest_port}" if args.rest_enabled else "disabled",
     )
     service.start()
 

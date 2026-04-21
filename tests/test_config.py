@@ -179,6 +179,23 @@ class TestAppConfigEnvOverrides:
         assert cfg.mqtt.port == 1883
         assert cfg.display is False
 
+    def test_appearance_backend_override(self):
+        env = {
+            "APPEARANCE_BACKEND": "pphuman",
+            "APPEARANCE_MODEL_PATH": "models/pphuman.onnx",
+            "APPEARANCE_LABEL_MAP_PATH": "config/appearance_pphuman_labels.example.json",
+            "APPEARANCE_RUNTIME": "auto",
+            "APPEARANCE_SCORE_THRESHOLD": "0.6",
+            "APPEARANCE_BBOX_EXPAND_RATIO": "0.2",
+        }
+        cfg = AppConfig.from_env(env)
+        assert cfg.appearance.backend == "pphuman"
+        assert cfg.appearance.model_path == "models/pphuman.onnx"
+        assert cfg.appearance.label_map_path == "config/appearance_pphuman_labels.example.json"
+        assert cfg.appearance.runtime == "auto"
+        assert cfg.appearance.score_threshold == pytest.approx(0.6)
+        assert cfg.appearance.bbox_expand_ratio == pytest.approx(0.2)
+
     def test_post_init_initializes_all_sub_configs(self):
         cfg = AppConfig()
         assert cfg.models is not None

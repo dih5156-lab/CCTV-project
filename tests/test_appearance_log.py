@@ -31,6 +31,8 @@ class TestAppearanceLog:
             track_id=1,
             upper_color="black",
             lower_color="blue",
+            has_helmet=True,
+            helmet_color="yellow",
             gender="male",
             timestamp=1000.0,
         )
@@ -38,7 +40,10 @@ class TestAppearanceLog:
         rows = self.log.search(upper_color="black")
         assert len(rows) == 1
         assert rows[0]["camera_id"] == "cam01"
+        assert rows[0]["event_id"] is not None
         assert rows[0]["upper_color"] == "black"
+        assert rows[0]["has_helmet"] is True
+        assert rows[0]["helmet_color"] == "yellow"
         assert rows[0]["gender"] == "male"
 
     def test_insert_cooldown(self):
@@ -101,6 +106,19 @@ class TestAppearanceLog:
         assert len(self.log.search(has_handbag=True)) == 1
         assert len(self.log.search(has_backpack=False)) == 1
 
+    def test_helmet_filters(self):
+        self.log.insert(
+            camera_id="c",
+            track_id=1,
+            has_helmet=True,
+            helmet_color="yellow",
+            timestamp=100.0,
+        )
+        self.log.insert(camera_id="c", track_id=2, has_helmet=False, timestamp=200.0)
+        assert len(self.log.search(has_helmet=True)) == 1
+        assert len(self.log.search(helmet_color="yellow")) == 1
+        assert len(self.log.search(has_helmet=False)) == 1
+
 
 # ── Search API 엔드포인트 테스트 ─────────────────────────────────────
 
@@ -138,7 +156,15 @@ class TestSearchAPI:
         assert body["total"] == 0
 
     def test_search_with_results(self):
-        self.log.insert(camera_id="cam01", track_id=1, upper_color="black", gender="male", timestamp=1000.0)
+        self.log.insert(
+            camera_id="cam01",
+            track_id=1,
+            upper_color="black",
+            has_helmet=True,
+            helmet_color="yellow",
+            gender="male",
+            timestamp=1000.0,
+        )
         self.log.insert(camera_id="cam01", track_id=2, upper_color="white", gender="female", timestamp=1010.0)
 
         resp = self.client.get("/api/v1/search?upper_color=black")
@@ -148,6 +174,8 @@ class TestSearchAPI:
         assert len(body["items"]) == 1
         item = body["items"][0]
         assert item["upper_color"] == "black"
+        assert item["has_helmet"] is True
+        assert item["helmet_color"] == "yellow"
         assert item["gender"] == "male"
 
     def test_search_time_range(self):
@@ -194,3 +222,9 @@ class TestSearchAPI:
         resp = self.client.get("/api/v1/search")
         body = resp.json()
         assert body["items"][0]["crop_url"] == "/api/v1/search/crops/cam01_1_1000.jpg"
+
+    def test_duplicate_event_id_is_ignored(self):
+        event_id = "evt_same"
+        assert self.log.insert(camera_id="cam01", track_id=1, event_id=event_id, timestamp=1000.0) is True
+        assert self.log.insert(camera_id="cam01", track_id=2, event_id=event_id, timestamp=1005.0) is True
+        assert self.log.count() == 1

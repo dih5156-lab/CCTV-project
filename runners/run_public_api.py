@@ -8,13 +8,10 @@ from __future__ import annotations
 
 import argparse
 import logging
-import sys
-from pathlib import Path
 
-# /app/runners/run_public_api.py → 프로젝트 루트(/app)를 sys.path에 추가
-_PROJECT_ROOT = Path(__file__).resolve().parent.parent
-if str(_PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(_PROJECT_ROOT))
+from runners._shared import ensure_project_root, setup_runner_logging
+
+ensure_project_root()
 
 logger = logging.getLogger("run-public-api")
 
@@ -43,12 +40,9 @@ def main() -> None:
         logger.error(
             "uvicorn이 설치되지 않았습니다. pip install 'uvicorn[standard]' 를 실행하세요."
         )
-        sys.exit(1)
+        raise SystemExit(1)
 
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-    )
+    setup_runner_logging()
 
     logger.info("CCTV Public API 서버 시작: http://%s:%d", args.host, args.port)
     logger.info("API 문서: http://%s:%d/docs", args.host, args.port)

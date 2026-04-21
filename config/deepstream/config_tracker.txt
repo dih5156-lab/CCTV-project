@@ -1,0 +1,29 @@
+# =============================================================================
+# nvtracker NvDCF 설정 (Jetson Orin 전용 템플릿)
+# 참고: https://docs.nvidia.com/metropolis/deepstream/dev-guide/text/DS_plugin_gst-nvtracker.html
+#
+# 지원 트래커: NvDCF (권장), NvDeepSORT, NvByteTrack
+# =============================================================================
+
+[tracker]
+# ---------- 트래커 선택 ----------
+# NvDCF: DeepStream 내장 고성능 트래커 (Jetson 최적화)
+ll-lib-file=/opt/nvidia/deepstream/deepstream/lib/libnvds_nvmultiobjecttracker.so
+
+# 트래커 설정 파일 경로 (NvDCF YAML 설정)
+ll-config-file=config/deepstream/config_tracker_nvdcf.yml
+
+# ---------- 배치 처리 ----------
+# 배치 크기 (nvstreammux.batch-size 와 동일하게 설정)
+tracker-width=640
+tracker-height=384
+
+# GPU ID
+gpu-id=0
+
+# ---------- 트래킹 ID ----------
+# 전체 스트림에서 고유한 객체 ID 부여 (0=미사용, 1=사용)
+enable-past-frame=1
+
+# 스트림 간 고유 ID 사용 여부
+display-tracking-id=1
