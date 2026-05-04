@@ -1,8 +1,8 @@
 """
 EdgeX Outbox Mixin — SQLite store-and-forward 로직
 
-CCTVDeviceService 에 믹스인으로 포함되며, 전송 실패 이벤트를 SQLite 에
-저장하고 복구 후 재전송하는 기능을 담당한다.
+CCTVDeviceService 에 믹스인으로 포함되며, 전송 실패 이벤트를 공통
+event_outbox SQLite 테이블에 저장하고 복구 후 재전송하는 기능을 담당한다.
 각 메서드는 self.enable_store_and_forward, self.outbox_db_path,
 self.outbox_flush_batch_size, self._outbox_lock 에 의존한다.
 """
@@ -11,6 +11,7 @@ import json
 import logging
 import sqlite3
 import threading
+import time
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
@@ -43,18 +44,12 @@ class _OutboxMixin:
         "other",
     })
 
-    # ── 카테고리 → 테이블 매핑 ───────────────────────────────────────────────
-    _CATEGORY_TABLE_MAP: Dict[str, str] = {
-        "person": "detection_outbox",
-        "camera": "detection_outbox",
-        "sensor": "sensor_outbox",
-        "zone":   "zone_outbox",
-    }
-    _OUTBOX_TABLES = ("detection_outbox", "sensor_outbox", "zone_outbox")
+    _OUTBOX_TABLE = "event_outbox"
+    _LEGACY_OUTBOX_TABLES = ("detection_outbox", "sensor_outbox", "zone_outbox")
 
     @classmethod
     def _table_for_category(cls, category: str) -> str:
-        return cls._CATEGORY_TABLE_MAP.get(category, "detection_outbox")
+        return cls._OUTBOX_TABLE
 
     # ── 유틸리티 ────────────────────────────────────────────────────────────
 
@@ -104,116 +99,196 @@ class _OutboxMixin:
 
         try:
             with conn:
-                conn.execute("PRAGMA journal_mode=OFF")
-                conn.execute("PRAGMA synchronous=OFF")
-
-                for table in self._OUTBOX_TABLES:
-                    conn.execute(
-                        f"""
-                        CREATE TABLE IF NOT EXISTS {table} (
-                            id INTEGER PRIMARY KEY AUTOINCREMENT,
-                            event_id TEXT,
-                            destination_name TEXT NOT NULL DEFAULT 'edgex-core',
-                            camera_id TEXT NOT NULL,
-                            data_category TEXT NOT NULL DEFAULT 'camera',
-                            payload_json TEXT NOT NULL,
-                            created_at TEXT NOT NULL,
-                            expire_at TEXT,
-                            last_attempt_at TEXT,
-                            sent_at TEXT,
-                            retry_count INTEGER NOT NULL DEFAULT 0,
-                            status TEXT NOT NULL DEFAULT 'pending',
-                            last_error TEXT
-                        )
-                        """
+                conn.execute("PRAGMA journal_mode=WAL")
+                conn.execute("PRAGMA synchronous=NORMAL")
+                conn.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS event_outbox (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        event_id TEXT,
+                        source_service TEXT NOT NULL,
+                        data_category TEXT NOT NULL DEFAULT 'camera',
+                        destination_type TEXT NOT NULL DEFAULT 'edgex',
+                        destination_name TEXT NOT NULL DEFAULT 'edgex-core',
+                        camera_id TEXT,
+                        device_id TEXT,
+                        table_name TEXT,
+                        core_data_url TEXT,
+                        payload_json TEXT NOT NULL,
+                        created_at TEXT NOT NULL,
+                        created_at_ms INTEGER,
+                        expire_at TEXT,
+                        expire_at_ms INTEGER,
+                        last_attempt_at TEXT,
+                        last_attempt_ms INTEGER,
+                        sent_at TEXT,
+                        sent_at_ms INTEGER,
+                        retry_count INTEGER NOT NULL DEFAULT 0,
+                        status TEXT NOT NULL DEFAULT 'pending',
+                        last_error TEXT
                     )
-                    conn.execute(
-                        f"CREATE INDEX IF NOT EXISTS idx_{table}_status_id "
-                        f"ON {table}(status, id)"
-                    )
-                    conn.execute(
-                        f"CREATE UNIQUE INDEX IF NOT EXISTS idx_{table}_event_dest "
-                        f"ON {table}(event_id, destination_name)"
-                    )
-                    conn.execute(
-                        f"CREATE INDEX IF NOT EXISTS idx_{table}_category "
-                        f"ON {table}(data_category, status)"
-                    )
-
-                # 기존 DB에 data_category 컬럼 없으면 마이그레이션
-                existing = {
-                    row[1]
-                    for row in conn.execute("PRAGMA table_info(detection_outbox)")
-                }
-                if "data_category" not in existing:
-                    conn.execute(
-                        "ALTER TABLE detection_outbox "
-                        "ADD COLUMN data_category TEXT NOT NULL DEFAULT 'camera'"
-                    )
-                    logger.info("detection_outbox: data_category 컬럼 추가 완료 (마이그레이션)")
-                if "event_id" not in existing:
-                    conn.execute(
-                        "ALTER TABLE detection_outbox ADD COLUMN event_id TEXT"
-                    )
-                if "destination_name" not in existing:
-                    conn.execute(
-                        "ALTER TABLE detection_outbox ADD COLUMN destination_name TEXT NOT NULL DEFAULT 'edgex-core'"
-                    )
-                if "expire_at" not in existing:
-                    conn.execute(
-                        "ALTER TABLE detection_outbox ADD COLUMN expire_at TEXT"
-                    )
-
-                for table in self._OUTBOX_TABLES:
-                    cols = {
-                        row[1]
-                        for row in conn.execute(f"PRAGMA table_info({table})")
-                    }
-                    if "event_id" not in cols:
-                        conn.execute(f"ALTER TABLE {table} ADD COLUMN event_id TEXT")
-                    if "destination_name" not in cols:
-                        conn.execute(
-                            f"ALTER TABLE {table} ADD COLUMN destination_name TEXT NOT NULL DEFAULT 'edgex-core'"
-                        )
-                    if "expire_at" not in cols:
-                        conn.execute(f"ALTER TABLE {table} ADD COLUMN expire_at TEXT")
-                    conn.execute(
-                        f"CREATE UNIQUE INDEX IF NOT EXISTS idx_{table}_event_dest "
-                        f"ON {table}(event_id, destination_name)"
-                    )
-
-                # 기존 detection_outbox에서 sensor/zone 데이터를 새 테이블로 이관
-                for cat, target in (("sensor", "sensor_outbox"), ("zone", "zone_outbox")):
-                    migrated = conn.execute(
-                        f"""
-                        INSERT INTO {target}
-                            (camera_id, data_category, payload_json,
-                             created_at, last_attempt_at, sent_at,
-                             retry_count, status, last_error)
-                        SELECT camera_id, data_category, payload_json,
-                               created_at, last_attempt_at, sent_at,
-                               retry_count, status, last_error
-                        FROM detection_outbox
-                        WHERE data_category = ?
-                        """,
-                        (cat,),
-                    ).rowcount
-                    if migrated:
-                        conn.execute(
-                            "DELETE FROM detection_outbox WHERE data_category = ?",
-                            (cat,),
-                        )
-                        logger.info(
-                            "detection_outbox → %s 마이그레이션: %d건 이관",
-                            target, migrated,
-                        )
-
+                    """
+                )
+                conn.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_event_outbox_status_id "
+                    "ON event_outbox(status, id)"
+                )
+                conn.execute(
+                    "CREATE UNIQUE INDEX IF NOT EXISTS idx_event_outbox_event_dest "
+                    "ON event_outbox(event_id, destination_name)"
+                )
+                conn.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_event_outbox_category "
+                    "ON event_outbox(data_category, status)"
+                )
+                self._ensure_event_outbox_columns(conn)
+                self._migrate_legacy_outbox_tables(conn)
                 conn.commit()
         except Exception as exc:
             logger.warning("[Outbox] DB 초기화 실패 — store-and-forward 비활성화: %s", exc)
             self.enable_store_and_forward = False
         finally:
             conn.close()
+
+    def _ensure_event_outbox_columns(self, conn: sqlite3.Connection) -> None:
+        """다른 서비스가 먼저 만든 event_outbox에도 필요한 컬럼을 추가한다."""
+        cols = {
+            row[1]
+            for row in conn.execute("PRAGMA table_info(event_outbox)")
+        }
+        additions = {
+            "event_id": "TEXT",
+            "source_service": "TEXT NOT NULL DEFAULT 'cctv-edgex-adapter'",
+            "data_category": "TEXT NOT NULL DEFAULT 'camera'",
+            "destination_type": "TEXT NOT NULL DEFAULT 'edgex'",
+            "destination_name": "TEXT NOT NULL DEFAULT 'edgex-core'",
+            "camera_id": "TEXT",
+            "device_id": "TEXT",
+            "table_name": "TEXT",
+            "core_data_url": "TEXT",
+            "payload_json": "TEXT",
+            "created_at": "TEXT",
+            "created_at_ms": "INTEGER",
+            "expire_at": "TEXT",
+            "expire_at_ms": "INTEGER",
+            "last_attempt_at": "TEXT",
+            "last_attempt_ms": "INTEGER",
+            "sent_at": "TEXT",
+            "sent_at_ms": "INTEGER",
+            "retry_count": "INTEGER NOT NULL DEFAULT 0",
+            "status": "TEXT NOT NULL DEFAULT 'pending'",
+            "last_error": "TEXT",
+        }
+        for column, definition in additions.items():
+            if column not in cols:
+                conn.execute(f"ALTER TABLE event_outbox ADD COLUMN {column} {definition}")
+
+    def _migrate_legacy_outbox_tables(self, conn: sqlite3.Connection) -> None:
+        """기존 카테고리별 outbox 테이블을 공통 event_outbox로 복사한다."""
+        for table in self._LEGACY_OUTBOX_TABLES:
+            exists = conn.execute(
+                """
+                SELECT 1
+                FROM sqlite_master
+                WHERE type='table' AND name=?
+                """,
+                (table,),
+            ).fetchone()
+            if not exists:
+                continue
+
+            cols = {
+                row[1]
+                for row in conn.execute(f"PRAGMA table_info({table})")
+            }
+            if not {"camera_id", "payload_json", "created_at", "status"}.issubset(cols):
+                continue
+            if "event_id" not in cols:
+                conn.execute(f"ALTER TABLE {table} ADD COLUMN event_id TEXT")
+            if "destination_name" not in cols:
+                conn.execute(
+                    f"ALTER TABLE {table} ADD COLUMN destination_name TEXT NOT NULL DEFAULT 'edgex-core'"
+                )
+            if "data_category" not in cols:
+                default_category = (
+                    "sensor" if table == "sensor_outbox"
+                    else "zone" if table == "zone_outbox"
+                    else "camera"
+                )
+                conn.execute(
+                    f"ALTER TABLE {table} ADD COLUMN data_category TEXT NOT NULL DEFAULT '{default_category}'"
+                )
+            if "expire_at" not in cols:
+                conn.execute(f"ALTER TABLE {table} ADD COLUMN expire_at TEXT")
+            if "last_attempt_at" not in cols:
+                conn.execute(f"ALTER TABLE {table} ADD COLUMN last_attempt_at TEXT")
+            if "sent_at" not in cols:
+                conn.execute(f"ALTER TABLE {table} ADD COLUMN sent_at TEXT")
+            if "retry_count" not in cols:
+                conn.execute(f"ALTER TABLE {table} ADD COLUMN retry_count INTEGER NOT NULL DEFAULT 0")
+            if "last_error" not in cols:
+                conn.execute(f"ALTER TABLE {table} ADD COLUMN last_error TEXT")
+
+            rows = conn.execute(
+                f"""
+                SELECT id,
+                       event_id,
+                       COALESCE(destination_name, 'edgex-core') AS destination_name,
+                       camera_id,
+                       COALESCE(data_category, 'camera') AS data_category,
+                       payload_json,
+                       created_at,
+                       expire_at,
+                       last_attempt_at,
+                       sent_at,
+                       retry_count,
+                       status,
+                       last_error
+                FROM {table}
+                """
+            ).fetchall()
+            migrated = 0
+            for row in rows:
+                event_id = row[1]
+                if not event_id:
+                    try:
+                        event_id = get_payload_event_id(json.loads(row[5]))
+                    except Exception:
+                        event_id = None
+                cur = conn.execute(
+                    """
+                    INSERT OR IGNORE INTO event_outbox (
+                        event_id, source_service, data_category, destination_type,
+                        destination_name, camera_id, payload_json, created_at,
+                        created_at_ms, expire_at, expire_at_ms, last_attempt_at,
+                        last_attempt_ms, sent_at, sent_at_ms, retry_count,
+                        status, last_error
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        event_id,
+                        "cctv-edgex-adapter",
+                        row[4],
+                        "edgex",
+                        row[2],
+                        row[3],
+                        row[5],
+                        row[6],
+                        int(time.time() * 1000),
+                        row[7],
+                        None,
+                        row[8],
+                        None,
+                        row[9],
+                        None,
+                        row[10],
+                        row[11],
+                        row[12],
+                    ),
+                )
+                migrated += int(cur.rowcount or 0)
+            if migrated:
+                logger.info("%s → event_outbox 마이그레이션: %d건", table, migrated)
 
     # ── 이벤트 저장 ──────────────────────────────────────────────────────────
 
@@ -231,30 +306,37 @@ class _OutboxMixin:
         if isinstance(event_data, dict):
             event_type = str(event_data.get("type") or event_data.get("event_type") or "")
         category = self._classify_event_category(event_type)
-        table = self._table_for_category(category)
 
         with self._outbox_lock, self._outbox_connect() as conn:
             now = self._utc_now_iso()
+            now_ms = int(time.time() * 1000)
             event_id = get_payload_event_id(event_data)
             expire_at = datetime.now(timezone.utc).replace(
                 microsecond=0
             ).isoformat()
             conn.execute(
-                f"""
-                INSERT OR IGNORE INTO {table} (
-                    event_id, destination_name, camera_id, data_category, payload_json,
-                    created_at, expire_at, last_attempt_at, retry_count, status, last_error
-                ) VALUES (?, ?, ?, ?, ?, ?, datetime(?, '+{_OUTBOX_TTL_DAYS} days'), ?, ?, ?, ?)
+                """
+                INSERT OR IGNORE INTO event_outbox (
+                    event_id, source_service, data_category, destination_type,
+                    destination_name, camera_id, payload_json, created_at,
+                    created_at_ms, expire_at, expire_at_ms, last_attempt_at,
+                    last_attempt_ms, retry_count, status, last_error
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime(?, '+7 days'), ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     event_id,
+                    "cctv-edgex-adapter",
+                    category,
+                    "edgex",
                     "edgex-core",
                     camera_id,
-                    category,
                     json.dumps(event_data, ensure_ascii=False),
                     now,
+                    now_ms,
                     now,
+                    now_ms + (_OUTBOX_TTL_DAYS * 24 * 60 * 60 * 1000),
                     now,
+                    now_ms,
                     1,
                     "pending",
                     last_error[:1000],
@@ -262,8 +344,8 @@ class _OutboxMixin:
             )
             conn.commit()
             logger.debug(
-                "[Outbox:%s] 저장: camera=%s category=%s type=%s",
-                table, camera_id, category, event_type,
+                "[Outbox:event_outbox] 저장: camera=%s category=%s type=%s",
+                camera_id, category, event_type,
             )
 
     def _store_pending_event(
@@ -279,27 +361,34 @@ class _OutboxMixin:
         if isinstance(event_data, dict):
             event_type = str(event_data.get("type") or event_data.get("event_type") or "")
         category = self._classify_event_category(event_type)
-        table = self._table_for_category(category)
 
         with self._outbox_lock, self._outbox_connect() as conn:
             now = self._utc_now_iso()
+            now_ms = int(time.time() * 1000)
             event_id = get_payload_event_id(event_data)
             cur = conn.execute(
-                f"""
-                INSERT OR IGNORE INTO {table} (
-                    event_id, destination_name, camera_id, data_category, payload_json,
-                    created_at, expire_at, last_attempt_at, retry_count, status
-                ) VALUES (?, ?, ?, ?, ?, ?, datetime(?, '+{_OUTBOX_TTL_DAYS} days'), ?, ?, ?)
+                """
+                INSERT OR IGNORE INTO event_outbox (
+                    event_id, source_service, data_category, destination_type,
+                    destination_name, camera_id, payload_json, created_at,
+                    created_at_ms, expire_at, expire_at_ms, last_attempt_at,
+                    last_attempt_ms, retry_count, status
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime(?, '+7 days'), ?, ?, ?, ?, ?)
                 """,
                 (
                     event_id,
+                    "cctv-edgex-adapter",
+                    category,
+                    "edgex",
                     "edgex-core",
                     camera_id,
-                    category,
                     json.dumps(event_data, ensure_ascii=False),
                     now,
+                    now_ms,
                     now,
+                    now_ms + (_OUTBOX_TTL_DAYS * 24 * 60 * 60 * 1000),
                     now,
+                    now_ms,
                     0,
                     "pending",
                 ),
@@ -307,16 +396,16 @@ class _OutboxMixin:
             conn.commit()
             if cur.lastrowid is None or cur.lastrowid == 0:
                 row = conn.execute(
-                    f"SELECT id FROM {table} WHERE event_id = ? AND destination_name = ?",
+                    "SELECT id FROM event_outbox WHERE event_id = ? AND destination_name = ?",
                     (event_id, "edgex-core"),
                 ).fetchone()
                 if row:
-                    return (table, int(row[0]))
+                    return ("event_outbox", int(row[0]))
             logger.debug(
-                "[Outbox:%s] pending 저장: camera=%s category=%s type=%s id=%s",
-                table, camera_id, category, event_type, cur.lastrowid,
+                "[Outbox:event_outbox] pending 저장: camera=%s category=%s type=%s id=%s",
+                camera_id, category, event_type, cur.lastrowid,
             )
-            return (table, cur.lastrowid)
+            return ("event_outbox", cur.lastrowid)
 
     # ── 이벤트 조회 ──────────────────────────────────────────────────────────
 
@@ -335,49 +424,37 @@ class _OutboxMixin:
             return []
 
         fetch_limit = int(limit or self.outbox_flush_batch_size)
-        tables = (
-            [self._table_for_category(data_category)]
-            if data_category
-            else list(self._OUTBOX_TABLES)
-        )
-
-        all_rows: list = []
         with self._outbox_lock, self._outbox_connect() as conn:
             conn.row_factory = sqlite3.Row
-            for table in tables:
-                if data_category:
-                    rows = conn.execute(
-                        f"""
-                        SELECT id, camera_id, data_category, payload_json,
-                               event_id, destination_name, created_at, expire_at,
-                               last_attempt_at, retry_count, status, last_error
-                        FROM {table}
-                        WHERE status = 'pending' AND data_category = ?
-                        ORDER BY id ASC
-                        LIMIT ?
-                        """,
-                        (data_category, fetch_limit - len(all_rows)),
-                    ).fetchall()
-                else:
-                    rows = conn.execute(
-                        f"""
-                        SELECT id, camera_id, data_category, payload_json,
-                               event_id, destination_name, created_at, expire_at,
-                               last_attempt_at, retry_count, status, last_error
-                        FROM {table}
-                        WHERE status = 'pending'
-                        ORDER BY id ASC
-                        LIMIT ?
-                        """,
-                        (fetch_limit - len(all_rows),),
-                    ).fetchall()
-                for r in rows:
-                    all_rows.append((table, r))
-                if len(all_rows) >= fetch_limit:
-                    break
+            if data_category:
+                rows = conn.execute(
+                    """
+                    SELECT id, camera_id, data_category, payload_json,
+                           event_id, destination_name, created_at, expire_at,
+                           last_attempt_at, retry_count, status, last_error
+                    FROM event_outbox
+                    WHERE status = 'pending' AND data_category = ?
+                    ORDER BY id ASC
+                    LIMIT ?
+                    """,
+                    (data_category, fetch_limit),
+                ).fetchall()
+            else:
+                rows = conn.execute(
+                    """
+                    SELECT id, camera_id, data_category, payload_json,
+                           event_id, destination_name, created_at, expire_at,
+                           last_attempt_at, retry_count, status, last_error
+                    FROM event_outbox
+                    WHERE status = 'pending'
+                    ORDER BY id ASC
+                    LIMIT ?
+                    """,
+                    (fetch_limit,),
+                ).fetchall()
 
         pending: List[Dict[str, Any]] = []
-        for table, row in all_rows:
+        for row in rows:
             try:
                 payload = json.loads(row["payload_json"])
             except json.JSONDecodeError:
@@ -385,7 +462,7 @@ class _OutboxMixin:
             pending.append(
                 {
                     "id": row["id"],
-                    "_table": table,
+                    "_table": "event_outbox",
                     "camera_id": row["camera_id"],
                     "event_id": row["event_id"],
                     "destination_name": row["destination_name"],
@@ -409,20 +486,20 @@ class _OutboxMixin:
         expired = 0
         with self._outbox_lock, self._outbox_connect() as conn:
             now = self._utc_now_iso()
-            for table in self._OUTBOX_TABLES:
-                cur = conn.execute(
-                    f"""
-                    UPDATE {table}
-                    SET status = 'expired',
-                        last_attempt_at = ?,
-                        last_error = COALESCE(last_error, 'ttl expired')
-                    WHERE status = 'pending'
-                      AND expire_at IS NOT NULL
-                      AND datetime(expire_at) <= datetime(?)
-                    """,
-                    (now, now),
-                )
-                expired += int(cur.rowcount or 0)
+            cur = conn.execute(
+                """
+                UPDATE event_outbox
+                SET status = 'expired',
+                    last_attempt_at = ?,
+                    last_attempt_ms = ?,
+                    last_error = COALESCE(last_error, 'ttl expired')
+                WHERE status = 'pending'
+                  AND expire_at IS NOT NULL
+                  AND datetime(expire_at) <= datetime(?)
+                """,
+                (now, int(time.time() * 1000), now),
+            )
+            expired += int(cur.rowcount or 0)
             conn.commit()
         return expired
 
@@ -435,16 +512,22 @@ class _OutboxMixin:
         if isinstance(outbox_ref, tuple):
             table, outbox_id = outbox_ref
         else:
-            table, outbox_id = "detection_outbox", int(outbox_ref)
+            table, outbox_id = "event_outbox", int(outbox_ref)
+        if table in self._LEGACY_OUTBOX_TABLES:
+            table = "event_outbox"
         with self._outbox_lock, self._outbox_connect() as conn:
             now = self._utc_now_iso()
             conn.execute(
                 f"""
                 UPDATE {table}
-                SET status = 'sent', sent_at = ?, last_attempt_at = ?
+                SET status = 'sent',
+                    sent_at = ?,
+                    sent_at_ms = ?,
+                    last_attempt_at = ?,
+                    last_attempt_ms = ?
                 WHERE id = ?
                 """,
-                (now, now, outbox_id),
+                (now, int(time.time() * 1000), now, int(time.time() * 1000), outbox_id),
             )
             conn.commit()
 
@@ -455,16 +538,19 @@ class _OutboxMixin:
         if isinstance(outbox_ref, tuple):
             table, outbox_id = outbox_ref
         else:
-            table, outbox_id = "detection_outbox", int(outbox_ref)
+            table, outbox_id = "event_outbox", int(outbox_ref)
+        if table in self._LEGACY_OUTBOX_TABLES:
+            table = "event_outbox"
         with self._outbox_lock, self._outbox_connect() as conn:
             conn.execute(
                 f"""
                 UPDATE {table}
                 SET retry_count = retry_count + 1,
                     last_attempt_at = ?,
+                    last_attempt_ms = ?,
                     last_error = ?
                 WHERE id = ?
                 """,
-                (self._utc_now_iso(), last_error[:1000], outbox_id),
+                (self._utc_now_iso(), int(time.time() * 1000), last_error[:1000], outbox_id),
             )
             conn.commit()

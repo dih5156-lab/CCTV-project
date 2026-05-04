@@ -8,6 +8,7 @@ import logging
 import signal
 import sys
 import time
+from collections import deque
 from pathlib import Path
 from typing import Optional
 
@@ -65,8 +66,13 @@ class _RuleTopicPublisher:
 
         self._client.on_connect = self._on_connect
         self._client.on_disconnect = self._on_disconnect
-        self._client.connect(self.broker, self.port, keepalive=60)
-        self._client.loop_start()
+        try:
+            self._client.connect(self.broker, self.port, keepalive=60)
+            self._client.loop_start()
+        except Exception as exc:
+            logger.error("센서 규칙 MQTT 발행 연결 오류: %s", exc)
+            self._connected = False
+            return False
 
         deadline = time.monotonic() + 3.0
         while time.monotonic() < deadline:
@@ -124,10 +130,18 @@ def main() -> None:
         default="aiot/rules/sensor",
         help="운영 이벤트 발행 토픽 prefix",
     )
+    parser.add_argument(
+        "--max-pending-events",
+        type=int,
+        default=500,
+        help="MQTT 발행 실패 시 메모리에 보관할 최대 센서 규칙 이벤트 수",
+    )
     args = parser.parse_args()
 
     if args.mqtt_port <= 0:
         parser.error("--mqtt-port는 양수여야 합니다")
+    if args.max_pending_events <= 0:
+        parser.error("--max-pending-events는 양수여야 합니다")
 
     service = SensorRuleBridgeService()
     publisher = _RuleTopicPublisher(
@@ -135,18 +149,31 @@ def main() -> None:
         port=args.mqtt_port,
         topic_prefix=args.publish_topic_prefix,
     )
+    pending_events = deque(maxlen=args.max_pending_events)
+
+    def _flush_pending_events() -> None:
+        while pending_events:
+            event_payload = pending_events[0]
+            if not publisher.publish(event_payload):
+                return
+            pending_events.popleft()
 
     def _handle_message(topic: str, payload: bytes) -> None:
         sensor_message = service.parse_message(payload)
         if not sensor_message:
             return
 
+        _flush_pending_events()
         for event_payload in service.process_sensor_message(sensor_message):
             if not publisher.publish(event_payload):
+                was_full = len(pending_events) >= pending_events.maxlen
+                pending_events.append(event_payload)
                 logger.warning(
-                    "센서 규칙 이벤트 발행 보류: topic=%s device_id=%s",
+                    "센서 규칙 이벤트 발행 보류: topic=%s device_id=%s pending=%d dropped_oldest=%s",
                     topic,
                     sensor_message.get("device_id"),
+                    len(pending_events),
+                    was_full,
                 )
 
     subscriber = MqttTopicSubscriber(
@@ -177,6 +204,7 @@ def main() -> None:
 
     try:
         while not stop_requested:
+            _flush_pending_events()
             time.sleep(0.5)
     finally:
         subscriber.disconnect()

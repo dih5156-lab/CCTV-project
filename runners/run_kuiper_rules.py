@@ -5,11 +5,17 @@ import json
 import logging
 import os
 import re
+import sys
 import time
 from pathlib import Path
 from typing import Any, Dict
 
 import requests
+
+_RUNNER_DIR = Path(__file__).resolve().parent
+_PROJECT_ROOT = _RUNNER_DIR.parent
+if str(_PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT))
 
 from runners._shared import setup_runner_logging
 

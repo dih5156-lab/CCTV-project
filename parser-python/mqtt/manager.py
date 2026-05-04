@@ -288,10 +288,25 @@ class Manager:
             "lab":     configs.lab,
         }
 
+        connected_targets = set()
         for name, config in clients_to_connect.items():
             if config.host:
+                target_key = (
+                    str(config.host).strip().lower(),
+                    int(config.port),
+                    str(config.username or ""),
+                )
+                if target_key in connected_targets:
+                    logger.info(
+                        "Skipping MQTT client %s because %s:%s is already connected",
+                        name,
+                        config.host,
+                        config.port,
+                    )
+                    continue
                 try:
                     self.connect_client(name, config)
+                    connected_targets.add(target_key)
                 except Exception as e:
                     logger.warning(f"Failed to connect MQTT client {name}: {e}")
 

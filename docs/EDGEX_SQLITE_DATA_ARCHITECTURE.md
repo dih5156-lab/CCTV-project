@@ -79,8 +79,8 @@ SQLite 에 append 위주로 저장하는 원시 이벤트 계층입니다.
 현재 프로젝트에서 가까운 예:
 
 - `src/services/external_ingest.py`
-- `src/edgex/_outbox_mixin.py`
-- `parser-python/database/edgex_outbox.py`
+- `src/edgex/_outbox_mixin.py` (`event_outbox`)
+- `parser-python/database/edgex_outbox.py` (`event_outbox`)
 
 ### 2. Edge Silver
 
@@ -324,8 +324,8 @@ App Service 에 과도하게 넣지 말아야 할 것:
 
 1. 현재 SQLite 사용처를 `raw / outbox / search` 3종으로 명확히 나눈다.
 2. 모든 저장 경로에 `event_id` 를 넣는다.
-3. outbox 테이블에 unique dedupe key 를 넣는다.
-4. App Service 는 라우팅과 재전송만 담당하게 유지한다.
+3. outbox 테이블은 `event_outbox` 로 통일하고 unique dedupe key 를 넣는다.
+4. App Service 는 라우팅/외부 전송 담당으로 유지하고, SQLite 재전송 상태는 프로젝트 outbox 계층에서 관리한다.
 5. 운영 API 검색은 SQLite search table 기준으로 제공한다.
 6. 장기 저장 요구가 생기면 PostgreSQL sink 를 추가한다.
 
@@ -339,7 +339,7 @@ App Service 에 과도하게 넣지 말아야 할 것:
 
 ### 우선순위 2
 
-- outbox 테이블에 `destination_name` + `event_id` unique 제약
+- `event_outbox` 테이블에 `destination_name` + `event_id` unique 제약
 - `schema_version` 컬럼 추가
 - `expire_at` 또는 TTL 기준 추가
 

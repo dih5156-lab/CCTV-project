@@ -12,7 +12,7 @@ def test_replay_outbox_once_replays_pending_events():
     service.edgex_service.get_pending_detection_events.return_value = [
         {
             "id": 1,
-            "_table": "detection_outbox",
+            "_table": "event_outbox",
             "camera_id": "cam1",
             "event_data": {
                 "camera_id": "cam1",
@@ -32,7 +32,7 @@ def test_replay_outbox_once_replays_pending_events():
         rtsp_source="rtsp://camera-1",
     )
     service.edgex_service.replay_detection_event.assert_called_once_with(
-        ("detection_outbox", 1),
+        ("event_outbox", 1),
         "cam1",
         {
             "camera_id": "cam1",

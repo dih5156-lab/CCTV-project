@@ -97,6 +97,21 @@ def test_expire_old_failed(outbox):
         module._MAX_RETRY = original_max
 
 
+def test_get_pending_excludes_expired_rows(outbox):
+    """TTL이 지난 행은 expire_old_failed 실행 전이라도 재전송 대상에서 제외한다."""
+    row_id = outbox.save_pending("d1", "t34950", "http://x", {"a": 1})
+    expired_at_ms = int((time.time() - 1) * 1000)
+
+    with outbox._lock:
+        outbox._conn.execute(
+            "UPDATE event_outbox SET expire_at_ms=? WHERE id=?",
+            (expired_at_ms, row_id),
+        )
+        outbox._conn.commit()
+
+    assert outbox.get_pending() == []
+
+
 def test_multiple_pending_ordered(outbox):
     """pending 항목은 생성 순(오래된 것부터)으로 반환되어야 한다."""
     for i in range(5):

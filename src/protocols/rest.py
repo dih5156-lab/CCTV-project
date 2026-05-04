@@ -55,7 +55,7 @@ class _RestHandler(BaseApiHandler):
         """
         if _INTERNAL_TOKEN is None:
             return True
-        if self.path in ("/health", "/ping", "/metrics"):
+        if self.path in ("/", "/health", "/ping", "/metrics"):
             return True
         provided = self.headers.get("X-Internal-Token", "")
         if not secrets.compare_digest(provided, _INTERNAL_TOKEN):
@@ -63,11 +63,28 @@ class _RestHandler(BaseApiHandler):
             return False
         return True
 
+    def _root_payload(self) -> dict:
+        """브라우저로 루트 경로를 열었을 때 사용할 서비스 안내."""
+        return {
+            "service": "cctv-action-layer",
+            "description": "Internal action and control API",
+            "health": "GET /health",
+            "metrics": "GET /metrics",
+            "sites": "GET/POST /sites, DELETE /sites/{site_id}",
+            "mode": "GET/POST /mode",
+            "pending": "GET /pending",
+            "events": "POST /events",
+            "approve": "POST /approve/{event_id}",
+            "reject": "POST /reject/{event_id}",
+        }
+
     def do_GET(self):  # noqa: N802
         if not self._check_internal_token():
             return
         layer = self._layer()
-        if self.path in ("/health", "/ping"):
+        if self.path == "/":
+            self._respond(200, self._root_payload())
+        elif self.path in ("/health", "/ping"):
             mqtt_ok = False
             try:
                 mc = getattr(layer, "_mqtt_client", None)

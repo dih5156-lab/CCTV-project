@@ -68,7 +68,7 @@ class EdgeXDeviceAdapterService:
         resolved_outbox = (
             outbox_db_path
             or os.environ.get("EDGEX_OUTBOX_DB")
-            or "data/detection_outbox.db"
+            or "data/event_outbox.db"
         )
 
         self.edgex_service = CCTVDeviceService(

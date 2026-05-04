@@ -35,7 +35,7 @@ def svc(tmp_path) -> CCTVDeviceService:
         "redisHost": "localhost",
         "redisPort": "6379",
         "enableStoreAndForward": True,
-        "outboxDbPath": str(tmp_path / "edgex_outbox.db"),
+        "outboxDbPath": str(tmp_path / "event_outbox.db"),
     })
 
 
@@ -490,8 +490,8 @@ class TestEventCategoryClassification:
         assert len(zone_only) == 1
         assert zone_only[0]["event_data"]["type"] == "danger_zone"
 
-    def test_sensor_stored_in_sensor_outbox(self, svc):
-        """sensor 이벤트는 sensor_outbox 테이블에 저장된다."""
+    def test_sensor_stored_in_event_outbox(self, svc):
+        """sensor 이벤트는 공통 event_outbox 테이블에 category로 저장된다."""
         svc._init_outbox()
         svc._store_failed_detection_event("s1", {"type": "tilt_alert"}, "err")
         svc._store_failed_detection_event("s2", {"type": "vibration_alert"}, "err")
@@ -499,28 +499,30 @@ class TestEventCategoryClassification:
         import sqlite3
         with sqlite3.connect(str(svc.outbox_db_path)) as conn:
             sensor_count = conn.execute(
-                "SELECT COUNT(*) FROM sensor_outbox"
+                "SELECT COUNT(*) FROM event_outbox WHERE data_category = 'sensor'"
             ).fetchone()[0]
-            detection_count = conn.execute(
-                "SELECT COUNT(*) FROM detection_outbox"
+            total_count = conn.execute(
+                "SELECT COUNT(*) FROM event_outbox"
             ).fetchone()[0]
 
         assert sensor_count == 2
-        assert detection_count == 0
+        assert total_count == 2
 
-    def test_zone_stored_in_zone_outbox(self, svc):
-        """zone 이벤트는 zone_outbox 테이블에 저장된다."""
+    def test_zone_stored_in_event_outbox(self, svc):
+        """zone 이벤트는 공통 event_outbox 테이블에 category로 저장된다."""
         svc._init_outbox()
         svc._store_failed_detection_event("cam1", {"type": "intrusion"}, "err")
         svc._store_failed_detection_event("cam2", {"type": "crowd_warning"}, "err")
 
         import sqlite3
         with sqlite3.connect(str(svc.outbox_db_path)) as conn:
-            zone_count = conn.execute("SELECT COUNT(*) FROM zone_outbox").fetchone()[0]
-            detection_count = conn.execute("SELECT COUNT(*) FROM detection_outbox").fetchone()[0]
+            zone_count = conn.execute(
+                "SELECT COUNT(*) FROM event_outbox WHERE data_category = 'zone'"
+            ).fetchone()[0]
+            total_count = conn.execute("SELECT COUNT(*) FROM event_outbox").fetchone()[0]
 
         assert zone_count == 2
-        assert detection_count == 0
+        assert total_count == 2
 
     def test_pending_returns_table_key(self, svc):
         """get_pending_detection_events 반환값에 _table 키가 포함된다."""
@@ -528,7 +530,7 @@ class TestEventCategoryClassification:
         svc._store_failed_detection_event("cam1", {"type": "tilt_alert"}, "err")
         pending = svc.get_pending_detection_events(data_category="sensor")
         assert len(pending) == 1
-        assert pending[0]["_table"] == "sensor_outbox"
+        assert pending[0]["_table"] == "event_outbox"
 
 
 class TestEdgeXAdapterOutbox:

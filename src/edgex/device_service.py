@@ -54,7 +54,7 @@ class CCTVDeviceService(_OutboxMixin, _HttpMixin, _PayloadMixin, _PublisherMixin
         self.message_bus_type = str(config.get("messageBusType", "redis")).lower()
         self.enable_rest_event_post = self._to_bool(config.get("enableRestEventPost", False))
         self.enable_store_and_forward = self._to_bool(config.get("enableStoreAndForward", True))
-        self.outbox_db_path = Path(config.get("outboxDbPath", "data/detection_outbox.db"))
+        self.outbox_db_path = Path(config.get("outboxDbPath", "data/event_outbox.db"))
         self.outbox_flush_batch_size = int(config.get("outboxFlushBatchSize", 100))
         self._mqtt_client: Optional[object] = None
         self._redis_client: Optional[object] = None
@@ -225,8 +225,7 @@ class CCTVDeviceService(_OutboxMixin, _HttpMixin, _PayloadMixin, _PublisherMixin
         resource_name = self._map_event_type_to_resource(event_type)
 
         if self.message_bus_type == "redis":
-            redis_ok = await asyncio.to_thread(
-                self._publish_event_redis,
+            redis_ok = self._publish_event_redis(
                 device_name, resource_name, event_type,
                 fields["confidence"], fields["x"], fields["y"],
                 fields["width"], fields["height"], fields["object_id"],
@@ -237,8 +236,7 @@ class CCTVDeviceService(_OutboxMixin, _HttpMixin, _PayloadMixin, _PublisherMixin
                 self._mark_outbox_sent(outbox_row_id)
                 return True
 
-        mqtt_ok = await asyncio.to_thread(
-            self._publish_event_mqtt,
+        mqtt_ok = self._publish_event_mqtt(
             device_name, resource_name, event_type,
             fields["confidence"], fields["x"], fields["y"],
             fields["width"], fields["height"], fields["object_id"],

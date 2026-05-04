@@ -7,6 +7,14 @@ Docker 배포 시 docker-compose.yml 의 environment 섹션으로 모든 값을 
 import argparse
 import logging
 import os
+import sys
+from pathlib import Path
+
+_RUNNER_DIR = Path(__file__).resolve().parent
+_PROJECT_ROOT = _RUNNER_DIR.parent
+if str(_PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT))
+
 from runners._shared import ensure_project_root, setup_runner_logging
 
 ensure_project_root()
@@ -41,10 +49,15 @@ def main() -> None:
             "cctv/rules/intrusion/filtered,"
             "cctv/rules/intrusion/persisted,"
             "cctv/rules/intrusion/critical,"
+            "cctv/ai/events/+/person,"
+            "cctv/ai/events/+/helmet,"
             "cctv/ai/events/+/head,"
             "cctv/ai/events/+/fall_detected,"
+            "cctv/ai/events/+/unsafe_behavior,"
             "cctv/ai/events/+/zone_entered,"
             "cctv/ai/events/+/zone_dwelling,"
+            "cctv/ai/events/+/zone_object_detected,"
+            "cctv/ai/events/+/crowd_warning,"
             "aiot/rules/sensor/tilt,"
             "aiot/rules/sensor/temperature,"
             "aiot/rules/sensor/vibration",
@@ -56,6 +69,11 @@ def main() -> None:
             "ALARM_TOPICS",
             "cctv/rules/intrusion/persisted,"
             "cctv/rules/intrusion/critical,"
+            "cctv/ai/events/+/person,"
+            "cctv/ai/events/+/helmet,"
+            "cctv/ai/events/+/head,"
+            "cctv/ai/events/+/fall_detected,"
+            "cctv/ai/events/+/unsafe_behavior,"
             "cctv/ai/events/+/zone_entered,"
             "cctv/ai/events/+/zone_dwelling,"
             "cctv/ai/events/+/zone_object_detected,"
@@ -173,4 +191,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

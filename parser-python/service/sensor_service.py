@@ -12,6 +12,7 @@ Go의 타입 어설션(type assertion) → Python의 isinstance() + dict.get() �
 import base64
 import json
 import logging
+import os
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
@@ -140,8 +141,16 @@ class SensorService(SensorDataProcessor):
         # 2. DeviceID 조회
         device_id = self.device_info.get_device_id(dev_eui)
         if not device_id:
-            logger.error(f"Device ID not found for devEUI: {dev_eui}")
-            raise ValueError(f"device ID not found for devEUI: {dev_eui}")
+            allow_unknown = os.environ.get("AIOT_ALLOW_UNKNOWN_DEVICES", "true").strip().lower()
+            if allow_unknown in {"1", "true", "yes", "on"}:
+                device_id = dev_eui
+                logger.warning(
+                    "Device ID not found for devEUI %s; using devEUI as fallback device_id",
+                    dev_eui,
+                )
+            else:
+                logger.error(f"Device ID not found for devEUI: {dev_eui}")
+                raise ValueError(f"device ID not found for devEUI: {dev_eui}")
 
         # 3. TLV 파싱 (Go: s.tlvParser.DecodeLwM2MTLV(decodedPayload, 8))
         try:

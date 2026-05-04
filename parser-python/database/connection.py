@@ -26,6 +26,202 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
+_SCHEMA_STATEMENTS = [
+    """
+    CREATE TABLE IF NOT EXISTS user_applicationids (
+        user_id TEXT NOT NULL,
+        application_ids TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[]
+    )
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS notifications (
+        id BIGSERIAL PRIMARY KEY,
+        user_id TEXT,
+        app_eui TEXT,
+        dev_eui TEXT,
+        device_id TEXT,
+        object_id TEXT,
+        message_id TEXT,
+        created_at TIMESTAMPTZ DEFAULT now()
+    )
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS t3 (
+        id BIGSERIAL PRIMARY KEY,
+        app_eui TEXT,
+        dev_eui TEXT,
+        device_id TEXT,
+        payload TEXT,
+        channel INTEGER,
+        frequency BIGINT,
+        received_at TIMESTAMPTZ,
+        manufacturer TEXT,
+        model_number TEXT,
+        firmware_version TEXT,
+        reboot BOOLEAN,
+        factory_reset BOOLEAN,
+        battery_level INTEGER,
+        error_code INTEGER,
+        reset_error_code INTEGER,
+        supported_binding_and_modes TEXT,
+        hardware_version TEXT,
+        battery_status INTEGER
+    )
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS t34950 (
+        id BIGSERIAL PRIMARY KEY,
+        app_eui TEXT,
+        dev_eui TEXT,
+        device_id TEXT,
+        created_at TIMESTAMPTZ,
+        payload TEXT,
+        channel INTEGER,
+        frequency BIGINT,
+        received_at TIMESTAMPTZ,
+        water_level DOUBLE PRECISION,
+        flow_velocity DOUBLE PRECISION,
+        rain_fall DOUBLE PRECISION,
+        reporting_period INTEGER
+    )
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS t34952 (
+        id BIGSERIAL PRIMARY KEY,
+        app_eui TEXT,
+        dev_eui TEXT,
+        device_id TEXT,
+        created_at TIMESTAMPTZ,
+        payload TEXT,
+        channel INTEGER,
+        frequency BIGINT,
+        received_at TIMESTAMPTZ,
+        flood_level DOUBLE PRECISION,
+        reporting_period INTEGER
+    )
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS t34954 (
+        id BIGSERIAL PRIMARY KEY,
+        app_eui TEXT,
+        dev_eui TEXT,
+        device_id TEXT,
+        created_at TIMESTAMPTZ,
+        payload TEXT,
+        channel INTEGER,
+        frequency BIGINT,
+        received_at TIMESTAMPTZ,
+        temperature DOUBLE PRECISION,
+        humidity DOUBLE PRECISION,
+        reporting_period INTEGER
+    )
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS t34955 (
+        id BIGSERIAL PRIMARY KEY,
+        app_eui TEXT,
+        dev_eui TEXT,
+        device_id TEXT,
+        created_at TIMESTAMPTZ,
+        payload TEXT,
+        channel INTEGER,
+        frequency BIGINT,
+        received_at TIMESTAMPTZ,
+        angle_x DOUBLE PRECISION,
+        angle_y DOUBLE PRECISION,
+        reporting_angle_threshold DOUBLE PRECISION,
+        relative_angle_value_reset DOUBLE PRECISION,
+        reporting_period INTEGER
+    )
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS t34956 (
+        id BIGSERIAL PRIMARY KEY,
+        app_eui TEXT,
+        dev_eui TEXT,
+        device_id TEXT,
+        created_at TIMESTAMPTZ,
+        payload TEXT,
+        channel INTEGER,
+        frequency BIGINT,
+        received_at TIMESTAMPTZ,
+        fire_alarm BOOLEAN,
+        reporting_period INTEGER
+    )
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS t34957 (
+        id BIGSERIAL PRIMARY KEY,
+        app_eui TEXT,
+        dev_eui TEXT,
+        device_id TEXT,
+        created_at TIMESTAMPTZ,
+        payload TEXT,
+        channel INTEGER,
+        frequency BIGINT,
+        received_at TIMESTAMPTZ,
+        temperature DOUBLE PRECISION,
+        angle_x DOUBLE PRECISION,
+        angle_y DOUBLE PRECISION,
+        event_code BOOLEAN
+    )
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS t34958 (
+        id BIGSERIAL PRIMARY KEY,
+        app_eui TEXT,
+        dev_eui TEXT,
+        device_id TEXT,
+        created_at TIMESTAMPTZ,
+        payload TEXT,
+        channel INTEGER,
+        frequency BIGINT,
+        received_at TIMESTAMPTZ,
+        acc_x DOUBLE PRECISION,
+        acc_y DOUBLE PRECISION,
+        acc_z DOUBLE PRECISION,
+        gyro_x DOUBLE PRECISION,
+        gyro_y DOUBLE PRECISION,
+        gyro_z DOUBLE PRECISION,
+        angle_x DOUBLE PRECISION,
+        angle_y DOUBLE PRECISION,
+        event_code BOOLEAN
+    )
+    """,
+    """
+    CREATE TABLE IF NOT EXISTS sensor_data (
+        id BIGSERIAL PRIMARY KEY,
+        app_eui TEXT,
+        dev_eui TEXT,
+        device_id TEXT,
+        created_at TIMESTAMPTZ,
+        payload TEXT,
+        channel INTEGER,
+        frequency BIGINT,
+        received_at TIMESTAMPTZ,
+        object_id TEXT,
+        payload_tlv JSONB,
+        is_event BOOLEAN
+    )
+    """,
+]
+
+
+def _ensure_schema(pool) -> None:
+    """Create the minimal AIoT parser schema when running on a fresh Jetson DB."""
+    conn = pool.getconn()
+    try:
+        with conn.cursor() as cur:
+            for statement in _SCHEMA_STATEMENTS:
+                cur.execute(statement)
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        pool.putconn(conn)
+
+
 class DB:
     """
     데이터베이스 연결 풀 래퍼 클래스
@@ -273,6 +469,7 @@ def init(cfg) -> DB:
     # 연결 테스트 (Go: sqldb.Ping())
     test_conn = pool.getconn()
     pool.putconn(test_conn)
+    _ensure_schema(pool)
 
     logger.info(f"Database connected successfully to {cfg.host}:{cfg.port}/{cfg.database}")
 

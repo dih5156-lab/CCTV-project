@@ -162,14 +162,23 @@ class _DabitClient:
         self._timeout = timeout
 
     def _send(self, buf: bytes) -> bytes:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(self._timeout)
-        try:
-            sock.connect((self._host, self._port))
-            sock.sendall(bytearray(buf))
-            return sock.recv(1024)
-        finally:
-            sock.close()
+        last_exc: Optional[OSError] = None
+        for attempt in range(1, 4):
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(self._timeout)
+            try:
+                sock.connect((self._host, self._port))
+                sock.sendall(bytearray(buf))
+                return sock.recv(1024)
+            except OSError as exc:
+                last_exc = exc
+                if attempt >= 3:
+                    break
+                # Dabit 컨트롤러가 직전 명령 직후 포트를 잠깐 거부하는 경우가 있다.
+                time.sleep(0.2 * attempt)
+            finally:
+                sock.close()
+        raise last_exc or ConnectionError("Dabit 전광판 전송 실패")
 
     @staticmethod
     def _check(response: bytes) -> None:
