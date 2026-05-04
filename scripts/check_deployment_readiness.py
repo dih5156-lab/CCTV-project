@@ -24,7 +24,7 @@ CHECKS = (
     Check("model manifest artifacts", [sys.executable, "scripts/check_model_report.py", "--check-artifacts"]),
     Check("grafana dashboard JSON", [sys.executable, "-m", "json.tool", "monitoring/grafana/provisioning/dashboards/cctv_overview.json"]),
     Check("alarm device config", [sys.executable, "scripts/check_alarm_devices.py", "--skip-network", "--allow-unconfigured"]),
-    Check("python scripts compile", [sys.executable, "-m", "py_compile", "scripts/evaluate_detection.py", "scripts/check_model_report.py", "scripts/check_sensitive_defaults.py", "scripts/check_monitoring_config.py", "scripts/check_compose_runtime_assumptions.py", "scripts/check_alarm_devices.py", "scripts/check_offline_readiness.py", "scripts/smoke_test_deployment.py", "scripts/smoke_test_data_flow.py", "runners/run_sensor_rule_bridge.py"]),
+    Check("python scripts compile", [sys.executable, "-m", "py_compile", "scripts/evaluate_detection.py", "scripts/check_model_report.py", "scripts/check_sensitive_defaults.py", "scripts/check_monitoring_config.py", "scripts/check_compose_runtime_assumptions.py", "scripts/check_alarm_devices.py", "scripts/check_field_network.py", "scripts/check_offline_readiness.py", "scripts/smoke_test_deployment.py", "scripts/smoke_test_data_flow.py", "runners/run_sensor_rule_bridge.py"]),
     Check("docker compose config", ["docker", "compose", "config"]),
     Check("docker compose jetson config", ["docker", "compose", "-f", "docker-compose.jetson.yml", "config"]),
     Check("docker-build.sh syntax", ["bash", "-n", "docker-build.sh"]),

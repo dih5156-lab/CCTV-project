@@ -57,6 +57,15 @@ def build_checks(*, full: bool = False) -> list[Check]:
                 "--allow-unconfigured",
             ],
         ),
+        Check(
+            "field network routes",
+            [
+                sys.executable,
+                "scripts/check_field_network.py",
+                "--allow-unconfigured",
+                "--allow-permission-denied",
+            ],
+        ),
     ]
 
     if full:

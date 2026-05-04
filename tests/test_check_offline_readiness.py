@@ -47,6 +47,13 @@ def test_parser_check_sets_pythonpath():
     assert "/dev/null" in parser_check.command
 
 
+def test_field_network_check_allows_sandbox_permission_denied():
+    checks = check_offline_readiness.build_checks()
+    field_check = next(check for check in checks if check.name == "field network routes")
+
+    assert "--allow-permission-denied" in field_check.command
+
+
 def test_run_check_returns_failure_detail(monkeypatch):
     def fake_run(*args, **kwargs):
         return subprocess.CompletedProcess(args[0], 1, stdout="stdout detail", stderr="stderr detail")

@@ -363,6 +363,7 @@ docker compose exec cctv-public-api env | grep APPEARANCE
 확인 방법:
 
 ```bash
+.venv/bin/python scripts/check_field_network.py --allow-unconfigured
 .venv/bin/python scripts/check_alarm_devices.py
 docker compose logs --tail 120 cctv-ai-engine
 docker compose logs --tail 120 cctv-action-layer
@@ -380,6 +381,15 @@ sudo docker compose exec cctv-action-layer env | grep -E 'SPEAKER|SIREN|SIGNBOAR
 
 ```bash
 .venv/bin/python scripts/check_alarm_devices.py --skip-network
+```
+
+서버 라우팅이 현장 장비망으로 잡히는지 먼저 확인하려면:
+
+```bash
+.venv/bin/python scripts/check_field_network.py \
+  --allow-unconfigured \
+  --expected-interface eno1 \
+  --expected-subnet 192.168.88.0/24
 ```
 
 장비 전원과 네트워크를 장비별로 확인합니다.
