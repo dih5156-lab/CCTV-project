@@ -317,11 +317,18 @@ def start_processor_runtime(
 
     logger.info("%d개 카메라로 프로세서 시작 중...", added_count)
 
+    stream_api_started = False
     if api_port > 0:
         start_zone_api_server(processor, cameras_json_path, api_port, presets_path=zone_presets_path)
         start_camera_model_api_server(processor, cameras_json_path, api_port + 1)
         start_face_api_server(processor, api_port + 2)
         start_stream_api_server(processor, api_port + 3)
+        stream_api_started = True
+
+    stream_port = int(os.environ.get("STREAM_PORT", "0") or 0)
+    stream_api_enabled = os.environ.get("STREAM_API_ENABLED", "0").strip().lower()
+    if not stream_api_started and (stream_port > 0 or stream_api_enabled in {"1", "true", "yes", "on"}):
+        start_stream_api_server(processor, stream_port or 8769)
 
     if cfg.display:
         drawer = ZoneDrawer(processor, cameras_json_path)

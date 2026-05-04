@@ -1,0 +1,4 @@
+# helmet_model_ver0.5 클래스 레이블 (한 줄에 하나씩, 인덱스 순서)
+# class-id: 0=helmet, 1=head
+helmet
+head

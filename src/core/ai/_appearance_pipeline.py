@@ -22,10 +22,18 @@ logger = logging.getLogger(__name__)
 class AppearancePipeline:
     """외형 속성 추출, 로그 저장, 조건 매칭을 담당한다."""
 
-    def __init__(self, appearance: AppearanceAnalyzer, crop_dir: Path) -> None:
+    def __init__(
+        self,
+        appearance: AppearanceAnalyzer,
+        crop_dir: Path,
+        *,
+        save_crops: bool = False,
+    ) -> None:
         self._appearance = appearance
         self._crop_dir = crop_dir
-        self._crop_dir.mkdir(parents=True, exist_ok=True)
+        self._save_crops = save_crops
+        if self._save_crops:
+            self._crop_dir.mkdir(parents=True, exist_ok=True)
         self._appearance_cooldown: Dict[str, float] = {}
         self._appearance_log: Optional["AppearanceLog"] = None
 
@@ -52,6 +60,9 @@ class AppearancePipeline:
         ts: float,
     ) -> Optional[str]:
         """person bbox 영역을 JPEG로 저장하고 경로를 반환한다."""
+        if not self._save_crops:
+            return None
+
         try:
             frame_h, frame_w = frame.shape[:2]
             x1, y1 = max(0, x), max(0, y)
@@ -76,32 +87,15 @@ class AppearancePipeline:
                 face_meta_map[face_event.object_id] = face_event.metadata
         return face_meta_map
 
-    def _log_person_appearance(
-        self,
-        frame: np.ndarray,
+    @staticmethod
+    def _build_log_parts(
         person: DetectionEvent,
-        now: float,
-        camera_id: str,
-        nearby_objects: List[Dict],
+        attrs: Dict,
         face_meta: Dict,
-    ) -> None:
-        log_key = f"_applog_{person.object_id}"
-        last_log = self._appearance_cooldown.get(log_key, 0.0)
-        if now - last_log < 3.0:
-            return
-
-        attrs = self._appearance.extract_attributes(
-            frame,
-            person.x,
-            person.y,
-            person.width,
-            person.height,
-            nearby_objects=nearby_objects,
-            keypoints=person.keypoints,
-        )
+    ) -> List[str]:
+        """운영 로그에 남길 외형 요약 문자열을 만든다."""
         gender = face_meta.get("gender")
         age_group = face_meta.get("age_group")
-        face_name = face_meta.get("face_name")
 
         parts = [f"track={person.object_id}"]
         if attrs.get("upper_color") not in (None, "unknown"):
@@ -118,36 +112,103 @@ class AppearancePipeline:
             f"성별={gender or '?'}",
             f"나이={age_group or '?'}",
         ])
-        logger.info("[외형] %s", "  ".join(parts))
+        return parts
+
+    def _extract_person_attributes(
+        self,
+        frame: np.ndarray,
+        person: DetectionEvent,
+        nearby_objects: List[Dict],
+    ) -> Dict:
+        """사람 1명에 대한 외형 속성을 추출한다."""
+        return self._appearance.extract_attributes(
+            frame,
+            person.x,
+            person.y,
+            person.width,
+            person.height,
+            nearby_objects=nearby_objects,
+            keypoints=person.keypoints,
+        )
+
+    def _build_log_payload(
+        self,
+        *,
+        camera_id: str,
+        person: DetectionEvent,
+        attrs: Dict,
+        face_meta: Dict,
+        crop_path: Optional[str],
+        timestamp: float,
+    ) -> Dict:
+        """AppearanceLog.insert()에 넘길 payload를 만든다."""
+        return {
+            "camera_id": camera_id,
+            "event_id": f"appearance:{camera_id}:{person.object_id}:{int(timestamp * 1000)}",
+            "track_id": person.object_id,
+            "upper_color": attrs.get("upper_color"),
+            "lower_color": attrs.get("lower_color"),
+            "has_helmet": bool(attrs.get("has_helmet")),
+            "helmet_color": attrs.get("helmet_color"),
+            "has_backpack": bool(attrs.get("has_backpack")),
+            "has_handbag": bool(attrs.get("has_handbag")),
+            "has_suitcase": bool(attrs.get("has_suitcase")),
+            "gender": face_meta.get("gender"),
+            "age_group": face_meta.get("age_group"),
+            "face_name": face_meta.get("face_name"),
+            "attribute_backend": attrs.get("attribute_backend"),
+            "crop_path": crop_path,
+            "bbox_x": person.x,
+            "bbox_y": person.y,
+            "bbox_w": person.width,
+            "bbox_h": person.height,
+            "timestamp": timestamp,
+        }
+
+    def _insert_log_payload(self, payload: Dict) -> None:
+        """외형 로그 payload를 DB에 저장한다."""
+        if not self._appearance_log:
+            return
+        self._appearance_log.insert(**payload)
+
+    def log_person_appearance(
+        self,
+        frame: np.ndarray,
+        person: DetectionEvent,
+        now: float,
+        camera_id: str,
+        nearby_objects: List[Dict],
+        face_meta: Dict,
+    ) -> None:
+        """외형 속성을 추출하고 로그/DB/crop 저장까지 처리한다."""
+        log_key = f"_applog_{person.object_id}"
+        last_log = self._appearance_cooldown.get(log_key, 0.0)
+        if now - last_log < 3.0:
+            return
+
+        attrs = self._extract_person_attributes(frame, person, nearby_objects)
+        logger.info("[외형] %s", "  ".join(self._build_log_parts(person, attrs, face_meta)))
         self._appearance_cooldown[log_key] = now
 
         crop_path = self.save_person_crop(
-            frame, person.x, person.y, person.width, person.height, camera_id, person.object_id, now
+            frame,
+            person.x,
+            person.y,
+            person.width,
+            person.height,
+            camera_id,
+            person.object_id,
+            now,
         )
-
-        if self._appearance_log:
-            self._appearance_log.insert(
-                camera_id=camera_id,
-                event_id=f"appearance:{camera_id}:{person.object_id}:{int(now * 1000)}",
-                track_id=person.object_id,
-                upper_color=attrs.get("upper_color"),
-                lower_color=attrs.get("lower_color"),
-                has_helmet=bool(attrs.get("has_helmet")),
-                helmet_color=attrs.get("helmet_color"),
-                has_backpack=bool(attrs.get("has_backpack")),
-                has_handbag=bool(attrs.get("has_handbag")),
-                has_suitcase=bool(attrs.get("has_suitcase")),
-                gender=gender,
-                age_group=age_group,
-                face_name=face_name,
-                attribute_backend=attrs.get("attribute_backend"),
-                crop_path=crop_path,
-                bbox_x=person.x,
-                bbox_y=person.y,
-                bbox_w=person.width,
-                bbox_h=person.height,
-                timestamp=now,
-            )
+        payload = self._build_log_payload(
+            camera_id=camera_id,
+            person=person,
+            attrs=attrs,
+            face_meta=face_meta,
+            crop_path=crop_path,
+            timestamp=now,
+        )
+        self._insert_log_payload(payload)
 
     def run_matching(
         self,
@@ -240,7 +301,7 @@ class AppearancePipeline:
         face_meta_map = self._build_face_meta_map(face_events)
 
         for person in person_events:
-            self._log_person_appearance(
+            self.log_person_appearance(
                 frame,
                 person,
                 now,

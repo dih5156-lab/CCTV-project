@@ -41,6 +41,7 @@ from ..utils.visualizer import draw_events
 from ._camera_registry import _CameraRegistry
 from ._inference_pipeline import _InferencePipeline
 from .ai.analyzer import AIAnalyzer
+from .ai._yolo_helpers import has_dynamic_input_shape
 from .base_processor import BaseProcessor
 from .event_filters import CumulativeViolationFilter, TrackManager
 from .events import DetectionEvent, EventType
@@ -533,11 +534,16 @@ class VideoProcessor(BaseProcessor):
         analyzer.person_threshold = self.config.detection.person_confidence
         analyzer.pose_threshold   = self.config.detection.pose_confidence
 
-        # TRT .engine 사용 시 governor imgsz 자동 조정 잠금
-        # (engine은 컴파일 시 imgsz 고정 → 런타임에 변경 불가)
+        # 고정 shape TRT .engine 사용 시에만 governor imgsz 자동 조정을 잠근다.
+        # dynamic profile 엔진은 320/416/640 같은 런타임 imgsz 조정을 허용한다.
+        engine_models = (
+            (analyzer.pose_model_path, analyzer.pose_model),
+            (analyzer.helmet_model_path, analyzer.helmet_model),
+            (analyzer.person_model_path, analyzer.person_model),
+        )
         if any(
-            p and str(p).endswith(".engine")
-            for p in (analyzer.pose_model_path, analyzer.helmet_model_path, analyzer.person_model_path)
+            p and str(p).endswith(".engine") and not has_dynamic_input_shape(model)
+            for p, model in engine_models
         ):
             self._governor.lock_imgsz()
 
@@ -1268,7 +1274,26 @@ class VideoProcessor(BaseProcessor):
     def get_stats(self) -> Dict:
         with self._stats_lock:
             snapshot = self.stats.snapshot()
-        return ProcessorStats.with_derived_stats(snapshot)
+        derived = ProcessorStats.with_derived_stats(snapshot)
+        return self._build_stats_payload(
+            backend="video",
+            camera_count=self._cams.count,
+            frames_processed=derived.get("frames_processed", 0),
+            frames_dropped=derived.get("frames_dropped", 0),
+            events_detected=derived.get("events_detected", 0),
+            events_sent=derived.get("events_sent", 0),
+            events_filtered=derived.get("events_filtered", 0),
+            events_dropped=derived.get("events_dropped", 0),
+            events_failed=derived.get("events_failed", 0),
+            inference_errors=derived.get("inference_errors", 0),
+            camera_errors=derived.get("camera_errors", 0),
+            fps=derived.get("fps", 0.0),
+            uptime_seconds=derived.get("uptime_seconds", 0.0),
+            avg_inference_ms=derived.get("avg_inference_ms", 0.0),
+            start_time=derived.get("start_time"),
+            inference_count=derived.get("inference_count", 0),
+            total_inference_time=derived.get("total_inference_time", 0.0),
+        )
 
     def get_camera_status(self) -> Dict[str, dict]:
         """카메라별 연결 상태·재시도 횟수·마지막 프레임 시간을 반환한다.
@@ -1292,32 +1317,22 @@ class VideoProcessor(BaseProcessor):
                 },
             }
         """
-        now = time.time()
         result: Dict[str, dict] = {}
         for cam_id, cam in self._cams.cameras.items():
-            if cam.connected:
-                status = "online"
-            elif cam.reconnect_attempts > 0:
-                status = "reconnecting"
-            else:
-                status = "offline"
             last_ft = cam.last_frame_time
-            result[cam_id] = {
-                "status": status,
-                "connected": cam.connected,
-                "reconnect_attempts": cam.reconnect_attempts,
-                "last_frame_time": last_ft if last_ft else None,
-                "last_frame_age_sec": round(now - last_ft, 1) if last_ft else None,
-            }
+            result[cam_id] = self._build_camera_status_entry(
+                connected=cam.connected,
+                source=getattr(cam, "source", None),
+                reconnect_attempts=cam.reconnect_attempts,
+                last_frame_time=last_ft if last_ft else None,
+            )
         for cam_id in self._cams.pending_camera_ids():
             if cam_id not in result:
-                result[cam_id] = {
-                    "status": "reconnecting",
-                    "connected": False,
-                    "reconnect_attempts": -1,
-                    "last_frame_time": None,
-                    "last_frame_age_sec": None,
-                }
+                result[cam_id] = self._build_camera_status_entry(
+                    connected=False,
+                    reconnect_attempts=-1,
+                    status="reconnecting",
+                )
         return result
 
     def get_detection_snapshot(self) -> Dict[str, dict]:

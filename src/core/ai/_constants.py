@@ -44,8 +44,8 @@ _TEMP_TRACK_MAX_AREA_RATIO_DELTA = 0.75  # 면적 비율 차 최대 임계값
 _FACE_TRACK_COOLDOWN_SEC = 2.0  # 동일 객체에 대한 얼굴 인식 재실행 억제 간격 (초)
 
 # ── YOLO 모델 설정 ───────────────────────────────────────────────────
-# ※ TensorRT .engine 파일은 컴파일 시 고정된 imgsz와 정확히 일치해야 함
-#   .pt 파일은 runtime에 자동 리사이즈되므로 640 사용 가능
+# ※ 고정 shape TensorRT .engine 파일은 컴파일 시 imgsz와 정확히 일치해야 함
+#   dynamic profile 엔진과 .pt 파일은 runtime imgsz 조정 가능
 DEFAULT_IMAGE_SIZE_HELMET = 320   # 폴백: .engine 자동 감지 실패 시 (원래 480)
 DEFAULT_IMAGE_SIZE_POSE   = 320   # 폴백: .engine 자동 감지 실패 시 (원래 416)
 DEFAULT_IMAGE_SIZE_PERSON = 640   # .pt 파일 사용, 640 유지

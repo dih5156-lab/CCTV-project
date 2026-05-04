@@ -20,54 +20,54 @@ Windows PC와 NVIDIA Jetson Orin 모두 동작합니다.
 
 ```
 CCTV-project/
-├── src/
-│   ├── config/
-│   │   └── config.py              # 중앙화된 설정 (ENV 오버라이드 지원)
-│   ├── core/
-│   │   ├── events.py              # 이벤트 타입 정의
-│   │   ├── event_filters.py       # 누적 감지 필터 / 트랙 관리
-│   │   ├── ai/                    # AI 추론 패키지 (analyzer, fall, tracker 등)
-│   │   └── processor.py           # 비디오 파이프라인 오케스트레이터
-│   ├── utils/
-│   │   ├── camera_input.py        # RTSP/웹캠 연결 (GStreamer 지원)
-│   │   ├── geometry.py            # 좌표 변환 유틸리티
-│   │   ├── visualizer.py          # 감지 결과 시각화
-│   │   ├── zone_detection.py      # 폴리곤 구역 침입 판정
-│   │   ├── zone_drawer.py         # GUI 구역 그리기 / 삭제
-│   │   ├── zone_presets.py        # 구역 프리셋 저장소
-│   │   └── dataset_collector.py   # YOLO 형식 데이터셋 수집
-│   ├── services/
-│   │   ├── zone_api.py            # 위험구역 REST API 서버
-│   │   └── action_bridge.py       # 스피커·외부 API·DB 액션 레이어
-│   ├── protocols/
-│   │   ├── mqtt.py                # MQTT 이벤트 발행
-│   │   ├── http.py                # HTTP 이벤트 전송
-│   │   └── rest.py                # REST 클라이언트 공통
-│   ├── edgex/
-│   │   ├── device_service.py      # EdgeX Foundry v3 디바이스 서비스
-│   │   └── adapter_service.py     # EdgeX 어댑터 (AI→EdgeX 브릿지)
-│   └── devices/
-│       ├── speaker.py             # TCP 스피커 제어
-│       ├── signboard.py           # 전광판 제어
-│       ├── siren.py               # 경광등/사이렌 제어
-│       └── sensor_device.py       # 센서 읽기 도메인 모델
-├── main.py                        # 메인 진입점
-├── runners/
-│   ├── run_edgex_adapter.py       # EdgeX 어댑터 단독 실행
-│   ├── run_action_bridge.py       # Action Layer 단독 실행
-│   ├── run_kuiper_rules.py        # Kuiper 룰 배포
-│   ├── run_alert_api.py           # Alert REST API 서버
-│   └── run_public_api.py          # 공개 API 서버
-├── cameras.json                   # 카메라 목록 및 구역 설정
-├── zones_config.json              # 전역 위험 구역 설정
-├── Dockerfile                     # 컨테이너 빌드 (x86)
-├── requirements.txt               # Python 의존성
-└── docs/
-    ├── ACTION_LAYER_SPEAKER_BRIDGE.md
-    ├── ASC_RULE_ENGINE.md
-    ├── DEVICE_SERVICE_ARCHITECTURE.md
-    └── KUIPER_RULE_ENGINE.md
+├── main.py                         # CCTV AI 엔진 기본 실행 진입점
+├── src/                            # 핵심 애플리케이션 코드
+│   ├── api/                        # FastAPI 공개 API (/api/v1)
+│   ├── bootstrap/                  # CLI, 런타임 초기화, 프로세서 생성
+│   ├── config/                     # 중앙화된 설정 (ENV 오버라이드 지원)
+│   ├── core/                       # 영상 처리, AI 추론, 이벤트 생성
+│   │   ├── ai/                     # YOLO, 낙상, 얼굴, 외형 분석
+│   │   ├── processor.py            # OpenCV + YOLO 기반 처리기
+│   │   └── deepstream_processor.py # NVIDIA DeepStream 기반 처리기
+│   ├── services/                   # ActionBridge, API 서버, 로그/검색 서비스
+│   ├── edgex/                      # EdgeX 디바이스 서비스/어댑터
+│   ├── protocols/                  # MQTT, HTTP, REST, TLV 통신 계층
+│   ├── devices/                    # 스피커, 전광판, 경광등 제어
+│   ├── storage/                    # SQLite 저장소
+│   └── utils/                      # 카메라 입력, 구역, 시각화, geometry
+├── runners/                        # 서비스별 단독 실행 진입점
+├── parser-python/                  # AIoT TLV 센서 파서 서비스
+├── config/                         # DeepStream/외형 분석 설정
+├── models/                         # YOLO, PP-Human, TensorRT 모델 파일
+├── edgex/                          # EdgeX device profile 및 ASC 설정
+├── kuiper/                         # eKuiper 룰 파일
+├── monitoring/                     # Prometheus/Grafana 설정
+├── scripts/                        # 점검, 변환, smoke test, 모델 평가
+├── tests/                          # pytest 테스트
+├── docker-compose.yml              # 일반 Docker/EdgeX 통합 배포
+├── docker-compose.jetson.yml       # Jetson/DeepStream 운영 배포
+└── docs/PROJECT_STRUCTURE.md       # 상세 프로젝트 구조 문서
 ```
+
+더 자세한 디렉터리별 역할과 데이터 흐름은
+[docs/PROJECT_STRUCTURE.md](docs/PROJECT_STRUCTURE.md)를 참고하세요.
+운영 중 상태 확인과 복구 절차는
+[docs/OPERATIONS_RUNBOOK.md](docs/OPERATIONS_RUNBOOK.md)에 정리되어 있습니다.
+
+## 포트별 역할
+
+| 포트 | 서비스 | 브라우저 확인 주소 | 비고 |
+|------|--------|-------------------|------|
+| `9000` | Public API | `http://127.0.0.1:9000/` | Swagger 문서는 `/docs`, API는 `/api/v1/*` |
+| `8000` | Alert API | `http://127.0.0.1:8000/` | 이벤트 수신용 내부 API, `/api/alerts`는 POST 전용 |
+| `8080` | Action Layer | `http://127.0.0.1:8080/` | 사이트/제어/알람 액션 처리 |
+| `9090` | Prometheus | `http://127.0.0.1:9090/-/ready` | 메트릭 수집 상태 |
+| `3001` | Grafana | `http://127.0.0.1:3001/api/health` | 모니터링 UI |
+| `1883` | MQTT broker | TCP only | 브라우저 확인 대상 아님 |
+
+브라우저에서 `{"error":"not found"}`가 보이면 서버가 죽은 것이 아니라,
+대부분 포트나 경로가 맞지 않은 경우입니다. 예를 들어 `8000`번의 루트는 Alert API 안내용이고,
+Public API 문서는 `http://127.0.0.1:9000/docs`에서 확인합니다.
 
 ## 지원 플랫폼
 
@@ -128,8 +128,34 @@ pip install -r requirements-face-jetson.txt
 models/
 ├── helmet_model_ver0.5.pt   # 헬멧 감지 (커스텀)
 ├── yolov8n-pose.pt          # 낙상 감지 (포즈)
-└── yolov8n.pt               # 사람 감지
+├── yolov8n.pt               # 사람 감지
+└── pphuman_attribute.onnx   # 선택: 외형 속성 분석
 ```
+
+외형 속성 분석은 기본적으로 HSV 색상 기반으로 동작합니다. PP-Human 계열 ONNX 모델을
+사용하려면 아래 환경변수를 추가합니다.
+
+```bash
+APPEARANCE_ENABLED=true
+APPEARANCE_BACKEND=pphuman
+APPEARANCE_MODEL_PATH=models/pphuman_attribute.onnx
+APPEARANCE_LABEL_MAP_PATH=config/appearance_pphuman_labels.example.json
+APPEARANCE_RUNTIME=onnxruntime
+```
+
+Jetson에서 ONNX Runtime wheel 호환 문제가 있으면 Paddle 원본 모델을 직접 지정할 수 있습니다.
+
+```bash
+pip install -r requirements-appearance-paddle.txt
+
+APPEARANCE_BACKEND=pphuman
+APPEARANCE_MODEL_PATH=models/pphuman_attribute_src/PP-LCNet_x1_0_pedestrian_attribute_infer
+APPEARANCE_LABEL_MAP_PATH=config/appearance_pphuman_labels.example.json
+APPEARANCE_RUNTIME=paddle
+```
+
+카메라 설정의 `detections`에 `appearance`를 포함하면 `YOLO person bbox → 속성 모델
+crop → SQLite appearance_log 저장/검색` 흐름으로 연결됩니다.
 
 **Jetson TensorRT 가속 (선택사항):**
 
@@ -178,6 +204,12 @@ YOLO("models/yolov8n.pt").export(format="engine", device=0)
 | `HELMET_MODEL_PATH` | 헬멧 모델 경로 | `/models/helmet.pt` |
 | `PERSON_MODEL_PATH` | 사람 모델 경로 | `/models/yolov8n.pt` |
 | `POSE_MODEL_PATH` | 포즈 모델 경로 | `/models/yolov8n-pose.pt` |
+| `APPEARANCE_ENABLED` | 외형 분석 활성화 | `true` / `false` |
+| `APPEARANCE_BACKEND` | 외형 분석 방식 | `hsv` / `pphuman` |
+| `APPEARANCE_MODEL_PATH` | 속성 모델 경로 | `models/pphuman_attribute.onnx` |
+| `APPEARANCE_LABEL_MAP_PATH` | 속성 라벨 맵 경로 | `config/appearance_pphuman_labels.example.json` |
+| `APPEARANCE_RUNTIME` | 속성 모델 런타임 | `auto` / `onnxruntime` / `paddle` |
+| `APPEARANCES_DB` | 외형 로그 SQLite 경로 | `/app/data/appearances.db` |
 | `DISPLAY_ENABLED` | 화면 출력 | `true` / `false` |
 | `MQTT_BROKER` | MQTT 브로커 호스트 | `localhost` |
 | `USE_GSTREAMER` | Jetson NVDec 하드웨어 디코딩 | `1` (Jetson 전용) |
@@ -216,18 +248,18 @@ python main.py --cameras cameras.json \
   --mqtt-topic-prefix cctv/ai/events
 
 # 2) EdgeX 어댑터 (AI 이벤트 → EdgeX Core Data)
-python run_edgex_adapter.py \
+python runners/run_edgex_adapter.py \
   --ai-mqtt-broker localhost --ai-topic-prefix cctv/ai/events \
   --edgex-metadata-url http://localhost:59881 \
   --edgex-data-url http://localhost:59880
 
 # 3) Kuiper 룰 배포 (침입 필터링 / 고신뢰 라우팅)
-python run_kuiper_rules.py \
+python runners/run_kuiper_rules.py \
   --kuiper-api http://localhost:9081 \
   --intrusion-confidence 0.7 --critical-confidence 0.9
 
 # 4) Action Layer (스피커 알람 + 외부 API + DB)
-python run_action_bridge.py \
+python runners/run_action_bridge.py \
   --mqtt-broker localhost \
   --external-api-url http://localhost:8000/api/alerts \
   --speaker-host 192.168.88.92 --speaker-port 5000 \
@@ -240,8 +272,9 @@ python run_action_bridge.py \
 
 | 파일 | 용도 |
 |------|------|
-| `docker-compose.yml` | **기본 구성** — AI 엔진이 같은 PC에서 실행될 때 사용 |
-| `docker-compose.server.yml` | **서버 모드 override** — Jetson Orin이 AI를 담당하고 Windows PC가 EdgeX 서버 역할을 할 때 기본 파일 위에 덧씌움 |
+| `docker-compose.yml` | **기본 구성** — 공개 API, Action Layer, EdgeX 계열 서비스를 같은 서버/PC에서 실행할 때 사용 |
+| `docker-compose.arm64.yml` | **ARM64 override** — Jetson/ARM64에서 기본 compose의 EdgeX 이미지를 ARM64용으로 보정할 때 사용 |
+| `docker-compose.jetson.yml` | **Jetson 구성** — Jetson에서 AI 엔진, alert-api, 내부 관리 API를 함께 실행할 때 사용 |
 
 #### 기본 실행 (Windows PC에서 모두 실행)
 
@@ -259,16 +292,47 @@ docker compose logs -f cctv-action-layer
 docker compose down
 ```
 
-#### 서버 모드 실행 (Jetson Orin + Windows PC 분리)
+Public API, Alert API, Action Layer 중심으로만 확인할 때는 필요한 서비스만 올릴 수 있습니다.
 
 ```bash
-# Windows PC (EdgeX 서버 + Action Layer)
-docker compose -f docker-compose.yml -f docker-compose.server.yml up -d --build
+docker compose up -d cctv-alert-api cctv-action-layer cctv-public-api prometheus grafana edgex-mqtt-broker
+```
 
-# Jetson Orin (AI 엔진만 실행, 이 PC의 IP를 MQTT 브로커로 지정)
+AIoT parser까지 확인할 때는 PostgreSQL 보조 서비스도 함께 올립니다.
+
+```bash
+docker compose up -d aiot-parser-db aiot-parser
+```
+
+> arm64/Jetson 계열 호스트에서 기본 `docker-compose.yml`의 일부 EdgeX 이미지는 `exec format error`가 날 수 있습니다.
+> 같은 장비에서 기본 compose 전체 스택을 올릴 때는 `docker-compose.arm64.yml`을 함께 적용하고,
+> Jetson 현장 배포는 `docker-compose.jetson.yml`을 우선 사용하세요. 자세한 운영 대응은
+> [docs/OPERATIONS_RUNBOOK.md](docs/OPERATIONS_RUNBOOK.md)를 참고하세요.
+> EdgeX UI 이미지는 이 환경에서 ARM64 manifest가 확인되지 않아 ARM64 override 기본 실행에서 제외됩니다.
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.arm64.yml up -d
+```
+
+배포 전 런타임 전제 조건은 아래 명령으로 미리 확인할 수 있습니다.
+
+```bash
+.venv/bin/python scripts/check_compose_runtime_assumptions.py --json
+```
+
+#### Jetson 분리 실행 (Jetson Orin + 서버/PC 분리)
+
+```bash
+# 서버/PC (공개 API + Action Layer + EdgeX)
+docker compose -f docker-compose.yml up -d --build
+
+# Jetson Orin (AI 엔진 계열 컨테이너 실행)
+docker compose -f docker-compose.jetson.yml up -d --build
+
+# 또는 Jetson에서 단일 프로세스로 AI 엔진 실행 시
 USE_GSTREAMER=1 DEVICE=cuda:0 python main.py \
   --cameras cameras.json \
-  --mqtt-broker <Windows_PC_IP> \   # ipconfig 로 확인 (예: 192.168.0.10)
+  --mqtt-broker <SERVER_IP> \
   --mqtt-port 1883 \
   --mqtt-topic-prefix cctv/ai/events
 ```
@@ -326,16 +390,31 @@ docker compose restart cctv-action-layer
 ## 공개 API
 
 공개 API는 `runners/run_public_api.py`로 실행합니다.
+인증, 요청/응답 예시, 대시보드 연동 기준은
+[docs/PUBLIC_API_GUIDE.md](docs/PUBLIC_API_GUIDE.md)에 정리되어 있습니다.
+바로 호출해볼 `curl` 예시는 [docs/PUBLIC_API_EXAMPLES.md](docs/PUBLIC_API_EXAMPLES.md)를 참고하세요.
 
 ```bash
 python runners/run_public_api.py --host 0.0.0.0 --port 9000
 ```
 
+내부 관리 API는 AI 엔진 프로세스 또는 Jetson compose에서 함께 뜹니다.
+
+- Zone API: 위험구역 조회/수정
+- Camera Model API: 카메라별 모델 on/off
+- Face API: 등록 얼굴 관리
+- Stream API: MJPEG 스트림
+
+운영 환경에서는 `INTERNAL_SERVICE_TOKEN`을 설정해 내부 관리 API를 보호하는 것을 권장합니다.
+
 주요 엔드포인트:
 
 - `GET /api/v1/health`
+- `GET /api/v1/readiness`
 - `GET /api/v1/events`
 - `GET /api/v1/cameras`
+- `GET /api/v1/search`
+- `GET /api/v1/appearances/status`
 - `GET/POST/DELETE /api/v1/sites`
 - `GET/POST /api/v1/control/*`
 
@@ -343,6 +422,25 @@ python runners/run_public_api.py --host 0.0.0.0 --port 9000
 
 - 성공/실패 응답은 `{ success, data, error, timestamp }`
 - 목록 조회는 페이지네이션 응답에서 `{ success, items, total, limit, offset, timestamp }`
+- `/api/v1/health`는 Public API 프로세스 자체 상태, `/api/v1/readiness`는 Action Layer와 Alert API 연결까지 확인합니다.
+
+외형 검색 상태 API:
+
+- `GET /api/v1/appearances/status`
+- 대시보드에서 `enabled`, `ready`, `warnings`, `next_steps`를 기준으로 필터 활성/비활성 및 운영 진단을 표시할 때 사용
+- 상세 계약 문서: [docs/APPEARANCES_STATUS_API.md](docs/APPEARANCES_STATUS_API.md)
+
+카메라 / 사이트 / 제어 API 해석 기준:
+
+- `GET /api/v1/cameras`
+  - `url`은 자격증명을 제거한 값만 내려갑니다.
+  - `zones`는 `cameras.json` 기준 구역 설정입니다.
+- `GET /api/v1/sites`
+  - `camera_ids`, `control_mode`, `alarm_devices`를 함께 반환합니다.
+  - 사이트 제어 기준 화면에서는 이 응답을 기준 source of truth로 쓰는 것을 권장합니다.
+- `GET /api/v1/control/pending`
+  - 현재는 Action Layer 원본 payload를 거의 그대로 전달합니다.
+  - 프론트에서는 `event_id`, `camera_id`, `type`, `timestamp` 존재 여부를 우선적으로 방어적으로 처리하는 것을 권장합니다.
 
 ## 테스트
 
@@ -427,9 +525,9 @@ edgex/events/device/cctv-device-service/CCTV-Camera-Profile/{device}/{resource}
 
 ### `src/core/ai/analyzer.py` — 다중 모델 AI 추론
 
-- **사람 모델** (YOLOv8s): 800px 입력, `person_confidence=0.4`
+- **사람 모델** (YOLOv8n fallback): 640px 입력, `person_confidence=0.4`
 - **포즈 모델** (YOLOv8n-pose): 낙상 감지, 어깨-엉덩이 각도 분석
-- **헬멧 모델** (커스텀): 640px, `helmet_confidence=0.7`
+- **헬멧 모델** (커스텀): 320px, `helmet_confidence=0.7`
 - `track(persist=True)`로 프레임 간 객체 ID 유지
 - IoU 기반 중복 박스 제거
 
@@ -505,6 +603,31 @@ collected_data/
 yolo train model=yolov8n.pt data=data.yaml epochs=100 imgsz=640
 cp runs/detect/train/weights/best.pt models/helmet_model_ver0.5.pt
 ```
+
+## 모델 평가
+
+모델 교체 전에는 `models/model_manifest.json`의 기준과 고정 평가 데이터셋으로
+precision/recall/latency를 확인합니다.
+
+먼저 manifest에 기록된 모델 파일이 실제로 존재하는지 확인합니다.
+
+```bash
+python scripts/check_model_report.py --check-artifacts
+```
+
+```bash
+python scripts/evaluate_detection.py \
+  --model models/helmet_model_ver0.5.onnx \
+  --dataset data/eval/helmet \
+  --output reports/eval/helmet_model_ver0.5.json \
+  --imgsz 320 \
+  --conf 0.35 \
+  --iou 0.5 \
+  --warmup 1 \
+  --target-classes helmet,head
+```
+
+상세 절차는 `docs/MLOPS_MODEL_EVALUATION.md`를 참고하세요.
 
 ## 문제 해결
 

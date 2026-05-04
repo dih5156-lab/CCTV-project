@@ -313,6 +313,29 @@ class TestPPHumanBackend:
         attrs = backend.predict(AttributeCrop(frame=frame, x=0, y=0, width=32, height=64))
         assert attrs["has_backpack"] is True
 
+    def test_auto_runtime_uses_paddle_for_inference_json_directory(self, tmp_path):
+        model_dir = tmp_path / "pphuman"
+        model_dir.mkdir()
+        (model_dir / "inference.json").write_text("{}", encoding="utf-8")
+
+        backend = PPHumanAttributeBackend(
+            predictor=lambda crop: {},
+            runtime="auto",
+        )
+
+        assert backend._should_use_paddle(model_dir) is True
+
+    def test_input_shape_hint_updates_preprocess_size(self):
+        backend = PPHumanAttributeBackend(predictor=lambda crop: {})
+        backend._set_input_shape_hint([None, 3, 256, 192])
+        frame = np.zeros((300, 200, 3), dtype=np.uint8)
+
+        tensor = backend._preprocess(
+            AttributeCrop(frame=frame, x=0, y=0, width=200, height=300)
+        )
+
+        assert tensor.shape == (1, 3, 256, 192)
+
 
 # ── 조건 매칭 테스트 ─────────────────────────────────────────────────
 
@@ -510,6 +533,38 @@ class TestHelmetAttributes:
         assert attrs["has_helmet"] is False
         assert attrs["helmet_color"] == "unknown"
 
+    def test_helmet_evidence_from_event_type(self, analyzer):
+        frame = np.zeros((200, 100, 3), dtype=np.uint8)
+        head_h = int(200 * 0.15)
+        frame[:head_h, :] = (0, 0, 255)
+        frame[head_h:, :] = (255, 255, 255)
+        attrs = analyzer.extract_attributes(
+            frame,
+            0,
+            0,
+            100,
+            200,
+            nearby_objects=[{"event_type": "helmet", "x": 20, "y": 0, "width": 60, "height": 25}],
+        )
+        assert attrs["has_helmet"] is True
+        assert attrs["helmet_color"] == "red"
+
+    def test_far_helmet_does_not_mark_person_as_wearing(self, analyzer):
+        frame = np.zeros((200, 100, 3), dtype=np.uint8)
+        head_h = int(200 * 0.15)
+        frame[:head_h, :] = (0, 0, 255)
+        frame[head_h:, :] = (255, 255, 255)
+        attrs = analyzer.extract_attributes(
+            frame,
+            0,
+            0,
+            100,
+            200,
+            nearby_objects=[{"class_name": "helmet", "x": 220, "y": 120, "width": 40, "height": 20}],
+        )
+        assert attrs["has_helmet"] is False
+        assert attrs["helmet_color"] == "unknown"
+
     def test_helmet_color_condition_match(self, analyzer):
         attrs = {"upper_color": "white", "lower_color": "black", "has_helmet": True, "helmet_color": "red"}
         cond = {"helmet_color": "red"}
@@ -574,6 +629,21 @@ class TestBagDetection:
         assert result["has_backpack"] is True
         assert result["has_handbag"] is True
         assert result["has_suitcase"] is False
+
+    def test_bag_detected_from_event_type(self):
+        nearby = [{"event_type": "backpack", "x": 50, "y": 50, "width": 30, "height": 30}]
+        result = AppearanceAnalyzer._detect_bags(50, 50, 60, 150, nearby)
+        assert result["has_backpack"] is True
+
+    def test_bag_detected_from_alias_label(self):
+        nearby = [{"class_name": "back_pack", "x": 50, "y": 50, "width": 30, "height": 30}]
+        result = AppearanceAnalyzer._detect_bags(50, 50, 60, 150, nearby)
+        assert result["has_backpack"] is True
+
+    def test_suitcase_detected_from_luggage_alias(self):
+        nearby = [{"event_type": "luggage", "x": 60, "y": 160, "width": 40, "height": 40}]
+        result = AppearanceAnalyzer._detect_bags(50, 50, 60, 150, nearby)
+        assert result["has_suitcase"] is True
 
     def test_bag_condition_match(self):
         analyzer = AppearanceAnalyzer()

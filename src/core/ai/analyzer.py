@@ -25,7 +25,6 @@ import numpy as np
 
 from ..events import EventType, DetectionEvent
 from ...utils.geometry import is_helmet_worn, boxes_overlap
-from ...utils.face_recognition import FaceRecognitionEngine
 from ._constants import (
     _MODEL_IMGSZ, _IMGSZ_LOCK,
     DEFAULT_IMAGE_SIZE_HELMET, DEFAULT_IMAGE_SIZE_POSE, DEFAULT_IOU_THRESHOLD,
@@ -33,16 +32,17 @@ from ._constants import (
     DUPLICATE_IOU_THRESHOLD, PERSON_DUPLICATE_IOU_THRESHOLD,
     HEAD_REGION_RATIO, MIN_PERSON_WIDTH, MIN_PERSON_HEIGHT,
     MIN_KEYPOINT_CONFIDENCE, SHOULDER_TOP_MIN_RATIO,
-    _FACE_TRACK_COOLDOWN_SEC,
 )
 from ._yolo_helpers import (
     extract_bbox, extract_confidence, extract_keypoints, extract_track_id,
-    detect_engine_imgsz, age_to_group, generate_temp_id,
+    detect_engine_imgsz, generate_temp_id,
 )
 from ._object_tracker import ObjectTracker
 from ._fall_detector import FallDetector
 from ._appearance_analyzer import AppearanceAnalyzer, BAG_CLASSES
 from ._appearance_pipeline import AppearancePipeline
+from ._face_recognition_pipeline import FaceRecognitionPipeline
+from ._object_detection_pipeline import ObjectDetectionPipeline
 
 logger = logging.getLogger(__name__)
 
@@ -125,12 +125,13 @@ class AIAnalyzer:
         self.last_load_errors: List[Tuple[str, str]] = []
         self._person_warning_shown  = False
         self._helmet_warning_shown  = False
-        self._face_identity_cache:  Dict[int, Dict] = {}
+        self._last_bag_objects: List[Dict] = []
 
         # 전담 컴포넌트
         self._tracker      = ObjectTracker()
         self._fall         = FallDetector(fall_height_ratio)
-        self.face_recognizer = FaceRecognitionEngine(device=self.device)
+        self._face_recognizer = None
+        self._face_pipeline = FaceRecognitionPipeline(lambda: self.face_recognizer)
         self._appearance   = AppearanceAnalyzer(
             backend_name=appearance_backend,
             backend_model_path=appearance_model_path,
@@ -141,13 +142,30 @@ class AIAnalyzer:
             backend_score_threshold=appearance_score_threshold,
             bbox_expand_ratio=appearance_bbox_expand_ratio,
         )
-        self._crop_dir = Path("data/crops")
-        self._appearance_pipeline = AppearancePipeline(self._appearance, self._crop_dir)
+        self._crop_dir = Path(
+            os.environ.get("APPEARANCE_CROP_DIR", "data/appearance_crops")
+        )
+        self._appearance_pipeline = AppearancePipeline(
+            self._appearance,
+            self._crop_dir,
+            save_crops=os.environ.get("APPEARANCE_SAVE_CROPS", "").strip().lower()
+            in {"1", "true", "yes", "on"},
+        )
+        self._object_pipeline = ObjectDetectionPipeline(self)
 
         if YOLO is None:
             raise ImportError("ultralytics 패키지가 필요합니다 (`pip install ultralytics`)")
 
         self.load_models()
+
+    @property
+    def face_recognizer(self):
+        """얼굴 인식 엔진은 실제 사용 시점에 초기화한다."""
+        if self._face_recognizer is None:
+            from ...utils.face_recognition import FaceRecognitionEngine
+
+            self._face_recognizer = FaceRecognitionEngine(device=self.device)
+        return self._face_recognizer
 
     # ── 모델 관리 ─────────────────────────────────────────────────────
 
@@ -582,66 +600,7 @@ class AIAnalyzer:
         person_events: List[DetectionEvent],
     ) -> List[DetectionEvent]:
         """사람 ROI 상단에서 얼굴 검출/인식을 수행한다."""
-        if frame is None or not person_events or not self.face_recognizer.enabled:
-            return []
-
-        face_events: List[DetectionEvent] = []
-        now = time.time()
-
-        for person in person_events:
-            object_id = person.object_id
-            if object_id is None:
-                continue
-
-            cached = self._face_identity_cache.get(object_id)
-            if cached and now - float(cached.get("timestamp", 0.0)) < _FACE_TRACK_COOLDOWN_SEC:
-                if cached.get("event") is not None:
-                    face_events.append(cached["event"])
-                continue
-
-            results = self.face_recognizer.detect_and_recognize(
-                frame,
-                {"x": person.x, "y": person.y, "width": person.width, "height": person.height},
-            )
-            if not results:
-                self._face_identity_cache.pop(object_id, None)
-                continue
-
-            best = max(results, key=lambda item: item.confidence)
-            event_type = EventType.FACE_RECOGNIZED if best.matched else EventType.FACE_UNKNOWN
-            face_meta: Dict[str, object] = {
-                "person_object_id": object_id,
-                "face_name":        best.label,
-                "face_score":       round(best.confidence, 4),
-                "recognizer":       self.face_recognizer.backend_name,
-            }
-            if best.age is not None:
-                face_meta["age"]       = round(best.age, 1)
-                face_meta["age_group"] = age_to_group(best.age)
-            if best.gender is not None:
-                face_meta["gender"] = best.gender
-
-            event = DetectionEvent(
-                event_type=event_type,
-                x=best.bbox["x"], y=best.bbox["y"],
-                width=best.bbox["width"], height=best.bbox["height"],
-                confidence=best.confidence,
-                timestamp=now,
-                object_id=object_id,
-                metadata=face_meta,
-            )
-            face_events.append(event)
-            self._face_identity_cache[object_id] = {"timestamp": now, "event": event}
-
-        # 오래된 캐시 항목 정리
-        stale_ids = [
-            oid for oid, item in self._face_identity_cache.items()
-            if now - float(item.get("timestamp", 0.0)) > (_FACE_TRACK_COOLDOWN_SEC * 5)
-        ]
-        for oid in stale_ids:
-            self._face_identity_cache.pop(oid, None)
-
-        return face_events
+        return self._face_pipeline.run(frame, person_events)
 
     # ── 외형 로그 DB / 크롭 ──────────────────────────────────────────
 
@@ -693,11 +652,13 @@ class AIAnalyzer:
                 continue
             nearby.append({
                 "class_name": str(event.class_name or event.event_type.value).lower(),
+                "event_type": event.event_type.value,
                 "x": event.x,
                 "y": event.y,
                 "width": event.width,
                 "height": event.height,
                 "confidence": event.confidence,
+                "metadata": dict(event.metadata or {}),
             })
         return nearby
 
@@ -757,33 +718,15 @@ class AIAnalyzer:
         우선순위: 낙상(최우선) → 사람 → 얼굴 → 헬멧
         낙상이 감지된 사람은 헬멧 탐지 대상에서 제외한다.
         """
-        if frame is None or not isinstance(frame, np.ndarray):
-            return []
-
-        person_events, fall_events = self._detect_primary_people(
-            frame, use_pose=use_pose, use_person=use_person
-        )
-        helmet_events = self._detect_helmet_events(
-            frame, person_events, fall_events, use_helmet=use_helmet
-        )
-        face_events = (
-            self._run_face_recognition(frame, person_events)
-            if use_face and person_events
-            else []
-        )
-        appearance_events = self._run_appearance_pipeline(
+        return self._object_pipeline.run(
             frame,
-            person_events,
-            face_events,
-            camera_id=camera_id,
+            use_helmet=use_helmet,
+            use_pose=use_pose,
+            use_person=use_person,
+            use_face=use_face,
             use_appearance=use_appearance,
-            nearby_objects=self._build_appearance_nearby_objects(
-                getattr(self, "_last_bag_objects", []),
-                helmet_events,
-            ),
+            camera_id=camera_id,
         )
-
-        return fall_events + person_events + face_events + helmet_events + appearance_events
 
     def _detect_primary_people(
         self,
@@ -793,29 +736,11 @@ class AIAnalyzer:
         use_person: bool,
     ) -> Tuple[List[DetectionEvent], List[DetectionEvent]]:
         """사람/낙상 기본 감지를 수행한다."""
-        person_events: List[DetectionEvent] = []
-        fall_events: List[DetectionEvent] = []
-
-        if use_pose and self.pose_model:
-            person_events, fall_events = self._run_pose_full_frame(frame)
-            logger.debug(
-                "포즈 모델(전체 프레임): 사람 %d명, 낙상 %d건",
-                len(person_events), len(fall_events),
-            )
-            return person_events, fall_events
-
-        if use_person:
-            if self.person_model:
-                self._last_bag_objects = []
-                person_events = self._run_single_model(
-                    self.person_model, frame, model_type="person"
-                )
-                logger.debug("사람 모델(폴백): %d 감지됨", len(person_events))
-            elif not self._person_warning_shown:
-                logger.warning("포즈 모델과 사람 모델이 모두 없어 사람 감지가 불가합니다.")
-                self._person_warning_shown = True
-
-        return person_events, fall_events
+        return self._object_pipeline.detect_primary_people(
+            frame,
+            use_pose=use_pose,
+            use_person=use_person,
+        )
 
     def _detect_helmet_events(
         self,
@@ -826,54 +751,18 @@ class AIAnalyzer:
         use_helmet: bool,
     ) -> List[DetectionEvent]:
         """사람 감지 결과를 기반으로 헬멧 이벤트를 생성한다."""
-        if not use_helmet:
-            return []
-
-        if not self.helmet_model:
-            if not self._helmet_warning_shown:
-                logger.warning("헬멧 모델이 로드되지 않았습니다.")
-                self._helmet_warning_shown = True
-            return []
-
-        if not person_events:
-            return []
-
-        fallen_ids = {event.object_id for event in fall_events}
-        standing_people = [
-            person for person in person_events if person.object_id not in fallen_ids
-        ]
-        if fallen_ids:
-            logger.debug("낙상자 %d명 헬멧 탐지 제외", len(fallen_ids))
-        if not standing_people:
-            return []
-
-        raw_events = self._run_helmet_on_person_rois(frame, standing_people)
-        logger.debug(
-            "헬멧 모델: %d 감지됨 (threshold=%s)",
-            len(raw_events),
-            getattr(self, "helmet_threshold", self.confidence_threshold),
+        return self._object_pipeline.detect_helmet_events(
+            frame,
+            person_events,
+            fall_events,
+            use_helmet=use_helmet,
         )
-        return self._filter_helmet_boxes(raw_events)
 
     def _build_face_meta_map(
         self, face_events: List[DetectionEvent]
     ) -> Dict[int, Dict]:
         """얼굴 이벤트 메타데이터를 track_id 기준으로 정리한다."""
         return self._appearance_pipeline._build_face_meta_map(face_events)
-
-    def _log_person_appearance(
-        self,
-        frame: np.ndarray,
-        person: DetectionEvent,
-        now: float,
-        camera_id: str,
-        bag_objects: List[Dict],
-        face_meta: Dict,
-    ) -> None:
-        """외형 속성을 추출하고 로그/DB/crop 저장까지 처리한다."""
-        self._appearance_pipeline._log_person_appearance(
-            frame, person, now, camera_id, bag_objects, face_meta
-        )
 
     def _run_appearance_pipeline(
         self,

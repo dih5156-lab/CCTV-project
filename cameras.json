@@ -8,13 +8,16 @@
     "detections": [
       "fall",
       "person",
-      "face"
+      "helmet",
+      "face",
+      "appearance"
     ],
     "model_settings": {
-      "use_helmet": false,
+      "use_helmet": true,
       "use_pose": true,
       "use_person": false,
-      "use_face": true
+      "use_face": true,
+      "use_appearance": true
     },
     "model_paths": {
       "helmet": "models/helmet_model_ver0.5.pt",
@@ -42,7 +45,7 @@
     "name": "웹캠",
     "source": 0,
     "location": "로컬",
-    "enabled": true,
+    "enabled": false,
     "detections": [
       "fall",
       "person",

@@ -180,6 +180,46 @@ def detect_engine_imgsz(model, fallback: int) -> int:
     return fallback
 
 
+def has_dynamic_input_shape(model) -> bool:
+    """TensorRT 엔진이 입력 H/W dynamic profile을 갖는지 확인한다."""
+    if model is None:
+        return False
+
+    engine = getattr(getattr(model, "model", None), "engine", None)
+    if engine is None:
+        return False
+
+    try:
+        import tensorrt as trt  # type: ignore
+
+        num_io_tensors = int(getattr(engine, "num_io_tensors", 0) or 0)
+        for idx in range(num_io_tensors):
+            name = engine.get_tensor_name(idx)
+            mode = engine.get_tensor_mode(name)
+            if mode != trt.TensorIOMode.INPUT:
+                continue
+            shape = tuple(int(dim) for dim in engine.get_tensor_shape(name))
+            if any(dim < 0 for dim in shape):
+                logger.info("동적 TRT 입력 shape 감지: %s=%s", name, shape)
+                return True
+    except Exception:
+        pass
+
+    try:
+        num_bindings = int(getattr(engine, "num_bindings", 0) or 0)
+        for idx in range(num_bindings):
+            if hasattr(engine, "binding_is_input") and not engine.binding_is_input(idx):
+                continue
+            shape = tuple(int(dim) for dim in engine.get_binding_shape(idx))
+            if any(dim < 0 for dim in shape):
+                logger.info("동적 TRT binding shape 감지: binding[%d]=%s", idx, shape)
+                return True
+    except Exception:
+        pass
+
+    return False
+
+
 # ── 기타 헬퍼 ────────────────────────────────────────────────────────
 
 

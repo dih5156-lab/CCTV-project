@@ -10,6 +10,7 @@ from __future__ import annotations
 import base64
 import json
 import logging
+import os
 import re
 import uuid
 from dataclasses import dataclass
@@ -20,11 +21,6 @@ import cv2
 import numpy as np
 
 logger = logging.getLogger(__name__)
-
-try:
-    from insightface.app import FaceAnalysis
-except Exception:
-    FaceAnalysis = None
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 _DEFAULT_FACE_GALLERY = _PROJECT_ROOT / "known_faces.json"
@@ -295,8 +291,17 @@ class FaceRecognitionEngine:
         return results
 
     def _load_insightface(self):
-        if FaceAnalysis is None:
+        backend = os.environ.get("FACE_RECOGNITION_BACKEND", "auto").strip().lower()
+        if backend in {"opencv", "haar", "disabled", "none", "off"}:
+            logger.info("InsightFace 비활성화됨 (FACE_RECOGNITION_BACKEND=%s)", backend)
             return None
+
+        try:
+            from insightface.app import FaceAnalysis
+        except Exception as exc:
+            logger.info("InsightFace 사용 불가, OpenCV 폴백 사용: %s", exc)
+            return None
+
         try:
             app = FaceAnalysis(name="buffalo_l")
             app.prepare(ctx_id=self._ctx_id, det_size=self._det_size)

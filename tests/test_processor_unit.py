@@ -219,6 +219,56 @@ class TestParseDetections:
         flags = VideoProcessor._parse_detections(["fall", "helmet"])
         assert flags == {"use_helmet": True, "use_pose": True, "use_person": False, "use_face": False, "use_appearance": False}
 
+
+class TestCameraStatusContract:
+    def test_get_camera_status_uses_common_fields(self, minimal_processor):
+        cam = _camera_mock()
+        cam.connected = True
+        cam.reconnect_attempts = 2
+        cam.last_frame_time = time.time() - 0.5
+        cam.source = "rtsp://example.com/stream"
+
+        minimal_processor._cams.register("cam1", cam)
+
+        status = minimal_processor.get_camera_status()
+
+        assert "cam1" in status
+        entry = status["cam1"]
+        assert {
+            "status",
+            "connected",
+            "source",
+            "reconnect_attempts",
+            "last_frame_time",
+            "last_frame_age_sec",
+        } <= set(entry.keys())
+        assert entry["status"] == "online"
+        assert entry["connected"] is True
+        assert entry["source"] == "rtsp://example.com/stream"
+
+
+class TestProcessorStatsContract:
+    def test_get_stats_uses_common_fields(self, minimal_processor):
+        stats = minimal_processor.get_stats()
+
+        assert {
+            "backend",
+            "camera_count",
+            "frames_processed",
+            "frames_dropped",
+            "events_detected",
+            "events_sent",
+            "events_filtered",
+            "events_dropped",
+            "events_failed",
+            "inference_errors",
+            "camera_errors",
+            "fps",
+            "uptime_seconds",
+            "avg_inference_ms",
+        } <= set(stats.keys())
+        assert stats["backend"] == "video"
+
     def test_case_insensitive(self):
         flags = VideoProcessor._parse_detections(["FALL", "HELMET"])
         assert flags["use_pose"] is True

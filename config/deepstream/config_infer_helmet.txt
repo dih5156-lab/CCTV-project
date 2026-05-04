@@ -1,0 +1,45 @@
+# =============================================================================
+# nvinfer TensorRT helmet/head 탐지 설정 (Jetson Orin / DeepStream)
+# helmet_model_ver0.5.engine 클래스: 0=helmet, 1=head
+# YOLOv8 raw tensor는 output-tensor-meta를 Python pad-probe에서 직접 파싱한다.
+# =============================================================================
+
+[property]
+gpu-id=0
+gie-unique-id=2
+net-scale-factor=0.0039215697906911373
+model-engine-file=/app/models/helmet_model_ver0.5.engine
+labelfile-path=/app/config/deepstream/labels_helmet.txt
+model-color-format=0
+batch-size=8
+
+# 100=Other. bbox parser 대신 Python tensor parser 사용.
+network-type=100
+num-detected-classes=2
+output-blob-names=output
+infer-dims=3;640;640
+workspace-size=1024
+maintain-aspect-ratio=1
+symmetric-padding=1
+output-tensor-meta=1
+
+# 현재는 full-frame 추가 inference로 실행한다.
+# 이후 person ROI 안에서만 helmet/head를 보려면 process-mode=2 + operate-on-gie-id=1로 전환 가능.
+process-mode=1
+
+[class-attrs-all]
+pre-cluster-threshold=0.30
+roi-top-offset=0
+roi-bottom-offset=0
+detected-min-w=8
+detected-min-h=8
+detected-max-w=3840
+detected-max-h=2160
+
+[class-attrs-0]
+# helmet
+pre-cluster-threshold=0.35
+
+[class-attrs-1]
+# head / no-helmet candidate
+pre-cluster-threshold=0.35

@@ -13,9 +13,10 @@
 [property]
 # ---------- 엔진 ----------
 gpu-id=0
-net-scale-factor=0.0039215697906911373          # 1/255 (정규화)
-model-engine-file=models/deepstream/yolov8_fp16.engine
-labelfile-path=config/deepstream/labels.txt
+gie-unique-id=1
+net-scale-factor=0.0039215697906911373
+model-engine-file=/app/models/yolov8n-pose.engine
+labelfile-path=/app/config/deepstream/labels.txt
 
 # ---------- 파서 ----------
 # custom-lib-path=libs/libnvdsinfer_custom_impl_Yolo.so
@@ -30,30 +31,28 @@ model-color-format=0
 # _build_pipeline() 에서 nvinfer.set_property("batch-size", len(self._cameras)) 로 동적 설정됨
 batch-size=8
 
-# 네트워크 유형: 0=Detector, 1=Classifier, 2=Segmentation
-network-type=0
+# 네트워크 유형: 0=Detector, 1=Classifier, 2=Segmentation, 100=Other
+# YOLOv8 raw tensor는 DeepStream 기본 bbox parser가 해석하지 못하므로
+# output-tensor-meta를 Python pad-probe에서 직접 파싱한다.
+network-type=100
 
-# 클래스 수 (labels.txt 줄 수와 일치)
-num-detected-classes=3
+# yolov8n-pose 기준 클래스 수: 0=person
+num-detected-classes=1
+output-blob-names=output
 
 # ---------- 네트워크 입력 크기 ----------
 # 형식: C;H;W (C=채널 수)
-network-input-shape=3;640;640
 infer-dims=3;640;640
 
 # ---------- 임계값 ----------
-# 객체 감지 신뢰도 임계값 (0.0 ~ 1.0)
-threshold=0.30
-
-# Non-Maximum Suppression IoU 임계값
-nms-iou-threshold=0.45
+# 객체 감지 신뢰도 임계값은 [class-attrs-*] 의 pre-cluster-threshold 사용
 
 # ---------- TRT 빌드 파라미터 ----------
 # 메모리 절약을 위해 fp16 권장 (Jetson Orin)
 # 0=FP32, 1=INT8, 2=FP16
 # net-type가 detector일 때 int8 사용 시 calibration cache 필요
-workspace-size=1024                             # MiB (TRT 빌드 시 작업 공간)
-tlt-model-key=                                  # TAO toolkit 모델만 필요
+workspace-size=1024
+tlt-model-key=
 
 # ---------- 전처리 ----------
 # maintain-aspect-ratio=1 : letterbox 패딩 적용
@@ -62,12 +61,12 @@ symmetric-padding=1
 
 # ---------- 출력 ----------
 # 1=사용, 0=미사용
-output-tensor-meta=1                            # 커스텀 파서 사용 시 필요
+output-tensor-meta=1
 
 
 [class-attrs-all]
 # 전체 클래스 공통 임계값 (개별 클래스 설정이 우선)
-threshold=0.30
+pre-cluster-threshold=0.30
 roi-top-offset=0
 roi-bottom-offset=0
 detected-min-w=10
@@ -81,12 +80,4 @@ detected-max-h=2160
 
 [class-attrs-0]
 # Person: 0
-threshold=0.30
-
-[class-attrs-1]
-# Helmet: 1
-threshold=0.40
-
-[class-attrs-2]
-# Hardhat-off: 2  (미착용 → 경보)
-threshold=0.35
+pre-cluster-threshold=0.35

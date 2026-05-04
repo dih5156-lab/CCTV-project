@@ -28,6 +28,7 @@ VideoProcessor (현재 파이프라인) 와 DeepStreamProcessor (Jetson 전용) 
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+import time
 from typing import Any, Dict, List, Optional, Union
 
 from ..config import AppConfig
@@ -139,3 +140,79 @@ class BaseProcessor(ABC):
         cameras_json_path: str = "cameras.json",
     ) -> bool:
         return False
+
+    # ------------------------------------------------------------------
+    # 공통 상태 응답 헬퍼
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _build_camera_status_entry(
+        *,
+        connected: bool,
+        source: Optional[Union[str, int]] = None,
+        reconnect_attempts: int = 0,
+        last_frame_time: Optional[float] = None,
+        status: Optional[str] = None,
+        **extra: Any,
+    ) -> Dict[str, Any]:
+        """프로세서 구현체 공통 카메라 상태 payload를 생성한다."""
+        if status is None:
+            if connected:
+                status = "online"
+            elif reconnect_attempts > 0:
+                status = "reconnecting"
+            else:
+                status = "offline"
+
+        now = time.time()
+        payload: Dict[str, Any] = {
+            "status": status,
+            "connected": connected,
+            "source": source,
+            "reconnect_attempts": reconnect_attempts,
+            "last_frame_time": last_frame_time,
+            "last_frame_age_sec": round(now - last_frame_time, 1)
+            if last_frame_time
+            else None,
+        }
+        payload.update(extra)
+        return payload
+
+    @staticmethod
+    def _build_stats_payload(
+        *,
+        backend: str,
+        camera_count: int,
+        frames_processed: int = 0,
+        frames_dropped: int = 0,
+        events_detected: int = 0,
+        events_sent: int = 0,
+        events_filtered: int = 0,
+        events_dropped: int = 0,
+        events_failed: int = 0,
+        inference_errors: int = 0,
+        camera_errors: int = 0,
+        fps: float = 0.0,
+        uptime_seconds: float = 0.0,
+        avg_inference_ms: float = 0.0,
+        **extra: Any,
+    ) -> Dict[str, Any]:
+        """프로세서 구현체 공통 통계 payload를 생성한다."""
+        payload: Dict[str, Any] = {
+            "backend": backend,
+            "camera_count": camera_count,
+            "frames_processed": frames_processed,
+            "frames_dropped": frames_dropped,
+            "events_detected": events_detected,
+            "events_sent": events_sent,
+            "events_filtered": events_filtered,
+            "events_dropped": events_dropped,
+            "events_failed": events_failed,
+            "inference_errors": inference_errors,
+            "camera_errors": camera_errors,
+            "fps": fps,
+            "uptime_seconds": uptime_seconds,
+            "avg_inference_ms": avg_inference_ms,
+        }
+        payload.update(extra)
+        return payload

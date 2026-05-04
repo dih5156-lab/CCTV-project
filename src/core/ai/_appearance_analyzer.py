@@ -25,6 +25,7 @@ from typing import Dict, List, Optional, Tuple
 import cv2
 import numpy as np
 
+from ...utils.geometry import is_helmet_worn
 from ._attribute_backend import AttributeCrop, AttributeBackend
 from ._attribute_backends import build_attribute_backend
 
@@ -68,12 +69,22 @@ _MIN_FULL_BODY_COVERAGE_RATIO = 0.75
 _MIN_UPPER_BODY_COVERAGE_RATIO = 0.35
 _MIN_COLOR_DOMINANCE_RATIO = 0.20
 _MIN_HELMET_COLOR_DOMINANCE_RATIO = 0.45
+_HELMET_HEAD_RATIO = 0.22
+_HELMET_IOU_THRESHOLD = 0.02
+_HELMET_OVERLAP_THRESHOLD = 0.10
 
 # YOLO COCO 클래스 매핑 — 가방/소지품
 BAG_CLASSES: Dict[str, str] = {
     "backpack": "has_backpack",
+    "back_pack": "has_backpack",
+    "rucksack": "has_backpack",
     "handbag":  "has_handbag",
+    "hand_bag": "has_handbag",
+    "purse": "has_handbag",
     "suitcase": "has_suitcase",
+    "luggage": "has_suitcase",
+    "travel_bag": "has_suitcase",
+    "carry_on": "has_suitcase",
 }
 HELMET_CLASSES = {"helmet", "helmet_wearing", "hardhat"}
 
@@ -124,6 +135,11 @@ class AppearanceAnalyzer:
     def conditions(self) -> List[Dict]:
         """등록된 외형 조건 목록."""
         return list(self._conditions)
+
+    @property
+    def backend_name(self) -> str:
+        """현재 외형 속성 백엔드 이름."""
+        return str(getattr(self._backend, "backend_name", "unknown"))
 
     def set_conditions(self, conditions: List[Dict]) -> None:
         """외형 조건을 교체한다 (API에서 호출)."""
@@ -220,6 +236,7 @@ class AppearanceAnalyzer:
                 "has_helmet": False,
                 "helmet_color": "unknown",
                 "has_backpack": False, "has_handbag": False, "has_suitcase": False,
+                "attribute_backend": self.backend_name,
             }
 
         crop = frame[y1:y2, x1:x2]
@@ -258,7 +275,7 @@ class AppearanceAnalyzer:
 
         # 소지품 판별
         bag_attrs = self._detect_bags(x, y, width, height, nearby_objects)
-        has_helmet = self._has_helmet_evidence(nearby_objects)
+        has_helmet = self._has_helmet_evidence(x, y, width, height, nearby_objects)
 
         attrs = {
             "upper_color": self._dominant_color(upper) if visibility["upper_visible"] else "unknown",
@@ -304,17 +321,17 @@ class AppearanceAnalyzer:
         height: int,
     ) -> Dict[str, object]:
         """추가 속성 모델 결과를 현재 속성과 병합한다."""
+        merged = dict(attrs)
+        merged["attribute_backend"] = self.backend_name
         backend_attrs = self._backend.predict(
             AttributeCrop(frame=frame, **self._expand_bbox(x, y, width, height))
         )
         if not backend_attrs:
-            return attrs
-        merged = dict(attrs)
+            return merged
         for key, value in backend_attrs.items():
             if value in (None, "", "unknown"):
                 continue
             merged[key] = value
-        merged["attribute_backend"] = getattr(self._backend, "backend_name", "unknown")
         return merged
 
     def _estimate_region_visibility(
@@ -500,15 +517,60 @@ class AppearanceAnalyzer:
         return upper, lower
 
     @staticmethod
-    def _has_helmet_evidence(nearby_objects: Optional[List[Dict]]) -> bool:
-        """주변 객체 정보에 헬멧 근거가 있을 때만 True."""
+    def _normalized_object_labels(obj: Dict) -> List[str]:
+        """주변 객체 딕셔너리에서 판별 가능한 라벨 후보를 정규화한다."""
+        labels: List[str] = []
+        metadata = obj.get("metadata") if isinstance(obj.get("metadata"), dict) else {}
+
+        for raw_value in (
+            obj.get("class_name"),
+            obj.get("event_type"),
+            obj.get("type"),
+            metadata.get("class_name"),
+            metadata.get("event_type"),
+            metadata.get("type"),
+            metadata.get("model_task"),
+        ):
+            if raw_value is None:
+                continue
+            normalized = str(raw_value).strip().lower().replace("-", "_")
+            if normalized and normalized not in labels:
+                labels.append(normalized)
+        return labels
+
+    @staticmethod
+    def _has_helmet_evidence(
+        px: int,
+        py: int,
+        pw: int,
+        ph: int,
+        nearby_objects: Optional[List[Dict]],
+    ) -> bool:
+        """사람 머리 영역과 실제로 겹치는 헬멧 근거가 있을 때만 True."""
         if not nearby_objects:
             return False
+        helmet_bboxes: List[Dict[str, float]] = []
         for obj in nearby_objects:
-            class_name = str(obj.get("class_name", "")).lower().strip()
-            if class_name in HELMET_CLASSES:
-                return True
-        return False
+            labels = AppearanceAnalyzer._normalized_object_labels(obj)
+            if not any(label in HELMET_CLASSES for label in labels):
+                continue
+            helmet_bboxes.append({
+                "x": float(obj.get("x", 0)),
+                "y": float(obj.get("y", 0)),
+                "width": float(obj.get("width", 0)),
+                "height": float(obj.get("height", 0)),
+            })
+
+        if not helmet_bboxes:
+            return False
+
+        return is_helmet_worn(
+            {"x": px, "y": py, "width": pw, "height": ph},
+            helmet_bboxes,
+            head_ratio=_HELMET_HEAD_RATIO,
+            iou_threshold=_HELMET_IOU_THRESHOLD,
+            overlap_threshold=_HELMET_OVERLAP_THRESHOLD,
+        )
 
     @staticmethod
     def _build_skin_mask(hsv: np.ndarray) -> np.ndarray:
@@ -607,8 +669,12 @@ class AppearanceAnalyzer:
         person_cy = py + ph / 2
 
         for obj in nearby_objects:
-            cls_name = obj.get("class_name", "")
-            attr_key = BAG_CLASSES.get(cls_name)
+            labels = AppearanceAnalyzer._normalized_object_labels(obj)
+            attr_key = None
+            for label in labels:
+                attr_key = BAG_CLASSES.get(label)
+                if attr_key is not None:
+                    break
             if attr_key is None:
                 continue
 
@@ -625,7 +691,11 @@ class AppearanceAnalyzer:
 
             if dist / diag < _BAG_PROXIMITY_RATIO:
                 result[attr_key] = True
-                logger.debug("소지품 감지: %s (거리비=%.2f)", cls_name, dist / diag)
+                logger.debug(
+                    "소지품 감지: %s (거리비=%.2f)",
+                    ",".join(labels) if labels else "unknown",
+                    dist / diag,
+                )
 
         return result
 

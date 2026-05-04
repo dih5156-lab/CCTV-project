@@ -12,6 +12,12 @@ import numpy as np
 
 from ...config.config import PROJECT_ROOT
 from ._attribute_backend import AttributeBackend, AttributeCrop
+from ._attribute_runtimes import (
+    AttributeRuntime,
+    build_onnx_runtime,
+    build_paddle_runtime,
+    resolve_paddle_model_prefix,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -51,18 +57,25 @@ class PPHumanAttributeBackend:
         self._predictor = predictor
         self._runtime = str(runtime or "auto").lower()
         self._device = device
-        self._input_size = max(32, int(input_size))
+        resolved_input_size = max(32, int(input_size))
+        self._input_height = resolved_input_size
+        self._input_width = resolved_input_size
         self._score_threshold = float(score_threshold)
         self._warned = False
         self._session = None
         self._input_name: Optional[str] = None
+        self._runtime_session: Optional[AttributeRuntime] = None
         self._label_map = self._load_label_map(label_map_path)
         if predictor is None and model_path:
-            self._session = self._build_session(session_factory)
+            self._runtime_session = self._build_runtime(session_factory)
 
     def predict(self, crop: AttributeCrop) -> Dict[str, object]:
         if self._predictor is not None:
             return dict(self._predictor(crop))
+        if self._runtime_session is not None:
+            outputs = self._runtime_session.run(self._preprocess(crop))
+            return self._decode(outputs)
+        # 테스트와 기존 내부 사용 호환: 직접 주입된 ONNX 세션도 실행한다.
         if self._session is not None and self._input_name:
             tensor = self._preprocess(crop)
             outputs = self._session.run(None, {self._input_name: tensor})
@@ -75,35 +88,85 @@ class PPHumanAttributeBackend:
             self._warned = True
         return {}
 
-    def _build_session(self, session_factory: Optional[SessionFactory]) -> Optional[object]:
-        """ONNX Runtime 세션을 생성한다."""
+    def _build_runtime(self, session_factory: Optional[SessionFactory]) -> Optional[AttributeRuntime]:
+        """설정된 런타임에 맞는 속성 모델 세션을 생성한다."""
         model_path = self._resolve_model_path(self._model_path)
         if model_path is None:
             logger.warning("PP-Human 속성 모델 파일을 찾지 못했습니다: %s", self._model_path)
             return None
 
-        try:
-            ort = None
-            if session_factory is None:
-                import onnxruntime as ort  # type: ignore
+        if self._should_use_paddle(model_path):
+            return self._build_paddle_runtime(model_path)
 
-                session_factory = ort.InferenceSession
-            providers = self._select_providers(ort)
-            session = session_factory(str(model_path), providers=providers)
-            inputs = session.get_inputs()
-            if not inputs:
-                logger.warning("PP-Human 속성 모델 입력 노드를 찾지 못했습니다: %s", model_path)
-                return None
-            self._input_name = str(inputs[0].name)
+        return self._build_onnx_runtime(model_path, session_factory)
+
+    def _build_onnx_runtime(
+        self,
+        model_path: Path,
+        session_factory: Optional[SessionFactory],
+    ) -> Optional[AttributeRuntime]:
+        """ONNX Runtime 세션을 생성한다."""
+        try:
+            ort_module = self._import_onnxruntime() if session_factory is None else None
+            providers = self._select_providers(ort_module)
+            runtime = build_onnx_runtime(
+                model_path,
+                providers,
+                session_factory=session_factory,
+            )
+            self._input_name = runtime.input_name  # type: ignore[attr-defined]
+            self._set_input_shape_hint(runtime.input_shape)
+            self._session = runtime.session  # type: ignore[attr-defined]
             logger.info(
                 "PP-Human 속성 모델 로드 완료: %s (providers=%s)",
                 model_path,
                 providers,
             )
-            return session
+            return runtime
         except Exception as exc:
             logger.warning("PP-Human 속성 세션 생성 실패: %s", exc)
             return None
+
+    @staticmethod
+    def _import_onnxruntime():
+        import onnxruntime as ort  # type: ignore
+
+        return ort
+
+    def _should_use_paddle(self, model_path: Path) -> bool:
+        """Paddle inference artifact를 직접 사용할지 판단한다."""
+        if self._runtime == "paddle":
+            return True
+        if self._runtime not in {"auto", ""}:
+            return False
+        if model_path.is_dir():
+            return (model_path / "inference.json").exists()
+        return model_path.name == "inference.json"
+
+    def _build_paddle_runtime(self, model_path: Path) -> Optional[AttributeRuntime]:
+        """Paddle inference 모델을 로드한다."""
+        try:
+            runtime = build_paddle_runtime(model_path)
+            self._set_input_shape_hint(runtime.input_shape)
+            logger.info(
+                "PP-Human Paddle 속성 모델 로드 완료: %s",
+                resolve_paddle_model_prefix(model_path),
+            )
+            return runtime
+        except Exception as exc:
+            logger.warning("PP-Human Paddle 모델 로드 실패: %s", exc)
+            return None
+
+    def _set_input_shape_hint(self, shape: object) -> None:
+        """ONNX 입력 shape가 고정이면 전처리 resize 크기에 반영한다."""
+        if not isinstance(shape, (list, tuple)) or len(shape) < 4:
+            return
+        height = shape[2]
+        width = shape[3]
+        if isinstance(height, int) and height > 0:
+            self._input_height = height
+        if isinstance(width, int) and width > 0:
+            self._input_width = width
 
     def _resolve_model_path(self, model_path: Optional[str]) -> Optional[Path]:
         """모델 경로를 절대 경로로 해석한다."""
@@ -178,10 +241,13 @@ class PPHumanAttributeBackend:
         y2 = min(frame_h, int(crop.y + crop.height))
         person_crop = frame[y1:y2, x1:x2]
         if person_crop.size == 0:
-            person_crop = np.zeros((self._input_size, self._input_size, 3), dtype=np.uint8)
+            person_crop = np.zeros(
+                (self._input_height, self._input_width, 3),
+                dtype=np.uint8,
+            )
         resized = cv2.resize(
             person_crop,
-            (self._input_size, self._input_size),
+            (self._input_width, self._input_height),
             interpolation=cv2.INTER_LINEAR,
         )
         rgb = cv2.cvtColor(resized, cv2.COLOR_BGR2RGB).astype(np.float32) / 255.0

@@ -34,7 +34,13 @@ MODEL_CANDIDATES: dict[str, tuple[str, tuple[Union[str, Path], ...]]] = {
             # TensorRT (Jetson 우선)
             PROJECT_ROOT / "models/helmet_model_ver0.6.engine",
             PROJECT_ROOT / "models/helmet_model_ver0.6.pt",
+            PROJECT_ROOT / "models/helmet_model_ver0.5.engine",
+            PROJECT_ROOT / "models/helmet_model_ver0.5.pt",
+            PROJECT_ROOT / "models/helmet_model.engine",
+            PROJECT_ROOT / "models/helmet_model.pt",
             PROJECT_ROOT / "helmet_model_ver0.6.pt",
+            PROJECT_ROOT / "helmet_model_ver0.5.pt",
+            PROJECT_ROOT / "helmet_model.pt",
         ),
     ),
     "pose_model": (
@@ -337,7 +343,7 @@ class AppearanceConfig:
     backend: str = "hsv"                 # hsv | pphuman
     model_path: Optional[str] = None     # 외형 속성 모델 경로
     label_map_path: Optional[str] = None # 속성 라벨 매핑 JSON 경로
-    runtime: str = "auto"                # auto | onnxruntime
+    runtime: str = "auto"                # auto | onnxruntime | paddle
     input_size: int = 224                # 속성 모델 입력 해상도 힌트
     score_threshold: float = 0.5         # 속성 활성화 임계값
     bbox_expand_ratio: float = 0.15      # 속성 분석용 person bbox 확장 비율
