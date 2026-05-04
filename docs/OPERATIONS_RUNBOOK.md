@@ -538,6 +538,7 @@ docker compose up -d aiot-parser-db aiot-parser
 배포 전에는 아래를 한 번에 확인합니다.
 
 ```bash
+.venv/bin/python scripts/check_offline_readiness.py
 .venv/bin/python -m pytest
 .venv/bin/python scripts/check_compose_runtime_assumptions.py --json
 .venv/bin/python scripts/check_deployment_readiness.py
@@ -550,6 +551,7 @@ docker compose up -d aiot-parser-db aiot-parser
 
 기준:
 
+- 장비 전원이 아직 안 들어온 상태에서는 `check_offline_readiness.py`를 먼저 봅니다. 이 스크립트는 카메라/스피커/전광판 네트워크 연결을 요구하지 않고 배포 설정, 핵심 API, AI/DeepStream 단위, parser/outbox 테스트를 확인합니다.
 - 전체 테스트가 통과해야 합니다.
 - `check_compose_runtime_assumptions.py`가 실패하면 full compose 실행 전에 호스트 아키텍처, EdgeX 이미지, AIoT parser DB 설정을 먼저 맞춥니다.
 - `check_sensitive_defaults.py`에서 민감 기본값이 없어야 합니다.
