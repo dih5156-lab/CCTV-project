@@ -7,6 +7,7 @@ import json
 import os
 import socket
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Mapping
 
 
@@ -45,6 +46,24 @@ DEVICE_CHECKS = (
 
 def _env_value(env: Mapping[str, str], key: str) -> str:
     return str(env.get(key, "")).strip()
+
+
+def load_env_file(path: str | Path) -> dict[str, str]:
+    env_path = Path(path)
+    if not env_path.exists():
+        return {}
+
+    values: dict[str, str] = {}
+    for raw_line in env_path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        if key:
+            values[key] = value
+    return values
 
 
 def _parse_port(raw: str, default_port: int) -> tuple[int, str | None]:
@@ -119,7 +138,7 @@ def run_checks(
     skip_network: bool = False,
     allow_unconfigured: bool = False,
 ) -> dict:
-    source_env = env or os.environ
+    source_env = env if env is not None else {**load_env_file(".env"), **os.environ}
     checks = [
         run_device_check(
             check,
@@ -147,6 +166,11 @@ def main() -> int:
     )
     parser.add_argument("--timeout", type=float, default=2.0, help="TCP timeout seconds.")
     parser.add_argument(
+        "--env-file",
+        default=".env",
+        help="Env file to read before process environment overrides.",
+    )
+    parser.add_argument(
         "--skip-network",
         action="store_true",
         help="Only validate environment variables and port values.",
@@ -158,7 +182,9 @@ def main() -> int:
     )
     args = parser.parse_args()
 
+    merged_env = {**load_env_file(args.env_file), **os.environ}
     result = run_checks(
+        env=merged_env,
         timeout=args.timeout,
         skip_network=args.skip_network,
         allow_unconfigured=args.allow_unconfigured,

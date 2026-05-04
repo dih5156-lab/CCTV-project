@@ -77,6 +77,27 @@ def test_invalid_port_marks_device_unconfigured():
     assert "invalid port" in result["detail"]
 
 
+def test_load_env_file_parses_simple_key_values(tmp_path):
+    env_file = tmp_path / ".env"
+    env_file.write_text(
+        "\n".join(
+            [
+                "# comment",
+                "SPEAKER_HOST=192.0.2.10",
+                "SPEAKER_USER='admin'",
+                'SPEAKER_PASSWORD="secret"',
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    values = check_alarm_devices.load_env_file(env_file)
+
+    assert values["SPEAKER_HOST"] == "192.0.2.10"
+    assert values["SPEAKER_USER"] == "admin"
+    assert values["SPEAKER_PASSWORD"] == "secret"
+
+
 def test_reachability_uses_tcp_connection(monkeypatch):
     calls = []
 
