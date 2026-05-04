@@ -20,6 +20,7 @@ from ..canonical_event import (
     get_payload_camera_id,
     get_payload_display_message,
     get_payload_event_type,
+    get_payload_confidence,
     get_payload_severity,
     get_payload_tts_message,
 )
@@ -52,7 +53,7 @@ class SiteConfig:
     camera_ids: List[str] = field(default_factory=list)
     control_mode: ControlMode = ControlMode.AUTO
     alarm_devices: List[AlarmDevice] = field(
-        default_factory=lambda: [AlarmDevice.SPEAKER]
+        default_factory=lambda: [AlarmDevice.SPEAKER, AlarmDevice.SIGNBOARD]
     )
 
     def to_dict(self) -> Dict:
@@ -75,7 +76,7 @@ class SiteConfig:
             control_mode=ControlMode(data.get("control_mode", "auto")),
             alarm_devices=[
                 AlarmDevice(device)
-                for device in data.get("alarm_devices", ["speaker"])
+                for device in data.get("alarm_devices", ["speaker", "signboard"])
             ],
         )
 
@@ -148,10 +149,10 @@ class _EventRepo:
                         event_id,
                         datetime.now(timezone.utc).isoformat(),
                         topic,
-                        payload.get("camera_id"),
-                        payload.get("type"),
-                        payload.get("confidence"),
-                        payload.get("severity"),
+                        get_payload_camera_id(payload),
+                        get_payload_event_type(payload),
+                        get_payload_confidence(payload),
+                        get_payload_severity(payload),
                         int(alarm_played),
                         int(http_sent),
                         json.dumps(payload, ensure_ascii=False),
@@ -253,9 +254,9 @@ class _SiteRegistry:
                     "event_id": event_id,
                     "queued_at": info.get("queued_at"),
                     "site_id": info.get("site_id"),
-                    "camera_id": info["payload"].get("camera_id"),
-                    "event_type": info["payload"].get("type"),
-                    "severity": info["payload"].get("severity"),
+                    "camera_id": get_payload_camera_id(info["payload"]),
+                    "event_type": get_payload_event_type(info["payload"]),
+                    "severity": get_payload_severity(info["payload"]),
                     "topic": info.get("topic"),
                 }
                 for event_id, info in self._pending.items()

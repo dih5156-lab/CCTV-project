@@ -96,6 +96,30 @@ class TestAutoModeFullPipeline:
         assert row["event_type"] == "intrusion"
         assert row["topic"] == _INTRUSION_TOPIC
 
+    def test_canonical_payload_saved_to_db(self, bridge: ActionBridge):
+        """표준 event/device 구조만 있어도 ActionBridge가 저장 필드를 채운다."""
+        payload = {
+            "schema_version": "1.0",
+            "message_type": "ai_detection_event",
+            "occurred_at": "2026-05-04T01:00:00+00:00",
+            "device": {"camera_id": "cam-canonical"},
+            "event": {
+                "event_type": "fall_detected",
+                "severity": "critical",
+                "confidence": 0.97,
+            },
+            "raw": {},
+        }
+        msg = _make_mqtt_message("cctv/ai/events/cam-canonical/fall_detected", payload)
+
+        bridge._on_message(None, None, msg)
+
+        row = _last_db_row(bridge._repo.db_path)
+        assert row["camera_id"] == "cam-canonical"
+        assert row["event_type"] == "fall_detected"
+        assert row["confidence"] == 0.97
+        assert row["severity"] == "critical"
+
     def test_multiple_events_accumulated(self, bridge: ActionBridge):
         """연속 이벤트가 각각 DB에 저장된다."""
         for cam in ("cam-01", "cam-02", "cam-03"):

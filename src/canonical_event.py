@@ -133,7 +133,7 @@ def get_payload_event_type(payload: Mapping[str, Any]) -> str:
             value = event_info.get(key)
             if value:
                 return str(value)
-    value = payload.get("type")
+    value = payload.get("type") or payload.get("event_type")
     if value:
         return str(value)
     return "unknown"
@@ -149,6 +149,21 @@ def get_payload_severity(payload: Mapping[str, Any]) -> str:
     if value:
         return str(value)
     return ""
+
+
+def get_payload_confidence(payload: Mapping[str, Any]) -> Optional[float]:
+    event_info = payload.get("event")
+    value: Any = None
+    if isinstance(event_info, Mapping):
+        value = event_info.get("confidence")
+    if value is None:
+        value = payload.get("confidence")
+    if value is None or value == "":
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
 
 
 def get_payload_display_message(payload: Mapping[str, Any]) -> Optional[str]:
@@ -196,6 +211,65 @@ def get_payload_event_id(payload: Mapping[str, Any]) -> str:
         message_id=get_payload_message_id(payload),
         payload=payload,
     )
+
+
+def canonicalize_event_payload(
+    payload: Mapping[str, Any],
+    *,
+    message_type: str = "ai_detection_event",
+    source: str = "cctv-ai-engine",
+    source_type: str = "vision",
+) -> Dict[str, Any]:
+    """레거시 이벤트 payload에 표준 이벤트 필드를 보강한다.
+
+    기존 MQTT/Kuiper 호환을 위해 top-level 필드는 유지하고,
+    표준 소비자가 사용할 수 있는 schema_version/event/device/raw/event_id를 추가한다.
+    """
+    normalized = dict(payload)
+    camera_id = get_payload_camera_id(normalized)
+    event_type = get_payload_event_type(normalized)
+    occurred_at = get_payload_occurred_at(normalized) or _utc_now_iso()
+    severity = get_payload_severity(normalized) or None
+    confidence = get_payload_confidence(normalized)
+
+    normalized.setdefault("camera_id", camera_id)
+    normalized.setdefault("type", event_type)
+    if confidence is not None:
+        normalized.setdefault("confidence", confidence)
+    if severity is not None:
+        normalized.setdefault("severity", severity)
+
+    if "schema_version" not in normalized or "event" not in normalized:
+        raw_fields = {
+            "bbox": normalized.get("bbox"),
+            "object_id": normalized.get("object_id"),
+            "class_idx": normalized.get("class_idx"),
+            "class_name": normalized.get("class_name"),
+            "keypoints": normalized.get("keypoints"),
+            "metadata": normalized.get("metadata"),
+        }
+        normalized.update(
+            build_canonical_event(
+                camera_id=camera_id,
+                event_type=event_type,
+                message_type=message_type,
+                occurred_at=occurred_at,
+                source=source,
+                source_type=source_type,
+                severity=severity,
+                confidence=confidence,
+                message_id=get_payload_message_id(normalized),
+                message=get_payload_display_message(normalized),
+                display_message=get_payload_display_message(normalized),
+                tts_message=get_payload_tts_message(normalized),
+                device={"camera_id": camera_id},
+                decoded={},
+                raw=raw_fields,
+            )
+        )
+
+    normalized.setdefault("event_id", get_payload_event_id(normalized))
+    return normalized
 
 
 def get_payload_tts_message(payload: Mapping[str, Any]) -> Optional[str]:

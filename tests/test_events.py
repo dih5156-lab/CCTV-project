@@ -58,6 +58,12 @@ class TestDetectionEvent:
         assert d["confidence"] == pytest.approx(0.85)
         assert d["object_id"] == 42
 
+    def test_to_dict_keeps_legacy_shape_without_canonical_fields(self):
+        evt = self._make()
+        d = evt.to_dict()
+        assert "schema_version" not in d
+        assert "event" not in d
+
     def test_to_dict_optional_none(self):
         evt = self._make(object_id=None, class_idx=None, keypoints=None)
         d = evt.to_dict()

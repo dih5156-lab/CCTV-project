@@ -31,6 +31,11 @@ from typing import Dict, List, Optional, Set, Tuple
 
 import paho.mqtt.client as mqtt
 
+from ..canonical_event import (
+    canonicalize_event_payload,
+    get_payload_camera_id,
+    get_payload_event_type,
+)
 from ..devices.siren     import SensorConfig, SirenDevice
 from ..devices.signboard import SignboardConfig, SignboardDevice, build_display_text
 from ..devices.speaker   import SpeakerConfig, SpeakerDevice
@@ -97,7 +102,13 @@ _DEFAULT_SUBSCRIBE_TOPICS = _INTRUSION_TOPICS | _ZONE_TOPICS | _DETECTION_TOPICS
 _DEFAULT_ALARM_TOPICS = (
     {"cctv/rules/intrusion/persisted", "cctv/rules/intrusion/critical"}
     | _ZONE_TOPICS
-    | {"cctv/ai/events/+/fall_detected", "cctv/ai/events/+/unsafe_behavior"}
+    | {
+        "cctv/ai/events/+/person",
+        "cctv/ai/events/+/helmet",
+        "cctv/ai/events/+/head",
+        "cctv/ai/events/+/fall_detected",
+        "cctv/ai/events/+/unsafe_behavior",
+    }
     | _SENSOR_TOPICS
 )
 
@@ -268,7 +279,7 @@ class ActionBridge:
             "events/approved",
             {
                 "event_id": event_id,
-                "camera_id": info["payload"].get("camera_id"),
+                "camera_id": get_payload_camera_id(info["payload"]),
                 "site_id": info.get("site_id"),
                 "status": "approved",
             },
@@ -286,7 +297,7 @@ class ActionBridge:
             "events/rejected",
             {
                 "event_id": event_id,
-                "camera_id": info["payload"].get("camera_id"),
+                "camera_id": get_payload_camera_id(info["payload"]),
                 "site_id": info.get("site_id"),
                 "status": "rejected",
             },
@@ -307,7 +318,8 @@ class ActionBridge:
         - AUTO 모드: 즉시 알람/HTTP 실행
         - MANUAL 모드: 승인 대기 큐에 추가
         """
-        camera_id = str(payload.get("camera_id", "unknown"))
+        payload = canonicalize_event_payload(payload, source="action-layer", source_type="action")
+        camera_id = get_payload_camera_id(payload)
         mode, site_id = self._sites.resolve_mode(camera_id)
 
         events_handled.labels(mode=mode.value).inc()
@@ -323,7 +335,7 @@ class ActionBridge:
                     "event_id": event_id,
                     "camera_id": camera_id,
                     "site_id": site_id,
-                    "event_type": payload.get("type"),
+                    "event_type": get_payload_event_type(payload),
                     "status": "pending",
                 },
             )

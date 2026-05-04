@@ -12,6 +12,7 @@ from typing import Dict, Optional
 
 import paho.mqtt.client as mqtt
 
+from ..canonical_event import canonicalize_event_payload, get_payload_camera_id, get_payload_event_type
 from ._mqtt_factory import create_mqtt_client, RECONNECT_MIN_DELAY, RECONNECT_MULTIPLIER
 
 logger = logging.getLogger(__name__)
@@ -169,8 +170,9 @@ class MqttEventPublisher:
                 self._publish_fail_count += 1
             return False
 
-        camera_id = event_data.get("camera_id", "unknown")
-        event_type = event_data.get("type", "unknown")
+        event_data = canonicalize_event_payload(event_data)
+        camera_id = get_payload_camera_id(event_data)
+        event_type = get_payload_event_type(event_data)
         topic = f"{self.topic_prefix}/{camera_id}/{event_type}"
 
         try:
