@@ -50,6 +50,15 @@ x-edgex-security: &edgex-security
   security_opt:
     - no-new-privileges:true
 
+x-appearance-runtime: &appearance-runtime
+  DS_YOLO_LABELS: ${DS_YOLO_LABELS:-person}
+  DS_HELMET_ENABLED: ${DS_HELMET_ENABLED:-1}
+  DS_FACE_ENABLED: ${DS_FACE_ENABLED:-1}
+  DS_APPEARANCE_ENABLED: ${DS_APPEARANCE_ENABLED:-1}
+  APPEARANCE_BACKEND: ${APPEARANCE_BACKEND:-hsv}
+  APPEARANCES_DB: ${APPEARANCES_DB:-/app/data/appearances.db}
+  APPEARANCE_CROP_DIR: ${APPEARANCE_CROP_DIR:-/app/data/appearance_crops}
+
 # ── 서비스 정의 ──────────────────────────────────────────────────────────────
 services:
 
@@ -497,11 +506,18 @@ services:
   # ============================================================================
   ui:
     container_name: edgex-ui-go
+    depends_on:
+      core-metadata:
+        condition: service_started
+      core-data:
+        condition: service_started
+      core-command:
+        condition: service_started
     environment:
       <<: *edgex-common
       SERVICE_HOST: edgex-ui-go
     hostname: edgex-ui-go
-    image: edgexfoundry/edgex-ui:4.0.1
+    image: edgexfoundry/edgex-ui:3.1.0
     platform: linux/arm64
     networks:
       edgex-network: null
@@ -531,21 +547,50 @@ services:
       # JetPack 6.2 / CUDA 12.6 / TensorRT 10.3.0 (Dockerfile.jetson에 고정)
     # NVIDIA Container Toolkit runtime (GPU 접근 활성화)
     runtime: nvidia
+    env_file:
+      - ./.env.jetson
     environment:
       PYTHONIOENCODING: utf-8
       PYTHONUTF8: "1"
       NVIDIA_VISIBLE_DEVICES: all
-      NVIDIA_DRIVER_CAPABILITIES: compute,video,utility
+      NVIDIA_DRIVER_CAPABILITIES: compute,video,utility,graphics
       # GStreamer 하드웨어 디코딩 (.env.jetson USE_GSTREAMER=1)
       USE_GSTREAMER: ${USE_GSTREAMER:-1}
+      # DeepStreamProcessor 활성화 스위치 (기본은 기존 VideoProcessor)
+      USE_DEEPSTREAM: ${USE_DEEPSTREAM:-1}
+      # DeepStream 출력 모드: fakesink(헤드리스) 또는 display(Jetson X11 화면)
+      DS_OUTPUT_MODE: ${DS_OUTPUT_MODE:-fakesink}
+      DS_NVBUF_MEMORY_TYPE: ${DS_NVBUF_MEMORY_TYPE:-0}
+      DS_EVENT_MIN_INTERVAL_SEC: ${DS_EVENT_MIN_INTERVAL_SEC:-3.0}
+      DS_YOLO_TASK: ${DS_YOLO_TASK:-pose}
+      DS_YOLO_CLASS_IDS: ${DS_YOLO_CLASS_IDS:-0}
+      DS_YOLO_CONFIDENCE: ${DS_YOLO_CONFIDENCE:-0.35}
+      DS_POSE_GIE_ID: ${DS_POSE_GIE_ID:-1}
+      DS_HELMET_GIE_ID: ${DS_HELMET_GIE_ID:-2}
+      DS_HELMET_CLASS_IDS: ${DS_HELMET_CLASS_IDS:-0,1}
+      DS_HELMET_LABELS: ${DS_HELMET_LABELS:-helmet,head}
+      DS_HELMET_CONFIDENCE: ${DS_HELMET_CONFIDENCE:-0.35}
+      <<: *appearance-runtime
+      DS_APPEARANCE_CONDITION_REFRESH_SEC: ${DS_APPEARANCE_CONDITION_REFRESH_SEC:-10}
+      FACE_DEVICE: ${FACE_DEVICE:-cpu}
+      FACE_RECOGNITION_BACKEND: ${FACE_RECOGNITION_BACKEND:-opencv}
+      APPEARANCE_ENABLED: ${APPEARANCE_ENABLED:-true}
+      DS_PREVIEW_ENABLED: ${DS_PREVIEW_ENABLED:-1}
+      STREAM_API_ENABLED: ${STREAM_API_ENABLED:-1}
+      STREAM_PORT: ${STREAM_PORT:-8769}
+      STREAM_FPS: ${STREAM_FPS:-15}
+      STREAM_JPEG_QUALITY: ${STREAM_JPEG_QUALITY:-75}
+      DISPLAY: ${DISPLAY:-:0}
+      QT_X11_NO_MITSHM: "1"
       # Jetson Orin nvgpu cuDNN v8 API 비활성화 (GET engine 에러 방지)
       TORCH_CUDNN_V8_API_ENABLED: "0"
       # cuDNN 벤치마크 비활성화 (Jetson 통합 GPU 안정성)
       TORCH_CUDNN_BENCHMARK: "0"
       # RTSP 프레임 버퍼 크기 (1: 지연 최소화, 2~3: 네트워크 지터 완충)
       RTSP_BUFFER_SIZE: ${RTSP_BUFFER_SIZE:-2}
-      # torch lib의 CUDA 공유 라이브러리 경로 추가 (cusparseLt 등)
-      LD_LIBRARY_PATH: "/usr/local/lib/python3.10/dist-packages/torch/lib:/usr/local/lib/python3.10/dist-packages/nvidia/cusparselt/lib:/usr/local/cuda-12.6/lib64:/usr/local/cuda/lib64:/usr/lib/aarch64-linux-gnu"
+      # torch lib + host DeepStream 런타임 공유 라이브러리 경로 추가
+      LD_LIBRARY_PATH: "/opt/nvidia/deepstream/deepstream/lib:/usr/lib/aarch64-linux-gnu/nvidia:/usr/local/lib/python3.10/dist-packages/torch/lib:/usr/local/lib/python3.10/dist-packages/nvidia/cusparselt/lib:/usr/local/cuda-12.6/lib64:/usr/local/cuda/lib64:/usr/lib/aarch64-linux-gnu"
+      GST_PLUGIN_PATH: "/opt/nvidia/deepstream/deepstream/lib/gst-plugins"
     command:
       - python3
       - main.py
@@ -569,14 +614,32 @@ services:
       - ${FPS:-30}
       - --debounce
       - ${DEBOUNCE:-3.0}
+      - --zone-detection
+      - --zones-config
+      - /app/zones_config.json
       - --api-port
       - ${ZONE_API_PORT:-0}
       # --display 는 헤드리스 환경이므로 사용 금지
     depends_on:
       edgex-mqtt-broker:
         condition: service_started
+      core-metadata:
+        condition: service_started
+      core-data:
+        condition: service_started
+      device-rest:
+        condition: service_started
+      cctv-edgex-adapter:
+        condition: service_started
+      ui:
+        condition: service_started
     networks:
       edgex-network: null
+    ports:
+      # DeepStream MJPEG preview: http://<Jetson-IP>:8769/stream/camera_1
+      - target: 8769
+        published: "${STREAM_PORT:-8769}"
+        protocol: tcp
     healthcheck:
       test: ["CMD-SHELL", "kill -0 1 2>/dev/null || exit 1"]
       interval: 30s
@@ -596,25 +659,54 @@ services:
       - type: bind
         source: ./models
         target: /app/models
+      - type: bind
+        source: ./config/deepstream
+        target: /app/config/deepstream
+        read_only: true
+      - type: bind
+        source: ./data
+        target: /app/data
+      - type: bind
+        source: ./data/insightface
+        target: /root/.insightface
+      - type: bind
+        source: ./known_faces.json
+        target: /app/known_faces.json
+      - type: bind
+        source: ./known_faces
+        target: /app/known_faces
+      - type: bind
+        source: /opt/nvidia/deepstream
+        target: /opt/nvidia/deepstream
+        read_only: true
+      - type: bind
+        source: /usr/lib/aarch64-linux-gnu/nvidia
+        target: /usr/lib/aarch64-linux-gnu/nvidia
+        read_only: true
+      - type: bind
+        source: /tmp/.X11-unix
+        target: /tmp/.X11-unix
       # TensorRT 엔진 캐시 보존 (재시작 시 재변환 방지)
       - type: volume
         source: trt-cache
         target: /app/models/trt_cache
-      # ── Jetson 전용 PyTorch (호스트의 NVIDIA JP6.2 빌드를 컨테이너에 마운트) ──
-      # Docker 빌드 중 외부 네트워크 차단으로 Jetson wheel 설치 불가한 경우 사용
+      # ── Jetson 전용 PyTorch (큰 디스크에 설치한 NVIDIA JP6 / CUDA 12.6 wheel 마운트) ──
+      # Root 저장공간을 아끼고, 컨테이너 내부에서 검증된 GPU wheel을 우선 사용한다.
       - type: bind
-        source: /home/sawwave/.local/lib/python3.10/site-packages/torch
+        source: /media/sawwave/Learning1/jetson-py310-cu126/site-packages/torch
         target: /usr/local/lib/python3.10/dist-packages/torch
         read_only: true
       - type: bind
-        # egg 내부의 torchvision 패키지 디렉토리를 직접 마운트
-        source: /home/sawwave/.local/lib/python3.10/site-packages/torchvision-0.20.0-py3.10-linux-aarch64.egg/torchvision
-        target: /usr/local/lib/python3.10/dist-packages/torchvision
+        source: /media/sawwave/Learning1/jetson-py310-cu126/site-packages/torchgen
+        target: /usr/local/lib/python3.10/dist-packages/torchgen
         read_only: true
-      # NVIDIA CUDA 라이브러리 패키지 (cusparseLt만 마운트: torch 의존성)
       - type: bind
-        source: /home/sawwave/.local/lib/python3.10/site-packages/nvidia/cusparselt
-        target: /usr/local/lib/python3.10/dist-packages/nvidia/cusparselt
+        source: /media/sawwave/Learning1/jetson-py310-cu126/site-packages/functorch
+        target: /usr/local/lib/python3.10/dist-packages/functorch
+        read_only: true
+      - type: bind
+        source: /media/sawwave/Learning1/jetson-py310-cu126/site-packages/torchvision
+        target: /usr/local/lib/python3.10/dist-packages/torchvision
         read_only: true
 
   # ── EdgeX 어댑터 (AI 이벤트 → EdgeX 파이프라인 브릿지) ──────────────────────
@@ -624,9 +716,11 @@ services:
       context: .
       dockerfile: Dockerfile.action
     environment:
+      PYTHONPATH: /app
       PYTHONIOENCODING: utf-8
       PYTHONUTF8: "1"
       NVIDIA_VISIBLE_DEVICES: ""
+      EDGEX_OUTBOX_DB: /data/event_outbox.db
     command:
       - python
       - runners/run_edgex_adapter.py
@@ -664,6 +758,10 @@ services:
       retries: 3
       start_period: 20s
     restart: always
+    volumes:
+      - type: volume
+        source: aiot-parser-data
+        target: /data
 
   # ── AIoT TLV 파서 (LoRa uplink -> TLV decode -> EdgeX/Alert) ───────────────
   aiot-parser:
@@ -674,6 +772,7 @@ services:
     env_file:
       - ./parser-python/.env
     environment:
+      PYTHONPATH: /app
       PYTHONIOENCODING: utf-8
       PYTHONUTF8: "1"
       PYTHONUNBUFFERED: "1"
@@ -683,12 +782,17 @@ services:
       DB_USER: ${AIOT_DB_USER:-postgres}
       DB_PW: ${AIOT_DB_PASSWORD:-postgres}
       DB_NAME: ${AIOT_DB_NAME:-aiot_sensor}
+      NS_PARK_MQTT_HOST: edgex-mqtt-broker
+      NS_PARK_MQTT_PORT: "1883"
+      LAB_MQTT_HOST: edgex-mqtt-broker
+      LAB_MQTT_PORT: "1883"
       EDGEX_MQTT_HOST: edgex-mqtt-broker
       EDGEX_MQTT_PORT: "1883"
       EDGEX_CORE_DATA_URL: http://edgex-core-data:59880
       ALERT_API_URL: http://cctv-alert-api:8000/api/sensor-readings
-      EDGEX_OUTBOX_DB: /data/edgex_outbox.db
+      EDGEX_OUTBOX_DB: /data/event_outbox.db
       EDGEX_OUTBOX_RETRY_INTERVAL: "30"
+      AIOT_ALLOW_UNKNOWN_DEVICES: ${AIOT_ALLOW_UNKNOWN_DEVICES:-true}
     depends_on:
       aiot-parser-db:
         condition: service_healthy
@@ -701,15 +805,15 @@ services:
     networks:
       edgex-network: null
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3500/health"]
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:3500/health', timeout=3).read()\""]
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 20s
     restart: always
     volumes:
-      - type: bind
-        source: ./data
+      - type: volume
+        source: aiot-parser-data
         target: /data
 
   # ── 센서 규칙 브리지 (aiot/sensors/# -> aiot/rules/sensor/#) ───────────────
@@ -730,6 +834,7 @@ services:
       - --publish-topic-prefix
       - aiot/rules/sensor
     environment:
+      PYTHONPATH: /app
       PYTHONIOENCODING: utf-8
       PYTHONUTF8: "1"
       NVIDIA_VISIBLE_DEVICES: ""
@@ -755,6 +860,7 @@ services:
       context: .
       dockerfile: Dockerfile.action
     environment:
+      PYTHONPATH: /app
       PYTHONIOENCODING: utf-8
       PYTHONUTF8: "1"
       NVIDIA_VISIBLE_DEVICES: ""
@@ -792,13 +898,17 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.action
+    env_file:
+      - ./.env.jetson
     depends_on:
       edgex-mqtt-broker:
         condition: service_started
     environment:
+      PYTHONPATH: /app
       PYTHONIOENCODING: utf-8
       PYTHONUTF8: "1"
       NVIDIA_VISIBLE_DEVICES: ""
+      <<: *appearance-runtime
     command:
       - python
       - runners/run_alert_api.py
@@ -822,6 +932,10 @@ services:
       retries: 3
       start_period: 10s
     restart: always
+    volumes:
+      - type: bind
+        source: ./data
+        target: /app/data
 
   # ── Action Layer (스피커 / 전광판 / 사이렌 연동) ────────────────────────────
   cctv-action-layer:
@@ -829,37 +943,18 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.action
+    env_file:
+      - ./.env.jetson
     command:
       - python
       - /app/runners/run_action_bridge.py
     environment:
+      PYTHONPATH: /app
       MQTT_BROKER: edgex-mqtt-broker
       MQTT_PORT: "1883"
       DB_PATH: /app/action_events.db
       EXTERNAL_API_URL: http://cctv-alert-api:8000/api/alerts
       ALARM_COOLDOWN: ${ACTION_ALARM_COOLDOWN:-10}
-      SPEAKER_HOST: ${SPEAKER_HOST:-}
-      SPEAKER_PORT: ${SPEAKER_PORT:-80}
-      SPEAKER_USER: ${SPEAKER_USER:-}
-      SPEAKER_PASSWORD: ${SPEAKER_PASSWORD:-}
-      SPEAKER_VOLUME: ${SPEAKER_VOLUME:-10}
-      SPEAKER_TTS_LANGUAGE: ${SPEAKER_TTS_LANGUAGE:-kor}
-      SPEAKER_TTS_GENDER: ${SPEAKER_TTS_GENDER:-female}
-      SPEAKER_TTS_PITCH: ${SPEAKER_TTS_PITCH:-100}
-      SPEAKER_TTS_SPEED: ${SPEAKER_TTS_SPEED:-100}
-      SPEAKER_TTS_VOLUME: ${SPEAKER_TTS_VOLUME:-1}
-      SIGNBOARD_HOST: ${SIGNBOARD_HOST:-}
-      SIGNBOARD_PORT: ${SIGNBOARD_PORT:-5000}
-      SIGNBOARD_BRIGHTNESS: ${SIGNBOARD_BRIGHTNESS:-10}
-      SIGNBOARD_TEXT_COLOR: ${SIGNBOARD_TEXT_COLOR:-7}
-      SIGNBOARD_BACK_COLOR: ${SIGNBOARD_BACK_COLOR:-0}
-      SIGNBOARD_TEXT_SIZE: ${SIGNBOARD_TEXT_SIZE:-2}
-      SIGNBOARD_TEXT_SPEED: ${SIGNBOARD_TEXT_SPEED:-10}
-      SIREN_HOST: ${SIREN_HOST:-}
-      SIREN_PORT: ${SIREN_PORT:-80}
-      SIREN_USER: ${SIREN_USER:-}
-      SIREN_PASSWORD: ${SIREN_PASSWORD:-}
-      SIREN_AUTO_STOP: ${SIREN_AUTO_STOP:-10}
       REST_ENABLED: "true"
       REST_HOST: "0.0.0.0"
       REST_PORT: "8080"
@@ -910,6 +1005,8 @@ volumes:
     name: edgex-jetson_db-data
   aiot-db-data:
     name: edgex-jetson_aiot-db-data
+  aiot-parser-data:
+    name: edgex-jetson_aiot-parser-data
   kuiper-data:
     name: edgex-jetson_kuiper-data
   kuiper-etc:

@@ -80,6 +80,36 @@ python main.py --cameras cameras.json
 python main.py --cameras cameras.json --device cuda --display
 ```
 
+### YOLO + 외형 속성 분석
+
+HSV 기반 색상 분석은 별도 모델 없이 동작합니다. PP-Human 계열 ONNX 속성 모델을
+붙일 때는 모델 파일과 라벨 맵 경로를 함께 지정합니다.
+
+```bash
+APPEARANCE_ENABLED=true \
+APPEARANCE_BACKEND=pphuman \
+APPEARANCE_MODEL_PATH=models/pphuman_attribute.onnx \
+APPEARANCE_LABEL_MAP_PATH=config/appearance_pphuman_labels.example.json \
+APPEARANCE_RUNTIME=onnxruntime \
+python main.py --cameras cameras.json --device cuda
+```
+
+Jetson 환경에서 ONNX Runtime wheel이 맞지 않으면 Paddle 원본 모델을 직접 사용할 수 있습니다.
+
+```bash
+pip install -r requirements-appearance-paddle.txt
+
+APPEARANCE_ENABLED=true \
+APPEARANCE_BACKEND=pphuman \
+APPEARANCE_MODEL_PATH=models/pphuman_attribute_src/PP-LCNet_x1_0_pedestrian_attribute_infer \
+APPEARANCE_LABEL_MAP_PATH=config/appearance_pphuman_labels.example.json \
+APPEARANCE_RUNTIME=paddle \
+python main.py --cameras cameras.json --device cuda
+```
+
+카메라별 `detections`에는 `appearance`가 포함되어야 하며, 사람 bbox가 필요하므로
+`person` 또는 `fall`/pose 감지가 함께 활성화됩니다.
+
 ### 헬멧/낙상 감지 + MQTT 전송
 
 ```bash
@@ -448,6 +478,27 @@ docker compose restart cctv-action-layer
 
 ```bash
 docker compose up -d --build cctv-ai-engine
+
+# Docker 빌드 전 정적 배포 준비 점검
+python scripts/check_deployment_readiness.py
+
+# 컨테이너 기동 후 API/Prometheus/Grafana 스모크 테스트
+python scripts/smoke_test_deployment.py
+
+# 컨테이너 기동 후 alert/sensor/action 데이터 플로우 스모크 테스트
+python scripts/smoke_test_data_flow.py
+
+# Dockerfile COPY 대상 파일 누락만 빠르게 확인
+python scripts/check_dockerfile_sources.py
+
+# helper 스크립트 사용
+./docker-build.sh cctv-public-api cctv-action-layer
+
+# Jetson compose 파일로 빌드
+COMPOSE_FILE=docker-compose.jetson.yml ./docker-build.sh cctv-alert-api
+
+# 빌드만 하고 시작하지 않기
+START_AFTER_BUILD=0 ./docker-build.sh cctv-action-layer
 ```
 
 ### 전체 중지 및 제거

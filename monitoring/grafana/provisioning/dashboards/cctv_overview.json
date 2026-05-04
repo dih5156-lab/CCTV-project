@@ -74,6 +74,44 @@
       ]
     },
     {
+      "id": 9,
+      "type": "stat",
+      "title": "Action Layer scrape",
+      "gridPos": { "x": 16, "y": 0, "w": 4, "h": 4 },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } } }
+          ]
+        }
+      },
+      "targets": [
+        {
+          "expr": "up{job=\"cctv-action-layer\"}",
+          "legendFormat": "action-layer"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "type": "stat",
+      "title": "Public API scrape",
+      "gridPos": { "x": 20, "y": 0, "w": 4, "h": 4 },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } } }
+          ]
+        }
+      },
+      "targets": [
+        {
+          "expr": "up{job=\"cctv-public-api\"}",
+          "legendFormat": "public-api"
+        }
+      ]
+    },
+    {
       "id": 5,
       "type": "timeseries",
       "title": "MQTT 수신 이벤트 속도 (topic별)",
@@ -81,7 +119,7 @@
       "targets": [
         {
           "expr": "rate(cctv_mqtt_events_received_total[1m])",
-          "legendFormat": "{{topic}}"
+          "legendFormat": "{{topic_prefix}}"
         }
       ]
     },

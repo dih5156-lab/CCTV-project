@@ -1,0 +1,143 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-04-28",
+  "notes": "Model inventory for CCTV MLOps tracking. Fill metrics after running scripts/evaluate_detection.py on a fixed evaluation dataset.",
+  "models": [
+    {
+      "name": "helmet_model_ver0.5",
+      "task": "helmet_detection",
+      "primary_runtime": "tensorrt",
+      "artifacts": {
+        "pytorch": "models/helmet_model_ver0.5.pt",
+        "onnx": "models/helmet_model_ver0.5.onnx",
+        "tensorrt": "models/helmet_model_ver0.5.engine"
+      },
+      "input_size": 320,
+      "classes": ["helmet", "head"],
+      "deployment_target": "Jetson Orin",
+      "acceptance_criteria": {
+        "min_precision": 0.85,
+        "min_recall": 0.9,
+        "max_avg_latency_ms": 50
+      },
+      "latest_evaluation": null
+    },
+    {
+      "name": "helmet_model",
+      "task": "helmet_detection",
+      "primary_runtime": "tensorrt",
+      "artifacts": {
+        "pytorch": "models/helmet_model.pt",
+        "onnx": "models/helmet_model.onnx",
+        "tensorrt": "models/helmet_model.engine"
+      },
+      "input_size": 320,
+      "classes": ["helmet", "head"],
+      "deployment_target": "Jetson Orin",
+      "acceptance_criteria": {
+        "min_precision": 0.85,
+        "min_recall": 0.9,
+        "max_avg_latency_ms": 50
+      },
+      "latest_evaluation": null
+    },
+    {
+      "name": "yolov8n-pose",
+      "task": "person_pose_fall_detection",
+      "primary_runtime": "tensorrt",
+      "artifacts": {
+        "pytorch": "models/yolov8n-pose.pt",
+        "onnx": "models/yolov8n-pose.onnx",
+        "tensorrt": "models/yolov8n-pose.engine"
+      },
+      "input_size": 320,
+      "classes": ["person"],
+      "deployment_target": "Jetson Orin",
+      "acceptance_criteria": {
+        "min_precision": 0.8,
+        "min_recall": 0.85,
+        "max_avg_latency_ms": 60
+      },
+      "latest_evaluation": null
+    },
+    {
+      "name": "yolov8m-pose",
+      "task": "person_pose_fall_detection",
+      "primary_runtime": "tensorrt",
+      "artifacts": {
+        "pytorch": "models/yolov8m-pose.pt",
+        "onnx": "models/yolov8m-pose.onnx",
+        "tensorrt": "models/yolov8m-pose.engine"
+      },
+      "input_size": 640,
+      "classes": ["person"],
+      "deployment_target": "accuracy_baseline",
+      "acceptance_criteria": {
+        "min_precision": 0.85,
+        "min_recall": 0.9,
+        "max_avg_latency_ms": 120
+      },
+      "latest_evaluation": null
+    },
+    {
+      "name": "yolov8n",
+      "task": "person_detection_fallback",
+      "primary_runtime": "tensorrt",
+      "artifacts": {
+        "pytorch": "models/yolov8n.pt",
+        "onnx": "models/yolov8n.onnx",
+        "tensorrt": "models/yolov8n.engine"
+      },
+      "input_size": 640,
+      "classes": ["person"],
+      "deployment_target": "fallback",
+      "acceptance_criteria": {
+        "min_precision": 0.8,
+        "min_recall": 0.85,
+        "max_avg_latency_ms": 50
+      },
+      "latest_evaluation": null
+    },
+    {
+      "name": "pphuman_attribute",
+      "task": "person_attribute_classification",
+      "primary_runtime": "onnxruntime",
+      "artifacts": {
+        "onnx": "models/pphuman_attribute.onnx",
+        "paddle": "models/pphuman_attribute_src/PP-LCNet_x1_0_pedestrian_attribute_infer",
+        "label_map": "config/appearance_pphuman_labels.example.json"
+      },
+      "input_size": [256, 192],
+      "classes": [
+        "has_hat",
+        "has_glasses",
+        "upper_sleeve",
+        "upper_pattern",
+        "lower_pattern",
+        "outerwear",
+        "lower_type",
+        "has_boots",
+        "has_backpack",
+        "has_handbag",
+        "holding_objects",
+        "age_group",
+        "gender",
+        "view_direction"
+      ],
+      "deployment_target": "Jetson Orin optional attribute backend",
+      "integration": {
+        "enabled_by": "APPEARANCE_BACKEND=pphuman",
+        "model_env": "APPEARANCE_MODEL_PATH",
+        "label_map_env": "APPEARANCE_LABEL_MAP_PATH",
+        "runtime_env": "APPEARANCE_RUNTIME",
+        "pipeline": "YOLO person bbox -> AttributeCrop -> AppearanceAnalyzer",
+        "runtime_options": ["onnxruntime", "paddle"]
+      },
+      "acceptance_criteria": {
+        "min_attribute_accuracy": 0.8,
+        "max_avg_latency_ms": 35
+      },
+      "latest_evaluation": null
+    }
+  ]
+}

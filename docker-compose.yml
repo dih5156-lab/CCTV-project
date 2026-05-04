@@ -25,6 +25,16 @@
 # From the compose-builder folder use `make build` to regenerate all standard compose files variations
 #
 name: edgex
+
+x-appearance-search-runtime: &appearance-search-runtime
+  APPEARANCES_DB: /app/data/appearances.db
+  APPEARANCE_BACKEND: ${APPEARANCE_BACKEND:-hsv}
+  DS_FACE_ENABLED: ${DS_FACE_ENABLED:-0}
+  DS_APPEARANCE_ENABLED: ${DS_APPEARANCE_ENABLED:-0}
+  DS_HELMET_ENABLED: ${DS_HELMET_ENABLED:-1}
+  DS_YOLO_LABELS: ${DS_YOLO_LABELS:-person}
+  APPEARANCE_CROP_DIR: ${APPEARANCE_CROP_DIR:-/app/data/appearance_crops}
+
 services:
   edgex-mqtt-broker:
     container_name: edgex-mqtt-broker
@@ -212,6 +222,31 @@ services:
       source: db-data
       target: /data
       volume: {}
+
+  aiot-parser-db:
+    container_name: aiot-parser-db
+    hostname: aiot-parser-db
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${AIOT_DB_NAME:-aiot_sensor}
+      POSTGRES_USER: ${AIOT_DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${AIOT_DB_PASSWORD:-postgres}
+    networks:
+      edgex-network: null
+    restart: always
+    healthcheck:
+      test: [
+        "CMD-SHELL",
+        "pg_isready -U ${AIOT_DB_USER:-postgres} -d ${AIOT_DB_NAME:-aiot_sensor}"
+      ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    volumes:
+    - type: volume
+      source: aiot-db-data
+      target: /var/lib/postgresql/data
   device-rest:
     container_name: edgex-device-rest
     depends_on:
@@ -400,7 +435,7 @@ services:
       PYTHONIOENCODING: utf-8
       PYTHONUTF8: "1"
       PYTHONPATH: /app
-      EDGEX_OUTBOX_DB: /data/detection_outbox.db
+      EDGEX_OUTBOX_DB: /data/event_outbox.db
       EDGEX_OUTBOX_RETRY_INTERVAL: "30"
     depends_on:
       edgex-mqtt-broker:
@@ -471,12 +506,25 @@ services:
       read_only: true
     restart: on-failure
 
+  cctv-alert-log-init:
+    container_name: cctv-alert-log-init
+    image: busybox:1.36
+    command: ["sh", "-c", "mkdir -p /app/logs && chown -R 2002:2001 /app/logs"]
+    network_mode: none
+    volumes:
+    - type: volume
+      source: alert-logs
+      target: /app/logs
+    restart: "no"
+
   cctv-alert-api:
     container_name: cctv-alert-api
     build:
       context: .
       dockerfile: Dockerfile.action
     depends_on:
+      cctv-alert-log-init:
+        condition: service_completed_successfully
       edgex-mqtt-broker:
         condition: service_started
     environment:
@@ -619,6 +667,11 @@ services:
       PYTHONIOENCODING: utf-8
       PYTHONUTF8: "1"
       PYTHONUNBUFFERED: "1"
+      DB_HOST: aiot-parser-db
+      DB_PORT: "5432"
+      DB_USER: ${AIOT_DB_USER:-postgres}
+      DB_PW: ${AIOT_DB_PASSWORD:-postgres}
+      DB_NAME: ${AIOT_DB_NAME:-aiot_sensor}
       # EdgeX MQTT 브로커로 파싱 결과 발행
       # topic: aiot/sensors/{dev_eui}/{table_name}
       EDGEX_MQTT_HOST: edgex-mqtt-broker
@@ -626,11 +679,15 @@ services:
       # EdgeX Core Data 직접 push (Outbox 저장 경로)
       EDGEX_CORE_DATA_URL: http://edgex-core-data:59880
       # 로컬 SQLite Outbox 경로 (컨테이너 재시작 시에도 유지)
-      EDGEX_OUTBOX_DB: /data/edgex_outbox.db
+      EDGEX_OUTBOX_DB: /data/event_outbox.db
       EDGEX_OUTBOX_RETRY_INTERVAL: "30"
     volumes:
-      - ./data:/data
+    - type: volume
+      source: aiot-parser-data
+      target: /data
     depends_on:
+      aiot-parser-db:
+        condition: service_healthy
       edgex-mqtt-broker:
         condition: service_started
     networks:
@@ -677,7 +734,7 @@ services:
       # CORS — 서버팀 도메인으로 제한 (예: https://server.example.com)
       CORS_ORIGINS: ${CORS_ORIGINS:-*}
       # 외형 검색 조건 DB 경로
-      APPEARANCES_DB: /app/data/appearances.db
+      <<: *appearance-search-runtime
       # Rate limit 비활성화 옵션 (기본 활성화)
       RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-true}
       # 내부 서비스 인증 시크릿 (action-layer와 동일한 값으로 설정)
@@ -823,4 +880,7 @@ volumes:
     name: cctv_alert-logs
   grafana-data:
     name: cctv_grafana-data
-
+  aiot-db-data:
+    name: cctv_aiot-db-data
+  aiot-parser-data:
+    name: cctv_aiot-parser-data

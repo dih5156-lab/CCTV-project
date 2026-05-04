@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import importlib
 import json
 import socket
 import sys
@@ -19,6 +20,7 @@ class HttpCheck:
     name: str
     url: str
     expect_status: int = 200
+    headers: Optional[dict[str, str]] = None
 
 
 @dataclass(frozen=True)
@@ -43,7 +45,10 @@ def _check_http(item: HttpCheck, timeout: float) -> tuple[bool, str]:
     """HTTP 엔드포인트 응답 상태를 확인한다."""
     request = urllib.request.Request(
         item.url,
-        headers={"User-Agent": "jetson-edgex-check/1.0"},
+        headers={
+            "User-Agent": "jetson-edgex-check/1.0",
+            **(item.headers or {}),
+        },
     )
     try:
         with urllib.request.urlopen(request, timeout=timeout) as response:
@@ -63,15 +68,49 @@ def _print_result(ok: bool, name: str, detail: str) -> None:
     print(f"[{prefix}] {name}: {detail}")
 
 
-def _build_http_checks(host: str) -> list[HttpCheck]:
-    """기본 HTTP 점검 목록을 구성한다."""
+def _check_python_import(name: str) -> tuple[bool, str]:
+    """Python 모듈 import 가능 여부를 확인한다."""
+    try:
+        importlib.import_module(name)
+        return True, "import 성공"
+    except Exception as exc:
+        return False, f"{type(exc).__name__}: {exc}"
+
+
+def _build_deepstream_checks() -> list[tuple[str, str]]:
+    """DeepStream Python 런타임 점검 목록을 구성한다."""
     return [
+        ("GStreamer Python", "gi"),
+        ("DeepStream pyds", "pyds"),
+    ]
+
+
+def _build_http_checks(
+    host: str,
+    *,
+    public_api_port: int,
+    public_api_key: str,
+    include_appearance_status: bool,
+) -> list[HttpCheck]:
+    """기본 HTTP 점검 목록을 구성한다."""
+    checks = [
         HttpCheck("EdgeX Core Metadata", f"http://{host}:59881/api/v3/ping"),
         HttpCheck("EdgeX Core Data", f"http://{host}:59880/api/v3/ping"),
         HttpCheck("AIoT Parser", f"http://{host}:3500/health"),
         HttpCheck("Alert API", f"http://{host}:8000/health"),
         HttpCheck("Action Layer", f"http://{host}:8080/health"),
+        HttpCheck("Public API", f"http://{host}:{public_api_port}/api/v1/health"),
     ]
+    if include_appearance_status:
+        headers = {"X-API-Key": public_api_key} if public_api_key else None
+        checks.append(
+            HttpCheck(
+                "Public API Appearance Status",
+                f"http://{host}:{public_api_port}/api/v1/appearances/status",
+                headers=headers,
+            )
+        )
+    return checks
 
 
 def _build_tcp_checks(
@@ -116,6 +155,8 @@ def main(argv: Optional[list[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Jetson + EdgeX 스택 점검")
     parser.add_argument("--host", default="127.0.0.1", help="Jetson 호스트 주소")
     parser.add_argument("--timeout", type=float, default=3.0, help="개별 점검 타임아웃(초)")
+    parser.add_argument("--public-api-port", type=int, default=9000, help="Public API 포트")
+    parser.add_argument("--public-api-key", default="", help="Public API Key (appearances/status 점검 시 사용)")
     parser.add_argument("--speaker-host", default="", help="스피커 장비 주소")
     parser.add_argument("--speaker-port", type=int, default=80, help="스피커 장비 포트")
     parser.add_argument("--signboard-host", default="", help="전광판 장비 주소")
@@ -126,6 +167,16 @@ def main(argv: Optional[list[str]] = None) -> int:
         "--json",
         action="store_true",
         help="사람용 출력 대신 JSON 으로 결과를 반환",
+    )
+    parser.add_argument(
+        "--deepstream",
+        action="store_true",
+        help="DeepStream Python 바인딩(gi, pyds) import 가능 여부도 점검",
+    )
+    parser.add_argument(
+        "--check-appearance-status",
+        action="store_true",
+        help="Public API의 /api/v1/appearances/status 도 함께 점검",
     )
     args = parser.parse_args(argv)
 
@@ -146,11 +197,23 @@ def main(argv: Optional[list[str]] = None) -> int:
         if not ok:
             failures.append(item.name)
 
-    for item in _build_http_checks(host=args.host):
+    for item in _build_http_checks(
+        host=args.host,
+        public_api_port=args.public_api_port,
+        public_api_key=args.public_api_key,
+        include_appearance_status=args.check_appearance_status,
+    ):
         ok, detail = _check_http(item, timeout=args.timeout)
         results.append({"type": "http", "name": item.name, "ok": ok, "detail": detail})
         if not ok:
             failures.append(item.name)
+
+    if args.deepstream:
+        for name, module_name in _build_deepstream_checks():
+            ok, detail = _check_python_import(module_name)
+            results.append({"type": "python", "name": name, "ok": ok, "detail": detail})
+            if not ok:
+                failures.append(name)
 
     if args.json:
         print(json.dumps({"results": results, "failures": failures}, ensure_ascii=False, indent=2))

@@ -1,7 +1,7 @@
 # AIoT TLV Parser Dockerfile
 # LoRa 센서 MQTT 수신 → TLV 파싱 → DB 저장 + EdgeX MQTT 발행
 
-FROM python:3.10-slim
+FROM python:3.10-slim-bookworm
 
 WORKDIR /app
 

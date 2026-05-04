@@ -1,7 +1,7 @@
 # CCTV Pipeline Runtime Dockerfile
 
 # Stage 1: Builder
-FROM python:3.10-slim AS builder
+FROM python:3.10-slim-bookworm AS builder
 
 WORKDIR /build
 
@@ -15,7 +15,7 @@ COPY requirements.txt .
 RUN pip install --user --no-cache-dir -r requirements.txt
 
 # Stage 2: Runtime
-FROM python:3.10-slim
+FROM python:3.10-slim-bookworm
 
 # OpenCV 시스템 의존성 설치 (headless 버전 - GUI 없음)
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -32,6 +32,8 @@ RUN groupadd -r cctv && useradd -r -g cctv cctv
 
 # 작업 디렉터리
 WORKDIR /app
+
+RUN mkdir -p /app/models /app/event_backup && chown -R cctv:cctv /app
 
 # Builder에서 Python 패키지 복사
 COPY --from=builder /root/.local /home/cctv/.local
@@ -50,10 +52,11 @@ COPY --chown=cctv:cctv src /app/src
 COPY --chown=cctv:cctv main.py /app/main.py
 COPY --chown=cctv:cctv runners /app/runners
 COPY --chown=cctv:cctv kuiper /app/kuiper
+COPY --chown=cctv:cctv models/model_manifest.json /app/models/model_manifest.json
 COPY --chown=cctv:cctv requirements.txt /app/
 
-# 모델 디렉터리 생성
-RUN mkdir -p /app/models /app/event_backup && chown -R cctv:cctv /app
+# 런타임 쓰기 디렉터리 권한 보정
+RUN chown -R cctv:cctv /app
 
 USER cctv
 

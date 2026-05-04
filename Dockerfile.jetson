@@ -24,6 +24,8 @@ LABEL maintainer="CCTV-project" \
       cuda="12.6" \
       tensorrt="10.3.0"
 
+ARG PYDS_WHEEL_URL="https://github.com/NVIDIA-AI-IOT/deepstream_python_apps/releases/download/v1.2.0/pyds-1.2.0-cp310-cp310-linux_aarch64.whl"
+
 # ── 환경 변수 ─────────────────────────────────────────────────────────────────
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
@@ -40,6 +42,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-dev \
     python3-setuptools \
     python3-wheel \
+    build-essential \
     # OpenCV 런타임 라이브러리
     libglib2.0-0 \
     libgomp1 \
@@ -53,6 +56,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gstreamer1.0-libav \
     libgstreamer1.0-dev \
     libgstreamer-plugins-base1.0-dev \
+    python3-gi \
+    python3-gst-1.0 \
+    gir1.2-gstreamer-1.0 \
+    # DeepStream host runtime plugins loaded from /opt/nvidia/deepstream need these Ubuntu libs
+    libyaml-cpp0.7 \
+    libjsoncpp25 \
+    libgstrtspserver-1.0-0 \
     # 네트워크 / 유틸
     curl \
     wget \
@@ -65,33 +75,38 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN pip3 install --no-cache-dir --upgrade pip setuptools wheel && \
     ln -sf /usr/bin/python3 /usr/local/bin/python
 
-# ── PyTorch 2.5 설치 (JetPack 6.2 / CUDA 12.6 전용 NVIDIA 공식 빌드) ──────────
-# 우선순위:
-# 1차: jetson-ai-lab 공식 JP6/cu126 PyPI (권장, 가장 안정적)
-# 2차: NVIDIA NGC 공식 wheel 직접 다운로드 (JP6.2 전용 aarch64 빌드)
-# 3차: NVIDIA NGC PyPI (사전 릴리스 포함)
-RUN pip3 install --no-cache-dir \
-        --extra-index-url https://pypi.jetson-ai-lab.dev/jp6/cu126 \
-        "torch>=2.5.0" "torchvision>=0.20.0" \
-    || pip3 install --no-cache-dir \
-        "https://developer.download.nvidia.com/compute/redist/jp/v62/pytorch/torch-2.5.0a0+872d972e41.nv24.08-cp310-cp310-linux_aarch64.whl" \
-    || pip3 install --no-cache-dir \
-        --pre --extra-index-url https://pypi.ngc.nvidia.com \
-        "torch>=2.5.0"
+# ── PyTorch / torchvision은 런타임 bind mount로 주입 ─────────────────────────
+# Jetson GPU wheel은 호스트의 큰 디스크에 설치해두고 docker-compose.jetson.yml에서
+# /usr/local/lib/python3.10/dist-packages 로 마운트한다. 빌드 중 PyPI torch를 받으면
+# CUDA 13 계열 대용량 wheel까지 끌려와 저장공간과 시간을 크게 낭비한다.
+RUN echo "Skipping torch/torchvision install; Jetson GPU wheels are mounted at runtime."
 
 # ── Python 의존성 설치 ─────────────────────────────────────────────────────────
-# torch / torchvision / torchaudio 는 위에서 설치 완료 → requirements에서 제외
+# torch / torchvision / torchaudio 는 런타임 마운트 → requirements에서 제외
 # opencv-python → opencv-python-headless (Jetson 헤드리스 환경)
 WORKDIR /build
 COPY requirements-ai.txt .
+COPY requirements-face-jetson.txt .
 
-RUN grep -vE '^(torch|torchvision|torchaudio|opencv-python)([>=<!~ ]|$)' requirements-ai.txt \
+RUN grep -vE '^(ultralytics|torch|torchvision|torchaudio|opencv-python|openCV-python|numpy)([>=<!~ ]|$)' requirements-ai.txt \
     > requirements-ai-jetson.txt && \
+    pip3 install --no-cache-dir -r requirements-ai-jetson.txt && \
     pip3 install --no-cache-dir \
-        --extra-index-url https://pypi.jetson-ai-lab.dev/jp6/cu126 \
-        --extra-index-url https://pypi.ngc.nvidia.com \
-        -r requirements-ai-jetson.txt && \
-    pip3 install --no-cache-dir "opencv-python-headless>=4.8.0"
+        "numpy<2.0.0" \
+        "opencv-python-headless>=4.8.0" \
+        "matplotlib>=3.3.0" \
+        "pyyaml>=5.3.1" \
+        "scipy>=1.4.1" \
+        "psutil>=5.8.0" \
+        "polars>=0.20.0" \
+        "filelock" \
+        "typing-extensions>=4.10.0" \
+        "sympy>=1.13.3" \
+        "networkx>=2.5.1" \
+        "jinja2" \
+        "fsspec>=0.8.5" && \
+    pip3 install --no-cache-dir --no-deps "ultralytics-thop>=2.0.18" && \
+    pip3 install --no-cache-dir --no-deps "ultralytics>=8.0.0"
 
 # pydantic 버전 보장 (speaker-edgex dtos 의존성)
 RUN pip3 install --no-cache-dir "pydantic>=2.5.0,<3.0.0"
@@ -99,6 +114,16 @@ RUN pip3 install --no-cache-dir "pydantic>=2.5.0,<3.0.0"
 # NumPy 1.x 고정 (PyTorch JP6.2 빌드는 NumPy 1.x 기준으로 컴파일됨)
 # NumPy 2.x 사용 시 ImportError: _ARRAY_API not found 발생
 RUN pip3 install --no-cache-dir "numpy<2.0.0"
+
+# ── 얼굴 인식 추가 의존성 ─────────────────────────────────────────────
+# InsightFace는 aarch64에서 일부 Cython 확장을 빌드하므로 Cython을 먼저 보장한다.
+RUN pip3 install --no-cache-dir "Cython>=3.0.0" && \
+    pip3 install --no-cache-dir -r requirements-face-jetson.txt
+
+# ── DeepStream Python bindings (pyds) ────────────────────────────────────────
+# DeepStream 7.1 / Ubuntu 22.04 / Python 3.10 / Jetson(aarch64) 공식 wheel.
+# pyds 가 없으면 USE_DEEPSTREAM=1 설정 시 VideoProcessor 로 폴백된다.
+RUN pip3 install --no-cache-dir "${PYDS_WHEEL_URL}"
 
 # ── libcusparseLt 심링크 설정 ──────────────────────────────────────
 # l4t-jetpack 베이스에 libcusparseLt가 /usr/lib/aarch64-linux-gnu/libcusparseLt/13/ 에 있지만
@@ -118,14 +143,18 @@ RUN id cctv 2>/dev/null \
 # ── 앱 코드 복사 ──────────────────────────────────────────────────────────────
 WORKDIR /app
 
+RUN mkdir -p /app/models /app/event_backup \
+    && chown -R cctv:cctv /app
+
 COPY --chown=cctv:cctv src         /app/src
 COPY --chown=cctv:cctv main.py     /app/main.py
 COPY --chown=cctv:cctv runners     /app/runners
 COPY --chown=cctv:cctv kuiper      /app/kuiper
+COPY --chown=cctv:cctv config      /app/config
+COPY --chown=cctv:cctv models/model_manifest.json /app/models/model_manifest.json
 COPY --chown=cctv:cctv requirements.txt /app/
 
-RUN mkdir -p /app/models /app/event_backup \
-    && chown -R cctv:cctv /app
+RUN chown -R cctv:cctv /app
 
 # ── 기본 진입점 ───────────────────────────────────────────────────────────────
 CMD ["python3", "main.py", "--help"]

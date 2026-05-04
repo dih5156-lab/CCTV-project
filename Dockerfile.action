@@ -5,10 +5,10 @@
 #              (AI 추론 불필요 — torch/ultralytics/opencv 제외)
 #
 # 사용 플랫폼: x86-64 (기본) 및 ARM64 (Jetson 포함)
-#              python:3.10-slim 은 multi-arch 이미지이므로 별도 수정 불필요
+#              python:3.10-slim-bookworm 은 multi-arch 이미지이므로 별도 수정 불필요
 # ==============================================================================
 
-FROM python:3.10-slim
+FROM python:3.10-slim-bookworm
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
@@ -29,11 +29,16 @@ RUN groupadd -r -g 2001 cctv && useradd -r -u 2002 -g cctv cctv
 
 WORKDIR /app
 
+RUN mkdir -p /app/models /app/event_backup && chown -R cctv:cctv /app
+
 COPY --chown=cctv:cctv src         /app/src
 COPY --chown=cctv:cctv runners     /app/runners
 COPY --chown=cctv:cctv kuiper      /app/kuiper
+COPY --chown=cctv:cctv models/model_manifest.json /app/models/model_manifest.json
 COPY --chown=cctv:cctv requirements-action.txt /app/
 
-RUN mkdir -p /app/event_backup && chown -R cctv:cctv /app
+RUN chown -R cctv:cctv /app
+
+USER cctv
 
 CMD ["python", "--help"]

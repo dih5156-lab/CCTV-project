@@ -36,6 +36,9 @@ Local Test Sever/
 # 런타임 생성 데이터
 event_backup/
 data/crops/
+data/appearance_crops/
+data/face_snapshots/
+data/insightface/
 snapshots/
 logs/
 tmp_probe_dir/
@@ -82,6 +85,7 @@ test-results.xml
 
 # 모델 캐시 (TensorRT 변환 결과는 로컬 전용)
 *.engine
+models/*.onnx
 
 .venv/
 
