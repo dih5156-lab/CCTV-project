@@ -12,7 +12,9 @@ import threading
 import time
 import urllib.request
 import urllib.error
+from io import BytesIO
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -52,6 +54,12 @@ def cameras_json(tmp_path: Path) -> Path:
 def _build_processor() -> MagicMock:
     """가짜 VideoProcessor를 생성한다."""
     proc = MagicMock()
+    proc.get_camera_status = MagicMock(
+        return_value={
+            "camera_1": {"status": "online"},
+            "camera_2": {"status": "offline"},
+        }
+    )
     proc.get_camera_model_settings = MagicMock(
         side_effect=lambda camera_id: {
             "camera_1": {"use_pose": True, "use_helmet": True, "use_person": False},
@@ -78,7 +86,10 @@ def _live_server(processor, cameras_json_path: str, port: int = 0):
     """실제 HTTP 서버를 스레드로 기동하여 반환한다."""
     from http.server import HTTPServer
 
-    server = HTTPServer(("127.0.0.1", port), CameraModelApiHandler)
+    try:
+        server = HTTPServer(("127.0.0.1", port), CameraModelApiHandler)
+    except PermissionError as exc:
+        pytest.skip(f"이 환경에서는 로컬 소켓 바인딩이 허용되지 않음: {exc}")
     server.processor = processor
     server.cameras_json_path = cameras_json_path
     t = threading.Thread(target=server.serve_forever, daemon=True)
@@ -88,6 +99,28 @@ def _live_server(processor, cameras_json_path: str, port: int = 0):
 
 
 from tests.conftest import http_request as _request
+
+
+def _make_handler(processor, cameras_json_path: str, path: str) -> CameraModelApiHandler:
+    handler = CameraModelApiHandler.__new__(CameraModelApiHandler)
+    handler.server = SimpleNamespace(
+        processor=processor,
+        cameras_json_path=cameras_json_path,
+    )
+    handler.path = path
+    handler.headers = {}
+    handler.wfile = BytesIO()
+    handler.rfile = BytesIO(b"")
+    handler.requestline = f"GET {path} HTTP/1.1"
+    handler.command = "GET"
+    responses: list[tuple[int, dict]] = []
+
+    def _mock_respond(code: int, body) -> None:
+        responses.append((code, body))
+
+    handler._respond = _mock_respond  # type: ignore[method-assign]
+    handler._responses = responses  # type: ignore[attr-defined]
+    return handler
 
 
 # ===========================================================================
@@ -126,6 +159,36 @@ class TestCameraModelApiGET:
     def test_get_unknown_path_returns_404(self):
         code, _ = _request("GET", f"{self.base}/cameras")
         assert code == 404
+
+    def test_health_returns_service_metadata(self):
+        code, body = _request("GET", f"{self.base}/health")
+        assert code == 200
+        assert body["service"] == "cctv-camera-model-api"
+        assert body["status"] == "ok"
+        assert body["camera_count"] == 2
+        assert "checked_at" in body
+
+
+def test_health_direct_handler_returns_service_metadata(cameras_json: Path):
+    proc = _build_processor()
+    handler = _make_handler(proc, str(cameras_json), "/health")
+    handler.do_GET()
+    code, body = handler._responses[0]  # type: ignore[attr-defined]
+    assert code == 200
+    assert body["service"] == "cctv-camera-model-api"
+    assert body["status"] == "ok"
+    assert body["camera_count"] == 2
+    assert "checked_at" in body
+
+
+def test_camera_model_api_requires_internal_token_when_configured(cameras_json: Path):
+    proc = _build_processor()
+    handler = _make_handler(proc, str(cameras_json), "/cameras/camera_1/models")
+    with patch.dict("os.environ", {"INTERNAL_SERVICE_TOKEN": "internal-secret"}):
+        handler.do_GET()
+    code, body = handler._responses[0]  # type: ignore[attr-defined]
+    assert code == 401
+    assert body["error"] == "Unauthorized"
 
 
 # ===========================================================================

@@ -89,7 +89,7 @@ def _read_events(
     ),
 )
 @limiter.limit("60/minute")
-def list_events(
+async def list_events(
     request: Request,
     limit: int = Query(default=50, ge=1, le=500, description="페이지 크기"),
     offset: int = Query(default=0, ge=0, description="시작 오프셋"),

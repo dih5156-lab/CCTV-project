@@ -33,7 +33,7 @@ http_requests_total: Counter = Counter(
 
 
 @router.get("/metrics", include_in_schema=False)
-def get_metrics() -> Response:
+async def get_metrics() -> Response:
     """Prometheus 메트릭 스크랩 엔드포인트.
 
     Python 프로세스 메트릭(gc, memory, threads 등)과

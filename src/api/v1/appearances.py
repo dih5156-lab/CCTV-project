@@ -9,20 +9,22 @@
 
 from __future__ import annotations
 
-import json
 import logging
 import os
-import sqlite3
 import uuid
-from contextlib import contextmanager
 from pathlib import Path
-from typing import Generator, List, Optional
+from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field, model_validator
 
 from ..dependencies.auth import verify_api_key
 from ..schemas.common import BaseResponse, success_response
+from ...services.appearance_conditions import AppearanceConditionStore
+from ...services.appearance_status import (
+    AppearanceRuntimeStatus,
+    build_runtime_status,
+)
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/appearances", tags=["appearances"])
@@ -34,7 +36,6 @@ _VALID_COLORS = frozenset({
     "red", "orange", "yellow", "green", "blue",
     "purple", "white", "black", "gray",
 })
-
 
 class AppearanceConditionIn(BaseModel):
     """외형 조건 등록 요청."""
@@ -126,47 +127,15 @@ class AppearanceConditionList(BaseModel):
     total: int
 
 
-# ── SQLite 영속화 저장소 ─────────────────────────────────────────────
 _DB_PATH = Path(os.environ.get("APPEARANCES_DB", "/app/data/appearances.db"))
-
-_SCHEMA = """
-CREATE TABLE IF NOT EXISTS search_conditions (
-    id          TEXT PRIMARY KEY,
-    name        TEXT NOT NULL,
-    payload     TEXT NOT NULL,
-    enabled     INTEGER NOT NULL DEFAULT 1,
-    created_at  TEXT NOT NULL
-);
-"""
-
-
-@contextmanager
-def _db() -> Generator[sqlite3.Connection, None, None]:
-    _DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(str(_DB_PATH))
-    conn.row_factory = sqlite3.Row
-    try:
-        conn.execute(_SCHEMA)
-        conn.commit()
-        yield conn
-    finally:
-        conn.close()
-
-
-def _row_to_dict(row: sqlite3.Row) -> dict:
-    entry = json.loads(row["payload"])
-    entry["id"] = row["id"]
-    entry["name"] = row["name"]
-    entry["enabled"] = bool(row["enabled"])
-    return entry
 
 
 def _load_all() -> List[dict]:
-    with _db() as conn:
-        rows = conn.execute(
-            "SELECT * FROM search_conditions ORDER BY created_at"
-        ).fetchall()
-    return [_row_to_dict(r) for r in rows]
+    return AppearanceConditionStore(_DB_PATH).list_all()
+
+
+def _build_runtime_status() -> AppearanceRuntimeStatus:
+    return build_runtime_status(_DB_PATH)
 
 
 # AppearanceAnalyzer 인스턴스 참조 (앱 시작 시 주입)
@@ -208,6 +177,21 @@ async def list_conditions(
     )
 
 
+@router.get(
+    "/status",
+    response_model=BaseResponse[AppearanceRuntimeStatus],
+    summary="외형 검색 준비 상태 조회",
+    description=(
+        "대시보드에서 외형 검색 필드별 준비 상태와 실제 적재 통계를 함께 조회합니다. "
+        "값이 비는 원인이 설정 문제인지, 데이터 부족인지 구분할 때 사용합니다."
+    ),
+)
+async def get_appearance_status(
+    _: None = Depends(verify_api_key),
+) -> BaseResponse[AppearanceRuntimeStatus]:
+    return success_response(_build_runtime_status())
+
+
 @router.post(
     "",
     response_model=BaseResponse[AppearanceConditionOut],
@@ -219,7 +203,6 @@ async def create_condition(
     body: AppearanceConditionIn,
     _: None = Depends(verify_api_key),
 ) -> BaseResponse[AppearanceConditionOut]:
-    from datetime import datetime, timezone
     cid = str(uuid.uuid4())[:8]
     payload = {
         "upper_color": body.upper_color,
@@ -232,18 +215,15 @@ async def create_condition(
         "threshold": body.threshold,
         "cameras": body.cameras,
     }
-    with _db() as conn:
-        conn.execute(
-            "INSERT INTO search_conditions (id, name, payload, enabled, created_at) "
-            "VALUES (?, ?, ?, ?, ?)",
-            (cid, body.name, json.dumps(payload), int(body.enabled),
-             datetime.now(timezone.utc).isoformat()),
-        )
-        conn.commit()
+    entry = AppearanceConditionStore(_DB_PATH).create(
+        condition_id=cid,
+        name=body.name,
+        payload=payload,
+        enabled=body.enabled,
+    )
     _sync_to_analyzer()
     logger.info("외형 조건 등록: %s (%s)", cid, body.name)
 
-    entry = {"id": cid, "name": body.name, "enabled": body.enabled, **payload}
     return success_response(AppearanceConditionOut(**entry))
 
 
@@ -257,14 +237,7 @@ async def delete_condition(
     condition_id: str,
     _: None = Depends(verify_api_key),
 ) -> BaseResponse[dict]:
-    with _db() as conn:
-        cur = conn.execute(
-            "DELETE FROM search_conditions WHERE id = ?", (condition_id,)
-        )
-        conn.commit()
-        deleted = cur.rowcount
-
-    if not deleted:
+    if not AppearanceConditionStore(_DB_PATH).delete(condition_id):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"조건을 찾을 수 없습니다: {condition_id}",

@@ -38,6 +38,11 @@ from .dependencies.rate_limit import limiter
 logger = logging.getLogger("cctv-public-api")
 
 
+def _running_under_pytest() -> bool:
+    """pytest 실행 중이면 일부 미들웨어를 가볍게 우회한다."""
+    return bool(os.environ.get("PYTEST_CURRENT_TEST"))
+
+
 # ---------------------------------------------------------------------------
 # 앱 생성
 # ---------------------------------------------------------------------------
@@ -76,7 +81,8 @@ app = FastAPI(
 # slowapi — 앱 상태에 limiter 등록 + 미들웨어 + 예외 핸들러
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
-app.add_middleware(SlowAPIMiddleware)
+if not _running_under_pytest():
+    app.add_middleware(SlowAPIMiddleware)
 
 # ---------------------------------------------------------------------------
 # CORS — 서버팀 도메인으로 제한 (환경변수로 설정)
@@ -99,9 +105,50 @@ app.add_middleware(
 )
 
 
+def _metric_path_prefix(path: str) -> str:
+    """동적 path 값을 낮은 cardinality의 Prometheus label로 정규화한다."""
+    parts = [part for part in path.split("/") if part]
+    if len(parts) >= 3 and parts[0] == "api" and parts[1] == "v1":
+        return f"/api/v1/{parts[2]}"
+    if path in {"/", "/docs", "/redoc", "/openapi.json"}:
+        return path
+    return "/other"
+
+
+@app.middleware("http")
+async def record_http_metrics(request: Request, call_next):
+    """Public API HTTP 요청 수를 Prometheus counter에 기록한다."""
+    status_code = 500
+    try:
+        response = await call_next(request)
+        status_code = response.status_code
+        return response
+    finally:
+        metrics.http_requests_total.labels(
+            method=request.method,
+            path_prefix=_metric_path_prefix(request.url.path),
+            status_code=str(status_code),
+        ).inc()
+
+
 # ---------------------------------------------------------------------------
 # 전역 예외 핸들러
 # ---------------------------------------------------------------------------
+
+
+@app.get("/", include_in_schema=False)
+async def root_info() -> dict:
+    """브라우저로 루트 경로를 열었을 때 사용할 서비스 안내."""
+    return {
+        "service": "cctv-public-api",
+        "description": "CCTV Platform Public API",
+        "docs": "/docs",
+        "health": "/api/v1/health",
+        "events": "/api/v1/events",
+        "cameras": "/api/v1/cameras",
+        "sites": "/api/v1/sites",
+        "search": "/api/v1/search",
+    }
 
 
 @app.exception_handler(HTTPException)

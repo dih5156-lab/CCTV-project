@@ -75,8 +75,12 @@ class FaceApiHandler(BaseApiHandler):
         self.end_headers()
 
     def do_GET(self):  # noqa: N802
+        if not self._check_internal_token():
+            return
         path = self.path.split("?")[0].rstrip("/")
-        if path == "/faces":
+        if path == "/health":
+            self._health()
+        elif path == "/faces":
             self._get_faces()
         elif m := _RE_KNOWN_FACE_IMG.match(path):
             self._serve_image(m.group(1))
@@ -84,6 +88,8 @@ class FaceApiHandler(BaseApiHandler):
             self._respond(404, {"error": "Not Found"})
 
     def do_POST(self):  # noqa: N802
+        if not self._check_internal_token():
+            return
         path = self.path.rstrip("/")
         if path == "/faces":
             self._post_face()
@@ -92,6 +98,8 @@ class FaceApiHandler(BaseApiHandler):
             self._respond(404, {"error": "Not Found"})
 
     def do_DELETE(self):  # noqa: N802
+        if not self._check_internal_token():
+            return
         path = self.path.rstrip("/")
         if m := _RE_FACE_ID.match(path):
             self._delete_face(m.group(1))
@@ -101,6 +109,18 @@ class FaceApiHandler(BaseApiHandler):
     # ------------------------------------------------------------------
     # GET 핸들러
     # ------------------------------------------------------------------
+
+    def _health(self) -> None:
+        processor = self._processor()
+        faces = processor.list_registered_faces() if hasattr(processor, "list_registered_faces") else []
+        self._respond(
+            200,
+            self._build_health_payload(
+                service="cctv-face-api",
+                status="ok",
+                face_count=len(faces),
+            ),
+        )
 
     def _get_faces(self) -> None:
         try:
@@ -230,6 +250,7 @@ def start_face_api_server(
         name="FaceApiServer",
     ).start()
     logger.info("Face API 서버 시작: http://0.0.0.0:%d", port)
+    logger.info("  GET    /health")
     logger.info("  GET    /faces")
     logger.info("  POST   /faces")
     logger.info("  DELETE /faces/{face_id}")

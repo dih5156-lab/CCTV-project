@@ -1,6 +1,8 @@
 """API Key 인증 의존성.
 
-X-API-Key 헤더 또는 ?api_key= 쿼리 파라미터로 인증한다.
+기본적으로 X-API-Key 헤더만 허용한다.
+운영상 꼭 필요할 때만 PUBLIC_API_ALLOW_QUERY_KEY=1 로
+?api_key= 쿼리 파라미터 인증을 임시 허용할 수 있다.
 환경변수 PUBLIC_API_KEY 에 설정된 값과 대조한다.
 키가 설정되지 않으면 개발 편의를 위해 통과시키되 경고를 남긴다.
 """
@@ -25,7 +27,16 @@ def _get_configured_key() -> str | None:
     return os.environ.get("PUBLIC_API_KEY") or None
 
 
-def verify_api_key(
+def _allow_query_api_key() -> bool:
+    return os.environ.get("PUBLIC_API_ALLOW_QUERY_KEY", "0").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
+
+
+async def verify_api_key(
     header_key: str | None = Security(_api_key_header),
     query_key: str | None = Security(_api_key_query),
 ) -> None:
@@ -40,11 +51,16 @@ def verify_api_key(
         )
         return
 
-    provided = header_key or query_key
+    provided = header_key
+    if provided is None and _allow_query_api_key():
+        provided = query_key
     if provided is None:
+        detail = "API Key가 필요합니다. X-API-Key 헤더를 제공하세요."
+        if _allow_query_api_key():
+            detail = "API Key가 필요합니다. X-API-Key 헤더 또는 ?api_key= 파라미터를 제공하세요."
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="API Key가 필요합니다. X-API-Key 헤더 또는 ?api_key= 파라미터를 제공하세요.",
+            detail=detail,
         )
 
     # timing-safe 비교로 timing attack 방지

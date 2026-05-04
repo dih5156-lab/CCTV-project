@@ -119,7 +119,10 @@ def api_server(tmp_path):
     processor = MagicMock()
     processor.zone_manager = None  # 기본적으로 비활성화
 
-    server = HTTPServer(("127.0.0.1", 0), ZoneApiHandler)
+    try:
+        server = HTTPServer(("127.0.0.1", 0), ZoneApiHandler)
+    except PermissionError as exc:
+        pytest.skip(f"이 환경에서는 로컬 소켓 바인딩이 허용되지 않음: {exc}")
     server.processor = processor
     server.cameras_json_path = str(cameras_file)
     server.preset_store = ZonePresetStore(presets_file)

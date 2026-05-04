@@ -28,6 +28,7 @@ router = APIRouter(prefix="/sites", tags=["sites"])
     "",
     response_model=BaseResponse[List[SiteOut]],
     summary="사이트 목록 조회",
+    description="Action Layer에 등록된 사이트 목록을 반환합니다. 사이트별 camera_ids, control_mode, alarm_devices를 포함합니다.",
 )
 async def list_sites(_: None = Depends(verify_api_key)) -> BaseResponse[List[SiteOut]]:
     raw = await proxy_action_request(_ACTION_URL, "get", "/sites")
@@ -40,6 +41,7 @@ async def list_sites(_: None = Depends(verify_api_key)) -> BaseResponse[List[Sit
     response_model=BaseResponse[dict],
     status_code=status.HTTP_201_CREATED,
     summary="사이트 등록",
+    description="새 사이트를 Action Layer에 등록합니다. site_id는 중복되면 안 되며, camera_ids는 현장 카메라 ID와 맞아야 합니다.",
 )
 async def create_site(
     body: SiteCreateIn,
@@ -53,6 +55,7 @@ async def create_site(
     "/{site_id}",
     response_model=BaseResponse[dict],
     summary="사이트 삭제",
+    description="기존 사이트 1건을 삭제합니다. 삭제 후 해당 사이트의 수동 승인/제어 설정도 함께 사라질 수 있습니다.",
 )
 async def delete_site(
     site_id: str = Path(min_length=1),

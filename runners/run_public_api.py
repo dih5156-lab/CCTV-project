@@ -8,6 +8,13 @@ from __future__ import annotations
 
 import argparse
 import logging
+import sys
+from pathlib import Path
+
+_RUNNER_DIR = Path(__file__).resolve().parent
+_PROJECT_ROOT = _RUNNER_DIR.parent
+if str(_PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT))
 
 from runners._shared import ensure_project_root, setup_runner_logging
 

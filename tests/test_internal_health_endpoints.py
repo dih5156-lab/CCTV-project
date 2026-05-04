@@ -78,6 +78,28 @@ def test_alert_health_response_contains_service_metadata() -> None:
     assert "checked_at" in body
 
 
+def test_alert_root_response_guides_browser_users() -> None:
+    handler = _make_alert_handler("/")
+    handler.do_GET()
+    code, body = handler._responses[0]  # type: ignore[attr-defined]
+    assert code == 200
+    assert body["service"] == "cctv-alert-api"
+    assert body["health"] == "GET /health"
+    assert body["alerts"] == "POST /api/alerts"
+    assert body["sensor_readings"] == "POST /api/sensor-readings"
+
+
+def test_alert_get_post_only_endpoint_returns_method_guidance() -> None:
+    handler = _make_alert_handler("/api/alerts")
+    handler.do_GET()
+    code, body = handler._responses[0]  # type: ignore[attr-defined]
+    assert code == 405
+    assert body["error"] == "method not allowed"
+    assert body["path"] == "/api/alerts"
+    assert body["allowed"] == "POST"
+    assert "POST" in body["hint"]
+
+
 def test_action_layer_health_response_contains_service_metadata() -> None:
     handler = _make_rest_handler()
     handler.do_GET()
@@ -87,6 +109,17 @@ def test_action_layer_health_response_contains_service_metadata() -> None:
     assert body["status"] == "up"
     assert body["mqtt"] == "connected"
     assert "checked_at" in body
+
+
+def test_action_layer_root_response_guides_browser_users() -> None:
+    handler = _make_rest_handler("/")
+    handler.do_GET()
+    code, body = handler._responses[0]  # type: ignore[attr-defined]
+    assert code == 200
+    assert body["service"] == "cctv-action-layer"
+    assert body["health"] == "GET /health"
+    assert body["sites"] == "GET/POST /sites, DELETE /sites/{site_id}"
+    assert body["approve"] == "POST /approve/{event_id}"
 
 
 def test_action_layer_health_degraded_when_mqtt_is_down() -> None:

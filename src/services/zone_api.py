@@ -126,8 +126,12 @@ class ZoneApiHandler(BaseApiHandler):
         self.end_headers()
 
     def do_GET(self):  # noqa: N802
+        if not self._check_internal_token():
+            return
         path = self.path.split("?")[0].rstrip("/")
-        if path == "/cameras":
+        if path == "/health":
+            self._health()
+        elif path == "/cameras":
             self._get_cameras()
         elif path == "/zone-presets":
             self._get_presets()
@@ -137,6 +141,8 @@ class ZoneApiHandler(BaseApiHandler):
             self._respond(404, {"error": "Not Found"})
 
     def do_POST(self):  # noqa: N802
+        if not self._check_internal_token():
+            return
         path = self.path.rstrip("/")
         if path == "/zone-presets":
             self._post_preset()
@@ -155,6 +161,8 @@ class ZoneApiHandler(BaseApiHandler):
             self._respond(404, {"error": "Not Found"})
 
     def do_DELETE(self):  # noqa: N802
+        if not self._check_internal_token():
+            return
         path = self.path.rstrip("/")
         if m := _RE_CAMERA_ZONE_ID.match(path):
             self._delete_camera_zone(m.group(1), m.group(2))
@@ -166,6 +174,18 @@ class ZoneApiHandler(BaseApiHandler):
     # ------------------------------------------------------------------
     # GET 핸들러
     # ------------------------------------------------------------------
+
+    def _health(self) -> None:
+        cameras = self._load_cameras()
+        self._respond(
+            200,
+            self._build_health_payload(
+                service="cctv-zone-api",
+                status="ok",
+                camera_count=len(cameras),
+                preset_count=len(self._presets().list_all()),
+            ),
+        )
 
     def _get_cameras(self) -> None:
         result = []
@@ -302,6 +322,7 @@ def start_zone_api_server(
                      name="ZoneApiServer").start()
     logger.info("Zone API 서버 시작: http://0.0.0.0:%d", port)
     for line in [
+        "  GET    /health",
         "  GET    /cameras",
         "  GET    /cameras/{id}/zones",
         "  POST   /cameras/{id}/zones",

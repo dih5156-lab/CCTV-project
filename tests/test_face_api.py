@@ -13,7 +13,9 @@ import threading
 import time
 import urllib.request
 import urllib.error
+from io import BytesIO
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -45,7 +47,10 @@ def _live_server(processor, port: int = 0):
     """실제 HTTP 서버를 스레드로 기동하여 반환한다."""
     from http.server import HTTPServer
 
-    server = HTTPServer(("127.0.0.1", port), FaceApiHandler)
+    try:
+        server = HTTPServer(("127.0.0.1", port), FaceApiHandler)
+    except PermissionError as exc:
+        pytest.skip(f"이 환경에서는 로컬 소켓 바인딩이 허용되지 않음: {exc}")
     server.processor = processor
     t = threading.Thread(target=server.serve_forever, daemon=True)
     t.start()
@@ -54,6 +59,25 @@ def _live_server(processor, port: int = 0):
 
 
 from tests.conftest import http_request as _request
+
+
+def _make_handler(processor, path: str) -> FaceApiHandler:
+    handler = FaceApiHandler.__new__(FaceApiHandler)
+    handler.server = SimpleNamespace(processor=processor)
+    handler.path = path
+    handler.headers = {}
+    handler.wfile = BytesIO()
+    handler.rfile = BytesIO(b"")
+    handler.requestline = f"GET {path} HTTP/1.1"
+    handler.command = "GET"
+    responses: list[tuple[int, dict]] = []
+
+    def _mock_respond(code: int, body) -> None:
+        responses.append((code, body))
+
+    handler._respond = _mock_respond  # type: ignore[method-assign]
+    handler._responses = responses  # type: ignore[attr-defined]
+    return handler
 
 
 # ===========================================================================
@@ -101,6 +125,36 @@ class TestFaceApiGET:
     def test_get_unknown_path_returns_404(self):
         code, _ = _request("GET", f"{self.base}/unknown")
         assert code == 404
+
+    def test_get_health_returns_service_metadata(self):
+        code, body = _request("GET", f"{self.base}/health")
+        assert code == 200
+        assert body["service"] == "cctv-face-api"
+        assert body["status"] == "ok"
+        assert body["face_count"] == 1
+        assert "checked_at" in body
+
+
+def test_face_health_direct_handler_returns_service_metadata():
+    proc = _build_processor()
+    handler = _make_handler(proc, "/health")
+    handler.do_GET()
+    code, body = handler._responses[0]  # type: ignore[attr-defined]
+    assert code == 200
+    assert body["service"] == "cctv-face-api"
+    assert body["status"] == "ok"
+    assert body["face_count"] == 1
+    assert "checked_at" in body
+
+
+def test_face_api_requires_internal_token_when_configured():
+    proc = _build_processor()
+    handler = _make_handler(proc, "/faces")
+    with patch.dict("os.environ", {"INTERNAL_SERVICE_TOKEN": "internal-secret"}):
+        handler.do_GET()
+    code, body = handler._responses[0]  # type: ignore[attr-defined]
+    assert code == 401
+    assert body["error"] == "Unauthorized"
 
 
 # ===========================================================================

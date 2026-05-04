@@ -1,6 +1,6 @@
 """CCTV Public API 테스트.
 
-FastAPI TestClient를 사용해 각 엔드포인트의 기본 동작을 검증한다.
+httpx ASGI transport로 각 엔드포인트의 기본 동작을 검증한다.
 내부 서비스(action-layer, alert-api)는 httpx mock으로 격리한다.
 """
 
@@ -9,18 +9,48 @@ from __future__ import annotations
 import json
 import os
 import tempfile
+import asyncio
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import httpx
 import pytest
-from fastapi.testclient import TestClient
 
 from src.api.app import app
 
 
+class SyncASGIClient:
+    """동기 테스트에서 ASGI 앱을 직접 호출하는 작은 래퍼."""
+
+    def __init__(self, asgi_app):
+        self._transport = httpx.ASGITransport(app=asgi_app)
+        self._base_url = "http://testserver"
+
+    def request(self, method: str, path: str, **kwargs):
+        async def _request():
+            async with httpx.AsyncClient(
+                transport=self._transport,
+                base_url=self._base_url,
+            ) as client:
+                return await client.request(method, path, **kwargs)
+
+        return asyncio.run(_request())
+
+    def get(self, path: str, **kwargs):
+        return self.request("GET", path, **kwargs)
+
+    def post(self, path: str, **kwargs):
+        return self.request("POST", path, **kwargs)
+
+    def close(self) -> None:
+        asyncio.run(self._transport.aclose())
+
+
 @pytest.fixture
 def client():
-    return TestClient(app)
+    client = SyncASGIClient(app)
+    yield client
+    client.close()
 
 
 # ---------------------------------------------------------------------------
@@ -28,7 +58,17 @@ def client():
 # ---------------------------------------------------------------------------
 
 
-def test_health_up(client: TestClient) -> None:
+def test_root_guides_browser_users(client: SyncASGIClient) -> None:
+    resp = client.get("/")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["service"] == "cctv-public-api"
+    assert data["docs"] == "/docs"
+    assert data["health"] == "/api/v1/health"
+    assert data["events"] == "/api/v1/events"
+
+
+def test_health_up(client: SyncASGIClient) -> None:
     resp = client.get("/api/v1/health")
     assert resp.status_code == 200
     data = resp.json()
@@ -37,13 +77,59 @@ def test_health_up(client: TestClient) -> None:
     assert data["data"]["service"] == "cctv-public-api"
 
 
+def test_readiness_up_when_dependencies_are_healthy(client: SyncASGIClient) -> None:
+    async def _mock_get(self, url, *args, **kwargs):
+        mock = MagicMock()
+        mock.status_code = 200
+        return mock
+
+    with patch("httpx.AsyncClient.get", new=_mock_get):
+        resp = client.get("/api/v1/readiness")
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["success"] is True
+    assert body["data"]["status"] == "ready"
+    assert {dep["name"] for dep in body["data"]["dependencies"]} == {
+        "action-layer",
+        "alert-api",
+    }
+
+
+def test_readiness_degraded_when_dependency_is_down(client: SyncASGIClient) -> None:
+    async def _mock_get(self, url, *args, **kwargs):
+        mock = MagicMock()
+        mock.status_code = 503 if "cctv-action-layer" in url else 200
+        return mock
+
+    with patch("httpx.AsyncClient.get", new=_mock_get):
+        resp = client.get("/api/v1/readiness")
+
+    assert resp.status_code == 503
+    body = resp.json()
+    assert body["success"] is False
+    assert body["data"]["status"] == "degraded"
+    statuses = {dep["name"]: dep["status"] for dep in body["data"]["dependencies"]}
+    assert statuses["action-layer"] == "down"
+    assert statuses["alert-api"] == "up"
+
+
+def test_metrics_counter_records_http_requests(client: SyncASGIClient) -> None:
+    client.get("/api/v1/health")
+    resp = client.get("/api/v1/metrics")
+    assert resp.status_code == 200
+    body = resp.text
+    assert "cctv_public_api_http_requests_total" in body
+    assert 'path_prefix="/api/v1/health"' in body
+
+
 # ---------------------------------------------------------------------------
 # /api/v1/alerts
 # ---------------------------------------------------------------------------
 
 
 class TestAlerts:
-    def test_post_alert_success(self, client: TestClient) -> None:
+    def test_post_alert_success(self, client: SyncASGIClient) -> None:
         """유효한 payload로 POST → 202 Accepted."""
         payload = {
             "camera_id": "cam-01",
@@ -70,7 +156,7 @@ class TestAlerts:
         assert body["data"]["camera_id"] == "cam-01"
         assert body["data"]["event_type"] == "helmet"
 
-    def test_post_alert_invalid_event_type(self, client: TestClient) -> None:
+    def test_post_alert_invalid_event_type(self, client: SyncASGIClient) -> None:
         """유효하지 않은 event_type → 422"""
         payload = {
             "camera_id": "cam-01",
@@ -84,14 +170,14 @@ class TestAlerts:
         assert body["success"] is False
         assert body["error"]
 
-    def test_post_alert_missing_required_field(self, client: TestClient) -> None:
+    def test_post_alert_missing_required_field(self, client: SyncASGIClient) -> None:
         """필수 필드 누락 → 422"""
         payload = {"event_type": "helmet", "confidence": 0.9}
         resp = client.post("/api/v1/alerts", json=payload)
         assert resp.status_code == 422
         assert resp.json()["success"] is False
 
-    def test_post_alert_confidence_out_of_range(self, client: TestClient) -> None:
+    def test_post_alert_confidence_out_of_range(self, client: SyncASGIClient) -> None:
         """confidence 범위 초과 → 422"""
         payload = {
             "camera_id": "cam-01",
@@ -103,7 +189,7 @@ class TestAlerts:
         assert resp.status_code == 422
         assert resp.json()["success"] is False
 
-    def test_post_alert_fallback_on_internal_error(self, client: TestClient, tmp_path: Path) -> None:
+    def test_post_alert_fallback_on_internal_error(self, client: SyncASGIClient, tmp_path: Path) -> None:
         """내부 alert-api 실패 시 fallback 파일에 저장되고 202 반환."""
         import src.api.v1.alerts as alerts_module
 
@@ -139,7 +225,7 @@ class TestAlerts:
 
 
 class TestEvents:
-    def test_list_events_empty_log(self, client: TestClient) -> None:
+    def test_list_events_empty_log(self, client: SyncASGIClient) -> None:
         """로그 파일 없을 때 → 빈 목록 반환."""
         import src.api.v1.events as events_module
 
@@ -155,7 +241,7 @@ class TestEvents:
         finally:
             events_module._ALERT_LOG = original
 
-    def test_list_events_with_data(self, client: TestClient, tmp_path: Path) -> None:
+    def test_list_events_with_data(self, client: SyncASGIClient, tmp_path: Path) -> None:
         """JSONL 파일이 있을 때 파싱 및 반환 확인."""
         import src.api.v1.events as events_module
 
@@ -197,7 +283,7 @@ class TestEvents:
         finally:
             events_module._ALERT_LOG = original
 
-    def test_list_events_camera_filter(self, client: TestClient, tmp_path: Path) -> None:
+    def test_list_events_camera_filter(self, client: SyncASGIClient, tmp_path: Path) -> None:
         """camera_id 필터링 동작 확인."""
         import src.api.v1.events as events_module
 
@@ -227,7 +313,7 @@ class TestEvents:
         finally:
             events_module._ALERT_LOG = original
 
-    def test_list_events_pagination(self, client: TestClient, tmp_path: Path) -> None:
+    def test_list_events_pagination(self, client: SyncASGIClient, tmp_path: Path) -> None:
         """페이지네이션 파라미터 동작 확인."""
         import src.api.v1.events as events_module
 
@@ -251,7 +337,7 @@ class TestEvents:
         finally:
             events_module._ALERT_LOG = original
 
-    def test_list_events_time_filter(self, client: TestClient, tmp_path: Path) -> None:
+    def test_list_events_time_filter(self, client: SyncASGIClient, tmp_path: Path) -> None:
         """time_from / time_to 필터 동작 확인."""
         import src.api.v1.events as events_module
 
@@ -277,7 +363,7 @@ class TestEvents:
         finally:
             events_module._ALERT_LOG = original
 
-    def test_list_events_event_type_filter(self, client: TestClient, tmp_path: Path) -> None:
+    def test_list_events_event_type_filter(self, client: SyncASGIClient, tmp_path: Path) -> None:
         """event_type 필터 동작 확인."""
         import src.api.v1.events as events_module
 
@@ -302,7 +388,7 @@ class TestEvents:
         finally:
             events_module._ALERT_LOG = original
 
-    def test_list_events_combined_filters(self, client: TestClient, tmp_path: Path) -> None:
+    def test_list_events_combined_filters(self, client: SyncASGIClient, tmp_path: Path) -> None:
         """camera_id + event_type + time_from 복합 필터 확인."""
         import src.api.v1.events as events_module
 
@@ -335,7 +421,7 @@ class TestEvents:
 
 
 class TestCameras:
-    def test_list_cameras_no_file(self, client: TestClient) -> None:
+    def test_list_cameras_no_file(self, client: SyncASGIClient) -> None:
         """cameras.json 없을 때 빈 목록 반환."""
         import src.api.v1.cameras as cam_module
 
@@ -350,7 +436,7 @@ class TestCameras:
         finally:
             cam_module._CAMERAS_JSON = original
 
-    def test_list_cameras_strips_credentials(self, client: TestClient, tmp_path: Path) -> None:
+    def test_list_cameras_strips_credentials(self, client: SyncASGIClient, tmp_path: Path) -> None:
         """RTSP URL에서 자격증명이 제거되는지 확인."""
         import src.api.v1.cameras as cam_module
 
@@ -372,7 +458,7 @@ class TestCameras:
         finally:
             cam_module._CAMERAS_JSON = original
 
-    def test_get_camera_not_found_uses_wrapped_error(self, client: TestClient) -> None:
+    def test_get_camera_not_found_uses_wrapped_error(self, client: SyncASGIClient) -> None:
         import src.api.v1.cameras as cam_module
 
         original = cam_module._CAMERAS_JSON
@@ -387,7 +473,7 @@ class TestCameras:
         finally:
             cam_module._CAMERAS_JSON = original
 
-    def test_get_camera_not_found(self, client: TestClient, tmp_path: Path) -> None:
+    def test_get_camera_not_found(self, client: SyncASGIClient, tmp_path: Path) -> None:
         """존재하지 않는 camera_id → 404."""
         import src.api.v1.cameras as cam_module
 
@@ -408,7 +494,7 @@ class TestCameras:
 
 
 class TestAuth:
-    def test_no_key_when_not_configured(self, client: TestClient) -> None:
+    def test_no_key_when_not_configured(self, client: SyncASGIClient) -> None:
         """PUBLIC_API_KEY 미설정 시 인증 없이 통과."""
         env = os.environ.copy()
         env.pop("PUBLIC_API_KEY", None)
@@ -416,13 +502,13 @@ class TestAuth:
             resp = client.get("/api/v1/health")
         assert resp.status_code == 200
 
-    def test_valid_key_accepted(self, client: TestClient) -> None:
+    def test_valid_key_accepted(self, client: SyncASGIClient) -> None:
         """올바른 API Key → 통과."""
         with patch.dict(os.environ, {"PUBLIC_API_KEY": "test-secret-key"}):
             resp = client.get("/api/v1/health", headers={"X-API-Key": "test-secret-key"})
         assert resp.status_code == 200
 
-    def test_invalid_key_rejected(self, client: TestClient, tmp_path: Path) -> None:
+    def test_invalid_key_rejected(self, client: SyncASGIClient, tmp_path: Path) -> None:
         """잘못된 API Key → 403 (카메라 목록 조회 사용)."""
         import src.api.v1.cameras as cam_module
 
@@ -437,7 +523,7 @@ class TestAuth:
         finally:
             cam_module._CAMERAS_JSON = original
 
-    def test_missing_key_when_configured(self, client: TestClient, tmp_path: Path) -> None:
+    def test_missing_key_when_configured(self, client: SyncASGIClient, tmp_path: Path) -> None:
         """API Key 설정됐는데 헤더 누락 → 401."""
         import src.api.v1.cameras as cam_module
 
@@ -452,8 +538,8 @@ class TestAuth:
         finally:
             cam_module._CAMERAS_JSON = original
 
-    def test_query_param_key_accepted(self, client: TestClient, tmp_path: Path) -> None:
-        """?api_key= 쿼리 파라미터로도 인증 가능."""
+    def test_query_param_key_rejected_by_default(self, client: SyncASGIClient, tmp_path: Path) -> None:
+        """기본 설정에서는 ?api_key= 쿼리 파라미터 인증을 허용하지 않는다."""
         import src.api.v1.cameras as cam_module
 
         cameras_file = tmp_path / "cameras.json"
@@ -463,7 +549,7 @@ class TestAuth:
         try:
             with patch.dict(os.environ, {"PUBLIC_API_KEY": "test-secret-key"}):
                 resp = client.get("/api/v1/cameras?api_key=test-secret-key")
-            assert resp.status_code == 200
+            assert resp.status_code == 401
         finally:
             cam_module._CAMERAS_JSON = original
 
@@ -474,7 +560,7 @@ class TestAuth:
 
 
 class TestResponseFormat:
-    def test_success_response_has_required_fields(self, client: TestClient) -> None:
+    def test_success_response_has_required_fields(self, client: SyncASGIClient) -> None:
         resp = client.get("/api/v1/health")
         assert resp.status_code == 200
         body = resp.json()
@@ -482,7 +568,7 @@ class TestResponseFormat:
         assert "data" in body
         assert "timestamp" in body
 
-    def test_cameras_response_format(self, client: TestClient, tmp_path: Path) -> None:
+    def test_cameras_response_format(self, client: SyncASGIClient, tmp_path: Path) -> None:
         """BaseResponse 래퍼 형식 (success, data, error, timestamp) 검증."""
         import src.api.v1.cameras as cam_module
 

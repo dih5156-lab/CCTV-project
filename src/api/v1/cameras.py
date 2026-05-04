@@ -60,10 +60,13 @@ def _load_cameras() -> List[CameraOut]:
     "",
     response_model=BaseResponse[List[CameraOut]],
     summary="카메라 목록 조회",
-    description="등록된 CCTV 카메라 목록을 반환합니다. RTSP URL의 자격증명은 제거됩니다.",
+    description=(
+        "등록된 CCTV 카메라 목록을 반환합니다. "
+        "RTSP URL의 자격증명은 제거되며, zone 정보는 cameras.json 기준으로 내려갑니다."
+    ),
 )
 @limiter.limit("60/minute")
-def list_cameras(request: Request, _: None = Depends(verify_api_key)) -> BaseResponse[List[CameraOut]]:
+async def list_cameras(request: Request, _: None = Depends(verify_api_key)) -> BaseResponse[List[CameraOut]]:
     cameras = _load_cameras()
     return success_response(cameras)
 
@@ -72,9 +75,10 @@ def list_cameras(request: Request, _: None = Depends(verify_api_key)) -> BaseRes
     "/{camera_id}",
     response_model=BaseResponse[CameraOut],
     summary="카메라 단건 조회",
+    description="특정 카메라 1건의 기본 메타데이터와 zone 정보를 반환합니다.",
 )
 @limiter.limit("60/minute")
-def get_camera(request: Request, camera_id: str, _: None = Depends(verify_api_key)) -> BaseResponse[CameraOut]:
+async def get_camera(request: Request, camera_id: str, _: None = Depends(verify_api_key)) -> BaseResponse[CameraOut]:
     cameras = _load_cameras()
     for cam in cameras:
         if cam.id == camera_id:

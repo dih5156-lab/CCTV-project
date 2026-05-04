@@ -12,7 +12,7 @@ POST   /api/v1/control/reject/{eid}      — 이벤트 거부
 from __future__ import annotations
 
 import logging
-from typing import List
+from typing import Any, List, Mapping
 
 from fastapi import APIRouter, Depends, Path
 
@@ -20,16 +20,72 @@ from .._action_proxy import proxy_action_request
 from ..dependencies._settings import ACTION_LAYER_URL as _ACTION_URL
 from ..dependencies.auth import verify_api_key
 from ..schemas.common import BaseResponse, success_response
-from ..schemas.site import ApprovalOut, ModeOut, ModeSetIn
+from ..schemas.site import ApprovalOut, ModeOut, ModeSetIn, PendingEventOut
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/control", tags=["control"])
+
+
+def _first_non_empty_str(*values: Any) -> str | None:
+    """첫 번째 유효 문자열 값을 반환한다."""
+    for value in values:
+        if value is None:
+            continue
+        text = str(value).strip()
+        if text:
+            return text
+    return None
+
+
+def _normalize_pending_item(item: Mapping[str, Any]) -> PendingEventOut:
+    """Action Layer 원본 payload를 Public API 스키마로 정규화한다."""
+    payload = item.get("payload")
+    payload_map = payload if isinstance(payload, Mapping) else {}
+    return PendingEventOut(
+        event_id=_first_non_empty_str(
+            item.get("event_id"),
+            payload_map.get("event_id"),
+            payload_map.get("eventId"),
+        )
+        or "unknown",
+        queued_at=_first_non_empty_str(
+            item.get("queued_at"),
+            item.get("queuedAt"),
+            payload_map.get("queued_at"),
+        ),
+        site_id=_first_non_empty_str(
+            item.get("site_id"),
+            item.get("siteId"),
+            payload_map.get("site_id"),
+        ),
+        camera_id=_first_non_empty_str(
+            item.get("camera_id"),
+            item.get("cameraId"),
+            payload_map.get("camera_id"),
+            payload_map.get("cameraId"),
+        ),
+        event_type=_first_non_empty_str(
+            item.get("event_type"),
+            item.get("type"),
+            payload_map.get("event_type"),
+            payload_map.get("type"),
+        ),
+        severity=_first_non_empty_str(
+            item.get("severity"),
+            payload_map.get("severity"),
+        ),
+        topic=_first_non_empty_str(
+            item.get("topic"),
+            payload_map.get("topic"),
+        ),
+    )
 
 
 @router.get(
     "/mode",
     response_model=BaseResponse[ModeOut],
     summary="현재 제어 모드 조회",
+    description="현재 전역 또는 사이트 단위 제어 모드를 조회합니다. 기본값은 auto 입니다.",
 )
 async def get_mode(_: None = Depends(verify_api_key)) -> BaseResponse[ModeOut]:
     raw = await proxy_action_request(_ACTION_URL, "get", "/mode")
@@ -61,14 +117,23 @@ async def set_mode(
 
 @router.get(
     "/pending",
-    response_model=BaseResponse[List[dict]],
+    response_model=BaseResponse[List[PendingEventOut]],
     summary="수동 승인 대기 이벤트 목록",
-    description="control_mode가 manual인 사이트에서 대기 중인 이벤트를 반환합니다.",
+    description=(
+        "control_mode가 manual인 사이트에서 대기 중인 이벤트를 반환합니다. "
+        "Action Layer 원본 응답을 Public API 기준 최소 스키마로 정규화해 내려주므로, "
+        "프론트에서는 event_id, camera_id, event_type, queued_at을 기준으로 안정적으로 사용할 수 있습니다."
+    ),
 )
-async def list_pending(_: None = Depends(verify_api_key)) -> BaseResponse[List[dict]]:
+async def list_pending(_: None = Depends(verify_api_key)) -> BaseResponse[List[PendingEventOut]]:
     raw = await proxy_action_request(_ACTION_URL, "get", "/pending")
     items = raw if isinstance(raw, list) else []
-    return success_response(items)
+    normalized = [
+        _normalize_pending_item(item)
+        for item in items
+        if isinstance(item, Mapping)
+    ]
+    return success_response(normalized)
 
 
 @router.post(

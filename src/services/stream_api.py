@@ -24,7 +24,6 @@ import os
 import re
 import threading
 import time
-from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 
 from .._http_server import BaseApiHandler, ThreadingApiServer
@@ -100,15 +99,14 @@ class StreamApiHandler(BaseApiHandler):
         cameras = list(proc.cameras.keys())
         self._respond(
             200,
-            {
-                "service": "cctv-stream-api",
-                "status": "ok",
-                "checked_at": datetime.now(timezone.utc).isoformat(),
-                "camera_count": len(cameras),
-                "cameras": cameras,
-                "stream_fps": _read_stream_fps(),
-                "jpeg_quality": _read_jpeg_quality(),
-            },
+            self._build_health_payload(
+                service="cctv-stream-api",
+                status="ok",
+                camera_count=len(cameras),
+                cameras=cameras,
+                stream_fps=_read_stream_fps(),
+                jpeg_quality=_read_jpeg_quality(),
+            ),
         )
 
     def _stream(self, camera_id: str) -> None:

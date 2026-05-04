@@ -21,6 +21,9 @@ Usage::
 
 import json
 import logging
+import os
+import secrets
+from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
 
@@ -90,3 +93,39 @@ class BaseApiHandler(BaseHTTPRequestHandler):
                 self.rfile.read(length)
         except Exception:
             pass
+
+    def _build_health_payload(
+        self,
+        *,
+        service: str,
+        status: str = "up",
+        **extra,
+    ) -> dict:
+        """내부 HTTP 서버용 표준 health payload를 생성한다."""
+        payload = {
+            "service": service,
+            "status": status,
+            "checked_at": datetime.now(timezone.utc).isoformat(),
+        }
+        payload.update(extra)
+        return payload
+
+    def _check_internal_token(
+        self,
+        *,
+        exempt_paths: tuple[str, ...] = ("/health",),
+    ) -> bool:
+        """내부 관리 HTTP 서버용 X-Internal-Token 헤더를 검증한다."""
+        configured = os.environ.get("INTERNAL_SERVICE_TOKEN") or None
+        if configured is None:
+            return True
+
+        path = self.path.split("?")[0].rstrip("/") or "/"
+        if path in exempt_paths:
+            return True
+
+        provided = self.headers.get("X-Internal-Token", "")
+        if not secrets.compare_digest(provided, configured):
+            self._respond(401, {"error": "Unauthorized"})
+            return False
+        return True

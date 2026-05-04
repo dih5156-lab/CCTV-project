@@ -37,7 +37,8 @@ _RE_CAMERA_MODELS = re.compile(r"^/cameras/([^/]+)/models$")
 
 _ALLOWED_KEYS = frozenset({
     "use_pose", "use_helmet", "use_person", "use_face",
-    "pose", "helmet", "person", "face",
+    "use_appearance",
+    "pose", "helmet", "person", "face", "appearance",
 })
 
 
@@ -74,13 +75,19 @@ class CameraModelApiHandler(BaseApiHandler):
         self.end_headers()
 
     def do_GET(self):  # noqa: N802
+        if not self._check_internal_token():
+            return
         path = self.path.split("?")[0].rstrip("/")
-        if m := _RE_CAMERA_MODELS.match(path):
+        if path == "/health":
+            self._health()
+        elif m := _RE_CAMERA_MODELS.match(path):
             self._get_camera_models(m.group(1))
         else:
             self._respond(404, {"error": "Not Found"})
 
     def do_POST(self):  # noqa: N802
+        if not self._check_internal_token():
+            return
         path = self.path.rstrip("/")
         if m := _RE_CAMERA_MODELS.match(path):
             self._post_camera_models(m.group(1))
@@ -92,6 +99,18 @@ class CameraModelApiHandler(BaseApiHandler):
     # ------------------------------------------------------------------
     # GET 핸들러
     # ------------------------------------------------------------------
+
+    def _health(self) -> None:
+        processor = self._processor()
+        camera_status = processor.get_camera_status() if hasattr(processor, "get_camera_status") else {}
+        self._respond(
+            200,
+            self._build_health_payload(
+                service="cctv-camera-model-api",
+                status="ok",
+                camera_count=len(camera_status),
+            ),
+        )
 
     def _get_camera_models(self, camera_id: str) -> None:
         settings = self._processor().get_camera_model_settings(camera_id)
@@ -165,6 +184,7 @@ def start_camera_model_api_server(
         name="CameraModelApiServer",
     ).start()
     logger.info("Camera Model API 서버 시작: http://0.0.0.0:%d", port)
+    logger.info("  GET   /health")
     logger.info("  GET   /cameras/{id}/models")
     logger.info("  POST  /cameras/{id}/models")
 

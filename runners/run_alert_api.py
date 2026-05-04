@@ -3,9 +3,15 @@
 import argparse
 import json
 import logging
+import sys
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+
+_RUNNER_DIR = Path(__file__).resolve().parent
+_PROJECT_ROOT = _RUNNER_DIR.parent
+if str(_PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT))
 
 from runners._shared import setup_runner_logging
 
@@ -33,6 +39,25 @@ class AlertHandler(BaseHTTPRequestHandler):
             "checked_at": datetime.now(timezone.utc).isoformat(),
         }
 
+    def _root_payload(self) -> dict:
+        """브라우저로 루트 경로를 열었을 때 사용할 서비스 안내."""
+        return {
+            "service": "cctv-alert-api",
+            "description": "Internal alert ingestion API",
+            "health": "GET /health",
+            "alerts": "POST /api/alerts",
+            "sensor_readings": "POST /api/sensor-readings",
+        }
+
+    def _method_not_allowed_payload(self, path: str, allowed: str) -> dict:
+        """정의된 경로를 잘못된 HTTP method로 호출했을 때의 안내."""
+        return {
+            "error": "method not allowed",
+            "path": path,
+            "allowed": allowed,
+            "hint": f"{path}는 {allowed} 요청으로 호출해야 합니다.",
+        }
+
     def _send_json(self, status_code: int, payload: dict) -> None:
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
         try:
@@ -45,8 +70,14 @@ class AlertHandler(BaseHTTPRequestHandler):
             logger.debug("클라이언트가 응답 전에 연결을 종료함 (BrokenPipe)")
 
     def do_GET(self):
+        if self.path == "/":
+            self._send_json(200, self._root_payload())
+            return
         if self.path in ["/health", "/ping"]:
             self._send_json(200, self._health_payload())
+            return
+        if self.path in ["/api/alerts", "/api/sensor-readings"]:
+            self._send_json(405, self._method_not_allowed_payload(self.path, "POST"))
             return
         self._send_json(404, {"error": "not found"})
 

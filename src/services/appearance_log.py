@@ -4,7 +4,7 @@
 SQLite에 기록하고, 조건부 검색을 지원한다.
 
 사용:
-    log = AppearanceLog("data/appearance.db")
+    log = AppearanceLog("data/appearances.db")
     log.insert(camera_id="cam_01", track_id=3, upper_color="black", ...)
     results = log.search(upper_color="black", gender="male",
                          time_from="2026-04-13 14:00:00")
@@ -20,6 +20,7 @@ import time
 from typing import Dict, List, Optional
 
 from ..canonical_event import build_event_id
+from ..storage import SQLiteDatabase
 
 logger = logging.getLogger(__name__)
 
@@ -64,15 +65,15 @@ _INSERT_COOLDOWN = 3.0
 class AppearanceLog:
     """SQLite 기반 외형 감지 기록 저장소."""
 
-    def __init__(self, db_path: str = "data/appearance.db") -> None:
+    def __init__(self, db_path: Optional[str] = None) -> None:
+        if db_path is None:
+            db_path = os.environ.get("APPEARANCES_DB", "data/appearances.db")
         self._db_path = db_path
+        self._database = SQLiteDatabase(db_path)
         self._lock = threading.Lock()
         self._last_insert: Dict[str, float] = {}  # "cam:track" → timestamp
 
-        os.makedirs(os.path.dirname(db_path) or ".", exist_ok=True)
-        self._conn = sqlite3.connect(db_path, check_same_thread=False)
-        self._conn.row_factory = sqlite3.Row
-        self._conn.executescript(_SCHEMA)
+        self._conn = self._database.initialize(_SCHEMA, check_same_thread=False)
         self._ensure_columns()
         self._conn.commit()
         logger.info("외형 로그 DB 초기화: %s", db_path)

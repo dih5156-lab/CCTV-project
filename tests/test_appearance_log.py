@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import asyncio
 import os
+import sqlite3
 import tempfile
 import time
 from pathlib import Path
 
+import httpx
 import pytest
 
 
@@ -126,6 +129,26 @@ class TestAppearanceLog:
 class TestSearchAPI:
     """FastAPI search 엔드포인트 테스트."""
 
+    class _SyncASGIClient:
+        """httpx.AsyncClient를 동기 테스트에서 간단히 감싸는 래퍼."""
+
+        def __init__(self, app):
+            self._transport = httpx.ASGITransport(app=app)
+            self._base_url = "http://testserver"
+
+        def get(self, path: str):
+            async def _request():
+                async with httpx.AsyncClient(
+                    transport=self._transport,
+                    base_url=self._base_url,
+                ) as client:
+                    return await client.get(path)
+
+            return asyncio.run(_request())
+
+        def close(self) -> None:
+            asyncio.run(self._transport.aclose())
+
     @pytest.fixture(autouse=True)
     def _setup(self, tmp_path: Path, monkeypatch):
         from src.services.appearance_log import AppearanceLog
@@ -140,11 +163,11 @@ class TestSearchAPI:
         self.crop_dir.mkdir()
         monkeypatch.setattr(search_mod, "_CROP_DIR", self.crop_dir)
 
-        from fastapi.testclient import TestClient
         from src.api.app import app
 
-        self.client = TestClient(app)
+        self.client = self._SyncASGIClient(app)
         yield
+        self.client.close()
         self.log.close()
 
     def test_search_empty(self):
@@ -228,3 +251,112 @@ class TestSearchAPI:
         assert self.log.insert(camera_id="cam01", track_id=1, event_id=event_id, timestamp=1000.0) is True
         assert self.log.insert(camera_id="cam01", track_id=2, event_id=event_id, timestamp=1005.0) is True
         assert self.log.count() == 1
+
+
+class TestAppearanceStatusAPI:
+    """외형 상태 계산/엔드포인트 테스트."""
+
+    @pytest.fixture(autouse=True)
+    def _setup(self, tmp_path: Path, monkeypatch):
+        from src.api.v1 import appearances as appearances_mod
+
+        self.db_path = tmp_path / "appearance_status.db"
+        self.appearances_mod = appearances_mod
+        monkeypatch.setattr(appearances_mod, "_DB_PATH", self.db_path)
+        monkeypatch.setenv("APPEARANCE_BACKEND", "hsv")
+        monkeypatch.setenv("DS_APPEARANCE_ENABLED", "true")
+        monkeypatch.setenv("DS_HELMET_ENABLED", "true")
+        monkeypatch.setenv("DS_FACE_ENABLED", "true")
+        monkeypatch.delenv("PUBLIC_API_KEY", raising=False)
+        yield
+
+    def _insert_appearance_row(
+        self,
+        *,
+        timestamp: float,
+        camera_id: str = "cam01",
+        track_id: int = 1,
+        gender: str | None = None,
+        has_helmet: bool = False,
+        has_backpack: bool = False,
+        has_handbag: bool = False,
+        has_suitcase: bool = False,
+        attribute_backend: str | None = None,
+    ) -> None:
+        from src.services.appearance_log import AppearanceLog
+
+        log = AppearanceLog(str(self.db_path))
+        try:
+            inserted = log.insert(
+                camera_id=camera_id,
+                track_id=track_id,
+                timestamp=timestamp,
+                gender=gender,
+                has_helmet=has_helmet,
+                has_backpack=has_backpack,
+                has_handbag=has_handbag,
+                has_suitcase=has_suitcase,
+                attribute_backend=attribute_backend,
+            )
+            assert inserted is True
+        finally:
+            log.close()
+
+    def test_status_returns_runtime_stats_and_warnings(self):
+        self._insert_appearance_row(timestamp=1000.0, track_id=1, gender="male", attribute_backend=None)
+        self._insert_appearance_row(timestamp=1005.0, track_id=2, attribute_backend=None)
+
+        body = asyncio.run(self.appearances_mod.get_appearance_status(None))
+        body = body.model_dump(mode="json")
+        assert body["success"] is True
+
+        data = body["data"]
+        assert data["db_path"].endswith("appearance_status.db")
+        assert data["backend"] == "hsv"
+        assert data["data_stats"]["total_records"] == 2
+        assert data["data_stats"]["gender_filled"] == 1
+        assert data["data_stats"]["helmet_true"] == 0
+        assert data["backend_counts"] == {"unknown": 2}
+
+        field_map = {field["field"]: field for field in data["fields"]}
+        assert field_map["gender"]["ready"] is True
+        assert field_map["gender"]["observed_count"] == 1
+        assert field_map["has_helmet"]["ready"] is True
+        assert field_map["has_helmet"]["observed_count"] == 0
+        assert field_map["has_backpack"]["ready"] is False
+        assert field_map["has_backpack"]["reason"] == "backend=hsv, bag_labels=none"
+
+        warning_text = "\n".join(data["warnings"])
+        assert "attribute_backend가 모두 unknown" in warning_text
+        assert "has_helmet는 설정상 활성화되어 있지만 실제 적재 건수가 0" in warning_text
+        assert "backend=hsv 환경에서는 bag 값이 detector nearby_objects에 의존" in warning_text
+        assert any("/api/v1/appearances/status" in step for step in data["next_steps"])
+
+    def test_status_recognizes_bag_label_alias_as_ready(self, monkeypatch):
+        monkeypatch.setenv("DS_YOLO_LABELS", "person,back_pack")
+        self._insert_appearance_row(
+            timestamp=2000.0,
+            track_id=10,
+            has_backpack=True,
+            attribute_backend="hsv",
+        )
+
+        data = self.appearances_mod._build_runtime_status().model_dump()
+        field_map = {field["field"]: field for field in data["fields"]}
+
+        assert data["backend_counts"] == {"hsv": 1}
+        assert field_map["has_backpack"]["ready"] is True
+        assert field_map["has_backpack"]["observed_count"] == 1
+        assert field_map["has_backpack"]["observed_ratio"] == 1.0
+        assert field_map["has_handbag"]["ready"] is True
+        assert field_map["has_suitcase"]["ready"] is True
+
+    def test_status_handles_missing_appearance_log_table(self):
+        with sqlite3.connect(self.db_path) as conn:
+            conn.execute("CREATE TABLE IF NOT EXISTS search_conditions (id TEXT PRIMARY KEY)")
+            conn.commit()
+
+        data = self.appearances_mod._build_runtime_status().model_dump()
+        assert data["data_stats"]["total_records"] == 0
+        assert data["backend_counts"] == {}
+        assert any("appearance_log 데이터가 아직 없습니다" in warning for warning in data["warnings"])

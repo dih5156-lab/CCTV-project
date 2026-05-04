@@ -7,13 +7,14 @@ SQLite에 기록된 인물 외형 속성을 조건부 검색하여
 from __future__ import annotations
 
 import logging
+import os
 import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from fastapi.responses import FileResponse
+from fastapi.responses import Response
 from pydantic import BaseModel, Field
 
 from ..dependencies.auth import verify_api_key
@@ -56,6 +57,7 @@ class AppearanceRecord(BaseModel):
     gender: Optional[str] = None
     age_group: Optional[str] = None
     face_name: Optional[str] = None
+    attribute_backend: Optional[str] = None
     crop_url: Optional[str] = Field(
         default=None,
         description="인물 crop 이미지 URL (/api/v1/search/crops/...)",
@@ -66,7 +68,7 @@ def _to_record(row: dict) -> AppearanceRecord:
     crop_path = row.get("crop_path")
     crop_url: Optional[str] = None
     if crop_path:
-        # data/crops/xxx.jpg → /api/v1/search/crops/xxx.jpg
+        # 저장 위치와 상관없이 파일명만 공개 URL로 노출한다.
         fname = crop_path.rsplit("/", 1)[-1].rsplit("\\", 1)[-1]
         crop_url = f"/api/v1/search/crops/{fname}"
 
@@ -88,6 +90,7 @@ def _to_record(row: dict) -> AppearanceRecord:
         gender=row.get("gender"),
         age_group=row.get("age_group"),
         face_name=row.get("face_name"),
+        attribute_backend=row.get("attribute_backend"),
         crop_url=crop_url,
     )
 
@@ -105,7 +108,7 @@ def _to_record(row: dict) -> AppearanceRecord:
     ),
     dependencies=[Depends(verify_api_key)],
 )
-def search_appearances(
+async def search_appearances(
     camera_id: Optional[str] = Query(None, description="카메라 ID"),
     upper_color: Optional[str] = Query(None, description="상의 색상"),
     lower_color: Optional[str] = Query(None, description="하의 색상"),
@@ -175,7 +178,12 @@ def _parse_datetime(s: str) -> float:
 
 # ── crop 이미지 서빙 ─────────────────────────────────────────────────
 
-_CROP_DIR = Path("data/crops")
+_PRIMARY_CROP_DIR = Path(
+    os.environ.get("APPEARANCE_CROP_DIR", "data/appearance_crops")
+)
+# 하위 호환: 기존 테스트/코드에서 _CROP_DIR monkeypatch를 사용한다.
+_CROP_DIR = _PRIMARY_CROP_DIR
+_LEGACY_CROP_DIR = Path("data/crops")
 _SAFE_FNAME = re.compile(r"^[\w\-]+\.jpg$")
 
 
@@ -185,14 +193,21 @@ _SAFE_FNAME = re.compile(r"^[\w\-]+\.jpg$")
     responses={200: {"content": {"image/jpeg": {}}}},
     dependencies=[Depends(verify_api_key)],
 )
-def get_crop_image(filename: str):
+async def get_crop_image(filename: str):
     """저장된 인물 crop JPEG 이미지를 반환한다."""
     if not _SAFE_FNAME.match(filename):
         raise HTTPException(status_code=400, detail="잘못된 파일명")
-    fpath = (_CROP_DIR / filename).resolve()
-    # path traversal 방지
-    if not str(fpath).startswith(str(_CROP_DIR.resolve())):
-        raise HTTPException(status_code=400, detail="잘못된 경로")
-    if not fpath.is_file():
-        raise HTTPException(status_code=404, detail="이미지를 찾을 수 없습니다")
-    return FileResponse(fpath, media_type="image/jpeg")
+    candidate_dirs = [_CROP_DIR]
+    if _LEGACY_CROP_DIR != _CROP_DIR:
+        candidate_dirs.append(_LEGACY_CROP_DIR)
+
+    for crop_dir in candidate_dirs:
+        resolved_dir = crop_dir.resolve()
+        fpath = (crop_dir / filename).resolve()
+        # path traversal 방지
+        if not str(fpath).startswith(str(resolved_dir)):
+            continue
+        if fpath.is_file():
+            return Response(content=fpath.read_bytes(), media_type="image/jpeg")
+
+    raise HTTPException(status_code=404, detail="이미지를 찾을 수 없습니다")

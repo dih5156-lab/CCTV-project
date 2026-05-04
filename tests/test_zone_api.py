@@ -15,6 +15,7 @@ import threading
 import time
 import urllib.request
 import urllib.error
+from io import BytesIO
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
@@ -102,7 +103,10 @@ def _live_server(processor, cameras_json_path: str, port: int = 0):
     from http.server import HTTPServer
     from src.utils.zone_presets import ZonePresetStore
 
-    server = HTTPServer(("127.0.0.1", port), ZoneApiHandler)
+    try:
+        server = HTTPServer(("127.0.0.1", port), ZoneApiHandler)
+    except PermissionError as exc:
+        pytest.skip(f"이 환경에서는 로컬 소켓 바인딩이 허용되지 않음: {exc}")
     server.processor = processor
     server.cameras_json_path = cameras_json_path
     server.preset_store = ZonePresetStore(
@@ -115,6 +119,29 @@ def _live_server(processor, cameras_json_path: str, port: int = 0):
 
 
 from tests.conftest import http_request as _request
+
+
+def _make_handler(processor, cameras_json_path: str, path: str, preset_store) -> ZoneApiHandler:
+    handler = ZoneApiHandler.__new__(ZoneApiHandler)
+    handler.server = SimpleNamespace(
+        processor=processor,
+        cameras_json_path=cameras_json_path,
+        preset_store=preset_store,
+    )
+    handler.path = path
+    handler.headers = {}
+    handler.wfile = BytesIO()
+    handler.rfile = BytesIO(b"")
+    handler.requestline = f"GET {path} HTTP/1.1"
+    handler.command = "GET"
+    responses: list[tuple[int, dict]] = []
+
+    def _mock_respond(code: int, body) -> None:
+        responses.append((code, body))
+
+    handler._respond = _mock_respond  # type: ignore[method-assign]
+    handler._responses = responses  # type: ignore[attr-defined]
+    return handler
 
 
 # ===========================================================================
@@ -246,6 +273,15 @@ class TestZoneApiGET:
     def test_get_cameras_trailing_slash(self):
         code, _ = _request("GET", f"{self.base}/cameras/")
         assert code == 200
+
+    def test_get_health_returns_service_metadata(self):
+        code, body = _request("GET", f"{self.base}/health")
+        assert code == 200
+        assert body["service"] == "cctv-zone-api"
+        assert body["status"] == "ok"
+        assert body["camera_count"] == 2
+        assert body["preset_count"] == 0
+        assert "checked_at" in body
 
 
 class TestZoneApiPOST:
@@ -421,3 +457,32 @@ class TestZoneApiRouting:
                 mock_srv.serve_forever.assert_called_once()
         finally:
             pass  # 모킹이므로 별도 정리 불필요
+
+
+def test_zone_health_direct_handler_returns_service_metadata(cameras_json: Path, tmp_path: Path):
+    from src.utils.zone_presets import ZonePresetStore
+
+    preset_store = ZonePresetStore(str(tmp_path / "zone_presets.json"))
+    proc = _build_processor(zone_manager=None)
+    handler = _make_handler(proc, str(cameras_json), "/health", preset_store)
+    handler.do_GET()
+    code, body = handler._responses[0]  # type: ignore[attr-defined]
+    assert code == 200
+    assert body["service"] == "cctv-zone-api"
+    assert body["status"] == "ok"
+    assert body["camera_count"] == 2
+    assert body["preset_count"] == 0
+    assert "checked_at" in body
+
+
+def test_zone_api_requires_internal_token_when_configured(cameras_json: Path, tmp_path: Path):
+    from src.utils.zone_presets import ZonePresetStore
+
+    preset_store = ZonePresetStore(str(tmp_path / "zone_presets.json"))
+    proc = _build_processor(zone_manager=None)
+    handler = _make_handler(proc, str(cameras_json), "/cameras", preset_store)
+    with patch.dict("os.environ", {"INTERNAL_SERVICE_TOKEN": "internal-secret"}):
+        handler.do_GET()
+    code, body = handler._responses[0]  # type: ignore[attr-defined]
+    assert code == 401
+    assert body["error"] == "Unauthorized"
