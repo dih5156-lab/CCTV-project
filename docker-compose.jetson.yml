@@ -770,7 +770,8 @@ services:
       context: .
       dockerfile: Dockerfile.parser
     env_file:
-      - ./parser-python/.env
+      - path: ./parser-python/.env
+        required: false
     environment:
       PYTHONPATH: /app
       PYTHONIOENCODING: utf-8
