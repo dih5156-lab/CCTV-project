@@ -21,6 +21,7 @@ Windows PC와 NVIDIA Jetson Orin 모두 동작합니다.
 ```
 CCTV-project/
 ├── main.py                         # CCTV AI 엔진 기본 실행 진입점
+├── run_external_ingest.py           # 외부 MQTT/NC 수신 진입점
 ├── src/                            # 핵심 애플리케이션 코드
 │   ├── api/                        # FastAPI 공개 API (/api/v1)
 │   ├── bootstrap/                  # CLI, 런타임 초기화, 프로세서 생성
@@ -37,14 +38,19 @@ CCTV-project/
 │   └── utils/                      # 카메라 입력, 구역, 시각화, geometry
 ├── runners/                        # 서비스별 단독 실행 진입점
 ├── parser-python/                  # AIoT TLV 센서 파서 서비스
+├── web/                            # 시연/관제용 HTML 대시보드
 ├── config/                         # DeepStream/외형 분석 설정
 ├── models/                         # YOLO, PP-Human, TensorRT 모델 파일
+├── data/                           # SQLite DB, crop 이미지, 런타임 데이터
+├── known_faces/                    # 얼굴 인식용 등록/샘플 이미지
 ├── edgex/                          # EdgeX device profile 및 ASC 설정
 ├── kuiper/                         # eKuiper 룰 파일
 ├── monitoring/                     # Prometheus/Grafana 설정
+├── mosquitto/                      # MQTT broker 설정
 ├── scripts/                        # 점검, 변환, smoke test, 모델 평가
 ├── tests/                          # pytest 테스트
 ├── docker-compose.yml              # 일반 Docker/EdgeX 통합 배포
+├── docker-compose.arm64.yml        # ARM64 EdgeX 호환 override
 ├── docker-compose.jetson.yml       # Jetson/DeepStream 운영 배포
 └── docs/PROJECT_STRUCTURE.md       # 상세 프로젝트 구조 문서
 ```
@@ -64,6 +70,7 @@ CCTV-project/
 | `9090` | Prometheus | `http://127.0.0.1:9090/-/ready` | 메트릭 수집 상태 |
 | `3001` | Grafana | `http://127.0.0.1:3001/api/health` | 모니터링 UI |
 | `1883` | MQTT broker | TCP only | 브라우저 확인 대상 아님 |
+| `8769` | Stream API | `http://127.0.0.1:8769/health` | 카메라 MJPEG 미리보기 |
 
 브라우저에서 `{"error":"not found"}`가 보이면 서버가 죽은 것이 아니라,
 대부분 포트나 경로가 맞지 않은 경우입니다. 예를 들어 `8000`번의 루트는 Alert API 안내용이고,
@@ -386,6 +393,15 @@ docker compose restart cctv-action-layer
 | `--frame-skip N` | 매 N프레임마다 AI 추론 | `3` |
 | `--display` | GUI 화면 표시 | off |
 | `--api-port PORT` | Zone REST API 포트 | off |
+| `--zone-presets FILE` | 구역 프리셋 저장 파일 | `zone_presets.json` |
+| `--zone-detection` | 위험 구역 감지 활성화 | off |
+| `--mqtt-broker HOST` | MQTT 브로커 | `localhost` |
+| `--mqtt-port PORT` | MQTT 포트 | `1883` |
+| `--mqtt-topic-prefix` | MQTT 토픽 prefix | `cctv/ai/events` |
+| `--no-debounce` | 이벤트 디바운싱 비활성화 | off |
+| `--debounce SEC` | 디바운싱 간격(초) | `3.0` |
+| `--collect-dataset` | 데이터셋 자동 수집 | off |
+| `--dataset-dir DIR` | 수집 데이터 저장 경로 | `./collected_data` |
 
 ## 공개 API
 
@@ -442,6 +458,65 @@ python runners/run_public_api.py --host 0.0.0.0 --port 9000
   - 현재는 Action Layer 원본 payload를 거의 그대로 전달합니다.
   - 프론트에서는 `event_id`, `camera_id`, `type`, `timestamp` 존재 여부를 우선적으로 방어적으로 처리하는 것을 권장합니다.
 
+## 실사용 시연 UI
+
+내부 발표나 현장 시연에서는 `web/public-demo.html`을 사용합니다.
+이 화면은 Public API와 Stream API를 직접 호출해서 운영 흐름을 빠르게 보여주기 위한
+가벼운 HTML 대시보드입니다.
+
+브라우저에서 아래 파일을 엽니다.
+
+```text
+web/public-demo.html
+```
+
+기본 연결 주소:
+
+| 항목 | 기본값 | 설명 |
+|------|--------|------|
+| Public API | `http://localhost:9000` | 상태, readiness, 카메라 목록, 이벤트 전송 |
+| Stream API | `http://localhost:8769` | 카메라 MJPEG 화면 |
+| Grafana | `http://localhost:3001` | 운영 메트릭 대시보드 |
+
+시연 전 확인:
+
+```bash
+docker compose ps
+curl -fsS http://localhost:9000/api/v1/health
+curl -fsS http://localhost:9000/api/v1/readiness
+curl -fsS http://localhost:8769/health
+curl -fsS http://localhost:8769/cameras
+.venv/bin/python scripts/smoke_test_deployment.py
+.venv/bin/python scripts/smoke_test_data_flow.py
+```
+
+Docker socket 권한이 막힌 장비에서는 `docker` 명령 앞에 `sudo`를 붙입니다.
+
+```bash
+sudo docker compose ps
+sudo docker compose up -d --force-recreate cctv-ai-engine
+```
+
+카메라 화면이 `스트림 연결 실패`로 보이면 아래 순서로 확인합니다.
+
+1. `curl -fsS http://localhost:8769/health`
+2. `curl -fsS http://localhost:8769/cameras`
+3. `sudo docker logs --tail 120 cctv-ai-engine`
+
+`cctv-ai-engine` 로그에 `MJPEG 스트리밍 서버 시작`이 없으면 Stream API가 뜨지 않은 상태입니다.
+이 경우 `docker-compose.yml`의 `STREAM_API_ENABLED`, `STREAM_PORT`, `8769` 포트 publish 설정을 확인하고
+`cctv-ai-engine` 컨테이너를 재생성합니다.
+
+내일 설명할 때는 아래 순서가 가장 안전합니다.
+
+```text
+1. 전체 구조: AI Engine → MQTT/Alert API → Action Layer → Public API → Grafana/UI
+2. Public API health/readiness로 서비스 상태 확인
+3. 카메라 목록과 Stream API 화면으로 실제 입력 확인
+4. 데모 UI에서 낙상/헬멧 미착용/위험구역 이벤트 전송
+5. Metrics/Grafana/Swagger로 운영 연동 가능성 확인
+```
+
 ## 테스트
 
 공개 API 회귀 테스트:
@@ -455,15 +530,6 @@ python -m pytest tests/test_public_api.py -q
 ```bash
 python -m pytest tests/test_stream_api.py -q
 ```
-| `--zone-presets FILE` | 구역 프리셋 저장 파일 | `zone_presets.json` |
-| `--zone-detection` | 위험 구역 감지 활성화 | off |
-| `--mqtt-broker HOST` | MQTT 브로커 | `localhost` |
-| `--mqtt-port PORT` | MQTT 포트 | `1883` |
-| `--mqtt-topic-prefix` | MQTT 토픽 prefix | `cctv/ai/events` |
-| `--no-debounce` | 이벤트 디바운싱 비활성화 | off |
-| `--debounce SEC` | 디바운싱 간격(초) | `3.0` |
-| `--collect-dataset` | 데이터셋 자동 수집 | off |
-| `--dataset-dir DIR` | 수집 데이터 저장 경로 | `./collected_data` |
 
 ## 위험 구역 GUI 조작 (`--display` 모드)
 
@@ -641,6 +707,29 @@ python scripts/evaluate_detection.py \
 | Windows 로그 한글 깨짐 | `chcp 65001` 후 실행, 또는 `PYTHONUTF8=1` |
 
 ## 변경 이력
+
+### v1.8.0 (2026-05-06) - 실사용 시연 UI 및 운영 데모 준비
+
+- **시연용 Public API 대시보드 추가**
+  - `web/public-demo.html` 추가
+  - Public API 상태, readiness, 카메라 목록, metrics 상태를 한 화면에서 확인
+  - 낙상 감지, 헬멧 미착용, 위험구역 침입 이벤트를 UI 버튼으로 전송 가능
+  - Swagger(`http://localhost:9000/docs`)와 Grafana(`http://localhost:3001`) 바로가기 제공
+  - `/api/v1/events` 조회가 실패해도 시연 중 전송한 이벤트를 화면에 남기는 fallback 처리 추가
+
+- **카메라 스트림 시연 지원**
+  - `Stream API` 기본 주소를 `http://localhost:8769`로 정리
+  - `web/public-demo.html`에서 카메라 목록을 기반으로 MJPEG 화면 자동 표시
+  - 스트림 연결 실패 시 `8769` 포트와 Stream API 상태를 확인하도록 UI 메시지 개선
+  - `docker-compose.yml`의 `cctv-ai-engine`에 `STREAM_API_ENABLED`, `STREAM_PORT`, `8769` 포트 publish 설정 추가
+
+- **README 운영/시연 문서 보강**
+  - 프로젝트 구조에 `web/` 대시보드 디렉터리 설명 추가
+  - 포트 표에 `8769` Stream API 항목 추가
+  - `실사용 시연 UI` 섹션 추가
+  - 시연 전 점검 명령, Stream API 장애 확인 순서, 컨테이너 재생성 명령 정리
+  - 내일 발표용 설명 순서 추가: 전체 구조 → health/readiness → 카메라 화면 → 이벤트 전송 → Grafana/Swagger 확인
+  - README 내 흩어져 있던 CLI 옵션 표 조각을 `주요 CLI 옵션` 섹션으로 정리
 
 ### v1.7.0 (2026-03-09) - 크로스 플랫폼 지원 (Windows + Jetson Orin)
 

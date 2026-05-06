@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CCTV Public API Demo</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #191d25;
+      --panel-2: #202633;
+      --line: #303747;
+      --text: #e8edf5;
+      --muted: #98a3b4;
+      --good: #22c55e;
+      --warn: #f59e0b;
+      --bad: #ef4444;
+      --brand: #4f7cff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    header {
+      height: 58px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 0 22px;
+      border-bottom: 1px solid var(--line);
+      background: #171b23;
+    }
+    h1 { font-size: 18px; margin: 0; }
+    main { max-width: 1320px; margin: 0 auto; padding: 22px; }
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-left: auto;
+      flex-wrap: wrap;
+    }
+    input, select, button {
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--panel-2);
+      color: var(--text);
+      font: inherit;
+      height: 36px;
+      padding: 0 11px;
+    }
+    input { min-width: 250px; }
+    button {
+      cursor: pointer;
+      background: var(--brand);
+      border-color: var(--brand);
+      font-weight: 650;
+    }
+    button.secondary { background: var(--panel-2); border-color: var(--line); }
+    button.warn { background: #9a3412; border-color: #9a3412; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(160px, 1fr));
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+    .cols {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 16px;
+      align-items: start;
+    }
+    .camera-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+    }
+    .camera-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #0b0d12;
+      overflow: hidden;
+    }
+    .camera-card img {
+      display: block;
+      width: 100%;
+      min-height: 180px;
+      aspect-ratio: 16 / 9;
+      object-fit: contain;
+      background: #050607;
+    }
+    .camera-error {
+      min-height: 180px;
+      aspect-ratio: 16 / 9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      text-align: center;
+      color: var(--muted);
+      background: #050607;
+      border-bottom: 1px solid var(--line);
+    }
+    .camera-caption {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 9px 10px;
+      border-top: 1px solid var(--line);
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .stat-title {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .stat-value { font-size: 30px; font-weight: 800; margin-top: 4px; }
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .dot { width: 9px; height: 9px; border-radius: 999px; background: var(--muted); }
+    .ok .dot { background: var(--good); box-shadow: 0 0 8px rgba(34,197,94,.7); }
+    .bad .dot { background: var(--bad); }
+    .warn-status .dot { background: var(--warn); }
+    h2 { font-size: 16px; margin: 0 0 12px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td {
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+      padding: 10px 9px;
+      font-size: 14px;
+      vertical-align: top;
+    }
+    th { color: var(--muted); font-size: 12px; text-transform: uppercase; }
+    tr:last-child td { border-bottom: 0; }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      color: #b9c5d8;
+      font-size: 12px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 5px;
+      background: var(--panel-2);
+      color: #c9d3e3;
+      font-size: 12px;
+      font-weight: 650;
+    }
+    .critical { background: #7f1d1d; color: #fecaca; }
+    .normal { background: #78350f; color: #fde68a; }
+    .low { background: #14532d; color: #bbf7d0; }
+    .row-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: #c7d2e4;
+      font-size: 12px;
+      max-height: 280px;
+      overflow: auto;
+    }
+    .muted { color: var(--muted); }
+    .full { grid-column: 1 / -1; }
+    .toast {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      min-width: 240px;
+      max-width: 420px;
+      padding: 12px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      opacity: 0;
+      transform: translateY(8px);
+      transition: .18s ease;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    @media (max-width: 900px) {
+      header { height: auto; align-items: stretch; flex-direction: column; padding: 14px; }
+      .toolbar { margin-left: 0; }
+      input { min-width: 100%; }
+      .grid, .cols { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>CCTV 운영 시연 대시보드</h1>
+    <span class="status" id="connection-status"><span class="dot"></span><span>연결 확인 중</span></span>
+    <div class="toolbar">
+      <input id="api-base" value="http://localhost:9000" aria-label="API base URL">
+      <button class="secondary" id="open-swagger">Swagger</button>
+      <button class="secondary" id="open-grafana">Grafana</button>
+      <button id="refresh">새로고침</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="grid">
+      <div class="panel">
+        <div class="stat-title">Public API</div>
+        <div class="stat-value" id="stat-api">-</div>
+      </div>
+      <div class="panel">
+        <div class="stat-title">Readiness</div>
+        <div class="stat-value" id="stat-ready">-</div>
+      </div>
+      <div class="panel">
+        <div class="stat-title">카메라</div>
+        <div class="stat-value" id="stat-cameras">-</div>
+      </div>
+      <div class="panel">
+        <div class="stat-title">Metrics</div>
+        <div class="stat-value" id="stat-metrics">-</div>
+      </div>
+    </section>
+
+    <section class="cols">
+      <div class="panel full">
+        <div class="camera-caption" style="padding:0 0 12px;border-top:0">
+          <h2 style="margin:0">카메라 화면</h2>
+          <div class="toolbar" style="margin-left:0">
+            <input id="stream-base" value="http://localhost:8769" aria-label="Stream API base URL">
+            <button class="secondary" id="load-streams">화면 연결</button>
+          </div>
+        </div>
+        <div id="camera-preview" class="camera-grid">
+          <div class="muted">스트림 API가 열려 있으면 카메라 화면이 여기에 표시됩니다.</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="panel">
+          <h2>카메라 목록</h2>
+          <table>
+            <thead><tr><th>ID</th><th>이름</th><th>구역</th></tr></thead>
+            <tbody id="camera-rows"><tr><td colspan="3" class="muted">로딩 중</td></tr></tbody>
+          </table>
+        </div>
+
+        <div class="panel">
+          <h2>최근 이벤트</h2>
+          <table>
+            <thead><tr><th>시각</th><th>유형</th><th>카메라</th><th>신뢰도</th><th>등급</th></tr></thead>
+            <tbody id="event-rows"><tr><td colspan="5" class="muted">로딩 중</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <div class="panel">
+          <h2>실사용 이벤트 주입</h2>
+          <div class="muted">내일 시연에서 버튼을 누르면 Public API로 이벤트를 넣고 처리 흐름을 확인할 수 있습니다.</div>
+          <div class="row-actions">
+            <select id="demo-type">
+              <option value="fall_detected">낙상 감지</option>
+              <option value="head">헬멧 미착용</option>
+              <option value="intrusion">위험구역 침입</option>
+            </select>
+            <select id="demo-severity">
+              <option value="critical">critical</option>
+              <option value="normal">normal</option>
+              <option value="low">low</option>
+            </select>
+            <button class="warn" id="send-event">이벤트 전송</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>하위 서비스 상태</h2>
+          <table>
+            <thead><tr><th>서비스</th><th>상태</th><th>URL</th></tr></thead>
+            <tbody id="dependency-rows"><tr><td colspan="3" class="muted">로딩 중</td></tr></tbody>
+          </table>
+        </div>
+
+        <div class="panel">
+          <h2>마지막 응답</h2>
+          <pre id="last-response">-</pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const demoEvents = [];
+
+    function apiBase() {
+      return $("api-base").value.replace(/\/$/, "");
+    }
+
+    function streamBase() {
+      return $("stream-base").value.replace(/\/$/, "");
+    }
+
+    function showToast(message) {
+      const toast = $("toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(toast._timer);
+      toast._timer = setTimeout(() => toast.classList.remove("show"), 2600);
+    }
+
+    async function request(path, options = {}) {
+      const response = await fetch(apiBase() + path, {
+        headers: { "Content-Type": "application/json", ...(options.headers || {}) },
+        ...options,
+      });
+      const text = await response.text();
+      let body = {};
+      try { body = text ? JSON.parse(text) : {}; } catch { body = { raw: text }; }
+      $("last-response").textContent = JSON.stringify(body, null, 2);
+      if (!response.ok) {
+        throw new Error(body.error || body.detail || response.statusText);
+      }
+      return body;
+    }
+
+    function setConnection(state, label) {
+      const el = $("connection-status");
+      el.className = "status " + state;
+      el.lastElementChild.textContent = label;
+    }
+
+    function formatTime(value) {
+      if (!value) return "-";
+      const date = typeof value === "number" ? new Date(value * 1000) : new Date(value);
+      if (Number.isNaN(date.getTime())) return String(value);
+      return date.toLocaleString("ko-KR", { hour12: false });
+    }
+
+    async function loadHealth() {
+      const health = await request("/api/v1/health");
+      $("stat-api").textContent = health.data?.status || "-";
+      setConnection("ok", "Public API 연결됨");
+      return health;
+    }
+
+    async function loadReadiness() {
+      const readiness = await request("/api/v1/readiness");
+      const status = readiness.data?.status || "-";
+      $("stat-ready").textContent = status;
+      const deps = readiness.data?.dependencies || [];
+      $("dependency-rows").innerHTML = deps.length
+        ? deps.map(dep => `
+            <tr>
+              <td>${dep.name}</td>
+              <td><span class="badge ${dep.status === "up" ? "low" : "critical"}">${dep.status}</span></td>
+              <td><code>${dep.url}</code></td>
+            </tr>
+          `).join("")
+        : '<tr><td colspan="3" class="muted">의존 서비스 정보 없음</td></tr>';
+      return readiness;
+    }
+
+    async function loadCameras() {
+      const cameras = await request("/api/v1/cameras");
+      const items = cameras.data || [];
+      $("stat-cameras").textContent = String(items.length);
+      $("camera-rows").innerHTML = items.length
+        ? items.map(camera => `
+            <tr>
+              <td><code>${camera.id}</code></td>
+              <td>${camera.name || "-"}</td>
+              <td>${(camera.zones || []).length}개</td>
+            </tr>
+          `).join("")
+        : '<tr><td colspan="3" class="muted">카메라 없음</td></tr>';
+      renderCameraPreview(items);
+      return cameras;
+    }
+
+    function renderCameraPreview(cameras) {
+      const root = $("camera-preview");
+      if (!cameras.length) {
+        root.innerHTML = '<div class="muted">카메라 정보가 없습니다.</div>';
+        return;
+      }
+      root.innerHTML = cameras.map(camera => {
+        const id = encodeURIComponent(camera.id);
+        const src = `${streamBase()}/stream/${id}`;
+        return `
+          <div class="camera-card">
+            <img src="${src}" alt="${camera.name || camera.id}"
+                 onerror="this.replaceWith(Object.assign(document.createElement('div'), { className: 'camera-error', textContent: '스트림 연결 실패: 8769 포트/Stream API 상태를 확인하세요.' }));">
+            <div class="camera-caption">
+              <div>
+                <div>${camera.name || camera.id}</div>
+                <code>${camera.id}</code>
+              </div>
+              <span class="badge">${(camera.zones || []).length} zones</span>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function loadMetrics() {
+      const response = await fetch(apiBase() + "/api/v1/metrics");
+      const text = await response.text();
+      $("stat-metrics").textContent = response.ok ? "up" : "down";
+      if (!response.ok) throw new Error("metrics " + response.status);
+      return text;
+    }
+
+    function renderEvents(items, note = "") {
+      $("event-rows").innerHTML = items.length
+        ? items.map(event => `
+            <tr>
+              <td>${formatTime(event.received_at || event.timestamp)}</td>
+              <td><span class="badge">${event.event_type}</span></td>
+              <td><code>${event.camera_id || "-"}</code></td>
+              <td>${Number(event.confidence || 0).toFixed(2)}</td>
+              <td><span class="badge ${event.severity || "normal"}">${event.severity || "-"}</span></td>
+            </tr>
+          `).join("")
+        : `<tr><td colspan="5" class="muted">${note || "최근 이벤트 없음"}</td></tr>`;
+    }
+
+    async function loadEvents() {
+      try {
+        const events = await request("/api/v1/events?limit=10");
+        renderEvents(events.items || []);
+      } catch (error) {
+        renderEvents(
+          demoEvents,
+          "이벤트 조회 API 응답 없음. 버튼으로 전송한 시연 이벤트가 여기에 표시됩니다."
+        );
+      }
+    }
+
+    async function refreshAll() {
+      try {
+        await loadHealth();
+        await loadReadiness();
+        await loadCameras();
+        await loadMetrics();
+        await loadEvents();
+        showToast("상태 갱신 완료");
+      } catch (error) {
+        setConnection("bad", "연결 오류");
+        showToast("갱신 실패: " + error.message);
+      }
+    }
+
+    async function sendDemoEvent() {
+      const payload = {
+        camera_id: "demo-cam-01",
+        event_type: $("demo-type").value,
+        severity: $("demo-severity").value,
+        confidence: 0.92,
+        timestamp: Date.now() / 1000,
+        bbox: { x: 120, y: 90, width: 80, height: 160 },
+        object_id: Math.floor(Math.random() * 1000),
+        metadata: { source: "public-demo-ui", demo: true }
+      };
+      try {
+        await request("/api/v1/alerts", {
+          method: "POST",
+          body: JSON.stringify(payload)
+        });
+        demoEvents.unshift({ ...payload, received_at: new Date().toISOString() });
+        renderEvents(demoEvents);
+        showToast("이벤트 전송 완료");
+        await loadEvents();
+        await loadMetrics();
+      } catch (error) {
+        showToast("이벤트 전송 실패: " + error.message);
+      }
+    }
+
+    $("refresh").addEventListener("click", refreshAll);
+    $("send-event").addEventListener("click", sendDemoEvent);
+    $("load-streams").addEventListener("click", loadCameras);
+    $("open-swagger").addEventListener("click", () => window.open(apiBase() + "/docs", "_blank"));
+    $("open-grafana").addEventListener("click", () => window.open("http://localhost:3001", "_blank"));
+
+    refreshAll();
+    setInterval(refreshAll, 10000);
+  </script>
+</body>
+</html>

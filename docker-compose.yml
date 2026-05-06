@@ -358,6 +358,8 @@ services:
     environment:
       PYTHONIOENCODING: utf-8
       PYTHONUTF8: "1"
+      STREAM_API_ENABLED: ${STREAM_API_ENABLED:-1}
+      STREAM_PORT: ${STREAM_PORT:-8769}
     deploy:
       resources:
         limits:
@@ -381,6 +383,10 @@ services:
         condition: service_started
     networks:
       edgex-network: null
+    ports:
+    - target: 8769
+      published: "${STREAM_PORT:-8769}"
+      protocol: tcp
     restart: always
     volumes:
     - type: bind
