@@ -1,4 +1,4 @@
 interface:
   display_name: "Backend Architect"
-  short_description: "APIs, schema, scale, reliability"
-  default_prompt: "Use $backend-architect to review backend design, database, API, or system tradeoffs in this repo."
+  short_description: "Senior backend architect specializing in scalable system..."
+  default_prompt: "Use $backend-architect to help with Backend Architect work in this repo."

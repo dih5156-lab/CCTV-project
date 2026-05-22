@@ -1,0 +1,4 @@
+interface:
+  display_name: "Paid Media Auditor"
+  short_description: "Comprehensive paid media auditor who systematically..."
+  default_prompt: "Use $paid-media-auditor to help with Paid Media Auditor work in this repo."

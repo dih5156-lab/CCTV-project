@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EdgeX Status</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #191d25;
+      --line: #303747;
+      --text: #e8edf5;
+      --muted: #98a3b4;
+      --good: #22c55e;
+      --bad: #ef4444;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    main { max-width: 960px; margin: 0 auto; padding: 28px; }
+    h1 { margin: 0 0 8px; font-size: 24px; }
+    p { margin: 0 0 22px; color: var(--muted); }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px;
+    }
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      padding: 16px;
+    }
+    .name { font-weight: 750; margin-bottom: 8px; }
+    .status { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); }
+    .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); }
+    .up .dot { background: var(--good); box-shadow: 0 0 8px rgba(34,197,94,.7); }
+    .down .dot { background: var(--bad); }
+    code {
+      display: block;
+      margin-top: 12px;
+      color: #b9c5d8;
+      font-size: 12px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    button {
+      margin-top: 18px;
+      height: 36px;
+      border: 1px solid #4f7cff;
+      border-radius: 7px;
+      background: #4f7cff;
+      color: white;
+      font: inherit;
+      font-weight: 650;
+      padding: 0 12px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>EdgeX 상태 확인</h1>
+    <p>Jetson/ARM64 환경에서 공식 EdgeX UI 대신 Core 서비스 응답을 확인하는 경량 상태 화면입니다.</p>
+    <section class="grid" id="services"></section>
+    <button id="refresh">새로고침</button>
+  </main>
+
+  <script>
+    const checks = [
+      { name: "Core Data", url: "/core-data/api/v3/ping" },
+      { name: "Core Metadata", url: "/core-metadata/api/v3/ping" },
+      { name: "Kuiper Rule Engine", url: "/kuiper/" },
+    ];
+
+    async function checkService(item) {
+      try {
+        const response = await fetch(item.url, { cache: "no-store" });
+        const text = await response.text();
+        return {
+          ...item,
+          ok: response.ok,
+          detail: text.slice(0, 320) || response.statusText,
+        };
+      } catch (error) {
+        return { ...item, ok: false, detail: error.message };
+      }
+    }
+
+    async function render() {
+      const root = document.getElementById("services");
+      root.innerHTML = "";
+      const results = await Promise.all(checks.map(checkService));
+      root.innerHTML = results.map(item => `
+        <article class="card">
+          <div class="name">${item.name}</div>
+          <div class="status ${item.ok ? "up" : "down"}">
+            <span class="dot"></span>
+            <span>${item.ok ? "up" : "down"}</span>
+          </div>
+          <code>${item.url}\n${item.detail}</code>
+        </article>
+      `).join("");
+    }
+
+    document.getElementById("refresh").addEventListener("click", render);
+    render();
+    setInterval(render, 10000);
+  </script>
+</body>
+</html>

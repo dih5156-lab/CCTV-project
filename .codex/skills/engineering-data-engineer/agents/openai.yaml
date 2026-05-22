@@ -1,4 +1,4 @@
 interface:
-  display_name: "Engineering Data Engineer"
-  short_description: "Pipelines, lakehouse, dbt, data quality"
-  default_prompt: "Use $engineering-data-engineer to inspect ETL, lakehouse, dbt, CDC, or data quality work in this repo."
+  display_name: "Data Engineer"
+  short_description: "Expert data engineer specializing in building reliable data..."
+  default_prompt: "Use $engineering-data-engineer to help with Data Engineer work in this repo."

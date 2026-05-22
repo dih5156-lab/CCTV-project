@@ -1,0 +1,4 @@
+interface:
+  display_name: "Autonomous Optimization Architect"
+  short_description: "Intelligent system governor that continuously shadow-tests..."
+  default_prompt: "Use $engineering-autonomous-optimization-architect to help with Autonomous Optimization Architect work in this repo."

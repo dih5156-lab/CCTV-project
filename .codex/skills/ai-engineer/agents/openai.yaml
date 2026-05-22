@@ -1,4 +1,4 @@
 interface:
   display_name: "AI Engineer"
-  short_description: "ML, CV, RAG, inference work"
-  default_prompt: "Use $ai-engineer to inspect model, inference, or data-pipeline work in this repo."
+  short_description: "Expert AI/ML engineer specializing in machine learning model..."
+  default_prompt: "Use $ai-engineer to help with AI Engineer work in this repo."

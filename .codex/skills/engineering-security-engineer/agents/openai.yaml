@@ -1,0 +1,4 @@
+interface:
+  display_name: "Security Engineer"
+  short_description: "Expert application security engineer specializing in threat..."
+  default_prompt: "Use $engineering-security-engineer to help with Security Engineer work in this repo."
