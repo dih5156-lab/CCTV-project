@@ -228,6 +228,38 @@ class TestEnsureConnectionBackoff:
         svc._mqtt_last_fail_time = 0
         svc._mqtt_client = None
 
+    def test_connection_state_is_isolated_per_instance(self, svc, tmp_path):
+        """한 서비스 인스턴스의 백오프 상태가 다른 인스턴스에 전파되지 않아야 한다."""
+        other = CCTVDeviceService({
+            "coreMetadataUrl": "http://localhost:59881",
+            "coreDataUrl": "http://localhost:59880",
+            "deviceServiceName": "other-service",
+            "enableStoreAndForward": True,
+            "outboxDbPath": str(tmp_path / "other_outbox.db"),
+        })
+
+        svc._redis_fail_count = 3
+        svc._redis_last_fail_time = time.time()
+        svc._mqtt_fail_count = 2
+        svc._mqtt_last_fail_time = time.time()
+
+        assert other._redis_fail_count == 0
+        assert other._redis_last_fail_time == 0.0
+        assert other._mqtt_fail_count == 0
+        assert other._mqtt_last_fail_time == 0.0
+
+    def test_connection_locks_are_isolated_per_instance(self, svc, tmp_path):
+        other = CCTVDeviceService({
+            "coreMetadataUrl": "http://localhost:59881",
+            "coreDataUrl": "http://localhost:59880",
+            "deviceServiceName": "other-service",
+            "enableStoreAndForward": True,
+            "outboxDbPath": str(tmp_path / "other_outbox.db"),
+        })
+
+        assert svc._redis_state.lock is not other._redis_state.lock
+        assert svc._mqtt_state.lock is not other._mqtt_state.lock
+
     @redis_required
     def test_redis_fails_and_increments_fail_count(self, svc):
         """Redis 연결 실패 → fail_count 증가."""
@@ -252,7 +284,7 @@ class TestEnsureConnectionBackoff:
         self._reset_mqtt(svc)
         mock_instance = MagicMock()
         mock_instance.connect.side_effect = ConnectionRefusedError("MQTT 연결 거부")
-        with patch("src.edgex._publisher_mixin.mqtt.Client", return_value=mock_instance):
+        with patch("src.edgex._publisher_mixin.create_mqtt_client", return_value=mock_instance):
             result = svc._ensure_mqtt_client()
         assert result is False
         assert svc._mqtt_fail_count >= 1
@@ -284,7 +316,7 @@ class TestEnsureConnectionBackoff:
         svc._mqtt_last_fail_time = 0
         mock_instance = MagicMock()
         mock_instance.connect.return_value = None
-        with patch("src.edgex._publisher_mixin.mqtt.Client", return_value=mock_instance):
+        with patch("src.edgex._publisher_mixin.create_mqtt_client", return_value=mock_instance):
             svc._mqtt_client = None
             result = svc._ensure_mqtt_client()
         assert result is True

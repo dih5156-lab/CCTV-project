@@ -192,6 +192,16 @@ def _get_env_string_slice(key: str, default: List[str]) -> List[str]:
     return [p for p in parts if p]
 
 
+def _get_mqtt_username(key: str) -> str:
+    """Broker-specific username, falling back to the shared compose MQTT user."""
+    return _get_env_string(key, _get_env_string("MQTT_USER", ""))
+
+
+def _get_mqtt_password(key: str) -> str:
+    """Broker-specific password, falling back to the shared compose MQTT password."""
+    return _get_env_string(key, _get_env_string("MQTT_PASSWORD", ""))
+
+
 # ──────────────────────────────────────────────
 # Load 함수 (메인 진입점)
 # Go: func Load() *Config
@@ -231,26 +241,26 @@ def load() -> Config:
             ns_park=MQTTConfig(
                 host=_get_env_string("NS_PARK_MQTT_HOST", "localhost"),
                 port=_get_env_int("NS_PARK_MQTT_PORT", 1883),
-                username=_get_env_string("NS_PARK_MQTT_ID", ""),
-                password=_get_env_string("NC_PW", ""),
+                username=_get_mqtt_username("NS_PARK_MQTT_ID"),
+                password=_get_mqtt_password("NC_PW"),
             ),
             lab=MQTTConfig(
                 host=_get_env_string("LAB_MQTT_HOST", "localhost"),
                 port=_get_env_int("LAB_MQTT_PORT", 1883),
-                username=_get_env_string("LAB_MQTT_ID", ""),
-                password=_get_env_string("NC_PW", ""),
+                username=_get_mqtt_username("LAB_MQTT_ID"),
+                password=_get_mqtt_password("NC_PW"),
             ),
             lab_test=MQTTConfig(
                 host=_get_env_string("LAB_TEST_MQTT_HOST", "localhost"),
                 port=_get_env_int("LAB_TEST_MQTT_PORT", 1883),
-                username=_get_env_string("LAB_TEST_MQTT_ID", ""),
-                password=_get_env_string("NC_PW", ""),
+                username=_get_mqtt_username("LAB_TEST_MQTT_ID"),
+                password=_get_mqtt_password("NC_PW"),
             ),
             local=MQTTConfig(
                 host=_get_env_string("LOCAL_MQTT_HOST", "localhost"),
                 port=_get_env_int("LOCAL_MQTT_PORT", 1883),
-                username=_get_env_string("LOCAL_MQTT_ID", ""),
-                password=_get_env_string("LOCAL_MQTT_PW", ""),
+                username=_get_mqtt_username("LOCAL_MQTT_ID"),
+                password=_get_mqtt_password("LOCAL_MQTT_PW"),
             ),
         ),
         batch=BatchConfig(

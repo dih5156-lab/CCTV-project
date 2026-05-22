@@ -6,6 +6,7 @@
 Routes:
     GET /cameras                → 사용 가능한 카메라 ID 목록 (JSON)
     GET /stream/<camera_id>     → MJPEG 스트림 (브라우저 img src로 사용 가능)
+    GET /snapshot/<camera_id>   → 최신 프레임 1장을 JPEG로 반환 (구역 편집용)
 
 사용법::
 
@@ -20,13 +21,13 @@ Routes:
 from __future__ import annotations
 
 import logging
-import os
 import re
 import threading
 import time
 from typing import TYPE_CHECKING
 
 from .._http_server import BaseApiHandler, ThreadingApiServer
+from ..utils.env import get_env_float, get_env_int
 
 if TYPE_CHECKING:
     from ..core.base_processor import BaseProcessor
@@ -34,28 +35,43 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 _RE_STREAM = re.compile(r"^/stream/([^/]+)$")
+_RE_SNAPSHOT = re.compile(r"^/snapshot/([^/]+)$")
 
 
 def _read_stream_fps() -> float:
     """환경 변수에서 스트리밍 FPS를 읽고 안전한 범위로 보정한다."""
-    raw = os.environ.get("STREAM_FPS", "15")
-    try:
-        fps = float(raw)
-    except (TypeError, ValueError):
-        logger.warning("잘못된 STREAM_FPS=%r → 기본값 15 사용", raw)
-        return 15.0
-    return min(max(fps, 1.0), 30.0)
+    return get_env_float("STREAM_FPS", 30.0, minimum=1.0, maximum=60.0, logger=logger)
 
 
 def _read_jpeg_quality() -> int:
     """환경 변수에서 JPEG 품질을 읽고 안전한 범위로 보정한다."""
-    raw = os.environ.get("STREAM_JPEG_QUALITY", "75")
+    return get_env_int("STREAM_JPEG_QUALITY", 75, minimum=30, maximum=95, logger=logger)
+
+
+def _read_stream_size() -> tuple[int, int]:
+    """환경 변수에서 MJPEG 송출 해상도를 읽는다. 0이면 원본 크기를 유지한다."""
+    width = get_env_int("STREAM_WIDTH", 0, minimum=0, maximum=3840, logger=logger)
+    height = get_env_int("STREAM_HEIGHT", 0, minimum=0, maximum=2160, logger=logger)
+    if width <= 0 or height <= 0:
+        return 0, 0
+    return width, height
+
+
+def _get_camera_frame_for_stream(proc: "BaseProcessor", camera_id: str):
+    """DeepStream에서는 추가 frame copy를 피하고, 기존 프로세서는 호환 경로를 쓴다."""
     try:
-        quality = int(raw)
-    except (TypeError, ValueError):
-        logger.warning("잘못된 STREAM_JPEG_QUALITY=%r → 기본값 75 사용", raw)
-        return 75
-    return min(max(quality, 30), 95)
+        return proc.get_camera_frame(camera_id, annotated=True, copy_frame=False)
+    except TypeError:
+        return proc.get_camera_frame(camera_id, annotated=True)
+
+
+def _resize_for_stream(cv2, frame, width: int, height: int):
+    if width <= 0 or height <= 0:
+        return frame
+    frame_height, frame_width = frame.shape[:2]
+    if frame_width == width and frame_height == height:
+        return frame
+    return cv2.resize(frame, (width, height), interpolation=cv2.INTER_AREA)
 
 
 class StreamApiHandler(BaseApiHandler):
@@ -86,6 +102,8 @@ class StreamApiHandler(BaseApiHandler):
             self._list_cameras()
         elif m := _RE_STREAM.match(path):
             self._stream(m.group(1))
+        elif m := _RE_SNAPSHOT.match(path):
+            self._snapshot(m.group(1))
         else:
             self._consume_body()
             self._respond(404, {"error": "Not Found"})
@@ -106,6 +124,10 @@ class StreamApiHandler(BaseApiHandler):
                 cameras=cameras,
                 stream_fps=_read_stream_fps(),
                 jpeg_quality=_read_jpeg_quality(),
+                stream_size={
+                    "width": _read_stream_size()[0],
+                    "height": _read_stream_size()[1],
+                },
             ),
         )
 
@@ -130,10 +152,14 @@ class StreamApiHandler(BaseApiHandler):
 
         interval = 1.0 / _read_stream_fps()
         jpeg_quality = _read_jpeg_quality()
+        stream_width, stream_height = _read_stream_size()
         try:
+            # 단순 time.sleep(interval) 대신 deadline 보정으로 인코딩 시간 누적 드리프트 방지
+            deadline = time.monotonic()
             while True:
-                frame = proc.get_camera_frame(camera_id, annotated=True)
+                frame = _get_camera_frame_for_stream(proc, camera_id)
                 if frame is not None:
+                    frame = _resize_for_stream(cv2, frame, stream_width, stream_height)
                     ret, jpeg = cv2.imencode(
                         ".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, jpeg_quality]
                     )
@@ -146,11 +172,53 @@ class StreamApiHandler(BaseApiHandler):
                         )
                         self.wfile.write(header + data + b"\r\n")
                         self.wfile.flush()
-                time.sleep(interval)
+                deadline += interval
+                remaining = deadline - time.monotonic()
+                if remaining > 0:
+                    time.sleep(remaining)
+                else:
+                    # 처리 지연이 한 프레임 이상 누적된 경우 deadline 리셋
+                    deadline = time.monotonic()
         except (BrokenPipeError, ConnectionResetError):
             pass  # 클라이언트 연결 끊김 — 정상 종료
         except Exception as exc:
             logger.debug("[%s] 스트리밍 중단: %s", camera_id, exc)
+
+    def _snapshot(self, camera_id: str) -> None:
+        try:
+            import cv2
+        except ImportError:
+            self._respond(503, {"error": "cv2 not available"})
+            return
+
+        proc = self._processor()
+        if camera_id not in proc.cameras:
+            self._respond(404, {"error": f"Camera '{camera_id}' not found"})
+            return
+
+        frame = proc.get_camera_frame(camera_id, annotated=True)
+        if frame is None:
+            self._respond(503, {"error": "Frame not ready"})
+            return
+
+        ret, jpeg = cv2.imencode(
+            ".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, _read_jpeg_quality()]
+        )
+        if not ret:
+            self._respond(500, {"error": "JPEG encode failed"})
+            return
+
+        data = jpeg.tobytes()
+        try:
+            self.send_response(200)
+            self.send_header("Content-Type", "image/jpeg")
+            self.send_header("Content-Length", str(len(data)))
+            self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(data)
+        except (BrokenPipeError, ConnectionResetError):
+            pass  # 클라이언트가 snapshot 갱신 중 연결을 닫은 정상 케이스
 
 
 def start_stream_api_server(
@@ -168,7 +236,7 @@ def start_stream_api_server(
         STREAM_FPS          스트리밍 프레임 레이트 (기본값: 15)
         STREAM_JPEG_QUALITY JPEG 품질 0~100 (기본값: 75)
     """
-    port = int(os.environ.get("STREAM_PORT", port))
+    port = get_env_int("STREAM_PORT", port, minimum=1, maximum=65535, logger=logger)
     try:
         server = ThreadingApiServer(("", port), StreamApiHandler)
         server.processor = processor  # type: ignore[attr-defined]

@@ -11,6 +11,8 @@ from pathlib import Path
 ACTION_LAYER_URL: str = os.environ.get("ACTION_LAYER_URL", "http://cctv-action-layer:8080")
 ALERT_API_URL: str = os.environ.get("ALERT_API_URL", "http://cctv-alert-api:8000")
 ALERT_LOG_PATH: Path = Path(os.environ.get("ALERT_LOG_PATH", "/app/logs/alert_api_events.jsonl"))
+SENSOR_LOG_PATH: Path = Path(os.environ.get("SENSOR_LOG_PATH", "/app/logs/sensor_readings.jsonl"))
+SENSOR_DEVICE_MAP_PATH: Path = Path(os.environ.get("SENSOR_DEVICE_MAP_PATH", "/app/config/sensor_devices.json"))
 ALERT_FALLBACK_LOG: Path = Path(os.environ.get("ALERT_FALLBACK_LOG", "/app/logs/public_api_fallback.jsonl"))
 CAMERAS_JSON: Path = Path(os.environ.get("CAMERAS_JSON", "/app/cameras.json"))
 

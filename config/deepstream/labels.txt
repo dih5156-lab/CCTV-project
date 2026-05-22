@@ -1,5 +1,7 @@
 # nvinfer 클래스 레이블 (한 줄에 하나씩, 인덱스 순서)
 # config_infer_primary.txt 의 num-detected-classes 값과 줄 수가 일치해야 함
 #
+# Pose 모델만 사용 (person keypoint 감지)
+# Bag 감지는 PPHuman 백엔드에서 처리
 # class-id:  0
 person

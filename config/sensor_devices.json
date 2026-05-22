@@ -1,0 +1,16 @@
+{
+  "devices": [
+    {
+      "device_id": "demo-tlv-web",
+      "name": "시연용 TLV 온도/기울기 센서"
+    },
+    {
+      "device_id": "demo-tlv-01",
+      "name": "시연용 TLV 센서 01"
+    },
+    {
+      "device_id": "smoke-sensor-01",
+      "name": "스모크 테스트 센서"
+    }
+  ]
+}

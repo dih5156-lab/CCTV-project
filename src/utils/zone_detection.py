@@ -11,6 +11,7 @@
 
 import json
 import logging
+import errno
 import time
 from dataclasses import asdict, dataclass, field
 from enum import Enum
@@ -337,7 +338,15 @@ class ZoneManager:
             json.dumps(cameras, ensure_ascii=False, indent=2),
             encoding='utf-8',
         )
-        tmp.replace(p)
+        try:
+            tmp.replace(p)
+        except OSError as exc:
+            if exc.errno != errno.EBUSY:
+                raise
+            # Docker single-file bind mounts cannot always be atomically replaced.
+            # Fall back to in-place write so /app/cameras.json still persists.
+            p.write_text(tmp.read_text(encoding='utf-8'), encoding='utf-8')
+            tmp.unlink(missing_ok=True)
         logger.info(
             "[%s] zones를 cameras.json에 저장했습니다 (%d개)", camera_id, len(zones_data)
         )
@@ -607,16 +616,5 @@ class ZoneManager:
         o3 = orientation(q1, q2, p1)
         o4 = orientation(q1, q2, p2)
         return o1 * o2 <= 0 and o3 * o4 <= 0
-
-    def draw_zones(self, frame: np.ndarray, camera_id: str) -> np.ndarray:
-        """프레임에 모든 구역 그리기"""
-        if camera_id not in self.zones:
-            return frame
-        
-        for zone in self.zones[camera_id].values():
-            zone.draw(frame, color=(0, 255, 255), thickness=2)
-        
-        return frame
-
 
 __all__ = ["Zone", "PolygonZone", "LineZone", "ZoneManager", "ZoneEvent", "ZoneMode", "ZoneEventType"]

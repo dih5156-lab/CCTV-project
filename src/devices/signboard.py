@@ -273,7 +273,7 @@ class SignboardDevice:
         self._last_display_ts[slot] = now
         self._last_event_ts = now   # idle 타이머 리셋
 
-        logger.info("[Signboard] 표시: title=%r color=%d back=%d", title, color, back)
+        logger.info("[Signboard] 표시: title=%r text=%r color=%d back=%d", title, text, color, back)
         try:
             client.set_brightness(cfg.brightness)
             client.send_title(title)

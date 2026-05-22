@@ -77,6 +77,76 @@
       "color_code": 5,
       "priority": 4,
       "alert_level": "critical"
+    },
+    "zone_entered": {
+      "tts_message": "위험 구역에 진입이 감지되었습니다. 즉시 대피 바랍니다.",
+      "display_text": "위험구역 진입 감지",
+      "color_code": 1,
+      "priority": 4,
+      "alert_level": "critical"
+    },
+    "zone_exited": {
+      "tts_message": "감시 구역에서 이탈이 감지되었습니다.",
+      "display_text": "감시구역 이탈 감지",
+      "color_code": 3,
+      "priority": 2,
+      "alert_level": "warning"
+    },
+    "zone_dwelling": {
+      "tts_message": "위험 구역 체류가 감지되었습니다. 즉시 이탈 바랍니다.",
+      "display_text": "위험구역 체류 감지",
+      "color_code": 1,
+      "priority": 4,
+      "alert_level": "critical"
+    },
+    "zone_object_detected": {
+      "tts_message": "감시 구역에 객체가 감지되었습니다.",
+      "display_text": "감시구역 객체 감지",
+      "color_code": 3,
+      "priority": 2,
+      "alert_level": "warning"
+    },
+    "person": {
+      "tts_message": "사람이 감지되었습니다.",
+      "display_text": "사람 감지",
+      "color_code": 2,
+      "priority": 1,
+      "alert_level": "info"
+    },
+    "helmet": {
+      "tts_message": "헬멧 착용이 확인되었습니다.",
+      "display_text": "헬멧 착용 확인",
+      "color_code": 2,
+      "priority": 1,
+      "alert_level": "info"
+    },
+    "face_recognized": {
+      "tts_message": "등록된 얼굴이 인식되었습니다.",
+      "display_text": "얼굴 인식 감지",
+      "color_code": 6,
+      "priority": 2,
+      "alert_level": "warning"
+    },
+    "face_unknown": {
+      "tts_message": "미등록 얼굴이 감지되었습니다. 즉시 확인 바랍니다.",
+      "display_text": "미등록 얼굴 감지",
+      "color_code": 1,
+      "priority": 3,
+      "alert_level": "error"
+    },
+    "smoke_test_alert": {
+      "tts_message": "연기가 감지되었습니다. 즉시 현장을 확인 바랍니다.",
+      "display_text": "연기 감지 - 즉시 확인",
+      "color_code": 5,
+      "priority": 4,
+      "alert_level": "critical"
+    },
+    "sensor_temperature": {
+      "tts_message": "온도 이상이 감지되었습니다. 즉시 현장을 확인 바랍니다.",
+      "display_text": "온도 이상 감지",
+      "color_code": 5,
+      "priority": 3,
+      "alert_level": "error"
     }
   },
   "defaults": {

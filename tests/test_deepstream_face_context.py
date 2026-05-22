@@ -48,11 +48,12 @@ class FakeRecognizer:
         ]
 
 
-def test_run_deepstream_face_recognition_builds_metadata_and_snapshot():
+def test_run_deepstream_face_recognition_builds_metadata_and_snapshot(caplog):
     recognizer = FakeRecognizer()
     cache = {}
     saved = []
 
+    caplog.set_level("INFO")
     events = run_deepstream_face_recognition(
         frame=np.zeros((120, 120, 3), dtype=np.uint8),
         person_events=[_person_event()],
@@ -73,6 +74,7 @@ def test_run_deepstream_face_recognition_builds_metadata_and_snapshot():
     assert event.metadata["age_group"] == "30대"
     assert event.metadata["snapshot_path"] == "snap.jpg"
     assert len(saved) == 1
+    assert "이름=tester" in caplog.text
 
 
 def test_run_deepstream_face_recognition_reuses_recent_cache():

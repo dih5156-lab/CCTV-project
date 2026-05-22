@@ -136,6 +136,32 @@ async def list_pending(_: None = Depends(verify_api_key)) -> BaseResponse[List[P
     return success_response(normalized)
 
 
+@router.get(
+    "/devices",
+    response_model=BaseResponse[List[dict]],
+    summary="출력 디바이스 설정 상태 조회",
+    description="Action Layer에 연결된 스피커, 전광판, 경광등 설정 상태를 조회합니다.",
+)
+async def list_output_devices(_: None = Depends(verify_api_key)) -> BaseResponse[List[dict]]:
+    raw = await proxy_action_request(_ACTION_URL, "get", "/devices")
+    return success_response(raw if isinstance(raw, list) else [])
+
+
+@router.get(
+    "/action-events",
+    response_model=BaseResponse[List[dict]],
+    summary="Action Layer 최근 처리 이력 조회",
+    description="MQTT/REST로 들어온 이벤트가 출력 디바이스와 Alert API로 처리된 이력을 조회합니다.",
+)
+async def list_action_events(
+    limit: int = 20,
+    _: None = Depends(verify_api_key),
+) -> BaseResponse[List[dict]]:
+    safe_limit = max(1, min(int(limit), 100))
+    raw = await proxy_action_request(_ACTION_URL, "get", f"/events?limit={safe_limit}")
+    return success_response(raw if isinstance(raw, list) else [])
+
+
 @router.post(
     "/approve/{event_id}",
     response_model=BaseResponse[ApprovalOut],

@@ -604,10 +604,6 @@ class AIAnalyzer:
 
     # ── 외형 로그 DB / 크롭 ──────────────────────────────────────────
 
-    def _ensure_appearance_log(self):
-        """Lazy-init AppearanceLog (첫 호출 시 한 번만)."""
-        self._appearance_pipeline.ensure_log()
-
     def _save_person_crop(
         self,
         frame: np.ndarray,
@@ -619,25 +615,6 @@ class AIAnalyzer:
         """person bbox 영역을 JPEG로 저장하고 상대 경로를 반환한다."""
         return self._appearance_pipeline.save_person_crop(
             frame, x, y, w, h, camera_id, track_id, ts
-        )
-
-    # ── 외형 분석 ────────────────────────────────────────────────────
-
-    def _run_appearance_matching(
-        self,
-        frame,
-        person_events: List[DetectionEvent],
-        camera_id: Optional[str] = None,
-        cooldown: float = 5.0,
-        nearby_objects: Optional[List[Dict]] = None,
-    ) -> List[DetectionEvent]:
-        """person bbox에서 색상 속성을 추출하고 등록된 조건과 매칭한다."""
-        return self._appearance_pipeline.run_matching(
-            frame,
-            person_events,
-            camera_id=camera_id,
-            cooldown=cooldown,
-            nearby_objects=nearby_objects,
         )
 
     @staticmethod
@@ -726,36 +703,6 @@ class AIAnalyzer:
             use_face=use_face,
             use_appearance=use_appearance,
             camera_id=camera_id,
-        )
-
-    def _detect_primary_people(
-        self,
-        frame: np.ndarray,
-        *,
-        use_pose: bool,
-        use_person: bool,
-    ) -> Tuple[List[DetectionEvent], List[DetectionEvent]]:
-        """사람/낙상 기본 감지를 수행한다."""
-        return self._object_pipeline.detect_primary_people(
-            frame,
-            use_pose=use_pose,
-            use_person=use_person,
-        )
-
-    def _detect_helmet_events(
-        self,
-        frame: np.ndarray,
-        person_events: List[DetectionEvent],
-        fall_events: List[DetectionEvent],
-        *,
-        use_helmet: bool,
-    ) -> List[DetectionEvent]:
-        """사람 감지 결과를 기반으로 헬멧 이벤트를 생성한다."""
-        return self._object_pipeline.detect_helmet_events(
-            frame,
-            person_events,
-            fall_events,
-            use_helmet=use_helmet,
         )
 
     def _build_face_meta_map(

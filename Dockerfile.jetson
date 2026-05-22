@@ -54,6 +54,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gstreamer1.0-plugins-bad \
     gstreamer1.0-plugins-ugly \
     gstreamer1.0-libav \
+    gstreamer1.0-rtsp \
     libgstreamer1.0-dev \
     libgstreamer-plugins-base1.0-dev \
     python3-gi \
@@ -87,6 +88,7 @@ RUN echo "Skipping torch/torchvision install; Jetson GPU wheels are mounted at r
 WORKDIR /build
 COPY requirements-ai.txt .
 COPY requirements-face-jetson.txt .
+COPY requirements-appearance-paddle.txt .
 
 RUN grep -vE '^(ultralytics|torch|torchvision|torchaudio|opencv-python|openCV-python|numpy)([>=<!~ ]|$)' requirements-ai.txt \
     > requirements-ai-jetson.txt && \
@@ -119,6 +121,11 @@ RUN pip3 install --no-cache-dir "numpy<2.0.0"
 # InsightFace는 aarch64에서 일부 Cython 확장을 빌드하므로 Cython을 먼저 보장한다.
 RUN pip3 install --no-cache-dir "Cython>=3.0.0" && \
     pip3 install --no-cache-dir -r requirements-face-jetson.txt
+
+# ── PP-Human 속성 모델 Paddle 런타임 ─────────────────────────────────
+# Jetson/aarch64에서 ONNX Runtime 세션 초기화가 네이티브 크래시를 낼 수 있어
+# PP-Human 원본 Paddle artifact를 직접 읽는 경로를 기본 운영 경로로 둔다.
+RUN pip3 install --no-cache-dir -r requirements-appearance-paddle.txt
 
 # ── DeepStream Python bindings (pyds) ────────────────────────────────────────
 # DeepStream 7.1 / Ubuntu 22.04 / Python 3.10 / Jetson(aarch64) 공식 wheel.

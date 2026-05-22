@@ -3,322 +3,1295 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>CCTV Public API Demo</title>
+  <title>CCTV Edge Demo Dashboard</title>
   <style>
     :root {
       color-scheme: dark;
-      --bg: #111318;
-      --panel: #191d25;
-      --panel-2: #202633;
-      --line: #303747;
-      --text: #e8edf5;
-      --muted: #98a3b4;
-      --good: #22c55e;
-      --warn: #f59e0b;
-      --bad: #ef4444;
-      --brand: #4f7cff;
+      --bg: #0f1115;
+      --surface: #171b22;
+      --surface-2: #202632;
+      --line: #303949;
+      --text: #edf2f8;
+      --muted: #9aa7ba;
+      --good: #20c76f;
+      --warn: #f3b23c;
+      --bad: #f05252;
+      --blue: #5f8cff;
+      --cyan: #33c7d6;
+      --purple: #a78bfa;
+      --shadow: rgba(0, 0, 0, .28);
     }
     * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
     body {
       margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background: var(--bg);
       color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 14px;
     }
-    header {
-      height: 58px;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 0 22px;
+    button, input, select {
+      font: inherit;
+    }
+    button {
+      min-height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--surface-2);
+      color: var(--text);
+      padding: 0 11px;
+      cursor: pointer;
+    }
+    button:hover { border-color: #52617a; }
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    summary:focus-visible {
+      outline: 2px solid var(--cyan);
+      outline-offset: 2px;
+    }
+    button.primary { background: var(--blue); border-color: var(--blue); color: white; font-weight: 700; }
+    button.warn { background: #b94242; border-color: #d85c5c; color: white; font-weight: 700; }
+    button.good { background: #167a4a; border-color: #20a765; color: white; font-weight: 700; }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    input, select {
+      min-height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #11151c;
+      color: var(--text);
+      padding: 0 10px;
+      outline: none;
+    }
+    input:focus, select:focus { border-color: var(--blue); }
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      color: #c6d0df;
+      font-size: 12px;
+      word-break: break-all;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      min-width: 680px;
+    }
+    th, td {
+      padding: 9px 10px;
       border-bottom: 1px solid var(--line);
-      background: #171b23;
+      text-align: left;
+      vertical-align: middle;
+      overflow-wrap: anywhere;
     }
-    h1 { font-size: 18px; margin: 0; }
-    main { max-width: 1320px; margin: 0 auto; padding: 22px; }
-    .toolbar {
+    th {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    pre {
+      margin: 0;
+      min-height: 180px;
+      max-height: 420px;
+      overflow: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      color: #c7d2e1;
+      font-size: 12px;
+    }
+    .app-shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 236px minmax(0, 1fr);
+    }
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      border-right: 1px solid var(--line);
+      background: #12161d;
+      padding: 18px 14px;
+      overflow: auto;
+    }
+    .brand {
       display: flex;
       align-items: center;
       gap: 10px;
-      margin-left: auto;
-      flex-wrap: wrap;
+      margin-bottom: 18px;
+      font-weight: 800;
+      letter-spacing: 0;
     }
-    input, select, button {
-      border: 1px solid var(--line);
-      border-radius: 7px;
-      background: var(--panel-2);
-      color: var(--text);
-      font: inherit;
-      height: 36px;
-      padding: 0 11px;
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background: #213454;
+      color: #a8c7ff;
+      font-weight: 900;
     }
-    input { min-width: 250px; }
-    button {
-      cursor: pointer;
-      background: var(--brand);
-      border-color: var(--brand);
+    .nav {
+      display: grid;
+      gap: 6px;
+    }
+    .nav button {
+      width: 100%;
+      justify-content: flex-start;
+      text-align: left;
+      background: transparent;
+      border-color: transparent;
+      color: var(--muted);
       font-weight: 650;
     }
-    button.secondary { background: var(--panel-2); border-color: var(--line); }
-    button.warn { background: #9a3412; border-color: #9a3412; }
+    .nav button.active {
+      background: var(--surface-2);
+      border-color: var(--line);
+      color: var(--text);
+      box-shadow: 0 8px 22px var(--shadow);
+    }
+    .sidebar-footer {
+      margin-top: 20px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+      display: grid;
+      gap: 8px;
+    }
+    .main {
+      min-width: 0;
+      padding: 18px;
+    }
+    .skip-link {
+      position: fixed;
+      left: 12px;
+      top: 12px;
+      z-index: 20;
+      transform: translateY(-140%);
+      border-radius: 7px;
+      background: var(--blue);
+      color: white;
+      padding: 9px 12px;
+      font-weight: 800;
+      text-decoration: none;
+      transition: transform .16s ease;
+    }
+    .skip-link:focus { transform: translateY(0); }
+    .topbar {
+      min-height: 64px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .title h1 {
+      margin: 0;
+      font-size: 22px;
+      letter-spacing: 0;
+    }
+    .title p {
+      margin: 4px 0 0;
+      color: var(--muted);
+    }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+      align-items: center;
+    }
+    .toolbar input { width: 220px; }
+    .connection-panel {
+      margin-bottom: 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #121720;
+    }
+    .connection-panel summary {
+      min-height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 0 14px;
+      cursor: pointer;
+      color: var(--text);
+      font-weight: 800;
+    }
+    .connection-panel summary::marker { color: var(--muted); }
+    .connection-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      padding: 0 14px 14px;
+    }
+    .connection-status {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 650;
+    }
+    .status-strip {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .service-card {
+      min-height: 66px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #121720;
+      padding: 10px 12px;
+      display: grid;
+      align-content: space-between;
+      gap: 8px;
+    }
+    .service-card.good { border-color: rgba(32, 199, 111, .38); background: rgba(32, 199, 111, .08); }
+    .service-card.warn { border-color: rgba(243, 178, 60, .42); background: rgba(243, 178, 60, .08); }
+    .service-card.bad { border-color: rgba(240, 82, 82, .42); background: rgba(240, 82, 82, .08); }
+    .service-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      min-width: 0;
+    }
+    .service-name {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .service-detail {
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 700;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .tab { display: none; }
+    .tab.active { display: block; }
     .grid {
       display: grid;
-      grid-template-columns: repeat(4, minmax(160px, 1fr));
-      gap: 14px;
-      margin-bottom: 18px;
+      gap: 12px;
     }
-    .cols {
+    .grid.stats { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      box-shadow: 0 10px 26px var(--shadow);
+      min-width: 0;
+    }
+    .panel.pad { padding: 14px; }
+    .panel-head {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--line);
+    }
+    .panel-head h2 {
+      margin: 0;
+      font-size: 15px;
+    }
+    .panel-body { padding: 14px; }
+    .scroll {
+      max-height: 360px;
+      overflow: auto;
+      overflow-x: auto;
+    }
+    .stat {
+      padding: 14px;
+      min-height: 96px;
       display: grid;
-      grid-template-columns: 1.1fr 0.9fr;
-      gap: 16px;
-      align-items: start;
+      align-content: space-between;
     }
+    .stat-label { color: var(--muted); font-size: 12px; font-weight: 700; }
+    .stat-value { font-size: 26px; font-weight: 850; margin-top: 8px; }
+    .stat-sub { color: var(--muted); font-size: 12px; margin-top: 6px; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 22px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 2px 8px;
+      color: #d7e0ed;
+      background: #141923;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .badge.good { border-color: rgba(32, 199, 111, .45); color: #a8f0cb; background: rgba(32, 199, 111, .12); }
+    .badge.warn { border-color: rgba(243, 178, 60, .5); color: #ffe1a8; background: rgba(243, 178, 60, .12); }
+    .badge.bad { border-color: rgba(240, 82, 82, .5); color: #ffc1c1; background: rgba(240, 82, 82, .12); }
+    .badge.blue { border-color: rgba(95, 140, 255, .45); color: #c7d7ff; background: rgba(95, 140, 255, .12); }
+    .event-row-critical td { background: rgba(240, 82, 82, .08); }
+    .event-row-warning td { background: rgba(243, 178, 60, .07); }
+    .event-row-low td { opacity: .78; }
+    .event-row-critical td:first-child,
+    .event-row-warning td:first-child {
+      border-left: 3px solid var(--bad);
+    }
+    .event-row-warning td:first-child { border-left-color: var(--warn); }
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--muted);
+      display: inline-block;
+    }
+    .dot.good { background: var(--good); box-shadow: 0 0 10px rgba(32, 199, 111, .8); }
+    .dot.warn { background: var(--warn); }
+    .dot.bad { background: var(--bad); }
+    .muted { color: var(--muted); }
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .flow-step {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #121720;
+      padding: 12px;
+      min-height: 86px;
+    }
+    .flow-step strong { display: block; margin-bottom: 8px; }
     .camera-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 12px;
     }
     .camera-card {
       border: 1px solid var(--line);
       border-radius: 8px;
-      background: #0b0d12;
       overflow: hidden;
+      background: #0c0f14;
+      min-width: 0;
     }
-    .camera-card img {
-      display: block;
+    .camera-card[data-camera-modal] {
+      cursor: zoom-in;
+    }
+    .camera-card[data-camera-modal]:hover {
+      border-color: #52617a;
+    }
+    .camera-card img,
+    .camera-card iframe {
       width: 100%;
-      min-height: 180px;
       aspect-ratio: 16 / 9;
-      object-fit: contain;
-      background: #050607;
+      object-fit: cover;
+      display: block;
+      background: #05070a;
+    }
+    .camera-card iframe {
+      border: 0;
     }
     .camera-error {
-      min-height: 180px;
       aspect-ratio: 16 / 9;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-      text-align: center;
+      display: grid;
+      place-items: center;
+      padding: 14px;
       color: var(--muted);
-      background: #050607;
-      border-bottom: 1px solid var(--line);
+      background: #07090d;
+      text-align: center;
     }
     .camera-caption {
       display: flex;
-      align-items: center;
       justify-content: space-between;
       gap: 10px;
-      padding: 9px 10px;
+      align-items: center;
+      padding: 11px 12px;
       border-top: 1px solid var(--line);
     }
-    .panel {
-      background: var(--panel);
+    .camera-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: flex-end;
+    }
+    .camera-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 0 12px 12px;
+    }
+    .camera-actions button {
+      min-height: 32px;
+      padding: 0 10px;
+    }
+    .zone-editor {
+      display: grid;
+      gap: 10px;
+    }
+    .zone-stage {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
       border: 1px solid var(--line);
       border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 16px;
+      overflow: hidden;
+      background: #05070a;
+      user-select: none;
     }
-    .stat-title {
+    .zone-stage img,
+    .zone-stage svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+    .zone-stage img {
+      object-fit: cover;
+    }
+    .zone-stage svg {
+      cursor: crosshair;
+    }
+    .zone-point {
+      fill: #ffffff;
+      stroke: #10151d;
+      stroke-width: 2;
+    }
+    .zone-poly {
+      fill: rgba(95, 140, 255, .20);
+      stroke: #7fb0ff;
+      stroke-width: 3;
+      vector-effect: non-scaling-stroke;
+    }
+    .zone-draft {
+      fill: rgba(243, 178, 60, .18);
+      stroke: #f3b23c;
+      stroke-width: 3;
+      vector-effect: non-scaling-stroke;
+      stroke-dasharray: 7 6;
+    }
+    .zone-label {
+      fill: #f8fbff;
+      paint-order: stroke;
+      stroke: rgba(0, 0, 0, .75);
+      stroke-width: 4;
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      align-items: end;
+    }
+    .field {
+      display: grid;
+      gap: 5px;
+    }
+    .field label {
       color: var(--muted);
       font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: .04em;
+      font-weight: 700;
     }
-    .stat-value { font-size: 30px; font-weight: 800; margin-top: 4px; }
-    .status {
+    .checks {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .model-switches {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .check {
+      min-height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #11151c;
       display: inline-flex;
       align-items: center;
-      gap: 7px;
-      color: var(--muted);
-      font-size: 14px;
+      gap: 6px;
+      padding: 0 9px;
+      color: #d7e0ed;
     }
-    .dot { width: 9px; height: 9px; border-radius: 999px; background: var(--muted); }
-    .ok .dot { background: var(--good); box-shadow: 0 0 8px rgba(34,197,94,.7); }
-    .bad .dot { background: var(--bad); }
-    .warn-status .dot { background: var(--warn); }
-    h2 { font-size: 16px; margin: 0 0 12px; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td {
-      text-align: left;
-      border-bottom: 1px solid var(--line);
-      padding: 10px 9px;
-      font-size: 14px;
-      vertical-align: top;
+    .face-preview {
+      width: 54px;
+      height: 54px;
+      border-radius: 8px;
+      object-fit: cover;
+      background: #0c0f14;
+      border: 1px solid var(--line);
     }
-    th { color: var(--muted); font-size: 12px; text-transform: uppercase; }
-    tr:last-child td { border-bottom: 0; }
-    code {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      color: #b9c5d8;
-      font-size: 12px;
+    .crop-thumb {
+      width: 72px;
+      height: 72px;
+      border-radius: 7px;
+      object-fit: cover;
+      border: 1px solid var(--line);
+      background: #05070a;
+      display: block;
     }
-    .badge {
-      display: inline-block;
-      padding: 3px 8px;
-      border-radius: 5px;
-      background: var(--panel-2);
-      color: #c9d3e3;
-      font-size: 12px;
-      font-weight: 650;
+    .snapshot-detail {
+      display: grid;
+      grid-template-columns: 220px minmax(0, 1fr);
+      gap: 12px;
+      align-items: start;
     }
-    .critical { background: #7f1d1d; color: #fecaca; }
-    .normal { background: #78350f; color: #fde68a; }
-    .low { background: #14532d; color: #bbf7d0; }
-    .row-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-top: 12px;
+    .snapshot-detail img {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #05070a;
     }
-    pre {
-      margin: 0;
-      white-space: pre-wrap;
-      word-break: break-word;
-      color: #c7d2e4;
-      font-size: 12px;
-      max-height: 280px;
-      overflow: auto;
+    .kv {
+      display: grid;
+      grid-template-columns: 112px minmax(0, 1fr);
+      gap: 6px 10px;
+      font-size: 13px;
     }
-    .muted { color: var(--muted); }
-    .full { grid-column: 1 / -1; }
+    .kv span:nth-child(odd) { color: var(--muted); font-weight: 700; }
+    .json-panel { position: sticky; top: 18px; }
     .toast {
       position: fixed;
       right: 18px;
       bottom: 18px;
-      min-width: 240px;
       max-width: 420px;
-      padding: 12px 14px;
-      border-radius: 8px;
       border: 1px solid var(--line);
-      background: var(--panel);
+      border-radius: 8px;
+      padding: 12px 14px;
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: 0 12px 30px var(--shadow);
       opacity: 0;
       transform: translateY(8px);
       transition: .18s ease;
       pointer-events: none;
+      z-index: 10;
     }
     .toast.show { opacity: 1; transform: translateY(0); }
-    @media (max-width: 900px) {
-      header { height: auto; align-items: stretch; flex-direction: column; padding: 14px; }
-      .toolbar { margin-left: 0; }
-      input { min-width: 100%; }
-      .grid, .cols { grid-template-columns: 1fr; }
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: none;
+      place-items: center;
+      padding: 20px;
+      background: rgba(4, 7, 12, .76);
+    }
+    .modal-backdrop.show { display: grid; }
+    .camera-modal {
+      width: min(1180px, 100%);
+      max-height: calc(100vh - 40px);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #0c0f14;
+      box-shadow: 0 22px 60px rgba(0, 0, 0, .46);
+      overflow: hidden;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+    }
+    .modal-head {
+      min-height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      background: #121720;
+    }
+    .modal-title {
+      min-width: 0;
+      display: grid;
+      gap: 2px;
+    }
+    .modal-title strong {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .modal-body {
+      min-height: 0;
+      display: grid;
+      place-items: center;
+      padding: 12px;
+      background: #05070a;
+    }
+    .modal-body img,
+    .modal-body iframe {
+      width: 100%;
+      max-height: calc(100vh - 128px);
+      aspect-ratio: 16 / 9;
+      object-fit: contain;
+      display: block;
+      background: #05070a;
+      border: 0;
+    }
+    .empty-state {
+      display: grid;
+      gap: 5px;
+      padding: 16px;
+      color: var(--muted);
+      text-align: left;
+    }
+    .empty-state strong {
+      color: var(--text);
+      font-size: 13px;
+    }
+    .empty-state.bad { color: #ffc1c1; }
+    .empty-state.warn { color: #ffe1a8; }
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    @media (max-width: 1360px) {
+      body { font-size: 13px; }
+      .app-shell { grid-template-columns: 212px minmax(0, 1fr); }
+      .main { padding: 14px; }
+      .toolbar input { width: 180px; }
+      .grid.stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .stat { min-height: 86px; padding: 12px; }
+      .stat-value { font-size: 23px; }
+      .flow { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .model-switches { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    @media (max-width: 1100px) {
+      .app-shell { grid-template-columns: 1fr; }
+      .sidebar {
+        position: relative;
+        height: auto;
+        padding: 12px;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .brand { margin-bottom: 12px; }
+      .nav { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .topbar { grid-template-columns: 1fr; }
+      .toolbar { justify-content: flex-start; }
+      .status-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .connection-grid { grid-template-columns: 1fr 1fr; }
+      .grid.stats, .grid.two, .grid.three, .flow, .form-grid { grid-template-columns: 1fr; }
+      .form-grid[style], .model-switches { grid-template-columns: 1fr 1fr !important; }
+      .snapshot-detail { grid-template-columns: 1fr; }
+      .json-panel { position: static; }
+      table { min-width: 760px; }
+    }
+    @media (max-width: 720px) {
+      body { font-size: 12px; }
+      button, input, select { min-height: 32px; }
+      .main { padding: 10px; }
+      .topbar { gap: 10px; margin-bottom: 12px; }
+      .title h1 { font-size: 18px; }
+      .title p { font-size: 12px; }
+      .panel-head {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 11px 12px;
+      }
+      .panel-head .toolbar { width: 100%; }
+      .panel-body { padding: 12px; }
+      .stat { min-height: 74px; }
+      .stat-label, .stat-sub, th, code, pre, .field label, .badge, .sidebar-footer { font-size: 11px; }
+      .stat-value { font-size: 20px; }
+      .toolbar input, .toolbar select, .toolbar button { width: 100%; }
+      .status-strip { grid-template-columns: 1fr; }
+      .modal-backdrop { padding: 8px; }
+      .camera-modal { max-height: calc(100vh - 16px); }
+      .modal-body { padding: 8px; }
+      .modal-body img,
+      .modal-body iframe { max-height: calc(100vh - 112px); }
+      .nav {
+        display: flex;
+        gap: 6px;
+        overflow-x: auto;
+        padding-bottom: 2px;
+      }
+      .nav button {
+        flex: 0 0 auto;
+        min-height: 32px;
+        padding: 0 8px;
+        text-align: center;
+        justify-content: center;
+      }
+      .connection-grid { grid-template-columns: 1fr; }
+      .form-grid[style], .model-switches { grid-template-columns: 1fr !important; }
+      .camera-grid { grid-template-columns: 1fr; }
+      table { min-width: 720px; }
+      th, td { padding: 8px; }
+    }
+    @media (max-width: 460px) {
+      .brand-mark { width: 30px; height: 30px; }
+      .grid { gap: 10px; }
+      .panel { border-radius: 7px; }
+      table { min-width: 640px; }
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>CCTV 운영 시연 대시보드</h1>
-    <span class="status" id="connection-status"><span class="dot"></span><span>연결 확인 중</span></span>
-    <div class="toolbar">
-      <input id="api-base" value="http://localhost:9000" aria-label="API base URL">
-      <button class="secondary" id="open-swagger">Swagger</button>
-      <button class="secondary" id="open-grafana">Grafana</button>
-      <button id="refresh">새로고침</button>
+  <a class="skip-link" href="#main-content">본문으로 이동</a>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">AI</div>
+        <div>
+          <div>CCTV Edge Demo</div>
+          <div class="muted" style="font-size:12px">Jetson 관제 시연</div>
+        </div>
+      </div>
+      <nav class="nav" id="nav" aria-label="대시보드 메뉴">
+        <button class="active" data-tab="overview" role="tab" aria-selected="true">개요</button>
+        <button data-tab="live" role="tab" aria-selected="false">라이브</button>
+        <button data-tab="events" role="tab" aria-selected="false">이벤트</button>
+        <button data-tab="sensors" role="tab" aria-selected="false">TLV 로그</button>
+        <button data-tab="appearance" role="tab" aria-selected="false">외형검색</button>
+        <button data-tab="cameras" role="tab" aria-selected="false">카메라/구역</button>
+        <button data-tab="faces" role="tab" aria-selected="false">얼굴인식</button>
+        <button data-tab="control" role="tab" aria-selected="false">알람/제어</button>
+        <button data-tab="system" role="tab" aria-selected="false">시스템</button>
+      </nav>
+      <div class="sidebar-footer">
+        <div><span class="dot" id="side-dot"></span> <span id="side-status">연결 확인 중</span></div>
+        <div>최근 갱신: <span id="last-refresh">-</span></div>
+        <div><code id="side-api-base">-</code></div>
+      </div>
+    </aside>
+
+    <main class="main" id="main-content">
+      <header class="topbar">
+        <div class="title">
+          <h1 id="page-title">개요</h1>
+          <p id="page-desc">AI Engine, WebRTC Live, Public API, Action Layer 흐름을 한 화면에서 확인합니다.</p>
+        </div>
+        <div class="toolbar">
+          <button id="open-swagger">Swagger</button>
+          <button id="open-grafana">Grafana</button>
+          <button class="primary" id="refresh">새로고침</button>
+        </div>
+      </header>
+
+      <details class="connection-panel">
+        <summary>
+          <span>연결 설정</span>
+          <span class="connection-status">기본값은 현재 데모 호스트 기준으로 자동 설정됩니다.</span>
+        </summary>
+        <div class="connection-grid">
+          <div class="field"><label for="api-base">Public API</label><input id="api-base" aria-label="Public API base URL"></div>
+          <div class="field"><label for="media-base">Media/WebRTC</label><input id="media-base" aria-label="Media WebRTC base URL"></div>
+          <div class="field"><label for="zone-base">Zone API</label><input id="zone-base" aria-label="Zone API base URL"></div>
+          <div class="field"><label for="face-base">Face API</label><input id="face-base" aria-label="Face API base URL"></div>
+          <div class="field"><label for="model-base">Model API</label><input id="model-base" aria-label="Model API base URL"></div>
+          <div class="field"><label for="api-key">API Key</label><input id="api-key" type="password" autocomplete="off" aria-label="Public API key" placeholder="필요 시 입력"></div>
+        </div>
+      </details>
+
+      <section class="status-strip" aria-label="서비스 상태 요약">
+        <div class="service-card warn" id="svc-public">
+          <div class="service-head"><span class="service-name">Public API</span><span class="dot warn"></span></div>
+          <div class="service-detail">확인 대기</div>
+        </div>
+        <div class="service-card warn" id="svc-stream">
+          <div class="service-head"><span class="service-name">Media/WebRTC</span><span class="dot warn"></span></div>
+          <div class="service-detail">확인 대기</div>
+        </div>
+        <div class="service-card warn" id="svc-zone">
+          <div class="service-head"><span class="service-name">Zone API</span><span class="dot warn"></span></div>
+          <div class="service-detail">확인 대기</div>
+        </div>
+        <div class="service-card warn" id="svc-face">
+          <div class="service-head"><span class="service-name">Face API</span><span class="dot warn"></span></div>
+          <div class="service-detail">확인 대기</div>
+        </div>
+        <div class="service-card warn" id="svc-model">
+          <div class="service-head"><span class="service-name">Model API</span><span class="dot warn"></span></div>
+          <div class="service-detail">확인 대기</div>
+        </div>
+      </section>
+
+      <section id="tab-overview" class="tab active" role="tabpanel">
+        <div class="grid stats">
+          <div class="panel stat"><div><div class="stat-label">Public API</div><div class="stat-value" id="stat-api">-</div></div><div class="stat-sub" id="stat-api-sub">/api/v1/health</div></div>
+          <div class="panel stat"><div><div class="stat-label">Readiness</div><div class="stat-value" id="stat-ready">-</div></div><div class="stat-sub">Action Layer / Alert API</div></div>
+          <div class="panel stat"><div><div class="stat-label">카메라</div><div class="stat-value" id="stat-cameras">-</div></div><div class="stat-sub">WebRTC 라이브</div></div>
+          <div class="panel stat"><div><div class="stat-label">최근 이벤트</div><div class="stat-value" id="stat-events">-</div></div><div class="stat-sub">/api/v1/events</div></div>
+          <div class="panel stat"><div><div class="stat-label">TLV 로그</div><div class="stat-value" id="stat-sensors">-</div></div><div class="stat-sub">/api/v1/sensor-readings</div></div>
+        </div>
+        <div class="grid two" style="margin-top:12px">
+          <div class="panel">
+            <div class="panel-head"><h2>처리 흐름</h2><span class="badge blue">Edge Demo</span></div>
+            <div class="panel-body">
+              <div class="flow">
+                <div class="flow-step"><strong>1. 입력</strong><span class="muted">CCTV 영상<br>AIoT 센서</span></div>
+                <div class="flow-step"><strong>2. 분석</strong><span class="muted">DeepStream<br>AI Engine</span></div>
+                <div class="flow-step"><strong>3. 이벤트</strong><span class="muted">MQTT<br>EdgeX / Kuiper</span></div>
+                <div class="flow-step"><strong>4. 조치</strong><span class="muted">Speaker<br>Signboard / Siren</span></div>
+                <div class="flow-step"><strong>5. 조회</strong><span class="muted">Public API<br>Dashboard</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h2>의존 서비스 상태</h2><button id="refresh-readiness">확인</button></div>
+            <div class="scroll">
+              <table>
+                <thead><tr><th>서비스</th><th>상태</th><th>URL</th></tr></thead>
+                <tbody id="dependency-rows"><tr><td colspan="3" class="muted">로딩 중</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="grid two" style="margin-top:12px">
+          <div class="panel">
+            <div class="panel-head"><h2>최근 이벤트</h2><button data-jump="events">자세히</button></div>
+            <div class="scroll">
+              <table>
+                <thead><tr><th>시각</th><th>유형</th><th>카메라</th><th>신뢰도</th></tr></thead>
+                <tbody id="overview-events"><tr><td colspan="4" class="muted">로딩 중</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h2>외형 분석 진단</h2><button data-jump="appearance">확인</button></div>
+            <div class="panel-body" id="appearance-summary"><span class="muted">로딩 중</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="tab-live" class="tab" role="tabpanel">
+        <div class="panel">
+          <div class="panel-head">
+            <h2>실시간 카메라 화면</h2>
+            <div class="toolbar"><button id="reload-streams">화면 연결</button></div>
+          </div>
+          <div class="panel-body">
+            <div id="camera-preview" class="camera-grid"><div class="muted">MediaMTX WebRTC 화면을 연결하는 중입니다.</div></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="tab-events" class="tab" role="tabpanel">
+        <div class="grid two">
+          <div class="panel">
+            <div class="panel-head"><h2>이벤트 조회</h2><button id="refresh-events">조회</button></div>
+            <div class="panel-body">
+              <div class="form-grid">
+                <div class="field"><label>카메라</label><select id="event-camera"><option value="">전체</option></select></div>
+                <div class="field"><label>이벤트 타입</label><select id="event-type"><option value="">전체</option><option value="fall_detected">낙상</option><option value="head">헬멧 미착용</option><option value="helmet">헬멧</option><option value="intrusion">침입</option><option value="zone_entered">위험구역 진입</option><option value="zone_dwelling">위험구역 체류</option><option value="zone_object_detected">위험구역 객체</option><option value="crowd_warning">인파 경고</option><option value="face_recognized">얼굴 인식</option><option value="face_unknown">미등록 얼굴</option><option value="person">사람</option></select></div>
+                <div class="field"><label>개수</label><select id="event-limit"><option>20</option><option selected>50</option><option>100</option><option>200</option></select></div>
+                <div class="field"><label>데모 이벤트</label><button class="warn" id="send-demo-event">전송</button></div>
+              </div>
+            </div>
+            <div class="scroll">
+              <table>
+                <thead><tr><th>시각</th><th>유형</th><th>대상</th><th>카메라</th><th>신뢰도</th><th>등급</th><th>object</th></tr></thead>
+                <tbody id="event-rows"><tr><td colspan="7" class="muted">로딩 중</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h2>이벤트 주입</h2><span class="badge warn">Demo</span></div>
+            <div class="panel-body">
+              <div class="form-grid" style="grid-template-columns:1fr 1fr">
+                <div class="field"><label>유형</label><select id="demo-type"><option value="fall_detected">낙상 감지</option><option value="head">헬멧 미착용</option><option value="intrusion">위험구역 침입</option><option value="face_unknown">미등록 얼굴</option><option value="sensor_temperature">온도 이상</option></select></div>
+                <div class="field"><label>등급</label><select id="demo-severity"><option value="critical">critical</option><option value="warning">warning</option><option value="normal">normal</option><option value="low">low</option></select></div>
+                <div class="field"><label>카메라 ID</label><input id="demo-camera" value="camera_1"></div>
+                <div class="field"><label>신뢰도</label><input id="demo-confidence" value="0.92" inputmode="decimal"></div>
+              </div>
+              <p class="muted">버튼을 누르면 `/api/v1/alerts`로 이벤트를 보내고, Action Layer 처리 이력을 함께 확인합니다.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="tab-sensors" class="tab" role="tabpanel">
+        <div class="grid two">
+          <div class="panel">
+            <div class="panel-head"><h2>TLV 수신 로그</h2><button id="refresh-sensors">조회</button></div>
+            <div class="panel-body">
+              <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr">
+                <div class="field"><label>장비 ID</label><input id="sensor-device" placeholder="전체"></div>
+                <div class="field"><label>테이블</label><input id="sensor-table" placeholder="전체"></div>
+                <div class="field"><label>개수</label><select id="sensor-limit"><option>20</option><option selected>50</option><option>100</option><option>200</option></select></div>
+              </div>
+            </div>
+            <div class="scroll">
+              <table>
+                <thead><tr><th>시각</th><th>장비명</th><th>장비 ID</th><th>테이블</th><th>측정값</th><th>상태</th></tr></thead>
+                <tbody id="sensor-rows"><tr><td colspan="6" class="muted">로딩 중</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h2>TLV 로그 시연 입력</h2><button class="primary" id="send-demo-sensor">전송</button></div>
+            <div class="panel-body">
+              <div class="form-grid" style="grid-template-columns:1fr 1fr">
+                <div class="field"><label>장비 ID</label><input id="demo-sensor-device" value="demo-tlv-01"></div>
+                <div class="field"><label>테이블</label><input id="demo-sensor-table" value="t34957"></div>
+                <div class="field"><label>온도</label><input id="demo-sensor-temp" value="26.2" inputmode="decimal"></div>
+                <div class="field"><label>X 기울기</label><input id="demo-sensor-angle-x" value="3.1" inputmode="decimal"></div>
+                <div class="field"><label>Y 기울기</label><input id="demo-sensor-angle-y" value="0.8" inputmode="decimal"></div>
+                <div class="field"><label>이벤트 코드</label><input id="demo-sensor-code" value="0" inputmode="numeric"></div>
+              </div>
+              <p class="muted">전송하면 Public API가 내부 `/api/sensor-readings`로 중계하고, 수신 로그에 표시합니다.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="tab-appearance" class="tab" role="tabpanel">
+        <div class="grid two">
+          <div class="panel">
+            <div class="panel-head"><h2>외형 검색 상태</h2><button id="refresh-appearance">상태 조회</button></div>
+            <div class="panel-body" id="appearance-status">로딩 중</div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h2>외형 조건 등록</h2><button class="primary" id="create-condition">등록</button></div>
+            <div class="panel-body">
+              <div class="form-grid" style="grid-template-columns:1fr 1fr">
+                <div class="field"><label>조건 이름</label><input id="cond-name" value="검은 상의 작업자"></div>
+                <div class="field"><label>상의 색상</label><select id="cond-upper"><option value="">선택 안 함</option></select></div>
+                <div class="field"><label>하의 색상</label><select id="cond-lower"><option value="">선택 안 함</option></select></div>
+                <div class="field"><label>헬멧</label><select id="cond-helmet"><option value="">상관 없음</option><option value="true">착용</option><option value="false">미착용</option></select></div>
+                <div class="field"><label>백팩</label><select id="cond-backpack"><option value="">상관 없음</option><option value="true">있음</option><option value="false">없음</option></select></div>
+                <div class="field"><label>임계값</label><input id="cond-threshold" value="0.8" inputmode="decimal"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="grid two" style="margin-top:12px">
+          <div class="panel">
+            <div class="panel-head"><h2>외형 기록 검색</h2><button id="run-search">검색</button></div>
+            <div class="panel-body">
+              <div class="field" style="margin-bottom:8px">
+                <label>문장 검색</label>
+                <input id="search-q" value="검정색 상의 빨간색 하의 사람" placeholder="예: 검정색 상의, 빨간색 하의 입은 사람">
+              </div>
+              <div class="form-grid">
+                <div class="field"><label>카메라</label><select id="search-camera"><option value="">전체</option></select></div>
+                <div class="field"><label>상의</label><select id="search-upper"><option value="">전체</option></select></div>
+                <div class="field"><label>하의</label><select id="search-lower"><option value="">전체</option></select></div>
+                <div class="field"><label>성별</label><select id="search-gender"><option value="">전체</option><option value="male">male</option><option value="female">female</option></select></div>
+                <div class="field"><label>나이대</label><select id="search-age"><option value="">전체</option><option value="child">child</option><option value="adult">adult</option><option value="senior">senior</option></select></div>
+                <div class="field"><label>헬멧</label><select id="search-helmet"><option value="">전체</option><option value="true">착용</option><option value="false">미착용</option></select></div>
+                <div class="field"><label>가방</label><select id="search-bag"><option value="">전체</option><option value="backpack">백팩</option><option value="handbag">핸드백</option><option value="suitcase">캐리어</option></select></div>
+                <div class="field"><label>개수</label><select id="search-limit"><option>20</option><option selected>50</option><option>100</option></select></div>
+              </div>
+            </div>
+            <div class="scroll">
+              <table>
+                <thead><tr><th>시각</th><th>구분</th><th>카메라</th><th>대상</th><th>외형</th><th>스냅샷</th><th>기록</th></tr></thead>
+                <tbody id="search-rows"><tr><td colspan="7" class="muted">검색 전</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h2>등록 조건</h2><button id="load-conditions">목록</button></div>
+            <div class="scroll">
+              <table>
+                <thead><tr><th>ID</th><th>이름</th><th>조건</th><th>상태</th><th></th></tr></thead>
+                <tbody id="condition-rows"><tr><td colspan="5" class="muted">로딩 중</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="grid two" style="margin-top:12px">
+          <div class="panel">
+            <div class="panel-head"><h2>검색 결과 스냅샷</h2><span class="badge blue" id="selected-search-badge">선택 대기</span></div>
+            <div class="panel-body" id="selected-search-detail">
+              <span class="muted">검색 결과의 `상세`를 누르면 crop 이미지와 메타데이터를 시연용으로 고정 표시합니다.</span>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h2>스냅샷 조회 기록</h2><button id="clear-search-history">비우기</button></div>
+            <div class="scroll">
+              <table>
+                <thead><tr><th>조회시각</th><th>검색어</th><th>대상</th><th>스냅샷</th></tr></thead>
+                <tbody id="search-history-rows"><tr><td colspan="4" class="muted">조회 기록 없음</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="tab-cameras" class="tab" role="tabpanel">
+        <div class="grid two">
+          <div class="panel">
+            <div class="panel-head"><h2>카메라 목록</h2><button id="refresh-cameras">새로고침</button></div>
+            <div class="scroll">
+              <table>
+                <thead><tr><th>ID</th><th>이름</th><th>URL</th><th>구역</th><th>모델</th></tr></thead>
+                <tbody id="camera-rows"><tr><td colspan="5" class="muted">로딩 중</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h2>구역 요약</h2><span class="badge blue">cameras.json</span></div>
+            <div class="panel-body" id="zone-summary">로딩 중</div>
+          </div>
+        </div>
+        <div class="grid two" style="margin-top:12px">
+          <div class="panel">
+            <div class="panel-head"><h2>모델 on/off</h2><button id="load-models">조회</button></div>
+            <div class="panel-body">
+              <div class="form-grid" style="grid-template-columns:1fr auto">
+                <div class="field"><label>카메라</label><select id="model-camera"></select></div>
+                <div class="field"><label>적용</label><button class="primary" id="save-models">저장</button></div>
+              </div>
+              <div class="model-switches" style="margin-top:10px">
+                <label class="check"><input type="checkbox" id="model-pose"> pose/낙상</label>
+                <label class="check"><input type="checkbox" id="model-helmet"> 헬멧</label>
+                <label class="check"><input type="checkbox" id="model-person"> 사람감지</label>
+                <label class="check"><input type="checkbox" id="model-appearance"> 외형검색</label>
+                <label class="check"><input type="checkbox" id="model-face"> 얼굴</label>
+              </div>
+              <p class="muted" id="model-help" style="margin:10px 0 0">헬멧/외형/얼굴은 사람 ROI가 필요해서 pose가 자동으로 켜질 수 있습니다.</p>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <h2>위험구역 그리기</h2>
+              <div class="toolbar">
+                <button id="load-zone-editor">불러오기</button>
+                <button id="finish-zone" class="primary">구역 추가</button>
+              </div>
+            </div>
+            <div class="panel-body zone-editor">
+              <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr">
+                <div class="field"><label>카메라</label><select id="zone-camera"></select></div>
+                <div class="field"><label>구역 이름</label><input id="zone-name" value="위험 구역"></div>
+                <div class="field"><label>모드</label><select id="zone-mode"><option value="danger">위험구역</option><option value="object_watch">객체감시</option><option value="crowd_count">인파분석</option></select></div>
+              </div>
+              <div class="zone-stage" id="zone-stage">
+                <img id="zone-image" alt="zone editor camera preview">
+                <svg id="zone-svg" viewBox="0 0 1280 720" preserveAspectRatio="none"></svg>
+              </div>
+              <div class="checks">
+                <button id="undo-zone-point">마지막 점 취소</button>
+                <button id="cancel-zone-draft">그리기 취소</button>
+                <button id="save-zones" class="good">전체 저장</button>
+                <span class="muted">영상 위를 클릭해 3개 이상 점을 찍고 `구역 추가` 후 저장하세요.</span>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h2>현재 구역</h2><button id="refresh-zone-list">목록 갱신</button></div>
+            <div class="scroll">
+              <table>
+                <thead><tr><th>ID</th><th>이름</th><th>모드</th><th>좌표</th><th></th></tr></thead>
+                <tbody id="zone-rows"><tr><td colspan="5" class="muted">Zone API를 불러오세요.</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="tab-faces" class="tab" role="tabpanel">
+        <div class="grid two">
+          <div class="panel">
+            <div class="panel-head"><h2>등록 얼굴</h2><button id="load-faces">목록</button></div>
+            <div class="scroll">
+              <table>
+                <thead><tr><th>이미지</th><th>이름</th><th>전화</th><th>부서/직책</th><th></th></tr></thead>
+                <tbody id="face-rows"><tr><td colspan="5" class="muted">로딩 중</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h2>얼굴 등록</h2><button class="primary" id="register-face">등록</button></div>
+            <div class="panel-body">
+              <div class="form-grid" style="grid-template-columns:1fr 1fr">
+                <div class="field"><label>이름</label><input id="face-name" placeholder="홍길동"></div>
+                <div class="field"><label>전화번호</label><input id="face-phone" placeholder="010-1234-5678"></div>
+                <div class="field"><label>부서</label><input id="face-dept" placeholder="경비팀"></div>
+                <div class="field"><label>직책</label><input id="face-position" placeholder="팀장"></div>
+                <div class="field"><label>사번</label><input id="face-empid" placeholder="EMP-001"></div>
+                <div class="field"><label>입사일</label><input id="face-hired" type="date"></div>
+                <div class="field" style="grid-column:1/-1"><label>사진</label><input id="face-file" type="file" accept="image/*"></div>
+              </div>
+              <div style="margin-top:10px; display:flex; gap:10px; align-items:center">
+                <img class="face-preview" id="face-preview" alt="">
+                <span class="muted">정면 얼굴 사진을 선택하면 등록 API로 전송합니다.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="tab-control" class="tab" role="tabpanel">
+        <div class="grid two">
+          <div class="panel">
+            <div class="panel-head"><h2>제어 모드</h2><button id="load-mode">조회</button></div>
+            <div class="panel-body">
+              <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr">
+                <div class="field"><label>현재 모드</label><div class="badge blue" id="control-mode">-</div></div>
+                <div class="field"><label>변경</label><select id="mode-select"><option value="auto">auto</option><option value="manual">manual</option></select></div>
+                <div class="field"><label>적용</label><button class="primary" id="set-mode">모드 변경</button></div>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h2>출력 디바이스</h2><button id="load-devices">조회</button></div>
+            <div class="scroll">
+              <table>
+                <thead><tr><th>장치</th><th>상태</th><th>연결</th></tr></thead>
+                <tbody id="device-rows"><tr><td colspan="3" class="muted">로딩 중</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="grid two" style="margin-top:12px">
+          <div class="panel">
+            <div class="panel-head"><h2>승인 대기 이벤트</h2><button id="load-pending">조회</button></div>
+            <div class="scroll">
+              <table>
+                <thead><tr><th>시각</th><th>유형</th><th>카메라</th><th>등급</th><th>처리</th></tr></thead>
+                <tbody id="pending-rows"><tr><td colspan="5" class="muted">로딩 중</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h2>최근 조치 실행</h2><button id="load-actions">조회</button></div>
+            <div class="scroll">
+              <table>
+                <thead><tr><th>시각</th><th>유형</th><th>알람</th><th>API</th></tr></thead>
+                <tbody id="action-rows"><tr><td colspan="4" class="muted">로딩 중</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="tab-system" class="tab" role="tabpanel">
+        <div class="grid two">
+          <div class="panel">
+            <div class="panel-head"><h2>시스템 링크</h2></div>
+            <div class="panel-body checks">
+              <button id="sys-health">Health</button>
+              <button id="sys-ready">Readiness</button>
+              <button id="sys-stream">WebRTC 열기</button>
+              <button id="sys-metrics">Metrics</button>
+              <button id="sys-swagger">Swagger</button>
+              <button id="sys-edgex">EdgeX Status</button>
+            </div>
+          </div>
+          <div class="panel json-panel">
+            <div class="panel-head"><h2>마지막 응답</h2><button id="clear-response">지우기</button></div>
+            <div class="panel-body"><pre id="last-response">-</pre></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="modal-backdrop" id="camera-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="camera-modal-title">
+    <div class="camera-modal">
+      <div class="modal-head">
+        <div class="modal-title">
+          <strong id="camera-modal-title">카메라</strong>
+          <code id="camera-modal-id">-</code>
+        </div>
+        <div class="toolbar">
+          <button id="camera-modal-open-stream">WebRTC 열기</button>
+          <button id="camera-modal-close">닫기</button>
+        </div>
+      </div>
+      <div class="modal-body">
+        <iframe id="camera-modal-frame" title="확대 카메라 WebRTC 화면" allow="autoplay; fullscreen"></iframe>
+      </div>
     </div>
-  </header>
-
-  <main>
-    <section class="grid">
-      <div class="panel">
-        <div class="stat-title">Public API</div>
-        <div class="stat-value" id="stat-api">-</div>
-      </div>
-      <div class="panel">
-        <div class="stat-title">Readiness</div>
-        <div class="stat-value" id="stat-ready">-</div>
-      </div>
-      <div class="panel">
-        <div class="stat-title">카메라</div>
-        <div class="stat-value" id="stat-cameras">-</div>
-      </div>
-      <div class="panel">
-        <div class="stat-title">Metrics</div>
-        <div class="stat-value" id="stat-metrics">-</div>
-      </div>
-    </section>
-
-    <section class="cols">
-      <div class="panel full">
-        <div class="camera-caption" style="padding:0 0 12px;border-top:0">
-          <h2 style="margin:0">카메라 화면</h2>
-          <div class="toolbar" style="margin-left:0">
-            <input id="stream-base" value="http://localhost:8769" aria-label="Stream API base URL">
-            <button class="secondary" id="load-streams">화면 연결</button>
-          </div>
-        </div>
-        <div id="camera-preview" class="camera-grid">
-          <div class="muted">스트림 API가 열려 있으면 카메라 화면이 여기에 표시됩니다.</div>
-        </div>
-      </div>
-
-      <div>
-        <div class="panel">
-          <h2>카메라 목록</h2>
-          <table>
-            <thead><tr><th>ID</th><th>이름</th><th>구역</th></tr></thead>
-            <tbody id="camera-rows"><tr><td colspan="3" class="muted">로딩 중</td></tr></tbody>
-          </table>
-        </div>
-
-        <div class="panel">
-          <h2>최근 이벤트</h2>
-          <table>
-            <thead><tr><th>시각</th><th>유형</th><th>카메라</th><th>신뢰도</th><th>등급</th></tr></thead>
-            <tbody id="event-rows"><tr><td colspan="5" class="muted">로딩 중</td></tr></tbody>
-          </table>
-        </div>
-      </div>
-
-      <div>
-        <div class="panel">
-          <h2>실사용 이벤트 주입</h2>
-          <div class="muted">내일 시연에서 버튼을 누르면 Public API로 이벤트를 넣고 처리 흐름을 확인할 수 있습니다.</div>
-          <div class="row-actions">
-            <select id="demo-type">
-              <option value="fall_detected">낙상 감지</option>
-              <option value="head">헬멧 미착용</option>
-              <option value="intrusion">위험구역 침입</option>
-            </select>
-            <select id="demo-severity">
-              <option value="critical">critical</option>
-              <option value="normal">normal</option>
-              <option value="low">low</option>
-            </select>
-            <button class="warn" id="send-event">이벤트 전송</button>
-          </div>
-        </div>
-
-        <div class="panel">
-          <h2>하위 서비스 상태</h2>
-          <table>
-            <thead><tr><th>서비스</th><th>상태</th><th>URL</th></tr></thead>
-            <tbody id="dependency-rows"><tr><td colspan="3" class="muted">로딩 중</td></tr></tbody>
-          </table>
-        </div>
-
-        <div class="panel">
-          <h2>마지막 응답</h2>
-          <pre id="last-response">-</pre>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <div class="toast" id="toast"></div>
+  </div>
 
   <script>
     const $ = (id) => document.getElementById(id);
-    const demoEvents = [];
+    const COLORS = ["red", "orange", "yellow", "green", "blue", "purple", "white", "black", "gray"];
+    const state = {
+      cameras: [],
+      events: [],
+      sensorReadings: [],
+      demoEvents: [],
+      appearanceSearchRows: [],
+      searchHistory: [],
+      cropObjectUrls: {},
+      faceImageBase64: "",
+      faceFilename: "",
+      modelSettings: {},
+      cameraModalTimer: null,
+      selectedModalCameraId: "",
+      zoneEditor: {
+        cameraId: "",
+        zones: [],
+        draft: [],
+        frameWidth: 1280,
+        frameHeight: 720,
+      },
+      previewTimers: [],
+    };
+    const pageCopy = {
+      overview: ["개요", "AI Engine, WebRTC Live, Public API, Action Layer 흐름을 한 화면에서 확인합니다."],
+      live: ["라이브", "MediaMTX WebRTC/H.264 화면만 사용해 실시간 화면을 표시합니다."],
+      events: ["이벤트", "AI 탐지 이벤트 조회와 시연용 이벤트 주입을 수행합니다."],
+      sensors: ["TLV 로그", "AIoT TLV 파서에서 들어온 센서 수신 로그와 시연 입력을 확인합니다."],
+      appearance: ["외형검색", "상의/하의 색상, 성별, 나이대, 헬멧, 가방 조건을 확인합니다."],
+      cameras: ["카메라/구역", "등록 카메라와 위험구역 설정을 확인합니다."],
+      faces: ["얼굴인식", "등록 인원 목록과 얼굴 등록 기능을 확인합니다."],
+      control: ["알람/제어", "제어 모드, 승인 대기 이벤트, 출력 디바이스 처리 이력을 확인합니다."],
+      system: ["시스템", "API 응답, Swagger, Grafana, EdgeX 상태 링크를 확인합니다."],
+    };
 
     function apiBase() {
       return $("api-base").value.replace(/\/$/, "");
     }
-
     function streamBase() {
-      return $("stream-base").value.replace(/\/$/, "");
+      return `${location.origin}/stream-api`;
     }
-
+    function mediaBase() {
+      return $("media-base").value.replace(/\/$/, "");
+    }
+    function zoneBase() {
+      return $("zone-base").value.replace(/\/$/, "");
+    }
+    function faceBase() {
+      return $("face-base").value.replace(/\/$/, "");
+    }
+    function modelBase() {
+      return $("model-base").value.replace(/\/$/, "");
+    }
+    function apiKey() {
+      return $("api-key").value.trim();
+    }
+    function defaultServiceUrl(port) {
+      const protocol = location.protocol === "https:" ? "https:" : "http:";
+      const hostname = location.hostname || "localhost";
+      return `${protocol}//${hostname}:${port}`;
+    }
+    function initializeServiceUrls() {
+      $("api-base").value = `${location.origin}/public-api`;
+      $("media-base").value = defaultServiceUrl(8889);
+      $("zone-base").value = `${location.origin}/zone-api`;
+      $("face-base").value = `${location.origin}/face-api`;
+      $("model-base").value = `${location.origin}/model-api`;
+      $("api-key").value = localStorage.getItem("cctv-demo-api-key") || "";
+      $("side-api-base").textContent = apiBase();
+    }
+    function headers(extra = {}) {
+      const result = {
+        "Content-Type": "application/json",
+        ...extra,
+      };
+      const apiKeyValue = apiKey();
+      if (apiKeyValue) result["X-API-Key"] = apiKeyValue;
+      return result;
+    }
     function showToast(message) {
       const toast = $("toast");
       toast.textContent = message;
@@ -326,183 +1299,1227 @@
       clearTimeout(toast._timer);
       toast._timer = setTimeout(() => toast.classList.remove("show"), 2600);
     }
-
+    function setServiceCard(id, tone, detail) {
+      const card = $(id);
+      if (!card) return;
+      card.className = `service-card ${tone}`;
+      const dot = card.querySelector(".dot");
+      const text = card.querySelector(".service-detail");
+      if (dot) dot.className = `dot ${tone}`;
+      if (text) text.textContent = detail;
+    }
+    async function fetchHealth(url, headersValue = {}) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 2200);
+      try {
+        const response = await fetch(url, {
+          cache: "no-store",
+          headers: headersValue,
+          signal: controller.signal,
+        });
+        const text = await response.text();
+        let body = {};
+        try { body = text ? JSON.parse(text) : {}; } catch { body = { raw: text }; }
+        return { ok: response.ok, status: response.status, body };
+      } catch (error) {
+        return { ok: false, status: 0, body: { error: error?.name === "AbortError" ? "timeout" : error?.message } };
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+    function healthDetail(result, fallbackOk = "정상") {
+      if (result.ok) {
+        const body = result.body || {};
+        const service = body.service || body.data?.service || fallbackOk;
+        const count = body.camera_count ?? body.face_count ?? body.data?.camera_count;
+        return count !== undefined ? `${service} · ${count}개` : String(service);
+      }
+      return result.status ? `응답 실패 ${result.status}` : (result.body?.error || "연결 실패");
+    }
+    async function refreshServiceSummary() {
+      setServiceCard("svc-public", "warn", "확인 중");
+      setServiceCard("svc-stream", "warn", "확인 중");
+      setServiceCard("svc-zone", "warn", "확인 중");
+      setServiceCard("svc-face", "warn", "확인 중");
+      setServiceCard("svc-model", "warn", "확인 중");
+      const authHeaders = headers({});
+      const [publicApi, zoneApi, faceApi, modelApi] = await Promise.all([
+        fetchHealth(apiBase() + "/api/v1/health", authHeaders),
+        fetchHealth(zoneBase() + "/health", authHeaders),
+        fetchHealth(faceBase() + "/health", authHeaders),
+        fetchHealth(modelBase() + "/health", authHeaders),
+      ]);
+      setServiceCard("svc-public", publicApi.ok ? "good" : "bad", healthDetail(publicApi, "Public API"));
+      setServiceCard("svc-stream", "good", "WebRTC 전용");
+      setServiceCard("svc-zone", zoneApi.ok ? "good" : "bad", healthDetail(zoneApi, "Zone API"));
+      setServiceCard("svc-face", faceApi.ok ? "good" : "bad", healthDetail(faceApi, "Face API"));
+      setServiceCard("svc-model", modelApi.ok ? "good" : "bad", healthDetail(modelApi, "Model API"));
+    }
+    async function runAction(button, label, action) {
+      const originalText = button?.textContent;
+      if (button) {
+        button.disabled = true;
+        button.textContent = label || "처리 중";
+      }
+      try {
+        return await action();
+      } catch (error) {
+        showToast((error && error.message) ? error.message : "처리 중 오류가 발생했습니다.");
+      } finally {
+        if (button) {
+          button.disabled = false;
+          button.textContent = originalText;
+        }
+      }
+    }
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+    function setStatus(ok, label) {
+      $("side-dot").className = "dot " + (ok ? "good" : "bad");
+      $("side-status").textContent = label;
+      setServiceCard("svc-public", ok ? "good" : "bad", label);
+    }
+    function setLastResponse(body) {
+      $("last-response").textContent = typeof body === "string" ? body : JSON.stringify(body, null, 2);
+    }
     async function request(path, options = {}) {
       const response = await fetch(apiBase() + path, {
-        headers: { "Content-Type": "application/json", ...(options.headers || {}) },
         ...options,
+        headers: headers(options.headers || {}),
       });
       const text = await response.text();
       let body = {};
-      try { body = text ? JSON.parse(text) : {}; } catch { body = { raw: text }; }
-      $("last-response").textContent = JSON.stringify(body, null, 2);
+      try { body = text ? JSON.parse(text) : {}; } catch { body = text; }
+      setLastResponse(body);
       if (!response.ok) {
-        throw new Error(body.error || body.detail || response.statusText);
+        const error = typeof body === "object" ? (body.error || body.detail || response.statusText) : response.statusText;
+        throw new Error(error);
       }
       return body;
     }
-
-    function setConnection(state, label) {
-      const el = $("connection-status");
-      el.className = "status " + state;
-      el.lastElementChild.textContent = label;
+    async function requestText(path) {
+      const response = await fetch(apiBase() + path, { headers: headers({}) });
+      const text = await response.text();
+      setLastResponse(text.slice(0, 4000));
+      if (!response.ok) throw new Error(response.statusText);
+      return text;
     }
-
-    function formatTime(value) {
+    function fmtTime(value) {
       if (!value) return "-";
       const date = typeof value === "number" ? new Date(value * 1000) : new Date(value);
       if (Number.isNaN(date.getTime())) return String(value);
       return date.toLocaleString("ko-KR", { hour12: false });
     }
+    function badge(value, tone = "") {
+      return `<span class="badge ${tone}">${value ?? "-"}</span>`;
+    }
+    function emptyState(title, detail = "", tone = "") {
+      return `<div class="empty-state ${tone}"><strong>${title}</strong>${detail ? `<span>${detail}</span>` : ""}</div>`;
+    }
+    function statusTone(value) {
+      const text = String(value || "").toLowerCase();
+      if (["up", "ok", "on", "healthy", "ready", "true", "configured", "online", "auto", "approved", "sent", "executed"].includes(text)) return "good";
+      if (["down", "off", "error", "failed", "false", "disabled", "unreachable", "critical", "rejected"].includes(text)) return "bad";
+      return "warn";
+    }
+    function deviceStatusLabel(device) {
+      return device?.reachable === true ? "on" : "off";
+    }
+    function deviceStatusTone(device) {
+      if (device?.status) return statusTone(device.status);
+      if (device?.reachable === true) return "good";
+      if (device?.configured && device?.reachable === false) return "bad";
+      return device?.configured ? "warn" : "bad";
+    }
+    function eventLabel(type) {
+      const map = {
+        fall_detected: "낙상",
+        head: "헬멧 미착용",
+        helmet: "헬멧",
+        intrusion: "침입",
+        danger_zone: "위험구역",
+        zone_entered: "위험구역 진입",
+        zone_exited: "위험구역 이탈",
+        zone_dwelling: "위험구역 체류",
+        zone_object_detected: "위험구역 객체",
+        crowd_warning: "인파 경고",
+        face_recognized: "얼굴 인식",
+        face_unknown: "미등록 얼굴",
+        tilt_alert: "기울기 이상",
+        temperature_alert: "온도 이상",
+        sensor_temperature: "온도 이상",
+        person: "사람",
+      };
+      return map[type] || type || "-";
+    }
+    function eventVisualTone(event) {
+      const severity = String(event?.severity || "").toLowerCase();
+      const type = String(event?.event_type || "").toLowerCase();
+      if (["critical", "emergency"].includes(severity)) return "critical";
+      if (["fall_detected", "intrusion", "danger_zone", "face_unknown"].includes(type)) return "critical";
+      if (["warning", "warn"].includes(severity)) return "warning";
+      if (type.startsWith("zone_") || ["head", "helmet", "crowd_warning", "sensor_temperature", "temperature_alert", "tilt_alert"].includes(type)) return "warning";
+      if (["low", "info"].includes(severity)) return "low";
+      return "normal";
+    }
+    function eventBadgeTone(event) {
+      const tone = eventVisualTone(event);
+      if (tone === "critical") return "bad";
+      if (tone === "warning") return "warn";
+      return "blue";
+    }
+    function appearanceClassLabel(item) {
+      if (item.face_name && String(item.face_name).toLowerCase() !== "unknown") return "등록 얼굴";
+      if (item.face_name && String(item.face_name).toLowerCase() === "unknown") return "미등록 얼굴";
+      if (item.has_helmet === false) return "헬멧 미착용";
+      return "외형 로그";
+    }
+    function appearanceTargetLabel(item) {
+      if (item.face_name && String(item.face_name).toLowerCase() !== "unknown") return item.face_name;
+      return item.track_id !== undefined && item.track_id !== null ? `track ${item.track_id}` : "-";
+    }
+    function appearanceMetaLines(item) {
+      return [
+        item.upper_color && `상의=${item.upper_color}`,
+        item.lower_color && `하의=${item.lower_color}`,
+        item.gender && `성별=${item.gender}`,
+        item.age_group && `나이=${item.age_group}`,
+        item.has_helmet ? "헬멧 착용" : "헬멧 미착용",
+        item.has_backpack ? "백팩" : "",
+        item.has_handbag ? "핸드백" : "",
+        item.has_suitcase ? "캐리어" : "",
+        item.attribute_backend && `backend=${item.attribute_backend}`,
+      ].filter(Boolean);
+    }
+    function query(params) {
+      const qs = new URLSearchParams();
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== "") qs.set(key, value);
+      });
+      const text = qs.toString();
+      return text ? `?${text}` : "";
+    }
+    function fillColorSelects() {
+      ["cond-upper", "cond-lower", "search-upper", "search-lower"].forEach((id) => {
+        const select = $(id);
+        const current = select.value;
+        select.innerHTML = `<option value="">${id.startsWith("search") ? "전체" : "선택 안 함"}</option>` +
+          COLORS.map((color) => `<option value="${color}">${color}</option>`).join("");
+        select.value = current;
+      });
+    }
+    function fillCameraSelects() {
+      ["event-camera", "search-camera", "zone-camera", "model-camera"].forEach((id) => {
+        const select = $(id);
+        const current = select.value;
+        const emptyLabel = id === "zone-camera" || id === "model-camera" ? "카메라 선택" : "전체";
+        select.innerHTML = `<option value="">${emptyLabel}</option>` + state.cameras.map((camera) =>
+          `<option value="${camera.id}">${camera.name || camera.id}</option>`
+        ).join("");
+        select.value = current;
+      });
+      if (state.cameras[0] && !$("demo-camera").value) $("demo-camera").value = state.cameras[0].id;
+      if (state.cameras[0] && !$("zone-camera").value) $("zone-camera").value = state.cameras[0].id;
+      if (state.cameras[0] && !$("model-camera").value) $("model-camera").value = state.cameras[0].id;
+    }
+    function switchTab(name) {
+      document.querySelectorAll(".tab").forEach((el) => el.classList.remove("active"));
+      document.querySelectorAll(".nav button").forEach((el) => {
+        const active = el.dataset.tab === name;
+        el.classList.toggle("active", active);
+        el.setAttribute("aria-selected", active ? "true" : "false");
+      });
+      $(`tab-${name}`).classList.add("active");
+      $("page-title").textContent = pageCopy[name][0];
+      $("page-desc").textContent = pageCopy[name][1];
+      if (name === "live") renderCameraPreview();
+      if (name === "events") loadEvents();
+      if (name === "sensors") loadSensorReadings();
+      if (name === "appearance") loadAppearanceBundle();
+      if (name === "cameras") loadCameras().then(() => Promise.allSettled([loadZoneEditor(), loadModelSettings()])).catch(() => {});
+      if (name === "faces") loadFaces();
+      if (name === "control") loadControlBundle();
+    }
 
     async function loadHealth() {
-      const health = await request("/api/v1/health");
-      $("stat-api").textContent = health.data?.status || "-";
-      setConnection("ok", "Public API 연결됨");
-      return health;
+      const body = await request("/api/v1/health");
+      const status = body.data?.status || "-";
+      $("stat-api").textContent = status;
+      $("stat-api-sub").textContent = body.data?.service || "/api/v1/health";
+      setStatus(status === "up", status === "up" ? "Public API 정상" : "Public API 확인 필요");
+      return body;
     }
-
     async function loadReadiness() {
-      const readiness = await request("/api/v1/readiness");
-      const status = readiness.data?.status || "-";
+      const body = await request("/api/v1/readiness");
+      const status = body.data?.status || "-";
       $("stat-ready").textContent = status;
-      const deps = readiness.data?.dependencies || [];
-      $("dependency-rows").innerHTML = deps.length
-        ? deps.map(dep => `
-            <tr>
-              <td>${dep.name}</td>
-              <td><span class="badge ${dep.status === "up" ? "low" : "critical"}">${dep.status}</span></td>
-              <td><code>${dep.url}</code></td>
-            </tr>
-          `).join("")
-        : '<tr><td colspan="3" class="muted">의존 서비스 정보 없음</td></tr>';
-      return readiness;
+      const deps = body.data?.dependencies || [];
+      $("dependency-rows").innerHTML = deps.length ? deps.map((dep) => `
+        <tr>
+          <td>${dep.name || "-"}</td>
+          <td>${badge(dep.status, statusTone(dep.status))}</td>
+          <td><code>${dep.url || "-"}</code></td>
+        </tr>
+      `).join("") : '<tr><td colspan="3" class="muted">의존 서비스 정보 없음</td></tr>';
+      return body;
     }
-
     async function loadCameras() {
-      const cameras = await request("/api/v1/cameras");
-      const items = cameras.data || [];
-      $("stat-cameras").textContent = String(items.length);
-      $("camera-rows").innerHTML = items.length
-        ? items.map(camera => `
-            <tr>
-              <td><code>${camera.id}</code></td>
-              <td>${camera.name || "-"}</td>
-              <td>${(camera.zones || []).length}개</td>
-            </tr>
-          `).join("")
-        : '<tr><td colspan="3" class="muted">카메라 없음</td></tr>';
-      renderCameraPreview(items);
-      return cameras;
+      let cameraResponse = null;
+      let publicCameras = [];
+      try {
+        cameraResponse = await request("/api/v1/cameras");
+        publicCameras = cameraResponse.data || [];
+      } catch (error) {
+        showToast("Public API 카메라 목록 실패, 기본 WebRTC 카메라를 사용합니다: " + error.message);
+      }
+      if (publicCameras.length) {
+        state.cameras = publicCameras.map((camera) => ({
+          ...camera,
+          stream_available: true,
+        }));
+      } else {
+        const fallbackCameraIds = ["camera_1"];
+        state.cameras = fallbackCameraIds.map((id) => ({
+          id,
+          name: id,
+          url: `${mediaBase()}/${encodeURIComponent(id)}`,
+          zones: [],
+          stream_available: true,
+        }));
+      }
+      setServiceCard(
+        "svc-stream",
+        state.cameras.length ? "good" : "warn",
+        state.cameras.length
+          ? `WebRTC ${state.cameras.length}개`
+          : "카메라 없음"
+      );
+      $("stat-cameras").textContent = String(state.cameras.length);
+      fillCameraSelects();
+      $("camera-rows").innerHTML = state.cameras.length ? state.cameras.map((camera) => `
+        <tr>
+          <td><code>${camera.id}</code></td>
+          <td>${camera.name || "-"}</td>
+          <td><code>${camera.url || "-"}</code></td>
+          <td>${(camera.zones || []).length}개<br>${badge(camera.stream_available ? "stream" : "no stream", camera.stream_available ? "good" : "warn")}</td>
+          <td><button onclick="selectModelCamera('${camera.id}')">설정</button></td>
+        </tr>
+      `).join("") : '<tr><td colspan="5" class="muted">카메라 없음</td></tr>';
+      renderZoneSummary();
+      return cameraResponse || { data: state.cameras };
     }
-
-    function renderCameraPreview(cameras) {
-      const root = $("camera-preview");
-      if (!cameras.length) {
-        root.innerHTML = '<div class="muted">카메라 정보가 없습니다.</div>';
+    async function modelRequest(path, options = {}) {
+      const response = await fetch(modelBase() + path, {
+        ...options,
+        headers: headers(options.headers || {}),
+      });
+      const text = await response.text();
+      let body = {};
+      try { body = text ? JSON.parse(text) : {}; } catch { body = { raw: text }; }
+      setLastResponse(body);
+      if (!response.ok) throw new Error(body.error || body.detail || response.statusText);
+      return body;
+    }
+    function renderModelSettings(settings = {}) {
+      $("model-pose").checked = Boolean(settings.use_pose);
+      $("model-helmet").checked = Boolean(settings.use_helmet);
+      $("model-person").checked = Boolean(settings.use_person);
+      $("model-appearance").checked = Boolean(settings.use_appearance);
+      $("model-face").checked = Boolean(settings.use_face);
+      $("model-help").innerHTML = Object.keys(settings).length
+        ? `${badge(settings.use_appearance ? "외형검색 ON" : "외형검색 OFF", settings.use_appearance ? "good" : "warn")} ${badge(settings.use_helmet ? "헬멧 ON" : "헬멧 OFF", settings.use_helmet ? "good" : "warn")}`
+        : "모델 API를 조회하세요.";
+    }
+    async function loadModelSettings() {
+      const cameraId = $("model-camera").value || state.cameras[0]?.id || "";
+      if (!cameraId) {
+        showToast("카메라를 먼저 불러오세요.");
         return;
       }
-      root.innerHTML = cameras.map(camera => {
+      $("model-camera").value = cameraId;
+      const body = await modelRequest(`/cameras/${encodeURIComponent(cameraId)}/models`);
+      state.modelSettings[cameraId] = body.model_settings || {};
+      renderModelSettings(state.modelSettings[cameraId]);
+    }
+    async function saveModelSettings() {
+      const cameraId = $("model-camera").value || state.cameras[0]?.id || "";
+      if (!cameraId) {
+        showToast("카메라를 선택하세요.");
+        return;
+      }
+      const payload = {
+        use_pose: $("model-pose").checked,
+        use_helmet: $("model-helmet").checked,
+        use_person: $("model-person").checked,
+        use_appearance: $("model-appearance").checked,
+        use_face: $("model-face").checked,
+      };
+      const body = await modelRequest(`/cameras/${encodeURIComponent(cameraId)}/models`, {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+      state.modelSettings[cameraId] = body.model_settings || payload;
+      renderModelSettings(state.modelSettings[cameraId]);
+
+      if (body.pipeline_restarting) {
+        showToast("모델 설정 저장 완료 — AI 엔진 파이프라인 재시작 중 (약 30초 후 화면이 갱신됩니다)");
+        // 파이프라인 재시작 시 WebRTC 스트림이 끊기므로 30초 후 iframe 자동 갱신
+        setTimeout(() => reloadAllCameraIframes(), 32000);
+      } else {
+        showToast("모델 설정 저장 완료 — 라이브 화면에 즉시 반영됩니다");
+      }
+    }
+
+    function reloadAllCameraIframes() {
+      // camera-preview 내 iframe들 갱신
+      document.querySelectorAll("#camera-preview iframe").forEach((iframe) => {
+        const src = iframe.src;
+        iframe.src = "";
+        setTimeout(() => { iframe.src = src; }, 100);
+      });
+      // 확대 모달 iframe 갱신
+      const modalFrame = $("camera-modal-frame");
+      if (modalFrame && modalFrame.src) {
+        const src = modalFrame.src;
+        modalFrame.src = "";
+        setTimeout(() => { modalFrame.src = src; }, 100);
+      }
+    }
+    async function selectModelCamera(cameraId) {
+      $("model-camera").value = cameraId;
+      await loadModelSettings();
+    }
+    window.selectModelCamera = selectModelCamera;
+    function renderZoneSummary() {
+      const camerasWithZones = state.cameras.filter((camera) => (camera.zones || []).length);
+      $("zone-summary").innerHTML = state.cameras.length ? `
+        <div class="grid">
+          ${state.cameras.map((camera) => `
+            <div class="panel pad">
+              <strong>${camera.name || camera.id}</strong>
+              <div class="muted"><code>${camera.id}</code></div>
+              <div style="margin-top:8px">${(camera.zones || []).length ? (camera.zones || []).map((zone) =>
+                badge(zone.name || zone.id || "zone", "blue")
+              ).join(" ") : '<span class="muted">등록 구역 없음</span>'}</div>
+            </div>
+          `).join("")}
+        </div>
+        <p class="muted">구역 보유 카메라: ${camerasWithZones.length}/${state.cameras.length}</p>
+      ` : '<span class="muted">카메라 정보 없음</span>';
+    }
+    async function zoneRequest(path, options = {}) {
+      const response = await fetch(zoneBase() + path, {
+        ...options,
+        headers: headers(options.headers || {}),
+      });
+      const text = await response.text();
+      let body = {};
+      try { body = text ? JSON.parse(text) : {}; } catch { body = { raw: text }; }
+      setLastResponse(body);
+      if (!response.ok) throw new Error(body.error || body.detail || response.statusText);
+      return body;
+    }
+    async function loadZoneEditor() {
+      const cameraId = $("zone-camera").value || state.cameras[0]?.id || "";
+      if (!cameraId) {
+        $("zone-rows").innerHTML = '<tr><td colspan="5" class="muted">카메라가 없습니다.</td></tr>';
+        return;
+      }
+      state.zoneEditor.cameraId = cameraId;
+      state.zoneEditor.draft = [];
+      $("zone-image").src = `${streamBase()}/snapshot/${encodeURIComponent(cameraId)}?zone_editor=${Date.now()}`;
+      try {
+        const body = await zoneRequest(`/cameras/${encodeURIComponent(cameraId)}/zones`);
+        state.zoneEditor.zones = body.zones || [];
+      } catch (error) {
+        const fallback = state.cameras.find((camera) => camera.id === cameraId);
+        state.zoneEditor.zones = fallback?.zones || [];
+        showToast("Zone API 연결 실패, 읽기 전용 구역만 표시: " + error.message);
+      }
+      renderZoneEditor();
+    }
+    function updateZoneFrameSize() {
+      const image = $("zone-image");
+      const width = image.naturalWidth || 1280;
+      const height = image.naturalHeight || 720;
+      state.zoneEditor.frameWidth = width;
+      state.zoneEditor.frameHeight = height;
+      $("zone-svg").setAttribute("viewBox", `0 0 ${width} ${height}`);
+    }
+    function zoneModeLabel(mode) {
+      if (mode === "object_watch") return "객체감시";
+      if (mode === "crowd_count") return "인파분석";
+      return "위험구역";
+    }
+    function zoneModeTone(mode) {
+      if (mode === "object_watch") return "warn";
+      if (mode === "crowd_count") return "bad";
+      return "blue";
+    }
+    function polygonPoints(points) {
+      return (points || []).map((point) => `${Number(point[0] || 0)},${Number(point[1] || 0)}`).join(" ");
+    }
+    function renderZoneEditor() {
+      updateZoneFrameSize();
+      const zones = state.zoneEditor.zones || [];
+      const draft = state.zoneEditor.draft || [];
+      $("zone-svg").innerHTML = [
+        ...zones.map((zone) => `
+          <polygon class="zone-poly" points="${polygonPoints(zone.polygon)}"></polygon>
+          ${(zone.polygon || []).map((point) => `<circle class="zone-point" cx="${point[0]}" cy="${point[1]}" r="5"></circle>`).join("")}
+          <text class="zone-label" x="${zone.polygon?.[0]?.[0] || 8}" y="${Math.max(18, (zone.polygon?.[0]?.[1] || 26) - 8)}">${zone.name || zone.id}</text>
+        `),
+        draft.length ? `
+          <polyline class="zone-draft" fill="none" points="${polygonPoints(draft)}"></polyline>
+          ${draft.length >= 3 ? `<polygon class="zone-draft" points="${polygonPoints(draft)}"></polygon>` : ""}
+          ${draft.map((point) => `<circle class="zone-point" cx="${point[0]}" cy="${point[1]}" r="5"></circle>`).join("")}
+        ` : "",
+      ].join("");
+      $("zone-rows").innerHTML = zones.length ? zones.map((zone) => `
+        <tr>
+          <td><code>${zone.id}</code></td>
+          <td>${zone.name || "-"}</td>
+          <td>${badge(zoneModeLabel(zone.mode), zoneModeTone(zone.mode))}</td>
+          <td>${(zone.polygon || []).length}점</td>
+          <td><button class="warn" onclick="deleteZoneLocal('${zone.id}')">삭제</button></td>
+        </tr>
+      `).join("") : '<tr><td colspan="5" class="muted">등록 구역 없음</td></tr>';
+    }
+    function zoneSvgPoint(event) {
+      updateZoneFrameSize();
+      const svg = $("zone-svg");
+      const rect = svg.getBoundingClientRect();
+      const x = Math.round(((event.clientX - rect.left) / rect.width) * state.zoneEditor.frameWidth);
+      const y = Math.round(((event.clientY - rect.top) / rect.height) * state.zoneEditor.frameHeight);
+      return [
+        Math.max(0, Math.min(state.zoneEditor.frameWidth, x)),
+        Math.max(0, Math.min(state.zoneEditor.frameHeight, y)),
+      ];
+    }
+    function nextZoneId() {
+      const nums = state.zoneEditor.zones
+        .map((zone) => String(zone.id || "").match(/zone_(\d+)/))
+        .filter(Boolean)
+        .map((match) => Number(match[1]));
+      return `zone_${(nums.length ? Math.max(...nums) : 0) + 1}`;
+    }
+    function finishZoneDraft() {
+      const draft = state.zoneEditor.draft;
+      if (draft.length < 3) {
+        showToast("구역은 3개 이상 점이 필요합니다.");
+        return;
+      }
+      const mode = $("zone-mode").value;
+      const zoneId = nextZoneId();
+      const zone = {
+        id: zoneId,
+        name: $("zone-name").value.trim() || zoneId,
+        type: "polygon",
+        polygon: draft.map((point) => [point[0], point[1]]),
+        mode,
+      };
+      if (mode === "object_watch") {
+        zone.watch_classes = ["person"];
+        zone.alert_cooldown = 30.0;
+      } else if (mode === "crowd_count") {
+        zone.count_classes = ["person"];
+        zone.count_threshold = 5;
+        zone.alert_cooldown = 30.0;
+      }
+      state.zoneEditor.zones.push(zone);
+      state.zoneEditor.draft = [];
+      renderZoneEditor();
+      showToast("구역이 임시 추가되었습니다. 전체 저장을 눌러 반영하세요.");
+    }
+    function undoZonePoint() {
+      state.zoneEditor.draft.pop();
+      renderZoneEditor();
+    }
+    function cancelZoneDraft() {
+      state.zoneEditor.draft = [];
+      renderZoneEditor();
+    }
+    function deleteZoneLocal(zoneId) {
+      state.zoneEditor.zones = state.zoneEditor.zones.filter((zone) => zone.id !== zoneId);
+      renderZoneEditor();
+      showToast("구역이 임시 삭제되었습니다. 전체 저장을 눌러 반영하세요.");
+    }
+    window.deleteZoneLocal = deleteZoneLocal;
+    async function saveZones() {
+      const cameraId = state.zoneEditor.cameraId || $("zone-camera").value;
+      if (!cameraId) {
+        showToast("카메라를 선택하세요.");
+        return;
+      }
+      await zoneRequest(`/cameras/${encodeURIComponent(cameraId)}/zones`, {
+        method: "POST",
+        body: JSON.stringify({ zones: state.zoneEditor.zones }),
+      });
+      showToast("위험구역 저장 완료");
+      await Promise.allSettled([loadCameras(), loadZoneEditor()]);
+    }
+    function modalCamera() {
+      return state.cameras.find((camera) => String(camera.id) === String(state.selectedModalCameraId));
+    }
+    function cameraWebRtcUrl(cameraId) {
+      return `${location.origin}/webrtc/${encodeURIComponent(cameraId)}/`;
+    }
+    function openCameraModal(cameraId) {
+      const camera = state.cameras.find((item) => String(item.id) === String(cameraId));
+      if (!camera || !camera.stream_available) {
+        showToast("확대할 수 있는 스트림이 없습니다.");
+        return;
+      }
+      state.selectedModalCameraId = String(camera.id);
+      $("camera-modal-title").textContent = camera.name || camera.id;
+      $("camera-modal-id").textContent = camera.id;
+      $("camera-modal-backdrop").classList.add("show");
+      $("camera-modal-frame").src = cameraWebRtcUrl(camera.id);
+    }
+    function closeCameraModal() {
+      $("camera-modal-backdrop").classList.remove("show");
+      $("camera-modal-frame").removeAttribute("src");
+      state.selectedModalCameraId = "";
+      clearInterval(state.cameraModalTimer);
+      state.cameraModalTimer = null;
+    }
+    function openCameraWebRtcWindow(cameraId) {
+      if (!cameraId) return;
+      window.open(cameraWebRtcUrl(cameraId), "_blank");
+    }
+    function openCameraStreamWindow() {
+      const camera = modalCamera();
+      if (!camera) return;
+      openCameraWebRtcWindow(camera.id);
+    }
+    function renderCameraPreview() {
+      const root = $("camera-preview");
+      state.previewTimers.forEach((timer) => clearInterval(timer));
+      state.previewTimers = [];
+      if (!state.cameras.length) {
+        root.innerHTML = emptyState("카메라 정보가 없습니다.", "Public API 카메라 목록을 확인하세요.", "warn");
+        return;
+      }
+      root.innerHTML = state.cameras.map((camera) => {
         const id = encodeURIComponent(camera.id);
-        const src = `${streamBase()}/stream/${id}`;
-        return `
-          <div class="camera-card">
-            <img src="${src}" alt="${camera.name || camera.id}"
-                 onerror="this.replaceWith(Object.assign(document.createElement('div'), { className: 'camera-error', textContent: '스트림 연결 실패: 8769 포트/Stream API 상태를 확인하세요.' }));">
-            <div class="camera-caption">
-              <div>
-                <div>${camera.name || camera.id}</div>
-                <code>${camera.id}</code>
+        if (!camera.stream_available) {
+          return `
+            <div class="camera-card">
+              <div class="camera-error">스트림 미연결: AI Engine에 로드된 카메라가 아닙니다.</div>
+              <div class="camera-caption">
+                <div><strong>${camera.name || camera.id}</strong><br><code>${camera.id}</code></div>
+                <div class="camera-meta">${badge("no stream", "warn")} ${badge(`${(camera.zones || []).length} zones`, "blue")}</div>
               </div>
-              <span class="badge">${(camera.zones || []).length} zones</span>
+            </div>
+          `;
+        }
+        const webRtcSrc = cameraWebRtcUrl(camera.id);
+        return `
+          <div class="camera-card" data-camera-modal="${escapeHtml(camera.id)}" title="클릭하면 크게 봅니다">
+            <iframe src="${escapeHtml(webRtcSrc)}" title="${escapeHtml(camera.name || camera.id)} WebRTC stream" allow="autoplay; fullscreen"></iframe>
+            <div class="camera-caption">
+              <div><strong>${camera.name || camera.id}</strong><br><code>${camera.id}</code></div>
+              <div class="camera-meta">${badge("webrtc/h264", "good")} ${badge(`${(camera.zones || []).length} zones`, "blue")}</div>
+            </div>
+            <div class="camera-actions">
+              <button data-open-webrtc="${escapeHtml(camera.id)}">WebRTC/H.264</button>
             </div>
           </div>
         `;
       }).join("");
     }
-
-    async function loadMetrics() {
-      const response = await fetch(apiBase() + "/api/v1/metrics");
-      const text = await response.text();
-      $("stat-metrics").textContent = response.ok ? "up" : "down";
-      if (!response.ok) throw new Error("metrics " + response.status);
-      return text;
-    }
-
-    function renderEvents(items, note = "") {
-      $("event-rows").innerHTML = items.length
-        ? items.map(event => `
-            <tr>
-              <td>${formatTime(event.received_at || event.timestamp)}</td>
-              <td><span class="badge">${event.event_type}</span></td>
-              <td><code>${event.camera_id || "-"}</code></td>
-              <td>${Number(event.confidence || 0).toFixed(2)}</td>
-              <td><span class="badge ${event.severity || "normal"}">${event.severity || "-"}</span></td>
-            </tr>
-          `).join("")
-        : `<tr><td colspan="5" class="muted">${note || "최근 이벤트 없음"}</td></tr>`;
-    }
-
     async function loadEvents() {
+      const params = {
+        limit: $("event-limit").value,
+        camera_id: $("event-camera").value,
+        event_type: $("event-type").value,
+      };
       try {
-        const events = await request("/api/v1/events?limit=10");
-        renderEvents(events.items || []);
+        const body = await request("/api/v1/events" + query(params));
+        state.events = body.items || [];
+        $("stat-events").textContent = String(body.total ?? state.events.length);
+        renderEventRows("event-rows", state.events, 7);
+        renderEventRows("overview-events", state.events.slice(0, 8), 4, true);
       } catch (error) {
-        renderEvents(
-          demoEvents,
-          "이벤트 조회 API 응답 없음. 버튼으로 전송한 시연 이벤트가 여기에 표시됩니다."
-        );
+        renderEventRows("event-rows", state.demoEvents, 7);
+        renderEventRows("overview-events", state.demoEvents.slice(0, 8), 4, true);
+        showToast("이벤트 조회 실패, 데모 이벤트만 표시: " + error.message);
       }
     }
-
-    async function refreshAll() {
+    function renderEventRows(targetId, items, colSpan, compact = false) {
+      const rows = items || [];
+      $(targetId).innerHTML = rows.length ? rows.map((event) => {
+        const visualTone = eventVisualTone(event);
+        const rowClass = visualTone === "normal" ? "" : ` class="event-row-${visualTone}"`;
+        const typeBadge = badge(eventLabel(event.event_type), eventBadgeTone(event));
+        if (compact) {
+          return `<tr${rowClass}><td>${fmtTime(event.received_at || event.timestamp)}</td><td>${typeBadge}</td><td><code>${event.camera_id || "-"}</code></td><td>${Number(event.confidence || 0).toFixed(2)}</td></tr>`;
+        }
+        const target = eventTargetLabel(event);
+        return `<tr${rowClass}>
+          <td>${fmtTime(event.received_at || event.timestamp)}</td>
+          <td>${typeBadge}</td>
+          <td>${target}</td>
+          <td><code>${event.camera_id || "-"}</code></td>
+          <td>${Number(event.confidence || 0).toFixed(2)}</td>
+          <td>${badge(event.severity || "-", statusTone(event.severity))}</td>
+          <td>${event.object_id ?? "-"}</td>
+        </tr>`;
+      }).join("") : `<tr><td colspan="${colSpan}">${emptyState("이벤트 없음", "필터 조건을 바꾸거나 데모 이벤트를 전송해 확인하세요.")}</td></tr>`;
+    }
+    function eventTargetLabel(event) {
+      const metadata = event.metadata || {};
+      const name = metadata.face_name || metadata.person_name || metadata.name;
+      if (name && String(name).toLowerCase() !== "unknown") return String(name);
+      if (event.event_type === "face_unknown") return "미등록";
+      return "-";
+    }
+    async function sendDemoEvent() {
+      const payload = {
+        camera_id: $("demo-camera").value || "camera_1",
+        event_type: $("demo-type").value,
+        severity: $("demo-severity").value,
+        confidence: Number($("demo-confidence").value || 0.92),
+        timestamp: Date.now() / 1000,
+        bbox: { x: 120, y: 90, width: 80, height: 160 },
+        object_id: Math.floor(Math.random() * 10000),
+        metadata: { source: "public-demo-ui", demo: true },
+      };
+      await request("/api/v1/alerts", { method: "POST", body: JSON.stringify(payload) });
+      state.demoEvents.unshift({ ...payload, received_at: new Date().toISOString() });
+      renderEventRows("event-rows", state.demoEvents, 7);
+      showToast("데모 이벤트 전송 완료");
+      await Promise.allSettled([loadEvents(), loadActionEvents()]);
+    }
+    async function loadSensorReadings() {
+      const params = {
+        limit: $("sensor-limit").value,
+        device_id: $("sensor-device").value.trim(),
+        table: $("sensor-table").value.trim(),
+      };
       try {
-        await loadHealth();
-        await loadReadiness();
-        await loadCameras();
-        await loadMetrics();
-        await loadEvents();
-        showToast("상태 갱신 완료");
+        const body = await request("/api/v1/sensor-readings" + query(params));
+        state.sensorReadings = body.items || [];
+        $("stat-sensors").textContent = String(body.total ?? state.sensorReadings.length);
+        renderSensorRows(state.sensorReadings);
       } catch (error) {
-        setConnection("bad", "연결 오류");
+        renderSensorRows([]);
+        $("stat-sensors").textContent = "-";
+        showToast("TLV 로그 조회 실패: " + error.message);
+      }
+    }
+    function renderSensorRows(items) {
+      const rows = items || [];
+      $("sensor-rows").innerHTML = rows.length ? rows.map((item) => `
+        <tr>
+          <td>${fmtTime(item.received_at || item.timestamp)}</td>
+          <td>${item.device_name || "-"}</td>
+          <td><code>${item.device_id || "-"}</code></td>
+          <td>${badge(item.table || "-", "blue")}</td>
+          <td>${sensorValueSummary(item.data || {})}</td>
+          <td>${sensorStatusBadge(item.data || {}, item.payload || {})}</td>
+        </tr>
+      `).join("") : '<tr><td colspan="6" class="muted">TLV 수신 로그 없음</td></tr>';
+    }
+    function sensorValueSummary(data) {
+      const preferred = ["temperature", "angle_x", "angle_y", "event_code", "humidity", "battery"];
+      const parts = preferred
+        .filter((key) => data[key] !== undefined && data[key] !== null && data[key] !== "")
+        .map((key) => `${key}=${data[key]}`);
+      if (!parts.length) {
+        Object.entries(data).slice(0, 4).forEach(([key, value]) => parts.push(`${key}=${value}`));
+      }
+      return parts.join("<br>") || "-";
+    }
+    function sensorStatusBadge(data, payload) {
+      const temp = Number(data.temperature);
+      const angleX = Math.abs(Number(data.angle_x || 0));
+      const angleY = Math.abs(Number(data.angle_y || 0));
+      const type = payload.type || payload.event_type;
+      if (type) return badge(eventLabel(type), statusTone(payload.severity || "warn"));
+      if (Number.isFinite(temp) && temp >= 60) return badge("고온", "bad");
+      if (Math.max(angleX, angleY) >= 30) return badge("기울기", "bad");
+      return badge("수신", "good");
+    }
+    async function sendDemoSensor() {
+      const payload = {
+        device_id: $("demo-sensor-device").value.trim() || "demo-tlv-01",
+        table: $("demo-sensor-table").value.trim() || "t34957",
+        data: {
+          temperature: Number($("demo-sensor-temp").value || 0),
+          angle_x: Number($("demo-sensor-angle-x").value || 0),
+          angle_y: Number($("demo-sensor-angle-y").value || 0),
+          event_code: Number($("demo-sensor-code").value || 0),
+        },
+        received_at: Date.now(),
+      };
+      await request("/api/v1/sensor-readings", { method: "POST", body: JSON.stringify(payload) });
+      showToast("TLV 데모 로그 전송 완료");
+      await loadSensorReadings();
+    }
+    async function loadAppearanceStatus() {
+      const body = await request("/api/v1/appearances/status");
+      const data = body.data || {};
+      const fields = data.fields || [];
+      $("appearance-summary").innerHTML = `
+        <div>${badge(`backend=${data.backend || "-"}`, data.backend === "pphuman" ? "good" : "warn")}</div>
+        <p class="muted">총 ${data.data_stats?.total_records ?? 0}건, gender ${data.data_stats?.gender_filled ?? 0}건, helmet ${data.data_stats?.helmet_true ?? 0}건</p>
+        ${(data.warnings || []).map((item) => `<div class="badge warn" style="margin:3px 3px 0 0">${item}</div>`).join("") || '<span class="muted">경고 없음</span>'}
+      `;
+      $("appearance-status").innerHTML = `
+        <div class="grid">
+          <div>${badge(`DB ${data.db_path || "-"}`, "blue")}</div>
+          <div>${badge(`backend ${data.backend || "-"}`, data.backend === "pphuman" ? "good" : "warn")}</div>
+        </div>
+        <div style="margin-top:10px" class="scroll">
+          <table>
+            <thead><tr><th>필드</th><th>준비</th><th>소스</th><th>적재</th><th>사유</th></tr></thead>
+            <tbody>${fields.map((field) => `
+              <tr>
+                <td>${field.field}</td>
+                <td>${badge(field.ready ? "ready" : "not ready", field.ready ? "good" : "warn")}</td>
+                <td><code>${field.source || "-"}</code></td>
+                <td>${field.observed_count ?? 0} (${Math.round((field.observed_ratio || 0) * 1000) / 10}%)</td>
+                <td>${field.reason || "-"}</td>
+              </tr>
+            `).join("") || '<tr><td colspan="5" class="muted">필드 정보 없음</td></tr>'}</tbody>
+          </table>
+        </div>
+        <div style="margin-top:10px">${(data.next_steps || []).map((step) => `<div class="muted">- ${step}</div>`).join("")}</div>
+      `;
+      return body;
+    }
+    async function loadConditions() {
+      const body = await request("/api/v1/appearances");
+      const conditions = body.data?.conditions || [];
+      $("condition-rows").innerHTML = conditions.length ? conditions.map((item) => {
+        const parts = ["upper_color", "lower_color", "has_helmet", "has_backpack", "has_handbag", "has_suitcase"]
+          .filter((key) => item[key] !== null && item[key] !== undefined && item[key] !== "")
+          .map((key) => `${key}=${item[key]}`);
+        return `<tr>
+          <td><code>${item.id}</code></td>
+          <td>${item.name}</td>
+          <td>${parts.join("<br>") || "-"}</td>
+          <td>${badge(item.enabled ? "enabled" : "disabled", item.enabled ? "good" : "warn")}</td>
+          <td><button class="warn" onclick="deleteCondition('${item.id}')">삭제</button></td>
+        </tr>`;
+      }).join("") : '<tr><td colspan="5" class="muted">등록 조건 없음</td></tr>';
+    }
+    function optionalBool(value) {
+      if (value === "") return undefined;
+      return value === "true";
+    }
+    async function createCondition() {
+      const payload = {
+        name: $("cond-name").value.trim() || "외형 조건",
+        upper_color: $("cond-upper").value || null,
+        lower_color: $("cond-lower").value || null,
+        has_helmet: optionalBool($("cond-helmet").value),
+        has_backpack: optionalBool($("cond-backpack").value),
+        threshold: Number($("cond-threshold").value || 0.8),
+        enabled: true,
+      };
+      Object.keys(payload).forEach((key) => payload[key] === undefined && delete payload[key]);
+      await request("/api/v1/appearances", { method: "POST", body: JSON.stringify(payload) });
+      showToast("외형 조건 등록 완료");
+      await loadConditions();
+    }
+    async function deleteCondition(id) {
+      if (!confirm(`외형 조건 ${id}를 삭제할까요?`)) return;
+      await request(`/api/v1/appearances/${encodeURIComponent(id)}`, { method: "DELETE" });
+      showToast("외형 조건 삭제 완료");
+      await loadConditions();
+    }
+    window.deleteCondition = deleteCondition;
+    async function runAppearanceSearch() {
+      const bag = $("search-bag").value;
+      const params = {
+        q: $("search-q").value.trim(),
+        camera_id: $("search-camera").value,
+        upper_color: $("search-upper").value,
+        lower_color: $("search-lower").value,
+        gender: $("search-gender").value,
+        age_group: $("search-age").value,
+        has_helmet: $("search-helmet").value,
+        limit: $("search-limit").value,
+      };
+      if (bag) params[`has_${bag}`] = true;
+      const body = await request("/api/v1/search" + query(params));
+      const rows = body.items || [];
+      state.appearanceSearchRows = rows;
+      $("search-rows").innerHTML = rows.length ? rows.map((item) => `
+        <tr>
+          <td>${fmtTime(item.timestamp)}</td>
+          <td>${badge(appearanceClassLabel(item), item.face_name ? "good" : "blue")}</td>
+          <td><code>${item.camera_id}</code></td>
+          <td>${escapeHtml(appearanceTargetLabel(item))}<br><code>${escapeHtml(item.event_id || `row-${item.id}`)}</code></td>
+          <td>${badge(item.upper_color || "-", "blue")} ${badge(item.lower_color || "-", "blue")}<br>${appearanceMetaLines(item).slice(2).join("<br>") || "-"}</td>
+          <td>${item.crop_url ? `<img class="crop-thumb" data-crop-url="${escapeHtml(item.crop_url)}" alt="검색 crop">` : '<span class="muted">crop 없음</span>'}</td>
+          <td><button onclick="selectSearchResult(${item.id})">상세</button></td>
+        </tr>
+      `).join("") : '<tr><td colspan="7" class="muted">검색 결과 없음</td></tr>';
+      hydrateCropImages();
+      if (rows[0]) selectSearchResult(rows[0].id, false);
+    }
+    function openCrop(path) {
+      window.open(apiBase() + path, "_blank");
+    }
+    window.openCrop = openCrop;
+    async function selectSearchResult(id, persist = true) {
+      const item = state.appearanceSearchRows.find((row) => Number(row.id) === Number(id));
+      if (!item) return;
+      const cropSrc = item.crop_url ? await getCropObjectUrl(item.crop_url) : "";
+      $("selected-search-badge").textContent = appearanceClassLabel(item);
+      $("selected-search-detail").innerHTML = `
+        <div class="snapshot-detail">
+          <div>${cropSrc ? `<img src="${cropSrc}" alt="검색 결과 스냅샷">` : '<div class="camera-error">저장된 crop 이미지가 없습니다.</div>'}</div>
+          <div class="kv">
+            <span>시각</span><span>${fmtTime(item.timestamp)}</span>
+            <span>구분</span><span>${badge(appearanceClassLabel(item), item.face_name ? "good" : "blue")}</span>
+            <span>대상</span><span>${escapeHtml(appearanceTargetLabel(item))}</span>
+            <span>카메라</span><span><code>${escapeHtml(item.camera_id)}</code></span>
+            <span>색상</span><span>${badge(item.upper_color || "-", "blue")} ${badge(item.lower_color || "-", "blue")}</span>
+            <span>속성</span><span>${appearanceMetaLines(item).join("<br>") || "-"}</span>
+            <span>BBox</span><span><code>${escapeHtml(JSON.stringify(item.bbox || {}))}</code></span>
+            <span>Event</span><span><code>${escapeHtml(item.event_id || `row-${item.id}`)}</code></span>
+          </div>
+        </div>
+      `;
+      if (persist) appendSearchHistory(item);
+    }
+    async function getCropObjectUrl(path) {
+      if (!path) return "";
+      if (state.cropObjectUrls[path]) return state.cropObjectUrls[path];
+      const response = await fetch(apiBase() + path, { headers: headers({}) });
+      if (!response.ok) throw new Error(`스냅샷 이미지 조회 실패: ${response.status}`);
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      state.cropObjectUrls[path] = objectUrl;
+      return objectUrl;
+    }
+    async function hydrateCropImages() {
+      const images = Array.from(document.querySelectorAll("img[data-crop-url]"));
+      await Promise.allSettled(images.map(async (image) => {
+        const path = image.dataset.cropUrl;
+        if (!path || image.dataset.loaded === "1") return;
+        image.src = await getCropObjectUrl(path);
+        image.dataset.loaded = "1";
+      }));
+    }
+    function currentSearchLabel() {
+      const q = $("search-q").value.trim();
+      const filters = [
+        $("search-camera").value && `camera=${$("search-camera").value}`,
+        $("search-upper").value && `upper=${$("search-upper").value}`,
+        $("search-lower").value && `lower=${$("search-lower").value}`,
+        $("search-helmet").value && `helmet=${$("search-helmet").value}`,
+        $("search-bag").value && `bag=${$("search-bag").value}`,
+      ].filter(Boolean);
+      return [q, ...filters].filter(Boolean).join(" / ") || "전체 검색";
+    }
+    function appendSearchHistory(item) {
+      const entry = {
+        viewedAt: new Date().toISOString(),
+        query: currentSearchLabel(),
+        id: item.id,
+        event_id: item.event_id,
+        camera_id: item.camera_id,
+        target: appearanceTargetLabel(item),
+        classLabel: appearanceClassLabel(item),
+        cropUrl: item.crop_url || "",
+      };
+      state.searchHistory = [entry, ...state.searchHistory.filter((row) => row.event_id !== entry.event_id || row.id !== entry.id)].slice(0, 20);
+      localStorage.setItem("cctv-demo-search-history", JSON.stringify(state.searchHistory));
+      renderSearchHistory();
+    }
+    function loadSearchHistory() {
+      try {
+        state.searchHistory = JSON.parse(localStorage.getItem("cctv-demo-search-history") || "[]");
+      } catch {
+        state.searchHistory = [];
+      }
+      renderSearchHistory();
+    }
+    function renderSearchHistory() {
+      $("search-history-rows").innerHTML = state.searchHistory.length ? state.searchHistory.map((item) => `
+        <tr>
+          <td>${fmtTime(item.viewedAt)}</td>
+          <td>${escapeHtml(item.query)}</td>
+          <td>${badge(item.classLabel, item.classLabel === "등록 얼굴" ? "good" : "blue")}<br>${escapeHtml(item.target)}<br><code>${escapeHtml(item.camera_id)}</code></td>
+          <td>${item.cropUrl ? `<img class="crop-thumb" data-crop-url="${escapeHtml(item.cropUrl)}" alt="조회 기록 스냅샷">` : "-"}</td>
+        </tr>
+      `).join("") : '<tr><td colspan="4" class="muted">조회 기록 없음</td></tr>';
+      hydrateCropImages();
+    }
+    function clearSearchHistory() {
+      state.searchHistory = [];
+      localStorage.removeItem("cctv-demo-search-history");
+      renderSearchHistory();
+      showToast("스냅샷 조회 기록을 비웠습니다.");
+    }
+    window.selectSearchResult = selectSearchResult;
+    async function loadFaces() {
+      try {
+        const response = await fetch(faceBase() + "/faces", { headers: headers({}) });
+        const body = await response.json();
+        setLastResponse(body);
+        if (!response.ok) throw new Error(body.error || body.detail || response.statusText);
+        renderFaces(body.faces || body.data || []);
+      } catch {
+        const body = await request("/api/v1/faces");
+        renderFaces(body.faces || body.data || []);
+      }
+    }
+    function renderFaces(faces) {
+      $("face-rows").innerHTML = faces.length ? faces.map((face) => {
+        const image = face.image ? `${apiBase()}/known_faces/${encodeURIComponent(face.image.split("/").pop())}` : "";
+        return `<tr>
+          <td>${image ? `<img class="face-preview" src="${image}" alt="${face.name}" onerror="this.style.display='none'">` : "-"}</td>
+          <td>${face.name || "-"}<br><code>${face.employee_id || face.id || "-"}</code></td>
+          <td>${face.phone || "-"}</td>
+          <td>${[face.department, face.position].filter(Boolean).join(" / ") || "-"}</td>
+          <td>${face.id ? `<button class="warn" onclick="deleteFace('${face.id}')">삭제</button>` : "-"}</td>
+        </tr>`;
+      }).join("") : '<tr><td colspan="5" class="muted">등록 얼굴 없음</td></tr>';
+    }
+    async function registerFace() {
+      if (!state.faceImageBase64) {
+        showToast("얼굴 사진을 먼저 선택하세요");
+        return;
+      }
+      const payload = {
+        name: $("face-name").value.trim(),
+        phone: $("face-phone").value.trim(),
+        image_base64: state.faceImageBase64,
+        filename: state.faceFilename,
+        department: $("face-dept").value.trim() || null,
+        position: $("face-position").value.trim() || null,
+        employee_id: $("face-empid").value.trim() || null,
+        hired_at: $("face-hired").value || null,
+      };
+      if (!payload.name || !payload.phone) {
+        showToast("이름과 전화번호를 입력하세요");
+        return;
+      }
+      try {
+        const response = await fetch(faceBase() + "/faces", {
+          method: "POST",
+          headers: headers({}),
+          body: JSON.stringify(payload),
+        });
+        const body = await response.json().catch(() => ({}));
+        setLastResponse(body);
+        if (!response.ok) throw new Error(body.error || body.detail || response.statusText);
+      } catch {
+        await request("/api/v1/faces", { method: "POST", body: JSON.stringify(payload) });
+      }
+      showToast("얼굴 등록 완료");
+      await loadFaces();
+    }
+    async function deleteFace(id) {
+      if (!confirm(`얼굴 등록 ${id}를 삭제할까요?`)) return;
+      try {
+        const response = await fetch(`${faceBase()}/faces/${encodeURIComponent(id)}`, {
+          method: "DELETE",
+          headers: headers({}),
+        });
+        const body = await response.json().catch(() => ({}));
+        setLastResponse(body);
+        if (!response.ok) throw new Error(body.error || body.detail || response.statusText);
+      } catch {
+        await request(`/api/v1/faces/${encodeURIComponent(id)}`, { method: "DELETE" });
+      }
+      showToast("얼굴 삭제 완료");
+      await loadFaces();
+    }
+    window.deleteFace = deleteFace;
+    async function loadMode() {
+      const body = await request("/api/v1/control/mode");
+      const mode = body.data?.mode || "-";
+      $("control-mode").textContent = mode;
+      $("control-mode").className = "badge " + statusTone(mode);
+      $("mode-select").value = mode === "manual" ? "manual" : "auto";
+    }
+    async function setMode() {
+      const body = { mode: $("mode-select").value };
+      await request("/api/v1/control/mode", { method: "POST", body: JSON.stringify(body) });
+      showToast("제어 모드 변경 완료");
+      await loadMode();
+    }
+    async function loadDevices() {
+      const body = await request("/api/v1/control/devices");
+      const items = body.data || [];
+      $("device-rows").innerHTML = items.length ? items.map((device) => `
+        <tr>
+          <td>${device.label || device.device || device.name || "-"}</td>
+          <td>${badge(deviceStatusLabel(device), deviceStatusTone(device))}</td>
+          <td><code>${device.host ? `${device.host}:${device.port || ""}` : device.protocol || "-"}</code></td>
+        </tr>
+      `).join("") : '<tr><td colspan="3" class="muted">출력 디바이스 정보 없음</td></tr>';
+    }
+    async function loadPending() {
+      const body = await request("/api/v1/control/pending");
+      const items = body.data || [];
+      $("pending-rows").innerHTML = items.length ? items.map((item) => `
+        <tr>
+          <td>${fmtTime(item.queued_at)}</td>
+          <td>${badge(eventLabel(item.event_type), "blue")}</td>
+          <td><code>${item.camera_id || "-"}</code></td>
+          <td>${badge(item.severity || "-", statusTone(item.severity))}</td>
+          <td><button class="good" onclick="approveEvent('${item.event_id}')">승인</button> <button class="warn" onclick="rejectEvent('${item.event_id}')">거부</button></td>
+        </tr>
+      `).join("") : '<tr><td colspan="5" class="muted">승인 대기 이벤트 없음</td></tr>';
+    }
+    async function approveEvent(id) {
+      await request(`/api/v1/control/approve/${encodeURIComponent(id)}`, { method: "POST" });
+      showToast("승인 완료");
+      await loadPending();
+    }
+    async function rejectEvent(id) {
+      await request(`/api/v1/control/reject/${encodeURIComponent(id)}`, { method: "POST" });
+      showToast("거부 완료");
+      await loadPending();
+    }
+    window.approveEvent = approveEvent;
+    window.rejectEvent = rejectEvent;
+    async function loadActionEvents() {
+      const body = await request("/api/v1/control/action-events?limit=20");
+      const items = body.data || [];
+      $("action-rows").innerHTML = items.length ? items.map((item) => `
+        <tr>
+          <td>${fmtTime(item.received_at || item.timestamp)}</td>
+          <td>${badge(eventLabel(item.event_type), "blue")}</td>
+          <td>${badge(item.alarm_played ? "executed" : "skip", item.alarm_played ? "good" : "warn")}</td>
+          <td>${badge(item.http_sent ? "sent" : "none", item.http_sent ? "good" : "warn")}</td>
+        </tr>
+      `).join("") : '<tr><td colspan="4" class="muted">조치 실행 이력 없음</td></tr>';
+    }
+    async function loadControlBundle() {
+      await Promise.allSettled([loadMode(), loadDevices(), loadPending(), loadActionEvents()]);
+    }
+    async function loadAppearanceBundle() {
+      await Promise.allSettled([loadAppearanceStatus(), loadConditions(), runAppearanceSearch()]);
+    }
+    async function refreshAll() {
+      $("side-api-base").textContent = apiBase();
+      try {
+        await Promise.allSettled([
+          loadHealth(),
+          loadReadiness(),
+          loadCameras(),
+          loadEvents(),
+          loadSensorReadings(),
+          loadAppearanceStatus(),
+          loadConditions(),
+          refreshServiceSummary(),
+        ]);
+        $("last-refresh").textContent = new Date().toLocaleTimeString("ko-KR");
+        showToast("대시보드 갱신 완료");
+      } catch (error) {
+        setStatus(false, "연결 오류");
         showToast("갱신 실패: " + error.message);
       }
     }
 
-    async function sendDemoEvent() {
-      const payload = {
-        camera_id: "demo-cam-01",
-        event_type: $("demo-type").value,
-        severity: $("demo-severity").value,
-        confidence: 0.92,
-        timestamp: Date.now() / 1000,
-        bbox: { x: 120, y: 90, width: 80, height: 160 },
-        object_id: Math.floor(Math.random() * 1000),
-        metadata: { source: "public-demo-ui", demo: true }
-      };
-      try {
-        await request("/api/v1/alerts", {
-          method: "POST",
-          body: JSON.stringify(payload)
-        });
-        demoEvents.unshift({ ...payload, received_at: new Date().toISOString() });
-        renderEvents(demoEvents);
-        showToast("이벤트 전송 완료");
-        await loadEvents();
-        await loadMetrics();
-      } catch (error) {
-        showToast("이벤트 전송 실패: " + error.message);
+    document.querySelectorAll("#nav button").forEach((button) => button.addEventListener("click", () => switchTab(button.dataset.tab)));
+    document.querySelectorAll("[data-jump]").forEach((button) => button.addEventListener("click", () => switchTab(button.dataset.jump)));
+    fillColorSelects();
+    $("refresh").addEventListener("click", (event) => runAction(event.currentTarget, "갱신 중", refreshAll));
+    $("refresh-readiness").addEventListener("click", (event) => runAction(event.currentTarget, "확인 중", loadReadiness));
+    $("reload-streams").addEventListener("click", (event) => runAction(event.currentTarget, "연결 중", async () => { await loadCameras(); renderCameraPreview(); }));
+    $("camera-preview").addEventListener("click", (event) => {
+      const webRtcButton = event.target.closest("[data-open-webrtc]");
+      if (webRtcButton) {
+        event.stopPropagation();
+        openCameraWebRtcWindow(webRtcButton.dataset.openWebrtc);
+        return;
       }
-    }
-
-    $("refresh").addEventListener("click", refreshAll);
-    $("send-event").addEventListener("click", sendDemoEvent);
-    $("load-streams").addEventListener("click", loadCameras);
+      const card = event.target.closest("[data-camera-modal]");
+      if (!card) return;
+      openCameraModal(card.dataset.cameraModal);
+    });
+    $("camera-modal-close").addEventListener("click", closeCameraModal);
+    $("camera-modal-open-stream").addEventListener("click", openCameraStreamWindow);
+    $("camera-modal-backdrop").addEventListener("click", (event) => {
+      if (event.target.id === "camera-modal-backdrop") closeCameraModal();
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && $("camera-modal-backdrop").classList.contains("show")) {
+        closeCameraModal();
+      }
+    });
+    $("refresh-events").addEventListener("click", (event) => runAction(event.currentTarget, "조회 중", loadEvents));
+    $("send-demo-event").addEventListener("click", (event) => runAction(event.currentTarget, "전송 중", sendDemoEvent));
+    $("refresh-sensors").addEventListener("click", (event) => runAction(event.currentTarget, "조회 중", loadSensorReadings));
+    $("send-demo-sensor").addEventListener("click", (event) => runAction(event.currentTarget, "전송 중", sendDemoSensor));
+    $("refresh-appearance").addEventListener("click", (event) => runAction(event.currentTarget, "조회 중", loadAppearanceStatus));
+    $("load-conditions").addEventListener("click", (event) => runAction(event.currentTarget, "불러오는 중", loadConditions));
+    $("create-condition").addEventListener("click", (event) => runAction(event.currentTarget, "등록 중", createCondition));
+    $("run-search").addEventListener("click", (event) => runAction(event.currentTarget, "검색 중", runAppearanceSearch));
+    $("clear-search-history").addEventListener("click", clearSearchHistory);
+    $("refresh-cameras").addEventListener("click", (event) => runAction(event.currentTarget, "갱신 중", loadCameras));
+    $("load-models").addEventListener("click", (event) => runAction(event.currentTarget, "조회 중", loadModelSettings));
+    $("save-models").addEventListener("click", (event) => runAction(event.currentTarget, "저장 중", saveModelSettings));
+    $("model-camera").addEventListener("change", loadModelSettings);
+    $("load-zone-editor").addEventListener("click", (event) => runAction(event.currentTarget, "불러오는 중", loadZoneEditor));
+    $("refresh-zone-list").addEventListener("click", (event) => runAction(event.currentTarget, "갱신 중", loadZoneEditor));
+    $("finish-zone").addEventListener("click", finishZoneDraft);
+    $("undo-zone-point").addEventListener("click", undoZonePoint);
+    $("cancel-zone-draft").addEventListener("click", cancelZoneDraft);
+    $("save-zones").addEventListener("click", (event) => runAction(event.currentTarget, "저장 중", saveZones));
+    $("zone-camera").addEventListener("change", loadZoneEditor);
+    $("zone-image").addEventListener("load", renderZoneEditor);
+    $("zone-svg").addEventListener("click", (event) => {
+      state.zoneEditor.draft.push(zoneSvgPoint(event));
+      renderZoneEditor();
+    });
+    $("load-faces").addEventListener("click", (event) => runAction(event.currentTarget, "불러오는 중", loadFaces));
+    $("register-face").addEventListener("click", (event) => runAction(event.currentTarget, "등록 중", registerFace));
+    $("load-mode").addEventListener("click", (event) => runAction(event.currentTarget, "조회 중", loadMode));
+    $("set-mode").addEventListener("click", (event) => runAction(event.currentTarget, "변경 중", setMode));
+    $("load-devices").addEventListener("click", (event) => runAction(event.currentTarget, "조회 중", loadDevices));
+    $("load-pending").addEventListener("click", (event) => runAction(event.currentTarget, "조회 중", loadPending));
+    $("load-actions").addEventListener("click", (event) => runAction(event.currentTarget, "조회 중", loadActionEvents));
     $("open-swagger").addEventListener("click", () => window.open(apiBase() + "/docs", "_blank"));
-    $("open-grafana").addEventListener("click", () => window.open("http://localhost:3001", "_blank"));
-
+    $("open-grafana").addEventListener("click", () => window.open(defaultServiceUrl(3001), "_blank"));
+    $("api-key").addEventListener("input", () => {
+      const value = apiKey();
+      if (value) localStorage.setItem("cctv-demo-api-key", value);
+      else localStorage.removeItem("cctv-demo-api-key");
+    });
+    $("sys-swagger").addEventListener("click", () => window.open(apiBase() + "/docs", "_blank"));
+    $("sys-edgex").addEventListener("click", () => window.open(defaultServiceUrl(4000), "_blank"));
+    $("sys-health").addEventListener("click", (event) => runAction(event.currentTarget, "확인 중", loadHealth));
+    $("sys-ready").addEventListener("click", (event) => runAction(event.currentTarget, "확인 중", loadReadiness));
+    $("sys-stream").addEventListener("click", () => openCameraWebRtcWindow(state.cameras[0]?.id || "camera_1"));
+    $("sys-metrics").addEventListener("click", (event) => runAction(event.currentTarget, "조회 중", () => requestText("/api/v1/metrics")));
+    $("clear-response").addEventListener("click", () => setLastResponse("-"));
+    $("face-file").addEventListener("change", (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+      state.faceFilename = file.name;
+      const reader = new FileReader();
+      reader.onload = () => {
+        state.faceImageBase64 = reader.result;
+        $("face-preview").src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+    ["api-base", "media-base", "zone-base", "face-base", "model-base"].forEach((id) => $(id).addEventListener("change", () => {
+      $("side-api-base").textContent = apiBase();
+      if ($("tab-live").classList.contains("active")) renderCameraPreview();
+      refreshServiceSummary();
+    }));
+    initializeServiceUrls();
+    loadSearchHistory();
     refreshAll();
-    setInterval(refreshAll, 10000);
+    setInterval(refreshAll, 15000);
   </script>
 </body>
 </html>

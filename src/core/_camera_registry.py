@@ -65,6 +65,10 @@ class _CameraRegistry:
     def stop_flag(self, camera_id: str) -> Optional[Event]:
         return self._stop_flags.get(camera_id)
 
+    def has_stop_flag(self, camera_id: str) -> bool:
+        """카메라별 정지 플래그 존재 여부를 반환한다."""
+        return camera_id in self._stop_flags
+
     def ensure_stop_flag(self, camera_id: str) -> Event:
         """정지 플래그를 생성하거나 기존 플래그를 초기화한다."""
         if camera_id not in self._stop_flags:
@@ -124,6 +128,16 @@ class _CameraRegistry:
         """재연결 대기 중인 카메라 ID 목록을 반환한다."""
         with self._pending_lock:
             return [camera_id for camera_id, _, _ in self._pending]
+
+    def pending_count(self) -> int:
+        """재연결 대기 항목 수를 반환한다."""
+        with self._pending_lock:
+            return len(self._pending)
+
+    def pending_sources(self) -> Dict[str, Any]:
+        """재연결 대기 중인 카메라별 source를 반환한다."""
+        with self._pending_lock:
+            return {camera_id: source for camera_id, source, _ in self._pending}
 
     def set_all_stop_flags(self) -> None:
         """등록된 모든 카메라의 정지 플래그를 설정한다."""

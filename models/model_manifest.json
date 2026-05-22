@@ -101,9 +101,10 @@
     {
       "name": "pphuman_attribute",
       "task": "person_attribute_classification",
-      "primary_runtime": "onnxruntime",
+      "primary_runtime": "tensorrt",
       "artifacts": {
         "onnx": "models/pphuman_attribute.onnx",
+        "tensorrt": "models/pphuman_attribute.engine",
         "paddle": "models/pphuman_attribute_src/PP-LCNet_x1_0_pedestrian_attribute_infer",
         "label_map": "config/appearance_pphuman_labels.example.json"
       },
@@ -130,8 +131,9 @@
         "model_env": "APPEARANCE_MODEL_PATH",
         "label_map_env": "APPEARANCE_LABEL_MAP_PATH",
         "runtime_env": "APPEARANCE_RUNTIME",
-        "pipeline": "YOLO person bbox -> AttributeCrop -> AppearanceAnalyzer",
-        "runtime_options": ["onnxruntime", "paddle"]
+        "deepstream_config": "config/deepstream/config_infer_pphuman.txt",
+        "pipeline": "DeepStream person bbox -> PP-Human TensorRT SGIE -> Appearance metadata",
+        "runtime_options": ["tensorrt", "paddle"]
       },
       "acceptance_criteria": {
         "min_attribute_accuracy": 0.8,

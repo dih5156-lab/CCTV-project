@@ -19,6 +19,7 @@ import json
 import logging
 import threading
 import time
+from datetime import datetime
 from typing import Optional
 
 try:
@@ -167,9 +168,8 @@ class Manager:
         topic = msg.topic
         logger.debug(f"Received message on topic: {topic}")
 
-        # 'up' 이 없으면 처리하지 않음
-        # Go: if !strings.Contains(msg.Topic(), "up") { return }
-        if "up" not in topic:
+        # 업링크 메시지만 처리
+        if not topic.split("/")[-1:] == ["up"]:
             return
 
         # JSON 파싱
@@ -179,22 +179,26 @@ class Manager:
             logger.error(f"Failed to parse JSON message: {e}")
             return
 
-        app_id = message_data.get("app_eui", "")
-        dev_eui = message_data.get("dev_eui", "")
+        app_id, dev_eui = self._extract_app_and_device(topic, message_data)
+        payload = self._extract_payload(message_data)
 
         if not app_id or not dev_eui:
-            logger.warning("Missing appID or devEUI in message")
+            logger.warning("Missing appID or devEUI in message: topic=%s", topic)
+            return
+        if not payload:
+            logger.info("Missing payload in message: appID=%s devEUI=%s topic=%s", app_id, dev_eui, topic)
             return
 
         # rx_metadata 에서 채널/주파수/시각 추출
         channel = 0
         frequency = 0
         received_at = 0
-        rx_metadata = message_data.get("rx_metadata", [])
+        uplink = message_data.get("uplink_message", {})
+        rx_metadata = message_data.get("rx_metadata") or uplink.get("rx_metadata", [])
         if rx_metadata:
             channel = rx_metadata[0].get("channel", 0)
-            frequency = rx_metadata[0].get("frequency", 0)
-            received_at = int(rx_metadata[0].get("time", 0))
+            frequency = int(float(rx_metadata[0].get("frequency", 0) or 0))
+            received_at = self._parse_received_at(rx_metadata[0].get("time", 0))
 
         # 센서 데이터 처리기 호출
         if self._processor:
@@ -202,7 +206,7 @@ class Manager:
                 self._processor.process_sensor_data(
                     app_id=app_id,
                     dev_eui=dev_eui,
-                    payload=message_data.get("payload", ""),
+                    payload=payload,
                     channel=channel,
                     frequency=frequency,
                     received_at=received_at,
@@ -210,14 +214,67 @@ class Manager:
             except Exception as e:
                 logger.error(f"Failed to process sensor data: {e}")
 
+    def _extract_app_and_device(self, topic: str, message_data: dict) -> tuple[str, str]:
+        app_id = message_data.get("app_eui") or message_data.get("application_id") or ""
+        dev_eui = message_data.get("dev_eui") or message_data.get("device_id") or ""
+
+        end_device_ids = message_data.get("end_device_ids") or {}
+        app_ids = end_device_ids.get("application_ids") or {}
+        app_id = app_id or app_ids.get("application_id", "")
+        dev_eui = dev_eui or end_device_ids.get("dev_eui") or end_device_ids.get("device_id", "")
+
+        if app_id and dev_eui:
+            return app_id, self._normalize_dev_eui(dev_eui)
+
+        try:
+            parsed_app_id, parsed_dev_eui = self._parse_topic(topic)
+        except ValueError:
+            return app_id, self._normalize_dev_eui(dev_eui)
+        return app_id or parsed_app_id, self._normalize_dev_eui(dev_eui or parsed_dev_eui)
+
+    def _extract_payload(self, message_data: dict) -> str:
+        uplink = message_data.get("uplink_message") or {}
+        return (
+            message_data.get("payload")
+            or message_data.get("frm_payload")
+            or uplink.get("frm_payload")
+            or ""
+        )
+
+    def _parse_received_at(self, value) -> int:
+        if isinstance(value, (int, float)):
+            return int(value)
+        if not value:
+            return 0
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            pass
+        try:
+            dt = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+        except ValueError:
+            logger.debug("Failed to parse received_at time: %s", value)
+            return 0
+        return int(dt.timestamp() * 1000)
+
+    def _normalize_dev_eui(self, dev_eui: str) -> str:
+        value = str(dev_eui or "").strip()
+        if value.lower().startswith("eui-"):
+            value = value[4:]
+        return value
+
     def _parse_topic(self, topic: str):
         """
         토픽에서 appID, devEUI 추출
         Go: func (m *Manager) parseTopic(topic string) (appID, devEUI string, err error)
 
-        토픽 형식: {appID}/{devEUI}/...
+        토픽 형식:
+          - {appID}/{devEUI}/up
+          - v3/{appID}/devices/eui-{devEUI}/up
         """
         parts = topic.split("/")
+        if len(parts) >= 5 and parts[0] == "v3" and parts[2] == "devices":
+            return parts[1], parts[3]
         if len(parts) < 3:
             raise ValueError(f"invalid topic format: {topic}")
         return parts[0], parts[1]

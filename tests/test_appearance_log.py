@@ -178,6 +178,32 @@ class TestSearchAPI:
         assert body["items"] == []
         assert body["total"] == 0
 
+    def test_search_natural_language_color_query(self):
+        self.log.insert(
+            camera_id="cam01",
+            track_id=1,
+            upper_color="black",
+            lower_color="red",
+            timestamp=1000.0,
+        )
+        self.log.insert(
+            camera_id="cam01",
+            track_id=2,
+            upper_color="black",
+            lower_color="blue",
+            timestamp=1010.0,
+        )
+
+        resp = self.client.get(
+            "/api/v1/search?q=%EA%B2%80%EC%A0%95%EC%83%89%20%EC%83%81%EC%9D%98%20%EB%B9%A8%EA%B0%84%EC%83%89%20%ED%95%98%EC%9D%98%20%EC%82%AC%EB%9E%8C"
+        )
+
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["total"] == 1
+        assert body["items"][0]["upper_color"] == "black"
+        assert body["items"][0]["lower_color"] == "red"
+
     def test_search_with_results(self):
         self.log.insert(
             camera_id="cam01",
@@ -267,6 +293,7 @@ class TestAppearanceStatusAPI:
         monkeypatch.setenv("DS_APPEARANCE_ENABLED", "true")
         monkeypatch.setenv("DS_HELMET_ENABLED", "true")
         monkeypatch.setenv("DS_FACE_ENABLED", "true")
+        monkeypatch.setenv("CAMERAS_JSON", str(tmp_path / "missing_cameras.json"))
         monkeypatch.delenv("PUBLIC_API_KEY", raising=False)
         yield
 
@@ -350,6 +377,62 @@ class TestAppearanceStatusAPI:
         assert field_map["has_backpack"]["observed_ratio"] == 1.0
         assert field_map["has_handbag"]["ready"] is True
         assert field_map["has_suitcase"]["ready"] is True
+
+    def test_status_respects_camera_level_helmet_off(self, tmp_path: Path, monkeypatch):
+        cameras_path = tmp_path / "cameras.json"
+        cameras_path.write_text(
+            """
+            [
+              {
+                "id": "cam01",
+                "enabled": true,
+                "detections": ["person", "appearance"],
+                "model_settings": {
+                  "use_helmet": false,
+                  "use_face": true,
+                  "use_appearance": true
+                }
+              }
+            ]
+            """,
+            encoding="utf-8",
+        )
+        monkeypatch.setenv("CAMERAS_JSON", str(cameras_path))
+        self._insert_appearance_row(timestamp=2100.0, track_id=11, attribute_backend="hsv")
+
+        data = self.appearances_mod._build_runtime_status().model_dump()
+        field_map = {field["field"]: field for field in data["fields"]}
+        warning_text = "\n".join(data["warnings"])
+
+        assert field_map["has_helmet"]["enabled"] is False
+        assert field_map["has_helmet"]["ready"] is False
+        assert "has_helmet는 설정상 활성화되어 있지만 실제 적재 건수가 0" not in warning_text
+
+    def test_status_uses_pphuman_label_map_for_bag_fields(self, tmp_path: Path, monkeypatch):
+        label_map_path = tmp_path / "labels.json"
+        label_map_path.write_text(
+            """
+            {
+              "labels": [
+                { "index": 15, "field": "has_handbag", "value": true },
+                { "index": 17, "field": "has_backpack", "value": true }
+              ]
+            }
+            """,
+            encoding="utf-8",
+        )
+        monkeypatch.setenv("APPEARANCE_BACKEND", "pphuman")
+        monkeypatch.setenv("APPEARANCE_LABEL_MAP_PATH", str(label_map_path))
+        self._insert_appearance_row(timestamp=2200.0, track_id=12, attribute_backend="pphuman")
+
+        data = self.appearances_mod._build_runtime_status().model_dump()
+        field_map = {field["field"]: field for field in data["fields"]}
+        warning_text = "\n".join(data["warnings"])
+
+        assert field_map["has_backpack"]["ready"] is True
+        assert field_map["has_handbag"]["ready"] is True
+        assert field_map["has_suitcase"]["ready"] is False
+        assert "backend=hsv 환경에서는 bag 값이 detector nearby_objects에 의존" not in warning_text
 
     def test_status_handles_missing_appearance_log_table(self):
         with sqlite3.connect(self.db_path) as conn:

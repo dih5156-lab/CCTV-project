@@ -62,6 +62,7 @@ desktop.ini
 
 # 환경설정 (개인정보)
 .env
+.env.jetson
 
 # parser code  (테스트 및 코드 리뷰용)
 parser-code/
@@ -72,6 +73,11 @@ parser-code/
 # cameras.json 에는 RTSP URL(카메라 IP/ID/비밀번호)이 포함될 수 있습니다.
 # 팀에 공유할 때는 cameras.example.json 을 사용하세요.
 cameras.json
+known_faces.json
+known_faces/*.jpg
+known_faces/*.jpeg
+known_faces/*.png
+mosquitto/passwd
 
 # 임시 출력 파일
 temp_output.txt
@@ -96,3 +102,4 @@ models/*.onnx
 *.db-journal
 !data/.gitkeep
 data/*.db
+data/alert_api_events.jsonl

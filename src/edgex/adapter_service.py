@@ -16,11 +16,11 @@ from concurrent.futures import TimeoutError as FutureTimeoutError
 from threading import Event, Thread
 from typing import Dict, Optional, Set
 
-import paho.mqtt.client as mqtt
 import redis
 
 from .device_service import CCTVDeviceService
 from ..config import EdgeXConfig
+from ..protocols._mqtt_factory import create_mqtt_client
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +51,7 @@ class EdgeXDeviceAdapterService:
         self.subscribe_topic = f"{self.ai_topic_prefix}/#"
         self.service_name = service_name
 
-        self._subscriber: Optional[mqtt.Client] = None
+        self._subscriber: Optional[object] = None
         self._registered_cameras: Set[str] = set()
         self._validation_stop = Event()
         self._validation_thread: Optional[Thread] = None
@@ -379,7 +379,7 @@ class EdgeXDeviceAdapterService:
         self._start_validation_responder()
         self._start_outbox_replay_worker()
 
-        self._subscriber = mqtt.Client()
+        self._subscriber = create_mqtt_client("cctv-edgex-adapter-sub")
         self._subscriber.on_connect = self._on_connect
         self._subscriber.on_message = self._on_message
 
@@ -417,11 +417,9 @@ class EdgeXDeviceAdapterService:
             except Exception as error:
                 logger.error("구독 클라이언트 종료 오류: %s", error)
 
-        if self.edgex_service._mqtt_client:
-            try:
-                self.edgex_service._mqtt_client.loop_stop()
-                self.edgex_service._mqtt_client.disconnect()
-            except Exception as error:
-                logger.error("EdgeX MQTT 클라이언트 종료 오류: %s", error)
+        try:
+            self.edgex_service.close()
+        except Exception as error:
+            logger.error("EdgeX 디바이스 서비스 종료 오류: %s", error)
 
         self._stop_async_loop()

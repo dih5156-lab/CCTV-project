@@ -3,7 +3,7 @@ test_events.py — DetectionEvent / EventType 단위 테스트
 """
 import time
 import pytest
-from src.core.events import DetectionEvent, EventType
+from src.core.events import DetectionEvent, EventType, severity_for_event_type
 
 
 # ---------------------------------------------------------------------------
@@ -31,6 +31,16 @@ class TestEventType:
         """모든 enum 값이 from_string(value.value) 로 복원되는지 확인."""
         for evt in EventType:
             assert EventType.from_string(evt.value) == evt
+
+
+class TestEventSeverity:
+    def test_critical_event_types(self):
+        assert severity_for_event_type(EventType.FALL_DETECTED) == "critical"
+        assert severity_for_event_type(EventType.DANGER_ZONE) == "critical"
+        assert severity_for_event_type(EventType.UNSAFE_BEHAVIOR) == "critical"
+
+    def test_normal_event_type(self):
+        assert severity_for_event_type(EventType.HELMET) == "normal"
 
 
 # ---------------------------------------------------------------------------

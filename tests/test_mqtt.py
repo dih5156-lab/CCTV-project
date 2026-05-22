@@ -13,6 +13,7 @@ import json
 import pytest
 from unittest.mock import MagicMock, patch
 
+from src.protocols._mqtt_factory import create_mqtt_client
 from src.protocols.mqtt_publisher import (
     MqttEventPublisher,
     _RECONNECT_MAX_DELAY,
@@ -79,6 +80,34 @@ class TestMqttEventPublisherInit:
         assert stats["publish_count"] == 0
         assert stats["publish_fail_count"] == 0
         assert stats["is_connected"] is False
+
+
+class TestMqttClientFactory:
+    def test_uses_explicit_credentials(self):
+        with patch("src.protocols._mqtt_factory.mqtt") as mock_mqtt_mod:
+            mock_mqtt_mod.CallbackAPIVersion.VERSION2 = object()
+            mock_client = MagicMock()
+            mock_mqtt_mod.Client.return_value = mock_client
+
+            create_mqtt_client(
+                "test-client",
+                username="user",
+                password="secret",
+            )
+
+        mock_client.username_pw_set.assert_called_once_with("user", "secret")
+
+    def test_uses_env_credentials_when_explicit_missing(self, monkeypatch):
+        monkeypatch.setenv("MQTT_USER", "env-user")
+        monkeypatch.setenv("MQTT_PASSWORD", "env-secret")
+        with patch("src.protocols._mqtt_factory.mqtt") as mock_mqtt_mod:
+            mock_mqtt_mod.CallbackAPIVersion.VERSION2 = object()
+            mock_client = MagicMock()
+            mock_mqtt_mod.Client.return_value = mock_client
+
+            create_mqtt_client("test-client")
+
+        mock_client.username_pw_set.assert_called_once_with("env-user", "env-secret")
 
 
 # ---------------------------------------------------------------------------

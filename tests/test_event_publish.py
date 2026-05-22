@@ -68,3 +68,26 @@ def test_publish_queue_item_falls_back_to_event_publisher():
     assert ok is True
     assert publisher.payloads[0]["camera_id"] == "cam03"
     assert publisher.payloads[0]["event"]["event_type"] == "fall_detected"
+
+
+def test_publish_queue_item_can_set_backend():
+    class FakePublisher:
+        def __init__(self) -> None:
+            self.payloads = []
+
+        def publish_event(self, payload):
+            self.payloads.append(payload)
+            return True
+
+    publisher = FakePublisher()
+
+    ok = publish_queue_item(
+        {"type": "head", "camera_id": "cam04"},
+        topic_prefix="unused",
+        mqtt_publish=None,
+        event_publisher=publisher,
+        backend="opencv",
+    )
+
+    assert ok is True
+    assert publisher.payloads[0]["backend"] == "opencv"

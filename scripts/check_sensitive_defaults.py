@@ -9,6 +9,7 @@ from pathlib import Path
 CHECK_FILES = (
     Path(".env.example"),
     Path(".env.jetson"),
+    Path(".env.jetson.example"),
     Path("docker-compose.yml"),
     Path("docker-compose.jetson.yml"),
 )
@@ -18,8 +19,20 @@ FORBIDDEN_LITERAL_PATTERNS = (
 )
 
 SECRET_ASSIGNMENT_PATTERNS = (
-    re.compile(r"^(SPEAKER_PASSWORD|SIREN_PASSWORD|INTERNAL_SERVICE_TOKEN|PUBLIC_API_KEY)=(.+)$"),
-    re.compile(r"^\s*(SPEAKER_PASSWORD|SIREN_PASSWORD|INTERNAL_SERVICE_TOKEN|PUBLIC_API_KEY):\s*(.+)$"),
+    re.compile(
+        r"^(SPEAKER_PASSWORD|SIREN_PASSWORD|INTERNAL_SERVICE_TOKEN|PUBLIC_API_KEY|"
+        r"AIOT_DB_PASSWORD|GRAFANA_ADMIN_PASSWORD|MQTT_PASSWORD)=(.+)$"
+    ),
+    re.compile(
+        r"^\s*(SPEAKER_PASSWORD|SIREN_PASSWORD|INTERNAL_SERVICE_TOKEN|PUBLIC_API_KEY|"
+        r"AIOT_DB_PASSWORD|GRAFANA_ADMIN_PASSWORD|MQTT_PASSWORD):\s*(.+)$"
+    ),
+)
+
+UNSAFE_ASSIGNMENT_PATTERNS = (
+    re.compile(r"^(CORS_ORIGINS)=(\*)$"),
+    re.compile(r"^\s*(CORS_ORIGINS):\s*(\*)$"),
+    re.compile(r"^\s*(CORS_ORIGINS):\s*\$\{CORS_ORIGINS:-\*\}$"),
 )
 
 
@@ -47,6 +60,11 @@ def find_sensitive_defaults() -> list[str]:
                 match = pattern.match(line)
                 if match and not _is_allowed_value(match.group(2)):
                     findings.append(f"{path}:{line_no}: non-empty default for {match.group(1)}")
+
+            for pattern in UNSAFE_ASSIGNMENT_PATTERNS:
+                match = pattern.match(line)
+                if match:
+                    findings.append(f"{path}:{line_no}: unsafe default for {match.group(1)}")
     return findings
 
 

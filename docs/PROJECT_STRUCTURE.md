@@ -419,7 +419,7 @@ AIoT sensor payload
 
 ```text
 web/
-├── index.html                      # 내부 관리 API 중심 관제 UI
+├── edgex-status.html               # EdgeX 상태 확인용 경량 UI
 └── public-demo.html                # Public API + Stream API 시연 UI
 ```
 

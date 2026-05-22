@@ -98,3 +98,52 @@ services:
 def test_parser_db_defaults_pass_when_db_host_is_service_name():
     result = runtime_checks.check_parser_db_defaults("DB_HOST=aiot-parser-db\n")
     assert result["passed"] is True
+
+
+def test_mqtt_auth_config_passes_when_auth_artifacts_are_wired(tmp_path):
+    passwd = tmp_path / "passwd"
+    passwd.write_text("cctv:$7$hash\n", encoding="utf-8")
+    compose = """
+services:
+  edgex-mqtt-broker:
+    environment:
+      MQTT_USER: ${MQTT_USER:-}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-}
+    volumes:
+      - ./mosquitto/passwd:/mosquitto/config/passwd:ro
+  cctv-action-layer:
+    environment:
+      MQTT_USER: ${MQTT_USER:-}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-}
+"""
+
+    result = runtime_checks.check_mqtt_auth_config(
+        mosquitto_text="allow_anonymous false\npassword_file /mosquitto/config/passwd\n",
+        compose_text=compose,
+        jetson_compose_text=compose,
+        passwd_path=passwd,
+    )
+
+    assert result["passed"] is True
+
+
+def test_mqtt_auth_config_fails_when_passwd_is_missing(tmp_path):
+    compose = """
+services:
+  edgex-mqtt-broker:
+    environment:
+      MQTT_USER: ${MQTT_USER:-}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-}
+    volumes:
+      - ./mosquitto/passwd:/mosquitto/config/passwd:ro
+"""
+
+    result = runtime_checks.check_mqtt_auth_config(
+        mosquitto_text="allow_anonymous false\npassword_file /mosquitto/config/passwd\n",
+        compose_text=compose,
+        jetson_compose_text=compose,
+        passwd_path=tmp_path / "passwd",
+    )
+
+    assert result["passed"] is False
+    assert "non-empty mosquitto/passwd" in result["detail"]

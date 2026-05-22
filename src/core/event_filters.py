@@ -15,6 +15,8 @@ logger = logging.getLogger(__name__)
 _DIRECTION_HISTORY_SIZE = 5       # 방향 계산에 사용하는 최대 프레임 수
 _DIRECTION_SPEED_THRESHOLD = 2.0  # px/frame 이하이면 「정지」로 판단
 
+__all__ = ["TrackManager", "CumulativeViolationFilter"]
+
 
 class TrackManager:
     """IOU 기반 중복 제거를 위한 스레드 안전 추적 레지스트리."""

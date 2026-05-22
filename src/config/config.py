@@ -33,10 +33,10 @@ MODEL_CANDIDATES: dict[str, tuple[str, tuple[Union[str, Path], ...]]] = {
         (
             # TensorRT (Jetson 우선)
             PROJECT_ROOT / "models/helmet_model_ver0.6.engine",
-            PROJECT_ROOT / "models/helmet_model_ver0.6.pt",
             PROJECT_ROOT / "models/helmet_model_ver0.5.engine",
-            PROJECT_ROOT / "models/helmet_model_ver0.5.pt",
             PROJECT_ROOT / "models/helmet_model.engine",
+            PROJECT_ROOT / "models/helmet_model_ver0.6.pt",
+            PROJECT_ROOT / "models/helmet_model_ver0.5.pt",
             PROJECT_ROOT / "models/helmet_model.pt",
             PROJECT_ROOT / "helmet_model_ver0.6.pt",
             PROJECT_ROOT / "helmet_model_ver0.5.pt",

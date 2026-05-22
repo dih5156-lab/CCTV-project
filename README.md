@@ -708,6 +708,45 @@ python scripts/evaluate_detection.py \
 
 ## 변경 이력
 
+### v1.9.0 (2026-05-22) - 성능 최적화 및 안정성 강화
+
+- **DeepStream 파이프라인 안정성 개선**
+  - `_restart_pipeline` finally 블록에서 `_pipeline_restart_pending = False` 리셋 누락 버그 수정
+    → 재시작 완료 후에도 API가 계속 "재시작 중"을 반환하던 문제 해결
+  - `cameras.json` 동시 R/W 레이스 컨디션 수정: `_cameras_json_lock` + `os.replace` 원자적 쓰기 적용
+  - `docker-compose.yml`의 `cctv-ai-engine` cameras.json 마운트에서 `read_only: true` 제거
+    (모델 설정 저장 API 사용 시 컨테이너 내 쓰기가 실패하던 문제)
+
+- **GStreamer 메인 루프 블로킹 제거 (고우선순위)**
+  - InsightFace CNN 얼굴 인식 및 AppearancePipeline을 GLib 메인 루프 스레드에서 동기 호출하던 문제 해결
+  - `_face_work_queue (maxsize=8)` + `ds-face-worker` 데몬 스레드 도입으로 완전 비동기화
+  - 30fps 기준 per-frame 블로킹 ~200ms 제거 → 파이프라인 프레임 드롭 방지
+
+- **메모리 누수 수정**
+  - `_last_event_emit_at` dict: nvtracker object_id 기반 키가 무한 증가하는 문제
+    → 1000 프레임마다 만료 키 일괄 정리 (쿨다운 10배 초과 항목 제거)
+  - `_pphuman_attrs_by_frame` dead code 제거 (선언만 있고 미사용)
+
+- **성능 최적화**
+  - `_on_pad_probe` 내 `pad_to_camera` dict 매 프레임 재생성 제거
+    → `_pad_to_camera` 캐시 필드 도입, `_build_pipeline` 완료 시 1회 갱신
+  - `_on_preview_sample` BGRx→BGR 변환: `reshape[:,:,:3].copy()` 2단계 →
+    `np.ascontiguousarray` 단일 패스로 통합 (30fps 기준 메모리 복사 1회 제거)
+  - `import tempfile` 함수 내부 위치에서 모듈 최상단으로 이동
+
+- **SyntheticObjectIdAssigner O(n²) IoU 개선**
+  - `_find_best_track()` 에 AABB 비중첩 사전 검사 추가 (IoU 계산보다 10배 이상 저렴)
+  - IoU > 0.85 조기 종료 추가
+  - 탐지 50개 × 트랙 50개 기준 최대 95% 계산 감소
+
+- **JSONL 이벤트 API 이중 스캔 제거**
+  - `GET /api/v1/events`에서 `camera_id` 필터를 전체 수집 후 2nd pass로 처리하던 로직 수정
+  - 파싱 루프 내 즉시 필터링으로 통합 → 최대 5000줄 기준 메모리 사용량 절반 감소
+
+- **카메라 모델 설정 API 응답 개선**
+  - `POST /api/v1/cameras/{id}/model_settings` 응답에 `pipeline_restarting` 필드 추가
+  - 프론트엔드(`public-demo.html`)에서 파이프라인 재시작 여부 감지 후 32초 후 자동 iframe 갱신
+
 ### v1.8.0 (2026-05-06) - 실사용 시연 UI 및 운영 데모 준비
 
 - **시연용 Public API 대시보드 추가**

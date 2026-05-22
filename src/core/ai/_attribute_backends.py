@@ -4,7 +4,10 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 from pathlib import Path
+import subprocess
+import sys
 from typing import Callable, Dict, List, Optional
 
 import cv2
@@ -26,6 +29,54 @@ SessionFactory = Callable[..., object]
 
 _DEFAULT_MEAN = np.array([0.485, 0.456, 0.406], dtype=np.float32).reshape(1, 1, 3)
 _DEFAULT_STD = np.array([0.229, 0.224, 0.225], dtype=np.float32).reshape(1, 1, 3)
+
+
+def decode_pphuman_scores(
+    scores: object,
+    label_map: Dict[str, object],
+    *,
+    default_threshold: float = 0.5,
+) -> Dict[str, object]:
+    """PP-Human multi-label score 벡터를 속성 딕셔너리로 변환한다."""
+    values = np.asarray(scores, dtype=np.float32).reshape(-1)
+    if values.size == 0:
+        return {}
+    if float(values.min()) < 0.0 or float(values.max()) > 1.0:
+        values = 1.0 / (1.0 + np.exp(-values))
+
+    labels = label_map.get("labels", [])
+    if not isinstance(labels, list):
+        return {}
+
+    grouped: Dict[str, List[Dict[str, object]]] = {}
+    for entry in labels:
+        if not isinstance(entry, dict):
+            continue
+        index = int(entry.get("index", -1))
+        field = str(entry.get("field", "")).strip()
+        if index < 0 or index >= len(values) or not field:
+            continue
+        threshold = float(entry.get("threshold", default_threshold))
+        grouped.setdefault(field, []).append({
+            "score": float(values[index]),
+            "value": entry.get("value"),
+            "threshold": threshold,
+        })
+
+    attrs: Dict[str, object] = {}
+    for field, candidates in grouped.items():
+        best = max(candidates, key=lambda item: float(item["score"]))
+        if field.startswith("has_"):
+            attrs[field] = float(best["score"]) >= float(best["threshold"])
+            continue
+        if float(best["score"]) >= float(best["threshold"]):
+            attrs[field] = best["value"]
+
+    attrs["attribute_scores"] = {
+        field: round(max(float(item["score"]) for item in candidates), 4)
+        for field, candidates in grouped.items()
+    }
+    return attrs
 
 
 class NullAttributeBackend:
@@ -107,6 +158,8 @@ class PPHumanAttributeBackend:
     ) -> Optional[AttributeRuntime]:
         """ONNX Runtime 세션을 생성한다."""
         try:
+            if session_factory is None and not self._onnx_runtime_preflight(model_path):
+                return None
             ort_module = self._import_onnxruntime() if session_factory is None else None
             providers = self._select_providers(ort_module)
             runtime = build_onnx_runtime(
@@ -126,6 +179,42 @@ class PPHumanAttributeBackend:
         except Exception as exc:
             logger.warning("PP-Human 속성 세션 생성 실패: %s", exc)
             return None
+
+    def _onnx_runtime_preflight(self, model_path: Path) -> bool:
+        """ONNX Runtime 네이티브 크래시를 메인 AI 프로세스 밖에서 먼저 확인한다."""
+        timeout = float(os.environ.get("APPEARANCE_ONNX_PREFLIGHT_TIMEOUT_SEC", "20"))
+        code = (
+            "import onnxruntime as ort; "
+            "s=ort.InferenceSession("
+            f"{str(model_path)!r}, providers=['CPUExecutionProvider']"
+            "); "
+            "print(s.get_inputs()[0].name)"
+        )
+        try:
+            completed = subprocess.run(
+                [sys.executable, "-c", code],
+                check=False,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                timeout=timeout,
+            )
+        except Exception as exc:
+            logger.warning("PP-Human ONNX Runtime 사전 점검 실패: %s", exc)
+            return False
+
+        if completed.returncode == 0:
+            return True
+
+        stderr = (completed.stderr or "").strip().splitlines()
+        last_error = stderr[-1] if stderr else "no stderr"
+        logger.warning(
+            "PP-Human ONNX Runtime 사전 점검 실패(returncode=%s): %s. "
+            "AI 엔진 보호를 위해 ONNX 속성 백엔드는 비활성화합니다.",
+            completed.returncode,
+            last_error,
+        )
+        return False
 
     @staticmethod
     def _import_onnxruntime():
@@ -259,45 +348,11 @@ class PPHumanAttributeBackend:
         """다중 라벨 출력 벡터를 속성 딕셔너리로 변환한다."""
         if not outputs:
             return {}
-        scores = np.asarray(outputs[0], dtype=np.float32).reshape(-1)
-        if scores.size == 0:
-            return {}
-        if float(scores.min()) < 0.0 or float(scores.max()) > 1.0:
-            scores = 1.0 / (1.0 + np.exp(-scores))
-
-        labels = self._label_map.get("labels", [])
-        if not isinstance(labels, list):
-            return {}
-
-        grouped: Dict[str, List[Dict[str, object]]] = {}
-        for entry in labels:
-            if not isinstance(entry, dict):
-                continue
-            index = int(entry.get("index", -1))
-            field = str(entry.get("field", "")).strip()
-            if index < 0 or index >= len(scores) or not field:
-                continue
-            threshold = float(entry.get("threshold", self._score_threshold))
-            grouped.setdefault(field, []).append({
-                "score": float(scores[index]),
-                "value": entry.get("value"),
-                "threshold": threshold,
-            })
-
-        attrs: Dict[str, object] = {}
-        for field, candidates in grouped.items():
-            best = max(candidates, key=lambda item: float(item["score"]))
-            if field.startswith("has_"):
-                attrs[field] = float(best["score"]) >= float(best["threshold"])
-                continue
-            if float(best["score"]) >= float(best["threshold"]):
-                attrs[field] = best["value"]
-
-        attrs["attribute_scores"] = {
-            field: round(max(float(item["score"]) for item in candidates), 4)
-            for field, candidates in grouped.items()
-        }
-        return attrs
+        return decode_pphuman_scores(
+            outputs[0],
+            self._label_map,
+            default_threshold=self._score_threshold,
+        )
 
 
 def build_attribute_backend(

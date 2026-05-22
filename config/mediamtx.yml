@@ -1,0 +1,30 @@
+logLevel: info
+logDestinations: [stdout]
+
+rtsp: yes
+rtspAddress: :8554
+
+hls: no
+hlsAddress: :8888
+hlsAllowOrigins: ["*"]
+hlsEncryption: no
+hlsVariant: fmp4
+hlsAlwaysRemux: false
+hlsSegmentDuration: 2s
+hlsSegmentMaxSize: 250MB
+
+webrtc: yes
+webrtcAddress: :8889
+webrtcAllowOrigins: ["*"]
+webrtcLocalUDPAddress: :8189
+webrtcAdditionalHosts: [192.168.88.137, 192.168.2.242, 192.168.0.10]
+
+api: yes
+apiAddress: :9997
+apiAllowOrigins: ["*"]
+
+paths:
+  camera_1:
+    # cctv-ai-engine 이 RTSP publisher 로 밀어 넣는 표준 라이브 경로.
+    # WebRTC 는 이 path 를 읽고, MJPEG/Stream API/HLS 는 운영 기본 경로에서 제외한다.
+    source: publisher

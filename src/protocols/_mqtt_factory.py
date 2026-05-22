@@ -6,6 +6,7 @@ MqttEventPublisher 와 MqttTopicSubscriber 양쪽에서 사용한다.
 
 from __future__ import annotations
 
+import os
 import uuid
 from typing import Optional
 
@@ -52,7 +53,9 @@ def create_mqtt_client(
         # 최후 폴백: 키워드 없이 시도 (구버전 paho 대응)
         client = mqtt.Client(client_id=cid)
 
-    if username:
-        client.username_pw_set(username, password)
+    resolved_username = username or os.environ.get("MQTT_USER") or None
+    resolved_password = password if password is not None else os.environ.get("MQTT_PASSWORD")
+    if resolved_username:
+        client.username_pw_set(resolved_username, resolved_password)
 
     return client

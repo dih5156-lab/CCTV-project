@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import asyncio
+from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 
 import httpx
@@ -12,6 +14,23 @@ from ..dependencies._settings import ACTION_LAYER_URL, ALERT_API_URL
 from ..schemas.common import BaseResponse, success_response
 
 router = APIRouter(tags=["health"])
+
+# 공유 httpx 클라이언트 — 매 요청마다 SSL 컨텍스트를 새로 여는 fd 누출 방지
+_http_client: httpx.AsyncClient | None = None
+
+
+async def get_http_client() -> httpx.AsyncClient:
+    global _http_client
+    if _http_client is None or _http_client.is_closed:
+        _http_client = httpx.AsyncClient(timeout=2.0)
+    return _http_client
+
+
+async def close_http_client() -> None:
+    global _http_client
+    if _http_client is not None and not _http_client.is_closed:
+        await _http_client.aclose()
+    _http_client = None
 
 
 @router.get("/health", summary="시스템 상태 확인")
@@ -32,8 +51,8 @@ async def get_health() -> BaseResponse[dict]:
 async def _check_dependency(name: str, url: str) -> dict:
     """하위 서비스 health endpoint를 짧은 timeout으로 확인한다."""
     try:
-        async with httpx.AsyncClient(timeout=2.0) as client:
-            response = await client.get(url)
+        client = await get_http_client()
+        response = await client.get(url)
         ok = 200 <= response.status_code < 300
         return {
             "name": name,
@@ -61,10 +80,10 @@ async def _check_dependency(name: str, url: str) -> dict:
 async def get_readiness() -> JSONResponse:
     """Action Layer와 Alert API까지 포함해 운영 준비 상태를 확인한다."""
     checked_at = datetime.now(timezone.utc).isoformat()
-    dependencies = [
-        await _check_dependency("action-layer", f"{ACTION_LAYER_URL.rstrip('/')}/health"),
-        await _check_dependency("alert-api", f"{ALERT_API_URL.rstrip('/')}/health"),
-    ]
+    dependencies = await asyncio.gather(
+        _check_dependency("action-layer", f"{ACTION_LAYER_URL.rstrip('/')}/health"),
+        _check_dependency("alert-api", f"{ALERT_API_URL.rstrip('/')}/health"),
+    )
     ready = all(dep["status"] == "up" for dep in dependencies)
     payload = {
         "success": ready,

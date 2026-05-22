@@ -3,6 +3,7 @@ test_action_bridge.py — _SiteRegistry / _AlarmCoordinator / SiteConfig / Actio
 """
 import time
 import pytest
+from types import SimpleNamespace
 from unittest.mock import MagicMock
 from src.services.action_bridge import (
     ActionBridge,
@@ -224,6 +225,12 @@ class TestAlarmCoordinator:
         coord = self._coord()
         assert coord.should_alarm("other/topic", {"type": "helmet", "severity": "critical"}) is True
 
+    def test_person_event_does_not_alarm_output_devices(self):
+        coord = self._coord(topics={"cctv/ai/events/+/person"})
+        assert coord.should_alarm("rest/inbound", {"type": "person"}) is False
+        assert coord.should_alarm("cctv/ai/events/cam1/person", {"type": "person"}) is False
+        assert coord.should_alarm("other/topic", {"type": "person", "severity": "critical"}) is False
+
     def test_non_critical_other_not_alarm(self):
         coord = self._coord()
         assert coord.should_alarm("other/topic", {"type": "helmet", "severity": "low"}) is False
@@ -376,3 +383,37 @@ class TestActionBridgeStatusPublishing:
         )
         assert bridge._signboard.display.call_count == 1
         assert bridge._signboard.display.call_args.kwargs["text"] == "기울기 이상 감지"
+
+    def test_list_output_devices_reports_reachability(self, monkeypatch):
+        bridge = self._make_bridge()
+
+        def _device(host, port, configured):
+            return SimpleNamespace(
+                config=SimpleNamespace(
+                    host=host,
+                    port=port,
+                    is_configured=configured,
+                )
+            )
+
+        bridge._speaker = _device("", 80, False)
+        bridge._signboard = _device("192.168.88.91", 5000, True)
+        bridge._siren = _device("192.168.88.93", 80, True)
+
+        def fake_reachable(host, port):
+            return host == "192.168.88.93" and port == 80
+
+        monkeypatch.setattr(
+            "src.services.action_bridge._check_tcp_reachable",
+            fake_reachable,
+        )
+
+        devices = {item["device"]: item for item in bridge.list_output_devices()}
+
+        assert devices["speaker"]["status"] == "disabled"
+        assert devices["speaker"]["reachable"] is None
+        assert devices["signboard"]["configured"] is True
+        assert devices["signboard"]["reachable"] is False
+        assert devices["signboard"]["status"] == "unreachable"
+        assert devices["siren"]["reachable"] is True
+        assert devices["siren"]["status"] == "online"

@@ -23,6 +23,7 @@ REST 수신 서버는 protocols/rest.py 의 RestEventReceiver 를 사용한다.
 import json
 import logging
 import signal
+import socket
 import time
 import uuid
 from datetime import datetime, timezone
@@ -40,6 +41,7 @@ from ..devices.siren     import SensorConfig, SirenDevice
 from ..devices.signboard import SignboardConfig, SignboardDevice, build_display_text
 from ..devices.speaker   import SpeakerConfig, SpeakerDevice
 from ..protocols.http    import HttpEventForwarder, HttpEventTarget
+from ..protocols._mqtt_factory import create_mqtt_client
 from ..protocols.rest    import RestEventReceiver
 from ..config            import ActionBridgeConfig
 from .cctv_metrics       import (
@@ -61,6 +63,25 @@ from ._action_bridge_support import (
 logger = logging.getLogger(__name__)
 
 _ACTION_DEFAULTS = ActionBridgeConfig()
+_DEVICE_REACHABILITY_TIMEOUT_SECONDS = 0.4
+_DEVICE_REACHABILITY_CACHE_SECONDS = 15.0
+
+
+def _check_tcp_reachable(host: str, port: int) -> bool:
+    """Return whether a configured output device accepts a short TCP connection."""
+    try:
+        with socket.create_connection(
+            (host, port), timeout=_DEVICE_REACHABILITY_TIMEOUT_SECONDS
+        ):
+            return True
+    except OSError:
+        return False
+
+
+def _device_status(configured: bool, reachable: Optional[bool]) -> str:
+    if not configured:
+        return "disabled"
+    return "online" if reachable else "unreachable"
 
 # MQTT 명령 토픽
 _CMD_TOPIC_MODE    = "cctv/commands/mode"     # {"site_id"?, "mode": "auto|manual"}
@@ -103,7 +124,6 @@ _DEFAULT_ALARM_TOPICS = (
     {"cctv/rules/intrusion/persisted", "cctv/rules/intrusion/critical"}
     | _ZONE_TOPICS
     | {
-        "cctv/ai/events/+/person",
         "cctv/ai/events/+/helmet",
         "cctv/ai/events/+/head",
         "cctv/ai/events/+/fall_detected",
@@ -179,6 +199,7 @@ class ActionBridge:
         self._speaker   = SpeakerDevice(speaker_config   or SpeakerConfig())
         self._signboard = SignboardDevice(signboard_config or SignboardConfig())
         self._siren     = SirenDevice(siren_config        or SensorConfig())
+        self._device_reachability_cache: Dict[str, Tuple[float, bool]] = {}
 
         # ── HTTP 포워더 ───────────────────────────────────────────
         targets: List[HttpEventTarget] = list(http_targets or [])
@@ -232,6 +253,72 @@ class ActionBridge:
 
     def list_sites(self) -> List[Dict]:
         return self._sites.list_all()
+
+    def list_recent_events(self, limit: int = 20) -> List[Dict]:
+        """최근 Action Layer 처리 이력을 반환한다."""
+        return self._repo.list_recent(limit=limit)
+
+    def list_output_devices(self) -> List[Dict]:
+        """출력 디바이스 설정 상태를 UI/API용으로 반환한다."""
+        speaker_configured = self._speaker.config.is_configured
+        speaker_host = self._speaker.config.host
+        speaker_port = self._speaker.config.port
+        speaker_reachable = (
+            _check_tcp_reachable(speaker_host, speaker_port)
+            if speaker_configured
+            else None
+        )
+
+        signboard_configured = self._signboard.config.is_configured
+        signboard_host = self._signboard.config.host
+        signboard_port = self._signboard.config.port
+        signboard_reachable = (
+            _check_tcp_reachable(signboard_host, signboard_port)
+            if signboard_configured
+            else None
+        )
+
+        siren_configured = self._siren.config.is_configured
+        siren_host = self._siren.config.host
+        siren_port = self._siren.config.port
+        siren_reachable = (
+            _check_tcp_reachable(siren_host, siren_port)
+            if siren_configured
+            else None
+        )
+
+        return [
+            {
+                "device": "speaker",
+                "label": "스피커",
+                "configured": speaker_configured,
+                "reachable": speaker_reachable,
+                "status": _device_status(speaker_configured, speaker_reachable),
+                "host": speaker_host or None,
+                "port": speaker_port,
+                "protocol": "HTTP Digest / InterM",
+            },
+            {
+                "device": "signboard",
+                "label": "전광판",
+                "configured": signboard_configured,
+                "reachable": signboard_reachable,
+                "status": _device_status(signboard_configured, signboard_reachable),
+                "host": signboard_host or None,
+                "port": signboard_port,
+                "protocol": "TCP Socket / Dabit",
+            },
+            {
+                "device": "siren",
+                "label": "경광등",
+                "configured": siren_configured,
+                "reachable": siren_reachable,
+                "status": _device_status(siren_configured, siren_reachable),
+                "host": siren_host or None,
+                "port": siren_port,
+                "protocol": "HTTP Digest / InterM",
+            },
+        ]
 
 
     def set_mode(self, mode: ControlMode, site_id: Optional[str] = None) -> None:
@@ -310,7 +397,48 @@ class ActionBridge:
 
     def _resolve_devices(self, camera_id: str) -> List[AlarmDevice]:
         site = self._sites.find_by_camera(camera_id)
-        return site.alarm_devices if site else list(AlarmDevice)
+        candidates = site.alarm_devices if site else list(AlarmDevice)
+        return [
+            device
+            for device in candidates
+            if self._device_is_available(device)
+        ]
+
+    def _device_is_available(self, device: AlarmDevice) -> bool:
+        """설정되지 않았거나 네트워크에 닿지 않는 출력 장치는 실행 대상에서 제외한다."""
+        if device == AlarmDevice.SPEAKER:
+            config = self._speaker.config
+        elif device == AlarmDevice.SIGNBOARD:
+            config = self._signboard.config
+        elif device == AlarmDevice.SIREN:
+            config = self._siren.config
+        else:
+            return False
+
+        if not config.is_configured:
+            return False
+        return self._device_reachable_cached(
+            device.value,
+            str(config.host),
+            int(config.port),
+        )
+
+    def _device_reachable_cached(self, key: str, host: str, port: int) -> bool:
+        now = time.time()
+        cached = self._device_reachability_cache.get(key)
+        if cached and now - cached[0] < _DEVICE_REACHABILITY_CACHE_SECONDS:
+            return cached[1]
+
+        reachable = _check_tcp_reachable(host, port)
+        self._device_reachability_cache[key] = (now, reachable)
+        if not reachable:
+            logger.warning(
+                "출력 장치 연결 불가 - 알람 실행에서 제외: device=%s host=%s port=%s",
+                key,
+                host,
+                port,
+            )
+        return reachable
 
     def _handle_event(self, payload: Dict, topic: str = "rest/inbound") -> None:
         """수신된 이벤트를 처리한다 (MQTT·REST 공통 경로).
@@ -356,6 +484,7 @@ class ActionBridge:
         userdata: object,
         flags: dict,
         rc: int,
+        *args: object,
     ) -> None:
         if rc != 0:
             logger.error("Action Layer MQTT 연결 실패 (rc=%d)", rc)
@@ -473,7 +602,7 @@ class ActionBridge:
         self._repo.init()
         self._forwarder.start()
 
-        self._mqtt_client = mqtt.Client()
+        self._mqtt_client = create_mqtt_client("cctv-action-layer")
         self._mqtt_client.on_connect = self._on_connect
         self._mqtt_client.on_message = self._on_message
 

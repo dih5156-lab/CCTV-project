@@ -28,18 +28,23 @@ name: edgex
 
 x-appearance-search-runtime: &appearance-search-runtime
   APPEARANCES_DB: /app/data/appearances.db
-  APPEARANCE_BACKEND: ${APPEARANCE_BACKEND:-hsv}
+  APPEARANCE_BACKEND: ${APPEARANCE_BACKEND:-pphuman}
+  APPEARANCE_MODEL_PATH: ${APPEARANCE_MODEL_PATH:-models/pphuman_attribute.onnx}
   DS_FACE_ENABLED: ${DS_FACE_ENABLED:-0}
-  DS_APPEARANCE_ENABLED: ${DS_APPEARANCE_ENABLED:-0}
+  DS_APPEARANCE_ENABLED: ${DS_APPEARANCE_ENABLED:-1}
   DS_HELMET_ENABLED: ${DS_HELMET_ENABLED:-1}
   DS_YOLO_LABELS: ${DS_YOLO_LABELS:-person}
   APPEARANCE_CROP_DIR: ${APPEARANCE_CROP_DIR:-/app/data/appearance_crops}
+  APPEARANCE_SAVE_CROPS: ${APPEARANCE_SAVE_CROPS:-true}
 
 services:
   edgex-mqtt-broker:
     container_name: edgex-mqtt-broker
     hostname: edgex-mqtt-broker
     image: eclipse-mosquitto:2.0
+    environment:
+      MQTT_USER: ${MQTT_USER:-}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-}
     networks:
       edgex-network: null
     ports:
@@ -50,7 +55,7 @@ services:
       protocol: tcp
     restart: always
     healthcheck:
-      test: ["CMD-SHELL", "mosquitto_pub -h localhost -p 1883 -t 'health/check' -m 'ping' -q 0 2>/dev/null || exit 1"]
+      test: ["CMD-SHELL", "mosquitto_pub -h localhost -p 1883 -u \"$${MQTT_USER}\" -P \"$${MQTT_PASSWORD}\" -t 'health/check' -m 'ping' -q 0 2>/dev/null || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 3
@@ -59,6 +64,12 @@ services:
     - type: bind
       source: ./mosquitto/mosquitto.conf
       target: /mosquitto/config/mosquitto.conf
+      bind:
+        create_host_path: true
+    - type: bind
+      source: ./mosquitto/passwd
+      target: /mosquitto/config/passwd
+      read_only: true
       bind:
         create_host_path: true
 
@@ -230,7 +241,7 @@ services:
     environment:
       POSTGRES_DB: ${AIOT_DB_NAME:-aiot_sensor}
       POSTGRES_USER: ${AIOT_DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${AIOT_DB_PASSWORD:-postgres}
+      POSTGRES_PASSWORD: ${AIOT_DB_PASSWORD:-}
     networks:
       edgex-network: null
     restart: always
@@ -358,8 +369,14 @@ services:
     environment:
       PYTHONIOENCODING: utf-8
       PYTHONUTF8: "1"
+      MQTT_USER: ${MQTT_USER:-}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-}
       STREAM_API_ENABLED: ${STREAM_API_ENABLED:-1}
       STREAM_PORT: ${STREAM_PORT:-8769}
+      STREAM_FPS: ${STREAM_FPS:-15}
+      STREAM_JPEG_QUALITY: ${STREAM_JPEG_QUALITY:-65}
+      STREAM_WIDTH: ${STREAM_WIDTH:-960}
+      STREAM_HEIGHT: ${STREAM_HEIGHT:-540}
     deploy:
       resources:
         limits:
@@ -392,12 +409,8 @@ services:
     - type: bind
       source: ./cameras.json
       target: /app/cameras.json
-      read_only: true
       bind:
         create_host_path: true
-    - type: bind
-      source: ./zones_config.json
-      target: /app/zones_config.json
       read_only: true
       bind:
         create_host_path: true
@@ -478,6 +491,8 @@ services:
       KUIPER_API: http://edgex-kuiper:59720
       MQTT_BROKER: edgex-mqtt-broker
       MQTT_PORT: "1883"
+      MQTT_USER: ${MQTT_USER:-}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-}
       # ── CCTV AI 임계값 ────────────────────────────────────
       INTRUSION_CONFIDENCE: ${INTRUSION_CONFIDENCE:-0.7}
       CRITICAL_CONFIDENCE: ${CRITICAL_CONFIDENCE:-0.9}
@@ -580,6 +595,8 @@ services:
     environment:
       MQTT_BROKER: edgex-mqtt-broker
       MQTT_PORT: "1883"
+      MQTT_USER: ${MQTT_USER:-}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-}
       DB_PATH: /app/action_events.db
       EXTERNAL_API_URL: http://cctv-alert-api:8000/api/alerts
       ALARM_COOLDOWN: ${ACTION_ALARM_COOLDOWN:-10}
@@ -630,6 +647,7 @@ services:
         condition: service_healthy
     networks:
       edgex-network: null
+      edgex-jetson-network: null
     restart: always
     healthcheck:
       test: ["CMD", "python", "-c",
@@ -677,12 +695,21 @@ services:
       DB_HOST: aiot-parser-db
       DB_PORT: "5432"
       DB_USER: ${AIOT_DB_USER:-postgres}
-      DB_PW: ${AIOT_DB_PASSWORD:-postgres}
+      DB_PW: ${AIOT_DB_PASSWORD:-}
       DB_NAME: ${AIOT_DB_NAME:-aiot_sensor}
+      NS_PARK_MQTT_HOST: ${NS_PARK_MQTT_HOST:-edgex-mqtt-broker}
+      NS_PARK_MQTT_PORT: ${NS_PARK_MQTT_PORT:-1883}
+      NS_PARK_MQTT_ID: ${NS_PARK_MQTT_ID:-}
+      LAB_MQTT_HOST: ${LAB_MQTT_HOST:-edgex-mqtt-broker}
+      LAB_MQTT_PORT: ${LAB_MQTT_PORT:-1883}
+      LAB_MQTT_ID: ${LAB_MQTT_ID:-}
+      NC_PW: ${NC_PW:-}
       # EdgeX MQTT 브로커로 파싱 결과 발행
       # topic: aiot/sensors/{dev_eui}/{table_name}
       EDGEX_MQTT_HOST: edgex-mqtt-broker
       EDGEX_MQTT_PORT: "1883"
+      MQTT_USER: ${MQTT_USER:-}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-}
       # EdgeX Core Data 직접 push (Outbox 저장 경로)
       EDGEX_CORE_DATA_URL: http://edgex-core-data:59880
       # 로컬 SQLite Outbox 경로 (컨테이너 재시작 시에도 유지)
@@ -726,6 +753,10 @@ services:
       timeout: 5s
       retries: 3
       start_period: 15s
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
     environment:
       PYTHONIOENCODING: utf-8
       PYTHONUTF8: "1"
@@ -733,13 +764,15 @@ services:
       ACTION_LAYER_URL: http://cctv-action-layer:8080
       ALERT_API_URL: http://cctv-alert-api:8000
       # 이벤트 로그 경로 (cctv-alert-api와 공유 볼륨)
-      ALERT_LOG_PATH: /app/logs/alert_api_events.jsonl
+      ALERT_LOG_PATH: /app/data/alert_api_events.jsonl
+      SENSOR_LOG_PATH: /app/logs/sensor_readings.jsonl
+      SENSOR_DEVICE_MAP_PATH: /app/config/sensor_devices.json
       ALERT_FALLBACK_LOG: /app/logs/public_api_fallback.jsonl
       CAMERAS_JSON: /app/cameras.json
       # API Key — 프로덕션에서는 반드시 설정할 것
       PUBLIC_API_KEY: ${PUBLIC_API_KEY:-}
       # CORS — 서버팀 도메인으로 제한 (예: https://server.example.com)
-      CORS_ORIGINS: ${CORS_ORIGINS:-*}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
       # 외형 검색 조건 DB 경로
       <<: *appearance-search-runtime
       # Rate limit 비활성화 옵션 (기본 활성화)
@@ -781,6 +814,12 @@ services:
       bind:
         create_host_path: true
     - type: bind
+      source: ./config/sensor_devices.json
+      target: /app/config/sensor_devices.json
+      read_only: true
+      bind:
+        create_host_path: true
+    - type: bind
       source: ./data
       target: /app/data
       bind:
@@ -795,7 +834,7 @@ services:
       EDGEX_SECURITY_SECRET_STORE: "false"
       SERVICE_HOST: edgex-ui-go
     hostname: edgex-ui-go
-    image: edgexfoundry/edgex-ui:3.1.0
+    image: nginx:1.27-alpine
     networks:
       edgex-network: null
     ports:
@@ -803,12 +842,58 @@ services:
       target: 4000
       published: "4000"
       protocol: tcp
-    read_only: true
     restart: always
     security_opt:
     - no-new-privileges:true
-    user: 2002:2001
     volumes:
+    - type: bind
+      source: ./web/edgex-status.html
+      target: /usr/share/nginx/html/edgex-status.html
+      read_only: true
+      bind:
+        create_host_path: true
+    - type: bind
+      source: ./config/nginx/edgex-status.conf
+      target: /etc/nginx/conf.d/default.conf
+      read_only: true
+      bind:
+        create_host_path: true
+    - type: bind
+      source: /etc/localtime
+      target: /etc/localtime
+      read_only: true
+      bind:
+        create_host_path: true
+
+  public-demo-ui:
+    container_name: cctv-public-demo-ui
+    image: nginx:1.27-alpine
+    environment:
+      PUBLIC_API_KEY: ${PUBLIC_API_KEY:-}
+    networks:
+      edgex-network: null
+    ports:
+    - mode: ingress
+      host_ip: 0.0.0.0
+      target: 7000
+      published: "7000"
+      protocol: tcp
+    restart: always
+    security_opt:
+    - no-new-privileges:true
+    volumes:
+    - type: bind
+      source: ./web/public-demo.html
+      target: /usr/share/nginx/html/public-demo.html
+      read_only: true
+      bind:
+        create_host_path: true
+    - type: bind
+      source: ./config/nginx/public-demo.conf.template
+      target: /etc/nginx/templates/default.conf.template
+      read_only: true
+      bind:
+        create_host_path: true
     - type: bind
       source: /etc/localtime
       target: /etc/localtime
@@ -841,7 +926,7 @@ services:
     container_name: cctv-grafana
     image: grafana/grafana:10.4.2
     environment:
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-}
       GF_USERS_ALLOW_SIGN_UP: "false"
       GF_SERVER_ROOT_URL: http://localhost:3001
     volumes:
@@ -868,6 +953,9 @@ networks:
   edgex-network:
     name: edgex_edgex-network
     driver: bridge
+  edgex-jetson-network:
+    name: edgex-jetson_edgex-network
+    external: true
 volumes:
   consul-config:
     name: edgex_consul-config

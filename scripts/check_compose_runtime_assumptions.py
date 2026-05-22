@@ -149,10 +149,68 @@ def check_parser_db_defaults(
     }
 
 
+def check_mqtt_auth_config(
+    *,
+    mosquitto_text: str | None = None,
+    compose_text: str | None = None,
+    jetson_compose_text: str | None = None,
+    passwd_path: Path | None = None,
+) -> dict[str, Any]:
+    """Catch common MQTT auth rollout mistakes before Docker startup."""
+    broker_config = (
+        mosquitto_text
+        if mosquitto_text is not None
+        else _read_text(PROJECT_ROOT / "mosquitto" / "mosquitto.conf")
+    )
+    if "allow_anonymous false" not in broker_config:
+        return {
+            "name": "mqtt authentication config",
+            "passed": True,
+            "detail": "anonymous MQTT access is not disabled",
+        }
+
+    missing: list[str] = []
+    if "password_file /mosquitto/config/passwd" not in broker_config:
+        missing.append("mosquitto.conf password_file /mosquitto/config/passwd")
+
+    actual_passwd_path = passwd_path or PROJECT_ROOT / "mosquitto" / "passwd"
+    if not actual_passwd_path.exists() or actual_passwd_path.stat().st_size == 0:
+        missing.append("non-empty mosquitto/passwd")
+
+    compose = compose_text if compose_text is not None else _read_text(PROJECT_ROOT / "docker-compose.yml")
+    jetson = (
+        jetson_compose_text
+        if jetson_compose_text is not None
+        else _read_text(PROJECT_ROOT / "docker-compose.jetson.yml")
+    )
+
+    for label, text in (("docker-compose.yml", compose), ("docker-compose.jetson.yml", jetson)):
+        if "./mosquitto/passwd" not in text:
+            missing.append(f"{label} bind mount for ./mosquitto/passwd")
+        if "MQTT_USER" not in text:
+            missing.append(f"{label} MQTT_USER propagation")
+        if "MQTT_PASSWORD" not in text:
+            missing.append(f"{label} MQTT_PASSWORD propagation")
+
+    if missing:
+        return {
+            "name": "mqtt authentication config",
+            "passed": False,
+            "detail": "missing: " + ", ".join(missing),
+        }
+
+    return {
+        "name": "mqtt authentication config",
+        "passed": True,
+        "detail": "",
+    }
+
+
 def run_checks() -> list[dict[str, Any]]:
     return [
         check_default_compose_architecture(),
         check_parser_db_defaults(),
+        check_mqtt_auth_config(),
     ]
 
 

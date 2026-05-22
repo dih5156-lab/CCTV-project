@@ -14,40 +14,101 @@ import logging
 import threading
 import time
 import uuid
-from typing import TYPE_CHECKING, Dict, Optional
+from dataclasses import dataclass, field
+from typing import Any, TYPE_CHECKING, Dict, Optional
 
 if TYPE_CHECKING:
     import redis as redis_module
-
-import paho.mqtt.client as mqtt
 
 try:
     import redis
 except ImportError:
     redis = None  # type: ignore[assignment]
 
+from ..protocols._mqtt_factory import create_mqtt_client
+
 logger = logging.getLogger(__name__)
 
-# 연결 시도 간 최소 간격을 보장하기 위한 모듈 수준 락
-_redis_lock = threading.Lock()
-_mqtt_lock = threading.Lock()
+@dataclass
+class PublisherConnectionState:
+    """메시지 버스 연결 상태.
+
+    CCTVDeviceService 인스턴스마다 별도 객체를 가져야 한다.
+    """
+
+    client: Optional[Any] = None
+    last_fail_time: float = 0.0
+    fail_count: int = 0
+    lock: threading.Lock = field(default_factory=threading.Lock)
 
 
 class _PublisherMixin:
     """Redis/MQTT 메시지 버스 발행 및 연결 관리 믹스인."""
 
-    _redis_lock = _redis_lock
-    _mqtt_lock = _mqtt_lock
     _redis_base_cooldown_sec: float = 5
     _mqtt_base_cooldown_sec: float = 5
     _max_cooldown_sec: float = 60
+
+    @property
+    def _redis_client(self):
+        return self._redis_state.client
+
+    @_redis_client.setter
+    def _redis_client(self, value) -> None:
+        self._redis_state.client = value
+
+    @property
+    def _mqtt_client(self):
+        return self._mqtt_state.client
+
+    @_mqtt_client.setter
+    def _mqtt_client(self, value) -> None:
+        self._mqtt_state.client = value
+
+    @property
+    def _redis_last_fail_time(self) -> float:
+        return self._redis_state.last_fail_time
+
+    @_redis_last_fail_time.setter
+    def _redis_last_fail_time(self, value: float) -> None:
+        self._redis_state.last_fail_time = float(value)
+
+    @property
+    def _mqtt_last_fail_time(self) -> float:
+        return self._mqtt_state.last_fail_time
+
+    @_mqtt_last_fail_time.setter
+    def _mqtt_last_fail_time(self, value: float) -> None:
+        self._mqtt_state.last_fail_time = float(value)
+
+    @property
+    def _redis_fail_count(self) -> int:
+        return self._redis_state.fail_count
+
+    @_redis_fail_count.setter
+    def _redis_fail_count(self, value: int) -> None:
+        self._redis_state.fail_count = int(value)
+
+    @property
+    def _mqtt_fail_count(self) -> int:
+        return self._mqtt_state.fail_count
+
+    @_mqtt_fail_count.setter
+    def _mqtt_fail_count(self, value: int) -> None:
+        self._mqtt_state.fail_count = int(value)
+
+    def _connection_state(self, bus_type: str) -> PublisherConnectionState:
+        if bus_type == "redis":
+            return self._redis_state
+        if bus_type == "mqtt":
+            return self._mqtt_state
+        raise ValueError(f"unsupported bus_type: {bus_type}")
 
     # ── 연결 보장 (지수 백오프) ──────────────────────────────────────────────
 
     def _ensure_connection(
         self,
         bus_type: str,
-        lock: threading.Lock,
         connect_fn,
     ) -> bool:
         """Redis/MQTT 공통 연결 보장 헬퍼.
@@ -57,38 +118,36 @@ class _PublisherMixin:
             lock: 해당 버스의 Lock
             connect_fn: 실제 연결 콜백. 성공 시 클라이언트 객체 반환.
         """
-        client_attr = f"_{bus_type}_client"
-        fail_count_attr = f"_{bus_type}_fail_count"
-        last_fail_attr = f"_{bus_type}_last_fail_time"
+        state = self._connection_state(bus_type)
         base_cooldown = getattr(type(self), f"_{bus_type}_base_cooldown_sec")
 
-        with lock:
-            if getattr(self, client_attr):
+        with state.lock:
+            if state.client:
                 return True
             now = time.time()
-            fail_count = getattr(self, fail_count_attr)
+            fail_count = state.fail_count
             cooldown = min(
                 base_cooldown * (2 ** fail_count),
                 type(self)._max_cooldown_sec,
             )
-            if now - getattr(self, last_fail_attr) < cooldown:
+            if now - state.last_fail_time < cooldown:
                 logger.debug(
                     "%s 재연결 쿨다운 중 (%.1f초 대기, 실패 횟수=%d)",
                     bus_type.upper(),
-                    cooldown - (now - getattr(self, last_fail_attr)),
+                    cooldown - (now - state.last_fail_time),
                     fail_count,
                 )
                 return False
             try:
                 client = connect_fn()
-                setattr(self, client_attr, client)
-                setattr(self, fail_count_attr, 0)
+                state.client = client
+                state.fail_count = 0
                 logger.info("✓ %s 연결됨", bus_type.upper())
                 return True
             except Exception as exc:
                 new_count = fail_count + 1
-                setattr(self, fail_count_attr, new_count)
-                setattr(self, last_fail_attr, now)
+                state.fail_count = new_count
+                state.last_fail_time = now
                 next_cd = min(
                     base_cooldown * (2 ** new_count),
                     type(self)._max_cooldown_sec,
@@ -97,7 +156,7 @@ class _PublisherMixin:
                     "%s 연결 실패 (횟수=%d, 다음 재시도 %.0f초 후): %s",
                     bus_type.upper(), new_count, next_cd, exc,
                 )
-                setattr(self, client_attr, None)
+                state.client = None
                 return False
 
     def _ensure_redis_client(self) -> bool:
@@ -113,16 +172,16 @@ class _PublisherMixin:
             client.ping()
             return client
 
-        return self._ensure_connection("redis", type(self)._redis_lock, _connect)
+        return self._ensure_connection("redis", _connect)
 
     def _ensure_mqtt_client(self) -> bool:
         def _connect():
-            client = mqtt.Client()
+            client = create_mqtt_client("cctv-edgex-device-service")
             client.connect(self.mqtt_broker, self.mqtt_port, 60)
             client.loop_start()
             return client
 
-        return self._ensure_connection("mqtt", type(self)._mqtt_lock, _connect)
+        return self._ensure_connection("mqtt", _connect)
 
     # ── Redis 발행 ───────────────────────────────────────────────────────────
 
@@ -304,19 +363,24 @@ class _PublisherMixin:
 
     def close(self) -> None:
         """열려 있는 메시지 버스 연결 정리."""
-        try:
-            if self._mqtt_client:
-                self._mqtt_client.loop_stop()
-                self._mqtt_client.disconnect()
-        except Exception as exc:
-            logger.debug("MQTT 연결 정리 중 오류 (무시됨): %s", exc)
-        finally:
-            self._mqtt_client = None
+        mqtt_client = None
+        redis_client = None
+        with self._mqtt_state.lock:
+            mqtt_client = self._mqtt_state.client
+            self._mqtt_state.client = None
+        with self._redis_state.lock:
+            redis_client = self._redis_state.client
+            self._redis_state.client = None
 
         try:
-            if self._redis_client:
-                self._redis_client.close()
+            if mqtt_client:
+                mqtt_client.loop_stop()
+                mqtt_client.disconnect()
+        except Exception as exc:
+            logger.debug("MQTT 연결 정리 중 오류 (무시됨): %s", exc)
+
+        try:
+            if redis_client:
+                redis_client.close()
         except Exception as exc:
             logger.debug("Redis 연결 정리 중 오류 (무시됨): %s", exc)
-        finally:
-            self._redis_client = None

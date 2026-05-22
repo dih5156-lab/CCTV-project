@@ -22,6 +22,7 @@ import secrets
 from datetime import datetime, timezone
 from threading import Thread
 from typing import Any, Dict, Optional
+from urllib.parse import parse_qs, urlparse
 
 from .._http_server import BaseApiHandler, ThreadingApiServer
 
@@ -82,9 +83,12 @@ class _RestHandler(BaseApiHandler):
         if not self._check_internal_token():
             return
         layer = self._layer()
-        if self.path == "/":
+        parsed = urlparse(self.path)
+        path = parsed.path
+        query = parse_qs(parsed.query)
+        if path == "/":
             self._respond(200, self._root_payload())
-        elif self.path in ("/health", "/ping"):
+        elif path in ("/health", "/ping"):
             mqtt_ok = False
             try:
                 mc = getattr(layer, "_mqtt_client", None)
@@ -104,13 +108,21 @@ class _RestHandler(BaseApiHandler):
                     "pending": len(layer.get_pending_events()),
                 },
             )
-        elif self.path == "/sites":
+        elif path == "/sites":
             self._respond(200, layer.list_sites())
-        elif self.path == "/pending":
+        elif path == "/pending":
             self._respond(200, layer.get_pending_events())
-        elif self.path == "/mode":
+        elif path == "/mode":
             self._respond(200, {"mode": layer.default_mode.value})
-        elif self.path == "/metrics":
+        elif path == "/devices":
+            self._respond(200, layer.list_output_devices())
+        elif path == "/events":
+            try:
+                limit = int((query.get("limit") or ["20"])[0])
+            except ValueError:
+                limit = 20
+            self._respond(200, layer.list_recent_events(limit=limit))
+        elif path == "/metrics":
             self._respond_metrics()
         else:
             self._respond(404, {"error": "Not Found"})

@@ -1,6 +1,7 @@
 import os
 import shutil
 import subprocess
+from dataclasses import dataclass
 
 MODEL_DIR = "models"
 INPUT_NAME = os.environ.get("TRT_INPUT_NAME", "input")
@@ -8,12 +9,59 @@ MIN_IMGSZ = int(os.environ.get("TRT_MIN_IMGSZ", "320"))
 OPT_IMGSZ = int(os.environ.get("TRT_OPT_IMGSZ", "416"))
 MAX_IMGSZ = int(os.environ.get("TRT_MAX_IMGSZ", "640"))
 
-model_files = [
-    "helmet_model.onnx",
-    "helmet_model_ver0.5.onnx",
-    "yolov8m-pose.onnx",
-    "yolov8n-pose.onnx",
-    "yolov8n.onnx",
+
+@dataclass(frozen=True)
+class ModelSpec:
+    filename: str
+    input_name: str
+    min_shape: str
+    opt_shape: str
+    max_shape: str
+
+
+model_specs = [
+    ModelSpec(
+        "helmet_model.onnx",
+        INPUT_NAME,
+        f"1x3x{MIN_IMGSZ}x{MIN_IMGSZ}",
+        f"1x3x{OPT_IMGSZ}x{OPT_IMGSZ}",
+        f"1x3x{MAX_IMGSZ}x{MAX_IMGSZ}",
+    ),
+    ModelSpec(
+        "helmet_model_ver0.5.onnx",
+        INPUT_NAME,
+        f"1x3x{MIN_IMGSZ}x{MIN_IMGSZ}",
+        f"1x3x{OPT_IMGSZ}x{OPT_IMGSZ}",
+        f"1x3x{MAX_IMGSZ}x{MAX_IMGSZ}",
+    ),
+    ModelSpec(
+        "yolov8m-pose.onnx",
+        INPUT_NAME,
+        f"1x3x{MIN_IMGSZ}x{MIN_IMGSZ}",
+        f"1x3x{OPT_IMGSZ}x{OPT_IMGSZ}",
+        f"1x3x{MAX_IMGSZ}x{MAX_IMGSZ}",
+    ),
+    ModelSpec(
+        "yolov8n-pose.onnx",
+        INPUT_NAME,
+        f"1x3x{MIN_IMGSZ}x{MIN_IMGSZ}",
+        f"1x3x{OPT_IMGSZ}x{OPT_IMGSZ}",
+        f"1x3x{MAX_IMGSZ}x{MAX_IMGSZ}",
+    ),
+    ModelSpec(
+        "yolov8n.onnx",
+        INPUT_NAME,
+        f"1x3x{MIN_IMGSZ}x{MIN_IMGSZ}",
+        f"1x3x{OPT_IMGSZ}x{OPT_IMGSZ}",
+        f"1x3x{MAX_IMGSZ}x{MAX_IMGSZ}",
+    ),
+    ModelSpec(
+        "pphuman_attribute.onnx",
+        "x",
+        "1x3x256x192",
+        "4x3x256x192",
+        "8x3x256x192",
+    ),
 ]
 
 TRTEXEC_CANDIDATES = [
@@ -37,15 +85,17 @@ def find_trtexec():
 TRTEXEC = find_trtexec()
 
 
-def convert_to_engine(onnx_path, engine_path):
+def convert_to_engine(spec):
+    onnx_path = os.path.join(MODEL_DIR, spec.filename)
+    engine_path = onnx_path.replace(".onnx", ".engine")
     cmd = [
         TRTEXEC,
         f"--onnx={onnx_path}",
         f"--saveEngine={engine_path}",
         "--fp16",
-        f"--minShapes={INPUT_NAME}:1x3x{MIN_IMGSZ}x{MIN_IMGSZ}",
-        f"--optShapes={INPUT_NAME}:1x3x{OPT_IMGSZ}x{OPT_IMGSZ}",
-        f"--maxShapes={INPUT_NAME}:1x3x{MAX_IMGSZ}x{MAX_IMGSZ}",
+        f"--minShapes={spec.input_name}:{spec.min_shape}",
+        f"--optShapes={spec.input_name}:{spec.opt_shape}",
+        f"--maxShapes={spec.input_name}:{spec.max_shape}",
         "--skipInference",
     ]
     print(f"실행: {' '.join(cmd)}")
@@ -54,14 +104,13 @@ def convert_to_engine(onnx_path, engine_path):
 
 
 def main():
-    for fname in model_files:
-        onnx_path = os.path.join(MODEL_DIR, fname)
-        engine_path = onnx_path.replace(".onnx", ".engine")
+    for spec in model_specs:
+        onnx_path = os.path.join(MODEL_DIR, spec.filename)
         if not os.path.exists(onnx_path):
             print(f"ONNX 파일 없음: {onnx_path}")
             continue
 
-        convert_to_engine(onnx_path, engine_path)
+        convert_to_engine(spec)
 
 
 if __name__ == "__main__":

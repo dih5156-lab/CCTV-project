@@ -162,6 +162,50 @@ class _EventRepo:
         except sqlite3.Error as exc:
             logger.error("DB 저장 오류: %s", exc)
 
+    def list_recent(self, limit: int = 20) -> List[Dict]:
+        """최근 Action Layer 처리 이력을 최신순으로 반환한다."""
+        safe_limit = max(1, min(int(limit), 100))
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                conn.row_factory = sqlite3.Row
+                rows = conn.execute(
+                    """
+                    SELECT id, event_id, received_at, topic, camera_id, event_type,
+                           confidence, severity, alarm_played, http_sent, payload_json
+                    FROM action_events
+                    ORDER BY id DESC
+                    LIMIT ?
+                    """,
+                    (safe_limit,),
+                ).fetchall()
+        except sqlite3.Error as exc:
+            logger.error("DB 조회 오류: %s", exc)
+            return []
+
+        items: List[Dict] = []
+        for row in rows:
+            payload = {}
+            try:
+                payload = json.loads(row["payload_json"])
+            except (TypeError, json.JSONDecodeError):
+                payload = {}
+            items.append(
+                {
+                    "id": row["id"],
+                    "event_id": row["event_id"],
+                    "received_at": row["received_at"],
+                    "topic": row["topic"],
+                    "camera_id": row["camera_id"],
+                    "event_type": row["event_type"],
+                    "confidence": row["confidence"],
+                    "severity": row["severity"],
+                    "alarm_played": bool(row["alarm_played"]),
+                    "http_sent": bool(row["http_sent"]),
+                    "payload": payload,
+                }
+            )
+        return items
+
 
 class _SiteRegistry:
     """사이트 설정과 수동 승인 큐를 관리한다."""
@@ -267,6 +311,7 @@ class _AlarmCoordinator:
     """알람 토픽, 쿨다운, 재생 잠금을 관리한다."""
 
     _COOLDOWN_EXEMPT: frozenset = frozenset({"head", "fall_detected"})
+    _DEVICE_OUTPUT_SUPPRESSED: frozenset = frozenset({"person"})
 
     def __init__(
         self,
@@ -300,8 +345,11 @@ class _AlarmCoordinator:
     def should_alarm(self, topic: str, payload: Dict) -> bool:
         event_type = str(payload.get("type", "")).lower()
         severity = str(payload.get("severity", "")).lower()
+        if event_type in self._DEVICE_OUTPUT_SUPPRESSED:
+            return False
         return (
-            event_type in self._COOLDOWN_EXEMPT
+            topic == "rest/inbound"                                               # REST API로 직접 수신한 이벤트
+            or event_type in self._COOLDOWN_EXEMPT
             or any(self._mqtt_topic_matches(pattern, topic) for pattern in self.alarm_topics)
             or severity == "critical"
         )
@@ -371,28 +419,34 @@ class _ActionExecutor:
             devices = self._resolve_devices(camera_id)
 
             if self._alarm_device_enum.SPEAKER in devices:
-                alarm_played = self._speaker.play(
+                speaker_ok = self._speaker.play(
                     event_type,
                     severity,
                     camera_id,
                     text=tts_message,
                 )
+                if speaker_ok:
+                    alarm_played = True
                 _device_commands.labels(
-                    device="speaker", status="ok" if alarm_played else "skip"
+                    device="speaker", status="ok" if speaker_ok else "skip"
                 ).inc()
 
             if self._alarm_device_enum.SIGNBOARD in devices:
-                self._signboard.display(
+                signboard_ok = self._signboard.display(
                     text=display_message
                     or self._build_display_text(event_type, severity, camera_id),
                     title="경고!",
                     class_name=event_type,
                 )
-                _device_commands.labels(device="signboard", status="ok").inc()
+                if signboard_ok:
+                    alarm_played = True
+                _device_commands.labels(device="signboard", status="ok" if signboard_ok else "skip").inc()
 
             if self._alarm_device_enum.SIREN in devices:
-                self._siren.trigger(event_type, camera_id)
-                _device_commands.labels(device="siren", status="ok").inc()
+                siren_ok = self._siren.trigger(event_type, camera_id)
+                if siren_ok:
+                    alarm_played = True
+                _device_commands.labels(device="siren", status="ok" if siren_ok else "skip").inc()
 
         self._forwarder.forward(topic, payload)
         http_sent = self._forwarder.has_targets

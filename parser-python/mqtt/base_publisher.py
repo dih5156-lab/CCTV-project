@@ -10,6 +10,7 @@ parser-python 패키지 전용으로 독립적으로 구현합니다.
 """
 
 import logging
+import os
 import time
 import uuid
 from threading import Event, Lock
@@ -101,6 +102,9 @@ class BaseMqttPublisher:
                 self._client = mqtt.Client(client_id=client_id, clean_session=True)
             self._client.on_connect = self._on_connect
             self._client.on_disconnect = self._on_disconnect
+            mqtt_user = os.environ.get("MQTT_USER") or None
+            if mqtt_user:
+                self._client.username_pw_set(mqtt_user, os.environ.get("MQTT_PASSWORD"))
 
         try:
             self._connect_waiter.clear()

@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import os
 import threading
+import types
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -24,6 +25,7 @@ import pytest
 
 from src.core.base_processor import BaseProcessor
 from src.core.deepstream_processor import DEEPSTREAM_AVAILABLE, DeepStreamProcessor
+from src.core.events import DetectionEvent, EventType
 from src.core.processor import VideoProcessor
 
 
@@ -219,6 +221,40 @@ def test_deepstream_get_stats_uses_common_fields_without_runtime():
     assert stats["output_mode"] == "fakesink"
 
 
+def test_read_preview_max_fps_defaults_to_stream_fps(monkeypatch):
+    monkeypatch.delenv("DS_PREVIEW_MAX_FPS", raising=False)
+    monkeypatch.setenv("STREAM_FPS", "20")
+
+    assert DeepStreamProcessor._read_preview_max_fps() == 20.0
+
+
+def test_read_preview_max_fps_clamps_high_values(monkeypatch):
+    monkeypatch.setenv("DS_PREVIEW_MAX_FPS", "120")
+
+    assert DeepStreamProcessor._read_preview_max_fps() == 60.0
+
+
+def test_preview_sample_is_pulled_even_when_throttled(monkeypatch):
+    proc = object.__new__(DeepStreamProcessor)
+    proc._preview_min_interval_sec = 1.0
+    proc._preview_last_sample_at = 100.0
+    monkeypatch.setattr("src.core.deepstream_processor.time.monotonic", lambda: 100.1)
+    monkeypatch.setattr(
+        "src.core.deepstream_processor.Gst",
+        types.SimpleNamespace(FlowReturn=types.SimpleNamespace(OK="ok")),
+    )
+
+    sample = MagicMock()
+    sink = MagicMock()
+    sink.emit.return_value = sample
+
+    result = proc._on_preview_sample(sink)
+
+    assert result == "ok"
+    sink.emit.assert_called_once_with("pull-sample")
+    sample.get_buffer.assert_not_called()
+
+
 def test_build_source_entries_skips_integer_sources_without_runtime():
     proc = object.__new__(DeepStreamProcessor)
     proc._cameras = {
@@ -234,6 +270,57 @@ def test_build_source_entries_skips_integer_sources_without_runtime():
     assert entries[0][3] == "rtsp://192.168.1.1/stream"
 
 
+def test_deepstream_model_flags_do_not_force_pose():
+    flags = DeepStreamProcessor._normalize_model_flags(
+        {"use_pose": False, "use_helmet": True, "use_face": True, "use_appearance": True}
+    )
+
+    assert flags == {
+        "use_helmet": True,
+        "use_pose": False,
+        "use_person": False,
+        "use_face": True,
+        "use_appearance": True,
+    }
+
+
+def test_deepstream_filter_events_respects_all_off():
+    proc = object.__new__(DeepStreamProcessor)
+    proc._camera_ai_flags = {
+        "cam1": {
+            "use_helmet": False,
+            "use_pose": False,
+            "use_person": False,
+            "use_face": False,
+            "use_appearance": False,
+        }
+    }
+    events = [
+        DetectionEvent(EventType.PERSON, 0, 0, 10, 10, 0.9, 1.0),
+        DetectionEvent(EventType.HEAD, 0, 0, 10, 10, 0.8, 1.0),
+        DetectionEvent(EventType.FALL_DETECTED, 0, 0, 10, 10, 0.7, 1.0),
+    ]
+
+    assert proc._filter_events_for_camera(events, "cam1") == []
+
+
+def test_deepstream_filter_events_respects_one_model_off():
+    proc = object.__new__(DeepStreamProcessor)
+    proc._camera_ai_flags = {
+        "cam1": {
+            "use_helmet": False,
+            "use_pose": True,
+            "use_person": False,
+            "use_face": False,
+            "use_appearance": False,
+        }
+    }
+    person = DetectionEvent(EventType.PERSON, 0, 0, 10, 10, 0.9, 1.0)
+    head = DetectionEvent(EventType.HEAD, 0, 0, 10, 10, 0.8, 1.0)
+
+    assert proc._filter_events_for_camera([person, head], "cam1") == [person]
+
+
 class _FakeElement:
     def __init__(self, name="element", link_ok=True):
         self.name = name
@@ -247,6 +334,9 @@ class _FakeElement:
     def link(self, other):
         self.linked_to.append(other)
         return self.link_ok
+
+    def connect(self, *args):
+        self.properties["connect_args"] = args
 
     def get_name(self):
         return self.name
@@ -277,6 +367,78 @@ def test_configure_output_queue_sets_leaky_low_latency_properties():
         "max-size-bytes": 0,
         "max-size-time": 0,
     }
+
+
+def test_create_preview_elements_can_downscale_preview_caps(monkeypatch):
+    proc = object.__new__(DeepStreamProcessor)
+    created = []
+
+    def make_element(factory, name):
+        element = _FakeElement(name)
+        created.append(element)
+        return element
+
+    caps_from_string = MagicMock(side_effect=lambda value: value)
+    monkeypatch.setattr(proc, "_make_element", make_element)
+    monkeypatch.setenv("DS_PREVIEW_WIDTH", "1280")
+    monkeypatch.setenv("DS_PREVIEW_HEIGHT", "720")
+    monkeypatch.setattr(
+        "src.core.deepstream_processor.Gst",
+        types.SimpleNamespace(Caps=types.SimpleNamespace(from_string=caps_from_string)),
+    )
+
+    elements = proc._create_preview_elements()
+
+    assert elements == created
+    caps_from_string.assert_called_once_with("video/x-raw,format=BGRx,width=1280,height=720")
+    assert created[0].properties["leaky"] == 2
+    assert created[2].properties["caps"] == "video/x-raw,format=BGRx,width=1280,height=720"
+    assert created[3].properties["drop"] is True
+
+
+def test_create_output_elements_can_stream_h264_mpegts(monkeypatch):
+    proc = object.__new__(DeepStreamProcessor)
+    proc._output_mode = "h264-mpegts"
+    created = []
+
+    def make_element(factory, name):
+        element = _FakeElement(name)
+        element.factory = factory
+        created.append(element)
+        return element
+
+    caps_from_string = MagicMock(side_effect=lambda value: value)
+    monkeypatch.setattr(proc, "_make_element", make_element)
+    monkeypatch.setenv("DS_H264_UDP_HOST", "media")
+    monkeypatch.setenv("DS_H264_UDP_PORT", "1234")
+    monkeypatch.setenv("DS_H264_WIDTH", "1280")
+    monkeypatch.setenv("DS_H264_HEIGHT", "720")
+    monkeypatch.setenv("DS_H264_BITRATE", "6000000")
+    monkeypatch.setenv("DS_H264_IFRAME_INTERVAL", "30")
+    monkeypatch.setattr(
+        "src.core.deepstream_processor.Gst",
+        types.SimpleNamespace(Caps=types.SimpleNamespace(from_string=caps_from_string)),
+    )
+
+    elements = proc._create_output_elements()
+
+    assert [element.factory for element in elements] == [
+        "nvvideoconvert",
+        "capsfilter",
+        "nvv4l2h264enc",
+        "h264parse",
+        "mpegtsmux",
+        "udpsink",
+    ]
+    caps_from_string.assert_called_once_with(
+        "video/x-raw(memory:NVMM),format=NV12,width=1280,height=720"
+    )
+    assert elements[2].properties["bitrate"] == 6000000
+    assert elements[2].properties["insert-sps-pps"] is True
+    assert elements[2].properties["iframeinterval"] == 30
+    assert elements[5].properties["host"] == "media"
+    assert elements[5].properties["port"] == 1234
+    assert elements[5].properties["sync"] is False
 
 
 def test_link_or_raise_raises_when_gstreamer_link_fails():

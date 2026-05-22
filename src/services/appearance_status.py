@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 import os
+import json
 import sqlite3
+from contextlib import contextmanager
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, Generator, List, Optional, Set
 
 from pydantic import BaseModel, Field
 
+from ..config.config import PROJECT_ROOT
 from ..storage import SQLiteDatabase
 
 _BAG_LABEL_ALIASES = {
@@ -100,8 +103,106 @@ def _truthy_env(name: str, default: bool = False) -> bool:
     return raw.strip().lower() in {"1", "true", "yes", "on"}
 
 
-def _connect(db_path: Path) -> sqlite3.Connection:
-    return SQLiteDatabase(db_path).connect()
+def _resolve_project_path(path_value: str) -> Path:
+    path = Path(path_value).expanduser()
+    if path.is_absolute():
+        return path
+    return (PROJECT_ROOT / path).resolve()
+
+
+def _load_active_camera_flags() -> Optional[List[Dict[str, bool]]]:
+    """활성 카메라의 모델 on/off 설정을 읽는다.
+
+    상태 API는 public API 컨테이너에서 실행될 수 있으므로 CAMERAS_JSON을 우선하고,
+    없으면 프로젝트 기본 cameras.json을 사용한다.
+    """
+    cameras_path = _resolve_project_path(os.environ.get("CAMERAS_JSON", "cameras.json"))
+    if not cameras_path.exists():
+        return None
+    try:
+        cameras = json.loads(cameras_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    if not isinstance(cameras, list):
+        return None
+
+    active_flags: List[Dict[str, bool]] = []
+    detection_aliases = {
+        "use_helmet": "helmet",
+        "use_face": "face",
+        "use_appearance": "appearance",
+    }
+    for camera in cameras:
+        if not isinstance(camera, dict) or camera.get("enabled") is False:
+            continue
+        model_settings = camera.get("model_settings")
+        detections = camera.get("detections")
+        detection_set = {
+            str(item).strip().lower()
+            for item in detections
+            if isinstance(item, str)
+        } if isinstance(detections, list) else set()
+        flags: Dict[str, bool] = {}
+        for flag_name, detection_name in detection_aliases.items():
+            if isinstance(model_settings, dict) and flag_name in model_settings:
+                flags[flag_name] = bool(model_settings[flag_name])
+            elif detection_name in detection_set:
+                flags[flag_name] = True
+        active_flags.append(flags)
+    return active_flags
+
+
+def _camera_flag_enabled(flag_name: str) -> Optional[bool]:
+    active_flags = _load_active_camera_flags()
+    if active_flags is None:
+        return None
+    if not active_flags:
+        return False
+    explicit_values = [
+        flags[flag_name]
+        for flags in active_flags
+        if flag_name in flags
+    ]
+    if not explicit_values:
+        return None
+    return any(explicit_values)
+
+
+def _env_and_camera_flag(env_name: str, flag_name: str, default: bool) -> bool:
+    env_enabled = _truthy_env(env_name, default)
+    camera_enabled = _camera_flag_enabled(flag_name)
+    if camera_enabled is None:
+        return env_enabled
+    return env_enabled and camera_enabled
+
+
+def _load_attribute_label_fields() -> Optional[Set[str]]:
+    label_map_path = os.environ.get("APPEARANCE_LABEL_MAP_PATH", "").strip()
+    if not label_map_path:
+        return None
+    path = _resolve_project_path(label_map_path)
+    try:
+        label_map = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    labels = label_map.get("labels")
+    if not isinstance(labels, list):
+        return None
+    return {
+        str(entry.get("field", "")).strip()
+        for entry in labels
+        if isinstance(entry, dict) and str(entry.get("field", "")).strip()
+    }
+
+
+@contextmanager
+def _connect(db_path: Path) -> Generator[sqlite3.Connection, None, None]:
+    """SQLite 연결을 열고 켄텍스트 종료 시 반드시 닫는다."""
+    conn = SQLiteDatabase(db_path).connect()
+    try:
+        yield conn
+    finally:
+        conn.close()
 
 
 def _collect_data_stats(db_path: Path) -> AppearanceDataStats:
@@ -165,11 +266,18 @@ def _collect_backend_counts(db_path: Path) -> Dict[str, int]:
 
 def _build_field_statuses(data_stats: AppearanceDataStats) -> List[AppearanceFieldStatus]:
     backend = os.environ.get("APPEARANCE_BACKEND", "hsv").strip().lower()
-    face_enabled = _truthy_env("DS_FACE_ENABLED", False)
-    appearance_enabled = _truthy_env("DS_APPEARANCE_ENABLED", False) or _truthy_env("APPEARANCE_ENABLED", False)
-    helmet_enabled = _truthy_env("DS_HELMET_ENABLED", True)
+    face_enabled = _env_and_camera_flag("DS_FACE_ENABLED", "use_face", False)
+    appearance_runtime_enabled = _truthy_env("DS_APPEARANCE_ENABLED", False) or _truthy_env("APPEARANCE_ENABLED", False)
+    camera_appearance_enabled = _camera_flag_enabled("use_appearance")
+    appearance_enabled = (
+        appearance_runtime_enabled
+        if camera_appearance_enabled is None
+        else appearance_runtime_enabled and camera_appearance_enabled
+    )
+    helmet_enabled = _env_and_camera_flag("DS_HELMET_ENABLED", "use_helmet", True)
     yolo_labels = set(_csv_env("DS_YOLO_LABELS", "person"))
     bag_labels = sorted(label for label in yolo_labels if label in _BAG_LABEL_ALIASES)
+    attribute_label_fields = _load_attribute_label_fields()
     bag_model_ready = bool(bag_labels) or backend != "hsv"
     total_records = max(data_stats.total_records, 1)
 
@@ -214,6 +322,7 @@ def _build_field_statuses(data_stats: AppearanceDataStats) -> List[AppearanceFie
             backend=backend,
             bag_model_ready=bag_model_ready,
             bag_labels=bag_labels,
+            attribute_label_fields=attribute_label_fields,
             data_stats=data_stats,
             total_records=total_records,
         ),
@@ -226,30 +335,34 @@ def _build_bag_field_statuses(
     backend: str,
     bag_model_ready: bool,
     bag_labels: List[str],
+    attribute_label_fields: Optional[Set[str]],
     data_stats: AppearanceDataStats,
     total_records: int,
 ) -> List[AppearanceFieldStatus]:
     source = "attribute_backend" if backend != "hsv" else "yolo_nearby_objects"
-    reason = None if appearance_enabled and bag_model_ready else (
-        f"backend={backend}, bag_labels={','.join(bag_labels) if bag_labels else 'none'}"
-    )
     values = [
         ("has_backpack", data_stats.backpack_true),
         ("has_handbag", data_stats.handbag_true),
         ("has_suitcase", data_stats.suitcase_true),
     ]
-    return [
-        AppearanceFieldStatus(
+    statuses: List[AppearanceFieldStatus] = []
+    for name, count in values:
+        field_ready = bag_model_ready
+        if backend != "hsv" and attribute_label_fields is not None:
+            field_ready = name in attribute_label_fields
+        reason = None if appearance_enabled and field_ready else (
+            f"backend={backend}, bag_labels={','.join(bag_labels) if bag_labels else 'none'}"
+        )
+        statuses.append(AppearanceFieldStatus(
             field=name,
             enabled=appearance_enabled,
-            ready=appearance_enabled and bag_model_ready,
+            ready=appearance_enabled and field_ready,
             source=source,
             observed_count=count,
             observed_ratio=round(count / total_records, 4),
             reason=reason,
-        )
-        for name, count in values
-    ]
+        ))
+    return statuses
 
 
 def _build_runtime_warnings(

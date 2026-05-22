@@ -64,7 +64,7 @@ class TestCameraRegistryRegister:
     def test_register_creates_stop_flag(self):
         reg = _make_registry()
         reg.register("cam1", _camera_mock())
-        assert "cam1" in reg._stop_flags
+        assert reg.has_stop_flag("cam1")
 
     def test_initial_count_zero(self):
         assert _make_registry().count == 0
@@ -137,7 +137,7 @@ class TestCameraRegistryRetry:
     def test_enqueue_adds_pending(self):
         reg = _make_registry()
         reg.enqueue_retry("cam1", "rtsp://example.com", delay_seconds=30)
-        assert len(reg._pending) == 1
+        assert reg.pending_count() == 1
 
     def test_dequeue_not_ready_returns_empty(self):
         reg = _make_registry()
@@ -157,14 +157,14 @@ class TestCameraRegistryRetry:
         reg.enqueue_retry("cam1", "rtsp://example.com", delay_seconds=0)
         time.sleep(0.01)
         reg.poll_ready_retries()
-        assert len(reg._pending) == 0
+        assert reg.pending_count() == 0
 
     def test_enqueue_same_camera_replaces_old_entry(self):
         reg = _make_registry()
         reg.enqueue_retry("cam1", "rtsp://old", delay_seconds=100)
         reg.enqueue_retry("cam1", "rtsp://new", delay_seconds=100)
-        assert len(reg._pending) == 1
-        assert reg._pending[0][1] == "rtsp://new"
+        assert reg.pending_count() == 1
+        assert reg.pending_sources()["cam1"] == "rtsp://new"
 
     def test_multiple_cameras_in_queue(self):
         reg = _make_registry()
@@ -276,7 +276,7 @@ class TestProcessorStatsContract:
 
     def test_model_settings_mapping_supported(self):
         flags = VideoProcessor._parse_detections({"use_pose": False, "use_helmet": True})
-        assert flags == {"use_helmet": True, "use_pose": True, "use_person": False, "use_face": False, "use_appearance": False}
+        assert flags == {"use_helmet": True, "use_pose": False, "use_person": False, "use_face": False, "use_appearance": False}
 
     def test_unknown_mode_treated_as_person(self):
         flags = VideoProcessor._parse_detections(["unknown_mode"])
@@ -301,8 +301,34 @@ class TestModelSettingsHelpers:
             "cam1",
             {"use_pose": False, "use_helmet": True},
         )
-        assert updated == {"use_helmet": True, "use_pose": True, "use_person": False, "use_face": False, "use_appearance": False}
+        assert updated == {"use_helmet": True, "use_pose": False, "use_person": False, "use_face": False, "use_appearance": False}
         assert minimal_processor.get_camera_model_settings("cam1") == updated
+
+    def test_update_camera_model_settings_allows_all_off(self, minimal_processor):
+        minimal_processor._camera_ai_flags["cam1"] = {
+            "use_helmet": True,
+            "use_pose": True,
+            "use_person": True,
+            "use_face": True,
+            "use_appearance": True,
+        }
+        updated = minimal_processor.update_camera_model_settings(
+            "cam1",
+            {
+                "use_pose": False,
+                "use_helmet": False,
+                "use_person": False,
+                "use_face": False,
+                "use_appearance": False,
+            },
+        )
+        assert updated == {
+            "use_helmet": False,
+            "use_pose": False,
+            "use_person": False,
+            "use_face": False,
+            "use_appearance": False,
+        }
 
     def test_update_camera_model_settings_persists_json(self, minimal_processor, tmp_path):
         minimal_processor._camera_ai_flags["cam1"] = {

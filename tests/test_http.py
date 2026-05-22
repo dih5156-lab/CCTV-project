@@ -55,12 +55,12 @@ class TestHttpEventForwarder:
         fw = HttpEventForwarder()
         fw.add_target(_make_target("A"))
         fw.add_target(_make_target("B"))
-        assert len(fw._targets) == 2
+        assert fw.target_count == 2
 
     def test_init_with_targets(self):
         targets = [_make_target("X"), _make_target("Y")]
         fw = HttpEventForwarder(targets=targets)
-        assert len(fw._targets) == 2
+        assert fw.target_count == 2
 
     @patch("src.protocols.http.requests.post")
     def test_forward_sends_to_all_targets(self, mock_post):
@@ -96,7 +96,7 @@ class TestHttpEventForwarder:
 
         fw.forward("topic", {"x": 1})
         # 실패 → 재시도 큐에 1건 들어감
-        assert fw._retry_queue.qsize() == 1
+        assert fw.retry_queue_size == 1
 
     @patch("src.protocols.http.requests.post")
     def test_202_accepted_is_success(self, mock_post):
@@ -105,7 +105,7 @@ class TestHttpEventForwarder:
 
         fw.forward("topic", {})
         # 202는 성공 → 재시도 큐 비어있음
-        assert fw._retry_queue.qsize() == 0
+        assert fw.retry_queue_size == 0
 
     @patch("src.protocols.http.requests.post")
     def test_retry_queue_not_exceeded_max(self, mock_post):
@@ -114,8 +114,8 @@ class TestHttpEventForwarder:
 
         # _RETRY_QUEUE_MAX + 10 개 전송 → 큐 크기는 최대 _RETRY_QUEUE_MAX
         for _ in range(_RETRY_QUEUE_MAX + 10):
-            fw._send(fw._targets[0], "topic", {}, attempt=1)
-        assert fw._retry_queue.qsize() <= _RETRY_QUEUE_MAX
+            fw._send(fw.target_at(0), "topic", {}, attempt=1)
+        assert fw.retry_queue_size <= _RETRY_QUEUE_MAX
 
     @patch("src.protocols.http.requests.post")
     def test_max_attempts_no_more_retry(self, mock_post):
@@ -123,8 +123,8 @@ class TestHttpEventForwarder:
         fw = HttpEventForwarder(targets=[_make_target()])
 
         # attempt == _RETRY_MAX_ATTEMPTS → 더 이상 큐에 넣지 않음
-        fw._send(fw._targets[0], "topic", {}, attempt=_RETRY_MAX_ATTEMPTS)
-        assert fw._retry_queue.qsize() == 0
+        fw._send(fw.target_at(0), "topic", {}, attempt=_RETRY_MAX_ATTEMPTS)
+        assert fw.retry_queue_size == 0
 
     def test_start_stop_worker(self):
         fw = HttpEventForwarder()

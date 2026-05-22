@@ -13,6 +13,24 @@ _INTERNAL_HEADERS: dict[str, str] = (
     {"X-Internal-Token": _INTERNAL_TOKEN} if _INTERNAL_TOKEN else {}
 )
 
+# 요청마다 새 클라이언트 생성 제거 — 커넥션 풀 재사용
+_shared_client: httpx.AsyncClient | None = None
+
+
+def _get_client() -> httpx.AsyncClient:
+    global _shared_client
+    if _shared_client is None or _shared_client.is_closed:
+        _shared_client = httpx.AsyncClient(
+            timeout=5.0,
+            headers=_INTERNAL_HEADERS,
+            limits=httpx.Limits(
+                max_connections=20,
+                max_keepalive_connections=10,
+                keepalive_expiry=30.0,
+            ),
+        )
+    return _shared_client
+
 
 def _extract_error_detail(response: httpx.Response) -> str:
     """Action Layer 응답에서 사용자 친화적인 오류 메시지를 뽑는다."""
@@ -41,12 +59,16 @@ async def proxy_action_request(
 ) -> Any:
     """Action Layer REST 서버로 요청을 보내고 JSON 응답을 반환한다."""
     url = f"{base_url.rstrip('/')}{path}"
+    client = _get_client()
     try:
-        async with httpx.AsyncClient(timeout=timeout, headers=_INTERNAL_HEADERS) as client:
-            call = getattr(client, method)
-            response = await (call(url, json=payload) if payload is not None else call(url))
-            response.raise_for_status()
-            return response.json()
+        call = getattr(client, method)
+        response = await (
+            call(url, json=payload, timeout=timeout)
+            if payload is not None
+            else call(url, timeout=timeout)
+        )
+        response.raise_for_status()
+        return response.json()
     except httpx.HTTPStatusError as exc:
         raise HTTPException(
             status_code=exc.response.status_code,

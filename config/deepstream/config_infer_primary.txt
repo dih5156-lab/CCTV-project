@@ -36,7 +36,9 @@ batch-size=8
 # output-tensor-meta를 Python pad-probe에서 직접 파싱한다.
 network-type=100
 
-# yolov8n-pose 기준 클래스 수: 0=person
+# Pose 모델만 사용 (person + keypoint)
+# Bag 감지는 APPEARANCE_BACKEND=pphuman에서 별도 처리하므로
+# YOLO에서는 person만 감지
 num-detected-classes=1
 output-blob-names=output
 

@@ -19,7 +19,9 @@ from ...core.events import EventType as EventTypeOut  # noqa: F401  (re-export)
 
 class SeverityOut(str, Enum):
     CRITICAL = "critical"
+    WARNING = "warning"
     NORMAL = "normal"
+    LOW = "low"
 
 
 # ---------------------------------------------------------------------------

@@ -6,12 +6,13 @@ SQLite에 기록된 인물 외형 속성을 조건부 검색하여
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
 import re
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import Response
@@ -23,6 +24,26 @@ from ...services.appearance_log import AppearanceLog
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/search", tags=["search"])
+
+_COLOR_ALIASES = {
+    "black": ("black", "검정", "검은", "검은색", "검정색", "블랙"),
+    "red": ("red", "빨강", "빨간", "빨간색", "붉은", "레드"),
+    "blue": ("blue", "파랑", "파란", "파란색", "블루", "청색"),
+    "white": ("white", "흰", "흰색", "하얀", "하얀색", "화이트"),
+    "gray": ("gray", "회색", "그레이"),
+    "yellow": ("yellow", "노랑", "노란", "노란색", "옐로우"),
+    "green": ("green", "초록", "초록색", "녹색", "그린"),
+    "orange": ("orange", "주황", "주황색", "오렌지"),
+    "purple": ("purple", "보라", "보라색", "퍼플"),
+}
+
+_UPPER_TERMS = ("상의", "윗옷", "상체", "top", "upper")
+_LOWER_TERMS = ("하의", "바지", "하체", "bottom", "lower", "pants")
+_BAG_TERMS = {
+    "has_backpack": ("백팩", "배낭", "backpack"),
+    "has_handbag": ("핸드백", "손가방", "handbag"),
+    "has_suitcase": ("캐리어", "여행가방", "suitcase", "luggage"),
+}
 
 # ── 싱글턴 DB 인스턴스 ──────────────────────────────────────────────
 
@@ -43,6 +64,7 @@ class AppearanceRecord(BaseModel):
     """검색 결과 개별 레코드."""
 
     id: int
+    event_id: Optional[str] = None
     timestamp: float
     datetime_str: str = Field(description="사람 읽을 수 있는 시각 문자열")
     camera_id: str
@@ -62,6 +84,10 @@ class AppearanceRecord(BaseModel):
         default=None,
         description="인물 crop 이미지 URL (/api/v1/search/crops/...)",
     )
+    bbox: Optional[Dict[str, int]] = Field(
+        default=None,
+        description="검색 기록에 저장된 person bbox",
+    )
 
 
 def _to_record(row: dict) -> AppearanceRecord:
@@ -76,6 +102,7 @@ def _to_record(row: dict) -> AppearanceRecord:
 
     return AppearanceRecord(
         id=row["id"],
+        event_id=row.get("event_id"),
         timestamp=row["timestamp"],
         datetime_str=dt.strftime("%Y-%m-%d %H:%M:%S"),
         camera_id=row["camera_id"],
@@ -92,6 +119,12 @@ def _to_record(row: dict) -> AppearanceRecord:
         face_name=row.get("face_name"),
         attribute_backend=row.get("attribute_backend"),
         crop_url=crop_url,
+        bbox={
+            "x": int(row.get("bbox_x") or 0),
+            "y": int(row.get("bbox_y") or 0),
+            "width": int(row.get("bbox_w") or 0),
+            "height": int(row.get("bbox_h") or 0),
+        },
     )
 
 
@@ -109,6 +142,10 @@ def _to_record(row: dict) -> AppearanceRecord:
     dependencies=[Depends(verify_api_key)],
 )
 async def search_appearances(
+    q: Optional[str] = Query(
+        None,
+        description="자연어 조건. 예: 검정색 상의 빨간색 하의 사람",
+    ),
     camera_id: Optional[str] = Query(None, description="카메라 ID"),
     upper_color: Optional[str] = Query(None, description="상의 색상"),
     lower_color: Optional[str] = Query(None, description="하의 색상"),
@@ -133,6 +170,15 @@ async def search_appearances(
 ) -> PaginatedResponse[AppearanceRecord]:
     log = _get_log()
 
+    parsed_query = _parse_query(q)
+    upper_color = upper_color or parsed_query.get("upper_color")
+    lower_color = lower_color or parsed_query.get("lower_color")
+    has_helmet = has_helmet if has_helmet is not None else parsed_query.get("has_helmet")
+    helmet_color = helmet_color or parsed_query.get("helmet_color")
+    has_backpack = has_backpack if has_backpack is not None else parsed_query.get("has_backpack")
+    has_handbag = has_handbag if has_handbag is not None else parsed_query.get("has_handbag")
+    has_suitcase = has_suitcase if has_suitcase is not None else parsed_query.get("has_suitcase")
+
     # ISO datetime → unix timestamp 변환
     ts_from = _parse_datetime(time_from) if time_from else None
     ts_to = _parse_datetime(time_to) if time_to else None
@@ -153,8 +199,13 @@ async def search_appearances(
         time_to=ts_to,
     )
 
-    rows = log.search(**search_kwargs, limit=limit, offset=offset)
-    total = log.count(**search_kwargs)
+    # SQLite blocking I/O를 asyncio 스레드풀로 오프로드해 이벤트 루프 블로킹 방지
+    # search + count를 병렬 실행해 왕복 대기 제거
+    loop = asyncio.get_event_loop()
+    rows, total = await asyncio.gather(
+        loop.run_in_executor(None, lambda: log.search(**search_kwargs, limit=limit, offset=offset)),
+        loop.run_in_executor(None, lambda: log.count(**search_kwargs)),
+    )
 
     return PaginatedResponse[AppearanceRecord](
         success=True,
@@ -163,6 +214,65 @@ async def search_appearances(
         limit=limit,
         offset=offset,
     )
+
+
+def _parse_query(q: Optional[str]) -> Dict[str, object]:
+    """한국어/영어 자연어 검색 문장을 API 필터로 변환한다.
+
+    운영 부담을 줄이기 위해 LLM 호출 없이 색상+부위 키워드만 결정적으로 해석한다.
+    """
+    if not q:
+        return {}
+
+    text = q.strip().lower().replace("색상의", "색 상의")
+    parsed: Dict[str, object] = {}
+    for color, aliases in _COLOR_ALIASES.items():
+        for alias in sorted(aliases, key=len, reverse=True):
+            body_part = _nearest_body_part(text, alias)
+            if body_part and body_part not in parsed:
+                parsed[body_part] = color
+
+    if any(term in text for term in ("헬멧 미착용", "안전모 미착용", "no helmet", "without helmet")):
+        parsed["has_helmet"] = False
+    elif any(term in text for term in ("헬멧", "안전모", "helmet")):
+        parsed["has_helmet"] = True
+
+    for field, terms in _BAG_TERMS.items():
+        if any(term in text for term in terms):
+            parsed[field] = True
+
+    return parsed
+
+
+def _nearest_body_part(text: str, color_alias: str, window: int = 12) -> Optional[str]:
+    """색상 키워드와 가장 가까운 상의/하의 키워드를 찾는다."""
+    start = 0
+    while True:
+        color_index = text.find(color_alias, start)
+        if color_index < 0:
+            return None
+        color_end = color_index + len(color_alias)
+        candidates = []
+        for body_part, terms in (("upper_color", _UPPER_TERMS), ("lower_color", _LOWER_TERMS)):
+            for term in terms:
+                search_start = max(0, color_index - window)
+                search_end = color_end + window + len(term)
+                term_index = text.find(term, search_start, search_end)
+                if term_index >= 0:
+                    term_end = term_index + len(term)
+                    if term_index >= color_end:
+                        gap = term_index - color_end
+                        direction = 0
+                    elif color_index >= term_end:
+                        gap = color_index - term_end
+                        direction = 1
+                    else:
+                        gap = 0
+                        direction = 0
+                    candidates.append((direction, gap, body_part))
+        if candidates:
+            return min(candidates, key=lambda item: (item[0], item[1]))[2]
+        start = color_end
 
 
 def _parse_datetime(s: str) -> float:

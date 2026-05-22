@@ -25,7 +25,8 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
 from .schemas.common import error_response
-from .v1 import alerts, appearances, cameras, control, events, health, metrics, search, sites
+from .v1 import alerts, appearances, cameras, control, events, health, metrics, search, sensor_readings, sites
+from .v1.health import close_http_client
 from .dependencies._settings import ACTION_LAYER_URL, ALERT_API_URL
 from .dependencies.rate_limit import limiter
 
@@ -59,6 +60,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     # Docker 배포 시 ai-engine과 public-api는 별개의 컨테이너이므로
     # 외형 조건 동기화는 SQLite DB(APPEARANCES_DB)를 통해 이뤄진다.
     yield
+    await close_http_client()
     logger.info("CCTV Public API 종료")
 
 
@@ -145,6 +147,7 @@ async def root_info() -> dict:
         "docs": "/docs",
         "health": "/api/v1/health",
         "events": "/api/v1/events",
+        "sensor_readings": "/api/v1/sensor-readings",
         "cameras": "/api/v1/cameras",
         "sites": "/api/v1/sites",
         "search": "/api/v1/search",
@@ -184,6 +187,7 @@ _PREFIX = "/api/v1"
 app.include_router(health.router, prefix=_PREFIX)
 app.include_router(alerts.router, prefix=_PREFIX)
 app.include_router(events.router, prefix=_PREFIX)
+app.include_router(sensor_readings.router, prefix=_PREFIX)
 app.include_router(cameras.router, prefix=_PREFIX)
 app.include_router(sites.router, prefix=_PREFIX)
 app.include_router(control.router, prefix=_PREFIX)

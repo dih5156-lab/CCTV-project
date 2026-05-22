@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
 import uuid
@@ -168,7 +169,8 @@ def _sync_to_analyzer() -> None:
 async def list_conditions(
     _: None = Depends(verify_api_key),
 ) -> BaseResponse[AppearanceConditionList]:
-    conditions = _load_all()
+    loop = asyncio.get_event_loop()
+    conditions = await loop.run_in_executor(None, _load_all)
     return success_response(
         AppearanceConditionList(
             conditions=[AppearanceConditionOut(**c) for c in conditions],
@@ -189,7 +191,9 @@ async def list_conditions(
 async def get_appearance_status(
     _: None = Depends(verify_api_key),
 ) -> BaseResponse[AppearanceRuntimeStatus]:
-    return success_response(_build_runtime_status())
+    loop = asyncio.get_event_loop()
+    status_data = await loop.run_in_executor(None, _build_runtime_status)
+    return success_response(status_data)
 
 
 @router.post(
@@ -215,11 +219,15 @@ async def create_condition(
         "threshold": body.threshold,
         "cameras": body.cameras,
     }
-    entry = AppearanceConditionStore(_DB_PATH).create(
-        condition_id=cid,
-        name=body.name,
-        payload=payload,
-        enabled=body.enabled,
+    loop = asyncio.get_event_loop()
+    entry = await loop.run_in_executor(
+        None,
+        lambda: AppearanceConditionStore(_DB_PATH).create(
+            condition_id=cid,
+            name=body.name,
+            payload=payload,
+            enabled=body.enabled,
+        ),
     )
     _sync_to_analyzer()
     logger.info("외형 조건 등록: %s (%s)", cid, body.name)
@@ -237,7 +245,11 @@ async def delete_condition(
     condition_id: str,
     _: None = Depends(verify_api_key),
 ) -> BaseResponse[dict]:
-    if not AppearanceConditionStore(_DB_PATH).delete(condition_id):
+    loop = asyncio.get_event_loop()
+    deleted = await loop.run_in_executor(
+        None, lambda: AppearanceConditionStore(_DB_PATH).delete(condition_id)
+    )
+    if not deleted:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"조건을 찾을 수 없습니다: {condition_id}",

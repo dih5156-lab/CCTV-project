@@ -27,10 +27,10 @@
 
 ### 1. JetPack / L4T 버전 정합성
 
-[Dockerfile.jetson](/C:/Users/dih51/Documents/GitHub/CCTV-project/Dockerfile.jetson)은 `r36.4.0` 기준인데, [.env.jetson](/C:/Users/dih51/Documents/GitHub/CCTV-project/.env.jetson)에는 `L4T_TAG=r36.2.0-pth2.1-py3`가 남아 있습니다.
+[Dockerfile.jetson](/C:/Users/dih51/Documents/GitHub/CCTV-project/Dockerfile.jetson)과 [.env.jetson.example](/C:/Users/dih51/Documents/GitHub/CCTV-project/.env.jetson.example)은 `r36.4.0` 기준으로 맞춰져 있습니다.
 
 - 실제 Jetson이 JetPack 6.2면 `r36.4.x` 기준으로 맞추는 편이 안전합니다.
-- 현재 compose는 `L4T_TAG`를 직접 쓰지 않더라도, 운영 문서와 실제 장비 버전이 어긋나 있으면 현장 대응이 꼬이기 쉽습니다.
+- 현재 compose는 `L4T_TAG`를 직접 쓰지 않더라도, 실제 장비의 JetPack/L4T 버전과 예시 파일이 어긋나지 않는지 배포 전에 한 번 더 확인해야 합니다.
 
 ### 2. 민감 정보 외부 분리
 

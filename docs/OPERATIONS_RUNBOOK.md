@@ -32,6 +32,7 @@ cctv-grafana        Up, 127.0.0.1:3001->3000
 - `cctv-public-api`만 호스트 외부 접근이 가능한 `0.0.0.0:9000`으로 열려 있습니다.
 - `alert-api`, `action-layer`, `mqtt`, `prometheus`, `grafana`는 로컬 호스트에만 바인딩되어 있습니다.
 - 운영 환경에서는 `PUBLIC_API_KEY`, `INTERNAL_SERVICE_TOKEN`, `GRAFANA_ADMIN_PASSWORD`를 반드시 실제 값으로 설정해야 합니다.
+- MQTT 브로커는 익명 접속을 허용하지 않습니다. 실행 전 `mosquitto/passwd`를 생성하고 `MQTT_USER`, `MQTT_PASSWORD`를 설정해야 합니다.
 
 ## 서비스 구성 요약
 
@@ -80,6 +81,8 @@ docker compose up -d cctv-alert-api cctv-action-layer cctv-public-api prometheus
 전체 EdgeX 스택까지 올릴 때:
 
 ```bash
+docker run --rm -v "$PWD/mosquitto:/mosquitto/config" eclipse-mosquitto:2.0 \
+  mosquitto_passwd -c /mosquitto/config/passwd "${MQTT_USER}"
 docker compose up -d
 ```
 
@@ -252,6 +255,8 @@ curl -i -H "X-API-Key: ${PUBLIC_API_KEY}" http://localhost:9000/api/v1/health
 
 수정 방법:
 
+- `.env`에 키가 없으면 `./scripts/ensure_public_api_key.sh .env`로 생성합니다.
+- 데모 UI(`/public-api/*`)는 `public-demo-ui` nginx가 `X-API-Key`를 서버 쪽에서 주입합니다.
 - 운영에서는 클라이언트에 `X-API-Key` 헤더를 추가합니다.
 - 서버의 `PUBLIC_API_KEY`는 `.env` 또는 배포 secret으로 관리합니다.
 

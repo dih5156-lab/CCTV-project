@@ -24,6 +24,11 @@ Writable:
       SecretName: "http"
       SecretData:
         headervalue: ""
+    mqtt:
+      SecretName: "mqtt"
+      SecretData:
+        username: ""
+        password: ""
 
 Service:
   Host: "localhost"
@@ -51,7 +56,7 @@ Trigger:
     Retain: true
     SkipCertVerify: false
     SecretName: "mqtt"
-    AuthMode: "none"
+    AuthMode: "usernamepassword"
     Will:
       Enabled: false
       Payload: ""

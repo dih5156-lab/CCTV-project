@@ -8,7 +8,11 @@ from ..canonical_event import canonicalize_event_payload
 from .events import DetectionEvent
 
 
-def normalize_event_queue_item(queue_item: Any) -> Tuple[Dict[str, Any], str, str]:
+def normalize_event_queue_item(
+    queue_item: Any,
+    *,
+    default_backend: Optional[str] = "deepstream",
+) -> Tuple[Dict[str, Any], str, str]:
     """큐 항목을 MQTT 발행용 dict, event_type, camera_id로 정규화한다."""
     if isinstance(queue_item, DetectionEvent):
         event_data = queue_item.to_dict()
@@ -24,7 +28,8 @@ def normalize_event_queue_item(queue_item: Any) -> Tuple[Dict[str, Any], str, st
     metadata = event_data.get("metadata") or {}
     camera_id = event_data.get("camera_id", metadata.get("camera_id", "unknown"))
     event_data["camera_id"] = camera_id
-    event_data["backend"] = "deepstream"
+    if default_backend is not None:
+        event_data.setdefault("backend", default_backend)
     event_data = canonicalize_event_payload(event_data)
     return event_data, event_type, str(camera_id)
 
@@ -35,9 +40,13 @@ def publish_queue_item(
     topic_prefix: str,
     mqtt_publish: Optional[Callable[[str, dict], None]],
     event_publisher: Any,
+    backend: Optional[str] = "deepstream",
 ) -> bool:
     """큐 항목 1개를 발행하고 성공 여부를 반환한다."""
-    event_data, event_type, camera_id = normalize_event_queue_item(queue_item)
+    event_data, event_type, camera_id = normalize_event_queue_item(
+        queue_item,
+        default_backend=backend,
+    )
     if mqtt_publish is not None:
         topic = f"{topic_prefix}/{camera_id}/{event_type}"
         mqtt_publish(topic, event_data)

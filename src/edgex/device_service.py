@@ -27,7 +27,7 @@ except ImportError:
 from ._http_mixin import _HttpMixin
 from ._outbox_mixin import _OutboxMixin
 from ._payload_mixin import _PayloadMixin
-from ._publisher_mixin import _PublisherMixin
+from ._publisher_mixin import PublisherConnectionState, _PublisherMixin
 
 logger = logging.getLogger(__name__)
 
@@ -56,12 +56,8 @@ class CCTVDeviceService(_OutboxMixin, _HttpMixin, _PayloadMixin, _PublisherMixin
         self.enable_store_and_forward = self._to_bool(config.get("enableStoreAndForward", True))
         self.outbox_db_path = Path(config.get("outboxDbPath", "data/event_outbox.db"))
         self.outbox_flush_batch_size = int(config.get("outboxFlushBatchSize", 100))
-        self._mqtt_client: Optional[object] = None
-        self._redis_client: Optional[object] = None
-        self._redis_last_fail_time = 0.0
-        self._mqtt_last_fail_time = 0.0
-        self._redis_fail_count = 0
-        self._mqtt_fail_count = 0
+        self._redis_state = PublisherConnectionState()
+        self._mqtt_state = PublisherConnectionState()
         self._outbox_lock = threading.Lock()
         self.base_url = config.get("baseUrl", "http://cctv-device-service:59986")
         self.devices: Dict[str, str] = {}  # camera_id -> device_id 매핑

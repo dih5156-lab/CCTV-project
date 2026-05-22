@@ -151,10 +151,14 @@ class CameraModelApiHandler(BaseApiHandler):
             self._respond(404, {"error": f"camera '{camera_id}' not found"})
             return
 
+        processor = self._processor()
+        pipeline_restarting = bool(getattr(processor, "_pipeline_restart_pending", False))
+
         self._respond(200, {
             "status": "ok",
             "camera_id": camera_id,
             "model_settings": settings,
+            "pipeline_restarting": pipeline_restarting,
         })
 
 

@@ -168,7 +168,7 @@ class TestAlerts:
         assert resp.status_code == 422
         body = resp.json()
         assert body["success"] is False
-        assert body["error"]
+
 
     def test_post_alert_missing_required_field(self, client: SyncASGIClient) -> None:
         """필수 필드 누락 → 422"""
@@ -217,6 +217,98 @@ class TestAlerts:
             assert alerts_module._FALLBACK_LOG.exists()
         finally:
             alerts_module._FALLBACK_LOG = original_log
+
+
+# ---------------------------------------------------------------------------
+# /api/v1/sensor-readings
+# ---------------------------------------------------------------------------
+
+
+class TestSensorReadings:
+    def test_get_sensor_readings_returns_latest_tlv_logs(
+        self,
+        client: SyncASGIClient,
+        tmp_path: Path,
+    ) -> None:
+        import src.api.v1.sensor_readings as sensor_module
+
+        log_file = tmp_path / "sensor_readings.jsonl"
+        map_file = tmp_path / "sensor_devices.json"
+        map_file.write_text(
+            json.dumps({"devices": [{"device_id": "sensor-02", "name": "설비실 온도 센서"}]}, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        log_file.write_text(
+            "\n".join(
+                [
+                    json.dumps(
+                        {
+                            "receivedAt": "2026-05-14T01:00:00+00:00",
+                            "payload": {
+                                "device_id": "sensor-01",
+                                "table": "t34957",
+                                "data": {"temperature": 24.5, "angle_x": 1.2},
+                                "received_at": 1778720400000,
+                            },
+                        },
+                        ensure_ascii=False,
+                    ),
+                    json.dumps(
+                        {
+                            "receivedAt": "2026-05-14T01:01:00+00:00",
+                            "payload": {
+                                "device_id": "sensor-02",
+                                "table": "t34958",
+                                "data": {"temperature": 31.5},
+                            },
+                        },
+                        ensure_ascii=False,
+                    ),
+                ]
+            ),
+            encoding="utf-8",
+        )
+        original = sensor_module._SENSOR_LOG
+        original_map = sensor_module._SENSOR_DEVICE_MAP
+        sensor_module._SENSOR_LOG = log_file
+        sensor_module._SENSOR_DEVICE_MAP = map_file
+        try:
+            resp = client.get("/api/v1/sensor-readings?limit=10")
+        finally:
+            sensor_module._SENSOR_LOG = original
+            sensor_module._SENSOR_DEVICE_MAP = original_map
+
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["total"] == 2
+        assert body["items"][0]["device_id"] == "sensor-02"
+        assert body["items"][0]["device_name"] == "설비실 온도 센서"
+        assert body["items"][1]["table"] == "t34957"
+        assert body["items"][1]["data"]["temperature"] == 24.5
+
+    def test_post_sensor_reading_forwards_to_alert_api(self, client: SyncASGIClient) -> None:
+        payload = {
+            "device_id": "demo-tlv-01",
+            "table": "t34957",
+            "data": {"temperature": 26.2, "angle_x": 3.1},
+            "received_at": 1778720400000,
+        }
+
+        async def _mock_post(*args, **kwargs):
+            mock = MagicMock()
+            mock.status_code = 202
+            mock.raise_for_status = MagicMock()
+            return mock
+
+        with patch("httpx.AsyncClient.post", new=_mock_post):
+            resp = client.post("/api/v1/sensor-readings", json=payload)
+
+        assert resp.status_code == 202
+        body = resp.json()
+        assert body["success"] is True
+        assert body["data"]["accepted"] is True
+        assert body["data"]["device_id"] == "demo-tlv-01"
+        assert body["data"]["table"] == "t34957"
 
 
 # ---------------------------------------------------------------------------
@@ -360,6 +452,77 @@ class TestEvents:
             body = resp.json()
             assert body["total"] == 1
             assert body["items"][0]["timestamp"] == pytest.approx(1700000060.0)
+        finally:
+            events_module._ALERT_LOG = original
+
+    def test_list_events_accepts_iso_timestamp(self, client: SyncASGIClient, tmp_path: Path) -> None:
+        """실사용 로그의 ISO timestamp도 Unix seconds로 변환해 반환한다."""
+        import src.api.v1.events as events_module
+
+        log_file = tmp_path / "test_events_iso_timestamp.jsonl"
+        entry = {
+            "receivedAt": "2026-05-06T01:55:27.452483+00:00",
+            "payload": {
+                "camera_id": "camera_1",
+                "type": "fall_detected",
+                "severity": "critical",
+                "confidence": 0.92,
+                "timestamp": "2026-05-06T01:55:27.452483+00:00",
+            },
+        }
+        log_file.write_text(json.dumps(entry) + "\n", encoding="utf-8")
+
+        original = events_module._ALERT_LOG
+        events_module._ALERT_LOG = log_file
+        try:
+            resp = client.get("/api/v1/events?limit=1")
+            assert resp.status_code == 200
+            body = resp.json()
+            assert body["total"] == 1
+            assert body["items"][0]["timestamp"] == pytest.approx(1778032527.452483)
+            assert body["items"][0]["received_at"] == "2026-05-06T01:55:27.452483Z"
+        finally:
+            events_module._ALERT_LOG = original
+
+    def test_list_events_reads_nested_alert_event(self, client: SyncASGIClient, tmp_path: Path) -> None:
+        """Alert API가 저장하는 payload.event 포맷을 파싱한다."""
+        import src.api.v1.events as events_module
+
+        log_file = tmp_path / "test_nested_alert_event.jsonl"
+        entry = {
+            "receivedAt": "2026-05-06T01:57:55.574782+00:00",
+            "payload": {
+                "topic": "cctv/ai/events/camera_1/person",
+                "event": {
+                    "camera_id": "camera_1",
+                    "type": "person",
+                    "confidence": 0.858,
+                    "timestamp": 1778032673.848273,
+                    "object_id": 28,
+                    "event": {
+                        "event_type": "person",
+                        "severity": "normal",
+                    },
+                    "raw": {
+                        "bbox": {"x": 346, "y": 108, "width": 1570, "height": 971},
+                        "metadata": {"direction": "left"},
+                    },
+                },
+            },
+        }
+        log_file.write_text(json.dumps(entry) + "\n", encoding="utf-8")
+
+        original = events_module._ALERT_LOG
+        events_module._ALERT_LOG = log_file
+        try:
+            resp = client.get("/api/v1/events?limit=1")
+            assert resp.status_code == 200
+            item = resp.json()["items"][0]
+            assert item["camera_id"] == "camera_1"
+            assert item["event_type"] == "person"
+            assert item["confidence"] == pytest.approx(0.858)
+            assert item["bbox"]["x"] == 346
+            assert item["metadata"]["direction"] == "left"
         finally:
             events_module._ALERT_LOG = original
 

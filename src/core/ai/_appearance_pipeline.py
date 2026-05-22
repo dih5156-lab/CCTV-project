@@ -96,8 +96,11 @@ class AppearancePipeline:
         """운영 로그에 남길 외형 요약 문자열을 만든다."""
         gender = face_meta.get("gender")
         age_group = face_meta.get("age_group")
+        face_name = face_meta.get("face_name")
 
         parts = [f"track={person.object_id}"]
+        if face_name and str(face_name).strip().lower() != "unknown":
+            parts.append(f"이름={face_name}")
         if attrs.get("upper_color") not in (None, "unknown"):
             parts.append(f"상의={attrs['upper_color']}")
         if attrs.get("lower_color") not in (None, "unknown"):
@@ -179,6 +182,7 @@ class AppearancePipeline:
         camera_id: str,
         nearby_objects: List[Dict],
         face_meta: Dict,
+        precomputed_attrs: Optional[Dict] = None,
     ) -> None:
         """외형 속성을 추출하고 로그/DB/crop 저장까지 처리한다."""
         log_key = f"_applog_{person.object_id}"
@@ -186,7 +190,11 @@ class AppearancePipeline:
         if now - last_log < 3.0:
             return
 
-        attrs = self._extract_person_attributes(frame, person, nearby_objects)
+        attrs = (
+            dict(precomputed_attrs)
+            if precomputed_attrs
+            else self._extract_person_attributes(frame, person, nearby_objects)
+        )
         logger.info("[외형] %s", "  ".join(self._build_log_parts(person, attrs, face_meta)))
         self._appearance_cooldown[log_key] = now
 
@@ -217,6 +225,7 @@ class AppearancePipeline:
         camera_id: Optional[str] = None,
         cooldown: float = 5.0,
         nearby_objects: Optional[List[Dict]] = None,
+        precomputed_attributes: Optional[Dict[int, Dict]] = None,
     ) -> List[DetectionEvent]:
         """외형 조건 매칭 이벤트를 생성한다."""
         if frame is None or not person_events:
@@ -226,16 +235,24 @@ class AppearancePipeline:
         now = time.time()
 
         for person in person_events:
-            matches = self._appearance.find_matches(
-                frame,
-                person.x,
-                person.y,
-                person.width,
-                person.height,
-                camera_id=camera_id,
-                nearby_objects=nearby_objects,
-                keypoints=person.keypoints,
+            precomputed = (
+                precomputed_attributes.get(int(person.object_id))
+                if precomputed_attributes and person.object_id is not None
+                else None
             )
+            if precomputed:
+                matches = self._find_matches_from_attributes(precomputed, camera_id)
+            else:
+                matches = self._appearance.find_matches(
+                    frame,
+                    person.x,
+                    person.y,
+                    person.width,
+                    person.height,
+                    camera_id=camera_id,
+                    nearby_objects=nearby_objects,
+                    keypoints=person.keypoints,
+                )
             for match in matches:
                 cooldown_key = f"{person.object_id}:{match['condition_id']}"
                 last_ts = self._appearance_cooldown.get(cooldown_key, 0.0)
@@ -280,6 +297,24 @@ class AppearancePipeline:
             logger.info("외형 매칭: %d건 발생", len(appearance_events))
         return appearance_events
 
+    def _find_matches_from_attributes(
+        self,
+        attrs: Dict,
+        camera_id: Optional[str],
+    ) -> List[Dict]:
+        """사전 계산된 속성으로 외형 조건 매칭 결과를 만든다."""
+        matches: List[Dict] = []
+        for condition in self._appearance.get_enabled_conditions(camera_id):
+            score = self._appearance.match_conditions(attrs, condition)
+            if score >= float(condition.get("threshold", 0.8)):
+                matches.append({
+                    "condition_id": condition["id"],
+                    "condition_name": condition.get("name", ""),
+                    "score": score,
+                    "attributes": attrs,
+                })
+        return matches
+
     def run(
         self,
         frame: np.ndarray,
@@ -289,6 +324,7 @@ class AppearancePipeline:
         camera_id: Optional[str],
         use_appearance: bool,
         nearby_objects: Optional[List[Dict]] = None,
+        precomputed_attributes: Optional[Dict[int, Dict]] = None,
     ) -> List[DetectionEvent]:
         """외형 속성 추출, 로그 저장, 조건 매칭을 순서대로 수행한다."""
         if not use_appearance or not person_events:
@@ -301,6 +337,11 @@ class AppearancePipeline:
         face_meta_map = self._build_face_meta_map(face_events)
 
         for person in person_events:
+            precomputed = (
+                precomputed_attributes.get(int(person.object_id))
+                if precomputed_attributes and person.object_id is not None
+                else None
+            )
             self.log_person_appearance(
                 frame,
                 person,
@@ -308,6 +349,7 @@ class AppearancePipeline:
                 resolved_camera_id,
                 nearby,
                 face_meta_map.get(person.object_id, {}),
+                precomputed_attrs=precomputed,
             )
 
         if not self._appearance.conditions:
@@ -318,4 +360,5 @@ class AppearancePipeline:
             person_events,
             camera_id=resolved_camera_id,
             nearby_objects=nearby,
+            precomputed_attributes=precomputed_attributes,
         )

@@ -5,7 +5,7 @@ DetectionEvent: YOLO 추론 결과를 담는 핵심 dataclass.
 """
 
 from dataclasses import dataclass
-from typing import Optional, Dict
+from typing import Dict, FrozenSet, Optional
 from enum import Enum
 
 class EventType(str, Enum):
@@ -15,6 +15,7 @@ class EventType(str, Enum):
     FACE_RECOGNIZED = "face_recognized"
     FACE_UNKNOWN = "face_unknown"
     DANGER_ZONE = "danger_zone"
+    INTRUSION = "intrusion"              # 위험구역 침입 (데모 이벤트)
     FALL_DETECTED = "fall_detected"
     NOT_FALL = "not_fall"
     UNSAFE_BEHAVIOR = "unsafe_behavior"
@@ -23,6 +24,7 @@ class EventType(str, Enum):
     CROWD_WARNING = "crowd_warning"      # 유동인구 임계값 초과 경고
     ZONE_OBJECT = "zone_object"          # 특정구역 객체 감지
     APPEARANCE_MATCH = "appearance_match" # 외형 조건 매칭 (색상·속성)
+    SENSOR_TEMPERATURE = "sensor_temperature"  # 온도 이상
 
     @classmethod
     def from_string(cls, value: str) -> 'EventType':
@@ -34,11 +36,16 @@ class EventType(str, Enum):
 
 
 # 엄중 이벤트 집합 — 새 타입 추가 시 이곳만 수정
-_CRITICAL_EVENT_TYPES: frozenset = frozenset({
+_CRITICAL_EVENT_TYPES: FrozenSet[EventType] = frozenset({
     EventType.FALL_DETECTED,
     EventType.DANGER_ZONE,
     EventType.UNSAFE_BEHAVIOR,
 })
+
+
+def severity_for_event_type(event_type: EventType) -> str:
+    """이벤트 타입에 대응하는 기본 severity를 반환한다."""
+    return "critical" if event_type in _CRITICAL_EVENT_TYPES else "normal"
 
 
 @dataclass
@@ -71,11 +78,9 @@ class DetectionEvent:
 
     def to_dict(self) -> Dict:
         """이벤트를 딕셔너리 형식으로 변환"""
-        # critical 여부 — _CRITICAL_EVENT_TYPES 세트에서 결정
-        severity = "critical" if self.event_type in _CRITICAL_EVENT_TYPES else "normal"
         return {
             "type": self.event_type.value,
-            "severity": severity,
+            "severity": severity_for_event_type(self.event_type),
             "bbox": {"x": self.x, "y": self.y, "width": self.width, "height": self.height},
             "confidence": self.confidence,
             "timestamp": self.timestamp,

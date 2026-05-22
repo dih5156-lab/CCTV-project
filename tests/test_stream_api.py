@@ -11,8 +11,11 @@ import pytest
 
 from src.services.stream_api import (
     StreamApiHandler,
+    _get_camera_frame_for_stream,
     _read_jpeg_quality,
     _read_stream_fps,
+    _read_stream_size,
+    _resize_for_stream,
     start_stream_api_server,
 )
 
@@ -92,8 +95,9 @@ class TestStreamApiCamerasList:
         assert body["status"] == "ok"
         assert body["camera_count"] == 2
         assert "checked_at" in body
-        assert body["stream_fps"] == 15.0
+        assert body["stream_fps"] == 30.0
         assert body["jpeg_quality"] == 75
+        assert body["stream_size"] == {"width": 0, "height": 0}
 
 
 # ---------------------------------------------------------------------------
@@ -199,15 +203,27 @@ class TestStartStreamApiServer:
         # 환경 변수 값(19998)이 사용되어야 함
         MockServer.assert_called_once_with(("", 19998), StreamApiHandler)
 
+    def test_invalid_stream_port_env_falls_back(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("STREAM_PORT", "bad-port")
+        mock_proc = MagicMock()
+
+        with patch("src.services.stream_api.ThreadingApiServer") as MockServer:
+            mock_instance = MagicMock()
+            MockServer.return_value = mock_instance
+            with patch("threading.Thread"):
+                start_stream_api_server(mock_proc, port=19999)
+
+        MockServer.assert_called_once_with(("", 19999), StreamApiHandler)
+
 
 class TestStreamApiEnvParsing:
     def test_invalid_stream_fps_falls_back(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setenv("STREAM_FPS", "not-a-number")
-        assert _read_stream_fps() == 15.0
+        assert _read_stream_fps() == 30.0
 
     def test_stream_fps_is_clamped(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setenv("STREAM_FPS", "120")
-        assert _read_stream_fps() == 30.0
+        assert _read_stream_fps() == 60.0
 
     def test_invalid_jpeg_quality_falls_back(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setenv("STREAM_JPEG_QUALITY", "bad")
@@ -216,3 +232,59 @@ class TestStreamApiEnvParsing:
     def test_jpeg_quality_is_clamped(self, monkeypatch: pytest.MonkeyPatch) -> None:
         monkeypatch.setenv("STREAM_JPEG_QUALITY", "10")
         assert _read_jpeg_quality() == 30
+
+    def test_stream_size_defaults_to_original(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.delenv("STREAM_WIDTH", raising=False)
+        monkeypatch.delenv("STREAM_HEIGHT", raising=False)
+        assert _read_stream_size() == (0, 0)
+
+    def test_stream_size_requires_width_and_height(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("STREAM_WIDTH", "960")
+        monkeypatch.delenv("STREAM_HEIGHT", raising=False)
+        assert _read_stream_size() == (0, 0)
+
+    def test_stream_size_reads_valid_dimensions(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("STREAM_WIDTH", "960")
+        monkeypatch.setenv("STREAM_HEIGHT", "540")
+        assert _read_stream_size() == (960, 540)
+
+
+class TestStreamApiFramePreparation:
+    def test_get_camera_frame_uses_no_copy_when_supported(self) -> None:
+        proc = MagicMock()
+        proc.get_camera_frame.return_value = "frame"
+
+        frame = _get_camera_frame_for_stream(proc, "cam-1")
+
+        assert frame == "frame"
+        proc.get_camera_frame.assert_called_once_with(
+            "cam-1", annotated=True, copy_frame=False
+        )
+
+    def test_get_camera_frame_falls_back_for_legacy_processor(self) -> None:
+        proc = MagicMock()
+        proc.get_camera_frame.side_effect = [TypeError("bad kw"), "frame"]
+
+        frame = _get_camera_frame_for_stream(proc, "cam-1")
+
+        assert frame == "frame"
+        assert proc.get_camera_frame.call_args_list[-1].kwargs == {"annotated": True}
+
+    def test_resize_for_stream_resizes_when_configured(self) -> None:
+        frame = MagicMock()
+        frame.shape = (720, 1280, 3)
+        cv2 = MagicMock()
+        cv2.INTER_AREA = 3
+        cv2.resize.return_value = "resized"
+
+        result = _resize_for_stream(cv2, frame, 960, 540)
+
+        assert result == "resized"
+        cv2.resize.assert_called_once_with(frame, (960, 540), interpolation=3)
+
+    def test_resize_for_stream_keeps_original_when_disabled(self) -> None:
+        frame = MagicMock()
+        cv2 = MagicMock()
+
+        assert _resize_for_stream(cv2, frame, 0, 0) is frame
+        cv2.resize.assert_not_called()

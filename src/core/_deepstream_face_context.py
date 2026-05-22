@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from typing import Any, Callable, Dict, List, Tuple
 
 from .ai._constants import _FACE_TRACK_COOLDOWN_SEC
@@ -10,6 +11,7 @@ from .events import DetectionEvent, EventType
 
 
 FaceCache = Dict[Tuple[str, int], Dict[str, Any]]
+logger = logging.getLogger(__name__)
 
 
 def remove_camera_face_cache(cache: FaceCache, camera_id: str) -> None:
@@ -110,6 +112,15 @@ def _build_face_event(
     )
     if snapshot_path:
         face_meta["snapshot_path"] = snapshot_path
+
+    if best.matched:
+        logger.info(
+            "[얼굴] camera=%s track=%s 이름=%s score=%.4f",
+            camera_name,
+            person.object_id,
+            best.label,
+            best.confidence,
+        )
 
     return DetectionEvent(
         event_type=event_type,

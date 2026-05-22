@@ -71,7 +71,7 @@ def _build_processor() -> MagicMock:
         if camera_id not in ("camera_1", "camera_2"):
             return None
         use_helmet = bool(settings.get("use_helmet", settings.get("helmet", True)))
-        use_pose = bool(settings.get("use_pose", settings.get("pose", True))) or use_helmet
+        use_pose = bool(settings.get("use_pose", settings.get("pose", True)))
         return {
             "use_pose": use_pose,
             "use_helmet": use_helmet,

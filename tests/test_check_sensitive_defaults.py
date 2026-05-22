@@ -31,5 +31,20 @@ def test_non_empty_secret_defaults_are_rejected():
     assert not check_sensitive_defaults._is_allowed_value("${SPEAKER_PASSWORD:-plain-secret}")
 
 
+def test_jetson_example_is_checked_for_sensitive_defaults():
+    assert Path(".env.jetson.example") in check_sensitive_defaults.CHECK_FILES
+
+
+def test_wildcard_cors_default_is_rejected(tmp_path, monkeypatch):
+    config_file = tmp_path / ".env.example"
+    config_file.write_text("CORS_ORIGINS=*\n", encoding="utf-8")
+
+    monkeypatch.setattr(check_sensitive_defaults, "CHECK_FILES", (config_file,))
+
+    findings = check_sensitive_defaults.find_sensitive_defaults()
+
+    assert findings == [f"{config_file}:1: unsafe default for CORS_ORIGINS"]
+
+
 def test_current_shared_configs_have_no_sensitive_defaults():
     assert check_sensitive_defaults.find_sensitive_defaults() == []

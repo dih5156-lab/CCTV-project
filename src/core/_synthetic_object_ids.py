@@ -70,13 +70,25 @@ class SyntheticObjectIdAssigner:
     ) -> Tuple[Optional[int], float]:
         best_track_id: Optional[int] = None
         best_iou = 0.0
+        ex2 = event.x + event.width
+        ey2 = event.y + event.height
         for track_id, (_, tracked_event) in tracks.items():
             if tracked_event.event_type != event.event_type:
+                continue
+            # 빠른 비중첩 사전 검사 — IoU 계산보다 훨씬 저렴
+            if (
+                ex2 <= tracked_event.x
+                or tracked_event.x + tracked_event.width <= event.x
+                or ey2 <= tracked_event.y
+                or tracked_event.y + tracked_event.height <= event.y
+            ):
                 continue
             iou = event_iou(event, tracked_event)
             if iou > best_iou:
                 best_iou = iou
                 best_track_id = track_id
+                if best_iou > 0.85:   # 충분히 높은 매칭 → 조기 종료
+                    break
         return best_track_id, best_iou
 
     def _allocate(self) -> int:

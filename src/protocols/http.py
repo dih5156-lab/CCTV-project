@@ -62,6 +62,20 @@ class HttpEventForwarder:
         """등록된 HTTP 전송 대상이 하나 이상 있으면 True."""
         return bool(self._targets)
 
+    @property
+    def target_count(self) -> int:
+        """등록된 HTTP 전송 대상 수."""
+        return len(self._targets)
+
+    @property
+    def retry_queue_size(self) -> int:
+        """대기 중인 재시도 이벤트 수."""
+        return self._retry_queue.qsize()
+
+    def target_at(self, index: int) -> HttpEventTarget:
+        """테스트/운영 점검용 대상 조회. 내부 리스트는 노출하지 않는다."""
+        return self._targets[index]
+
     # ------------------------------------------------------------------
 
     def add_target(self, target: HttpEventTarget) -> None:

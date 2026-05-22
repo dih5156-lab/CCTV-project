@@ -87,6 +87,36 @@ def test_build_log_payload_includes_face_meta_and_bbox(tmp_path):
     assert payload["bbox_h"] == 40
 
 
+def test_build_log_parts_includes_registered_face_name(tmp_path):
+    pipeline = AppearancePipeline(AppearanceAnalyzer(), tmp_path / "crops")
+    person = DetectionEvent(
+        event_type=EventType.PERSON,
+        x=10,
+        y=20,
+        width=30,
+        height=40,
+        confidence=0.9,
+        timestamp=1000.0,
+        object_id=7,
+        class_name="person",
+    )
+
+    parts = pipeline._build_log_parts(
+        person,
+        {
+            "upper_color": "black",
+            "lower_color": "blue",
+            "has_helmet": True,
+            "has_backpack": False,
+            "has_handbag": False,
+            "has_suitcase": False,
+        },
+        {"face_name": "홍길동"},
+    )
+
+    assert "이름=홍길동" in parts
+
+
 def test_log_person_appearance_builds_and_inserts_payload(tmp_path):
     pipeline = AppearancePipeline(AppearanceAnalyzer(), tmp_path / "crops")
     frame = np.zeros((40, 40, 3), dtype=np.uint8)

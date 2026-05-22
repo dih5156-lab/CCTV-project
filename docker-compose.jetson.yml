@@ -55,9 +55,15 @@ x-appearance-runtime: &appearance-runtime
   DS_HELMET_ENABLED: ${DS_HELMET_ENABLED:-1}
   DS_FACE_ENABLED: ${DS_FACE_ENABLED:-1}
   DS_APPEARANCE_ENABLED: ${DS_APPEARANCE_ENABLED:-1}
-  APPEARANCE_BACKEND: ${APPEARANCE_BACKEND:-hsv}
+  APPEARANCE_BACKEND: ${APPEARANCE_BACKEND:-pphuman}
+  APPEARANCE_MODEL_PATH: ${APPEARANCE_MODEL_PATH:-models/pphuman_attribute_src/PP-LCNet_x1_0_pedestrian_attribute_infer}
+  APPEARANCE_LABEL_MAP_PATH: ${APPEARANCE_LABEL_MAP_PATH:-config/appearance_pphuman_labels.example.json}
+  APPEARANCE_RUNTIME: ${APPEARANCE_RUNTIME:-paddle}
+  APPEARANCE_INPUT_SIZE: ${APPEARANCE_INPUT_SIZE:-224}
+  APPEARANCE_SCORE_THRESHOLD: ${APPEARANCE_SCORE_THRESHOLD:-0.5}
   APPEARANCES_DB: ${APPEARANCES_DB:-/app/data/appearances.db}
   APPEARANCE_CROP_DIR: ${APPEARANCE_CROP_DIR:-/app/data/appearance_crops}
+  APPEARANCE_SAVE_CROPS: ${APPEARANCE_SAVE_CROPS:-true}
 
 # ── 서비스 정의 ──────────────────────────────────────────────────────────────
 services:
@@ -69,6 +75,9 @@ services:
     container_name: edgex-mqtt-broker
     hostname: edgex-mqtt-broker
     image: eclipse-mosquitto:2.0
+    environment:
+      MQTT_USER: ${MQTT_USER:-}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-}
     networks:
       edgex-network: null
     ports:
@@ -81,6 +90,10 @@ services:
       - type: bind
         source: ./mosquitto/mosquitto.conf
         target: /mosquitto/config/mosquitto.conf
+        read_only: true
+      - type: bind
+        source: ./mosquitto/passwd
+        target: /mosquitto/config/passwd
         read_only: true
 
   # ============================================================================
@@ -158,7 +171,7 @@ services:
     environment:
       POSTGRES_DB: ${AIOT_DB_NAME:-aiot_sensor}
       POSTGRES_USER: ${AIOT_DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${AIOT_DB_PASSWORD:-postgres}
+      POSTGRES_PASSWORD: ${AIOT_DB_PASSWORD:-}
     networks:
       edgex-network: null
     restart: always
@@ -480,6 +493,8 @@ services:
       WRITABLE_PIPELINE_FUNCTIONS_HTTPEXPORT_PARAMETERS_URL: http://cctv-alert-api:8000/api/alerts
       WRITABLE_PIPELINE_FUNCTIONS_HTTPEXPORT_PARAMETERS_PERSISTONERROR: "false"
       WRITABLE_PIPELINE_FUNCTIONS_HTTPEXPORT_PARAMETERS_CONTINUEONSENDERROR: "false"
+      WRITABLE_INSECURESECRETS_MQTT_SECRETDATA_USERNAME: ${MQTT_USER:-}
+      WRITABLE_INSECURESECRETS_MQTT_SECRETDATA_PASSWORD: ${MQTT_PASSWORD:-}
     hostname: edgex-app-rules-engine
     image: edgexfoundry/app-service-configurable:3.1.1
     platform: linux/arm64
@@ -517,7 +532,7 @@ services:
       <<: *edgex-common
       SERVICE_HOST: edgex-ui-go
     hostname: edgex-ui-go
-    image: edgexfoundry/edgex-ui:3.1.0
+    image: nginx:1.27-alpine
     platform: linux/arm64
     networks:
       edgex-network: null
@@ -526,12 +541,76 @@ services:
       - target: 4000
         published: "4000"
         protocol: tcp
-    read_only: true
     restart: always
     <<: *edgex-security
-    user: 2002:2001
     volumes:
       - <<: *localtime
+      - type: bind
+        source: ./web/edgex-status.html
+        target: /usr/share/nginx/html/edgex-status.html
+        read_only: true
+      - type: bind
+        source: ./config/nginx/edgex-status.conf
+        target: /etc/nginx/conf.d/default.conf
+        read_only: true
+
+  public-demo-ui:
+    container_name: cctv-public-demo-ui
+    image: nginx:1.27-alpine
+    platform: linux/arm64
+    environment:
+      PUBLIC_API_KEY: ${PUBLIC_API_KEY:-}
+    networks:
+      edgex-network: null
+    ports:
+      # 외부에서 http://<Jetson-IP>:7000 으로 CCTV 데모 화면 접근
+      - target: 7000
+        published: "7000"
+        protocol: tcp
+    restart: always
+    <<: *edgex-security
+    volumes:
+      - <<: *localtime
+      - type: bind
+        source: ./web/public-demo.html
+        target: /usr/share/nginx/html/public-demo.html
+        read_only: true
+      - type: bind
+        source: ./config/nginx/public-demo.conf.template
+        target: /etc/nginx/templates/default.conf.template
+        read_only: true
+
+  cctv-media-server:
+    container_name: cctv-media-server
+    image: bluenviron/mediamtx:1
+    platform: linux/arm64
+    environment:
+      # Docker bridge 안의 컨테이너 IP가 아니라, 브라우저가 실제 접근 가능한 Jetson IP를 ICE 후보로 보낸다.
+      MTX_WEBRTCADDITIONALHOSTS: ${MEDIA_WEBRTC_ADDITIONAL_HOSTS:-192.168.88.137,192.168.2.242,192.168.0.10}
+    networks:
+      edgex-network: null
+    ports:
+      - target: 8554
+        published: "${MEDIA_RTSP_PORT:-8554}"
+        protocol: tcp
+      - target: 8888
+        published: "${MEDIA_HLS_PORT:-8888}"
+        protocol: tcp
+      - target: 8889
+        published: "${MEDIA_WEBRTC_PORT:-8889}"
+        protocol: tcp
+      - target: 8189
+        published: "${MEDIA_WEBRTC_UDP_PORT:-8189}"
+        protocol: udp
+      - target: 9997
+        published: "${MEDIA_API_PORT:-9997}"
+        protocol: tcp
+    restart: always
+    volumes:
+      - type: bind
+        source: ./config/mediamtx.yml
+        target: /mediamtx.yml
+        read_only: true
 
   # ============================================================================
   # CCTV 커스텀 서비스들
@@ -558,8 +637,19 @@ services:
       USE_GSTREAMER: ${USE_GSTREAMER:-1}
       # DeepStreamProcessor 활성화 스위치 (기본은 기존 VideoProcessor)
       USE_DEEPSTREAM: ${USE_DEEPSTREAM:-1}
-      # DeepStream 출력 모드: fakesink(헤드리스) 또는 display(Jetson X11 화면)
-      DS_OUTPUT_MODE: ${DS_OUTPUT_MODE:-fakesink}
+      # DeepStream 출력 모드: h264-mpegts(MediaMTX UDP ingest), rtsp-publish, fakesink, display
+      DS_OUTPUT_MODE: ${DS_OUTPUT_MODE:-h264-mpegts}
+      DS_RTSP_LOCATION: ${DS_RTSP_LOCATION:-rtsp://cctv-media-server:8554/camera_1}
+      DS_RTSP_LATENCY_MS: ${DS_RTSP_LATENCY_MS:-100}
+      DS_H264_ENCODER: ${DS_H264_ENCODER:-nvv4l2h264enc}
+      DS_H264_UDP_HOST: ${DS_H264_UDP_HOST:-cctv-media-server}
+      DS_H264_UDP_PORT: ${DS_H264_UDP_PORT:-1234}
+      DS_H264_WIDTH: ${DS_H264_WIDTH:-1280}
+      DS_H264_HEIGHT: ${DS_H264_HEIGHT:-720}
+      DS_H264_FPS: ${DS_H264_FPS:-30}
+      DS_H264_BITRATE: ${DS_H264_BITRATE:-6000000}
+      DS_H264_IFRAME_INTERVAL: ${DS_H264_IFRAME_INTERVAL:-30}
+      DS_H264_IDR_INTERVAL: ${DS_H264_IDR_INTERVAL:-30}
       DS_NVBUF_MEMORY_TYPE: ${DS_NVBUF_MEMORY_TYPE:-0}
       DS_EVENT_MIN_INTERVAL_SEC: ${DS_EVENT_MIN_INTERVAL_SEC:-3.0}
       DS_YOLO_TASK: ${DS_YOLO_TASK:-pose}
@@ -576,10 +666,18 @@ services:
       FACE_RECOGNITION_BACKEND: ${FACE_RECOGNITION_BACKEND:-opencv}
       APPEARANCE_ENABLED: ${APPEARANCE_ENABLED:-true}
       DS_PREVIEW_ENABLED: ${DS_PREVIEW_ENABLED:-1}
+      # 라이브 표준 경로는 MediaMTX WebRTC/H.264이며, MJPEG/Stream API는 기본 비활성화한다.
+      DS_PREVIEW_MAX_FPS: ${DS_PREVIEW_MAX_FPS:-15}
+      DS_PREVIEW_WIDTH: ${DS_PREVIEW_WIDTH:-960}
+      DS_PREVIEW_HEIGHT: ${DS_PREVIEW_HEIGHT:-540}
       STREAM_API_ENABLED: ${STREAM_API_ENABLED:-1}
       STREAM_PORT: ${STREAM_PORT:-8769}
       STREAM_FPS: ${STREAM_FPS:-15}
-      STREAM_JPEG_QUALITY: ${STREAM_JPEG_QUALITY:-75}
+      STREAM_JPEG_QUALITY: ${STREAM_JPEG_QUALITY:-65}
+      STREAM_WIDTH: ${STREAM_WIDTH:-960}
+      STREAM_HEIGHT: ${STREAM_HEIGHT:-540}
+      MQTT_USER: ${MQTT_USER:-}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-}
       DISPLAY: ${DISPLAY:-:0}
       QT_X11_NO_MITSHM: "1"
       # Jetson Orin nvgpu cuDNN v8 API 비활성화 (GET engine 에러 방지)
@@ -618,7 +716,7 @@ services:
       - --zones-config
       - /app/zones_config.json
       - --api-port
-      - ${ZONE_API_PORT:-0}
+      - ${ZONE_API_PORT:-8765}
       # --display 는 헤드리스 환경이므로 사용 금지
     depends_on:
       edgex-mqtt-broker:
@@ -633,12 +731,20 @@ services:
         condition: service_started
       ui:
         condition: service_started
+      cctv-media-server:
+        condition: service_started
     networks:
       edgex-network: null
     ports:
-      # DeepStream MJPEG preview: http://<Jetson-IP>:8769/stream/camera_1
-      - target: 8769
-        published: "${STREAM_PORT:-8769}"
+      # Demo dashboard management APIs
+      - target: 8765
+        published: "${ZONE_API_PORT:-8765}"
+        protocol: tcp
+      - target: 8766
+        published: "${CAMERA_MODEL_API_PORT:-8766}"
+        protocol: tcp
+      - target: 8767
+        published: "${FACE_API_PORT:-8767}"
         protocol: tcp
     healthcheck:
       test: ["CMD-SHELL", "kill -0 1 2>/dev/null || exit 1"]
@@ -649,9 +755,12 @@ services:
     restart: always
     volumes:
       - type: bind
+        source: ./src
+        target: /app/src
+        read_only: true
+      - type: bind
         source: ./cameras.json
         target: /app/cameras.json
-        read_only: true
       - type: bind
         source: ./zones_config.json
         target: /app/zones_config.json
@@ -781,12 +890,17 @@ services:
       DB_HOST: aiot-parser-db
       DB_PORT: "5432"
       DB_USER: ${AIOT_DB_USER:-postgres}
-      DB_PW: ${AIOT_DB_PASSWORD:-postgres}
+      DB_PW: ${AIOT_DB_PASSWORD:-}
       DB_NAME: ${AIOT_DB_NAME:-aiot_sensor}
-      NS_PARK_MQTT_HOST: edgex-mqtt-broker
-      NS_PARK_MQTT_PORT: "1883"
-      LAB_MQTT_HOST: edgex-mqtt-broker
-      LAB_MQTT_PORT: "1883"
+      MQTT_USER: ${MQTT_USER:-}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-}
+      NS_PARK_MQTT_HOST: ${NS_PARK_MQTT_HOST:-edgex-mqtt-broker}
+      NS_PARK_MQTT_PORT: ${NS_PARK_MQTT_PORT:-1883}
+      NS_PARK_MQTT_ID: ${NS_PARK_MQTT_ID:-}
+      LAB_MQTT_HOST: ${LAB_MQTT_HOST:-edgex-mqtt-broker}
+      LAB_MQTT_PORT: ${LAB_MQTT_PORT:-1883}
+      LAB_MQTT_ID: ${LAB_MQTT_ID:-}
+      NC_PW: ${NC_PW:-}
       EDGEX_MQTT_HOST: edgex-mqtt-broker
       EDGEX_MQTT_PORT: "1883"
       EDGEX_CORE_DATA_URL: http://edgex-core-data:59880
@@ -899,6 +1013,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.action
+    user: "1000:1000"
     env_file:
       - ./.env.jetson
     depends_on:
@@ -918,7 +1033,9 @@ services:
       - --port
       - "8000"
       - --log-path
-      - /app/alert_api_events.jsonl
+      - /app/data/alert_api_events.jsonl
+      - --sensor-log-path
+      - /app/data/sensor_readings.jsonl
     networks:
       edgex-network: null
     ports:
@@ -953,6 +1070,8 @@ services:
       PYTHONPATH: /app
       MQTT_BROKER: edgex-mqtt-broker
       MQTT_PORT: "1883"
+      MQTT_USER: ${MQTT_USER:-}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-}
       DB_PATH: /app/action_events.db
       EXTERNAL_API_URL: http://cctv-alert-api:8000/api/alerts
       ALARM_COOLDOWN: ${ACTION_ALARM_COOLDOWN:-10}
@@ -989,6 +1108,80 @@ services:
         source: ./runners
         target: /app/runners
         read_only: true
+
+  # ── Public API (외부 서버/대시보드 연동) ──────────────────────────────────
+  cctv-public-api:
+    container_name: cctv-public-api
+    build:
+      context: .
+      dockerfile: Dockerfile.action
+    user: "1000:1000"
+    command:
+      - python
+      - runners/run_public_api.py
+      - --host
+      - 0.0.0.0
+      - --port
+      - "9000"
+    environment:
+      PYTHONPATH: /app
+      PYTHONIOENCODING: utf-8
+      PYTHONUTF8: "1"
+      NVIDIA_VISIBLE_DEVICES: ""
+      ACTION_LAYER_URL: http://cctv-action-layer:8080
+      ALERT_API_URL: http://cctv-alert-api:8000
+      ALERT_LOG_PATH: /app/data/alert_api_events.jsonl
+      SENSOR_LOG_PATH: /app/data/sensor_readings.jsonl
+      SENSOR_DEVICE_MAP_PATH: /app/config/sensor_devices.json
+      ALERT_FALLBACK_LOG: /app/data/public_api_fallback.jsonl
+      CAMERAS_JSON: /app/cameras.json
+      PUBLIC_API_KEY: ${PUBLIC_API_KEY:-}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+      <<: *appearance-runtime
+      RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-true}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-}
+    ports:
+      - target: 9000
+        published: "9000"
+        protocol: tcp
+    depends_on:
+      cctv-alert-api:
+        condition: service_healthy
+      cctv-action-layer:
+        condition: service_healthy
+    networks:
+      edgex-network: null
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:9000/api/v1/health', timeout=3)"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    restart: always
+    volumes:
+      - type: bind
+        source: ./src
+        target: /app/src
+        read_only: true
+      - type: bind
+        source: ./runners
+        target: /app/runners
+        read_only: true
+      - type: bind
+        source: ./cameras.json
+        target: /app/cameras.json
+        read_only: true
+      - type: bind
+        source: ./config/sensor_devices.json
+        target: /app/config/sensor_devices.json
+        read_only: true
+      - type: bind
+        source: ./data
+        target: /app/data
 
 # ── 네트워크 ──────────────────────────────────────────────────────────────────
 networks:

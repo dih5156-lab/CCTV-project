@@ -1,0 +1,35 @@
+# =============================================================================
+# nvinfer TensorRT PP-Human person attribute 설정 (Jetson Orin / DeepStream)
+#
+# 입력:  x, NCHW 3x256x192
+# 출력:  fetch_name_0, 26개 sigmoid score
+#
+# 현재 파일은 DeepStream secondary GIE 전환용 템플릿이다.
+# 파이프라인 연결 후 object tensor meta를 Python에서 label map으로 디코딩해야 한다.
+# =============================================================================
+
+[property]
+gpu-id=0
+gie-unique-id=3
+model-engine-file=/app/models/pphuman_attribute.engine
+
+# PP-Human 전처리: RGB, ImageNet normalize
+model-color-format=0
+net-scale-factor=0.017124753831663668
+offsets=123.675;116.28;103.53
+
+# 100=Other. 26개 sigmoid output을 Python pad-probe에서 직접 디코딩한다.
+network-type=100
+output-blob-names=fetch_name_0
+infer-dims=3;256;192
+batch-size=8
+workspace-size=512
+output-tensor-meta=1
+
+# Person detector(primary gie id=1)의 person(class id=0) ROI에만 적용한다.
+process-mode=2
+operate-on-gie-id=1
+operate-on-class-ids=0
+
+[class-attrs-all]
+threshold=0.5
