@@ -476,7 +476,17 @@ web/public-demo.html
 |------|--------|------|
 | Public API | `http://localhost:9000` | 상태, readiness, 카메라 목록, 이벤트 전송 |
 | Stream API | `http://localhost:8769` | 카메라 MJPEG 화면 |
-| Grafana | `http://localhost:3001` | 운영 메트릭 대시보드 |
+| Grafana | `http://localhost:3001` | 선택: 운영 메트릭 대시보드 |
+
+이번 주 기능 진행 기준:
+
+- TLV 센서 로그는 조회만 하지 않고 위험 상태를 함께 계산합니다.
+  - `temperature >= 50`: `temperature_alert` / `warning`
+  - `temperature >= 70`: `temperature_alert` / `critical`
+  - `angle_x` 또는 `angle_y` 절댓값 `>= 30`: `tilt_alert` / `warning`
+  - `event_code != 0`: `sensor_event` / `warning`
+- 위험 센서 입력은 Public API가 Action Layer `/events`로 함께 전달합니다.
+- 시연 UI의 운영 요약은 최근 CCTV 이벤트, TLV 센서 이상, 승인 대기 건수를 같이 봅니다.
 
 시연 전 확인:
 
@@ -489,6 +499,19 @@ curl -fsS http://localhost:8769/cameras
 .venv/bin/python scripts/smoke_test_deployment.py
 .venv/bin/python scripts/smoke_test_data_flow.py
 ```
+
+Prometheus/Grafana는 운영 모니터링용 선택 구성입니다. 핵심 시연 검증은 기본 smoke test만으로
+Alert API, Action Layer, Public API readiness를 확인합니다. 모니터링까지 함께 검증할 때만 아래처럼 실행합니다.
+
+```bash
+.venv/bin/python scripts/smoke_test_deployment.py --include-monitoring
+```
+
+런타임 로그 정책:
+
+- `data/*.jsonl`은 시연/운영 중 계속 누적되는 로컬 로그이므로 git 추적 대상에서 제외합니다.
+- 공유가 필요한 샘플 데이터는 실제 런타임 파일 대신 별도 예제 파일로 분리해서 추가합니다.
+- 장시간 smoke/soak 후 로그가 커지면 파일을 비우거나 백업 후 재시작해도 API 기능에는 영향이 없습니다.
 
 Docker socket 권한이 막힌 장비에서는 `docker` 명령 앞에 `sudo`를 붙입니다.
 
@@ -510,11 +533,12 @@ sudo docker compose up -d --force-recreate cctv-ai-engine
 내일 설명할 때는 아래 순서가 가장 안전합니다.
 
 ```text
-1. 전체 구조: AI Engine → MQTT/Alert API → Action Layer → Public API → Grafana/UI
+1. 전체 구조: AI Engine → MQTT/Alert API → Action Layer → Public API → Demo UI
 2. Public API health/readiness로 서비스 상태 확인
 3. 카메라 목록과 Stream API 화면으로 실제 입력 확인
 4. 데모 UI에서 낙상/헬멧 미착용/위험구역 이벤트 전송
-5. Metrics/Grafana/Swagger로 운영 연동 가능성 확인
+5. TLV 정상값/위험값을 전송해 센서 이벤트와 Action Layer 이력 확인
+6. Metrics/Swagger와 선택형 Grafana로 운영 연동 가능성 확인
 ```
 
 ## 테스트

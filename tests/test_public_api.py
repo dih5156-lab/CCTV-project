@@ -75,6 +75,11 @@ def test_health_up(client: SyncASGIClient) -> None:
     assert data["success"] is True
     assert data["data"]["status"] == "up"
     assert data["data"]["service"] == "cctv-public-api"
+    assert data["data"]["resources"]["file_descriptors"]["status"] in {
+        "ok",
+        "critical",
+        "unknown",
+    }
 
 
 def test_readiness_up_when_dependencies_are_healthy(client: SyncASGIClient) -> None:
@@ -112,6 +117,40 @@ def test_readiness_degraded_when_dependency_is_down(client: SyncASGIClient) -> N
     statuses = {dep["name"]: dep["status"] for dep in body["data"]["dependencies"]}
     assert statuses["action-layer"] == "down"
     assert statuses["alert-api"] == "up"
+
+
+def test_readiness_degraded_when_file_descriptors_are_critical(
+    client: SyncASGIClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import src.api.v1.health as health_module
+
+    async def _mock_get(self, url, *args, **kwargs):
+        mock = MagicMock()
+        mock.status_code = 200
+        return mock
+
+    monkeypatch.setattr(
+        health_module,
+        "_fd_usage",
+        lambda: {
+            "status": "critical",
+            "open": 95,
+            "soft_limit": 100,
+            "hard_limit": 100,
+            "usage_ratio": 0.95,
+            "remaining": 5,
+        },
+    )
+
+    with patch("httpx.AsyncClient.get", new=_mock_get):
+        resp = client.get("/api/v1/readiness")
+
+    assert resp.status_code == 503
+    body = resp.json()
+    assert body["success"] is False
+    assert body["data"]["status"] == "degraded"
+    assert body["data"]["resources"]["file_descriptors"]["status"] == "critical"
 
 
 def test_metrics_counter_records_http_requests(client: SyncASGIClient) -> None:
@@ -270,21 +309,26 @@ class TestSensorReadings:
         )
         original = sensor_module._SENSOR_LOG
         original_map = sensor_module._SENSOR_DEVICE_MAP
+        original_cache = sensor_module._device_name_map_cache
         sensor_module._SENSOR_LOG = log_file
         sensor_module._SENSOR_DEVICE_MAP = map_file
+        sensor_module._device_name_map_cache = None
         try:
             resp = client.get("/api/v1/sensor-readings?limit=10")
         finally:
             sensor_module._SENSOR_LOG = original
             sensor_module._SENSOR_DEVICE_MAP = original_map
+            sensor_module._device_name_map_cache = original_cache
 
         assert resp.status_code == 200
         body = resp.json()
         assert body["total"] == 2
         assert body["items"][0]["device_id"] == "sensor-02"
         assert body["items"][0]["device_name"] == "설비실 온도 센서"
+        assert body["items"][0]["status"] == "normal"
         assert body["items"][1]["table"] == "t34957"
         assert body["items"][1]["data"]["temperature"] == 24.5
+        assert body["items"][1]["severity"] == "normal"
 
     def test_post_sensor_reading_forwards_to_alert_api(self, client: SyncASGIClient) -> None:
         payload = {
@@ -309,6 +353,78 @@ class TestSensorReadings:
         assert body["data"]["accepted"] is True
         assert body["data"]["device_id"] == "demo-tlv-01"
         assert body["data"]["table"] == "t34957"
+        assert body["data"]["status"] == "normal"
+        assert body["data"]["action_dispatched"] is False
+
+    def test_post_sensor_reading_dispatches_action_for_high_temperature(
+        self,
+        client: SyncASGIClient,
+    ) -> None:
+        payload = {
+            "device_id": "demo-tlv-02",
+            "table": "t34957",
+            "data": {"temperature": 72.5, "angle_x": 3.1},
+            "received_at": 1778720400000,
+        }
+        posted: list[tuple[str, dict]] = []
+
+        async def _mock_post(self, url, *args, **kwargs):
+            posted.append((url, kwargs.get("json") or {}))
+            mock = MagicMock()
+            mock.status_code = 202
+            mock.raise_for_status = MagicMock()
+            return mock
+
+        with patch("httpx.AsyncClient.post", new=_mock_post):
+            resp = client.post("/api/v1/sensor-readings", json=payload)
+
+        assert resp.status_code == 202
+        body = resp.json()
+        assert body["success"] is True
+        assert body["data"]["status"] == "alert"
+        assert body["data"]["severity"] == "critical"
+        assert body["data"]["event_type"] == "temperature_alert"
+        assert body["data"]["action_dispatched"] is True
+        assert len(posted) == 2
+        assert posted[1][1]["camera_id"] == "demo-tlv-02"
+        assert posted[1][1]["type"] == "temperature_alert"
+
+    def test_get_sensor_readings_marks_tilt_alert(
+        self,
+        client: SyncASGIClient,
+        tmp_path: Path,
+    ) -> None:
+        import src.api.v1.sensor_readings as sensor_module
+
+        log_file = tmp_path / "sensor_readings.jsonl"
+        log_file.write_text(
+            json.dumps(
+                {
+                    "receivedAt": "2026-05-14T01:00:00+00:00",
+                    "payload": {
+                        "device_id": "tilt-01",
+                        "table": "t34957",
+                        "data": {"temperature": 24.5, "angle_x": 31.2},
+                    },
+                },
+                ensure_ascii=False,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+
+        original = sensor_module._SENSOR_LOG
+        sensor_module._SENSOR_LOG = log_file
+        try:
+            resp = client.get("/api/v1/sensor-readings?limit=1")
+        finally:
+            sensor_module._SENSOR_LOG = original
+
+        assert resp.status_code == 200
+        item = resp.json()["items"][0]
+        assert item["status"] == "alert"
+        assert item["severity"] == "warning"
+        assert item["event_type"] == "tilt_alert"
 
 
 # ---------------------------------------------------------------------------

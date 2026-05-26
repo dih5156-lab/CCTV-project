@@ -6,7 +6,6 @@
 
 from __future__ import annotations
 
-import asyncio
 import json
 import logging
 from collections import deque
@@ -144,10 +143,12 @@ async def list_events(
     time_to: Optional[float] = Query(default=None, description="종료 Unix timestamp (초 단위)"),
     _: None = Depends(verify_api_key),
 ) -> PaginatedResponse[EventOut]:
-    # 파일 I/O를 스레드풀로 오프로드해 이벤트 루프 블로킹 방지
-    loop = asyncio.get_event_loop()
-    items, total = await loop.run_in_executor(
-        None,
-        lambda: _read_events(limit, offset, camera_id, time_from=time_from, time_to=time_to, event_type=event_type),
+    items, total = _read_events(
+        limit,
+        offset,
+        camera_id,
+        time_from=time_from,
+        time_to=time_to,
+        event_type=event_type,
     )
     return PaginatedResponse(items=items, total=total, limit=limit, offset=offset)

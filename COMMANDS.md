@@ -11,6 +11,8 @@
 8. [AIoT TLV 파서 서버](#8-aiot-tlv-파서-서버)
 9. [테스트](#9-테스트)
 10. [Docker Compose](#10-docker-compose)
+11. [모니터링 (옵션)](#11-모니터링-옵션)
+12. [스모크 테스트 반복 실행](#12-스모크-테스트-반복-실행)
 
 ---
 
@@ -512,3 +514,52 @@ docker compose down
 ```bash
 docker compose -f docker-compose.jetson.yml up -d
 ```
+
+---
+
+## 11. 모니터링 (옵션)
+
+Prometheus / Grafana는 기본 스택과 분리된 `docker-compose.monitoring.yml`로 관리합니다.  
+필요할 때만 켜고, 평상시엔 끄면 됩니다.
+
+### 모니터링 스택 시작 (메인 스택과 함께)
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.monitoring.yml up -d prometheus grafana
+```
+
+### 모니터링만 단독으로 시작/중지
+
+```bash
+# 시작
+docker compose -f docker-compose.monitoring.yml up -d
+
+# 중지 (볼륨은 유지)
+docker compose -f docker-compose.monitoring.yml down
+```
+
+### 접속
+
+| 서비스      | URL                        |
+|------------|----------------------------|
+| Prometheus | http://localhost:9090       |
+| Grafana    | http://localhost:3001       |
+
+Grafana 초기 비밀번호: `.env`의 `GRAFANA_ADMIN_PASSWORD` (미설정 시 `admin`)
+
+---
+
+## 12. 스모크 테스트 반복 실행
+
+이벤트/센서/액션 흐름 안정성 확인용 루프 스크립트:
+
+```bash
+# 60분간 30초 간격으로 반복 (기본값)
+bash scripts/run_smoke_loop.sh 60 30
+
+# 30분간 15초 간격
+bash scripts/run_smoke_loop.sh 30 15
+```
+
+PASS/FAIL 누적 카운트와 실패 상세 내용을 실시간 출력합니다.  
+전체 PASS면 exit 0, 하나라도 FAIL이면 exit 1을 반환합니다.

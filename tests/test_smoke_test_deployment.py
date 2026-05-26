@@ -62,6 +62,15 @@ def test_build_checks_includes_public_api_readiness():
     checks = smoke_test_deployment.build_checks("localhost")
     urls = {check.name: check.url for check in checks}
     assert urls["public api readiness"] == "http://localhost:9000/api/v1/readiness"
+    assert "prometheus readiness" not in urls
+    assert "grafana health" not in urls
+
+
+def test_build_checks_includes_monitoring_when_requested():
+    checks = smoke_test_deployment.build_checks("localhost", include_monitoring=True)
+    urls = {check.name: check.url for check in checks}
+    assert urls["prometheus readiness"] == "http://localhost:9090/-/ready"
+    assert urls["grafana health"] == "http://localhost:3001/api/health"
 
 
 def test_prometheus_targets_require_action_and_public_api_up(monkeypatch):

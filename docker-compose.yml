@@ -411,9 +411,6 @@ services:
       target: /app/cameras.json
       bind:
         create_host_path: true
-      read_only: true
-      bind:
-        create_host_path: true
     - type: bind
       source: ./models
       target: /app/models
@@ -901,53 +898,8 @@ services:
       bind:
         create_host_path: true
 
-  prometheus:
-    container_name: cctv-prometheus
-    image: prom/prometheus:v2.51.2
-    command:
-      - --config.file=/etc/prometheus/prometheus.yml
-      - --storage.tsdb.retention.time=7d
-    volumes:
-      - type: bind
-        source: ./monitoring/prometheus.yml
-        target: /etc/prometheus/prometheus.yml
-        read_only: true
-    ports:
-      - mode: ingress
-        host_ip: 127.0.0.1
-        target: 9090
-        published: "9090"
-        protocol: tcp
-    networks:
-      edgex-network: null
-    restart: always
-
-  grafana:
-    container_name: cctv-grafana
-    image: grafana/grafana:10.4.2
-    environment:
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-}
-      GF_USERS_ALLOW_SIGN_UP: "false"
-      GF_SERVER_ROOT_URL: http://localhost:3001
-    volumes:
-      - type: bind
-        source: ./monitoring/grafana/provisioning
-        target: /etc/grafana/provisioning
-        read_only: true
-      - type: volume
-        source: grafana-data
-        target: /var/lib/grafana
-    ports:
-      - mode: ingress
-        host_ip: 127.0.0.1
-        target: 3000
-        published: "3001"
-        protocol: tcp
-    depends_on:
-      - prometheus
-    networks:
-      edgex-network: null
-    restart: always
+  # Prometheus / Grafana는 docker-compose.monitoring.yml 으로 분리됨 (옵션)
+  # 실행: docker compose -f docker-compose.yml -f docker-compose.monitoring.yml up -d
 
 networks:
   edgex-network:
@@ -973,8 +925,6 @@ volumes:
     name: edgex_kuiper-plugins
   alert-logs:
     name: cctv_alert-logs
-  grafana-data:
-    name: cctv_grafana-data
   aiot-db-data:
     name: cctv_aiot-db-data
   aiot-parser-data:

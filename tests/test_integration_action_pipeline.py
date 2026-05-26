@@ -262,6 +262,10 @@ class TestDeviceCommandIntegration:
         )
         ab._repo.init()
         ab._mqtt_client = None
+        ab._speaker.config.host = "127.0.0.1"
+        ab._speaker.config.username = "admin"
+        ab._speaker.config.password = "pw"
+        ab._device_reachability_cache["speaker"] = (time.time(), True)
 
         with patch.object(ab._speaker, "play", return_value=True) as mock_play:
             msg = _make_mqtt_message(

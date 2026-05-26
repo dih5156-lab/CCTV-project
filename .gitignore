@@ -103,3 +103,4 @@ models/*.onnx
 !data/.gitkeep
 data/*.db
 data/alert_api_events.jsonl
+data/*.jsonl

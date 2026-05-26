@@ -277,7 +277,7 @@
       display: grid;
       gap: 12px;
     }
-    .grid.stats { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    .grid.stats { grid-template-columns: repeat(6, minmax(0, 1fr)); }
     .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .panel {
@@ -333,6 +333,41 @@
     .badge.warn { border-color: rgba(243, 178, 60, .5); color: #ffe1a8; background: rgba(243, 178, 60, .12); }
     .badge.bad { border-color: rgba(240, 82, 82, .5); color: #ffc1c1; background: rgba(240, 82, 82, .12); }
     .badge.blue { border-color: rgba(95, 140, 255, .45); color: #c7d7ff; background: rgba(95, 140, 255, .12); }
+    .ops-summary {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 12px;
+      border-left: 4px solid var(--warn);
+    }
+    .ops-summary.good { border-left-color: var(--good); }
+    .ops-summary.bad { border-left-color: var(--bad); }
+    .ops-copy {
+      display: grid;
+      gap: 7px;
+      min-width: 0;
+    }
+    .ops-copy strong {
+      font-size: 18px;
+      line-height: 1.25;
+    }
+    .ops-copy span {
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    .ops-next {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .ops-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+    .ops-actions button { white-space: nowrap; }
     .event-row-critical td { background: rgba(240, 82, 82, .08); }
     .event-row-warning td { background: rgba(243, 178, 60, .07); }
     .event-row-low td { opacity: .78; }
@@ -427,6 +462,12 @@
       min-height: 32px;
       padding: 0 10px;
     }
+    .camera-note {
+      color: var(--muted);
+      font-size: 12px;
+      padding: 0 12px 10px;
+      line-height: 1.4;
+    }
     .zone-editor {
       display: grid;
       gap: 10px;
@@ -451,6 +492,26 @@
     .zone-stage img {
       object-fit: cover;
     }
+    .zone-stage.loading img,
+    .zone-stage.error img {
+      opacity: .28;
+    }
+    .zone-status {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      z-index: 2;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 9px 10px;
+      background: rgba(7, 9, 13, .86);
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+      pointer-events: none;
+    }
+    .zone-status:empty { display: none; }
     .zone-stage svg {
       cursor: crosshair;
     }
@@ -701,6 +762,9 @@
       }
       .panel-head .toolbar { width: 100%; }
       .panel-body { padding: 12px; }
+      .ops-summary { grid-template-columns: 1fr; }
+      .ops-actions { justify-content: flex-start; }
+      .ops-actions button { flex: 1 1 120px; }
       .stat { min-height: 74px; }
       .stat-label, .stat-sub, th, code, pre, .field label, .badge, .sidebar-footer { font-size: 11px; }
       .stat-value { font-size: 20px; }
@@ -788,6 +852,7 @@
         <div class="connection-grid">
           <div class="field"><label for="api-base">Public API</label><input id="api-base" aria-label="Public API base URL"></div>
           <div class="field"><label for="media-base">Media/WebRTC</label><input id="media-base" aria-label="Media WebRTC base URL"></div>
+          <div class="field"><label for="stream-base">Stream API</label><input id="stream-base" aria-label="Stream API base URL"></div>
           <div class="field"><label for="zone-base">Zone API</label><input id="zone-base" aria-label="Zone API base URL"></div>
           <div class="field"><label for="face-base">Face API</label><input id="face-base" aria-label="Face API base URL"></div>
           <div class="field"><label for="model-base">Model API</label><input id="model-base" aria-label="Model API base URL"></div>
@@ -819,12 +884,26 @@
       </section>
 
       <section id="tab-overview" class="tab active" role="tabpanel">
+        <div class="panel pad ops-summary warn" id="ops-summary">
+          <div class="ops-copy">
+            <strong id="ops-title">운영 상태 확인 중</strong>
+            <span id="ops-detail">서비스 연결, 카메라, 최근 이벤트를 확인하고 있습니다.</span>
+            <div class="ops-next" id="ops-next" aria-label="권장 조치"></div>
+          </div>
+          <div class="ops-actions" aria-label="주요 운영 액션">
+            <button data-jump="live">라이브 보기</button>
+            <button data-jump="events">이벤트 확인</button>
+            <button data-jump="cameras">구역 수정</button>
+            <button data-jump="control">알람 승인</button>
+          </div>
+        </div>
         <div class="grid stats">
           <div class="panel stat"><div><div class="stat-label">Public API</div><div class="stat-value" id="stat-api">-</div></div><div class="stat-sub" id="stat-api-sub">/api/v1/health</div></div>
           <div class="panel stat"><div><div class="stat-label">Readiness</div><div class="stat-value" id="stat-ready">-</div></div><div class="stat-sub">Action Layer / Alert API</div></div>
           <div class="panel stat"><div><div class="stat-label">카메라</div><div class="stat-value" id="stat-cameras">-</div></div><div class="stat-sub">WebRTC 라이브</div></div>
           <div class="panel stat"><div><div class="stat-label">최근 이벤트</div><div class="stat-value" id="stat-events">-</div></div><div class="stat-sub">/api/v1/events</div></div>
           <div class="panel stat"><div><div class="stat-label">TLV 로그</div><div class="stat-value" id="stat-sensors">-</div></div><div class="stat-sub">/api/v1/sensor-readings</div></div>
+          <div class="panel stat"><div><div class="stat-label">승인 대기</div><div class="stat-value" id="stat-pending">-</div></div><div class="stat-sub">알람/제어 확인 필요</div></div>
         </div>
         <div class="grid two" style="margin-top:12px">
           <div class="panel">
@@ -1073,6 +1152,7 @@
               <div class="zone-stage" id="zone-stage">
                 <img id="zone-image" alt="zone editor camera preview">
                 <svg id="zone-svg" viewBox="0 0 1280 720" preserveAspectRatio="none"></svg>
+                <div class="zone-status" id="zone-status"></div>
               </div>
               <div class="checks">
                 <button id="undo-zone-point">마지막 점 취소</button>
@@ -1227,6 +1307,11 @@
       modelSettings: {},
       cameraModalTimer: null,
       selectedModalCameraId: "",
+      serviceHealth: {},
+      pendingCount: null,
+      zoneImageFallbackUsed: false,
+      zoneImageAttempts: [],
+      zoneImageMode: "",
       zoneEditor: {
         cameraId: "",
         zones: [],
@@ -1252,7 +1337,7 @@
       return $("api-base").value.replace(/\/$/, "");
     }
     function streamBase() {
-      return `${location.origin}/stream-api`;
+      return $("stream-base").value.replace(/\/$/, "");
     }
     function mediaBase() {
       return $("media-base").value.replace(/\/$/, "");
@@ -1277,6 +1362,7 @@
     function initializeServiceUrls() {
       $("api-base").value = `${location.origin}/public-api`;
       $("media-base").value = defaultServiceUrl(8889);
+      $("stream-base").value = location.port === "8099" ? defaultServiceUrl(8769) : `${location.origin}/stream-api`;
       $("zone-base").value = `${location.origin}/zone-api`;
       $("face-base").value = `${location.origin}/face-api`;
       $("model-base").value = `${location.origin}/model-api`;
@@ -1308,6 +1394,20 @@
       if (dot) dot.className = `dot ${tone}`;
       if (text) text.textContent = detail;
     }
+    function serviceLabelFromId(id) {
+      const labels = {
+        "svc-public": "Public API",
+        "svc-stream": "Media/WebRTC",
+        "svc-zone": "Zone API",
+        "svc-face": "Face API",
+        "svc-model": "Model API",
+      };
+      return labels[id] || id;
+    }
+    function rememberServiceHealth(id, tone, detail) {
+      state.serviceHealth[id] = { tone, detail, label: serviceLabelFromId(id) };
+      updateOpsSummary();
+    }
     async function fetchHealth(url, headersValue = {}) {
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), 2200);
@@ -1334,7 +1434,8 @@
         const count = body.camera_count ?? body.face_count ?? body.data?.camera_count;
         return count !== undefined ? `${service} · ${count}개` : String(service);
       }
-      return result.status ? `응답 실패 ${result.status}` : (result.body?.error || "연결 실패");
+      const reason = result.status ? `HTTP ${result.status}` : (result.body?.error || "연결 실패");
+      return `${fallbackOk} 확인 실패 · ${reason}`;
     }
     async function refreshServiceSummary() {
       setServiceCard("svc-public", "warn", "확인 중");
@@ -1349,11 +1450,17 @@
         fetchHealth(faceBase() + "/health", authHeaders),
         fetchHealth(modelBase() + "/health", authHeaders),
       ]);
-      setServiceCard("svc-public", publicApi.ok ? "good" : "bad", healthDetail(publicApi, "Public API"));
-      setServiceCard("svc-stream", "good", "WebRTC 전용");
-      setServiceCard("svc-zone", zoneApi.ok ? "good" : "bad", healthDetail(zoneApi, "Zone API"));
-      setServiceCard("svc-face", faceApi.ok ? "good" : "bad", healthDetail(faceApi, "Face API"));
-      setServiceCard("svc-model", modelApi.ok ? "good" : "bad", healthDetail(modelApi, "Model API"));
+      const serviceResults = [
+        ["svc-public", publicApi.ok ? "good" : "bad", healthDetail(publicApi, "Public API")],
+        ["svc-stream", "good", "WebRTC 경로는 카메라 카드에서 확인"],
+        ["svc-zone", zoneApi.ok ? "good" : "bad", healthDetail(zoneApi, "Zone API")],
+        ["svc-face", faceApi.ok ? "good" : "bad", healthDetail(faceApi, "Face API")],
+        ["svc-model", modelApi.ok ? "good" : "bad", healthDetail(modelApi, "Model API")],
+      ];
+      serviceResults.forEach(([id, tone, detail]) => {
+        setServiceCard(id, tone, detail);
+        rememberServiceHealth(id, tone, detail);
+      });
     }
     async function runAction(button, label, action) {
       const originalText = button?.textContent;
@@ -1422,6 +1529,46 @@
     function emptyState(title, detail = "", tone = "") {
       return `<div class="empty-state ${tone}"><strong>${title}</strong>${detail ? `<span>${detail}</span>` : ""}</div>`;
     }
+    function updateOpsSummary() {
+      const summary = $("ops-summary");
+      if (!summary) return;
+      const services = Object.values(state.serviceHealth);
+      const failedServices = services.filter((service) => service.tone === "bad");
+      const warningServices = services.filter((service) => service.tone === "warn");
+      const criticalEvents = (state.events || []).filter((event) => eventVisualTone(event) === "critical").length;
+      const sensorAlerts = (state.sensorReadings || []).filter((item) => item.status === "alert").length;
+      const cameraCount = state.cameras.length;
+      const pendingCount = state.pendingCount;
+      const actions = [];
+      let tone = "good";
+      let title = "운영 상태 정상";
+      let detail = `카메라 ${cameraCount}개, 최근 위험 이벤트 ${criticalEvents}건, 센서 이상 ${sensorAlerts}건 기준으로 확인 중입니다.`;
+      if (failedServices.length) {
+        tone = "bad";
+        title = "연결 확인 필요";
+        detail = `${failedServices.map((service) => service.label).join(", ")} 응답이 없습니다. 상단 연결 설정의 URL과 포트를 먼저 확인하세요.`;
+        actions.push("연결 설정 확인", "서비스 health 재조회");
+      } else if (!cameraCount) {
+        tone = "warn";
+        title = "카메라 확인 필요";
+        detail = "Public API 카메라 목록이 비어 있습니다. AI Engine 카메라 설정과 스트림 상태를 확인하세요.";
+        actions.push("카메라 목록 확인", "AI Engine 로그 확인");
+      } else if (criticalEvents || sensorAlerts || (pendingCount ?? 0) > 0 || warningServices.length) {
+        tone = "warn";
+        title = "주의 항목 확인 필요";
+        detail = `최근 위험 이벤트 ${criticalEvents}건, 센서 이상 ${sensorAlerts}건, 승인 대기 ${pendingCount ?? "-"}건입니다. 이벤트와 알람 승인 화면을 확인하세요.`;
+        if (criticalEvents) actions.push("이벤트 확인");
+        if (sensorAlerts) actions.push("TLV 로그 확인");
+        if ((pendingCount ?? 0) > 0) actions.push("알람 승인");
+        if (warningServices.length) actions.push("서비스 상태 확인");
+      } else {
+        actions.push("라이브 화면 확인", "데모 이벤트 테스트");
+      }
+      summary.className = `panel pad ops-summary ${tone}`;
+      $("ops-title").textContent = title;
+      $("ops-detail").textContent = detail;
+      $("ops-next").innerHTML = actions.slice(0, 3).map((item) => badge(item, tone === "bad" ? "bad" : tone === "warn" ? "warn" : "good")).join("");
+    }
     function statusTone(value) {
       const text = String(value || "").toLowerCase();
       if (["up", "ok", "on", "healthy", "ready", "true", "configured", "online", "auto", "approved", "sent", "executed"].includes(text)) return "good";
@@ -1454,6 +1601,7 @@
         tilt_alert: "기울기 이상",
         temperature_alert: "온도 이상",
         sensor_temperature: "온도 이상",
+        sensor_event: "센서 이벤트",
         person: "사람",
       };
       return map[type] || type || "-";
@@ -1473,6 +1621,14 @@
       if (tone === "critical") return "bad";
       if (tone === "warning") return "warn";
       return "blue";
+    }
+    function latestCameraEvent(cameraId) {
+      return (state.events || []).find((event) => String(event.camera_id || "") === String(cameraId));
+    }
+    function cameraRiskBadge(cameraId) {
+      const event = latestCameraEvent(cameraId);
+      if (!event) return badge("최근 이벤트 없음", "blue");
+      return badge(eventLabel(event.event_type), eventBadgeTone(event));
     }
     function appearanceClassLabel(item) {
       if (item.face_name && String(item.face_name).toLowerCase() !== "unknown") return "등록 얼굴";
@@ -1553,6 +1709,7 @@
       $("stat-api").textContent = status;
       $("stat-api-sub").textContent = body.data?.service || "/api/v1/health";
       setStatus(status === "up", status === "up" ? "Public API 정상" : "Public API 확인 필요");
+      updateOpsSummary();
       return body;
     }
     async function loadReadiness() {
@@ -1567,6 +1724,7 @@
           <td><code>${dep.url || "-"}</code></td>
         </tr>
       `).join("") : '<tr><td colspan="3" class="muted">의존 서비스 정보 없음</td></tr>';
+      updateOpsSummary();
       return body;
     }
     async function loadCameras() {
@@ -1612,6 +1770,7 @@
         </tr>
       `).join("") : '<tr><td colspan="5" class="muted">카메라 없음</td></tr>';
       renderZoneSummary();
+      updateOpsSummary();
       return cameraResponse || { data: state.cameras };
     }
     async function modelRequest(path, options = {}) {
@@ -1733,7 +1892,8 @@
       }
       state.zoneEditor.cameraId = cameraId;
       state.zoneEditor.draft = [];
-      $("zone-image").src = `${streamBase()}/snapshot/${encodeURIComponent(cameraId)}?zone_editor=${Date.now()}`;
+      state.zoneImageFallbackUsed = false;
+      startZoneImageLoad(cameraId);
       try {
         const body = await zoneRequest(`/cameras/${encodeURIComponent(cameraId)}/zones`);
         state.zoneEditor.zones = body.zones || [];
@@ -1744,6 +1904,35 @@
       }
       renderZoneEditor();
     }
+    function zoneImageUrl(base, cameraId, kind) {
+      return `${base}/${kind}/${encodeURIComponent(cameraId)}?zone_editor=${Date.now()}`;
+    }
+    function startZoneImageLoad(cameraId) {
+      const currentBase = streamBase();
+      const directBase = defaultServiceUrl(8769);
+      const bases = currentBase === directBase ? [currentBase] : [currentBase, directBase];
+      state.zoneImageAttempts = bases.flatMap((base) => [
+        { url: zoneImageUrl(base, cameraId, "snapshot"), mode: "snapshot", label: `${base}/snapshot` },
+        { url: zoneImageUrl(base, cameraId, "stream"), mode: "stream", label: `${base}/stream` },
+      ]);
+      $("zone-stage").classList.add("loading");
+      $("zone-stage").classList.remove("error");
+      $("zone-status").textContent = "카메라 화면을 불러오는 중입니다.";
+      loadNextZoneImageAttempt();
+    }
+    function loadNextZoneImageAttempt() {
+      const next = state.zoneImageAttempts.shift();
+      if (!next) {
+        $("zone-stage").classList.remove("loading");
+        $("zone-stage").classList.add("error");
+        $("zone-status").textContent = "카메라 화면을 불러오지 못했습니다. 연결 설정의 Stream API 주소, 8769 포트, AI Engine 카메라 ID를 확인하세요.";
+        return;
+      }
+      state.zoneImageMode = next.mode;
+      state.zoneImageFallbackUsed = next.mode === "stream" || !next.label.startsWith(streamBase());
+      $("zone-status").textContent = `${next.label} 화면을 불러오는 중입니다.`;
+      $("zone-image").src = next.url;
+    }
     function updateZoneFrameSize() {
       const image = $("zone-image");
       const width = image.naturalWidth || 1280;
@@ -1751,6 +1940,13 @@
       state.zoneEditor.frameWidth = width;
       state.zoneEditor.frameHeight = height;
       $("zone-svg").setAttribute("viewBox", `0 0 ${width} ${height}`);
+    }
+    function handleZoneImageLoaded() {
+      $("zone-stage").classList.remove("loading", "error");
+      $("zone-status").textContent = state.zoneImageFallbackUsed
+        ? "대체 경로로 연결했습니다. 점 3개 이상 선택 후 구역 추가를 누르세요."
+        : "";
+      renderZoneEditor();
     }
     function zoneModeLabel(mode) {
       if (mode === "object_watch") return "객체감시";
@@ -1893,6 +2089,16 @@
       if (!cameraId) return;
       window.open(cameraWebRtcUrl(cameraId), "_blank");
     }
+    function focusCameraEvents(cameraId) {
+      $("event-camera").value = cameraId;
+      switchTab("events");
+      loadEvents();
+    }
+    function focusCameraZones(cameraId) {
+      $("zone-camera").value = cameraId;
+      switchTab("cameras");
+      loadZoneEditor();
+    }
     function openCameraStreamWindow() {
       const camera = modalCamera();
       if (!camera) return;
@@ -1911,10 +2117,14 @@
         if (!camera.stream_available) {
           return `
             <div class="camera-card">
-              <div class="camera-error">스트림 미연결: AI Engine에 로드된 카메라가 아닙니다.</div>
+              <div class="camera-error">스트림 미연결<br>AI Engine 카메라 설정 또는 MediaMTX 경로를 확인하세요.</div>
               <div class="camera-caption">
                 <div><strong>${camera.name || camera.id}</strong><br><code>${camera.id}</code></div>
-                <div class="camera-meta">${badge("no stream", "warn")} ${badge(`${(camera.zones || []).length} zones`, "blue")}</div>
+                <div class="camera-meta">${badge("no stream", "warn")} ${badge(`${(camera.zones || []).length} zones`, "blue")} ${cameraRiskBadge(camera.id)}</div>
+              </div>
+              <div class="camera-actions">
+                <button data-camera-events="${escapeHtml(camera.id)}">이벤트</button>
+                <button data-camera-zones="${escapeHtml(camera.id)}">구역</button>
               </div>
             </div>
           `;
@@ -1925,11 +2135,14 @@
             <iframe src="${escapeHtml(webRtcSrc)}" title="${escapeHtml(camera.name || camera.id)} WebRTC stream" allow="autoplay; fullscreen"></iframe>
             <div class="camera-caption">
               <div><strong>${camera.name || camera.id}</strong><br><code>${camera.id}</code></div>
-              <div class="camera-meta">${badge("webrtc/h264", "good")} ${badge(`${(camera.zones || []).length} zones`, "blue")}</div>
+              <div class="camera-meta">${badge("webrtc/h264", "good")} ${badge(`${(camera.zones || []).length} zones`, "blue")} ${cameraRiskBadge(camera.id)}</div>
             </div>
             <div class="camera-actions">
               <button data-open-webrtc="${escapeHtml(camera.id)}">WebRTC/H.264</button>
+              <button data-camera-events="${escapeHtml(camera.id)}">이벤트</button>
+              <button data-camera-zones="${escapeHtml(camera.id)}">구역</button>
             </div>
+            <div class="camera-note">카드를 클릭하면 확대됩니다. 이벤트/구역 버튼은 해당 카메라 기준으로 이동합니다.</div>
           </div>
         `;
       }).join("");
@@ -1946,9 +2159,12 @@
         $("stat-events").textContent = String(body.total ?? state.events.length);
         renderEventRows("event-rows", state.events, 7);
         renderEventRows("overview-events", state.events.slice(0, 8), 4, true);
+        updateOpsSummary();
       } catch (error) {
+        state.events = state.demoEvents;
         renderEventRows("event-rows", state.demoEvents, 7);
         renderEventRows("overview-events", state.demoEvents.slice(0, 8), 4, true);
+        updateOpsSummary();
         showToast("이벤트 조회 실패, 데모 이벤트만 표시: " + error.message);
       }
     }
@@ -2008,9 +2224,12 @@
         state.sensorReadings = body.items || [];
         $("stat-sensors").textContent = String(body.total ?? state.sensorReadings.length);
         renderSensorRows(state.sensorReadings);
+        updateOpsSummary();
       } catch (error) {
+        state.sensorReadings = [];
         renderSensorRows([]);
         $("stat-sensors").textContent = "-";
+        updateOpsSummary();
         showToast("TLV 로그 조회 실패: " + error.message);
       }
     }
@@ -2022,8 +2241,8 @@
           <td>${item.device_name || "-"}</td>
           <td><code>${item.device_id || "-"}</code></td>
           <td>${badge(item.table || "-", "blue")}</td>
-          <td>${sensorValueSummary(item.data || {})}</td>
-          <td>${sensorStatusBadge(item.data || {}, item.payload || {})}</td>
+          <td>${sensorValueSummary(item.data || {})}${item.reason ? `<br><span class="muted">${escapeHtml(item.reason)}</span>` : ""}</td>
+          <td>${sensorStatusBadge(item)}</td>
         </tr>
       `).join("") : '<tr><td colspan="6" class="muted">TLV 수신 로그 없음</td></tr>';
     }
@@ -2037,7 +2256,11 @@
       }
       return parts.join("<br>") || "-";
     }
-    function sensorStatusBadge(data, payload) {
+    function sensorStatusBadge(item) {
+      const data = item?.data || {};
+      const payload = item?.payload || {};
+      if (item?.status === "alert") return badge(eventLabel(item.event_type), statusTone(item.severity || "warning"));
+      if (item?.event_type) return badge(eventLabel(item.event_type), statusTone(item.severity || "normal"));
       const temp = Number(data.temperature);
       const angleX = Math.abs(Number(data.angle_x || 0));
       const angleY = Math.abs(Number(data.angle_y || 0));
@@ -2059,9 +2282,11 @@
         },
         received_at: Date.now(),
       };
-      await request("/api/v1/sensor-readings", { method: "POST", body: JSON.stringify(payload) });
-      showToast("TLV 데모 로그 전송 완료");
+      const body = await request("/api/v1/sensor-readings", { method: "POST", body: JSON.stringify(payload) });
+      const result = body.data || {};
+      showToast(result.status === "alert" ? `TLV 위험 이벤트 전송 완료: ${eventLabel(result.event_type)}` : "TLV 데모 로그 전송 완료");
       await loadSensorReadings();
+      await loadActionEvents();
     }
     async function loadAppearanceStatus() {
       const body = await request("/api/v1/appearances/status");
@@ -2366,6 +2591,8 @@
     async function loadPending() {
       const body = await request("/api/v1/control/pending");
       const items = body.data || [];
+      state.pendingCount = items.length;
+      $("stat-pending").textContent = String(items.length);
       $("pending-rows").innerHTML = items.length ? items.map((item) => `
         <tr>
           <td>${fmtTime(item.queued_at)}</td>
@@ -2375,6 +2602,7 @@
           <td><button class="good" onclick="approveEvent('${item.event_id}')">승인</button> <button class="warn" onclick="rejectEvent('${item.event_id}')">거부</button></td>
         </tr>
       `).join("") : '<tr><td colspan="5" class="muted">승인 대기 이벤트 없음</td></tr>';
+      updateOpsSummary();
     }
     async function approveEvent(id) {
       await request(`/api/v1/control/approve/${encodeURIComponent(id)}`, { method: "POST" });
@@ -2406,7 +2634,10 @@
     async function loadAppearanceBundle() {
       await Promise.allSettled([loadAppearanceStatus(), loadConditions(), runAppearanceSearch()]);
     }
+    let refreshInFlight = false;
     async function refreshAll() {
+      if (refreshInFlight) return;
+      refreshInFlight = true;
       $("side-api-base").textContent = apiBase();
       try {
         await Promise.allSettled([
@@ -2417,6 +2648,7 @@
           loadSensorReadings(),
           loadAppearanceStatus(),
           loadConditions(),
+          loadPending(),
           refreshServiceSummary(),
         ]);
         $("last-refresh").textContent = new Date().toLocaleTimeString("ko-KR");
@@ -2424,6 +2656,8 @@
       } catch (error) {
         setStatus(false, "연결 오류");
         showToast("갱신 실패: " + error.message);
+      } finally {
+        refreshInFlight = false;
       }
     }
 
@@ -2438,6 +2672,18 @@
       if (webRtcButton) {
         event.stopPropagation();
         openCameraWebRtcWindow(webRtcButton.dataset.openWebrtc);
+        return;
+      }
+      const eventsButton = event.target.closest("[data-camera-events]");
+      if (eventsButton) {
+        event.stopPropagation();
+        focusCameraEvents(eventsButton.dataset.cameraEvents);
+        return;
+      }
+      const zonesButton = event.target.closest("[data-camera-zones]");
+      if (zonesButton) {
+        event.stopPropagation();
+        focusCameraZones(zonesButton.dataset.cameraZones);
         return;
       }
       const card = event.target.closest("[data-camera-modal]");
@@ -2474,7 +2720,8 @@
     $("cancel-zone-draft").addEventListener("click", cancelZoneDraft);
     $("save-zones").addEventListener("click", (event) => runAction(event.currentTarget, "저장 중", saveZones));
     $("zone-camera").addEventListener("change", loadZoneEditor);
-    $("zone-image").addEventListener("load", renderZoneEditor);
+    $("zone-image").addEventListener("load", handleZoneImageLoaded);
+    $("zone-image").addEventListener("error", loadNextZoneImageAttempt);
     $("zone-svg").addEventListener("click", (event) => {
       state.zoneEditor.draft.push(zoneSvgPoint(event));
       renderZoneEditor();
@@ -2511,9 +2758,10 @@
       };
       reader.readAsDataURL(file);
     });
-    ["api-base", "media-base", "zone-base", "face-base", "model-base"].forEach((id) => $(id).addEventListener("change", () => {
+    ["api-base", "media-base", "stream-base", "zone-base", "face-base", "model-base"].forEach((id) => $(id).addEventListener("change", () => {
       $("side-api-base").textContent = apiBase();
       if ($("tab-live").classList.contains("active")) renderCameraPreview();
+      if (id === "stream-base" && $("tab-cameras").classList.contains("active")) loadZoneEditor();
       refreshServiceSummary();
     }));
     initializeServiceUrls();

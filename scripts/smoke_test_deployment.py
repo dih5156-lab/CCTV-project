@@ -98,15 +98,21 @@ def check_prometheus_targets(prometheus_url: str, timeout: float) -> dict[str, A
     }
 
 
-def build_checks(host: str) -> list[HttpCheck]:
-    return [
+def build_checks(host: str, include_monitoring: bool = False) -> list[HttpCheck]:
+    checks = [
         HttpCheck("alert api health", f"http://{host}:8000/health", required_text="cctv-alert-api"),
         HttpCheck("action layer health", f"http://{host}:8080/health", required_text="cctv-action-layer"),
         HttpCheck("public api health", f"http://{host}:9000/api/v1/health"),
         HttpCheck("public api readiness", f"http://{host}:9000/api/v1/readiness", required_text="ready"),
-        HttpCheck("prometheus readiness", f"http://{host}:9090/-/ready", required_text="Prometheus Server is Ready"),
-        HttpCheck("grafana health", f"http://{host}:3001/api/health"),
     ]
+    if include_monitoring:
+        checks.extend(
+            [
+                HttpCheck("prometheus readiness", f"http://{host}:9090/-/ready", required_text="Prometheus Server is Ready"),
+                HttpCheck("grafana health", f"http://{host}:3001/api/health"),
+            ]
+        )
+    return checks
 
 
 def main() -> int:
@@ -114,14 +120,22 @@ def main() -> int:
     parser.add_argument("--host", default="localhost", help="Published Docker host address.")
     parser.add_argument("--timeout", type=float, default=3.0, help="HTTP timeout in seconds.")
     parser.add_argument(
+        "--include-monitoring",
+        action="store_true",
+        help="Also check optional Prometheus and Grafana services.",
+    )
+    parser.add_argument(
         "--skip-prometheus-targets",
         action="store_true",
-        help="Skip Prometheus scrape target health checks.",
+        help="Compatibility option. Prometheus target checks now run only with --include-monitoring.",
     )
     args = parser.parse_args()
 
-    results = [run_http_check(check, args.timeout) for check in build_checks(args.host)]
-    if not args.skip_prometheus_targets:
+    results = [
+        run_http_check(check, args.timeout)
+        for check in build_checks(args.host, include_monitoring=args.include_monitoring)
+    ]
+    if args.include_monitoring and not args.skip_prometheus_targets:
         results.append(check_prometheus_targets(f"http://{args.host}:9090", args.timeout))
 
     passed = all(result["passed"] for result in results)

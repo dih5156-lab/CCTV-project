@@ -24,9 +24,12 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
+from ._action_proxy import close_action_proxy_client
 from .schemas.common import error_response
 from .v1 import alerts, appearances, cameras, control, events, health, metrics, search, sensor_readings, sites
+from .v1.alerts import close_alert_client
 from .v1.health import close_http_client
+from .v1.sensor_readings import close_sensor_client
 from .dependencies._settings import ACTION_LAYER_URL, ALERT_API_URL
 from .dependencies.rate_limit import limiter
 
@@ -61,6 +64,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     # 외형 조건 동기화는 SQLite DB(APPEARANCES_DB)를 통해 이뤄진다.
     yield
     await close_http_client()
+    await close_action_proxy_client()
+    await close_alert_client()
+    await close_sensor_client()
     logger.info("CCTV Public API 종료")
 
 

@@ -46,6 +46,14 @@ def _get_alert_client() -> httpx.AsyncClient:
         )
     return _shared_alert_client
 
+
+async def close_alert_client() -> None:
+    """Public API 종료 시 내부 alert/action 중계 HTTP 클라이언트를 닫는다."""
+    global _shared_alert_client
+    if _shared_alert_client is not None and not _shared_alert_client.is_closed:
+        await _shared_alert_client.aclose()
+    _shared_alert_client = None
+
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/alerts", tags=["alerts"])
 

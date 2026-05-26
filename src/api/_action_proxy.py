@@ -32,6 +32,14 @@ def _get_client() -> httpx.AsyncClient:
     return _shared_client
 
 
+async def close_action_proxy_client() -> None:
+    """Public API 종료 시 Action Layer 프록시 HTTP 클라이언트를 닫는다."""
+    global _shared_client
+    if _shared_client is not None and not _shared_client.is_closed:
+        await _shared_client.aclose()
+    _shared_client = None
+
+
 def _extract_error_detail(response: httpx.Response) -> str:
     """Action Layer 응답에서 사용자 친화적인 오류 메시지를 뽑는다."""
     try:

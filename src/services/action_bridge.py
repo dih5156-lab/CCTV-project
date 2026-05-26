@@ -472,6 +472,7 @@ class ActionBridge:
 
     def _execute_action(self, topic: str, payload: Dict) -> None:
         """디바이스 조치 + HTTP 전송을 즉시 실행한다."""
+        self._executor._resolve_devices = self._resolve_devices
         self._executor.execute(topic, payload)
 
     # ------------------------------------------------------------------

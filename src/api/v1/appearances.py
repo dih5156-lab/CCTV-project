@@ -9,7 +9,6 @@
 
 from __future__ import annotations
 
-import asyncio
 import logging
 import os
 import uuid
@@ -169,8 +168,7 @@ def _sync_to_analyzer() -> None:
 async def list_conditions(
     _: None = Depends(verify_api_key),
 ) -> BaseResponse[AppearanceConditionList]:
-    loop = asyncio.get_event_loop()
-    conditions = await loop.run_in_executor(None, _load_all)
+    conditions = _load_all()
     return success_response(
         AppearanceConditionList(
             conditions=[AppearanceConditionOut(**c) for c in conditions],
@@ -191,8 +189,7 @@ async def list_conditions(
 async def get_appearance_status(
     _: None = Depends(verify_api_key),
 ) -> BaseResponse[AppearanceRuntimeStatus]:
-    loop = asyncio.get_event_loop()
-    status_data = await loop.run_in_executor(None, _build_runtime_status)
+    status_data = _build_runtime_status()
     return success_response(status_data)
 
 
@@ -219,15 +216,11 @@ async def create_condition(
         "threshold": body.threshold,
         "cameras": body.cameras,
     }
-    loop = asyncio.get_event_loop()
-    entry = await loop.run_in_executor(
-        None,
-        lambda: AppearanceConditionStore(_DB_PATH).create(
-            condition_id=cid,
-            name=body.name,
-            payload=payload,
-            enabled=body.enabled,
-        ),
+    entry = AppearanceConditionStore(_DB_PATH).create(
+        condition_id=cid,
+        name=body.name,
+        payload=payload,
+        enabled=body.enabled,
     )
     _sync_to_analyzer()
     logger.info("외형 조건 등록: %s (%s)", cid, body.name)
@@ -245,10 +238,7 @@ async def delete_condition(
     condition_id: str,
     _: None = Depends(verify_api_key),
 ) -> BaseResponse[dict]:
-    loop = asyncio.get_event_loop()
-    deleted = await loop.run_in_executor(
-        None, lambda: AppearanceConditionStore(_DB_PATH).delete(condition_id)
-    )
+    deleted = AppearanceConditionStore(_DB_PATH).delete(condition_id)
     if not deleted:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

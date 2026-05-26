@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
 import json
 import logging
 from collections import deque
@@ -14,6 +13,7 @@ from fastapi import APIRouter, Body, Depends, Query, Request, status
 from pydantic import BaseModel
 
 from ..dependencies._settings import (
+    ACTION_LAYER_URL as _ACTION_LAYER_URL,
     ALERT_API_URL as _ALERT_API_URL,
     INTERNAL_SERVICE_TOKEN as _INTERNAL_TOKEN,
     SENSOR_DEVICE_MAP_PATH as _SENSOR_DEVICE_MAP,
@@ -49,6 +49,14 @@ def _get_sensor_client() -> httpx.AsyncClient:
     return _shared_sensor_client
 
 
+async def close_sensor_client() -> None:
+    """Public API 종료 시 센서 중계 HTTP 클라이언트를 닫는다."""
+    global _shared_sensor_client
+    if _shared_sensor_client is not None and not _shared_sensor_client.is_closed:
+        await _shared_sensor_client.aclose()
+    _shared_sensor_client = None
+
+
 class SensorReadingOut(BaseModel):
     """시연 대시보드에서 보여줄 TLV/센서 로그 1건."""
 
@@ -60,12 +68,72 @@ class SensorReadingOut(BaseModel):
     table: Optional[str] = None
     data: dict[str, Any] = {}
     payload: dict[str, Any] = {}
+    status: str = "normal"
+    severity: str = "normal"
+    event_type: Optional[str] = None
+    reason: Optional[str] = None
 
 
 class SensorReadingAccepted(BaseModel):
     accepted: bool = True
     device_id: Optional[str] = None
     table: Optional[str] = None
+    status: str = "normal"
+    severity: str = "normal"
+    event_type: Optional[str] = None
+    action_dispatched: bool = False
+
+
+def _as_float(value: Any) -> Optional[float]:
+    if value in (None, ""):
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _classify_sensor_payload(payload: dict[str, Any]) -> dict[str, Optional[str]]:
+    """TLV 센서값을 시연/관제용 위험 상태로 정규화한다."""
+    data = _extract_data(payload)
+    event_type = str(payload.get("type") or payload.get("event_type") or "").strip()
+    severity = str(payload.get("severity") or "").strip().lower()
+    if event_type:
+        return {
+            "status": "alert" if severity in {"critical", "warning", "warn"} else "normal",
+            "severity": "warning" if severity == "warn" else (severity or "normal"),
+            "event_type": event_type,
+            "reason": str(payload.get("reason") or event_type),
+        }
+
+    temperature = _as_float(data.get("temperature") or data.get("temp"))
+    angle_x = abs(_as_float(data.get("angle_x") or data.get("tilt_x") or data.get("x_angle")) or 0.0)
+    angle_y = abs(_as_float(data.get("angle_y") or data.get("tilt_y") or data.get("y_angle")) or 0.0)
+    event_code = _as_float(data.get("event_code") or data.get("code"))
+
+    if temperature is not None and temperature >= 50.0:
+        severity = "critical" if temperature >= 70.0 else "warning"
+        return {
+            "status": "alert",
+            "severity": severity,
+            "event_type": "temperature_alert",
+            "reason": f"temperature={temperature:g} >= {'70' if severity == 'critical' else '50'}",
+        }
+    if max(angle_x, angle_y) >= 30.0:
+        return {
+            "status": "alert",
+            "severity": "warning",
+            "event_type": "tilt_alert",
+            "reason": f"tilt={max(angle_x, angle_y):g} >= 30",
+        }
+    if event_code is not None and event_code != 0:
+        return {
+            "status": "alert",
+            "severity": "warning",
+            "event_type": "sensor_event",
+            "reason": f"event_code={event_code:g}",
+        }
+    return {"status": "normal", "severity": "normal", "event_type": None, "reason": None}
 
 
 def _coerce_timestamp(value: object, fallback: object = None) -> float:
@@ -163,6 +231,7 @@ def _lookup_device_name(device_id: Optional[str], dev_eui: Optional[str]) -> Opt
 def _normalize_entry(entry: dict[str, Any]) -> SensorReadingOut:
     payload = _payload_from_entry(entry)
     data = _extract_data(payload)
+    risk = _classify_sensor_payload(payload)
     device_info = payload.get("device") if isinstance(payload.get("device"), dict) else {}
     table = (
         payload.get("table")
@@ -198,6 +267,10 @@ def _normalize_entry(entry: dict[str, Any]) -> SensorReadingOut:
         table=str(table) if table else None,
         data=data,
         payload=payload,
+        status=risk["status"] or "normal",
+        severity=risk["severity"] or "normal",
+        event_type=risk["event_type"],
+        reason=risk["reason"],
     )
 
 
@@ -261,11 +334,7 @@ async def list_sensor_readings(
     if not _SENSOR_LOG.exists():
         return PaginatedResponse(items=[], total=0, limit=limit, offset=offset)
 
-    loop = asyncio.get_event_loop()
-    items, total = await loop.run_in_executor(
-        None,
-        lambda: _read_sensor_log(limit, offset, device_id, table),
-    )
+    items, total = _read_sensor_log(limit, offset, device_id, table)
     return PaginatedResponse(items=items[offset : offset + limit], total=total, limit=limit, offset=offset)
 
 
@@ -282,9 +351,9 @@ async def receive_sensor_reading(
     payload: dict[str, Any] = Body(...),
     _: None = Depends(verify_api_key),
 ) -> BaseResponse[SensorReadingAccepted]:
+    client = _get_sensor_client()
     target = f"{_ALERT_API_URL.rstrip('/')}/api/sensor-readings"
     try:
-        client = _get_sensor_client()
         response = await client.post(target, json=payload)
         response.raise_for_status()
     except httpx.HTTPError as exc:
@@ -292,10 +361,39 @@ async def receive_sensor_reading(
         _append_fallback(payload)
 
     data = _extract_data(payload)
+    risk = _classify_sensor_payload(payload)
+    action_dispatched = False
+    if risk["status"] == "alert" and risk["event_type"]:
+        device_id = payload.get("device_id") or payload.get("dev_eui") or "sensor"
+        action_payload = {
+            "camera_id": str(device_id),
+            "type": risk["event_type"],
+            "severity": risk["severity"] or "warning",
+            "confidence": 1.0,
+            "metadata": {
+                "source": "sensor_readings",
+                "table": payload.get("table") or payload.get("tableName") or data.get("tableName"),
+                "reason": risk["reason"],
+                "data": data,
+            },
+        }
+        action_target = f"{_ACTION_LAYER_URL.rstrip('/')}/events"
+        try:
+            action_response = await client.post(action_target, json=action_payload)
+            action_dispatched = action_response.status_code in (200, 202)
+            if not action_dispatched:
+                logger.warning("센서 위험 이벤트 action layer 전달 실패 (status=%s)", action_response.status_code)
+        except httpx.HTTPError as exc:
+            logger.warning("센서 위험 이벤트 action layer 전달 실패 (%s)", exc)
+
     return success_response(
         SensorReadingAccepted(
             accepted=True,
             device_id=payload.get("device_id") or payload.get("dev_eui"),
             table=payload.get("table") or payload.get("tableName") or data.get("tableName"),
+            status=risk["status"] or "normal",
+            severity=risk["severity"] or "normal",
+            event_type=risk["event_type"],
+            action_dispatched=action_dispatched,
         )
     )

@@ -427,18 +427,24 @@ def test_create_output_elements_can_stream_h264_mpegts(monkeypatch):
         "capsfilter",
         "nvv4l2h264enc",
         "h264parse",
+        "capsfilter",
+        "identity",
         "mpegtsmux",
         "udpsink",
     ]
-    caps_from_string.assert_called_once_with(
-        "video/x-raw(memory:NVMM),format=NV12,width=1280,height=720"
+    assert caps_from_string.call_args_list[0].args == (
+        "video/x-raw(memory:NVMM),format=NV12,width=1280,height=720",
+    )
+    assert caps_from_string.call_args_list[1].args == (
+        "video/x-h264,stream-format=byte-stream,alignment=au",
     )
     assert elements[2].properties["bitrate"] == 6000000
     assert elements[2].properties["insert-sps-pps"] is True
     assert elements[2].properties["iframeinterval"] == 30
-    assert elements[5].properties["host"] == "media"
-    assert elements[5].properties["port"] == 1234
-    assert elements[5].properties["sync"] is False
+    assert elements[5].properties["signal-handoffs"] is True
+    assert elements[7].properties["host"] == "media"
+    assert elements[7].properties["port"] == 1234
+    assert elements[7].properties["sync"] is False
 
 
 def test_link_or_raise_raises_when_gstreamer_link_fails():

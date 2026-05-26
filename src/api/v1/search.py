@@ -6,7 +6,6 @@ SQLite에 기록된 인물 외형 속성을 조건부 검색하여
 
 from __future__ import annotations
 
-import asyncio
 import logging
 import os
 import re
@@ -199,13 +198,8 @@ async def search_appearances(
         time_to=ts_to,
     )
 
-    # SQLite blocking I/O를 asyncio 스레드풀로 오프로드해 이벤트 루프 블로킹 방지
-    # search + count를 병렬 실행해 왕복 대기 제거
-    loop = asyncio.get_event_loop()
-    rows, total = await asyncio.gather(
-        loop.run_in_executor(None, lambda: log.search(**search_kwargs, limit=limit, offset=offset)),
-        loop.run_in_executor(None, lambda: log.count(**search_kwargs)),
-    )
+    rows = log.search(**search_kwargs, limit=limit, offset=offset)
+    total = log.count(**search_kwargs)
 
     return PaginatedResponse[AppearanceRecord](
         success=True,

@@ -16,21 +16,21 @@
 
 ## 현재 확인된 상태
 
-2026-05-04 기준 로컬 Compose 상태 확인 결과, 핵심 서비스는 아래처럼 실행 중이었습니다.
+2026-05-26 기준 로컬 Compose 상태 확인 결과, 핵심 서비스는 아래처럼 실행 중이었습니다.
 
 ```text
 cctv-alert-api      Up, healthy, 127.0.0.1:8000->8000
 cctv-action-layer   Up, healthy, 127.0.0.1:8080->8080
 cctv-public-api     Up, healthy, 0.0.0.0:9000->9000
 edgex-mqtt-broker   Up, healthy, 127.0.0.1:1883->1883
-cctv-prometheus     Up, 127.0.0.1:9090->9090
-cctv-grafana        Up, 127.0.0.1:3001->3000
 ```
+
+> **Prometheus / Grafana**는 `docker-compose.monitoring.yml`로 분리되어 있습니다. 필요할 때만 별도로 실행합니다 (아래 "모니터링 옵션" 섹션 참조).
 
 주의:
 
 - `cctv-public-api`만 호스트 외부 접근이 가능한 `0.0.0.0:9000`으로 열려 있습니다.
-- `alert-api`, `action-layer`, `mqtt`, `prometheus`, `grafana`는 로컬 호스트에만 바인딩되어 있습니다.
+- `alert-api`, `action-layer`, `mqtt`는 로컬 호스트에만 바인딩되어 있습니다.
 - 운영 환경에서는 `PUBLIC_API_KEY`, `INTERNAL_SERVICE_TOKEN`, `GRAFANA_ADMIN_PASSWORD`를 반드시 실제 값으로 설정해야 합니다.
 - MQTT 브로커는 익명 접속을 허용하지 않습니다. 실행 전 `mosquitto/passwd`를 생성하고 `MQTT_USER`, `MQTT_PASSWORD`를 설정해야 합니다.
 
@@ -42,8 +42,10 @@ cctv-grafana        Up, 127.0.0.1:3001->3000
 | `cctv-alert-api` | 이벤트 JSONL 수신/저장 | `127.0.0.1:8000` | `/health` |
 | `cctv-action-layer` | 알람/외부전송/수동승인 | `127.0.0.1:8080` | `/health` |
 | `cctv-public-api` | 대시보드/서버팀 공개 API | `0.0.0.0:9000` | `/api/v1/health`, `/api/v1/readiness` |
-| `cctv-prometheus` | 메트릭 수집 | `127.0.0.1:9090` | `/-/ready` |
-| `cctv-grafana` | 모니터링 대시보드 | `127.0.0.1:3001` | `/api/health` |
+| `cctv-prometheus` ⚙️ | 메트릭 수집 (옵션) | `127.0.0.1:9090` | `/-/ready` |
+| `cctv-grafana` ⚙️ | 모니터링 대시보드 (옵션) | `127.0.0.1:3001` | `/api/health` |
+
+⚙️ 옵션 서비스 — `docker-compose.monitoring.yml`로 분리됨
 
 브라우저 확인용 주소:
 
@@ -75,7 +77,19 @@ sudo docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
 Public API, Alert API, Action Layer 중심으로 운영/개발 확인만 할 때는 전체 스택보다 필요한 서비스만 올리는 편이 안전합니다.
 
 ```bash
-docker compose up -d cctv-alert-api cctv-action-layer cctv-public-api prometheus grafana edgex-mqtt-broker
+docker compose up -d cctv-alert-api cctv-action-layer cctv-public-api edgex-mqtt-broker
+```
+
+### 모니터링 옵션 (Prometheus + Grafana)
+
+평상시엔 끄고, 필요할 때만 켭니다.
+
+```bash
+# 메인 스택과 함께 올리기
+docker compose -f docker-compose.yml -f docker-compose.monitoring.yml up -d prometheus grafana
+
+# 모니터링만 중지 (볼륨 유지)
+docker compose -f docker-compose.monitoring.yml down
 ```
 
 전체 EdgeX 스택까지 올릴 때:
@@ -103,11 +117,18 @@ docker compose -f docker-compose.yml -f docker-compose.arm64.yml up -d
 
 ## Health endpoint 확인
 
+핵심 서비스:
+
 ```bash
 curl -fsS http://localhost:8000/health
 curl -fsS http://localhost:8080/health
 curl -fsS http://localhost:9000/api/v1/health
 curl -fsS http://localhost:9000/api/v1/readiness
+```
+
+모니터링 서비스 (옵션, 실행 중일 때만):
+
+```bash
 curl -fsS http://localhost:9090/-/ready
 curl -fsS http://localhost:3001/api/health
 ```
@@ -149,9 +170,17 @@ curl -fsS \
 - action layer health
 - public api health
 - public api readiness
-- prometheus readiness
-- grafana health
-- prometheus scrape targets
+- prometheus readiness (모니터링 스택 실행 중일 때만 PASS)
+- grafana health (모니터링 스택 실행 중일 때만 PASS)
+- prometheus scrape targets (모니터링 스택 실행 중일 때만 PASS)
+
+> 모니터링 스택을 끈 상태에서 실행하면 prometheus/grafana 항목은 FAIL로 표시됩니다. 데이터 흐름 자체는 `smoke_test_data_flow.py`로 별도 확인하세요.
+
+반복 안정성 확인 (30분~1시간):
+
+```bash
+bash scripts/run_smoke_loop.sh 60 30   # 60분, 30초 간격
+```
 
 `smoke_test_data_flow.py`는 실제 데이터 흐름에 가까운 점검입니다.
 
@@ -176,8 +205,9 @@ docker compose logs --tail 120 cctv-public-api
 docker compose logs --tail 120 cctv-action-layer
 docker compose logs --tail 120 cctv-alert-api
 docker compose logs --tail 120 edgex-mqtt-broker
-docker compose logs --tail 120 prometheus
-docker compose logs --tail 120 grafana
+# 모니터링 스택 실행 중일 때:
+docker compose -f docker-compose.monitoring.yml logs --tail 120 prometheus
+docker compose -f docker-compose.monitoring.yml logs --tail 120 grafana
 ```
 
 실시간 추적:
@@ -474,8 +504,9 @@ curl -fsS http://localhost:9090/-/ready
 curl -fsS http://localhost:9090/api/v1/targets
 curl -fsS http://localhost:9000/api/v1/metrics | head
 curl -fsS http://localhost:8080/metrics | head
-docker compose logs --tail 120 prometheus
-docker compose logs --tail 120 grafana
+# 모니터링 스택 실행 중일 때:
+docker compose -f docker-compose.monitoring.yml logs --tail 120 prometheus
+docker compose -f docker-compose.monitoring.yml logs --tail 120 grafana
 ```
 
 수정 방법:
