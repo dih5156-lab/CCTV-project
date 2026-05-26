@@ -2503,7 +2503,7 @@
     }
     function renderFaces(faces) {
       $("face-rows").innerHTML = faces.length ? faces.map((face) => {
-        const image = face.image ? `${apiBase()}/known_faces/${encodeURIComponent(face.image.split("/").pop())}` : "";
+        const image = face.image ? `${faceBase()}/known_faces/${encodeURIComponent(face.image.split("/").pop())}` : "";
         return `<tr>
           <td>${image ? `<img class="face-preview" src="${image}" alt="${face.name}" onerror="this.style.display='none'">` : "-"}</td>
           <td>${face.name || "-"}<br><code>${face.employee_id || face.id || "-"}</code></td>
