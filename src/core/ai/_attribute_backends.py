@@ -69,6 +69,11 @@ def decode_pphuman_scores(
         if field.startswith("has_"):
             attrs[field] = float(best["score"]) >= float(best["threshold"])
             continue
+        # gender는 단일 binary 필드: score >= 0.5 → female, < 0.5 → male
+        if field == "gender" and len(candidates) == 1:
+            female_score = float(best["score"])
+            attrs[field] = "female" if female_score >= float(best["threshold"]) else "male"
+            continue
         if float(best["score"]) >= float(best["threshold"]):
             attrs[field] = best["value"]
 
