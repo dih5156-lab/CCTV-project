@@ -953,6 +953,8 @@ services:
       PYTHONIOENCODING: utf-8
       PYTHONUTF8: "1"
       NVIDIA_VISIBLE_DEVICES: ""
+      MQTT_USER: ${MQTT_USER:-}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-}
     depends_on:
       edgex-mqtt-broker:
         condition: service_started
