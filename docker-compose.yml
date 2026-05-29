@@ -369,6 +369,7 @@ services:
     environment:
       PYTHONIOENCODING: utf-8
       PYTHONUTF8: "1"
+      <<: *appearance-search-runtime
       MQTT_USER: ${MQTT_USER:-}
       MQTT_PASSWORD: ${MQTT_PASSWORD:-}
       STREAM_API_ENABLED: ${STREAM_API_ENABLED:-1}
@@ -414,6 +415,11 @@ services:
     - type: bind
       source: ./models
       target: /app/models
+      bind:
+        create_host_path: true
+    - type: bind
+      source: ./data
+      target: /app/data
       bind:
         create_host_path: true
     healthcheck:

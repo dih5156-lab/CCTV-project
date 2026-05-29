@@ -22,6 +22,10 @@ from ..dependencies._settings import (
 from ..dependencies.auth import verify_api_key
 from ..dependencies.rate_limit import limiter
 from ..schemas.common import BaseResponse, PaginatedResponse, success_response
+from ...services.sensor_classifier import (
+    classify_sensor_payload as _classify_sensor_payload,
+    extract_sensor_data as _extract_data,
+)
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/sensor-readings", tags=["sensor-readings"])
@@ -84,57 +88,6 @@ class SensorReadingAccepted(BaseModel):
     action_dispatched: bool = False
 
 
-def _as_float(value: Any) -> Optional[float]:
-    if value in (None, ""):
-        return None
-    try:
-        return float(value)
-    except (TypeError, ValueError):
-        return None
-
-
-def _classify_sensor_payload(payload: dict[str, Any]) -> dict[str, Optional[str]]:
-    """TLV 센서값을 시연/관제용 위험 상태로 정규화한다."""
-    data = _extract_data(payload)
-    event_type = str(payload.get("type") or payload.get("event_type") or "").strip()
-    severity = str(payload.get("severity") or "").strip().lower()
-    if event_type:
-        return {
-            "status": "alert" if severity in {"critical", "warning", "warn"} else "normal",
-            "severity": "warning" if severity == "warn" else (severity or "normal"),
-            "event_type": event_type,
-            "reason": str(payload.get("reason") or event_type),
-        }
-
-    temperature = _as_float(data.get("temperature") or data.get("temp"))
-    angle_x = abs(_as_float(data.get("angle_x") or data.get("tilt_x") or data.get("x_angle")) or 0.0)
-    angle_y = abs(_as_float(data.get("angle_y") or data.get("tilt_y") or data.get("y_angle")) or 0.0)
-    event_code = _as_float(data.get("event_code") or data.get("code"))
-
-    if temperature is not None and temperature >= 50.0:
-        severity = "critical" if temperature >= 70.0 else "warning"
-        return {
-            "status": "alert",
-            "severity": severity,
-            "event_type": "temperature_alert",
-            "reason": f"temperature={temperature:g} >= {'70' if severity == 'critical' else '50'}",
-        }
-    if max(angle_x, angle_y) >= 30.0:
-        return {
-            "status": "alert",
-            "severity": "warning",
-            "event_type": "tilt_alert",
-            "reason": f"tilt={max(angle_x, angle_y):g} >= 30",
-        }
-    if event_code is not None and event_code != 0:
-        return {
-            "status": "alert",
-            "severity": "warning",
-            "event_type": "sensor_event",
-            "reason": f"event_code={event_code:g}",
-        }
-    return {"status": "normal", "severity": "normal", "event_type": None, "reason": None}
-
 
 def _coerce_timestamp(value: object, fallback: object = None) -> float:
     for candidate in (value, fallback):
@@ -163,15 +116,6 @@ def _payload_from_entry(entry: dict[str, Any]) -> dict[str, Any]:
     payload = entry.get("payload", entry)
     return payload if isinstance(payload, dict) else {}
 
-
-def _extract_data(payload: dict[str, Any]) -> dict[str, Any]:
-    data = payload.get("data")
-    if isinstance(data, dict):
-        return data
-    decoded = payload.get("decoded")
-    if isinstance(decoded, dict):
-        return decoded
-    return {}
 
 
 # 장비 이름 매핑은 프로세스 기동 중에 바뀌지 않으므로 한 번만 읽고 캐시한다.

@@ -44,11 +44,34 @@ def _coerce_timestamp(value: object, fallback: object = None) -> float:
 
 
 def _event_payload(entry: dict) -> dict:
-    """Alert API JSONL 엔트리에서 실제 이벤트 본문을 꺼낸다."""
+    """Alert API JSONL 엔트리에서 실제 이벤트 본문을 꺼낸다.
+
+    저장 로그에는 두 형태가 섞일 수 있다.
+    - 표준 payload: top-level ``event``는 이벤트 메타 정보
+    - 래퍼 payload: ``{"topic": "...", "event": {...실제 이벤트...}}``
+    """
     payload = entry.get("payload", entry)
-    if isinstance(payload, dict) and isinstance(payload.get("event"), dict):
-        return payload["event"]
-    return payload if isinstance(payload, dict) else {}
+    if not isinstance(payload, dict):
+        return {}
+    nested_event = payload.get("event")
+    is_wrapper_event = (
+        isinstance(nested_event, dict)
+        and "topic" in payload
+        and (
+            "camera_id" in nested_event
+            or "type" in nested_event
+            or "raw" in nested_event
+        )
+    )
+    if is_wrapper_event:
+        return nested_event
+    return payload
+
+
+def _payload_camera_id(payload: dict) -> Optional[str]:
+    device = payload.get("device") if isinstance(payload.get("device"), dict) else {}
+    value = payload.get("camera_id") or device.get("camera_id") or payload.get("device_id")
+    return str(value) if value else None
 
 
 def _read_events(
@@ -81,7 +104,7 @@ def _read_events(
                 raw = payload.get("raw") if isinstance(payload.get("raw"), dict) else {}
                 event_meta = payload.get("event") if isinstance(payload.get("event"), dict) else {}
                 ts = _coerce_timestamp(
-                    payload.get("timestamp"),
+                    payload.get("timestamp") or payload.get("occurred_at"),
                     entry.get("receivedAt"),
                 )
                 if time_from is not None and ts < time_from:
@@ -96,7 +119,7 @@ def _read_events(
                 )
                 if event_type is not None and etype != event_type:
                     continue
-                cam = payload.get("camera_id")
+                cam = _payload_camera_id(payload)
                 if camera_id is not None and cam != camera_id:
                     continue
                 all_items.append(
@@ -107,7 +130,7 @@ def _read_events(
                         "confidence": payload.get("confidence", event_meta.get("confidence", 0.0)),
                         "timestamp": ts,
                         "bbox": payload.get("bbox") or raw.get("bbox"),
-                        "object_id": payload.get("object_id"),
+                        "object_id": payload.get("object_id", raw.get("object_id")),
                         "metadata": payload.get("metadata") or raw.get("metadata"),
                         "received_at": entry.get("receivedAt"),
                     }

@@ -179,3 +179,15 @@ class TestIsHelmetWorn:
 
     def test_empty_helmets(self):
         assert is_helmet_worn(_bbox(0, 0, 100, 200), []) is False
+
+    def test_large_helmet_box_covering_head_is_true(self):
+        person = _bbox(100, 100, 120, 260)
+        # SGIE 좌표 보정 이슈로 크게 생성된 박스라도 머리 영역을 충분히 덮으면 True
+        large_helmet = _bbox(80, 90, 260, 260)
+        assert is_helmet_worn(
+            person,
+            [large_helmet],
+            head_ratio=0.22,
+            iou_threshold=0.02,
+            overlap_threshold=0.10,
+        ) is True

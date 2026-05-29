@@ -482,6 +482,7 @@
       background: #05070a;
       user-select: none;
     }
+    .zone-stage iframe,
     .zone-stage img,
     .zone-stage svg {
       position: absolute;
@@ -489,10 +490,20 @@
       width: 100%;
       height: 100%;
     }
+    .zone-stage iframe {
+      border: 0;
+      background: #05070a;
+      pointer-events: none;
+    }
     .zone-stage img {
       object-fit: cover;
     }
+    .zone-stage.webrtc img,
+    .zone-stage:not(.webrtc) iframe {
+      display: none;
+    }
     .zone-stage.loading img,
+    .zone-stage.loading iframe,
     .zone-stage.error img {
       opacity: .28;
     }
@@ -1150,6 +1161,7 @@
                 <div class="field"><label>모드</label><select id="zone-mode"><option value="danger">위험구역</option><option value="object_watch">객체감시</option><option value="crowd_count">인파분석</option></select></div>
               </div>
               <div class="zone-stage" id="zone-stage">
+                <iframe id="zone-frame" title="구역 편집 WebRTC 화면" allow="autoplay; fullscreen"></iframe>
                 <img id="zone-image" alt="zone editor camera preview">
                 <svg id="zone-svg" viewBox="0 0 1280 720" preserveAspectRatio="none"></svg>
                 <div class="zone-status" id="zone-status"></div>
@@ -1293,6 +1305,10 @@
 
   <script>
     const $ = (id) => document.getElementById(id);
+    const HEALTH_CHECK_TIMEOUT_MS = 6000;
+    const AUTO_REFRESH_INTERVAL_MS = 30000;
+    const SERVICE_FAILURE_THRESHOLD = 2;
+    const SERVICE_RECENT_SUCCESS_GRACE_MS = 120000;
     const COLORS = ["red", "orange", "yellow", "green", "blue", "purple", "white", "black", "gray"];
     const state = {
       cameras: [],
@@ -1308,6 +1324,7 @@
       cameraModalTimer: null,
       selectedModalCameraId: "",
       serviceHealth: {},
+      serviceHealthMeta: {},
       pendingCount: null,
       zoneImageFallbackUsed: false,
       zoneImageAttempts: [],
@@ -1410,7 +1427,7 @@
     }
     async function fetchHealth(url, headersValue = {}) {
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 2200);
+      const timer = setTimeout(() => controller.abort(), HEALTH_CHECK_TIMEOUT_MS);
       try {
         const response = await fetch(url, {
           cache: "no-store",
@@ -1437,12 +1454,22 @@
       const reason = result.status ? `HTTP ${result.status}` : (result.body?.error || "연결 실패");
       return `${fallbackOk} 확인 실패 · ${reason}`;
     }
+    function resolveServiceTone(id, result) {
+      const now = Date.now();
+      const meta = state.serviceHealthMeta[id] || { consecutiveFailures: 0, lastSuccessAt: 0 };
+      if (result.ok) {
+        meta.consecutiveFailures = 0;
+        meta.lastSuccessAt = now;
+        state.serviceHealthMeta[id] = meta;
+        return "good";
+      }
+      meta.consecutiveFailures += 1;
+      state.serviceHealthMeta[id] = meta;
+      if (meta.consecutiveFailures < SERVICE_FAILURE_THRESHOLD) return "warn";
+      if (meta.lastSuccessAt && (now - meta.lastSuccessAt) <= SERVICE_RECENT_SUCCESS_GRACE_MS) return "warn";
+      return "bad";
+    }
     async function refreshServiceSummary() {
-      setServiceCard("svc-public", "warn", "확인 중");
-      setServiceCard("svc-stream", "warn", "확인 중");
-      setServiceCard("svc-zone", "warn", "확인 중");
-      setServiceCard("svc-face", "warn", "확인 중");
-      setServiceCard("svc-model", "warn", "확인 중");
       const authHeaders = headers({});
       const [publicApi, zoneApi, faceApi, modelApi] = await Promise.all([
         fetchHealth(apiBase() + "/api/v1/health", authHeaders),
@@ -1450,12 +1477,18 @@
         fetchHealth(faceBase() + "/health", authHeaders),
         fetchHealth(modelBase() + "/health", authHeaders),
       ]);
+      const serviceTone = {
+        "svc-public": resolveServiceTone("svc-public", publicApi),
+        "svc-zone": resolveServiceTone("svc-zone", zoneApi),
+        "svc-face": resolveServiceTone("svc-face", faceApi),
+        "svc-model": resolveServiceTone("svc-model", modelApi),
+      };
       const serviceResults = [
-        ["svc-public", publicApi.ok ? "good" : "bad", healthDetail(publicApi, "Public API")],
+        ["svc-public", serviceTone["svc-public"], healthDetail(publicApi, "Public API")],
         ["svc-stream", "good", "WebRTC 경로는 카메라 카드에서 확인"],
-        ["svc-zone", zoneApi.ok ? "good" : "bad", healthDetail(zoneApi, "Zone API")],
-        ["svc-face", faceApi.ok ? "good" : "bad", healthDetail(faceApi, "Face API")],
-        ["svc-model", modelApi.ok ? "good" : "bad", healthDetail(modelApi, "Model API")],
+        ["svc-zone", serviceTone["svc-zone"], healthDetail(zoneApi, "Zone API")],
+        ["svc-face", serviceTone["svc-face"], healthDetail(faceApi, "Face API")],
+        ["svc-model", serviceTone["svc-model"], healthDetail(modelApi, "Model API")],
       ];
       serviceResults.forEach(([id, tone, detail]) => {
         setServiceCard(id, tone, detail);
@@ -1524,7 +1557,7 @@
       return date.toLocaleString("ko-KR", { hour12: false });
     }
     function badge(value, tone = "") {
-      return `<span class="badge ${tone}">${value ?? "-"}</span>`;
+      return `<span class="badge ${tone}">${escapeHtml(value ?? "-")}</span>`;
     }
     function emptyState(title, detail = "", tone = "") {
       return `<div class="empty-state ${tone}"><strong>${title}</strong>${detail ? `<span>${detail}</span>` : ""}</div>`;
@@ -1907,16 +1940,23 @@
     function zoneImageUrl(base, cameraId, kind) {
       return `${base}/${kind}/${encodeURIComponent(cameraId)}?zone_editor=${Date.now()}`;
     }
+    function zoneVisualUrl(cameraId, kind, base = streamBase()) {
+      if (kind === "webrtc") return cameraWebRtcUrl(cameraId);
+      return zoneImageUrl(base, cameraId, kind);
+    }
     function startZoneImageLoad(cameraId) {
       const currentBase = streamBase();
       const directBase = defaultServiceUrl(8769);
       const bases = currentBase === directBase ? [currentBase] : [currentBase, directBase];
-      state.zoneImageAttempts = bases.flatMap((base) => [
-        { url: zoneImageUrl(base, cameraId, "snapshot"), mode: "snapshot", label: `${base}/snapshot` },
-        { url: zoneImageUrl(base, cameraId, "stream"), mode: "stream", label: `${base}/stream` },
-      ]);
+      state.zoneImageAttempts = [
+        { url: zoneVisualUrl(cameraId, "webrtc"), mode: "webrtc", label: "WebRTC/H.264" },
+        ...bases.flatMap((base) => [
+          { url: zoneImageUrl(base, cameraId, "snapshot"), mode: "snapshot", label: `${base}/snapshot` },
+          { url: zoneImageUrl(base, cameraId, "stream"), mode: "stream", label: `${base}/stream` },
+        ]),
+      ];
       $("zone-stage").classList.add("loading");
-      $("zone-stage").classList.remove("error");
+      $("zone-stage").classList.remove("error", "webrtc");
       $("zone-status").textContent = "카메라 화면을 불러오는 중입니다.";
       loadNextZoneImageAttempt();
     }
@@ -1929,24 +1969,38 @@
         return;
       }
       state.zoneImageMode = next.mode;
-      state.zoneImageFallbackUsed = next.mode === "stream" || !next.label.startsWith(streamBase());
+      state.zoneImageFallbackUsed = next.mode !== "webrtc";
       $("zone-status").textContent = `${next.label} 화면을 불러오는 중입니다.`;
-      $("zone-image").src = next.url;
+      if (next.mode === "webrtc") {
+        $("zone-stage").classList.add("webrtc");
+        $("zone-image").removeAttribute("src");
+        $("zone-frame").src = next.url;
+      } else {
+        $("zone-stage").classList.remove("webrtc");
+        $("zone-frame").removeAttribute("src");
+        $("zone-image").src = next.url;
+      }
     }
     function updateZoneFrameSize() {
       const image = $("zone-image");
-      const width = image.naturalWidth || 1280;
-      const height = image.naturalHeight || 720;
+      const useWebRtcSize = state.zoneImageMode === "webrtc";
+      const width = useWebRtcSize ? 1280 : (image.naturalWidth || 1280);
+      const height = useWebRtcSize ? 720 : (image.naturalHeight || 720);
       state.zoneEditor.frameWidth = width;
       state.zoneEditor.frameHeight = height;
       $("zone-svg").setAttribute("viewBox", `0 0 ${width} ${height}`);
     }
     function handleZoneImageLoaded() {
       $("zone-stage").classList.remove("loading", "error");
-      $("zone-status").textContent = state.zoneImageFallbackUsed
+      $("zone-status").textContent = state.zoneImageMode === "webrtc"
+        ? "라이브와 같은 WebRTC/H.264 화면입니다. 점 3개 이상 선택 후 구역 추가를 누르세요."
+        : state.zoneImageFallbackUsed
         ? "대체 경로로 연결했습니다. 점 3개 이상 선택 후 구역 추가를 누르세요."
         : "";
       renderZoneEditor();
+    }
+    function handleZoneImageError() {
+      if (state.zoneImageMode !== "webrtc") loadNextZoneImageAttempt();
     }
     function zoneModeLabel(mode) {
       if (mode === "object_watch") return "객체감시";
@@ -2238,8 +2292,8 @@
       $("sensor-rows").innerHTML = rows.length ? rows.map((item) => `
         <tr>
           <td>${fmtTime(item.received_at || item.timestamp)}</td>
-          <td>${item.device_name || "-"}</td>
-          <td><code>${item.device_id || "-"}</code></td>
+          <td>${escapeHtml(item.device_name || "-")}</td>
+          <td><code>${escapeHtml(item.device_id || "-")}</code></td>
           <td>${badge(item.table || "-", "blue")}</td>
           <td>${sensorValueSummary(item.data || {})}${item.reason ? `<br><span class="muted">${escapeHtml(item.reason)}</span>` : ""}</td>
           <td>${sensorStatusBadge(item)}</td>
@@ -2247,18 +2301,20 @@
       `).join("") : '<tr><td colspan="6" class="muted">TLV 수신 로그 없음</td></tr>';
     }
     function sensorValueSummary(data) {
+      const source = data && typeof data === "object" && !Array.isArray(data) ? data : {};
       const preferred = ["temperature", "angle_x", "angle_y", "event_code", "humidity", "battery"];
+      const formatPart = (key, value) => `${escapeHtml(key)}=${escapeHtml(value)}`;
       const parts = preferred
-        .filter((key) => data[key] !== undefined && data[key] !== null && data[key] !== "")
-        .map((key) => `${key}=${data[key]}`);
+        .filter((key) => source[key] !== undefined && source[key] !== null && source[key] !== "")
+        .map((key) => formatPart(key, source[key]));
       if (!parts.length) {
-        Object.entries(data).slice(0, 4).forEach(([key, value]) => parts.push(`${key}=${value}`));
+        Object.entries(source).slice(0, 4).forEach(([key, value]) => parts.push(formatPart(key, value)));
       }
       return parts.join("<br>") || "-";
     }
     function sensorStatusBadge(item) {
-      const data = item?.data || {};
-      const payload = item?.payload || {};
+      const data = item?.data && typeof item.data === "object" ? item.data : {};
+      const payload = item?.payload && typeof item.payload === "object" ? item.payload : {};
       if (item?.status === "alert") return badge(eventLabel(item.event_type), statusTone(item.severity || "warning"));
       if (item?.event_type) return badge(eventLabel(item.event_type), statusTone(item.severity || "normal"));
       const temp = Number(data.temperature);
@@ -2635,7 +2691,8 @@
       await Promise.allSettled([loadAppearanceStatus(), loadConditions(), runAppearanceSearch()]);
     }
     let refreshInFlight = false;
-    async function refreshAll() {
+    async function refreshAll(options = {}) {
+      const silent = Boolean(options.silent);
       if (refreshInFlight) return;
       refreshInFlight = true;
       $("side-api-base").textContent = apiBase();
@@ -2652,10 +2709,12 @@
           refreshServiceSummary(),
         ]);
         $("last-refresh").textContent = new Date().toLocaleTimeString("ko-KR");
-        showToast("대시보드 갱신 완료");
+        if (!silent) showToast("대시보드 갱신 완료");
       } catch (error) {
-        setStatus(false, "연결 오류");
-        showToast("갱신 실패: " + error.message);
+        if (!silent) {
+          setStatus(false, "연결 오류");
+          showToast("갱신 실패: " + error.message);
+        }
       } finally {
         refreshInFlight = false;
       }
@@ -2721,7 +2780,8 @@
     $("save-zones").addEventListener("click", (event) => runAction(event.currentTarget, "저장 중", saveZones));
     $("zone-camera").addEventListener("change", loadZoneEditor);
     $("zone-image").addEventListener("load", handleZoneImageLoaded);
-    $("zone-image").addEventListener("error", loadNextZoneImageAttempt);
+    $("zone-image").addEventListener("error", handleZoneImageError);
+    $("zone-frame").addEventListener("load", handleZoneImageLoaded);
     $("zone-svg").addEventListener("click", (event) => {
       state.zoneEditor.draft.push(zoneSvgPoint(event));
       renderZoneEditor();
@@ -2767,7 +2827,7 @@
     initializeServiceUrls();
     loadSearchHistory();
     refreshAll();
-    setInterval(refreshAll, 15000);
+    setInterval(() => refreshAll({ silent: true }), AUTO_REFRESH_INTERVAL_MS);
   </script>
 </body>
 </html>

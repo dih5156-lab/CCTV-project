@@ -211,6 +211,26 @@ class TestExtractAttributes:
         assert attrs["upper_color"] == "red"
         assert attrs["lower_color"] == "blue"
 
+    def test_partial_pose_without_shoulders_keeps_upper_hsv_fallback(self, analyzer):
+        frame = _two_tone_frame(
+            upper_bgr=(255, 0, 0),   # blue
+            lower_bgr=(0, 0, 0),     # black
+        )
+        partial_keypoints = [[0.0, 0.0, 0.0] for _ in range(17)]
+        partial_keypoints[0] = [50.0, 20.0, 0.95]  # face only
+
+        attrs = analyzer.extract_attributes(
+            frame,
+            0,
+            0,
+            100,
+            200,
+            keypoints=partial_keypoints,
+        )
+
+        assert attrs["upper_color"] == "blue"
+        assert attrs["lower_color"] == "unknown"
+
     def test_only_visible_upper_body_leaves_hat_and_lower_unknown(self, analyzer):
         frame = np.zeros((200, 100, 3), dtype=np.uint8)
         frame[:120, :] = (0, 0, 255)      # red torso

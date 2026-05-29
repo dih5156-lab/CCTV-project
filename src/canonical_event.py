@@ -16,6 +16,49 @@ def _strip_none(data: Mapping[str, Any]) -> Dict[str, Any]:
     return {key: value for key, value in data.items() if value is not None}
 
 
+_APPEARANCE_ATTRIBUTE_KEYS = frozenset(
+    {
+        "upper_color",
+        "lower_color",
+        "has_helmet",
+        "helmet_color",
+        "has_backpack",
+        "has_handbag",
+        "has_suitcase",
+        "gender",
+        "age_group",
+        "face_name",
+        "attribute_backend",
+        "attribute_scores",
+    }
+)
+
+
+def _extract_payload_attributes(payload: Mapping[str, Any]) -> Dict[str, Any]:
+    """외형 속성 필드를 top-level attributes 형태로 모은다."""
+    attributes: Dict[str, Any] = {}
+
+    existing = payload.get("attributes")
+    if isinstance(existing, Mapping):
+        attributes.update(_strip_none(existing))
+
+    metadata = payload.get("metadata")
+    if isinstance(metadata, Mapping):
+        for key in _APPEARANCE_ATTRIBUTE_KEYS:
+            if key in metadata and key not in attributes and metadata[key] is not None:
+                attributes[key] = metadata[key]
+
+    raw = payload.get("raw")
+    if isinstance(raw, Mapping):
+        raw_attributes = raw.get("attributes")
+        if isinstance(raw_attributes, Mapping):
+            for key, value in raw_attributes.items():
+                if key not in attributes and value is not None:
+                    attributes[key] = value
+
+    return attributes
+
+
 def _coerce_iso_timestamp(value: Any) -> str:
     if value is None or value == "":
         return _utc_now_iso()
@@ -239,6 +282,10 @@ def canonicalize_event_payload(
     if severity is not None:
         normalized.setdefault("severity", severity)
 
+    attributes = _extract_payload_attributes(normalized)
+    if attributes:
+        normalized.setdefault("attributes", attributes)
+
     if "schema_version" not in normalized or "event" not in normalized:
         raw_fields = {
             "bbox": normalized.get("bbox"),
@@ -247,6 +294,7 @@ def canonicalize_event_payload(
             "class_name": normalized.get("class_name"),
             "keypoints": normalized.get("keypoints"),
             "metadata": normalized.get("metadata"),
+            "attributes": normalized.get("attributes"),
         }
         normalized.update(
             build_canonical_event(

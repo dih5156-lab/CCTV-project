@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from math import isfinite
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 from ..canonical_event import build_canonical_event
 from ..devices.sensor_device import SensorReading
@@ -89,18 +89,24 @@ class SensorEventDetector:
 
     def __init__(self, rules: Optional[SensorRuleConfig] = None) -> None:
         self.rules = rules or SensorRuleConfig()
+        self._detectors: List[Callable[[SensorReading], Optional[SensorAlertEvent]]] = [
+            self._detect_tilt_alert,
+            self._detect_temperature_alert,
+        ]
+
+    def register_detector(
+        self,
+        detector: Callable[[SensorReading], Optional[SensorAlertEvent]],
+    ) -> None:
+        """외부 센서 규칙 detector를 실행 순서의 끝에 추가한다."""
+        self._detectors.append(detector)
 
     def detect_events(self, reading: SensorReading) -> List[SensorAlertEvent]:
         events: List[SensorAlertEvent] = []
-
-        tilt_event = self._detect_tilt_alert(reading)
-        if tilt_event:
-            events.append(tilt_event)
-
-        temperature_event = self._detect_temperature_alert(reading)
-        if temperature_event:
-            events.append(temperature_event)
-
+        for detector in self._detectors:
+            event = detector(reading)
+            if event:
+                events.append(event)
         return events
 
     def _detect_tilt_alert(self, reading: SensorReading) -> Optional[SensorAlertEvent]:
@@ -114,19 +120,15 @@ class SensorEventDetector:
             return None
 
         severity = "critical" if peak >= self.rules.tilt_critical_angle else "warning"
-        return SensorAlertEvent(
-            camera_id=reading.device_id,
+        return self._build_alert_event(
+            reading,
             event_type="tilt_alert",
             severity=severity,
             message="기울기 이상 감지",
-            timestamp=reading.received_at,
-            metadata=self._build_metadata(
-                reading,
-                telemetry={
-                    "angle_x_deg": angle_x,
-                    "angle_y_deg": angle_y,
-                },
-            ),
+            telemetry={
+                "angle_x_deg": angle_x,
+                "angle_y_deg": angle_y,
+            },
         )
 
     def _detect_temperature_alert(self, reading: SensorReading) -> Optional[SensorAlertEvent]:
@@ -143,16 +145,31 @@ class SensorEventDetector:
             if temperature >= self.rules.temperature_critical
             else "warning"
         )
-        return SensorAlertEvent(
-            camera_id=reading.device_id,
+        return self._build_alert_event(
+            reading,
             event_type="temperature_alert",
             severity=severity,
             message="온도 이상 감지",
+            telemetry={"temperature_c": temperature},
+        )
+
+    def _build_alert_event(
+        self,
+        reading: SensorReading,
+        *,
+        event_type: str,
+        severity: str,
+        message: str,
+        telemetry: Dict[str, Any],
+    ) -> SensorAlertEvent:
+        """센서 rule 결과를 공통 AlertEvent 형식으로 만든다."""
+        return SensorAlertEvent(
+            camera_id=reading.device_id,
+            event_type=event_type,
+            severity=severity,
+            message=message,
             timestamp=reading.received_at,
-            metadata=self._build_metadata(
-                reading,
-                telemetry={"temperature_c": temperature},
-            ),
+            metadata=self._build_metadata(reading, telemetry=telemetry),
         )
 
     @staticmethod

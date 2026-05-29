@@ -34,6 +34,7 @@ Local Test Server/
 Local Test Sever/
 
 # 런타임 생성 데이터
+reports/
 event_backup/
 data/crops/
 data/appearance_crops/

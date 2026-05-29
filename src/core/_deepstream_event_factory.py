@@ -15,6 +15,8 @@ def object_meta_to_event(
     frame_num: int,
     timestamp_factory: Callable[[], float],
     event_type_for_label: Callable[[str], EventType],
+    frame_width: Optional[int] = None,
+    frame_height: Optional[int] = None,
 ) -> Optional[DetectionEvent]:
     """DeepStream NvDsObjectMeta 형태의 객체를 DetectionEvent로 변환한다."""
     label = getattr(obj_meta, "obj_label", "") or ""
@@ -27,6 +29,17 @@ def object_meta_to_event(
     if object_id < 0:
         object_id = None
 
+    metadata = {
+        "backend": "deepstream",
+        "camera_id": camera_name,
+        "source_id": source_id,
+        "frame_num": frame_num,
+    }
+    if frame_width:
+        metadata["frame_width"] = frame_width
+    if frame_height:
+        metadata["frame_height"] = frame_height
+
     return DetectionEvent(
         event_type=event_type,
         x=int(rect.left),
@@ -38,12 +51,7 @@ def object_meta_to_event(
         object_id=object_id,
         class_idx=int(obj_meta.class_id),
         class_name=str(label),
-        metadata={
-            "backend": "deepstream",
-            "camera_id": camera_name,
-            "source_id": source_id,
-            "frame_num": frame_num,
-        },
+        metadata=metadata,
     )
 
 
@@ -55,6 +63,8 @@ def detections_to_events(
     frame_num: int,
     timestamp_factory: Callable[[], float],
     event_type_for_label: Callable[[str], EventType],
+    frame_width: Optional[int] = None,
+    frame_height: Optional[int] = None,
 ) -> List[DetectionEvent]:
     """YOLO 후처리 detection dict 목록을 DeepStream 이벤트로 변환한다."""
     events: List[DetectionEvent] = []
@@ -73,6 +83,12 @@ def detections_to_events(
             "gie_id": int(detection.get("gie_id", 0)),
             "model_task": str(detection.get("task", "")),
         }
+        resolved_frame_width = detection.get("frame_width", frame_width)
+        resolved_frame_height = detection.get("frame_height", frame_height)
+        if resolved_frame_width:
+            base_metadata["frame_width"] = resolved_frame_width
+        if resolved_frame_height:
+            base_metadata["frame_height"] = resolved_frame_height
         events.append(
             DetectionEvent(
                 event_type=event_type,

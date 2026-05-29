@@ -19,12 +19,13 @@ from typing import AsyncIterator
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
 from ._action_proxy import close_action_proxy_client
+from ._local_docs import local_api_docs_html
 from .schemas.common import error_response
 from .v1 import alerts, appearances, cameras, control, events, health, metrics, search, sensor_readings, sites
 from .v1.alerts import close_alert_client
@@ -81,8 +82,8 @@ app = FastAPI(
     ),
     version="1.0.0",
     lifespan=lifespan,
-    docs_url="/docs",
-    redoc_url="/redoc",
+    docs_url=None,
+    redoc_url=None,
     openapi_url="/openapi.json",
 )
 
@@ -159,6 +160,11 @@ async def root_info() -> dict:
         "search": "/api/v1/search",
     }
 
+
+@app.get("/docs", include_in_schema=False)
+async def local_api_docs() -> HTMLResponse:
+    """외부 CDN 없이 동작하는 가벼운 OpenAPI 문서 페이지."""
+    return HTMLResponse(local_api_docs_html())
 
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException) -> JSONResponse:

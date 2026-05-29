@@ -17,6 +17,7 @@ class HttpCheck:
     url: str
     expected_statuses: tuple[int, ...] = (200,)
     required_text: str | None = None
+    forbidden_texts: tuple[str, ...] = ()
 
 
 def _read_url(url: str, timeout: float) -> tuple[bool, int | None, str]:
@@ -34,14 +35,25 @@ def _read_url(url: str, timeout: float) -> tuple[bool, int | None, str]:
 def run_http_check(check: HttpCheck, timeout: float) -> dict[str, Any]:
     ok, status, body = _read_url(check.url, timeout)
     passed = ok and status in check.expected_statuses
-    if check.required_text is not None:
-        passed = passed and check.required_text in body
+    detail = ""
+    if check.required_text is not None and check.required_text not in body:
+        passed = False
+        detail = f"missing required text: {check.required_text}"
+
+    found_forbidden = [text for text in check.forbidden_texts if text in body]
+    if found_forbidden:
+        passed = False
+        detail = f"forbidden text found: {', '.join(found_forbidden)}"
+
+    if not passed and not detail:
+        detail = body[:500]
+
     return {
         "name": check.name,
         "url": check.url,
         "passed": passed,
         "status": status,
-        "detail": "" if passed else body[:500],
+        "detail": "" if passed else detail,
     }
 
 
@@ -104,6 +116,13 @@ def build_checks(host: str, include_monitoring: bool = False) -> list[HttpCheck]
         HttpCheck("action layer health", f"http://{host}:8080/health", required_text="cctv-action-layer"),
         HttpCheck("public api health", f"http://{host}:9000/api/v1/health"),
         HttpCheck("public api readiness", f"http://{host}:9000/api/v1/readiness", required_text="ready"),
+        HttpCheck(
+            "public api docs",
+            f"http://{host}:9000/docs",
+            required_text="CCTV Platform API",
+            forbidden_texts=("cdn.jsdelivr.net", "unpkg.com"),
+        ),
+        HttpCheck("public api openapi schema", f"http://{host}:9000/openapi.json", required_text="CCTV Platform API"),
     ]
     if include_monitoring:
         checks.extend(

@@ -386,9 +386,18 @@ class AppearanceAnalyzer:
         has_hips = has_visible([11, 12])
         has_lower_joints = has_visible([13, 14, 15, 16])
 
-        result["hat_visible"] = has_face
-        result["upper_visible"] = has_shoulders
-        result["lower_visible"] = has_hips and has_lower_joints
+        # DeepStream pose can provide partial keypoints. Missing shoulders should
+        # not block upper-color HSV fallback, but visible upper-body evidence
+        # without lower-body joints means lower clothing is not reliable.
+        has_pose_evidence = has_face or has_shoulders or has_hips or has_lower_joints
+        if has_face:
+            result["hat_visible"] = True
+        if has_shoulders:
+            result["upper_visible"] = True
+        if has_hips and has_lower_joints:
+            result["lower_visible"] = True
+        elif has_pose_evidence:
+            result["lower_visible"] = False
         return result
 
     def _split_body_regions(

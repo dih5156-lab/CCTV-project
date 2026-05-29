@@ -28,6 +28,12 @@ ARM64_OVERRIDE_SERVICES = (
     "device-rest",
 )
 
+REQUIRED_RUNTIME_SECRETS = (
+    "MQTT_USER",
+    "MQTT_PASSWORD",
+    "AIOT_DB_PASSWORD",
+)
+
 
 def _read_text(path: Path) -> str:
     try:
@@ -43,6 +49,17 @@ def _normalize_machine(machine: str | None = None) -> str:
     if value in {"x86_64", "amd64"}:
         return "amd64"
     return value or "unknown"
+
+
+def _parse_env_values(text: str) -> dict[str, str]:
+    values: dict[str, str] = {}
+    for line in text.splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#") or "=" not in stripped:
+            continue
+        key, value = stripped.split("=", 1)
+        values[key.strip()] = value.strip().strip('"').strip("'")
+    return values
 
 
 def check_default_compose_architecture(
@@ -116,13 +133,7 @@ def check_parser_db_defaults(
             "detail": "",
         }
 
-    values: dict[str, str] = {}
-    for line in text.splitlines():
-        stripped = line.strip()
-        if not stripped or stripped.startswith("#") or "=" not in stripped:
-            continue
-        key, value = stripped.split("=", 1)
-        values[key.strip()] = value.strip().strip('"').strip("'")
+    values = _parse_env_values(text)
 
     db_host = values.get("DB_HOST", "localhost")
     if db_host in {"localhost", "127.0.0.1", "::1"}:
@@ -148,6 +159,59 @@ def check_parser_db_defaults(
         "detail": "",
     }
 
+
+def check_required_runtime_secrets(env_text: str | None = None) -> dict[str, Any]:
+    """Fail fast when compose-required runtime secrets are missing from .env."""
+    text = env_text if env_text is not None else _read_text(PROJECT_ROOT / ".env")
+    values = _parse_env_values(text)
+    missing = [key for key in REQUIRED_RUNTIME_SECRETS if not values.get(key)]
+
+    if missing:
+        return {
+            "name": "runtime secret source",
+            "passed": False,
+            "detail": "missing non-empty .env values: " + ", ".join(missing),
+        }
+
+    return {
+        "name": "runtime secret source",
+        "passed": True,
+        "detail": ".env provides MQTT and AIoT DB secrets",
+    }
+
+
+def check_aiot_db_secret_wiring(
+    *,
+    compose_text: str | None = None,
+    jetson_compose_text: str | None = None,
+) -> dict[str, Any]:
+    """Ensure parser and Postgres are wired to the same DB password source."""
+    compose = compose_text if compose_text is not None else _read_text(PROJECT_ROOT / "docker-compose.yml")
+    jetson = (
+        jetson_compose_text
+        if jetson_compose_text is not None
+        else _read_text(PROJECT_ROOT / "docker-compose.jetson.yml")
+    )
+
+    missing: list[str] = []
+    for label, text in (("docker-compose.yml", compose), ("docker-compose.jetson.yml", jetson)):
+        if "POSTGRES_PASSWORD: ${AIOT_DB_PASSWORD:-}" not in text:
+            missing.append(f"{label} aiot-parser-db POSTGRES_PASSWORD from AIOT_DB_PASSWORD")
+        if "DB_PW: ${AIOT_DB_PASSWORD:-}" not in text:
+            missing.append(f"{label} aiot-parser DB_PW from AIOT_DB_PASSWORD")
+
+    if missing:
+        return {
+            "name": "aiot database secret wiring",
+            "passed": False,
+            "detail": "missing: " + ", ".join(missing),
+        }
+
+    return {
+        "name": "aiot database secret wiring",
+        "passed": True,
+        "detail": "",
+    }
 
 def check_mqtt_auth_config(
     *,
@@ -192,6 +256,26 @@ def check_mqtt_auth_config(
         if "MQTT_PASSWORD" not in text:
             missing.append(f"{label} MQTT_PASSWORD propagation")
 
+    if "app-rules-engine:" in jetson:
+        if "MQTT_USER: ${MQTT_USER:-}" not in jetson:
+            missing.append("docker-compose.jetson.yml app-rules-engine MQTT_USER render input")
+        if "MQTT_PASSWORD: ${MQTT_PASSWORD:-}" not in jetson:
+            missing.append("docker-compose.jetson.yml app-rules-engine MQTT_PASSWORD render input")
+        if 'entrypoint: ["/res/cctv-external-http/render-and-run.sh"]' not in jetson:
+            missing.append("docker-compose.jetson.yml app-rules-engine rendered config entrypoint")
+        if 'command: ["-cp=consul.http://edgex-core-consul:8500", "--registry", "-o"]' not in jetson:
+            missing.append("docker-compose.jetson.yml app-rules-engine consul command")
+
+    app_config = _read_text(PROJECT_ROOT / "edgex" / "asc" / "cctv-external-http" / "configuration.yaml")
+    render_script = _read_text(PROJECT_ROOT / "edgex" / "asc" / "cctv-external-http" / "render-and-run.sh")
+    if 'Type: "external-mqtt"' in app_config:
+        if 'SecretName: "mqtt"' not in app_config and 'SecretPath: "mqtt"' not in app_config:
+            missing.append("cctv-external-http ExternalMqtt mqtt secret reference")
+        if 'AuthMode: "usernamepassword"' not in app_config:
+            missing.append("cctv-external-http ExternalMqtt AuthMode usernamepassword")
+        if 'MQTT_USER' not in render_script or 'MQTT_PASSWORD' not in render_script:
+            missing.append("cctv-external-http render-and-run MQTT credential rendering")
+
     if missing:
         return {
             "name": "mqtt authentication config",
@@ -210,6 +294,8 @@ def run_checks() -> list[dict[str, Any]]:
     return [
         check_default_compose_architecture(),
         check_parser_db_defaults(),
+        check_required_runtime_secrets(),
+        check_aiot_db_secret_wiring(),
         check_mqtt_auth_config(),
     ]
 

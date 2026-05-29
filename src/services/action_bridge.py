@@ -28,6 +28,8 @@ import time
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
+from queue import Empty, Full, Queue
+from threading import Event, Thread
 from typing import Dict, List, Optional, Set, Tuple
 
 import paho.mqtt.client as mqtt
@@ -63,8 +65,9 @@ from ._action_bridge_support import (
 logger = logging.getLogger(__name__)
 
 _ACTION_DEFAULTS = ActionBridgeConfig()
-_DEVICE_REACHABILITY_TIMEOUT_SECONDS = 0.4
-_DEVICE_REACHABILITY_CACHE_SECONDS = 15.0
+_DEVICE_REACHABILITY_TIMEOUT_SECONDS = 1.5
+_DEVICE_REACHABILITY_CACHE_SECONDS = 30.0
+_REST_ACTION_QUEUE_MAX_SIZE = 1000
 
 
 def _check_tcp_reachable(host: str, port: int) -> bool:
@@ -228,6 +231,11 @@ class ActionBridge:
 
         self._mqtt_client: Optional[mqtt.Client] = None
         self._running = False
+        self._rest_action_queue: Queue[Tuple[str, Dict]] = Queue(
+            maxsize=_REST_ACTION_QUEUE_MAX_SIZE
+        )
+        self._rest_action_worker_stop = Event()
+        self._rest_action_worker: Optional[Thread] = None
 
     # ------------------------------------------------------------------
     # default_mode 하위 호환 프로퍼티
@@ -470,6 +478,52 @@ class ActionBridge:
         else:
             self._execute_action(topic, payload)
 
+    def enqueue_rest_event(self, payload: Dict, topic: str = "rest/inbound") -> bool:
+        """REST 수신 이벤트를 백그라운드 큐에 넣는다.
+
+        HTTP 요청 스레드가 실제 장비 제어 timeout에 묶이지 않도록 REST 경로만
+        비동기로 분리한다. MQTT 경로는 기존 동기 동작을 유지한다.
+        """
+        self._start_rest_action_worker()
+        try:
+            self._rest_action_queue.put_nowait((topic, dict(payload)))
+            return True
+        except Full:
+            logger.error("REST action queue 가득 참 - 이벤트 거부: topic=%s", topic)
+            return False
+
+    def _start_rest_action_worker(self) -> None:
+        """REST action worker를 필요할 때 시작한다."""
+        if self._rest_action_worker and self._rest_action_worker.is_alive():
+            return
+        self._rest_action_worker_stop.clear()
+        self._rest_action_worker = Thread(
+            target=self._rest_action_worker_loop,
+            daemon=True,
+            name="RestActionWorker",
+        )
+        self._rest_action_worker.start()
+
+    def _rest_action_worker_loop(self) -> None:
+        """REST 이벤트 큐를 소비해 실제 액션을 수행한다."""
+        while not self._rest_action_worker_stop.is_set() or not self._rest_action_queue.empty():
+            try:
+                topic, payload = self._rest_action_queue.get(timeout=0.2)
+            except Empty:
+                continue
+            try:
+                self._handle_event(payload, topic=topic)
+            except Exception as exc:
+                logger.error("REST action worker 처리 오류: %s", exc, exc_info=True)
+            finally:
+                self._rest_action_queue.task_done()
+
+    def _stop_rest_action_worker(self) -> None:
+        """REST action worker를 종료한다."""
+        self._rest_action_worker_stop.set()
+        if self._rest_action_worker and self._rest_action_worker.is_alive():
+            self._rest_action_worker.join(timeout=5.0)
+
     def _execute_action(self, topic: str, payload: Dict) -> None:
         """디바이스 조치 + HTTP 전송을 즉시 실행한다."""
         self._executor._resolve_devices = self._resolve_devices
@@ -630,6 +684,8 @@ class ActionBridge:
 
         self._mqtt_client.loop_start()
 
+        self._start_rest_action_worker()
+
         if self._rest_receiver:
             self._rest_receiver.start()
 
@@ -654,6 +710,7 @@ class ActionBridge:
         """서비스를 안전하게 종료한다."""
         action_bridge_up.set(0)
         logger.info("Speaker-Bridge 종료 중...")
+        self._stop_rest_action_worker()
         self._forwarder.stop()
         if self._rest_receiver:
             self._rest_receiver.stop()

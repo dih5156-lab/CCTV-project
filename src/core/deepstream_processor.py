@@ -37,6 +37,7 @@ import tempfile
 import threading
 import time
 import ctypes
+from collections import deque
 from pathlib import Path
 from queue import Empty, Full, Queue
 from threading import Event
@@ -383,6 +384,12 @@ class DeepStreamProcessor(BaseProcessor):
         self._cameras: Dict[str, Dict] = {}
         self._camera_ai_flags: Dict[str, Dict[str, bool]] = {}
         self._pad_to_camera: Dict[int, str] = {}  # pad_id → camera_id 캐시 (매 프레임 재생성 방지)
+        # SGIE(helmet/pphuman)와 primary(person)가 서로 다른 텐서 콜백으로 들어올 수 있어,
+        # 외형 분석 시점에 최근 주변 이벤트를 합쳐 nearby_objects 컨텍스트를 복원한다.
+        self._context_event_ttl_sec = float(os.environ.get("DS_CONTEXT_EVENT_TTL_SEC", "2.0"))
+        self._context_events_maxlen = int(os.environ.get("DS_CONTEXT_EVENTS_MAXLEN", "256"))
+        self._recent_context_events: Dict[str, deque] = {}
+        self._context_events_lock = threading.Lock()
         self.event_queue: Queue = Queue(maxsize=config.events.queue_max_size * 3)
         self._frames_processed = 0
         self._frames_dropped = 0
@@ -771,6 +778,8 @@ class DeepStreamProcessor(BaseProcessor):
         self.violation_filter.purge(camera_id)
         self._synthetic_id_assigner.remove_camera(camera_id)
         remove_camera_face_cache(self._face_identity_cache, camera_id)
+        with self._context_events_lock:
+            self._recent_context_events.pop(camera_id, None)
         logger.info("[%s] 카메라 제거됨 (DeepStream)", camera_id)
 
     def enqueue_camera_retry(
@@ -1508,6 +1517,69 @@ class DeepStreamProcessor(BaseProcessor):
     def _nearby_objects_from_events(events: List[DetectionEvent]) -> List[Dict[str, Any]]:
         return events_to_nearby_objects(events)
 
+    def _remember_context_events(self, camera_name: str, events: List[DetectionEvent]) -> None:
+        """외형 분석에 필요한 최근 주변 이벤트를 카메라별로 짧게 보관한다."""
+        if not events:
+            return
+        now = time.time()
+        cutoff = now - max(0.1, self._context_event_ttl_sec)
+        with self._context_events_lock:
+            bucket = self._recent_context_events.setdefault(
+                camera_name,
+                deque(maxlen=max(16, self._context_events_maxlen)),
+            )
+            while bucket and bucket[0][0] < cutoff:
+                bucket.popleft()
+            for event in events:
+                # person은 현재 프레임 이벤트에서 항상 전달되므로 주변 컨텍스트만 캐시한다.
+                if event.event_type == EventType.PERSON:
+                    continue
+                bucket.append((now, event))
+
+    def _collect_context_events(
+        self,
+        camera_name: str,
+        current_events: List[DetectionEvent],
+    ) -> List[DetectionEvent]:
+        """현재 프레임 이벤트 + 최근 SGIE 이벤트를 병합해 컨텍스트를 만든다."""
+        now = time.time()
+        cutoff = now - max(0.1, self._context_event_ttl_sec)
+        merged: List[DetectionEvent] = list(current_events)
+        seen_keys = {
+            (
+                event.event_type.value,
+                int(event.x),
+                int(event.y),
+                int(event.width),
+                int(event.height),
+                int(event.object_id) if event.object_id is not None else None,
+            )
+            for event in current_events
+        }
+
+        with self._context_events_lock:
+            bucket = self._recent_context_events.setdefault(
+                camera_name,
+                deque(maxlen=max(16, self._context_events_maxlen)),
+            )
+            while bucket and bucket[0][0] < cutoff:
+                bucket.popleft()
+            for _, event in bucket:
+                key = (
+                    event.event_type.value,
+                    int(event.x),
+                    int(event.y),
+                    int(event.width),
+                    int(event.height),
+                    int(event.object_id) if event.object_id is not None else None,
+                )
+                if key in seen_keys:
+                    continue
+                seen_keys.add(key)
+                merged.append(event)
+
+        return merged
+
     def _run_face_recognition(
         self,
         frame: Any,
@@ -1632,14 +1704,16 @@ class DeepStreamProcessor(BaseProcessor):
         flags = self._feature_flags_for_camera(camera_name)
         if not (flags.get("use_face") or flags.get("use_appearance")):
             return
+        self._remember_context_events(camera_name, filtered_events)
         person_events = [e for e in filtered_events if e.event_type == EventType.PERSON]
         if not person_events:
             return
+        context_events = self._collect_context_events(camera_name, filtered_events)
         frame = self.get_camera_frame(camera_name, copy_frame=True)
         if frame is None:
             return
         try:
-            self._face_work_queue.put_nowait((camera_name, person_events, frame, flags, filtered_events))
+            self._face_work_queue.put_nowait((camera_name, person_events, frame, flags, context_events))
         except Full:
             logger.debug("[%s] 얼굴 인식 워커 큐 가득 참 — 프레임 건너뜀", camera_name)
 
@@ -1873,6 +1947,8 @@ class DeepStreamProcessor(BaseProcessor):
                     source_id=int(frame_meta.source_id),
                     frame_num=int(frame_meta.frame_num),
                     timestamp_factory=time.time,
+                    frame_width=int(getattr(frame_meta, "source_frame_width", 0) or 0),
+                    frame_height=int(getattr(frame_meta, "source_frame_height", 0) or 0),
                     event_type_for_label=self._event_type_for_label,
                 )
                 detected += sum(
@@ -1912,6 +1988,8 @@ class DeepStreamProcessor(BaseProcessor):
                 source_id=int(frame_meta.source_id),
                 frame_num=int(frame_meta.frame_num),
                 timestamp_factory=time.time,
+                frame_width=int(getattr(frame_meta, "source_frame_width", 0) or 0),
+                frame_height=int(getattr(frame_meta, "source_frame_height", 0) or 0),
                 event_type_for_label=self._event_type_for_label,
             )
             if event is not None:

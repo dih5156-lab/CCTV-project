@@ -318,3 +318,26 @@ def test_custom_temperature_threshold_stricter():
     events = SensorEventDetector(rules).detect_events(_reading(temperature=45.0))
     assert len(events) == 1
     assert events[0].severity == "warning"
+
+
+def test_register_detector_adds_custom_sensor_rule():
+    detector = SensorEventDetector()
+
+    def _vibration_rule(reading: SensorReading):
+        if reading.telemetry.get("vibration") != "high":
+            return None
+        return detector._build_alert_event(
+            reading,
+            event_type="vibration_alert",
+            severity="warning",
+            message="진동 이상 감지",
+            telemetry={"vibration": "high"},
+        )
+
+    detector.register_detector(_vibration_rule)
+
+    events = detector.detect_events(_reading(vibration="high"))
+
+    assert len(events) == 1
+    assert events[0].event_type == "vibration_alert"
+    assert events[0].severity == "warning"

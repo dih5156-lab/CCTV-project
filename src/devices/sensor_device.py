@@ -3,7 +3,41 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import datetime
+from math import isfinite
 from typing import Any, Dict, Mapping
+
+
+def _normalize_timestamp(value: Any) -> float:
+    """초/ms/ISO timestamp를 Unix seconds(float)로 정규화한다."""
+    if value in (None, ""):
+        return 0.0
+    if isinstance(value, str):
+        try:
+            value = value.strip()
+            if not value:
+                return 0.0
+            number = float(value)
+        except ValueError:
+            try:
+                return datetime.fromisoformat(value.replace("Z", "+00:00")).timestamp()
+            except ValueError:
+                return 0.0
+    else:
+        try:
+            number = float(value)
+        except (TypeError, ValueError):
+            return 0.0
+
+    if not isfinite(number):
+        return 0.0
+    if abs(number) >= 1e11:
+        number /= 1000.0
+    return number
+
+
+def _as_mapping(value: Any) -> Dict[str, Any]:
+    return dict(value) if isinstance(value, Mapping) else {}
 
 
 @dataclass
@@ -28,10 +62,13 @@ class SensorReading:
         rx_metadata = uplink_message.get("rx_metadata") or []
         rx0 = rx_metadata[0] if isinstance(rx_metadata, list) and rx_metadata else {}
 
-        raw_data = decoded_payload.get("data", decoded_payload)
+        if "data" in decoded_payload:
+            raw_data = _as_mapping(decoded_payload.get("data"))
+        else:
+            raw_data = _as_mapping(decoded_payload)
         telemetry = {
             key: value
-            for key, value in dict(raw_data).items()
+            for key, value in raw_data.items()
             if key != "tableName"
         }
         table_name = str(
@@ -39,15 +76,19 @@ class SensorReading:
             or raw_data.get("tableName")
             or "unknown"
         )
-        dev_eui = str(uplink_message.get("dev_eui", "")).lower()
+        dev_eui = str(uplink_message.get("dev_eui") or "").lower()
+        device_id = str(uplink_message.get("device_id") or dev_eui or "unknown")
+        received_at = _normalize_timestamp(
+            rx0.get("time") or uplink_message.get("received_at") or uplink_message.get("timestamp")
+        )
 
         return cls(
-            device_id=dev_eui or str(uplink_message.get("device_id", "unknown")),
-            app_eui=str(uplink_message.get("app_eui", "")).lower(),
+            device_id=device_id,
+            app_eui=str(uplink_message.get("app_eui") or "").lower(),
             dev_eui=dev_eui,
             table_name=table_name,
             telemetry=telemetry,
-            received_at=float(rx0.get("time") or uplink_message.get("timestamp") or 0.0),
+            received_at=received_at,
             metadata={
                 "f_port": uplink_message.get("f_port"),
                 "f_cnt_up": uplink_message.get("f_cnt_up"),

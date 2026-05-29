@@ -31,6 +31,43 @@ def test_normalize_event_queue_item_from_detection_event():
     assert event_data["event_id"].startswith("evt_")
 
 
+def test_normalize_event_queue_item_promotes_appearance_attributes():
+    event = DetectionEvent(
+        event_type=EventType.APPEARANCE_MATCH,
+        x=10,
+        y=20,
+        width=30,
+        height=40,
+        confidence=0.88,
+        timestamp=1000.0,
+        object_id=7,
+        class_name="person",
+        metadata={
+            "camera_id": "cam-appearance",
+            "condition_id": "cond-1",
+            "upper_color": "black",
+            "lower_color": "gray",
+            "has_backpack": True,
+            "gender": "male",
+            "attribute_backend": "hsv",
+        },
+    )
+
+    event_data, event_type, camera_id = normalize_event_queue_item(event)
+
+    assert event_type == "appearance_match"
+    assert camera_id == "cam-appearance"
+    assert event_data["attributes"] == {
+        "upper_color": "black",
+        "lower_color": "gray",
+        "has_backpack": True,
+        "gender": "male",
+        "attribute_backend": "hsv",
+    }
+    assert event_data["raw"]["attributes"] == event_data["attributes"]
+    assert event_data["raw"]["metadata"]["condition_id"] == "cond-1"
+
+
 def test_publish_queue_item_uses_callback_topic():
     published = []
 

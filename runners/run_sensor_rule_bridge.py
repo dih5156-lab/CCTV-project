@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import os
 import signal
 import sys
 import time
@@ -40,11 +41,15 @@ class _RuleTopicPublisher:
         broker: str,
         port: int,
         topic_prefix: str,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
     ) -> None:
         self.broker = broker
         self.port = int(port)
         self.topic_prefix = topic_prefix.rstrip("/")
         self._client = create_mqtt_client("sensor-rule-bridge-pub")
+        if username:
+            self._client.username_pw_set(username, password)
         self._connected = False
 
     def _on_connect(self, client, userdata, flags, rc, *args) -> None:
@@ -143,11 +148,16 @@ def main() -> None:
     if args.max_pending_events <= 0:
         parser.error("--max-pending-events는 양수여야 합니다")
 
+    mqtt_user = os.environ.get("MQTT_USER") or None
+    mqtt_password = os.environ.get("MQTT_PASSWORD") or None
+
     service = SensorRuleBridgeService()
     publisher = _RuleTopicPublisher(
         broker=args.mqtt_broker,
         port=args.mqtt_port,
         topic_prefix=args.publish_topic_prefix,
+        username=mqtt_user,
+        password=mqtt_password,
     )
     pending_events = deque(maxlen=args.max_pending_events)
 
@@ -182,6 +192,8 @@ def main() -> None:
         topics=(args.subscribe_topic,),
         message_handler=_handle_message,
         client_id_prefix="sensor-rule-bridge-sub",
+        username=mqtt_user,
+        password=mqtt_password,
     )
 
     if not subscriber.connect():

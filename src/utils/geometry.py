@@ -105,12 +105,14 @@ def calculate_overlap_ratio(bbox1: dict, bbox2: dict) -> float:
     if inter_area == 0.0:
         return 0.0
     
-    bbox2_area = bbox2['width'] * bbox2['height']
+    # 함수 설명대로 bbox1(기준 박스) 대비 겹침 비율을 계산한다.
+    # 기존 bbox2 기준 분모는 큰 helmet 박스에서 과도하게 작은 비율을 만들 수 있다.
+    bbox1_area = bbox1['width'] * bbox1['height']
     
-    if bbox2_area <= 0:
+    if bbox1_area <= 0:
         return 0.0
     
-    return inter_area / bbox2_area
+    return inter_area / bbox1_area
 
 
 def get_head_bbox(person_bbox: dict, head_ratio: float = 0.7) -> dict:

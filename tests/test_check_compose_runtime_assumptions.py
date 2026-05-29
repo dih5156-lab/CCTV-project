@@ -147,3 +147,76 @@ services:
 
     assert result["passed"] is False
     assert "non-empty mosquitto/passwd" in result["detail"]
+
+
+
+def test_required_runtime_secrets_fails_when_env_missing_values():
+    result = runtime_checks.check_required_runtime_secrets(
+        "MQTT_USER=cctv\nMQTT_PASSWORD=\n"
+    )
+    assert result["passed"] is False
+    assert "MQTT_PASSWORD" in result["detail"]
+    assert "AIOT_DB_PASSWORD" in result["detail"]
+
+
+def test_required_runtime_secrets_passes_when_env_has_required_values():
+    result = runtime_checks.check_required_runtime_secrets(
+        "MQTT_USER=cctv\nMQTT_PASSWORD=secret\nAIOT_DB_PASSWORD=dbsecret\n"
+    )
+    assert result["passed"] is True
+
+
+def test_aiot_db_secret_wiring_requires_same_env_source():
+    compose = """
+services:
+  aiot-parser-db:
+    environment:
+      POSTGRES_PASSWORD: ${AIOT_DB_PASSWORD:-}
+  aiot-parser:
+    environment:
+      DB_PW: ${AIOT_DB_PASSWORD:-}
+"""
+    result = runtime_checks.check_aiot_db_secret_wiring(
+        compose_text=compose,
+        jetson_compose_text=compose,
+    )
+    assert result["passed"] is True
+
+
+def test_aiot_db_secret_wiring_fails_on_split_secret_sources():
+    result = runtime_checks.check_aiot_db_secret_wiring(
+        compose_text="POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-}\nDB_PW: ${AIOT_DB_PASSWORD:-}\n",
+        jetson_compose_text="POSTGRES_PASSWORD: ${AIOT_DB_PASSWORD:-}\nDB_PW: ${DB_PASSWORD:-}\n",
+    )
+    assert result["passed"] is False
+    assert "AIOT_DB_PASSWORD" in result["detail"]
+
+
+def test_mqtt_auth_config_requires_app_rules_engine_rendered_config(tmp_path):
+    passwd = tmp_path / "passwd"
+    passwd.write_text("cctv:$7$hash\n", encoding="utf-8")
+    compose = """
+services:
+  edgex-mqtt-broker:
+    environment:
+      MQTT_USER: ${MQTT_USER:-}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-}
+    volumes:
+      - ./mosquitto/passwd:/mosquitto/config/passwd:ro
+"""
+    jetson = compose + """
+  app-rules-engine:
+    environment:
+      MQTT_USER: ${MQTT_USER:-}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-}
+"""
+
+    result = runtime_checks.check_mqtt_auth_config(
+        mosquitto_text="allow_anonymous false\npassword_file /mosquitto/config/passwd\n",
+        compose_text=compose,
+        jetson_compose_text=jetson,
+        passwd_path=passwd,
+    )
+
+    assert result["passed"] is False
+    assert "app-rules-engine rendered config entrypoint" in result["detail"]

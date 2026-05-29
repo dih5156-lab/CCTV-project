@@ -68,6 +68,24 @@ def test_root_guides_browser_users(client: SyncASGIClient) -> None:
     assert data["events"] == "/api/v1/events"
 
 
+def test_docs_page_uses_local_openapi_explorer(client: SyncASGIClient) -> None:
+    resp = client.get("/docs")
+
+    assert resp.status_code == 200
+    assert "text/html" in resp.headers["content-type"]
+    assert "CCTV Platform API" in resp.text
+    assert 'fetch("/openapi.json"' in resp.text
+    assert "cdn.jsdelivr.net" not in resp.text
+    assert "unpkg.com" not in resp.text
+
+
+def test_openapi_json_is_available(client: SyncASGIClient) -> None:
+    resp = client.get("/openapi.json")
+
+    assert resp.status_code == 200
+    assert resp.json()["info"]["title"] == "CCTV Platform API"
+
+
 def test_health_up(client: SyncASGIClient) -> None:
     resp = client.get("/api/v1/health")
     assert resp.status_code == 200
@@ -177,9 +195,13 @@ class TestAlerts:
             "confidence": 0.95,
             "timestamp": 1700000000.0,
             "bbox": {"x": 10, "y": 20, "width": 100, "height": 80},
+            "object_id": 7,
+            "metadata": {"zone_id": "zone-A"},
         }
+        posted_payloads = []
 
         async def _mock_post(*args, **kwargs):
+            posted_payloads.append(kwargs.get("json"))
             mock = MagicMock()
             mock.status_code = 202
             mock.raise_for_status = MagicMock()
@@ -194,6 +216,16 @@ class TestAlerts:
         assert body["data"]["accepted"] is True
         assert body["data"]["camera_id"] == "cam-01"
         assert body["data"]["event_type"] == "helmet"
+        assert posted_payloads[1] == {
+            "camera_id": "cam-01",
+            "type": "helmet",
+            "severity": "normal",
+            "confidence": 0.95,
+            "timestamp": 1700000000.0,
+            "bbox": {"x": 10, "y": 20, "width": 100, "height": 80},
+            "object_id": 7,
+            "metadata": {"zone_id": "zone-A"},
+        }
 
     def test_post_alert_invalid_event_type(self, client: SyncASGIClient) -> None:
         """유효하지 않은 event_type → 422"""
@@ -639,6 +671,51 @@ class TestEvents:
             assert item["confidence"] == pytest.approx(0.858)
             assert item["bbox"]["x"] == 346
             assert item["metadata"]["direction"] == "left"
+        finally:
+            events_module._ALERT_LOG = original
+
+    def test_list_events_reads_canonical_payload(self, client: SyncASGIClient, tmp_path: Path) -> None:
+        """표준 canonical payload는 top-level 필드와 event 메타를 함께 사용한다."""
+        import src.api.v1.events as events_module
+
+        log_file = tmp_path / "test_canonical_alert_event.jsonl"
+        entry = {
+            "receivedAt": "2026-05-06T01:57:55.574782+00:00",
+            "payload": {
+                "schema_version": "1.0",
+                "message_type": "ai_detection_event",
+                "event_id": "evt_test",
+                "occurred_at": "2026-05-06T01:57:53.848273+00:00",
+                "device": {"camera_id": "camera_2"},
+                "event": {
+                    "event_type": "fall_detected",
+                    "severity": "critical",
+                    "confidence": 0.931,
+                },
+                "raw": {
+                    "bbox": {"x": 11, "y": 22, "width": 33, "height": 44},
+                    "object_id": 99,
+                    "metadata": {"backend": "deepstream"},
+                },
+            },
+        }
+        log_file.write_text(json.dumps(entry) + "\n", encoding="utf-8")
+
+        original = events_module._ALERT_LOG
+        events_module._ALERT_LOG = log_file
+        try:
+            resp = client.get("/api/v1/events?limit=1&event_type=fall_detected")
+            assert resp.status_code == 200
+            body = resp.json()
+            assert body["total"] == 1
+            item = body["items"][0]
+            assert item["camera_id"] == "camera_2"
+            assert item["event_type"] == "fall_detected"
+            assert item["severity"] == "critical"
+            assert item["confidence"] == pytest.approx(0.931)
+            assert item["bbox"] == {"x": 11, "y": 22, "width": 33, "height": 44}
+            assert item["object_id"] == 99
+            assert item["metadata"] == {"backend": "deepstream"}
         finally:
             events_module._ALERT_LOG = original
 

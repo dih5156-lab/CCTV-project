@@ -171,3 +171,129 @@ def test_log_person_appearance_builds_and_inserts_payload(tmp_path):
     assert payload["has_handbag"] is True
     assert payload["gender"] == "female"
     assert payload["face_name"] == "tester"
+
+
+def test_log_person_appearance_saves_scaled_deepstream_crop(tmp_path):
+    crop_dir = tmp_path / "crops"
+    pipeline = AppearancePipeline(AppearanceAnalyzer(), crop_dir, save_crops=True)
+    frame = np.zeros((50, 50, 3), dtype=np.uint8)
+    frame[15:25, 10:30] = (255, 255, 255)
+    person = DetectionEvent(
+        event_type=EventType.PERSON,
+        x=20,
+        y=30,
+        width=40,
+        height=20,
+        confidence=0.95,
+        timestamp=1000.0,
+        object_id=3,
+        class_name="person",
+        metadata={"frame_width": 100, "frame_height": 100},
+    )
+    inserted_payloads = []
+
+    class DummyAppearance:
+        conditions = []
+
+        def extract_attributes(self, *args, **kwargs):
+            return {"upper_color": "white", "lower_color": "black", "attribute_backend": "hsv"}
+
+    pipeline._appearance = DummyAppearance()
+    pipeline._appearance_log = SimpleNamespace(
+        insert=lambda **payload: inserted_payloads.append(payload)
+    )
+
+    pipeline.log_person_appearance(frame, person, 1111.0, "cam01", [], {})
+
+    assert len(inserted_payloads) == 1
+    crop_path = inserted_payloads[0]["crop_path"]
+    assert crop_path is not None
+    saved = __import__("cv2").imread(crop_path)
+    assert saved is not None
+    assert saved.shape[:2] == (10, 20)
+    assert saved.mean() > 200
+
+
+def test_extract_person_attributes_scales_deepstream_bbox_to_preview_frame(tmp_path):
+    pipeline = AppearancePipeline(AppearanceAnalyzer(), tmp_path / "crops")
+    frame = np.zeros((50, 50, 3), dtype=np.uint8)
+    person = DetectionEvent(
+        event_type=EventType.PERSON,
+        x=20,
+        y=30,
+        width=40,
+        height=20,
+        confidence=0.95,
+        timestamp=1000.0,
+        object_id=3,
+        class_name="person",
+        keypoints=[[30, 40, 0.9]],
+        metadata={"frame_width": 100, "frame_height": 100},
+    )
+    nearby_objects = [{"class_name": "backpack", "x": 60, "y": 20, "width": 20, "height": 30}]
+    captured = {}
+
+    class DummyAppearance:
+        def extract_attributes(self, frame_arg, x, y, width, height, nearby_objects=None, keypoints=None):
+            captured.update(
+                x=x,
+                y=y,
+                width=width,
+                height=height,
+                nearby_objects=nearby_objects,
+                keypoints=keypoints,
+            )
+            return {"upper_color": "red", "lower_color": "blue", "attribute_backend": "hsv"}
+
+    pipeline._appearance = DummyAppearance()
+
+    attrs = pipeline._extract_person_attributes(frame, person, nearby_objects)
+
+    assert attrs["upper_color"] == "red"
+    assert (captured["x"], captured["y"], captured["width"], captured["height"]) == (10, 15, 20, 10)
+    assert captured["keypoints"] == [[15.0, 20.0, 0.9]]
+    assert captured["nearby_objects"][0]["x"] == 30
+    assert captured["nearby_objects"][0]["height"] == 15
+
+
+def test_smooth_track_attributes_uses_majority_color_per_track(tmp_path):
+    pipeline = AppearancePipeline(
+        AppearanceAnalyzer(),
+        tmp_path / "crops",
+        color_smoothing_window=5,
+        color_min_samples=2,
+    )
+    person = DetectionEvent(
+        event_type=EventType.PERSON,
+        x=0,
+        y=0,
+        width=20,
+        height=40,
+        confidence=0.9,
+        timestamp=1000.0,
+        object_id=7,
+        class_name="person",
+    )
+
+    first = pipeline._smooth_track_attributes(
+        "cam01",
+        person,
+        {"upper_color": "blue", "lower_color": "black", "attribute_backend": "hsv"},
+    )
+    second = pipeline._smooth_track_attributes(
+        "cam01",
+        person,
+        {"upper_color": "black", "lower_color": "black", "attribute_backend": "hsv"},
+    )
+    third = pipeline._smooth_track_attributes(
+        "cam01",
+        person,
+        {"upper_color": "blue", "lower_color": "unknown", "attribute_backend": "hsv"},
+    )
+
+    assert first["upper_color"] == "blue"
+    assert second["upper_color"] == "black"
+    assert third["upper_color"] == "blue"
+    assert third["lower_color"] == "black"
+    assert third["attribute_metadata"]["color_observations"]["upper_color"] == 3
+    assert third["attribute_metadata"]["color_observations"]["lower_color"] == 2

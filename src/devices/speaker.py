@@ -329,7 +329,7 @@ class _IntermClient:
 
     def __init__(self, cfg: SpeakerConfig):
         self._cfg = cfg
-        self._base = f"http://{cfg.host}/interm-api"
+        self._base = f"http://{cfg.host}:{cfg.port}/interm-api"
         self._auth = HTTPDigestAuth(cfg.username, cfg.password)
         self._timeout = (cfg.connect_timeout, cfg.read_timeout)
 

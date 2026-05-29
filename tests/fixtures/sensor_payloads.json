@@ -1,0 +1,76 @@
+{
+  "normal_temperature": {
+    "message": {
+      "app_eui": "app-1",
+      "dev_eui": "0080E11505C9E23C",
+      "device_id": "factory-24",
+      "table": "t34957",
+      "data": {
+        "temperature": 26.2,
+        "angle_x": 3.1,
+        "angle_y": 0.8,
+        "event_code": 0
+      },
+      "received_at": 1710000000
+    },
+    "expected": {
+      "device_id": "factory-24",
+      "table": "t34957",
+      "event_count": 0
+    }
+  },
+  "critical_temperature": {
+    "message": {
+      "app_eui": "app-1",
+      "dev_eui": "0080E11505C9E23C",
+      "device_id": "factory-24",
+      "table": "t34957",
+      "data": {
+        "temperature": 80.0
+      },
+      "received_at": 1774938420097
+    },
+    "expected": {
+      "device_id": "factory-24",
+      "table": "t34957",
+      "event_count": 1,
+      "event_type": "temperature_alert",
+      "severity": "critical",
+      "timestamp": 1774938420.097
+    }
+  },
+  "critical_tilt_dev_eui_only": {
+    "message": {
+      "app_eui": "app-1",
+      "dev_eui": "0080E11505C9E23C",
+      "tableName": "t34955",
+      "data": {
+        "angle_x": 50.0,
+        "angle_y": 10.0
+      },
+      "timestamp": "2026-05-27T01:00:00+00:00"
+    },
+    "expected": {
+      "device_id": "0080e11505c9e23c",
+      "table": "t34955",
+      "event_count": 1,
+      "event_type": "tilt_alert",
+      "severity": "critical"
+    }
+  },
+  "malformed_data": {
+    "message": {
+      "app_eui": "app-1",
+      "dev_eui": "0080E11505C9E23C",
+      "device_id": "factory-24",
+      "table": "t34957",
+      "data": null,
+      "received_at": 1710000000
+    },
+    "expected": {
+      "device_id": "factory-24",
+      "table": "t34957",
+      "event_count": 0
+    }
+  }
+}

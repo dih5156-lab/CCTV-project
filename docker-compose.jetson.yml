@@ -493,8 +493,10 @@ services:
       WRITABLE_PIPELINE_FUNCTIONS_HTTPEXPORT_PARAMETERS_URL: http://cctv-alert-api:8000/api/alerts
       WRITABLE_PIPELINE_FUNCTIONS_HTTPEXPORT_PARAMETERS_PERSISTONERROR: "false"
       WRITABLE_PIPELINE_FUNCTIONS_HTTPEXPORT_PARAMETERS_CONTINUEONSENDERROR: "false"
-      WRITABLE_INSECURESECRETS_MQTT_SECRETDATA_USERNAME: ${MQTT_USER:-}
-      WRITABLE_INSECURESECRETS_MQTT_SECRETDATA_PASSWORD: ${MQTT_PASSWORD:-}
+      MQTT_USER: ${MQTT_USER:-}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-}
+    entrypoint: ["/res/cctv-external-http/render-and-run.sh"]
+    command: ["-cp=consul.http://edgex-core-consul:8500", "--registry", "-o"]
     hostname: edgex-app-rules-engine
     image: edgexfoundry/app-service-configurable:3.1.1
     platform: linux/arm64
@@ -506,6 +508,8 @@ services:
         published: "59701"
         protocol: tcp
     read_only: true
+    tmpfs:
+      - /tmp
     restart: always
     <<: *edgex-security
     user: 2002:2001
@@ -637,11 +641,11 @@ services:
       USE_GSTREAMER: ${USE_GSTREAMER:-1}
       # DeepStreamProcessor 활성화 스위치 (기본은 기존 VideoProcessor)
       USE_DEEPSTREAM: ${USE_DEEPSTREAM:-1}
-      # DeepStream 출력 모드: h264-mpegts(MediaMTX UDP ingest), rtsp-publish, fakesink, display
-      DS_OUTPUT_MODE: ${DS_OUTPUT_MODE:-h264-mpegts}
+      # DeepStream 출력 모드: rtsp-publish(MediaMTX 표준 라이브), h264-mpegts, fakesink, display
+      DS_OUTPUT_MODE: ${DS_OUTPUT_MODE:-rtsp-publish}
       DS_RTSP_LOCATION: ${DS_RTSP_LOCATION:-rtsp://cctv-media-server:8554/camera_1}
       DS_RTSP_LATENCY_MS: ${DS_RTSP_LATENCY_MS:-100}
-      DS_H264_ENCODER: ${DS_H264_ENCODER:-nvv4l2h264enc}
+      DS_H264_ENCODER: ${DS_H264_ENCODER:-x264}
       DS_H264_UDP_HOST: ${DS_H264_UDP_HOST:-cctv-media-server}
       DS_H264_UDP_PORT: ${DS_H264_UDP_PORT:-1234}
       DS_H264_WIDTH: ${DS_H264_WIDTH:-1280}
@@ -1109,6 +1113,10 @@ services:
       - type: bind
         source: ./runners
         target: /app/runners
+        read_only: true
+      - type: bind
+        source: ./config/event_type_map.json
+        target: /app/config/event_type_map.json
         read_only: true
 
   # ── Public API (외부 서버/대시보드 연동) ──────────────────────────────────

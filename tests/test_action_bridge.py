@@ -315,6 +315,16 @@ class TestActionBridgeStatusPublishing:
         bridge._alarm = MagicMock()
         bridge._alarm.should_alarm.return_value = True
         bridge._alarm.try_acquire_slot.return_value = True
+
+        # ActionBridge 초기화 시 생성된 executor가 실제 의존성을 잡고 있으므로
+        # 테스트 목 객체로 재바인딩해 장치/DB 실경로를 타지 않게 한다.
+        bridge._executor._repo = bridge._repo
+        bridge._executor._forwarder = bridge._forwarder
+        bridge._executor._speaker = bridge._speaker
+        bridge._executor._signboard = bridge._signboard
+        bridge._executor._siren = bridge._siren
+        bridge._executor._resolve_devices = bridge._resolve_devices
+        bridge._executor._alarm = bridge._alarm
         return bridge
 
     def test_manual_event_publishes_pending_status(self):
@@ -353,6 +363,23 @@ class TestActionBridgeStatusPublishing:
 
         published = bridge._mqtt_client.publish.call_args_list
         assert any("cctv/status/action/commands/result" in call.args[0] for call in published)
+
+    def test_enqueue_rest_event_processes_in_background(self):
+        import threading
+
+        bridge = self._make_bridge()
+        handled = threading.Event()
+
+        def execute_action(topic, payload):
+            assert topic == "rest/inbound"
+            assert payload["camera_id"] == "cam1"
+            handled.set()
+
+        bridge._execute_action = execute_action
+
+        assert bridge.enqueue_rest_event({"camera_id": "cam1", "type": "helmet"}) is True
+        assert handled.wait(1.0) is True
+        bridge._stop_rest_action_worker()
 
     def test_execute_action_prefers_canonical_output_messages(self):
         bridge = self._make_bridge()

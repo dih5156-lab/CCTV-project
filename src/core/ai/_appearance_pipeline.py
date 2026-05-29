@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import logging
+import os
 import time
+from collections import Counter, deque
 from pathlib import Path
-from typing import Dict, List, Optional, TYPE_CHECKING
+from typing import Deque, Dict, List, Optional, TYPE_CHECKING, Tuple
 
 import cv2
 import numpy as np
@@ -28,6 +30,8 @@ class AppearancePipeline:
         crop_dir: Path,
         *,
         save_crops: bool = False,
+        color_smoothing_window: Optional[int] = None,
+        color_min_samples: Optional[int] = None,
     ) -> None:
         self._appearance = appearance
         self._crop_dir = crop_dir
@@ -36,6 +40,17 @@ class AppearancePipeline:
             self._crop_dir.mkdir(parents=True, exist_ok=True)
         self._appearance_cooldown: Dict[str, float] = {}
         self._appearance_log: Optional["AppearanceLog"] = None
+        self._color_smoothing_window = max(1, int(
+            color_smoothing_window
+            if color_smoothing_window is not None
+            else os.environ.get("APPEARANCE_COLOR_SMOOTHING_WINDOW", "12")
+        ))
+        self._color_min_samples = max(1, int(
+            color_min_samples
+            if color_min_samples is not None
+            else os.environ.get("APPEARANCE_COLOR_MIN_SAMPLES", "3")
+        ))
+        self._color_history: Dict[str, Dict[str, Deque[str]]] = {}
 
     def ensure_log(self) -> None:
         """AppearanceLog를 지연 초기화한다."""
@@ -70,9 +85,15 @@ class AppearancePipeline:
             if x2 <= x1 or y2 <= y1:
                 return None
             crop = frame[y1:y2, x1:x2]
-            file_name = f"{camera_id}_{track_id}_{int(ts * 1000)}.jpg"
+            safe_camera_id = "".join(
+                ch if ch.isalnum() or ch in ("_", "-") else "_" for ch in str(camera_id)
+            )
+            file_name = f"{safe_camera_id}_{track_id}_{int(ts * 1000)}.jpg"
             file_path = self._crop_dir / file_name
-            cv2.imwrite(str(file_path), crop, [cv2.IMWRITE_JPEG_QUALITY, 80])
+            self._crop_dir.mkdir(parents=True, exist_ok=True)
+            if not cv2.imwrite(str(file_path), crop, [cv2.IMWRITE_JPEG_QUALITY, 80]):
+                logger.warning("person crop 저장 실패: %s", file_path)
+                return None
             return str(file_path)
         except Exception:
             logger.debug("person crop 저장 실패", exc_info=True)
@@ -117,6 +138,93 @@ class AppearancePipeline:
         ])
         return parts
 
+    @staticmethod
+    def _coerce_positive_int(value: object) -> Optional[int]:
+        try:
+            number = int(float(value))
+        except (TypeError, ValueError):
+            return None
+        return number if number > 0 else None
+
+    def _frame_scale_for_person(
+        self,
+        frame: np.ndarray,
+        person: DetectionEvent,
+    ) -> Tuple[float, float]:
+        metadata = person.metadata or {}
+        ref_w = self._coerce_positive_int(metadata.get("frame_width"))
+        ref_h = self._coerce_positive_int(metadata.get("frame_height"))
+        if not ref_w or not ref_h:
+            return 1.0, 1.0
+
+        frame_h, frame_w = frame.shape[:2]
+        if frame_w <= 0 or frame_h <= 0:
+            return 1.0, 1.0
+        if abs(ref_w - frame_w) <= 1 and abs(ref_h - frame_h) <= 1:
+            return 1.0, 1.0
+        return frame_w / float(ref_w), frame_h / float(ref_h)
+
+    @staticmethod
+    def _scale_keypoints(
+        keypoints: Optional[list],
+        scale_x: float,
+        scale_y: float,
+    ) -> Optional[list]:
+        if not keypoints or (scale_x == 1.0 and scale_y == 1.0):
+            return keypoints
+        scaled = []
+        for point in keypoints:
+            if not isinstance(point, (list, tuple)) or len(point) < 2:
+                scaled.append(point)
+                continue
+            copied = list(point)
+            try:
+                copied[0] = float(copied[0]) * scale_x
+                copied[1] = float(copied[1]) * scale_y
+            except (TypeError, ValueError):
+                pass
+            scaled.append(copied)
+        return scaled
+
+    @staticmethod
+    def _scale_nearby_objects(
+        nearby_objects: List[Dict],
+        scale_x: float,
+        scale_y: float,
+    ) -> List[Dict]:
+        if scale_x == 1.0 and scale_y == 1.0:
+            return nearby_objects
+        scaled_objects: List[Dict] = []
+        for obj in nearby_objects:
+            copied = dict(obj)
+            for key, scale in (("x", scale_x), ("width", scale_x), ("y", scale_y), ("height", scale_y)):
+                if copied.get(key) is None:
+                    continue
+                try:
+                    copied[key] = int(round(float(copied[key]) * scale))
+                except (TypeError, ValueError):
+                    pass
+            scaled_objects.append(copied)
+        return scaled_objects
+
+    def _scaled_person_inputs(
+        self,
+        frame: np.ndarray,
+        person: DetectionEvent,
+        nearby_objects: List[Dict],
+    ) -> Tuple[int, int, int, int, Optional[list], List[Dict]]:
+        scale_x, scale_y = self._frame_scale_for_person(frame, person)
+        if scale_x == 1.0 and scale_y == 1.0:
+            return person.x, person.y, person.width, person.height, person.keypoints, nearby_objects
+        return (
+            int(round(person.x * scale_x)),
+            int(round(person.y * scale_y)),
+            max(1, int(round(person.width * scale_x))),
+            max(1, int(round(person.height * scale_y))),
+            self._scale_keypoints(person.keypoints, scale_x, scale_y),
+            self._scale_nearby_objects(nearby_objects, scale_x, scale_y),
+        )
+
     def _extract_person_attributes(
         self,
         frame: np.ndarray,
@@ -124,15 +232,85 @@ class AppearancePipeline:
         nearby_objects: List[Dict],
     ) -> Dict:
         """사람 1명에 대한 외형 속성을 추출한다."""
+        x, y, width, height, keypoints, scaled_nearby = self._scaled_person_inputs(
+            frame,
+            person,
+            nearby_objects,
+        )
         return self._appearance.extract_attributes(
             frame,
-            person.x,
-            person.y,
-            person.width,
-            person.height,
-            nearby_objects=nearby_objects,
-            keypoints=person.keypoints,
+            x,
+            y,
+            width,
+            height,
+            nearby_objects=scaled_nearby,
+            keypoints=keypoints,
         )
+
+    @staticmethod
+    def _is_known_color(value: object) -> bool:
+        return bool(value) and str(value).strip().lower() != "unknown"
+
+    @staticmethod
+    def _track_history_key(camera_id: str, person: DetectionEvent) -> Optional[str]:
+        if person.object_id is None:
+            return None
+        return f"{camera_id}:{int(person.object_id)}"
+
+    @staticmethod
+    def _majority_value(samples: Deque[str], current: object) -> str:
+        counts = Counter(samples)
+        if not counts:
+            return str(current)
+        highest = max(counts.values())
+        candidates = {value for value, count in counts.items() if count == highest}
+        current_value = str(current) if current else "unknown"
+        if current_value in candidates:
+            return current_value
+        for value in reversed(samples):
+            if value in candidates:
+                return value
+        return next(iter(candidates))
+
+    def _smooth_track_attributes(
+        self,
+        camera_id: str,
+        person: DetectionEvent,
+        attrs: Dict,
+    ) -> Dict:
+        key = self._track_history_key(camera_id, person)
+        if key is None:
+            return dict(attrs)
+
+        smoothed = dict(attrs)
+        history = self._color_history.setdefault(key, {})
+        observation_counts: Dict[str, int] = {}
+        for field in ("upper_color", "lower_color", "helmet_color"):
+            value = attrs.get(field)
+            samples = history.setdefault(field, deque(maxlen=self._color_smoothing_window))
+            if self._is_known_color(value):
+                samples.append(str(value))
+            observation_counts[field] = len(samples)
+            if len(samples) >= self._color_min_samples:
+                smoothed[field] = self._majority_value(samples, value)
+
+        metadata = dict(smoothed.get("attribute_metadata") or {})
+        metadata["color_observations"] = observation_counts
+        metadata["color_smoothing_window"] = self._color_smoothing_window
+        smoothed["attribute_metadata"] = metadata
+        return smoothed
+
+    def _prune_color_history(self, active_keys: set[str]) -> None:
+        if not active_keys:
+            return
+        max_entries = max(64, self._color_smoothing_window * 32)
+        if len(self._color_history) <= max_entries:
+            return
+        for key in list(self._color_history):
+            if key not in active_keys:
+                self._color_history.pop(key, None)
+                if len(self._color_history) <= max_entries:
+                    break
 
     def _build_log_payload(
         self,
@@ -198,12 +376,17 @@ class AppearancePipeline:
         logger.info("[외형] %s", "  ".join(self._build_log_parts(person, attrs, face_meta)))
         self._appearance_cooldown[log_key] = now
 
+        crop_x, crop_y, crop_w, crop_h, _, _ = self._scaled_person_inputs(
+            frame,
+            person,
+            nearby_objects,
+        )
         crop_path = self.save_person_crop(
             frame,
-            person.x,
-            person.y,
-            person.width,
-            person.height,
+            crop_x,
+            crop_y,
+            crop_w,
+            crop_h,
             camera_id,
             person.object_id,
             now,
@@ -243,22 +426,37 @@ class AppearancePipeline:
             if precomputed:
                 matches = self._find_matches_from_attributes(precomputed, camera_id)
             else:
-                matches = self._appearance.find_matches(
-                    frame,
-                    person.x,
-                    person.y,
-                    person.width,
-                    person.height,
-                    camera_id=camera_id,
-                    nearby_objects=nearby_objects,
-                    keypoints=person.keypoints,
-                )
+                attrs = self._extract_person_attributes(frame, person, nearby_objects or [])
+                matches = self._find_matches_from_attributes(attrs, camera_id)
             for match in matches:
                 cooldown_key = f"{person.object_id}:{match['condition_id']}"
                 last_ts = self._appearance_cooldown.get(cooldown_key, 0.0)
                 if now - last_ts < cooldown:
                     continue
                 self._appearance_cooldown[cooldown_key] = now
+
+                attributes = {
+                    "upper_color": match["attributes"].get("upper_color"),
+                    "lower_color": match["attributes"].get("lower_color"),
+                    "has_helmet": bool(match["attributes"].get("has_helmet")),
+                    "helmet_color": match["attributes"].get("helmet_color", "unknown"),
+                    "has_backpack": match["attributes"].get("has_backpack", False),
+                    "has_handbag": match["attributes"].get("has_handbag", False),
+                    "has_suitcase": match["attributes"].get("has_suitcase", False),
+                    "gender": match["attributes"].get("gender"),
+                    "age_group": match["attributes"].get("age_group"),
+                    "attribute_backend": match["attributes"].get("attribute_backend"),
+                }
+                attributes = {
+                    key: value for key, value in attributes.items() if value is not None
+                }
+                metadata = {
+                    "condition_id": match["condition_id"],
+                    "condition_name": match["condition_name"],
+                    **attributes,
+                    "attributes": attributes,
+                    "match_score": match["score"],
+                }
 
                 appearance_events.append(
                     DetectionEvent(
@@ -271,18 +469,7 @@ class AppearancePipeline:
                         timestamp=now,
                         object_id=person.object_id,
                         class_name="person",
-                        metadata={
-                            "condition_id": match["condition_id"],
-                            "condition_name": match["condition_name"],
-                            "upper_color": match["attributes"]["upper_color"],
-                            "lower_color": match["attributes"]["lower_color"],
-                            "has_helmet": bool(match["attributes"].get("has_helmet")),
-                            "helmet_color": match["attributes"].get("helmet_color", "unknown"),
-                            "has_backpack": match["attributes"].get("has_backpack", False),
-                            "has_handbag": match["attributes"].get("has_handbag", False),
-                            "has_suitcase": match["attributes"].get("has_suitcase", False),
-                            "match_score": match["score"],
-                        },
+                        metadata=metadata,
                     )
                 )
 
@@ -335,6 +522,8 @@ class AppearancePipeline:
         nearby = nearby_objects or []
         self.ensure_log()
         face_meta_map = self._build_face_meta_map(face_events)
+        smoothed_attributes: Dict[int, Dict] = {}
+        active_history_keys: set[str] = set()
 
         for person in person_events:
             precomputed = (
@@ -342,6 +531,17 @@ class AppearancePipeline:
                 if precomputed_attributes and person.object_id is not None
                 else None
             )
+            raw_attrs = (
+                dict(precomputed)
+                if precomputed
+                else self._extract_person_attributes(frame, person, nearby)
+            )
+            attrs = self._smooth_track_attributes(resolved_camera_id, person, raw_attrs)
+            history_key = self._track_history_key(resolved_camera_id, person)
+            if history_key:
+                active_history_keys.add(history_key)
+            if person.object_id is not None:
+                smoothed_attributes[int(person.object_id)] = attrs
             self.log_person_appearance(
                 frame,
                 person,
@@ -349,8 +549,10 @@ class AppearancePipeline:
                 resolved_camera_id,
                 nearby,
                 face_meta_map.get(person.object_id, {}),
-                precomputed_attrs=precomputed,
+                precomputed_attrs=attrs,
             )
+
+        self._prune_color_history(active_history_keys)
 
         if not self._appearance.conditions:
             return []
@@ -360,5 +562,5 @@ class AppearancePipeline:
             person_events,
             camera_id=resolved_camera_id,
             nearby_objects=nearby,
-            precomputed_attributes=precomputed_attributes,
+            precomputed_attributes=smoothed_attributes,
         )

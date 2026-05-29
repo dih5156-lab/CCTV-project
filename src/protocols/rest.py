@@ -138,8 +138,15 @@ class _RestHandler(BaseApiHandler):
             if payload is None:
                 self._respond(400, {"error": "Invalid JSON"})
                 return
-            layer._handle_event(payload)
-            self._respond(200, {"status": "ok"})
+            if hasattr(layer, "enqueue_rest_event"):
+                accepted = layer.enqueue_rest_event(payload)
+            else:
+                layer._handle_event(payload)
+                accepted = True
+            if not accepted:
+                self._respond(503, {"status": "error", "error": "action queue full"})
+                return
+            self._respond(200, {"status": "ok", "queued": True})
 
         elif path == "/sites":
             data = self._read_json()
