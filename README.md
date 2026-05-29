@@ -12,6 +12,8 @@ Windows PC와 NVIDIA Jetson Orin 모두 동작합니다.
 - **얼굴 인식 확장 구조**: Windows 개발/디버깅, Jetson 운영 배포를 전제로 한 선택형 백엔드
 - **Zone API**: REST API로 외부에서 구역 설정 조회·수정
 - **EdgeX Foundry 연동**: MQTT 기반 표준 EdgeX v3 이벤트 발행
+- **이벤트 포워딩**: Public API 수신 이벤트를 Action Layer로 전달해 알람/이력 처리를 통합
+- **센서 위험 분류**: TLV 센서 온도·기울기·event_code 기반 경고/위험 이벤트 자동 생성
 - **Action Layer**: 스피커 알람·외부 API 호출·SQLite 이벤트 저장
 - **데이터셋 수집**: YOLO 형식 자동 라벨링 및 학습 데이터 생성
 - **Jetson 가속**: GStreamer NVDec 하드웨어 디코딩 + TensorRT `.engine` 모델 자동 인식
@@ -59,6 +61,9 @@ CCTV-project/
 [docs/PROJECT_STRUCTURE.md](docs/PROJECT_STRUCTURE.md)를 참고하세요.
 운영 중 상태 확인과 복구 절차는
 [docs/OPERATIONS_RUNBOOK.md](docs/OPERATIONS_RUNBOOK.md)에 정리되어 있습니다.
+현장 점검 순서와 DeepStream 장시간 안정성 확인은
+[docs/OPERATION_CHECKLIST.md](docs/OPERATION_CHECKLIST.md),
+[docs/DEEPSTREAM_PERFORMANCE_STABILITY_2026-05-26.md](docs/DEEPSTREAM_PERFORMANCE_STABILITY_2026-05-26.md)를 참고하세요.
 
 ## 포트별 역할
 
@@ -327,6 +332,14 @@ docker compose -f docker-compose.yml -f docker-compose.arm64.yml up -d
 .venv/bin/python scripts/check_compose_runtime_assumptions.py --json
 ```
 
+운영 투입 전에는 비밀값, compose 전제 조건, API readiness, DeepStream 안정성 점검을 한 번에 확인할 수 있습니다.
+
+```bash
+.venv/bin/python scripts/check_runtime_secret_consistency.py --json
+./scripts/run_operation_check.sh
+./scripts/run_deepstream_stability_watch.sh --duration 300
+```
+
 #### Jetson 분리 실행 (Jetson Orin + 서버/PC 분리)
 
 ```bash
@@ -409,6 +422,7 @@ docker compose restart cctv-action-layer
 인증, 요청/응답 예시, 대시보드 연동 기준은
 [docs/PUBLIC_API_GUIDE.md](docs/PUBLIC_API_GUIDE.md)에 정리되어 있습니다.
 바로 호출해볼 `curl` 예시는 [docs/PUBLIC_API_EXAMPLES.md](docs/PUBLIC_API_EXAMPLES.md)를 참고하세요.
+네트워크가 제한된 현장에서는 API 프로세스가 제공하는 로컬 문서 엔드포인트로도 기본 사용법을 확인할 수 있습니다.
 
 ```bash
 python runners/run_public_api.py --host 0.0.0.0 --port 9000
@@ -427,6 +441,8 @@ python runners/run_public_api.py --host 0.0.0.0 --port 9000
 
 - `GET /api/v1/health`
 - `GET /api/v1/readiness`
+- `GET /api/v1/docs`
+- `GET /api/v1/docs/openapi.json`
 - `GET /api/v1/events`
 - `GET /api/v1/cameras`
 - `GET /api/v1/search`
@@ -439,6 +455,7 @@ python runners/run_public_api.py --host 0.0.0.0 --port 9000
 - 성공/실패 응답은 `{ success, data, error, timestamp }`
 - 목록 조회는 페이지네이션 응답에서 `{ success, items, total, limit, offset, timestamp }`
 - `/api/v1/health`는 Public API 프로세스 자체 상태, `/api/v1/readiness`는 Action Layer와 Alert API 연결까지 확인합니다.
+- `/api/v1/events`, `/api/v1/alerts`, `/api/v1/sensor-readings`로 들어온 위험 이벤트는 Action Layer `/events`로 포워딩되어 동일한 알람/저장 경로를 탑니다.
 
 외형 검색 상태 API:
 
@@ -480,13 +497,14 @@ web/public-demo.html
 
 이번 주 기능 진행 기준:
 
-- TLV 센서 로그는 조회만 하지 않고 위험 상태를 함께 계산합니다.
+- TLV 센서 로그는 조회만 하지 않고 `src/services/sensor_classifier.py` 기준으로 위험 상태를 함께 계산합니다.
   - `temperature >= 50`: `temperature_alert` / `warning`
   - `temperature >= 70`: `temperature_alert` / `critical`
   - `angle_x` 또는 `angle_y` 절댓값 `>= 30`: `tilt_alert` / `warning`
   - `event_code != 0`: `sensor_event` / `warning`
 - 위험 센서 입력은 Public API가 Action Layer `/events`로 함께 전달합니다.
 - 시연 UI의 운영 요약은 최근 CCTV 이벤트, TLV 센서 이상, 승인 대기 건수를 같이 봅니다.
+- 이벤트 포워딩 실패 시에도 API 응답은 실패 원인을 포함하고, 운영자는 readiness와 Action Layer 로그를 기준으로 확인합니다.
 
 시연 전 확인:
 
@@ -494,10 +512,12 @@ web/public-demo.html
 docker compose ps
 curl -fsS http://localhost:9000/api/v1/health
 curl -fsS http://localhost:9000/api/v1/readiness
+curl -fsS http://localhost:9000/api/v1/docs/openapi.json
 curl -fsS http://localhost:8769/health
 curl -fsS http://localhost:8769/cameras
 .venv/bin/python scripts/smoke_test_deployment.py
 .venv/bin/python scripts/smoke_test_data_flow.py
+.venv/bin/python scripts/check_runtime_secret_consistency.py --json
 ```
 
 Prometheus/Grafana는 운영 모니터링용 선택 구성입니다. 핵심 시연 검증은 기본 smoke test만으로
@@ -547,6 +567,12 @@ sudo docker compose up -d --force-recreate cctv-ai-engine
 
 ```bash
 python -m pytest tests/test_public_api.py -q
+```
+
+이벤트 포워딩 / 센서 분류 회귀 테스트:
+
+```bash
+python -m pytest tests/test_event_forwarding.py tests/test_sensor_classifier.py tests/test_sensor_device.py -q
 ```
 
 스트림 API 회귀 테스트:
@@ -731,6 +757,23 @@ python scripts/evaluate_detection.py \
 | Windows 로그 한글 깨짐 | `chcp 65001` 후 실행, 또는 `PYTHONUTF8=1` |
 
 ## 변경 이력
+
+### v1.10.0 (2026-05-26) - 이벤트 포워딩 및 운영 점검 강화
+
+- **Public API 이벤트 전달 경로 정리**
+  - `/api/v1/events`, `/api/v1/alerts`, `/api/v1/sensor-readings` 수신 이벤트를 Action Layer `/events`로 포워딩
+  - 공통 포워딩 모듈(`src/api/_event_forwarding.py`)로 중복 로직 축소
+  - 로컬 API 문서(`src/api/_local_docs.py`)와 `/api/v1/docs/openapi.json` 추가
+
+- **TLV 센서 위험 분류 추가**
+  - `src/services/sensor_classifier.py`에서 온도, 기울기, event_code 기준으로 warning/critical 이벤트 생성
+  - 센서 payload fixture와 회귀 테스트 추가
+
+- **운영 점검 자동화 보강**
+  - 런타임 비밀값 일관성 점검: `scripts/check_runtime_secret_consistency.py`
+  - 현장 운영 점검 래퍼: `scripts/run_operation_check.sh`
+  - DeepStream 장시간 안정성 관찰: `scripts/run_deepstream_stability_watch.sh`
+  - 운영 체크리스트와 DeepStream 안정성 기록 문서 추가
 
 ### v1.9.0 (2026-05-22) - 성능 최적화 및 안정성 강화
 
