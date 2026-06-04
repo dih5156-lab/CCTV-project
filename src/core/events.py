@@ -5,7 +5,7 @@ DetectionEvent: YOLO 추론 결과를 담는 핵심 dataclass.
 """
 
 from dataclasses import dataclass
-from typing import Dict, FrozenSet, Optional
+from typing import Optional, Dict
 from enum import Enum
 
 class EventType(str, Enum):
@@ -36,7 +36,7 @@ class EventType(str, Enum):
 
 
 # 엄중 이벤트 집합 — 새 타입 추가 시 이곳만 수정
-_CRITICAL_EVENT_TYPES: FrozenSet[EventType] = frozenset({
+_CRITICAL_EVENT_TYPES: frozenset = frozenset({
     EventType.FALL_DETECTED,
     EventType.DANGER_ZONE,
     EventType.UNSAFE_BEHAVIOR,
@@ -44,7 +44,7 @@ _CRITICAL_EVENT_TYPES: FrozenSet[EventType] = frozenset({
 
 
 def severity_for_event_type(event_type: EventType) -> str:
-    """이벤트 타입에 대응하는 기본 severity를 반환한다."""
+    """이벤트 타입에 따른 심각도 문자열을 반환한다."""
     return "critical" if event_type in _CRITICAL_EVENT_TYPES else "normal"
 
 
@@ -78,9 +78,11 @@ class DetectionEvent:
 
     def to_dict(self) -> Dict:
         """이벤트를 딕셔너리 형식으로 변환"""
+        # critical 여부 — _CRITICAL_EVENT_TYPES 세트에서 결정
+        severity = "critical" if self.event_type in _CRITICAL_EVENT_TYPES else "normal"
         return {
             "type": self.event_type.value,
-            "severity": severity_for_event_type(self.event_type),
+            "severity": severity,
             "bbox": {"x": self.x, "y": self.y, "width": self.width, "height": self.height},
             "confidence": self.confidence,
             "timestamp": self.timestamp,
@@ -91,6 +93,10 @@ class DetectionEvent:
             "metadata": self.metadata if self.metadata else None,
         }
     
+    def bbox_dict(self) -> Dict:
+        """바운딩 박스 좌표를 딕셔너리로 반환."""
+        return {"x": self.x, "y": self.y, "width": self.width, "height": self.height}
+
     def __repr__(self) -> str:
         return (f"DetectionEvent(type={self.event_type.value}, "
                 f"bbox=({self.x},{self.y},{self.width},{self.height}), "
