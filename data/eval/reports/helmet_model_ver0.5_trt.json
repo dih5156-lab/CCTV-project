@@ -1,0 +1,31 @@
+{
+  "model": "models/helmet_model_ver0.5.engine",
+  "dataset": "data/eval/helmet",
+  "image_count": 100,
+  "settings": {
+    "imgsz": 320,
+    "conf": 0.25,
+    "iou": 0.5,
+    "device": "cuda",
+    "target_classes": null,
+    "warmup": 3
+  },
+  "latency": {
+    "avg_ms": 28.674,
+    "p50_ms": 27.9,
+    "p95_ms": 32.1
+  },
+  "metrics": {
+    "overall": {
+      "precision": 0.9305,
+      "recall": 0.8577,
+      "f1": 0.8926,
+      "tp": null,
+      "fp": null,
+      "fn": null
+    },
+    "per_class": {}
+  },
+  "per_image": [],
+  "_note": "Reconstructed from session checkpoint 5e9a4d5e (2026-06-01). per_image detail not available."
+}

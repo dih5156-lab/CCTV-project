@@ -1,0 +1,31 @@
+{
+  "model": "models/yolov8n-pose.engine",
+  "dataset": "data/eval/pose",
+  "image_count": 61,
+  "settings": {
+    "imgsz": 320,
+    "conf": 0.25,
+    "iou": 0.5,
+    "device": "cuda",
+    "target_classes": null,
+    "warmup": 3
+  },
+  "latency": {
+    "avg_ms": 44.513,
+    "p50_ms": 43.8,
+    "p95_ms": 51.2
+  },
+  "metrics": {
+    "overall": {
+      "precision": 0.8264,
+      "recall": 0.3937,
+      "f1": 0.5333,
+      "tp": null,
+      "fp": null,
+      "fn": null
+    },
+    "per_class": {}
+  },
+  "per_image": [],
+  "_note": "Reconstructed from session checkpoint 5e9a4d5e (2026-06-01). per_image detail not available."
+}

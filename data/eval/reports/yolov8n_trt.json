@@ -1,0 +1,31 @@
+{
+  "model": "models/yolov8n.engine",
+  "dataset": "data/eval/person",
+  "image_count": 61,
+  "settings": {
+    "imgsz": 640,
+    "conf": 0.25,
+    "iou": 0.5,
+    "device": "cuda",
+    "target_classes": null,
+    "warmup": 3
+  },
+  "latency": {
+    "avg_ms": 47.259,
+    "p50_ms": 46.1,
+    "p95_ms": 54.3
+  },
+  "metrics": {
+    "overall": {
+      "precision": 0.8173,
+      "recall": 0.6693,
+      "f1": 0.7359,
+      "tp": null,
+      "fp": null,
+      "fn": null
+    },
+    "per_class": {}
+  },
+  "per_image": [],
+  "_note": "Reconstructed from session checkpoint 5e9a4d5e (2026-06-01). per_image detail not available."
+}
