@@ -23,7 +23,24 @@
         "min_recall": 0.9,
         "max_avg_latency_ms": 50
       },
-      "latest_evaluation": null
+      "latest_evaluation": {
+        "report": "data/eval/reports/helmet_model_ver0.5_trt.json",
+        "image_count": 100,
+        "precision": 0.9305,
+        "recall": 0.8577,
+        "avg_latency_ms": 28.674,
+        "settings": {
+          "imgsz": 320,
+          "conf": 0.25,
+          "iou": 0.5,
+          "device": "0",
+          "target_classes": [
+            "helmet"
+          ],
+          "warmup": 1
+        },
+        "dataset": "data/eval/helmet"
+      }
     },
     {
       "name": "helmet_model",
@@ -45,7 +62,24 @@
         "min_recall": 0.9,
         "max_avg_latency_ms": 50
       },
-      "latest_evaluation": null
+      "latest_evaluation": {
+        "report": "data/eval/reports/helmet_model_trt.json",
+        "image_count": 100,
+        "precision": 0.835,
+        "recall": 0.9181,
+        "avg_latency_ms": 28.948,
+        "settings": {
+          "imgsz": 320,
+          "conf": 0.25,
+          "iou": 0.5,
+          "device": "0",
+          "target_classes": [
+            "helmet"
+          ],
+          "warmup": 1
+        },
+        "dataset": "data/eval/helmet"
+      }
     },
     {
       "name": "yolov8n-pose",
@@ -105,13 +139,13 @@
         "max_avg_latency_ms": 120
       },
       "latest_evaluation": {
-        "report": "data/eval/reports/yolov8m-pose.json",
+        "report": "data/eval/reports/yolov8m-pose_trt.json",
         "image_count": 61,
-        "precision": 0.9085,
-        "recall": 0.5472,
-        "avg_latency_ms": 212.291,
+        "precision": 0.8837,
+        "recall": 0.4488,
+        "avg_latency_ms": 43.172,
         "settings": {
-          "imgsz": 640,
+          "imgsz": 320,
           "conf": 0.25,
           "iou": 0.5,
           "device": "0",
