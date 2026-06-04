@@ -13,7 +13,10 @@
         "tensorrt": "models/helmet_model_ver0.5.engine"
       },
       "input_size": 320,
-      "classes": ["helmet", "head"],
+      "classes": [
+        "helmet",
+        "head"
+      ],
       "deployment_target": "Jetson Orin",
       "acceptance_criteria": {
         "min_precision": 0.85,
@@ -32,7 +35,10 @@
         "tensorrt": "models/helmet_model.engine"
       },
       "input_size": 320,
-      "classes": ["helmet", "head"],
+      "classes": [
+        "helmet",
+        "head"
+      ],
       "deployment_target": "Jetson Orin",
       "acceptance_criteria": {
         "min_precision": 0.85,
@@ -51,14 +57,33 @@
         "tensorrt": "models/yolov8n-pose.engine"
       },
       "input_size": 320,
-      "classes": ["person"],
+      "classes": [
+        "person"
+      ],
       "deployment_target": "Jetson Orin",
       "acceptance_criteria": {
         "min_precision": 0.8,
         "min_recall": 0.85,
         "max_avg_latency_ms": 60
       },
-      "latest_evaluation": null
+      "latest_evaluation": {
+        "report": "data/eval/reports/yolov8n-pose_trt.json",
+        "image_count": 61,
+        "precision": 0.8264,
+        "recall": 0.3937,
+        "avg_latency_ms": 44.513,
+        "settings": {
+          "imgsz": 320,
+          "conf": 0.25,
+          "iou": 0.5,
+          "device": "0",
+          "target_classes": [
+            "person"
+          ],
+          "warmup": 1
+        },
+        "dataset": "data/eval/person"
+      }
     },
     {
       "name": "yolov8m-pose",
@@ -70,14 +95,33 @@
         "tensorrt": "models/yolov8m-pose.engine"
       },
       "input_size": 640,
-      "classes": ["person"],
+      "classes": [
+        "person"
+      ],
       "deployment_target": "accuracy_baseline",
       "acceptance_criteria": {
         "min_precision": 0.85,
         "min_recall": 0.9,
         "max_avg_latency_ms": 120
       },
-      "latest_evaluation": null
+      "latest_evaluation": {
+        "report": "data/eval/reports/yolov8m-pose.json",
+        "image_count": 61,
+        "precision": 0.9085,
+        "recall": 0.5472,
+        "avg_latency_ms": 212.291,
+        "settings": {
+          "imgsz": 640,
+          "conf": 0.25,
+          "iou": 0.5,
+          "device": "0",
+          "target_classes": [
+            "person"
+          ],
+          "warmup": 1
+        },
+        "dataset": "data/eval/person"
+      }
     },
     {
       "name": "yolov8n",
@@ -89,14 +133,33 @@
         "tensorrt": "models/yolov8n.engine"
       },
       "input_size": 640,
-      "classes": ["person"],
+      "classes": [
+        "person"
+      ],
       "deployment_target": "fallback",
       "acceptance_criteria": {
         "min_precision": 0.8,
         "min_recall": 0.85,
         "max_avg_latency_ms": 50
       },
-      "latest_evaluation": null
+      "latest_evaluation": {
+        "report": "data/eval/reports/yolov8n_trt.json",
+        "image_count": 61,
+        "precision": 0.8173,
+        "recall": 0.6693,
+        "avg_latency_ms": 47.259,
+        "settings": {
+          "imgsz": 640,
+          "conf": 0.25,
+          "iou": 0.5,
+          "device": "0",
+          "target_classes": [
+            "person"
+          ],
+          "warmup": 1
+        },
+        "dataset": "data/eval/person"
+      }
     },
     {
       "name": "pphuman_attribute",
@@ -108,7 +171,10 @@
         "paddle": "models/pphuman_attribute_src/PP-LCNet_x1_0_pedestrian_attribute_infer",
         "label_map": "config/appearance_pphuman_labels.example.json"
       },
-      "input_size": [256, 192],
+      "input_size": [
+        256,
+        192
+      ],
       "classes": [
         "has_hat",
         "has_glasses",
@@ -133,7 +199,10 @@
         "runtime_env": "APPEARANCE_RUNTIME",
         "deepstream_config": "config/deepstream/config_infer_pphuman.txt",
         "pipeline": "DeepStream person bbox -> PP-Human TensorRT SGIE -> Appearance metadata",
-        "runtime_options": ["tensorrt", "paddle"]
+        "runtime_options": [
+          "tensorrt",
+          "paddle"
+        ]
       },
       "acceptance_criteria": {
         "min_attribute_accuracy": 0.8,
