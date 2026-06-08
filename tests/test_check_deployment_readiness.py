@@ -53,3 +53,11 @@ def test_checks_include_runtime_assumptions():
     names = {check.name for check in check_deployment_readiness.CHECKS}
     assert "compose runtime assumptions" in names
     assert "alarm device config" in names
+
+
+def test_ci_checks_skip_environment_specific_runtime_checks():
+    names = {check.name for check in check_deployment_readiness.CI_CHECKS}
+    assert "docker compose jetson config" in names
+    assert "model manifest artifacts" not in names
+    assert "compose runtime assumptions" not in names
+    assert "runner action bridge entrypoint" not in names
