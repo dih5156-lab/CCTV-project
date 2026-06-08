@@ -1,20 +1,20 @@
 """
 test_geometry.py — geometry 유틸리티 단위 테스트
 """
-import pytest
-from src.core.events import DetectionEvent, EventType
-from src.utils.geometry import (
-    calculate_iou,
-    calculate_bbox_iou,
-    boxes_overlap,
-    get_center,
-    point_in_bbox,
-    get_head_bbox,
-    calculate_overlap_ratio,
-    is_helmet_worn,
-)
 import time
 
+import pytest
+
+from src.core.events import DetectionEvent, EventType
+from src.utils.geometry import (
+    boxes_overlap,
+    calculate_bbox_iou,
+    calculate_iou,
+    get_center,
+    get_head_bbox,
+    is_helmet_worn,
+    point_in_bbox,
+)
 
 # ---------------------------------------------------------------------------
 # 헬퍼

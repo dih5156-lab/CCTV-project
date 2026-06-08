@@ -4,17 +4,14 @@ test_http.py — HttpEventForwarder / HttpEventTarget 단위 테스트
 전략: requests.post를 mock 처리하여 전송·재시도·큐 관련 로직을 검증한다.
 """
 import time
-from unittest.mock import MagicMock, patch, call
-
-import pytest
+from unittest.mock import MagicMock, patch
 
 from src.protocols.http import (
-    HttpEventForwarder,
-    HttpEventTarget,
     _RETRY_MAX_ATTEMPTS,
     _RETRY_QUEUE_MAX,
+    HttpEventForwarder,
+    HttpEventTarget,
 )
-
 
 # ---------------------------------------------------------------------------
 # HttpEventTarget 테스트
@@ -125,6 +122,46 @@ class TestHttpEventForwarder:
         # attempt == _RETRY_MAX_ATTEMPTS → 더 이상 큐에 넣지 않음
         fw._send(fw.target_at(0), "topic", {}, attempt=_RETRY_MAX_ATTEMPTS)
         assert fw.retry_queue_size == 0
+
+    @patch("src.protocols.http.requests.post")
+    def test_failed_request_is_kept_in_outbox(self, mock_post, tmp_path):
+        mock_post.return_value = _mock_resp(500)
+        fw = HttpEventForwarder(
+            targets=[_make_target("alert-api")],
+            outbox_db_path=str(tmp_path / "http_outbox.db"),
+        )
+
+        fw.forward("topic", {"event_id": "evt-http-fail", "camera_id": "cam1", "type": "head"})
+
+        assert fw.outbox_pending_count == 1
+
+    @patch("src.protocols.http.requests.post")
+    def test_successful_request_marks_outbox_sent(self, mock_post, tmp_path):
+        mock_post.return_value = _mock_resp(200)
+        fw = HttpEventForwarder(
+            targets=[_make_target("alert-api")],
+            outbox_db_path=str(tmp_path / "http_outbox.db"),
+        )
+
+        fw.forward("topic", {"event_id": "evt-http-ok", "camera_id": "cam1", "type": "head"})
+
+        assert fw.outbox_pending_count == 0
+
+    @patch("src.protocols.http.requests.post")
+    def test_replay_pending_once_marks_sent(self, mock_post, tmp_path):
+        mock_post.return_value = _mock_resp(200)
+        fw = HttpEventForwarder(
+            targets=[_make_target("alert-api")],
+            outbox_db_path=str(tmp_path / "http_outbox.db"),
+        )
+        body = fw._build_body(
+            "topic",
+            {"event_id": "evt-http-replay", "camera_id": "cam1", "type": "head"},
+        )
+        fw._outbox.save_pending("alert-api", fw.target_at(0).url, body)
+
+        assert fw.replay_pending_once() == 1
+        assert fw.outbox_pending_count == 0
 
     def test_start_stop_worker(self):
         fw = HttpEventForwarder()

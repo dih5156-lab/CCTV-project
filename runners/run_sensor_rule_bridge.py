@@ -18,10 +18,7 @@ _PROJECT_ROOT = _RUNNER_DIR.parent
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
-from runners._shared import ensure_project_root, setup_runner_logging
-
-ensure_project_root()
-
+from runners._shared import setup_runner_logging
 from src.protocols._mqtt_factory import create_mqtt_client
 from src.protocols.mqtt_subscriber import MqttTopicSubscriber
 from src.services.sensor_rule_bridge import (

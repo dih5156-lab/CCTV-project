@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/engineering-technical-writer.md](../../../../agents/engineering-technical-writer.md).
+Derived from [agents/engineering-technical-writer.md](../../../../tooling/agents/engineering-technical-writer.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

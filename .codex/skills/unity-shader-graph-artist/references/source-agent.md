@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/unity-shader-graph-artist.md](../../../../agents/unity-shader-graph-artist.md).
+Derived from [agents/unity-shader-graph-artist.md](../../../../tooling/agents/unity-shader-graph-artist.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

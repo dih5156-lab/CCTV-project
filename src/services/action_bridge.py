@@ -26,7 +26,6 @@ import signal
 import socket
 import time
 import uuid
-from datetime import datetime, timezone
 from pathlib import Path
 from queue import Empty, Full, Queue
 from threading import Event, Thread
@@ -37,29 +36,33 @@ import paho.mqtt.client as mqtt
 from ..canonical_event import (
     canonicalize_event_payload,
     get_payload_camera_id,
+    get_payload_confidence,
     get_payload_event_type,
 )
-from ..devices.siren     import SensorConfig, SirenDevice
+from ..config import ActionBridgeConfig
 from ..devices.signboard import SignboardConfig, SignboardDevice, build_display_text
-from ..devices.speaker   import SpeakerConfig, SpeakerDevice
-from ..protocols.http    import HttpEventForwarder, HttpEventTarget
+from ..devices.siren import SensorConfig, SirenDevice
+from ..devices.speaker import SpeakerConfig, SpeakerDevice
 from ..protocols._mqtt_factory import create_mqtt_client
-from ..protocols.rest    import RestEventReceiver
-from ..config            import ActionBridgeConfig
-from .cctv_metrics       import (
-    mqtt_events_received,
-    events_handled,
-    pending_events as _metric_pending,
-    action_bridge_up,
-)
+from ..protocols.http import HttpEventForwarder, HttpEventTarget
+from ..protocols.rest import RestEventReceiver
+from ..time_utils import now_kst_iso
 from ._action_bridge_support import (
-    _ActionExecutor,
     AlarmDevice,
     ControlMode,
     SiteConfig,
+    _ActionExecutor,
     _AlarmCoordinator,
     _EventRepo,
     _SiteRegistry,
+)
+from .cctv_metrics import (
+    action_bridge_up,
+    events_handled,
+    mqtt_events_received,
+)
+from .cctv_metrics import (
+    pending_events as _metric_pending,
 )
 
 logger = logging.getLogger(__name__)
@@ -164,7 +167,7 @@ class ActionBridge:
         mqtt_port:         int           = _ACTION_DEFAULTS.mqtt_port,
         subscribe_topics:  Optional[Set[str]] = None,
         # DB
-        db_path:           str           = "action_events.db",
+        db_path:           str           = "/app/data/runtime/action_events.db",
         # 디바이스
         speaker_config:    Optional[SpeakerConfig]   = None,
         signboard_config:  Optional[SignboardConfig]  = None,
@@ -268,69 +271,62 @@ class ActionBridge:
 
     def list_output_devices(self) -> List[Dict]:
         """출력 디바이스 설정 상태를 UI/API용으로 반환한다."""
-        speaker_configured = self._speaker.config.is_configured
-        speaker_host = self._speaker.config.host
-        speaker_port = self._speaker.config.port
-        speaker_reachable = (
-            _check_tcp_reachable(speaker_host, speaker_port)
-            if speaker_configured
-            else None
-        )
-
-        signboard_configured = self._signboard.config.is_configured
-        signboard_host = self._signboard.config.host
-        signboard_port = self._signboard.config.port
-        signboard_reachable = (
-            _check_tcp_reachable(signboard_host, signboard_port)
-            if signboard_configured
-            else None
-        )
-
-        siren_configured = self._siren.config.is_configured
-        siren_host = self._siren.config.host
-        siren_port = self._siren.config.port
-        siren_reachable = (
-            _check_tcp_reachable(siren_host, siren_port)
-            if siren_configured
-            else None
-        )
-
         return [
-            {
-                "device": "speaker",
-                "label": "스피커",
-                "configured": speaker_configured,
-                "reachable": speaker_reachable,
-                "status": _device_status(speaker_configured, speaker_reachable),
-                "host": speaker_host or None,
-                "port": speaker_port,
-                "protocol": "HTTP Digest / InterM",
-            },
-            {
-                "device": "signboard",
-                "label": "전광판",
-                "configured": signboard_configured,
-                "reachable": signboard_reachable,
-                "status": _device_status(signboard_configured, signboard_reachable),
-                "host": signboard_host or None,
-                "port": signboard_port,
-                "protocol": "TCP Socket / Dabit",
-            },
-            {
-                "device": "siren",
-                "label": "경광등",
-                "configured": siren_configured,
-                "reachable": siren_reachable,
-                "status": _device_status(siren_configured, siren_reachable),
-                "host": siren_host or None,
-                "port": siren_port,
-                "protocol": "HTTP Digest / InterM",
-            },
+            self._output_device_status(
+                "speaker", "스피커", self._speaker.config, "HTTP Digest / InterM"
+            ),
+            self._output_device_status(
+                "signboard", "전광판", self._signboard.config, "TCP Socket / Dabit"
+            ),
+            self._output_device_status(
+                "siren", "경광등", self._siren.config, "HTTP Digest / InterM"
+            ),
         ]
+
+    def _output_device_status(
+        self,
+        device: str,
+        label: str,
+        config,
+        protocol: str,
+    ) -> Dict:
+        configured = config.is_configured
+        host = config.host
+        port = config.port
+        reachable = _check_tcp_reachable(host, port) if configured else None
+        return {
+            "device": device,
+            "label": label,
+            "configured": configured,
+            "reachable": reachable,
+            "status": _device_status(configured, reachable),
+            "host": host or None,
+            "port": port,
+            "protocol": protocol,
+        }
 
 
     def set_mode(self, mode: ControlMode, site_id: Optional[str] = None) -> None:
         self._sites.set_mode(mode, site_id=site_id)
+
+    def get_default_mode_settings(self) -> Dict:
+        """전역 기본 모드와 기본 조치 상세 설정을 반환한다."""
+        return self._sites.default_settings()
+
+    def set_default_action_settings(
+        self,
+        *,
+        alarm_devices: Optional[List[AlarmDevice]] = None,
+        confidence_threshold: Optional[float] = None,
+        display_message: Optional[str] = None,
+        tts_message: Optional[str] = None,
+    ) -> None:
+        self._sites.set_default_action_settings(
+            alarm_devices=alarm_devices,
+            confidence_threshold=confidence_threshold,
+            display_message=display_message,
+            tts_message=tts_message,
+        )
 
     def add_site_from_dict(self, data: Dict) -> str:
         """dict에서 사이트를 생성하여 추가하고 site_id를 반환한다."""
@@ -356,7 +352,7 @@ class ActionBridge:
         try:
             topic = f"{_STATUS_TOPIC_PREFIX}/{suffix.lstrip('/')}"
             body = {
-                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "timestamp": now_kst_iso(),
                 **payload,
             }
             self._mqtt_client.publish(topic, json.dumps(body, ensure_ascii=False), qos=0)
@@ -404,8 +400,7 @@ class ActionBridge:
     # ------------------------------------------------------------------
 
     def _resolve_devices(self, camera_id: str) -> List[AlarmDevice]:
-        site = self._sites.find_by_camera(camera_id)
-        candidates = site.alarm_devices if site else list(AlarmDevice)
+        candidates = self._sites.resolve_alarm_devices(camera_id)
         return [
             device
             for device in candidates
@@ -457,8 +452,45 @@ class ActionBridge:
         payload = canonicalize_event_payload(payload, source="action-layer", source_type="action")
         camera_id = get_payload_camera_id(payload)
         mode, site_id = self._sites.resolve_mode(camera_id)
+        action_settings = self._sites.resolve_action_settings(camera_id)
 
         events_handled.labels(mode=mode.value).inc()
+
+        confidence_threshold = action_settings.get("confidence_threshold")
+        if confidence_threshold is not None:
+            confidence = get_payload_confidence(payload)
+            if confidence is not None and confidence < confidence_threshold:
+                logger.info(
+                    "신뢰도 임계값 미달 - 조치 스킵: camera=%s confidence=%.3f threshold=%.3f",
+                    camera_id,
+                    confidence,
+                    confidence_threshold,
+                )
+                self._repo.save(topic, payload, alarm_played=False, http_sent=False)
+                self._publish_status(
+                    "events/filtered",
+                    {
+                        "camera_id": camera_id,
+                        "site_id": site_id,
+                        "event_type": get_payload_event_type(payload),
+                        "confidence": confidence,
+                        "threshold": confidence_threshold,
+                        "status": "filtered",
+                    },
+                )
+                return
+
+        display_message = action_settings.get("display_message") or ""
+        tts_message = action_settings.get("tts_message") or ""
+        if display_message or tts_message:
+            payload = dict(payload)
+            event_payload = dict(payload.get("event") or {})
+            if display_message:
+                event_payload["display_message"] = display_message
+                event_payload.setdefault("message", display_message)
+            if tts_message:
+                event_payload["tts_message"] = tts_message
+            payload["event"] = event_payload
 
         if mode == ControlMode.MANUAL:
             event_id = str(uuid.uuid4())

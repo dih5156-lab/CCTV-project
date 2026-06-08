@@ -90,7 +90,7 @@ COPY requirements-ai.txt .
 COPY requirements-face-jetson.txt .
 COPY requirements-appearance-paddle.txt .
 
-RUN grep -vE '^(ultralytics|torch|torchvision|torchaudio|opencv-python|openCV-python|numpy)([>=<!~ ]|$)' requirements-ai.txt \
+RUN grep -vE '^(ultralytics|torch|torchvision|torchaudio|opencv-python|numpy)([>=<!~ ]|$)' requirements-ai.txt \
     > requirements-ai-jetson.txt && \
     pip3 install --no-cache-dir -r requirements-ai-jetson.txt && \
     pip3 install --no-cache-dir \
@@ -154,7 +154,9 @@ RUN mkdir -p /app/models /app/event_backup \
     && chown -R cctv:cctv /app
 
 COPY --chown=cctv:cctv src         /app/src
+COPY --chown=cctv:cctv app         /app/app
 COPY --chown=cctv:cctv main.py     /app/main.py
+COPY --chown=cctv:cctv run_external_ingest.py /app/run_external_ingest.py
 COPY --chown=cctv:cctv runners     /app/runners
 COPY --chown=cctv:cctv kuiper      /app/kuiper
 COPY --chown=cctv:cctv config      /app/config

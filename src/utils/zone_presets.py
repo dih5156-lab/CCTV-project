@@ -20,9 +20,10 @@
 import json
 import logging
 import uuid
-from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
+
+from ..time_utils import now_kst
 
 logger = logging.getLogger(__name__)
 
@@ -79,12 +80,7 @@ class ZonePresetStore:
             {'id': ..., 'name': ..., 'zones': [...], 'created_at': ...}
         """
         presets = self._load()
-        preset: Dict = {
-            "id": uuid.uuid4().hex[:8],
-            "name": name,
-            "zones": zones,
-            "created_at": datetime.now().isoformat(timespec="seconds"),
-        }
+        preset = self._new_preset(name, zones)
         presets.append(preset)
         self._write(presets)
         logger.info("프리셋 저장: %s (%s), zones=%d", preset["id"], name, len(zones))
@@ -99,6 +95,15 @@ class ZonePresetStore:
         self._write(new_presets)
         logger.info("프리셋 삭제: %s", preset_id)
         return True
+
+    @staticmethod
+    def _new_preset(name: str, zones: List[Dict]) -> Dict:
+        return {
+            "id": uuid.uuid4().hex[:8],
+            "name": name,
+            "zones": zones,
+            "created_at": now_kst().isoformat(timespec="seconds"),
+        }
 
 
 __all__ = ["ZonePresetStore"]

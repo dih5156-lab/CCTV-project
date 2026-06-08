@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/project-management-studio-operations.md](../../../../agents/project-management-studio-operations.md).
+Derived from [agents/project-management-studio-operations.md](../../../../tooling/agents/project-management-studio-operations.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

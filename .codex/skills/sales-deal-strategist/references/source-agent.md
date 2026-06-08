@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/sales-deal-strategist.md](../../../../agents/sales-deal-strategist.md).
+Derived from [agents/sales-deal-strategist.md](../../../../tooling/agents/sales-deal-strategist.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

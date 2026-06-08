@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/engineering-frontend-developer.md](../../../../agents/engineering-frontend-developer.md).
+Derived from [agents/engineering-frontend-developer.md](../../../../tooling/agents/engineering-frontend-developer.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

@@ -7,11 +7,11 @@ Go 원본: aiot-tlv-parser/pkg/config/config.go
 Go의 struct → Python dataclass 로 변환되었습니다.
 """
 
-import os
 import logging
+import os
 from dataclasses import dataclass, field
-from typing import List
 from datetime import timedelta
+from typing import List
 
 from config.validation import validate_config
 

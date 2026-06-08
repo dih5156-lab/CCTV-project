@@ -2,18 +2,17 @@
 test_action_bridge.py — _SiteRegistry / _AlarmCoordinator / SiteConfig / ActionBridge 단위 테스트
 """
 import time
-import pytest
 from types import SimpleNamespace
 from unittest.mock import MagicMock
+
 from src.services.action_bridge import (
     ActionBridge,
-    ControlMode,
     AlarmDevice,
+    ControlMode,
     SiteConfig,
-    _SiteRegistry,
     _AlarmCoordinator,
+    _SiteRegistry,
 )
-
 
 # ---------------------------------------------------------------------------
 # SiteConfig
@@ -65,6 +64,18 @@ class TestSiteConfig:
         d = cfg.to_dict()
         assert d["control_mode"] == "manual"
         assert SiteConfig.from_dict(d).control_mode == ControlMode.MANUAL
+
+    def test_action_detail_fields_round_trip(self):
+        cfg = self._make(
+            confidence_threshold=0.82,
+            display_message="전광판 출력",
+            tts_message="스피커 출력",
+        )
+        d = cfg.to_dict()
+        restored = SiteConfig.from_dict(d)
+        assert restored.confidence_threshold == 0.82
+        assert restored.display_message == "전광판 출력"
+        assert restored.tts_message == "스피커 출력"
 
 
 # ---------------------------------------------------------------------------
@@ -119,6 +130,20 @@ class TestSiteRegistry:
         reg = self._reg(mode=ControlMode.AUTO)
         reg.set_mode(ControlMode.MANUAL)
         assert reg.default_mode == ControlMode.MANUAL
+
+    def test_default_action_settings_round_trip(self):
+        reg = self._reg(mode=ControlMode.AUTO)
+        reg.set_default_action_settings(
+            alarm_devices=[AlarmDevice.SPEAKER],
+            confidence_threshold=0.75,
+            display_message="기본 표시",
+            tts_message="기본 음성",
+        )
+        settings = reg.default_settings()
+        assert settings["alarm_devices"] == ["speaker"]
+        assert settings["confidence_threshold"] == 0.75
+        assert settings["display_message"] == "기본 표시"
+        assert settings["tts_message"] == "기본 음성"
 
     def test_set_mode_specific_site(self):
         reg = self._reg()
@@ -245,6 +270,15 @@ class TestAlarmCoordinator:
         coord.try_acquire_slot("cam1", "helmet")
         assert coord.try_acquire_slot("cam1", "helmet") is False
 
+    def test_force_acquire_bypasses_cooldown(self):
+        coord = self._coord(cooldown=60)
+        coord.try_acquire_slot("cam1", "helmet")
+        assert coord.try_acquire_slot("cam1", "helmet", force=True) is True
+
+    def test_public_demo_metadata_marks_demo_event(self):
+        coord = self._coord()
+        assert coord.is_demo_event({"metadata": {"source": "public-demo-ui", "demo": True}}) is True
+
     def test_after_cooldown_acquires_again(self):
         coord = self._coord(cooldown=1)   # 1초 쿨다운
         coord.try_acquire_slot("cam1", "helmet")
@@ -335,6 +369,77 @@ class TestActionBridgeStatusPublishing:
 
         published = bridge._mqtt_client.publish.call_args_list
         assert any("cctv/status/action/events/pending" in call.args[0] for call in published)
+
+    def test_site_confidence_threshold_filters_low_confidence_event(self):
+        bridge = self._make_bridge()
+        bridge.add_site(
+            SiteConfig(
+                site_id="site1",
+                site_name="현장1",
+                camera_ids=["cam1"],
+                confidence_threshold=0.9,
+            )
+        )
+        bridge._execute_action = MagicMock()
+
+        bridge._handle_event(
+            {"camera_id": "cam1", "type": "helmet", "confidence": 0.5},
+            topic="t",
+        )
+
+        bridge._execute_action.assert_not_called()
+        bridge._repo.save.assert_called_once()
+        assert bridge.get_pending_events() == []
+        published = bridge._mqtt_client.publish.call_args_list
+        assert any("cctv/status/action/events/filtered" in call.args[0] for call in published)
+
+    def test_default_confidence_threshold_filters_unknown_site_event(self):
+        bridge = self._make_bridge()
+        bridge.set_default_action_settings(confidence_threshold=0.8)
+        bridge._execute_action = MagicMock()
+
+        bridge._handle_event(
+            {"camera_id": "unknown-cam", "type": "helmet", "confidence": 0.5},
+            topic="t",
+        )
+
+        bridge._execute_action.assert_not_called()
+        bridge._repo.save.assert_called_once()
+
+    def test_site_output_messages_are_applied_before_action(self):
+        bridge = self._make_bridge()
+        bridge.add_site(
+            SiteConfig(
+                site_id="site1",
+                site_name="현장1",
+                camera_ids=["cam1"],
+                display_message="전광판 확인 문구",
+                tts_message="스피커 안내 문구",
+            )
+        )
+        bridge._execute_action = MagicMock()
+
+        bridge._handle_event({"camera_id": "cam1", "type": "head", "confidence": 0.95}, topic="t")
+
+        bridge._execute_action.assert_called_once()
+        payload = bridge._execute_action.call_args.args[1]
+        assert payload["event"]["display_message"] == "전광판 확인 문구"
+        assert payload["event"]["tts_message"] == "스피커 안내 문구"
+
+    def test_default_output_messages_are_applied_before_action(self):
+        bridge = self._make_bridge()
+        bridge.set_default_action_settings(
+            display_message="기본 전광판 문구",
+            tts_message="기본 스피커 문구",
+        )
+        bridge._execute_action = MagicMock()
+
+        bridge._handle_event({"camera_id": "unknown-cam", "type": "head", "confidence": 0.95}, topic="t")
+
+        bridge._execute_action.assert_called_once()
+        payload = bridge._execute_action.call_args.args[1]
+        assert payload["event"]["display_message"] == "기본 전광판 문구"
+        assert payload["event"]["tts_message"] == "기본 스피커 문구"
 
     def test_approve_event_publishes_approved_status(self):
         bridge = self._make_bridge()

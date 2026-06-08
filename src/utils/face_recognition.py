@@ -20,6 +20,8 @@ from typing import Dict, List, Optional, Tuple
 import cv2
 import numpy as np
 
+from ..time_utils import now_kst_iso
+
 logger = logging.getLogger(__name__)
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -120,13 +122,12 @@ class FaceRecognitionEngine:
         stored_path = faces_dir / stored_name
         stored_path.write_bytes(image_bytes)
 
-        from datetime import datetime, timezone
         entry: Dict[str, str] = {
             "id": uuid.uuid4().hex[:8],
             "name": clean_name,
             "phone": clean_phone,
             "image": f"known_faces/{stored_name}",
-            "registered_at": datetime.now(timezone.utc).isoformat(),
+            "registered_at": now_kst_iso(),
         }
         if department is not None:
             entry["department"] = str(department).strip()

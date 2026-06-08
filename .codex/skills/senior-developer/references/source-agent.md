@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/engineering-senior-developer.md](../../../../agents/engineering-senior-developer.md).
+Derived from [agents/engineering-senior-developer.md](../../../../tooling/agents/engineering-senior-developer.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

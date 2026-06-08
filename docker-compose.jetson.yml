@@ -30,7 +30,7 @@
 #   docker compose -f docker-compose.jetson.yml logs -f cctv-ai-engine
 #
 # [환경 변수 오버라이드]
-#   .env.jetson 파일을 복사하여 (cp .env.jetson .env) 수정하거나
+#   cp .env.jetson.example .env.jetson
 #   docker compose --env-file .env.jetson -f docker-compose.jetson.yml up -d
 # ==============================================================================
 
@@ -61,8 +61,8 @@ x-appearance-runtime: &appearance-runtime
   APPEARANCE_RUNTIME: ${APPEARANCE_RUNTIME:-paddle}
   APPEARANCE_INPUT_SIZE: ${APPEARANCE_INPUT_SIZE:-224}
   APPEARANCE_SCORE_THRESHOLD: ${APPEARANCE_SCORE_THRESHOLD:-0.5}
-  APPEARANCES_DB: ${APPEARANCES_DB:-/app/data/appearances.db}
-  APPEARANCE_CROP_DIR: ${APPEARANCE_CROP_DIR:-/app/data/appearance_crops}
+  APPEARANCES_DB: ${APPEARANCES_DB:-/app/data/runtime/appearances.db}
+  APPEARANCE_CROP_DIR: ${APPEARANCE_CROP_DIR:-/app/data/runtime/appearance_crops}
   APPEARANCE_SAVE_CROPS: ${APPEARANCE_SAVE_CROPS:-true}
 
 # ── 서비스 정의 ──────────────────────────────────────────────────────────────
@@ -95,6 +95,9 @@ services:
         source: ./mosquitto/passwd
         target: /mosquitto/config/passwd
         read_only: true
+      - type: volume
+        source: mosquitto-data
+        target: /mosquitto/data
 
   # ============================================================================
   # 인프라: Consul (서비스 레지스트리)
@@ -169,6 +172,8 @@ services:
     hostname: aiot-parser-db
     image: postgres:16-alpine
     environment:
+      TZ: Asia/Seoul
+      PGTZ: Asia/Seoul
       POSTGRES_DB: ${AIOT_DB_NAME:-aiot_sensor}
       POSTGRES_USER: ${AIOT_DB_USER:-postgres}
       POSTGRES_PASSWORD: ${AIOT_DB_PASSWORD:-}
@@ -633,6 +638,7 @@ services:
     env_file:
       - ./.env.jetson
     environment:
+      TZ: Asia/Seoul
       PYTHONIOENCODING: utf-8
       PYTHONUTF8: "1"
       NVIDIA_VISIBLE_DEVICES: all
@@ -682,7 +688,12 @@ services:
       STREAM_HEIGHT: ${STREAM_HEIGHT:-540}
       MQTT_USER: ${MQTT_USER:-}
       MQTT_PASSWORD: ${MQTT_PASSWORD:-}
-      DISPLAY: ${DISPLAY:-:0}
+      MQTT_QOS: ${MQTT_QOS:-1}
+      MQTT_EVENT_OUTBOX_DB: /app/data/runtime/mqtt_event_outbox.db
+      MQTT_EVENT_OUTBOX_RETRY_INTERVAL: ${MQTT_EVENT_OUTBOX_RETRY_INTERVAL:-5}
+      # 헤드리스 Jetson 운영에서는 X11 인증 실패가 DeepStream 초기화를 막을 수 있다.
+      # 화면 출력이 필요할 때만 .env.jetson 에 DISPLAY=:0 을 명시한다.
+      DISPLAY: ${DISPLAY:-}
       QT_X11_NO_MITSHM: "1"
       # Jetson Orin nvgpu cuDNN v8 API 비활성화 (GET engine 에러 방지)
       TORCH_CUDNN_V8_API_ENABLED: "0"
@@ -751,7 +762,7 @@ services:
         published: "${FACE_API_PORT:-8767}"
         protocol: tcp
     healthcheck:
-      test: ["CMD-SHELL", "kill -0 1 2>/dev/null || exit 1"]
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8765/health', timeout=3).read()\""]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -789,11 +800,11 @@ services:
         source: ./known_faces
         target: /app/known_faces
       - type: bind
-        source: /opt/nvidia/deepstream
+        source: ${DEEPSTREAM_ROOT:-/opt/nvidia/deepstream}
         target: /opt/nvidia/deepstream
         read_only: true
       - type: bind
-        source: /usr/lib/aarch64-linux-gnu/nvidia
+        source: ${NVIDIA_LIB_ROOT:-/usr/lib/aarch64-linux-gnu/nvidia}
         target: /usr/lib/aarch64-linux-gnu/nvidia
         read_only: true
       - type: bind
@@ -806,19 +817,19 @@ services:
       # ── Jetson 전용 PyTorch (큰 디스크에 설치한 NVIDIA JP6 / CUDA 12.6 wheel 마운트) ──
       # Root 저장공간을 아끼고, 컨테이너 내부에서 검증된 GPU wheel을 우선 사용한다.
       - type: bind
-        source: /media/sawwave/Learning1/jetson-py310-cu126/site-packages/torch
+        source: ${JETSON_TORCH_SITE_PACKAGES:-/media/sawwave/Learning1/jetson-py310-cu126/site-packages}/torch
         target: /usr/local/lib/python3.10/dist-packages/torch
         read_only: true
       - type: bind
-        source: /media/sawwave/Learning1/jetson-py310-cu126/site-packages/torchgen
+        source: ${JETSON_TORCH_SITE_PACKAGES:-/media/sawwave/Learning1/jetson-py310-cu126/site-packages}/torchgen
         target: /usr/local/lib/python3.10/dist-packages/torchgen
         read_only: true
       - type: bind
-        source: /media/sawwave/Learning1/jetson-py310-cu126/site-packages/functorch
+        source: ${JETSON_TORCH_SITE_PACKAGES:-/media/sawwave/Learning1/jetson-py310-cu126/site-packages}/functorch
         target: /usr/local/lib/python3.10/dist-packages/functorch
         read_only: true
       - type: bind
-        source: /media/sawwave/Learning1/jetson-py310-cu126/site-packages/torchvision
+        source: ${JETSON_TORCH_SITE_PACKAGES:-/media/sawwave/Learning1/jetson-py310-cu126/site-packages}/torchvision
         target: /usr/local/lib/python3.10/dist-packages/torchvision
         read_only: true
 
@@ -829,11 +840,14 @@ services:
       context: .
       dockerfile: Dockerfile.action
     environment:
+      TZ: Asia/Seoul
       PYTHONPATH: /app
       PYTHONIOENCODING: utf-8
       PYTHONUTF8: "1"
       NVIDIA_VISIBLE_DEVICES: ""
-      EDGEX_OUTBOX_DB: /data/event_outbox.db
+      EDGEX_OUTBOX_DB: /data/runtime/event_outbox.db
+      MQTT_USER: ${MQTT_USER:-}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-}
     command:
       - python
       - runners/run_edgex_adapter.py
@@ -886,6 +900,7 @@ services:
       - path: ./parser-python/.env
         required: false
     environment:
+      TZ: Asia/Seoul
       PYTHONPATH: /app
       PYTHONIOENCODING: utf-8
       PYTHONUTF8: "1"
@@ -909,7 +924,7 @@ services:
       EDGEX_MQTT_PORT: "1883"
       EDGEX_CORE_DATA_URL: http://edgex-core-data:59880
       ALERT_API_URL: http://cctv-alert-api:8000/api/sensor-readings
-      EDGEX_OUTBOX_DB: /data/event_outbox.db
+      EDGEX_OUTBOX_DB: /data/runtime/event_outbox.db
       EDGEX_OUTBOX_RETRY_INTERVAL: "30"
       AIOT_ALLOW_UNKNOWN_DEVICES: ${AIOT_ALLOW_UNKNOWN_DEVICES:-true}
     depends_on:
@@ -953,6 +968,7 @@ services:
       - --publish-topic-prefix
       - aiot/rules/sensor
     environment:
+      TZ: Asia/Seoul
       PYTHONPATH: /app
       PYTHONIOENCODING: utf-8
       PYTHONUTF8: "1"
@@ -981,6 +997,7 @@ services:
       context: .
       dockerfile: Dockerfile.action
     environment:
+      TZ: Asia/Seoul
       PYTHONPATH: /app
       PYTHONIOENCODING: utf-8
       PYTHONUTF8: "1"
@@ -1026,6 +1043,7 @@ services:
       edgex-mqtt-broker:
         condition: service_started
     environment:
+      TZ: Asia/Seoul
       PYTHONPATH: /app
       PYTHONIOENCODING: utf-8
       PYTHONUTF8: "1"
@@ -1039,9 +1057,9 @@ services:
       - --port
       - "8000"
       - --log-path
-      - /app/data/alert_api_events.jsonl
+      - /app/data/logs/alert_api_events.jsonl
       - --sensor-log-path
-      - /app/data/sensor_readings.jsonl
+      - /app/data/logs/sensor_readings.jsonl
     networks:
       edgex-network: null
     ports:
@@ -1067,20 +1085,45 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.action
+    user: "1000:1000"
     env_file:
       - ./.env.jetson
     command:
       - python
       - /app/runners/run_action_bridge.py
     environment:
+      TZ: Asia/Seoul
       PYTHONPATH: /app
       MQTT_BROKER: edgex-mqtt-broker
       MQTT_PORT: "1883"
       MQTT_USER: ${MQTT_USER:-}
       MQTT_PASSWORD: ${MQTT_PASSWORD:-}
-      DB_PATH: /app/action_events.db
+      DB_PATH: /app/data/runtime/action_events.db
       EXTERNAL_API_URL: http://cctv-alert-api:8000/api/alerts
+      ACTION_HTTP_OUTBOX_DB: /app/data/runtime/action_http_outbox.db
       ALARM_COOLDOWN: ${ACTION_ALARM_COOLDOWN:-10}
+      SPEAKER_HOST: ${SPEAKER_HOST:-}
+      SPEAKER_PORT: ${SPEAKER_PORT:-80}
+      SPEAKER_USER: ${SPEAKER_USER:-}
+      SPEAKER_PASSWORD: ${SPEAKER_PASSWORD:-}
+      SPEAKER_VOLUME: ${SPEAKER_VOLUME:-10}
+      SPEAKER_TTS_LANGUAGE: ${SPEAKER_TTS_LANGUAGE:-kor}
+      SPEAKER_TTS_GENDER: ${SPEAKER_TTS_GENDER:-female}
+      SPEAKER_TTS_PITCH: ${SPEAKER_TTS_PITCH:-100}
+      SPEAKER_TTS_SPEED: ${SPEAKER_TTS_SPEED:-100}
+      SPEAKER_TTS_VOLUME: ${SPEAKER_TTS_VOLUME:-1}
+      SIGNBOARD_HOST: ${SIGNBOARD_HOST:-}
+      SIGNBOARD_PORT: ${SIGNBOARD_PORT:-5000}
+      SIGNBOARD_BRIGHTNESS: ${SIGNBOARD_BRIGHTNESS:-10}
+      SIGNBOARD_TEXT_COLOR: ${SIGNBOARD_TEXT_COLOR:-7}
+      SIGNBOARD_BACK_COLOR: ${SIGNBOARD_BACK_COLOR:-0}
+      SIGNBOARD_TEXT_SIZE: ${SIGNBOARD_TEXT_SIZE:-2}
+      SIGNBOARD_TEXT_SPEED: ${SIGNBOARD_TEXT_SPEED:-10}
+      SIREN_HOST: ${SIREN_HOST:-}
+      SIREN_PORT: ${SIREN_PORT:-80}
+      SIREN_USER: ${SIREN_USER:-}
+      SIREN_PASSWORD: ${SIREN_PASSWORD:-}
+      SIREN_AUTO_STOP: ${SIREN_AUTO_STOP:-10}
       REST_ENABLED: "true"
       REST_HOST: "0.0.0.0"
       REST_PORT: "8080"
@@ -1118,6 +1161,9 @@ services:
         source: ./config/event_type_map.json
         target: /app/config/event_type_map.json
         read_only: true
+      - type: bind
+        source: ./data
+        target: /app/data
 
   # ── Public API (외부 서버/대시보드 연동) ──────────────────────────────────
   cctv-public-api:
@@ -1134,16 +1180,21 @@ services:
       - --port
       - "9000"
     environment:
+      TZ: Asia/Seoul
       PYTHONPATH: /app
       PYTHONIOENCODING: utf-8
       PYTHONUTF8: "1"
       NVIDIA_VISIBLE_DEVICES: ""
       ACTION_LAYER_URL: http://cctv-action-layer:8080
       ALERT_API_URL: http://cctv-alert-api:8000
-      ALERT_LOG_PATH: /app/data/alert_api_events.jsonl
-      SENSOR_LOG_PATH: /app/data/sensor_readings.jsonl
+      AI_ENGINE_ZONE_API_URL: http://cctv-ai-engine:8765
+      AI_ENGINE_MODEL_API_URL: http://cctv-ai-engine:8766
+      AI_ENGINE_FACE_API_URL: http://cctv-ai-engine:8767
+      AI_ENGINE_STREAM_API_URL: http://cctv-ai-engine:8769
+      ALERT_LOG_PATH: /app/data/logs/alert_api_events.jsonl
+      SENSOR_LOG_PATH: /app/data/logs/sensor_readings.jsonl
       SENSOR_DEVICE_MAP_PATH: /app/config/sensor_devices.json
-      ALERT_FALLBACK_LOG: /app/data/public_api_fallback.jsonl
+      ALERT_FALLBACK_LOG: /app/data/logs/public_api_fallback.jsonl
       CAMERAS_JSON: /app/cameras.json
       PUBLIC_API_KEY: ${PUBLIC_API_KEY:-}
       CORS_ORIGINS: ${CORS_ORIGINS:-}
@@ -1221,3 +1272,5 @@ volumes:
     name: edgex-jetson_kuiper-plugins
   trt-cache:
     name: edgex-jetson_trt-cache
+  mosquitto-data:
+    name: edgex-jetson_mosquitto-data

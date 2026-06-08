@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/marketing-bilibili-content-strategist.md](../../../../agents/marketing-bilibili-content-strategist.md).
+Derived from [agents/marketing-bilibili-content-strategist.md](../../../../tooling/agents/marketing-bilibili-content-strategist.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

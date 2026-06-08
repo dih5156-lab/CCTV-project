@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/sales-coach.md](../../../../agents/sales-coach.md).
+Derived from [agents/sales-coach.md](../../../../tooling/agents/sales-coach.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

@@ -4,16 +4,43 @@ from __future__ import annotations
 
 import hashlib
 import json
-from datetime import datetime, timezone
 from typing import Any, Dict, Mapping, Optional
+
+from .time_utils import now_kst_iso, timestamp_to_kst_iso
 
 
 def _utc_now_iso() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return now_kst_iso()
 
 
 def _strip_none(data: Mapping[str, Any]) -> Dict[str, Any]:
     return {key: value for key, value in data.items() if value is not None}
+
+
+def _first_mapping_value(data: Mapping[str, Any], keys: tuple[str, ...]) -> Any:
+    for key in keys:
+        value = data.get(key)
+        if value:
+            return value
+    return None
+
+
+def _event_mapping(payload: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
+    event_info = payload.get("event")
+    return event_info if isinstance(event_info, Mapping) else None
+
+
+def _event_or_payload_value(
+    payload: Mapping[str, Any],
+    event_keys: tuple[str, ...],
+    payload_keys: tuple[str, ...],
+) -> Any:
+    event_info = _event_mapping(payload)
+    if event_info is not None:
+        value = _first_mapping_value(event_info, event_keys)
+        if value:
+            return value
+    return _first_mapping_value(payload, payload_keys)
 
 
 _APPEARANCE_ATTRIBUTE_KEYS = frozenset(
@@ -78,7 +105,7 @@ def _coerce_iso_timestamp(value: Any) -> str:
         numeric /= 1_000_000.0
     elif abs(numeric) >= 1e11:
         numeric /= 1_000.0
-    return datetime.fromtimestamp(numeric, tz=timezone.utc).isoformat()
+    return timestamp_to_kst_iso(numeric)
 
 
 def build_canonical_event(
@@ -158,40 +185,25 @@ def build_event_id(
 def get_payload_camera_id(payload: Mapping[str, Any]) -> str:
     event_device = payload.get("device")
     if isinstance(event_device, Mapping):
-        for key in ("camera_id", "device_id", "dev_eui"):
-            value = event_device.get(key)
-            if value:
-                return str(value)
-    for key in ("camera_id", "device_id", "dev_eui"):
-        value = payload.get(key)
+        value = _first_mapping_value(event_device, ("camera_id", "device_id", "dev_eui"))
         if value:
             return str(value)
-    return "unknown"
+    return str(_first_mapping_value(payload, ("camera_id", "device_id", "dev_eui")) or "unknown")
 
 
 def get_payload_event_type(payload: Mapping[str, Any]) -> str:
-    event_info = payload.get("event")
-    if isinstance(event_info, Mapping):
-        for key in ("event_type", "type"):
-            value = event_info.get(key)
-            if value:
-                return str(value)
-    value = payload.get("type") or payload.get("event_type")
-    if value:
-        return str(value)
-    return "unknown"
+    return str(
+        _event_or_payload_value(
+            payload,
+            ("event_type", "type"),
+            ("type", "event_type"),
+        )
+        or "unknown"
+    )
 
 
 def get_payload_severity(payload: Mapping[str, Any]) -> str:
-    event_info = payload.get("event")
-    if isinstance(event_info, Mapping):
-        value = event_info.get("severity")
-        if value:
-            return str(value)
-    value = payload.get("severity")
-    if value:
-        return str(value)
-    return ""
+    return str(_event_or_payload_value(payload, ("severity",), ("severity",)) or "")
 
 
 def get_payload_confidence(payload: Mapping[str, Any]) -> Optional[float]:
@@ -210,18 +222,12 @@ def get_payload_confidence(payload: Mapping[str, Any]) -> Optional[float]:
 
 
 def get_payload_display_message(payload: Mapping[str, Any]) -> Optional[str]:
-    event_info = payload.get("event")
-    if isinstance(event_info, Mapping):
-        value = event_info.get("display_message")
-        if value:
-            return str(value)
-        value = event_info.get("message")
-        if value:
-            return str(value)
-    value = payload.get("message")
-    if value:
-        return str(value)
-    return None
+    value = _event_or_payload_value(
+        payload,
+        ("display_message", "message"),
+        ("message",),
+    )
+    return str(value) if value else None
 
 
 def get_payload_message_id(payload: Mapping[str, Any]) -> Optional[str]:
@@ -321,15 +327,9 @@ def canonicalize_event_payload(
 
 
 def get_payload_tts_message(payload: Mapping[str, Any]) -> Optional[str]:
-    event_info = payload.get("event")
-    if isinstance(event_info, Mapping):
-        value = event_info.get("tts_message")
-        if value:
-            return str(value)
-        value = event_info.get("message")
-        if value:
-            return str(value)
-    value = payload.get("message")
-    if value:
-        return str(value)
-    return None
+    value = _event_or_payload_value(
+        payload,
+        ("tts_message", "message"),
+        ("message",),
+    )
+    return str(value) if value else None

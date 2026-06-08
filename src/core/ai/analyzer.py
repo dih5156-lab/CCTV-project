@@ -14,35 +14,45 @@
 
 from __future__ import annotations
 
+import logging
 import os
 import time
-import logging
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
-import cv2
 import numpy as np
 
-from ..events import EventType, DetectionEvent
-from ...utils.geometry import is_helmet_worn, boxes_overlap
-from ._constants import (
-    _MODEL_IMGSZ, _IMGSZ_LOCK,
-    DEFAULT_IMAGE_SIZE_HELMET, DEFAULT_IMAGE_SIZE_POSE, DEFAULT_IOU_THRESHOLD,
-    MAX_HELMET_WIDTH, MAX_HELMET_HEIGHT, MIN_HELMET_SIZE, MAX_HELMET_ASPECT_RATIO,
-    DUPLICATE_IOU_THRESHOLD, PERSON_DUPLICATE_IOU_THRESHOLD,
-    HEAD_REGION_RATIO, MIN_PERSON_WIDTH, MIN_PERSON_HEIGHT,
-    MIN_KEYPOINT_CONFIDENCE, SHOULDER_TOP_MIN_RATIO,
-)
-from ._yolo_helpers import (
-    extract_bbox, extract_confidence, extract_keypoints, extract_track_id,
-    detect_engine_imgsz, generate_temp_id,
-)
-from ._object_tracker import ObjectTracker
-from ._fall_detector import FallDetector
-from ._appearance_analyzer import AppearanceAnalyzer, BAG_CLASSES
+from ...utils.geometry import boxes_overlap, is_helmet_worn
+from ..events import DetectionEvent, EventType
+from ._appearance_analyzer import BAG_CLASSES, AppearanceAnalyzer
 from ._appearance_pipeline import AppearancePipeline
+from ._constants import (
+    _IMGSZ_LOCK,
+    _MODEL_IMGSZ,
+    DEFAULT_IMAGE_SIZE_HELMET,
+    DEFAULT_IMAGE_SIZE_POSE,
+    DEFAULT_IOU_THRESHOLD,
+    DUPLICATE_IOU_THRESHOLD,
+    HEAD_REGION_RATIO,
+    MAX_HELMET_ASPECT_RATIO,
+    MAX_HELMET_HEIGHT,
+    MAX_HELMET_WIDTH,
+    MIN_HELMET_SIZE,
+    MIN_PERSON_HEIGHT,
+    MIN_PERSON_WIDTH,
+    PERSON_DUPLICATE_IOU_THRESHOLD,
+)
 from ._face_recognition_pipeline import FaceRecognitionPipeline
+from ._fall_detector import FallDetector
 from ._object_detection_pipeline import ObjectDetectionPipeline
+from ._object_tracker import ObjectTracker
+from ._yolo_helpers import (
+    detect_engine_imgsz,
+    extract_bbox,
+    extract_confidence,
+    extract_keypoints,
+    generate_temp_id,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -143,7 +153,7 @@ class AIAnalyzer:
             bbox_expand_ratio=appearance_bbox_expand_ratio,
         )
         self._crop_dir = Path(
-            os.environ.get("APPEARANCE_CROP_DIR", "data/appearance_crops")
+            os.environ.get("APPEARANCE_CROP_DIR", "data/runtime/appearance_crops")
         )
         self._appearance_pipeline = AppearancePipeline(
             self._appearance,

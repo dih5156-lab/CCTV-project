@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/lsp-index-engineer.md](../../../../agents/lsp-index-engineer.md).
+Derived from [agents/lsp-index-engineer.md](../../../../tooling/agents/lsp-index-engineer.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

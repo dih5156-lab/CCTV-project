@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "updated_at": "2026-04-28",
-  "notes": "Model inventory for CCTV MLOps tracking. Fill metrics after running scripts/evaluate_detection.py on a fixed evaluation dataset.",
+  "notes": "Model inventory for CCTV MLOps tracking. Fill metrics after running scripts/ops/evaluate_detection.py on a fixed evaluation dataset.",
   "models": [
     {
       "name": "helmet_model_ver0.5",

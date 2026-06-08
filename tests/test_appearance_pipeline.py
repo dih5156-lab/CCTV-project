@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-import numpy as np
 from types import SimpleNamespace
+
+import numpy as np
 
 from src.core.ai._appearance_analyzer import AppearanceAnalyzer
 from src.core.ai._appearance_pipeline import AppearancePipeline
@@ -66,7 +67,7 @@ def test_build_log_payload_includes_face_meta_and_bbox(tmp_path):
         person=person,
         attrs=attrs,
         face_meta=face_meta,
-        crop_path="data/appearance_crops/cam01_7.jpg",
+        crop_path="data/runtime/appearance_crops/cam01_7.jpg",
         timestamp=1234.5,
     )
 

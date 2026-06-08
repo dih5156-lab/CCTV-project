@@ -15,10 +15,7 @@ import threading
 import time
 import uuid
 from dataclasses import dataclass, field
-from typing import Any, TYPE_CHECKING, Dict, Optional
-
-if TYPE_CHECKING:
-    import redis as redis_module
+from typing import Any, Dict, Optional
 
 try:
     import redis

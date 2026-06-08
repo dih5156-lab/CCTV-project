@@ -10,9 +10,10 @@ import json
 import logging
 import time
 import uuid
-from datetime import datetime, timezone
-from typing import Any, Dict, Optional
+from typing import Dict, Optional
 from urllib.parse import urlparse
+
+from ..time_utils import coerce_timestamp_seconds, now_kst_iso
 
 logger = logging.getLogger(__name__)
 
@@ -80,37 +81,17 @@ class _PayloadMixin:
 
     def _normalize_timestamp(self, timestamp: object) -> str:
         """타임스탬프를 ISO 8601 문자열로 정규화 (유연한 입력 지원)."""
-        def _now() -> str:
-            return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
-
         if timestamp is None:
-            return _now()
+            return now_kst_iso()
         if isinstance(timestamp, str):
             normalized = timestamp.strip()
-            return normalized if normalized else _now()
+            return normalized if normalized else now_kst_iso()
         return str(timestamp)
 
     def _to_origin_nanos(self, timestamp: object) -> int:
         """타임스탬프를 나노초 단위의 정수로 변환 (유연한 입력 지원)."""
-        if isinstance(timestamp, (int, float)):
-            return int(float(timestamp) * 1_000_000_000)
-
-        if isinstance(timestamp, str):
-            value = timestamp.strip()
-            if value:
-                try:
-                    return int(float(value) * 1_000_000_000)
-                except Exception as exc:
-                    logger.debug("타임스탬프 float 변환 실패, ISO 파싱 시도: %s", exc)
-                try:
-                    normalized = value.replace("Z", "+00:00")
-                    return int(
-                        datetime.fromisoformat(normalized).timestamp() * 1_000_000_000
-                    )
-                except Exception as exc:
-                    logger.debug("타임스탬프 ISO 파싱 실패, 현재 시각 사용: %s", exc)
-
-        return int(time.time() * 1_000_000_000)
+        seconds = coerce_timestamp_seconds(timestamp, fallback=time.time())
+        return int(seconds * 1_000_000_000)
 
     # ── 이벤트 필드 추출 ─────────────────────────────────────────────────────
 

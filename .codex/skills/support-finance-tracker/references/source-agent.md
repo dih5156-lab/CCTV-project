@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/support-finance-tracker.md](../../../../agents/support-finance-tracker.md).
+Derived from [agents/support-finance-tracker.md](../../../../tooling/agents/support-finance-tracker.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

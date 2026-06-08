@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import json
 import logging
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 import httpx
 
+from ..time_utils import now_kst_iso
 from .dependencies._settings import INTERNAL_SERVICE_TOKEN as _INTERNAL_TOKEN
 from .schemas.event import AlertIn
 
@@ -45,15 +45,22 @@ async def close_alert_forwarding_client() -> None:
     _shared_alert_client = None
 
 
-def save_alert_fallback(payload: dict[str, Any], fallback_log: Path, logger: logging.Logger) -> None:
+def save_alert_fallback(
+    payload: dict[str, Any], fallback_log: Path, logger: logging.Logger
+) -> None:
     """Save an alert payload to a local JSONL fallback file."""
     try:
         fallback_log.parent.mkdir(parents=True, exist_ok=True)
-        entry = {"received_at": datetime.now(timezone.utc).isoformat(), "payload": payload}
+        entry = {"received_at": now_kst_iso(), "payload": payload}
         with fallback_log.open("a", encoding="utf-8") as file:
             file.write(json.dumps(entry, ensure_ascii=False) + "\n")
     except OSError as exc:
         logger.error("Fallback 저장 실패: %s", exc)
+
+
+def _set_if_not_none(payload: dict[str, Any], key: str, value: Any) -> None:
+    if value is not None:
+        payload[key] = value
 
 
 def build_alert_action_payload(alert: AlertIn) -> dict[str, Any]:
@@ -65,13 +72,23 @@ def build_alert_action_payload(alert: AlertIn) -> dict[str, Any]:
         "confidence": alert.confidence,
         "timestamp": alert.timestamp,
     }
-    if alert.bbox is not None:
-        action_payload["bbox"] = alert.bbox.model_dump()
-    if alert.object_id is not None:
-        action_payload["object_id"] = alert.object_id
-    if alert.metadata is not None:
-        action_payload["metadata"] = alert.metadata
+    _set_if_not_none(
+        action_payload,
+        "bbox",
+        alert.bbox.model_dump() if alert.bbox is not None else None,
+    )
+    _set_if_not_none(action_payload, "object_id", alert.object_id)
+    _set_if_not_none(action_payload, "metadata", alert.metadata)
     return action_payload
+
+
+def build_alert_action_topic(alert: AlertIn) -> str:
+    """Return the Action Layer topic that matches the alert event type."""
+    if alert.event_type.value == "intrusion":
+        return "cctv/rules/intrusion/critical"
+    if alert.event_type.value == "sensor_temperature":
+        return "aiot/rules/sensor/temperature"
+    return f"cctv/ai/events/{alert.camera_id}/{alert.event_type.value}"
 
 
 async def forward_alert_event(
@@ -99,12 +116,15 @@ async def forward_alert_event(
 
     action_target = f"{action_layer_url.rstrip('/')}/events"
     action_payload = build_alert_action_payload(alert)
+    action_payload["topic"] = build_alert_action_topic(alert)
     try:
         response = await client.post(action_target, json=action_payload)
         if response.status_code not in (200, 202):
             logger.warning("action layer 전달 실패 (status=%s)", response.status_code)
         else:
-            logger.info("action layer 전달 완료: %s/%s", alert.camera_id, alert.event_type.value)
+            logger.info(
+                "action layer 전달 완료: %s/%s", alert.camera_id, alert.event_type.value
+            )
     except httpx.HTTPError as exc:
         logger.warning("action layer 전달 실패 (%s)", exc)
     except Exception as exc:  # noqa: BLE001

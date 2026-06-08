@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/zk-steward.md](../../../../agents/zk-steward.md).
+Derived from [agents/zk-steward.md](../../../../tooling/agents/zk-steward.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

@@ -6,7 +6,6 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable, Mapping, Optional, Sequence, Union
 
-
 # 프로젝트 루트 디렉토리 (src/config에서 2단계 상위)
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 logger = logging.getLogger(__name__)
@@ -18,6 +17,18 @@ def _identity(value: str) -> str:
 
 def _parse_bool(value: str) -> bool:
     return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _parse_int(value: str) -> int:
+    return int(value.strip())
+
+
+def _parse_float(value: str) -> float:
+    return float(value.strip())
+
+
+def _parse_csv_tuple(value: str) -> tuple[str, ...]:
+    return tuple(item.strip() for item in value.split(",") if item.strip())
 
 
 @dataclass(frozen=True)
@@ -76,8 +87,10 @@ ENV_OVERRIDES: tuple[EnvOverride, ...] = (
     EnvOverride("POSE_MODEL_PATH", ("models", "pose_model")),
     EnvOverride("DEVICE", ("detection", "device")),
     EnvOverride("MQTT_BROKER", ("mqtt", "broker")),
-    EnvOverride("MQTT_PORT", ("mqtt", "port"), parser=lambda v: int(v.strip())),
+    EnvOverride("MQTT_PORT", ("mqtt", "port"), parser=_parse_int),
     EnvOverride("MQTT_TOPIC_PREFIX", ("mqtt", "topic_prefix")),
+    EnvOverride("MQTT_QOS", ("mqtt", "qos"), parser=_parse_int),
+    EnvOverride("MQTT_RETAIN", ("mqtt", "retain"), parser=_parse_bool),
     EnvOverride("DISPLAY_ENABLED", ("display",), parser=_parse_bool),
     EnvOverride("ZONE_DETECTION_ENABLED", ("zone_detection",), parser=_parse_bool),
     EnvOverride("COLLECT_DATASET", ("collect_dataset",), parser=_parse_bool),
@@ -85,19 +98,19 @@ ENV_OVERRIDES: tuple[EnvOverride, ...] = (
     EnvOverride("EDGEX_METADATA_URL", ("edgex", "metadata_url")),
     EnvOverride("EDGEX_DATA_URL", ("edgex", "data_url")),
     EnvOverride("EDGEX_MQTT_BROKER", ("edgex", "mqtt_broker")),
-    EnvOverride("EDGEX_MQTT_PORT", ("edgex", "mqtt_port"), parser=lambda v: int(v.strip())),
+    EnvOverride("EDGEX_MQTT_PORT", ("edgex", "mqtt_port"), parser=_parse_int),
     EnvOverride("EDGEX_REDIS_HOST", ("edgex", "redis_host")),
-    EnvOverride("EDGEX_REDIS_PORT", ("edgex", "redis_port"), parser=lambda v: int(v.strip())),
+    EnvOverride("EDGEX_REDIS_PORT", ("edgex", "redis_port"), parser=_parse_int),
     EnvOverride("EDGEX_SERVICE_BASE_URL", ("edgex", "service_base_url")),
     # ActionBridge
     EnvOverride("ACTION_MQTT_BROKER", ("action", "mqtt_broker")),
-    EnvOverride("ACTION_MQTT_PORT", ("action", "mqtt_port"), parser=lambda v: int(v.strip())),
+    EnvOverride("ACTION_MQTT_PORT", ("action", "mqtt_port"), parser=_parse_int),
     EnvOverride("ACTION_REST_HOST", ("action", "rest_host")),
-    EnvOverride("ACTION_REST_PORT", ("action", "rest_port"), parser=lambda v: int(v.strip())),
+    EnvOverride("ACTION_REST_PORT", ("action", "rest_port"), parser=_parse_int),
     # External ingest
     EnvOverride("EXTERNAL_MQTT_BROKER", ("external_ingest", "mqtt_broker")),
-    EnvOverride("EXTERNAL_MQTT_PORT", ("external_ingest", "mqtt_port"), parser=lambda v: int(v.strip())),
-    EnvOverride("EXTERNAL_MQTT_TOPICS", ("external_ingest", "topics"), parser=lambda v: tuple(item.strip() for item in v.split(",") if item.strip())),
+    EnvOverride("EXTERNAL_MQTT_PORT", ("external_ingest", "mqtt_port"), parser=_parse_int),
+    EnvOverride("EXTERNAL_MQTT_TOPICS", ("external_ingest", "topics"), parser=_parse_csv_tuple),
     EnvOverride("EXTERNAL_MQTT_CLIENT_ID_PREFIX", ("external_ingest", "client_id_prefix")),
     EnvOverride("EXTERNAL_MQTT_CLIENT_ID", ("external_ingest", "mqtt_client_id")),
     EnvOverride("EXTERNAL_MQTT_USERNAME", ("external_ingest", "mqtt_username")),
@@ -105,25 +118,25 @@ ENV_OVERRIDES: tuple[EnvOverride, ...] = (
     EnvOverride("EXTERNAL_INGEST_DB_PATH", ("external_ingest", "db_path")),
     EnvOverride("EXTERNAL_REPUBLISH_ENABLED", ("external_ingest", "republish_enabled"), parser=_parse_bool),
     # 카메라 / RTSP
-    EnvOverride("RTSP_BUFFER_SIZE", ("camera", "buffer_size"), parser=lambda v: int(v.strip())),
+    EnvOverride("RTSP_BUFFER_SIZE", ("camera", "buffer_size"), parser=_parse_int),
     # 외형 분석
     EnvOverride("APPEARANCE_ENABLED", ("appearance", "enabled"), parser=_parse_bool),
     EnvOverride("APPEARANCE_BACKEND", ("appearance", "backend")),
     EnvOverride("APPEARANCE_MODEL_PATH", ("appearance", "model_path")),
     EnvOverride("APPEARANCE_LABEL_MAP_PATH", ("appearance", "label_map_path")),
     EnvOverride("APPEARANCE_RUNTIME", ("appearance", "runtime")),
-    EnvOverride("APPEARANCE_INPUT_SIZE", ("appearance", "input_size"), parser=lambda v: int(v.strip())),
-    EnvOverride("APPEARANCE_SCORE_THRESHOLD", ("appearance", "score_threshold"), parser=lambda v: float(v.strip())),
-    EnvOverride("APPEARANCE_BBOX_EXPAND_RATIO", ("appearance", "bbox_expand_ratio"), parser=lambda v: float(v.strip())),
-    EnvOverride("APPEARANCE_MATCH_THRESHOLD", ("appearance", "match_threshold"), parser=lambda v: float(v.strip())),
-    EnvOverride("APPEARANCE_COOLDOWN_SECONDS", ("appearance", "cooldown_seconds"), parser=lambda v: float(v.strip())),
+    EnvOverride("APPEARANCE_INPUT_SIZE", ("appearance", "input_size"), parser=_parse_int),
+    EnvOverride("APPEARANCE_SCORE_THRESHOLD", ("appearance", "score_threshold"), parser=_parse_float),
+    EnvOverride("APPEARANCE_BBOX_EXPAND_RATIO", ("appearance", "bbox_expand_ratio"), parser=_parse_float),
+    EnvOverride("APPEARANCE_MATCH_THRESHOLD", ("appearance", "match_threshold"), parser=_parse_float),
+    EnvOverride("APPEARANCE_COOLDOWN_SECONDS", ("appearance", "cooldown_seconds"), parser=_parse_float),
     # 이벤트 디바운스 / 지속 감지
-    EnvOverride("DEBOUNCE_SECONDS", ("events", "debounce_seconds"), parser=lambda v: float(v.strip())),
-    EnvOverride("FALL_SUSTAINED_SECONDS", ("events", "fall_sustained_seconds"), parser=lambda v: float(v.strip())),
-    EnvOverride("FALL_RESEND_COOLDOWN", ("events", "fall_resend_cooldown"), parser=lambda v: float(v.strip())),
-    EnvOverride("FALL_GAP_RESET_SECONDS", ("events", "fall_gap_reset_seconds"), parser=lambda v: float(v.strip())),
-    EnvOverride("HEAD_RESEND_COOLDOWN", ("events", "head_resend_cooldown"), parser=lambda v: float(v.strip())),
-    EnvOverride("HEAD_GAP_RESET_SECONDS", ("events", "head_gap_reset_seconds"), parser=lambda v: float(v.strip())),
+    EnvOverride("DEBOUNCE_SECONDS", ("events", "debounce_seconds"), parser=_parse_float),
+    EnvOverride("FALL_SUSTAINED_SECONDS", ("events", "fall_sustained_seconds"), parser=_parse_float),
+    EnvOverride("FALL_RESEND_COOLDOWN", ("events", "fall_resend_cooldown"), parser=_parse_float),
+    EnvOverride("FALL_GAP_RESET_SECONDS", ("events", "fall_gap_reset_seconds"), parser=_parse_float),
+    EnvOverride("HEAD_RESEND_COOLDOWN", ("events", "head_resend_cooldown"), parser=_parse_float),
+    EnvOverride("HEAD_GAP_RESET_SECONDS", ("events", "head_gap_reset_seconds"), parser=_parse_float),
 )
 
 @dataclass

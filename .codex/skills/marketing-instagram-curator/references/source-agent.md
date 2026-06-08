@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/marketing-instagram-curator.md](../../../../agents/marketing-instagram-curator.md).
+Derived from [agents/marketing-instagram-curator.md](../../../../tooling/agents/marketing-instagram-curator.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

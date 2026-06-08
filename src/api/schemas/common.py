@@ -9,16 +9,18 @@ PaginatedResponse: 페이지네이션 포함 목록 응답
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Any, Generic, List, Optional, TypeVar
 
 from pydantic import BaseModel, Field
 
+from ...time_utils import now_kst
+
 T = TypeVar("T")
 
 
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
+def _now_kst() -> datetime:
+    return now_kst()
 
 
 class BaseResponse(BaseModel, Generic[T]):
@@ -27,7 +29,7 @@ class BaseResponse(BaseModel, Generic[T]):
     success: bool
     data: Optional[T] = None
     error: Optional[str] = None
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=_now_kst)
 
     model_config = {"populate_by_name": True}
 
@@ -40,7 +42,7 @@ class PaginatedResponse(BaseModel, Generic[T]):
     total: int
     limit: int
     offset: int
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=_now_kst)
 
 
 def success_response(data: T | None = None) -> BaseResponse[T]:

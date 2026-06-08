@@ -11,17 +11,16 @@ Python 파서가 올바르게 동작하는지 검증합니다.
     pytest tests/test_tlv_parser.py -v
 """
 
-import sys
 import os
+import sys
 
 # parser-python/ 폴더를 sys.path 에 추가 (절대 임포트 허용)
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import binascii
+
 import pytest
-
-from tlv.parser import Parser, ParsedData
-
+from tlv.parser import ParsedData, Parser
 
 # ──────────────────────────────────────────────────────────────────
 # 테스트 데이터  (Go: hexStrings 배열과 동일)
@@ -70,7 +69,7 @@ def decode_hex(hex_str: str) -> bytes:
 # 헬퍼: 파싱 결과를 출력 (Go: fmt.Printf 와 동일한 역할)
 # ──────────────────────────────────────────────────────────────────
 def print_result(index: int, result: ParsedData):
-    print(f"\n=== TLV Parsing Result ===")
+    print("\n=== TLV Parsing Result ===")
     print(f"Table Name : {result.table_name}")
     print(f"Data       : {result.data}")
     print(f"origin result: {EXPECTED_LABELS[index]}")
@@ -188,7 +187,7 @@ def test_case5_table34956_fire_alarm(parser):
 
     d = result.data
     # Go: fire_alarm = false / Python: False == 0
-    assert d.get("fire_alarm") == False
+    assert d.get("fire_alarm") is False
 
 
 # ──────────────────────────────────────────────────────────────────

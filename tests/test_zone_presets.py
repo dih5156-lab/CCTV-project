@@ -13,11 +13,11 @@ import threading
 import urllib.request
 from http.server import HTTPServer
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
-from src.services.zone_api import ZoneApiHandler, start_zone_api_server
+from src.services.zone_api import ZoneApiHandler
 from src.utils.zone_presets import ZonePresetStore
 
 # ---------------------------------------------------------------------------

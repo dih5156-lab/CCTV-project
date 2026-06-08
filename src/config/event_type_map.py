@@ -10,7 +10,7 @@ import json
 import logging
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict
 
 from .config import PROJECT_ROOT
 

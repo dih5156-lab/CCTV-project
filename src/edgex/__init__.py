@@ -8,8 +8,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .device_service import CCTVDeviceService
     from .adapter_service import EdgeXDeviceAdapterService
+    from .device_service import CCTVDeviceService
 
 __all__ = ["CCTVDeviceService", "EdgeXDeviceAdapterService"]
 

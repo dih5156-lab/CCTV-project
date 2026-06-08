@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/unreal-technical-artist.md](../../../../agents/unreal-technical-artist.md).
+Derived from [agents/unreal-technical-artist.md](../../../../tooling/agents/unreal-technical-artist.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

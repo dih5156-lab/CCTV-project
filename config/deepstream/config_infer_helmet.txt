@@ -21,6 +21,8 @@ infer-dims=3;640;640
 workspace-size=1024
 maintain-aspect-ratio=1
 symmetric-padding=1
+# Headless Jetson 컨테이너에서는 VIC 경로가 EGL display에 묶일 수 있어 GPU 스케일링을 사용한다.
+scaling-compute-hw=1
 output-tensor-meta=1
 
 # 현재는 full-frame 추가 inference로 실행한다.

@@ -7,8 +7,8 @@ from collections import deque
 from threading import Lock
 from typing import Dict, Iterable, List, Optional, Set, Tuple
 
-from .events import DetectionEvent
 from ..utils.geometry import calculate_iou
+from .events import DetectionEvent
 
 logger = logging.getLogger(__name__)
 
@@ -172,7 +172,7 @@ class CumulativeViolationFilter:
             # _history 업데이트 및 violation_summary 수집.
             # violation_summary 는 로컬 변수이므로 락 해제 후에도 안전하게 읽을 수 있음.
             for object_id in seen_ids:
-                key = (camera_id, object_id)
+                key = self._history_key(camera_id, object_id)
                 if key not in self._history:
                     self._history[key] = deque(maxlen=self.history_max_size)
                 history = self._history[key]
@@ -184,7 +184,7 @@ class CumulativeViolationFilter:
                     continue
                 if event.event_type.value not in self.violation_types:
                     continue
-                key = (camera_id, event.object_id)
+                key = self._history_key(camera_id, event.object_id)
                 history = self._history.get(key, [])
                 violation_summary[key] = (sum(history), len(history))
 
@@ -193,7 +193,7 @@ class CumulativeViolationFilter:
                 filtered.append(event)
                 continue
 
-            key = (camera_id, event.object_id)
+            key = self._history_key(camera_id, event.object_id)
             violation_count, history_size = violation_summary.get(key, (0, 0))
             if violation_count >= self.violation_threshold:
                 filtered.append(event)
@@ -218,17 +218,9 @@ class CumulativeViolationFilter:
 
     def purge(self, camera_id: str, object_ids: Optional[Iterable[int]] = None) -> int:
         with self._lock:
-            if object_ids is None:
-                keys = [key for key in list(self._history.keys()) if key[0] == camera_id]
-            else:
-                obj_set = {obj_id for obj_id in object_ids if obj_id is not None}
-                if not obj_set:
-                    return 0
-                keys = [
-                    key
-                    for key in list(self._history.keys())
-                    if key[0] == camera_id and key[1] in obj_set
-                ]
+            keys = self._keys_for_purge(camera_id, object_ids)
+            if not keys:
+                return 0
 
             for key in keys:
                 self._history.pop(key, None)
@@ -250,3 +242,24 @@ class CumulativeViolationFilter:
     def history_size(self) -> int:
         with self._lock:
             return len(self._history)
+
+    @staticmethod
+    def _history_key(camera_id: str, object_id: int) -> Tuple[str, int]:
+        return camera_id, object_id
+
+    def _keys_for_purge(
+        self,
+        camera_id: str,
+        object_ids: Optional[Iterable[int]],
+    ) -> List[Tuple[str, int]]:
+        if object_ids is None:
+            return [key for key in list(self._history.keys()) if key[0] == camera_id]
+
+        obj_set = {obj_id for obj_id in object_ids if obj_id is not None}
+        if not obj_set:
+            return []
+        return [
+            key
+            for key in list(self._history.keys())
+            if key[0] == camera_id and key[1] in obj_set
+        ]

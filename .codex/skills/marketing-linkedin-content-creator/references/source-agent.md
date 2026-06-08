@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/marketing-linkedin-content-creator.md](../../../../agents/marketing-linkedin-content-creator.md).
+Derived from [agents/marketing-linkedin-content-creator.md](../../../../tooling/agents/marketing-linkedin-content-creator.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

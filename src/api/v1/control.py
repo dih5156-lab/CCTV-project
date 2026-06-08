@@ -41,6 +41,8 @@ def _normalize_pending_item(item: Mapping[str, Any]) -> PendingEventOut:
     """Action Layer 원본 payload를 Public API 스키마로 정규화한다."""
     payload = item.get("payload")
     payload_map = payload if isinstance(payload, Mapping) else {}
+    event = payload_map.get("event")
+    event_map = event if isinstance(event, Mapping) else {}
     return PendingEventOut(
         event_id=_first_non_empty_str(
             item.get("event_id"),
@@ -70,9 +72,37 @@ def _normalize_pending_item(item: Mapping[str, Any]) -> PendingEventOut:
             payload_map.get("event_type"),
             payload_map.get("type"),
         ),
+        confidence=(
+            item.get("confidence")
+            if item.get("confidence") is not None
+            else (
+                payload_map.get("confidence")
+                if payload_map.get("confidence") is not None
+                else event_map.get("confidence")
+            )
+        ),
         severity=_first_non_empty_str(
             item.get("severity"),
             payload_map.get("severity"),
+            event_map.get("severity"),
+        ),
+        display_message=_first_non_empty_str(
+            item.get("display_message"),
+            item.get("displayMessage"),
+            payload_map.get("display_message"),
+            payload_map.get("displayMessage"),
+            event_map.get("display_message"),
+            event_map.get("displayMessage"),
+            event_map.get("message"),
+        ),
+        tts_message=_first_non_empty_str(
+            item.get("tts_message"),
+            item.get("ttsMessage"),
+            payload_map.get("tts_message"),
+            payload_map.get("ttsMessage"),
+            event_map.get("tts_message"),
+            event_map.get("ttsMessage"),
+            event_map.get("message"),
         ),
         topic=_first_non_empty_str(
             item.get("topic"),
@@ -89,7 +119,15 @@ def _normalize_pending_item(item: Mapping[str, Any]) -> PendingEventOut:
 )
 async def get_mode(_: None = Depends(verify_api_key)) -> BaseResponse[ModeOut]:
     raw = await proxy_action_request(_ACTION_URL, "get", "/mode")
-    return success_response(ModeOut(mode=raw.get("mode", "auto")))
+    return success_response(
+        ModeOut(
+            mode=raw.get("mode", "auto"),
+            alarm_devices=raw.get("alarm_devices", []),
+            confidence_threshold=raw.get("confidence_threshold"),
+            display_message=raw.get("display_message", ""),
+            tts_message=raw.get("tts_message", ""),
+        )
+    )
 
 
 @router.post(
@@ -109,9 +147,24 @@ async def set_mode(
     payload: dict = {"mode": body.mode.value}
     if body.site_id:
         payload["site_id"] = body.site_id
+    fields_set = getattr(body, "model_fields_set", set())
+    if "alarm_devices" in fields_set and body.alarm_devices is not None:
+        payload["alarm_devices"] = [device.value for device in body.alarm_devices]
+    if "confidence_threshold" in fields_set:
+        payload["confidence_threshold"] = body.confidence_threshold
+    if "display_message" in fields_set or "tts_message" in fields_set:
+        payload["display_message"] = body.display_message
+        payload["tts_message"] = body.tts_message
     raw = await proxy_action_request(_ACTION_URL, "post", "/mode", payload)
     return success_response(
-        ModeOut(mode=raw.get("mode", body.mode.value), site_id=body.site_id)
+        ModeOut(
+            mode=raw.get("mode", body.mode.value),
+            site_id=body.site_id,
+            alarm_devices=raw.get("alarm_devices", payload.get("alarm_devices", [])),
+            confidence_threshold=raw.get("confidence_threshold", payload.get("confidence_threshold")),
+            display_message=raw.get("display_message", payload.get("display_message", "")),
+            tts_message=raw.get("tts_message", payload.get("tts_message", "")),
+        )
     )
 
 

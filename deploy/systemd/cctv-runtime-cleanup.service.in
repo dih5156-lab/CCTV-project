@@ -1,0 +1,9 @@
+[Unit]
+Description=CCTV 런타임 데이터 정리
+After=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=@PROJECT_ROOT@
+EnvironmentFile=-/etc/default/cctv-runtime-cleanup
+ExecStart=@PROJECT_ROOT@/scripts/cleanup/cleanup_runtime_data.sh --apply

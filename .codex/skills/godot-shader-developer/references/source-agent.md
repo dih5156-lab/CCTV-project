@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/godot-shader-developer.md](../../../../agents/godot-shader-developer.md).
+Derived from [agents/godot-shader-developer.md](../../../../tooling/agents/godot-shader-developer.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

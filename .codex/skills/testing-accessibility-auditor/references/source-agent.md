@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/testing-accessibility-auditor.md](../../../../agents/testing-accessibility-auditor.md).
+Derived from [agents/testing-accessibility-auditor.md](../../../../tooling/agents/testing-accessibility-auditor.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

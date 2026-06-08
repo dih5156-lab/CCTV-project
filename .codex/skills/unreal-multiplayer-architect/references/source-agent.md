@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/unreal-multiplayer-architect.md](../../../../agents/unreal-multiplayer-architect.md).
+Derived from [agents/unreal-multiplayer-architect.md](../../../../tooling/agents/unreal-multiplayer-architect.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

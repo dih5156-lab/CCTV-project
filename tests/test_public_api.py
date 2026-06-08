@@ -6,12 +6,11 @@ httpx ASGI transport로 각 엔드포인트의 기본 동작을 검증한다.
 
 from __future__ import annotations
 
+import asyncio
 import json
 import os
-import tempfile
-import asyncio
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 import httpx
 import pytest
@@ -116,6 +115,10 @@ def test_readiness_up_when_dependencies_are_healthy(client: SyncASGIClient) -> N
     assert {dep["name"] for dep in body["data"]["dependencies"]} == {
         "action-layer",
         "alert-api",
+        "ai-engine-zone-api",
+        "ai-engine-model-api",
+        "ai-engine-face-api",
+        "ai-engine-stream-api",
     }
 
 
@@ -178,6 +181,8 @@ def test_metrics_counter_records_http_requests(client: SyncASGIClient) -> None:
     body = resp.text
     assert "cctv_public_api_http_requests_total" in body
     assert 'path_prefix="/api/v1/health"' in body
+    assert "cctv_public_api_open_file_descriptors" in body
+    assert "cctv_public_api_file_descriptor_soft_limit" in body
 
 
 # ---------------------------------------------------------------------------
@@ -225,6 +230,7 @@ class TestAlerts:
             "bbox": {"x": 10, "y": 20, "width": 100, "height": 80},
             "object_id": 7,
             "metadata": {"zone_id": "zone-A"},
+            "topic": "cctv/ai/events/cam-01/helmet",
         }
 
     def test_post_alert_invalid_event_type(self, client: SyncASGIClient) -> None:
@@ -239,7 +245,6 @@ class TestAlerts:
         assert resp.status_code == 422
         body = resp.json()
         assert body["success"] is False
-
 
     def test_post_alert_missing_required_field(self, client: SyncASGIClient) -> None:
         """필수 필드 누락 → 422"""
@@ -260,7 +265,9 @@ class TestAlerts:
         assert resp.status_code == 422
         assert resp.json()["success"] is False
 
-    def test_post_alert_fallback_on_internal_error(self, client: SyncASGIClient, tmp_path: Path) -> None:
+    def test_post_alert_fallback_on_internal_error(
+        self, client: SyncASGIClient, tmp_path: Path
+    ) -> None:
         """내부 alert-api 실패 시 fallback 파일에 저장되고 202 반환."""
         import src.api.v1.alerts as alerts_module
 
@@ -306,7 +313,10 @@ class TestSensorReadings:
         log_file = tmp_path / "sensor_readings.jsonl"
         map_file = tmp_path / "sensor_devices.json"
         map_file.write_text(
-            json.dumps({"devices": [{"device_id": "sensor-02", "name": "설비실 온도 센서"}]}, ensure_ascii=False),
+            json.dumps(
+                {"devices": [{"device_id": "sensor-02", "name": "설비실 온도 센서"}]},
+                ensure_ascii=False,
+            ),
             encoding="utf-8",
         )
         log_file.write_text(
@@ -362,7 +372,9 @@ class TestSensorReadings:
         assert body["items"][1]["data"]["temperature"] == 24.5
         assert body["items"][1]["severity"] == "normal"
 
-    def test_post_sensor_reading_forwards_to_alert_api(self, client: SyncASGIClient) -> None:
+    def test_post_sensor_reading_forwards_to_alert_api(
+        self, client: SyncASGIClient
+    ) -> None:
         payload = {
             "device_id": "demo-tlv-01",
             "table": "t34957",
@@ -481,7 +493,9 @@ class TestEvents:
         finally:
             events_module._ALERT_LOG = original
 
-    def test_list_events_with_data(self, client: SyncASGIClient, tmp_path: Path) -> None:
+    def test_list_events_with_data(
+        self, client: SyncASGIClient, tmp_path: Path
+    ) -> None:
         """JSONL 파일이 있을 때 파싱 및 반환 확인."""
         import src.api.v1.events as events_module
 
@@ -523,7 +537,91 @@ class TestEvents:
         finally:
             events_module._ALERT_LOG = original
 
-    def test_list_events_camera_filter(self, client: SyncASGIClient, tmp_path: Path) -> None:
+    def test_list_events_reads_rotated_logs(
+        self, client: SyncASGIClient, tmp_path: Path
+    ) -> None:
+        """활성 로그와 회전 로그를 최신 순서대로 함께 조회한다."""
+        import src.api.v1.events as events_module
+
+        log_file = tmp_path / "test_events_rotated.jsonl"
+        rotated_log = tmp_path / "test_events_rotated.jsonl.1"
+        rotated_log.write_text(
+            json.dumps(
+                {
+                    "payload": {
+                        "camera_id": "cam-old",
+                        "type": "helmet",
+                        "timestamp": 1700000000.0,
+                    }
+                }
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        log_file.write_text(
+            json.dumps(
+                {
+                    "payload": {
+                        "camera_id": "cam-new",
+                        "type": "fall_detected",
+                        "timestamp": 1700000060.0,
+                    }
+                }
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+
+        original = events_module._ALERT_LOG
+        events_module._ALERT_LOG = log_file
+        try:
+            resp = client.get("/api/v1/events")
+            assert resp.status_code == 200
+            body = resp.json()
+            assert body["total"] == 2
+            assert [item["camera_id"] for item in body["items"]] == [
+                "cam-new",
+                "cam-old",
+            ]
+        finally:
+            events_module._ALERT_LOG = original
+
+    def test_list_events_reads_rotated_log_without_active_log(
+        self, client: SyncASGIClient, tmp_path: Path
+    ) -> None:
+        """활성 로그가 아직 없어도 회전 로그가 있으면 조회한다."""
+        import src.api.v1.events as events_module
+
+        log_file = tmp_path / "test_events_missing_active.jsonl"
+        rotated_log = tmp_path / "test_events_missing_active.jsonl.1"
+        rotated_log.write_text(
+            json.dumps(
+                {
+                    "payload": {
+                        "camera_id": "cam-rotated",
+                        "type": "person",
+                        "timestamp": 1700000000.0,
+                    }
+                }
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+
+        original = events_module._ALERT_LOG
+        events_module._ALERT_LOG = log_file
+        try:
+            resp = client.get("/api/v1/events")
+            assert resp.status_code == 200
+            body = resp.json()
+            assert body["total"] == 1
+            assert body["items"][0]["camera_id"] == "cam-rotated"
+        finally:
+            events_module._ALERT_LOG = original
+
+    def test_list_events_camera_filter(
+        self, client: SyncASGIClient, tmp_path: Path
+    ) -> None:
         """camera_id 필터링 동작 확인."""
         import src.api.v1.events as events_module
 
@@ -531,11 +629,23 @@ class TestEvents:
         entries = [
             {
                 "receivedAt": "2024-01-01T00:00:00",
-                "payload": {"camera_id": "cam-A", "type": "helmet", "severity": "normal", "confidence": 0.9, "timestamp": 1700000000.0},
+                "payload": {
+                    "camera_id": "cam-A",
+                    "type": "helmet",
+                    "severity": "normal",
+                    "confidence": 0.9,
+                    "timestamp": 1700000000.0,
+                },
             },
             {
                 "receivedAt": "2024-01-01T00:01:00",
-                "payload": {"camera_id": "cam-B", "type": "helmet", "severity": "normal", "confidence": 0.8, "timestamp": 1700000060.0},
+                "payload": {
+                    "camera_id": "cam-B",
+                    "type": "helmet",
+                    "severity": "normal",
+                    "confidence": 0.8,
+                    "timestamp": 1700000060.0,
+                },
             },
         ]
         with log_file.open("w", encoding="utf-8") as f:
@@ -553,7 +663,9 @@ class TestEvents:
         finally:
             events_module._ALERT_LOG = original
 
-    def test_list_events_pagination(self, client: SyncASGIClient, tmp_path: Path) -> None:
+    def test_list_events_pagination(
+        self, client: SyncASGIClient, tmp_path: Path
+    ) -> None:
         """페이지네이션 파라미터 동작 확인."""
         import src.api.v1.events as events_module
 
@@ -562,7 +674,13 @@ class TestEvents:
             for i in range(10):
                 entry = {
                     "receivedAt": "2024-01-01T00:00:00",
-                    "payload": {"camera_id": f"cam-{i:02d}", "type": "person", "severity": "normal", "confidence": 0.8, "timestamp": float(1700000000 + i)},
+                    "payload": {
+                        "camera_id": f"cam-{i:02d}",
+                        "type": "person",
+                        "severity": "normal",
+                        "confidence": 0.8,
+                        "timestamp": float(1700000000 + i),
+                    },
                 }
                 f.write(json.dumps(entry) + "\n")
 
@@ -577,15 +695,44 @@ class TestEvents:
         finally:
             events_module._ALERT_LOG = original
 
-    def test_list_events_time_filter(self, client: SyncASGIClient, tmp_path: Path) -> None:
+    def test_list_events_time_filter(
+        self, client: SyncASGIClient, tmp_path: Path
+    ) -> None:
         """time_from / time_to 필터 동작 확인."""
         import src.api.v1.events as events_module
 
         log_file = tmp_path / "test_events_time.jsonl"
         entries = [
-            {"receivedAt": "2024-01-01T00:00:00", "payload": {"camera_id": "cam-01", "type": "helmet", "severity": "normal", "confidence": 0.9, "timestamp": 1700000000.0}},
-            {"receivedAt": "2024-01-01T00:01:00", "payload": {"camera_id": "cam-01", "type": "helmet", "severity": "normal", "confidence": 0.9, "timestamp": 1700000060.0}},
-            {"receivedAt": "2024-01-01T00:02:00", "payload": {"camera_id": "cam-01", "type": "helmet", "severity": "normal", "confidence": 0.9, "timestamp": 1700000120.0}},
+            {
+                "receivedAt": "2024-01-01T00:00:00",
+                "payload": {
+                    "camera_id": "cam-01",
+                    "type": "helmet",
+                    "severity": "normal",
+                    "confidence": 0.9,
+                    "timestamp": 1700000000.0,
+                },
+            },
+            {
+                "receivedAt": "2024-01-01T00:01:00",
+                "payload": {
+                    "camera_id": "cam-01",
+                    "type": "helmet",
+                    "severity": "normal",
+                    "confidence": 0.9,
+                    "timestamp": 1700000060.0,
+                },
+            },
+            {
+                "receivedAt": "2024-01-01T00:02:00",
+                "payload": {
+                    "camera_id": "cam-01",
+                    "type": "helmet",
+                    "severity": "normal",
+                    "confidence": 0.9,
+                    "timestamp": 1700000120.0,
+                },
+            },
         ]
         with log_file.open("w", encoding="utf-8") as f:
             for entry in entries:
@@ -603,7 +750,9 @@ class TestEvents:
         finally:
             events_module._ALERT_LOG = original
 
-    def test_list_events_accepts_iso_timestamp(self, client: SyncASGIClient, tmp_path: Path) -> None:
+    def test_list_events_accepts_iso_timestamp(
+        self, client: SyncASGIClient, tmp_path: Path
+    ) -> None:
         """실사용 로그의 ISO timestamp도 Unix seconds로 변환해 반환한다."""
         import src.api.v1.events as events_module
 
@@ -632,7 +781,9 @@ class TestEvents:
         finally:
             events_module._ALERT_LOG = original
 
-    def test_list_events_reads_nested_alert_event(self, client: SyncASGIClient, tmp_path: Path) -> None:
+    def test_list_events_reads_nested_alert_event(
+        self, client: SyncASGIClient, tmp_path: Path
+    ) -> None:
         """Alert API가 저장하는 payload.event 포맷을 파싱한다."""
         import src.api.v1.events as events_module
 
@@ -674,7 +825,9 @@ class TestEvents:
         finally:
             events_module._ALERT_LOG = original
 
-    def test_list_events_reads_canonical_payload(self, client: SyncASGIClient, tmp_path: Path) -> None:
+    def test_list_events_reads_canonical_payload(
+        self, client: SyncASGIClient, tmp_path: Path
+    ) -> None:
         """표준 canonical payload는 top-level 필드와 event 메타를 함께 사용한다."""
         import src.api.v1.events as events_module
 
@@ -719,15 +872,44 @@ class TestEvents:
         finally:
             events_module._ALERT_LOG = original
 
-    def test_list_events_event_type_filter(self, client: SyncASGIClient, tmp_path: Path) -> None:
+    def test_list_events_event_type_filter(
+        self, client: SyncASGIClient, tmp_path: Path
+    ) -> None:
         """event_type 필터 동작 확인."""
         import src.api.v1.events as events_module
 
         log_file = tmp_path / "test_events_etype.jsonl"
         entries = [
-            {"receivedAt": "2024-01-01T00:00:00", "payload": {"camera_id": "cam-01", "type": "helmet", "severity": "normal", "confidence": 0.9, "timestamp": 1700000000.0}},
-            {"receivedAt": "2024-01-01T00:01:00", "payload": {"camera_id": "cam-01", "type": "fall_detected", "severity": "critical", "confidence": 0.99, "timestamp": 1700000060.0}},
-            {"receivedAt": "2024-01-01T00:02:00", "payload": {"camera_id": "cam-01", "type": "helmet", "severity": "normal", "confidence": 0.85, "timestamp": 1700000120.0}},
+            {
+                "receivedAt": "2024-01-01T00:00:00",
+                "payload": {
+                    "camera_id": "cam-01",
+                    "type": "helmet",
+                    "severity": "normal",
+                    "confidence": 0.9,
+                    "timestamp": 1700000000.0,
+                },
+            },
+            {
+                "receivedAt": "2024-01-01T00:01:00",
+                "payload": {
+                    "camera_id": "cam-01",
+                    "type": "fall_detected",
+                    "severity": "critical",
+                    "confidence": 0.99,
+                    "timestamp": 1700000060.0,
+                },
+            },
+            {
+                "receivedAt": "2024-01-01T00:02:00",
+                "payload": {
+                    "camera_id": "cam-01",
+                    "type": "helmet",
+                    "severity": "normal",
+                    "confidence": 0.85,
+                    "timestamp": 1700000120.0,
+                },
+            },
         ]
         with log_file.open("w", encoding="utf-8") as f:
             for entry in entries:
@@ -744,15 +926,44 @@ class TestEvents:
         finally:
             events_module._ALERT_LOG = original
 
-    def test_list_events_combined_filters(self, client: SyncASGIClient, tmp_path: Path) -> None:
+    def test_list_events_combined_filters(
+        self, client: SyncASGIClient, tmp_path: Path
+    ) -> None:
         """camera_id + event_type + time_from 복합 필터 확인."""
         import src.api.v1.events as events_module
 
         log_file = tmp_path / "test_events_combined.jsonl"
         entries = [
-            {"receivedAt": "2024-01-01T00:00:00", "payload": {"camera_id": "cam-A", "type": "helmet", "severity": "normal", "confidence": 0.9, "timestamp": 1700000000.0}},
-            {"receivedAt": "2024-01-01T00:01:00", "payload": {"camera_id": "cam-A", "type": "helmet", "severity": "normal", "confidence": 0.9, "timestamp": 1700000060.0}},
-            {"receivedAt": "2024-01-01T00:02:00", "payload": {"camera_id": "cam-B", "type": "helmet", "severity": "normal", "confidence": 0.9, "timestamp": 1700000120.0}},
+            {
+                "receivedAt": "2024-01-01T00:00:00",
+                "payload": {
+                    "camera_id": "cam-A",
+                    "type": "helmet",
+                    "severity": "normal",
+                    "confidence": 0.9,
+                    "timestamp": 1700000000.0,
+                },
+            },
+            {
+                "receivedAt": "2024-01-01T00:01:00",
+                "payload": {
+                    "camera_id": "cam-A",
+                    "type": "helmet",
+                    "severity": "normal",
+                    "confidence": 0.9,
+                    "timestamp": 1700000060.0,
+                },
+            },
+            {
+                "receivedAt": "2024-01-01T00:02:00",
+                "payload": {
+                    "camera_id": "cam-B",
+                    "type": "helmet",
+                    "severity": "normal",
+                    "confidence": 0.9,
+                    "timestamp": 1700000120.0,
+                },
+            },
         ]
         with log_file.open("w", encoding="utf-8") as f:
             for entry in entries:
@@ -761,7 +972,9 @@ class TestEvents:
         original = events_module._ALERT_LOG
         events_module._ALERT_LOG = log_file
         try:
-            resp = client.get("/api/v1/events?camera_id=cam-A&event_type=helmet&time_from=1700000050")
+            resp = client.get(
+                "/api/v1/events?camera_id=cam-A&event_type=helmet&time_from=1700000050"
+            )
             assert resp.status_code == 200
             body = resp.json()
             assert body["total"] == 1
@@ -792,14 +1005,22 @@ class TestCameras:
         finally:
             cam_module._CAMERAS_JSON = original
 
-    def test_list_cameras_strips_credentials(self, client: SyncASGIClient, tmp_path: Path) -> None:
+    def test_list_cameras_strips_credentials(
+        self, client: SyncASGIClient, tmp_path: Path
+    ) -> None:
         """RTSP URL에서 자격증명이 제거되는지 확인."""
         import src.api.v1.cameras as cam_module
 
         cameras_file = tmp_path / "cameras.json"
         cameras_file.write_text(
             json.dumps(
-                [{"id": "cam-01", "name": "정문", "url": "rtsp://admin:secret@192.168.1.10:554/stream"}]
+                [
+                    {
+                        "id": "cam-01",
+                        "name": "정문",
+                        "url": "rtsp://admin:secret@192.168.1.10:554/stream",
+                    }
+                ]
             ),
             encoding="utf-8",
         )
@@ -814,7 +1035,43 @@ class TestCameras:
         finally:
             cam_module._CAMERAS_JSON = original
 
-    def test_get_camera_not_found_uses_wrapped_error(self, client: SyncASGIClient) -> None:
+    def test_list_cameras_skips_invalid_entries_and_keeps_port(
+        self,
+        client: SyncASGIClient,
+        tmp_path: Path,
+    ) -> None:
+        """잘못된 cameras.json 항목은 건너뛰고 RTSP 포트는 유지한다."""
+        import src.api.v1.cameras as cam_module
+
+        cameras_file = tmp_path / "cameras.json"
+        cameras_file.write_text(
+            json.dumps(
+                {
+                    "cameras": [
+                        "broken",
+                        {
+                            "id": "cam-01",
+                            "url": "rtsp://admin:secret@192.168.1.10:8554/stream",
+                        },
+                    ]
+                }
+            ),
+            encoding="utf-8",
+        )
+        original = cam_module._CAMERAS_JSON
+        cam_module._CAMERAS_JSON = cameras_file
+        try:
+            resp = client.get("/api/v1/cameras")
+            assert resp.status_code == 200
+            cameras = resp.json()["data"]
+            assert len(cameras) == 1
+            assert cameras[0]["url"] == "rtsp://192.168.1.10:8554/stream"
+        finally:
+            cam_module._CAMERAS_JSON = original
+
+    def test_get_camera_not_found_uses_wrapped_error(
+        self, client: SyncASGIClient
+    ) -> None:
         import src.api.v1.cameras as cam_module
 
         original = cam_module._CAMERAS_JSON
@@ -834,7 +1091,9 @@ class TestCameras:
         import src.api.v1.cameras as cam_module
 
         cameras_file = tmp_path / "cameras.json"
-        cameras_file.write_text(json.dumps([{"id": "cam-01", "name": "정문"}]), encoding="utf-8")
+        cameras_file.write_text(
+            json.dumps([{"id": "cam-01", "name": "정문"}]), encoding="utf-8"
+        )
         original = cam_module._CAMERAS_JSON
         cam_module._CAMERAS_JSON = cameras_file
         try:
@@ -861,7 +1120,9 @@ class TestAuth:
     def test_valid_key_accepted(self, client: SyncASGIClient) -> None:
         """올바른 API Key → 통과."""
         with patch.dict(os.environ, {"PUBLIC_API_KEY": "test-secret-key"}):
-            resp = client.get("/api/v1/health", headers={"X-API-Key": "test-secret-key"})
+            resp = client.get(
+                "/api/v1/health", headers={"X-API-Key": "test-secret-key"}
+            )
         assert resp.status_code == 200
 
     def test_invalid_key_rejected(self, client: SyncASGIClient, tmp_path: Path) -> None:
@@ -879,7 +1140,9 @@ class TestAuth:
         finally:
             cam_module._CAMERAS_JSON = original
 
-    def test_missing_key_when_configured(self, client: SyncASGIClient, tmp_path: Path) -> None:
+    def test_missing_key_when_configured(
+        self, client: SyncASGIClient, tmp_path: Path
+    ) -> None:
         """API Key 설정됐는데 헤더 누락 → 401."""
         import src.api.v1.cameras as cam_module
 
@@ -894,7 +1157,9 @@ class TestAuth:
         finally:
             cam_module._CAMERAS_JSON = original
 
-    def test_query_param_key_rejected_by_default(self, client: SyncASGIClient, tmp_path: Path) -> None:
+    def test_query_param_key_rejected_by_default(
+        self, client: SyncASGIClient, tmp_path: Path
+    ) -> None:
         """기본 설정에서는 ?api_key= 쿼리 파라미터 인증을 허용하지 않는다."""
         import src.api.v1.cameras as cam_module
 
@@ -924,7 +1189,9 @@ class TestResponseFormat:
         assert "data" in body
         assert "timestamp" in body
 
-    def test_cameras_response_format(self, client: SyncASGIClient, tmp_path: Path) -> None:
+    def test_cameras_response_format(
+        self, client: SyncASGIClient, tmp_path: Path
+    ) -> None:
         """BaseResponse 래퍼 형식 (success, data, error, timestamp) 검증."""
         import src.api.v1.cameras as cam_module
 

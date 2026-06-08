@@ -32,7 +32,11 @@ logger = logging.getLogger(__name__)
 # 로컬 개발: {프로젝트루트}/data/event_outbox.db (fallback)
 _DEFAULT_DB_PATH = os.environ.get(
     "EDGEX_OUTBOX_DB",
-    os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data", "event_outbox.db"),
+    os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+        "data",
+        "event_outbox.db",
+    ),
 )
 _MAX_RETRY = int(os.environ.get("EDGEX_OUTBOX_MAX_RETRY", "20"))
 _TTL_SECONDS = int(os.environ.get("EDGEX_OUTBOX_TTL_SECONDS", str(60 * 60 * 24)))  # 24h
@@ -100,7 +104,7 @@ class EdgeXOutbox:
 
     def _init_db(self) -> None:
         conn = sqlite3.connect(self._db_path, check_same_thread=False)
-        conn.execute("PRAGMA journal_mode=WAL;")   # 동시 쓰기/읽기 성능 향상
+        conn.execute("PRAGMA journal_mode=WAL;")  # 동시 쓰기/읽기 성능 향상
         conn.execute("PRAGMA synchronous=NORMAL;")
         conn.executescript(_CREATE_TABLE_SQL)
         self._ensure_event_outbox_columns(conn)
@@ -113,10 +117,7 @@ class EdgeXOutbox:
 
     def _ensure_event_outbox_columns(self, conn: sqlite3.Connection) -> None:
         """다른 서비스가 먼저 만든 event_outbox에도 필요한 컬럼을 추가한다."""
-        cols = {
-            row[1]
-            for row in conn.execute("PRAGMA table_info(event_outbox)")
-        }
+        cols = {row[1] for row in conn.execute("PRAGMA table_info(event_outbox)")}
         additions = {
             "event_id": "TEXT",
             "source_service": "TEXT NOT NULL DEFAULT 'aiot-parser'",
@@ -142,7 +143,9 @@ class EdgeXOutbox:
         }
         for column, definition in additions.items():
             if column not in cols:
-                conn.execute(f"ALTER TABLE event_outbox ADD COLUMN {column} {definition}")
+                conn.execute(
+                    f"ALTER TABLE event_outbox ADD COLUMN {column} {definition}"
+                )
 
     def _migrate_legacy_table(self, conn: sqlite3.Connection) -> None:
         """기존 edgex_outbox 테이블이 있으면 공통 event_outbox로 복사한다."""
@@ -254,7 +257,9 @@ class EdgeXOutbox:
                     (event_id, "edgex-core-data"),
                 ).fetchone()
                 row_id = int(row[0]) if row else 0
-        logger.debug("[Outbox] 저장 id=%s device=%s table=%s", row_id, device_id, table_name)
+        logger.debug(
+            "[Outbox] 저장 id=%s device=%s table=%s", row_id, device_id, table_name
+        )
         return int(row_id)
 
     def mark_sent(self, row_id: int) -> None:
@@ -323,13 +328,13 @@ class EdgeXOutbox:
                 event = {}
             result.append(
                 {
-                    "id":              row[0],
-                    "device_id":       row[1],
-                    "table_name":      row[2],
-                    "core_data_url":   row[3],
-                    "edgex_event":     event,
-                    "retry_count":     row[5],
-                    "created_at_ms":   row[6],
+                    "id": row[0],
+                    "device_id": row[1],
+                    "table_name": row[2],
+                    "core_data_url": row[3],
+                    "edgex_event": event,
+                    "retry_count": row[5],
+                    "created_at_ms": row[6],
                 }
             )
         return result
@@ -353,7 +358,7 @@ class EdgeXOutbox:
                 WHERE status = 'pending'
                   AND (expire_at_ms <= ? OR retry_count >= ?)
                 """,
-                (int(time.time() * 1000), _MAX_RETRY),
+                (cutoff_ms, _MAX_RETRY),
             )
             self._conn.commit()
             return cur.rowcount

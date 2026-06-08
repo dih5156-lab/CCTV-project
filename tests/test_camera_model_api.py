@@ -10,8 +10,8 @@ test_camera_model_api.py — CameraModelApiHandler 단위 / 통합 테스트
 import json
 import threading
 import time
-import urllib.request
 import urllib.error
+import urllib.request
 from io import BytesIO
 from pathlib import Path
 from types import SimpleNamespace
@@ -19,7 +19,10 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.services.camera_model_api import CameraModelApiHandler, start_camera_model_api_server
+from src.services.camera_model_api import (
+    CameraModelApiHandler,
+    start_camera_model_api_server,
+)
 
 # ---------------------------------------------------------------------------
 # 공통 픽스처 / 헬퍼

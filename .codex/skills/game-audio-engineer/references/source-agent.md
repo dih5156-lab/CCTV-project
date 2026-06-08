@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/game-audio-engineer.md](../../../../agents/game-audio-engineer.md).
+Derived from [agents/game-audio-engineer.md](../../../../tooling/agents/game-audio-engineer.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

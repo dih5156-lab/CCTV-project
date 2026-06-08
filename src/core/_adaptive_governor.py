@@ -90,7 +90,7 @@ class _AdaptiveGovernor:
 
     def _set_imgsz(self, idx: int) -> None:
         """pose + helmet imgsz 를 동시에 설정한다."""
-        from .ai._constants import _MODEL_IMGSZ, _IMGSZ_LOCK
+        from .ai._constants import _IMGSZ_LOCK, _MODEL_IMGSZ
         clamped = max(0, min(idx, len(self._IMGSZ_STEPS) - 1))
         new_val = self._IMGSZ_STEPS[clamped]
         with _IMGSZ_LOCK:

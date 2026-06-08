@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/project-manager-senior.md](../../../../agents/project-manager-senior.md).
+Derived from [agents/project-manager-senior.md](../../../../tooling/agents/project-manager-senior.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

@@ -183,7 +183,7 @@ python runners/run_action_bridge.py
 # .env 또는 shell export
 export MQTT_BROKER=localhost
 export MQTT_PORT=1883
-export DB_PATH=/app/action_events.db
+export DB_PATH=/app/data/runtime/action_events.db
 
 python runners/run_action_bridge.py
 ```
@@ -482,16 +482,16 @@ docker compose restart cctv-action-layer
 docker compose up -d --build cctv-ai-engine
 
 # Docker 빌드 전 정적 배포 준비 점검
-python scripts/check_deployment_readiness.py
+python scripts/health/check_deployment_readiness.py
 
 # 컨테이너 기동 후 API/Prometheus/Grafana 스모크 테스트
-python scripts/smoke_test_deployment.py
+python scripts/smoke/smoke_test_deployment.py
 
 # 컨테이너 기동 후 alert/sensor/action 데이터 플로우 스모크 테스트
-python scripts/smoke_test_data_flow.py
+python scripts/smoke/smoke_test_data_flow.py
 
 # Dockerfile COPY 대상 파일 누락만 빠르게 확인
-python scripts/check_dockerfile_sources.py
+python scripts/health/check_dockerfile_sources.py
 
 # helper 스크립트 사용
 ./docker-build.sh cctv-public-api cctv-action-layer
@@ -512,7 +512,8 @@ docker compose down
 ### Jetson Orin 전용 Compose
 
 ```bash
-docker compose -f docker-compose.jetson.yml up -d
+cp .env.jetson.example .env.jetson
+docker compose --env-file .env.jetson -f docker-compose.jetson.yml up -d
 ```
 
 ---
@@ -555,10 +556,10 @@ Grafana 초기 비밀번호: `.env`의 `GRAFANA_ADMIN_PASSWORD` (미설정 시 `
 
 ```bash
 # 60분간 30초 간격으로 반복 (기본값)
-bash scripts/run_smoke_loop.sh 60 30
+bash scripts/smoke/run_smoke_loop.sh 60 30
 
 # 30분간 15초 간격
-bash scripts/run_smoke_loop.sh 30 15
+bash scripts/smoke/run_smoke_loop.sh 30 15
 ```
 
 PASS/FAIL 누적 카운트와 실패 상세 내용을 실시간 출력합니다.  

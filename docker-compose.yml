@@ -27,14 +27,14 @@
 name: edgex
 
 x-appearance-search-runtime: &appearance-search-runtime
-  APPEARANCES_DB: /app/data/appearances.db
+  APPEARANCES_DB: /app/data/runtime/appearances.db
   APPEARANCE_BACKEND: ${APPEARANCE_BACKEND:-pphuman}
   APPEARANCE_MODEL_PATH: ${APPEARANCE_MODEL_PATH:-models/pphuman_attribute.onnx}
   DS_FACE_ENABLED: ${DS_FACE_ENABLED:-0}
   DS_APPEARANCE_ENABLED: ${DS_APPEARANCE_ENABLED:-1}
   DS_HELMET_ENABLED: ${DS_HELMET_ENABLED:-1}
   DS_YOLO_LABELS: ${DS_YOLO_LABELS:-person}
-  APPEARANCE_CROP_DIR: ${APPEARANCE_CROP_DIR:-/app/data/appearance_crops}
+  APPEARANCE_CROP_DIR: ${APPEARANCE_CROP_DIR:-/app/data/runtime/appearance_crops}
   APPEARANCE_SAVE_CROPS: ${APPEARANCE_SAVE_CROPS:-true}
 
 services:
@@ -457,7 +457,7 @@ services:
       PYTHONIOENCODING: utf-8
       PYTHONUTF8: "1"
       PYTHONPATH: /app
-      EDGEX_OUTBOX_DB: /data/event_outbox.db
+      EDGEX_OUTBOX_DB: /data/runtime/event_outbox.db
       EDGEX_OUTBOX_RETRY_INTERVAL: "30"
     depends_on:
       edgex-mqtt-broker:
@@ -533,12 +533,14 @@ services:
   cctv-alert-log-init:
     container_name: cctv-alert-log-init
     image: busybox:1.36
-    command: ["sh", "-c", "mkdir -p /app/logs && chown -R 2002:2001 /app/logs"]
+    command: ["sh", "-c", "mkdir -p /app/data/logs /app/data/runtime && chown -R 2002:2001 /app/data"]
     network_mode: none
     volumes:
-    - type: volume
-      source: alert-logs
-      target: /app/logs
+    - type: bind
+      source: ./data
+      target: /app/data
+      bind:
+        create_host_path: true
     restart: "no"
 
   cctv-alert-api:
@@ -563,9 +565,9 @@ services:
     - --port
     - "8000"
     - --log-path
-    - /app/logs/alert_api_events.jsonl
+    - /app/data/logs/alert_api_events.jsonl
     - --sensor-log-path
-    - /app/logs/sensor_readings.jsonl
+    - /app/data/logs/sensor_readings.jsonl
     networks:
       edgex-network: null
     ports:
@@ -583,9 +585,11 @@ services:
       retries: 3
       start_period: 10s
     volumes:
-    - type: volume
-      source: alert-logs
-      target: /app/logs
+    - type: bind
+      source: ./data
+      target: /app/data
+      bind:
+        create_host_path: true
 
   cctv-action-layer:
     container_name: cctv-action-layer
@@ -600,7 +604,7 @@ services:
       MQTT_PORT: "1883"
       MQTT_USER: ${MQTT_USER:-}
       MQTT_PASSWORD: ${MQTT_PASSWORD:-}
-      DB_PATH: /app/action_events.db
+      DB_PATH: /app/data/runtime/action_events.db
       EXTERNAL_API_URL: http://cctv-alert-api:8000/api/alerts
       ALARM_COOLDOWN: ${ACTION_ALARM_COOLDOWN:-10}
       # Speaker (InterM HTTP REST + Digest auth)
@@ -678,6 +682,11 @@ services:
       read_only: true
       bind:
         create_host_path: true
+    - type: bind
+      source: ./data
+      target: /app/data
+      bind:
+        create_host_path: true
   # app-aiot-forwarder: removed — EdgeXForwarder in aiot-parser now handles
   # both alert-api HTTP POST and Core Data HTTP push directly.
   # Raw MQTT payloads on aiot/sensors/# are not EdgeX Event format,
@@ -716,7 +725,7 @@ services:
       # EdgeX Core Data 직접 push (Outbox 저장 경로)
       EDGEX_CORE_DATA_URL: http://edgex-core-data:59880
       # 로컬 SQLite Outbox 경로 (컨테이너 재시작 시에도 유지)
-      EDGEX_OUTBOX_DB: /data/event_outbox.db
+      EDGEX_OUTBOX_DB: /data/runtime/event_outbox.db
       EDGEX_OUTBOX_RETRY_INTERVAL: "30"
     volumes:
     - type: volume
@@ -767,10 +776,10 @@ services:
       ACTION_LAYER_URL: http://cctv-action-layer:8080
       ALERT_API_URL: http://cctv-alert-api:8000
       # 이벤트 로그 경로 (cctv-alert-api와 공유 볼륨)
-      ALERT_LOG_PATH: /app/data/alert_api_events.jsonl
-      SENSOR_LOG_PATH: /app/logs/sensor_readings.jsonl
+      ALERT_LOG_PATH: /app/data/logs/alert_api_events.jsonl
+      SENSOR_LOG_PATH: /app/data/logs/sensor_readings.jsonl
       SENSOR_DEVICE_MAP_PATH: /app/config/sensor_devices.json
-      ALERT_FALLBACK_LOG: /app/logs/public_api_fallback.jsonl
+      ALERT_FALLBACK_LOG: /app/data/logs/public_api_fallback.jsonl
       CAMERAS_JSON: /app/cameras.json
       # API Key — 프로덕션에서는 반드시 설정할 것
       PUBLIC_API_KEY: ${PUBLIC_API_KEY:-}
@@ -827,10 +836,6 @@ services:
       target: /app/data
       bind:
         create_host_path: true
-    - type: volume
-      source: alert-logs
-      target: /app/logs
-
   ui:
     container_name: edgex-ui-go
     environment:
@@ -929,8 +934,6 @@ volumes:
     name: edgex_kuiper-log
   kuiper-plugins:
     name: edgex_kuiper-plugins
-  alert-logs:
-    name: cctv_alert-logs
   aiot-db-data:
     name: cctv_aiot-db-data
   aiot-parser-data:

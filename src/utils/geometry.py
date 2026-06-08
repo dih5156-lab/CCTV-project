@@ -3,17 +3,18 @@ geometry.py - 기하학 유틸리티 함수
 """
 
 from typing import Tuple, Union
+
 from ..core.events import DetectionEvent
+
+_BBOX_KEYS = ("x", "y", "width", "height")
 
 
 def calculate_iou(box1: DetectionEvent, box2: DetectionEvent) -> float:
     """두 박스 간의 IoU (Intersection over Union) 계산"""
     if not isinstance(box1, DetectionEvent) or not isinstance(box2, DetectionEvent):
         raise TypeError("두 인자 모두 DetectionEvent 객체여야 함")
-    
-    bbox1 = {'x': box1.x, 'y': box1.y, 'width': box1.width, 'height': box1.height}
-    bbox2 = {'x': box2.x, 'y': box2.y, 'width': box2.width, 'height': box2.height}
-    return calculate_bbox_iou(bbox1, bbox2)
+
+    return calculate_bbox_iou(box1.bbox_dict(), box2.bbox_dict())
 
 
 def boxes_overlap(box1: DetectionEvent, box2: DetectionEvent, threshold: float = 0.3) -> bool:
@@ -29,11 +30,7 @@ def boxes_overlap(box1: DetectionEvent, box2: DetectionEvent, threshold: float =
 
 def get_center(bbox: dict) -> Tuple[float, float]:
     """바운딩 박스의 중심점 계산"""
-    if not isinstance(bbox, dict):
-        raise TypeError("bbox는 딕셔너리여야 함")
-    required_keys = ['x', 'y', 'width', 'height']
-    if not all(k in bbox for k in required_keys):
-        raise ValueError(f"bbox는 다음 키를 포함해야 함: {required_keys}")
+    _validate_bbox(bbox, name="bbox")
     
     cx = bbox['x'] + bbox['width'] / 2
     cy = bbox['y'] + bbox['height'] / 2
@@ -42,11 +39,7 @@ def get_center(bbox: dict) -> Tuple[float, float]:
 
 def point_in_bbox(px: Union[int, float], py: Union[int, float], bbox: dict) -> bool:
     """점이 바운딩 박스 내부에 있는지 확인"""
-    if not isinstance(bbox, dict):
-        raise TypeError("bbox는 딕셔너리여야 함")
-    required_keys = ['x', 'y', 'width', 'height']
-    if not all(k in bbox for k in required_keys):
-        raise ValueError(f"bbox는 다음 키를 포함해야 함: {required_keys}")
+    _validate_bbox(bbox, name="bbox")
     
     return (
         bbox['x'] <= px <= bbox['x'] + bbox['width'] and
@@ -73,6 +66,13 @@ def _calculate_intersection_area(bbox1: dict, bbox2: dict) -> float:
         return 0.0
     
     return (inter_x_max - inter_x_min) * (inter_y_max - inter_y_min)
+
+
+def _validate_bbox(bbox: dict, *, name: str) -> None:
+    if not isinstance(bbox, dict):
+        raise TypeError(f"{name}는 딕셔너리여야 함")
+    if not all(key in bbox for key in _BBOX_KEYS):
+        raise ValueError(f"{name}는 다음 키를 포함해야 함: {list(_BBOX_KEYS)}")
 
 
 def calculate_bbox_iou(bbox1: dict, bbox2: dict) -> float:

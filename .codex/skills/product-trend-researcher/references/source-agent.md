@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/product-trend-researcher.md](../../../../agents/product-trend-researcher.md).
+Derived from [agents/product-trend-researcher.md](../../../../tooling/agents/product-trend-researcher.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/engineering-backend-architect.md](../../../../agents/engineering-backend-architect.md).
+Derived from [agents/engineering-backend-architect.md](../../../../tooling/agents/engineering-backend-architect.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

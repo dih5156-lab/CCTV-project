@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/marketing-carousel-growth-engine.md](../../../../agents/marketing-carousel-growth-engine.md).
+Derived from [agents/marketing-carousel-growth-engine.md](../../../../tooling/agents/marketing-carousel-growth-engine.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

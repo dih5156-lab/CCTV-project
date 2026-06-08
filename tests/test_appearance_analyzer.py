@@ -11,10 +11,9 @@
 import numpy as np
 import pytest
 
-from src.core.ai._attribute_backend import AttributeCrop
 from src.core.ai._appearance_analyzer import AppearanceAnalyzer
+from src.core.ai._attribute_backend import AttributeCrop
 from src.core.ai._attribute_backends import PPHumanAttributeBackend
-
 
 # ── 헬퍼 ─────────────────────────────────────────────────────────────
 

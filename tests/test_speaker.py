@@ -4,7 +4,7 @@ test_speaker.py — SpeakerDevice / _IntermClient / 헬퍼 함수 단위 테스�
 전략: requests.Session을 mock 처리하여 실제 스피커 없이 InterM HTTP API
       흐름과 비즈니스 로직을 검증한다.
 """
-from unittest.mock import MagicMock, patch, call
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -13,16 +13,14 @@ from src.devices.speaker import (
     SpeakerDevice,
     SpeakerNetworkError,
     _IntermClient,
-    _snap_beam_steering,
-    _BEAM_STEERING_STEPS,
-    build_tts_text,
+    _is_error_response,
     _param_create_tts,
     _param_play,
-    _param_volume,
     _param_stop,
-    _is_error_response,
+    _param_volume,
+    _snap_beam_steering,
+    build_tts_text,
 )
-
 
 # ---------------------------------------------------------------------------
 # 헬퍼 함수 테스트

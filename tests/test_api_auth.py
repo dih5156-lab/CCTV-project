@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import asyncio
 
-from fastapi import HTTPException
 import pytest
+from fastapi import HTTPException
 
 from src.api.dependencies.auth import verify_api_key
 

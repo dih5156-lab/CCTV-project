@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/engineering-solidity-smart-contract-engineer.md](../../../../agents/engineering-solidity-smart-contract-engineer.md).
+Derived from [agents/engineering-solidity-smart-contract-engineer.md](../../../../tooling/agents/engineering-solidity-smart-contract-engineer.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/testing-tool-evaluator.md](../../../../agents/testing-tool-evaluator.md).
+Derived from [agents/testing-tool-evaluator.md](../../../../tooling/agents/testing-tool-evaluator.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

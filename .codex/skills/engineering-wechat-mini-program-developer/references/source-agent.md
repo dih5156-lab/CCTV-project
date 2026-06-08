@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/engineering-wechat-mini-program-developer.md](../../../../agents/engineering-wechat-mini-program-developer.md).
+Derived from [agents/engineering-wechat-mini-program-developer.md](../../../../tooling/agents/engineering-wechat-mini-program-developer.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

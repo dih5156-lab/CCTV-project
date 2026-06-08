@@ -4,7 +4,10 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-from src.core._deepstream_event_factory import detections_to_events, object_meta_to_event
+from src.core._deepstream_event_factory import (
+    detections_to_events,
+    object_meta_to_event,
+)
 from src.core.events import EventType
 
 

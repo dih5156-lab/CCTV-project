@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/sales-pipeline-analyst.md](../../../../agents/sales-pipeline-analyst.md).
+Derived from [agents/sales-pipeline-analyst.md](../../../../tooling/agents/sales-pipeline-analyst.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

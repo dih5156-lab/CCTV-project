@@ -14,7 +14,8 @@ import numpy as np
 import pytest
 
 from src.core.events import DetectionEvent, EventType
-from src.utils.zone_detection import PolygonZone as Zone, ZoneEvent, ZoneEventType, ZoneManager
+from src.utils.zone_detection import PolygonZone as Zone
+from src.utils.zone_detection import ZoneEvent, ZoneEventType, ZoneManager
 
 # ---------------------------------------------------------------------------
 # 헬퍼

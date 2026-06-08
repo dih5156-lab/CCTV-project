@@ -26,13 +26,24 @@ from slowapi.middleware import SlowAPIMiddleware
 
 from ._action_proxy import close_action_proxy_client
 from ._local_docs import local_api_docs_html
+from .dependencies._settings import ACTION_LAYER_URL, ALERT_API_URL
+from .dependencies.rate_limit import limiter
 from .schemas.common import error_response
-from .v1 import alerts, appearances, cameras, control, events, health, metrics, search, sensor_readings, sites
+from .v1 import (
+    alerts,
+    appearances,
+    cameras,
+    control,
+    events,
+    health,
+    metrics,
+    search,
+    sensor_readings,
+    sites,
+)
 from .v1.alerts import close_alert_client
 from .v1.health import close_http_client
 from .v1.sensor_readings import close_sensor_client
-from .dependencies._settings import ACTION_LAYER_URL, ALERT_API_URL
-from .dependencies.rate_limit import limiter
 
 # ---------------------------------------------------------------------------
 # 로깅

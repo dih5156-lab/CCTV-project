@@ -12,14 +12,13 @@ Go의 Bun ORM + database/sql → Python의 psycopg2 + connection pool 로 변환
 """
 
 import logging
-import time
 from contextlib import contextmanager
-from typing import Any, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 try:
     import psycopg2
-    import psycopg2.pool
     import psycopg2.extras
+    import psycopg2.pool
 except ImportError:
     psycopg2 = None  # 테스트 환경에서도 import 가능하게 처리
 

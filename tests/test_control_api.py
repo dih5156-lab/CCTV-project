@@ -33,6 +33,29 @@ def test_normalize_pending_item_supports_payload_fallbacks() -> None:
     assert item.topic == "cctv/ai/events/cam-01/helmet"
 
 
+def test_normalize_pending_item_supports_nested_event_confidence() -> None:
+    item = _normalize_pending_item(
+        {
+            "payload": {
+                "eventId": "evt-101",
+                "cameraId": "cam-01",
+                "type": "head",
+                "event": {
+                    "confidence": 0.87,
+                    "severity": "warning",
+                    "display_message": "안전모 미착용 확인",
+                    "tts_message": "안전모를 착용해 주세요.",
+                },
+            },
+        }
+    )
+
+    assert item.confidence == 0.87
+    assert item.severity == "warning"
+    assert item.display_message == "안전모 미착용 확인"
+    assert item.tts_message == "안전모를 착용해 주세요."
+
+
 @pytest.mark.asyncio
 async def test_list_pending_returns_normalized_schema() -> None:
     raw_items = [

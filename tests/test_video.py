@@ -13,8 +13,8 @@ _ROOT = Path(__file__).resolve().parent.parent
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
-from src.core import VideoProcessor
 from src.config import AppConfig
+from src.core import VideoProcessor
 
 # 동영상 파일 경로 - 로컬 환경에 맞게 수정하세요
 VIDEO_PATH = "C:\\Users\\dih51\\OneDrive\\Desktop\\test_video\\video1.mp4"

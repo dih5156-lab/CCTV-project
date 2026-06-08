@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/design-brand-guardian.md](../../../../agents/design-brand-guardian.md).
+Derived from [agents/design-brand-guardian.md](../../../../tooling/agents/design-brand-guardian.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

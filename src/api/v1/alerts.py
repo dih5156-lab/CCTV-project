@@ -10,16 +10,20 @@ import logging
 
 from fastapi import APIRouter, Depends, Request, status
 
+from .._event_forwarding import close_alert_forwarding_client, forward_alert_event
 from ..dependencies._settings import (
     ACTION_LAYER_URL as _ACTION_LAYER_URL,
+)
+from ..dependencies._settings import (
     ALERT_API_URL as _ALERT_API_URL,
+)
+from ..dependencies._settings import (
     ALERT_FALLBACK_LOG as _FALLBACK_LOG,
 )
 from ..dependencies.auth import verify_api_key
 from ..dependencies.rate_limit import limiter
 from ..schemas.common import BaseResponse, success_response
 from ..schemas.event import AlertAccepted, AlertIn
-from .._event_forwarding import close_alert_forwarding_client, forward_alert_event
 
 
 async def close_alert_client() -> None:

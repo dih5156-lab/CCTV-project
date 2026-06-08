@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/blockchain-security-auditor.md](../../../../agents/blockchain-security-auditor.md).
+Derived from [agents/blockchain-security-auditor.md](../../../../tooling/agents/blockchain-security-auditor.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

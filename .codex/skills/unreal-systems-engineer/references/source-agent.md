@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/unreal-systems-engineer.md](../../../../agents/unreal-systems-engineer.md).
+Derived from [agents/unreal-systems-engineer.md](../../../../tooling/agents/unreal-systems-engineer.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

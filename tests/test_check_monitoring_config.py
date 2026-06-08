@@ -15,7 +15,7 @@ def _load_script_module(name: str, relative_path: str):
 
 check_monitoring_config = _load_script_module(
     "check_monitoring_config",
-    "scripts/check_monitoring_config.py",
+    "scripts/health/check_monitoring_config.py",
 )
 
 

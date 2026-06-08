@@ -4,14 +4,10 @@ tests/test_edgex_outbox.py
 EdgeXOutbox 와 EdgeXForwarder 아웃박스 통합 단위 테스트.
 """
 
-import json
-import os
-import tempfile
 import time
+
 import pytest
-
 from database.edgex_outbox import EdgeXOutbox
-
 
 # ────────────────────────────────────────────
 # Fixture: 임시 SQLite 파일

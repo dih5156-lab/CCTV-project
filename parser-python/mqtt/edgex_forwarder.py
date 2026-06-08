@@ -23,14 +23,13 @@ import json
 import logging
 import os
 import threading
-import time
-import uuid
-import urllib.request
 import urllib.error
+import urllib.request
+import uuid
 from typing import Optional
 
-from mqtt.base_publisher import BaseMqttPublisher
 from database.edgex_outbox import EdgeXOutbox
+from mqtt.base_publisher import BaseMqttPublisher
 
 logger = logging.getLogger(__name__)
 

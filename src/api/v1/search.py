@@ -9,17 +9,18 @@ from __future__ import annotations
 import logging
 import os
 import re
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import Response
 from pydantic import BaseModel, Field
 
+from ...services.appearance_log import AppearanceLog
+from ...time_utils import KST
 from ..dependencies.auth import verify_api_key
 from ..schemas.common import PaginatedResponse
-from ...services.appearance_log import AppearanceLog
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/search", tags=["search"])
@@ -48,12 +49,41 @@ _BAG_TERMS = {
 
 _log_instance: Optional[AppearanceLog] = None
 
+# ── crop 이미지 경로 ─────────────────────────────────────────────────
+
+_PRIMARY_CROP_DIR = Path(
+    os.environ.get("APPEARANCE_CROP_DIR", "data/runtime/appearance_crops")
+)
+# 하위 호환: 기존 테스트/코드에서 _CROP_DIR monkeypatch를 사용한다.
+_CROP_DIR = _PRIMARY_CROP_DIR
+_LEGACY_CROP_DIR = Path("data/crops")
+_SAFE_FNAME = re.compile(r"^[\w\-]+\.jpg$")
+
 
 def _get_log() -> AppearanceLog:
     global _log_instance
     if _log_instance is None:
         _log_instance = AppearanceLog()
     return _log_instance
+
+
+def _find_crop_file(filename: str) -> Optional[Path]:
+    """공개 가능한 crop 파일이 실제로 남아 있으면 경로를 반환한다."""
+    if not _SAFE_FNAME.match(filename):
+        return None
+
+    candidate_dirs = [_CROP_DIR]
+    if _LEGACY_CROP_DIR != _CROP_DIR:
+        candidate_dirs.append(_LEGACY_CROP_DIR)
+
+    for crop_dir in candidate_dirs:
+        resolved_dir = crop_dir.resolve()
+        file_path = (crop_dir / filename).resolve()
+        if not str(file_path).startswith(str(resolved_dir)):
+            continue
+        if file_path.is_file():
+            return file_path
+    return None
 
 
 # ── 응답 스키마 ──────────────────────────────────────────────────────
@@ -95,9 +125,10 @@ def _to_record(row: dict) -> AppearanceRecord:
     if crop_path:
         # 저장 위치와 상관없이 파일명만 공개 URL로 노출한다.
         fname = crop_path.rsplit("/", 1)[-1].rsplit("\\", 1)[-1]
-        crop_url = f"/api/v1/search/crops/{fname}"
+        if _find_crop_file(fname) is not None:
+            crop_url = f"/api/v1/search/crops/{fname}"
 
-    dt = datetime.fromtimestamp(row["timestamp"], tz=timezone.utc)
+    dt = datetime.fromtimestamp(row["timestamp"], tz=KST)
 
     return AppearanceRecord(
         id=row["id"],
@@ -246,34 +277,67 @@ def _nearest_body_part(text: str, color_alias: str, window: int = 12) -> Optiona
         if color_index < 0:
             return None
         color_end = color_index + len(color_alias)
-        candidates = []
-        for body_part, terms in (("upper_color", _UPPER_TERMS), ("lower_color", _LOWER_TERMS)):
-            for term in terms:
-                search_start = max(0, color_index - window)
-                search_end = color_end + window + len(term)
-                term_index = text.find(term, search_start, search_end)
-                if term_index >= 0:
-                    term_end = term_index + len(term)
-                    if term_index >= color_end:
-                        gap = term_index - color_end
-                        direction = 0
-                    elif color_index >= term_end:
-                        gap = color_index - term_end
-                        direction = 1
-                    else:
-                        gap = 0
-                        direction = 0
-                    candidates.append((direction, gap, body_part))
+        candidates = _body_part_candidates(text, color_index, color_end, window)
         if candidates:
             return min(candidates, key=lambda item: (item[0], item[1]))[2]
         start = color_end
 
 
+def _body_part_candidates(
+    text: str,
+    color_index: int,
+    color_end: int,
+    window: int,
+) -> list[tuple[int, int, str]]:
+    candidates: list[tuple[int, int, str]] = []
+    for body_part, terms in (("upper_color", _UPPER_TERMS), ("lower_color", _LOWER_TERMS)):
+        for term in terms:
+            term_index = text.find(
+                term,
+                max(0, color_index - window),
+                color_end + window + len(term),
+            )
+            if term_index < 0:
+                continue
+            candidates.append(
+                (
+                    *_term_distance(color_index, color_end, term_index, len(term)),
+                    body_part,
+                )
+            )
+    return candidates
+
+
+def _term_distance(
+    color_index: int,
+    color_end: int,
+    term_index: int,
+    term_length: int,
+) -> tuple[int, int]:
+    term_end = term_index + term_length
+    if term_index >= color_end:
+        return 0, term_index - color_end
+    if color_index >= term_end:
+        return 1, color_index - term_end
+    return 0, 0
+
+
 def _parse_datetime(s: str) -> float:
-    """ISO datetime 문자열을 unix timestamp로 변환한다."""
+    """ISO datetime 문자열을 unix timestamp로 변환한다.
+
+    오프셋이 없는 입력은 운영 기준인 KST로 해석한다.
+    """
+    try:
+        dt = datetime.fromisoformat(s)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=KST)
+        return dt.timestamp()
+    except ValueError:
+        pass
+
     for fmt in ("%Y-%m-%dT%H:%M:%S", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d"):
         try:
-            dt = datetime.strptime(s, fmt).replace(tzinfo=timezone.utc)
+            dt = datetime.strptime(s, fmt).replace(tzinfo=KST)
             return dt.timestamp()
         except ValueError:
             continue
@@ -281,14 +345,6 @@ def _parse_datetime(s: str) -> float:
 
 
 # ── crop 이미지 서빙 ─────────────────────────────────────────────────
-
-_PRIMARY_CROP_DIR = Path(
-    os.environ.get("APPEARANCE_CROP_DIR", "data/appearance_crops")
-)
-# 하위 호환: 기존 테스트/코드에서 _CROP_DIR monkeypatch를 사용한다.
-_CROP_DIR = _PRIMARY_CROP_DIR
-_LEGACY_CROP_DIR = Path("data/crops")
-_SAFE_FNAME = re.compile(r"^[\w\-]+\.jpg$")
 
 
 @router.get(
@@ -301,17 +357,8 @@ async def get_crop_image(filename: str):
     """저장된 인물 crop JPEG 이미지를 반환한다."""
     if not _SAFE_FNAME.match(filename):
         raise HTTPException(status_code=400, detail="잘못된 파일명")
-    candidate_dirs = [_CROP_DIR]
-    if _LEGACY_CROP_DIR != _CROP_DIR:
-        candidate_dirs.append(_LEGACY_CROP_DIR)
-
-    for crop_dir in candidate_dirs:
-        resolved_dir = crop_dir.resolve()
-        fpath = (crop_dir / filename).resolve()
-        # path traversal 방지
-        if not str(fpath).startswith(str(resolved_dir)):
-            continue
-        if fpath.is_file():
-            return Response(content=fpath.read_bytes(), media_type="image/jpeg")
+    file_path = _find_crop_file(filename)
+    if file_path is not None:
+        return Response(content=file_path.read_bytes(), media_type="image/jpeg")
 
     raise HTTPException(status_code=404, detail="이미지를 찾을 수 없습니다")

@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/marketing-tiktok-strategist.md](../../../../agents/marketing-tiktok-strategist.md).
+Derived from [agents/marketing-tiktok-strategist.md](../../../../tooling/agents/marketing-tiktok-strategist.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

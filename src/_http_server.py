@@ -23,9 +23,10 @@ import json
 import logging
 import os
 import secrets
-from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from socketserver import ThreadingMixIn
+
+from .time_utils import now_kst_iso
 
 logger = logging.getLogger(__name__)
 
@@ -81,6 +82,15 @@ class BaseApiHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(data)
 
+    def _respond_options(self, methods: str, headers: str = "Content-Type") -> None:
+        """CORS preflight 응답을 전송한다."""
+        self.send_response(200)
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", methods)
+        if headers:
+            self.send_header("Access-Control-Allow-Headers", headers)
+        self.end_headers()
+
     def _consume_body(self) -> None:
         """요청 본문을 읽어 버린다.
 
@@ -105,7 +115,7 @@ class BaseApiHandler(BaseHTTPRequestHandler):
         payload = {
             "service": service,
             "status": status,
-            "checked_at": datetime.now(timezone.utc).isoformat(),
+            "checked_at": now_kst_iso(),
         }
         payload.update(extra)
         return payload

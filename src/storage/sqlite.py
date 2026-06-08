@@ -13,6 +13,13 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Generator, Iterable, Optional, Sequence
 
+_DEFAULT_PRAGMAS = (
+    "PRAGMA journal_mode=WAL",
+    "PRAGMA synchronous=NORMAL",
+    "PRAGMA foreign_keys=ON",
+    "PRAGMA busy_timeout=30000",
+)
+
 
 class SQLiteDatabase:
     """프로젝트 표준 SQLite 연결 팩토리."""
@@ -26,15 +33,7 @@ class SQLiteDatabase:
     ) -> None:
         self.path = Path(db_path)
         self.timeout = timeout
-        self.pragmas = tuple(
-            pragmas
-            or (
-                "PRAGMA journal_mode=WAL",
-                "PRAGMA synchronous=NORMAL",
-                "PRAGMA foreign_keys=ON",
-                "PRAGMA busy_timeout=30000",
-            )
-        )
+        self.pragmas = tuple(pragmas or _DEFAULT_PRAGMAS)
         self._schema_lock = threading.Lock()
 
     def connect(self, *, check_same_thread: bool = True) -> sqlite3.Connection:

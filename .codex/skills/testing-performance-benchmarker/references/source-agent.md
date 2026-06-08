@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/testing-performance-benchmarker.md](../../../../agents/testing-performance-benchmarker.md).
+Derived from [agents/testing-performance-benchmarker.md](../../../../tooling/agents/testing-performance-benchmarker.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

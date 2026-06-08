@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/engineering-mobile-app-builder.md](../../../../agents/engineering-mobile-app-builder.md).
+Derived from [agents/engineering-mobile-app-builder.md](../../../../tooling/agents/engineering-mobile-app-builder.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

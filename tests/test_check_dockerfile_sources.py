@@ -15,7 +15,7 @@ def _load_script_module(name: str, relative_path: str):
 
 check_dockerfile_sources = _load_script_module(
     "check_dockerfile_sources",
-    "scripts/check_dockerfile_sources.py",
+    "scripts/health/check_dockerfile_sources.py",
 )
 
 

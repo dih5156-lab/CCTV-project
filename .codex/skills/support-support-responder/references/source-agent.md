@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/support-support-responder.md](../../../../agents/support-support-responder.md).
+Derived from [agents/support-support-responder.md](../../../../tooling/agents/support-support-responder.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

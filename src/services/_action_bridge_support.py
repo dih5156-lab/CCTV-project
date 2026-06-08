@@ -7,23 +7,22 @@ import logging
 import sqlite3
 import time
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
 from threading import Lock
 from typing import Dict, List, Optional, Set, Tuple
 
-from .cctv_metrics import device_commands as _device_commands
-
 from ..canonical_event import (
-    get_payload_event_id,
     get_payload_camera_id,
-    get_payload_display_message,
-    get_payload_event_type,
     get_payload_confidence,
+    get_payload_display_message,
+    get_payload_event_id,
+    get_payload_event_type,
     get_payload_severity,
     get_payload_tts_message,
 )
+from ..time_utils import now_kst_iso
+from .cctv_metrics import device_commands as _device_commands
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +54,9 @@ class SiteConfig:
     alarm_devices: List[AlarmDevice] = field(
         default_factory=lambda: [AlarmDevice.SPEAKER, AlarmDevice.SIGNBOARD]
     )
+    confidence_threshold: Optional[float] = None
+    display_message: str = ""
+    tts_message: str = ""
 
     def to_dict(self) -> Dict:
         return {
@@ -64,10 +66,18 @@ class SiteConfig:
             "camera_ids": self.camera_ids,
             "control_mode": self.control_mode.value,
             "alarm_devices": [device.value for device in self.alarm_devices],
+            "confidence_threshold": self.confidence_threshold,
+            "display_message": self.display_message,
+            "tts_message": self.tts_message,
         }
 
     @classmethod
     def from_dict(cls, data: Dict) -> "SiteConfig":
+        threshold = data.get("confidence_threshold")
+        if threshold in ("", None):
+            threshold = None
+        else:
+            threshold = max(0.0, min(float(threshold), 1.0))
         return cls(
             site_id=data["site_id"],
             site_name=data.get("site_name", ""),
@@ -78,6 +88,9 @@ class SiteConfig:
                 AlarmDevice(device)
                 for device in data.get("alarm_devices", ["speaker", "signboard"])
             ],
+            confidence_threshold=threshold,
+            display_message=str(data.get("display_message", "") or ""),
+            tts_message=str(data.get("tts_message", "") or ""),
         )
 
 
@@ -147,7 +160,7 @@ class _EventRepo:
                     """,
                     (
                         event_id,
-                        datetime.now(timezone.utc).isoformat(),
+                        now_kst_iso(),
                         topic,
                         get_payload_camera_id(payload),
                         get_payload_event_type(payload),
@@ -184,27 +197,28 @@ class _EventRepo:
 
         items: List[Dict] = []
         for row in rows:
-            payload = {}
-            try:
-                payload = json.loads(row["payload_json"])
-            except (TypeError, json.JSONDecodeError):
-                payload = {}
-            items.append(
-                {
-                    "id": row["id"],
-                    "event_id": row["event_id"],
-                    "received_at": row["received_at"],
-                    "topic": row["topic"],
-                    "camera_id": row["camera_id"],
-                    "event_type": row["event_type"],
-                    "confidence": row["confidence"],
-                    "severity": row["severity"],
-                    "alarm_played": bool(row["alarm_played"]),
-                    "http_sent": bool(row["http_sent"]),
-                    "payload": payload,
-                }
-            )
+            items.append(self._row_to_dict(row))
         return items
+
+    @staticmethod
+    def _row_to_dict(row: sqlite3.Row) -> Dict:
+        try:
+            payload = json.loads(row["payload_json"])
+        except (TypeError, json.JSONDecodeError):
+            payload = {}
+        return {
+            "id": row["id"],
+            "event_id": row["event_id"],
+            "received_at": row["received_at"],
+            "topic": row["topic"],
+            "camera_id": row["camera_id"],
+            "event_type": row["event_type"],
+            "confidence": row["confidence"],
+            "severity": row["severity"],
+            "alarm_played": bool(row["alarm_played"]),
+            "http_sent": bool(row["http_sent"]),
+            "payload": payload,
+        }
 
 
 class _SiteRegistry:
@@ -216,6 +230,10 @@ class _SiteRegistry:
         initial_sites: Optional[List[SiteConfig]] = None,
     ) -> None:
         self.default_mode: ControlMode = default_mode
+        self.default_alarm_devices: List[AlarmDevice] = list(AlarmDevice)
+        self.default_confidence_threshold: Optional[float] = None
+        self.default_display_message: str = ""
+        self.default_tts_message: str = ""
         self._sites: Dict[str, SiteConfig] = {
             site.site_id: site for site in (initial_sites or [])
         }
@@ -259,6 +277,53 @@ class _SiteRegistry:
             self.default_mode = mode
             logger.info("전역 기본 모드 변경 → %s", mode.value)
 
+    def default_settings(self) -> Dict:
+        return {
+            "mode": self.default_mode.value,
+            "alarm_devices": [device.value for device in self.default_alarm_devices],
+            "confidence_threshold": self.default_confidence_threshold,
+            "display_message": self.default_display_message,
+            "tts_message": self.default_tts_message,
+        }
+
+    def set_default_action_settings(
+        self,
+        *,
+        alarm_devices: Optional[List[AlarmDevice]] = None,
+        confidence_threshold: Optional[float] = None,
+        display_message: Optional[str] = None,
+        tts_message: Optional[str] = None,
+    ) -> None:
+        if alarm_devices is not None:
+            self.default_alarm_devices = alarm_devices
+        self.default_confidence_threshold = confidence_threshold
+        if display_message is not None:
+            self.default_display_message = display_message
+        if tts_message is not None:
+            self.default_tts_message = tts_message
+
+    def resolve_alarm_devices(self, camera_id: str) -> List[AlarmDevice]:
+        site = self.find_by_camera(camera_id)
+        return site.alarm_devices if site else self.default_alarm_devices
+
+    def resolve_action_settings(self, camera_id: str) -> Dict:
+        site = self.find_by_camera(camera_id)
+        if site:
+            return {
+                "site": site,
+                "site_id": site.site_id,
+                "confidence_threshold": site.confidence_threshold,
+                "display_message": site.display_message,
+                "tts_message": site.tts_message,
+            }
+        return {
+            "site": None,
+            "site_id": None,
+            "confidence_threshold": self.default_confidence_threshold,
+            "display_message": self.default_display_message,
+            "tts_message": self.default_tts_message,
+        }
+
     def resolve_mode(self, camera_id: str) -> Tuple[ControlMode, Optional[str]]:
         site = self.find_by_camera(camera_id)
         if site:
@@ -276,7 +341,7 @@ class _SiteRegistry:
             self._pending[event_id] = {
                 "payload": payload,
                 "topic": topic,
-                "queued_at": datetime.now(timezone.utc).isoformat(),
+                "queued_at": now_kst_iso(),
                 "site_id": site_id,
             }
         logger.info(
@@ -300,7 +365,10 @@ class _SiteRegistry:
                     "site_id": info.get("site_id"),
                     "camera_id": get_payload_camera_id(info["payload"]),
                     "event_type": get_payload_event_type(info["payload"]),
+                    "confidence": get_payload_confidence(info["payload"]),
                     "severity": get_payload_severity(info["payload"]),
+                    "display_message": get_payload_display_message(info["payload"]),
+                    "tts_message": get_payload_tts_message(info["payload"]),
                     "topic": info.get("topic"),
                 }
                 for event_id, info in self._pending.items()
@@ -354,7 +422,17 @@ class _AlarmCoordinator:
             or severity == "critical"
         )
 
-    def try_acquire_slot(self, camera_id: str, event_type: str) -> bool:
+    @staticmethod
+    def is_demo_event(payload: Dict) -> bool:
+        metadata = payload.get("metadata")
+        if not isinstance(metadata, dict):
+            return False
+        return metadata.get("demo") is True or metadata.get("source") == "public-demo-ui"
+
+    def try_acquire_slot(self, camera_id: str, event_type: str, *, force: bool = False) -> bool:
+        if force:
+            logger.info("데모 이벤트 - 알람 쿨다운 우회: camera=%s type=%s", camera_id, event_type)
+            return True
         now = time.time()
         with self._lock:
             block_until = self._block_until.get(camera_id, 0.0)
@@ -414,7 +492,7 @@ class _ActionExecutor:
 
         alarm_played = False
         if self._alarm.should_alarm(topic, payload) and self._alarm.try_acquire_slot(
-            camera_id, event_type
+            camera_id, event_type, force=self._alarm.is_demo_event(payload)
         ):
             devices = self._resolve_devices(camera_id)
 
@@ -440,7 +518,9 @@ class _ActionExecutor:
                 )
                 if signboard_ok:
                     alarm_played = True
-                _device_commands.labels(device="signboard", status="ok" if signboard_ok else "skip").inc()
+                _device_commands.labels(
+                    device="signboard", status="ok" if signboard_ok else "skip"
+                ).inc()
 
             if self._alarm_device_enum.SIREN in devices:
                 siren_ok = self._siren.trigger(event_type, camera_id)

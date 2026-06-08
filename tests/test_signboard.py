@@ -3,24 +3,21 @@ test_signboard.py — SignboardDevice / _DabitClient / 헬퍼 함수 단위 테�
 
 전략: TCP 소켓을 mock 처리하여 실제 전광판 없이 Dabit 프로토콜 로직을 검증한다.
 """
-import socket
-import time
 from unittest.mock import MagicMock, patch
 
 import pytest
 
 from src.devices.signboard import (
+    CLASS_COLOR_MAP,
     SignboardConfig,
     SignboardDevice,
-    _DabitClient,
     _buf_context,
     _buf_title,
     _center_pad,
+    _DabitClient,
     _display_width,
     build_display_text,
-    CLASS_COLOR_MAP,
 )
-
 
 # ---------------------------------------------------------------------------
 # 헬퍼 함수 테스트

@@ -3,15 +3,12 @@
 from __future__ import annotations
 
 import asyncio
-import os
 import sqlite3
-import tempfile
 import time
 from pathlib import Path
 
 import httpx
 import pytest
-
 
 # ── AppearanceLog 단위 테스트 ────────────────────────────────────────
 
@@ -151,8 +148,8 @@ class TestSearchAPI:
 
     @pytest.fixture(autouse=True)
     def _setup(self, tmp_path: Path, monkeypatch):
-        from src.services.appearance_log import AppearanceLog
         from src.api.v1 import search as search_mod
+        from src.services.appearance_log import AppearanceLog
 
         self.db_path = str(tmp_path / "api_test.db")
         self.log = AppearanceLog(self.db_path)
@@ -204,6 +201,15 @@ class TestSearchAPI:
         assert body["items"][0]["upper_color"] == "black"
         assert body["items"][0]["lower_color"] == "red"
 
+    def test_search_naive_time_range_is_interpreted_as_kst(self):
+        self.log.insert(camera_id="c", track_id=1, timestamp=10.0)
+
+        resp = self.client.get(
+            "/api/v1/search?time_from=1970-01-01T09:00:10&time_to=1970-01-01T09:00:11"
+        )
+        assert resp.status_code == 200
+        assert resp.json()["total"] == 1
+
     def test_search_with_results(self):
         self.log.insert(
             camera_id="cam01",
@@ -231,7 +237,7 @@ class TestSearchAPI:
         self.log.insert(camera_id="c", track_id=1, timestamp=1000.0)
         self.log.insert(camera_id="c", track_id=2, timestamp=2000.0)
 
-        resp = self.client.get("/api/v1/search?time_from=1970-01-01T00:16:00&time_to=1970-01-01T00:17:00")
+        resp = self.client.get("/api/v1/search?time_from=1970-01-01T09:16:00&time_to=1970-01-01T09:17:00")
         assert resp.status_code == 200
         body = resp.json()
         assert body["total"] == 1
@@ -262,6 +268,7 @@ class TestSearchAPI:
         assert resp.status_code in (400, 404, 422)
 
     def test_search_result_has_crop_url(self):
+        (self.crop_dir / "cam01_1_1000.jpg").write_bytes(b"\xff\xd8\xff\xe0fake")
         self.log.insert(
             camera_id="cam01",
             track_id=1,
@@ -271,6 +278,17 @@ class TestSearchAPI:
         resp = self.client.get("/api/v1/search")
         body = resp.json()
         assert body["items"][0]["crop_url"] == "/api/v1/search/crops/cam01_1_1000.jpg"
+
+    def test_search_result_hides_deleted_crop_url(self):
+        self.log.insert(
+            camera_id="cam01",
+            track_id=1,
+            crop_path="data/crops/deleted.jpg",
+            timestamp=1000.0,
+        )
+        resp = self.client.get("/api/v1/search")
+        body = resp.json()
+        assert body["items"][0]["crop_url"] is None
 
     def test_duplicate_event_id_is_ignored(self):
         event_id = "evt_same"

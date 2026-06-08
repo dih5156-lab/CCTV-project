@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/design-image-prompt-engineer.md](../../../../agents/design-image-prompt-engineer.md).
+Derived from [agents/design-image-prompt-engineer.md](../../../../tooling/agents/design-image-prompt-engineer.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

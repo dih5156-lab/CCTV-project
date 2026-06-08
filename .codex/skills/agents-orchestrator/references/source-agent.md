@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/agents-orchestrator.md](../../../../agents/agents-orchestrator.md).
+Derived from [agents/agents-orchestrator.md](../../../../tooling/agents/agents-orchestrator.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

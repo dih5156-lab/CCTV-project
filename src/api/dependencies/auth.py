@@ -27,13 +27,15 @@ def _get_configured_key() -> str | None:
     return os.environ.get("PUBLIC_API_KEY") or None
 
 
+def _get_env_bool(name: str, default: bool = False) -> bool:
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
 def _allow_query_api_key() -> bool:
-    return os.environ.get("PUBLIC_API_ALLOW_QUERY_KEY", "0").strip().lower() in {
-        "1",
-        "true",
-        "yes",
-        "on",
-    }
+    return _get_env_bool("PUBLIC_API_ALLOW_QUERY_KEY", default=False)
 
 
 async def verify_api_key(

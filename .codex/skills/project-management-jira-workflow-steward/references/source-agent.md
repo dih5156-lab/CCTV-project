@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/project-management-jira-workflow-steward.md](../../../../agents/project-management-jira-workflow-steward.md).
+Derived from [agents/project-management-jira-workflow-steward.md](../../../../tooling/agents/project-management-jira-workflow-steward.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

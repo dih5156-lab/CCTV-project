@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/unity-architect.md](../../../../agents/unity-architect.md).
+Derived from [agents/unity-architect.md](../../../../tooling/agents/unity-architect.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

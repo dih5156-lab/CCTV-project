@@ -11,14 +11,13 @@ test_processor_unit.py — VideoProcessor 내부 헬퍼 단위 테스트
 """
 
 import time
-
-import pytest
 from threading import Event
 from unittest.mock import MagicMock, patch
 
-from src.core.processor import _CameraRegistry, VideoProcessor
-from src.utils.zone_detection import ZoneEvent, ZoneEventType
+import pytest
 
+from src.core.processor import VideoProcessor, _CameraRegistry
+from src.utils.zone_detection import ZoneEvent, ZoneEventType
 
 # ---------------------------------------------------------------------------
 # 공통 헬퍼

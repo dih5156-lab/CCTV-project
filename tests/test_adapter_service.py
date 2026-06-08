@@ -1,9 +1,21 @@
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
 
 pytest.importorskip("redis")
 
 from src.edgex.adapter_service import EdgeXDeviceAdapterService
+
+
+def test_on_connect_accepts_paho_v2_extra_args():
+    """Paho MQTT v2 reason properties 인자가 추가되어도 구독한다."""
+    service = EdgeXDeviceAdapterService()
+    client = MagicMock()
+
+    service._on_connect(client, None, {}, 0, MagicMock())
+
+    client.subscribe.assert_any_call("cctv/ai/events/#", qos=0)
+    client.subscribe.assert_any_call("aiot/rules/sensor/#", qos=0)
 
 
 def test_replay_outbox_once_replays_pending_events():

@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/design-inclusive-visuals-specialist.md](../../../../agents/design-inclusive-visuals-specialist.md).
+Derived from [agents/design-inclusive-visuals-specialist.md](../../../../tooling/agents/design-inclusive-visuals-specialist.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

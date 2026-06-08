@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/paid-media-auditor.md](../../../../agents/paid-media-auditor.md).
+Derived from [agents/paid-media-auditor.md](../../../../tooling/agents/paid-media-auditor.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

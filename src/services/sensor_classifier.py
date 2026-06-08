@@ -30,18 +30,33 @@ def extract_sensor_data(payload: dict[str, Any]) -> dict[str, Any]:
     return {}
 
 
+def _risk(
+    status: str,
+    severity: str,
+    event_type: Optional[str],
+    reason: Optional[str],
+) -> dict[str, Optional[str]]:
+    return {
+        "status": status,
+        "severity": severity,
+        "event_type": event_type,
+        "reason": reason,
+    }
+
+
 def classify_sensor_payload(payload: dict[str, Any]) -> dict[str, Optional[str]]:
     """Normalize TLV/AIoT sensor values into a dashboard/action risk state."""
     data = extract_sensor_data(payload)
     event_type = str(payload.get("type") or payload.get("event_type") or "").strip()
     severity = str(payload.get("severity") or "").strip().lower()
     if event_type:
-        return {
-            "status": "alert" if severity in {"critical", "warning", "warn"} else "normal",
-            "severity": "warning" if severity == "warn" else (severity or "normal"),
-            "event_type": event_type,
-            "reason": str(payload.get("reason") or event_type),
-        }
+        normalized_severity = "warning" if severity == "warn" else (severity or "normal")
+        return _risk(
+            "alert" if severity in {"critical", "warning", "warn"} else "normal",
+            normalized_severity,
+            event_type,
+            str(payload.get("reason") or event_type),
+        )
 
     temperature = as_float(data.get("temperature") or data.get("temp"))
     angle_x = abs(as_float(data.get("angle_x") or data.get("tilt_x") or data.get("x_angle")) or 0.0)
@@ -50,24 +65,15 @@ def classify_sensor_payload(payload: dict[str, Any]) -> dict[str, Optional[str]]
 
     if temperature is not None and temperature >= 50.0:
         severity = "critical" if temperature >= 70.0 else "warning"
-        return {
-            "status": "alert",
-            "severity": severity,
-            "event_type": "temperature_alert",
-            "reason": f"temperature={temperature:g} >= {'70' if severity == 'critical' else '50'}",
-        }
+        threshold = "70" if severity == "critical" else "50"
+        return _risk(
+            "alert",
+            severity,
+            "temperature_alert",
+            f"temperature={temperature:g} >= {threshold}",
+        )
     if max(angle_x, angle_y) >= 30.0:
-        return {
-            "status": "alert",
-            "severity": "warning",
-            "event_type": "tilt_alert",
-            "reason": f"tilt={max(angle_x, angle_y):g} >= 30",
-        }
+        return _risk("alert", "warning", "tilt_alert", f"tilt={max(angle_x, angle_y):g} >= 30")
     if event_code is not None and event_code != 0:
-        return {
-            "status": "alert",
-            "severity": "warning",
-            "event_type": "sensor_event",
-            "reason": f"event_code={event_code:g}",
-        }
-    return {"status": "normal", "severity": "normal", "event_type": None, "reason": None}
+        return _risk("alert", "warning", "sensor_event", f"event_code={event_code:g}")
+    return _risk("normal", "normal", None, None)

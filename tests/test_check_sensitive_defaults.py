@@ -15,7 +15,7 @@ def _load_script_module(name: str, relative_path: str):
 
 check_sensitive_defaults = _load_script_module(
     "check_sensitive_defaults",
-    "scripts/check_sensitive_defaults.py",
+    "scripts/health/check_sensitive_defaults.py",
 )
 
 
@@ -33,6 +33,10 @@ def test_non_empty_secret_defaults_are_rejected():
 
 def test_jetson_example_is_checked_for_sensitive_defaults():
     assert Path(".env.jetson.example") in check_sensitive_defaults.CHECK_FILES
+
+
+def test_local_jetson_runtime_env_is_not_checked_as_shared_config():
+    assert Path(".env.jetson") not in check_sensitive_defaults.CHECK_FILES
 
 
 def test_wildcard_cors_default_is_rejected(tmp_path, monkeypatch):

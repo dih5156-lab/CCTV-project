@@ -16,7 +16,7 @@ def _load_script_module(name: str, relative_path: str):
 
 check_deployment_readiness = _load_script_module(
     "check_deployment_readiness",
-    "scripts/check_deployment_readiness.py",
+    "scripts/health/check_deployment_readiness.py",
 )
 
 

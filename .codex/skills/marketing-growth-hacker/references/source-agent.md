@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/marketing-growth-hacker.md](../../../../agents/marketing-growth-hacker.md).
+Derived from [agents/marketing-growth-hacker.md](../../../../tooling/agents/marketing-growth-hacker.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

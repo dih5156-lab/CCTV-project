@@ -54,7 +54,7 @@ class CCTVDeviceService(_OutboxMixin, _HttpMixin, _PayloadMixin, _PublisherMixin
         self.message_bus_type = str(config.get("messageBusType", "redis")).lower()
         self.enable_rest_event_post = self._to_bool(config.get("enableRestEventPost", False))
         self.enable_store_and_forward = self._to_bool(config.get("enableStoreAndForward", True))
-        self.outbox_db_path = Path(config.get("outboxDbPath", "data/event_outbox.db"))
+        self.outbox_db_path = Path(config.get("outboxDbPath", "data/runtime/event_outbox.db"))
         self.outbox_flush_batch_size = int(config.get("outboxFlushBatchSize", 100))
         self._redis_state = PublisherConnectionState()
         self._mqtt_state = PublisherConnectionState()

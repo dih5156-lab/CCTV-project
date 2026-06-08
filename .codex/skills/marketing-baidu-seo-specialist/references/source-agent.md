@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/marketing-baidu-seo-specialist.md](../../../../agents/marketing-baidu-seo-specialist.md).
+Derived from [agents/marketing-baidu-seo-specialist.md](../../../../tooling/agents/marketing-baidu-seo-specialist.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

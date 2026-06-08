@@ -21,9 +21,9 @@ import logging
 import os
 import re
 import time
-from dataclasses import dataclass, field, asdict, replace
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from queue import Empty, Full, Queue
+from queue import Empty, Queue
 from threading import Event, Lock, Thread
 from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
 
@@ -33,20 +33,20 @@ from ..config import AppConfig
 from ..protocols.mqtt_publisher import MqttEventPublisher
 from ..utils.camera_input import RTSPCamera
 from ..utils.dataset_collector import DatasetCollector
+from ..utils.visualizer import draw_events
 from ..utils.zone_detection import ZoneEvent, ZoneManager
 from ..utils.zone_drawer import ZoneDrawer
+from ._camera_registry import _CameraRegistry
 from ._display_event_mapper import DisplayEventMapper
 from ._display_grid import _DisplayGrid
-from ..utils.visualizer import draw_events
-from ._camera_registry import _CameraRegistry
 from ._inference_pipeline import _InferencePipeline
-from .ai.analyzer import AIAnalyzer
 from .ai._yolo_helpers import has_dynamic_input_shape
+from .ai.analyzer import AIAnalyzer
 from .base_processor import BaseProcessor
 from .detection_snapshot_store import DetectionSnapshotStore
 from .event_dispatcher import EventDispatcher
 from .event_filters import CumulativeViolationFilter, TrackManager
-from .events import DetectionEvent, EventType
+from .events import DetectionEvent
 
 logger = logging.getLogger(__name__)
 
@@ -256,7 +256,6 @@ class _EventDebouncer:
             logger.error("로컬 저장 실패: %s", exc)
 
 from ._adaptive_governor import _AdaptiveGovernor  # noqa: F401 — 하위 호환 재내보내기
-
 
 # ===========================================================================
 # VideoProcessor  (공개 API)
@@ -1246,8 +1245,8 @@ class VideoProcessor(BaseProcessor):
         if frame is None:
             return None
 
-        from pathlib import Path as _Path
         from datetime import datetime as _dt
+        from pathlib import Path as _Path
 
         safe_type = re.sub(r"[^\w\-]", "_", event_type)
         now = _dt.now()

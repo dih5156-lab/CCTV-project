@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/design-whimsy-injector.md](../../../../agents/design-whimsy-injector.md).
+Derived from [agents/design-whimsy-injector.md](../../../../tooling/agents/design-whimsy-injector.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

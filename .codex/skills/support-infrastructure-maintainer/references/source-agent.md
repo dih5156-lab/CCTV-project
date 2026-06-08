@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/support-infrastructure-maintainer.md](../../../../agents/support-infrastructure-maintainer.md).
+Derived from [agents/support-infrastructure-maintainer.md](../../../../tooling/agents/support-infrastructure-maintainer.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

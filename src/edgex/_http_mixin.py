@@ -8,7 +8,7 @@ EdgeX Foundry REST API 와의 통신에 필요한 모든 HTTP 유틸리티를 �
 
 import asyncio
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 import requests
 

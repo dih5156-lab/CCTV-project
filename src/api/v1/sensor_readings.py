@@ -5,27 +5,37 @@ from __future__ import annotations
 import json
 import logging
 from collections import deque
-from datetime import datetime, timezone
 from typing import Any, Optional
 
 import httpx
 from fastapi import APIRouter, Body, Depends, Query, Request, status
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
+from ...services.sensor_classifier import (
+    classify_sensor_payload as _classify_sensor_payload,
+)
+from ...services.sensor_classifier import (
+    extract_sensor_data as _extract_data,
+)
+from ...time_utils import coerce_timestamp_seconds, now_kst_iso
 from ..dependencies._settings import (
     ACTION_LAYER_URL as _ACTION_LAYER_URL,
+)
+from ..dependencies._settings import (
     ALERT_API_URL as _ALERT_API_URL,
+)
+from ..dependencies._settings import (
     INTERNAL_SERVICE_TOKEN as _INTERNAL_TOKEN,
+)
+from ..dependencies._settings import (
     SENSOR_DEVICE_MAP_PATH as _SENSOR_DEVICE_MAP,
+)
+from ..dependencies._settings import (
     SENSOR_LOG_PATH as _SENSOR_LOG,
 )
 from ..dependencies.auth import verify_api_key
 from ..dependencies.rate_limit import limiter
 from ..schemas.common import BaseResponse, PaginatedResponse, success_response
-from ...services.sensor_classifier import (
-    classify_sensor_payload as _classify_sensor_payload,
-    extract_sensor_data as _extract_data,
-)
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/sensor-readings", tags=["sensor-readings"])
@@ -70,8 +80,8 @@ class SensorReadingOut(BaseModel):
     device_name: Optional[str] = None
     dev_eui: Optional[str] = None
     table: Optional[str] = None
-    data: dict[str, Any] = {}
-    payload: dict[str, Any] = {}
+    data: dict[str, Any] = Field(default_factory=dict)
+    payload: dict[str, Any] = Field(default_factory=dict)
     status: str = "normal"
     severity: str = "normal"
     event_type: Optional[str] = None
@@ -88,34 +98,9 @@ class SensorReadingAccepted(BaseModel):
     action_dispatched: bool = False
 
 
-
-def _coerce_timestamp(value: object, fallback: object = None) -> float:
-    for candidate in (value, fallback):
-        if candidate in (None, ""):
-            continue
-        if isinstance(candidate, (int, float)):
-            numeric = float(candidate)
-            if abs(numeric) >= 1e11:
-                numeric /= 1000.0
-            return numeric
-        if isinstance(candidate, str):
-            try:
-                numeric = float(candidate)
-                if abs(numeric) >= 1e11:
-                    numeric /= 1000.0
-                return numeric
-            except ValueError:
-                try:
-                    return datetime.fromisoformat(candidate.replace("Z", "+00:00")).timestamp()
-                except ValueError:
-                    continue
-    return 0.0
-
-
 def _payload_from_entry(entry: dict[str, Any]) -> dict[str, Any]:
     payload = entry.get("payload", entry)
     return payload if isinstance(payload, dict) else {}
-
 
 
 # 장비 이름 매핑은 프로세스 기동 중에 바뀌지 않으므로 한 번만 읽고 캐시한다.
@@ -172,43 +157,67 @@ def _lookup_device_name(device_id: Optional[str], dev_eui: Optional[str]) -> Opt
     return None
 
 
-def _normalize_entry(entry: dict[str, Any]) -> SensorReadingOut:
-    payload = _payload_from_entry(entry)
-    data = _extract_data(payload)
-    risk = _classify_sensor_payload(payload)
-    device_info = payload.get("device") if isinstance(payload.get("device"), dict) else {}
-    table = (
+def _payload_device_info(payload: dict[str, Any]) -> dict[str, Any]:
+    device_info = payload.get("device")
+    return device_info if isinstance(device_info, dict) else {}
+
+
+def _payload_table(payload: dict[str, Any], data: dict[str, Any]) -> Optional[str]:
+    value = (
         payload.get("table")
         or payload.get("tableName")
         or data.get("tableName")
         or payload.get("type")
     )
-    received_at = entry.get("receivedAt") or entry.get("received_at") or payload.get("received_at")
-    dev_eui = (
+    return str(value) if value else None
+
+
+def _payload_dev_eui(payload: dict[str, Any], device_info: dict[str, Any]) -> Optional[str]:
+    value = (
         payload.get("dev_eui")
         or device_info.get("dev_eui")
         or payload.get("deviceEui")
         or payload.get("devEui")
     )
-    device_id = (
+    return str(value) if value else None
+
+
+def _payload_device_id(
+    payload: dict[str, Any],
+    device_info: dict[str, Any],
+    dev_eui: Optional[str],
+) -> Optional[str]:
+    value = (
         payload.get("device_id")
         or device_info.get("device_id")
         or device_info.get("camera_id")
         or dev_eui
     )
+    return str(value) if value else None
+
+
+def _normalize_entry(entry: dict[str, Any]) -> SensorReadingOut:
+    payload = _payload_from_entry(entry)
+    data = _extract_data(payload)
+    risk = _classify_sensor_payload(payload)
+    device_info = _payload_device_info(payload)
+    table = _payload_table(payload, data)
+    received_at = entry.get("receivedAt") or entry.get("received_at") or payload.get("received_at")
+    dev_eui = _payload_dev_eui(payload, device_info)
+    device_id = _payload_device_id(payload, device_info, dev_eui)
     return SensorReadingOut(
         received_at=str(received_at) if received_at else None,
-        timestamp=_coerce_timestamp(
+        timestamp=coerce_timestamp_seconds(
             payload.get("received_at") or payload.get("timestamp") or payload.get("occurred_at"),
             received_at,
         ),
-        device_id=str(device_id) if device_id else None,
+        device_id=device_id,
         device_name=_lookup_device_name(
-            str(device_id) if device_id else None,
-            str(dev_eui) if dev_eui else None,
+            device_id,
+            dev_eui,
         ),
-        dev_eui=str(dev_eui) if dev_eui else None,
-        table=str(table) if table else None,
+        dev_eui=dev_eui,
+        table=table,
         data=data,
         payload=payload,
         status=risk["status"] or "normal",
@@ -221,7 +230,7 @@ def _normalize_entry(entry: dict[str, Any]) -> SensorReadingOut:
 def _append_fallback(payload: dict[str, Any]) -> None:
     try:
         _SENSOR_LOG.parent.mkdir(parents=True, exist_ok=True)
-        entry = {"receivedAt": datetime.now(timezone.utc).isoformat(), "payload": payload}
+        entry = {"receivedAt": now_kst_iso(), "payload": payload}
         with _SENSOR_LOG.open("a", encoding="utf-8") as file:
             file.write(json.dumps(entry, ensure_ascii=False) + "\n")
     except OSError as exc:

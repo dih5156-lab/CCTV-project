@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/marketing-china-ecommerce-operator.md](../../../../agents/marketing-china-ecommerce-operator.md).
+Derived from [agents/marketing-china-ecommerce-operator.md](../../../../tooling/agents/marketing-china-ecommerce-operator.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

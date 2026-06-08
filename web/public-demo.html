@@ -400,6 +400,68 @@
       min-height: 86px;
     }
     .flow-step strong { display: block; margin-bottom: 8px; }
+    .control-policy {
+      display: grid;
+      gap: 12px;
+    }
+    .mode-options {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .mode-card {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 10px;
+      align-items: flex-start;
+      min-height: 82px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #121720;
+      padding: 12px;
+      cursor: pointer;
+    }
+    .mode-card input { margin-top: 3px; }
+    .mode-card strong { display: block; margin-bottom: 4px; }
+    .mode-card span {
+      color: var(--muted);
+      line-height: 1.4;
+      font-size: 12px;
+    }
+    .mode-card:has(input:checked) {
+      border-color: rgba(95, 140, 255, .7);
+      background: rgba(95, 140, 255, .12);
+    }
+    .device-checks {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .device-check {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 10px;
+      align-items: flex-start;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #11151c;
+      padding: 11px;
+    }
+    .device-check strong { display: block; margin-bottom: 3px; }
+    .device-check span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+    .policy-note {
+      border: 1px solid rgba(243, 178, 60, .4);
+      border-radius: 8px;
+      background: rgba(243, 178, 60, .08);
+      padding: 11px 12px;
+      color: #ffe1a8;
+      line-height: 1.45;
+      font-size: 12px;
+    }
     .camera-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -755,6 +817,7 @@
       .connection-grid { grid-template-columns: 1fr 1fr; }
       .grid.stats, .grid.two, .grid.three, .flow, .form-grid { grid-template-columns: 1fr; }
       .form-grid[style], .model-switches { grid-template-columns: 1fr 1fr !important; }
+      .mode-options, .device-checks { grid-template-columns: 1fr; }
       .snapshot-detail { grid-template-columns: 1fr; }
       .json-panel { position: static; }
       table { min-width: 760px; }
@@ -977,7 +1040,6 @@
                 <div class="field"><label>카메라</label><select id="event-camera"><option value="">전체</option></select></div>
                 <div class="field"><label>이벤트 타입</label><select id="event-type"><option value="">전체</option><option value="fall_detected">낙상</option><option value="head">헬멧 미착용</option><option value="helmet">헬멧</option><option value="intrusion">침입</option><option value="zone_entered">위험구역 진입</option><option value="zone_dwelling">위험구역 체류</option><option value="zone_object_detected">위험구역 객체</option><option value="crowd_warning">인파 경고</option><option value="face_recognized">얼굴 인식</option><option value="face_unknown">미등록 얼굴</option><option value="person">사람</option></select></div>
                 <div class="field"><label>개수</label><select id="event-limit"><option>20</option><option selected>50</option><option>100</option><option>200</option></select></div>
-                <div class="field"><label>데모 이벤트</label><button class="warn" id="send-demo-event">전송</button></div>
               </div>
             </div>
             <div class="scroll">
@@ -988,7 +1050,7 @@
             </div>
           </div>
           <div class="panel">
-            <div class="panel-head"><h2>이벤트 주입</h2><span class="badge warn">Demo</span></div>
+            <div class="panel-head"><h2>이벤트 주입</h2><button class="warn" id="send-demo-event">전송</button></div>
             <div class="panel-body">
               <div class="form-grid" style="grid-template-columns:1fr 1fr">
                 <div class="field"><label>유형</label><select id="demo-type"><option value="fall_detected">낙상 감지</option><option value="head">헬멧 미착용</option><option value="intrusion">위험구역 침입</option><option value="face_unknown">미등록 얼굴</option><option value="sensor_temperature">온도 이상</option></select></div>
@@ -1047,7 +1109,7 @@
             <div class="panel-head"><h2>외형 조건 등록</h2><button class="primary" id="create-condition">등록</button></div>
             <div class="panel-body">
               <div class="form-grid" style="grid-template-columns:1fr 1fr">
-                <div class="field"><label>조건 이름</label><input id="cond-name" value="검은 상의 작업자"></div>
+                <div class="field"><label>조건 이름</label><input id="cond-name" placeholder="예) 검은 상의 작업자"></div>
                 <div class="field"><label>상의 색상</label><select id="cond-upper"><option value="">선택 안 함</option></select></div>
                 <div class="field"><label>하의 색상</label><select id="cond-lower"><option value="">선택 안 함</option></select></div>
                 <div class="field"><label>헬멧</label><select id="cond-helmet"><option value="">상관 없음</option><option value="true">착용</option><option value="false">미착용</option></select></div>
@@ -1063,7 +1125,7 @@
             <div class="panel-body">
               <div class="field" style="margin-bottom:8px">
                 <label>문장 검색</label>
-                <input id="search-q" value="검정색 상의 빨간색 하의 사람" placeholder="예: 검정색 상의, 빨간색 하의 입은 사람">
+                <input id="search-q" placeholder="예) 검정색 상의 빨간색 하의 사람">
               </div>
               <div class="form-grid">
                 <div class="field"><label>카메라</label><select id="search-camera"><option value="">전체</option></select></div>
@@ -1221,12 +1283,51 @@
       <section id="tab-control" class="tab" role="tabpanel">
         <div class="grid two">
           <div class="panel">
-            <div class="panel-head"><h2>제어 모드</h2><button id="load-mode">조회</button></div>
+            <div class="panel-head"><h2>모드 변경</h2><button id="load-mode">조회</button></div>
             <div class="panel-body">
-              <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr">
-                <div class="field"><label>현재 모드</label><div class="badge blue" id="control-mode">-</div></div>
-                <div class="field"><label>변경</label><select id="mode-select"><option value="auto">auto</option><option value="manual">manual</option></select></div>
-                <div class="field"><label>적용</label><button class="primary" id="set-mode">모드 변경</button></div>
+              <div class="control-policy">
+                <div class="form-grid" style="grid-template-columns:1fr 1fr auto">
+                  <div class="field">
+                    <label>적용 대상</label>
+                    <select id="control-site">
+                      <option value="">기본 모드</option>
+                    </select>
+                  </div>
+                  <div class="field"><label>현재 적용</label><div class="badge blue" id="control-mode">-</div></div>
+                  <div class="field"><label>저장</label><button class="primary" id="set-mode">모드 적용</button></div>
+                </div>
+                <div class="mode-options" role="radiogroup" aria-label="제어 모드">
+                  <label class="mode-card">
+                    <input type="radio" name="mode-select" value="auto" checked>
+                    <span><strong>자동모드</strong>탐지 이벤트가 알람 조건에 맞으면 선택된 출력 장치를 즉시 실행합니다.</span>
+                  </label>
+                  <label class="mode-card">
+                    <input type="radio" name="mode-select" value="manual">
+                    <span><strong>수동모드</strong>이벤트를 승인 대기 목록에 쌓고, 운영자가 승인한 건만 장치를 실행합니다.</span>
+                  </label>
+                </div>
+                <div>
+                  <div class="stat-label" style="margin-bottom:8px">출력 장치 선택</div>
+                  <div class="device-checks">
+                    <label class="device-check">
+                      <input type="checkbox" id="policy-speaker" value="speaker">
+                      <span><strong>스피커</strong>음성 안내 또는 TTS 방송을 실행합니다.</span>
+                    </label>
+                    <label class="device-check">
+                      <input type="checkbox" id="policy-signboard" value="signboard">
+                      <span><strong>전광판</strong>현장 표시 문구를 출력합니다.</span>
+                    </label>
+                    <label class="device-check">
+                      <input type="checkbox" id="policy-siren" value="siren">
+                      <span><strong>경광등</strong>시각/경보 알람을 트리거합니다.</span>
+                    </label>
+                  </div>
+                </div>
+                <div class="form-grid" style="grid-template-columns:1fr 1fr">
+                  <div class="field"><label>신뢰도 임계값</label><input id="policy-confidence" value="0.80" inputmode="decimal"></div>
+                  <div class="field"><label>출력 상세내용</label><input id="policy-message" placeholder="예) 안전모 미착용 작업자 확인 바랍니다."></div>
+                </div>
+                <div class="policy-note">장치 선택, 신뢰도 임계값, 출력 상세내용은 기본 모드와 사이트별 모드에 모두 저장됩니다.</div>
               </div>
             </div>
           </div>
@@ -1245,8 +1346,8 @@
             <div class="panel-head"><h2>승인 대기 이벤트</h2><button id="load-pending">조회</button></div>
             <div class="scroll">
               <table>
-                <thead><tr><th>시각</th><th>유형</th><th>카메라</th><th>등급</th><th>처리</th></tr></thead>
-                <tbody id="pending-rows"><tr><td colspan="5" class="muted">로딩 중</td></tr></tbody>
+                <thead><tr><th>시각</th><th>유형</th><th>카메라</th><th>신뢰도</th><th>등급</th><th>출력 상세</th><th>처리</th></tr></thead>
+                <tbody id="pending-rows"><tr><td colspan="7" class="muted">로딩 중</td></tr></tbody>
               </table>
             </div>
           </div>
@@ -1254,8 +1355,8 @@
             <div class="panel-head"><h2>최근 조치 실행</h2><button id="load-actions">조회</button></div>
             <div class="scroll">
               <table>
-                <thead><tr><th>시각</th><th>유형</th><th>알람</th><th>API</th></tr></thead>
-                <tbody id="action-rows"><tr><td colspan="4" class="muted">로딩 중</td></tr></tbody>
+                <thead><tr><th>시각</th><th>유형</th><th>카메라</th><th>알람</th><th>API</th><th>상세</th></tr></thead>
+                <tbody id="action-rows"><tr><td colspan="6" class="muted">로딩 중</td></tr></tbody>
               </table>
             </div>
           </div>
@@ -1310,6 +1411,7 @@
     const SERVICE_FAILURE_THRESHOLD = 2;
     const SERVICE_RECENT_SUCCESS_GRACE_MS = 120000;
     const COLORS = ["red", "orange", "yellow", "green", "blue", "purple", "white", "black", "gray"];
+    const ZONE_EVENT_TYPES = new Set(["zone_entered", "zone_exited", "zone_dwelling", "zone_object_detected", "crowd_warning"]);
     const state = {
       cameras: [],
       events: [],
@@ -1321,6 +1423,15 @@
       faceImageBase64: "",
       faceFilename: "",
       modelSettings: {},
+      sites: [],
+      outputDevices: [],
+      defaultModeSettings: {
+        mode: "auto",
+        alarm_devices: ["speaker", "signboard"],
+        confidence_threshold: null,
+        display_message: "",
+        tts_message: "",
+      },
       cameraModalTimer: null,
       selectedModalCameraId: "",
       serviceHealth: {},
@@ -1639,6 +1750,24 @@
       };
       return map[type] || type || "-";
     }
+    function fmtConfidence(value) {
+      if (value === undefined || value === null || value === "") return "-";
+      const num = Number(value);
+      if (!Number.isFinite(num)) return String(value);
+      return `${Math.round(num * 100)}%`;
+    }
+    function outputDetail(item) {
+      return item.display_message || item.tts_message || item.topic || "-";
+    }
+    function isZoneEventType(type) {
+      return ZONE_EVENT_TYPES.has(String(type || "").toLowerCase());
+    }
+    function hasZonesForEventFilter(cameraId) {
+      const cameras = cameraId
+        ? state.cameras.filter((camera) => String(camera.id) === String(cameraId))
+        : state.cameras;
+      return cameras.some((camera) => Array.isArray(camera.zones) && camera.zones.length > 0);
+    }
     function eventVisualTone(event) {
       const severity = String(event?.severity || "").toLowerCase();
       const type = String(event?.event_type || "").toLowerCase();
@@ -1655,6 +1784,50 @@
       if (tone === "warning") return "warn";
       return "blue";
     }
+    function eventPriority(event) {
+      const priorities = { critical: 0, warning: 1, normal: 2, low: 3 };
+      return priorities[eventVisualTone(event)] ?? 2;
+    }
+    function eventSortTime(event) {
+      const value = event?.received_at || event?.timestamp;
+      if (typeof value === "number") return value;
+      const parsed = Date.parse(value);
+      return Number.isFinite(parsed) ? parsed / 1000 : 0;
+    }
+    function isDemoEvent(event) {
+      const metadata = event?.metadata || {};
+      return metadata.demo === true || metadata.source === "public-demo-ui";
+    }
+    function sortEventsForDisplay(items) {
+      return [...(items || [])].sort((a, b) => {
+        const demoDiff = Number(isDemoEvent(b)) - Number(isDemoEvent(a));
+        if (demoDiff !== 0) return demoDiff;
+        const priorityDiff = eventPriority(a) - eventPriority(b);
+        if (priorityDiff !== 0) return priorityDiff;
+        return eventSortTime(b) - eventSortTime(a);
+      });
+    }
+    function eventIdentity(event) {
+      return [
+        event?.event_id,
+        event?.camera_id,
+        event?.event_type,
+        event?.object_id,
+        event?.timestamp,
+      ].map((value) => String(value ?? "")).join("|");
+    }
+    function mergeDemoEvents(items) {
+      const merged = [...(items || [])];
+      const seen = new Set(merged.map(eventIdentity));
+      for (const event of state.demoEvents || []) {
+        const key = eventIdentity(event);
+        if (!seen.has(key)) {
+          merged.unshift(event);
+          seen.add(key);
+        }
+      }
+      return merged;
+    }
     function latestCameraEvent(cameraId) {
       return (state.events || []).find((event) => String(event.camera_id || "") === String(cameraId));
     }
@@ -1667,18 +1840,62 @@
       if (item.face_name && String(item.face_name).toLowerCase() !== "unknown") return "등록 얼굴";
       if (item.face_name && String(item.face_name).toLowerCase() === "unknown") return "미등록 얼굴";
       if (item.has_helmet === false) return "헬멧 미착용";
-      return "외형 로그";
+      return "외형 분석";
     }
     function appearanceTargetLabel(item) {
       if (item.face_name && String(item.face_name).toLowerCase() !== "unknown") return item.face_name;
       return item.track_id !== undefined && item.track_id !== null ? `track ${item.track_id}` : "-";
     }
+    function isKnownAppearanceValue(value) {
+      const text = String(value ?? "").trim().toLowerCase();
+      return Boolean(text) && !["unknown", "none", "null", "-"].includes(text);
+    }
+    function appearanceValueLabel(value, labels = {}) {
+      if (!isKnownAppearanceValue(value)) return "";
+      const text = String(value).trim().toLowerCase();
+      return labels[text] || String(value).trim();
+    }
+    function appearanceColorLabel(value) {
+      return appearanceValueLabel(value, {
+        black: "검정",
+        blue: "파랑",
+        brown: "갈색",
+        gray: "회색",
+        green: "초록",
+        orange: "주황",
+        purple: "보라",
+        red: "빨강",
+        white: "흰색",
+        yellow: "노랑",
+      });
+    }
+    function appearanceGenderLabel(value) {
+      return appearanceValueLabel(value, { male: "남성", female: "여성" });
+    }
+    function appearanceAgeLabel(value) {
+      return appearanceValueLabel(value, {
+        child: "아동",
+        teenager: "청소년",
+        adult: "성인",
+        elderly: "고령",
+        senior: "고령",
+      });
+    }
+    function appearanceColorBadges(item) {
+      const colors = [appearanceColorLabel(item.upper_color), appearanceColorLabel(item.lower_color)]
+        .filter(Boolean);
+      return colors.length ? colors.map((color) => badge(color, "blue")).join(" ") : "-";
+    }
     function appearanceMetaLines(item) {
+      const upperColor = appearanceColorLabel(item.upper_color);
+      const lowerColor = appearanceColorLabel(item.lower_color);
+      const gender = appearanceGenderLabel(item.gender);
+      const age = appearanceAgeLabel(item.age_group);
       return [
-        item.upper_color && `상의=${item.upper_color}`,
-        item.lower_color && `하의=${item.lower_color}`,
-        item.gender && `성별=${item.gender}`,
-        item.age_group && `나이=${item.age_group}`,
+        upperColor && `상의=${upperColor}`,
+        lowerColor && `하의=${lowerColor}`,
+        gender && `성별=${gender}`,
+        age && `나이=${age}`,
         item.has_helmet ? "헬멧 착용" : "헬멧 미착용",
         item.has_backpack ? "백팩" : "",
         item.has_handbag ? "핸드백" : "",
@@ -2202,22 +2419,30 @@
       }).join("");
     }
     async function loadEvents() {
+      const eventTypeSelect = $("event-type");
+      const cameraId = $("event-camera").value;
+      if (isZoneEventType(eventTypeSelect.value) && !hasZonesForEventFilter(cameraId)) {
+        eventTypeSelect.value = "";
+        showToast("선택한 카메라에 위험구역이 없어 전체 이벤트로 조회합니다.");
+      }
       const params = {
         limit: $("event-limit").value,
-        camera_id: $("event-camera").value,
-        event_type: $("event-type").value,
+        camera_id: cameraId,
+        event_type: eventTypeSelect.value,
       };
       try {
         const body = await request("/api/v1/events" + query(params));
-        state.events = body.items || [];
+        state.events = mergeDemoEvents(body.items || []);
+        const displayEvents = sortEventsForDisplay(state.events);
         $("stat-events").textContent = String(body.total ?? state.events.length);
-        renderEventRows("event-rows", state.events, 7);
-        renderEventRows("overview-events", state.events.slice(0, 8), 4, true);
+        renderEventRows("event-rows", displayEvents, 7);
+        renderEventRows("overview-events", displayEvents.slice(0, 8), 4, true);
         updateOpsSummary();
       } catch (error) {
         state.events = state.demoEvents;
-        renderEventRows("event-rows", state.demoEvents, 7);
-        renderEventRows("overview-events", state.demoEvents.slice(0, 8), 4, true);
+        const displayEvents = sortEventsForDisplay(state.demoEvents);
+        renderEventRows("event-rows", displayEvents, 7);
+        renderEventRows("overview-events", displayEvents.slice(0, 8), 4, true);
         updateOpsSummary();
         showToast("이벤트 조회 실패, 데모 이벤트만 표시: " + error.message);
       }
@@ -2227,7 +2452,7 @@
       $(targetId).innerHTML = rows.length ? rows.map((event) => {
         const visualTone = eventVisualTone(event);
         const rowClass = visualTone === "normal" ? "" : ` class="event-row-${visualTone}"`;
-        const typeBadge = badge(eventLabel(event.event_type), eventBadgeTone(event));
+        const typeBadge = `${isDemoEvent(event) ? badge("데모", "good") + " " : ""}${badge(eventLabel(event.event_type), eventBadgeTone(event))}`;
         if (compact) {
           return `<tr${rowClass}><td>${fmtTime(event.received_at || event.timestamp)}</td><td>${typeBadge}</td><td><code>${event.camera_id || "-"}</code></td><td>${Number(event.confidence || 0).toFixed(2)}</td></tr>`;
         }
@@ -2263,9 +2488,8 @@
       };
       await request("/api/v1/alerts", { method: "POST", body: JSON.stringify(payload) });
       state.demoEvents.unshift({ ...payload, received_at: new Date().toISOString() });
-      renderEventRows("event-rows", state.demoEvents, 7);
       showToast("데모 이벤트 전송 완료");
-      await Promise.allSettled([loadEvents(), loadActionEvents()]);
+      await Promise.allSettled([loadEvents(), loadActionEvents(), loadPending()]);
     }
     async function loadSensorReadings() {
       const params = {
@@ -2440,7 +2664,7 @@
           <td>${badge(appearanceClassLabel(item), item.face_name ? "good" : "blue")}</td>
           <td><code>${item.camera_id}</code></td>
           <td>${escapeHtml(appearanceTargetLabel(item))}<br><code>${escapeHtml(item.event_id || `row-${item.id}`)}</code></td>
-          <td>${badge(item.upper_color || "-", "blue")} ${badge(item.lower_color || "-", "blue")}<br>${appearanceMetaLines(item).slice(2).join("<br>") || "-"}</td>
+          <td>${appearanceColorBadges(item)}<br>${appearanceMetaLines(item).slice(2).join("<br>") || "-"}</td>
           <td>${item.crop_url ? `<img class="crop-thumb" data-crop-url="${escapeHtml(item.crop_url)}" alt="검색 crop">` : '<span class="muted">crop 없음</span>'}</td>
           <td><button onclick="selectSearchResult(${item.id})">상세</button></td>
         </tr>
@@ -2465,7 +2689,7 @@
             <span>구분</span><span>${badge(appearanceClassLabel(item), item.face_name ? "good" : "blue")}</span>
             <span>대상</span><span>${escapeHtml(appearanceTargetLabel(item))}</span>
             <span>카메라</span><span><code>${escapeHtml(item.camera_id)}</code></span>
-            <span>색상</span><span>${badge(item.upper_color || "-", "blue")} ${badge(item.lower_color || "-", "blue")}</span>
+            <span>색상</span><span>${appearanceColorBadges(item)}</span>
             <span>속성</span><span>${appearanceMetaLines(item).join("<br>") || "-"}</span>
             <span>BBox</span><span><code>${escapeHtml(JSON.stringify(item.bbox || {}))}</code></span>
             <span>Event</span><span><code>${escapeHtml(item.event_id || `row-${item.id}`)}</code></span>
@@ -2620,22 +2844,142 @@
       await loadFaces();
     }
     window.deleteFace = deleteFace;
+    function selectedControlMode() {
+      return document.querySelector('input[name="mode-select"]:checked')?.value || "auto";
+    }
+    function controlModeLabel(mode) {
+      return mode === "manual" ? "수동모드" : "자동모드";
+    }
+    function setSelectedControlMode(mode) {
+      const value = mode === "manual" ? "manual" : "auto";
+      const radio = document.querySelector(`input[name="mode-select"][value="${value}"]`);
+      if (radio) radio.checked = true;
+    }
+    function selectedPolicyDevices() {
+      return ["policy-speaker", "policy-signboard", "policy-siren"]
+        .map((id) => $(id))
+        .filter((input) => input?.checked)
+        .map((input) => input.value);
+    }
+    function allPolicyDevices() {
+      return ["speaker", "signboard", "siren"];
+    }
+    function resolvePolicyDevicesForMode(mode) {
+      const devices = selectedPolicyDevices();
+      if (devices.length) return devices;
+      if (mode === "auto") {
+        setPolicyDevices(allPolicyDevices());
+        return allPolicyDevices();
+      }
+      return [];
+    }
+    function setPolicyDevices(devices = []) {
+      const selected = new Set((devices || []).map((value) => String(value).toLowerCase()));
+      $("policy-speaker").checked = selected.has("speaker");
+      $("policy-signboard").checked = selected.has("signboard");
+      $("policy-siren").checked = selected.has("siren");
+    }
+    function setModeDetailInputs(site) {
+      const settings = site || state.defaultModeSettings;
+      $("policy-confidence").value = settings?.confidence_threshold ?? "";
+      $("policy-message").value = settings?.display_message || settings?.tts_message || "";
+      ["policy-speaker", "policy-signboard", "policy-siren", "policy-confidence", "policy-message"].forEach((id) => {
+        $(id).disabled = false;
+      });
+    }
+    function deviceLabel(device) {
+      const map = { speaker: "스피커", signboard: "전광판", siren: "경광등" };
+      return map[device] || device || "-";
+    }
+    function currentSitePolicy() {
+      const siteId = $("control-site").value;
+      return state.sites.find((site) => String(site.site_id) === String(siteId));
+    }
+    function renderControlPolicy(defaultMode = null) {
+      const site = currentSitePolicy();
+      const mode = site?.control_mode || defaultMode || state.defaultModeSettings.mode || "auto";
+      $("control-mode").textContent = site
+        ? `${site.site_name || site.site_id} · ${controlModeLabel(mode)}`
+        : controlModeLabel(mode);
+      $("control-mode").className = "badge " + statusTone(mode);
+      setSelectedControlMode(mode);
+      setPolicyDevices(site?.alarm_devices || state.defaultModeSettings.alarm_devices || ["speaker", "signboard"]);
+      setModeDetailInputs(site);
+    }
+    async function loadSites() {
+      const body = await request("/api/v1/sites");
+      state.sites = body.data || [];
+      const current = $("control-site").value;
+      $("control-site").innerHTML = '<option value="">기본 모드</option>' + state.sites.map((site) => `
+        <option value="${escapeHtml(site.site_id)}">${escapeHtml(site.site_name || site.site_id)} (${escapeHtml(site.site_id)})</option>
+      `).join("");
+      if (current && state.sites.some((site) => String(site.site_id) === String(current))) {
+        $("control-site").value = current;
+      }
+      renderControlPolicy();
+    }
     async function loadMode() {
       const body = await request("/api/v1/control/mode");
-      const mode = body.data?.mode || "-";
-      $("control-mode").textContent = mode;
-      $("control-mode").className = "badge " + statusTone(mode);
-      $("mode-select").value = mode === "manual" ? "manual" : "auto";
+      const data = body.data || {};
+      const mode = data.mode || "auto";
+      state.defaultModeSettings = {
+        mode,
+        alarm_devices: data.alarm_devices || ["speaker", "signboard"],
+        confidence_threshold: data.confidence_threshold ?? null,
+        display_message: data.display_message || "",
+        tts_message: data.tts_message || "",
+      };
+      renderControlPolicy(mode);
     }
     async function setMode() {
-      const body = { mode: $("mode-select").value };
+      const site = currentSitePolicy();
+      const mode = selectedControlMode();
+      if (site) {
+        const body = {
+          site_id: site.site_id,
+          site_name: site.site_name || site.site_id,
+          site_nickname: site.site_nickname || "",
+          camera_ids: site.camera_ids || [],
+          control_mode: mode,
+          alarm_devices: resolvePolicyDevicesForMode(mode),
+          confidence_threshold: $("policy-confidence").value === "" ? null : Number($("policy-confidence").value),
+          display_message: $("policy-message").value.trim(),
+          tts_message: $("policy-message").value.trim(),
+        };
+        if (!body.alarm_devices.length) {
+          showToast("수동모드는 승인 후 실행할 출력 장치를 하나 이상 선택하세요");
+          return;
+        }
+        if (body.confidence_threshold !== null && (!Number.isFinite(body.confidence_threshold) || body.confidence_threshold < 0 || body.confidence_threshold > 1)) {
+          showToast("신뢰도 임계값은 0부터 1 사이로 입력하세요");
+          return;
+        }
+        await request("/api/v1/sites", { method: "POST", body: JSON.stringify(body) });
+        showToast("사이트 모드 저장 완료");
+        await loadSites();
+        return;
+      }
+      const body = { mode };
+      body.alarm_devices = resolvePolicyDevicesForMode(mode);
+      body.confidence_threshold = $("policy-confidence").value === "" ? null : Number($("policy-confidence").value);
+      body.display_message = $("policy-message").value.trim();
+      body.tts_message = $("policy-message").value.trim();
+      if (!body.alarm_devices.length) {
+        showToast("수동모드는 승인 후 실행할 출력 장치를 하나 이상 선택하세요");
+        return;
+      }
+      if (body.confidence_threshold !== null && (!Number.isFinite(body.confidence_threshold) || body.confidence_threshold < 0 || body.confidence_threshold > 1)) {
+        showToast("신뢰도 임계값은 0부터 1 사이로 입력하세요");
+        return;
+      }
       await request("/api/v1/control/mode", { method: "POST", body: JSON.stringify(body) });
-      showToast("제어 모드 변경 완료");
+      showToast("모드 변경 완료");
       await loadMode();
     }
     async function loadDevices() {
       const body = await request("/api/v1/control/devices");
       const items = body.data || [];
+      state.outputDevices = items;
       $("device-rows").innerHTML = items.length ? items.map((device) => `
         <tr>
           <td>${device.label || device.device || device.name || "-"}</td>
@@ -2654,10 +2998,12 @@
           <td>${fmtTime(item.queued_at)}</td>
           <td>${badge(eventLabel(item.event_type), "blue")}</td>
           <td><code>${item.camera_id || "-"}</code></td>
+          <td>${badge(fmtConfidence(item.confidence), "blue")}</td>
           <td>${badge(item.severity || "-", statusTone(item.severity))}</td>
+          <td>${escapeHtml(outputDetail(item))}</td>
           <td><button class="good" onclick="approveEvent('${item.event_id}')">승인</button> <button class="warn" onclick="rejectEvent('${item.event_id}')">거부</button></td>
         </tr>
-      `).join("") : '<tr><td colspan="5" class="muted">승인 대기 이벤트 없음</td></tr>';
+      `).join("") : '<tr><td colspan="7" class="muted">승인 대기 이벤트 없음</td></tr>';
       updateOpsSummary();
     }
     async function approveEvent(id) {
@@ -2679,13 +3025,16 @@
         <tr>
           <td>${fmtTime(item.received_at || item.timestamp)}</td>
           <td>${badge(eventLabel(item.event_type), "blue")}</td>
+          <td><code>${item.camera_id || item.payload?.camera_id || "-"}</code></td>
           <td>${badge(item.alarm_played ? "executed" : "skip", item.alarm_played ? "good" : "warn")}</td>
           <td>${badge(item.http_sent ? "sent" : "none", item.http_sent ? "good" : "warn")}</td>
+          <td>${item.alarm_played ? "출력 명령 실행" : "장치 설정/연결, 모드, 쿨다운 확인"}</td>
         </tr>
-      `).join("") : '<tr><td colspan="4" class="muted">조치 실행 이력 없음</td></tr>';
+      `).join("") : '<tr><td colspan="6" class="muted">조치 실행 이력 없음</td></tr>';
     }
     async function loadControlBundle() {
-      await Promise.allSettled([loadMode(), loadDevices(), loadPending(), loadActionEvents()]);
+      await Promise.allSettled([loadSites(), loadDevices(), loadPending(), loadActionEvents()]);
+      await loadMode();
     }
     async function loadAppearanceBundle() {
       await Promise.allSettled([loadAppearanceStatus(), loadConditions(), runAppearanceSearch()]);
@@ -2788,8 +3137,16 @@
     });
     $("load-faces").addEventListener("click", (event) => runAction(event.currentTarget, "불러오는 중", loadFaces));
     $("register-face").addEventListener("click", (event) => runAction(event.currentTarget, "등록 중", registerFace));
-    $("load-mode").addEventListener("click", (event) => runAction(event.currentTarget, "조회 중", loadMode));
+    $("load-mode").addEventListener("click", (event) => runAction(event.currentTarget, "조회 중", loadControlBundle));
     $("set-mode").addEventListener("click", (event) => runAction(event.currentTarget, "변경 중", setMode));
+    $("control-site").addEventListener("change", () => renderControlPolicy());
+    document.querySelectorAll('input[name="mode-select"]').forEach((input) => {
+      input.addEventListener("change", () => {
+        if (input.value === "auto" && input.checked && !selectedPolicyDevices().length) {
+          setPolicyDevices(allPolicyDevices());
+        }
+      });
+    });
     $("load-devices").addEventListener("click", (event) => runAction(event.currentTarget, "조회 중", loadDevices));
     $("load-pending").addEventListener("click", (event) => runAction(event.currentTarget, "조회 중", loadPending));
     $("load-actions").addEventListener("click", (event) => runAction(event.currentTarget, "조회 중", loadActionEvents));

@@ -5,14 +5,20 @@ from __future__ import annotations
 import asyncio
 import os
 import resource
-from contextlib import asynccontextmanager
-from datetime import datetime, timezone
 
 import httpx
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
-from ..dependencies._settings import ACTION_LAYER_URL, ALERT_API_URL
+from ...time_utils import now_kst_iso
+from ..dependencies._settings import (
+    ACTION_LAYER_URL,
+    AI_ENGINE_FACE_API_URL,
+    AI_ENGINE_MODEL_API_URL,
+    AI_ENGINE_STREAM_API_URL,
+    AI_ENGINE_ZONE_API_URL,
+    ALERT_API_URL,
+)
 from ..schemas.common import BaseResponse, success_response
 
 router = APIRouter(tags=["health"])
@@ -88,9 +94,15 @@ async def get_health() -> BaseResponse[dict]:
             "status": "up",
             "service": "cctv-public-api",
             "version": "1.0.0",
-            "checked_at": datetime.now(timezone.utc).isoformat(),
+            "checked_at": now_kst_iso(),
             "action_layer_url": ACTION_LAYER_URL,
             "alert_api_url": ALERT_API_URL,
+            "ai_engine_urls": {
+                "zone_api": AI_ENGINE_ZONE_API_URL,
+                "model_api": AI_ENGINE_MODEL_API_URL,
+                "face_api": AI_ENGINE_FACE_API_URL,
+                "stream_api": AI_ENGINE_STREAM_API_URL,
+            },
             "resources": {
                 "file_descriptors": _fd_usage(),
             },
@@ -129,11 +141,15 @@ async def _check_dependency(name: str, url: str) -> dict:
 @router.get("/readiness", summary="Public API 의존 서비스 준비 상태 확인")
 async def get_readiness() -> JSONResponse:
     """Action Layer와 Alert API까지 포함해 운영 준비 상태를 확인한다."""
-    checked_at = datetime.now(timezone.utc).isoformat()
+    checked_at = now_kst_iso()
     fd_usage = _fd_usage()
     dependencies = await asyncio.gather(
         _check_dependency("action-layer", f"{ACTION_LAYER_URL.rstrip('/')}/health"),
         _check_dependency("alert-api", f"{ALERT_API_URL.rstrip('/')}/health"),
+        _check_dependency("ai-engine-zone-api", f"{AI_ENGINE_ZONE_API_URL.rstrip('/')}/health"),
+        _check_dependency("ai-engine-model-api", f"{AI_ENGINE_MODEL_API_URL.rstrip('/')}/health"),
+        _check_dependency("ai-engine-face-api", f"{AI_ENGINE_FACE_API_URL.rstrip('/')}/health"),
+        _check_dependency("ai-engine-stream-api", f"{AI_ENGINE_STREAM_API_URL.rstrip('/')}/health"),
     )
     ready = all(dep["status"] == "up" for dep in dependencies) and fd_usage["status"] != "critical"
     payload = {

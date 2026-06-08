@@ -8,13 +8,11 @@ test_face_api.py — FaceApiHandler 단위 / 통합 테스트
     TestFaceApiRouting - 서버 기동 확인
 """
 
-import json
 import threading
 import time
-import urllib.request
 import urllib.error
+import urllib.request
 from io import BytesIO
-from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 

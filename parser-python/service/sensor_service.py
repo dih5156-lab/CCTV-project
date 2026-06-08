@@ -10,23 +10,33 @@ Go의 타입 어설션(type assertion) → Python의 isinstance() + dict.get() �
 """
 
 import base64
-import json
 import logging
 import os
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Tuple
+from datetime import datetime
+from typing import List
 
 from database.connection import DB
-from database.processor import DataProcessor
 from database.models import (
-    DefaultSensorData, Notification, SensorData,
-    T3, T34950, T34952, T34954, T34955, T34956, T34957, T34958,
+    T3,
+    T34950,
+    T34952,
+    T34954,
+    T34955,
+    T34956,
+    T34957,
+    T34958,
+    DefaultSensorData,
+    Notification,
+    SensorData,
 )
-from tlv.parser import Parser
+from database.processor import DataProcessor
+from mqtt.interfaces import SensorDataProcessor
 from service.device_info_service import DeviceInfoService
 from service.event_service import EventService
-from mqtt.interfaces import SensorDataProcessor
+from tlv.parser import Parser
+
+from time_utils import now_kst, timestamp_ms_to_kst
 
 logger = logging.getLogger(__name__)
 
@@ -103,7 +113,7 @@ class SensorService(SensorDataProcessor):
         """
         from datetime import timedelta
         self._db = db
-        self._data_processor = DataProcessor(db, threshold=30, interval=timedelta(seconds=1))
+        self._data_processor = DataProcessor(db, interval=timedelta(seconds=1))
         self._tlv_parser = Parser()
         self.device_info = DeviceInfoService()
         self.event_service = EventService(db)
@@ -164,7 +174,7 @@ class SensorService(SensorDataProcessor):
             raise ValueError(f"no TLV data parsed for devEUI: {dev_eui}")
 
         payload_hex = decoded_payload.hex()
-        received_dt = _unix_milli_to_utc(received_at)
+        received_dt = _unix_milli_to_kst(received_at)
         created_dt = _get_created_at(parsed_tlv.data)
 
         # 파싱 성공 로그
@@ -372,18 +382,6 @@ def _get_bool(data: dict, key: str) -> bool:
     return False
 
 
-def _must_marshal_json(v: Any) -> bytes:
-    """
-    JSON 직렬화 (실패 시 빈 객체 반환)
-    Go: func mustMarshalJSON(v interface{}) []byte
-    """
-    try:
-        return json.dumps(v).encode("utf-8")
-    except Exception as e:
-        logger.error(f"Failed to marshal JSON: {e}")
-        return b"{}"
-
-
 def _get_created_at(data: dict) -> datetime:
     """
     TLV 데이터에서 created_at 타임스탬프 추출
@@ -392,13 +390,13 @@ def _get_created_at(data: dict) -> datetime:
     created_at = data.get("created_at")
     if isinstance(created_at, int):
         # Go: time.UnixMilli(timestamp).UTC()
-        return _unix_milli_to_utc(created_at)
-    return datetime.now(timezone.utc)
+        return _unix_milli_to_kst(created_at)
+    return now_kst()
 
 
-def _unix_milli_to_utc(ms: int) -> datetime:
-    """Unix 밀리초 → UTC datetime 변환"""
-    return datetime.fromtimestamp(ms / 1000.0, tz=timezone.utc)
+def _unix_milli_to_kst(ms: int) -> datetime:
+    """Unix 밀리초를 KST datetime으로 변환한다."""
+    return timestamp_ms_to_kst(ms)
 
 
 def _is_event(data: dict) -> bool:

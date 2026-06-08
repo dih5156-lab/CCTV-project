@@ -3,25 +3,20 @@ test_config.py — AppConfig / ModelPaths / DetectionConfig / EnvOverride 단위
 
 전략: 파일시스템 패치와 환경변수 딕셔너리 주입으로 실제 파일 없이 설정 로직을 검증한다.
 """
-import os
-from pathlib import Path
-from unittest.mock import patch, MagicMock
 
 import pytest
 
 from src.config.config import (
-    AppConfig,
-    ModelPaths,
-    DetectionConfig,
     ActionBridgeConfig,
+    AppConfig,
+    DetectionConfig,
     EdgeXConfig,
     ExternalIngestConfig,
+    ModelPaths,
     MqttConfig,
-    _parse_bool,
     _identity,
-    EnvOverride,
+    _parse_bool,
 )
-
 
 # ---------------------------------------------------------------------------
 # 파서 함수

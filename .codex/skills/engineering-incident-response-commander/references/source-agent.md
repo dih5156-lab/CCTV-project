@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/engineering-incident-response-commander.md](../../../../agents/engineering-incident-response-commander.md).
+Derived from [agents/engineering-incident-response-commander.md](../../../../tooling/agents/engineering-incident-response-commander.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

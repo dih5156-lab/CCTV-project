@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/identity-graph-operator.md](../../../../agents/identity-graph-operator.md).
+Derived from [agents/identity-graph-operator.md](../../../../tooling/agents/identity-graph-operator.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

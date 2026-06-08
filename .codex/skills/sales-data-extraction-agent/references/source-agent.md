@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/sales-data-extraction-agent.md](../../../../agents/sales-data-extraction-agent.md).
+Derived from [agents/sales-data-extraction-agent.md](../../../../tooling/agents/sales-data-extraction-agent.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

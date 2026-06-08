@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/sales-account-strategist.md](../../../../agents/sales-account-strategist.md).
+Derived from [agents/sales-account-strategist.md](../../../../tooling/agents/sales-account-strategist.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

@@ -7,8 +7,10 @@ mock 을 통해 격리하거나 빠른 타임아웃으로 실패 경로를 테�
 import asyncio
 import importlib
 import time
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
+
 from src.edgex.device_service import CCTVDeviceService
 
 # redis 설치 여부 확인 — 없으면 관련 테스트를 skip

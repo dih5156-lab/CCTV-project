@@ -410,7 +410,6 @@ pool = psycopg2.pool.ThreadedConnectionPool(
 | Go 변수 | Python 변수 | 타입 | 설명 |
 |---------|-----------|------|------|
 | `dp.db` | `self._db` | DB | DB 인스턴스 |
-| `dp.threshold` | `self._threshold` | int | 처리 임계값 |
 | `dp.interval` | `self._interval` | float(초) | 처리 주기 |
 | `dp.t3 []T3` | `self._t3: List[T3]` | list | T3 큐 |
 | `dp.t34950 []T34950` | `self._t34950: List[T34950]` | list | T34950 큐 |
@@ -569,7 +568,6 @@ da 타입 토픽: {appEUI}/{devEUI}/up
 | `getStringFromTLV(data, key)` | `_get_str(data, key)` | str |
 | `getIntFromTLV(data, key)` | `_get_int(data, key)` | int |
 | `getBoolFromTLV(data, key)` | `_get_bool(data, key)` | bool |
-| `mustMarshalJSON(v)` | `_must_marshal_json(v)` | bytes |
 | `getCreatedAt(data)` | `_get_created_at(data)` | datetime |
 | `isEvent(data)` | `_is_event(data)` | bool |
 

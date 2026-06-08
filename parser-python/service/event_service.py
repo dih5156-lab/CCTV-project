@@ -17,10 +17,10 @@ import logging
 import queue
 import threading
 import uuid
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
-from database.models import Notification, QueryResult
 from database.connection import DB
+from database.models import Notification, QueryResult
 from database.queries import QueryService
 
 logger = logging.getLogger(__name__)

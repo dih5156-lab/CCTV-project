@@ -6,18 +6,8 @@
 from __future__ import annotations
 
 import logging
-import sys
-from pathlib import Path
 
 _LOG_FORMAT = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
-
-
-def ensure_project_root() -> Path:
-    """runner 실행 시 프로젝트 루트를 sys.path에 추가한다."""
-    project_root = Path(__file__).resolve().parent.parent
-    if str(project_root) not in sys.path:
-        sys.path.insert(0, str(project_root))
-    return project_root
 
 
 def setup_runner_logging(level: int = logging.INFO) -> None:

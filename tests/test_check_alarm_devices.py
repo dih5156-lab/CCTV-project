@@ -16,7 +16,7 @@ def _load_script_module(name: str, relative_path: str):
 
 check_alarm_devices = _load_script_module(
     "check_alarm_devices",
-    "scripts/check_alarm_devices.py",
+    "scripts/health/check_alarm_devices.py",
 )
 
 

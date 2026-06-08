@@ -115,7 +115,7 @@ See [full API reference →](https://docs.yourproject.com/api)
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md)
+See [CONTRIBUTING.md](https://example.com/your-project/contributing)
 
 ## License
 
@@ -214,9 +214,9 @@ paths:
 - Concept C
 
 **Prerequisites**:
-- [ ] [Tool X](link) installed (version Y+)
+- [ ] [Tool X](https://example.com/tool-x) installed (version Y+)
 - [ ] Basic knowledge of [concept]
-- [ ] An account at [service] ([sign up free](link))
+- [ ] An account at [service] ([sign up free](https://example.com/signup))
 
 ---
 
@@ -252,9 +252,9 @@ You built a [description]. Here's what you learned:
 
 ## Next Steps
 
-- [Advanced tutorial: Add authentication](link)
-- [Reference: Full API docs](link)
-- [Example: Production-ready version](link)
+- [Advanced tutorial: Add authentication](https://example.com/tutorials/add-authentication)
+- [Reference: Full API docs](https://example.com/api)
+- [Example: Production-ready version](https://example.com/examples/production)
 ```
 
 ### Docusaurus Configuration

@@ -19,12 +19,13 @@ Routes:
 import logging
 import os
 import secrets
-from datetime import datetime, timezone
 from threading import Thread
-from typing import Any, Dict, Optional
+from typing import Optional
 from urllib.parse import parse_qs, urlparse
 
 from .._http_server import BaseApiHandler, ThreadingApiServer
+from ..services._action_bridge_support import AlarmDevice
+from ..time_utils import now_kst_iso
 
 logger = logging.getLogger(__name__)
 
@@ -89,31 +90,13 @@ class _RestHandler(BaseApiHandler):
         if path == "/":
             self._respond(200, self._root_payload())
         elif path in ("/health", "/ping"):
-            mqtt_ok = False
-            try:
-                mc = getattr(layer, "_mqtt_client", None)
-                mqtt_ok = bool(mc and mc.is_connected())
-            except Exception:
-                pass
-            status = "up" if (getattr(layer, "_running", False) and mqtt_ok) else "degraded"
-            self._respond(
-                200 if status == "up" else 503,
-                {
-                    "service": "cctv-action-layer",
-                    "status": status,
-                    "checked_at": datetime.now(timezone.utc).isoformat(),
-                    "mqtt": "connected" if mqtt_ok else "disconnected",
-                    "mode": layer.default_mode.value,
-                    "sites": len(layer.list_sites()),
-                    "pending": len(layer.get_pending_events()),
-                },
-            )
+            self._respond_health(layer)
         elif path == "/sites":
             self._respond(200, layer.list_sites())
         elif path == "/pending":
             self._respond(200, layer.get_pending_events())
         elif path == "/mode":
-            self._respond(200, {"mode": layer.default_mode.value})
+            self._respond(200, layer.get_default_mode_settings())
         elif path == "/devices":
             self._respond(200, layer.list_output_devices())
         elif path == "/events":
@@ -138,10 +121,11 @@ class _RestHandler(BaseApiHandler):
             if payload is None:
                 self._respond(400, {"error": "Invalid JSON"})
                 return
+            topic = str(payload.pop("topic", "rest/inbound") or "rest/inbound")
             if hasattr(layer, "enqueue_rest_event"):
-                accepted = layer.enqueue_rest_event(payload)
+                accepted = layer.enqueue_rest_event(payload, topic=topic)
             else:
-                layer._handle_event(payload)
+                layer._handle_event(payload, topic=topic)
                 accepted = True
             if not accepted:
                 self._respond(503, {"status": "error", "error": "action queue full"})
@@ -161,19 +145,11 @@ class _RestHandler(BaseApiHandler):
 
         elif path.startswith("/approve/"):
             event_id = path[len("/approve/"):]
-            ok, msg = layer.approve_event(event_id)
-            self._respond(
-                200 if ok else 404,
-                {"status": "ok" if ok else "error", "message": msg},
-            )
+            self._respond_action_result(*layer.approve_event(event_id))
 
         elif path.startswith("/reject/"):
             event_id = path[len("/reject/"):]
-            ok, msg = layer.reject_event(event_id)
-            self._respond(
-                200 if ok else 404,
-                {"status": "ok" if ok else "error", "message": msg},
-            )
+            self._respond_action_result(*layer.reject_event(event_id))
 
         elif path == "/mode":
             data = self._read_json()
@@ -184,17 +160,59 @@ class _RestHandler(BaseApiHandler):
                 mode_str = data["mode"]
                 site_id  = data.get("site_id")
                 layer.set_mode_str(mode_str, site_id=site_id)
-                self._respond(200, {"status": "ok", "mode": mode_str, "site_id": site_id})
+                if not site_id:
+                    alarm_devices = data.get("alarm_devices")
+                    layer.set_default_action_settings(
+                        alarm_devices=[
+                            AlarmDevice(device)
+                            for device in alarm_devices
+                        ] if alarm_devices is not None else None,
+                        confidence_threshold=data.get("confidence_threshold"),
+                        display_message=data.get("display_message"),
+                        tts_message=data.get("tts_message"),
+                    )
+                response = {"status": "ok", "mode": mode_str, "site_id": site_id}
+                if not site_id:
+                    response.update(layer.get_default_mode_settings())
+                self._respond(200, response)
             except ValueError:
                 self._respond(400, {"error": f"Invalid mode: {data['mode']!r}"})
 
         else:
             self._respond(404, {"error": "Not Found"})
 
+    def _respond_health(self, layer) -> None:
+        mqtt_ok = False
+        try:
+            mc = getattr(layer, "_mqtt_client", None)
+            mqtt_ok = bool(mc and mc.is_connected())
+        except Exception:
+            pass
+        status = "up" if (getattr(layer, "_running", False) and mqtt_ok) else "degraded"
+        self._respond(
+            200 if status == "up" else 503,
+            {
+                "service": "cctv-action-layer",
+                "status": status,
+                "checked_at": now_kst_iso(),
+                "mqtt": "connected" if mqtt_ok else "disconnected",
+                "mode": layer.default_mode.value,
+                "sites": len(layer.list_sites()),
+                "pending": len(layer.get_pending_events()),
+            },
+        )
+
+    def _respond_action_result(self, ok: bool, message: str) -> None:
+        self._respond(
+            200 if ok else 404,
+            {"status": "ok" if ok else "error", "message": message},
+        )
+
     def _respond_metrics(self) -> None:
         """Prometheus テキスト형식 메트릭을 반환한다."""
         try:
-            from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
+            from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
+
             from ..services.cctv_metrics import REGISTRY
             body: bytes = generate_latest(REGISTRY)
             self.send_response(200)

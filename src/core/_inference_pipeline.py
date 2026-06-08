@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 import time
 from dataclasses import dataclass
-from typing import Any, Dict, List, Set, TYPE_CHECKING, Tuple
+from typing import TYPE_CHECKING, Any, Dict, List, Set, Tuple
 
 from ..utils.zone_detection import ZoneEvent
 from .events import DetectionEvent
@@ -13,9 +13,9 @@ from .events import DetectionEvent
 if TYPE_CHECKING:
     from .ai.analyzer import AIAnalyzer
     from .detection_snapshot_store import DetectionSnapshotStore
+    from .event_debouncer import EventDebouncer
     from .event_dispatcher import EventDispatcher
     from .event_filters import CumulativeViolationFilter, TrackManager
-    from .event_debouncer import EventDebouncer
 
 logger = logging.getLogger(__name__)
 

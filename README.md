@@ -54,16 +54,16 @@ CCTV-project/
 ├── docker-compose.yml              # 일반 Docker/EdgeX 통합 배포
 ├── docker-compose.arm64.yml        # ARM64 EdgeX 호환 override
 ├── docker-compose.jetson.yml       # Jetson/DeepStream 운영 배포
-└── docs/PROJECT_STRUCTURE.md       # 상세 프로젝트 구조 문서
+└── docs/architecture/PROJECT_STRUCTURE.md # 상세 프로젝트 구조 문서
 ```
 
 더 자세한 디렉터리별 역할과 데이터 흐름은
-[docs/PROJECT_STRUCTURE.md](docs/PROJECT_STRUCTURE.md)를 참고하세요.
+[docs/architecture/PROJECT_STRUCTURE.md](docs/architecture/PROJECT_STRUCTURE.md)를 참고하세요.
 운영 중 상태 확인과 복구 절차는
-[docs/OPERATIONS_RUNBOOK.md](docs/OPERATIONS_RUNBOOK.md)에 정리되어 있습니다.
+[docs/operations/OPERATIONS_RUNBOOK.md](docs/operations/OPERATIONS_RUNBOOK.md)에 정리되어 있습니다.
 현장 점검 순서와 DeepStream 장시간 안정성 확인은
-[docs/OPERATION_CHECKLIST.md](docs/OPERATION_CHECKLIST.md),
-[docs/DEEPSTREAM_PERFORMANCE_STABILITY_2026-05-26.md](docs/DEEPSTREAM_PERFORMANCE_STABILITY_2026-05-26.md)를 참고하세요.
+[docs/operations/OPERATION_CHECKLIST.md](docs/operations/OPERATION_CHECKLIST.md),
+[docs/operations/DEEPSTREAM_PERFORMANCE_STABILITY_2026-05-26.md](docs/operations/DEEPSTREAM_PERFORMANCE_STABILITY_2026-05-26.md)를 참고하세요.
 
 ## 포트별 역할
 
@@ -130,7 +130,7 @@ Jetson에서 실사용 얼굴 인식을 켜려면 추가로 아래 파일을 설
 pip install -r requirements-face-jetson.txt
 ```
 
-자세한 내용은 [docs/FACE_RECOGNITION_SETUP.md](docs/FACE_RECOGNITION_SETUP.md)를 참고하세요.
+자세한 내용은 [docs/operations/FACE_RECOGNITION_SETUP.md](docs/operations/FACE_RECOGNITION_SETUP.md)를 참고하세요.
 
 ### 4. 모델 파일 준비
 
@@ -221,7 +221,7 @@ YOLO("models/yolov8n.pt").export(format="engine", device=0)
 | `APPEARANCE_MODEL_PATH` | 속성 모델 경로 | `models/pphuman_attribute.onnx` |
 | `APPEARANCE_LABEL_MAP_PATH` | 속성 라벨 맵 경로 | `config/appearance_pphuman_labels.example.json` |
 | `APPEARANCE_RUNTIME` | 속성 모델 런타임 | `auto` / `onnxruntime` / `paddle` |
-| `APPEARANCES_DB` | 외형 로그 SQLite 경로 | `/app/data/appearances.db` |
+| `APPEARANCES_DB` | 외형 로그 SQLite 경로 | `/app/data/runtime/appearances.db` |
 | `DISPLAY_ENABLED` | 화면 출력 | `true` / `false` |
 | `MQTT_BROKER` | MQTT 브로커 호스트 | `localhost` |
 | `USE_GSTREAMER` | Jetson NVDec 하드웨어 디코딩 | `1` (Jetson 전용) |
@@ -319,7 +319,7 @@ docker compose up -d aiot-parser-db aiot-parser
 > arm64/Jetson 계열 호스트에서 기본 `docker-compose.yml`의 일부 EdgeX 이미지는 `exec format error`가 날 수 있습니다.
 > 같은 장비에서 기본 compose 전체 스택을 올릴 때는 `docker-compose.arm64.yml`을 함께 적용하고,
 > Jetson 현장 배포는 `docker-compose.jetson.yml`을 우선 사용하세요. 자세한 운영 대응은
-> [docs/OPERATIONS_RUNBOOK.md](docs/OPERATIONS_RUNBOOK.md)를 참고하세요.
+> [docs/operations/OPERATIONS_RUNBOOK.md](docs/operations/OPERATIONS_RUNBOOK.md)를 참고하세요.
 > EdgeX UI 이미지는 이 환경에서 ARM64 manifest가 확인되지 않아 ARM64 override 기본 실행에서 제외됩니다.
 
 ```bash
@@ -329,15 +329,15 @@ docker compose -f docker-compose.yml -f docker-compose.arm64.yml up -d
 배포 전 런타임 전제 조건은 아래 명령으로 미리 확인할 수 있습니다.
 
 ```bash
-.venv/bin/python scripts/check_compose_runtime_assumptions.py --json
+.venv/bin/python scripts/health/check_compose_runtime_assumptions.py --json
 ```
 
 운영 투입 전에는 비밀값, compose 전제 조건, API readiness, DeepStream 안정성 점검을 한 번에 확인할 수 있습니다.
 
 ```bash
-.venv/bin/python scripts/check_runtime_secret_consistency.py --json
-./scripts/run_operation_check.sh
-./scripts/run_deepstream_stability_watch.sh --duration 300
+.venv/bin/python scripts/health/check_runtime_secret_consistency.py --env-file .env --json
+./scripts/ops/run_operation_check.sh
+./scripts/ops/run_deepstream_stability_watch.sh --duration 300
 ```
 
 #### Jetson 분리 실행 (Jetson Orin + 서버/PC 분리)
@@ -347,7 +347,7 @@ docker compose -f docker-compose.yml -f docker-compose.arm64.yml up -d
 docker compose -f docker-compose.yml up -d --build
 
 # Jetson Orin (AI 엔진 계열 컨테이너 실행)
-docker compose -f docker-compose.jetson.yml up -d --build
+docker compose --env-file .env.jetson -f docker-compose.jetson.yml up -d --build
 
 # 또는 Jetson에서 단일 프로세스로 AI 엔진 실행 시
 USE_GSTREAMER=1 DEVICE=cuda:0 python main.py \
@@ -373,25 +373,19 @@ docker compose logs -f edgex-kuiper
 docker compose restart cctv-action-layer
 ```
 
-#### 필수 환경변수 (.env 파일)
+#### 운영 환경 변수 기준
 
-`.env.example`을 복사하여 `.env`를 만들고 아래 값을 설정합니다.
+기본 스택은 `.env`, Jetson 통합 스택은 `.env.jetson`을 기준 파일로 사용합니다.
+Jetson은 반드시 `docker compose --env-file .env.jetson -f docker-compose.jetson.yml ...` 형태로 실행하세요.
 
-| 변수 | 설명 | 예시 |
-|------|------|------|
-| `SPEAKER_HOST` | 스피커 IP | `192.168.0.100` |
-| `SPEAKER_USER` | 스피커 인증 사용자명 | `admin` |
-| `SPEAKER_PASSWORD` | 스피커 인증 비밀번호 | _(보안상 직접 입력)_ |
-| `SIGNBOARD_HOST` | 전광판 IP (없으면 비활성화) | `192.168.0.101` |
-| `SIREN_HOST` | 경광등 IP (없으면 비활성화) | `192.168.0.102` |
-| `ACTION_ALARM_COOLDOWN` | 알람 재발生 억제 간격(초) | `10` |
+운영 기준 변수 표와 우선순위는 [docs/operations/DEPLOYMENT_ENVIRONMENT_VARIABLES.md](docs/operations/DEPLOYMENT_ENVIRONMENT_VARIABLES.md)에 모아두었습니다.
 
-> **주의**: `.env` 파일은 `.gitignore`에 포함되어 Git에 커밋되지 않습니다.
-> 실제 비밀번호를 `.env.example`에 직접 쓰지 마세요.
+운영에서 비워두면 안 되는 핵심 값:
+- `MQTT_USER`, `MQTT_PASSWORD`, `AIOT_DB_PASSWORD`
+- `PUBLIC_API_KEY`, `INTERNAL_SERVICE_TOKEN`, `GRAFANA_ADMIN_PASSWORD`
+- 현장 장비를 붙일 경우 `SPEAKER_*`, `SIGNBOARD_*`, `SIREN_*`
 
-필수 환경값:
-- `ACTION_SPEAKER_PASSWORD` — 스피커 인증 비밀번호
-- `EDGEX_METADATA_URL`, `EDGEX_DATA_URL` — EdgeX 외부 연결 시
+`.env`와 `.env.jetson`은 Git에 커밋하지 않고, 실제 비밀번호와 토큰은 예시 파일에 넣지 않습니다.
 
 ### 주요 CLI 옵션
 
@@ -420,8 +414,8 @@ docker compose restart cctv-action-layer
 
 공개 API는 `runners/run_public_api.py`로 실행합니다.
 인증, 요청/응답 예시, 대시보드 연동 기준은
-[docs/PUBLIC_API_GUIDE.md](docs/PUBLIC_API_GUIDE.md)에 정리되어 있습니다.
-바로 호출해볼 `curl` 예시는 [docs/PUBLIC_API_EXAMPLES.md](docs/PUBLIC_API_EXAMPLES.md)를 참고하세요.
+[docs/api/PUBLIC_API_GUIDE.md](docs/api/PUBLIC_API_GUIDE.md)에 정리되어 있습니다.
+바로 호출해볼 `curl` 예시는 [docs/api/PUBLIC_API_EXAMPLES.md](docs/api/PUBLIC_API_EXAMPLES.md)를 참고하세요.
 네트워크가 제한된 현장에서는 API 프로세스가 제공하는 로컬 문서 엔드포인트로도 기본 사용법을 확인할 수 있습니다.
 
 ```bash
@@ -461,7 +455,7 @@ python runners/run_public_api.py --host 0.0.0.0 --port 9000
 
 - `GET /api/v1/appearances/status`
 - 대시보드에서 `enabled`, `ready`, `warnings`, `next_steps`를 기준으로 필터 활성/비활성 및 운영 진단을 표시할 때 사용
-- 상세 계약 문서: [docs/APPEARANCES_STATUS_API.md](docs/APPEARANCES_STATUS_API.md)
+- 상세 계약 문서: [docs/api/APPEARANCES_STATUS_API.md](docs/api/APPEARANCES_STATUS_API.md)
 
 카메라 / 사이트 / 제어 API 해석 기준:
 
@@ -515,23 +509,31 @@ curl -fsS http://localhost:9000/api/v1/readiness
 curl -fsS http://localhost:9000/api/v1/docs/openapi.json
 curl -fsS http://localhost:8769/health
 curl -fsS http://localhost:8769/cameras
-.venv/bin/python scripts/smoke_test_deployment.py
-.venv/bin/python scripts/smoke_test_data_flow.py
-.venv/bin/python scripts/check_runtime_secret_consistency.py --json
+.venv/bin/python scripts/smoke/smoke_test_deployment.py
+.venv/bin/python scripts/smoke/smoke_test_data_flow.py
+.venv/bin/python scripts/health/check_public_api_fd_stability.py
+.venv/bin/python scripts/health/check_runtime_secret_consistency.py --json
 ```
 
 Prometheus/Grafana는 운영 모니터링용 선택 구성입니다. 핵심 시연 검증은 기본 smoke test만으로
 Alert API, Action Layer, Public API readiness를 확인합니다. 모니터링까지 함께 검증할 때만 아래처럼 실행합니다.
 
 ```bash
-.venv/bin/python scripts/smoke_test_deployment.py --include-monitoring
+.venv/bin/python scripts/smoke/smoke_test_deployment.py --include-monitoring
 ```
 
 런타임 로그 정책:
 
+- 새로 생성되는 ISO 8601 시각 문자열은 한국 표준시 오프셋 `+09:00`을 사용합니다.
+- Unix epoch 숫자는 시간대와 무관한 절대시각이므로 기존 형식을 유지합니다.
 - `data/*.jsonl`은 시연/운영 중 계속 누적되는 로컬 로그이므로 git 추적 대상에서 제외합니다.
 - 공유가 필요한 샘플 데이터는 실제 런타임 파일 대신 별도 예제 파일로 분리해서 추가합니다.
-- 장시간 smoke/soak 후 로그가 커지면 파일을 비우거나 백업 후 재시작해도 API 기능에는 영향이 없습니다.
+- 런타임 로그와 외형 crop은 먼저 `./scripts/cleanup/cleanup_runtime_data.sh`로 미리보기합니다.
+- 확인 후 `sudo ./scripts/cleanup/cleanup_runtime_data.sh --apply`를 실행하면 기본 7일 crop 보존, 삭제된 crop의 DB 참조 정리, 200MB JSONL 로그 회전 정책을 반영합니다.
+- 운영 장비에서는 `./scripts/ops/install_runtime_cleanup_timer.sh --dry-run`으로 한국시간 매일 09:00 예약 내용을 확인한 뒤
+  `sudo ./scripts/ops/install_runtime_cleanup_timer.sh`로 일일 정리 타이머를 설치합니다.
+- Docker socket 권한이 제한된 장비에서 표준 운영 점검을 실행할 때는
+  `sudo ./scripts/ops/run_operation_check.sh`를 사용합니다.
 
 Docker socket 권한이 막힌 장비에서는 `docker` 명령 앞에 `sudo`를 붙입니다.
 
@@ -629,7 +631,7 @@ MQTT 토픽 구조:
 edgex/events/device/cctv-device-service/CCTV-Camera-Profile/{device}/{resource}
 ```
 
-상세 내용: `docs/DEVICE_SERVICE_ARCHITECTURE.md`, `docs/ASC_RULE_ENGINE.md`
+상세 내용: `docs/architecture/DEVICE_SERVICE_ARCHITECTURE.md`, `docs/architecture/ASC_RULE_ENGINE.md`
 
 ## 주요 모듈
 
@@ -728,11 +730,11 @@ precision/recall/latency를 확인합니다.
 먼저 manifest에 기록된 모델 파일이 실제로 존재하는지 확인합니다.
 
 ```bash
-python scripts/check_model_report.py --check-artifacts
+python scripts/health/check_model_report.py --check-artifacts
 ```
 
 ```bash
-python scripts/evaluate_detection.py \
+python scripts/ops/evaluate_detection.py \
   --model models/helmet_model_ver0.5.onnx \
   --dataset data/eval/helmet \
   --output reports/eval/helmet_model_ver0.5.json \
@@ -743,7 +745,7 @@ python scripts/evaluate_detection.py \
   --target-classes helmet,head
 ```
 
-상세 절차는 `docs/MLOPS_MODEL_EVALUATION.md`를 참고하세요.
+상세 절차는 `docs/operations/MLOPS_MODEL_EVALUATION.md`를 참고하세요.
 
 ## 문제 해결
 
@@ -758,6 +760,28 @@ python scripts/evaluate_detection.py \
 
 ## 변경 이력
 
+### v1.11.0 (2026-06-08) - 문서/스크립트 구조 정리 및 운영 정리 자동화
+
+- **문서 구조 재분류**
+  - API, 운영, 아키텍처, 보고서 문서를 `docs/api`, `docs/operations`, `docs/architecture`, `docs/reports`로 분류
+  - README와 주요 보고서의 문서 링크를 새 경로 기준으로 갱신
+  - 문서 진입점 `docs/README.md`를 추가해 운영/리뷰 자료를 빠르게 찾을 수 있게 정리
+
+- **스크립트 카테고리 정리**
+  - health, smoke, ops, cleanup, convert 기준으로 `scripts/` 하위 구조를 정리
+  - 운영 점검 명령을 `scripts/health/*`, `scripts/ops/*`, `scripts/smoke/*` 경로로 통일
+  - 런타임 정리 스크립트와 systemd timer 설치 스크립트를 추가
+
+- **런타임 데이터 정리 정책**
+  - 루트 `action_events.db`를 `data/runtime/action_events.db` 기준으로 정리
+  - 회전 로그 `data/alert_api_events.jsonl.1`을 gzip 백업해 `data/archive/`로 이동
+  - appearance crop 보존기간과 JSONL 로그 회전 기준을 README에 반영
+
+- **검증 기록**
+  - `bash -n` 기준 shell script 문법 검사를 통과
+  - `tests/test_runtime_cleanup_scripts.py`, `tests/test_check_public_api_fd_stability.py` 통과
+  - 문서 내 구 `scripts/*` 경로 잔여 패턴 0건 확인
+
 ### v1.10.0 (2026-05-26) - 이벤트 포워딩 및 운영 점검 강화
 
 - **Public API 이벤트 전달 경로 정리**
@@ -770,9 +794,9 @@ python scripts/evaluate_detection.py \
   - 센서 payload fixture와 회귀 테스트 추가
 
 - **운영 점검 자동화 보강**
-  - 런타임 비밀값 일관성 점검: `scripts/check_runtime_secret_consistency.py`
-  - 현장 운영 점검 래퍼: `scripts/run_operation_check.sh`
-  - DeepStream 장시간 안정성 관찰: `scripts/run_deepstream_stability_watch.sh`
+  - 런타임 비밀값 일관성 점검: `scripts/health/check_runtime_secret_consistency.py`
+  - 현장 운영 점검 래퍼: `scripts/ops/run_operation_check.sh`
+  - DeepStream 장시간 안정성 관찰: `scripts/ops/run_deepstream_stability_watch.sh`
   - 운영 체크리스트와 DeepStream 안정성 기록 문서 추가
 
 ### v1.9.0 (2026-05-22) - 성능 최적화 및 안정성 강화

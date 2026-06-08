@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/level-designer.md](../../../../agents/level-designer.md).
+Derived from [agents/level-designer.md](../../../../tooling/agents/level-designer.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

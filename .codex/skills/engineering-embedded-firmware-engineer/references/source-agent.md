@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/engineering-embedded-firmware-engineer.md](../../../../agents/engineering-embedded-firmware-engineer.md).
+Derived from [agents/engineering-embedded-firmware-engineer.md](../../../../tooling/agents/engineering-embedded-firmware-engineer.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

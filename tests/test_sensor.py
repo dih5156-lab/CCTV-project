@@ -3,13 +3,9 @@ test_sensor.py — SirenDevice / SensorConfig 단위 테스트
 
 전략: requests.post를 mock 처리하여 실제 경광등 없이 HTTP 제어 흐름을 검증한다.
 """
-import threading
-from unittest.mock import MagicMock, patch, call
-
-import pytest
+from unittest.mock import MagicMock, patch
 
 from src.devices.siren import SensorConfig, SirenDevice
-
 
 # ---------------------------------------------------------------------------
 # SensorConfig 테스트

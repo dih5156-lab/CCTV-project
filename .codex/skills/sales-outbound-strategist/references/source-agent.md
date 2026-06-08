@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/sales-outbound-strategist.md](../../../../agents/sales-outbound-strategist.md).
+Derived from [agents/sales-outbound-strategist.md](../../../../tooling/agents/sales-outbound-strategist.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

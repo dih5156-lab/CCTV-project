@@ -13,17 +13,17 @@ live_receiver.py
     python live_receiver.py --broker ns_park                 (특정 브로커만)
 """
 
-import sys
-import os
-import json
-import base64
-import struct
 import argparse
-import threading
+import base64
+import json
+import os
 import signal
-from datetime import datetime, timezone
+import sys
+import threading
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from time_utils import now_kst
 
 # ── 의존성 체크 ──────────────────────────────────────
 try:
@@ -121,7 +121,7 @@ def parse_and_print(broker_name: str, topic: str, raw_json: dict):
 
     # 출력
     label = TABLE_NAMES.get(result.table_name, result.table_name)
-    now   = datetime.now().strftime("%H:%M:%S")
+    now   = now_kst().strftime("%H:%M:%S")
 
     data  = {k: v for k, v in result.data.items() if k != "tableName"}
 
@@ -139,7 +139,7 @@ def parse_and_print(broker_name: str, topic: str, raw_json: dict):
 
 def _print(broker_name: str, topic: str, msg: str):
     with _lock:
-        now = datetime.now().strftime("%H:%M:%S")
+        now = now_kst().strftime("%H:%M:%S")
         print(f"[{now}] {broker_name.upper()} │ {topic} │ {msg}")
 
 

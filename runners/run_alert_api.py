@@ -4,7 +4,6 @@ import argparse
 import json
 import logging
 import sys
-from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
@@ -14,6 +13,7 @@ if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
 from runners._shared import setup_runner_logging
+from src.time_utils import now_kst_iso
 
 logger = logging.getLogger("alert-api")
 
@@ -36,7 +36,7 @@ class AlertHandler(BaseHTTPRequestHandler):
         return {
             "service": "cctv-alert-api",
             "status": "up",
-            "checked_at": datetime.now(timezone.utc).isoformat(),
+            "checked_at": now_kst_iso(),
         }
 
     def _root_payload(self) -> dict:
@@ -104,7 +104,7 @@ class AlertHandler(BaseHTTPRequestHandler):
             return
 
         entry = {
-            "receivedAt": datetime.now(timezone.utc).isoformat(),
+            "receivedAt": now_kst_iso(),
             "payload": payload,
         }
         log_path.parent.mkdir(parents=True, exist_ok=True)
@@ -124,8 +124,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="CCTV 내부 Alert API 서버")
     parser.add_argument("--host", default="0.0.0.0")
     parser.add_argument("--port", type=int, default=8000)
-    parser.add_argument("--log-path", default="/app/alert_api_events.jsonl")
-    parser.add_argument("--sensor-log-path", default="/app/sensor_readings.jsonl")
+    parser.add_argument("--log-path", default="/app/data/logs/alert_api_events.jsonl")
+    parser.add_argument("--sensor-log-path", default="/app/data/logs/sensor_readings.jsonl")
     args = parser.parse_args()
 
     server = ThreadingHTTPServer((args.host, args.port), AlertHandler)

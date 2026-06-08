@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import json
 import logging
-from typing import List
+from typing import Any, Iterable, List, Mapping
 from urllib.parse import urlparse, urlunparse
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -27,10 +27,38 @@ def _strip_credentials(url: str) -> str:
     """RTSP URL에서 사용자명/비밀번호를 제거한다."""
     try:
         parsed = urlparse(url)
-        sanitized = parsed._replace(netloc=parsed.hostname or "")
+        sanitized = parsed._replace(netloc=_host_with_port(parsed.hostname, parsed.port))
         return urlunparse(sanitized)
-    except Exception:
+    except ValueError:
         return "[hidden]"
+
+
+def _host_with_port(hostname: str | None, port: int | None) -> str:
+    if not hostname:
+        return ""
+    if port is None:
+        return hostname
+    return f"{hostname}:{port}"
+
+
+def _camera_entries(raw: object) -> Iterable[Mapping[str, Any]]:
+    if isinstance(raw, list):
+        cameras = raw
+    elif isinstance(raw, dict):
+        cameras = raw.get("cameras", [])
+    else:
+        cameras = []
+    return (camera for camera in cameras if isinstance(camera, Mapping))
+
+
+def _camera_from_entry(camera: Mapping[str, Any]) -> CameraOut:
+    url = camera.get("url") or camera.get("rtsp_url") or ""
+    return CameraOut(
+        id=str(camera.get("id", camera.get("camera_id", ""))),
+        name=camera.get("name"),
+        url=_strip_credentials(str(url)) if url else None,
+        zones=camera.get("zones"),
+    )
 
 
 def _load_cameras() -> List[CameraOut]:
@@ -38,19 +66,7 @@ def _load_cameras() -> List[CameraOut]:
         return []
     try:
         raw = json.loads(_CAMERAS_JSON.read_text(encoding="utf-8"))
-        cameras = raw if isinstance(raw, list) else raw.get("cameras", [])
-        result = []
-        for cam in cameras:
-            url = cam.get("url") or cam.get("rtsp_url") or ""
-            result.append(
-                CameraOut(
-                    id=str(cam.get("id", cam.get("camera_id", ""))),
-                    name=cam.get("name"),
-                    url=_strip_credentials(url) if url else None,
-                    zones=cam.get("zones"),
-                )
-            )
-        return result
+        return [_camera_from_entry(camera) for camera in _camera_entries(raw)]
     except (json.JSONDecodeError, OSError) as exc:
         logger.error("cameras.json 로드 실패: %s", exc)
         return []

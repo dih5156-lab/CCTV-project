@@ -4,7 +4,7 @@
 SQLite에 기록하고, 조건부 검색을 지원한다.
 
 사용:
-    log = AppearanceLog("data/appearances.db")
+    log = AppearanceLog("data/runtime/appearances.db")
     log.insert(camera_id="cam_01", track_id=3, upper_color="black", ...)
     results = log.search(upper_color="black", gender="male",
                          time_from="2026-04-13 14:00:00")
@@ -67,7 +67,7 @@ class AppearanceLog:
 
     def __init__(self, db_path: Optional[str] = None) -> None:
         if db_path is None:
-            db_path = os.environ.get("APPEARANCES_DB", "data/appearances.db")
+            db_path = os.environ.get("APPEARANCES_DB", "data/runtime/appearances.db")
         self._db_path = db_path
         self._database = SQLiteDatabase(db_path)
         self._lock = threading.Lock()
@@ -195,50 +195,21 @@ class AppearanceLog:
         offset: int = 0,
     ) -> List[Dict]:
         """조건에 맞는 외형 기록을 검색한다."""
-        clauses: List[str] = []
-        params: List[object] = []
-
-        if camera_id:
-            clauses.append("camera_id = ?")
-            params.append(camera_id)
-        if upper_color:
-            clauses.append("upper_color = ?")
-            params.append(upper_color)
-        if lower_color:
-            clauses.append("lower_color = ?")
-            params.append(lower_color)
-        if has_helmet is not None:
-            clauses.append("has_helmet = ?")
-            params.append(int(has_helmet))
-        if helmet_color:
-            clauses.append("helmet_color = ?")
-            params.append(helmet_color)
-        if has_backpack is not None:
-            clauses.append("has_backpack = ?")
-            params.append(int(has_backpack))
-        if has_handbag is not None:
-            clauses.append("has_handbag = ?")
-            params.append(int(has_handbag))
-        if has_suitcase is not None:
-            clauses.append("has_suitcase = ?")
-            params.append(int(has_suitcase))
-        if gender:
-            clauses.append("gender = ?")
-            params.append(gender)
-        if age_group:
-            clauses.append("age_group = ?")
-            params.append(age_group)
-        if face_name:
-            clauses.append("face_name LIKE ?")
-            params.append(f"%{face_name}%")
-        if time_from is not None:
-            clauses.append("timestamp >= ?")
-            params.append(time_from)
-        if time_to is not None:
-            clauses.append("timestamp <= ?")
-            params.append(time_to)
-
-        where = (" WHERE " + " AND ".join(clauses)) if clauses else ""
+        where, params = self._build_filter_clause(
+            camera_id=camera_id,
+            upper_color=upper_color,
+            lower_color=lower_color,
+            has_helmet=has_helmet,
+            helmet_color=helmet_color,
+            has_backpack=has_backpack,
+            has_handbag=has_handbag,
+            has_suitcase=has_suitcase,
+            gender=gender,
+            age_group=age_group,
+            face_name=face_name,
+            time_from=time_from,
+            time_to=time_to,
+        )
         # limit/offset을 정수로 직접 삽입 (SQL injection 안전: int 강제 변환)
         sql = (
             f"SELECT * FROM appearance_log{where}"
@@ -253,6 +224,15 @@ class AppearanceLog:
 
     def count(self, **kwargs) -> int:
         """검색 조건에 맞는 총 레코드 수를 반환한다."""
+        where, params = self._build_filter_clause(**kwargs)
+        sql = f"SELECT COUNT(*) FROM appearance_log{where}"
+
+        with self._lock:
+            return self._conn.execute(sql, params).fetchone()[0]
+
+    @staticmethod
+    def _build_filter_clause(**filters) -> tuple[str, List[object]]:
+        """검색/count 공통 WHERE 절과 파라미터를 만든다."""
         clauses: List[str] = []
         params: List[object] = []
 
@@ -260,32 +240,29 @@ class AppearanceLog:
             "camera_id", "upper_color", "lower_color", "helmet_color",
             "gender", "age_group",
         ):
-            val = kwargs.get(key)
+            val = filters.get(key)
             if val:
                 clauses.append(f"{key} = ?")
                 params.append(val)
 
         for key in ("has_helmet", "has_backpack", "has_handbag", "has_suitcase"):
-            val = kwargs.get(key)
+            val = filters.get(key)
             if val is not None:
                 clauses.append(f"{key} = ?")
                 params.append(int(val))
 
-        if kwargs.get("face_name"):
+        if filters.get("face_name"):
             clauses.append("face_name LIKE ?")
-            params.append(f"%{kwargs['face_name']}%")
-        if kwargs.get("time_from") is not None:
+            params.append(f"%{filters['face_name']}%")
+        if filters.get("time_from") is not None:
             clauses.append("timestamp >= ?")
-            params.append(kwargs["time_from"])
-        if kwargs.get("time_to") is not None:
+            params.append(filters["time_from"])
+        if filters.get("time_to") is not None:
             clauses.append("timestamp <= ?")
-            params.append(kwargs["time_to"])
+            params.append(filters["time_to"])
 
         where = (" WHERE " + " AND ".join(clauses)) if clauses else ""
-        sql = f"SELECT COUNT(*) FROM appearance_log{where}"
-
-        with self._lock:
-            return self._conn.execute(sql, params).fetchone()[0]
+        return where, params
 
     @staticmethod
     def _row_to_dict(row: sqlite3.Row) -> Dict:

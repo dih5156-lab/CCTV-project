@@ -95,15 +95,14 @@ def _parse_event_data(event: Union[Dict, DetectionEvent]) -> Optional[Dict]:
         if event.event_type == EventType.OTHER:
             return None
 
-        data = event.to_dict()
         return {
             "type_str": event.event_type.value,
             "color": EVENT_COLORS.get(event.event_type, EVENT_COLORS[EventType.OTHER]),
             "confidence": event.confidence,
-            "bbox": data.get("bbox", {}),
+            "bbox": event.bbox_dict(),
             "keypoints": event.keypoints,
             "object_id": event.object_id,
-            "metadata": data.get("metadata") or {},
+            "metadata": dict(event.metadata or {}),
         }
 
     logger.warning("알 수 없는 이벤트 타입: %s", type(event))

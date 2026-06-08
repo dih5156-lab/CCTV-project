@@ -13,10 +13,7 @@ def events_to_nearby_objects(events: Iterable[DetectionEvent]) -> List[Dict[str,
         {
             "class_name": event.class_name or event.event_type.value,
             "event_type": event.event_type.value,
-            "x": event.x,
-            "y": event.y,
-            "width": event.width,
-            "height": event.height,
+            **event.bbox_dict(),
             "confidence": event.confidence,
             "metadata": dict(event.metadata or {}),
         }

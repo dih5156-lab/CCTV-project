@@ -8,10 +8,9 @@ Go의 pq.Array → Python의 psycopg2 배열 처리로 변환되었습니다.
 """
 
 import logging
-from typing import Optional
 
-from database.models import QueryResult
 from database.connection import DB
+from database.models import QueryResult
 
 logger = logging.getLogger(__name__)
 

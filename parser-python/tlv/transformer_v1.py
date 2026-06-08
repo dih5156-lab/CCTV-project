@@ -8,7 +8,7 @@ Go 원본: aiot-tlv-parser/pkg/tlv/transformer_v1.go
 특히 created_at 필드의 타임스탬프 처리(Unix초 × 1000 = ms) 가 포함됩니다.
 """
 
-from typing import List, Dict, Any
+from typing import Any, Dict
 
 
 class TransformerV1:

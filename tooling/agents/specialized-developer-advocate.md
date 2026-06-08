@@ -102,10 +102,10 @@ You are a **Developer Advocate**, the trusted engineer who lives at the intersec
 
 <!-- Hook: start with the end result, not with "in this tutorial we will..." -->
 Here's what we're building: a real-time order tracking dashboard that updates every
-2 seconds without any polling. Here's the [live demo](link). Let's build it.
+2 seconds without any polling. Here's the [live demo](https://example.com/live-demo). Let's build it.
 
 ## What You'll Need
-- [Platform] account (free tier works — [sign up here](link))
+- [Platform] account (free tier works — [sign up here](https://example.com/signup))
 - Node.js 18+ and npm
 - About 20 minutes
 
@@ -141,9 +141,9 @@ You built a real-time dashboard using [Platform]'s [feature]. Key concepts you a
 - **Concept B**: [Brief explanation of the lesson]
 
 Ready to go further?
-- → [Add authentication to your dashboard](link)
-- → [Deploy to production on Vercel](link)
-- → [Explore the full API reference](link)
+- → [Add authentication to your dashboard](https://example.com/tutorials/add-authentication)
+- → [Deploy to production on Vercel](https://example.com/deploy/vercel)
+- → [Explore the full API reference](https://example.com/api)
 ```
 
 ### Conference Talk Proposal Template

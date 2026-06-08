@@ -9,7 +9,6 @@ Go의 메서드 수신자(receiver) 방식 → Python 함수 방식으로 변환
 
 from urllib.parse import urlparse
 
-
 # ──────────────────────────────────────────────
 # 유효성 검사 함수들
 # Go: func (c *Config) Validate() error

@@ -9,17 +9,16 @@ test_mqtt.py — MqttEventPublisher 단위 테스트
 """
 
 import json
+from unittest.mock import MagicMock, patch
 
 import pytest
-from unittest.mock import MagicMock, patch
 
 from src.protocols._mqtt_factory import create_mqtt_client
 from src.protocols.mqtt_publisher import (
-    MqttEventPublisher,
     _RECONNECT_MAX_DELAY,
     _RECONNECT_MIN_DELAY,
+    MqttEventPublisher,
 )
-
 
 # ---------------------------------------------------------------------------
 # 후처리 헬퍼: connected publisher fixture
@@ -204,6 +203,41 @@ class TestPublishWhenConnected:
         for _ in range(5):
             pub.publish_event({"camera_id": "c", "type": "t"})
         assert pub.get_stats()["publish_count"] == 5
+
+
+class TestPublishWithOutbox:
+    def test_failed_publish_is_kept_pending(self, tmp_path):
+        pub = _connected_publisher(outbox_db_path=str(tmp_path / "mqtt_outbox.db"))
+        bad_result = MagicMock()
+        bad_result.rc = 1
+        pub._client.publish.return_value = bad_result
+
+        assert pub.publish_event({"event_id": "evt-fail", "camera_id": "cam1", "type": "head"}) is False
+
+        stats = pub.get_stats()
+        assert stats["outbox_enabled"] is True
+        assert stats["outbox_pending_count"] == 1
+        pub.disconnect()
+
+    def test_successful_publish_marks_outbox_sent(self, tmp_path):
+        pub = _connected_publisher(outbox_db_path=str(tmp_path / "mqtt_outbox.db"))
+
+        assert pub.publish_event({"event_id": "evt-ok", "camera_id": "cam1", "type": "head"}) is True
+
+        assert pub.get_stats()["outbox_pending_count"] == 0
+        pub.disconnect()
+
+    def test_replay_pending_once_marks_sent(self, tmp_path):
+        pub = _connected_publisher(outbox_db_path=str(tmp_path / "mqtt_outbox.db"))
+        pub._outbox.save_pending(  # type: ignore[union-attr]
+            "cctv/ai/events/cam1/head",
+            {"event_id": "evt-replay", "camera_id": "cam1", "type": "head"},
+        )
+
+        assert pub.replay_pending_once() == 1
+        assert pub.get_stats()["outbox_pending_count"] == 0
+        assert pub.get_stats()["outbox_replay_count"] == 1
+        pub.disconnect()
 
 
 # ---------------------------------------------------------------------------

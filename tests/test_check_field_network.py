@@ -20,7 +20,7 @@ if str(SCRIPTS_DIR) not in sys.path:
 
 check_field_network = _load_script_module(
     "check_field_network",
-    "scripts/check_field_network.py",
+    "scripts/health/check_field_network.py",
 )
 
 

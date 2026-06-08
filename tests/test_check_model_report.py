@@ -13,7 +13,7 @@ def _load_script_module(name: str, relative_path: str):
     return module
 
 
-check_model_report = _load_script_module("check_model_report", "scripts/check_model_report.py")
+check_model_report = _load_script_module("check_model_report", "scripts/health/check_model_report.py")
 
 
 def test_evaluate_criteria_passes_when_all_thresholds_met():

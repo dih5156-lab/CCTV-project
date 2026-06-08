@@ -2,6 +2,10 @@ server {
     listen 7000;
     server_name _;
 
+    # Re-resolve Docker service DNS so upstream container IP changes do not cause stale routing.
+    resolver 127.0.0.11 ipv6=off valid=10s;
+    resolver_timeout 2s;
+
     root /usr/share/nginx/html;
     index public-demo.html;
 
@@ -11,7 +15,9 @@ server {
     }
 
     location /public-api/ {
-        proxy_pass http://cctv-public-api:9000/;
+        set $public_api_upstream http://cctv-public-api:9000;
+        rewrite ^/public-api/(.*)$ /$1 break;
+        proxy_pass $public_api_upstream;
         proxy_http_version 1.1;
         proxy_buffering off;
         proxy_read_timeout 60s;
@@ -36,7 +42,9 @@ server {
     }
 
     location /webrtc/ {
-        proxy_pass http://cctv-media-server:8889/;
+        set $webrtc_upstream http://cctv-media-server:8889;
+        rewrite ^/webrtc/(.*)$ /$1 break;
+        proxy_pass $webrtc_upstream;
         proxy_http_version 1.1;
         proxy_buffering off;
         proxy_cache off;
@@ -49,7 +57,9 @@ server {
     }
 
     location /zone-api/ {
-        proxy_pass http://cctv-ai-engine:8765/;
+        set $zone_api_upstream http://cctv-ai-engine:8765;
+        rewrite ^/zone-api/(.*)$ /$1 break;
+        proxy_pass $zone_api_upstream;
         proxy_http_version 1.1;
         proxy_buffering off;
         proxy_read_timeout 60s;
@@ -60,7 +70,9 @@ server {
     }
 
     location /face-api/ {
-        proxy_pass http://cctv-ai-engine:8767/;
+        set $face_api_upstream http://cctv-ai-engine:8767;
+        rewrite ^/face-api/(.*)$ /$1 break;
+        proxy_pass $face_api_upstream;
         proxy_http_version 1.1;
         proxy_buffering off;
         proxy_read_timeout 60s;
@@ -71,7 +83,9 @@ server {
     }
 
     location /model-api/ {
-        proxy_pass http://cctv-ai-engine:8766/;
+        set $model_api_upstream http://cctv-ai-engine:8766;
+        rewrite ^/model-api/(.*)$ /$1 break;
+        proxy_pass $model_api_upstream;
         proxy_http_version 1.1;
         proxy_buffering off;
         proxy_read_timeout 60s;

@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/specialized-developer-advocate.md](../../../../agents/specialized-developer-advocate.md).
+Derived from [agents/specialized-developer-advocate.md](../../../../tooling/agents/specialized-developer-advocate.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

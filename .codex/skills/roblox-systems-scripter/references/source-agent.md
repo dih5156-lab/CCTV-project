@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/roblox-systems-scripter.md](../../../../agents/roblox-systems-scripter.md).
+Derived from [agents/roblox-systems-scripter.md](../../../../tooling/agents/roblox-systems-scripter.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

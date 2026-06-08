@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/godot-gameplay-scripter.md](../../../../agents/godot-gameplay-scripter.md).
+Derived from [agents/godot-gameplay-scripter.md](../../../../tooling/agents/godot-gameplay-scripter.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

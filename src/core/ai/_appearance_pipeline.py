@@ -7,7 +7,7 @@ import os
 import time
 from collections import Counter, deque
 from pathlib import Path
-from typing import Deque, Dict, List, Optional, TYPE_CHECKING, Tuple
+from typing import TYPE_CHECKING, Deque, Dict, List, Optional, Tuple
 
 import cv2
 import numpy as np

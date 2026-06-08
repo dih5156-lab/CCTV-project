@@ -20,7 +20,6 @@ Routes:
     GET    /known_faces/{filename} → 등록 얼굴 이미지 파일 서빙
 """
 
-import json
 import logging
 import re
 import threading
@@ -68,11 +67,7 @@ class FaceApiHandler(BaseApiHandler):
     # ------------------------------------------------------------------
 
     def do_OPTIONS(self):  # noqa: N802
-        self.send_response(200)
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
-        self.end_headers()
+        self._respond_options("GET, POST, DELETE, OPTIONS")
 
     def do_GET(self):  # noqa: N802
         if not self._check_internal_token():

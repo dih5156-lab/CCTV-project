@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/design-ux-researcher.md](../../../../agents/design-ux-researcher.md).
+Derived from [agents/design-ux-researcher.md](../../../../tooling/agents/design-ux-researcher.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

@@ -4,13 +4,12 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field
 
 # EventType 을 str,Enum 으로 직접 재사용 — 중복 정의 제거
 from ...core.events import EventType as EventTypeOut  # noqa: F401  (re-export)
-
 
 # ---------------------------------------------------------------------------
 # Enum re-exports (서버팀은 이 값들을 사용한다)

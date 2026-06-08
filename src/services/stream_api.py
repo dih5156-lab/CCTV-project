@@ -87,10 +87,7 @@ class StreamApiHandler(BaseApiHandler):
         return self.server.processor  # type: ignore[attr-defined]
 
     def do_OPTIONS(self):  # noqa: N802
-        self.send_response(200)
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, OPTIONS")
-        self.end_headers()
+        self._respond_options("GET, OPTIONS", headers="")
 
     def do_GET(self):  # noqa: N802
         path = self.path.split("?")[0].rstrip("/")
@@ -115,6 +112,7 @@ class StreamApiHandler(BaseApiHandler):
     def _health(self) -> None:
         proc = self._processor()
         cameras = list(proc.cameras.keys())
+        stream_width, stream_height = _read_stream_size()
         self._respond(
             200,
             self._build_health_payload(
@@ -125,8 +123,8 @@ class StreamApiHandler(BaseApiHandler):
                 stream_fps=_read_stream_fps(),
                 jpeg_quality=_read_jpeg_quality(),
                 stream_size={
-                    "width": _read_stream_size()[0],
-                    "height": _read_stream_size()[1],
+                    "width": stream_width,
+                    "height": stream_height,
                 },
             ),
         )

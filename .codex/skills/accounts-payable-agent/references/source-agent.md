@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/accounts-payable-agent.md](../../../../agents/accounts-payable-agent.md).
+Derived from [agents/accounts-payable-agent.md](../../../../tooling/agents/accounts-payable-agent.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

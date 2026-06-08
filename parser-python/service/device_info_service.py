@@ -13,7 +13,7 @@ Go의 sync/atomic.Pointer → Python의 threading.Lock + 참조 교체 방식으
 
 import logging
 import threading
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
 logger = logging.getLogger(__name__)
 

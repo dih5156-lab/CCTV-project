@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/support-executive-summary-generator.md](../../../../agents/support-executive-summary-generator.md).
+Derived from [agents/support-executive-summary-generator.md](../../../../tooling/agents/support-executive-summary-generator.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

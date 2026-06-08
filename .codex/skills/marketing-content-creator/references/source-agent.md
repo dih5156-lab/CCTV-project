@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/marketing-content-creator.md](../../../../agents/marketing-content-creator.md).
+Derived from [agents/marketing-content-creator.md](../../../../tooling/agents/marketing-content-creator.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

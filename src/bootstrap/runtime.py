@@ -254,7 +254,10 @@ def create_processor(cfg: AppConfig) -> BaseProcessor:
     """
     if os.environ.get("USE_DEEPSTREAM", "0") == "1":
         try:
-            from ..core.deepstream_processor import DeepStreamProcessor, DEEPSTREAM_AVAILABLE
+            from ..core.deepstream_processor import (
+                DEEPSTREAM_AVAILABLE,
+                DeepStreamProcessor,
+            )
 
             if not DEEPSTREAM_AVAILABLE:
                 logger.warning(
@@ -284,17 +287,37 @@ def start_processor_runtime(
     processor_refs: Optional[list] = None,
 ) -> None:
     """프로세서를 생성하고 카메라 연결부터 실행 루프까지 담당한다."""
-    if not camera_list:
-        logger.error("카메라가 제공되지 않았습니다. 프로세서를 시작할 수 없습니다.")
-        return
-
     processor = create_processor(cfg)
     if processor_refs is not None:
         processor_refs.append(processor)
 
+    if api_port > 0:
+        start_zone_api_server(processor, cameras_json_path, api_port, presets_path=zone_presets_path)
+        start_camera_model_api_server(processor, cameras_json_path, api_port + 1)
+        start_face_api_server(processor, api_port + 2)
+
+    stream_port = get_env_int("STREAM_PORT", 0, minimum=0, maximum=65535, logger=logger)
+    stream_api_enabled = get_env_bool("STREAM_API_ENABLED", False)
+    if stream_port > 0 or stream_api_enabled:
+        start_stream_api_server(processor, stream_port or (api_port + 3 if api_port > 0 else 8769))
+    elif api_port > 0:
+        start_stream_api_server(processor, api_port + 3)
+
+    def _keep_api_runtime_alive(reason: str) -> None:
+        logger.error("%s API 서버는 유지하고 추론 파이프라인은 시작하지 않습니다.", reason)
+        try:
+            while True:
+                time.sleep(30)
+        except KeyboardInterrupt:
+            logger.info("사용자가 중단함 (Ctrl+C)")
+
+    if not camera_list:
+        _keep_api_runtime_alive("카메라가 제공되지 않았습니다.")
+        return
+
     active_cameras = collect_active_cameras(camera_list, processor)
     if not active_cameras:
-        logger.error("활성화된 카메라가 없습니다.")
+        _keep_api_runtime_alive("활성화된 카메라가 없습니다.")
         return
 
     results = connect_cameras_parallel(active_cameras, processor)
@@ -313,54 +336,85 @@ def start_processor_runtime(
         added_count += initial_retry(active_cameras, processor)
 
     if added_count == 0:
-        logger.error("카메라 연결에 최종 실패했습니다. 종료합니다.")
+        _keep_api_runtime_alive("카메라 연결에 최종 실패했습니다.")
         return
 
     logger.info("%d개 카메라로 프로세서 시작 중...", added_count)
-
-    if api_port > 0:
-        start_zone_api_server(processor, cameras_json_path, api_port, presets_path=zone_presets_path)
-        start_camera_model_api_server(processor, cameras_json_path, api_port + 1)
-        start_face_api_server(processor, api_port + 2)
-
-    stream_port = get_env_int("STREAM_PORT", 0, minimum=0, maximum=65535, logger=logger)
-    stream_api_enabled = get_env_bool("STREAM_API_ENABLED", False)
-    if stream_port > 0 or stream_api_enabled:
-        start_stream_api_server(processor, stream_port or (api_port + 3 if api_port > 0 else 8769))
-    elif api_port > 0:
-        start_stream_api_server(processor, api_port + 3)
 
     if cfg.display:
         drawer = ZoneDrawer(processor, cameras_json_path)
         processor.set_zone_drawer(drawer)
         logger.info("구역 그리기 모드 사용 가능: 디스플레이 창에서 'd' 키를 누르세요")
 
+    restart_on_pipeline_error = get_env_bool("AI_ENGINE_RESTART_ON_PIPELINE_ERROR", True)
+    restart_delay_sec = get_env_int(
+        "AI_ENGINE_RESTART_DELAY_SEC",
+        10,
+        minimum=1,
+        maximum=3600,
+        logger=logger,
+    )
+
     try:
-        processor.start()
-        logger.info("프로세서가 시작되었습니다. 중지하려면 Ctrl+C를 누르세요.")
+        while True:
+            next_restart_delay_sec = float(restart_delay_sec)
+            try:
+                processor.start()
+                logger.info("프로세서가 시작되었습니다. 중지하려면 Ctrl+C를 누르세요.")
 
-        if cfg.display:
-            logger.info("디스플레이 루프 시작 (메인 스레드)")
-            processor.start_display_loop()
-        else:
-            last_stats = time.time()
-            while processor.running and not processor.stop_event.is_set():
-                time.sleep(0.5)
-                if time.time() - last_stats >= 10:
-                    processor.print_stats()
+                if cfg.display:
+                    logger.info("디스플레이 루프 시작 (메인 스레드)")
+                    processor.start_display_loop()
+                else:
                     last_stats = time.time()
+                    while processor.running and not processor.stop_event.is_set():
+                        time.sleep(0.5)
+                        if time.time() - last_stats >= 10:
+                            processor.print_stats()
+                            last_stats = time.time()
 
-        if processor.stop_event.is_set() and processor.running:
-            logger.info("디스플레이 종료 감지 → 프로세서 중지")
+                if processor.stop_event.is_set() and processor.running:
+                    logger.warning("프로세서 중지 이벤트 감지 → 파이프라인 재시작 준비")
+            except KeyboardInterrupt:
+                raise
+            except Exception as exc:
+                source_retry_delay = (
+                    processor.next_source_retry_delay()
+                    if hasattr(processor, "next_source_retry_delay")
+                    else None
+                )
+                if source_retry_delay is not None:
+                    next_restart_delay_sec = max(float(restart_delay_sec), float(source_retry_delay))
+                    logger.warning(
+                        "활성 DeepStream 소스가 없습니다. %.0f초 후 소스 backoff 종료에 맞춰 재시도합니다.",
+                        next_restart_delay_sec,
+                    )
+                else:
+                    logger.error("처리 중 오류 발생: %s", exc)
+                    traceback.print_exc()
+            finally:
+                logger.info("프로세서 중지 중...")
+                processor.stop()
+                logger.info("프로세서가 중지되었습니다.")
+
+            if cfg.display or not restart_on_pipeline_error:
+                break
+
+            source_retry_delay = (
+                processor.next_source_retry_delay()
+                if hasattr(processor, "next_source_retry_delay")
+                else None
+            )
+            if source_retry_delay is not None:
+                next_restart_delay_sec = max(float(restart_delay_sec), float(source_retry_delay))
+
+            logger.warning(
+                "AI 엔진 프로세스는 유지하고 %.0f초 후 파이프라인만 재시작합니다.",
+                next_restart_delay_sec,
+            )
+            time.sleep(next_restart_delay_sec)
     except KeyboardInterrupt:
         logger.info("사용자가 중단함 (Ctrl+C)")
-    except Exception as exc:
-        logger.error("처리 중 오류 발생: %s", exc)
-        traceback.print_exc()
-    finally:
-        logger.info("프로세서 중지 중...")
-        processor.stop()
-        logger.info("프로세서가 중지되었습니다.")
 
 
 def register_shutdown_handlers(processor_refs: list) -> None:

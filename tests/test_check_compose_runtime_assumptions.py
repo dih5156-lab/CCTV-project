@@ -15,7 +15,7 @@ def _load_script_module(name: str, relative_path: str):
 
 runtime_checks = _load_script_module(
     "check_compose_runtime_assumptions",
-    "scripts/check_compose_runtime_assumptions.py",
+    "scripts/health/check_compose_runtime_assumptions.py",
 )
 
 
@@ -190,6 +190,46 @@ def test_aiot_db_secret_wiring_fails_on_split_secret_sources():
     )
     assert result["passed"] is False
     assert "AIOT_DB_PASSWORD" in result["detail"]
+
+
+def test_runtime_path_convergence_requires_runtime_and_logs_paths():
+    compose = """
+services:
+  cctv-alert-api:
+    command:
+      - /app/data/logs/alert_api_events.jsonl
+      - /app/data/logs/sensor_readings.jsonl
+  cctv-action-layer:
+    environment:
+      DB_PATH: /app/data/runtime/action_events.db
+  cctv-public-api:
+    environment:
+      APPEARANCES_DB: /app/data/runtime/appearances.db
+      APPEARANCE_CROP_DIR: /app/data/runtime/appearance_crops
+      ALERT_FALLBACK_LOG: /app/data/logs/public_api_fallback.jsonl
+"""
+
+    result = runtime_checks.check_runtime_path_convergence(
+        compose_text=compose,
+        jetson_compose_text=compose,
+        env_example_text=compose,
+        jetson_env_example_text=compose,
+    )
+
+    assert result["passed"] is True
+
+
+def test_runtime_path_convergence_rejects_legacy_paths():
+    result = runtime_checks.check_runtime_path_convergence(
+        compose_text="/app/data/appearances.db\n/app/data/logs/alert_api_events.jsonl",
+        jetson_compose_text="/app/logs/alert_api_events.jsonl",
+        env_example_text="/app/data/appearance_crops",
+        jetson_env_example_text="/app/action_events.db",
+    )
+
+    assert result["passed"] is False
+    assert "/app/data/appearances.db" in result["detail"]
+    assert "/app/logs" in result["detail"]
 
 
 def test_mqtt_auth_config_requires_app_rules_engine_rendered_config(tmp_path):

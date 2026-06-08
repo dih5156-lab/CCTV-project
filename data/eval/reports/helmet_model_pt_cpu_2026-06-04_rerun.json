@@ -1,0 +1,1300 @@
+{
+  "model": "models/helmet_model.pt",
+  "dataset": "data/eval/helmet",
+  "image_count": 100,
+  "settings": {
+    "imgsz": 320,
+    "conf": 0.25,
+    "iou": 0.5,
+    "device": "cpu",
+    "target_classes": [
+      "helmet"
+    ],
+    "warmup": 1
+  },
+  "latency": {
+    "avg_ms": 916.857,
+    "p50_ms": 892.617,
+    "p95_ms": 1163.209
+  },
+  "metrics": {
+    "overall": {
+      "tp": 260,
+      "fp": 45,
+      "fn": 21,
+      "precision": 0.8525,
+      "recall": 0.9253,
+      "f1": 0.8874
+    },
+    "by_class": {
+      "helmet": {
+        "tp": 260,
+        "fp": 45,
+        "fn": 21,
+        "precision": 0.8525,
+        "recall": 0.9253,
+        "f1": 0.8874
+      }
+    }
+  },
+  "per_image": [
+    {
+      "image": "images/005298_jpg.rf.647d148af5d961d8bbc041f172247170.jpg",
+      "ground_truth": 8,
+      "predictions": 7,
+      "latency_ms": 865.14,
+      "counts": {
+        "helmet": {
+          "tp": 4,
+          "fp": 3,
+          "fn": 4
+        }
+      }
+    },
+    {
+      "image": "images/005299_jpg.rf.71165960b763340fddc7e7cd0e448cb5.jpg",
+      "ground_truth": 1,
+      "predictions": 2,
+      "latency_ms": 833.095,
+      "counts": {
+        "helmet": {
+          "tp": 1,
+          "fp": 1,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005300_jpg.rf.1670526983a03ed2ccc2ff28c90e0040.jpg",
+      "ground_truth": 1,
+      "predictions": 1,
+      "latency_ms": 875.386,
+      "counts": {
+        "helmet": {
+          "tp": 0,
+          "fp": 1,
+          "fn": 1
+        }
+      }
+    },
+    {
+      "image": "images/005301_jpg.rf.2c59fae9c52694ed1895a795c23da613.jpg",
+      "ground_truth": 0,
+      "predictions": 0,
+      "latency_ms": 834.228,
+      "counts": {}
+    },
+    {
+      "image": "images/005302_jpg.rf.d378ca349a23d7c1099acdd1617eeeed.jpg",
+      "ground_truth": 1,
+      "predictions": 2,
+      "latency_ms": 947.637,
+      "counts": {
+        "helmet": {
+          "tp": 1,
+          "fp": 1,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005303_jpg.rf.336d9f3f085ab79ab3d26e48dffb0274.jpg",
+      "ground_truth": 4,
+      "predictions": 7,
+      "latency_ms": 732.809,
+      "counts": {
+        "helmet": {
+          "tp": 3,
+          "fp": 4,
+          "fn": 1
+        }
+      }
+    },
+    {
+      "image": "images/005304_jpg.rf.68023ed553bb1d711826d6e1f185ea39.jpg",
+      "ground_truth": 4,
+      "predictions": 4,
+      "latency_ms": 764.952,
+      "counts": {
+        "helmet": {
+          "tp": 4,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005305_jpg.rf.4bfbcf630358ee01c2a6a2c1da620f63.jpg",
+      "ground_truth": 1,
+      "predictions": 1,
+      "latency_ms": 726.7,
+      "counts": {
+        "helmet": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005306_jpg.rf.99ad10b15eec3e38011b1b292ce1fae3.jpg",
+      "ground_truth": 1,
+      "predictions": 1,
+      "latency_ms": 660.031,
+      "counts": {
+        "helmet": {
+          "tp": 0,
+          "fp": 1,
+          "fn": 1
+        }
+      }
+    },
+    {
+      "image": "images/005307_jpg.rf.4e4a0559c0186ba6ca5673ccf5b9fc34.jpg",
+      "ground_truth": 2,
+      "predictions": 1,
+      "latency_ms": 723.073,
+      "counts": {
+        "helmet": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 1
+        }
+      }
+    },
+    {
+      "image": "images/005308_jpg.rf.4403a2f5f05f7715de6bdd234a24f8e3.jpg",
+      "ground_truth": 2,
+      "predictions": 4,
+      "latency_ms": 704.513,
+      "counts": {
+        "helmet": {
+          "tp": 2,
+          "fp": 2,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005309_jpg.rf.7857830095f72844b36a8bda9f820a12.jpg",
+      "ground_truth": 2,
+      "predictions": 3,
+      "latency_ms": 915.757,
+      "counts": {
+        "helmet": {
+          "tp": 2,
+          "fp": 1,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005310_jpg.rf.96dd2e4fbbe72f9761829db58e0f058b.jpg",
+      "ground_truth": 1,
+      "predictions": 1,
+      "latency_ms": 724.66,
+      "counts": {
+        "helmet": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005311_jpg.rf.6c16e0d1052d37c4df5501a7c7b7d3b4.jpg",
+      "ground_truth": 3,
+      "predictions": 3,
+      "latency_ms": 668.227,
+      "counts": {
+        "helmet": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005312_jpg.rf.2a028a462ee82f38ae6bc8dfdf9dbb60.jpg",
+      "ground_truth": 1,
+      "predictions": 1,
+      "latency_ms": 742.335,
+      "counts": {
+        "helmet": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005313_jpg.rf.8268dd5f74c93be1a401b9a3cac1eb98.jpg",
+      "ground_truth": 1,
+      "predictions": 1,
+      "latency_ms": 1020.896,
+      "counts": {
+        "helmet": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005314_jpg.rf.08536d6c97e260ba6f876f4411ae408a.jpg",
+      "ground_truth": 3,
+      "predictions": 3,
+      "latency_ms": 795.734,
+      "counts": {
+        "helmet": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005315_jpg.rf.4fdcc0e63e92be506ac178d2f6595499.jpg",
+      "ground_truth": 2,
+      "predictions": 3,
+      "latency_ms": 1050.439,
+      "counts": {
+        "helmet": {
+          "tp": 2,
+          "fp": 1,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005316_jpg.rf.45c8dd29cadc2f60f46a4ce0a4f9b9b9.jpg",
+      "ground_truth": 3,
+      "predictions": 4,
+      "latency_ms": 1073.408,
+      "counts": {
+        "helmet": {
+          "tp": 3,
+          "fp": 1,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005317_jpg.rf.426b1986b640d1eb913bd589805f2ddf.jpg",
+      "ground_truth": 6,
+      "predictions": 7,
+      "latency_ms": 836.303,
+      "counts": {
+        "helmet": {
+          "tp": 5,
+          "fp": 2,
+          "fn": 1
+        }
+      }
+    },
+    {
+      "image": "images/005318_jpg.rf.0d498661bcf0bbaa958b91cc6a2f2f27.jpg",
+      "ground_truth": 4,
+      "predictions": 5,
+      "latency_ms": 1021.714,
+      "counts": {
+        "helmet": {
+          "tp": 4,
+          "fp": 1,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005319_jpg.rf.563beb6078cfab7bcf311291b8b1124a.jpg",
+      "ground_truth": 1,
+      "predictions": 1,
+      "latency_ms": 825.27,
+      "counts": {
+        "helmet": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005320_jpg.rf.f664b5f00bbca9858b244b4f0b810f6b.jpg",
+      "ground_truth": 1,
+      "predictions": 1,
+      "latency_ms": 1235.42,
+      "counts": {
+        "helmet": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005321_jpg.rf.b5f0e98c15af5be7f4e08b30d977da11.jpg",
+      "ground_truth": 2,
+      "predictions": 2,
+      "latency_ms": 1050.958,
+      "counts": {
+        "helmet": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005322_jpg.rf.38c87c9a9999606bd5936d6ddb6915b2.jpg",
+      "ground_truth": 1,
+      "predictions": 1,
+      "latency_ms": 1040.755,
+      "counts": {
+        "helmet": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005323_jpg.rf.15a423f0458bd62c2c98431cb50b05b8.jpg",
+      "ground_truth": 3,
+      "predictions": 3,
+      "latency_ms": 1098.139,
+      "counts": {
+        "helmet": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005324_jpg.rf.226f04b937eb57a903d93fecc61f39fe.jpg",
+      "ground_truth": 1,
+      "predictions": 1,
+      "latency_ms": 1005.771,
+      "counts": {
+        "helmet": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005325_jpg.rf.45a2fcd397555b21cb09401d1a044d25.jpg",
+      "ground_truth": 0,
+      "predictions": 0,
+      "latency_ms": 959.334,
+      "counts": {}
+    },
+    {
+      "image": "images/005326_jpg.rf.8ffda053c92d9c229342601dc7da084f.jpg",
+      "ground_truth": 1,
+      "predictions": 2,
+      "latency_ms": 876.823,
+      "counts": {
+        "helmet": {
+          "tp": 1,
+          "fp": 1,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005327_jpg.rf.7ac2e444fcb36d45bed1585055b3d53c.jpg",
+      "ground_truth": 4,
+      "predictions": 4,
+      "latency_ms": 761.785,
+      "counts": {
+        "helmet": {
+          "tp": 4,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005328_jpg.rf.ed0cbdb140a976ea04a2ffa39f4c82f1.jpg",
+      "ground_truth": 1,
+      "predictions": 1,
+      "latency_ms": 1092.697,
+      "counts": {
+        "helmet": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005329_jpg.rf.78fa54f030de5bdd33eab3b7425595fa.jpg",
+      "ground_truth": 1,
+      "predictions": 1,
+      "latency_ms": 881.003,
+      "counts": {
+        "helmet": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005330_jpg.rf.1ed1652556d198b9f2cb06da0064857e.jpg",
+      "ground_truth": 2,
+      "predictions": 3,
+      "latency_ms": 1138.755,
+      "counts": {
+        "helmet": {
+          "tp": 2,
+          "fp": 1,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005331_jpg.rf.662d6a4a732a30ac82b2071bc953baaa.jpg",
+      "ground_truth": 12,
+      "predictions": 10,
+      "latency_ms": 1202.075,
+      "counts": {
+        "helmet": {
+          "tp": 10,
+          "fp": 0,
+          "fn": 2
+        }
+      }
+    },
+    {
+      "image": "images/005332_jpg.rf.a6bd08fb3835fd674f74a516b3516563.jpg",
+      "ground_truth": 3,
+      "predictions": 3,
+      "latency_ms": 990.197,
+      "counts": {
+        "helmet": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005333_jpg.rf.41ecee9b4043e0274097e2f44b6d11f1.jpg",
+      "ground_truth": 3,
+      "predictions": 3,
+      "latency_ms": 1340.33,
+      "counts": {
+        "helmet": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005334_jpg.rf.6f6803db9bbc52b791025b568cc0b083.jpg",
+      "ground_truth": 2,
+      "predictions": 3,
+      "latency_ms": 1240.033,
+      "counts": {
+        "helmet": {
+          "tp": 2,
+          "fp": 1,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005335_jpg.rf.747d6f6b89717d5f35d0b785c27bb6d8.jpg",
+      "ground_truth": 1,
+      "predictions": 1,
+      "latency_ms": 878.656,
+      "counts": {
+        "helmet": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005336_jpg.rf.aca59abc9a6f604c2850712aad51f172.jpg",
+      "ground_truth": 2,
+      "predictions": 2,
+      "latency_ms": 885.609,
+      "counts": {
+        "helmet": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005337_jpg.rf.2fa22926b53bf1c1e9dddb65bee01a90.jpg",
+      "ground_truth": 3,
+      "predictions": 4,
+      "latency_ms": 789.959,
+      "counts": {
+        "helmet": {
+          "tp": 3,
+          "fp": 1,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005338_jpg.rf.e84a0c3ab9d1e434c5ad30c3bfba91ec.jpg",
+      "ground_truth": 2,
+      "predictions": 2,
+      "latency_ms": 937.869,
+      "counts": {
+        "helmet": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005339_jpg.rf.547220c442b0bcfdea7e6895c66d7039.jpg",
+      "ground_truth": 1,
+      "predictions": 1,
+      "latency_ms": 811.004,
+      "counts": {
+        "helmet": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005340_jpg.rf.ef8f13ee38e0734f4bf604f6237628fc.jpg",
+      "ground_truth": 1,
+      "predictions": 1,
+      "latency_ms": 790.138,
+      "counts": {
+        "helmet": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005341_jpg.rf.ce8b261793ba2b9db3a526d36581920f.jpg",
+      "ground_truth": 2,
+      "predictions": 2,
+      "latency_ms": 896.634,
+      "counts": {
+        "helmet": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005342_jpg.rf.0b57e9bad07ceb6bf086f7e23e1e1224.jpg",
+      "ground_truth": 3,
+      "predictions": 3,
+      "latency_ms": 1105.647,
+      "counts": {
+        "helmet": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005343_jpg.rf.895a7b267aacfe87b7548dae58e752ac.jpg",
+      "ground_truth": 5,
+      "predictions": 5,
+      "latency_ms": 982.233,
+      "counts": {
+        "helmet": {
+          "tp": 5,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005344_jpg.rf.544d70e7c48df8b4aa396e3dacd7cf57.jpg",
+      "ground_truth": 2,
+      "predictions": 2,
+      "latency_ms": 800.721,
+      "counts": {
+        "helmet": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005345_jpg.rf.8b594f8b30f1b5881959f4a41ba37288.jpg",
+      "ground_truth": 1,
+      "predictions": 1,
+      "latency_ms": 802.479,
+      "counts": {
+        "helmet": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005346_jpg.rf.8bd69fbd424d324d18fe1474a91261ab.jpg",
+      "ground_truth": 9,
+      "predictions": 8,
+      "latency_ms": 875.758,
+      "counts": {
+        "helmet": {
+          "tp": 8,
+          "fp": 0,
+          "fn": 1
+        }
+      }
+    },
+    {
+      "image": "images/005347_jpg.rf.316cc55645840f1529684e73536caa4c.jpg",
+      "ground_truth": 2,
+      "predictions": 2,
+      "latency_ms": 1057.979,
+      "counts": {
+        "helmet": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005348_jpg.rf.fe5c35e067b60bdf75d8bb5f9ce17817.jpg",
+      "ground_truth": 2,
+      "predictions": 2,
+      "latency_ms": 914.529,
+      "counts": {
+        "helmet": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005349_jpg.rf.0fe50f22e22fc4d04dc35a351e9afa4f.jpg",
+      "ground_truth": 1,
+      "predictions": 1,
+      "latency_ms": 834.026,
+      "counts": {
+        "helmet": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005350_jpg.rf.0d25c4f9740b4334088797fc3243dd1a.jpg",
+      "ground_truth": 1,
+      "predictions": 1,
+      "latency_ms": 628.248,
+      "counts": {
+        "helmet": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005351_jpg.rf.ed2d454b2e059fc13f901bcc62947bfa.jpg",
+      "ground_truth": 2,
+      "predictions": 2,
+      "latency_ms": 913.739,
+      "counts": {
+        "helmet": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005352_jpg.rf.d88db95cea2986e4f4b11d1afdd3b3e4.jpg",
+      "ground_truth": 3,
+      "predictions": 3,
+      "latency_ms": 725.284,
+      "counts": {
+        "helmet": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005353_jpg.rf.5d9af6cb4587438d64957bd7192e39de.jpg",
+      "ground_truth": 1,
+      "predictions": 1,
+      "latency_ms": 843.463,
+      "counts": {
+        "helmet": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005354_jpg.rf.66ac8412f01e08a6146d5bc63bbb158c.jpg",
+      "ground_truth": 1,
+      "predictions": 2,
+      "latency_ms": 894.468,
+      "counts": {
+        "helmet": {
+          "tp": 1,
+          "fp": 1,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005355_jpg.rf.12db1f111d72bbbd5619fb7bb392ba22.jpg",
+      "ground_truth": 7,
+      "predictions": 8,
+      "latency_ms": 696.643,
+      "counts": {
+        "helmet": {
+          "tp": 7,
+          "fp": 1,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005356_jpg.rf.dd15fd06b6d5851d6dd4eddb78f4651f.jpg",
+      "ground_truth": 4,
+      "predictions": 4,
+      "latency_ms": 988.963,
+      "counts": {
+        "helmet": {
+          "tp": 4,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005357_jpg.rf.df51ca15e87c9aa7faace47e8ee5a572.jpg",
+      "ground_truth": 1,
+      "predictions": 1,
+      "latency_ms": 875.236,
+      "counts": {
+        "helmet": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005358_jpg.rf.8529a6fd49e7f907817f667a038095be.jpg",
+      "ground_truth": 6,
+      "predictions": 6,
+      "latency_ms": 939.253,
+      "counts": {
+        "helmet": {
+          "tp": 5,
+          "fp": 1,
+          "fn": 1
+        }
+      }
+    },
+    {
+      "image": "images/005359_jpg.rf.17354e91cf65f9ab3587415dd31d2f48.jpg",
+      "ground_truth": 2,
+      "predictions": 2,
+      "latency_ms": 1078.868,
+      "counts": {
+        "helmet": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005360_jpg.rf.75fc39584c00492f09ac369bbfc2f105.jpg",
+      "ground_truth": 7,
+      "predictions": 6,
+      "latency_ms": 892.617,
+      "counts": {
+        "helmet": {
+          "tp": 5,
+          "fp": 1,
+          "fn": 2
+        }
+      }
+    },
+    {
+      "image": "images/005361_jpg.rf.e37d7954e38e9ab2a17aa43d39ac7a7b.jpg",
+      "ground_truth": 2,
+      "predictions": 2,
+      "latency_ms": 841.86,
+      "counts": {
+        "helmet": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005362_jpg.rf.162fd8254a194a1e0198bc1861287e46.jpg",
+      "ground_truth": 9,
+      "predictions": 10,
+      "latency_ms": 1139.605,
+      "counts": {
+        "helmet": {
+          "tp": 9,
+          "fp": 1,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005363_jpg.rf.b6104e4bdaf80defdf9e72f69722ba1b.jpg",
+      "ground_truth": 4,
+      "predictions": 4,
+      "latency_ms": 1047.016,
+      "counts": {
+        "helmet": {
+          "tp": 4,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005364_jpg.rf.b8e3dae81d80ac55f9bec424a2fc33e2.jpg",
+      "ground_truth": 3,
+      "predictions": 3,
+      "latency_ms": 1084.655,
+      "counts": {
+        "helmet": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005365_jpg.rf.10b71063ca52946d889bbadd73b80ec5.jpg",
+      "ground_truth": 6,
+      "predictions": 6,
+      "latency_ms": 977.159,
+      "counts": {
+        "helmet": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005366_jpg.rf.82e5b1fb137bb3607d8ce98838ac2e03.jpg",
+      "ground_truth": 1,
+      "predictions": 1,
+      "latency_ms": 885.755,
+      "counts": {
+        "helmet": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005367_jpg.rf.cfd8e51a002cbe97a681c2e9beb4eaac.jpg",
+      "ground_truth": 0,
+      "predictions": 0,
+      "latency_ms": 910.82,
+      "counts": {}
+    },
+    {
+      "image": "images/005368_jpg.rf.32fe6ce8f83ce1a34a38f3613e703033.jpg",
+      "ground_truth": 4,
+      "predictions": 4,
+      "latency_ms": 1147.273,
+      "counts": {
+        "helmet": {
+          "tp": 3,
+          "fp": 1,
+          "fn": 1
+        }
+      }
+    },
+    {
+      "image": "images/005369_jpg.rf.3d685ccd73bd2bd6576a110cc7a079a7.jpg",
+      "ground_truth": 3,
+      "predictions": 4,
+      "latency_ms": 747.739,
+      "counts": {
+        "helmet": {
+          "tp": 3,
+          "fp": 1,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005370_jpg.rf.ea60e2a060fa57af9b93722c45add200.jpg",
+      "ground_truth": 1,
+      "predictions": 1,
+      "latency_ms": 794.032,
+      "counts": {
+        "helmet": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005371_jpg.rf.477c8ed24f562deb664ff098e9a09df6.jpg",
+      "ground_truth": 2,
+      "predictions": 2,
+      "latency_ms": 804.545,
+      "counts": {
+        "helmet": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005372_jpg.rf.4809d0a8b99b8ad46967380676ef1ff3.jpg",
+      "ground_truth": 7,
+      "predictions": 9,
+      "latency_ms": 950.891,
+      "counts": {
+        "helmet": {
+          "tp": 6,
+          "fp": 3,
+          "fn": 1
+        }
+      }
+    },
+    {
+      "image": "images/005373_jpg.rf.d141221dad87e6a6a30cc016fa0d07e5.jpg",
+      "ground_truth": 6,
+      "predictions": 6,
+      "latency_ms": 819.011,
+      "counts": {
+        "helmet": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005374_jpg.rf.ecef5686e5c7e32a253d47cb7ef720d2.jpg",
+      "ground_truth": 2,
+      "predictions": 2,
+      "latency_ms": 816.594,
+      "counts": {
+        "helmet": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005375_jpg.rf.44f4df2d90ee26ecdab495150ab4e158.jpg",
+      "ground_truth": 1,
+      "predictions": 1,
+      "latency_ms": 783.044,
+      "counts": {
+        "helmet": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005376_jpg.rf.b2c505a82aa99aaeb6ad630e1d964953.jpg",
+      "ground_truth": 4,
+      "predictions": 6,
+      "latency_ms": 739.393,
+      "counts": {
+        "helmet": {
+          "tp": 4,
+          "fp": 2,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005377_jpg.rf.07395f9bb00674b13e06dc1ab1c63fa1.jpg",
+      "ground_truth": 1,
+      "predictions": 1,
+      "latency_ms": 869.631,
+      "counts": {
+        "helmet": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005378_jpg.rf.57adab7cd85dcd41427b845638aeede2.jpg",
+      "ground_truth": 11,
+      "predictions": 10,
+      "latency_ms": 767.807,
+      "counts": {
+        "helmet": {
+          "tp": 10,
+          "fp": 0,
+          "fn": 1
+        }
+      }
+    },
+    {
+      "image": "images/005379_jpg.rf.da0d790368f19b85eaef616935338591.jpg",
+      "ground_truth": 0,
+      "predictions": 0,
+      "latency_ms": 757.648,
+      "counts": {}
+    },
+    {
+      "image": "images/005380_jpg.rf.243e3d51db8ebaf13bd7c6402369f5c9.jpg",
+      "ground_truth": 1,
+      "predictions": 1,
+      "latency_ms": 942.163,
+      "counts": {
+        "helmet": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005381_jpg.rf.be7a0d23f9a13d1e0321014db768002f.jpg",
+      "ground_truth": 3,
+      "predictions": 3,
+      "latency_ms": 917.876,
+      "counts": {
+        "helmet": {
+          "tp": 3,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005382_jpg.rf.bad5f80a3fa19ab150532b976adaa2f1.jpg",
+      "ground_truth": 4,
+      "predictions": 5,
+      "latency_ms": 1092.575,
+      "counts": {
+        "helmet": {
+          "tp": 4,
+          "fp": 1,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005383_jpg.rf.4834f8d42c6b0d07962d8612caf09651.jpg",
+      "ground_truth": 0,
+      "predictions": 1,
+      "latency_ms": 951.834,
+      "counts": {
+        "helmet": {
+          "tp": 0,
+          "fp": 1,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005384_jpg.rf.34ab47f3859c29a33df2780579333dc1.jpg",
+      "ground_truth": 3,
+      "predictions": 6,
+      "latency_ms": 830.013,
+      "counts": {
+        "helmet": {
+          "tp": 2,
+          "fp": 4,
+          "fn": 1
+        }
+      }
+    },
+    {
+      "image": "images/005385_jpg.rf.aa3ca01ed31ce9c709f480c7b4293342.jpg",
+      "ground_truth": 0,
+      "predictions": 0,
+      "latency_ms": 1163.209,
+      "counts": {}
+    },
+    {
+      "image": "images/005386_jpg.rf.fd587ee7b6b0091c4ac6dfdffe68a5e8.jpg",
+      "ground_truth": 0,
+      "predictions": 0,
+      "latency_ms": 969.812,
+      "counts": {}
+    },
+    {
+      "image": "images/005387_jpg.rf.bc13b67718ce1875ba463efef1281b7e.jpg",
+      "ground_truth": 6,
+      "predictions": 6,
+      "latency_ms": 1005.866,
+      "counts": {
+        "helmet": {
+          "tp": 6,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005388_jpg.rf.23e8d14b21e417062207e580d8edb64f.jpg",
+      "ground_truth": 3,
+      "predictions": 4,
+      "latency_ms": 878.728,
+      "counts": {
+        "helmet": {
+          "tp": 3,
+          "fp": 1,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005389_jpg.rf.c5eaffbb36d23fd054e553d08dfc131a.jpg",
+      "ground_truth": 2,
+      "predictions": 2,
+      "latency_ms": 1034.881,
+      "counts": {
+        "helmet": {
+          "tp": 2,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005390_jpg.rf.f660b8bd6237e8e0515abc9518b85dce.jpg",
+      "ground_truth": 1,
+      "predictions": 1,
+      "latency_ms": 899.022,
+      "counts": {
+        "helmet": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005391_jpg.rf.5e0fc2567a2d119bd49f400c9be91f4b.jpg",
+      "ground_truth": 0,
+      "predictions": 0,
+      "latency_ms": 1123.438,
+      "counts": {}
+    },
+    {
+      "image": "images/005392_jpg.rf.c36c61c68b683c46afadf00930450a85.jpg",
+      "ground_truth": 8,
+      "predictions": 7,
+      "latency_ms": 874.144,
+      "counts": {
+        "helmet": {
+          "tp": 7,
+          "fp": 0,
+          "fn": 1
+        }
+      }
+    },
+    {
+      "image": "images/005393_jpg.rf.e15cf21d63ce700797e4aaed67389aa9.jpg",
+      "ground_truth": 13,
+      "predictions": 13,
+      "latency_ms": 817.087,
+      "counts": {
+        "helmet": {
+          "tp": 12,
+          "fp": 1,
+          "fn": 1
+        }
+      }
+    },
+    {
+      "image": "images/005394_jpg.rf.6abe6588fd8ea5082de932aa857fcdd7.jpg",
+      "ground_truth": 2,
+      "predictions": 3,
+      "latency_ms": 890.987,
+      "counts": {
+        "helmet": {
+          "tp": 2,
+          "fp": 1,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005395_jpg.rf.a38830389c0d26e139ba81b2e1a813a3.jpg",
+      "ground_truth": 1,
+      "predictions": 2,
+      "latency_ms": 1061.719,
+      "counts": {
+        "helmet": {
+          "tp": 1,
+          "fp": 1,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005396_jpg.rf.eea1d76dbbfafcfce4679882b0bf06ce.jpg",
+      "ground_truth": 1,
+      "predictions": 1,
+      "latency_ms": 1034.286,
+      "counts": {
+        "helmet": {
+          "tp": 1,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    },
+    {
+      "image": "images/005397_jpg.rf.eb518c5ace162681763b07ddc5f5fbee.jpg",
+      "ground_truth": 5,
+      "predictions": 5,
+      "latency_ms": 1217.167,
+      "counts": {
+        "helmet": {
+          "tp": 5,
+          "fp": 0,
+          "fn": 0
+        }
+      }
+    }
+  ]
+}

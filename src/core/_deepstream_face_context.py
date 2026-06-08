@@ -9,7 +9,6 @@ from .ai._constants import _FACE_TRACK_COOLDOWN_SEC
 from .ai._yolo_helpers import age_to_group
 from .events import DetectionEvent, EventType
 
-
 FaceCache = Dict[Tuple[str, int], Dict[str, Any]]
 logger = logging.getLogger(__name__)
 

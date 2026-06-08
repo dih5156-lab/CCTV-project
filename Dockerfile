@@ -49,7 +49,9 @@ ENV PYTHONDONTWRITEBYTECODE=1
 
 # 애플리케이션 코드 복사
 COPY --chown=cctv:cctv src /app/src
+COPY --chown=cctv:cctv app /app/app
 COPY --chown=cctv:cctv main.py /app/main.py
+COPY --chown=cctv:cctv run_external_ingest.py /app/run_external_ingest.py
 COPY --chown=cctv:cctv runners /app/runners
 COPY --chown=cctv:cctv kuiper /app/kuiper
 COPY --chown=cctv:cctv models/model_manifest.json /app/models/model_manifest.json

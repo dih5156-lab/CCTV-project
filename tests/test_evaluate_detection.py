@@ -15,7 +15,7 @@ def _load_script_module(name: str, relative_path: str):
     return module
 
 
-evaluate_detection = _load_script_module("evaluate_detection", "scripts/evaluate_detection.py")
+evaluate_detection = _load_script_module("evaluate_detection", "scripts/ops/evaluate_detection.py")
 
 
 def test_yolo_to_xyxy_converts_normalized_box():

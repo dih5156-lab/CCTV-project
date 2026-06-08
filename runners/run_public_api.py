@@ -16,9 +16,7 @@ _PROJECT_ROOT = _RUNNER_DIR.parent
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
-from runners._shared import ensure_project_root, setup_runner_logging
-
-ensure_project_root()
+from runners._shared import setup_runner_logging
 
 logger = logging.getLogger("run-public-api")
 

@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/game-designer.md](../../../../agents/game-designer.md).
+Derived from [agents/game-designer.md](../../../../tooling/agents/game-designer.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

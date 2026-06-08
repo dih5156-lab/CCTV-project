@@ -15,28 +15,22 @@ Go의 goroutine + ticker → Python의 threading.Timer 루프로 변환되었습
 import logging
 import threading
 from datetime import timedelta
-from typing import List, Any
+from typing import Any, List
 
+from database.connection import DB, bulk_insert
 from database.models import (
-    T3, T34950, T34952, T34954, T34955, T34956, T34957, T34958,
+    T3,
+    T34950,
+    T34952,
+    T34954,
+    T34955,
+    T34956,
+    T34957,
+    T34958,
     SensorData,
 )
-from database.connection import DB, bulk_insert
 
 logger = logging.getLogger(__name__)
-
-# 테이블 이름 매핑 (Go의 tableName 문자열과 동일)
-_TABLE_MAP = {
-    "T3": "t3",
-    "T34950": "t34950",
-    "T34952": "t34952",
-    "T34954": "t34954",
-    "T34955": "t34955",
-    "T34956": "t34956",
-    "T34957": "t34957",
-    "T34958": "t34958",
-    "SensorData": "sensor_data",
-}
 
 _BATCH_SIZE = 1000  # Go: batchSize := 1000
 
@@ -44,23 +38,21 @@ _BATCH_SIZE = 1000  # Go: batchSize := 1000
 class DataProcessor:
     """
     배치 데이터 처리기
-    Go: type DataProcessor struct { db *bun.DB; threshold int; interval time.Duration; t3 []T3; ... }
+    Go: type DataProcessor struct { db *bun.DB; interval time.Duration; t3 []T3; ... }
 
     각 테이블별 Python 리스트가 Go의 슬라이스 큐에 대응합니다.
     threading.Lock 이 Go의 암묵적 goroutine 분리를 보완합니다.
     """
 
-    def __init__(self, db: DB, threshold: int, interval: timedelta):
+    def __init__(self, db: DB, interval: timedelta):
         """
-        Go: func NewDataProcessor(db *bun.DB, threshold int, interval time.Duration) *DataProcessor
+        Go: func NewDataProcessor(db *bun.DB, interval time.Duration) *DataProcessor
 
         Args:
             db        : DB 인스턴스
-            threshold : 임계값 (현재 Go 코드에서는 간접 사용)
             interval  : 배치 처리 주기 (Go: 3초 고정이었으나 인자로 받음)
         """
         self._db = db
-        self._threshold = threshold
         self._interval = interval.total_seconds()
 
         # 각 테이블별 슬라이스 큐 (Go: t3 []T3 등)

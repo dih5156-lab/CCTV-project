@@ -18,9 +18,9 @@ from typing import Dict, Optional, Set
 
 import redis
 
-from .device_service import CCTVDeviceService
 from ..config import EdgeXConfig
 from ..protocols._mqtt_factory import create_mqtt_client
+from .device_service import CCTVDeviceService
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +68,7 @@ class EdgeXDeviceAdapterService:
         resolved_outbox = (
             outbox_db_path
             or os.environ.get("EDGEX_OUTBOX_DB")
-            or "data/event_outbox.db"
+            or "data/runtime/event_outbox.db"
         )
 
         self.edgex_service = CCTVDeviceService(
@@ -324,7 +324,7 @@ class EdgeXDeviceAdapterService:
         self._outbox_thread = Thread(target=_run, daemon=True, name="edgex-outbox-replay")
         self._outbox_thread.start()
 
-    def _on_connect(self, client, userdata, flags, rc):
+    def _on_connect(self, client, userdata, flags, rc, *args):
         if rc == 0:
             logger.info("AI MQTT 구독 연결 성공: %s:%s", self.ai_mqtt_broker, self.ai_mqtt_port)
             client.subscribe(self.subscribe_topic, qos=0)

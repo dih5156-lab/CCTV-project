@@ -2,10 +2,9 @@
 test_event_filters.py — TrackManager / CumulativeViolationFilter 단위 테스트
 """
 import time
-import pytest
-from src.core.events import DetectionEvent, EventType
-from src.core.event_filters import TrackManager, CumulativeViolationFilter
 
+from src.core.event_filters import CumulativeViolationFilter, TrackManager
+from src.core.events import DetectionEvent, EventType
 
 # ---------------------------------------------------------------------------
 # 헬퍼

@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/agentic-identity-trust.md](../../../../agents/agentic-identity-trust.md).
+Derived from [agents/agentic-identity-trust.md](../../../../tooling/agents/agentic-identity-trust.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

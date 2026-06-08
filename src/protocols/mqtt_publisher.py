@@ -6,14 +6,20 @@ AI 추론 결과 이벤트를 MQTT 브로커로 발행하는 클라이언트.
 
 import json
 import logging
+import os
 import time
-from threading import Event, Lock
+from threading import Event, Lock, Thread
 from typing import Dict, Optional
 
 import paho.mqtt.client as mqtt
 
-from ..canonical_event import canonicalize_event_payload, get_payload_camera_id, get_payload_event_type
-from ._mqtt_factory import create_mqtt_client, RECONNECT_MIN_DELAY, RECONNECT_MULTIPLIER
+from ..canonical_event import (
+    canonicalize_event_payload,
+    get_payload_camera_id,
+    get_payload_event_type,
+)
+from ._mqtt_factory import RECONNECT_MIN_DELAY, RECONNECT_MULTIPLIER, create_mqtt_client
+from .mqtt_outbox import MqttEventOutbox
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +45,10 @@ class MqttEventPublisher:
         qos: int = 0,
         retain: bool = False,
         connect_timeout: float = 2.0,
+        outbox_db_path: Optional[str] = None,
+        outbox_retry_interval: Optional[float] = None,
+        outbox_replay_batch_size: int = 100,
+        outbox_max_retry: int = 1000,
     ):
         self.broker = broker
         self.port = int(port)
@@ -47,6 +57,17 @@ class MqttEventPublisher:
         self.qos = qos
         self.retain = retain
         self.connect_timeout = max(0.1, float(connect_timeout))
+        self.outbox_db_path = outbox_db_path or os.environ.get("MQTT_EVENT_OUTBOX_DB")
+        self.outbox_retry_interval = max(
+            1.0,
+            float(
+                outbox_retry_interval
+                if outbox_retry_interval is not None
+                else os.environ.get("MQTT_EVENT_OUTBOX_RETRY_INTERVAL", "5")
+            ),
+        )
+        self.outbox_replay_batch_size = max(1, int(outbox_replay_batch_size))
+        self.outbox_max_retry = max(1, int(outbox_max_retry))
 
         self._client: Optional[mqtt.Client] = None
         self._connected = False
@@ -61,6 +82,17 @@ class MqttEventPublisher:
         # 발행 통계
         self._publish_count = 0
         self._publish_fail_count = 0
+        self._outbox_replay_count = 0
+
+        self._outbox: Optional[MqttEventOutbox] = None
+        self._outbox_stop = Event()
+        self._outbox_thread: Optional[Thread] = None
+        if self.outbox_db_path:
+            self._outbox = MqttEventOutbox(
+                self.outbox_db_path,
+                destination_name=self.topic_prefix,
+            )
+            self._start_outbox_replay_worker()
 
     # ------------------------------------------------------------------
     # 공개 속성
@@ -165,30 +197,100 @@ class MqttEventPublisher:
         반환값:
             발행 성공 시 True, 실패 시 False.
         """
+        event_data = canonicalize_event_payload(event_data)
+        topic = self._event_topic(event_data)
+        outbox_row_id = self._store_outbox_pending(topic, event_data)
+
         if not self._ensure_connected():
-            with self._stats_lock:
-                self._publish_fail_count += 1
+            self._increment_publish_fail_count()
             return False
 
-        event_data = canonicalize_event_payload(event_data)
-        camera_id = get_payload_camera_id(event_data)
-        event_type = get_payload_event_type(event_data)
-        topic = f"{self.topic_prefix}/{camera_id}/{event_type}"
+        ok, error_message = self._publish_serialized(topic, event_data)
+        if ok:
+            if outbox_row_id:
+                self._outbox.mark_sent(outbox_row_id)  # type: ignore[union-attr]
+            self._increment_publish_count()
+            return True
 
+        if outbox_row_id:
+            self._outbox.mark_retry_failed(outbox_row_id, error_message)  # type: ignore[union-attr]
+        self._increment_publish_fail_count()
+        return False
+
+    def _publish_serialized(self, topic: str, event_data: Dict) -> tuple[bool, str]:
         try:
             payload = json.dumps(event_data, ensure_ascii=False)
             result = self._client.publish(topic, payload, qos=self.qos, retain=self.retain)
             if result.rc == 0:
-                with self._stats_lock:
-                    self._publish_count += 1
-                return True
+                return True, ""
             logger.error("MQTT 발행 실패 (rc=%s): %s", result.rc, topic)
+            return False, f"mqtt publish rc={result.rc}"
         except Exception as error:
             logger.error("MQTT 발행 오류: %s", error, exc_info=True)
+            return False, str(error)
 
+    def _store_outbox_pending(self, topic: str, event_data: Dict) -> int:
+        if self._outbox is None:
+            return 0
+        try:
+            return self._outbox.save_pending(topic, event_data)
+        except Exception as error:
+            logger.error("MQTT outbox 저장 실패: %s", error, exc_info=True)
+            return 0
+
+    def _start_outbox_replay_worker(self) -> None:
+        if self._outbox_thread and self._outbox_thread.is_alive():
+            return
+        self._outbox_stop.clear()
+        self._outbox_thread = Thread(
+            target=self._outbox_replay_loop,
+            daemon=True,
+            name="MqttEventOutboxReplay",
+        )
+        self._outbox_thread.start()
+
+    def _outbox_replay_loop(self) -> None:
+        logger.info("MQTT outbox 재전송 워커 시작: %s", self.outbox_db_path)
+        while not self._outbox_stop.wait(self.outbox_retry_interval):
+            self.replay_pending_once()
+
+    def replay_pending_once(self) -> int:
+        """Replay one batch of pending outbox rows and return sent count."""
+        if self._outbox is None:
+            return 0
+        if not self._ensure_connected():
+            return 0
+
+        sent_count = 0
+        rows = self._outbox.get_pending(
+            limit=self.outbox_replay_batch_size,
+            max_retry=self.outbox_max_retry,
+        )
+        for row in rows:
+            ok, error_message = self._publish_serialized(row["topic"], row["payload"])
+            if ok:
+                self._outbox.mark_sent(row["id"])
+                sent_count += 1
+                continue
+            self._outbox.mark_retry_failed(row["id"], error_message)
+        if sent_count:
+            with self._stats_lock:
+                self._outbox_replay_count += sent_count
+            logger.info("MQTT outbox 재전송 성공: %d건", sent_count)
+        return sent_count
+
+    def _event_topic(self, event_data: Dict) -> str:
+        camera_id = get_payload_camera_id(event_data)
+        event_type = get_payload_event_type(event_data)
+        return f"{self.topic_prefix}/{camera_id}/{event_type}"
+
+    def _increment_publish_count(self) -> None:
+        with self._stats_lock:
+            self._publish_count += 1
+
+    def _increment_publish_fail_count(self) -> None:
         with self._stats_lock:
             self._publish_fail_count += 1
-        return False
 
     def get_stats(self) -> Dict:
         """발행 통계를 반환한다.
@@ -201,11 +303,17 @@ class MqttEventPublisher:
                 "is_connected": self._connected,
                 "publish_count": self._publish_count,
                 "publish_fail_count": self._publish_fail_count,
+                "outbox_enabled": self._outbox is not None,
+                "outbox_pending_count": self._outbox.pending_count() if self._outbox else 0,
+                "outbox_replay_count": self._outbox_replay_count,
                 "broker": f"{self.broker}:{self.port}",
             }
 
     def disconnect(self):
         """MQTT 연결을 종료하고 리소스를 정리한다."""
+        self._outbox_stop.set()
+        if self._outbox_thread and self._outbox_thread.is_alive():
+            self._outbox_thread.join(timeout=3)
         if not self._client:
             return
         try:

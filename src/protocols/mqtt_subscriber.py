@@ -9,7 +9,7 @@ from typing import Optional, Sequence
 
 import paho.mqtt.client as mqtt
 
-from ._mqtt_factory import create_mqtt_client, RECONNECT_MIN_DELAY, RECONNECT_MULTIPLIER
+from ._mqtt_factory import RECONNECT_MIN_DELAY, RECONNECT_MULTIPLIER, create_mqtt_client
 
 logger = logging.getLogger(__name__)
 

@@ -10,9 +10,9 @@ Go의 goroutine + WaitGroup → Python의 threading.Thread로 변환되었습니
 import logging
 import threading
 import time
-from typing import List, Dict, Optional
+from typing import Dict, List
 
-from batch.devices_batch import DeviceScheduler, SchedulerConfig, DeviceUpdateCallback
+from batch.devices_batch import DeviceScheduler, DeviceUpdateCallback, SchedulerConfig
 
 logger = logging.getLogger(__name__)
 

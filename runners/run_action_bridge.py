@@ -15,14 +15,11 @@ _PROJECT_ROOT = _RUNNER_DIR.parent
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
-from runners._shared import ensure_project_root, setup_runner_logging
-
-ensure_project_root()
-
-from src.services.action_bridge import ActionBridge
-from src.devices.speaker   import SpeakerConfig
+from runners._shared import setup_runner_logging
 from src.devices.signboard import SignboardConfig
-from src.devices.siren     import SensorConfig
+from src.devices.siren import SensorConfig
+from src.devices.speaker import SpeakerConfig
+from src.services.action_bridge import ActionBridge
 
 logger = logging.getLogger("run-action-bridge")
 
@@ -85,7 +82,7 @@ def main() -> None:
     )
 
     # ── DB / 외부 API ─────────────────────────────────────────────────────
-    parser.add_argument("--db-path",          default=_env("DB_PATH", "/app/action_events.db"))
+    parser.add_argument("--db-path",          default=_env("DB_PATH", "/app/data/runtime/action_events.db"))
     parser.add_argument("--external-api-url", default=_env("EXTERNAL_API_URL", ""))
     parser.add_argument("--alarm-cooldown",   type=int, default=int(_env("ALARM_COOLDOWN", "10")))
 

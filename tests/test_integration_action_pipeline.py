@@ -10,11 +10,14 @@ import sqlite3
 import time
 from pathlib import Path
 from types import SimpleNamespace
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
-from src.services.action_bridge import ActionBridge, ControlMode, AlarmDevice, SiteConfig
+from src.services.action_bridge import (
+    ActionBridge,
+    ControlMode,
+)
 
 # ---------------------------------------------------------------------------
 # 헬퍼

@@ -119,11 +119,7 @@ class ZoneApiHandler(BaseApiHandler):
     # ------------------------------------------------------------------
 
     def do_OPTIONS(self):  # noqa: N802
-        self.send_response(200)
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
-        self.end_headers()
+        self._respond_options("GET, POST, DELETE, OPTIONS")
 
     def do_GET(self):  # noqa: N802
         if not self._check_internal_token():
@@ -152,12 +148,7 @@ class ZoneApiHandler(BaseApiHandler):
             self._post_camera_zones(m.group(1))
         else:
             # 요청 본문을 먼저 소비해야 Windows에서 연결 리셋(WinError 10053) 방지
-            try:
-                length = int(self.headers.get("Content-Length", 0))
-                if length > 0:
-                    self.rfile.read(length)
-            except Exception:
-                pass
+            self._consume_body()
             self._respond(404, {"error": "Not Found"})
 
     def do_DELETE(self):  # noqa: N802

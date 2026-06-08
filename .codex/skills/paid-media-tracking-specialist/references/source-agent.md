@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/paid-media-tracking-specialist.md](../../../../agents/paid-media-tracking-specialist.md).
+Derived from [agents/paid-media-tracking-specialist.md](../../../../tooling/agents/paid-media-tracking-specialist.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

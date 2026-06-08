@@ -9,11 +9,11 @@ from __future__ import annotations
 import json
 import logging
 from collections import deque
-from datetime import datetime
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Query, Request
 
+from ...time_utils import coerce_timestamp_seconds
 from ..dependencies._settings import ALERT_LOG_PATH as _ALERT_LOG
 from ..dependencies.auth import verify_api_key
 from ..dependencies.rate_limit import limiter
@@ -22,25 +22,7 @@ from ..schemas.event import EventOut
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/events", tags=["events"])
-
-
-def _coerce_timestamp(value: object, fallback: object = None) -> float:
-    """로그 timestamp를 API 응답용 Unix seconds로 정규화한다."""
-    for candidate in (value, fallback):
-        if candidate in (None, ""):
-            continue
-        if isinstance(candidate, (int, float)):
-            return float(candidate)
-        if isinstance(candidate, str):
-            try:
-                return float(candidate)
-            except ValueError:
-                try:
-                    normalized = candidate.replace("Z", "+00:00")
-                    return datetime.fromisoformat(normalized).timestamp()
-                except ValueError:
-                    continue
-    return 0.0
+_ROTATED_LOG_KEEP = 5
 
 
 def _event_payload(entry: dict) -> dict:
@@ -74,6 +56,64 @@ def _payload_camera_id(payload: dict) -> Optional[str]:
     return str(value) if value else None
 
 
+def _payload_event_type(payload: dict, event_meta: dict) -> str:
+    return (
+        payload.get("type")
+        or payload.get("event_type")
+        or event_meta.get("event_type")
+        or "other"
+    )
+
+
+def _event_item_from_entry(entry: dict) -> dict:
+    payload = _event_payload(entry)
+    raw = payload.get("raw") if isinstance(payload.get("raw"), dict) else {}
+    event_meta = payload.get("event") if isinstance(payload.get("event"), dict) else {}
+    return {
+        "camera_id": _payload_camera_id(payload),
+        "event_type": _payload_event_type(payload, event_meta),
+        "severity": payload.get("severity", event_meta.get("severity", "normal")),
+        "confidence": payload.get("confidence", event_meta.get("confidence", 0.0)),
+        "timestamp": coerce_timestamp_seconds(
+            payload.get("timestamp") or payload.get("occurred_at"),
+            entry.get("receivedAt"),
+        ),
+        "bbox": payload.get("bbox") or raw.get("bbox"),
+        "object_id": payload.get("object_id", raw.get("object_id")),
+        "metadata": payload.get("metadata") or raw.get("metadata"),
+        "received_at": entry.get("receivedAt"),
+    }
+
+
+def _read_recent_log_lines(max_lines: int) -> list[str]:
+    """활성 로그와 회전 로그를 합쳐 최신 라인부터 반환한다."""
+    remaining = max_lines
+    recent_lines: list[str] = []
+    log_paths = [
+        _ALERT_LOG,
+        *[
+            type(_ALERT_LOG)(f"{_ALERT_LOG}.{index}")
+            for index in range(1, _ROTATED_LOG_KEEP + 1)
+        ],
+    ]
+
+    for log_path in log_paths:
+        if remaining <= 0:
+            break
+        if not log_path.exists():
+            continue
+        try:
+            with log_path.open("r", encoding="utf-8") as fh:
+                lines = deque(fh, maxlen=remaining)
+        except OSError as exc:
+            logger.warning("이벤트 로그 읽기 실패, 다음 파일 계속 확인: %s (%s)", log_path, exc)
+            continue
+        recent_lines.extend(reversed(lines))
+        remaining -= len(lines)
+
+    return recent_lines
+
+
 def _read_events(
     limit: int,
     offset: int,
@@ -83,63 +123,28 @@ def _read_events(
     event_type: Optional[str] = None,
 ) -> tuple[List[EventOut], int]:
     """JSONL 파일에서 이벤트를 읽어 필터링·페이지네이션한다."""
-    if not _ALERT_LOG.exists():
-        return [], 0
-
     # 최대 (limit + offset) * 10 또는 5000라인 중 큰 값 tail 읽기
     _TAIL_MAX = max(5000, (limit + offset) * 10)
 
     all_items: list[dict] = []
-    try:
-        with _ALERT_LOG.open("r", encoding="utf-8") as fh:
-            last_lines = deque(fh, maxlen=_TAIL_MAX)
-
-        for line in reversed(last_lines):  # 최신 이벤트 우선
-            line = line.strip()
-            if not line:
+    for line in _read_recent_log_lines(_TAIL_MAX):
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            entry = json.loads(line)
+            item = _event_item_from_entry(entry)
+            if time_from is not None and item["timestamp"] < time_from:
                 continue
-            try:
-                entry = json.loads(line)
-                payload = _event_payload(entry)
-                raw = payload.get("raw") if isinstance(payload.get("raw"), dict) else {}
-                event_meta = payload.get("event") if isinstance(payload.get("event"), dict) else {}
-                ts = _coerce_timestamp(
-                    payload.get("timestamp") or payload.get("occurred_at"),
-                    entry.get("receivedAt"),
-                )
-                if time_from is not None and ts < time_from:
-                    continue
-                if time_to is not None and ts > time_to:
-                    continue
-                etype = (
-                    payload.get("type")
-                    or payload.get("event_type")
-                    or event_meta.get("event_type")
-                    or "other"
-                )
-                if event_type is not None and etype != event_type:
-                    continue
-                cam = _payload_camera_id(payload)
-                if camera_id is not None and cam != camera_id:
-                    continue
-                all_items.append(
-                    {
-                        "camera_id": cam,
-                        "event_type": etype,
-                        "severity": payload.get("severity", event_meta.get("severity", "normal")),
-                        "confidence": payload.get("confidence", event_meta.get("confidence", 0.0)),
-                        "timestamp": ts,
-                        "bbox": payload.get("bbox") or raw.get("bbox"),
-                        "object_id": payload.get("object_id", raw.get("object_id")),
-                        "metadata": payload.get("metadata") or raw.get("metadata"),
-                        "received_at": entry.get("receivedAt"),
-                    }
-                )
-            except (json.JSONDecodeError, KeyError):
+            if time_to is not None and item["timestamp"] > time_to:
                 continue
-    except OSError as exc:
-        logger.error("이벤트 로그 읽기 실패: %s", exc)
-        return [], 0
+            if event_type is not None and item["event_type"] != event_type:
+                continue
+            if camera_id is not None and item["camera_id"] != camera_id:
+                continue
+            all_items.append(item)
+        except (json.JSONDecodeError, KeyError):
+            continue
 
     total = len(all_items)
     paged = all_items[offset : offset + limit]

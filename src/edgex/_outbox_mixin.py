@@ -10,12 +10,12 @@ self.outbox_flush_batch_size, self._outbox_lock 에 의존한다.
 import json
 import logging
 import sqlite3
-import threading
 import time
-from datetime import datetime, timezone
+from datetime import timedelta
 from typing import Any, Dict, List, Optional
 
 from ..canonical_event import get_payload_event_id
+from ..time_utils import now_kst, now_kst_iso
 
 logger = logging.getLogger(__name__)
 
@@ -47,15 +47,11 @@ class _OutboxMixin:
     _OUTBOX_TABLE = "event_outbox"
     _LEGACY_OUTBOX_TABLES = ("detection_outbox", "sensor_outbox", "zone_outbox")
 
-    @classmethod
-    def _table_for_category(cls, category: str) -> str:
-        return cls._OUTBOX_TABLE
-
     # ── 유틸리티 ────────────────────────────────────────────────────────────
 
     @staticmethod
     def _utc_now_iso() -> str:
-        return datetime.now(timezone.utc).isoformat()
+        return now_kst_iso()
 
     def _outbox_connect(self):
         """부모 디렉토리를 보장한 뒤 SQLite 연결을 반환."""
@@ -311,7 +307,7 @@ class _OutboxMixin:
             now = self._utc_now_iso()
             now_ms = int(time.time() * 1000)
             event_id = get_payload_event_id(event_data)
-            expire_at = datetime.now(timezone.utc).replace(
+            expire_at = (now_kst() + timedelta(days=_OUTBOX_TTL_DAYS)).replace(
                 microsecond=0
             ).isoformat()
             conn.execute(
@@ -321,7 +317,7 @@ class _OutboxMixin:
                     destination_name, camera_id, payload_json, created_at,
                     created_at_ms, expire_at, expire_at_ms, last_attempt_at,
                     last_attempt_ms, retry_count, status, last_error
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime(?, '+7 days'), ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     event_id,
@@ -333,7 +329,7 @@ class _OutboxMixin:
                     json.dumps(event_data, ensure_ascii=False),
                     now,
                     now_ms,
-                    now,
+                    expire_at,
                     now_ms + (_OUTBOX_TTL_DAYS * 24 * 60 * 60 * 1000),
                     now,
                     now_ms,
@@ -366,6 +362,9 @@ class _OutboxMixin:
             now = self._utc_now_iso()
             now_ms = int(time.time() * 1000)
             event_id = get_payload_event_id(event_data)
+            expire_at = (now_kst() + timedelta(days=_OUTBOX_TTL_DAYS)).replace(
+                microsecond=0
+            ).isoformat()
             cur = conn.execute(
                 """
                 INSERT OR IGNORE INTO event_outbox (
@@ -373,7 +372,7 @@ class _OutboxMixin:
                     destination_name, camera_id, payload_json, created_at,
                     created_at_ms, expire_at, expire_at_ms, last_attempt_at,
                     last_attempt_ms, retry_count, status
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime(?, '+7 days'), ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     event_id,
@@ -385,7 +384,7 @@ class _OutboxMixin:
                     json.dumps(event_data, ensure_ascii=False),
                     now,
                     now_ms,
-                    now,
+                    expire_at,
                     now_ms + (_OUTBOX_TTL_DAYS * 24 * 60 * 60 * 1000),
                     now,
                     now_ms,

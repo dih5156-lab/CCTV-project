@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/specialized-model-qa.md](../../../../agents/specialized-model-qa.md).
+Derived from [agents/specialized-model-qa.md](../../../../tooling/agents/specialized-model-qa.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

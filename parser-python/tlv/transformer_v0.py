@@ -8,7 +8,7 @@ Go 원본: aiot-tlv-parser/pkg/tlv/transformer_v0.go
 """
 
 import struct
-from typing import List, Dict, Any
+from typing import Any, Dict
 
 
 class TransformerV0:

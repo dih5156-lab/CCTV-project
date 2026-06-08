@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/design-ux-architect.md](../../../../agents/design-ux-architect.md).
+Derived from [agents/design-ux-architect.md](../../../../tooling/agents/design-ux-architect.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

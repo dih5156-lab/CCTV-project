@@ -18,13 +18,13 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field, model_validator
 
-from ..dependencies.auth import verify_api_key
-from ..schemas.common import BaseResponse, success_response
 from ...services.appearance_conditions import AppearanceConditionStore
 from ...services.appearance_status import (
     AppearanceRuntimeStatus,
     build_runtime_status,
 )
+from ..dependencies.auth import verify_api_key
+from ..schemas.common import BaseResponse, success_response
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/appearances", tags=["appearances"])
@@ -33,9 +33,40 @@ router = APIRouter(prefix="/appearances", tags=["appearances"])
 # ── Pydantic 스키마 ──────────────────────────────────────────────────
 
 _VALID_COLORS = frozenset({
-    "red", "orange", "yellow", "green", "blue",
-    "purple", "white", "black", "gray",
+    "red",
+    "orange",
+    "yellow",
+    "green",
+    "blue",
+    "purple",
+    "white",
+    "black",
+    "gray",
 })
+
+_COLOR_FIELDS = ("upper_color", "lower_color", "helmet_color")
+
+
+def _has_search_condition(body: "AppearanceConditionIn") -> bool:
+    return any(
+        (
+            body.upper_color,
+            body.lower_color,
+            body.has_helmet is not None,
+            body.helmet_color,
+            body.has_backpack is not None,
+            body.has_handbag is not None,
+            body.has_suitcase is not None,
+        )
+    )
+
+
+def _validate_color_fields(body: "AppearanceConditionIn") -> None:
+    for field_name in _COLOR_FIELDS:
+        value = getattr(body, field_name)
+        if value and value not in _VALID_COLORS:
+            raise ValueError(f"유효하지 않은 색상: {field_name}={value}")
+
 
 class AppearanceConditionIn(BaseModel):
     """외형 조건 등록 요청."""
@@ -82,24 +113,9 @@ class AppearanceConditionIn(BaseModel):
     @model_validator(mode="after")
     def _check_conditions(self) -> "AppearanceConditionIn":
         """최소 1개 조건 필수, 유효한 색상명인지 Pydantic 검증."""
-        has_any = (
-            self.upper_color
-            or self.lower_color
-            or self.has_helmet is not None
-            or self.helmet_color
-            or self.has_backpack is not None
-            or self.has_handbag is not None
-            or self.has_suitcase is not None
-        )
-        if not has_any:
+        if not _has_search_condition(self):
             raise ValueError("색상 또는 소지품 조건 중 최소 1개는 필수입니다.")
-        for label, val in [
-            ("upper_color", self.upper_color),
-            ("lower_color", self.lower_color),
-            ("helmet_color", self.helmet_color),
-        ]:
-            if val and val not in _VALID_COLORS:
-                raise ValueError(f"유효하지 않은 색상: {label}={val}")
+        _validate_color_fields(self)
         return self
 
 
@@ -127,7 +143,7 @@ class AppearanceConditionList(BaseModel):
     total: int
 
 
-_DB_PATH = Path(os.environ.get("APPEARANCES_DB", "/app/data/appearances.db"))
+_DB_PATH = Path(os.environ.get("APPEARANCES_DB", "/app/data/runtime/appearances.db"))
 
 
 def _load_all() -> List[dict]:
@@ -205,17 +221,7 @@ async def create_condition(
     _: None = Depends(verify_api_key),
 ) -> BaseResponse[AppearanceConditionOut]:
     cid = str(uuid.uuid4())[:8]
-    payload = {
-        "upper_color": body.upper_color,
-        "lower_color": body.lower_color,
-        "has_helmet": body.has_helmet,
-        "helmet_color": body.helmet_color,
-        "has_backpack": body.has_backpack,
-        "has_handbag": body.has_handbag,
-        "has_suitcase": body.has_suitcase,
-        "threshold": body.threshold,
-        "cameras": body.cameras,
-    }
+    payload = body.model_dump(exclude={"name", "enabled"})
     entry = AppearanceConditionStore(_DB_PATH).create(
         condition_id=cid,
         name=body.name,

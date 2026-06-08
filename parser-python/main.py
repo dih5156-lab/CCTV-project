@@ -23,11 +23,9 @@ Go의 gin HTTP 서버 + goroutine graceful shutdown
 """
 
 import logging
-import os
 import signal
-import sys
-import time
 import threading
+import time
 
 # 로깅 기본 설정
 logging.basicConfig(
@@ -71,8 +69,8 @@ def main():
     # 4. 서비스 초기화
     # Go: sensorService := service.NewSensorService(db)
     # ──────────────────────────────────────────────
-    from service.sensor_service import SensorService
     from mqtt.edgex_forwarder import create_from_env as create_edgex_forwarder
+    from service.sensor_service import SensorService
     edgex_forwarder = create_edgex_forwarder()
     sensor_service = SensorService(db, edgex_forwarder=edgex_forwarder)
 

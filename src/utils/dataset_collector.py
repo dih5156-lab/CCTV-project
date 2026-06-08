@@ -7,9 +7,10 @@ import json
 import logging
 import shutil
 import time
-from pathlib import Path
 from dataclasses import dataclass
-from typing import List, Dict, Optional, Tuple
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
+
 import cv2
 import numpy as np
 

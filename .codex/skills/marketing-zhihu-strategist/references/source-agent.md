@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/marketing-zhihu-strategist.md](../../../../agents/marketing-zhihu-strategist.md).
+Derived from [agents/marketing-zhihu-strategist.md](../../../../tooling/agents/marketing-zhihu-strategist.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

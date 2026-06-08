@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/engineering-autonomous-optimization-architect.md](../../../../agents/engineering-autonomous-optimization-architect.md).
+Derived from [agents/engineering-autonomous-optimization-architect.md](../../../../tooling/agents/engineering-autonomous-optimization-architect.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

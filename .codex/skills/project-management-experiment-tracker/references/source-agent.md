@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/project-management-experiment-tracker.md](../../../../agents/project-management-experiment-tracker.md).
+Derived from [agents/project-management-experiment-tracker.md](../../../../tooling/agents/project-management-experiment-tracker.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

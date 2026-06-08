@@ -5,11 +5,11 @@ from __future__ import annotations
 import json
 import sqlite3
 from contextlib import contextmanager
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Generator, List
 
 from ..storage import SQLiteDatabase
+from ..time_utils import now_kst_iso
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS search_conditions (
@@ -70,7 +70,7 @@ class AppearanceConditionStore:
                     name,
                     json.dumps(payload),
                     int(enabled),
-                    datetime.now(timezone.utc).isoformat(),
+                    now_kst_iso(),
                 ),
             )
             conn.commit()

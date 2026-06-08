@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/testing-evidence-collector.md](../../../../agents/testing-evidence-collector.md).
+Derived from [agents/testing-evidence-collector.md](../../../../tooling/agents/testing-evidence-collector.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

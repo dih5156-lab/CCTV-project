@@ -1,4 +1,3 @@
-import pytest
 
 from src.core.sensor_detection import SensorEventDetector, SensorRuleConfig
 from src.devices.sensor_device import SensorReading

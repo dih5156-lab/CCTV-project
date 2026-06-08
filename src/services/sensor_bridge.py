@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict, List, Mapping, Optional
 
-from ..core.sensor_detection import SensorAlertEvent, SensorEventDetector
+from ..core.sensor_detection import SensorEventDetector
 from ..devices.sensor_device import SensorReading
 from ..protocols.mqtt_publisher import MqttEventPublisher
 from ..protocols.tlv_decoder import GoTLVDecoderClient

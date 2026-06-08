@@ -1,4 +1,7 @@
-from src.api._event_forwarding import build_alert_action_payload
+from src.api._event_forwarding import (
+    build_alert_action_payload,
+    build_alert_action_topic,
+)
 from src.api.schemas.event import AlertIn
 
 
@@ -24,3 +27,35 @@ def test_build_alert_action_payload_keeps_optional_fields():
         "object_id": 7,
         "metadata": {"zone_id": "zone-A"},
     }
+
+
+def test_build_alert_action_topic_matches_alarm_topic_pattern():
+    alert = AlertIn(
+        camera_id="camera_1",
+        event_type="head",
+        severity="critical",
+        confidence=0.92,
+        timestamp=1700000000.0,
+    )
+
+    assert build_alert_action_topic(alert) == "cctv/ai/events/camera_1/head"
+
+
+def test_build_alert_action_topic_maps_rule_events():
+    intrusion = AlertIn(
+        camera_id="camera_1",
+        event_type="intrusion",
+        severity="critical",
+        confidence=0.92,
+        timestamp=1700000000.0,
+    )
+    temperature = AlertIn(
+        camera_id="camera_1",
+        event_type="sensor_temperature",
+        severity="critical",
+        confidence=0.92,
+        timestamp=1700000000.0,
+    )
+
+    assert build_alert_action_topic(intrusion) == "cctv/rules/intrusion/critical"
+    assert build_alert_action_topic(temperature) == "aiot/rules/sensor/temperature"

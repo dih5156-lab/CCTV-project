@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/engineering-devops-automator.md](../../../../agents/engineering-devops-automator.md).
+Derived from [agents/engineering-devops-automator.md](../../../../tooling/agents/engineering-devops-automator.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

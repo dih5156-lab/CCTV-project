@@ -14,10 +14,9 @@ TLV 구조 개요:
   3, 34950, 34952, 34954, 34955, 34956, 34957, 34958
 """
 
-import struct
 import logging
-import math
-from typing import Optional, List, Any, Tuple
+import struct
+from typing import Any, List, Optional, Tuple
 
 from tlv.transformer_v0 import TransformerV0
 from tlv.transformer_v1 import TransformerV1

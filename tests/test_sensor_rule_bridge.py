@@ -10,7 +10,6 @@ from src.services.sensor_rule_bridge import (
     build_sensor_bridge_inputs,
 )
 
-
 SENSOR_FIXTURES = json.loads(
     (Path(__file__).parent / "fixtures" / "sensor_payloads.json").read_text(encoding="utf-8")
 )

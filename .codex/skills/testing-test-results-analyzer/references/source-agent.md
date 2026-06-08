@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/testing-test-results-analyzer.md](../../../../agents/testing-test-results-analyzer.md).
+Derived from [agents/testing-test-results-analyzer.md](../../../../tooling/agents/testing-test-results-analyzer.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

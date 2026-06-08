@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/project-management-project-shepherd.md](../../../../agents/project-management-project-shepherd.md).
+Derived from [agents/project-management-project-shepherd.md](../../../../tooling/agents/project-management-project-shepherd.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

@@ -13,19 +13,17 @@ import json
 import os
 import threading
 import time
-import urllib.request
 import urllib.error
+import urllib.request
 from io import BytesIO
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
-import numpy as np
 import pytest
 
-from src.utils.zone_detection import PolygonZone, ZoneManager
 from src.services.zone_api import ZoneApiHandler, start_zone_api_server
-
+from src.utils.zone_detection import PolygonZone, ZoneManager
 
 # ---------------------------------------------------------------------------
 # 공통 픽스처 / 헬퍼
@@ -101,6 +99,7 @@ def _live_server(processor, cameras_json_path: str, port: int = 0):
     """
     import tempfile
     from http.server import HTTPServer
+
     from src.utils.zone_presets import ZonePresetStore
 
     try:

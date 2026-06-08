@@ -39,7 +39,7 @@ class OnnxAttributeRuntime:
 class PaddleAttributeRuntime:
     """Paddle inference 모델 실행 어댑터."""
 
-    input_shape = [None, 3, 256, 192]
+    input_shape = (None, 3, 256, 192)
 
     def __init__(self, model: object) -> None:
         self.model = model

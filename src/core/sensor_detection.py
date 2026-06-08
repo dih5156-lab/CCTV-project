@@ -116,10 +116,14 @@ class SensorEventDetector:
             return None
 
         peak = max(abs(angle_x or 0.0), abs(angle_y or 0.0))
-        if peak < self.rules.tilt_warning_angle:
+        severity = self._threshold_severity(
+            peak,
+            warning_threshold=self.rules.tilt_warning_angle,
+            critical_threshold=self.rules.tilt_critical_angle,
+        )
+        if severity is None:
             return None
 
-        severity = "critical" if peak >= self.rules.tilt_critical_angle else "warning"
         return self._build_alert_event(
             reading,
             event_type="tilt_alert",
@@ -137,14 +141,17 @@ class SensorEventDetector:
             min_value=-50.0,
             max_value=150.0,
         )
-        if temperature is None or temperature < self.rules.temperature_warning:
+        if temperature is None:
             return None
 
-        severity = (
-            "critical"
-            if temperature >= self.rules.temperature_critical
-            else "warning"
+        severity = self._threshold_severity(
+            temperature,
+            warning_threshold=self.rules.temperature_warning,
+            critical_threshold=self.rules.temperature_critical,
         )
+        if severity is None:
+            return None
+
         return self._build_alert_event(
             reading,
             event_type="temperature_alert",
@@ -194,6 +201,17 @@ class SensorEventDetector:
         if max_abs is not None and abs(number) > max_abs:
             return None
         return number
+
+    @staticmethod
+    def _threshold_severity(
+        value: float,
+        *,
+        warning_threshold: float,
+        critical_threshold: float,
+    ) -> Optional[str]:
+        if value < warning_threshold:
+            return None
+        return "critical" if value >= critical_threshold else "warning"
 
     @staticmethod
     def _build_metadata(

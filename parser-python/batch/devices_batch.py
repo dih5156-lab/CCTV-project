@@ -12,17 +12,19 @@ Go의 goroutine 기반 병렬 API 호출 → Python의 concurrent.futures.Thread
   3. 모든 결과 통합 후 DeviceUpdateCallback 호출
 """
 
+import json
 import logging
 import ssl
 import threading
 import time
-import urllib.request
 import urllib.error
-import json
+import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Callable, Dict, List, Optional
+
+from time_utils import now_kst
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +47,7 @@ class DeviceInfo:
     id: str = ""
     eui: str = ""
     name: str = ""
-    last_seen: datetime = field(default_factory=datetime.utcnow)
+    last_seen: datetime = field(default_factory=now_kst)
 
 
 @dataclass

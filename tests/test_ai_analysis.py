@@ -16,13 +16,13 @@ test_ai_analysis.py — AIAnalyzer 단위 테스트
       순수 계산 로직만 검증하므로 실제 모델 추론은 수행하지 않는다.
 """
 
+from unittest.mock import MagicMock, patch
+
 import numpy as np
 import pytest
-from unittest.mock import MagicMock, patch
 
 from src.core.events import DetectionEvent, EventType
 from tests.conftest import make_event
-
 
 # ---------------------------------------------------------------------------
 # 헬퍼

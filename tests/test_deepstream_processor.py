@@ -28,7 +28,6 @@ from src.core.deepstream_processor import DEEPSTREAM_AVAILABLE, DeepStreamProces
 from src.core.events import DetectionEvent, EventType
 from src.core.processor import VideoProcessor
 
-
 # ---------------------------------------------------------------------------
 # 픽스처
 # ---------------------------------------------------------------------------
@@ -157,6 +156,8 @@ def test_deepstream_get_camera_status_uses_common_fields_without_runtime():
     proc = object.__new__(DeepStreamProcessor)
     proc.running = False
     proc._preview_last_frame_at = None
+    proc._source_backoff_until = {}
+    proc._source_last_error = {}
     proc._cameras = {
         "cam1": {
             "source": "rtsp://192.168.1.1/stream",
@@ -182,6 +183,64 @@ def test_deepstream_get_camera_status_uses_common_fields_without_runtime():
     assert entry["connected"] is False
     assert entry["source"] == "rtsp://192.168.1.1/stream"
     assert entry["pad_id"] == 0
+
+
+def test_deepstream_marks_failed_source_with_backoff(monkeypatch):
+    proc = object.__new__(DeepStreamProcessor)
+    proc._source_failure_backoff_sec = 30.0
+    proc._source_backoff_until = {}
+    proc._source_last_error = {}
+    proc._cameras = {
+        "cam1": {
+            "source": "rtsp://192.168.1.1/stream",
+            "reconnect_attempts": 0,
+        }
+    }
+    monkeypatch.setattr("src.core.deepstream_processor.time.monotonic", lambda: 100.0)
+
+    proc._mark_source_failed("cam1", "rtsp timeout")
+
+    assert proc._source_backoff_until["cam1"] == 130.0
+    assert proc._source_last_error["cam1"] == "rtsp timeout"
+    assert proc._cameras["cam1"]["reconnect_attempts"] == 1
+
+
+def test_deepstream_build_source_entries_skips_backoff_camera(monkeypatch):
+    proc = object.__new__(DeepStreamProcessor)
+    proc._source_backoff_until = {"cam1": 130.0}
+    proc._cameras = {
+        "cam1": {"source": "rtsp://192.168.1.1/stream"},
+        "cam2": {"source": "rtsp://192.168.1.2/stream"},
+    }
+    monkeypatch.setattr("src.core.deepstream_processor.time.monotonic", lambda: 100.0)
+
+    entries = proc._build_source_entries()
+
+    assert [(pad_id, camera_id, source_uri) for pad_id, camera_id, _info, source_uri in entries] == [
+        (0, "cam2", "rtsp://192.168.1.2/stream")
+    ]
+
+
+def test_deepstream_next_source_retry_delay_returns_nearest_backoff(monkeypatch):
+    proc = object.__new__(DeepStreamProcessor)
+    proc._source_backoff_until = {"cam1": 130.0, "cam2": 160.0}
+    monkeypatch.setattr("src.core.deepstream_processor.time.monotonic", lambda: 100.0)
+
+    assert proc.next_source_retry_delay() == 30.0
+
+
+def test_deepstream_camera_id_from_error_debug():
+    proc = object.__new__(DeepStreamProcessor)
+    proc._cameras = {"camera_1": {}, "camera_2": {}}
+    message = MagicMock()
+    message.src = None
+
+    camera_id = proc._camera_id_from_message(
+        message,
+        "/GstPipeline:cctv-deepstream/GstDsNvUriSrcBin:src-camera_1/GstRTSPSrc:src",
+    )
+
+    assert camera_id == "camera_1"
 
 
 def test_deepstream_get_stats_uses_common_fields_without_runtime():
@@ -257,6 +316,7 @@ def test_preview_sample_is_pulled_even_when_throttled(monkeypatch):
 
 def test_build_source_entries_skips_integer_sources_without_runtime():
     proc = object.__new__(DeepStreamProcessor)
+    proc._source_backoff_until = {}
     proc._cameras = {
         "cam1": {"source": "rtsp://192.168.1.1/stream"},
         "cam2": {"source": 0},

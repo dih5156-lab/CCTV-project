@@ -5,9 +5,9 @@ from __future__ import annotations
 import json
 import logging
 import os
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
 from typing import Callable, Dict, List, Optional
 
 import cv2

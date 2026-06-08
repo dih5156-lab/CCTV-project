@@ -20,7 +20,6 @@ Routes:
     POST  /cameras/{id}/models  → 모델 on/off 상태 변경 (cameras.json에 저장)
 """
 
-import json
 import logging
 import re
 import threading
@@ -68,11 +67,7 @@ class CameraModelApiHandler(BaseApiHandler):
     # ------------------------------------------------------------------
 
     def do_OPTIONS(self):  # noqa: N802
-        self.send_response(200)
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
-        self.end_headers()
+        self._respond_options("GET, POST, OPTIONS")
 
     def do_GET(self):  # noqa: N802
         if not self._check_internal_token():

@@ -2,9 +2,9 @@ name: CCTV CI/CD
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, develop, release, release/**]
   pull_request:
-    branches: [main]
+    branches: [main, release, release/**]
 
 env:
   REGISTRY: ghcr.io
@@ -23,10 +23,16 @@ jobs:
           cache: pip
 
       - name: Check sensitive defaults
-        run: python scripts/check_sensitive_defaults.py
+        run: python scripts/health/check_sensitive_defaults.py
+
+      - name: Check root generated files
+        run: python scripts/health/check_root_generated_files.py
 
       - name: Install dev dependencies
         run: pip install -r requirements-dev.txt
+
+      - name: Run ruff
+        run: ruff check .
 
       - name: Run pytest
         run: pytest tests/ -v --tb=short --junitxml=test-results.xml
@@ -36,6 +42,7 @@ jobs:
         with:
           name: test-results
           path: test-results.xml
+          retention-days: ${{ startsWith(github.ref, 'refs/heads/release') && 30 || 7 }}
 
   compose-config:
     runs-on: ubuntu-latest
@@ -50,7 +57,7 @@ jobs:
           docker compose -f docker-compose.jetson.yml config >/tmp/docker-compose.jetson.yml
 
       - name: Deployment readiness smoke check
-        run: python scripts/check_deployment_readiness.py
+        run: python scripts/health/check_deployment_readiness.py
 
   # ── 2. 보안 취약점 스캔 ─────────────────────────────────────────────
   security-scan:
@@ -58,19 +65,37 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: pip-audit (requirements)
+      - name: pip-audit (enforced on main)
+        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release'))
+        run: |
+          pip install pip-audit
+          pip-audit -r requirements.txt
+          pip-audit -r requirements-action.txt
+
+      - name: pip-audit (warning on non-main/PR)
+        if: github.ref != 'refs/heads/main' || github.event_name == 'pull_request'
         run: |
           pip install pip-audit
           pip-audit -r requirements.txt || true
           pip-audit -r requirements-action.txt || true
 
-      - name: Trivy filesystem scan
+      - name: Trivy filesystem scan (enforced on main)
+        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release'))
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: fs
           scan-ref: .
           severity: CRITICAL,HIGH
-          exit-code: "0"   # 경고만 — 빌드 차단은 팀 정책에 따라 "1"로 변경
+          exit-code: "1"
+
+      - name: Trivy filesystem scan (warning on non-main/PR)
+        if: github.event_name == 'pull_request' || (github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/heads/release'))
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: CRITICAL,HIGH
+          exit-code: "0"
 
   # ── 3. 이미지 빌드 & GHCR 푸시 ─────────────────────────────────────
   build:
@@ -131,7 +156,7 @@ jobs:
   # ── 4. Jetson ARM64 빌드 (main 브랜치만) ───────────────────────────
   build-jetson:
     needs: [test]
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release')
     runs-on: ubuntu-latest
     permissions:
       contents: read

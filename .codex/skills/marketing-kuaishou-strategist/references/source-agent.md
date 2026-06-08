@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/marketing-kuaishou-strategist.md](../../../../agents/marketing-kuaishou-strategist.md).
+Derived from [agents/marketing-kuaishou-strategist.md](../../../../tooling/agents/marketing-kuaishou-strategist.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

@@ -17,11 +17,11 @@ Go의 struct(태그 포함) → Python dataclass 로 변환되었습니다.
   t34958  : 복합 요약2 (가속도 + 자이로 + 경사)
 """
 
-import json
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional, Any, Dict
+from typing import Any, Dict
 
+from time_utils import now_kst
 
 # ──────────────────────────────────────────────
 # 공통 기본 센서 데이터
@@ -47,11 +47,11 @@ class DefaultSensorData:
     app_eui: str = ""
     dev_eui: str = ""
     device_id: str = ""
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=now_kst)
     payload: str = ""
     channel: int = 0
     frequency: int = 0
-    received_at: datetime = field(default_factory=datetime.utcnow)
+    received_at: datetime = field(default_factory=now_kst)
 
 
 # ──────────────────────────────────────────────
@@ -84,7 +84,7 @@ class T3:
     payload: str = ""
     channel: int = 0
     frequency: int = 0
-    received_at: datetime = field(default_factory=datetime.utcnow)
+    received_at: datetime = field(default_factory=now_kst)
 
     manufacturer: str = ""
     model_number: str = ""
@@ -251,30 +251,6 @@ class SensorData:
     object_id: str = ""
     payload_tlv: Dict[str, Any] = field(default_factory=dict)
     is_event: bool = False
-
-    def payload_tlv_json(self) -> str:
-        """
-        payload_tlv를 JSON 문자열로 직렬화
-        Go: PayloadTLV.Value() driver.Valuer 인터페이스 구현
-        """
-        try:
-            return json.dumps(self.payload_tlv)
-        except Exception:
-            return "{}"
-
-
-# ──────────────────────────────────────────────
-# 기타 결과 타입
-# ──────────────────────────────────────────────
-
-@dataclass
-class InsertResult:
-    """
-    INSERT 작업 결과
-    Go: type InsertResult struct { RowCount int; Rows []map[string]interface{} }
-    """
-    row_count: int = 0
-    rows: list = field(default_factory=list)
 
 
 @dataclass

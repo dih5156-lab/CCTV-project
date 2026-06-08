@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/paid-media-creative-strategist.md](../../../../agents/paid-media-creative-strategist.md).
+Derived from [agents/paid-media-creative-strategist.md](../../../../tooling/agents/paid-media-creative-strategist.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

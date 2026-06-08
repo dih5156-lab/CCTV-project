@@ -1,0 +1,76 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.black]
+line-length = 88
+target-version = ["py310"]
+exclude = '''
+/(
+  \.git
+  | \.venv
+  | __pycache__
+  | data
+  | models
+  | reports
+  | tmp_test_dirs
+  | .codex
+  | .pytest_cache
+)/
+'''
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+extend-exclude = [
+  ".git",
+  ".venv",
+  "__pycache__",
+  "data",
+  "models",
+  "reports",
+  "tmp_test_dirs",
+  ".codex",
+  ".pytest_cache",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"parser-python/**/*.py" = ["E402"]
+"runners/*.py" = ["E402"]
+"scripts/ops/*.py" = ["E402"]
+"src/core/processor.py" = ["E402"]
+"src/devices/speaker.py" = ["E402"]
+"tests/*.py" = ["E402"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app", "src", "runners", "parser-python"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+no_implicit_optional = true
+disallow_untyped_defs = false
+ignore_missing_imports = true
+files = ["src", "runners", "parser-python", "tests"]
+exclude = [
+  "^data/",
+  "^models/",
+  "^reports/",
+  "^tmp_test_dirs/",
+  '^\.venv/',
+  '^\.codex/',
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short --ignore=parser-python --ignore=tests/test_video.py"
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+norecursedirs = ["parser-python"]

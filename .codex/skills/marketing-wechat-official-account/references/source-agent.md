@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/marketing-wechat-official-account.md](../../../../agents/marketing-wechat-official-account.md).
+Derived from [agents/marketing-wechat-official-account.md](../../../../tooling/agents/marketing-wechat-official-account.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

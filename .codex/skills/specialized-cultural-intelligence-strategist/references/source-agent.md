@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/specialized-cultural-intelligence-strategist.md](../../../../agents/specialized-cultural-intelligence-strategist.md).
+Derived from [agents/specialized-cultural-intelligence-strategist.md](../../../../tooling/agents/specialized-cultural-intelligence-strategist.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

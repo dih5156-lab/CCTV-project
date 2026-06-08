@@ -1,0 +1,10 @@
+[Unit]
+Description=CCTV 런타임 데이터 일일 정리 예약
+
+[Timer]
+OnCalendar=*-*-* 09:00:00
+Persistent=true
+Unit=cctv-runtime-cleanup.service
+
+[Install]
+WantedBy=timers.target

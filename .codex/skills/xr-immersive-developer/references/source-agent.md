@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/xr-immersive-developer.md](../../../../agents/xr-immersive-developer.md).
+Derived from [agents/xr-immersive-developer.md](../../../../tooling/agents/xr-immersive-developer.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

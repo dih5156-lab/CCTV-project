@@ -30,13 +30,12 @@
 
 from __future__ import annotations
 
+import ctypes
+import json
 import logging
 import os
-import json
-import tempfile
 import threading
 import time
-import ctypes
 from collections import deque
 from pathlib import Path
 from queue import Empty, Full, Queue
@@ -46,10 +45,8 @@ from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple, Union
 from ..config import AppConfig
 from ..protocols.mqtt_publisher import MqttEventPublisher
 from ..services.appearance_conditions import AppearanceConditionStore
+from ..utils.face_recognition import FaceRecognitionEngine
 from ..utils.zone_detection import ZoneEvent, ZoneManager
-from ..utils.zone_drawer import ZoneDrawer
-from .ai._fall_detector import FallDetector
-from .base_processor import BaseProcessor
 from ._deepstream_event_factory import detections_to_events, object_meta_to_event
 from ._deepstream_face_context import (
     remove_camera_face_cache,
@@ -58,19 +55,19 @@ from ._deepstream_face_context import (
 from ._event_context import events_to_nearby_objects
 from ._event_publish import publish_queue_item
 from ._face_snapshot import save_recognized_face_snapshot
-from .event_filters import CumulativeViolationFilter, TrackManager
-from .events import DetectionEvent, EventType
 from ._synthetic_object_ids import SyntheticObjectIdAssigner, event_iou
 from ._yolo_postprocess import (
     detections_from_yolo_output,
     map_yolo_box_to_frame,
-    map_yolo_keypoints_to_frame,
     nms_detections,
 )
-from .ai._attribute_backends import decode_pphuman_scores
-from .ai._appearance_analyzer import AppearanceAnalyzer, BAG_CLASSES
+from .ai._appearance_analyzer import BAG_CLASSES, AppearanceAnalyzer
 from .ai._appearance_pipeline import AppearancePipeline
-from ..utils.face_recognition import FaceRecognitionEngine
+from .ai._attribute_backends import decode_pphuman_scores
+from .ai._fall_detector import FallDetector
+from .base_processor import BaseProcessor
+from .event_filters import CumulativeViolationFilter, TrackManager
+from .events import DetectionEvent, EventType
 
 logger = logging.getLogger(__name__)
 
@@ -101,10 +98,11 @@ try:
     import gi  # type: ignore
 
     gi.require_version("Gst", "1.0")
-    from gi.repository import Gst  # type: ignore  # noqa: F401
-    from gi.repository import GLib  # type: ignore  # noqa: F401
-
     import pyds  # type: ignore  # noqa: F401
+    from gi.repository import (
+        GLib,  # type: ignore  # noqa: F401
+        Gst,  # type: ignore  # noqa: F401
+    )
 
     DEEPSTREAM_AVAILABLE = True
     logger.debug("DeepStream Python bindings (pyds) 로드 성공")
@@ -367,6 +365,9 @@ class DeepStreamProcessor(BaseProcessor):
         # _build_pipeline() 호출 시 갱신됨. 재시작 필요 여부 판단에 사용.
         self._built_topology: Tuple[bool, bool, bool] = (False, False, False)
         self._pipeline_restart_pending: bool = False  # API 응답에 재시작 여부 전달용
+        self._source_failure_backoff_sec = float(os.environ.get("DS_SOURCE_FAILURE_BACKOFF_SEC", "60"))
+        self._source_backoff_until: Dict[str, float] = {}
+        self._source_last_error: Dict[str, str] = {}
         self._helmet_enabled = self._env_bool("DS_HELMET_ENABLED", True)
         self._pphuman_sgie_enabled = self._env_bool("DS_PPHUMAN_SGIE_ENABLED", True)
         self._face_enabled_default = self._env_bool("DS_FACE_ENABLED", False)
@@ -455,7 +456,7 @@ class DeepStreamProcessor(BaseProcessor):
     def _init_ai_context(self, config: AppConfig) -> None:
         """얼굴/외형/구역 후처리 컨텍스트를 초기화한다."""
         self._face_snapshot_enabled = self._env_bool("FACE_SNAPSHOT_ENABLED", False)
-        self._face_snapshot_dir = Path(os.environ.get("FACE_SNAPSHOT_DIR", "data/face_snapshots"))
+        self._face_snapshot_dir = Path(os.environ.get("FACE_SNAPSHOT_DIR", "data/runtime/face_snapshots"))
         self._face_snapshot_cooldown_sec = float(os.environ.get("FACE_SNAPSHOT_COOLDOWN_SEC", "30.0"))
         self._last_face_snapshot_at: Dict[Tuple[str, str], float] = {}
         self.face_recognizer = FaceRecognitionEngine(
@@ -474,10 +475,10 @@ class DeepStreamProcessor(BaseProcessor):
         )
         self._appearance_pipeline = AppearancePipeline(
             self._appearance,
-            Path(os.environ.get("APPEARANCE_CROP_DIR", "data/appearance_crops")),
+            Path(os.environ.get("APPEARANCE_CROP_DIR", "data/runtime/appearance_crops")),
             save_crops=self._env_bool("APPEARANCE_SAVE_CROPS", False),
         )
-        self._appearance_db_path = Path(os.environ.get("APPEARANCES_DB", "/app/data/appearances.db"))
+        self._appearance_db_path = Path(os.environ.get("APPEARANCES_DB", "/app/data/runtime/appearances.db"))
         self._appearance_conditions_mtime: Optional[float] = None
         self._appearance_conditions_checked_at = 0.0
         self._appearance_conditions_refresh_sec = float(
@@ -743,6 +744,7 @@ class DeepStreamProcessor(BaseProcessor):
             "zones_data": zones_data or [],
             "src_element": None,   # Gst.Element — 동적 추가 시 저장
             "pad_id": None,        # nvstreammux 패드 번호
+            "reconnect_attempts": 0,
         }
         self._camera_ai_flags[camera_id] = self._parse_detections(detections)
         logger.info("[%s] DeepStream 감지 항목: %s", camera_id, self._camera_ai_flags[camera_id])
@@ -856,7 +858,10 @@ class DeepStreamProcessor(BaseProcessor):
             logger.info("DeepStream 파이프라인 시작됨")
 
         except Exception as exc:
-            logger.exception("DeepStream 파이프라인 오류: %s", exc)
+            if self.next_source_retry_delay() is not None and "지원 소스가 없습니다" in str(exc):
+                logger.warning("DeepStream 파이프라인 대기: %s", exc)
+            else:
+                logger.exception("DeepStream 파이프라인 오류: %s", exc)
             self.stop()
             raise
 
@@ -897,13 +902,22 @@ class DeepStreamProcessor(BaseProcessor):
 
     def get_camera_status(self) -> Dict[str, dict]:
         """카메라별 상태를 반환한다."""
+        now = time.monotonic()
         return {
             camera_id: self._build_camera_status_entry(
-                connected=self.running,
+                connected=self.running and camera_id not in self._source_backoff_until,
                 source=info.get("source"),
                 reconnect_attempts=int(info.get("reconnect_attempts", 0) or 0),
                 last_frame_time=self._preview_last_frame_at,
+                status="backoff" if camera_id in self._source_backoff_until else None,
                 pad_id=info.get("pad_id"),
+                source_backoff_remaining_sec=round(
+                    max(0.0, self._source_backoff_until.get(camera_id, 0.0) - now),
+                    1,
+                )
+                if camera_id in self._source_backoff_until
+                else None,
+                last_error=self._source_last_error.get(camera_id),
             )
             for camera_id, info in self._cameras.items()
         }
@@ -960,7 +974,17 @@ class DeepStreamProcessor(BaseProcessor):
     def _build_source_entries(self) -> List[Tuple[int, str, Dict, str]]:
         """카메라 설정을 DeepStream source entry 목록으로 변환한다."""
         source_entries: List[Tuple[int, str, Dict, str]] = []
+        now = time.monotonic()
         for camera_id, info in self._cameras.items():
+            backoff_until = self._source_backoff_until.get(camera_id)
+            if backoff_until is not None:
+                if now < backoff_until:
+                    remaining = backoff_until - now
+                    logger.warning("[%s] DeepStream 소스 backoff 중: %.1f초 후 재시도", camera_id, remaining)
+                    continue
+                self._source_backoff_until.pop(camera_id, None)
+                logger.info("[%s] DeepStream 소스 backoff 종료 → 파이프라인 포함", camera_id)
+
             try:
                 source_uri = self._normalize_uri(info["source"])
             except ValueError as exc:
@@ -968,6 +992,53 @@ class DeepStreamProcessor(BaseProcessor):
                 continue
             source_entries.append((len(source_entries), camera_id, info, source_uri))
         return source_entries
+
+    def _mark_source_failed(self, camera_id: str, reason: str) -> None:
+        """문제 소스를 일정 시간 제외해 다른 카메라 파이프라인을 보호한다."""
+        if camera_id not in self._cameras:
+            return
+        self._source_last_error[camera_id] = reason
+        self._source_backoff_until[camera_id] = time.monotonic() + max(
+            1.0,
+            self._source_failure_backoff_sec,
+        )
+        info = self._cameras[camera_id]
+        info["reconnect_attempts"] = int(info.get("reconnect_attempts", 0) or 0) + 1
+        logger.warning(
+            "[%s] DeepStream 소스 오류로 %.0f초 backoff 적용: %s",
+            camera_id,
+            self._source_failure_backoff_sec,
+            reason,
+        )
+
+    def next_source_retry_delay(self) -> Optional[float]:
+        """backoff 중인 소스가 있으면 가장 가까운 재시도까지 남은 초를 반환한다."""
+        now = time.monotonic()
+        remaining = [
+            backoff_until - now
+            for backoff_until in self._source_backoff_until.values()
+            if backoff_until > now
+        ]
+        if not remaining:
+            return None
+        return max(1.0, min(remaining))
+
+    def _camera_id_from_message(self, message: Any, debug: object) -> Optional[str]:
+        """GStreamer error message에서 src-<camera_id> element명을 추출한다."""
+        candidates = []
+        try:
+            src = getattr(message, "src", None)
+            if src is not None and hasattr(src, "get_name"):
+                candidates.append(str(src.get_name()))
+        except Exception:
+            pass
+        candidates.append(str(debug or ""))
+
+        for text in candidates:
+            for camera_id in self._cameras:
+                if f"src-{camera_id}" in text:
+                    return camera_id
+        return None
 
     def _load_pphuman_label_map(self, label_map_path: Optional[str]) -> Dict[str, object]:
         """PP-Human SGIE tensor 디코딩용 라벨 맵을 로드한다."""
@@ -1242,7 +1313,6 @@ class DeepStreamProcessor(BaseProcessor):
 
     def _read_pphuman_obj_scores(self, obj_meta: Any) -> List[float]:
         """NvDsObjectMeta.obj_user_meta_list에서 PP-Human SGIE 26개 score를 추출한다."""
-        import numpy as np
 
         l_user = obj_meta.obj_user_meta_list
         while l_user is not None:
@@ -1280,16 +1350,6 @@ class DeepStreamProcessor(BaseProcessor):
     ) -> Tuple[int, int, int, int]:
         return map_yolo_box_to_frame(
             box,
-            frame_width,
-            frame_height,
-            input_size=float(os.environ.get("DS_YOLO_INPUT_SIZE", "640")),
-        )
-
-    def _map_yolo_keypoints_to_frame(
-        self, values: Any, frame_width: int, frame_height: int
-    ) -> List[List[float]]:
-        return map_yolo_keypoints_to_frame(
-            values,
             frame_width,
             frame_height,
             input_size=float(os.environ.get("DS_YOLO_INPUT_SIZE", "640")),
@@ -1626,51 +1686,6 @@ class DeepStreamProcessor(BaseProcessor):
             logger.debug("[%s] 등록 얼굴 스냅샷 저장 실패: %s", camera_name, exc)
             return None
 
-    def _run_context_postprocessing(
-        self, camera_name: str, filtered_events: List[DetectionEvent]
-    ) -> List[DetectionEvent]:
-        flags = self._feature_flags_for_camera(camera_name)
-        if not (flags.get("use_face") or flags.get("use_appearance")):
-            return []
-
-        person_events = [
-            event for event in filtered_events
-            if event.event_type == EventType.PERSON
-        ]
-        if not person_events:
-            return []
-
-        frame = self.get_camera_frame(camera_name, copy_frame=False)
-        if frame is None:
-            logger.debug("[%s] DeepStream context 후처리 스킵: preview frame 없음", camera_name)
-            return []
-
-        face_events = (
-            self._run_face_recognition(frame, person_events, camera_name)
-            if flags.get("use_face")
-            else []
-        )
-
-        appearance_events: List[DetectionEvent] = []
-        if flags.get("use_appearance"):
-            self._log_appearance_capability_hints(camera_name, flags)
-            self._refresh_appearance_conditions()
-            appearance_events = self._appearance_pipeline.run(
-                frame,
-                person_events,
-                face_events,
-                camera_id=camera_name,
-                use_appearance=True,
-                nearby_objects=self._nearby_objects_from_events(filtered_events),
-            )
-            for event in appearance_events:
-                metadata = dict(event.metadata or {})
-                metadata.setdefault("backend", "deepstream_context")
-                metadata.setdefault("camera_id", camera_name)
-                event.metadata = metadata
-
-        return face_events + appearance_events
-
     def _apply_existing_event_pipeline(
         self, camera_name: str, events: List[DetectionEvent]
     ) -> List[DetectionEvent]:
@@ -1845,7 +1860,6 @@ class DeepStreamProcessor(BaseProcessor):
             pyds.nvds_add_display_meta_to_frame(frame_meta, display_meta)
 
     def _detections_from_tensor(self, tensor_meta: Any, frame_meta: Any) -> List[Dict[str, Any]]:
-        import numpy as np
 
         gie_id = self._tensor_gie_id(tensor_meta)
         task = self._task_by_gie.get(gie_id, self._yolo_task)
@@ -2498,6 +2512,9 @@ class DeepStreamProcessor(BaseProcessor):
         elif msg_type == Gst.MessageType.ERROR:
             err, debug = message.parse_error()
             logger.error("DeepStream 오류: %s debug=%s", err, debug)
+            camera_id = self._camera_id_from_message(message, debug)
+            if camera_id:
+                self._mark_source_failed(camera_id, str(err))
             self.stop_event.set()
             if self._main_loop is not None:
                 self._main_loop.quit()

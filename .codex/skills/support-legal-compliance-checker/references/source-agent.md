@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/support-legal-compliance-checker.md](../../../../agents/support-legal-compliance-checker.md).
+Derived from [agents/support-legal-compliance-checker.md](../../../../tooling/agents/support-legal-compliance-checker.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

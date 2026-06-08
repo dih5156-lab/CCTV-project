@@ -11,20 +11,19 @@ import threading
 import time
 from base64 import b64decode
 from dataclasses import dataclass
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from ..canonical_event import build_canonical_event
-from ..canonical_event import build_event_id
+from ..canonical_event import build_canonical_event, build_event_id
 from ..config import AppConfig, ExternalIngestConfig, MqttConfig
 from ..protocols import MqttEventPublisher, MqttTopicSubscriber
+from ..time_utils import now_kst_iso
 
 logger = logging.getLogger(__name__)
 
 
 def _utc_now_iso() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return now_kst_iso()
 
 
 def _coerce_float(value: Any) -> Optional[float]:
@@ -66,11 +65,60 @@ def _extract_lora_timestamp(raw_payload: Dict[str, Any]) -> Optional[str]:
     return None
 
 
+def _lora_spec(raw_payload: Dict[str, Any], gateway_info: Dict[str, Any]) -> Dict[str, Any]:
+    return {
+        "message_id": raw_payload.get("message_id"),
+        "app_eui": raw_payload.get("app_eui"),
+        "dev_eui": raw_payload.get("dev_eui"),
+        "f_port": raw_payload.get("f_port"),
+        "f_cnt_up": raw_payload.get("f_cnt_up"),
+        "is_confirmed": raw_payload.get("is_confirmed"),
+        "gateway": gateway_info,
+        "channel_plan": gateway_info.get("channel_plan"),
+    }
+
+
+def _lora_telemetry(first_rx_meta: Dict[str, Any]) -> Dict[str, Any]:
+    return {
+        "modulation": first_rx_meta.get("modulation"),
+        "data_rate": first_rx_meta.get("data_rate"),
+        "coding_rate": first_rx_meta.get("coding_rate"),
+        "frequency": first_rx_meta.get("frequency"),
+        "channel": first_rx_meta.get("channel"),
+        "rssi": first_rx_meta.get("rssi"),
+        "snr": first_rx_meta.get("snr"),
+        "gateway_time": first_rx_meta.get("gw_recv_time"),
+    }
+
+
+def _canonical_gateway_fields(
+    first_rx_meta: Dict[str, Any],
+    gateway_info: Dict[str, Any],
+) -> Dict[str, Any]:
+    return {
+        "gw_eui": gateway_info.get("gw_eui"),
+        "latitude": gateway_info.get("latitude"),
+        "longitude": gateway_info.get("longitude"),
+        "altitude": gateway_info.get("altitude"),
+        "channel_plan": gateway_info.get("channel_plan"),
+        "modulation": first_rx_meta.get("modulation"),
+        "data_rate": first_rx_meta.get("data_rate"),
+        "coding_rate": first_rx_meta.get("coding_rate"),
+        "channel": first_rx_meta.get("channel"),
+        "frequency": first_rx_meta.get("frequency"),
+        "rssi": first_rx_meta.get("rssi"),
+        "snr": first_rx_meta.get("snr"),
+        "received_at": first_rx_meta.get("gw_recv_time"),
+    }
+
+
 def normalize_external_event(raw_payload: Dict[str, Any], topic: str) -> Dict[str, Any]:
     """외부 입력 payload를 프로젝트 내부 이벤트 형식으로 정규화한다."""
     rx_metadata = raw_payload.get("rx_metadata")
     first_rx_meta = rx_metadata[0] if isinstance(rx_metadata, list) and rx_metadata else {}
-    gateway_info = first_rx_meta.get("gateway_info", {}) if isinstance(first_rx_meta, dict) else {}
+    first_rx_meta = first_rx_meta if isinstance(first_rx_meta, dict) else {}
+    gateway_info = first_rx_meta.get("gateway_info", {})
+    gateway_info = gateway_info if isinstance(gateway_info, dict) else {}
     is_lora_uplink = "dev_eui" in raw_payload or "app_eui" in raw_payload or "f_port" in raw_payload
 
     camera_id = (
@@ -124,26 +172,8 @@ def normalize_external_event(raw_payload: Dict[str, Any], topic: str) -> Dict[st
             "topic": topic,
             "source_id": raw_payload.get("source_id") or raw_payload.get("device_id") or raw_payload.get("deviceId") or raw_payload.get("dev_eui"),
             "sensor_type": sensor_type,
-            "spec": raw_payload.get("spec") or {
-                "message_id": raw_payload.get("message_id"),
-                "app_eui": raw_payload.get("app_eui"),
-                "dev_eui": raw_payload.get("dev_eui"),
-                "f_port": raw_payload.get("f_port"),
-                "f_cnt_up": raw_payload.get("f_cnt_up"),
-                "is_confirmed": raw_payload.get("is_confirmed"),
-                "gateway": gateway_info,
-                "channel_plan": gateway_info.get("channel_plan") if isinstance(gateway_info, dict) else None,
-            },
-            "telemetry": raw_payload.get("telemetry") or {
-                "modulation": first_rx_meta.get("modulation") if isinstance(first_rx_meta, dict) else None,
-                "data_rate": first_rx_meta.get("data_rate") if isinstance(first_rx_meta, dict) else None,
-                "coding_rate": first_rx_meta.get("coding_rate") if isinstance(first_rx_meta, dict) else None,
-                "frequency": first_rx_meta.get("frequency") if isinstance(first_rx_meta, dict) else None,
-                "channel": first_rx_meta.get("channel") if isinstance(first_rx_meta, dict) else None,
-                "rssi": first_rx_meta.get("rssi") if isinstance(first_rx_meta, dict) else None,
-                "snr": first_rx_meta.get("snr") if isinstance(first_rx_meta, dict) else None,
-                "gateway_time": first_rx_meta.get("gw_recv_time") if isinstance(first_rx_meta, dict) else None,
-            },
+            "spec": raw_payload.get("spec") or _lora_spec(raw_payload, gateway_info),
+            "telemetry": raw_payload.get("telemetry") or _lora_telemetry(first_rx_meta),
             "image_path": raw_payload.get("image_path"),
             "image_url": raw_payload.get("image_url"),
             "image_ref": raw_payload.get("image_ref"),
@@ -176,21 +206,7 @@ def normalize_external_event(raw_payload: Dict[str, Any], topic: str) -> Dict[st
                 "f_port": raw_payload.get("f_port"),
                 "f_cnt_up": raw_payload.get("f_cnt_up"),
             },
-            gateway={
-                "gw_eui": gateway_info.get("gw_eui") if isinstance(gateway_info, dict) else None,
-                "latitude": gateway_info.get("latitude") if isinstance(gateway_info, dict) else None,
-                "longitude": gateway_info.get("longitude") if isinstance(gateway_info, dict) else None,
-                "altitude": gateway_info.get("altitude") if isinstance(gateway_info, dict) else None,
-                "channel_plan": gateway_info.get("channel_plan") if isinstance(gateway_info, dict) else None,
-                "modulation": first_rx_meta.get("modulation") if isinstance(first_rx_meta, dict) else None,
-                "data_rate": first_rx_meta.get("data_rate") if isinstance(first_rx_meta, dict) else None,
-                "coding_rate": first_rx_meta.get("coding_rate") if isinstance(first_rx_meta, dict) else None,
-                "channel": first_rx_meta.get("channel") if isinstance(first_rx_meta, dict) else None,
-                "frequency": first_rx_meta.get("frequency") if isinstance(first_rx_meta, dict) else None,
-                "rssi": first_rx_meta.get("rssi") if isinstance(first_rx_meta, dict) else None,
-                "snr": first_rx_meta.get("snr") if isinstance(first_rx_meta, dict) else None,
-                "received_at": first_rx_meta.get("gw_recv_time") if isinstance(first_rx_meta, dict) else None,
-            },
+            gateway=_canonical_gateway_fields(first_rx_meta, gateway_info),
             decoded=raw_payload.get("decoded") or raw_payload.get("telemetry") or {},
             raw={
                 "payload_base64": raw_payload.get("payload"),

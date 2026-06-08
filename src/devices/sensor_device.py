@@ -3,37 +3,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
-from math import isfinite
 from typing import Any, Dict, Mapping
 
-
-def _normalize_timestamp(value: Any) -> float:
-    """초/ms/ISO timestamp를 Unix seconds(float)로 정규화한다."""
-    if value in (None, ""):
-        return 0.0
-    if isinstance(value, str):
-        try:
-            value = value.strip()
-            if not value:
-                return 0.0
-            number = float(value)
-        except ValueError:
-            try:
-                return datetime.fromisoformat(value.replace("Z", "+00:00")).timestamp()
-            except ValueError:
-                return 0.0
-    else:
-        try:
-            number = float(value)
-        except (TypeError, ValueError):
-            return 0.0
-
-    if not isfinite(number):
-        return 0.0
-    if abs(number) >= 1e11:
-        number /= 1000.0
-    return number
+from src.time_utils import coerce_timestamp_seconds
 
 
 def _as_mapping(value: Any) -> Dict[str, Any]:
@@ -78,7 +50,7 @@ class SensorReading:
         )
         dev_eui = str(uplink_message.get("dev_eui") or "").lower()
         device_id = str(uplink_message.get("device_id") or dev_eui or "unknown")
-        received_at = _normalize_timestamp(
+        received_at = coerce_timestamp_seconds(
             rx0.get("time") or uplink_message.get("received_at") or uplink_message.get("timestamp")
         )
 

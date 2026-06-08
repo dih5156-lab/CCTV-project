@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/narrative-designer.md](../../../../agents/narrative-designer.md).
+Derived from [agents/narrative-designer.md](../../../../tooling/agents/narrative-designer.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

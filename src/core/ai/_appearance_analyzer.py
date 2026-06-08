@@ -26,7 +26,7 @@ import cv2
 import numpy as np
 
 from ...utils.geometry import is_helmet_worn
-from ._attribute_backend import AttributeCrop, AttributeBackend
+from ._attribute_backend import AttributeBackend, AttributeCrop
 from ._attribute_backends import build_attribute_backend
 
 logger = logging.getLogger(__name__)

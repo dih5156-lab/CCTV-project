@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/marketing-xiaohongshu-specialist.md](../../../../agents/marketing-xiaohongshu-specialist.md).
+Derived from [agents/marketing-xiaohongshu-specialist.md](../../../../tooling/agents/marketing-xiaohongshu-specialist.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

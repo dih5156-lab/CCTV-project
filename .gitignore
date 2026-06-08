@@ -39,8 +39,10 @@ reports/
 event_backup/
 data/crops/
 data/appearance_crops/
+data/archive/
 data/face_snapshots/
 data/insightface/
+data/runtime/
 snapshots/
 logs/
 tmp_probe_dir/

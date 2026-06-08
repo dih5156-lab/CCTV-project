@@ -15,7 +15,7 @@ def _load_script_module(name: str, relative_path: str):
 
 smoke_test_data_flow = _load_script_module(
     "smoke_test_data_flow",
-    "scripts/smoke_test_data_flow.py",
+    "scripts/smoke/smoke_test_data_flow.py",
 )
 
 

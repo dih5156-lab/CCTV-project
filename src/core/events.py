@@ -5,8 +5,9 @@ DetectionEvent: YOLO 추론 결과를 담는 핵심 dataclass.
 """
 
 from dataclasses import dataclass
-from typing import Optional, Dict
 from enum import Enum
+from typing import Dict, Optional
+
 
 class EventType(str, Enum):
     """감지 결과 이벤트 타입 열거형"""

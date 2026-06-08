@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/marketing-social-media-strategist.md](../../../../agents/marketing-social-media-strategist.md).
+Derived from [agents/marketing-social-media-strategist.md](../../../../tooling/agents/marketing-social-media-strategist.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

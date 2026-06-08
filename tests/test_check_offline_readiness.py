@@ -16,7 +16,7 @@ def _load_script_module(name: str, relative_path: str):
 
 check_offline_readiness = _load_script_module(
     "check_offline_readiness",
-    "scripts/check_offline_readiness.py",
+    "scripts/health/check_offline_readiness.py",
 )
 
 

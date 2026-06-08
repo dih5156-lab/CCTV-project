@@ -10,8 +10,8 @@ import uuid
 from pathlib import Path
 
 import pytest
-from src.core.events import DetectionEvent, EventType
 
+from src.core.events import DetectionEvent, EventType
 
 # ---------------------------------------------------------------------------
 # DetectionEvent 팩토리 헬퍼

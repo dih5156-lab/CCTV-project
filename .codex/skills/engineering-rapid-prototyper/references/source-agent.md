@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/engineering-rapid-prototyper.md](../../../../agents/engineering-rapid-prototyper.md).
+Derived from [agents/engineering-rapid-prototyper.md](../../../../tooling/agents/engineering-rapid-prototyper.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

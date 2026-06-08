@@ -7,6 +7,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
+from ..time_utils import KST
+
 
 def save_recognized_face_snapshot(
     *,
@@ -58,7 +60,7 @@ def save_recognized_face_snapshot(
 
     safe_camera = re.sub(r"[^\w\-]", "_", camera_name)
     safe_name = re.sub(r"[^\w\-]", "_", normalized_name)
-    timestamp = datetime.fromtimestamp(now).strftime("%Y%m%d_%H%M%S_%f")[:19]
+    timestamp = datetime.fromtimestamp(now, tz=KST).strftime("%Y%m%d_%H%M%S_%f")[:19]
     out_dir = snapshot_dir / safe_camera
     out_dir.mkdir(parents=True, exist_ok=True)
     dest = out_dir / f"{timestamp}_{safe_name}.jpg"

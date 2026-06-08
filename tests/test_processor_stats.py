@@ -2,10 +2,11 @@
 test_processor_stats.py — ProcessorStats / _EventDebouncer 단위 테스트
 """
 import time
-import pytest
 from unittest.mock import MagicMock
-from src.core.processor import ProcessorStats, _EventDebouncer
 
+import pytest
+
+from src.core.processor import ProcessorStats, _EventDebouncer
 
 # ---------------------------------------------------------------------------
 # ProcessorStats
@@ -217,7 +218,6 @@ class TestEventDebouncer:
 
     def test_save_locally_creates_file(self, tmp_path, monkeypatch):
         """save_locally 가 파일을 생성하는지 확인."""
-        import os
         monkeypatch.chdir(tmp_path)
         cfg = self._make_config()
         d = _EventDebouncer(cfg, MagicMock())

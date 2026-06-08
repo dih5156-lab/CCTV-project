@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/macos-spatial-metal-engineer.md](../../../../agents/macos-spatial-metal-engineer.md).
+Derived from [agents/macos-spatial-metal-engineer.md](../../../../tooling/agents/macos-spatial-metal-engineer.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

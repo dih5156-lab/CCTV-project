@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/engineering-data-engineer.md](../../../../agents/engineering-data-engineer.md).
+Derived from [agents/engineering-data-engineer.md](../../../../tooling/agents/engineering-data-engineer.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

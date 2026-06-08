@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/unreal-world-builder.md](../../../../agents/unreal-world-builder.md).
+Derived from [agents/unreal-world-builder.md](../../../../tooling/agents/unreal-world-builder.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

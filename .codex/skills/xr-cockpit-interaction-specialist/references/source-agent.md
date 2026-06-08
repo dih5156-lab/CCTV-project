@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/xr-cockpit-interaction-specialist.md](../../../../agents/xr-cockpit-interaction-specialist.md).
+Derived from [agents/xr-cockpit-interaction-specialist.md](../../../../tooling/agents/xr-cockpit-interaction-specialist.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

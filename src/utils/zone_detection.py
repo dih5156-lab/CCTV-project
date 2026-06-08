@@ -9,9 +9,9 @@
     events = zone_mgr.check_zones('cam1', detections)
 """
 
+import errno
 import json
 import logging
-import errno
 import time
 from dataclasses import asdict, dataclass, field
 from enum import Enum

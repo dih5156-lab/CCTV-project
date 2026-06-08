@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/report-distribution-agent.md](../../../../agents/report-distribution-agent.md).
+Derived from [agents/report-distribution-agent.md](../../../../tooling/agents/report-distribution-agent.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 

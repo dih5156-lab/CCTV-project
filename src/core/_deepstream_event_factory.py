@@ -7,6 +7,18 @@ from typing import Any, Callable, Dict, Iterable, List, Optional
 from .events import DetectionEvent, EventType
 
 
+def _add_frame_size_metadata(
+    metadata: Dict[str, Any],
+    *,
+    frame_width: Optional[int],
+    frame_height: Optional[int],
+) -> None:
+    if frame_width:
+        metadata["frame_width"] = frame_width
+    if frame_height:
+        metadata["frame_height"] = frame_height
+
+
 def object_meta_to_event(
     obj_meta: Any,
     *,
@@ -35,10 +47,11 @@ def object_meta_to_event(
         "source_id": source_id,
         "frame_num": frame_num,
     }
-    if frame_width:
-        metadata["frame_width"] = frame_width
-    if frame_height:
-        metadata["frame_height"] = frame_height
+    _add_frame_size_metadata(
+        metadata,
+        frame_width=frame_width,
+        frame_height=frame_height,
+    )
 
     return DetectionEvent(
         event_type=event_type,
@@ -85,10 +98,11 @@ def detections_to_events(
         }
         resolved_frame_width = detection.get("frame_width", frame_width)
         resolved_frame_height = detection.get("frame_height", frame_height)
-        if resolved_frame_width:
-            base_metadata["frame_width"] = resolved_frame_width
-        if resolved_frame_height:
-            base_metadata["frame_height"] = resolved_frame_height
+        _add_frame_size_metadata(
+            base_metadata,
+            frame_width=resolved_frame_width,
+            frame_height=resolved_frame_height,
+        )
         events.append(
             DetectionEvent(
                 event_type=event_type,

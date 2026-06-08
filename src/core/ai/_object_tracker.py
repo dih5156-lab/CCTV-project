@@ -7,19 +7,19 @@ IoU 기반 bbox 매칭으로 임시 ID를 일관되게 유지한다.
 
 from __future__ import annotations
 
-import time
 import logging
-from typing import Dict, Optional, Tuple
+import time
+from typing import Dict, Optional
 
 from ._constants import (
-    _TEMP_TRACK_ID_START,
     _TEMP_TRACK_ID_END,
-    _TEMP_TRACK_TTL_SEC,
-    _TEMP_TRACK_MIN_IOU,
-    _TEMP_TRACK_MAX_CENTER_RATIO,
+    _TEMP_TRACK_ID_START,
     _TEMP_TRACK_MAX_AREA_RATIO_DELTA,
+    _TEMP_TRACK_MAX_CENTER_RATIO,
+    _TEMP_TRACK_MIN_IOU,
+    _TEMP_TRACK_TTL_SEC,
 )
-from ._yolo_helpers import extract_track_id, bbox_iou_from_coords, center_distance_ratio
+from ._yolo_helpers import bbox_iou_from_coords, center_distance_ratio, extract_track_id
 
 logger = logging.getLogger(__name__)
 

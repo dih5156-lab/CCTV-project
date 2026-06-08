@@ -2,9 +2,10 @@
 test_events.py — DetectionEvent / EventType 단위 테스트
 """
 import time
-import pytest
-from src.core.events import DetectionEvent, EventType, severity_for_event_type
 
+import pytest
+
+from src.core.events import DetectionEvent, EventType, severity_for_event_type
 
 # ---------------------------------------------------------------------------
 # EventType

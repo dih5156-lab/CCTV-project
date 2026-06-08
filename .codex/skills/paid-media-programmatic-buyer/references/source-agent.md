@@ -1,6 +1,6 @@
 # Source Agent
 
-Derived from [agents/paid-media-programmatic-buyer.md](../../../../agents/paid-media-programmatic-buyer.md).
+Derived from [agents/paid-media-programmatic-buyer.md](../../../../tooling/agents/paid-media-programmatic-buyer.md).
 
 The original agent definition follows. Use it as detailed reference material when the concise SKILL.md is not enough.
 
