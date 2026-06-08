@@ -54,7 +54,7 @@ jobs:
       - name: Validate docker compose files
         run: |
           docker compose config >/tmp/docker-compose.yml
-          docker compose -f docker-compose.jetson.yml config >/tmp/docker-compose.jetson.yml
+          docker compose --env-file .env.jetson.example -f docker-compose.jetson.yml config >/tmp/docker-compose.jetson.yml
 
       - name: Deployment readiness smoke check
         run: python scripts/health/check_deployment_readiness.py

@@ -5,7 +5,7 @@ from __future__ import annotations
 import sqlite3
 from pathlib import Path
 
-from scripts.cleanup_appearance_crop_refs import cleanup_missing_crop_refs
+from scripts.cleanup.cleanup_appearance_crop_refs import cleanup_missing_crop_refs
 
 
 def _create_db(path: Path) -> None:

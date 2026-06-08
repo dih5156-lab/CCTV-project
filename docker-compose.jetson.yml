@@ -636,7 +636,8 @@ services:
     # NVIDIA Container Toolkit runtime (GPU 접근 활성화)
     runtime: nvidia
     env_file:
-      - ./.env.jetson
+      - path: ./.env.jetson
+        required: false
     environment:
       TZ: Asia/Seoul
       PYTHONIOENCODING: utf-8
@@ -1038,7 +1039,8 @@ services:
       dockerfile: Dockerfile.action
     user: "1000:1000"
     env_file:
-      - ./.env.jetson
+      - path: ./.env.jetson
+        required: false
     depends_on:
       edgex-mqtt-broker:
         condition: service_started
@@ -1087,7 +1089,8 @@ services:
       dockerfile: Dockerfile.action
     user: "1000:1000"
     env_file:
-      - ./.env.jetson
+      - path: ./.env.jetson
+        required: false
     command:
       - python
       - /app/runners/run_action_bridge.py

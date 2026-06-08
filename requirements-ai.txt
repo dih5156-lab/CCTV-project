@@ -13,7 +13,7 @@ opencv-python>=4.8.0,<5.0.0
 
 # 이미지 처리
 numpy>=1.24.0
-Pillow>=10.0.0
+Pillow>=12.2.0,<13.0.0
 
 # 서버 통신
 requests>=2.31.0
