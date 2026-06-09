@@ -15,8 +15,8 @@
 gpu-id=0
 gie-unique-id=1
 net-scale-factor=0.0039215697906911373
-model-engine-file=/app/models/yolov8n-pose.engine
-labelfile-path=/app/config/deepstream/labels.txt
+model-engine-file=../../models/yolov8n-pose.engine
+labelfile-path=labels.txt
 
 # ---------- 파서 ----------
 # custom-lib-path=libs/libnvdsinfer_custom_impl_Yolo.so

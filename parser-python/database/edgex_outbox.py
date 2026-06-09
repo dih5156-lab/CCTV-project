@@ -143,9 +143,13 @@ class EdgeXOutbox:
         }
         for column, definition in additions.items():
             if column not in cols:
-                conn.execute(
-                    f"ALTER TABLE event_outbox ADD COLUMN {column} {definition}"
-                )
+                try:
+                    conn.execute(
+                        f"ALTER TABLE event_outbox ADD COLUMN {column} {definition}"
+                    )
+                except sqlite3.OperationalError as exc:
+                    if "duplicate column name" not in str(exc).lower():
+                        raise
 
     def _migrate_legacy_table(self, conn: sqlite3.Connection) -> None:
         """기존 edgex_outbox 테이블이 있으면 공통 event_outbox로 복사한다."""
@@ -224,39 +228,43 @@ class EdgeXOutbox:
         event_json = json.dumps(edgex_event, ensure_ascii=False)
         event_id = self._event_id_from_payload(event_json)
         with self._lock:
-            cur = self._cursor()
-            cur.execute(
-                """
-                INSERT OR IGNORE INTO event_outbox
-                    (event_id, source_service, data_category, destination_type,
-                     destination_name, device_id, table_name, core_data_url,
-                     payload_json, status, created_at_ms, expire_at_ms,
-                     last_attempt_ms)
-                VALUES (?, 'aiot-parser', 'sensor', 'http',
-                        'edgex-core-data', ?, ?, ?, ?, 'pending', ?, ?, ?)
-                """,
-                (
-                    event_id,
-                    device_id,
-                    table_name,
-                    core_data_url,
-                    event_json,
-                    now_ms,
-                    now_ms + (_TTL_SECONDS * 1000),
-                    now_ms,
-                ),
-            )
-            self._conn.commit()
-            row_id = cur.lastrowid
-            if row_id is None or row_id == 0:
-                row = self._conn.execute(
+            try:
+                cur = self._cursor()
+                cur.execute(
                     """
-                    SELECT id FROM event_outbox
-                    WHERE event_id = ? AND destination_name = ?
+                    INSERT OR IGNORE INTO event_outbox
+                        (event_id, source_service, data_category, destination_type,
+                         destination_name, device_id, table_name, core_data_url,
+                         payload_json, status, created_at_ms, expire_at_ms,
+                         last_attempt_ms)
+                    VALUES (?, 'aiot-parser', 'sensor', 'http',
+                            'edgex-core-data', ?, ?, ?, ?, 'pending', ?, ?, ?)
                     """,
-                    (event_id, "edgex-core-data"),
-                ).fetchone()
-                row_id = int(row[0]) if row else 0
+                    (
+                        event_id,
+                        device_id,
+                        table_name,
+                        core_data_url,
+                        event_json,
+                        now_ms,
+                        now_ms + (_TTL_SECONDS * 1000),
+                        now_ms,
+                    ),
+                )
+                self._conn.commit()
+                row_id = cur.lastrowid
+                if row_id is None or row_id == 0:
+                    row = self._conn.execute(
+                        """
+                        SELECT id FROM event_outbox
+                        WHERE event_id = ? AND destination_name = ?
+                        """,
+                        (event_id, "edgex-core-data"),
+                    ).fetchone()
+                    row_id = int(row[0]) if row else 0
+            except sqlite3.Error as exc:
+                logger.error("[Outbox] save_pending DB 저장 에러: %s", exc)
+                return 0
         logger.debug(
             "[Outbox] 저장 id=%s device=%s table=%s", row_id, device_id, table_name
         )
@@ -266,15 +274,18 @@ class EdgeXOutbox:
         """전송 성공 → 'sent' 상태로 업데이트."""
         now_ms = int(time.time() * 1000)
         with self._lock:
-            self._conn.execute(
-                """
-                UPDATE event_outbox
-                SET status='sent', sent_at_ms=?, last_attempt_ms=?
-                WHERE id=?
-                """,
-                (now_ms, now_ms, row_id),
-            )
-            self._conn.commit()
+            try:
+                self._conn.execute(
+                    """
+                    UPDATE event_outbox
+                    SET status='sent', sent_at_ms=?, last_attempt_ms=?
+                    WHERE id=?
+                    """,
+                    (now_ms, now_ms, row_id),
+                )
+                self._conn.commit()
+            except sqlite3.Error as exc:
+                logger.error("[Outbox] mark_sent 상태 업데이트 에러: %s", exc)
 
     def mark_failed(self, row_id: int) -> None:
         """최대 재시도 초과 → 'failed' 상태로 업데이트."""

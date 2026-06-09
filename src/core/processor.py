@@ -4,7 +4,7 @@ processor.py - 실시간 CCTV 객체 감지 프로세서
 
 클래스 구성:
   ProcessorStats      - 처리 통계 DTO
-  _EventDebouncer     - 이벤트 디바운싱 + 로컬 백업  (VideoProcessor 내부용)
+  EventDebouncer      - 이벤트 디바운싱 + 로컬 백업
   _DisplayGrid        - 다중 카메라 그리드 디스플레이 (VideoProcessor 내부용)
   _CameraRegistry     - 카메라·스레드·재시도 큐 관리  (VideoProcessor 내부용)
   _InferencePipeline  - AI 추론·구역 탐지·이벤트 큐 처리 (VideoProcessor 내부용)
@@ -25,7 +25,7 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from queue import Empty, Queue
 from threading import Event, Lock, Thread
-from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
+from typing import Any, Dict, List, Mapping, Optional, Union
 
 import cv2
 
@@ -44,11 +44,15 @@ from .ai._yolo_helpers import has_dynamic_input_shape
 from .ai.analyzer import AIAnalyzer
 from .base_processor import BaseProcessor
 from .detection_snapshot_store import DetectionSnapshotStore
+from .event_debouncer import EventDebouncer
 from .event_dispatcher import EventDispatcher
 from .event_filters import CumulativeViolationFilter, TrackManager
 from .events import DetectionEvent
 
 logger = logging.getLogger(__name__)
+
+# 하위 호환: 기존 테스트/외부 코드가 processor._EventDebouncer 를 import할 수 있다.
+_EventDebouncer = EventDebouncer
 
 
 # ===========================================================================
@@ -111,150 +115,6 @@ class ProcessorStats:
         return self.with_derived_stats(self.snapshot())
 
 
-# ===========================================================================
-# _EventDebouncer  (내부용)
-# ===========================================================================
-
-
-class _EventDebouncer:
-    """이벤트 중복 전송 방지·로컬 백업·만료 정리.
-
-    VideoProcessor 에서만 사용한다.
-    """
-
-    def __init__(self, config: AppConfig, increment_stat) -> None:
-        self._config = config
-        self._increment_stat = increment_stat
-        self._last_events: Dict[Tuple[str, str, int], float] = {}
-        self._lock = Lock()
-        # 낙상 지속 감지용 상태 추적 (camera_id, object_id) 기준
-        self._fall_first_seen: Dict[Tuple[str, int], float] = {}  # 낙상 최초 감지 시각
-        self._fall_last_seen: Dict[Tuple[str, int], float] = {}   # 낙상 마지막 감지 시각
-        self._fall_alerted: Dict[Tuple[str, int], float] = {}     # 낙상 알림 마지막 전송 시각
-        # 헬멧 미착용(head) 상태 추적 (camera_id, object_id) 기준
-        self._head_last_seen: Dict[Tuple[str, int], float] = {}   # head 마지막 감지 시각
-        self._head_alerted: Dict[Tuple[str, int], float] = {}     # head 마지막 전송 시각
-
-    def should_send(self, camera_id: str, event_type: str, object_id: int) -> bool:
-        """중복 전송을 방지하기 위해 이벤트를 보내야 하는지 반환한다."""
-        if not self._config.events.debounce_enabled:
-            return True
-
-        # 낙상: 10초 이상 지속 감지되어야 전송 (매 프레임 전송 방지)
-        if event_type == "fall_detected":
-            return self._should_send_fall(camera_id, object_id)
-
-        # 헬멧 미착용: 상태 변화 감지 + 최소 재전송 간격 적용
-        if event_type == "head":
-            return self._should_send_head(camera_id, object_id)
-
-        key = (camera_id, event_type, object_id)
-        now = time.time()
-        with self._lock:
-            last_time = self._last_events.get(key, 0)
-            if now - last_time >= self._config.events.debounce_seconds:
-                self._last_events[key] = now
-                return True
-            self._increment_stat("events_filtered")
-            return False
-
-    def _should_send_head(self, camera_id: str, object_id: int) -> bool:
-        """헬멧 미착용(head) 이벤트 전송 여부 판단.
-
-        - gap_reset_seconds 이상 미감지 후 재등장 → 상태 변화로 보고 즉시 전송
-        - 연속 감지 중에는 resend_cooldown 간격으로만 재전송
-        """
-        cfg = self._config.events
-        key = (camera_id, object_id)
-        now = time.time()
-        with self._lock:
-            last_seen = self._head_last_seen.get(key, 0)
-            last_alert = self._head_alerted.get(key, 0)
-            is_state_change = (now - last_seen) > cfg.head_gap_reset_seconds
-            self._head_last_seen[key] = now
-
-            if is_state_change or (now - last_alert) >= cfg.head_resend_cooldown:
-                self._head_alerted[key] = now
-                if is_state_change:
-                    logger.info(
-                        "[%s] 헬멧 미착용 재등장 감지 → 즉시 전송 (object_id=%s)",
-                        camera_id, object_id,
-                    )
-                return True
-
-            self._increment_stat("events_filtered")
-            return False
-
-    def _should_send_fall(self, camera_id: str, object_id: int) -> bool:
-        """낙상이 sustained_seconds 이상 지속될 때만 True 반환.
-
-        - gap_reset_seconds 이상 낙상이 끊기면 지속 타이머 초기화
-        - 전송 후 resend_cooldown 동안 재전송 억제
-        """
-        cfg = self._config.events
-        key = (camera_id, object_id)
-        now = time.time()
-        with self._lock:
-            last_seen = self._fall_last_seen.get(key, 0)
-            # 낙상이 gap_reset_seconds 이상 끊겼으면 타이머 리셋
-            if now - last_seen > cfg.fall_gap_reset_seconds:
-                self._fall_first_seen[key] = now
-            self._fall_last_seen[key] = now
-
-            duration = now - self._fall_first_seen.get(key, now)
-            if duration < cfg.fall_sustained_seconds:
-                # 아직 지속 시간 미달
-                self._increment_stat("events_filtered")
-                return False
-
-            # 지속 시간 충족 — 재전송 쿨다운 확인
-            last_alert = self._fall_alerted.get(key, 0)
-            if now - last_alert < cfg.fall_resend_cooldown:
-                self._increment_stat("events_filtered")
-                return False
-
-            self._fall_alerted[key] = now
-            logger.info(
-                "[%s] 낙상 지속 %.1f초 확인 → 이벤트 전송 (object_id=%s)",
-                camera_id, duration, object_id,
-            )
-            return True
-
-    def cleanup(self, max_age_hours: Optional[int] = None) -> int:
-        """보존 기간이 지난 이벤트 키를 제거하고 제거 수를 반환한다."""
-        if max_age_hours is None:
-            max_age_hours = self._config.events.event_retention_hours
-        cutoff = time.time() - max_age_hours * 3600
-        # 낙상/헬멧 추적 딕셔너리 정리: 동일 보존 기준 적용
-        with self._lock:
-            before = len(self._last_events)
-            self._last_events     = {k: v for k, v in self._last_events.items()     if v > cutoff}
-            self._fall_first_seen = {k: v for k, v in self._fall_first_seen.items() if v > cutoff}
-            self._fall_last_seen  = {k: v for k, v in self._fall_last_seen.items()  if v > cutoff}
-            self._fall_alerted    = {k: v for k, v in self._fall_alerted.items()    if v > cutoff}
-            self._head_last_seen  = {k: v for k, v in self._head_last_seen.items()  if v > cutoff}
-            self._head_alerted    = {k: v for k, v in self._head_alerted.items()    if v > cutoff}
-            return before - len(self._last_events)
-
-    def save_locally(self, event_data: Dict) -> None:
-        """큐 포화 시 이벤트를 로컬 JSON 파일로 백업한다.
-
-        파일명에 나노초 타임스탬프를 사용하여 같은 초에 여러 이벤트가
-        도착해도 덮어쓰기가 발생하지 않도록 한다.
-        """
-        try:
-            backup_dir = os.path.join(os.getcwd(), "event_backup")
-            os.makedirs(backup_dir, exist_ok=True)
-            ts_ns = time.time_ns()          # 나노초 — 충돌 확률 사실상 0
-            cam_id = event_data.get('camera_id', 'unknown')
-            filename = f"event_{ts_ns}_{cam_id}.json"
-            filepath = os.path.join(backup_dir, filename)
-            with open(filepath, "w", encoding="utf-8") as fp:
-                json.dump(event_data, fp, ensure_ascii=False, indent=2)
-            logger.debug("이벤트 로컬 저장: %s", filepath)
-        except Exception as exc:
-            logger.error("로컬 저장 실패: %s", exc)
-
 from ._adaptive_governor import _AdaptiveGovernor  # noqa: F401 — 하위 호환 재내보내기
 
 # ===========================================================================
@@ -295,7 +155,7 @@ class VideoProcessor(BaseProcessor):
         self.stop_event = Event()
 
         # ── 내부 헬퍼 ────────────────────────────────────────────────
-        self._debouncer = _EventDebouncer(config, self._increment_stat)
+        self._debouncer = EventDebouncer(config, self._increment_stat)
         self._display   = _DisplayGrid(get_fps=lambda: self.stats.get_fps())
         self._cams      = _CameraRegistry(
             config,
@@ -375,8 +235,7 @@ class VideoProcessor(BaseProcessor):
             debouncer=self._debouncer,
             event_dispatcher=self._event_dispatcher,
             zone_manager=self.zone_manager,
-            dataset_collector=self.dataset_collector,
-            snapshot_store=self._snapshot_store,
+            on_raw_detections=self._on_raw_detections,
             increment_stat=self._increment_stat,
             add_inference_metrics=self._add_inference_metrics,
         )
@@ -442,6 +301,17 @@ class VideoProcessor(BaseProcessor):
     def _set_camera_count(self, count: int) -> None:
         with self._stats_lock:
             self.stats.camera_count = count
+
+    def _on_raw_detections(self, camera_id: str, frame: Any, events: List[DetectionEvent]) -> None:
+        """추론 직후의 원본 이벤트를 스냅샷과 데이터셋 수집기에 전달한다."""
+        self._snapshot_store.record(camera_id, events)
+        if self.dataset_collector:
+            try:
+                self.dataset_collector.save_frame(frame, events, camera_id=camera_id)
+            except OSError as exc:
+                logger.error("[%s] 데이터셋 파일 저장 실패: %s", camera_id, exc)
+            except Exception as exc:
+                logger.warning("[%s] 데이터셋 저장 오류: %s", camera_id, exc)
 
     # ------------------------------------------------------------------
     # 모델 팩토리
@@ -972,33 +842,24 @@ class VideoProcessor(BaseProcessor):
                 if _skip > 1 and _frame_counter % _skip != 0:
                     self._display.update_frame(camera_id, frame, _cached_display_evts)
                     continue
-                events = self._pipeline._infer(camera_id, frame)
-                events_for_display = events.copy()
-                events_for_dataset = events.copy()
-                self._record_detection_snapshot(camera_id, events)
-
-                events, removed_ids = self.track_manager.update(camera_id, events)
-                if removed_ids:
-                    self.violation_filter.purge(camera_id, removed_ids)
-                events = self.violation_filter.filter(camera_id, events)
-
-                self._pipeline._collect(frame, events_for_dataset, camera_id)
-                zone_events, frame = self._pipeline._check_zones(camera_id, events, frame)
-                self._pipeline._enqueue(camera_id, events, zone_events)
-                self._save_zone_event_snapshots(camera_id, zone_events)
+                result = self._pipeline.process_frame(camera_id, frame)
+                self._save_zone_event_snapshots(camera_id, result.zone_events)
                 display_evts = self._build_display_events(
-                    camera_id, events_for_display, zone_events, removed_ids
+                    camera_id,
+                    result.events_for_display,
+                    result.zone_events,
+                    result.removed_ids,
                 )
                 # 웹 스트리밍을 위해 항상 프레임 저장 (display 모드 여부 무관)
                 # 새 이벤트가 있으면 캐시 갱신, 없으면 만료된 트랙만 제거하여 유지
                 if display_evts:
                     _cached_display_evts = list(display_evts)
-                elif removed_ids:
+                elif result.removed_ids:
                     _cached_display_evts = [
                         e for e in _cached_display_evts
-                        if getattr(e, "object_id", None) not in removed_ids
+                        if getattr(e, "object_id", None) not in result.removed_ids
                     ]
-                self._display.update_frame(camera_id, frame, _cached_display_evts)
+                self._display.update_frame(camera_id, result.frame, _cached_display_evts)
                 consecutive_errors = 0
             except Exception as exc:
                 logger.error("[%s] 추론 루프 오류: %s", camera_id, exc, exc_info=True)
@@ -1189,7 +1050,7 @@ class VideoProcessor(BaseProcessor):
     # ------------------------------------------------------------------
 
     def get_camera_frame(
-        self, camera_id: str, *, annotated: bool = False
+        self, camera_id: str, *, annotated: bool = False, copy_frame: bool = True
     ) -> Optional[Any]:
         """특정 카메라의 최신 프레임(numpy ndarray)을 반환한다.
 
@@ -1206,7 +1067,7 @@ class VideoProcessor(BaseProcessor):
         frame, events = entry
         if frame is None:
             return None
-        out = frame.copy()
+        out = frame.copy() if copy_frame else frame
         if annotated:
             if events:
                 out = draw_events(out, events)

@@ -5,17 +5,16 @@ from __future__ import annotations
 import logging
 import time
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Set, Tuple
+from typing import Any, Callable, Dict, List, Set, TYPE_CHECKING, Tuple
 
 from ..utils.zone_detection import ZoneEvent
 from .events import DetectionEvent
 
 if TYPE_CHECKING:
     from .ai.analyzer import AIAnalyzer
-    from .detection_snapshot_store import DetectionSnapshotStore
-    from .event_debouncer import EventDebouncer
     from .event_dispatcher import EventDispatcher
     from .event_filters import CumulativeViolationFilter, TrackManager
+    from .event_debouncer import EventDebouncer
 
 logger = logging.getLogger(__name__)
 
@@ -42,8 +41,7 @@ class _InferencePipeline:
         debouncer: "EventDebouncer",
         event_dispatcher: "EventDispatcher",
         zone_manager,
-        dataset_collector,
-        snapshot_store: "DetectionSnapshotStore",
+        on_raw_detections: Callable[[str, Any, List[DetectionEvent]], None],
         increment_stat,
         add_inference_metrics,
     ) -> None:
@@ -54,8 +52,7 @@ class _InferencePipeline:
         self._debouncer = debouncer
         self._event_dispatcher = event_dispatcher
         self._zone_manager = zone_manager
-        self._dataset_collector = dataset_collector
-        self._snapshot_store = snapshot_store
+        self._on_raw_detections = on_raw_detections
         self._increment_stat = increment_stat
         self._add_inference_metrics = add_inference_metrics
 
@@ -87,19 +84,6 @@ class _InferencePipeline:
         finally:
             self._add_inference_metrics(time.time() - started_at)
 
-    def _collect(
-        self, frame: Any, events: List[DetectionEvent], camera_id: str
-    ) -> None:
-        """데이터셋 프레임을 저장한다."""
-        if not self._dataset_collector:
-            return
-        try:
-            self._dataset_collector.save_frame(frame, events, camera_id=camera_id)
-        except IOError as exc:
-            logger.error("[%s] 데이터셋 파일 저장 실패: %s", camera_id, exc)
-        except Exception as exc:
-            logger.warning("[%s] 데이터셋 저장 오류: %s", camera_id, exc)
-
     def _check_zones(
         self, camera_id: str, events: List[DetectionEvent], frame: Any
     ) -> Tuple[List[ZoneEvent], Any]:
@@ -112,25 +96,18 @@ class _InferencePipeline:
             logger.warning("[%s] 구역 감지 오류: %s", camera_id, exc)
             return [], frame
 
-    def _record_detection_snapshot(
-        self, camera_id: str, events: List[DetectionEvent]
-    ) -> None:
-        """웹/API에서 조회할 최신 탐지 스냅샷을 저장한다."""
-        self._snapshot_store.record(camera_id, events)
-
     def process_frame(self, camera_id: str, frame: Any) -> InferenceCycleResult:
         """한 프레임의 추론부터 이벤트 큐 적재까지 처리한다."""
         events = self._infer(camera_id, frame)
         events_for_display = events.copy()
-        events_for_dataset = events.copy()
-        self._record_detection_snapshot(camera_id, events)
+
+        self._collect(frame, events, camera_id)
 
         events, removed_ids = self._track_manager.update(camera_id, events)
         if removed_ids:
             self._violation_filter.purge(camera_id, removed_ids)
         events = self._violation_filter.filter(camera_id, events)
 
-        self._collect(frame, events_for_dataset, camera_id)
         zone_events, frame = self._check_zones(camera_id, events, frame)
         self._enqueue(camera_id, events, zone_events)
 
@@ -140,6 +117,15 @@ class _InferencePipeline:
             zone_events=zone_events,
             removed_ids=removed_ids,
         )
+
+    def _collect(
+        self,
+        frame: Any,
+        events: List[DetectionEvent],
+        camera_id: str,
+    ) -> None:
+        """추론 직후 부수 효과(스냅샷/데이터셋 수집)를 호출한다."""
+        self._on_raw_detections(camera_id, frame, events)
 
     def _enqueue(
         self,

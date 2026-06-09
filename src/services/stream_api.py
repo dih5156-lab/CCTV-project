@@ -58,11 +58,8 @@ def _read_stream_size() -> tuple[int, int]:
 
 
 def _get_camera_frame_for_stream(proc: "BaseProcessor", camera_id: str):
-    """DeepStream에서는 추가 frame copy를 피하고, 기존 프로세서는 호환 경로를 쓴다."""
-    try:
-        return proc.get_camera_frame(camera_id, annotated=True, copy_frame=False)
-    except TypeError:
-        return proc.get_camera_frame(camera_id, annotated=True)
+    """프로세서 공통 인터페이스를 통해 복사본 없는 프레임을 요청한다."""
+    return proc.get_camera_frame(camera_id, annotated=True, copy_frame=False)
 
 
 def _resize_for_stream(cv2, frame, width: int, height: int):

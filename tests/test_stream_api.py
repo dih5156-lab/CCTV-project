@@ -19,6 +19,7 @@ from src.services.stream_api import (
     start_stream_api_server,
 )
 
+
 # ---------------------------------------------------------------------------
 # 도우미 — 최소 HTTPServer + 핸들러 조합
 # ---------------------------------------------------------------------------
@@ -259,15 +260,6 @@ class TestStreamApiFramePreparation:
         proc.get_camera_frame.assert_called_once_with(
             "cam-1", annotated=True, copy_frame=False
         )
-
-    def test_get_camera_frame_falls_back_for_legacy_processor(self) -> None:
-        proc = MagicMock()
-        proc.get_camera_frame.side_effect = [TypeError("bad kw"), "frame"]
-
-        frame = _get_camera_frame_for_stream(proc, "cam-1")
-
-        assert frame == "frame"
-        assert proc.get_camera_frame.call_args_list[-1].kwargs == {"annotated": True}
 
     def test_resize_for_stream_resizes_when_configured(self) -> None:
         frame = MagicMock()

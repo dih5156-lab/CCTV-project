@@ -11,7 +11,7 @@
 [property]
 gpu-id=0
 gie-unique-id=3
-model-engine-file=/app/models/pphuman_attribute.engine
+model-engine-file=../../models/pphuman_attribute.engine
 
 # PP-Human 전처리: RGB, ImageNet normalize
 model-color-format=0

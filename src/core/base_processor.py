@@ -16,6 +16,10 @@ VideoProcessor (현재 파이프라인) 와 DeepStreamProcessor (Jetson 전용) 
     get_camera_status()     — 카메라 상태 반환
     cameras (property)      — 카메라 맵
 
+필수 확장 인터페이스:
+    get_camera_frame()      — 최신 카메라 프레임 반환
+    get_detection_snapshot()— 최신 탐지 결과 반환
+
 선택 확장 인터페이스 (기본 구현: NotImplementedError 또는 빈 반환):
     update_camera_model_settings()
     get_camera_model_settings()
@@ -27,8 +31,8 @@ VideoProcessor (현재 파이프라인) 와 DeepStreamProcessor (Jetson 전용) 
 
 from __future__ import annotations
 
-import time
 from abc import ABC, abstractmethod
+import time
 from typing import Any, Dict, List, Optional, Union
 
 from ..config import AppConfig
@@ -91,6 +95,16 @@ class BaseProcessor(ABC):
     def cameras(self) -> Dict:
         """현재 등록된 카메라 맵을 반환한다."""
 
+    @abstractmethod
+    def get_camera_frame(
+        self, camera_id: str, *, annotated: bool = False, copy_frame: bool = True
+    ) -> Optional[Any]:
+        """특정 카메라의 최신 프레임을 반환한다."""
+
+    @abstractmethod
+    def get_detection_snapshot(self) -> Dict[str, dict]:
+        """카메라별 최신 탐지 스냅샷을 반환한다."""
+
     # ------------------------------------------------------------------
     # 선택 오버라이드 메서드 (기본 구현 제공)
     # ------------------------------------------------------------------
@@ -109,6 +123,14 @@ class BaseProcessor(ABC):
 
     def set_zone_drawer(self, drawer: ZoneDrawer) -> None:
         """ZoneDrawer를 연결한다. GUI가 없으면 아무것도 하지 않는다."""
+
+    def release_all_cameras(self) -> None:
+        """등록된 모든 카메라 리소스를 해제한다."""
+        pass
+
+    def print_stats(self) -> None:
+        """처리 통계를 콘솔/로그에 출력한다."""
+        pass
 
     # ------------------------------------------------------------------
     # 얼굴 인식 확장 (옵션)

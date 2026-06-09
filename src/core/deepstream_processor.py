@@ -31,6 +31,7 @@
 from __future__ import annotations
 
 import ctypes
+import importlib
 import json
 import logging
 import os
@@ -66,6 +67,7 @@ from .ai._appearance_pipeline import AppearancePipeline
 from .ai._attribute_backends import decode_pphuman_scores
 from .ai._fall_detector import FallDetector
 from .base_processor import BaseProcessor
+from .event_debouncer import EventDebouncer
 from .event_filters import CumulativeViolationFilter, TrackManager
 from .events import DetectionEvent, EventType
 
@@ -90,27 +92,28 @@ _TRACKER_LIB = "/opt/nvidia/deepstream/deepstream/lib/libnvds_nvmultiobjecttrack
 # ---------------------------------------------------------------------------
 
 DEEPSTREAM_AVAILABLE: bool = False
-Gst = None  # type: ignore[assignment]
-GLib = None  # type: ignore[assignment]
-pyds = None  # type: ignore[assignment]
+Gst: Any = None
+GLib: Any = None
+pyds: Any = None
 
 try:
-    import gi  # type: ignore
-
+    gi = importlib.import_module("gi")
     gi.require_version("Gst", "1.0")
-    import pyds  # type: ignore  # noqa: F401
-    from gi.repository import (
-        GLib,  # type: ignore  # noqa: F401
-        Gst,  # type: ignore  # noqa: F401
+    pyds = importlib.import_module("pyds")
+    GLib = importlib.import_module("gi.repository.GLib")
+    Gst = importlib.import_module("gi.repository.Gst")
+except (ImportError, ValueError, OSError) as exc:
+    Gst = None
+    GLib = None
+    pyds = None
+    DEEPSTREAM_AVAILABLE = False
+    logger.debug(
+        "DeepStream 환경을 로드할 수 없습니다 (%s). "
+        "DeepStreamProcessor 는 이 환경에서 비활성화됩니다.", exc
     )
-
+else:
     DEEPSTREAM_AVAILABLE = True
     logger.debug("DeepStream Python bindings (pyds) 로드 성공")
-except ImportError:
-    logger.debug(
-        "DeepStream Python bindings (pyds / gi) 를 찾을 수 없습니다. "
-        "DeepStreamProcessor 는 이 환경에서 사용할 수 없습니다."
-    )
 
 
 # ---------------------------------------------------------------------------
@@ -327,8 +330,9 @@ class DeepStreamProcessor(BaseProcessor):
 
         logger.info("DeepStreamProcessor 초기화됨 (Jetson 모드)")
         logger.info(
-            "DeepStream 이벤트 최소 발행 간격: %.2f초",
-            self._event_min_interval_seconds,
+            "DeepStream 이벤트 디바운싱: %s (간격: %.2f초)",
+            config.events.debounce_enabled,
+            config.events.debounce_seconds,
         )
         logger.info("설정 디렉터리: %s", _DS_CONFIG_DIR)
         if not _INFER_CONFIG.exists():
@@ -375,13 +379,6 @@ class DeepStreamProcessor(BaseProcessor):
             "DS_APPEARANCE_ENABLED",
             bool(config.appearance.enabled),
         )
-        self._event_min_interval_seconds = float(
-            os.environ.get(
-                "DS_EVENT_MIN_INTERVAL_SEC",
-                str(config.events.debounce_seconds if config.events.debounce_enabled else 0.0),
-            )
-        )
-        self._last_event_emit_at: Dict[Tuple[str, str, int, Optional[int]], float] = {}
         self._cameras: Dict[str, Dict] = {}
         self._camera_ai_flags: Dict[str, Dict[str, bool]] = {}
         self._pad_to_camera: Dict[int, str] = {}  # pad_id → camera_id 캐시 (매 프레임 재생성 방지)
@@ -392,11 +389,21 @@ class DeepStreamProcessor(BaseProcessor):
         self._recent_context_events: Dict[str, deque] = {}
         self._context_events_lock = threading.Lock()
         self.event_queue: Queue = Queue(maxsize=config.events.queue_max_size * 3)
+        self._debouncer = EventDebouncer(config, self._increment_stat)
         self._frames_processed = 0
         self._frames_dropped = 0
         self._events_detected = 0
+        self._events_sent = 0
+        self._events_dropped = 0
         self._events_filtered = 0
         self._events_failed = 0
+
+    def _increment_stat(self, field_name: str, delta: int = 1) -> int:
+        attr_name = f"_{field_name}"
+        current = getattr(self, attr_name, 0)
+        new_val = current + delta
+        setattr(self, attr_name, new_val)
+        return new_val
 
     def _init_yolo_settings(self) -> None:
         """DeepStream nvinfer tensor 후처리 설정을 초기화한다."""
@@ -456,7 +463,7 @@ class DeepStreamProcessor(BaseProcessor):
     def _init_ai_context(self, config: AppConfig) -> None:
         """얼굴/외형/구역 후처리 컨텍스트를 초기화한다."""
         self._face_snapshot_enabled = self._env_bool("FACE_SNAPSHOT_ENABLED", False)
-        self._face_snapshot_dir = Path(os.environ.get("FACE_SNAPSHOT_DIR", "data/runtime/face_snapshots"))
+        self._face_snapshot_dir = Path(os.environ.get("FACE_SNAPSHOT_DIR", "data/face_snapshots"))
         self._face_snapshot_cooldown_sec = float(os.environ.get("FACE_SNAPSHOT_COOLDOWN_SEC", "30.0"))
         self._last_face_snapshot_at: Dict[Tuple[str, str], float] = {}
         self.face_recognizer = FaceRecognitionEngine(
@@ -475,10 +482,10 @@ class DeepStreamProcessor(BaseProcessor):
         )
         self._appearance_pipeline = AppearancePipeline(
             self._appearance,
-            Path(os.environ.get("APPEARANCE_CROP_DIR", "data/runtime/appearance_crops")),
+            Path(os.environ.get("APPEARANCE_CROP_DIR", "data/appearance_crops")),
             save_crops=self._env_bool("APPEARANCE_SAVE_CROPS", False),
         )
-        self._appearance_db_path = Path(os.environ.get("APPEARANCES_DB", "/app/data/runtime/appearances.db"))
+        self._appearance_db_path = Path(os.environ.get("APPEARANCES_DB", "/app/data/appearances.db"))
         self._appearance_conditions_mtime: Optional[float] = None
         self._appearance_conditions_checked_at = 0.0
         self._appearance_conditions_refresh_sec = float(
@@ -891,6 +898,8 @@ class DeepStreamProcessor(BaseProcessor):
             frames_processed=self._frames_processed,
             frames_dropped=self._frames_dropped,
             events_detected=self._events_detected,
+            events_sent=getattr(self, "_events_sent", 0),
+            events_dropped=getattr(self, "_events_dropped", 0),
             events_filtered=self._events_filtered,
             events_failed=self._events_failed,
             output_mode=self._output_mode,
@@ -942,6 +951,10 @@ class DeepStreamProcessor(BaseProcessor):
         if frame is None:
             return None
         return frame.copy() if copy_frame else frame
+
+    def get_detection_snapshot(self) -> Dict[str, dict]:
+        """카메라별 최신 탐지 스냅샷을 반환한다."""
+        return self._snapshot_store.snapshot()
 
     # ------------------------------------------------------------------
     # 내부 파이프라인 구현 메서드 (스켈레톤)
@@ -1409,14 +1422,19 @@ class DeepStreamProcessor(BaseProcessor):
         """Raw tensor 결과에 기존 후처리용 stable object_id를 붙인다."""
         return self._synthetic_id_assigner.assign(camera_name, events)
 
-    def _put_event_dict(self, event_data: Dict[str, Any], camera_name: str) -> bool:
+    def _enqueue_queue_item(self, queue_item: Any, camera_name: str) -> bool:
+        """DeepStream 이벤트 큐 적재와 관련 통계를 한 곳에서 처리한다."""
         try:
-            self.event_queue.put_nowait(event_data)
+            self.event_queue.put_nowait(queue_item)
+            self._increment_stat("events_detected")
             return True
         except Full:
-            self._frames_dropped += 1
+            self._increment_stat("events_dropped")
             logger.warning("[%s] DeepStream 이벤트 큐 가득 참", camera_name)
             return False
+
+    def _put_event_dict(self, event_data: Dict[str, Any], camera_name: str) -> bool:
+        return self._enqueue_queue_item(event_data, camera_name)
 
     def _enqueue_zone_events(
         self, camera_name: str, zone_events: List[ZoneEvent]
@@ -1769,39 +1787,17 @@ class DeepStreamProcessor(BaseProcessor):
             except Exception as exc:
                 logger.warning("[%s] 얼굴/외형 컨텍스트 후처리 실패: %s", camera_name, exc)
 
-    def _should_enqueue_event(self, event: DetectionEvent) -> bool:
+    def _should_enqueue_event(self, event: DetectionEvent, camera_name: str) -> bool:
         """동일 이벤트가 프레임마다 MQTT로 발행되지 않도록 제한한다."""
-        if self._event_min_interval_seconds <= 0:
-            return True
-
         metadata = event.metadata or {}
-        camera_id = str(metadata.get("camera_id", "unknown"))
-        event_name = event.event_type.value
-        class_idx = int(event.class_idx) if event.class_idx is not None else -1
-        object_id = int(event.object_id) if event.object_id is not None else None
-        throttle_key = (camera_id, event_name, class_idx, object_id)
-
-        now = time.monotonic()
-        last_emit_at = self._last_event_emit_at.get(throttle_key)
-        if (
-            last_emit_at is not None
-            and now - last_emit_at < self._event_min_interval_seconds
-        ):
-            return False
-
-        self._last_event_emit_at[throttle_key] = now
-        return True
+        camera_id = str(metadata.get("camera_id") or camera_name)
+        object_id = int(event.object_id) if event.object_id is not None else 0
+        return self._debouncer.should_send(camera_id, event.event_type.value, object_id)
 
     def _enqueue_event(self, event: DetectionEvent, camera_name: str) -> bool:
-        if not self._should_enqueue_event(event):
+        if not self._should_enqueue_event(event, camera_name):
             return False
-        try:
-            self.event_queue.put_nowait(event)
-            return True
-        except Full:
-            self._frames_dropped += 1
-            logger.warning("[%s] DeepStream 이벤트 큐 가득 참", camera_name)
-            return False
+        return self._enqueue_queue_item(event, camera_name)
 
     def _label_color(self, label: str) -> Tuple[float, float, float, float]:
         normalized = (label or "").strip().lower().replace("-", "_")
@@ -2565,7 +2561,7 @@ class DeepStreamProcessor(BaseProcessor):
           [ ] NvDsObjectMeta.confidence → DetectionEvent.confidence
           [ ] NvDsObjectMeta.object_id → track ID (nvtracker 결과)
           [ ] NvDsObjectMeta.classifier_meta_list → 헬멧 분류 결과
-          [ ] DetectionEvent 생성 후 self.event_queue.put_nowait(event)
+          [ ] DetectionEvent 생성 후 _enqueue_event() 로 디바운싱/큐 적재
           [ ] self._frames_processed += 1
         """
         buffer = info.get_buffer()
@@ -2588,12 +2584,10 @@ class DeepStreamProcessor(BaseProcessor):
             camera_name = pad_to_camera.get(frame_meta.source_id, "unknown")
             self._frames_processed += 1
 
-            # 주기적으로 만료된 throttle 키 정리 (메모리 누수 방지)
+            # 주기적으로 오래된 디바운스/필터 상태 정리 (메모리 누수 방지)
             if self._frames_processed % 1000 == 0:
-                _cutoff = time.monotonic() - self._event_min_interval_seconds * 10
-                self._last_event_emit_at = {
-                    k: v for k, v in self._last_event_emit_at.items() if v > _cutoff
-                }
+                self._debouncer.cleanup()
+                self.violation_filter.cleanup(self._synthetic_track_timeout * 10)
 
             detected_from_tensor = self._emit_tensor_events(batch_meta, frame_meta, camera_name)
             self._apply_existing_event_pipeline(
@@ -2625,10 +2619,9 @@ class DeepStreamProcessor(BaseProcessor):
         구현 체크리스트:
           [ ] while self.running: event_queue.get(timeout=1.0)
           [ ] MQTT 토픽: f"{topic_prefix}/{camera_id}/{event.event_type.value}"
-          [ ] self._mqtt_publish(topic, event.to_dict()) 호출
-          [ ] self._events_detected += 1
+          [ ] publish_queue_item() 로 DetectionEvent/dict 발행
+          [ ] 성공 시 events_sent, 실패 시 events_failed 증가
           [ ] queue.Empty 예외는 continue 로 처리
-          [ ] 종료 시 잔여 이벤트 드레인 처리
         """
         logger.info("MQTT 발행 스레드 시작")
         while self.running and not self.stop_event.is_set():
@@ -2640,23 +2633,28 @@ class DeepStreamProcessor(BaseProcessor):
                     mqtt_publish=self._mqtt_publish,
                     event_publisher=self.event_publisher,
                 ):
-                    self._events_detected += 1
+                    self._increment_stat("events_sent")
                     continue
-                self._events_failed += 1
+                self._increment_stat("events_failed")
             except Empty:
                 continue
             except Exception as exc:
                 logger.error("MQTT 발행 오류: %s", exc)
-                self._events_failed += 1
+                self._increment_stat("events_failed")
         logger.info("MQTT 발행 스레드 종료")
 
     def print_stats(self) -> None:
         stats = self.get_stats()
         logger.info(
-            "DeepStream stats: frames=%s dropped=%s events=%s cameras=%s",
+            "DeepStream stats: frames=%s frame_dropped=%s "
+            "events_detected=%s sent=%s filtered=%s event_dropped=%s failed=%s cameras=%s",
             stats["frames_processed"],
             stats["frames_dropped"],
             stats["events_detected"],
+            stats["events_sent"],
+            stats["events_filtered"],
+            stats["events_dropped"],
+            stats["events_failed"],
             stats["cameras"],
         )
 

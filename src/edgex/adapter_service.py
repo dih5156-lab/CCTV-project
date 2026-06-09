@@ -244,19 +244,18 @@ class EdgeXDeviceAdapterService:
         """
         parts = topic.split("/")
 
-        # 센서 토픽: aiot/rules/sensor/{type}
         if topic.startswith("aiot/rules/sensor/"):
             event_type = parts[3] if len(parts) > 3 else "sensor_data"
-            return {"camera_id": "sensor", "event_type": f"{event_type}_alert" if not event_type.endswith("_alert") else event_type}
+            if not event_type.endswith("_alert"):
+                event_type = f"{event_type}_alert"
+            return {"camera_id": "sensor", "event_type": event_type}
 
-        # AI 이벤트 토픽: cctv/ai/events/{camera_id}/{event_type}
         prefix_parts = self.ai_topic_prefix.split("/")
-
         if len(parts) <= len(prefix_parts):
             return {"camera_id": "unknown", "event_type": "unknown"}
 
-        camera_id = parts[len(prefix_parts)] if len(parts) > len(prefix_parts) else "unknown"
-        event_type = parts[len(prefix_parts) + 1] if len(parts) > len(prefix_parts) + 1 else "unknown"
+        camera_id = parts[len(prefix_parts)]
+        event_type = parts[len(prefix_parts) + 1] if len(parts) > len(prefix_parts) + 1 else "data"
 
         return {"camera_id": camera_id, "event_type": event_type}
 
@@ -333,44 +332,53 @@ class EdgeXDeviceAdapterService:
         else:
             logger.error("AI MQTT 구독 연결 실패 (rc=%s)", rc)
 
+    def _process_single_event(self, event_data: dict, topic_info: dict) -> None:
+        """단일 이벤트 페이로드를 처리하고 EdgeX로 발행합니다."""
+        if not isinstance(event_data, dict):
+            logger.warning("비정상 페이로드 항목 무시: %s", type(event_data).__name__)
+            return
+
+        camera_id = (
+            event_data.get("camera_id")
+            or event_data.get("device_id")
+            or topic_info.get("camera_id")
+            or "unknown"
+        )
+        event_type = event_data.get("type") or topic_info.get("event_type") or "unknown"
+
+        if "type" not in event_data:
+            event_data["type"] = event_type
+        if "camera_id" not in event_data:
+            event_data["camera_id"] = camera_id
+
+        rtsp_source = event_data.get("source")
+
+        try:
+            if not self._ensure_camera_registered(camera_id, rtsp_source=rtsp_source):
+                logger.warning("메타데이터 등록 실패로 이벤트 스킵: camera_id=%s", camera_id)
+                return
+
+            published = self._run_coro(
+                self.edgex_service.send_detection_event(camera_id, [event_data])
+            )
+            if not published:
+                logger.warning("EdgeX 이벤트 발행 실패: camera_id=%s, type=%s", camera_id, event_type)
+        except (TimeoutError, redis.exceptions.ConnectionError) as conn_err:
+            logger.error("EdgeX 서비스 통신 오류: %s", conn_err)
+        except Exception as exc:
+            logger.error("이벤트 처리 중 예외 발생 (camera_id=%s): %s", camera_id, exc, exc_info=True)
+
     def _on_message(self, client, userdata, msg):
         try:
             topic_info = self._extract_from_topic(msg.topic)
             payload = json.loads(msg.payload.decode("utf-8"))
-
-            # Kuiper는 결과를 JSON 배열로 발행 → 개별 dict 로 순회
-            items = payload if isinstance(payload, list) else [payload]
-
-            for event_data in items:
-                if not isinstance(event_data, dict):
-                    logger.warning("비정상 페이로드 항목 무시: %s", type(event_data).__name__)
-                    continue
-
-                # 센서 이벤트는 device_id 를 camera_id 로 사용
-                camera_id = (
-                    event_data.get("camera_id")
-                    or event_data.get("device_id")
-                    or topic_info["camera_id"]
-                )
-                event_type = event_data.get("type") or topic_info["event_type"]
-                if "type" not in event_data:
-                    event_data["type"] = event_type
-                if "camera_id" not in event_data:
-                    event_data["camera_id"] = camera_id
-
-                rtsp_source = event_data.get("source")
-                if not self._ensure_camera_registered(camera_id, rtsp_source=rtsp_source):
-                    logger.warning("메타데이터 등록 실패로 이벤트 스킵: camera_id=%s", camera_id)
-                    continue
-
-                published = self._run_coro(self.edgex_service.send_detection_event(camera_id, [event_data]))
-                if not published:
-                    logger.warning("EdgeX 이벤트 발행 실패: camera_id=%s, type=%s", camera_id, event_type)
-
         except json.JSONDecodeError as error:
             logger.error("JSON 파싱 실패: %s", error)
-        except Exception as error:
-            logger.error("메시지 처리 오류: %s", error, exc_info=True)
+            return
+
+        items = payload if isinstance(payload, list) else [payload]
+        for event_data in items:
+            self._process_single_event(event_data, topic_info)
 
     def start(self) -> None:
         """서비스 시작 (블로킹)"""

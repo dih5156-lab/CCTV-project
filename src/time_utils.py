@@ -23,6 +23,24 @@ def timestamp_to_kst_iso(timestamp: float) -> str:
     return datetime.fromtimestamp(timestamp, tz=KST).isoformat()
 
 
+def _parse_single_candidate(candidate: object) -> float | None:
+    """단일 후보값을 Unix epoch 초로 파싱 시도한다."""
+    if candidate in (None, ""):
+        return None
+    if isinstance(candidate, (int, float)):
+        return _normalize_epoch_number(float(candidate))
+    if isinstance(candidate, str):
+        try:
+            return _normalize_epoch_number(float(candidate))
+        except ValueError:
+            try:
+                # Python 3.11+ 에서는 "Z"를 기본 지원하지만, 하위 호환성을 위해 유지
+                return datetime.fromisoformat(candidate.replace("Z", "+00:00")).timestamp()
+            except ValueError:
+                return None
+    return None
+
+
 def coerce_timestamp_seconds(value: object, fallback: object = None) -> float:
     """숫자/문자열/ISO timestamp를 Unix epoch 초로 정규화한다.
 
@@ -30,23 +48,9 @@ def coerce_timestamp_seconds(value: object, fallback: object = None) -> float:
     변환할 수 없으면 0.0을 반환한다.
     """
     for candidate in (value, fallback):
-        if candidate in (None, ""):
-            continue
-        if isinstance(candidate, (int, float)):
-            normalized = _normalize_epoch_number(float(candidate))
-            if normalized is not None:
-                return normalized
-            continue
-        if isinstance(candidate, str):
-            try:
-                normalized = _normalize_epoch_number(float(candidate))
-                if normalized is not None:
-                    return normalized
-            except ValueError:
-                try:
-                    return datetime.fromisoformat(candidate.replace("Z", "+00:00")).timestamp()
-                except ValueError:
-                    continue
+        result = _parse_single_candidate(candidate)
+        if result is not None:
+            return result
     return 0.0
 
 

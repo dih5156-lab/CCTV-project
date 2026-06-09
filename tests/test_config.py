@@ -168,6 +168,19 @@ class TestAppConfigEnvOverrides:
         cfg = AppConfig.from_env(env)
         assert cfg.external_ingest.republish_enabled is True
 
+    def test_legacy_deepstream_event_interval_override(self):
+        env = {"DS_EVENT_MIN_INTERVAL_SEC": "7.5"}
+        cfg = AppConfig.from_env(env)
+        assert cfg.events.debounce_seconds == 7.5
+
+    def test_debounce_seconds_takes_precedence_over_legacy_deepstream_name(self):
+        env = {
+            "DS_EVENT_MIN_INTERVAL_SEC": "7.5",
+            "DEBOUNCE_SECONDS": "2.0",
+        }
+        cfg = AppConfig.from_env(env)
+        assert cfg.events.debounce_seconds == 2.0
+
     def test_no_env_returns_defaults(self):
         cfg = AppConfig.from_env({})
         assert cfg.mqtt.broker == "localhost"

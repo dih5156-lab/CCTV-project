@@ -8,8 +8,8 @@
 gpu-id=0
 gie-unique-id=2
 net-scale-factor=0.0039215697906911373
-model-engine-file=/app/models/helmet_model_ver0.5.engine
-labelfile-path=/app/config/deepstream/labels_helmet.txt
+model-engine-file=../../models/helmet_model_ver0.5.engine
+labelfile-path=labels_helmet.txt
 model-color-format=0
 batch-size=8
 

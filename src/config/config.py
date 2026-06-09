@@ -131,6 +131,7 @@ ENV_OVERRIDES: tuple[EnvOverride, ...] = (
     EnvOverride("APPEARANCE_MATCH_THRESHOLD", ("appearance", "match_threshold"), parser=_parse_float),
     EnvOverride("APPEARANCE_COOLDOWN_SECONDS", ("appearance", "cooldown_seconds"), parser=_parse_float),
     # 이벤트 디바운스 / 지속 감지
+    EnvOverride("DS_EVENT_MIN_INTERVAL_SEC", ("events", "debounce_seconds"), parser=_parse_float),
     EnvOverride("DEBOUNCE_SECONDS", ("events", "debounce_seconds"), parser=_parse_float),
     EnvOverride("FALL_SUSTAINED_SECONDS", ("events", "fall_sustained_seconds"), parser=_parse_float),
     EnvOverride("FALL_RESEND_COOLDOWN", ("events", "fall_resend_cooldown"), parser=_parse_float),

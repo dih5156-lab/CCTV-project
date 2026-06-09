@@ -15,6 +15,7 @@
 from __future__ import annotations
 
 import os
+from queue import Queue
 import threading
 import types
 from pathlib import Path
@@ -25,6 +26,7 @@ import pytest
 
 from src.core.base_processor import BaseProcessor
 from src.core.deepstream_processor import DEEPSTREAM_AVAILABLE, DeepStreamProcessor
+from src.core.event_debouncer import EventDebouncer
 from src.core.events import DetectionEvent, EventType
 from src.core.processor import VideoProcessor
 
@@ -379,6 +381,100 @@ def test_deepstream_filter_events_respects_one_model_off():
     head = DetectionEvent(EventType.HEAD, 0, 0, 10, 10, 0.8, 1.0)
 
     assert proc._filter_events_for_camera([person, head], "cam1") == [person]
+
+
+def test_deepstream_should_enqueue_event_uses_common_debouncer(mock_config):
+    proc = object.__new__(DeepStreamProcessor)
+    proc._debouncer = EventDebouncer(mock_config, proc._increment_stat)
+
+    event = DetectionEvent(
+        EventType.PERSON,
+        0,
+        0,
+        10,
+        10,
+        0.9,
+        1.0,
+        object_id=7,
+        metadata={"camera_id": "cam1"},
+    )
+
+    assert proc._should_enqueue_event(event, "fallback_cam") is True
+    assert proc._should_enqueue_event(event, "fallback_cam") is False
+
+
+def test_deepstream_event_queue_full_counts_event_drop_not_frame_drop():
+    proc = object.__new__(DeepStreamProcessor)
+    proc.event_queue = Queue(maxsize=1)
+    proc.event_queue.put_nowait({"type": "existing"})
+    proc._frames_dropped = 0
+    proc._events_dropped = 0
+
+    ok = proc._put_event_dict({"type": "person"}, "cam1")
+
+    assert ok is False
+    assert proc._frames_dropped == 0
+    assert proc._events_dropped == 1
+
+
+def test_deepstream_event_queue_success_counts_detected_event():
+    proc = object.__new__(DeepStreamProcessor)
+    proc.event_queue = Queue(maxsize=1)
+    proc._events_detected = 0
+
+    ok = proc._put_event_dict({"type": "person"}, "cam1")
+
+    assert ok is True
+    assert proc._events_detected == 1
+
+
+def test_deepstream_detection_event_enqueue_uses_common_queue_stats(mock_config):
+    proc = object.__new__(DeepStreamProcessor)
+    proc.event_queue = Queue(maxsize=1)
+    proc._debouncer = EventDebouncer(mock_config, proc._increment_stat)
+    proc._events_detected = 0
+    event = DetectionEvent(
+        EventType.PERSON,
+        0,
+        0,
+        10,
+        10,
+        0.9,
+        1.0,
+        object_id=7,
+        metadata={"camera_id": "cam1"},
+    )
+
+    ok = proc._enqueue_event(event, "cam1")
+
+    assert ok is True
+    assert proc._events_detected == 1
+    assert proc.event_queue.get_nowait() is event
+
+
+def test_deepstream_publish_loop_success_counts_sent_not_detected(mock_config):
+    proc = object.__new__(DeepStreamProcessor)
+    proc.running = True
+    proc.stop_event = threading.Event()
+    proc.event_queue = Queue()
+    proc.event_queue.put_nowait({"type": "person", "camera_id": "cam1"})
+    proc.config = mock_config
+    proc.event_publisher = MagicMock()
+    proc._mqtt_publish = MagicMock(return_value=True)
+    proc._events_detected = 1
+    proc._events_sent = 0
+    proc._events_failed = 0
+
+    def stop_after_publish(*args, **kwargs):
+        proc.running = False
+        return True
+
+    with patch("src.core.deepstream_processor.publish_queue_item", side_effect=stop_after_publish):
+        proc._publish_loop()
+
+    assert proc._events_detected == 1
+    assert proc._events_sent == 1
+    assert proc._events_failed == 0
 
 
 class _FakeElement:
