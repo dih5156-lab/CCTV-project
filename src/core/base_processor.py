@@ -31,8 +31,8 @@ VideoProcessor (현재 파이프라인) 와 DeepStreamProcessor (Jetson 전용) 
 
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
 import time
+from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional, Union
 
 from ..config import AppConfig

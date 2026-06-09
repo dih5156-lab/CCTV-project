@@ -15,10 +15,10 @@
 from __future__ import annotations
 
 import os
-from queue import Queue
 import threading
 import types
 from pathlib import Path
+from queue import Queue
 from unittest.mock import MagicMock, patch
 
 import numpy as np

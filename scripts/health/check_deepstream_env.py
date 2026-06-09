@@ -11,7 +11,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Optional
 
-
 DEFAULT_CONFIGS = (
     "config/deepstream/config_infer_primary.txt",
     "config/deepstream/config_infer_helmet.txt",
