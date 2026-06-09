@@ -336,8 +336,9 @@ docker compose -f docker-compose.yml -f docker-compose.arm64.yml up -d
 
 ```bash
 .venv/bin/python scripts/health/check_runtime_secret_consistency.py --env-file .env --json
+.venv/bin/python scripts/health/check_deepstream_env.py
 ./scripts/ops/run_operation_check.sh
-./scripts/ops/run_deepstream_stability_watch.sh --duration 300
+./scripts/ops/run_deepstream_stability_watch.sh 300 60
 ```
 
 #### Jetson 분리 실행 (Jetson Orin + 서버/PC 분리)
@@ -795,6 +796,7 @@ python scripts/ops/evaluate_detection.py \
 
 - **운영 점검 자동화 보강**
   - 런타임 비밀값 일관성 점검: `scripts/health/check_runtime_secret_consistency.py`
+  - Jetson DeepStream 런타임/GStreamer/nvinfer 설정 점검: `scripts/health/check_deepstream_env.py`
   - 현장 운영 점검 래퍼: `scripts/ops/run_operation_check.sh`
   - DeepStream 장시간 안정성 관찰: `scripts/ops/run_deepstream_stability_watch.sh`
   - 운영 체크리스트와 DeepStream 안정성 기록 문서 추가
