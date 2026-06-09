@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Prevent common GitHub Actions failures from reaching origin/main.
+
+set -euo pipefail
+
+ROOT_DIR=$(git rev-parse --show-toplevel)
+cd "$ROOT_DIR"
+
+if [[ "${SKIP_PRE_PUSH_CHECKS:-0}" == "1" ]]; then
+    echo "SKIP_PRE_PUSH_CHECKS=1 set; skipping local pre-push checks."
+    exit 0
+fi
+
+./scripts/dev/check_before_push.sh
+
+if ! git diff --quiet; then
+    echo
+    echo "ERROR: pre-push checks modified files, likely via ruff --fix." >&2
+    echo "Review, commit the changes, then push again." >&2
+    git status --short >&2
+    exit 1
+fi

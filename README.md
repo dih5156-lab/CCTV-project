@@ -566,6 +566,24 @@ sudo docker compose up -d --force-recreate cctv-ai-engine
 
 ## 테스트
 
+GitHub Actions와 같은 기본 검사를 push 전에 로컬에서 실행:
+
+```bash
+./scripts/dev/check_before_push.sh
+```
+
+이 저장소는 `.githooks/pre-push`를 사용하도록 설정하면 push 전에 위 검사를 자동 실행합니다.
+
+```bash
+git config --local core.hooksPath .githooks
+```
+
+긴급히 hook을 건너뛸 때만 아래처럼 실행합니다.
+
+```bash
+SKIP_PRE_PUSH_CHECKS=1 git push
+```
+
 공개 API 회귀 테스트:
 
 ```bash
