@@ -7,10 +7,12 @@
   <style>
     :root {
       color-scheme: dark;
-      --bg: #0f1115;
-      --surface: #171b22;
-      --surface-2: #202632;
-      --line: #303949;
+      --bg: #090d12;
+      --surface: #161d26;
+      --surface-2: #243041;
+      --surface-3: #101821;
+      --line: #344256;
+      --line-soft: rgba(255, 255, 255, .07);
       --text: #edf2f8;
       --muted: #9aa7ba;
       --good: #20c76f;
@@ -19,13 +21,16 @@
       --blue: #5f8cff;
       --cyan: #33c7d6;
       --purple: #a78bfa;
-      --shadow: rgba(0, 0, 0, .28);
+      --radius: 8px;
+      --shadow: rgba(0, 0, 0, .24);
     }
     * { box-sizing: border-box; }
     html, body { min-height: 100%; }
     body {
       margin: 0;
-      background: var(--bg);
+      background:
+        linear-gradient(180deg, rgba(34, 47, 65, .48) 0, rgba(9, 13, 18, 0) 210px),
+        var(--bg);
       color: var(--text);
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       font-size: 14px;
@@ -36,13 +41,15 @@
     button {
       min-height: 34px;
       border: 1px solid var(--line);
-      border-radius: 7px;
+      border-radius: 6px;
       background: var(--surface-2);
       color: var(--text);
       padding: 0 11px;
       cursor: pointer;
+      font-weight: 700;
+      transition: background .12s ease, border-color .12s ease, color .12s ease;
     }
-    button:hover { border-color: #52617a; }
+    button:hover { border-color: #56657e; background: #252d3a; }
     button:focus-visible,
     input:focus-visible,
     select:focus-visible,
@@ -57,8 +64,8 @@
     input, select {
       min-height: 34px;
       border: 1px solid var(--line);
-      border-radius: 7px;
-      background: #11151c;
+      border-radius: 6px;
+      background: #10151d;
       color: var(--text);
       padding: 0 10px;
       outline: none;
@@ -72,13 +79,14 @@
     }
     table {
       width: 100%;
-      border-collapse: collapse;
+      border-collapse: separate;
+      border-spacing: 0;
       table-layout: fixed;
       min-width: 680px;
     }
     th, td {
       padding: 9px 10px;
-      border-bottom: 1px solid var(--line);
+      border-bottom: 1px solid var(--line-soft);
       text-align: left;
       vertical-align: middle;
       overflow-wrap: anywhere;
@@ -87,7 +95,12 @@
       color: var(--muted);
       font-size: 12px;
       font-weight: 700;
+      background: rgba(255, 255, 255, .025);
+      position: sticky;
+      top: 0;
+      z-index: 1;
     }
+    tbody tr:hover td { background: rgba(255, 255, 255, .025); }
     pre {
       margin: 0;
       min-height: 180px;
@@ -102,38 +115,39 @@
     .app-shell {
       min-height: 100vh;
       display: grid;
-      grid-template-columns: 236px minmax(0, 1fr);
+      grid-template-columns: 248px minmax(0, 1fr);
     }
     .sidebar {
       position: sticky;
       top: 0;
       height: 100vh;
       border-right: 1px solid var(--line);
-      background: #12161d;
-      padding: 18px 14px;
+      background: #0c1219;
+      padding: 20px 14px;
       overflow: auto;
     }
     .brand {
       display: flex;
       align-items: center;
       gap: 10px;
-      margin-bottom: 18px;
+      margin-bottom: 22px;
       font-weight: 800;
       letter-spacing: 0;
     }
     .brand-mark {
       width: 34px;
       height: 34px;
-      border-radius: 8px;
+      border-radius: var(--radius);
       display: grid;
       place-items: center;
-      background: #213454;
-      color: #a8c7ff;
+      background: #0e2f3a;
+      color: #9df2ff;
       font-weight: 900;
+      box-shadow: inset 0 0 0 1px rgba(51, 199, 214, .36);
     }
     .nav {
       display: grid;
-      gap: 6px;
+      gap: 8px;
     }
     .nav button {
       width: 100%;
@@ -143,12 +157,14 @@
       border-color: transparent;
       color: var(--muted);
       font-weight: 650;
+      min-height: 38px;
+      padding: 0 12px;
     }
     .nav button.active {
-      background: var(--surface-2);
-      border-color: var(--line);
+      background: #1d2a39;
+      border-color: rgba(95, 140, 255, .42);
       color: var(--text);
-      box-shadow: 0 8px 22px var(--shadow);
+      box-shadow: inset 4px 0 0 var(--blue), 0 8px 18px rgba(0, 0, 0, .18);
     }
     .sidebar-footer {
       margin-top: 20px;
@@ -161,7 +177,7 @@
     }
     .main {
       min-width: 0;
-      padding: 18px;
+      padding: 20px 22px;
     }
     .skip-link {
       position: fixed;
@@ -179,16 +195,21 @@
     }
     .skip-link:focus { transform: translateY(0); }
     .topbar {
-      min-height: 64px;
+      min-height: 72px;
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
       gap: 12px;
       align-items: center;
-      margin-bottom: 16px;
+      margin-bottom: 18px;
+      border: 1px solid var(--line-soft);
+      border-radius: var(--radius);
+      background: rgba(16, 24, 33, .72);
+      padding: 14px 16px;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, .18);
     }
     .title h1 {
       margin: 0;
-      font-size: 22px;
+      font-size: 24px;
       letter-spacing: 0;
     }
     .title p {
@@ -206,8 +227,8 @@
     .connection-panel {
       margin-bottom: 16px;
       border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #121720;
+      border-radius: var(--radius);
+      background: rgba(16, 24, 33, .82);
     }
     .connection-panel summary {
       min-height: 42px;
@@ -235,22 +256,34 @@
     .status-strip {
       display: grid;
       grid-template-columns: repeat(5, minmax(0, 1fr));
-      gap: 10px;
-      margin-bottom: 16px;
+      gap: 12px;
+      margin-bottom: 18px;
     }
     .service-card {
+      position: relative;
       min-height: 66px;
       border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #121720;
-      padding: 10px 12px;
+      border-radius: var(--radius);
+      background: var(--surface-3);
+      padding: 14px 12px 11px;
       display: grid;
       align-content: space-between;
       gap: 8px;
+      overflow: hidden;
     }
-    .service-card.good { border-color: rgba(32, 199, 111, .38); background: rgba(32, 199, 111, .08); }
-    .service-card.warn { border-color: rgba(243, 178, 60, .42); background: rgba(243, 178, 60, .08); }
-    .service-card.bad { border-color: rgba(240, 82, 82, .42); background: rgba(240, 82, 82, .08); }
+    .service-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto;
+      height: 4px;
+      background: var(--warn);
+    }
+    .service-card.good { border-color: rgba(32, 199, 111, .38); background: rgba(32, 199, 111, .10); }
+    .service-card.good::before { background: var(--good); }
+    .service-card.warn { border-color: rgba(243, 178, 60, .42); background: rgba(243, 178, 60, .10); }
+    .service-card.warn::before { background: var(--warn); }
+    .service-card.bad { border-color: rgba(240, 82, 82, .42); background: rgba(240, 82, 82, .10); }
+    .service-card.bad::before { background: var(--bad); }
     .service-head {
       display: flex;
       align-items: center;
@@ -262,6 +295,8 @@
       color: var(--muted);
       font-size: 12px;
       font-weight: 800;
+      letter-spacing: .02em;
+      text-transform: uppercase;
     }
     .service-detail {
       color: var(--text);
@@ -275,16 +310,16 @@
     .tab.active { display: block; }
     .grid {
       display: grid;
-      gap: 12px;
+      gap: 14px;
     }
     .grid.stats { grid-template-columns: repeat(6, minmax(0, 1fr)); }
     .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .panel {
       border: 1px solid var(--line);
-      border-radius: 8px;
+      border-radius: var(--radius);
       background: var(--surface);
-      box-shadow: 0 10px 26px var(--shadow);
+      box-shadow: 0 12px 26px var(--shadow);
       min-width: 0;
     }
     .panel.pad { padding: 14px; }
@@ -293,12 +328,24 @@
       gap: 10px;
       align-items: center;
       justify-content: space-between;
-      padding: 13px 14px;
-      border-bottom: 1px solid var(--line);
+      min-height: 50px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line-soft);
+      background: #101821;
     }
     .panel-head h2 {
       margin: 0;
       font-size: 15px;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+    }
+    .panel-head h2::before {
+      content: "";
+      width: 6px;
+      height: 18px;
+      border-radius: 99px;
+      background: var(--cyan);
     }
     .panel-body { padding: 14px; }
     .scroll {
@@ -307,14 +354,98 @@
       overflow-x: auto;
     }
     .stat {
+      position: relative;
       padding: 14px;
       min-height: 96px;
       display: grid;
       align-content: space-between;
+      box-shadow: none;
+      background: #111a24;
+      overflow: hidden;
     }
-    .stat-label { color: var(--muted); font-size: 12px; font-weight: 700; }
-    .stat-value { font-size: 26px; font-weight: 850; margin-top: 8px; }
+    .stat::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: var(--blue);
+    }
+    .stat:nth-child(2)::before { background: var(--cyan); }
+    .stat:nth-child(3)::before { background: var(--good); }
+    .stat:nth-child(4)::before { background: var(--warn); }
+    .stat:nth-child(5)::before { background: var(--purple); }
+    .stat:nth-child(6)::before { background: var(--bad); }
+    .stat-label { color: #b7c4d6; font-size: 12px; font-weight: 800; }
+    .stat-value { font-size: 30px; font-weight: 900; margin-top: 8px; color: #ffffff; }
     .stat-sub { color: var(--muted); font-size: 12px; margin-top: 6px; }
+    .overview-focus {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(320px, .65fr);
+      gap: 14px;
+      align-items: stretch;
+      margin-bottom: 14px;
+    }
+    .overview-focus .ops-summary,
+    .overview-focus .priority-event {
+      margin: 0;
+      min-height: 142px;
+    }
+    #tab-overview .grid.stats {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    #tab-overview .stat {
+      min-height: 78px;
+      padding: 12px 12px 12px 14px;
+      background: #111923;
+      box-shadow: none;
+    }
+    #tab-overview .stat-value {
+      font-size: 24px;
+      margin-top: 4px;
+    }
+    #tab-overview .stat-sub {
+      margin-top: 3px;
+      line-height: 1.25;
+    }
+    .overview-collapse {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(16, 24, 33, .72);
+      margin-top: 14px;
+      overflow: hidden;
+    }
+    .overview-collapse summary {
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 0 14px;
+      color: #d9e4f2;
+      cursor: pointer;
+      font-weight: 800;
+    }
+    .overview-collapse summary::after {
+      content: "열기";
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .overview-collapse[open] summary::after { content: "닫기"; }
+    .overview-collapse-body {
+      padding: 0 14px 14px;
+    }
+    .overview-collapse .status-strip {
+      margin: 0;
+    }
+    .overview-collapse .service-card {
+      min-height: 56px;
+      padding: 12px 10px 9px;
+    }
     .badge {
       display: inline-flex;
       align-items: center;
@@ -324,7 +455,7 @@
       border-radius: 999px;
       padding: 2px 8px;
       color: #d7e0ed;
-      background: #141923;
+      background: #141a23;
       font-size: 12px;
       font-weight: 700;
       white-space: nowrap;
@@ -336,20 +467,23 @@
     .ops-summary {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
-      gap: 14px;
+      gap: 18px;
       align-items: center;
-      margin-bottom: 12px;
-      border-left: 4px solid var(--warn);
+      margin-bottom: 14px;
+      border-color: rgba(243, 178, 60, .48);
+      border-left: 0;
+      background: #171f2a;
+      box-shadow: inset 0 4px 0 var(--warn), 0 14px 28px rgba(0, 0, 0, .22);
     }
-    .ops-summary.good { border-left-color: var(--good); }
-    .ops-summary.bad { border-left-color: var(--bad); }
+    .ops-summary.good { border-color: rgba(32, 199, 111, .44); box-shadow: inset 0 4px 0 var(--good), 0 14px 28px rgba(0, 0, 0, .22); }
+    .ops-summary.bad { border-color: rgba(240, 82, 82, .48); box-shadow: inset 0 4px 0 var(--bad), 0 14px 28px rgba(0, 0, 0, .22); }
     .ops-copy {
       display: grid;
       gap: 7px;
       min-width: 0;
     }
     .ops-copy strong {
-      font-size: 18px;
+      font-size: 20px;
       line-height: 1.25;
     }
     .ops-copy span {
@@ -360,6 +494,52 @@
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
+    }
+    .priority-event {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      margin-top: 14px;
+      padding: 16px;
+      border: 1px solid rgba(95, 140, 255, .46);
+      border-left: 0;
+      border-radius: var(--radius);
+      background: #121d2a;
+      box-shadow: inset 0 0 0 1px rgba(95, 140, 255, .14), inset 0 4px 0 var(--blue);
+    }
+    .priority-event.critical {
+      border-color: rgba(240, 82, 82, .45);
+      background: rgba(240, 82, 82, .08);
+      box-shadow: inset 0 0 0 1px rgba(240, 82, 82, .18), inset 0 4px 0 var(--bad);
+    }
+    .priority-event.warning {
+      border-color: rgba(243, 178, 60, .45);
+      background: rgba(243, 178, 60, .08);
+      box-shadow: inset 0 0 0 1px rgba(243, 178, 60, .16), inset 0 4px 0 var(--warn);
+    }
+    .priority-copy {
+      min-width: 0;
+      display: grid;
+      gap: 6px;
+    }
+    .priority-title {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      font-size: 20px;
+      font-weight: 900;
+    }
+    .priority-meta {
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    .sort-hint {
+      grid-column: 1 / -1;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
     }
     .ops-actions {
       display: flex;
@@ -390,14 +570,33 @@
     .flow {
       display: grid;
       grid-template-columns: repeat(5, minmax(0, 1fr));
-      gap: 8px;
+      gap: 10px;
+      counter-reset: flow-step;
     }
     .flow-step {
+      position: relative;
       border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #121720;
-      padding: 12px;
-      min-height: 86px;
+      border-radius: var(--radius);
+      background: #101821;
+      padding: 40px 12px 12px;
+      min-height: 104px;
+      overflow: hidden;
+    }
+    .flow-step::before {
+      counter-increment: flow-step;
+      content: counter(flow-step);
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: rgba(51, 199, 214, .16);
+      color: #a9f6ff;
+      font-size: 12px;
+      font-weight: 900;
     }
     .flow-step strong { display: block; margin-bottom: 8px; }
     .control-policy {
@@ -416,8 +615,8 @@
       align-items: flex-start;
       min-height: 82px;
       border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #121720;
+      border-radius: var(--radius);
+      background: var(--surface-3);
       padding: 12px;
       cursor: pointer;
     }
@@ -443,8 +642,8 @@
       gap: 10px;
       align-items: flex-start;
       border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #11151c;
+      border-radius: var(--radius);
+      background: #10151d;
       padding: 11px;
     }
     .device-check strong { display: block; margin-bottom: 3px; }
@@ -455,7 +654,7 @@
     }
     .policy-note {
       border: 1px solid rgba(243, 178, 60, .4);
-      border-radius: 8px;
+      border-radius: var(--radius);
       background: rgba(243, 178, 60, .08);
       padding: 11px 12px;
       color: #ffe1a8;
@@ -469,7 +668,7 @@
     }
     .camera-card {
       border: 1px solid var(--line);
-      border-radius: 8px;
+      border-radius: var(--radius);
       overflow: hidden;
       background: #0c0f14;
       min-width: 0;
@@ -506,7 +705,7 @@
       gap: 10px;
       align-items: center;
       padding: 11px 12px;
-      border-top: 1px solid var(--line);
+      border-top: 1px solid var(--line-soft);
     }
     .camera-meta {
       display: flex;
@@ -539,7 +738,7 @@
       width: 100%;
       aspect-ratio: 16 / 9;
       border: 1px solid var(--line);
-      border-radius: 8px;
+      border-radius: var(--radius);
       overflow: hidden;
       background: #05070a;
       user-select: none;
@@ -576,7 +775,7 @@
       bottom: 12px;
       z-index: 2;
       border: 1px solid var(--line);
-      border-radius: 7px;
+      border-radius: 6px;
       padding: 9px 10px;
       background: rgba(7, 9, 13, .86);
       color: var(--muted);
@@ -642,8 +841,8 @@
     .check {
       min-height: 34px;
       border: 1px solid var(--line);
-      border-radius: 7px;
-      background: #11151c;
+      border-radius: 6px;
+      background: #10151d;
       display: inline-flex;
       align-items: center;
       gap: 6px;
@@ -661,7 +860,7 @@
     .crop-thumb {
       width: 72px;
       height: 72px;
-      border-radius: 7px;
+      border-radius: 6px;
       object-fit: cover;
       border: 1px solid var(--line);
       background: #05070a;
@@ -678,7 +877,7 @@
       aspect-ratio: 4 / 3;
       object-fit: cover;
       border: 1px solid var(--line);
-      border-radius: 8px;
+      border-radius: var(--radius);
       background: #05070a;
     }
     .kv {
@@ -695,7 +894,7 @@
       bottom: 18px;
       max-width: 420px;
       border: 1px solid var(--line);
-      border-radius: 8px;
+      border-radius: var(--radius);
       padding: 12px 14px;
       background: var(--surface);
       color: var(--text);
@@ -721,7 +920,7 @@
       width: min(1180px, 100%);
       max-height: calc(100vh - 40px);
       border: 1px solid var(--line);
-      border-radius: 8px;
+      border-radius: var(--radius);
       background: #0c0f14;
       box-shadow: 0 22px 60px rgba(0, 0, 0, .46);
       overflow: hidden;
@@ -735,8 +934,8 @@
       justify-content: space-between;
       gap: 12px;
       padding: 10px 12px;
-      border-bottom: 1px solid var(--line);
-      background: #121720;
+      border-bottom: 1px solid var(--line-soft);
+      background: var(--surface-3);
     }
     .modal-title {
       min-width: 0;
@@ -814,6 +1013,7 @@
       .topbar { grid-template-columns: 1fr; }
       .toolbar { justify-content: flex-start; }
       .status-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .overview-focus { grid-template-columns: 1fr; }
       .connection-grid { grid-template-columns: 1fr 1fr; }
       .grid.stats, .grid.two, .grid.three, .flow, .form-grid { grid-template-columns: 1fr; }
       .form-grid[style], .model-switches { grid-template-columns: 1fr 1fr !important; }
@@ -837,6 +1037,8 @@
       .panel-head .toolbar { width: 100%; }
       .panel-body { padding: 12px; }
       .ops-summary { grid-template-columns: 1fr; }
+      .priority-event { grid-template-columns: 1fr; }
+      #tab-overview .grid.stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .ops-actions { justify-content: flex-start; }
       .ops-actions button { flex: 1 1 120px; }
       .stat { min-height: 74px; }
@@ -844,6 +1046,7 @@
       .stat-value { font-size: 20px; }
       .toolbar input, .toolbar select, .toolbar button { width: 100%; }
       .status-strip { grid-template-columns: 1fr; }
+      #tab-overview .grid.stats { grid-template-columns: 1fr; }
       .modal-backdrop { padding: 8px; }
       .camera-modal { max-height: calc(100vh - 16px); }
       .modal-body { padding: 8px; }
@@ -934,41 +1137,27 @@
         </div>
       </details>
 
-      <section class="status-strip" aria-label="서비스 상태 요약">
-        <div class="service-card warn" id="svc-public">
-          <div class="service-head"><span class="service-name">Public API</span><span class="dot warn"></span></div>
-          <div class="service-detail">확인 대기</div>
-        </div>
-        <div class="service-card warn" id="svc-stream">
-          <div class="service-head"><span class="service-name">Media/WebRTC</span><span class="dot warn"></span></div>
-          <div class="service-detail">확인 대기</div>
-        </div>
-        <div class="service-card warn" id="svc-zone">
-          <div class="service-head"><span class="service-name">Zone API</span><span class="dot warn"></span></div>
-          <div class="service-detail">확인 대기</div>
-        </div>
-        <div class="service-card warn" id="svc-face">
-          <div class="service-head"><span class="service-name">Face API</span><span class="dot warn"></span></div>
-          <div class="service-detail">확인 대기</div>
-        </div>
-        <div class="service-card warn" id="svc-model">
-          <div class="service-head"><span class="service-name">Model API</span><span class="dot warn"></span></div>
-          <div class="service-detail">확인 대기</div>
-        </div>
-      </section>
-
       <section id="tab-overview" class="tab active" role="tabpanel">
-        <div class="panel pad ops-summary warn" id="ops-summary">
-          <div class="ops-copy">
-            <strong id="ops-title">운영 상태 확인 중</strong>
-            <span id="ops-detail">서비스 연결, 카메라, 최근 이벤트를 확인하고 있습니다.</span>
-            <div class="ops-next" id="ops-next" aria-label="권장 조치"></div>
+        <div class="overview-focus">
+          <div class="panel pad ops-summary warn" id="ops-summary">
+            <div class="ops-copy">
+              <strong id="ops-title">운영 상태 확인 중</strong>
+              <span id="ops-detail">서비스 연결, 카메라, 최근 이벤트를 확인하고 있습니다.</span>
+              <div class="ops-next" id="ops-next" aria-label="권장 조치"></div>
+            </div>
+            <div class="ops-actions" aria-label="주요 운영 액션">
+              <button data-jump="live">라이브 보기</button>
+              <button data-jump="events">이벤트 확인</button>
+              <button data-jump="cameras">구역 수정</button>
+              <button data-jump="control">알람 승인</button>
+            </div>
           </div>
-          <div class="ops-actions" aria-label="주요 운영 액션">
-            <button data-jump="live">라이브 보기</button>
+          <div class="priority-event" id="priority-event">
+            <div class="priority-copy">
+              <div class="priority-title"><span>최우선 이벤트 없음</span></div>
+              <div class="priority-meta">최근 이벤트를 불러오면 시연 중 먼저 봐야 할 항목을 여기에 고정합니다.</div>
+            </div>
             <button data-jump="events">이벤트 확인</button>
-            <button data-jump="cameras">구역 수정</button>
-            <button data-jump="control">알람 승인</button>
           </div>
         </div>
         <div class="grid stats">
@@ -979,30 +1168,34 @@
           <div class="panel stat"><div><div class="stat-label">TLV 로그</div><div class="stat-value" id="stat-sensors">-</div></div><div class="stat-sub">/api/v1/sensor-readings</div></div>
           <div class="panel stat"><div><div class="stat-label">승인 대기</div><div class="stat-value" id="stat-pending">-</div></div><div class="stat-sub">알람/제어 확인 필요</div></div>
         </div>
-        <div class="grid two" style="margin-top:12px">
-          <div class="panel">
-            <div class="panel-head"><h2>처리 흐름</h2><span class="badge blue">Edge Demo</span></div>
-            <div class="panel-body">
-              <div class="flow">
-                <div class="flow-step"><strong>1. 입력</strong><span class="muted">CCTV 영상<br>AIoT 센서</span></div>
-                <div class="flow-step"><strong>2. 분석</strong><span class="muted">DeepStream<br>AI Engine</span></div>
-                <div class="flow-step"><strong>3. 이벤트</strong><span class="muted">MQTT<br>EdgeX / Kuiper</span></div>
-                <div class="flow-step"><strong>4. 조치</strong><span class="muted">Speaker<br>Signboard / Siren</span></div>
-                <div class="flow-step"><strong>5. 조회</strong><span class="muted">Public API<br>Dashboard</span></div>
+        <details class="overview-collapse">
+          <summary>서비스 상태 상세</summary>
+          <div class="overview-collapse-body">
+            <section class="status-strip" aria-label="서비스 상태 요약">
+              <div class="service-card warn" id="svc-public">
+                <div class="service-head"><span class="service-name">Public API</span><span class="dot warn"></span></div>
+                <div class="service-detail">확인 대기</div>
               </div>
-            </div>
+              <div class="service-card warn" id="svc-stream">
+                <div class="service-head"><span class="service-name">Media/WebRTC</span><span class="dot warn"></span></div>
+                <div class="service-detail">확인 대기</div>
+              </div>
+              <div class="service-card warn" id="svc-zone">
+                <div class="service-head"><span class="service-name">Zone API</span><span class="dot warn"></span></div>
+                <div class="service-detail">확인 대기</div>
+              </div>
+              <div class="service-card warn" id="svc-face">
+                <div class="service-head"><span class="service-name">Face API</span><span class="dot warn"></span></div>
+                <div class="service-detail">확인 대기</div>
+              </div>
+              <div class="service-card warn" id="svc-model">
+                <div class="service-head"><span class="service-name">Model API</span><span class="dot warn"></span></div>
+                <div class="service-detail">확인 대기</div>
+              </div>
+            </section>
           </div>
-          <div class="panel">
-            <div class="panel-head"><h2>의존 서비스 상태</h2><button id="refresh-readiness">확인</button></div>
-            <div class="scroll">
-              <table>
-                <thead><tr><th>서비스</th><th>상태</th><th>URL</th></tr></thead>
-                <tbody id="dependency-rows"><tr><td colspan="3" class="muted">로딩 중</td></tr></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-        <div class="grid two" style="margin-top:12px">
+        </details>
+        <div class="grid two">
           <div class="panel">
             <div class="panel-head"><h2>최근 이벤트</h2><button data-jump="events">자세히</button></div>
             <div class="scroll">
@@ -1017,6 +1210,34 @@
             <div class="panel-body" id="appearance-summary"><span class="muted">로딩 중</span></div>
           </div>
         </div>
+        <details class="overview-collapse">
+          <summary>처리 흐름과 의존 서비스</summary>
+          <div class="overview-collapse-body">
+            <div class="grid two">
+              <div class="panel">
+                <div class="panel-head"><h2>처리 흐름</h2><span class="badge blue">Edge Demo</span></div>
+                <div class="panel-body">
+                  <div class="flow">
+                    <div class="flow-step"><strong>1. 입력</strong><span class="muted">CCTV 영상<br>AIoT 센서</span></div>
+                    <div class="flow-step"><strong>2. 분석</strong><span class="muted">DeepStream<br>AI Engine</span></div>
+                    <div class="flow-step"><strong>3. 이벤트</strong><span class="muted">MQTT<br>EdgeX / Kuiper</span></div>
+                    <div class="flow-step"><strong>4. 조치</strong><span class="muted">Speaker<br>Signboard / Siren</span></div>
+                    <div class="flow-step"><strong>5. 조회</strong><span class="muted">Public API<br>Dashboard</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="panel">
+                <div class="panel-head"><h2>의존 서비스 상태</h2><button id="refresh-readiness">확인</button></div>
+                <div class="scroll">
+                  <table>
+                    <thead><tr><th>서비스</th><th>상태</th><th>URL</th></tr></thead>
+                    <tbody id="dependency-rows"><tr><td colspan="3" class="muted">로딩 중</td></tr></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </details>
       </section>
 
       <section id="tab-live" class="tab" role="tabpanel">
@@ -1039,7 +1260,9 @@
               <div class="form-grid">
                 <div class="field"><label>카메라</label><select id="event-camera"><option value="">전체</option></select></div>
                 <div class="field"><label>이벤트 타입</label><select id="event-type"><option value="">전체</option><option value="fall_detected">낙상</option><option value="head">헬멧 미착용</option><option value="helmet">헬멧</option><option value="intrusion">침입</option><option value="zone_entered">위험구역 진입</option><option value="zone_dwelling">위험구역 체류</option><option value="zone_object_detected">위험구역 객체</option><option value="crowd_warning">인파 경고</option><option value="face_recognized">얼굴 인식</option><option value="face_unknown">미등록 얼굴</option><option value="person">사람</option></select></div>
+                <div class="field"><label>정렬 기준</label><select id="event-sort"><option value="priority" selected>위험도 우선</option><option value="recent">최신순</option><option value="type">유형별</option><option value="camera">카메라별</option></select></div>
                 <div class="field"><label>개수</label><select id="event-limit"><option>20</option><option selected>50</option><option>100</option><option>200</option></select></div>
+                <div class="sort-hint" id="event-sort-hint">위험도 우선: 낙상, 침입, 위험구역, 헬멧 미착용을 먼저 표시합니다.</div>
               </div>
             </div>
             <div class="scroll">
@@ -1412,6 +1635,40 @@
     const SERVICE_RECENT_SUCCESS_GRACE_MS = 120000;
     const COLORS = ["red", "orange", "yellow", "green", "blue", "purple", "white", "black", "gray"];
     const ZONE_EVENT_TYPES = new Set(["zone_entered", "zone_exited", "zone_dwelling", "zone_object_detected", "crowd_warning"]);
+    const EVENT_TYPE_PRIORITY = {
+      fall_detected: 0,
+      intrusion: 1,
+      danger_zone: 1,
+      head: 2,
+      face_unknown: 3,
+      zone_entered: 4,
+      zone_dwelling: 4,
+      zone_object_detected: 4,
+      crowd_warning: 5,
+      temperature_alert: 6,
+      sensor_temperature: 6,
+      tilt_alert: 6,
+      sensor_event: 7,
+      zone_exited: 12,
+      person: 20,
+      helmet: 30,
+      face_recognized: 30,
+    };
+    const EVENT_SEVERITY_PRIORITY = {
+      emergency: 0,
+      critical: 0,
+      warning: 4,
+      warn: 4,
+      normal: 20,
+      low: 30,
+      info: 30,
+    };
+    const EVENT_SORT_HINTS = {
+      priority: "위험도 우선: 낙상, 침입, 위험구역, 헬멧 미착용을 먼저 표시합니다.",
+      recent: "최신순: 이벤트 발생/수신 시간이 가장 최근인 항목부터 표시합니다.",
+      type: "유형별: 같은 이벤트 종류끼리 묶고, 묶음 안에서는 위험도와 최신순을 적용합니다.",
+      camera: "카메라별: 같은 카메라 이벤트끼리 묶고, 묶음 안에서는 위험도와 최신순을 적용합니다.",
+    };
     const state = {
       cameras: [],
       events: [],
@@ -1769,13 +2026,14 @@
       return cameras.some((camera) => Array.isArray(camera.zones) && camera.zones.length > 0);
     }
     function eventVisualTone(event) {
-      const severity = String(event?.severity || "").toLowerCase();
-      const type = String(event?.event_type || "").toLowerCase();
+      const severity = eventSeverityKey(event);
+      const type = eventTypeKey(event);
       if (["critical", "emergency"].includes(severity)) return "critical";
-      if (["fall_detected", "intrusion", "danger_zone", "face_unknown"].includes(type)) return "critical";
+      if (["fall_detected", "intrusion", "danger_zone"].includes(type)) return "critical";
       if (["warning", "warn"].includes(severity)) return "warning";
-      if (type.startsWith("zone_") || ["head", "helmet", "crowd_warning", "sensor_temperature", "temperature_alert", "tilt_alert"].includes(type)) return "warning";
+      if (type.startsWith("zone_") || ["head", "face_unknown", "crowd_warning", "sensor_temperature", "temperature_alert", "tilt_alert"].includes(type)) return "warning";
       if (["low", "info"].includes(severity)) return "low";
+      if (["helmet", "person", "face_recognized"].includes(type)) return "low";
       return "normal";
     }
     function eventBadgeTone(event) {
@@ -1784,12 +2042,26 @@
       if (tone === "warning") return "warn";
       return "blue";
     }
+    function eventTypeKey(event) {
+      return String(event?.event_type || event?.type || "").toLowerCase();
+    }
+    function eventSeverityKey(event) {
+      return String(event?.severity || "").toLowerCase();
+    }
+    function eventCameraId(event) {
+      return String(event?.camera_id || event?.payload?.camera_id || "");
+    }
     function eventPriority(event) {
-      const priorities = { critical: 0, warning: 1, normal: 2, low: 3 };
-      return priorities[eventVisualTone(event)] ?? 2;
+      if (Number.isFinite(Number(event?.priority))) return Number(event.priority);
+      const type = eventTypeKey(event);
+      const severity = eventSeverityKey(event);
+      return Math.min(
+        EVENT_TYPE_PRIORITY[type] ?? 20,
+        EVENT_SEVERITY_PRIORITY[severity] ?? 20,
+      );
     }
     function eventSortTime(event) {
-      const value = event?.received_at || event?.timestamp;
+      const value = event?.received_at || event?.queued_at || event?.timestamp;
       if (typeof value === "number") return value;
       const parsed = Date.parse(value);
       return Number.isFinite(parsed) ? parsed / 1000 : 0;
@@ -1798,14 +2070,85 @@
       const metadata = event?.metadata || {};
       return metadata.demo === true || metadata.source === "public-demo-ui";
     }
-    function sortEventsForDisplay(items) {
+    function eventSortMode() {
+      return $("event-sort")?.value || localStorage.getItem("cctvDemoEventSort") || "priority";
+    }
+    function compareEventTimeDesc(a, b) {
+      return eventSortTime(b) - eventSortTime(a);
+    }
+    function compareEventPriority(a, b) {
+      return eventPriority(a) - eventPriority(b);
+    }
+    function compareEventType(a, b) {
+      return eventLabel(eventTypeKey(a)).localeCompare(eventLabel(eventTypeKey(b)), "ko");
+    }
+    function compareEventCamera(a, b) {
+      return eventCameraId(a).localeCompare(eventCameraId(b), "ko");
+    }
+    function compareDemoFirst(a, b) {
+      return Number(isDemoEvent(b)) - Number(isDemoEvent(a));
+    }
+    function firstNonZero(...values) {
+      return values.find((value) => value !== 0) || 0;
+    }
+    function sortEventsForDisplay(items, mode = eventSortMode()) {
       return [...(items || [])].sort((a, b) => {
-        const demoDiff = Number(isDemoEvent(b)) - Number(isDemoEvent(a));
-        if (demoDiff !== 0) return demoDiff;
-        const priorityDiff = eventPriority(a) - eventPriority(b);
-        if (priorityDiff !== 0) return priorityDiff;
-        return eventSortTime(b) - eventSortTime(a);
+        if (mode === "recent") {
+          return firstNonZero(compareEventTimeDesc(a, b), compareEventPriority(a, b), compareDemoFirst(a, b));
+        }
+        if (mode === "type") {
+          return firstNonZero(compareEventType(a, b), compareEventPriority(a, b), compareEventTimeDesc(a, b), compareDemoFirst(a, b));
+        }
+        if (mode === "camera") {
+          return firstNonZero(compareEventCamera(a, b), compareEventPriority(a, b), compareEventTimeDesc(a, b), compareDemoFirst(a, b));
+        }
+        return firstNonZero(compareEventPriority(a, b), compareEventTimeDesc(a, b), compareDemoFirst(a, b));
       });
+    }
+    function eventSortHint(mode = eventSortMode()) {
+      return EVENT_SORT_HINTS[mode] || EVENT_SORT_HINTS.priority;
+    }
+    function updateEventSortHint() {
+      const target = $("event-sort-hint");
+      if (target) target.textContent = eventSortHint();
+    }
+    function renderPriorityEvent(items) {
+      const target = $("priority-event");
+      if (!target) return;
+
+      const event = sortEventsForDisplay(items || [], "priority")[0];
+      if (!event) {
+        target.className = "priority-event";
+        target.innerHTML = `
+          <div class="priority-copy">
+            <div class="priority-title"><span>최우선 이벤트 없음</span></div>
+            <div class="priority-meta">최근 이벤트를 불러오면 시연 중 먼저 봐야 할 항목을 여기에 고정합니다.</div>
+          </div>
+          <button data-jump="events">이벤트 확인</button>
+        `;
+        return;
+      }
+
+      const tone = eventVisualTone(event);
+      const title = eventLabel(eventTypeKey(event));
+      const time = fmtTime(event.received_at || event.queued_at || event.timestamp);
+      const camera = eventCameraId(event) || "-";
+      const confidence = fmtConfidence(event.confidence);
+      const actionButton = eventCameraId(event)
+        ? `<button data-camera-events="${escapeHtml(eventCameraId(event))}">카메라 이벤트</button>`
+        : `<button data-jump="events">이벤트 확인</button>`;
+      target.className = `priority-event ${tone === "critical" ? "critical" : tone === "warning" ? "warning" : ""}`;
+      target.innerHTML = `
+        <div class="priority-copy">
+          <div class="priority-title">
+            ${badge(title, eventBadgeTone(event))}
+            ${isDemoEvent(event) ? badge("데모", "good") : ""}
+            <span>${escapeHtml(camera)}</span>
+          </div>
+          <div class="priority-meta">${time} · 신뢰도 ${confidence} · 등급 ${escapeHtml(event.severity || "-")}</div>
+        </div>
+        ${actionButton}
+      `;
     }
     function eventIdentity(event) {
       return [
@@ -1834,7 +2177,7 @@
     function cameraRiskBadge(cameraId) {
       const event = latestCameraEvent(cameraId);
       if (!event) return badge("최근 이벤트 없음", "blue");
-      return badge(eventLabel(event.event_type), eventBadgeTone(event));
+      return badge(eventLabel(eventTypeKey(event)), eventBadgeTone(event));
     }
     function appearanceClassLabel(item) {
       if (item.face_name && String(item.face_name).toLowerCase() !== "unknown") return "등록 얼굴";
@@ -2437,12 +2780,16 @@
         $("stat-events").textContent = String(body.total ?? state.events.length);
         renderEventRows("event-rows", displayEvents, 7);
         renderEventRows("overview-events", displayEvents.slice(0, 8), 4, true);
+        renderPriorityEvent(state.events);
+        updateEventSortHint();
         updateOpsSummary();
       } catch (error) {
         state.events = state.demoEvents;
         const displayEvents = sortEventsForDisplay(state.demoEvents);
         renderEventRows("event-rows", displayEvents, 7);
         renderEventRows("overview-events", displayEvents.slice(0, 8), 4, true);
+        renderPriorityEvent(state.events);
+        updateEventSortHint();
         updateOpsSummary();
         showToast("이벤트 조회 실패, 데모 이벤트만 표시: " + error.message);
       }
@@ -2452,16 +2799,16 @@
       $(targetId).innerHTML = rows.length ? rows.map((event) => {
         const visualTone = eventVisualTone(event);
         const rowClass = visualTone === "normal" ? "" : ` class="event-row-${visualTone}"`;
-        const typeBadge = `${isDemoEvent(event) ? badge("데모", "good") + " " : ""}${badge(eventLabel(event.event_type), eventBadgeTone(event))}`;
+        const typeBadge = `${isDemoEvent(event) ? badge("데모", "good") + " " : ""}${badge(eventLabel(eventTypeKey(event)), eventBadgeTone(event))}`;
         if (compact) {
-          return `<tr${rowClass}><td>${fmtTime(event.received_at || event.timestamp)}</td><td>${typeBadge}</td><td><code>${event.camera_id || "-"}</code></td><td>${Number(event.confidence || 0).toFixed(2)}</td></tr>`;
+          return `<tr${rowClass}><td>${fmtTime(event.received_at || event.timestamp)}</td><td>${typeBadge}</td><td><code>${eventCameraId(event) || "-"}</code></td><td>${Number(event.confidence || 0).toFixed(2)}</td></tr>`;
         }
         const target = eventTargetLabel(event);
         return `<tr${rowClass}>
           <td>${fmtTime(event.received_at || event.timestamp)}</td>
           <td>${typeBadge}</td>
           <td>${target}</td>
-          <td><code>${event.camera_id || "-"}</code></td>
+          <td><code>${eventCameraId(event) || "-"}</code></td>
           <td>${Number(event.confidence || 0).toFixed(2)}</td>
           <td>${badge(event.severity || "-", statusTone(event.severity))}</td>
           <td>${event.object_id ?? "-"}</td>
@@ -2472,7 +2819,7 @@
       const metadata = event.metadata || {};
       const name = metadata.face_name || metadata.person_name || metadata.name;
       if (name && String(name).toLowerCase() !== "unknown") return String(name);
-      if (event.event_type === "face_unknown") return "미등록";
+      if (eventTypeKey(event) === "face_unknown") return "미등록";
       return "-";
     }
     async function sendDemoEvent() {
@@ -2990,14 +3337,14 @@
     }
     async function loadPending() {
       const body = await request("/api/v1/control/pending");
-      const items = body.data || [];
+      const items = sortEventsForDisplay(body.data || []);
       state.pendingCount = items.length;
       $("stat-pending").textContent = String(items.length);
       $("pending-rows").innerHTML = items.length ? items.map((item) => `
         <tr>
           <td>${fmtTime(item.queued_at)}</td>
-          <td>${badge(eventLabel(item.event_type), "blue")}</td>
-          <td><code>${item.camera_id || "-"}</code></td>
+          <td>${badge(eventLabel(eventTypeKey(item)), eventBadgeTone(item))}</td>
+          <td><code>${eventCameraId(item) || "-"}</code></td>
           <td>${badge(fmtConfidence(item.confidence), "blue")}</td>
           <td>${badge(item.severity || "-", statusTone(item.severity))}</td>
           <td>${escapeHtml(outputDetail(item))}</td>
@@ -3020,12 +3367,12 @@
     window.rejectEvent = rejectEvent;
     async function loadActionEvents() {
       const body = await request("/api/v1/control/action-events?limit=20");
-      const items = body.data || [];
+      const items = sortEventsForDisplay(body.data || []);
       $("action-rows").innerHTML = items.length ? items.map((item) => `
         <tr>
           <td>${fmtTime(item.received_at || item.timestamp)}</td>
-          <td>${badge(eventLabel(item.event_type), "blue")}</td>
-          <td><code>${item.camera_id || item.payload?.camera_id || "-"}</code></td>
+          <td>${badge(eventLabel(eventTypeKey(item)), eventBadgeTone(item))}</td>
+          <td><code>${eventCameraId(item) || "-"}</code></td>
           <td>${badge(item.alarm_played ? "executed" : "skip", item.alarm_played ? "good" : "warn")}</td>
           <td>${badge(item.http_sent ? "sent" : "none", item.http_sent ? "good" : "warn")}</td>
           <td>${item.alarm_played ? "출력 명령 실행" : "장치 설정/연결, 모드, 쿨다운 확인"}</td>
@@ -3072,6 +3419,18 @@
     document.querySelectorAll("#nav button").forEach((button) => button.addEventListener("click", () => switchTab(button.dataset.tab)));
     document.querySelectorAll("[data-jump]").forEach((button) => button.addEventListener("click", () => switchTab(button.dataset.jump)));
     fillColorSelects();
+    if ($("event-sort")) {
+      $("event-sort").value = localStorage.getItem("cctvDemoEventSort") || "priority";
+      updateEventSortHint();
+      $("event-sort").addEventListener("change", async () => {
+        localStorage.setItem("cctvDemoEventSort", $("event-sort").value);
+        updateEventSortHint();
+        renderEventRows("event-rows", sortEventsForDisplay(state.events), 7);
+        renderEventRows("overview-events", sortEventsForDisplay(state.events).slice(0, 8), 4, true);
+        renderPriorityEvent(state.events);
+        await Promise.allSettled([loadPending(), loadActionEvents()]);
+      });
+    }
     $("refresh").addEventListener("click", (event) => runAction(event.currentTarget, "갱신 중", refreshAll));
     $("refresh-readiness").addEventListener("click", (event) => runAction(event.currentTarget, "확인 중", loadReadiness));
     $("reload-streams").addEventListener("click", (event) => runAction(event.currentTarget, "연결 중", async () => { await loadCameras(); renderCameraPreview(); }));
@@ -3097,6 +3456,15 @@
       const card = event.target.closest("[data-camera-modal]");
       if (!card) return;
       openCameraModal(card.dataset.cameraModal);
+    });
+    $("priority-event").addEventListener("click", (event) => {
+      const eventsButton = event.target.closest("[data-camera-events]");
+      if (eventsButton) {
+        focusCameraEvents(eventsButton.dataset.cameraEvents);
+        return;
+      }
+      const jumpButton = event.target.closest("[data-jump]");
+      if (jumpButton) switchTab(jumpButton.dataset.jump);
     });
     $("camera-modal-close").addEventListener("click", closeCameraModal);
     $("camera-modal-open-stream").addEventListener("click", openCameraStreamWindow);
