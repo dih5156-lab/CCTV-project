@@ -91,6 +91,9 @@ def test_detections_to_events_builds_base_and_fall_events():
     assert events[0].metadata["backend"] == "deepstream_tensor"
     assert events[0].metadata["camera_id"] == "cam01"
     assert events[1].metadata["derived_from"] == "pose"
+    fall_payload = events[1].to_dict()
+    assert fall_payload["metadata"]["skeleton_keypoints"] == [[1.0, 2.0, 0.9]]
+    assert fall_payload["metadata"]["skeleton_format"] == "coco17_xyc"
 
 
 def test_detections_to_events_skips_unknown_labels():

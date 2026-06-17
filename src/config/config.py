@@ -119,6 +119,8 @@ ENV_OVERRIDES: tuple[EnvOverride, ...] = (
     EnvOverride("EXTERNAL_REPUBLISH_ENABLED", ("external_ingest", "republish_enabled"), parser=_parse_bool),
     # 카메라 / RTSP
     EnvOverride("RTSP_BUFFER_SIZE", ("camera", "buffer_size"), parser=_parse_int),
+    # 감지 임계값
+    EnvOverride("FALL_HEIGHT_RATIO", ("detection", "fall_height_ratio"), parser=_parse_float),
     # 외형 분석
     EnvOverride("APPEARANCE_ENABLED", ("appearance", "enabled"), parser=_parse_bool),
     EnvOverride("APPEARANCE_BACKEND", ("appearance", "backend")),
@@ -138,6 +140,11 @@ ENV_OVERRIDES: tuple[EnvOverride, ...] = (
     EnvOverride("FALL_GAP_RESET_SECONDS", ("events", "fall_gap_reset_seconds"), parser=_parse_float),
     EnvOverride("HEAD_RESEND_COOLDOWN", ("events", "head_resend_cooldown"), parser=_parse_float),
     EnvOverride("HEAD_GAP_RESET_SECONDS", ("events", "head_gap_reset_seconds"), parser=_parse_float),
+    # 로컬 객체 추적 안정화
+    EnvOverride("TRACK_TIMEOUT_SECONDS", ("processing", "track_timeout_seconds"), parser=_parse_float),
+    EnvOverride("TRACK_IOU_THRESHOLD", ("processing", "track_iou_threshold"), parser=_parse_float),
+    EnvOverride("TRACK_MAX_MISSED_FRAMES", ("processing", "track_max_missed_frames"), parser=_parse_int),
+    EnvOverride("MIN_TRACK_FRAMES", ("processing", "min_track_frames"), parser=_parse_int),
 )
 
 @dataclass
@@ -347,6 +354,9 @@ class ProcessingConfig:
     violation_threshold: int = 2  # 위반 임계값 (3개 중 2개 이상 위반 시 경고)
     
     # 추적 기반 오탐 필터링
+    track_timeout_seconds: float = 1.0  # 트랙이 사라진 뒤 유지할 최대 시간
+    track_iou_threshold: float = 0.5  # 중복 트랙으로 판단할 IoU 임계값
+    track_max_missed_frames: int = 2  # 연속 미감지 허용 횟수
     min_track_frames: int = 2  # 최소 추적 프레임 수 (연속 감지되어야 유효한 객체로 인정)
 
 

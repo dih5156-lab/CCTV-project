@@ -82,10 +82,24 @@ class EventDebouncer:
             last_seen = self._fall_last_seen.get(key, 0)
             if now - last_seen > cfg.fall_gap_reset_seconds:
                 self._fall_first_seen[key] = now
+                logger.info(
+                    "[%s] 낙상 후보 감지 시작 (object_id=%s, sustained=%.1fs, gap_reset=%.1fs)",
+                    camera_id,
+                    object_id,
+                    cfg.fall_sustained_seconds,
+                    cfg.fall_gap_reset_seconds,
+                )
             self._fall_last_seen[key] = now
 
             duration = now - self._fall_first_seen.get(key, now)
             if duration < cfg.fall_sustained_seconds:
+                logger.debug(
+                    "[%s] 낙상 후보 지속 시간 부족: %.1fs/%.1fs (object_id=%s)",
+                    camera_id,
+                    duration,
+                    cfg.fall_sustained_seconds,
+                    object_id,
+                )
                 self._increment_stat("events_filtered")
                 return False
 

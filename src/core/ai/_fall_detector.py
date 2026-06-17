@@ -34,8 +34,26 @@ class FallDetector:
         옷걸이·의류 오탐을 걸러낸다.
     """
 
-    def __init__(self, fall_height_ratio: float = 0.3) -> None:
+    def __init__(
+        self,
+        fall_height_ratio: float = 0.3,
+        *,
+        angle_horizontal: float = FALL_ANGLE_HORIZONTAL,
+        angle_inverted: float = FALL_ANGLE_INVERTED,
+        bbox_aspect_ratio: float = 1.8,
+        span_bbox_aspect_ratio: float = 1.3,
+        span_ratio: float = FALL_KEYPOINT_SPAN_RATIO,
+        min_keypoint_confidence: float = MIN_KEYPOINT_CONFIDENCE,
+        min_hip_confidence: float = MIN_HIP_CONFIDENCE,
+    ) -> None:
         self.fall_height_ratio = fall_height_ratio
+        self.angle_horizontal = angle_horizontal
+        self.angle_inverted = angle_inverted
+        self.bbox_aspect_ratio = bbox_aspect_ratio
+        self.span_bbox_aspect_ratio = span_bbox_aspect_ratio
+        self.span_ratio = span_ratio
+        self.min_keypoint_confidence = min_keypoint_confidence
+        self.min_hip_confidence = min_hip_confidence
 
     # ── 공개 API ──────────────────────────────────────────────────────
 
@@ -75,11 +93,11 @@ class FallDetector:
         right_shoulder = kpts[6][:2]
         left_hip = kpts[11][:2]
         right_hip = kpts[12][:2]
-        nose_valid = kpts[0][2] >= MIN_KEYPOINT_CONFIDENCE
-        left_shoulder_v = kpts[5][2] >= MIN_KEYPOINT_CONFIDENCE
-        right_shoulder_v = kpts[6][2] >= MIN_KEYPOINT_CONFIDENCE
-        left_hip_v = kpts[11][2] >= MIN_HIP_CONFIDENCE
-        right_hip_v = kpts[12][2] >= MIN_HIP_CONFIDENCE
+        nose_valid = kpts[0][2] >= self.min_keypoint_confidence
+        left_shoulder_v = kpts[5][2] >= self.min_keypoint_confidence
+        right_shoulder_v = kpts[6][2] >= self.min_keypoint_confidence
+        left_hip_v = kpts[11][2] >= self.min_hip_confidence
+        right_hip_v = kpts[12][2] >= self.min_hip_confidence
 
         # 어깨 키포인트가 최소 하나 있어야 함
         if not left_shoulder_v and not right_shoulder_v:
@@ -112,19 +130,19 @@ class FallDetector:
 
             body_vec = hc - sc
             angle = np.abs(np.arctan2(body_vec[1], body_vec[0]) * 180 / np.pi)
-            if angle < FALL_ANGLE_HORIZONTAL or angle > FALL_ANGLE_INVERTED:
+            if angle < self.angle_horizontal or angle > self.angle_inverted:
                 return True
 
         # 방법 2: 무릎/발목이 코보다 높은 경우
         if nose_valid:
             _inf = float("inf")
             knee_y_min = min(
-                kpts[13][1] if kpts[13][2] > MIN_HIP_CONFIDENCE else _inf,
-                kpts[14][1] if kpts[14][2] > MIN_HIP_CONFIDENCE else _inf,
+                kpts[13][1] if kpts[13][2] > self.min_hip_confidence else _inf,
+                kpts[14][1] if kpts[14][2] > self.min_hip_confidence else _inf,
             )
             ankle_y_min = min(
-                kpts[15][1] if kpts[15][2] > MIN_HIP_CONFIDENCE else _inf,
-                kpts[16][1] if kpts[16][2] > MIN_HIP_CONFIDENCE else _inf,
+                kpts[15][1] if kpts[15][2] > self.min_hip_confidence else _inf,
+                kpts[16][1] if kpts[16][2] > self.min_hip_confidence else _inf,
             )
             head_y = nose[1]
             if (knee_y_min != _inf and knee_y_min < head_y) or (
@@ -135,21 +153,21 @@ class FallDetector:
         # 방법 3: bbox 가로 비율 + 코 위치
         if (
             nose_valid
-            and bbox_w > bbox_h * 1.8
+            and bbox_w > bbox_h * self.bbox_aspect_ratio
             and nose[1] > bbox_h * self.fall_height_ratio
         ):
             return True
 
         # 방법 4: 키포인트 수직 분산 비율
-        if bbox_h > 0 and bbox_w > bbox_h * 1.3:
+        if bbox_h > 0 and bbox_w > bbox_h * self.span_bbox_aspect_ratio:
             ys_valid = [
                 kpts[ki][1]
                 for ki in range(min(len(kpts), 17))
-                if kpts[ki][2] >= MIN_KEYPOINT_CONFIDENCE
+                if kpts[ki][2] >= self.min_keypoint_confidence
             ]
             if len(ys_valid) >= 3:
                 span_ratio = (max(ys_valid) - min(ys_valid)) / bbox_h
-                if span_ratio < FALL_KEYPOINT_SPAN_RATIO:
+                if span_ratio < self.span_ratio:
                     return True
 
         return False

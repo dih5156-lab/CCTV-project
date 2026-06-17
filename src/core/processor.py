@@ -188,13 +188,15 @@ class VideoProcessor(BaseProcessor):
 
         # ── 추적 / 누적 필터 ─────────────────────────────────────────
         self.track_manager = TrackManager(
-            track_timeout=0.5,
-            track_iou_threshold=0.5,
+            track_timeout=config.processing.track_timeout_seconds,
+            track_iou_threshold=config.processing.track_iou_threshold,
             min_track_frames=config.processing.min_track_frames,
+            max_missed_frames=config.processing.track_max_missed_frames,
         )
         self.violation_filter = CumulativeViolationFilter(
             history_max_size=config.processing.detection_history_size,
             violation_threshold=config.processing.violation_threshold,
+            violation_types={"head"},
             enabled=config.processing.cumulative_detection_enabled,
         )
         self._history_timeout = max(10.0, self.track_manager.track_timeout * 10)

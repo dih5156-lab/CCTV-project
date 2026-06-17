@@ -63,6 +63,23 @@ class TestTrackManager:
         _, removed = mgr.update(CAM, [_evt("helmet", 2)])  # id=1이 사라져야 함
         assert 1 in removed
 
+    def test_missing_track_kept_within_missed_frame_budget(self):
+        """일시적인 미감지는 허용 횟수 안에서는 트랙을 유지한다."""
+        mgr = TrackManager(track_timeout=999.0, max_missed_frames=1)
+        mgr.update(CAM, [_evt("helmet", 1)])
+        _, removed = mgr.update(CAM, [])
+        assert 1 not in removed
+        assert mgr.get_frame_count(CAM, 1) == 1
+
+    def test_missing_track_removed_after_missed_frame_budget(self):
+        """연속 미감지가 허용 횟수를 넘으면 트랙을 제거한다."""
+        mgr = TrackManager(track_timeout=999.0, max_missed_frames=1)
+        mgr.update(CAM, [_evt("helmet", 1)])
+        mgr.update(CAM, [])
+        _, removed = mgr.update(CAM, [])
+        assert 1 in removed
+        assert mgr.get_frame_count(CAM, 1) == 0
+
     def test_event_without_object_id_passes(self):
         """object_id=None 이벤트는 중복 체크 없이 통과."""
         mgr = TrackManager()

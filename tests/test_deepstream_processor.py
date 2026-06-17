@@ -24,6 +24,7 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import pytest
 
+import src.core.deepstream_processor as deepstream_processor
 from src.core.base_processor import BaseProcessor
 from src.core.deepstream_processor import DEEPSTREAM_AVAILABLE, DeepStreamProcessor
 from src.core.event_debouncer import EventDebouncer
@@ -96,6 +97,52 @@ def mock_heavy_deepstream_dependencies(monkeypatch):
 def test_deepstream_available_is_bool():
     """DEEPSTREAM_AVAILABLE 은 반드시 bool 타입이어야 한다."""
     assert isinstance(DEEPSTREAM_AVAILABLE, bool)
+
+
+def test_deepstream_module_probe_does_not_import_native_bindings(monkeypatch):
+    """가용성 확인은 pyds import 없이 find_spec만 사용해야 한다."""
+    find_spec_calls = []
+
+    def fake_find_spec(name):
+        find_spec_calls.append(name)
+        return object()
+
+    import_module_mock = MagicMock(side_effect=AssertionError("import_module should not be called"))
+
+    monkeypatch.setattr(deepstream_processor.importlib.util, "find_spec", fake_find_spec)
+    monkeypatch.setattr(deepstream_processor.importlib, "import_module", import_module_mock)
+
+    assert deepstream_processor._has_deepstream_modules() is True
+    assert find_spec_calls == ["gi", "pyds"]
+    import_module_mock.assert_not_called()
+
+
+def test_deepstream_native_bindings_load_only_when_ensured(monkeypatch):
+    """실제 pyds/Gst/GLib 로드는 명시적으로 보장할 때만 수행한다."""
+    fake_gi = MagicMock()
+    fake_pyds = object()
+    fake_glib = object()
+    fake_gst = object()
+
+    def fake_import_module(name):
+        return {
+            "gi": fake_gi,
+            "pyds": fake_pyds,
+            "gi.repository.GLib": fake_glib,
+            "gi.repository.Gst": fake_gst,
+        }[name]
+
+    monkeypatch.setattr(deepstream_processor, "DEEPSTREAM_AVAILABLE", True)
+    monkeypatch.setattr(deepstream_processor, "Gst", None)
+    monkeypatch.setattr(deepstream_processor, "GLib", None)
+    monkeypatch.setattr(deepstream_processor, "pyds", None)
+    monkeypatch.setattr(deepstream_processor.importlib, "import_module", fake_import_module)
+
+    assert deepstream_processor._ensure_deepstream_loaded() is True
+    fake_gi.require_version.assert_called_once_with("Gst", "1.0")
+    assert deepstream_processor.pyds is fake_pyds
+    assert deepstream_processor.GLib is fake_glib
+    assert deepstream_processor.Gst is fake_gst
 
 
 def test_deepstream_not_available_on_windows_ci():
@@ -364,6 +411,138 @@ def test_deepstream_filter_events_respects_all_off():
     ]
 
     assert proc._filter_events_for_camera(events, "cam1") == []
+
+
+def test_deepstream_fall_detector_uses_env_thresholds(mock_config, monkeypatch):
+    proc = object.__new__(DeepStreamProcessor)
+    monkeypatch.setenv("DS_FALL_HEIGHT_RATIO", "0.40")
+    monkeypatch.setenv("DS_FALL_ANGLE_HORIZONTAL", "55")
+    monkeypatch.setenv("DS_FALL_ANGLE_INVERTED", "125")
+    monkeypatch.setenv("DS_FALL_BBOX_ASPECT_RATIO", "1.35")
+    monkeypatch.setenv("DS_FALL_SPAN_BBOX_ASPECT_RATIO", "1.20")
+    monkeypatch.setenv("DS_FALL_KEYPOINT_SPAN_RATIO", "0.55")
+    monkeypatch.setenv("DS_FALL_MIN_KEYPOINT_CONFIDENCE", "0.25")
+    monkeypatch.setenv("DS_FALL_MIN_HIP_CONFIDENCE", "0.25")
+
+    proc._init_event_filters(mock_config)
+
+    assert proc._fall_detector.fall_height_ratio == 0.40
+    assert proc._fall_detector.angle_horizontal == 55.0
+    assert proc._fall_detector.angle_inverted == 125.0
+    assert proc._fall_detector.bbox_aspect_ratio == 1.35
+    assert proc._fall_detector.span_bbox_aspect_ratio == 1.20
+    assert proc._fall_detector.span_ratio == 0.55
+    assert proc._fall_detector.min_keypoint_confidence == 0.25
+    assert proc._fall_detector.min_hip_confidence == 0.25
+
+
+def test_deepstream_cumulative_filter_does_not_gate_fall_events(mock_config):
+    """낙상은 별도 지속시간 debouncer로 제어하므로 누적 위반 필터 대상에서 제외한다."""
+    proc = object.__new__(DeepStreamProcessor)
+
+    proc._init_event_filters(mock_config)
+
+    assert proc.violation_filter.violation_types == {"head"}
+
+
+class _FakeColor:
+    def __init__(self):
+        self.value = None
+
+    def set(self, red, green, blue, alpha):
+        self.value = (red, green, blue, alpha)
+
+
+class _FakeDisplayMeta:
+    def __init__(self):
+        self.num_rects = 0
+        self.num_labels = 0
+        self.num_lines = 0
+        self.num_circles = 0
+        self.rect_params = [
+            types.SimpleNamespace(
+                left=0,
+                top=0,
+                width=0,
+                height=0,
+                border_width=0,
+                has_bg_color=0,
+                border_color=_FakeColor(),
+            )
+            for _ in range(16)
+        ]
+        self.text_params = [
+            types.SimpleNamespace(
+                display_text="",
+                x_offset=0,
+                y_offset=0,
+                font_params=types.SimpleNamespace(
+                    font_name="",
+                    font_size=0,
+                    font_color=_FakeColor(),
+                ),
+                set_bg_clr=0,
+                text_bg_clr=_FakeColor(),
+            )
+            for _ in range(16)
+        ]
+        self.line_params = [
+            types.SimpleNamespace(
+                x1=0,
+                y1=0,
+                x2=0,
+                y2=0,
+                line_width=0,
+                line_color=_FakeColor(),
+            )
+            for _ in range(16)
+        ]
+        self.circle_params = [
+            types.SimpleNamespace(
+                xc=0,
+                yc=0,
+                radius=0,
+                circle_color=_FakeColor(),
+                has_bg_color=0,
+                bg_color=_FakeColor(),
+            )
+            for _ in range(16)
+        ]
+
+
+def test_deepstream_osd_draws_skeleton_for_fall_detection(monkeypatch):
+    proc = object.__new__(DeepStreamProcessor)
+    proc._fall_detector = types.SimpleNamespace(min_keypoint_confidence=0.25)
+    acquired = []
+    frame_meta = types.SimpleNamespace(added_display_meta=[])
+
+    def acquire(_batch_meta):
+        meta = _FakeDisplayMeta()
+        acquired.append(meta)
+        return meta
+
+    fake_pyds = types.SimpleNamespace(
+        nvds_acquire_display_meta_from_pool=acquire,
+        nvds_add_display_meta_to_frame=(
+            lambda frame, meta: frame.added_display_meta.append(meta)
+        ),
+    )
+    monkeypatch.setattr(deepstream_processor, "pyds", fake_pyds)
+
+    keypoints = [[float(idx * 10), float(idx * 5), 0.9] for idx in range(17)]
+    detection = {
+        "box": (10, 20, 120, 80),
+        "label": "person",
+        "confidence": 0.88,
+        "is_fall": True,
+        "keypoints": keypoints,
+    }
+
+    proc._add_osd_overlays(object(), frame_meta, [detection])
+
+    assert acquired[0].text_params[0].display_text == "fall_detected 0.88"
+    assert any(meta.num_lines > 0 for meta in frame_meta.added_display_meta)
+    assert any(meta.num_circles > 0 for meta in frame_meta.added_display_meta)
 
 
 def test_deepstream_filter_events_respects_one_model_off():

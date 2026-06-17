@@ -81,6 +81,10 @@ class DetectionEvent:
         """이벤트를 딕셔너리 형식으로 변환"""
         # critical 여부 — _CRITICAL_EVENT_TYPES 세트에서 결정
         severity = "critical" if self.event_type in _CRITICAL_EVENT_TYPES else "normal"
+        metadata = dict(self.metadata or {})
+        if self.event_type == EventType.FALL_DETECTED and self.keypoints:
+            metadata.setdefault("skeleton_keypoints", self.keypoints)
+            metadata.setdefault("skeleton_format", "coco17_xyc")
         return {
             "type": self.event_type.value,
             "severity": severity,
@@ -91,7 +95,7 @@ class DetectionEvent:
             "class_idx": self.class_idx,
             "class_name": self.class_name if self.class_name else None,
             "keypoints": self.keypoints if self.keypoints else None,
-            "metadata": self.metadata if self.metadata else None,
+            "metadata": metadata if metadata else None,
         }
     
     def bbox_dict(self) -> Dict:

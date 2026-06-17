@@ -68,6 +68,32 @@ def test_normalize_event_queue_item_promotes_appearance_attributes():
     assert event_data["raw"]["metadata"]["condition_id"] == "cond-1"
 
 
+def test_normalize_event_queue_item_preserves_fall_skeleton_metadata():
+    keypoints = [[float(idx), float(idx + 1), 0.9] for idx in range(17)]
+    event = DetectionEvent(
+        event_type=EventType.FALL_DETECTED,
+        x=10,
+        y=20,
+        width=120,
+        height=80,
+        confidence=0.93,
+        timestamp=1000.0,
+        object_id=42,
+        keypoints=keypoints,
+        metadata={"camera_id": "cam-fall"},
+    )
+
+    event_data, event_type, camera_id = normalize_event_queue_item(event)
+
+    assert event_type == "fall_detected"
+    assert camera_id == "cam-fall"
+    assert event_data["keypoints"] == keypoints
+    assert event_data["metadata"]["skeleton_keypoints"] == keypoints
+    assert event_data["metadata"]["skeleton_format"] == "coco17_xyc"
+    assert event_data["raw"]["keypoints"] == keypoints
+    assert event_data["raw"]["metadata"]["skeleton_keypoints"] == keypoints
+
+
 def test_publish_queue_item_uses_callback_topic():
     published = []
 

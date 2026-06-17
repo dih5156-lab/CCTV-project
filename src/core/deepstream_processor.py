@@ -87,33 +87,70 @@ _LABELS_FILE    = _DS_CONFIG_DIR / "labels.txt"
 _HELMET_LABELS_FILE = _DS_CONFIG_DIR / "labels_helmet.txt"
 _TRACKER_LIB = "/opt/nvidia/deepstream/deepstream/lib/libnvds_nvmultiobjecttracker.so"
 
+_COCO_SKELETON_EDGES: Tuple[Tuple[int, int], ...] = (
+    (5, 6),
+    (5, 7),
+    (7, 9),
+    (6, 8),
+    (8, 10),
+    (5, 11),
+    (6, 12),
+    (11, 12),
+    (11, 13),
+    (13, 15),
+    (12, 14),
+    (14, 16),
+)
+
 # ---------------------------------------------------------------------------
 # DeepStream 가용성 탐지 (런타임 조건부 임포트)
 # ---------------------------------------------------------------------------
 
-DEEPSTREAM_AVAILABLE: bool = False
 Gst: Any = None
 GLib: Any = None
 pyds: Any = None
 
-try:
-    gi = importlib.import_module("gi")
-    gi.require_version("Gst", "1.0")
-    pyds = importlib.import_module("pyds")
-    GLib = importlib.import_module("gi.repository.GLib")
-    Gst = importlib.import_module("gi.repository.Gst")
-except (ImportError, ValueError, OSError) as exc:
-    Gst = None
-    GLib = None
-    pyds = None
-    DEEPSTREAM_AVAILABLE = False
-    logger.debug(
-        "DeepStream 환경을 로드할 수 없습니다 (%s). "
-        "DeepStreamProcessor 는 이 환경에서 비활성화됩니다.", exc
+
+def _has_deepstream_modules() -> bool:
+    """네이티브 모듈을 import하지 않고 DeepStream Python 모듈 존재만 확인한다."""
+    return (
+        importlib.util.find_spec("gi") is not None
+        and importlib.util.find_spec("pyds") is not None
     )
-else:
+
+
+DEEPSTREAM_AVAILABLE: bool = _has_deepstream_modules()
+
+
+def _ensure_deepstream_loaded() -> bool:
+    """실제 DeepStream/GStreamer 사용 직전에 네이티브 모듈을 로드한다."""
+    global DEEPSTREAM_AVAILABLE, GLib, Gst, pyds
+
+    if Gst is not None and GLib is not None and pyds is not None:
+        return True
+    if not DEEPSTREAM_AVAILABLE:
+        return False
+
+    try:
+        gi = importlib.import_module("gi")
+        gi.require_version("Gst", "1.0")
+        pyds = importlib.import_module("pyds")
+        GLib = importlib.import_module("gi.repository.GLib")
+        Gst = importlib.import_module("gi.repository.Gst")
+    except (ImportError, ValueError, OSError) as exc:
+        Gst = None
+        GLib = None
+        pyds = None
+        DEEPSTREAM_AVAILABLE = False
+        logger.debug(
+            "DeepStream 환경을 로드할 수 없습니다 (%s). "
+            "DeepStreamProcessor 는 이 환경에서 비활성화됩니다.", exc
+        )
+        return False
+
     DEEPSTREAM_AVAILABLE = True
     logger.debug("DeepStream Python bindings (pyds) 로드 성공")
+    return True
 
 
 # ---------------------------------------------------------------------------
@@ -440,25 +477,111 @@ class DeepStreamProcessor(BaseProcessor):
     def _init_event_filters(self, config: AppConfig) -> None:
         """기존 VideoProcessor 후처리 필터를 재사용하도록 초기화한다."""
         self._synthetic_track_iou = float(os.environ.get("DS_SYNTHETIC_TRACK_IOU", "0.30"))
-        self._synthetic_track_timeout = float(os.environ.get("DS_SYNTHETIC_TRACK_TIMEOUT", "1.00"))
+        self._synthetic_track_timeout = self._read_float_setting(
+            "DS_SYNTHETIC_TRACK_TIMEOUT",
+            config.processing.track_timeout_seconds,
+            1.00,
+        )
         self._synthetic_id_assigner = SyntheticObjectIdAssigner(
             track_iou=self._synthetic_track_iou,
             track_timeout=self._synthetic_track_timeout,
         )
-        self._fall_detector = FallDetector(config.detection.fall_height_ratio)
+        self._fall_detector = FallDetector(
+            self._read_float_setting(
+                "DS_FALL_HEIGHT_RATIO",
+                config.detection.fall_height_ratio,
+                0.30,
+            ),
+            angle_horizontal=self._read_float_setting(
+                "DS_FALL_ANGLE_HORIZONTAL",
+                40.0,
+                40.0,
+            ),
+            angle_inverted=self._read_float_setting(
+                "DS_FALL_ANGLE_INVERTED",
+                140.0,
+                140.0,
+            ),
+            bbox_aspect_ratio=self._read_float_setting(
+                "DS_FALL_BBOX_ASPECT_RATIO",
+                1.8,
+                1.8,
+            ),
+            span_bbox_aspect_ratio=self._read_float_setting(
+                "DS_FALL_SPAN_BBOX_ASPECT_RATIO",
+                1.3,
+                1.3,
+            ),
+            span_ratio=self._read_float_setting(
+                "DS_FALL_KEYPOINT_SPAN_RATIO",
+                0.40,
+                0.40,
+            ),
+            min_keypoint_confidence=self._read_float_setting(
+                "DS_FALL_MIN_KEYPOINT_CONFIDENCE",
+                0.30,
+                0.30,
+            ),
+            min_hip_confidence=self._read_float_setting(
+                "DS_FALL_MIN_HIP_CONFIDENCE",
+                0.30,
+                0.30,
+            ),
+        )
         self.track_manager = TrackManager(
             track_timeout=self._synthetic_track_timeout,
-            track_iou_threshold=float(os.environ.get("DS_TRACK_IOU_THRESHOLD", "0.50")),
-            min_track_frames=int(os.environ.get(
+            track_iou_threshold=self._read_float_setting(
+                "DS_TRACK_IOU_THRESHOLD",
+                config.processing.track_iou_threshold,
+                0.50,
+            ),
+            min_track_frames=self._read_int_setting(
                 "DS_MIN_TRACK_FRAMES",
-                str(config.processing.min_track_frames),
-            )),
+                config.processing.min_track_frames,
+                3,
+            ),
+            max_missed_frames=self._read_int_setting(
+                "DS_TRACK_MAX_MISSED_FRAMES",
+                config.processing.track_max_missed_frames,
+                30,
+            ),
         )
         self.violation_filter = CumulativeViolationFilter(
             history_max_size=config.processing.detection_history_size,
             violation_threshold=config.processing.violation_threshold,
+            violation_types={"head"},
             enabled=config.processing.cumulative_detection_enabled,
         )
+
+    @staticmethod
+    def _read_float_setting(env_name: str, config_value: Any, default: float) -> float:
+        raw_value = os.environ.get(env_name)
+        if raw_value is not None:
+            try:
+                return float(raw_value)
+            except (TypeError, ValueError):
+                logger.warning("잘못된 %s 값입니다: %r, 기본값 %.2f 사용", env_name, raw_value, default)
+                return default
+        if isinstance(config_value, bool):
+            return default
+        if isinstance(config_value, (int, float)):
+            return float(config_value)
+        return default
+
+    @staticmethod
+    def _read_int_setting(env_name: str, config_value: Any, default: int) -> int:
+        raw_value = os.environ.get(env_name)
+        if raw_value is not None:
+            try:
+                return int(raw_value)
+            except (TypeError, ValueError):
+                logger.warning("잘못된 %s 값입니다: %r, 기본값 %d 사용", env_name, raw_value, default)
+                return default
+        if isinstance(config_value, bool):
+            return default
+        if isinstance(config_value, int):
+            return config_value
+        return default
 
     def _init_ai_context(self, config: AppConfig) -> None:
         """얼굴/외형/구역 후처리 컨텍스트를 초기화한다."""
@@ -1706,9 +1829,9 @@ class DeepStreamProcessor(BaseProcessor):
 
     def _apply_existing_event_pipeline(
         self, camera_name: str, events: List[DetectionEvent]
-    ) -> List[DetectionEvent]:
+    ) -> None:
         if not events:
-            return []
+            return
 
         events = self._assign_synthetic_object_ids(camera_name, events)
         tracked_events, removed_ids = self.track_manager.update(camera_name, events)
@@ -1811,6 +1934,83 @@ class DeepStreamProcessor(BaseProcessor):
             return (0.05, 0.55, 1.0, 1.0)
         return (1.0, 0.75, 0.05, 1.0)
 
+    def _fall_skeleton_points(
+        self,
+        detection: Dict[str, Any],
+    ) -> Dict[int, Tuple[int, int]]:
+        if not detection.get("is_fall"):
+            return {}
+
+        keypoints = detection.get("keypoints")
+        if not keypoints:
+            return {}
+
+        threshold = float(
+            os.environ.get(
+                "DS_OSD_KEYPOINT_CONFIDENCE",
+                str(self._fall_detector.min_keypoint_confidence),
+            )
+        )
+        points: Dict[int, Tuple[int, int]] = {}
+        for idx, keypoint in enumerate(keypoints[:17]):
+            if len(keypoint) < 3:
+                continue
+            try:
+                x_coord = int(float(keypoint[0]))
+                y_coord = int(float(keypoint[1]))
+                confidence = float(keypoint[2])
+            except (TypeError, ValueError):
+                continue
+            if confidence >= threshold:
+                points[idx] = (x_coord, y_coord)
+        return points
+
+    def _add_fall_skeleton_overlay(
+        self,
+        batch_meta: Any,
+        frame_meta: Any,
+        detection: Dict[str, Any],
+    ) -> None:
+        points = self._fall_skeleton_points(detection)
+        if not points:
+            return
+
+        line_segments = [
+            (points[start], points[end])
+            for start, end in _COCO_SKELETON_EDGES
+            if start in points and end in points
+        ]
+        circles = list(points.values())
+        max_elements = int(os.environ.get("DS_OSD_MAX_ELEMENTS_PER_META", "16"))
+
+        for start in range(0, len(line_segments), max_elements):
+            display_meta = pyds.nvds_acquire_display_meta_from_pool(batch_meta)
+            chunk = line_segments[start : start + max_elements]
+            display_meta.num_lines = len(chunk)
+            for idx, ((x1, y1), (x2, y2)) in enumerate(chunk):
+                line_params = display_meta.line_params[idx]
+                line_params.x1 = int(x1)
+                line_params.y1 = int(y1)
+                line_params.x2 = int(x2)
+                line_params.y2 = int(y2)
+                line_params.line_width = 4
+                line_params.line_color.set(1.0, 0.0, 1.0, 1.0)
+            pyds.nvds_add_display_meta_to_frame(frame_meta, display_meta)
+
+        for start in range(0, len(circles), max_elements):
+            display_meta = pyds.nvds_acquire_display_meta_from_pool(batch_meta)
+            chunk = circles[start : start + max_elements]
+            display_meta.num_circles = len(chunk)
+            for idx, (x_coord, y_coord) in enumerate(chunk):
+                circle_params = display_meta.circle_params[idx]
+                circle_params.xc = int(x_coord)
+                circle_params.yc = int(y_coord)
+                circle_params.radius = 5
+                circle_params.circle_color.set(1.0, 0.0, 1.0, 1.0)
+                circle_params.has_bg_color = 1
+                circle_params.bg_color.set(0.0, 0.0, 0.0, 0.85)
+            pyds.nvds_add_display_meta_to_frame(frame_meta, display_meta)
+
     def _add_osd_overlays(
         self,
         batch_meta: Any,
@@ -1830,7 +2030,11 @@ class DeepStreamProcessor(BaseProcessor):
 
             for idx, detection in enumerate(chunk):
                 x, y, width, height = detection["box"]
-                label = str(detection["label"])
+                label = (
+                    "fall_detected"
+                    if detection.get("is_fall")
+                    else str(detection["label"])
+                )
                 confidence = float(detection["confidence"])
                 red, green, blue, alpha = self._label_color(label)
 
@@ -1854,6 +2058,9 @@ class DeepStreamProcessor(BaseProcessor):
                 text_params.text_bg_clr.set(0.0, 0.0, 0.0, 0.75)
 
             pyds.nvds_add_display_meta_to_frame(frame_meta, display_meta)
+
+        for detection in detections:
+            self._add_fall_skeleton_overlay(batch_meta, frame_meta, detection)
 
     def _detections_from_tensor(self, tensor_meta: Any, frame_meta: Any) -> List[Dict[str, Any]]:
 
@@ -2314,6 +2521,11 @@ class DeepStreamProcessor(BaseProcessor):
           [ ] GLib.MainLoop 생성 및 self._main_loop 에 저장
           [ ] 버스 메시지 핸들러 등록: bus.add_signal_watch() + connect("message", _on_bus_message)
         """
+        if not _ensure_deepstream_loaded():
+            raise RuntimeError(
+                "DeepStreamProcessor 는 NVIDIA DeepStream SDK 와 pyds 바인딩이 "
+                "설치된 환경(Jetson / Linux+GPU)에서만 실행할 수 있습니다."
+            )
         if not self._cameras:
             raise RuntimeError("DeepStream 파이프라인을 만들 카메라가 없습니다.")
         if not _INFER_CONFIG.exists():

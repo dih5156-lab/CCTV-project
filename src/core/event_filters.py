@@ -4,6 +4,7 @@ import logging
 import math
 import time
 from collections import deque
+from numbers import Real
 from threading import Lock
 from typing import Dict, Iterable, List, Optional, Set, Tuple
 
@@ -18,6 +19,20 @@ _DIRECTION_SPEED_THRESHOLD = 2.0  # px/frame 이하이면 「정지」로 판단
 __all__ = ["TrackManager", "CumulativeViolationFilter"]
 
 
+def _float_or_default(value: object, default: float) -> float:
+    if isinstance(value, Real):
+        parsed = float(value)
+        if math.isfinite(parsed):
+            return parsed
+    return default
+
+
+def _int_or_default(value: object, default: int) -> int:
+    if isinstance(value, Real):
+        return int(value)
+    return default
+
+
 class TrackManager:
     """IOU 기반 중복 제거를 위한 스레드 안전 추적 레지스트리."""
 
@@ -26,11 +41,13 @@ class TrackManager:
         track_timeout: float = 0.5,
         track_iou_threshold: float = 0.5,
         min_track_frames: int = 2,
+        max_missed_frames: int = 1,
     ) -> None:
-        self.track_timeout = track_timeout
-        self.track_iou_threshold = track_iou_threshold
-        self.min_track_frames = min_track_frames
-        self._tracks: Dict[str, Dict[int, Tuple[float, DetectionEvent, int]]] = {}
+        self.track_timeout = _float_or_default(track_timeout, 0.5)
+        self.track_iou_threshold = _float_or_default(track_iou_threshold, 0.5)
+        self.min_track_frames = _int_or_default(min_track_frames, 2)
+        self.max_missed_frames = max(0, _int_or_default(max_missed_frames, 1))
+        self._tracks: Dict[str, Dict[int, Tuple[float, DetectionEvent, int, int]]] = {}
         # (camera_id, object_id) → deque of (timestamp, cx, cy)
         self._pos_history: Dict[str, Dict[int, deque]] = {}
         self._lock = Lock()
@@ -52,11 +69,11 @@ class TrackManager:
 
                 track_id = event.object_id
                 current_ids.add(track_id)
-                _, _, existing_count = tracks.get(track_id, (now, event, 0))
+                _, _, existing_count, _ = tracks.get(track_id, (now, event, 0, 0))
                 frame_count = existing_count + 1
 
                 duplicates: List[int] = []
-                for existing_id, (_, existing_event, _) in list(tracks.items()):
+                for existing_id, (_, existing_event, _, _) in list(tracks.items()):
                     if existing_id == track_id or existing_event.event_type != event.event_type:
                         continue
                     if calculate_iou(event, existing_event) > self.track_iou_threshold:
@@ -67,7 +84,7 @@ class TrackManager:
                     removed_ids.add(old_id)
                     self._pos_history.get(camera_id, {}).pop(old_id, None)
 
-                tracks[track_id] = (now, event, frame_count)
+                tracks[track_id] = (now, event, frame_count, 0)
 
                 # 위치 히스토리 갱신 및 이동 방향 enrichment
                 cx = event.x + event.width // 2
@@ -85,11 +102,19 @@ class TrackManager:
 
                 filtered.append(event)
 
-            expired = [
-                track_id
-                for track_id, (last_seen, _, _) in list(tracks.items())
-                if track_id not in current_ids and now - last_seen > self.track_timeout
-            ]
+            expired: List[int] = []
+            for track_id, (last_seen, event, frame_count, missed_count) in list(tracks.items()):
+                if track_id in current_ids:
+                    continue
+                next_missed_count = missed_count + 1
+                if (
+                    now - last_seen > self.track_timeout
+                    or next_missed_count > self.max_missed_frames
+                ):
+                    expired.append(track_id)
+                    continue
+                tracks[track_id] = (last_seen, event, frame_count, next_missed_count)
+
             for track_id in expired:
                 tracks.pop(track_id, None)
                 removed_ids.add(track_id)

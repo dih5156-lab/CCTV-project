@@ -21,6 +21,7 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import pytest
 
+from src.core.ai._fall_detector import FallDetector
 from src.core.events import DetectionEvent, EventType
 from tests.conftest import make_event
 
@@ -469,6 +470,24 @@ class TestDetectFallFromKeypoints:
             keypoints, idx=0, bbox_width=50, bbox_height=200
         )
         assert result is False
+
+    def test_relaxed_angle_threshold_catches_diagonal_fall_candidate(self):
+        """DeepStream 현장 튜닝값처럼 각도 기준을 완화하면 대각선 낙상 후보를 잡는다."""
+        kpts = _make_kpts(
+            {
+                0: [100, 80, 0.9],
+                5: [95, 100, 0.9],
+                6: [105, 100, 0.9],
+                11: [159, 176, 0.9],
+                12: [169, 176, 0.9],
+            }
+        )
+
+        assert FallDetector()._check_fall(kpts, bbox_w=110, bbox_h=100) is False
+        assert (
+            FallDetector(angle_horizontal=55)._check_fall(kpts, bbox_w=110, bbox_h=100)
+            is True
+        )
 
 
 # ===========================================================================
