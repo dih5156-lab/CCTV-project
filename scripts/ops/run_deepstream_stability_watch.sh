@@ -26,6 +26,7 @@ Environment:
   ZONE_API_URL                       default: http://localhost:8765/health
   MODEL_API_URL                      default: http://localhost:8766/health
   FACE_API_URL                       default: http://localhost:8767/health
+  DEEPSTREAM_LOG_SINCE               default: stability watch start time
 EOF
 }
 
@@ -61,6 +62,7 @@ fi
 
 DURATION_SEC=$((DURATION_MIN * 60))
 START=$(date +%s)
+LOG_SINCE=${DEEPSTREAM_LOG_SINCE:-$(date -d "@$START" --iso-8601=seconds)}
 END=$((START + DURATION_SEC))
 SAMPLE=0
 PASS=0
@@ -146,7 +148,7 @@ docker_stats_check() {
 }
 
 deepstream_log_check() {
-    "${DOCKER_CMD[@]}" logs --tail 160 "$CONTAINER_NAME" 2>&1 | grep -E 'DeepStream stats|ERROR|WARNING|NvDsInfer|RestartCount|dropped=' || true
+    "${DOCKER_CMD[@]}" logs --since "$LOG_SINCE" --tail 160 "$CONTAINER_NAME" 2>&1 | grep -E 'DeepStream stats|ERROR|WARNING|NvDsInfer|RestartCount|dropped=' || true
 }
 
 smoke_check() {
@@ -183,6 +185,7 @@ log "  간격: ${INTERVAL_SEC}초"
 log "  컨테이너: ${CONTAINER_NAME}"
 log "  로그 파일: ${LOG_FILE}"
 log "  요약 파일: ${SUMMARY_FILE}"
+log "  컨테이너 로그 기준: ${LOG_SINCE} 이후"
 log "  시작: $(date '+%Y-%m-%d %H:%M:%S %Z')"
 log "=========================================="
 

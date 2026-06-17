@@ -14,8 +14,9 @@ Usage:
 Defaults:
   Runs deployment smoke and data-flow smoke checks only.
   With --with-deepstream, also runs scripts/ops/run_deepstream_stability_watch.sh.
-    Runtime secret check uses RUNTIME_ENV_FILE when set, otherwise .env,
-    and falls back to .env.jetson only when .env is absent.
+    Runtime secret check uses RUNTIME_ENV_FILE when set. Otherwise it uses
+    .env.jetson when the running compose project is edgex-jetson, then .env,
+    and falls back to .env.jetson when .env is absent.
 
 Examples:
   ./scripts/ops/run_operation_check.sh
@@ -29,8 +30,16 @@ DEEPSTREAM_DURATION_MIN=30
 DEEPSTREAM_INTERVAL_SEC=30
 RUNTIME_ENV_FILE=${RUNTIME_ENV_FILE:-}
 
+running_jetson_stack() {
+    docker inspect \
+        --format '{{ index .Config.Labels "com.docker.compose.project" }}' \
+        cctv-ai-engine 2>/dev/null | grep -qx 'edgex-jetson'
+}
+
 if [[ -z "$RUNTIME_ENV_FILE" ]]; then
-    if [[ -f .env ]]; then
+    if [[ -f .env.jetson ]] && running_jetson_stack; then
+        RUNTIME_ENV_FILE=.env.jetson
+    elif [[ -f .env ]]; then
         RUNTIME_ENV_FILE=.env
     elif [[ -f .env.jetson ]]; then
         RUNTIME_ENV_FILE=.env.jetson

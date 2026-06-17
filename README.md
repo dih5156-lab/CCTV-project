@@ -223,6 +223,10 @@ YOLO("models/yolov8n.pt").export(format="engine", device=0)
 | `APPEARANCE_RUNTIME` | 속성 모델 런타임 | `auto` / `onnxruntime` / `paddle` |
 | `APPEARANCES_DB` | 외형 로그 SQLite 경로 | `/app/data/runtime/appearances.db` |
 | `DISPLAY_ENABLED` | 화면 출력 | `true` / `false` |
+| `TRACK_TIMEOUT_SECONDS` | 미감지 트랙 유지 시간 | `1.0` |
+| `TRACK_MAX_MISSED_FRAMES` | 연속 미감지 허용 프레임 수 | `2` |
+| `TRACK_IOU_THRESHOLD` | 중복 트랙 판단 IoU 임계값 | `0.5` |
+| `MIN_TRACK_FRAMES` | 이벤트 인정 전 최소 연속 추적 프레임 | `2` |
 | `MQTT_BROKER` | MQTT 브로커 호스트 | `localhost` |
 | `USE_GSTREAMER` | Jetson NVDec 하드웨어 디코딩 | `1` (Jetson 전용) |
 

@@ -90,6 +90,9 @@ _debug_out.txt
 _test_results.txt
 test-results.xml
 
+# 로컬 개발/검증 도구
+tooling/node-*/
+
 # pytest 캐시
 .pytest_cache/
 
