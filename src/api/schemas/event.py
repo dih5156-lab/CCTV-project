@@ -73,6 +73,8 @@ class EventOut(BaseModel):
     object_id: Optional[int] = None
     metadata: Optional[Dict[str, Any]] = None
     received_at: Optional[datetime] = None
+    priority: int = Field(default=20, ge=0)
+    risk_level: str = "normal"
 
 
 class AlertAccepted(BaseModel):

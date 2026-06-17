@@ -9,6 +9,7 @@ from typing import Any
 
 import httpx
 
+from ..event_routing import mark_alert_stored_by_public_api
 from ..time_utils import now_kst_iso
 from .dependencies._settings import INTERNAL_SERVICE_TOKEN as _INTERNAL_TOKEN
 from .schemas.event import AlertIn
@@ -65,6 +66,7 @@ def _set_if_not_none(payload: dict[str, Any], key: str, value: Any) -> None:
 
 def build_alert_action_payload(alert: AlertIn) -> dict[str, Any]:
     """Build the Action Layer payload for a validated alert request."""
+    metadata = mark_alert_stored_by_public_api(alert.metadata)
     action_payload: dict[str, Any] = {
         "camera_id": alert.camera_id,
         "type": alert.event_type.value,
@@ -78,7 +80,7 @@ def build_alert_action_payload(alert: AlertIn) -> dict[str, Any]:
         alert.bbox.model_dump() if alert.bbox is not None else None,
     )
     _set_if_not_none(action_payload, "object_id", alert.object_id)
-    _set_if_not_none(action_payload, "metadata", alert.metadata)
+    action_payload["metadata"] = metadata
     return action_payload
 
 

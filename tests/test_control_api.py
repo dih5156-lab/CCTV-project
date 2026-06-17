@@ -28,6 +28,8 @@ def test_normalize_pending_item_supports_payload_fallbacks() -> None:
     assert item.camera_id == "cam-01"
     assert item.event_type == "helmet"
     assert item.severity == "high"
+    assert item.priority == 20
+    assert item.risk_level == "normal"
     assert item.queued_at == "2026-04-24T10:00:00Z"
     assert item.site_id == "site-a"
     assert item.topic == "cctv/ai/events/cam-01/helmet"
@@ -52,6 +54,8 @@ def test_normalize_pending_item_supports_nested_event_confidence() -> None:
 
     assert item.confidence == 0.87
     assert item.severity == "warning"
+    assert item.priority == 2
+    assert item.risk_level == "warning"
     assert item.display_message == "안전모 미착용 확인"
     assert item.tts_message == "안전모를 착용해 주세요."
 
@@ -99,4 +103,6 @@ async def test_list_pending_returns_normalized_schema() -> None:
     assert second.event_id == "evt-2"
     assert second.camera_id == "cam-02"
     assert second.event_type == "fall_detected"
+    assert second.priority == 0
+    assert second.risk_level == "critical"
     assert second.queued_at == "2026-04-24T09:05:00Z"

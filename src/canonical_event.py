@@ -8,6 +8,8 @@ from typing import Any, Dict, Mapping, Optional
 
 from .time_utils import now_kst_iso, timestamp_to_kst_iso
 
+SKIP_ALERT_FORWARD_METADATA_KEY = "skip_alert_forward"
+
 
 def _utc_now_iso() -> str:
     return now_kst_iso()
@@ -185,18 +187,36 @@ def build_event_id(
 def get_payload_camera_id(payload: Mapping[str, Any]) -> str:
     event_device = payload.get("device")
     if isinstance(event_device, Mapping):
-        value = _first_mapping_value(event_device, ("camera_id", "device_id", "dev_eui"))
+        value = _first_mapping_value(
+            event_device,
+            ("camera_id", "cameraId", "device_id", "deviceId", "dev_eui", "devEui"),
+        )
         if value:
             return str(value)
-    return str(_first_mapping_value(payload, ("camera_id", "device_id", "dev_eui")) or "unknown")
+    return str(
+        _first_mapping_value(
+            payload,
+            (
+                "camera_id",
+                "cameraId",
+                "source_id",
+                "device_id",
+                "deviceId",
+                "dev_eui",
+                "devEui",
+                "camera",
+            ),
+        )
+        or "unknown"
+    )
 
 
 def get_payload_event_type(payload: Mapping[str, Any]) -> str:
     return str(
         _event_or_payload_value(
             payload,
-            ("event_type", "type"),
-            ("type", "event_type"),
+            ("event_type", "eventType", "type"),
+            ("type", "event_type", "eventType", "label_hint", "sensor_type", "status"),
         )
         or "unknown"
     )
@@ -221,6 +241,25 @@ def get_payload_confidence(payload: Mapping[str, Any]) -> Optional[float]:
         return None
 
 
+def should_skip_alert_forward(payload: Mapping[str, Any]) -> bool:
+    metadata = payload.get("metadata")
+    if not isinstance(metadata, Mapping):
+        return False
+    return bool(metadata.get(SKIP_ALERT_FORWARD_METADATA_KEY))
+
+
+def get_payload_metadata(payload: Mapping[str, Any]) -> Dict[str, Any]:
+    metadata = payload.get("metadata")
+    if isinstance(metadata, Mapping):
+        return dict(metadata)
+    raw = payload.get("raw")
+    if isinstance(raw, Mapping):
+        raw_metadata = raw.get("metadata")
+        if isinstance(raw_metadata, Mapping):
+            return dict(raw_metadata)
+    return {}
+
+
 def get_payload_display_message(payload: Mapping[str, Any]) -> Optional[str]:
     value = _event_or_payload_value(
         payload,
@@ -238,7 +277,12 @@ def get_payload_message_id(payload: Mapping[str, Any]) -> Optional[str]:
 
 
 def get_payload_occurred_at(payload: Mapping[str, Any]) -> Optional[str]:
-    value = payload.get("occurred_at") or payload.get("timestamp")
+    value = (
+        payload.get("occurred_at")
+        or payload.get("timestamp")
+        or payload.get("received_at")
+        or payload.get("queued_at")
+    )
     if value:
         return _coerce_iso_timestamp(value)
     return None

@@ -3,6 +3,11 @@ from src.api._event_forwarding import (
     build_alert_action_topic,
 )
 from src.api.schemas.event import AlertIn
+from src.canonical_event import SKIP_ALERT_FORWARD_METADATA_KEY
+from src.event_routing import (
+    ALERT_STORAGE_OWNER_METADATA_KEY,
+    PUBLIC_API_ALERT_STORAGE_OWNER,
+)
 
 
 def test_build_alert_action_payload_keeps_optional_fields():
@@ -25,7 +30,11 @@ def test_build_alert_action_payload_keeps_optional_fields():
         "timestamp": 1700000000.0,
         "bbox": {"x": 10, "y": 20, "width": 100, "height": 80},
         "object_id": 7,
-        "metadata": {"zone_id": "zone-A"},
+        "metadata": {
+            "zone_id": "zone-A",
+            SKIP_ALERT_FORWARD_METADATA_KEY: True,
+            ALERT_STORAGE_OWNER_METADATA_KEY: PUBLIC_API_ALERT_STORAGE_OWNER,
+        },
     }
 
 

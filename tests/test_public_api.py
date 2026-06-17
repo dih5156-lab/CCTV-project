@@ -16,6 +16,11 @@ import httpx
 import pytest
 
 from src.api.app import app
+from src.canonical_event import SKIP_ALERT_FORWARD_METADATA_KEY
+from src.event_routing import (
+    ALERT_STORAGE_OWNER_METADATA_KEY,
+    PUBLIC_API_ALERT_STORAGE_OWNER,
+)
 
 
 class SyncASGIClient:
@@ -229,7 +234,11 @@ class TestAlerts:
             "timestamp": 1700000000.0,
             "bbox": {"x": 10, "y": 20, "width": 100, "height": 80},
             "object_id": 7,
-            "metadata": {"zone_id": "zone-A"},
+            "metadata": {
+                "zone_id": "zone-A",
+                SKIP_ALERT_FORWARD_METADATA_KEY: True,
+                ALERT_STORAGE_OWNER_METADATA_KEY: PUBLIC_API_ALERT_STORAGE_OWNER,
+            },
             "topic": "cctv/ai/events/cam-01/helmet",
         }
 
@@ -825,6 +834,44 @@ class TestEvents:
         finally:
             events_module._ALERT_LOG = original
 
+    def test_list_events_reads_nested_alert_event_alias_fields(
+        self, client: SyncASGIClient, tmp_path: Path
+    ) -> None:
+        """wrapper 내부 이벤트가 cameraId/event_type을 써도 파싱한다."""
+        import src.api.v1.events as events_module
+
+        log_file = tmp_path / "test_nested_alias_alert_event.jsonl"
+        entry = {
+            "receivedAt": "2026-05-06T01:57:55.574782+00:00",
+            "payload": {
+                "topic": "cctv/ai/events/camera_alias/fall_detected",
+                "event": {
+                    "cameraId": "camera_alias",
+                    "event_type": "fall_detected",
+                    "severity": "critical",
+                    "timestamp": 1778032673.848273,
+                    "raw": {
+                        "metadata": {"backend": "alias"},
+                    },
+                },
+            },
+        }
+        log_file.write_text(json.dumps(entry) + "\n", encoding="utf-8")
+
+        original = events_module._ALERT_LOG
+        events_module._ALERT_LOG = log_file
+        try:
+            resp = client.get("/api/v1/events?camera_id=camera_alias&event_type=fall_detected")
+            assert resp.status_code == 200
+            body = resp.json()
+            assert body["total"] == 1
+            item = body["items"][0]
+            assert item["camera_id"] == "camera_alias"
+            assert item["event_type"] == "fall_detected"
+            assert item["metadata"] == {"backend": "alias"}
+        finally:
+            events_module._ALERT_LOG = original
+
     def test_list_events_reads_canonical_payload(
         self, client: SyncASGIClient, tmp_path: Path
     ) -> None:
@@ -869,6 +916,45 @@ class TestEvents:
             assert item["bbox"] == {"x": 11, "y": 22, "width": 33, "height": 44}
             assert item["object_id"] == 99
             assert item["metadata"] == {"backend": "deepstream"}
+            assert item["priority"] == 0
+            assert item["risk_level"] == "critical"
+        finally:
+            events_module._ALERT_LOG = original
+
+    def test_list_events_preserves_fall_skeleton_metadata(
+        self, client: SyncASGIClient, tmp_path: Path
+    ) -> None:
+        """낙상 이벤트 skeleton metadata를 API 응답까지 보존한다."""
+        import src.api.v1.events as events_module
+
+        keypoints = [[float(idx), float(idx + 1), 0.9] for idx in range(17)]
+        log_file = tmp_path / "test_fall_skeleton_event.jsonl"
+        entry = {
+            "receivedAt": "2026-05-06T01:57:55.574782+00:00",
+            "payload": {
+                "camera_id": "camera_1",
+                "type": "fall_detected",
+                "severity": "critical",
+                "confidence": 0.96,
+                "timestamp": 1778032673.848273,
+                "keypoints": keypoints,
+                "metadata": {
+                    "skeleton_keypoints": keypoints,
+                    "skeleton_format": "coco17_xyc",
+                },
+            },
+        }
+        log_file.write_text(json.dumps(entry) + "\n", encoding="utf-8")
+
+        original = events_module._ALERT_LOG
+        events_module._ALERT_LOG = log_file
+        try:
+            resp = client.get("/api/v1/events?event_type=fall_detected&limit=1")
+            assert resp.status_code == 200
+            item = resp.json()["items"][0]
+            assert item["event_type"] == "fall_detected"
+            assert item["metadata"]["skeleton_keypoints"] == keypoints
+            assert item["metadata"]["skeleton_format"] == "coco17_xyc"
         finally:
             events_module._ALERT_LOG = original
 

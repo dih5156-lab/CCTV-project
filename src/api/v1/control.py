@@ -16,6 +16,7 @@ from typing import Any, List, Mapping
 
 from fastapi import APIRouter, Depends, Path
 
+from ...event_priority import event_priority, event_risk_level
 from .._action_proxy import proxy_action_request
 from ..dependencies._settings import ACTION_LAYER_URL as _ACTION_URL
 from ..dependencies.auth import verify_api_key
@@ -37,12 +38,23 @@ def _first_non_empty_str(*values: Any) -> str | None:
     return None
 
 
+def _coerce_priority(value: Any) -> int | None:
+    if value is None:
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
 def _normalize_pending_item(item: Mapping[str, Any]) -> PendingEventOut:
     """Action Layer 원본 payload를 Public API 스키마로 정규화한다."""
     payload = item.get("payload")
     payload_map = payload if isinstance(payload, Mapping) else {}
     event = payload_map.get("event")
     event_map = event if isinstance(event, Mapping) else {}
+    priority_payload = payload_map if payload_map else item
+    priority_value = _coerce_priority(item.get("priority"))
     return PendingEventOut(
         event_id=_first_non_empty_str(
             item.get("event_id"),
@@ -86,6 +98,9 @@ def _normalize_pending_item(item: Mapping[str, Any]) -> PendingEventOut:
             payload_map.get("severity"),
             event_map.get("severity"),
         ),
+        priority=priority_value if priority_value is not None else event_priority(priority_payload),
+        risk_level=_first_non_empty_str(item.get("risk_level"), item.get("riskLevel"))
+        or event_risk_level(priority_payload),
         display_message=_first_non_empty_str(
             item.get("display_message"),
             item.get("displayMessage"),

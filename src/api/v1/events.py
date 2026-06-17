@@ -13,6 +13,14 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Query, Request
 
+from ...canonical_event import (
+    get_payload_camera_id,
+    get_payload_confidence,
+    get_payload_event_type,
+    get_payload_metadata,
+    get_payload_severity,
+)
+from ...event_priority import event_priority, event_risk_level
 from ...time_utils import coerce_timestamp_seconds
 from ..dependencies._settings import ALERT_LOG_PATH as _ALERT_LOG
 from ..dependencies.auth import verify_api_key
@@ -41,7 +49,10 @@ def _event_payload(entry: dict) -> dict:
         and "topic" in payload
         and (
             "camera_id" in nested_event
+            or "cameraId" in nested_event
             or "type" in nested_event
+            or "event_type" in nested_event
+            or "eventType" in nested_event
             or "raw" in nested_event
         )
     )
@@ -50,38 +61,26 @@ def _event_payload(entry: dict) -> dict:
     return payload
 
 
-def _payload_camera_id(payload: dict) -> Optional[str]:
-    device = payload.get("device") if isinstance(payload.get("device"), dict) else {}
-    value = payload.get("camera_id") or device.get("camera_id") or payload.get("device_id")
-    return str(value) if value else None
-
-
-def _payload_event_type(payload: dict, event_meta: dict) -> str:
-    return (
-        payload.get("type")
-        or payload.get("event_type")
-        or event_meta.get("event_type")
-        or "other"
-    )
-
-
 def _event_item_from_entry(entry: dict) -> dict:
     payload = _event_payload(entry)
     raw = payload.get("raw") if isinstance(payload.get("raw"), dict) else {}
-    event_meta = payload.get("event") if isinstance(payload.get("event"), dict) else {}
+    confidence = get_payload_confidence(payload)
+    priority = event_priority(payload)
     return {
-        "camera_id": _payload_camera_id(payload),
-        "event_type": _payload_event_type(payload, event_meta),
-        "severity": payload.get("severity", event_meta.get("severity", "normal")),
-        "confidence": payload.get("confidence", event_meta.get("confidence", 0.0)),
+        "camera_id": get_payload_camera_id(payload),
+        "event_type": get_payload_event_type(payload),
+        "severity": get_payload_severity(payload) or "normal",
+        "confidence": confidence if confidence is not None else 0.0,
         "timestamp": coerce_timestamp_seconds(
             payload.get("timestamp") or payload.get("occurred_at"),
             entry.get("receivedAt"),
         ),
         "bbox": payload.get("bbox") or raw.get("bbox"),
         "object_id": payload.get("object_id", raw.get("object_id")),
-        "metadata": payload.get("metadata") or raw.get("metadata"),
+        "metadata": get_payload_metadata(payload) or None,
         "received_at": entry.get("receivedAt"),
+        "priority": priority,
+        "risk_level": event_risk_level(payload),
     }
 
 

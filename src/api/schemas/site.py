@@ -166,6 +166,8 @@ class PendingEventOut(BaseModel):
         default=None,
         description="이벤트 심각도",
     )
+    priority: int = Field(default=20, ge=0, description="낮을수록 먼저 처리할 이벤트 우선순위")
+    risk_level: str = Field(default="normal", description="우선순위 기반 위험도 레벨")
     display_message: Optional[str] = Field(
         default=None,
         description="전광판 등 표시 장치에 출력할 문구",

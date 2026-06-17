@@ -21,6 +21,8 @@ from ..canonical_event import (
     get_payload_severity,
     get_payload_tts_message,
 )
+from ..event_priority import event_priority, event_risk_level
+from ..event_routing import decide_alert_forward
 from ..time_utils import now_kst_iso
 from .cctv_metrics import device_commands as _device_commands
 
@@ -218,6 +220,8 @@ class _EventRepo:
             "alarm_played": bool(row["alarm_played"]),
             "http_sent": bool(row["http_sent"]),
             "payload": payload,
+            "priority": event_priority(payload),
+            "risk_level": event_risk_level(payload),
         }
 
 
@@ -367,6 +371,8 @@ class _SiteRegistry:
                     "event_type": get_payload_event_type(info["payload"]),
                     "confidence": get_payload_confidence(info["payload"]),
                     "severity": get_payload_severity(info["payload"]),
+                    "priority": event_priority(info["payload"]),
+                    "risk_level": event_risk_level(info["payload"]),
                     "display_message": get_payload_display_message(info["payload"]),
                     "tts_message": get_payload_tts_message(info["payload"]),
                     "topic": info.get("topic"),
@@ -411,8 +417,8 @@ class _AlarmCoordinator:
         return pattern_index == len(pat_parts) and topic_index == len(top_parts)
 
     def should_alarm(self, topic: str, payload: Dict) -> bool:
-        event_type = str(payload.get("type", "")).lower()
-        severity = str(payload.get("severity", "")).lower()
+        event_type = get_payload_event_type(payload).lower()
+        severity = get_payload_severity(payload).lower()
         if event_type in self._DEVICE_OUTPUT_SUPPRESSED:
             return False
         return (
@@ -528,8 +534,15 @@ class _ActionExecutor:
                     alarm_played = True
                 _device_commands.labels(device="siren", status="ok" if siren_ok else "skip").inc()
 
-        self._forwarder.forward(topic, payload)
-        http_sent = self._forwarder.has_targets
+        forward_decision = decide_alert_forward(
+            payload,
+            has_targets=self._forwarder.has_targets,
+        )
+        if forward_decision.reason == "already_stored":
+            logger.debug("중복 Alert 저장 방지를 위해 HTTP forward 생략: camera=%s type=%s", camera_id, event_type)
+        elif forward_decision.should_forward:
+            self._forwarder.forward(topic, payload)
+        http_sent = forward_decision.http_sent
 
         self._repo.save(topic, payload, alarm_played=alarm_played, http_sent=http_sent)
         self._publish_status(

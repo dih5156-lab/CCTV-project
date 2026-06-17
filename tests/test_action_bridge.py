@@ -13,6 +13,8 @@ from src.services.action_bridge import (
     _AlarmCoordinator,
     _SiteRegistry,
 )
+from src.services._action_bridge_support import _EventRepo
+from src.canonical_event import SKIP_ALERT_FORWARD_METADATA_KEY
 
 # ---------------------------------------------------------------------------
 # SiteConfig
@@ -76,6 +78,30 @@ class TestSiteConfig:
         assert restored.confidence_threshold == 0.82
         assert restored.display_message == "전광판 출력"
         assert restored.tts_message == "스피커 출력"
+
+
+# ---------------------------------------------------------------------------
+# _EventRepo
+# ---------------------------------------------------------------------------
+
+
+class TestEventRepo:
+    def test_list_recent_includes_priority_fields(self, tmp_path):
+        repo = _EventRepo(tmp_path / "action_events.db")
+        repo.init()
+        payload = {
+            "camera_id": "cam1",
+            "type": "fall_detected",
+            "severity": "critical",
+            "confidence": 0.98,
+        }
+
+        repo.save("cctv/ai/events/cam1/fall_detected", payload, alarm_played=True, http_sent=False)
+        rows = repo.list_recent()
+
+        assert len(rows) == 1
+        assert rows[0]["priority"] == 0
+        assert rows[0]["risk_level"] == "critical"
 
 
 # ---------------------------------------------------------------------------
@@ -192,6 +218,11 @@ class TestSiteRegistry:
         assert len(pending) == 2
         event_ids = {p["event_id"] for p in pending}
         assert {"e1", "e2"} == event_ids
+        by_id = {p["event_id"]: p for p in pending}
+        assert by_id["e1"]["priority"] == 30
+        assert by_id["e1"]["risk_level"] == "low"
+        assert by_id["e2"]["priority"] == 2
+        assert by_id["e2"]["risk_level"] == "warning"
 
     def test_pending_thread_safe(self):
         """동시 push/pop 에서 예외 없어야 함."""
@@ -249,6 +280,17 @@ class TestAlarmCoordinator:
     def test_critical_severity_alarms(self):
         coord = self._coord()
         assert coord.should_alarm("other/topic", {"type": "helmet", "severity": "critical"}) is True
+
+    def test_canonical_event_shape_alarms(self):
+        coord = self._coord()
+        payload = {
+            "event": {
+                "event_type": "fall_detected",
+                "severity": "critical",
+            }
+        }
+
+        assert coord.should_alarm("other/topic", payload) is True
 
     def test_person_event_does_not_alarm_output_devices(self):
         coord = self._coord(topics={"cctv/ai/events/+/person"})
@@ -515,6 +557,23 @@ class TestActionBridgeStatusPublishing:
         )
         assert bridge._signboard.display.call_count == 1
         assert bridge._signboard.display.call_args.kwargs["text"] == "기울기 이상 감지"
+
+    def test_execute_action_can_skip_duplicate_alert_forward(self):
+        bridge = self._make_bridge()
+
+        bridge._execute_action(
+            "cctv/ai/events/camera_1/fall_detected",
+            {
+                "camera_id": "camera_1",
+                "type": "fall_detected",
+                "severity": "critical",
+                "metadata": {SKIP_ALERT_FORWARD_METADATA_KEY: True},
+            },
+        )
+
+        bridge._forwarder.forward.assert_not_called()
+        bridge._repo.save.assert_called_once()
+        assert bridge._repo.save.call_args.kwargs["http_sent"] is False
 
     def test_list_output_devices_reports_reachability(self, monkeypatch):
         bridge = self._make_bridge()
