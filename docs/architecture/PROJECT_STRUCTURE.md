@@ -41,6 +41,8 @@ CCTV-project/
 ├── config/                         # DeepStream, 라벨, 이벤트 타입, 외형 분석 설정
 ├── models/                         # YOLO, pose, helmet, PP-Human, TensorRT 캐시
 ├── data/                           # SQLite DB, crop 이미지, 런타임 데이터
+├── external/                       # 외부 학습 저장소/공개 데이터셋 연결 지점
+├── falldata/                       # 공공 낙상 데이터 패키지, git 제외
 ├── known_faces/                    # 얼굴 인식용 샘플/등록 이미지
 ├── edgex/                          # EdgeX device profile, ASC 설정, 등록 스크립트
 ├── kuiper/                         # eKuiper 룰 파일
@@ -67,9 +69,13 @@ CCTV-project/
 
 ```text
 .venv/
+.venv-falldata/
+.venv-mediapipe/
+.venv-par/
 .pytest_cache/
 __pycache__/
 tmp_test_dirs/
+falldata/
 data/runtime/appearance_crops/
 data/crops/
 ```
@@ -219,6 +225,7 @@ src/core/ai/
 ├── _object_detection_pipeline.py   # 사람/헬멧/객체 탐지
 ├── _object_tracker.py              # track/object_id 관리
 ├── _fall_detector.py               # 낙상 판정
+├── _falldata_aux.py                # 공공 falldata RF 모델 기반 낙상 보조 검증
 ├── _face_recognition_pipeline.py   # 얼굴 인식
 ├── _appearance_pipeline.py         # 외형 속성 분석 흐름
 ├── _appearance_analyzer.py         # HSV/PP-Human 분석
@@ -233,6 +240,7 @@ src/core/ai/
 - 사람 감지
 - 헬멧/머리 감지
 - 낙상 감지
+- 낙상 보조 검증: pose 후보를 MediaPipe feature + RF 모델로 shadow/confirm 확인
 - 위험 구역 침입/체류/객체 감지
 - 얼굴 인식
 - 외형 속성 분석과 검색
@@ -258,6 +266,8 @@ src/api/
     ├── cameras.py                  # /api/v1/cameras
     ├── sites.py                    # /api/v1/sites
     ├── control.py                  # /api/v1/control/*
+    ├── event_reviews.py            # /api/v1/event-reviews*
+    ├── sensor_readings.py          # /api/v1/sensor-readings
     ├── appearances.py              # /api/v1/appearances*
     ├── search.py                   # /api/v1/search*
     └── metrics.py                  # /api/v1/metrics
@@ -269,6 +279,7 @@ Public API 특징:
 - Swagger: `http://localhost:9000/docs`
 - Health: `GET /api/v1/health`
 - Readiness: `GET /api/v1/readiness`
+- 이벤트 검수: `POST /api/v1/event-reviews`, `GET /api/v1/event-reviews/summary`
 - 응답 형식: `{ success, data, error, timestamp }` 또는 pagination wrapper
 - 운영 인증: `X-API-Key`
 - CORS: `CORS_ORIGINS`
@@ -284,8 +295,10 @@ src/services/
 ├── appearance_status.py            # 외형 검색 준비 상태 계산
 ├── camera_model_api.py             # 카메라별 모델 on/off API
 ├── cctv_metrics.py                 # Prometheus metric
+├── event_review.py                 # 이벤트 맞음/오탐/애매함 검수 저장
 ├── external_ingest.py              # 외부 MQTT/NC ingest
 ├── face_api.py                     # 얼굴 등록/삭제/조회 API
+├── sensor_classifier.py            # TLV 센서 위험 상태 분류
 ├── sensor_bridge.py                # 센서 이벤트 bridge
 ├── sensor_rule_bridge.py           # 센서 룰 bridge
 ├── stream_api.py                   # MJPEG 카메라 스트림 API
@@ -452,10 +465,19 @@ Swagger      http://localhost:9000/docs
 ```text
 config/
 ├── event_type_map.json
+├── appearance_pa100k_labels.json
 ├── appearance_pphuman_labels.example.json
+├── sensor_devices.example.json
+├── sensor_devices.json
+├── nginx/
+│   ├── edgex-status.conf
+│   ├── public-demo.conf
+│   └── public-demo.conf.template
 └── deepstream/
     ├── config_infer_primary.txt
     ├── config_infer_helmet.txt
+    ├── config_infer_pa100k.txt
+    ├── config_infer_pphuman.txt
     ├── config_tracker.txt
     ├── config_tracker_nvdcf.yml
     ├── config_streammux.txt
@@ -472,6 +494,8 @@ models/
 ├── yolov8n.pt
 ├── yolov8n-pose.pt
 ├── yolov8m-pose.pt
+├── pa100k_resnet50_attr.onnx
+├── pa100k_resnet50_attr.engine
 ├── model_manifest.json
 ├── pphuman_attribute_src/
 └── trt_cache/
@@ -598,6 +622,28 @@ Jetson/DeepStream 운영용 compose입니다.
 - TensorRT/DeepStream/GStreamer 경로 설정
 - Stream API 기본 포트 `8769`
 
+## 스크립트 구조
+
+```text
+scripts/
+├── cleanup/                        # 런타임 로그/crop 정리
+├── convert/                        # ONNX/TensorRT/export 변환
+├── datasets/                       # 공개 데이터셋 점검/manifest/feature 변환
+├── dev/                            # push 전 로컬 검사
+├── health/                         # 배포/런타임/모델 readiness 점검
+├── ops/                            # 운영 점검, 장비 확인, 평가
+└── smoke/                          # 배포/데이터 흐름 smoke test
+```
+
+falldata 관련 주요 명령:
+
+```text
+scripts/datasets/check_falldata_package.py
+scripts/datasets/extract_falldata_mediapipe_features.py
+scripts/datasets/smoke_falldata_video_model.py
+scripts/health/check_falldata_aux.py
+```
+
 ## 주요 데이터 흐름
 
 ### 영상 AI 이벤트
@@ -608,6 +654,8 @@ cameras.json / RTSP / webcam
   -> src/bootstrap/runtime.py
   -> VideoProcessor 또는 DeepStreamProcessor
   -> AIAnalyzer 또는 DeepStream probe
+  -> pose 낙상 후보 생성
+  -> 선택: falldata 보조 검증 shadow/confirm
   -> DetectionEvent
   -> event filter / zone detection / debounce
   -> MQTT cctv/ai/events/...
@@ -640,7 +688,7 @@ web/public-demo.html
 ```text
 YOLO person bbox
   -> AppearancePipeline
-  -> HSV 또는 PP-Human backend
+  -> HSV 또는 PP-Human/PA100K backend
   -> AppearanceLog SQLite
   -> /api/v1/search
   -> crop 이미지 조회
@@ -677,6 +725,7 @@ docs/
 │   ├── KUIPER_RULE_ENGINE.md
 │   ├── PROJECT_OVERVIEW.md
 │   └── PROJECT_STRUCTURE.md
+├── falldata_integration_notes.md
 ├── operations/
 │   ├── DEEPSTREAM_PERFORMANCE_STABILITY_2026-05-26.md
 │   ├── DEVICE_INTEGRATION_CHECK_2026-05-29.md
@@ -710,6 +759,7 @@ tooling/agents/  # skill 작성 시 참고하는 원본 agent 문서 (참고 자
 - Public API, auth, health, metrics
 - ActionBridge, SensorBridge, EdgeX adapter
 - AI analyzer, YOLO postprocess, DeepStream factory
+- falldata 낙상 보조 검증
 - appearance/search/face recognition
 - zone detection, geometry
 - Dockerfile/compose/runtime assumption
@@ -719,22 +769,13 @@ tooling/agents/  # skill 작성 시 참고하는 원본 agent 문서 (참고 자
 
 ```text
 scripts/
-├── check_alarm_devices.py
-├── check_compose_runtime_assumptions.py
-├── check_deployment_readiness.py
-├── check_dockerfile_sources.py
-├── check_field_network.py
-├── check_jetson_edgex_stack.py
-├── check_model_report.py
-├── check_monitoring_config.py
-├── check_offline_readiness.py
-├── check_sensitive_defaults.py
-├── convert_pt_to_onnx.py
-├── convert_onnx_to_engine.py
-├── evaluate_detection.py
-├── smoke_test_data_flow.py
-├── smoke_test_deployment.py
-└── test_jetson_docker.sh
+├── cleanup/                        # cleanup_runtime_data.sh 등
+├── convert/                        # convert_pt_to_onnx.py, export_rethinking_par_onnx.py 등
+├── datasets/                       # PAR/falldata 데이터셋 점검과 변환
+├── dev/                            # check_before_push.sh
+├── health/                         # readiness, 보안, 모델, falldata 점검
+├── ops/                            # 운영 점검, 평가, 장비 확인
+└── smoke/                          # smoke_test_deployment.py, smoke_test_data_flow.py
 ```
 
 내일 시연 전 최소 확인:

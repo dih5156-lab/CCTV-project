@@ -44,6 +44,7 @@ from ._constants import (
 )
 from ._face_recognition_pipeline import FaceRecognitionPipeline
 from ._fall_detector import FallDetector
+from ._falldata_aux import FallDataAuxVerifier
 from ._object_detection_pipeline import ObjectDetectionPipeline
 from ._object_tracker import ObjectTracker
 from ._yolo_helpers import (
@@ -140,6 +141,7 @@ class AIAnalyzer:
         # 전담 컴포넌트
         self._tracker      = ObjectTracker()
         self._fall         = FallDetector(fall_height_ratio)
+        self._falldata_aux = FallDataAuxVerifier()
         self._face_recognizer = None
         self._face_pipeline = FaceRecognitionPipeline(lambda: self.face_recognizer)
         self._appearance   = AppearanceAnalyzer(
@@ -705,6 +707,7 @@ class AIAnalyzer:
         우선순위: 낙상(최우선) → 사람 → 얼굴 → 헬멧
         낙상이 감지된 사람은 헬멧 탐지 대상에서 제외한다.
         """
+        self._falldata_aux.add_frame(frame)
         return self._object_pipeline.run(
             frame,
             use_helmet=use_helmet,

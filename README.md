@@ -7,12 +7,15 @@ Windows PC와 NVIDIA Jetson Orin 모두 동작합니다.
 
 - **헬멧 착용 감지**: 커스텀 YOLOv8 모델로 헬멧 착용/미착용 실시간 탐지
 - **낙상 감지**: YOLOv8-pose 모델 기반 사람 자세 분석으로 낙상 사고 탐지
+- **낙상 보조 검증**: 공공 `falldata` RF 모델을 shadow/confirm 모드로 연결해 pose 낙상 후보를 2차 검증
 - **다중 카메라**: RTSP/웹캠 동시 처리 및 자동 재연결
 - **위험 구역 관리**: 실시간 폴리곤 그리기·저장·삭제 (GUI 인터랙션 지원)
 - **얼굴 인식 확장 구조**: Windows 개발/디버깅, Jetson 운영 배포를 전제로 한 선택형 백엔드
+- **외형 속성 분석**: HSV 기본 분석, PP-Human/Paddle, PA100K TensorRT 기반 보조 분석 경로 지원
 - **Zone API**: REST API로 외부에서 구역 설정 조회·수정
 - **EdgeX Foundry 연동**: MQTT 기반 표준 EdgeX v3 이벤트 발행
 - **이벤트 포워딩**: Public API 수신 이벤트를 Action Layer로 전달해 알람/이력 처리를 통합
+- **이벤트 검수 API**: 운영자가 이벤트를 맞음/오탐/애매함으로 라벨링하고 요약 조회
 - **센서 위험 분류**: TLV 센서 온도·기울기·event_code 기반 경고/위험 이벤트 자동 생성
 - **Action Layer**: 스피커 알람·외부 API 호출·SQLite 이벤트 저장
 - **데이터셋 수집**: YOLO 형식 자동 라벨링 및 학습 데이터 생성
@@ -44,6 +47,8 @@ CCTV-project/
 ├── config/                         # DeepStream/외형 분석 설정
 ├── models/                         # YOLO, PP-Human, TensorRT 모델 파일
 ├── data/                           # SQLite DB, crop 이미지, 런타임 데이터
+├── external/                       # 외부 학습 저장소/데이터셋 연결 지점
+├── falldata/                       # 공공 낙상 데이터 패키지 (git 제외)
 ├── known_faces/                    # 얼굴 인식용 등록/샘플 이미지
 ├── edgex/                          # EdgeX device profile 및 ASC 설정
 ├── kuiper/                         # eKuiper 룰 파일
@@ -169,6 +174,16 @@ APPEARANCE_RUNTIME=paddle
 카메라 설정의 `detections`에 `appearance`를 포함하면 `YOLO person bbox → 속성 모델
 crop → SQLite appearance_log 저장/검색` 흐름으로 연결됩니다.
 
+PA100K로 학습한 속성 모델을 TensorRT engine으로 운영할 때는 아래처럼 연결합니다.
+
+```bash
+APPEARANCE_ENABLED=true
+APPEARANCE_BACKEND=pphuman
+APPEARANCE_MODEL_PATH=models/pa100k_resnet50_attr.engine
+APPEARANCE_LABEL_MAP_PATH=config/appearance_pa100k_labels.json
+APPEARANCE_RUNTIME=tensorrt
+```
+
 **Jetson TensorRT 가속 (선택사항):**
 
 ```python
@@ -222,6 +237,10 @@ YOLO("models/yolov8n.pt").export(format="engine", device=0)
 | `APPEARANCE_LABEL_MAP_PATH` | 속성 라벨 맵 경로 | `config/appearance_pphuman_labels.example.json` |
 | `APPEARANCE_RUNTIME` | 속성 모델 런타임 | `auto` / `onnxruntime` / `paddle` |
 | `APPEARANCES_DB` | 외형 로그 SQLite 경로 | `/app/data/runtime/appearances.db` |
+| `FALLDATA_AUX_ENABLED` | 공공 낙상 보조 검증 활성화 | `true` / `false` |
+| `FALLDATA_AUX_MODE` | 보조 검증 적용 방식 | `shadow` / `confirm` |
+| `FALLDATA_AUX_THRESHOLD` | 낙상 class 확률 임계값 | `0.7` |
+| `FALLDATA_AUX_FALL_CLASS_INDEX` | RF 모델의 낙상 class index | `0` |
 | `DISPLAY_ENABLED` | 화면 출력 | `true` / `false` |
 | `TRACK_TIMEOUT_SECONDS` | 미감지 트랙 유지 시간 | `1.0` |
 | `TRACK_MAX_MISSED_FRAMES` | 연속 미감지 허용 프레임 수 | `2` |
@@ -254,6 +273,43 @@ USE_GSTREAMER=1 DEVICE=cuda:0 python main.py --cameras cameras.json
 # TensorRT 모델 자동 사용 (models/*.engine 파일이 있으면 우선 로드)
 USE_GSTREAMER=1 DEVICE=cuda:0 python main.py --cameras cameras.json
 ```
+
+### 낙상 보조 검증 모델
+
+기본 낙상 감지는 YOLOv8-pose 기반입니다. 공공 `falldata` 패키지의 RF 모델은
+pose가 만든 낙상 후보를 한 번 더 확인하는 보조 검증기로 사용합니다.
+
+권장 순서:
+
+```text
+1. pose 낙상 이벤트는 기존처럼 생성
+2. falldata 보조 모델은 shadow 모드로 metadata만 추가
+3. 현장 영상에서 확률/오탐 로그 확인
+4. 충분히 확인된 뒤 confirm 모드로 전환
+```
+
+준비 상태 점검:
+
+```bash
+python scripts/health/check_falldata_aux.py
+python scripts/health/check_falldata_aux.py \
+  --video 'external/OpenPAR/VTFPAR++/demo/video.mp4' \
+  --max-frames 30
+```
+
+shadow 모드 실행:
+
+```bash
+FALLDATA_AUX_ENABLED=true \
+FALLDATA_AUX_MODE=shadow \
+FALLDATA_AUX_THRESHOLD=0.7 \
+FALLDATA_AUX_FALL_CLASS_INDEX=0 \
+python main.py --video sample.mp4 --display
+```
+
+`confirm` 모드는 보조모델이 확인하지 못한 pose 낙상 이벤트를 버릴 수 있으므로,
+실제 현장 shadow 로그를 확인한 뒤 사용합니다. 자세한 구조와 한계는
+[docs/falldata_integration_notes.md](docs/falldata_integration_notes.md)를 참고하세요.
 
 ### EdgeX 전체 파이프라인
 
@@ -443,6 +499,8 @@ python runners/run_public_api.py --host 0.0.0.0 --port 9000
 - `GET /api/v1/docs`
 - `GET /api/v1/docs/openapi.json`
 - `GET /api/v1/events`
+- `POST /api/v1/event-reviews`
+- `GET /api/v1/event-reviews/summary`
 - `GET /api/v1/cameras`
 - `GET /api/v1/search`
 - `GET /api/v1/appearances/status`
@@ -604,6 +662,12 @@ python -m pytest tests/test_event_forwarding.py tests/test_sensor_classifier.py 
 
 ```bash
 python -m pytest tests/test_stream_api.py -q
+```
+
+낙상 보조 검증 회귀 테스트:
+
+```bash
+python -m pytest tests/test_falldata_aux.py tests/test_ai_analysis.py tests/test_object_detection_pipeline.py -q
 ```
 
 ## 위험 구역 GUI 조작 (`--display` 모드)
@@ -782,6 +846,30 @@ python scripts/ops/evaluate_detection.py \
 | Windows 로그 한글 깨짐 | `chcp 65001` 후 실행, 또는 `PYTHONUTF8=1` |
 
 ## 변경 이력
+
+### v1.12.0 (2026-06-22) - 공공 낙상 데이터 보조 검증 및 운영 문서 최신화
+
+- **falldata 보조 검증기 추가**
+  - 공공 낙상 데이터 패키지의 MediaPipe feature 구조와 RF 모델 입력을 확인
+  - `src/core/ai/_falldata_aux.py`를 추가해 pose 낙상 후보를 shadow/confirm 모드로 2차 검증
+  - 기본값은 비활성화이며, shadow 모드에서는 기존 이벤트를 유지하고 `metadata.falldata_aux`만 추가
+
+- **데이터/모델 점검 스크립트 추가**
+  - `scripts/datasets/check_falldata_package.py`
+  - `scripts/datasets/probe_falldata_models.py`
+  - `scripts/datasets/extract_falldata_mediapipe_features.py`
+  - `scripts/datasets/smoke_falldata_video_model.py`
+  - `scripts/health/check_falldata_aux.py`
+
+- **운영 설정과 문서 최신화**
+  - `.env.example`에 `FALLDATA_AUX_*` 환경변수 추가
+  - `COMMANDS.md`와 `docs/falldata_integration_notes.md`에 shadow/confirm 운영 절차 정리
+  - README와 프로젝트 구조 문서에 PA100K/TensorRT 외형 분석, 이벤트 검수 API, falldata 보조 검증 흐름 반영
+
+- **검증 기록**
+  - `scripts/health/check_falldata_aux.py` 기본 smoke 통과
+  - 샘플 비디오 기준 MediaPipe feature 추출 → RF 모델 추론 end-to-end smoke 통과
+  - `tests/test_falldata_aux.py`, `tests/test_ai_analysis.py`, `tests/test_object_detection_pipeline.py`, `tests/test_events.py` 기준 84개 테스트 통과
 
 ### v1.11.0 (2026-06-08) - 문서/스크립트 구조 정리 및 운영 정리 자동화
 

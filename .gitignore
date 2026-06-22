@@ -21,6 +21,7 @@ collected_data/
 my_collected_data/
 dataset/
 fall_dataset/
+falldata/
 event_logs/
 test_video/
 runs/
@@ -35,6 +36,8 @@ Local Test Sever/
 
 # 런타임 생성 데이터
 reports/
+external/
+Rethinking_of_PAR/
 !data/eval/reports/
 event_backup/
 data/crops/
@@ -101,6 +104,9 @@ tooling/node-*/
 models/*.onnx
 
 .venv/
+.venv-par/
+.venv-falldata/
+.venv-mediapipe/
 
 .pytest_tmp/
 *.db

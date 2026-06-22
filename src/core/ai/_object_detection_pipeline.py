@@ -41,6 +41,9 @@ class ObjectDetectionPipeline:
             use_pose=use_pose,
             use_person=use_person,
         )
+        falldata_aux = getattr(self._analyzer, "_falldata_aux", None)
+        if falldata_aux is not None:
+            fall_events = falldata_aux.annotate_events(fall_events)
         helmet_events = self.detect_helmet_events(
             frame,
             person_events,

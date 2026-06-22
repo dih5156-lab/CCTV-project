@@ -70,6 +70,46 @@ python main.py --display
 python main.py --video sample.mp4 --display
 ```
 
+### 낙상 보조 검증 모델 shadow 모드
+
+공공 falldata RF 모델은 MediaPipe feature 추출 환경과 sklearn 모델 실행 환경을 분리해서
+사용합니다. 운영에 바로 `confirm`으로 넣기 전에 먼저 `shadow`로 metadata만 쌓아 확인하세요.
+
+```bash
+python3.10 -m venv .venv-falldata
+.venv-falldata/bin/pip install numpy==1.26.1 scipy==1.11.3 scikit-learn==1.3.2 joblib==1.3.2
+
+python3.10 -m venv .venv-mediapipe
+.venv-mediapipe/bin/pip install opencv-python-headless mediapipe
+```
+
+준비 상태 점검:
+
+```bash
+python scripts/health/check_falldata_aux.py
+```
+
+샘플 비디오까지 포함한 end-to-end 점검:
+
+```bash
+python scripts/health/check_falldata_aux.py \
+  --video 'external/OpenPAR/VTFPAR++/demo/video.mp4' \
+  --max-frames 30
+```
+
+shadow 모드 실행:
+
+```bash
+FALLDATA_AUX_ENABLED=true \
+FALLDATA_AUX_MODE=shadow \
+FALLDATA_AUX_THRESHOLD=0.7 \
+FALLDATA_AUX_FALL_CLASS_INDEX=0 \
+python main.py --video sample.mp4 --display
+```
+
+`confirm` 모드는 보조모델이 낙상을 확인하지 못하면 기존 pose 낙상 이벤트를 버릴 수 있으므로,
+현장 shadow 로그를 확인한 뒤에만 사용하세요.
+
 ### 다중 카메라 (cameras.json)
 
 ```bash
@@ -111,6 +151,332 @@ python main.py --cameras cameras.json --device cuda
 
 카메라별 `detections`에는 `appearance`가 포함되어야 하며, 사람 bbox가 필요하므로
 `person` 또는 `fall`/pose 감지가 함께 활성화됩니다.
+
+### 외형 성별 임계값 점검
+
+PP-Human 성별 속성은 `female_score` 하나로 나오므로, 애매한 구간은 `unknown`으로
+두는 것이 운영 오탐을 줄이는 데 유리합니다. 저장된 crop 기준으로 최근 점수 분포와
+임계값별 `male/female/unknown` 비율을 확인합니다.
+
+```bash
+python scripts/ops/evaluate_appearance_gender.py --limit 100
+```
+
+Jetson 컨테이너 안에서 실제 Paddle 런타임으로 확인하려면:
+
+```bash
+docker exec cctv-ai-engine python scripts/ops/evaluate_appearance_gender.py \
+  --crop-dir /app/data/runtime/appearance_crops \
+  --limit 100
+```
+
+현재 보수적 기본값은 아래와 같습니다.
+
+```bash
+APPEARANCE_GENDER_FEMALE_MIN_SCORE=0.75
+APPEARANCE_GENDER_MALE_MAX_SCORE=0.25
+APPEARANCE_GENDER_MIN_SAMPLES=3
+```
+
+### RAP/RAPv2 외형 학습 데이터 준비
+
+RAP/RAPv2는 보행자 속성 인식(Pedestrian Attribute Recognition) 데이터셋입니다.
+데이터셋 사용 조건과 라이선스를 먼저 확인한 뒤, 내려받은 이미지/annotation을
+`data/external/rapv2` 같은 로컬 경로에 둡니다.
+
+MAT annotation 구조를 먼저 점검합니다.
+
+```bash
+python scripts/datasets/prepare_rap_attribute_manifest.py \
+  --mat data/external/rapv2/RAP_annotation.mat \
+  --inspect-json data/processed/rapv2/inspect.json
+```
+
+annotation에서 이미지명/속성명/라벨 행렬이 자동 감지되면, 프로젝트용 학습 manifest로
+변환합니다.
+
+```bash
+python scripts/datasets/prepare_rap_attribute_manifest.py \
+  --mat data/external/rapv2/RAP_annotation.mat \
+  --image-root data/external/rapv2/images \
+  --output-csv data/processed/rapv2/appearance_manifest.csv
+```
+
+출력 CSV는 아래 공통 필드로 정리됩니다.
+
+```text
+image_path,gender,upper_color,lower_color,bag,hat,source_active_attributes
+```
+
+변환된 manifest를 학습/검증 리스트와 프로젝트용 label map으로 나눕니다.
+
+```bash
+python scripts/datasets/build_appearance_training_lists.py \
+  --manifest data/processed/rapv2/appearance_manifest.csv \
+  --output-dir data/processed/rapv2 \
+  --val-ratio 0.2
+```
+
+생성 파일:
+
+```text
+data/processed/rapv2/train_list.txt
+data/processed/rapv2/val_list.txt
+data/processed/rapv2/appearance_label_map.json
+data/processed/rapv2/summary.json
+```
+
+`train_list.txt`와 `val_list.txt`는 이미지 경로 뒤에 multi-label 0/1 vector가 붙는 형식입니다.
+
+```text
+data/external/rapv2/images/000001.jpg 0 1 0 0 ...
+```
+
+label map은 현재 PP-Human decoder와 맞도록 `gender=female` 단일 score,
+`upper_color`, `lower_color`, `has_bag`, `has_hat` 구조로 생성됩니다.
+
+RAP/RAPv2 annotation을 이미 CSV로 변환한 경우에는 CSV 입력도 사용할 수 있습니다.
+
+```bash
+python scripts/datasets/prepare_rap_attribute_manifest.py \
+  --annotations-csv data/external/rapv2/attributes.csv \
+  --image-root data/external/rapv2/images \
+  --output-csv data/processed/rapv2/appearance_manifest.csv
+```
+
+주의:
+
+- 공개 데이터셋만으로 바로 운영 성능을 보장할 수 없습니다.
+- RAP/RAPv2로 기본 fine-tuning 후, `data/runtime/appearance_crops`에서 수집한 현장 crop을
+  300~1,000장 정도 추가 라벨링해 한 번 더 fine-tuning하는 것을 권장합니다.
+- 성별은 애매한 경우 `unknown`으로 남기는 정책을 유지합니다.
+
+PaddleClas/PP-LCNet 계열로 학습할 때는 위 `train_list.txt`, `val_list.txt`를 dataset 입력으로
+연결하고, export된 inference model 경로를 `APPEARANCE_MODEL_PATH`로 지정합니다.
+
+```bash
+APPEARANCE_MODEL_PATH=models/pphuman_attribute_rapv2_finetuned
+APPEARANCE_LABEL_MAP_PATH=data/processed/rapv2/appearance_label_map.json
+APPEARANCE_RUNTIME=paddle
+```
+
+### Rethinking_of_PAR 기준선 학습 준비
+
+PyTorch 기반 Pedestrian Attribute Recognition 기준선으로
+`valencebond/Rethinking_of_PAR`를 `external/Rethinking_of_PAR`에 받을 수 있습니다.
+이 저장소는 dependency가 오래된 편이라 운영 `.venv`에 섞지 말고 별도 conda/venv에서 사용합니다.
+
+```bash
+git clone https://github.com/valencebond/Rethinking_of_PAR.git external/Rethinking_of_PAR
+```
+
+우리 manifest를 해당 저장소의 `dataset_all.pkl` 포맷으로 변환합니다.
+
+```bash
+python scripts/datasets/build_rethinking_par_dataset.py \
+  --manifest data/processed/rapv2/appearance_manifest.csv \
+  --image-root data/external/rapv2/images \
+  --output-pkl external/Rethinking_of_PAR/data/RAP2/dataset_all.pkl \
+  --val-ratio 0.2
+```
+
+학습 저장소에서 실행합니다.
+
+```bash
+cd external/Rethinking_of_PAR
+CUDA_VISIBLE_DEVICES=0 python train.py --cfg ./configs/pedes_baseline/rapv2.yaml
+```
+
+주의:
+
+- `Rethinking_of_PAR` 기본 README는 Python 3.7, PyTorch 1.x 계열을 전제로 합니다.
+- 현재 프로젝트의 운영 환경과 분리된 학습 전용 환경에서 실행합니다.
+- 학습이 끝난 `.pth`는 그대로 Jetson 운영에 넣기보다 ONNX export 또는 별도 추론 어댑터를 거쳐 연결합니다.
+
+### OpenPAR 데이터셋 번들 확인
+
+RAP/RAPv2 개별 다운로드가 어려우면 OpenPAR에서 안내하는 benchmark bundle을 우선 확인합니다.
+
+```text
+OpenPAR: https://github.com/Event-AHU/OpenPAR
+PAR_public_benchmark_datasets: 10.3GB
+지원 데이터셋: PETA, PA100K, RAPv1, RAPv2, WIDER, MSP60K
+```
+
+추천 순서:
+
+1. OpenPAR README의 Dropbox 또는 BaiduDrive 링크로 benchmark bundle을 내려받습니다.
+2. 압축을 풀어 `data/external/openpar` 아래에 배치합니다.
+3. 우선 `PA100k`부터 검증합니다.
+
+예상 구조:
+
+```text
+data/external/openpar/
+  PA100k/
+    data/
+      000001.jpg
+      ...
+    annotation.mat
+    dataset_all.pkl
+```
+
+다운로드 후 구조를 확인합니다.
+
+```bash
+python scripts/datasets/check_par_dataset_layout.py \
+  --dataset-root external/OpenPAR \
+  --dataset PA100K
+```
+
+`ready: True`가 나오면 학습용 pkl 또는 manifest 변환 단계로 넘어갑니다.
+
+현재 PA100K 준비 상태 확인 예시:
+
+```text
+image_count: 100000
+pkl_images: 100000
+pkl_attributes: 26
+pkl_first_image_exists: True
+ready: True
+```
+
+`dataset_all.pkl` 내부 이미지 root가 다른 PC 경로를 가리키면 현재 이미지 폴더로 패치합니다.
+
+```bash
+python scripts/datasets/patch_par_dataset_root.py \
+  --pkl external/OpenPAR/PA100k/dataset_all.pkl \
+  --image-root external/OpenPAR/PA100k/data
+```
+
+`Rethinking_of_PAR` 기준선 학습에 같은 데이터를 연결하려면 pkl을 복사하고 이미지 폴더를 symlink로 연결합니다.
+
+```bash
+cp external/OpenPAR/PA100k/dataset_all.pkl \
+  external/Rethinking_of_PAR/data/PA100k/dataset_all.pkl
+
+ln -s ../../../OpenPAR/PA100k/data \
+  external/Rethinking_of_PAR/data/PA100k/data
+```
+
+주의:
+
+- 현재 운영 `.venv`는 학습 전용 환경이 아니므로 `Rethinking_of_PAR/train.py`를 바로 실행하면 `mmcv`, `yacs`, `tensorboard`, `visdom` 같은 학습 의존성이 없을 수 있습니다.
+- 학습은 별도 conda/venv에서 진행하고, 운영 `.venv`에는 학습 의존성을 섞지 않습니다.
+- PA100K 데이터 연결 확인 결과, `external/Rethinking_of_PAR` 기준으로 1-batch forward가 통과했습니다.
+
+```text
+images: (2, 3, 256, 192)
+labels: (2, 26)
+logits: (2, 26)
+feature: (2, 2048, 8, 6)
+```
+
+현재 장비에서는 CUDA 초기화가 실패해 `torch.cuda.is_available()`가 `False`입니다. 전체 학습은 CUDA가 정상 동작하는 학습 환경에서 실행합니다.
+
+Jetson에서 학습용 `.venv-par`를 사용할 때는 cuSPARSELt를 `.venv-par/lib`에 둔 상태로
+`LD_LIBRARY_PATH`를 함께 지정합니다.
+
+```bash
+cd /media/sawwave/Learning11/CCTV-project/external/Rethinking_of_PAR
+
+LD_LIBRARY_PATH=/media/sawwave/Learning11/CCTV-project/.venv-par/lib:${LD_LIBRARY_PATH:-} \
+MPLCONFIGDIR=/tmp/matplotlib-cache \
+/media/sawwave/Learning11/CCTV-project/.venv-par/bin/python train.py \
+  --cfg ./configs/pedes_baseline/pa100k.yaml
+```
+
+현재 확인된 CUDA 스모크 결과:
+
+```text
+torch: 2.5.0a0+872d972e41.nv24.08
+torch cuda: 12.6
+cuda available: True
+device: Orin
+PA100K 1-batch CUDA forward: PASS
+images: (2, 3, 256, 192)
+labels: (2, 26)
+logits: (2, 26)
+```
+
+### PA100K 학습 모델 export 및 연결
+
+학습 완료 후 best checkpoint를 ONNX로 변환합니다. Jetson용 PyTorch 환경은
+`libcusparseLt` 경로가 필요할 수 있으므로 `LD_LIBRARY_PATH`를 같이 지정합니다.
+
+```bash
+LD_LIBRARY_PATH=/media/sawwave/Learning11/CCTV-project/.venv-par/lib:${LD_LIBRARY_PATH:-} \
+  .venv-par/bin/python scripts/convert/export_rethinking_par_onnx.py \
+  --checkpoint external/Rethinking_of_PAR/exp_result/PA100k/resnet50.base.adam/img_model/ckpt_max_2026-06-19_11:19:51.pth \
+  --output models/pa100k_resnet50_attr.onnx
+```
+
+현재 확인된 best checkpoint:
+
+```text
+epoch: 24
+metric: 0.7650567363313108
+input: [batch, 3, 256, 192]
+output: [batch, 26]
+```
+
+PA100K 라벨맵은 아래 경로를 사용합니다.
+
+```text
+config/appearance_pa100k_labels.json
+```
+
+ONNXRuntime이 안정적으로 로드되는 환경에서는 아래 값으로 외형 백엔드를 PA100K 모델로
+연결합니다.
+
+```bash
+APPEARANCE_ENABLED=true
+APPEARANCE_BACKEND=pphuman
+APPEARANCE_MODEL_PATH=models/pa100k_resnet50_attr.onnx
+APPEARANCE_LABEL_MAP_PATH=config/appearance_pa100k_labels.json
+APPEARANCE_RUNTIME=onnxruntime
+APPEARANCE_SCORE_THRESHOLD=0.5
+```
+
+Jetson 운영 컨테이너에서는 PyPI `onnxruntime`가 native crash를 낼 수 있으므로,
+DeepStream SGIE/TensorRT 경로를 우선 사용합니다. ONNX를 engine으로 변환합니다.
+
+```bash
+docker exec cctv-ai-engine /usr/src/tensorrt/bin/trtexec \
+  --onnx=/app/models/pa100k_resnet50_attr.onnx \
+  --saveEngine=/app/models/pa100k_resnet50_attr.engine \
+  --fp16 \
+  --builderOptimizationLevel=0 \
+  --avgTiming=1 \
+  --minShapes=images:1x3x256x192 \
+  --optShapes=images:1x3x256x192 \
+  --maxShapes=images:8x3x256x192 \
+  --skipInference
+```
+
+DeepStream SGIE에서 PA100K engine을 쓰려면 아래 값을 지정합니다.
+
+```bash
+DS_PPHUMAN_INFER_CONFIG=config/deepstream/config_infer_pa100k.txt
+APPEARANCE_LABEL_MAP_PATH=config/appearance_pa100k_labels.json
+```
+
+현재 primary YOLO는 raw tensor를 Python에서 직접 파싱하므로 DeepStream SGIE ROI 연결이
+제한될 수 있습니다. 운영에서는 외형 worker가 TensorRT engine을 직접 실행하도록 아래
+설정을 함께 사용합니다.
+
+```bash
+APPEARANCE_MODEL_PATH=models/pa100k_resnet50_attr.engine
+APPEARANCE_RUNTIME=tensorrt
+APPEARANCE_LABEL_MAP_PATH=config/appearance_pa100k_labels.json
+```
+
+주의:
+
+- PA100K 모델은 성별, 연령대, 방향, 모자, 안경, 가방, 상/하의 형태 같은 26개 속성을 출력합니다.
+- 상/하의 색상은 PA100K 라벨에 없으므로 기존 HSV 색상 추정과 함께 사용해야 합니다.
+- 현재 Jetson 기본 Python 환경의 `onnxruntime`는 native crash가 날 수 있습니다. 이 경우 바로 운영에
+  연결하지 말고 ONNXRuntime 패키지/컨테이너를 정리하거나 TensorRT 실행 어댑터를 별도로 추가합니다.
 
 ### 헬멧/낙상 감지 + MQTT 전송
 
@@ -170,6 +536,41 @@ python main.py \
 진입점: `runners/run_action_bridge.py`
 
 스피커 / 전광판 / 경광등 조치 실행, 외부 플랫폼 HTTP 전송, SQLite 이벤트 저장.
+
+### 이벤트 오탐 검수
+
+Public API에서 이벤트를 `맞음 / 오탐 / 애매함`으로 라벨링할 수 있습니다.
+검수 결과는 원본 이벤트 로그와 분리되어 `EVENT_REVIEW_DB`
+기본값 `/app/data/runtime/event_reviews.db`에 저장됩니다.
+
+```bash
+curl -X POST "http://localhost:9000/api/v1/event-reviews" \
+  -H "X-API-Key: ${PUBLIC_API_KEY}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "event_id": "example-event-id",
+    "status": "false_positive",
+    "reviewer": "operator",
+    "category": "head",
+    "note": "화면 가장자리 작업자 오탐"
+  }'
+```
+
+검수 누적 요약:
+
+```bash
+curl -H "X-API-Key: ${PUBLIC_API_KEY}" \
+  "http://localhost:9000/api/v1/event-reviews/summary"
+```
+
+이벤트 조회 응답에는 운영용 `risk_score`도 포함됩니다. 값은 0~100이며 높을수록
+우선 확인할 이벤트입니다. 모델 confidence, 이벤트 유형, severity, bbox 품질,
+검수 결과를 함께 반영합니다.
+
+```bash
+curl -H "X-API-Key: ${PUBLIC_API_KEY}" \
+  "http://localhost:9000/api/v1/events?limit=5"
+```
 
 ### 기본 실행
 
