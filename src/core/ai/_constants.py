@@ -27,6 +27,7 @@ MIN_KEYPOINT_CONFIDENCE = 0.3   # 0.2 → 0.3: 낮은 값은 배경 키포인트
 FALL_ANGLE_HORIZONTAL    = 40    # 어깨-엉덩이 벡터 수평 각도 임계값 (°)
 FALL_ANGLE_INVERTED      = 140   # 역방향 수평 각도 임계값 (°)
 MIN_HIP_CONFIDENCE       = 0.3   # 엉덩이 키포인트 최소 신뢰도
+MIN_LEG_CONFIDENCE       = 0.3   # 무릎/발목 키포인트 최소 신뢰도
 FALL_KEYPOINT_SPAN_RATIO = 0.4   # 키포인트 수직 분산 / bbox 높이 비율 임계값
 
 # 어깨 위치 검증 — 어깨가 bbox 상단에서 이 비율 이상 아래에 위치해야 사람으로 인정

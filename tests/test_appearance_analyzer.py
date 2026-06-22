@@ -13,7 +13,10 @@ import pytest
 
 from src.core.ai._appearance_analyzer import AppearanceAnalyzer
 from src.core.ai._attribute_backend import AttributeCrop
-from src.core.ai._attribute_backends import PPHumanAttributeBackend
+from src.core.ai._attribute_backends import (
+    PPHumanAttributeBackend,
+    decode_pphuman_scores,
+)
 
 # ── 헬퍼 ─────────────────────────────────────────────────────────────
 
@@ -305,6 +308,36 @@ class TestPPHumanBackend:
         assert attrs["helmet_color"] == "yellow"
         assert attrs["attribute_scores"]["upper_color"] == pytest.approx(0.9)
 
+    def test_decode_gender_uses_unknown_band(self):
+        label_map = {
+            "labels": [
+                {"index": 0, "field": "gender", "value": "female", "threshold": 0.5},
+            ]
+        }
+
+        male_attrs = decode_pphuman_scores(
+            np.array([[0.2]], dtype=np.float32),
+            label_map,
+            gender_female_min_score=0.75,
+            gender_male_max_score=0.25,
+        )
+        unknown_attrs = decode_pphuman_scores(
+            np.array([[0.5]], dtype=np.float32),
+            label_map,
+            gender_female_min_score=0.75,
+            gender_male_max_score=0.25,
+        )
+        female_attrs = decode_pphuman_scores(
+            np.array([[0.8]], dtype=np.float32),
+            label_map,
+            gender_female_min_score=0.75,
+            gender_male_max_score=0.25,
+        )
+
+        assert male_attrs["gender"] == "male"
+        assert unknown_attrs["gender"] == "unknown"
+        assert female_attrs["gender"] == "female"
+
     def test_predict_uses_session_when_available(self):
         class FakeInput:
             name = "x"
@@ -343,6 +376,17 @@ class TestPPHumanBackend:
         )
 
         assert backend._should_use_paddle(model_dir) is True
+
+    def test_auto_runtime_uses_tensorrt_for_engine_file(self, tmp_path):
+        engine_path = tmp_path / "pa100k.engine"
+        engine_path.write_bytes(b"fake")
+
+        backend = PPHumanAttributeBackend(
+            predictor=lambda crop: {},
+            runtime="auto",
+        )
+
+        assert backend._should_use_tensorrt(engine_path) is True
 
     def test_input_shape_hint_updates_preprocess_size(self):
         backend = PPHumanAttributeBackend(predictor=lambda crop: {})

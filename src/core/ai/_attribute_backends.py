@@ -19,6 +19,7 @@ from ._attribute_runtimes import (
     AttributeRuntime,
     build_onnx_runtime,
     build_paddle_runtime,
+    build_tensorrt_runtime,
     resolve_paddle_model_prefix,
 )
 
@@ -29,6 +30,19 @@ SessionFactory = Callable[..., object]
 
 _DEFAULT_MEAN = np.array([0.485, 0.456, 0.406], dtype=np.float32).reshape(1, 1, 3)
 _DEFAULT_STD = np.array([0.229, 0.224, 0.225], dtype=np.float32).reshape(1, 1, 3)
+_DEFAULT_GENDER_FEMALE_MIN_SCORE = 0.75
+_DEFAULT_GENDER_MALE_MAX_SCORE = 0.25
+
+
+def _read_float_env(name: str, default: float) -> float:
+    raw_value = os.environ.get(name)
+    if raw_value is None:
+        return default
+    try:
+        return float(raw_value)
+    except (TypeError, ValueError):
+        logger.warning("잘못된 %s 값입니다: %r, 기본값 %.2f 사용", name, raw_value, default)
+        return default
 
 
 def decode_pphuman_scores(
@@ -36,6 +50,8 @@ def decode_pphuman_scores(
     label_map: Dict[str, object],
     *,
     default_threshold: float = 0.5,
+    gender_female_min_score: Optional[float] = None,
+    gender_male_max_score: Optional[float] = None,
 ) -> Dict[str, object]:
     """PP-Human multi-label score 벡터를 속성 딕셔너리로 변환한다."""
     values = np.asarray(scores, dtype=np.float32).reshape(-1)
@@ -64,15 +80,30 @@ def decode_pphuman_scores(
         })
 
     attrs: Dict[str, object] = {}
+    female_min_score = (
+        _read_float_env("APPEARANCE_GENDER_FEMALE_MIN_SCORE", _DEFAULT_GENDER_FEMALE_MIN_SCORE)
+        if gender_female_min_score is None
+        else float(gender_female_min_score)
+    )
+    male_max_score = (
+        _read_float_env("APPEARANCE_GENDER_MALE_MAX_SCORE", _DEFAULT_GENDER_MALE_MAX_SCORE)
+        if gender_male_max_score is None
+        else float(gender_male_max_score)
+    )
     for field, candidates in grouped.items():
         best = max(candidates, key=lambda item: float(item["score"]))
         if field.startswith("has_"):
             attrs[field] = float(best["score"]) >= float(best["threshold"])
             continue
-        # gender는 단일 binary 필드: score >= 0.5 → female, < 0.5 → male
+        # gender는 단일 female score라 애매한 구간은 unknown으로 둔다.
         if field == "gender" and len(candidates) == 1:
             female_score = float(best["score"])
-            attrs[field] = "female" if female_score >= float(best["threshold"]) else "male"
+            if female_score >= female_min_score:
+                attrs[field] = "female"
+            elif female_score <= male_max_score:
+                attrs[field] = "male"
+            else:
+                attrs[field] = "unknown"
             continue
         if float(best["score"]) >= float(best["threshold"]):
             attrs[field] = best["value"]
@@ -151,10 +182,32 @@ class PPHumanAttributeBackend:
             logger.warning("PP-Human 속성 모델 파일을 찾지 못했습니다: %s", self._model_path)
             return None
 
+        if self._should_use_tensorrt(model_path):
+            return self._build_tensorrt_runtime(model_path)
+
         if self._should_use_paddle(model_path):
             return self._build_paddle_runtime(model_path)
 
         return self._build_onnx_runtime(model_path, session_factory)
+
+    def _should_use_tensorrt(self, model_path: Path) -> bool:
+        """TensorRT engine을 직접 실행할지 판단한다."""
+        if self._runtime in {"tensorrt", "trt", "engine"}:
+            return True
+        if self._runtime not in {"auto", ""}:
+            return False
+        return model_path.suffix.lower() == ".engine"
+
+    def _build_tensorrt_runtime(self, model_path: Path) -> Optional[AttributeRuntime]:
+        """TensorRT engine 세션을 생성한다."""
+        try:
+            runtime = build_tensorrt_runtime(model_path)
+            self._set_input_shape_hint(runtime.input_shape)
+            logger.info("PP-Human TensorRT 속성 모델 로드 완료: %s", model_path)
+            return runtime
+        except Exception as exc:
+            logger.warning("PP-Human TensorRT 모델 로드 실패: %s", exc)
+            return None
 
     def _build_onnx_runtime(
         self,

@@ -418,6 +418,25 @@ class TestDetectFallFromKeypoints:
         )
         assert result is True
 
+    def test_horizontal_upper_body_without_visible_legs_is_not_fall(self, analyzer):
+        """의자에 기대어 상체만 수평에 가까운 경우는 다리 확인 전 낙상으로 보지 않는다."""
+        kpts = _make_kpts({
+            0:  [100, 100, 0.9],
+            5:  [50,  130, 0.9],
+            6:  [50,  170, 0.9],
+            11: [150, 130, 0.9],
+            12: [150, 170, 0.9],
+            13: [90,  280, 0.05],
+            14: [110, 280, 0.05],
+            15: [90,  350, 0.05],
+            16: [110, 350, 0.05],
+        })
+        keypoints = MockKeypoints(kpts)
+        result = analyzer._detect_fall_from_keypoints(
+            keypoints, idx=0, bbox_width=200, bbox_height=50
+        )
+        assert result is False
+
     def test_knee_above_head_is_fall_method2(self, analyzer):
         """무릎의 y좌표가 코보다 작으면 (화면상 더 위) → 낙상 (방법 2)."""
         kpts = _make_kpts({

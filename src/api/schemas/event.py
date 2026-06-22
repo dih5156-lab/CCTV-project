@@ -64,6 +64,7 @@ class EventOut(BaseModel):
     """단일 탐지 이벤트 응답."""
 
     id: Optional[int] = None
+    event_id: Optional[str] = None
     camera_id: Optional[str] = None
     event_type: str
     severity: str
@@ -75,6 +76,9 @@ class EventOut(BaseModel):
     received_at: Optional[datetime] = None
     priority: int = Field(default=20, ge=0)
     risk_level: str = "normal"
+    risk_score: int = Field(default=0, ge=0, le=100)
+    review_status: Optional[str] = None
+    reviewed_at: Optional[datetime] = None
 
 
 class AlertAccepted(BaseModel):

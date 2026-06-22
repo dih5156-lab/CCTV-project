@@ -5,6 +5,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 import numpy as np
+import pytest
 
 from src.core.ai._appearance_analyzer import AppearanceAnalyzer
 from src.core.ai._appearance_pipeline import AppearancePipeline
@@ -31,6 +32,41 @@ def test_save_person_crop_enabled_writes_file(tmp_path):
 
     assert path is not None
     assert (crop_dir / "cam1_1_1000000.jpg").exists()
+
+
+def test_save_person_crop_includes_context_by_default(tmp_path):
+    pytest.importorskip("cv2")
+
+    crop_dir = tmp_path / "crops"
+    pipeline = AppearancePipeline(AppearanceAnalyzer(), crop_dir, save_crops=True)
+    frame = np.zeros((100, 100, 3), dtype=np.uint8)
+    frame[40:60, 40:60] = (255, 255, 255)
+
+    path = pipeline.save_person_crop(frame, 40, 40, 20, 20, "cam1", 1, 1000.0)
+
+    saved = __import__("cv2").imread(path)
+    assert saved is not None
+    assert saved.shape[:2] == (44, 44)
+    assert saved[12:32, 12:32].mean() > 200
+
+
+def test_save_person_crop_context_can_be_disabled(tmp_path):
+    pytest.importorskip("cv2")
+
+    crop_dir = tmp_path / "crops"
+    pipeline = AppearancePipeline(
+        AppearanceAnalyzer(),
+        crop_dir,
+        save_crops=True,
+        crop_context_ratio=0.0,
+    )
+    frame = np.zeros((100, 100, 3), dtype=np.uint8)
+
+    path = pipeline.save_person_crop(frame, 40, 40, 20, 20, "cam1", 1, 1000.0)
+
+    saved = __import__("cv2").imread(path)
+    assert saved is not None
+    assert saved.shape[:2] == (20, 20)
 
 
 def test_build_log_payload_includes_face_meta_and_bbox(tmp_path):
@@ -211,8 +247,8 @@ def test_log_person_appearance_saves_scaled_deepstream_crop(tmp_path):
     assert crop_path is not None
     saved = __import__("cv2").imread(crop_path)
     assert saved is not None
-    assert saved.shape[:2] == (10, 20)
-    assert saved.mean() > 200
+    assert saved.shape[:2] == (22, 42)
+    assert saved[6:16, 10:30].mean() > 200
 
 
 def test_extract_person_attributes_scales_deepstream_bbox_to_preview_frame(tmp_path):
@@ -298,3 +334,87 @@ def test_smooth_track_attributes_uses_majority_color_per_track(tmp_path):
     assert third["lower_color"] == "black"
     assert third["attribute_metadata"]["color_observations"]["upper_color"] == 3
     assert third["attribute_metadata"]["color_observations"]["lower_color"] == 2
+
+
+def test_smooth_track_attributes_requires_stable_gender_samples(tmp_path):
+    pipeline = AppearancePipeline(
+        AppearanceAnalyzer(),
+        tmp_path / "crops",
+        color_smoothing_window=5,
+        color_min_samples=2,
+    )
+    person = DetectionEvent(
+        event_type=EventType.PERSON,
+        x=0,
+        y=0,
+        width=20,
+        height=40,
+        confidence=0.9,
+        timestamp=1000.0,
+        object_id=7,
+        class_name="person",
+    )
+
+    first = pipeline._smooth_track_attributes("cam01", person, {"gender": "male"})
+    second = pipeline._smooth_track_attributes("cam01", person, {"gender": "male"})
+    third = pipeline._smooth_track_attributes("cam01", person, {"gender": "female"})
+
+    assert first["gender"] == "unknown"
+    assert second["gender"] == "unknown"
+    assert third["gender"] == "male"
+    assert third["attribute_metadata"]["gender_observations"] == 3
+    assert third["attribute_metadata"]["gender_min_samples"] == 3
+
+
+def test_extract_person_attributes_merges_deepstream_sgie_metadata(tmp_path):
+    pipeline = AppearancePipeline(AppearanceAnalyzer(), tmp_path / "crops")
+    person = DetectionEvent(
+        event_type=EventType.PERSON,
+        x=0,
+        y=0,
+        width=20,
+        height=40,
+        confidence=0.9,
+        timestamp=1000.0,
+        object_id=7,
+        class_name="person",
+        metadata={
+            "appearance": {
+                "gender": "male",
+                "age_group": "adult",
+                "has_backpack": True,
+            },
+            "appearance_backend": "pphuman_sgie",
+        },
+    )
+    frame = np.zeros((80, 40, 3), dtype=np.uint8)
+
+    attrs = pipeline._extract_person_attributes(frame, person, [])
+
+    assert attrs["gender"] == "male"
+    assert attrs["age_group"] == "adult"
+    assert attrs["has_backpack"] is True
+    assert attrs["attribute_backend"] == "pphuman_sgie"
+
+
+def test_build_log_parts_uses_attribute_gender_when_face_meta_missing():
+    person = DetectionEvent(
+        event_type=EventType.PERSON,
+        x=0,
+        y=0,
+        width=20,
+        height=40,
+        confidence=0.9,
+        timestamp=1000.0,
+        object_id=7,
+        class_name="person",
+    )
+
+    parts = AppearancePipeline._build_log_parts(
+        person,
+        {"gender": "male", "age_group": "adult", "has_helmet": False},
+        {},
+    )
+
+    assert "성별=male" in parts
+    assert "나이=adult" in parts

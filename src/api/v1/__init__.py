@@ -10,6 +10,7 @@ __all__ = [
     "appearances",
     "cameras",
     "control",
+    "event_reviews",
     "events",
     "health",
     "metrics",

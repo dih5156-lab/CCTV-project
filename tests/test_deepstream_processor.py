@@ -423,6 +423,7 @@ def test_deepstream_fall_detector_uses_env_thresholds(mock_config, monkeypatch):
     monkeypatch.setenv("DS_FALL_KEYPOINT_SPAN_RATIO", "0.55")
     monkeypatch.setenv("DS_FALL_MIN_KEYPOINT_CONFIDENCE", "0.25")
     monkeypatch.setenv("DS_FALL_MIN_HIP_CONFIDENCE", "0.25")
+    monkeypatch.setenv("DS_FALL_MIN_LEG_CONFIDENCE", "0.35")
 
     proc._init_event_filters(mock_config)
 
@@ -434,6 +435,7 @@ def test_deepstream_fall_detector_uses_env_thresholds(mock_config, monkeypatch):
     assert proc._fall_detector.span_ratio == 0.55
     assert proc._fall_detector.min_keypoint_confidence == 0.25
     assert proc._fall_detector.min_hip_confidence == 0.25
+    assert proc._fall_detector.min_leg_confidence == 0.35
 
 
 def test_deepstream_cumulative_filter_does_not_gate_fall_events(mock_config):

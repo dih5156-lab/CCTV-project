@@ -381,6 +381,47 @@ class TestSensorReadings:
         assert body["items"][1]["data"]["temperature"] == 24.5
         assert body["items"][1]["severity"] == "normal"
 
+    def test_get_sensor_readings_accepts_table_and_dev_eui_filters(
+        self,
+        client: SyncASGIClient,
+        tmp_path: Path,
+    ) -> None:
+        import src.api.v1.sensor_readings as sensor_module
+
+        log_file = tmp_path / "sensor_readings.jsonl"
+        log_file.write_text(
+            json.dumps(
+                {
+                    "receivedAt": "2026-05-14T01:00:00+00:00",
+                    "payload": {
+                        "dev_eui": "0080e11505c9ea26",
+                        "device_id": "factory-14",
+                        "table": "t34957",
+                        "data": {"temperature_c": 22.7, "angle_x_deg": 4.2},
+                    },
+                },
+                ensure_ascii=False,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+
+        original = sensor_module._SENSOR_LOG
+        sensor_module._SENSOR_LOG = log_file
+        try:
+            resp = client.get(
+                "/api/v1/sensor-readings?limit=10&device_id=0080e11505c9ea26&table=34957"
+            )
+        finally:
+            sensor_module._SENSOR_LOG = original
+
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["total"] == 1
+        assert body["items"][0]["device_id"] == "factory-14"
+        assert body["items"][0]["dev_eui"] == "0080e11505c9ea26"
+        assert body["items"][0]["table"] == "t34957"
+
     def test_post_sensor_reading_forwards_to_alert_api(
         self, client: SyncASGIClient
     ) -> None:
@@ -486,6 +527,63 @@ class TestSensorReadings:
 
 
 class TestEvents:
+    def test_event_review_upsert_summary_and_event_annotation(
+        self, client: SyncASGIClient, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        import src.api.v1.event_reviews as event_reviews_module
+        import src.api.v1.events as events_module
+
+        review_db = tmp_path / "event_reviews.db"
+        monkeypatch.setenv("EVENT_REVIEW_DB", str(review_db))
+        event_reviews_module._store = None
+
+        log_file = tmp_path / "review_events.jsonl"
+        payload = {
+            "event_id": "evt-review-1",
+            "camera_id": "cam-01",
+            "type": "head",
+            "severity": "warning",
+            "confidence": 0.62,
+            "timestamp": 1700000000.0,
+            "object_id": 7,
+        }
+        log_file.write_text(
+            json.dumps({"receivedAt": "2024-01-01T00:00:00", "payload": payload}) + "\n",
+            encoding="utf-8",
+        )
+
+        original_log = events_module._ALERT_LOG
+        events_module._ALERT_LOG = log_file
+        try:
+            review_resp = client.post(
+                "/api/v1/event-reviews",
+                json={
+                    "event_id": "evt-review-1",
+                    "status": "false_positive",
+                    "reviewer": "tester",
+                    "category": "head",
+                    "event": payload,
+                },
+            )
+            assert review_resp.status_code == 200
+            assert review_resp.json()["data"]["status"] == "false_positive"
+
+            summary_resp = client.get("/api/v1/event-reviews/summary")
+            assert summary_resp.status_code == 200
+            summary = summary_resp.json()["data"]
+            assert summary["total"] == 1
+            assert summary["by_status"]["false_positive"] == 1
+
+            events_resp = client.get("/api/v1/events?limit=1")
+            assert events_resp.status_code == 200
+            item = events_resp.json()["items"][0]
+            assert item["event_id"] == "evt-review-1"
+            assert item["review_status"] == "false_positive"
+            assert 0 <= item["risk_score"] <= 100
+        finally:
+            events_module._ALERT_LOG = original_log
+            event_reviews_module._store = None
+
     def test_list_events_empty_log(self, client: SyncASGIClient) -> None:
         """로그 파일 없을 때 → 빈 목록 반환."""
         import src.api.v1.events as events_module

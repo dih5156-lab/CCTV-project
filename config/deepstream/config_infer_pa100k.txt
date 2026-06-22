@@ -1,0 +1,37 @@
+# =============================================================================
+# nvinfer TensorRT PA100K person attribute 설정 (Jetson Orin / DeepStream)
+#
+# 입력:  images, NCHW 3x256x192
+# 출력:  scores, 26개 attribute logits/scores
+#
+# Rethinking_of_PAR PA100K resnet50 checkpoint를 ONNX로 export한 뒤 TensorRT
+# engine으로 변환해 사용한다. Python pad-probe에서
+# config/appearance_pa100k_labels.json 라벨맵으로 디코딩한다.
+# =============================================================================
+
+[property]
+gpu-id=0
+gie-unique-id=3
+model-engine-file=../../models/pa100k_resnet50_attr.engine
+
+# ImageNet normalize와 동일한 전처리. model-color-format=0은 RGB 입력이다.
+model-color-format=0
+net-scale-factor=0.017124753831663668
+offsets=123.675;116.28;103.53
+
+# 100=Other. bbox parser 대신 Python tensor parser 사용.
+network-type=100
+output-blob-names=scores
+infer-dims=3;256;192
+batch-size=8
+workspace-size=1024
+scaling-compute-hw=1
+output-tensor-meta=1
+
+# Person detector(primary gie id=1)의 person(class id=0) ROI에만 적용한다.
+process-mode=2
+operate-on-gie-id=1
+operate-on-class-ids=0
+
+[class-attrs-all]
+threshold=0.5

@@ -5,6 +5,8 @@ import time
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
+from src.canonical_event import SKIP_ALERT_FORWARD_METADATA_KEY
+from src.services._action_bridge_support import _EventRepo
 from src.services.action_bridge import (
     ActionBridge,
     AlarmDevice,
@@ -13,8 +15,6 @@ from src.services.action_bridge import (
     _AlarmCoordinator,
     _SiteRegistry,
 )
-from src.services._action_bridge_support import _EventRepo
-from src.canonical_event import SKIP_ALERT_FORWARD_METADATA_KEY
 
 # ---------------------------------------------------------------------------
 # SiteConfig

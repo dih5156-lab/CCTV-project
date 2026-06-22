@@ -141,7 +141,12 @@ class _InferencePipeline:
                 frame_count = self._track_manager.get_frame_count(camera_id, event.object_id)
                 if frame_count < self._track_manager.min_track_frames:
                     continue
-            if self._debouncer.should_send(camera_id, event.event_type.value, event_id):
+            if self._debouncer.should_send(
+                camera_id,
+                event.event_type.value,
+                event_id,
+                event=event,
+            ):
                 event_data = event.to_dict()
                 event_data["camera_id"] = camera_id
                 self._event_dispatcher.enqueue(camera_id, event_data)

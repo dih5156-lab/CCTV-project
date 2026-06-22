@@ -464,6 +464,40 @@
     .badge.warn { border-color: rgba(243, 178, 60, .5); color: #ffe1a8; background: rgba(243, 178, 60, .12); }
     .badge.bad { border-color: rgba(240, 82, 82, .5); color: #ffc1c1; background: rgba(240, 82, 82, .12); }
     .badge.blue { border-color: rgba(95, 140, 255, .45); color: #c7d7ff; background: rgba(95, 140, 255, .12); }
+    .sensor-values {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+    .sensor-value {
+      display: inline-grid;
+      grid-template-columns: auto auto;
+      gap: 5px;
+      align-items: baseline;
+      min-height: 24px;
+      border: 1px solid rgba(255, 255, 255, .12);
+      border-radius: 6px;
+      padding: 3px 7px;
+      background: rgba(255, 255, 255, .035);
+      max-width: 100%;
+      overflow-wrap: anywhere;
+    }
+    .sensor-value-label {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .sensor-value-reading {
+      color: #e5edf8;
+      font-size: 12px;
+      font-weight: 800;
+      min-width: 0;
+    }
+    .sensor-reason {
+      display: block;
+      margin-top: 6px;
+    }
     .ops-summary {
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
@@ -866,14 +900,34 @@
       background: #05070a;
       display: block;
     }
+    .crop-preview-button,
+    .snapshot-preview-button {
+      appearance: none;
+      border: 0;
+      padding: 0;
+      margin: 0;
+      background: transparent;
+      color: inherit;
+      cursor: zoom-in;
+      display: inline-block;
+    }
+    .crop-preview-button:focus-visible,
+    .snapshot-preview-button:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+      border-radius: 8px;
+    }
     .snapshot-detail {
       display: grid;
       grid-template-columns: 220px minmax(0, 1fr);
       gap: 12px;
       align-items: start;
     }
+    .snapshot-preview-button,
     .snapshot-detail img {
       width: 100%;
+    }
+    .snapshot-detail img {
       aspect-ratio: 4 / 3;
       object-fit: cover;
       border: 1px solid var(--line);
@@ -963,6 +1017,17 @@
       display: block;
       background: #05070a;
       border: 0;
+    }
+    .snapshot-modal {
+      width: min(980px, 100%);
+    }
+    .snapshot-modal .modal-body {
+      background: #05070a;
+    }
+    .snapshot-modal img {
+      max-height: calc(100vh - 128px);
+      aspect-ratio: auto;
+      object-fit: contain;
     }
     .empty-state {
       display: grid;
@@ -1267,8 +1332,8 @@
             </div>
             <div class="scroll">
               <table>
-                <thead><tr><th>시각</th><th>유형</th><th>대상</th><th>카메라</th><th>신뢰도</th><th>등급</th><th>object</th></tr></thead>
-                <tbody id="event-rows"><tr><td colspan="7" class="muted">로딩 중</td></tr></tbody>
+                <thead><tr><th>시각</th><th>유형</th><th>대상</th><th>카메라</th><th>신뢰도</th><th>점수</th><th>등급</th><th>object</th><th>검수</th></tr></thead>
+                <tbody id="event-rows"><tr><td colspan="9" class="muted">로딩 중</td></tr></tbody>
               </table>
             </div>
           </div>
@@ -1282,6 +1347,7 @@
                 <div class="field"><label>신뢰도</label><input id="demo-confidence" value="0.92" inputmode="decimal"></div>
               </div>
               <p class="muted">버튼을 누르면 `/api/v1/alerts`로 이벤트를 보내고, Action Layer 처리 이력을 함께 확인합니다.</p>
+              <div class="muted" id="event-review-summary">검수 요약 로딩 중</div>
             </div>
           </div>
         </div>
@@ -1626,6 +1692,23 @@
       </div>
     </div>
   </div>
+  <div class="modal-backdrop" id="crop-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="crop-modal-title">
+    <div class="camera-modal snapshot-modal">
+      <div class="modal-head">
+        <div class="modal-title">
+          <strong id="crop-modal-title">스냅샷</strong>
+          <code id="crop-modal-meta">-</code>
+        </div>
+        <div class="toolbar">
+          <button id="crop-modal-open">새 창</button>
+          <button id="crop-modal-close">닫기</button>
+        </div>
+      </div>
+      <div class="modal-body">
+        <img id="crop-modal-image" alt="확대 스냅샷">
+      </div>
+    </div>
+  </div>
 
   <script>
     const $ = (id) => document.getElementById(id);
@@ -1672,11 +1755,13 @@
     const state = {
       cameras: [],
       events: [],
+      reviewSummary: null,
       sensorReadings: [],
       demoEvents: [],
       appearanceSearchRows: [],
       searchHistory: [],
       cropObjectUrls: {},
+      cropModalPath: "",
       faceImageBase64: "",
       faceFilename: "",
       modelSettings: {},
@@ -2060,6 +2145,19 @@
         EVENT_SEVERITY_PRIORITY[severity] ?? 20,
       );
     }
+    function eventRiskScore(event) {
+      const score = Number(event?.risk_score);
+      if (Number.isFinite(score)) return Math.max(0, Math.min(100, score));
+      const confidence = Number(event?.confidence || 0);
+      const base = Math.max(0, Math.min(1, confidence)) * 50;
+      const priorityBonus = Math.max(0, 30 - eventPriority(event));
+      return Math.round(Math.max(0, Math.min(100, base + priorityBonus)));
+    }
+    function eventRiskBadge(event) {
+      const score = eventRiskScore(event);
+      const tone = score >= 85 ? "bad" : score >= 70 ? "warn" : score >= 45 ? "blue" : "";
+      return badge(String(Math.round(score)), tone);
+    }
     function eventSortTime(event) {
       const value = event?.received_at || event?.queued_at || event?.timestamp;
       if (typeof value === "number") return value;
@@ -2077,7 +2175,10 @@
       return eventSortTime(b) - eventSortTime(a);
     }
     function compareEventPriority(a, b) {
-      return eventPriority(a) - eventPriority(b);
+      return firstNonZero(
+        eventRiskScore(b) - eventRiskScore(a),
+        eventPriority(a) - eventPriority(b)
+      );
     }
     function compareEventType(a, b) {
       return eventLabel(eventTypeKey(a)).localeCompare(eventLabel(eventTypeKey(b)), "ko");
@@ -2145,7 +2246,7 @@
             ${isDemoEvent(event) ? badge("데모", "good") : ""}
             <span>${escapeHtml(camera)}</span>
           </div>
-          <div class="priority-meta">${time} · 신뢰도 ${confidence} · 등급 ${escapeHtml(event.severity || "-")}</div>
+          <div class="priority-meta">${time} · 신뢰도 ${confidence} · 점수 ${Math.round(eventRiskScore(event))} · 등급 ${escapeHtml(event.severity || "-")}</div>
         </div>
         ${actionButton}
       `;
@@ -2776,9 +2877,10 @@
       try {
         const body = await request("/api/v1/events" + query(params));
         state.events = mergeDemoEvents(body.items || []);
+        await loadEventReviewSummary();
         const displayEvents = sortEventsForDisplay(state.events);
         $("stat-events").textContent = String(body.total ?? state.events.length);
-        renderEventRows("event-rows", displayEvents, 7);
+        renderEventRows("event-rows", displayEvents, 9);
         renderEventRows("overview-events", displayEvents.slice(0, 8), 4, true);
         renderPriorityEvent(state.events);
         updateEventSortHint();
@@ -2786,7 +2888,7 @@
       } catch (error) {
         state.events = state.demoEvents;
         const displayEvents = sortEventsForDisplay(state.demoEvents);
-        renderEventRows("event-rows", displayEvents, 7);
+        renderEventRows("event-rows", displayEvents, 9);
         renderEventRows("overview-events", displayEvents.slice(0, 8), 4, true);
         renderPriorityEvent(state.events);
         updateEventSortHint();
@@ -2810,10 +2912,87 @@
           <td>${target}</td>
           <td><code>${eventCameraId(event) || "-"}</code></td>
           <td>${Number(event.confidence || 0).toFixed(2)}</td>
+          <td>${eventRiskBadge(event)}</td>
           <td>${badge(event.severity || "-", statusTone(event.severity))}</td>
           <td>${event.object_id ?? "-"}</td>
+          <td>${eventReviewControls(event)}</td>
         </tr>`;
       }).join("") : `<tr><td colspan="${colSpan}">${emptyState("이벤트 없음", "필터 조건을 바꾸거나 데모 이벤트를 전송해 확인하세요.")}</td></tr>`;
+    }
+    function eventReviewId(event) {
+      if (event.event_id) return String(event.event_id);
+      return [
+        eventCameraId(event) || "unknown",
+        eventTypeKey(event) || "event",
+        event.timestamp || event.received_at || "time",
+        event.object_id ?? "object",
+      ].map((value) => String(value).replaceAll("|", "_")).join("|");
+    }
+    function eventReviewControls(event) {
+      const current = event.review_status || "";
+      const id = escapeHtml(eventReviewId(event));
+      const button = (status, label, tone) => {
+        const active = current === status ? ` ${badge(label, tone)}` : label;
+        return `<button data-review-event="${id}" data-review-status="${status}">${active}</button>`;
+      };
+      return `<div class="toolbar">${button("true_positive", "맞음", "good")}${button("false_positive", "오탐", "bad")}${button("uncertain", "애매", "warn")}</div>`;
+    }
+    function eventReviewPayload(event, status) {
+      return {
+        event_id: eventReviewId(event),
+        status,
+        reviewer: "public-demo",
+        category: eventTypeKey(event),
+        event: {
+          event_id: eventReviewId(event),
+          camera_id: eventCameraId(event),
+          event_type: eventTypeKey(event),
+          severity: event.severity,
+          confidence: Number(event.confidence || 0),
+          timestamp: event.timestamp || null,
+          object_id: event.object_id ?? null,
+          metadata: event.metadata || null,
+        },
+      };
+    }
+    async function reviewEventById(eventId, status) {
+      const event = (state.events || []).find((item) => eventReviewId(item) === eventId);
+      if (!event) return;
+      const body = await request("/api/v1/event-reviews", {
+        method: "POST",
+        body: JSON.stringify(eventReviewPayload(event, status)),
+      });
+      event.review_status = body.data?.status || status;
+      event.reviewed_at = body.data?.reviewed_at || new Date().toISOString();
+      renderEventRows("event-rows", sortEventsForDisplay(state.events), 9);
+      renderEventRows("overview-events", sortEventsForDisplay(state.events).slice(0, 8), 4, true);
+      await loadEventReviewSummary();
+      showToast("이벤트 검수 저장 완료");
+    }
+    async function loadEventReviewSummary() {
+      try {
+        const body = await request("/api/v1/event-reviews/summary");
+        state.reviewSummary = body.data || null;
+      } catch {
+        state.reviewSummary = null;
+      }
+      renderEventReviewSummary();
+    }
+    function renderEventReviewSummary() {
+      const el = $("event-review-summary");
+      if (!el) return;
+      const summary = state.reviewSummary;
+      if (!summary) {
+        el.textContent = "검수 요약을 불러오지 못했습니다.";
+        return;
+      }
+      const byStatus = summary.by_status || {};
+      el.innerHTML = [
+        `누적 ${summary.total ?? 0}건`,
+        `맞음 ${byStatus.true_positive ?? 0}`,
+        `오탐 ${byStatus.false_positive ?? 0}`,
+        `애매 ${byStatus.uncertain ?? 0}`,
+      ].map((text) => badge(text, "")).join(" ");
     }
     function eventTargetLabel(event) {
       const metadata = event.metadata || {};
@@ -2866,22 +3045,79 @@
           <td>${escapeHtml(item.device_name || "-")}</td>
           <td><code>${escapeHtml(item.device_id || "-")}</code></td>
           <td>${badge(item.table || "-", "blue")}</td>
-          <td>${sensorValueSummary(item.data || {})}${item.reason ? `<br><span class="muted">${escapeHtml(item.reason)}</span>` : ""}</td>
+          <td>${sensorValueSummary(item.data || {})}${item.reason ? `<span class="muted sensor-reason">${escapeHtml(item.reason)}</span>` : ""}</td>
           <td>${sensorStatusBadge(item)}</td>
         </tr>
       `).join("") : '<tr><td colspan="6" class="muted">TLV 수신 로그 없음</td></tr>';
     }
     function sensorValueSummary(data) {
       const source = data && typeof data === "object" && !Array.isArray(data) ? data : {};
-      const preferred = ["temperature", "angle_x", "angle_y", "event_code", "humidity", "battery"];
-      const formatPart = (key, value) => `${escapeHtml(key)}=${escapeHtml(value)}`;
-      const parts = preferred
+      const preferred = [
+        "temperature", "temperature_c", "humidity", "humidity_pct",
+        "angle_x", "angle_x_deg", "angle_y", "angle_y_deg",
+        "acc_x_g", "acc_y_g", "acc_z_g",
+        "gyro_x_dps", "gyro_y_dps", "gyro_z_dps",
+        "event_code", "battery", "battery_level_pct",
+        "water_level_m", "flow_velocity_mps", "rain_fall_mm", "flood_level_m",
+        "reporting_period_s",
+      ];
+      const parts = [];
+      preferred
         .filter((key) => source[key] !== undefined && source[key] !== null && source[key] !== "")
-        .map((key) => formatPart(key, source[key]));
+        .forEach((key) => parts.push(sensorValueChip(key, source[key])));
       if (!parts.length) {
-        Object.entries(source).slice(0, 4).forEach(([key, value]) => parts.push(formatPart(key, value)));
+        Object.entries(source).slice(0, 6).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== "") parts.push(sensorValueChip(key, value));
+        });
       }
-      return parts.join("<br>") || "-";
+      return parts.length ? `<div class="sensor-values">${parts.join("")}</div>` : "-";
+    }
+    function sensorValueChip(key, value) {
+      const meta = sensorValueMeta(key);
+      return `
+        <span class="sensor-value" title="${escapeHtml(key)}">
+          <span class="sensor-value-label">${escapeHtml(meta.label)}</span>
+          <span class="sensor-value-reading">${escapeHtml(formatSensorValue(value, meta.unit))}</span>
+        </span>
+      `;
+    }
+    function sensorValueMeta(key) {
+      const labels = {
+        temperature: ["온도", "°C"],
+        temperature_c: ["온도", "°C"],
+        humidity: ["습도", "%"],
+        humidity_pct: ["습도", "%"],
+        angle_x: ["X 기울기", "°"],
+        angle_x_deg: ["X 기울기", "°"],
+        angle_y: ["Y 기울기", "°"],
+        angle_y_deg: ["Y 기울기", "°"],
+        acc_x_g: ["가속도 X", "g"],
+        acc_y_g: ["가속도 Y", "g"],
+        acc_z_g: ["가속도 Z", "g"],
+        gyro_x_dps: ["자이로 X", "°/s"],
+        gyro_y_dps: ["자이로 Y", "°/s"],
+        gyro_z_dps: ["자이로 Z", "°/s"],
+        event_code: ["이벤트", ""],
+        battery: ["배터리", "%"],
+        battery_level_pct: ["배터리", "%"],
+        water_level_m: ["수위", "m"],
+        flow_velocity_mps: ["유속", "m/s"],
+        rain_fall_mm: ["강수", "mm"],
+        flood_level_m: ["침수", "m"],
+        reporting_period_s: ["주기", "s"],
+      };
+      const [label, unit] = labels[key] || [key.replaceAll("_", " "), ""];
+      return { label, unit };
+    }
+    function formatSensorValue(value, unit = "") {
+      if (typeof value === "boolean") return value ? "ON" : "OFF";
+      const number = Number(value);
+      if (Number.isFinite(number) && value !== "") {
+        const decimals = Math.abs(number) >= 100 ? 0 : Math.abs(number) >= 10 ? 1 : 2;
+        return `${Number(number.toFixed(decimals))}${unit ? ` ${unit}` : ""}`;
+      }
+      if (typeof value === "object") return JSON.stringify(value);
+      return `${value}${unit ? ` ${unit}` : ""}`;
     }
     function sensorStatusBadge(item) {
       const data = item?.data && typeof item.data === "object" ? item.data : {};
@@ -3012,7 +3248,7 @@
           <td><code>${item.camera_id}</code></td>
           <td>${escapeHtml(appearanceTargetLabel(item))}<br><code>${escapeHtml(item.event_id || `row-${item.id}`)}</code></td>
           <td>${appearanceColorBadges(item)}<br>${appearanceMetaLines(item).slice(2).join("<br>") || "-"}</td>
-          <td>${item.crop_url ? `<img class="crop-thumb" data-crop-url="${escapeHtml(item.crop_url)}" alt="검색 crop">` : '<span class="muted">crop 없음</span>'}</td>
+          <td>${cropPreviewButton(item.crop_url, "검색 crop") || '<span class="muted">crop 없음</span>'}</td>
           <td><button onclick="selectSearchResult(${item.id})">상세</button></td>
         </tr>
       `).join("") : '<tr><td colspan="7" class="muted">검색 결과 없음</td></tr>';
@@ -3023,6 +3259,39 @@
       window.open(apiBase() + path, "_blank");
     }
     window.openCrop = openCrop;
+    function cropPreviewButton(path, alt, imageClass = "crop-thumb", buttonClass = "crop-preview-button") {
+      if (!path) return "";
+      const safePath = escapeHtml(path);
+      return `
+        <button class="${buttonClass}" data-crop-preview="${safePath}" type="button" aria-label="스냅샷 확대">
+          <img class="${imageClass}" data-crop-url="${safePath}" alt="${escapeHtml(alt)}">
+        </button>
+      `;
+    }
+    async function openCropModal(path, label = "스냅샷") {
+      if (!path) return;
+      const objectUrl = await getCropObjectUrl(path);
+      state.cropModalPath = path;
+      $("crop-modal-title").textContent = label;
+      $("crop-modal-meta").textContent = path.split("/").pop() || path;
+      $("crop-modal-image").src = objectUrl;
+      $("crop-modal-backdrop").classList.add("show");
+    }
+    function closeCropModal() {
+      $("crop-modal-backdrop").classList.remove("show");
+      $("crop-modal-image").removeAttribute("src");
+      state.cropModalPath = "";
+    }
+    function openCropModalWindow() {
+      if (state.cropModalPath) openCrop(state.cropModalPath);
+    }
+    async function openCropPreviewFromElement(preview) {
+      try {
+        await openCropModal(preview.dataset.cropPreview);
+      } catch (error) {
+        showToast((error && error.message) ? error.message : "스냅샷을 열지 못했습니다.");
+      }
+    }
     async function selectSearchResult(id, persist = true) {
       const item = state.appearanceSearchRows.find((row) => Number(row.id) === Number(id));
       if (!item) return;
@@ -3030,7 +3299,7 @@
       $("selected-search-badge").textContent = appearanceClassLabel(item);
       $("selected-search-detail").innerHTML = `
         <div class="snapshot-detail">
-          <div>${cropSrc ? `<img src="${cropSrc}" alt="검색 결과 스냅샷">` : '<div class="camera-error">저장된 crop 이미지가 없습니다.</div>'}</div>
+          <div>${cropSrc ? cropPreviewButton(item.crop_url, "검색 결과 스냅샷", "", "snapshot-preview-button") : '<div class="camera-error">저장된 crop 이미지가 없습니다.</div>'}</div>
           <div class="kv">
             <span>시각</span><span>${fmtTime(item.timestamp)}</span>
             <span>구분</span><span>${badge(appearanceClassLabel(item), item.face_name ? "good" : "blue")}</span>
@@ -3043,6 +3312,7 @@
           </div>
         </div>
       `;
+      hydrateCropImages();
       if (persist) appendSearchHistory(item);
     }
     async function getCropObjectUrl(path) {
@@ -3104,7 +3374,7 @@
           <td>${fmtTime(item.viewedAt)}</td>
           <td>${escapeHtml(item.query)}</td>
           <td>${badge(item.classLabel, item.classLabel === "등록 얼굴" ? "good" : "blue")}<br>${escapeHtml(item.target)}<br><code>${escapeHtml(item.camera_id)}</code></td>
-          <td>${item.cropUrl ? `<img class="crop-thumb" data-crop-url="${escapeHtml(item.cropUrl)}" alt="조회 기록 스냅샷">` : "-"}</td>
+          <td>${cropPreviewButton(item.cropUrl, "조회 기록 스냅샷") || "-"}</td>
         </tr>
       `).join("") : '<tr><td colspan="4" class="muted">조회 기록 없음</td></tr>';
       hydrateCropImages();
@@ -3425,7 +3695,7 @@
       $("event-sort").addEventListener("change", async () => {
         localStorage.setItem("cctvDemoEventSort", $("event-sort").value);
         updateEventSortHint();
-        renderEventRows("event-rows", sortEventsForDisplay(state.events), 7);
+        renderEventRows("event-rows", sortEventsForDisplay(state.events), 9);
         renderEventRows("overview-events", sortEventsForDisplay(state.events).slice(0, 8), 4, true);
         renderPriorityEvent(state.events);
         await Promise.allSettled([loadPending(), loadActionEvents()]);
@@ -3471,8 +3741,37 @@
     $("camera-modal-backdrop").addEventListener("click", (event) => {
       if (event.target.id === "camera-modal-backdrop") closeCameraModal();
     });
+    $("crop-modal-close").addEventListener("click", closeCropModal);
+    $("crop-modal-open").addEventListener("click", openCropModalWindow);
+    $("crop-modal-backdrop").addEventListener("click", (event) => {
+      if (event.target.id === "crop-modal-backdrop") closeCropModal();
+    });
+    document.addEventListener("click", (event) => {
+      const reviewButton = event.target.closest("[data-review-event]");
+      if (reviewButton) {
+        event.preventDefault();
+        reviewEventById(reviewButton.dataset.reviewEvent, reviewButton.dataset.reviewStatus)
+          .catch((error) => showToast("검수 저장 실패: " + error.message));
+        return;
+      }
+      const preview = event.target.closest("[data-crop-preview]");
+      if (!preview) return;
+      openCropPreviewFromElement(preview);
+    });
     document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape" && $("camera-modal-backdrop").classList.contains("show")) {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      const preview = event.target.closest("[data-crop-preview]");
+      if (!preview) return;
+      event.preventDefault();
+      openCropPreviewFromElement(preview);
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape") return;
+      if ($("crop-modal-backdrop").classList.contains("show")) {
+        closeCropModal();
+        return;
+      }
+      if ($("camera-modal-backdrop").classList.contains("show")) {
         closeCameraModal();
       }
     });

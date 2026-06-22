@@ -34,6 +34,7 @@ from .v1 import (
     appearances,
     cameras,
     control,
+    event_reviews,
     events,
     health,
     metrics,
@@ -214,6 +215,7 @@ app.include_router(sensor_readings.router, prefix=_PREFIX)
 app.include_router(cameras.router, prefix=_PREFIX)
 app.include_router(sites.router, prefix=_PREFIX)
 app.include_router(control.router, prefix=_PREFIX)
+app.include_router(event_reviews.router, prefix=_PREFIX)
 app.include_router(appearances.router, prefix=_PREFIX)
 app.include_router(search.router, prefix=_PREFIX)
 app.include_router(metrics.router, prefix=_PREFIX)

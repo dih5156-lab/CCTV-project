@@ -30,12 +30,18 @@ class AppearancePipeline:
         crop_dir: Path,
         *,
         save_crops: bool = False,
+        crop_context_ratio: Optional[float] = None,
         color_smoothing_window: Optional[int] = None,
         color_min_samples: Optional[int] = None,
     ) -> None:
         self._appearance = appearance
         self._crop_dir = crop_dir
         self._save_crops = save_crops
+        self._crop_context_ratio = max(0.0, float(
+            crop_context_ratio
+            if crop_context_ratio is not None
+            else os.environ.get("APPEARANCE_CROP_CONTEXT_RATIO", "0.6")
+        ))
         if self._save_crops:
             self._crop_dir.mkdir(parents=True, exist_ok=True)
         self._appearance_cooldown: Dict[str, float] = {}
@@ -49,6 +55,9 @@ class AppearancePipeline:
             color_min_samples
             if color_min_samples is not None
             else os.environ.get("APPEARANCE_COLOR_MIN_SAMPLES", "3")
+        ))
+        self._gender_min_samples = max(1, int(
+            os.environ.get("APPEARANCE_GENDER_MIN_SAMPLES", "3")
         ))
         self._color_history: Dict[str, Dict[str, Deque[str]]] = {}
 
@@ -80,8 +89,7 @@ class AppearancePipeline:
 
         try:
             frame_h, frame_w = frame.shape[:2]
-            x1, y1 = max(0, x), max(0, y)
-            x2, y2 = min(frame_w, x + w), min(frame_h, y + h)
+            x1, y1, x2, y2 = self._context_crop_bounds(frame_w, frame_h, x, y, w, h)
             if x2 <= x1 or y2 <= y1:
                 return None
             crop = frame[y1:y2, x1:x2]
@@ -99,6 +107,32 @@ class AppearancePipeline:
             logger.debug("person crop 저장 실패", exc_info=True)
             return None
 
+    def _context_crop_bounds(
+        self,
+        frame_w: int,
+        frame_h: int,
+        x: int,
+        y: int,
+        w: int,
+        h: int,
+    ) -> Tuple[int, int, int, int]:
+        """검수 이미지 저장용으로 bbox 주변 맥락을 포함한 crop 좌표를 계산한다."""
+        x1, y1 = int(x), int(y)
+        x2, y2 = int(x + w), int(y + h)
+        if self._crop_context_ratio > 0.0 and w > 0 and h > 0:
+            pad_x = int(w * self._crop_context_ratio)
+            pad_y = int(h * self._crop_context_ratio)
+            x1 -= pad_x
+            x2 += pad_x
+            y1 -= pad_y
+            y2 += pad_y
+        return (
+            max(0, x1),
+            max(0, y1),
+            min(frame_w, x2),
+            min(frame_h, y2),
+        )
+
     def _build_face_meta_map(
         self, face_events: List[DetectionEvent]
     ) -> Dict[int, Dict]:
@@ -115,8 +149,8 @@ class AppearancePipeline:
         face_meta: Dict,
     ) -> List[str]:
         """운영 로그에 남길 외형 요약 문자열을 만든다."""
-        gender = face_meta.get("gender")
-        age_group = face_meta.get("age_group")
+        gender = face_meta.get("gender") or attrs.get("gender")
+        age_group = face_meta.get("age_group") or attrs.get("age_group")
         face_name = face_meta.get("face_name")
 
         parts = [f"track={person.object_id}"]
@@ -237,7 +271,7 @@ class AppearancePipeline:
             person,
             nearby_objects,
         )
-        return self._appearance.extract_attributes(
+        attrs = self._appearance.extract_attributes(
             frame,
             x,
             y,
@@ -246,10 +280,32 @@ class AppearancePipeline:
             nearby_objects=scaled_nearby,
             keypoints=keypoints,
         )
+        return self._merge_person_metadata_attributes(attrs, person)
+
+    @staticmethod
+    def _merge_person_metadata_attributes(attrs: Dict, person: DetectionEvent) -> Dict:
+        """DeepStream SGIE가 person metadata에 붙인 외형 속성을 병합한다."""
+        metadata = person.metadata if isinstance(person.metadata, dict) else {}
+        sgie_attrs = metadata.get("appearance")
+        if not isinstance(sgie_attrs, dict):
+            return attrs
+
+        merged = dict(attrs)
+        for key, value in sgie_attrs.items():
+            if value in (None, "", "unknown"):
+                continue
+            merged[key] = value
+        if metadata.get("appearance_backend"):
+            merged["attribute_backend"] = metadata["appearance_backend"]
+        return merged
 
     @staticmethod
     def _is_known_color(value: object) -> bool:
         return bool(value) and str(value).strip().lower() != "unknown"
+
+    @staticmethod
+    def _is_known_gender(value: object) -> bool:
+        return str(value).strip().lower() in {"male", "female"}
 
     @staticmethod
     def _track_history_key(camera_id: str, person: DetectionEvent) -> Optional[str]:
@@ -294,9 +350,20 @@ class AppearancePipeline:
             if len(samples) >= self._color_min_samples:
                 smoothed[field] = self._majority_value(samples, value)
 
+        gender_samples = history.setdefault("gender", deque(maxlen=self._color_smoothing_window))
+        gender = attrs.get("gender")
+        if self._is_known_gender(gender):
+            gender_samples.append(str(gender))
+        if len(gender_samples) >= self._gender_min_samples:
+            smoothed["gender"] = self._majority_value(gender_samples, gender)
+        elif "gender" in smoothed:
+            smoothed["gender"] = "unknown"
+
         metadata = dict(smoothed.get("attribute_metadata") or {})
         metadata["color_observations"] = observation_counts
         metadata["color_smoothing_window"] = self._color_smoothing_window
+        metadata["gender_observations"] = len(gender_samples)
+        metadata["gender_min_samples"] = self._gender_min_samples
         smoothed["attribute_metadata"] = metadata
         return smoothed
 

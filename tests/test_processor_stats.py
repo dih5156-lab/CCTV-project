@@ -7,6 +7,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from src.core.processor import ProcessorStats, _EventDebouncer
+from tests.conftest import make_event
 
 # ---------------------------------------------------------------------------
 # ProcessorStats
@@ -181,6 +182,36 @@ class TestEventDebouncer:
         d.should_send("cam1", "fall_detected", 1)   # 리셋 후 first_seen 재설정
         time.sleep(0.01)  # duration≈0.01 < sustained(0.05)
         assert d.should_send("cam1", "fall_detected", 1) is False  # 리셋 때문에 미전송
+
+    def test_fall_detected_reassociates_changed_object_id_by_bbox(self):
+        """낙상 중 track id가 바뀌어도 bbox가 같으면 지속 시간을 이어간다."""
+        cfg = self._make_config(
+            fall_sustained_seconds=0.05,
+            fall_resend_cooldown=9999.0,
+            fall_gap_reset_seconds=0.2,
+        )
+        d = _EventDebouncer(cfg, MagicMock())
+        first = make_event("fall_detected", x=100, y=100, width=120, height=70, object_id=1)
+        second = make_event("fall_detected", x=105, y=103, width=120, height=70, object_id=2)
+
+        assert d.should_send("cam1", "fall_detected", 1, event=first) is False
+        time.sleep(0.06)
+        assert d.should_send("cam1", "fall_detected", 2, event=second) is True
+
+    def test_fall_detected_distant_new_object_id_starts_new_timer(self):
+        """멀리 떨어진 새 object_id는 다른 사람으로 보고 낙상 타이머를 새로 시작한다."""
+        cfg = self._make_config(
+            fall_sustained_seconds=0.05,
+            fall_resend_cooldown=9999.0,
+            fall_gap_reset_seconds=0.2,
+        )
+        d = _EventDebouncer(cfg, MagicMock())
+        first = make_event("fall_detected", x=100, y=100, width=120, height=70, object_id=1)
+        second = make_event("fall_detected", x=500, y=400, width=120, height=70, object_id=2)
+
+        assert d.should_send("cam1", "fall_detected", 1, event=first) is False
+        time.sleep(0.06)
+        assert d.should_send("cam1", "fall_detected", 2, event=second) is False
 
     def test_different_cameras_independent(self):
         cfg = self._make_config(debounce_seconds=9999.0)

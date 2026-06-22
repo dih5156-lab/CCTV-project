@@ -78,9 +78,25 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 _DS_CONFIG_DIR = Path(__file__).parent.parent.parent / "config" / "deepstream"
+
+
+def _resolve_deepstream_config(env_name: str, default_name: str) -> Path:
+    """DeepStream config 경로를 환경변수 또는 기본 config 디렉터리에서 해석한다."""
+    value = os.environ.get(env_name, "").strip()
+    if not value:
+        return _DS_CONFIG_DIR / default_name
+    candidate = Path(value).expanduser()
+    if candidate.is_absolute():
+        return candidate
+    return (Path(__file__).parent.parent.parent / candidate).resolve()
+
+
 _INFER_CONFIG   = _DS_CONFIG_DIR / "config_infer_primary.txt"
 _HELMET_INFER_CONFIG = _DS_CONFIG_DIR / "config_infer_helmet.txt"
-_PPHUMAN_INFER_CONFIG = _DS_CONFIG_DIR / "config_infer_pphuman.txt"
+_PPHUMAN_INFER_CONFIG = _resolve_deepstream_config(
+    "DS_PPHUMAN_INFER_CONFIG",
+    "config_infer_pphuman.txt",
+)
 _TRACKER_CONFIG = _DS_CONFIG_DIR / "config_tracker.txt"
 _STREAMMUX_CONFIG = _DS_CONFIG_DIR / "config_streammux.txt"
 _LABELS_FILE    = _DS_CONFIG_DIR / "labels.txt"
@@ -416,6 +432,13 @@ class DeepStreamProcessor(BaseProcessor):
             "DS_APPEARANCE_ENABLED",
             bool(config.appearance.enabled),
         )
+        if not self._preview_enabled and (
+            self._face_enabled_default or self._appearance_enabled_default
+        ):
+            logger.warning(
+                "DS_PREVIEW_ENABLED=0이면 얼굴/외형 후처리용 프레임을 받을 수 없습니다. "
+                "face/appearance 기능을 쓰려면 DS_PREVIEW_ENABLED=1로 설정하세요."
+            )
         self._cameras: Dict[str, Dict] = {}
         self._camera_ai_flags: Dict[str, Dict[str, bool]] = {}
         self._pad_to_camera: Dict[int, str] = {}  # pad_id → camera_id 캐시 (매 프레임 재생성 방지)
@@ -527,6 +550,11 @@ class DeepStreamProcessor(BaseProcessor):
                 0.30,
                 0.30,
             ),
+            min_leg_confidence=self._read_float_setting(
+                "DS_FALL_MIN_LEG_CONFIDENCE",
+                0.30,
+                0.30,
+            ),
         )
         self.track_manager = TrackManager(
             track_timeout=self._synthetic_track_timeout,
@@ -607,6 +635,9 @@ class DeepStreamProcessor(BaseProcessor):
             self._appearance,
             Path(os.environ.get("APPEARANCE_CROP_DIR", "data/appearance_crops")),
             save_crops=self._env_bool("APPEARANCE_SAVE_CROPS", False),
+            crop_context_ratio=self._read_float_setting(
+                "APPEARANCE_CROP_CONTEXT_RATIO", None, 0.6
+            ),
         )
         self._appearance_db_path = Path(os.environ.get("APPEARANCES_DB", "/app/data/appearances.db"))
         self._appearance_conditions_mtime: Optional[float] = None
@@ -1915,7 +1946,12 @@ class DeepStreamProcessor(BaseProcessor):
         metadata = event.metadata or {}
         camera_id = str(metadata.get("camera_id") or camera_name)
         object_id = int(event.object_id) if event.object_id is not None else 0
-        return self._debouncer.should_send(camera_id, event.event_type.value, object_id)
+        return self._debouncer.should_send(
+            camera_id,
+            event.event_type.value,
+            object_id,
+            event=event,
+        )
 
     def _enqueue_event(self, event: DetectionEvent, camera_name: str) -> bool:
         if not self._should_enqueue_event(event, camera_name):

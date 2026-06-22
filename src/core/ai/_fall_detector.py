@@ -15,6 +15,7 @@ from ._constants import (
     FALL_KEYPOINT_SPAN_RATIO,
     MIN_HIP_CONFIDENCE,
     MIN_KEYPOINT_CONFIDENCE,
+    MIN_LEG_CONFIDENCE,
     SHOULDER_TOP_MIN_RATIO,
 )
 from ._yolo_helpers import extract_keypoints
@@ -45,6 +46,7 @@ class FallDetector:
         span_ratio: float = FALL_KEYPOINT_SPAN_RATIO,
         min_keypoint_confidence: float = MIN_KEYPOINT_CONFIDENCE,
         min_hip_confidence: float = MIN_HIP_CONFIDENCE,
+        min_leg_confidence: float = MIN_LEG_CONFIDENCE,
     ) -> None:
         self.fall_height_ratio = fall_height_ratio
         self.angle_horizontal = angle_horizontal
@@ -54,6 +56,7 @@ class FallDetector:
         self.span_ratio = span_ratio
         self.min_keypoint_confidence = min_keypoint_confidence
         self.min_hip_confidence = min_hip_confidence
+        self.min_leg_confidence = min_leg_confidence
 
     # ── 공개 API ──────────────────────────────────────────────────────
 
@@ -101,6 +104,12 @@ class FallDetector:
 
         # 어깨 키포인트가 최소 하나 있어야 함
         if not left_shoulder_v and not right_shoulder_v:
+            return False
+
+        # 의자에 기대거나 상체만 기울어진 자세 오탐을 줄이기 위해
+        # 무릎/발목 중 최소 하나가 확인될 때만 낙상 판정을 시작한다.
+        if not self._has_visible_leg(kpts):
+            logger.debug("낙상 후보 거부: 무릎/발목 키포인트 신뢰도 부족")
             return False
 
         # 방법 1: 어깨-엉덩이 벡터 각도
@@ -171,6 +180,13 @@ class FallDetector:
                     return True
 
         return False
+
+    def _has_visible_leg(self, kpts: np.ndarray) -> bool:
+        """무릎 또는 발목 키포인트가 충분히 보이는지 확인한다."""
+        return any(
+            len(kpts) > ki and kpts[ki][2] >= self.min_leg_confidence
+            for ki in (13, 14, 15, 16)
+        )
 
     # ── 사람 검증 로직 ────────────────────────────────────────────────
 

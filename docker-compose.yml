@@ -36,6 +36,9 @@ x-appearance-search-runtime: &appearance-search-runtime
   DS_YOLO_LABELS: ${DS_YOLO_LABELS:-person}
   APPEARANCE_CROP_DIR: ${APPEARANCE_CROP_DIR:-/app/data/runtime/appearance_crops}
   APPEARANCE_SAVE_CROPS: ${APPEARANCE_SAVE_CROPS:-true}
+  APPEARANCE_GENDER_FEMALE_MIN_SCORE: ${APPEARANCE_GENDER_FEMALE_MIN_SCORE:-0.75}
+  APPEARANCE_GENDER_MALE_MAX_SCORE: ${APPEARANCE_GENDER_MALE_MAX_SCORE:-0.25}
+  APPEARANCE_GENDER_MIN_SAMPLES: ${APPEARANCE_GENDER_MIN_SAMPLES:-3}
 
 services:
   edgex-mqtt-broker:
@@ -779,6 +782,7 @@ services:
       ALERT_LOG_PATH: /app/data/logs/alert_api_events.jsonl
       SENSOR_LOG_PATH: /app/data/logs/sensor_readings.jsonl
       SENSOR_DEVICE_MAP_PATH: /app/config/sensor_devices.json
+      EVENT_REVIEW_DB: ${EVENT_REVIEW_DB:-/app/data/runtime/event_reviews.db}
       ALERT_FALLBACK_LOG: /app/data/logs/public_api_fallback.jsonl
       CAMERAS_JSON: /app/cameras.json
       # API Key — 프로덕션에서는 반드시 설정할 것

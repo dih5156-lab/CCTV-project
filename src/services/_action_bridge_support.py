@@ -21,7 +21,7 @@ from ..canonical_event import (
     get_payload_severity,
     get_payload_tts_message,
 )
-from ..event_priority import event_priority, event_risk_level
+from ..event_priority import event_priority, event_risk_level, event_risk_score
 from ..event_routing import decide_alert_forward
 from ..time_utils import now_kst_iso
 from .cctv_metrics import device_commands as _device_commands
@@ -222,6 +222,7 @@ class _EventRepo:
             "payload": payload,
             "priority": event_priority(payload),
             "risk_level": event_risk_level(payload),
+            "risk_score": event_risk_score(payload),
         }
 
 
@@ -373,6 +374,7 @@ class _SiteRegistry:
                     "severity": get_payload_severity(info["payload"]),
                     "priority": event_priority(info["payload"]),
                     "risk_level": event_risk_level(info["payload"]),
+                    "risk_score": event_risk_score(info["payload"]),
                     "display_message": get_payload_display_message(info["payload"]),
                     "tts_message": get_payload_tts_message(info["payload"]),
                     "topic": info.get("topic"),

@@ -1,0 +1,36 @@
+{
+  "model": "Rethinking_of_PAR PA100K resnet50",
+  "input": {
+    "height": 256,
+    "width": 192,
+    "format": "BGR crop -> RGB -> ImageNet normalize -> NCHW"
+  },
+  "labels": [
+    {"index": 0, "field": "gender", "value": "female", "threshold": 0.5},
+    {"index": 1, "field": "age_group", "value": "senior", "threshold": 0.5},
+    {"index": 2, "field": "age_group", "value": "adult", "threshold": 0.5},
+    {"index": 3, "field": "age_group", "value": "child", "threshold": 0.5},
+    {"index": 4, "field": "view_direction", "value": "front", "threshold": 0.5},
+    {"index": 5, "field": "view_direction", "value": "side", "threshold": 0.5},
+    {"index": 6, "field": "view_direction", "value": "back", "threshold": 0.5},
+    {"index": 7, "field": "has_hat", "value": true, "threshold": 0.5},
+    {"index": 8, "field": "has_glasses", "value": true, "threshold": 0.5},
+    {"index": 9, "field": "has_handbag", "value": true, "threshold": 0.5},
+    {"index": 10, "field": "has_shoulderbag", "value": true, "threshold": 0.5},
+    {"index": 11, "field": "has_backpack", "value": true, "threshold": 0.5},
+    {"index": 12, "field": "holding_objects", "value": "front", "threshold": 0.5},
+    {"index": 13, "field": "upper_sleeve", "value": "short", "threshold": 0.5},
+    {"index": 14, "field": "upper_sleeve", "value": "long", "threshold": 0.5},
+    {"index": 15, "field": "upper_pattern", "value": "stripe", "threshold": 0.5},
+    {"index": 16, "field": "upper_pattern", "value": "logo", "threshold": 0.5},
+    {"index": 17, "field": "upper_pattern", "value": "plaid", "threshold": 0.5},
+    {"index": 18, "field": "upper_pattern", "value": "splice", "threshold": 0.5},
+    {"index": 19, "field": "lower_pattern", "value": "stripe", "threshold": 0.5},
+    {"index": 20, "field": "lower_pattern", "value": "pattern", "threshold": 0.5},
+    {"index": 21, "field": "outerwear", "value": "long_coat", "threshold": 0.5},
+    {"index": 22, "field": "lower_type", "value": "trousers", "threshold": 0.5},
+    {"index": 23, "field": "lower_type", "value": "shorts", "threshold": 0.5},
+    {"index": 24, "field": "lower_type", "value": "skirt_or_dress", "threshold": 0.5},
+    {"index": 25, "field": "has_boots", "value": true, "threshold": 0.5}
+  ]
+}

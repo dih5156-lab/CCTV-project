@@ -16,11 +16,13 @@ from fastapi import APIRouter, Depends, Query, Request
 from ...canonical_event import (
     get_payload_camera_id,
     get_payload_confidence,
+    get_payload_event_id,
     get_payload_event_type,
     get_payload_metadata,
     get_payload_severity,
 )
-from ...event_priority import event_priority, event_risk_level
+from ...event_priority import event_priority, event_risk_level, event_risk_score
+from ...services.event_review import EventReviewStore
 from ...time_utils import coerce_timestamp_seconds
 from ..dependencies._settings import ALERT_LOG_PATH as _ALERT_LOG
 from ..dependencies.auth import verify_api_key
@@ -67,6 +69,7 @@ def _event_item_from_entry(entry: dict) -> dict:
     confidence = get_payload_confidence(payload)
     priority = event_priority(payload)
     return {
+        "event_id": get_payload_event_id(payload),
         "camera_id": get_payload_camera_id(payload),
         "event_type": get_payload_event_type(payload),
         "severity": get_payload_severity(payload) or "normal",
@@ -81,6 +84,7 @@ def _event_item_from_entry(entry: dict) -> dict:
         "received_at": entry.get("receivedAt"),
         "priority": priority,
         "risk_level": event_risk_level(payload),
+        "risk_score": event_risk_score(payload),
     }
 
 
@@ -147,6 +151,18 @@ def _read_events(
 
     total = len(all_items)
     paged = all_items[offset : offset + limit]
+    reviews = EventReviewStore().get_many([
+        str(item.get("event_id") or "") for item in paged
+    ])
+    for item in paged:
+        review = reviews.get(str(item.get("event_id") or ""))
+        if review:
+            item["review_status"] = review.get("status")
+            item["reviewed_at"] = review.get("reviewed_at")
+            item["risk_score"] = event_risk_score(
+                item,
+                review_status=str(review.get("status") or ""),
+            )
     return [EventOut(**item) for item in paged], total
 
 

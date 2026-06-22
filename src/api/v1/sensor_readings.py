@@ -237,6 +237,38 @@ def _append_fallback(payload: dict[str, Any]) -> None:
         logger.error("센서 로그 fallback 저장 실패: %s", exc)
 
 
+def _normalize_filter_text(value: Optional[str]) -> Optional[str]:
+    text = str(value or "").strip().lower()
+    return text or None
+
+
+def _matches_device_filter(item: SensorReadingOut, device_id: Optional[str]) -> bool:
+    needle = _normalize_filter_text(device_id)
+    if not needle:
+        return True
+    candidates = [
+        _normalize_filter_text(item.device_id),
+        _normalize_filter_text(item.dev_eui),
+        _normalize_filter_text(item.device_name),
+    ]
+    return any(candidate == needle for candidate in candidates if candidate)
+
+
+def _matches_table_filter(item: SensorReadingOut, table: Optional[str]) -> bool:
+    needle = _normalize_filter_text(table)
+    if not needle:
+        return True
+    current = _normalize_filter_text(item.table)
+    if not current:
+        return False
+    table_aliases = {current}
+    if current.startswith("t"):
+        table_aliases.add(current[1:])
+    elif current.isdigit():
+        table_aliases.add(f"t{current}")
+    return needle in table_aliases
+
+
 def _read_sensor_log(
     limit: int,
     offset: int,
@@ -261,9 +293,9 @@ def _read_sensor_log(
             item = _normalize_entry(json.loads(raw_line))
         except json.JSONDecodeError:
             continue
-        if device_id and item.device_id != device_id:
+        if not _matches_device_filter(item, device_id):
             continue
-        if table and item.table != table:
+        if not _matches_table_filter(item, table):
             continue
         items.append(item)
     return items, len(items)

@@ -7,7 +7,8 @@ if [ ! -f "$ENV_FILE" ]; then
   cp .env.example "$ENV_FILE"
 fi
 
-if grep -Eq '^PUBLIC_API_KEY=.+$' "$ENV_FILE"; then
+if grep -Eq '^PUBLIC_API_KEY=.+$' "$ENV_FILE" \
+  && ! grep -Eq '^PUBLIC_API_KEY=\$\{PUBLIC_API_KEY:-\}$' "$ENV_FILE"; then
   echo "PUBLIC_API_KEY already set in $ENV_FILE"
   exit 0
 fi
