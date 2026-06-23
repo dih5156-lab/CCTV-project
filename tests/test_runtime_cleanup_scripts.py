@@ -9,23 +9,46 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
-def test_install_timer_dry_run_renders_project_root(tmp_path: Path) -> None:
-    env = os.environ.copy()
-    env["SYSTEMD_DIR"] = str(tmp_path / "systemd")
-
-    result = subprocess.run(
-        ["bash", "scripts/ops/install_runtime_cleanup_timer.sh", "--dry-run"],
-        cwd=PROJECT_ROOT,
+def _run_script(
+    command: list[str],
+    *,
+    cwd: Path = PROJECT_ROOT,
+    env: dict[str, str] | None = None,
+) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        command,
+        cwd=cwd,
         env=env,
         check=False,
         capture_output=True,
         text=True,
     )
 
+
+def _read_env_values(env_file: Path) -> dict[str, str]:
+    return dict(
+        line.split("=", 1)
+        for line in env_file.read_text(encoding="utf-8").splitlines()
+        if line and not line.startswith("#") and "=" in line
+    )
+
+
+def test_install_timer_dry_run_renders_project_root(tmp_path: Path) -> None:
+    env = os.environ.copy()
+    env["SYSTEMD_DIR"] = str(tmp_path / "systemd")
+
+    result = _run_script(
+        ["bash", "scripts/ops/install_runtime_cleanup_timer.sh", "--dry-run"],
+        env=env,
+    )
+
     assert result.returncode == 0
     assert str(PROJECT_ROOT) in result.stdout
     assert "@PROJECT_ROOT@" not in result.stdout
-    assert f"=== {tmp_path / 'systemd' / 'cctv-runtime-cleanup.service'} ===" in result.stdout
+    assert (
+        f"=== {tmp_path / 'systemd' / 'cctv-runtime-cleanup.service'} ==="
+        in result.stdout
+    )
     assert "Unit=cctv-runtime-cleanup.service" in result.stdout
 
 
@@ -46,13 +69,9 @@ def test_cleanup_runtime_preview_uses_python_bin_override(tmp_path: Path) -> Non
         }
     )
 
-    result = subprocess.run(
+    result = _run_script(
         ["bash", "scripts/cleanup/cleanup_runtime_data.sh"],
-        cwd=PROJECT_ROOT,
         env=env,
-        check=False,
-        capture_output=True,
-        text=True,
     )
 
     assert result.returncode == 0
@@ -60,3 +79,87 @@ def test_cleanup_runtime_preview_uses_python_bin_override(tmp_path: Path) -> Non
     assert f"runtime 산출물 경로: {runtime_dir}" in result.stdout
     assert f"crop 경로: {crop_dir}" in result.stdout
     assert "실제 반영하려면 --apply를 추가하세요." in result.stdout
+
+
+def test_ensure_public_api_key_preserves_existing_values(tmp_path: Path) -> None:
+    env_file = tmp_path / ".env"
+    env_file.write_text(
+        "PUBLIC_API_KEY=existing-public\nINTERNAL_SERVICE_TOKEN=existing-internal\n",
+        encoding="utf-8",
+    )
+
+    result = _run_script(
+        ["sh", "scripts/ops/ensure_public_api_key.sh", str(env_file)],
+    )
+
+    assert result.returncode == 0
+    assert env_file.read_text(encoding="utf-8") == (
+        "PUBLIC_API_KEY=existing-public\nINTERNAL_SERVICE_TOKEN=existing-internal\n"
+    )
+    assert "PUBLIC_API_KEY already set" in result.stdout
+    assert "INTERNAL_SERVICE_TOKEN already set" in result.stdout
+    assert "existing-public" not in result.stdout
+    assert "existing-internal" not in result.stdout
+
+
+def test_ensure_public_api_key_generates_empty_values(tmp_path: Path) -> None:
+    env_file = tmp_path / ".env"
+    env_file.write_text(
+        "PUBLIC_API_KEY=\nINTERNAL_SERVICE_TOKEN=\n",
+        encoding="utf-8",
+    )
+
+    result = _run_script(
+        ["sh", "scripts/ops/ensure_public_api_key.sh", str(env_file)],
+    )
+
+    assert result.returncode == 0
+    env_values = _read_env_values(env_file)
+    assert env_values["PUBLIC_API_KEY"]
+    assert env_values["INTERNAL_SERVICE_TOKEN"]
+    assert env_values["PUBLIC_API_KEY"] not in result.stdout
+    assert env_values["INTERNAL_SERVICE_TOKEN"] not in result.stdout
+    assert "PUBLIC_API_KEY generated" in result.stdout
+    assert "INTERNAL_SERVICE_TOKEN generated" in result.stdout
+
+
+def test_ensure_public_api_key_generates_placeholder_values(tmp_path: Path) -> None:
+    env_file = tmp_path / ".env"
+    env_file.write_text(
+        "PUBLIC_API_KEY=${PUBLIC_API_KEY:-}\n"
+        "INTERNAL_SERVICE_TOKEN=${INTERNAL_SERVICE_TOKEN:-}\n",
+        encoding="utf-8",
+    )
+
+    result = _run_script(
+        ["sh", "scripts/ops/ensure_public_api_key.sh", str(env_file)],
+    )
+
+    assert result.returncode == 0
+    env_values = _read_env_values(env_file)
+    assert env_values["PUBLIC_API_KEY"]
+    assert env_values["PUBLIC_API_KEY"] != "${PUBLIC_API_KEY:-}"
+    assert env_values["INTERNAL_SERVICE_TOKEN"]
+    assert env_values["INTERNAL_SERVICE_TOKEN"] != "${INTERNAL_SERVICE_TOKEN:-}"
+
+
+def test_ensure_public_api_key_copies_example_from_script_location(
+    tmp_path: Path,
+) -> None:
+    env_file = tmp_path / "generated.env"
+    other_cwd = tmp_path / "other"
+    other_cwd.mkdir()
+
+    result = _run_script(
+        [
+            "sh",
+            str(PROJECT_ROOT / "scripts/ops/ensure_public_api_key.sh"),
+            str(env_file),
+        ],
+        cwd=other_cwd,
+    )
+
+    assert result.returncode == 0
+    env_values = _read_env_values(env_file)
+    assert env_values["PUBLIC_API_KEY"]
+    assert env_values["INTERNAL_SERVICE_TOKEN"]

@@ -20,12 +20,25 @@ from fastapi.security import APIKeyHeader, APIKeyQuery
 logger = logging.getLogger(__name__)
 
 _API_KEY_NAME = "X-API-Key"
+_QUERY_API_KEY_NAME = "api_key"
+_PUBLIC_API_KEY_ENV = "PUBLIC_API_KEY"
+_ALLOW_QUERY_KEY_ENV = "PUBLIC_API_ALLOW_QUERY_KEY"
+_REQUIRE_PUBLIC_API_KEY_ENV = "REQUIRE_PUBLIC_API_KEY"
+_APP_ENV = "APP_ENV"
+
+_MISSING_KEY_DETAIL = "PUBLIC_API_KEY가 설정되지 않았습니다."
+_HEADER_REQUIRED_DETAIL = "API Key가 필요합니다. X-API-Key 헤더를 제공하세요."
+_HEADER_OR_QUERY_REQUIRED_DETAIL = (
+    "API Key가 필요합니다. X-API-Key 헤더 또는 ?api_key= 파라미터를 제공하세요."
+)
+_INVALID_KEY_DETAIL = "유효하지 않은 API Key입니다."
+
 _api_key_header = APIKeyHeader(name=_API_KEY_NAME, auto_error=False)
-_api_key_query = APIKeyQuery(name="api_key", auto_error=False)
+_api_key_query = APIKeyQuery(name=_QUERY_API_KEY_NAME, auto_error=False)
 
 
 def _get_configured_key() -> str | None:
-    return os.environ.get("PUBLIC_API_KEY") or None
+    return os.environ.get(_PUBLIC_API_KEY_ENV) or None
 
 
 def _get_env_bool(name: str, default: bool = False) -> bool:
@@ -36,38 +49,37 @@ def _get_env_bool(name: str, default: bool = False) -> bool:
 
 
 def _allow_query_api_key() -> bool:
-    return _get_env_bool("PUBLIC_API_ALLOW_QUERY_KEY", default=False)
+    return _get_env_bool(_ALLOW_QUERY_KEY_ENV, default=False)
 
 
 def _is_production_env() -> bool:
-    return os.environ.get("APP_ENV", "").strip().lower() in {
+    return os.environ.get(_APP_ENV, "").strip().lower() in {
         "prod",
         "production",
     }
 
 
 def _require_public_api_key() -> bool:
-    return _is_production_env() or _get_env_bool("REQUIRE_PUBLIC_API_KEY", default=False)
+    return _is_production_env() or _get_env_bool(
+        _REQUIRE_PUBLIC_API_KEY_ENV,
+        default=False,
+    )
 
 
 async def verify_api_key(
     header_key: str | None = Security(_api_key_header),
     query_key: str | None = Security(_api_key_query),
 ) -> None:
-    """FastAPI Depends 로 사용하는 API Key 검증 함수."""
     configured = _get_configured_key()
 
     if configured is None:
         if _require_public_api_key():
-            logger.error(
-                "PUBLIC_API_KEY가 필수인 환경이지만 값이 설정되지 않았습니다."
-            )
+            logger.error("PUBLIC_API_KEY가 필수인 환경이지만 값이 설정되지 않았습니다.")
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail="PUBLIC_API_KEY가 설정되지 않았습니다.",
+                detail=_MISSING_KEY_DETAIL,
             )
 
-        # 키가 설정되지 않은 개발 모드 — 경고만 출력
         logger.warning(
             "PUBLIC_API_KEY 환경변수가 설정되지 않았습니다. "
             "프로덕션 환경에서는 반드시 설정하세요."
@@ -78,17 +90,16 @@ async def verify_api_key(
     if provided is None and _allow_query_api_key():
         provided = query_key
     if provided is None:
-        detail = "API Key가 필요합니다. X-API-Key 헤더를 제공하세요."
+        detail = _HEADER_REQUIRED_DETAIL
         if _allow_query_api_key():
-            detail = "API Key가 필요합니다. X-API-Key 헤더 또는 ?api_key= 파라미터를 제공하세요."
+            detail = _HEADER_OR_QUERY_REQUIRED_DETAIL
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=detail,
         )
 
-    # timing-safe 비교로 timing attack 방지
     if not secrets.compare_digest(provided, configured):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="유효하지 않은 API Key입니다.",
+            detail=_INVALID_KEY_DETAIL,
         )

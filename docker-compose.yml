@@ -792,6 +792,7 @@ services:
       CAMERAS_JSON: /app/cameras.json
       # API Key — 프로덕션에서는 반드시 설정할 것
       PUBLIC_API_KEY: ${PUBLIC_API_KEY:-}
+      PUBLIC_API_ALLOW_QUERY_KEY: ${PUBLIC_API_ALLOW_QUERY_KEY:-0}
       REQUIRE_PUBLIC_API_KEY: ${REQUIRE_PUBLIC_API_KEY:-0}
       # CORS — 서버팀 도메인으로 제한 (예: https://server.example.com)
       CORS_ORIGINS: ${CORS_ORIGINS:-}

@@ -1,10 +1,13 @@
 #!/usr/bin/env sh
 set -eu
 
+SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+PROJECT_ROOT="$(CDPATH= cd -- "$SCRIPT_DIR/../.." && pwd)"
+ENV_EXAMPLE="$PROJECT_ROOT/.env.example"
 ENV_FILE="${1:-.env}"
 
 if [ ! -f "$ENV_FILE" ]; then
-  cp .env.example "$ENV_FILE"
+  cp "$ENV_EXAMPLE" "$ENV_FILE"
 fi
 
 generate_secret() {
@@ -18,7 +21,29 @@ generate_secret() {
 is_placeholder_or_empty() {
   KEY_NAME="$1"
   ! grep -Eq "^${KEY_NAME}=.+$" "$ENV_FILE" \
-    || grep -Eq "^${KEY_NAME}=\$\{${KEY_NAME}:-\}$" "$ENV_FILE"
+    || grep -Fxq "${KEY_NAME}=\${${KEY_NAME}:-}" "$ENV_FILE"
+}
+
+set_env_value() {
+  KEY_NAME="$1"
+  VALUE="$2"
+  TEMP_FILE="${ENV_FILE}.tmp"
+
+  awk -v key="$KEY_NAME" -v value="$VALUE" '
+    BEGIN { found = 0 }
+    index($0, key "=") == 1 {
+      print key "=" value
+      found = 1
+      next
+    }
+    { print }
+    END {
+      if (!found) {
+        print key "=" value
+      }
+    }
+  ' "$ENV_FILE" > "$TEMP_FILE"
+  mv "$TEMP_FILE" "$ENV_FILE"
 }
 
 ensure_secret() {
@@ -30,11 +55,7 @@ ensure_secret() {
   fi
 
   VALUE="$(generate_secret)"
-  if grep -Eq "^${KEY_NAME}=" "$ENV_FILE"; then
-    sed -i "s|^${KEY_NAME}=.*|${KEY_NAME}=${VALUE}|" "$ENV_FILE"
-  else
-    printf '\n%s=%s\n' "$KEY_NAME" "$VALUE" >> "$ENV_FILE"
-  fi
+  set_env_value "$KEY_NAME" "$VALUE"
   echo "$KEY_NAME generated in $ENV_FILE"
 }
 

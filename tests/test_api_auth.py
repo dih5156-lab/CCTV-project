@@ -10,14 +10,18 @@ from fastapi import HTTPException
 from src.api.dependencies.auth import verify_api_key
 
 
-def test_verify_api_key_accepts_header_when_configured(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_verify_api_key_accepts_header_when_configured(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setenv("PUBLIC_API_KEY", "public-secret")
     monkeypatch.delenv("PUBLIC_API_ALLOW_QUERY_KEY", raising=False)
 
     asyncio.run(verify_api_key(header_key="public-secret", query_key=None))
 
 
-def test_verify_api_key_rejects_query_by_default(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_verify_api_key_rejects_query_by_default(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setenv("PUBLIC_API_KEY", "public-secret")
     monkeypatch.delenv("PUBLIC_API_ALLOW_QUERY_KEY", raising=False)
 
@@ -28,7 +32,9 @@ def test_verify_api_key_rejects_query_by_default(monkeypatch: pytest.MonkeyPatch
     assert "X-API-Key" in str(exc_info.value.detail)
 
 
-def test_verify_api_key_allows_query_when_opted_in(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_verify_api_key_allows_query_when_opted_in(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setenv("PUBLIC_API_KEY", "public-secret")
     monkeypatch.setenv("PUBLIC_API_ALLOW_QUERY_KEY", "1")
 
