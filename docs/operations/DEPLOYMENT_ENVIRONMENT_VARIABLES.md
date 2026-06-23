@@ -29,10 +29,15 @@
 | `AIOT_DB_PASSWORD` | `.env`, `.env.jetson` | `aiot-parser-db`와 `aiot-parser`가 함께 쓰는 PostgreSQL 비밀번호 |
 | `PUBLIC_API_KEY` | `.env`, `.env.jetson` | Public API 외부 인증 키 |
 | `INTERNAL_SERVICE_TOKEN` | `.env`, `.env.jetson` | Public API, Alert API, Action Layer 내부 호출 토큰 |
+| `STREAM_API_TOKEN` | `.env`, `.env.jetson` | 선택 사항. Stream API 전용 토큰, 비우면 `INTERNAL_SERVICE_TOKEN`을 사용 |
 | `GRAFANA_ADMIN_PASSWORD` | `.env`, `.env.jetson` | Grafana 관리자 비밀번호 |
 
 권장값:
 
+- `APP_ENV=production`: 운영 보안 강제 기준으로 사용합니다.
+- `REQUIRE_PUBLIC_API_KEY=1`: `PUBLIC_API_KEY`가 비어 있으면 Public API 요청을 거부합니다.
+- `REQUIRE_CORS_ORIGINS=1`: `CORS_ORIGINS` 누락 또는 `*` 설정을 거부합니다.
+- `REQUIRE_STREAM_API_TOKEN=1`: Stream API의 `/cameras`, `/stream`, `/snapshot` 접근에 토큰을 요구합니다.
 - `CORS_ORIGINS`: 운영 도메인만 쉼표로 제한합니다.
 - `RATE_LIMIT_ENABLED=true`: 특별한 이유가 없으면 유지합니다.
 
@@ -68,7 +73,7 @@ Jetson 통합 스택에서 자주 조정하는 값만 추렸습니다. 나머지
 | `FRAME_SKIP`, `FPS`, `RTSP_BUFFER_SIZE` | 입력 처리 성능 조정 |
 | `DS_YOLO_TASK`, `DS_YOLO_CLASS_IDS`, `DS_YOLO_LABELS` | DeepStream 추론 라우팅 |
 | `DS_HELMET_ENABLED`, `DS_FACE_ENABLED`, `DS_APPEARANCE_ENABLED` | 기능 on/off |
-| `DS_PREVIEW_ENABLED`, `STREAM_API_ENABLED`, `STREAM_PORT`, `STREAM_FPS`, `STREAM_JPEG_QUALITY` | 미리보기/스트림 API |
+| `DS_PREVIEW_ENABLED`, `STREAM_API_ENABLED`, `STREAM_PORT`, `STREAM_FPS`, `STREAM_JPEG_QUALITY`, `STREAM_API_TOKEN`, `REQUIRE_STREAM_API_TOKEN` | 미리보기/스트림 API |
 | `ZONE_API_PORT`, `CAMERA_MODEL_API_PORT`, `FACE_API_PORT` | 내부 관리 API 포트 |
 | `APPEARANCE_ENABLED`, `APPEARANCE_BACKEND`, `APPEARANCE_SAVE_CROPS` | 외형 검색 기본 동작 |
 | `FACE_RECOGNITION_BACKEND`, `FACE_SNAPSHOT_ENABLED` | 얼굴 인식/스냅샷 |

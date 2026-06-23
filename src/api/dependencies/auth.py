@@ -5,6 +5,7 @@
 ?api_key= 쿼리 파라미터 인증을 임시 허용할 수 있다.
 환경변수 PUBLIC_API_KEY 에 설정된 값과 대조한다.
 키가 설정되지 않으면 개발 편의를 위해 통과시키되 경고를 남긴다.
+단, APP_ENV=production 또는 REQUIRE_PUBLIC_API_KEY=1이면 키를 반드시 요구한다.
 """
 
 from __future__ import annotations
@@ -38,6 +39,17 @@ def _allow_query_api_key() -> bool:
     return _get_env_bool("PUBLIC_API_ALLOW_QUERY_KEY", default=False)
 
 
+def _is_production_env() -> bool:
+    return os.environ.get("APP_ENV", "").strip().lower() in {
+        "prod",
+        "production",
+    }
+
+
+def _require_public_api_key() -> bool:
+    return _is_production_env() or _get_env_bool("REQUIRE_PUBLIC_API_KEY", default=False)
+
+
 async def verify_api_key(
     header_key: str | None = Security(_api_key_header),
     query_key: str | None = Security(_api_key_query),
@@ -46,7 +58,16 @@ async def verify_api_key(
     configured = _get_configured_key()
 
     if configured is None:
-        # 키가 설정되지 않으면 개발 모드 — 경고만 출력
+        if _require_public_api_key():
+            logger.error(
+                "PUBLIC_API_KEY가 필수인 환경이지만 값이 설정되지 않았습니다."
+            )
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="PUBLIC_API_KEY가 설정되지 않았습니다.",
+            )
+
+        # 키가 설정되지 않은 개발 모드 — 경고만 출력
         logger.warning(
             "PUBLIC_API_KEY 환경변수가 설정되지 않았습니다. "
             "프로덕션 환경에서는 반드시 설정하세요."
