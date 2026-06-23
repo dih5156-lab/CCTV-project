@@ -94,6 +94,26 @@ run_step() {
     return 1
 }
 
+export_runtime_env_value() {
+    local key=$1
+    local value
+
+    if [[ ! -f "$RUNTIME_ENV_FILE" ]]; then
+        return 0
+    fi
+
+    value=$(grep -E "^${key}=" "$RUNTIME_ENV_FILE" | tail -n 1 | cut -d= -f2- || true)
+    if [[ -n "$value" ]]; then
+        export "${key}=${value}"
+    fi
+}
+
+load_runtime_env_exports() {
+    export_runtime_env_value INTERNAL_SERVICE_TOKEN
+    export_runtime_env_value PUBLIC_API_KEY
+    export_runtime_env_value STREAM_API_TOKEN
+}
+
 FAILED=0
 
 log "=== CCTV 운영 점검 시작 ==="
@@ -101,6 +121,8 @@ log "  report: ${REPORT_FILE}"
 log "  started: $(date '+%Y-%m-%d %H:%M:%S %Z')"
 log "  with_deepstream: ${WITH_DEEPSTREAM}"
 log "  runtime_env_file: ${RUNTIME_ENV_FILE}"
+
+load_runtime_env_exports
 
 run_step "runtime secret consistency" .venv/bin/python scripts/health/check_runtime_secret_consistency.py --env-file "$RUNTIME_ENV_FILE" || FAILED=1
 run_step "deployment smoke" .venv/bin/python scripts/smoke/smoke_test_deployment.py || FAILED=1
