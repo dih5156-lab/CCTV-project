@@ -421,6 +421,7 @@ class DeepStreamProcessor(BaseProcessor):
         # 실제 파이프라인에 빌드된 토폴로지 (primary, helmet, pphuman)
         # _build_pipeline() 호출 시 갱신됨. 재시작 필요 여부 판단에 사용.
         self._built_topology: Tuple[bool, bool, bool] = (False, False, False)
+        self._built_source_count: int = 0
         self._pipeline_restart_pending: bool = False  # API 응답에 재시작 여부 전달용
         self._source_failure_backoff_sec = float(os.environ.get("DS_SOURCE_FAILURE_BACKOFF_SEC", "60"))
         self._source_backoff_until: Dict[str, float] = {}
@@ -905,6 +906,7 @@ class DeepStreamProcessor(BaseProcessor):
             "zones_data": zones_data or [],
             "src_element": None,   # Gst.Element — 동적 추가 시 저장
             "pad_id": None,        # nvstreammux 패드 번호
+            "sinkpad": None,       # nvstreammux request pad
             "reconnect_attempts": 0,
         }
         self._camera_ai_flags[camera_id] = self._parse_detections(detections)
@@ -926,6 +928,31 @@ class DeepStreamProcessor(BaseProcessor):
                 self.zone_manager.load_zones(camera_id, None)
             except Exception as exc:
                 logger.warning("[%s] DeepStream 구역 로딩 실패: %s", camera_id, exc)
+
+        if self.running and self._pipeline is not None:
+            next_topology = self._inference_topology_signature()
+            needs_restart = any(
+                need and not have
+                for need, have in zip(next_topology, self._built_topology)
+            )
+            if needs_restart:
+                logger.info(
+                    "[%s] 새 카메라가 현재 DeepStream 토폴로지에 없는 추론 요소를 요구합니다. "
+                    "파이프라인 재시작을 예약합니다: 빌드=%s 필요=%s",
+                    camera_id,
+                    self._built_topology,
+                    next_topology,
+                )
+                self._pipeline_restart_pending = True
+                self._restart_pipeline_async(f"camera_added:{camera_id}:topology_changed")
+            elif not self._add_camera_to_pipeline(camera_id):
+                logger.warning(
+                    "[%s] 실행 중 동적 카메라 추가 실패 → 파이프라인 재시작으로 폴백",
+                    camera_id,
+                )
+                self._pipeline_restart_pending = True
+                self._restart_pipeline_async(f"camera_added:{camera_id}:fallback_restart")
+
         logger.info("[%s] 카메라 등록됨 (DeepStream): %s", camera_id, source)
         return True
 
@@ -969,8 +996,21 @@ class DeepStreamProcessor(BaseProcessor):
         if not self.running:
             return
         logger.info("[%s] 재연결 시도 중...", camera_id)
-        self.add_camera(camera_id, source)
-        # TODO: _add_camera_to_pipeline(camera_id) 호출 (파이프라인 실행 중 동적 추가)
+        self._source_backoff_until.pop(camera_id, None)
+        self._source_last_error.pop(camera_id, None)
+
+        if camera_id not in self._cameras:
+            self.add_camera(camera_id, source)
+        else:
+            self._cameras[camera_id]["source"] = source
+
+        if self._add_camera_to_pipeline(camera_id):
+            logger.info("[%s] DeepStream 카메라 재연결 동적 attach 완료", camera_id)
+            return
+
+        logger.warning("[%s] DeepStream 동적 재연결 실패 → 파이프라인 재시작으로 폴백", camera_id)
+        self._pipeline_restart_pending = True
+        self._restart_pipeline_async(f"camera_retry:{camera_id}:fallback_restart")
 
     def start(self) -> None:
         """DeepStream 파이프라인을 시작한다.
@@ -1137,6 +1177,172 @@ class DeepStreamProcessor(BaseProcessor):
         ret = pad.link(sinkpad)
         if ret != Gst.PadLinkReturn.OK:
             logger.error("DeepStream source pad link 실패: %s -> %s", src.get_name(), ret)
+
+    def _next_dynamic_pad_id(self) -> int:
+        """현재 등록된 source pad 다음 번호를 반환한다."""
+        used = {
+            int(info["pad_id"])
+            for info in self._cameras.values()
+            if info.get("pad_id") is not None
+        }
+        pad_id = 0
+        while pad_id in used:
+            pad_id += 1
+        return pad_id
+
+    def _detach_camera_source_from_pipeline(
+        self,
+        camera_id: str,
+        *,
+        pipeline: Optional[Any] = None,
+        streammux: Optional[Any] = None,
+    ) -> Optional[int]:
+        """카메라 source element와 streammux request pad를 파이프라인에서 제거한다."""
+        info = self._cameras.get(camera_id)
+        if not info:
+            return None
+
+        previous_pad_id = info.get("pad_id")
+        pipeline = pipeline or self._pipeline
+        streammux = streammux or (pipeline.get_by_name("streammux") if pipeline is not None else None)
+        src = info.get("src_element")
+        sinkpad = info.get("sinkpad")
+
+        if src is not None:
+            try:
+                src.set_state(Gst.State.NULL)
+            except Exception as exc:
+                logger.debug("[%s] source NULL 전환 실패: %s", camera_id, exc)
+            if pipeline is not None:
+                try:
+                    pipeline.remove(src)
+                except Exception as exc:
+                    logger.debug("[%s] source pipeline 제거 실패: %s", camera_id, exc)
+
+        if sinkpad is not None and streammux is not None and hasattr(streammux, "release_request_pad"):
+            try:
+                streammux.release_request_pad(sinkpad)
+            except Exception as exc:
+                logger.debug("[%s] streammux request pad 해제 실패: %s", camera_id, exc)
+
+        if previous_pad_id is not None:
+            self._pad_to_camera.pop(previous_pad_id, None)
+        info["src_element"] = None
+        info["sinkpad"] = None
+        info["pad_id"] = None
+        return previous_pad_id
+
+    def _attach_camera_source_to_pipeline(
+        self,
+        camera_id: str,
+        *,
+        pad_id: Optional[int] = None,
+        pipeline: Optional[Any] = None,
+        streammux: Optional[Any] = None,
+        detach_existing: bool = False,
+    ) -> bool:
+        """카메라 source를 nvstreammux에 연결한다.
+
+        start() 중 정적 빌드와 실행 중 동적 재연결이 같은 경로를 사용하도록
+        분리한 헬퍼다. 실패 시 호출자가 파이프라인 재시작으로 폴백한다.
+        """
+        info = self._cameras.get(camera_id)
+        if info is None:
+            logger.warning("[%s] 등록되지 않은 카메라 source attach 요청", camera_id)
+            return False
+
+        pipeline = pipeline or self._pipeline
+        if pipeline is None:
+            logger.warning("[%s] source attach 실패: pipeline 없음", camera_id)
+            return False
+
+        streammux = streammux or pipeline.get_by_name("streammux")
+        if streammux is None:
+            logger.warning("[%s] source attach 실패: streammux 없음", camera_id)
+            return False
+
+        try:
+            source_uri = self._normalize_uri(info["source"])
+        except ValueError as exc:
+            logger.warning("[%s] DeepStream 소스 제외: %s", camera_id, exc)
+            return False
+
+        if detach_existing:
+            previous_pad_id = self._detach_camera_source_from_pipeline(
+                camera_id,
+                pipeline=pipeline,
+                streammux=streammux,
+            )
+            if pad_id is None:
+                pad_id = previous_pad_id
+
+        if pad_id is None:
+            pad_id = self._next_dynamic_pad_id()
+
+        src = self._make_element("nvurisrcbin", f"src-{camera_id}")
+        src.set_property("uri", source_uri)
+        try:
+            src.set_property("latency", int(os.environ.get("DS_RTSP_LATENCY_MS", "200")))
+        except TypeError:
+            logger.debug("nvurisrcbin latency property 미지원")
+
+        sinkpad = streammux.get_request_pad(f"sink_{pad_id}")
+        if sinkpad is None:
+            logger.warning("[%s] nvstreammux sink_%s pad 요청 실패", camera_id, pad_id)
+            return False
+
+        try:
+            pipeline.add(src)
+            src.connect("pad-added", self._on_source_pad_added, sinkpad)
+            static_srcpad = src.get_static_pad("src")
+            if static_srcpad is not None:
+                self._on_source_pad_added(src, static_srcpad, sinkpad)
+            if hasattr(src, "sync_state_with_parent"):
+                src.sync_state_with_parent()
+        except Exception as exc:
+            logger.warning("[%s] source attach 중 오류: %s", camera_id, exc)
+            try:
+                streammux.release_request_pad(sinkpad)
+            except Exception:
+                pass
+            try:
+                pipeline.remove(src)
+            except Exception:
+                pass
+            return False
+
+        info["src_element"] = src
+        info["sinkpad"] = sinkpad
+        info["pad_id"] = pad_id
+        self._pad_to_camera[pad_id] = camera_id
+        if not self._preview_camera_id:
+            self._preview_camera_id = camera_id
+        logger.info("[%s] DeepStream source attach 완료: pad_id=%s uri=%s", camera_id, pad_id, source_uri)
+        return True
+
+    def _add_camera_to_pipeline(self, camera_id: str) -> bool:
+        """실행 중인 DeepStream 파이프라인에 카메라 source를 동적으로 붙인다."""
+        if not self.running or self._pipeline is None:
+            return False
+        info = self._cameras.get(camera_id)
+        if info is None:
+            return False
+        attached_count = sum(
+            1
+            for camera_info in self._cameras.values()
+            if camera_info.get("src_element") is not None
+        )
+        if info.get("pad_id") is None and attached_count >= self._built_source_count:
+            logger.info(
+                "[%s] 현재 DeepStream batch-size(%d)를 넘는 source 추가는 재시작으로 처리합니다.",
+                camera_id,
+                self._built_source_count,
+            )
+            return False
+        return self._attach_camera_source_to_pipeline(
+            camera_id,
+            detach_existing=True,
+        )
 
     def _build_source_entries(self) -> List[Tuple[int, str, Dict, str]]:
         """카메라 설정을 DeepStream source entry 목록으로 변환한다."""
@@ -2592,6 +2798,11 @@ class DeepStreamProcessor(BaseProcessor):
         source_entries = self._build_source_entries()
         if not source_entries:
             raise RuntimeError("DeepStream 파이프라인을 만들 지원 소스가 없습니다.")
+        for info in self._cameras.values():
+            info["src_element"] = None
+            info["sinkpad"] = None
+            info["pad_id"] = None
+        self._pad_to_camera = {}
         self._preview_camera_id = source_entries[0][1]
 
         n_cams = len(source_entries)
@@ -2684,25 +2895,13 @@ class DeepStreamProcessor(BaseProcessor):
             previous = element
 
         for pad_id, camera_id, info, source_uri in source_entries:
-            src = self._make_element("nvurisrcbin", f"src-{camera_id}")
-            src.set_property("uri", source_uri)
-            try:
-                src.set_property("latency", int(os.environ.get("DS_RTSP_LATENCY_MS", "200")))
-            except TypeError:
-                logger.debug("nvurisrcbin latency property 미지원")
-
-            pipeline.add(src)
-            sinkpad = streammux.get_request_pad(f"sink_{pad_id}")
-            if sinkpad is None:
-                raise RuntimeError(f"nvstreammux sink_{pad_id} pad 요청 실패")
-
-            src.connect("pad-added", self._on_source_pad_added, sinkpad)
-            static_srcpad = src.get_static_pad("src")
-            if static_srcpad is not None:
-                self._on_source_pad_added(src, static_srcpad, sinkpad)
-
-            info["src_element"] = src
-            info["pad_id"] = pad_id
+            if not self._attach_camera_source_to_pipeline(
+                camera_id,
+                pad_id=pad_id,
+                pipeline=pipeline,
+                streammux=streammux,
+            ):
+                raise RuntimeError(f"[{camera_id}] DeepStream source attach 실패: {source_uri}")
 
         srcpad = probe_element.get_static_pad("src")
         if srcpad is None:
@@ -2721,6 +2920,7 @@ class DeepStreamProcessor(BaseProcessor):
             helmet_infer is not None,
             pphuman_infer is not None,
         )
+        self._built_source_count = n_cams
         # pad_id → camera_id 역매핑 캐시 갱신 (매 프레임 재생성 방지)
         self._pad_to_camera = {
             cam_info.get("pad_id"): cam_id
