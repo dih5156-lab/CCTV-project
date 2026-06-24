@@ -25,6 +25,8 @@ import numpy as np
 import pytest
 
 import src.core.deepstream_processor as deepstream_processor
+from src.core._context_event_store import ContextEventStore
+from src.core._preview_frame_store import PreviewFrameStore
 from src.core.base_processor import BaseProcessor
 from src.core.deepstream_processor import DEEPSTREAM_AVAILABLE, DeepStreamProcessor
 from src.core.event_debouncer import EventDebouncer
@@ -189,8 +191,8 @@ def test_get_camera_frame_can_skip_copy_for_internal_postprocessing():
     """내부 후처리는 preview 프레임 추가 복사를 피할 수 있어야 한다."""
     proc = object.__new__(DeepStreamProcessor)
     frame = [[1, 2, 3]]
-    proc._preview_frame_lock = threading.Lock()
-    proc._preview_frames = {"cam1": frame}
+    proc._preview_store = PreviewFrameStore(max_fps=5.0)
+    proc._preview_store.put_frame("cam1", frame, now_monotonic=1.0, wall_time=1.0)
     proc._preview_camera_id = None
 
     copied = proc.get_camera_frame("cam1")
@@ -204,7 +206,7 @@ def test_get_camera_frame_can_skip_copy_for_internal_postprocessing():
 def test_deepstream_get_camera_status_uses_common_fields_without_runtime():
     proc = object.__new__(DeepStreamProcessor)
     proc.running = False
-    proc._preview_last_frame_at = None
+    proc._preview_store = PreviewFrameStore(max_fps=5.0)
     proc._source_backoff_until = {}
     proc._source_last_error = {}
     proc._cameras = {
@@ -292,6 +294,64 @@ def test_deepstream_camera_id_from_error_debug():
     assert camera_id == "camera_1"
 
 
+def test_deepstream_retry_camera_clears_backoff_and_attaches_dynamically():
+    proc = object.__new__(DeepStreamProcessor)
+    proc.running = True
+    proc._source_backoff_until = {"cam1": 130.0}
+    proc._source_last_error = {"cam1": "rtsp timeout"}
+    proc._cameras = {"cam1": {"source": "rtsp://old/stream"}}
+    proc._pipeline_restart_pending = False
+    proc._add_camera_to_pipeline = MagicMock(return_value=True)
+    restart = MagicMock()
+    proc._restart_pipeline_async = restart
+
+    proc._retry_camera("cam1", "rtsp://new/stream")
+
+    assert "cam1" not in proc._source_backoff_until
+    assert "cam1" not in proc._source_last_error
+    assert proc._cameras["cam1"]["source"] == "rtsp://new/stream"
+    assert proc._pipeline_restart_pending is False
+    proc._add_camera_to_pipeline.assert_called_once_with("cam1")
+    restart.assert_not_called()
+
+
+def test_deepstream_retry_camera_falls_back_to_restart_when_dynamic_attach_fails():
+    proc = object.__new__(DeepStreamProcessor)
+    proc.running = True
+    proc._source_backoff_until = {}
+    proc._source_last_error = {}
+    proc._cameras = {"cam1": {"source": "rtsp://old/stream"}}
+    proc._pipeline_restart_pending = False
+    proc._add_camera_to_pipeline = MagicMock(return_value=False)
+    restart = MagicMock()
+    proc._restart_pipeline_async = restart
+
+    proc._retry_camera("cam1", "rtsp://new/stream")
+
+    assert proc._pipeline_restart_pending is True
+    restart.assert_called_once_with("camera_retry:cam1:fallback_restart")
+
+
+def test_deepstream_retry_camera_registers_missing_camera_before_restart():
+    proc = object.__new__(DeepStreamProcessor)
+    proc.running = True
+    proc._source_backoff_until = {}
+    proc._source_last_error = {}
+    proc._cameras = {}
+    proc._pipeline_restart_pending = False
+    proc.add_camera = MagicMock(return_value=True)
+    proc._add_camera_to_pipeline = MagicMock(return_value=True)
+    restart = MagicMock()
+    proc._restart_pipeline_async = restart
+
+    proc._retry_camera("cam1", "rtsp://new/stream")
+
+    proc.add_camera.assert_called_once_with("cam1", "rtsp://new/stream")
+    assert proc._pipeline_restart_pending is False
+    proc._add_camera_to_pipeline.assert_called_once_with("cam1")
+    restart.assert_not_called()
+
+
 def test_deepstream_get_stats_uses_common_fields_without_runtime():
     proc = object.__new__(DeepStreamProcessor)
     proc._frames_processed = 12
@@ -301,8 +361,7 @@ def test_deepstream_get_stats_uses_common_fields_without_runtime():
     proc._events_failed = 0
     proc._output_mode = "fakesink"
     proc._preview_enabled = True
-    proc._preview_max_fps = 5.0
-    proc._preview_last_frame_at = None
+    proc._preview_store = PreviewFrameStore(max_fps=5.0)
     proc._cameras = {"cam1": {"source": "rtsp://192.168.1.1/stream"}}
 
     stats = proc.get_stats()
@@ -344,8 +403,8 @@ def test_read_preview_max_fps_clamps_high_values(monkeypatch):
 
 def test_preview_sample_is_pulled_even_when_throttled(monkeypatch):
     proc = object.__new__(DeepStreamProcessor)
-    proc._preview_min_interval_sec = 1.0
-    proc._preview_last_sample_at = 100.0
+    proc._preview_store = PreviewFrameStore(max_fps=1.0)
+    proc._preview_store.last_sample_at = 100.0
     monkeypatch.setattr("src.core.deepstream_processor.time.monotonic", lambda: 100.1)
     monkeypatch.setattr(
         "src.core.deepstream_processor.Gst",
@@ -411,6 +470,39 @@ def test_deepstream_filter_events_respects_all_off():
     ]
 
     assert proc._filter_events_for_camera(events, "cam1") == []
+
+
+def test_context_event_store_merges_recent_non_person_events_without_duplicates():
+    now = 100.0
+    store = ContextEventStore(
+        ttl_sec=2.0,
+        maxlen=16,
+        time_factory=lambda: now,
+    )
+    person = DetectionEvent(EventType.PERSON, 0, 0, 10, 10, 0.9, now, object_id=1)
+    head = DetectionEvent(EventType.HEAD, 5, 5, 8, 8, 0.8, now, object_id=2)
+    duplicate_head = DetectionEvent(EventType.HEAD, 5, 5, 8, 8, 0.7, now, object_id=2)
+
+    store.remember("cam1", [person, head])
+    merged = store.collect("cam1", [person, duplicate_head])
+
+    assert merged == [person, duplicate_head]
+
+
+def test_context_event_store_drops_stale_cached_events():
+    current_time = [100.0]
+    store = ContextEventStore(
+        ttl_sec=1.0,
+        maxlen=16,
+        time_factory=lambda: current_time[0],
+    )
+    head = DetectionEvent(EventType.HEAD, 5, 5, 8, 8, 0.8, 100.0, object_id=2)
+    person = DetectionEvent(EventType.PERSON, 0, 0, 10, 10, 0.9, 102.0, object_id=1)
+
+    store.remember("cam1", [head])
+    current_time[0] = 102.0
+
+    assert store.collect("cam1", [person]) == [person]
 
 
 def test_deepstream_fall_detector_uses_env_thresholds(mock_config, monkeypatch):
@@ -664,9 +756,15 @@ class _FakeElement:
         self.link_ok = link_ok
         self.linked_to = []
         self.properties = {}
+        self.state = None
+        self.static_pad = None
+        self.synced = False
 
     def set_property(self, name, value):
         self.properties[name] = value
+
+    def set_state(self, state):
+        self.state = state
 
     def link(self, other):
         self.linked_to.append(other)
@@ -675,8 +773,181 @@ class _FakeElement:
     def connect(self, *args):
         self.properties["connect_args"] = args
 
+    def get_static_pad(self, name):
+        return self.static_pad if name == "src" else None
+
+    def sync_state_with_parent(self):
+        self.synced = True
+
     def get_name(self):
         return self.name
+
+
+class _FakePad:
+    def __init__(self):
+        self.linked = False
+        self.linked_to = None
+
+    def is_linked(self):
+        return self.linked
+
+    def link(self, sinkpad):
+        self.linked = True
+        self.linked_to = sinkpad
+        return "ok"
+
+
+class _FakeStreamMux(_FakeElement):
+    def __init__(self):
+        super().__init__("streammux")
+        self.requested = {}
+        self.released = []
+
+    def get_request_pad(self, name):
+        pad = _FakePad()
+        self.requested[name] = pad
+        return pad
+
+    def release_request_pad(self, pad):
+        self.released.append(pad)
+
+
+class _FakePipeline:
+    def __init__(self, streammux):
+        self.streammux = streammux
+        self.added = []
+        self.removed = []
+
+    def get_by_name(self, name):
+        return self.streammux if name == "streammux" else None
+
+    def add(self, element):
+        self.added.append(element)
+
+    def remove(self, element):
+        self.removed.append(element)
+
+
+def test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map(monkeypatch):
+    proc = object.__new__(DeepStreamProcessor)
+    proc._cameras = {"cam1": {"source": "rtsp://example/stream", "pad_id": None}}
+    proc._pad_to_camera = {}
+    proc._preview_camera_id = None
+    streammux = _FakeStreamMux()
+    pipeline = _FakePipeline(streammux)
+    created = []
+
+    def make_element(factory, name):
+        element = _FakeElement(name)
+        element.static_pad = _FakePad()
+        created.append((factory, element))
+        return element
+
+    monkeypatch.setattr(proc, "_make_element", make_element)
+    monkeypatch.setattr(
+        "src.core.deepstream_processor.Gst",
+        types.SimpleNamespace(
+            PadLinkReturn=types.SimpleNamespace(OK="ok"),
+            State=types.SimpleNamespace(NULL="null"),
+        ),
+    )
+
+    ok = proc._attach_camera_source_to_pipeline(
+        "cam1",
+        pad_id=2,
+        pipeline=pipeline,
+        streammux=streammux,
+    )
+
+    assert ok is True
+    assert created[0][0] == "nvurisrcbin"
+    assert pipeline.added == [created[0][1]]
+    assert streammux.requested["sink_2"].linked is False
+    assert created[0][1].static_pad.linked_to is streammux.requested["sink_2"]
+    assert proc._cameras["cam1"]["src_element"] is created[0][1]
+    assert proc._cameras["cam1"]["sinkpad"] is streammux.requested["sink_2"]
+    assert proc._cameras["cam1"]["pad_id"] == 2
+    assert proc._pad_to_camera == {2: "cam1"}
+    assert proc._preview_camera_id == "cam1"
+    assert created[0][1].synced is True
+
+
+def test_attach_camera_source_to_pipeline_detaches_existing_source(monkeypatch):
+    old_src = _FakeElement("old-src")
+    old_sinkpad = _FakePad()
+    proc = object.__new__(DeepStreamProcessor)
+    proc._cameras = {
+        "cam1": {
+            "source": "rtsp://example/new",
+            "src_element": old_src,
+            "sinkpad": old_sinkpad,
+            "pad_id": 4,
+        }
+    }
+    proc._pad_to_camera = {4: "cam1"}
+    proc._preview_camera_id = "cam1"
+    streammux = _FakeStreamMux()
+    pipeline = _FakePipeline(streammux)
+
+    def make_element(factory, name):
+        element = _FakeElement(name)
+        element.static_pad = _FakePad()
+        return element
+
+    monkeypatch.setattr(proc, "_make_element", make_element)
+    monkeypatch.setattr(
+        "src.core.deepstream_processor.Gst",
+        types.SimpleNamespace(
+            PadLinkReturn=types.SimpleNamespace(OK="ok"),
+            State=types.SimpleNamespace(NULL="null"),
+        ),
+    )
+
+    ok = proc._attach_camera_source_to_pipeline(
+        "cam1",
+        pipeline=pipeline,
+        streammux=streammux,
+        detach_existing=True,
+    )
+
+    assert ok is True
+    assert old_src.state == "null"
+    assert pipeline.removed == [old_src]
+    assert streammux.released == [old_sinkpad]
+    assert proc._cameras["cam1"]["pad_id"] == 4
+    assert proc._pad_to_camera == {4: "cam1"}
+
+
+def test_add_camera_to_pipeline_uses_restart_when_batch_size_would_grow():
+    proc = object.__new__(DeepStreamProcessor)
+    proc.running = True
+    proc._pipeline = object()
+    proc._built_source_count = 1
+    proc._cameras = {
+        "cam1": {"src_element": object(), "pad_id": 0},
+        "cam2": {"src_element": None, "pad_id": None},
+    }
+    proc._attach_camera_source_to_pipeline = MagicMock(return_value=True)
+
+    assert proc._add_camera_to_pipeline("cam2") is False
+    proc._attach_camera_source_to_pipeline.assert_not_called()
+
+
+def test_add_camera_to_pipeline_allows_same_camera_reconnect_with_existing_pad():
+    proc = object.__new__(DeepStreamProcessor)
+    proc.running = True
+    proc._pipeline = object()
+    proc._built_source_count = 1
+    proc._cameras = {
+        "cam1": {"src_element": object(), "pad_id": 0},
+    }
+    proc._attach_camera_source_to_pipeline = MagicMock(return_value=True)
+
+    assert proc._add_camera_to_pipeline("cam1") is True
+    proc._attach_camera_source_to_pipeline.assert_called_once_with(
+        "cam1",
+        detach_existing=True,
+    )
 
 
 def test_configure_streammux_sets_batch_and_frame_properties(monkeypatch):

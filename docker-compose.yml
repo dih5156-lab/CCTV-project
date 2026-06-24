@@ -372,9 +372,13 @@ services:
     environment:
       PYTHONIOENCODING: utf-8
       PYTHONUTF8: "1"
+      APP_ENV: ${APP_ENV:-development}
       <<: *appearance-search-runtime
       MQTT_USER: ${MQTT_USER:-}
       MQTT_PASSWORD: ${MQTT_PASSWORD:-}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-}
+      STREAM_API_TOKEN: ${STREAM_API_TOKEN:-}
+      REQUIRE_STREAM_API_TOKEN: ${REQUIRE_STREAM_API_TOKEN:-0}
       STREAM_API_ENABLED: ${STREAM_API_ENABLED:-1}
       STREAM_PORT: ${STREAM_PORT:-8769}
       STREAM_FPS: ${STREAM_FPS:-15}
@@ -775,6 +779,7 @@ services:
     environment:
       PYTHONIOENCODING: utf-8
       PYTHONUTF8: "1"
+      APP_ENV: ${APP_ENV:-development}
       # 내부 서비스 URL
       ACTION_LAYER_URL: http://cctv-action-layer:8080
       ALERT_API_URL: http://cctv-alert-api:8000
@@ -787,8 +792,11 @@ services:
       CAMERAS_JSON: /app/cameras.json
       # API Key — 프로덕션에서는 반드시 설정할 것
       PUBLIC_API_KEY: ${PUBLIC_API_KEY:-}
+      PUBLIC_API_ALLOW_QUERY_KEY: ${PUBLIC_API_ALLOW_QUERY_KEY:-0}
+      REQUIRE_PUBLIC_API_KEY: ${REQUIRE_PUBLIC_API_KEY:-0}
       # CORS — 서버팀 도메인으로 제한 (예: https://server.example.com)
       CORS_ORIGINS: ${CORS_ORIGINS:-}
+      REQUIRE_CORS_ORIGINS: ${REQUIRE_CORS_ORIGINS:-0}
       # 외형 검색 조건 DB 경로
       <<: *appearance-search-runtime
       # Rate limit 비활성화 옵션 (기본 활성화)

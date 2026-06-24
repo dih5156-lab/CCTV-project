@@ -60,6 +60,36 @@ def _running_under_pytest() -> bool:
     return bool(os.environ.get("PYTEST_CURRENT_TEST"))
 
 
+def _env_bool(name: str, default: bool = False) -> bool:
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _is_production_env() -> bool:
+    return os.environ.get("APP_ENV", "").strip().lower() in {
+        "prod",
+        "production",
+    }
+
+
+def _load_cors_origins() -> list[str]:
+    """CORS 허용 origin을 읽고 운영 모드에서는 안전 기본값을 강제한다."""
+    origins = [
+        origin.strip()
+        for origin in os.environ.get("CORS_ORIGINS", "").split(",")
+        if origin.strip()
+    ]
+    strict = _is_production_env() or _env_bool("REQUIRE_CORS_ORIGINS", default=False)
+    if strict:
+        if not origins:
+            raise RuntimeError("운영 환경에서는 CORS_ORIGINS를 1개 이상 설정해야 합니다.")
+        if "*" in origins:
+            raise RuntimeError("운영 환경에서는 CORS_ORIGINS='*'를 사용할 수 없습니다.")
+    return origins or ["*"]
+
+
 # ---------------------------------------------------------------------------
 # 앱 생성
 # ---------------------------------------------------------------------------
@@ -109,13 +139,7 @@ if not _running_under_pytest():
 # CORS — 서버팀 도메인으로 제한 (환경변수로 설정)
 # ---------------------------------------------------------------------------
 
-_origins = [
-    o.strip()
-    for o in os.environ.get("CORS_ORIGINS", "").split(",")
-    if o.strip()
-]
-if not _origins:
-    _origins = ["*"]  # 개발 환경 기본값
+_origins = _load_cors_origins()
 
 app.add_middleware(
     CORSMiddleware,

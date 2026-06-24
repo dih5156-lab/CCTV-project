@@ -134,6 +134,65 @@ class TestStreamApiStream:
         assert code == 200
         assert "cameras" in body
 
+    def test_do_get_rejects_cameras_without_token_when_required(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        monkeypatch.setenv("REQUIRE_STREAM_API_TOKEN", "1")
+        monkeypatch.setenv("STREAM_API_TOKEN", "stream-secret")
+
+        handler = _make_handler("/cameras")
+        handler.do_GET()
+
+        code, body = handler._responses[0]  # type: ignore[attr-defined]
+        assert code == 401
+        assert body["error"] == "Unauthorized"
+
+    def test_do_get_accepts_stream_token_header_when_required(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        monkeypatch.setenv("REQUIRE_STREAM_API_TOKEN", "1")
+        monkeypatch.setenv("STREAM_API_TOKEN", "stream-secret")
+
+        handler = _make_handler("/cameras")
+        handler.headers = {"X-Stream-Token": "stream-secret"}
+        handler.do_GET()
+
+        code, body = handler._responses[0]  # type: ignore[attr-defined]
+        assert code == 200
+        assert "cameras" in body
+
+    def test_do_get_accepts_internal_token_fallback_when_required(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        monkeypatch.setenv("REQUIRE_STREAM_API_TOKEN", "1")
+        monkeypatch.delenv("STREAM_API_TOKEN", raising=False)
+        monkeypatch.setenv("INTERNAL_SERVICE_TOKEN", "internal-secret")
+
+        handler = _make_handler("/cameras")
+        handler.headers = {"X-Internal-Token": "internal-secret"}
+        handler.do_GET()
+
+        code, body = handler._responses[0]  # type: ignore[attr-defined]
+        assert code == 200
+        assert "cameras" in body
+
+    def test_health_does_not_require_stream_token_when_required(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        monkeypatch.setenv("REQUIRE_STREAM_API_TOKEN", "1")
+        monkeypatch.setenv("STREAM_API_TOKEN", "stream-secret")
+
+        handler = _make_handler("/health")
+        handler.do_GET()
+
+        code, body = handler._responses[0]  # type: ignore[attr-defined]
+        assert code == 200
+        assert body["service"] == "cctv-stream-api"
+
     def test_do_get_routes_unknown(self) -> None:
         handler = _make_handler("/unknown/path")
         handler.do_GET()

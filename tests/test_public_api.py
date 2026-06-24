@@ -1294,12 +1294,34 @@ class TestCameras:
 
 class TestAuth:
     def test_no_key_when_not_configured(self, client: SyncASGIClient) -> None:
-        """PUBLIC_API_KEY 미설정 시 인증 없이 통과."""
+        """개발 모드에서는 PUBLIC_API_KEY 미설정 시 인증 없이 통과."""
         env = os.environ.copy()
         env.pop("PUBLIC_API_KEY", None)
+        env.pop("APP_ENV", None)
+        env.pop("REQUIRE_PUBLIC_API_KEY", None)
         with patch.dict(os.environ, env, clear=True):
             resp = client.get("/api/v1/health")
         assert resp.status_code == 200
+
+    def test_no_key_rejected_when_required(
+        self, client: SyncASGIClient, tmp_path: Path
+    ) -> None:
+        """운영 모드에서는 PUBLIC_API_KEY 미설정 시 요청을 거부한다."""
+        import src.api.v1.cameras as cam_module
+
+        cameras_file = tmp_path / "cameras.json"
+        cameras_file.write_text(json.dumps([]), encoding="utf-8")
+        original = cam_module._CAMERAS_JSON
+        env = os.environ.copy()
+        env.pop("PUBLIC_API_KEY", None)
+        env["REQUIRE_PUBLIC_API_KEY"] = "1"
+        try:
+            cam_module._CAMERAS_JSON = cameras_file
+            with patch.dict(os.environ, env, clear=True):
+                resp = client.get("/api/v1/cameras")
+            assert resp.status_code == 503
+        finally:
+            cam_module._CAMERAS_JSON = original
 
     def test_valid_key_accepted(self, client: SyncASGIClient) -> None:
         """올바른 API Key → 통과."""
@@ -1357,6 +1379,41 @@ class TestAuth:
             assert resp.status_code == 401
         finally:
             cam_module._CAMERAS_JSON = original
+
+
+class TestCorsConfig:
+    def test_cors_defaults_to_wildcard_in_development(self) -> None:
+        import src.api.app as app_module
+
+        env = os.environ.copy()
+        env.pop("APP_ENV", None)
+        env.pop("REQUIRE_CORS_ORIGINS", None)
+        env.pop("CORS_ORIGINS", None)
+
+        with patch.dict(os.environ, env, clear=True):
+            assert app_module._load_cors_origins() == ["*"]
+
+    def test_cors_requires_origins_when_flagged(self) -> None:
+        import src.api.app as app_module
+
+        env = os.environ.copy()
+        env.pop("CORS_ORIGINS", None)
+        env["REQUIRE_CORS_ORIGINS"] = "1"
+
+        with patch.dict(os.environ, env, clear=True):
+            with pytest.raises(RuntimeError):
+                app_module._load_cors_origins()
+
+    def test_cors_rejects_wildcard_when_flagged(self) -> None:
+        import src.api.app as app_module
+
+        with patch.dict(
+            os.environ,
+            {"REQUIRE_CORS_ORIGINS": "1", "CORS_ORIGINS": "*"},
+            clear=True,
+        ):
+            with pytest.raises(RuntimeError):
+                app_module._load_cors_origins()
 
 
 # ---------------------------------------------------------------------------

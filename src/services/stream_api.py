@@ -21,10 +21,13 @@ Routes:
 from __future__ import annotations
 
 import logging
+import os
 import re
+import secrets
 import threading
 import time
 from typing import TYPE_CHECKING
+from urllib.parse import parse_qs, urlsplit
 
 from .._http_server import BaseApiHandler, ThreadingApiServer
 from ..utils.env import get_env_float, get_env_int
@@ -57,6 +60,28 @@ def _read_stream_size() -> tuple[int, int]:
     return width, height
 
 
+def _env_bool(name: str, default: bool = False) -> bool:
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _is_production_env() -> bool:
+    return os.environ.get("APP_ENV", "").strip().lower() in {
+        "prod",
+        "production",
+    }
+
+
+def _stream_token_required() -> bool:
+    return _is_production_env() or _env_bool("REQUIRE_STREAM_API_TOKEN", default=False)
+
+
+def _configured_stream_token() -> str | None:
+    return os.environ.get("STREAM_API_TOKEN") or os.environ.get("INTERNAL_SERVICE_TOKEN") or None
+
+
 def _get_camera_frame_for_stream(proc: "BaseProcessor", camera_id: str):
     """프로세서 공통 인터페이스를 통해 복사본 없는 프레임을 요청한다."""
     return proc.get_camera_frame(camera_id, annotated=True, copy_frame=False)
@@ -83,20 +108,55 @@ class StreamApiHandler(BaseApiHandler):
     def _processor(self) -> "BaseProcessor":
         return self.server.processor  # type: ignore[attr-defined]
 
+    def _check_stream_token(self) -> bool:
+        if not _stream_token_required():
+            return True
+
+        configured = _configured_stream_token()
+        if configured is None:
+            logger.error(
+                "Stream API token이 필수인 환경이지만 STREAM_API_TOKEN 또는 "
+                "INTERNAL_SERVICE_TOKEN이 설정되지 않았습니다."
+            )
+            self._respond(503, {"error": "Stream API token is not configured"})
+            return False
+
+        query = parse_qs(urlsplit(self.path).query)
+        provided = (
+            self.headers.get("X-Stream-Token")
+            or self.headers.get("X-Internal-Token")
+            or (query.get("stream_token") or [""])[0]
+        )
+        if not secrets.compare_digest(provided, configured):
+            self._respond(401, {"error": "Unauthorized"})
+            return False
+        return True
+
     def do_OPTIONS(self):  # noqa: N802
-        self._respond_options("GET, OPTIONS", headers="")
+        self._respond_options(
+            "GET, OPTIONS",
+            headers="X-Stream-Token, X-Internal-Token",
+        )
 
     def do_GET(self):  # noqa: N802
         path = self.path.split("?")[0].rstrip("/")
         if path in ("", "/"):
+            if not self._check_stream_token():
+                return
             self._list_cameras()
         elif path == "/health":
             self._health()
         elif path == "/cameras":
+            if not self._check_stream_token():
+                return
             self._list_cameras()
         elif m := _RE_STREAM.match(path):
+            if not self._check_stream_token():
+                return
             self._stream(m.group(1))
         elif m := _RE_SNAPSHOT.match(path):
+            if not self._check_stream_token():
+                return
             self._snapshot(m.group(1))
         else:
             self._consume_body()

@@ -89,13 +89,12 @@ def _device_status(configured: bool, reachable: Optional[bool]) -> str:
         return "disabled"
     return "online" if reachable else "unreachable"
 
-# MQTT 명령 토픽
-_CMD_TOPIC_MODE    = "cctv/commands/mode"     # {"site_id"?, "mode": "auto|manual"}
+
+_CMD_TOPIC_MODE = "cctv/commands/mode"  # {"site_id"?, "mode": "auto|manual"}
 _CMD_TOPIC_APPROVE = "cctv/commands/approve"  # {"event_id": "..."}
-_CMD_TOPIC_REJECT  = "cctv/commands/reject"   # {"event_id": "..."}
+_CMD_TOPIC_REJECT = "cctv/commands/reject"  # {"event_id": "..."}
 _STATUS_TOPIC_PREFIX = "cctv/status/action"
 
-# ── 공통 토픽 정의 (subscribe_topics / alarm_topics 기본값에 공유) ─────
 _ZONE_TOPICS = {
     "cctv/ai/events/+/zone_entered",
     "cctv/ai/events/+/zone_dwelling",
@@ -122,10 +121,10 @@ _SENSOR_TOPICS = {
     "aiot/rules/sensor/vibration",
 }
 
-# subscribe: 모든 이벤트를 수신하여 DB 저장
-_DEFAULT_SUBSCRIBE_TOPICS = _INTRUSION_TOPICS | _ZONE_TOPICS | _DETECTION_TOPICS | _SENSOR_TOPICS
+_DEFAULT_SUBSCRIBE_TOPICS = (
+    _INTRUSION_TOPICS | _ZONE_TOPICS | _DETECTION_TOPICS | _SENSOR_TOPICS
+)
 
-# alarm: 알람 장치(스피커/전광판/경광등)를 작동시킬 토픽만
 _DEFAULT_ALARM_TOPICS = (
     {"cctv/rules/intrusion/persisted", "cctv/rules/intrusion/critical"}
     | _ZONE_TOPICS
@@ -139,10 +138,14 @@ _DEFAULT_ALARM_TOPICS = (
 )
 
 
+def default_subscribe_topics() -> Set[str]:
+    """ActionBridge가 기본으로 저장 구독할 MQTT 토픽 목록을 반환한다."""
+    return set(_DEFAULT_SUBSCRIBE_TOPICS)
 
-# ===========================================================================
-# ActionBridge  (공개 API)
-# ===========================================================================
+
+def default_alarm_topics() -> Set[str]:
+    """ActionBridge가 기본으로 알람 처리할 MQTT 토픽 목록을 반환한다."""
+    return set(_DEFAULT_ALARM_TOPICS)
 
 
 class ActionBridge:
@@ -162,52 +165,42 @@ class ActionBridge:
 
     def __init__(
         self,
-        # MQTT
-        mqtt_broker:       str           = _ACTION_DEFAULTS.mqtt_broker,
-        mqtt_port:         int           = _ACTION_DEFAULTS.mqtt_port,
-        subscribe_topics:  Optional[Set[str]] = None,
-        # DB
-        db_path:           str           = "/app/data/runtime/action_events.db",
-        # 디바이스
-        speaker_config:    Optional[SpeakerConfig]   = None,
-        signboard_config:  Optional[SignboardConfig]  = None,
-        siren_config:      Optional[SensorConfig]     = None,
-        # HTTP 플랫폼 전송
-        http_targets:      Optional[List[HttpEventTarget]] = None,
-        external_api_url:  Optional[str] = None,   # 하위 호환 단일 URL
-        # 알람 제어
-        alarm_topics:          Optional[Set[str]] = None,
+        mqtt_broker: str = _ACTION_DEFAULTS.mqtt_broker,
+        mqtt_port: int = _ACTION_DEFAULTS.mqtt_port,
+        subscribe_topics: Optional[Set[str]] = None,
+        db_path: str = "/app/data/runtime/action_events.db",
+        speaker_config: Optional[SpeakerConfig] = None,
+        signboard_config: Optional[SignboardConfig] = None,
+        siren_config: Optional[SensorConfig] = None,
+        http_targets: Optional[List[HttpEventTarget]] = None,
+        external_api_url: Optional[str] = None,  # 하위 호환 단일 URL
+        alarm_topics: Optional[Set[str]] = None,
         alarm_cooldown_seconds: int = 10,
-        # 모드
-        default_mode:   ControlMode              = ControlMode.AUTO,
-        initial_sites:  Optional[List[SiteConfig]] = None,
-        # REST 서버
+        default_mode: ControlMode = ControlMode.AUTO,
+        initial_sites: Optional[List[SiteConfig]] = None,
         rest_enabled: bool = False,
-        rest_host:    str  = _ACTION_DEFAULTS.rest_host,
-        rest_port:    int  = _ACTION_DEFAULTS.rest_port,
+        rest_host: str = _ACTION_DEFAULTS.rest_host,
+        rest_port: int = _ACTION_DEFAULTS.rest_port,
     ) -> None:
         self.mqtt_broker = mqtt_broker
-        self.mqtt_port   = int(mqtt_port)
-        self.subscribe_topics = subscribe_topics or set(_DEFAULT_SUBSCRIBE_TOPICS)
+        self.mqtt_port = int(mqtt_port)
+        self.subscribe_topics = subscribe_topics or default_subscribe_topics()
 
-        # ── 내부 헬퍼 ──────────────────────────────────────────────
-        self._repo  = _EventRepo(Path(db_path))
+        self._repo = _EventRepo(Path(db_path))
         self._sites = _SiteRegistry(
             default_mode=default_mode,
             initial_sites=initial_sites,
         )
         self._alarm = _AlarmCoordinator(
-            alarm_topics=alarm_topics or set(_DEFAULT_ALARM_TOPICS),
+            alarm_topics=alarm_topics or default_alarm_topics(),
             alarm_cooldown_seconds=alarm_cooldown_seconds,
         )
 
-        # ── 디바이스 ──────────────────────────────────────────────
-        self._speaker   = SpeakerDevice(speaker_config   or SpeakerConfig())
+        self._speaker = SpeakerDevice(speaker_config or SpeakerConfig())
         self._signboard = SignboardDevice(signboard_config or SignboardConfig())
-        self._siren     = SirenDevice(siren_config        or SensorConfig())
+        self._siren = SirenDevice(siren_config or SensorConfig())
         self._device_reachability_cache: Dict[str, Tuple[float, bool]] = {}
 
-        # ── HTTP 포워더 ───────────────────────────────────────────
         targets: List[HttpEventTarget] = list(http_targets or [])
         if external_api_url and not any(t.url == external_api_url for t in targets):
             targets.append(HttpEventTarget(name="default", url=external_api_url))
@@ -225,7 +218,6 @@ class ActionBridge:
             alarm_device_enum=AlarmDevice,
         )
 
-        # ── REST 서버 ─────────────────────────────────────────────
         self._rest_receiver: Optional[RestEventReceiver] = None
         if rest_enabled:
             self._rest_receiver = RestEventReceiver(
@@ -305,7 +297,6 @@ class ActionBridge:
             "protocol": protocol,
         }
 
-
     def set_mode(self, mode: ControlMode, site_id: Optional[str] = None) -> None:
         self._sites.set_mode(mode, site_id=site_id)
 
@@ -355,7 +346,9 @@ class ActionBridge:
                 "timestamp": now_kst_iso(),
                 **payload,
             }
-            self._mqtt_client.publish(topic, json.dumps(body, ensure_ascii=False), qos=0)
+            self._mqtt_client.publish(
+                topic, json.dumps(body, ensure_ascii=False), qos=0
+            )
         except Exception as exc:
             logger.warning("Action status 발행 실패: %s", exc)
 
@@ -383,7 +376,9 @@ class ActionBridge:
         if info is None:
             return False, f"이벤트 없음: {event_id}"
         logger.info("[수동 거부] event_id=%s", event_id)
-        self._repo.save(info["topic"], info["payload"], alarm_played=False, http_sent=False)
+        self._repo.save(
+            info["topic"], info["payload"], alarm_played=False, http_sent=False
+        )
         self._publish_status(
             "events/rejected",
             {
@@ -401,11 +396,7 @@ class ActionBridge:
 
     def _resolve_devices(self, camera_id: str) -> List[AlarmDevice]:
         candidates = self._sites.resolve_alarm_devices(camera_id)
-        return [
-            device
-            for device in candidates
-            if self._device_is_available(device)
-        ]
+        return [device for device in candidates if self._device_is_available(device)]
 
     def _device_is_available(self, device: AlarmDevice) -> bool:
         """설정되지 않았거나 네트워크에 닿지 않는 출력 장치는 실행 대상에서 제외한다."""
@@ -449,7 +440,9 @@ class ActionBridge:
         - AUTO 모드: 즉시 알람/HTTP 실행
         - MANUAL 모드: 승인 대기 큐에 추가
         """
-        payload = canonicalize_event_payload(payload, source="action-layer", source_type="action")
+        payload = canonicalize_event_payload(
+            payload, source="action-layer", source_type="action"
+        )
         camera_id = get_payload_camera_id(payload)
         mode, site_id = self._sites.resolve_mode(camera_id)
         action_settings = self._sites.resolve_action_settings(camera_id)
@@ -538,7 +531,10 @@ class ActionBridge:
 
     def _rest_action_worker_loop(self) -> None:
         """REST 이벤트 큐를 소비해 실제 액션을 수행한다."""
-        while not self._rest_action_worker_stop.is_set() or not self._rest_action_queue.empty():
+        while (
+            not self._rest_action_worker_stop.is_set()
+            or not self._rest_action_queue.empty()
+        ):
             try:
                 topic, payload = self._rest_action_queue.get(timeout=0.2)
             except Empty:
@@ -576,7 +572,9 @@ class ActionBridge:
         if rc != 0:
             logger.error("Action Layer MQTT 연결 실패 (rc=%d)", rc)
             return
-        logger.info("Action Layer MQTT 연결 성공: %s:%d", self.mqtt_broker, self.mqtt_port)
+        logger.info(
+            "Action Layer MQTT 연결 성공: %s:%d", self.mqtt_broker, self.mqtt_port
+        )
         all_topics = [
             *((t, 0) for t in self.subscribe_topics),
             *((t, 1) for t in (_CMD_TOPIC_MODE, _CMD_TOPIC_APPROVE, _CMD_TOPIC_REJECT)),
@@ -638,7 +636,7 @@ class ActionBridge:
         msg: mqtt.MQTTMessage,
     ) -> None:
         try:
-            topic   = msg.topic
+            topic = msg.topic
             payload = json.loads(msg.payload.decode("utf-8"))
             if topic in (_CMD_TOPIC_MODE, _CMD_TOPIC_APPROVE, _CMD_TOPIC_REJECT):
                 self._dispatch_command(topic, payload)
@@ -668,7 +666,11 @@ class ActionBridge:
         공통 형식 : {"camera_id":"factory-24", "type":"tilt_alert", "source":"sensor", ...}
         """
         if not isinstance(payload, dict):
-            return {"type": f"{topic.split('/')[-1]}_alert", "source": "sensor", "camera_id": "unknown"}
+            return {
+                "type": f"{topic.split('/')[-1]}_alert",
+                "source": "sensor",
+                "camera_id": "unknown",
+            }
         normalized = dict(payload)
         # device_id → camera_id 매핑
         if "camera_id" not in normalized and "device_id" in normalized:
@@ -698,19 +700,17 @@ class ActionBridge:
                 self._mqtt_client.connect(
                     self.mqtt_broker, self.mqtt_port, keepalive=60
                 )
-                logger.info(
-                    "MQTT 연결 성공: %s:%d", self.mqtt_broker, self.mqtt_port
-                )
+                logger.info("MQTT 연결 성공: %s:%d", self.mqtt_broker, self.mqtt_port)
                 break
             except (ConnectionRefusedError, OSError) as exc:
                 if attempt >= self._MQTT_MAX_ATTEMPTS:
-                    logger.error(
-                        "MQTT 연결 실패 - 포기 (%d회 시도): %s", attempt, exc
-                    )
+                    logger.error("MQTT 연결 실패 - 포기 (%d회 시도): %s", attempt, exc)
                     raise
                 logger.warning(
                     "MQTT 연결 실패 (시도 %d/%d): %s - 5초 후 재시도...",
-                    attempt, self._MQTT_MAX_ATTEMPTS, exc,
+                    attempt,
+                    self._MQTT_MAX_ATTEMPTS,
+                    exc,
                 )
                 time.sleep(5)
 
@@ -725,7 +725,7 @@ class ActionBridge:
         action_bridge_up.set(1)
         logger.info("Speaker-Bridge Action Layer 실행 중 (Ctrl+C 종료)")
 
-        signal.signal(signal.SIGINT,  self._signal_handler)
+        signal.signal(signal.SIGINT, self._signal_handler)
         signal.signal(signal.SIGTERM, self._signal_handler)
 
         try:

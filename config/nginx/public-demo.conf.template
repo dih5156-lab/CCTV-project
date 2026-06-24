@@ -7,7 +7,6 @@ server {
     listen 7000;
     server_name _;
 
-    # Re-resolve Docker service DNS so upstream container IP changes do not cause stale routing.
     resolver 127.0.0.11 ipv6=off valid=10s;
     resolver_timeout 2s;
 
@@ -41,7 +40,6 @@ server {
         return 410;
     }
 
-    # HLS는 데모 라이브 표준 경로에서 제외한다.
     location ~ ^/([^/]+)/(index\.m3u8|.*\.ts|.*\.m4s|.*\.mp4|.*\.vtt) {
         return 410;
     }

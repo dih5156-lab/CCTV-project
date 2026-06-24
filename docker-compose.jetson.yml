@@ -646,6 +646,7 @@ services:
       TZ: Asia/Seoul
       PYTHONIOENCODING: utf-8
       PYTHONUTF8: "1"
+      APP_ENV: ${APP_ENV:-development}
       NVIDIA_VISIBLE_DEVICES: all
       NVIDIA_DRIVER_CAPABILITIES: compute,video,utility,graphics
       # GStreamer 하드웨어 디코딩 (.env.jetson USE_GSTREAMER=1)
@@ -686,6 +687,8 @@ services:
       DS_PREVIEW_WIDTH: ${DS_PREVIEW_WIDTH:-960}
       DS_PREVIEW_HEIGHT: ${DS_PREVIEW_HEIGHT:-540}
       STREAM_API_ENABLED: ${STREAM_API_ENABLED:-1}
+      STREAM_API_TOKEN: ${STREAM_API_TOKEN:-}
+      REQUIRE_STREAM_API_TOKEN: ${REQUIRE_STREAM_API_TOKEN:-0}
       STREAM_PORT: ${STREAM_PORT:-8769}
       STREAM_FPS: ${STREAM_FPS:-15}
       STREAM_JPEG_QUALITY: ${STREAM_JPEG_QUALITY:-65}
@@ -693,6 +696,7 @@ services:
       STREAM_HEIGHT: ${STREAM_HEIGHT:-540}
       MQTT_USER: ${MQTT_USER:-}
       MQTT_PASSWORD: ${MQTT_PASSWORD:-}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-}
       MQTT_QOS: ${MQTT_QOS:-1}
       MQTT_EVENT_OUTBOX_DB: /app/data/runtime/mqtt_event_outbox.db
       MQTT_EVENT_OUTBOX_RETRY_INTERVAL: ${MQTT_EVENT_OUTBOX_RETRY_INTERVAL:-5}
@@ -857,6 +861,7 @@ services:
       PYTHONPATH: /app
       PYTHONIOENCODING: utf-8
       PYTHONUTF8: "1"
+      APP_ENV: ${APP_ENV:-development}
       NVIDIA_VISIBLE_DEVICES: ""
       EDGEX_OUTBOX_DB: /data/runtime/event_outbox.db
       MQTT_USER: ${MQTT_USER:-}
@@ -1213,7 +1218,10 @@ services:
       ALERT_FALLBACK_LOG: /app/data/logs/public_api_fallback.jsonl
       CAMERAS_JSON: /app/cameras.json
       PUBLIC_API_KEY: ${PUBLIC_API_KEY:-}
+      PUBLIC_API_ALLOW_QUERY_KEY: ${PUBLIC_API_ALLOW_QUERY_KEY:-0}
+      REQUIRE_PUBLIC_API_KEY: ${REQUIRE_PUBLIC_API_KEY:-0}
       CORS_ORIGINS: ${CORS_ORIGINS:-}
+      REQUIRE_CORS_ORIGINS: ${REQUIRE_CORS_ORIGINS:-0}
       <<: *appearance-runtime
       RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-true}
       INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-}
