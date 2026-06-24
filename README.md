@@ -872,6 +872,7 @@ python scripts/ops/evaluate_detection.py \
   - Jetson 통합 스택은 `docker compose -f docker-compose.jetson.yml ...` 형태로 확인/재시작해야 함을 README, COMMANDS, 현장 체크리스트에 반영
   - `cctv-ai-engine` 재시작, 로그 확인, health 확인 명령을 바로 복사해 쓸 수 있게 정리
   - Jetson compose에서도 Stream API `8769` 포트를 외부에 publish해 `http://<Jetson-IP>:8769`로 MJPEG 프리뷰 상태를 확인 가능하게 정리
+  - Public Demo의 Stream API 기본 주소를 nginx에서 막힌 `/stream-api` 대신 외부 공개 포트 `8769`로 맞춤
 
 ### v1.12.0 (2026-06-22) - 공공 낙상 데이터 보조 검증 및 운영 문서 최신화
 
