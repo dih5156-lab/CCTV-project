@@ -434,6 +434,16 @@ docker compose logs -f edgex-kuiper
 docker compose restart cctv-action-layer
 ```
 
+Jetson 통합 스택은 `docker-compose.jetson.yml`로 실행되므로, AI 엔진을 확인하거나
+재시작할 때는 compose 파일을 명시합니다.
+
+```bash
+docker compose -f docker-compose.jetson.yml ps cctv-ai-engine
+docker compose -f docker-compose.jetson.yml restart cctv-ai-engine
+docker logs --tail 120 cctv-ai-engine
+curl -fsS http://localhost:8765/health
+```
+
 #### 운영 환경 변수 기준
 
 기본 스택은 `.env`, Jetson 통합 스택은 `.env.jetson`을 기준 파일로 사용합니다.
@@ -846,6 +856,21 @@ python scripts/ops/evaluate_detection.py \
 | Windows 로그 한글 깨짐 | `chcp 65001` 후 실행, 또는 `PYTHONUTF8=1` |
 
 ## 변경 이력
+
+### v1.13.0 (2026-06-24) - DeepStream 프로세서 구조 분리 및 Jetson 운영 명령 정리
+
+- **DeepStreamProcessor 보조 모듈 분리**
+  - H264 POC 보정, preview frame 저장, tensor meta 처리, OSD overlay, source attach/detach, context event cache를 독립 모듈로 분리
+  - `deepstream_processor.py`가 파이프라인/이벤트 흐름에 더 집중하도록 책임 범위를 축소
+  - 기존 public 메서드 wrapper는 유지해 호출부와 테스트 영향 범위를 최소화
+
+- **Jetson 실기 재시작 검증**
+  - `docker-compose.jetson.yml` 기준으로 `cctv-ai-engine` 재시작 후 DeepStream source attach, TensorRT 모델 로드, MQTT 연결, 얼굴/외형 분석 로그를 확인
+  - `tests/test_deepstream_processor.py` 기준 48개 통과, 5개 Jetson 의존 테스트 skip 확인
+
+- **운영 명령 문서화**
+  - Jetson 통합 스택은 `docker compose -f docker-compose.jetson.yml ...` 형태로 확인/재시작해야 함을 README, COMMANDS, 현장 체크리스트에 반영
+  - `cctv-ai-engine` 재시작, 로그 확인, health 확인 명령을 바로 복사해 쓸 수 있게 정리
 
 ### v1.12.0 (2026-06-22) - 공공 낙상 데이터 보조 검증 및 운영 문서 최신화
 

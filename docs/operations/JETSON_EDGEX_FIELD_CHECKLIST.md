@@ -105,13 +105,14 @@ python scripts/health/check_jetson_edgex_stack.py --json
 1. Jetson 호스트에서 GPU 런타임과 Docker를 확인합니다.
 2. `docker compose --env-file .env.jetson -f docker-compose.jetson.yml up -d --build`로 스택을 올립니다.
 3. `docker compose -f docker-compose.jetson.yml ps`로 컨테이너 상태를 확인합니다.
-4. `python scripts/health/check_jetson_edgex_stack.py ...`로 인프라 상태를 확인합니다.
-5. 외형 검색을 운영할 경우 `--check-appearance-status` 옵션으로 `appearances/status`도 함께 확인합니다.
-6. `cctv-ai-engine` 로그에서 카메라 입력과 MQTT 발행 여부를 확인합니다.
-7. `cctv-edgex-adapter` 로그에서 카메라 등록, Core Metadata/Core Data 연결 여부를 확인합니다.
-8. `cctv-action-layer` 로그에서 MQTT 구독, 장비 제어 성공 여부를 확인합니다.
-9. 실제 이벤트 1건을 발생시켜 스피커/전광판/사이렌 반응을 확인합니다.
-10. MQTT 또는 EdgeX를 잠시 끊었다가 복구해 outbox 재전송이 동작하는지 확인합니다.
+4. AI 엔진만 재시작할 때는 `docker compose -f docker-compose.jetson.yml restart cctv-ai-engine`을 사용합니다.
+5. `python scripts/health/check_jetson_edgex_stack.py ...`로 인프라 상태를 확인합니다.
+6. 외형 검색을 운영할 경우 `--check-appearance-status` 옵션으로 `appearances/status`도 함께 확인합니다.
+7. `cctv-ai-engine` 로그에서 카메라 입력과 MQTT 발행 여부를 확인합니다.
+8. `cctv-edgex-adapter` 로그에서 카메라 등록, Core Metadata/Core Data 연결 여부를 확인합니다.
+9. `cctv-action-layer` 로그에서 MQTT 구독, 장비 제어 성공 여부를 확인합니다.
+10. 실제 이벤트 1건을 발생시켜 스피커/전광판/사이렌 반응을 확인합니다.
+11. MQTT 또는 EdgeX를 잠시 끊었다가 복구해 outbox 재전송이 동작하는지 확인합니다.
 
 ## 현장 테스트 전 최종 권장사항
 

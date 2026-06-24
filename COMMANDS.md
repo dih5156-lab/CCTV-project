@@ -917,6 +917,28 @@ cp .env.jetson.example .env.jetson
 docker compose --env-file .env.jetson -f docker-compose.jetson.yml up -d
 ```
 
+Jetson 통합 스택은 compose project가 `edgex-jetson`으로 뜨므로, 기본
+`docker compose ps`가 비어 보일 수 있습니다. Jetson 컨테이너를 확인하거나
+재시작할 때는 반드시 `docker-compose.jetson.yml`을 지정합니다.
+
+```bash
+# Jetson 스택 서비스 확인
+docker compose -f docker-compose.jetson.yml ps
+
+# AI 엔진만 재시작
+docker compose -f docker-compose.jetson.yml restart cctv-ai-engine
+
+# 재시작 반영 확인
+docker inspect cctv-ai-engine \
+  --format '{{.Name}} {{.State.Status}} started={{.State.StartedAt}} health={{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}'
+
+# DeepStream/얼굴/외형 분석 로그 확인
+docker logs --tail 120 cctv-ai-engine
+
+# AI 엔진 내부 API health 확인
+curl -fsS http://localhost:8765/health
+```
+
 ---
 
 ## 11. 모니터링 (옵션)

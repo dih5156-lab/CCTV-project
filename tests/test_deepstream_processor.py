@@ -25,6 +25,8 @@ import numpy as np
 import pytest
 
 import src.core.deepstream_processor as deepstream_processor
+from src.core._context_event_store import ContextEventStore
+from src.core._preview_frame_store import PreviewFrameStore
 from src.core.base_processor import BaseProcessor
 from src.core.deepstream_processor import DEEPSTREAM_AVAILABLE, DeepStreamProcessor
 from src.core.event_debouncer import EventDebouncer
@@ -189,8 +191,8 @@ def test_get_camera_frame_can_skip_copy_for_internal_postprocessing():
     """내부 후처리는 preview 프레임 추가 복사를 피할 수 있어야 한다."""
     proc = object.__new__(DeepStreamProcessor)
     frame = [[1, 2, 3]]
-    proc._preview_frame_lock = threading.Lock()
-    proc._preview_frames = {"cam1": frame}
+    proc._preview_store = PreviewFrameStore(max_fps=5.0)
+    proc._preview_store.put_frame("cam1", frame, now_monotonic=1.0, wall_time=1.0)
     proc._preview_camera_id = None
 
     copied = proc.get_camera_frame("cam1")
@@ -204,7 +206,7 @@ def test_get_camera_frame_can_skip_copy_for_internal_postprocessing():
 def test_deepstream_get_camera_status_uses_common_fields_without_runtime():
     proc = object.__new__(DeepStreamProcessor)
     proc.running = False
-    proc._preview_last_frame_at = None
+    proc._preview_store = PreviewFrameStore(max_fps=5.0)
     proc._source_backoff_until = {}
     proc._source_last_error = {}
     proc._cameras = {
@@ -359,8 +361,7 @@ def test_deepstream_get_stats_uses_common_fields_without_runtime():
     proc._events_failed = 0
     proc._output_mode = "fakesink"
     proc._preview_enabled = True
-    proc._preview_max_fps = 5.0
-    proc._preview_last_frame_at = None
+    proc._preview_store = PreviewFrameStore(max_fps=5.0)
     proc._cameras = {"cam1": {"source": "rtsp://192.168.1.1/stream"}}
 
     stats = proc.get_stats()
@@ -402,8 +403,8 @@ def test_read_preview_max_fps_clamps_high_values(monkeypatch):
 
 def test_preview_sample_is_pulled_even_when_throttled(monkeypatch):
     proc = object.__new__(DeepStreamProcessor)
-    proc._preview_min_interval_sec = 1.0
-    proc._preview_last_sample_at = 100.0
+    proc._preview_store = PreviewFrameStore(max_fps=1.0)
+    proc._preview_store.last_sample_at = 100.0
     monkeypatch.setattr("src.core.deepstream_processor.time.monotonic", lambda: 100.1)
     monkeypatch.setattr(
         "src.core.deepstream_processor.Gst",
@@ -469,6 +470,39 @@ def test_deepstream_filter_events_respects_all_off():
     ]
 
     assert proc._filter_events_for_camera(events, "cam1") == []
+
+
+def test_context_event_store_merges_recent_non_person_events_without_duplicates():
+    now = 100.0
+    store = ContextEventStore(
+        ttl_sec=2.0,
+        maxlen=16,
+        time_factory=lambda: now,
+    )
+    person = DetectionEvent(EventType.PERSON, 0, 0, 10, 10, 0.9, now, object_id=1)
+    head = DetectionEvent(EventType.HEAD, 5, 5, 8, 8, 0.8, now, object_id=2)
+    duplicate_head = DetectionEvent(EventType.HEAD, 5, 5, 8, 8, 0.7, now, object_id=2)
+
+    store.remember("cam1", [person, head])
+    merged = store.collect("cam1", [person, duplicate_head])
+
+    assert merged == [person, duplicate_head]
+
+
+def test_context_event_store_drops_stale_cached_events():
+    current_time = [100.0]
+    store = ContextEventStore(
+        ttl_sec=1.0,
+        maxlen=16,
+        time_factory=lambda: current_time[0],
+    )
+    head = DetectionEvent(EventType.HEAD, 5, 5, 8, 8, 0.8, 100.0, object_id=2)
+    person = DetectionEvent(EventType.PERSON, 0, 0, 10, 10, 0.9, 102.0, object_id=1)
+
+    store.remember("cam1", [head])
+    current_time[0] = 102.0
+
+    assert store.collect("cam1", [person]) == [person]
 
 
 def test_deepstream_fall_detector_uses_env_thresholds(mock_config, monkeypatch):
