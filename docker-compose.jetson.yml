@@ -770,6 +770,9 @@ services:
       - target: 8767
         published: "${FACE_API_PORT:-8767}"
         protocol: tcp
+      - target: 8769
+        published: "${STREAM_PORT:-8769}"
+        protocol: tcp
     healthcheck:
       test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8765/health', timeout=3).read()\""]
       interval: 30s

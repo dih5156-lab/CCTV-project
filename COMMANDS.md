@@ -937,6 +937,10 @@ docker logs --tail 120 cctv-ai-engine
 
 # AI 엔진 내부 API health 확인
 curl -fsS http://localhost:8765/health
+
+# MJPEG Stream API health / 카메라 목록 확인
+curl -fsS http://localhost:8769/health
+curl -fsS http://localhost:8769/cameras
 ```
 
 ---
