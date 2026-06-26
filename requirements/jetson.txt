@@ -1,0 +1,13 @@
+# Jetson-only optional runtime dependencies.
+#
+# This file combines the former face-recognition and Paddle appearance runtime
+# requirements so Jetson-specific packages stay out of the normal PC install.
+
+# Face recognition
+insightface>=0.7.3
+# 1.23.x can crash during session initialization on Jetson/aarch64.
+onnxruntime==1.22.1
+
+# PP-Human/PaddleX pedestrian attribute runtime.
+# Conversion tools such as paddle2onnx/onnxoptimizer are intentionally excluded.
+paddlepaddle==3.2.2

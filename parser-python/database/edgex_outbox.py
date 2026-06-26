@@ -10,8 +10,8 @@ EdgeX Core Data 전송 실패 시 로컬 SQLite에 저장하는 아웃박스(Out
   4. MAX_RETRY 초과 또는 TTL 만료 시 'failed' 로 처리
 
 환경변수:
-  EDGEX_OUTBOX_DB  : SQLite 파일 경로 (기본: /data/event_outbox.db)
-                     로컬 개발 시 ./data/event_outbox.db 로 자동 fallback
+  EDGEX_OUTBOX_DB  : SQLite 파일 경로 (기본: /data/runtime/event_outbox.db)
+                     로컬 개발 시 ./data/runtime/event_outbox.db 로 자동 fallback
 """
 
 import json
@@ -28,13 +28,14 @@ logger = logging.getLogger(__name__)
 # ─────────────────────────────────────────────
 # 상수
 # ─────────────────────────────────────────────
-# 컨테이너: /data/event_outbox.db
-# 로컬 개발: {프로젝트루트}/data/event_outbox.db (fallback)
+# 컨테이너: /data/runtime/event_outbox.db
+# 로컬 개발: {프로젝트루트}/data/runtime/event_outbox.db (fallback)
 _DEFAULT_DB_PATH = os.environ.get(
     "EDGEX_OUTBOX_DB",
     os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
         "data",
+        "runtime",
         "event_outbox.db",
     ),
 )

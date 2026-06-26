@@ -35,7 +35,7 @@ def test_default_compose_architecture_fails_on_arm64_risky_edgex_images():
     )
     assert result["passed"] is False
     assert "arm64 host detected" in result["detail"]
-    assert "docker-compose.arm64.yml" in result["detail"]
+    assert "docker-compose.jetson.yml" in result["detail"]
 
 
 def test_default_compose_architecture_passes_on_arm64_with_platform_override():
@@ -46,7 +46,7 @@ def test_default_compose_architecture_passes_on_arm64_with_platform_override():
     assert result["passed"] is True
 
 
-def test_default_compose_architecture_passes_on_arm64_with_override_file():
+def test_default_compose_architecture_fails_on_arm64_even_if_old_override_text_is_provided():
     result = runtime_checks.check_default_compose_architecture(
         machine="aarch64",
         compose_text="image: edgexfoundry/core-data:3.1.0",
@@ -65,9 +65,8 @@ services:
       - amd64-ui
 """,
     )
-    assert result["passed"] is True
-    assert "docker-compose.arm64.yml" in result["detail"]
-    assert "UI is excluded" in result["detail"]
+    assert result["passed"] is False
+    assert "docker-compose.jetson.yml" in result["detail"]
 
 
 def test_parser_db_defaults_fail_when_db_host_is_localhost():

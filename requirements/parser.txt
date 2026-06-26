@@ -1,4 +1,4 @@
-# parser-python 의존성 패키지
+# AIoT TLV parser dependencies.
 # Go의 go.mod 에 해당
 
 flask>=3.0.0          # HTTP 서버 (Go: gin-gonic/gin)

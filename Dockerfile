@@ -1,4 +1,9 @@
 # CCTV Pipeline Runtime Dockerfile
+#
+# Build targets:
+#   default/runtime: AI engine and utility services
+#   action:         Public API, Alert API, Action Layer, EdgeX adapter
+#   parser:         AIoT TLV parser
 
 # Stage 1: Builder
 FROM python:3.10-slim-bookworm AS builder
@@ -11,8 +16,69 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # 의존성 설치
-COPY requirements.txt .
-RUN pip install --user --no-cache-dir -r requirements.txt
+COPY requirements/base.txt requirements/ai.txt ./
+RUN pip install --user --no-cache-dir -r ai.txt
+
+# Stage 1b: Lightweight action/API services
+FROM python:3.10-slim-bookworm AS action
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /build
+COPY requirements/base.txt .
+RUN pip install --no-cache-dir -r base.txt
+
+RUN groupadd -r -g 2001 cctv && useradd -r -u 2002 -g cctv cctv
+
+WORKDIR /app
+
+RUN mkdir -p /app/models /app/event_backup && chown -R cctv:cctv /app
+
+COPY --chown=cctv:cctv src         /app/src
+COPY --chown=cctv:cctv runners     /app/runners
+COPY --chown=cctv:cctv kuiper      /app/kuiper
+COPY --chown=cctv:cctv models/model_manifest.json /app/models/model_manifest.json
+COPY --chown=cctv:cctv requirements/base.txt /app/requirements-base.txt
+
+RUN chown -R cctv:cctv /app
+
+USER cctv
+
+CMD ["python", "--help"]
+
+# Stage 1c: AIoT TLV parser service
+FROM python:3.10-slim-bookworm AS parser
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements/parser.txt requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY parser-python/ .
+
+RUN groupadd -r -g 2001 cctv && useradd -r -g cctv -u 2003 cctv \
+    && mkdir -p /data && chown -R cctv:cctv /app /data \
+    && chmod 2775 /data
+
+USER cctv
+
+ENV PYTHONIOENCODING=utf-8
+ENV PYTHONUTF8=1
+ENV PYTHONUNBUFFERED=1
+
+EXPOSE 4000
+
+CMD ["python", "main.py"]
 
 # Stage 2: Runtime
 FROM python:3.10-slim-bookworm
@@ -55,7 +121,7 @@ COPY --chown=cctv:cctv run_external_ingest.py /app/run_external_ingest.py
 COPY --chown=cctv:cctv runners /app/runners
 COPY --chown=cctv:cctv kuiper /app/kuiper
 COPY --chown=cctv:cctv models/model_manifest.json /app/models/model_manifest.json
-COPY --chown=cctv:cctv requirements.txt /app/
+COPY --chown=cctv:cctv requirements/ai.txt /app/requirements-ai.txt
 
 # 런타임 쓰기 디렉터리 권한 보정
 RUN chown -R cctv:cctv /app

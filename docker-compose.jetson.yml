@@ -55,11 +55,12 @@ x-appearance-runtime: &appearance-runtime
   DS_HELMET_ENABLED: ${DS_HELMET_ENABLED:-1}
   DS_FACE_ENABLED: ${DS_FACE_ENABLED:-1}
   DS_APPEARANCE_ENABLED: ${DS_APPEARANCE_ENABLED:-1}
-  DS_PPHUMAN_INFER_CONFIG: ${DS_PPHUMAN_INFER_CONFIG:-config/deepstream/config_infer_pphuman.txt}
-  APPEARANCE_BACKEND: ${APPEARANCE_BACKEND:-pphuman}
-  APPEARANCE_MODEL_PATH: ${APPEARANCE_MODEL_PATH:-models/pphuman_attribute_src/PP-LCNet_x1_0_pedestrian_attribute_infer}
-  APPEARANCE_LABEL_MAP_PATH: ${APPEARANCE_LABEL_MAP_PATH:-config/appearance_pphuman_labels.example.json}
-  APPEARANCE_RUNTIME: ${APPEARANCE_RUNTIME:-paddle}
+  DS_PPHUMAN_SGIE_ENABLED: ${DS_PPHUMAN_SGIE_ENABLED:-1}
+  DS_PPHUMAN_INFER_CONFIG: ${DS_PPHUMAN_INFER_CONFIG:-config/deepstream/config_infer_pa100k.txt}
+  APPEARANCE_BACKEND: ${APPEARANCE_BACKEND:-hsv}
+  APPEARANCE_MODEL_PATH: ${APPEARANCE_MODEL_PATH:-models/pa100k_resnet50_attr.engine}
+  APPEARANCE_LABEL_MAP_PATH: ${APPEARANCE_LABEL_MAP_PATH:-config/appearance_pa100k_labels.json}
+  APPEARANCE_RUNTIME: ${APPEARANCE_RUNTIME:-tensorrt}
   APPEARANCE_INPUT_SIZE: ${APPEARANCE_INPUT_SIZE:-224}
   APPEARANCE_SCORE_THRESHOLD: ${APPEARANCE_SCORE_THRESHOLD:-0.5}
   APPEARANCES_DB: ${APPEARANCES_DB:-/app/data/runtime/appearances.db}
@@ -68,6 +69,12 @@ x-appearance-runtime: &appearance-runtime
   APPEARANCE_GENDER_FEMALE_MIN_SCORE: ${APPEARANCE_GENDER_FEMALE_MIN_SCORE:-0.75}
   APPEARANCE_GENDER_MALE_MAX_SCORE: ${APPEARANCE_GENDER_MALE_MAX_SCORE:-0.25}
   APPEARANCE_GENDER_MIN_SAMPLES: ${APPEARANCE_GENDER_MIN_SAMPLES:-3}
+  APPEARANCE_COLOR_SMOOTHING_WINDOW: ${APPEARANCE_COLOR_SMOOTHING_WINDOW:-12}
+  APPEARANCE_COLOR_MIN_SAMPLES: ${APPEARANCE_COLOR_MIN_SAMPLES:-3}
+  APPEARANCE_BOOL_SMOOTHING_WINDOW: ${APPEARANCE_BOOL_SMOOTHING_WINDOW:-8}
+  APPEARANCE_BOOL_MIN_SAMPLES: ${APPEARANCE_BOOL_MIN_SAMPLES:-3}
+  APPEARANCE_BOOL_TRUE_RATIO: ${APPEARANCE_BOOL_TRUE_RATIO:-0.6}
+  APPEARANCE_CROP_CONTEXT_RATIO: ${APPEARANCE_CROP_CONTEXT_RATIO:-0.6}
 
 # ── 서비스 정의 ──────────────────────────────────────────────────────────────
 services:
@@ -573,6 +580,7 @@ services:
     platform: linux/arm64
     environment:
       PUBLIC_API_KEY: ${PUBLIC_API_KEY:-}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-}
     networks:
       edgex-network: null
     ports:
@@ -811,6 +819,22 @@ services:
         source: ./data
         target: /app/data
       - type: bind
+        source: ./Sample
+        target: /app/Sample
+        read_only: true
+      - type: bind
+        source: ./falldata
+        target: /app/falldata
+        read_only: true
+      - type: bind
+        source: ./.venv-mediapipe
+        target: /app/.venv-mediapipe
+        read_only: true
+      - type: bind
+        source: ./.venv-falldata
+        target: /app/.venv-falldata
+        read_only: true
+      - type: bind
         source: ./data/insightface
         target: /root/.insightface
       - type: bind
@@ -858,7 +882,8 @@ services:
     container_name: cctv-edgex-adapter
     build:
       context: .
-      dockerfile: Dockerfile.action
+      dockerfile: Dockerfile
+      target: action
     environment:
       TZ: Asia/Seoul
       PYTHONPATH: /app
@@ -916,7 +941,8 @@ services:
     container_name: aiot-parser
     build:
       context: .
-      dockerfile: Dockerfile.parser
+      dockerfile: Dockerfile
+      target: parser
     env_file:
       - path: ./parser-python/.env
         required: false
@@ -976,7 +1002,8 @@ services:
     container_name: cctv-sensor-rule-bridge
     build:
       context: .
-      dockerfile: Dockerfile.action
+      dockerfile: Dockerfile
+      target: action
     command:
       - python
       - runners/run_sensor_rule_bridge.py
@@ -1016,7 +1043,8 @@ services:
     container_name: cctv-kuiper-rule-loader
     build:
       context: .
-      dockerfile: Dockerfile.action
+      dockerfile: Dockerfile
+      target: action
     environment:
       TZ: Asia/Seoul
       PYTHONPATH: /app
@@ -1056,7 +1084,8 @@ services:
     container_name: cctv-alert-api
     build:
       context: .
-      dockerfile: Dockerfile.action
+      dockerfile: Dockerfile
+      target: action
     user: "1000:1000"
     env_file:
       - path: ./.env.jetson
@@ -1106,7 +1135,8 @@ services:
     container_name: cctv-action-layer
     build:
       context: .
-      dockerfile: Dockerfile.action
+      dockerfile: Dockerfile
+      target: action
     user: "1000:1000"
     env_file:
       - path: ./.env.jetson
@@ -1193,7 +1223,8 @@ services:
     container_name: cctv-public-api
     build:
       context: .
-      dockerfile: Dockerfile.action
+      dockerfile: Dockerfile
+      target: action
     user: "1000:1000"
     command:
       - python

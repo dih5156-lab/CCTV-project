@@ -1,0 +1,16 @@
+# AI engine dependencies. Includes base service packages plus inference/runtime tools.
+
+-r base.txt
+
+# Deep learning
+ultralytics>=8.0.0,<9.0.0
+torch>=2.0.0,<3.0.0
+torchvision>=0.15.0,<1.0.0
+
+# Computer vision
+# Jetson builds filter this out and install opencv-python-headless instead.
+opencv-python>=4.8.0,<5.0.0
+
+# Image processing
+numpy>=1.24.0,<3.0.0
+Pillow>=12.2.0,<13.0.0

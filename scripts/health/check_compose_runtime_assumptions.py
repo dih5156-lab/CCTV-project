@@ -20,13 +20,6 @@ ARM64_RISK_IMAGES = (
     "edgexfoundry/edgex-ui:",
 )
 
-ARM64_OVERRIDE_SERVICES = (
-    "core-common-config-bootstrapper",
-    "core-data",
-    "core-metadata",
-    "device-rest",
-)
-
 REQUIRED_RUNTIME_SECRETS = (
     "MQTT_USER",
     "MQTT_PASSWORD",
@@ -90,11 +83,6 @@ def check_default_compose_architecture(
     """Detect default compose services likely to fail with exec format errors."""
     arch = _normalize_machine(machine)
     text = compose_text if compose_text is not None else _read_text(PROJECT_ROOT / "docker-compose.yml")
-    override = (
-        arm64_override_text
-        if arm64_override_text is not None
-        else _read_text(PROJECT_ROOT / "docker-compose.arm64.yml")
-    )
     risky_images = [image for image in ARM64_RISK_IMAGES if image in text]
 
     if arch != "arm64" or not risky_images:
@@ -112,26 +100,12 @@ def check_default_compose_architecture(
             "detail": "arm64 host detected; compose contains platform override",
         }
 
-    override_has_platform = "platform: linux/arm64" in override
-    override_has_services = all(f"{service}:" in override for service in ARM64_OVERRIDE_SERVICES)
-    override_disables_ui = "ui:" in override and "profiles:" in override
-    if override_has_platform and override_has_services and override_disables_ui:
-        return {
-            "name": "default compose architecture",
-            "passed": True,
-            "detail": (
-                "arm64 host detected; use docker-compose.arm64.yml with docker-compose.yml "
-                "when starting the full EdgeX stack. EdgeX UI is excluded on arm64."
-            ),
-        }
-
     return {
         "name": "default compose architecture",
         "passed": False,
         "detail": (
             "arm64 host detected but docker-compose.yml includes EdgeX images that may be amd64-only: "
-            f"{', '.join(risky_images)}. Use docker-compose.arm64.yml with docker-compose.yml, "
-            "use docker-compose.jetson.yml for Jetson-specific deployment, or run only the "
+            f"{', '.join(risky_images)}. Use docker-compose.jetson.yml for Jetson deployment, or run only the "
             "API/action services from docker-compose.yml."
         ),
     }

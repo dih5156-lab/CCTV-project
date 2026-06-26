@@ -1,6 +1,0 @@
-# Jetson 운영 환경용 얼굴 인식 추가 의존성
-# Python 3.10 환경을 기준으로 사용 권장
-
-insightface>=0.7.3
-# 1.23.x can crash during session initialization on Jetson/aarch64.
-onnxruntime==1.22.1

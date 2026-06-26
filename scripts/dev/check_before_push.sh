@@ -21,7 +21,7 @@ fi
 
 if [[ ! -x "$RUFF_BIN" ]]; then
     echo "ERROR: ruff executable not found: $RUFF_BIN" >&2
-    echo "Install dev dependencies first: $PYTHON_BIN -m pip install -r requirements-dev.txt" >&2
+    echo "Install dev dependencies first: $PYTHON_BIN -m pip install -r requirements/dev.txt" >&2
     exit 127
 fi
 

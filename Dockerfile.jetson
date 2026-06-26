@@ -86,11 +86,11 @@ RUN echo "Skipping torch/torchvision install; Jetson GPU wheels are mounted at r
 # torch / torchvision / torchaudio 는 런타임 마운트 → requirements에서 제외
 # opencv-python → opencv-python-headless (Jetson 헤드리스 환경)
 WORKDIR /build
-COPY requirements-ai.txt .
-COPY requirements-face-jetson.txt .
-COPY requirements-appearance-paddle.txt .
+COPY requirements/base.txt .
+COPY requirements/ai.txt .
+COPY requirements/jetson.txt .
 
-RUN grep -vE '^(ultralytics|torch|torchvision|torchaudio|opencv-python|numpy)([>=<!~ ]|$)' requirements-ai.txt \
+RUN grep -vE '^(ultralytics|torch|torchvision|torchaudio|opencv-python|numpy)([>=<!~ ]|$)' ai.txt \
     > requirements-ai-jetson.txt && \
     pip3 install --no-cache-dir -r requirements-ai-jetson.txt && \
     pip3 install --no-cache-dir \
@@ -120,12 +120,12 @@ RUN pip3 install --no-cache-dir "numpy<2.0.0"
 # ── 얼굴 인식 추가 의존성 ─────────────────────────────────────────────
 # InsightFace는 aarch64에서 일부 Cython 확장을 빌드하므로 Cython을 먼저 보장한다.
 RUN pip3 install --no-cache-dir "Cython>=3.0.0" && \
-    pip3 install --no-cache-dir -r requirements-face-jetson.txt
+    pip3 install --no-cache-dir -r jetson.txt
 
 # ── PP-Human 속성 모델 Paddle 런타임 ─────────────────────────────────
 # Jetson/aarch64에서 ONNX Runtime 세션 초기화가 네이티브 크래시를 낼 수 있어
 # PP-Human 원본 Paddle artifact를 직접 읽는 경로를 기본 운영 경로로 둔다.
-RUN pip3 install --no-cache-dir -r requirements-appearance-paddle.txt
+RUN echo "Paddle runtime is installed from requirements/jetson.txt."
 
 # ── DeepStream Python bindings (pyds) ────────────────────────────────────────
 # DeepStream 7.1 / Ubuntu 22.04 / Python 3.10 / Jetson(aarch64) 공식 wheel.
@@ -161,7 +161,8 @@ COPY --chown=cctv:cctv runners     /app/runners
 COPY --chown=cctv:cctv kuiper      /app/kuiper
 COPY --chown=cctv:cctv config      /app/config
 COPY --chown=cctv:cctv models/model_manifest.json /app/models/model_manifest.json
-COPY --chown=cctv:cctv requirements.txt /app/
+COPY --chown=cctv:cctv requirements/ai.txt /app/requirements-ai.txt
+COPY --chown=cctv:cctv requirements/jetson.txt /app/requirements-jetson.txt
 
 RUN chown -R cctv:cctv /app
 

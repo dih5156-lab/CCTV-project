@@ -554,7 +554,8 @@ services:
     container_name: cctv-alert-api
     build:
       context: .
-      dockerfile: Dockerfile.action
+      dockerfile: Dockerfile
+      target: action
     depends_on:
       cctv-alert-log-init:
         condition: service_completed_successfully
@@ -602,7 +603,8 @@ services:
     container_name: cctv-action-layer
     build:
       context: .
-      dockerfile: Dockerfile.action
+      dockerfile: Dockerfile
+      target: action
     command:
     - python
     - /app/runners/run_action_bridge.py
@@ -703,7 +705,8 @@ services:
     container_name: aiot-parser
     build:
       context: .
-      dockerfile: Dockerfile.parser
+      dockerfile: Dockerfile
+      target: parser
     env_file:
       - path: ./parser-python/.env
         required: false
@@ -757,7 +760,8 @@ services:
     container_name: cctv-public-api
     build:
       context: .
-      dockerfile: Dockerfile.action
+      dockerfile: Dockerfile
+      target: action
     command:
     - python
     - runners/run_public_api.py
@@ -921,8 +925,62 @@ services:
       bind:
         create_host_path: true
 
-  # Prometheus / Grafana는 docker-compose.monitoring.yml 으로 분리됨 (옵션)
-  # 실행: docker compose -f docker-compose.yml -f docker-compose.monitoring.yml up -d
+  prometheus:
+    container_name: cctv-prometheus
+    image: prom/prometheus:v2.51.2
+    profiles:
+    - monitoring
+    command:
+    - --config.file=/etc/prometheus/prometheus.yml
+    - --storage.tsdb.retention.time=7d
+    volumes:
+    - type: bind
+      source: ./monitoring/prometheus.yml
+      target: /etc/prometheus/prometheus.yml
+      read_only: true
+      bind:
+        create_host_path: true
+    ports:
+    - mode: ingress
+      host_ip: 127.0.0.1
+      target: 9090
+      published: "9090"
+      protocol: tcp
+    networks:
+      edgex-network: null
+    restart: unless-stopped
+
+  grafana:
+    container_name: cctv-grafana
+    image: grafana/grafana:10.4.2
+    profiles:
+    - monitoring
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_SERVER_ROOT_URL: http://localhost:3001
+    volumes:
+    - type: bind
+      source: ./monitoring/grafana/provisioning
+      target: /etc/grafana/provisioning
+      read_only: true
+      bind:
+        create_host_path: true
+    - type: volume
+      source: grafana-data
+      target: /var/lib/grafana
+      volume: {}
+    ports:
+    - mode: ingress
+      host_ip: 127.0.0.1
+      target: 3000
+      published: "3001"
+      protocol: tcp
+    depends_on:
+    - prometheus
+    networks:
+      edgex-network: null
+    restart: unless-stopped
 
 networks:
   edgex-network:
@@ -950,3 +1008,5 @@ volumes:
     name: cctv_aiot-db-data
   aiot-parser-data:
     name: cctv_aiot-parser-data
+  grafana-data:
+    name: cctv_grafana-data

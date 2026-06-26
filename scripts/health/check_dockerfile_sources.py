@@ -7,9 +7,7 @@ from pathlib import Path
 
 DOCKERFILES = (
     Path("Dockerfile"),
-    Path("Dockerfile.action"),
     Path("Dockerfile.jetson"),
-    Path("Dockerfile.parser"),
 )
 
 
