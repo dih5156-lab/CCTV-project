@@ -65,6 +65,41 @@ def test_confirm_mode_drops_unconfirmed_fall(monkeypatch) -> None:
     assert verifier.annotate_events([_fall_event()]) == []
 
 
+def test_cooldown_without_previous_result_is_not_confirmed(monkeypatch) -> None:
+    verifier = FallDataAuxVerifier(
+        FallDataAuxConfig(enabled=True, mode="shadow", cooldown_seconds=60)
+    )
+    monkeypatch.setattr("src.core.ai._falldata_aux.time.time", lambda: 100.0)
+    verifier._last_run_at = 99.0
+
+    result = verifier.verify()
+
+    assert result["status"] == "skipped_cooldown"
+    assert result["confirmed"] is False
+
+
+def test_cooldown_reuses_previous_result_but_marks_status(monkeypatch) -> None:
+    verifier = FallDataAuxVerifier(
+        FallDataAuxConfig(enabled=True, mode="shadow", cooldown_seconds=60)
+    )
+    monkeypatch.setattr("src.core.ai._falldata_aux.time.time", lambda: 100.0)
+    verifier._last_run_at = 99.0
+    verifier._last_result = {
+        "enabled": True,
+        "mode": "shadow",
+        "status": "ok",
+        "confirmed": True,
+        "fall_probability": 0.91,
+    }
+
+    result = verifier.verify()
+
+    assert result["status"] == "skipped_cooldown"
+    assert result["previous_status"] == "ok"
+    assert result["confirmed"] is True
+    assert result["fall_probability"] == 0.91
+
+
 def test_parse_smoke_outputs() -> None:
     output = """
     nonzero_feature_frames: 40

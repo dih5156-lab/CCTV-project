@@ -33,6 +33,9 @@ class AppearancePipeline:
         crop_context_ratio: Optional[float] = None,
         color_smoothing_window: Optional[int] = None,
         color_min_samples: Optional[int] = None,
+        bool_smoothing_window: Optional[int] = None,
+        bool_min_samples: Optional[int] = None,
+        bool_true_ratio: Optional[float] = None,
     ) -> None:
         self._appearance = appearance
         self._crop_dir = crop_dir
@@ -59,7 +62,22 @@ class AppearancePipeline:
         self._gender_min_samples = max(1, int(
             os.environ.get("APPEARANCE_GENDER_MIN_SAMPLES", "3")
         ))
-        self._color_history: Dict[str, Dict[str, Deque[str]]] = {}
+        self._bool_smoothing_window = max(1, int(
+            bool_smoothing_window
+            if bool_smoothing_window is not None
+            else os.environ.get("APPEARANCE_BOOL_SMOOTHING_WINDOW", "8")
+        ))
+        self._bool_min_samples = max(1, int(
+            bool_min_samples
+            if bool_min_samples is not None
+            else os.environ.get("APPEARANCE_BOOL_MIN_SAMPLES", "3")
+        ))
+        self._bool_true_ratio = min(1.0, max(0.0, float(
+            bool_true_ratio
+            if bool_true_ratio is not None
+            else os.environ.get("APPEARANCE_BOOL_TRUE_RATIO", "0.6")
+        )))
+        self._attribute_history: Dict[str, Dict[str, Deque]] = {}
 
     def ensure_log(self) -> None:
         """AppearanceLog를 지연 초기화한다."""
@@ -170,6 +188,12 @@ class AppearancePipeline:
             f"성별={gender or '?'}",
             f"나이={age_group or '?'}",
         ])
+        scores = attrs.get("attribute_scores")
+        if isinstance(scores, dict) and scores.get("has_backpack") is not None:
+            try:
+                parts.append(f"백팩점수={float(scores['has_backpack']):.3f}")
+            except (TypeError, ValueError):
+                pass
         return parts
 
     @staticmethod
@@ -308,6 +332,21 @@ class AppearancePipeline:
         return str(value).strip().lower() in {"male", "female"}
 
     @staticmethod
+    def _coerce_bool_observation(value: object) -> Optional[bool]:
+        if value is None:
+            return None
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, (int, float)):
+            return bool(value)
+        text = str(value).strip().lower()
+        if text in {"true", "1", "yes", "y", "on"}:
+            return True
+        if text in {"false", "0", "no", "n", "off"}:
+            return False
+        return None
+
+    @staticmethod
     def _track_history_key(camera_id: str, person: DetectionEvent) -> Optional[str]:
         if person.object_id is None:
             return None
@@ -339,7 +378,7 @@ class AppearancePipeline:
             return dict(attrs)
 
         smoothed = dict(attrs)
-        history = self._color_history.setdefault(key, {})
+        history = self._attribute_history.setdefault(key, {})
         observation_counts: Dict[str, int] = {}
         for field in ("upper_color", "lower_color", "helmet_color"):
             value = attrs.get(field)
@@ -359,24 +398,44 @@ class AppearancePipeline:
         elif "gender" in smoothed:
             smoothed["gender"] = "unknown"
 
+        bool_observation_counts: Dict[str, int] = {}
+        bool_true_ratios: Dict[str, float] = {}
+        for field in ("has_backpack", "has_handbag", "has_suitcase", "has_helmet"):
+            samples = history.setdefault(field, deque(maxlen=self._bool_smoothing_window))
+            observed = self._coerce_bool_observation(attrs.get(field))
+            if observed is not None:
+                samples.append(observed)
+            bool_observation_counts[field] = len(samples)
+            true_ratio = (sum(1 for value in samples if value) / float(len(samples))) if samples else 0.0
+            bool_true_ratios[field] = round(true_ratio, 3)
+            if len(samples) >= self._bool_min_samples:
+                smoothed[field] = true_ratio >= self._bool_true_ratio
+            elif field in smoothed:
+                smoothed[field] = False
+
         metadata = dict(smoothed.get("attribute_metadata") or {})
         metadata["color_observations"] = observation_counts
         metadata["color_smoothing_window"] = self._color_smoothing_window
         metadata["gender_observations"] = len(gender_samples)
         metadata["gender_min_samples"] = self._gender_min_samples
+        metadata["boolean_observations"] = bool_observation_counts
+        metadata["boolean_true_ratios"] = bool_true_ratios
+        metadata["boolean_smoothing_window"] = self._bool_smoothing_window
+        metadata["boolean_min_samples"] = self._bool_min_samples
+        metadata["boolean_true_ratio"] = self._bool_true_ratio
         smoothed["attribute_metadata"] = metadata
         return smoothed
 
-    def _prune_color_history(self, active_keys: set[str]) -> None:
+    def _prune_attribute_history(self, active_keys: set[str]) -> None:
         if not active_keys:
             return
-        max_entries = max(64, self._color_smoothing_window * 32)
-        if len(self._color_history) <= max_entries:
+        max_entries = max(64, max(self._color_smoothing_window, self._bool_smoothing_window) * 32)
+        if len(self._attribute_history) <= max_entries:
             return
-        for key in list(self._color_history):
+        for key in list(self._attribute_history):
             if key not in active_keys:
-                self._color_history.pop(key, None)
-                if len(self._color_history) <= max_entries:
+                self._attribute_history.pop(key, None)
+                if len(self._attribute_history) <= max_entries:
                     break
 
     def _build_log_payload(
@@ -619,7 +678,7 @@ class AppearancePipeline:
                 precomputed_attrs=attrs,
             )
 
-        self._prune_color_history(active_history_keys)
+        self._prune_attribute_history(active_history_keys)
 
         if not self._appearance.conditions:
             return []

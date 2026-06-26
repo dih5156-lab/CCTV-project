@@ -47,6 +47,19 @@ _COLOR_RANGES: Dict[str, List[Tuple[Tuple[int, int, int], Tuple[int, int, int]]]
     "gray":   [((0, 0, 51), (180, 30, 179))],
 }
 
+_LAB_NEUTRAL = 128.0
+_LAB_ACHROMA_CHROMA_THRESHOLD = 14.0
+_LAB_BLACK_L_THRESHOLD = 92.0
+_LAB_WHITE_L_THRESHOLD = 196.0
+_LAB_PROTOTYPE_BGR: Dict[str, Tuple[int, int, int]] = {
+    "red": (0, 0, 220),
+    "orange": (0, 128, 255),
+    "yellow": (0, 220, 220),
+    "green": (0, 160, 0),
+    "blue": (220, 80, 0),
+    "purple": (160, 0, 160),
+}
+
 # 외형 조건 매칭 기본 임계값
 DEFAULT_MATCH_THRESHOLD = 0.8
 
@@ -598,6 +611,61 @@ class AppearanceAnalyzer:
         )
         return mask
 
+    @staticmethod
+    def _hsv_color_ratio(hsv: np.ndarray, clothing_mask: np.ndarray) -> Tuple[str, float]:
+        """HSV 범위 매칭으로 최다 색상과 비율을 계산한다."""
+        total = float(cv2.countNonZero(clothing_mask))
+        if total <= 0:
+            return "unknown", 0.0
+
+        best_color = "unknown"
+        best_ratio = 0.0
+        for color_name, ranges in _COLOR_RANGES.items():
+            color_mask = np.zeros(hsv.shape[:2], dtype=np.uint8)
+            for lower, upper in ranges:
+                color_mask |= cv2.inRange(
+                    hsv,
+                    np.array(lower, dtype=np.uint8),
+                    np.array(upper, dtype=np.uint8),
+                )
+            combined = cv2.bitwise_and(color_mask, clothing_mask)
+            ratio = float(cv2.countNonZero(combined)) / total
+            if ratio > best_ratio:
+                best_ratio = ratio
+                best_color = color_name
+        return best_color, best_ratio
+
+    @staticmethod
+    def _lab_color_name(lab: np.ndarray, clothing_mask: np.ndarray) -> str:
+        """LAB 중앙값 기준으로 조명 변화에 덜 민감한 색상명을 계산한다."""
+        pixels = lab[clothing_mask > 0]
+        if pixels.size == 0:
+            return "unknown"
+
+        l_value, a_value, b_value = np.median(pixels.reshape(-1, 3), axis=0)
+        chroma = ((float(a_value) - _LAB_NEUTRAL) ** 2 + (float(b_value) - _LAB_NEUTRAL) ** 2) ** 0.5
+        if float(l_value) <= _LAB_BLACK_L_THRESHOLD:
+            return "black"
+        if chroma <= _LAB_ACHROMA_CHROMA_THRESHOLD:
+            if float(l_value) >= _LAB_WHITE_L_THRESHOLD:
+                return "white"
+            return "gray"
+
+        sample = np.array([float(l_value), float(a_value), float(b_value)], dtype=np.float32)
+        best_color = "unknown"
+        best_distance = float("inf")
+        for color_name, bgr in _LAB_PROTOTYPE_BGR.items():
+            prototype = np.zeros((1, 1, 3), dtype=np.uint8)
+            prototype[0, 0] = bgr
+            lab_value = cv2.cvtColor(prototype, cv2.COLOR_BGR2LAB)[0, 0].astype(np.float32)
+            # 색상 축(a/b)을 더 중요하게 보고, 밝기(L)는 보조로만 본다.
+            diff = sample - lab_value
+            distance = float((diff[0] * 0.35) ** 2 + diff[1] ** 2 + diff[2] ** 2)
+            if distance < best_distance:
+                best_distance = distance
+                best_color = color_name
+        return best_color
+
     def _dominant_color(
         self,
         region: np.ndarray,
@@ -618,6 +686,7 @@ class AppearanceAnalyzer:
         l_ch = self._clahe.apply(l_ch)
         corrected = cv2.merge([l_ch, a_ch, b_ch])
         corrected_bgr = cv2.cvtColor(corrected, cv2.COLOR_LAB2BGR)
+        corrected_lab = cv2.cvtColor(corrected_bgr, cv2.COLOR_BGR2LAB)
 
         hsv = cv2.cvtColor(corrected_bgr, cv2.COLOR_BGR2HSV)
 
@@ -634,29 +703,25 @@ class AppearanceAnalyzer:
         if total == 0:
             return "unknown"
 
-        best_color = "unknown"
-        best_ratio = 0.0
+        best_color, best_ratio = self._hsv_color_ratio(hsv, clothing_mask)
+        lab_color = self._lab_color_name(corrected_lab, clothing_mask)
 
-        for color_name, ranges in _COLOR_RANGES.items():
-            color_mask = np.zeros(hsv.shape[:2], dtype=np.uint8)
-            for lower, upper in ranges:
-                color_mask |= cv2.inRange(
-                    hsv,
-                    np.array(lower, dtype=np.uint8),
-                    np.array(upper, dtype=np.uint8),
-                )
-            # 피부 영역을 제외한 색상 매칭
-            combined = cv2.bitwise_and(color_mask, clothing_mask)
-            ratio = float(cv2.countNonZero(combined)) / total
-            if ratio > best_ratio:
-                best_ratio = ratio
-                best_color = color_name
+        if best_color in {"white", "gray", "black"} or best_ratio < max(min_ratio, 0.35):
+            best_color = lab_color
 
         if best_ratio < min_ratio:
+            if lab_color != "unknown" and allow_low_signal_fallback:
+                logger.debug(
+                    "색상 분석 LAB fallback: %s (HSV=%s 비율=%.2f)",
+                    lab_color,
+                    best_color,
+                    best_ratio,
+                )
+                return lab_color
             logger.debug("색상 분석 근거 부족: %s (비율=%.2f < %.2f)", best_color, best_ratio, min_ratio)
             return "unknown"
 
-        logger.debug("색상 분석 결과: %s (비율=%.2f)", best_color, best_ratio)
+        logger.debug("색상 분석 결과: %s (HSV비율=%.2f LAB=%s)", best_color, best_ratio, lab_color)
         return best_color
 
     # ── 소지품(가방) 판별 ──────────────────────────────────────────

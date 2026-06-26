@@ -67,7 +67,7 @@ class AppearanceRuntimeStatus(BaseModel):
 def build_runtime_status(db_path: Path) -> AppearanceRuntimeStatus:
     """외형 검색 상태 응답을 구성한다."""
     data_stats = _collect_data_stats(db_path)
-    backend = os.environ.get("APPEARANCE_BACKEND", "hsv").strip().lower()
+    backend = _runtime_attribute_backend_name()
     fields = _build_field_statuses(data_stats)
     backend_counts = _collect_backend_counts(db_path)
     warnings = _build_runtime_warnings(
@@ -195,6 +195,35 @@ def _load_attribute_label_fields() -> Optional[Set[str]]:
     }
 
 
+def _label_map_mentions_pa100k() -> bool:
+    label_map_path = os.environ.get("APPEARANCE_LABEL_MAP_PATH", "").strip()
+    if not label_map_path:
+        return False
+    path = _resolve_project_path(label_map_path)
+    try:
+        label_map = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return "pa100k" in label_map_path.lower()
+    candidates = [
+        label_map_path,
+        str(label_map.get("model") or ""),
+    ]
+    return any("pa100k" in value.lower() for value in candidates)
+
+
+def _runtime_attribute_backend_name() -> str:
+    """외형 속성의 실제 운영 백엔드 이름을 계산한다."""
+    configured_backend = os.environ.get("APPEARANCE_BACKEND", "hsv").strip().lower()
+    if _truthy_env("DS_PPHUMAN_SGIE_ENABLED", False):
+        return "pa100k_sgie" if _label_map_mentions_pa100k() else "pphuman_sgie"
+    if configured_backend == "pphuman" and _label_map_mentions_pa100k():
+        runtime = os.environ.get("APPEARANCE_RUNTIME", "").strip().lower()
+        if runtime in {"tensorrt", "trt", "engine"}:
+            return "pa100k_tensorrt"
+        return "pa100k"
+    return configured_backend
+
+
 @contextmanager
 def _connect(db_path: Path) -> Generator[sqlite3.Connection, None, None]:
     """SQLite 연결을 열고 켄텍스트 종료 시 반드시 닫는다."""
@@ -265,7 +294,7 @@ def _collect_backend_counts(db_path: Path) -> Dict[str, int]:
 
 
 def _build_field_statuses(data_stats: AppearanceDataStats) -> List[AppearanceFieldStatus]:
-    backend = os.environ.get("APPEARANCE_BACKEND", "hsv").strip().lower()
+    backend = _runtime_attribute_backend_name()
     face_enabled = _env_and_camera_flag("DS_FACE_ENABLED", "use_face", False)
     appearance_runtime_enabled = _truthy_env("DS_APPEARANCE_ENABLED", False) or _truthy_env("APPEARANCE_ENABLED", False)
     camera_appearance_enabled = _camera_flag_enabled("use_appearance")
@@ -278,7 +307,8 @@ def _build_field_statuses(data_stats: AppearanceDataStats) -> List[AppearanceFie
     yolo_labels = set(_csv_env("DS_YOLO_LABELS", "person"))
     bag_labels = sorted(label for label in yolo_labels if label in _BAG_LABEL_ALIASES)
     attribute_label_fields = _load_attribute_label_fields()
-    bag_model_ready = bool(bag_labels) or backend != "hsv"
+    attribute_backend_ready = backend != "hsv"
+    bag_model_ready = bool(bag_labels) or attribute_backend_ready
     total_records = max(data_stats.total_records, 1)
 
     return [
@@ -380,7 +410,7 @@ def _build_runtime_warnings(
         return warnings
 
     if backend_counts and set(backend_counts.keys()) == {"unknown"}:
-        warnings.append("현재 DB는 과거 적재분 위주라 attribute_backend가 모두 unknown 입니다. 재시작 후 새 데이터부터 hsv/pphuman 값이 보이기 시작해야 정상입니다.")
+        warnings.append("현재 DB는 과거 적재분 위주라 attribute_backend가 모두 unknown 입니다. 재시작 후 새 데이터부터 hsv/pphuman/pa100k 값이 보이기 시작해야 정상입니다.")
 
     gender_field = field_map.get("gender")
     if gender_field and gender_field.ready and gender_field.observed_count == 0:
@@ -392,7 +422,7 @@ def _build_runtime_warnings(
 
     bag_fields = [field_map.get("has_backpack"), field_map.get("has_handbag"), field_map.get("has_suitcase")]
     if all(field is not None and field.ready for field in bag_fields) and all(field.observed_count == 0 for field in bag_fields if field is not None):
-        warnings.append("가방 계열 필드는 설정상 준비 상태지만 실제 적재가 0입니다. detector가 bag label을 실제로 내는지, 또는 속성 모델(pphuman)이 연결됐는지 확인하세요.")
+        warnings.append("가방 계열 필드는 설정상 준비 상태지만 실제 적재가 0입니다. detector가 bag label을 실제로 내는지, 또는 속성 모델(pphuman/pa100k)이 연결됐는지 확인하세요.")
 
     if backend == "hsv" and all((field_map.get(name).observed_count if field_map.get(name) else 0) == 0 for name in ("has_backpack", "has_handbag", "has_suitcase")):
         warnings.append("backend=hsv 환경에서는 bag 값이 detector nearby_objects에 의존합니다. DS_YOLO_LABELS 또는 person 모델이 bag 클래스를 내지 않으면 계속 0으로 남을 수 있습니다.")
@@ -417,7 +447,7 @@ def _build_next_steps(
 
     bag_field = field_map.get("has_backpack")
     if bag_field and bag_field.ready:
-        next_steps.append("bag 값이 계속 0이면 detector 출력 라벨(예: backpack/back_pack/luggage) 또는 pphuman 연결 여부를 확인하세요.")
+        next_steps.append("bag 값이 계속 0이면 detector 출력 라벨(예: backpack/back_pack/luggage) 또는 pphuman/pa100k 연결 여부를 확인하세요.")
 
     gender_field = field_map.get("gender")
     if gender_field and gender_field.ready:

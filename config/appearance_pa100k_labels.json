@@ -17,7 +17,7 @@
     {"index": 8, "field": "has_glasses", "value": true, "threshold": 0.5},
     {"index": 9, "field": "has_handbag", "value": true, "threshold": 0.5},
     {"index": 10, "field": "has_shoulderbag", "value": true, "threshold": 0.5},
-    {"index": 11, "field": "has_backpack", "value": true, "threshold": 0.5},
+    {"index": 11, "field": "has_backpack", "value": true, "threshold": 0.85},
     {"index": 12, "field": "holding_objects", "value": "front", "threshold": 0.5},
     {"index": 13, "field": "upper_sleeve", "value": "short", "threshold": 0.5},
     {"index": 14, "field": "upper_sleeve", "value": "long", "threshold": 0.5},

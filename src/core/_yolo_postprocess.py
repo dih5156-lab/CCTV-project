@@ -115,7 +115,7 @@ def detections_from_yolo_output(
     input_size: float,
     iou_threshold: float,
     max_detections: int,
-    fall_checker: Callable[[List[List[float]], int, int], bool],
+    fall_checker: Callable[[List[List[float]], int, int], Any],
     person_pose_validator: Callable[[List[List[float]]], bool],
 ) -> List[Dict[str, Any]]:
     """YOLO raw output 배열을 DetectionEvent 생성 전 dict 목록으로 변환한다."""
@@ -155,6 +155,9 @@ def detections_from_yolo_output(
         label = labels[class_id] if class_id < len(labels) else f"class_{class_id}"
         keypoints = None
         is_fall = False
+        fall_score = None
+        fall_reasons = None
+        fall_near_miss = None
         if task == "pose" and row.shape[0] >= 56:
             keypoints = map_yolo_keypoints_to_frame(
                 row[5:56],
@@ -162,7 +165,14 @@ def detections_from_yolo_output(
                 frame_height,
                 input_size=input_size,
             )
-            is_fall = fall_checker(keypoints, width, height)
+            fall_result = fall_checker(keypoints, width, height)
+            if isinstance(fall_result, dict):
+                is_fall = bool(fall_result.get("is_fall"))
+                fall_score = fall_result.get("score")
+                fall_reasons = fall_result.get("reasons")
+                fall_near_miss = fall_result.get("near_miss")
+            else:
+                is_fall = bool(fall_result)
             if not is_fall and not person_pose_validator(keypoints):
                 continue
 
@@ -174,6 +184,9 @@ def detections_from_yolo_output(
                 "label": label,
                 "keypoints": keypoints,
                 "is_fall": is_fall,
+                "fall_score": fall_score,
+                "fall_reasons": fall_reasons,
+                "fall_near_miss": fall_near_miss,
                 "gie_id": gie_id,
                 "task": task,
             }

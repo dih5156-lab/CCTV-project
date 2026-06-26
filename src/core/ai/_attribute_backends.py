@@ -127,8 +127,6 @@ class NullAttributeBackend:
 class PPHumanAttributeBackend:
     """PP-Human 계열 속성 모델 연결 지점."""
 
-    backend_name = "pphuman"
-
     def __init__(
         self,
         model_path: Optional[str] = None,
@@ -153,8 +151,13 @@ class PPHumanAttributeBackend:
         self._input_name: Optional[str] = None
         self._runtime_session: Optional[AttributeRuntime] = None
         self._label_map = self._load_label_map(label_map_path)
+        self._backend_name = self._resolve_backend_name(model_path, label_map_path)
         if predictor is None and model_path:
             self._runtime_session = self._build_runtime(session_factory)
+
+    @property
+    def backend_name(self) -> str:
+        return self._backend_name
 
     def predict(self, crop: AttributeCrop) -> Dict[str, object]:
         if self._predictor is not None:
@@ -349,6 +352,26 @@ class PPHumanAttributeBackend:
         except Exception as exc:
             logger.warning("PP-Human 라벨 맵 로드 실패: %s (%s)", path, exc)
             return {"labels": []}
+
+    def _resolve_backend_name(
+        self,
+        model_path: Optional[str],
+        label_map_path: Optional[str],
+    ) -> str:
+        """운영 로그/DB에 남길 속성 모델 이름을 결정한다."""
+        candidates = [
+            str(model_path or ""),
+            str(label_map_path or ""),
+            str(self._label_map.get("model") or ""),
+        ]
+        uses_pa100k = any("pa100k" in value.lower() for value in candidates)
+        if not uses_pa100k:
+            return "pphuman"
+        if self._runtime in {"tensorrt", "trt", "engine"}:
+            return "pa100k_tensorrt"
+        if self._runtime in {"auto", ""} and str(model_path or "").lower().endswith(".engine"):
+            return "pa100k_tensorrt"
+        return "pa100k"
 
     def _select_providers(self, ort_module) -> List[object]:
         """장치 환경에 맞는 ONNX Runtime provider 우선순위를 구성한다."""

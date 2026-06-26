@@ -366,6 +366,37 @@ def test_smooth_track_attributes_requires_stable_gender_samples(tmp_path):
     assert third["attribute_metadata"]["gender_min_samples"] == 3
 
 
+def test_smooth_track_attributes_requires_repeated_backpack_observations(tmp_path):
+    pipeline = AppearancePipeline(
+        AppearanceAnalyzer(),
+        tmp_path / "crops",
+        bool_smoothing_window=5,
+        bool_min_samples=3,
+        bool_true_ratio=0.6,
+    )
+    person = DetectionEvent(
+        event_type=EventType.PERSON,
+        x=0,
+        y=0,
+        width=20,
+        height=40,
+        confidence=0.9,
+        timestamp=1000.0,
+        object_id=7,
+        class_name="person",
+    )
+
+    first = pipeline._smooth_track_attributes("cam01", person, {"has_backpack": True})
+    second = pipeline._smooth_track_attributes("cam01", person, {"has_backpack": False})
+    third = pipeline._smooth_track_attributes("cam01", person, {"has_backpack": True})
+
+    assert first["has_backpack"] is False
+    assert second["has_backpack"] is False
+    assert third["has_backpack"] is True
+    assert third["attribute_metadata"]["boolean_observations"]["has_backpack"] == 3
+    assert third["attribute_metadata"]["boolean_true_ratios"]["has_backpack"] == pytest.approx(0.667)
+
+
 def test_extract_person_attributes_merges_deepstream_sgie_metadata(tmp_path):
     pipeline = AppearancePipeline(AppearanceAnalyzer(), tmp_path / "crops")
     person = DetectionEvent(
@@ -384,7 +415,7 @@ def test_extract_person_attributes_merges_deepstream_sgie_metadata(tmp_path):
                 "age_group": "adult",
                 "has_backpack": True,
             },
-            "appearance_backend": "pphuman_sgie",
+            "appearance_backend": "pa100k_sgie",
         },
     )
     frame = np.zeros((80, 40, 3), dtype=np.uint8)
@@ -394,7 +425,7 @@ def test_extract_person_attributes_merges_deepstream_sgie_metadata(tmp_path):
     assert attrs["gender"] == "male"
     assert attrs["age_group"] == "adult"
     assert attrs["has_backpack"] is True
-    assert attrs["attribute_backend"] == "pphuman_sgie"
+    assert attrs["attribute_backend"] == "pa100k_sgie"
 
 
 def test_build_log_parts_uses_attribute_gender_when_face_meta_missing():

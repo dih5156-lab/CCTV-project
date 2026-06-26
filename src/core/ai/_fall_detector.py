@@ -6,6 +6,7 @@ AIAnalyzer에서 낙상/검증 로직만 분리하여 단독 테스트 및 재�
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass
 
 import numpy as np
 
@@ -23,12 +24,20 @@ from ._yolo_helpers import extract_keypoints
 logger = logging.getLogger(__name__)
 
 
+@dataclass(frozen=True)
+class FallScore:
+    """낙상 후보 점수와 판정 근거."""
+
+    score: float
+    reasons: tuple[str, ...]
+
+
 class FallDetector:
     """COCO 키포인트를 이용한 낙상 감지 및 사람 자세 검증.
 
     낙상 감지:
-        4가지 방법(어깨-엉덩이 각도, 다리가 머리 위, bbox 가로비율,
-        키포인트 수직 분산) 중 하나라도 성립하면 낙상으로 판정.
+        어깨-엉덩이 각도, 다리가 머리 위, bbox 가로비율,
+        키포인트 수직 분산 등 단일 프레임 신호를 점수화해 판정한다.
 
     사람 검증:
         키포인트 신뢰도 수 + 해부학적 수직 순서(코 > 어깨 > 엉덩이)로
@@ -44,6 +53,8 @@ class FallDetector:
         bbox_aspect_ratio: float = 1.8,
         span_bbox_aspect_ratio: float = 1.3,
         span_ratio: float = FALL_KEYPOINT_SPAN_RATIO,
+        score_threshold: float = 3.0,
+        enable_folded_pose: bool = False,
         min_keypoint_confidence: float = MIN_KEYPOINT_CONFIDENCE,
         min_hip_confidence: float = MIN_HIP_CONFIDENCE,
         min_leg_confidence: float = MIN_LEG_CONFIDENCE,
@@ -54,6 +65,8 @@ class FallDetector:
         self.bbox_aspect_ratio = bbox_aspect_ratio
         self.span_bbox_aspect_ratio = span_bbox_aspect_ratio
         self.span_ratio = span_ratio
+        self.score_threshold = score_threshold
+        self.enable_folded_pose = enable_folded_pose
         self.min_keypoint_confidence = min_keypoint_confidence
         self.min_hip_confidence = min_hip_confidence
         self.min_leg_confidence = min_leg_confidence
@@ -87,7 +100,27 @@ class FallDetector:
     # ── 낙상 감지 로직 ────────────────────────────────────────────────
 
     def _check_fall(self, kpts: np.ndarray, bbox_w: int, bbox_h: int) -> bool:
-        """낙상 4-방법 판정."""
+        """낙상 점수 기반 판정."""
+        result = self._score_fall(kpts, bbox_w, bbox_h)
+        is_fall = result.score >= self.score_threshold
+        if is_fall:
+            logger.debug(
+                "낙상 후보 승인: score=%.2f threshold=%.2f reasons=%s",
+                result.score,
+                self.score_threshold,
+                ",".join(result.reasons),
+            )
+        else:
+            logger.debug(
+                "낙상 후보 미충족: score=%.2f threshold=%.2f reasons=%s",
+                result.score,
+                self.score_threshold,
+                ",".join(result.reasons),
+            )
+        return is_fall
+
+    def _score_fall(self, kpts: np.ndarray, bbox_w: int, bbox_h: int) -> FallScore:
+        """단일 프레임 포즈에서 낙상 가능성 점수와 근거를 계산한다."""
         # COCO: 0-코, 5-왼쪽어깨, 6-오른쪽어깨
         #        11-왼쪽엉덩이, 12-오른쪽엉덩이
         #        13-왼쪽무릎, 14-오른쪽무릎, 15-왼쪽발목, 16-오른쪽발목
@@ -104,13 +137,16 @@ class FallDetector:
 
         # 어깨 키포인트가 최소 하나 있어야 함
         if not left_shoulder_v and not right_shoulder_v:
-            return False
+            return FallScore(0.0, ("missing_shoulder",))
 
         # 의자에 기대거나 상체만 기울어진 자세 오탐을 줄이기 위해
         # 무릎/발목 중 최소 하나가 확인될 때만 낙상 판정을 시작한다.
         if not self._has_visible_leg(kpts):
             logger.debug("낙상 후보 거부: 무릎/발목 키포인트 신뢰도 부족")
-            return False
+            return FallScore(0.0, ("missing_leg",))
+
+        score = 0.0
+        reasons: list[str] = []
 
         # 방법 1: 어깨-엉덩이 벡터 각도
         if left_hip_v or right_hip_v:
@@ -140,7 +176,14 @@ class FallDetector:
             body_vec = hc - sc
             angle = np.abs(np.arctan2(body_vec[1], body_vec[0]) * 180 / np.pi)
             if angle < self.angle_horizontal or angle > self.angle_inverted:
-                return True
+                score += 2.0
+                reasons.append(f"torso_horizontal:{angle:.1f}")
+
+            vertical_gap = abs(float(hc[1] - sc[1]))
+            horizontal_gap = abs(float(hc[0] - sc[0]))
+            if bbox_h > 0 and vertical_gap / bbox_h < 0.35 and horizontal_gap > vertical_gap:
+                score += 0.5
+                reasons.append("torso_flattened")
 
         # 방법 2: 무릎/발목이 코보다 높은 경우
         if nose_valid:
@@ -157,15 +200,27 @@ class FallDetector:
             if (knee_y_min != _inf and knee_y_min < head_y) or (
                 ankle_y_min != _inf and ankle_y_min < head_y
             ):
-                return True
+                score += 2.5
+                reasons.append("leg_above_head")
+
+        if self.enable_folded_pose:
+            folded_floor_pose = self._is_folded_floor_pose(kpts, bbox_h)
+            if folded_floor_pose is not None:
+                score += 3.0
+                reasons.append(f"folded_floor_pose:{folded_floor_pose:.2f}")
 
         # 방법 3: bbox 가로 비율 + 코 위치
+        aspect_ratio = bbox_w / max(bbox_h, 1)
         if (
             nose_valid
             and bbox_w > bbox_h * self.bbox_aspect_ratio
             and nose[1] > bbox_h * self.fall_height_ratio
         ):
-            return True
+            score += 2.0
+            reasons.append(f"wide_bbox_low_head:{aspect_ratio:.2f}")
+        elif bbox_w > bbox_h * self.span_bbox_aspect_ratio:
+            score += 0.5
+            reasons.append(f"wide_bbox_candidate:{aspect_ratio:.2f}")
 
         # 방법 4: 키포인트 수직 분산 비율
         if bbox_h > 0 and bbox_w > bbox_h * self.span_bbox_aspect_ratio:
@@ -177,9 +232,53 @@ class FallDetector:
             if len(ys_valid) >= 3:
                 span_ratio = (max(ys_valid) - min(ys_valid)) / bbox_h
                 if span_ratio < self.span_ratio:
-                    return True
+                    score += 1.5
+                    reasons.append(f"low_vertical_span:{span_ratio:.2f}")
 
-        return False
+        return FallScore(score, tuple(reasons))
+
+    def folded_floor_pose_score(self, keypoints, bbox_height: int) -> float | None:
+        """운영 판정과 분리해 후면/측면 바닥 착좌형 후보 신호를 계산한다."""
+        try:
+            kpts = np.asarray(keypoints, dtype=np.float32)
+            return self._is_folded_floor_pose(kpts, bbox_height)
+        except Exception as exc:
+            logger.debug("접힌 바닥 자세 후보 계산 실패: %s", exc)
+            return None
+
+    def _is_folded_floor_pose(self, kpts: np.ndarray, bbox_h: int) -> float | None:
+        """후면/측면에서 주저앉거나 무릎을 접은 낙상 자세를 감지한다.
+
+        얼굴/코가 보이지 않는 후면 낙상은 몸통이 수평으로 눕기보다
+        바닥에 앉은 형태로 끝나는 경우가 있어, 하체 키포인트가 엉덩이
+        주변에 압축되어 있는지를 별도 신호로 본다.
+        """
+        if bbox_h <= 0:
+            return None
+
+        shoulder_points = self._visible_points(kpts, (5, 6), self.min_keypoint_confidence)
+        hip_points = self._visible_points(kpts, (11, 12), self.min_hip_confidence)
+        knee_points = self._visible_points(kpts, (13, 14), self.min_leg_confidence)
+        ankle_points = self._visible_points(kpts, (15, 16), self.min_leg_confidence)
+        if not shoulder_points or not hip_points or not knee_points:
+            return None
+
+        shoulder_center = np.mean(shoulder_points, axis=0)
+        hip_center = np.mean(hip_points, axis=0)
+        lower_points = hip_points + knee_points + ankle_points
+        lower_ys = [float(point[1]) for point in lower_points]
+        lower_span_ratio = (max(lower_ys) - min(lower_ys)) / bbox_h
+        torso_gap_ratio = abs(float(hip_center[1] - shoulder_center[1])) / bbox_h
+
+        # 바닥에 접힌 자세는 하체가 엉덩이 주변에 몰리고, 어깨-엉덩이 간격은
+        # 어느 정도 남아 있어 단순 키포인트 노이즈와 구분된다.
+        if lower_span_ratio > 0.38:
+            return None
+        if torso_gap_ratio < 0.22 or torso_gap_ratio > 0.78:
+            return None
+        if hip_center[1] <= shoulder_center[1]:
+            return None
+        return lower_span_ratio
 
     def _has_visible_leg(self, kpts: np.ndarray) -> bool:
         """무릎 또는 발목 키포인트가 충분히 보이는지 확인한다."""
@@ -187,6 +286,18 @@ class FallDetector:
             len(kpts) > ki and kpts[ki][2] >= self.min_leg_confidence
             for ki in (13, 14, 15, 16)
         )
+
+    @staticmethod
+    def _visible_points(
+        kpts: np.ndarray,
+        indices: tuple[int, ...],
+        min_confidence: float,
+    ) -> list[np.ndarray]:
+        return [
+            kpts[ki][:2]
+            for ki in indices
+            if len(kpts) > ki and kpts[ki][2] >= min_confidence
+        ]
 
     # ── 사람 검증 로직 ────────────────────────────────────────────────
 

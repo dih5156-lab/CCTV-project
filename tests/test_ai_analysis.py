@@ -437,8 +437,8 @@ class TestDetectFallFromKeypoints:
         )
         assert result is False
 
-    def test_knee_above_head_is_fall_method2(self, analyzer):
-        """무릎의 y좌표가 코보다 작으면 (화면상 더 위) → 낙상 (방법 2)."""
+    def test_knee_above_head_is_single_signal_below_default_threshold(self, analyzer):
+        """무릎이 머리 위인 단일 신호만으로는 기본 운영 기준에서 낙상 확정하지 않는다."""
         kpts = _make_kpts({
             0:  [100, 300, 0.9],   # nose: 아래에 있음 (y=300 큰 값)
             5:  [90,  280, 0.9],
@@ -452,10 +452,13 @@ class TestDetectFallFromKeypoints:
         result = analyzer._detect_fall_from_keypoints(
             keypoints, idx=0, bbox_width=50, bbox_height=50
         )
-        assert result is True
+        assert result is False
+        assert FallDetector(score_threshold=2.0)._check_fall(
+            kpts, bbox_w=50, bbox_h=50
+        ) is True
 
-    def test_wide_bbox_with_low_nose_is_fall_method3(self, analyzer):
-        """가로 > 세로×2 이고 코가 충분히 낮은 위치 → 낙상 (방법 3)."""
+    def test_wide_bbox_with_low_nose_is_single_signal_below_default_threshold(self, analyzer):
+        """넓은 bbox+낮은 코 단일 신호만으로는 기본 운영 기준에서 낙상 확정하지 않는다."""
         kpts = _make_kpts({
             0:  [100, 80, 0.9],    # nose y=80 > bbox_height*0.3=30
             5:  [50,  50, 0.9],
@@ -468,7 +471,64 @@ class TestDetectFallFromKeypoints:
         result = analyzer._detect_fall_from_keypoints(
             keypoints, idx=0, bbox_width=300, bbox_height=100
         )
-        assert result is True
+        assert result is False
+        assert FallDetector(score_threshold=2.0)._check_fall(
+            kpts, bbox_w=300, bbox_h=100
+        ) is True
+
+    def test_folded_floor_pose_without_visible_face_is_fall(self):
+        """후면/측면에서 얼굴이 안 보여도 하체가 접혀 바닥에 앉은 자세는 낙상 후보로 본다."""
+        kpts = _make_kpts({
+            0:  [100, 20, 0.05],
+            5:  [90,  90, 0.9],
+            6:  [115, 92, 0.9],
+            11: [100, 155, 0.9],
+            12: [125, 158, 0.9],
+            13: [112, 178, 0.9],
+            14: [136, 176, 0.9],
+            15: [130, 190, 0.7],
+            16: [150, 188, 0.7],
+        })
+
+        assert FallDetector(enable_folded_pose=True)._check_fall(
+            kpts, bbox_w=110, bbox_h=220
+        ) is True
+
+    def test_folded_floor_pose_can_be_scored_without_enabling_alarm(self):
+        """운영 알람 기준과 분리해 후면/측면 후보 신호만 산출할 수 있다."""
+        kpts = _make_kpts({
+            0:  [100, 20, 0.05],
+            5:  [90,  90, 0.9],
+            6:  [115, 92, 0.9],
+            11: [100, 155, 0.9],
+            12: [125, 158, 0.9],
+            13: [112, 178, 0.9],
+            14: [136, 176, 0.9],
+            15: [130, 190, 0.7],
+            16: [150, 188, 0.7],
+        })
+        detector = FallDetector(enable_folded_pose=False)
+
+        assert detector._check_fall(kpts, bbox_w=110, bbox_h=220) is False
+        assert detector.folded_floor_pose_score(kpts, bbox_height=220) is not None
+
+    def test_forward_bending_person_is_not_folded_floor_pose(self):
+        """서서 앞으로 숙인 자세처럼 하체 수직 폭이 큰 경우는 접힌 바닥 자세로 보지 않는다."""
+        kpts = _make_kpts({
+            0:  [100, 80, 0.7],
+            5:  [85,  120, 0.9],
+            6:  [115, 120, 0.9],
+            11: [95,  180, 0.9],
+            12: [125, 180, 0.9],
+            13: [92,  260, 0.9],
+            14: [128, 260, 0.9],
+            15: [90,  350, 0.9],
+            16: [130, 350, 0.9],
+        })
+
+        assert FallDetector(enable_folded_pose=True)._check_fall(
+            kpts, bbox_w=120, bbox_h=360
+        ) is False
 
     def test_none_keypoints_returns_false(self, analyzer):
         """keypoints가 None이면 _extract_keypoints에서 None 반환 → False."""
@@ -504,7 +564,9 @@ class TestDetectFallFromKeypoints:
 
         assert FallDetector()._check_fall(kpts, bbox_w=110, bbox_h=100) is False
         assert (
-            FallDetector(angle_horizontal=55)._check_fall(kpts, bbox_w=110, bbox_h=100)
+            FallDetector(angle_horizontal=55, score_threshold=2.0)._check_fall(
+                kpts, bbox_w=110, bbox_h=100
+            )
             is True
         )
 

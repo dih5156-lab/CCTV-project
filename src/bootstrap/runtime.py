@@ -14,6 +14,7 @@ import time
 import traceback
 from pathlib import Path
 from typing import Optional
+from urllib.parse import unquote, urlparse
 
 from ..config import AppConfig
 from ..core import VideoProcessor
@@ -26,6 +27,22 @@ from ..utils.env import get_env_bool, get_env_int
 from ..utils.zone_drawer import ZoneDrawer
 
 logger = logging.getLogger(__name__)
+
+
+VIDEO_FILE_SUFFIXES = {".mp4", ".avi", ".mkv", ".mov", ".m4v"}
+
+
+def _resolve_video_file_source(source: str) -> Path | None:
+    """검증 가능한 로컬 비디오 파일 source를 Path로 변환한다."""
+    if source.startswith("file://"):
+        parsed = urlparse(source)
+        if parsed.netloc and parsed.netloc not in {"", "localhost"}:
+            return None
+        path = Path(unquote(parsed.path))
+        return path if path.suffix.lower() in VIDEO_FILE_SUFFIXES else None
+
+    path = Path(source)
+    return path if path.suffix.lower() in VIDEO_FILE_SUFFIXES else None
 
 
 def configure_runtime_environment() -> None:
@@ -123,8 +140,8 @@ def load_camera_list(path: str) -> list[dict]:
                 pass
             elif source.startswith(("rtsp://", "rtmp://", "http://", "https://")):
                 pass
-            elif Path(source).suffix.lower() in {".mp4", ".avi", ".mkv", ".mov", ".m4v"}:
-                if not Path(source).exists():
+            elif video_file_path := _resolve_video_file_source(source):
+                if not video_file_path.exists():
                     logger.warning("[%s] 비디오 파일을 찾을 수 없습니다: %s — 건너뜀", camera_id, source)
                     continue
             else:

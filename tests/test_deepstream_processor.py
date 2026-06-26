@@ -14,6 +14,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 import threading
 import types
@@ -723,6 +724,259 @@ def test_deepstream_detection_event_enqueue_uses_common_queue_stats(mock_config)
     assert ok is True
     assert proc._events_detected == 1
     assert proc.event_queue.get_nowait() is event
+
+
+def test_deepstream_falldata_aux_submission_only_for_fall_events():
+    proc = object.__new__(DeepStreamProcessor)
+    proc._falldata_aux_queue = Queue(maxsize=2)
+    proc._falldata_aux = MagicMock()
+    proc._falldata_aux.enabled = True
+
+    person = DetectionEvent(EventType.PERSON, 0, 0, 10, 10, 0.9, 1.0, object_id=1)
+    fall = DetectionEvent(EventType.FALL_DETECTED, 1, 2, 30, 20, 0.8, 1.0, object_id=7)
+
+    proc._submit_falldata_aux_work("cam1", [person])
+    assert proc._falldata_aux_queue.empty()
+
+    proc._submit_falldata_aux_work("cam1", [person, fall])
+    camera_name, payload = proc._falldata_aux_queue.get_nowait()
+
+    assert camera_name == "cam1"
+    assert payload["type"] == "fall_detected"
+    assert payload["object_id"] == 7
+
+
+def test_deepstream_falldata_aux_submission_ignored_when_disabled():
+    proc = object.__new__(DeepStreamProcessor)
+    proc._falldata_aux_queue = Queue(maxsize=2)
+    proc._falldata_aux = MagicMock()
+    proc._falldata_aux.enabled = False
+    fall = DetectionEvent(EventType.FALL_DETECTED, 1, 2, 30, 20, 0.8, 1.0, object_id=7)
+
+    proc._submit_falldata_aux_work("cam1", [fall])
+
+    assert proc._falldata_aux_queue.empty()
+
+
+def test_deepstream_pa100k_sgie_backend_name_is_explicit(monkeypatch):
+    proc = object.__new__(DeepStreamProcessor)
+    proc._pphuman_label_map = {"model": "Rethinking_of_PAR PA100K resnet50"}
+    monkeypatch.setenv("DS_PPHUMAN_INFER_CONFIG", "config/deepstream/config_infer_pa100k.txt")
+    monkeypatch.setenv("APPEARANCE_LABEL_MAP_PATH", "config/appearance_pa100k_labels.json")
+
+    assert proc._resolve_pphuman_sgie_backend_name() == "pa100k_sgie"
+
+
+def test_deepstream_sgie_injected_person_meta_has_label(monkeypatch):
+    proc = object.__new__(DeepStreamProcessor)
+    proc._pose_gie_id = 1
+
+    injected_meta = types.SimpleNamespace(
+        unique_component_id=0,
+        class_id=-1,
+        obj_label="",
+        confidence=0.0,
+        rect_params=types.SimpleNamespace(left=0.0, top=0.0, width=0.0, height=0.0),
+    )
+    added = []
+
+    fake_pyds = types.SimpleNamespace(
+        NVDSINFER_TENSOR_OUTPUT_META=100,
+        NvDsUserMeta=types.SimpleNamespace(cast=lambda value: value),
+        NvDsInferTensorMeta=types.SimpleNamespace(cast=lambda value: value),
+        nvds_acquire_obj_meta_from_pool=lambda batch_meta: injected_meta,
+        nvds_add_obj_meta_to_frame=lambda frame_meta, obj_meta, parent: added.append(obj_meta),
+    )
+    monkeypatch.setattr(deepstream_processor, "pyds", fake_pyds)
+    monkeypatch.setattr(
+        proc,
+        "_detections_from_tensor",
+        lambda tensor_meta, frame_meta: [
+            {
+                "label": "person",
+                "class_id": 0,
+                "confidence": 0.91,
+                "box": (10, 20, 30, 40),
+            }
+        ],
+    )
+    monkeypatch.setattr(proc, "_filter_detections_for_camera", lambda detections, camera: detections)
+
+    tensor_meta = types.SimpleNamespace(unique_id=1)
+    user_meta = types.SimpleNamespace(
+        base_meta=types.SimpleNamespace(meta_type=100),
+        user_meta_data=tensor_meta,
+    )
+    frame_meta = types.SimpleNamespace(frame_user_meta_list=types.SimpleNamespace(data=user_meta, next=None))
+
+    injected = proc._inject_primary_person_object_meta(object(), frame_meta, "cam1")
+
+    assert injected == 1
+    assert added == [injected_meta]
+    assert injected_meta.unique_component_id == 1
+    assert injected_meta.class_id == 0
+    assert injected_meta.obj_label == "person"
+    assert injected_meta.rect_params.width == 30
+
+
+def test_deepstream_sgie_shrinks_oversized_person_roi(monkeypatch):
+    proc = object.__new__(DeepStreamProcessor)
+    proc._pose_gie_id = 1
+    injected_meta = types.SimpleNamespace(
+        unique_component_id=0,
+        class_id=-1,
+        obj_label="",
+        confidence=0.0,
+        rect_params=types.SimpleNamespace(left=0.0, top=0.0, width=0.0, height=0.0),
+    )
+    added = []
+
+    fake_pyds = types.SimpleNamespace(
+        NVDSINFER_TENSOR_OUTPUT_META=100,
+        NvDsUserMeta=types.SimpleNamespace(cast=lambda value: value),
+        NvDsInferTensorMeta=types.SimpleNamespace(cast=lambda value: value),
+        nvds_acquire_obj_meta_from_pool=lambda batch_meta: injected_meta,
+        nvds_add_obj_meta_to_frame=lambda frame_meta, obj_meta, parent: added.append(obj_meta),
+    )
+    monkeypatch.setattr(deepstream_processor, "pyds", fake_pyds)
+    monkeypatch.setattr(
+        proc,
+        "_detections_from_tensor",
+        lambda tensor_meta, frame_meta: [
+            {
+                "label": "person",
+                "class_id": 0,
+                "confidence": 0.91,
+                "box": (0, 0, 900, 710),
+                "keypoints": [
+                    [0, 0, 0.0],
+                    [0, 0, 0.0],
+                    [0, 0, 0.0],
+                    [0, 0, 0.0],
+                    [0, 0, 0.0],
+                    [500, 150, 0.9],
+                    [650, 150, 0.9],
+                    [470, 320, 0.8],
+                    [680, 320, 0.8],
+                    [450, 430, 0.7],
+                    [700, 430, 0.7],
+                    [520, 500, 0.8],
+                    [640, 500, 0.8],
+                ],
+            }
+        ],
+    )
+    monkeypatch.setattr(proc, "_filter_detections_for_camera", lambda detections, camera: detections)
+    monkeypatch.delenv("DS_PPHUMAN_MAX_ROI_WIDTH_RATIO", raising=False)
+    monkeypatch.delenv("DS_PPHUMAN_MAX_ROI_HEIGHT_RATIO", raising=False)
+
+    tensor_meta = types.SimpleNamespace(unique_id=1)
+    user_meta = types.SimpleNamespace(
+        base_meta=types.SimpleNamespace(meta_type=100),
+        user_meta_data=tensor_meta,
+    )
+    frame_meta = types.SimpleNamespace(
+        source_frame_width=1280,
+        source_frame_height=720,
+        frame_user_meta_list=types.SimpleNamespace(data=user_meta, next=None),
+    )
+
+    injected = proc._inject_primary_person_object_meta(object(), frame_meta, "cam1")
+
+    assert injected == 1
+    assert added == [injected_meta]
+    assert injected_meta.rect_params.left > 0
+    assert injected_meta.rect_params.width < 900
+    assert injected_meta.rect_params.height <= 720
+
+
+def test_deepstream_fall_shadow_review_record_writes_jsonl(tmp_path):
+    proc = object.__new__(DeepStreamProcessor)
+    proc._fall_shadow_review_log_path = tmp_path / "logs" / "fall_shadow_review.jsonl"
+    proc._fall_shadow_clip_dir = tmp_path / "clips"
+    proc._fall_shadow_save_clips = False
+    proc._falldata_aux = MagicMock()
+
+    record = proc._write_fall_shadow_review_record(
+        "cam 1",
+        {
+            "type": "fall_detected",
+            "object_id": 7,
+            "bbox": {"x": 1, "y": 2, "width": 30, "height": 20},
+            "confidence": 0.8,
+        },
+        {"status": "ok", "confirmed": True, "fall_probability": 0.82},
+    )
+
+    lines = proc._fall_shadow_review_log_path.read_text(encoding="utf-8").splitlines()
+    payload = json.loads(lines[0])
+
+    assert record["review_status"] == "unlabeled"
+    assert payload["camera_id"] == "cam 1"
+    assert payload["falldata_aux"]["fall_probability"] == 0.82
+    assert payload["clip_path"] is None
+    assert " " not in payload["event_id"]
+
+
+def test_deepstream_fall_shadow_review_record_can_save_clip(tmp_path):
+    proc = object.__new__(DeepStreamProcessor)
+    proc._fall_shadow_review_log_path = tmp_path / "fall_shadow_review.jsonl"
+    proc._fall_shadow_clip_dir = tmp_path / "clips"
+    proc._fall_shadow_save_clips = True
+    proc._falldata_aux = MagicMock()
+    proc._falldata_aux.save_buffered_clip.return_value = 12
+
+    record = proc._write_fall_shadow_review_record(
+        "cam1",
+        {"type": "fall_detected", "object_id": 3},
+        {"status": "ok", "confirmed": False, "fall_probability": 0.4},
+    )
+
+    proc._falldata_aux.save_buffered_clip.assert_called_once()
+    assert record["clip_frames"] == 12
+    assert record["clip_path"].endswith(".mp4")
+
+
+def test_deepstream_fall_near_miss_writes_review_record(tmp_path, monkeypatch):
+    proc = object.__new__(DeepStreamProcessor)
+    proc._fall_shadow_review_log_path = tmp_path / "fall_shadow_review.jsonl"
+    proc._fall_shadow_clip_dir = tmp_path / "clips"
+    proc._fall_shadow_save_clips = False
+    proc._fall_shadow_near_miss_enabled = True
+    proc._fall_shadow_near_miss_cooldown_sec = 10.0
+    proc._fall_shadow_near_miss_last_at = {}
+    proc._falldata_aux = None
+    monkeypatch.setattr("src.core.deepstream_processor.time.monotonic", lambda: 100.0)
+
+    event = DetectionEvent(
+        EventType.PERSON,
+        1,
+        2,
+        30,
+        20,
+        0.8,
+        1.0,
+        object_id=7,
+        metadata={
+            "fall_near_miss": {
+                "type": "folded_floor_pose",
+                "score": 3.0,
+                "reasons": ["folded_floor_pose:0.20"],
+            }
+        },
+    )
+
+    proc._write_fall_near_miss_review_records("cam1", [event])
+    proc._write_fall_near_miss_review_records("cam1", [event])
+
+    lines = proc._fall_shadow_review_log_path.read_text(encoding="utf-8").splitlines()
+    payload = json.loads(lines[0])
+
+    assert len(lines) == 1
+    assert payload["event_type"] == "fall_near_miss"
+    assert payload["review_source"] == "fall_near_miss"
+    assert payload["near_miss"]["type"] == "folded_floor_pose"
+    assert payload["falldata_aux"]["status"] == "not_run"
 
 
 def test_deepstream_publish_loop_success_counts_sent_not_detected(mock_config):

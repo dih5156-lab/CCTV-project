@@ -47,12 +47,17 @@ from ..services.appearance_conditions import AppearanceConditionStore
 from ..utils.face_recognition import FaceRecognitionEngine
 from ..utils.zone_detection import ZoneEvent, ZoneManager
 from ._context_event_store import ContextEventStore
+from ._deepstream_context_worker import DeepStreamContextWorker
 from ._deepstream_event_factory import detections_to_events, object_meta_to_event
 from ._deepstream_face_context import (
     remove_camera_face_cache,
     run_deepstream_face_recognition,
 )
 from ._deepstream_osd import add_osd_overlays
+from ._deepstream_pipeline_builder import (
+    DeepStreamPipelineElements,
+    link_deepstream_pipeline_path,
+)
 from ._deepstream_source_manager import (
     attach_camera_source_to_pipeline,
     detach_camera_source_from_pipeline,
@@ -69,9 +74,13 @@ from ._deepstream_tensor_utils import (
     select_yolo_output,
     tensor_gie_id,
 )
-from ._event_context import events_to_nearby_objects
 from ._event_publish import publish_queue_item
 from ._face_snapshot import save_recognized_face_snapshot
+from ._fall_shadow_review import (
+    FallShadowReviewConfig,
+    FallShadowReviewRecorder,
+    fall_shadow_event_id,
+)
 from ._h264_poc_fixer import H264PocFixer
 from ._preview_frame_store import PreviewFrameStore
 from ._synthetic_object_ids import SyntheticObjectIdAssigner, event_iou
@@ -84,6 +93,7 @@ from .ai._appearance_analyzer import BAG_CLASSES, AppearanceAnalyzer
 from .ai._appearance_pipeline import AppearancePipeline
 from .ai._attribute_backends import decode_pphuman_scores
 from .ai._fall_detector import FallDetector
+from .ai._falldata_aux import FallDataAuxVerifier
 from .base_processor import BaseProcessor
 from .event_debouncer import EventDebouncer
 from .event_filters import CumulativeViolationFilter, TrackManager
@@ -238,6 +248,9 @@ class DeepStreamProcessor(BaseProcessor):
         # 얼굴/외형 인식 비동기 워커 (GStreamer 메인루프 블로킹 방지)
         self._face_work_queue: Queue = Queue(maxsize=8)
         self._face_worker_thread: Optional[threading.Thread] = None
+        # falldata 보조 낙상 검증 워커. DeepStream 실시간 경로를 막지 않도록 shadow 로그만 남긴다.
+        self._falldata_aux_queue: Queue = Queue(maxsize=2)
+        self._falldata_aux_worker_thread: Optional[threading.Thread] = None
         # 실제 파이프라인에 빌드된 토폴로지 (primary, helmet, pphuman)
         # _build_pipeline() 호출 시 갱신됨. 재시작 필요 여부 판단에 사용.
         self._built_topology: Tuple[bool, bool, bool] = (False, False, False)
@@ -363,6 +376,12 @@ class DeepStreamProcessor(BaseProcessor):
                 0.40,
                 0.40,
             ),
+            score_threshold=self._read_float_setting(
+                "DS_FALL_SCORE_THRESHOLD",
+                3.0,
+                3.0,
+            ),
+            enable_folded_pose=self._env_bool("DS_FALL_ENABLE_FOLDED_POSE", False),
             min_keypoint_confidence=self._read_float_setting(
                 "DS_FALL_MIN_KEYPOINT_CONFIDENCE",
                 0.30,
@@ -456,13 +475,14 @@ class DeepStreamProcessor(BaseProcessor):
         )
         self._appearance_pipeline = AppearancePipeline(
             self._appearance,
-            Path(os.environ.get("APPEARANCE_CROP_DIR", "data/appearance_crops")),
+            Path(os.environ.get("APPEARANCE_CROP_DIR", "/app/data/runtime/appearance_crops")),
             save_crops=self._env_bool("APPEARANCE_SAVE_CROPS", False),
             crop_context_ratio=self._read_float_setting(
                 "APPEARANCE_CROP_CONTEXT_RATIO", None, 0.6
             ),
         )
-        self._appearance_db_path = Path(os.environ.get("APPEARANCES_DB", "/app/data/appearances.db"))
+        self._face_context_worker: Optional[DeepStreamContextWorker] = None
+        self._appearance_db_path = Path(os.environ.get("APPEARANCES_DB", "/app/data/runtime/appearances.db"))
         self._appearance_conditions_mtime: Optional[float] = None
         self._appearance_conditions_checked_at = 0.0
         self._appearance_conditions_refresh_sec = float(
@@ -470,6 +490,47 @@ class DeepStreamProcessor(BaseProcessor):
         )
         self._appearance_capability_logged: set[str] = set()
         self._pphuman_label_map = self._load_pphuman_label_map(config.appearance.label_map_path)
+        self._pphuman_sgie_backend_name = self._resolve_pphuman_sgie_backend_name()
+        self._falldata_aux = FallDataAuxVerifier()
+        self._fall_shadow_review_log_path = Path(
+            os.environ.get("FALL_SHADOW_REVIEW_LOG_PATH", "/app/data/logs/fall_shadow_review.jsonl")
+        )
+        self._fall_shadow_clip_dir = Path(
+            os.environ.get("FALL_SHADOW_CLIP_DIR", "/app/data/fall_review_clips")
+        )
+        self._fall_shadow_save_clips = self._env_bool("FALL_SHADOW_SAVE_CLIPS", False)
+        self._fall_shadow_near_miss_enabled = self._env_bool(
+            "FALL_SHADOW_NEAR_MISS_LOG",
+            False,
+        )
+        self._fall_shadow_near_miss_cooldown_sec = self._read_float_setting(
+            "FALL_SHADOW_NEAR_MISS_COOLDOWN_SECONDS",
+            None,
+            10.0,
+        )
+        self._fall_shadow_near_miss_last_at: Dict[Tuple[str, int], float] = {}
+        self._fall_shadow = FallShadowReviewRecorder(
+            FallShadowReviewConfig(
+                review_log_path=self._fall_shadow_review_log_path,
+                clip_dir=self._fall_shadow_clip_dir,
+                save_clips=self._fall_shadow_save_clips,
+                near_miss_enabled=self._fall_shadow_near_miss_enabled,
+                near_miss_cooldown_sec=self._fall_shadow_near_miss_cooldown_sec,
+            ),
+            falldata_aux=self._falldata_aux,
+            near_miss_last_at=self._fall_shadow_near_miss_last_at,
+        )
+        if self._falldata_aux.enabled:
+            logger.info(
+                "DeepStream falldata shadow 검증 활성화: mode=%s threshold=%.2f",
+                self._falldata_aux.config.mode,
+                self._falldata_aux.config.threshold,
+            )
+            if not self._preview_enabled:
+                logger.warning(
+                    "FALLDATA_AUX_ENABLED=true 이지만 DS_PREVIEW_ENABLED=0입니다. "
+                    "DeepStream falldata shadow는 preview 프레임 버퍼가 필요합니다."
+                )
         self.zone_manager: Optional[ZoneManager] = None
         if config.zone_detection:
             try:
@@ -866,6 +927,14 @@ class DeepStreamProcessor(BaseProcessor):
             )
             self._face_worker_thread.start()
 
+            if self._falldata_aux.enabled:
+                self._falldata_aux_worker_thread = threading.Thread(
+                    target=self._falldata_aux_worker_loop,
+                    daemon=True,
+                    name="ds-falldata-aux-worker",
+                )
+                self._falldata_aux_worker_thread.start()
+
             # GStreamer 파이프라인 재생 시작
             ret = self._pipeline.set_state(Gst.State.PLAYING)
             if ret == Gst.StateChangeReturn.FAILURE:
@@ -902,6 +971,8 @@ class DeepStreamProcessor(BaseProcessor):
             self._main_loop_thread.join(timeout=2.0)
         if self._face_worker_thread and self._face_worker_thread.is_alive():
             self._face_worker_thread.join(timeout=2.0)
+        if self._falldata_aux_worker_thread and self._falldata_aux_worker_thread.is_alive():
+            self._falldata_aux_worker_thread.join(timeout=2.0)
         self.event_publisher.disconnect()
         logger.info("DeepStreamProcessor 중지됨")
 
@@ -1386,6 +1457,18 @@ class DeepStreamProcessor(BaseProcessor):
             logger.debug("PP-Human SGIE score 디코딩 실패: %s", exc)
             return {}
 
+    def _resolve_pphuman_sgie_backend_name(self) -> str:
+        """DeepStream SGIE로 붙은 속성 모델 이름을 운영 로그/DB용으로 결정한다."""
+        candidates = [
+            str(_PPHUMAN_INFER_CONFIG),
+            os.environ.get("DS_PPHUMAN_INFER_CONFIG", ""),
+            os.environ.get("APPEARANCE_LABEL_MAP_PATH", ""),
+            str(self._pphuman_label_map.get("model") or ""),
+        ]
+        if any("pa100k" in value.lower() for value in candidates):
+            return "pa100k_sgie"
+        return "pphuman_sgie"
+
     def _map_yolo_box_to_frame(
         self, box: Any, frame_width: int, frame_height: int
     ) -> Tuple[int, int, int, int]:
@@ -1399,16 +1482,39 @@ class DeepStreamProcessor(BaseProcessor):
     def _is_fall_pose(
         self, keypoints: List[List[float]], width: int, height: int
     ) -> bool:
+        return bool(self._score_fall_pose(keypoints, width, height).get("is_fall"))
+
+    def _score_fall_pose(
+        self, keypoints: List[List[float]], width: int, height: int
+    ) -> Dict[str, Any]:
         import numpy as np
 
         if not keypoints:
-            return False
+            return {"is_fall": False, "score": 0.0, "reasons": ["missing_keypoints"]}
         try:
             kpts = np.asarray(keypoints, dtype=np.float32)
-            return self._fall_detector._check_fall(kpts, width, height)
+            result = self._fall_detector._score_fall(kpts, width, height)
+            is_fall = result.score >= self._fall_detector.score_threshold
+            payload: Dict[str, Any] = {
+                "is_fall": is_fall,
+                "score": result.score,
+                "reasons": list(result.reasons),
+                "threshold": self._fall_detector.score_threshold,
+            }
+            folded_score = self._fall_detector.folded_floor_pose_score(kpts, height)
+            if folded_score is not None and not is_fall:
+                payload["near_miss"] = {
+                    "type": "folded_floor_pose",
+                    "score": 3.0,
+                    "reasons": [f"folded_floor_pose:{folded_score:.2f}"],
+                    "base_score": result.score,
+                    "base_reasons": list(result.reasons),
+                    "threshold": self._fall_detector.score_threshold,
+                }
+            return payload
         except Exception as exc:
             logger.debug("DeepStream pose 낙상 판단 실패: %s", exc)
-            return False
+            return {"is_fall": False, "score": 0.0, "reasons": ["error"]}
 
     def _is_valid_person_pose(
         self, keypoints: List[List[float]]
@@ -1575,7 +1681,7 @@ class DeepStreamProcessor(BaseProcessor):
         )
         gender_ready = bool(flags.get("use_face")) and bool(self.face_recognizer.enabled)
         helmet_ready = bool(flags.get("use_helmet")) and self._helmet_enabled
-        bag_ready = bool(bag_labels) or backend_name != "hsv"
+        bag_ready = bool(bag_labels) or backend_name != "hsv" or pphuman_sgie_active
 
         logger.info(
             "[%s] 외형 검색 컨텍스트: backend=%s, pphuman_sgie=%s, gender_ready=%s, helmet_ready=%s, bag_ready=%s",
@@ -1608,10 +1714,6 @@ class DeepStreamProcessor(BaseProcessor):
             )
 
         self._appearance_capability_logged.add(camera_name)
-
-    @staticmethod
-    def _nearby_objects_from_events(events: List[DetectionEvent]) -> List[Dict[str, Any]]:
-        return events_to_nearby_objects(events)
 
     def _remember_context_events(self, camera_name: str, events: List[DetectionEvent]) -> None:
         self._context_event_store.remember(camera_name, events)
@@ -1694,63 +1796,162 @@ class DeepStreamProcessor(BaseProcessor):
                 logger.warning("[%s] DeepStream 구역 감지 오류: %s", camera_name, exc)
         self._enqueue_zone_events(camera_name, zone_events)
 
+        self._write_fall_near_miss_review_records(camera_name, filtered_events)
+        self._submit_falldata_aux_work(camera_name, filtered_events)
+
         for event in filtered_events:
             self._enqueue_event(event, camera_name)
 
+    def _write_fall_near_miss_review_records(
+        self,
+        camera_name: str,
+        filtered_events: List[DetectionEvent],
+    ) -> None:
+        """알람 미발생 후면/측면 낙상 후보를 shadow 라벨링 로그로 저장한다."""
+        self._fall_shadow_recorder().write_near_miss_records(
+            camera_name,
+            filtered_events,
+            now_monotonic=time.monotonic(),
+        )
+
+    def _submit_falldata_aux_work(
+        self,
+        camera_name: str,
+        filtered_events: List[DetectionEvent],
+    ) -> None:
+        """DeepStream 낙상 후보를 falldata 보조 검증 워커에 제출한다."""
+        self._fall_shadow_recorder().submit_aux_work(
+            self._falldata_aux_queue,
+            camera_name,
+            filtered_events,
+        )
+
+    def _falldata_aux_worker_loop(self) -> None:
+        """falldata 보조 낙상 검증을 백그라운드에서 실행해 shadow 로그를 남긴다."""
+        logger.info("falldata shadow 워커 시작")
+        if self._falldata_aux.config.mode == "confirm":
+            logger.warning(
+                "DeepStream 경로의 FALLDATA_AUX_MODE=confirm은 이벤트 차단 없이 shadow 로그만 남깁니다."
+            )
+        while not self.stop_event.is_set():
+            try:
+                camera_name, event_payload = self._falldata_aux_queue.get(timeout=0.1)
+            except Empty:
+                continue
+            try:
+                recorder = self._fall_shadow_recorder()
+                result, review_record = recorder.verify_and_write_aux_record(
+                    camera_name,
+                    event_payload,
+                )
+                logger.info(
+                    "[%s] falldata shadow result: status=%s confirmed=%s fall_probability=%s "
+                    "threshold=%s nonzero_frames=%s object_id=%s review_log=%s clip=%s",
+                    camera_name,
+                    result.get("status"),
+                    result.get("confirmed"),
+                    result.get("fall_probability"),
+                    result.get("threshold"),
+                    result.get("nonzero_feature_frames"),
+                    event_payload.get("object_id"),
+                    recorder.config.review_log_path,
+                    review_record.get("clip_path"),
+                )
+            except Exception as exc:
+                logger.warning("[%s] falldata shadow 워커 실패: %s", camera_name, exc)
+
+    def _write_fall_shadow_review_record(
+        self,
+        camera_name: str,
+        event_payload: Dict[str, Any],
+        result: Dict[str, Any],
+        *,
+        near_miss: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        """학습/라벨링 검토용 falldata shadow JSONL 레코드를 저장한다."""
+        return self._fall_shadow_recorder().write_record(
+            camera_name,
+            event_payload,
+            result,
+            near_miss=near_miss,
+        )
+
+    @staticmethod
+    def _fall_shadow_event_id(
+        camera_name: str,
+        event_payload: Dict[str, Any],
+        created_at: Any,
+    ) -> str:
+        return fall_shadow_event_id(camera_name, event_payload, created_at)
+
+    def _fall_shadow_recorder(self) -> FallShadowReviewRecorder:
+        config = FallShadowReviewConfig(
+            review_log_path=Path(
+                getattr(
+                    self,
+                    "_fall_shadow_review_log_path",
+                    "/app/data/logs/fall_shadow_review.jsonl",
+                )
+            ),
+            clip_dir=Path(
+                getattr(self, "_fall_shadow_clip_dir", "/app/data/fall_review_clips")
+            ),
+            save_clips=bool(getattr(self, "_fall_shadow_save_clips", False)),
+            near_miss_enabled=bool(
+                getattr(self, "_fall_shadow_near_miss_enabled", False)
+            ),
+            near_miss_cooldown_sec=float(
+                getattr(self, "_fall_shadow_near_miss_cooldown_sec", 10.0)
+            ),
+        )
+        near_miss_last_at = getattr(self, "_fall_shadow_near_miss_last_at", None)
+        if near_miss_last_at is None:
+            near_miss_last_at = {}
+            self._fall_shadow_near_miss_last_at = near_miss_last_at
+
+        recorder = getattr(self, "_fall_shadow", None)
+        if recorder is None:
+            recorder = FallShadowReviewRecorder(
+                config,
+                falldata_aux=getattr(self, "_falldata_aux", None),
+                near_miss_last_at=near_miss_last_at,
+            )
+            self._fall_shadow = recorder
+            return recorder
+
+        recorder.config = config
+        recorder.falldata_aux = getattr(self, "_falldata_aux", None)
+        recorder.near_miss_last_at = near_miss_last_at
+        return recorder
+
     def _submit_face_work(self, camera_name: str, filtered_events: List[DetectionEvent]) -> None:
         """얼굴/외형 인식 작업을 비동기 워커 큐에 제출한다."""
-        flags = self._feature_flags_for_camera(camera_name)
-        if not (flags.get("use_face") or flags.get("use_appearance")):
-            return
-        self._remember_context_events(camera_name, filtered_events)
-        person_events = [e for e in filtered_events if e.event_type == EventType.PERSON]
-        if not person_events:
-            return
-        context_events = self._collect_context_events(camera_name, filtered_events)
-        frame = self.get_camera_frame(camera_name, copy_frame=True)
-        if frame is None:
-            return
-        try:
-            self._face_work_queue.put_nowait((camera_name, person_events, frame, flags, context_events))
-        except Full:
-            logger.debug("[%s] 얼굴 인식 워커 큐 가득 참 — 프레임 건너뜀", camera_name)
+        self._face_worker().submit(camera_name, filtered_events)
 
     def _face_worker_loop(self) -> None:
         """얼굴/외형 인식 전용 백그라운드 워커 스레드."""
-        logger.info("얼굴 인식 비동기 워커 시작")
-        while not self.stop_event.is_set():
-            try:
-                task = self._face_work_queue.get(timeout=0.1)
-            except Empty:
-                continue
-            camera_name, person_events, frame, flags, all_filtered_events = task
-            try:
-                face_events = (
-                    self._run_face_recognition(frame, person_events, camera_name)
-                    if flags.get("use_face")
-                    else []
-                )
-                appearance_events: List[DetectionEvent] = []
-                if flags.get("use_appearance"):
-                    self._log_appearance_capability_hints(camera_name, flags)
-                    self._refresh_appearance_conditions()
-                    appearance_events = self._appearance_pipeline.run(
-                        frame,
-                        person_events,
-                        face_events,
-                        camera_id=camera_name,
-                        use_appearance=True,
-                        nearby_objects=self._nearby_objects_from_events(all_filtered_events),
-                    )
-                    for event in appearance_events:
-                        metadata = dict(event.metadata or {})
-                        metadata.setdefault("backend", "deepstream_context")
-                        metadata.setdefault("camera_id", camera_name)
-                        event.metadata = metadata
-                for event in face_events + appearance_events:
-                    self._enqueue_event(event, camera_name)
-            except Exception as exc:
-                logger.warning("[%s] 얼굴/외형 컨텍스트 후처리 실패: %s", camera_name, exc)
+        self._face_worker().run_loop(self.stop_event)
+
+    def _face_worker(self) -> DeepStreamContextWorker:
+        worker = getattr(self, "_face_context_worker", None)
+        if worker is None:
+            worker = DeepStreamContextWorker(
+                queue=self._face_work_queue,
+                feature_flags_for_camera=self._feature_flags_for_camera,
+                remember_context_events=self._remember_context_events,
+                collect_context_events=self._collect_context_events,
+                get_camera_frame=lambda camera_name: self.get_camera_frame(
+                    camera_name,
+                    copy_frame=True,
+                ),
+                run_face_recognition=self._run_face_recognition,
+                log_appearance_capability_hints=self._log_appearance_capability_hints,
+                refresh_appearance_conditions=self._refresh_appearance_conditions,
+                appearance_pipeline=self._appearance_pipeline,
+                enqueue_event=self._enqueue_event,
+            )
+            self._face_context_worker = worker
+        return worker
 
     def _should_enqueue_event(self, event: DetectionEvent, camera_name: str) -> bool:
         """동일 이벤트가 프레임마다 MQTT로 발행되지 않도록 제한한다."""
@@ -1816,7 +2017,7 @@ class DeepStreamProcessor(BaseProcessor):
             input_size=float(os.environ.get("DS_YOLO_INPUT_SIZE", "640")),
             iou_threshold=self._yolo_iou_threshold,
             max_detections=self._yolo_max_detections,
-            fall_checker=self._is_fall_pose,
+            fall_checker=self._score_fall_pose,
             person_pose_validator=self._is_valid_person_pose,
         )
 
@@ -1901,6 +2102,182 @@ class DeepStreamProcessor(BaseProcessor):
                 break
         return detected
 
+    def _inject_primary_person_object_meta(
+        self,
+        batch_meta: Any,
+        frame_meta: Any,
+        camera_name: str,
+    ) -> int:
+        """Python YOLO tensor 결과를 DeepStream object_meta로 주입해 SGIE ROI로 사용한다."""
+        injected = 0
+        l_user = frame_meta.frame_user_meta_list
+        while l_user is not None:
+            try:
+                user_meta = pyds.NvDsUserMeta.cast(l_user.data)
+            except StopIteration:
+                break
+
+            if user_meta.base_meta.meta_type == pyds.NVDSINFER_TENSOR_OUTPUT_META:
+                tensor_meta = pyds.NvDsInferTensorMeta.cast(user_meta.user_meta_data)
+                if tensor_gie_id(tensor_meta, self._pose_gie_id) != self._pose_gie_id:
+                    try:
+                        l_user = l_user.next
+                    except StopIteration:
+                        break
+                    continue
+                detections = self._filter_detections_for_camera(
+                    self._detections_from_tensor(tensor_meta, frame_meta),
+                    camera_name,
+                )
+                for detection in detections:
+                    if self._event_type_for_label(str(detection.get("label", ""))) != EventType.PERSON:
+                        continue
+                    try:
+                        obj_meta = pyds.nvds_acquire_obj_meta_from_pool(batch_meta)
+                        x, y, width, height = self._pphuman_roi_for_detection(detection, frame_meta)
+                        obj_meta.unique_component_id = self._pose_gie_id
+                        obj_meta.class_id = int(detection.get("class_id", 0))
+                        obj_meta.obj_label = str(detection.get("label") or "person")
+                        obj_meta.confidence = float(detection.get("confidence", 0.0))
+                        obj_meta.rect_params.left = float(x)
+                        obj_meta.rect_params.top = float(y)
+                        obj_meta.rect_params.width = float(width)
+                        obj_meta.rect_params.height = float(height)
+                        pyds.nvds_add_obj_meta_to_frame(frame_meta, obj_meta, None)
+                        injected += 1
+                    except Exception as exc:
+                        if not getattr(self, "_sgie_object_injection_warned", False):
+                            logger.warning("[%s] SGIE용 person object_meta 주입 실패: %s", camera_name, exc)
+                            self._sgie_object_injection_warned = True
+
+            try:
+                l_user = l_user.next
+            except StopIteration:
+                break
+        if injected and not getattr(self, "_sgie_object_injection_logged", False):
+            logger.info("[%s] SGIE용 person object_meta 주입 시작: %d건", camera_name, injected)
+            self._sgie_object_injection_logged = True
+        return injected
+
+    def _pphuman_roi_for_detection(
+        self,
+        detection: Mapping[str, Any],
+        frame_meta: Any,
+    ) -> Tuple[int, int, int, int]:
+        """PA100K SGIE에 넣을 ROI를 계산한다.
+
+        가까운 사람 bbox는 의자/책상/배경까지 함께 들어가 소지품 오탐이 커진다.
+        큰 bbox는 버리지 않고 pose keypoint 기준으로 더 좁은 ROI를 만들어 확인한다.
+        """
+        x, y, width, height = [int(round(float(value))) for value in detection["box"]]
+        frame_width = int(getattr(frame_meta, "source_frame_width", 0) or 0)
+        frame_height = int(getattr(frame_meta, "source_frame_height", 0) or 0)
+        if frame_width <= 0 or frame_height <= 0:
+            return x, y, width, height
+
+        width_ratio = float(width) / float(frame_width)
+        height_ratio = float(height) / float(frame_height)
+
+        max_width_ratio = self._read_float_setting(
+            "DS_PPHUMAN_MAX_ROI_WIDTH_RATIO",
+            None,
+            0.70,
+        )
+        max_height_ratio = self._read_float_setting(
+            "DS_PPHUMAN_MAX_ROI_HEIGHT_RATIO",
+            None,
+            0.95,
+        )
+        if width_ratio <= max_width_ratio and height_ratio <= max_height_ratio:
+            return x, y, width, height
+
+        keypoint_roi = self._pphuman_keypoint_roi(detection, frame_width, frame_height)
+        if keypoint_roi is not None:
+            roi = keypoint_roi
+        else:
+            target_width = max(1, int(round(min(width, frame_width * max_width_ratio))))
+            center_x = x + width / 2.0
+            roi_x = int(round(center_x - target_width / 2.0))
+            roi = (
+                max(0, min(frame_width - 1, roi_x)),
+                max(0, y),
+                target_width,
+                min(height, frame_height),
+            )
+            roi = self._clip_roi_to_frame(roi, frame_width, frame_height)
+
+        if not getattr(self, "_pphuman_oversized_roi_logged", False):
+            logger.info(
+                "PA100K SGIE oversized ROI 보정 시작: width_ratio=%.2f height_ratio=%.2f "
+                "limit_width=%.2f limit_height=%.2f roi=%s",
+                width_ratio,
+                height_ratio,
+                max_width_ratio,
+                max_height_ratio,
+                roi,
+            )
+            self._pphuman_oversized_roi_logged = True
+        return roi
+
+    @staticmethod
+    def _clip_roi_to_frame(
+        roi: Tuple[int, int, int, int],
+        frame_width: int,
+        frame_height: int,
+    ) -> Tuple[int, int, int, int]:
+        x, y, width, height = roi
+        x = max(0, min(frame_width - 1, int(x)))
+        y = max(0, min(frame_height - 1, int(y)))
+        width = max(1, min(int(width), frame_width - x))
+        height = max(1, min(int(height), frame_height - y))
+        return x, y, width, height
+
+    def _pphuman_keypoint_roi(
+        self,
+        detection: Mapping[str, Any],
+        frame_width: int,
+        frame_height: int,
+    ) -> Optional[Tuple[int, int, int, int]]:
+        keypoints = detection.get("keypoints")
+        if not isinstance(keypoints, list):
+            return None
+        min_conf = self._read_float_setting(
+            "DS_PPHUMAN_ROI_KEYPOINT_MIN_CONF",
+            None,
+            0.25,
+        )
+        # COCO pose: shoulders/elbows/wrists/hips 중심으로 몸통 ROI를 만든다.
+        body_indices = (5, 6, 7, 8, 9, 10, 11, 12)
+        points: List[Tuple[float, float]] = []
+        for index in body_indices:
+            if index >= len(keypoints):
+                continue
+            point = keypoints[index]
+            if not isinstance(point, list) or len(point) < 3:
+                continue
+            if float(point[2]) < min_conf:
+                continue
+            points.append((float(point[0]), float(point[1])))
+        if len(points) < 2:
+            return None
+
+        xs = [point[0] for point in points]
+        ys = [point[1] for point in points]
+        left, right = min(xs), max(xs)
+        top, bottom = min(ys), max(ys)
+        span_w = max(1.0, right - left)
+        span_h = max(1.0, bottom - top)
+        pad_x = span_w * self._read_float_setting("DS_PPHUMAN_ROI_KEYPOINT_PAD_X", None, 0.55)
+        pad_top = span_h * self._read_float_setting("DS_PPHUMAN_ROI_KEYPOINT_PAD_TOP", None, 0.55)
+        pad_bottom = span_h * self._read_float_setting("DS_PPHUMAN_ROI_KEYPOINT_PAD_BOTTOM", None, 0.75)
+        roi = (
+            int(round(left - pad_x)),
+            int(round(top - pad_top)),
+            int(round(span_w + (pad_x * 2))),
+            int(round(span_h + pad_top + pad_bottom)),
+        )
+        return self._clip_roi_to_frame(roi, frame_width, frame_height)
+
     def _object_meta_events_from_frame(
         self,
         frame_meta: Any,
@@ -1938,7 +2315,7 @@ class DeepStreamProcessor(BaseProcessor):
                         if event.metadata is None:
                             event.metadata = {}
                         event.metadata["appearance"] = pphuman_attrs
-                        event.metadata["appearance_backend"] = "pphuman_sgie"
+                        event.metadata["appearance_backend"] = self._pphuman_sgie_backend_name
                 events.append(event)
 
             try:
@@ -2175,12 +2552,81 @@ class DeepStreamProcessor(BaseProcessor):
 
             camera_id = self._preview_camera_id or next(iter(self._cameras.keys()), "camera_1")
             self._preview_store.put_frame(camera_id, frame, now_monotonic=now_monotonic)
+            if getattr(self, "_falldata_aux", None) is not None:
+                self._falldata_aux.add_frame(frame)
         except Exception as exc:
             logger.debug("DeepStream preview sample 처리 실패: %s", exc)
         finally:
             buffer.unmap(map_info)
 
         return Gst.FlowReturn.OK
+
+    def _add_primary_tensor_probe(self, nvinfer: Any) -> None:
+        primary_srcpad = nvinfer.get_static_pad("src")
+        if primary_srcpad is None:
+            raise RuntimeError("primary-infer src pad를 찾을 수 없습니다.")
+        primary_srcpad.add_probe(
+            Gst.PadProbeType.BUFFER,
+            self._on_primary_tensor_probe,
+            None,
+        )
+
+    def _log_pphuman_pipeline_connected(self) -> None:
+        logger.info(
+            "PP-Human SGIE 파이프라인 연결 완료: gie_id=%d, config=%s",
+            self._pphuman_gie_id,
+            _PPHUMAN_INFER_CONFIG,
+        )
+
+    def _create_pipeline_elements(
+        self,
+        *,
+        primary_enabled: bool,
+        helmet_enabled: bool,
+        pphuman_enabled: bool,
+    ) -> DeepStreamPipelineElements:
+        streammux = self._make_element("nvstreammux", "streammux")
+        nvinfer = (
+            self._make_element("nvinfer", "primary-infer")
+            if primary_enabled
+            else None
+        )
+        pphuman_infer = (
+            self._make_element("nvinfer", "pphuman-infer")
+            if pphuman_enabled and nvinfer is not None
+            else None
+        )
+        helmet_infer = (
+            self._make_element("nvinfer", "helmet-infer")
+            if helmet_enabled
+            else None
+        )
+        tracker = (
+            self._make_element("nvtracker", "tracker")
+            if nvinfer is not None or helmet_infer is not None
+            else None
+        )
+        tee = self._make_element("tee", "preview-tee") if self._preview_enabled else None
+        output_queue = (
+            self._make_element("queue", "output-queue")
+            if tee is not None
+            else None
+        )
+        output_elements = self._create_output_elements()
+        preview_elements = self._create_preview_elements() if tee is not None else []
+        return DeepStreamPipelineElements(
+            streammux=streammux,
+            nvinfer=nvinfer,
+            tracker=tracker,
+            pphuman_infer=pphuman_infer,
+            helmet_infer=helmet_infer,
+            converter=self._make_element("nvvideoconvert", "converter"),
+            osd=self._make_element("nvdsosd", "osd"),
+            tee=tee,
+            output_queue=output_queue,
+            preview_elements=preview_elements,
+            output_elements=output_elements,
+        )
 
     def _build_pipeline(self) -> None:
         """GStreamer 파이프라인을 조립한다.
@@ -2277,100 +2723,41 @@ class DeepStreamProcessor(BaseProcessor):
         self._preview_camera_id = source_entries[0][1]
 
         n_cams = len(source_entries)
-        streammux = self._make_element("nvstreammux", "streammux")
-        nvinfer = self._make_element("nvinfer", "primary-infer") if primary_enabled else None
-        pphuman_infer = (
-            self._make_element("nvinfer", "pphuman-infer")
-            if pphuman_enabled and nvinfer is not None
-            else None
+        elements = self._create_pipeline_elements(
+            primary_enabled=primary_enabled,
+            helmet_enabled=helmet_enabled,
+            pphuman_enabled=pphuman_enabled,
         )
-        helmet_infer = (
-            self._make_element("nvinfer", "helmet-infer")
-            if helmet_enabled
-            else None
+
+        self._configure_streammux(elements.streammux, n_cams)
+        self._configure_infer_elements(
+            elements.nvinfer,
+            elements.helmet_infer,
+            elements.pphuman_infer,
+            n_cams,
         )
-        tracker = self._make_element("nvtracker", "tracker") if (nvinfer or helmet_infer) else None
-        converter = self._make_element("nvvideoconvert", "converter")
-        osd = self._make_element("nvdsosd", "osd")
-        tee = self._make_element("tee", "preview-tee") if self._preview_enabled else None
-        output_queue = self._make_element("queue", "output-queue") if tee is not None else None
-        output_elements = self._create_output_elements()
-        preview_elements = self._create_preview_elements() if tee is not None else []
+        if elements.tracker is not None:
+            self._configure_tracker(elements.tracker)
+        if elements.output_queue is not None:
+            self._configure_output_queue(elements.output_queue)
 
-        self._configure_streammux(streammux, n_cams)
-        self._configure_infer_elements(nvinfer, helmet_infer, pphuman_infer, n_cams)
-        if tracker is not None:
-            self._configure_tracker(tracker)
-        if output_queue is not None:
-            self._configure_output_queue(output_queue)
-
-        pipeline_elements = [streammux]
-        if nvinfer is not None:
-            pipeline_elements.append(nvinfer)
-        if pphuman_infer is not None:
-            pipeline_elements.append(pphuman_infer)
-        if helmet_infer is not None:
-            pipeline_elements.append(helmet_infer)
-        if tracker is not None:
-            pipeline_elements.append(tracker)
-        pipeline_elements.extend([converter, osd])
-        if tee is not None and output_queue is not None:
-            pipeline_elements.extend([tee, output_queue, *preview_elements])
-        pipeline_elements.extend(output_elements)
-
-        for element in pipeline_elements:
+        for element in elements.all_elements():
             pipeline.add(element)
 
-        previous = streammux
-        probe_element = streammux
-        if nvinfer is not None:
-            self._link_or_raise(previous, nvinfer, "nvstreammux -> nvinfer link 실패")
-            previous = nvinfer
-            probe_element = nvinfer
-        if pphuman_infer is not None:
-            primary_srcpad = nvinfer.get_static_pad("src") if nvinfer is not None else None
-            if primary_srcpad is None:
-                raise RuntimeError("primary-infer src pad를 찾을 수 없습니다.")
-            primary_srcpad.add_probe(
-                Gst.PadProbeType.BUFFER,
-                self._on_primary_tensor_probe,
-                None,
-            )
-            self._link_or_raise(previous, pphuman_infer, "primary-infer -> pphuman-infer link 실패")
-            previous = pphuman_infer
-            probe_element = pphuman_infer
-            logger.info(
-                "PP-Human SGIE 파이프라인 연결 완료: gie_id=%d, config=%s",
-                self._pphuman_gie_id,
-                _PPHUMAN_INFER_CONFIG,
-            )
-        if helmet_infer is not None:
-            self._link_or_raise(previous, helmet_infer, f"{previous.get_name()} -> helmet-infer link 실패")
-            previous = helmet_infer
-            probe_element = helmet_infer
-        if tracker is not None:
-            self._link_or_raise(previous, tracker, f"{previous.get_name()} -> nvtracker link 실패")
-            previous = tracker
-        self._link_or_raise(previous, converter, f"{previous.get_name()} -> nvvideoconvert link 실패")
-        self._link_or_raise(converter, osd, "nvvideoconvert -> nvdsosd link 실패")
-        previous = osd
-        if tee is not None and output_queue is not None:
-            previous = self._link_preview_branch(
-                osd=osd,
-                tee=tee,
-                output_queue=output_queue,
-                preview_elements=preview_elements,
-            )
-        for element in output_elements:
-            self._link_or_raise(previous, element)
-            previous = element
+        probe_element = link_deepstream_pipeline_path(
+            elements,
+            link_or_raise=self._link_or_raise,
+            add_primary_probe=self._add_primary_tensor_probe,
+            link_preview_branch=self._link_preview_branch,
+            on_pphuman_linked=self._log_pphuman_pipeline_connected,
+        )
 
         for pad_id, camera_id, info, source_uri in source_entries:
             if not self._attach_camera_source_to_pipeline(
                 camera_id,
                 pad_id=pad_id,
                 pipeline=pipeline,
-                streammux=streammux,
+                streammux=elements.streammux,
             ):
                 raise RuntimeError(f"[{camera_id}] DeepStream source attach 실패: {source_uri}")
 
@@ -2386,11 +2773,7 @@ class DeepStreamProcessor(BaseProcessor):
         self._pipeline = pipeline
         self._main_loop = GLib.MainLoop()
         # 실제 빌드된 파이프라인 토폴로지 기록
-        self._built_topology = (
-            nvinfer is not None,
-            helmet_infer is not None,
-            pphuman_infer is not None,
-        )
+        self._built_topology = elements.topology()
         self._built_source_count = n_cams
         # pad_id → camera_id 역매핑 캐시 갱신 (매 프레임 재생성 방지)
         self._pad_to_camera = rebuild_pad_to_camera(self._cameras)
@@ -2438,12 +2821,27 @@ class DeepStreamProcessor(BaseProcessor):
     def _on_primary_tensor_probe(
         self, pad: Any, info: Any, user_data: Any
     ) -> Any:  # Gst.PadProbeReturn
-        """primary nvinfer src pad probe — pphuman SGIE 활성 시 passthrough 역할.
+        """primary nvinfer src pad probe — SGIE가 사용할 person object_meta를 주입한다."""
+        buffer = info.get_buffer()
+        if buffer is None:
+            return Gst.PadProbeReturn.OK
 
-        pphuman_infer가 활성화된 경우, 주 탐지(YOLO tensor)는 pphuman_infer
-        src pad의 _on_pad_probe에서 처리된다. 이 probe는 primary GIE 직후
-        버퍼가 올바르게 흐르는지 확인하는 passthrough 역할만 한다.
-        """
+        batch_meta = pyds.gst_buffer_get_nvds_batch_meta(hash(buffer))
+        if batch_meta is None:
+            return Gst.PadProbeReturn.OK
+
+        l_frame = batch_meta.frame_meta_list
+        while l_frame is not None:
+            try:
+                frame_meta = pyds.NvDsFrameMeta.cast(l_frame.data)
+            except StopIteration:
+                break
+            camera_name = self._pad_to_camera.get(frame_meta.source_id, "unknown")
+            self._inject_primary_person_object_meta(batch_meta, frame_meta, camera_name)
+            try:
+                l_frame = l_frame.next
+            except StopIteration:
+                break
         return Gst.PadProbeReturn.OK
 
     def _on_pad_probe(

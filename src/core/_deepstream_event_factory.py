@@ -103,6 +103,8 @@ def detections_to_events(
             frame_width=resolved_frame_width,
             frame_height=resolved_frame_height,
         )
+        if detection.get("fall_near_miss") is not None:
+            base_metadata["fall_near_miss"] = detection.get("fall_near_miss")
         events.append(
             DetectionEvent(
                 event_type=event_type,
@@ -122,6 +124,10 @@ def detections_to_events(
         if detection.get("is_fall"):
             metadata = dict(base_metadata)
             metadata["derived_from"] = "pose"
+            if detection.get("fall_score") is not None:
+                metadata["fall_score"] = detection.get("fall_score")
+            if detection.get("fall_reasons") is not None:
+                metadata["fall_reasons"] = detection.get("fall_reasons")
             events.append(
                 DetectionEvent(
                     event_type=EventType.FALL_DETECTED,

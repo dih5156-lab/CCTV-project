@@ -452,6 +452,42 @@ class TestAppearanceStatusAPI:
         assert field_map["has_suitcase"]["ready"] is False
         assert "backend=hsv 환경에서는 bag 값이 detector nearby_objects에 의존" not in warning_text
 
+    def test_status_recognizes_pa100k_sgie_as_attribute_backend(self, tmp_path: Path, monkeypatch):
+        label_map_path = tmp_path / "appearance_pa100k_labels.json"
+        label_map_path.write_text(
+            """
+            {
+              "model": "Rethinking_of_PAR PA100K resnet50",
+              "labels": [
+                { "index": 9, "field": "has_handbag", "value": true },
+                { "index": 11, "field": "has_backpack", "value": true }
+              ]
+            }
+            """,
+            encoding="utf-8",
+        )
+        monkeypatch.setenv("APPEARANCE_BACKEND", "hsv")
+        monkeypatch.setenv("DS_PPHUMAN_SGIE_ENABLED", "1")
+        monkeypatch.setenv("APPEARANCE_LABEL_MAP_PATH", str(label_map_path))
+        self._insert_appearance_row(
+            timestamp=2300.0,
+            track_id=13,
+            has_backpack=True,
+            attribute_backend="pa100k_sgie",
+        )
+
+        data = self.appearances_mod._build_runtime_status().model_dump()
+        field_map = {field["field"]: field for field in data["fields"]}
+        warning_text = "\n".join(data["warnings"])
+
+        assert data["backend"] == "pa100k_sgie"
+        assert data["backend_counts"] == {"pa100k_sgie": 1}
+        assert field_map["has_backpack"]["source"] == "attribute_backend"
+        assert field_map["has_backpack"]["ready"] is True
+        assert field_map["has_handbag"]["ready"] is True
+        assert field_map["has_suitcase"]["ready"] is False
+        assert "backend=hsv 환경에서는 bag 값이 detector nearby_objects에 의존" not in warning_text
+
     def test_status_handles_missing_appearance_log_table(self):
         with sqlite3.connect(self.db_path) as conn:
             conn.execute("CREATE TABLE IF NOT EXISTS search_conditions (id TEXT PRIMARY KEY)")

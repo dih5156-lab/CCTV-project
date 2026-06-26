@@ -96,6 +96,7 @@ def read_pphuman_obj_scores(
     default_gie_id: int,
 ) -> List[float]:
     """NvDsObjectMeta.obj_user_meta_list에서 PP-Human score 목록을 추출한다."""
+    fallback_scores: List[float] = []
     l_user = obj_meta.obj_user_meta_list
     while l_user is not None:
         try:
@@ -104,14 +105,19 @@ def read_pphuman_obj_scores(
             break
         if user_meta.base_meta.meta_type == pyds_module.NVDSINFER_TENSOR_OUTPUT_META:
             tensor_meta = pyds_module.NvDsInferTensorMeta.cast(user_meta.user_meta_data)
-            if tensor_gie_id(tensor_meta, default_gie_id) == pphuman_gie_id:
-                layer = select_pphuman_layer(tensor_meta, pyds_module)
-                if layer is not None:
-                    output = layer_to_numpy(layer, pyds_module)
-                    if output is not None:
-                        return output.reshape(-1).tolist()
+            layer = select_pphuman_layer(tensor_meta, pyds_module)
+            if layer is not None:
+                output = layer_to_numpy(layer, pyds_module)
+                if output is not None:
+                    scores = output.reshape(-1).tolist()
+                    if tensor_gie_id(tensor_meta, default_gie_id) == pphuman_gie_id:
+                        return scores
+                    # 일부 pyds 버전에서는 SGIE object tensor의 gie id가 노출되지 않는다.
+                    # PA100K/PP-Human 속성 출력은 26-score 벡터라 안전한 fallback 후보로 둔다.
+                    if len(scores) == 26 and not fallback_scores:
+                        fallback_scores = scores
         try:
             l_user = l_user.next
         except StopIteration:
             break
-    return []
+    return fallback_scores

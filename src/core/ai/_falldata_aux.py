@@ -19,6 +19,7 @@ import time
 from collections import deque
 from dataclasses import dataclass
 from pathlib import Path
+from threading import Lock
 from typing import Deque, Iterable, Optional
 
 import numpy as np
@@ -110,6 +111,8 @@ class FallDataAuxVerifier:
         self.config = config or FallDataAuxConfig.from_env()
         self._frames: Deque[np.ndarray] = deque(maxlen=max(self.config.buffer_frames, 1))
         self._last_run_at = 0.0
+        self._last_result: dict | None = None
+        self._lock = Lock()
 
     @property
     def enabled(self) -> bool:
@@ -118,7 +121,8 @@ class FallDataAuxVerifier:
     def add_frame(self, frame: np.ndarray) -> None:
         if not self.enabled or frame is None or not isinstance(frame, np.ndarray):
             return
-        self._frames.append(frame.copy())
+        with self._lock:
+            self._frames.append(frame.copy())
 
     def annotate_events(self, events: Iterable[DetectionEvent]) -> list[DetectionEvent]:
         events = list(events)
@@ -144,25 +148,31 @@ class FallDataAuxVerifier:
     def verify(self) -> dict:
         now = time.time()
         if now - self._last_run_at < self.config.cooldown_seconds:
-            return {
-                "enabled": True,
-                "mode": self.config.mode,
-                "status": "skipped_cooldown",
-                "confirmed": self.config.mode != "confirm",
-            }
+            return self._cooldown_result()
         self._last_run_at = now
 
         try:
-            return self._verify_once()
+            result = self._verify_once()
+            self._last_result = dict(result)
+            return result
         except Exception as exc:
             logger.warning("falldata aux verification failed: %s", exc)
+            result = self._result(
+                "error",
+                confirmed=self.config.mode != "confirm",
+                error=str(exc),
+            )
+            self._last_result = dict(result)
+            return result
+
+    def _cooldown_result(self) -> dict:
+        if self._last_result:
             return {
-                "enabled": True,
-                "mode": self.config.mode,
-                "status": "error",
-                "error": str(exc),
-                "confirmed": self.config.mode != "confirm",
+                **self._last_result,
+                "status": "skipped_cooldown",
+                "previous_status": self._last_result.get("status"),
             }
+        return self._result("skipped_cooldown", confirmed=False)
 
     def _verify_once(self) -> dict:
         if not self._frames:
@@ -179,7 +189,7 @@ class FallDataAuxVerifier:
             tmp_path = Path(tmp)
             video_path = tmp_path / "candidate.mp4"
             feature_dir = tmp_path / "features"
-            self._write_video(video_path, list(self._frames))
+            self._write_video(video_path, self.snapshot_frames())
             extract = self._run(
                 [
                     str(self.config.mediapipe_python),
@@ -209,34 +219,55 @@ class FallDataAuxVerifier:
             if probability and 0 <= self.config.fall_class_index < len(probability)
             else None
         )
-        enough_signal = nonzero_frames >= self.config.min_nonzero_frames
-        passes_threshold = (
-            fall_probability is not None and fall_probability >= self.config.threshold
+        confirmed = self._is_confirmed(nonzero_frames, fall_probability)
+        return self._result(
+            "ok",
+            confirmed=confirmed,
+            prediction=prediction,
+            probability=probability,
+            fall_probability=fall_probability,
+            threshold=self.config.threshold,
+            fall_class_index=self.config.fall_class_index,
+            nonzero_feature_frames=nonzero_frames,
+            min_nonzero_feature_frames=self.config.min_nonzero_frames,
         )
-        confirmed = bool(enough_signal and passes_threshold)
-        return {
-            "enabled": True,
-            "mode": self.config.mode,
-            "status": "ok",
-            "confirmed": confirmed,
-            "prediction": prediction,
-            "probability": probability,
-            "fall_probability": fall_probability,
-            "threshold": self.config.threshold,
-            "fall_class_index": self.config.fall_class_index,
-            "nonzero_feature_frames": nonzero_frames,
-            "min_nonzero_feature_frames": self.config.min_nonzero_frames,
-            "buffered_frames": len(self._frames),
-        }
 
-    def _result(self, status: str, *, confirmed: bool) -> dict:
-        return {
+    def _result(self, status: str, *, confirmed: bool, **extra: object) -> dict:
+        result = {
             "enabled": True,
             "mode": self.config.mode,
             "status": status,
             "confirmed": confirmed,
             "buffered_frames": len(self._frames),
         }
+        result.update(extra)
+        return result
+
+    def _is_confirmed(
+        self,
+        nonzero_frames: int,
+        fall_probability: Optional[float],
+    ) -> bool:
+        if fall_probability is None:
+            return False
+        return (
+            nonzero_frames >= self.config.min_nonzero_frames
+            and fall_probability >= self.config.threshold
+        )
+
+    def snapshot_frames(self) -> list[np.ndarray]:
+        """현재 버퍼 프레임 복사본을 반환한다."""
+        with self._lock:
+            return list(self._frames)
+
+    def save_buffered_clip(self, path: Path) -> int:
+        """현재 버퍼를 mp4 클립으로 저장하고 저장 프레임 수를 반환한다."""
+        frames = self.snapshot_frames()
+        if not frames:
+            return 0
+        path.parent.mkdir(parents=True, exist_ok=True)
+        self._write_video(path, frames)
+        return len(frames[-self.config.buffer_frames :])
 
     def _missing_dependency(self) -> Optional[str]:
         candidates = [

@@ -133,6 +133,18 @@ class TestDominantColor:
         region = np.zeros((3, 3, 3), dtype=np.uint8)
         assert analyzer._dominant_color(region) == "unknown"
 
+    def test_lab_fallback_keeps_charcoal_clothing_black(self, analyzer):
+        region = _solid_frame((42, 42, 42), h=50, w=50)
+        region[:, 20:30] = (95, 95, 95)  # 조명/프린트 노이즈
+
+        assert analyzer._dominant_color(region) == "black"
+
+    def test_lab_fallback_handles_warm_white_clothing(self, analyzer):
+        region = _solid_frame((235, 240, 245), h=50, w=50)
+        region[:, :10] = (210, 220, 230)
+
+        assert analyzer._dominant_color(region) == "white"
+
 
 # ── 속성 추출 테스트 ─────────────────────────────────────────────────
 
@@ -387,6 +399,22 @@ class TestPPHumanBackend:
         )
 
         assert backend._should_use_tensorrt(engine_path) is True
+
+    def test_pa100k_tensorrt_backend_name_is_explicit(self, tmp_path):
+        label_map_path = tmp_path / "appearance_pa100k_labels.json"
+        label_map_path.write_text(
+            '{"model": "Rethinking_of_PAR PA100K resnet50", "labels": []}',
+            encoding="utf-8",
+        )
+
+        backend = PPHumanAttributeBackend(
+            model_path="models/pa100k_resnet50_attr.engine",
+            label_map_path=str(label_map_path),
+            predictor=lambda crop: {},
+            runtime="tensorrt",
+        )
+
+        assert backend.backend_name == "pa100k_tensorrt"
 
     def test_input_shape_hint_updates_preprocess_size(self):
         backend = PPHumanAttributeBackend(predictor=lambda crop: {})
