@@ -6,6 +6,7 @@ import argparse
 import importlib
 import json
 import socket
+import subprocess
 import sys
 import urllib.error
 import urllib.request
@@ -21,6 +22,7 @@ class HttpCheck:
     url: str
     expect_status: int = 200
     headers: Optional[dict[str, str]] = None
+    fallback_container: str = ""
 
 
 @dataclass(frozen=True)
@@ -30,6 +32,7 @@ class TcpCheck:
     name: str
     host: str
     port: int
+    fallback_container: str = ""
 
 
 def _check_tcp(item: TcpCheck, timeout: float) -> tuple[bool, str]:
@@ -60,6 +63,62 @@ def _check_http(item: HttpCheck, timeout: float) -> tuple[bool, str]:
         return False, f"status={exc.code}, reason={exc.reason}"
     except OSError as exc:
         return False, str(exc)
+
+
+def _check_container_health(container_name: str, timeout: float) -> tuple[bool, str]:
+    """호스트 포트가 닫힌 compose 내부 서비스의 Docker health 상태를 확인한다."""
+    if not container_name:
+        return False, "fallback 컨테이너가 지정되지 않음"
+    try:
+        completed = subprocess.run(
+            [
+                "docker",
+                "inspect",
+                container_name,
+                "--format",
+                "{{.State.Status}} {{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}",
+            ],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        return False, f"Docker health 확인 실패 ({exc})"
+
+    detail = (completed.stdout or completed.stderr).strip()
+    if completed.returncode != 0:
+        return False, f"Docker inspect 실패: {detail}"
+
+    parts = detail.split()
+    status = parts[0] if parts else "unknown"
+    health = parts[1] if len(parts) > 1 else "none"
+    ok = status == "running" and health in {"healthy", "none"}
+    return ok, f"host 포트 미노출, Docker 상태 fallback: status={status}, health={health}"
+
+
+def _check_tcp_with_fallback(item: TcpCheck, timeout: float) -> tuple[bool, str]:
+    """TCP 점검 후 필요하면 컨테이너 health로 fallback한다."""
+    ok, detail = _check_tcp(item, timeout)
+    if ok or not item.fallback_container:
+        return ok, detail
+    fallback_ok, fallback_detail = _check_container_health(
+        item.fallback_container,
+        timeout,
+    )
+    return fallback_ok, f"{detail}; {fallback_detail}"
+
+
+def _check_http_with_fallback(item: HttpCheck, timeout: float) -> tuple[bool, str]:
+    """HTTP 점검 후 필요하면 컨테이너 health로 fallback한다."""
+    ok, detail = _check_http(item, timeout)
+    if ok or not item.fallback_container:
+        return ok, detail
+    fallback_ok, fallback_detail = _check_container_health(
+        item.fallback_container,
+        timeout,
+    )
+    return fallback_ok, f"{detail}; {fallback_detail}"
 
 
 def _print_result(ok: bool, name: str, detail: str) -> None:
@@ -96,7 +155,11 @@ def _build_http_checks(
     checks = [
         HttpCheck("EdgeX Core Metadata", f"http://{host}:59881/api/v3/ping"),
         HttpCheck("EdgeX Core Data", f"http://{host}:59880/api/v3/ping"),
-        HttpCheck("AIoT Parser", f"http://{host}:3500/health"),
+        HttpCheck(
+            "AIoT Parser",
+            f"http://{host}:3500/health",
+            fallback_container="aiot-parser",
+        ),
         HttpCheck("Alert API", f"http://{host}:8000/health"),
         HttpCheck("Action Layer", f"http://{host}:8080/health"),
         HttpCheck("Public API", f"http://{host}:{public_api_port}/api/v1/health"),
@@ -126,7 +189,7 @@ def _build_tcp_checks(
     checks = [
         TcpCheck("MQTT Broker", host, 1883),
         TcpCheck("Redis", "127.0.0.1", 6379),
-        TcpCheck("AIoT Parser DB", host, 5432),
+        TcpCheck("AIoT Parser DB", host, 5432, fallback_container="aiot-parser-db"),
     ]
     if speaker_host:
         checks.append(TcpCheck("Speaker Device", speaker_host, speaker_port))
@@ -192,7 +255,7 @@ def main(argv: Optional[list[str]] = None) -> int:
         siren_host=args.siren_host,
         siren_port=args.siren_port,
     ):
-        ok, detail = _check_tcp(item, timeout=args.timeout)
+        ok, detail = _check_tcp_with_fallback(item, timeout=args.timeout)
         results.append({"type": "tcp", "name": item.name, "ok": ok, "detail": detail})
         if not ok:
             failures.append(item.name)
@@ -203,7 +266,7 @@ def main(argv: Optional[list[str]] = None) -> int:
         public_api_key=args.public_api_key,
         include_appearance_status=args.check_appearance_status,
     ):
-        ok, detail = _check_http(item, timeout=args.timeout)
+        ok, detail = _check_http_with_fallback(item, timeout=args.timeout)
         results.append({"type": "http", "name": item.name, "ok": ok, "detail": detail})
         if not ok:
             failures.append(item.name)
