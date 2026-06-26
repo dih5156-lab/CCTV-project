@@ -21,6 +21,7 @@ Environment:
   DEEPSTREAM_CONTAINER_NAME          default: cctv-ai-engine
   DEEPSTREAM_STABILITY_REPORT_DIR    default: reports/deepstream-stability
   DEEPSTREAM_STABILITY_SUMMARY_FILE  default: <log_file>.summary
+  RUNTIME_ENV_FILE                   default: .env.jetson for Jetson compose, then .env
   DOCKER_USE_SUDO                    default: auto (docker, then sudo -n docker)
   PUBLIC_API_URL                     default: http://localhost:9000/api/v1/health
   ZONE_API_URL                       default: http://localhost:8765/health
@@ -49,6 +50,26 @@ FACE_API_URL=${FACE_API_URL:-http://localhost:8767/health}
 HTTP_CHECK_TIMEOUT_SEC=${HTTP_CHECK_TIMEOUT_SEC:-8}
 HTTP_CHECK_RETRIES=${HTTP_CHECK_RETRIES:-3}
 HTTP_CHECK_RETRY_DELAY_SEC=${HTTP_CHECK_RETRY_DELAY_SEC:-2}
+RUNTIME_ENV_FILE=${RUNTIME_ENV_FILE:-}
+
+running_jetson_stack() {
+    command -v docker >/dev/null 2>&1 || return 1
+    docker inspect \
+        --format '{{ index .Config.Labels "com.docker.compose.project" }}' \
+        "$CONTAINER_NAME" 2>/dev/null | grep -qx 'edgex-jetson'
+}
+
+if [[ -z "$RUNTIME_ENV_FILE" ]]; then
+    if [[ -f .env.jetson ]] && running_jetson_stack; then
+        RUNTIME_ENV_FILE=.env.jetson
+    elif [[ -f .env ]]; then
+        RUNTIME_ENV_FILE=.env
+    elif [[ -f .env.jetson ]]; then
+        RUNTIME_ENV_FILE=.env.jetson
+    else
+        RUNTIME_ENV_FILE=.env
+    fi
+fi
 
 if ! [[ "$DURATION_MIN" =~ ^[0-9]+$ && "$DURATION_MIN" -gt 0 ]]; then
     echo "ERROR: 실행시간(분)은 양수여야 합니다: ${DURATION_MIN}" >&2
@@ -83,6 +104,24 @@ require_command() {
 
     log "[FAIL] required command missing: ${command_name}"
     return 1
+}
+
+export_runtime_env_value() {
+    local key=$1
+    local value
+
+    if [[ ! -f "$RUNTIME_ENV_FILE" ]]; then
+        return 0
+    fi
+
+    value=$(grep -E "^${key}=" "$RUNTIME_ENV_FILE" | tail -n 1 | cut -d= -f2- || true)
+    if [[ -n "$value" ]]; then
+        export "${key}=${value}"
+    fi
+}
+
+load_runtime_env_exports() {
+    export_runtime_env_value INTERNAL_SERVICE_TOKEN
 }
 
 docker_access_check() {
@@ -185,6 +224,7 @@ log "  간격: ${INTERVAL_SEC}초"
 log "  컨테이너: ${CONTAINER_NAME}"
 log "  로그 파일: ${LOG_FILE}"
 log "  요약 파일: ${SUMMARY_FILE}"
+log "  런타임 env 파일: ${RUNTIME_ENV_FILE}"
 log "  컨테이너 로그 기준: ${LOG_SINCE} 이후"
 log "  시작: $(date '+%Y-%m-%d %H:%M:%S %Z')"
 log "=========================================="
@@ -202,6 +242,8 @@ if [[ "$PRECHECK_FAILED" -ne 0 ]]; then
     write_summary "precheck_failed"
     exit 2
 fi
+
+load_runtime_env_exports
 
 while [[ $(date +%s) -lt "$END" ]]; do
     SAMPLE=$((SAMPLE + 1))
