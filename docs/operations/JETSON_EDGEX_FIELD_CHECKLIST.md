@@ -6,14 +6,14 @@
 
 현재 저장소는 현장 테스트를 진행할 수 있는 수준의 배포 자산을 이미 갖추고 있습니다.
 
-- Jetson 전용 배포 파일: [docker-compose.jetson.yml](/C:/Users/dih51/Documents/GitHub/CCTV-project/docker-compose.jetson.yml)
-- Jetson 전용 컨테이너 이미지: [Dockerfile.jetson](/C:/Users/dih51/Documents/GitHub/CCTV-project/Dockerfile.jetson)
-- TLV 파서: [Dockerfile.parser](/C:/Users/dih51/Documents/GitHub/CCTV-project/Dockerfile.parser)
-- EdgeX 어댑터: [runners/run_edgex_adapter.py](/C:/Users/dih51/Documents/GitHub/CCTV-project/runners/run_edgex_adapter.py)
-- 센서 규칙 브리지: [runners/run_sensor_rule_bridge.py](/C:/Users/dih51/Documents/GitHub/CCTV-project/runners/run_sensor_rule_bridge.py)
-- Action Layer: [runners/run_action_bridge.py](/C:/Users/dih51/Documents/GitHub/CCTV-project/runners/run_action_bridge.py)
-- Alert API: [runners/run_alert_api.py](/C:/Users/dih51/Documents/GitHub/CCTV-project/runners/run_alert_api.py)
-- TLV Parser DB 환경값: [.env.jetson](/C:/Users/dih51/Documents/GitHub/CCTV-project/.env.jetson)
+- Jetson 전용 배포 파일: [docker-compose.jetson.yml](../../docker-compose.jetson.yml)
+- Jetson 전용 컨테이너 이미지: [Dockerfile.jetson](../../Dockerfile.jetson)
+- TLV 파서: [Dockerfile](../../Dockerfile)의 `parser` build target
+- EdgeX 어댑터: [runners/run_edgex_adapter.py](../../runners/run_edgex_adapter.py)
+- 센서 규칙 브리지: [runners/run_sensor_rule_bridge.py](../../runners/run_sensor_rule_bridge.py)
+- Action Layer: [runners/run_action_bridge.py](../../runners/run_action_bridge.py)
+- Alert API: [runners/run_alert_api.py](../../runners/run_alert_api.py)
+- TLV Parser DB 환경값: `.env.jetson`
 
 즉, 방향은 맞습니다.  
 다만 현장 안정성을 위해서는 배포 성공 여부보다 아래 3가지를 확인해야 합니다.
@@ -27,14 +27,14 @@
 
 ### 1. JetPack / L4T 버전 정합성
 
-[Dockerfile.jetson](/C:/Users/dih51/Documents/GitHub/CCTV-project/Dockerfile.jetson)과 [.env.jetson.example](/C:/Users/dih51/Documents/GitHub/CCTV-project/.env.jetson.example)은 `r36.4.0` 기준으로 맞춰져 있습니다.
+[Dockerfile.jetson](../../Dockerfile.jetson)과 [.env.jetson.example](../../.env.jetson.example)은 `r36.4.0` 기준으로 맞춰져 있습니다.
 
 - 실제 Jetson이 JetPack 6.2면 `r36.4.x` 기준으로 맞추는 편이 안전합니다.
 - 현재 compose는 `L4T_TAG`를 직접 쓰지 않더라도, 실제 장비의 JetPack/L4T 버전과 예시 파일이 어긋나지 않는지 배포 전에 한 번 더 확인해야 합니다.
 
 ### 2. 민감 정보 외부 분리
 
-[.env.jetson](/C:/Users/dih51/Documents/GitHub/CCTV-project/.env.jetson)에 스피커 비밀번호가 평문으로 들어 있습니다.
+`.env.jetson`에 스피커 비밀번호가 평문으로 들어갈 수 있습니다.
 
 - 현장 배포 전에는 `.env.jetson`을 실운영용 비밀 파일로 분리하는 것을 권장합니다.
 - 저장소에는 예시 파일만 남기고, 실제 장비 비밀번호는 배포 서버의 별도 env 파일이나 비밀 저장소로 옮기는 편이 안전합니다.
@@ -50,7 +50,7 @@
 
 현장 점검용 스크립트를 추가했습니다.
 
-- [scripts/health/check_jetson_edgex_stack.py](/C:/Users/dih51/Documents/GitHub/CCTV-project/scripts/health/check_jetson_edgex_stack.py)
+- [scripts/health/check_jetson_edgex_stack.py](../../scripts/health/check_jetson_edgex_stack.py)
 
 기본 점검 항목:
 

@@ -78,7 +78,10 @@ def test_docs_page_uses_local_openapi_explorer(client: SyncASGIClient) -> None:
     assert resp.status_code == 200
     assert "text/html" in resp.headers["content-type"]
     assert "CCTV Platform API" in resp.text
-    assert 'fetch("/openapi.json"' in resp.text
+    assert "const openapiPath" in resp.text
+    assert "fetch(openapiPath" in resp.text
+    assert 'id="method-tabs"' in resp.text
+    assert 'const methodOrder = ["GET", "POST", "DELETE"]' in resp.text
     assert "cdn.jsdelivr.net" not in resp.text
     assert "unpkg.com" not in resp.text
 
@@ -1216,6 +1219,34 @@ class TestCameras:
             url = resp.json()["data"][0]["url"]
             assert "secret" not in url
             assert "admin" not in url
+        finally:
+            cam_module._CAMERAS_JSON = original
+
+    def test_list_cameras_excludes_disabled_entries(
+        self, client: SyncASGIClient, tmp_path: Path
+    ) -> None:
+        """비활성 카메라는 데모 라이브 카드가 생성되지 않도록 목록에서 제외한다."""
+        import src.api.v1.cameras as cam_module
+
+        cameras_file = tmp_path / "cameras.json"
+        cameras_file.write_text(
+            json.dumps(
+                [
+                    {"id": "camera_1", "enabled": True},
+                    {"id": "camera_2", "enabled": False},
+                    {"id": "webcam", "enabled": False},
+                ]
+            ),
+            encoding="utf-8",
+        )
+        original = cam_module._CAMERAS_JSON
+        cam_module._CAMERAS_JSON = cameras_file
+        try:
+            resp = client.get("/api/v1/cameras")
+            assert resp.status_code == 200
+            cameras = resp.json()["data"]
+            assert [camera["id"] for camera in cameras] == ["camera_1"]
+            assert cameras[0]["enabled"] is True
         finally:
             cam_module._CAMERAS_JSON = original
 

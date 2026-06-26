@@ -28,7 +28,7 @@ Action Layer는 Rule Engine(Kuiper) 출력 이벤트를 실제 조치로 연결�
 둘 중 하나를 선택해서 사용합니다.
 
 1) Speaker-edgex 코드 직접 연동 (권장)
-- `--speaker-code-root C:/Users/dih51/OneDrive/Desktop/Speaker-edgex`
+- `--speaker-code-root /opt/Speaker-edgex`
 - `--speaker-host 192.168.88.92 --speaker-port 5000 --speaker-user admin --speaker-password ...`
 - 내부적으로 `control.Speaker.start_broadcast(SpeakerOption)` 호출
 
@@ -43,13 +43,24 @@ Action Layer는 Rule Engine(Kuiper) 출력 이벤트를 실제 조치로 연결�
 ## 실행
 
 ```bash
-python run_action_bridge.py --mqtt-broker localhost --mqtt-port 1883 --db-path action_events.db --external-api-url http://localhost:8000/api/alerts --speaker-webhook-url http://localhost:9100/play --alarm-cooldown 3
+python runners/run_action_bridge.py --mqtt-broker localhost --mqtt-port 1883 --db-path data/runtime/action_events.db --external-api-url http://localhost:8000/api/alerts --speaker-webhook-url http://localhost:9100/play --alarm-cooldown 3
 ```
 
 Speaker-edgex 직접 연동 예시:
 
 ```bash
-python run_action_bridge.py --mqtt-broker localhost --mqtt-port 1883 --db-path action_events.db --external-api-url http://localhost:8000/api/alerts --speaker-code-root C:/Users/dih51/OneDrive/Desktop/Speaker-edgex --speaker-host 192.168.88.92 --speaker-port 5000 --speaker-user admin --speaker-password your_password --speaker-volume 1 --alarm-cooldown 3
+python runners/run_action_bridge.py \
+  --mqtt-broker localhost \
+  --mqtt-port 1883 \
+  --db-path data/runtime/action_events.db \
+  --external-api-url http://localhost:8000/api/alerts \
+  --speaker-code-root "${SPEAKER_CODE_ROOT:-/opt/Speaker-edgex}" \
+  --speaker-host "${SPEAKER_HOST}" \
+  --speaker-port "${SPEAKER_PORT:-5000}" \
+  --speaker-user "${SPEAKER_USER:-admin}" \
+  --speaker-password "${SPEAKER_PASSWORD}" \
+  --speaker-volume 1 \
+  --alarm-cooldown 3
 ```
 
 ## DB 스키마

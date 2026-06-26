@@ -57,6 +57,7 @@ def _camera_from_entry(camera: Mapping[str, Any]) -> CameraOut:
         id=str(camera.get("id", camera.get("camera_id", ""))),
         name=camera.get("name"),
         url=_strip_credentials(str(url)) if url else None,
+        enabled=bool(camera.get("enabled", True)),
         zones=camera.get("zones"),
     )
 
@@ -66,7 +67,11 @@ def _load_cameras() -> List[CameraOut]:
         return []
     try:
         raw = json.loads(_CAMERAS_JSON.read_text(encoding="utf-8"))
-        return [_camera_from_entry(camera) for camera in _camera_entries(raw)]
+        return [
+            camera
+            for camera in (_camera_from_entry(entry) for entry in _camera_entries(raw))
+            if camera.enabled
+        ]
     except (json.JSONDecodeError, OSError) as exc:
         logger.error("cameras.json 로드 실패: %s", exc)
         return []

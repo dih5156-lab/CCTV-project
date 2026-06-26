@@ -22,7 +22,7 @@
 - 애플리케이션 코드는 대부분 `from src...` import 를 사용한다.
 - 테스트도 대다수가 `src.*` import 를 직접 사용한다.
 - Docker/Compose 는 `./src -> /app/src`, `./runners -> /app/runners` bind mount 를 전제로 한다.
-- `Dockerfile.action` 역시 `src`, `runners`, `kuiper` 를 `/app` 아래에 복사한다.
+- `Dockerfile`의 `action` target 역시 `src`, `runners`, `kuiper` 를 `/app` 아래에 복사한다.
 - 여러 runner 는 프로젝트 루트를 `sys.path` 에 넣고 `src.*` 를 import 한다.
 
 따라서 첫 차수에서 `src` 이름 자체를 바꾸는 이동은 영향 범위가 너무 넓다.
@@ -134,7 +134,7 @@ web/                      # 유지
 
 - `docker-compose.yml`
 - `docker-compose.jetson.yml`
-- `Dockerfile.action`
+- `Dockerfile`의 `action` target
 - README 의 `python runners/...` 예시
 
 ### `src/` 이동 영향

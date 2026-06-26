@@ -1832,7 +1832,7 @@
     function initializeServiceUrls() {
       $("api-base").value = `${location.origin}/public-api`;
       $("media-base").value = defaultServiceUrl(8889);
-      $("stream-base").value = defaultServiceUrl(8769);
+      $("stream-base").value = `${location.origin}/stream-api`;
       $("zone-base").value = `${location.origin}/zone-api`;
       $("face-base").value = `${location.origin}/face-api`;
       $("model-base").value = `${location.origin}/model-api`;
@@ -2780,6 +2780,9 @@
     }
     function cameraWebRtcUrl(cameraId) {
       return `${location.origin}/webrtc/${encodeURIComponent(cameraId)}/`;
+    }
+    function cameraStreamUrl(cameraId) {
+      return `${location.origin}/stream-api/stream/${encodeURIComponent(cameraId)}`;
     }
     function openCameraModal(cameraId) {
       const camera = state.cameras.find((item) => String(item.id) === String(cameraId));

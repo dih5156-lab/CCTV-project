@@ -34,16 +34,16 @@ source .venv/bin/activate
 
 ```bash
 # AI 엔진 전체 (YOLO, OpenCV, torch 포함)
-pip install -r requirements.txt
+pip install -r requirements/ai.txt
 
 # 액션 레이어 전용 (torch 제외, 경량)
-pip install -r requirements-action.txt
+pip install -r requirements/base.txt
 
 # 개발 도구 (pytest, black, mypy 포함)
-pip install -r requirements-dev.txt
+pip install -r requirements/dev.txt
 
 # AIoT TLV 파서 서버
-pip install -r parser-python/requirements.txt
+pip install -r requirements/parser.txt
 ```
 
 ---
@@ -139,7 +139,7 @@ python main.py --cameras cameras.json --device cuda
 Jetson 환경에서 ONNX Runtime wheel이 맞지 않으면 Paddle 원본 모델을 직접 사용할 수 있습니다.
 
 ```bash
-pip install -r requirements-appearance-paddle.txt
+pip install -r requirements/jetson.txt
 
 APPEARANCE_ENABLED=true \
 APPEARANCE_BACKEND=pphuman \
@@ -847,6 +847,17 @@ python -m pytest parser-python/tests/ -v
 
 ## 10. Docker Compose
 
+### Compose 선택 기준
+
+| 상황 | 사용할 파일 |
+|------|-------------|
+| 개발 PC/서버에서 API, Action Layer, EdgeX, parser를 함께 확인 | `docker-compose.yml` |
+| Jetson에서 DeepStream/TensorRT/GStreamer 기반 AI 엔진 운영 | `docker-compose.jetson.yml` |
+| Jetson과 서버/PC를 분리 운영 | 서버/PC는 `docker-compose.yml`, Jetson은 `docker-compose.jetson.yml` |
+
+arm64/Jetson 호스트에서 기본 `docker-compose.yml` 전체 스택을 바로 올리면 일부 EdgeX 이미지에서
+`exec format error`가 날 수 있습니다. Jetson 현장 운영은 아래 Jetson 전용 명령을 기준으로 진행하세요.
+
 ### 전체 스택 시작
 
 ```bash
@@ -947,23 +958,23 @@ curl -fsS http://localhost:8769/cameras
 
 ## 11. 모니터링 (옵션)
 
-Prometheus / Grafana는 기본 스택과 분리된 `docker-compose.monitoring.yml`로 관리합니다.  
+Prometheus / Grafana는 기본 스택과 분리된 `docker-compose.yml`의 `monitoring` profile로 관리합니다.
 필요할 때만 켜고, 평상시엔 끄면 됩니다.
 
 ### 모니터링 스택 시작 (메인 스택과 함께)
 
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.monitoring.yml up -d prometheus grafana
+docker compose --profile monitoring up -d prometheus grafana
 ```
 
 ### 모니터링만 단독으로 시작/중지
 
 ```bash
 # 시작
-docker compose -f docker-compose.monitoring.yml up -d
+docker compose --profile monitoring up -d prometheus grafana
 
 # 중지 (볼륨은 유지)
-docker compose -f docker-compose.monitoring.yml down
+docker compose --profile monitoring down
 ```
 
 ### 접속

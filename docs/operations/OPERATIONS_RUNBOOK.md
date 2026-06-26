@@ -25,7 +25,7 @@ cctv-public-api     Up, healthy, 0.0.0.0:9000->9000
 edgex-mqtt-broker   Up, healthy, 127.0.0.1:1883->1883
 ```
 
-> **Prometheus / Grafana**는 `docker-compose.monitoring.yml`로 분리되어 있습니다. 필요할 때만 별도로 실행합니다 (아래 "모니터링 옵션" 섹션 참조).
+> **Prometheus / Grafana**는 `docker-compose.yml`의 `monitoring` profile로 분리되어 있습니다. 필요할 때만 별도로 실행합니다 (아래 "모니터링 옵션" 섹션 참조).
 
 주의:
 
@@ -45,7 +45,7 @@ edgex-mqtt-broker   Up, healthy, 127.0.0.1:1883->1883
 | `cctv-prometheus` ⚙️ | 메트릭 수집 (옵션) | `127.0.0.1:9090` | `/-/ready` |
 | `cctv-grafana` ⚙️ | 모니터링 대시보드 (옵션) | `127.0.0.1:3001` | `/api/health` |
 
-⚙️ 옵션 서비스 — `docker-compose.monitoring.yml`로 분리됨
+⚙️ 옵션 서비스 — `docker-compose.yml`의 `monitoring` profile로 분리됨
 
 브라우저 확인용 주소:
 
@@ -86,10 +86,10 @@ docker compose up -d cctv-alert-api cctv-action-layer cctv-public-api edgex-mqtt
 
 ```bash
 # 메인 스택과 함께 올리기
-docker compose -f docker-compose.yml -f docker-compose.monitoring.yml up -d prometheus grafana
+docker compose --profile monitoring up -d prometheus grafana
 
 # 모니터링만 중지 (볼륨 유지)
-docker compose -f docker-compose.monitoring.yml down
+docker compose --profile monitoring down
 ```
 
 전체 EdgeX 스택까지 올릴 때:
@@ -100,20 +100,18 @@ docker run --rm -v "$PWD/mosquitto:/mosquitto/config" eclipse-mosquitto:2.0 \
 docker compose up -d
 ```
 
-arm64/Jetson 계열 호스트에서 기본 compose 전체 스택을 올릴 때:
+arm64/Jetson 계열 호스트에서 전체 스택을 올릴 때:
 
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.arm64.yml up -d
+docker compose -f docker-compose.jetson.yml up -d
 ```
 
 주의:
 
 - arm64/Jetson 계열 호스트에서 `docker-compose.yml`의 일부 EdgeX 이미지는 `linux/amd64`일 수 있습니다.
 - 이 경우 `exec format error`로 `core-data`, `core-metadata`, `device-rest`, `ui`가 재시작 루프에 들어갈 수 있습니다.
-- 기본 compose 전체 스택을 arm64에서 실행하려면 `docker-compose.arm64.yml` override를 함께 적용합니다.
-- EdgeX UI 이미지는 이 환경에서 ARM64 manifest가 확인되지 않아 `docker-compose.arm64.yml` 기본 실행에서 제외됩니다.
+- Jetson 현장 배포는 `docker-compose.jetson.yml` 기준으로 확인합니다.
 - AIoT parser는 PostgreSQL 설정이 필요합니다. 기본 compose에서는 `aiot-parser-db` 서비스와 전용 volume을 사용합니다.
-- Jetson 현장 배포는 가능하면 `docker-compose.jetson.yml` 기준으로 확인합니다.
 
 ## Health endpoint 확인
 
@@ -206,8 +204,8 @@ docker compose logs --tail 120 cctv-action-layer
 docker compose logs --tail 120 cctv-alert-api
 docker compose logs --tail 120 edgex-mqtt-broker
 # 모니터링 스택 실행 중일 때:
-docker compose -f docker-compose.monitoring.yml logs --tail 120 prometheus
-docker compose -f docker-compose.monitoring.yml logs --tail 120 grafana
+docker compose --profile monitoring logs --tail 120 prometheus
+docker compose --profile monitoring logs --tail 120 grafana
 ```
 
 실시간 추적:
@@ -505,8 +503,8 @@ curl -fsS http://localhost:9090/api/v1/targets
 curl -fsS http://localhost:9000/api/v1/metrics | head
 curl -fsS http://localhost:8080/metrics | head
 # 모니터링 스택 실행 중일 때:
-docker compose -f docker-compose.monitoring.yml logs --tail 120 prometheus
-docker compose -f docker-compose.monitoring.yml logs --tail 120 grafana
+docker compose --profile monitoring logs --tail 120 prometheus
+docker compose --profile monitoring logs --tail 120 grafana
 ```
 
 수정 방법:
@@ -542,14 +540,14 @@ docker ps -a --filter label=com.docker.compose.project=edgex-jetson
 docker compose stop core-data core-metadata device-rest ui
 ```
 
-- 같은 arm64 호스트에서 기본 compose 전체 스택을 계속 써야 하면 ARM64 override를 함께 적용합니다.
+- 같은 arm64 호스트에서 전체 스택을 계속 써야 하면 Jetson compose 기준으로 재기동합니다.
 
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.arm64.yml up -d
+docker compose -f docker-compose.jetson.yml up -d
 ```
 
 - EdgeX UI가 필요하면 ARM64 장비에서 직접 띄우기보다 x86_64 서버/PC에서 UI를 실행하거나, EdgeX REST API와 Grafana를 우선 사용합니다.
-- Jetson/arm64 운영은 `docker-compose.jetson.yml` 사용을 우선 검토합니다.
+- Jetson/arm64 운영은 `docker-compose.jetson.yml` 사용을 우선합니다.
 - 이전 compose 프로젝트의 중지 컨테이너가 이름을 점유한다면, 해당 컨테이너가 실행 중이 아닌지 확인한 뒤 제거합니다.
 
 ### AIoT parser가 PostgreSQL/Outbox 오류로 재시작함

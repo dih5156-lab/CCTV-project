@@ -18,6 +18,7 @@ class CameraOut(BaseModel):
     id: str = Field(description="카메라 고유 ID")
     name: Optional[str] = Field(default=None, description="카메라 표시 이름")
     url: Optional[str] = Field(default=None, description="자격증명을 제거한 카메라 URL")
+    enabled: bool = Field(default=True, description="cameras.json 기준 활성화 여부")
     zones: Optional[list] = Field(default=None, description="cameras.json 기준 구역 설정 목록")
 
 

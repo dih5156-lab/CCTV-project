@@ -43,7 +43,7 @@
 Go 원본 (aiot-tlv-parser/)          Python 변환본 (parser-python/)
 ────────────────────────────────    ────────────────────────────────────
 main.go                         →   main.py
-go.mod                          →   requirements.txt
+go.mod                          →   requirements/parser.txt
 pkg/
   config/
     config.go                   →   config/config.py
@@ -87,7 +87,7 @@ pkg/
 | `defer` | `finally` / `with` / `atexit` | 클린업 코드 지연 실행 |
 | `error` 반환값 | `raise Exception` | 오류 처리 |
 | `type assertion` | `isinstance()` | 런타임 타입 확인 |
-| `go.mod` | `requirements.txt` | 의존성 관리 파일 |
+| `go.mod` | `requirements/parser.txt` | 의존성 관리 파일 |
 | `gin` (HTTP) | `Flask` (HTTP) | REST API 서버 프레임워크 |
 | `bun` ORM | `psycopg2` | PostgreSQL 드라이버/ORM |
 | `paho.mqtt.golang` | `paho-mqtt` | MQTT 클라이언트 라이브러리 |

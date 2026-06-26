@@ -55,9 +55,9 @@ CCTV-project/
 ├── monitoring/                     # Prometheus/Grafana 설정
 ├── mosquitto/                      # MQTT broker 설정
 ├── scripts/                        # 점검, 변환, smoke test, 모델 평가
+├── requirements/                   # 역할별 Python 의존성 파일
 ├── tests/                          # pytest 테스트
 ├── docker-compose.yml              # 일반 Docker/EdgeX 통합 배포
-├── docker-compose.arm64.yml        # ARM64 EdgeX 호환 override
 ├── docker-compose.jetson.yml       # Jetson/DeepStream 운영 배포
 └── docs/architecture/PROJECT_STRUCTURE.md # 상세 프로젝트 구조 문서
 ```
@@ -118,7 +118,7 @@ source .venv/bin/activate
 ### 3. 의존성 설치
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements/ai.txt
 ```
 
 > **Jetson Orin**: PyTorch/OpenCV는 L4T 이미지에 이미 포함되어 있어 별도 설치 불필요.
@@ -132,7 +132,7 @@ pip install -r requirements.txt
 Jetson에서 실사용 얼굴 인식을 켜려면 추가로 아래 파일을 설치합니다.
 
 ```bash
-pip install -r requirements-face-jetson.txt
+pip install -r requirements/jetson.txt
 ```
 
 자세한 내용은 [docs/operations/FACE_RECOGNITION_SETUP.md](docs/operations/FACE_RECOGNITION_SETUP.md)를 참고하세요.
@@ -163,7 +163,7 @@ APPEARANCE_RUNTIME=onnxruntime
 Jetson에서 ONNX Runtime wheel 호환 문제가 있으면 Paddle 원본 모델을 직접 지정할 수 있습니다.
 
 ```bash
-pip install -r requirements-appearance-paddle.txt
+pip install -r requirements/jetson.txt
 
 APPEARANCE_BACKEND=pphuman
 APPEARANCE_MODEL_PATH=models/pphuman_attribute_src/PP-LCNet_x1_0_pedestrian_attribute_infer
@@ -174,15 +174,18 @@ APPEARANCE_RUNTIME=paddle
 카메라 설정의 `detections`에 `appearance`를 포함하면 `YOLO person bbox → 속성 모델
 crop → SQLite appearance_log 저장/검색` 흐름으로 연결됩니다.
 
-PA100K로 학습한 속성 모델을 TensorRT engine으로 운영할 때는 아래처럼 연결합니다.
+PA100K로 학습한 속성 모델은 Jetson 운영에서는 DeepStream SGIE로 붙이는 구성을 권장합니다.
 
 ```bash
 APPEARANCE_ENABLED=true
-APPEARANCE_BACKEND=pphuman
-APPEARANCE_MODEL_PATH=models/pa100k_resnet50_attr.engine
+APPEARANCE_BACKEND=hsv
+DS_PPHUMAN_SGIE_ENABLED=1
+DS_PPHUMAN_INFER_CONFIG=config/deepstream/config_infer_pa100k.txt
 APPEARANCE_LABEL_MAP_PATH=config/appearance_pa100k_labels.json
-APPEARANCE_RUNTIME=tensorrt
 ```
+
+이 구성에서는 DeepStream이 person ROI에 PA100K 속성 tensor를 붙이고, Python 파이프라인은
+그 metadata를 `attribute_backend=pa100k_sgie`로 DB에 저장합니다.
 
 **Jetson TensorRT 가속 (선택사항):**
 
@@ -345,8 +348,14 @@ python runners/run_action_bridge.py \
 | 파일 | 용도 |
 |------|------|
 | `docker-compose.yml` | **기본 구성** — 공개 API, Action Layer, EdgeX 계열 서비스를 같은 서버/PC에서 실행할 때 사용 |
-| `docker-compose.arm64.yml` | **ARM64 override** — Jetson/ARM64에서 기본 compose의 EdgeX 이미지를 ARM64용으로 보정할 때 사용 |
 | `docker-compose.jetson.yml` | **Jetson 구성** — Jetson에서 AI 엔진, alert-api, 내부 관리 API를 함께 실행할 때 사용 |
+
+선택 기준은 단순하게 가져갑니다.
+
+- 개발 PC/서버에서 API, Action Layer, EdgeX, parser를 함께 확인할 때: `docker-compose.yml`
+- Jetson에서 DeepStream/TensorRT/GStreamer 기반 AI 엔진까지 운영할 때: `docker-compose.jetson.yml`
+- Jetson이 아닌 PC에서 UI/API만 확인할 때: `docker-compose.yml`에서 필요한 서비스만 실행
+- Jetson과 서버/PC를 분리할 때: 서버/PC는 `docker-compose.yml`, Jetson은 `docker-compose.jetson.yml`
 
 #### 기본 실행 (Windows PC에서 모두 실행)
 
@@ -367,7 +376,7 @@ docker compose down
 Public API, Alert API, Action Layer 중심으로만 확인할 때는 필요한 서비스만 올릴 수 있습니다.
 
 ```bash
-docker compose up -d cctv-alert-api cctv-action-layer cctv-public-api prometheus grafana edgex-mqtt-broker
+docker compose --profile monitoring up -d cctv-alert-api cctv-action-layer cctv-public-api prometheus grafana edgex-mqtt-broker
 ```
 
 AIoT parser까지 확인할 때는 PostgreSQL 보조 서비스도 함께 올립니다.
@@ -377,13 +386,11 @@ docker compose up -d aiot-parser-db aiot-parser
 ```
 
 > arm64/Jetson 계열 호스트에서 기본 `docker-compose.yml`의 일부 EdgeX 이미지는 `exec format error`가 날 수 있습니다.
-> 같은 장비에서 기본 compose 전체 스택을 올릴 때는 `docker-compose.arm64.yml`을 함께 적용하고,
 > Jetson 현장 배포는 `docker-compose.jetson.yml`을 우선 사용하세요. 자세한 운영 대응은
 > [docs/operations/OPERATIONS_RUNBOOK.md](docs/operations/OPERATIONS_RUNBOOK.md)를 참고하세요.
-> EdgeX UI 이미지는 이 환경에서 ARM64 manifest가 확인되지 않아 ARM64 override 기본 실행에서 제외됩니다.
 
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.arm64.yml up -d
+docker compose -f docker-compose.jetson.yml up -d
 ```
 
 배포 전 런타임 전제 조건은 아래 명령으로 미리 확인할 수 있습니다.
@@ -506,8 +513,8 @@ python runners/run_public_api.py --host 0.0.0.0 --port 9000
 
 - `GET /api/v1/health`
 - `GET /api/v1/readiness`
-- `GET /api/v1/docs`
-- `GET /api/v1/docs/openapi.json`
+- `GET /docs`
+- `GET /openapi.json`
 - `GET /api/v1/events`
 - `POST /api/v1/event-reviews`
 - `GET /api/v1/event-reviews/summary`
@@ -579,7 +586,7 @@ web/public-demo.html
 docker compose ps
 curl -fsS http://localhost:9000/api/v1/health
 curl -fsS http://localhost:9000/api/v1/readiness
-curl -fsS http://localhost:9000/api/v1/docs/openapi.json
+curl -fsS http://localhost:9000/openapi.json
 curl -fsS http://localhost:8769/health
 curl -fsS http://localhost:8769/cameras
 .venv/bin/python scripts/smoke/smoke_test_deployment.py
@@ -592,6 +599,7 @@ Prometheus/Grafana는 운영 모니터링용 선택 구성입니다. 핵심 시�
 Alert API, Action Layer, Public API readiness를 확인합니다. 모니터링까지 함께 검증할 때만 아래처럼 실행합니다.
 
 ```bash
+docker compose --profile monitoring up -d prometheus grafana
 .venv/bin/python scripts/smoke/smoke_test_deployment.py --include-monitoring
 ```
 
@@ -925,7 +933,7 @@ python scripts/ops/evaluate_detection.py \
 - **Public API 이벤트 전달 경로 정리**
   - `/api/v1/events`, `/api/v1/alerts`, `/api/v1/sensor-readings` 수신 이벤트를 Action Layer `/events`로 포워딩
   - 공통 포워딩 모듈(`src/api/_event_forwarding.py`)로 중복 로직 축소
-  - 로컬 API 문서(`src/api/_local_docs.py`)와 `/api/v1/docs/openapi.json` 추가
+  - 로컬 API 문서(`src/api/_local_docs.py`)와 `/openapi.json` 추가
 
 - **TLV 센서 위험 분류 추가**
   - `src/services/sensor_classifier.py`에서 온도, 기울기, event_code 기준으로 warning/critical 이벤트 생성

@@ -20,7 +20,7 @@
 Windows에서는 기본적으로 공통 의존성만 설치합니다.
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements/ai.txt
 ```
 
 이 환경에서는:
@@ -35,8 +35,8 @@ pip install -r requirements.txt
 Jetson에서는 Python 3.10 가상환경에서 아래 순서로 설치를 권장합니다.
 
 ```bash
-pip install -r requirements-ai.txt
-pip install -r requirements-face-jetson.txt
+pip install -r requirements/ai.txt
+pip install -r requirements/jetson.txt
 ```
 
 설치 후 `src/utils/face_recognition.py`는 자동으로 InsightFace 백엔드를 사용합니다.

@@ -49,12 +49,9 @@ CCTV-project/
 ├── monitoring/                     # Prometheus/Grafana 설정
 ├── mosquitto/                      # MQTT broker 설정
 ├── tooling/                        # 앱 실행과 분리된 개발 도구 원본 자료
-├── Dockerfile                      # 일반 AI/API 서비스 이미지
-├── Dockerfile.action               # Action Layer 이미지
+├── Dockerfile                      # 일반 AI/API/Action/Parser 멀티 타깃 이미지
 ├── Dockerfile.jetson               # Jetson/DeepStream 이미지
-├── Dockerfile.parser               # AIoT parser 이미지
 ├── docker-compose.yml              # 일반 Docker/EdgeX 통합 실행
-├── docker-compose.arm64.yml        # ARM64 EdgeX 호환 override
 ├── docker-compose.jetson.yml       # Jetson/DeepStream 운영 실행
 ├── cameras.example.json            # 카메라 설정 예시
 ├── cameras.json                    # 실제 카메라 설정
@@ -509,6 +506,8 @@ data/
 │   ├── appearances.db
 │   ├── action_events.db
 │   ├── action_http_outbox.db
+│   ├── event_outbox.db
+│   ├── mqtt_event_outbox.db
 │   ├── appearance_crops/
 │   └── face_snapshots/
 ├── logs/
@@ -598,16 +597,6 @@ STREAM_API_ENABLED=1
 STREAM_PORT=8769
 8769:8769
 ```
-
-### ARM64 override: `docker-compose.arm64.yml`
-
-ARM64/Jetson 계열에서 기본 EdgeX 이미지의 architecture mismatch를 피하기 위한 override입니다.
-
-주요 목적:
-
-- ARM64에서 실행 가능한 EdgeX 이미지 선택
-- ARM64 manifest가 없는 UI 서비스 제외 또는 대체
-- 기본 compose와 함께 적용
 
 ### Jetson Compose: `docker-compose.jetson.yml`
 

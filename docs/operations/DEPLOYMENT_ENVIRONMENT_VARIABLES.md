@@ -92,9 +92,13 @@ Jetson 통합 스택에서 자주 조정하는 값만 추렸습니다. 나머지
 | `APPEARANCE_CROP_DIR` | `<data>/runtime/appearance_crops` | crop 저장 경로 |
 | `ALERT_LOG_PATH` | `<data>/logs/alert_api_events.jsonl` | 알림 로그 경로 |
 | `SENSOR_LOG_PATH` | `<data>/logs/sensor_readings.jsonl` | 센서 로그 경로 |
+| `FALL_SHADOW_REVIEW_LOG_PATH` | `<data>/logs/fall_shadow_review.jsonl` | 낙상 shadow 검토 JSONL 로그 경로 |
+| `FALL_SHADOW_CLIP_DIR` | `<data>/fall_review_clips` | 낙상 검토 클립 저장 경로 |
 | `APPEARANCES_DB` | `<data>/runtime/appearances.db` | 외형 검색 DB 경로 |
 | `CROP_RETENTION_DAYS` | `7` | crop 보존 일수 |
+| `FALL_REVIEW_RETENTION_DAYS` | `3` | 낙상 검토 클립 보존 일수 |
 | `LOG_MAX_MB` | `200` | JSONL 로그 회전 기준 |
+| `FALL_SHADOW_LOG_MAX_MB` | `50` | 낙상 shadow 로그 회전 기준 |
 | `PYTHON_BIN` | `<project>/.venv/bin/python`, 없으면 `python3` | crop DB 참조 정리에 사용할 Python 실행 파일 |
 
 ## 7. 검증 명령
