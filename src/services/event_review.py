@@ -153,7 +153,8 @@ class EventReviewStore:
             ).fetchall()
         return {row["event_id"]: self._row_to_dict(row) for row in rows}
 
-    def summary(self) -> Dict[str, Any]:
+    def summary(self, *, recent_limit: int = 20) -> Dict[str, Any]:
+        recent_limit = max(1, min(int(recent_limit), 100))
         with self._connect() as conn:
             total = conn.execute("SELECT COUNT(*) FROM event_reviews").fetchone()[0]
             by_status = {
@@ -177,16 +178,27 @@ class EventReviewStore:
             recent = [
                 self._row_to_dict(row)
                 for row in conn.execute(
-                    "SELECT * FROM event_reviews ORDER BY reviewed_at DESC LIMIT 20"
+                    "SELECT * FROM event_reviews ORDER BY reviewed_at DESC LIMIT ?",
+                    (recent_limit,),
                 ).fetchall()
             ]
+        total_count = int(total)
+        true_positive_count = int(by_status.get("true_positive", 0))
+        false_positive_count = int(by_status.get("false_positive", 0))
+        uncertain_count = int(by_status.get("uncertain", 0))
+        rates = {
+            "true_positive_rate": true_positive_count / total_count if total_count else 0.0,
+            "false_positive_rate": false_positive_count / total_count if total_count else 0.0,
+            "uncertain_rate": uncertain_count / total_count if total_count else 0.0,
+        }
         return {
-            "total": int(total),
+            "total": total_count,
             "by_status": {
-                "true_positive": int(by_status.get("true_positive", 0)),
-                "false_positive": int(by_status.get("false_positive", 0)),
-                "uncertain": int(by_status.get("uncertain", 0)),
+                "true_positive": true_positive_count,
+                "false_positive": false_positive_count,
+                "uncertain": uncertain_count,
             },
+            "rates": rates,
             "by_event_type": by_type,
             "recent": recent,
         }

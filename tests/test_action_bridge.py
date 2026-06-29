@@ -528,6 +528,27 @@ class TestActionBridgeStatusPublishing:
         assert handled.wait(1.0) is True
         bridge._stop_rest_action_worker()
 
+    def test_enqueue_rest_event_records_queue_full_metrics(self):
+        from queue import Queue
+
+        from src.services.cctv_metrics import (
+            rest_action_queue_depth,
+            rest_events_dropped,
+        )
+
+        bridge = self._make_bridge()
+        bridge._start_rest_action_worker = MagicMock()
+        bridge._rest_action_queue = Queue(maxsize=1)
+        bridge._rest_action_queue.put_nowait(("rest/inbound", {"camera_id": "cam1"}))
+
+        before_dropped = rest_events_dropped.labels(reason="queue_full")._value.get()
+
+        assert bridge.enqueue_rest_event({"camera_id": "cam2", "type": "helmet"}) is False
+
+        after_dropped = rest_events_dropped.labels(reason="queue_full")._value.get()
+        assert after_dropped == before_dropped + 1
+        assert rest_action_queue_depth._value.get() == 1
+
     def test_execute_action_prefers_canonical_output_messages(self):
         bridge = self._make_bridge()
         bridge._resolve_devices.return_value = [AlarmDevice.SPEAKER, AlarmDevice.SIGNBOARD]

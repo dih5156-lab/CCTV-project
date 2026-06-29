@@ -155,6 +155,22 @@ def test_face_api_requires_internal_token_when_configured():
     assert body["error"] == "Unauthorized"
 
 
+def test_post_face_non_object_json_direct_handler_returns_400():
+    proc = _build_processor()
+    payload = b'["not", "an", "object"]'
+    handler = _make_handler(proc, "/faces")
+    handler.command = "POST"
+    handler.requestline = "POST /faces HTTP/1.1"
+    handler.headers = {"Content-Length": str(len(payload))}
+    handler.rfile = BytesIO(payload)
+
+    handler.do_POST()
+
+    code, body = handler._responses[0]  # type: ignore[attr-defined]
+    assert code == 400
+    assert body["error"] == "JSON object is required"
+
+
 # ===========================================================================
 # POST /faces
 # ===========================================================================

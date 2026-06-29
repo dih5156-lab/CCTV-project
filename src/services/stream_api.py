@@ -26,7 +26,7 @@ import re
 import secrets
 import threading
 import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from urllib.parse import parse_qs, urlsplit
 
 from .._http_server import BaseApiHandler, ThreadingApiServer
@@ -39,6 +39,8 @@ logger = logging.getLogger(__name__)
 
 _RE_STREAM = re.compile(r"^/stream/([^/]+)$")
 _RE_SNAPSHOT = re.compile(r"^/snapshot/([^/]+)$")
+_JPEG_CACHE_LOCK = threading.Lock()
+_JPEG_CACHE: dict[str, tuple[tuple[Any, ...], bytes]] = {}
 
 
 def _read_stream_fps() -> float:
@@ -94,6 +96,45 @@ def _resize_for_stream(cv2, frame, width: int, height: int):
     if frame_width == width and frame_height == height:
         return frame
     return cv2.resize(frame, (width, height), interpolation=cv2.INTER_AREA)
+
+
+def _stream_frame_cache_key(frame, width: int, height: int, jpeg_quality: int) -> tuple[Any, ...]:
+    return (
+        id(frame),
+        tuple(getattr(frame, "shape", ()) or ()),
+        width,
+        height,
+        jpeg_quality,
+    )
+
+
+def _encode_jpeg_for_stream(
+    cv2,
+    camera_id: str,
+    frame,
+    *,
+    width: int,
+    height: int,
+    jpeg_quality: int,
+) -> bytes | None:
+    """MJPEG 송출용 JPEG bytes를 만들고, 같은 최신 프레임이면 재사용한다."""
+    cache_key = _stream_frame_cache_key(frame, width, height, jpeg_quality)
+    with _JPEG_CACHE_LOCK:
+        cached = _JPEG_CACHE.get(camera_id)
+        if cached is not None and cached[0] == cache_key:
+            return cached[1]
+
+    frame = _resize_for_stream(cv2, frame, width, height)
+    ret, jpeg = cv2.imencode(
+        ".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, jpeg_quality]
+    )
+    if not ret:
+        return None
+
+    data = jpeg.tobytes()
+    with _JPEG_CACHE_LOCK:
+        _JPEG_CACHE[camera_id] = (cache_key, data)
+    return data
 
 
 class StreamApiHandler(BaseApiHandler):
@@ -214,12 +255,15 @@ class StreamApiHandler(BaseApiHandler):
             while True:
                 frame = _get_camera_frame_for_stream(proc, camera_id)
                 if frame is not None:
-                    frame = _resize_for_stream(cv2, frame, stream_width, stream_height)
-                    ret, jpeg = cv2.imencode(
-                        ".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, jpeg_quality]
+                    data = _encode_jpeg_for_stream(
+                        cv2,
+                        camera_id,
+                        frame,
+                        width=stream_width,
+                        height=stream_height,
+                        jpeg_quality=jpeg_quality,
                     )
-                    if ret:
-                        data = jpeg.tobytes()
+                    if data is not None:
                         header = (
                             b"--frame\r\n"
                             b"Content-Type: image/jpeg\r\n"

@@ -160,6 +160,9 @@ class FaceApiHandler(BaseApiHandler):
         if body is None:
             self._respond(400, {"error": "Invalid JSON"})
             return
+        if not isinstance(body, dict):
+            self._respond(400, {"error": "JSON object is required"})
+            return
 
         name = str(body.get("name", "")).strip()
         phone = str(body.get("phone", "")).strip()

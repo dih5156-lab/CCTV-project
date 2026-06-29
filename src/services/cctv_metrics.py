@@ -42,6 +42,13 @@ device_commands: Counter = Counter(
     registry=REGISTRY,
 )
 
+rest_events_dropped: Counter = Counter(
+    "cctv_rest_events_dropped_total",
+    "REST action queue 포화로 거부된 이벤트 총 수",
+    ["reason"],  # queue_full
+    registry=REGISTRY,
+)
+
 # ── 상태 게이지 ──────────────────────────────────────────────────────────────
 
 pending_events: Gauge = Gauge(
@@ -53,5 +60,11 @@ pending_events: Gauge = Gauge(
 action_bridge_up: Gauge = Gauge(
     "cctv_action_bridge_up",
     "Action Bridge 가동 여부 (1=정상, 0=비정상)",
+    registry=REGISTRY,
+)
+
+rest_action_queue_depth: Gauge = Gauge(
+    "cctv_rest_action_queue_depth",
+    "REST action worker 대기 큐에 남아 있는 이벤트 수",
     registry=REGISTRY,
 )

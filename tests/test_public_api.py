@@ -570,12 +570,32 @@ class TestEvents:
             )
             assert review_resp.status_code == 200
             assert review_resp.json()["data"]["status"] == "false_positive"
+            second_review_resp = client.post(
+                "/api/v1/event-reviews",
+                json={
+                    "event_id": "evt-review-2",
+                    "status": "true_positive",
+                    "reviewer": "tester",
+                    "category": "head",
+                    "event": {
+                        "event_id": "evt-review-2",
+                        "camera_id": "cam-01",
+                        "type": "head",
+                        "timestamp": 1700000001.0,
+                    },
+                },
+            )
+            assert second_review_resp.status_code == 200
 
-            summary_resp = client.get("/api/v1/event-reviews/summary")
+            summary_resp = client.get("/api/v1/event-reviews/summary?recent_limit=1")
             assert summary_resp.status_code == 200
             summary = summary_resp.json()["data"]
-            assert summary["total"] == 1
+            assert summary["total"] == 2
             assert summary["by_status"]["false_positive"] == 1
+            assert summary["by_status"]["true_positive"] == 1
+            assert summary["rates"]["false_positive_rate"] == pytest.approx(0.5)
+            assert summary["rates"]["true_positive_rate"] == pytest.approx(0.5)
+            assert len(summary["recent"]) == 1
 
             events_resp = client.get("/api/v1/events?limit=1")
             assert events_resp.status_code == 200

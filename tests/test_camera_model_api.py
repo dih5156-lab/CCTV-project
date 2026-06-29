@@ -194,6 +194,23 @@ def test_camera_model_api_requires_internal_token_when_configured(cameras_json: 
     assert body["error"] == "Unauthorized"
 
 
+def test_post_camera_models_non_object_json_direct_handler_returns_400(cameras_json: Path):
+    proc = _build_processor()
+    payload = b'["use_pose"]'
+    handler = _make_handler(proc, str(cameras_json), "/cameras/camera_1/models")
+    handler.command = "POST"
+    handler.requestline = "POST /cameras/camera_1/models HTTP/1.1"
+    handler.headers = {"Content-Length": str(len(payload))}
+    handler.rfile = BytesIO(payload)
+
+    handler.do_POST()
+
+    code, body = handler._responses[0]  # type: ignore[attr-defined]
+    assert code == 400
+    assert body["error"] == "JSON object is required"
+    proc.update_camera_model_settings.assert_not_called()
+
+
 # ===========================================================================
 # POST /cameras/{id}/models
 # ===========================================================================

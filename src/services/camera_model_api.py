@@ -123,6 +123,9 @@ class CameraModelApiHandler(BaseApiHandler):
         if body is None:
             self._respond(400, {"error": "Invalid JSON"})
             return
+        if not isinstance(body, dict):
+            self._respond(400, {"error": "JSON object is required"})
+            return
 
         if not any(key in body for key in _ALLOWED_KEYS):
             self._respond(400, {"error": "model_settings payload is required"})

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 
 from ...services.event_review import EventReviewStore
@@ -40,6 +40,7 @@ class EventReviewOut(BaseModel):
 class EventReviewSummary(BaseModel):
     total: int
     by_status: Dict[str, int]
+    rates: Dict[str, float]
     by_event_type: List[Dict[str, Any]]
     recent: List[EventReviewOut]
 
@@ -85,6 +86,9 @@ async def upsert_event_review(
     description="검수 누적 건수와 상태별/이벤트 타입별 집계를 반환합니다.",
 )
 async def get_event_review_summary(
+    recent_limit: int = Query(default=20, ge=1, le=100),
     _: None = Depends(verify_api_key),
 ) -> BaseResponse[EventReviewSummary]:
-    return success_response(EventReviewSummary(**_get_store().summary()))
+    return success_response(
+        EventReviewSummary(**_get_store().summary(recent_limit=recent_limit))
+    )

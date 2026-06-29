@@ -10,7 +10,9 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from src.services.stream_api import (
+    _JPEG_CACHE,
     StreamApiHandler,
+    _encode_jpeg_for_stream,
     _get_camera_frame_for_stream,
     _read_jpeg_quality,
     _read_stream_fps,
@@ -308,6 +310,97 @@ class TestStreamApiEnvParsing:
 
 
 class TestStreamApiFramePreparation:
+    def test_encode_jpeg_for_stream_reuses_same_frame_cache(self) -> None:
+        class _Frame:
+            shape = (480, 640, 3)
+
+        class _Jpeg:
+            def __init__(self, value: bytes) -> None:
+                self._value = value
+
+            def tobytes(self) -> bytes:
+                return self._value
+
+        class _Cv2:
+            IMWRITE_JPEG_QUALITY = 1
+            INTER_AREA = 2
+
+            def __init__(self) -> None:
+                self.encode_count = 0
+
+            def imencode(self, ext, frame, params):
+                self.encode_count += 1
+                return True, _Jpeg(f"jpeg-{self.encode_count}".encode())
+
+            def resize(self, frame, size, interpolation=None):
+                return frame
+
+        _JPEG_CACHE.clear()
+        cv2 = _Cv2()
+        frame = _Frame()
+
+        first = _encode_jpeg_for_stream(
+            cv2,
+            "cam-1",
+            frame,
+            width=0,
+            height=0,
+            jpeg_quality=70,
+        )
+        second = _encode_jpeg_for_stream(
+            cv2,
+            "cam-1",
+            frame,
+            width=0,
+            height=0,
+            jpeg_quality=70,
+        )
+
+        assert first == b"jpeg-1"
+        assert second == first
+        assert cv2.encode_count == 1
+
+    def test_encode_jpeg_for_stream_reencodes_when_quality_changes(self) -> None:
+        class _Frame:
+            shape = (480, 640, 3)
+
+        class _Jpeg:
+            def __init__(self, value: bytes) -> None:
+                self._value = value
+
+            def tobytes(self) -> bytes:
+                return self._value
+
+        cv2 = MagicMock()
+        cv2.IMWRITE_JPEG_QUALITY = 1
+        cv2.imencode.side_effect = [
+            (True, _Jpeg(b"quality-70")),
+            (True, _Jpeg(b"quality-80")),
+        ]
+        _JPEG_CACHE.clear()
+        frame = _Frame()
+
+        first = _encode_jpeg_for_stream(
+            cv2,
+            "cam-1",
+            frame,
+            width=0,
+            height=0,
+            jpeg_quality=70,
+        )
+        second = _encode_jpeg_for_stream(
+            cv2,
+            "cam-1",
+            frame,
+            width=0,
+            height=0,
+            jpeg_quality=80,
+        )
+
+        assert first == b"quality-70"
+        assert second == b"quality-80"
+        assert cv2.imencode.call_count == 2
+
     def test_get_camera_frame_uses_no_copy_when_supported(self) -> None:
         proc = MagicMock()
         proc.get_camera_frame.return_value = "frame"

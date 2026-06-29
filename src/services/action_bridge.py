@@ -60,6 +60,8 @@ from .cctv_metrics import (
     action_bridge_up,
     events_handled,
     mqtt_events_received,
+    rest_action_queue_depth,
+    rest_events_dropped,
 )
 from .cctv_metrics import (
     pending_events as _metric_pending,
@@ -512,9 +514,12 @@ class ActionBridge:
         self._start_rest_action_worker()
         try:
             self._rest_action_queue.put_nowait((topic, dict(payload)))
+            rest_action_queue_depth.set(self._rest_action_queue.qsize())
             return True
         except Full:
             logger.error("REST action queue 가득 참 - 이벤트 거부: topic=%s", topic)
+            rest_events_dropped.labels(reason="queue_full").inc()
+            rest_action_queue_depth.set(self._rest_action_queue.qsize())
             return False
 
     def _start_rest_action_worker(self) -> None:
@@ -545,6 +550,7 @@ class ActionBridge:
                 logger.error("REST action worker 처리 오류: %s", exc, exc_info=True)
             finally:
                 self._rest_action_queue.task_done()
+                rest_action_queue_depth.set(self._rest_action_queue.qsize())
 
     def _stop_rest_action_worker(self) -> None:
         """REST action worker를 종료한다."""
