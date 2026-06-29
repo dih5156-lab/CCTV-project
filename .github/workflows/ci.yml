@@ -116,12 +116,15 @@ jobs:
           - dockerfile: Dockerfile
             image: ai-engine
             platforms: linux/amd64
-          - dockerfile: Dockerfile.action
+            target: ""
+          - dockerfile: Dockerfile
             image: action
             platforms: linux/amd64,linux/arm64
-          - dockerfile: Dockerfile.parser
+            target: action
+          - dockerfile: Dockerfile
             image: parser
             platforms: linux/amd64,linux/arm64
+            target: parser
 
     steps:
       - uses: actions/checkout@v4
@@ -154,6 +157,7 @@ jobs:
           context: .
           file: ${{ matrix.dockerfile }}
           platforms: ${{ matrix.platforms }}
+          target: ${{ matrix.target }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           cache-from: type=gha
