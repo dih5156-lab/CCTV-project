@@ -29,7 +29,7 @@ jobs:
         run: python scripts/health/check_root_generated_files.py
 
       - name: Install dev dependencies
-        run: pip install -r requirements-dev.txt
+        run: pip install -r requirements/dev.txt
 
       - name: Run ruff
         run: ruff check .
@@ -69,15 +69,19 @@ jobs:
         if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release'))
         run: |
           pip install pip-audit
-          pip-audit -r requirements.txt
-          pip-audit -r requirements-action.txt
+          pip-audit -r requirements/base.txt
+          pip-audit -r requirements/ai.txt
+          pip-audit -r requirements/parser.txt
+          pip-audit -r requirements/jetson.txt
 
       - name: pip-audit (warning on non-main/PR)
         if: github.ref != 'refs/heads/main' || github.event_name == 'pull_request'
         run: |
           pip install pip-audit
-          pip-audit -r requirements.txt || true
-          pip-audit -r requirements-action.txt || true
+          pip-audit -r requirements/base.txt || true
+          pip-audit -r requirements/ai.txt || true
+          pip-audit -r requirements/parser.txt || true
+          pip-audit -r requirements/jetson.txt || true
 
       - name: Trivy filesystem scan (enforced on main)
         if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release'))
