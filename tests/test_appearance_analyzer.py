@@ -245,6 +245,27 @@ class TestExtractAttributes:
         assert attrs["upper_color"] == "blue"
         assert attrs["lower_color"] == "unknown"
 
+    def test_pose_with_hips_but_missing_knees_keeps_lower_fallback(self, analyzer):
+        frame = _two_tone_frame(
+            upper_bgr=(128, 128, 128),  # gray
+            lower_bgr=(0, 0, 0),        # black
+        )
+        partial_keypoints = _pose_keypoints_for_bbox()
+        partial_keypoints[13] = [0.0, 0.0, 0.0]
+        partial_keypoints[14] = [0.0, 0.0, 0.0]
+
+        attrs = analyzer.extract_attributes(
+            frame,
+            0,
+            0,
+            100,
+            200,
+            keypoints=partial_keypoints,
+        )
+
+        assert attrs["upper_color"] == "gray"
+        assert attrs["lower_color"] == "black"
+
     def test_only_visible_upper_body_leaves_hat_and_lower_unknown(self, analyzer):
         frame = np.zeros((200, 100, 3), dtype=np.uint8)
         frame[:120, :] = (0, 0, 255)      # red torso
@@ -278,6 +299,8 @@ class TestExtractAttributes:
         assert attrs["upper_color"] == "yellow"
         assert attrs["has_backpack"] is True
         assert attrs["attribute_backend"] == "pphuman"
+        assert attrs["attribute_metadata"]["color_sources"]["upper_color"] == "pphuman"
+        assert attrs["attribute_metadata"]["color_candidates"]["upper_color"]["selected"] == "yellow"
 
     def test_bbox_expand_ratio_feeds_larger_crop_to_backend(self):
         seen = {}

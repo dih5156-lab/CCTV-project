@@ -4,18 +4,26 @@ set -eu
 SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 PROJECT_ROOT="$(CDPATH= cd -- "$SCRIPT_DIR/../.." && pwd)"
 ENV_EXAMPLE="$PROJECT_ROOT/.env.example"
-ENV_FILE="${1:-.env}"
+ROTATE_SECRETS=0
+
+if [ "${1:-}" = "--rotate" ]; then
+  ROTATE_SECRETS=1
+  ENV_FILE="${2:-.env}"
+else
+  ENV_FILE="${1:-.env}"
+fi
 
 if [ ! -f "$ENV_FILE" ]; then
   cp "$ENV_EXAMPLE" "$ENV_FILE"
 fi
 
 generate_secret() {
-  if command -v openssl >/dev/null 2>&1; then
-    openssl rand -base64 32 | tr '+/' '-_' | tr -d '='
-  else
-    date +%s%N | sha256sum | awk '{print $1}'
+  if ! command -v openssl >/dev/null 2>&1; then
+    echo "openssl is required to generate secure API tokens" >&2
+    return 1
   fi
+
+  openssl rand -base64 32 | tr '+/' '-_' | tr -d '='
 }
 
 is_placeholder_or_empty() {
@@ -49,14 +57,18 @@ set_env_value() {
 ensure_secret() {
   KEY_NAME="$1"
 
-  if ! is_placeholder_or_empty "$KEY_NAME"; then
+  if [ "$ROTATE_SECRETS" -ne 1 ] && ! is_placeholder_or_empty "$KEY_NAME"; then
     echo "$KEY_NAME already set in $ENV_FILE"
     return
   fi
 
   VALUE="$(generate_secret)"
   set_env_value "$KEY_NAME" "$VALUE"
-  echo "$KEY_NAME generated in $ENV_FILE"
+  if [ "$ROTATE_SECRETS" -eq 1 ]; then
+    echo "$KEY_NAME rotated in $ENV_FILE"
+  else
+    echo "$KEY_NAME generated in $ENV_FILE"
+  fi
 }
 
 ensure_secret PUBLIC_API_KEY

@@ -1,3 +1,5 @@
+import subprocess
+
 import numpy as np
 
 from src.core.ai._falldata_aux import FallDataAuxConfig, FallDataAuxVerifier
@@ -63,6 +65,184 @@ def test_confirm_mode_drops_unconfirmed_fall(monkeypatch) -> None:
     )
 
     assert verifier.annotate_events([_fall_event()]) == []
+
+
+def test_confirm_mode_fail_opens_when_aux_is_unavailable(monkeypatch) -> None:
+    verifier = FallDataAuxVerifier(
+        FallDataAuxConfig(enabled=True, mode="confirm", cooldown_seconds=0)
+    )
+    monkeypatch.setattr(
+        verifier,
+        "verify",
+        lambda: {
+            "enabled": True,
+            "mode": "confirm",
+            "status": "missing_dependency",
+            "confirmed": False,
+            "missing": ".venv-falldata/bin/python",
+        },
+    )
+
+    [event] = verifier.annotate_events([_fall_event()])
+
+    assert event.metadata["falldata_aux"]["status"] == "missing_dependency"
+    assert event.metadata["falldata_aux_confirm_fallback"] == "missing_dependency"
+
+
+def test_confirm_mode_can_disable_fail_open(monkeypatch) -> None:
+    verifier = FallDataAuxVerifier(
+        FallDataAuxConfig(
+            enabled=True,
+            mode="confirm",
+            cooldown_seconds=0,
+            fail_open_on_unavailable=False,
+        )
+    )
+    monkeypatch.setattr(
+        verifier,
+        "verify",
+        lambda: {
+            "enabled": True,
+            "mode": "confirm",
+            "status": "error",
+            "confirmed": False,
+        },
+    )
+
+    assert verifier.annotate_events([_fall_event()]) == []
+
+
+def test_shadow_mode_keeps_event_but_error_is_not_confirmed(monkeypatch) -> None:
+    verifier = FallDataAuxVerifier(
+        FallDataAuxConfig(enabled=True, mode="shadow", cooldown_seconds=0)
+    )
+    monkeypatch.setattr(
+        verifier,
+        "_verify_once",
+        lambda: (_ for _ in ()).throw(RuntimeError("timeout")),
+    )
+
+    [event] = verifier.annotate_events([_fall_event()])
+
+    assert event.metadata["falldata_aux"]["status"] == "error"
+    assert event.metadata["falldata_aux"]["confirmed"] is False
+
+
+def test_verify_passes_max_extract_frames_to_mediapipe(monkeypatch, tmp_path) -> None:
+    verifier = FallDataAuxVerifier(
+        FallDataAuxConfig(
+            enabled=True,
+            max_extract_frames=42,
+            cooldown_seconds=0,
+            mediapipe_python=tmp_path / "mediapipe-python",
+            model_python=tmp_path / "model-python",
+            model_path=tmp_path / "model.pkl",
+        )
+    )
+    for path in (
+        verifier.config.mediapipe_python,
+        verifier.config.model_python,
+        verifier.config.model_path,
+    ):
+        path.write_text("", encoding="utf-8")
+    verifier.add_frame(np.zeros((4, 4, 3), dtype=np.uint8))
+    commands = []
+
+    def fake_run(command):
+        commands.append(command)
+        stdout = (
+            "nonzero_feature_frames: 42\n"
+            if "--output-dir" in command
+            else "prediction: [0]\npredict_proba: [[0.91, 0.09]]\n"
+        )
+        return subprocess.CompletedProcess(command, 0, stdout=stdout, stderr="")
+
+    monkeypatch.setattr(verifier, "_run", fake_run)
+
+    verifier.verify()
+
+    extract_command = commands[0]
+    max_frames_index = extract_command.index("--max-frames")
+    assert extract_command[max_frames_index + 1] == "42"
+
+
+def test_verify_records_compare_model_result(monkeypatch, tmp_path) -> None:
+    verifier = FallDataAuxVerifier(
+        FallDataAuxConfig(
+            enabled=True,
+            cooldown_seconds=0,
+            threshold=0.7,
+            mediapipe_python=tmp_path / "mediapipe-python",
+            model_python=tmp_path / "model-python",
+            model_path=tmp_path / "baseline.pkl",
+            compare_model_path=tmp_path / "candidate.pkl",
+        )
+    )
+    for path in (
+        verifier.config.mediapipe_python,
+        verifier.config.model_python,
+        verifier.config.model_path,
+        verifier.config.compare_model_path,
+    ):
+        path.write_text("", encoding="utf-8")
+    verifier.add_frame(np.zeros((4, 4, 3), dtype=np.uint8))
+
+    def fake_run(command):
+        if "--output-dir" in command:
+            stdout = "nonzero_feature_frames: 42\n"
+        elif str(verifier.config.compare_model_path) in command:
+            stdout = "prediction: [1]\npredict_proba: [[0.12, 0.88]]\n"
+        else:
+            stdout = "prediction: [0]\npredict_proba: [[0.91, 0.09]]\n"
+        return subprocess.CompletedProcess(command, 0, stdout=stdout, stderr="")
+
+    monkeypatch.setattr(verifier, "_run", fake_run)
+
+    result = verifier.verify()
+
+    assert result["status"] == "ok"
+    assert result["confirmed"] is True
+    assert result["compare_model"]["status"] == "ok"
+    assert result["compare_model"]["confirmed"] is False
+    assert result["compare_model"]["prediction"] == 1
+    assert result["compare_model"]["fall_probability"] == 0.12
+
+
+def test_missing_compare_model_does_not_block_primary_result(monkeypatch, tmp_path) -> None:
+    verifier = FallDataAuxVerifier(
+        FallDataAuxConfig(
+            enabled=True,
+            cooldown_seconds=0,
+            mediapipe_python=tmp_path / "mediapipe-python",
+            model_python=tmp_path / "model-python",
+            model_path=tmp_path / "baseline.pkl",
+            compare_model_path=tmp_path / "missing-candidate.pkl",
+        )
+    )
+    for path in (
+        verifier.config.mediapipe_python,
+        verifier.config.model_python,
+        verifier.config.model_path,
+    ):
+        path.write_text("", encoding="utf-8")
+    verifier.add_frame(np.zeros((4, 4, 3), dtype=np.uint8))
+
+    def fake_run(command):
+        stdout = (
+            "nonzero_feature_frames: 42\n"
+            if "--output-dir" in command
+            else "prediction: [0]\npredict_proba: [[0.91, 0.09]]\n"
+        )
+        return subprocess.CompletedProcess(command, 0, stdout=stdout, stderr="")
+
+    monkeypatch.setattr(verifier, "_run", fake_run)
+
+    result = verifier.verify()
+
+    assert result["status"] == "ok"
+    assert result["confirmed"] is True
+    assert result["compare_model"]["status"] == "missing_dependency"
+    assert result["compare_model"]["confirmed"] is False
 
 
 def test_cooldown_without_previous_result_is_not_confirmed(monkeypatch) -> None:

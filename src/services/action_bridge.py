@@ -23,12 +23,9 @@ REST 수신 서버는 protocols/rest.py 의 RestEventReceiver 를 사용한다.
 import json
 import logging
 import signal
-import socket
 import time
 import uuid
 from pathlib import Path
-from queue import Empty, Full, Queue
-from threading import Event, Thread
 from typing import Dict, List, Optional, Set, Tuple
 
 import paho.mqtt.client as mqtt
@@ -47,6 +44,9 @@ from ..protocols._mqtt_factory import create_mqtt_client
 from ..protocols.http import HttpEventForwarder, HttpEventTarget
 from ..protocols.rest import RestEventReceiver
 from ..time_utils import now_kst_iso
+from . import _action_bridge_rest_queue as _rest_queue
+from . import _device_reachability
+from ._action_bridge_payloads import normalize_sensor_payload
 from ._action_bridge_support import (
     AlarmDevice,
     ControlMode,
@@ -56,12 +56,18 @@ from ._action_bridge_support import (
     _EventRepo,
     _SiteRegistry,
 )
+from ._action_bridge_topics import (
+    CMD_TOPIC_APPROVE,
+    CMD_TOPIC_MODE,
+    CMD_TOPIC_REJECT,
+    STATUS_TOPIC_PREFIX,
+    default_alarm_topics,
+    default_subscribe_topics,
+)
 from .cctv_metrics import (
     action_bridge_up,
     events_handled,
     mqtt_events_received,
-    rest_action_queue_depth,
-    rest_events_dropped,
 )
 from .cctv_metrics import (
     pending_events as _metric_pending,
@@ -70,84 +76,12 @@ from .cctv_metrics import (
 logger = logging.getLogger(__name__)
 
 _ACTION_DEFAULTS = ActionBridgeConfig()
-_DEVICE_REACHABILITY_TIMEOUT_SECONDS = 1.5
-_DEVICE_REACHABILITY_CACHE_SECONDS = 30.0
+_DEVICE_REACHABILITY_CACHE_SECONDS = (
+    _device_reachability.DEVICE_REACHABILITY_CACHE_SECONDS
+)
+_check_tcp_reachable = _device_reachability.check_tcp_reachable
+_device_status = _device_reachability.device_status
 _REST_ACTION_QUEUE_MAX_SIZE = 1000
-
-
-def _check_tcp_reachable(host: str, port: int) -> bool:
-    """Return whether a configured output device accepts a short TCP connection."""
-    try:
-        with socket.create_connection(
-            (host, port), timeout=_DEVICE_REACHABILITY_TIMEOUT_SECONDS
-        ):
-            return True
-    except OSError:
-        return False
-
-
-def _device_status(configured: bool, reachable: Optional[bool]) -> str:
-    if not configured:
-        return "disabled"
-    return "online" if reachable else "unreachable"
-
-
-_CMD_TOPIC_MODE = "cctv/commands/mode"  # {"site_id"?, "mode": "auto|manual"}
-_CMD_TOPIC_APPROVE = "cctv/commands/approve"  # {"event_id": "..."}
-_CMD_TOPIC_REJECT = "cctv/commands/reject"  # {"event_id": "..."}
-_STATUS_TOPIC_PREFIX = "cctv/status/action"
-
-_ZONE_TOPICS = {
-    "cctv/ai/events/+/zone_entered",
-    "cctv/ai/events/+/zone_dwelling",
-    "cctv/ai/events/+/zone_object_detected",
-    "cctv/ai/events/+/crowd_warning",
-}
-_DETECTION_TOPICS = {
-    "cctv/ai/events/+/person",
-    "cctv/ai/events/+/fall_detected",
-    "cctv/ai/events/+/unsafe_behavior",
-    "cctv/ai/events/+/helmet",
-    "cctv/ai/events/+/head",
-    "cctv/ai/events/+/face_unknown",
-    "cctv/ai/events/+/face_recognized",
-}
-_INTRUSION_TOPICS = {
-    "cctv/rules/intrusion/filtered",
-    "cctv/rules/intrusion/persisted",
-    "cctv/rules/intrusion/critical",
-}
-_SENSOR_TOPICS = {
-    "aiot/rules/sensor/tilt",
-    "aiot/rules/sensor/temperature",
-    "aiot/rules/sensor/vibration",
-}
-
-_DEFAULT_SUBSCRIBE_TOPICS = (
-    _INTRUSION_TOPICS | _ZONE_TOPICS | _DETECTION_TOPICS | _SENSOR_TOPICS
-)
-
-_DEFAULT_ALARM_TOPICS = (
-    {"cctv/rules/intrusion/persisted", "cctv/rules/intrusion/critical"}
-    | _ZONE_TOPICS
-    | {
-        "cctv/ai/events/+/helmet",
-        "cctv/ai/events/+/head",
-        "cctv/ai/events/+/fall_detected",
-        "cctv/ai/events/+/unsafe_behavior",
-    }
-    | _SENSOR_TOPICS
-)
-
-
-def default_subscribe_topics() -> Set[str]:
-    """ActionBridge가 기본으로 저장 구독할 MQTT 토픽 목록을 반환한다."""
-    return set(_DEFAULT_SUBSCRIBE_TOPICS)
-
-
-def default_alarm_topics() -> Set[str]:
-    """ActionBridge가 기본으로 알람 처리할 MQTT 토픽 목록을 반환한다."""
-    return set(_DEFAULT_ALARM_TOPICS)
 
 
 class ActionBridge:
@@ -228,15 +162,11 @@ class ActionBridge:
 
         self._mqtt_client: Optional[mqtt.Client] = None
         self._running = False
-        self._rest_action_queue: Queue[Tuple[str, Dict]] = Queue(
-            maxsize=_REST_ACTION_QUEUE_MAX_SIZE
+        self._rest_action_queue = _rest_queue.new_rest_action_queue(
+            _REST_ACTION_QUEUE_MAX_SIZE
         )
-        self._rest_action_worker_stop = Event()
-        self._rest_action_worker: Optional[Thread] = None
-
-    # ------------------------------------------------------------------
-    # default_mode 하위 호환 프로퍼티
-    # ------------------------------------------------------------------
+        self._rest_action_worker_stop = _rest_queue.new_rest_action_worker_stop()
+        self._rest_action_worker: Optional[object] = None
 
     @property
     def default_mode(self) -> ControlMode:
@@ -245,10 +175,6 @@ class ActionBridge:
     @default_mode.setter
     def default_mode(self, value: ControlMode) -> None:
         self._sites.default_mode = value
-
-    # ------------------------------------------------------------------
-    # 사이트 관리 — _SiteRegistry 위임 (공개 API는 그대로 유지)
-    # ------------------------------------------------------------------
 
     def add_site(self, site: SiteConfig) -> None:
         self._sites.add(site)
@@ -331,10 +257,6 @@ class ActionBridge:
         """문자열 값으로 모드를 설정한다. 잘못된 값이면 ValueError를 전파한다."""
         self._sites.set_mode(ControlMode(mode_str), site_id=site_id)
 
-    # ------------------------------------------------------------------
-    # 수동 승인 큐 (공개 API)
-    # ------------------------------------------------------------------
-
     def get_pending_events(self) -> List[Dict]:
         return self._sites.list_pending()
 
@@ -343,7 +265,7 @@ class ActionBridge:
         if not self._mqtt_client:
             return
         try:
-            topic = f"{_STATUS_TOPIC_PREFIX}/{suffix.lstrip('/')}"
+            topic = f"{STATUS_TOPIC_PREFIX}/{suffix.lstrip('/')}"
             body = {
                 "timestamp": now_kst_iso(),
                 **payload,
@@ -391,10 +313,6 @@ class ActionBridge:
             },
         )
         return True, f"거부 완료: {event_id}"
-
-    # ------------------------------------------------------------------
-    # 이벤트 핸들러 (MQTT / REST 공통)
-    # ------------------------------------------------------------------
 
     def _resolve_devices(self, camera_id: str) -> List[AlarmDevice]:
         candidates = self._sites.resolve_alarm_devices(camera_id)
@@ -511,52 +429,19 @@ class ActionBridge:
         HTTP 요청 스레드가 실제 장비 제어 timeout에 묶이지 않도록 REST 경로만
         비동기로 분리한다. MQTT 경로는 기존 동기 동작을 유지한다.
         """
-        self._start_rest_action_worker()
-        try:
-            self._rest_action_queue.put_nowait((topic, dict(payload)))
-            rest_action_queue_depth.set(self._rest_action_queue.qsize())
-            return True
-        except Full:
-            logger.error("REST action queue 가득 참 - 이벤트 거부: topic=%s", topic)
-            rest_events_dropped.labels(reason="queue_full").inc()
-            rest_action_queue_depth.set(self._rest_action_queue.qsize())
-            return False
+        return _rest_queue.enqueue_rest_event(self, payload, topic=topic)
 
     def _start_rest_action_worker(self) -> None:
         """REST action worker를 필요할 때 시작한다."""
-        if self._rest_action_worker and self._rest_action_worker.is_alive():
-            return
-        self._rest_action_worker_stop.clear()
-        self._rest_action_worker = Thread(
-            target=self._rest_action_worker_loop,
-            daemon=True,
-            name="RestActionWorker",
-        )
-        self._rest_action_worker.start()
+        _rest_queue.start_rest_action_worker(self)
 
     def _rest_action_worker_loop(self) -> None:
         """REST 이벤트 큐를 소비해 실제 액션을 수행한다."""
-        while (
-            not self._rest_action_worker_stop.is_set()
-            or not self._rest_action_queue.empty()
-        ):
-            try:
-                topic, payload = self._rest_action_queue.get(timeout=0.2)
-            except Empty:
-                continue
-            try:
-                self._handle_event(payload, topic=topic)
-            except Exception as exc:
-                logger.error("REST action worker 처리 오류: %s", exc, exc_info=True)
-            finally:
-                self._rest_action_queue.task_done()
-                rest_action_queue_depth.set(self._rest_action_queue.qsize())
+        _rest_queue.rest_action_worker_loop(self)
 
     def _stop_rest_action_worker(self) -> None:
         """REST action worker를 종료한다."""
-        self._rest_action_worker_stop.set()
-        if self._rest_action_worker and self._rest_action_worker.is_alive():
-            self._rest_action_worker.join(timeout=5.0)
+        _rest_queue.stop_rest_action_worker(self)
 
     def _execute_action(self, topic: str, payload: Dict) -> None:
         """디바이스 조치 + HTTP 전송을 즉시 실행한다."""
@@ -583,7 +468,7 @@ class ActionBridge:
         )
         all_topics = [
             *((t, 0) for t in self.subscribe_topics),
-            *((t, 1) for t in (_CMD_TOPIC_MODE, _CMD_TOPIC_APPROVE, _CMD_TOPIC_REJECT)),
+            *((t, 1) for t in (CMD_TOPIC_MODE, CMD_TOPIC_APPROVE, CMD_TOPIC_REJECT)),
         ]
         for topic, qos in all_topics:
             client.subscribe(topic, qos=qos)
@@ -595,7 +480,7 @@ class ActionBridge:
         command_status = "ignored"
         message = ""
 
-        if topic == _CMD_TOPIC_MODE:
+        if topic == CMD_TOPIC_MODE:
             mode_val = payload.get("mode")
             if mode_val:
                 try:
@@ -607,7 +492,7 @@ class ActionBridge:
                     command_status = "error"
                     message = f"invalid mode: {mode_val!r}"
 
-        elif topic == _CMD_TOPIC_APPROVE:
+        elif topic == CMD_TOPIC_APPROVE:
             event_id = payload.get("event_id")
             if event_id:
                 ok, msg = self.approve_event(event_id)
@@ -615,7 +500,7 @@ class ActionBridge:
                 command_status = "success" if ok else "error"
                 message = msg
 
-        elif topic == _CMD_TOPIC_REJECT:
+        elif topic == CMD_TOPIC_REJECT:
             event_id = payload.get("event_id")
             if event_id:
                 ok, msg = self.reject_event(event_id)
@@ -644,18 +529,15 @@ class ActionBridge:
         try:
             topic = msg.topic
             payload = json.loads(msg.payload.decode("utf-8"))
-            if topic in (_CMD_TOPIC_MODE, _CMD_TOPIC_APPROVE, _CMD_TOPIC_REJECT):
+            if topic in (CMD_TOPIC_MODE, CMD_TOPIC_APPROVE, CMD_TOPIC_REJECT):
                 self._dispatch_command(topic, payload)
             else:
-                # Kuiper sink는 배열 형태로 결과를 발행할 수 있음 → 개별 처리
                 payloads = payload if isinstance(payload, list) else [payload]
-                # MQTT 수신 카운터: 토픽 앞 두 세그먼트만 label로 사용
                 topic_prefix = "/".join(topic.split("/")[:2])
                 mqtt_events_received.labels(topic_prefix=topic_prefix).inc()
                 for single in payloads:
                     if not isinstance(single, dict):
                         continue
-                    # 센서 경보 토픽: device_id → camera_id, type 필드 정규화
                     if topic.startswith("aiot/rules/sensor/"):
                         single = self._normalize_sensor_payload(topic, single)
                     self._handle_event(single, topic=topic)
@@ -666,31 +548,7 @@ class ActionBridge:
 
     @staticmethod
     def _normalize_sensor_payload(topic: str, payload: Dict) -> Dict:
-        """센서 경보 페이로드를 Action Bridge 공통 형식으로 변환합니다.
-
-        Kuiper 출력: {"dev_eui":..., "device_id":"factory-24", "type":"tilt_alert", ...}
-        공통 형식 : {"camera_id":"factory-24", "type":"tilt_alert", "source":"sensor", ...}
-        """
-        if not isinstance(payload, dict):
-            return {
-                "type": f"{topic.split('/')[-1]}_alert",
-                "source": "sensor",
-                "camera_id": "unknown",
-            }
-        normalized = dict(payload)
-        # device_id → camera_id 매핑
-        if "camera_id" not in normalized and "device_id" in normalized:
-            normalized["camera_id"] = normalized["device_id"]
-        # type이 없는 경우 토픽에서 추출 (aiot/rules/sensor/tilt → tilt_alert)
-        if "type" not in normalized:
-            sensor_kind = topic.split("/")[-1]
-            normalized["type"] = f"{sensor_kind}_alert"
-        normalized.setdefault("source", "sensor")
-        return normalized
-
-    # ------------------------------------------------------------------
-    # 라이프사이클
-    # ------------------------------------------------------------------
+        return normalize_sensor_payload(topic, payload)
 
     def start(self) -> None:
         """서비스를 시작한다."""

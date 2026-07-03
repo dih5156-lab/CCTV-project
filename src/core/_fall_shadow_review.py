@@ -49,29 +49,36 @@ class FallShadowReviewRecorder:
         queue: Queue,
         camera_name: str,
         filtered_events: Iterable[DetectionEvent],
-    ) -> None:
+    ) -> Optional[DetectionEvent]:
         """Submit the first fall event to the background falldata verifier."""
         if not self.falldata_aux or not self.falldata_aux.enabled:
-            return
+            return None
 
+        fall_events = [
+            event
+            for event in filtered_events
+            if event.event_type == EventType.FALL_DETECTED
+        ]
         fall_event = next(
             (
                 event
-                for event in filtered_events
-                if event.event_type == EventType.FALL_DETECTED
+                for event in fall_events
+                if (event.metadata or {}).get("falldata_aux_publish_pending")
             ),
-            None,
+            fall_events[0] if fall_events else None,
         )
         if fall_event is None:
-            return
+            return None
 
         try:
             queue.put_nowait((camera_name, fall_event.to_dict()))
+            return fall_event
         except Full:
-            logger.debug(
+            logger.warning(
                 "[%s] falldata shadow 워커 큐 가득 참 - 후보 검증 건너뜀",
                 camera_name,
             )
+            return None
 
     def write_near_miss_records(
         self,
@@ -158,6 +165,9 @@ class FallShadowReviewRecorder:
             "confidence": event_payload.get("confidence"),
             "fall_score": (event_payload.get("metadata") or {}).get("fall_score"),
             "fall_reasons": (event_payload.get("metadata") or {}).get("fall_reasons"),
+            "falldata_aux_publish_pending": bool(
+                (event_payload.get("metadata") or {}).get("falldata_aux_publish_pending")
+            ),
             "review_source": "fall_near_miss" if near_miss is not None else "falldata_aux",
             "falldata_aux": result,
             "clip_path": clip_path,

@@ -123,6 +123,30 @@ def test_ensure_public_api_key_generates_empty_values(tmp_path: Path) -> None:
     assert "INTERNAL_SERVICE_TOKEN generated" in result.stdout
 
 
+def test_ensure_public_api_key_rotates_existing_values(tmp_path: Path) -> None:
+    env_file = tmp_path / ".env"
+    env_file.write_text(
+        "PUBLIC_API_KEY=existing-public\nINTERNAL_SERVICE_TOKEN=existing-internal\n",
+        encoding="utf-8",
+    )
+
+    result = _run_script(
+        ["sh", "scripts/ops/ensure_public_api_key.sh", "--rotate", str(env_file)],
+    )
+
+    assert result.returncode == 0
+    env_values = _read_env_values(env_file)
+    assert env_values["PUBLIC_API_KEY"] != "existing-public"
+    assert env_values["INTERNAL_SERVICE_TOKEN"] != "existing-internal"
+    assert env_values["PUBLIC_API_KEY"] != env_values["INTERNAL_SERVICE_TOKEN"]
+    assert len(env_values["PUBLIC_API_KEY"]) == 43
+    assert len(env_values["INTERNAL_SERVICE_TOKEN"]) == 43
+    assert env_values["PUBLIC_API_KEY"] not in result.stdout
+    assert env_values["INTERNAL_SERVICE_TOKEN"] not in result.stdout
+    assert "PUBLIC_API_KEY rotated" in result.stdout
+    assert "INTERNAL_SERVICE_TOKEN rotated" in result.stdout
+
+
 def test_ensure_public_api_key_generates_placeholder_values(tmp_path: Path) -> None:
     env_file = tmp_path / ".env"
     env_file.write_text(

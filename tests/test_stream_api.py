@@ -401,6 +401,47 @@ class TestStreamApiFramePreparation:
         assert second == b"quality-80"
         assert cv2.imencode.call_count == 2
 
+    def test_encode_jpeg_for_stream_reencodes_when_same_buffer_changes(self) -> None:
+        np = pytest.importorskip("numpy")
+
+        class _Jpeg:
+            def __init__(self, value: bytes) -> None:
+                self._value = value
+
+            def tobytes(self) -> bytes:
+                return self._value
+
+        cv2 = MagicMock()
+        cv2.IMWRITE_JPEG_QUALITY = 1
+        cv2.imencode.side_effect = [
+            (True, _Jpeg(b"frame-1")),
+            (True, _Jpeg(b"frame-2")),
+        ]
+        _JPEG_CACHE.clear()
+        frame = np.zeros((16, 16, 3), dtype=np.uint8)
+
+        first = _encode_jpeg_for_stream(
+            cv2,
+            "cam-1",
+            frame,
+            width=0,
+            height=0,
+            jpeg_quality=70,
+        )
+        frame[8, 8, 0] = 255
+        second = _encode_jpeg_for_stream(
+            cv2,
+            "cam-1",
+            frame,
+            width=0,
+            height=0,
+            jpeg_quality=70,
+        )
+
+        assert first == b"frame-1"
+        assert second == b"frame-2"
+        assert cv2.imencode.call_count == 2
+
     def test_get_camera_frame_uses_no_copy_when_supported(self) -> None:
         proc = MagicMock()
         proc.get_camera_frame.return_value = "frame"

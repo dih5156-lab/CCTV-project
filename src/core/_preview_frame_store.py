@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import logging
 import time
 from threading import Lock
-from typing import Any, Optional
+from typing import Any, Mapping, Optional
+
+logger = logging.getLogger(__name__)
 
 
 class PreviewFrameStore:
@@ -54,3 +57,70 @@ class PreviewFrameStore:
         if frame is None:
             return None
         return frame.copy() if copy_frame else frame
+
+
+def process_preview_sample(
+    *,
+    sink: Any,
+    preview_store: PreviewFrameStore,
+    preview_camera_id: Optional[str],
+    cameras: Mapping[str, Any],
+    gst_module: Any,
+) -> Any:
+    """DeepStream appsink preview 샘플을 읽어 최신 프레임 저장소를 갱신한다."""
+    now_monotonic = time.monotonic()
+    sample = sink.emit("pull-sample")
+    if sample is None:
+        return gst_module.FlowReturn.OK
+
+    if not preview_store.should_accept_sample(now_monotonic):
+        return gst_module.FlowReturn.OK
+
+    buffer = sample.get_buffer()
+    caps = sample.get_caps()
+    if buffer is None or caps is None or caps.get_size() == 0:
+        return gst_module.FlowReturn.OK
+
+    structure = caps.get_structure(0)
+    width = int(structure.get_value("width") or 0)
+    height = int(structure.get_value("height") or 0)
+    pixel_format = str(structure.get_value("format") or "")
+    if width <= 0 or height <= 0:
+        return gst_module.FlowReturn.OK
+
+    success, map_info = buffer.map(gst_module.MapFlags.READ)
+    if not success:
+        return gst_module.FlowReturn.OK
+
+    try:
+        import numpy as np
+
+        data = np.frombuffer(map_info.data, dtype=np.uint8)
+        if pixel_format == "BGRx":
+            expected_size = width * height * 4
+            if data.size < expected_size:
+                return gst_module.FlowReturn.OK
+            frame = np.ascontiguousarray(
+                data[:expected_size].reshape((height, width, 4))[:, :, :3]
+            )
+        elif pixel_format == "BGR":
+            expected_size = width * height * 3
+            if data.size < expected_size:
+                return gst_module.FlowReturn.OK
+            frame = data[:expected_size].reshape((height, width, 3)).copy()
+        else:
+            logger.debug("지원하지 않는 DeepStream preview pixel format: %s", pixel_format)
+            return gst_module.FlowReturn.OK
+
+        camera_id = preview_camera_id or next(iter(cameras.keys()), "camera_1")
+        preview_store.put_frame(
+            camera_id,
+            frame,
+            now_monotonic=now_monotonic,
+        )
+    except Exception as exc:
+        logger.debug("DeepStream preview sample 처리 실패: %s", exc)
+    finally:
+        buffer.unmap(map_info)
+
+    return gst_module.FlowReturn.OK

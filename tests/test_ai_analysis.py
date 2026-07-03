@@ -570,6 +570,71 @@ class TestDetectFallFromKeypoints:
             is True
         )
 
+    def test_sitting_like_wide_pose_can_be_suppressed(self):
+        """침대/의자에 앉아 다리를 뻗은 넓은 bbox 자세는 선택적으로 감점한다."""
+        kpts = _make_kpts(
+            {
+                0: [100, 80, 0.9],
+                1: [95, 80, 0.05],
+                2: [105, 80, 0.05],
+                3: [90, 80, 0.05],
+                4: [110, 80, 0.05],
+                5: [40, 60, 0.9],
+                6: [60, 60, 0.9],
+                7: [85, 80, 0.05],
+                8: [115, 80, 0.05],
+                9: [80, 80, 0.05],
+                10: [120, 80, 0.05],
+                11: [120, 70, 0.9],
+                12: [140, 70, 0.9],
+                13: [130, 100, 0.9],
+                14: [150, 105, 0.9],
+                15: [145, 130, 0.9],
+                16: [165, 130, 0.9],
+            }
+        )
+
+        assert FallDetector(angle_horizontal=55, bbox_aspect_ratio=1.35)._check_fall(
+            kpts, bbox_w=160, bbox_h=100
+        ) is True
+        assert FallDetector(
+            angle_horizontal=55,
+            bbox_aspect_ratio=1.35,
+            suppress_sitting_like_pose=True,
+            sitting_like_aspect_ratio=1.45,
+        )._check_fall(kpts, bbox_w=160, bbox_h=100) is False
+
+    def test_sitting_like_suppression_keeps_low_vertical_span_fall(self):
+        """수직 분산이 낮은 강한 낙상 근거가 있으면 앉은 자세 감점을 적용하지 않는다."""
+        kpts = _make_kpts(
+            {
+                0: [100, 80, 0.9],
+                1: [95, 80, 0.05],
+                2: [105, 80, 0.05],
+                3: [90, 80, 0.05],
+                4: [110, 80, 0.05],
+                5: [40, 60, 0.9],
+                6: [60, 60, 0.9],
+                7: [85, 80, 0.05],
+                8: [115, 80, 0.05],
+                9: [80, 80, 0.05],
+                10: [120, 80, 0.05],
+                11: [120, 70, 0.9],
+                12: [140, 70, 0.9],
+                13: [130, 82, 0.9],
+                14: [150, 84, 0.9],
+                15: [145, 88, 0.9],
+                16: [165, 90, 0.9],
+            }
+        )
+
+        assert FallDetector(
+            angle_horizontal=55,
+            bbox_aspect_ratio=1.35,
+            suppress_sitting_like_pose=True,
+            sitting_like_aspect_ratio=1.45,
+        )._check_fall(kpts, bbox_w=160, bbox_h=100) is True
+
 
 # ===========================================================================
 # _validate_person_keypoints

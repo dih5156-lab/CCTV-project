@@ -6,6 +6,7 @@ import logging
 import os
 import time
 from collections import Counter, deque
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING, Deque, Dict, List, Optional, Tuple
 
@@ -19,6 +20,7 @@ if TYPE_CHECKING:
     from ...services.appearance_log import AppearanceLog
 
 logger = logging.getLogger(__name__)
+KST = timezone(timedelta(hours=9))
 
 
 class AppearancePipeline:
@@ -114,7 +116,12 @@ class AppearancePipeline:
             safe_camera_id = "".join(
                 ch if ch.isalnum() or ch in ("_", "-") else "_" for ch in str(camera_id)
             )
-            file_name = f"{safe_camera_id}_{track_id}_{int(ts * 1000)}.jpg"
+            kst_timestamp = datetime.fromtimestamp(ts, tz=KST)
+            timestamp_text = kst_timestamp.strftime("%Y%m%d_%H%M%S")
+            milliseconds = int(ts * 1000) % 1000
+            file_name = (
+                f"{safe_camera_id}_{track_id}_{timestamp_text}_{milliseconds:03d}.jpg"
+            )
             file_path = self._crop_dir / file_name
             self._crop_dir.mkdir(parents=True, exist_ok=True)
             if not cv2.imwrite(str(file_path), crop, [cv2.IMWRITE_JPEG_QUALITY, 80]):
@@ -315,12 +322,31 @@ class AppearancePipeline:
             return attrs
 
         merged = dict(attrs)
+        attribute_metadata = dict(merged.get("attribute_metadata") or {})
+        color_sources = dict(attribute_metadata.get("color_sources") or {})
+        color_candidates = dict(attribute_metadata.get("color_candidates") or {})
+        backend_name = str(metadata.get("appearance_backend") or "sgie")
         for key, value in sgie_attrs.items():
             if value in (None, "", "unknown"):
                 continue
             merged[key] = value
+            if key in ("upper_color", "lower_color", "helmet_color"):
+                color_sources[key] = backend_name
+                candidate = dict(color_candidates.get(key) or {})
+                candidate["selected"] = value
+                candidate["source"] = backend_name
+                scores = sgie_attrs.get("attribute_scores")
+                if isinstance(scores, dict) and scores.get(key) is not None:
+                    candidate["confidence"] = scores[key]
+                color_candidates[key] = candidate
         if metadata.get("appearance_backend"):
             merged["attribute_backend"] = metadata["appearance_backend"]
+        if color_sources:
+            attribute_metadata["color_sources"] = color_sources
+        if color_candidates:
+            attribute_metadata["color_candidates"] = color_candidates
+        if attribute_metadata:
+            merged["attribute_metadata"] = attribute_metadata
         return merged
 
     @staticmethod
@@ -464,6 +490,7 @@ class AppearancePipeline:
             "age_group": face_meta.get("age_group") or attrs.get("age_group"),
             "face_name": face_meta.get("face_name"),
             "attribute_backend": attrs.get("attribute_backend"),
+            "attribute_metadata": attrs.get("attribute_metadata"),
             "crop_path": crop_path,
             "bbox_x": person.x,
             "bbox_y": person.y,

@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
+import logging
+from queue import Empty
 from typing import Any, Callable, Dict, Optional, Tuple
 
 from ..canonical_event import canonicalize_event_payload
 from .events import DetectionEvent
+
+logger = logging.getLogger(__name__)
 
 
 def normalize_event_queue_item(
@@ -52,3 +56,36 @@ def publish_queue_item(
         mqtt_publish(topic, event_data)
         return True
     return bool(event_publisher.publish_event(event_data))
+
+
+def run_publish_loop(
+    *,
+    is_running: Callable[[], bool],
+    stop_event: Any,
+    event_queue: Any,
+    topic_prefix: str,
+    mqtt_publish: Optional[Callable[[str, dict], None]],
+    event_publisher: Any,
+    increment_stat: Callable[[str], int],
+    queue_timeout_sec: float = 1.0,
+) -> None:
+    """이벤트 큐를 소비하며 publish 통계를 누적한다."""
+    while is_running() and not stop_event.is_set():
+        try:
+            queue_item = event_queue.get(timeout=queue_timeout_sec)
+        except Empty:
+            continue
+
+        try:
+            if publish_queue_item(
+                queue_item,
+                topic_prefix=topic_prefix,
+                mqtt_publish=mqtt_publish,
+                event_publisher=event_publisher,
+            ):
+                increment_stat("events_sent")
+                continue
+            increment_stat("events_failed")
+        except Exception as exc:
+            logger.error("MQTT 발행 오류: %s", exc)
+            increment_stat("events_failed")

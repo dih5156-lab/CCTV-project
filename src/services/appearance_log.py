@@ -12,6 +12,7 @@ SQLite에 기록하고, 조건부 검색을 지원한다.
 
 from __future__ import annotations
 
+import json
 import logging
 import os
 import sqlite3
@@ -42,6 +43,7 @@ CREATE TABLE IF NOT EXISTS appearance_log (
     age_group   TEXT,
     face_name   TEXT,
     attribute_backend TEXT,
+    attribute_metadata TEXT,
     crop_path   TEXT,
     bbox_x      INTEGER,
     bbox_y      INTEGER,
@@ -100,6 +102,10 @@ class AppearanceLog:
             self._conn.execute(
                 "ALTER TABLE appearance_log ADD COLUMN attribute_backend TEXT"
             )
+        if "attribute_metadata" not in existing:
+            self._conn.execute(
+                "ALTER TABLE appearance_log ADD COLUMN attribute_metadata TEXT"
+            )
         self._conn.execute(
             "CREATE UNIQUE INDEX IF NOT EXISTS idx_appearance_event_id ON appearance_log(event_id)"
         )
@@ -122,6 +128,7 @@ class AppearanceLog:
         age_group: Optional[str] = None,
         face_name: Optional[str] = None,
         attribute_backend: Optional[str] = None,
+        attribute_metadata: Optional[Dict] = None,
         crop_path: Optional[str] = None,
         bbox_x: int = 0,
         bbox_y: int = 0,
@@ -152,19 +159,26 @@ class AppearanceLog:
             self._last_insert[cooldown_key] = now
 
             try:
+                metadata_json = (
+                    json.dumps(attribute_metadata, ensure_ascii=False, sort_keys=True)
+                    if attribute_metadata
+                    else None
+                )
                 self._conn.execute(
                     """INSERT OR IGNORE INTO appearance_log
                        (event_id, timestamp, camera_id, track_id,
                        upper_color, lower_color, has_helmet, helmet_color,
                        has_backpack, has_handbag, has_suitcase,
-                       gender, age_group, face_name, attribute_backend, crop_path,
+                       gender, age_group, face_name, attribute_backend,
+                       attribute_metadata, crop_path,
                        bbox_x, bbox_y, bbox_w, bbox_h)
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                     (
                         resolved_event_id, now, camera_id, track_id,
                         upper_color, lower_color, int(has_helmet), helmet_color,
                         int(has_backpack), int(has_handbag), int(has_suitcase),
-                        gender, age_group, face_name, attribute_backend, crop_path,
+                        gender, age_group, face_name, attribute_backend,
+                        metadata_json, crop_path,
                         bbox_x, bbox_y, bbox_w, bbox_h,
                     ),
                 )
@@ -266,6 +280,11 @@ class AppearanceLog:
 
     @staticmethod
     def _row_to_dict(row: sqlite3.Row) -> Dict:
+        raw_metadata = row["attribute_metadata"] if "attribute_metadata" in row.keys() else None
+        try:
+            attribute_metadata = json.loads(raw_metadata) if raw_metadata else None
+        except (TypeError, ValueError, json.JSONDecodeError):
+            attribute_metadata = None
         return {
             "id": row["id"],
             "event_id": row["event_id"],
@@ -283,6 +302,7 @@ class AppearanceLog:
             "age_group": row["age_group"],
             "face_name": row["face_name"],
             "attribute_backend": row["attribute_backend"],
+            "attribute_metadata": attribute_metadata,
             "crop_path": row["crop_path"],
             "bbox_x": row["bbox_x"],
             "bbox_y": row["bbox_y"],

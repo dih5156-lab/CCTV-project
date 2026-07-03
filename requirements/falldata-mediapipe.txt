@@ -1,0 +1,9 @@
+# Public falldata video feature extraction runtime.
+#
+# MediaPipe currently pulls a NumPy 2.x-compatible stack, while the public
+# RandomForest models need the legacy sklearn stack in falldata-model.txt.
+# Install this file into .venv-mediapipe, not into .venv-falldata.
+
+mediapipe>=0.10.14,<0.11.0
+opencv-python-headless>=4.8.0,<5.0.0
+numpy>=2.0.0,<3.0.0

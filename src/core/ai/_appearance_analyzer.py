@@ -31,10 +31,6 @@ from ._attribute_backends import build_attribute_backend
 
 logger = logging.getLogger(__name__)
 
-# ── HSV 색상 범위 매핑 ────────────────────────────────────────────────
-# 각 색상에 대한 (lower, upper) HSV 범위 리스트
-# red는 HSV hue가 0 근처에서 wrap-around 하므로 두 범위 사용
-
 _COLOR_RANGES: Dict[str, List[Tuple[Tuple[int, int, int], Tuple[int, int, int]]]] = {
     "red":    [((0, 70, 50), (10, 255, 255)), ((170, 70, 50), (180, 255, 255))],
     "orange": [((11, 70, 50), (25, 255, 255))],
@@ -60,18 +56,12 @@ _LAB_PROTOTYPE_BGR: Dict[str, Tuple[int, int, int]] = {
     "purple": (160, 0, 160),
 }
 
-# 외형 조건 매칭 기본 임계값
 DEFAULT_MATCH_THRESHOLD = 0.8
 
-# 머리 영역 비율 (person bbox 상단 15%)
 _HEAD_REGION_RATIO = 0.15
 
-# 좌우 배경 제거를 위한 수평 마진 비율 (양쪽 각 30% 제거 → 중앙 40% 사용)
 _HORIZONTAL_MARGIN = 0.30
 
-# 상의/하의 색상 샘플링 밴드.
-# 단순 45/55 분할 대신 중심 구간만 사용해 팔, 가방, 긴 외투, 발쪽 배경이
-# 색상 판별에 섞이는 문제를 줄인다.
 _UPPER_SAMPLE_START_RATIO = 0.18
 _UPPER_SAMPLE_END_RATIO = 0.42
 _LOWER_SAMPLE_START_RATIO = 0.58
@@ -86,7 +76,6 @@ _HELMET_HEAD_RATIO = 0.22
 _HELMET_IOU_THRESHOLD = 0.02
 _HELMET_OVERLAP_THRESHOLD = 0.10
 
-# YOLO COCO 클래스 매핑 — 가방/소지품
 BAG_CLASSES: Dict[str, str] = {
     "backpack": "has_backpack",
     "back_pack": "has_backpack",
@@ -100,11 +89,10 @@ BAG_CLASSES: Dict[str, str] = {
     "carry_on": "has_suitcase",
 }
 HELMET_CLASSES = {"helmet", "helmet_wearing", "hardhat"}
+COLOR_FIELDS = ("upper_color", "lower_color", "helmet_color")
 
-# 가방 bbox 중심이 사람 bbox 주변 이 비율 이내일 때 소유로 판정
 _BAG_PROXIMITY_RATIO = 0.5
 
-# 최소 crop 크기 (px) — 너무 작으면 색상 분석 신뢰도 저하
 _MIN_CROP_SIZE = 20
 
 
@@ -141,8 +129,6 @@ class AppearanceAnalyzer:
             score_threshold=backend_score_threshold,
         )
         self._bbox_expand_ratio = max(0.0, float(bbox_expand_ratio))
-
-    # ── 조건 관리 ─────────────────────────────────────────────────────
 
     @property
     def conditions(self) -> List[Dict]:
@@ -219,8 +205,6 @@ class AppearanceAnalyzer:
             result.append(cond)
         return result
 
-    # ── 속성 추출 ─────────────────────────────────────────────────────
-
     def extract_attributes(
         self,
         frame: np.ndarray,
@@ -234,7 +218,6 @@ class AppearanceAnalyzer:
         """person bbox에서 색상 속성을 추출하고, 주변 객체로 소지품을 판별한다."""
         frame_h, frame_w = frame.shape[:2]
 
-        # bbox 클리핑
         x1 = max(x, 0)
         y1 = max(y, 0)
         x2 = min(x + width, frame_w)
@@ -254,12 +237,10 @@ class AppearanceAnalyzer:
 
         crop = frame[y1:y2, x1:x2]
 
-        # 좌우 배경 제거 — 중앙 영역만 사용
         margin_px = int(crop_w * _HORIZONTAL_MARGIN)
         if crop_w - 2 * margin_px >= _MIN_CROP_SIZE:
             crop = crop[:, margin_px:crop_w - margin_px]
 
-        # 머리 영역 (상단 15%)
         head_h = max(int(crop_h * _HEAD_REGION_RATIO), 5)
         head_region = crop[:head_h, :]
 
@@ -286,19 +267,48 @@ class AppearanceAnalyzer:
             keypoints=keypoints,
         )
 
-        # 소지품 판별
         bag_attrs = self._detect_bags(x, y, width, height, nearby_objects)
         has_helmet = self._has_helmet_evidence(x, y, width, height, nearby_objects)
 
-        attrs = {
-            "upper_color": self._dominant_color(upper) if visibility["upper_visible"] else "unknown",
-            "lower_color": self._dominant_color(lower) if visibility["lower_visible"] else "unknown",
-            "has_helmet": has_helmet,
-            "helmet_color": self._dominant_color(
+        upper_evidence = (
+            self._dominant_color_evidence(upper)
+            if visibility["upper_visible"]
+            else self._unknown_color_evidence("not_visible")
+        )
+        lower_evidence = (
+            self._dominant_color_evidence(lower)
+            if visibility["lower_visible"]
+            else self._unknown_color_evidence("not_visible")
+        )
+        helmet_evidence = (
+            self._dominant_color_evidence(
                 head_region,
                 min_ratio=_MIN_HELMET_COLOR_DOMINANCE_RATIO,
                 allow_low_signal_fallback=False,
-            ) if visibility["hat_visible"] and has_helmet else "unknown",
+            )
+            if visibility["hat_visible"] and has_helmet
+            else self._unknown_color_evidence(
+                "not_visible" if not visibility["hat_visible"] else "no_helmet"
+            )
+        )
+
+        attrs = {
+            "upper_color": upper_evidence["selected"],
+            "lower_color": lower_evidence["selected"],
+            "has_helmet": has_helmet,
+            "helmet_color": helmet_evidence["selected"],
+            "attribute_metadata": {
+                "color_candidates": {
+                    "upper_color": upper_evidence,
+                    "lower_color": lower_evidence,
+                    "helmet_color": helmet_evidence,
+                },
+                "color_sources": {
+                    "upper_color": upper_evidence["source"],
+                    "lower_color": lower_evidence["source"],
+                    "helmet_color": helmet_evidence["source"],
+                },
+            },
             **bag_attrs,
         }
         return self._merge_backend_attributes(
@@ -336,15 +346,34 @@ class AppearanceAnalyzer:
         """추가 속성 모델 결과를 현재 속성과 병합한다."""
         merged = dict(attrs)
         merged["attribute_backend"] = self.backend_name
+        metadata = dict(merged.get("attribute_metadata") or {})
+        color_sources = dict(metadata.get("color_sources") or {})
+        color_candidates = dict(metadata.get("color_candidates") or {})
         backend_attrs = self._backend.predict(
             AttributeCrop(frame=frame, **self._expand_bbox(x, y, width, height))
         )
         if not backend_attrs:
+            merged["attribute_metadata"] = metadata
             return merged
         for key, value in backend_attrs.items():
             if value in (None, "", "unknown"):
                 continue
             merged[key] = value
+            if key in COLOR_FIELDS:
+                color_sources[key] = self.backend_name
+                candidate = dict(color_candidates.get(key) or {})
+                candidate["selected"] = value
+                candidate["source"] = self.backend_name
+                if isinstance(backend_attrs.get("attribute_scores"), dict):
+                    score = backend_attrs["attribute_scores"].get(key)
+                    if score is not None:
+                        candidate["confidence"] = score
+                color_candidates[key] = candidate
+        if color_sources:
+            metadata["color_sources"] = color_sources
+        if color_candidates:
+            metadata["color_candidates"] = color_candidates
+        merged["attribute_metadata"] = metadata
         return merged
 
     def _estimate_region_visibility(
@@ -400,14 +429,15 @@ class AppearanceAnalyzer:
         has_lower_joints = has_visible([13, 14, 15, 16])
 
         # DeepStream pose can provide partial keypoints. Missing shoulders should
-        # not block upper-color HSV fallback, but visible upper-body evidence
-        # without lower-body joints means lower clothing is not reliable.
+        # not block upper-color HSV fallback. If hips are visible, keep the
+        # lower-color fallback because knees/ankles are often missed even when
+        # the person bbox covers the full body.
         has_pose_evidence = has_face or has_shoulders or has_hips or has_lower_joints
         if has_face:
             result["hat_visible"] = True
         if has_shoulders:
             result["upper_visible"] = True
-        if has_hips and has_lower_joints:
+        if has_hips or has_lower_joints:
             result["lower_visible"] = True
         elif has_pose_evidence:
             result["lower_visible"] = False
@@ -597,13 +627,11 @@ class AppearanceAnalyzer:
     @staticmethod
     def _build_skin_mask(hsv: np.ndarray) -> np.ndarray:
         """피부색 영역 마스크를 생성한다 (제외 용도)."""
-        # 일반적인 피부색 HSV 범위
         mask = cv2.inRange(
             hsv,
             np.array((0, 30, 80), dtype=np.uint8),
             np.array((25, 170, 255), dtype=np.uint8),
         )
-        # 약간 더 붉은 피부톤
         mask |= cv2.inRange(
             hsv,
             np.array((165, 30, 80), dtype=np.uint8),
@@ -636,6 +664,18 @@ class AppearanceAnalyzer:
         return best_color, best_ratio
 
     @staticmethod
+    def _unknown_color_evidence(reason: str = "unknown") -> Dict[str, object]:
+        """색상 분석 실패/스킵 사유를 metadata에 남기기 위한 기본값."""
+        return {
+            "selected": "unknown",
+            "source": reason,
+            "confidence": 0.0,
+            "hsv_color": "unknown",
+            "hsv_ratio": 0.0,
+            "lab_color": "unknown",
+        }
+
+    @staticmethod
     def _lab_color_name(lab: np.ndarray, clothing_mask: np.ndarray) -> str:
         """LAB 중앙값 기준으로 조명 변화에 덜 민감한 색상명을 계산한다."""
         pixels = lab[clothing_mask > 0]
@@ -658,7 +698,6 @@ class AppearanceAnalyzer:
             prototype = np.zeros((1, 1, 3), dtype=np.uint8)
             prototype[0, 0] = bgr
             lab_value = cv2.cvtColor(prototype, cv2.COLOR_BGR2LAB)[0, 0].astype(np.float32)
-            # 색상 축(a/b)을 더 중요하게 보고, 밝기(L)는 보조로만 본다.
             diff = sample - lab_value
             distance = float((diff[0] * 0.35) ** 2 + diff[1] ** 2 + diff[2] ** 2)
             if distance < best_distance:
@@ -677,10 +716,23 @@ class AppearanceAnalyzer:
 
         피부색 픽셀은 제외하여 옷 색상만 분석한다.
         """
-        if region.size == 0 or region.shape[0] < 5 or region.shape[1] < 5:
-            return "unknown"
+        return str(self._dominant_color_evidence(
+            region,
+            min_ratio=min_ratio,
+            allow_low_signal_fallback=allow_low_signal_fallback,
+        )["selected"])
 
-        # 조명 보정: L 채널에 CLAHE 적용
+    def _dominant_color_evidence(
+        self,
+        region: np.ndarray,
+        *,
+        min_ratio: float = _MIN_COLOR_DOMINANCE_RATIO,
+        allow_low_signal_fallback: bool = True,
+    ) -> Dict[str, object]:
+        """색상명과 HSV/LAB 근거를 함께 반환한다."""
+        if region.size == 0 or region.shape[0] < 5 or region.shape[1] < 5:
+            return self._unknown_color_evidence("too_small")
+
         lab = cv2.cvtColor(region, cv2.COLOR_BGR2LAB)
         l_ch, a_ch, b_ch = cv2.split(lab)
         l_ch = self._clahe.apply(l_ch)
@@ -690,41 +742,62 @@ class AppearanceAnalyzer:
 
         hsv = cv2.cvtColor(corrected_bgr, cv2.COLOR_BGR2HSV)
 
-        # 피부색 마스크 생성 — 피부 영역을 분석에서 제외
         skin_mask = self._build_skin_mask(hsv)
         clothing_mask = cv2.bitwise_not(skin_mask)
         total = float(cv2.countNonZero(clothing_mask))
         if total < 50:
             if not allow_low_signal_fallback:
-                return "unknown"
-            # 피부 제외 후 남은 픽셀이 너무 적으면 전체 사용
+                return self._unknown_color_evidence("low_signal")
             clothing_mask = np.ones(hsv.shape[:2], dtype=np.uint8) * 255
             total = float(hsv.shape[0] * hsv.shape[1])
         if total == 0:
-            return "unknown"
+            return self._unknown_color_evidence("empty_mask")
 
         best_color, best_ratio = self._hsv_color_ratio(hsv, clothing_mask)
         lab_color = self._lab_color_name(corrected_lab, clothing_mask)
 
+        selected = best_color
+        source = "hsv"
+        confidence = best_ratio
         if best_color in {"white", "gray", "black"} or best_ratio < max(min_ratio, 0.35):
-            best_color = lab_color
+            selected = lab_color
+            source = "lab"
+            confidence = max(best_ratio, 0.35 if lab_color != "unknown" else 0.0)
 
         if best_ratio < min_ratio:
             if lab_color != "unknown" and allow_low_signal_fallback:
                 logger.debug(
                     "색상 분석 LAB fallback: %s (HSV=%s 비율=%.2f)",
                     lab_color,
-                    best_color,
+                    selected,
                     best_ratio,
                 )
-                return lab_color
-            logger.debug("색상 분석 근거 부족: %s (비율=%.2f < %.2f)", best_color, best_ratio, min_ratio)
-            return "unknown"
+                return {
+                    "selected": lab_color,
+                    "source": "lab_fallback",
+                    "confidence": confidence,
+                    "hsv_color": best_color,
+                    "hsv_ratio": round(best_ratio, 4),
+                    "lab_color": lab_color,
+                }
+            logger.debug("색상 분석 근거 부족: %s (비율=%.2f < %.2f)", selected, best_ratio, min_ratio)
+            evidence = self._unknown_color_evidence("low_ratio")
+            evidence.update({
+                "hsv_color": best_color,
+                "hsv_ratio": round(best_ratio, 4),
+                "lab_color": lab_color,
+            })
+            return evidence
 
-        logger.debug("색상 분석 결과: %s (HSV비율=%.2f LAB=%s)", best_color, best_ratio, lab_color)
-        return best_color
-
-    # ── 소지품(가방) 판별 ──────────────────────────────────────────
+        logger.debug("색상 분석 결과: %s (HSV비율=%.2f LAB=%s)", selected, best_ratio, lab_color)
+        return {
+            "selected": selected,
+            "source": source,
+            "confidence": round(confidence, 4),
+            "hsv_color": best_color,
+            "hsv_ratio": round(best_ratio, 4),
+            "lab_color": lab_color,
+        }
 
     @staticmethod
     def _detect_bags(
@@ -759,7 +832,6 @@ class AppearanceAnalyzer:
             obj_cx = ox + ow / 2
             obj_cy = oy + oh / 2
 
-            # 사람 bbox 대각선 길이 기준 근접도 판별
             diag = max((pw ** 2 + ph ** 2) ** 0.5, 1)
             dist = ((person_cx - obj_cx) ** 2 + (person_cy - obj_cy) ** 2) ** 0.5
 
@@ -773,8 +845,6 @@ class AppearanceAnalyzer:
 
         return result
 
-    # ── 조건 매칭 ─────────────────────────────────────────────────────
-
     def match_conditions(
         self,
         attributes: Dict[str, object],
@@ -784,14 +854,12 @@ class AppearanceAnalyzer:
         checks = 0
         matches = 0
 
-        # 색상 조건
         for color_key in ("upper_color", "lower_color", "helmet_color"):
             if condition.get(color_key):
                 checks += 1
                 if attributes.get(color_key) == condition[color_key]:
                     matches += 1
 
-        # bool 조건
         for bool_key in ("has_helmet", "has_backpack", "has_handbag", "has_suitcase"):
             if condition.get(bool_key) is not None:
                 checks += 1

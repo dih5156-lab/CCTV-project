@@ -46,6 +46,32 @@ class TestAppearanceLog:
         assert rows[0]["helmet_color"] == "yellow"
         assert rows[0]["gender"] == "male"
 
+    def test_insert_and_search_attribute_metadata(self):
+        metadata = {
+            "color_sources": {"upper_color": "pa100k_sgie"},
+            "color_candidates": {
+                "upper_color": {
+                    "selected": "blue",
+                    "hsv_color": "black",
+                    "hsv_ratio": 0.18,
+                    "lab_color": "blue",
+                },
+            },
+        }
+
+        ok = self.log.insert(
+            camera_id="cam01",
+            track_id=1,
+            upper_color="blue",
+            attribute_backend="pa100k_sgie",
+            attribute_metadata=metadata,
+            timestamp=1000.0,
+        )
+
+        assert ok is True
+        rows = self.log.search(upper_color="blue")
+        assert rows[0]["attribute_metadata"] == metadata
+
     def test_insert_cooldown(self):
         """같은 track_id로 3초 이내 재삽입하면 무시."""
         now = time.time()
