@@ -26,6 +26,7 @@ import re
 import secrets
 import threading
 import time
+import zlib
 from typing import TYPE_CHECKING, Any
 from urllib.parse import parse_qs, urlsplit
 
@@ -102,10 +103,34 @@ def _stream_frame_cache_key(frame, width: int, height: int, jpeg_quality: int) -
     return (
         id(frame),
         tuple(getattr(frame, "shape", ()) or ()),
+        _frame_content_token(frame),
         width,
         height,
         jpeg_quality,
     )
+
+
+def _frame_content_token(frame) -> int | None:
+    """같은 ndarray 버퍼가 새 프레임으로 갱신된 경우를 구분하는 가벼운 샘플 CRC."""
+    try:
+        view = memoryview(frame).cast("B")
+    except (TypeError, ValueError):
+        return None
+
+    size = len(view)
+    if size <= 0:
+        return 0
+
+    chunk_size = min(64, size)
+    if size <= chunk_size * 8:
+        return zlib.crc32(view.tobytes())
+
+    crc = 0
+    # 전체 프레임 해싱은 JPEG 인코딩보다도 부담이 될 수 있어 8개 지점만 샘플링한다.
+    for index in range(8):
+        start = ((size - chunk_size) * index) // 7
+        crc = zlib.crc32(view[start : start + chunk_size], crc)
+    return crc
 
 
 def _encode_jpeg_for_stream(

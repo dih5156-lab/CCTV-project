@@ -1,0 +1,10 @@
+# Public falldata RandomForest model runtime.
+#
+# Keep this separate from the main runtime. The public .pkl files were saved
+# around the scikit-learn 1.3 generation and are not safe to load with the
+# project's newer AI stack.
+
+numpy==1.26.1
+scipy==1.11.3
+scikit-learn==1.3.2
+joblib==1.3.2

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import Any, Callable, Dict, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 from ._deepstream_source_state import (
     clear_source_state,
@@ -124,3 +124,33 @@ def attach_camera_source_to_pipeline(
     pad_to_camera[pad_id] = camera_id
     logger.info("[%s] DeepStream source attach 완료: pad_id=%s uri=%s", camera_id, pad_id, source_uri)
     return True
+
+
+def attach_camera_sources_batch(
+    *,
+    source_entries: List[Tuple[int, str, Dict[str, Any], str]],
+    pad_to_camera: Dict[int, str],
+    gst_module: Any,
+    pipeline: Any,
+    streammux: Any,
+    make_element: Callable[[str, str], Any],
+    normalize_uri: Callable[[Union[str, int]], str],
+    on_source_pad_added: Callable[[Any, Any, Any], None],
+) -> None:
+    """source entry 목록을 순회하며 카메라 source를 파이프라인에 연결한다."""
+    for pad_id, camera_id, info, _source_uri in source_entries:
+        attached = attach_camera_source_to_pipeline(
+            camera_id=camera_id,
+            info=info,
+            pad_to_camera=pad_to_camera,
+            gst_module=gst_module,
+            pipeline=pipeline,
+            streammux=streammux,
+            pad_id=pad_id,
+            make_element=make_element,
+            normalize_uri=normalize_uri,
+            on_source_pad_added=on_source_pad_added,
+            next_pad_id=lambda: pad_id,
+        )
+        if not attached:
+            raise RuntimeError(f"DeepStream source attach 실패: {camera_id}")

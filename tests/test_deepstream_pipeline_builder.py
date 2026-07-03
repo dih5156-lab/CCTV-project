@@ -16,6 +16,12 @@ class _Element:
     def get_name(self) -> str:
         return self.name
 
+    def get_static_pad(self, name):
+        return self
+
+    def add_probe(self, *args):
+        self.probe_args = args
+
 
 def _link_or_raise(first, second, message=None) -> None:
     assert first.link(second)
@@ -39,9 +45,9 @@ def test_pipeline_elements_keep_gstreamer_add_order() -> None:
     assert [element.get_name() for element in elements.all_elements()] == [
         "streammux",
         "primary",
-        "tracker",
         "pphuman",
         "helmet",
+        "tracker",
         "converter",
         "osd",
         "tee",
@@ -66,22 +72,24 @@ def test_link_pipeline_path_returns_last_inference_probe_element() -> None:
         preview_elements=[],
         output_elements=[_Element("sink")],
     )
-    primary_probe_calls = []
-    pphuman_linked = []
+    gst_module = type("Gst", (), {"PadProbeType": type("PadProbeType", (), {"BUFFER": "buffer"})})
+    def primary_probe_callback(*args):
+        return None
 
     probe_element = link_deepstream_pipeline_path(
         elements,
         link_or_raise=_link_or_raise,
-        add_primary_probe=primary_probe_calls.append,
+        gst_module=gst_module,
+        primary_probe_callback=primary_probe_callback,
         link_preview_branch=lambda **kwargs: kwargs["output_queue"],
-        on_pphuman_linked=lambda: pphuman_linked.append(True),
+        pphuman_gie_id=3,
+        pphuman_infer_config="pphuman.txt",
     )
 
     assert probe_element.get_name() == "helmet"
-    assert primary_probe_calls == [elements.nvinfer]
-    assert pphuman_linked == [True]
+    assert elements.nvinfer.probe_args == ("buffer", primary_probe_callback, None)
     assert [element.get_name() for element in elements.streammux.linked_to] == ["primary"]
-    assert [element.get_name() for element in elements.nvinfer.linked_to] == ["tracker"]
-    assert [element.get_name() for element in elements.tracker.linked_to] == ["pphuman"]
+    assert [element.get_name() for element in elements.nvinfer.linked_to] == ["pphuman"]
     assert [element.get_name() for element in elements.pphuman_infer.linked_to] == ["helmet"]
-    assert [element.get_name() for element in elements.helmet_infer.linked_to] == ["converter"]
+    assert [element.get_name() for element in elements.helmet_infer.linked_to] == ["tracker"]
+    assert [element.get_name() for element in elements.tracker.linked_to] == ["converter"]

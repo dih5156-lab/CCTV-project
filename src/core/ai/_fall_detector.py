@@ -55,6 +55,8 @@ class FallDetector:
         span_ratio: float = FALL_KEYPOINT_SPAN_RATIO,
         score_threshold: float = 3.0,
         enable_folded_pose: bool = False,
+        suppress_sitting_like_pose: bool = False,
+        sitting_like_aspect_ratio: float = 1.45,
         min_keypoint_confidence: float = MIN_KEYPOINT_CONFIDENCE,
         min_hip_confidence: float = MIN_HIP_CONFIDENCE,
         min_leg_confidence: float = MIN_LEG_CONFIDENCE,
@@ -67,6 +69,8 @@ class FallDetector:
         self.span_ratio = span_ratio
         self.score_threshold = score_threshold
         self.enable_folded_pose = enable_folded_pose
+        self.suppress_sitting_like_pose = suppress_sitting_like_pose
+        self.sitting_like_aspect_ratio = sitting_like_aspect_ratio
         self.min_keypoint_confidence = min_keypoint_confidence
         self.min_hip_confidence = min_hip_confidence
         self.min_leg_confidence = min_leg_confidence
@@ -234,6 +238,18 @@ class FallDetector:
                 if span_ratio < self.span_ratio:
                     score += 1.5
                     reasons.append(f"low_vertical_span:{span_ratio:.2f}")
+
+        if (
+            self.suppress_sitting_like_pose
+            and aspect_ratio >= self.sitting_like_aspect_ratio
+            and any(reason == "torso_flattened" for reason in reasons)
+            and any(reason.startswith("wide_bbox_low_head:") for reason in reasons)
+            and not any(reason == "leg_above_head" for reason in reasons)
+            and not any(reason.startswith("low_vertical_span:") for reason in reasons)
+            and not any(reason.startswith("folded_floor_pose:") for reason in reasons)
+        ):
+            score = max(0.0, score - 2.0)
+            reasons.append(f"sitting_like_wide_pose:-2.0:{aspect_ratio:.2f}")
 
         return FallScore(score, tuple(reasons))
 

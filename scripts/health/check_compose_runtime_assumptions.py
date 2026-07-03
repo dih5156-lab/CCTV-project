@@ -261,6 +261,180 @@ def check_runtime_path_convergence(
         "detail": "runtime artifacts use /app/data/runtime and logs use /app/data/logs",
     }
 
+
+def check_appearance_model_wiring(
+    *,
+    compose_text: str | None = None,
+    jetson_compose_text: str | None = None,
+) -> dict[str, Any]:
+    """Ensure appearance model config includes the decoder metadata it needs."""
+    compose = compose_text if compose_text is not None else _read_text(PROJECT_ROOT / "docker-compose.yml")
+    jetson = (
+        jetson_compose_text
+        if jetson_compose_text is not None
+        else _read_text(PROJECT_ROOT / "docker-compose.jetson.yml")
+    )
+
+    required_entries = (
+        ("docker-compose.yml", compose, "APPEARANCE_BACKEND: ${APPEARANCE_BACKEND:-pphuman}"),
+        ("docker-compose.yml", compose, "APPEARANCE_MODEL_PATH: ${APPEARANCE_MODEL_PATH:-models/pphuman_attribute.onnx}"),
+        (
+            "docker-compose.yml",
+            compose,
+            "APPEARANCE_LABEL_MAP_PATH: ${APPEARANCE_LABEL_MAP_PATH:-config/appearance_pphuman_labels.example.json}",
+        ),
+        ("docker-compose.yml", compose, "APPEARANCE_RUNTIME: ${APPEARANCE_RUNTIME:-onnxruntime}"),
+        ("docker-compose.jetson.yml", jetson, "DS_PPHUMAN_SGIE_ENABLED: ${DS_PPHUMAN_SGIE_ENABLED:-1}"),
+        (
+            "docker-compose.jetson.yml",
+            jetson,
+            "DS_PPHUMAN_INFER_CONFIG: ${DS_PPHUMAN_INFER_CONFIG:-config/deepstream/config_infer_pa100k.txt}",
+        ),
+        (
+            "docker-compose.jetson.yml",
+            jetson,
+            "APPEARANCE_MODEL_PATH: ${APPEARANCE_MODEL_PATH:-models/pa100k_resnet50_attr.engine}",
+        ),
+        (
+            "docker-compose.jetson.yml",
+            jetson,
+            "APPEARANCE_LABEL_MAP_PATH: ${APPEARANCE_LABEL_MAP_PATH:-config/appearance_pa100k_labels.json}",
+        ),
+        ("docker-compose.jetson.yml", jetson, "APPEARANCE_RUNTIME: ${APPEARANCE_RUNTIME:-tensorrt}"),
+    )
+    missing = [f"{label} missing {entry}" for label, text, entry in required_entries if entry not in text]
+
+    if missing:
+        return {
+            "name": "appearance model wiring",
+            "passed": False,
+            "detail": "missing: " + ", ".join(missing),
+        }
+
+    return {
+        "name": "appearance model wiring",
+        "passed": True,
+        "detail": "PP-Human/PA100K model paths, label maps, and runtimes are wired",
+    }
+
+
+def check_falldata_aux_wiring(
+    *,
+    compose_text: str | None = None,
+    jetson_compose_text: str | None = None,
+    env_example_text: str | None = None,
+    jetson_env_example_text: str | None = None,
+) -> dict[str, Any]:
+    """Ensure falldata aux deployment keeps fail-open safety and Jetson paths wired."""
+    compose = compose_text if compose_text is not None else _read_text(PROJECT_ROOT / "docker-compose.yml")
+    jetson = (
+        jetson_compose_text
+        if jetson_compose_text is not None
+        else _read_text(PROJECT_ROOT / "docker-compose.jetson.yml")
+    )
+    env_example = env_example_text if env_example_text is not None else _read_text(PROJECT_ROOT / ".env.example")
+    jetson_env = (
+        jetson_env_example_text
+        if jetson_env_example_text is not None
+        else _read_text(PROJECT_ROOT / ".env.jetson.example")
+    )
+
+    required_entries = (
+        (
+            "docker-compose.yml",
+            compose,
+            "FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE: ${FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE:-true}",
+        ),
+        (
+            "docker-compose.jetson.yml",
+            jetson,
+            "FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE: ${FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE:-true}",
+        ),
+        (
+            "docker-compose.jetson.yml",
+            jetson,
+            "FALLDATA_AUX_MEDIAPIPE_PYTHON: ${FALLDATA_AUX_MEDIAPIPE_PYTHON:-/app/.venv-mediapipe/bin/python}",
+        ),
+        (
+            "docker-compose.jetson.yml",
+            jetson,
+            "FALLDATA_AUX_MODEL_PYTHON: ${FALLDATA_AUX_MODEL_PYTHON:-/app/.venv-falldata/bin/python}",
+        ),
+        ("docker-compose.jetson.yml", jetson, "source: ./falldata"),
+        ("docker-compose.jetson.yml", jetson, "source: ./.venv-mediapipe"),
+        ("docker-compose.jetson.yml", jetson, "source: ./.venv-falldata"),
+        (".env.example", env_example, "FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE=true"),
+        (".env.jetson.example", jetson_env, "FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE=true"),
+        (".env.jetson.example", jetson_env, "FALLDATA_AUX_CONFIRM_BORDERLINE=false"),
+        (
+            ".env.jetson.example",
+            jetson_env,
+            "FALLDATA_AUX_MEDIAPIPE_PYTHON=/app/.venv-mediapipe/bin/python",
+        ),
+        (
+            ".env.jetson.example",
+            jetson_env,
+            "FALLDATA_AUX_MODEL_PYTHON=/app/.venv-falldata/bin/python",
+        ),
+    )
+    missing = [f"{label} missing {entry}" for label, text, entry in required_entries if entry not in text]
+
+    if missing:
+        return {
+            "name": "falldata aux safety wiring",
+            "passed": False,
+            "detail": "missing: " + ", ".join(missing),
+        }
+
+    return {
+        "name": "falldata aux safety wiring",
+        "passed": True,
+        "detail": "fail-open policy and Jetson aux paths are wired",
+    }
+
+
+def check_h264_webrtc_wiring(
+    *,
+    compose_text: str | None = None,
+    jetson_compose_text: str | None = None,
+) -> dict[str, Any]:
+    """Ensure Jetson NVENC output keeps the WebRTC POC compatibility guard."""
+    compose = compose_text if compose_text is not None else _read_text(PROJECT_ROOT / "docker-compose.yml")
+    jetson = (
+        jetson_compose_text
+        if jetson_compose_text is not None
+        else _read_text(PROJECT_ROOT / "docker-compose.jetson.yml")
+    )
+    required_entries = (
+        (
+            "docker-compose.yml",
+            compose,
+            "DS_H264_POC_FIX_ENABLED: ${DS_H264_POC_FIX_ENABLED:-true}",
+        ),
+        (
+            "docker-compose.jetson.yml",
+            jetson,
+            "DS_H264_ENCODER: ${DS_H264_ENCODER:-nvv4l2h264enc}",
+        ),
+        (
+            "docker-compose.jetson.yml",
+            jetson,
+            "DS_H264_POC_FIX_ENABLED: ${DS_H264_POC_FIX_ENABLED:-true}",
+        ),
+        (
+            "docker-compose.jetson.yml",
+            jetson,
+            "DS_H264_POC_TYPE: ${DS_H264_POC_TYPE:-2}",
+        ),
+    )
+    missing = [f"{label} missing {entry}" for label, text, entry in required_entries if entry not in text]
+    return {
+        "name": "H.264 WebRTC compatibility wiring",
+        "passed": not missing,
+        "detail": "missing: " + ", ".join(missing) if missing else "Jetson NVENC POC guard is wired",
+    }
+
+
 def check_mqtt_auth_config(
     *,
     mosquitto_text: str | None = None,
@@ -345,6 +519,9 @@ def run_checks() -> list[dict[str, Any]]:
         check_required_runtime_secrets(),
         check_aiot_db_secret_wiring(),
         check_runtime_path_convergence(),
+        check_appearance_model_wiring(),
+        check_falldata_aux_wiring(),
+        check_h264_webrtc_wiring(),
         check_mqtt_auth_config(),
     ]
 

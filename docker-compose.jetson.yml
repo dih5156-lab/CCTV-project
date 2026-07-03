@@ -665,15 +665,17 @@ services:
       DS_OUTPUT_MODE: ${DS_OUTPUT_MODE:-rtsp-publish}
       DS_RTSP_LOCATION: ${DS_RTSP_LOCATION:-rtsp://cctv-media-server:8554/camera_1}
       DS_RTSP_LATENCY_MS: ${DS_RTSP_LATENCY_MS:-100}
-      DS_H264_ENCODER: ${DS_H264_ENCODER:-x264}
+      DS_H264_ENCODER: ${DS_H264_ENCODER:-nvv4l2h264enc}
       DS_H264_UDP_HOST: ${DS_H264_UDP_HOST:-cctv-media-server}
       DS_H264_UDP_PORT: ${DS_H264_UDP_PORT:-1234}
-      DS_H264_WIDTH: ${DS_H264_WIDTH:-1280}
-      DS_H264_HEIGHT: ${DS_H264_HEIGHT:-720}
-      DS_H264_FPS: ${DS_H264_FPS:-30}
-      DS_H264_BITRATE: ${DS_H264_BITRATE:-6000000}
-      DS_H264_IFRAME_INTERVAL: ${DS_H264_IFRAME_INTERVAL:-30}
-      DS_H264_IDR_INTERVAL: ${DS_H264_IDR_INTERVAL:-30}
+      DS_H264_WIDTH: ${DS_H264_WIDTH:-960}
+      DS_H264_HEIGHT: ${DS_H264_HEIGHT:-540}
+      DS_H264_FPS: ${DS_H264_FPS:-20}
+      DS_H264_BITRATE: ${DS_H264_BITRATE:-3000000}
+      DS_H264_IFRAME_INTERVAL: ${DS_H264_IFRAME_INTERVAL:-20}
+      DS_H264_IDR_INTERVAL: ${DS_H264_IDR_INTERVAL:-20}
+      DS_H264_POC_FIX_ENABLED: ${DS_H264_POC_FIX_ENABLED:-true}
+      DS_H264_POC_TYPE: ${DS_H264_POC_TYPE:-2}
       DS_NVBUF_MEMORY_TYPE: ${DS_NVBUF_MEMORY_TYPE:-0}
       DS_EVENT_MIN_INTERVAL_SEC: ${DS_EVENT_MIN_INTERVAL_SEC:-3.0}
       DS_YOLO_TASK: ${DS_YOLO_TASK:-pose}
@@ -702,6 +704,21 @@ services:
       STREAM_JPEG_QUALITY: ${STREAM_JPEG_QUALITY:-65}
       STREAM_WIDTH: ${STREAM_WIDTH:-960}
       STREAM_HEIGHT: ${STREAM_HEIGHT:-540}
+      FALLDATA_AUX_ENABLED: ${FALLDATA_AUX_ENABLED:-false}
+      FALLDATA_AUX_MODE: ${FALLDATA_AUX_MODE:-shadow}
+      FALLDATA_AUX_THRESHOLD: ${FALLDATA_AUX_THRESHOLD:-0.7}
+      FALLDATA_AUX_FALL_CLASS_INDEX: ${FALLDATA_AUX_FALL_CLASS_INDEX:-0}
+      FALLDATA_AUX_MIN_NONZERO_FRAMES: ${FALLDATA_AUX_MIN_NONZERO_FRAMES:-30}
+      FALLDATA_AUX_BUFFER_FRAMES: ${FALLDATA_AUX_BUFFER_FRAMES:-600}
+      FALLDATA_AUX_MAX_EXTRACT_FRAMES: ${FALLDATA_AUX_MAX_EXTRACT_FRAMES:-120}
+      FALLDATA_AUX_TIMEOUT_SECONDS: ${FALLDATA_AUX_TIMEOUT_SECONDS:-30}
+      FALLDATA_AUX_COOLDOWN_SECONDS: ${FALLDATA_AUX_COOLDOWN_SECONDS:-10}
+      FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE: ${FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE:-true}
+      FALLDATA_AUX_CONFIRM_BORDERLINE: ${FALLDATA_AUX_CONFIRM_BORDERLINE:-false}
+      FALLDATA_AUX_COMPARE_VETO_ENABLED: ${FALLDATA_AUX_COMPARE_VETO_ENABLED:-false}
+      FALLDATA_AUX_MEDIAPIPE_PYTHON: ${FALLDATA_AUX_MEDIAPIPE_PYTHON:-/app/.venv-mediapipe/bin/python}
+      FALLDATA_AUX_MODEL_PYTHON: ${FALLDATA_AUX_MODEL_PYTHON:-/app/.venv-falldata/bin/python}
+      FALLDATA_AUX_MODEL_PATH: ${FALLDATA_AUX_MODEL_PATH:-/app/falldata/2. AI학습모델파일/영상/낙상분류/FNF_RF_SMOTE_CAM_1.pkl}
       MQTT_USER: ${MQTT_USER:-}
       MQTT_PASSWORD: ${MQTT_PASSWORD:-}
       INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-}
@@ -1314,21 +1331,31 @@ volumes:
     name: edgex-jetson_consul-config
   consul-data:
     name: edgex-jetson_consul-data
+
+
   db-data:
+    external: true
     name: edgex-jetson_db-data
   aiot-db-data:
+    external: true
     name: edgex-jetson_aiot-db-data
   aiot-parser-data:
+    external: true
     name: edgex-jetson_aiot-parser-data
   kuiper-data:
+    external: true
     name: edgex-jetson_kuiper-data
   kuiper-etc:
+    external: true
     name: edgex-jetson_kuiper-etc
   kuiper-log:
+    external: true
     name: edgex-jetson_kuiper-log
   kuiper-plugins:
+    external: true
     name: edgex-jetson_kuiper-plugins
   trt-cache:
+    external: true
     name: edgex-jetson_trt-cache
   mosquitto-data:
     name: edgex-jetson_mosquitto-data

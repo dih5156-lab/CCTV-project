@@ -36,6 +36,8 @@ Local Test Sever/
 
 # 런타임 생성 데이터
 reports/
+!docs/reports/
+!docs/reports/*.md
 external/
 Rethinking_of_PAR/
 !data/eval/reports/
@@ -105,6 +107,7 @@ tooling/node-*/
 # 모델 캐시 (TensorRT 변환 결과는 로컬 전용)
 *.engine
 models/*.onnx
+models/experiments/
 
 .venv/
 .venv-par/

@@ -21,6 +21,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -39,6 +40,42 @@ DEFAULT_HOST_RTSP_URL = "rtsp://localhost:8554/sample_eval"
 DEFAULT_CONTAINER_RTSP_URL = "rtsp://cctv-media-server:8554/sample_eval"
 DEFAULT_CONTAINER_PROJECT_ROOT = Path("/app")
 DEFAULT_COMPOSE_ENV_FILE = Path(".env.jetson")
+
+
+def _parse_bool(value: Any, default: bool = False) -> bool:
+    if value is None:
+        return default
+    return str(value).strip().lower() in {"1", "true", "yes", "y", "on"}
+
+
+def _parse_optional_float(value: Any) -> float | None:
+    if value is None or str(value).strip() == "":
+        return None
+    try:
+        return float(str(value).strip())
+    except ValueError:
+        return None
+
+
+def _read_env_file_values(path: Path | None) -> dict[str, str]:
+    if path is None or not path.exists():
+        return {}
+    values: dict[str, str] = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        values[key.strip()] = value.split("#", 1)[0].strip().strip("\"'")
+    return values
+
+
+def _runtime_bool(env_values: dict[str, str], name: str, default: bool = False) -> bool:
+    return _parse_bool(os.environ.get(name, env_values.get(name)), default)
+
+
+def _runtime_optional_float(env_values: dict[str, str], name: str) -> float | None:
+    return _parse_optional_float(os.environ.get(name, env_values.get(name)))
 
 
 def _read_jsonl(path: Path) -> list[dict[str, Any]]:
@@ -209,8 +246,49 @@ def _score_result(expected_fall: bool, detected: bool) -> str:
     return "TN"
 
 
-def _summarize_shadow_records(records: list[dict[str, Any]], camera_id: str) -> dict[str, Any]:
+def _compare_vetoes_record(
+    row: dict[str, Any],
+    *,
+    compare_veto_enabled: bool,
+    compare_veto_min_fall_score: float | None,
+) -> bool:
+    if not compare_veto_enabled:
+        return False
+    try:
+        fall_score = float(row.get("fall_score"))
+    except (TypeError, ValueError):
+        return False
+    if compare_veto_min_fall_score is not None and fall_score < compare_veto_min_fall_score:
+        return False
+    aux = row.get("falldata_aux")
+    if not isinstance(aux, dict):
+        return False
+    compare_model = aux.get("compare_model")
+    if not isinstance(compare_model, dict):
+        return False
+    if compare_model.get("status") != "ok":
+        return False
+    return compare_model.get("confirmed") is False
+
+
+def _summarize_shadow_records(
+    records: list[dict[str, Any]],
+    camera_id: str,
+    *,
+    compare_veto_enabled: bool = False,
+    compare_veto_min_fall_score: float | None = None,
+) -> dict[str, Any]:
     camera_records = [row for row in records if str(row.get("camera_id")) == camera_id]
+    fall_event_records = [
+        row
+        for row in camera_records
+        if str(row.get("event_type") or row.get("type")) == "fall_detected"
+    ]
+    immediate_fall_event_records = [
+        row
+        for row in fall_event_records
+        if row.get("falldata_aux_publish_pending") is not True
+    ]
     confirmed_records = [
         row
         for row in camera_records
@@ -218,20 +296,75 @@ def _summarize_shadow_records(records: list[dict[str, Any]], camera_id: str) -> 
         and row["falldata_aux"].get("status") == "ok"
         and row["falldata_aux"].get("confirmed") is True
     ]
+    aux_published_records = [
+        row
+        for row in confirmed_records
+        if not _compare_vetoes_record(
+            row,
+            compare_veto_enabled=compare_veto_enabled,
+            compare_veto_min_fall_score=compare_veto_min_fall_score,
+        )
+    ]
     probabilities = [
         row.get("falldata_aux", {}).get("fall_probability")
         for row in confirmed_records
         if isinstance(row.get("falldata_aux"), dict)
     ]
     numeric_probs = [float(value) for value in probabilities if isinstance(value, (int, float))]
+    compare_records = [
+        row
+        for row in camera_records
+        if isinstance(row.get("falldata_aux"), dict)
+        and isinstance(row["falldata_aux"].get("compare_model"), dict)
+        and row["falldata_aux"]["compare_model"].get("status") == "ok"
+    ]
+    compare_confirmed_records = [
+        row
+        for row in compare_records
+        if row["falldata_aux"]["compare_model"].get("confirmed") is True
+    ]
+    compare_probabilities = [
+        row["falldata_aux"]["compare_model"].get("fall_probability")
+        for row in compare_records
+    ]
+    numeric_compare_probs = [
+        float(value) for value in compare_probabilities if isinstance(value, (int, float))
+    ]
+    fall_scores = [
+        row.get("fall_score")
+        for row in fall_event_records
+        if isinstance(row.get("fall_score"), (int, float))
+    ]
+    detected_by_event = bool(immediate_fall_event_records)
+    detected_by_aux = bool(aux_published_records)
+    detected_by_compare_aux = bool(compare_confirmed_records)
     return {
-        "detected": bool(confirmed_records),
+        "detected": detected_by_event or detected_by_aux,
+        "detected_by_event": detected_by_event,
+        "detected_by_aux": detected_by_aux,
+        "detected_by_compare_aux": detected_by_compare_aux,
         "shadow_record_count": len(camera_records),
+        "fall_event_count": len(immediate_fall_event_records),
+        "fall_candidate_count": len(fall_event_records),
         "confirmed_shadow_record_count": len(confirmed_records),
+        "aux_published_shadow_record_count": len(aux_published_records),
+        "compare_model_record_count": len(compare_records),
+        "compare_confirmed_shadow_record_count": len(compare_confirmed_records),
+        "max_fall_score": max(fall_scores) if fall_scores else None,
         "max_fall_probability": max(numeric_probs) if numeric_probs else None,
+        "max_compare_fall_probability": (
+            max(numeric_compare_probs) if numeric_compare_probs else None
+        ),
         "last_shadow_status": (
             camera_records[-1].get("falldata_aux", {}).get("status")
             if camera_records and isinstance(camera_records[-1].get("falldata_aux"), dict)
+            else None
+        ),
+        "last_compare_status": (
+            camera_records[-1].get("falldata_aux", {}).get("compare_model", {}).get("status")
+            if camera_records
+            and isinstance(camera_records[-1].get("falldata_aux"), dict)
+            and isinstance(camera_records[-1]["falldata_aux"].get("compare_model"), dict)
             else None
         ),
     }
@@ -251,6 +384,22 @@ def evaluate(args: argparse.Namespace) -> list[dict[str, Any]]:
     )
     _write_eval_cameras(args.eval_cameras_json, args.camera_id, initial_source)
     print(f"eval cameras: {args.eval_cameras_json}")
+    env_values = _read_env_file_values(args.compose_env_file)
+    compare_veto_enabled = _runtime_bool(
+        env_values,
+        "FALLDATA_AUX_COMPARE_VETO_ENABLED",
+        False,
+    )
+    compare_veto_min_fall_score = _runtime_optional_float(
+        env_values,
+        "FALLDATA_AUX_COMPARE_VETO_MIN_FALL_SCORE",
+    )
+    if compare_veto_enabled:
+        print(
+            "compare veto enabled: min_fall_score={}".format(
+                compare_veto_min_fall_score
+            )
+        )
 
     backup: Path | None = None
     if args.prepare_only:
@@ -294,7 +443,12 @@ def evaluate(args: argparse.Namespace) -> list[dict[str, Any]]:
                 _run_ffmpeg_replay(video_path, args.host_rtsp_url, duration, args.timeout_grace_seconds)
                 time.sleep(args.shadow_wait_seconds)
             new_records = _read_new_jsonl_records(args.review_log, offset)
-            shadow = _summarize_shadow_records(new_records, args.camera_id)
+            shadow = _summarize_shadow_records(
+                new_records,
+                args.camera_id,
+                compare_veto_enabled=compare_veto_enabled,
+                compare_veto_min_fall_score=compare_veto_min_fall_score,
+            )
             expected_fall = bool(row.get("is_fall"))
             result = {
                 "scene_id": row.get("scene_id"),
@@ -308,9 +462,24 @@ def evaluate(args: argparse.Namespace) -> list[dict[str, Any]]:
                 "scene_length": row.get("scene_length"),
                 "camera": row.get("camera"),
                 "shadow_record_count": shadow["shadow_record_count"],
+                "fall_event_count": shadow["fall_event_count"],
+                "fall_candidate_count": shadow["fall_candidate_count"],
                 "confirmed_shadow_record_count": shadow["confirmed_shadow_record_count"],
+                "aux_published_shadow_record_count": shadow[
+                    "aux_published_shadow_record_count"
+                ],
+                "compare_model_record_count": shadow["compare_model_record_count"],
+                "compare_confirmed_shadow_record_count": shadow[
+                    "compare_confirmed_shadow_record_count"
+                ],
+                "detected_by_event": shadow["detected_by_event"],
+                "detected_by_aux": shadow["detected_by_aux"],
+                "detected_by_compare_aux": shadow["detected_by_compare_aux"],
+                "max_fall_score": shadow["max_fall_score"],
                 "max_fall_probability": shadow["max_fall_probability"],
+                "max_compare_fall_probability": shadow["max_compare_fall_probability"],
                 "last_shadow_status": shadow["last_shadow_status"],
+                "last_compare_status": shadow["last_compare_status"],
                 "evaluated_at": datetime.now(timezone.utc).isoformat(),
             }
             results.append(result)

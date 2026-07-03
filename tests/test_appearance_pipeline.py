@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
 
 import numpy as np
@@ -31,7 +32,10 @@ def test_save_person_crop_enabled_writes_file(tmp_path):
     path = pipeline.save_person_crop(frame, 0, 0, 20, 20, "cam1", 1, 1000.0)
 
     assert path is not None
-    assert (crop_dir / "cam1_1_1000000.jpg").exists()
+    kst = timezone(timedelta(hours=9))
+    kst_timestamp = datetime.fromtimestamp(1000.0, tz=kst)
+    expected_name = f"cam1_1_{kst_timestamp:%Y%m%d_%H%M%S}_000.jpg"
+    assert (crop_dir / expected_name).exists()
 
 
 def test_save_person_crop_includes_context_by_default(tmp_path):
@@ -91,6 +95,9 @@ def test_build_log_payload_includes_face_meta_and_bbox(tmp_path):
         "has_handbag": False,
         "has_suitcase": False,
         "attribute_backend": "hsv",
+        "attribute_metadata": {
+            "color_sources": {"upper_color": "lab"},
+        },
     }
     face_meta = {
         "gender": "male",
@@ -118,6 +125,7 @@ def test_build_log_payload_includes_face_meta_and_bbox(tmp_path):
     assert payload["age_group"] == "adult"
     assert payload["face_name"] == "홍길동"
     assert payload["attribute_backend"] == "hsv"
+    assert payload["attribute_metadata"]["color_sources"]["upper_color"] == "lab"
     assert payload["bbox_x"] == 10
     assert payload["bbox_y"] == 20
     assert payload["bbox_w"] == 30
@@ -183,6 +191,9 @@ def test_log_person_appearance_builds_and_inserts_payload(tmp_path):
                 "has_handbag": True,
                 "has_suitcase": False,
                 "attribute_backend": "hsv",
+                "attribute_metadata": {
+                    "color_sources": {"upper_color": "lab"},
+                },
             }
 
     pipeline._appearance = DummyAppearance()
@@ -208,6 +219,7 @@ def test_log_person_appearance_builds_and_inserts_payload(tmp_path):
     assert payload["has_handbag"] is True
     assert payload["gender"] == "female"
     assert payload["face_name"] == "tester"
+    assert payload["attribute_metadata"]["color_sources"]["upper_color"] == "lab"
 
 
 def test_log_person_appearance_saves_scaled_deepstream_crop(tmp_path):
@@ -411,6 +423,7 @@ def test_extract_person_attributes_merges_deepstream_sgie_metadata(tmp_path):
         class_name="person",
         metadata={
             "appearance": {
+                "upper_color": "blue",
                 "gender": "male",
                 "age_group": "adult",
                 "has_backpack": True,
@@ -422,10 +435,12 @@ def test_extract_person_attributes_merges_deepstream_sgie_metadata(tmp_path):
 
     attrs = pipeline._extract_person_attributes(frame, person, [])
 
+    assert attrs["upper_color"] == "blue"
     assert attrs["gender"] == "male"
     assert attrs["age_group"] == "adult"
     assert attrs["has_backpack"] is True
     assert attrs["attribute_backend"] == "pa100k_sgie"
+    assert attrs["attribute_metadata"]["color_sources"]["upper_color"] == "pa100k_sgie"
 
 
 def test_build_log_parts_uses_attribute_gender_when_face_meta_missing():

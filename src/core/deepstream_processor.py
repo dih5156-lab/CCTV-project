@@ -37,44 +37,94 @@ import os
 import threading
 import time
 from pathlib import Path
-from queue import Empty, Full, Queue
+from queue import Queue
 from threading import Event
 from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple, Union
 
 from ..config import AppConfig
 from ..protocols.mqtt_publisher import MqttEventPublisher
-from ..services.appearance_conditions import AppearanceConditionStore
 from ..utils.face_recognition import FaceRecognitionEngine
 from ..utils.zone_detection import ZoneEvent, ZoneManager
+from . import _deepstream_element_config as ds_element_config
+from . import _deepstream_env as ds_env
 from ._context_event_store import ContextEventStore
 from ._deepstream_context_worker import DeepStreamContextWorker
-from ._deepstream_event_factory import detections_to_events, object_meta_to_event
+from ._deepstream_event_factory import (
+    emit_tensor_events,
+    filter_detections_for_camera,
+    filter_events_for_camera,
+    object_meta_events_from_frame,
+    process_batch_frames,
+)
+from ._deepstream_event_queue import (
+    apply_existing_event_pipeline as ds_apply_existing_event_pipeline,
+)
+from ._deepstream_event_queue import enqueue_queue_item as ds_enqueue_queue_item
+from ._deepstream_event_queue import enqueue_zone_events as ds_enqueue_zone_events
 from ._deepstream_face_context import (
     remove_camera_face_cache,
     run_deepstream_face_recognition,
 )
-from ._deepstream_osd import add_osd_overlays
+from ._deepstream_labels import (
+    event_type_for_label,
+    load_pphuman_label_map,
+    load_yolo_labels,
+    resolve_pphuman_sgie_backend_name,
+)
+from ._deepstream_model_flags import flags_to_detection_modes, normalize_model_flags
+from ._deepstream_osd import add_osd_overlays as ds_add_osd_overlays
 from ._deepstream_pipeline_builder import (
-    DeepStreamPipelineElements,
+    add_pipeline_elements,
+    configure_pipeline_elements_bundle,
+    create_h264_encoder_elements,
+    create_output_elements,
+    create_pipeline_elements_bundle,
+    create_preview_elements,
     link_deepstream_pipeline_path,
+    register_pipeline_runtime_hooks,
+    start_pipeline_runtime,
+    stop_pipeline_runtime,
+    validate_pipeline_prerequisites,
+)
+from ._deepstream_source_health import (
+    build_camera_status_map,
+    build_deepstream_stats_fields,
+    build_source_entries,
+    camera_id_from_message,
+    execute_pipeline_restart,
+    handle_bus_message,
+    mark_restart_pending_if_allowed,
+    mark_source_failed,
+    start_pipeline_restart_thread,
+)
+from ._deepstream_source_health import (
+    next_source_retry_delay as compute_next_source_retry_delay,
 )
 from ._deepstream_source_manager import (
     attach_camera_source_to_pipeline,
-    detach_camera_source_from_pipeline,
+    attach_camera_sources_batch,
 )
-from ._deepstream_source_state import (
-    clear_source_state,
-    count_attached_sources,
-    next_available_pad_id,
-    rebuild_pad_to_camera,
-)
+from ._deepstream_source_state import rebuild_pad_to_camera
 from ._deepstream_tensor_utils import (
     layer_to_numpy,
-    read_pphuman_obj_scores,
     select_yolo_output,
     tensor_gie_id,
 )
-from ._event_publish import publish_queue_item
+from ._deepstream_tensor_utils import (
+    read_pphuman_obj_scores as tensor_read_pphuman_obj_scores,
+)
+from ._deepstream_topology import (
+    any_camera_flag,
+    feature_flags_for_camera,
+    inference_topology_signature,
+)
+from ._event_context import (
+    log_appearance_capability_hints as event_context_log_appearance_capability_hints,
+)
+from ._event_context import (
+    refresh_appearance_conditions as event_context_refresh_appearance_conditions,
+)
+from ._event_publish import run_publish_loop
 from ._face_snapshot import save_recognized_face_snapshot
 from ._fall_shadow_review import (
     FallShadowReviewConfig,
@@ -82,7 +132,7 @@ from ._fall_shadow_review import (
     fall_shadow_event_id,
 )
 from ._h264_poc_fixer import H264PocFixer
-from ._preview_frame_store import PreviewFrameStore
+from ._preview_frame_store import PreviewFrameStore, process_preview_sample
 from ._synthetic_object_ids import SyntheticObjectIdAssigner, event_iou
 from ._yolo_postprocess import (
     detections_from_yolo_output,
@@ -93,7 +143,6 @@ from .ai._appearance_analyzer import BAG_CLASSES, AppearanceAnalyzer
 from .ai._appearance_pipeline import AppearancePipeline
 from .ai._attribute_backends import decode_pphuman_scores
 from .ai._fall_detector import FallDetector
-from .ai._falldata_aux import FallDataAuxVerifier
 from .base_processor import BaseProcessor
 from .event_debouncer import EventDebouncer
 from .event_filters import CumulativeViolationFilter, TrackManager
@@ -101,39 +150,15 @@ from .events import DetectionEvent, EventType
 
 logger = logging.getLogger(__name__)
 
-# ---------------------------------------------------------------------------
-# 설정 파일 경로
-# ---------------------------------------------------------------------------
-
 _DS_CONFIG_DIR = Path(__file__).parent.parent.parent / "config" / "deepstream"
-
-
-def _resolve_deepstream_config(env_name: str, default_name: str) -> Path:
-    """DeepStream config 경로를 환경변수 또는 기본 config 디렉터리에서 해석한다."""
-    value = os.environ.get(env_name, "").strip()
-    if not value:
-        return _DS_CONFIG_DIR / default_name
-    candidate = Path(value).expanduser()
-    if candidate.is_absolute():
-        return candidate
-    return (Path(__file__).parent.parent.parent / candidate).resolve()
-
-
 _INFER_CONFIG   = _DS_CONFIG_DIR / "config_infer_primary.txt"
 _HELMET_INFER_CONFIG = _DS_CONFIG_DIR / "config_infer_helmet.txt"
-_PPHUMAN_INFER_CONFIG = _resolve_deepstream_config(
-    "DS_PPHUMAN_INFER_CONFIG",
-    "config_infer_pphuman.txt",
-)
+_PPHUMAN_INFER_CONFIG = _DS_CONFIG_DIR / "config_infer_pphuman.txt"
 _TRACKER_CONFIG = _DS_CONFIG_DIR / "config_tracker.txt"
 _STREAMMUX_CONFIG = _DS_CONFIG_DIR / "config_streammux.txt"
 _LABELS_FILE    = _DS_CONFIG_DIR / "labels.txt"
 _HELMET_LABELS_FILE = _DS_CONFIG_DIR / "labels_helmet.txt"
 _TRACKER_LIB = "/opt/nvidia/deepstream/deepstream/lib/libnvds_nvmultiobjecttracker.so"
-
-# ---------------------------------------------------------------------------
-# DeepStream 가용성 탐지 (런타임 조건부 임포트)
-# ---------------------------------------------------------------------------
 
 Gst: Any = None
 GLib: Any = None
@@ -180,11 +205,6 @@ def _ensure_deepstream_loaded() -> bool:
     DEEPSTREAM_AVAILABLE = True
     logger.debug("DeepStream Python bindings (pyds) 로드 성공")
     return True
-
-
-# ---------------------------------------------------------------------------
-# DeepStreamProcessor
-# ---------------------------------------------------------------------------
 
 
 class DeepStreamProcessor(BaseProcessor):
@@ -242,20 +262,19 @@ class DeepStreamProcessor(BaseProcessor):
         self._tensor_probe_warned = False
         self._preview_enabled = self._env_bool("DS_PREVIEW_ENABLED", True)
         self._preview_camera_id: Optional[str] = None
-        self._preview_store = PreviewFrameStore(self._read_preview_max_fps())
+        self._preview_max_fps = self._read_preview_max_fps()
+        self._preview_store = PreviewFrameStore(self._preview_max_fps)
         self._pipeline_restart_lock = threading.Lock()
-        self._cameras_json_lock = threading.Lock()   # cameras.json R/W 직렬화
-        # 얼굴/외형 인식 비동기 워커 (GStreamer 메인루프 블로킹 방지)
+        self._restart_request_lock = threading.Lock()
+        self._cameras_json_lock = threading.Lock()
         self._face_work_queue: Queue = Queue(maxsize=8)
         self._face_worker_thread: Optional[threading.Thread] = None
-        # falldata 보조 낙상 검증 워커. DeepStream 실시간 경로를 막지 않도록 shadow 로그만 남긴다.
-        self._falldata_aux_queue: Queue = Queue(maxsize=2)
-        self._falldata_aux_worker_thread: Optional[threading.Thread] = None
-        # 실제 파이프라인에 빌드된 토폴로지 (primary, helmet, pphuman)
-        # _build_pipeline() 호출 시 갱신됨. 재시작 필요 여부 판단에 사용.
         self._built_topology: Tuple[bool, bool, bool] = (False, False, False)
-        self._built_source_count: int = 0
-        self._pipeline_restart_pending: bool = False  # API 응답에 재시작 여부 전달용
+        self._pipeline_restart_pending: bool = False
+        self._pipeline_restart_min_interval_sec = float(
+            os.environ.get("DS_PIPELINE_RESTART_MIN_INTERVAL_SEC", "5.0")
+        )
+        self._last_pipeline_restart_at = 0.0
         self._source_failure_backoff_sec = float(os.environ.get("DS_SOURCE_FAILURE_BACKOFF_SEC", "60"))
         self._source_backoff_until: Dict[str, float] = {}
         self._source_last_error: Dict[str, str] = {}
@@ -266,23 +285,12 @@ class DeepStreamProcessor(BaseProcessor):
             "DS_APPEARANCE_ENABLED",
             bool(config.appearance.enabled),
         )
-        if not self._preview_enabled and (
-            self._face_enabled_default or self._appearance_enabled_default
-        ):
-            logger.warning(
-                "DS_PREVIEW_ENABLED=0이면 얼굴/외형 후처리용 프레임을 받을 수 없습니다. "
-                "face/appearance 기능을 쓰려면 DS_PREVIEW_ENABLED=1로 설정하세요."
-            )
         self._cameras: Dict[str, Dict] = {}
         self._camera_ai_flags: Dict[str, Dict[str, bool]] = {}
-        self._pad_to_camera: Dict[int, str] = {}  # pad_id → camera_id 캐시 (매 프레임 재생성 방지)
-        # SGIE(helmet/pphuman)와 primary(person)가 서로 다른 텐서 콜백으로 들어올 수 있어,
-        # 외형 분석 시점에 최근 주변 이벤트를 합쳐 nearby_objects 컨텍스트를 복원한다.
-        self._context_event_ttl_sec = float(os.environ.get("DS_CONTEXT_EVENT_TTL_SEC", "2.0"))
-        self._context_events_maxlen = int(os.environ.get("DS_CONTEXT_EVENTS_MAXLEN", "256"))
+        self._pad_to_camera: Dict[int, str] = {}
         self._context_event_store = ContextEventStore(
-            ttl_sec=self._context_event_ttl_sec,
-            maxlen=self._context_events_maxlen,
+            ttl_sec=float(os.environ.get("DS_CONTEXT_EVENT_TTL_SEC", "2.0")),
+            maxlen=int(os.environ.get("DS_CONTEXT_EVENTS_MAXLEN", "256")),
         )
         self.event_queue: Queue = Queue(maxsize=config.events.queue_max_size * 3)
         self._debouncer = EventDebouncer(config, self._increment_stat)
@@ -295,6 +303,7 @@ class DeepStreamProcessor(BaseProcessor):
         self._events_failed = 0
 
     def _increment_stat(self, field_name: str, delta: int = 1) -> int:
+        """지정한 통계 카운터 값을 증가시키고 최신 값을 반환한다."""
         attr_name = f"_{field_name}"
         current = getattr(self, attr_name, 0)
         new_val = current + delta
@@ -346,57 +355,15 @@ class DeepStreamProcessor(BaseProcessor):
             track_timeout=self._synthetic_track_timeout,
         )
         self._fall_detector = FallDetector(
-            self._read_float_setting(
-                "DS_FALL_HEIGHT_RATIO",
-                config.detection.fall_height_ratio,
-                0.30,
-            ),
-            angle_horizontal=self._read_float_setting(
-                "DS_FALL_ANGLE_HORIZONTAL",
-                40.0,
-                40.0,
-            ),
-            angle_inverted=self._read_float_setting(
-                "DS_FALL_ANGLE_INVERTED",
-                140.0,
-                140.0,
-            ),
-            bbox_aspect_ratio=self._read_float_setting(
-                "DS_FALL_BBOX_ASPECT_RATIO",
-                1.8,
-                1.8,
-            ),
-            span_bbox_aspect_ratio=self._read_float_setting(
-                "DS_FALL_SPAN_BBOX_ASPECT_RATIO",
-                1.3,
-                1.3,
-            ),
-            span_ratio=self._read_float_setting(
-                "DS_FALL_KEYPOINT_SPAN_RATIO",
-                0.40,
-                0.40,
-            ),
-            score_threshold=self._read_float_setting(
-                "DS_FALL_SCORE_THRESHOLD",
-                3.0,
-                3.0,
-            ),
-            enable_folded_pose=self._env_bool("DS_FALL_ENABLE_FOLDED_POSE", False),
-            min_keypoint_confidence=self._read_float_setting(
-                "DS_FALL_MIN_KEYPOINT_CONFIDENCE",
-                0.30,
-                0.30,
-            ),
-            min_hip_confidence=self._read_float_setting(
-                "DS_FALL_MIN_HIP_CONFIDENCE",
-                0.30,
-                0.30,
-            ),
-            min_leg_confidence=self._read_float_setting(
-                "DS_FALL_MIN_LEG_CONFIDENCE",
-                0.30,
-                0.30,
-            ),
+            float(os.environ.get("DS_FALL_HEIGHT_RATIO", config.detection.fall_height_ratio)),
+            angle_horizontal=float(os.environ.get("DS_FALL_ANGLE_HORIZONTAL", "55")),
+            angle_inverted=float(os.environ.get("DS_FALL_ANGLE_INVERTED", "125")),
+            bbox_aspect_ratio=float(os.environ.get("DS_FALL_BBOX_ASPECT_RATIO", "1.35")),
+            span_bbox_aspect_ratio=float(os.environ.get("DS_FALL_SPAN_BBOX_ASPECT_RATIO", "1.20")),
+            span_ratio=float(os.environ.get("DS_FALL_KEYPOINT_SPAN_RATIO", "0.55")),
+            min_keypoint_confidence=float(os.environ.get("DS_FALL_MIN_KEYPOINT_CONFIDENCE", "0.25")),
+            min_hip_confidence=float(os.environ.get("DS_FALL_MIN_HIP_CONFIDENCE", "0.25")),
+            min_leg_confidence=float(os.environ.get("DS_FALL_MIN_LEG_CONFIDENCE", "0.35")),
         )
         self.track_manager = TrackManager(
             track_timeout=self._synthetic_track_timeout,
@@ -425,33 +392,13 @@ class DeepStreamProcessor(BaseProcessor):
 
     @staticmethod
     def _read_float_setting(env_name: str, config_value: Any, default: float) -> float:
-        raw_value = os.environ.get(env_name)
-        if raw_value is not None:
-            try:
-                return float(raw_value)
-            except (TypeError, ValueError):
-                logger.warning("잘못된 %s 값입니다: %r, 기본값 %.2f 사용", env_name, raw_value, default)
-                return default
-        if isinstance(config_value, bool):
-            return default
-        if isinstance(config_value, (int, float)):
-            return float(config_value)
-        return default
+        """환경변수/설정값/기본값 우선순위로 float 설정값을 읽는다."""
+        return ds_env.read_float_setting(env_name, config_value, default)
 
     @staticmethod
     def _read_int_setting(env_name: str, config_value: Any, default: int) -> int:
-        raw_value = os.environ.get(env_name)
-        if raw_value is not None:
-            try:
-                return int(raw_value)
-            except (TypeError, ValueError):
-                logger.warning("잘못된 %s 값입니다: %r, 기본값 %d 사용", env_name, raw_value, default)
-                return default
-        if isinstance(config_value, bool):
-            return default
-        if isinstance(config_value, int):
-            return config_value
-        return default
+        """환경변수/설정값/기본값 우선순위로 int 설정값을 읽는다."""
+        return ds_env.read_int_setting(env_name, config_value, default)
 
     def _init_ai_context(self, config: AppConfig) -> None:
         """얼굴/외형/구역 후처리 컨텍스트를 초기화한다."""
@@ -475,14 +422,10 @@ class DeepStreamProcessor(BaseProcessor):
         )
         self._appearance_pipeline = AppearancePipeline(
             self._appearance,
-            Path(os.environ.get("APPEARANCE_CROP_DIR", "/app/data/runtime/appearance_crops")),
+            Path(os.environ.get("APPEARANCE_CROP_DIR", "data/appearance_crops")),
             save_crops=self._env_bool("APPEARANCE_SAVE_CROPS", False),
-            crop_context_ratio=self._read_float_setting(
-                "APPEARANCE_CROP_CONTEXT_RATIO", None, 0.6
-            ),
         )
-        self._face_context_worker: Optional[DeepStreamContextWorker] = None
-        self._appearance_db_path = Path(os.environ.get("APPEARANCES_DB", "/app/data/runtime/appearances.db"))
+        self._appearance_db_path = Path(os.environ.get("APPEARANCES_DB", "/app/data/appearances.db"))
         self._appearance_conditions_mtime: Optional[float] = None
         self._appearance_conditions_checked_at = 0.0
         self._appearance_conditions_refresh_sec = float(
@@ -490,47 +433,18 @@ class DeepStreamProcessor(BaseProcessor):
         )
         self._appearance_capability_logged: set[str] = set()
         self._pphuman_label_map = self._load_pphuman_label_map(config.appearance.label_map_path)
-        self._pphuman_sgie_backend_name = self._resolve_pphuman_sgie_backend_name()
-        self._falldata_aux = FallDataAuxVerifier()
-        self._fall_shadow_review_log_path = Path(
-            os.environ.get("FALL_SHADOW_REVIEW_LOG_PATH", "/app/data/logs/fall_shadow_review.jsonl")
+        self._context_worker = DeepStreamContextWorker(
+            queue=self._face_work_queue,
+            feature_flags_for_camera=self._feature_flags_for_camera,
+            remember_context_events=self._remember_context_events,
+            collect_context_events=self._collect_context_events,
+            get_camera_frame=self.get_camera_frame,
+            run_face_recognition=self._run_face_recognition,
+            log_appearance_capability_hints=self._log_appearance_capability_hints,
+            refresh_appearance_conditions=self._refresh_appearance_conditions,
+            appearance_pipeline=self._appearance_pipeline,
+            enqueue_event=self._enqueue_event,
         )
-        self._fall_shadow_clip_dir = Path(
-            os.environ.get("FALL_SHADOW_CLIP_DIR", "/app/data/fall_review_clips")
-        )
-        self._fall_shadow_save_clips = self._env_bool("FALL_SHADOW_SAVE_CLIPS", False)
-        self._fall_shadow_near_miss_enabled = self._env_bool(
-            "FALL_SHADOW_NEAR_MISS_LOG",
-            False,
-        )
-        self._fall_shadow_near_miss_cooldown_sec = self._read_float_setting(
-            "FALL_SHADOW_NEAR_MISS_COOLDOWN_SECONDS",
-            None,
-            10.0,
-        )
-        self._fall_shadow_near_miss_last_at: Dict[Tuple[str, int], float] = {}
-        self._fall_shadow = FallShadowReviewRecorder(
-            FallShadowReviewConfig(
-                review_log_path=self._fall_shadow_review_log_path,
-                clip_dir=self._fall_shadow_clip_dir,
-                save_clips=self._fall_shadow_save_clips,
-                near_miss_enabled=self._fall_shadow_near_miss_enabled,
-                near_miss_cooldown_sec=self._fall_shadow_near_miss_cooldown_sec,
-            ),
-            falldata_aux=self._falldata_aux,
-            near_miss_last_at=self._fall_shadow_near_miss_last_at,
-        )
-        if self._falldata_aux.enabled:
-            logger.info(
-                "DeepStream falldata shadow 검증 활성화: mode=%s threshold=%.2f",
-                self._falldata_aux.config.mode,
-                self._falldata_aux.config.threshold,
-            )
-            if not self._preview_enabled:
-                logger.warning(
-                    "FALLDATA_AUX_ENABLED=true 이지만 DS_PREVIEW_ENABLED=0입니다. "
-                    "DeepStream falldata shadow는 preview 프레임 버퍼가 필요합니다."
-                )
         self.zone_manager: Optional[ZoneManager] = None
         if config.zone_detection:
             try:
@@ -539,6 +453,7 @@ class DeepStreamProcessor(BaseProcessor):
                 logger.warning("DeepStream ZoneManager 초기화 실패: %s", exc)
 
     def _init_pipeline_handles(self) -> None:
+        """파이프라인/루프/스레드 핸들 멤버를 초기 상태로 만든다."""
         self._pipeline: Any = None
         self._main_loop: Any = None
         self._publish_thread: Optional[threading.Thread] = None
@@ -546,6 +461,7 @@ class DeepStreamProcessor(BaseProcessor):
         self._mqtt_publish: Optional[Callable[[str, dict], None]] = None
 
     def _init_event_publisher(self, config: AppConfig) -> None:
+        """DeepStream 이벤트 전송용 MQTT 퍼블리셔를 초기화한다."""
         self.event_publisher = MqttEventPublisher(
             broker=config.mqtt.broker,
             port=config.mqtt.port,
@@ -577,54 +493,34 @@ class DeepStreamProcessor(BaseProcessor):
 
     @property
     def cameras(self) -> Dict:
+        """현재 등록된 카메라 설정 사본을 반환한다."""
         return dict(self._cameras)
 
     @staticmethod
     def _normalize_model_flags(flags: Dict[str, object]) -> Dict[str, bool]:
-        use_pose = bool(flags.get("use_pose", flags.get("pose", False)))
-        use_helmet = bool(flags.get("use_helmet", flags.get("helmet", False)))
-        use_person = bool(flags.get("use_person", flags.get("person", False)))
-        use_face = bool(flags.get("use_face", flags.get("face", False)))
-        use_appearance = bool(flags.get("use_appearance", flags.get("appearance", False)))
-
-        return {
-            "use_helmet": use_helmet,
-            "use_pose": use_pose,
-            "use_person": use_person,
-            "use_face": use_face,
-            "use_appearance": use_appearance,
-        }
+        """카메라 모델 플래그를 bool 기반 표준 형태로 정규화한다."""
+        return normalize_model_flags(flags)
 
     @classmethod
     def _flags_to_detection_modes(cls, flags: Dict[str, object]) -> List[str]:
-        normalized = cls._normalize_model_flags(flags)
-        modes: List[str] = []
-        if normalized["use_pose"]:
-            modes.extend(["fall", "person"])
-        if normalized["use_helmet"]:
-            modes.append("helmet")
-        if normalized["use_face"]:
-            modes.append("face")
-        if normalized["use_person"] and "person" not in modes:
-            modes.append("person")
-        if normalized["use_appearance"]:
-            modes.append("appearance")
-        return modes
+        """정규화 플래그를 카메라 detections 모드 목록으로 변환한다."""
+        return flags_to_detection_modes(flags)
 
     def _parse_detections(
         self,
         detections: Optional[Union[List[str], Mapping[str, object]]],
     ) -> Dict[str, bool]:
+        """입력 detections 값을 카메라별 기능 플래그로 해석한다."""
         if isinstance(detections, Mapping):
             return self._normalize_model_flags(dict(detections))
 
         if not detections:
             return {
-                "use_helmet": self._helmet_enabled,
+                "use_helmet": getattr(self, "_helmet_enabled", True),
                 "use_pose": True,
                 "use_person": False,
-                "use_face": self._face_enabled_default,
-                "use_appearance": self._appearance_enabled_default,
+                "use_face": getattr(self, "_face_enabled_default", False),
+                "use_appearance": getattr(self, "_appearance_enabled_default", False),
             }
 
         modes = {str(item).lower() for item in detections}
@@ -638,6 +534,7 @@ class DeepStreamProcessor(BaseProcessor):
         return self._normalize_model_flags(flags)
 
     def get_camera_model_settings(self, camera_id: str) -> Optional[Dict[str, bool]]:
+        """카메라별 현재 모델 활성화 플래그를 반환한다."""
         flags = self._camera_ai_flags.get(camera_id)
         return dict(flags) if flags is not None else None
 
@@ -647,6 +544,7 @@ class DeepStreamProcessor(BaseProcessor):
         model_settings: Dict,
         cameras_json_path: str = "cameras.json",
     ) -> Optional[Dict[str, bool]]:
+        """카메라 모델 설정을 갱신하고 필요 시 파이프라인 재시작을 예약한다."""
         if camera_id not in self._cameras:
             return None
 
@@ -674,10 +572,8 @@ class DeepStreamProcessor(BaseProcessor):
                     "[%s] 파이프라인 재시작 필요: 빌드 토폴로지=%s → 필요 토폴로지=%s",
                     camera_id, built, next_topology,
                 )
-                self._pipeline_restart_pending = True
-                self._restart_pipeline_async("model_settings_changed")
+                self._request_pipeline_restart("model_settings_changed")
             else:
-                self._pipeline_restart_pending = False
                 logger.info(
                     "[%s] 런타임 필터 적용 (파이프라인 재시작 없음): 토폴로지=%s",
                     camera_id, next_topology,
@@ -691,6 +587,7 @@ class DeepStreamProcessor(BaseProcessor):
         model_settings: Dict[str, object],
         cameras_json_path: str,
     ) -> None:
+        """카메라 모델 플래그를 cameras.json에 원자적으로 저장한다."""
         normalized = self._normalize_model_flags(model_settings)
         detections = self._flags_to_detection_modes(normalized)
 
@@ -709,7 +606,6 @@ class DeepStreamProcessor(BaseProcessor):
             if not updated:
                 raise KeyError(f"camera_id '{camera_id}' not found in cameras config")
 
-            # 원자적 쓰기: 임시 파일에 쓴 뒤 교체
             tmp_path = cameras_json_path + ".tmp"
             with open(tmp_path, "w", encoding="utf-8") as fp:
                 json.dump(cameras, fp, ensure_ascii=False, indent=2)
@@ -744,20 +640,24 @@ class DeepStreamProcessor(BaseProcessor):
             return False
 
     def list_registered_faces(self) -> List[Dict[str, str]]:
+        """등록된 얼굴 목록을 조회한다."""
         return self.face_recognizer.list_faces()
 
     def register_face(self, *args: Any, **kwargs: Any) -> Dict[str, str]:
+        """얼굴을 등록한 뒤 갤러리를 즉시 다시 로드한다."""
         entry = self.face_recognizer.register_face(*args, **kwargs)
         self.reload_face_gallery()
         return entry
 
     def delete_face(self, face_id: str) -> bool:
+        """지정 얼굴을 삭제하고 성공 시 갤러리를 다시 로드한다."""
         deleted = self.face_recognizer.delete_face(face_id)
         if deleted:
             self.reload_face_gallery()
         return deleted
 
     def reload_face_gallery(self) -> None:
+        """얼굴 인식 갤러리 메모리를 강제로 새로고침한다."""
         try:
             self.face_recognizer.reload_gallery()
         except Exception as exc:
@@ -789,7 +689,6 @@ class DeepStreamProcessor(BaseProcessor):
             "zones_data": zones_data or [],
             "src_element": None,   # Gst.Element — 동적 추가 시 저장
             "pad_id": None,        # nvstreammux 패드 번호
-            "sinkpad": None,       # nvstreammux request pad
             "reconnect_attempts": 0,
         }
         self._camera_ai_flags[camera_id] = self._parse_detections(detections)
@@ -811,31 +710,6 @@ class DeepStreamProcessor(BaseProcessor):
                 self.zone_manager.load_zones(camera_id, None)
             except Exception as exc:
                 logger.warning("[%s] DeepStream 구역 로딩 실패: %s", camera_id, exc)
-
-        if self.running and self._pipeline is not None:
-            next_topology = self._inference_topology_signature()
-            needs_restart = any(
-                need and not have
-                for need, have in zip(next_topology, self._built_topology)
-            )
-            if needs_restart:
-                logger.info(
-                    "[%s] 새 카메라가 현재 DeepStream 토폴로지에 없는 추론 요소를 요구합니다. "
-                    "파이프라인 재시작을 예약합니다: 빌드=%s 필요=%s",
-                    camera_id,
-                    self._built_topology,
-                    next_topology,
-                )
-                self._pipeline_restart_pending = True
-                self._restart_pipeline_async(f"camera_added:{camera_id}:topology_changed")
-            elif not self._add_camera_to_pipeline(camera_id):
-                logger.warning(
-                    "[%s] 실행 중 동적 카메라 추가 실패 → 파이프라인 재시작으로 폴백",
-                    camera_id,
-                )
-                self._pipeline_restart_pending = True
-                self._restart_pipeline_async(f"camera_added:{camera_id}:fallback_restart")
-
         logger.info("[%s] 카메라 등록됨 (DeepStream): %s", camera_id, source)
         return True
 
@@ -880,19 +754,13 @@ class DeepStreamProcessor(BaseProcessor):
         logger.info("[%s] 재연결 시도 중...", camera_id)
         self._source_backoff_until.pop(camera_id, None)
         self._source_last_error.pop(camera_id, None)
-
-        if camera_id not in self._cameras:
-            self.add_camera(camera_id, source)
-        else:
+        if camera_id in self._cameras:
             self._cameras[camera_id]["source"] = source
-
-        if self._add_camera_to_pipeline(camera_id):
-            logger.info("[%s] DeepStream 카메라 재연결 동적 attach 완료", camera_id)
+        elif not self.add_camera(camera_id, source):
             return
-
-        logger.warning("[%s] DeepStream 동적 재연결 실패 → 파이프라인 재시작으로 폴백", camera_id)
-        self._pipeline_restart_pending = True
-        self._restart_pipeline_async(f"camera_retry:{camera_id}:fallback_restart")
+        if not self._add_camera_to_pipeline(camera_id):
+            self._pipeline_restart_pending = True
+            self._restart_pipeline_async(f"camera_retry:{camera_id}:fallback_restart")
 
     def start(self) -> None:
         """DeepStream 파이프라인을 시작한다.
@@ -916,36 +784,17 @@ class DeepStreamProcessor(BaseProcessor):
             if self._pipeline is None:
                 raise RuntimeError("_build_pipeline() 이 pipeline을 설정하지 않았습니다.")
 
-            self._publish_thread = threading.Thread(
-                target=self._publish_loop, daemon=True, name="ds-publish"
+            (
+                self._publish_thread,
+                self._main_loop_thread,
+                self._face_worker_thread,
+            ) = start_pipeline_runtime(
+                pipeline=self._pipeline,
+                main_loop=self._main_loop,
+                gst_module=Gst,
+                publish_loop_target=self._publish_loop,
+                face_worker_loop_target=self._face_worker_loop,
             )
-            self._publish_thread.start()
-
-            # 얼굴/외형 인식 워커 시작 (GStreamer 메인루프와 분리)
-            self._face_worker_thread = threading.Thread(
-                target=self._face_worker_loop, daemon=True, name="ds-face-worker"
-            )
-            self._face_worker_thread.start()
-
-            if self._falldata_aux.enabled:
-                self._falldata_aux_worker_thread = threading.Thread(
-                    target=self._falldata_aux_worker_loop,
-                    daemon=True,
-                    name="ds-falldata-aux-worker",
-                )
-                self._falldata_aux_worker_thread.start()
-
-            # GStreamer 파이프라인 재생 시작
-            ret = self._pipeline.set_state(Gst.State.PLAYING)
-            if ret == Gst.StateChangeReturn.FAILURE:
-                raise RuntimeError("파이프라인을 PLAYING 상태로 전환하는 데 실패했습니다.")
-
-            self._main_loop_thread = threading.Thread(
-                target=self._main_loop.run,
-                daemon=True,
-                name="ds-main-loop",
-            )
-            self._main_loop_thread.start()
             logger.info("DeepStream 파이프라인 시작됨")
 
         except Exception as exc:
@@ -960,27 +809,24 @@ class DeepStreamProcessor(BaseProcessor):
         """DeepStream 파이프라인을 중지한다."""
         self.running = False
         self.stop_event.set()
-        if self._pipeline is not None:
-            self._pipeline.set_state(Gst.State.NULL)
-            self._pipeline = None
-        if self._main_loop is not None and self._main_loop.is_running():
-            self._main_loop.quit()
-        if self._publish_thread and self._publish_thread.is_alive():
-            self._publish_thread.join(timeout=2.0)
-        if self._main_loop_thread and self._main_loop_thread.is_alive():
-            self._main_loop_thread.join(timeout=2.0)
-        if self._face_worker_thread and self._face_worker_thread.is_alive():
-            self._face_worker_thread.join(timeout=2.0)
-        if self._falldata_aux_worker_thread and self._falldata_aux_worker_thread.is_alive():
-            self._falldata_aux_worker_thread.join(timeout=2.0)
+
+        stop_pipeline_runtime(
+            pipeline=self._pipeline,
+            main_loop=self._main_loop,
+            publish_thread=self._publish_thread,
+            main_loop_thread=self._main_loop_thread,
+            face_worker_thread=self._face_worker_thread,
+            gst_module=Gst,
+            join_timeout_sec=2.0,
+        )
+        self._pipeline = None
         self.event_publisher.disconnect()
         logger.info("DeepStreamProcessor 중지됨")
 
     def get_stats(self) -> Dict:
         """처리 통계를 반환한다."""
-        return self._build_stats_payload(
-            backend="deepstream",
-            camera_count=len(self._cameras),
+        stats_fields = build_deepstream_stats_fields(
+            cameras_count=len(self._cameras),
             frames_processed=self._frames_processed,
             frames_dropped=self._frames_dropped,
             events_detected=self._events_detected,
@@ -990,32 +836,26 @@ class DeepStreamProcessor(BaseProcessor):
             events_failed=self._events_failed,
             output_mode=self._output_mode,
             preview_enabled=self._preview_enabled,
-            preview_max_fps=self._preview_store.max_fps,
-            preview_ready=self._preview_store.last_frame_at is not None,
-            cameras=len(self._cameras),
+            preview_max_fps=getattr(self, "_preview_max_fps", 0.0),
+            preview_ready=getattr(self, "_preview_store", None) is not None
+            and self._preview_store.last_frame_at is not None,
+        )
+        return self._build_stats_payload(
+            backend="deepstream",
+            **stats_fields,
         )
 
     def get_camera_status(self) -> Dict[str, dict]:
         """카메라별 상태를 반환한다."""
-        now = time.monotonic()
-        return {
-            camera_id: self._build_camera_status_entry(
-                connected=self.running and camera_id not in self._source_backoff_until,
-                source=info.get("source"),
-                reconnect_attempts=int(info.get("reconnect_attempts", 0) or 0),
-                last_frame_time=self._preview_store.last_frame_at,
-                status="backoff" if camera_id in self._source_backoff_until else None,
-                pad_id=info.get("pad_id"),
-                source_backoff_remaining_sec=round(
-                    max(0.0, self._source_backoff_until.get(camera_id, 0.0) - now),
-                    1,
-                )
-                if camera_id in self._source_backoff_until
-                else None,
-                last_error=self._source_last_error.get(camera_id),
-            )
-            for camera_id, info in self._cameras.items()
-        }
+        return build_camera_status_map(
+            cameras=self._cameras,
+            running=self.running,
+            source_backoff_until=self._source_backoff_until,
+            source_last_error=self._source_last_error,
+            preview_last_frame_at=self._preview_store.last_frame_at,
+            now_monotonic=time.monotonic(),
+            build_status_entry=self._build_camera_status_entry,
+        )
 
     def get_camera_frame(
         self,
@@ -1032,7 +872,7 @@ class DeepStreamProcessor(BaseProcessor):
         """
         return self._preview_store.get_frame(
             camera_id,
-            fallback_camera_id=self._preview_camera_id,
+            fallback_camera_id=getattr(self, "_preview_camera_id", None),
             copy_frame=copy_frame,
         )
 
@@ -1045,12 +885,14 @@ class DeepStreamProcessor(BaseProcessor):
     # ------------------------------------------------------------------
 
     def _make_element(self, factory: str, name: str) -> Any:
+        """GStreamer 엘리먼트를 생성하고 실패 시 예외를 발생시킨다."""
         element = Gst.ElementFactory.make(factory, name)
         if element is None:
             raise RuntimeError(f"GStreamer element 생성 실패: {factory} ({name})")
         return element
 
     def _normalize_uri(self, source: Union[str, int]) -> str:
+        """카메라 source 값을 DeepStream에서 사용할 URI 형태로 정규화한다."""
         if isinstance(source, int):
             raise ValueError("DeepStream nvurisrcbin은 현재 RTSP/HTTP/file URI만 지원합니다.")
 
@@ -1062,38 +904,41 @@ class DeepStreamProcessor(BaseProcessor):
         return path.as_uri()
 
     def _on_source_pad_added(self, src: Any, pad: Any, sinkpad: Any) -> None:
+        """동적 소스 패드를 streammux sink pad에 안전하게 링크한다."""
         if sinkpad.is_linked():
             return
         ret = pad.link(sinkpad)
         if ret != Gst.PadLinkReturn.OK:
             logger.error("DeepStream source pad link 실패: %s -> %s", src.get_name(), ret)
 
-    def _next_dynamic_pad_id(self) -> int:
-        """현재 등록된 source pad 다음 번호를 반환한다."""
-        return next_available_pad_id(self._cameras)
-
-    def _detach_camera_source_from_pipeline(
-        self,
-        camera_id: str,
-        *,
-        pipeline: Optional[Any] = None,
-        streammux: Optional[Any] = None,
-    ) -> Optional[int]:
-        """카메라 source element와 streammux request pad를 파이프라인에서 제거한다."""
-        info = self._cameras.get(camera_id)
-        if not info:
-            return None
-
-        pipeline = pipeline or self._pipeline
-        streammux = streammux or (pipeline.get_by_name("streammux") if pipeline is not None else None)
-        return detach_camera_source_from_pipeline(
-            camera_id=camera_id,
-            info=info,
-            pad_to_camera=self._pad_to_camera,
-            gst_module=Gst,
-            pipeline=pipeline,
-            streammux=streammux,
+    def next_source_retry_delay(self) -> Optional[float]:
+        """소스 backoff 종료까지 남은 최소 대기 시간을 반환한다."""
+        return compute_next_source_retry_delay(
+            self._source_backoff_until,
+            now=time.monotonic(),
         )
+
+    def _build_source_entries(self) -> List[Tuple[int, str, Dict, str]]:
+        return build_source_entries(
+            cameras=self._cameras,
+            source_backoff_until=self._source_backoff_until,
+            now=time.monotonic(),
+            normalize_uri=self._normalize_uri,
+        )
+
+    def _mark_source_failed(self, camera_id: str, reason: str) -> None:
+        mark_source_failed(
+            cameras=self._cameras,
+            source_backoff_until=self._source_backoff_until,
+            source_last_error=self._source_last_error,
+            source_failure_backoff_sec=self._source_failure_backoff_sec,
+            camera_id=camera_id,
+            reason=reason,
+            now=time.monotonic(),
+        )
+
+    def _camera_id_from_message(self, message: Any, debug: object) -> Optional[str]:
+        return camera_id_from_message(cameras=self._cameras, message=message, debug=debug)
 
     def _attach_camera_source_to_pipeline(
         self,
@@ -1104,29 +949,13 @@ class DeepStreamProcessor(BaseProcessor):
         streammux: Optional[Any] = None,
         detach_existing: bool = False,
     ) -> bool:
-        """카메라 source를 nvstreammux에 연결한다.
-
-        start() 중 정적 빌드와 실행 중 동적 재연결이 같은 경로를 사용하도록
-        분리한 헬퍼다. 실패 시 호출자가 파이프라인 재시작으로 폴백한다.
-        """
-        info = self._cameras.get(camera_id)
-        if info is None:
-            logger.warning("[%s] 등록되지 않은 카메라 source attach 요청", camera_id)
-            return False
-
         pipeline = pipeline or self._pipeline
-        if pipeline is None:
-            logger.warning("[%s] source attach 실패: pipeline 없음", camera_id)
+        streammux = streammux or (pipeline.get_by_name("streammux") if pipeline else None)
+        if pipeline is None or streammux is None or camera_id not in self._cameras:
             return False
-
-        streammux = streammux or pipeline.get_by_name("streammux")
-        if streammux is None:
-            logger.warning("[%s] source attach 실패: streammux 없음", camera_id)
-            return False
-
         attached = attach_camera_source_to_pipeline(
             camera_id=camera_id,
-            info=info,
+            info=self._cameras[camera_id],
             pad_to_camera=self._pad_to_camera,
             gst_module=Gst,
             pipeline=pipeline,
@@ -1135,138 +964,142 @@ class DeepStreamProcessor(BaseProcessor):
             make_element=self._make_element,
             normalize_uri=self._normalize_uri,
             on_source_pad_added=self._on_source_pad_added,
-            next_pad_id=self._next_dynamic_pad_id,
+            next_pad_id=lambda: max(self._pad_to_camera.keys(), default=-1) + 1,
             detach_existing=detach_existing,
         )
-        if attached and not self._preview_camera_id:
+        if attached and self._preview_camera_id is None:
             self._preview_camera_id = camera_id
         return attached
 
     def _add_camera_to_pipeline(self, camera_id: str) -> bool:
-        """실행 중인 DeepStream 파이프라인에 카메라 source를 동적으로 붙인다."""
-        if not self.running or self._pipeline is None:
+        if not self.running or self._pipeline is None or camera_id not in self._cameras:
             return False
-        info = self._cameras.get(camera_id)
-        if info is None:
-            return False
-        attached_count = count_attached_sources(self._cameras)
-        if info.get("pad_id") is None and attached_count >= self._built_source_count:
-            logger.info(
-                "[%s] 현재 DeepStream batch-size(%d)를 넘는 source 추가는 재시작으로 처리합니다.",
-                camera_id,
-                self._built_source_count,
-            )
+        info = self._cameras[camera_id]
+        existing_source = info.get("src_element") is not None
+        built_source_count = getattr(
+            self, "_built_source_count", len(getattr(self, "_pad_to_camera", {}))
+        )
+        if not existing_source and len(self._cameras) > built_source_count:
             return False
         return self._attach_camera_source_to_pipeline(
             camera_id,
-            detach_existing=True,
+            detach_existing=existing_source,
         )
-
-    def _build_source_entries(self) -> List[Tuple[int, str, Dict, str]]:
-        """카메라 설정을 DeepStream source entry 목록으로 변환한다."""
-        source_entries: List[Tuple[int, str, Dict, str]] = []
-        now = time.monotonic()
-        for camera_id, info in self._cameras.items():
-            backoff_until = self._source_backoff_until.get(camera_id)
-            if backoff_until is not None:
-                if now < backoff_until:
-                    remaining = backoff_until - now
-                    logger.warning("[%s] DeepStream 소스 backoff 중: %.1f초 후 재시도", camera_id, remaining)
-                    continue
-                self._source_backoff_until.pop(camera_id, None)
-                logger.info("[%s] DeepStream 소스 backoff 종료 → 파이프라인 포함", camera_id)
-
-            try:
-                source_uri = self._normalize_uri(info["source"])
-            except ValueError as exc:
-                logger.warning("[%s] DeepStream 소스 제외: %s", camera_id, exc)
-                continue
-            source_entries.append((len(source_entries), camera_id, info, source_uri))
-        return source_entries
-
-    def _mark_source_failed(self, camera_id: str, reason: str) -> None:
-        """문제 소스를 일정 시간 제외해 다른 카메라 파이프라인을 보호한다."""
-        if camera_id not in self._cameras:
-            return
-        self._source_last_error[camera_id] = reason
-        self._source_backoff_until[camera_id] = time.monotonic() + max(
-            1.0,
-            self._source_failure_backoff_sec,
-        )
-        info = self._cameras[camera_id]
-        info["reconnect_attempts"] = int(info.get("reconnect_attempts", 0) or 0) + 1
-        logger.warning(
-            "[%s] DeepStream 소스 오류로 %.0f초 backoff 적용: %s",
-            camera_id,
-            self._source_failure_backoff_sec,
-            reason,
-        )
-
-    def next_source_retry_delay(self) -> Optional[float]:
-        """backoff 중인 소스가 있으면 가장 가까운 재시도까지 남은 초를 반환한다."""
-        now = time.monotonic()
-        remaining = [
-            backoff_until - now
-            for backoff_until in self._source_backoff_until.values()
-            if backoff_until > now
-        ]
-        if not remaining:
-            return None
-        return max(1.0, min(remaining))
-
-    def _camera_id_from_message(self, message: Any, debug: object) -> Optional[str]:
-        """GStreamer error message에서 src-<camera_id> element명을 추출한다."""
-        candidates = []
-        try:
-            src = getattr(message, "src", None)
-            if src is not None and hasattr(src, "get_name"):
-                candidates.append(str(src.get_name()))
-        except Exception:
-            pass
-        candidates.append(str(debug or ""))
-
-        for text in candidates:
-            for camera_id in self._cameras:
-                if f"src-{camera_id}" in text:
-                    return camera_id
-        return None
 
     def _load_pphuman_label_map(self, label_map_path: Optional[str]) -> Dict[str, object]:
-        """PP-Human SGIE tensor 디코딩용 라벨 맵을 로드한다."""
-        candidates = [
-            label_map_path,
-            os.environ.get("APPEARANCE_LABEL_MAP_PATH"),
-            "config/appearance_pphuman_labels.example.json",
-        ]
-        for value in candidates:
-            if not value:
-                continue
-            path = Path(str(value)).expanduser()
-            if not path.exists():
-                path = (Path.cwd() / str(value)).resolve()
-            if not path.exists():
-                continue
-            try:
-                payload = json.loads(path.read_text(encoding="utf-8"))
-                if isinstance(payload, dict):
-                    return payload
-            except Exception as exc:
-                logger.warning("PP-Human SGIE 라벨 맵 로드 실패: %s (%s)", path, exc)
-        return {"labels": []}
+        """PP-Human 속성 디코딩용 라벨 맵을 로드한다."""
+        return load_pphuman_label_map(label_map_path)
+
+    def _put_event_dict(self, event_data: Dict[str, Any], camera_name: str) -> bool:
+        return ds_enqueue_queue_item(
+            event_queue=self.event_queue,
+            queue_item=event_data,
+            camera_name=camera_name,
+            increment_stat=self._increment_stat,
+        )
+
+    def _resolve_pphuman_sgie_backend_name(self) -> str:
+        return resolve_pphuman_sgie_backend_name(
+            pphuman_infer_config=Path(
+                os.environ.get("DS_PPHUMAN_INFER_CONFIG", str(_PPHUMAN_INFER_CONFIG))
+            ),
+            pphuman_label_map=self._pphuman_label_map,
+        )
+
+    def _fall_shadow_recorder(self) -> FallShadowReviewRecorder:
+        config = FallShadowReviewConfig(
+            review_log_path=Path(getattr(self, "_fall_shadow_review_log_path", "/app/data/logs/fall_shadow_review.jsonl")),
+            clip_dir=Path(getattr(self, "_fall_shadow_clip_dir", "/app/data/fall_review_clips")),
+            save_clips=bool(getattr(self, "_fall_shadow_save_clips", False)),
+            near_miss_enabled=bool(getattr(self, "_fall_shadow_near_miss_enabled", False)),
+            near_miss_cooldown_sec=float(getattr(self, "_fall_shadow_near_miss_cooldown_sec", 10.0)),
+        )
+        near_miss_last_at = getattr(self, "_fall_shadow_near_miss_last_at", None)
+        if near_miss_last_at is None:
+            near_miss_last_at = {}
+            self._fall_shadow_near_miss_last_at = near_miss_last_at
+        recorder = getattr(self, "_fall_shadow", None)
+        if recorder is None:
+            recorder = FallShadowReviewRecorder(
+                config,
+                falldata_aux=getattr(self, "_falldata_aux", None),
+                near_miss_last_at=near_miss_last_at,
+            )
+            self._fall_shadow = recorder
+        else:
+            recorder.config = config
+            recorder.falldata_aux = getattr(self, "_falldata_aux", None)
+            recorder.near_miss_last_at = near_miss_last_at
+        return recorder
+
+    def _submit_falldata_aux_work(
+        self, camera_name: str, filtered_events: List[DetectionEvent]
+    ) -> Optional[DetectionEvent]:
+        return self._fall_shadow_recorder().submit_aux_work(
+            self._falldata_aux_queue, camera_name, filtered_events
+        )
+
+    def _write_fall_near_miss_review_records(
+        self, camera_name: str, filtered_events: List[DetectionEvent]
+    ) -> None:
+        self._fall_shadow_recorder().write_near_miss_records(
+            camera_name, filtered_events, now_monotonic=time.monotonic()
+        )
+
+    def _write_fall_shadow_review_record(
+        self,
+        camera_name: str,
+        event_payload: Dict[str, Any],
+        result: Dict[str, Any],
+        *,
+        near_miss: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        return self._fall_shadow_recorder().write_record(
+            camera_name, event_payload, result, near_miss=near_miss
+        )
+
+    @staticmethod
+    def _fall_shadow_event_id(camera_name: str, event_payload: Dict[str, Any], created_at: Any) -> str:
+        return fall_shadow_event_id(camera_name, event_payload, created_at)
+
+    def _should_confirm_fall_with_aux_before_publish(self, event: DetectionEvent) -> bool:
+        if event.event_type != EventType.FALL_DETECTED:
+            return False
+        if not getattr(self, "_fall_aux_confirm_borderline", False):
+            return False
+        falldata_aux = getattr(self, "_falldata_aux", None)
+        if falldata_aux is None or not falldata_aux.enabled:
+            return False
+        score = float((event.metadata or {}).get("fall_score", 0.0))
+        max_score = getattr(self, "_fall_aux_confirm_max_fall_score", None)
+        if max_score is not None:
+            return score <= float(max_score)
+        return score <= float(self._fall_detector.score_threshold)
+
+    def _enqueue_aux_confirmed_fall_event(
+        self, camera_name: str, event_payload: Dict[str, Any], result: Dict[str, Any]
+    ) -> bool:
+        if result.get("status") != "ok" or result.get("confirmed") is not True:
+            return False
+        metadata = dict(event_payload.get("metadata") or {})
+        if (
+            getattr(self, "_fall_aux_compare_veto_enabled", False)
+            and float(metadata.get("fall_score", 0.0))
+            >= float(getattr(self, "_fall_aux_compare_veto_min_fall_score", 0.0))
+            and (result.get("compare_model") or {}).get("status") == "ok"
+            and (result.get("compare_model") or {}).get("confirmed") is False
+        ):
+            return False
+        metadata.pop("falldata_aux_publish_pending", None)
+        metadata["falldata_aux"] = result
+        metadata["falldata_aux_confirmed"] = True
+        queue_item = dict(event_payload)
+        queue_item["metadata"] = metadata
+        return self._put_event_dict(queue_item, camera_name)
 
     def _configure_streammux(self, streammux: Any, n_cams: int) -> None:
-        streammux.set_property("batch-size", n_cams)
-        streammux.set_property("width", int(os.environ.get("DS_STREAM_WIDTH", "1920")))
-        streammux.set_property("height", int(os.environ.get("DS_STREAM_HEIGHT", "1080")))
-        # 30fps 기준 배치 타임아웃: 1/30s = 33333µs
-        # 카메라 수가 많으면 늘릴 것 (4cam: 33333 / 8cam+: 40000)
-        streammux.set_property("batched-push-timeout", int(os.environ.get("DS_BATCH_TIMEOUT_US", "33333")))
-        streammux.set_property("live-source", 1)
-        streammux.set_property("enable-padding", 1)
-        try:
-            streammux.set_property("nvbuf-memory-type", int(os.environ.get("DS_NVBUF_MEMORY_TYPE", "0")))
-        except TypeError:
-            logger.debug("nvstreammux nvbuf-memory-type property 미지원")
+        """카메라 수에 맞춰 nvstreammux 속성을 설정한다."""
+        ds_element_config.configure_streammux(streammux, n_cams)
 
     def _configure_infer_elements(
         self,
@@ -1275,61 +1108,36 @@ class DeepStreamProcessor(BaseProcessor):
         pphuman_infer: Optional[Any],
         n_cams: int,
     ) -> None:
-        if nvinfer is not None:
-            nvinfer.set_property("config-file-path", str(_INFER_CONFIG))
-            nvinfer.set_property("batch-size", n_cams)
-            self._set_optional_property(
-                nvinfer,
-                "interval",
-                self._env_int("DS_PRIMARY_INTERVAL", 0),
-            )
-        if pphuman_infer is not None:
-            pphuman_infer.set_property("config-file-path", str(_PPHUMAN_INFER_CONFIG))
-            pphuman_infer.set_property("batch-size", n_cams)
-            self._set_optional_property(
-                pphuman_infer,
-                "interval",
-                self._env_int("DS_PPHUMAN_INTERVAL", 4),
-            )
-            self._set_optional_property(
-                pphuman_infer,
-                "secondary-reinfer-interval",
-                self._env_int("DS_PPHUMAN_REINFER_INTERVAL", 15),
-            )
-        if helmet_infer is not None:
-            helmet_infer.set_property("config-file-path", str(_HELMET_INFER_CONFIG))
-            helmet_infer.set_property("batch-size", n_cams)
-            self._set_optional_property(
-                helmet_infer,
-                "interval",
-                self._env_int("DS_HELMET_INTERVAL", 1),
-            )
+        """Primary/Helmet/PP-Human 추론 엘리먼트 속성을 일괄 설정한다."""
+        ds_element_config.configure_infer_elements(
+            nvinfer=nvinfer,
+            helmet_infer=helmet_infer,
+            pphuman_infer=pphuman_infer,
+            n_cams=n_cams,
+            infer_config=_INFER_CONFIG,
+            helmet_infer_config=_HELMET_INFER_CONFIG,
+            pphuman_infer_config=_PPHUMAN_INFER_CONFIG,
+            env_int=self._env_int,
+            set_property_optional=self._set_optional_property,
+        )
 
     def _configure_tracker(self, tracker: Any) -> None:
-        if Path(_TRACKER_LIB).exists():
-            tracker.set_property("ll-lib-file", _TRACKER_LIB)
-        tracker.set_property("ll-config-file", str(_TRACKER_CONFIG))
-        tracker.set_property("tracker-width", int(os.environ.get("DS_TRACKER_WIDTH", "640")))
-        tracker.set_property("tracker-height", int(os.environ.get("DS_TRACKER_HEIGHT", "384")))
-        tracker.set_property("gpu-id", 0)
-        try:
-            tracker.set_property("enable-past-frame", 1)
-        except TypeError:
-            logger.debug("nvtracker enable-past-frame property 미지원")
+        """nvtracker 라이브러리/설정 경로 및 공통 옵션을 적용한다."""
+        ds_element_config.configure_tracker(
+            tracker=tracker,
+            tracker_lib=_TRACKER_LIB,
+            tracker_config=_TRACKER_CONFIG,
+        )
 
     @staticmethod
     def _configure_output_queue(output_queue: Any) -> None:
-        output_queue.set_property("leaky", 2)
-        output_queue.set_property("max-size-buffers", 2)
-        output_queue.set_property("max-size-bytes", 0)
-        output_queue.set_property("max-size-time", 0)
+        """출력 큐의 누수/버퍼 정책을 설정해 지연을 제어한다."""
+        ds_element_config.configure_output_queue(output_queue)
 
     @staticmethod
     def _link_or_raise(first: Any, second: Any, message: Optional[str] = None) -> None:
-        if not first.link(second):
-            if message is None:
-                message = f"{first.get_name()} -> {second.get_name()} link 실패"
-            raise RuntimeError(message)
+        """두 엘리먼트를 링크하고 실패 시 예외로 중단한다."""
+        ds_element_config.link_or_raise(first, second, message)
 
     def _link_preview_branch(
         self,
@@ -1339,56 +1147,33 @@ class DeepStreamProcessor(BaseProcessor):
         output_queue: Any,
         preview_elements: List[Any],
     ) -> Any:
-        self._link_or_raise(osd, tee, "nvdsosd -> preview-tee link 실패")
-        self._link_or_raise(tee, output_queue, "preview-tee -> output-queue link 실패")
-        if preview_elements:
-            self._link_or_raise(
-                tee,
-                preview_elements[0],
-                "preview-tee -> preview-queue link 실패",
-            )
-            preview_previous = preview_elements[0]
-            for element in preview_elements[1:]:
-                self._link_or_raise(preview_previous, element)
-                preview_previous = element
-        return output_queue
+        """OSD 이후 tee에서 preview 브랜치를 연결한다."""
+        return ds_element_config.link_preview_branch(
+            osd=osd,
+            tee=tee,
+            output_queue=output_queue,
+            preview_elements=preview_elements,
+            link=self._link_or_raise,
+        )
 
     def _event_type_for_label(self, label: str) -> EventType:
-        normalized = (label or "").strip().lower().replace("-", "_")
-        if normalized == "person":
-            return EventType.PERSON
-        if normalized in {"helmet", "hardhat", "head_protected"}:
-            return EventType.HELMET
-        if normalized in {"head", "hardhat_off", "no_helmet", "helmet_off", "helmet_missing"}:
-            return EventType.HEAD
-        if normalized in {"fall", "fall_detected"}:
-            return EventType.FALL_DETECTED
-        return EventType.OTHER
+        """라벨 문자열을 내부 EventType으로 변환한다."""
+        return event_type_for_label(label)
 
     @staticmethod
     def _env_bool(name: str, default: bool = False) -> bool:
-        raw_value = os.environ.get(name)
-        if raw_value is None:
-            return default
-        return raw_value.strip().lower() in {"1", "true", "yes", "on"}
+        """환경변수를 bool로 파싱한다."""
+        return ds_env.env_bool(name, default)
 
     @staticmethod
     def _env_int(name: str, default: int = 0) -> int:
-        raw_value = os.environ.get(name)
-        if raw_value is None:
-            return default
-        try:
-            return int(raw_value)
-        except (TypeError, ValueError):
-            logger.warning("잘못된 %s 값입니다: %r, 기본값 %d 사용", name, raw_value, default)
-            return default
+        """환경변수를 int로 파싱한다."""
+        return ds_env.env_int(name, default)
 
     @staticmethod
     def _set_optional_property(element: Any, name: str, value: Any) -> None:
-        try:
-            element.set_property(name, value)
-        except TypeError:
-            logger.debug("%s property 미지원: %s", element.get_name(), name)
+        """지원되는 경우에만 GStreamer 속성을 설정한다."""
+        ds_element_config.set_optional_property(element, name, value)
 
     @staticmethod
     def _read_preview_max_fps() -> float:
@@ -1397,24 +1182,12 @@ class DeepStreamProcessor(BaseProcessor):
         별도 값이 없으면 MJPEG 스트림 FPS와 맞춰 브라우저 화면이 불필요하게
         낮은 FPS로 제한되지 않도록 한다.
         """
-        raw_value = os.environ.get("DS_PREVIEW_MAX_FPS") or os.environ.get("STREAM_FPS") or "30.0"
-        try:
-            preview_fps = float(raw_value)
-        except (TypeError, ValueError):
-            logger.warning("잘못된 DS_PREVIEW_MAX_FPS/STREAM_FPS 값입니다: %r, 기본값 30.0 사용", raw_value)
-            return 30.0
-        return max(0.0, min(preview_fps, 60.0))
+        return ds_env.read_preview_max_fps()
 
     @staticmethod
     def _parse_class_ids(name: str, default: Optional[set[int]] = None) -> set[int]:
-        raw_value = os.environ.get(name)
-        if raw_value is None or not raw_value.strip():
-            return set(default or set())
-        return {
-            int(value.strip())
-            for value in raw_value.split(",")
-            if value.strip()
-        }
+        """클래스 ID 환경변수를 정수 집합으로 파싱한다."""
+        return ds_env.parse_class_ids(name, default)
 
     def _load_yolo_labels(
         self,
@@ -1422,28 +1195,12 @@ class DeepStreamProcessor(BaseProcessor):
         env_name: str,
         fallback: Optional[List[str]] = None,
     ) -> List[str]:
-        labels: List[str] = []
-        if labels_file.exists():
-            for line in labels_file.read_text(encoding="utf-8").splitlines():
-                label = line.strip()
-                if label and not label.startswith("#"):
-                    labels.append(label)
-
-        if not labels:
-            labels = list(fallback or [])
-        if not labels:
-            labels = [f"class_{idx}" for idx in range(80)]
-            labels[0] = "person"
-
-        env_labels = [label.strip() for label in os.environ.get(env_name, "").split(",")]
-        env_labels = [label for label in env_labels if label]
-        if env_labels:
-            labels = env_labels
-        return labels
+        """라벨 파일/환경변수/기본값 순으로 YOLO 라벨 목록을 구성한다."""
+        return load_yolo_labels(labels_file, env_name, fallback)
 
     def _decode_pphuman_for_obj(self, obj_meta: Any) -> Dict[str, Any]:
         """obj_meta에서 PP-Human 26-score를 읽어 appearance 속성 dict로 반환한다."""
-        scores = read_pphuman_obj_scores(
+        scores = tensor_read_pphuman_obj_scores(
             obj_meta,
             pyds_module=pyds,
             pphuman_gie_id=self._pphuman_gie_id,
@@ -1457,21 +1214,10 @@ class DeepStreamProcessor(BaseProcessor):
             logger.debug("PP-Human SGIE score 디코딩 실패: %s", exc)
             return {}
 
-    def _resolve_pphuman_sgie_backend_name(self) -> str:
-        """DeepStream SGIE로 붙은 속성 모델 이름을 운영 로그/DB용으로 결정한다."""
-        candidates = [
-            str(_PPHUMAN_INFER_CONFIG),
-            os.environ.get("DS_PPHUMAN_INFER_CONFIG", ""),
-            os.environ.get("APPEARANCE_LABEL_MAP_PATH", ""),
-            str(self._pphuman_label_map.get("model") or ""),
-        ]
-        if any("pa100k" in value.lower() for value in candidates):
-            return "pa100k_sgie"
-        return "pphuman_sgie"
-
     def _map_yolo_box_to_frame(
         self, box: Any, frame_width: int, frame_height: int
     ) -> Tuple[int, int, int, int]:
+        """모델 입력 좌표계 bbox를 원본 프레임 좌표계로 변환한다."""
         return map_yolo_box_to_frame(
             box,
             frame_width,
@@ -1482,43 +1228,22 @@ class DeepStreamProcessor(BaseProcessor):
     def _is_fall_pose(
         self, keypoints: List[List[float]], width: int, height: int
     ) -> bool:
-        return bool(self._score_fall_pose(keypoints, width, height).get("is_fall"))
-
-    def _score_fall_pose(
-        self, keypoints: List[List[float]], width: int, height: int
-    ) -> Dict[str, Any]:
+        """키포인트와 bbox 크기를 이용해 낙상 자세 여부를 판정한다."""
         import numpy as np
 
         if not keypoints:
-            return {"is_fall": False, "score": 0.0, "reasons": ["missing_keypoints"]}
+            return False
         try:
             kpts = np.asarray(keypoints, dtype=np.float32)
-            result = self._fall_detector._score_fall(kpts, width, height)
-            is_fall = result.score >= self._fall_detector.score_threshold
-            payload: Dict[str, Any] = {
-                "is_fall": is_fall,
-                "score": result.score,
-                "reasons": list(result.reasons),
-                "threshold": self._fall_detector.score_threshold,
-            }
-            folded_score = self._fall_detector.folded_floor_pose_score(kpts, height)
-            if folded_score is not None and not is_fall:
-                payload["near_miss"] = {
-                    "type": "folded_floor_pose",
-                    "score": 3.0,
-                    "reasons": [f"folded_floor_pose:{folded_score:.2f}"],
-                    "base_score": result.score,
-                    "base_reasons": list(result.reasons),
-                    "threshold": self._fall_detector.score_threshold,
-                }
-            return payload
+            return self._fall_detector._check_fall(kpts, width, height)
         except Exception as exc:
             logger.debug("DeepStream pose 낙상 판단 실패: %s", exc)
-            return {"is_fall": False, "score": 0.0, "reasons": ["error"]}
+            return False
 
     def _is_valid_person_pose(
         self, keypoints: List[List[float]]
     ) -> bool:
+        """키포인트가 유효한 사람 자세인지 검증한다."""
         import numpy as np
 
         if not keypoints:
@@ -1530,6 +1255,7 @@ class DeepStreamProcessor(BaseProcessor):
             return True
 
     def _nms(self, detections: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """탐지 결과에 Non-Maximum Suppression을 적용한다."""
         return nms_detections(
             detections,
             iou_threshold=self._yolo_iou_threshold,
@@ -1538,6 +1264,7 @@ class DeepStreamProcessor(BaseProcessor):
 
     @staticmethod
     def _event_iou(first: DetectionEvent, second: DetectionEvent) -> float:
+        """두 이벤트 bbox의 IoU를 계산한다."""
         return event_iou(first, second)
 
     def _assign_synthetic_object_ids(
@@ -1547,175 +1274,133 @@ class DeepStreamProcessor(BaseProcessor):
         return self._synthetic_id_assigner.assign(camera_name, events)
 
     def _enqueue_queue_item(self, queue_item: Any, camera_name: str) -> bool:
-        """DeepStream 이벤트 큐 적재와 관련 통계를 한 곳에서 처리한다."""
-        try:
-            self.event_queue.put_nowait(queue_item)
-            self._increment_stat("events_detected")
-            return True
-        except Full:
-            self._increment_stat("events_dropped")
-            logger.warning("[%s] DeepStream 이벤트 큐 가득 참", camera_name)
-            return False
-
-    def _put_event_dict(self, event_data: Dict[str, Any], camera_name: str) -> bool:
-        return self._enqueue_queue_item(event_data, camera_name)
+        return ds_enqueue_queue_item(
+            event_queue=self.event_queue,
+            queue_item=queue_item,
+            camera_name=camera_name,
+            increment_stat=self._increment_stat,
+        )
 
     def _enqueue_zone_events(
         self, camera_name: str, zone_events: List[ZoneEvent]
     ) -> None:
-        for zone_event in zone_events:
-            event_dict = zone_event.to_dict()
-            if "type" not in event_dict:
-                event_dict["type"] = event_dict.get("event_type")
-            event_dict.setdefault("camera_id", camera_name)
-            event_dict["backend"] = "deepstream"
-            self._put_event_dict(event_dict, camera_name)
+        ds_enqueue_zone_events(
+            camera_name=camera_name,
+            zone_events=zone_events,
+            enqueue_event_dict=self._enqueue_queue_item,
+        )
 
     def _refresh_appearance_conditions(self) -> None:
-        if not self._appearance_enabled_default and not any(
-            flags.get("use_appearance") for flags in self._camera_ai_flags.values()
-        ):
-            return
-
-        now = time.monotonic()
-        if now - self._appearance_conditions_checked_at < self._appearance_conditions_refresh_sec:
-            return
-        self._appearance_conditions_checked_at = now
-
-        try:
-            stat = self._appearance_db_path.stat()
-        except FileNotFoundError:
-            if self._appearance.conditions:
-                self._appearance.set_conditions([])
-            self._appearance_conditions_mtime = None
-            return
-        except OSError as exc:
-            logger.debug("외형 조건 DB stat 실패: %s", exc)
-            return
-
-        if self._appearance_conditions_mtime == stat.st_mtime:
-            return
-
-        conditions = AppearanceConditionStore(self._appearance_db_path).list_all()
-        self._appearance.set_conditions(conditions)
-        self._appearance_conditions_mtime = stat.st_mtime
+        (
+            self._appearance_conditions_checked_at,
+            self._appearance_conditions_mtime,
+        ) = event_context_refresh_appearance_conditions(
+            appearance_enabled_default=self._appearance_enabled_default,
+            camera_ai_flags=self._camera_ai_flags,
+            appearance=self._appearance,
+            appearance_db_path=self._appearance_db_path,
+            current_mtime=self._appearance_conditions_mtime,
+            checked_at=self._appearance_conditions_checked_at,
+            refresh_sec=self._appearance_conditions_refresh_sec,
+            now_monotonic=time.monotonic(),
+        )
 
     def _feature_flags_for_camera(self, camera_name: str) -> Dict[str, bool]:
-        flags = self._camera_ai_flags.get(camera_name)
-        if flags is not None:
-            return flags
-        return {
-            "use_helmet": self._helmet_enabled,
-            "use_pose": True,
-            "use_person": False,
-            "use_face": self._face_enabled_default,
-            "use_appearance": self._appearance_enabled_default,
-        }
+        return feature_flags_for_camera(
+            camera_ai_flags=getattr(self, "_camera_ai_flags", {}),
+            camera_name=camera_name,
+            helmet_enabled=getattr(self, "_helmet_enabled", True),
+            face_enabled_default=getattr(self, "_face_enabled_default", False),
+            appearance_enabled_default=getattr(self, "_appearance_enabled_default", False),
+        )
 
     def _any_camera_flag(self, *flag_names: str) -> bool:
-        return any(
-            bool(flags.get(flag_name))
-            for flags in self._camera_ai_flags.values()
-            for flag_name in flag_names
-        )
+        return any_camera_flag(self._camera_ai_flags, *flag_names)
 
     def _inference_topology_signature(self) -> Tuple[bool, bool, bool]:
-        """현재 모델 플래그로 필요한 DeepStream nvinfer 구성을 계산한다."""
-        primary_enabled = self._any_camera_flag(
-            "use_pose",
-            "use_person",
-            "use_face",
-            "use_appearance",
+        return inference_topology_signature(
+            camera_ai_flags=self._camera_ai_flags,
+            helmet_enabled=self._helmet_enabled,
+            pphuman_sgie_enabled=self._pphuman_sgie_enabled,
+            helmet_config_exists=_HELMET_INFER_CONFIG.exists(),
+            pphuman_config_exists=_PPHUMAN_INFER_CONFIG.exists(),
         )
-        helmet_enabled = (
-            self._helmet_enabled
-            and self._any_camera_flag("use_helmet")
-            and _HELMET_INFER_CONFIG.exists()
-        )
-        pphuman_enabled = (
-            self._pphuman_sgie_enabled
-            and self._any_camera_flag("use_appearance")
-            and _PPHUMAN_INFER_CONFIG.exists()
-        )
-        return primary_enabled, helmet_enabled, pphuman_enabled
+
+    def _set_pipeline_restart_pending(self, pending: bool) -> None:
+        self._pipeline_restart_pending = pending
+
+    def _set_last_pipeline_restart_at(self, timestamp: float) -> None:
+        self._last_pipeline_restart_at = timestamp
+
+    def _request_pipeline_restart(self, reason: str) -> bool:
+        """중복/폭주를 막으면서 DeepStream 파이프라인 재시작을 예약한다."""
+        now = time.monotonic()
+        with self._restart_request_lock:
+            if not mark_restart_pending_if_allowed(
+                running=self.running,
+                restart_pending=self._pipeline_restart_pending,
+                now=now,
+                last_restart_at=self._last_pipeline_restart_at,
+                min_interval_sec=self._pipeline_restart_min_interval_sec,
+                reason=reason,
+                set_pending_cb=self._set_pipeline_restart_pending,
+            ):
+                return False
+
+        self._restart_pipeline_async(reason)
+        return True
 
     def _restart_pipeline_async(self, reason: str) -> None:
-        thread = threading.Thread(
-            target=self._restart_pipeline,
-            args=(reason,),
-            daemon=True,
-            name="ds-pipeline-restart",
+        """재시작 작업 스레드를 시작한다.
+
+        원칙적으로 _request_pipeline_restart()를 통해서만 호출되어야 한다.
+        향후 직접 호출이 추가되더라도 게이트를 우회하지 않도록 보호한다.
+        """
+        with self._restart_request_lock:
+            pending = self._pipeline_restart_pending
+
+        start_pipeline_restart_thread(
+            pending=pending,
+            reason=reason,
+            request_pipeline_restart_cb=self._request_pipeline_restart,
+            restart_pipeline_cb=self._restart_pipeline,
         )
-        thread.start()
 
     def _restart_pipeline(self, reason: str) -> None:
         with self._pipeline_restart_lock:
-            logger.info("DeepStream 파이프라인 재시작 시작: %s", reason)
             try:
-                self.stop()
-                self.start()
-                logger.info("DeepStream 파이프라인 재시작 완료: %s", reason)
-            except Exception as exc:
-                logger.exception("DeepStream 파이프라인 재시작 실패(%s): %s", reason, exc)
+                execute_pipeline_restart(
+                    reason=reason,
+                    stop_cb=self.stop,
+                    start_cb=self.start,
+                    monotonic_now=time.monotonic,
+                    set_last_restart_at_cb=self._set_last_pipeline_restart_at,
+                )
             finally:
-                self._pipeline_restart_pending = False
+                with self._restart_request_lock:
+                    self._set_pipeline_restart_pending(False)
 
     def _log_appearance_capability_hints(
         self,
         camera_name: str,
         flags: Dict[str, bool],
     ) -> None:
-        """외형 검색 가능 여부를 카메라별로 1회 로그로 남긴다."""
-        if camera_name in self._appearance_capability_logged:
-            return
-
-        backend_name = self._appearance.backend_name
-        pphuman_sgie_active = (
-            self._pphuman_sgie_enabled
-            and flags.get("use_appearance", False)
-            and _PPHUMAN_INFER_CONFIG.exists()
+        """카메라별 외형 분석 활성 상태와 제약 정보를 로그로 남긴다."""
+        event_context_log_appearance_capability_hints(
+            logged_cameras=self._appearance_capability_logged,
+            camera_name=camera_name,
+            flags=flags,
+            backend_name=self._appearance.backend_name,
+            pphuman_sgie_enabled=self._pphuman_sgie_enabled,
+            pphuman_config_exists=_PPHUMAN_INFER_CONFIG.exists(),
+            yolo_labels=self._yolo_labels,
+            bag_classes=set(BAG_CLASSES),
+            face_recognizer_enabled=bool(self.face_recognizer.enabled),
+            helmet_enabled=self._helmet_enabled,
         )
-        bag_labels = sorted(
-            label for label in self._yolo_labels
-            if str(label).strip().lower() in BAG_CLASSES
-        )
-        gender_ready = bool(flags.get("use_face")) and bool(self.face_recognizer.enabled)
-        helmet_ready = bool(flags.get("use_helmet")) and self._helmet_enabled
-        bag_ready = bool(bag_labels) or backend_name != "hsv" or pphuman_sgie_active
-
-        logger.info(
-            "[%s] 외형 검색 컨텍스트: backend=%s, pphuman_sgie=%s, gender_ready=%s, helmet_ready=%s, bag_ready=%s",
-            camera_name,
-            backend_name,
-            pphuman_sgie_active,
-            gender_ready,
-            helmet_ready,
-            bag_ready,
-        )
-
-        if not gender_ready:
-            logger.warning(
-                "[%s] use_face가 꺼져 있거나 얼굴 인식이 비활성화되어 gender 값이 비어 있을 수 있습니다.",
-                camera_name,
-            )
-
-        if not helmet_ready:
-            logger.warning(
-                "[%s] use_helmet 또는 DS_HELMET_ENABLED가 꺼져 있어 has_helmet 검색값이 채워지지 않을 수 있습니다.",
-                camera_name,
-            )
-
-        if not bag_ready:
-            logger.warning(
-                "[%s] 현재 backend=%s 이고 bag class labels=%s 이라 backpack/handbag/suitcase 값이 채워지기 어렵습니다.",
-                camera_name,
-                backend_name,
-                ",".join(bag_labels) if bag_labels else "none",
-            )
-
-        self._appearance_capability_logged.add(camera_name)
 
     def _remember_context_events(self, camera_name: str, events: List[DetectionEvent]) -> None:
+        """카메라별 최근 이벤트를 컨텍스트 저장소에 기록한다."""
         self._context_event_store.remember(camera_name, events)
 
     def _collect_context_events(
@@ -1723,6 +1408,7 @@ class DeepStreamProcessor(BaseProcessor):
         camera_name: str,
         current_events: List[DetectionEvent],
     ) -> List[DetectionEvent]:
+        """현재 이벤트에 병합할 과거 컨텍스트 이벤트를 수집한다."""
         return self._context_event_store.collect(camera_name, current_events)
 
     def _run_face_recognition(
@@ -1731,6 +1417,7 @@ class DeepStreamProcessor(BaseProcessor):
         person_events: List[DetectionEvent],
         camera_name: str,
     ) -> List[DetectionEvent]:
+        """프레임 내 사람 이벤트에 얼굴 인식 결과를 결합한다."""
         return run_deepstream_face_recognition(
             frame=frame,
             person_events=person_events,
@@ -1774,198 +1461,49 @@ class DeepStreamProcessor(BaseProcessor):
     def _apply_existing_event_pipeline(
         self, camera_name: str, events: List[DetectionEvent]
     ) -> None:
-        if not events:
-            return
+        """기존 트래킹/필터/구역/얼굴 후처리 파이프라인을 적용한다."""
+        ds_apply_existing_event_pipeline(
+            camera_name=camera_name,
+            events=events,
+            assign_synthetic_object_ids=self._assign_synthetic_object_ids,
+            track_manager=self.track_manager,
+            violation_filter=self.violation_filter,
+            submit_face_work=self._submit_face_work,
+            zone_manager=self.zone_manager,
+            enqueue_zone_events_cb=self._enqueue_zone_events,
+            enqueue_event=self._enqueue_event,
+            add_filtered_event_count=lambda delta: self._increment_stat("events_filtered", delta),
+        )
 
-        events = self._assign_synthetic_object_ids(camera_name, events)
-        tracked_events, removed_ids = self.track_manager.update(camera_name, events)
-        if removed_ids:
-            self.violation_filter.purge(camera_name, removed_ids)
+    def _cleanup_event_filters(self) -> None:
+        """디바운서와 위반 누적 필터의 오래된 상태를 정리한다."""
+        self._debouncer.cleanup()
+        self.violation_filter.cleanup(self._synthetic_track_timeout * 10)
 
-        filtered_events = self.violation_filter.filter(camera_name, tracked_events)
-        self._events_filtered += max(0, len(tracked_events) - len(filtered_events))
-
-        # 얼굴/외형 인식은 비동기 워커에 위임 (GStreamer 메인루프 블로킹 방지)
-        self._submit_face_work(camera_name, filtered_events)
-
-        zone_events: List[ZoneEvent] = []
-        if self.zone_manager is not None:
-            try:
-                zone_events = self.zone_manager.check_zones(camera_name, filtered_events)
-            except Exception as exc:
-                logger.warning("[%s] DeepStream 구역 감지 오류: %s", camera_name, exc)
-        self._enqueue_zone_events(camera_name, zone_events)
-
-        self._write_fall_near_miss_review_records(camera_name, filtered_events)
-        self._submit_falldata_aux_work(camera_name, filtered_events)
-
-        for event in filtered_events:
-            self._enqueue_event(event, camera_name)
-
-    def _write_fall_near_miss_review_records(
-        self,
-        camera_name: str,
-        filtered_events: List[DetectionEvent],
-    ) -> None:
-        """알람 미발생 후면/측면 낙상 후보를 shadow 라벨링 로그로 저장한다."""
-        self._fall_shadow_recorder().write_near_miss_records(
+    def _log_tensor_probe_waiting(self, camera_name: str) -> None:
+        """텐서 메타는 있으나 유효 객체가 없을 때 상태를 로그로 기록한다."""
+        logger.info(
+            "[%s] DeepStream tensor meta는 수신 중이나 필터 조건을 통과한 객체가 아직 없습니다.",
             camera_name,
-            filtered_events,
-            now_monotonic=time.monotonic(),
         )
-
-    def _submit_falldata_aux_work(
-        self,
-        camera_name: str,
-        filtered_events: List[DetectionEvent],
-    ) -> None:
-        """DeepStream 낙상 후보를 falldata 보조 검증 워커에 제출한다."""
-        self._fall_shadow_recorder().submit_aux_work(
-            self._falldata_aux_queue,
-            camera_name,
-            filtered_events,
-        )
-
-    def _falldata_aux_worker_loop(self) -> None:
-        """falldata 보조 낙상 검증을 백그라운드에서 실행해 shadow 로그를 남긴다."""
-        logger.info("falldata shadow 워커 시작")
-        if self._falldata_aux.config.mode == "confirm":
-            logger.warning(
-                "DeepStream 경로의 FALLDATA_AUX_MODE=confirm은 이벤트 차단 없이 shadow 로그만 남깁니다."
-            )
-        while not self.stop_event.is_set():
-            try:
-                camera_name, event_payload = self._falldata_aux_queue.get(timeout=0.1)
-            except Empty:
-                continue
-            try:
-                recorder = self._fall_shadow_recorder()
-                result, review_record = recorder.verify_and_write_aux_record(
-                    camera_name,
-                    event_payload,
-                )
-                logger.info(
-                    "[%s] falldata shadow result: status=%s confirmed=%s fall_probability=%s "
-                    "threshold=%s nonzero_frames=%s object_id=%s review_log=%s clip=%s",
-                    camera_name,
-                    result.get("status"),
-                    result.get("confirmed"),
-                    result.get("fall_probability"),
-                    result.get("threshold"),
-                    result.get("nonzero_feature_frames"),
-                    event_payload.get("object_id"),
-                    recorder.config.review_log_path,
-                    review_record.get("clip_path"),
-                )
-            except Exception as exc:
-                logger.warning("[%s] falldata shadow 워커 실패: %s", camera_name, exc)
-
-    def _write_fall_shadow_review_record(
-        self,
-        camera_name: str,
-        event_payload: Dict[str, Any],
-        result: Dict[str, Any],
-        *,
-        near_miss: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
-        """학습/라벨링 검토용 falldata shadow JSONL 레코드를 저장한다."""
-        return self._fall_shadow_recorder().write_record(
-            camera_name,
-            event_payload,
-            result,
-            near_miss=near_miss,
-        )
-
-    @staticmethod
-    def _fall_shadow_event_id(
-        camera_name: str,
-        event_payload: Dict[str, Any],
-        created_at: Any,
-    ) -> str:
-        return fall_shadow_event_id(camera_name, event_payload, created_at)
-
-    def _fall_shadow_recorder(self) -> FallShadowReviewRecorder:
-        config = FallShadowReviewConfig(
-            review_log_path=Path(
-                getattr(
-                    self,
-                    "_fall_shadow_review_log_path",
-                    "/app/data/logs/fall_shadow_review.jsonl",
-                )
-            ),
-            clip_dir=Path(
-                getattr(self, "_fall_shadow_clip_dir", "/app/data/fall_review_clips")
-            ),
-            save_clips=bool(getattr(self, "_fall_shadow_save_clips", False)),
-            near_miss_enabled=bool(
-                getattr(self, "_fall_shadow_near_miss_enabled", False)
-            ),
-            near_miss_cooldown_sec=float(
-                getattr(self, "_fall_shadow_near_miss_cooldown_sec", 10.0)
-            ),
-        )
-        near_miss_last_at = getattr(self, "_fall_shadow_near_miss_last_at", None)
-        if near_miss_last_at is None:
-            near_miss_last_at = {}
-            self._fall_shadow_near_miss_last_at = near_miss_last_at
-
-        recorder = getattr(self, "_fall_shadow", None)
-        if recorder is None:
-            recorder = FallShadowReviewRecorder(
-                config,
-                falldata_aux=getattr(self, "_falldata_aux", None),
-                near_miss_last_at=near_miss_last_at,
-            )
-            self._fall_shadow = recorder
-            return recorder
-
-        recorder.config = config
-        recorder.falldata_aux = getattr(self, "_falldata_aux", None)
-        recorder.near_miss_last_at = near_miss_last_at
-        return recorder
 
     def _submit_face_work(self, camera_name: str, filtered_events: List[DetectionEvent]) -> None:
-        """얼굴/외형 인식 작업을 비동기 워커 큐에 제출한다."""
-        self._face_worker().submit(camera_name, filtered_events)
+        """얼굴/외형 후처리 작업을 백그라운드 워커 큐에 전달한다."""
+        self._context_worker.submit(camera_name, filtered_events)
 
     def _face_worker_loop(self) -> None:
-        """얼굴/외형 인식 전용 백그라운드 워커 스레드."""
-        self._face_worker().run_loop(self.stop_event)
-
-    def _face_worker(self) -> DeepStreamContextWorker:
-        worker = getattr(self, "_face_context_worker", None)
-        if worker is None:
-            worker = DeepStreamContextWorker(
-                queue=self._face_work_queue,
-                feature_flags_for_camera=self._feature_flags_for_camera,
-                remember_context_events=self._remember_context_events,
-                collect_context_events=self._collect_context_events,
-                get_camera_frame=lambda camera_name: self.get_camera_frame(
-                    camera_name,
-                    copy_frame=True,
-                ),
-                run_face_recognition=self._run_face_recognition,
-                log_appearance_capability_hints=self._log_appearance_capability_hints,
-                refresh_appearance_conditions=self._refresh_appearance_conditions,
-                appearance_pipeline=self._appearance_pipeline,
-                enqueue_event=self._enqueue_event,
-            )
-            self._face_context_worker = worker
-        return worker
+        """얼굴/외형 컨텍스트 워커 루프를 실행한다."""
+        self._context_worker.run_loop(self.stop_event)
 
     def _should_enqueue_event(self, event: DetectionEvent, camera_name: str) -> bool:
         """동일 이벤트가 프레임마다 MQTT로 발행되지 않도록 제한한다."""
         metadata = event.metadata or {}
         camera_id = str(metadata.get("camera_id") or camera_name)
         object_id = int(event.object_id) if event.object_id is not None else 0
-        return self._debouncer.should_send(
-            camera_id,
-            event.event_type.value,
-            object_id,
-            event=event,
-        )
+        return self._debouncer.should_send(camera_id, event.event_type.value, object_id)
 
     def _enqueue_event(self, event: DetectionEvent, camera_name: str) -> bool:
+        """디바운싱 검증 후 이벤트를 내부 큐에 적재한다."""
         if not self._should_enqueue_event(event, camera_name):
             return False
         return self._enqueue_queue_item(event, camera_name)
@@ -1976,15 +1514,19 @@ class DeepStreamProcessor(BaseProcessor):
         frame_meta: Any,
         detections: List[Dict[str, Any]],
     ) -> None:
-        add_osd_overlays(
+        """탐지 결과를 OSD 오버레이로 프레임 메타에 반영한다."""
+        ds_add_osd_overlays(
             pyds_module=pyds,
             batch_meta=batch_meta,
             frame_meta=frame_meta,
             detections=detections,
-            min_keypoint_confidence=self._fall_detector.min_keypoint_confidence,
+            min_keypoint_confidence=float(
+                os.environ.get("DS_OSD_KEYPOINT_CONFIDENCE", "0.35")
+            ),
         )
 
     def _detections_from_tensor(self, tensor_meta: Any, frame_meta: Any) -> List[Dict[str, Any]]:
+        """nvinfer 텐서 메타를 후처리해 공통 탐지 dict 목록으로 변환한다."""
 
         gie_id = tensor_gie_id(tensor_meta, self._pose_gie_id)
         task = self._task_by_gie.get(gie_id, self._yolo_task)
@@ -2017,122 +1559,45 @@ class DeepStreamProcessor(BaseProcessor):
             input_size=float(os.environ.get("DS_YOLO_INPUT_SIZE", "640")),
             iou_threshold=self._yolo_iou_threshold,
             max_detections=self._yolo_max_detections,
-            fall_checker=self._score_fall_pose,
+            fall_checker=self._is_fall_pose,
             person_pose_validator=self._is_valid_person_pose,
         )
 
-    def _filter_detections_for_camera(
-        self,
-        detections: List[Dict[str, Any]],
-        camera_name: str,
-    ) -> List[Dict[str, Any]]:
-        """카메라별 모델 on/off 설정에 맞지 않는 DeepStream tensor 결과를 제거한다."""
-        flags = self._feature_flags_for_camera(camera_name)
-        filtered: List[Dict[str, Any]] = []
-        for detection in detections:
-            event_type = self._event_type_for_label(str(detection.get("label", "")))
-            if event_type == EventType.FALL_DETECTED and not flags.get("use_pose"):
-                continue
-            if event_type == EventType.PERSON and not (
-                flags.get("use_pose") or flags.get("use_person")
-            ):
-                continue
-            if event_type in {EventType.HELMET, EventType.HEAD} and not flags.get("use_helmet"):
-                continue
-            filtered.append(detection)
-        return filtered
-
-    def _filter_events_for_camera(
-        self,
-        events: List[DetectionEvent],
-        camera_name: str,
-    ) -> List[DetectionEvent]:
-        """카메라별 모델 on/off 설정에 맞지 않는 DetectionEvent를 제거한다."""
-        flags = self._feature_flags_for_camera(camera_name)
-        filtered: List[DetectionEvent] = []
-        for event in events:
-            if event.event_type == EventType.FALL_DETECTED and not flags.get("use_pose"):
-                continue
-            if event.event_type == EventType.PERSON and not (
-                flags.get("use_pose") or flags.get("use_person")
-            ):
-                continue
-            if event.event_type in {EventType.HELMET, EventType.HEAD} and not flags.get("use_helmet"):
-                continue
-            filtered.append(event)
-        return filtered
-
-    def _emit_tensor_events(
-        self, batch_meta: Any, frame_meta: Any, camera_name: str
-    ) -> int:
-        detected = 0
-        l_user = frame_meta.frame_user_meta_list
-        while l_user is not None:
-            try:
-                user_meta = pyds.NvDsUserMeta.cast(l_user.data)
-            except StopIteration:
-                break
-
-            if user_meta.base_meta.meta_type == pyds.NVDSINFER_TENSOR_OUTPUT_META:
-                tensor_meta = pyds.NvDsInferTensorMeta.cast(user_meta.user_meta_data)
-                detections = self._filter_detections_for_camera(
-                    self._detections_from_tensor(tensor_meta, frame_meta),
-                    camera_name,
-                )
-                self._add_osd_overlays(batch_meta, frame_meta, detections)
-                events = detections_to_events(
-                    detections,
-                    camera_name=camera_name,
-                    source_id=int(frame_meta.source_id),
-                    frame_num=int(frame_meta.frame_num),
-                    timestamp_factory=time.time,
-                    frame_width=int(getattr(frame_meta, "source_frame_width", 0) or 0),
-                    frame_height=int(getattr(frame_meta, "source_frame_height", 0) or 0),
-                    event_type_for_label=self._event_type_for_label,
-                )
-                detected += sum(
-                    1 for event in events
-                    if event.event_type != EventType.FALL_DETECTED
-                )
-                self._apply_existing_event_pipeline(camera_name, events)
-
-            try:
-                l_user = l_user.next
-            except StopIteration:
-                break
-        return detected
+    @staticmethod
+    def _pphuman_roi_for_detection(
+        detection: Mapping[str, Any], frame_meta: Any
+    ) -> Tuple[int, int, int, int]:
+        x, y, width, height = [int(value) for value in detection.get("box", (0, 0, 0, 0))]
+        frame_width = int(getattr(frame_meta, "source_frame_width", 0) or 0)
+        frame_height = int(getattr(frame_meta, "source_frame_height", 0) or 0)
+        max_width = int(frame_width * float(os.environ.get("DS_PPHUMAN_MAX_ROI_WIDTH_RATIO", "0.65")))
+        max_height = int(frame_height * float(os.environ.get("DS_PPHUMAN_MAX_ROI_HEIGHT_RATIO", "1.0")))
+        keypoints = [point for point in detection.get("keypoints", []) if len(point) >= 3 and point[2] > 0]
+        if frame_width and width > max_width and keypoints:
+            xs = [int(point[0]) for point in keypoints]
+            margin = max(10, int((max(xs) - min(xs)) * 0.35))
+            x = max(0, min(xs) - margin)
+            width = min(frame_width - x, max(xs) - min(xs) + margin * 2)
+        if frame_height and height > max_height:
+            height = max_height
+        return x, y, width, height
 
     def _inject_primary_person_object_meta(
-        self,
-        batch_meta: Any,
-        frame_meta: Any,
-        camera_name: str,
+        self, batch_meta: Any, frame_meta: Any, camera_name: str
     ) -> int:
-        """Python YOLO tensor 결과를 DeepStream object_meta로 주입해 SGIE ROI로 사용한다."""
         injected = 0
-        l_user = frame_meta.frame_user_meta_list
-        while l_user is not None:
-            try:
-                user_meta = pyds.NvDsUserMeta.cast(l_user.data)
-            except StopIteration:
-                break
-
+        user_meta_list = frame_meta.frame_user_meta_list
+        while user_meta_list is not None:
+            user_meta = pyds.NvDsUserMeta.cast(user_meta_list.data)
             if user_meta.base_meta.meta_type == pyds.NVDSINFER_TENSOR_OUTPUT_META:
                 tensor_meta = pyds.NvDsInferTensorMeta.cast(user_meta.user_meta_data)
-                if tensor_gie_id(tensor_meta, self._pose_gie_id) != self._pose_gie_id:
-                    try:
-                        l_user = l_user.next
-                    except StopIteration:
-                        break
-                    continue
-                detections = self._filter_detections_for_camera(
-                    self._detections_from_tensor(tensor_meta, frame_meta),
-                    camera_name,
-                )
-                for detection in detections:
-                    if self._event_type_for_label(str(detection.get("label", ""))) != EventType.PERSON:
-                        continue
-                    try:
+                if tensor_gie_id(tensor_meta, self._pose_gie_id) == self._pose_gie_id:
+                    detections = self._filter_detections_for_camera(
+                        self._detections_from_tensor(tensor_meta, frame_meta), camera_name
+                    )
+                    for detection in detections:
+                        if self._event_type_for_label(str(detection.get("label", ""))) != EventType.PERSON:
+                            continue
                         obj_meta = pyds.nvds_acquire_obj_meta_from_pool(batch_meta)
                         x, y, width, height = self._pphuman_roi_for_detection(detection, frame_meta)
                         obj_meta.unique_component_id = self._pose_gie_id
@@ -2145,487 +1610,104 @@ class DeepStreamProcessor(BaseProcessor):
                         obj_meta.rect_params.height = float(height)
                         pyds.nvds_add_obj_meta_to_frame(frame_meta, obj_meta, None)
                         injected += 1
-                    except Exception as exc:
-                        if not getattr(self, "_sgie_object_injection_warned", False):
-                            logger.warning("[%s] SGIE용 person object_meta 주입 실패: %s", camera_name, exc)
-                            self._sgie_object_injection_warned = True
-
-            try:
-                l_user = l_user.next
-            except StopIteration:
-                break
-        if injected and not getattr(self, "_sgie_object_injection_logged", False):
-            logger.info("[%s] SGIE용 person object_meta 주입 시작: %d건", camera_name, injected)
-            self._sgie_object_injection_logged = True
+            user_meta_list = getattr(user_meta_list, "next", None)
         return injected
 
-    def _pphuman_roi_for_detection(
+    def _filter_detections_for_camera(
         self,
-        detection: Mapping[str, Any],
-        frame_meta: Any,
-    ) -> Tuple[int, int, int, int]:
-        """PA100K SGIE에 넣을 ROI를 계산한다.
-
-        가까운 사람 bbox는 의자/책상/배경까지 함께 들어가 소지품 오탐이 커진다.
-        큰 bbox는 버리지 않고 pose keypoint 기준으로 더 좁은 ROI를 만들어 확인한다.
-        """
-        x, y, width, height = [int(round(float(value))) for value in detection["box"]]
-        frame_width = int(getattr(frame_meta, "source_frame_width", 0) or 0)
-        frame_height = int(getattr(frame_meta, "source_frame_height", 0) or 0)
-        if frame_width <= 0 or frame_height <= 0:
-            return x, y, width, height
-
-        width_ratio = float(width) / float(frame_width)
-        height_ratio = float(height) / float(frame_height)
-
-        max_width_ratio = self._read_float_setting(
-            "DS_PPHUMAN_MAX_ROI_WIDTH_RATIO",
-            None,
-            0.70,
+        detections: List[Dict[str, Any]],
+        camera_name: str,
+    ) -> List[Dict[str, Any]]:
+        """카메라 기능 플래그에 따라 탐지 dict를 필터링한다."""
+        return filter_detections_for_camera(
+            detections,
+            camera_name=camera_name,
+            feature_flags_for_camera=self._feature_flags_for_camera,
+            event_type_for_label=self._event_type_for_label,
         )
-        max_height_ratio = self._read_float_setting(
-            "DS_PPHUMAN_MAX_ROI_HEIGHT_RATIO",
-            None,
-            0.95,
-        )
-        if width_ratio <= max_width_ratio and height_ratio <= max_height_ratio:
-            return x, y, width, height
 
-        keypoint_roi = self._pphuman_keypoint_roi(detection, frame_width, frame_height)
-        if keypoint_roi is not None:
-            roi = keypoint_roi
-        else:
-            target_width = max(1, int(round(min(width, frame_width * max_width_ratio))))
-            center_x = x + width / 2.0
-            roi_x = int(round(center_x - target_width / 2.0))
-            roi = (
-                max(0, min(frame_width - 1, roi_x)),
-                max(0, y),
-                target_width,
-                min(height, frame_height),
-            )
-            roi = self._clip_roi_to_frame(roi, frame_width, frame_height)
-
-        if not getattr(self, "_pphuman_oversized_roi_logged", False):
-            logger.info(
-                "PA100K SGIE oversized ROI 보정 시작: width_ratio=%.2f height_ratio=%.2f "
-                "limit_width=%.2f limit_height=%.2f roi=%s",
-                width_ratio,
-                height_ratio,
-                max_width_ratio,
-                max_height_ratio,
-                roi,
-            )
-            self._pphuman_oversized_roi_logged = True
-        return roi
-
-    @staticmethod
-    def _clip_roi_to_frame(
-        roi: Tuple[int, int, int, int],
-        frame_width: int,
-        frame_height: int,
-    ) -> Tuple[int, int, int, int]:
-        x, y, width, height = roi
-        x = max(0, min(frame_width - 1, int(x)))
-        y = max(0, min(frame_height - 1, int(y)))
-        width = max(1, min(int(width), frame_width - x))
-        height = max(1, min(int(height), frame_height - y))
-        return x, y, width, height
-
-    def _pphuman_keypoint_roi(
+    def _filter_events_for_camera(
         self,
-        detection: Mapping[str, Any],
-        frame_width: int,
-        frame_height: int,
-    ) -> Optional[Tuple[int, int, int, int]]:
-        keypoints = detection.get("keypoints")
-        if not isinstance(keypoints, list):
-            return None
-        min_conf = self._read_float_setting(
-            "DS_PPHUMAN_ROI_KEYPOINT_MIN_CONF",
-            None,
-            0.25,
+        events: List[DetectionEvent],
+        camera_name: str,
+    ) -> List[DetectionEvent]:
+        """카메라별 기능 설정에 맞지 않는 이벤트를 제거한다."""
+        return filter_events_for_camera(
+            events,
+            camera_name=camera_name,
+            feature_flags_for_camera=self._feature_flags_for_camera,
         )
-        # COCO pose: shoulders/elbows/wrists/hips 중심으로 몸통 ROI를 만든다.
-        body_indices = (5, 6, 7, 8, 9, 10, 11, 12)
-        points: List[Tuple[float, float]] = []
-        for index in body_indices:
-            if index >= len(keypoints):
-                continue
-            point = keypoints[index]
-            if not isinstance(point, list) or len(point) < 3:
-                continue
-            if float(point[2]) < min_conf:
-                continue
-            points.append((float(point[0]), float(point[1])))
-        if len(points) < 2:
-            return None
 
-        xs = [point[0] for point in points]
-        ys = [point[1] for point in points]
-        left, right = min(xs), max(xs)
-        top, bottom = min(ys), max(ys)
-        span_w = max(1.0, right - left)
-        span_h = max(1.0, bottom - top)
-        pad_x = span_w * self._read_float_setting("DS_PPHUMAN_ROI_KEYPOINT_PAD_X", None, 0.55)
-        pad_top = span_h * self._read_float_setting("DS_PPHUMAN_ROI_KEYPOINT_PAD_TOP", None, 0.55)
-        pad_bottom = span_h * self._read_float_setting("DS_PPHUMAN_ROI_KEYPOINT_PAD_BOTTOM", None, 0.75)
-        roi = (
-            int(round(left - pad_x)),
-            int(round(top - pad_top)),
-            int(round(span_w + (pad_x * 2))),
-            int(round(span_h + pad_top + pad_bottom)),
+    def _emit_tensor_events(
+        self, batch_meta: Any, frame_meta: Any, camera_name: str
+    ) -> int:
+        """텐서 메타 기반 이벤트 생성/후처리를 수행하고 처리 건수를 반환한다."""
+        return emit_tensor_events(
+            batch_meta=batch_meta,
+            frame_meta=frame_meta,
+            camera_name=camera_name,
+            pyds_module=pyds,
+            detections_from_tensor=self._detections_from_tensor,
+            add_osd_overlays=self._add_osd_overlays,
+            apply_existing_event_pipeline=self._apply_existing_event_pipeline,
+            feature_flags_for_camera=self._feature_flags_for_camera,
+            event_type_for_label=self._event_type_for_label,
         )
-        return self._clip_roi_to_frame(roi, frame_width, frame_height)
 
     def _object_meta_events_from_frame(
         self,
         frame_meta: Any,
         camera_name: str,
     ) -> List[DetectionEvent]:
-        """DeepStream object_meta_list를 DetectionEvent 목록으로 변환한다."""
-        flags = self._feature_flags_for_camera(camera_name)
-        attach_appearance = (
-            self._pphuman_sgie_enabled
-            and flags.get("use_appearance", False)
+        """object_meta를 읽어 DetectionEvent 목록으로 변환한다."""
+        return object_meta_events_from_frame(
+            frame_meta=frame_meta,
+            camera_name=camera_name,
+            pyds_module=pyds,
+            pphuman_sgie_enabled=self._pphuman_sgie_enabled,
+            feature_flags_for_camera=self._feature_flags_for_camera,
+            decode_pphuman_for_obj=self._decode_pphuman_for_obj,
+            event_type_for_label=self._event_type_for_label,
         )
-        events: List[DetectionEvent] = []
-        l_obj = frame_meta.obj_meta_list
-        while l_obj is not None:
-            try:
-                obj_meta = pyds.NvDsObjectMeta.cast(l_obj.data)
-            except StopIteration:
-                break
-
-            event = object_meta_to_event(
-                obj_meta,
-                camera_name=camera_name,
-                source_id=int(frame_meta.source_id),
-                frame_num=int(frame_meta.frame_num),
-                timestamp_factory=time.time,
-                frame_width=int(getattr(frame_meta, "source_frame_width", 0) or 0),
-                frame_height=int(getattr(frame_meta, "source_frame_height", 0) or 0),
-                event_type_for_label=self._event_type_for_label,
-            )
-            if event is not None:
-                # PP-Human SGIE 결과: person ROI(class_id=0)에만 appearance 부착
-                if attach_appearance and int(obj_meta.class_id) == 0:
-                    pphuman_attrs = self._decode_pphuman_for_obj(obj_meta)
-                    if pphuman_attrs:
-                        if event.metadata is None:
-                            event.metadata = {}
-                        event.metadata["appearance"] = pphuman_attrs
-                        event.metadata["appearance_backend"] = self._pphuman_sgie_backend_name
-                events.append(event)
-
-            try:
-                l_obj = l_obj.next
-            except StopIteration:
-                break
-        return self._filter_events_for_camera(events, camera_name)
 
     def _create_output_elements(self) -> List[Any]:
-        if self._output_mode in {"", "fake", "fakesink", "headless"}:
-            sink = self._make_element("fakesink", "sink")
-            sink.set_property("sync", False)
-            sink.set_property("async", False)
-            return [sink]
-
-        if self._output_mode in {
-            "mpegts",
-            "h264",
-            "h264_mpegts",
-            "h264-mpegts",
-            "rtsp",
-            "rtsp_publish",
-            "rtsp-publish",
-        }:
-            h264_elements = self._create_h264_encoder_elements()
-
-            if self._output_mode in {"rtsp", "rtsp_publish", "rtsp-publish"}:
-                sink = self._make_element("rtspclientsink", "h264-rtsp-sink")
-                sink.set_property(
-                    "location",
-                    os.environ.get(
-                        "DS_RTSP_LOCATION",
-                        "rtsp://cctv-media-server:8554/camera_1",
-                    ),
-                )
-                self._set_optional_property(sink, "protocols", "tcp")
-                self._set_optional_property(sink, "latency", self._env_int("DS_RTSP_LATENCY_MS", 100))
-                return [*h264_elements, sink]
-
-            mux = self._make_element("mpegtsmux", "mpegts-mux")
-            sink = self._make_element("udpsink", "mpegts-udp-sink")
-            self._set_optional_property(mux, "alignment", 7)
-            self._set_optional_property(mux, "pcr-interval", 9000)
-            self._set_optional_property(mux, "pat-interval", 9000)
-            self._set_optional_property(mux, "pmt-interval", 9000)
-            sink.set_property("host", os.environ.get("DS_H264_UDP_HOST", "cctv-media-server"))
-            sink.set_property("port", self._env_int("DS_H264_UDP_PORT", 1234))
-            sink.set_property("sync", False)
-            sink.set_property("async", False)
-
-            # poc_lsb 순차 수정 identity: nvv4l2h264enc가 B-frame 스타일 poc_lsb를
-            # 기록하여 MediaMTX DTS 추출기를 혼란케 하므로 0,2,4,... 로 강제 수정한다.
-            poc_fixer = H264PocFixer()
-            poc_identity = self._make_element("identity", "poc-fix-identity")
-            poc_identity.set_property("signal-handoffs", True)
-            poc_identity.set_property("silent", True)
-
-            clock_time_none = getattr(Gst, "CLOCK_TIME_NONE", -1)
-            _prev_pts: list = [clock_time_none]  # PTS 단조증가 보정용
-            h264_fps = max(1, self._env_int("DS_H264_FPS", 30))
-            poc_frame_ns = int(1_000_000_000 / h264_fps)
-
-            def _poc_handoff(element: Any, buf: Any) -> None:  # noqa: ANN401
-                size = buf.get_size()
-                ok, minfo = buf.map(Gst.MapFlags.READ)
-                if not ok:
-                    return
-                try:
-                    data = bytearray(minfo.data[:size])
-                finally:
-                    buf.unmap(minfo)
-                poc_fixer.process_buffer(data)
-                buf.fill(0, bytes(data))
-                # PTS 단조증가 보장: PTS 역전 시 이전값 + 1프레임으로 보정
-                cur_pts = buf.pts
-                if cur_pts != clock_time_none:
-                    if _prev_pts[0] == clock_time_none:
-                        _prev_pts[0] = cur_pts
-                    elif cur_pts <= _prev_pts[0]:
-                        new_pts = _prev_pts[0] + poc_frame_ns
-                        buf.pts = new_pts
-                        buf.dts = new_pts
-                        _prev_pts[0] = new_pts
-                    else:
-                        _prev_pts[0] = cur_pts
-
-            poc_identity.connect("handoff", _poc_handoff)
-            return [*h264_elements, poc_identity, mux, sink]
-
-        if self._output_mode in {"display", "egl", "ui"}:
-            transform = self._make_element("nvegltransform", "egl-transform")
-            sink = self._make_element("nveglglessink", "egl-sink")
-            sink.set_property("sync", False)
-            return [transform, sink]
-
-        raise ValueError(
-            "지원하지 않는 DS_OUTPUT_MODE 입니다: "
-            f"{self._output_mode}. 사용 가능: fakesink, display, h264-mpegts, rtsp-publish"
+        """출력 모드에 맞는 sink 브랜치 엘리먼트 집합을 생성한다."""
+        return create_output_elements(
+            output_mode=self._output_mode,
+            make_element=self._make_element,
+            set_optional_property=self._set_optional_property,
+            env_int=self._env_int,
+            gst_module=Gst,
+            create_h264_encoder_elements_fn=self._create_h264_encoder_elements,
+            poc_fixer_factory=H264PocFixer,
         )
 
     def _create_h264_encoder_elements(self) -> List[Any]:
-        converter = self._make_element("nvvideoconvert", "h264-nvvidconv")
-        capsfilter = self._make_element("capsfilter", "h264-caps")
-        encoder_name = os.environ.get("DS_H264_ENCODER", "nvv4l2h264enc").strip().lower()
-        use_x264 = encoder_name in {"x264", "x264enc", "software"}
-        encoder = self._make_element("x264enc" if use_x264 else "nvv4l2h264enc", "h264-encoder")
-        parser = self._make_element("h264parse", "h264-parser")
-        parsed_capsfilter = self._make_element("capsfilter", "h264-parsed-caps")
-
-        width = self._env_int("DS_H264_WIDTH", 1280)
-        height = self._env_int("DS_H264_HEIGHT", 720)
-        memory = "" if use_x264 else "(memory:NVMM)"
-        capsfilter.set_property(
-            "caps",
-            Gst.Caps.from_string(
-                f"video/x-raw{memory},format=NV12,width={width},height={height}"
-            ),
+        """H.264 인코딩 브랜치 엘리먼트를 생성한다."""
+        return create_h264_encoder_elements(
+            make_element=self._make_element,
+            env_int=self._env_int,
+            set_optional_property=self._set_optional_property,
+            gst_module=Gst,
         )
-
-        bitrate = self._env_int("DS_H264_BITRATE", 6000000)
-        iframe_interval = self._env_int("DS_H264_IFRAME_INTERVAL", 30)
-        idr_interval = self._env_int("DS_H264_IDR_INTERVAL", iframe_interval)
-        if use_x264:
-            encoder.set_property("bitrate", max(1, bitrate // 1000))
-            self._set_optional_property(encoder, "speed-preset", "ultrafast")
-            self._set_optional_property(encoder, "tune", "zerolatency")
-            self._set_optional_property(encoder, "key-int-max", iframe_interval)
-            self._set_optional_property(encoder, "byte-stream", True)
-            self._set_optional_property(encoder, "bframes", 0)
-            self._set_optional_property(encoder, "b-adapt", False)
-            self._set_optional_property(encoder, "ref", 1)
-            self._set_optional_property(encoder, "cabac", False)
-            self._set_optional_property(encoder, "aud", True)
-            self._set_optional_property(encoder, "insert-vui", True)
-            self._set_optional_property(encoder, "sliced-threads", True)
-        else:
-            encoder.set_property("bitrate", bitrate)
-            self._set_optional_property(encoder, "maxperf-enable", True)
-            self._set_optional_property(encoder, "insert-aud", True)
-            self._set_optional_property(encoder, "insert-sps-pps", True)
-            self._set_optional_property(encoder, "insert-vui", False)  # VUI의 max_num_reorder_frames 오염 방지
-            self._set_optional_property(encoder, "iframeinterval", iframe_interval)
-            self._set_optional_property(encoder, "idrinterval", idr_interval)
-            self._set_optional_property(encoder, "control-rate", 1)
-            self._set_optional_property(encoder, "ratecontrol-enable", True)
-            self._set_optional_property(encoder, "copy-timestamp", False)
-            self._set_optional_property(encoder, "disable-cabac", True)
-            self._set_optional_property(encoder, "num-B-Frames", 0)
-            self._set_optional_property(encoder, "num-Ref-Frames", 1)
-            self._set_optional_property(encoder, "profile", 0)   # Baseline
-            self._set_optional_property(encoder, "poc-type", 0)   # poc_type=0: 슬라이스 헤더에 poc_lsb 포함
-
-        self._set_optional_property(parser, "disable-passthrough", True)
-        self._set_optional_property(parser, "config-interval", -1)
-        parsed_capsfilter.set_property(
-            "caps",
-            Gst.Caps.from_string("video/x-h264,stream-format=byte-stream,alignment=au"),
-        )
-        return [converter, capsfilter, encoder, parser, parsed_capsfilter]
 
     def _create_preview_elements(self) -> List[Any]:
-        """OSD 결과를 CPU BGR 프레임으로 복사하는 preview branch를 만든다."""
-        queue = self._make_element("queue", "preview-queue")
-        converter = self._make_element("nvvideoconvert", "preview-nvvidconv")
-        capsfilter = self._make_element("capsfilter", "preview-caps")
-        appsink = self._make_element("appsink", "preview-appsink")
-
-        queue.set_property("leaky", 2)
-        # 30fps에서 jitter 흡수용으로 2프레임 버퍼 유지 (~66ms)
-        queue.set_property("max-size-buffers", 2)
-        queue.set_property("max-size-bytes", 0)
-        queue.set_property("max-size-time", 0)
-
-        caps_parts = ["video/x-raw", "format=BGRx"]
-        preview_width = self._env_int("DS_PREVIEW_WIDTH", 0)
-        preview_height = self._env_int("DS_PREVIEW_HEIGHT", 0)
-        if preview_width > 0 and preview_height > 0:
-            caps_parts.extend([f"width={preview_width}", f"height={preview_height}"])
-        caps = Gst.Caps.from_string(",".join(caps_parts))
-        capsfilter.set_property("caps", caps)
-
-        appsink.set_property("emit-signals", True)
-        appsink.set_property("max-buffers", 1)
-        appsink.set_property("drop", True)
-        appsink.set_property("sync", False)
-        appsink.connect("new-sample", self._on_preview_sample)
-        return [queue, converter, capsfilter, appsink]
+        """미리보기용 샘플 추출 브랜치 엘리먼트를 생성한다."""
+        return create_preview_elements(
+            make_element=self._make_element,
+            env_int=self._env_int,
+            gst_module=Gst,
+            on_preview_sample=self._on_preview_sample,
+        )
 
     def _on_preview_sample(self, sink: Any) -> Any:
-        now_monotonic = time.monotonic()
-        sample = sink.emit("pull-sample")
-        if sample is None:
-            return Gst.FlowReturn.OK
-
-        if not self._preview_store.should_accept_sample(now_monotonic):
-            return Gst.FlowReturn.OK
-
-        buffer = sample.get_buffer()
-        caps = sample.get_caps()
-        if buffer is None or caps is None or caps.get_size() == 0:
-            return Gst.FlowReturn.OK
-
-        structure = caps.get_structure(0)
-        width = int(structure.get_value("width") or 0)
-        height = int(structure.get_value("height") or 0)
-        pixel_format = str(structure.get_value("format") or "")
-        if width <= 0 or height <= 0:
-            return Gst.FlowReturn.OK
-
-        success, map_info = buffer.map(Gst.MapFlags.READ)
-        if not success:
-            return Gst.FlowReturn.OK
-
-        try:
-            import numpy as np
-
-            data = np.frombuffer(map_info.data, dtype=np.uint8)
-            if pixel_format == "BGRx":
-                expected_size = width * height * 4
-                if data.size < expected_size:
-                    return Gst.FlowReturn.OK
-                # ascontiguousarray: BGRx→BGR 슬라이스 + copy를 단일 패스로 처리
-                frame = np.ascontiguousarray(
-                    data[:expected_size].reshape((height, width, 4))[:, :, :3]
-                )
-            elif pixel_format == "BGR":
-                expected_size = width * height * 3
-                if data.size < expected_size:
-                    return Gst.FlowReturn.OK
-                frame = data[:expected_size].reshape((height, width, 3)).copy()
-            else:
-                logger.debug("지원하지 않는 DeepStream preview pixel format: %s", pixel_format)
-                return Gst.FlowReturn.OK
-
-            camera_id = self._preview_camera_id or next(iter(self._cameras.keys()), "camera_1")
-            self._preview_store.put_frame(camera_id, frame, now_monotonic=now_monotonic)
-            if getattr(self, "_falldata_aux", None) is not None:
-                self._falldata_aux.add_frame(frame)
-        except Exception as exc:
-            logger.debug("DeepStream preview sample 처리 실패: %s", exc)
-        finally:
-            buffer.unmap(map_info)
-
-        return Gst.FlowReturn.OK
-
-    def _add_primary_tensor_probe(self, nvinfer: Any) -> None:
-        primary_srcpad = nvinfer.get_static_pad("src")
-        if primary_srcpad is None:
-            raise RuntimeError("primary-infer src pad를 찾을 수 없습니다.")
-        primary_srcpad.add_probe(
-            Gst.PadProbeType.BUFFER,
-            self._on_primary_tensor_probe,
-            None,
-        )
-
-    def _log_pphuman_pipeline_connected(self) -> None:
-        logger.info(
-            "PP-Human SGIE 파이프라인 연결 완료: gie_id=%d, config=%s",
-            self._pphuman_gie_id,
-            _PPHUMAN_INFER_CONFIG,
-        )
-
-    def _create_pipeline_elements(
-        self,
-        *,
-        primary_enabled: bool,
-        helmet_enabled: bool,
-        pphuman_enabled: bool,
-    ) -> DeepStreamPipelineElements:
-        streammux = self._make_element("nvstreammux", "streammux")
-        nvinfer = (
-            self._make_element("nvinfer", "primary-infer")
-            if primary_enabled
-            else None
-        )
-        pphuman_infer = (
-            self._make_element("nvinfer", "pphuman-infer")
-            if pphuman_enabled and nvinfer is not None
-            else None
-        )
-        helmet_infer = (
-            self._make_element("nvinfer", "helmet-infer")
-            if helmet_enabled
-            else None
-        )
-        tracker = (
-            self._make_element("nvtracker", "tracker")
-            if nvinfer is not None or helmet_infer is not None
-            else None
-        )
-        tee = self._make_element("tee", "preview-tee") if self._preview_enabled else None
-        output_queue = (
-            self._make_element("queue", "output-queue")
-            if tee is not None
-            else None
-        )
-        output_elements = self._create_output_elements()
-        preview_elements = self._create_preview_elements() if tee is not None else []
-        return DeepStreamPipelineElements(
-            streammux=streammux,
-            nvinfer=nvinfer,
-            tracker=tracker,
-            pphuman_infer=pphuman_infer,
-            helmet_infer=helmet_infer,
-            converter=self._make_element("nvvideoconvert", "converter"),
-            osd=self._make_element("nvdsosd", "osd"),
-            tee=tee,
-            output_queue=output_queue,
-            preview_elements=preview_elements,
-            output_elements=output_elements,
+        """appsink 샘플을 읽어 카메라별 최신 프레임 캐시에 저장한다."""
+        return process_preview_sample(
+            sink=sink,
+            preview_store=self._preview_store,
+            preview_camera_id=getattr(self, "_preview_camera_id", None),
+            cameras=getattr(self, "_cameras", {}),
+            gst_module=Gst,
         )
 
     def _build_pipeline(self) -> None:
@@ -2682,31 +1764,13 @@ class DeepStreamProcessor(BaseProcessor):
           [ ] GLib.MainLoop 생성 및 self._main_loop 에 저장
           [ ] 버스 메시지 핸들러 등록: bus.add_signal_watch() + connect("message", _on_bus_message)
         """
-        if not _ensure_deepstream_loaded():
-            raise RuntimeError(
-                "DeepStreamProcessor 는 NVIDIA DeepStream SDK 와 pyds 바인딩이 "
-                "설치된 환경(Jetson / Linux+GPU)에서만 실행할 수 있습니다."
-            )
-        if not self._cameras:
-            raise RuntimeError("DeepStream 파이프라인을 만들 카메라가 없습니다.")
-        if not _INFER_CONFIG.exists():
-            raise FileNotFoundError(f"nvinfer 설정 파일 없음: {_INFER_CONFIG}")
-        primary_enabled = self._any_camera_flag(
-            "use_pose",
-            "use_person",
-            "use_face",
-            "use_appearance",
+        validate_pipeline_prerequisites(
+            deepstream_loaded=_ensure_deepstream_loaded(),
+            has_cameras=bool(self._cameras),
+            infer_config_exists=_INFER_CONFIG.exists(),
+            infer_config_path=_INFER_CONFIG,
         )
-        helmet_enabled = (
-            self._helmet_enabled
-            and self._any_camera_flag("use_helmet")
-            and _HELMET_INFER_CONFIG.exists()
-        )
-        pphuman_enabled = (
-            self._pphuman_sgie_enabled
-            and self._any_camera_flag("use_appearance")
-            and _PPHUMAN_INFER_CONFIG.exists()
-        )
+        primary_enabled, helmet_enabled, pphuman_enabled = self._inference_topology_signature()
 
         Gst.init(None)
 
@@ -2714,73 +1778,85 @@ class DeepStreamProcessor(BaseProcessor):
         if pipeline is None:
             raise RuntimeError("Gst.Pipeline 생성 실패")
 
-        source_entries = self._build_source_entries()
+        source_entries = build_source_entries(
+            cameras=self._cameras,
+            source_backoff_until=self._source_backoff_until,
+            now=time.monotonic(),
+            normalize_uri=self._normalize_uri,
+        )
         if not source_entries:
             raise RuntimeError("DeepStream 파이프라인을 만들 지원 소스가 없습니다.")
-        for info in self._cameras.values():
-            clear_source_state(info)
-        self._pad_to_camera = {}
         self._preview_camera_id = source_entries[0][1]
 
         n_cams = len(source_entries)
-        elements = self._create_pipeline_elements(
+        output_elements = self._create_output_elements()
+        preview_elements = self._create_preview_elements() if self._preview_enabled else []
+
+        elements = create_pipeline_elements_bundle(
+            make_element=self._make_element,
+            preview_enabled=self._preview_enabled,
             primary_enabled=primary_enabled,
             helmet_enabled=helmet_enabled,
             pphuman_enabled=pphuman_enabled,
+            output_elements=output_elements,
+            preview_elements=preview_elements,
         )
 
-        self._configure_streammux(elements.streammux, n_cams)
-        self._configure_infer_elements(
-            elements.nvinfer,
-            elements.helmet_infer,
-            elements.pphuman_infer,
-            n_cams,
+        configure_pipeline_elements_bundle(
+            elements=elements,
+            n_cams=n_cams,
+            configure_streammux=self._configure_streammux,
+            configure_infer_elements=self._configure_infer_elements,
+            configure_tracker=self._configure_tracker,
+            configure_output_queue=self._configure_output_queue,
         )
-        if elements.tracker is not None:
-            self._configure_tracker(elements.tracker)
-        if elements.output_queue is not None:
-            self._configure_output_queue(elements.output_queue)
-
-        for element in elements.all_elements():
-            pipeline.add(element)
+        add_pipeline_elements(pipeline, elements)
 
         probe_element = link_deepstream_pipeline_path(
             elements,
             link_or_raise=self._link_or_raise,
-            add_primary_probe=self._add_primary_tensor_probe,
+            gst_module=Gst,
+            primary_probe_callback=self._on_primary_tensor_probe,
             link_preview_branch=self._link_preview_branch,
-            on_pphuman_linked=self._log_pphuman_pipeline_connected,
+            pphuman_gie_id=self._pphuman_gie_id,
+            pphuman_infer_config=_PPHUMAN_INFER_CONFIG,
         )
 
-        for pad_id, camera_id, info, source_uri in source_entries:
-            if not self._attach_camera_source_to_pipeline(
-                camera_id,
-                pad_id=pad_id,
-                pipeline=pipeline,
-                streammux=elements.streammux,
-            ):
-                raise RuntimeError(f"[{camera_id}] DeepStream source attach 실패: {source_uri}")
+        attach_camera_sources_batch(
+            source_entries=source_entries,
+            pad_to_camera=self._pad_to_camera,
+            gst_module=Gst,
+            pipeline=pipeline,
+            streammux=elements.streammux,
+            make_element=self._make_element,
+            normalize_uri=self._normalize_uri,
+            on_source_pad_added=self._on_source_pad_added,
+        )
 
-        srcpad = probe_element.get_static_pad("src")
-        if srcpad is None:
-            raise RuntimeError(f"{probe_element.get_name()} src pad를 찾을 수 없습니다.")
-        srcpad.add_probe(Gst.PadProbeType.BUFFER, self._on_pad_probe, None)
-
-        bus = pipeline.get_bus()
-        bus.add_signal_watch()
-        bus.connect("message", self._on_bus_message)
+        register_pipeline_runtime_hooks(
+            probe_element=probe_element,
+            pipeline=pipeline,
+            gst_module=Gst,
+            on_pad_probe=self._on_pad_probe,
+            on_bus_message=self._on_bus_message,
+        )
 
         self._pipeline = pipeline
         self._main_loop = GLib.MainLoop()
         # 실제 빌드된 파이프라인 토폴로지 기록
         self._built_topology = elements.topology()
-        self._built_source_count = n_cams
         # pad_id → camera_id 역매핑 캐시 갱신 (매 프레임 재생성 방지)
         self._pad_to_camera = rebuild_pad_to_camera(self._cameras)
         logger.info(
             "DeepStream 파이프라인 토폴로지: primary=%s, helmet=%s, pphuman=%s",
             *self._built_topology,
         )
+
+    def _stop_runtime_loop(self) -> None:
+        """버스 오류/EOS 수신 시 메인 루프와 런타임 종료 플래그를 정리한다."""
+        self.stop_event.set()
+        if self._main_loop is not None:
+            self._main_loop.quit()
 
     def _on_bus_message(self, bus: Any, message: Any) -> bool:
         """GLib 메인 루프 버스 메시지 핸들러.
@@ -2798,50 +1874,27 @@ class DeepStreamProcessor(BaseProcessor):
           [ ] Gst.MessageType.WARNING → 경고 로그만
           [ ] 카메라별 EOS(소스 종료) → enqueue_camera_retry() 호출
         """
-        msg_type = message.type
-        if msg_type == Gst.MessageType.EOS:
-            logger.warning("DeepStream EOS 수신")
-            self.stop_event.set()
-            if self._main_loop is not None:
-                self._main_loop.quit()
-        elif msg_type == Gst.MessageType.ERROR:
-            err, debug = message.parse_error()
-            logger.error("DeepStream 오류: %s debug=%s", err, debug)
-            camera_id = self._camera_id_from_message(message, debug)
-            if camera_id:
-                self._mark_source_failed(camera_id, str(err))
-            self.stop_event.set()
-            if self._main_loop is not None:
-                self._main_loop.quit()
-        elif msg_type == Gst.MessageType.WARNING:
-            warn, debug = message.parse_warning()
-            logger.warning("DeepStream 경고: %s debug=%s", warn, debug)
-        return True
+        return handle_bus_message(
+            cameras=self._cameras,
+            source_backoff_until=self._source_backoff_until,
+            source_last_error=self._source_last_error,
+            source_failure_backoff_sec=self._source_failure_backoff_sec,
+            message=message,
+            gst_module=Gst,
+            monotonic_now=time.monotonic,
+            request_pipeline_restart_cb=self._request_pipeline_restart,
+            stop_runtime_cb=self._stop_runtime_loop,
+        )
 
     def _on_primary_tensor_probe(
         self, pad: Any, info: Any, user_data: Any
     ) -> Any:  # Gst.PadProbeReturn
-        """primary nvinfer src pad probe — SGIE가 사용할 person object_meta를 주입한다."""
-        buffer = info.get_buffer()
-        if buffer is None:
-            return Gst.PadProbeReturn.OK
+        """primary nvinfer src pad probe — pphuman SGIE 활성 시 passthrough 역할.
 
-        batch_meta = pyds.gst_buffer_get_nvds_batch_meta(hash(buffer))
-        if batch_meta is None:
-            return Gst.PadProbeReturn.OK
-
-        l_frame = batch_meta.frame_meta_list
-        while l_frame is not None:
-            try:
-                frame_meta = pyds.NvDsFrameMeta.cast(l_frame.data)
-            except StopIteration:
-                break
-            camera_name = self._pad_to_camera.get(frame_meta.source_id, "unknown")
-            self._inject_primary_person_object_meta(batch_meta, frame_meta, camera_name)
-            try:
-                l_frame = l_frame.next
-            except StopIteration:
-                break
+        pphuman_infer가 활성화된 경우, 주 탐지(YOLO tensor)는 pphuman_infer
+        src pad의 _on_pad_probe에서 처리된다. 이 probe는 primary GIE 직후
+        버퍼가 올바르게 흐르는지 확인하는 passthrough 역할만 한다.
+        """
         return Gst.PadProbeReturn.OK
 
     def _on_pad_probe(
@@ -2886,44 +1939,19 @@ class DeepStreamProcessor(BaseProcessor):
         if batch_meta is None:
             return Gst.PadProbeReturn.OK
 
-        pad_to_camera = self._pad_to_camera
-
-        l_frame = batch_meta.frame_meta_list
-        while l_frame is not None:
-            try:
-                frame_meta = pyds.NvDsFrameMeta.cast(l_frame.data)
-            except StopIteration:
-                break
-
-            camera_name = pad_to_camera.get(frame_meta.source_id, "unknown")
-            self._frames_processed += 1
-
-            # 주기적으로 오래된 디바운스/필터 상태 정리 (메모리 누수 방지)
-            if self._frames_processed % 1000 == 0:
-                self._debouncer.cleanup()
-                self.violation_filter.cleanup(self._synthetic_track_timeout * 10)
-
-            detected_from_tensor = self._emit_tensor_events(batch_meta, frame_meta, camera_name)
-            self._apply_existing_event_pipeline(
-                camera_name,
-                self._object_meta_events_from_frame(frame_meta, camera_name),
-            )
-
-            if (
-                detected_from_tensor == 0
-                and frame_meta.frame_num % 300 == 0
-                and not self._tensor_probe_warned
-            ):
-                logger.info(
-                    "[%s] DeepStream tensor meta는 수신 중이나 필터 조건을 통과한 객체가 아직 없습니다.",
-                    camera_name,
-                )
-                self._tensor_probe_warned = True
-
-            try:
-                l_frame = l_frame.next
-            except StopIteration:
-                break
+        self._frames_processed, self._tensor_probe_warned = process_batch_frames(
+            batch_meta=batch_meta,
+            pyds_module=pyds,
+            pad_to_camera=self._pad_to_camera,
+            frames_processed=self._frames_processed,
+            tensor_probe_warned=self._tensor_probe_warned,
+            cleanup_interval=1000,
+            cleanup_callback=self._cleanup_event_filters,
+            emit_tensor_events_for_frame=self._emit_tensor_events,
+            object_meta_events_for_frame=self._object_meta_events_from_frame,
+            apply_existing_event_pipeline=self._apply_existing_event_pipeline,
+            tensor_warn_log=self._log_tensor_probe_waiting,
+        )
 
         return Gst.PadProbeReturn.OK
 
@@ -2938,26 +1966,19 @@ class DeepStreamProcessor(BaseProcessor):
           [ ] queue.Empty 예외는 continue 로 처리
         """
         logger.info("MQTT 발행 스레드 시작")
-        while self.running and not self.stop_event.is_set():
-            try:
-                queue_item = self.event_queue.get(timeout=1.0)
-                if publish_queue_item(
-                    queue_item,
-                    topic_prefix=self.config.mqtt.topic_prefix,
-                    mqtt_publish=self._mqtt_publish,
-                    event_publisher=self.event_publisher,
-                ):
-                    self._increment_stat("events_sent")
-                    continue
-                self._increment_stat("events_failed")
-            except Empty:
-                continue
-            except Exception as exc:
-                logger.error("MQTT 발행 오류: %s", exc)
-                self._increment_stat("events_failed")
+        run_publish_loop(
+            is_running=lambda: self.running,
+            stop_event=self.stop_event,
+            event_queue=self.event_queue,
+            topic_prefix=self.config.mqtt.topic_prefix,
+            mqtt_publish=self._mqtt_publish,
+            event_publisher=self.event_publisher,
+            increment_stat=self._increment_stat,
+        )
         logger.info("MQTT 발행 스레드 종료")
 
     def print_stats(self) -> None:
+        """현재 누적 처리 통계를 로그 한 줄로 출력한다."""
         stats = self.get_stats()
         logger.info(
             "DeepStream stats: frames=%s frame_dropped=%s "
@@ -2972,5 +1993,7 @@ class DeepStreamProcessor(BaseProcessor):
             stats["cameras"],
         )
 
+
     def release_all_cameras(self) -> None:
+        """호환 인터페이스용으로 전체 카메라 처리를 중지한다."""
         self.stop()

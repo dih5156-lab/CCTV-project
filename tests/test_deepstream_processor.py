@@ -735,15 +735,80 @@ def test_deepstream_falldata_aux_submission_only_for_fall_events():
     person = DetectionEvent(EventType.PERSON, 0, 0, 10, 10, 0.9, 1.0, object_id=1)
     fall = DetectionEvent(EventType.FALL_DETECTED, 1, 2, 30, 20, 0.8, 1.0, object_id=7)
 
-    proc._submit_falldata_aux_work("cam1", [person])
+    submitted = proc._submit_falldata_aux_work("cam1", [person])
+    assert submitted is None
     assert proc._falldata_aux_queue.empty()
 
-    proc._submit_falldata_aux_work("cam1", [person, fall])
+    submitted = proc._submit_falldata_aux_work("cam1", [person, fall])
     camera_name, payload = proc._falldata_aux_queue.get_nowait()
 
+    assert submitted is fall
     assert camera_name == "cam1"
     assert payload["type"] == "fall_detected"
     assert payload["object_id"] == 7
+
+
+def test_deepstream_falldata_aux_submission_prefers_pending_borderline_fall():
+    proc = object.__new__(DeepStreamProcessor)
+    proc._falldata_aux_queue = Queue(maxsize=2)
+    proc._falldata_aux = MagicMock()
+    proc._falldata_aux.enabled = True
+
+    clear_fall = DetectionEvent(
+        EventType.FALL_DETECTED,
+        1,
+        2,
+        30,
+        20,
+        0.8,
+        1.0,
+        object_id=8,
+        metadata={"fall_score": 4.0},
+    )
+    pending_fall = DetectionEvent(
+        EventType.FALL_DETECTED,
+        1,
+        2,
+        30,
+        20,
+        0.8,
+        1.0,
+        object_id=7,
+        metadata={
+            "fall_score": 3.0,
+            "falldata_aux_publish_pending": True,
+        },
+    )
+
+    submitted = proc._submit_falldata_aux_work("cam1", [clear_fall, pending_fall])
+    _, payload = proc._falldata_aux_queue.get_nowait()
+
+    assert submitted is pending_fall
+    assert payload["object_id"] == 7
+    assert payload["metadata"]["falldata_aux_publish_pending"] is True
+
+
+def test_deepstream_falldata_aux_submission_reports_queue_full():
+    proc = object.__new__(DeepStreamProcessor)
+    proc._falldata_aux_queue = Queue(maxsize=1)
+    proc._falldata_aux_queue.put_nowait(("cam1", {"type": "existing"}))
+    proc._falldata_aux = MagicMock()
+    proc._falldata_aux.enabled = True
+    fall = DetectionEvent(
+        EventType.FALL_DETECTED,
+        1,
+        2,
+        30,
+        20,
+        0.8,
+        1.0,
+        object_id=7,
+        metadata={"falldata_aux_publish_pending": True},
+    )
+
+    submitted = proc._submit_falldata_aux_work("cam1", [fall])
+
+    assert submitted is None
 
 
 def test_deepstream_falldata_aux_submission_ignored_when_disabled():
@@ -753,9 +818,196 @@ def test_deepstream_falldata_aux_submission_ignored_when_disabled():
     proc._falldata_aux.enabled = False
     fall = DetectionEvent(EventType.FALL_DETECTED, 1, 2, 30, 20, 0.8, 1.0, object_id=7)
 
-    proc._submit_falldata_aux_work("cam1", [fall])
+    submitted = proc._submit_falldata_aux_work("cam1", [fall])
 
+    assert submitted is None
     assert proc._falldata_aux_queue.empty()
+
+
+def test_deepstream_borderline_fall_can_require_aux_before_publish():
+    proc = object.__new__(DeepStreamProcessor)
+    proc._fall_aux_confirm_borderline = True
+    proc._fall_aux_confirm_max_fall_score = None
+    proc._falldata_aux = MagicMock()
+    proc._falldata_aux.enabled = True
+    proc._fall_detector = types.SimpleNamespace(score_threshold=3.0)
+
+    borderline = DetectionEvent(
+        EventType.FALL_DETECTED,
+        1,
+        2,
+        30,
+        20,
+        0.8,
+        1.0,
+        object_id=7,
+        metadata={"fall_score": 3.0},
+    )
+    clear_fall = DetectionEvent(
+        EventType.FALL_DETECTED,
+        1,
+        2,
+        30,
+        20,
+        0.8,
+        1.0,
+        object_id=8,
+        metadata={"fall_score": 4.0},
+    )
+    person = DetectionEvent(EventType.PERSON, 1, 2, 30, 20, 0.8, 1.0)
+
+    assert proc._should_confirm_fall_with_aux_before_publish(borderline) is True
+    assert proc._should_confirm_fall_with_aux_before_publish(clear_fall) is False
+    assert proc._should_confirm_fall_with_aux_before_publish(person) is False
+
+
+def test_deepstream_fall_aux_confirm_max_score_can_extend_pending_window():
+    proc = object.__new__(DeepStreamProcessor)
+    proc._fall_aux_confirm_borderline = True
+    proc._fall_aux_confirm_max_fall_score = 6.0
+    proc._falldata_aux = MagicMock()
+    proc._falldata_aux.enabled = True
+    proc._fall_detector = types.SimpleNamespace(score_threshold=3.0)
+    high_score_fall = DetectionEvent(
+        EventType.FALL_DETECTED,
+        1,
+        2,
+        30,
+        20,
+        0.8,
+        1.0,
+        object_id=7,
+        metadata={"fall_score": 5.5},
+    )
+    too_high_score_fall = DetectionEvent(
+        EventType.FALL_DETECTED,
+        1,
+        2,
+        30,
+        20,
+        0.8,
+        1.0,
+        object_id=8,
+        metadata={"fall_score": 6.5},
+    )
+
+    assert proc._should_confirm_fall_with_aux_before_publish(high_score_fall) is True
+    assert proc._should_confirm_fall_with_aux_before_publish(too_high_score_fall) is False
+
+
+def test_deepstream_aux_confirmed_borderline_fall_is_enqueued():
+    proc = object.__new__(DeepStreamProcessor)
+    proc.event_queue = Queue(maxsize=2)
+    proc._events_detected = 0
+    payload = {
+        "type": "fall_detected",
+        "object_id": 7,
+        "metadata": {
+            "fall_score": 3.0,
+            "falldata_aux_publish_pending": True,
+        },
+    }
+    result = {
+        "status": "ok",
+        "confirmed": True,
+        "fall_probability": 0.82,
+    }
+
+    ok = proc._enqueue_aux_confirmed_fall_event("cam1", payload, result)
+    enqueued = proc.event_queue.get_nowait()
+
+    assert ok is True
+    assert proc._events_detected == 1
+    assert enqueued["metadata"]["falldata_aux"] == result
+    assert enqueued["metadata"]["falldata_aux_confirmed"] is True
+    assert "falldata_aux_publish_pending" not in enqueued["metadata"]
+
+
+def test_deepstream_aux_rejected_borderline_fall_is_not_enqueued():
+    proc = object.__new__(DeepStreamProcessor)
+    proc.event_queue = Queue(maxsize=2)
+    proc._events_detected = 0
+    payload = {
+        "type": "fall_detected",
+        "object_id": 7,
+        "metadata": {
+            "fall_score": 3.0,
+            "falldata_aux_publish_pending": True,
+        },
+    }
+
+    ok = proc._enqueue_aux_confirmed_fall_event(
+        "cam1",
+        payload,
+        {"status": "ok", "confirmed": False},
+    )
+
+    assert ok is False
+    assert proc.event_queue.empty()
+    assert proc._events_detected == 0
+
+
+def test_deepstream_compare_veto_can_drop_aux_confirmed_high_score_fall():
+    proc = object.__new__(DeepStreamProcessor)
+    proc.event_queue = Queue(maxsize=2)
+    proc._events_detected = 0
+    proc._fall_aux_compare_veto_enabled = True
+    proc._fall_aux_compare_veto_min_fall_score = 5.0
+    payload = {
+        "type": "fall_detected",
+        "object_id": 7,
+        "metadata": {
+            "fall_score": 6.0,
+            "falldata_aux_publish_pending": True,
+        },
+    }
+    result = {
+        "status": "ok",
+        "confirmed": True,
+        "compare_model": {
+            "status": "ok",
+            "confirmed": False,
+            "fall_probability": 0.24,
+        },
+    }
+
+    ok = proc._enqueue_aux_confirmed_fall_event("cam1", payload, result)
+
+    assert ok is False
+    assert proc.event_queue.empty()
+    assert proc._events_detected == 0
+
+
+def test_deepstream_compare_veto_ignores_scores_below_minimum():
+    proc = object.__new__(DeepStreamProcessor)
+    proc.event_queue = Queue(maxsize=2)
+    proc._events_detected = 0
+    proc._fall_aux_compare_veto_enabled = True
+    proc._fall_aux_compare_veto_min_fall_score = 5.0
+    payload = {
+        "type": "fall_detected",
+        "object_id": 7,
+        "metadata": {
+            "fall_score": 3.0,
+            "falldata_aux_publish_pending": True,
+        },
+    }
+    result = {
+        "status": "ok",
+        "confirmed": True,
+        "compare_model": {
+            "status": "ok",
+            "confirmed": False,
+            "fall_probability": 0.24,
+        },
+    }
+
+    ok = proc._enqueue_aux_confirmed_fall_event("cam1", payload, result)
+    enqueued = proc.event_queue.get_nowait()
+
+    assert ok is True
+    assert enqueued["metadata"]["falldata_aux"] == result
+    assert proc._events_detected == 1
 
 
 def test_deepstream_pa100k_sgie_backend_name_is_explicit(monkeypatch):
@@ -996,7 +1248,7 @@ def test_deepstream_publish_loop_success_counts_sent_not_detected(mock_config):
         proc.running = False
         return True
 
-    with patch("src.core.deepstream_processor.publish_queue_item", side_effect=stop_after_publish):
+    with patch("src.core._event_publish.publish_queue_item", side_effect=stop_after_publish):
         proc._publish_loop()
 
     assert proc._events_detected == 1
@@ -1290,7 +1542,6 @@ def test_create_output_elements_can_stream_h264_mpegts(monkeypatch):
         "nvv4l2h264enc",
         "h264parse",
         "capsfilter",
-        "identity",
         "mpegtsmux",
         "udpsink",
     ]
@@ -1303,10 +1554,83 @@ def test_create_output_elements_can_stream_h264_mpegts(monkeypatch):
     assert elements[2].properties["bitrate"] == 6000000
     assert elements[2].properties["insert-sps-pps"] is True
     assert elements[2].properties["iframeinterval"] == 30
+    assert elements[2].properties["poc-type"] == 2
+    assert elements[6].properties["host"] == "media"
+    assert elements[6].properties["port"] == 1234
+    assert elements[6].properties["sync"] is False
+
+
+def test_create_output_elements_can_enable_h264_poc_fix(monkeypatch):
+    proc = object.__new__(DeepStreamProcessor)
+    proc._output_mode = "h264-mpegts"
+    created = []
+
+    def make_element(factory, name):
+        element = _FakeElement(name)
+        element.factory = factory
+        created.append(element)
+        return element
+
+    monkeypatch.setattr(proc, "_make_element", make_element)
+    monkeypatch.setenv("DS_H264_POC_FIX_ENABLED", "1")
+    monkeypatch.setattr(
+        "src.core.deepstream_processor.Gst",
+        types.SimpleNamespace(
+            Caps=types.SimpleNamespace(from_string=lambda value: value),
+            CLOCK_TIME_NONE=-1,
+        ),
+    )
+
+    elements = proc._create_output_elements()
+
+    assert [element.factory for element in elements] == [
+        "nvvideoconvert",
+        "capsfilter",
+        "nvv4l2h264enc",
+        "h264parse",
+        "capsfilter",
+        "identity",
+        "mpegtsmux",
+        "udpsink",
+    ]
+    assert elements[2].properties["poc-type"] == 0
     assert elements[5].properties["signal-handoffs"] is True
-    assert elements[7].properties["host"] == "media"
-    assert elements[7].properties["port"] == 1234
-    assert elements[7].properties["sync"] is False
+
+
+def test_create_output_elements_can_enable_h264_poc_fix_for_rtsp_publish(monkeypatch):
+    proc = object.__new__(DeepStreamProcessor)
+    proc._output_mode = "rtsp-publish"
+    created = []
+
+    def make_element(factory, name):
+        element = _FakeElement(name)
+        element.factory = factory
+        created.append(element)
+        return element
+
+    monkeypatch.setattr(proc, "_make_element", make_element)
+    monkeypatch.setenv("DS_H264_POC_FIX_ENABLED", "1")
+    monkeypatch.setattr(
+        "src.core.deepstream_processor.Gst",
+        types.SimpleNamespace(
+            Caps=types.SimpleNamespace(from_string=lambda value: value),
+            CLOCK_TIME_NONE=-1,
+        ),
+    )
+
+    elements = proc._create_output_elements()
+
+    assert [element.factory for element in elements] == [
+        "nvvideoconvert",
+        "capsfilter",
+        "nvv4l2h264enc",
+        "h264parse",
+        "capsfilter",
+        "identity",
+        "rtspclientsink",
+    ]
+    assert elements[2].properties["poc-type"] == 0
+    assert elements[5].properties["signal-handoffs"] is True
 
 
 def test_link_or_raise_raises_when_gstreamer_link_fails():

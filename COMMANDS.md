@@ -107,6 +107,45 @@ FALLDATA_AUX_FALL_CLASS_INDEX=0 \
 python main.py --video sample.mp4 --display
 ```
 
+수집된 현장 낙상 후보 클립을 키보드로 라벨링합니다. 기본값은 `camera_1` 실영상만
+대상으로 하며, `F=낙상`, `N=비낙상`, `S=판단 보류`, `Q=종료`입니다.
+
+```bash
+rtk python scripts/ops/label_fall_shadow_clips.py
+rtk python scripts/ops/summarize_fall_shadow_review.py
+```
+
+검수된 현장 클립을 기존 공개 낙상 샘플과 합쳐 학습 manifest를 생성합니다.
+같은 카메라·날짜의 클립은 같은 scene group으로 묶여 train/test 누수를 줄입니다.
+
+```bash
+rtk python scripts/datasets/build_field_fall_manifest.py --max-field-per-group 5
+rtk python scripts/health/check_fall_manifest_readiness.py \
+  --manifest data/fall_eval/field_combined_manifest.jsonl
+```
+
+manifest 준비 검사를 통과한 뒤에만 RF 재학습을 실행합니다.
+
+```bash
+rtk proxy .venv-falldata/bin/python scripts/datasets/train_falldata_video_rf.py \
+  --manifest data/fall_eval/field_combined_manifest.jsonl \
+  --feature-cache data/fall_eval/falldata_feature_cache \
+  --output-model models/experiments/falldata_field_combined_rf_max120.pkl \
+  --metrics-json models/experiments/falldata_field_combined_rf_max120_metrics.json \
+  --dataset-version field_combined_balanced_20260703 \
+  --extract-workers 2 \
+  --cv-group-by scene_base
+```
+
+학습 후 모델 승격 검사를 실행합니다. 실패한 모델은 `confirm` 또는 `veto` 운영 모드에
+연결하지 않습니다.
+
+```bash
+rtk python scripts/health/check_falldata_model_report.py \
+  --metrics-json models/experiments/falldata_field_combined_rf_max120_metrics.json \
+  --require-cross-validation
+```
+
 `confirm` 모드는 보조모델이 낙상을 확인하지 못하면 기존 pose 낙상 이벤트를 버릴 수 있으므로,
 현장 shadow 로그를 확인한 뒤에만 사용하세요.
 
@@ -909,7 +948,10 @@ python scripts/health/check_dockerfile_sources.py
 ./docker-build.sh cctv-public-api cctv-action-layer
 
 # Jetson compose 파일로 빌드
-COMPOSE_FILE=docker-compose.jetson.yml ./docker-build.sh cctv-alert-api
+START_AFTER_BUILD=0 COMPOSE_FILE=docker-compose.jetson.yml ./docker-build.sh cctv-alert-api
+
+# Jetson 서비스 시작은 환경 파일을 명시
+docker compose --env-file .env.jetson -f docker-compose.jetson.yml up -d cctv-alert-api
 
 # 빌드만 하고 시작하지 않기
 START_AFTER_BUILD=0 ./docker-build.sh cctv-action-layer
@@ -934,10 +976,10 @@ Jetson 통합 스택은 compose project가 `edgex-jetson`으로 뜨므로, 기�
 
 ```bash
 # Jetson 스택 서비스 확인
-docker compose -f docker-compose.jetson.yml ps
+docker compose --env-file .env.jetson -f docker-compose.jetson.yml ps
 
 # AI 엔진만 재시작
-docker compose -f docker-compose.jetson.yml restart cctv-ai-engine
+docker compose --env-file .env.jetson -f docker-compose.jetson.yml restart cctv-ai-engine
 
 # 재시작 반영 확인
 docker inspect cctv-ai-engine \
@@ -974,7 +1016,7 @@ docker compose --profile monitoring up -d prometheus grafana
 docker compose --profile monitoring up -d prometheus grafana
 
 # 중지 (볼륨은 유지)
-docker compose --profile monitoring down
+docker compose stop prometheus grafana
 ```
 
 ### 접속

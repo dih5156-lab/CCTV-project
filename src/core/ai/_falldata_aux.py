@@ -34,6 +34,7 @@ DEFAULT_MODEL_PATH = (
     PROJECT_ROOT
     / "falldata/2. AI학습모델파일/영상/낙상분류/FNF_RF_SMOTE_CAM_1.pkl"
 )
+DEFAULT_COMPARE_MODEL_PATH = PROJECT_ROOT / "models/experiments/falldata_sample_rf_max120_guarded.pkl"
 DEFAULT_MEDIAPIPE_PYTHON = PROJECT_ROOT / ".venv-mediapipe/bin/python"
 DEFAULT_MODEL_PYTHON = PROJECT_ROOT / ".venv-falldata/bin/python"
 EXTRACT_SCRIPT = PROJECT_ROOT / "scripts/datasets/extract_falldata_mediapipe_features.py"
@@ -68,17 +69,21 @@ class FallDataAuxConfig:
     min_nonzero_frames: int = 30
     fall_class_index: int = 0
     buffer_frames: int = 600
+    max_extract_frames: int = 120
     timeout_seconds: float = 30.0
     cooldown_seconds: float = 10.0
+    fail_open_on_unavailable: bool = True
     mediapipe_python: Path = DEFAULT_MEDIAPIPE_PYTHON
     model_python: Path = DEFAULT_MODEL_PYTHON
     model_path: Path = DEFAULT_MODEL_PATH
+    compare_model_path: Optional[Path] = None
 
     @classmethod
     def from_env(cls) -> "FallDataAuxConfig":
         mode = os.environ.get("FALLDATA_AUX_MODE", "shadow").strip().lower()
         if mode not in {"shadow", "confirm"}:
             mode = "shadow"
+        compare_model_raw = os.environ.get("FALLDATA_AUX_COMPARE_MODEL_PATH", "").strip()
         return cls(
             enabled=_parse_bool(os.environ.get("FALLDATA_AUX_ENABLED"), False),
             mode=mode,
@@ -88,11 +93,17 @@ class FallDataAuxConfig:
             ),
             fall_class_index=_parse_int(os.environ.get("FALLDATA_AUX_FALL_CLASS_INDEX"), 0),
             buffer_frames=_parse_int(os.environ.get("FALLDATA_AUX_BUFFER_FRAMES"), 600),
+            max_extract_frames=_parse_int(
+                os.environ.get("FALLDATA_AUX_MAX_EXTRACT_FRAMES"), 120
+            ),
             timeout_seconds=_parse_float(
                 os.environ.get("FALLDATA_AUX_TIMEOUT_SECONDS"), 30.0
             ),
             cooldown_seconds=_parse_float(
                 os.environ.get("FALLDATA_AUX_COOLDOWN_SECONDS"), 10.0
+            ),
+            fail_open_on_unavailable=_parse_bool(
+                os.environ.get("FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE"), True
             ),
             mediapipe_python=Path(
                 os.environ.get("FALLDATA_AUX_MEDIAPIPE_PYTHON", str(DEFAULT_MEDIAPIPE_PYTHON))
@@ -101,11 +112,19 @@ class FallDataAuxConfig:
                 os.environ.get("FALLDATA_AUX_MODEL_PYTHON", str(DEFAULT_MODEL_PYTHON))
             ),
             model_path=Path(os.environ.get("FALLDATA_AUX_MODEL_PATH", str(DEFAULT_MODEL_PATH))),
+            compare_model_path=Path(compare_model_raw) if compare_model_raw else None,
         )
 
 
 class FallDataAuxVerifier:
     """Buffers frames and verifies pose fall candidates with the public RF model."""
+
+    UNAVAILABLE_STATUSES = {
+        "error",
+        "missing_dependency",
+        "no_frames",
+        "skipped_cooldown",
+    }
 
     def __init__(self, config: Optional[FallDataAuxConfig] = None) -> None:
         self.config = config or FallDataAuxConfig.from_env()
@@ -140,10 +159,25 @@ class FallDataAuxVerifier:
             metadata["falldata_aux"] = result
             event.metadata = metadata
             if self.config.mode == "confirm" and not result.get("confirmed", False):
+                if self._should_fail_open(result):
+                    metadata["falldata_aux_confirm_fallback"] = result.get("status")
+                    event.metadata = metadata
+                    logger.warning(
+                        "falldata aux confirm unavailable; publishing original fall event: %s",
+                        result,
+                    )
+                    annotated.append(event)
+                    continue
                 logger.info("falldata aux confirm mode rejected fall event: %s", result)
                 continue
             annotated.append(event)
         return annotated
+
+    def _should_fail_open(self, result: dict) -> bool:
+        """검증기 자체 실패는 안전 알람 손실을 막기 위해 기본 fail-open 처리한다."""
+        if not self.config.fail_open_on_unavailable:
+            return False
+        return str(result.get("status")) in self.UNAVAILABLE_STATUSES
 
     def verify(self) -> dict:
         now = time.time()
@@ -159,7 +193,7 @@ class FallDataAuxVerifier:
             logger.warning("falldata aux verification failed: %s", exc)
             result = self._result(
                 "error",
-                confirmed=self.config.mode != "confirm",
+                confirmed=False,
                 error=str(exc),
             )
             self._last_result = dict(result)
@@ -198,6 +232,8 @@ class FallDataAuxVerifier:
                     str(video_path),
                     "--output-dir",
                     str(feature_dir),
+                    "--max-frames",
+                    str(max(self.config.max_extract_frames, 1)),
                 ]
             )
             nonzero_frames = self._parse_nonzero_frames(extract.stdout)
@@ -213,6 +249,7 @@ class FallDataAuxVerifier:
             )
             probability = self._parse_probability(infer.stdout)
             prediction = self._parse_prediction(infer.stdout)
+            compare_result = self._run_compare_model(feature_dir, nonzero_frames)
 
         fall_probability = (
             probability[self.config.fall_class_index]
@@ -230,7 +267,50 @@ class FallDataAuxVerifier:
             fall_class_index=self.config.fall_class_index,
             nonzero_feature_frames=nonzero_frames,
             min_nonzero_feature_frames=self.config.min_nonzero_frames,
+            compare_model=compare_result,
         )
+
+    def _run_compare_model(
+        self,
+        feature_dir: Path,
+        nonzero_frames: int,
+    ) -> Optional[dict]:
+        compare_model_path = self.config.compare_model_path
+        if compare_model_path is None:
+            return None
+        if not compare_model_path.exists():
+            return {
+                "status": "missing_dependency",
+                "model_path": str(compare_model_path),
+                "confirmed": False,
+            }
+        infer = self._run(
+            [
+                str(self.config.model_python),
+                str(SMOKE_SCRIPT),
+                "--model",
+                str(compare_model_path),
+                "--sequence-dir",
+                str(feature_dir),
+            ]
+        )
+        probability = self._parse_probability(infer.stdout)
+        prediction = self._parse_prediction(infer.stdout)
+        fall_probability = (
+            probability[self.config.fall_class_index]
+            if probability and 0 <= self.config.fall_class_index < len(probability)
+            else None
+        )
+        return {
+            "status": "ok",
+            "model_path": str(compare_model_path),
+            "confirmed": self._is_confirmed(nonzero_frames, fall_probability),
+            "prediction": prediction,
+            "probability": probability,
+            "fall_probability": fall_probability,
+            "threshold": self.config.threshold,
+            "fall_class_index": self.config.fall_class_index,
+        }
 
     def _result(self, status: str, *, confirmed: bool, **extra: object) -> dict:
         result = {

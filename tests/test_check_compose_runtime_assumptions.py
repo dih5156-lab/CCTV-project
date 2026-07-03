@@ -231,6 +231,135 @@ def test_runtime_path_convergence_rejects_legacy_paths():
     assert "/app/logs" in result["detail"]
 
 
+def test_appearance_model_wiring_requires_label_maps_and_runtimes():
+    compose = """
+x-appearance-search-runtime:
+  APPEARANCE_BACKEND: ${APPEARANCE_BACKEND:-pphuman}
+  APPEARANCE_MODEL_PATH: ${APPEARANCE_MODEL_PATH:-models/pphuman_attribute.onnx}
+  APPEARANCE_LABEL_MAP_PATH: ${APPEARANCE_LABEL_MAP_PATH:-config/appearance_pphuman_labels.example.json}
+  APPEARANCE_RUNTIME: ${APPEARANCE_RUNTIME:-onnxruntime}
+"""
+    jetson = """
+x-appearance-runtime:
+  DS_PPHUMAN_SGIE_ENABLED: ${DS_PPHUMAN_SGIE_ENABLED:-1}
+  DS_PPHUMAN_INFER_CONFIG: ${DS_PPHUMAN_INFER_CONFIG:-config/deepstream/config_infer_pa100k.txt}
+  APPEARANCE_MODEL_PATH: ${APPEARANCE_MODEL_PATH:-models/pa100k_resnet50_attr.engine}
+  APPEARANCE_LABEL_MAP_PATH: ${APPEARANCE_LABEL_MAP_PATH:-config/appearance_pa100k_labels.json}
+  APPEARANCE_RUNTIME: ${APPEARANCE_RUNTIME:-tensorrt}
+"""
+
+    result = runtime_checks.check_appearance_model_wiring(
+        compose_text=compose,
+        jetson_compose_text=jetson,
+    )
+
+    assert result["passed"] is True
+
+
+def test_appearance_model_wiring_fails_when_pphuman_label_map_is_missing():
+    compose = """
+x-appearance-search-runtime:
+  APPEARANCE_BACKEND: ${APPEARANCE_BACKEND:-pphuman}
+  APPEARANCE_MODEL_PATH: ${APPEARANCE_MODEL_PATH:-models/pphuman_attribute.onnx}
+  APPEARANCE_RUNTIME: ${APPEARANCE_RUNTIME:-onnxruntime}
+"""
+    jetson = """
+x-appearance-runtime:
+  DS_PPHUMAN_SGIE_ENABLED: ${DS_PPHUMAN_SGIE_ENABLED:-1}
+  DS_PPHUMAN_INFER_CONFIG: ${DS_PPHUMAN_INFER_CONFIG:-config/deepstream/config_infer_pa100k.txt}
+  APPEARANCE_MODEL_PATH: ${APPEARANCE_MODEL_PATH:-models/pa100k_resnet50_attr.engine}
+  APPEARANCE_LABEL_MAP_PATH: ${APPEARANCE_LABEL_MAP_PATH:-config/appearance_pa100k_labels.json}
+  APPEARANCE_RUNTIME: ${APPEARANCE_RUNTIME:-tensorrt}
+"""
+
+    result = runtime_checks.check_appearance_model_wiring(
+        compose_text=compose,
+        jetson_compose_text=jetson,
+    )
+
+    assert result["passed"] is False
+    assert "appearance_pphuman_labels.example.json" in result["detail"]
+
+
+def test_falldata_aux_wiring_requires_fail_open_and_jetson_paths():
+    compose = """
+services:
+  cctv-ai-engine:
+    environment:
+      FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE: ${FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE:-true}
+"""
+    jetson = """
+services:
+  cctv-ai-engine:
+    environment:
+      FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE: ${FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE:-true}
+      FALLDATA_AUX_MEDIAPIPE_PYTHON: ${FALLDATA_AUX_MEDIAPIPE_PYTHON:-/app/.venv-mediapipe/bin/python}
+      FALLDATA_AUX_MODEL_PYTHON: ${FALLDATA_AUX_MODEL_PYTHON:-/app/.venv-falldata/bin/python}
+    volumes:
+      - type: bind
+        source: ./falldata
+      - type: bind
+        source: ./.venv-mediapipe
+      - type: bind
+        source: ./.venv-falldata
+"""
+    result = runtime_checks.check_falldata_aux_wiring(
+        compose_text=compose,
+        jetson_compose_text=jetson,
+        env_example_text="FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE=true\n",
+        jetson_env_example_text=(
+            "FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE=true\n"
+            "FALLDATA_AUX_CONFIRM_BORDERLINE=false\n"
+            "FALLDATA_AUX_MEDIAPIPE_PYTHON=/app/.venv-mediapipe/bin/python\n"
+            "FALLDATA_AUX_MODEL_PYTHON=/app/.venv-falldata/bin/python\n"
+        ),
+    )
+
+    assert result["passed"] is True
+
+
+def test_falldata_aux_wiring_fails_without_fail_open() -> None:
+    result = runtime_checks.check_falldata_aux_wiring(
+        compose_text="services: {}\n",
+        jetson_compose_text="services: {}\n",
+        env_example_text="FALLDATA_AUX_ENABLED=false\n",
+        jetson_env_example_text="FALLDATA_AUX_ENABLED=false\n",
+    )
+
+    assert result["passed"] is False
+    assert "FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE" in result["detail"]
+
+
+def test_h264_webrtc_wiring_requires_jetson_poc_guard() -> None:
+    compose = "DS_H264_POC_FIX_ENABLED: ${DS_H264_POC_FIX_ENABLED:-true}\n"
+    jetson = (
+        "DS_H264_ENCODER: ${DS_H264_ENCODER:-nvv4l2h264enc}\n"
+        "DS_H264_POC_FIX_ENABLED: ${DS_H264_POC_FIX_ENABLED:-true}\n"
+        "DS_H264_POC_TYPE: ${DS_H264_POC_TYPE:-2}\n"
+    )
+
+    result = runtime_checks.check_h264_webrtc_wiring(
+        compose_text=compose,
+        jetson_compose_text=jetson,
+    )
+
+    assert result["passed"] is True
+
+
+def test_h264_webrtc_wiring_rejects_disabled_poc_fix_default() -> None:
+    result = runtime_checks.check_h264_webrtc_wiring(
+        compose_text="DS_H264_POC_FIX_ENABLED: ${DS_H264_POC_FIX_ENABLED:-false}\n",
+        jetson_compose_text=(
+            "DS_H264_ENCODER: ${DS_H264_ENCODER:-nvv4l2h264enc}\n"
+            "DS_H264_POC_FIX_ENABLED: ${DS_H264_POC_FIX_ENABLED:-false}\n"
+            "DS_H264_POC_TYPE: ${DS_H264_POC_TYPE:-2}\n"
+        ),
+    )
+
+    assert result["passed"] is False
+    assert "DS_H264_POC_FIX_ENABLED" in result["detail"]
+
+
 def test_mqtt_auth_config_requires_app_rules_engine_rendered_config(tmp_path):
     passwd = tmp_path / "passwd"
     passwd.write_text("cctv:$7$hash\n", encoding="utf-8")

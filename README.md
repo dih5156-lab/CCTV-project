@@ -1,7 +1,20 @@
 # CCTV 헬멧 착용 및 낙상 감지 시스템
 
 YOLOv8 기반 실시간 안전 관리 시스템으로, 다중 카메라 환경에서 헬멧 착용 여부, 낙상 사고, 위험 구역 침입을 자동 감지합니다.
-Windows PC와 NVIDIA Jetson Orin 모두 동작합니다.
+PC에서는 OpenCV 기반 개발·기능 확인을, NVIDIA Jetson Orin에서는 DeepStream/TensorRT 기반 운영 배포를 지원합니다.
+
+## 처음 시작하기
+
+| 목적 | 권장 경로 | 시작 문서 |
+|---|---|---|
+| PC에서 코드와 기능 확인 | Python 가상환경 + OpenCV/YOLO | [빠른 시작](docs/guides/QUICK_START.md) |
+| PC/서버에 API·Action Layer 배포 | `docker-compose.yml` + `.env` | [배포 환경변수](docs/guides/DEPLOYMENT_ENVIRONMENT_VARIABLES.md) |
+| Jetson에서 AI 엔진 운영 | `docker-compose.jetson.yml` + `.env.jetson` | [Jetson·EdgeX 현장 체크리스트](docs/guides/JETSON_EDGEX_FIELD_CHECKLIST.md) |
+| 장애 확인과 복구 | 운영 점검 스크립트 + 로그 | [운영 Runbook](docs/guides/OPERATIONS_RUNBOOK.md) |
+
+현재 코드와 문서의 변경 범위, 자동 검증과 실기 검증의 구분은
+[2026-07-03 변경 및 검증 요약](docs/reviews/CHANGESET_SUMMARY_2026-07-03.md)에서 확인할 수 있습니다.
+전체 문서는 [문서 목차](docs/README.md)에서 기능·모듈·실행/배포·리뷰 기준으로 분류되어 있습니다.
 
 ## 주요 기능
 
@@ -26,7 +39,7 @@ Windows PC와 NVIDIA Jetson Orin 모두 동작합니다.
 ```
 CCTV-project/
 ├── main.py                         # CCTV AI 엔진 기본 실행 진입점
-├── run_external_ingest.py           # 외부 MQTT/NC 수신 진입점
+├── run_external_ingest.py           # 외부 MQTT 수신 진입점
 ├── src/                            # 핵심 애플리케이션 코드
 │   ├── api/                        # FastAPI 공개 API (/api/v1)
 │   ├── bootstrap/                  # CLI, 런타임 초기화, 프로세서 생성
@@ -59,16 +72,16 @@ CCTV-project/
 ├── tests/                          # pytest 테스트
 ├── docker-compose.yml              # 일반 Docker/EdgeX 통합 배포
 ├── docker-compose.jetson.yml       # Jetson/DeepStream 운영 배포
-└── docs/architecture/PROJECT_STRUCTURE.md # 상세 프로젝트 구조 문서
+└── docs/modules/PROJECT_STRUCTURE.md # 상세 프로젝트 구조 문서
 ```
 
 더 자세한 디렉터리별 역할과 데이터 흐름은
-[docs/architecture/PROJECT_STRUCTURE.md](docs/architecture/PROJECT_STRUCTURE.md)를 참고하세요.
+[docs/modules/PROJECT_STRUCTURE.md](docs/modules/PROJECT_STRUCTURE.md)를 참고하세요.
 운영 중 상태 확인과 복구 절차는
-[docs/operations/OPERATIONS_RUNBOOK.md](docs/operations/OPERATIONS_RUNBOOK.md)에 정리되어 있습니다.
+[docs/guides/OPERATIONS_RUNBOOK.md](docs/guides/OPERATIONS_RUNBOOK.md)에 정리되어 있습니다.
 현장 점검 순서와 DeepStream 장시간 안정성 확인은
-[docs/operations/OPERATION_CHECKLIST.md](docs/operations/OPERATION_CHECKLIST.md),
-[docs/operations/DEEPSTREAM_PERFORMANCE_STABILITY_2026-05-26.md](docs/operations/DEEPSTREAM_PERFORMANCE_STABILITY_2026-05-26.md)를 참고하세요.
+[docs/guides/OPERATION_CHECKLIST.md](docs/guides/OPERATION_CHECKLIST.md),
+[docs/guides/DEEPSTREAM_PERFORMANCE_STABILITY_2026-05-26.md](docs/guides/DEEPSTREAM_PERFORMANCE_STABILITY_2026-05-26.md)를 참고하세요.
 
 ## 포트별 역할
 
@@ -135,7 +148,7 @@ Jetson에서 실사용 얼굴 인식을 켜려면 추가로 아래 파일을 설
 pip install -r requirements/jetson.txt
 ```
 
-자세한 내용은 [docs/operations/FACE_RECOGNITION_SETUP.md](docs/operations/FACE_RECOGNITION_SETUP.md)를 참고하세요.
+자세한 내용은 [docs/guides/FACE_RECOGNITION_SETUP.md](docs/guides/FACE_RECOGNITION_SETUP.md)를 참고하세요.
 
 ### 4. 모델 파일 준비
 
@@ -239,11 +252,18 @@ YOLO("models/yolov8n.pt").export(format="engine", device=0)
 | `APPEARANCE_MODEL_PATH` | 속성 모델 경로 | `models/pphuman_attribute.onnx` |
 | `APPEARANCE_LABEL_MAP_PATH` | 속성 라벨 맵 경로 | `config/appearance_pphuman_labels.example.json` |
 | `APPEARANCE_RUNTIME` | 속성 모델 런타임 | `auto` / `onnxruntime` / `paddle` |
+| `APPEARANCE_INPUT_SIZE` | 속성 모델 입력 크기 | `224` |
+| `APPEARANCE_SCORE_THRESHOLD` | 속성 판정 임계값 | `0.5` |
 | `APPEARANCES_DB` | 외형 로그 SQLite 경로 | `/app/data/runtime/appearances.db` |
 | `FALLDATA_AUX_ENABLED` | 공공 낙상 보조 검증 활성화 | `true` / `false` |
 | `FALLDATA_AUX_MODE` | 보조 검증 적용 방식 | `shadow` / `confirm` |
 | `FALLDATA_AUX_THRESHOLD` | 낙상 class 확률 임계값 | `0.7` |
 | `FALLDATA_AUX_FALL_CLASS_INDEX` | RF 모델의 낙상 class index | `0` |
+| `FALLDATA_AUX_MAX_EXTRACT_FRAMES` | MediaPipe feature 추출 최대 프레임 | `120` |
+| `FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE` | 보조 검증 실패 시 원본 알람 유지 | `true` |
+| `STREAM_FPS` | MJPEG 송출 FPS | `15` |
+| `STREAM_WIDTH`, `STREAM_HEIGHT` | MJPEG 송출 해상도 | `960`, `540` |
+| `STREAM_JPEG_QUALITY` | MJPEG JPEG 품질 | `65` |
 | `DISPLAY_ENABLED` | 화면 출력 | `true` / `false` |
 | `TRACK_TIMEOUT_SECONDS` | 미감지 트랙 유지 시간 | `1.0` |
 | `TRACK_MAX_MISSED_FRAMES` | 연속 미감지 허용 프레임 수 | `2` |
@@ -310,9 +330,8 @@ FALLDATA_AUX_FALL_CLASS_INDEX=0 \
 python main.py --video sample.mp4 --display
 ```
 
-`confirm` 모드는 보조모델이 확인하지 못한 pose 낙상 이벤트를 버릴 수 있으므로,
-실제 현장 shadow 로그를 확인한 뒤 사용합니다. 자세한 구조와 한계는
-[docs/falldata_integration_notes.md](docs/falldata_integration_notes.md)를 참고하세요.
+`confirm` 모드는 보조모델이 정상 실행되어 `confirmed=false`를 반환한 pose 낙상 이벤트를 버릴 수 있습니다. 기본 설정에서는 의존성 누락, 프레임 부족, cooldown, subprocess 오류 시 `fail-open`으로 원본 알람을 유지합니다. 실제 현장 shadow 로그를 확인한 뒤 사용합니다. DeepStream 경로는 현재 초기화 연결 상태도 함께 확인해야 합니다. 자세한 구조와 한계는
+[docs/features/FALLDATA_INTEGRATION.md](docs/features/FALLDATA_INTEGRATION.md)를 참고하세요.
 
 ### EdgeX 전체 파이프라인
 
@@ -387,10 +406,10 @@ docker compose up -d aiot-parser-db aiot-parser
 
 > arm64/Jetson 계열 호스트에서 기본 `docker-compose.yml`의 일부 EdgeX 이미지는 `exec format error`가 날 수 있습니다.
 > Jetson 현장 배포는 `docker-compose.jetson.yml`을 우선 사용하세요. 자세한 운영 대응은
-> [docs/operations/OPERATIONS_RUNBOOK.md](docs/operations/OPERATIONS_RUNBOOK.md)를 참고하세요.
+> [docs/guides/OPERATIONS_RUNBOOK.md](docs/guides/OPERATIONS_RUNBOOK.md)를 참고하세요.
 
 ```bash
-docker compose -f docker-compose.jetson.yml up -d
+docker compose --env-file .env.jetson -f docker-compose.jetson.yml up -d
 ```
 
 배포 전 런타임 전제 조건은 아래 명령으로 미리 확인할 수 있습니다.
@@ -399,12 +418,19 @@ docker compose -f docker-compose.jetson.yml up -d
 .venv/bin/python scripts/health/check_compose_runtime_assumptions.py --json
 ```
 
+ARM64 Jetson에서는 이 스크립트가 기본 `docker-compose.yml`의 amd64 이미지 가능성을 감지해 `passed=false`를 반환할 수 있습니다. Jetson Compose 자체 구문은 다음 명령으로 별도 확인합니다.
+
+```bash
+docker compose --env-file .env.jetson -f docker-compose.jetson.yml config --quiet
+```
+
 운영 투입 전에는 비밀값, compose 전제 조건, API readiness, DeepStream 안정성 점검을 한 번에 확인할 수 있습니다.
 
 ```bash
-.venv/bin/python scripts/health/check_runtime_secret_consistency.py --env-file .env --json
+.venv/bin/python scripts/health/check_runtime_secret_consistency.py --env-file .env.jetson --json
 .venv/bin/python scripts/health/check_deepstream_env.py
 ./scripts/ops/run_operation_check.sh
+# 인자 단위: 300분 동안 60초 간격
 ./scripts/ops/run_deepstream_stability_watch.sh 300 60
 ```
 
@@ -445,8 +471,8 @@ Jetson 통합 스택은 `docker-compose.jetson.yml`로 실행되므로, AI 엔�
 재시작할 때는 compose 파일을 명시합니다.
 
 ```bash
-docker compose -f docker-compose.jetson.yml ps cctv-ai-engine
-docker compose -f docker-compose.jetson.yml restart cctv-ai-engine
+docker compose --env-file .env.jetson -f docker-compose.jetson.yml ps cctv-ai-engine
+docker compose --env-file .env.jetson -f docker-compose.jetson.yml restart cctv-ai-engine
 docker logs --tail 120 cctv-ai-engine
 curl -fsS http://localhost:8765/health
 ```
@@ -456,7 +482,7 @@ curl -fsS http://localhost:8765/health
 기본 스택은 `.env`, Jetson 통합 스택은 `.env.jetson`을 기준 파일로 사용합니다.
 Jetson은 반드시 `docker compose --env-file .env.jetson -f docker-compose.jetson.yml ...` 형태로 실행하세요.
 
-운영 기준 변수 표와 우선순위는 [docs/operations/DEPLOYMENT_ENVIRONMENT_VARIABLES.md](docs/operations/DEPLOYMENT_ENVIRONMENT_VARIABLES.md)에 모아두었습니다.
+운영 기준 변수 표와 우선순위는 [docs/guides/DEPLOYMENT_ENVIRONMENT_VARIABLES.md](docs/guides/DEPLOYMENT_ENVIRONMENT_VARIABLES.md)에 모아두었습니다.
 
 운영에서 비워두면 안 되는 핵심 값:
 - `MQTT_USER`, `MQTT_PASSWORD`, `AIOT_DB_PASSWORD`
@@ -492,8 +518,8 @@ Jetson은 반드시 `docker compose --env-file .env.jetson -f docker-compose.jet
 
 공개 API는 `runners/run_public_api.py`로 실행합니다.
 인증, 요청/응답 예시, 대시보드 연동 기준은
-[docs/api/PUBLIC_API_GUIDE.md](docs/api/PUBLIC_API_GUIDE.md)에 정리되어 있습니다.
-바로 호출해볼 `curl` 예시는 [docs/api/PUBLIC_API_EXAMPLES.md](docs/api/PUBLIC_API_EXAMPLES.md)를 참고하세요.
+[docs/features/PUBLIC_API_GUIDE.md](docs/features/PUBLIC_API_GUIDE.md)에 정리되어 있습니다.
+바로 호출해볼 `curl` 예시는 [docs/features/PUBLIC_API_EXAMPLES.md](docs/features/PUBLIC_API_EXAMPLES.md)를 참고하세요.
 네트워크가 제한된 현장에서는 API 프로세스가 제공하는 로컬 문서 엔드포인트로도 기본 사용법을 확인할 수 있습니다.
 
 ```bash
@@ -535,7 +561,7 @@ python runners/run_public_api.py --host 0.0.0.0 --port 9000
 
 - `GET /api/v1/appearances/status`
 - 대시보드에서 `enabled`, `ready`, `warnings`, `next_steps`를 기준으로 필터 활성/비활성 및 운영 진단을 표시할 때 사용
-- 상세 계약 문서: [docs/api/APPEARANCES_STATUS_API.md](docs/api/APPEARANCES_STATUS_API.md)
+- 상세 계약 문서: [docs/features/APPEARANCES_STATUS_API.md](docs/features/APPEARANCES_STATUS_API.md)
 
 카메라 / 사이트 / 제어 API 해석 기준:
 
@@ -546,19 +572,19 @@ python runners/run_public_api.py --host 0.0.0.0 --port 9000
   - `camera_ids`, `control_mode`, `alarm_devices`를 함께 반환합니다.
   - 사이트 제어 기준 화면에서는 이 응답을 기준 source of truth로 쓰는 것을 권장합니다.
 - `GET /api/v1/control/pending`
-  - 현재는 Action Layer 원본 payload를 거의 그대로 전달합니다.
-  - 프론트에서는 `event_id`, `camera_id`, `type`, `timestamp` 존재 여부를 우선적으로 방어적으로 처리하는 것을 권장합니다.
+  - Action Layer 응답을 Public API 최소 스키마로 정규화합니다.
+  - 프론트에서는 `event_id`, `camera_id`, `event_type`, `queued_at`을 기준으로 처리합니다.
 
 ## 실사용 시연 UI
 
-내부 발표나 현장 시연에서는 `web/public-demo.html`을 사용합니다.
+내부 발표나 현장 시연에서는 Compose의 `public-demo-ui`가 제공하는 `web/public-demo.html`을 사용합니다.
 이 화면은 Public API와 Stream API를 직접 호출해서 운영 흐름을 빠르게 보여주기 위한
 가벼운 HTML 대시보드입니다.
 
-브라우저에서 아래 파일을 엽니다.
+브라우저에서 아래 주소를 엽니다.
 
 ```text
-web/public-demo.html
+http://localhost:7000/public-demo.html
 ```
 
 기본 연결 주소:
@@ -736,7 +762,7 @@ MQTT 토픽 구조:
 edgex/events/device/cctv-device-service/CCTV-Camera-Profile/{device}/{resource}
 ```
 
-상세 내용: `docs/architecture/DEVICE_SERVICE_ARCHITECTURE.md`, `docs/architecture/ASC_RULE_ENGINE.md`
+상세 내용: `docs/modules/DEVICE_SERVICE_ARCHITECTURE.md`, `docs/modules/ASC_RULE_ENGINE.md`
 
 ## 주요 모듈
 
@@ -842,7 +868,7 @@ python scripts/health/check_model_report.py --check-artifacts
 python scripts/ops/evaluate_detection.py \
   --model models/helmet_model_ver0.5.onnx \
   --dataset data/eval/helmet \
-  --output reports/eval/helmet_model_ver0.5.json \
+  --output data/eval/reports/helmet_model_ver0.5.json \
   --imgsz 320 \
   --conf 0.35 \
   --iou 0.5 \
@@ -850,7 +876,7 @@ python scripts/ops/evaluate_detection.py \
   --target-classes helmet,head
 ```
 
-상세 절차는 `docs/operations/MLOPS_MODEL_EVALUATION.md`를 참고하세요.
+상세 절차는 `docs/guides/MLOPS_MODEL_EVALUATION.md`를 참고하세요.
 
 ## 문제 해결
 
@@ -861,6 +887,8 @@ python scripts/ops/evaluate_detection.py \
 | 카메라 연결 실패 | RTSP URL 및 네트워크 확인 |
 | Jetson에서 FFMPEG 오류 | `USE_GSTREAMER=1` 환경변수 추가 |
 | `cuda:0` 인식 안 됨 | `DEVICE=cuda:0` 환경변수로 지정 |
+| `NumPy 1.x에서 빌드된 모듈을 NumPy 2.x에서 실행` 경고 | 시스템 Python과 프로젝트 패키지를 섞지 말고 `.venv/bin/python` 사용. falldata MediaPipe와 RF 환경은 각각 전용 venv 유지 |
+| `NVIDIA driver ... too old` CUDA 경고 | 호스트 pip PyTorch보다 JetPack/L4T에 맞춘 `docker-compose.jetson.yml` 경로를 우선하고 `check_deepstream_env.py`로 정합성 확인 |
 | Windows 로그 한글 깨짐 | `chcp 65001` 후 실행, 또는 `PYTHONUTF8=1` |
 
 ## 변경 이력
@@ -877,7 +905,7 @@ python scripts/ops/evaluate_detection.py \
   - `tests/test_deepstream_processor.py` 기준 48개 통과, 5개 Jetson 의존 테스트 skip 확인
 
 - **운영 명령 문서화**
-  - Jetson 통합 스택은 `docker compose -f docker-compose.jetson.yml ...` 형태로 확인/재시작해야 함을 README, COMMANDS, 현장 체크리스트에 반영
+  - Jetson 통합 스택은 `docker compose --env-file .env.jetson -f docker-compose.jetson.yml ...` 형태로 확인/재시작해야 함을 README, COMMANDS, 현장 체크리스트에 반영
   - `cctv-ai-engine` 재시작, 로그 확인, health 확인 명령을 바로 복사해 쓸 수 있게 정리
   - Jetson compose에서도 Stream API `8769` 포트를 외부에 publish해 `http://<Jetson-IP>:8769`로 MJPEG 프리뷰 상태를 확인 가능하게 정리
   - Public Demo의 Stream API 기본 주소를 nginx에서 막힌 `/stream-api` 대신 외부 공개 포트 `8769`로 맞춤
@@ -898,7 +926,7 @@ python scripts/ops/evaluate_detection.py \
 
 - **운영 설정과 문서 최신화**
   - `.env.example`에 `FALLDATA_AUX_*` 환경변수 추가
-  - `COMMANDS.md`와 `docs/falldata_integration_notes.md`에 shadow/confirm 운영 절차 정리
+  - `COMMANDS.md`와 `docs/features/FALLDATA_INTEGRATION.md`에 shadow/confirm 운영 절차 정리
   - README와 프로젝트 구조 문서에 PA100K/TensorRT 외형 분석, 이벤트 검수 API, falldata 보조 검증 흐름 반영
 
 - **검증 기록**

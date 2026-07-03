@@ -2158,8 +2158,11 @@
       const tone = score >= 85 ? "bad" : score >= 70 ? "warn" : score >= 45 ? "blue" : "";
       return badge(String(Math.round(score)), tone);
     }
+    function eventOccurredAt(event) {
+      return event?.timestamp || event?.received_at || event?.queued_at;
+    }
     function eventSortTime(event) {
-      const value = event?.received_at || event?.queued_at || event?.timestamp;
+      const value = eventOccurredAt(event);
       if (typeof value === "number") return value;
       const parsed = Date.parse(value);
       return Number.isFinite(parsed) ? parsed / 1000 : 0;
@@ -2232,7 +2235,7 @@
 
       const tone = eventVisualTone(event);
       const title = eventLabel(eventTypeKey(event));
-      const time = fmtTime(event.received_at || event.queued_at || event.timestamp);
+      const time = fmtTime(eventOccurredAt(event));
       const camera = eventCameraId(event) || "-";
       const confidence = fmtConfidence(event.confidence);
       const actionButton = eventCameraId(event)
@@ -2868,12 +2871,15 @@
     async function loadEvents() {
       const eventTypeSelect = $("event-type");
       const cameraId = $("event-camera").value;
+      const displayLimit = Number($("event-limit").value) || 50;
       if (isZoneEventType(eventTypeSelect.value) && !hasZonesForEventFilter(cameraId)) {
         eventTypeSelect.value = "";
         showToast("선택한 카메라에 위험구역이 없어 전체 이벤트로 조회합니다.");
       }
       const params = {
-        limit: $("event-limit").value,
+        // 전체 조회는 person 이벤트가 많아 위험 이벤트가 금방 첫 페이지 밖으로 밀린다.
+        // 표시 개수와 조회 범위를 분리해 최근 위험 이벤트를 정렬 대상에 포함한다.
+        limit: eventTypeSelect.value ? displayLimit : 500,
         camera_id: cameraId,
         event_type: eventTypeSelect.value,
       };
@@ -2883,7 +2889,7 @@
         await loadEventReviewSummary();
         const displayEvents = sortEventsForDisplay(state.events);
         $("stat-events").textContent = String(body.total ?? state.events.length);
-        renderEventRows("event-rows", displayEvents, 9);
+        renderEventRows("event-rows", displayEvents.slice(0, displayLimit), 9);
         renderEventRows("overview-events", displayEvents.slice(0, 8), 4, true);
         renderPriorityEvent(state.events);
         updateEventSortHint();
@@ -2906,11 +2912,11 @@
         const rowClass = visualTone === "normal" ? "" : ` class="event-row-${visualTone}"`;
         const typeBadge = `${isDemoEvent(event) ? badge("데모", "good") + " " : ""}${badge(eventLabel(eventTypeKey(event)), eventBadgeTone(event))}`;
         if (compact) {
-          return `<tr${rowClass}><td>${fmtTime(event.received_at || event.timestamp)}</td><td>${typeBadge}</td><td><code>${eventCameraId(event) || "-"}</code></td><td>${Number(event.confidence || 0).toFixed(2)}</td></tr>`;
+          return `<tr${rowClass}><td>${fmtTime(eventOccurredAt(event))}</td><td>${typeBadge}</td><td><code>${eventCameraId(event) || "-"}</code></td><td>${Number(event.confidence || 0).toFixed(2)}</td></tr>`;
         }
         const target = eventTargetLabel(event);
         return `<tr${rowClass}>
-          <td>${fmtTime(event.received_at || event.timestamp)}</td>
+          <td>${fmtTime(eventOccurredAt(event))}</td>
           <td>${typeBadge}</td>
           <td>${target}</td>
           <td><code>${eventCameraId(event) || "-"}</code></td>
