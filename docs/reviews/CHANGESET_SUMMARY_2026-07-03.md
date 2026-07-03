@@ -52,14 +52,14 @@
 2026-07-03 게시 직전 로컬 검증 결과:
 
 - Python 정적 검사: `ruff check src scripts tests` 통과
-- 전체 pytest: `1123 passed, 72 skipped`, 실패 0
+- 전체 pytest: Git pre-push 기준 `1190 passed, 5 skipped`, 실패 0
 - 기본 Compose 구문: `.env.example` 기준 `config --quiet` 통과
 - Jetson Compose 구문: `.env.jetson.example` 기준 `config --quiet` 통과
 - shell script 문법 검사: `scripts/**/*.sh` 전체 통과
 - Markdown 내부 링크 검사: 끊어진 로컬 링크 0건
 - Git 패치 형식 검사: `git diff --check` 통과
 
-skip 항목은 선택 의존성, Jetson/DeepStream, 로컬 소켓 등 현재 실행 환경에서 사용할 수 없는 조건을 포함합니다. 따라서 `1123 passed`는 로컬 자동 검증 결과이며 Jetson 실기 검증을 대신하지 않습니다.
+skip 항목은 Jetson/DeepStream 등 현재 실행 환경에서 사용할 수 없는 조건을 포함합니다. 따라서 `1190 passed`는 로컬 자동 검증 결과이며 Jetson 실기 검증을 대신하지 않습니다.
 
 Jetson GPU, 실제 RTSP 카메라, 외부 장비가 필요한 검증은 로컬 자동 테스트와 구분해 기록합니다.
 
