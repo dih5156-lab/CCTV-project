@@ -67,6 +67,14 @@ def _get_log() -> AppearanceLog:
     return _log_instance
 
 
+def close_log_instance() -> None:
+    """Public API 종료 시 검색용 SQLite 연결을 정리한다."""
+    global _log_instance
+    if _log_instance is not None:
+        _log_instance.close()
+        _log_instance = None
+
+
 def _find_crop_file(filename: str) -> Optional[Path]:
     """공개 가능한 crop 파일이 실제로 남아 있으면 경로를 반환한다."""
     if not _SAFE_FNAME.match(filename):

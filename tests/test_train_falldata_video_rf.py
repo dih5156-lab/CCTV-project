@@ -78,3 +78,57 @@ def test_prediction_error_summary_lists_false_positive_and_false_negative() -> N
     assert summary["false_negative_count"] == 1
     assert summary["false_positives"][0]["scene_id"] == "fp"
     assert summary["false_negatives"][0]["scene_id"] == "fn"
+
+
+def test_select_rows_keeps_both_classes_for_small_poc() -> None:
+    rows = [
+        *[
+            {"scene_id": f"non_{index}", "is_fall": False, "video_path": "unused.mp4"}
+            for index in range(10)
+        ],
+        *[
+            {"scene_id": f"fall_{index}", "is_fall": True, "video_path": "unused.mp4"}
+            for index in range(10)
+        ],
+    ]
+
+    selected = train_falldata_video_rf._select_rows(rows, max_videos=6)
+
+    assert len(selected) == 6
+    assert sum(1 for row in selected if row["is_fall"]) == 3
+    assert sum(1 for row in selected if not row["is_fall"]) == 3
+
+
+def test_predict_with_fall_threshold_uses_fall_probability() -> None:
+    class FakeModel:
+        classes_ = np.asarray([0, 1])
+
+        def predict_proba(self, x: np.ndarray) -> np.ndarray:
+            return np.asarray([[0.69, 0.31], [0.71, 0.29]], dtype=np.float32)
+
+        def predict(self, x: np.ndarray) -> np.ndarray:
+            return np.asarray([0, 0], dtype=np.int64)
+
+    predictions, probabilities = train_falldata_video_rf._predict_with_fall_threshold(
+        FakeModel(),
+        np.zeros((2, 3), dtype=np.float32),
+        fall_threshold=0.7,
+    )
+
+    assert predictions.tolist() == [1, 0]
+    assert probabilities is not None
+    assert probabilities[0][0] == pytest.approx(0.69)
+    assert probabilities[1][0] == pytest.approx(0.71)
+
+
+def test_load_sequence_with_quality_counts_nonzero_frames(tmp_path, monkeypatch) -> None:
+    monkeypatch.setattr(train_falldata_video_rf, "TARGET_FRAMES", 3)
+    monkeypatch.setattr(train_falldata_video_rf, "FRAME_FEATURES", 2)
+    np.save(tmp_path / "000.npy", np.asarray([0.0, 0.0], dtype=np.float32))
+    np.save(tmp_path / "001.npy", np.asarray([1.0, 0.0], dtype=np.float32))
+    np.save(tmp_path / "002.npy", np.asarray([0.0, 2.0], dtype=np.float32))
+
+    sequence, nonzero_frames = train_falldata_video_rf._load_sequence_with_quality(tmp_path)
+
+    assert sequence.shape == (6,)
+    assert nonzero_frames == 2

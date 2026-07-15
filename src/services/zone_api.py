@@ -214,6 +214,9 @@ class ZoneApiHandler(BaseApiHandler):
         if err:
             self._respond(400, err)
             return
+        if zones is None:
+            self._respond(400, {"error": "'zones' field is required"})
+            return
         ok = self._processor().update_zones(camera_id, zones, self._cameras_path())
         if ok:
             self._respond(200, {"status": "ok", "camera_id": camera_id,
@@ -233,6 +236,9 @@ class ZoneApiHandler(BaseApiHandler):
         zones, err = self._parse_zone_list(body)
         if err:
             self._respond(400, err)
+            return
+        if zones is None:
+            self._respond(400, {"error": "'zones' field is required"})
             return
         self._respond(201, self._presets().save(name, zones))
 

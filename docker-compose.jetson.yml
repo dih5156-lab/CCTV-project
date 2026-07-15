@@ -63,6 +63,10 @@ x-appearance-runtime: &appearance-runtime
   APPEARANCE_RUNTIME: ${APPEARANCE_RUNTIME:-tensorrt}
   APPEARANCE_INPUT_SIZE: ${APPEARANCE_INPUT_SIZE:-224}
   APPEARANCE_SCORE_THRESHOLD: ${APPEARANCE_SCORE_THRESHOLD:-0.5}
+  APPEARANCE_COLOR_MODEL_PATH: ${APPEARANCE_COLOR_MODEL_PATH:-models/appearance_color_yolov8n.engine}
+  APPEARANCE_COLOR_LABEL_MAP_PATH: ${APPEARANCE_COLOR_LABEL_MAP_PATH:-config/appearance_color_labels.json}
+  APPEARANCE_COLOR_INPUT_SIZE: ${APPEARANCE_COLOR_INPUT_SIZE:-160}
+  APPEARANCE_COLOR_SCORE_THRESHOLD: ${APPEARANCE_COLOR_SCORE_THRESHOLD:-0.75}
   APPEARANCES_DB: ${APPEARANCES_DB:-/app/data/runtime/appearances.db}
   APPEARANCE_CROP_DIR: ${APPEARANCE_CROP_DIR:-/app/data/runtime/appearance_crops}
   APPEARANCE_SAVE_CROPS: ${APPEARANCE_SAVE_CROPS:-true}
@@ -92,8 +96,9 @@ services:
     networks:
       edgex-network: null
     ports:
-      # 외부 카메라 / 대시보드에서 접근 가능하도록 0.0.0.0 바인딩
+      # 외부 장치가 직접 MQTT로 붙어야 할 때만 MQTT_BIND_HOST=0.0.0.0 으로 연다.
       - target: 1883
+        host_ip: ${MQTT_BIND_HOST:-127.0.0.1}
         published: "1883"
         protocol: tcp
     restart: always
@@ -586,6 +591,7 @@ services:
     ports:
       # 외부에서 http://<Jetson-IP>:7000 으로 CCTV 데모 화면 접근
       - target: 7000
+        host_ip: ${PUBLIC_DEMO_BIND_HOST:-127.0.0.1}
         published: "7000"
         protocol: tcp
     restart: always
@@ -612,18 +618,23 @@ services:
       edgex-network: null
     ports:
       - target: 8554
+        host_ip: ${MEDIA_BIND_HOST:-127.0.0.1}
         published: "${MEDIA_RTSP_PORT:-8554}"
         protocol: tcp
       - target: 8888
+        host_ip: ${MEDIA_BIND_HOST:-127.0.0.1}
         published: "${MEDIA_HLS_PORT:-8888}"
         protocol: tcp
       - target: 8889
+        host_ip: ${MEDIA_BIND_HOST:-127.0.0.1}
         published: "${MEDIA_WEBRTC_PORT:-8889}"
         protocol: tcp
       - target: 8189
+        host_ip: ${MEDIA_BIND_HOST:-127.0.0.1}
         published: "${MEDIA_WEBRTC_UDP_PORT:-8189}"
         protocol: udp
       - target: 9997
+        host_ip: ${MEDIA_API_BIND_HOST:-127.0.0.1}
         published: "${MEDIA_API_PORT:-9997}"
         protocol: tcp
     restart: always
@@ -681,11 +692,25 @@ services:
       DS_YOLO_TASK: ${DS_YOLO_TASK:-pose}
       DS_YOLO_CLASS_IDS: ${DS_YOLO_CLASS_IDS:-0}
       DS_YOLO_CONFIDENCE: ${DS_YOLO_CONFIDENCE:-0.35}
+      DS_YOLO_POSTPROCESS_MODE: ${DS_YOLO_POSTPROCESS_MODE:-vectorized}
+      DS_FALL_HEIGHT_RATIO: ${DS_FALL_HEIGHT_RATIO:-0.3}
+      DS_FALL_ANGLE_HORIZONTAL: ${DS_FALL_ANGLE_HORIZONTAL:-55}
+      DS_FALL_ANGLE_INVERTED: ${DS_FALL_ANGLE_INVERTED:-125}
+      DS_FALL_BBOX_ASPECT_RATIO: ${DS_FALL_BBOX_ASPECT_RATIO:-1.35}
+      DS_FALL_SPAN_BBOX_ASPECT_RATIO: ${DS_FALL_SPAN_BBOX_ASPECT_RATIO:-1.20}
+      DS_FALL_KEYPOINT_SPAN_RATIO: ${DS_FALL_KEYPOINT_SPAN_RATIO:-0.55}
+      DS_FALL_SCORE_THRESHOLD: ${DS_FALL_SCORE_THRESHOLD:-3.0}
+      DS_FALL_ENABLE_FOLDED_POSE: ${DS_FALL_ENABLE_FOLDED_POSE:-false}
+      DS_FALL_SUPPRESS_SITTING_LIKE_POSE: ${DS_FALL_SUPPRESS_SITTING_LIKE_POSE:-false}
+      DS_FALL_SITTING_LIKE_ASPECT_RATIO: ${DS_FALL_SITTING_LIKE_ASPECT_RATIO:-1.45}
+      DS_FALL_MIN_KEYPOINT_CONFIDENCE: ${DS_FALL_MIN_KEYPOINT_CONFIDENCE:-0.25}
+      DS_FALL_MIN_HIP_CONFIDENCE: ${DS_FALL_MIN_HIP_CONFIDENCE:-0.25}
+      DS_FALL_MIN_LEG_CONFIDENCE: ${DS_FALL_MIN_LEG_CONFIDENCE:-0.35}
       DS_POSE_GIE_ID: ${DS_POSE_GIE_ID:-1}
       DS_HELMET_GIE_ID: ${DS_HELMET_GIE_ID:-2}
       DS_HELMET_CLASS_IDS: ${DS_HELMET_CLASS_IDS:-0,1}
       DS_HELMET_LABELS: ${DS_HELMET_LABELS:-helmet,head}
-      DS_HELMET_CONFIDENCE: ${DS_HELMET_CONFIDENCE:-0.35}
+      DS_HELMET_CONFIDENCE: ${DS_HELMET_CONFIDENCE:-0.65}
       <<: *appearance-runtime
       DS_APPEARANCE_CONDITION_REFRESH_SEC: ${DS_APPEARANCE_CONDITION_REFRESH_SEC:-10}
       FACE_DEVICE: ${FACE_DEVICE:-cpu}
@@ -714,11 +739,19 @@ services:
       FALLDATA_AUX_TIMEOUT_SECONDS: ${FALLDATA_AUX_TIMEOUT_SECONDS:-30}
       FALLDATA_AUX_COOLDOWN_SECONDS: ${FALLDATA_AUX_COOLDOWN_SECONDS:-10}
       FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE: ${FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE:-true}
-      FALLDATA_AUX_CONFIRM_BORDERLINE: ${FALLDATA_AUX_CONFIRM_BORDERLINE:-false}
-      FALLDATA_AUX_COMPARE_VETO_ENABLED: ${FALLDATA_AUX_COMPARE_VETO_ENABLED:-false}
+      FALLDATA_AUX_CONFIRM_BORDERLINE: ${FALLDATA_AUX_CONFIRM_BORDERLINE:-true}
+      FALLDATA_AUX_COMPARE_VETO_ENABLED: ${FALLDATA_AUX_COMPARE_VETO_ENABLED:-true}
+      FALLDATA_AUX_CONFIRM_MAX_FALL_SCORE: ${FALLDATA_AUX_CONFIRM_MAX_FALL_SCORE:-4.5}
+      FALLDATA_AUX_COMPARE_VETO_MIN_FALL_SCORE: ${FALLDATA_AUX_COMPARE_VETO_MIN_FALL_SCORE:-3.0}
+      FALLDATA_AUX_COMPARE_MODEL_PATH: ${FALLDATA_AUX_COMPARE_MODEL_PATH:-}
       FALLDATA_AUX_MEDIAPIPE_PYTHON: ${FALLDATA_AUX_MEDIAPIPE_PYTHON:-/app/.venv-mediapipe/bin/python}
       FALLDATA_AUX_MODEL_PYTHON: ${FALLDATA_AUX_MODEL_PYTHON:-/app/.venv-falldata/bin/python}
       FALLDATA_AUX_MODEL_PATH: ${FALLDATA_AUX_MODEL_PATH:-/app/falldata/2. AI학습모델파일/영상/낙상분류/FNF_RF_SMOTE_CAM_1.pkl}
+      FALL_SHADOW_REVIEW_LOG_PATH: ${FALL_SHADOW_REVIEW_LOG_PATH:-/app/data/fall_dataset/annotations/review.jsonl}
+      FALL_SHADOW_SAVE_CLIPS: ${FALL_SHADOW_SAVE_CLIPS:-false}
+      FALL_SHADOW_CLIP_DIR: ${FALL_SHADOW_CLIP_DIR:-/app/data/fall_dataset/clips/pending}
+      FALL_SHADOW_NEAR_MISS_LOG: ${FALL_SHADOW_NEAR_MISS_LOG:-true}
+      FALL_SHADOW_NEAR_MISS_COOLDOWN_SECONDS: ${FALL_SHADOW_NEAR_MISS_COOLDOWN_SECONDS:-10}
       MQTT_USER: ${MQTT_USER:-}
       MQTT_PASSWORD: ${MQTT_PASSWORD:-}
       INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-}
@@ -726,8 +759,9 @@ services:
       MQTT_EVENT_OUTBOX_DB: /app/data/runtime/mqtt_event_outbox.db
       MQTT_EVENT_OUTBOX_RETRY_INTERVAL: ${MQTT_EVENT_OUTBOX_RETRY_INTERVAL:-5}
       # 헤드리스 Jetson 운영에서는 X11 인증 실패가 DeepStream 초기화를 막을 수 있다.
-      # 화면 출력이 필요할 때만 .env.jetson 에 DISPLAY=:0 을 명시한다.
-      DISPLAY: ${DISPLAY:-}
+      # 화면 출력이 필요할 때만 .env.jetson 에 DS_DISPLAY=:0 을 명시한다.
+      # 호스트 DISPLAY를 자동 상속하면 Xauthority 없이 EGL 초기화가 실패할 수 있다.
+      DISPLAY: ${DS_DISPLAY:-}
       QT_X11_NO_MITSHM: "1"
       # Jetson Orin nvgpu cuDNN v8 API 비활성화 (GET engine 에러 방지)
       TORCH_CUDNN_V8_API_ENABLED: "0"
@@ -833,6 +867,10 @@ services:
         target: /app/config/appearance_pa100k_labels.json
         read_only: true
       - type: bind
+        source: ./config/appearance_color_labels.json
+        target: /app/config/appearance_color_labels.json
+        read_only: true
+      - type: bind
         source: ./data
         target: /app/data
       - type: bind
@@ -908,7 +946,7 @@ services:
       PYTHONUTF8: "1"
       APP_ENV: ${APP_ENV:-development}
       NVIDIA_VISIBLE_DEVICES: ""
-      EDGEX_OUTBOX_DB: /data/runtime/event_outbox.db
+      EDGEX_OUTBOX_DB: /data/cctv-edgex-adapter/event_outbox.db
       MQTT_USER: ${MQTT_USER:-}
       MQTT_PASSWORD: ${MQTT_PASSWORD:-}
     command:
@@ -1189,6 +1227,7 @@ services:
       SIGNBOARD_BACK_COLOR: ${SIGNBOARD_BACK_COLOR:-0}
       SIGNBOARD_TEXT_SIZE: ${SIGNBOARD_TEXT_SIZE:-2}
       SIGNBOARD_TEXT_SPEED: ${SIGNBOARD_TEXT_SPEED:-10}
+      SIGNBOARD_IDLE_REFRESH_INTERVAL: ${SIGNBOARD_IDLE_REFRESH_INTERVAL:-10}
       SIREN_HOST: ${SIREN_HOST:-}
       SIREN_PORT: ${SIREN_PORT:-80}
       SIREN_USER: ${SIREN_USER:-}
@@ -1271,6 +1310,8 @@ services:
       PUBLIC_API_KEY: ${PUBLIC_API_KEY:-}
       PUBLIC_API_ALLOW_QUERY_KEY: ${PUBLIC_API_ALLOW_QUERY_KEY:-0}
       REQUIRE_PUBLIC_API_KEY: ${REQUIRE_PUBLIC_API_KEY:-0}
+      PUBLIC_API_EXIT_ON_FD_CRITICAL: ${PUBLIC_API_EXIT_ON_FD_CRITICAL:-1}
+      PUBLIC_API_FD_WATCH_INTERVAL_SEC: ${PUBLIC_API_FD_WATCH_INTERVAL_SEC:-30}
       CORS_ORIGINS: ${CORS_ORIGINS:-}
       REQUIRE_CORS_ORIGINS: ${REQUIRE_CORS_ORIGINS:-0}
       <<: *appearance-runtime
@@ -1278,6 +1319,7 @@ services:
       INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-}
     ports:
       - target: 9000
+        host_ip: ${PUBLIC_API_BIND_HOST:-127.0.0.1}
         published: "9000"
         protocol: tcp
     depends_on:
@@ -1288,7 +1330,7 @@ services:
     networks:
       edgex-network: null
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:9000/api/v1/health', timeout=3)"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:9000/api/v1/readiness', timeout=3)"]
       interval: 20s
       timeout: 5s
       retries: 3

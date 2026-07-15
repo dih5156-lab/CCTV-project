@@ -497,7 +497,7 @@ python scripts/health/check_model_report.py \
 
 주의:
 
-- 위 검증 결과는 `docs/PROJECT_REVIEW_2026-06.md` 기준이다.
+- 위 검증 결과는 당시 Jetson 실기 기록 기준이다.
 - 장비, JetPack 버전, 모델 파일, 카메라 입력이 바뀌면 재검증이 필요하다.
 
 ### 4.5 Public API 및 Action Layer
@@ -557,9 +557,8 @@ Jetson/DeepStream 30분 안정성 관찰: healthy, RestartCount=0, dropped=0
 
 관련 문서:
 
-- `docs/OPERATIONS_RUNBOOK.md`
-- `docs/PROJECT_REVIEW_2026-06.md`
-- `docs/JETSON_EDGEX_FIELD_CHECKLIST.md`
+- `docs/guides/OPERATIONS_RUNBOOK.md`
+- `docs/guides/JETSON_EDGEX_FIELD_CHECKLIST.md`
 
 ## 5. 데이터 흐름
 
@@ -667,15 +666,14 @@ Jetson에서는 정확도만 높이는 것보다 FPS, 메모리, GPU 사용량, 
 ## 9. 참고 문서
 
 - `README.md`
-- `docs/PROJECT_STRUCTURE.md`
-- `docs/PROJECT_REVIEW_2026-06.md`
-- `docs/DEVICE_SERVICE_ARCHITECTURE.md`
-- `docs/EVENT_SCHEMA_STANDARD.md`
-- `docs/EDGEX_SQLITE_DATA_ARCHITECTURE.md`
-- `docs/MLOPS_MODEL_EVALUATION.md`
-- `docs/PPHUMAN_ATTRIBUTE_INTEGRATION.md`
-- `docs/JETSON_EDGEX_FIELD_CHECKLIST.md`
-- `docs/OPERATIONS_RUNBOOK.md`
+- `docs/modules/PROJECT_STRUCTURE.md`
+- `docs/modules/DEVICE_SERVICE_ARCHITECTURE.md`
+- `docs/features/EVENT_SCHEMA_STANDARD.md`
+- `docs/modules/EDGEX_SQLITE_DATA_ARCHITECTURE.md`
+- `docs/guides/MLOPS_MODEL_EVALUATION.md`
+- `docs/guides/PPHUMAN_ATTRIBUTE_INTEGRATION.md`
+- `docs/guides/JETSON_EDGEX_FIELD_CHECKLIST.md`
+- `docs/guides/OPERATIONS_RUNBOOK.md`
 
 ## 추가로 채워야 할 체크리스트
 

@@ -38,7 +38,7 @@ def object_meta_to_event(
         return None
 
     rect = obj_meta.rect_params
-    object_id = int(obj_meta.object_id)
+    object_id: Optional[int] = int(obj_meta.object_id)
     if object_id < 0:
         object_id = None
 

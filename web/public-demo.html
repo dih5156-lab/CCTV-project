@@ -480,8 +480,7 @@
       border-radius: 6px;
       padding: 3px 7px;
       background: rgba(255, 255, 255, .035);
-      max-width: 100%;
-      overflow-wrap: anywhere;
+      white-space: nowrap;
     }
     .sensor-value-label {
       color: var(--muted);
@@ -492,7 +491,6 @@
       color: #e5edf8;
       font-size: 12px;
       font-weight: 800;
-      min-width: 0;
     }
     .sensor-reason {
       display: block;
@@ -1832,7 +1830,7 @@
     function initializeServiceUrls() {
       $("api-base").value = `${location.origin}/public-api`;
       $("media-base").value = defaultServiceUrl(8889);
-      $("stream-base").value = `${location.origin}/stream-api`;
+      $("stream-base").value = location.port === "8099" ? defaultServiceUrl(8769) : `${location.origin}/stream-api`;
       $("zone-base").value = `${location.origin}/zone-api`;
       $("face-base").value = `${location.origin}/face-api`;
       $("model-base").value = `${location.origin}/model-api`;
@@ -2158,11 +2156,8 @@
       const tone = score >= 85 ? "bad" : score >= 70 ? "warn" : score >= 45 ? "blue" : "";
       return badge(String(Math.round(score)), tone);
     }
-    function eventOccurredAt(event) {
-      return event?.timestamp || event?.received_at || event?.queued_at;
-    }
     function eventSortTime(event) {
-      const value = eventOccurredAt(event);
+      const value = event?.received_at || event?.queued_at || event?.timestamp;
       if (typeof value === "number") return value;
       const parsed = Date.parse(value);
       return Number.isFinite(parsed) ? parsed / 1000 : 0;
@@ -2235,7 +2230,7 @@
 
       const tone = eventVisualTone(event);
       const title = eventLabel(eventTypeKey(event));
-      const time = fmtTime(eventOccurredAt(event));
+      const time = fmtTime(event.received_at || event.queued_at || event.timestamp);
       const camera = eventCameraId(event) || "-";
       const confidence = fmtConfidence(event.confidence);
       const actionButton = eventCameraId(event)
@@ -2784,9 +2779,6 @@
     function cameraWebRtcUrl(cameraId) {
       return `${location.origin}/webrtc/${encodeURIComponent(cameraId)}/`;
     }
-    function cameraStreamUrl(cameraId) {
-      return `${location.origin}/stream-api/stream/${encodeURIComponent(cameraId)}`;
-    }
     function openCameraModal(cameraId) {
       const camera = state.cameras.find((item) => String(item.id) === String(cameraId));
       if (!camera || !camera.stream_available) {
@@ -2871,15 +2863,12 @@
     async function loadEvents() {
       const eventTypeSelect = $("event-type");
       const cameraId = $("event-camera").value;
-      const displayLimit = Number($("event-limit").value) || 50;
       if (isZoneEventType(eventTypeSelect.value) && !hasZonesForEventFilter(cameraId)) {
         eventTypeSelect.value = "";
         showToast("선택한 카메라에 위험구역이 없어 전체 이벤트로 조회합니다.");
       }
       const params = {
-        // 전체 조회는 person 이벤트가 많아 위험 이벤트가 금방 첫 페이지 밖으로 밀린다.
-        // 표시 개수와 조회 범위를 분리해 최근 위험 이벤트를 정렬 대상에 포함한다.
-        limit: eventTypeSelect.value ? displayLimit : 500,
+        limit: $("event-limit").value,
         camera_id: cameraId,
         event_type: eventTypeSelect.value,
       };
@@ -2889,7 +2878,7 @@
         await loadEventReviewSummary();
         const displayEvents = sortEventsForDisplay(state.events);
         $("stat-events").textContent = String(body.total ?? state.events.length);
-        renderEventRows("event-rows", displayEvents.slice(0, displayLimit), 9);
+        renderEventRows("event-rows", displayEvents, 9);
         renderEventRows("overview-events", displayEvents.slice(0, 8), 4, true);
         renderPriorityEvent(state.events);
         updateEventSortHint();
@@ -2912,11 +2901,11 @@
         const rowClass = visualTone === "normal" ? "" : ` class="event-row-${visualTone}"`;
         const typeBadge = `${isDemoEvent(event) ? badge("데모", "good") + " " : ""}${badge(eventLabel(eventTypeKey(event)), eventBadgeTone(event))}`;
         if (compact) {
-          return `<tr${rowClass}><td>${fmtTime(eventOccurredAt(event))}</td><td>${typeBadge}</td><td><code>${eventCameraId(event) || "-"}</code></td><td>${Number(event.confidence || 0).toFixed(2)}</td></tr>`;
+          return `<tr${rowClass}><td>${fmtTime(event.received_at || event.timestamp)}</td><td>${typeBadge}</td><td><code>${eventCameraId(event) || "-"}</code></td><td>${Number(event.confidence || 0).toFixed(2)}</td></tr>`;
         }
         const target = eventTargetLabel(event);
         return `<tr${rowClass}>
-          <td>${fmtTime(eventOccurredAt(event))}</td>
+          <td>${fmtTime(event.received_at || event.timestamp)}</td>
           <td>${typeBadge}</td>
           <td>${target}</td>
           <td><code>${eventCameraId(event) || "-"}</code></td>
@@ -3054,79 +3043,22 @@
           <td>${escapeHtml(item.device_name || "-")}</td>
           <td><code>${escapeHtml(item.device_id || "-")}</code></td>
           <td>${badge(item.table || "-", "blue")}</td>
-          <td>${sensorValueSummary(item.data || {})}${item.reason ? `<span class="muted sensor-reason">${escapeHtml(item.reason)}</span>` : ""}</td>
+          <td>${sensorValueSummary(item.data || {})}${item.reason ? `<br><span class="muted">${escapeHtml(item.reason)}</span>` : ""}</td>
           <td>${sensorStatusBadge(item)}</td>
         </tr>
       `).join("") : '<tr><td colspan="6" class="muted">TLV 수신 로그 없음</td></tr>';
     }
     function sensorValueSummary(data) {
       const source = data && typeof data === "object" && !Array.isArray(data) ? data : {};
-      const preferred = [
-        "temperature", "temperature_c", "humidity", "humidity_pct",
-        "angle_x", "angle_x_deg", "angle_y", "angle_y_deg",
-        "acc_x_g", "acc_y_g", "acc_z_g",
-        "gyro_x_dps", "gyro_y_dps", "gyro_z_dps",
-        "event_code", "battery", "battery_level_pct",
-        "water_level_m", "flow_velocity_mps", "rain_fall_mm", "flood_level_m",
-        "reporting_period_s",
-      ];
-      const parts = [];
-      preferred
+      const preferred = ["temperature", "angle_x", "angle_y", "event_code", "humidity", "battery"];
+      const formatPart = (key, value) => `${escapeHtml(key)}=${escapeHtml(value)}`;
+      const parts = preferred
         .filter((key) => source[key] !== undefined && source[key] !== null && source[key] !== "")
-        .forEach((key) => parts.push(sensorValueChip(key, source[key])));
+        .map((key) => formatPart(key, source[key]));
       if (!parts.length) {
-        Object.entries(source).slice(0, 6).forEach(([key, value]) => {
-          if (value !== undefined && value !== null && value !== "") parts.push(sensorValueChip(key, value));
-        });
+        Object.entries(source).slice(0, 4).forEach(([key, value]) => parts.push(formatPart(key, value)));
       }
-      return parts.length ? `<div class="sensor-values">${parts.join("")}</div>` : "-";
-    }
-    function sensorValueChip(key, value) {
-      const meta = sensorValueMeta(key);
-      return `
-        <span class="sensor-value" title="${escapeHtml(key)}">
-          <span class="sensor-value-label">${escapeHtml(meta.label)}</span>
-          <span class="sensor-value-reading">${escapeHtml(formatSensorValue(value, meta.unit))}</span>
-        </span>
-      `;
-    }
-    function sensorValueMeta(key) {
-      const labels = {
-        temperature: ["온도", "°C"],
-        temperature_c: ["온도", "°C"],
-        humidity: ["습도", "%"],
-        humidity_pct: ["습도", "%"],
-        angle_x: ["X 기울기", "°"],
-        angle_x_deg: ["X 기울기", "°"],
-        angle_y: ["Y 기울기", "°"],
-        angle_y_deg: ["Y 기울기", "°"],
-        acc_x_g: ["가속도 X", "g"],
-        acc_y_g: ["가속도 Y", "g"],
-        acc_z_g: ["가속도 Z", "g"],
-        gyro_x_dps: ["자이로 X", "°/s"],
-        gyro_y_dps: ["자이로 Y", "°/s"],
-        gyro_z_dps: ["자이로 Z", "°/s"],
-        event_code: ["이벤트", ""],
-        battery: ["배터리", "%"],
-        battery_level_pct: ["배터리", "%"],
-        water_level_m: ["수위", "m"],
-        flow_velocity_mps: ["유속", "m/s"],
-        rain_fall_mm: ["강수", "mm"],
-        flood_level_m: ["침수", "m"],
-        reporting_period_s: ["주기", "s"],
-      };
-      const [label, unit] = labels[key] || [key.replaceAll("_", " "), ""];
-      return { label, unit };
-    }
-    function formatSensorValue(value, unit = "") {
-      if (typeof value === "boolean") return value ? "ON" : "OFF";
-      const number = Number(value);
-      if (Number.isFinite(number) && value !== "") {
-        const decimals = Math.abs(number) >= 100 ? 0 : Math.abs(number) >= 10 ? 1 : 2;
-        return `${Number(number.toFixed(decimals))}${unit ? ` ${unit}` : ""}`;
-      }
-      if (typeof value === "object") return JSON.stringify(value);
-      return `${value}${unit ? ` ${unit}` : ""}`;
+      return parts.join("<br>") || "-";
     }
     function sensorStatusBadge(item) {
       const data = item?.data && typeof item.data === "object" ? item.data : {};

@@ -219,8 +219,11 @@ class MqttEventPublisher:
 
     def _publish_serialized(self, topic: str, event_data: Dict) -> tuple[bool, str]:
         try:
+            client = self._client
+            if client is None:
+                return False, "mqtt client is not connected"
             payload = json.dumps(event_data, ensure_ascii=False)
-            result = self._client.publish(topic, payload, qos=self.qos, retain=self.retain)
+            result = client.publish(topic, payload, qos=self.qos, retain=self.retain)
             if result.rc == 0:
                 return True, ""
             logger.error("MQTT 발행 실패 (rc=%s): %s", result.rc, topic)

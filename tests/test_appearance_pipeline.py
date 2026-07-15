@@ -348,6 +348,41 @@ def test_smooth_track_attributes_uses_majority_color_per_track(tmp_path):
     assert third["attribute_metadata"]["color_observations"]["lower_color"] == 2
 
 
+def test_smooth_track_attributes_does_not_restore_not_visible_color(tmp_path):
+    pipeline = AppearancePipeline(
+        AppearanceAnalyzer(),
+        tmp_path / "crops",
+        color_smoothing_window=5,
+        color_min_samples=2,
+    )
+    person = DetectionEvent(
+        event_type=EventType.PERSON,
+        x=0,
+        y=0,
+        width=300,
+        height=200,
+        confidence=0.9,
+        timestamp=1000.0,
+        object_id=7,
+        class_name="person",
+    )
+    visible = {"lower_color": "black", "attribute_metadata": {"color_sources": {"lower_color": "hsv"}}}
+    pipeline._smooth_track_attributes("cam01", person, visible)
+    pipeline._smooth_track_attributes("cam01", person, visible)
+
+    hidden = pipeline._smooth_track_attributes(
+        "cam01",
+        person,
+        {
+            "lower_color": "unknown",
+            "attribute_metadata": {"color_sources": {"lower_color": "not_visible"}},
+        },
+    )
+
+    assert hidden["lower_color"] == "unknown"
+    assert hidden["attribute_metadata"]["color_observations"]["lower_color"] == 0
+
+
 def test_smooth_track_attributes_requires_stable_gender_samples(tmp_path):
     pipeline = AppearancePipeline(
         AppearanceAnalyzer(),

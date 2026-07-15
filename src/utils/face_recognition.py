@@ -66,6 +66,8 @@ class FaceRecognitionEngine:
             _gpu_idx = 0
         self._ctx_id: int   = _gpu_idx if _is_gpu else -1
         self._det_size      = (320, 320) if _is_gpu else (160, 160)
+        self._backend_setting = os.environ.get("FACE_RECOGNITION_BACKEND", "auto").strip().lower()
+        self._recognition_disabled = self._backend_setting in {"disabled", "none", "off"}
 
         self.insight_app = self._load_insightface()
         self.detector = self._load_detector() if self.insight_app is None else None
@@ -292,30 +294,58 @@ class FaceRecognitionEngine:
         return results
 
     def _load_insightface(self):
-        backend = os.environ.get("FACE_RECOGNITION_BACKEND", "auto").strip().lower()
+        backend = getattr(
+            self,
+            "_backend_setting",
+            os.environ.get("FACE_RECOGNITION_BACKEND", "auto").strip().lower(),
+        )
         if backend in {"opencv", "haar", "disabled", "none", "off"}:
             logger.info("InsightFace 비활성화됨 (FACE_RECOGNITION_BACKEND=%s)", backend)
             return None
 
+        insightface_required = backend == "insightface"
+        cuda_required = self._ctx_id >= 0
+
         try:
             from insightface.app import FaceAnalysis
         except Exception as exc:
+            if insightface_required:
+                raise RuntimeError("InsightFace 백엔드를 요청했지만 패키지를 불러올 수 없습니다") from exc
             logger.info("InsightFace 사용 불가, OpenCV 폴백 사용: %s", exc)
             return None
 
         try:
-            app = FaceAnalysis(name="buffalo_l")
+            providers = None
+            if cuda_required:
+                import onnxruntime as ort
+
+                available_providers = ort.get_available_providers()
+                if "CUDAExecutionProvider" not in available_providers:
+                    raise RuntimeError(
+                        "FACE_DEVICE가 CUDA를 요청했지만 ONNX Runtime에서 "
+                        f"CUDAExecutionProvider를 사용할 수 없습니다: {available_providers}"
+                    )
+                providers = ["CUDAExecutionProvider", "CPUExecutionProvider"]
+
+            app = FaceAnalysis(name="buffalo_l", providers=providers)
             app.prepare(ctx_id=self._ctx_id, det_size=self._det_size)
             logger.info(
-                "InsightFace 얼굴 인식 활성화됨 (ctx_id=%d, det_size=%s)",
-                self._ctx_id, self._det_size,
+                "InsightFace 얼굴 인식 활성화됨 (ctx_id=%d, det_size=%s, providers=%s)",
+                self._ctx_id, self._det_size, providers or "runtime-default",
             )
             return app
         except Exception as exc:
+            if insightface_required or cuda_required:
+                raise RuntimeError(
+                    f"요청한 InsightFace 실행 환경을 초기화하지 못했습니다 (ctx_id={self._ctx_id})"
+                ) from exc
             logger.warning("InsightFace 초기화 실패, OpenCV 폴백 사용: %s", exc)
             return None
 
     def _load_detector(self):
+        if getattr(self, "_recognition_disabled", False):
+            logger.info("얼굴 인식 비활성화됨 (FACE_RECOGNITION_BACKEND=%s)", self._backend_setting)
+            return None
         try:
             cascade_path = Path(cv2.data.haarcascades) / "haarcascade_frontalface_default.xml"
             detector = cv2.CascadeClassifier(str(cascade_path))
@@ -329,6 +359,8 @@ class FaceRecognitionEngine:
 
     def _load_gallery(self) -> Dict[str, List[np.ndarray]]:
         gallery: Dict[str, List[np.ndarray]] = {}
+        if getattr(self, "_recognition_disabled", False):
+            return gallery
         for item in self._load_entries():
             name = str(item.get("name", "")).strip()
             image_path = str(item.get("image", "")).strip()

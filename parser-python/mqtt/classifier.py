@@ -123,6 +123,21 @@ class Classifier:
                 channel=meta.get("channel", 0),
                 frequency=meta.get("frequency", 0),
                 received_at=received_at,
+                uplink_metadata={
+                    "message_id": raw.get("message_id", ""),
+                    "f_port": raw.get("f_port", 0),
+                    "f_cnt_up": raw.get("f_cnt_up", 0),
+                    "is_confirmed": bool(raw.get("is_confirmed", False)),
+                    "is_ack": bool(raw.get("is_ack", False)),
+                    "radio": {
+                        "gateway_id": (meta.get("gateway_info") or {}).get("gw_id", ""),
+                        "data_rate": meta.get("data_rate", ""),
+                        "channel": meta.get("channel", 0),
+                        "frequency": meta.get("frequency", 0),
+                        "rssi": meta.get("rssi", 0),
+                        "snr": meta.get("snr", 0),
+                    },
+                },
             )
 
     def _get_parser_type(self, topic: str) -> str:

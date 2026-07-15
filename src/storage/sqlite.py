@@ -50,7 +50,8 @@ class SQLiteDatabase:
 
     def apply_pragmas(self, conn: sqlite3.Connection) -> None:
         for pragma in self.pragmas:
-            conn.execute(pragma)
+            cursor = conn.execute(pragma)
+            cursor.close()
 
     def initialize(
         self,
@@ -64,7 +65,8 @@ class SQLiteDatabase:
         with self._schema_lock:
             conn.executescript(schema)
             for statement in migrations:
-                conn.execute(statement)
+                cursor = conn.execute(statement)
+                cursor.close()
             conn.commit()
         return conn
 

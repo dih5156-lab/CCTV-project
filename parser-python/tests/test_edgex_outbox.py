@@ -4,9 +4,16 @@ tests/test_edgex_outbox.py
 EdgeXOutbox 와 EdgeXForwarder 아웃박스 통합 단위 테스트.
 """
 
+import sys
 import time
+from pathlib import Path
 
 import pytest
+
+PARSER_ROOT = Path(__file__).resolve().parents[1]
+if str(PARSER_ROOT) not in sys.path:
+    sys.path.insert(0, str(PARSER_ROOT))
+
 from database.edgex_outbox import EdgeXOutbox
 
 # ────────────────────────────────────────────

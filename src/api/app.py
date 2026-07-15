@@ -11,9 +11,10 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, suppress
 from typing import AsyncIterator
 
 from fastapi import FastAPI, HTTPException, Request
@@ -67,6 +68,16 @@ def _env_bool(name: str, default: bool = False) -> bool:
     return value.strip().lower() in {"1", "true", "yes", "on"}
 
 
+def _env_float(name: str, default: float) -> float:
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    try:
+        return float(value)
+    except ValueError:
+        return default
+
+
 def _is_production_env() -> bool:
     return os.environ.get("APP_ENV", "").strip().lower() in {
         "prod",
@@ -90,6 +101,18 @@ def _load_cors_origins() -> list[str]:
     return origins or ["*"]
 
 
+async def _fd_watchdog_loop() -> None:
+    """FD critical 상태가 되면 프로세스를 종료해 restart policy가 복구하게 한다."""
+    interval_sec = max(5.0, _env_float("PUBLIC_API_FD_WATCH_INTERVAL_SEC", 30.0))
+    while True:
+        await asyncio.sleep(interval_sec)
+        fd_usage = health._fd_usage()
+        if fd_usage.get("status") != "critical":
+            continue
+        logger.critical("FD critical 상태 감지, Public API 재시작 유도: %s", fd_usage)
+        os._exit(75)
+
+
 # ---------------------------------------------------------------------------
 # 앱 생성
 # ---------------------------------------------------------------------------
@@ -105,12 +128,22 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     # NOTE: appearances.set_analyzer()는 단일 프로세스(로컬 개발) 모드에서만 사용한다.
     # Docker 배포 시 ai-engine과 public-api는 별개의 컨테이너이므로
     # 외형 조건 동기화는 SQLite DB(APPEARANCES_DB)를 통해 이뤄진다.
-    yield
-    await close_http_client()
-    await close_action_proxy_client()
-    await close_alert_client()
-    await close_sensor_client()
-    logger.info("CCTV Public API 종료")
+    fd_watchdog_task: asyncio.Task[None] | None = None
+    if _env_bool("PUBLIC_API_EXIT_ON_FD_CRITICAL", default=False):
+        fd_watchdog_task = asyncio.create_task(_fd_watchdog_loop())
+    try:
+        yield
+    finally:
+        if fd_watchdog_task is not None:
+            fd_watchdog_task.cancel()
+            with suppress(asyncio.CancelledError):
+                await fd_watchdog_task
+        search.close_log_instance()
+        await close_http_client()
+        await close_action_proxy_client()
+        await close_alert_client()
+        await close_sensor_client()
+        logger.info("CCTV Public API 종료")
 
 
 app = FastAPI(

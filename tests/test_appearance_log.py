@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import os
 import sqlite3
 import time
 from pathlib import Path
@@ -117,6 +118,13 @@ class TestAppearanceLog:
         self.log.insert(camera_id="c", track_id=2, upper_color="blue", timestamp=200.0)
         assert self.log.count() == 2
         assert self.log.count(upper_color="red") == 1
+
+    def test_close_is_idempotent_and_blocks_reuse(self):
+        self.log.close()
+        self.log.close()
+
+        with pytest.raises(sqlite3.ProgrammingError):
+            self.log.count()
 
     def test_face_name_search(self):
         self.log.insert(camera_id="c", track_id=1, face_name="홍길동", timestamp=100.0)
@@ -373,6 +381,23 @@ class TestAppearanceStatusAPI:
         finally:
             log.close()
 
+    @staticmethod
+    def _count_open_fds_for_path(path: Path) -> int:
+        fd_dir = Path("/proc/self/fd")
+        if not fd_dir.exists():
+            pytest.skip("/proc/self/fd가 없는 환경에서는 FD 누적 검사를 건너뜁니다.")
+
+        resolved_path = os.path.realpath(path)
+        count = 0
+        for fd_path in fd_dir.iterdir():
+            try:
+                target = os.path.realpath(os.readlink(fd_path))
+            except OSError:
+                continue
+            if target == resolved_path:
+                count += 1
+        return count
+
     def test_status_returns_runtime_stats_and_warnings(self):
         self._insert_appearance_row(timestamp=1000.0, track_id=1, gender="male", attribute_backend=None)
         self._insert_appearance_row(timestamp=1005.0, track_id=2, attribute_backend=None)
@@ -402,6 +427,17 @@ class TestAppearanceStatusAPI:
         assert "has_helmet는 설정상 활성화되어 있지만 실제 적재 건수가 0" in warning_text
         assert "backend=hsv 환경에서는 bag 값이 detector nearby_objects에 의존" in warning_text
         assert any("/api/v1/appearances/status" in step for step in data["next_steps"])
+
+    def test_status_does_not_accumulate_db_file_descriptors(self):
+        self._insert_appearance_row(timestamp=1100.0, track_id=3, attribute_backend="hsv")
+
+        before = self._count_open_fds_for_path(self.db_path)
+        for _ in range(25):
+            data = self.appearances_mod._build_runtime_status().model_dump()
+            assert data["data_stats"]["total_records"] == 1
+        after = self._count_open_fds_for_path(self.db_path)
+
+        assert after <= before
 
     def test_status_recognizes_bag_label_alias_as_ready(self, monkeypatch):
         monkeypatch.setenv("DS_YOLO_LABELS", "person,back_pack")

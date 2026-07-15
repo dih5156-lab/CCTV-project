@@ -168,6 +168,11 @@ def _add_signboard_arguments(parser: argparse.ArgumentParser) -> None:
         type=int,
         default=_env_int("SIGNBOARD_TEXT_SPEED", 10),
     )
+    parser.add_argument(
+        "--signboard-idle-refresh-interval",
+        type=float,
+        default=_env_float("SIGNBOARD_IDLE_REFRESH_INTERVAL", 10.0),
+    )
 
 
 def _add_siren_arguments(parser: argparse.ArgumentParser) -> None:
@@ -231,6 +236,7 @@ def _build_signboard_config(args: argparse.Namespace) -> SignboardConfig:
         back_color=args.signboard_back_color,
         text_size=args.signboard_text_size,
         text_speed=args.signboard_text_speed,
+        idle_refresh_interval=args.signboard_idle_refresh_interval,
     )
 
 

@@ -19,6 +19,45 @@ runtime_checks = _load_script_module(
 )
 
 
+def test_edgex_adapter_outbox_path_is_isolated_from_aiot_parser():
+    compose = """
+services:
+  cctv-edgex-adapter:
+    environment:
+      EDGEX_OUTBOX_DB: /data/cctv-edgex-adapter/event_outbox.db
+  aiot-parser:
+    environment:
+      EDGEX_OUTBOX_DB: /data/runtime/event_outbox.db
+"""
+
+    result = runtime_checks.check_edgex_outbox_path_isolation(
+        compose_text=compose,
+        jetson_compose_text=compose,
+    )
+
+    assert result["passed"] is True
+
+
+def test_edgex_adapter_outbox_path_rejects_shared_parser_database():
+    compose = """
+services:
+  cctv-edgex-adapter:
+    environment:
+      EDGEX_OUTBOX_DB: /data/runtime/event_outbox.db
+  aiot-parser:
+    environment:
+      EDGEX_OUTBOX_DB: /data/runtime/event_outbox.db
+"""
+
+    result = runtime_checks.check_edgex_outbox_path_isolation(
+        compose_text=compose,
+        jetson_compose_text=compose,
+    )
+
+    assert result["passed"] is False
+    assert "shared outbox path" in result["detail"]
+
+
 def test_default_compose_architecture_passes_on_amd64():
     result = runtime_checks.check_default_compose_architecture(
         machine="x86_64",
@@ -309,7 +348,7 @@ services:
         env_example_text="FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE=true\n",
         jetson_env_example_text=(
             "FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE=true\n"
-            "FALLDATA_AUX_CONFIRM_BORDERLINE=false\n"
+            "FALLDATA_AUX_CONFIRM_BORDERLINE=true\n"
             "FALLDATA_AUX_MEDIAPIPE_PYTHON=/app/.venv-mediapipe/bin/python\n"
             "FALLDATA_AUX_MODEL_PYTHON=/app/.venv-falldata/bin/python\n"
         ),
@@ -358,6 +397,97 @@ def test_h264_webrtc_wiring_rejects_disabled_poc_fix_default() -> None:
 
     assert result["passed"] is False
     assert "DS_H264_POC_FIX_ENABLED" in result["detail"]
+
+
+def test_public_api_exposure_defaults_require_localhost_bind() -> None:
+    compose = """
+services:
+  edgex-mqtt-broker:
+    ports:
+      - target: 1883
+        host_ip: ${MQTT_BIND_HOST:-127.0.0.1}
+  cctv-public-api:
+    ports:
+      - target: 9000
+        host_ip: ${PUBLIC_API_BIND_HOST:-127.0.0.1}
+  public-demo-ui:
+    ports:
+      - target: 7000
+        host_ip: ${PUBLIC_DEMO_BIND_HOST:-127.0.0.1}
+  cctv-media-server:
+    ports:
+      - target: 8554
+        host_ip: ${MEDIA_BIND_HOST:-127.0.0.1}
+      - target: 9997
+        host_ip: ${MEDIA_API_BIND_HOST:-127.0.0.1}
+"""
+    env_example = (
+        "MQTT_BIND_HOST=127.0.0.1\n"
+        "PUBLIC_API_BIND_HOST=127.0.0.1\n"
+        "PUBLIC_DEMO_BIND_HOST=127.0.0.1\n"
+        "MEDIA_BIND_HOST=127.0.0.1\n"
+        "MEDIA_API_BIND_HOST=127.0.0.1\n"
+    )
+
+    result = runtime_checks.check_public_api_exposure_defaults(
+        compose_text=compose,
+        jetson_compose_text=compose,
+        env_example_text=env_example,
+        jetson_env_example_text=env_example,
+    )
+
+    assert result["passed"] is True
+
+
+def test_public_api_exposure_defaults_reject_hardcoded_external_bind() -> None:
+    compose = """
+services:
+  cctv-public-api:
+    ports:
+      - target: 9000
+        host_ip: 0.0.0.0
+"""
+
+    result = runtime_checks.check_public_api_exposure_defaults(
+        compose_text=compose,
+        jetson_compose_text=compose,
+        env_example_text="",
+        jetson_env_example_text="",
+    )
+
+    assert result["passed"] is False
+    assert "0.0.0.0" in result["detail"]
+    assert "PUBLIC_API_BIND_HOST" in result["detail"]
+
+
+def test_public_api_shared_secret_alignment_passes_when_env_files_match() -> None:
+    env_text = """
+PUBLIC_API_KEY=shared-key
+INTERNAL_SERVICE_TOKEN=shared-token
+"""
+
+    result = runtime_checks.check_public_api_shared_secret_alignment(
+        env_text=env_text,
+        jetson_env_text=env_text,
+    )
+
+    assert result["passed"] is True
+
+
+def test_public_api_shared_secret_alignment_fails_when_env_files_drift() -> None:
+    result = runtime_checks.check_public_api_shared_secret_alignment(
+        env_text="""
+PUBLIC_API_KEY=local-key
+INTERNAL_SERVICE_TOKEN=shared-token
+""",
+        jetson_env_text="""
+PUBLIC_API_KEY=jetson-key
+INTERNAL_SERVICE_TOKEN=shared-token
+""",
+    )
+
+    assert result["passed"] is False
+    assert "PUBLIC_API_KEY" in result["detail"]
 
 
 def test_mqtt_auth_config_requires_app_rules_engine_rendered_config(tmp_path):

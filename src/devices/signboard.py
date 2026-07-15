@@ -60,6 +60,7 @@ class SignboardConfig:
     text_size: int = 2          # 1~4
     text_speed: int = 10        # 1~99
     socket_timeout: float = 3.0
+    idle_refresh_interval: float = 10.0
 
     @property
     def is_configured(self) -> bool:
@@ -223,6 +224,7 @@ class SignboardDevice:
         # 마지막 이벤트 수신 시각 (idle 감지용)
         self._last_event_ts: float = 0.0
         self._idle_stop = threading.Event()
+        self._send_lock = threading.Lock()
         self._idle_thread: Optional[threading.Thread] = None
         if config.is_configured:
             self._start_idle_thread()
@@ -275,11 +277,12 @@ class SignboardDevice:
 
         logger.info("[Signboard] 표시: title=%r text=%r color=%d back=%d", title, text, color, back)
         try:
-            client.set_brightness(cfg.brightness)
-            client.send_title(title)
-            for line in text.splitlines():
-                if line.strip():
-                    client.send_context(line, size, speed, back, color)
+            with self._send_lock:
+                client.set_brightness(cfg.brightness)
+                client.send_title(title)
+                for line in text.splitlines():
+                    if line.strip():
+                        client.send_context(line, size, speed, back, color)
             logger.info("[Signboard] 방송 시작 완료")
             return True
         except Exception as exc:
@@ -335,7 +338,8 @@ class SignboardDevice:
         if client is None:
             return False
         try:
-            fn(client)
+            with self._send_lock:
+                fn(client)
             logger.info("[Signboard] %s 완료", label)
             return True
         except Exception as exc:
@@ -355,7 +359,7 @@ class SignboardDevice:
 
     def _idle_worker(self) -> None:
         last_second = -1
-        while not self._idle_stop.wait(1):
+        while not self._idle_stop.wait(self.config.idle_refresh_interval):
             if time.time() - self._last_event_ts < self.config.display_time:
                 last_second = -1    # 이벤트 수신 중 → 초 추적 초기화
                 continue
@@ -376,9 +380,10 @@ class SignboardDevice:
             f"({weekday}) {now.hour:02d}시 {now.minute:02d}분 {now.second:02d}초"
         )
         try:
-            client.set_brightness(cfg.brightness)
-            client.send_title("현재 시간")
-            client.send_context(_center_pad(dt_text, width=32), 2, 1, 0, 5)
+            with self._send_lock:
+                client.set_brightness(cfg.brightness)
+                client.send_title("현재 시간")
+                client.send_context(_center_pad(dt_text, width=32), 2, 1, 0, 5)
             logger.debug("[Signboard] idle 표시: %s", dt_text)
         except Exception as exc:
             logger.debug("[Signboard] idle 표시 오류: %s", exc)

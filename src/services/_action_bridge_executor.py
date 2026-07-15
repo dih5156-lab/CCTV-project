@@ -53,12 +53,16 @@ class _ActionExecutor:
         severity = get_payload_severity(payload).lower()
         display_message = get_payload_display_message(payload)
         tts_message = get_payload_tts_message(payload)
+        force_reachability_refresh = self._alarm.is_demo_event(payload)
 
         alarm_played = False
         if self._alarm.should_alarm(topic, payload) and self._alarm.try_acquire_slot(
             camera_id, event_type, force=self._alarm.is_demo_event(payload)
         ):
-            devices = self._resolve_devices(camera_id)
+            devices = self._resolve_devices(
+                camera_id,
+                force_refresh=force_reachability_refresh,
+            )
 
             if self._alarm_device_enum.SPEAKER in devices:
                 speaker_ok = self._speaker.play(
@@ -119,7 +123,11 @@ class _ActionExecutor:
                 "alarm_played": alarm_played,
                 "http_sent": http_sent,
                 "devices": [
-                    device.value for device in self._resolve_devices(camera_id)
+                    device.value
+                    for device in self._resolve_devices(
+                        camera_id,
+                        force_refresh=force_reachability_refresh,
+                    )
                 ],
             },
         )

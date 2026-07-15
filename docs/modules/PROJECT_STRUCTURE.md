@@ -758,10 +758,7 @@ docs/
 │   ├── OPERATIONS_RUNBOOK.md
 │   └── PPHUMAN_ATTRIBUTE_INTEGRATION.md
 ├── reviews/           # 코드 리뷰와 시점별 점검 기록
-│   ├── CODE_REVIEW_REPORT.md
-│   ├── PROJECT_COMPLETION_REVIEW_2026-07.md
-│   ├── PROJECT_REVIEW_2026-04.md
-│   ├── PROJECT_REVIEW_2026-06.md
+│   ├── CHANGESET_SUMMARY_2026-07-03.md
 │   └── TECHNICAL_WORK_REPORT_GUIDE.md
 └── tooling/
   └── CODEX_MULTI_AGENT_SETUP.md

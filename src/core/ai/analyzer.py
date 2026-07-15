@@ -153,6 +153,10 @@ class AIAnalyzer:
             backend_input_size=appearance_input_size,
             backend_score_threshold=appearance_score_threshold,
             bbox_expand_ratio=appearance_bbox_expand_ratio,
+            color_model_path=os.environ.get("APPEARANCE_COLOR_MODEL_PATH"),
+            color_label_map_path=os.environ.get("APPEARANCE_COLOR_LABEL_MAP_PATH"),
+            color_input_size=int(os.environ.get("APPEARANCE_COLOR_INPUT_SIZE", "160")),
+            color_score_threshold=float(os.environ.get("APPEARANCE_COLOR_SCORE_THRESHOLD", "0.75")),
         )
         self._crop_dir = Path(
             os.environ.get("APPEARANCE_CROP_DIR", "data/runtime/appearance_crops")

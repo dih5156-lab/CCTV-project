@@ -33,6 +33,7 @@ from __future__ import annotations
 
 import time
 from abc import ABC, abstractmethod
+from threading import Event
 from typing import Any, Dict, List, Optional, Union
 
 from ..config import AppConfig
@@ -41,6 +42,9 @@ from ..utils.zone_drawer import ZoneDrawer
 
 class BaseProcessor(ABC):
     """모든 프로세서 구현체가 따라야 하는 추상 기반 클래스."""
+
+    running: bool
+    stop_event: Event
 
     def __init__(self, config: AppConfig) -> None:
         self.config = config
@@ -112,7 +116,7 @@ class BaseProcessor(ABC):
     def update_zones(
         self,
         camera_id: str,
-        zones_data: Optional[List[Dict]],
+        zones_data: List[Dict],
         cameras_json_path: str = "cameras.json",
     ) -> bool:
         """구역 설정을 갱신한다. 지원하지 않는 구현체는 False 반환."""
@@ -160,8 +164,8 @@ class BaseProcessor(ABC):
         camera_id: str,
         model_settings: Dict,
         cameras_json_path: str = "cameras.json",
-    ) -> bool:
-        return False
+    ) -> Optional[Dict[str, bool]]:
+        return None
 
     # ------------------------------------------------------------------
     # 공통 상태 응답 헬퍼

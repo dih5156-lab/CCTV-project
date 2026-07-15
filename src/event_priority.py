@@ -77,6 +77,8 @@ def _bbox_quality_penalty(payload: Mapping[str, Any]) -> float:
     metadata = get_payload_metadata(payload)
     frame_width = metadata.get("frame_width") or metadata.get("source_width")
     frame_height = metadata.get("frame_height") or metadata.get("source_height")
+    if frame_width is None or frame_height is None:
+        return 0.0
     try:
         x = float(bbox.get("x", 0))
         y = float(bbox.get("y", 0))

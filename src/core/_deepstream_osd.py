@@ -92,9 +92,9 @@ def add_fall_skeleton_overlay(
 
     for start in range(0, len(line_segments), max_elements):
         display_meta = pyds_module.nvds_acquire_display_meta_from_pool(batch_meta)
-        chunk = line_segments[start : start + max_elements]
-        display_meta.num_lines = len(chunk)
-        for idx, ((x1, y1), (x2, y2)) in enumerate(chunk):
+        line_chunk = line_segments[start : start + max_elements]
+        display_meta.num_lines = len(line_chunk)
+        for idx, ((x1, y1), (x2, y2)) in enumerate(line_chunk):
             line_params = display_meta.line_params[idx]
             line_params.x1 = int(x1)
             line_params.y1 = int(y1)
@@ -106,9 +106,9 @@ def add_fall_skeleton_overlay(
 
     for start in range(0, len(circles), max_elements):
         display_meta = pyds_module.nvds_acquire_display_meta_from_pool(batch_meta)
-        chunk = circles[start : start + max_elements]
-        display_meta.num_circles = len(chunk)
-        for idx, (x_coord, y_coord) in enumerate(chunk):
+        circle_chunk = circles[start : start + max_elements]
+        display_meta.num_circles = len(circle_chunk)
+        for idx, (x_coord, y_coord) in enumerate(circle_chunk):
             circle_params = display_meta.circle_params[idx]
             circle_params.xc = int(x_coord)
             circle_params.yc = int(y_coord)

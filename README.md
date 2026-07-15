@@ -12,8 +12,15 @@ PC에서는 OpenCV 기반 개발·기능 확인을, NVIDIA Jetson Orin에서는 
 | Jetson에서 AI 엔진 운영 | `docker-compose.jetson.yml` + `.env.jetson` | [Jetson·EdgeX 현장 체크리스트](docs/guides/JETSON_EDGEX_FIELD_CHECKLIST.md) |
 | 장애 확인과 복구 | 운영 점검 스크립트 + 로그 | [운영 Runbook](docs/guides/OPERATIONS_RUNBOOK.md) |
 
-현재 코드와 문서의 변경 범위, 자동 검증과 실기 검증의 구분은
-[2026-07-03 변경 및 검증 요약](docs/reviews/CHANGESET_SUMMARY_2026-07-03.md)에서 확인할 수 있습니다.
+> Compose 혼용 방지를 위해 직접 `docker compose`를 실행하기보다 안전 진입점을 사용하세요.
+> Jetson은 Jetson 구성만, Linux 서버와 Windows는 일반 서버 구성만 자동 선택합니다.
+>
+> ```bash
+> python scripts/ops/compose_stack.py up -d
+> python scripts/ops/compose_stack.py ps
+> python scripts/ops/compose_stack.py logs -f cctv-public-api
+> ```
+
 전체 문서는 [문서 목차](docs/README.md)에서 기능·모듈·실행/배포·리뷰 기준으로 분류되어 있습니다.
 
 ## 주요 기능
@@ -24,7 +31,7 @@ PC에서는 OpenCV 기반 개발·기능 확인을, NVIDIA Jetson Orin에서는 
 - **다중 카메라**: RTSP/웹캠 동시 처리 및 자동 재연결
 - **위험 구역 관리**: 실시간 폴리곤 그리기·저장·삭제 (GUI 인터랙션 지원)
 - **얼굴 인식 확장 구조**: Windows 개발/디버깅, Jetson 운영 배포를 전제로 한 선택형 백엔드
-- **외형 속성 분석**: HSV 기본 분석, PP-Human/Paddle, PA100K TensorRT 기반 보조 분석 경로 지원
+- **외형 속성 분석**: HSV/LAB 폴백과 YOLOv8n 색상 분류 TensorRT 모델을 결합하고, PP-Human/Paddle·PA100K 속성 분석 경로 지원
 - **Zone API**: REST API로 외부에서 구역 설정 조회·수정
 - **EdgeX Foundry 연동**: MQTT 기반 표준 EdgeX v3 이벤트 발행
 - **이벤트 포워딩**: Public API 수신 이벤트를 Action Layer로 전달해 알람/이력 처리를 통합
@@ -159,8 +166,14 @@ models/
 ├── helmet_model_ver0.5.pt   # 헬멧 감지 (커스텀)
 ├── yolov8n-pose.pt          # 낙상 감지 (포즈)
 ├── yolov8n.pt               # 사람 감지
-└── pphuman_attribute.onnx   # 선택: 외형 속성 분석
+├── pphuman_attribute.onnx   # 선택: 외형 속성 분석
+├── appearance_color_yolov8n.onnx   # PC/서버용 의류 색상 분류
+└── appearance_color_yolov8n.engine # Jetson용 FP16 TensorRT 색상 분류
 ```
+
+모델 바이너리(`.pt`, `.onnx`, `.engine`)는 용량과 장치 호환성 때문에 Git에 포함하지
+않으며, 배포 대상 장치에 별도로 준비해야 합니다. 필요 아티팩트와 검증 기준은
+[`models/model_manifest.json`](models/model_manifest.json)을 참고하세요.
 
 외형 속성 분석은 기본적으로 HSV 색상 기반으로 동작합니다. PP-Human 계열 ONNX 모델을
 사용하려면 아래 환경변수를 추가합니다.
@@ -199,6 +212,28 @@ APPEARANCE_LABEL_MAP_PATH=config/appearance_pa100k_labels.json
 
 이 구성에서는 DeepStream이 person ROI에 PA100K 속성 tensor를 붙이고, Python 파이프라인은
 그 metadata를 `attribute_backend=pa100k_sgie`로 DB에 저장합니다.
+
+의류 색상 분류 모델은 person bbox에서 분리한 상·하체 ROI에 각각 적용됩니다. 모델 신뢰도가
+임계값 이상이면 분류 결과를 사용하고, 임계값 미만이거나 모델 로드·추론에 실패하면 기존
+HSV/LAB 결과를 유지합니다. Jetson은 ONNX Runtime 대신 해당 장치에서 생성한 TensorRT
+`.engine` 사용을 권장합니다.
+
+```bash
+# PC/서버
+APPEARANCE_COLOR_MODEL_PATH=models/appearance_color_yolov8n.onnx
+APPEARANCE_COLOR_LABEL_MAP_PATH=config/appearance_color_labels.json
+APPEARANCE_COLOR_INPUT_SIZE=160
+APPEARANCE_COLOR_SCORE_THRESHOLD=0.75
+
+# Jetson
+APPEARANCE_COLOR_MODEL_PATH=models/appearance_color_yolov8n.engine
+```
+
+현재 모델은 `black`, `blue`, `brown`, `gray`, `green`, `orange`, `pink`, `purple`, `red`,
+`white`, `yellow` 11개 색상을 출력합니다. AI4C 검증셋의 Jetson TensorRT Top-1은 88.49%였고,
+신뢰도 0.75 적용 시 수락률 90.65%, 수락 결과 정확도 91.27%, 평균 추론 시간은
+6.45ms/ROI였습니다. 다만 실제 `orange`, `pink` 검증 표본이 적으므로 현장 ROI를 추가
+수집해 지속적으로 검증해야 합니다.
 
 **Jetson TensorRT 가속 (선택사항):**
 
@@ -254,6 +289,10 @@ YOLO("models/yolov8n.pt").export(format="engine", device=0)
 | `APPEARANCE_RUNTIME` | 속성 모델 런타임 | `auto` / `onnxruntime` / `paddle` |
 | `APPEARANCE_INPUT_SIZE` | 속성 모델 입력 크기 | `224` |
 | `APPEARANCE_SCORE_THRESHOLD` | 속성 판정 임계값 | `0.5` |
+| `APPEARANCE_COLOR_MODEL_PATH` | 의류 색상 분류 모델 경로 | PC: `.onnx`, Jetson: `.engine` |
+| `APPEARANCE_COLOR_LABEL_MAP_PATH` | 색상 분류 라벨 맵 경로 | `config/appearance_color_labels.json` |
+| `APPEARANCE_COLOR_INPUT_SIZE` | 색상 분류 입력 크기 | `160` |
+| `APPEARANCE_COLOR_SCORE_THRESHOLD` | 모델 결과를 HSV/LAB보다 우선할 최소 신뢰도 | `0.75` |
 | `APPEARANCES_DB` | 외형 로그 SQLite 경로 | `/app/data/runtime/appearances.db` |
 | `FALLDATA_AUX_ENABLED` | 공공 낙상 보조 검증 활성화 | `true` / `false` |
 | `FALLDATA_AUX_MODE` | 보조 검증 적용 방식 | `shadow` / `confirm` |
@@ -892,6 +931,33 @@ python scripts/ops/evaluate_detection.py \
 | Windows 로그 한글 깨짐 | `chcp 65001` 후 실행, 또는 `PYTHONUTF8=1` |
 
 ## 변경 이력
+
+### v1.14.0 (2026-07-15) - DeepStream 운영 안정화 및 현장 데이터 파이프라인 강화
+
+- **색상 데이터 보강 및 재학습**
+  - AI4C와 공개 의류 이미지를 통합하고 희소 색상을 합성 보강해 11개 클래스, 학습 5,500장으로 구성
+  - YOLOv8n Classification을 재학습하고 PT/ONNX 및 Jetson FP16 TensorRT 엔진 생성
+  - 동일 AI4C 검증셋 Top-1이 기존 87.05%에서 89.93%로 개선됨
+
+- **외형 분석 파이프라인 적용**
+  - 상·하체 ROI별 색상 분류 백엔드를 추가하고 신뢰도 0.75 이상일 때 모델 결과 사용
+  - 낮은 신뢰도, 모델 로드 실패, 추론 실패 시 기존 HSV/LAB 색상 결과로 자동 폴백
+  - `.env.example`, `.env.jetson.example`, 일반/Jetson Compose에 색상 모델·라벨·입력 크기·임계값 설정 추가
+
+- **DeepStream 낙상 판정 및 후처리 개선**
+  - YOLO 후처리를 NumPy 벡터 경로로 최적화하고 `legacy` 즉시 롤백 옵션 제공
+  - 자세·키포인트·bbox 조건과 falldata 비교 모델 veto 범위를 운영 설정으로 분리
+  - 현장 낙상 클립 수집·라벨링·manifest 생성·임계값 튜닝 스크립트 추가
+
+- **엣지 연동과 배포 안전성 강화**
+  - dcaLPWAN MQTT uplink topic/TLV metadata 처리와 EdgeX outbox 보존 경로 개선
+  - 호스트별 Compose 안전 진입점을 추가하고 주요 포트를 기본 localhost로 제한
+  - Public API readiness/FD watchdog, 외형 로그 리소스 정리, Action Layer 예외 처리 보강
+
+- **Jetson 실기 검증**
+  - TensorRT 전체 검증 Top-1 88.49%, 임계값 적용 수락 결과 정확도 91.27%, 평균 6.45ms/ROI 확인
+  - `cctv-ai-engine` 재생성 후 색상 TensorRT 로드, 실제 이미지 추론, DeepStream 외형 로그 및 health 정상 확인
+  - 실제 주황·분홍 검증 표본이 적어 현장 ROI 추가 검증이 필요함
 
 ### v1.13.0 (2026-06-24) - DeepStream 프로세서 구조 분리 및 Jetson 운영 명령 정리
 

@@ -29,7 +29,7 @@ def _float_or_default(value: object, default: float) -> float:
 
 def _int_or_default(value: object, default: int) -> int:
     if isinstance(value, Real):
-        return int(value)
+        return int(float(value))
     return default
 
 
@@ -210,7 +210,7 @@ class CumulativeViolationFilter:
                 if event.event_type.value not in self.violation_types:
                     continue
                 key = self._history_key(camera_id, event.object_id)
-                history = self._history.get(key, [])
+                history = self._history.get(key, deque())
                 violation_summary[key] = (sum(history), len(history))
 
         for event in events:

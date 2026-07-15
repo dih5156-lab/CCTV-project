@@ -5,9 +5,8 @@ from __future__ import annotations
 import json
 import os
 import sqlite3
-from contextlib import contextmanager
 from pathlib import Path
-from typing import Dict, Generator, List, Optional, Set
+from typing import Dict, List, Optional, Set
 
 from pydantic import BaseModel, Field
 
@@ -224,19 +223,9 @@ def _runtime_attribute_backend_name() -> str:
     return configured_backend
 
 
-@contextmanager
-def _connect(db_path: Path) -> Generator[sqlite3.Connection, None, None]:
-    """SQLite 연결을 열고 켄텍스트 종료 시 반드시 닫는다."""
-    conn = SQLiteDatabase(db_path).connect()
-    try:
-        yield conn
-    finally:
-        conn.close()
-
-
 def _collect_data_stats(db_path: Path) -> AppearanceDataStats:
     try:
-        with _connect(db_path) as conn:
+        with SQLiteDatabase(db_path).session() as conn:
             row = conn.execute(
                 """
                 SELECT
@@ -274,7 +263,7 @@ def _collect_data_stats(db_path: Path) -> AppearanceDataStats:
 
 def _collect_backend_counts(db_path: Path) -> Dict[str, int]:
     try:
-        with _connect(db_path) as conn:
+        with SQLiteDatabase(db_path).session() as conn:
             rows = conn.execute(
                 """
                 SELECT COALESCE(NULLIF(attribute_backend, ''), 'unknown') AS backend_name,

@@ -46,7 +46,7 @@ def _event_payload(entry: dict) -> dict:
     if not isinstance(payload, dict):
         return {}
     nested_event = payload.get("event")
-    is_wrapper_event = (
+    if (
         isinstance(nested_event, dict)
         and "topic" in payload
         and (
@@ -57,15 +57,15 @@ def _event_payload(entry: dict) -> dict:
             or "eventType" in nested_event
             or "raw" in nested_event
         )
-    )
-    if is_wrapper_event:
+    ):
         return nested_event
     return payload
 
 
 def _event_item_from_entry(entry: dict) -> dict:
     payload = _event_payload(entry)
-    raw = payload.get("raw") if isinstance(payload.get("raw"), dict) else {}
+    raw_value = payload.get("raw")
+    raw = raw_value if isinstance(raw_value, dict) else {}
     confidence = get_payload_confidence(payload)
     priority = event_priority(payload)
     return {

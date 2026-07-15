@@ -45,9 +45,14 @@ env/
 # Logs
 *.log
 logs/
+core
+core.*
 
 # Dataset (큰 파일)
 collected_data/
+data/datasets/
+falldata/
+Sample/
 
 # 모델 파일 (빌드 불필요 — bind mount로 주입)
 models/*

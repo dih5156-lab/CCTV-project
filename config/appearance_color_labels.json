@@ -1,0 +1,28 @@
+{
+  "model": "YOLOv8n Classification balanced fashion color v2",
+  "input": {
+    "height": 160,
+    "width": 160,
+    "format": "BGR ROI -> RGB -> resize/crop -> NCHW"
+  },
+  "labels": [
+    {"index": 0, "value": "black"},
+    {"index": 1, "value": "blue"},
+    {"index": 2, "value": "brown"},
+    {"index": 3, "value": "gray"},
+    {"index": 4, "value": "green"},
+    {"index": 5, "value": "orange"},
+    {"index": 6, "value": "pink"},
+    {"index": 7, "value": "purple"},
+    {"index": 8, "value": "red"},
+    {"index": 9, "value": "white"},
+    {"index": 10, "value": "yellow"}
+  ],
+  "recommended_threshold": 0.75,
+  "status": "poc_balanced_v2",
+  "limitations": [
+    "orange and pink still have too few real validation samples",
+    "synthetic recoloring supplements brown, gray, orange, pink, purple, and yellow training data",
+    "validate on pedestrian upper/lower ROIs before enabling in production"
+  ]
+}

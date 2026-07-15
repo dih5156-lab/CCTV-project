@@ -71,4 +71,3 @@ Jetson GPU, 실제 RTSP 카메라, 외부 장비가 필요한 검증은 로컬 �
 - [Action Layer 구조](../modules/ACTION_LAYER_SPEAKER_BRIDGE.md)
 - [falldata 연동](../features/FALLDATA_INTEGRATION.md)
 - [운영 Runbook](../guides/OPERATIONS_RUNBOOK.md)
-- [프로젝트 완성도 점검](PROJECT_COMPLETION_REVIEW_2026-07.md)

@@ -6,6 +6,8 @@ import numpy as np
 
 from src.core._yolo_postprocess import (
     detections_from_yolo_output,
+    filter_yolo_candidates,
+    filter_yolo_candidates_legacy,
     map_yolo_box_to_frame,
     nms_detections,
 )
@@ -69,3 +71,63 @@ def test_detections_from_yolo_output_decodes_detect_rows():
     assert detections[0]["label"] == "helmet"
     assert detections[0]["class_id"] == 1
     assert detections[0]["box"] == (270, 190, 100, 100)
+
+
+def test_filter_yolo_candidates_vectorizes_pose_confidence_filter():
+    rows = np.zeros((8400, 56), dtype=np.float32)
+    rows[17, 4] = 0.91
+    rows[7000, 4] = 0.49
+
+    candidates, class_ids, confidences = filter_yolo_candidates(
+        rows,
+        task="pose",
+        confidence_threshold=0.5,
+        class_ids_filter={0},
+    )
+
+    assert candidates.shape == (1, 56)
+    assert class_ids.tolist() == [0]
+    assert confidences.tolist() == [np.float32(0.91)]
+
+
+def test_filter_yolo_candidates_vectorizes_detect_class_filter():
+    rows = np.array(
+        [
+            [10, 10, 4, 4, 0.90, 0.10],
+            [20, 20, 4, 4, 0.20, 0.80],
+            [30, 30, 4, 4, np.nan, 0.95],
+        ],
+        dtype=np.float32,
+    )
+
+    candidates, class_ids, confidences = filter_yolo_candidates(
+        rows,
+        task="detect",
+        confidence_threshold=0.5,
+        class_ids_filter={1},
+    )
+
+    assert candidates[:, 0].tolist() == [20.0, 30.0]
+    assert class_ids.tolist() == [1, 1]
+    assert confidences.tolist() == [np.float32(0.8), np.float32(0.95)]
+
+
+def test_vectorized_candidate_filter_matches_legacy_for_finite_pose_rows():
+    rng = np.random.default_rng(20260708)
+    rows = rng.random((8400, 56), dtype=np.float32)
+
+    vectorized = filter_yolo_candidates(
+        rows,
+        task="pose",
+        confidence_threshold=0.55,
+        class_ids_filter={0},
+    )
+    legacy = filter_yolo_candidates_legacy(
+        rows,
+        task="pose",
+        confidence_threshold=0.55,
+        class_ids_filter={0},
+    )
+
+    for vectorized_value, legacy_value in zip(vectorized, legacy):
+        np.testing.assert_array_equal(vectorized_value, legacy_value)

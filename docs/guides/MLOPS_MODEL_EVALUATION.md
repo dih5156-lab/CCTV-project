@@ -8,6 +8,14 @@
 - 고정 평가 데이터셋으로 precision, recall, false positive, latency를 산출한다.
 - 평가 리포트를 `data/eval/reports/*.json`에 저장해 모델 교체 판단 근거로 사용한다.
 
+## 모델 아티팩트 보관 정책
+
+- 운영에 필요한 PyTorch 원본만 `models/*.pt`에 두고 `models/model_manifest.json`에 등록한다.
+- 저장소 루트에 자동 다운로드되는 `yolo*.pt`는 캐시이므로 커밋하지 않는다.
+- 장치별 생성물인 `*.onnx`, `*.engine`과 학습 중간 결과는 커밋하지 않는다.
+- 단일 모델이 GitHub 일반 파일 제한에 가까워지면 Git LFS 또는 외부 모델 저장소를 먼저 도입한다.
+- 모델을 교체할 때는 파일만 덮어쓰지 말고 manifest의 평가 결과와 체크섬을 함께 갱신한다.
+
 ## 평가 데이터 구조
 
 ```text

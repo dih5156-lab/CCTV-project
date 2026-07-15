@@ -17,6 +17,7 @@ from src.core.ai._attribute_backends import (
     PPHumanAttributeBackend,
     decode_pphuman_scores,
 )
+from src.core.ai._color_classification_backend import OnnxColorClassificationBackend
 
 # ── 헬퍼 ─────────────────────────────────────────────────────────────
 
@@ -118,6 +119,8 @@ class TestDominantColor:
             ((255, 255, 255), "white"), # 순수 흰색
             ((255, 0, 0), "blue"),      # 순수 파랑
             ((0, 255, 0), "green"),     # 순수 초록
+            ((0, 75, 150), "brown"),    # 갈색
+            ((180, 105, 255), "pink"),  # 분홍
         ],
     )
     def test_solid_colors(self, analyzer, bgr, expected):
@@ -128,6 +131,131 @@ class TestDominantColor:
     def test_empty_region(self, analyzer):
         region = np.zeros((0, 0, 3), dtype=np.uint8)
         assert analyzer._dominant_color(region) == "unknown"
+
+
+class TestColorClassificationBackend:
+    @pytest.fixture()
+    def analyzer(self):
+        return AppearanceAnalyzer()
+
+    def test_model_result_overrides_chromatic_classical_result(self):
+        class FakeColorBackend:
+            backend_name = "color_yolov8n"
+
+            def __init__(self):
+                self.calls = 0
+
+            def predict(self, region):
+                self.calls += 1
+                color = "red" if self.calls == 1 else "blue"
+                return {"color": color, "confidence": 0.91}
+
+        backend = FakeColorBackend()
+        analyzer = AppearanceAnalyzer(color_backend=backend)
+        frame = _two_tone_frame((0, 0, 255), (255, 0, 0))
+
+        attrs = analyzer.extract_attributes(frame, 0, 0, 100, 200)
+
+        assert attrs["upper_color"] == "red"
+        assert attrs["lower_color"] == "blue"
+        assert attrs["attribute_metadata"]["color_sources"]["upper_color"] == "color_yolov8n"
+        assert attrs["attribute_metadata"]["color_sources"]["lower_color"] == "color_yolov8n"
+
+    def test_empty_or_low_confidence_model_result_keeps_hsv(self):
+        class LowConfidenceBackend:
+            backend_name = "color_yolov8n"
+
+            def predict(self, region):
+                return {"confidence": 0.4}
+
+        analyzer = AppearanceAnalyzer(color_backend=LowConfidenceBackend())
+        frame = _two_tone_frame((0, 0, 255), (0, 0, 0))
+
+        attrs = analyzer.extract_attributes(frame, 0, 0, 100, 200)
+
+        assert attrs["upper_color"] == "red"
+        assert attrs["lower_color"] == "black"
+
+    def test_achromatic_hsv_lab_consensus_vetoes_model_error(self):
+        class BrownModelBackend:
+            backend_name = "color_yolov8n"
+
+            def predict(self, region):
+                return {"color": "brown", "confidence": 0.99}
+
+        analyzer = AppearanceAnalyzer(color_backend=BrownModelBackend())
+        evidence = {
+            "selected": "black",
+            "source": "lab",
+            "confidence": 0.6,
+            "hsv_color": "black",
+            "hsv_ratio": 0.6,
+            "lab_color": "black",
+        }
+
+        merged = analyzer._merge_color_model_evidence(
+            evidence,
+            _solid_frame((0, 0, 0), h=40, w=40),
+        )
+
+        assert merged["selected"] == "black"
+        assert merged["source"] == "hsv_lab_consensus"
+
+    def test_chromatic_disagreement_keeps_model_result(self):
+        class PurpleModelBackend:
+            backend_name = "color_yolov8n"
+
+            def predict(self, region):
+                return {"color": "purple", "confidence": 0.99}
+
+        analyzer = AppearanceAnalyzer(color_backend=PurpleModelBackend())
+        evidence = {
+            "selected": "orange",
+            "source": "lab",
+            "confidence": 0.6,
+            "hsv_color": "red",
+            "hsv_ratio": 0.6,
+            "lab_color": "orange",
+        }
+
+        merged = analyzer._merge_color_model_evidence(
+            evidence,
+            _solid_frame((0, 0, 255), h=40, w=40),
+        )
+
+        assert merged["selected"] == "purple"
+        assert merged["source"] == "color_yolov8n"
+        assert merged["model_color"] == "purple"
+
+    def test_onnx_backend_decodes_softmax_and_label(self, tmp_path):
+        class FakeInput:
+            name = "images"
+            shape = [1, 3, 160, 160]
+
+        class FakeSession:
+            def get_inputs(self):
+                return [FakeInput()]
+
+            def run(self, output_names, feed):
+                assert feed["images"].shape == (1, 3, 160, 160)
+                assert float(feed["images"].min()) >= 0.0
+                assert float(feed["images"].max()) <= 1.0
+                logits = np.zeros((1, 11), dtype=np.float32)
+                logits[0, 7] = 10.0
+                return [logits]
+
+        model_path = tmp_path / "appearance_color_yolov8n.onnx"
+        model_path.touch()
+        backend = OnnxColorClassificationBackend(
+            str(model_path),
+            "config/appearance_color_labels.json",
+            session_factory=lambda *args, **kwargs: FakeSession(),
+        )
+
+        result = backend.predict(_solid_frame((255, 0, 0), h=80, w=40))
+
+        assert result["color"] == "purple"
+        assert result["confidence"] > 0.99
 
     def test_tiny_region(self, analyzer):
         region = np.zeros((3, 3, 3), dtype=np.uint8)
@@ -180,6 +308,15 @@ class TestExtractAttributes:
         assert attrs["upper_color"] == "unknown"
         assert attrs["lower_color"] == "unknown"
 
+    def test_distant_narrow_person_color_is_rejected(self, analyzer):
+        frame = _two_tone_frame((0, 0, 255), (255, 0, 0), h=200, w=79)
+
+        attrs = analyzer.extract_attributes(frame, 0, 0, 79, 200)
+
+        assert attrs["upper_color"] == "unknown"
+        assert attrs["lower_color"] == "unknown"
+        assert attrs["attribute_metadata"]["color_sources"]["upper_color"] == "not_visible"
+
     def test_bbox_clipping(self, analyzer):
         """bbox가 프레임을 벗어나도 에러 없이 처리."""
         frame = _solid_frame((0, 0, 255), h=100, w=100)
@@ -208,6 +345,17 @@ class TestExtractAttributes:
         assert attrs["upper_color"] == "red"
         assert attrs["lower_color"] == "black"
 
+    def test_wide_upper_body_bbox_does_not_infer_lower_color(self, analyzer):
+        """앉은 사람처럼 넓은 상반신 bbox의 의자/배경을 하의로 오인하지 않는다."""
+        frame = np.zeros((200, 300, 3), dtype=np.uint8)
+        frame[:90, :] = (0, 0, 255)       # red upper
+        frame[90:, :] = (0, 0, 0)         # black chair/background
+
+        attrs = analyzer.extract_attributes(frame, 0, 0, 300, 200)
+
+        assert attrs["upper_color"] == "red"
+        assert attrs["lower_color"] == "unknown"
+
     def test_pose_keypoints_focus_on_torso_and_legs(self, analyzer):
         frame = np.zeros((200, 100, 3), dtype=np.uint8)
         frame[:60, :] = (255, 255, 255)   # white head/neck area
@@ -224,6 +372,48 @@ class TestExtractAttributes:
         )
         assert attrs["upper_color"] == "red"
         assert attrs["lower_color"] == "blue"
+
+    def test_off_center_pose_roi_excludes_wide_bbox_background(self, analyzer):
+        frame = np.full((200, 300, 3), (80, 150, 210), dtype=np.uint8)  # beige background
+        frame[55:125, 210:290] = (0, 0, 0)  # black shirt on the right
+        frame[145:195, 215:285] = (255, 0, 0)  # blue trousers
+        keypoints = _pose_keypoints_for_bbox(x=200, y=0, w=100, h=200)
+
+        attrs = analyzer.extract_attributes(
+            frame,
+            0,
+            0,
+            300,
+            200,
+            keypoints=keypoints,
+        )
+
+        assert attrs["upper_color"] == "black"
+        assert attrs["lower_color"] == "blue"
+
+    def test_trapezoid_mask_excludes_region_corners(self, analyzer):
+        mask = analyzer._trapezoid_region_mask(
+            (50, 100),
+            top_xs=(20.0, 80.0),
+            bottom_xs=(30.0, 70.0),
+            frame_x1=0,
+        )
+
+        assert mask is not None
+        assert mask[0, 0] == 0
+        assert mask[-1, -1] == 0
+        assert mask[25, 50] == 255
+        assert 0.4 < np.count_nonzero(mask) / mask.size < 0.9
+
+    def test_region_mask_prevents_background_color_dominance(self, analyzer):
+        region = np.full((80, 120, 3), (80, 150, 210), dtype=np.uint8)
+        region[:, 40:80] = (0, 0, 0)
+        mask = np.zeros(region.shape[:2], dtype=np.uint8)
+        mask[:, 40:80] = 255
+
+        evidence = analyzer._dominant_color_evidence(region, region_mask=mask)
+
+        assert evidence["selected"] == "black"
 
     def test_partial_pose_without_shoulders_keeps_upper_hsv_fallback(self, analyzer):
         frame = _two_tone_frame(
@@ -282,6 +472,23 @@ class TestExtractAttributes:
         assert attrs["lower_color"] == "unknown"
         assert attrs["helmet_color"] == "unknown"
         assert attrs["has_helmet"] is False
+
+    def test_shoulder_only_pose_builds_upper_fallback_mask(self, analyzer):
+        frame = np.zeros((200, 100, 3), dtype=np.uint8)
+        keypoints = _upper_only_pose_keypoints_for_bbox()
+
+        _, _, upper_mask, lower_mask = analyzer._split_body_regions(
+            frame,
+            crop_h=200,
+            head_h=30,
+            frame_x1=0,
+            frame_y1=0,
+            keypoints=keypoints,
+        )
+
+        assert upper_mask is not None
+        assert 0 < np.count_nonzero(upper_mask) < upper_mask.size
+        assert lower_mask is None
 
     def test_backend_attributes_override_hsv_result(self):
         class FakeBackend:
