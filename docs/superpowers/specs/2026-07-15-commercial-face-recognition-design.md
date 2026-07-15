@@ -8,6 +8,7 @@ Jetson 한 대에서 실시간으로 얼굴을 검출·정렬·임베딩하고, 
 
 - 등록 사진은 1장부터 허용하고 한 사람당 여러 장을 추가할 수 있다.
 - 카메라 1대, 동시 얼굴 1~3명 조건에서 1초 이내에 식별 결과를 생성한다.
+- 다중 카메라 요청은 공용 GPU worker가 처리하며 카메라별 얼굴 추론 worker를 만들지 않는다.
 - 같은 track을 매 프레임 재추론하지 않고 기본 0.75초 간격으로 제한한다.
 - 얼굴 식별 실패가 DeepStream의 헬멧·낙상·외형 분석을 중단시키지 않는다.
 - 운영 모델 artifact마다 출처 URL, 버전, SHA-256, 라이선스 파일을 기록한다.
@@ -19,8 +20,8 @@ Jetson 한 대에서 실시간으로 얼굴을 검출·정렬·임베딩하고, 
 
 - 공식 OpenCV 배포 파일의 라이선스: MIT
 - 역할: 얼굴 bbox, 양쪽 눈, 코, 양쪽 입꼬리의 5개 landmark 출력
-- 초기 실행 경로: OpenCV `FaceDetectorYN` CPU 비동기 worker
-- 선택 이유: 가볍고 5-point landmark를 함께 제공하며 현재 프로젝트의 OpenCV 의존성을 그대로 사용한다.
+- 운영 실행 경로: YuNet ONNX를 Jetson에서 TensorRT FP16 engine으로 변환해 공용 GPU worker에서 실행
+- 선택 이유: 가볍고 5-point landmark를 함께 제공하며 TensorRT로 여러 카메라의 얼굴 요청을 통합 처리할 수 있다.
 
 ### 얼굴 임베딩: OpenCV SFace
 
@@ -45,9 +46,9 @@ RTSP camera
 DeepStream person tracking
     |  person bbox + camera_id + track_id
     v
-Bounded asynchronous face worker
-    |-- YuNet face detection and five landmarks
-    |-- five-point similarity-transform alignment
+Shared bounded TensorRT face worker
+    |-- YuNet TensorRT face detection and five landmarks
+    |-- OpenCV five-point similarity-transform alignment
     |-- SFace TensorRT embedding
     `-- FaceGallery 1:N cosine search
              |
@@ -58,7 +59,7 @@ name / person_id / category / similarity / decision
 track cache -> face event -> attendance/watchlist policy
 ```
 
-DeepStream 영상 처리 thread는 얼굴 결과를 기다리지 않는다. bounded queue와 track cache를 사용하고, 얼굴 worker가 unavailable이면 얼굴 필드만 생략한다.
+DeepStream 영상 처리 thread는 얼굴 결과를 기다리지 않는다. 모든 카메라가 하나의 bounded queue와 TensorRT worker pool을 공유하고, track cache를 사용한다. 얼굴 worker가 unavailable이면 얼굴 필드만 생략한다. OpenCV는 작은 얼굴 crop의 affine 정렬과 좌표 처리에만 사용하며 모델 추론에는 사용하지 않는다.
 
 ## 4. 구성 요소
 
@@ -73,10 +74,13 @@ DeepStream 영상 처리 thread는 얼굴 결과를 기다리지 않는다. boun
 ### 4.2 YuNet 얼굴 검출기
 
 - 사람 bbox의 상단 ROI만 입력해 전체 frame 반복 검출을 피한다.
+- YuNet ONNX를 대상 Jetson에서 FP16, batch 1 TensorRT engine으로 변환한다.
+- 첫 구현은 batch 1로 정확성을 검증하고, 실제 queue 부하 측정 후 engine profile이 지원하면 소규모 batch를 추가한다.
 - 결과 bbox와 5개 landmark를 원본 frame 좌표로 복원한다.
 - 너무 작거나 흐리거나 frame 경계를 벗어난 얼굴은 임베딩 단계로 보내지 않는다.
 - 초기 최소 얼굴 크기는 40px로 두고 현장 데이터로 조정한다.
 - confidence와 NMS threshold는 환경변수로 노출하되 검증된 기본값을 문서화한다.
+- YuNet output decode, confidence filtering, NMS는 CPU에서 수행하되 GPU tensor output만 처리하며 frame 전체에 대한 OpenCV DNN 추론은 하지 않는다.
 
 ### 4.3 5-point 얼굴 정렬
 
@@ -93,7 +97,17 @@ DeepStream 영상 처리 thread는 얼굴 결과를 기다리지 않는다. boun
 - NaN, infinity, zero norm, 예상하지 않은 shape는 오류로 처리한다.
 - runtime 오류는 worker 내부에 격리하고 DeepStream process를 종료하지 않는다.
 
-### 4.5 FaceGallery
+### 4.5 다중 카메라 얼굴 scheduler
+
+- 모든 카메라가 하나의 bounded priority queue를 공유한다.
+- queue key는 `(camera_id, track_id)`이며 같은 track의 오래된 요청은 최신 요청으로 교체한다.
+- 기본 재추론 간격은 0.75초이며 최근에 안정적으로 식별된 track은 간격을 늘릴 수 있다.
+- 얼굴 크기, blur, 정면성, 마지막 처리 시각을 조합한 우선순위로 품질이 높은 최신 요청을 먼저 처리한다.
+- 카메라별 최대 대기 요청 수를 제한해 한 카메라가 worker를 독점하지 못하게 한다.
+- 초기 worker는 하나의 CUDA context를 소유한다. GPU stream이나 worker 수 증가는 TensorRT context 안전성과 실제 profile 결과를 확인한 뒤 추가한다.
+- queue 지연이 SLA를 넘으면 오래된 요청을 버리고 `face_queue_dropped_total`을 증가시킨다.
+
+### 4.6 FaceGallery
 
 모델과 저장소를 분리하기 위해 다음 인터페이스를 사용한다.
 
@@ -113,7 +127,7 @@ class FaceGallery:
 - 등록 인원이 커져도 호출부를 바꾸지 않도록 향후 pgvector 또는 ANN 구현체로 교체 가능하게 한다.
 - 모델 ID와 전처리 버전이 다른 임베딩은 같은 gallery에서 비교하지 않는다.
 
-### 4.6 등록 정책
+### 4.7 등록 정책
 
 - 최소 등록 사진은 1장이다.
 - 1장만 등록된 사람은 `single_sample` 상태로 표시한다.
@@ -123,7 +137,7 @@ class FaceGallery:
 - 모델이 바뀔 때 재임베딩할 수 있도록 동의받은 등록 원본을 암호화 저장한다.
 - 카메라에서 반복 인식된 얼굴을 자동 등록하지 않는다. 관리자 승인 후에만 샘플을 추가한다.
 
-### 4.7 식별 판정
+### 4.8 식별 판정
 
 - 최고 cosine similarity가 검증된 threshold 미만이면 `unknown`이다.
 - 최고 후보와 두 번째 후보의 점수 차이가 검증된 margin 미만이면 `ambiguous`이다.
@@ -131,7 +145,7 @@ class FaceGallery:
 - track 내 여러 프레임 결과를 누적해 단일 frame 오인식을 억제한다.
 - 이벤트에는 모델 ID, similarity, margin, 품질 점수, 판정 근거를 포함한다.
 
-### 4.8 출입 및 관심 인물 정책
+### 4.9 출입 및 관심 인물 정책
 
 - 사람 category는 `employee`, `watchlist`, `visitor`를 지원한다.
 - employee는 cooldown과 카메라 역할을 기준으로 출근·퇴근 이벤트를 만든다.
@@ -204,11 +218,12 @@ class FaceGallery:
 ### 단위 검증
 
 - YuNet 결과의 ROI→frame 좌표 복원
+- YuNet TensorRT output decode, confidence filtering, NMS
 - 5-point 정렬 기준점과 잘못된 landmark 거부
 - SFace 전처리, output shape, L2 정규화
 - gallery 등록·수정·비활성화·삭제·top-k 검색
 - threshold, margin, single-sample 정책
-- track cooldown과 누적 판정
+- track cooldown, 최신 요청 교체, 카메라별 fairness와 누적 판정
 
 ### 모델 검증
 
@@ -225,17 +240,20 @@ class FaceGallery:
 - 얼굴 서비스 강제 종료 중 DeepStream 프레임·낙상·헬멧 이벤트 유지
 - 최소 30분 안정성 감시에서 frame drop, restart, FD 증가 확인
 - 모델 artifact 제거 또는 변조 시 readiness 실패 확인
+- 1·4·8개 카메라 부하를 순차 재현해 처리량, queue depth, drop 수, p95 식별 지연시간, CPU/GPU/메모리 사용량을 기록
+- 카메라 수 증가 시 DeepStream frame 처리량이 얼굴 인식 비활성 기준 대비 허용 범위 안에 있는지 비교
 
 ## 9. 단계적 적용
 
 1. 공식 YuNet/SFace artifact와 LICENSE를 고정 revision·hash로 가져온다.
-2. YuNet 검출과 5-point 정렬을 독립 샘플에서 검증한다.
+2. YuNet ONNX를 TensorRT engine으로 변환하고 output decode와 5-point 정렬을 독립 샘플에서 검증한다.
 3. SFace ONNX를 TensorRT engine으로 변환하고 출력·지연시간을 검증한다.
-4. SQLite metadata와 vectorized `FaceGallery`를 구현한다.
-5. 기존 등록 API를 새 gallery와 연결한다.
-6. DeepStream 비동기 얼굴 worker와 track cache를 연결한다.
-7. 실제 등록자 데이터로 threshold·margin을 측정한다.
-8. 장애 격리와 운영 검증을 통과한 뒤 기본 얼굴 backend를 전환한다.
+4. 다중 카메라 공용 queue와 TensorRT 얼굴 worker를 구현한다.
+5. SQLite metadata와 vectorized `FaceGallery`를 구현한다.
+6. 기존 등록 API를 새 gallery와 연결한다.
+7. DeepStream 비동기 얼굴 worker와 track cache를 연결한다.
+8. 실제 등록자 데이터로 threshold·margin을 측정한다.
+9. 1·4·8개 카메라 부하와 장애 격리를 검증한 뒤 기본 얼굴 backend를 전환한다.
 
 각 단계에서 기존 OpenCV 폴백은 유지한다. 새 경로가 실제 카메라 검증을 통과하기 전에는 현재 운영 설정을 변경하지 않는다.
 
