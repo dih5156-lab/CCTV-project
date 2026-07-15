@@ -105,15 +105,25 @@ class TensorRTAttributeRuntime:
         return ptr
 
     def run(self, tensor: np.ndarray) -> List[object]:
+        return self._run_outputs(tensor, [self.output_name])
+
+    def _run_outputs(
+        self, tensor: np.ndarray, output_names: List[str]
+    ) -> List[object]:
         import tensorrt as trt  # type: ignore
 
         input_tensor = np.ascontiguousarray(tensor, dtype=np.float32)
         self.context.set_input_shape(self.input_name, tuple(input_tensor.shape))
-        output_shape = tuple(int(dim) for dim in self.context.get_tensor_shape(self.output_name))
-        output_tensor = np.empty(output_shape, dtype=trt.nptype(self.engine.get_tensor_dtype(self.output_name)))
+        output_tensors = [
+            np.empty(
+                tuple(int(dim) for dim in self.context.get_tensor_shape(output_name)),
+                dtype=trt.nptype(self.engine.get_tensor_dtype(output_name)),
+            )
+            for output_name in output_names
+        ]
 
         input_ptr = self._cuda_malloc(input_tensor.nbytes)
-        output_ptr = self._cuda_malloc(output_tensor.nbytes)
+        output_ptrs = [self._cuda_malloc(output.nbytes) for output in output_tensors]
         try:
             self._check_cuda(
                 self._cudart.cudaMemcpy(
@@ -125,23 +135,46 @@ class TensorRTAttributeRuntime:
                 "cudaMemcpy host to device",
             )
             self.context.set_tensor_address(self.input_name, int(input_ptr.value))
-            self.context.set_tensor_address(self.output_name, int(output_ptr.value))
+            for output_name, output_ptr in zip(output_names, output_ptrs):
+                self.context.set_tensor_address(output_name, int(output_ptr.value))
             if not self.context.execute_async_v3(0):
                 raise RuntimeError("TensorRT execute_async_v3 failed")
             self._check_cuda(self._cudart.cudaDeviceSynchronize(), "cudaDeviceSynchronize")
-            self._check_cuda(
-                self._cudart.cudaMemcpy(
-                    output_tensor.ctypes.data_as(ctypes.c_void_p),
-                    output_ptr,
-                    output_tensor.nbytes,
-                    2,  # cudaMemcpyDeviceToHost
-                ),
-                "cudaMemcpy device to host",
-            )
-            return [output_tensor.astype(np.float32, copy=False)]
+            for output_tensor, output_ptr in zip(output_tensors, output_ptrs):
+                self._check_cuda(
+                    self._cudart.cudaMemcpy(
+                        output_tensor.ctypes.data_as(ctypes.c_void_p),
+                        output_ptr,
+                        output_tensor.nbytes,
+                        2,  # cudaMemcpyDeviceToHost
+                    ),
+                    "cudaMemcpy device to host",
+                )
+            return [output.astype(np.float32, copy=False) for output in output_tensors]
         finally:
             self._cudart.cudaFree(input_ptr)
-            self._cudart.cudaFree(output_ptr)
+            for output_ptr in output_ptrs:
+                self._cudart.cudaFree(output_ptr)
+
+
+class TensorRTNamedOutputsRuntime(TensorRTAttributeRuntime):
+    """TensorRT adapter that preserves every output tensor name."""
+
+    def __init__(
+        self,
+        engine: object,
+        context: object,
+        input_name: str,
+        output_names: List[str],
+    ) -> None:
+        if not output_names:
+            raise ValueError("TensorRT named runtime requires at least one output")
+        super().__init__(engine, context, input_name, output_names[0])
+        self.output_names = output_names
+
+    def run_named(self, tensor: np.ndarray) -> dict[str, object]:
+        outputs = self._run_outputs(tensor, self.output_names)
+        return dict(zip(self.output_names, outputs))
 
 
 def resolve_paddle_model_prefix(model_path: Path) -> Path:
@@ -208,3 +241,32 @@ def build_tensorrt_runtime(model_path: Path) -> TensorRTAttributeRuntime:
     if context is None:
         raise ValueError(f"TensorRT execution context create failed: {model_path}")
     return TensorRTAttributeRuntime(engine, context, input_name, output_name)
+
+
+def build_tensorrt_named_runtime(model_path: Path) -> TensorRTNamedOutputsRuntime:
+    """Load a TensorRT engine while retaining all output tensor names."""
+    import tensorrt as trt  # type: ignore
+
+    logger = trt.Logger(trt.Logger.ERROR)
+    with model_path.open("rb") as handle, trt.Runtime(logger) as runtime:
+        engine = runtime.deserialize_cuda_engine(handle.read())
+    if engine is None:
+        raise ValueError(f"TensorRT engine load failed: {model_path}")
+
+    input_names: List[str] = []
+    output_names: List[str] = []
+    for index in range(int(engine.num_io_tensors)):
+        name = str(engine.get_tensor_name(index))
+        mode = engine.get_tensor_mode(name)
+        if mode == trt.TensorIOMode.INPUT:
+            input_names.append(name)
+        elif mode == trt.TensorIOMode.OUTPUT:
+            output_names.append(name)
+    if len(input_names) != 1 or not output_names:
+        raise ValueError(
+            f"TensorRT named runtime expected one input and at least one output: {model_path}"
+        )
+    context = engine.create_execution_context()
+    if context is None:
+        raise ValueError(f"TensorRT execution context create failed: {model_path}")
+    return TensorRTNamedOutputsRuntime(engine, context, input_names[0], output_names)

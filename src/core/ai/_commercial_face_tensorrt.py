@@ -9,7 +9,7 @@ from dataclasses import dataclass
 import cv2
 import numpy as np
 
-from ._attribute_runtimes import build_tensorrt_runtime
+from ._attribute_runtimes import build_tensorrt_named_runtime, build_tensorrt_runtime
 
 
 SFACE_MODEL_ID = "opencv-sface-tensorrt-v1"
@@ -255,3 +255,48 @@ class TensorRTSFaceEmbedder:
                 f"received {raw_embedding.size}"
             )
         return normalize_sface_embedding(raw_embedding)
+
+
+class TensorRTYuNetDetector:
+    """Run YuNet TensorRT inference on a frame ROI and decode named outputs."""
+
+    def __init__(
+        self,
+        model_path: Path,
+        runtime_factory: Callable[[Path], object] = build_tensorrt_named_runtime,
+        *,
+        score_threshold: float = 0.6,
+        nms_threshold: float = 0.3,
+    ) -> None:
+        self.model_path = Path(model_path)
+        self.score_threshold = score_threshold
+        self.nms_threshold = nms_threshold
+        self._runtime = runtime_factory(self.model_path)
+
+    def detect(
+        self,
+        frame: np.ndarray,
+        roi: tuple[float, float, float, float],
+    ) -> list[YuNetFace]:
+        if (
+            not isinstance(frame, np.ndarray)
+            or frame.size == 0
+            or frame.ndim != 3
+            or frame.shape[2] != 3
+        ):
+            raise ValueError("YuNet frame must be a non-empty BGR image")
+        x, y, width, height = (float(value) for value in roi)
+        x1 = max(0, min(frame.shape[1], int(np.floor(x))))
+        y1 = max(0, min(frame.shape[0], int(np.floor(y))))
+        x2 = max(0, min(frame.shape[1], int(np.ceil(x + width))))
+        y2 = max(0, min(frame.shape[0], int(np.ceil(y + height))))
+        if x2 <= x1 or y2 <= y1:
+            raise ValueError("YuNet ROI does not intersect the frame")
+        crop = frame[y1:y2, x1:x2]
+        outputs = self._runtime.run_named(preprocess_yunet_bgr(crop))
+        return decode_yunet_outputs(
+            outputs,
+            roi=(x1, y1, x2 - x1, y2 - y1),
+            score_threshold=self.score_threshold,
+            nms_threshold=self.nms_threshold,
+        )

@@ -5,6 +5,7 @@ import pytest
 
 from src.core.ai._commercial_face_tensorrt import (
     SFACE_LANDMARK_TEMPLATE,
+    TensorRTYuNetDetector,
     TensorRTSFaceEmbedder,
     align_sface_bgr,
     decode_yunet_outputs,
@@ -215,3 +216,39 @@ def test_align_sface_maps_scaled_landmarks_to_official_template():
 def test_align_sface_rejects_invalid_landmarks(landmarks, message):
     with pytest.raises(ValueError, match=message):
         align_sface_bgr(np.zeros((112, 112, 3), dtype=np.uint8), landmarks)
+
+
+def test_yunet_detector_runs_named_runtime_on_clamped_roi():
+    outputs = _empty_yunet_outputs()
+    outputs["cls_32"][0, 0, 0] = 1.0
+    outputs["obj_32"][0, 0, 0] = 1.0
+
+    class FakeNamedRuntime:
+        def __init__(self):
+            self.inputs = []
+
+        def run_named(self, tensor):
+            self.inputs.append(tensor)
+            return outputs
+
+    runtime = FakeNamedRuntime()
+    detector = TensorRTYuNetDetector(
+        Path("yunet.engine"), runtime_factory=lambda _: runtime
+    )
+    frame = np.zeros((100, 200, 3), dtype=np.uint8)
+
+    faces = detector.detect(frame, roi=(-10, -20, 110, 80))
+
+    assert len(faces) == 1
+    assert runtime.inputs[0].shape == (1, 3, 640, 640)
+    assert faces[0].bbox[0] >= 0
+    assert faces[0].bbox[1] >= 0
+
+
+def test_yunet_detector_rejects_roi_outside_frame():
+    detector = TensorRTYuNetDetector(
+        Path("yunet.engine"), runtime_factory=lambda _: FakeRuntime([])
+    )
+
+    with pytest.raises(ValueError, match="does not intersect"):
+        detector.detect(np.zeros((100, 100, 3), dtype=np.uint8), (200, 200, 10, 10))
