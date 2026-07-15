@@ -32,7 +32,8 @@ ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONDONTWRITEBYTECODE=1 \
     PATH=/usr/local/cuda-12.6/bin:/usr/local/cuda/bin:${PATH} \
     LD_LIBRARY_PATH=/usr/local/cuda-12.6/lib64:/usr/local/cuda/lib64:/usr/local/lib/python3.10/dist-packages/torch/lib:${LD_LIBRARY_PATH:-} \
-    CUDA_HOME=/usr/local/cuda-12.6
+    CUDA_HOME=/usr/local/cuda-12.6 \
+    TENSORRT_EXPECTED_VERSION=10.3
 
 # ── 시스템 의존성 ──────────────────────────────────────────────────────────────
 # Python 3.10 + pip + OpenCV 헤드리스 런타임 + GStreamer 하드웨어 디코더

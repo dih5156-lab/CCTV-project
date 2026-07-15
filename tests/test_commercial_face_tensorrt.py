@@ -4,9 +4,11 @@ import numpy as np
 import pytest
 
 from src.core.ai._commercial_face_tensorrt import (
+    CommercialFaceEmbeddingPipeline,
     SFACE_LANDMARK_TEMPLATE,
     TensorRTYuNetDetector,
     TensorRTSFaceEmbedder,
+    YuNetFace,
     align_sface_bgr,
     decode_yunet_outputs,
     normalize_sface_embedding,
@@ -252,3 +254,38 @@ def test_yunet_detector_rejects_roi_outside_frame():
 
     with pytest.raises(ValueError, match="does not intersect"):
         detector.detect(np.zeros((100, 100, 3), dtype=np.uint8), (200, 200, 10, 10))
+
+
+def test_commercial_pipeline_aligns_and_embeds_each_detected_face():
+    face = YuNetFace(
+        bbox=(10.0, 20.0, 80.0, 90.0),
+        landmarks=tuple(map(tuple, SFACE_LANDMARK_TEMPLATE)),
+        score=0.95,
+    )
+
+    class FakeDetector:
+        def detect(self, frame, roi):
+            return [face]
+
+    class FakeEmbedder:
+        model_id = "opencv-sface-tensorrt-v1"
+
+        def __init__(self):
+            self.images = []
+
+        def embed_aligned(self, image):
+            self.images.append(image)
+            return np.ones(128, dtype=np.float32) / np.sqrt(128)
+
+    embedder = FakeEmbedder()
+    pipeline = CommercialFaceEmbeddingPipeline(FakeDetector(), embedder)
+
+    results = pipeline.extract_embeddings(
+        np.zeros((112, 112, 3), dtype=np.uint8), (0, 0, 112, 112)
+    )
+
+    assert len(results) == 1
+    assert results[0].face == face
+    assert results[0].embedding.shape == (128,)
+    assert results[0].model_id == "opencv-sface-tensorrt-v1"
+    assert embedder.images[0].shape == (112, 112, 3)

@@ -5,10 +5,12 @@ from __future__ import annotations
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 from src.core.ai._attribute_runtimes import (
     OnnxAttributeRuntime,
     resolve_paddle_model_prefix,
+    validate_tensorrt_version,
 )
 
 
@@ -44,3 +46,12 @@ def test_resolve_paddle_model_prefix_for_json_file():
     assert resolve_paddle_model_prefix(Path("/models/attr/inference.json")) == Path(
         "/models/attr/inference"
     )
+
+
+def test_validate_tensorrt_version_accepts_same_major_minor():
+    validate_tensorrt_version("10.3.0", expected="10.3")
+
+
+def test_validate_tensorrt_version_rejects_incompatible_binding():
+    with pytest.raises(RuntimeError, match="TensorRT version mismatch"):
+        validate_tensorrt_version("10.16.1.11", expected="10.3")

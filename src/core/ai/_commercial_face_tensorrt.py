@@ -300,3 +300,36 @@ class TensorRTYuNetDetector:
             score_threshold=self.score_threshold,
             nms_threshold=self.nms_threshold,
         )
+
+
+@dataclass(frozen=True)
+class CommercialFaceEmbedding:
+    face: YuNetFace
+    embedding: np.ndarray
+    model_id: str
+
+
+class CommercialFaceEmbeddingPipeline:
+    """Compose YuNet detection, SFace alignment, and SFace embedding."""
+
+    def __init__(self, detector: object, embedder: object) -> None:
+        self.detector = detector
+        self.embedder = embedder
+
+    def extract_embeddings(
+        self,
+        frame: np.ndarray,
+        roi: tuple[float, float, float, float],
+    ) -> list[CommercialFaceEmbedding]:
+        results: list[CommercialFaceEmbedding] = []
+        for face in self.detector.detect(frame, roi):
+            aligned = align_sface_bgr(frame, np.asarray(face.landmarks))
+            embedding = self.embedder.embed_aligned(aligned)
+            results.append(
+                CommercialFaceEmbedding(
+                    face=face,
+                    embedding=embedding,
+                    model_id=str(self.embedder.model_id),
+                )
+            )
+        return results

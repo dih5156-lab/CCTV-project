@@ -4,10 +4,35 @@ from __future__ import annotations
 
 import ctypes
 import ctypes.util
+import os
 from pathlib import Path
 from typing import List, Optional, Protocol
 
 import numpy as np
+
+
+DEFAULT_TENSORRT_MAJOR_MINOR = "10.3"
+
+
+def validate_tensorrt_version(
+    actual: str,
+    *,
+    expected: Optional[str] = None,
+) -> None:
+    """Stop before native runtime creation when Python TensorRT is incompatible."""
+    required = expected or os.getenv(
+        "TENSORRT_EXPECTED_VERSION", DEFAULT_TENSORRT_MAJOR_MINOR
+    )
+    actual_parts = str(actual).split(".")
+    required_parts = str(required).split(".")
+    actual_major_minor = ".".join(actual_parts[:2])
+    required_major_minor = ".".join(required_parts[:2])
+    if actual_major_minor != required_major_minor:
+        raise RuntimeError(
+            "TensorRT version mismatch: "
+            f"Python binding is {actual}, expected {required_major_minor}.x. "
+            "Use the Jetson system/container TensorRT binding."
+        )
 
 
 class AttributeRuntime(Protocol):
@@ -219,6 +244,8 @@ def build_tensorrt_runtime(model_path: Path) -> TensorRTAttributeRuntime:
     """TensorRT engine을 로드한다."""
     import tensorrt as trt  # type: ignore
 
+    validate_tensorrt_version(trt.__version__)
+
     logger = trt.Logger(trt.Logger.ERROR)
     with model_path.open("rb") as handle, trt.Runtime(logger) as runtime:
         engine = runtime.deserialize_cuda_engine(handle.read())
@@ -246,6 +273,8 @@ def build_tensorrt_runtime(model_path: Path) -> TensorRTAttributeRuntime:
 def build_tensorrt_named_runtime(model_path: Path) -> TensorRTNamedOutputsRuntime:
     """Load a TensorRT engine while retaining all output tensor names."""
     import tensorrt as trt  # type: ignore
+
+    validate_tensorrt_version(trt.__version__)
 
     logger = trt.Logger(trt.Logger.ERROR)
     with model_path.open("rb") as handle, trt.Runtime(logger) as runtime:
