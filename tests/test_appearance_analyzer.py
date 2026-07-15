@@ -227,7 +227,7 @@ class TestColorClassificationBackend:
         assert merged["source"] == "color_yolov8n"
         assert merged["model_color"] == "purple"
 
-    def test_onnx_backend_decodes_softmax_and_label(self):
+    def test_onnx_backend_decodes_softmax_and_label(self, tmp_path):
         class FakeInput:
             name = "images"
             shape = [1, 3, 160, 160]
@@ -244,8 +244,10 @@ class TestColorClassificationBackend:
                 logits[0, 7] = 10.0
                 return [logits]
 
+        model_path = tmp_path / "appearance_color_yolov8n.onnx"
+        model_path.touch()
         backend = OnnxColorClassificationBackend(
-            "models/appearance_color_yolov8n.onnx",
+            str(model_path),
             "config/appearance_color_labels.json",
             session_factory=lambda *args, **kwargs: FakeSession(),
         )
