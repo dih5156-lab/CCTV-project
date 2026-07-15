@@ -404,8 +404,8 @@ def test_h264_webrtc_wiring_rejects_disabled_poc_fix_default() -> None:
 def test_per_camera_rtsp_wiring_requires_template_and_dynamic_mediamtx_path() -> None:
     result = runtime_checks.check_per_camera_rtsp_wiring(
         jetson_compose_text=(
-            "DS_RTSP_LOCATION_TEMPLATE: "
-            "${DS_RTSP_LOCATION_TEMPLATE:-rtsp://cctv-media-server:8554/{camera_id}}\n"
+            "DS_RTSP_LOCATION_TEMPLATE: ${DS_RTSP_LOCATION_TEMPLATE:-}\n"
+            "DS_RTSP_LOCATION: ${DS_RTSP_LOCATION:-}\n"
         ),
         mediamtx_text="paths:\n  all_others:\n    source: publisher\n",
         jetson_env_example_text=(
@@ -426,15 +426,15 @@ def test_per_camera_rtsp_wiring_requires_template_and_dynamic_mediamtx_path() ->
             "docker-compose.jetson.yml",
         ),
         (
-            "DS_RTSP_LOCATION_TEMPLATE: "
-            "${DS_RTSP_LOCATION_TEMPLATE:-rtsp://cctv-media-server:8554/{camera_id}}\n",
+            "DS_RTSP_LOCATION_TEMPLATE: ${DS_RTSP_LOCATION_TEMPLATE:-}\n"
+            "DS_RTSP_LOCATION: ${DS_RTSP_LOCATION:-}\n",
             "paths:\n  camera_1:\n    source: publisher\n",
             "DS_RTSP_LOCATION_TEMPLATE=rtsp://cctv-media-server:8554/{camera_id}\n",
             "config/mediamtx.yml",
         ),
         (
-            "DS_RTSP_LOCATION_TEMPLATE: "
-            "${DS_RTSP_LOCATION_TEMPLATE:-rtsp://cctv-media-server:8554/{camera_id}}\n",
+            "DS_RTSP_LOCATION_TEMPLATE: ${DS_RTSP_LOCATION_TEMPLATE:-}\n"
+            "DS_RTSP_LOCATION: ${DS_RTSP_LOCATION:-}\n",
             "paths:\n  all_others:\n    source: publisher\n",
             "DS_OUTPUT_MODE=rtsp-publish\n",
             ".env.jetson.example",
@@ -455,6 +455,21 @@ def test_per_camera_rtsp_wiring_reports_missing_configuration(
 
     assert result["passed"] is False
     assert missing in result["detail"]
+
+
+def test_per_camera_rtsp_wiring_rejects_compose_that_drops_legacy_location() -> None:
+    result = runtime_checks.check_per_camera_rtsp_wiring(
+        jetson_compose_text=(
+            "DS_RTSP_LOCATION_TEMPLATE: ${DS_RTSP_LOCATION_TEMPLATE:-}\n"
+        ),
+        mediamtx_text="paths:\n  all_others:\n    source: publisher\n",
+        jetson_env_example_text=(
+            "DS_RTSP_LOCATION_TEMPLATE=rtsp://cctv-media-server:8554/{camera_id}\n"
+        ),
+    )
+
+    assert result["passed"] is False
+    assert "DS_RTSP_LOCATION" in result["detail"]
 
 
 def test_public_api_exposure_defaults_require_localhost_bind() -> None:

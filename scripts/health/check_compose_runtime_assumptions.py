@@ -516,8 +516,12 @@ def check_per_camera_rtsp_wiring(
         (
             "docker-compose.jetson.yml",
             jetson_compose,
-            "DS_RTSP_LOCATION_TEMPLATE: "
-            "${DS_RTSP_LOCATION_TEMPLATE:-rtsp://cctv-media-server:8554/{camera_id}}",
+            "DS_RTSP_LOCATION_TEMPLATE: ${DS_RTSP_LOCATION_TEMPLATE:-}",
+        ),
+        (
+            "docker-compose.jetson.yml",
+            jetson_compose,
+            "DS_RTSP_LOCATION: ${DS_RTSP_LOCATION:-}",
         ),
         ("config/mediamtx.yml", mediamtx, "all_others:"),
         ("config/mediamtx.yml", mediamtx, "source: publisher"),

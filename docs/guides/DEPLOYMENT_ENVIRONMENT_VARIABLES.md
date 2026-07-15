@@ -94,7 +94,7 @@ Jetson 통합 스택에서 자주 조정하는 값만 추렸습니다. 나머지
 | `STREAM_FPS` | `15` | `15` | MJPEG 목표 FPS |
 | `STREAM_WIDTH`, `STREAM_HEIGHT` | `960`, `540` | `960`, `540` | MJPEG 송출 크기. 둘 중 하나가 `0`이면 원본 크기 유지 |
 | `STREAM_JPEG_QUALITY` | `65` | `.env.jetson.example`은 `75` | JPEG 품질. 코드에서 `30~95`로 보정 |
-| `DS_RTSP_LOCATION_TEMPLATE` | `rtsp://cctv-media-server:8554/{camera_id}` | 동일 | 카메라 ID별 분석 영상 RTSP 게시 URL 템플릿 |
+| `DS_RTSP_LOCATION_TEMPLATE` | `rtsp://cctv-media-server:8554/{camera_id}` | `.env.jetson.example`은 동일 | 카메라 ID별 분석 영상 RTSP 게시 URL 템플릿 |
 | `DS_H264_ENCODER` | 구성별 값 | `nvv4l2h264enc` | H.264 인코더 |
 | `DS_H264_WIDTH`, `DS_H264_HEIGHT` | `1280`, `720` | `960`, `540` | H.264 출력 해상도 |
 | `DS_H264_BITRATE` | `4000000` | `3000000` | H.264 bitrate |
@@ -103,7 +103,7 @@ Jetson 통합 스택에서 자주 조정하는 값만 추렸습니다. 나머지
 
 `DS_H264_POC_FIX_ENABLED`는 Python buffer handoff를 사용하므로 CPU 부하와 복사가 늘어날 수 있습니다. 영상 호환 문제가 없으면 현장 부하 측정 후 비활성화를 검토합니다.
 
-카메라별 WebRTC 라이브 주소는 `http://<Jetson-IP>:8889/<camera_id>/`입니다. 기존 `DS_RTSP_LOCATION`은 활성 카메라가 하나이고 `DS_RTSP_LOCATION_TEMPLATE`이 없을 때만 호환됩니다. 다중 카메라에서는 `{camera_id}` 템플릿을 사용해야 합니다.
+카메라별 WebRTC 라이브 주소는 `http://<Jetson-IP>:8889/<camera_id>/`입니다. Compose는 두 RTSP 변수를 그대로 전달하며, 둘 다 비어 있으면 애플리케이션이 위 기본 템플릿을 사용합니다. 기존 `DS_RTSP_LOCATION`은 활성 카메라가 하나이고 `DS_RTSP_LOCATION_TEMPLATE`이 없을 때만 호환됩니다. 다중 카메라에서는 `{camera_id}` 템플릿을 사용해야 합니다.
 
 ### falldata 보조 검증
 
