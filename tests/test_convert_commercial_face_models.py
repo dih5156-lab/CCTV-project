@@ -10,10 +10,10 @@ from scripts.convert.convert_commercial_face_models_to_engine import (
 
 
 @pytest.mark.parametrize(
-    ("model_name", "shape"),
-    [("yunet", "input:1x3x640x640"), ("sface", "data:1x3x112x112")],
+    "model_name",
+    ["yunet", "sface"],
 )
-def test_build_command_uses_fixed_fp16_profile(model_name, shape):
+def test_build_command_uses_fp16_without_dynamic_profile_for_static_model(model_name):
     command = build_trtexec_command(
         model_name=model_name,
         onnx_path=Path(f"{model_name}.onnx"),
@@ -22,9 +22,11 @@ def test_build_command_uses_fixed_fp16_profile(model_name, shape):
     )
 
     assert "--fp16" in command
-    assert f"--minShapes={shape}" in command
-    assert f"--optShapes={shape}" in command
-    assert f"--maxShapes={shape}" in command
+    assert "--avgTiming=1" in command
+    assert "--builderOptimizationLevel=0" in command
+    assert not any(argument.startswith("--minShapes=") for argument in command)
+    assert not any(argument.startswith("--optShapes=") for argument in command)
+    assert not any(argument.startswith("--maxShapes=") for argument in command)
     assert f"--onnx={model_name}.onnx" in command
     assert f"--saveEngine={model_name}.engine" in command
 

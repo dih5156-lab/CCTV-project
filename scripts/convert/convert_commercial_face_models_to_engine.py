@@ -71,16 +71,13 @@ def build_trtexec_command(
     spec = MODEL_SPECS.get(model_name)
     if spec is None:
         raise ValueError(f"unknown model: {model_name}")
-    dimensions = "x".join(str(value) for value in spec.shape)
-    shape = f"{spec.input_name}:{dimensions}"
     return [
         str(trtexec),
         f"--onnx={onnx_path}",
         f"--saveEngine={engine_path}",
         "--fp16",
-        f"--minShapes={shape}",
-        f"--optShapes={shape}",
-        f"--maxShapes={shape}",
+        "--avgTiming=1",
+        "--builderOptimizationLevel=0",
         "--skipInference",
     ]
 
