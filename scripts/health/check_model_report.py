@@ -133,6 +133,27 @@ def evaluate_criteria(criteria: dict[str, Any], values: dict[str, float]) -> lis
     return checks
 
 
+def check_insightface_tensorrt_report(report: dict[str, Any]) -> list[str]:
+    """InsightFace TensorRT POC report의 필수 측정값을 검증한다."""
+    errors: list[str] = []
+    model_id = report.get("model_id")
+    if model_id != "arcface-w600k-r50-tensorrt-v1":
+        errors.append(f"unexpected InsightFace model_id: {model_id}")
+
+    for key, minimum in (
+        ("gallery_images", 2),
+        ("identities", 2),
+        ("genuine_pairs", 1),
+        ("impostor_pairs", 1),
+    ):
+        if int(report.get(key, 0)) < minimum:
+            errors.append(f"InsightFace {key} must be at least {minimum}")
+
+    if report.get("p95_latency_ms") is None:
+        errors.append("InsightFace p95_latency_ms is required")
+    return errors
+
+
 def build_latest_evaluation(report_path: Path, report: dict[str, Any], values: dict[str, float]) -> dict[str, Any]:
     return {
         "report": str(report_path),

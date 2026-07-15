@@ -81,3 +81,29 @@ def test_iter_artifact_checks_reports_missing_and_present(tmp_path):
         "model.onnx": True,
         "missing.engine": False,
     }
+
+
+def test_insightface_report_requires_model_id_and_measured_samples():
+    errors = check_model_report.check_insightface_tensorrt_report(
+        {"model_id": "wrong", "gallery_images": 0}
+    )
+
+    assert "unexpected InsightFace model_id: wrong" in errors
+    assert "InsightFace gallery_images must be at least 2" in errors
+
+
+def test_insightface_report_accepts_complete_poc_result():
+    errors = check_model_report.check_insightface_tensorrt_report(
+        {
+            "model_id": "arcface-w600k-r50-tensorrt-v1",
+            "gallery_images": 4,
+            "identities": 2,
+            "genuine_pairs": 2,
+            "impostor_pairs": 4,
+            "false_accept_rate": 0.0,
+            "false_reject_rate": 0.0,
+            "p95_latency_ms": 40.0,
+        }
+    )
+
+    assert errors == []
