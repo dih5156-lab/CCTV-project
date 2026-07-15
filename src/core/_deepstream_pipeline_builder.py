@@ -5,8 +5,10 @@ from __future__ import annotations
 import logging
 import os
 import threading
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Callable, List, Optional
+
+from ._deepstream_rtsp_output import RtspOutputBranch
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +26,8 @@ class DeepStreamPipelineElements:
     output_queue: Optional[Any]
     preview_elements: List[Any]
     output_elements: List[Any]
+    output_demux: Optional[Any] = None
+    rtsp_output_branches: List[RtspOutputBranch] = field(default_factory=list)
 
     def all_elements(self) -> List[Any]:
         elements = [self.streammux]
@@ -41,6 +45,10 @@ class DeepStreamPipelineElements:
         if self.tee is not None and self.output_queue is not None:
             elements.extend([self.tee, self.output_queue, *self.preview_elements])
         elements.extend(self.output_elements)
+        if self.output_demux is not None:
+            elements.append(self.output_demux)
+        for branch in self.rtsp_output_branches:
+            elements.extend(branch.elements)
         return elements
 
     def topology(self) -> tuple[bool, bool, bool]:
@@ -60,6 +68,7 @@ def link_deepstream_pipeline_path(
     link_preview_branch: Callable[..., Any],
     pphuman_gie_id: int,
     pphuman_infer_config: Any,
+    link_rtsp_branches: Optional[Callable[..., Any]] = None,
 ) -> Any:
     """Link the main inference/output path and return the element to probe."""
     previous = elements.streammux
@@ -126,9 +135,18 @@ def link_deepstream_pipeline_path(
             preview_elements=elements.preview_elements,
         )
 
-    for element in elements.output_elements:
-        link_or_raise(previous, element, None)
-        previous = element
+    if elements.output_demux is not None:
+        link_or_raise(previous, elements.output_demux, "output path -> nvstreamdemux link 실패")
+        if link_rtsp_branches is None:
+            raise RuntimeError("RTSP 출력 branch linker가 설정되지 않았습니다.")
+        link_rtsp_branches(
+            demux=elements.output_demux,
+            branches=elements.rtsp_output_branches,
+        )
+    else:
+        for element in elements.output_elements:
+            link_or_raise(previous, element, None)
+            previous = element
 
     return probe_element
 
@@ -456,6 +474,8 @@ def create_pipeline_elements_bundle(
     pphuman_enabled: bool,
     output_elements: List[Any],
     preview_elements: List[Any],
+    output_demux: Optional[Any] = None,
+    rtsp_output_branches: Optional[List[RtspOutputBranch]] = None,
 ) -> DeepStreamPipelineElements:
     """DeepStream main path element 묶음을 생성한다."""
     streammux = make_element("nvstreammux", "streammux")
@@ -484,6 +504,8 @@ def create_pipeline_elements_bundle(
         output_queue=output_queue,
         preview_elements=preview_elements,
         output_elements=output_elements,
+        output_demux=output_demux,
+        rtsp_output_branches=rtsp_output_branches or [],
     )
 
 

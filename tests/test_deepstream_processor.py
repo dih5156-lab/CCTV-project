@@ -1991,6 +1991,52 @@ def test_create_output_elements_uses_camera_specific_names_and_location(monkeypa
     assert elements[-1].properties["location"] == "rtsp://media:8554/camera_2"
 
 
+def test_create_rtsp_output_branches_resolves_active_camera_locations(monkeypatch):
+    proc = object.__new__(DeepStreamProcessor)
+    created = []
+    output_calls = []
+
+    def make_element(factory, name):
+        element = _FakeElement(name)
+        element.factory = factory
+        created.append(element)
+        return element
+
+    def create_output_elements(**kwargs):
+        output_calls.append(kwargs)
+        return [_FakeElement(f"output-{kwargs['element_name_suffix']}")]
+
+    monkeypatch.setattr(proc, "_make_element", make_element)
+    monkeypatch.setattr(proc, "_create_output_elements", create_output_elements)
+    monkeypatch.setenv(
+        "DS_RTSP_LOCATION_TEMPLATE",
+        "rtsp://media:8554/{camera_id}",
+    )
+    monkeypatch.delenv("DS_RTSP_LOCATION", raising=False)
+
+    demux, branches = proc._create_rtsp_output_branches(
+        [
+            (0, "camera_1", {}, "rtsp://input/1"),
+            (1, "camera_2", {}, "rtsp://input/2"),
+        ]
+    )
+
+    assert demux.factory == "nvstreamdemux"
+    assert [branch.camera_id for branch in branches] == ["camera_1", "camera_2"]
+    assert output_calls == [
+        {
+            "rtsp_location": "rtsp://media:8554/camera_1",
+            "element_name_suffix": "camera_1",
+            "include_output_queue": True,
+        },
+        {
+            "rtsp_location": "rtsp://media:8554/camera_2",
+            "element_name_suffix": "camera_2",
+            "include_output_queue": True,
+        },
+    ]
+
+
 def test_link_or_raise_raises_when_gstreamer_link_fails():
     first = _FakeElement("first", link_ok=False)
     second = _FakeElement("second")

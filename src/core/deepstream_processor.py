@@ -87,6 +87,12 @@ from ._deepstream_pipeline_builder import (
     stop_pipeline_runtime,
     validate_pipeline_prerequisites,
 )
+from ._deepstream_rtsp_output import (
+    RtspOutputBranch,
+    create_rtsp_output_branches,
+    link_rtsp_output_branches,
+    resolve_rtsp_locations,
+)
 from ._deepstream_source_health import (
     build_camera_status_map,
     build_deepstream_stats_fields,
@@ -1939,6 +1945,42 @@ class DeepStreamProcessor(BaseProcessor):
             include_output_queue=include_output_queue,
         )
 
+    def _create_rtsp_output_branches(
+        self,
+        source_entries: List[Tuple[int, str, Dict[str, Any], str]],
+    ) -> Tuple[Any, List[RtspOutputBranch]]:
+        """활성 카메라마다 고유 RTSP 출력 branch를 생성한다."""
+        camera_ids = [camera_id for _pad_id, camera_id, _info, _uri in source_entries]
+        locations = resolve_rtsp_locations(
+            camera_ids,
+            location_template=os.environ.get("DS_RTSP_LOCATION_TEMPLATE"),
+            legacy_location=os.environ.get("DS_RTSP_LOCATION"),
+        )
+        return create_rtsp_output_branches(
+            source_entries=source_entries,
+            locations=locations,
+            make_element=self._make_element,
+            create_output_elements=lambda camera_id, location: self._create_output_elements(
+                rtsp_location=location,
+                element_name_suffix=camera_id,
+                include_output_queue=True,
+            ),
+        )
+
+    def _link_rtsp_output_branches(
+        self,
+        *,
+        demux: Any,
+        branches: List[RtspOutputBranch],
+    ) -> None:
+        """demux pad와 카메라별 인코딩 branch를 연결한다."""
+        link_rtsp_output_branches(
+            demux=demux,
+            branches=branches,
+            gst_module=Gst,
+            link_or_raise=self._link_or_raise,
+        )
+
     def _create_h264_encoder_elements(
         self,
         element_name_suffix: str = "",
@@ -2062,7 +2104,16 @@ class DeepStreamProcessor(BaseProcessor):
         self._preview_camera_id = source_entries[0][1]
 
         n_cams = len(source_entries)
-        output_elements = self._create_output_elements()
+        rtsp_output_mode = self._output_mode in {"rtsp", "rtsp_publish", "rtsp-publish"}
+        output_demux = None
+        rtsp_output_branches: List[RtspOutputBranch] = []
+        if rtsp_output_mode:
+            output_demux, rtsp_output_branches = self._create_rtsp_output_branches(
+                source_entries
+            )
+            output_elements = []
+        else:
+            output_elements = self._create_output_elements()
         preview_elements = self._create_preview_elements() if self._preview_enabled else []
 
         elements = create_pipeline_elements_bundle(
@@ -2073,6 +2124,8 @@ class DeepStreamProcessor(BaseProcessor):
             pphuman_enabled=pphuman_enabled,
             output_elements=output_elements,
             preview_elements=preview_elements,
+            output_demux=output_demux,
+            rtsp_output_branches=rtsp_output_branches,
         )
 
         configure_pipeline_elements_bundle(
@@ -2093,6 +2146,7 @@ class DeepStreamProcessor(BaseProcessor):
             link_preview_branch=self._link_preview_branch,
             pphuman_gie_id=self._pphuman_gie_id,
             pphuman_infer_config=self._resolve_pphuman_infer_config(),
+            link_rtsp_branches=self._link_rtsp_output_branches,
         )
 
         attach_camera_sources_batch(
