@@ -56,12 +56,16 @@ class CommercialFaceRecognizer:
         y = max(int(person_bbox.get("y", 0)), 0)
         width = max(int(person_bbox.get("width", 0)), 0)
         height = max(int(person_bbox.get("height", 0)), 0)
-        roi_height = max(int(height * 0.6), 1)
         if width <= 0 or height <= 0:
+            return []
+        frame_height, frame_width = frame.shape[:2]
+        x2 = min(x + width, frame_width)
+        y2 = min(y + max(int(height * 0.6), 1), frame_height)
+        if x >= frame_width or y >= frame_height or x2 <= x or y2 <= y:
             return []
 
         embedded_faces = self.embedding_pipeline.extract_embeddings(
-            frame, (x, y, width, roi_height)
+            frame, (x, y, x2 - x, y2 - y)
         )
         results: list[CommercialFaceRecognitionResult] = []
         for embedded_face in embedded_faces:

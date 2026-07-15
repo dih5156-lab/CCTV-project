@@ -119,3 +119,16 @@ def test_enrollment_returns_single_embedding():
     )
 
     assert embedding.shape == (128,)
+
+
+def test_recognizer_ignores_person_bbox_outside_frame():
+    pipeline = FakeEmbeddingPipeline([])
+    recognizer = CommercialFaceRecognizer(pipeline, FakeGallery(None))
+
+    results = recognizer.detect_and_recognize(
+        np.zeros((100, 100, 3), dtype=np.uint8),
+        {"x": 150, "y": 150, "width": 20, "height": 20},
+    )
+
+    assert results == []
+    assert pipeline.calls == []
