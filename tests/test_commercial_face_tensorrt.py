@@ -5,7 +5,9 @@ import pytest
 
 from src.core.ai._commercial_face_tensorrt import (
     TensorRTSFaceEmbedder,
+    decode_yunet_outputs,
     normalize_sface_embedding,
+    preprocess_yunet_bgr,
     preprocess_sface_bgr,
 )
 
@@ -80,3 +82,103 @@ def test_embed_aligned_rejects_unexpected_outputs(outputs, message):
 
     with pytest.raises(ValueError, match=message):
         embedder.embed_aligned(np.zeros((112, 112, 3), dtype=np.uint8))
+
+
+def _empty_yunet_outputs():
+    outputs = {}
+    for stride, count in ((8, 6400), (16, 1600), (32, 400)):
+        outputs[f"cls_{stride}"] = np.zeros((1, count, 1), dtype=np.float32)
+        outputs[f"obj_{stride}"] = np.zeros((1, count, 1), dtype=np.float32)
+        outputs[f"bbox_{stride}"] = np.zeros((1, count, 4), dtype=np.float32)
+        outputs[f"kps_{stride}"] = np.zeros((1, count, 10), dtype=np.float32)
+    return outputs
+
+
+def test_preprocess_yunet_returns_fixed_bgr_float_blob():
+    image = np.zeros((320, 160, 3), dtype=np.uint8)
+    image[0, 0] = [10, 20, 30]
+
+    tensor = preprocess_yunet_bgr(image)
+
+    assert tensor.shape == (1, 3, 640, 640)
+    assert tensor.dtype == np.float32
+    assert tensor.flags.c_contiguous
+    assert tensor[0, :, 0, 0].tolist() == [10.0, 20.0, 30.0]
+
+
+def test_decode_yunet_restores_bbox_and_landmarks_to_frame_coordinates():
+    outputs = _empty_yunet_outputs()
+    # stride 8, grid row=2, col=3
+    index = 2 * 80 + 3
+    outputs["cls_8"][0, index, 0] = 0.81
+    outputs["obj_8"][0, index, 0] = 1.0
+    outputs["bbox_8"][0, index] = [0.5, 0.5, 0.0, 0.0]
+    outputs["kps_8"][0, index] = [0, 0, 1, 0, 0.5, 0.5, 0, 1, 1, 1]
+
+    faces = decode_yunet_outputs(
+        outputs,
+        roi=(100, 50, 320, 160),
+        score_threshold=0.6,
+        nms_threshold=0.3,
+    )
+
+    assert len(faces) == 1
+    face = faces[0]
+    assert face.score == pytest.approx(0.9)
+    assert face.bbox == pytest.approx((112.0, 54.0, 4.0, 2.0))
+    assert np.asarray(face.landmarks) == pytest.approx(
+        np.asarray(((112.0, 54.0), (116.0, 54.0), (114.0, 55.0), (112.0, 56.0), (116.0, 56.0)))
+    )
+
+
+def test_decode_yunet_filters_low_score_after_clamping():
+    outputs = _empty_yunet_outputs()
+    outputs["cls_32"][0, 0, 0] = 2.0
+    outputs["obj_32"][0, 0, 0] = 0.25
+
+    assert decode_yunet_outputs(outputs, roi=(0, 0, 640, 640), score_threshold=0.6) == []
+
+
+def test_decode_yunet_applies_nms():
+    outputs = _empty_yunet_outputs()
+    for index, score in ((0, 0.9), (1, 0.8)):
+        outputs["cls_32"][0, index, 0] = score * score
+        outputs["obj_32"][0, index, 0] = 1.0
+        outputs["bbox_32"][0, index] = [0.5 - index, 0.5, 1.0, 1.0]
+
+    faces = decode_yunet_outputs(
+        outputs, roi=(0, 0, 640, 640), score_threshold=0.6, nms_threshold=0.3
+    )
+
+    assert len(faces) == 1
+    assert faces[0].score == pytest.approx(0.9)
+
+
+def test_decode_yunet_clamps_bbox_and_landmarks_to_roi():
+    outputs = _empty_yunet_outputs()
+    outputs["cls_32"][0, 0, 0] = 1.0
+    outputs["obj_32"][0, 0, 0] = 1.0
+    outputs["bbox_32"][0, 0] = [0.0, 0.0, 1.0, 1.0]
+    outputs["kps_32"][0, 0] = [-1, -1, 30, 30, 0, 0, 0, 0, 0, 0]
+
+    face = decode_yunet_outputs(outputs, roi=(10, 20, 100, 50))[0]
+
+    x, y, width, height = face.bbox
+    assert x == 10
+    assert y == 20
+    assert width > 0
+    assert height > 0
+    assert face.landmarks[0] == (10, 20)
+    assert face.landmarks[1] == (110, 70)
+
+
+def test_decode_yunet_rejects_missing_or_bad_output_shape():
+    outputs = _empty_yunet_outputs()
+    del outputs["kps_16"]
+    with pytest.raises(ValueError, match="missing YuNet outputs"):
+        decode_yunet_outputs(outputs, roi=(0, 0, 640, 640))
+
+    outputs = _empty_yunet_outputs()
+    outputs["bbox_8"] = np.zeros((1, 1, 4), dtype=np.float32)
+    with pytest.raises(ValueError, match="bbox_8 shape"):
+        decode_yunet_outputs(outputs, roi=(0, 0, 640, 640))
