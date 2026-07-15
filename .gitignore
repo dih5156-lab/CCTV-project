@@ -104,6 +104,7 @@ test-results.xml
 
 # 로컬 개발/검증 도구
 tooling/node-*/
+.worktrees/
 
 # pytest 캐시
 .pytest_cache/
