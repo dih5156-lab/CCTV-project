@@ -139,14 +139,21 @@ def create_h264_encoder_elements(
     env_int: Callable[[str, int], int],
     set_optional_property: Callable[[Any, str, Any], None],
     gst_module: Any,
+    element_name_suffix: str = "",
 ) -> List[Any]:
-    converter = make_element("nvvideoconvert", "h264-nvvidconv")
-    capsfilter = make_element("capsfilter", "h264-caps")
+    def element_name(base: str) -> str:
+        return f"{base}-{element_name_suffix}" if element_name_suffix else base
+
+    converter = make_element("nvvideoconvert", element_name("h264-nvvidconv"))
+    capsfilter = make_element("capsfilter", element_name("h264-caps"))
     encoder_name = os.environ.get("DS_H264_ENCODER", "nvv4l2h264enc").strip().lower()
     use_x264 = encoder_name in {"x264", "x264enc", "software"}
-    encoder = make_element("x264enc" if use_x264 else "nvv4l2h264enc", "h264-encoder")
-    parser = make_element("h264parse", "h264-parser")
-    parsed_capsfilter = make_element("capsfilter", "h264-parsed-caps")
+    encoder = make_element(
+        "x264enc" if use_x264 else "nvv4l2h264enc",
+        element_name("h264-encoder"),
+    )
+    parser = make_element("h264parse", element_name("h264-parser"))
+    parsed_capsfilter = make_element("capsfilter", element_name("h264-parsed-caps"))
 
     width = env_int("DS_H264_WIDTH", 1280)
     height = env_int("DS_H264_HEIGHT", 720)
@@ -246,9 +253,15 @@ def create_output_elements(
     set_optional_property: Callable[[Any, str, Any], None],
     env_int: Callable[[str, int], int],
     gst_module: Any,
-    create_h264_encoder_elements_fn: Callable[[], List[Any]],
+    create_h264_encoder_elements_fn: Callable[[str], List[Any]],
     poc_fixer_factory: Callable[[], Any],
+    rtsp_location: Optional[str] = None,
+    element_name_suffix: str = "",
+    include_output_queue: bool = False,
 ) -> List[Any]:
+    def element_name(base: str) -> str:
+        return f"{base}-{element_name_suffix}" if element_name_suffix else base
+
     if output_mode in {"", "fake", "fakesink", "headless"}:
         sink = make_element("fakesink", "sink")
         sink.set_property("sync", False)
@@ -264,7 +277,7 @@ def create_output_elements(
         "rtsp_publish",
         "rtsp-publish",
     }:
-        h264_elements = create_h264_encoder_elements_fn()
+        h264_elements = create_h264_encoder_elements_fn(element_name_suffix)
         poc_fix_enabled = os.environ.get(
             "DS_H264_POC_FIX_ENABLED", "false"
         ).strip().lower() in {"1", "true", "yes", "on"}
@@ -272,7 +285,7 @@ def create_output_elements(
         poc_identity = None
         if poc_fix_enabled:
             poc_fixer = poc_fixer_factory()
-            poc_identity = make_element("identity", "poc-fix-identity")
+            poc_identity = make_element("identity", element_name("poc-fix-identity"))
             poc_identity.set_property("signal-handoffs", True)
             poc_identity.set_property("silent", True)
 
@@ -307,17 +320,26 @@ def create_output_elements(
             poc_identity.connect("handoff", _poc_handoff)
 
         if output_mode in {"rtsp", "rtsp_publish", "rtsp-publish"}:
-            sink = make_element("rtspclientsink", "h264-rtsp-sink")
+            sink = make_element("rtspclientsink", element_name("h264-rtsp-sink"))
             sink.set_property(
                 "location",
-                os.environ.get(
+                rtsp_location
+                or os.environ.get(
                     "DS_RTSP_LOCATION",
                     "rtsp://cctv-media-server:8554/camera_1",
                 ),
             )
             set_optional_property(sink, "protocols", "tcp")
             set_optional_property(sink, "latency", env_int("DS_RTSP_LATENCY_MS", 100))
-            return [*h264_elements, *([poc_identity] if poc_identity else []), sink]
+            elements = [*h264_elements, *([poc_identity] if poc_identity else []), sink]
+            if include_output_queue:
+                queue = make_element("queue", element_name("output-queue"))
+                queue.set_property("leaky", 2)
+                queue.set_property("max-size-buffers", 2)
+                queue.set_property("max-size-bytes", 0)
+                queue.set_property("max-size-time", 0)
+                elements.insert(0, queue)
+            return elements
 
         mux = make_element("mpegtsmux", "mpegts-mux")
         sink = make_element("udpsink", "mpegts-udp-sink")

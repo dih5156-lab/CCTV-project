@@ -1918,7 +1918,13 @@ class DeepStreamProcessor(BaseProcessor):
             event_type_for_label=self._event_type_for_label,
         )
 
-    def _create_output_elements(self) -> List[Any]:
+    def _create_output_elements(
+        self,
+        *,
+        rtsp_location: Optional[str] = None,
+        element_name_suffix: str = "",
+        include_output_queue: bool = False,
+    ) -> List[Any]:
         """출력 모드에 맞는 sink 브랜치 엘리먼트 집합을 생성한다."""
         return create_output_elements(
             output_mode=self._output_mode,
@@ -1928,15 +1934,22 @@ class DeepStreamProcessor(BaseProcessor):
             gst_module=Gst,
             create_h264_encoder_elements_fn=self._create_h264_encoder_elements,
             poc_fixer_factory=H264PocFixer,
+            rtsp_location=rtsp_location,
+            element_name_suffix=element_name_suffix,
+            include_output_queue=include_output_queue,
         )
 
-    def _create_h264_encoder_elements(self) -> List[Any]:
+    def _create_h264_encoder_elements(
+        self,
+        element_name_suffix: str = "",
+    ) -> List[Any]:
         """H.264 인코딩 브랜치 엘리먼트를 생성한다."""
         return create_h264_encoder_elements(
             make_element=self._make_element,
             env_int=self._env_int,
             set_optional_property=self._set_optional_property,
             gst_module=Gst,
+            element_name_suffix=element_name_suffix,
         )
 
     def _create_preview_elements(self) -> List[Any]:

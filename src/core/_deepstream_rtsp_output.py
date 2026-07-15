@@ -4,9 +4,20 @@ from __future__ import annotations
 
 import re
 from collections.abc import Sequence
+from dataclasses import dataclass
+from typing import Any, Callable
 
 DEFAULT_RTSP_LOCATION_TEMPLATE = "rtsp://cctv-media-server:8554/{camera_id}"
 _CAMERA_ID_PATTERN = re.compile(r"^[A-Za-z0-9_-]+$")
+
+
+@dataclass(frozen=True)
+class RtspOutputBranch:
+    """카메라 하나의 nvstreamdemux 출력 branch."""
+
+    camera_id: str
+    pad_id: int
+    elements: list[Any]
 
 
 def validate_camera_id(camera_id: str) -> None:
@@ -50,3 +61,58 @@ def resolve_rtsp_locations(
         camera_id: DEFAULT_RTSP_LOCATION_TEMPLATE.replace("{camera_id}", camera_id)
         for camera_id in ids
     }
+
+
+def create_rtsp_output_branches(
+    *,
+    source_entries: list[tuple[int, str, dict[str, Any], str]],
+    locations: dict[str, str],
+    make_element: Callable[[str, str], Any],
+    create_output_elements: Callable[[str, str], list[Any]],
+) -> tuple[Any, list[RtspOutputBranch]]:
+    """활성 source 순서대로 demux와 카메라별 출력 branch를 만든다."""
+    demux = make_element("nvstreamdemux", "output-demux")
+    branches = [
+        RtspOutputBranch(
+            camera_id=camera_id,
+            pad_id=pad_id,
+            elements=create_output_elements(camera_id, locations[camera_id]),
+        )
+        for pad_id, camera_id, _info, _source_uri in source_entries
+    ]
+    return demux, branches
+
+
+def link_rtsp_output_branches(
+    *,
+    demux: Any,
+    branches: list[RtspOutputBranch],
+    gst_module: Any,
+    link_or_raise: Callable[[Any, Any, str | None], None],
+) -> None:
+    """nvstreamdemux의 source pad를 카메라별 출력 branch에 연결한다."""
+    for branch in branches:
+        if not branch.elements:
+            raise RuntimeError(
+                f"RTSP 출력 branch가 비어 있습니다: "
+                f"{branch.camera_id} pad_id={branch.pad_id}"
+            )
+
+        demux_pad = demux.get_request_pad(f"src_{branch.pad_id}")
+        first = branch.elements[0]
+        sink_pad = first.get_static_pad("sink")
+        if demux_pad is None or sink_pad is None:
+            raise RuntimeError(
+                f"nvstreamdemux pad 요청 실패: "
+                f"{branch.camera_id} pad_id={branch.pad_id}"
+            )
+        if demux_pad.link(sink_pad) != gst_module.PadLinkReturn.OK:
+            raise RuntimeError(
+                f"nvstreamdemux branch 연결 실패: "
+                f"{branch.camera_id} pad_id={branch.pad_id}"
+            )
+
+        previous = first
+        for element in branch.elements[1:]:
+            link_or_raise(previous, element, None)
+            previous = element
