@@ -490,6 +490,55 @@ def check_h264_webrtc_wiring(
     }
 
 
+def check_per_camera_rtsp_wiring(
+    *,
+    jetson_compose_text: str | None = None,
+    mediamtx_text: str | None = None,
+    jetson_env_example_text: str | None = None,
+) -> dict[str, Any]:
+    """Ensure each active camera can publish to its own MediaMTX path."""
+    jetson_compose = (
+        jetson_compose_text
+        if jetson_compose_text is not None
+        else _read_text(PROJECT_ROOT / "docker-compose.jetson.yml")
+    )
+    mediamtx = (
+        mediamtx_text
+        if mediamtx_text is not None
+        else _read_text(PROJECT_ROOT / "config" / "mediamtx.yml")
+    )
+    jetson_env_example = (
+        jetson_env_example_text
+        if jetson_env_example_text is not None
+        else _read_text(PROJECT_ROOT / ".env.jetson.example")
+    )
+    required_entries = (
+        (
+            "docker-compose.jetson.yml",
+            jetson_compose,
+            "DS_RTSP_LOCATION_TEMPLATE: "
+            "${DS_RTSP_LOCATION_TEMPLATE:-rtsp://cctv-media-server:8554/{camera_id}}",
+        ),
+        ("config/mediamtx.yml", mediamtx, "all_others:"),
+        ("config/mediamtx.yml", mediamtx, "source: publisher"),
+        (
+            ".env.jetson.example",
+            jetson_env_example,
+            "DS_RTSP_LOCATION_TEMPLATE=rtsp://cctv-media-server:8554/{camera_id}",
+        ),
+    )
+    missing = [
+        f"{label} missing {entry}"
+        for label, text, entry in required_entries
+        if entry not in text
+    ]
+    return {
+        "name": "per-camera RTSP wiring",
+        "passed": not missing,
+        "detail": "missing: " + ", ".join(missing) if missing else "dynamic camera paths are wired",
+    }
+
+
 def check_public_api_exposure_defaults(
     *,
     compose_text: str | None = None,
@@ -671,6 +720,7 @@ def run_checks() -> list[dict[str, Any]]:
         check_appearance_model_wiring(),
         check_falldata_aux_wiring(),
         check_h264_webrtc_wiring(),
+        check_per_camera_rtsp_wiring(),
         check_public_api_exposure_defaults(),
         check_public_api_shared_secret_alignment(),
         check_mqtt_auth_config(),

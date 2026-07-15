@@ -674,7 +674,7 @@ services:
       USE_DEEPSTREAM: ${USE_DEEPSTREAM:-1}
       # DeepStream 출력 모드: rtsp-publish(MediaMTX 표준 라이브), h264-mpegts, fakesink, display
       DS_OUTPUT_MODE: ${DS_OUTPUT_MODE:-rtsp-publish}
-      DS_RTSP_LOCATION: ${DS_RTSP_LOCATION:-rtsp://cctv-media-server:8554/camera_1}
+      DS_RTSP_LOCATION_TEMPLATE: ${DS_RTSP_LOCATION_TEMPLATE:-rtsp://cctv-media-server:8554/{camera_id}}
       DS_RTSP_LATENCY_MS: ${DS_RTSP_LATENCY_MS:-100}
       DS_H264_ENCODER: ${DS_H264_ENCODER:-nvv4l2h264enc}
       DS_H264_UDP_HOST: ${DS_H264_UDP_HOST:-cctv-media-server}

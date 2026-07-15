@@ -2,6 +2,8 @@ import importlib.util
 import sys
 from pathlib import Path
 
+import pytest
+
 
 def _load_script_module(name: str, relative_path: str):
     path = Path(__file__).resolve().parents[1] / relative_path
@@ -397,6 +399,62 @@ def test_h264_webrtc_wiring_rejects_disabled_poc_fix_default() -> None:
 
     assert result["passed"] is False
     assert "DS_H264_POC_FIX_ENABLED" in result["detail"]
+
+
+def test_per_camera_rtsp_wiring_requires_template_and_dynamic_mediamtx_path() -> None:
+    result = runtime_checks.check_per_camera_rtsp_wiring(
+        jetson_compose_text=(
+            "DS_RTSP_LOCATION_TEMPLATE: "
+            "${DS_RTSP_LOCATION_TEMPLATE:-rtsp://cctv-media-server:8554/{camera_id}}\n"
+        ),
+        mediamtx_text="paths:\n  all_others:\n    source: publisher\n",
+        jetson_env_example_text=(
+            "DS_RTSP_LOCATION_TEMPLATE=rtsp://cctv-media-server:8554/{camera_id}\n"
+        ),
+    )
+
+    assert result["passed"] is True
+
+
+@pytest.mark.parametrize(
+    ("compose", "mediamtx", "env_example", "missing"),
+    [
+        (
+            "services: {}\n",
+            "paths:\n  all_others:\n    source: publisher\n",
+            "DS_RTSP_LOCATION_TEMPLATE=rtsp://cctv-media-server:8554/{camera_id}\n",
+            "docker-compose.jetson.yml",
+        ),
+        (
+            "DS_RTSP_LOCATION_TEMPLATE: "
+            "${DS_RTSP_LOCATION_TEMPLATE:-rtsp://cctv-media-server:8554/{camera_id}}\n",
+            "paths:\n  camera_1:\n    source: publisher\n",
+            "DS_RTSP_LOCATION_TEMPLATE=rtsp://cctv-media-server:8554/{camera_id}\n",
+            "config/mediamtx.yml",
+        ),
+        (
+            "DS_RTSP_LOCATION_TEMPLATE: "
+            "${DS_RTSP_LOCATION_TEMPLATE:-rtsp://cctv-media-server:8554/{camera_id}}\n",
+            "paths:\n  all_others:\n    source: publisher\n",
+            "DS_OUTPUT_MODE=rtsp-publish\n",
+            ".env.jetson.example",
+        ),
+    ],
+)
+def test_per_camera_rtsp_wiring_reports_missing_configuration(
+    compose: str,
+    mediamtx: str,
+    env_example: str,
+    missing: str,
+) -> None:
+    result = runtime_checks.check_per_camera_rtsp_wiring(
+        jetson_compose_text=compose,
+        mediamtx_text=mediamtx,
+        jetson_env_example_text=env_example,
+    )
+
+    assert result["passed"] is False
+    assert missing in result["detail"]
 
 
 def test_public_api_exposure_defaults_require_localhost_bind() -> None:
