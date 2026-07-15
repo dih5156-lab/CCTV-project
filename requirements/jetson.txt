@@ -7,7 +7,7 @@
 insightface>=0.7.3
 # JetPack 6 / CUDA 12.6 / Python 3.10 / aarch64 GPU build.
 # 일반 PyPI onnxruntime wheel은 Jetson에서 CUDA provider가 없거나 import 중 abort될 수 있다.
-onnxruntime-gpu @ https://pypi.jetson-ai-lab.io/jp6/cu126/+f/d98/0b934b9a29c1a/onnxruntime_gpu-1.24.0-cp310-cp310-linux_aarch64.whl#sha256=d980b934b9a29c1a9d6f39751edd7662b69fadd75556a10ff363773a58ce0950
+onnxruntime-gpu @ https://pypi.jetson-ai-lab.io/jp6/cu126/+f/d98/0b934b9a29c1a/onnxruntime_gpu-1.24.0-cp310-cp310-linux_aarch64.whl#sha256=d980b934b9a29c1a9d6f39751edd7662b69fadd75556a10ff363773a58ce0950 ; platform_machine == "aarch64" and python_version == "3.10"
 
 # PP-Human/PaddleX pedestrian attribute runtime.
 # Conversion tools such as paddle2onnx/onnxoptimizer are intentionally excluded.
