@@ -38,6 +38,12 @@ class FakeRecognizer:
                 matched=True,
                 label="tester",
                 confidence=0.91,
+                decision="matched",
+                person_id="employee-1",
+                category="employee",
+                model_id="opencv-sface-tensorrt-v1",
+                second_best_similarity=0.42,
+                margin=0.49,
                 age=31.2,
                 gender="male",
                 bbox={"x": roi["x"] + 1, "y": roi["y"] + 2, "width": 12, "height": 13},
@@ -60,6 +66,12 @@ def test_face_recognition_pipeline_builds_event_metadata():
     assert event.metadata["recognizer"] == "fake"
     assert event.metadata["age_group"] == "30대"
     assert event.metadata["gender"] == "male"
+    assert event.metadata["face_decision"] == "matched"
+    assert event.metadata["face_person_id"] == "employee-1"
+    assert event.metadata["face_category"] == "employee"
+    assert event.metadata["face_model_id"] == "opencv-sface-tensorrt-v1"
+    assert event.metadata["face_second_best_score"] == 0.42
+    assert event.metadata["face_margin"] == 0.49
 
 
 def test_face_recognition_pipeline_reuses_recent_cache():
