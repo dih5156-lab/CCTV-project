@@ -103,6 +103,22 @@ def _build_face_event(
         face_meta["age_group"] = age_to_group(best.age)
     if best.gender is not None:
         face_meta["gender"] = best.gender
+    optional_metadata = (
+        ("decision", "face_decision"),
+        ("person_id", "face_person_id"),
+        ("category", "face_category"),
+        ("model_id", "face_model_id"),
+        ("second_best_similarity", "face_second_best_score"),
+        ("margin", "face_margin"),
+    )
+    for attribute_name, metadata_name in optional_metadata:
+        value = getattr(best, attribute_name, None)
+        if value is not None:
+            face_meta[metadata_name] = (
+                round(float(value), 4)
+                if attribute_name in {"second_best_similarity", "margin"}
+                else value
+            )
 
     snapshot_path = (
         snapshot_saver(frame, camera_name, best.label, best.bbox, best.confidence, now)

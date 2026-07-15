@@ -185,6 +185,7 @@ class FaceApiHandler(BaseApiHandler):
         employee_id = body.get("employee_id") or None
         hired_at = body.get("hired_at") or None
         note = body.get("note") or None
+        category = body.get("category") or None
 
         try:
             face = self._processor().register_face(
@@ -197,6 +198,7 @@ class FaceApiHandler(BaseApiHandler):
                 employee_id=employee_id,
                 hired_at=hired_at,
                 note=note,
+                category=category,
             )
         except ValueError as exc:
             self._respond(400, {"error": str(exc)})

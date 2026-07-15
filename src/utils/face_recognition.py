@@ -101,6 +101,7 @@ class FaceRecognitionEngine:
         employee_id: Optional[str] = None,
         hired_at: Optional[str] = None,
         note: Optional[str] = None,
+        category: Optional[str] = None,
     ) -> Dict[str, str]:
         clean_name = str(name).strip()
         clean_phone = str(phone).strip()

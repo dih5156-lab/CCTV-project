@@ -453,9 +453,16 @@ class DeepStreamProcessor(BaseProcessor):
         self._face_snapshot_dir = Path(os.environ.get("FACE_SNAPSHOT_DIR", "data/face_snapshots"))
         self._face_snapshot_cooldown_sec = float(os.environ.get("FACE_SNAPSHOT_COOLDOWN_SEC", "30.0"))
         self._last_face_snapshot_at: Dict[Tuple[str, str], float] = {}
-        self.face_recognizer = FaceRecognitionEngine(
-            device=os.environ.get("FACE_DEVICE", config.detection.device)
-        )
+        face_device = os.environ.get("FACE_DEVICE", config.detection.device)
+        if os.environ.get("FACE_RECOGNITION_BACKEND", "auto").strip().lower() in {
+            "commercial_tensorrt",
+            "yunet_sface_tensorrt",
+        }:
+            from .ai._commercial_face_service import create_face_recognition_engine
+
+            self.face_recognizer = create_face_recognition_engine(device=face_device)
+        else:
+            self.face_recognizer = FaceRecognitionEngine(device=face_device)
         self._face_identity_cache: Dict[Tuple[str, int], Dict[str, Any]] = {}
         appearance_models_enabled = bool(config.appearance.enabled) or bool(
             getattr(self, "_appearance_enabled_default", False)

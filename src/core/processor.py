@@ -516,6 +516,13 @@ class VideoProcessor(BaseProcessor):
         analyzer = next(iter(self._analyzers.values()), None)
         if analyzer is not None:
             return analyzer.face_recognizer
+        if os.environ.get("FACE_RECOGNITION_BACKEND", "auto").strip().lower() in {
+            "commercial_tensorrt",
+            "yunet_sface_tensorrt",
+        }:
+            from .ai._commercial_face_service import create_face_recognition_engine
+
+            return create_face_recognition_engine()
         from ..utils.face_recognition import FaceRecognitionEngine
         return FaceRecognitionEngine()
 
@@ -534,6 +541,7 @@ class VideoProcessor(BaseProcessor):
         employee_id: Optional[str] = None,
         hired_at: Optional[str] = None,
         note: Optional[str] = None,
+        category: Optional[str] = None,
     ) -> Dict[str, str]:
         """새 얼굴을 등록하고 모든 분석기의 얼굴 갤러리를 갱신한다."""
         kwargs = dict(
@@ -546,6 +554,7 @@ class VideoProcessor(BaseProcessor):
             employee_id=employee_id,
             hired_at=hired_at,
             note=note,
+            category=category,
         )
         entry = self._get_face_recognizer().register_face(**kwargs)
         self.reload_face_gallery()

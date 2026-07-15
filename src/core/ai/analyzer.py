@@ -178,9 +178,9 @@ class AIAnalyzer:
     def face_recognizer(self):
         """얼굴 인식 엔진은 실제 사용 시점에 초기화한다."""
         if self._face_recognizer is None:
-            from ...utils.face_recognition import FaceRecognitionEngine
+            from ._commercial_face_service import create_face_recognition_engine
 
-            self._face_recognizer = FaceRecognitionEngine(device=self.device)
+            self._face_recognizer = create_face_recognition_engine(device=self.device)
         return self._face_recognizer
 
     # ── 모델 관리 ─────────────────────────────────────────────────────
