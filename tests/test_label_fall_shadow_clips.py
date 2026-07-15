@@ -72,6 +72,30 @@ def test_apply_label_updates_only_matching_event(tmp_path) -> None:
     assert saved[1]["review_status"] == "reviewed"
 
 
+def test_apply_label_moves_clip_into_label_directory(tmp_path) -> None:
+    pending_dir = tmp_path / "clips" / "pending"
+    pending_dir.mkdir(parents=True)
+    clip = pending_dir / "event.mp4"
+    clip.write_bytes(b"video")
+    review_log = tmp_path / "annotations" / "review.jsonl"
+    labeler.write_review_log_atomic(review_log, [_row("event", str(clip))])
+
+    labeler.apply_label(
+        review_log,
+        event_id="event",
+        label="fall",
+        review_status="reviewed",
+        clip_dir=pending_dir,
+        labeled_dir=tmp_path / "clips" / "labeled",
+    )
+
+    saved = labeler.read_review_log(review_log)[0]
+    labeled_clip = tmp_path / "clips" / "labeled" / "fall" / "event.mp4"
+    assert labeled_clip.read_bytes() == b"video"
+    assert not clip.exists()
+    assert saved["clip_path"] == str(labeled_clip)
+
+
 def test_read_review_log_reports_invalid_line(tmp_path) -> None:
     review_log = tmp_path / "review.jsonl"
     review_log.write_text(json.dumps({"event_id": "ok"}) + "\ninvalid\n")

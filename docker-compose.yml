@@ -34,6 +34,10 @@ x-appearance-search-runtime: &appearance-search-runtime
   APPEARANCE_RUNTIME: ${APPEARANCE_RUNTIME:-onnxruntime}
   APPEARANCE_INPUT_SIZE: ${APPEARANCE_INPUT_SIZE:-224}
   APPEARANCE_SCORE_THRESHOLD: ${APPEARANCE_SCORE_THRESHOLD:-0.5}
+  APPEARANCE_COLOR_MODEL_PATH: ${APPEARANCE_COLOR_MODEL_PATH:-models/appearance_color_yolov8n.onnx}
+  APPEARANCE_COLOR_LABEL_MAP_PATH: ${APPEARANCE_COLOR_LABEL_MAP_PATH:-config/appearance_color_labels.json}
+  APPEARANCE_COLOR_INPUT_SIZE: ${APPEARANCE_COLOR_INPUT_SIZE:-160}
+  APPEARANCE_COLOR_SCORE_THRESHOLD: ${APPEARANCE_COLOR_SCORE_THRESHOLD:-0.75}
   DS_FACE_ENABLED: ${DS_FACE_ENABLED:-0}
   DS_APPEARANCE_ENABLED: ${DS_APPEARANCE_ENABLED:-1}
   DS_HELMET_ENABLED: ${DS_HELMET_ENABLED:-1}
@@ -476,7 +480,7 @@ services:
       PYTHONIOENCODING: utf-8
       PYTHONUTF8: "1"
       PYTHONPATH: /app
-      EDGEX_OUTBOX_DB: /data/runtime/event_outbox.db
+      EDGEX_OUTBOX_DB: /data/cctv-edgex-adapter/event_outbox.db
       EDGEX_OUTBOX_RETRY_INTERVAL: "30"
     depends_on:
       edgex-mqtt-broker:
@@ -647,6 +651,7 @@ services:
       SIGNBOARD_BACK_COLOR: "0"
       SIGNBOARD_TEXT_SIZE: "2"
       SIGNBOARD_TEXT_SPEED: "10"
+      SIGNBOARD_IDLE_REFRESH_INTERVAL: ${SIGNBOARD_IDLE_REFRESH_INTERVAL:-10}
       # Siren (InterM HTTP REST + Digest auth) - leave host empty to disable
       SIREN_HOST: ${SIREN_HOST:-}
       SIREN_PORT: ${SIREN_PORT:-80}
@@ -783,7 +788,7 @@ services:
     - "9000"
     healthcheck:
       test: ["CMD", "python", "-c",
-             "import urllib.request; urllib.request.urlopen('http://localhost:9000/api/v1/health', timeout=3)"]
+             "import urllib.request; urllib.request.urlopen('http://localhost:9000/api/v1/readiness', timeout=3)"]
       interval: 20s
       timeout: 5s
       retries: 3
@@ -810,6 +815,8 @@ services:
       PUBLIC_API_KEY: ${PUBLIC_API_KEY:-}
       PUBLIC_API_ALLOW_QUERY_KEY: ${PUBLIC_API_ALLOW_QUERY_KEY:-0}
       REQUIRE_PUBLIC_API_KEY: ${REQUIRE_PUBLIC_API_KEY:-0}
+      PUBLIC_API_EXIT_ON_FD_CRITICAL: ${PUBLIC_API_EXIT_ON_FD_CRITICAL:-1}
+      PUBLIC_API_FD_WATCH_INTERVAL_SEC: ${PUBLIC_API_FD_WATCH_INTERVAL_SEC:-30}
       # CORS — 서버팀 도메인으로 제한 (예: https://server.example.com)
       CORS_ORIGINS: ${CORS_ORIGINS:-}
       REQUIRE_CORS_ORIGINS: ${REQUIRE_CORS_ORIGINS:-0}
@@ -822,7 +829,7 @@ services:
       PYTHONPATH: /app
     ports:
     - mode: ingress
-      host_ip: 0.0.0.0
+      host_ip: ${PUBLIC_API_BIND_HOST:-127.0.0.1}
       target: 9000
       published: "9000"
       protocol: tcp
@@ -910,7 +917,7 @@ services:
       edgex-network: null
     ports:
     - mode: ingress
-      host_ip: 0.0.0.0
+      host_ip: ${PUBLIC_DEMO_BIND_HOST:-127.0.0.1}
       target: 7000
       published: "7000"
       protocol: tcp

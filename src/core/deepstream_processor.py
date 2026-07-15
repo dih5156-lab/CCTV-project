@@ -30,6 +30,7 @@
 
 from __future__ import annotations
 
+import errno
 import importlib
 import json
 import logging
@@ -37,7 +38,7 @@ import os
 import threading
 import time
 from pathlib import Path
-from queue import Queue
+from queue import Empty, Queue
 from threading import Event
 from typing import Any, Callable, Dict, List, Mapping, Optional, Tuple, Union
 
@@ -143,6 +144,7 @@ from .ai._appearance_analyzer import BAG_CLASSES, AppearanceAnalyzer
 from .ai._appearance_pipeline import AppearancePipeline
 from .ai._attribute_backends import decode_pphuman_scores
 from .ai._fall_detector import FallDetector
+from .ai._falldata_aux import FallDataAuxVerifier
 from .base_processor import BaseProcessor
 from .event_debouncer import EventDebouncer
 from .event_filters import CumulativeViolationFilter, TrackManager
@@ -269,6 +271,10 @@ class DeepStreamProcessor(BaseProcessor):
         self._cameras_json_lock = threading.Lock()
         self._face_work_queue: Queue = Queue(maxsize=8)
         self._face_worker_thread: Optional[threading.Thread] = None
+        self._falldata_aux_queue: Queue = Queue(
+            maxsize=int(os.environ.get("FALLDATA_AUX_QUEUE_MAXSIZE", "4"))
+        )
+        self._falldata_aux_thread: Optional[threading.Thread] = None
         self._built_topology: Tuple[bool, bool, bool] = (False, False, False)
         self._pipeline_restart_pending: bool = False
         self._pipeline_restart_min_interval_sec = float(
@@ -301,6 +307,9 @@ class DeepStreamProcessor(BaseProcessor):
         self._events_dropped = 0
         self._events_filtered = 0
         self._events_failed = 0
+        self._yolo_postprocess_calls = 0
+        self._yolo_postprocess_total_seconds = 0.0
+        self._yolo_postprocess_max_seconds = 0.0
 
     def _increment_stat(self, field_name: str, delta: int = 1) -> int:
         """지정한 통계 카운터 값을 증가시키고 최신 값을 반환한다."""
@@ -309,6 +318,27 @@ class DeepStreamProcessor(BaseProcessor):
         new_val = current + delta
         setattr(self, attr_name, new_val)
         return new_val
+
+    def _record_yolo_postprocess_timing(self, elapsed_seconds: float) -> None:
+        """YOLO 후처리 지연을 누적해 운영 통계에 노출한다."""
+        self._yolo_postprocess_calls += 1
+        self._yolo_postprocess_total_seconds += elapsed_seconds
+        self._yolo_postprocess_max_seconds = max(
+            self._yolo_postprocess_max_seconds,
+            elapsed_seconds,
+        )
+
+    def _yolo_postprocess_stats(self) -> Dict[str, Any]:
+        calls = int(getattr(self, "_yolo_postprocess_calls", 0))
+        total_seconds = float(getattr(self, "_yolo_postprocess_total_seconds", 0.0))
+        max_seconds = float(getattr(self, "_yolo_postprocess_max_seconds", 0.0))
+        average_ms = total_seconds * 1000.0 / calls if calls else 0.0
+        return {
+            "yolo_postprocess_mode": getattr(self, "_yolo_postprocess_mode", "unknown"),
+            "yolo_postprocess_calls": calls,
+            "yolo_postprocess_avg_ms": round(average_ms, 3),
+            "yolo_postprocess_max_ms": round(max_seconds * 1000.0, 3),
+        }
 
     def _init_yolo_settings(self) -> None:
         """DeepStream nvinfer tensor 후처리 설정을 초기화한다."""
@@ -319,6 +349,14 @@ class DeepStreamProcessor(BaseProcessor):
         self._yolo_conf_threshold = float(os.environ.get("DS_YOLO_CONFIDENCE", "0.35"))
         self._yolo_iou_threshold = float(os.environ.get("DS_YOLO_IOU_THRESHOLD", "0.45"))
         self._yolo_max_detections = int(os.environ.get("DS_YOLO_MAX_DETECTIONS", "100"))
+        self._yolo_postprocess_mode = os.environ.get(
+            "DS_YOLO_POSTPROCESS_MODE", "vectorized"
+        ).strip().lower()
+        if self._yolo_postprocess_mode not in {"vectorized", "legacy"}:
+            raise ValueError(
+                "DS_YOLO_POSTPROCESS_MODE는 'vectorized' 또는 'legacy'여야 합니다: "
+                f"{self._yolo_postprocess_mode}"
+            )
         self._yolo_class_ids = self._parse_class_ids("DS_YOLO_CLASS_IDS", {0})
         self._yolo_labels = self._load_yolo_labels(_LABELS_FILE, "DS_YOLO_LABELS")
         self._task_by_gie = {
@@ -339,7 +377,7 @@ class DeepStreamProcessor(BaseProcessor):
         }
         self._confidence_by_gie = {
             self._pose_gie_id: float(os.environ.get("DS_POSE_CONFIDENCE", str(self._yolo_conf_threshold))),
-            self._helmet_gie_id: float(os.environ.get("DS_HELMET_CONFIDENCE", "0.35")),
+            self._helmet_gie_id: float(os.environ.get("DS_HELMET_CONFIDENCE", "0.65")),
         }
 
     def _init_event_filters(self, config: AppConfig) -> None:
@@ -361,6 +399,15 @@ class DeepStreamProcessor(BaseProcessor):
             bbox_aspect_ratio=float(os.environ.get("DS_FALL_BBOX_ASPECT_RATIO", "1.35")),
             span_bbox_aspect_ratio=float(os.environ.get("DS_FALL_SPAN_BBOX_ASPECT_RATIO", "1.20")),
             span_ratio=float(os.environ.get("DS_FALL_KEYPOINT_SPAN_RATIO", "0.55")),
+            score_threshold=float(os.environ.get("DS_FALL_SCORE_THRESHOLD", "3.0")),
+            enable_folded_pose=self._env_bool("DS_FALL_ENABLE_FOLDED_POSE", False),
+            suppress_sitting_like_pose=self._env_bool(
+                "DS_FALL_SUPPRESS_SITTING_LIKE_POSE",
+                False,
+            ),
+            sitting_like_aspect_ratio=float(
+                os.environ.get("DS_FALL_SITTING_LIKE_ASPECT_RATIO", "1.45")
+            ),
             min_keypoint_confidence=float(os.environ.get("DS_FALL_MIN_KEYPOINT_CONFIDENCE", "0.25")),
             min_hip_confidence=float(os.environ.get("DS_FALL_MIN_HIP_CONFIDENCE", "0.25")),
             min_leg_confidence=float(os.environ.get("DS_FALL_MIN_LEG_CONFIDENCE", "0.35")),
@@ -410,15 +457,34 @@ class DeepStreamProcessor(BaseProcessor):
             device=os.environ.get("FACE_DEVICE", config.detection.device)
         )
         self._face_identity_cache: Dict[Tuple[str, int], Dict[str, Any]] = {}
+        appearance_models_enabled = bool(config.appearance.enabled) or bool(
+            getattr(self, "_appearance_enabled_default", False)
+        )
         self._appearance = AppearanceAnalyzer(
             backend_name=config.appearance.backend,
-            backend_model_path=config.appearance.model_path,
-            backend_label_map_path=config.appearance.label_map_path,
+            backend_model_path=(
+                config.appearance.model_path if appearance_models_enabled else None
+            ),
+            backend_label_map_path=(
+                config.appearance.label_map_path if appearance_models_enabled else None
+            ),
             backend_runtime=config.appearance.runtime,
             backend_device=os.environ.get("APPEARANCE_DEVICE", "cpu"),
             backend_input_size=config.appearance.input_size,
             backend_score_threshold=config.appearance.score_threshold,
             bbox_expand_ratio=config.appearance.bbox_expand_ratio,
+            color_model_path=(
+                os.environ.get("APPEARANCE_COLOR_MODEL_PATH")
+                if appearance_models_enabled
+                else None
+            ),
+            color_label_map_path=(
+                os.environ.get("APPEARANCE_COLOR_LABEL_MAP_PATH")
+                if appearance_models_enabled
+                else None
+            ),
+            color_input_size=int(os.environ.get("APPEARANCE_COLOR_INPUT_SIZE", "160")),
+            color_score_threshold=float(os.environ.get("APPEARANCE_COLOR_SCORE_THRESHOLD", "0.75")),
         )
         self._appearance_pipeline = AppearancePipeline(
             self._appearance,
@@ -432,6 +498,40 @@ class DeepStreamProcessor(BaseProcessor):
             os.environ.get("DS_APPEARANCE_CONDITION_REFRESH_SEC", "10.0")
         )
         self._appearance_capability_logged: set[str] = set()
+        self._fall_shadow_review_log_path = Path(
+            os.environ.get(
+                "FALL_SHADOW_REVIEW_LOG_PATH",
+                "/app/data/logs/fall_shadow_review.jsonl",
+            )
+        )
+        self._fall_shadow_clip_dir = Path(
+            os.environ.get("FALL_SHADOW_CLIP_DIR", "/app/data/fall_review_clips")
+        )
+        self._fall_shadow_save_clips = self._env_bool("FALL_SHADOW_SAVE_CLIPS", False)
+        self._fall_shadow_near_miss_enabled = self._env_bool(
+            "FALL_SHADOW_NEAR_MISS_LOG",
+            False,
+        )
+        self._fall_shadow_near_miss_cooldown_sec = float(
+            os.environ.get("FALL_SHADOW_NEAR_MISS_COOLDOWN_SECONDS", "10.0")
+        )
+        self._fall_shadow_near_miss_last_at: Dict[Tuple[str, int], float] = {}
+        self._falldata_aux = FallDataAuxVerifier()
+        self._fall_aux_confirm_borderline = self._env_bool(
+            "FALLDATA_AUX_CONFIRM_BORDERLINE",
+            False,
+        )
+        raw_confirm_max_score = os.environ.get("FALLDATA_AUX_CONFIRM_MAX_FALL_SCORE", "").strip()
+        self._fall_aux_confirm_max_fall_score = (
+            float(raw_confirm_max_score) if raw_confirm_max_score else None
+        )
+        self._fall_aux_compare_veto_enabled = self._env_bool(
+            "FALLDATA_AUX_COMPARE_VETO_ENABLED",
+            False,
+        )
+        self._fall_aux_compare_veto_min_fall_score = float(
+            os.environ.get("FALLDATA_AUX_COMPARE_VETO_MIN_FALL_SCORE", "0") or "0"
+        )
         self._pphuman_label_map = self._load_pphuman_label_map(config.appearance.label_map_path)
         self._context_worker = DeepStreamContextWorker(
             queue=self._face_work_queue,
@@ -609,7 +709,22 @@ class DeepStreamProcessor(BaseProcessor):
             tmp_path = cameras_json_path + ".tmp"
             with open(tmp_path, "w", encoding="utf-8") as fp:
                 json.dump(cameras, fp, ensure_ascii=False, indent=2)
-            os.replace(tmp_path, cameras_json_path)
+            try:
+                os.replace(tmp_path, cameras_json_path)
+            except OSError as exc:
+                if exc.errno != errno.EBUSY:
+                    raise
+                logger.warning(
+                    "cameras.json 원자적 교체 실패(EBUSY) - bind mount 파일로 판단하여 직접 저장으로 재시도: %s",
+                    cameras_json_path,
+                )
+                with open(cameras_json_path, "w", encoding="utf-8") as fp:
+                    json.dump(cameras, fp, ensure_ascii=False, indent=2)
+                    fp.write("\n")
+                try:
+                    os.unlink(tmp_path)
+                except FileNotFoundError:
+                    pass
 
     def update_zones(
         self,
@@ -795,6 +910,12 @@ class DeepStreamProcessor(BaseProcessor):
                 publish_loop_target=self._publish_loop,
                 face_worker_loop_target=self._face_worker_loop,
             )
+            self._falldata_aux_thread = threading.Thread(
+                target=self._falldata_aux_worker_loop,
+                name="DeepStreamFallDataAuxWorker",
+                daemon=True,
+            )
+            self._falldata_aux_thread.start()
             logger.info("DeepStream 파이프라인 시작됨")
 
         except Exception as exc:
@@ -819,6 +940,9 @@ class DeepStreamProcessor(BaseProcessor):
             gst_module=Gst,
             join_timeout_sec=2.0,
         )
+        if self._falldata_aux_thread and self._falldata_aux_thread.is_alive():
+            self._falldata_aux_thread.join(timeout=2.0)
+        self._falldata_aux_thread = None
         self._pipeline = None
         self.event_publisher.disconnect()
         logger.info("DeepStreamProcessor 중지됨")
@@ -840,6 +964,7 @@ class DeepStreamProcessor(BaseProcessor):
             preview_ready=getattr(self, "_preview_store", None) is not None
             and self._preview_store.last_frame_at is not None,
         )
+        stats_fields.update(self._yolo_postprocess_stats())
         return self._build_stats_payload(
             backend="deepstream",
             **stats_fields,
@@ -1000,10 +1125,14 @@ class DeepStreamProcessor(BaseProcessor):
 
     def _resolve_pphuman_sgie_backend_name(self) -> str:
         return resolve_pphuman_sgie_backend_name(
-            pphuman_infer_config=Path(
-                os.environ.get("DS_PPHUMAN_INFER_CONFIG", str(_PPHUMAN_INFER_CONFIG))
-            ),
+            pphuman_infer_config=self._resolve_pphuman_infer_config(),
             pphuman_label_map=self._pphuman_label_map,
+        )
+
+    @staticmethod
+    def _resolve_pphuman_infer_config() -> Path:
+        return Path(
+            os.environ.get("DS_PPHUMAN_INFER_CONFIG", str(_PPHUMAN_INFER_CONFIG))
         )
 
     def _fall_shadow_recorder(self) -> FallShadowReviewRecorder:
@@ -1057,6 +1186,24 @@ class DeepStreamProcessor(BaseProcessor):
         return self._fall_shadow_recorder().write_record(
             camera_name, event_payload, result, near_miss=near_miss
         )
+
+    def _write_fall_event_review_record(
+        self, camera_name: str, event: DetectionEvent
+    ) -> None:
+        if event.event_type != EventType.FALL_DETECTED:
+            return
+        try:
+            self._write_fall_shadow_review_record(
+                camera_name,
+                event.to_dict(),
+                {
+                    "status": "not_run",
+                    "reason": "deepstream_event_only",
+                    "confirmed": None,
+                },
+            )
+        except Exception as exc:
+            logger.warning("[%s] fall event review 기록 실패: %s", camera_name, exc)
 
     @staticmethod
     def _fall_shadow_event_id(camera_name: str, event_payload: Dict[str, Any], created_at: Any) -> str:
@@ -1116,7 +1263,7 @@ class DeepStreamProcessor(BaseProcessor):
             n_cams=n_cams,
             infer_config=_INFER_CONFIG,
             helmet_infer_config=_HELMET_INFER_CONFIG,
-            pphuman_infer_config=_PPHUMAN_INFER_CONFIG,
+            pphuman_infer_config=self._resolve_pphuman_infer_config(),
             env_int=self._env_int,
             set_property_optional=self._set_optional_property,
         )
@@ -1227,18 +1374,40 @@ class DeepStreamProcessor(BaseProcessor):
 
     def _is_fall_pose(
         self, keypoints: List[List[float]], width: int, height: int
-    ) -> bool:
+    ) -> Dict[str, Any]:
         """키포인트와 bbox 크기를 이용해 낙상 자세 여부를 판정한다."""
         import numpy as np
 
         if not keypoints:
-            return False
+            return {"is_fall": False, "score": 0.0, "reasons": ["missing_keypoints"]}
         try:
             kpts = np.asarray(keypoints, dtype=np.float32)
-            return self._fall_detector._check_fall(kpts, width, height)
+            score = self._fall_detector._score_fall(kpts, width, height)
+            is_fall = score.score >= self._fall_detector.score_threshold
+            near_miss = None
+            if not is_fall:
+                folded_score = self._fall_detector.folded_floor_pose_score(kpts, height)
+                if folded_score is not None:
+                    near_miss = {
+                        "type": "folded_floor_pose",
+                        "score": score.score,
+                        "reasons": [f"folded_floor_pose:{folded_score:.2f}"],
+                    }
+                elif score.score > 0.0:
+                    near_miss = {
+                        "type": "low_score_pose",
+                        "score": score.score,
+                        "reasons": list(score.reasons),
+                    }
+            return {
+                "is_fall": is_fall,
+                "score": score.score,
+                "reasons": list(score.reasons),
+                "near_miss": near_miss,
+            }
         except Exception as exc:
             logger.debug("DeepStream pose 낙상 판단 실패: %s", exc)
-            return False
+            return {"is_fall": False, "score": 0.0, "reasons": ["error"]}
 
     def _is_valid_person_pose(
         self, keypoints: List[List[float]]
@@ -1323,7 +1492,7 @@ class DeepStreamProcessor(BaseProcessor):
             helmet_enabled=self._helmet_enabled,
             pphuman_sgie_enabled=self._pphuman_sgie_enabled,
             helmet_config_exists=_HELMET_INFER_CONFIG.exists(),
-            pphuman_config_exists=_PPHUMAN_INFER_CONFIG.exists(),
+            pphuman_config_exists=self._resolve_pphuman_infer_config().exists(),
         )
 
     def _set_pipeline_restart_pending(self, pending: bool) -> None:
@@ -1392,7 +1561,7 @@ class DeepStreamProcessor(BaseProcessor):
             flags=flags,
             backend_name=self._appearance.backend_name,
             pphuman_sgie_enabled=self._pphuman_sgie_enabled,
-            pphuman_config_exists=_PPHUMAN_INFER_CONFIG.exists(),
+            pphuman_config_exists=self._resolve_pphuman_infer_config().exists(),
             yolo_labels=self._yolo_labels,
             bag_classes=set(BAG_CLASSES),
             face_recognizer_enabled=bool(self.face_recognizer.enabled),
@@ -1462,6 +1631,7 @@ class DeepStreamProcessor(BaseProcessor):
         self, camera_name: str, events: List[DetectionEvent]
     ) -> None:
         """기존 트래킹/필터/구역/얼굴 후처리 파이프라인을 적용한다."""
+        self._write_fall_near_miss_review_records(camera_name, events)
         ds_apply_existing_event_pipeline(
             camera_name=camera_name,
             events=events,
@@ -1471,7 +1641,7 @@ class DeepStreamProcessor(BaseProcessor):
             submit_face_work=self._submit_face_work,
             zone_manager=self.zone_manager,
             enqueue_zone_events_cb=self._enqueue_zone_events,
-            enqueue_event=self._enqueue_event,
+            enqueue_event=self._enqueue_event_or_defer_fall_aux,
             add_filtered_event_count=lambda delta: self._increment_stat("events_filtered", delta),
         )
 
@@ -1495,6 +1665,77 @@ class DeepStreamProcessor(BaseProcessor):
         """얼굴/외형 컨텍스트 워커 루프를 실행한다."""
         self._context_worker.run_loop(self.stop_event)
 
+    def _falldata_aux_worker_loop(self) -> None:
+        """borderline 낙상 후보를 보조 모델로 검증하고 confirmed일 때만 발행한다."""
+        logger.info("falldata aux 비동기 워커 시작")
+        while not self.stop_event.is_set():
+            try:
+                camera_name, event_payload = self._falldata_aux_queue.get(timeout=0.1)
+            except Empty:
+                continue
+            try:
+                result, _ = self._fall_shadow_recorder().verify_and_write_aux_record(
+                    camera_name,
+                    event_payload,
+                )
+                if self._enqueue_aux_confirmed_fall_event(camera_name, event_payload, result):
+                    continue
+                if self._should_fail_open_falldata_aux_result(result):
+                    self._enqueue_aux_fallback_fall_event(camera_name, event_payload, result)
+            except Exception as exc:
+                logger.warning("[%s] falldata aux 워커 처리 실패: %s", camera_name, exc)
+
+    def _should_fail_open_falldata_aux_result(self, result: Dict[str, Any]) -> bool:
+        falldata_aux = getattr(self, "_falldata_aux", None)
+        if falldata_aux is None:
+            return False
+        return falldata_aux._should_fail_open(result)
+
+    def _enqueue_aux_fallback_fall_event(
+        self,
+        camera_name: str,
+        event_payload: Dict[str, Any],
+        result: Dict[str, Any],
+    ) -> bool:
+        metadata = dict(event_payload.get("metadata") or {})
+        metadata.pop("falldata_aux_publish_pending", None)
+        metadata["falldata_aux"] = result
+        metadata["falldata_aux_confirm_fallback"] = result.get("status")
+        queue_item = dict(event_payload)
+        queue_item["metadata"] = metadata
+        logger.warning(
+            "[%s] falldata aux 사용 불가로 borderline 낙상 후보 fail-open 발행: %s",
+            camera_name,
+            result.get("status"),
+        )
+        return self._put_event_dict(queue_item, camera_name)
+
+    def _enqueue_event_or_defer_fall_aux(
+        self,
+        event: DetectionEvent,
+        camera_name: str,
+    ) -> bool:
+        if not self._should_confirm_fall_with_aux_before_publish(event):
+            return self._enqueue_event(event, camera_name)
+
+        metadata = dict(event.metadata or {})
+        metadata["falldata_aux_publish_pending"] = True
+        event.metadata = metadata
+        submitted = self._submit_falldata_aux_work(camera_name, [event])
+        if submitted is not None:
+            logger.info(
+                "[%s] borderline fall 후보 aux 확인 대기: object_id=%s score=%s",
+                camera_name,
+                event.object_id,
+                metadata.get("fall_score"),
+            )
+            return False
+
+        metadata["falldata_aux_confirm_fallback"] = "submit_failed"
+        event.metadata = metadata
+        logger.warning("[%s] falldata aux 제출 실패 - borderline 후보 fail-open 발행", camera_name)
+        return self._enqueue_event(event, camera_name)
+
     def _should_enqueue_event(self, event: DetectionEvent, camera_name: str) -> bool:
         """동일 이벤트가 프레임마다 MQTT로 발행되지 않도록 제한한다."""
         metadata = event.metadata or {}
@@ -1506,7 +1747,10 @@ class DeepStreamProcessor(BaseProcessor):
         """디바운싱 검증 후 이벤트를 내부 큐에 적재한다."""
         if not self._should_enqueue_event(event, camera_name):
             return False
-        return self._enqueue_queue_item(event, camera_name)
+        enqueued = self._enqueue_queue_item(event, camera_name)
+        if enqueued:
+            self._write_fall_event_review_record(camera_name, event)
+        return enqueued
 
     def _add_osd_overlays(
         self,
@@ -1547,7 +1791,8 @@ class DeepStreamProcessor(BaseProcessor):
             frame_width = int(os.environ.get("DS_STREAM_WIDTH", "1920"))
             frame_height = int(os.environ.get("DS_STREAM_HEIGHT", "1080"))
 
-        return detections_from_yolo_output(
+        postprocess_started_at = time.perf_counter()
+        detections = detections_from_yolo_output(
             output,
             task=task,
             gie_id=gie_id,
@@ -1561,7 +1806,10 @@ class DeepStreamProcessor(BaseProcessor):
             max_detections=self._yolo_max_detections,
             fall_checker=self._is_fall_pose,
             person_pose_validator=self._is_valid_person_pose,
+            postprocess_mode=self._yolo_postprocess_mode,
         )
+        self._record_yolo_postprocess_timing(time.perf_counter() - postprocess_started_at)
+        return detections
 
     @staticmethod
     def _pphuman_roi_for_detection(
@@ -1702,13 +1950,25 @@ class DeepStreamProcessor(BaseProcessor):
 
     def _on_preview_sample(self, sink: Any) -> Any:
         """appsink 샘플을 읽어 카메라별 최신 프레임 캐시에 저장한다."""
-        return process_preview_sample(
+        result = process_preview_sample(
             sink=sink,
             preview_store=self._preview_store,
             preview_camera_id=getattr(self, "_preview_camera_id", None),
             cameras=getattr(self, "_cameras", {}),
             gst_module=Gst,
         )
+        try:
+            camera_id = getattr(self, "_preview_camera_id", None) or next(
+                iter(getattr(self, "_cameras", {}).keys()),
+                None,
+            )
+            if camera_id:
+                frame = self.get_camera_frame(camera_id, copy_frame=False)
+                if frame is not None:
+                    self._falldata_aux.add_frame(frame)
+        except Exception as exc:
+            logger.debug("falldata aux preview frame 추가 실패: %s", exc)
+        return result
 
     def _build_pipeline(self) -> None:
         """GStreamer 파이프라인을 조립한다.
@@ -1819,7 +2079,7 @@ class DeepStreamProcessor(BaseProcessor):
             primary_probe_callback=self._on_primary_tensor_probe,
             link_preview_branch=self._link_preview_branch,
             pphuman_gie_id=self._pphuman_gie_id,
-            pphuman_infer_config=_PPHUMAN_INFER_CONFIG,
+            pphuman_infer_config=self._resolve_pphuman_infer_config(),
         )
 
         attach_camera_sources_batch(
@@ -1982,7 +2242,8 @@ class DeepStreamProcessor(BaseProcessor):
         stats = self.get_stats()
         logger.info(
             "DeepStream stats: frames=%s frame_dropped=%s "
-            "events_detected=%s sent=%s filtered=%s event_dropped=%s failed=%s cameras=%s",
+            "events_detected=%s sent=%s filtered=%s event_dropped=%s failed=%s cameras=%s "
+            "yolo_postprocess=%s avg_ms=%.3f max_ms=%.3f calls=%s",
             stats["frames_processed"],
             stats["frames_dropped"],
             stats["events_detected"],
@@ -1991,6 +2252,10 @@ class DeepStreamProcessor(BaseProcessor):
             stats["events_dropped"],
             stats["events_failed"],
             stats["cameras"],
+            stats["yolo_postprocess_mode"],
+            stats["yolo_postprocess_avg_ms"],
+            stats["yolo_postprocess_max_ms"],
+            stats["yolo_postprocess_calls"],
         )
 
 

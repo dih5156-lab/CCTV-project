@@ -11,9 +11,10 @@ from pathlib import Path
 from typing import Any
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_REVIEW_LOG = PROJECT_ROOT / "data/logs/fall_shadow_review.jsonl"
+DEFAULT_DATASET_ROOT = PROJECT_ROOT / "data/fall_dataset"
+DEFAULT_REVIEW_LOG = DEFAULT_DATASET_ROOT / "annotations/review.jsonl"
 DEFAULT_BASE_MANIFEST = PROJECT_ROOT / "data/fall_eval/sample_manifest.jsonl"
-DEFAULT_OUTPUT = PROJECT_ROOT / "data/fall_eval/field_combined_manifest.jsonl"
+DEFAULT_OUTPUT = DEFAULT_DATASET_ROOT / "manifests/field_combined_manifest.jsonl"
 
 
 def read_jsonl(path: Path) -> list[dict[str, Any]]:
@@ -134,7 +135,9 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--review-log", type=Path, default=DEFAULT_REVIEW_LOG)
     parser.add_argument("--base-manifest", type=Path, default=DEFAULT_BASE_MANIFEST)
-    parser.add_argument("--clip-dir", type=Path, default=PROJECT_ROOT / "data/fall_review_clips")
+    parser.add_argument(
+        "--clip-dir", type=Path, default=DEFAULT_DATASET_ROOT / "clips/labeled"
+    )
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument(
         "--max-field-per-group",

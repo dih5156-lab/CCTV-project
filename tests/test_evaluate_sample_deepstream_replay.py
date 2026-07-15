@@ -1,4 +1,40 @@
-from scripts.ops.evaluate_sample_deepstream_replay import _summarize_shadow_records
+from pathlib import Path
+
+from scripts.ops.evaluate_sample_deepstream_replay import (
+    DEFAULT_REVIEW_LOG,
+    _host_path_from_container_path,
+    _resolve_review_log_path,
+    _summarize_shadow_records,
+)
+
+
+def test_host_path_from_container_path_maps_app_relative_paths():
+    assert _host_path_from_container_path(
+        "/app/data/fall_dataset/annotations/review.jsonl",
+        Path("/app"),
+    ) == Path("data/fall_dataset/annotations/review.jsonl")
+
+
+def test_resolve_review_log_uses_env_file_when_default_requested():
+    resolved = _resolve_review_log_path(
+        DEFAULT_REVIEW_LOG,
+        {"FALL_SHADOW_REVIEW_LOG_PATH": "/app/data/fall_dataset/annotations/review.jsonl"},
+        Path("/app"),
+    )
+
+    assert resolved == Path("data/fall_dataset/annotations/review.jsonl")
+
+
+def test_resolve_review_log_keeps_explicit_argument():
+    explicit = Path("custom/review.jsonl")
+
+    resolved = _resolve_review_log_path(
+        explicit,
+        {"FALL_SHADOW_REVIEW_LOG_PATH": "/app/data/fall_dataset/annotations/review.jsonl"},
+        Path("/app"),
+    )
+
+    assert resolved == explicit
 
 
 def test_summarize_shadow_records_counts_only_ok_confirmed_records():
@@ -85,6 +121,44 @@ def test_summarize_shadow_records_reports_fall_event_even_when_aux_errors():
     assert summary["fall_event_count"] == 1
     assert summary["fall_candidate_count"] == 1
     assert summary["max_fall_score"] == 4.5
+
+
+def test_summarize_shadow_records_reports_near_miss_details():
+    records = [
+        {
+            "camera_id": "sample_eval",
+            "event_type": "fall_near_miss",
+            "near_miss": {
+                "type": "folded_floor_pose",
+                "score": 0.0,
+                "reasons": ["folded_floor_pose:0.38"],
+            },
+            "falldata_aux": {
+                "status": "not_run",
+                "confirmed": None,
+            },
+        },
+        {
+            "camera_id": "sample_eval",
+            "event_type": "fall_near_miss",
+            "near_miss": {
+                "type": "low_score_pose",
+                "score": 2.5,
+                "reasons": ["torso_horizontal:44.3"],
+            },
+            "falldata_aux": {
+                "status": "not_run",
+                "confirmed": None,
+            },
+        },
+    ]
+
+    summary = _summarize_shadow_records(records, "sample_eval")
+
+    assert summary["detected"] is False
+    assert summary["near_miss_record_count"] == 2
+    assert summary["near_miss_types"] == ["folded_floor_pose", "low_score_pose"]
+    assert summary["max_near_miss_score"] == 2.5
 
 
 def test_summarize_shadow_records_pending_borderline_requires_aux_confirmation():

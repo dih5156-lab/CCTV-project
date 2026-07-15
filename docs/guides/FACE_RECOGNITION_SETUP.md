@@ -39,14 +39,19 @@ pip install -r requirements/ai.txt
 pip install -r requirements/jetson.txt
 ```
 
-`requirements/jetson.txt`에는 InsightFace가 포함되어 있지만, 현재 `.env.jetson.example` 기본값은 안정적인 폴백 경로인 `FACE_RECOGNITION_BACKEND=opencv`입니다. InsightFace를 사용하려면 설치 후 명시적으로 다음 값을 설정하고 Jetson에서 초기화 로그를 확인합니다.
+`requirements/jetson.txt`에는 InsightFace와 JetPack 6/CUDA 12.6용 ONNX Runtime GPU wheel이 포함됩니다. Jetson 운영 환경에서는 다음 값을 설정하고 초기화 로그를 확인합니다.
 
 ```bash
 FACE_RECOGNITION_BACKEND=insightface
-FACE_DEVICE=cpu
+FACE_DEVICE=cuda:0
 ```
 
-`auto` 또는 `insightface`에서 InsightFace import·초기화가 실패하면 OpenCV Haar 기반으로 폴백합니다. `FACE_DEVICE`가 `cuda` 또는 `cuda:N`으로 시작하면 GPU context를, 그 외에는 CPU context를 선택합니다. GPU 사용 여부는 실제 시작 로그와 Jetson 부하로 확인합니다.
+`FACE_RECOGNITION_BACKEND=insightface` 또는 `FACE_DEVICE=cuda:N`을 명시했는데 InsightFace/CUDA provider 초기화가 실패하면 서비스가 명확한 오류를 발생시킵니다. `auto`와 CPU 조합에서만 OpenCV Haar 폴백을 허용합니다. 시작 로그의 `providers`에 `CUDAExecutionProvider`가 있는지 확인합니다.
+
+```bash
+docker exec cctv-ai-engine python -c \
+  "import onnxruntime as ort; print(ort.get_available_providers())"
+```
 
 ## 등록 얼굴 데이터
 

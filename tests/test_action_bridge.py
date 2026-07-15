@@ -629,3 +629,19 @@ class TestActionBridgeStatusPublishing:
         assert devices["signboard"]["status"] == "unreachable"
         assert devices["siren"]["reachable"] is True
         assert devices["siren"]["status"] == "online"
+
+    def test_configured_signboard_is_not_dropped_by_preflight_probe(self, monkeypatch):
+        bridge = self._make_bridge()
+        bridge._signboard.config = SimpleNamespace(
+            host="192.168.88.91",
+            port=5000,
+            is_configured=True,
+        )
+        probe = MagicMock(return_value=False)
+        monkeypatch.setattr(
+            "src.services.action_bridge._check_tcp_reachable",
+            probe,
+        )
+
+        assert bridge._device_is_available(AlarmDevice.SIGNBOARD) is True
+        probe.assert_not_called()

@@ -122,6 +122,15 @@ RUN pip3 install --no-cache-dir "numpy<2.0.0"
 RUN pip3 install --no-cache-dir "Cython>=3.0.0" && \
     pip3 install --no-cache-dir -r jetson.txt
 
+# InsightFace가 CPU용 onnxruntime/opencv-python과 NumPy 2.x를 의존성으로
+# 다시 설치할 수 있으므로 Jetson 운영 조합을 마지막에 명시적으로 복원한다.
+RUN pip3 uninstall -y onnxruntime opencv-python && \
+    pip3 install --no-cache-dir --force-reinstall --no-deps \
+        "https://pypi.jetson-ai-lab.io/jp6/cu126/+f/d98/0b934b9a29c1a/onnxruntime_gpu-1.24.0-cp310-cp310-linux_aarch64.whl#sha256=d980b934b9a29c1a9d6f39751edd7662b69fadd75556a10ff363773a58ce0950" && \
+    pip3 install --no-cache-dir --force-reinstall \
+        "numpy<2.0.0" \
+        "opencv-python-headless==4.11.0.86"
+
 # ── PP-Human 속성 모델 Paddle 런타임 ─────────────────────────────────
 # Jetson/aarch64에서 ONNX Runtime 세션 초기화가 네이티브 크래시를 낼 수 있어
 # PP-Human 원본 Paddle artifact를 직접 읽는 경로를 기본 운영 경로로 둔다.

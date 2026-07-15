@@ -151,9 +151,9 @@ class Manager:
         MQTT 토픽 구독
         Go: func (m *Manager) subscribeToTopics(client mqtt.Client, name string, config config.MQTTConfig) error
 
-        모든 브로커에 대해 '#' (와일드카드) 구독
+        dcaLPWAN 표준 Uplink와 호환 포맷만 구독
         """
-        topics = ["#"]  # Go: topics = []string{"#"}
+        topics = ["+/+/up", "v3/+/devices/+/up"]
         for topic in topics:
             client.subscribe(topic, qos=1)
             logger.info(f"Subscribed to topic: {topic}")
@@ -175,7 +175,9 @@ class Manager:
         # JSON 파싱
         try:
             message_data = json.loads(msg.payload)
-        except Exception as e:
+            if not isinstance(message_data, dict):
+                raise ValueError("JSON payload must be an object")
+        except (UnicodeDecodeError, json.JSONDecodeError, ValueError, TypeError) as e:
             logger.error(f"Failed to parse JSON message: {e}")
             return
 
@@ -195,10 +197,12 @@ class Manager:
         received_at = 0
         uplink = message_data.get("uplink_message", {})
         rx_metadata = message_data.get("rx_metadata") or uplink.get("rx_metadata", [])
-        if rx_metadata:
-            channel = rx_metadata[0].get("channel", 0)
-            frequency = int(float(rx_metadata[0].get("frequency", 0) or 0))
-            received_at = self._parse_received_at(rx_metadata[0].get("time", 0))
+        primary_rx_metadata = {}
+        if isinstance(rx_metadata, list) and rx_metadata and isinstance(rx_metadata[0], dict):
+            primary_rx_metadata = rx_metadata[0]
+            channel = self._parse_integer(primary_rx_metadata.get("channel", 0))
+            frequency = self._parse_integer(primary_rx_metadata.get("frequency", 0))
+            received_at = self._parse_received_at(primary_rx_metadata.get("time", 0))
 
         # 센서 데이터 처리기 호출
         if self._processor:
@@ -210,6 +214,14 @@ class Manager:
                     channel=channel,
                     frequency=frequency,
                     received_at=received_at,
+                    uplink_metadata={
+                        "message_id": message_data.get("message_id", ""),
+                        "f_port": message_data.get("f_port", 0),
+                        "f_cnt_up": message_data.get("f_cnt_up", 0),
+                        "is_confirmed": bool(message_data.get("is_confirmed", False)),
+                        "is_ack": bool(message_data.get("is_ack", False)),
+                        "radio": self._extract_radio_metadata(primary_rx_metadata),
+                    },
                 )
             except Exception as e:
                 logger.error(f"Failed to process sensor data: {e}")
@@ -256,6 +268,27 @@ class Manager:
             logger.debug("Failed to parse received_at time: %s", value)
             return 0
         return int(dt.timestamp() * 1000)
+
+    def _parse_integer(self, value) -> int:
+        """구현사별 숫자/문자열 metadata를 DB 정수 컬럼에 안전하게 맞춘다."""
+        try:
+            return int(float(value or 0))
+        except (TypeError, ValueError, OverflowError):
+            return 0
+
+    def _extract_radio_metadata(self, metadata: dict) -> dict:
+        """내부 이벤트에 필요한 첫 게이트웨이 무선 품질만 가볍게 보존한다."""
+        if not metadata:
+            return {}
+        gateway_info = metadata.get("gateway_info") or {}
+        return {
+            "gateway_id": gateway_info.get("gw_id", ""),
+            "data_rate": metadata.get("data_rate", ""),
+            "channel": metadata.get("channel", 0),
+            "frequency": metadata.get("frequency", 0),
+            "rssi": metadata.get("rssi", 0),
+            "snr": metadata.get("snr", 0),
+        }
 
     def _normalize_dev_eui(self, dev_eui: str) -> str:
         value = str(dev_eui or "").strip()

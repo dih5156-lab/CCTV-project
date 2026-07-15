@@ -12,6 +12,7 @@ SQLite에 기록하고, 조건부 검색을 지원한다.
 
 from __future__ import annotations
 
+import contextlib
 import json
 import logging
 import os
@@ -74,6 +75,7 @@ class AppearanceLog:
         self._database = SQLiteDatabase(db_path)
         self._lock = threading.Lock()
         self._last_insert: Dict[str, float] = {}  # "cam:track" → timestamp
+        self._closed = False
 
         self._conn = self._database.initialize(_SCHEMA, check_same_thread=False)
         self._ensure_columns()
@@ -82,33 +84,42 @@ class AppearanceLog:
 
     def _ensure_columns(self) -> None:
         """기존 DB를 새 외형 스키마로 점진 마이그레이션한다."""
-        existing = {
-            row["name"]
-            for row in self._conn.execute("PRAGMA table_info(appearance_log)").fetchall()
-        }
+        cursor = self._conn.execute("PRAGMA table_info(appearance_log)")
+        try:
+            existing = {row["name"] for row in cursor.fetchall()}
+        finally:
+            cursor.close()
         if "has_helmet" not in existing:
-            self._conn.execute(
+            self._execute_and_close(
                 "ALTER TABLE appearance_log ADD COLUMN has_helmet INTEGER DEFAULT 0"
             )
         if "helmet_color" not in existing:
-            self._conn.execute(
+            self._execute_and_close(
                 "ALTER TABLE appearance_log ADD COLUMN helmet_color TEXT"
             )
         if "event_id" not in existing:
-            self._conn.execute(
+            self._execute_and_close(
                 "ALTER TABLE appearance_log ADD COLUMN event_id TEXT"
             )
         if "attribute_backend" not in existing:
-            self._conn.execute(
+            self._execute_and_close(
                 "ALTER TABLE appearance_log ADD COLUMN attribute_backend TEXT"
             )
         if "attribute_metadata" not in existing:
-            self._conn.execute(
+            self._execute_and_close(
                 "ALTER TABLE appearance_log ADD COLUMN attribute_metadata TEXT"
             )
-        self._conn.execute(
+        self._execute_and_close(
             "CREATE UNIQUE INDEX IF NOT EXISTS idx_appearance_event_id ON appearance_log(event_id)"
         )
+
+    def _ensure_open(self) -> None:
+        if self._closed:
+            raise sqlite3.ProgrammingError("AppearanceLog is closed")
+
+    def _execute_and_close(self, sql: str, params: tuple = ()) -> None:
+        cursor = self._conn.execute(sql, params)
+        cursor.close()
 
     # ── 기록 ─────────────────────────────────────────────────────────
 
@@ -153,6 +164,7 @@ class AppearanceLog:
         )
 
         with self._lock:
+            self._ensure_open()
             last = self._last_insert.get(cooldown_key, 0.0)
             if now - last < _INSERT_COOLDOWN:
                 return False
@@ -164,7 +176,7 @@ class AppearanceLog:
                     if attribute_metadata
                     else None
                 )
-                self._conn.execute(
+                cursor = self._conn.execute(
                     """INSERT OR IGNORE INTO appearance_log
                        (event_id, timestamp, camera_id, track_id,
                        upper_color, lower_color, has_helmet, helmet_color,
@@ -182,6 +194,7 @@ class AppearanceLog:
                         bbox_x, bbox_y, bbox_w, bbox_h,
                     ),
                 )
+                cursor.close()
                 self._conn.commit()
                 return True
             except Exception as exc:
@@ -232,7 +245,12 @@ class AppearanceLog:
         )
 
         with self._lock:
-            rows = self._conn.execute(sql, params).fetchall()
+            self._ensure_open()
+            cursor = self._conn.execute(sql, params)
+            try:
+                rows = cursor.fetchall()
+            finally:
+                cursor.close()
 
         return [self._row_to_dict(row) for row in rows]
 
@@ -242,7 +260,12 @@ class AppearanceLog:
         sql = f"SELECT COUNT(*) FROM appearance_log{where}"
 
         with self._lock:
-            return self._conn.execute(sql, params).fetchone()[0]
+            self._ensure_open()
+            cursor = self._conn.execute(sql, params)
+            try:
+                return cursor.fetchone()[0]
+            finally:
+                cursor.close()
 
     @staticmethod
     def _build_filter_clause(**filters) -> tuple[str, List[object]]:
@@ -312,4 +335,18 @@ class AppearanceLog:
 
     def close(self) -> None:
         with self._lock:
+            if self._closed:
+                return
             self._conn.close()
+            self._closed = True
+
+    def __enter__(self) -> "AppearanceLog":
+        self._ensure_open()
+        return self
+
+    def __exit__(self, exc_type, exc, tb) -> None:
+        self.close()
+
+    def __del__(self) -> None:
+        with contextlib.suppress(Exception):
+            self.close()

@@ -28,6 +28,7 @@ import pytest
 import src.core.deepstream_processor as deepstream_processor
 from src.core._context_event_store import ContextEventStore
 from src.core._preview_frame_store import PreviewFrameStore
+from src.core.ai._fall_detector import FallDetector
 from src.core.base_processor import BaseProcessor
 from src.core.deepstream_processor import DEEPSTREAM_AVAILABLE, DeepStreamProcessor
 from src.core.event_debouncer import EventDebouncer
@@ -514,6 +515,10 @@ def test_deepstream_fall_detector_uses_env_thresholds(mock_config, monkeypatch):
     monkeypatch.setenv("DS_FALL_BBOX_ASPECT_RATIO", "1.35")
     monkeypatch.setenv("DS_FALL_SPAN_BBOX_ASPECT_RATIO", "1.20")
     monkeypatch.setenv("DS_FALL_KEYPOINT_SPAN_RATIO", "0.55")
+    monkeypatch.setenv("DS_FALL_SCORE_THRESHOLD", "3.1")
+    monkeypatch.setenv("DS_FALL_ENABLE_FOLDED_POSE", "true")
+    monkeypatch.setenv("DS_FALL_SUPPRESS_SITTING_LIKE_POSE", "true")
+    monkeypatch.setenv("DS_FALL_SITTING_LIKE_ASPECT_RATIO", "1.50")
     monkeypatch.setenv("DS_FALL_MIN_KEYPOINT_CONFIDENCE", "0.25")
     monkeypatch.setenv("DS_FALL_MIN_HIP_CONFIDENCE", "0.25")
     monkeypatch.setenv("DS_FALL_MIN_LEG_CONFIDENCE", "0.35")
@@ -526,9 +531,125 @@ def test_deepstream_fall_detector_uses_env_thresholds(mock_config, monkeypatch):
     assert proc._fall_detector.bbox_aspect_ratio == 1.35
     assert proc._fall_detector.span_bbox_aspect_ratio == 1.20
     assert proc._fall_detector.span_ratio == 0.55
+    assert proc._fall_detector.score_threshold == 3.1
+    assert proc._fall_detector.enable_folded_pose is True
+    assert proc._fall_detector.suppress_sitting_like_pose is True
+    assert proc._fall_detector.sitting_like_aspect_ratio == 1.50
     assert proc._fall_detector.min_keypoint_confidence == 0.25
     assert proc._fall_detector.min_hip_confidence == 0.25
     assert proc._fall_detector.min_leg_confidence == 0.35
+
+
+def test_deepstream_falldata_aux_operational_settings_from_env(mock_config, monkeypatch):
+    proc = object.__new__(DeepStreamProcessor)
+    proc._face_work_queue = Queue(maxsize=2)
+    proc._context_event_store = ContextEventStore(ttl_sec=1.0, maxlen=10)
+    monkeypatch.setenv("FALLDATA_AUX_CONFIRM_BORDERLINE", "true")
+    monkeypatch.setenv("FALLDATA_AUX_CONFIRM_MAX_FALL_SCORE", "4.5")
+    monkeypatch.setenv("FALLDATA_AUX_COMPARE_VETO_ENABLED", "true")
+    monkeypatch.setenv("FALLDATA_AUX_COMPARE_VETO_MIN_FALL_SCORE", "5.0")
+
+    proc._init_ai_context(mock_config)
+
+    assert proc._falldata_aux.enabled is not None
+    assert proc._fall_aux_confirm_borderline is True
+    assert proc._fall_aux_confirm_max_fall_score == 4.5
+    assert proc._fall_aux_compare_veto_enabled is True
+    assert proc._fall_aux_compare_veto_min_fall_score == 5.0
+
+
+def test_deepstream_fall_pose_returns_score_metadata():
+    proc = object.__new__(DeepStreamProcessor)
+    proc._fall_detector = FallDetector(angle_horizontal=55, score_threshold=3.0)
+    keypoints = [[0.0, 0.0, 0.0] for _ in range(17)]
+    keypoints[0] = [100.0, 80.0, 0.9]
+    keypoints[5] = [40.0, 60.0, 0.9]
+    keypoints[6] = [60.0, 60.0, 0.9]
+    keypoints[11] = [120.0, 70.0, 0.9]
+    keypoints[12] = [140.0, 70.0, 0.9]
+    keypoints[13] = [130.0, 82.0, 0.9]
+    keypoints[14] = [150.0, 84.0, 0.9]
+    keypoints[15] = [145.0, 88.0, 0.9]
+    keypoints[16] = [165.0, 90.0, 0.9]
+
+    result = proc._is_fall_pose(keypoints, width=160, height=100)
+
+    assert result["is_fall"] is True
+    assert result["score"] >= 3.0
+    assert any(reason.startswith("torso_horizontal:") for reason in result["reasons"])
+
+
+def test_deepstream_fall_pose_reports_folded_floor_near_miss():
+    proc = object.__new__(DeepStreamProcessor)
+    proc._fall_detector = FallDetector(enable_folded_pose=False)
+    keypoints = [[0.0, 0.0, 0.0] for _ in range(17)]
+    keypoints[0] = [100.0, 20.0, 0.05]
+    keypoints[5] = [90.0, 90.0, 0.9]
+    keypoints[6] = [115.0, 92.0, 0.9]
+    keypoints[11] = [100.0, 155.0, 0.9]
+    keypoints[12] = [125.0, 158.0, 0.9]
+    keypoints[13] = [112.0, 178.0, 0.9]
+    keypoints[14] = [136.0, 176.0, 0.9]
+    keypoints[15] = [130.0, 190.0, 0.7]
+    keypoints[16] = [150.0, 188.0, 0.7]
+
+    result = proc._is_fall_pose(keypoints, width=110, height=220)
+
+    assert result["is_fall"] is False
+    assert result["near_miss"]["type"] == "folded_floor_pose"
+
+
+def test_deepstream_fall_pose_reports_low_score_near_miss():
+    proc = object.__new__(DeepStreamProcessor)
+    proc._fall_detector = FallDetector(angle_horizontal=55, score_threshold=3.0)
+    keypoints = [[0.0, 0.0, 0.0] for _ in range(17)]
+    keypoints[0] = [100.0, 80.0, 0.9]
+    keypoints[5] = [40.0, 60.0, 0.9]
+    keypoints[6] = [60.0, 60.0, 0.9]
+    keypoints[11] = [120.0, 70.0, 0.9]
+    keypoints[12] = [140.0, 70.0, 0.9]
+    keypoints[13] = [130.0, 140.0, 0.9]
+
+    result = proc._is_fall_pose(keypoints, width=80, height=180)
+
+    assert result["is_fall"] is False
+    assert result["near_miss"]["type"] == "low_score_pose"
+    assert result["near_miss"]["score"] > 0.0
+
+
+def test_deepstream_yolo_postprocess_mode_defaults_to_vectorized(monkeypatch):
+    proc = object.__new__(DeepStreamProcessor)
+    monkeypatch.delenv("DS_YOLO_POSTPROCESS_MODE", raising=False)
+
+    proc._init_yolo_settings()
+
+    assert proc._yolo_postprocess_mode == "vectorized"
+
+
+def test_deepstream_yolo_postprocess_mode_rejects_unknown_value(monkeypatch):
+    proc = object.__new__(DeepStreamProcessor)
+    monkeypatch.setenv("DS_YOLO_POSTPROCESS_MODE", "surprise")
+
+    with pytest.raises(ValueError, match="DS_YOLO_POSTPROCESS_MODE"):
+        proc._init_yolo_settings()
+
+
+def test_deepstream_yolo_postprocess_metrics_report_average_and_maximum():
+    proc = object.__new__(DeepStreamProcessor)
+    proc._yolo_postprocess_mode = "vectorized"
+    proc._yolo_postprocess_calls = 0
+    proc._yolo_postprocess_total_seconds = 0.0
+    proc._yolo_postprocess_max_seconds = 0.0
+
+    proc._record_yolo_postprocess_timing(0.002)
+    proc._record_yolo_postprocess_timing(0.006)
+
+    assert proc._yolo_postprocess_stats() == {
+        "yolo_postprocess_mode": "vectorized",
+        "yolo_postprocess_calls": 2,
+        "yolo_postprocess_avg_ms": 4.0,
+        "yolo_postprocess_max_ms": 6.0,
+    }
 
 
 def test_deepstream_cumulative_filter_does_not_gate_fall_events(mock_config):
@@ -895,6 +1016,76 @@ def test_deepstream_fall_aux_confirm_max_score_can_extend_pending_window():
     assert proc._should_confirm_fall_with_aux_before_publish(too_high_score_fall) is False
 
 
+def test_deepstream_borderline_fall_is_deferred_to_aux_queue():
+    proc = object.__new__(DeepStreamProcessor)
+    proc.event_queue = Queue(maxsize=2)
+    proc._events_detected = 0
+    proc._events_dropped = 0
+    proc._falldata_aux_queue = Queue(maxsize=2)
+    proc._fall_aux_confirm_borderline = True
+    proc._fall_aux_confirm_max_fall_score = 4.5
+    proc._falldata_aux = MagicMock()
+    proc._falldata_aux.enabled = True
+    proc._fall_detector = types.SimpleNamespace(score_threshold=3.0)
+    proc._debouncer = MagicMock()
+    proc._debouncer.should_send.return_value = True
+    proc._fall_shadow_review_log_path = Path("/tmp/not-used.jsonl")
+    proc._fall_shadow_clip_dir = Path("/tmp")
+    proc._fall_shadow_save_clips = False
+
+    borderline = DetectionEvent(
+        EventType.FALL_DETECTED,
+        1,
+        2,
+        30,
+        20,
+        0.8,
+        1.0,
+        object_id=7,
+        metadata={"fall_score": 4.5},
+    )
+
+    ok = proc._enqueue_event_or_defer_fall_aux(borderline, "cam1")
+    camera_name, payload = proc._falldata_aux_queue.get_nowait()
+
+    assert ok is False
+    assert proc.event_queue.empty()
+    assert camera_name == "cam1"
+    assert payload["metadata"]["falldata_aux_publish_pending"] is True
+
+
+def test_deepstream_clear_high_score_fall_bypasses_aux_defer(tmp_path):
+    proc = object.__new__(DeepStreamProcessor)
+    proc.event_queue = Queue(maxsize=2)
+    proc._events_detected = 0
+    proc._events_dropped = 0
+    proc._fall_aux_confirm_borderline = True
+    proc._fall_aux_confirm_max_fall_score = 4.5
+    proc._falldata_aux = MagicMock()
+    proc._falldata_aux.enabled = True
+    proc._fall_detector = types.SimpleNamespace(score_threshold=3.0)
+    proc._debouncer = MagicMock()
+    proc._debouncer.should_send.return_value = True
+    proc._fall_shadow_review_log_path = tmp_path / "fall_shadow_review.jsonl"
+    proc._fall_shadow_clip_dir = tmp_path / "clips"
+    proc._fall_shadow_save_clips = False
+
+    clear_fall = DetectionEvent(
+        EventType.FALL_DETECTED,
+        1,
+        2,
+        30,
+        20,
+        0.8,
+        1.0,
+        object_id=7,
+        metadata={"fall_score": 6.0},
+    )
+
+    assert proc._enqueue_event_or_defer_fall_aux(clear_fall, "cam1") is True
+    assert proc.event_queue.get_nowait() is clear_fall
+
+
 def test_deepstream_aux_confirmed_borderline_fall_is_enqueued():
     proc = object.__new__(DeepStreamProcessor)
     proc.event_queue = Queue(maxsize=2)
@@ -945,6 +1136,33 @@ def test_deepstream_aux_rejected_borderline_fall_is_not_enqueued():
     assert ok is False
     assert proc.event_queue.empty()
     assert proc._events_detected == 0
+
+
+def test_deepstream_aux_unavailable_fallback_fall_is_enqueued():
+    proc = object.__new__(DeepStreamProcessor)
+    proc.event_queue = Queue(maxsize=2)
+    proc._events_detected = 0
+    payload = {
+        "type": "fall_detected",
+        "object_id": 7,
+        "metadata": {
+            "fall_score": 4.0,
+            "falldata_aux_publish_pending": True,
+        },
+    }
+    result = {
+        "status": "no_frames",
+        "confirmed": False,
+    }
+
+    ok = proc._enqueue_aux_fallback_fall_event("cam1", payload, result)
+    enqueued = proc.event_queue.get_nowait()
+
+    assert ok is True
+    assert proc._events_detected == 1
+    assert enqueued["metadata"]["falldata_aux"] == result
+    assert enqueued["metadata"]["falldata_aux_confirm_fallback"] == "no_frames"
+    assert "falldata_aux_publish_pending" not in enqueued["metadata"]
 
 
 def test_deepstream_compare_veto_can_drop_aux_confirmed_high_score_fall():
@@ -1017,6 +1235,18 @@ def test_deepstream_pa100k_sgie_backend_name_is_explicit(monkeypatch):
     monkeypatch.setenv("APPEARANCE_LABEL_MAP_PATH", "config/appearance_pa100k_labels.json")
 
     assert proc._resolve_pphuman_sgie_backend_name() == "pa100k_sgie"
+
+
+def test_deepstream_uses_configured_pphuman_infer_config(monkeypatch):
+    proc = object.__new__(DeepStreamProcessor)
+    monkeypatch.setenv(
+        "DS_PPHUMAN_INFER_CONFIG",
+        "config/deepstream/config_infer_pa100k.txt",
+    )
+
+    assert proc._resolve_pphuman_infer_config() == Path(
+        "config/deepstream/config_infer_pa100k.txt"
+    )
 
 
 def test_deepstream_sgie_injected_person_meta_has_label(monkeypatch):
@@ -1189,6 +1419,39 @@ def test_deepstream_fall_shadow_review_record_can_save_clip(tmp_path):
     assert record["clip_path"].endswith(".mp4")
 
 
+def test_deepstream_enqueue_fall_event_writes_review_record(tmp_path):
+    proc = object.__new__(DeepStreamProcessor)
+    proc.event_queue = Queue(maxsize=2)
+    proc._events_detected = 0
+    proc._events_dropped = 0
+    proc._fall_shadow_review_log_path = tmp_path / "fall_shadow_review.jsonl"
+    proc._fall_shadow_clip_dir = tmp_path / "clips"
+    proc._fall_shadow_save_clips = False
+    proc._falldata_aux = None
+    proc._debouncer = MagicMock()
+    proc._debouncer.should_send.return_value = True
+
+    event = DetectionEvent(
+        EventType.FALL_DETECTED,
+        1,
+        2,
+        30,
+        20,
+        0.8,
+        1.0,
+        object_id=7,
+        metadata={"fall_score": 4.5, "fall_reasons": ["torso_horizontal:5.0"]},
+    )
+
+    assert proc._enqueue_event(event, "cam1") is True
+
+    payload = json.loads(proc._fall_shadow_review_log_path.read_text(encoding="utf-8"))
+    assert payload["event_type"] == "fall_detected"
+    assert payload["fall_score"] == 4.5
+    assert payload["falldata_aux"]["status"] == "not_run"
+    assert payload["falldata_aux"]["reason"] == "deepstream_event_only"
+
+
 def test_deepstream_fall_near_miss_writes_review_record(tmp_path, monkeypatch):
     proc = object.__new__(DeepStreamProcessor)
     proc._fall_shadow_review_log_path = tmp_path / "fall_shadow_review.jsonl"
@@ -1229,6 +1492,54 @@ def test_deepstream_fall_near_miss_writes_review_record(tmp_path, monkeypatch):
     assert payload["review_source"] == "fall_near_miss"
     assert payload["near_miss"]["type"] == "folded_floor_pose"
     assert payload["falldata_aux"]["status"] == "not_run"
+
+
+def test_deepstream_event_pipeline_writes_fall_near_miss_record(tmp_path, monkeypatch):
+    proc = object.__new__(DeepStreamProcessor)
+    proc._fall_shadow_review_log_path = tmp_path / "fall_shadow_review.jsonl"
+    proc._fall_shadow_clip_dir = tmp_path / "clips"
+    proc._fall_shadow_save_clips = False
+    proc._fall_shadow_near_miss_enabled = True
+    proc._fall_shadow_near_miss_cooldown_sec = 10.0
+    proc._fall_shadow_near_miss_last_at = {}
+    proc._falldata_aux = None
+    proc._assign_synthetic_object_ids = lambda events, camera_name: None
+    proc.track_manager = MagicMock()
+    proc.violation_filter = MagicMock()
+    proc._submit_face_work = lambda camera_name, events: None
+    proc.zone_manager = MagicMock()
+    proc._enqueue_zone_events = lambda camera_name, events: None
+    proc._enqueue_event = lambda event, camera_name: True
+    proc._increment_stat = lambda name, delta=1: None
+    monkeypatch.setattr("src.core.deepstream_processor.time.monotonic", lambda: 100.0)
+    monkeypatch.setattr(
+        "src.core.deepstream_processor.ds_apply_existing_event_pipeline",
+        lambda **kwargs: None,
+    )
+
+    event = DetectionEvent(
+        EventType.PERSON,
+        1,
+        2,
+        30,
+        20,
+        0.8,
+        1.0,
+        object_id=7,
+        metadata={
+            "fall_near_miss": {
+                "type": "low_score_pose",
+                "score": 2.5,
+                "reasons": ["torso_horizontal:40.0"],
+            }
+        },
+    )
+
+    proc._apply_existing_event_pipeline("cam1", [event])
+
+    payload = json.loads(proc._fall_shadow_review_log_path.read_text(encoding="utf-8"))
+    assert payload["event_type"] == "fall_near_miss"
+    assert payload["near_miss"]["type"] == "low_score_pose"
 
 
 def test_deepstream_publish_loop_success_counts_sent_not_detected(mock_config):

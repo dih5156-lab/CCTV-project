@@ -8,10 +8,7 @@
 
 ## 기존 DeepStream 성능/안정성 결과
 
-출처:
-
-- `docs/reviews/PROJECT_REVIEW_2026-06.md`
-- `/tmp/deepstream_stability_20260514_110527.log`
+출처는 2026-05 현장 안정성 관찰 로그이며, 원본 임시 로그는 저장소에 보관하지 않습니다.
 
 30분 안정성 관찰 요약:
 

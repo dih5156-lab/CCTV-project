@@ -103,6 +103,7 @@ class TestSignboardConfig:
         assert cfg.brightness == 10
         assert cfg.text_color == 7
         assert cfg.back_color == 0
+        assert cfg.idle_refresh_interval == 10.0
 
 
 # ---------------------------------------------------------------------------

@@ -157,17 +157,18 @@ def normalize_external_event(raw_payload: Dict[str, Any], topic: str) -> Dict[st
         or raw_payload.get("description")
     )
 
-    normalized = {
+    confidence = _coerce_float(
+        raw_payload.get("confidence")
+        or raw_payload.get("score")
+        or raw_payload.get("probability")
+    )
+    normalized: Dict[str, Any] = {
         "camera_id": str(camera_id),
         "type": str(event_type),
         "timestamp": str(timestamp),
         "source": "external_mqtt",
         "source_type": "mqtt",
-        "confidence": _coerce_float(
-            raw_payload.get("confidence")
-            or raw_payload.get("score")
-            or raw_payload.get("probability")
-        ),
+        "confidence": confidence,
         "metadata": {
             "topic": topic,
             "source_id": raw_payload.get("source_id") or raw_payload.get("device_id") or raw_payload.get("deviceId") or raw_payload.get("dev_eui"),
@@ -194,7 +195,7 @@ def normalize_external_event(raw_payload: Dict[str, Any], topic: str) -> Dict[st
             source="external_mqtt",
             source_type="mqtt",
             severity=raw_payload.get("severity"),
-            confidence=normalized["confidence"],
+            confidence=confidence,
             message=message,
             display_message=raw_payload.get("display_message") or message,
             tts_message=raw_payload.get("tts_message") or message,

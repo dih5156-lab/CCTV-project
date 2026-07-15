@@ -15,8 +15,10 @@ from pathlib import Path
 from typing import Any
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_REVIEW_LOG = PROJECT_ROOT / "data/logs/fall_shadow_review.jsonl"
-DEFAULT_CLIP_DIR = PROJECT_ROOT / "data/fall_review_clips"
+DEFAULT_DATASET_ROOT = PROJECT_ROOT / "data/fall_dataset"
+DEFAULT_REVIEW_LOG = DEFAULT_DATASET_ROOT / "annotations/review.jsonl"
+DEFAULT_CLIP_DIR = DEFAULT_DATASET_ROOT / "clips/pending"
+DEFAULT_LABELED_DIR = DEFAULT_DATASET_ROOT / "clips/labeled"
 
 
 def read_review_log(path: Path) -> list[dict[str, Any]]:
@@ -42,6 +44,10 @@ def resolve_clip_path(
     path = Path(raw_path)
     if path.exists():
         return path
+    if not path.is_absolute():
+        project_path = PROJECT_ROOT / path
+        if project_path.exists():
+            return project_path
     return clip_dir / path.name
 
 
@@ -92,15 +98,38 @@ def apply_label(
     event_id: str,
     label: str | None,
     review_status: str,
+    clip_dir: Path = DEFAULT_CLIP_DIR,
+    labeled_dir: Path | None = None,
 ) -> None:
     """Reload and update one event so each key press is saved immediately."""
     rows = read_review_log(path)
     matches = [row for row in rows if row.get("event_id") == event_id]
     if len(matches) != 1:
         raise ValueError(f"expected one event_id={event_id!r}, found {len(matches)}")
-    matches[0]["label"] = label
-    matches[0]["review_status"] = review_status
-    write_review_log_atomic(path, rows)
+    row = matches[0]
+    original_clip: Path | None = None
+    labeled_clip: Path | None = None
+    if label in {"fall", "non_fall"} and labeled_dir is not None and row.get("clip_path"):
+        original_clip = resolve_clip_path(str(row["clip_path"]), clip_dir=clip_dir)
+        if not original_clip.is_file():
+            raise FileNotFoundError(f"clip not found: {original_clip}")
+        label_directory = labeled_dir / label
+        label_directory.mkdir(parents=True, exist_ok=True)
+        labeled_clip = label_directory / original_clip.name
+        if labeled_clip.exists() and labeled_clip != original_clip:
+            raise FileExistsError(f"labeled clip already exists: {labeled_clip}")
+        if labeled_clip != original_clip:
+            shutil.move(str(original_clip), str(labeled_clip))
+        row["clip_path"] = str(labeled_clip)
+
+    row["label"] = label
+    row["review_status"] = review_status
+    try:
+        write_review_log_atomic(path, rows)
+    except Exception:
+        if original_clip and labeled_clip and labeled_clip != original_clip and labeled_clip.exists():
+            shutil.move(str(labeled_clip), str(original_clip))
+        raise
 
 
 def create_backup(path: Path) -> Path:
@@ -189,6 +218,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--review-log", type=Path, default=DEFAULT_REVIEW_LOG)
     parser.add_argument("--clip-dir", type=Path, default=DEFAULT_CLIP_DIR)
+    parser.add_argument("--labeled-dir", type=Path, default=DEFAULT_LABELED_DIR)
     parser.add_argument("--camera", default="camera_1")
     parser.add_argument("--include-sample-eval", action="store_true")
     parser.add_argument("--list", action="store_true", help="List candidates without GUI")
@@ -225,6 +255,8 @@ def main() -> int:
             event_id=str(candidate["event_id"]),
             label=label,
             review_status=review_status,
+            clip_dir=args.clip_dir,
+            labeled_dir=args.labeled_dir,
         )
         print(f"{candidate['event_id']}: {label or review_status}")
     return 0

@@ -24,6 +24,7 @@ import numpy as np
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_MANIFEST = PROJECT_ROOT / "data/fall_eval/sample_manifest.jsonl"
 DEFAULT_FEATURE_CACHE = PROJECT_ROOT / "data/fall_eval/falldata_feature_cache"
+DEFAULT_VALIDATION_FEATURE_CACHE = PROJECT_ROOT / "data/fall_eval/falldata_validation_feature_cache"
 DEFAULT_OUTPUT_MODEL = PROJECT_ROOT / "models/experiments/falldata_sample_rf.pkl"
 DEFAULT_METRICS = PROJECT_ROOT / "models/experiments/falldata_sample_rf_metrics.json"
 DEFAULT_MEDIAPIPE_PYTHON = PROJECT_ROOT / ".venv-mediapipe/bin/python"
@@ -94,6 +95,21 @@ def _load_sequence(sequence_dir: Path) -> np.ndarray:
     return sequence.reshape(-1)
 
 
+def _load_sequence_with_quality(sequence_dir: Path) -> tuple[np.ndarray, int]:
+    frame_files = sorted(
+        sequence_dir.glob("*.npy"),
+        key=lambda path: int(path.stem) if path.stem.isdigit() else path.stem,
+    )
+    if len(frame_files) != TARGET_FRAMES:
+        raise ValueError(f"expected {TARGET_FRAMES} frames, found {len(frame_files)}: {sequence_dir}")
+
+    sequence = np.asarray([np.load(path).reshape(-1) for path in frame_files], dtype=np.float32)
+    if sequence.shape != (TARGET_FRAMES, FRAME_FEATURES):
+        raise ValueError(f"unexpected sequence shape {sequence.shape}: {sequence_dir}")
+    nonzero_frames = int(np.any(sequence != 0, axis=1).sum())
+    return sequence.reshape(-1), nonzero_frames
+
+
 def _label_for_row(row: dict[str, Any]) -> int:
     return FALL_LABEL if bool(row.get("is_fall")) else NON_FALL_LABEL
 
@@ -125,19 +141,27 @@ def _select_rows(rows: list[dict[str, Any]], max_videos: int) -> list[dict[str, 
         return rows
     fall_rows = [row for row in rows if bool(row.get("is_fall"))]
     non_fall_rows = [row for row in rows if not bool(row.get("is_fall"))]
-    selected: list[dict[str, Any]] = []
-    for group in (non_fall_rows, fall_rows):
-        remaining = max_videos - len(selected)
-        if remaining <= 0:
-            break
-        selected.extend(group[:remaining])
-    return selected[:max_videos]
+    primary_quota = max_videos // 2
+    selected = non_fall_rows[:primary_quota] + fall_rows[:primary_quota]
+    remaining = max_videos - len(selected)
+    if remaining > 0:
+        selected_ids = {id(row) for row in selected}
+        leftovers = [row for row in rows if id(row) not in selected_ids]
+        selected.extend(leftovers[:remaining])
+    return selected
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
     parser.add_argument("--feature-cache", type=Path, default=DEFAULT_FEATURE_CACHE)
+    parser.add_argument("--validation-manifest", type=Path)
+    parser.add_argument(
+        "--validation-feature-cache",
+        type=Path,
+        default=DEFAULT_VALIDATION_FEATURE_CACHE,
+    )
+    parser.add_argument("--validation-max-videos", type=int, default=0)
     parser.add_argument("--output-model", type=Path, default=DEFAULT_OUTPUT_MODEL)
     parser.add_argument("--metrics-json", type=Path, default=DEFAULT_METRICS)
     parser.add_argument("--mediapipe-python", type=Path, default=DEFAULT_MEDIAPIPE_PYTHON)
@@ -155,6 +179,23 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--min-samples-leaf", type=int, default=2)
     parser.add_argument("--max-features", default="sqrt")
     parser.add_argument("--cv-group-by", default="scene_base")
+    parser.add_argument(
+        "--skip-cross-validation",
+        action="store_true",
+        help="Skip group cross-validation for large runs; holdout/validation evaluation still runs.",
+    )
+    parser.add_argument(
+        "--fall-threshold",
+        type=float,
+        default=0.5,
+        help="Minimum fall probability required to predict fall (default: 0.5).",
+    )
+    parser.add_argument(
+        "--min-nonzero-feature-frames",
+        type=int,
+        default=0,
+        help="Drop samples with fewer nonzero feature frames after extraction (default: 0).",
+    )
     parser.add_argument("--force-extract", action="store_true")
     parser.add_argument(
         "--extract-workers",
@@ -215,6 +256,37 @@ def _evaluate_predictions(
     }
 
 
+def _fall_probabilities_from_model(model: Any, x: np.ndarray) -> list[float] | None:
+    if not hasattr(model, "predict_proba"):
+        return None
+    probabilities = model.predict_proba(x)
+    classes = list(getattr(model, "classes_", []))
+    if FALL_LABEL not in classes:
+        return None
+    fall_index = classes.index(FALL_LABEL)
+    return [float(row[fall_index]) for row in probabilities]
+
+
+def _predict_with_fall_threshold(
+    model: Any,
+    x: np.ndarray,
+    *,
+    fall_threshold: float,
+) -> tuple[np.ndarray, list[list[float]] | None]:
+    probabilities = model.predict_proba(x).tolist() if hasattr(model, "predict_proba") else None
+    fall_probabilities = _fall_probabilities_from_model(model, x)
+    if fall_probabilities is None:
+        return model.predict(x), probabilities
+    predictions = np.asarray(
+        [
+            FALL_LABEL if fall_probability >= fall_threshold else NON_FALL_LABEL
+            for fall_probability in fall_probabilities
+        ],
+        dtype=np.int64,
+    )
+    return predictions, probabilities
+
+
 def _prediction_error_summary(evaluation: dict[str, Any]) -> dict[str, Any]:
     false_positives = [
         row
@@ -268,6 +340,9 @@ def _cross_validate(
 ) -> dict[str, Any]:
     from sklearn.model_selection import GroupKFold
 
+    if args.skip_cross_validation:
+        return {"enabled": False, "reason": "skipped_by_option"}
+
     unique_groups = sorted(set(groups))
     if len(unique_groups) < 2:
         return {"enabled": False, "reason": "not enough groups"}
@@ -285,11 +360,10 @@ def _cross_validate(
     ):
         model = _build_model(args)
         model.fit(x[train_idx], y[train_idx])
-        fold_pred = model.predict(x[test_idx])
-        fold_prob = (
-            model.predict_proba(x[test_idx]).tolist()
-            if hasattr(model, "predict_proba")
-            else None
+        fold_pred, fold_prob = _predict_with_fall_threshold(
+            model,
+            x[test_idx],
+            fall_threshold=args.fall_threshold,
         )
         fold_ids = [row_ids[index] for index in test_idx]
         fold_true = y[test_idx]
@@ -448,32 +522,103 @@ def _train_test_split(
     return x_train, x_test, y_train, y_test, ids_train, ids_test, split_info
 
 
-def main() -> int:
-    import joblib
+def _prepare_dataset(
+    *,
+    rows: list[dict[str, Any]],
+    feature_cache: Path,
+    max_frames: int,
+    min_nonzero_feature_frames: int,
+    cv_group_by: str,
+) -> dict[str, Any]:
+    x = np.empty((len(rows), TARGET_FRAMES * FRAME_FEATURES), dtype=np.float32)
+    labels: list[int] = []
+    row_ids: list[str] = []
+    groups: list[str] = []
+    included_rows: list[dict[str, Any]] = []
+    feature_quality: list[dict[str, Any]] = []
+    excluded_rows: list[dict[str, Any]] = []
+    included_count = 0
+    for row in rows:
+        sequence_dir = _sequence_dir(feature_cache, row, max_frames)
+        sequence, nonzero_frames = _load_sequence_with_quality(sequence_dir)
+        row_id = _safe_id(row)
+        label = _label_for_row(row)
+        quality = {
+            "scene_id": row_id,
+            "nonzero_feature_frames": nonzero_frames,
+            "min_nonzero_feature_frames": min_nonzero_feature_frames,
+        }
+        if nonzero_frames < min_nonzero_feature_frames:
+            excluded_rows.append(
+                {
+                    **quality,
+                    "label": "fall" if label == FALL_LABEL else "non_fall",
+                    "reason": "nonzero_feature_frames_below_minimum",
+                }
+            )
+            continue
+        feature_quality.append(quality)
+        included_rows.append(row)
+        x[included_count] = sequence
+        included_count += 1
+        labels.append(label)
+        row_ids.append(row_id)
+        groups.append(_group_for_row(row, cv_group_by))
 
-    args = parse_args()
-    rows = _select_rows(_read_jsonl(args.manifest), args.max_videos)
-    if not rows:
-        raise SystemExit("no rows selected")
+    if included_count == 0:
+        raise SystemExit(
+            "no rows left after feature-quality filtering; lower --min-nonzero-feature-frames"
+        )
 
+    x = x[:included_count]
+    y = np.asarray(labels, dtype=np.int64)
+    return {
+        "x": x,
+        "y": y,
+        "counts": _class_counts(y),
+        "row_ids": row_ids,
+        "groups": groups,
+        "included_rows": included_rows,
+        "feature_quality": {
+            "min_nonzero_feature_frames": min_nonzero_feature_frames,
+            "included": feature_quality,
+            "excluded": excluded_rows,
+            "excluded_count": len(excluded_rows),
+        },
+        "dataset_summary": _dataset_summary(included_rows, groups),
+        "rows": len(rows),
+        "effective_rows": len(row_ids),
+    }
+
+
+def _prepare_sequences(
+    *,
+    rows: list[dict[str, Any]],
+    feature_cache: Path,
+    max_frames: int,
+    force_extract: bool,
+    extract_workers: int,
+    mediapipe_python: Path,
+    label: str,
+) -> None:
     def prepare_sequence(item: tuple[int, dict[str, Any]]) -> None:
         index, row = item
-        sequence_dir = _sequence_dir(args.feature_cache, row, args.max_frames)
-        if args.force_extract or not _is_sequence_ready(sequence_dir):
+        sequence_dir = _sequence_dir(feature_cache, row, max_frames)
+        if force_extract or not _is_sequence_ready(sequence_dir):
             print(
-                f"[{index}/{len(rows)}] extract {_safe_id(row)} -> {sequence_dir}",
+                f"[{label} {index}/{len(rows)}] extract {_safe_id(row)} -> {sequence_dir}",
                 flush=True,
             )
             _extract_features(
-                mediapipe_python=args.mediapipe_python,
+                mediapipe_python=mediapipe_python,
                 video_path=PROJECT_ROOT / str(row["video_path"]),
                 output_dir=sequence_dir,
-                max_frames=args.max_frames,
+                max_frames=max_frames,
             )
         else:
-            print(f"[{index}/{len(rows)}] cache {_safe_id(row)}", flush=True)
+            print(f"[{label} {index}/{len(rows)}] cache {_safe_id(row)}", flush=True)
 
-    worker_count = max(1, int(args.extract_workers))
+    worker_count = max(1, int(extract_workers))
     indexed_rows = list(enumerate(rows, start=1))
     if worker_count == 1:
         for item in indexed_rows:
@@ -482,20 +627,65 @@ def main() -> int:
         with concurrent.futures.ThreadPoolExecutor(max_workers=worker_count) as executor:
             list(executor.map(prepare_sequence, indexed_rows))
 
-    features: list[np.ndarray] = []
-    labels: list[int] = []
-    row_ids: list[str] = []
-    groups: list[str] = []
-    for row in rows:
-        sequence_dir = _sequence_dir(args.feature_cache, row, args.max_frames)
-        features.append(_load_sequence(sequence_dir))
-        labels.append(_label_for_row(row))
-        row_ids.append(_safe_id(row))
-        groups.append(_group_for_row(row, args.cv_group_by))
 
-    x = np.asarray(features, dtype=np.float32)
-    y = np.asarray(labels, dtype=np.int64)
-    counts = _class_counts(y)
+def _evaluate_model_on_dataset(
+    *,
+    model: Any,
+    dataset: dict[str, Any],
+    fall_threshold: float,
+) -> dict[str, Any]:
+    predictions, probabilities = _predict_with_fall_threshold(
+        model,
+        dataset["x"],
+        fall_threshold=fall_threshold,
+    )
+    evaluation = _evaluate_predictions(
+        dataset["y"],
+        predictions,
+        probabilities=probabilities,
+        scene_ids=dataset["row_ids"],
+    )
+    return {
+        **evaluation,
+        "errors": _prediction_error_summary(evaluation),
+        "rows": dataset["rows"],
+        "effective_rows": dataset["effective_rows"],
+        "class_counts": dataset["counts"],
+        "dataset_summary": dataset["dataset_summary"],
+        "feature_quality": dataset["feature_quality"],
+    }
+
+
+def main() -> int:
+    import joblib
+
+    args = parse_args()
+    rows = _select_rows(_read_jsonl(args.manifest), args.max_videos)
+    if not rows:
+        raise SystemExit("no rows selected")
+
+    _prepare_sequences(
+        rows=rows,
+        feature_cache=args.feature_cache,
+        max_frames=args.max_frames,
+        force_extract=args.force_extract,
+        extract_workers=args.extract_workers,
+        mediapipe_python=args.mediapipe_python,
+        label="train",
+    )
+    train_dataset = _prepare_dataset(
+        rows=rows,
+        feature_cache=args.feature_cache,
+        max_frames=args.max_frames,
+        min_nonzero_feature_frames=args.min_nonzero_feature_frames,
+        cv_group_by=args.cv_group_by,
+    )
+
+    x = train_dataset["x"]
+    y = train_dataset["y"]
+    counts = train_dataset["counts"]
+    row_ids = train_dataset["row_ids"]
+    groups = train_dataset["groups"]
     if len(set(y.tolist())) < 2:
         raise SystemExit(f"need both fall and non-fall classes, got {counts}")
 
@@ -511,11 +701,10 @@ def main() -> int:
 
     model = _build_model(args)
     model.fit(x_train, y_train)
-    predictions = model.predict(x_test)
-    probabilities = (
-        model.predict_proba(x_test).tolist()
-        if hasattr(model, "predict_proba")
-        else None
+    predictions, probabilities = _predict_with_fall_threshold(
+        model,
+        x_test,
+        fall_threshold=args.fall_threshold,
     )
 
     holdout = _evaluate_predictions(
@@ -524,6 +713,35 @@ def main() -> int:
         probabilities=probabilities,
         scene_ids=ids_test,
     )
+    validation: dict[str, Any] | None = None
+    if args.validation_manifest is not None:
+        validation_rows = _select_rows(
+            _read_jsonl(args.validation_manifest),
+            args.validation_max_videos,
+        )
+        if not validation_rows:
+            raise SystemExit("no validation rows selected")
+        _prepare_sequences(
+            rows=validation_rows,
+            feature_cache=args.validation_feature_cache,
+            max_frames=args.max_frames,
+            force_extract=args.force_extract,
+            extract_workers=args.extract_workers,
+            mediapipe_python=args.mediapipe_python,
+            label="validation",
+        )
+        validation_dataset = _prepare_dataset(
+            rows=validation_rows,
+            feature_cache=args.validation_feature_cache,
+            max_frames=args.max_frames,
+            min_nonzero_feature_frames=args.min_nonzero_feature_frames,
+            cv_group_by=args.cv_group_by,
+        )
+        validation = _evaluate_model_on_dataset(
+            model=model,
+            dataset=validation_dataset,
+            fall_threshold=args.fall_threshold,
+        )
     metrics = {
         "created_at": datetime.now(timezone.utc).isoformat(),
         "manifest": str(args.manifest),
@@ -532,8 +750,10 @@ def main() -> int:
         "output_model": str(args.output_model),
         "max_frames": args.max_frames,
         "rows": len(rows),
+        "effective_rows": train_dataset["effective_rows"],
         "class_counts": counts,
-        "dataset_summary": _dataset_summary(rows, groups),
+        "dataset_summary": train_dataset["dataset_summary"],
+        "feature_quality": train_dataset["feature_quality"],
         "train_ids": ids_train,
         "test_ids": ids_test,
         "holdout_split": split_info,
@@ -545,6 +765,12 @@ def main() -> int:
             "max_features": args.max_features,
             "class_weight": "balanced",
             "random_state": args.random_state,
+            "fall_threshold": args.fall_threshold,
+        },
+        "decision_policy": {
+            "fall_threshold": args.fall_threshold,
+            "fall_probability_source": "predict_proba class 0",
+            "min_nonzero_feature_frames": args.min_nonzero_feature_frames,
         },
         "holdout": holdout,
         "holdout_errors": _prediction_error_summary(holdout),
@@ -554,6 +780,8 @@ def main() -> int:
         "test_predictions": holdout["predictions"],
         "cross_validation": cross_validation,
     }
+    if validation is not None:
+        metrics["validation"] = validation
 
     args.output_model.parent.mkdir(parents=True, exist_ok=True)
     args.metrics_json.parent.mkdir(parents=True, exist_ok=True)
@@ -565,6 +793,8 @@ def main() -> int:
 
     print(f"features: {x.shape}")
     print(f"class_counts: {counts}")
+    print(f"fall_threshold: {args.fall_threshold}")
+    print(f"excluded_low_feature_rows: {train_dataset['feature_quality']['excluded_count']}")
     print(f"holdout confusion_matrix labels={holdout['confusion_matrix_labels']}:")
     print(np.asarray(holdout["confusion_matrix"]))
     if cross_validation.get("enabled"):
@@ -574,6 +804,18 @@ def main() -> int:
             f"labels={cross_validation['aggregate']['confusion_matrix_labels']}:"
         )
         print(cv_matrix)
+    if validation is not None:
+        validation_matrix = np.asarray(validation["confusion_matrix"])
+        print(
+            "validation confusion_matrix "
+            f"labels={validation['confusion_matrix_labels']}:"
+        )
+        print(validation_matrix)
+        print(
+            "validation_errors: "
+            f"FP={validation['errors']['false_positive_count']} "
+            f"FN={validation['errors']['false_negative_count']}"
+        )
     print(f"model: {args.output_model}")
     print(f"metrics: {args.metrics_json}")
     print(

@@ -78,6 +78,31 @@ def _runtime_optional_float(env_values: dict[str, str], name: str) -> float | No
     return _parse_optional_float(os.environ.get(name, env_values.get(name)))
 
 
+def _host_path_from_container_path(path: str, container_project_root: Path) -> Path:
+    container_path = Path(path)
+    try:
+        relative = container_path.relative_to(container_project_root)
+    except ValueError:
+        return Path(path)
+    return Path(relative)
+
+
+def _resolve_review_log_path(
+    requested_path: Path,
+    env_values: dict[str, str],
+    container_project_root: Path,
+) -> Path:
+    if requested_path != DEFAULT_REVIEW_LOG:
+        return requested_path
+    env_path = os.environ.get(
+        "FALL_SHADOW_REVIEW_LOG_PATH",
+        env_values.get("FALL_SHADOW_REVIEW_LOG_PATH", ""),
+    ).strip()
+    if not env_path:
+        return requested_path
+    return _host_path_from_container_path(env_path, container_project_root)
+
+
 def _read_jsonl(path: Path) -> list[dict[str, Any]]:
     if not path.exists():
         return []
@@ -335,6 +360,24 @@ def _summarize_shadow_records(
         for row in fall_event_records
         if isinstance(row.get("fall_score"), (int, float))
     ]
+    near_miss_records = [
+        row
+        for row in camera_records
+        if row.get("event_type") == "fall_near_miss"
+        and isinstance(row.get("near_miss"), dict)
+    ]
+    near_miss_scores = [
+        row["near_miss"].get("score")
+        for row in near_miss_records
+        if isinstance(row["near_miss"].get("score"), (int, float))
+    ]
+    near_miss_types = sorted(
+        {
+            str(row["near_miss"].get("type"))
+            for row in near_miss_records
+            if row["near_miss"].get("type")
+        }
+    )
     detected_by_event = bool(immediate_fall_event_records)
     detected_by_aux = bool(aux_published_records)
     detected_by_compare_aux = bool(compare_confirmed_records)
@@ -350,7 +393,10 @@ def _summarize_shadow_records(
         "aux_published_shadow_record_count": len(aux_published_records),
         "compare_model_record_count": len(compare_records),
         "compare_confirmed_shadow_record_count": len(compare_confirmed_records),
+        "near_miss_record_count": len(near_miss_records),
+        "near_miss_types": near_miss_types,
         "max_fall_score": max(fall_scores) if fall_scores else None,
+        "max_near_miss_score": max(near_miss_scores) if near_miss_scores else None,
         "max_fall_probability": max(numeric_probs) if numeric_probs else None,
         "max_compare_fall_probability": (
             max(numeric_compare_probs) if numeric_compare_probs else None
@@ -385,6 +431,12 @@ def evaluate(args: argparse.Namespace) -> list[dict[str, Any]]:
     _write_eval_cameras(args.eval_cameras_json, args.camera_id, initial_source)
     print(f"eval cameras: {args.eval_cameras_json}")
     env_values = _read_env_file_values(args.compose_env_file)
+    args.review_log = _resolve_review_log_path(
+        args.review_log,
+        env_values,
+        args.container_project_root,
+    )
+    print(f"review log: {args.review_log}")
     compare_veto_enabled = _runtime_bool(
         env_values,
         "FALLDATA_AUX_COMPARE_VETO_ENABLED",
@@ -472,10 +524,13 @@ def evaluate(args: argparse.Namespace) -> list[dict[str, Any]]:
                 "compare_confirmed_shadow_record_count": shadow[
                     "compare_confirmed_shadow_record_count"
                 ],
+                "near_miss_record_count": shadow["near_miss_record_count"],
+                "near_miss_types": shadow["near_miss_types"],
                 "detected_by_event": shadow["detected_by_event"],
                 "detected_by_aux": shadow["detected_by_aux"],
                 "detected_by_compare_aux": shadow["detected_by_compare_aux"],
                 "max_fall_score": shadow["max_fall_score"],
+                "max_near_miss_score": shadow["max_near_miss_score"],
                 "max_fall_probability": shadow["max_fall_probability"],
                 "max_compare_fall_probability": shadow["max_compare_fall_probability"],
                 "last_shadow_status": shadow["last_shadow_status"],
@@ -486,9 +541,10 @@ def evaluate(args: argparse.Namespace) -> list[dict[str, Any]]:
             _write_jsonl(results, args.results_jsonl)
             _write_csv(results, args.results_csv)
             print(
-                "  -> {result} detected={detected} max_prob={prob}".format(
+                "  -> {result} detected={detected} max_score={score} max_prob={prob}".format(
                     result=result["result"],
                     detected=result["detected"],
+                    score=result["max_fall_score"],
                     prob=result["max_fall_probability"],
                 )
             )

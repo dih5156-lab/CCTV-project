@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 
 class ControlMode(str, Enum):
@@ -53,7 +53,7 @@ class SiteConfig:
 
     @classmethod
     def from_dict(cls, data: Dict) -> "SiteConfig":
-        threshold = data.get("confidence_threshold")
+        threshold: Any = data.get("confidence_threshold")
         if threshold in ("", None):
             threshold = None
         else:

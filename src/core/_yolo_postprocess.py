@@ -7,6 +7,80 @@ from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 import numpy as np
 
 
+def filter_yolo_candidates(
+    rows: np.ndarray,
+    *,
+    task: str,
+    confidence_threshold: float,
+    class_ids_filter: Optional[Set[int]],
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """YOLO row를 NumPy에서 일괄 필터링해 Python 반복 대상을 최소화한다."""
+    if rows.ndim != 2 or rows.shape[0] == 0:
+        feature_count = rows.shape[1] if rows.ndim == 2 else 0
+        return (
+            np.empty((0, feature_count), dtype=np.float32),
+            np.empty(0, dtype=np.int32),
+            np.empty(0, dtype=np.float32),
+        )
+
+    if task == "pose":
+        class_ids = np.zeros(rows.shape[0], dtype=np.int32)
+        confidences = rows[:, 4]
+    else:
+        class_scores = rows[:, 4:]
+        if class_scores.shape[1] == 0:
+            return (
+                np.empty((0, rows.shape[1]), dtype=np.float32),
+                np.empty(0, dtype=np.int32),
+                np.empty(0, dtype=np.float32),
+            )
+        # 손상된 한 class score가 다른 정상 class 선택까지 막지 않도록 제외한다.
+        finite_scores = np.where(np.isfinite(class_scores), class_scores, -np.inf)
+        class_ids = finite_scores.argmax(axis=1).astype(np.int32, copy=False)
+        confidences = finite_scores[np.arange(rows.shape[0]), class_ids]
+
+    mask = np.isfinite(confidences) & (confidences >= confidence_threshold)
+    if class_ids_filter:
+        allowed_class_ids = np.fromiter(class_ids_filter, dtype=np.int32)
+        mask &= np.isin(class_ids, allowed_class_ids)
+
+    return rows[mask], class_ids[mask], confidences[mask]
+
+
+def filter_yolo_candidates_legacy(
+    rows: np.ndarray,
+    *,
+    task: str,
+    confidence_threshold: float,
+    class_ids_filter: Optional[Set[int]],
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """배포 롤백용 기존 Python row 반복 필터."""
+    if task == "pose":
+        class_ids = np.zeros(rows.shape[0], dtype=np.int32)
+        confidences = rows[:, 4]
+    else:
+        class_scores = rows[:, 4:]
+        if class_scores.shape[1] == 0:
+            return (
+                np.empty((0, rows.shape[1]), dtype=np.float32),
+                np.empty(0, dtype=np.int32),
+                np.empty(0, dtype=np.float32),
+            )
+        class_ids = class_scores.argmax(axis=1).astype(np.int32, copy=False)
+        confidences = class_scores[np.arange(rows.shape[0]), class_ids]
+
+    kept_indices = []
+    for row_index, (class_id, confidence) in enumerate(zip(class_ids, confidences)):
+        if float(confidence) < confidence_threshold:
+            continue
+        if class_ids_filter and int(class_id) not in class_ids_filter:
+            continue
+        kept_indices.append(row_index)
+
+    indices = np.asarray(kept_indices, dtype=np.intp)
+    return rows[indices], class_ids[indices], confidences[indices]
+
+
 def map_yolo_box_to_frame(
     box: Any,
     frame_width: int,
@@ -117,6 +191,7 @@ def detections_from_yolo_output(
     max_detections: int,
     fall_checker: Callable[[List[List[float]], int, int], Any],
     person_pose_validator: Callable[[List[List[float]]], bool],
+    postprocess_mode: str = "vectorized",
 ) -> List[Dict[str, Any]]:
     """YOLO raw output 배열을 DetectionEvent 생성 전 dict 목록으로 변환한다."""
     rows = np.asarray(output, dtype=np.float32)
@@ -129,22 +204,22 @@ def detections_from_yolo_output(
     if rows.shape[1] < 5:
         return []
 
-    if task == "pose":
-        class_ids = np.zeros(rows.shape[0], dtype=np.int32)
-        confidences = rows[:, 4]
-    else:
-        class_scores = rows[:, 4:]
-        class_ids = class_scores.argmax(axis=1)
-        confidences = class_scores[np.arange(rows.shape[0]), class_ids]
+    candidate_filter = (
+        filter_yolo_candidates_legacy
+        if postprocess_mode == "legacy"
+        else filter_yolo_candidates
+    )
+    candidate_rows, class_ids, confidences = candidate_filter(
+        rows,
+        task=task,
+        confidence_threshold=confidence_threshold,
+        class_ids_filter=class_ids_filter,
+    )
 
     detections: List[Dict[str, Any]] = []
-    for row, class_id, confidence in zip(rows, class_ids, confidences):
+    for row, class_id, confidence in zip(candidate_rows, class_ids, confidences):
         class_id = int(class_id)
         confidence = float(confidence)
-        if confidence < confidence_threshold:
-            continue
-        if class_ids_filter and class_id not in class_ids_filter:
-            continue
 
         x, y, width, height = map_yolo_box_to_frame(
             row[:4],

@@ -29,6 +29,7 @@ import uuid
 from typing import Optional
 
 from database.edgex_outbox import EdgeXOutbox
+
 from mqtt.base_publisher import BaseMqttPublisher
 
 logger = logging.getLogger(__name__)
@@ -96,6 +97,7 @@ class EdgeXForwarder(BaseMqttPublisher):
         table_name: str,
         data: dict,
         received_at: int,
+        uplink_metadata: Optional[dict] = None,
     ) -> bool:
         """파싱된 센서 데이터를 aiot/sensors/{dev_eui}/{table_name} 으로 발행하고
         EdgeX Core Data 및 Alert API에 전송합니다.
@@ -115,6 +117,8 @@ class EdgeXForwarder(BaseMqttPublisher):
             "data":        {k: v for k, v in data.items() if k != "tableName"},
             "received_at": received_at,
         }
+        if uplink_metadata:
+            sensor_payload["uplink"] = uplink_metadata
         payload_json = json.dumps(sensor_payload, default=str)
 
         # 1. MQTT 발행 (aiot/sensors/{dev_eui}/{table_name})

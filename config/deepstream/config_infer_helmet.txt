@@ -40,8 +40,8 @@ detected-max-h=2160
 
 [class-attrs-0]
 # helmet
-pre-cluster-threshold=0.35
+pre-cluster-threshold=0.65
 
 [class-attrs-1]
 # head / no-helmet candidate
-pre-cluster-threshold=0.35
+pre-cluster-threshold=0.65

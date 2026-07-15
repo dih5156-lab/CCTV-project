@@ -74,6 +74,61 @@ def _parse_env_values(text: str) -> dict[str, str]:
     return values
 
 
+def _compose_service_env_value(text: str, service_name: str, key: str) -> str:
+    """Return one environment value from a top-level Compose service block."""
+    service_block = _compose_service_block(text, service_name)
+    for line in service_block.splitlines():
+        stripped = line.strip()
+        if stripped.startswith(f"{key}:"):
+            return stripped.split(":", 1)[1].strip().strip('"').strip("'")
+    return ""
+
+
+def _compose_service_block(text: str, service_name: str) -> str:
+    """Return a top-level Compose service block."""
+    service_marker = f"  {service_name}:"
+    in_service = False
+    lines: list[str] = []
+    for line in text.splitlines():
+        if line == service_marker:
+            in_service = True
+            lines.append(line)
+            continue
+        if in_service and line.startswith("  ") and not line.startswith("    "):
+            break
+        if in_service:
+            lines.append(line)
+    return "\n".join(lines)
+
+
+def check_edgex_outbox_path_isolation(
+    *,
+    compose_text: str | None = None,
+    jetson_compose_text: str | None = None,
+) -> dict[str, Any]:
+    """Ensure the CCTV adapter and AIoT parser do not share one SQLite file."""
+    compose = compose_text if compose_text is not None else _read_text(PROJECT_ROOT / "docker-compose.yml")
+    jetson = (
+        jetson_compose_text
+        if jetson_compose_text is not None
+        else _read_text(PROJECT_ROOT / "docker-compose.jetson.yml")
+    )
+    failures: list[str] = []
+    for label, text in (("docker-compose.yml", compose), ("docker-compose.jetson.yml", jetson)):
+        adapter_path = _compose_service_env_value(text, "cctv-edgex-adapter", "EDGEX_OUTBOX_DB")
+        parser_path = _compose_service_env_value(text, "aiot-parser", "EDGEX_OUTBOX_DB")
+        if not adapter_path or not parser_path:
+            failures.append(f"{label} missing EDGEX_OUTBOX_DB")
+        elif adapter_path == parser_path:
+            failures.append(f"{label} shared outbox path: {adapter_path}")
+
+    return {
+        "name": "EdgeX outbox path isolation",
+        "passed": not failures,
+        "detail": ", ".join(failures),
+    }
+
+
 def check_default_compose_architecture(
     *,
     machine: str | None = None,
@@ -365,7 +420,7 @@ def check_falldata_aux_wiring(
         ("docker-compose.jetson.yml", jetson, "source: ./.venv-falldata"),
         (".env.example", env_example, "FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE=true"),
         (".env.jetson.example", jetson_env, "FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE=true"),
-        (".env.jetson.example", jetson_env, "FALLDATA_AUX_CONFIRM_BORDERLINE=false"),
+        (".env.jetson.example", jetson_env, "FALLDATA_AUX_CONFIRM_BORDERLINE=true"),
         (
             ".env.jetson.example",
             jetson_env,
@@ -432,6 +487,100 @@ def check_h264_webrtc_wiring(
         "name": "H.264 WebRTC compatibility wiring",
         "passed": not missing,
         "detail": "missing: " + ", ".join(missing) if missing else "Jetson NVENC POC guard is wired",
+    }
+
+
+def check_public_api_exposure_defaults(
+    *,
+    compose_text: str | None = None,
+    jetson_compose_text: str | None = None,
+    env_example_text: str | None = None,
+    jetson_env_example_text: str | None = None,
+) -> dict[str, Any]:
+    """Ensure Public API is not externally bound by default."""
+    compose = compose_text if compose_text is not None else _read_text(PROJECT_ROOT / "docker-compose.yml")
+    jetson = (
+        jetson_compose_text
+        if jetson_compose_text is not None
+        else _read_text(PROJECT_ROOT / "docker-compose.jetson.yml")
+    )
+    env_example = env_example_text if env_example_text is not None else _read_text(PROJECT_ROOT / ".env.example")
+    jetson_env = (
+        jetson_env_example_text
+        if jetson_env_example_text is not None
+        else _read_text(PROJECT_ROOT / ".env.jetson.example")
+    )
+
+    required_entries = (
+        ("docker-compose.yml", compose, "host_ip: ${PUBLIC_API_BIND_HOST:-127.0.0.1}"),
+        ("docker-compose.yml", compose, "host_ip: ${PUBLIC_DEMO_BIND_HOST:-127.0.0.1}"),
+        ("docker-compose.jetson.yml", jetson, "host_ip: ${MQTT_BIND_HOST:-127.0.0.1}"),
+        ("docker-compose.jetson.yml", jetson, "host_ip: ${PUBLIC_API_BIND_HOST:-127.0.0.1}"),
+        ("docker-compose.jetson.yml", jetson, "host_ip: ${PUBLIC_DEMO_BIND_HOST:-127.0.0.1}"),
+        ("docker-compose.jetson.yml", jetson, "host_ip: ${MEDIA_BIND_HOST:-127.0.0.1}"),
+        ("docker-compose.jetson.yml", jetson, "host_ip: ${MEDIA_API_BIND_HOST:-127.0.0.1}"),
+        (".env.example", env_example, "PUBLIC_API_BIND_HOST=127.0.0.1"),
+        (".env.example", env_example, "PUBLIC_DEMO_BIND_HOST=127.0.0.1"),
+        (".env.jetson.example", jetson_env, "MQTT_BIND_HOST=127.0.0.1"),
+        (".env.jetson.example", jetson_env, "PUBLIC_API_BIND_HOST=127.0.0.1"),
+        (".env.jetson.example", jetson_env, "PUBLIC_DEMO_BIND_HOST=127.0.0.1"),
+        (".env.jetson.example", jetson_env, "MEDIA_BIND_HOST=127.0.0.1"),
+        (".env.jetson.example", jetson_env, "MEDIA_API_BIND_HOST=127.0.0.1"),
+    )
+    missing = [f"{label} missing {entry}" for label, text, entry in required_entries if entry not in text]
+    unsafe_blocks = (
+        ("docker-compose.yml", compose, "cctv-public-api"),
+        ("docker-compose.yml", compose, "public-demo-ui"),
+        ("docker-compose.jetson.yml", jetson, "edgex-mqtt-broker"),
+        ("docker-compose.jetson.yml", jetson, "public-demo-ui"),
+        ("docker-compose.jetson.yml", jetson, "cctv-media-server"),
+        ("docker-compose.jetson.yml", jetson, "cctv-public-api"),
+    )
+    unsafe = [
+        f"{label} hardcodes {service_name} host_ip 0.0.0.0"
+        for label, text, service_name in unsafe_blocks
+        if "host_ip: 0.0.0.0" in _compose_service_block(text, service_name)
+    ]
+
+    failures = missing + unsafe
+    return {
+        "name": "network exposure defaults",
+        "passed": not failures,
+        "detail": "missing/unsafe entries: " + ", ".join(failures) if failures else "externally reachable services bind to localhost by default",
+    }
+
+
+def check_public_api_shared_secret_alignment(
+    *,
+    env_text: str | None = None,
+    jetson_env_text: str | None = None,
+) -> dict[str, Any]:
+    """Ensure the demo UI and public API share the same runtime secrets across env files."""
+    env = env_text if env_text is not None else _read_text(PROJECT_ROOT / ".env")
+    jetson = (
+        jetson_env_text
+        if jetson_env_text is not None
+        else _read_text(PROJECT_ROOT / ".env.jetson")
+    )
+
+    env_values = _parse_env_values(env)
+    jetson_values = _parse_env_values(jetson)
+    tracked_keys = ("PUBLIC_API_KEY", "INTERNAL_SERVICE_TOKEN")
+
+    failures: list[str] = []
+    for key in tracked_keys:
+        env_value = env_values.get(key, "")
+        jetson_value = jetson_values.get(key, "")
+        if not env_value or not jetson_value:
+            failures.append(f"{key} missing in .env or .env.jetson")
+            continue
+        if env_value != jetson_value:
+            failures.append(f"{key} differs between .env and .env.jetson")
+
+    return {
+        "name": "public API shared secret alignment",
+        "passed": not failures,
+        "detail": ", ".join(failures),
     }
 
 
@@ -522,7 +671,10 @@ def run_checks() -> list[dict[str, Any]]:
         check_appearance_model_wiring(),
         check_falldata_aux_wiring(),
         check_h264_webrtc_wiring(),
+        check_public_api_exposure_defaults(),
+        check_public_api_shared_secret_alignment(),
         check_mqtt_auth_config(),
+        check_edgex_outbox_path_isolation(),
     ]
 
 

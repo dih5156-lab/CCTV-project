@@ -32,10 +32,10 @@ from database.models import (
 )
 from database.processor import DataProcessor
 from mqtt.interfaces import SensorDataProcessor
-from service.device_info_service import DeviceInfoService
-from service.event_service import EventService
 from tlv.parser import Parser
 
+from service.device_info_service import DeviceInfoService
+from service.event_service import EventService
 from time_utils import now_kst, timestamp_ms_to_kst
 
 logger = logging.getLogger(__name__)
@@ -127,6 +127,7 @@ class SensorService(SensorDataProcessor):
         channel: int,
         frequency: int,
         received_at: int,
+        uplink_metadata: dict | None = None,
     ) -> None:
         """
         MQTT 수신 데이터 처리 메인 로직
@@ -143,7 +144,7 @@ class SensorService(SensorDataProcessor):
         # 1. Base64 디코딩
         # Go: base64.StdEncoding.DecodeString(message)
         try:
-            decoded_payload = base64.b64decode(payload)
+            decoded_payload = base64.b64decode(payload, validate=True)
         except Exception as e:
             logger.error(f"Failed to decode base64 payload for devEUI {dev_eui}: {e}")
             return
@@ -303,6 +304,7 @@ class SensorService(SensorDataProcessor):
                 table_name=table,
                 data=d,
                 received_at=received_at,
+                uplink_metadata=uplink_metadata,
             )
 
         # 6. 이벤트 처리 (Go: if isEvent(parsedTLV.Data) { ... })

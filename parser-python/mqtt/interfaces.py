@@ -28,6 +28,7 @@ class SensorDataProcessor(ABC):
         channel: int,
         frequency: int,
         received_at: int,
+        uplink_metadata: dict | None = None,
     ) -> None:
         """
         MQTT 수신 센서 데이터 처리
@@ -40,6 +41,7 @@ class SensorDataProcessor(ABC):
             channel     : LoRa 채널 번호
             frequency   : LoRa 주파수 (Hz)
             received_at : 게이트웨이 수신 Unix 밀리초 타임스탬프
+            uplink_metadata: 서버 Uplink envelope의 추적용 필드
         """
         ...
 

@@ -69,6 +69,10 @@ desktop.ini
 # 로그
 *.log
 
+# 크래시 덤프
+/core
+/core.*
+
 # 환경설정 (개인정보)
 .env
 .env.jetson
@@ -105,9 +109,12 @@ tooling/node-*/
 .pytest_cache/
 
 # 모델 캐시 (TensorRT 변환 결과는 로컬 전용)
+/yolo*.pt
+models/*.pt
 *.engine
 models/*.onnx
 models/experiments/
+models/training/
 
 .venv/
 .venv-par/
@@ -126,4 +133,6 @@ data/*.jsonl
 data/*.jsonl.*
 data/fall_eval/
 data/fall_review_clips/
+data/fall_dataset/
+data/datasets/
 Sample/

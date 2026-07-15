@@ -24,6 +24,10 @@ apiAddress: :9997
 apiAllowOrigins: ["*"]
 
 paths:
+  sample_eval:
+    # cameras.json 의 sample_eval 카메라 ID와 WebRTC path 를 맞춘다.
+    source: publisher
+
   camera_1:
     # cctv-ai-engine 이 RTSP publisher 로 밀어 넣는 표준 라이브 경로.
     # WebRTC 는 이 path 를 읽고, MJPEG/Stream API/HLS 는 운영 기본 경로에서 제외한다.

@@ -28,16 +28,22 @@ import numpy as np
 from ...utils.geometry import is_helmet_worn
 from ._attribute_backend import AttributeBackend, AttributeCrop
 from ._attribute_backends import build_attribute_backend
+from ._color_classification_backend import (
+    ColorClassificationBackend,
+    build_color_classification_backend,
+)
 
 logger = logging.getLogger(__name__)
 
 _COLOR_RANGES: Dict[str, List[Tuple[Tuple[int, int, int], Tuple[int, int, int]]]] = {
-    "red":    [((0, 70, 50), (10, 255, 255)), ((170, 70, 50), (180, 255, 255))],
-    "orange": [((11, 70, 50), (25, 255, 255))],
+    "red":    [((0, 100, 50), (10, 255, 255)), ((170, 171, 50), (180, 255, 255))],
+    "brown":  [((5, 50, 35), (20, 255, 200))],
+    "orange": [((11, 70, 171), (25, 255, 255))],
     "yellow": [((26, 70, 50), (34, 255, 255))],
     "green":  [((35, 70, 50), (85, 255, 255))],
     "blue":   [((86, 70, 50), (130, 255, 255))],
-    "purple": [((131, 70, 50), (169, 255, 255))],
+    "purple": [((131, 70, 50), (159, 255, 255))],
+    "pink":   [((160, 30, 100), (180, 170, 255)), ((0, 30, 150), (10, 99, 255))],
     "white":  [((0, 0, 180), (180, 30, 255))],
     "black":  [((0, 0, 0), (180, 255, 50))],
     "gray":   [((0, 0, 51), (180, 30, 179))],
@@ -53,6 +59,8 @@ _LAB_PROTOTYPE_BGR: Dict[str, Tuple[int, int, int]] = {
     "yellow": (0, 220, 220),
     "green": (0, 160, 0),
     "blue": (220, 80, 0),
+    "brown": (0, 75, 150),
+    "pink": (180, 105, 255),
     "purple": (160, 0, 160),
 }
 
@@ -70,6 +78,7 @@ _LOWER_SAMPLE_END_RATIO = 0.90
 _POSE_KEYPOINT_MIN_CONFIDENCE = 0.30
 _MIN_FULL_BODY_COVERAGE_RATIO = 0.75
 _MIN_UPPER_BODY_COVERAGE_RATIO = 0.35
+_MIN_LOWER_BODY_ASPECT_RATIO = 1.20
 _MIN_COLOR_DOMINANCE_RATIO = 0.20
 _MIN_HELMET_COLOR_DOMINANCE_RATIO = 0.45
 _HELMET_HEAD_RATIO = 0.22
@@ -94,6 +103,10 @@ COLOR_FIELDS = ("upper_color", "lower_color", "helmet_color")
 _BAG_PROXIMITY_RATIO = 0.5
 
 _MIN_CROP_SIZE = 20
+_MIN_COLOR_REGION_WIDTH = 16
+_MIN_COLOR_REGION_HEIGHT = 10
+_MIN_COLOR_PERSON_WIDTH = 80
+_MIN_COLOR_PERSON_HEIGHT = 120
 
 
 class AppearanceAnalyzer:
@@ -116,6 +129,11 @@ class AppearanceAnalyzer:
         backend_input_size: int = 224,
         backend_score_threshold: float = 0.5,
         bbox_expand_ratio: float = 0.15,
+        color_backend: Optional[ColorClassificationBackend] = None,
+        color_model_path: Optional[str] = None,
+        color_label_map_path: Optional[str] = None,
+        color_input_size: int = 160,
+        color_score_threshold: float = 0.75,
     ) -> None:
         self._clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(4, 4))
         self._conditions: List[Dict] = []
@@ -127,6 +145,13 @@ class AppearanceAnalyzer:
             device=backend_device,
             input_size=backend_input_size,
             score_threshold=backend_score_threshold,
+        )
+        self._color_backend = color_backend or build_color_classification_backend(
+            color_model_path,
+            color_label_map_path,
+            input_size=color_input_size,
+            score_threshold=color_score_threshold,
+            device=backend_device,
         )
         self._bbox_expand_ratio = max(0.0, float(bbox_expand_ratio))
 
@@ -237,9 +262,21 @@ class AppearanceAnalyzer:
 
         crop = frame[y1:y2, x1:x2]
 
-        margin_px = int(crop_w * _HORIZONTAL_MARGIN)
-        if crop_w - 2 * margin_px >= _MIN_CROP_SIZE:
-            crop = crop[:, margin_px:crop_w - margin_px]
+        horizontal_start = 0
+        horizontal_end = crop_w
+        pose_bounds = self._pose_horizontal_bounds(
+            keypoints,
+            frame_x1=x1,
+            crop_w=crop_w,
+        )
+        if pose_bounds is not None:
+            horizontal_start, horizontal_end = pose_bounds
+        else:
+            margin_px = int(crop_w * _HORIZONTAL_MARGIN)
+            if crop_w - 2 * margin_px >= _MIN_CROP_SIZE:
+                horizontal_start = margin_px
+                horizontal_end = crop_w - margin_px
+        crop = crop[:, horizontal_start:horizontal_end]
 
         head_h = max(int(crop_h * _HEAD_REGION_RATIO), 5)
         head_region = crop[:head_h, :]
@@ -257,12 +294,15 @@ class AppearanceAnalyzer:
             crop_h=crop_h,
             keypoints=keypoints,
         )
+        if crop_w < _MIN_COLOR_PERSON_WIDTH or crop_h < _MIN_COLOR_PERSON_HEIGHT:
+            visibility["upper_visible"] = False
+            visibility["lower_visible"] = False
 
-        upper, lower = self._split_body_regions(
+        upper, lower, upper_mask, lower_mask = self._split_body_regions(
             crop,
             crop_h=crop_h,
             head_h=head_h,
-            frame_x1=x1 + margin_px,
+            frame_x1=x1 + horizontal_start,
             frame_y1=y1,
             keypoints=keypoints,
         )
@@ -271,12 +311,12 @@ class AppearanceAnalyzer:
         has_helmet = self._has_helmet_evidence(x, y, width, height, nearby_objects)
 
         upper_evidence = (
-            self._dominant_color_evidence(upper)
+            self._dominant_color_evidence(upper, region_mask=upper_mask)
             if visibility["upper_visible"]
             else self._unknown_color_evidence("not_visible")
         )
         lower_evidence = (
-            self._dominant_color_evidence(lower)
+            self._dominant_color_evidence(lower, region_mask=lower_mask)
             if visibility["lower_visible"]
             else self._unknown_color_evidence("not_visible")
         )
@@ -291,6 +331,19 @@ class AppearanceAnalyzer:
                 "not_visible" if not visibility["hat_visible"] else "no_helmet"
             )
         )
+
+        if visibility["upper_visible"]:
+            upper_evidence = self._merge_color_model_evidence(
+                upper_evidence,
+                upper,
+                region_mask=upper_mask,
+            )
+        if visibility["lower_visible"]:
+            lower_evidence = self._merge_color_model_evidence(
+                lower_evidence,
+                lower,
+                region_mask=lower_mask,
+            )
 
         attrs = {
             "upper_color": upper_evidence["selected"],
@@ -319,6 +372,59 @@ class AppearanceAnalyzer:
             width,
             height,
         )
+
+    def _merge_color_model_evidence(
+        self,
+        evidence: Dict[str, object],
+        region: np.ndarray,
+        *,
+        region_mask: Optional[np.ndarray] = None,
+    ) -> Dict[str, object]:
+        """신뢰 가능한 분류 결과만 기존 HSV/LAB 근거 위에 반영한다."""
+        if (
+            region.size == 0
+            or region.shape[1] < _MIN_COLOR_REGION_WIDTH
+            or region.shape[0] < _MIN_COLOR_REGION_HEIGHT
+        ):
+            return self._unknown_color_evidence("too_small")
+        model_region = region
+        mask_coverage = 1.0
+        if region_mask is not None and region_mask.shape == region.shape[:2]:
+            active_pixels = int(cv2.countNonZero(region_mask))
+            mask_coverage = active_pixels / max(float(region_mask.size), 1.0)
+            if active_pixels >= 50:
+                mean_bgr = cv2.mean(region, mask=region_mask)[:3]
+                model_region = np.empty_like(region)
+                model_region[:] = tuple(int(round(value)) for value in mean_bgr)
+                model_region[region_mask > 0] = region[region_mask > 0]
+        prediction = self._color_backend.predict(model_region)
+        color = prediction.get("color")
+        if not color:
+            return evidence
+        hsv_color = str(evidence.get("hsv_color") or "unknown")
+        lab_color = str(evidence.get("lab_color") or "unknown")
+        model_color = str(color)
+        model_confidence = float(prediction.get("confidence", 0.0))
+        if (
+            hsv_color == lab_color
+            and hsv_color in {"black", "white", "gray"}
+            and model_color != hsv_color
+        ):
+            consensus = dict(evidence)
+            consensus["selected"] = hsv_color
+            consensus["source"] = "hsv_lab_consensus"
+            consensus["model_color"] = model_color
+            consensus["model_confidence"] = model_confidence
+            consensus["mask_coverage"] = round(mask_coverage, 4)
+            return consensus
+        merged = dict(evidence)
+        merged["selected"] = model_color
+        merged["source"] = str(getattr(self._color_backend, "backend_name", "color_model"))
+        merged["confidence"] = model_confidence
+        merged["model_color"] = model_color
+        merged["model_confidence"] = model_confidence
+        merged["mask_coverage"] = round(mask_coverage, 4)
+        return merged
 
     def _expand_bbox(self, x: int, y: int, width: int, height: int) -> Dict[str, int]:
         """속성 분석용 person bbox를 약간 확장한다."""
@@ -395,11 +501,17 @@ class AppearanceAnalyzer:
         top_clipped = y1 > y
         bottom_clipped = y2 < (y + height)
         coverage_ratio = crop_h / max(float(height), 1.0)
+        visible_crop_width = x2 - x1
+        person_aspect_ratio = crop_h / max(float(visible_crop_width), 1.0)
 
         result = {
             "hat_visible": (not top_clipped) and crop_h >= head_h + 5,
             "upper_visible": coverage_ratio >= _MIN_UPPER_BODY_COVERAGE_RATIO,
-            "lower_visible": (not bottom_clipped) and coverage_ratio >= _MIN_FULL_BODY_COVERAGE_RATIO,
+            "lower_visible": (
+                (not bottom_clipped)
+                and coverage_ratio >= _MIN_FULL_BODY_COVERAGE_RATIO
+                and person_aspect_ratio >= _MIN_LOWER_BODY_ASPECT_RATIO
+            ),
         }
 
         if not keypoints:
@@ -452,7 +564,7 @@ class AppearanceAnalyzer:
         frame_x1: int,
         frame_y1: int,
         keypoints: Optional[List[List[float]]],
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> Tuple[np.ndarray, np.ndarray, Optional[np.ndarray], Optional[np.ndarray]]:
         """상의/하의 분석용 ROI를 반환한다.
 
         키포인트가 있으면 어깨-엉덩이-무릎 기준으로 동적으로 자르고,
@@ -476,7 +588,44 @@ class AppearanceAnalyzer:
 
         upper = crop[upper_start:upper_end, :]
         lower = crop[lower_start:lower_end, :]
-        return upper, lower
+        shoulder_xs = self._keypoint_pair_xs(keypoints, 5, 6)
+        hip_xs = self._keypoint_pair_xs(keypoints, 11, 12)
+        knee_xs = self._keypoint_pair_xs(keypoints, 13, 14)
+        upper_mask = self._trapezoid_region_mask(
+            upper.shape[:2],
+            top_xs=shoulder_xs,
+            bottom_xs=hip_xs or shoulder_xs,
+            frame_x1=frame_x1,
+        )
+        lower_mask = self._trapezoid_region_mask(
+            lower.shape[:2],
+            top_xs=hip_xs,
+            bottom_xs=knee_xs or hip_xs,
+            frame_x1=frame_x1,
+        )
+        return upper, lower, upper_mask, lower_mask
+
+    @staticmethod
+    def _keypoint_pair_xs(
+        keypoints: Optional[List[List[float]]],
+        first_index: int,
+        second_index: int,
+    ) -> Optional[Tuple[float, float]]:
+        if not keypoints or len(keypoints) <= max(first_index, second_index):
+            return None
+        try:
+            first = keypoints[first_index]
+            second = keypoints[second_index]
+            if (
+                len(first) < 3
+                or len(second) < 3
+                or float(first[2]) < _POSE_KEYPOINT_MIN_CONFIDENCE
+                or float(second[2]) < _POSE_KEYPOINT_MIN_CONFIDENCE
+            ):
+                return None
+            return tuple(sorted((float(first[0]), float(second[0]))))
+        except (TypeError, ValueError):
+            return None
 
     @staticmethod
     def _mean_keypoint_axis(kpts: np.ndarray, indices: List[int], axis: int) -> Optional[float]:
@@ -489,6 +638,46 @@ class AppearanceAnalyzer:
             return None
         return sum(values) / len(values)
 
+    @staticmethod
+    def _pose_horizontal_bounds(
+        keypoints: Optional[List[List[float]]],
+        *,
+        frame_x1: int,
+        crop_w: int,
+    ) -> Optional[Tuple[int, int]]:
+        """어깨/엉덩이 중심으로 배경이 적은 사람 가로 ROI를 계산한다."""
+        if not keypoints or crop_w < _MIN_CROP_SIZE:
+            return None
+        try:
+            kpts = np.asarray(keypoints, dtype=np.float32)
+        except (TypeError, ValueError):
+            return None
+        if kpts.ndim != 2 or kpts.shape[1] < 3:
+            return None
+
+        groups = ([5, 6], [11, 12])
+        visible_xs: List[float] = []
+        for indices in groups:
+            group_xs = [
+                float(kpts[index][0])
+                for index in indices
+                if len(kpts) > index
+                and float(kpts[index][2]) >= _POSE_KEYPOINT_MIN_CONFIDENCE
+            ]
+            if len(group_xs) >= 2:
+                visible_xs.extend(group_xs)
+        if len(visible_xs) < 2:
+            return None
+
+        center_x = (min(visible_xs) + max(visible_xs)) * 0.5 - frame_x1
+        body_span = max(max(visible_xs) - min(visible_xs), 1.0)
+        half_width = max(int(body_span), int(crop_w * 0.10), 12)
+        start = max(0, int(center_x - half_width))
+        end = min(crop_w, int(center_x + half_width))
+        if end - start < _MIN_CROP_SIZE:
+            return None
+        return start, end
+
     def _split_body_regions_from_keypoints(
         self,
         crop: np.ndarray,
@@ -498,7 +687,7 @@ class AppearanceAnalyzer:
         frame_x1: int,
         frame_y1: int,
         keypoints: Optional[List[List[float]]],
-    ) -> Optional[Tuple[np.ndarray, np.ndarray]]:
+    ) -> Optional[Tuple[np.ndarray, np.ndarray, Optional[np.ndarray], Optional[np.ndarray]]]:
         """포즈 키포인트 기반으로 상/하체 ROI를 계산한다."""
         if not keypoints:
             return None
@@ -517,11 +706,18 @@ class AppearanceAnalyzer:
         center_x = self._mean_keypoint_axis(kpts, [5, 6, 11, 12], axis=0)
         shoulder_span = None
         hip_span = None
+        shoulder_xs: Optional[Tuple[float, float]] = None
+        hip_xs: Optional[Tuple[float, float]] = None
+        knee_xs: Optional[Tuple[float, float]] = None
 
         if len(kpts) > 6 and float(kpts[5][2]) >= _POSE_KEYPOINT_MIN_CONFIDENCE and float(kpts[6][2]) >= _POSE_KEYPOINT_MIN_CONFIDENCE:
             shoulder_span = abs(float(kpts[6][0]) - float(kpts[5][0]))
+            shoulder_xs = tuple(sorted((float(kpts[5][0]), float(kpts[6][0]))))
         if len(kpts) > 12 and float(kpts[11][2]) >= _POSE_KEYPOINT_MIN_CONFIDENCE and float(kpts[12][2]) >= _POSE_KEYPOINT_MIN_CONFIDENCE:
             hip_span = abs(float(kpts[12][0]) - float(kpts[11][0]))
+            hip_xs = tuple(sorted((float(kpts[11][0]), float(kpts[12][0]))))
+        if len(kpts) > 14 and float(kpts[13][2]) >= _POSE_KEYPOINT_MIN_CONFIDENCE and float(kpts[14][2]) >= _POSE_KEYPOINT_MIN_CONFIDENCE:
+            knee_xs = tuple(sorted((float(kpts[13][0]), float(kpts[14][0]))))
 
         if shoulder_y is None or hip_y is None or hip_y <= shoulder_y:
             return None
@@ -566,7 +762,48 @@ class AppearanceAnalyzer:
         lower = crop[lower_start:lower_end, x_start:x_end]
         if upper.size == 0 or lower.size == 0:
             return None
-        return upper, lower
+        upper_mask = self._trapezoid_region_mask(
+            upper.shape[:2],
+            top_xs=shoulder_xs,
+            bottom_xs=hip_xs,
+            frame_x1=frame_x1 + x_start,
+        )
+        lower_mask = self._trapezoid_region_mask(
+            lower.shape[:2],
+            top_xs=hip_xs,
+            bottom_xs=knee_xs or hip_xs,
+            frame_x1=frame_x1 + x_start,
+        )
+        return upper, lower, upper_mask, lower_mask
+
+    @staticmethod
+    def _trapezoid_region_mask(
+        shape: Tuple[int, int],
+        *,
+        top_xs: Optional[Tuple[float, float]],
+        bottom_xs: Optional[Tuple[float, float]],
+        frame_x1: int,
+    ) -> Optional[np.ndarray]:
+        """어깨/엉덩이/무릎 폭으로 의류 영역 다각형 마스크를 만든다."""
+        height, width = shape
+        if height < 2 or width < 2 or top_xs is None or bottom_xs is None:
+            return None
+        top_span = max(top_xs[1] - top_xs[0], 1.0)
+        bottom_span = max(bottom_xs[1] - bottom_xs[0], 1.0)
+        top_pad = top_span * 0.12
+        bottom_pad = bottom_span * 0.12
+        points = np.array([[
+            [int(round(top_xs[0] - top_pad - frame_x1)), 0],
+            [int(round(top_xs[1] + top_pad - frame_x1)), 0],
+            [int(round(bottom_xs[1] + bottom_pad - frame_x1)), height - 1],
+            [int(round(bottom_xs[0] - bottom_pad - frame_x1)), height - 1],
+        ]], dtype=np.int32)
+        points[:, :, 0] = np.clip(points[:, :, 0], 0, width - 1)
+        mask = np.zeros((height, width), dtype=np.uint8)
+        cv2.fillPoly(mask, points, 255)
+        if cv2.countNonZero(mask) < 50:
+            return None
+        return mask
 
     @staticmethod
     def _normalized_object_labels(obj: Dict) -> List[str]:
@@ -728,9 +965,14 @@ class AppearanceAnalyzer:
         *,
         min_ratio: float = _MIN_COLOR_DOMINANCE_RATIO,
         allow_low_signal_fallback: bool = True,
+        region_mask: Optional[np.ndarray] = None,
     ) -> Dict[str, object]:
         """색상명과 HSV/LAB 근거를 함께 반환한다."""
-        if region.size == 0 or region.shape[0] < 5 or region.shape[1] < 5:
+        if (
+            region.size == 0
+            or region.shape[1] < _MIN_COLOR_REGION_WIDTH
+            or region.shape[0] < _MIN_COLOR_REGION_HEIGHT
+        ):
             return self._unknown_color_evidence("too_small")
 
         lab = cv2.cvtColor(region, cv2.COLOR_BGR2LAB)
@@ -744,12 +986,18 @@ class AppearanceAnalyzer:
 
         skin_mask = self._build_skin_mask(hsv)
         clothing_mask = cv2.bitwise_not(skin_mask)
+        if region_mask is not None and region_mask.shape == clothing_mask.shape:
+            clothing_mask = cv2.bitwise_and(clothing_mask, region_mask)
         total = float(cv2.countNonZero(clothing_mask))
         if total < 50:
             if not allow_low_signal_fallback:
                 return self._unknown_color_evidence("low_signal")
-            clothing_mask = np.ones(hsv.shape[:2], dtype=np.uint8) * 255
-            total = float(hsv.shape[0] * hsv.shape[1])
+            if region_mask is not None and region_mask.shape == clothing_mask.shape:
+                clothing_mask = region_mask.copy()
+                total = float(cv2.countNonZero(clothing_mask))
+            else:
+                clothing_mask = np.ones(hsv.shape[:2], dtype=np.uint8) * 255
+                total = float(hsv.shape[0] * hsv.shape[1])
         if total == 0:
             return self._unknown_color_evidence("empty_mask")
 
@@ -759,6 +1007,13 @@ class AppearanceAnalyzer:
         selected = best_color
         source = "hsv"
         confidence = best_ratio
+        if {best_color, lab_color} in (
+            {"brown", "orange"},
+            {"pink", "red"},
+            {"pink", "purple"},
+        ):
+            selected = lab_color
+            source = "lab_boundary"
         if best_color in {"white", "gray", "black"} or best_ratio < max(min_ratio, 0.35):
             selected = lab_color
             source = "lab"

@@ -31,6 +31,8 @@ def test_parse_runtime_config_builds_device_configs():
             "signboard.local",
             "--signboard-port",
             "5001",
+            "--signboard-idle-refresh-interval",
+            "12.5",
             "--siren-host",
             "siren.local",
             "--siren-port",
@@ -59,6 +61,7 @@ def test_parse_runtime_config_builds_device_configs():
     assert config.speaker_config.password == "speaker-pass"
     assert config.signboard_config.host == "signboard.local"
     assert config.signboard_config.port == 5001
+    assert config.signboard_config.idle_refresh_interval == 12.5
     assert config.siren_config.host == "siren.local"
     assert config.siren_config.port == 82
     assert config.siren_config.username == "siren-user"

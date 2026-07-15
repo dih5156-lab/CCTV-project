@@ -26,7 +26,7 @@ import signal
 import time
 import uuid
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 import paho.mqtt.client as mqtt
 
@@ -314,12 +314,27 @@ class ActionBridge:
         )
         return True, f"거부 완료: {event_id}"
 
-    def _resolve_devices(self, camera_id: str) -> List[AlarmDevice]:
+    def _resolve_devices(
+        self,
+        camera_id: str,
+        *,
+        force_refresh: bool = False,
+    ) -> List[AlarmDevice]:
         candidates = self._sites.resolve_alarm_devices(camera_id)
-        return [device for device in candidates if self._device_is_available(device)]
+        return [
+            device
+            for device in candidates
+            if self._device_is_available(device, force_refresh=force_refresh)
+        ]
 
-    def _device_is_available(self, device: AlarmDevice) -> bool:
+    def _device_is_available(
+        self,
+        device: AlarmDevice,
+        *,
+        force_refresh: bool = False,
+    ) -> bool:
         """설정되지 않았거나 네트워크에 닿지 않는 출력 장치는 실행 대상에서 제외한다."""
+        config: Any
         if device == AlarmDevice.SPEAKER:
             config = self._speaker.config
         elif device == AlarmDevice.SIGNBOARD:
@@ -331,16 +346,33 @@ class ActionBridge:
 
         if not config.is_configured:
             return False
+
+        # Dabit 전광판은 짧은 간격의 TCP 연결을 일시 거부할 수 있다. 사전 probe로
+        # 이벤트를 버리지 않고 SignboardDevice의 실제 전송 재시도에 맡긴다.
+        if device == AlarmDevice.SIGNBOARD:
+            return True
         return self._device_reachable_cached(
             device.value,
             str(config.host),
             int(config.port),
+            force_refresh=force_refresh,
         )
 
-    def _device_reachable_cached(self, key: str, host: str, port: int) -> bool:
+    def _device_reachable_cached(
+        self,
+        key: str,
+        host: str,
+        port: int,
+        *,
+        force_refresh: bool = False,
+    ) -> bool:
         now = time.time()
         cached = self._device_reachability_cache.get(key)
-        if cached and now - cached[0] < _DEVICE_REACHABILITY_CACHE_SECONDS:
+        if (
+            not force_refresh
+            and cached
+            and now - cached[0] < _DEVICE_REACHABILITY_CACHE_SECONDS
+        ):
             return cached[1]
 
         reachable = _check_tcp_reachable(host, port)

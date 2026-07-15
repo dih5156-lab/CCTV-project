@@ -406,9 +406,16 @@ class AppearancePipeline:
         smoothed = dict(attrs)
         history = self._attribute_history.setdefault(key, {})
         observation_counts: Dict[str, int] = {}
+        metadata = dict(attrs.get("attribute_metadata") or {})
+        color_sources = dict(metadata.get("color_sources") or {})
         for field in ("upper_color", "lower_color", "helmet_color"):
             value = attrs.get(field)
             samples = history.setdefault(field, deque(maxlen=self._color_smoothing_window))
+            if color_sources.get(field) == "not_visible":
+                samples.clear()
+                smoothed[field] = "unknown"
+                observation_counts[field] = 0
+                continue
             if self._is_known_color(value):
                 samples.append(str(value))
             observation_counts[field] = len(samples)

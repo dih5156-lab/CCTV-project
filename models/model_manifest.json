@@ -243,6 +243,46 @@
         "max_avg_latency_ms": 35
       },
       "latest_evaluation": null
+    },
+    {
+      "name": "appearance_color_yolov8n",
+      "task": "clothing_color_classification",
+      "primary_runtime": "tensorrt",
+      "artifacts": {
+        "pytorch": "models/appearance_color_yolov8n.pt",
+        "onnx": "models/appearance_color_yolov8n.onnx",
+        "tensorrt": "models/appearance_color_yolov8n.engine",
+        "label_map": "config/appearance_color_labels.json"
+      },
+      "checksums": {
+        "pytorch_sha256": "99ec8a1d5eec637018a655db6a0a1b3b0f6e17cea827af428497707590785f7e"
+      },
+      "input_size": 160,
+      "classes": [
+        "black",
+        "blue",
+        "brown",
+        "gray",
+        "green",
+        "orange",
+        "pink",
+        "purple",
+        "red",
+        "white",
+        "yellow"
+      ],
+      "deployment_target": "Jetson Orin clothing color backend",
+      "acceptance_criteria": {
+        "min_top1_accuracy": 0.88,
+        "max_avg_latency_ms": 10
+      },
+      "latest_evaluation": {
+        "dataset": "AI4C validation",
+        "top1_accuracy": 0.8849,
+        "accepted_accuracy": 0.9127,
+        "acceptance_threshold": 0.75,
+        "avg_latency_ms": 6.45
+      }
     }
   ]
 }
