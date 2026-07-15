@@ -28,7 +28,7 @@ paths:
     # cameras.json 의 sample_eval 카메라 ID와 WebRTC path 를 맞춘다.
     source: publisher
 
-  camera_1:
-    # cctv-ai-engine 이 RTSP publisher 로 밀어 넣는 표준 라이브 경로.
-    # WebRTC 는 이 path 를 읽고, MJPEG/Stream API/HLS 는 운영 기본 경로에서 제외한다.
+  all_others:
+    # 카메라 ID별 RTSP publisher 경로를 동적으로 수락한다.
+    # WebRTC는 동일한 path를 사용한다: http://<Jetson-IP>:8889/<camera_id>/
     source: publisher

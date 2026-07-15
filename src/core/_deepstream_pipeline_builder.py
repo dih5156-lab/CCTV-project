@@ -5,8 +5,10 @@ from __future__ import annotations
 import logging
 import os
 import threading
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Callable, List, Optional
+
+from ._deepstream_rtsp_output import RtspOutputBranch
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +26,8 @@ class DeepStreamPipelineElements:
     output_queue: Optional[Any]
     preview_elements: List[Any]
     output_elements: List[Any]
+    output_demux: Optional[Any] = None
+    rtsp_output_branches: List[RtspOutputBranch] = field(default_factory=list)
 
     def all_elements(self) -> List[Any]:
         elements = [self.streammux]
@@ -41,6 +45,10 @@ class DeepStreamPipelineElements:
         if self.tee is not None and self.output_queue is not None:
             elements.extend([self.tee, self.output_queue, *self.preview_elements])
         elements.extend(self.output_elements)
+        if self.output_demux is not None:
+            elements.append(self.output_demux)
+        for branch in self.rtsp_output_branches:
+            elements.extend(branch.elements)
         return elements
 
     def topology(self) -> tuple[bool, bool, bool]:
@@ -60,6 +68,7 @@ def link_deepstream_pipeline_path(
     link_preview_branch: Callable[..., Any],
     pphuman_gie_id: int,
     pphuman_infer_config: Any,
+    link_rtsp_branches: Optional[Callable[..., Any]] = None,
 ) -> Any:
     """Link the main inference/output path and return the element to probe."""
     previous = elements.streammux
@@ -126,9 +135,18 @@ def link_deepstream_pipeline_path(
             preview_elements=elements.preview_elements,
         )
 
-    for element in elements.output_elements:
-        link_or_raise(previous, element, None)
-        previous = element
+    if elements.output_demux is not None:
+        link_or_raise(previous, elements.output_demux, "output path -> nvstreamdemux link 실패")
+        if link_rtsp_branches is None:
+            raise RuntimeError("RTSP 출력 branch linker가 설정되지 않았습니다.")
+        link_rtsp_branches(
+            demux=elements.output_demux,
+            branches=elements.rtsp_output_branches,
+        )
+    else:
+        for element in elements.output_elements:
+            link_or_raise(previous, element, None)
+            previous = element
 
     return probe_element
 
@@ -139,14 +157,21 @@ def create_h264_encoder_elements(
     env_int: Callable[[str, int], int],
     set_optional_property: Callable[[Any, str, Any], None],
     gst_module: Any,
+    element_name_suffix: str = "",
 ) -> List[Any]:
-    converter = make_element("nvvideoconvert", "h264-nvvidconv")
-    capsfilter = make_element("capsfilter", "h264-caps")
+    def element_name(base: str) -> str:
+        return f"{base}-{element_name_suffix}" if element_name_suffix else base
+
+    converter = make_element("nvvideoconvert", element_name("h264-nvvidconv"))
+    capsfilter = make_element("capsfilter", element_name("h264-caps"))
     encoder_name = os.environ.get("DS_H264_ENCODER", "nvv4l2h264enc").strip().lower()
     use_x264 = encoder_name in {"x264", "x264enc", "software"}
-    encoder = make_element("x264enc" if use_x264 else "nvv4l2h264enc", "h264-encoder")
-    parser = make_element("h264parse", "h264-parser")
-    parsed_capsfilter = make_element("capsfilter", "h264-parsed-caps")
+    encoder = make_element(
+        "x264enc" if use_x264 else "nvv4l2h264enc",
+        element_name("h264-encoder"),
+    )
+    parser = make_element("h264parse", element_name("h264-parser"))
+    parsed_capsfilter = make_element("capsfilter", element_name("h264-parsed-caps"))
 
     width = env_int("DS_H264_WIDTH", 1280)
     height = env_int("DS_H264_HEIGHT", 720)
@@ -246,9 +271,15 @@ def create_output_elements(
     set_optional_property: Callable[[Any, str, Any], None],
     env_int: Callable[[str, int], int],
     gst_module: Any,
-    create_h264_encoder_elements_fn: Callable[[], List[Any]],
+    create_h264_encoder_elements_fn: Callable[[str], List[Any]],
     poc_fixer_factory: Callable[[], Any],
+    rtsp_location: Optional[str] = None,
+    element_name_suffix: str = "",
+    include_output_queue: bool = False,
 ) -> List[Any]:
+    def element_name(base: str) -> str:
+        return f"{base}-{element_name_suffix}" if element_name_suffix else base
+
     if output_mode in {"", "fake", "fakesink", "headless"}:
         sink = make_element("fakesink", "sink")
         sink.set_property("sync", False)
@@ -264,7 +295,7 @@ def create_output_elements(
         "rtsp_publish",
         "rtsp-publish",
     }:
-        h264_elements = create_h264_encoder_elements_fn()
+        h264_elements = create_h264_encoder_elements_fn(element_name_suffix)
         poc_fix_enabled = os.environ.get(
             "DS_H264_POC_FIX_ENABLED", "false"
         ).strip().lower() in {"1", "true", "yes", "on"}
@@ -272,7 +303,7 @@ def create_output_elements(
         poc_identity = None
         if poc_fix_enabled:
             poc_fixer = poc_fixer_factory()
-            poc_identity = make_element("identity", "poc-fix-identity")
+            poc_identity = make_element("identity", element_name("poc-fix-identity"))
             poc_identity.set_property("signal-handoffs", True)
             poc_identity.set_property("silent", True)
 
@@ -307,17 +338,26 @@ def create_output_elements(
             poc_identity.connect("handoff", _poc_handoff)
 
         if output_mode in {"rtsp", "rtsp_publish", "rtsp-publish"}:
-            sink = make_element("rtspclientsink", "h264-rtsp-sink")
+            sink = make_element("rtspclientsink", element_name("h264-rtsp-sink"))
             sink.set_property(
                 "location",
-                os.environ.get(
+                rtsp_location
+                or os.environ.get(
                     "DS_RTSP_LOCATION",
                     "rtsp://cctv-media-server:8554/camera_1",
                 ),
             )
             set_optional_property(sink, "protocols", "tcp")
             set_optional_property(sink, "latency", env_int("DS_RTSP_LATENCY_MS", 100))
-            return [*h264_elements, *([poc_identity] if poc_identity else []), sink]
+            elements = [*h264_elements, *([poc_identity] if poc_identity else []), sink]
+            if include_output_queue:
+                queue = make_element("queue", element_name("output-queue"))
+                queue.set_property("leaky", 2)
+                queue.set_property("max-size-buffers", 2)
+                queue.set_property("max-size-bytes", 0)
+                queue.set_property("max-size-time", 0)
+                elements.insert(0, queue)
+            return elements
 
         mux = make_element("mpegtsmux", "mpegts-mux")
         sink = make_element("udpsink", "mpegts-udp-sink")
@@ -434,6 +474,8 @@ def create_pipeline_elements_bundle(
     pphuman_enabled: bool,
     output_elements: List[Any],
     preview_elements: List[Any],
+    output_demux: Optional[Any] = None,
+    rtsp_output_branches: Optional[List[RtspOutputBranch]] = None,
 ) -> DeepStreamPipelineElements:
     """DeepStream main path element 묶음을 생성한다."""
     streammux = make_element("nvstreammux", "streammux")
@@ -462,6 +504,8 @@ def create_pipeline_elements_bundle(
         output_queue=output_queue,
         preview_elements=preview_elements,
         output_elements=output_elements,
+        output_demux=output_demux,
+        rtsp_output_branches=rtsp_output_branches or [],
     )
 
 
