@@ -114,6 +114,8 @@ tooling/node-*/
 models/*.pt
 *.engine
 models/*.onnx
+models/commercial_face/*.onnx
+models/commercial_face/*.LICENSE
 models/experiments/
 models/training/
 
