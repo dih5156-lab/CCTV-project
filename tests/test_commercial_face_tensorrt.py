@@ -4,7 +4,9 @@ import numpy as np
 import pytest
 
 from src.core.ai._commercial_face_tensorrt import (
+    SFACE_LANDMARK_TEMPLATE,
     TensorRTSFaceEmbedder,
+    align_sface_bgr,
     decode_yunet_outputs,
     normalize_sface_embedding,
     preprocess_yunet_bgr,
@@ -182,3 +184,34 @@ def test_decode_yunet_rejects_missing_or_bad_output_shape():
     outputs["bbox_8"] = np.zeros((1, 1, 4), dtype=np.float32)
     with pytest.raises(ValueError, match="bbox_8 shape"):
         decode_yunet_outputs(outputs, roi=(0, 0, 640, 640))
+
+
+def test_align_sface_is_identity_for_official_template():
+    image = np.arange(112 * 112 * 3, dtype=np.uint8).reshape(112, 112, 3)
+
+    aligned = align_sface_bgr(image, SFACE_LANDMARK_TEMPLATE)
+
+    assert aligned.shape == (112, 112, 3)
+    assert np.max(np.abs(aligned.astype(np.int16) - image.astype(np.int16))) <= 1
+
+
+def test_align_sface_maps_scaled_landmarks_to_official_template():
+    landmarks = SFACE_LANDMARK_TEMPLATE * 2.0 + np.array([10.0, 20.0])
+    source = np.zeros((260, 260, 3), dtype=np.uint8)
+
+    aligned = align_sface_bgr(source, landmarks)
+
+    assert aligned.shape == (112, 112, 3)
+
+
+@pytest.mark.parametrize(
+    "landmarks, message",
+    [
+        (np.zeros((4, 2), dtype=np.float32), "five landmarks"),
+        (np.full((5, 2), np.nan, dtype=np.float32), "finite"),
+        (np.ones((5, 2), dtype=np.float32), "degenerate"),
+    ],
+)
+def test_align_sface_rejects_invalid_landmarks(landmarks, message):
+    with pytest.raises(ValueError, match=message):
+        align_sface_bgr(np.zeros((112, 112, 3), dtype=np.uint8), landmarks)

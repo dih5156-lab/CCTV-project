@@ -14,6 +14,16 @@ from ._attribute_runtimes import build_tensorrt_runtime
 
 SFACE_MODEL_ID = "opencv-sface-tensorrt-v1"
 SFACE_INPUT_SIZE = (112, 112)
+SFACE_LANDMARK_TEMPLATE = np.asarray(
+    [
+        [38.2946, 51.6963],
+        [73.5318, 51.5014],
+        [56.0252, 71.7366],
+        [41.5493, 92.3655],
+        [70.7299, 92.2041],
+    ],
+    dtype=np.float32,
+)
 YUNET_INPUT_SIZE = (640, 640)
 YUNET_STRIDES = (8, 16, 32)
 YUNET_COUNTS = {8: 6400, 16: 1600, 32: 400}
@@ -160,6 +170,56 @@ def preprocess_sface_bgr(image: np.ndarray) -> np.ndarray:
     resized = cv2.resize(image, SFACE_INPUT_SIZE, interpolation=cv2.INTER_LINEAR)
     rgb = cv2.cvtColor(resized, cv2.COLOR_BGR2RGB).astype(np.float32)
     return np.ascontiguousarray(rgb.transpose(2, 0, 1)[None, ...])
+
+
+def _similarity_transform(
+    source_points: np.ndarray, destination_points: np.ndarray
+) -> np.ndarray:
+    source = np.asarray(source_points, dtype=np.float64)
+    destination = np.asarray(destination_points, dtype=np.float64)
+    source_mean = source.mean(axis=0)
+    destination_mean = destination.mean(axis=0)
+    source_centered = source - source_mean
+    destination_centered = destination - destination_mean
+    source_variance = float(np.mean(np.sum(source_centered**2, axis=1)))
+    if source_variance <= np.finfo(np.float64).eps:
+        raise ValueError("SFace landmarks form a degenerate transform")
+
+    covariance = destination_centered.T @ source_centered / source.shape[0]
+    left, singular_values, right_transposed = np.linalg.svd(covariance)
+    correction = np.eye(2, dtype=np.float64)
+    if np.linalg.det(left) * np.linalg.det(right_transposed) < 0:
+        correction[-1, -1] = -1
+    rotation = left @ correction @ right_transposed
+    scale = float(np.sum(singular_values * np.diag(correction)) / source_variance)
+    if not np.isfinite(scale) or scale <= 0:
+        raise ValueError("SFace landmarks form a degenerate transform")
+    translation = destination_mean - scale * (rotation @ source_mean)
+    return np.column_stack((scale * rotation, translation)).astype(np.float32)
+
+
+def align_sface_bgr(image: np.ndarray, landmarks: np.ndarray) -> np.ndarray:
+    """Align YuNet's ordered five landmarks to OpenCV's SFace template."""
+    if (
+        not isinstance(image, np.ndarray)
+        or image.size == 0
+        or image.ndim != 3
+        or image.shape[2] != 3
+    ):
+        raise ValueError("SFace alignment input must be a non-empty BGR image")
+    points = np.asarray(landmarks, dtype=np.float32)
+    if points.shape != (5, 2):
+        raise ValueError("SFace alignment requires exactly five landmarks")
+    if not np.all(np.isfinite(points)):
+        raise ValueError("SFace landmarks must contain only finite values")
+    transform = _similarity_transform(points, SFACE_LANDMARK_TEMPLATE)
+    return cv2.warpAffine(
+        image,
+        transform,
+        SFACE_INPUT_SIZE,
+        flags=cv2.INTER_LINEAR,
+        borderMode=cv2.BORDER_CONSTANT,
+    )
 
 
 def normalize_sface_embedding(vector: np.ndarray) -> np.ndarray:
