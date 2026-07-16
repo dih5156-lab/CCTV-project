@@ -23,6 +23,19 @@ _OUTBOX_TTL_DAYS = 7
 
 
 class _OutboxMixin:
+    def store_result(
+        self, request_id: str, payload: Dict[str, Any], last_error: str
+    ) -> None:
+        """AIoT 명령 결과를 기존 EdgeX outbox 형식으로 저장한다."""
+        result = dict(payload)
+        status = str(result.get("status") or "unknown")
+        result.setdefault("event_id", f"aiot:{request_id}:{status}")
+        result.setdefault("type", "aiot_command_result")
+        result.setdefault("event_type", "aiot_command_result")
+        result.setdefault("request_id", request_id)
+        camera_id = str(result.get("camera_id") or "system")
+        self._store_failed_detection_event(camera_id, result, last_error)
+
     """SQLite 기반 store-and-forward outbox 기능을 제공하는 믹스인."""
 
     # ── 데이터 카테고리 상수 ─────────────────────────────────────────────────
