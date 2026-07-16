@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from typing import Any, Mapping, Protocol, Sequence
+from pathlib import Path
+import time
+from typing import Any, Mapping, Optional, Protocol, Sequence
 
 from src.aiot.contracts import AiQueryRequest
 
@@ -11,10 +13,42 @@ class LiveMatchProvider(Protocol):
     ) -> list[Mapping[str, Any]]: ...
 
 
+class RecentAppearanceLiveProvider:
+    """최근 외형 로그를 GPU 추가 작업 없이 live 검색으로 제공한다."""
+
+    def __init__(self, appearance_log: Any, window_seconds: float = 30.0, now=time.time):
+        self.appearance_log = appearance_log
+        self.window_seconds = window_seconds
+        self.now = now
+
+    def search(
+        self, filters: Mapping[str, Any], camera_ids: Sequence[str], limit: int
+    ) -> list[Mapping[str, Any]]:
+        current = float(self.now())
+        camera_id = None if tuple(camera_ids) == ("*",) else camera_ids[0]
+        return self.appearance_log.search(
+            camera_id=camera_id,
+            upper_color=filters.get("upper_color"),
+            lower_color=filters.get("lower_color"),
+            has_helmet=filters.get("has_helmet"),
+            helmet_color=filters.get("helmet_color"),
+            has_backpack=filters.get("has_backpack"),
+            has_handbag=filters.get("has_handbag"),
+            has_suitcase=filters.get("has_suitcase"),
+            gender=filters.get("gender"),
+            age_group=filters.get("age_group"),
+            face_name=filters.get("face_name"),
+            time_from=current - self.window_seconds,
+            time_to=current,
+            limit=limit,
+        )
+
+
 class AiQueryService:
     def __init__(self, appearance_log: Any, live_provider: LiveMatchProvider):
         self.appearance_log = appearance_log
         self.live_provider = live_provider
+        self._media_paths: dict[str, Path] = {}
 
     def search(self, request: AiQueryRequest) -> list[dict[str, Any]]:
         rows: list[Mapping[str, Any]] = []
@@ -35,10 +69,15 @@ class AiQueryService:
             if match_id in seen:
                 continue
             seen.add(match_id)
+            if row.get("crop_path"):
+                self._media_paths[match_id] = Path(str(row["crop_path"]))
             matches.append(match)
             if len(matches) >= request.limit:
                 break
         return matches
+
+    def resolve_media(self, match_id: str) -> Optional[Path]:
+        return self._media_paths.get(match_id)
 
     def _search_history(self, request: AiQueryRequest) -> list[Mapping[str, Any]]:
         cameras = request.camera_ids
@@ -88,4 +127,3 @@ class AiQueryService:
             },
             "media_available": bool(row.get("crop_path") or row.get("media_available")),
         }
-

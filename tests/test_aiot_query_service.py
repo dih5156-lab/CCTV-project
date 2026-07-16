@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
 from src.aiot.contracts import AiQueryRequest
-from src.aiot.query_service import AiQueryService
+from src.aiot.query_service import AiQueryService, RecentAppearanceLiveProvider
 
 
 def _request(mode="history", filters=None):
@@ -84,3 +84,17 @@ def test_live_mode_does_not_query_history():
     assert not log.calls
     assert live.calls == 1
 
+
+def test_query_service_resolves_media_without_exposing_path():
+    service = AiQueryService(FakeAppearanceLog([ROW]), FakeLiveProvider([]))
+    match = service.search(_request())[0]
+    assert "crop_path" not in match
+    assert str(service.resolve_media("event-1")).endswith("event-1.jpg")
+
+
+def test_recent_live_provider_limits_search_to_recent_window():
+    log = FakeAppearanceLog([ROW])
+    provider = RecentAppearanceLiveProvider(log, window_seconds=30, now=lambda: 100.0)
+    provider.search({"gender": "female"}, ("camera-1",), 5)
+    assert log.calls[0]["time_from"] == 70.0
+    assert log.calls[0]["time_to"] == 100.0
