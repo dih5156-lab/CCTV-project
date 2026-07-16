@@ -991,6 +991,11 @@ services:
         condition: service_started
     networks:
       edgex-network: null
+    ports:
+      - target: 9105
+        published: "${AIOT_METRICS_PORT:-9105}"
+        host_ip: 127.0.0.1
+        protocol: tcp
     healthcheck:
       test: ["CMD-SHELL", "kill -0 1 2>/dev/null || exit 1"]
       interval: 30s
@@ -1003,9 +1008,9 @@ services:
         source: aiot-parser-data
         target: /data
       - type: bind
-        source: ./data
+        source: ${CCTV_RUNTIME_DATA_DIR:-./data}
         target: /app/data
-        read_only: true
+        read_only: false
 
   # ── AIoT TLV 파서 (LoRa uplink -> TLV decode -> EdgeX/Alert) ───────────────
   aiot-parser:

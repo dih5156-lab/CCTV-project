@@ -60,4 +60,8 @@ def test_jetson_compose_keeps_aiot_disabled_and_mounts_runtime_data():
         "  aiot-parser:", 1
     )[0]
     assert "AIOT_COMMANDS_ENABLED: ${AIOT_COMMANDS_ENABLED:-false}" in adapter_section
+    assert "source: ${CCTV_RUNTIME_DATA_DIR:-./data}" in adapter_section
     assert "target: /app/data" in adapter_section
+    assert "read_only: false" in adapter_section
+    assert "host_ip: 127.0.0.1" in adapter_section
+    assert 'published: "${AIOT_METRICS_PORT:-9105}"' in adapter_section

@@ -32,6 +32,22 @@ def test_parse_ai_query_request_accepts_both_mode():
     assert request.camera_ids == ("camera-1",)
 
 
+def test_parse_ai_query_request_treats_empty_camera_ids_as_all_cameras():
+    request = parse_ai_query_request(
+        {
+            "schema_version": "1.0",
+            "message_type": "ai_query_request",
+            "request_id": "q-all",
+            "target": {"jetson_id": "edge-01", "camera_ids": []},
+            "search_mode": "history",
+            "expires_at": FUTURE,
+        },
+        now=NOW,
+    )
+
+    assert request.camera_ids == ("*",)
+
+
 def test_parse_ai_query_request_rejects_expired_command():
     with pytest.raises(CommandValidationError, match="expired"):
         parse_ai_query_request(

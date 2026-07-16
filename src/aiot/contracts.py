@@ -102,7 +102,7 @@ def parse_ai_query_request(
     limit = int(payload.get("limit", max_results))
     if not 1 <= limit <= max_results:
         raise CommandValidationError(f"limit must be between 1 and {max_results}")
-    camera_ids = tuple(str(value) for value in target.get("camera_ids", ("*",)))
+    camera_ids = tuple(str(value) for value in target.get("camera_ids", ("*",))) or ("*",)
     return AiQueryRequest(
         request_id=_required_text(payload, "request_id"),
         jetson_id=_required_text(target, "jetson_id"),
