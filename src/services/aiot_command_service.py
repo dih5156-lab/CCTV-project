@@ -15,7 +15,6 @@ from src.aiot.contracts import (
     parse_fetch_media_request,
 )
 
-
 logger = logging.getLogger(__name__)
 
 

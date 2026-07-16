@@ -1,10 +1,9 @@
 from datetime import datetime, timedelta, timezone
-from pathlib import Path
 
 import pytest
 
 from src.aiot.contracts import FetchMediaRequest
-from src.aiot.media_uploader import MediaUploadError, MediaUploader
+from src.aiot.media_uploader import MediaUploader, MediaUploadError
 
 
 class FakeResponse:

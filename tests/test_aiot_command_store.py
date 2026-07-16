@@ -2,7 +2,6 @@ from datetime import datetime, timedelta, timezone
 
 from src.aiot.command_store import CommandStore
 
-
 FUTURE = datetime.now(timezone.utc) + timedelta(minutes=5)
 
 

@@ -9,7 +9,6 @@ from src.aiot.contracts import (
     parse_fetch_media_request,
 )
 
-
 NOW = datetime(2026, 7, 16, tzinfo=timezone.utc)
 FUTURE = (NOW + timedelta(minutes=5)).isoformat().replace("+00:00", "Z")
 

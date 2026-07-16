@@ -5,7 +5,6 @@ from datetime import datetime, timezone
 from typing import Any, Literal, Mapping, Optional, Tuple
 from urllib.parse import urlparse
 
-
 SUPPORTED_FILTERS = frozenset(
     {
         "camera_id",
