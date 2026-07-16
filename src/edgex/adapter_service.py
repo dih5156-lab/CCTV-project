@@ -14,7 +14,7 @@ import os
 import time
 from concurrent.futures import TimeoutError as FutureTimeoutError
 from threading import Event, Thread
-from typing import Dict, Optional, Set
+from typing import Any, Dict, Optional, Set
 
 import redis
 
@@ -44,14 +44,27 @@ class EdgeXDeviceAdapterService:
         edgex_topic_prefix: str = "edgex/events/device",
         service_name: str = "cctv-device-service",
         outbox_db_path: Optional[str] = None,
+        aiot_commands_enabled: bool = False,
+        aiot_jetson_id: str = "jetson-01",
+        aiot_command_topic_prefix: str = "edgex/commands/cctv",
+        aiot_command_service: Optional[Any] = None,
     ):
         self.ai_mqtt_broker = ai_mqtt_broker
         self.ai_mqtt_port = int(ai_mqtt_port)
         self.ai_topic_prefix = ai_topic_prefix.rstrip("/")
         self.subscribe_topic = f"{self.ai_topic_prefix}/#"
         self.service_name = service_name
+        self.edgex_mqtt_broker = edgex_mqtt_broker
+        self.edgex_mqtt_port = int(edgex_mqtt_port)
+        self.aiot_commands_enabled = bool(aiot_commands_enabled)
+        self.aiot_jetson_id = aiot_jetson_id
+        self.aiot_command_topic = (
+            f"{aiot_command_topic_prefix.rstrip('/')}/{aiot_jetson_id}/#"
+        )
+        self.aiot_command_service = aiot_command_service
 
         self._subscriber: Optional[object] = None
+        self._aiot_subscriber: Optional[object] = None
         self._registered_cameras: Set[str] = set()
         self._validation_stop = Event()
         self._validation_thread: Optional[Thread] = None
@@ -380,6 +393,40 @@ class EdgeXDeviceAdapterService:
         for event_data in items:
             self._process_single_event(event_data, topic_info)
 
+    def _on_aiot_connect(self, client, userdata, flags, rc, *args):
+        if rc == 0:
+            client.subscribe(self.aiot_command_topic, qos=1)
+            logger.info("AIoT 명령 구독 시작: %s", self.aiot_command_topic)
+        else:
+            logger.error("AIoT 명령 MQTT 연결 실패 (rc=%s)", rc)
+
+    def _on_aiot_message(self, client, userdata, msg):
+        try:
+            payload = json.loads(msg.payload.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError) as error:
+            logger.warning("AIoT 명령 JSON 파싱 실패: %s", error)
+            return
+        if not isinstance(payload, dict):
+            logger.warning("AIoT 명령은 JSON object여야 합니다")
+            return
+        if self.aiot_command_service is None:
+            logger.error("AIoT 명령 서비스가 구성되지 않았습니다")
+            return
+        self.aiot_command_service.handle(payload)
+
+    def _start_aiot_subscriber(self) -> None:
+        if not self.aiot_commands_enabled:
+            return
+        if self.aiot_command_service is None:
+            raise RuntimeError("AIoT commands enabled but command service is missing")
+        self._aiot_subscriber = create_mqtt_client("cctv-edgex-aiot-command-sub")
+        self._aiot_subscriber.on_connect = self._on_aiot_connect
+        self._aiot_subscriber.on_message = self._on_aiot_message
+        self._aiot_subscriber.connect(
+            self.edgex_mqtt_broker, self.edgex_mqtt_port, keepalive=60
+        )
+        self._aiot_subscriber.loop_start()
+
     def start(self) -> None:
         """서비스 시작 (블로킹)"""
         self._start_async_loop()
@@ -394,6 +441,7 @@ class EdgeXDeviceAdapterService:
         logger.info("AI MQTT 브로커 연결 중...")
         self._subscriber.connect(self.ai_mqtt_broker, self.ai_mqtt_port, keepalive=60)
         self._subscriber.loop_start()
+        self._start_aiot_subscriber()
 
         logger.info("EdgeX 디바이스 어댑터 실행 중 (Ctrl+C 종료)")
         try:
@@ -424,6 +472,13 @@ class EdgeXDeviceAdapterService:
                 self._subscriber.disconnect()
             except Exception as error:
                 logger.error("구독 클라이언트 종료 오류: %s", error)
+
+        if self._aiot_subscriber:
+            try:
+                self._aiot_subscriber.loop_stop()
+                self._aiot_subscriber.disconnect()
+            except Exception as error:
+                logger.error("AIoT 명령 구독 클라이언트 종료 오류: %s", error)
 
         try:
             self.edgex_service.close()

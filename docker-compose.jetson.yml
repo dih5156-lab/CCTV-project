@@ -949,6 +949,16 @@ services:
       APP_ENV: ${APP_ENV:-development}
       NVIDIA_VISIBLE_DEVICES: ""
       EDGEX_OUTBOX_DB: /data/cctv-edgex-adapter/event_outbox.db
+      AIOT_COMMANDS_ENABLED: ${AIOT_COMMANDS_ENABLED:-false}
+      AIOT_JETSON_ID: ${AIOT_JETSON_ID:-jetson-01}
+      AIOT_COMMAND_TOPIC_PREFIX: ${AIOT_COMMAND_TOPIC_PREFIX:-edgex/commands/cctv}
+      AIOT_ALLOWED_UPLOAD_HOSTS: ${AIOT_ALLOWED_UPLOAD_HOSTS:-}
+      AIOT_QUERY_MAX_RESULTS: ${AIOT_QUERY_MAX_RESULTS:-20}
+      AIOT_LIVE_WINDOW_SECONDS: ${AIOT_LIVE_WINDOW_SECONDS:-30}
+      AIOT_METRICS_PORT: ${AIOT_METRICS_PORT:-9105}
+      AIOT_COMMAND_DB: /data/cctv-edgex-adapter/aiot_commands.db
+      APPEARANCES_DB: /app/data/runtime/appearances.db
+      APPEARANCE_CROP_DIR: /app/data/runtime/appearance_crops
       MQTT_USER: ${MQTT_USER:-}
       MQTT_PASSWORD: ${MQTT_PASSWORD:-}
     command:
@@ -981,6 +991,11 @@ services:
         condition: service_started
     networks:
       edgex-network: null
+    ports:
+      - target: 9105
+        published: "${AIOT_METRICS_PORT:-9105}"
+        host_ip: 127.0.0.1
+        protocol: tcp
     healthcheck:
       test: ["CMD-SHELL", "kill -0 1 2>/dev/null || exit 1"]
       interval: 30s
@@ -992,6 +1007,10 @@ services:
       - type: volume
         source: aiot-parser-data
         target: /data
+      - type: bind
+        source: ${CCTV_RUNTIME_DATA_DIR:-./data}
+        target: /app/data
+        read_only: false
 
   # ── AIoT TLV 파서 (LoRa uplink -> TLV decode -> EdgeX/Alert) ───────────────
   aiot-parser:

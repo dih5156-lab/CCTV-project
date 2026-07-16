@@ -370,6 +370,39 @@ def canonicalize_event_payload(
     return normalized
 
 
+_EDGEX_RESOURCE_BY_EVENT_TYPE = {
+    "fall": "fall_detection",
+    "fall_detected": "fall_detection",
+    "intrusion": "intrusion_detection",
+    "intrusion_detected": "intrusion_detection",
+    "helmet": "helmet_detection",
+    "helmet_detected": "helmet_detection",
+    "appearance": "appearance_detection",
+    "aiot_command_result": "aiot_command_result",
+}
+
+
+def project_edgex_event(payload: Mapping[str, Any]) -> Dict[str, Any]:
+    """CanonicalEvent를 EdgeX용 경량 Reading 값으로 투영한다."""
+    event = payload.get("event") if isinstance(payload.get("event"), Mapping) else {}
+    device = payload.get("device") if isinstance(payload.get("device"), Mapping) else {}
+    media = payload.get("media") if isinstance(payload.get("media"), Mapping) else {}
+    event_type = str(event.get("event_type") or payload.get("type") or "unknown")
+    projected = {
+        "event_id": get_payload_event_id(payload),
+        "schema_version": payload.get("schema_version", "1.0"),
+        "type": event_type,
+        "resource": _EDGEX_RESOURCE_BY_EVENT_TYPE.get(event_type, "ai_event"),
+        "device": device.get("camera_id") or payload.get("camera_id"),
+        "device_type": device.get("device_type", "cctv"),
+        "confidence": event.get("confidence", payload.get("confidence")),
+        "severity": event.get("severity", payload.get("severity")),
+        "occurred_at": payload.get("occurred_at") or payload.get("timestamp"),
+        "snapshot_url": media.get("snapshot_url"),
+    }
+    return _strip_none(projected)
+
+
 def get_payload_tts_message(payload: Mapping[str, Any]) -> Optional[str]:
     value = _event_or_payload_value(
         payload,

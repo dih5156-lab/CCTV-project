@@ -3,6 +3,7 @@
 # 사용:
 #   ./scripts/ops/run_operation_check.sh
 #   ./scripts/ops/run_operation_check.sh --with-deepstream 30 30
+#   AIOT_PILOT_CHECK=1 ./scripts/ops/run_operation_check.sh
 
 set -euo pipefail
 
@@ -14,6 +15,7 @@ Usage:
 Defaults:
   Runs deployment smoke and data-flow smoke checks only.
   With --with-deepstream, also runs scripts/ops/run_deepstream_stability_watch.sh.
+  With AIOT_PILOT_CHECK=1, also checks the Jetson EdgeX stack and AIoT metrics.
     Runtime secret check uses RUNTIME_ENV_FILE when set. Otherwise it uses
     .env.jetson when the running compose project is edgex-jetson, then .env,
     and falls back to .env.jetson when .env is absent.
@@ -112,6 +114,8 @@ load_runtime_env_exports() {
     export_runtime_env_value INTERNAL_SERVICE_TOKEN
     export_runtime_env_value PUBLIC_API_KEY
     export_runtime_env_value STREAM_API_TOKEN
+    export_runtime_env_value AIOT_COMMANDS_ENABLED
+    export_runtime_env_value AIOT_METRICS_PORT
 }
 
 FAILED=0
@@ -128,6 +132,11 @@ run_step "runtime secret consistency" .venv/bin/python scripts/health/check_runt
 run_step "deployment smoke" .venv/bin/python scripts/smoke/smoke_test_deployment.py || FAILED=1
 run_step "data flow smoke" .venv/bin/python scripts/smoke/smoke_test_data_flow.py || FAILED=1
 run_step "public api fd stability" .venv/bin/python scripts/health/check_public_api_fd_stability.py || FAILED=1
+
+if [[ "${AIOT_PILOT_CHECK:-0}" == "1" ]]; then
+    run_step "jetson edgex stack" .venv/bin/python scripts/health/check_jetson_edgex_stack.py || FAILED=1
+    run_step "aiot metrics" curl -fsS --max-time 5 "http://127.0.0.1:${AIOT_METRICS_PORT:-9105}/metrics" || FAILED=1
+fi
 
 if [[ "$WITH_DEEPSTREAM" -eq 1 ]]; then
     run_step "deepstream stability watch" \
