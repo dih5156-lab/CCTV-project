@@ -128,6 +128,8 @@ def parse_fetch_media_request(
     match_ids = tuple(str(value) for value in payload.get("match_ids") or ())
     if not match_ids:
         raise CommandValidationError("match_ids must not be empty")
+    if len(match_ids) != 1:
+        raise CommandValidationError("exactly one match_id is required per upload_url")
     media_kind = str(payload.get("media_kind") or "")
     if media_kind not in {"snapshot", "clip"}:
         raise CommandValidationError("invalid media_kind")
@@ -157,4 +159,3 @@ def build_command_result(
         "status": status,
         **fields,
     }
-

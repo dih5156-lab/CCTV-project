@@ -82,6 +82,24 @@ def test_parse_fetch_media_request_requires_https():
         )
 
 
+def test_parse_fetch_media_request_rejects_multiple_matches_for_one_url():
+    with pytest.raises(CommandValidationError, match="exactly one"):
+        parse_fetch_media_request(
+            {
+                "schema_version": "1.0",
+                "message_type": "fetch_media_request",
+                "request_id": "m-1",
+                "parent_request_id": "q-1",
+                "match_ids": ["match-1", "match-2"],
+                "media_kind": "snapshot",
+                "upload_url": "https://server/upload",
+                "max_bytes": 1024,
+                "expires_at": FUTURE,
+            },
+            now=NOW,
+        )
+
+
 def test_build_command_result_keeps_correlation_fields():
     result = build_command_result(
         "q-1", "completed", parent_request_id="parent-1", matches=[]
@@ -89,4 +107,3 @@ def test_build_command_result_keeps_correlation_fields():
     assert result["request_id"] == "q-1"
     assert result["parent_request_id"] == "parent-1"
     assert result["status"] == "completed"
-
