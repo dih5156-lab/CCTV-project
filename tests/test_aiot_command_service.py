@@ -1,6 +1,9 @@
 from datetime import datetime, timedelta, timezone
 
+from prometheus_client import CollectorRegistry, generate_latest
+
 from src.aiot.command_store import CommandStore
+from src.aiot.metrics import AiotMetrics
 from src.edgex._outbox_mixin import _OutboxMixin
 from src.services.aiot_command_service import AiotCommandService
 
@@ -46,7 +49,7 @@ class FakeOutbox:
         self.items.append((request_id, payload, last_error))
 
 
-def _service(tmp_path, publisher=None):
+def _service(tmp_path, publisher=None, metrics=None):
     query = FakeQueryService()
     output = publisher or FakePublisher()
     outbox = FakeOutbox()
@@ -58,6 +61,7 @@ def _service(tmp_path, publisher=None):
         publish_result=output,
         result_outbox=outbox,
         max_results=20,
+        metrics=metrics,
     )
     return service, query, output, outbox
 
@@ -110,3 +114,13 @@ def build_result_payload(request_id, status):
         "request_id": request_id,
         "status": status,
     }
+
+
+def test_query_records_bounded_metrics(tmp_path):
+    registry = CollectorRegistry()
+    metrics = AiotMetrics(registry)
+    service, _, _, _ = _service(tmp_path, metrics=metrics)
+    service.handle(_query_payload())
+    output = generate_latest(registry).decode()
+    assert 'message_type="ai_query_request"' in output
+    assert 'search_mode="history"' in output

@@ -955,6 +955,7 @@ services:
       AIOT_ALLOWED_UPLOAD_HOSTS: ${AIOT_ALLOWED_UPLOAD_HOSTS:-}
       AIOT_QUERY_MAX_RESULTS: ${AIOT_QUERY_MAX_RESULTS:-20}
       AIOT_LIVE_WINDOW_SECONDS: ${AIOT_LIVE_WINDOW_SECONDS:-30}
+      AIOT_METRICS_PORT: ${AIOT_METRICS_PORT:-9105}
       AIOT_COMMAND_DB: /data/cctv-edgex-adapter/aiot_commands.db
       APPEARANCES_DB: /app/data/runtime/appearances.db
       APPEARANCE_CROP_DIR: /app/data/runtime/appearance_crops

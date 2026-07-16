@@ -51,6 +51,7 @@ def test_configure_aiot_commands_builds_service_from_environment(tmp_path, monke
     configure_aiot_commands(adapter)
     assert adapter.aiot_commands_enabled is True
     assert isinstance(adapter.aiot_command_service, AiotCommandService)
+    assert adapter.aiot_command_service.metrics is not None
 
 
 def test_jetson_compose_keeps_aiot_disabled_and_mounts_runtime_data():

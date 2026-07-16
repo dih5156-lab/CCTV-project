@@ -7,6 +7,8 @@ import sys
 from pathlib import Path
 from typing import Mapping
 
+from prometheus_client import start_http_server
+
 _RUNNER_DIR = Path(__file__).resolve().parent
 _PROJECT_ROOT = _RUNNER_DIR.parent
 if str(_PROJECT_ROOT) not in sys.path:
@@ -15,6 +17,7 @@ if str(_PROJECT_ROOT) not in sys.path:
 from runners._shared import setup_runner_logging
 from src.aiot.command_store import CommandStore
 from src.aiot.media_uploader import MediaUploader
+from src.aiot.metrics import AiotMetrics
 from src.aiot.query_service import AiQueryService, RecentAppearanceLiveProvider
 from src.edgex.adapter_service import EdgeXDeviceAdapterService
 from src.services.aiot_command_service import AiotCommandService
@@ -75,6 +78,7 @@ def configure_aiot_commands(adapter: EdgeXDeviceAdapterService) -> None:
         publish_result=publish_result,
         result_outbox=adapter.edgex_service,
         max_results=int(os.environ.get("AIOT_QUERY_MAX_RESULTS", "20")),
+        metrics=AiotMetrics(),
     )
     adapter.aiot_commands_enabled = True
 
@@ -114,6 +118,10 @@ def main() -> None:
         service_name=args.service_name,
     )
     configure_aiot_commands(service)
+    if service.aiot_commands_enabled:
+        metrics_port = int(os.environ.get("AIOT_METRICS_PORT", "9105"))
+        start_http_server(metrics_port)
+        logger.info("AIoT Prometheus 메트릭 서버 시작: port=%s", metrics_port)
     logger.info(
         "EdgeX Adapter 시작: ai-mqtt=%s:%s edgex-data=%s",
         args.ai_mqtt_broker,
