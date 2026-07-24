@@ -24,6 +24,10 @@ apiAddress: :9997
 apiAllowOrigins: ["*"]
 
 paths:
+  sample_eval_input:
+    # 평가 원본 입력. AI 처리 영상 출력(sample_eval)과 분리해 publisher 충돌을 막는다.
+    source: publisher
+
   sample_eval:
     # cameras.json 의 sample_eval 카메라 ID와 WebRTC path 를 맞춘다.
     source: publisher

@@ -1,11 +1,146 @@
+import json
 from pathlib import Path
+from types import SimpleNamespace
 
+import pytest
+
+from scripts.ops import evaluate_sample_deepstream_replay as replay
 from scripts.ops.evaluate_sample_deepstream_replay import (
+    DEFAULT_CONTAINER_RTSP_URL,
+    DEFAULT_HOST_RTSP_URL,
     DEFAULT_REVIEW_LOG,
     _host_path_from_container_path,
     _resolve_review_log_path,
     _summarize_shadow_records,
 )
+
+
+def test_default_rtsp_input_path_is_separate_from_sample_eval_output():
+    assert DEFAULT_HOST_RTSP_URL == "rtsp://localhost:8554/sample_eval_input"
+    assert (
+        DEFAULT_CONTAINER_RTSP_URL
+        == "rtsp://cctv-media-server:8554/sample_eval_input"
+    )
+
+
+def test_rtsp_replay_starts_publisher_before_restarting_ai_engine(tmp_path, monkeypatch):
+    video_path = tmp_path / "sample.mp4"
+    video_path.write_bytes(b"video")
+    manifest_path = tmp_path / "manifest.jsonl"
+    manifest_path.write_text(
+        json.dumps(
+            {
+                "scene_id": "scene-1",
+                "video_path": str(video_path),
+                "label": "fall",
+                "is_fall": True,
+                "scene_length": 30,
+                "camera": 1,
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    call_order = []
+
+    def fake_run_replay(
+        video_path,
+        rtsp_url,
+        duration,
+        timeout_grace,
+        *,
+        on_started=None,
+    ):
+        call_order.append("publisher_started")
+        if on_started:
+            on_started()
+        call_order.append("publisher_waited")
+        return 0
+
+    monkeypatch.setattr(replay, "_run_ffmpeg_replay", fake_run_replay)
+    monkeypatch.setattr(
+        replay,
+        "_restart_ai_engine",
+        lambda *args: call_order.append("restart"),
+    )
+    monkeypatch.setattr(replay, "_video_duration_seconds", lambda *args: 1.0)
+    monkeypatch.setattr(replay, "_read_new_jsonl_records", lambda *args: [])
+    monkeypatch.setattr(replay, "_write_jsonl", lambda *args: None)
+    monkeypatch.setattr(replay, "_write_csv", lambda *args: None)
+    monkeypatch.setattr(replay, "_apply_camera_config", lambda *args: None)
+    monkeypatch.setattr(replay.time, "sleep", lambda *args: None)
+
+    args = SimpleNamespace(
+        manifest=manifest_path,
+        label=None,
+        max_videos=1,
+        source_mode="rtsp",
+        container_project_root=Path("/app"),
+        container_rtsp_url="rtsp://cctv-media-server:8554/sample_eval",
+        host_rtsp_url="rtsp://localhost:8554/sample_eval",
+        eval_cameras_json=tmp_path / "eval-cameras.json",
+        camera_id="sample_eval",
+        compose_env_file=tmp_path / ".env",
+        review_log=tmp_path / "review.jsonl",
+        prepare_only=False,
+        apply_camera_config=True,
+        cameras_json=tmp_path / "cameras.json",
+        restart_ai_engine=True,
+        compose_file=tmp_path / "compose.yml",
+        restart_wait_seconds=0.0,
+        assumed_fps=30.0,
+        shadow_wait_seconds=0.0,
+        timeout_grace_seconds=1.0,
+        results_jsonl=tmp_path / "results.jsonl",
+        results_csv=tmp_path / "results.csv",
+        restore_camera_config=False,
+    )
+
+    replay.evaluate(args)
+
+    assert call_order == ["publisher_started", "restart", "publisher_waited"]
+
+
+def test_ffmpeg_replay_publishes_rtsp_over_tcp(tmp_path, monkeypatch):
+    captured_command = []
+
+    class CompletedProcess:
+        def wait(self, timeout):
+            return 0
+
+    monkeypatch.setattr(replay.shutil, "which", lambda name: "/usr/bin/ffmpeg")
+    monkeypatch.setattr(
+        replay.subprocess,
+        "Popen",
+        lambda command: captured_command.extend(command) or CompletedProcess(),
+    )
+
+    replay._run_ffmpeg_replay(
+        tmp_path / "sample.mp4",
+        "rtsp://localhost:8554/sample_eval",
+        1.0,
+        1.0,
+    )
+
+    transport_index = captured_command.index("-rtsp_transport")
+    assert captured_command[transport_index + 1] == "tcp"
+
+
+def test_ffmpeg_replay_rejects_nonzero_publisher_exit(tmp_path, monkeypatch):
+    class FailedProcess:
+        def wait(self, timeout):
+            return 1
+
+    monkeypatch.setattr(replay.shutil, "which", lambda name: "/usr/bin/ffmpeg")
+    monkeypatch.setattr(replay.subprocess, "Popen", lambda command: FailedProcess())
+
+    with pytest.raises(RuntimeError, match="ffmpeg replay failed with exit code 1"):
+        replay._run_ffmpeg_replay(
+            tmp_path / "sample.mp4",
+            "rtsp://localhost:8554/sample_eval_input",
+            1.0,
+            1.0,
+        )
 
 
 def test_host_path_from_container_path_maps_app_relative_paths():

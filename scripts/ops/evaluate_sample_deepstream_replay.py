@@ -28,7 +28,7 @@ import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Callable, Iterable
 
 DEFAULT_MANIFEST = Path("data/fall_eval/sample_manifest.jsonl")
 DEFAULT_RESULTS_JSONL = Path("data/fall_eval/sample_deepstream_results.jsonl")
@@ -36,8 +36,8 @@ DEFAULT_RESULTS_CSV = Path("data/fall_eval/sample_deepstream_results.csv")
 DEFAULT_REVIEW_LOG = Path("data/logs/fall_shadow_review.jsonl")
 DEFAULT_EVAL_CAMERAS = Path("data/fall_eval/cameras.sample_eval.json")
 DEFAULT_CAMERA_ID = "sample_eval"
-DEFAULT_HOST_RTSP_URL = "rtsp://localhost:8554/sample_eval"
-DEFAULT_CONTAINER_RTSP_URL = "rtsp://cctv-media-server:8554/sample_eval"
+DEFAULT_HOST_RTSP_URL = "rtsp://localhost:8554/sample_eval_input"
+DEFAULT_CONTAINER_RTSP_URL = "rtsp://cctv-media-server:8554/sample_eval_input"
 DEFAULT_CONTAINER_PROJECT_ROOT = Path("/app")
 DEFAULT_COMPOSE_ENV_FILE = Path(".env.jetson")
 
@@ -221,7 +221,14 @@ def _restart_ai_engine(compose_file: Path, compose_env_file: Path | None = None)
     subprocess.run(command, check=True)
 
 
-def _run_ffmpeg_replay(video_path: Path, rtsp_url: str, duration: float, timeout_grace: float) -> int:
+def _run_ffmpeg_replay(
+    video_path: Path,
+    rtsp_url: str,
+    duration: float,
+    timeout_grace: float,
+    *,
+    on_started: Callable[[], None] | None = None,
+) -> int:
     ffmpeg = shutil.which("ffmpeg")
     if not ffmpeg:
         raise RuntimeError("ffmpeg not found. Install ffmpeg on the Jetson host first.")
@@ -243,18 +250,25 @@ def _run_ffmpeg_replay(video_path: Path, rtsp_url: str, duration: float, timeout
             "zerolatency",
             "-f",
             "rtsp",
+            "-rtsp_transport",
+            "tcp",
             rtsp_url,
         ]
     )
+    if on_started:
+        on_started()
     try:
-        return proc.wait(timeout=max(duration + timeout_grace, 5.0))
+        return_code = proc.wait(timeout=max(duration + timeout_grace, 5.0))
     except subprocess.TimeoutExpired:
         proc.terminate()
         try:
-            return proc.wait(timeout=5.0)
+            return_code = proc.wait(timeout=5.0)
         except subprocess.TimeoutExpired:
             proc.kill()
-            return proc.wait(timeout=5.0)
+            return_code = proc.wait(timeout=5.0)
+    if return_code != 0:
+        raise RuntimeError(f"ffmpeg replay failed with exit code {return_code}")
+    return return_code
 
 
 def _container_file_uri(video_path: Path, container_project_root: Path) -> str:
@@ -460,7 +474,7 @@ def evaluate(args: argparse.Namespace) -> list[dict[str, Any]]:
     if args.apply_camera_config:
         backup = _apply_camera_config(args.eval_cameras_json, args.cameras_json)
         print(f"applied camera config: {args.cameras_json} (backup: {backup})")
-        if args.restart_ai_engine:
+        if args.restart_ai_engine and args.source_mode == "file":
             _restart_ai_engine(args.compose_file, args.compose_env_file)
             time.sleep(args.restart_wait_seconds)
 
@@ -492,7 +506,20 @@ def evaluate(args: argparse.Namespace) -> list[dict[str, Any]]:
                     time.sleep(args.restart_wait_seconds)
                 time.sleep(duration + args.shadow_wait_seconds)
             else:
-                _run_ffmpeg_replay(video_path, args.host_rtsp_url, duration, args.timeout_grace_seconds)
+                on_publisher_started = None
+                if args.apply_camera_config and args.restart_ai_engine:
+
+                    def on_publisher_started() -> None:
+                        _restart_ai_engine(args.compose_file, args.compose_env_file)
+                        time.sleep(args.restart_wait_seconds)
+
+                _run_ffmpeg_replay(
+                    video_path,
+                    args.host_rtsp_url,
+                    duration,
+                    args.timeout_grace_seconds,
+                    on_started=on_publisher_started,
+                )
                 time.sleep(args.shadow_wait_seconds)
             new_records = _read_new_jsonl_records(args.review_log, offset)
             shadow = _summarize_shadow_records(
