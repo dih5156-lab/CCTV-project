@@ -37,8 +37,11 @@ DEFAULT_MODEL_PATH = (
 DEFAULT_COMPARE_MODEL_PATH = PROJECT_ROOT / "models/experiments/falldata_sample_rf_max120_guarded.pkl"
 DEFAULT_MEDIAPIPE_PYTHON = PROJECT_ROOT / ".venv-mediapipe/bin/python"
 DEFAULT_MODEL_PYTHON = PROJECT_ROOT / ".venv-falldata/bin/python"
+DEFAULT_TEMPORAL_PYTHON = PROJECT_ROOT / ".venv-jetson-train/bin/python"
+DEFAULT_TEMPORAL_POSE_MODEL = PROJECT_ROOT / "models/yolov8n-pose.pt"
 EXTRACT_SCRIPT = PROJECT_ROOT / "scripts/datasets/extract_falldata_mediapipe_features.py"
 SMOKE_SCRIPT = PROJECT_ROOT / "scripts/datasets/smoke_falldata_video_model.py"
+TEMPORAL_SMOKE_SCRIPT = PROJECT_ROOT / "scripts/inference/smoke_fall_temporal_model.py"
 
 
 def _parse_bool(value: str | None, default: bool = False) -> bool:
@@ -77,6 +80,9 @@ class FallDataAuxConfig:
     model_python: Path = DEFAULT_MODEL_PYTHON
     model_path: Path = DEFAULT_MODEL_PATH
     compare_model_path: Optional[Path] = None
+    temporal_python: Path = DEFAULT_TEMPORAL_PYTHON
+    temporal_compare_model_path: Optional[Path] = None
+    temporal_pose_model_path: Path = DEFAULT_TEMPORAL_POSE_MODEL
 
     @classmethod
     def from_env(cls) -> "FallDataAuxConfig":
@@ -84,6 +90,9 @@ class FallDataAuxConfig:
         if mode not in {"shadow", "confirm"}:
             mode = "shadow"
         compare_model_raw = os.environ.get("FALLDATA_AUX_COMPARE_MODEL_PATH", "").strip()
+        temporal_compare_model_raw = os.environ.get(
+            "FALLDATA_AUX_TEMPORAL_COMPARE_MODEL_PATH", ""
+        ).strip()
         return cls(
             enabled=_parse_bool(os.environ.get("FALLDATA_AUX_ENABLED"), False),
             mode=mode,
@@ -113,6 +122,21 @@ class FallDataAuxConfig:
             ),
             model_path=Path(os.environ.get("FALLDATA_AUX_MODEL_PATH", str(DEFAULT_MODEL_PATH))),
             compare_model_path=Path(compare_model_raw) if compare_model_raw else None,
+            temporal_python=Path(
+                os.environ.get(
+                    "FALLDATA_AUX_TEMPORAL_PYTHON",
+                    str(DEFAULT_TEMPORAL_PYTHON),
+                )
+            ),
+            temporal_compare_model_path=(
+                Path(temporal_compare_model_raw) if temporal_compare_model_raw else None
+            ),
+            temporal_pose_model_path=Path(
+                os.environ.get(
+                    "FALLDATA_AUX_TEMPORAL_POSE_MODEL_PATH",
+                    str(DEFAULT_TEMPORAL_POSE_MODEL),
+                )
+            ),
         )
 
 
@@ -250,6 +274,7 @@ class FallDataAuxVerifier:
             probability = self._parse_probability(infer.stdout)
             prediction = self._parse_prediction(infer.stdout)
             compare_result = self._run_compare_model(feature_dir, nonzero_frames)
+            temporal_compare_result = self._run_temporal_compare_model(video_path)
 
         fall_probability = (
             probability[self.config.fall_class_index]
@@ -268,6 +293,7 @@ class FallDataAuxVerifier:
             nonzero_feature_frames=nonzero_frames,
             min_nonzero_feature_frames=self.config.min_nonzero_frames,
             compare_model=compare_result,
+            temporal_compare_model=temporal_compare_result,
         )
 
     def _run_compare_model(
@@ -310,6 +336,56 @@ class FallDataAuxVerifier:
             "fall_probability": fall_probability,
             "threshold": self.config.threshold,
             "fall_class_index": self.config.fall_class_index,
+        }
+
+    def _run_temporal_compare_model(self, video_path: Path) -> Optional[dict]:
+        model_path = self.config.temporal_compare_model_path
+        if model_path is None:
+            return None
+        required_paths = (
+            self.config.temporal_python,
+            model_path,
+            self.config.temporal_pose_model_path,
+            TEMPORAL_SMOKE_SCRIPT,
+        )
+        missing = next((path for path in required_paths if not path.exists()), None)
+        if missing is not None:
+            return {
+                "status": "missing_dependency",
+                "model_path": str(model_path),
+                "missing": str(missing),
+                "confirmed": False,
+            }
+        infer = self._run(
+            [
+                str(self.config.temporal_python),
+                str(TEMPORAL_SMOKE_SCRIPT),
+                "--model",
+                str(model_path),
+                "--pose-model",
+                str(self.config.temporal_pose_model_path),
+                "--video",
+                str(video_path),
+            ]
+        )
+        prediction = self._parse_prediction(infer.stdout)
+        fall_probability = self._parse_named_float(infer.stdout, "fall_probability")
+        threshold = self._parse_named_float(infer.stdout, "threshold")
+        frames_with_pose = self._parse_named_int(infer.stdout, "frames_with_pose")
+        confirmed = (
+            prediction == 1
+            and fall_probability is not None
+            and threshold is not None
+            and fall_probability >= threshold
+        )
+        return {
+            "status": "ok",
+            "model_path": str(model_path),
+            "confirmed": confirmed,
+            "prediction": prediction,
+            "fall_probability": fall_probability,
+            "threshold": threshold,
+            "frames_with_pose": frames_with_pose,
         }
 
     def _result(self, status: str, *, confirmed: bool, **extra: object) -> dict:
@@ -409,3 +485,13 @@ class FallDataAuxVerifier:
         if not match:
             return None
         return [float(part.strip()) for part in match.group(1).split(",")]
+
+    @staticmethod
+    def _parse_named_float(output: str, name: str) -> Optional[float]:
+        match = re.search(rf"{re.escape(name)}:\s*([-+]?[0-9]*\.?[0-9]+)", output)
+        return float(match.group(1)) if match else None
+
+    @staticmethod
+    def _parse_named_int(output: str, name: str) -> Optional[int]:
+        match = re.search(rf"{re.escape(name)}:\s*(\d+)", output)
+        return int(match.group(1)) if match else None

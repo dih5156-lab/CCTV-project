@@ -127,6 +127,7 @@ from ._event_context import (
 )
 from ._event_publish import run_publish_loop
 from ._face_snapshot import save_recognized_face_snapshot
+from ._fall_aux_policy import aux_result_confirms_fall, should_confirm_fall_with_aux
 from ._fall_shadow_review import (
     FallShadowReviewConfig,
     FallShadowReviewRecorder,
@@ -1008,6 +1009,15 @@ class DeepStreamProcessor(BaseProcessor):
             copy_frame=copy_frame,
         )
 
+    def _frame_capture_enabled(self) -> bool:
+        """공개 preview 또는 CPU 후처리가 프레임을 요구하면 appsink를 유지한다."""
+        if self._preview_enabled or self._face_enabled_default or self._appearance_enabled_default:
+            return True
+        return any(
+            flags.get("use_face") or flags.get("use_appearance")
+            for flags in self._camera_ai_flags.values()
+        )
+
     def get_detection_snapshot(self) -> Dict[str, dict]:
         """카메라별 최신 탐지 스냅샷을 반환한다."""
         return self._snapshot_store.snapshot()
@@ -1217,33 +1227,35 @@ class DeepStreamProcessor(BaseProcessor):
         return fall_shadow_event_id(camera_name, event_payload, created_at)
 
     def _should_confirm_fall_with_aux_before_publish(self, event: DetectionEvent) -> bool:
-        if event.event_type != EventType.FALL_DETECTED:
-            return False
-        if not getattr(self, "_fall_aux_confirm_borderline", False):
-            return False
         falldata_aux = getattr(self, "_falldata_aux", None)
-        if falldata_aux is None or not falldata_aux.enabled:
-            return False
-        score = float((event.metadata or {}).get("fall_score", 0.0))
-        max_score = getattr(self, "_fall_aux_confirm_max_fall_score", None)
-        if max_score is not None:
-            return score <= float(max_score)
-        return score <= float(self._fall_detector.score_threshold)
+        aux_mode = getattr(getattr(falldata_aux, "config", None), "mode", "confirm")
+        if not isinstance(aux_mode, str):
+            aux_mode = "confirm"
+        return should_confirm_fall_with_aux(
+            event,
+            confirm_borderline=getattr(self, "_fall_aux_confirm_borderline", False),
+            aux_enabled=(
+                falldata_aux is not None
+                and falldata_aux.enabled
+                and aux_mode.strip().lower() == "confirm"
+            ),
+            max_fall_score=getattr(self, "_fall_aux_confirm_max_fall_score", None),
+            detector_score_threshold=float(self._fall_detector.score_threshold),
+        )
 
     def _enqueue_aux_confirmed_fall_event(
         self, camera_name: str, event_payload: Dict[str, Any], result: Dict[str, Any]
     ) -> bool:
-        if result.get("status") != "ok" or result.get("confirmed") is not True:
-            return False
-        metadata = dict(event_payload.get("metadata") or {})
-        if (
-            getattr(self, "_fall_aux_compare_veto_enabled", False)
-            and float(metadata.get("fall_score", 0.0))
-            >= float(getattr(self, "_fall_aux_compare_veto_min_fall_score", 0.0))
-            and (result.get("compare_model") or {}).get("status") == "ok"
-            and (result.get("compare_model") or {}).get("confirmed") is False
+        if not aux_result_confirms_fall(
+            event_payload,
+            result,
+            compare_veto_enabled=getattr(self, "_fall_aux_compare_veto_enabled", False),
+            compare_veto_min_fall_score=float(
+                getattr(self, "_fall_aux_compare_veto_min_fall_score", 0.0)
+            ),
         ):
             return False
+        metadata = dict(event_payload.get("metadata") or {})
         metadata.pop("falldata_aux_publish_pending", None)
         metadata["falldata_aux"] = result
         metadata["falldata_aux_confirmed"] = True
@@ -1724,6 +1736,8 @@ class DeepStreamProcessor(BaseProcessor):
     ) -> bool:
         if not self._should_confirm_fall_with_aux_before_publish(event):
             return self._enqueue_event(event, camera_name)
+        if not self._should_enqueue_event(event, camera_name):
+            return False
 
         metadata = dict(event.metadata or {})
         metadata["falldata_aux_publish_pending"] = True
@@ -2057,11 +2071,12 @@ class DeepStreamProcessor(BaseProcessor):
 
         n_cams = len(source_entries)
         output_elements = self._create_output_elements()
-        preview_elements = self._create_preview_elements() if self._preview_enabled else []
+        frame_capture_enabled = self._frame_capture_enabled()
+        preview_elements = self._create_preview_elements() if frame_capture_enabled else []
 
         elements = create_pipeline_elements_bundle(
             make_element=self._make_element,
-            preview_enabled=self._preview_enabled,
+            preview_enabled=frame_capture_enabled,
             primary_enabled=primary_enabled,
             helmet_enabled=helmet_enabled,
             pphuman_enabled=pphuman_enabled,

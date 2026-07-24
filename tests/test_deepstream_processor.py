@@ -390,6 +390,38 @@ def test_deepstream_get_stats_uses_common_fields_without_runtime():
     assert stats["output_mode"] == "fakesink"
 
 
+def test_frame_capture_stays_enabled_for_face_when_public_preview_is_disabled():
+    proc = object.__new__(DeepStreamProcessor)
+    proc._preview_enabled = False
+    proc._face_enabled_default = True
+    proc._appearance_enabled_default = False
+    proc._camera_ai_flags = {}
+
+    assert proc._frame_capture_enabled() is True
+
+
+def test_frame_capture_stays_enabled_for_camera_appearance_override():
+    proc = object.__new__(DeepStreamProcessor)
+    proc._preview_enabled = False
+    proc._face_enabled_default = False
+    proc._appearance_enabled_default = False
+    proc._camera_ai_flags = {
+        "cam1": {"use_face": False, "use_appearance": True},
+    }
+
+    assert proc._frame_capture_enabled() is True
+
+
+def test_frame_capture_can_be_disabled_when_no_consumer_needs_frames():
+    proc = object.__new__(DeepStreamProcessor)
+    proc._preview_enabled = False
+    proc._face_enabled_default = False
+    proc._appearance_enabled_default = False
+    proc._camera_ai_flags = {}
+
+    assert proc._frame_capture_enabled() is False
+
+
 def test_read_preview_max_fps_defaults_to_stream_fps(monkeypatch):
     monkeypatch.delenv("DS_PREVIEW_MAX_FPS", raising=False)
     monkeypatch.setenv("STREAM_FPS", "20")
@@ -982,6 +1014,29 @@ def test_deepstream_borderline_fall_can_require_aux_before_publish():
     assert proc._should_confirm_fall_with_aux_before_publish(person) is False
 
 
+def test_deepstream_shadow_aux_never_delays_fall_publish():
+    proc = object.__new__(DeepStreamProcessor)
+    proc._fall_aux_confirm_borderline = True
+    proc._fall_aux_confirm_max_fall_score = 4.5
+    proc._falldata_aux = MagicMock()
+    proc._falldata_aux.enabled = True
+    proc._falldata_aux.config = types.SimpleNamespace(mode="shadow")
+    proc._fall_detector = types.SimpleNamespace(score_threshold=3.0)
+    borderline = DetectionEvent(
+        EventType.FALL_DETECTED,
+        1,
+        2,
+        30,
+        20,
+        0.8,
+        1.0,
+        object_id=7,
+        metadata={"fall_score": 3.0},
+    )
+
+    assert proc._should_confirm_fall_with_aux_before_publish(borderline) is False
+
+
 def test_deepstream_fall_aux_confirm_max_score_can_extend_pending_window():
     proc = object.__new__(DeepStreamProcessor)
     proc._fall_aux_confirm_borderline = True
@@ -1052,6 +1107,52 @@ def test_deepstream_borderline_fall_is_deferred_to_aux_queue():
     assert proc.event_queue.empty()
     assert camera_name == "cam1"
     assert payload["metadata"]["falldata_aux_publish_pending"] is True
+
+
+def test_deepstream_repeated_borderline_fall_is_debounced_before_aux_queue():
+    proc = object.__new__(DeepStreamProcessor)
+    proc.event_queue = Queue(maxsize=2)
+    proc._events_detected = 0
+    proc._events_dropped = 0
+    proc._falldata_aux_queue = Queue(maxsize=2)
+    proc._fall_aux_confirm_borderline = True
+    proc._fall_aux_confirm_max_fall_score = 4.5
+    proc._falldata_aux = MagicMock()
+    proc._falldata_aux.enabled = True
+    proc._fall_detector = types.SimpleNamespace(score_threshold=3.0)
+    proc._debouncer = MagicMock()
+    proc._debouncer.should_send.side_effect = [True, False]
+    proc._fall_shadow_review_log_path = Path("/tmp/not-used.jsonl")
+    proc._fall_shadow_clip_dir = Path("/tmp")
+    proc._fall_shadow_save_clips = False
+
+    first = DetectionEvent(
+        EventType.FALL_DETECTED,
+        1,
+        2,
+        30,
+        20,
+        0.8,
+        1.0,
+        object_id=7,
+        metadata={"fall_score": 4.0},
+    )
+    repeated = DetectionEvent(
+        EventType.FALL_DETECTED,
+        1,
+        2,
+        30,
+        20,
+        0.8,
+        1.0,
+        object_id=7,
+        metadata={"fall_score": 4.0},
+    )
+
+    assert proc._enqueue_event_or_defer_fall_aux(first, "cam1") is False
+    assert proc._enqueue_event_or_defer_fall_aux(repeated, "cam1") is False
+    assert proc._falldata_aux_queue.qsize() == 1
+    assert proc._debouncer.should_send.call_count == 2
 
 
 def test_deepstream_clear_high_score_fall_bypasses_aux_defer(tmp_path):

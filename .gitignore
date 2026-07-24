@@ -123,6 +123,7 @@ models/training/
 .venv-par/
 .venv-falldata/
 .venv-mediapipe/
+.venv-jetson-train/
 
 .pytest_tmp/
 *.db

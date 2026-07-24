@@ -23,6 +23,8 @@ from ..schemas.common import BaseResponse, success_response
 
 router = APIRouter(tags=["health"])
 
+_DEPENDENCY_TIMEOUT_SEC = float(os.environ.get("PUBLIC_API_READINESS_TIMEOUT_SEC", "5"))
+
 # 공유 httpx 클라이언트 — 매 요청마다 SSL 컨텍스트를 새로 여는 fd 누출 방지
 _http_client: httpx.AsyncClient | None = None
 
@@ -31,11 +33,11 @@ async def get_http_client() -> httpx.AsyncClient:
     global _http_client
     if _http_client is None or _http_client.is_closed:
         _http_client = httpx.AsyncClient(
-            timeout=2.0,
+            timeout=_DEPENDENCY_TIMEOUT_SEC,
             trust_env=False,
             limits=httpx.Limits(
-                max_connections=10,
-                max_keepalive_connections=5,
+                max_connections=20,
+                max_keepalive_connections=10,
                 keepalive_expiry=30.0,
             ),
         )

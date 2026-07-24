@@ -57,6 +57,19 @@ def client():
     client.close()
 
 
+@pytest.fixture(autouse=True)
+def run_thread_offloads_inline_in_unit_tests(monkeypatch: pytest.MonkeyPatch):
+    """이 실행 환경의 asyncio 기본 executor 종료 지연을 피하고 API 결과를 검증한다."""
+    import src.api.v1.events as events_module
+    import src.api.v1.sensor_readings as sensor_module
+
+    async def _inline(func, *args, **kwargs):
+        return func(*args, **kwargs)
+
+    monkeypatch.setattr(events_module.asyncio, "to_thread", _inline)
+    monkeypatch.setattr(sensor_module.asyncio, "to_thread", _inline)
+
+
 # ---------------------------------------------------------------------------
 # /api/v1/health
 # ---------------------------------------------------------------------------
@@ -315,6 +328,34 @@ class TestAlerts:
 
 
 class TestSensorReadings:
+    def test_get_sensor_readings_does_not_block_the_event_loop(
+        self, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    ) -> None:
+        import src.api.v1.sensor_readings as sensor_module
+
+        calls = []
+
+        def _read(*args, **kwargs):
+            return [], 0
+
+        async def _to_thread(func, *args, **kwargs):
+            calls.append(func)
+            return func(*args, **kwargs)
+
+        monkeypatch.setattr(sensor_module, "_read_sensor_log", _read)
+        monkeypatch.setattr(sensor_module.asyncio, "to_thread", _to_thread)
+        log_file = tmp_path / "sensor_readings.jsonl"
+        log_file.touch()
+        monkeypatch.setattr(sensor_module, "_SENSOR_LOG", log_file)
+
+        asyncio.run(
+            sensor_module.list_sensor_readings.__wrapped__(
+                request=MagicMock(), limit=10, offset=0, device_id=None, table=None, _=None
+            )
+        )
+
+        assert calls == [_read]
+
     def test_get_sensor_readings_returns_latest_tlv_logs(
         self,
         client: SyncASGIClient,
@@ -530,6 +571,32 @@ class TestSensorReadings:
 
 
 class TestEvents:
+    def test_get_events_does_not_block_the_event_loop(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        import src.api.v1.events as events_module
+
+        calls = []
+
+        def _read(*args, **kwargs):
+            return [], 0
+
+        async def _to_thread(func, *args, **kwargs):
+            calls.append(func)
+            return func(*args, **kwargs)
+
+        monkeypatch.setattr(events_module, "_read_events", _read)
+        monkeypatch.setattr(events_module.asyncio, "to_thread", _to_thread)
+
+        asyncio.run(
+            events_module.list_events.__wrapped__(
+                request=MagicMock(), limit=10, offset=0, camera_id=None,
+                event_type=None, time_from=None, time_to=None, _=None,
+            )
+        )
+
+        assert calls == [_read]
+
     def test_event_review_upsert_summary_and_event_annotation(
         self, client: SyncASGIClient, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:

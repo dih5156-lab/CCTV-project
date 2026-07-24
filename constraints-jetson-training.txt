@@ -1,0 +1,7 @@
+# JetPack 6.2 / CUDA 12.6 / Python 3.10 (aarch64)
+# Keep these pins when installing training dependencies. Generic PyPI
+# Torch/TorchVision wheels can silently replace the Jetson CUDA builds.
+torch==2.8.0
+torchvision==0.23.0
+numpy==1.26.4
+opencv-python==4.11.0.86

@@ -28,6 +28,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--min-class-groups", type=int, default=2)
     parser.add_argument("--max-false-negatives", type=int, default=0)
     parser.add_argument("--max-false-positives", type=int, default=0)
+    parser.add_argument("--min-holdout-fall-precision", type=float)
+    parser.add_argument("--min-holdout-fall-recall", type=float)
+    parser.add_argument("--min-validation-fall-precision", type=float)
+    parser.add_argument("--min-validation-fall-recall", type=float)
     parser.add_argument(
         "--require-cross-validation",
         action="store_true",
@@ -61,12 +65,24 @@ def evaluate_report(
     max_false_negatives: int,
     max_false_positives: int | None,
     require_cross_validation: bool,
+    min_holdout_fall_precision: float | None = None,
+    min_holdout_fall_recall: float | None = None,
+    min_validation_fall_precision: float | None = None,
+    min_validation_fall_recall: float | None = None,
 ) -> list[CheckResult]:
     split = report.get("holdout_split") or {}
     errors = report.get("holdout_errors") or {}
     dataset_summary = report.get("dataset_summary") or {}
     group_class_counts = dataset_summary.get("group_class_counts") or {}
     cross_validation = report.get("cross_validation") or {}
+    holdout_report = (
+        ((report.get("holdout") or {}).get("classification_report") or {}).get("fall")
+        or {}
+    )
+    validation_report = (
+        ((report.get("validation") or {}).get("classification_report") or {}).get("fall")
+        or {}
+    )
     train_groups = _as_set(split.get("train_groups"))
     test_groups = _as_set(split.get("test_groups"))
     overlap = sorted(train_groups & test_groups)
@@ -129,6 +145,37 @@ def evaluate_report(
                 bool(cross_validation.get("enabled")),
             )
         )
+
+    for report_name, classification, requirements in (
+        (
+            "holdout",
+            holdout_report,
+            (
+                ("precision", min_holdout_fall_precision),
+                ("recall", min_holdout_fall_recall),
+            ),
+        ),
+        (
+            "validation",
+            validation_report,
+            (
+                ("precision", min_validation_fall_precision),
+                ("recall", min_validation_fall_recall),
+            ),
+        ),
+    ):
+        for metric_name, minimum in requirements:
+            if minimum is None:
+                continue
+            actual = float(classification.get(metric_name, 0.0))
+            checks.append(
+                CheckResult(
+                    f"{report_name}.classification_report.fall.{metric_name}",
+                    actual,
+                    f">= {minimum}",
+                    actual >= minimum,
+                )
+            )
 
     return checks
 
@@ -258,6 +305,10 @@ def main() -> int:
         max_false_negatives=args.max_false_negatives,
         max_false_positives=args.max_false_positives,
         require_cross_validation=args.require_cross_validation,
+        min_holdout_fall_precision=args.min_holdout_fall_precision,
+        min_holdout_fall_recall=args.min_holdout_fall_recall,
+        min_validation_fall_precision=args.min_validation_fall_precision,
+        min_validation_fall_recall=args.min_validation_fall_recall,
     )
     payload = build_payload(args.metrics_json, report, checks)
     if args.update_manifest and payload["passed"]:
