@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="820" viewBox="0 0 1400 820" role="img" aria-labelledby="title desc">
+  <title id="title">CCTV runtime architecture</title>
+  <desc id="desc">Filtered runtime entry points and src module dependencies from Codebase Memory.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+    </marker>
+    <style>
+      .background { fill: #0f172a; }
+      .group { fill: #111c33; stroke: #334155; stroke-width: 2; rx: 18; }
+      .entry { fill: #172554; stroke: #60a5fa; stroke-width: 2; rx: 9; }
+      .runtime { fill: #3f1d2e; stroke: #fb7185; stroke-width: 2; rx: 9; }
+      .shared { fill: #422006; stroke: #fbbf24; stroke-width: 2; rx: 9; }
+      .label { fill: #e2e8f0; font: 16px sans-serif; text-anchor: middle; dominant-baseline: middle; }
+      .small { fill: #cbd5e1; font: 13px sans-serif; text-anchor: middle; }
+      .heading { fill: #f8fafc; font: 700 22px sans-serif; }
+      .edge { fill: none; stroke: #64748b; stroke-width: 2; marker-end: url(#arrow); }
+      .edge-strong { fill: none; stroke: #f59e0b; stroke-width: 2.5; marker-end: url(#arrow); }
+      .edge-dashed { fill: none; stroke: #38bdf8; stroke-width: 2; stroke-dasharray: 7 6; marker-end: url(#arrow); }
+      .edge-label { fill: #cbd5e1; font: 12px sans-serif; text-anchor: middle; }
+    </style>
+  </defs>
+
+  <rect class="background" width="1400" height="820"/>
+  <text class="heading" x="36" y="42">CCTV Runtime Architecture — filtered Codebase Memory view</text>
+
+  <rect class="group" x="35" y="70" width="400" height="705"/>
+  <text class="heading" x="60" y="108">Runtime entry points</text>
+
+  <rect class="entry" x="70" y="135" width="155" height="48"/>
+  <text class="label" x="147" y="159">app/main.py</text>
+  <rect class="entry" x="245" y="135" width="155" height="48"/>
+  <text class="label" x="322" y="151">external</text>
+  <text class="label" x="322" y="169">ingest</text>
+
+  <rect class="entry" x="70" y="220" width="155" height="48"/>
+  <text class="label" x="147" y="244">public API</text>
+  <rect class="entry" x="245" y="220" width="155" height="48"/>
+  <text class="label" x="322" y="244">alert API</text>
+  <rect class="entry" x="70" y="290" width="155" height="48"/>
+  <text class="label" x="147" y="314">action bridge</text>
+  <rect class="entry" x="245" y="290" width="155" height="48"/>
+  <text class="label" x="322" y="306">sensor rule</text>
+  <text class="label" x="322" y="324">bridge</text>
+  <rect class="entry" x="70" y="360" width="155" height="48"/>
+  <text class="label" x="147" y="384">EdgeX adapter</text>
+  <rect class="entry" x="245" y="360" width="155" height="48"/>
+  <text class="label" x="322" y="384">Kuiper rules</text>
+
+  <rect class="shared" x="125" y="470" width="220" height="55"/>
+  <text class="label" x="235" y="498">runners/_shared.py</text>
+  <path class="edge" d="M147 268 V445 H205 V470"/>
+  <path class="edge" d="M322 268 V445 H265 V470"/>
+  <path class="edge" d="M147 338 V445"/>
+  <path class="edge" d="M322 338 V445"/>
+  <path class="edge" d="M147 408 V445"/>
+  <path class="edge" d="M322 408 V445"/>
+
+  <rect class="entry" x="70" y="600" width="330" height="48"/>
+  <text class="label" x="235" y="624">edgex/register_aiot_devices.py</text>
+  <text class="small" x="235" y="704">점선: 설정·HTTP·MQTT 기반 경계</text>
+
+  <rect class="group" x="475" y="70" width="890" height="705"/>
+  <text class="heading" x="500" y="108">src runtime modules</text>
+
+  <rect class="runtime" x="520" y="145" width="145" height="54"/>
+  <text class="label" x="592" y="172">api</text>
+  <rect class="runtime" x="735" y="145" width="145" height="54"/>
+  <text class="label" x="807" y="172">core</text>
+  <rect class="runtime" x="950" y="145" width="145" height="54"/>
+  <text class="label" x="1022" y="172">services</text>
+
+  <rect class="runtime" x="520" y="390" width="145" height="54"/>
+  <text class="label" x="592" y="417">devices</text>
+  <rect class="runtime" x="735" y="390" width="145" height="54"/>
+  <text class="label" x="807" y="417">protocols</text>
+  <rect class="runtime" x="950" y="390" width="145" height="54"/>
+  <text class="label" x="1022" y="417">_http_server</text>
+  <rect class="runtime" x="1165" y="390" width="145" height="54"/>
+  <text class="label" x="1237" y="417">utils</text>
+
+  <rect class="runtime" x="735" y="620" width="145" height="54"/>
+  <text class="label" x="807" y="647">edgex / aiot</text>
+
+  <path class="edge" d="M665 160 H735"/>
+  <text class="edge-label" x="700" y="151">services 11</text>
+  <path class="edge" d="M665 185 C850 250 1050 305 1165 402"/>
+  <text class="edge-label" x="890" y="286">utils 19</text>
+
+  <path class="edge-strong" d="M880 160 H950"/>
+  <text class="edge-label" x="915" y="151">18</text>
+  <path class="edge-strong" d="M950 185 H880"/>
+  <text class="edge-label" x="915" y="207">17</text>
+
+  <path class="edge" d="M840 199 C970 270 1100 320 1165 402"/>
+  <text class="edge-label" x="1045" y="307">utils 128</text>
+  <path class="edge" d="M1095 185 C1180 240 1220 310 1232 390"/>
+  <text class="edge-label" x="1201" y="291">utils 44</text>
+  <path class="edge" d="M1022 199 V390"/>
+  <text class="edge-label" x="1054" y="300">HTTP 55</text>
+
+  <path class="edge-strong" d="M975 199 C930 285 880 330 835 390"/>
+  <text class="edge-label" x="916" y="302">11</text>
+  <path class="edge-strong" d="M780 390 C810 300 900 245 980 199"/>
+  <text class="edge-label" x="824" y="302">29</text>
+
+  <path class="edge" d="M665 417 H735"/>
+  <text class="edge-label" x="700" y="406">utils 12</text>
+  <path class="edge" d="M665 430 C830 510 1060 510 1180 444"/>
+
+  <path class="edge-dashed" d="M880 647 C980 610 1015 520 1022 444"/>
+  <text class="edge-label" x="973" y="568">HTTP / MQTT</text>
+
+  <path class="edge-dashed" d="M435 570 C500 570 505 460 550 444"/>
+  <text class="edge-label" x="492" y="535">launches</text>
+  <path class="edge-dashed" d="M435 624 C570 624 650 647 735 647"/>
+</svg>

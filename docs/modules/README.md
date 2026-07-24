@@ -6,6 +6,8 @@
 
 - [프로젝트 개요](PROJECT_OVERVIEW.md): 시스템 구성과 설계 의도
 - [프로젝트 구조](PROJECT_STRUCTURE.md): 디렉터리와 주요 모듈의 역할
+- [Codebase Memory 런타임 그래프](CODEBASE_MEMORY_RUNTIME_GRAPH.md): 테스트와
+  built-in 노드를 제외한 운영 코드 의존 관계
 - [디렉터리 이동 계획](CODE_DIRECTORY_RELOCATION_PLAN.md): 단계별 구조 개선안
 - [호환성 shim](COMPATIBILITY_SHIMS.md): 이전 경로와 인터페이스 호환 정책
 
