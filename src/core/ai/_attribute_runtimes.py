@@ -10,7 +10,6 @@ from typing import List, Optional, Protocol
 
 import numpy as np
 
-
 DEFAULT_TENSORRT_MAJOR_MINOR = "10.3"
 
 

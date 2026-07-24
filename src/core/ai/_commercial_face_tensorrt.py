@@ -2,15 +2,14 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
-from dataclasses import dataclass
 
 import cv2
 import numpy as np
 
 from ._attribute_runtimes import build_tensorrt_named_runtime, build_tensorrt_runtime
-
 
 SFACE_MODEL_ID = "opencv-sface-tensorrt-v1"
 SFACE_INPUT_SIZE = (112, 112)

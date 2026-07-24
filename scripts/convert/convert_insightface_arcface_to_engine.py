@@ -7,7 +7,6 @@ import shutil
 import subprocess
 from pathlib import Path
 
-
 DEFAULT_ONNX_PATH = Path(
     "data/insightface/models/buffalo_l/w600k_r50.onnx"
 )

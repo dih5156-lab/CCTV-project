@@ -4,16 +4,16 @@ import numpy as np
 import pytest
 
 from src.core.ai._commercial_face_tensorrt import (
-    CommercialFaceEmbeddingPipeline,
     SFACE_LANDMARK_TEMPLATE,
-    TensorRTYuNetDetector,
+    CommercialFaceEmbeddingPipeline,
     TensorRTSFaceEmbedder,
+    TensorRTYuNetDetector,
     YuNetFace,
     align_sface_bgr,
     decode_yunet_outputs,
     normalize_sface_embedding,
-    preprocess_yunet_bgr,
     preprocess_sface_bgr,
+    preprocess_yunet_bgr,
 )
 
 
