@@ -79,6 +79,12 @@ def _pad_or_trim(frames: list[np.ndarray]) -> np.ndarray:
     return np.asarray(padded, dtype=np.float32)
 
 
+def _tail_start_frame(total_frames: int, max_frames: int | None) -> int:
+    if max_frames is None or max_frames <= 0 or total_frames <= max_frames:
+        return 0
+    return total_frames - max_frames
+
+
 def extract_video_features(
     video_path: Path,
     *,
@@ -92,6 +98,11 @@ def extract_video_features(
     cap = cv2.VideoCapture(str(video_path))
     if not cap.isOpened():
         raise ValueError(f"could not open video: {video_path}")
+
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    start_frame = _tail_start_frame(total_frames, max_frames)
+    if start_frame > 0:
+        cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
 
     mp_holistic = mp.solutions.holistic
     frames: list[np.ndarray] = []
@@ -130,7 +141,10 @@ def parse_args() -> argparse.Namespace:
         "--max-frames",
         type=int,
         default=None,
-        help="Optional decode limit for quick experiments. Output is still padded to 600.",
+        help=(
+            "Optional limit that extracts the most recent frames. "
+            "Output is still padded to 600."
+        ),
     )
     parser.add_argument("--min-detection-confidence", type=float, default=0.1)
     parser.add_argument("--min-tracking-confidence", type=float, default=0.1)
