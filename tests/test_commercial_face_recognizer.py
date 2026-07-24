@@ -26,10 +26,10 @@ class FakeGallery:
         return self.search_result
 
 
-def _embedded_face():
+def _embedded_face(*, bbox=(10.2, 20.4, 30.6, 40.8), score=0.95):
     face = SimpleNamespace(
-        bbox=(10.2, 20.4, 30.6, 40.8),
-        score=0.95,
+        bbox=bbox,
+        score=score,
     )
     return SimpleNamespace(face=face, embedding=np.ones(128, dtype=np.float32))
 
@@ -119,6 +119,43 @@ def test_enrollment_returns_single_embedding():
     )
 
     assert embedding.shape == (128,)
+
+
+def test_enrollment_ignores_small_low_confidence_false_positive():
+    primary_face = _embedded_face(
+        bbox=(20.0, 10.0, 60.0, 75.0),
+        score=0.96,
+    )
+    false_positive = _embedded_face(
+        bbox=(2.0, 2.0, 8.0, 8.0),
+        score=0.63,
+    )
+    recognizer = CommercialFaceRecognizer(
+        FakeEmbeddingPipeline([primary_face, false_positive]), FakeGallery(None)
+    )
+
+    embedding = recognizer.extract_enrollment_embedding(
+        np.zeros((100, 100, 3), dtype=np.uint8)
+    )
+
+    assert np.array_equal(embedding, primary_face.embedding)
+
+
+def test_enrollment_still_rejects_two_credible_faces():
+    recognizer = CommercialFaceRecognizer(
+        FakeEmbeddingPipeline(
+            [
+                _embedded_face(bbox=(5.0, 10.0, 40.0, 50.0), score=0.95),
+                _embedded_face(bbox=(52.0, 12.0, 38.0, 48.0), score=0.91),
+            ]
+        ),
+        FakeGallery(None),
+    )
+
+    with pytest.raises(ValueError, match="exactly one face"):
+        recognizer.extract_enrollment_embedding(
+            np.zeros((100, 100, 3), dtype=np.uint8)
+        )
 
 
 def test_recognizer_ignores_person_bbox_outside_frame():

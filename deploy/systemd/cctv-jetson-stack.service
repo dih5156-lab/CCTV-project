@@ -1,0 +1,22 @@
+[Unit]
+Description=CCTV Jetson stack with X11/EGL preparation
+Requires=docker.service display-manager.service
+After=docker.service display-manager.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=sawwave
+Group=sawwave
+SupplementaryGroups=docker
+WorkingDirectory=/media/sawwave/Learning11/CCTV-project
+Environment=DISPLAY=:1
+Environment=XAUTHORITY=/run/user/1000/gdm/Xauthority
+ExecStartPre=/usr/bin/bash -c 'for attempt in {1..30}; do [ -S /tmp/.X11-unix/X1 ] && [ -r "$XAUTHORITY" ] && exit 0; sleep 2; done; exit 1'
+ExecStartPre=/usr/bin/xhost +SI:localuser:root
+ExecStart=/usr/bin/docker compose --env-file .env.jetson -f docker-compose.jetson.yml up -d --force-recreate cctv-ai-engine cctv-public-api cctv-public-demo-ui
+RemainAfterExit=yes
+TimeoutStartSec=180
+
+[Install]
+WantedBy=graphical.target

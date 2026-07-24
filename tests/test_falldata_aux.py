@@ -245,6 +245,69 @@ def test_missing_compare_model_does_not_block_primary_result(monkeypatch, tmp_pa
     assert result["compare_model"]["confirmed"] is False
 
 
+def test_verify_records_temporal_compare_model_result(monkeypatch, tmp_path) -> None:
+    verifier = FallDataAuxVerifier(
+        FallDataAuxConfig(
+            enabled=True,
+            cooldown_seconds=0,
+            mediapipe_python=tmp_path / "mediapipe-python",
+            model_python=tmp_path / "model-python",
+            model_path=tmp_path / "baseline.pkl",
+            temporal_python=tmp_path / "temporal-python",
+            temporal_compare_model_path=tmp_path / "candidate.pt",
+            temporal_pose_model_path=tmp_path / "pose.pt",
+        )
+    )
+    for path in (
+        verifier.config.mediapipe_python,
+        verifier.config.model_python,
+        verifier.config.model_path,
+        verifier.config.temporal_python,
+        verifier.config.temporal_compare_model_path,
+        verifier.config.temporal_pose_model_path,
+    ):
+        path.write_text("", encoding="utf-8")
+    verifier.add_frame(np.zeros((4, 4, 3), dtype=np.uint8))
+    commands = []
+
+    def fake_run(command):
+        commands.append(command)
+        if "--output-dir" in command:
+            stdout = "nonzero_feature_frames: 42\n"
+        elif str(verifier.config.temporal_compare_model_path) in command:
+            stdout = (
+                "prediction: [1]\n"
+                "fall_probability: 0.91\n"
+                "threshold: 0.6\n"
+                "frames_with_pose: 28\n"
+            )
+        else:
+            stdout = "prediction: [0]\npredict_proba: [[0.91, 0.09]]\n"
+        return subprocess.CompletedProcess(command, 0, stdout=stdout, stderr="")
+
+    monkeypatch.setattr(verifier, "_run", fake_run)
+
+    result = verifier.verify()
+
+    assert result["status"] == "ok"
+    assert result["temporal_compare_model"] == {
+        "status": "ok",
+        "model_path": str(verifier.config.temporal_compare_model_path),
+        "confirmed": True,
+        "prediction": 1,
+        "fall_probability": 0.91,
+        "threshold": 0.6,
+        "frames_with_pose": 28,
+    }
+    temporal_command = next(
+        command
+        for command in commands
+        if str(verifier.config.temporal_compare_model_path) in command
+    )
+    assert "--video" in temporal_command
+    assert str(verifier.config.temporal_pose_model_path) in temporal_command
+
+
 def test_cooldown_without_previous_result_is_not_confirmed(monkeypatch) -> None:
     verifier = FallDataAuxVerifier(
         FallDataAuxConfig(enabled=True, mode="shadow", cooldown_seconds=60)

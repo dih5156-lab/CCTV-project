@@ -65,6 +65,16 @@ FEATURE_NAMES = [
     "missing_leg_ratio",
     "missing_shoulder_ratio",
     "folded_floor_pose_ratio",
+    "fall_score_slope",
+    "fall_score_start_mean",
+    "fall_score_end_mean",
+    "fall_score_end_minus_start",
+    "max_fall_score_rise",
+    "fall_score_peak_position",
+    "late_score_ge_3_ratio",
+    "bbox_aspect_end_minus_start",
+    "bbox_area_end_minus_start",
+    "high_score_transition_ratio",
 ]
 
 
@@ -83,6 +93,68 @@ def _safe_id(row: dict[str, Any]) -> str:
     return "".join(ch if ch.isalnum() or ch in {"-", "_"} else "_" for ch in value)
 
 
+def _scene_base(scene_id: str) -> str:
+    parts = str(scene_id).rsplit("_C", 1)
+    if len(parts) == 2 and parts[1].isdigit():
+        return parts[0]
+    return str(scene_id)
+
+
+def _group_holdout_indices(
+    scene_ids: list[str],
+    labels: np.ndarray,
+    *,
+    test_size: float,
+    random_state: int,
+) -> tuple[np.ndarray, np.ndarray, dict[str, Any]]:
+    groups = [_scene_base(scene_id) for scene_id in scene_ids]
+    unique_groups = np.asarray(sorted(set(groups)), dtype=object)
+    unique_group_count = len(unique_groups)
+    effective_test_size = max(test_size, min(0.5, 2 / unique_group_count))
+    holdout_group_count = min(
+        max(int(np.ceil(unique_group_count * effective_test_size)), 1),
+        max(unique_group_count - 1, 1),
+    )
+    random_generator = np.random.RandomState(random_state)
+    first_split: tuple[np.ndarray, np.ndarray] | None = None
+    selected_split: tuple[np.ndarray, np.ndarray] | None = None
+    group_array = np.asarray(groups, dtype=object)
+    for _ in range(100):
+        shuffled_groups = random_generator.permutation(unique_groups)
+        holdout_groups_for_split = set(shuffled_groups[:holdout_group_count])
+        holdout_mask = np.asarray(
+            [group in holdout_groups_for_split for group in group_array],
+            dtype=bool,
+        )
+        holdout_indices = np.flatnonzero(holdout_mask)
+        train_indices = np.flatnonzero(~holdout_mask)
+        if first_split is None:
+            first_split = (train_indices, holdout_indices)
+        if len(set(labels[train_indices])) >= 2 and len(set(labels[holdout_indices])) >= 2:
+            selected_split = (train_indices, holdout_indices)
+            break
+    train_indices, holdout_indices = selected_split or first_split or (
+        np.arange(len(labels)),
+        np.arange(len(labels)),
+    )
+    train_groups = sorted({groups[index] for index in train_indices})
+    holdout_groups = sorted({groups[index] for index in holdout_indices})
+    split_info = {
+        "method": "group_shuffle",
+        "group_by": "scene_base",
+        "requested_test_size": test_size,
+        "effective_group_test_size": effective_test_size,
+        "train_groups": train_groups,
+        "test_groups": holdout_groups,
+        "group_overlap": sorted(set(train_groups) & set(holdout_groups)),
+        "train_class_counts": _class_counts(labels[train_indices]),
+        "test_class_counts": _class_counts(labels[holdout_indices]),
+    }
+    if selected_split is None:
+        split_info["warning"] = "could not find a group holdout split containing both classes"
+    return train_indices, holdout_indices, split_info
+
+
 def _label_for_row(row: dict[str, Any]) -> int:
     return FALL_LABEL if bool(row.get("is_fall")) else NON_FALL_LABEL
 
@@ -90,10 +162,73 @@ def _label_for_row(row: dict[str, Any]) -> int:
 def _select_rows(rows: list[dict[str, Any]], max_videos: int) -> list[dict[str, Any]]:
     if max_videos <= 0 or len(rows) <= max_videos:
         return rows
+
+    def select_scene_diverse(
+        class_rows: list[dict[str, Any]],
+        limit: int,
+        *,
+        environment_offset: int,
+    ) -> list[dict[str, Any]]:
+        grouped: dict[str, list[dict[str, Any]]] = {}
+        for row in class_rows:
+            scene_id = str(row.get("scene_id") or Path(str(row.get("video_path", ""))).stem)
+            grouped.setdefault(_scene_base(scene_id), []).append(row)
+
+        environment_groups: dict[tuple[str, str], list[list[dict[str, Any]]]] = {}
+        for group_rows in grouped.values():
+            first_row = group_rows[0]
+            environment = (
+                str(first_row.get("scene_location") or "unknown"),
+                str(first_row.get("scene_position") or "unknown"),
+            )
+            environment_groups.setdefault(environment, []).append(group_rows)
+
+        environment_rows: dict[tuple[str, str], list[dict[str, Any]]] = {}
+        for environment, scene_groups in environment_groups.items():
+            rows_for_environment: list[dict[str, Any]] = []
+            max_cameras = max(len(group_rows) for group_rows in scene_groups)
+            for camera_offset in range(max_cameras):
+                rows_for_environment.extend(
+                    group_rows[camera_offset]
+                    for group_rows in scene_groups
+                    if camera_offset < len(group_rows)
+                )
+            environment_rows[environment] = rows_for_environment
+
+        selected_rows: list[dict[str, Any]] = []
+        offsets = {environment: 0 for environment in environment_rows}
+        environments = list(environment_rows)
+        if environments:
+            rotation = environment_offset % len(environments)
+            environments = environments[rotation:] + environments[:rotation]
+        while len(selected_rows) < limit:
+            added = False
+            for environment in environments:
+                rows_for_environment = environment_rows[environment]
+                offset = offsets[environment]
+                if offset >= len(rows_for_environment):
+                    continue
+                selected_rows.append(rows_for_environment[offset])
+                offsets[environment] = offset + 1
+                added = True
+                if len(selected_rows) >= limit:
+                    break
+            if not added:
+                break
+        return selected_rows
+
     fall_rows = [row for row in rows if bool(row.get("is_fall"))]
     non_fall_rows = [row for row in rows if not bool(row.get("is_fall"))]
     primary_quota = max_videos // 2
-    selected = non_fall_rows[:primary_quota] + fall_rows[:primary_quota]
+    selected = select_scene_diverse(
+        non_fall_rows,
+        primary_quota,
+        environment_offset=0,
+    ) + select_scene_diverse(
+        fall_rows,
+        primary_quota,
+        environment_offset=primary_quota,
+    )
     remaining = max_videos - len(selected)
     if remaining > 0:
         selected_ids = {id(row) for row in selected}
@@ -163,6 +298,17 @@ def _summarize_frames(frame_records: list[dict[str, Any]], frames_seen: int) -> 
     top_count = min(5, len(fall_scores))
     top5_mean = float(np.sort(fall_scores)[-top_count:].mean()) if top_count else 0.0
     score_ge_3 = [float(score) >= 3.0 for score in fall_scores]
+    window = max(1, len(fall_scores) // 3)
+    start_scores = fall_scores[:window]
+    end_scores = fall_scores[-window:]
+    score_deltas = np.diff(fall_scores)
+    time_axis = np.arange(len(fall_scores), dtype=np.float32)
+    score_slope = (
+        float(np.polyfit(time_axis, fall_scores, 1)[0]) if len(fall_scores) >= 2 else 0.0
+    )
+    transition_count = sum(
+        before < 3.0 <= after for before, after in zip(fall_scores[:-1], fall_scores[1:])
+    )
 
     def reason_ratio(key: str) -> float:
         return float(reason_counts.get(key, 0) / denominator)
@@ -195,6 +341,20 @@ def _summarize_frames(frame_records: list[dict[str, Any]], frames_seen: int) -> 
         "missing_leg_ratio": reason_ratio("missing_leg"),
         "missing_shoulder_ratio": reason_ratio("missing_shoulder"),
         "folded_floor_pose_ratio": reason_ratio("folded_floor_pose"),
+        "fall_score_slope": score_slope,
+        "fall_score_start_mean": float(start_scores.mean()),
+        "fall_score_end_mean": float(end_scores.mean()),
+        "fall_score_end_minus_start": float(end_scores.mean() - start_scores.mean()),
+        "max_fall_score_rise": float(score_deltas.max()) if len(score_deltas) else 0.0,
+        "fall_score_peak_position": float(np.argmax(fall_scores) / max(len(fall_scores) - 1, 1)),
+        "late_score_ge_3_ratio": float((end_scores >= 3.0).sum() / len(end_scores)),
+        "bbox_aspect_end_minus_start": float(
+            bbox_aspects[-window:].mean() - bbox_aspects[:window].mean()
+        ),
+        "bbox_area_end_minus_start": float(
+            bbox_area_ratios[-window:].mean() - bbox_area_ratios[:window].mean()
+        ),
+        "high_score_transition_ratio": float(transition_count / max(len(fall_scores) - 1, 1)),
     }
     return {
         "frames_seen": frames_seen,
@@ -237,24 +397,25 @@ def _extract_video_features(
     else:
         frame_indices = list(range(0, max_frames * frame_stride, frame_stride))
 
-    frame_records: list[dict[str, Any]] = []
-    sampled_frames = 0
+    sampled: list[tuple[int, np.ndarray]] = []
     for zero_based_frame_index in frame_indices:
         capture.set(cv2.CAP_PROP_POS_FRAMES, zero_based_frame_index)
         ok, frame = capture.read()
         if not ok:
             continue
-        sampled_frames += 1
-        frame_index = zero_based_frame_index + 1
-        results = model.predict(
-            frame,
-            imgsz=imgsz,
-            conf=confidence_threshold,
-            verbose=False,
-        )
-        if not results:
-            continue
-        result = results[0]
+        sampled.append((zero_based_frame_index + 1, frame))
+    capture.release()
+
+    if not sampled:
+        return _empty_summary(0)
+    results = model.predict(
+        [frame for _, frame in sampled],
+        imgsz=imgsz,
+        conf=confidence_threshold,
+        verbose=False,
+    )
+    frame_records: list[dict[str, Any]] = []
+    for (frame_index, frame), result in zip(sampled, results):
         if result.boxes is None or result.keypoints is None or len(result.boxes) == 0:
             continue
         confidences = result.boxes.conf.detach().cpu().numpy()
@@ -281,8 +442,7 @@ def _extract_video_features(
                 "mean_keypoint_confidence": float(keypoints_conf.mean()),
             }
         )
-    capture.release()
-    return _summarize_frames(frame_records, sampled_frames)
+    return _summarize_frames(frame_records, len(sampled))
 
 
 def _ensure_features(
@@ -349,7 +509,11 @@ def _load_dataset(
                 }
             )
             continue
-        features.append([float(value) for value in payload["feature_vector"]])
+        summary = _summarize_frames(
+            list(payload.get("frame_records") or []),
+            int(payload.get("frames_seen") or 0),
+        )
+        features.append([float(value) for value in summary["feature_vector"]])
         labels.append(_label_for_row(row))
         scene_ids.append(_safe_id(row))
     if not features:
@@ -364,6 +528,20 @@ def _load_dataset(
 
 def _class_counts(values: np.ndarray) -> dict[str, int]:
     return {str(label): int((values == label).sum()) for label in sorted(set(values.tolist()))}
+
+
+def _dataset_summary(scene_ids: list[str], labels: np.ndarray) -> dict[str, Any]:
+    group_labels: dict[str, set[int]] = {}
+    for scene_id, label in zip(scene_ids, labels.tolist()):
+        group_labels.setdefault(_scene_base(scene_id), set()).add(int(label))
+    return {
+        "scene_ids": scene_ids,
+        "groups": len(group_labels),
+        "group_class_counts": {
+            "fall": sum(FALL_LABEL in values for values in group_labels.values()),
+            "non_fall": sum(NON_FALL_LABEL in values for values in group_labels.values()),
+        },
+    }
 
 
 def _predict_with_threshold(model: Any, x: np.ndarray, threshold: float) -> tuple[np.ndarray, list[list[float]]]:
@@ -456,6 +634,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--pose-model", type=Path, default=DEFAULT_POSE_MODEL)
     parser.add_argument("--output-model", type=Path, default=DEFAULT_OUTPUT_MODEL)
     parser.add_argument("--metrics-json", type=Path, default=DEFAULT_METRICS)
+    parser.add_argument("--dataset-version", default="yolo_pose_fall_rf")
     parser.add_argument("--max-videos", type=int, default=200)
     parser.add_argument("--validation-max-videos", type=int, default=80)
     parser.add_argument("--max-frames", type=int, default=120)
@@ -468,14 +647,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--min-samples-leaf", type=int, default=2)
     parser.add_argument("--random-state", type=int, default=42)
     parser.add_argument("--decision-threshold", type=float, default=0.6)
+    parser.add_argument(
+        "--classifier",
+        choices=("random_forest", "extra_trees"),
+        default="random_forest",
+    )
     parser.add_argument("--force-extract", action="store_true")
     return parser.parse_args()
 
 
 def main() -> int:
     import joblib
-    from sklearn.ensemble import RandomForestClassifier
-    from sklearn.model_selection import train_test_split
+    from sklearn.ensemble import ExtraTreesClassifier, RandomForestClassifier
 
     args = parse_args()
     train_rows = _select_rows(_read_jsonl(args.manifest), args.max_videos)
@@ -527,28 +710,23 @@ def main() -> int:
         min_pose_frames=args.min_pose_frames,
     )
     class_count = len(set(train_dataset["y"].tolist()))
-    holdout_count = int(np.ceil(len(train_dataset["y"]) * 0.25))
     if class_count < 2:
         raise SystemExit(f"need both fall and non-fall classes, got {_class_counts(train_dataset['y'])}")
-    if holdout_count < class_count:
-        x_train = train_dataset["x"]
-        x_holdout = train_dataset["x"]
-        y_train = train_dataset["y"]
-        y_holdout = train_dataset["y"]
-        ids_train = train_dataset["scene_ids"]
-        ids_holdout = train_dataset["scene_ids"]
-        holdout_method = "train_resubstitution_small_sample"
-    else:
-        x_train, x_holdout, y_train, y_holdout, ids_train, ids_holdout = train_test_split(
-            train_dataset["x"],
-            train_dataset["y"],
-            train_dataset["scene_ids"],
-            test_size=0.25,
-            random_state=args.random_state,
-            stratify=train_dataset["y"],
-        )
-        holdout_method = "stratified_random"
-    model = RandomForestClassifier(
+    train_indices, holdout_indices, holdout_split = _group_holdout_indices(
+        train_dataset["scene_ids"],
+        train_dataset["y"],
+        test_size=0.25,
+        random_state=args.random_state,
+    )
+    x_train = train_dataset["x"][train_indices]
+    x_holdout = train_dataset["x"][holdout_indices]
+    y_train = train_dataset["y"][train_indices]
+    y_holdout = train_dataset["y"][holdout_indices]
+    ids_holdout = [train_dataset["scene_ids"][index] for index in holdout_indices]
+    classifier_type = (
+        ExtraTreesClassifier if args.classifier == "extra_trees" else RandomForestClassifier
+    )
+    model = classifier_type(
         n_estimators=args.n_estimators,
         max_depth=args.max_depth,
         min_samples_leaf=args.min_samples_leaf,
@@ -559,8 +737,10 @@ def main() -> int:
     model.fit(x_train, y_train)
     holdout_dataset = {"x": x_holdout, "y": y_holdout, "scene_ids": ids_holdout}
     thresholds = [round(value, 2) for value in np.arange(0.35, 0.91, 0.05)]
+    holdout_evaluation = _evaluate(model, holdout_dataset, threshold=args.decision_threshold)
     metrics = {
         "created_at": datetime.now(timezone.utc).isoformat(),
+        "dataset_version": args.dataset_version,
         "manifest": str(args.manifest),
         "validation_manifest": str(args.validation_manifest),
         "pose_model": str(args.pose_model),
@@ -571,10 +751,14 @@ def main() -> int:
         "validation_rows": len(validation_rows),
         "validation_effective_rows": int(len(validation_dataset["y"])),
         "class_counts": _class_counts(train_dataset["y"]),
+        "dataset_summary": _dataset_summary(
+            train_dataset["scene_ids"], train_dataset["y"]
+        ),
         "validation_class_counts": _class_counts(validation_dataset["y"]),
         "excluded": train_dataset["excluded"],
         "validation_excluded": validation_dataset["excluded"],
         "model_params": {
+            "classifier": args.classifier,
             "n_estimators": args.n_estimators,
             "max_depth": args.max_depth,
             "min_samples_leaf": args.min_samples_leaf,
@@ -585,8 +769,10 @@ def main() -> int:
             "confidence_threshold": args.confidence_threshold,
             "min_pose_frames": args.min_pose_frames,
         },
-        "holdout_method": holdout_method,
-        "holdout": _evaluate(model, holdout_dataset, threshold=args.decision_threshold),
+        "holdout_method": holdout_split["method"],
+        "holdout_split": holdout_split,
+        "holdout": holdout_evaluation,
+        "holdout_errors": holdout_evaluation["errors"],
         "validation": _evaluate(model, validation_dataset, threshold=args.decision_threshold),
         "validation_threshold_sweep": _threshold_sweep(model, validation_dataset, thresholds),
     }

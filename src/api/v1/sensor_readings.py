@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 from collections import deque
@@ -319,7 +320,13 @@ async def list_sensor_readings(
     if not _SENSOR_LOG.exists():
         return PaginatedResponse(items=[], total=0, limit=limit, offset=offset)
 
-    items, total = _read_sensor_log(limit, offset, device_id, table)
+    items, total = await asyncio.to_thread(
+        _read_sensor_log,
+        limit,
+        offset,
+        device_id,
+        table,
+    )
     return PaginatedResponse(items=items[offset : offset + limit], total=total, limit=limit, offset=offset)
 
 

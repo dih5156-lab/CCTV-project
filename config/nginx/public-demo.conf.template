@@ -85,6 +85,7 @@ server {
     }
 
     location /face-api/ {
+        client_max_body_size 10m;
         set $face_api_upstream http://cctv-ai-engine:8767;
         rewrite ^/face-api/(.*)$ /$1 break;
         proxy_pass $face_api_upstream;

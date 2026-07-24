@@ -1712,6 +1712,7 @@
     const $ = (id) => document.getElementById(id);
     const HEALTH_CHECK_TIMEOUT_MS = 6000;
     const AUTO_REFRESH_INTERVAL_MS = 30000;
+    const MAX_FACE_IMAGE_BYTES = 6 * 1024 * 1024;
     const SERVICE_FAILURE_THRESHOLD = 2;
     const SERVICE_RECENT_SUCCESS_GRACE_MS = 120000;
     const COLORS = ["red", "orange", "yellow", "green", "blue", "purple", "white", "black", "gray"];
@@ -3046,7 +3047,7 @@
           <td>${sensorValueSummary(item.data || {})}${item.reason ? `<br><span class="muted">${escapeHtml(item.reason)}</span>` : ""}</td>
           <td>${sensorStatusBadge(item)}</td>
         </tr>
-      `).join("") : '<tr><td colspan="6" class="muted">TLV 수신 로그 없음</td></tr>';
+      `).join("") : '<tr><td colspan="6" class="muted">TLV 수신 로그 없음 (웹 화면은 PostgreSQL 원본이 아닌 sensor_readings.jsonl 미러를 조회합니다)</td></tr>';
     }
     function sensorValueSummary(data) {
       const source = data && typeof data === "object" && !Array.isArray(data) ? data : {};
@@ -3379,7 +3380,8 @@
         const body = await response.json().catch(() => ({}));
         setLastResponse(body);
         if (!response.ok) throw new Error(body.error || body.detail || response.statusText);
-      } catch {
+      } catch (error) {
+        if (!(error instanceof TypeError)) throw error;
         await request("/api/v1/faces", { method: "POST", body: JSON.stringify(payload) });
       }
       showToast("얼굴 등록 완료");
@@ -3775,6 +3777,14 @@
     $("face-file").addEventListener("change", (event) => {
       const file = event.target.files[0];
       if (!file) return;
+      if (file.size > MAX_FACE_IMAGE_BYTES) {
+        state.faceFilename = "";
+        state.faceImageBase64 = "";
+        event.target.value = "";
+        $("face-preview").removeAttribute("src");
+        showToast("사진은 6MB 이하로 선택하세요");
+        return;
+      }
       state.faceFilename = file.name;
       const reader = new FileReader();
       reader.onload = () => {

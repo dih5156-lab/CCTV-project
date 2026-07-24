@@ -7,6 +7,10 @@ from typing import Mapping
 
 import numpy as np
 
+_ENROLLMENT_MIN_FACE_SCORE = 0.75
+_ENROLLMENT_MIN_IMAGE_AREA_RATIO = 0.01
+_ENROLLMENT_MIN_LARGEST_FACE_AREA_RATIO = 0.25
+
 
 @dataclass(frozen=True)
 class CommercialFaceRecognitionResult:
@@ -109,6 +113,22 @@ class CommercialFaceRecognizer:
         results = self.embedding_pipeline.extract_embeddings(
             image, (0, 0, image.shape[1], image.shape[0])
         )
+        if len(results) > 1:
+            image_area = float(image.shape[0] * image.shape[1])
+            face_areas = [
+                max(float(result.face.bbox[2]), 0.0)
+                * max(float(result.face.bbox[3]), 0.0)
+                for result in results
+            ]
+            largest_face_area = max(face_areas, default=0.0)
+            results = [
+                result
+                for result, face_area in zip(results, face_areas)
+                if float(result.face.score) >= _ENROLLMENT_MIN_FACE_SCORE
+                and face_area >= image_area * _ENROLLMENT_MIN_IMAGE_AREA_RATIO
+                and face_area
+                >= largest_face_area * _ENROLLMENT_MIN_LARGEST_FACE_AREA_RATIO
+            ]
         if len(results) != 1:
             raise ValueError(
                 "enrollment image must contain exactly one face, "

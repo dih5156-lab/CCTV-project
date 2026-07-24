@@ -41,7 +41,17 @@ def _report() -> dict:
             "false_negative_count": 0,
             "false_positive_count": 1,
         },
+        "holdout": {
+            "classification_report": {
+                "fall": {"precision": 0.95, "recall": 0.9},
+            }
+        },
         "cross_validation": {"enabled": True},
+        "validation": {
+            "classification_report": {
+                "fall": {"precision": 0.9, "recall": 0.85},
+            }
+        },
     }
 
 
@@ -94,6 +104,56 @@ def test_evaluate_report_fails_when_class_group_count_is_too_small() -> None:
     failed = {check.name for check in checks if not check.passed}
 
     assert failed == {"dataset_summary.group_class_counts.non_fall"}
+
+
+def test_evaluate_report_enforces_external_validation_quality() -> None:
+    report = _report()
+    report["validation"]["classification_report"]["fall"] = {
+        "precision": 0.84,
+        "recall": 0.79,
+    }
+
+    checks = check_falldata_model_report.evaluate_report(
+        report,
+        required_group_by="scene_base",
+        min_class_groups=2,
+        max_false_negatives=0,
+        max_false_positives=None,
+        require_cross_validation=False,
+        min_validation_fall_precision=0.85,
+        min_validation_fall_recall=0.85,
+    )
+    failed = {check.name for check in checks if not check.passed}
+
+    assert failed == {
+        "validation.classification_report.fall.precision",
+        "validation.classification_report.fall.recall",
+    }
+
+
+def test_evaluate_report_enforces_holdout_quality_rates() -> None:
+    report = _report()
+    report["holdout"]["classification_report"]["fall"] = {
+        "precision": 0.84,
+        "recall": 0.79,
+    }
+
+    checks = check_falldata_model_report.evaluate_report(
+        report,
+        required_group_by="scene_base",
+        min_class_groups=2,
+        max_false_negatives=10,
+        max_false_positives=10,
+        require_cross_validation=False,
+        min_holdout_fall_precision=0.85,
+        min_holdout_fall_recall=0.85,
+    )
+    failed = {check.name for check in checks if not check.passed}
+
+    assert failed == {
+        "holdout.classification_report.fall.precision",
+        "holdout.classification_report.fall.recall",
+    }
 
 
 def test_build_payload_summarizes_report_identity(tmp_path) -> None:

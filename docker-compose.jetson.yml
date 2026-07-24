@@ -749,6 +749,9 @@ services:
       FALLDATA_AUX_MEDIAPIPE_PYTHON: ${FALLDATA_AUX_MEDIAPIPE_PYTHON:-/app/.venv-mediapipe/bin/python}
       FALLDATA_AUX_MODEL_PYTHON: ${FALLDATA_AUX_MODEL_PYTHON:-/app/.venv-falldata/bin/python}
       FALLDATA_AUX_MODEL_PATH: ${FALLDATA_AUX_MODEL_PATH:-/app/falldata/2. AI학습모델파일/영상/낙상분류/FNF_RF_SMOTE_CAM_1.pkl}
+      FALLDATA_AUX_TEMPORAL_PYTHON: ${FALLDATA_AUX_TEMPORAL_PYTHON:-/app/.venv-jetson-train/bin/python}
+      FALLDATA_AUX_TEMPORAL_COMPARE_MODEL_PATH: ${FALLDATA_AUX_TEMPORAL_COMPARE_MODEL_PATH:-}
+      FALLDATA_AUX_TEMPORAL_POSE_MODEL_PATH: ${FALLDATA_AUX_TEMPORAL_POSE_MODEL_PATH:-/app/models/yolov8n-pose.pt}
       FALL_SHADOW_REVIEW_LOG_PATH: ${FALL_SHADOW_REVIEW_LOG_PATH:-/app/data/fall_dataset/annotations/review.jsonl}
       FALL_SHADOW_SAVE_CLIPS: ${FALL_SHADOW_SAVE_CLIPS:-false}
       FALL_SHADOW_CLIP_DIR: ${FALL_SHADOW_CLIP_DIR:-/app/data/fall_dataset/clips/pending}
@@ -760,10 +763,9 @@ services:
       MQTT_QOS: ${MQTT_QOS:-1}
       MQTT_EVENT_OUTBOX_DB: /app/data/runtime/mqtt_event_outbox.db
       MQTT_EVENT_OUTBOX_RETRY_INTERVAL: ${MQTT_EVENT_OUTBOX_RETRY_INTERVAL:-5}
-      # 헤드리스 Jetson 운영에서는 X11 인증 실패가 DeepStream 초기화를 막을 수 있다.
-      # 화면 출력이 필요할 때만 .env.jetson 에 DS_DISPLAY=:0 을 명시한다.
-      # 호스트 DISPLAY를 자동 상속하면 Xauthority 없이 EGL 초기화가 실패할 수 있다.
-      DISPLAY: ${DS_DISPLAY:-}
+      # nvdsosd/nvvideoconvert의 EGL 초기화에는 RTSP 출력 모드에서도 Jetson X display가 필요하다.
+      # 재부팅 시 deploy/systemd/cctv-jetson-stack.service가 X11 ACL을 준비한다.
+      DISPLAY: ${DS_DISPLAY:-:1}
       QT_X11_NO_MITSHM: "1"
       # Jetson Orin nvgpu cuDNN v8 API 비활성화 (GET engine 에러 방지)
       TORCH_CUDNN_V8_API_ENABLED: "0"
@@ -890,6 +892,10 @@ services:
       - type: bind
         source: ./.venv-falldata
         target: /app/.venv-falldata
+        read_only: true
+      - type: bind
+        source: ./.venv-jetson-train
+        target: /app/.venv-jetson-train
         read_only: true
       - type: bind
         source: ./data/insightface
@@ -1337,6 +1343,7 @@ services:
       REQUIRE_CORS_ORIGINS: ${REQUIRE_CORS_ORIGINS:-0}
       <<: *appearance-runtime
       RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-true}
+      PUBLIC_API_READINESS_TIMEOUT_SEC: ${PUBLIC_API_READINESS_TIMEOUT_SEC:-5}
       INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:-}
     ports:
       - target: 9000

@@ -4,8 +4,17 @@ from scripts.ops import compose_stack
 def test_jetson_compose_does_not_inherit_host_display():
     compose_text = (compose_stack.PROJECT_ROOT / "docker-compose.jetson.yml").read_text()
 
-    assert "DISPLAY: ${DS_DISPLAY:-}" in compose_text
+    assert "DISPLAY: ${DS_DISPLAY:-" in compose_text
     assert "DISPLAY: ${DISPLAY:-}" not in compose_text
+
+
+def test_jetson_compose_wires_temporal_fall_shadow_runtime():
+    compose_text = (compose_stack.PROJECT_ROOT / "docker-compose.jetson.yml").read_text()
+
+    assert "FALLDATA_AUX_TEMPORAL_COMPARE_MODEL_PATH:" in compose_text
+    assert "FALLDATA_AUX_TEMPORAL_PYTHON:" in compose_text
+    assert "source: ./.venv-jetson-train" in compose_text
+    assert "target: /app/.venv-jetson-train" in compose_text
 
 
 def test_detects_jetson_from_model_marker(tmp_path):
