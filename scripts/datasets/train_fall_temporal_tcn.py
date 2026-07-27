@@ -14,7 +14,7 @@ from typing import Any
 import numpy as np
 import torch
 from torch import nn
-from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import DataLoader, TensorDataset, WeightedRandomSampler
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PROJECT_ROOT))
@@ -75,6 +75,12 @@ def parse_args() -> argparse.Namespace:
         default="hybrid",
     )
     parser.add_argument("--batch-size", type=int, default=16)
+    parser.add_argument(
+        "--positive-sample-weight",
+        type=float,
+        default=1.0,
+        help="Oversample positive fall sequences during training; 1.0 keeps uniform sampling.",
+    )
     parser.add_argument("--epochs", type=int, default=100)
     parser.add_argument("--patience", type=int, default=15)
     parser.add_argument("--learning-rate", type=float, default=1e-3)
@@ -334,14 +340,25 @@ def main() -> int:
     ) / summary_scale
     holdout_ids = [train_dataset["scene_ids"][index] for index in holdout_indices]
 
+    train_tensor_dataset = TensorDataset(
+        torch.from_numpy(x_train),
+        torch.from_numpy(summary_train.astype(np.float32)),
+        torch.from_numpy(y_train.astype(np.float32)),
+    )
+    sampler = None
+    if args.positive_sample_weight > 1.0:
+        sample_weights = np.where(y_train == 1, args.positive_sample_weight, 1.0)
+        sampler = WeightedRandomSampler(
+            weights=torch.as_tensor(sample_weights, dtype=torch.double),
+            num_samples=len(sample_weights),
+            replacement=True,
+            generator=torch.Generator().manual_seed(args.random_state),
+        )
     train_loader = DataLoader(
-        TensorDataset(
-            torch.from_numpy(x_train),
-            torch.from_numpy(summary_train.astype(np.float32)),
-            torch.from_numpy(y_train.astype(np.float32)),
-        ),
+        train_tensor_dataset,
         batch_size=args.batch_size,
-        shuffle=True,
+        shuffle=sampler is None,
+        sampler=sampler,
         generator=torch.Generator().manual_seed(args.random_state),
     )
     if args.model_type == "hybrid":
@@ -506,6 +523,7 @@ def main() -> int:
             "learning_rate": args.learning_rate,
             "weight_decay": args.weight_decay,
             "decision_threshold": args.decision_threshold,
+            "positive_sample_weight": args.positive_sample_weight,
             "random_state": args.random_state,
         },
         "training": {
