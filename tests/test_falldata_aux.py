@@ -308,6 +308,61 @@ def test_verify_records_temporal_compare_model_result(monkeypatch, tmp_path) -> 
     assert str(verifier.config.temporal_pose_model_path) in temporal_command
 
 
+def test_temporal_compare_model_can_use_sliding_windows(monkeypatch, tmp_path) -> None:
+    verifier = FallDataAuxVerifier(
+        FallDataAuxConfig(
+            enabled=True,
+            cooldown_seconds=0,
+            mediapipe_python=tmp_path / "mediapipe-python",
+            model_python=tmp_path / "model-python",
+            model_path=tmp_path / "baseline.pkl",
+            temporal_python=tmp_path / "temporal-python",
+            temporal_compare_model_path=tmp_path / "candidate.pt",
+            temporal_pose_model_path=tmp_path / "pose.pt",
+            temporal_sliding_window_size=12,
+            temporal_sliding_window_stride=4,
+            temporal_min_confirmed_windows=3,
+        )
+    )
+    for path in (
+        verifier.config.mediapipe_python,
+        verifier.config.model_python,
+        verifier.config.model_path,
+        verifier.config.temporal_python,
+        verifier.config.temporal_compare_model_path,
+        verifier.config.temporal_pose_model_path,
+    ):
+        path.write_text("", encoding="utf-8")
+    verifier.add_frame(np.zeros((4, 4, 3), dtype=np.uint8))
+    commands = []
+
+    def fake_run(command):
+        commands.append(command)
+        return subprocess.CompletedProcess(
+            command,
+            0,
+            stdout="prediction: [1]\nfall_probability: 0.8\nthreshold: 0.6\nframes_with_pose: 28\n",
+            stderr="",
+        )
+
+    monkeypatch.setattr(verifier, "_run", fake_run)
+    verifier.verify()
+
+    temporal_command = next(
+        command
+        for command in commands
+        if str(verifier.config.temporal_compare_model_path) in command
+    )
+    assert temporal_command[-6:] == [
+        "--sliding-window-size",
+        "12",
+        "--sliding-window-stride",
+        "4",
+        "--min-confirmed-windows",
+        "3",
+    ]
+
+
 def test_cooldown_without_previous_result_is_not_confirmed(monkeypatch) -> None:
     verifier = FallDataAuxVerifier(
         FallDataAuxConfig(enabled=True, mode="shadow", cooldown_seconds=60)

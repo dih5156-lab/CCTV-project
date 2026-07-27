@@ -112,6 +112,9 @@ Jetson 통합 스택에서 자주 조정하는 값만 추렸습니다. 나머지
 | `FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE` | `true` | 검증기 장애 시 원본 낙상 알람 유지 |
 | `FALLDATA_AUX_CONFIRM_BORDERLINE` | `false` | DeepStream borderline 후보 확인 실험 옵션 |
 | `FALLDATA_AUX_COMPARE_MODEL_PATH` | 미설정 | 후보 모델 비교 결과 기록 |
+| `FALLDATA_AUX_TEMPORAL_SLIDING_WINDOW_SIZE` | `0` | `0`이면 기존 전체 영상 추론, 양수면 겹치는 temporal window 사용 |
+| `FALLDATA_AUX_TEMPORAL_SLIDING_WINDOW_STRIDE` | `5` | sliding window 이동 간격 |
+| `FALLDATA_AUX_TEMPORAL_MIN_CONFIRMED_WINDOWS` | `1` | 연속 window 확인 개수; shadow 튜닝에서만 변경 |
 | `FALLDATA_AUX_COMPARE_VETO_ENABLED` | `false` | compare 결과 기반 차단 실험 옵션 |
 
 현재 코드 점검 기준으로 OpenCV 경로는 위 설정을 직접 읽습니다. DeepStream의 borderline/compare 정책은 처리 메서드는 있지만 초기화 연결이 확인되지 않았으므로, 환경변수만 설정하고 활성화되었다고 판단하지 않습니다. 자세한 상태는 [falldata 통합 문서](../features/FALLDATA_INTEGRATION.md)를 참고합니다.

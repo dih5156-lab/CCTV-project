@@ -83,6 +83,9 @@ class FallDataAuxConfig:
     temporal_python: Path = DEFAULT_TEMPORAL_PYTHON
     temporal_compare_model_path: Optional[Path] = None
     temporal_pose_model_path: Path = DEFAULT_TEMPORAL_POSE_MODEL
+    temporal_sliding_window_size: int = 0
+    temporal_sliding_window_stride: int = 5
+    temporal_min_confirmed_windows: int = 1
 
     @classmethod
     def from_env(cls) -> "FallDataAuxConfig":
@@ -136,6 +139,15 @@ class FallDataAuxConfig:
                     "FALLDATA_AUX_TEMPORAL_POSE_MODEL_PATH",
                     str(DEFAULT_TEMPORAL_POSE_MODEL),
                 )
+            ),
+            temporal_sliding_window_size=_parse_int(
+                os.environ.get("FALLDATA_AUX_TEMPORAL_SLIDING_WINDOW_SIZE"), 0
+            ),
+            temporal_sliding_window_stride=_parse_int(
+                os.environ.get("FALLDATA_AUX_TEMPORAL_SLIDING_WINDOW_STRIDE"), 5
+            ),
+            temporal_min_confirmed_windows=_parse_int(
+                os.environ.get("FALLDATA_AUX_TEMPORAL_MIN_CONFIRMED_WINDOWS"), 1
             ),
         )
 
@@ -356,18 +368,28 @@ class FallDataAuxVerifier:
                 "missing": str(missing),
                 "confirmed": False,
             }
-        infer = self._run(
-            [
-                str(self.config.temporal_python),
-                str(TEMPORAL_SMOKE_SCRIPT),
-                "--model",
-                str(model_path),
-                "--pose-model",
-                str(self.config.temporal_pose_model_path),
-                "--video",
-                str(video_path),
-            ]
-        )
+        command = [
+            str(self.config.temporal_python),
+            str(TEMPORAL_SMOKE_SCRIPT),
+            "--model",
+            str(model_path),
+            "--pose-model",
+            str(self.config.temporal_pose_model_path),
+            "--video",
+            str(video_path),
+        ]
+        if self.config.temporal_sliding_window_size > 0:
+            command.extend(
+                [
+                    "--sliding-window-size",
+                    str(self.config.temporal_sliding_window_size),
+                    "--sliding-window-stride",
+                    str(self.config.temporal_sliding_window_stride),
+                    "--min-confirmed-windows",
+                    str(self.config.temporal_min_confirmed_windows),
+                ]
+            )
+        infer = self._run(command)
         prediction = self._parse_prediction(infer.stdout)
         fall_probability = self._parse_named_float(infer.stdout, "fall_probability")
         threshold = self._parse_named_float(infer.stdout, "threshold")
