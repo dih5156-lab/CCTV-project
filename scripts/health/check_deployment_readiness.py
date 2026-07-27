@@ -83,12 +83,31 @@ def _parse_args() -> object:
         action="store_true",
         help="Run only checks that are valid on a clean GitHub Actions runner.",
     )
+    parser.add_argument(
+        "--require-model-quality",
+        action="store_true",
+        help="Also enforce the fixed fall/non-fall model quality gate.",
+    )
     return parser.parse_args()
 
 
 def main() -> int:
     args = _parse_args()
     checks = CI_CHECKS if args.ci else CHECKS
+    if args.require_model_quality:
+        checks = checks + (
+            Check(
+                "fall model quality gate",
+                [
+                    sys.executable,
+                    "scripts/health/check_fall_quality_gate.py",
+                    "--fall",
+                    "data/fall_eval/pilot_rtsp_input_split_fall3.jsonl",
+                    "--nonfall",
+                    "data/fall_eval/pilot_rtsp_input_split_notfall3.jsonl",
+                ],
+            ),
+        )
     results = []
     failed = False
     for check in checks:

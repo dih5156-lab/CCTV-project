@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import platform
 from pathlib import Path
 from typing import Any
@@ -139,6 +140,14 @@ def check_default_compose_architecture(
     arch = _normalize_machine(machine)
     text = compose_text if compose_text is not None else _read_text(PROJECT_ROOT / "docker-compose.yml")
     risky_images = [image for image in ARM64_RISK_IMAGES if image in text]
+
+    deployment_target = os.environ.get("CCTV_DEPLOYMENT_TARGET", "").strip().lower()
+    if deployment_target == "jetson":
+        return {
+            "name": "default compose architecture",
+            "passed": True,
+            "detail": "Jetson target selected; deployment uses docker-compose.jetson.yml",
+        }
 
     if arch != "arm64" or not risky_images:
         return {

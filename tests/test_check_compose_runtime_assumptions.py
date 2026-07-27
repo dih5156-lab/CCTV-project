@@ -85,6 +85,16 @@ def test_default_compose_architecture_passes_on_arm64_with_platform_override():
     assert result["passed"] is True
 
 
+def test_default_compose_architecture_passes_for_jetson_target(monkeypatch):
+    monkeypatch.setenv("CCTV_DEPLOYMENT_TARGET", "jetson")
+    result = runtime_checks.check_default_compose_architecture(
+        machine="aarch64",
+        compose_text="image: edgexfoundry/core-data:3.1.0",
+    )
+    assert result["passed"] is True
+    assert "Jetson target" in result["detail"]
+
+
 def test_default_compose_architecture_fails_on_arm64_even_if_old_override_text_is_provided():
     result = runtime_checks.check_default_compose_architecture(
         machine="aarch64",

@@ -665,3 +665,28 @@ docker compose up -d aiot-parser-db aiot-parser
 - [../features/PUBLIC_API_EXAMPLES.md](../features/PUBLIC_API_EXAMPLES.md): Public API 복붙용 샘플
 - [JETSON_EDGEX_FIELD_CHECKLIST.md](JETSON_EDGEX_FIELD_CHECKLIST.md): Jetson/EdgeX 현장 점검
 - [MLOPS_MODEL_EVALUATION.md](MLOPS_MODEL_EVALUATION.md): 모델 교체 전 평가 절차
+
+## 배포 승인 및 낙상 모델 롤백
+
+Jetson 배포 전에는 대상 호스트를 명시해 readiness를 실행합니다.
+
+```bash
+CCTV_DEPLOYMENT_TARGET=jetson .venv/bin/python scripts/health/check_deployment_readiness.py
+```
+
+낙상 모델은 고정 평가 세트의 품질 게이트도 통과해야 운영 승격할 수 있습니다.
+
+```bash
+.venv/bin/python scripts/health/check_deployment_readiness.py --require-model-quality
+```
+
+품질 게이트가 실패하면 현재 모델은 배포 후보로 승격하지 않고 `FALLDATA_AUX_MODE=shadow`를 유지합니다. 운영 중 보조 모델이나 비교 검증에서 오류·지연·메모리 증가가 관찰되면 다음 순서로 되돌립니다.
+
+```bash
+FALLDATA_AUX_ENABLED=false \
+FALLDATA_AUX_MODE=shadow \
+docker compose --env-file .env.jetson -f docker-compose.jetson.yml up -d --no-deps cctv-ai-engine
+bash scripts/ops/run_operation_check.sh
+```
+
+롤백 후 `cctv-ai-engine` 헬스, 이벤트 발행, WebRTC/RTSP 스트림, 파일 디스크립터와 프레임 드롭 지표를 다시 확인합니다. 원인과 시각은 운영 로그 및 shadow 결과와 함께 기록하고, 새 모델은 동일한 고정 세트와 현장 라벨 세트로 재평가합니다.
