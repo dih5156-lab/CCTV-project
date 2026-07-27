@@ -1194,12 +1194,20 @@ class DeepStreamProcessor(BaseProcessor):
     ) -> None:
         recorder = self._fall_shadow_recorder()
         if getattr(self, "_fall_shadow_near_miss_temporal_enabled", False):
-            recorder.submit_near_miss_aux_work(
+            submitted_event = recorder.submit_near_miss_aux_work(
                 self._falldata_aux_queue,
                 camera_name,
                 filtered_events,
                 now_monotonic=time.monotonic(),
             )
+            if submitted_event is not None:
+                near_miss = (submitted_event.metadata or {}).get("fall_near_miss") or {}
+                logger.info(
+                    "[%s] near-miss temporal shadow submitted: type=%s frame=%s",
+                    camera_name,
+                    near_miss.get("type"),
+                    (submitted_event.metadata or {}).get("frame_num"),
+                )
         recorder.write_near_miss_records(
             camera_name, filtered_events, now_monotonic=time.monotonic()
         )
