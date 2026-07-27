@@ -80,6 +80,40 @@ class FallShadowReviewRecorder:
             )
             return None
 
+    def submit_near_miss_aux_work(
+        self,
+        queue: Queue,
+        camera_name: str,
+        filtered_events: Iterable[DetectionEvent],
+        *,
+        now_monotonic: float,
+    ) -> Optional[DetectionEvent]:
+        """Submit one near-miss event for shadow-only temporal review."""
+        if not self.falldata_aux or not self.falldata_aux.enabled:
+            return None
+        for event in filtered_events:
+            if event.event_type != EventType.PERSON:
+                continue
+            if not isinstance((event.metadata or {}).get("fall_near_miss"), dict):
+                continue
+            object_id = int(event.object_id) if event.object_id is not None else 0
+            key = (camera_name, object_id)
+            last_at = self.near_miss_last_at.get(key)
+            if last_at is not None and now_monotonic - last_at < self.config.near_miss_cooldown_sec:
+                continue
+            payload = event.to_dict()
+            payload["type"] = "fall_near_miss"
+            metadata = dict(payload.get("metadata") or {})
+            metadata["falldata_aux_near_miss_shadow"] = True
+            payload["metadata"] = metadata
+            try:
+                queue.put_nowait((camera_name, payload))
+                return event
+            except Full:
+                logger.warning("[%s] near-miss temporal shadow 큐 가득 참", camera_name)
+                return None
+        return None
+
     def write_near_miss_records(
         self,
         camera_name: str,

@@ -520,6 +520,10 @@ class DeepStreamProcessor(BaseProcessor):
             "FALL_SHADOW_NEAR_MISS_LOG",
             False,
         )
+        self._fall_shadow_near_miss_temporal_enabled = self._env_bool(
+            "FALLDATA_AUX_TEMPORAL_NEAR_MISS_SHADOW_ENABLED",
+            False,
+        )
         self._fall_shadow_near_miss_cooldown_sec = float(
             os.environ.get("FALL_SHADOW_NEAR_MISS_COOLDOWN_SECONDS", "10.0")
         )
@@ -1188,7 +1192,15 @@ class DeepStreamProcessor(BaseProcessor):
     def _write_fall_near_miss_review_records(
         self, camera_name: str, filtered_events: List[DetectionEvent]
     ) -> None:
-        self._fall_shadow_recorder().write_near_miss_records(
+        recorder = self._fall_shadow_recorder()
+        if getattr(self, "_fall_shadow_near_miss_temporal_enabled", False):
+            recorder.submit_near_miss_aux_work(
+                self._falldata_aux_queue,
+                camera_name,
+                filtered_events,
+                now_monotonic=time.monotonic(),
+            )
+        recorder.write_near_miss_records(
             camera_name, filtered_events, now_monotonic=time.monotonic()
         )
 
@@ -1697,6 +1709,16 @@ class DeepStreamProcessor(BaseProcessor):
                     camera_name,
                     event_payload,
                 )
+                if (event_payload.get("metadata") or {}).get(
+                    "falldata_aux_near_miss_shadow"
+                ):
+                    logger.info(
+                        "[%s] near-miss temporal shadow result: confirmed=%s probability=%s",
+                        camera_name,
+                        result.get("confirmed"),
+                        result.get("temporal_compare_model", {}).get("fall_probability"),
+                    )
+                    continue
                 if self._enqueue_aux_confirmed_fall_event(camera_name, event_payload, result):
                     continue
                 if self._should_fail_open_falldata_aux_result(result):
