@@ -140,3 +140,5 @@ data/fall_review_clips/
 data/fall_dataset/
 data/datasets/
 Sample/
+# Added by code-review-graph
+.code-review-graph/
