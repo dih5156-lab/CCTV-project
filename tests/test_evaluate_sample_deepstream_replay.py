@@ -315,6 +315,24 @@ def test_filter_manifest_rows_applies_label_position_and_limit() -> None:
     ]
 
 
+def test_filter_manifest_rows_selects_exact_scene_ids_in_requested_order() -> None:
+    rows = [
+        {"scene_id": "scene-a", "label": "not_fall"},
+        {"scene_id": "scene-b", "label": "not_fall"},
+        {"scene_id": "scene-c", "label": "not_fall"},
+    ]
+
+    filtered = replay._filter_manifest_rows(
+        rows,
+        label="not_fall",
+        scene_position=None,
+        max_videos=0,
+        scene_ids=("scene-c", "scene-a"),
+    )
+
+    assert [row["scene_id"] for row in filtered] == ["scene-c", "scene-a"]
+
+
 def test_rtsp_replay_starts_publisher_before_restarting_ai_engine(tmp_path, monkeypatch):
     video_path = tmp_path / "sample.mp4"
     video_path.write_bytes(b"video")

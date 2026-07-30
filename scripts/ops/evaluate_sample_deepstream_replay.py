@@ -143,6 +143,7 @@ def _filter_manifest_rows(
     label: str | None,
     scene_position: str | None,
     max_videos: int,
+    scene_ids: tuple[str, ...] | list[str] | None = None,
 ) -> list[dict[str, Any]]:
     filtered = rows
     if label:
@@ -153,6 +154,18 @@ def _filter_manifest_rows(
             for row in filtered
             if row.get("scene_position") == scene_position
         ]
+    if scene_ids:
+        rows_by_scene_id = {
+            str(row.get("scene_id") or ""): row for row in filtered
+        }
+        missing_scene_ids = [
+            scene_id for scene_id in scene_ids if scene_id not in rows_by_scene_id
+        ]
+        if missing_scene_ids:
+            raise ValueError(
+                f"manifest scenes not found after filtering: {', '.join(missing_scene_ids)}"
+            )
+        filtered = [rows_by_scene_id[scene_id] for scene_id in scene_ids]
     if max_videos:
         filtered = filtered[:max_videos]
     return filtered
@@ -668,6 +681,7 @@ def evaluate(args: argparse.Namespace) -> list[dict[str, Any]]:
         label=args.label,
         scene_position=getattr(args, "scene_position", None),
         max_videos=args.max_videos,
+        scene_ids=getattr(args, "scene_ids", None),
     )
 
     initial_source = (
@@ -994,6 +1008,13 @@ def main() -> int:
     parser.add_argument("--source-mode", choices=["file", "rtsp"], default="file")
     parser.add_argument("--label", choices=["fall", "not_fall"], default=None)
     parser.add_argument("--scene-position")
+    parser.add_argument(
+        "--scene-id",
+        action="append",
+        dest="scene_ids",
+        default=None,
+        help="Exact scene ID to replay; repeat for multiple scenes.",
+    )
     parser.add_argument(
         "--score-source",
         choices=["overall", "inline_pose_rf"],
