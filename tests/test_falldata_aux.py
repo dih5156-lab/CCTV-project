@@ -1,8 +1,15 @@
+import json
 import subprocess
 
 import numpy as np
 
-from src.core.ai._falldata_aux import FallDataAuxConfig, FallDataAuxVerifier
+from scripts.datasets.train_yolo_pose_fall_rf import FEATURE_NAMES
+from src.core.ai._falldata_aux import (
+    PROJECT_ROOT,
+    FallDataAuxConfig,
+    FallDataAuxVerifier,
+)
+from src.core.ai.fall_temporal_model import FRAME_FEATURE_NAMES
 from src.core.events import DetectionEvent, EventType
 
 
@@ -18,6 +25,38 @@ def _fall_event() -> DetectionEvent:
     )
 
 
+def _pose_event(timestamp: float = 1.0) -> DetectionEvent:
+    keypoints = [
+        [float(10 + index), float(20 + index), 0.9]
+        for index in range(17)
+    ]
+    return DetectionEvent(
+        event_type=EventType.PERSON,
+        x=10,
+        y=20,
+        width=80,
+        height=160,
+        confidence=0.92,
+        timestamp=timestamp,
+        keypoints=keypoints,
+        metadata={
+            "frame_width": 640,
+            "frame_height": 480,
+            "fall_score": 3.5,
+            "fall_reasons": ["torso_horizontal:0.80"],
+        },
+    )
+
+
+class _FixedInlineClassifier:
+    classes_ = np.asarray([0, 1])
+    n_features_in_ = len(FEATURE_NAMES)
+
+    def predict_proba(self, features):
+        assert features.shape == (1, len(FEATURE_NAMES))
+        return np.asarray([[0.08, 0.92]], dtype=np.float64)
+
+
 def test_disabled_verifier_keeps_events_unchanged() -> None:
     verifier = FallDataAuxVerifier(FallDataAuxConfig(enabled=False))
     event = _fall_event()
@@ -25,6 +64,192 @@ def test_disabled_verifier_keeps_events_unchanged() -> None:
     assert verifier.annotate_events([event]) == [event]
     verifier.add_frame(np.zeros((4, 4, 3), dtype=np.uint8))
     assert verifier.annotate_events([event]) == [event]
+
+
+def test_config_reads_optional_inline_feature_capture_path(
+    monkeypatch,
+    tmp_path,
+) -> None:
+    capture_path = tmp_path / "inline-features.jsonl"
+    monkeypatch.setenv(
+        "FALLDATA_AUX_INLINE_FEATURE_CAPTURE_PATH",
+        str(capture_path),
+    )
+
+    config = FallDataAuxConfig.from_env()
+
+    assert config.inline_feature_capture_path == capture_path
+
+
+def test_config_disables_inline_feature_capture_when_env_is_blank(
+    monkeypatch,
+) -> None:
+    monkeypatch.setenv("FALLDATA_AUX_INLINE_FEATURE_CAPTURE_PATH", "  ")
+
+    config = FallDataAuxConfig.from_env()
+
+    assert config.inline_feature_capture_path is None
+
+
+def test_inline_feature_capture_writes_exact_summary_vector(tmp_path) -> None:
+    capture_path = tmp_path / "inline-features.jsonl"
+    verifier = FallDataAuxVerifier(
+        FallDataAuxConfig(
+            enabled=True,
+            inline_pose_rf=True,
+            inline_feature_capture_path=capture_path,
+        )
+    )
+    frame_records = [
+        {
+            "timestamp": float(index),
+            "fall_score": 3.5,
+            "fall_reasons": ["torso_horizontal:0.80"],
+            "detection_confidence": 0.92,
+            "bbox_aspect": 0.5,
+            "bbox_area_ratio": 0.04,
+            "visible_keypoints": 17,
+            "mean_keypoint_confidence": 0.9,
+        }
+        for index in range(48)
+    ]
+    summary = {
+        "frames_seen": 12,
+        "frames_with_pose": 10,
+        "feature_names": ["torso_angle_mean", "hip_speed_max"],
+        "feature_vector": [41.5, 0.82],
+        "reason_counts": {},
+        "frame_records": frame_records,
+    }
+
+    status = verifier._write_inline_feature_capture(
+        "camera-1",
+        summary,
+        window_seconds=3.0,
+    )
+
+    record = json.loads(capture_path.read_text(encoding="utf-8"))
+    assert status == "written"
+    assert record["schema_version"] == 2
+    assert record["runtime"] == "deepstream_pose_inline"
+    assert record["camera_id"] == "camera-1"
+    assert record["window_seconds"] == 3.0
+    assert record["frames_seen"] == 12
+    assert record["frames_with_pose"] == 10
+    assert record["sampled_frames"] == 48
+    assert record["frame_feature_names"] == list(FRAME_FEATURE_NAMES)
+    assert record["frame_records"] == frame_records
+    assert (
+        record["frame_records"][0]["timestamp"]
+        <= record["frame_records"][-1]["timestamp"]
+    )
+    assert record["feature_names"] == [
+        "torso_angle_mean",
+        "hip_speed_max",
+    ]
+    assert record["feature_vector"] == [41.5, 0.82]
+
+
+def test_inline_feature_capture_is_noop_when_disabled(tmp_path) -> None:
+    capture_path = tmp_path / "inline-features.jsonl"
+    verifier = FallDataAuxVerifier(
+        FallDataAuxConfig(
+            enabled=True,
+            inline_pose_rf=True,
+            inline_feature_capture_path=None,
+        )
+    )
+
+    status = verifier._write_inline_feature_capture(
+        "camera-1",
+        {
+            "frames_seen": 1,
+            "frames_with_pose": 1,
+            "feature_names": ["feature"],
+            "feature_vector": [1.0],
+            "frame_records": [],
+        },
+        window_seconds=3.0,
+    )
+
+    assert status is None
+    assert not capture_path.exists()
+
+
+def test_inline_feature_capture_failure_is_fail_open(tmp_path) -> None:
+    verifier = FallDataAuxVerifier(
+        FallDataAuxConfig(
+            enabled=True,
+            inline_pose_rf=True,
+            inline_feature_capture_path=tmp_path,
+        )
+    )
+
+    status = verifier._write_inline_feature_capture(
+        "camera-1",
+        {
+            "frames_seen": 1,
+            "frames_with_pose": 1,
+            "feature_names": ["feature"],
+            "feature_vector": [1.0],
+            "frame_records": [],
+        },
+        window_seconds=3.0,
+    )
+
+    assert status == "error"
+
+
+def test_inline_pose_rf_uses_camera_pose_records_without_subprocess(
+    monkeypatch,
+    tmp_path,
+) -> None:
+    capture_path = tmp_path / "inline-features.jsonl"
+    bundle = {
+        "model": _FixedInlineClassifier(),
+        "feature_names": FEATURE_NAMES,
+        "fall_class_label": 1,
+        "inference_config": {
+            "max_frames": 48,
+            "candidate_window_seconds": 3.0,
+        },
+        "training_config": {
+            "min_pose_frames": 1,
+            "decision_threshold": 0.7,
+        },
+    }
+    verifier = FallDataAuxVerifier(
+        FallDataAuxConfig(
+            enabled=True,
+            inline_pose_rf=True,
+            cooldown_seconds=0,
+            inline_feature_capture_path=capture_path,
+        ),
+        inline_pose_rf_bundle=bundle,
+    )
+    verifier.add_pose_events("cam01", [_pose_event()])
+    verifier.add_frame(np.zeros((1080, 1920, 3), dtype=np.uint8))
+    monkeypatch.setattr(
+        verifier,
+        "_run",
+        lambda _command: (_ for _ in ()).throw(
+            AssertionError("inline pose RF must not launch subprocesses")
+        ),
+    )
+
+    result = verifier.verify(camera_name="cam01")
+    other_camera_result = verifier.verify(camera_name="cam02")
+
+    assert result["status"] == "ok"
+    assert result["confirmed"] is True
+    assert result["fall_probability"] == 0.92
+    assert result["runtime"] == "deepstream_pose_inline"
+    assert result["feature_capture_status"] == "written"
+    captured_record = json.loads(capture_path.read_text(encoding="utf-8"))
+    assert captured_record["feature_names"] == FEATURE_NAMES
+    assert len(captured_record["feature_vector"]) == len(FEATURE_NAMES)
+    assert verifier.snapshot_frames() == []
+    assert other_camera_result["status"] == "no_pose_records"
 
 
 def test_shadow_mode_keeps_event_and_adds_metadata(monkeypatch) -> None:
@@ -133,6 +358,7 @@ def test_verify_passes_max_extract_frames_to_mediapipe(monkeypatch, tmp_path) ->
         FallDataAuxConfig(
             enabled=True,
             max_extract_frames=42,
+            sequence_transform="stretch",
             cooldown_seconds=0,
             mediapipe_python=tmp_path / "mediapipe-python",
             model_python=tmp_path / "model-python",
@@ -164,6 +390,25 @@ def test_verify_passes_max_extract_frames_to_mediapipe(monkeypatch, tmp_path) ->
     extract_command = commands[0]
     max_frames_index = extract_command.index("--max-frames")
     assert extract_command[max_frames_index + 1] == "42"
+    transform_index = extract_command.index("--sequence-transform")
+    assert extract_command[transform_index + 1] == "stretch"
+
+
+def test_run_isolates_subprocess_pythonpath(monkeypatch) -> None:
+    verifier = FallDataAuxVerifier(
+        FallDataAuxConfig(enabled=True, timeout_seconds=5)
+    )
+    captured = {}
+
+    def fake_run(command, **kwargs):
+        captured.update(kwargs)
+        return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+
+    verifier._run(["python", "script.py"])
+
+    assert captured["env"]["PYTHONPATH"] == str(PROJECT_ROOT)
 
 
 def test_verify_records_compare_model_result(monkeypatch, tmp_path) -> None:
@@ -206,6 +451,84 @@ def test_verify_records_compare_model_result(monkeypatch, tmp_path) -> None:
     assert result["compare_model"]["confirmed"] is False
     assert result["compare_model"]["prediction"] == 1
     assert result["compare_model"]["fall_probability"] == 0.12
+
+
+def test_compare_model_can_use_its_own_threshold(monkeypatch, tmp_path) -> None:
+    verifier = FallDataAuxVerifier(
+        FallDataAuxConfig(
+            enabled=True,
+            cooldown_seconds=0,
+            threshold=0.7,
+            compare_threshold=0.5,
+            compare_fall_class_index=1,
+            mediapipe_python=tmp_path / "mediapipe-python",
+            model_python=tmp_path / "model-python",
+            model_path=tmp_path / "baseline.pkl",
+            compare_model_path=tmp_path / "candidate.pkl",
+        )
+    )
+    for path in (
+        verifier.config.mediapipe_python,
+        verifier.config.model_python,
+        verifier.config.model_path,
+        verifier.config.compare_model_path,
+    ):
+        path.write_text("", encoding="utf-8")
+    verifier.add_frame(np.zeros((4, 4, 3), dtype=np.uint8))
+
+    def fake_run(command):
+        if "--output-dir" in command:
+            stdout = "nonzero_feature_frames: 42\n"
+        elif str(verifier.config.compare_model_path) in command:
+            stdout = "prediction: [1]\npredict_proba: [[0.4, 0.6]]\n"
+        else:
+            stdout = "prediction: [0]\npredict_proba: [[0.91, 0.09]]\n"
+        return subprocess.CompletedProcess(command, 0, stdout=stdout, stderr="")
+
+    monkeypatch.setattr(verifier, "_run", fake_run)
+
+    result = verifier.verify()
+
+    assert result["compare_model"]["confirmed"] is True
+    assert result["compare_model"]["threshold"] == 0.5
+
+
+def test_yolo_pose_compare_uses_named_fall_probability(monkeypatch, tmp_path) -> None:
+    compare_model = tmp_path / "candidate.pkl"
+    compare_model.write_text("", encoding="utf-8")
+    verifier = FallDataAuxVerifier(
+        FallDataAuxConfig(
+            enabled=True,
+            compare_model_kind="yolo_pose_rf",
+            compare_model_path=compare_model,
+            compare_fall_class_index=0,
+            compare_threshold=0.7,
+        )
+    )
+    monkeypatch.setattr(
+        verifier,
+        "_run",
+        lambda command: subprocess.CompletedProcess(
+            command,
+            0,
+            stdout=(
+                "prediction: [1]\n"
+                "predict_proba: [[0.95, 0.05]]\n"
+                "fall_probability: 0.82\n"
+                "frames_with_pose: 42\n"
+            ),
+            stderr="",
+        ),
+    )
+
+    result = verifier._run_compare_model(
+        tmp_path / "unused-features",
+        nonzero_frames=42,
+        video_path=tmp_path / "candidate.mp4",
+    )
+
+    assert result["fall_probability"] == 0.82
+    assert result["confirmed"] is True
 
 
 def test_missing_compare_model_does_not_block_primary_result(monkeypatch, tmp_path) -> None:

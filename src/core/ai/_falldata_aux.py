@@ -10,6 +10,7 @@ Keep this helper process-isolated and disabled by default.
 
 from __future__ import annotations
 
+import json
 import logging
 import os
 import re
@@ -18,12 +19,14 @@ import tempfile
 import time
 from collections import deque
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 from threading import Lock
-from typing import Deque, Iterable, Optional
+from typing import Any, Deque, Iterable, Optional
 
 import numpy as np
 
+from .fall_temporal_model import FRAME_FEATURE_NAMES
 from ..events import DetectionEvent, EventType
 
 logger = logging.getLogger(__name__)
@@ -42,6 +45,7 @@ DEFAULT_TEMPORAL_POSE_MODEL = PROJECT_ROOT / "models/yolov8n-pose.pt"
 EXTRACT_SCRIPT = PROJECT_ROOT / "scripts/datasets/extract_falldata_mediapipe_features.py"
 SMOKE_SCRIPT = PROJECT_ROOT / "scripts/datasets/smoke_falldata_video_model.py"
 TEMPORAL_SMOKE_SCRIPT = PROJECT_ROOT / "scripts/inference/smoke_fall_temporal_model.py"
+YOLO_RF_SMOKE_SCRIPT = PROJECT_ROOT / "scripts/datasets/smoke_yolo_pose_fall_rf.py"
 
 
 def _parse_bool(value: str | None, default: bool = False) -> bool:
@@ -73,6 +77,7 @@ class FallDataAuxConfig:
     fall_class_index: int = 0
     buffer_frames: int = 600
     max_extract_frames: int = 120
+    sequence_transform: str = "postpad"
     timeout_seconds: float = 30.0
     cooldown_seconds: float = 10.0
     fail_open_on_unavailable: bool = True
@@ -80,26 +85,43 @@ class FallDataAuxConfig:
     model_python: Path = DEFAULT_MODEL_PYTHON
     model_path: Path = DEFAULT_MODEL_PATH
     compare_model_path: Optional[Path] = None
+    compare_model_kind: str = "mediapipe_rf"
+    compare_fall_class_index: int = 0
+    compare_threshold: Optional[float] = None
     temporal_python: Path = DEFAULT_TEMPORAL_PYTHON
     temporal_compare_model_path: Optional[Path] = None
     temporal_pose_model_path: Path = DEFAULT_TEMPORAL_POSE_MODEL
     temporal_sliding_window_size: int = 0
     temporal_sliding_window_stride: int = 5
     temporal_min_confirmed_windows: int = 1
+    inline_pose_rf: bool = False
+    inline_feature_capture_path: Optional[Path] = None
 
     @classmethod
     def from_env(cls) -> "FallDataAuxConfig":
         mode = os.environ.get("FALLDATA_AUX_MODE", "shadow").strip().lower()
         if mode not in {"shadow", "confirm"}:
             mode = "shadow"
+        threshold = _parse_float(os.environ.get("FALLDATA_AUX_THRESHOLD"), 0.7)
+        compare_threshold_raw = os.environ.get(
+            "FALLDATA_AUX_COMPARE_THRESHOLD", ""
+        ).strip()
         compare_model_raw = os.environ.get("FALLDATA_AUX_COMPARE_MODEL_PATH", "").strip()
         temporal_compare_model_raw = os.environ.get(
             "FALLDATA_AUX_TEMPORAL_COMPARE_MODEL_PATH", ""
         ).strip()
+        inline_feature_capture_raw = os.environ.get(
+            "FALLDATA_AUX_INLINE_FEATURE_CAPTURE_PATH", ""
+        ).strip()
+        sequence_transform = os.environ.get(
+            "FALLDATA_AUX_SEQUENCE_TRANSFORM", "postpad"
+        ).strip().lower()
+        if sequence_transform not in {"postpad", "tail_align", "stretch"}:
+            sequence_transform = "postpad"
         return cls(
             enabled=_parse_bool(os.environ.get("FALLDATA_AUX_ENABLED"), False),
             mode=mode,
-            threshold=_parse_float(os.environ.get("FALLDATA_AUX_THRESHOLD"), 0.7),
+            threshold=threshold,
             min_nonzero_frames=_parse_int(
                 os.environ.get("FALLDATA_AUX_MIN_NONZERO_FRAMES"), 30
             ),
@@ -108,6 +130,7 @@ class FallDataAuxConfig:
             max_extract_frames=_parse_int(
                 os.environ.get("FALLDATA_AUX_MAX_EXTRACT_FRAMES"), 120
             ),
+            sequence_transform=sequence_transform,
             timeout_seconds=_parse_float(
                 os.environ.get("FALLDATA_AUX_TIMEOUT_SECONDS"), 30.0
             ),
@@ -125,6 +148,18 @@ class FallDataAuxConfig:
             ),
             model_path=Path(os.environ.get("FALLDATA_AUX_MODEL_PATH", str(DEFAULT_MODEL_PATH))),
             compare_model_path=Path(compare_model_raw) if compare_model_raw else None,
+            compare_model_kind=os.environ.get(
+                "FALLDATA_AUX_COMPARE_MODEL_KIND", "mediapipe_rf"
+            ).strip().lower(),
+            compare_fall_class_index=_parse_int(
+                os.environ.get("FALLDATA_AUX_COMPARE_FALL_CLASS_INDEX"),
+                _parse_int(os.environ.get("FALLDATA_AUX_FALL_CLASS_INDEX"), 0),
+            ),
+            compare_threshold=(
+                _parse_float(compare_threshold_raw, threshold)
+                if compare_threshold_raw
+                else threshold
+            ),
             temporal_python=Path(
                 os.environ.get(
                     "FALLDATA_AUX_TEMPORAL_PYTHON",
@@ -149,6 +184,14 @@ class FallDataAuxConfig:
             temporal_min_confirmed_windows=_parse_int(
                 os.environ.get("FALLDATA_AUX_TEMPORAL_MIN_CONFIRMED_WINDOWS"), 1
             ),
+            inline_pose_rf=_parse_bool(
+                os.environ.get("FALLDATA_AUX_INLINE_POSE_RF"), False
+            ),
+            inline_feature_capture_path=(
+                Path(inline_feature_capture_raw)
+                if inline_feature_capture_raw
+                else None
+            ),
         )
 
 
@@ -162,22 +205,136 @@ class FallDataAuxVerifier:
         "skipped_cooldown",
     }
 
-    def __init__(self, config: Optional[FallDataAuxConfig] = None) -> None:
+    def __init__(
+        self,
+        config: Optional[FallDataAuxConfig] = None,
+        *,
+        inline_pose_rf_bundle: Optional[dict[str, Any]] = None,
+    ) -> None:
         self.config = config or FallDataAuxConfig.from_env()
         self._frames: Deque[np.ndarray] = deque(maxlen=max(self.config.buffer_frames, 1))
+        self._pose_records: dict[str, Deque[dict[str, Any]]] = {}
+        self._inline_pose_rf_bundle = inline_pose_rf_bundle
         self._last_run_at = 0.0
+        self._last_run_by_camera: dict[str, float] = {}
         self._last_result: dict | None = None
+        self._last_result_by_camera: dict[str, dict] = {}
         self._lock = Lock()
+        self._inline_feature_capture_lock = Lock()
 
     @property
     def enabled(self) -> bool:
         return self.config.enabled
 
     def add_frame(self, frame: np.ndarray) -> None:
-        if not self.enabled or frame is None or not isinstance(frame, np.ndarray):
+        if (
+            not self.enabled
+            or self.config.inline_pose_rf
+            or frame is None
+            or not isinstance(frame, np.ndarray)
+        ):
             return
         with self._lock:
             self._frames.append(frame.copy())
+
+    def add_pose_events(
+        self,
+        camera_name: str,
+        events: Iterable[DetectionEvent],
+    ) -> None:
+        if not self.enabled or not self.config.inline_pose_rf:
+            return
+        from scripts.datasets.train_yolo_pose_fall_rf import _pose_geometry
+
+        records: list[dict[str, Any]] = []
+        for event in events:
+            if event.event_type != EventType.PERSON or not event.keypoints:
+                continue
+            metadata = dict(event.metadata or {})
+            fall_score = metadata.get("fall_score")
+            if fall_score is None:
+                continue
+            keypoints = np.asarray(event.keypoints, dtype=np.float32)
+            if keypoints.shape != (17, 3):
+                continue
+            frame_width = max(int(metadata.get("frame_width") or 0), 1)
+            frame_height = max(int(metadata.get("frame_height") or 0), 1)
+            bbox = np.asarray(
+                [event.x, event.y, event.x + event.width, event.y + event.height],
+                dtype=np.float32,
+            )
+            keypoint_confidences = keypoints[:, 2]
+            records.append(
+                {
+                    "timestamp": float(event.timestamp),
+                    "fall_score": float(fall_score),
+                    "fall_reasons": list(metadata.get("fall_reasons") or []),
+                    "detection_confidence": float(event.confidence),
+                    "bbox_aspect": float(event.width / max(event.height, 1)),
+                    "bbox_area_ratio": float(
+                        (event.width * event.height)
+                        / max(frame_width * frame_height, 1)
+                    ),
+                    "visible_keypoints": int((keypoint_confidences >= 0.35).sum()),
+                    "mean_keypoint_confidence": float(
+                        keypoint_confidences.mean()
+                    ),
+                    **_pose_geometry(
+                        keypoints,
+                        bbox=bbox,
+                        frame_width=frame_width,
+                        frame_height=frame_height,
+                        min_keypoint_confidence=0.35,
+                    ),
+                }
+            )
+        if not records:
+            return
+        with self._lock:
+            camera_records = self._pose_records.setdefault(
+                camera_name,
+                deque(maxlen=max(self.config.buffer_frames, 1)),
+            )
+            camera_records.extend(records)
+
+    def _write_inline_feature_capture(
+        self,
+        camera_name: str,
+        summary: dict[str, Any],
+        *,
+        window_seconds: float,
+    ) -> str | None:
+        path = self.config.inline_feature_capture_path
+        if path is None:
+            return None
+
+        record = {
+            "schema_version": 2,
+            "captured_at": datetime.now(timezone.utc).isoformat(),
+            "runtime": "deepstream_pose_inline",
+            "camera_id": camera_name,
+            "window_seconds": float(window_seconds),
+            "frames_seen": int(summary["frames_seen"]),
+            "frames_with_pose": int(summary["frames_with_pose"]),
+            "sampled_frames": len(summary.get("frame_records", [])),
+            "feature_names": list(summary["feature_names"]),
+            "feature_vector": list(summary["feature_vector"]),
+            "frame_feature_names": list(FRAME_FEATURE_NAMES),
+            "frame_records": [
+                dict(frame_record)
+                for frame_record in summary.get("frame_records", [])
+            ],
+        }
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            line = json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n"
+            with self._inline_feature_capture_lock:
+                with path.open("a", encoding="utf-8") as capture_file:
+                    capture_file.write(line)
+            return "written"
+        except (OSError, TypeError, ValueError):
+            logger.exception("DeepStream inline pose feature capture failed")
+            return "error"
 
     def annotate_events(self, events: Iterable[DetectionEvent]) -> list[DetectionEvent]:
         events = list(events)
@@ -215,7 +372,9 @@ class FallDataAuxVerifier:
             return False
         return str(result.get("status")) in self.UNAVAILABLE_STATUSES
 
-    def verify(self) -> dict:
+    def verify(self, camera_name: Optional[str] = None) -> dict:
+        if self.config.inline_pose_rf:
+            return self._verify_inline_pose_rf_with_cooldown(camera_name)
         now = time.time()
         if now - self._last_run_at < self.config.cooldown_seconds:
             return self._cooldown_result()
@@ -234,6 +393,133 @@ class FallDataAuxVerifier:
             )
             self._last_result = dict(result)
             return result
+
+    def _verify_inline_pose_rf_with_cooldown(
+        self,
+        camera_name: Optional[str],
+    ) -> dict:
+        if not camera_name:
+            return self._result("missing_camera", confirmed=False)
+        now = time.time()
+        last_run_at = self._last_run_by_camera.get(camera_name, 0.0)
+        if now - last_run_at < self.config.cooldown_seconds:
+            return dict(
+                self._last_result_by_camera.get(
+                    camera_name,
+                    self._result("skipped_cooldown", confirmed=False),
+                )
+            )
+        self._last_run_by_camera[camera_name] = now
+        try:
+            result = self._verify_inline_pose_rf(camera_name)
+        except Exception as exc:
+            logger.warning("inline pose RF verification failed: %s", exc)
+            result = self._result("error", confirmed=False, error=str(exc))
+        self._last_result_by_camera[camera_name] = dict(result)
+        return result
+
+    def _verify_inline_pose_rf(self, camera_name: str) -> dict:
+        from scripts.datasets.smoke_yolo_pose_fall_rf import (
+            _fall_probability_from_classifier,
+            _select_model_features,
+        )
+        from scripts.datasets.train_yolo_pose_fall_rf import _summarize_frames
+
+        bundle = self._inline_pose_rf_bundle
+        if bundle is None:
+            model_path = self.config.compare_model_path
+            if model_path is None or not model_path.exists():
+                return self._result(
+                    "missing_dependency",
+                    confirmed=False,
+                    missing=str(model_path),
+                )
+            import joblib
+
+            bundle = joblib.load(model_path)
+            if not isinstance(bundle, dict):
+                bundle = {"model": bundle}
+            self._inline_pose_rf_bundle = bundle
+
+        with self._lock:
+            records = list(self._pose_records.get(camera_name, ()))
+        if not records:
+            return self._result("no_pose_records", confirmed=False)
+
+        inference_config = dict(bundle.get("inference_config") or {})
+        training_config = dict(bundle.get("training_config") or {})
+        window_seconds = float(
+            inference_config.get("candidate_window_seconds") or 3.0
+        )
+        latest_timestamp = float(records[-1]["timestamp"])
+        window_start = latest_timestamp - max(window_seconds, 0.1)
+        window_records = [
+            record for record in records if float(record["timestamp"]) >= window_start
+        ]
+        min_pose_frames = int(training_config.get("min_pose_frames") or 1)
+        if len(window_records) < min_pose_frames:
+            return self._result(
+                "insufficient_pose_records",
+                confirmed=False,
+                frames_with_pose=len(window_records),
+                min_pose_frames=min_pose_frames,
+            )
+
+        max_frames = max(int(inference_config.get("max_frames") or 48), 1)
+        selected_indices = np.linspace(
+            0,
+            len(window_records) - 1,
+            num=max_frames,
+        ).astype(int)
+        selected_records = [window_records[index] for index in selected_indices]
+        summary = _summarize_frames(selected_records, max_frames)
+        feature_capture_status = self._write_inline_feature_capture(
+            camera_name,
+            summary,
+            window_seconds=window_seconds,
+        )
+
+        classifier = bundle.get("model", bundle)
+        feature_names = bundle.get("feature_names")
+        expected_features = getattr(
+            classifier,
+            "n_features_in_",
+            len(summary["feature_vector"]),
+        )
+        features = _select_model_features(
+            summary=summary,
+            model_feature_names=feature_names,
+            expected_feature_count=expected_features,
+        )
+        probabilities = classifier.predict_proba(features).tolist()
+        fall_probability = _fall_probability_from_classifier(
+            classifier,
+            probabilities,
+        )
+        threshold = float(
+            self.config.compare_threshold
+            if self.config.compare_threshold is not None
+            else training_config.get("decision_threshold", self.config.threshold)
+        )
+        confirmed = (
+            fall_probability is not None and fall_probability >= threshold
+        )
+        capture_result = (
+            {"feature_capture_status": feature_capture_status}
+            if feature_capture_status is not None
+            else {}
+        )
+        return self._result(
+            "ok",
+            confirmed=confirmed,
+            runtime="deepstream_pose_inline",
+            fall_probability=fall_probability,
+            threshold=threshold,
+            frames_with_pose=len(window_records),
+            sampled_frames=len(selected_records),
+            probability=probabilities[0],
+            **capture_result,
+        )
 
     def _cooldown_result(self) -> dict:
         if self._last_result:
@@ -270,6 +556,8 @@ class FallDataAuxVerifier:
                     str(feature_dir),
                     "--max-frames",
                     str(max(self.config.max_extract_frames, 1)),
+                    "--sequence-transform",
+                    self.config.sequence_transform,
                 ]
             )
             nonzero_frames = self._parse_nonzero_frames(extract.stdout)
@@ -285,7 +573,11 @@ class FallDataAuxVerifier:
             )
             probability = self._parse_probability(infer.stdout)
             prediction = self._parse_prediction(infer.stdout)
-            compare_result = self._run_compare_model(feature_dir, nonzero_frames)
+            compare_result = self._run_compare_model(
+                feature_dir,
+                nonzero_frames,
+                video_path,
+            )
             temporal_compare_result = self._run_temporal_compare_model(video_path)
 
         fall_probability = (
@@ -312,6 +604,7 @@ class FallDataAuxVerifier:
         self,
         feature_dir: Path,
         nonzero_frames: int,
+        video_path: Path,
     ) -> Optional[dict]:
         compare_model_path = self.config.compare_model_path
         if compare_model_path is None:
@@ -322,32 +615,73 @@ class FallDataAuxVerifier:
                 "model_path": str(compare_model_path),
                 "confirmed": False,
             }
-        infer = self._run(
-            [
-                str(self.config.model_python),
-                str(SMOKE_SCRIPT),
-                "--model",
-                str(compare_model_path),
-                "--sequence-dir",
-                str(feature_dir),
-            ]
-        )
+        if self.config.compare_model_kind == "yolo_pose_rf":
+            infer = self._run(
+                [
+                    str(self.config.temporal_python),
+                    str(YOLO_RF_SMOKE_SCRIPT),
+                    "--model",
+                    str(compare_model_path),
+                    "--pose-model",
+                    str(self.config.temporal_pose_model_path),
+                    "--video",
+                    str(video_path),
+                ]
+            )
+        else:
+            infer = self._run(
+                [
+                    str(self.config.model_python),
+                    str(SMOKE_SCRIPT),
+                    "--model",
+                    str(compare_model_path),
+                    "--sequence-dir",
+                    str(feature_dir),
+                ]
+            )
         probability = self._parse_probability(infer.stdout)
         prediction = self._parse_prediction(infer.stdout)
-        fall_probability = (
-            probability[self.config.fall_class_index]
-            if probability and 0 <= self.config.fall_class_index < len(probability)
-            else None
+        frames_with_pose = None
+        if self.config.compare_model_kind == "yolo_pose_rf":
+            fall_probability = self._parse_named_float(
+                infer.stdout,
+                "fall_probability",
+            )
+            frames_with_pose = self._parse_named_int(
+                infer.stdout,
+                "frames_with_pose",
+            )
+        else:
+            fall_probability = None
+        if fall_probability is None:
+            fall_probability = (
+                probability[self.config.compare_fall_class_index]
+                if probability
+                and 0 <= self.config.compare_fall_class_index < len(probability)
+                else None
+            )
+        compare_threshold = (
+            self.config.compare_threshold
+            if self.config.compare_threshold is not None
+            else self.config.threshold
+        )
+        confirmation_frames = (
+            frames_with_pose if frames_with_pose is not None else nonzero_frames
         )
         return {
             "status": "ok",
             "model_path": str(compare_model_path),
-            "confirmed": self._is_confirmed(nonzero_frames, fall_probability),
+            "confirmed": self._is_confirmed(
+                confirmation_frames,
+                fall_probability,
+                threshold=compare_threshold,
+            ),
             "prediction": prediction,
             "probability": probability,
             "fall_probability": fall_probability,
-            "threshold": self.config.threshold,
-            "fall_class_index": self.config.fall_class_index,
+            "threshold": compare_threshold,
+            "fall_class_index": self.config.compare_fall_class_index,
+            "frames_with_pose": frames_with_pose,
         }
 
     def _run_temporal_compare_model(self, video_path: Path) -> Optional[dict]:
@@ -425,12 +759,15 @@ class FallDataAuxVerifier:
         self,
         nonzero_frames: int,
         fall_probability: Optional[float],
+        *,
+        threshold: Optional[float] = None,
     ) -> bool:
         if fall_probability is None:
             return False
+        effective_threshold = self.config.threshold if threshold is None else threshold
         return (
             nonzero_frames >= self.config.min_nonzero_frames
-            and fall_probability >= self.config.threshold
+            and fall_probability >= effective_threshold
         )
 
     def snapshot_frames(self) -> list[np.ndarray]:
@@ -458,6 +795,15 @@ class FallDataAuxVerifier:
         for candidate in candidates:
             if not candidate.exists():
                 return str(candidate)
+        if self.config.compare_model_kind == "yolo_pose_rf":
+            for candidate in (
+                YOLO_RF_SMOKE_SCRIPT,
+                self.config.temporal_python,
+                self.config.temporal_pose_model_path,
+                self.config.compare_model_path,
+            ):
+                if candidate is not None and not candidate.exists():
+                    return str(candidate)
         return None
 
     def _write_video(self, path: Path, frames: list[np.ndarray]) -> None:
@@ -482,6 +828,8 @@ class FallDataAuxVerifier:
             writer.release()
 
     def _run(self, command: list[str]) -> subprocess.CompletedProcess[str]:
+        subprocess_env = os.environ.copy()
+        subprocess_env["PYTHONPATH"] = str(PROJECT_ROOT)
         return subprocess.run(
             command,
             check=True,
@@ -489,6 +837,7 @@ class FallDataAuxVerifier:
             capture_output=True,
             timeout=self.config.timeout_seconds,
             cwd=str(PROJECT_ROOT),
+            env=subprocess_env,
         )
 
     @staticmethod
