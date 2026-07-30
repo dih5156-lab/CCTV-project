@@ -7,8 +7,12 @@ import numpy as np
 import pytest
 
 from scripts.datasets.train_deepstream_pose_fall_tcn import (
+    TemporalCaptureDataset,
+    TrainingConfig,
     assert_validation_disjoint,
     load_temporal_capture_datasets,
+    select_threshold,
+    train_candidate,
 )
 from src.core.ai.fall_temporal_model import FRAME_FEATURE_NAMES
 
@@ -186,3 +190,91 @@ def test_assert_validation_disjoint_rejects_scene_or_group_overlap(
 
     with pytest.raises(ValueError, match=expected_message):
         assert_validation_disjoint(training, validation)
+
+
+def test_select_threshold_uses_lowest_passing_value_at_or_above_point_seven() -> None:
+    result = select_threshold(
+        np.asarray([1, 1, 0, 0], dtype=np.int64),
+        np.asarray([0.92, 0.71, 0.69, 0.20], dtype=np.float32),
+    )
+
+    assert result["passed"] is True
+    assert result["decision_threshold"] == 0.70
+    assert result["selected"]["fall_recall"] == 1.0
+    assert result["selected"]["false_positive_rate"] == 0.0
+    assert all(item["threshold"] >= 0.70 for item in result["sweep"])
+
+
+def test_select_threshold_reports_failure_without_lowering_minimum() -> None:
+    result = select_threshold(
+        np.asarray([1, 1, 0, 0], dtype=np.int64),
+        np.asarray([0.65, 0.60, 0.80, 0.10], dtype=np.float32),
+    )
+
+    assert result["passed"] is False
+    assert result["decision_threshold"] == 0.70
+    assert len(result["sweep"]) == 6
+
+
+def _synthetic_dataset(
+    *,
+    prefix: str,
+    samples_per_class: int,
+) -> TemporalCaptureDataset:
+    sequences: list[np.ndarray] = []
+    labels: list[int] = []
+    scene_ids: list[str] = []
+    group_ids: list[str] = []
+    metadata: list[dict] = []
+    for label in (1, 0):
+        for index in range(samples_per_class):
+            sequence = np.zeros(
+                (48, len(FRAME_FEATURE_NAMES)),
+                dtype=np.float32,
+            )
+            sequence[:, 0] = 0.9 if label else 0.1
+            sequence[:, 2] = 0.8 if label else 0.2
+            scene_id = f"{prefix}-{'fall' if label else 'normal'}-{index}"
+            group_id = f"{prefix}-group-{'fall' if label else 'normal'}-{index}"
+            sequences.append(sequence)
+            labels.append(label)
+            scene_ids.append(scene_id)
+            group_ids.append(group_id)
+            metadata.append({"scene_id": scene_id, "group_id": group_id})
+    return TemporalCaptureDataset(
+        sequences=np.stack(sequences),
+        labels=np.asarray(labels, dtype=np.int64),
+        scene_ids=tuple(scene_ids),
+        group_ids=tuple(group_ids),
+        metadata=tuple(metadata),
+    )
+
+
+def test_train_candidate_builds_temporal_only_checkpoint_contract() -> None:
+    training = _synthetic_dataset(prefix="train", samples_per_class=4)
+    validation = _synthetic_dataset(prefix="validation", samples_per_class=2)
+
+    checkpoint, metrics = train_candidate(
+        training,
+        validation,
+        TrainingConfig(
+            epochs=2,
+            patience=2,
+            batch_size=4,
+            channels=4,
+            device="cpu",
+            random_state=7,
+        ),
+    )
+
+    assert checkpoint["format_version"] == 2
+    assert checkpoint["model_type"] == "deepstream_pose_temporal_tcn"
+    assert checkpoint["sequence_length"] == 48
+    assert checkpoint["frame_feature_names"] == list(FRAME_FEATURE_NAMES)
+    assert checkpoint["decision_threshold"] >= 0.70
+    assert checkpoint["channels"] == 4
+    assert "state_dict" in checkpoint
+    assert "split_hash" in checkpoint
+    assert metrics["training"]["epochs_completed"] == 2
+    assert metrics["validation"]["fall_support"] == 2
+    assert metrics["validation"]["normal_support"] == 2
