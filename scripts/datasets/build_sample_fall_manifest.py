@@ -20,6 +20,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -56,12 +57,24 @@ def _source_video_for_label(
     return source_video_root / relative.with_suffix(".mp4")
 
 
+def _scene_group(scene_id: str) -> str:
+    return re.sub(r"_C\d+$", "", scene_id)
+
+
+def _camera_number(scene_id: str, scene_info: dict[str, Any]) -> int:
+    match = re.search(r"_C(\d+)$", scene_id)
+    if match:
+        return int(match.group(1))
+    return int(scene_info.get("cam_num") or 0)
+
+
 def build_manifest(
     sample_root: Path,
     *,
     source_video_root: Path | None = None,
     label_video_root: Path | None = None,
     split: str | None = None,
+    camera: int | None = None,
 ) -> list[dict[str, Any]]:
     source_root = source_video_root or sample_root / "01.원천데이터" / "영상"
     label_root = label_video_root or sample_root / "02.라벨링데이터" / "영상"
@@ -74,9 +87,14 @@ def build_manifest(
         meta = metadata.get("metadata") or {}
         actor_info = metadata.get("actor_info") or {}
         label = _label_from_parts(label_json, metadata)
+        scene_id = str(meta.get("scene_id") or label_json.stem)
+        camera_number = _camera_number(scene_id, scene_info)
+        if camera is not None and camera_number != camera:
+            continue
 
         row = {
-            "scene_id": str(meta.get("scene_id") or label_json.stem),
+            "scene_id": scene_id,
+            "scene_group": _scene_group(scene_id),
             "video_path": str(source_video),
             "label_path": str(label_json),
             "label": label,
@@ -84,7 +102,7 @@ def build_manifest(
             "fall_start_frame": int(sensor_data.get("fall_start_frame") or 0),
             "fall_end_frame": int(sensor_data.get("fall_end_frame") or 0),
             "scene_length": int(scene_info.get("scene_length") or 0),
-            "camera": int(scene_info.get("cam_num") or 0),
+            "camera": camera_number,
             "scene_category": scene_info.get("scene_cat_name"),
             "fall_type": scene_info.get("fall_type"),
             "scene_location": scene_info.get("scene_loc"),
@@ -147,6 +165,12 @@ def main() -> int:
         "--split",
         help="Optional split name to store in each row, e.g. train or val.",
     )
+    parser.add_argument(
+        "--camera",
+        type=int,
+        choices=range(1, 9),
+        help="Optionally keep one camera view (1-8), e.g. 2 for the CAM2 POC.",
+    )
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument(
         "--csv-output",
@@ -163,6 +187,7 @@ def main() -> int:
         source_video_root=args.source_video_root,
         label_video_root=args.label_video_root,
         split=args.split,
+        camera=args.camera,
     )
     write_jsonl(rows, args.output)
     write_csv(rows, args.csv_output)

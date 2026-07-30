@@ -83,3 +83,27 @@ def test_build_manifest_keeps_default_sample_layout(tmp_path) -> None:
     assert rows[0]["label"] == "not_fall"
     assert rows[0]["is_fall"] is False
     assert rows[0]["video_path"] == str(video_path)
+
+
+def test_build_manifest_filters_camera_and_records_scene_group(tmp_path) -> None:
+    source_root = tmp_path / "Training/01.원천데이터/extracted_TS/영상"
+    label_root = tmp_path / "Training/02.라벨링데이터/영상"
+    for camera in (1, 2):
+        scene_id = f"00001_H_A_BY_C{camera}"
+        label_path = label_root / f"Y/BY/{scene_id}/{scene_id}.json"
+        video_path = source_root / f"Y/BY/{scene_id}/{scene_id}.mp4"
+        video_path.parent.mkdir(parents=True, exist_ok=True)
+        video_path.write_bytes(b"video")
+        _write_label(label_path, scene_id=scene_id, scene_is_fall="낙상")
+
+    rows = build_sample_fall_manifest.build_manifest(
+        tmp_path,
+        source_video_root=source_root,
+        label_video_root=label_root,
+        split="train",
+        camera=2,
+    )
+
+    assert [row["scene_id"] for row in rows] == ["00001_H_A_BY_C2"]
+    assert rows[0]["scene_group"] == "00001_H_A_BY"
+    assert rows[0]["camera"] == 2
