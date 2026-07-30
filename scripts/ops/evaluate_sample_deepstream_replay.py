@@ -733,6 +733,11 @@ def evaluate(args: argparse.Namespace) -> list[dict[str, Any]]:
             "--apply-camera-config and --restart-ai-engine"
         )
 
+    initial_feature_capture_offset = (
+        feature_capture_log.stat().st_size
+        if feature_capture_log is not None and feature_capture_log.exists()
+        else 0
+    )
     dataset_host_root_raw = env_values.get("FALL_DATASET_HOST_PATH", "").strip()
     dataset_host_root = Path(dataset_host_root_raw) if dataset_host_root_raw else None
     args.review_log = _resolve_review_log_path(
@@ -788,11 +793,15 @@ def evaluate(args: argparse.Namespace) -> list[dict[str, Any]]:
                 continue
 
             offset = args.review_log.stat().st_size if args.review_log.exists() else 0
-            feature_capture_offset = (
-                feature_capture_log.stat().st_size
-                if feature_capture_log is not None and feature_capture_log.exists()
-                else 0
-            )
+            if idx == 1 and args.source_mode == "file":
+                feature_capture_offset = initial_feature_capture_offset
+            else:
+                feature_capture_offset = (
+                    feature_capture_log.stat().st_size
+                    if feature_capture_log is not None
+                    and feature_capture_log.exists()
+                    else 0
+                )
             duration = _video_duration_seconds(
                 video_path,
                 int(row.get("scene_length") or 0),

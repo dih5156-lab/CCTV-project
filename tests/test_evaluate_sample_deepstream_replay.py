@@ -494,30 +494,36 @@ def test_feature_capture_labels_new_records_and_restores_runtime(
     dataset_path = tmp_path / "data/fall_eval/dataset.jsonl"
     recreate_calls = []
 
-    def fake_restart(*_args):
-        capture_path.parent.mkdir(parents=True, exist_ok=True)
-        capture_path.write_text(
-            json.dumps(
-                {
-                    "schema_version": 1,
-                    "runtime": "deepstream_pose_inline",
-                    "camera_id": "sample_eval",
-                    "feature_names": ["a", "b"],
-                    "feature_vector": [0.1, 0.2],
-                }
+    def fake_recreate(*_args, **kwargs):
+        environment_overrides = kwargs.get("environment_overrides")
+        recreate_calls.append(environment_overrides)
+        if environment_overrides:
+            capture_path.parent.mkdir(parents=True, exist_ok=True)
+            capture_path.write_text(
+                json.dumps(
+                    {
+                        "schema_version": 2,
+                        "runtime": "deepstream_pose_inline",
+                        "camera_id": "sample_eval",
+                        "feature_names": ["a", "b"],
+                        "feature_vector": [0.1, 0.2],
+                        "frame_feature_names": list(FRAME_FEATURE_NAMES),
+                        "frame_records": [
+                            {"timestamp": float(index)}
+                            for index in range(48)
+                        ],
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
             )
-            + "\n",
-            encoding="utf-8",
-        )
 
     monkeypatch.setattr(replay, "_apply_camera_config", lambda *_args: backup_path)
-    monkeypatch.setattr(replay, "_restart_ai_engine", fake_restart)
+    monkeypatch.setattr(replay, "_restart_ai_engine", lambda *_args: None)
     monkeypatch.setattr(
         replay,
         "_recreate_ai_engine",
-        lambda *_args, **kwargs: recreate_calls.append(
-            kwargs.get("environment_overrides")
-        ),
+        fake_recreate,
     )
     monkeypatch.setattr(replay, "_video_duration_seconds", lambda *_args: 0.1)
     monkeypatch.setattr(replay.time, "sleep", lambda *_args: None)
