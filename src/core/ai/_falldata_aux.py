@@ -26,8 +26,8 @@ from typing import Any, Deque, Iterable, Optional
 
 import numpy as np
 
-from .fall_temporal_model import FRAME_FEATURE_NAMES
 from ..events import DetectionEvent, EventType
+from .fall_temporal_model import FRAME_FEATURE_NAMES
 
 logger = logging.getLogger(__name__)
 
@@ -266,6 +266,7 @@ class FallDataAuxVerifier:
             keypoint_confidences = keypoints[:, 2]
             records.append(
                 {
+                    "frame_index": int(metadata.get("frame_num") or 0),
                     "timestamp": float(event.timestamp),
                     "fall_score": float(fall_score),
                     "fall_reasons": list(metadata.get("fall_reasons") or []),
@@ -290,12 +291,44 @@ class FallDataAuxVerifier:
             )
         if not records:
             return
+        records_by_frame: dict[int, dict[str, Any]] = {}
+        for record in records:
+            frame_index = int(record["frame_index"])
+            current = records_by_frame.get(frame_index)
+            if current is None or (
+                record["fall_score"],
+                record["detection_confidence"],
+            ) > (
+                current["fall_score"],
+                current["detection_confidence"],
+            ):
+                records_by_frame[frame_index] = record
         with self._lock:
             camera_records = self._pose_records.setdefault(
                 camera_name,
                 deque(maxlen=max(self.config.buffer_frames, 1)),
             )
-            camera_records.extend(records)
+            for record in sorted(
+                records_by_frame.values(),
+                key=lambda item: int(item["frame_index"]),
+            ):
+                frame_index = int(record["frame_index"])
+                if camera_records:
+                    last_record = camera_records[-1]
+                    last_frame_index = int(last_record["frame_index"])
+                    if frame_index < last_frame_index:
+                        camera_records.clear()
+                    elif frame_index == last_frame_index:
+                        if (
+                            record["fall_score"],
+                            record["detection_confidence"],
+                        ) > (
+                            last_record["fall_score"],
+                            last_record["detection_confidence"],
+                        ):
+                            camera_records[-1] = record
+                        continue
+                camera_records.append(record)
 
     def _write_inline_feature_capture(
         self,

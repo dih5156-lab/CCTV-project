@@ -72,7 +72,10 @@ def test_label_feature_capture_records_uses_scene_group_as_group_id() -> None:
 
 
 def test_label_feature_capture_records_preserves_temporal_sequence_metadata() -> None:
-    frame_records = [{"timestamp": float(index)} for index in range(48)]
+    frame_records = [
+        {"timestamp": float(index), "frame_index": 120 + index}
+        for index in range(48)
+    ]
     capture = {
         "schema_version": 2,
         "runtime": "deepstream_pose_inline",
@@ -108,6 +111,90 @@ def test_label_feature_capture_records_preserves_temporal_sequence_metadata() ->
     assert labeled[0]["scene_location"] == "병원"
     assert labeled[0]["age_group"] == "노인"
     assert labeled[0]["fall_direction"] == "뒤"
+
+
+def test_label_feature_capture_records_drops_positive_window_before_fall() -> None:
+    capture = {
+        "schema_version": 2,
+        "runtime": "deepstream_pose_inline",
+        "feature_names": ["frames_seen"],
+        "feature_vector": [48.0],
+        "frame_feature_names": list(FRAME_FEATURE_NAMES),
+        "frame_records": [
+            {"timestamp": float(index), "frame_index": index}
+            for index in range(48)
+        ],
+    }
+
+    labeled, errors = replay._label_feature_capture_records(
+        [capture],
+        {
+            "video_path": "/dataset/fall.mp4",
+            "scene_id": "fall-before-window",
+            "scene_group": "subject-001",
+            "is_fall": True,
+            "fall_start_frame": 120,
+            "fall_end_frame": 180,
+        },
+    )
+
+    assert errors == []
+    assert labeled == []
+
+
+def test_label_feature_capture_records_drops_positive_window_without_fall_frame() -> None:
+    capture = {
+        "schema_version": 2,
+        "runtime": "deepstream_pose_inline",
+        "feature_names": ["frames_seen"],
+        "feature_vector": [4.0],
+        "frame_feature_names": list(FRAME_FEATURE_NAMES),
+        "frame_records": [
+            {"timestamp": float(frame_index), "frame_index": frame_index}
+            for frame_index in (0, 20, 100, 120)
+        ],
+    }
+
+    labeled, errors = replay._label_feature_capture_records(
+        [capture],
+        {
+            "video_path": "/dataset/fall.mp4",
+            "scene_id": "fall-with-pose-gap",
+            "scene_group": "subject-001",
+            "is_fall": True,
+            "fall_start_frame": 30,
+            "fall_end_frame": 90,
+        },
+    )
+
+    assert errors == []
+    assert labeled == []
+
+
+def test_label_feature_capture_records_requires_frame_index_for_positive_v2() -> None:
+    capture = {
+        "schema_version": 2,
+        "runtime": "deepstream_pose_inline",
+        "feature_names": ["frames_seen"],
+        "feature_vector": [48.0],
+        "frame_feature_names": list(FRAME_FEATURE_NAMES),
+        "frame_records": [{"timestamp": float(index)} for index in range(48)],
+    }
+
+    labeled, errors = replay._label_feature_capture_records(
+        [capture],
+        {
+            "video_path": "/dataset/fall.mp4",
+            "scene_id": "fall-missing-index",
+            "scene_group": "subject-001",
+            "is_fall": True,
+            "fall_start_frame": 120,
+            "fall_end_frame": 180,
+        },
+    )
+
+    assert labeled == []
+    assert errors == ["record 0: positive frame_records require frame_index"]
 
 
 @pytest.mark.parametrize(

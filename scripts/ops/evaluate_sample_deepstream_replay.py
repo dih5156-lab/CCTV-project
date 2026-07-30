@@ -225,6 +225,33 @@ def _label_feature_capture_records(
             if not isinstance(record.get("frame_feature_names"), list):
                 errors.append(f"record {index}: invalid frame_feature_names")
                 continue
+            if bool(manifest_row.get("is_fall")):
+                if any("frame_index" not in item for item in frame_records):
+                    errors.append(
+                        f"record {index}: positive frame_records require frame_index"
+                    )
+                    continue
+                fall_start_frame = int(
+                    manifest_row.get("fall_start_frame") or 0
+                )
+                fall_end_frame = int(manifest_row.get("fall_end_frame") or 0)
+                if fall_start_frame <= 0 or fall_end_frame <= fall_start_frame:
+                    errors.append(
+                        f"record {index}: positive manifest requires fall frame annotation"
+                    )
+                    continue
+                frame_indices = [
+                    int(frame_record["frame_index"])
+                    for frame_record in frame_records
+                ]
+                window_start_frame = min(frame_indices)
+                window_end_frame = max(frame_indices)
+                annotation_overlap_frames = sum(
+                    fall_start_frame <= frame_index <= fall_end_frame
+                    for frame_index in frame_indices
+                )
+                if annotation_overlap_frames == 0:
+                    continue
 
         output = dict(record)
         output.update(
@@ -236,6 +263,11 @@ def _label_feature_capture_records(
                 "video_path": str(manifest_row["video_path"]),
             }
         )
+        if schema_version == 2 and bool(manifest_row.get("is_fall")):
+            output["window_start_frame"] = window_start_frame
+            output["window_end_frame"] = window_end_frame
+            output["annotation_overlap"] = True
+            output["annotation_overlap_frames"] = annotation_overlap_frames
         for metadata_name in (
             "split_source",
             "fall_start_frame",

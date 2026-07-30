@@ -40,6 +40,7 @@ def _pose_event(timestamp: float = 1.0) -> DetectionEvent:
         timestamp=timestamp,
         keypoints=keypoints,
         metadata={
+            "frame_num": 42,
             "frame_width": 640,
             "frame_height": 480,
             "fall_score": 3.5,
@@ -200,6 +201,49 @@ def test_inline_feature_capture_failure_is_fail_open(tmp_path) -> None:
     assert status == "error"
 
 
+def test_add_pose_events_keeps_one_highest_fall_score_record_per_frame() -> None:
+    verifier = FallDataAuxVerifier(
+        FallDataAuxConfig(enabled=True, inline_pose_rf=True)
+    )
+    lower_score_event = _pose_event()
+    higher_score_event = _pose_event()
+    higher_score_event.metadata["fall_score"] = 4.5
+
+    verifier.add_pose_events(
+        "cam01",
+        [lower_score_event, higher_score_event],
+    )
+
+    records = list(verifier._pose_records["cam01"])
+    assert len(records) == 1
+    assert records[0]["frame_index"] == 42
+    assert records[0]["fall_score"] == 4.5
+
+
+def test_add_pose_events_deduplicates_across_calls_and_resets_on_frame_rewind() -> None:
+    verifier = FallDataAuxVerifier(
+        FallDataAuxConfig(enabled=True, inline_pose_rf=True)
+    )
+    lower_score_event = _pose_event()
+    higher_score_event = _pose_event()
+    higher_score_event.metadata["fall_score"] = 4.5
+    rewound_event = _pose_event()
+    rewound_event.metadata["frame_num"] = 0
+
+    verifier.add_pose_events("cam01", [lower_score_event])
+    verifier.add_pose_events("cam01", [higher_score_event])
+
+    records = list(verifier._pose_records["cam01"])
+    assert len(records) == 1
+    assert records[0]["fall_score"] == 4.5
+
+    verifier.add_pose_events("cam01", [rewound_event])
+
+    records = list(verifier._pose_records["cam01"])
+    assert len(records) == 1
+    assert records[0]["frame_index"] == 0
+
+
 def test_inline_pose_rf_uses_camera_pose_records_without_subprocess(
     monkeypatch,
     tmp_path,
@@ -248,6 +292,10 @@ def test_inline_pose_rf_uses_camera_pose_records_without_subprocess(
     captured_record = json.loads(capture_path.read_text(encoding="utf-8"))
     assert captured_record["feature_names"] == FEATURE_NAMES
     assert len(captured_record["feature_vector"]) == len(FEATURE_NAMES)
+    assert {
+        frame_record["frame_index"]
+        for frame_record in captured_record["frame_records"]
+    } == {42}
     assert verifier.snapshot_frames() == []
     assert other_camera_result["status"] == "no_pose_records"
 
