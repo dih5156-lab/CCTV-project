@@ -66,6 +66,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--max-frames", type=int, default=30)
     parser.add_argument("--frame-stride", type=int, default=6)
+    parser.add_argument("--fall-window-margin-frames", type=int, default=60)
     parser.add_argument("--sequence-length", type=int, default=30)
     parser.add_argument("--min-pose-frames", type=int, default=3)
     parser.add_argument("--channels", type=int, default=32)
@@ -101,6 +102,7 @@ def _load_cached_dataset(
     feature_cache: Path,
     max_frames: int,
     frame_stride: int,
+    fall_window_margin_frames: int,
     sequence_length: int,
     min_pose_frames: int,
 ) -> dict[str, Any]:
@@ -110,7 +112,13 @@ def _load_cached_dataset(
     scene_ids: list[str] = []
     excluded: list[dict[str, Any]] = []
     for row in rows:
-        feature_path = _feature_path(feature_cache, row, max_frames, frame_stride)
+        feature_path = _feature_path(
+            feature_cache,
+            row,
+            max_frames,
+            frame_stride,
+            fall_window_margin_frames,
+        )
         if not feature_path.exists():
             excluded.append({"scene_id": _safe_id(row), "reason": "feature_cache_missing"})
             continue
@@ -155,11 +163,18 @@ def _select_cached_rows(
     feature_cache: Path,
     max_frames: int,
     frame_stride: int,
+    fall_window_margin_frames: int,
 ) -> list[dict[str, Any]]:
     return [
         row
         for row in rows
-        if _feature_path(feature_cache, row, max_frames, frame_stride).exists()
+        if _feature_path(
+            feature_cache,
+            row,
+            max_frames,
+            frame_stride,
+            fall_window_margin_frames,
+        ).exists()
     ]
 
 
@@ -290,12 +305,14 @@ def main() -> int:
             feature_cache=args.feature_cache,
             max_frames=args.max_frames,
             frame_stride=args.frame_stride,
+            fall_window_margin_frames=args.fall_window_margin_frames,
         )
         validation_rows = _select_cached_rows(
             all_validation_rows,
             feature_cache=args.validation_feature_cache,
             max_frames=args.max_frames,
             frame_stride=args.frame_stride,
+            fall_window_margin_frames=args.fall_window_margin_frames,
         )
     else:
         train_rows = _select_rows(all_train_rows, args.max_videos)
@@ -308,6 +325,7 @@ def main() -> int:
         feature_cache=args.feature_cache,
         max_frames=args.max_frames,
         frame_stride=args.frame_stride,
+        fall_window_margin_frames=args.fall_window_margin_frames,
         sequence_length=args.sequence_length,
         min_pose_frames=args.min_pose_frames,
     )
@@ -316,6 +334,7 @@ def main() -> int:
         feature_cache=args.validation_feature_cache,
         max_frames=args.max_frames,
         frame_stride=args.frame_stride,
+        fall_window_margin_frames=args.fall_window_margin_frames,
         sequence_length=args.sequence_length,
         min_pose_frames=args.min_pose_frames,
     )
@@ -516,6 +535,7 @@ def main() -> int:
         "validation_excluded": validation_dataset["excluded"],
         "model_params": {
             "sequence_length": args.sequence_length,
+            "fall_window_margin_frames": args.fall_window_margin_frames,
             "input_features": len(FRAME_FEATURE_NAMES),
             "channels": args.channels,
             "model_type": args.model_type,

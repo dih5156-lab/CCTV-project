@@ -64,7 +64,7 @@ def test_select_cached_rows_keeps_only_rows_with_matching_feature_files(
         {"scene_id": "scene_a", "video_path": "a.mp4"},
         {"scene_id": "scene_b", "video_path": "b.mp4"},
     ]
-    (tmp_path / "scene_b_uniform_max30_stride6.json").write_text(
+    (tmp_path / "scene_b_labeled_window_max30_stride6_margin60.json").write_text(
         "{}",
         encoding="utf-8",
     )
@@ -74,6 +74,7 @@ def test_select_cached_rows_keeps_only_rows_with_matching_feature_files(
         feature_cache=tmp_path,
         max_frames=30,
         frame_stride=6,
+        fall_window_margin_frames=60,
     )
 
     assert [row["scene_id"] for row in selected] == ["scene_b"]
