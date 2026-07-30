@@ -343,6 +343,49 @@ def _predict_probabilities(
     return np.asarray(probabilities, dtype=np.float32)
 
 
+def _aggregate_scene_probabilities(
+    *,
+    scene_ids: Sequence[str],
+    labels: np.ndarray,
+    probabilities: np.ndarray,
+) -> tuple[tuple[str, ...], np.ndarray, np.ndarray]:
+    if len(scene_ids) != len(labels) or labels.shape != probabilities.shape:
+        raise ValueError("scene_ids, labels, and probabilities must align")
+
+    scene_labels: dict[str, int] = {}
+    scene_probabilities: dict[str, float] = {}
+    for scene_id, label, probability in zip(
+        scene_ids,
+        labels.tolist(),
+        probabilities.tolist(),
+    ):
+        normalized_scene_id = str(scene_id)
+        normalized_label = int(label)
+        previous_label = scene_labels.setdefault(
+            normalized_scene_id,
+            normalized_label,
+        )
+        if previous_label != normalized_label:
+            raise ValueError(f"scene has mixed labels: {normalized_scene_id}")
+        scene_probabilities[normalized_scene_id] = max(
+            scene_probabilities.get(normalized_scene_id, 0.0),
+            float(probability),
+        )
+
+    ordered_scene_ids = tuple(scene_labels)
+    return (
+        ordered_scene_ids,
+        np.asarray(
+            [scene_labels[scene_id] for scene_id in ordered_scene_ids],
+            dtype=np.int64,
+        ),
+        np.asarray(
+            [scene_probabilities[scene_id] for scene_id in ordered_scene_ids],
+            dtype=np.float32,
+        ),
+    )
+
+
 def train_candidate(
     training: TemporalCaptureDataset,
     validation: TemporalCaptureDataset,
@@ -454,21 +497,32 @@ def train_candidate(
         device=device,
         batch_size=config.batch_size,
     )
+    (
+        validation_scene_ids,
+        validation_scene_labels,
+        validation_scene_probabilities,
+    ) = _aggregate_scene_probabilities(
+        scene_ids=validation.scene_ids,
+        labels=validation.labels,
+        probabilities=validation_probabilities,
+    )
     threshold_result = select_threshold(
-        validation.labels,
-        validation_probabilities,
+        validation_scene_labels,
+        validation_scene_probabilities,
         minimum_threshold=config.minimum_threshold,
         minimum_recall=config.minimum_recall,
         maximum_false_positive_rate=config.maximum_false_positive_rate,
-        scene_ids=validation.scene_ids,
+        scene_ids=validation_scene_ids,
     )
     decision_threshold = float(threshold_result["decision_threshold"])
     validation_metrics = _binary_metrics(
-        validation.labels,
-        validation_probabilities,
+        validation_scene_labels,
+        validation_scene_probabilities,
         threshold=decision_threshold,
-        scene_ids=validation.scene_ids,
+        scene_ids=validation_scene_ids,
     )
+    validation_metrics["window_rows"] = len(validation.labels)
+    validation_metrics["scene_rows"] = len(validation_scene_labels)
 
     checkpoint = {
         "format_version": 2,

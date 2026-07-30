@@ -9,6 +9,7 @@ import pytest
 from scripts.datasets.train_deepstream_pose_fall_tcn import (
     TemporalCaptureDataset,
     TrainingConfig,
+    _aggregate_scene_probabilities,
     assert_validation_disjoint,
     load_temporal_capture_datasets,
     select_threshold,
@@ -214,6 +215,27 @@ def test_select_threshold_reports_failure_without_lowering_minimum() -> None:
     assert result["passed"] is False
     assert result["decision_threshold"] == 0.70
     assert len(result["sweep"]) == 6
+
+
+def test_aggregate_scene_probabilities_uses_max_window_per_scene() -> None:
+    scene_ids, labels, probabilities = _aggregate_scene_probabilities(
+        scene_ids=("fall-1", "fall-1", "normal-1"),
+        labels=np.asarray([1, 1, 0], dtype=np.int64),
+        probabilities=np.asarray([0.72, 0.91, 0.20], dtype=np.float32),
+    )
+
+    assert scene_ids == ("fall-1", "normal-1")
+    np.testing.assert_array_equal(labels, [1, 0])
+    np.testing.assert_allclose(probabilities, [0.91, 0.20])
+
+
+def test_aggregate_scene_probabilities_rejects_mixed_scene_labels() -> None:
+    with pytest.raises(ValueError, match="scene has mixed labels"):
+        _aggregate_scene_probabilities(
+            scene_ids=("scene-1", "scene-1"),
+            labels=np.asarray([1, 0], dtype=np.int64),
+            probabilities=np.asarray([0.8, 0.2], dtype=np.float32),
+        )
 
 
 def _synthetic_dataset(
