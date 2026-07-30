@@ -1457,7 +1457,10 @@ class DeepStreamProcessor(BaseProcessor):
         if not keypoints:
             return True
         try:
-            return self._fall_detector._check_person(np.asarray(keypoints, dtype=np.float32))
+            return self._fall_detector._check_person(
+                np.asarray(keypoints, dtype=np.float32),
+                enforce_vertical_order=False,
+            )
         except Exception as exc:
             logger.debug("DeepStream pose 사람 검증 실패: %s", exc)
             return True

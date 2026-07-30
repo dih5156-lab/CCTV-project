@@ -317,7 +317,12 @@ class FallDetector:
 
     # ── 사람 검증 로직 ────────────────────────────────────────────────
 
-    def _check_person(self, kpts: np.ndarray) -> bool:
+    def _check_person(
+        self,
+        kpts: np.ndarray,
+        *,
+        enforce_vertical_order: bool = True,
+    ) -> bool:
         """키포인트 신뢰도 및 해부학적 수직 순서 검증."""
         # COCO: 0-코, 5-왼어깨, 6-오른어깨, 11-왼엉덩이, 12-오른엉덩이
         nose_conf = kpts[0][2] if len(kpts) > 0 else 0.0
@@ -343,7 +348,7 @@ class FallDetector:
             return False
 
         # 검사 2: 수직 순서 (y 좌표계: 위로 갈수록 값이 작음)
-        if has_nose and has_shoulder:
+        if enforce_vertical_order and has_nose and has_shoulder:
             nose_y = kpts[0][1]
             sh_ys = [kpts[5][1] for _ in [()] if ls_conf > MIN_KEYPOINT_CONFIDENCE] + [
                 kpts[6][1] for _ in [()] if rs_conf > MIN_KEYPOINT_CONFIDENCE
@@ -359,7 +364,7 @@ class FallDetector:
                 )
                 return False
 
-        if has_shoulder and has_hip:
+        if enforce_vertical_order and has_shoulder and has_hip:
             sh_ys = ([kpts[5][1]] if ls_conf > MIN_KEYPOINT_CONFIDENCE else []) + (
                 [kpts[6][1]] if rs_conf > MIN_KEYPOINT_CONFIDENCE else []
             )

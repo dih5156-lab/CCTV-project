@@ -611,6 +611,24 @@ def test_deepstream_fall_pose_returns_score_metadata():
     assert any(reason.startswith("torso_horizontal:") for reason in result["reasons"])
 
 
+def test_deepstream_person_pose_validator_keeps_horizontal_fall_pose():
+    proc = object.__new__(DeepStreamProcessor)
+    proc._fall_detector = FallDetector()
+    keypoints = [[0.0, 0.0, 0.0] for _ in range(17)]
+    keypoints[0] = [100.0, 80.0, 0.9]
+    keypoints[5] = [40.0, 60.0, 0.9]
+    keypoints[6] = [60.0, 60.0, 0.9]
+    keypoints[11] = [120.0, 70.0, 0.9]
+    keypoints[12] = [140.0, 70.0, 0.9]
+    keypoints[13] = [130.0, 82.0, 0.9]
+    keypoints[14] = [150.0, 84.0, 0.9]
+
+    assert proc._fall_detector._check_person(
+        np.asarray(keypoints, dtype=np.float32)
+    ) is False
+    assert proc._is_valid_person_pose(keypoints) is True
+
+
 def test_deepstream_fall_pose_reports_folded_floor_near_miss():
     proc = object.__new__(DeepStreamProcessor)
     proc._fall_detector = FallDetector(enable_folded_pose=False)
