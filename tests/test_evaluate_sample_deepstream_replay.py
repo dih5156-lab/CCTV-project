@@ -13,6 +13,162 @@ from scripts.ops.evaluate_sample_deepstream_replay import (
     _resolve_review_log_path,
     _summarize_shadow_records,
 )
+from src.core.ai.fall_temporal_model import FRAME_FEATURE_NAMES
+
+
+def test_label_feature_capture_records_adds_manifest_metadata() -> None:
+    capture = {
+        "schema_version": 1,
+        "runtime": "deepstream_pose_inline",
+        "camera_id": "sample_eval",
+        "feature_names": ["torso_angle_mean", "hip_speed_max"],
+        "feature_vector": [41.5, 0.82],
+    }
+    manifest_row = {
+        "video_path": "/dataset/scene-001.mp4",
+        "scene_id": "scene-001",
+        "group_id": "subject-001",
+        "is_fall": True,
+    }
+
+    labeled, errors = replay._label_feature_capture_records(
+        [capture],
+        manifest_row,
+    )
+
+    assert errors == []
+    assert labeled == [
+        {
+            **capture,
+            "label": 1,
+            "is_fall": True,
+            "scene_id": "scene-001",
+            "group_id": "subject-001",
+            "video_path": "/dataset/scene-001.mp4",
+        }
+    ]
+
+
+def test_label_feature_capture_records_uses_scene_group_as_group_id() -> None:
+    labeled, errors = replay._label_feature_capture_records(
+        [
+            {
+                "schema_version": 1,
+                "runtime": "deepstream_pose_inline",
+                "feature_names": ["a"],
+                "feature_vector": [1.0],
+            }
+        ],
+        {
+            "video_path": "/dataset/scene-001.mp4",
+            "scene_id": "scene-001",
+            "scene_group": "subject-001",
+            "is_fall": False,
+        },
+    )
+
+    assert errors == []
+    assert labeled[0]["group_id"] == "subject-001"
+
+
+def test_label_feature_capture_records_preserves_temporal_sequence_metadata() -> None:
+    frame_records = [{"timestamp": float(index)} for index in range(48)]
+    capture = {
+        "schema_version": 2,
+        "runtime": "deepstream_pose_inline",
+        "feature_names": ["frames_seen"],
+        "feature_vector": [48.0],
+        "frame_feature_names": list(FRAME_FEATURE_NAMES),
+        "frame_records": frame_records,
+    }
+    manifest_row = {
+        "video_path": "/dataset/scene-001.mp4",
+        "scene_id": "scene-001",
+        "scene_group": "subject-001",
+        "is_fall": True,
+        "fall_start_frame": 120,
+        "fall_end_frame": 180,
+        "scene_position": "복도",
+        "scene_location": "병원",
+        "age_group": "노인",
+        "fall_direction": "뒤",
+    }
+
+    labeled, errors = replay._label_feature_capture_records(
+        [capture],
+        manifest_row,
+    )
+
+    assert errors == []
+    assert labeled[0]["frame_records"] == frame_records
+    assert labeled[0]["group_id"] == "subject-001"
+    assert labeled[0]["fall_start_frame"] == 120
+    assert labeled[0]["fall_end_frame"] == 180
+    assert labeled[0]["scene_position"] == "복도"
+    assert labeled[0]["scene_location"] == "병원"
+    assert labeled[0]["age_group"] == "노인"
+    assert labeled[0]["fall_direction"] == "뒤"
+
+
+@pytest.mark.parametrize(
+    "capture, expected_error",
+    [
+        (
+            {
+                "schema_version": 3,
+                "runtime": "deepstream_pose_inline",
+                "feature_names": ["a"],
+                "feature_vector": [1.0],
+            },
+            "unsupported schema_version",
+        ),
+        (
+            {
+                "schema_version": 1,
+                "runtime": "offline",
+                "feature_names": ["a"],
+                "feature_vector": [1.0],
+            },
+            "unexpected runtime",
+        ),
+        (
+            {
+                "schema_version": 1,
+                "runtime": "deepstream_pose_inline",
+                "feature_names": ["a", "b"],
+                "feature_vector": [1.0],
+            },
+            "feature length mismatch",
+        ),
+        (
+            {
+                "schema_version": 2,
+                "runtime": "deepstream_pose_inline",
+                "feature_names": ["a"],
+                "feature_vector": [1.0],
+                "frame_feature_names": list(FRAME_FEATURE_NAMES),
+                "frame_records": [],
+            },
+            "invalid frame_records",
+        ),
+    ],
+)
+def test_label_feature_capture_records_rejects_invalid_records(
+    capture,
+    expected_error,
+) -> None:
+    labeled, errors = replay._label_feature_capture_records(
+        [capture],
+        {
+            "video_path": "/dataset/scene-001.mp4",
+            "scene_id": "scene-001",
+            "group_id": "subject-001",
+            "is_fall": False,
+        },
+    )
+
+    assert labeled == []
+    assert expected_error in errors[0]
 
 
 def test_default_rtsp_input_path_is_separate_from_sample_eval_output():
@@ -21,6 +177,142 @@ def test_default_rtsp_input_path_is_separate_from_sample_eval_output():
         DEFAULT_CONTAINER_RTSP_URL
         == "rtsp://cctv-media-server:8554/sample_eval_input"
     )
+
+
+def test_recreate_ai_engine_passes_scoped_environment(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    calls = []
+    monkeypatch.setenv("UNCHANGED_ENV", "kept")
+    monkeypatch.setattr(
+        replay.subprocess,
+        "run",
+        lambda command, **kwargs: calls.append((command, kwargs)),
+    )
+
+    replay._recreate_ai_engine(
+        tmp_path / "docker-compose.jetson.yml",
+        tmp_path / ".env",
+        environment_overrides={
+            "FALLDATA_AUX_INLINE_FEATURE_CAPTURE_PATH":
+                "/app/data/fall_eval/capture.jsonl",
+            "FALLDATA_AUX_COMPARE_MODEL_PATH":
+                "/app/models/candidate.joblib",
+        },
+    )
+
+    command, kwargs = calls[0]
+    assert command[-4:] == [
+        "up",
+        "-d",
+        "--force-recreate",
+        "cctv-ai-engine",
+    ]
+    assert kwargs["check"] is True
+    assert kwargs["env"]["UNCHANGED_ENV"] == "kept"
+    assert (
+        kwargs["env"]["FALLDATA_AUX_INLINE_FEATURE_CAPTURE_PATH"]
+        == "/app/data/fall_eval/capture.jsonl"
+    )
+    assert (
+        kwargs["env"]["FALLDATA_AUX_COMPARE_MODEL_PATH"]
+        == "/app/models/candidate.joblib"
+    )
+
+
+def test_resolve_project_container_path_maps_relative_path(tmp_path) -> None:
+    host_path, container_path = replay._resolve_project_container_path(
+        Path("data/fall_eval/capture.jsonl"),
+        host_project_root=tmp_path,
+        container_project_root=Path("/app"),
+    )
+
+    assert host_path == tmp_path / "data/fall_eval/capture.jsonl"
+    assert container_path == Path("/app/data/fall_eval/capture.jsonl")
+
+
+def test_resolve_project_container_path_rejects_outside_project(
+    tmp_path,
+) -> None:
+    with pytest.raises(ValueError, match="project root"):
+        replay._resolve_project_container_path(
+            tmp_path.parent / "outside.jsonl",
+            host_project_root=tmp_path,
+            container_project_root=Path("/app"),
+        )
+
+
+def test_main_parses_feature_capture_and_candidate_model_arguments(
+    monkeypatch,
+) -> None:
+    captured_args = []
+    monkeypatch.setattr(replay, "evaluate", lambda args: captured_args.append(args) or [])
+    monkeypatch.setattr(
+        replay.sys,
+        "argv",
+        [
+            "evaluate_sample_deepstream_replay.py",
+            "--feature-capture-log",
+            "data/fall_eval/capture.jsonl",
+            "--feature-dataset-jsonl",
+            "data/fall_eval/dataset.jsonl",
+            "--runtime-compare-model-path",
+            "models/falldata/candidate.joblib",
+            "--scene-position",
+            "복도",
+            "--prepare-only",
+        ],
+    )
+
+    assert replay.main() == 0
+    [args] = captured_args
+    assert args.feature_capture_log == Path(
+        "data/fall_eval/capture.jsonl"
+    )
+    assert args.feature_dataset_jsonl == Path(
+        "data/fall_eval/dataset.jsonl"
+    )
+    assert args.runtime_compare_model_path == Path(
+        "models/falldata/candidate.joblib"
+    )
+    assert args.scene_position == "복도"
+
+
+def test_filter_manifest_rows_applies_label_position_and_limit() -> None:
+    rows = [
+        {
+            "scene_id": "room-normal",
+            "label": "not_fall",
+            "scene_position": "병실",
+        },
+        {
+            "scene_id": "corridor-normal-1",
+            "label": "not_fall",
+            "scene_position": "복도",
+        },
+        {
+            "scene_id": "corridor-fall",
+            "label": "fall",
+            "scene_position": "복도",
+        },
+        {
+            "scene_id": "corridor-normal-2",
+            "label": "not_fall",
+            "scene_position": "복도",
+        },
+    ]
+
+    filtered = replay._filter_manifest_rows(
+        rows,
+        label="not_fall",
+        scene_position="복도",
+        max_videos=1,
+    )
+
+    assert [row["scene_id"] for row in filtered] == [
+        "corridor-normal-1"
+    ]
 
 
 def test_rtsp_replay_starts_publisher_before_restarting_ai_engine(tmp_path, monkeypatch):
@@ -99,6 +391,272 @@ def test_rtsp_replay_starts_publisher_before_restarting_ai_engine(tmp_path, monk
     replay.evaluate(args)
 
     assert call_order == ["publisher_started", "restart", "publisher_waited"]
+
+
+def test_file_replay_restores_camera_config_when_initial_restart_fails(
+    tmp_path,
+    monkeypatch,
+):
+    video_path = tmp_path / "sample.mp4"
+    video_path.write_bytes(b"video")
+    manifest_path = tmp_path / "manifest.jsonl"
+    manifest_path.write_text(
+        json.dumps(
+            {
+                "scene_id": "scene-1",
+                "video_path": str(video_path),
+                "label": "fall",
+                "is_fall": True,
+                "scene_length": 30,
+                "camera": 1,
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    backup_path = tmp_path / "cameras.backup.json"
+    backup_path.write_text("{}", encoding="utf-8")
+    copied = []
+    restart_count = 0
+
+    monkeypatch.setattr(replay, "_apply_camera_config", lambda *args: backup_path)
+
+    def fail_first_restart(*args):
+        nonlocal restart_count
+        restart_count += 1
+        if restart_count == 1:
+            raise RuntimeError("restart failed")
+
+    monkeypatch.setattr(replay, "_restart_ai_engine", fail_first_restart)
+    monkeypatch.setattr(
+        replay.shutil,
+        "copy2",
+        lambda source, destination: copied.append((source, destination)),
+    )
+
+    args = SimpleNamespace(
+        manifest=manifest_path,
+        label=None,
+        max_videos=1,
+        source_mode="file",
+        container_project_root=Path("/app"),
+        container_rtsp_url="rtsp://cctv-media-server:8554/sample_eval",
+        host_rtsp_url="rtsp://localhost:8554/sample_eval",
+        eval_cameras_json=tmp_path / "eval-cameras.json",
+        camera_id="sample_eval",
+        compose_env_file=tmp_path / ".env",
+        review_log=tmp_path / "review.jsonl",
+        prepare_only=False,
+        apply_camera_config=True,
+        cameras_json=tmp_path / "cameras.json",
+        restart_ai_engine=True,
+        compose_file=tmp_path / "compose.yml",
+        restart_wait_seconds=0.0,
+        assumed_fps=30.0,
+        shadow_wait_seconds=0.0,
+        timeout_grace_seconds=1.0,
+        results_jsonl=tmp_path / "results.jsonl",
+        results_csv=tmp_path / "results.csv",
+        restore_camera_config=True,
+    )
+
+    with pytest.raises(RuntimeError, match="restart failed"):
+        replay.evaluate(args)
+
+    assert (backup_path, args.cameras_json) in copied
+
+
+def test_feature_capture_labels_new_records_and_restores_runtime(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    video_path = tmp_path / "sample.mp4"
+    video_path.write_bytes(b"video")
+    manifest_path = tmp_path / "manifest.jsonl"
+    manifest_path.write_text(
+        json.dumps(
+            {
+                "scene_id": "scene-1",
+                "group_id": "subject-1",
+                "video_path": str(video_path),
+                "label": "not_fall",
+                "is_fall": False,
+                "scene_length": 30,
+                "camera": 1,
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    backup_path = tmp_path / "cameras.backup.json"
+    backup_path.write_text("{}", encoding="utf-8")
+    capture_path = tmp_path / "data/fall_eval/capture.jsonl"
+    dataset_path = tmp_path / "data/fall_eval/dataset.jsonl"
+    recreate_calls = []
+
+    def fake_restart(*_args):
+        capture_path.parent.mkdir(parents=True, exist_ok=True)
+        capture_path.write_text(
+            json.dumps(
+                {
+                    "schema_version": 1,
+                    "runtime": "deepstream_pose_inline",
+                    "camera_id": "sample_eval",
+                    "feature_names": ["a", "b"],
+                    "feature_vector": [0.1, 0.2],
+                }
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+
+    monkeypatch.setattr(replay, "_apply_camera_config", lambda *_args: backup_path)
+    monkeypatch.setattr(replay, "_restart_ai_engine", fake_restart)
+    monkeypatch.setattr(
+        replay,
+        "_recreate_ai_engine",
+        lambda *_args, **kwargs: recreate_calls.append(
+            kwargs.get("environment_overrides")
+        ),
+    )
+    monkeypatch.setattr(replay, "_video_duration_seconds", lambda *_args: 0.1)
+    monkeypatch.setattr(replay.time, "sleep", lambda *_args: None)
+    monkeypatch.setattr(replay.shutil, "copy2", lambda *_args: None)
+
+    args = SimpleNamespace(
+        manifest=manifest_path,
+        label=None,
+        max_videos=1,
+        source_mode="file",
+        container_project_root=Path("/app"),
+        container_rtsp_url="rtsp://cctv-media-server:8554/sample_eval",
+        host_rtsp_url="rtsp://localhost:8554/sample_eval",
+        eval_cameras_json=tmp_path / "eval-cameras.json",
+        camera_id="sample_eval",
+        compose_env_file=tmp_path / ".env",
+        review_log=tmp_path / "review.jsonl",
+        prepare_only=False,
+        apply_camera_config=True,
+        cameras_json=tmp_path / "cameras.json",
+        restart_ai_engine=True,
+        compose_file=tmp_path / "docker-compose.jetson.yml",
+        restart_wait_seconds=0.0,
+        assumed_fps=30.0,
+        shadow_wait_seconds=0.0,
+        timeout_grace_seconds=1.0,
+        score_source="inline_pose_rf",
+        runtime_result_timeout_seconds=0.0,
+        runtime_result_poll_seconds=0.1,
+        results_jsonl=tmp_path / "results.jsonl",
+        results_csv=tmp_path / "results.csv",
+        restore_camera_config=True,
+        feature_capture_log=Path("data/fall_eval/capture.jsonl"),
+        feature_dataset_jsonl=Path("data/fall_eval/dataset.jsonl"),
+        runtime_compare_model_path=None,
+    )
+
+    [result] = replay.evaluate(args)
+
+    [dataset_record] = replay._read_jsonl(dataset_path)
+    assert dataset_record["scene_id"] == "scene-1"
+    assert dataset_record["group_id"] == "subject-1"
+    assert dataset_record["label"] == 0
+    assert result["feature_capture_record_count"] == 1
+    assert result["feature_capture_errors"] == []
+    assert recreate_calls == [
+        {
+            "FALLDATA_AUX_INLINE_FEATURE_CAPTURE_PATH":
+                "/app/data/fall_eval/capture.jsonl",
+        },
+        None,
+    ]
+
+
+def test_feature_capture_restores_runtime_when_replay_fails(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    video_path = tmp_path / "sample.mp4"
+    video_path.write_bytes(b"video")
+    manifest_path = tmp_path / "manifest.jsonl"
+    manifest_path.write_text(
+        json.dumps(
+            {
+                "scene_id": "scene-1",
+                "group_id": "subject-1",
+                "video_path": str(video_path),
+                "label": "fall",
+                "is_fall": True,
+                "scene_length": 30,
+                "camera": 1,
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    backup_path = tmp_path / "cameras.backup.json"
+    backup_path.write_text("{}", encoding="utf-8")
+    recreate_calls = []
+
+    monkeypatch.setattr(replay, "_apply_camera_config", lambda *_args: backup_path)
+    monkeypatch.setattr(
+        replay,
+        "_restart_ai_engine",
+        lambda *_args: (_ for _ in ()).throw(RuntimeError("restart failed")),
+    )
+    monkeypatch.setattr(
+        replay,
+        "_recreate_ai_engine",
+        lambda *_args, **kwargs: recreate_calls.append(
+            kwargs.get("environment_overrides")
+        ),
+    )
+    monkeypatch.setattr(replay, "_video_duration_seconds", lambda *_args: 0.1)
+    monkeypatch.setattr(replay.time, "sleep", lambda *_args: None)
+    monkeypatch.setattr(replay.shutil, "copy2", lambda *_args: None)
+
+    args = SimpleNamespace(
+        manifest=manifest_path,
+        label=None,
+        max_videos=1,
+        source_mode="file",
+        container_project_root=Path("/app"),
+        container_rtsp_url="rtsp://cctv-media-server:8554/sample_eval",
+        host_rtsp_url="rtsp://localhost:8554/sample_eval",
+        eval_cameras_json=tmp_path / "eval-cameras.json",
+        camera_id="sample_eval",
+        compose_env_file=tmp_path / ".env",
+        review_log=tmp_path / "review.jsonl",
+        prepare_only=False,
+        apply_camera_config=True,
+        cameras_json=tmp_path / "cameras.json",
+        restart_ai_engine=True,
+        compose_file=tmp_path / "docker-compose.jetson.yml",
+        restart_wait_seconds=0.0,
+        assumed_fps=30.0,
+        shadow_wait_seconds=0.0,
+        timeout_grace_seconds=1.0,
+        score_source="inline_pose_rf",
+        runtime_result_timeout_seconds=0.0,
+        runtime_result_poll_seconds=0.1,
+        results_jsonl=tmp_path / "results.jsonl",
+        results_csv=tmp_path / "results.csv",
+        restore_camera_config=True,
+        feature_capture_log=Path("data/fall_eval/capture.jsonl"),
+        feature_dataset_jsonl=Path("data/fall_eval/dataset.jsonl"),
+        runtime_compare_model_path=None,
+    )
+
+    with pytest.raises(RuntimeError, match="restart failed"):
+        replay.evaluate(args)
+
+    assert recreate_calls == [
+        {
+            "FALLDATA_AUX_INLINE_FEATURE_CAPTURE_PATH":
+                "/app/data/fall_eval/capture.jsonl",
+        },
+        None,
+    ]
 
 
 def test_ffmpeg_replay_publishes_rtsp_over_tcp(tmp_path, monkeypatch):
@@ -233,6 +791,115 @@ def test_summarize_shadow_records_reports_confirmed_probability():
     assert summary["confirmed_shadow_record_count"] == 1
     assert summary["aux_published_shadow_record_count"] == 1
     assert summary["max_fall_probability"] == 0.88
+
+
+def test_summarize_shadow_records_reports_inline_pose_rf_normal_probability():
+    records = [
+        {
+            "camera_id": "sample_eval",
+            "falldata_aux": {
+                "status": "ok",
+                "runtime": "deepstream_pose_inline",
+                "confirmed": False,
+                "fall_probability": 0.42,
+                "threshold": 0.7,
+            },
+        },
+        {
+            "camera_id": "sample_eval",
+            "falldata_aux": {
+                "status": "insufficient_pose_records",
+                "runtime": "deepstream_pose_inline",
+                "confirmed": False,
+            },
+        },
+    ]
+
+    summary = _summarize_shadow_records(records, "sample_eval")
+
+    assert summary["inline_pose_rf_record_count"] == 1
+    assert summary["inline_pose_rf_confirmed_record_count"] == 0
+    assert summary["detected_by_inline_pose_rf"] is False
+    assert summary["max_inline_pose_rf_probability"] == 0.42
+
+
+def test_score_runtime_result_does_not_treat_missing_inline_result_as_negative():
+    assert replay._score_runtime_result(True, False, evaluated=False) == "NO_RESULT"
+    assert replay._score_runtime_result(False, False, evaluated=False) == "NO_RESULT"
+    assert replay._score_runtime_result(True, True, evaluated=True) == "TP"
+    assert replay._score_runtime_result(False, False, evaluated=True) == "TN"
+
+
+def test_select_runtime_detection_requires_an_inline_pose_rf_record():
+    no_result = replay._select_runtime_detection(
+        {
+            "detected": True,
+            "detected_by_inline_pose_rf": False,
+            "inline_pose_rf_record_count": 0,
+        },
+        "inline_pose_rf",
+    )
+    normal_result = replay._select_runtime_detection(
+        {
+            "detected": True,
+            "detected_by_inline_pose_rf": False,
+            "inline_pose_rf_record_count": 1,
+        },
+        "inline_pose_rf",
+    )
+
+    assert no_result == (False, False)
+    assert normal_result == (False, True)
+
+
+def test_read_runtime_records_waits_for_valid_inline_pose_rf_result(
+    tmp_path,
+    monkeypatch,
+):
+    insufficient = [
+        {
+            "camera_id": "sample_eval",
+            "falldata_aux": {
+                "status": "insufficient_pose_records",
+                "runtime": "deepstream_pose_inline",
+            },
+        }
+    ]
+    valid = insufficient + [
+        {
+            "camera_id": "sample_eval",
+            "falldata_aux": {
+                "status": "ok",
+                "runtime": "deepstream_pose_inline",
+                "confirmed": False,
+                "fall_probability": 0.3,
+            },
+        }
+    ]
+    reads = iter([insufficient, valid])
+    monkeypatch.setattr(
+        replay,
+        "_read_new_jsonl_records",
+        lambda *args: next(reads),
+    )
+    monotonic_values = iter([0.0, 0.0, 1.0])
+    monkeypatch.setattr(
+        replay.time,
+        "monotonic",
+        lambda: next(monotonic_values),
+    )
+    monkeypatch.setattr(replay.time, "sleep", lambda *args: None)
+
+    records = replay._read_runtime_records(
+        tmp_path / "review.jsonl",
+        0,
+        "sample_eval",
+        score_source="inline_pose_rf",
+        timeout_seconds=5.0,
+        poll_seconds=1.0,
+    )
+
+    assert records == valid
 
 
 def test_summarize_shadow_records_reports_fall_event_even_when_aux_errors():

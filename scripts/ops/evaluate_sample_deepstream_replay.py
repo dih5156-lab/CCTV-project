@@ -87,6 +87,27 @@ def _host_path_from_container_path(path: str, container_project_root: Path) -> P
     return Path(relative)
 
 
+def _resolve_project_container_path(
+    path: Path,
+    *,
+    host_project_root: Path,
+    container_project_root: Path,
+) -> tuple[Path, Path]:
+    resolved_project_root = host_project_root.resolve()
+    resolved_host_path = (
+        path.resolve()
+        if path.is_absolute()
+        else (resolved_project_root / path).resolve()
+    )
+    try:
+        relative_path = resolved_host_path.relative_to(resolved_project_root)
+    except ValueError as exc:
+        raise ValueError(
+            f"path must be inside project root: {resolved_host_path}"
+        ) from exc
+    return resolved_host_path, container_project_root / relative_path
+
+
 def _resolve_review_log_path(
     requested_path: Path,
     env_values: dict[str, str],
@@ -116,6 +137,27 @@ def _read_jsonl(path: Path) -> list[dict[str, Any]]:
     return rows
 
 
+def _filter_manifest_rows(
+    rows: list[dict[str, Any]],
+    *,
+    label: str | None,
+    scene_position: str | None,
+    max_videos: int,
+) -> list[dict[str, Any]]:
+    filtered = rows
+    if label:
+        filtered = [row for row in filtered if row.get("label") == label]
+    if scene_position:
+        filtered = [
+            row
+            for row in filtered
+            if row.get("scene_position") == scene_position
+        ]
+    if max_videos:
+        filtered = filtered[:max_videos]
+    return filtered
+
+
 def _read_new_jsonl_records(path: Path, offset: int) -> list[dict[str, Any]]:
     if not path.exists():
         return []
@@ -132,6 +174,103 @@ def _read_new_jsonl_records(path: Path, offset: int) -> list[dict[str, Any]]:
         except json.JSONDecodeError:
             continue
     return rows
+
+
+def _label_feature_capture_records(
+    records: list[dict[str, Any]],
+    manifest_row: dict[str, Any],
+) -> tuple[list[dict[str, Any]], list[str]]:
+    group_id = manifest_row.get("group_id") or manifest_row.get("scene_group")
+    if not group_id:
+        return [], ["manifest: missing group_id or scene_group"]
+    labeled: list[dict[str, Any]] = []
+    errors: list[str] = []
+    for index, record in enumerate(records):
+        feature_names = record.get("feature_names")
+        feature_vector = record.get("feature_vector")
+        schema_version = int(record.get("schema_version") or 1)
+        if schema_version not in {1, 2}:
+            errors.append(f"record {index}: unsupported schema_version")
+            continue
+        if record.get("runtime") != "deepstream_pose_inline":
+            errors.append(f"record {index}: unexpected runtime")
+            continue
+        if not isinstance(feature_names, list) or not isinstance(
+            feature_vector,
+            list,
+        ):
+            errors.append(f"record {index}: features must be lists")
+            continue
+        if len(feature_names) != len(feature_vector):
+            errors.append(f"record {index}: feature length mismatch")
+            continue
+        if schema_version == 2:
+            frame_records = record.get("frame_records")
+            if not isinstance(frame_records, list) or not frame_records:
+                errors.append(f"record {index}: invalid frame_records")
+                continue
+            if not isinstance(record.get("frame_feature_names"), list):
+                errors.append(f"record {index}: invalid frame_feature_names")
+                continue
+
+        output = dict(record)
+        output.update(
+            {
+                "label": 1 if bool(manifest_row["is_fall"]) else 0,
+                "is_fall": bool(manifest_row["is_fall"]),
+                "scene_id": str(manifest_row["scene_id"]),
+                "group_id": str(group_id),
+                "video_path": str(manifest_row["video_path"]),
+            }
+        )
+        for metadata_name in (
+            "split_source",
+            "fall_start_frame",
+            "fall_end_frame",
+            "scene_position",
+            "scene_location",
+            "age_group",
+            "fall_direction",
+        ):
+            if metadata_name in manifest_row:
+                output[metadata_name] = manifest_row[metadata_name]
+        labeled.append(output)
+    return labeled, errors
+
+
+def _has_inline_pose_rf_result(
+    records: list[dict[str, Any]],
+    camera_id: str,
+) -> bool:
+    return any(
+        str(row.get("camera_id")) == camera_id
+        and isinstance(row.get("falldata_aux"), dict)
+        and row["falldata_aux"].get("status") == "ok"
+        and row["falldata_aux"].get("runtime") == "deepstream_pose_inline"
+        for row in records
+    )
+
+
+def _read_runtime_records(
+    path: Path,
+    offset: int,
+    camera_id: str,
+    *,
+    score_source: str,
+    timeout_seconds: float,
+    poll_seconds: float,
+) -> list[dict[str, Any]]:
+    records = _read_new_jsonl_records(path, offset)
+    if score_source != "inline_pose_rf" or timeout_seconds <= 0:
+        return records
+    deadline = time.monotonic() + timeout_seconds
+    while (
+        not _has_inline_pose_rf_result(records, camera_id)
+        and time.monotonic() < deadline
+    ):
+        time.sleep(max(poll_seconds, 0.1))
+        records = _read_new_jsonl_records(path, offset)
+    return records
 
 
 def _write_jsonl(rows: Iterable[dict[str, Any]], path: Path) -> None:
@@ -221,6 +360,30 @@ def _restart_ai_engine(compose_file: Path, compose_env_file: Path | None = None)
     subprocess.run(command, check=True)
 
 
+def _recreate_ai_engine(
+    compose_file: Path,
+    compose_env_file: Path | None = None,
+    *,
+    environment_overrides: dict[str, str] | None = None,
+) -> None:
+    command = ["docker", "compose"]
+    if compose_env_file:
+        command.extend(["--env-file", str(compose_env_file)])
+    command.extend(
+        [
+            "-f",
+            str(compose_file),
+            "up",
+            "-d",
+            "--force-recreate",
+            "cctv-ai-engine",
+        ]
+    )
+    environment = os.environ.copy()
+    environment.update(environment_overrides or {})
+    subprocess.run(command, check=True, env=environment)
+
+
 def _run_ffmpeg_replay(
     video_path: Path,
     rtsp_url: str,
@@ -275,6 +438,23 @@ def _container_file_uri(video_path: Path, container_project_root: Path) -> str:
     return f"file://{container_project_root / video_path.as_posix()}"
 
 
+def _resolve_video_paths(
+    video_path: Path,
+    *,
+    dataset_host_root: Path | None,
+) -> tuple[Path, Path]:
+    """Return host path for probing and container path for DeepStream."""
+    container_dataset_root = Path("/app/낙상학습데이터")
+    if dataset_host_root is not None:
+        if video_path.is_relative_to(container_dataset_root):
+            relative = video_path.relative_to(container_dataset_root)
+            return dataset_host_root / relative, video_path
+        if video_path.is_relative_to(dataset_host_root):
+            relative = video_path.relative_to(dataset_host_root)
+            return video_path, container_dataset_root / relative
+    return video_path, video_path
+
+
 def _score_result(expected_fall: bool, detected: bool) -> str:
     if expected_fall and detected:
         return "TP"
@@ -283,6 +463,27 @@ def _score_result(expected_fall: bool, detected: bool) -> str:
     if not expected_fall and detected:
         return "FP"
     return "TN"
+
+
+def _score_runtime_result(
+    expected_fall: bool,
+    detected: bool,
+    *,
+    evaluated: bool,
+) -> str:
+    if not evaluated:
+        return "NO_RESULT"
+    return _score_result(expected_fall, detected)
+
+
+def _select_runtime_detection(
+    summary: dict[str, Any],
+    score_source: str,
+) -> tuple[bool, bool]:
+    if score_source == "inline_pose_rf":
+        evaluated = int(summary.get("inline_pose_rf_record_count") or 0) > 0
+        return bool(summary.get("detected_by_inline_pose_rf")), evaluated
+    return bool(summary.get("detected")), True
 
 
 def _compare_vetoes_record(
@@ -369,6 +570,27 @@ def _summarize_shadow_records(
     numeric_compare_probs = [
         float(value) for value in compare_probabilities if isinstance(value, (int, float))
     ]
+    inline_pose_rf_records = [
+        row
+        for row in camera_records
+        if isinstance(row.get("falldata_aux"), dict)
+        and row["falldata_aux"].get("status") == "ok"
+        and row["falldata_aux"].get("runtime") == "deepstream_pose_inline"
+    ]
+    inline_pose_rf_confirmed_records = [
+        row
+        for row in inline_pose_rf_records
+        if row["falldata_aux"].get("confirmed") is True
+    ]
+    inline_pose_rf_probabilities = [
+        row["falldata_aux"].get("fall_probability")
+        for row in inline_pose_rf_records
+    ]
+    numeric_inline_pose_rf_probabilities = [
+        float(value)
+        for value in inline_pose_rf_probabilities
+        if isinstance(value, (int, float))
+    ]
     fall_scores = [
         row.get("fall_score")
         for row in fall_event_records
@@ -400,6 +622,7 @@ def _summarize_shadow_records(
         "detected_by_event": detected_by_event,
         "detected_by_aux": detected_by_aux,
         "detected_by_compare_aux": detected_by_compare_aux,
+        "detected_by_inline_pose_rf": bool(inline_pose_rf_confirmed_records),
         "shadow_record_count": len(camera_records),
         "fall_event_count": len(immediate_fall_event_records),
         "fall_candidate_count": len(fall_event_records),
@@ -407,6 +630,10 @@ def _summarize_shadow_records(
         "aux_published_shadow_record_count": len(aux_published_records),
         "compare_model_record_count": len(compare_records),
         "compare_confirmed_shadow_record_count": len(compare_confirmed_records),
+        "inline_pose_rf_record_count": len(inline_pose_rf_records),
+        "inline_pose_rf_confirmed_record_count": len(
+            inline_pose_rf_confirmed_records
+        ),
         "near_miss_record_count": len(near_miss_records),
         "near_miss_types": near_miss_types,
         "max_fall_score": max(fall_scores) if fall_scores else None,
@@ -414,6 +641,11 @@ def _summarize_shadow_records(
         "max_fall_probability": max(numeric_probs) if numeric_probs else None,
         "max_compare_fall_probability": (
             max(numeric_compare_probs) if numeric_compare_probs else None
+        ),
+        "max_inline_pose_rf_probability": (
+            max(numeric_inline_pose_rf_probabilities)
+            if numeric_inline_pose_rf_probabilities
+            else None
         ),
         "last_shadow_status": (
             camera_records[-1].get("falldata_aux", {}).get("status")
@@ -431,11 +663,12 @@ def _summarize_shadow_records(
 
 
 def evaluate(args: argparse.Namespace) -> list[dict[str, Any]]:
-    rows = _read_jsonl(args.manifest)
-    if args.label:
-        rows = [row for row in rows if row.get("label") == args.label]
-    if args.max_videos:
-        rows = rows[: args.max_videos]
+    rows = _filter_manifest_rows(
+        _read_jsonl(args.manifest),
+        label=args.label,
+        scene_position=getattr(args, "scene_position", None),
+        max_videos=args.max_videos,
+    )
 
     initial_source = (
         _container_file_uri(Path(rows[0]["video_path"]), args.container_project_root)
@@ -445,6 +678,63 @@ def evaluate(args: argparse.Namespace) -> list[dict[str, Any]]:
     _write_eval_cameras(args.eval_cameras_json, args.camera_id, initial_source)
     print(f"eval cameras: {args.eval_cameras_json}")
     env_values = _read_env_file_values(args.compose_env_file)
+    feature_capture_requested = getattr(args, "feature_capture_log", None)
+    feature_dataset_requested = getattr(args, "feature_dataset_jsonl", None)
+    if bool(feature_capture_requested) != bool(feature_dataset_requested):
+        raise ValueError(
+            "--feature-capture-log and --feature-dataset-jsonl "
+            "must be provided together"
+        )
+
+    host_project_root = args.compose_file.resolve().parent
+    feature_capture_log: Path | None = None
+    feature_dataset_jsonl: Path | None = None
+    feature_dataset_rows: list[dict[str, Any]] = []
+    runtime_overrides: dict[str, str] = {}
+    if feature_capture_requested:
+        feature_capture_log, container_capture_log = (
+            _resolve_project_container_path(
+                Path(feature_capture_requested),
+                host_project_root=host_project_root,
+                container_project_root=args.container_project_root,
+            )
+        )
+        feature_dataset_jsonl, _ = _resolve_project_container_path(
+            Path(feature_dataset_requested),
+            host_project_root=host_project_root,
+            container_project_root=args.container_project_root,
+        )
+        runtime_overrides["FALLDATA_AUX_INLINE_FEATURE_CAPTURE_PATH"] = str(
+            container_capture_log
+        )
+
+    runtime_compare_model_path = getattr(
+        args,
+        "runtime_compare_model_path",
+        None,
+    )
+    if runtime_compare_model_path:
+        host_model_path, container_model_path = _resolve_project_container_path(
+            Path(runtime_compare_model_path),
+            host_project_root=host_project_root,
+            container_project_root=args.container_project_root,
+        )
+        if not host_model_path.is_file():
+            raise ValueError(f"candidate model does not exist: {host_model_path}")
+        runtime_overrides["FALLDATA_AUX_COMPARE_MODEL_PATH"] = str(
+            container_model_path
+        )
+
+    if runtime_overrides and (
+        not args.apply_camera_config or not args.restart_ai_engine
+    ):
+        raise ValueError(
+            "runtime capture/model overrides require "
+            "--apply-camera-config and --restart-ai-engine"
+        )
+
+    dataset_host_root_raw = env_values.get("FALL_DATASET_HOST_PATH", "").strip()
+    dataset_host_root = Path(dataset_host_root_raw) if dataset_host_root_raw else None
     args.review_log = _resolve_review_log_path(
         args.review_log,
         env_values,
@@ -471,22 +761,38 @@ def evaluate(args: argparse.Namespace) -> list[dict[str, Any]]:
     if args.prepare_only:
         return []
 
-    if args.apply_camera_config:
-        backup = _apply_camera_config(args.eval_cameras_json, args.cameras_json)
-        print(f"applied camera config: {args.cameras_json} (backup: {backup})")
-        if args.restart_ai_engine and args.source_mode == "file":
-            _restart_ai_engine(args.compose_file, args.compose_env_file)
-            time.sleep(args.restart_wait_seconds)
-
     results: list[dict[str, Any]] = []
     try:
+        if args.apply_camera_config:
+            backup = _apply_camera_config(args.eval_cameras_json, args.cameras_json)
+            print(f"applied camera config: {args.cameras_json} (backup: {backup})")
+            if args.restart_ai_engine and args.source_mode == "file":
+                if runtime_overrides:
+                    _recreate_ai_engine(
+                        args.compose_file,
+                        args.compose_env_file,
+                        environment_overrides=runtime_overrides,
+                    )
+                else:
+                    _restart_ai_engine(args.compose_file, args.compose_env_file)
+                time.sleep(args.restart_wait_seconds)
+
         for idx, row in enumerate(rows, start=1):
-            video_path = Path(row["video_path"])
+            manifest_video_path = Path(row["video_path"])
+            video_path, container_video_path = _resolve_video_paths(
+                manifest_video_path,
+                dataset_host_root=dataset_host_root,
+            )
             if not video_path.exists():
                 print(f"[{idx}/{len(rows)}] missing video: {video_path}", file=sys.stderr)
                 continue
 
             offset = args.review_log.stat().st_size if args.review_log.exists() else 0
+            feature_capture_offset = (
+                feature_capture_log.stat().st_size
+                if feature_capture_log is not None and feature_capture_log.exists()
+                else 0
+            )
             duration = _video_duration_seconds(
                 video_path,
                 int(row.get("scene_length") or 0),
@@ -497,7 +803,7 @@ def evaluate(args: argparse.Namespace) -> list[dict[str, Any]]:
                 _write_eval_cameras(
                     args.eval_cameras_json,
                     args.camera_id,
-                    _container_file_uri(video_path, args.container_project_root),
+                    _container_file_uri(container_video_path, args.container_project_root),
                 )
                 if args.apply_camera_config:
                     shutil.copy2(args.eval_cameras_json, args.cameras_json)
@@ -521,7 +827,23 @@ def evaluate(args: argparse.Namespace) -> list[dict[str, Any]]:
                     on_started=on_publisher_started,
                 )
                 time.sleep(args.shadow_wait_seconds)
-            new_records = _read_new_jsonl_records(args.review_log, offset)
+            score_source = getattr(args, "score_source", "overall")
+            new_records = _read_runtime_records(
+                args.review_log,
+                offset,
+                args.camera_id,
+                score_source=score_source,
+                timeout_seconds=getattr(
+                    args,
+                    "runtime_result_timeout_seconds",
+                    0.0,
+                ),
+                poll_seconds=getattr(
+                    args,
+                    "runtime_result_poll_seconds",
+                    1.0,
+                ),
+            )
             shadow = _summarize_shadow_records(
                 new_records,
                 args.camera_id,
@@ -529,13 +851,38 @@ def evaluate(args: argparse.Namespace) -> list[dict[str, Any]]:
                 compare_veto_min_fall_score=compare_veto_min_fall_score,
             )
             expected_fall = bool(row.get("is_fall"))
+            detected, evaluated = _select_runtime_detection(shadow, score_source)
+            feature_capture_errors: list[str] = []
+            captured_feature_records: list[dict[str, Any]] = []
+            if feature_capture_log is not None:
+                raw_capture_records = _read_new_jsonl_records(
+                    feature_capture_log,
+                    feature_capture_offset,
+                )
+                (
+                    captured_feature_records,
+                    feature_capture_errors,
+                ) = _label_feature_capture_records(raw_capture_records, row)
+                feature_dataset_rows.extend(captured_feature_records)
+                if feature_dataset_jsonl is not None:
+                    _write_jsonl(feature_dataset_rows, feature_dataset_jsonl)
+                if not captured_feature_records:
+                    detected = False
+                    evaluated = False
             result = {
                 "scene_id": row.get("scene_id"),
                 "video_path": row.get("video_path"),
                 "label": row.get("label"),
                 "expected_fall": expected_fall,
-                "detected": shadow["detected"],
-                "result": _score_result(expected_fall, shadow["detected"]),
+                "score_source": score_source,
+                "evaluated": evaluated,
+                "detected": detected,
+                "overall_detected": shadow["detected"],
+                "result": _score_runtime_result(
+                    expected_fall,
+                    detected,
+                    evaluated=evaluated,
+                ),
                 "fall_start_frame": row.get("fall_start_frame"),
                 "fall_end_frame": row.get("fall_end_frame"),
                 "scene_length": row.get("scene_length"),
@@ -556,12 +903,28 @@ def evaluate(args: argparse.Namespace) -> list[dict[str, Any]]:
                 "detected_by_event": shadow["detected_by_event"],
                 "detected_by_aux": shadow["detected_by_aux"],
                 "detected_by_compare_aux": shadow["detected_by_compare_aux"],
+                "detected_by_inline_pose_rf": shadow[
+                    "detected_by_inline_pose_rf"
+                ],
                 "max_fall_score": shadow["max_fall_score"],
                 "max_near_miss_score": shadow["max_near_miss_score"],
                 "max_fall_probability": shadow["max_fall_probability"],
                 "max_compare_fall_probability": shadow["max_compare_fall_probability"],
+                "inline_pose_rf_record_count": shadow[
+                    "inline_pose_rf_record_count"
+                ],
+                "inline_pose_rf_confirmed_record_count": shadow[
+                    "inline_pose_rf_confirmed_record_count"
+                ],
+                "max_inline_pose_rf_probability": shadow[
+                    "max_inline_pose_rf_probability"
+                ],
                 "last_shadow_status": shadow["last_shadow_status"],
                 "last_compare_status": shadow["last_compare_status"],
+                "feature_capture_record_count": len(
+                    captured_feature_records
+                ),
+                "feature_capture_errors": feature_capture_errors,
                 "evaluated_at": datetime.now(timezone.utc).isoformat(),
             }
             results.append(result)
@@ -580,13 +943,19 @@ def evaluate(args: argparse.Namespace) -> list[dict[str, Any]]:
             shutil.copy2(backup, args.cameras_json)
             print(f"restored camera config from: {backup}")
             if args.restart_ai_engine:
-                _restart_ai_engine(args.compose_file, args.compose_env_file)
+                if runtime_overrides:
+                    _recreate_ai_engine(
+                        args.compose_file,
+                        args.compose_env_file,
+                    )
+                else:
+                    _restart_ai_engine(args.compose_file, args.compose_env_file)
 
     return results
 
 
 def print_summary(results: list[dict[str, Any]]) -> None:
-    counts = {"TP": 0, "FN": 0, "FP": 0, "TN": 0}
+    counts = {"TP": 0, "FN": 0, "FP": 0, "TN": 0, "NO_RESULT": 0}
     for row in results:
         counts[row["result"]] += 1
     total = sum(counts.values())
@@ -594,6 +963,7 @@ def print_summary(results: list[dict[str, Any]]) -> None:
     recall = counts["TP"] / max(counts["TP"] + counts["FN"], 1)
     print(f"total: {total}")
     print(f"TP: {counts['TP']} FN: {counts['FN']} FP: {counts['FP']} TN: {counts['TN']}")
+    print(f"NO_RESULT: {counts['NO_RESULT']}")
     print(f"precision: {precision:.3f}")
     print(f"recall: {recall:.3f}")
 
@@ -614,11 +984,22 @@ def main() -> int:
     parser.add_argument("--container-project-root", type=Path, default=DEFAULT_CONTAINER_PROJECT_ROOT)
     parser.add_argument("--source-mode", choices=["file", "rtsp"], default="file")
     parser.add_argument("--label", choices=["fall", "not_fall"], default=None)
+    parser.add_argument("--scene-position")
+    parser.add_argument(
+        "--score-source",
+        choices=["overall", "inline_pose_rf"],
+        default="overall",
+    )
     parser.add_argument("--max-videos", type=int, default=0)
     parser.add_argument("--assumed-fps", type=float, default=30.0)
     parser.add_argument("--timeout-grace-seconds", type=float, default=8.0)
     parser.add_argument("--shadow-wait-seconds", type=float, default=3.0)
     parser.add_argument("--restart-wait-seconds", type=float, default=20.0)
+    parser.add_argument("--runtime-result-timeout-seconds", type=float, default=25.0)
+    parser.add_argument("--runtime-result-poll-seconds", type=float, default=1.0)
+    parser.add_argument("--feature-capture-log", type=Path)
+    parser.add_argument("--feature-dataset-jsonl", type=Path)
+    parser.add_argument("--runtime-compare-model-path", type=Path)
     parser.add_argument("--prepare-only", action="store_true")
     parser.add_argument("--apply-camera-config", action="store_true")
     parser.add_argument("--restart-ai-engine", action="store_true")
