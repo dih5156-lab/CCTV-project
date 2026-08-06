@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -79,6 +80,25 @@ class FallShadowReviewRecorder:
                 camera_name,
             )
             return None
+
+    def submit_shadow_window(
+        self,
+        queue: Queue,
+        camera_name: str,
+    ) -> bool:
+        """Queue a shadow-only verification for the current buffered window."""
+        if not self.falldata_aux or not self.falldata_aux.enabled:
+            return False
+        payload = {
+            "type": "fall_shadow_window",
+            "metadata": {"falldata_aux_shadow_window": True},
+        }
+        try:
+            queue.put_nowait((camera_name, payload))
+            return True
+        except Full:
+            logger.debug("[%s] falldata shadow window 큐 가득 참", camera_name)
+            return False
 
     def submit_near_miss_aux_work(
         self,
@@ -163,7 +183,7 @@ class FallShadowReviewRecorder:
         camera_name: str,
         event_payload: Dict[str, Any],
     ) -> tuple[Dict[str, Any], Dict[str, Any]]:
-        result = self.falldata_aux.verify()
+        result = self.falldata_aux.verify(camera_name=camera_name)
         record = self.write_record(camera_name, event_payload, result)
         return result, record
 

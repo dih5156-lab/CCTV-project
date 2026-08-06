@@ -43,7 +43,12 @@ class CommercialTensorRTFaceService:
                 TensorRTYuNetDetector(Path(model_dir) / "yunet_fp16.engine"),
                 TensorRTSFaceEmbedder(Path(model_dir) / "sface_fp16.engine"),
             )
-            recognizer = CommercialFaceRecognizer(embedding_pipeline, self.gallery)
+            recognizer = CommercialFaceRecognizer(
+                embedding_pipeline,
+                self.gallery,
+                similarity_threshold=float(os.getenv("FACE_SIMILARITY_THRESHOLD", "0.6")),
+                similarity_margin=float(os.getenv("FACE_SIMILARITY_MARGIN", "0.12")),
+            )
         self.recognizer = recognizer
 
     def detect_and_recognize(self, frame, person_bbox):

@@ -10,7 +10,7 @@ import argparse
 import json
 import shutil
 import tempfile
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -56,6 +56,7 @@ def select_candidates(
     *,
     camera: str | None,
     include_sample_eval: bool,
+    min_fall_probability: float = 0.0,
     clip_dir: Path = DEFAULT_CLIP_DIR,
 ) -> list[dict[str, Any]]:
     candidates: list[dict[str, Any]] = []
@@ -70,6 +71,13 @@ def select_candidates(
         if camera and camera_id != camera:
             continue
         if not include_sample_eval and camera_id == "sample_eval":
+            continue
+        aux = row.get("falldata_aux") or {}
+        try:
+            fall_probability = float(aux.get("fall_probability"))
+        except (TypeError, ValueError):
+            fall_probability = 0.0
+        if fall_probability < min_fall_probability:
             continue
         local_clip = resolve_clip_path(str(row["clip_path"]), clip_dir=clip_dir)
         if not local_clip.is_file():
@@ -221,6 +229,33 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--labeled-dir", type=Path, default=DEFAULT_LABELED_DIR)
     parser.add_argument("--camera", default="camera_1")
     parser.add_argument("--include-sample-eval", action="store_true")
+    parser.add_argument(
+        "--since",
+        help="Only review clips created at or after this ISO-8601 timestamp.",
+    )
+    parser.add_argument(
+        "--limit",
+        type=int,
+        default=0,
+        help="Review at most this many candidates (0 means all).",
+    )
+    parser.add_argument(
+        "--min-fall-probability",
+        type=float,
+        default=0.0,
+        help="Only include clips whose falldata runtime probability reaches this value.",
+    )
+    parser.add_argument(
+        "--export-jsonl",
+        type=Path,
+        help="Export selected candidates as JSONL and exit without opening the GUI.",
+    )
+    parser.add_argument(
+        "--dedupe-seconds",
+        type=float,
+        default=0.0,
+        help="Keep one representative clip per camera within this time window.",
+    )
     parser.add_argument("--list", action="store_true", help="List candidates without GUI")
     return parser.parse_args()
 
@@ -232,9 +267,41 @@ def main() -> int:
         rows,
         camera=None if args.include_sample_eval else args.camera,
         include_sample_eval=args.include_sample_eval,
+        min_fall_probability=max(args.min_fall_probability, 0.0),
         clip_dir=args.clip_dir,
     )
+    if args.since:
+        candidates = [
+            candidate
+            for candidate in candidates
+            if str(candidate.get("created_at") or "") >= args.since
+        ]
+    if args.dedupe_seconds > 0:
+        deduped: list[dict[str, Any]] = []
+        last_by_camera: dict[str, float] = {}
+        for candidate in candidates:
+            try:
+                created = datetime.fromisoformat(
+                    str(candidate.get("created_at", "")).replace("Z", "+00:00")
+                ).astimezone(timezone.utc).timestamp()
+            except (TypeError, ValueError):
+                created = float("inf")
+            camera_id = str(candidate.get("camera_id") or "")
+            if created - last_by_camera.get(camera_id, float("-inf")) < args.dedupe_seconds:
+                continue
+            deduped.append(candidate)
+            last_by_camera[camera_id] = created
+        candidates = deduped
+    if args.limit > 0:
+        candidates = candidates[: args.limit]
     print(f"Unlabeled clips: {len(candidates)}")
+    if args.export_jsonl:
+        args.export_jsonl.parent.mkdir(parents=True, exist_ok=True)
+        with args.export_jsonl.open("w", encoding="utf-8") as fp:
+            for candidate in candidates:
+                fp.write(json.dumps(candidate, ensure_ascii=False, sort_keys=True) + "\n")
+        print(f"Exported: {args.export_jsonl}")
+        return 0
     if args.list:
         for candidate in candidates[:20]:
             print(candidate["event_id"], candidate["local_clip_path"])

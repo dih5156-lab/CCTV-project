@@ -8,6 +8,38 @@ from typing import Any, Callable, Dict, Iterable, List, Optional
 from .events import DetectionEvent, EventType
 
 
+_FALL_DETAIL_KEYS = (
+    "fall_direction",
+    "fall_type",
+    "fall_category",
+    "scene_cat_name",
+)
+
+
+def _add_fall_detail_metadata(
+    metadata: Dict[str, Any], detection: Dict[str, Any], *, is_fall: bool
+) -> None:
+    """보조 방향 분류기가 제공한 상세 라벨을 이벤트 메타데이터에 보존한다.
+
+    현재 기본 FallDetector는 이 값을 생성하지 않으므로 운영 이벤트는
+    ``unclassified``로 명시한다. 이후 방향 분류 모델이 값을 추가하면
+    동일한 이벤트/DB 경로를 통해 자동으로 보존된다.
+    """
+    if not is_fall:
+        return
+    detail_found = False
+    for key in _FALL_DETAIL_KEYS:
+        value = detection.get(key)
+        if value not in (None, ""):
+            metadata[key] = value
+            detail_found = True
+    metadata["fall_detail_status"] = "classified" if detail_found else "unclassified"
+    if detail_found:
+        metadata["fall_detail_source"] = str(
+            detection.get("fall_detail_source") or "direction_classifier"
+        )
+
+
 def _add_frame_size_metadata(
     metadata: Dict[str, Any],
     *,
@@ -106,6 +138,13 @@ def detections_to_events(
         )
         if detection.get("fall_near_miss") is not None:
             base_metadata["fall_near_miss"] = detection.get("fall_near_miss")
+        if detection.get("fall_score") is not None:
+            base_metadata["fall_score"] = detection.get("fall_score")
+        if detection.get("fall_reasons") is not None:
+            base_metadata["fall_reasons"] = detection.get("fall_reasons")
+        _add_fall_detail_metadata(
+            base_metadata, detection, is_fall=bool(detection.get("is_fall"))
+        )
         events.append(
             DetectionEvent(
                 event_type=event_type,
@@ -129,6 +168,7 @@ def detections_to_events(
                 metadata["fall_score"] = detection.get("fall_score")
             if detection.get("fall_reasons") is not None:
                 metadata["fall_reasons"] = detection.get("fall_reasons")
+            _add_fall_detail_metadata(metadata, detection, is_fall=True)
             events.append(
                 DetectionEvent(
                     event_type=EventType.FALL_DETECTED,
@@ -205,6 +245,7 @@ def emit_tensor_events(
     apply_existing_event_pipeline: Callable[[str, List[DetectionEvent]], None],
     feature_flags_for_camera: Callable[[str], Dict[str, bool]],
     event_type_for_label: Callable[[str], EventType],
+    object_meta_events_for_frame: Optional[Callable[[Any, str], List[DetectionEvent]]] = None,
 ) -> int:
     """frame_user_meta_list의 tensor 결과를 이벤트로 변환하고 파이프라인에 전달한다."""
     detected = 0
@@ -234,6 +275,9 @@ def emit_tensor_events(
                 frame_height=int(getattr(frame_meta, "source_frame_height", 0) or 0),
                 event_type_for_label=event_type_for_label,
             )
+            if object_meta_events_for_frame is not None:
+                tracker_events = object_meta_events_for_frame(frame_meta, camera_name)
+                _attach_tracker_ids(events, tracker_events)
             detected += sum(
                 1 for event in events if event.event_type != EventType.FALL_DETECTED
             )
@@ -244,6 +288,55 @@ def emit_tensor_events(
         except StopIteration:
             break
     return detected
+
+
+def _attach_tracker_ids(
+    events: List[DetectionEvent], tracker_events: List[DetectionEvent]
+) -> None:
+    """tensor 이벤트에 같은 프레임의 DeepStream tracker ID를 연결한다."""
+    candidates = [
+        event
+        for event in tracker_events
+        if event.object_id is not None and event.event_type == EventType.PERSON
+    ]
+    for event in events:
+        if event.object_id is not None or not candidates:
+            continue
+        best_match, match_score = max(
+            ((candidate, _tracker_match_score(event, candidate)) for candidate in candidates),
+            key=lambda item: item[1],
+        )
+        if match_score < 0.10:
+            continue
+        event.object_id = best_match.object_id
+        metadata = dict(event.metadata or {})
+        metadata["tracker_id_source"] = "deepstream_object_meta"
+        metadata["tracker_match_score"] = round(float(match_score), 4)
+        event.metadata = metadata
+
+
+def _bbox_iou(first: DetectionEvent, second: DetectionEvent) -> float:
+    left = max(first.x, second.x)
+    top = max(first.y, second.y)
+    right = min(first.x + first.width, second.x + second.width)
+    bottom = min(first.y + first.height, second.y + second.height)
+    intersection = max(0, right - left) * max(0, bottom - top)
+    union = first.width * first.height + second.width * second.height - intersection
+    return intersection / union if union > 0 else 0.0
+
+
+def _tracker_match_score(event: DetectionEvent, person: DetectionEvent) -> float:
+    """person bbox와 일반/helmet 이벤트의 tracker 매칭 점수를 계산한다."""
+    overlap = _bbox_iou(event, person)
+    center_x = event.x + event.width / 2
+    center_y = event.y + event.height / 2
+    inside_person = (
+        person.x <= center_x <= person.x + person.width
+        and person.y <= center_y <= person.y + person.height
+    )
+    if inside_person:
+        return max(overlap, 0.25)
+    return overlap
 
 
 def object_meta_events_from_frame(

@@ -2,14 +2,149 @@ from types import SimpleNamespace
 
 import numpy as np
 
+from scripts.datasets import train_yolo_pose_fall_rf
 from scripts.datasets.train_yolo_pose_fall_rf import (
     _dataset_summary,
+    _build_model_bundle,
     _extract_video_features,
     _group_holdout_indices,
+    _hard_case_sample_weights,
+    _pose_geometry,
+    _sample_video_frames,
+    _sampling_window_for_row,
     _scene_base,
     _select_rows,
+    _select_tracked_pose_index,
     _summarize_frames,
 )
+
+
+def test_hard_case_weights_only_upweight_out_of_fold_errors():
+    labels = np.asarray([0, 0, 1, 1], dtype=np.int64)
+    fall_probabilities = np.asarray([0.2, 0.8, 0.7, 0.3], dtype=np.float32)
+
+    sample_weights = _hard_case_sample_weights(
+        labels,
+        fall_probabilities,
+        hard_case_weight=3.0,
+    )
+
+    np.testing.assert_array_equal(sample_weights, np.asarray([1.0, 3.0, 1.0, 3.0]))
+
+
+def test_model_bundle_records_feature_and_inference_compatibility():
+    model = SimpleNamespace(n_features_in_=len(train_yolo_pose_fall_rf.FEATURE_NAMES))
+    args = SimpleNamespace(
+        max_frames=48,
+        frame_stride=3,
+        imgsz=640,
+        confidence_threshold=0.35,
+        candidate_window_frames=181,
+        candidate_window_seconds=3.0,
+        prediction_batch_size=4,
+        min_pose_frames=3,
+        decision_threshold=0.7,
+    )
+
+    bundle = _build_model_bundle(model, args)
+
+    assert bundle["bundle_schema_version"] == 1
+    assert bundle["model_kind"] == "yolo_pose_summary_rf"
+    assert bundle["fall_class_label"] == 1
+    assert bundle["inference_config"]["max_frames"] == 48
+    assert bundle["inference_config"]["imgsz"] == 640
+    assert bundle["inference_config"]["candidate_window_frames"] == 181
+    assert bundle["inference_config"]["candidate_window_seconds"] == 3.0
+    assert len(bundle["feature_names"]) == len(train_yolo_pose_fall_rf.FEATURE_NAMES)
+
+
+def test_sample_video_frames_decodes_forward_without_random_seeks():
+    class FakeCapture:
+        def __init__(self):
+            self.position = 0
+            self.set_calls = 0
+
+        def get(self, _property):
+            return 10
+
+        def set(self, _property, _value):
+            self.set_calls += 1
+            return True
+
+        def grab(self):
+            if self.position >= 10:
+                return False
+            self.position += 1
+            return True
+
+        def read(self):
+            if self.position >= 10:
+                return False, None
+            frame = np.full((2, 2, 3), self.position, dtype=np.uint8)
+            self.position += 1
+            return True, frame
+
+    capture = FakeCapture()
+
+    sampled = _sample_video_frames(capture, max_frames=4, frame_stride=2)
+
+    assert capture.set_calls == 0
+    assert [frame_index for frame_index, _ in sampled] == [1, 4, 7, 10]
+    assert [int(frame[0, 0, 0]) for _, frame in sampled] == [0, 3, 6, 9]
+
+
+def test_sample_video_frames_limits_sampling_to_labeled_fall_window():
+    class FakeCapture:
+        def __init__(self):
+            self.position = 0
+
+        def get(self, _property):
+            return 10
+
+        def grab(self):
+            self.position += 1
+            return self.position <= 10
+
+        def read(self):
+            if self.position >= 10:
+                return False, None
+            frame = np.full((2, 2, 3), self.position, dtype=np.uint8)
+            self.position += 1
+            return True, frame
+
+    sampled = _sample_video_frames(
+        FakeCapture(),
+        max_frames=3,
+        frame_stride=1,
+        start_frame=3,
+        end_frame=7,
+    )
+
+    assert [frame_index for frame_index, _ in sampled] == [3, 5, 7]
+
+
+def test_sampling_window_uses_margin_for_falls_and_full_video_for_non_falls():
+    fall_window = _sampling_window_for_row(
+        {
+            "is_fall": True,
+            "fall_start_frame": 233,
+            "fall_end_frame": 293,
+            "scene_length": 600,
+        },
+        margin_frames=120,
+    )
+    non_fall_window = _sampling_window_for_row(
+        {
+            "is_fall": False,
+            "fall_start_frame": 0,
+            "fall_end_frame": 0,
+            "scene_length": 600,
+        },
+        margin_frames=120,
+    )
+
+    assert fall_window == (113, 413)
+    assert non_fall_window == (None, None)
 
 
 def test_scene_base_strips_camera_suffix():
@@ -134,6 +269,117 @@ def test_summarize_frames_reports_temporal_fall_transition():
     assert values["max_fall_score_rise"] == 2.5
     assert values["late_score_ge_3_ratio"] == 1.0
     assert values["bbox_aspect_end_minus_start"] > 0
+
+
+def test_pose_geometry_distinguishes_upright_and_horizontal_torso():
+    upright = np.zeros((17, 3), dtype=np.float32)
+    horizontal = np.zeros((17, 3), dtype=np.float32)
+    for index in range(17):
+        upright[index] = [50 + index % 2 * 10, 20 + index * 8, 0.95]
+        horizontal[index] = [20 + index * 8, 100 + index % 2 * 10, 0.95]
+
+    upright[5:7, :2] = [[40, 40], [60, 40]]
+    upright[11:13, :2] = [[42, 100], [58, 100]]
+    horizontal[5:7, :2] = [[30, 90], [30, 110]]
+    horizontal[11:13, :2] = [[80, 90], [80, 110]]
+
+    upright_geometry = _pose_geometry(
+        upright,
+        bbox=np.asarray([20, 10, 90, 180], dtype=np.float32),
+        frame_width=200,
+        frame_height=200,
+        min_keypoint_confidence=0.3,
+    )
+    horizontal_geometry = _pose_geometry(
+        horizontal,
+        bbox=np.asarray([10, 70, 170, 130], dtype=np.float32),
+        frame_width=200,
+        frame_height=200,
+        min_keypoint_confidence=0.3,
+    )
+
+    assert upright_geometry["torso_angle_from_vertical"] < 0.1
+    assert horizontal_geometry["torso_angle_from_vertical"] > 0.9
+    assert (
+        horizontal_geometry["pose_width_height_ratio"]
+        > upright_geometry["pose_width_height_ratio"]
+    )
+
+
+def test_summarize_frames_reports_pose_center_descent():
+    frame_records = []
+    for index, center_y in enumerate((0.3, 0.4, 0.65, 0.75)):
+        frame_records.append(
+            {
+                "fall_score": float(index),
+                "bbox_aspect": 0.5 + index * 0.1,
+                "bbox_area_ratio": 0.1,
+                "visible_keypoints": 17,
+                "mean_keypoint_confidence": 0.9,
+                "detection_confidence": 0.95,
+                "fall_reasons": [],
+                "pose_width_height_ratio": 0.4 + index * 0.2,
+                "torso_angle_from_vertical": index / 3,
+                "torso_length_bbox_ratio": 0.3,
+                "hip_center_y_frame_ratio": center_y,
+                "body_center_y_frame_ratio": center_y - 0.05,
+                "bbox_center_y_frame_ratio": center_y,
+            }
+        )
+
+    summary = _summarize_frames(frame_records, frames_seen=4)
+    values = dict(zip(summary["feature_names"], summary["feature_vector"]))
+
+    assert values["hip_center_y_end_minus_start"] > 0
+    assert values["body_center_y_end_minus_start"] > 0
+    assert values["max_hip_center_y_rise"] > 0
+    assert values["torso_angle_end_minus_start"] > 0
+
+
+def test_select_tracked_pose_uses_highest_confidence_without_history():
+    selected_index = _select_tracked_pose_index(
+        confidences=np.asarray([0.65, 0.9]),
+        centers=np.asarray([[20.0, 20.0], [80.0, 80.0]]),
+        previous_center=None,
+        frame_diagonal=100.0,
+    )
+
+    assert selected_index == 1
+
+
+def test_select_tracked_pose_prefers_nearby_person_when_confidence_is_close():
+    selected_index = _select_tracked_pose_index(
+        confidences=np.asarray([0.8, 0.9]),
+        centers=np.asarray([[22.0, 20.0], [90.0, 90.0]]),
+        previous_center=(20.0, 20.0),
+        frame_diagonal=100.0,
+    )
+
+    assert selected_index == 0
+
+
+def test_predict_pose_results_chunks_frames_for_static_engine_batch():
+    class FakeModel:
+        def __init__(self):
+            self.batch_sizes = []
+
+        def predict(self, frames, **_kwargs):
+            self.batch_sizes.append(len(frames))
+            return [f"result-{len(self.batch_sizes)}" for _ in frames]
+
+    model = FakeModel()
+    frames = [np.zeros((8, 8, 3), dtype=np.uint8) for _ in range(3)]
+
+    results = train_yolo_pose_fall_rf._predict_pose_results(
+        model=model,
+        frames=frames,
+        imgsz=320,
+        confidence_threshold=0.35,
+        prediction_batch_size=1,
+    )
+
+    assert model.batch_sizes == [1, 1, 1]
+    assert results == ["result-1", "result-2", "result-3"]
 
 
 def test_extract_video_features_batches_sampled_frames(monkeypatch, tmp_path):

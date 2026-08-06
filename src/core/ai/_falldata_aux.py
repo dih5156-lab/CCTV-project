@@ -80,11 +80,14 @@ class FallDataAuxConfig:
     sequence_transform: str = "postpad"
     timeout_seconds: float = 30.0
     cooldown_seconds: float = 10.0
+    min_pose_frames: int = 0
+    min_confirmed_results: int = 1
     fail_open_on_unavailable: bool = True
     mediapipe_python: Path = DEFAULT_MEDIAPIPE_PYTHON
     model_python: Path = DEFAULT_MODEL_PYTHON
     model_path: Path = DEFAULT_MODEL_PATH
     compare_model_path: Optional[Path] = None
+    compare_model_paths_by_camera: dict[str, Path] | None = None
     compare_model_kind: str = "mediapipe_rf"
     compare_fall_class_index: int = 0
     compare_threshold: Optional[float] = None
@@ -96,6 +99,10 @@ class FallDataAuxConfig:
     temporal_min_confirmed_windows: int = 1
     inline_pose_rf: bool = False
     inline_feature_capture_path: Optional[Path] = None
+    inline_feature_capture_min_probability: float = 0.0
+    clip_buffer_enabled: bool = False
+    clip_buffer_width: int = 640
+    clip_buffer_height: int = 360
 
     @classmethod
     def from_env(cls) -> "FallDataAuxConfig":
@@ -107,6 +114,21 @@ class FallDataAuxConfig:
             "FALLDATA_AUX_COMPARE_THRESHOLD", ""
         ).strip()
         compare_model_raw = os.environ.get("FALLDATA_AUX_COMPARE_MODEL_PATH", "").strip()
+        compare_model_map_raw = os.environ.get(
+            "FALLDATA_AUX_COMPARE_MODEL_MAP", ""
+        ).strip()
+        compare_model_map: dict[str, Path] = {}
+        if compare_model_map_raw:
+            try:
+                parsed_map = json.loads(compare_model_map_raw)
+                if isinstance(parsed_map, dict):
+                    compare_model_map = {
+                        str(camera_id): Path(str(model_path))
+                        for camera_id, model_path in parsed_map.items()
+                        if str(camera_id).strip() and str(model_path).strip()
+                    }
+            except (TypeError, ValueError, json.JSONDecodeError):
+                logger.warning("FALLDATA_AUX_COMPARE_MODEL_MAP JSON 파싱 실패")
         temporal_compare_model_raw = os.environ.get(
             "FALLDATA_AUX_TEMPORAL_COMPARE_MODEL_PATH", ""
         ).strip()
@@ -137,6 +159,14 @@ class FallDataAuxConfig:
             cooldown_seconds=_parse_float(
                 os.environ.get("FALLDATA_AUX_COOLDOWN_SECONDS"), 10.0
             ),
+            min_pose_frames=max(
+                _parse_int(os.environ.get("FALLDATA_AUX_MIN_POSE_FRAMES"), 0),
+                0,
+            ),
+            min_confirmed_results=max(
+                _parse_int(os.environ.get("FALLDATA_AUX_MIN_CONFIRMED_RESULTS"), 1),
+                1,
+            ),
             fail_open_on_unavailable=_parse_bool(
                 os.environ.get("FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE"), True
             ),
@@ -148,6 +178,7 @@ class FallDataAuxConfig:
             ),
             model_path=Path(os.environ.get("FALLDATA_AUX_MODEL_PATH", str(DEFAULT_MODEL_PATH))),
             compare_model_path=Path(compare_model_raw) if compare_model_raw else None,
+            compare_model_paths_by_camera=compare_model_map or None,
             compare_model_kind=os.environ.get(
                 "FALLDATA_AUX_COMPARE_MODEL_KIND", "mediapipe_rf"
             ).strip().lower(),
@@ -192,6 +223,22 @@ class FallDataAuxConfig:
                 if inline_feature_capture_raw
                 else None
             ),
+            inline_feature_capture_min_probability=max(
+                _parse_float(
+                    os.environ.get("FALLDATA_AUX_INLINE_FEATURE_CAPTURE_MIN_PROBABILITY"),
+                    0.0,
+                ),
+                0.0,
+            ),
+            clip_buffer_enabled=_parse_bool(
+                os.environ.get("FALLDATA_AUX_CLIP_BUFFER_ENABLED"), False
+            ),
+            clip_buffer_width=max(
+                0, _parse_int(os.environ.get("FALLDATA_AUX_CLIP_BUFFER_WIDTH"), 640)
+            ),
+            clip_buffer_height=max(
+                0, _parse_int(os.environ.get("FALLDATA_AUX_CLIP_BUFFER_HEIGHT"), 360)
+            ),
         )
 
 
@@ -215,6 +262,7 @@ class FallDataAuxVerifier:
         self._frames: Deque[np.ndarray] = deque(maxlen=max(self.config.buffer_frames, 1))
         self._pose_records: dict[str, Deque[dict[str, Any]]] = {}
         self._inline_pose_rf_bundle = inline_pose_rf_bundle
+        self._inline_pose_rf_bundles: dict[str, dict[str, Any]] = {}
         self._last_run_at = 0.0
         self._last_run_by_camera: dict[str, float] = {}
         self._last_result: dict | None = None
@@ -229,13 +277,27 @@ class FallDataAuxVerifier:
     def add_frame(self, frame: np.ndarray) -> None:
         if (
             not self.enabled
-            or self.config.inline_pose_rf
             or frame is None
             or not isinstance(frame, np.ndarray)
         ):
             return
+        if self.config.inline_pose_rf and not self.config.clip_buffer_enabled:
+            return
+        buffered_frame = frame
+        if self.config.clip_buffer_enabled and (
+            self.config.clip_buffer_width > 0 or self.config.clip_buffer_height > 0
+        ):
+            import cv2
+
+            source_height, source_width = frame.shape[:2]
+            target_width = self.config.clip_buffer_width or source_width
+            target_height = self.config.clip_buffer_height or source_height
+            if (source_width, source_height) != (target_width, target_height):
+                buffered_frame = cv2.resize(
+                    frame, (target_width, target_height), interpolation=cv2.INTER_AREA
+                )
         with self._lock:
-            self._frames.append(frame.copy())
+            self._frames.append(buffered_frame.copy())
 
     def add_pose_events(
         self,
@@ -415,6 +477,8 @@ class FallDataAuxVerifier:
 
         try:
             result = self._verify_once()
+            if camera_name:
+                result = self._apply_confirmation_streak(result, camera_name)
             self._last_result = dict(result)
             return result
         except Exception as exc:
@@ -448,8 +512,24 @@ class FallDataAuxVerifier:
         except Exception as exc:
             logger.warning("inline pose RF verification failed: %s", exc)
             result = self._result("error", confirmed=False, error=str(exc))
+        result = self._apply_confirmation_streak(result, camera_name)
         self._last_result_by_camera[camera_name] = dict(result)
         return result
+
+    def _apply_confirmation_streak(self, result: dict, camera_name: str) -> dict:
+        """Require consecutive confirmed windows before publishing a result."""
+        if not result.get("confirmed"):
+            return {**result, "confirmation_streak": 0}
+        previous = self._last_result_by_camera.get(camera_name) or {}
+        previous_streak = int(previous.get("confirmation_streak") or 0)
+        streak = previous_streak + 1
+        required = max(int(self.config.min_confirmed_results), 1)
+        return {
+            **result,
+            "confirmation_streak": streak,
+            "confirmed": streak >= required,
+            "min_confirmed_results": required,
+        }
 
     def _verify_inline_pose_rf(self, camera_name: str) -> dict:
         from scripts.datasets.smoke_yolo_pose_fall_rf import (
@@ -458,9 +538,15 @@ class FallDataAuxVerifier:
         )
         from scripts.datasets.train_yolo_pose_fall_rf import _summarize_frames
 
-        bundle = self._inline_pose_rf_bundle
+        model_path = (
+            (self.config.compare_model_paths_by_camera or {}).get(camera_name)
+            or self.config.compare_model_path
+        )
+        bundle_key = str(model_path or "")
+        bundle = self._inline_pose_rf_bundles.get(bundle_key)
+        if bundle is None and self._inline_pose_rf_bundle is not None and not bundle_key:
+            bundle = self._inline_pose_rf_bundle
         if bundle is None:
-            model_path = self.config.compare_model_path
             if model_path is None or not model_path.exists():
                 return self._result(
                     "missing_dependency",
@@ -472,7 +558,7 @@ class FallDataAuxVerifier:
             bundle = joblib.load(model_path)
             if not isinstance(bundle, dict):
                 bundle = {"model": bundle}
-            self._inline_pose_rf_bundle = bundle
+            self._inline_pose_rf_bundles[bundle_key] = bundle
 
         with self._lock:
             records = list(self._pose_records.get(camera_name, ()))
@@ -490,6 +576,7 @@ class FallDataAuxVerifier:
             record for record in records if float(record["timestamp"]) >= window_start
         ]
         min_pose_frames = int(training_config.get("min_pose_frames") or 1)
+        min_pose_frames = max(min_pose_frames, int(self.config.min_pose_frames))
         if len(window_records) < min_pose_frames:
             return self._result(
                 "insufficient_pose_records",
@@ -506,12 +593,6 @@ class FallDataAuxVerifier:
         ).astype(int)
         selected_records = [window_records[index] for index in selected_indices]
         summary = _summarize_frames(selected_records, max_frames)
-        feature_capture_status = self._write_inline_feature_capture(
-            camera_name,
-            summary,
-            window_seconds=window_seconds,
-        )
-
         classifier = bundle.get("model", bundle)
         feature_names = bundle.get("feature_names")
         expected_features = getattr(
@@ -537,6 +618,17 @@ class FallDataAuxVerifier:
         confirmed = (
             fall_probability is not None and fall_probability >= threshold
         )
+        feature_capture_status = None
+        capture_min_probability = self.config.inline_feature_capture_min_probability
+        if (
+            fall_probability is not None
+            and fall_probability >= capture_min_probability
+        ):
+            feature_capture_status = self._write_inline_feature_capture(
+                camera_name,
+                summary,
+                window_seconds=window_seconds,
+            )
         capture_result = (
             {"feature_capture_status": feature_capture_status}
             if feature_capture_status is not None

@@ -276,6 +276,11 @@ class DeepStreamProcessor(BaseProcessor):
             maxsize=int(os.environ.get("FALLDATA_AUX_QUEUE_MAXSIZE", "4"))
         )
         self._falldata_aux_thread: Optional[threading.Thread] = None
+        self._falldata_shadow_last_at: Dict[str, float] = {}
+        self._falldata_shadow_interval_sec = max(
+            float(os.environ.get("FALLDATA_AUX_SHADOW_WINDOW_INTERVAL_SEC", "30")),
+            1.0,
+        )
         self._built_topology: Tuple[bool, bool, bool] = (False, False, False)
         self._pipeline_restart_pending: bool = False
         self._pipeline_restart_min_interval_sec = float(
@@ -1424,8 +1429,8 @@ class DeepStreamProcessor(BaseProcessor):
             score = self._fall_detector._score_fall(kpts, width, height)
             is_fall = score.score >= self._fall_detector.score_threshold
             near_miss = None
+            folded_score = self._fall_detector.folded_floor_pose_score(kpts, height)
             if not is_fall:
-                folded_score = self._fall_detector.folded_floor_pose_score(kpts, height)
                 if folded_score is not None:
                     near_miss = {
                         "type": "folded_floor_pose",
@@ -1673,6 +1678,9 @@ class DeepStreamProcessor(BaseProcessor):
         self, camera_name: str, events: List[DetectionEvent]
     ) -> None:
         """기존 트래킹/필터/구역/얼굴 후처리 파이프라인을 적용한다."""
+        falldata_aux = getattr(self, "_falldata_aux", None)
+        if falldata_aux is not None:
+            falldata_aux.add_pose_events(camera_name, events)
         self._write_fall_near_miss_review_records(camera_name, events)
         ds_apply_existing_event_pipeline(
             camera_name=camera_name,
@@ -1954,6 +1962,7 @@ class DeepStreamProcessor(BaseProcessor):
             apply_existing_event_pipeline=self._apply_existing_event_pipeline,
             feature_flags_for_camera=self._feature_flags_for_camera,
             event_type_for_label=self._event_type_for_label,
+            object_meta_events_for_frame=self._object_meta_events_from_frame,
         )
 
     def _object_meta_events_from_frame(
@@ -2020,6 +2029,15 @@ class DeepStreamProcessor(BaseProcessor):
                 frame = self.get_camera_frame(camera_id, copy_frame=False)
                 if frame is not None:
                     self._falldata_aux.add_frame(frame)
+                    if self._env_bool("FALLDATA_AUX_SHADOW_ALL_WINDOWS", False):
+                        now = time.monotonic()
+                        last_at = self._falldata_shadow_last_at.get(camera_id, 0.0)
+                        if now - last_at >= self._falldata_shadow_interval_sec:
+                            if self._fall_shadow_recorder().submit_shadow_window(
+                                self._falldata_aux_queue,
+                                camera_id,
+                            ):
+                                self._falldata_shadow_last_at[camera_id] = now
         except Exception as exc:
             logger.debug("falldata aux preview frame 추가 실패: %s", exc)
         return result

@@ -66,11 +66,30 @@ def _extract_keypoints(results: object) -> np.ndarray:
     return keypoints
 
 
-def _pad_or_trim(frames: list[np.ndarray]) -> np.ndarray:
+def _pad_or_trim(
+    frames: list[np.ndarray],
+    *,
+    sequence_transform: str = "postpad",
+) -> np.ndarray:
     if not frames:
         raise ValueError("no frames were decoded from the video")
     if len(frames) >= TARGET_FRAMES:
         return np.asarray(frames[:TARGET_FRAMES], dtype=np.float32)
+
+    source = np.asarray(frames, dtype=np.float32)
+    if sequence_transform == "stretch":
+        source_indices = np.linspace(
+            0,
+            len(source) - 1,
+            num=TARGET_FRAMES,
+        ).round().astype(np.int64)
+        return source[source_indices]
+    if sequence_transform == "tail_align":
+        padded = np.zeros((TARGET_FRAMES, FRAME_FEATURES), dtype=np.float32)
+        padded[-len(source) :] = source
+        return padded
+    if sequence_transform != "postpad":
+        raise ValueError(f"unknown sequence transform: {sequence_transform}")
 
     padded = list(frames)
     zero_frame = np.zeros(FRAME_FEATURES, dtype=np.float32)
@@ -91,6 +110,7 @@ def extract_video_features(
     max_frames: int | None,
     min_detection_confidence: float,
     min_tracking_confidence: float,
+    sequence_transform: str = "postpad",
 ) -> tuple[np.ndarray, int]:
     import cv2
     import mediapipe as mp
@@ -124,7 +144,10 @@ def extract_video_features(
                 break
     cap.release()
 
-    sequence = _pad_or_trim(frames)
+    sequence = _pad_or_trim(
+        frames,
+        sequence_transform=sequence_transform,
+    )
     return sequence, decoded
 
 
@@ -148,6 +171,12 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--min-detection-confidence", type=float, default=0.1)
     parser.add_argument("--min-tracking-confidence", type=float, default=0.1)
+    parser.add_argument(
+        "--sequence-transform",
+        choices=("postpad", "tail_align", "stretch"),
+        default="postpad",
+        help="How fewer than 600 extracted frames fill the model sequence.",
+    )
     return parser.parse_args()
 
 
@@ -158,6 +187,7 @@ def main() -> int:
         max_frames=args.max_frames,
         min_detection_confidence=args.min_detection_confidence,
         min_tracking_confidence=args.min_tracking_confidence,
+        sequence_transform=args.sequence_transform,
     )
     args.output_dir.mkdir(parents=True, exist_ok=True)
     for index, frame in enumerate(sequence):

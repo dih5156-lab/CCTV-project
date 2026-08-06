@@ -579,6 +579,44 @@ class TestActionBridgeStatusPublishing:
         assert bridge._signboard.display.call_count == 1
         assert bridge._signboard.display.call_args.kwargs["text"] == "기울기 이상 감지"
 
+    def test_fall_detail_metadata_does_not_change_output_message(self):
+        bridge = self._make_bridge()
+        bridge._resolve_devices.return_value = [AlarmDevice.SPEAKER, AlarmDevice.SIGNBOARD]
+        bridge._executor._speaker = bridge._speaker
+        bridge._executor._signboard = bridge._signboard
+
+        bridge._execute_action(
+            "cctv/ai/events/camera_1/fall_detected",
+            {
+                "camera_id": "camera_1",
+                "type": "fall_detected",
+                "severity": "critical",
+                "metadata": {
+                    "fall_direction": "back",
+                    "fall_type": "뒤로 넘어짐",
+                    "fall_detail_status": "classified",
+                },
+                "event": {
+                    "event_type": "fall_detected",
+                    "severity": "critical",
+                    "display_message": "낙상 감지 - 즉시 확인",
+                    "tts_message": "낙상이 감지되었습니다. 즉시 확인 바랍니다.",
+                    "metadata": {
+                        "fall_direction": "back",
+                        "fall_type": "뒤로 넘어짐",
+                    },
+                },
+            },
+        )
+
+        bridge._speaker.play.assert_called_once_with(
+            "fall_detected",
+            "critical",
+            "camera_1",
+            text="낙상이 감지되었습니다. 즉시 확인 바랍니다.",
+        )
+        assert bridge._signboard.display.call_args.kwargs["text"] == "낙상 감지 - 즉시 확인"
+
     def test_execute_action_can_skip_duplicate_alert_forward(self):
         bridge = self._make_bridge()
 

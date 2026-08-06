@@ -1323,6 +1323,7 @@
               <div class="form-grid">
                 <div class="field"><label>카메라</label><select id="event-camera"><option value="">전체</option></select></div>
                 <div class="field"><label>이벤트 타입</label><select id="event-type"><option value="">전체</option><option value="fall_detected">낙상</option><option value="head">헬멧 미착용</option><option value="helmet">헬멧</option><option value="intrusion">침입</option><option value="zone_entered">위험구역 진입</option><option value="zone_dwelling">위험구역 체류</option><option value="zone_object_detected">위험구역 객체</option><option value="crowd_warning">인파 경고</option><option value="face_recognized">얼굴 인식</option><option value="face_unknown">미등록 얼굴</option><option value="person">사람</option></select></div>
+                <div class="field"><label>낙상 방향</label><select id="event-fall-direction"><option value="">전체</option><option value="front">전면낙상</option><option value="side">측면낙상</option><option value="back">후면낙상</option><option value="unclassified">방향 미분류</option></select></div>
                 <div class="field"><label>정렬 기준</label><select id="event-sort"><option value="priority" selected>위험도 우선</option><option value="recent">최신순</option><option value="type">유형별</option><option value="camera">카메라별</option></select></div>
                 <div class="field"><label>개수</label><select id="event-limit"><option>20</option><option selected>50</option><option>100</option><option>200</option></select></div>
                 <div class="sort-hint" id="event-sort-hint">위험도 우선: 낙상, 침입, 위험구역, 헬멧 미착용을 먼저 표시합니다.</div>
@@ -1330,8 +1331,8 @@
             </div>
             <div class="scroll">
               <table>
-                <thead><tr><th>시각</th><th>유형</th><th>대상</th><th>카메라</th><th>신뢰도</th><th>점수</th><th>등급</th><th>object</th><th>검수</th></tr></thead>
-                <tbody id="event-rows"><tr><td colspan="9" class="muted">로딩 중</td></tr></tbody>
+                <thead><tr><th>시각</th><th>유형</th><th>낙상 상세</th><th>대상</th><th>카메라</th><th>신뢰도</th><th>점수</th><th>등급</th><th>object</th><th>검수</th></tr></thead>
+                <tbody id="event-rows"><tr><td colspan="10" class="muted">로딩 중</td></tr></tbody>
               </table>
             </div>
           </div>
@@ -2872,6 +2873,7 @@
         limit: $("event-limit").value,
         camera_id: cameraId,
         event_type: eventTypeSelect.value,
+        fall_direction: $("event-fall-direction").value,
       };
       try {
         const body = await request("/api/v1/events" + query(params));
@@ -2879,7 +2881,7 @@
         await loadEventReviewSummary();
         const displayEvents = sortEventsForDisplay(state.events);
         $("stat-events").textContent = String(body.total ?? state.events.length);
-        renderEventRows("event-rows", displayEvents, 9);
+        renderEventRows("event-rows", displayEvents, 10);
         renderEventRows("overview-events", displayEvents.slice(0, 8), 4, true);
         renderPriorityEvent(state.events);
         updateEventSortHint();
@@ -2887,7 +2889,7 @@
       } catch (error) {
         state.events = state.demoEvents;
         const displayEvents = sortEventsForDisplay(state.demoEvents);
-        renderEventRows("event-rows", displayEvents, 9);
+        renderEventRows("event-rows", displayEvents, 10);
         renderEventRows("overview-events", displayEvents.slice(0, 8), 4, true);
         renderPriorityEvent(state.events);
         updateEventSortHint();
@@ -2908,6 +2910,7 @@
         return `<tr${rowClass}>
           <td>${fmtTime(event.received_at || event.timestamp)}</td>
           <td>${typeBadge}</td>
+          <td>${fallDetailLabel(event)}</td>
           <td>${target}</td>
           <td><code>${eventCameraId(event) || "-"}</code></td>
           <td>${Number(event.confidence || 0).toFixed(2)}</td>
@@ -2917,6 +2920,18 @@
           <td>${eventReviewControls(event)}</td>
         </tr>`;
       }).join("") : `<tr><td colspan="${colSpan}">${emptyState("이벤트 없음", "필터 조건을 바꾸거나 데모 이벤트를 전송해 확인하세요.")}</td></tr>`;
+    }
+    function fallDetailLabel(event) {
+      if (eventTypeKey(event) !== "fall_detected") return "-";
+      const metadata = event?.metadata && typeof event.metadata === "object" ? event.metadata : {};
+      const directionLabels = { front: "전면", back: "후면", side: "측면" };
+      const direction = directionLabels[String(metadata.fall_direction || "").toLowerCase()] || metadata.fall_direction;
+      const category = metadata.scene_cat_name || metadata.fall_category;
+      const type = metadata.fall_type;
+      const detail = [direction, category, type].filter((value, index, values) => value && values.indexOf(value) === index);
+      if (detail.length) return `<span class="event-detail">${escapeHtml(detail.join(" · "))}</span>`;
+      if (metadata.fall_detail_status === "unclassified") return badge("방향 미분류", "warn");
+      return badge("상세 대기", "blue");
     }
     function eventReviewId(event) {
       if (event.event_id) return String(event.event_id);
@@ -2963,7 +2978,7 @@
       });
       event.review_status = body.data?.status || status;
       event.reviewed_at = body.data?.reviewed_at || new Date().toISOString();
-      renderEventRows("event-rows", sortEventsForDisplay(state.events), 9);
+      renderEventRows("event-rows", sortEventsForDisplay(state.events), 10);
       renderEventRows("overview-events", sortEventsForDisplay(state.events).slice(0, 8), 4, true);
       await loadEventReviewSummary();
       showToast("이벤트 검수 저장 완료");
@@ -3638,7 +3653,7 @@
       $("event-sort").addEventListener("change", async () => {
         localStorage.setItem("cctvDemoEventSort", $("event-sort").value);
         updateEventSortHint();
-        renderEventRows("event-rows", sortEventsForDisplay(state.events), 9);
+        renderEventRows("event-rows", sortEventsForDisplay(state.events), 10);
         renderEventRows("overview-events", sortEventsForDisplay(state.events).slice(0, 8), 4, true);
         renderPriorityEvent(state.events);
         await Promise.allSettled([loadPending(), loadActionEvents()]);

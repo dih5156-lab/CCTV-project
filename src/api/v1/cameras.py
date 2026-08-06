@@ -52,7 +52,9 @@ def _camera_entries(raw: object) -> Iterable[Mapping[str, Any]]:
 
 
 def _camera_from_entry(camera: Mapping[str, Any]) -> CameraOut:
-    url = camera.get("url") or camera.get("rtsp_url") or ""
+    # DeepStream 입력 설정은 ``source`` 키를 사용하고, 외부 API는
+    # 자격증명을 제거한 ``url`` 필드로 노출한다.
+    url = camera.get("url") or camera.get("rtsp_url") or camera.get("source") or ""
     return CameraOut(
         id=str(camera.get("id", camera.get("camera_id", ""))),
         name=camera.get("name"),

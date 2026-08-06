@@ -1200,6 +1200,44 @@ class TestEvents:
         finally:
             events_module._ALERT_LOG = original
 
+    def test_list_events_fall_direction_filter(
+        self, client: SyncASGIClient, tmp_path: Path
+    ) -> None:
+        """상세 방향 메타데이터와 미분류 상태를 기준으로 필터링한다."""
+        import src.api.v1.events as events_module
+
+        log_file = tmp_path / "test_events_direction.jsonl"
+        entries = [
+            {
+                "receivedAt": "2024-01-01T00:00:00",
+                "payload": {
+                    "camera_id": "cam-01", "type": "fall_detected", "severity": "critical",
+                    "confidence": 0.9, "timestamp": 1700000000.0,
+                    "metadata": {"fall_direction": "back", "fall_detail_status": "classified"},
+                },
+            },
+            {
+                "receivedAt": "2024-01-01T00:01:00",
+                "payload": {
+                    "camera_id": "cam-01", "type": "fall_detected", "severity": "critical",
+                    "confidence": 0.9, "timestamp": 1700000060.0,
+                    "metadata": {"fall_detail_status": "unclassified"},
+                },
+            },
+        ]
+        log_file.write_text("\n".join(json.dumps(entry) for entry in entries) + "\n", encoding="utf-8")
+        original = events_module._ALERT_LOG
+        events_module._ALERT_LOG = log_file
+        try:
+            response = client.get("/api/v1/events?fall_direction=후면")
+            assert response.status_code == 200
+            assert response.json()["total"] == 1
+            response = client.get("/api/v1/events?fall_direction=unclassified")
+            assert response.status_code == 200
+            assert response.json()["total"] == 1
+        finally:
+            events_module._ALERT_LOG = original
+
     def test_list_events_combined_filters(
         self, client: SyncASGIClient, tmp_path: Path
     ) -> None:
@@ -1334,6 +1372,28 @@ class TestCameras:
             cameras = resp.json()["data"]
             assert [camera["id"] for camera in cameras] == ["camera_1"]
             assert cameras[0]["enabled"] is True
+        finally:
+            cam_module._CAMERAS_JSON = original
+
+    def test_list_cameras_uses_source_as_public_url(
+        self, client: SyncASGIClient, tmp_path: Path
+    ) -> None:
+        """DeepStream source 입력도 대시보드 카메라 URL로 표시한다."""
+        import src.api.v1.cameras as cam_module
+
+        cameras_file = tmp_path / "cameras.json"
+        cameras_file.write_text(
+            json.dumps(
+                [{"id": "cam-source", "source": "rtsp://192.168.0.100:554/stream1"}]
+            ),
+            encoding="utf-8",
+        )
+        original = cam_module._CAMERAS_JSON
+        cam_module._CAMERAS_JSON = cameras_file
+        try:
+            resp = client.get("/api/v1/cameras")
+            assert resp.status_code == 200
+            assert resp.json()["data"][0]["url"] == "rtsp://192.168.0.100:554/stream1"
         finally:
             cam_module._CAMERAS_JSON = original
 

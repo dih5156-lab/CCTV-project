@@ -344,6 +344,7 @@ services:
       FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE: ${FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE:-true}
       FALLDATA_AUX_MEDIAPIPE_PYTHON: ${FALLDATA_AUX_MEDIAPIPE_PYTHON:-/app/.venv-mediapipe/bin/python}
       FALLDATA_AUX_MODEL_PYTHON: ${FALLDATA_AUX_MODEL_PYTHON:-/app/.venv-falldata/bin/python}
+      FALLDATA_AUX_INLINE_FEATURE_CAPTURE_PATH: ${FALLDATA_AUX_INLINE_FEATURE_CAPTURE_PATH:-}
     volumes:
       - type: bind
         source: ./falldata
@@ -377,6 +378,36 @@ def test_falldata_aux_wiring_fails_without_fail_open() -> None:
 
     assert result["passed"] is False
     assert "FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE" in result["detail"]
+
+
+def test_falldata_aux_wiring_fails_without_disabled_feature_capture_default() -> None:
+    result = runtime_checks.check_falldata_aux_wiring(
+        compose_text=(
+            "FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE: "
+            "${FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE:-true}\n"
+        ),
+        jetson_compose_text=(
+            "FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE: "
+            "${FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE:-true}\n"
+            "FALLDATA_AUX_MEDIAPIPE_PYTHON: "
+            "${FALLDATA_AUX_MEDIAPIPE_PYTHON:-/app/.venv-mediapipe/bin/python}\n"
+            "FALLDATA_AUX_MODEL_PYTHON: "
+            "${FALLDATA_AUX_MODEL_PYTHON:-/app/.venv-falldata/bin/python}\n"
+            "source: ./falldata\n"
+            "source: ./.venv-mediapipe\n"
+            "source: ./.venv-falldata\n"
+        ),
+        env_example_text="FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE=true\n",
+        jetson_env_example_text=(
+            "FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE=true\n"
+            "FALLDATA_AUX_CONFIRM_BORDERLINE=true\n"
+            "FALLDATA_AUX_MEDIAPIPE_PYTHON=/app/.venv-mediapipe/bin/python\n"
+            "FALLDATA_AUX_MODEL_PYTHON=/app/.venv-falldata/bin/python\n"
+        ),
+    )
+
+    assert result["passed"] is False
+    assert "FALLDATA_AUX_INLINE_FEATURE_CAPTURE_PATH" in result["detail"]
 
 
 def test_h264_webrtc_wiring_requires_jetson_poc_guard() -> None:

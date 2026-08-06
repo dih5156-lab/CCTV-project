@@ -424,6 +424,11 @@ def check_falldata_aux_wiring(
             jetson,
             "FALLDATA_AUX_MODEL_PYTHON: ${FALLDATA_AUX_MODEL_PYTHON:-/app/.venv-falldata/bin/python}",
         ),
+        (
+            "docker-compose.jetson.yml",
+            jetson,
+            "FALLDATA_AUX_INLINE_FEATURE_CAPTURE_PATH: ${FALLDATA_AUX_INLINE_FEATURE_CAPTURE_PATH:-}",
+        ),
         ("docker-compose.jetson.yml", jetson, "source: ./falldata"),
         ("docker-compose.jetson.yml", jetson, "source: ./.venv-mediapipe"),
         ("docker-compose.jetson.yml", jetson, "source: ./.venv-falldata"),

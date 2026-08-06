@@ -92,6 +92,11 @@ def test_detections_to_events_builds_base_and_fall_events():
     ]
     assert events[0].metadata["backend"] == "deepstream_tensor"
     assert events[0].metadata["camera_id"] == "cam01"
+    assert events[0].metadata["fall_score"] == 3.5
+    assert events[0].metadata["fall_reasons"] == [
+        "torso_horizontal:12.0",
+        "low_vertical_span:0.20",
+    ]
     assert events[1].metadata["derived_from"] == "pose"
     assert events[1].metadata["fall_score"] == 3.5
     assert events[1].metadata["fall_reasons"] == [
@@ -133,6 +138,60 @@ def test_detections_to_events_keeps_fall_near_miss_on_person_event():
 
     assert [event.event_type for event in events] == [EventType.PERSON]
     assert events[0].metadata["fall_near_miss"]["type"] == "folded_floor_pose"
+
+
+def test_detections_to_events_preserves_detail_without_changing_event_type():
+    detections = [
+        {
+            "box": (1, 2, 3, 4),
+            "confidence": 0.9,
+            "class_id": 0,
+            "label": "person",
+            "is_fall": True,
+            "fall_direction": "뒤",
+            "fall_type": "뒤로 넘어짐",
+            "scene_cat_name": "후면낙상",
+            "fall_detail_source": "direction_classifier_v1",
+        }
+    ]
+
+    events = detections_to_events(
+        detections,
+        camera_name="cam01",
+        source_id=2,
+        frame_num=3,
+        timestamp_factory=lambda: 1000.0,
+        event_type_for_label=lambda label: EventType.PERSON,
+    )
+
+    assert events[-1].event_type == EventType.FALL_DETECTED
+    assert events[-1].metadata["fall_detail_status"] == "classified"
+    assert events[-1].metadata["fall_direction"] == "뒤"
+    assert events[-1].metadata["fall_type"] == "뒤로 넘어짐"
+    assert events[-1].metadata["scene_cat_name"] == "후면낙상"
+    assert events[-1].metadata["fall_detail_source"] == "direction_classifier_v1"
+
+
+def test_detections_to_events_marks_missing_detail_as_unclassified():
+    detections = [
+        {
+            "box": (1, 2, 3, 4),
+            "confidence": 0.9,
+            "class_id": 0,
+            "label": "person",
+            "is_fall": True,
+        }
+    ]
+    events = detections_to_events(
+        detections,
+        camera_name="cam01",
+        source_id=2,
+        frame_num=3,
+        timestamp_factory=lambda: 1000.0,
+        event_type_for_label=lambda label: EventType.PERSON,
+    )
+
+    assert events[-1].metadata["fall_detail_status"] == "unclassified"
 
 
 def test_detections_to_events_skips_unknown_labels():

@@ -594,6 +594,11 @@ services:
         host_ip: ${PUBLIC_DEMO_BIND_HOST:-127.0.0.1}
         published: "7000"
         protocol: tcp
+      # 일부 브라우저는 localhost를 먼저 IPv6(::1)로 해석한다.
+      - target: 7000
+        host_ip: "::"
+        published: "7000"
+        protocol: tcp
     restart: always
     <<: *edgex-security
     volumes:
@@ -665,6 +670,9 @@ services:
       TZ: Asia/Seoul
       PYTHONIOENCODING: utf-8
       PYTHONUTF8: "1"
+      # Jetson CUDA 12.6 PyTorch wheel is kept in the project-mounted training venv.
+      # Do not bind-mount empty host site-packages over the image runtime.
+      PYTHONPATH: /app/.venv-jetson-train/lib/python3.10/site-packages:/app
       APP_ENV: ${APP_ENV:-development}
       NVIDIA_VISIBLE_DEVICES: all
       NVIDIA_DRIVER_CAPABILITIES: compute,video,utility,graphics
@@ -733,11 +741,14 @@ services:
       STREAM_HEIGHT: ${STREAM_HEIGHT:-540}
       FALLDATA_AUX_ENABLED: ${FALLDATA_AUX_ENABLED:-false}
       FALLDATA_AUX_MODE: ${FALLDATA_AUX_MODE:-shadow}
+      FALLDATA_AUX_INLINE_POSE_RF: ${FALLDATA_AUX_INLINE_POSE_RF:-false}
+      FALLDATA_AUX_INLINE_FEATURE_CAPTURE_PATH: ${FALLDATA_AUX_INLINE_FEATURE_CAPTURE_PATH:-}
       FALLDATA_AUX_THRESHOLD: ${FALLDATA_AUX_THRESHOLD:-0.7}
       FALLDATA_AUX_FALL_CLASS_INDEX: ${FALLDATA_AUX_FALL_CLASS_INDEX:-0}
       FALLDATA_AUX_MIN_NONZERO_FRAMES: ${FALLDATA_AUX_MIN_NONZERO_FRAMES:-30}
       FALLDATA_AUX_BUFFER_FRAMES: ${FALLDATA_AUX_BUFFER_FRAMES:-600}
       FALLDATA_AUX_MAX_EXTRACT_FRAMES: ${FALLDATA_AUX_MAX_EXTRACT_FRAMES:-120}
+      FALLDATA_AUX_SEQUENCE_TRANSFORM: ${FALLDATA_AUX_SEQUENCE_TRANSFORM:-postpad}
       FALLDATA_AUX_TIMEOUT_SECONDS: ${FALLDATA_AUX_TIMEOUT_SECONDS:-30}
       FALLDATA_AUX_COOLDOWN_SECONDS: ${FALLDATA_AUX_COOLDOWN_SECONDS:-10}
       FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE: ${FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE:-true}
@@ -746,6 +757,7 @@ services:
       FALLDATA_AUX_CONFIRM_MAX_FALL_SCORE: ${FALLDATA_AUX_CONFIRM_MAX_FALL_SCORE:-4.5}
       FALLDATA_AUX_COMPARE_VETO_MIN_FALL_SCORE: ${FALLDATA_AUX_COMPARE_VETO_MIN_FALL_SCORE:-3.0}
       FALLDATA_AUX_COMPARE_MODEL_PATH: ${FALLDATA_AUX_COMPARE_MODEL_PATH:-}
+      FALLDATA_AUX_COMPARE_THRESHOLD: ${FALLDATA_AUX_COMPARE_THRESHOLD:-}
       FALLDATA_AUX_MEDIAPIPE_PYTHON: ${FALLDATA_AUX_MEDIAPIPE_PYTHON:-/app/.venv-mediapipe/bin/python}
       FALLDATA_AUX_MODEL_PYTHON: ${FALLDATA_AUX_MODEL_PYTHON:-/app/.venv-falldata/bin/python}
       FALLDATA_AUX_MODEL_PATH: ${FALLDATA_AUX_MODEL_PATH:-/app/falldata/2. AI학습모델파일/영상/낙상분류/FNF_RF_SMOTE_CAM_1.pkl}
@@ -886,6 +898,10 @@ services:
         target: /app/Sample
         read_only: true
       - type: bind
+        source: ${FALL_DATASET_HOST_PATH:-/media/sawwave/Learning11/낙상학습데이터}
+        target: /app/낙상학습데이터
+        read_only: true
+      - type: bind
         source: ./falldata
         target: /app/falldata
         read_only: true
@@ -925,24 +941,6 @@ services:
       - type: volume
         source: trt-cache
         target: /app/models/trt_cache
-      # ── Jetson 전용 PyTorch (큰 디스크에 설치한 NVIDIA JP6 / CUDA 12.6 wheel 마운트) ──
-      # Root 저장공간을 아끼고, 컨테이너 내부에서 검증된 GPU wheel을 우선 사용한다.
-      - type: bind
-        source: ${JETSON_TORCH_SITE_PACKAGES:-/media/sawwave/Learning1/jetson-py310-cu126/site-packages}/torch
-        target: /usr/local/lib/python3.10/dist-packages/torch
-        read_only: true
-      - type: bind
-        source: ${JETSON_TORCH_SITE_PACKAGES:-/media/sawwave/Learning1/jetson-py310-cu126/site-packages}/torchgen
-        target: /usr/local/lib/python3.10/dist-packages/torchgen
-        read_only: true
-      - type: bind
-        source: ${JETSON_TORCH_SITE_PACKAGES:-/media/sawwave/Learning1/jetson-py310-cu126/site-packages}/functorch
-        target: /usr/local/lib/python3.10/dist-packages/functorch
-        read_only: true
-      - type: bind
-        source: ${JETSON_TORCH_SITE_PACKAGES:-/media/sawwave/Learning1/jetson-py310-cu126/site-packages}/torchvision
-        target: /usr/local/lib/python3.10/dist-packages/torchvision
-        read_only: true
 
   # ── EdgeX 어댑터 (AI 이벤트 → EdgeX 파이프라인 브릿지) ──────────────────────
   cctv-edgex-adapter:

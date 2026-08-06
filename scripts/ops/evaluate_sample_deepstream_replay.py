@@ -865,7 +865,11 @@ def evaluate(args: argparse.Namespace) -> list[dict[str, Any]]:
                 if args.restart_ai_engine:
                     _restart_ai_engine(args.compose_file, args.compose_env_file)
                     time.sleep(args.restart_wait_seconds)
-                time.sleep(duration + args.shadow_wait_seconds)
+                time.sleep(
+                    duration
+                    + args.shadow_wait_seconds
+                    + max(getattr(args, "post_replay_drain_seconds", 0.0), 0.0)
+                )
             else:
                 on_publisher_started = None
                 if args.apply_camera_config and args.restart_ai_engine:
@@ -1056,6 +1060,7 @@ def main() -> int:
     parser.add_argument("--assumed-fps", type=float, default=30.0)
     parser.add_argument("--timeout-grace-seconds", type=float, default=8.0)
     parser.add_argument("--shadow-wait-seconds", type=float, default=3.0)
+    parser.add_argument("--post-replay-drain-seconds", type=float, default=10.0)
     parser.add_argument("--restart-wait-seconds", type=float, default=20.0)
     parser.add_argument("--runtime-result-timeout-seconds", type=float, default=25.0)
     parser.add_argument("--runtime-result-poll-seconds", type=float, default=1.0)

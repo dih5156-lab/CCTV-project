@@ -125,6 +125,7 @@ def _read_events(
     time_from: Optional[float] = None,
     time_to: Optional[float] = None,
     event_type: Optional[str] = None,
+    fall_direction: Optional[str] = None,
 ) -> tuple[List[EventOut], int]:
     """JSONL 파일에서 이벤트를 읽어 필터링·페이지네이션한다."""
     # 최대 (limit + offset) * 10 또는 5000라인 중 큰 값 tail 읽기
@@ -146,6 +147,26 @@ def _read_events(
                 continue
             if camera_id is not None and item["camera_id"] != camera_id:
                 continue
+            if fall_direction is not None:
+                metadata = item.get("metadata") or {}
+                direction = str(metadata.get("fall_direction") or "").lower()
+                category = str(
+                    metadata.get("scene_cat_name") or metadata.get("fall_category") or ""
+                ).lower()
+                direction_alias = {
+                    "전면": "front",
+                    "후면": "back",
+                    "측면": "side",
+                }.get(fall_direction, fall_direction)
+                if fall_direction == "unclassified":
+                    if metadata.get("fall_detail_status") != "unclassified":
+                        continue
+                elif direction_alias != direction and not (
+                    (direction_alias == "front" and "전면" in category)
+                    or (direction_alias == "back" and "후면" in category)
+                    or (direction_alias == "side" and "측면" in category)
+                ):
+                    continue
             all_items.append(item)
         except (json.JSONDecodeError, KeyError):
             continue
@@ -173,7 +194,7 @@ def _read_events(
     summary="탐지 이벤트 목록 조회",
     description=(
         "최신 순으로 탐지 이벤트를 반환합니다. "
-        "camera_id, event_type, 시간 범위(time_from/time_to)로 필터링 가능합니다."
+        "camera_id, event_type, fall_direction, 시간 범위(time_from/time_to)로 필터링 가능합니다."
     ),
 )
 @limiter.limit("60/minute")
@@ -183,6 +204,11 @@ async def list_events(
     offset: int = Query(default=0, ge=0, description="시작 오프셋"),
     camera_id: Optional[str] = Query(default=None, description="특정 카메라 필터"),
     event_type: Optional[str] = Query(default=None, description="이벤트 타입 필터 (예: fall_detected, helmet)"),
+    fall_direction: Optional[str] = Query(
+        default=None,
+        pattern="^(front|back|side|전면|후면|측면|unclassified)$",
+        description="낙상 방향 필터 (front/back/side 또는 전면/후면/측면)",
+    ),
     time_from: Optional[float] = Query(default=None, description="시작 Unix timestamp (초 단위)"),
     time_to: Optional[float] = Query(default=None, description="종료 Unix timestamp (초 단위)"),
     _: None = Depends(verify_api_key),
@@ -195,5 +221,6 @@ async def list_events(
         time_from=time_from,
         time_to=time_to,
         event_type=event_type,
+        fall_direction=fall_direction,
     )
     return PaginatedResponse(items=items, total=total, limit=limit, offset=offset)

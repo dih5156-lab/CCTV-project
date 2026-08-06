@@ -92,6 +92,26 @@ def test_config_disables_inline_feature_capture_when_env_is_blank(
     assert config.inline_feature_capture_path is None
 
 
+def test_config_reads_camera_compare_model_map(monkeypatch, tmp_path) -> None:
+    camera_model = tmp_path / "camera-2.pkl"
+    monkeypatch.setenv(
+        "FALLDATA_AUX_COMPARE_MODEL_MAP",
+        json.dumps({"camera_2": str(camera_model)}),
+    )
+
+    config = FallDataAuxConfig.from_env()
+
+    assert config.compare_model_paths_by_camera == {"camera_2": camera_model}
+
+
+def test_config_ignores_invalid_camera_compare_model_map(monkeypatch) -> None:
+    monkeypatch.setenv("FALLDATA_AUX_COMPARE_MODEL_MAP", "not-json")
+
+    config = FallDataAuxConfig.from_env()
+
+    assert config.compare_model_paths_by_camera is None
+
+
 def test_inline_feature_capture_writes_exact_summary_vector(tmp_path) -> None:
     capture_path = tmp_path / "inline-features.jsonl"
     verifier = FallDataAuxVerifier(
@@ -298,6 +318,24 @@ def test_inline_pose_rf_uses_camera_pose_records_without_subprocess(
     } == {42}
     assert verifier.snapshot_frames() == []
     assert other_camera_result["status"] == "no_pose_records"
+
+
+def test_inline_pose_rf_clip_buffer_downscales_frames() -> None:
+    verifier = FallDataAuxVerifier(
+        FallDataAuxConfig(
+            enabled=True,
+            inline_pose_rf=True,
+            clip_buffer_enabled=True,
+            clip_buffer_width=640,
+            clip_buffer_height=360,
+        )
+    )
+
+    verifier.add_frame(np.zeros((720, 1280, 3), dtype=np.uint8))
+
+    frames = verifier.snapshot_frames()
+    assert len(frames) == 1
+    assert frames[0].shape == (360, 640, 3)
 
 
 def test_shadow_mode_keeps_event_and_adds_metadata(monkeypatch) -> None:
