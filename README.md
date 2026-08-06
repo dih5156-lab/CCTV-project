@@ -109,6 +109,15 @@ python scripts/compare_fall_models.py \
 
 ### 테스트 영상 재생 검증
 
+먼저 방향별 테스트 영상을 자동으로 선정합니다.
+
+```bash
+python scripts/datasets/build_fall_test_manifest.py \
+  --manifest data/fall_eval/auto/validation_manifest.jsonl \
+  --output data/fall_eval/test_manifest.jsonl \
+  --per-group 5
+```
+
 DeepStream 테스트 영상 재생과 TP/FN/FP/TN 집계는 기존 도구를 사용합니다.
 
 ```bash
