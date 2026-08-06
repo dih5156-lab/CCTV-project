@@ -124,6 +124,24 @@ models/training/
 .venv-falldata/
 .venv-mediapipe/
 .venv-jetson-train/
+.venv-code-review-graph/
+
+# 로컬 에이전트/코드리뷰 도구 설정
+.claude/
+.codebuddy/
+.gemini/
+.kiro/
+.qoder/
+.superpowers/
+.cursorrules
+.windsurfrules
+.mcp.json
+opencode.jsonc
+AGENTS.md
+CLAUDE.md
+CODEBUDDY.md
+GEMINI.md
+QODER.md
 
 .pytest_tmp/
 *.db
@@ -139,6 +157,8 @@ data/fall_eval/
 data/fall_review_clips/
 data/fall_dataset/
 data/datasets/
+data/backups/
+data/training/
 Sample/
 # Added by code-review-graph
 .code-review-graph/
