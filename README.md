@@ -85,6 +85,19 @@ python scripts/validate_event_contracts.py --file /path/to/events.json
 
 검증 실패는 종료 코드 `1`, 입력 파일 형식 오류는 `2`를 반환하며 결과는 JSON으로 출력됩니다.
 
+검증된 샘플을 실제 MQTT에 보내지 않고 재생 계획만 확인하려면 다음을 실행합니다.
+
+```bash
+python scripts/smoke/replay_event_contract_samples.py
+```
+
+실제 브로커 발행은 명시적으로 `--publish`를 지정해야 하며, critical 이벤트는 기본적으로 제외됩니다.
+
+```bash
+python scripts/smoke/replay_event_contract_samples.py --publish
+python scripts/smoke/replay_event_contract_samples.py --publish --include-critical
+```
+
 ## 이벤트 흐름
 
 ```text
