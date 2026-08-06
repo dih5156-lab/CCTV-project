@@ -71,7 +71,76 @@ aiot/rules/sensor/vibration
 
 센서 이벤트도 `metadata`에 원본 센서 값과 수신 정보를 보존합니다.
 
-## 3. Canonical Event
+## 3. 센서 파서 구조
+
+센서 파서는 **바이너리 수신값을 해석하는 계층**입니다. Kuiper처럼 SQL로 이벤트를 판단하는 계층이 아닙니다.
+
+```text
+LoRa/MQTT uplink
+  → Base64 디코딩
+  → LwM2M TLV 파싱(offset 8)
+  → tableName별 typed 데이터(T34954, T34955, T34958 ...)
+  → 공통 SensorData 원시 저장
+  → EdgeX/MQTT/센서 이벤트 브리지
+```
+
+파서 입력은 `app_id`, `dev_eui`, Base64 `payload`, 채널·주파수·수신시각입니다. 파싱 결과는 `tableName`과 `data`로 분리합니다.
+
+```json
+{
+  "dev_eui": "0102030405060708",
+  "app_eui": "aabbccddeeff0011",
+  "device_id": "worker-sensor-01",
+  "table": "t34958",
+  "data": {
+    "acc_x_g": 0.02,
+    "acc_y_g": 0.11,
+    "acc_z_g": 1.01,
+    "angle_x_deg": 52.0,
+    "angle_y_deg": 4.0,
+    "event_code": true
+  },
+  "received_at": 1770000000
+}
+```
+
+이 데이터는 `aiot/sensors/{dev_eui}/{table}`로 발행되고, 동시에 EdgeX Core Data와 센서 로그 API로 전달됩니다. 파서가 알람을 직접 결정하지 않는 이유는 원시값 저장과 운영 임계치 판단을 분리하기 위해서입니다.
+
+## 4. 센서 규칙 브리지와 Kuiper 룰
+
+센서 규칙 브리지는 파싱된 센서 측정값을 `SensorReading`으로 정규화한 뒤, 기울기·온도 detector를 실행합니다.
+
+```text
+aiot/sensors/#
+  → SensorRuleBridge
+  → SensorReading.from_decoded()
+  → tilt_alert(30°/45°), temperature_alert(50℃/70℃)
+  → aiot/rules/sensor/{event_type}
+  → Action Layer(스피커·전광판·사이렌)
+```
+
+예를 들어 `angle_x_deg=52`이면 `tilt_alert`, `severity=critical`이 생성됩니다. MQTT 발행 실패 시 최대 500건을 메모리에 보류했다가 연결이 복구되면 재발행합니다.
+
+Kuiper는 **이미 JSON으로 발행된 AI 이벤트를 SQL 스트림으로 필터·집계·라우팅하는 계층**입니다.
+
+```sql
+SELECT camera_id, type, confidence
+FROM ai_events_stream
+WHERE type IN ('fall_detected', 'unsafe_behavior')
+  AND confidence >= 0.7;
+```
+
+현재 룰 묶음은 다음 세 가지입니다.
+
+- `intrusion_confidence_filter`: 신뢰도 0.7 이상 이벤트를 필터링
+- `intrusion_5s_persist`: 5초 tumbling window에서 5회 이상 지속된 이벤트를 라우팅
+- `intrusion_high_confidence_routing`: 신뢰도 0.9 이상을 `critical`로 라우팅
+
+Kuiper 스트림은 `cctv/ai/events/+/+`를 구독하고, 결과는 `cctv/rules/intrusion/filtered`, `/persisted`, `/critical` 토픽으로 발행합니다. `runners/run_kuiper_rules.py`는 MQTT 소스 설정 → 스트림 재생성 → 룰 삭제·재등록을 REST API로 수행하며, 임계값은 환경변수나 CLI로 주입됩니다.
+
+즉, 센서 파서는 `바이트 → 측정값`, 센서 규칙 브리지는 `측정값 → 센서 알람`, Kuiper는 `JSON 이벤트 → 조건부 라우팅`을 담당합니다.
+
+## 5. Canonical Event
 
 `src/canonical_event.py`의 `canonicalize_event_payload()`가 레거시 payload를 보강합니다.
 
@@ -99,7 +168,16 @@ aiot/rules/sensor/vibration
 
 기존 `type`, `camera_id`, `confidence`, `severity`, `metadata` 필드는 하위 호환을 위해 제거하지 않습니다. 표준 소비자는 `event.event_type`와 `occurred_at`을 우선 사용합니다.
 
-## 4. EdgeX v3 이벤트
+### 원본 JSON과 Canonical Event가 비슷해 보이는 이유
+
+둘은 서로 다른 이벤트가 아니라 **같은 사실을 두 소비자 층에 맞춰 표현한 것**입니다.
+
+- AI 원본 JSON: 기존 MQTT 소비자와 Action Layer가 즉시 읽는 평평한 레거시 형식
+- Canonical Event: 여러 생산자(AI·센서·외부 MQTT)를 Public API와 EdgeX에서 공통 처리하기 위한 표준 봉투
+
+따라서 `type`과 `event.event_type`, `timestamp`와 `occurred_at`, `camera_id`와 `device.camera_id`처럼 값이 겹칩니다. Canonical 변환은 원본을 새로 생성하거나 버리는 작업이 아니라, 원본 필드를 보존하면서 표준 위치와 `schema_version`, `message_type`, `source`, `raw`를 추가하는 보강(enrichment)입니다. 이 중복이 있어야 기존 구독자는 계속 동작하고, 새 소비자는 표준 필드만 사용해 AI·센서 이벤트를 동일하게 처리할 수 있습니다.
+
+## 6. EdgeX v3 이벤트
 
 EdgeX로 전달할 때는 value가 JSON 문자열인 reading으로 변환합니다.
 
@@ -131,7 +209,7 @@ EdgeX로 전달할 때는 value가 JSON 문자열인 reading으로 변환합니�
 | `helmet`, `head` | `helmet_detection` |
 | `person` | `person_detection` |
 
-## 5. Public API 계약
+## 7. Public API 계약
 
 ```text
 GET  /api/v1/events
@@ -146,7 +224,7 @@ Public API 응답은 `metadata`를 객체로 반환합니다. 방향 검색은 �
 
 자세한 요청·응답 예시는 [API_QUICK_REFERENCE.md](API_QUICK_REFERENCE.md)를 참고하세요.
 
-## 6. Action Layer 계약
+## 8. Action Layer 계약
 
 Action Layer는 `event_type`과 `severity`로 알람 종류를 결정합니다. `metadata.fall_direction`과 `fall_type`은 저장·조회용이며 장치 문구를 변경하지 않습니다.
 
