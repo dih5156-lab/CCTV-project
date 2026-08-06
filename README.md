@@ -60,6 +60,22 @@ docker exec cctv-ai-engine python -c \
 웹 시연 화면은 `web/public-demo.html`이며, 이벤트 조회에서 낙상 방향 필터를 제공합니다.
 API 요청·응답 예시는 [API_QUICK_REFERENCE.md](docs/guides/API_QUICK_REFERENCE.md), MQTT·EdgeX·JSON 필드 계약은 [EVENT_DATA_CONTRACT.md](docs/guides/EVENT_DATA_CONTRACT.md)를 참고합니다.
 
+### 이벤트 타입 요약
+
+| 이벤트 | 의미 | 상세정보 저장 위치 |
+|---|---|---|
+| `person` | 사람 검출 | `object_id`, `bbox`, `confidence` |
+| `helmet` / `head` | 헬멧 착용 / 미착용 | `metadata`, 외형 DB |
+| `fall_detected` | 통합 낙상 이벤트 | `fall_direction`, `fall_type`, `keypoints` |
+| `face_recognized` / `face_unknown` | 등록 / 미등록 얼굴 | `face_*` 메타데이터 |
+| `danger_zone` / `intrusion` | 위험구역 침입 | `zone_id`, `zone_name`, `zone_event` |
+| `zone_object` | 감시구역 객체 | `mode=object_watch` |
+| `crowd_warning` | 인원 임계치 초과 | `person_count`, `threshold` |
+| `appearance_match` | 외형 조건 일치 | 외형 DB의 색상·헬멧·가방 필드 |
+| `unsafe_behavior` | 위험행동 | `reason`, `behavior`, `score` |
+
+장치에는 통합 경보 문구를 출력하고, 방향·외형·구역 같은 세부값은 DB/API 조회용으로 보존합니다.
+
 ## 이벤트 흐름
 
 ```text
