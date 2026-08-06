@@ -33,6 +33,13 @@ events_handled: Counter = Counter(
     registry=REGISTRY,
 )
 
+events_handled_by_type: Counter = Counter(
+    "cctv_events_handled_by_type_total",
+    "이벤트 타입별 처리 총 수",
+    ["event_type", "mode"],  # event_type: fall_detected|helmet|...; mode: auto|manual
+    registry=REGISTRY,
+)
+
 # ── 장치 명령 ────────────────────────────────────────────────────────────────
 
 device_commands: Counter = Counter(

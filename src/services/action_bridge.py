@@ -67,6 +67,7 @@ from ._action_bridge_topics import (
 from .cctv_metrics import (
     action_bridge_up,
     events_handled,
+    events_handled_by_type,
     mqtt_events_received,
 )
 from .cctv_metrics import (
@@ -399,7 +400,9 @@ class ActionBridge:
         mode, site_id = self._sites.resolve_mode(camera_id)
         action_settings = self._sites.resolve_action_settings(camera_id)
 
+        event_type = get_payload_event_type(payload).lower()
         events_handled.labels(mode=mode.value).inc()
+        events_handled_by_type.labels(event_type=event_type, mode=mode.value).inc()
 
         confidence_threshold = action_settings.get("confidence_threshold")
         if confidence_threshold is not None:
