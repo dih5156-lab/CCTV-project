@@ -1,0 +1,9 @@
+[Unit]
+Description=CCTV 런타임 DB 및 검수 로그 백업
+After=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=@PROJECT_ROOT@
+EnvironmentFile=-/etc/default/cctv-runtime-backup
+ExecStart=@PROJECT_ROOT@/scripts/ops/backup_runtime_databases.sh

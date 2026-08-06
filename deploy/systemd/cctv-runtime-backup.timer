@@ -1,0 +1,10 @@
+[Unit]
+Description=CCTV 런타임 DB 및 검수 로그 일일 백업 예약
+
+[Timer]
+OnCalendar=*-*-* 03:30:00
+Persistent=true
+Unit=cctv-runtime-backup.service
+
+[Install]
+WantedBy=timers.target
