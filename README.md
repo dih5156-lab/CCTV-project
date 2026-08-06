@@ -58,6 +58,7 @@ docker exec cctv-ai-engine python -c \
 | Prometheus | 9090 | 메트릭 |
 
 웹 시연 화면은 `web/public-demo.html`이며, 이벤트 조회에서 낙상 방향 필터를 제공합니다.
+API 요청·응답 예시는 [API_QUICK_REFERENCE.md](docs/guides/API_QUICK_REFERENCE.md), MQTT·EdgeX·JSON 필드 계약은 [EVENT_DATA_CONTRACT.md](docs/guides/EVENT_DATA_CONTRACT.md)를 참고합니다.
 
 ## 이벤트 흐름
 
