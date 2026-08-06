@@ -38,6 +38,136 @@ AI 엔진은 기존 소비자 호환을 위해 top-level 필드를 유지합니�
 
 낙상 방향은 `metadata`에 저장하며, 이벤트 타입은 항상 `fall_detected`로 통합합니다.
 
+## 이벤트별 공통 구조
+
+영상 이벤트는 `DetectionEvent.to_dict()`를 통해 공통 필드를 사용합니다.
+
+| 이벤트 | 의미 | 주요 상세 필드 | 기본 성격 |
+|---|---|---|---|
+| `person` | 사람 검출 | `object_id`, `class_name`, `bbox` | 정보 |
+| `helmet` | 헬멧 착용 검출 | `object_id`, `class_name`, `bbox` | 정보 |
+| `head` | 안전모 미착용/머리 검출 | `object_id`, `helmet_reason` | 경고 |
+| `fall_detected` | 낙상 판정 | `fall_score`, `fall_direction`, `fall_type`, `keypoints` | 긴급 |
+| `face_recognized` | 등록 얼굴 인식 | `face_name`, `face_score`, `face_person_id` | 조회/경고 |
+| `face_unknown` | 미등록 얼굴 인식 | `face_score`, `recognizer`, `face_decision` | 경고 |
+| `danger_zone` / `intrusion` | 위험구역 침입 | `zone_id`, `zone_name`, `mode` | 긴급 |
+| `zone_object` | 감시구역 객체 검출 | `zone_id`, `mode=object_watch` | 경고 |
+| `crowd_warning` | 인원 임계치 초과 | `zone_id`, `person_count`, `threshold` | 경고 |
+| `appearance_match` | 외형 조건 매칭 | 색상·헬멧·가방 속성 | 설정에 따름 |
+| `unsafe_behavior` | 위험행동 검출 | `reason`, `behavior`, `score` | 긴급 |
+
+공통 이벤트 예시는 다음과 같습니다.
+
+```json
+{
+  "type": "helmet",
+  "severity": "normal",
+  "bbox": {"x": 100, "y": 80, "width": 220, "height": 380},
+  "confidence": 0.93,
+  "timestamp": 1770000000.0,
+  "object_id": 12,
+  "class_name": "helmet",
+  "metadata": {
+    "backend": "deepstream",
+    "camera_id": "cam01",
+    "source_id": 0,
+    "frame_num": 1820
+  }
+}
+```
+
+`head`는 안전모 미착용 안내, `helmet`은 착용 확인에 사용합니다. 장치 문구와 우선순위는 `config/event_type_map.json`에서 결정됩니다.
+
+### 낙상 이벤트
+
+```json
+{
+  "type": "fall_detected",
+  "severity": "critical",
+  "confidence": 0.86,
+  "object_id": 12,
+  "keypoints": [[120, 90, 0.98], [130, 110, 0.95]],
+  "metadata": {
+    "fall_score": 5.2,
+    "fall_direction": "back",
+    "fall_type": "뒤로 넘어짐",
+    "fall_detail_status": "classified",
+    "skeleton_format": "coco17_xyc"
+  }
+}
+```
+
+스피커·전광판에는 통합 낙상 문구를 사용하고, 방향과 세부 유형은 DB/API 조회용으로 보존합니다.
+
+### 얼굴 인식 이벤트
+
+```json
+{
+  "type": "face_recognized",
+  "severity": "normal",
+  "confidence": 0.91,
+  "object_id": 12,
+  "metadata": {
+    "person_object_id": 12,
+    "face_name": "등록 사용자",
+    "face_score": 0.91,
+    "face_person_id": "worker-001",
+    "face_category": "employee",
+    "recognizer": "insightface"
+  }
+}
+```
+
+미등록 얼굴은 `type=face_unknown`, `face_decision=unknown`으로 저장합니다. 실제 얼굴 이름과 ID는 개인정보이므로 로그·문서에 넣지 않습니다.
+
+### 구역 이벤트
+
+```json
+{
+  "type": "danger_zone",
+  "severity": "critical",
+  "confidence": 0.88,
+  "object_id": 12,
+  "metadata": {
+    "zone_id": "zone-a",
+    "zone_name": "위험구역 A",
+    "mode": "danger",
+    "zone_event": "zone_entered"
+  }
+}
+```
+
+구역 상태 변화는 `zone_entered`, `zone_dwelling`, `zone_exited`, `zone_object_detected`로 기록될 수 있습니다. 화면 표시 시 사람은 `danger_zone`, 객체 감시 모드는 `zone_object`로 매핑됩니다.
+
+### 외형 이벤트·외형 DB 레코드
+
+외형 분석은 사람 track과 연결된 별도 DB 레코드로 저장됩니다.
+
+```json
+{
+  "event_id": "appearance:cam01:12:1770000000000",
+  "camera_id": "cam01",
+  "track_id": 12,
+  "upper_color": "blue",
+  "lower_color": "black",
+  "has_helmet": true,
+  "helmet_color": "yellow",
+  "has_backpack": false,
+  "has_handbag": false,
+  "gender": "unknown",
+  "age_group": "adult",
+  "face_name": null,
+  "attribute_backend": "attribute_backend",
+  "bbox_x": 100,
+  "bbox_y": 80,
+  "bbox_w": 220,
+  "bbox_h": 380,
+  "timestamp": 1770000000.0
+}
+```
+
+외형 검색 조건과 일치해 운영 이벤트가 필요할 때만 `appearance_match`를 발행하고, 원본 속성은 appearance DB에서 조회합니다.
+
 ## 2. MQTT 계약
 
 ### AI 탐지 토픽
