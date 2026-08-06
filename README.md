@@ -128,6 +128,15 @@ python scripts/quality_gate_fall_replay.py \
   --min-recall 0.80
 ```
 
+모델 교체는 기본적으로 dry-run이며, 명시적으로 `--approve`를 지정해야 합니다.
+
+```bash
+python scripts/promote_fall_model.py \
+  --comparison models/experiments/fall_model_comparison.json \
+  --candidate-model models/experiments/yolo_pose_fall_rf.pkl \
+  --target-model models/experiments/yolo_pose_fall_operational.pkl
+```
+
 ## API 예시
 
 ```bash
