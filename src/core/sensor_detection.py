@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from math import isfinite
+from math import isfinite, sqrt
 from typing import Any, Callable, Dict, List, Optional
 
 from ..canonical_event import build_canonical_event
@@ -18,6 +18,11 @@ class SensorRuleConfig:
     tilt_critical_angle: float = 45.0
     temperature_warning: float = 50.0
     temperature_critical: float = 70.0
+    # T34958 가속도 크기가 정지 상태의 중력(1g)에서 벗어나는 정도.
+    # 전용 진동 센서의 주파수 분석값이 아니라 IMU 기반 충격 감지 임계치다.
+    vibration_warning_delta_g: float = 0.5
+    vibration_critical_delta_g: float = 1.0
+    vibration_reference_g: float = 1.0
 
 
 @dataclass
@@ -92,6 +97,7 @@ class SensorEventDetector:
         self._detectors: List[Callable[[SensorReading], Optional[SensorAlertEvent]]] = [
             self._detect_tilt_alert,
             self._detect_temperature_alert,
+            self._detect_vibration_alert,
         ]
 
     def register_detector(
@@ -158,6 +164,50 @@ class SensorEventDetector:
             severity=severity,
             message="온도 이상 감지",
             telemetry={"temperature_c": temperature},
+        )
+
+    def _detect_vibration_alert(self, reading: SensorReading) -> Optional[SensorAlertEvent]:
+        """IMU 3축 가속도 크기의 1g 대비 편차를 충격/진동으로 판정한다.
+
+        샘플링 주파수와 전용 진동 센서값이 없는 현재 T34958 payload에서는
+        주파수 영역 진동 분석을 할 수 없으므로, 순간 가속도 편차만 다룬다.
+        3축이 모두 유효하지 않으면 오탐 방지를 위해 판정하지 않는다.
+        """
+        axis_values = []
+        for axis in ("x", "y", "z"):
+            value = reading.telemetry.get(f"acc_{axis}_g")
+            if value is None:
+                # 일부 레거시 입력은 단위를 생략한 acc_x 형식을 사용한다.
+                value = reading.telemetry.get(f"acc_{axis}")
+            parsed = self._coerce_float(value, max_abs=32.0)
+            if parsed is None:
+                return None
+            axis_values.append(parsed)
+
+        magnitude_g = sqrt(sum(value * value for value in axis_values))
+        delta_g = abs(magnitude_g - self.rules.vibration_reference_g)
+        severity = self._threshold_severity(
+            delta_g,
+            warning_threshold=self.rules.vibration_warning_delta_g,
+            critical_threshold=self.rules.vibration_critical_delta_g,
+        )
+        if severity is None:
+            return None
+
+        telemetry = {
+            "acc_x_g": axis_values[0],
+            "acc_y_g": axis_values[1],
+            "acc_z_g": axis_values[2],
+            "acceleration_magnitude_g": round(magnitude_g, 4),
+            "vibration_delta_g": round(delta_g, 4),
+            "detection_method": "imu_acceleration_delta_from_1g",
+        }
+        return self._build_alert_event(
+            reading,
+            event_type="vibration_alert",
+            severity=severity,
+            message="진동 충격 감지",
+            telemetry=telemetry,
         )
 
     def _build_alert_event(

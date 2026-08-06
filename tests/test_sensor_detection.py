@@ -250,6 +250,52 @@ def test_temperature_ignore_string():
 
 
 # ──────────────────────────────────────────────
+# IMU 진동/충격 — 가속도 크기 편차
+# ──────────────────────────────────────────────
+
+def test_detect_vibration_warning_from_imu_acceleration():
+    events = SensorEventDetector().detect_events(
+        _reading(acc_x_g=1.6, acc_y_g=0.0, acc_z_g=0.0)
+    )
+    assert len(events) == 1
+    assert events[0].event_type == "vibration_alert"
+    assert events[0].severity == "warning"
+    assert events[0].metadata["telemetry"]["detection_method"] == "imu_acceleration_delta_from_1g"
+
+
+def test_detect_vibration_critical_from_imu_acceleration():
+    events = SensorEventDetector().detect_events(
+        _reading(acc_x_g=2.1, acc_y_g=0.0, acc_z_g=0.0)
+    )
+    assert len(events) == 1
+    assert events[0].event_type == "vibration_alert"
+    assert events[0].severity == "critical"
+
+
+def test_normal_gravity_acceleration_does_not_trigger_vibration():
+    events = SensorEventDetector().detect_events(
+        _reading(acc_x_g=0.0, acc_y_g=0.0, acc_z_g=1.0)
+    )
+    assert events == []
+
+
+def test_partial_or_invalid_imu_acceleration_is_ignored():
+    assert SensorEventDetector().detect_events(_reading(acc_x_g=2.0, acc_y_g=0.0)) == []
+    assert SensorEventDetector().detect_events(
+        _reading(acc_x_g="invalid", acc_y_g=0.0, acc_z_g=1.0)
+    ) == []
+
+
+def test_custom_vibration_thresholds_are_applied():
+    rules = SensorRuleConfig(vibration_warning_delta_g=0.2, vibration_critical_delta_g=0.4)
+    events = SensorEventDetector(rules).detect_events(
+        _reading(acc_x_g=1.3, acc_y_g=0.0, acc_z_g=0.0)
+    )
+    assert len(events) == 1
+    assert events[0].severity == "warning"
+
+
+# ──────────────────────────────────────────────
 # 복합 케이스 (기울기 + 온도 동시 발생)
 # ──────────────────────────────────────────────
 

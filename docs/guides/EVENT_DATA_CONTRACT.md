@@ -238,18 +238,20 @@ LoRa/MQTT uplink
 
 ## 4. 센서 규칙 브리지와 Kuiper 룰
 
-센서 규칙 브리지는 파싱된 센서 측정값을 `SensorReading`으로 정규화한 뒤, 기울기·온도 detector를 실행합니다.
+센서 규칙 브리지는 파싱된 센서 측정값을 `SensorReading`으로 정규화한 뒤, 기울기·온도·IMU 진동 detector를 실행합니다.
 
 ```text
 aiot/sensors/#
   → SensorRuleBridge
   → SensorReading.from_decoded()
-  → tilt_alert(30°/45°), temperature_alert(50℃/70℃)
+  → tilt_alert(30°/45°), temperature_alert(50℃/70℃), vibration_alert(Δ가속도 0.5g/1.0g)
   → aiot/rules/sensor/{event_type}
   → Action Layer(스피커·전광판·사이렌)
 ```
 
 예를 들어 `angle_x_deg=52`이면 `tilt_alert`, `severity=critical`이 생성됩니다. MQTT 발행 실패 시 최대 500건을 메모리에 보류했다가 연결이 복구되면 재발행합니다.
+
+`T34958`에 전용 진동값이나 샘플링 주파수가 포함되지 않는 경우, `acc_x_g`, `acc_y_g`, `acc_z_g` 3축의 벡터 크기와 기준 중력 1g의 편차를 계산해 `vibration_alert`를 생성합니다. 기본값은 편차 0.5g 이상 `warning`, 1.0g 이상 `critical`이며 `SensorRuleConfig`로 조정할 수 있습니다. 이 방식은 주파수·RMS 기반의 지속 진동 분석이 아니라 순간 충격/큰 가속도 변화 감지입니다. 프로파일에는 단위(`g`)만 정의되어 있고 센서 제조사 물리 측정 범위는 확인되지 않았으므로, 코드의 ±32g 입력 제한은 하드웨어 사양이 아닌 비정상 payload를 거르는 소프트웨어 sanity bound입니다.
 
 Kuiper는 **이미 JSON으로 발행된 AI 이벤트를 SQL 스트림으로 필터·집계·라우팅하는 계층**입니다.
 
