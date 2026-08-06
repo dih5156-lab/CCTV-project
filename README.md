@@ -107,6 +107,27 @@ python scripts/compare_fall_models.py \
   --candidate-model models/experiments/yolo_pose_fall_rf.pkl
 ```
 
+### 테스트 영상 재생 검증
+
+DeepStream 테스트 영상 재생과 TP/FN/FP/TN 집계는 기존 도구를 사용합니다.
+
+```bash
+python scripts/ops/evaluate_sample_deepstream_replay.py \
+  --source-mode file \
+  --max-videos 20 \
+  --results-jsonl data/fall_eval/test_replay_results.jsonl \
+  --results-csv data/fall_eval/test_replay_results.csv
+```
+
+재생 결과에 대해 운영 품질 기준을 확인합니다.
+
+```bash
+python scripts/quality_gate_fall_replay.py \
+  --results-jsonl data/fall_eval/test_replay_results.jsonl \
+  --min-precision 0.90 \
+  --min-recall 0.80
+```
+
 ## API 예시
 
 ```bash
