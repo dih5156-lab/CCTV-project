@@ -76,6 +76,15 @@ API 요청·응답 예시는 [API_QUICK_REFERENCE.md](docs/guides/API_QUICK_REFE
 
 장치에는 통합 경보 문구를 출력하고, 방향·외형·구역 같은 세부값은 DB/API 조회용으로 보존합니다.
 
+이벤트 계약 자동검증은 GPU 학습과 무관하게 실행할 수 있습니다.
+
+```bash
+python scripts/validate_event_contracts.py --samples
+python scripts/validate_event_contracts.py --file /path/to/events.json
+```
+
+검증 실패는 종료 코드 `1`, 입력 파일 형식 오류는 `2`를 반환하며 결과는 JSON으로 출력됩니다.
+
 ## 이벤트 흐름
 
 ```text
