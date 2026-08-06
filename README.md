@@ -168,6 +168,7 @@ pytest -q
 - 가상환경과 도구별 로컬 설정
 
 상세 문서는 [docs/README.md](docs/README.md)에서 확인할 수 있습니다.
+외부 개발자에게 API를 설명할 때는 [API 빠른 참조](docs/guides/API_QUICK_REFERENCE.md)를 사용합니다.
 
 ## 운영 참고 문서
 

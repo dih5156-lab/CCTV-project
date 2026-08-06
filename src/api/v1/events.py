@@ -118,6 +118,60 @@ def _read_recent_log_lines(max_lines: int) -> list[str]:
     return recent_lines
 
 
+def _matches_event_filters(
+    item: dict,
+    *,
+    camera_id: Optional[str],
+    event_type: Optional[str],
+    time_from: Optional[float],
+    time_to: Optional[float],
+    fall_direction: Optional[str],
+) -> bool:
+    """단일 이벤트가 목록 조회 조건을 만족하는지 판단한다."""
+    if time_from is not None and item["timestamp"] < time_from:
+        return False
+    if time_to is not None and item["timestamp"] > time_to:
+        return False
+    if event_type is not None and item["event_type"] != event_type:
+        return False
+    if camera_id is not None and item["camera_id"] != camera_id:
+        return False
+    if fall_direction is None:
+        return True
+
+    metadata = item.get("metadata") or {}
+    direction = str(metadata.get("fall_direction") or "").lower()
+    category = str(
+        metadata.get("scene_cat_name") or metadata.get("fall_category") or ""
+    ).lower()
+    direction_alias = {"전면": "front", "후면": "back", "측면": "side"}.get(
+        fall_direction, fall_direction
+    )
+    if direction_alias == "unclassified":
+        return metadata.get("fall_detail_status") == "unclassified"
+    return direction_alias == direction or (
+        (direction_alias == "front" and "전면" in category)
+        or (direction_alias == "back" and "후면" in category)
+        or (direction_alias == "side" and "측면" in category)
+    )
+
+
+def _attach_review_annotations(items: list[dict]) -> None:
+    """페이지에 반환할 이벤트에 검수 상태와 재계산 점수를 붙인다."""
+    reviews = EventReviewStore().get_many(
+        [str(item.get("event_id") or "") for item in items]
+    )
+    for item in items:
+        review = reviews.get(str(item.get("event_id") or ""))
+        if not review:
+            continue
+        item["review_status"] = review.get("status")
+        item["reviewed_at"] = review.get("reviewed_at")
+        item["risk_score"] = event_risk_score(
+            item, review_status=str(review.get("status") or "")
+        )
+
+
 def _read_events(
     limit: int,
     offset: int,
@@ -139,52 +193,22 @@ def _read_events(
         try:
             entry = json.loads(line)
             item = _event_item_from_entry(entry)
-            if time_from is not None and item["timestamp"] < time_from:
+            if not _matches_event_filters(
+                item,
+                camera_id=camera_id,
+                event_type=event_type,
+                time_from=time_from,
+                time_to=time_to,
+                fall_direction=fall_direction,
+            ):
                 continue
-            if time_to is not None and item["timestamp"] > time_to:
-                continue
-            if event_type is not None and item["event_type"] != event_type:
-                continue
-            if camera_id is not None and item["camera_id"] != camera_id:
-                continue
-            if fall_direction is not None:
-                metadata = item.get("metadata") or {}
-                direction = str(metadata.get("fall_direction") or "").lower()
-                category = str(
-                    metadata.get("scene_cat_name") or metadata.get("fall_category") or ""
-                ).lower()
-                direction_alias = {
-                    "전면": "front",
-                    "후면": "back",
-                    "측면": "side",
-                }.get(fall_direction, fall_direction)
-                if fall_direction == "unclassified":
-                    if metadata.get("fall_detail_status") != "unclassified":
-                        continue
-                elif direction_alias != direction and not (
-                    (direction_alias == "front" and "전면" in category)
-                    or (direction_alias == "back" and "후면" in category)
-                    or (direction_alias == "side" and "측면" in category)
-                ):
-                    continue
             all_items.append(item)
         except (json.JSONDecodeError, KeyError):
             continue
 
     total = len(all_items)
     paged = all_items[offset : offset + limit]
-    reviews = EventReviewStore().get_many([
-        str(item.get("event_id") or "") for item in paged
-    ])
-    for item in paged:
-        review = reviews.get(str(item.get("event_id") or ""))
-        if review:
-            item["review_status"] = review.get("status")
-            item["reviewed_at"] = review.get("reviewed_at")
-            item["risk_score"] = event_risk_score(
-                item,
-                review_status=str(review.get("status") or ""),
-            )
+    _attach_review_annotations(paged)
     return [EventOut(**item) for item in paged], total
 
 
