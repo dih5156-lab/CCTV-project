@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import json
 import logging
-import os
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -183,7 +182,10 @@ class FallShadowReviewRecorder:
         camera_name: str,
         event_payload: Dict[str, Any],
     ) -> tuple[Dict[str, Any], Dict[str, Any]]:
-        result = self.falldata_aux.verify(camera_name=camera_name)
+        if event_payload.get("type") == "fall_near_miss":
+            result = self.falldata_aux.verify_temporal_shadow()
+        else:
+            result = self.falldata_aux.verify(camera_name=camera_name)
         record = self.write_record(camera_name, event_payload, result)
         return result, record
 

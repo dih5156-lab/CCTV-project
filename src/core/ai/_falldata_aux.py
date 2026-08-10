@@ -491,6 +491,33 @@ class FallDataAuxVerifier:
             self._last_result = dict(result)
             return result
 
+    def verify_temporal_shadow(self) -> dict:
+        """Run buffered-video verification so near-miss events include TCN output."""
+        if not self._frames:
+            return self._result("no_frames", confirmed=False)
+        try:
+            with tempfile.TemporaryDirectory(prefix="falldata_temporal_shadow_") as tmp:
+                video_path = Path(tmp) / "candidate.mp4"
+                self._write_video(video_path, self.snapshot_frames())
+                temporal_result = self._run_temporal_compare_model(video_path)
+            if temporal_result is None:
+                result = self._result(
+                    "temporal_unavailable",
+                    confirmed=False,
+                    temporal_compare_model=None,
+                )
+            else:
+                result = self._result(
+                    "ok" if temporal_result.get("status") == "ok" else "error",
+                    confirmed=bool(temporal_result.get("confirmed")),
+                    temporal_compare_model=temporal_result,
+                )
+            self._last_result = dict(result)
+            return result
+        except Exception as exc:
+            logger.warning("temporal shadow verification failed: %s", exc)
+            return self._result("error", confirmed=False, error=str(exc))
+
     def _verify_inline_pose_rf_with_cooldown(
         self,
         camera_name: Optional[str],

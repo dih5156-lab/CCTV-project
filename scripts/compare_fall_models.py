@@ -18,12 +18,19 @@ def _load(path: Path) -> dict[str, Any]:
 
 def _fall_metrics(report: dict[str, Any]) -> dict[str, float]:
     for section in ("validation", "holdout"):
-        fall = ((report.get(section) or {}).get("classification_report") or {}).get("fall")
+        fall = ((report.get(section) or {}).get("classification_report") or {}).get(
+            "fall"
+        )
         if isinstance(fall, dict):
+            precision = float(fall.get("precision", 0.0))
+            recall = float(fall.get("recall", 0.0))
+            f1 = float(fall.get("f1-score", 0.0))
+            if not f1 and precision + recall:
+                f1 = 2.0 * precision * recall / (precision + recall)
             return {
-                "precision": float(fall.get("precision", 0.0)),
-                "recall": float(fall.get("recall", 0.0)),
-                "f1": float(fall.get("f1-score", 0.0)),
+                "precision": precision,
+                "recall": recall,
+                "f1": f1,
             }
     return {"precision": 0.0, "recall": 0.0, "f1": 0.0}
 
@@ -34,7 +41,8 @@ def compare_reports(
     base = _fall_metrics(baseline)
     new = _fall_metrics(candidate)
     checks = {
-        "precision_not_lower": new["precision"] >= max(base["precision"], min_precision),
+        "precision_not_lower": new["precision"]
+        >= max(base["precision"], min_precision),
         "recall_not_lower": new["recall"] >= base["recall"],
         "f1_not_lower": new["f1"] >= base["f1"],
     }
@@ -55,7 +63,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--candidate-metrics", type=Path, required=True)
     parser.add_argument("--baseline-model", type=Path)
     parser.add_argument("--candidate-model", type=Path)
-    parser.add_argument("--output", type=Path, default=PROJECT_ROOT / "models/experiments/fall_model_comparison.json")
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=PROJECT_ROOT / "models/experiments/fall_model_comparison.json",
+    )
     parser.add_argument("--min-precision", type=float, default=0.0)
     return parser.parse_args()
 
@@ -64,20 +76,32 @@ def main() -> int:
     args = parse_args()
     if not args.baseline_metrics.exists() or not args.candidate_metrics.exists():
         raise SystemExit("baseline/candidate metrics file is not ready")
-    result = compare_reports(_load(args.baseline_metrics), _load(args.candidate_metrics), min_precision=args.min_precision)
-    result.update({
-        "baseline_metrics": str(args.baseline_metrics),
-        "candidate_metrics": str(args.candidate_metrics),
-        "baseline_model": str(args.baseline_model) if args.baseline_model else None,
-        "candidate_model": str(args.candidate_model) if args.candidate_model else None,
-        "decision_threshold": 0.7,
-    })
+    result = compare_reports(
+        _load(args.baseline_metrics),
+        _load(args.candidate_metrics),
+        min_precision=args.min_precision,
+    )
+    result.update(
+        {
+            "baseline_metrics": str(args.baseline_metrics),
+            "candidate_metrics": str(args.candidate_metrics),
+            "baseline_model": str(args.baseline_model) if args.baseline_model else None,
+            "candidate_model": str(args.candidate_model)
+            if args.candidate_model
+            else None,
+            "decision_threshold": 0.7,
+        }
+    )
     if result["promote_candidate"] and args.candidate_model:
         result["best_candidate"] = str(args.candidate_model)
     else:
-        result["best_candidate"] = str(args.baseline_model) if args.baseline_model else None
+        result["best_candidate"] = (
+            str(args.baseline_model) if args.baseline_model else None
+        )
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
+    args.output.write_text(
+        json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0 if result["promote_candidate"] else 2
 
