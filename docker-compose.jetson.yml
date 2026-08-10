@@ -1107,6 +1107,8 @@ services:
       NVIDIA_VISIBLE_DEVICES: ""
       MQTT_USER: ${MQTT_USER:-}
       MQTT_PASSWORD: ${MQTT_PASSWORD:-}
+      MQTT_USER: ${MQTT_USER:-}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-}
     depends_on:
       edgex-mqtt-broker:
         condition: service_started

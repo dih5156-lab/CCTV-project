@@ -33,12 +33,30 @@ def _find_unresolved_tokens(payload: str) -> list[str]:
     return sorted(set(re.findall(r"\{\{[A-Z0-9_]+\}\}", payload)))
 
 
+def _apply_mqtt_credentials(
+    rules: list[Dict[str, Any]], mqtt_user: str, mqtt_password: str
+) -> None:
+    """Add broker credentials to MQTT sink actions as well as source config."""
+    for rule in rules:
+        for action in rule.get("actions", []):
+            mqtt_action = action.get("mqtt") if isinstance(action, dict) else None
+            if isinstance(mqtt_action, dict):
+                mqtt_action["username"] = mqtt_user
+                mqtt_action["password"] = mqtt_password
+
+
 def _request(method: str, url: str, **kwargs):
     response = requests.request(method, url, timeout=10, **kwargs)
     return response
 
 
-def ensure_mqtt_source_config(kuiper_api: str, mqtt_broker: str, mqtt_port: int) -> None:
+def ensure_mqtt_source_config(
+    kuiper_api: str,
+    mqtt_broker: str,
+    mqtt_port: int,
+    mqtt_user: str = "",
+    mqtt_password: str = "",
+) -> None:
     """eKuiper 기본 MQTT 소스 설정을 올바른 브로커 주소로 패치합니다."""
     url = f"{kuiper_api}/metadata/sources/mqtt/confKeys/default"
     payload = {
@@ -46,8 +64,8 @@ def ensure_mqtt_source_config(kuiper_api: str, mqtt_broker: str, mqtt_port: int)
         "qos": 1,
         "protocolVersion": "3.1.1",
         "clientid": "",
-        "username": "",
-        "password": "",
+        "username": mqtt_user,
+        "password": mqtt_password,
     }
     resp = _request("PUT", url, json=payload)
     if resp.status_code in (200, 201):
@@ -135,6 +153,8 @@ def main() -> None:
     )
     parser.add_argument("--mqtt-broker", default=os.environ.get("MQTT_BROKER", "localhost"), help="MQTT 브로커 호스트 [env: MQTT_BROKER]")
     parser.add_argument("--mqtt-port", type=int, default=_env_int("MQTT_PORT", 1883), help="MQTT 브로커 포트 [env: MQTT_PORT]")
+    parser.add_argument("--mqtt-user", default=os.environ.get("MQTT_USER", ""), help="MQTT 사용자 [env: MQTT_USER]")
+    parser.add_argument("--mqtt-password", default=os.environ.get("MQTT_PASSWORD", ""), help="MQTT 비밀번호 [env: MQTT_PASSWORD]")
     parser.add_argument("--intrusion-confidence", type=float, default=_env_float("INTRUSION_CONFIDENCE", 0.7), help="침입 이벤트 신뢰도 임계값 [env: INTRUSION_CONFIDENCE]")
     parser.add_argument("--critical-confidence", type=float, default=_env_float("CRITICAL_CONFIDENCE", 0.9), help="중요 이벤트 라우팅 임계값 [env: CRITICAL_CONFIDENCE]")
     parser.add_argument("--persist-hit-count", type=int, default=_env_int("PERSIST_HIT_COUNT", 5), help="5초 윈도우 내 최소 검출 횟수 [env: PERSIST_HIT_COUNT]")
@@ -191,11 +211,18 @@ def main() -> None:
     else:
         streams = []
     rules = pack["rules"]
+    _apply_mqtt_credentials(rules, args.mqtt_user, args.mqtt_password)
 
     last_error = None
     for attempt in range(1, args.retry_count + 1):
         try:
-            ensure_mqtt_source_config(kuiper_api, args.mqtt_broker, args.mqtt_port)
+            ensure_mqtt_source_config(
+                kuiper_api,
+                args.mqtt_broker,
+                args.mqtt_port,
+                args.mqtt_user,
+                args.mqtt_password,
+            )
             for stream in streams:
                 ensure_stream(kuiper_api, stream["name"], stream["sql"])
 
