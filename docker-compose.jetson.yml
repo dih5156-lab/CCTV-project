@@ -1138,24 +1138,11 @@ services:
       MQTT_USER: ${MQTT_USER:-}
       MQTT_PASSWORD: ${MQTT_PASSWORD:-}
     command:
-      - python
-      - runners/run_kuiper_rules.py
-      - --kuiper-api
-      - http://edgex-kuiper:59720
-      - --mqtt-broker
-      - edgex-mqtt-broker
-      - --mqtt-port
-      - "1883"
-      - --intrusion-confidence
-      - "0.7"
-      - --critical-confidence
-      - "0.9"
-      - --persist-hit-count
-      - "5"
-      - --retry-count
-      - "20"
-      - --retry-delay
-      - "2"
+      - sh
+      - -c
+      - |
+        python runners/run_kuiper_rules.py --kuiper-api http://edgex-kuiper:59720 --rules-file kuiper/rules/cctv_intrusion_rules.json --mqtt-broker edgex-mqtt-broker --mqtt-port 1883 --intrusion-confidence 0.7 --critical-confidence 0.9 --persist-hit-count 5 --retry-count 20 --retry-delay 2 &&
+        python runners/run_kuiper_rules.py --kuiper-api http://edgex-kuiper:59720 --rules-file kuiper/rules/aiot_sensor_rules.json --mqtt-broker edgex-mqtt-broker --mqtt-port 1883 --retry-count 20 --retry-delay 2
     depends_on:
       rules-engine:
         condition: service_started
