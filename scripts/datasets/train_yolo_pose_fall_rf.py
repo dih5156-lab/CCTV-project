@@ -975,6 +975,11 @@ def parse_args() -> argparse.Namespace:
         default="random_forest",
     )
     parser.add_argument("--force-extract", action="store_true")
+    parser.add_argument(
+        "--extract-only",
+        action="store_true",
+        help="Extract train/validation feature caches without fitting a classifier.",
+    )
     return parser.parse_args()
 
 
@@ -1022,6 +1027,10 @@ def main() -> int:
         force_extract=args.force_extract,
         label="validation",
     )
+
+    if args.extract_only:
+        print("feature extraction complete; classifier training skipped", flush=True)
+        return 0
 
     train_dataset = _load_dataset(
         train_rows,
