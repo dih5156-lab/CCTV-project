@@ -8,7 +8,7 @@
 gpu-id=0
 gie-unique-id=2
 net-scale-factor=0.0039215697906911373
-model-engine-file=../../models/helmet_model_ver0.5.engine
+model-engine-file=../../models/helmet_model_ver0.5_320_fp16.engine
 labelfile-path=labels_helmet.txt
 model-color-format=0
 batch-size=8
@@ -17,7 +17,7 @@ batch-size=8
 network-type=100
 num-detected-classes=2
 output-blob-names=output
-infer-dims=3;640;640
+infer-dims=3;320;320
 workspace-size=1024
 maintain-aspect-ratio=1
 symmetric-padding=1
