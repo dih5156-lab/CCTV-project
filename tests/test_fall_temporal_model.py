@@ -3,6 +3,7 @@ from __future__ import annotations
 import numpy as np
 import torch
 
+from scripts.inference.smoke_fall_temporal_model import _required_frame_count
 from src.core.ai.fall_temporal_model import (
     FRAME_FEATURE_NAMES,
     FallTemporalHybrid,
@@ -35,8 +36,10 @@ def test_encode_frame_sequence_left_pads_and_preserves_temporal_order() -> None:
 
     assert sequence.shape == (4, len(FRAME_FEATURE_NAMES))
     np.testing.assert_array_equal(sequence[:2], 0.0)
-    assert sequence[2, FRAME_FEATURE_NAMES.index("fall_score")] == 0.2
-    assert sequence[3, FRAME_FEATURE_NAMES.index("fall_score")] == 0.8
+    np.testing.assert_allclose(
+        sequence[2:, FRAME_FEATURE_NAMES.index("fall_score")],
+        [0.2, 0.8],
+    )
     assert sequence[3, FRAME_FEATURE_NAMES.index("torso_horizontal")] == 1.0
 
 
@@ -50,6 +53,12 @@ def test_encode_frame_sequence_keeps_most_recent_frames_when_truncated() -> None
         sequence[:, FRAME_FEATURE_NAMES.index("fall_score")],
         [0.6, 0.8, 1.0],
     )
+
+
+def test_required_frame_count_covers_consecutive_sliding_windows() -> None:
+    assert _required_frame_count(60, 60, 20, 2) == 80
+    assert _required_frame_count(60, 60, 20, 3) == 100
+    assert _required_frame_count(60, 0, 20, 2) == 60
 
 
 def test_fall_temporal_tcn_returns_one_logit_per_video() -> None:

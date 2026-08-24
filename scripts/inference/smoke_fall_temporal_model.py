@@ -90,6 +90,22 @@ def _predict_window(
     return float(torch.sigmoid(logits)[0].item())
 
 
+def _required_frame_count(
+    sequence_length: int,
+    window_size: int,
+    stride: int,
+    min_confirmed_windows: int,
+) -> int:
+    """Return enough frames to evaluate the requested consecutive windows."""
+    required_windows = max(min_confirmed_windows, 1)
+    if window_size <= 0:
+        return sequence_length
+    return max(
+        sequence_length,
+        window_size + max(stride, 1) * (required_windows - 1),
+    )
+
+
 def main() -> int:
     args = parse_args()
     device = _resolve_device(args.device)
@@ -116,14 +132,12 @@ def main() -> int:
     else:
         if args.video is None:
             raise SystemExit("--video is required unless --feature-json is provided")
-        max_frames = int(checkpoint["sequence_length"])
-        if args.sliding_window_size > 0:
-            required_windows = max(args.min_confirmed_windows, 1)
-            max_frames = max(
-                max_frames,
-                int(args.sliding_window_size)
-                + max(args.sliding_window_stride, 1) * (required_windows - 1),
-            )
+        max_frames = _required_frame_count(
+            int(checkpoint["sequence_length"]),
+            int(args.sliding_window_size),
+            int(args.sliding_window_stride),
+            int(args.min_confirmed_windows),
+        )
         summary = _extract_video_features(
             model=_load_pose_model(args.pose_model),
             detector=FallDetector(),
