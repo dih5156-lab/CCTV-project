@@ -116,11 +116,19 @@ def main() -> int:
     else:
         if args.video is None:
             raise SystemExit("--video is required unless --feature-json is provided")
+        max_frames = int(checkpoint["sequence_length"])
+        if args.sliding_window_size > 0:
+            required_windows = max(args.min_confirmed_windows, 1)
+            max_frames = max(
+                max_frames,
+                int(args.sliding_window_size)
+                + max(args.sliding_window_stride, 1) * (required_windows - 1),
+            )
         summary = _extract_video_features(
             model=_load_pose_model(args.pose_model),
             detector=FallDetector(),
             video_path=args.video,
-            max_frames=int(checkpoint["sequence_length"]),
+            max_frames=max_frames,
             frame_stride=1,
             imgsz=args.imgsz,
             confidence_threshold=args.confidence_threshold,
