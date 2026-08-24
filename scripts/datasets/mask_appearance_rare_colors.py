@@ -36,7 +36,7 @@ def mask_manifest(input_path: Path, output_dir: Path, allowed_lower: set[str]) -
                 row["lower_color_defined"] = False
             destination.write(json.dumps(row, ensure_ascii=False) + "\n")
 
-    source_images = input_path.parent / "images"
+    source_images = (input_path.parent / "images").resolve()
     target_images = output_dir / "images"
     if not target_images.exists():
         target_images.symlink_to(source_images, target_is_directory=True)
