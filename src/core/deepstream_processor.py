@@ -1854,6 +1854,17 @@ class DeepStreamProcessor(BaseProcessor):
             frame_height = int(os.environ.get("DS_STREAM_HEIGHT", "1080"))
 
         postprocess_started_at = time.perf_counter()
+        input_size_env = (
+            "DS_HELMET_INPUT_SIZE"
+            if gie_id == self._helmet_gie_id
+            else "DS_YOLO_INPUT_SIZE"
+        )
+        input_size = float(
+            os.environ.get(
+                input_size_env,
+                "320" if gie_id == self._helmet_gie_id else "640",
+            )
+        )
         detections = detections_from_yolo_output(
             output,
             task=task,
@@ -1863,7 +1874,7 @@ class DeepStreamProcessor(BaseProcessor):
             frame_height=frame_height,
             confidence_threshold=confidence_threshold,
             class_ids_filter=class_ids_filter,
-            input_size=float(os.environ.get("DS_YOLO_INPUT_SIZE", "640")),
+            input_size=input_size,
             iou_threshold=self._yolo_iou_threshold,
             max_detections=self._yolo_max_detections,
             fall_checker=self._is_fall_pose,

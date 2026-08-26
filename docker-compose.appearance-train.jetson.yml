@@ -18,6 +18,8 @@ services:
       APPEARANCE_TRAINING_PYTHON: /app/.venv-jetson-train/bin/python
       APPEARANCE_DEVICE: cuda
       APPEARANCE_NATIVE11_CHECKPOINT: /app/Rethinking_of_PAR/exp_result/RAP2/aihub_kreid.resnet50.native11.smoke1/img_model/ckpt_max_2026-08-14_10:28:55.pth
+      APPEARANCE_TRAIN_DATASET_DIR: ${APPEARANCE_TRAIN_DATASET_DIR:-}
+      APPEARANCE_EXPERIMENT_DIR: ${APPEARANCE_EXPERIMENT_DIR:-}
     volumes:
       - type: bind
         source: ./.worktrees/appearance-multitask-v1
