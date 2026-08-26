@@ -13,6 +13,19 @@ import pytest
 
 from src.core.events import DetectionEvent, EventType
 
+
+@pytest.fixture(autouse=True)
+def isolate_auth_environment(monkeypatch):
+    """Prevent the developer's .env credentials from leaking between tests."""
+    for name in (
+        "PUBLIC_API_KEY",
+        "PUBLIC_API_ALLOW_QUERY_KEY",
+        "REQUIRE_PUBLIC_API_KEY",
+        "INTERNAL_SERVICE_TOKEN",
+        "APP_ENV",
+    ):
+        monkeypatch.delenv(name, raising=False)
+
 # ---------------------------------------------------------------------------
 # DetectionEvent 팩토리 헬퍼
 # ---------------------------------------------------------------------------
