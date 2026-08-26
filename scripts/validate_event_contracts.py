@@ -18,7 +18,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.canonical_event import canonicalize_event_payload, get_payload_event_type
+from src.canonical_event import canonicalize_event_payload, get_payload_event_type  # noqa: E402
 
 
 EVENT_TYPES = {
