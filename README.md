@@ -206,6 +206,16 @@ pytest -q
 - Action Layer 출력 문구
 - 학습 manifest·모델 비교
 
+## 업데이트 이력
+
+### 2026-08-26
+
+- helmet/head TensorRT 입력 크기(`320x320`)에 맞춰 DeepStream bbox 좌표 복원 로직을 수정했습니다. 라이브 화면에서 head 박스가 사람 머리 위치와 일치하는 것을 확인했습니다.
+- 외형 색상 검수 라벨 `appearance_color_review_labels0825.json`을 반영한 재학습 파이프라인을 구성했습니다. 현재 batch size 32로 GPU 학습 중이며, 완료 후 성능 게이트를 확인합니다.
+- 모델 정리 기준을 `models/head`, `models/fall`, `models/color`, `models/appearance`, `models/legacy`, `models/manifests`로 정의했습니다. 운영 중인 학습·서비스 경로 보호를 위해 실제 이동은 학습 완료 후 진행합니다.
+- 모델 현황과 정리 계획을 [model_inventory_20260826.md](docs/operations/model_inventory_20260826.md)에 기록했습니다.
+- GitHub Actions CI/CD workflow(`.github/workflows/ci.yml`)에서 테스트·Compose 검증·보안 검사·Docker 빌드를 수행하도록 유지합니다.
+
 ## Git 관리 원칙
 
 다음은 저장소에 커밋하지 않습니다.
