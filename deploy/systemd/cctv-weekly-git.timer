@@ -1,0 +1,10 @@
+[Unit]
+Description=Push CCTV project updates every Friday at 17:00
+
+[Timer]
+OnCalendar=Fri *-*-* 17:00:00 Asia/Seoul
+Persistent=true
+Unit=cctv-weekly-git.service
+
+[Install]
+WantedBy=timers.target

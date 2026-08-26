@@ -1,0 +1,7 @@
+[Unit]
+Description=CCTV weekly code update push
+
+[Service]
+Type=oneshot
+WorkingDirectory=/media/sawwave/Learning11/CCTV-project
+ExecStart=/media/sawwave/Learning11/CCTV-project/scripts/ops/weekly_git_push.sh
