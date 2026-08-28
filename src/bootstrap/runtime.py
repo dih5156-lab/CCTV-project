@@ -21,8 +21,8 @@ from ..core import VideoProcessor
 from ..core.base_processor import BaseProcessor
 from ..services.camera_model_api import start_camera_model_api_server
 from ..services.face_api import start_face_api_server
-from ..services.stream_api import start_stream_api_server
 from ..services.processor_metrics import start_processor_metrics_server
+from ..services.stream_api import start_stream_api_server
 from ..services.zone_api import start_zone_api_server
 from ..utils.env import get_env_bool, get_env_int, load_dotenv_file
 from ..utils.zone_drawer import ZoneDrawer

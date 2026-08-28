@@ -3,7 +3,7 @@
 ## 목적
 
 전광판을 EdgeX의 표준 장치로 등록하기 위한 프로파일과 Command 이름을 정의한다.
-현재 운영 전광판은 Action Layer의 Dabit TCP 드라이버로 직접 제어되며, 이 프로파일은 EdgeX 메타데이터 계약을 먼저 고정하기 위한 것이다.
+현재 `cctv-device-dabit` Device Service가 EdgeX Command를 Dabit TCP 명령으로 변환한다.
 
 ## 프로파일
 
@@ -20,7 +20,6 @@
 장치 등록 후 Core Command API는 다음 형식을 사용한다.
 
 ```text
-GET  /api/v3/device/name/cctv-signboard-01/display
 PUT  /api/v3/device/name/cctv-signboard-01/display
 PUT  /api/v3/device/name/cctv-signboard-01/clear
 GET  /api/v3/device/name/cctv-signboard-01/power
@@ -39,12 +38,11 @@ PUT  /api/v3/device/name/cctv-signboard-01/power
 
 ## 운영 전환 조건
 
-프로파일 업로드만으로 Dabit TCP 통신이 실행되지는 않는다. `device-rest`는 메타데이터 등록용으로 사용할 수 있지만, 실제 전광판 명령을 수행하려면 Dabit TCP를 구현한 전용 EdgeX Device Service가 필요하다.
+프로파일 업로드만으로 Dabit TCP 통신이 실행되지는 않는다. 전광판 장치는 범용 `device-rest`가 아니라 Dabit TCP를 구현한 `cctv-device-dabit` Device Service에 연결한다.
 
 따라서 전환 순서는 다음과 같다.
 
-1. 프로파일·장치 등록
-2. 전용 Device Service에서 EdgeX Command를 Dabit 버퍼로 변환
-3. `command_id` 기준 `sent/acknowledged/failed` 응답 발행
-4. Action Layer Shadow 비교
-5. 검증 후 EdgeX Command 경로를 운영 경로로 승격
+1. 프로파일·`cctv-device-dabit` 서비스·장치 등록
+2. Core Command에서 `display`, `clear`, `power` 명령 호출
+3. Device Service에서 EdgeX Command를 Dabit 버퍼로 변환
+4. `command_id` 기준 `acknowledged/failed` 결과 확인

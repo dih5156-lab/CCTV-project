@@ -80,6 +80,7 @@ class AppearancePipeline:
             else os.environ.get("APPEARANCE_BOOL_TRUE_RATIO", "0.6")
         )))
         self._attribute_history: Dict[str, Dict[str, Deque]] = {}
+        self._representative_crop_paths: Dict[str, str] = {}
 
     def ensure_log(self) -> None:
         """AppearanceLog를 지연 초기화한다."""
@@ -484,6 +485,7 @@ class AppearancePipeline:
         for key in list(self._attribute_history):
             if key not in active_keys:
                 self._attribute_history.pop(key, None)
+                self._representative_crop_paths.pop(key, None)
                 if len(self._attribute_history) <= max_entries:
                     break
 
@@ -557,16 +559,25 @@ class AppearancePipeline:
             person,
             nearby_objects,
         )
-        crop_path = self.save_person_crop(
-            frame,
-            crop_x,
-            crop_y,
-            crop_w,
-            crop_h,
-            camera_id,
-            person.object_id,
-            now,
+        track_key = self._track_history_key(camera_id, person)
+        crop_path = (
+            self._representative_crop_paths.get(track_key)
+            if track_key is not None
+            else None
         )
+        if crop_path is None:
+            crop_path = self.save_person_crop(
+                frame,
+                crop_x,
+                crop_y,
+                crop_w,
+                crop_h,
+                camera_id,
+                person.object_id,
+                now,
+            )
+            if track_key is not None and crop_path is not None:
+                self._representative_crop_paths[track_key] = crop_path
         payload = self._build_log_payload(
             camera_id=camera_id,
             person=person,

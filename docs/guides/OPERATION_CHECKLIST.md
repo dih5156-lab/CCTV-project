@@ -167,13 +167,20 @@ RUNTIME_ENV_FILE=.env.jetson ./scripts/ops/run_operation_check.sh
 ```
 
 기본 정책은 7일이 지난 외형 crop 삭제, 삭제된 crop의 DB 참조 정리,
-200MB를 넘은 이벤트/센서 JSONL 로그 회전입니다.
+7일이 지난 `sent` 상태의 HTTP/MQTT outbox 행 정리, 200MB를 넘은
+이벤트/센서 JSONL 로그 회전입니다. outbox는 DB별 1회 최대 25,000건만
+삭제하며 `pending` 행과 `action_events.db` 운영 이력은 삭제하지 않습니다.
 확인 후 실제로 반영할 때만 `--apply`를 사용합니다.
 컨테이너가 생성한 crop은 `nobody` 소유일 수 있으므로 운영 장비에서는 `sudo`로 실행합니다.
 
 ```bash
 sudo ./scripts/cleanup/cleanup_runtime_data.sh --apply
 ```
+
+SQLite 행 삭제 후 파일 크기는 즉시 줄지 않을 수 있지만 빈 페이지를 이후
+쓰기에서 재사용하므로 지속적인 증가를 억제합니다. 디스크 파일 자체를 줄이는
+`VACUUM`은 서비스 정지와 충분한 여유 공간을 확보한 별도 유지보수 시간에만
+수행합니다.
 
 Docker socket 권한이 제한된 장비에서는 표준 운영 점검 wrapper도 `sudo`로 실행합니다.
 

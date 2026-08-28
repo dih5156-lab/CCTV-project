@@ -8,14 +8,16 @@ from typing import Dict
 from ..canonical_event import (
     get_payload_camera_id,
     get_payload_display_message,
-    get_payload_event_type,
     get_payload_event_id,
+    get_payload_event_type,
     get_payload_severity,
     get_payload_tts_message,
 )
 from ..event_routing import decide_alert_forward
 from .cctv_metrics import (
     device_command_results as _device_command_results,
+)
+from .cctv_metrics import (
     device_commands as _device_commands,
 )
 

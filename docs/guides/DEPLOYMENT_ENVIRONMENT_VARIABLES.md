@@ -152,11 +152,15 @@ docker volume create edgex-jetson_trt-cache
 | `FALL_SHADOW_REVIEW_LOG_PATH` | `<data>/fall_dataset/annotations/review.jsonl` | 낙상 shadow 검토 JSONL 로그 경로 |
 | `FALL_SHADOW_CLIP_DIR` | `<data>/fall_dataset/clips/pending` | 라벨 대기 낙상 클립 저장 경로 |
 | `APPEARANCES_DB` | `<data>/runtime/appearances.db` | 외형 검색 DB 경로 |
+| `ACTION_HTTP_OUTBOX_DB` | `<data>/runtime/action_http_outbox.db` | HTTP 전송 outbox DB 경로 |
+| `MQTT_EVENT_OUTBOX_DB` | `<data>/runtime/mqtt_event_outbox.db` | MQTT 전송 outbox DB 경로 |
 | `CROP_RETENTION_DAYS` | `7` | crop 보존 일수 |
 | `FALL_REVIEW_RETENTION_DAYS` | `3` | 낙상 검토 클립 보존 일수 |
+| `OUTBOX_RETENTION_DAYS` | `7` | 전송 완료 outbox 보존 일수 |
+| `OUTBOX_CLEANUP_BATCH_SIZE` | `25000` | DB별 1회 최대 삭제 행 수 |
 | `LOG_MAX_MB` | `200` | JSONL 로그 회전 기준 |
 | `FALL_SHADOW_LOG_MAX_MB` | `50` | 낙상 shadow 로그 회전 기준 |
-| `PYTHON_BIN` | `<project>/.venv/bin/python`, 없으면 `python3` | crop DB 참조 정리에 사용할 Python 실행 파일 |
+| `PYTHON_BIN` | `<project>/.venv/bin/python`, 없으면 `python3` | 런타임 정리에 사용할 Python 실행 파일 |
 
 ## 7. 검증 명령
 

@@ -1,8 +1,18 @@
 from __future__ import annotations
 
+import json
 import subprocess
+import sys
+from pathlib import Path
 
 from scripts.health import check_jetson_edgex_stack as module
+
+SCRIPT_PATH = (
+    Path(__file__).resolve().parents[1]
+    / "scripts"
+    / "health"
+    / "check_jetson_edgex_stack.py"
+)
 
 
 def test_tcp_check_falls_back_to_container_health(monkeypatch) -> None:
@@ -78,3 +88,40 @@ def test_container_health_reports_unhealthy(monkeypatch) -> None:
     assert ok is False
     assert "status=running" in detail
     assert "health=unhealthy" in detail
+
+
+def test_main_includes_requested_device_contract_check(monkeypatch, capsys) -> None:
+    monkeypatch.setattr(module, "_build_tcp_checks", lambda **_kwargs: [])
+    monkeypatch.setattr(module, "_build_http_checks", lambda **_kwargs: [])
+    monkeypatch.setattr(
+        module,
+        "_check_device_contracts",
+        lambda **_kwargs: (False, "3개 계약 문제 발견"),
+        raising=False,
+    )
+
+    exit_code = module.main(["--json", "--check-device-contracts"])
+    output = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 1
+    assert output["results"] == [
+        {
+            "type": "contract",
+            "name": "EdgeX Device Contracts",
+            "ok": False,
+            "detail": "3개 계약 문제 발견",
+        }
+    ]
+    assert output["failures"] == ["EdgeX Device Contracts"]
+
+
+def test_script_entrypoint_can_load_contract_checker() -> None:
+    completed = subprocess.run(
+        [sys.executable, str(SCRIPT_PATH), "--help"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert "--check-device-contracts" in completed.stdout

@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[2]
 MODEL_ROOT = ROOT / "models"
 REQUIRED_DIRS = ("head", "fall", "person", "appearance", "legacy")

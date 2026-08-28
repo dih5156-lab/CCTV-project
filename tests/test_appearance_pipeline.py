@@ -263,6 +263,51 @@ def test_log_person_appearance_saves_scaled_deepstream_crop(tmp_path):
     assert saved[6:16, 10:30].mean() > 200
 
 
+def test_log_person_appearance_reuses_one_crop_per_track(tmp_path):
+    crop_dir = tmp_path / "crops"
+    pipeline = AppearancePipeline(AppearanceAnalyzer(), crop_dir, save_crops=True)
+    frame = np.zeros((50, 50, 3), dtype=np.uint8)
+    person = DetectionEvent(
+        event_type=EventType.PERSON,
+        x=5,
+        y=5,
+        width=20,
+        height=30,
+        confidence=0.95,
+        timestamp=1000.0,
+        object_id=9,
+        class_name="person",
+    )
+    inserted_payloads = []
+    pipeline._appearance_log = SimpleNamespace(
+        insert=lambda **payload: inserted_payloads.append(payload)
+    )
+    attrs = {"upper_color": "black", "lower_color": "blue"}
+
+    pipeline.log_person_appearance(
+        frame,
+        person,
+        1111.0,
+        "cam01",
+        [],
+        {},
+        precomputed_attrs=attrs,
+    )
+    pipeline.log_person_appearance(
+        frame,
+        person,
+        1115.0,
+        "cam01",
+        [],
+        {},
+        precomputed_attrs=attrs,
+    )
+
+    assert len(inserted_payloads) == 2
+    assert inserted_payloads[0]["crop_path"] == inserted_payloads[1]["crop_path"]
+    assert len(list(crop_dir.glob("*.jpg"))) == 1
+
+
 def test_extract_person_attributes_scales_deepstream_bbox_to_preview_frame(tmp_path):
     pipeline = AppearancePipeline(AppearanceAnalyzer(), tmp_path / "crops")
     frame = np.zeros((50, 50, 3), dtype=np.uint8)

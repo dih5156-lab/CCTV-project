@@ -13,6 +13,11 @@ import urllib.request
 from dataclasses import dataclass
 from typing import Iterable, Optional
 
+if __package__:
+    from .check_edgex_device_contracts import check_live_contracts
+else:
+    from check_edgex_device_contracts import check_live_contracts
+
 
 @dataclass(frozen=True)
 class HttpCheck:
@@ -200,6 +205,30 @@ def _build_tcp_checks(
     return checks
 
 
+def _check_device_contracts(
+    *, host: str, event_limit: int
+) -> tuple[bool, str]:
+    """EdgeX Metadata와 최근 Core Data 이벤트의 계약 일치 여부를 확인한다."""
+    try:
+        result = check_live_contracts(
+            metadata_url=f"http://{host}:59881",
+            core_data_url=f"http://{host}:59880",
+            event_limit=event_limit,
+        )
+    except RuntimeError as exc:
+        return False, str(exc)
+
+    checked = result["checked"]
+    issue_codes = sorted({issue["code"] for issue in result["issues"]})
+    detail = (
+        f"devices={checked['devices']}, profiles={checked['profiles']}, "
+        f"events={checked['events']}, issues={len(result['issues'])}"
+    )
+    if issue_codes:
+        detail += f" ({', '.join(issue_codes)})"
+    return bool(result["ok"]), detail
+
+
 def _summarize(failures: Iterable[str]) -> int:
     """최종 결과를 요약하고 종료 코드를 반환한다."""
     failed = list(failures)
@@ -241,6 +270,17 @@ def main(argv: Optional[list[str]] = None) -> int:
         action="store_true",
         help="Public API의 /api/v1/appearances/status 도 함께 점검",
     )
+    parser.add_argument(
+        "--check-device-contracts",
+        action="store_true",
+        help="EdgeX Metadata/Profile/최근 이벤트 계약도 함께 점검",
+    )
+    parser.add_argument(
+        "--device-contract-event-limit",
+        type=int,
+        default=500,
+        help="계약 점검에 사용할 최근 EdgeX 이벤트 수",
+    )
     args = parser.parse_args(argv)
 
     failures: list[str] = []
@@ -277,6 +317,18 @@ def main(argv: Optional[list[str]] = None) -> int:
             results.append({"type": "python", "name": name, "ok": ok, "detail": detail})
             if not ok:
                 failures.append(name)
+
+    if args.check_device_contracts:
+        name = "EdgeX Device Contracts"
+        ok, detail = _check_device_contracts(
+            host=args.host,
+            event_limit=args.device_contract_event_limit,
+        )
+        results.append(
+            {"type": "contract", "name": name, "ok": ok, "detail": detail}
+        )
+        if not ok:
+            failures.append(name)
 
     if args.json:
         print(json.dumps({"results": results, "failures": failures}, ensure_ascii=False, indent=2))

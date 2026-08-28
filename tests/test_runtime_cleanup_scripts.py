@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import os
+import sqlite3
 import subprocess
+import time
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -78,7 +80,104 @@ def test_cleanup_runtime_preview_uses_python_bin_override(tmp_path: Path) -> Non
     assert "모드: 미리보기" in result.stdout
     assert f"runtime 산출물 경로: {runtime_dir}" in result.stdout
     assert f"crop 경로: {crop_dir}" in result.stdout
+    assert "=== SQLite outbox cleanup ===" in result.stdout
     assert "실제 반영하려면 --apply를 추가하세요." in result.stdout
+
+
+def test_outbox_cleanup_deletes_only_expired_sent_rows(tmp_path: Path) -> None:
+    http_db = tmp_path / "http.db"
+    mqtt_db = tmp_path / "mqtt.db"
+    now_ms = int(time.time() * 1000)
+    old_ms = now_ms - (8 * 24 * 60 * 60 * 1000)
+    recent_ms = now_ms - (2 * 24 * 60 * 60 * 1000)
+
+    for db_path, table_name in (
+        (http_db, "http_event_outbox"),
+        (mqtt_db, "mqtt_event_outbox"),
+    ):
+        with sqlite3.connect(db_path) as connection:
+            connection.execute(
+                f"""
+                CREATE TABLE {table_name} (
+                    id INTEGER PRIMARY KEY,
+                    status TEXT NOT NULL,
+                    sent_at_ms INTEGER
+                )
+                """
+            )
+            connection.executemany(
+                f"INSERT INTO {table_name} (id, status, sent_at_ms) VALUES (?, ?, ?)",
+                [
+                    (1, "sent", old_ms),
+                    (2, "sent", recent_ms),
+                    (3, "pending", old_ms),
+                ],
+            )
+
+    result = _run_script(
+        [
+            os.environ.get("PYTHON", "python3"),
+            "scripts/cleanup/cleanup_outbox_databases.py",
+            "--apply",
+            "--http-db",
+            str(http_db),
+            "--mqtt-db",
+            str(mqtt_db),
+            "--retention-days",
+            "7",
+        ]
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "deleted=1" in result.stdout
+    for db_path, table_name in (
+        (http_db, "http_event_outbox"),
+        (mqtt_db, "mqtt_event_outbox"),
+    ):
+        with sqlite3.connect(db_path) as connection:
+            rows = connection.execute(
+                f"SELECT id, status FROM {table_name} ORDER BY id"
+            ).fetchall()
+        assert rows == [(2, "sent"), (3, "pending")]
+
+
+def test_outbox_cleanup_preview_does_not_delete_rows(tmp_path: Path) -> None:
+    http_db = tmp_path / "http.db"
+    old_ms = int(time.time() * 1000) - (8 * 24 * 60 * 60 * 1000)
+    with sqlite3.connect(http_db) as connection:
+        connection.execute(
+            """
+            CREATE TABLE http_event_outbox (
+                id INTEGER PRIMARY KEY,
+                status TEXT NOT NULL,
+                sent_at_ms INTEGER
+            )
+            """
+        )
+        connection.execute(
+            "INSERT INTO http_event_outbox VALUES (1, 'sent', ?)",
+            (old_ms,),
+        )
+
+    result = _run_script(
+        [
+            os.environ.get("PYTHON", "python3"),
+            "scripts/cleanup/cleanup_outbox_databases.py",
+            "--http-db",
+            str(http_db),
+            "--mqtt-db",
+            str(tmp_path / "missing.db"),
+            "--retention-days",
+            "7",
+        ]
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "eligible=1, deleted=0" in result.stdout
+    with sqlite3.connect(http_db) as connection:
+        assert connection.execute(
+            "SELECT COUNT(*) FROM http_event_outbox"
+        ).fetchone()[0] == 1
 
 
 def test_ensure_public_api_key_preserves_existing_values(tmp_path: Path) -> None:

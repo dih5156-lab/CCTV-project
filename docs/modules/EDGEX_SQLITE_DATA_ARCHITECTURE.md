@@ -353,7 +353,7 @@ App Service 에 과도하게 넣지 말아야 할 것:
 
 ### 우선순위 1
 
-- outbox별 보존 기간과 sent/expired 정리 작업을 운영 자동화에 연결
+- [완료] HTTP/MQTT outbox의 7일 지난 `sent` 행을 일일 정리 작업에 연결
 - DB별 크기, pending/failed 건수, 가장 오래된 pending 시각을 metric으로 노출
 
 ### 우선순위 2

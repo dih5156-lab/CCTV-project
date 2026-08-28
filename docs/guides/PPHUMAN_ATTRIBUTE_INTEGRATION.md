@@ -20,6 +20,7 @@
 - 라벨 인덱스 해석은 JSON으로 분리해 모델별 출력 순서 차이에 대응한다.
 - DeepStream SGIE metadata가 있으면 `attribute_backend=pa100k_sgie` 또는 설정된 SGIE backend 이름으로 저장한다.
 - 단일 프레임 결과보다 track 누적 결과를 우선해 색상과 boolean 속성의 흔들림을 줄인다.
+- `APPEARANCE_SAVE_CROPS=true`일 때 JPEG는 카메라·track별 대표 이미지 1장만 저장하고, 같은 track의 이후 외형 로그는 해당 경로를 재사용한다.
 
 환경 변수 예시:
 - `APPEARANCE_BACKEND=pphuman`

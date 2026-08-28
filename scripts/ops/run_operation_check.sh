@@ -17,7 +17,8 @@ Defaults:
   Runs deployment smoke and data-flow smoke checks only.
   With --with-deepstream, also runs scripts/ops/run_deepstream_stability_watch.sh.
   With --with-fall-shadow, runs the same watch and checks fall Shadow each sample.
-  With AIOT_PILOT_CHECK=1, also checks the Jetson EdgeX stack and AIoT metrics.
+  With AIOT_PILOT_CHECK=1, also checks the Jetson EdgeX stack, device contracts,
+  and AIoT metrics.
     Runtime secret check uses RUNTIME_ENV_FILE when set. Otherwise it uses
     .env.jetson when the running compose project is edgex-jetson, then .env,
     and falls back to .env.jetson when .env is absent.
@@ -142,7 +143,10 @@ run_step "data flow smoke" .venv/bin/python scripts/smoke/smoke_test_data_flow.p
 run_step "public api fd stability" .venv/bin/python scripts/health/check_public_api_fd_stability.py || FAILED=1
 
 if [[ "${AIOT_PILOT_CHECK:-0}" == "1" ]]; then
-    run_step "jetson edgex stack" .venv/bin/python scripts/health/check_jetson_edgex_stack.py || FAILED=1
+    run_step "jetson edgex stack" \
+        .venv/bin/python scripts/health/check_jetson_edgex_stack.py \
+        --check-device-contracts \
+        --device-contract-event-limit "${EDGEX_CONTRACT_EVENT_LIMIT:-500}" || FAILED=1
     run_step "aiot metrics" curl -fsS --max-time 5 "http://127.0.0.1:${AIOT_METRICS_PORT:-9105}/metrics" || FAILED=1
 fi
 

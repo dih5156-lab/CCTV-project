@@ -1302,7 +1302,7 @@ services:
       DABIT_SERVICE_PORT: "59990"
       REDIS_HOST: edgex-redis
       REDIS_PORT: "6379"
-      SIGNBOARD_DEVICE_ID: ${SIGNBOARD_DEVICE_ID:-signboard-01}
+      SIGNBOARD_DEVICE_ID: ${SIGNBOARD_DEVICE_ID:-cctv-signboard-01}
       SIGNBOARD_CONTROL_BACKEND: tcp
     command: ["python", "runners/run_dabit_device_service.py"]
     networks:

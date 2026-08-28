@@ -16,8 +16,12 @@ SENSOR_LOG=${SENSOR_LOG_PATH:-"${LOG_DIR}/sensor_readings.jsonl"}
 FALL_SHADOW_LOG=${FALL_SHADOW_REVIEW_LOG_PATH:-"${LOG_DIR}/fall_shadow_review.jsonl"}
 FALL_REVIEW_CLIP_DIR=${FALL_SHADOW_CLIP_DIR:-"${DATA_DIR}/fall_review_clips"}
 APPEARANCES_DB=${APPEARANCES_DB:-"${RUNTIME_DIR}/appearances.db"}
+ACTION_HTTP_OUTBOX_DB=${ACTION_HTTP_OUTBOX_DB:-"${RUNTIME_DIR}/action_http_outbox.db"}
+MQTT_EVENT_OUTBOX_DB=${MQTT_EVENT_OUTBOX_DB:-"${RUNTIME_DIR}/mqtt_event_outbox.db"}
 CROP_RETENTION_DAYS=${CROP_RETENTION_DAYS:-7}
 FALL_REVIEW_RETENTION_DAYS=${FALL_REVIEW_RETENTION_DAYS:-3}
+OUTBOX_RETENTION_DAYS=${OUTBOX_RETENTION_DAYS:-7}
+OUTBOX_CLEANUP_BATCH_SIZE=${OUTBOX_CLEANUP_BATCH_SIZE:-25000}
 LOG_MAX_MB=${LOG_MAX_MB:-200}
 FALL_SHADOW_LOG_MAX_MB=${FALL_SHADOW_LOG_MAX_MB:-50}
 PYTHON_BIN=${PYTHON_BIN:-}
@@ -39,9 +43,14 @@ usage() {
                           기본값: <data>/logs/fall_shadow_review.jsonl
   FALL_SHADOW_CLIP_DIR    기본값: <data>/fall_review_clips
   APPEARANCES_DB          기본값: <data>/runtime/appearances.db
+  ACTION_HTTP_OUTBOX_DB   기본값: <data>/runtime/action_http_outbox.db
+  MQTT_EVENT_OUTBOX_DB    기본값: <data>/runtime/mqtt_event_outbox.db
   CROP_RETENTION_DAYS     기본값: 7
   FALL_REVIEW_RETENTION_DAYS
                           기본값: 3
+  OUTBOX_RETENTION_DAYS   전송 완료 outbox 보존 기간, 기본값: 7
+  OUTBOX_CLEANUP_BATCH_SIZE
+                          DB별 1회 최대 삭제 행, 기본값: 25000
   LOG_MAX_MB              기본값: 200
   FALL_SHADOW_LOG_MAX_MB  기본값: 50
   PYTHON_BIN              기본값: <project>/.venv/bin/python, 없으면 python3
@@ -49,7 +58,8 @@ usage() {
 동작:
   기본 실행은 미리보기입니다.
   --apply를 지정하면 보존 기간이 지난 crop 이미지와 낙상 검토 클립을 삭제하고,
-  삭제된 crop의 DB 참조를 비운 뒤 크기 제한을 넘은 JSONL 로그를 회전합니다.
+  삭제된 crop의 DB 참조를 비우고, 오래된 전송 완료 outbox 행을 제한된 배치로
+  정리한 뒤 크기 제한을 넘은 JSONL 로그를 회전합니다.
 EOF
 }
 
@@ -76,6 +86,16 @@ fi
 
 if ! [[ "$FALL_REVIEW_RETENTION_DAYS" =~ ^[0-9]+$ ]]; then
   echo "FALL_REVIEW_RETENTION_DAYS는 0 이상의 정수여야 합니다: ${FALL_REVIEW_RETENTION_DAYS}" >&2
+  exit 2
+fi
+
+if ! [[ "$OUTBOX_RETENTION_DAYS" =~ ^[1-9][0-9]*$ ]]; then
+  echo "OUTBOX_RETENTION_DAYS는 양의 정수여야 합니다: ${OUTBOX_RETENTION_DAYS}" >&2
+  exit 2
+fi
+
+if ! [[ "$OUTBOX_CLEANUP_BATCH_SIZE" =~ ^[1-9][0-9]*$ ]]; then
+  echo "OUTBOX_CLEANUP_BATCH_SIZE는 양의 정수여야 합니다: ${OUTBOX_CLEANUP_BATCH_SIZE}" >&2
   exit 2
 fi
 
@@ -107,8 +127,10 @@ if [[ -z "$PYTHON_BIN" ]]; then
 fi
 
 CROP_REF_ARGS=()
+OUTBOX_CLEANUP_ARGS=()
 if [[ "$APPLY" -eq 1 ]]; then
   CROP_REF_ARGS=(--apply)
+  OUTBOX_CLEANUP_ARGS=(--apply)
 fi
 
 EXPIRED_COUNT=0
@@ -137,12 +159,20 @@ echo "센서 로그: ${SENSOR_LOG} ($(print_file_size "$SENSOR_LOG"))"
 echo "낙상 shadow 로그: ${FALL_SHADOW_LOG} ($(print_file_size "$FALL_SHADOW_LOG"))"
 echo "로그 회전 기준: ${LOG_MAX_MB}MB"
 echo "낙상 shadow 로그 회전 기준: ${FALL_SHADOW_LOG_MAX_MB}MB"
+echo "전송 완료 outbox 보존 기간: ${OUTBOX_RETENTION_DAYS}일"
+echo "outbox DB별 1회 삭제 한도: ${OUTBOX_CLEANUP_BATCH_SIZE}행"
 
 if [[ "$APPLY" -eq 0 ]]; then
   "$PYTHON_BIN" "${PROJECT_ROOT}/scripts/cleanup/cleanup_appearance_crop_refs.py" \
     "${CROP_REF_ARGS[@]}" \
     --db-path "$APPEARANCES_DB" \
     --crop-dir "$CROP_DIR"
+  "$PYTHON_BIN" "${PROJECT_ROOT}/scripts/cleanup/cleanup_outbox_databases.py" \
+    "${OUTBOX_CLEANUP_ARGS[@]}" \
+    --http-db "$ACTION_HTTP_OUTBOX_DB" \
+    --mqtt-db "$MQTT_EVENT_OUTBOX_DB" \
+    --retention-days "$OUTBOX_RETENTION_DAYS" \
+    --batch-size "$OUTBOX_CLEANUP_BATCH_SIZE"
   echo "실제 반영하려면 --apply를 추가하세요."
   exit 0
 fi
@@ -173,6 +203,12 @@ fi
   "${CROP_REF_ARGS[@]}" \
   --db-path "$APPEARANCES_DB" \
   --crop-dir "$CROP_DIR"
+"$PYTHON_BIN" "${PROJECT_ROOT}/scripts/cleanup/cleanup_outbox_databases.py" \
+  "${OUTBOX_CLEANUP_ARGS[@]}" \
+  --http-db "$ACTION_HTTP_OUTBOX_DB" \
+  --mqtt-db "$MQTT_EVENT_OUTBOX_DB" \
+  --retention-days "$OUTBOX_RETENTION_DAYS" \
+  --batch-size "$OUTBOX_CLEANUP_BATCH_SIZE"
 "${PROJECT_ROOT}/scripts/ops/rotate_alert_log.sh" "$ALERT_LOG" "$LOG_MAX_MB"
 "${PROJECT_ROOT}/scripts/ops/rotate_alert_log.sh" "$SENSOR_LOG" "$LOG_MAX_MB"
 "${PROJECT_ROOT}/scripts/ops/rotate_alert_log.sh" "$FALL_SHADOW_LOG" "$FALL_SHADOW_LOG_MAX_MB"
