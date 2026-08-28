@@ -61,7 +61,79 @@ class _EventRepo:
             conn.execute(
                 "CREATE INDEX IF NOT EXISTS idx_action_events_received_at ON action_events(received_at)"
             )
+            conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS action_commands (
+                    command_id TEXT PRIMARY KEY,
+                    topic TEXT NOT NULL,
+                    status TEXT NOT NULL,
+                    message TEXT,
+                    site_id TEXT,
+                    event_id TEXT,
+                    requested_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    payload_json TEXT NOT NULL
+                )
+                """
+            )
+            conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_action_commands_updated_at ON action_commands(updated_at)"
+            )
             conn.commit()
+
+    def record_command(self, command_id: str, topic: str, status: str, payload: Dict, message: str = "") -> None:
+        """명령 상태를 멱등하게 기록한다."""
+        now = now_kst_iso()
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                conn.execute(
+                    """
+                    INSERT INTO action_commands
+                        (command_id, topic, status, message, site_id, event_id,
+                         requested_at, updated_at, payload_json)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ON CONFLICT(command_id) DO UPDATE SET
+                        status=excluded.status, message=excluded.message,
+                        updated_at=excluded.updated_at, payload_json=excluded.payload_json
+                    """,
+                    (
+                        command_id, topic, status, message,
+                        payload.get("site_id"), payload.get("event_id"),
+                        now, now, json.dumps(payload, ensure_ascii=False),
+                    ),
+                )
+                conn.commit()
+        except sqlite3.Error as exc:
+            logger.error("명령 상태 저장 오류: %s", exc)
+
+    def list_commands(self, limit: int = 50) -> List[Dict]:
+        safe_limit = max(1, min(int(limit), 200))
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                conn.row_factory = sqlite3.Row
+                rows = conn.execute(
+                    """SELECT command_id, topic, status, message, site_id, event_id,
+                              requested_at, updated_at, payload_json
+                       FROM action_commands ORDER BY updated_at DESC LIMIT ?""",
+                    (safe_limit,),
+                ).fetchall()
+        except sqlite3.Error as exc:
+            logger.error("명령 상태 조회 오류: %s", exc)
+            return []
+        result = []
+        for row in rows:
+            try:
+                payload = json.loads(row["payload_json"])
+            except (TypeError, json.JSONDecodeError):
+                payload = {}
+            result.append({
+                "command_id": row["command_id"], "topic": row["topic"],
+                "status": row["status"], "message": row["message"],
+                "site_id": row["site_id"], "event_id": row["event_id"],
+                "requested_at": row["requested_at"], "updated_at": row["updated_at"],
+                "payload": payload,
+            })
+        return result
 
     def save(
         self,

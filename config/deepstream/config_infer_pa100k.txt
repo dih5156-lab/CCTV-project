@@ -12,7 +12,7 @@
 [property]
 gpu-id=0
 gie-unique-id=3
-model-engine-file=../../models/pa100k_resnet50_attr.engine
+model-engine-file=../../models/appearance/pa100k_resnet50_attr.engine
 
 # ImageNet normalize와 동일한 전처리. model-color-format=0은 RGB 입력이다.
 model-color-format=0

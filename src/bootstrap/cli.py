@@ -77,10 +77,13 @@ def validate_args(args: argparse.Namespace, parser: argparse.ArgumentParser) -> 
 
 def apply_args_to_config(args: argparse.Namespace, config: AppConfig) -> AppConfig:
     """명령줄 인자를 AppConfig에 반영한다."""
+    config.models.refresh_for_device(args.device)
     if args.helmet_model:
         config.models.helmet_model = args.helmet_model
+        config.models.mark_manual_override("helmet_model")
     if args.pose_model:
         config.models.pose_model = args.pose_model
+        config.models.mark_manual_override("pose_model")
 
     config.detection.helmet_confidence = args.confidence
     config.detection.pose_confidence = args.pose_confidence

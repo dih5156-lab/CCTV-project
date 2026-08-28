@@ -38,6 +38,7 @@ _VALID_COLORS = frozenset({
     "yellow",
     "green",
     "blue",
+    "navy",
     "purple",
     "white",
     "black",
@@ -74,7 +75,7 @@ class AppearanceConditionIn(BaseModel):
     name: str = Field(min_length=1, max_length=100, description="조건 이름 (예: 의심인물_A)")
     upper_color: Optional[str] = Field(
         default=None,
-        description="상의 색상 (red, orange, yellow, green, blue, purple, white, black, gray)",
+        description="상의 색상 (red, orange, yellow, green, blue, navy, purple, white, black, gray)",
     )
     lower_color: Optional[str] = Field(
         default=None,

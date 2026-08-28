@@ -9,11 +9,15 @@ from ..canonical_event import (
     get_payload_camera_id,
     get_payload_display_message,
     get_payload_event_type,
+    get_payload_event_id,
     get_payload_severity,
     get_payload_tts_message,
 )
 from ..event_routing import decide_alert_forward
-from .cctv_metrics import device_commands as _device_commands
+from .cctv_metrics import (
+    device_command_results as _device_command_results,
+    device_commands as _device_commands,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -56,6 +60,7 @@ class _ActionExecutor:
         force_reachability_refresh = self._alarm.is_demo_event(payload)
 
         alarm_played = False
+        device_results = []
         if self._alarm.should_alarm(topic, payload) and self._alarm.try_acquire_slot(
             camera_id, event_type, force=self._alarm.is_demo_event(payload)
         ):
@@ -65,6 +70,8 @@ class _ActionExecutor:
             )
 
             if self._alarm_device_enum.SPEAKER in devices:
+                command_id = f"{get_payload_event_id(payload)}:speaker"
+                self._repo.record_command(command_id, "device/speaker", "sent", payload)
                 speaker_ok = self._speaker.play(
                     event_type,
                     severity,
@@ -76,8 +83,14 @@ class _ActionExecutor:
                 _device_commands.labels(
                     device="speaker", status="ok" if speaker_ok else "skip"
                 ).inc()
+                status = "acknowledged" if speaker_ok else "failed"
+                _device_command_results.labels(device="speaker", status=status).inc()
+                self._repo.record_command(command_id, "device/speaker", status, payload)
+                device_results.append({"device": "speaker", "command_id": command_id, "status": status})
 
             if self._alarm_device_enum.SIGNBOARD in devices:
+                command_id = f"{get_payload_event_id(payload)}:signboard"
+                self._repo.record_command(command_id, "device/signboard", "sent", payload)
                 signboard_ok = self._signboard.display(
                     text=display_message
                     or self._build_display_text(event_type, severity, camera_id),
@@ -89,14 +102,24 @@ class _ActionExecutor:
                 _device_commands.labels(
                     device="signboard", status="ok" if signboard_ok else "skip"
                 ).inc()
+                status = "acknowledged" if signboard_ok else "failed"
+                _device_command_results.labels(device="signboard", status=status).inc()
+                self._repo.record_command(command_id, "device/signboard", status, payload)
+                device_results.append({"device": "signboard", "command_id": command_id, "status": status})
 
             if self._alarm_device_enum.SIREN in devices:
+                command_id = f"{get_payload_event_id(payload)}:siren"
+                self._repo.record_command(command_id, "device/siren", "sent", payload)
                 siren_ok = self._siren.trigger(event_type, camera_id)
                 if siren_ok:
                     alarm_played = True
                 _device_commands.labels(
                     device="siren", status="ok" if siren_ok else "skip"
                 ).inc()
+                status = "acknowledged" if siren_ok else "failed"
+                _device_command_results.labels(device="siren", status=status).inc()
+                self._repo.record_command(command_id, "device/siren", status, payload)
+                device_results.append({"device": "siren", "command_id": command_id, "status": status})
 
         forward_decision = decide_alert_forward(
             payload,
@@ -129,5 +152,6 @@ class _ActionExecutor:
                         force_refresh=force_reachability_refresh,
                     )
                 ],
+                "device_results": device_results,
             },
         )

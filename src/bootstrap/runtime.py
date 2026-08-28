@@ -22,8 +22,9 @@ from ..core.base_processor import BaseProcessor
 from ..services.camera_model_api import start_camera_model_api_server
 from ..services.face_api import start_face_api_server
 from ..services.stream_api import start_stream_api_server
+from ..services.processor_metrics import start_processor_metrics_server
 from ..services.zone_api import start_zone_api_server
-from ..utils.env import get_env_bool, get_env_int
+from ..utils.env import get_env_bool, get_env_int, load_dotenv_file
 from ..utils.zone_drawer import ZoneDrawer
 
 logger = logging.getLogger(__name__)
@@ -47,6 +48,7 @@ def _resolve_video_file_source(source: str) -> Path | None:
 
 def configure_runtime_environment() -> None:
     """OpenCV/콘솔/Jetson 실행 환경을 초기화한다."""
+    load_dotenv_file()
     os.environ.setdefault("OPENCV_FFMPEG_CAPTURE_OPTIONS", "rtsp_transport;tcp")
     os.environ["OPENCV_LOG_LEVEL"] = "ERROR"
     if sys.platform == "win32":
@@ -319,6 +321,10 @@ def start_processor_runtime(
         start_stream_api_server(processor, stream_port or (api_port + 3 if api_port > 0 else 8769))
     elif api_port > 0:
         start_stream_api_server(processor, api_port + 3)
+
+    metrics_port = get_env_int("METRICS_PORT", 0, minimum=0, maximum=65535, logger=logger)
+    if metrics_port > 0:
+        start_processor_metrics_server(processor, metrics_port)
 
     def _keep_api_runtime_alive(reason: str) -> None:
         logger.error("%s API 서버는 유지하고 추론 파이프라인은 시작하지 않습니다.", reason)

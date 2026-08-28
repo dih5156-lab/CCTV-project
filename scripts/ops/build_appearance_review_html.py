@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import html
 import json
+import os
 from pathlib import Path
 
 COLOR_OPTIONS = (
@@ -14,6 +15,7 @@ COLOR_OPTIONS = (
     "brown",
     "gray",
     "green",
+    "navy",
     "orange",
     "pink",
     "purple",
@@ -69,10 +71,15 @@ def _candidate_cells(item: dict, field: str) -> list[str]:
     ]
 
 
-def build_document(payload: dict) -> str:
+def build_document(payload: dict, *, base_dir: Path | None = None) -> str:
     rows = []
     for item in payload.get("items", []):
-        crop_uri = Path(item["crop_path"]).resolve().as_uri()
+        crop_path = Path(item["crop_path"]).resolve()
+        crop_uri = (
+            Path(os.path.relpath(crop_path, base_dir.resolve())).as_posix()
+            if base_dir is not None
+            else crop_path.as_uri()
+        )
         cells = [
             f"<td>{item['id']}</td>",
             (
@@ -103,7 +110,9 @@ def build_document(payload: dict) -> str:
 def build(manifest_path: Path, output_path: Path) -> None:
     payload = json.loads(manifest_path.read_text(encoding="utf-8"))
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(build_document(payload), encoding="utf-8")
+    output_path.write_text(
+        build_document(payload, base_dir=output_path.parent), encoding="utf-8"
+    )
 
 
 def main() -> int:

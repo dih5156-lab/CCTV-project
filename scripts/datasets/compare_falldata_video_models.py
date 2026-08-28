@@ -18,7 +18,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_MANIFEST = PROJECT_ROOT / "data/fall_eval/sample_manifest.jsonl"
 DEFAULT_FEATURE_CACHE = PROJECT_ROOT / "data/fall_eval/falldata_feature_cache"
 DEFAULT_BASELINE_MODEL = (
-    PROJECT_ROOT / "falldata/2. AI학습모델파일/영상/낙상분류/FNF_RF_SMOTE_CAM_1.pkl"
+    PROJECT_ROOT / "models/legacy/falldata_mediapipe/FNF_RF_SMOTE_CAM_1.pkl"
 )
 DEFAULT_CANDIDATE_MODEL = PROJECT_ROOT / "models/experiments/falldata_sample_rf_max120_all.pkl"
 DEFAULT_RESULTS_JSON = PROJECT_ROOT / "models/experiments/falldata_model_compare_max120.json"

@@ -208,6 +208,19 @@ pytest -q
 
 ## 업데이트 이력
 
+### 2026-08-28
+- 주간 자동 업데이트: 코드·설정·문서·테스트 변경사항 반영
+
+
+### 2026-08-28 (8월 4주차, 20250824~20250828)
+
+- Jetson 외형 속성 경로를 HSV fallback에서 PA100K TensorRT(`pa100k_tensorrt`)로 전환해 성별·나이 결과가 실제 appearance DB에 적재되도록 수정했습니다.
+- 성별 평가 스크립트의 PA100K 모델 기본 경로 오류를 수정하고, Jetson AI 엔진 재생성 후 TensorRT 모델 로드와 성별 출력(`male/female/unknown`)을 확인했습니다.
+- 얼굴등록·성별 상태를 점검했습니다. 얼굴 등록은 현재 1명·1샘플이므로 추가 각도/조명 샘플 등록이 필요합니다.
+- Jetson DeepStream 안정성 및 운영 스택을 재점검했습니다. 서비스 health 정상, 프레임 드롭 0, 처리량 약 30 FPS를 확인했습니다.
+- 헬멧·낙상·외형 모델 평가 리포트를 정리했습니다. 낙상 pose 단일 프레임 Recall과 temporal 낙상 모델 Recall을 구분해 기록했습니다.
+- 기본 `docker-compose.yml`은 Windows/일반 환경용으로 유지하고, Jetson 운영은 `docker-compose.jetson.yml`과 `.env.jetson`을 사용하도록 문서화했습니다.
+
 ### 2026-08-26
 
 - helmet/head TensorRT 입력 크기(`320x320`)에 맞춰 DeepStream bbox 좌표 복원 로직을 수정했습니다. 라이브 화면에서 head 박스가 사람 머리 위치와 일치하는 것을 확인했습니다.

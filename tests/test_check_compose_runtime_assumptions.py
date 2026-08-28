@@ -118,6 +118,34 @@ services:
     assert "docker-compose.jetson.yml" in result["detail"]
 
 
+def test_tensorrt_binding_cuda_alignment_fails_on_arm64_mismatch():
+    result = runtime_checks.check_tensorrt_binding_cuda_alignment(
+        machine="aarch64",
+        distribution_names=["tensorrt", "tensorrt_cu13"],
+        expected_cuda_major="12",
+    )
+    assert result["passed"] is False
+    assert "incompatible pip TensorRT CUDA variant" in result["detail"]
+
+
+def test_tensorrt_binding_cuda_alignment_passes_on_arm64_match():
+    result = runtime_checks.check_tensorrt_binding_cuda_alignment(
+        machine="aarch64",
+        distribution_names=["tensorrt", "tensorrt_cu12"],
+        expected_cuda_major="12",
+    )
+    assert result["passed"] is True
+
+
+def test_tensorrt_binding_cuda_alignment_ignored_on_amd64():
+    result = runtime_checks.check_tensorrt_binding_cuda_alignment(
+        machine="x86_64",
+        distribution_names=["tensorrt_cu13"],
+        expected_cuda_major="12",
+    )
+    assert result["passed"] is True
+
+
 def test_parser_db_defaults_fail_when_db_host_is_localhost():
     result = runtime_checks.check_parser_db_defaults(
         "DB_HOST=localhost\n",
@@ -330,7 +358,7 @@ x-appearance-runtime:
     assert "appearance_pphuman_labels.example.json" in result["detail"]
 
 
-def test_falldata_aux_wiring_requires_fail_open_and_jetson_paths():
+def test_falldata_aux_wiring_requires_fail_open_and_inline_pose_rf():
     compose = """
 services:
   cctv-ai-engine:
@@ -342,16 +370,10 @@ services:
   cctv-ai-engine:
     environment:
       FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE: ${FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE:-true}
-      FALLDATA_AUX_MEDIAPIPE_PYTHON: ${FALLDATA_AUX_MEDIAPIPE_PYTHON:-/app/.venv-mediapipe/bin/python}
-      FALLDATA_AUX_MODEL_PYTHON: ${FALLDATA_AUX_MODEL_PYTHON:-/app/.venv-falldata/bin/python}
+      FALLDATA_AUX_INLINE_POSE_RF: ${FALLDATA_AUX_INLINE_POSE_RF:-true}
+      FALLDATA_AUX_COMPARE_MODEL_PATH: ${FALLDATA_AUX_COMPARE_MODEL_PATH:-models/experiments/yolo_pose_fall_cam2_continuous_200_80_640.pkl}
+      FALLDATA_AUX_COMPARE_MODEL_KIND: ${FALLDATA_AUX_COMPARE_MODEL_KIND:-yolo_pose_rf}
       FALLDATA_AUX_INLINE_FEATURE_CAPTURE_PATH: ${FALLDATA_AUX_INLINE_FEATURE_CAPTURE_PATH:-}
-    volumes:
-      - type: bind
-        source: ./falldata
-      - type: bind
-        source: ./.venv-mediapipe
-      - type: bind
-        source: ./.venv-falldata
 """
     result = runtime_checks.check_falldata_aux_wiring(
         compose_text=compose,
@@ -360,8 +382,10 @@ services:
         jetson_env_example_text=(
             "FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE=true\n"
             "FALLDATA_AUX_CONFIRM_BORDERLINE=true\n"
-            "FALLDATA_AUX_MEDIAPIPE_PYTHON=/app/.venv-mediapipe/bin/python\n"
-            "FALLDATA_AUX_MODEL_PYTHON=/app/.venv-falldata/bin/python\n"
+            "FALLDATA_AUX_INLINE_POSE_RF=true\n"
+            "FALLDATA_AUX_COMPARE_MODEL_PATH="
+            "models/experiments/yolo_pose_fall_cam2_continuous_200_80_640.pkl\n"
+            "FALLDATA_AUX_COMPARE_MODEL_KIND=yolo_pose_rf\n"
         ),
     )
 
@@ -389,20 +413,21 @@ def test_falldata_aux_wiring_fails_without_disabled_feature_capture_default() ->
         jetson_compose_text=(
             "FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE: "
             "${FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE:-true}\n"
-            "FALLDATA_AUX_MEDIAPIPE_PYTHON: "
-            "${FALLDATA_AUX_MEDIAPIPE_PYTHON:-/app/.venv-mediapipe/bin/python}\n"
-            "FALLDATA_AUX_MODEL_PYTHON: "
-            "${FALLDATA_AUX_MODEL_PYTHON:-/app/.venv-falldata/bin/python}\n"
-            "source: ./falldata\n"
-            "source: ./.venv-mediapipe\n"
-            "source: ./.venv-falldata\n"
+            "FALLDATA_AUX_INLINE_POSE_RF: ${FALLDATA_AUX_INLINE_POSE_RF:-true}\n"
+            "FALLDATA_AUX_COMPARE_MODEL_PATH: "
+            "${FALLDATA_AUX_COMPARE_MODEL_PATH:-models/experiments/"
+            "yolo_pose_fall_cam2_continuous_200_80_640.pkl}\n"
+            "FALLDATA_AUX_COMPARE_MODEL_KIND: "
+            "${FALLDATA_AUX_COMPARE_MODEL_KIND:-yolo_pose_rf}\n"
         ),
         env_example_text="FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE=true\n",
         jetson_env_example_text=(
             "FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE=true\n"
             "FALLDATA_AUX_CONFIRM_BORDERLINE=true\n"
-            "FALLDATA_AUX_MEDIAPIPE_PYTHON=/app/.venv-mediapipe/bin/python\n"
-            "FALLDATA_AUX_MODEL_PYTHON=/app/.venv-falldata/bin/python\n"
+            "FALLDATA_AUX_INLINE_POSE_RF=true\n"
+            "FALLDATA_AUX_COMPARE_MODEL_PATH="
+            "models/experiments/yolo_pose_fall_cam2_continuous_200_80_640.pkl\n"
+            "FALLDATA_AUX_COMPARE_MODEL_KIND=yolo_pose_rf\n"
         ),
     )
 

@@ -68,7 +68,9 @@ def export_onnx(
     opset: int,
 ) -> None:
     model = _build_model(repo_root, nattr, backbone_name, classifier_name)
-    checkpoint = torch.load(checkpoint_path, map_location="cpu")
+    # Local training checkpoints include metadata objects, so disable
+    # weights-only mode introduced as the default in PyTorch 2.6.
+    checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
     state_key = "state_dict_ema" if use_ema and "state_dict_ema" in checkpoint else "state_dicts"
     state_dict = _strip_module_prefix(checkpoint[state_key])
     missing, unexpected = model.load_state_dict(state_dict, strict=False)

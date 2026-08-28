@@ -35,13 +35,13 @@ logger = logging.getLogger(__name__)
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_MODEL_PATH = (
     PROJECT_ROOT
-    / "falldata/2. AI학습모델파일/영상/낙상분류/FNF_RF_SMOTE_CAM_1.pkl"
+    / "models/legacy/falldata_mediapipe/FNF_RF_SMOTE_CAM_1.pkl"
 )
 DEFAULT_COMPARE_MODEL_PATH = PROJECT_ROOT / "models/experiments/falldata_sample_rf_max120_guarded.pkl"
 DEFAULT_MEDIAPIPE_PYTHON = PROJECT_ROOT / ".venv-mediapipe/bin/python"
 DEFAULT_MODEL_PYTHON = PROJECT_ROOT / ".venv-falldata/bin/python"
 DEFAULT_TEMPORAL_PYTHON = PROJECT_ROOT / ".venv-jetson-train/bin/python"
-DEFAULT_TEMPORAL_POSE_MODEL = PROJECT_ROOT / "models/yolov8n-pose.pt"
+DEFAULT_TEMPORAL_POSE_MODEL = PROJECT_ROOT / "models/fall/yolov8n-pose.pt"
 EXTRACT_SCRIPT = PROJECT_ROOT / "scripts/datasets/extract_falldata_mediapipe_features.py"
 SMOKE_SCRIPT = PROJECT_ROOT / "scripts/datasets/smoke_falldata_video_model.py"
 TEMPORAL_SMOKE_SCRIPT = PROJECT_ROOT / "scripts/inference/smoke_fall_temporal_model.py"

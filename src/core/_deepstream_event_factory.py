@@ -7,7 +7,6 @@ from typing import Any, Callable, Dict, Iterable, List, Optional
 
 from .events import DetectionEvent, EventType
 
-
 _FALL_DETAIL_KEYS = (
     "fall_direction",
     "fall_type",

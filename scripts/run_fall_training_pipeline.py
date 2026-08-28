@@ -20,7 +20,10 @@ from typing import Any
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from scripts.datasets.build_sample_fall_manifest import build_manifest, write_jsonl  # noqa: E402
+from scripts.datasets.build_sample_fall_manifest import (  # noqa: E402
+    build_manifest,
+    write_jsonl,
+)
 
 
 def _group_key(row: dict[str, Any]) -> str:

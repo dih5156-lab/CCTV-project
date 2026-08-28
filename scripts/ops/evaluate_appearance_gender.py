@@ -83,7 +83,7 @@ def _build_parser() -> argparse.ArgumentParser:
         "--model-path",
         default=os.environ.get(
             "APPEARANCE_MODEL_PATH",
-            "models/pphuman_attribute_src/PP-LCNet_x1_0_pedestrian_attribute_infer",
+            "models/appearance/pphuman_attribute_src/PP-LCNet_x1_0_pedestrian_attribute_infer",
         ),
         help="PP-Human attribute model path.",
     )

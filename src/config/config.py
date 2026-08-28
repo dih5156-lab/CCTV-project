@@ -6,6 +6,44 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable, Mapping, Optional, Sequence, Union
 
+
+def load_dotenv_file(path: Union[str, os.PathLike[str], None] = None, *, override: bool = False) -> bool:
+    """Load key=value entries from a .env file into os.environ.
+
+    This helper lives here to avoid a circular import through src.utils.__init__
+    while startup still needs project-local credentials before MQTT connects.
+    """
+    if path is None:
+        project_root = Path(__file__).resolve().parent.parent.parent
+        path = project_root / ".env"
+
+    env_path = Path(path).expanduser()
+    if not env_path.exists() or not env_path.is_file():
+        return False
+
+    loaded = False
+    for raw_line in env_path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+
+        key_part, value_part = line.split("=", 1)
+        key = key_part.strip()
+        if key.startswith("export "):
+            key = key.replace("export ", "", 1).strip()
+        if not key:
+            continue
+
+        value = value_part.strip()
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in {'"', "'"}:
+            value = value[1:-1]
+
+        if override or key not in os.environ:
+            os.environ[key] = value
+        loaded = True
+
+    return loaded
+
 # 프로젝트 루트 디렉토리 (src/config에서 2단계 상위)
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 logger = logging.getLogger(__name__)
@@ -43,39 +81,29 @@ MODEL_CANDIDATES: dict[str, tuple[str, tuple[Union[str, Path], ...]]] = {
         "helmet",
         (
             # TensorRT (Jetson 우선)
-            PROJECT_ROOT / "models/helmet_model_ver0.6.engine",
-            PROJECT_ROOT / "models/helmet_model_ver0.5.engine",
-            PROJECT_ROOT / "models/helmet_model.engine",
-            PROJECT_ROOT / "models/helmet_model_ver0.6.pt",
-            PROJECT_ROOT / "models/helmet_model_ver0.5.pt",
-            PROJECT_ROOT / "models/helmet_model.pt",
-            PROJECT_ROOT / "helmet_model_ver0.6.pt",
-            PROJECT_ROOT / "helmet_model_ver0.5.pt",
-            PROJECT_ROOT / "helmet_model.pt",
+            PROJECT_ROOT / "models/head/helmet_model.engine",
+            PROJECT_ROOT / "models/head/helmet_model.pt",
+            PROJECT_ROOT / "models/legacy/helmet_model_ver0.5.pt",
         ),
     ),
     "pose_model": (
         "pose",
         (
             # TensorRT (Jetson 우선)
-            PROJECT_ROOT / "models/yolov8n-pose.engine",
-            PROJECT_ROOT / "models/yolov8n-pose.pt",
-            PROJECT_ROOT / "yolov8n-pose.pt",
-            "yolov8n-pose.pt",
+            PROJECT_ROOT / "models/fall/yolov8n-pose.engine",
+            PROJECT_ROOT / "models/fall/yolov8n-pose.pt",
+            PROJECT_ROOT / "models/legacy/yolov8n-pose.pt",
         ),
     ),
     "person_model": (
         "person",
         (
             # TensorRT (Jetson 우선)
-            PROJECT_ROOT / "models/yolov8n.engine",
-            PROJECT_ROOT / "models/yolov8s.engine",
-            PROJECT_ROOT / "models/yolov8n.pt",
-            PROJECT_ROOT / "models/yolov8s.pt",
-            PROJECT_ROOT / "yolov8n.pt",
-            PROJECT_ROOT / "yolov8s.pt",
-            "yolov8n.pt",
-            "yolov8s.pt",
+            PROJECT_ROOT / "models/person/yolov8n.engine",
+            PROJECT_ROOT / "models/person/yolov8s.engine",
+            PROJECT_ROOT / "models/person/yolov8n.pt",
+            PROJECT_ROOT / "models/person/yolov8s.pt",
+            PROJECT_ROOT / "models/legacy/yolov8n.pt",
         ),
     ),
 }
@@ -154,13 +182,36 @@ class ModelPaths:
     helmet_model: Optional[str] = None
     person_model: Optional[str] = None
     pose_model: Optional[str] = None
+    _manual_overrides: set[str] = field(default_factory=set, init=False, repr=False, compare=False)
 
     def __post_init__(self) -> None:
         """누락된 모델 경로를 자동으로 보강"""
+        self.refresh_for_device("cpu")
+
+    def mark_manual_override(self, attr_name: str) -> None:
+        """사용자가 직접 지정한 모델 경로는 장치 선택 우선순위를 덮어쓰지 않는다."""
+        if attr_name in {"helmet_model", "person_model", "pose_model"}:
+            self._manual_overrides.add(attr_name)
+
+    def refresh_for_device(self, device: str = "cpu") -> None:
+        """CPU에서는 .pt를 우선, CUDA에서는 .engine 우선으로 경로를 재선택한다."""
+        use_cuda = str(device).lower().startswith("cuda")
 
         for attr, (label, candidates) in MODEL_CANDIDATES.items():
-            if getattr(self, attr) is None:
-                setattr(self, attr, self._resolve_path(label, candidates))
+            if attr in self._manual_overrides and getattr(self, attr):
+                continue
+
+            ordered_candidates = self._order_candidates(candidates, prefer_engine=use_cuda)
+            resolved = self._resolve_path(label, ordered_candidates)
+            setattr(self, attr, resolved)
+
+    @staticmethod
+    def _order_candidates(
+        candidates: Sequence[Union[str, Path]], *, prefer_engine: bool
+    ) -> tuple[Union[str, Path], ...]:
+        engine_candidates = tuple(c for c in candidates if str(c).lower().endswith(".engine"))
+        pt_candidates = tuple(c for c in candidates if not str(c).lower().endswith(".engine"))
+        return engine_candidates + pt_candidates if prefer_engine else pt_candidates + engine_candidates
 
     @staticmethod
     def _resolve_path(label: str, candidates: Sequence[Union[str, Path]]) -> Optional[str]:
@@ -401,12 +452,13 @@ class AppConfig:
 
     def __post_init__(self) -> None:
         """dataclass 기본값 검증 전용 — 서브코단피그 인스턴스 생성은 field()가 담당."""
-        pass
+        self.models.refresh_for_device(self.detection.device)
     
     @classmethod
     def from_env(cls, env: Optional[Mapping[str, str]] = None) -> "AppConfig":
         """환경 변수에서 설정값 로드"""
 
+        load_dotenv_file(PROJECT_ROOT / ".env")
         config = cls()
         config.apply_env_overrides(env)
         return config
@@ -426,7 +478,12 @@ class AppConfig:
                 logger.warning("환경 변수 파싱 실패: %s (%s)", override.key, exc)
                 continue
 
+            if override.path[:-1] == ("models",) and override.path[-1] in {"helmet_model", "person_model", "pose_model"}:
+                self.models.mark_manual_override(override.path[-1])
+
             self._set_nested_attr(override.path, parsed_value)
+
+        self.models.refresh_for_device(self.detection.device)
 
     def _set_nested_attr(self, path: tuple[str, ...], value: object) -> None:
         target = self

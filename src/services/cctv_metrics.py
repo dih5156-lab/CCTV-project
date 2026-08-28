@@ -49,6 +49,13 @@ device_commands: Counter = Counter(
     registry=REGISTRY,
 )
 
+device_command_results: Counter = Counter(
+    "cctv_device_command_results_total",
+    "장치 명령 실행 결과 총 수",
+    ["device", "status"],  # status: acknowledged|failed
+    registry=REGISTRY,
+)
+
 rest_events_dropped: Counter = Counter(
     "cctv_rest_events_dropped_total",
     "REST action queue 포화로 거부된 이벤트 총 수",

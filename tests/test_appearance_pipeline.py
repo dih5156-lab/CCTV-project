@@ -383,6 +383,42 @@ def test_smooth_track_attributes_does_not_restore_not_visible_color(tmp_path):
     assert hidden["attribute_metadata"]["color_observations"]["lower_color"] == 0
 
 
+def test_smooth_track_attributes_accepts_high_confidence_chromatic_lower_model(tmp_path):
+    pipeline = AppearancePipeline(
+        AppearanceAnalyzer(),
+        tmp_path / "crops",
+        color_smoothing_window=5,
+        color_min_samples=2,
+    )
+    person = DetectionEvent(
+        event_type=EventType.PERSON,
+        x=0,
+        y=0,
+        width=40,
+        height=80,
+        confidence=0.9,
+        timestamp=1000.0,
+        object_id=8,
+        class_name="person",
+    )
+    black = {"lower_color": "black", "attribute_metadata": {"color_sources": {"lower_color": "lab"}}}
+    pipeline._smooth_track_attributes("cam01", person, black)
+    pipeline._smooth_track_attributes("cam01", person, black)
+
+    blue = {
+        "lower_color": "blue",
+        "attribute_metadata": {
+            "color_sources": {"lower_color": "color_yolov8n"},
+            "color_candidates": {
+                "lower_color": {"model_color": "blue", "model_confidence": 0.999}
+            },
+        },
+    }
+    result = pipeline._smooth_track_attributes("cam01", person, blue)
+
+    assert result["lower_color"] == "blue"
+
+
 def test_smooth_track_attributes_requires_stable_gender_samples(tmp_path):
     pipeline = AppearancePipeline(
         AppearanceAnalyzer(),

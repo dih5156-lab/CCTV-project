@@ -4,9 +4,9 @@
 from __future__ import annotations
 
 import argparse
-from datetime import datetime
 import json
 import sqlite3
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -17,6 +17,7 @@ ALLOWED_COLORS = frozenset(
         "brown",
         "gray",
         "green",
+        "navy",
         "orange",
         "pink",
         "purple",

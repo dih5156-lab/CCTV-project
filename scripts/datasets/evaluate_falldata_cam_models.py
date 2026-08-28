@@ -21,7 +21,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_MANIFEST = PROJECT_ROOT / "data/fall_eval/field_combined_manifest.jsonl"
 DEFAULT_FEATURE_CACHE = PROJECT_ROOT / "data/fall_eval/falldata_cam_eval_feature_cache"
 DEFAULT_MODEL_DIR = (
-    PROJECT_ROOT / "falldata/2. AI학습모델파일/영상/낙상분류"
+    PROJECT_ROOT / "models/legacy/falldata_mediapipe"
 )
 DEFAULT_MEDIAPIPE_PYTHON = PROJECT_ROOT / ".venv-mediapipe/bin/python"
 DEFAULT_RESULTS_JSON = (

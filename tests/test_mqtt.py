@@ -1,3 +1,5 @@
+import os
+
 """
 test_mqtt.py — MqttEventPublisher 단위 테스트
 
@@ -19,6 +21,7 @@ from src.protocols.mqtt_publisher import (
     _RECONNECT_MIN_DELAY,
     MqttEventPublisher,
 )
+from src.utils.env import load_dotenv_file
 
 # ---------------------------------------------------------------------------
 # 후처리 헬퍼: connected publisher fixture
@@ -107,6 +110,19 @@ class TestMqttClientFactory:
             create_mqtt_client("test-client")
 
         mock_client.username_pw_set.assert_called_once_with("env-user", "env-secret")
+
+    def test_load_dotenv_file_sets_credentials(self, tmp_path, monkeypatch):
+        env_file = tmp_path / ".env"
+        env_file.write_text("MQTT_USER=dotenv-user\nMQTT_PASSWORD=dotenv-secret\n", encoding="utf-8")
+        monkeypatch.delenv("MQTT_USER", raising=False)
+        monkeypatch.delenv("MQTT_PASSWORD", raising=False)
+
+        loaded = load_dotenv_file(env_file)
+
+        assert loaded is True
+        assert "MQTT_USER" in __import__("os").environ
+        assert os.environ["MQTT_USER"] == "dotenv-user"
+        assert os.environ["MQTT_PASSWORD"] == "dotenv-secret"
 
 
 # ---------------------------------------------------------------------------

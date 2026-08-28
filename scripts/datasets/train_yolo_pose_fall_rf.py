@@ -31,7 +31,7 @@ DEFAULT_FEATURE_CACHE = PROJECT_ROOT / "data/fall_eval/yolo_pose_fall_feature_ca
 DEFAULT_VALIDATION_FEATURE_CACHE = (
     PROJECT_ROOT / "data/fall_eval/yolo_pose_fall_validation_feature_cache"
 )
-DEFAULT_POSE_MODEL = PROJECT_ROOT / "models/yolov8n-pose.pt"
+DEFAULT_POSE_MODEL = PROJECT_ROOT / "models/fall/yolov8n-pose.pt"
 DEFAULT_OUTPUT_MODEL = PROJECT_ROOT / "models/experiments/yolo_pose_fall_rf.pkl"
 DEFAULT_METRICS = PROJECT_ROOT / "models/experiments/yolo_pose_fall_rf_metrics.json"
 FALL_LABEL = 1
@@ -124,21 +124,29 @@ def _group_holdout_indices(
     *,
     test_size: float,
     random_state: int,
+    forced_train_scene_ids: set[str] | None = None,
 ) -> tuple[np.ndarray, np.ndarray, dict[str, Any]]:
     groups = [_scene_base(scene_id) for scene_id in scene_ids]
+    forced_train_groups = {
+        _scene_base(scene_id) for scene_id in (forced_train_scene_ids or set())
+    }
     unique_groups = np.asarray(sorted(set(groups)), dtype=object)
     unique_group_count = len(unique_groups)
+    holdout_eligible_groups = np.asarray(
+        [group for group in unique_groups if group not in forced_train_groups],
+        dtype=object,
+    )
     effective_test_size = max(test_size, min(0.5, 2 / unique_group_count))
     holdout_group_count = min(
         max(int(np.ceil(unique_group_count * effective_test_size)), 1),
-        max(unique_group_count - 1, 1),
+        max(len(holdout_eligible_groups) - 1, 1),
     )
     random_generator = np.random.RandomState(random_state)
     first_split: tuple[np.ndarray, np.ndarray] | None = None
     selected_split: tuple[np.ndarray, np.ndarray] | None = None
     group_array = np.asarray(groups, dtype=object)
     for _ in range(100):
-        shuffled_groups = random_generator.permutation(unique_groups)
+        shuffled_groups = random_generator.permutation(holdout_eligible_groups)
         holdout_groups_for_split = set(shuffled_groups[:holdout_group_count])
         holdout_mask = np.asarray(
             [group in holdout_groups_for_split for group in group_array],
@@ -165,12 +173,44 @@ def _group_holdout_indices(
         "train_groups": train_groups,
         "test_groups": holdout_groups,
         "group_overlap": sorted(set(train_groups) & set(holdout_groups)),
+        "forced_train_groups": sorted(forced_train_groups),
         "train_class_counts": _class_counts(labels[train_indices]),
         "test_class_counts": _class_counts(labels[holdout_indices]),
     }
     if selected_split is None:
         split_info["warning"] = "could not find a group holdout split containing both classes"
     return train_indices, holdout_indices, split_info
+
+
+def _apply_reviewed_hard_case_weights(
+    sample_weights: np.ndarray,
+    scene_ids: list[str],
+    reviewed_weights: dict[str, float],
+) -> np.ndarray:
+    weighted = sample_weights.copy()
+    for index, scene_id in enumerate(scene_ids):
+        if scene_id in reviewed_weights:
+            weighted[index] = max(weighted[index], reviewed_weights[scene_id])
+    return weighted
+
+
+def _read_reviewed_hard_case_weights(path: Path | None) -> dict[str, float]:
+    if path is None:
+        return {}
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    items = payload.get("items")
+    if payload.get("schema_version") != 1 or not isinstance(items, list):
+        raise ValueError("reviewed hard cases must use schema_version=1 with items")
+    weights: dict[str, float] = {}
+    for item in items:
+        scene_id = str(item.get("scene_id") or "")
+        weight = float(item.get("weight", 1.0))
+        if not scene_id or weight < 1.0:
+            raise ValueError(f"invalid reviewed hard case: {item!r}")
+        if scene_id in weights:
+            raise ValueError(f"duplicate reviewed hard case: {scene_id}")
+        weights[scene_id] = weight
+    return weights
 
 
 def _label_for_row(row: dict[str, Any]) -> int:
@@ -967,6 +1007,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--min-samples-leaf", type=int, default=2)
     parser.add_argument("--hard-case-weight", type=float, default=1.0)
     parser.add_argument("--hard-case-folds", type=int, default=5)
+    parser.add_argument(
+        "--reviewed-hard-cases",
+        type=Path,
+        help="JSON file containing explicitly reviewed training scene weights.",
+    )
     parser.add_argument("--random-state", type=int, default=42)
     parser.add_argument("--decision-threshold", type=float, default=0.6)
     parser.add_argument(
@@ -990,6 +1035,9 @@ def main() -> int:
     from sklearn.model_selection import GroupKFold, cross_val_predict
 
     args = parse_args()
+    reviewed_hard_case_weights = _read_reviewed_hard_case_weights(
+        args.reviewed_hard_cases
+    )
     train_rows = _select_rows(_read_jsonl(args.manifest), args.max_videos)
     validation_rows = _select_rows(_read_jsonl(args.validation_manifest), args.validation_max_videos)
     if not train_rows:
@@ -1056,6 +1104,7 @@ def main() -> int:
         train_dataset["y"],
         test_size=0.25,
         random_state=args.random_state,
+        forced_train_scene_ids=set(reviewed_hard_case_weights),
     )
     x_train = train_dataset["x"][train_indices]
     x_holdout = train_dataset["x"][holdout_indices]
@@ -1115,6 +1164,19 @@ def main() -> int:
                 for index in hard_indices
             ],
         }
+    training_scene_ids = [
+        train_dataset["scene_ids"][index] for index in train_indices
+    ]
+    sample_weights = _apply_reviewed_hard_case_weights(
+        sample_weights,
+        training_scene_ids,
+        reviewed_hard_case_weights,
+    )
+    hard_case_mining["reviewed_scene_ids"] = sorted(reviewed_hard_case_weights)
+    hard_case_mining["reviewed_count"] = len(reviewed_hard_case_weights)
+    hard_case_mining["reviewed_source"] = (
+        str(args.reviewed_hard_cases) if args.reviewed_hard_cases else None
+    )
     model.fit(x_train, y_train, sample_weight=sample_weights)
     holdout_dataset = {"x": x_holdout, "y": y_holdout, "scene_ids": ids_holdout}
     thresholds = [round(value, 2) for value in np.arange(0.35, 0.91, 0.05)]

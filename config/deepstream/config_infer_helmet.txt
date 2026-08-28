@@ -1,6 +1,6 @@
 # =============================================================================
 # nvinfer TensorRT helmet/head 탐지 설정 (Jetson Orin / DeepStream)
-# helmet_model_ver0.5.engine 클래스: 0=helmet, 1=head
+# models/head/helmet_model.engine 클래스: 0=helmet, 1=head
 # YOLOv8 raw tensor는 output-tensor-meta를 Python pad-probe에서 직접 파싱한다.
 # =============================================================================
 
@@ -8,7 +8,7 @@
 gpu-id=0
 gie-unique-id=2
 net-scale-factor=0.0039215697906911373
-model-engine-file=../../models/helmet_model_ver0.5_320_fp16.engine
+model-engine-file=../../models/head/helmet_model.engine
 labelfile-path=labels_helmet.txt
 model-color-format=0
 batch-size=8

@@ -138,7 +138,7 @@ class TestColorClassificationBackend:
     def analyzer(self):
         return AppearanceAnalyzer()
 
-    def test_model_result_overrides_chromatic_classical_result(self):
+    def test_model_result_is_used_when_classical_sources_are_unknown(self):
         class FakeColorBackend:
             backend_name = "color_yolov8n"
 
@@ -158,8 +158,8 @@ class TestColorClassificationBackend:
 
         assert attrs["upper_color"] == "red"
         assert attrs["lower_color"] == "blue"
-        assert attrs["attribute_metadata"]["color_sources"]["upper_color"] == "color_yolov8n"
-        assert attrs["attribute_metadata"]["color_sources"]["lower_color"] == "color_yolov8n"
+        assert attrs["attribute_metadata"]["color_sources"]["upper_color"] == "hsv_lab_consensus"
+        assert attrs["attribute_metadata"]["color_sources"]["lower_color"] == "hsv_lab_consensus"
 
     def test_empty_or_low_confidence_model_result_keeps_hsv(self):
         class LowConfidenceBackend:
@@ -201,7 +201,7 @@ class TestColorClassificationBackend:
         assert merged["selected"] == "black"
         assert merged["source"] == "hsv_lab_consensus"
 
-    def test_chromatic_disagreement_keeps_model_result(self):
+    def test_chromatic_disagreement_vetoes_model_result(self):
         class PurpleModelBackend:
             backend_name = "color_yolov8n"
 
@@ -223,9 +223,34 @@ class TestColorClassificationBackend:
             _solid_frame((0, 0, 255), h=40, w=40),
         )
 
-        assert merged["selected"] == "purple"
-        assert merged["source"] == "color_yolov8n"
+        assert merged["selected"] == "red"
+        assert merged["source"] == "hsv_lab_conflict_model_veto"
         assert merged["model_color"] == "purple"
+
+    def test_colored_hsv_lab_consensus_vetoes_model_error(self):
+        class BrownModelBackend:
+            backend_name = "color_yolov8n"
+
+            def predict(self, region):
+                return {"color": "brown", "confidence": 0.99}
+
+        analyzer = AppearanceAnalyzer(color_backend=BrownModelBackend())
+        evidence = {
+            "selected": "red",
+            "source": "lab",
+            "confidence": 0.6,
+            "hsv_color": "red",
+            "hsv_ratio": 0.6,
+            "lab_color": "red",
+        }
+
+        merged = analyzer._merge_color_model_evidence(
+            evidence,
+            _solid_frame((0, 0, 255), h=40, w=40),
+        )
+
+        assert merged["selected"] == "red"
+        assert merged["source"] == "hsv_lab_consensus"
 
     def test_onnx_backend_decodes_softmax_and_label(self, tmp_path):
         class FakeInput:

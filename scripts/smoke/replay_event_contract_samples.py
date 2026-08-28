@@ -15,8 +15,10 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from scripts.validate_event_contracts import _sample_payloads, validate_payload  # noqa: E402
-
+from scripts.validate_event_contracts import (  # noqa: E402
+    _sample_payloads,
+    validate_payload,
+)
 
 CRITICAL_TYPES = {"fall_detected", "danger_zone", "intrusion", "unsafe_behavior"}
 

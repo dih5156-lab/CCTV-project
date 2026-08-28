@@ -190,6 +190,10 @@ class ActionBridge:
         """최근 Action Layer 처리 이력을 반환한다."""
         return self._repo.list_recent(limit=limit)
 
+    def list_commands(self, limit: int = 50) -> List[Dict]:
+        """재시작 후에도 남아 있는 출력 제어 명령 상태를 반환한다."""
+        return self._repo.list_commands(limit=limit)
+
     def list_output_devices(self) -> List[Dict]:
         """출력 디바이스 설정 상태를 UI/API용으로 반환한다."""
         return [
@@ -512,6 +516,7 @@ class ActionBridge:
     def _dispatch_command(self, topic: str, payload: Dict) -> None:
         """MQTT 명령 토픽을 처리한다."""
         command_id = str(payload.get("command_id", uuid.uuid4()))
+        self._repo.record_command(command_id, topic, "queued", payload)
         command_status = "ignored"
         message = ""
 
@@ -554,6 +559,7 @@ class ActionBridge:
                 "event_id": payload.get("event_id"),
             },
         )
+        self._repo.record_command(command_id, topic, command_status, payload, message)
 
     def _on_message(
         self,

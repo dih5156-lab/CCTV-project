@@ -21,6 +21,7 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import pytest
 
+from src.core.ai._appearance_analyzer import AppearanceAnalyzer
 from src.core.ai._fall_detector import FallDetector
 from src.core.events import DetectionEvent, EventType
 from tests.conftest import make_event
@@ -128,6 +129,14 @@ class TestMapClassToEventType:
     def test_helmet_missing_maps_to_head(self, analyzer):
         assert analyzer._map_class_to_event_type("helmet_missing", "helmet") == EventType.HEAD
 
+    def test_hardhat_and_head_protected_aliases_map_to_helmet(self, analyzer):
+        assert analyzer._map_class_to_event_type("hardhat", "helmet") == EventType.HELMET
+        assert analyzer._map_class_to_event_type("head_protected", "helmet") == EventType.HELMET
+
+    def test_hardhat_off_and_helmet_off_aliases_map_to_head(self, analyzer):
+        assert analyzer._map_class_to_event_type("hardhat_off", "helmet") == EventType.HEAD
+        assert analyzer._map_class_to_event_type("helmet_off", "helmet") == EventType.HEAD
+
     def test_person_model_person_class(self, analyzer):
         assert analyzer._map_class_to_event_type("person", "person") == EventType.PERSON
 
@@ -151,6 +160,16 @@ class TestMapClassToEventType:
 # ===========================================================================
 # _generate_temp_id
 # ===========================================================================
+
+
+class TestAppearanceHelmetEvidence:
+    def test_positive_aliases_count_as_helmet_evidence(self):
+        nearby = [{"class_name": "head_protected", "x": 0, "y": 0, "width": 100, "height": 50}]
+        assert AppearanceAnalyzer._has_helmet_evidence(0, 0, 100, 50, nearby) is True
+
+    def test_negative_aliases_do_not_count_as_helmet_evidence(self):
+        nearby = [{"class_name": "helmet_off", "x": 0, "y": 0, "width": 100, "height": 50}]
+        assert AppearanceAnalyzer._has_helmet_evidence(0, 0, 100, 50, nearby) is False
 
 
 class TestGenerateTempId:

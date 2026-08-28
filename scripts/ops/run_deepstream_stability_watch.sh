@@ -28,6 +28,9 @@ Environment:
   MODEL_API_URL                      default: http://localhost:8766/health
   FACE_API_URL                       default: http://localhost:8767/health
   DEEPSTREAM_LOG_SINCE               default: stability watch start time
+  FALL_SHADOW_CHECK                  default: 0 (set 1 to check fall Shadow each sample)
+  DEEPSTREAM_MAX_SAMPLES             default: 0 (unlimited; useful for one-shot validation)
+  DEEPSTREAM_RUN_DATA_FLOW_SMOKE      default: 1 (set 0 for read-only monitoring)
 EOF
 }
 
@@ -51,6 +54,9 @@ HTTP_CHECK_TIMEOUT_SEC=${HTTP_CHECK_TIMEOUT_SEC:-8}
 HTTP_CHECK_RETRIES=${HTTP_CHECK_RETRIES:-3}
 HTTP_CHECK_RETRY_DELAY_SEC=${HTTP_CHECK_RETRY_DELAY_SEC:-2}
 RUNTIME_ENV_FILE=${RUNTIME_ENV_FILE:-}
+FALL_SHADOW_CHECK=${FALL_SHADOW_CHECK:-0}
+MAX_SAMPLES=${DEEPSTREAM_MAX_SAMPLES:-0}
+RUN_DATA_FLOW_SMOKE=${DEEPSTREAM_RUN_DATA_FLOW_SMOKE:-1}
 
 running_jetson_stack() {
     command -v docker >/dev/null 2>&1 || return 1
@@ -78,6 +84,11 @@ fi
 
 if ! [[ "$INTERVAL_SEC" =~ ^[0-9]+$ && "$INTERVAL_SEC" -gt 0 ]]; then
     echo "ERROR: 간격(초)은 양수여야 합니다: ${INTERVAL_SEC}" >&2
+    exit 2
+fi
+
+if ! [[ "$MAX_SAMPLES" =~ ^[0-9]+$ ]]; then
+    echo "ERROR: 최대 샘플 수는 0 이상의 정수여야 합니다: ${MAX_SAMPLES}" >&2
     exit 2
 fi
 
@@ -210,6 +221,9 @@ write_summary() {
         printf 'duration_min=%s\n' "$DURATION_MIN"
         printf 'interval_sec=%s\n' "$INTERVAL_SEC"
         printf 'container=%s\n' "$CONTAINER_NAME"
+        printf 'fall_shadow_check=%s\n' "$FALL_SHADOW_CHECK"
+        printf 'max_samples=%s\n' "$MAX_SAMPLES"
+        printf 'run_data_flow_smoke=%s\n' "$RUN_DATA_FLOW_SMOKE"
         printf 'samples=%s\n' "$SAMPLE"
         printf 'pass=%s\n' "$PASS"
         printf 'fail=%s\n' "$FAIL"
@@ -233,8 +247,13 @@ PRECHECK_FAILED=0
 run_check "required command: curl" require_command curl || PRECHECK_FAILED=1
 run_check "required command: docker" require_command docker || PRECHECK_FAILED=1
 run_check "docker access" docker_access_check || PRECHECK_FAILED=1
-run_check "smoke test script exists" test -f scripts/smoke/smoke_test_data_flow.py || PRECHECK_FAILED=1
+if [[ "$RUN_DATA_FLOW_SMOKE" == "1" ]]; then
+    run_check "smoke test script exists" test -f scripts/smoke/smoke_test_data_flow.py || PRECHECK_FAILED=1
+fi
 run_check "python virtualenv exists" test -x .venv/bin/python || PRECHECK_FAILED=1
+if [[ "$FALL_SHADOW_CHECK" == "1" ]]; then
+    run_check "fall shadow checker exists" test -x scripts/ops/check_fall_shadow_operation.py || PRECHECK_FAILED=1
+fi
 
 if [[ "$PRECHECK_FAILED" -ne 0 ]]; then
     log ""
@@ -258,8 +277,14 @@ while [[ $(date +%s) -lt "$END" ]]; do
     run_check "zone api health" http_check "$ZONE_API_URL" || SAMPLE_FAILED=1
     run_check "camera model api health" http_check "$MODEL_API_URL" || SAMPLE_FAILED=1
     run_check "face api health" http_check "$FACE_API_URL" || SAMPLE_FAILED=1
-    run_check "data flow smoke" smoke_check || SAMPLE_FAILED=1
+    if [[ "$RUN_DATA_FLOW_SMOKE" == "1" ]]; then
+        run_check "data flow smoke" smoke_check || SAMPLE_FAILED=1
+    fi
     run_check "deepstream recent logs" deepstream_log_check || SAMPLE_FAILED=1
+    if [[ "$FALL_SHADOW_CHECK" == "1" ]]; then
+        run_check "fall shadow operation" \
+            .venv/bin/python scripts/ops/check_fall_shadow_operation.py || SAMPLE_FAILED=1
+    fi
 
     if command -v tegrastats >/dev/null 2>&1; then
         timeout 3s tegrastats --interval 1000 >>"$LOG_FILE" 2>&1 || true
@@ -271,6 +296,10 @@ while [[ $(date +%s) -lt "$END" ]]; do
     else
         FAIL=$((FAIL + 1))
         log "[SAMPLE FAIL] sample=${SAMPLE} pass=${PASS} fail=${FAIL}"
+    fi
+
+    if [[ "$MAX_SAMPLES" -gt 0 && "$SAMPLE" -ge "$MAX_SAMPLES" ]]; then
+        break
     fi
 
     REMAINING=$((END - $(date +%s)))

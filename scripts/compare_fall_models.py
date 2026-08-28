@@ -48,12 +48,23 @@ def compare_reports(
     }
     candidate_wins = sum(new[key] > base[key] for key in ("precision", "recall", "f1"))
     checks["strict_improvement"] = candidate_wins >= 1
+    baseline_threshold = float(
+        (baseline.get("model_params") or {}).get("decision_threshold", 0.7)
+    )
+    candidate_threshold = float(
+        (candidate.get("model_params") or {}).get("decision_threshold", 0.7)
+    )
     return {
         "baseline": base,
         "candidate": new,
         "deltas": {key: new[key] - base[key] for key in base},
         "checks": checks,
         "promote_candidate": all(checks.values()),
+        "baseline_decision_threshold": baseline_threshold,
+        "candidate_decision_threshold": candidate_threshold,
+        "decision_threshold": (
+            candidate_threshold if all(checks.values()) else baseline_threshold
+        ),
     }
 
 
@@ -89,7 +100,6 @@ def main() -> int:
             "candidate_model": str(args.candidate_model)
             if args.candidate_model
             else None,
-            "decision_threshold": 0.7,
         }
     )
     if result["promote_candidate"] and args.candidate_model:

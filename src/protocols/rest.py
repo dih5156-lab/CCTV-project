@@ -12,6 +12,7 @@ Routes:
     POST   /approve/{event_id}  → 이벤트 승인
     POST   /reject/{event_id}   → 이벤트 거부
     GET    /mode                → 현재 모드 조회
+    GET    /commands            → 출력 제어 명령 상태 조회
     POST   /mode                → 전역/사이트 모드 설정
     POST   /events              → 이벤트 수신
 """
@@ -74,6 +75,7 @@ class _RestHandler(BaseApiHandler):
             "metrics": "GET /metrics",
             "sites": "GET/POST /sites, DELETE /sites/{site_id}",
             "mode": "GET/POST /mode",
+            "commands": "GET /commands",
             "pending": "GET /pending",
             "events": "POST /events",
             "approve": "POST /approve/{event_id}",
@@ -105,6 +107,12 @@ class _RestHandler(BaseApiHandler):
             except ValueError:
                 limit = 20
             self._respond(200, layer.list_recent_events(limit=limit))
+        elif path == "/commands":
+            try:
+                limit = int((query.get("limit") or ["50"])[0])
+            except ValueError:
+                limit = 50
+            self._respond(200, layer.list_commands(limit=limit))
         elif path == "/metrics":
             self._respond_metrics()
         else:

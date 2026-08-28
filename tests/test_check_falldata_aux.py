@@ -104,3 +104,39 @@ def test_policy_check_allows_shadow_with_compare_warning() -> None:
 
     assert result["passed"] is True
     assert result["warnings"]
+
+
+def test_inline_pose_rf_smoke_runs_predict_proba(monkeypatch, tmp_path) -> None:
+    python_path = tmp_path / "python"
+    model_path = tmp_path / "inline.pkl"
+    python_path.write_text("", encoding="utf-8")
+    model_path.write_bytes(b"model")
+
+    def fake_run(command, timeout):
+        assert command[0] == str(python_path)
+        assert str(model_path) in command[-1]
+        return {
+            "passed": True,
+            "command": command,
+            "returncode": 0,
+            "stdout": json.dumps(
+                {
+                    "feature_count": 50,
+                    "classes": [0, 1],
+                    "probability": [[0.9, 0.1]],
+                }
+            ),
+            "stderr": "",
+        }
+
+    monkeypatch.setattr(check_falldata_aux, "_run", fake_run)
+
+    result = check_falldata_aux._inline_pose_rf_smoke(
+        python_path=python_path,
+        model_path=model_path,
+        timeout=1.0,
+    )
+
+    assert result["passed"] is True
+    assert result["inference"]["feature_count"] == 50
+    assert result["inference"]["probability"] == [[0.9, 0.1]]

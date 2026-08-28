@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import argparse
+import importlib.metadata
 import json
 import os
 import platform
+import re
 from pathlib import Path
 from typing import Any
 
@@ -73,6 +75,23 @@ def _parse_env_values(text: str) -> dict[str, str]:
         key, value = stripped.split("=", 1)
         values[key.strip()] = value.strip().strip('"').strip("'")
     return values
+
+
+def _pip_tensorrt_cuda_variant_majors(distribution_names: list[str] | None = None) -> set[int]:
+    names = distribution_names
+    if names is None:
+        names = []
+        for dist in importlib.metadata.distributions():
+            name = str(dist.metadata.get("Name") or "").strip()
+            if name:
+                names.append(name)
+
+    majors: set[int] = set()
+    for raw_name in names:
+        match = re.match(r"^tensorrt_cu(\d+)$", str(raw_name).strip().lower())
+        if match:
+            majors.add(int(match.group(1)))
+    return majors
 
 
 def _compose_service_env_value(text: str, service_name: str, key: str) -> str:
@@ -341,7 +360,7 @@ def check_appearance_model_wiring(
 
     required_entries = (
         ("docker-compose.yml", compose, "APPEARANCE_BACKEND: ${APPEARANCE_BACKEND:-pphuman}"),
-        ("docker-compose.yml", compose, "APPEARANCE_MODEL_PATH: ${APPEARANCE_MODEL_PATH:-models/pphuman_attribute.onnx}"),
+        ("docker-compose.yml", compose, "APPEARANCE_MODEL_PATH: ${APPEARANCE_MODEL_PATH:-models/appearance/pphuman_attribute.onnx}"),
         (
             "docker-compose.yml",
             compose,
@@ -357,7 +376,7 @@ def check_appearance_model_wiring(
         (
             "docker-compose.jetson.yml",
             jetson,
-            "APPEARANCE_MODEL_PATH: ${APPEARANCE_MODEL_PATH:-models/pa100k_resnet50_attr.engine}",
+            "APPEARANCE_MODEL_PATH: ${APPEARANCE_MODEL_PATH:-models/appearance/pa100k_resnet50_attr.engine}",
         ),
         (
             "docker-compose.jetson.yml",
@@ -382,6 +401,59 @@ def check_appearance_model_wiring(
     }
 
 
+def check_tensorrt_binding_cuda_alignment(
+    *,
+    machine: str | None = None,
+    distribution_names: list[str] | None = None,
+    expected_cuda_major: str | None = None,
+) -> dict[str, Any]:
+    """Fail early when pip TensorRT CUDA variant is incompatible with arm64 baseline."""
+    arch = _normalize_machine(machine)
+    if arch != "arm64":
+        return {
+            "name": "TensorRT CUDA binding alignment",
+            "passed": True,
+            "detail": "",
+        }
+
+    raw_expected = expected_cuda_major or os.environ.get("TENSORRT_EXPECTED_CUDA_MAJOR", "12")
+    try:
+        expected_major = int(str(raw_expected).strip())
+    except (TypeError, ValueError):
+        return {
+            "name": "TensorRT CUDA binding alignment",
+            "passed": True,
+            "detail": "",
+        }
+
+    variant_majors = _pip_tensorrt_cuda_variant_majors(distribution_names)
+    if not variant_majors:
+        return {
+            "name": "TensorRT CUDA binding alignment",
+            "passed": True,
+            "detail": "",
+        }
+
+    if expected_major in variant_majors:
+        return {
+            "name": "TensorRT CUDA binding alignment",
+            "passed": True,
+            "detail": "",
+        }
+
+    found = ", ".join(f"cu{major}" for major in sorted(variant_majors))
+    return {
+        "name": "TensorRT CUDA binding alignment",
+        "passed": False,
+        "detail": (
+            "arm64 host with incompatible pip TensorRT CUDA variant "
+            f"[{found}] while expected is cu{expected_major}. "
+            "Remove pip tensorrt_cu* packages and use Jetson system/container TensorRT binding, "
+            "or set TENSORRT_EXPECTED_CUDA_MAJOR for the intended baseline."
+        ),
+    }
+
+
 def check_falldata_aux_wiring(
     *,
     compose_text: str | None = None,
@@ -389,7 +461,7 @@ def check_falldata_aux_wiring(
     env_example_text: str | None = None,
     jetson_env_example_text: str | None = None,
 ) -> dict[str, Any]:
-    """Ensure falldata aux deployment keeps fail-open safety and Jetson paths wired."""
+    """Ensure falldata aux deployment uses the active inline pose RF safely."""
     compose = compose_text if compose_text is not None else _read_text(PROJECT_ROOT / "docker-compose.yml")
     jetson = (
         jetson_compose_text
@@ -417,34 +489,33 @@ def check_falldata_aux_wiring(
         (
             "docker-compose.jetson.yml",
             jetson,
-            "FALLDATA_AUX_MEDIAPIPE_PYTHON: ${FALLDATA_AUX_MEDIAPIPE_PYTHON:-/app/.venv-mediapipe/bin/python}",
+            "FALLDATA_AUX_INLINE_POSE_RF: ${FALLDATA_AUX_INLINE_POSE_RF:-true}",
         ),
         (
             "docker-compose.jetson.yml",
             jetson,
-            "FALLDATA_AUX_MODEL_PYTHON: ${FALLDATA_AUX_MODEL_PYTHON:-/app/.venv-falldata/bin/python}",
+            "FALLDATA_AUX_COMPARE_MODEL_PATH: ${FALLDATA_AUX_COMPARE_MODEL_PATH:-models/experiments/yolo_pose_fall_cam2_continuous_200_80_640.pkl}",
+        ),
+        (
+            "docker-compose.jetson.yml",
+            jetson,
+            "FALLDATA_AUX_COMPARE_MODEL_KIND: ${FALLDATA_AUX_COMPARE_MODEL_KIND:-yolo_pose_rf}",
         ),
         (
             "docker-compose.jetson.yml",
             jetson,
             "FALLDATA_AUX_INLINE_FEATURE_CAPTURE_PATH: ${FALLDATA_AUX_INLINE_FEATURE_CAPTURE_PATH:-}",
         ),
-        ("docker-compose.jetson.yml", jetson, "source: ./falldata"),
-        ("docker-compose.jetson.yml", jetson, "source: ./.venv-mediapipe"),
-        ("docker-compose.jetson.yml", jetson, "source: ./.venv-falldata"),
         (".env.example", env_example, "FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE=true"),
         (".env.jetson.example", jetson_env, "FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE=true"),
         (".env.jetson.example", jetson_env, "FALLDATA_AUX_CONFIRM_BORDERLINE=true"),
+        (".env.jetson.example", jetson_env, "FALLDATA_AUX_INLINE_POSE_RF=true"),
         (
             ".env.jetson.example",
             jetson_env,
-            "FALLDATA_AUX_MEDIAPIPE_PYTHON=/app/.venv-mediapipe/bin/python",
+            "FALLDATA_AUX_COMPARE_MODEL_PATH=models/experiments/yolo_pose_fall_cam2_continuous_200_80_640.pkl",
         ),
-        (
-            ".env.jetson.example",
-            jetson_env,
-            "FALLDATA_AUX_MODEL_PYTHON=/app/.venv-falldata/bin/python",
-        ),
+        (".env.jetson.example", jetson_env, "FALLDATA_AUX_COMPARE_MODEL_KIND=yolo_pose_rf"),
     )
     missing = [f"{label} missing {entry}" for label, text, entry in required_entries if entry not in text]
 
@@ -458,7 +529,7 @@ def check_falldata_aux_wiring(
     return {
         "name": "falldata aux safety wiring",
         "passed": True,
-        "detail": "fail-open policy and Jetson aux paths are wired",
+        "detail": "fail-open policy and Jetson inline pose RF are wired",
     }
 
 
@@ -678,6 +749,7 @@ def check_mqtt_auth_config(
 def run_checks() -> list[dict[str, Any]]:
     return [
         check_default_compose_architecture(),
+        check_tensorrt_binding_cuda_alignment(),
         check_parser_db_defaults(),
         check_required_runtime_secrets(),
         check_aiot_db_secret_wiring(),

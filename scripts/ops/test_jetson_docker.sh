@@ -276,7 +276,7 @@ print(f'CUDA: {torch.cuda.is_available()}')
 
     # 실제 YOLO 모델 추론 테스트 (모델 파일 있는 경우)
     MODEL_PATH=""
-    for m in models/helmet_model_ver0.5.pt models/helmet_model.pt models/yolov8n.pt; do
+    for m in models/head/helmet_model.pt models/legacy/helmet_model_ver0.5.pt models/person/yolov8n.pt; do
         if [[ -f "$m" ]]; then MODEL_PATH="$m"; break; fi
     done
 

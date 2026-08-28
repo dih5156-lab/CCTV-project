@@ -153,6 +153,8 @@ AI 엔진은 기존 소비자 호환을 위해 top-level 필드를 유지합니�
   "has_helmet": true,
   "helmet_color": "yellow",
   "has_backpack": false,
+
+  
   "has_handbag": false,
   "gender": "unknown",
   "age_group": "adult",

@@ -80,12 +80,25 @@ class AIAnalyzer:
     """
 
     # ── 클래스 매핑 상수 ──────────────────────────────────────────────
+    # 실제 헬멧 모델은 'hardhat', 'head_protected', 'helmet_off' 등
+    # 다양한 라벨을 사용할 수 있으므로 alias를 넓게 수용한다.
     _HELMET_CLASS_MAP: Dict[str, str] = {
-        "helmet_missing": "head",
-        "no_helmet":      "head",
-        "helmet":         "helmet",
-        "helmet_wearing": "helmet",
-        "head":           "head",
+        "helmet_missing":     "head",
+        "helmet_off":         "head",
+        "hardhat_off":        "head",
+        "no_helmet":          "head",
+        "head":               "head",
+        "head_unprotected":   "head",
+        "without_helmet":     "head",
+        "helmet":             "helmet",
+        "helmet_wearing":     "helmet",
+        "helmet_on":          "helmet",
+        "helmet_protected":   "helmet",
+        "head_protected":     "helmet",
+        "protective_helmet":  "helmet",
+        "hardhat":            "helmet",
+        "hard_hat":           "helmet",
+        "safety_helmet":      "helmet",
     }
     _COMMON_CLASS_MAP: Dict[str, str] = {
         "danger_zone":      "danger_zone",
@@ -300,11 +313,24 @@ class AIAnalyzer:
     # ── 클래스 매핑 ───────────────────────────────────────────────────
 
     def _map_class_to_event_type(self, class_name: str, model_type: str) -> EventType:
-        """클래스명을 EventType으로 매핑."""
+        """클래스명을 EventType으로 매핑.
+
+        실험/학습 데이터는 공백, 하이픈, 언더스코어가 섞여서 내려오며,
+        helmet 모델 역시 'hardhat', 'head_protected' 같은 변형을 쓸 수 있다.
+        이를 정규화해 라벨 변이를 모두 수용한다.
+        """
         if not class_name:
             return EventType.OTHER
-        normalized   = class_name.lower().strip().replace(" ", "_")
-        mapped_str   = self._CLASS_MAP.get(normalized)
+
+        normalized = (
+            class_name.lower()
+            .strip()
+            .replace("-", "_")
+            .replace(" ", "_")
+            .replace("/", "_")
+        )
+        normalized = "_".join(part for part in normalized.split("_") if part)
+        mapped_str = self._CLASS_MAP.get(normalized)
 
         if model_type == "helmet":
             return {
@@ -639,9 +665,11 @@ class AIAnalyzer:
         helmet_events: Optional[List[DetectionEvent]],
     ) -> List[Dict]:
         """외형 분석에 필요한 주변 객체 문맥을 합친다."""
-        nearby: List[Dict] = list(bag_objects or [])
-        for event in helmet_events or []:
-            if event.event_type != EventType.HELMET:
+        raw_bags = list(bag_objects or [])
+        raw_helmets = list(helmet_events or [])
+        nearby: List[Dict] = list(raw_bags)
+        for event in raw_helmets:
+            if event.event_type not in (EventType.HELMET, EventType.HEAD):
                 continue
             nearby.append({
                 "class_name": str(event.class_name or event.event_type.value).lower(),
@@ -653,6 +681,12 @@ class AIAnalyzer:
                 "confidence": event.confidence,
                 "metadata": dict(event.metadata or {}),
             })
+        if not nearby:
+            logger.info(
+                "[helmet_debug] nearby_empty bag_count=%d helmet_count=%d",
+                len(raw_bags),
+                len(raw_helmets),
+            )
         return nearby
 
     # ── 공개 API — 이벤트 분류 ───────────────────────────────────────

@@ -76,6 +76,42 @@ GUI를 열기 전에 대상만 확인하려면 다음 명령을 사용합니다.
 python scripts/ops/label_fall_shadow_clips.py --camera camera_1 --list
 ```
 
+브라우저에서 검수하려면 HTML 페이지를 생성합니다. 다음 예시는 최근 후보 중
+같은 카메라에서 30초 이내에 반복된 영상을 줄이고 최대 50건을 선택합니다.
+
+```bash
+python scripts/ops/label_fall_shadow_clips.py \
+  --include-sample-eval \
+  --dedupe-seconds 30 \
+  --limit 50 \
+  --export-html data/fall_dataset/review/fall_review.html
+```
+
+HTML 파일을 브라우저로 열고 `낙상`, `비낙상`, `보류`를 선택한 뒤
+`검수 JSON 다운로드` 버튼으로 `fall_review_labels.json`을 저장합니다. 선택값은
+해당 브라우저에 임시 저장되지만, 다른 PC나 브라우저에는 공유되지 않습니다.
+
+원본 클립은 브라우저 호환성이 낮을 수 있으므로 HTML 생성 시
+`review/browser_clips/` 아래에 H.264 검수용 복사본을 만듭니다. 다음처럼 로컬
+HTTP 서버를 실행한 뒤 `http://127.0.0.1:8091/fall_review.html`로 접속합니다.
+
+```bash
+python -m http.server 8091 \
+  --bind 0.0.0.0 \
+  --directory data/fall_dataset/review
+```
+
+다운로드한 라벨을 반영할 때는 다음 명령을 실행합니다.
+
+```bash
+python scripts/ops/label_fall_shadow_clips.py \
+  --import-labels /path/to/fall_review_labels.json
+```
+
+반영 전에 전체 라벨과 클립 경로를 검증하며, `review.jsonl` 백업을 생성합니다.
+`fall`과 `non_fall` 영상만 각 labeled 폴더로 이동하고 `보류` 영상은 pending
+폴더에 유지합니다.
+
 ## 4. 학습·평가 manifest 생성
 
 ```bash

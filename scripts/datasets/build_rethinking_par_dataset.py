@@ -67,18 +67,29 @@ def build_dataset(
     seed: int,
 ) -> SimpleNamespace:
     labels = np.asarray([_label_vector(row) for row in rows], dtype=np.int64)
-    indices = list(range(len(rows)))
-    random.Random(seed).shuffle(indices)
-    test_count = max(1, round(len(indices) * max(0.0, min(0.9, val_ratio))))
-    test = np.asarray(indices[:test_count], dtype=np.int64)
-    trainval = np.asarray(indices[test_count:], dtype=np.int64)
-    if trainval.size == 0:
-        trainval = test
-        test = np.asarray([], dtype=np.int64)
+    explicit_splits = {row.get("split", "").strip().lower() for row in rows}
+    if explicit_splits and explicit_splits <= {"train", "validation", "val"} and "train" in explicit_splits:
+        trainval = np.asarray(
+            [index for index, row in enumerate(rows) if row.get("split", "").strip().lower() == "train"],
+            dtype=np.int64,
+        )
+        test = np.asarray(
+            [index for index, row in enumerate(rows) if row.get("split", "").strip().lower() in {"validation", "val"}],
+            dtype=np.int64,
+        )
+    else:
+        indices = list(range(len(rows)))
+        random.Random(seed).shuffle(indices)
+        test_count = max(1, round(len(indices) * max(0.0, min(0.9, val_ratio))))
+        test = np.asarray(indices[:test_count], dtype=np.int64)
+        trainval = np.asarray(indices[test_count:], dtype=np.int64)
+        if trainval.size == 0:
+            trainval = test
+            test = np.asarray([], dtype=np.int64)
 
     dataset = SimpleNamespace()
     dataset.description = "cctv_appearance_manifest_for_rethinking_par"
-    dataset.root = str(image_root) if image_root is not None else "."
+    dataset.root = str(image_root.resolve()) if image_root is not None else "."
     dataset.image_name = [
         _image_name(row["image_path"], image_root=image_root)
         for row in rows

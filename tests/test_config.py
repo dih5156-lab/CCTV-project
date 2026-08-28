@@ -106,6 +106,18 @@ class TestModelPaths:
         result = ModelPaths._resolve_path("test", [nonexistent])
         assert result is None
 
+    def test_cpu_prefers_pt_over_engine_when_available(self):
+        paths = ModelPaths()
+        paths.refresh_for_device("cpu")
+        assert paths.pose_model is not None
+        assert paths.pose_model.endswith(".pt")
+
+    def test_cuda_prefers_engine_when_available(self):
+        paths = ModelPaths()
+        paths.refresh_for_device("cuda")
+        assert paths.pose_model is not None
+        assert paths.pose_model.endswith(".engine")
+
 
 # ---------------------------------------------------------------------------
 # AppConfig ENV 오버라이드

@@ -46,6 +46,7 @@ def test_build_document_renders_upper_and_lower_review_fields(tmp_path):
     assert "상의 DB" in document
     assert "하의 DB" in document
     assert "<option>pink</option>" in document
+    assert "<option>navy</option>" in document
     assert "<option>yellow</option>" in document
     assert "<option>exclude</option>" in document
     assert "appearance_color_review_labels.json" in document
@@ -68,4 +69,5 @@ def test_build_writes_document_from_manifest(tmp_path):
 
     document = output_path.read_text(encoding="utf-8")
     assert "상의·하의 색상 검수 (1건)" in document
-    assert crop_path.resolve().as_uri() in document
+    assert "src='person.jpg'" in document
+    assert "file://" not in document

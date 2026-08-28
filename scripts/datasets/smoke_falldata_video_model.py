@@ -13,7 +13,7 @@ from pathlib import Path
 import numpy as np
 
 DEFAULT_MODEL = Path(
-    "falldata/2. AI학습모델파일/영상/낙상분류/FNF_RF_SMOTE_CAM_1.pkl"
+    "models/legacy/falldata_mediapipe/FNF_RF_SMOTE_CAM_1.pkl"
 )
 
 

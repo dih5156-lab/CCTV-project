@@ -10,6 +10,7 @@ import pytest
 from src.core.ai._attribute_runtimes import (
     OnnxAttributeRuntime,
     resolve_paddle_model_prefix,
+    validate_tensorrt_cuda_variant_compatibility,
     validate_tensorrt_version,
 )
 
@@ -55,3 +56,28 @@ def test_validate_tensorrt_version_accepts_same_major_minor():
 def test_validate_tensorrt_version_rejects_incompatible_binding():
     with pytest.raises(RuntimeError, match="TensorRT version mismatch"):
         validate_tensorrt_version("10.16.1.11", expected="10.3")
+
+
+def test_validate_tensorrt_cuda_variant_compatibility_passes_when_expected_matches():
+    validate_tensorrt_cuda_variant_compatibility(
+        expected_cuda_major="12",
+        machine="aarch64",
+        distribution_names=["tensorrt", "tensorrt_cu12", "numpy"],
+    )
+
+
+def test_validate_tensorrt_cuda_variant_compatibility_rejects_mismatch_on_arm64():
+    with pytest.raises(RuntimeError, match="TensorRT CUDA major mismatch"):
+        validate_tensorrt_cuda_variant_compatibility(
+            expected_cuda_major="12",
+            machine="aarch64",
+            distribution_names=["tensorrt_cu13"],
+        )
+
+
+def test_validate_tensorrt_cuda_variant_compatibility_ignores_non_arm64():
+    validate_tensorrt_cuda_variant_compatibility(
+        expected_cuda_major="12",
+        machine="x86_64",
+        distribution_names=["tensorrt_cu13"],
+    )

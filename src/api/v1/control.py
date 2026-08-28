@@ -230,6 +230,21 @@ async def list_action_events(
     return success_response(raw if isinstance(raw, list) else [])
 
 
+@router.get(
+    "/commands",
+    response_model=BaseResponse[List[dict]],
+    summary="출력 제어 명령 상태 조회",
+    description="MQTT로 수신한 mode/approve/reject 명령의 영속 상태와 처리 결과를 조회합니다.",
+)
+async def list_commands(
+    limit: int = 50,
+    _: None = Depends(verify_api_key),
+) -> BaseResponse[List[dict]]:
+    safe_limit = max(1, min(int(limit), 200))
+    raw = await proxy_action_request(_ACTION_URL, "get", f"/commands?limit={safe_limit}")
+    return success_response(raw if isinstance(raw, list) else [])
+
+
 @router.post(
     "/approve/{event_id}",
     response_model=BaseResponse[ApprovalOut],

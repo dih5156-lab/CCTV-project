@@ -159,6 +159,9 @@ class PPHumanAttributeBackend:
     def backend_name(self) -> str:
         return self._backend_name
 
+    def _mark_degraded_to_hsv(self) -> None:
+        self._backend_name = "hsv"
+
     def predict(self, crop: AttributeCrop) -> Dict[str, object]:
         if self._predictor is not None:
             return dict(self._predictor(crop))
@@ -176,6 +179,7 @@ class PPHumanAttributeBackend:
                 self._model_path,
             )
             self._warned = True
+        self._mark_degraded_to_hsv()
         return {}
 
     def _build_runtime(self, session_factory: Optional[SessionFactory]) -> Optional[AttributeRuntime]:
@@ -186,12 +190,21 @@ class PPHumanAttributeBackend:
             return None
 
         if self._should_use_tensorrt(model_path):
-            return self._build_tensorrt_runtime(model_path)
+            runtime = self._build_tensorrt_runtime(model_path)
+            if runtime is None:
+                self._mark_degraded_to_hsv()
+            return runtime
 
         if self._should_use_paddle(model_path):
-            return self._build_paddle_runtime(model_path)
+            runtime = self._build_paddle_runtime(model_path)
+            if runtime is None:
+                self._mark_degraded_to_hsv()
+            return runtime
 
-        return self._build_onnx_runtime(model_path, session_factory)
+        runtime = self._build_onnx_runtime(model_path, session_factory)
+        if runtime is None:
+            self._mark_degraded_to_hsv()
+        return runtime
 
     def _should_use_tensorrt(self, model_path: Path) -> bool:
         """TensorRT engine을 직접 실행할지 판단한다."""
@@ -239,6 +252,7 @@ class PPHumanAttributeBackend:
             return runtime
         except Exception as exc:
             logger.warning("PP-Human 속성 세션 생성 실패: %s", exc)
+            self._mark_degraded_to_hsv()
             return None
 
     def _onnx_runtime_preflight(self, model_path: Path) -> bool:

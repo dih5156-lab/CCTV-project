@@ -3,6 +3,7 @@
 # 사용:
 #   ./scripts/ops/run_operation_check.sh
 #   ./scripts/ops/run_operation_check.sh --with-deepstream 30 30
+#   ./scripts/ops/run_operation_check.sh --with-fall-shadow 30 30
 #   AIOT_PILOT_CHECK=1 ./scripts/ops/run_operation_check.sh
 
 set -euo pipefail
@@ -10,11 +11,12 @@ set -euo pipefail
 usage() {
     cat <<'EOF'
 Usage:
-  ./scripts/ops/run_operation_check.sh [--with-deepstream [duration_min interval_sec]]
+  ./scripts/ops/run_operation_check.sh [--with-deepstream|--with-fall-shadow [duration_min interval_sec]]
 
 Defaults:
   Runs deployment smoke and data-flow smoke checks only.
   With --with-deepstream, also runs scripts/ops/run_deepstream_stability_watch.sh.
+  With --with-fall-shadow, runs the same watch and checks fall Shadow each sample.
   With AIOT_PILOT_CHECK=1, also checks the Jetson EdgeX stack and AIoT metrics.
     Runtime secret check uses RUNTIME_ENV_FILE when set. Otherwise it uses
     .env.jetson when the running compose project is edgex-jetson, then .env,
@@ -23,11 +25,13 @@ Defaults:
 Examples:
   ./scripts/ops/run_operation_check.sh
   ./scripts/ops/run_operation_check.sh --with-deepstream 30 30
+  ./scripts/ops/run_operation_check.sh --with-fall-shadow 30 30
   ./scripts/ops/run_operation_check.sh --with-deepstream 720 60
 EOF
 }
 
 WITH_DEEPSTREAM=0
+WITH_FALL_SHADOW=0
 DEEPSTREAM_DURATION_MIN=30
 DEEPSTREAM_INTERVAL_SEC=30
 RUNTIME_ENV_FILE=${RUNTIME_ENV_FILE:-}
@@ -55,8 +59,11 @@ if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
     exit 0
 fi
 
-if [[ "${1:-}" == "--with-deepstream" ]]; then
+if [[ "${1:-}" == "--with-deepstream" || "${1:-}" == "--with-fall-shadow" ]]; then
     WITH_DEEPSTREAM=1
+    if [[ "${1:-}" == "--with-fall-shadow" ]]; then
+        WITH_FALL_SHADOW=1
+    fi
     shift
     DEEPSTREAM_DURATION_MIN=${1:-30}
     DEEPSTREAM_INTERVAL_SEC=${2:-30}
@@ -124,6 +131,7 @@ log "=== CCTV 운영 점검 시작 ==="
 log "  report: ${REPORT_FILE}"
 log "  started: $(date '+%Y-%m-%d %H:%M:%S %Z')"
 log "  with_deepstream: ${WITH_DEEPSTREAM}"
+log "  with_fall_shadow: ${WITH_FALL_SHADOW}"
 log "  runtime_env_file: ${RUNTIME_ENV_FILE}"
 
 load_runtime_env_exports
@@ -139,6 +147,10 @@ if [[ "${AIOT_PILOT_CHECK:-0}" == "1" ]]; then
 fi
 
 if [[ "$WITH_DEEPSTREAM" -eq 1 ]]; then
+    export FALL_SHADOW_CHECK="$WITH_FALL_SHADOW"
+    if [[ "$WITH_FALL_SHADOW" -eq 1 ]]; then
+        export DEEPSTREAM_RUN_DATA_FLOW_SMOKE=0
+    fi
     run_step "deepstream stability watch" \
         ./scripts/ops/run_deepstream_stability_watch.sh \
         "$DEEPSTREAM_DURATION_MIN" \

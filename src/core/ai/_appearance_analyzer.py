@@ -25,7 +25,14 @@ from typing import Dict, List, Optional, Tuple
 import cv2
 import numpy as np
 
-from ...utils.geometry import is_helmet_worn
+from ...utils.geometry import (
+    calculate_bbox_iou,
+    calculate_overlap_ratio,
+    get_center,
+    get_head_bbox,
+    is_helmet_worn,
+    point_in_bbox,
+)
 from ._attribute_backend import AttributeBackend, AttributeCrop
 from ._attribute_backends import build_attribute_backend
 from ._color_classification_backend import (
@@ -97,7 +104,26 @@ BAG_CLASSES: Dict[str, str] = {
     "travel_bag": "has_suitcase",
     "carry_on": "has_suitcase",
 }
-HELMET_CLASSES = {"helmet", "helmet_wearing", "hardhat"}
+HELMET_CLASSES = {
+    "head",
+    "helmet",
+    "helmet_wearing",
+    "helmet_on",
+    "helmet_protected",
+    "head_protected",
+    "hardhat",
+    "hard_hat",
+    "safety_helmet",
+    "protective_helmet",
+}
+_NEGATIVE_HELMET_CLASSES = {
+    "helmet_missing",
+    "helmet_off",
+    "hardhat_off",
+    "no_helmet",
+    "head_unprotected",
+    "without_helmet",
+}
 COLOR_FIELDS = ("upper_color", "lower_color", "helmet_color")
 
 _BAG_PROXIMITY_RATIO = 0.5
@@ -405,11 +431,11 @@ class AppearanceAnalyzer:
         lab_color = str(evidence.get("lab_color") or "unknown")
         model_color = str(color)
         model_confidence = float(prediction.get("confidence", 0.0))
-        if (
-            hsv_color == lab_color
-            and hsv_color in {"black", "white", "gray"}
-            and model_color != hsv_color
-        ):
+        # HSV와 LAB가 같은 색을 관측했다면 모델의 단독 고신뢰도 결과보다
+        # 두 전통 색상 근거의 합의를 우선한다. 현장 조명/배경 도메인에서
+        # 색상 분류 모델이 높은 confidence로 갈색 등을 오판하는 경우가
+        # 확인되어, 무채색에만 적용하던 veto를 모든 색상으로 확장한다.
+        if hsv_color == lab_color and hsv_color != "unknown":
             consensus = dict(evidence)
             consensus["selected"] = hsv_color
             consensus["source"] = "hsv_lab_consensus"
@@ -417,6 +443,22 @@ class AppearanceAnalyzer:
             consensus["model_confidence"] = model_confidence
             consensus["mask_coverage"] = round(mask_coverage, 4)
             return consensus
+
+        # HSV/LAB가 모두 유효하지만 서로 다르고 모델도 양쪽과 다르면,
+        # 모델 단독 결과를 최종값으로 확정하지 않는다. 기존 HSV 선택값을
+        # 유지해 오탐을 줄이고, metadata에는 충돌 사실을 남긴다.
+        if (
+            hsv_color != "unknown"
+            and lab_color != "unknown"
+            and model_color not in {hsv_color, lab_color}
+        ):
+            vetoed = dict(evidence)
+            vetoed["selected"] = hsv_color
+            vetoed["source"] = "hsv_lab_conflict_model_veto"
+            vetoed["model_color"] = model_color
+            vetoed["model_confidence"] = model_confidence
+            vetoed["mask_coverage"] = round(mask_coverage, 4)
+            return vetoed
         merged = dict(evidence)
         merged["selected"] = model_color
         merged["source"] = str(getattr(self._color_backend, "backend_name", "color_model"))
@@ -837,29 +879,88 @@ class AppearanceAnalyzer:
     ) -> bool:
         """사람 머리 영역과 실제로 겹치는 헬멧 근거가 있을 때만 True."""
         if not nearby_objects:
+            logger.info(
+                "[helmet_debug] no_nearby_objects person=(%d,%d,%d,%d)",
+                px,
+                py,
+                pw,
+                ph,
+            )
             return False
-        helmet_bboxes: List[Dict[str, float]] = []
+        person_bbox = {"x": px, "y": py, "width": pw, "height": ph}
+        head_bbox = get_head_bbox(person_bbox, _HELMET_HEAD_RATIO)
+        helmet_candidates: List[Tuple[List[str], Dict[str, float]]] = []
+        nearby_labels: List[str] = []
+
         for obj in nearby_objects:
             labels = AppearanceAnalyzer._normalized_object_labels(obj)
+            for label in labels:
+                if label not in nearby_labels:
+                    nearby_labels.append(label)
+            if any(label in _NEGATIVE_HELMET_CLASSES for label in labels):
+                continue
             if not any(label in HELMET_CLASSES for label in labels):
                 continue
-            helmet_bboxes.append({
+            helmet_candidates.append((labels, {
                 "x": float(obj.get("x", 0)),
                 "y": float(obj.get("y", 0)),
                 "width": float(obj.get("width", 0)),
                 "height": float(obj.get("height", 0)),
-            })
+            }))
 
-        if not helmet_bboxes:
+        if not helmet_candidates:
+            logger.info(
+                "[helmet_debug] no_helmet_candidates person=(%d,%d,%d,%d) nearby_labels=%s nearby_count=%d",
+                px,
+                py,
+                pw,
+                ph,
+                nearby_labels[:8],
+                len(nearby_objects),
+            )
             return False
 
-        return is_helmet_worn(
-            {"x": px, "y": py, "width": pw, "height": ph},
+        helmet_bboxes = [bbox for _, bbox in helmet_candidates]
+        has_helmet = is_helmet_worn(
+            person_bbox,
             helmet_bboxes,
             head_ratio=_HELMET_HEAD_RATIO,
             iou_threshold=_HELMET_IOU_THRESHOLD,
             overlap_threshold=_HELMET_OVERLAP_THRESHOLD,
         )
+
+        if not has_helmet:
+            candidate_metrics: List[Dict[str, object]] = []
+            for labels, helmet_bbox in helmet_candidates:
+                try:
+                    cx, cy = get_center(helmet_bbox)
+                    center_in_head = point_in_bbox(cx, cy, head_bbox)
+                    iou = calculate_bbox_iou(head_bbox, helmet_bbox)
+                    overlap = calculate_overlap_ratio(head_bbox, helmet_bbox)
+                    candidate_metrics.append(
+                        {
+                            "labels": labels[:3],
+                            "center_in_head": center_in_head,
+                            "iou": round(float(iou), 4),
+                            "overlap": round(float(overlap), 4),
+                        },
+                    )
+                except Exception:
+                    candidate_metrics.append({"labels": labels[:3], "metric_error": True})
+
+            logger.info(
+                "[helmet_debug] rejected person=(%d,%d,%d,%d) head_ratio=%.2f iou_th=%.2f overlap_th=%.2f candidates=%s",
+                px,
+                py,
+                pw,
+                ph,
+                _HELMET_HEAD_RATIO,
+                _HELMET_IOU_THRESHOLD,
+                _HELMET_OVERLAP_THRESHOLD,
+                candidate_metrics,
+            )
+
+        return has_helmet
 
     @staticmethod
     def _build_skin_mask(hsv: np.ndarray) -> np.ndarray:

@@ -4,8 +4,8 @@ import numpy as np
 
 from scripts.datasets import train_yolo_pose_fall_rf
 from scripts.datasets.train_yolo_pose_fall_rf import (
-    _dataset_summary,
     _build_model_bundle,
+    _dataset_summary,
     _extract_video_features,
     _group_holdout_indices,
     _hard_case_sample_weights,
@@ -180,6 +180,46 @@ def test_group_holdout_keeps_camera_variants_together():
     assert split_info["group_overlap"] == []
     assert set(labels[train_indices]) == {0, 1}
     assert set(labels[holdout_indices]) == {0, 1}
+
+
+def test_group_holdout_keeps_reviewed_hard_case_groups_in_training():
+    scene_ids = [
+        "fall_a_C1",
+        "fall_a_C2",
+        "fall_b_C1",
+        "fall_c_C1",
+        "normal_a_C1",
+        "normal_b_C1",
+        "normal_c_C1",
+    ]
+    labels = np.asarray([1, 1, 1, 1, 0, 0, 0], dtype=np.int64)
+
+    train_indices, holdout_indices, split_info = _group_holdout_indices(
+        scene_ids,
+        labels,
+        test_size=0.25,
+        random_state=42,
+        forced_train_scene_ids={"fall_a_C1"},
+    )
+
+    train_groups = {_scene_base(scene_ids[index]) for index in train_indices}
+    holdout_groups = {_scene_base(scene_ids[index]) for index in holdout_indices}
+    assert "fall_a" in train_groups
+    assert "fall_a" not in holdout_groups
+    assert split_info["forced_train_groups"] == ["fall_a"]
+
+
+def test_reviewed_hard_case_weights_apply_only_to_selected_training_rows():
+    scene_ids = ["fall_a_C1", "fall_b_C1", "normal_a_C1"]
+    base_weights = np.asarray([1.0, 2.0, 1.0])
+
+    weighted = train_yolo_pose_fall_rf._apply_reviewed_hard_case_weights(
+        base_weights,
+        scene_ids,
+        {"fall_a_C1": 3.0, "normal_a_C1": 4.0},
+    )
+
+    np.testing.assert_array_equal(weighted, np.asarray([3.0, 2.0, 4.0]))
 
 
 def test_dataset_summary_reports_scene_group_counts():

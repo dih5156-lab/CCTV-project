@@ -10,7 +10,10 @@ import random
 from pathlib import Path
 from typing import Iterable
 
-COLORS = ("black", "white", "gray", "red", "blue", "green", "yellow", "brown", "purple")
+COLORS = (
+    "black", "white", "gray", "red", "blue", "green", "yellow", "brown", "purple",
+    "navy", "orange",
+)
 LABELS = (
     {"index": 0, "field": "gender", "value": "female", "threshold": 0.5},
     *(
@@ -30,6 +33,29 @@ def _read_manifest(path: Path) -> list[dict[str, str]]:
     with path.open("r", encoding="utf-8", newline="") as handle:
         reader = csv.DictReader(handle)
         return [dict(row) for row in reader if row.get("image_path")]
+
+
+def _split_rows(
+    rows: list[dict[str, str]], *, val_ratio: float, seed: int
+) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
+    explicit_splits = {row.get("split", "").strip().lower() for row in rows}
+    if explicit_splits and explicit_splits <= {"train", "validation", "val"} and "train" in explicit_splits:
+        train_rows = [row for row in rows if row.get("split", "").strip().lower() == "train"]
+        val_rows = [
+            row
+            for row in rows
+            if row.get("split", "").strip().lower() in {"validation", "val"}
+        ]
+        return train_rows, val_rows
+
+    shuffled = list(rows)
+    random.Random(seed).shuffle(shuffled)
+    val_count = max(1, round(len(shuffled) * max(0.0, min(0.9, val_ratio))))
+    val_rows = shuffled[:val_count]
+    train_rows = shuffled[val_count:]
+    if not train_rows:
+        train_rows, val_rows = val_rows, []
+    return train_rows, val_rows
 
 
 def _vector_for_row(row: dict[str, str]) -> list[int]:
@@ -121,13 +147,7 @@ def main() -> int:
     if not rows:
         raise SystemExit(f"no rows found in {args.manifest}")
 
-    shuffled = list(rows)
-    random.Random(args.seed).shuffle(shuffled)
-    val_count = max(1, round(len(shuffled) * max(0.0, min(0.9, args.val_ratio))))
-    val_rows = shuffled[:val_count]
-    train_rows = shuffled[val_count:]
-    if not train_rows:
-        train_rows, val_rows = val_rows, []
+    train_rows, val_rows = _split_rows(rows, val_ratio=args.val_ratio, seed=args.seed)
 
     _write_list(args.output_dir / "train_list.txt", train_rows)
     _write_list(args.output_dir / "val_list.txt", val_rows)

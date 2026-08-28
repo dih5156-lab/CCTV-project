@@ -8,6 +8,7 @@ import json
 import os
 import re
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 from typing import Any
@@ -15,10 +16,15 @@ from typing import Any
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_MODEL = (
     PROJECT_ROOT
-    / "falldata/2. AI학습모델파일/영상/낙상분류/FNF_RF_SMOTE_CAM_1.pkl"
+    / "models/legacy/falldata_mediapipe/FNF_RF_SMOTE_CAM_1.pkl"
 )
 DEFAULT_MODEL_PYTHON = PROJECT_ROOT / ".venv-falldata/bin/python"
 DEFAULT_MEDIAPIPE_PYTHON = PROJECT_ROOT / ".venv-mediapipe/bin/python"
+DEFAULT_RUNTIME_PYTHON = Path(sys.executable)
+DEFAULT_COMPARE_MODEL = (
+    PROJECT_ROOT
+    / "models/experiments/yolo_pose_fall_cam2_continuous_200_80_640.pkl"
+)
 EXTRACT_SCRIPT = PROJECT_ROOT / "scripts/datasets/extract_falldata_mediapipe_features.py"
 SMOKE_SCRIPT = PROJECT_ROOT / "scripts/datasets/smoke_falldata_video_model.py"
 MODEL_REQUIREMENTS = PROJECT_ROOT / "requirements/falldata-model.txt"
@@ -149,6 +155,35 @@ def _parse_probability(output: str) -> list[float] | None:
     return [float(part.strip()) for part in match.group(1).split(",")]
 
 
+def _inline_pose_rf_smoke(
+    *,
+    python_path: Path,
+    model_path: Path,
+    timeout: float,
+) -> dict[str, Any]:
+    code = (
+        "import joblib, json, numpy as np; "
+        f"bundle=joblib.load({str(model_path)!r}); "
+        "model=bundle.get('model', bundle) if isinstance(bundle, dict) else bundle; "
+        "feature_count=int(model.n_features_in_); "
+        "sample=np.zeros((1, feature_count), dtype=np.float32); "
+        "probability=model.predict_proba(sample).tolist(); "
+        "classes=getattr(model, 'classes_', []); "
+        "print(json.dumps({'feature_count': feature_count, "
+        "'classes': classes.tolist() if hasattr(classes, 'tolist') else list(classes), "
+        "'probability': probability}))"
+    )
+    result = _run([str(python_path), "-c", code], timeout=timeout)
+    if not result.get("passed"):
+        return result
+    try:
+        result["inference"] = json.loads(str(result.get("stdout", "{}")))
+    except json.JSONDecodeError as exc:
+        result["passed"] = False
+        result["error"] = f"invalid inline pose RF smoke JSON: {exc}"
+    return result
+
+
 def _policy_check(
     *,
     mode: str,
@@ -185,6 +220,29 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--model-python", type=Path, default=DEFAULT_MODEL_PYTHON)
     parser.add_argument("--mediapipe-python", type=Path, default=DEFAULT_MEDIAPIPE_PYTHON)
     parser.add_argument("--model", type=Path, default=DEFAULT_MODEL)
+    parser.add_argument(
+        "--inline-pose-rf",
+        action=argparse.BooleanOptionalAction,
+        default=_parse_bool(os.environ.get("FALLDATA_AUX_INLINE_POSE_RF"), False),
+        help="Validate the active DeepStream inline pose RF instead of the legacy MediaPipe RF.",
+    )
+    parser.add_argument(
+        "--runtime-python",
+        type=Path,
+        default=DEFAULT_RUNTIME_PYTHON,
+        help="Python interpreter that loads the inline pose RF model.",
+    )
+    parser.add_argument(
+        "--compare-model",
+        type=Path,
+        default=Path(
+            os.environ.get(
+                "FALLDATA_AUX_COMPARE_MODEL_PATH",
+                str(DEFAULT_COMPARE_MODEL),
+            )
+        ),
+        help="Active DeepStream inline pose RF bundle.",
+    )
     parser.add_argument("--timeout", type=float, default=45.0)
     parser.add_argument(
         "--video",
@@ -231,18 +289,27 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    checks = [
-        _exists_check("model_python", args.model_python),
-        _exists_check("mediapipe_python", args.mediapipe_python),
-        _exists_check("model", args.model),
-        _exists_check("extract_script", EXTRACT_SCRIPT),
-        _exists_check("smoke_script", SMOKE_SCRIPT),
-        _exists_check("model_requirements", MODEL_REQUIREMENTS),
-        _exists_check("mediapipe_requirements", MEDIAPIPE_REQUIREMENTS),
-    ]
+    if args.inline_pose_rf:
+        checks = [
+            _exists_check("runtime_python", args.runtime_python),
+            _exists_check("compare_model", args.compare_model),
+        ]
+        backend = "inline_pose_rf"
+    else:
+        checks = [
+            _exists_check("model_python", args.model_python),
+            _exists_check("mediapipe_python", args.mediapipe_python),
+            _exists_check("model", args.model),
+            _exists_check("extract_script", EXTRACT_SCRIPT),
+            _exists_check("smoke_script", SMOKE_SCRIPT),
+            _exists_check("model_requirements", MODEL_REQUIREMENTS),
+            _exists_check("mediapipe_requirements", MEDIAPIPE_REQUIREMENTS),
+        ]
+        backend = "legacy_mediapipe_rf"
 
     payload: dict[str, Any] = {
         "passed": False,
+        "backend": backend,
         "checks": checks,
         "policy_check": _policy_check(
             mode=args.mode,
@@ -260,11 +327,25 @@ def main() -> int:
         print(json.dumps(payload, ensure_ascii=False, indent=2))
         return 1
 
-    missing = [check for check in checks if not check["exists"]]
+    missing = [check for check in checks if not check["exists"] or not check["is_file"]]
     if missing:
         payload["error"] = "missing required paths"
         print(json.dumps(payload, ensure_ascii=False, indent=2))
         return 1
+
+    if args.inline_pose_rf:
+        synthetic = _inline_pose_rf_smoke(
+            python_path=args.runtime_python,
+            model_path=args.compare_model,
+            timeout=args.timeout,
+        )
+        payload["synthetic_smoke"] = synthetic
+        if not synthetic["passed"]:
+            print(json.dumps(payload, ensure_ascii=False, indent=2))
+            return 1
+        payload["passed"] = True
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+        return 0
 
     if not args.skip_version_check:
         version_checks = [

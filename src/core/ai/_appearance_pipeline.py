@@ -416,6 +416,22 @@ class AppearancePipeline:
                 smoothed[field] = "unknown"
                 observation_counts[field] = 0
                 continue
+            # 하의는 어두운 청바지에서 HSV/LAB가 black으로 치우치기 쉽다.
+            # 색상 모델이 높은 확률로 명확한 유채색을 낸 경우 기존 black
+            # 히스토리의 다수결이 새 관측을 영구히 덮어쓰지 않도록 한다.
+            candidate = (metadata.get("color_candidates") or {}).get(field, {})
+            model_confidence = candidate.get("model_confidence")
+            model_color = candidate.get("model_color")
+            if (
+                field == "lower_color"
+                and color_sources.get(field) == "color_yolov8n"
+                and self._is_known_color(value)
+                and model_color == value
+                and str(value) not in {"black", "gray", "white"}
+                and isinstance(model_confidence, (int, float))
+                and float(model_confidence) >= 0.9
+            ):
+                samples.clear()
             if self._is_known_color(value):
                 samples.append(str(value))
             observation_counts[field] = len(samples)

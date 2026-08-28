@@ -5,6 +5,8 @@ import time
 
 import pytest
 
+from src.core.ai._appearance_analyzer import AppearanceAnalyzer
+from src.core.ai.analyzer import AIAnalyzer
 from src.core.events import DetectionEvent, EventType
 from src.utils.geometry import (
     boxes_overlap,
@@ -191,3 +193,33 @@ class TestIsHelmetWorn:
             iou_threshold=0.02,
             overlap_threshold=0.10,
         ) is True
+
+    def test_head_style_helmet_model_output_is_accepted(self):
+        person = _bbox(0, 0, 100, 200)
+        nearby = [{
+            "class_name": "head",
+            "event_type": "head",
+            "x": 10,
+            "y": 10,
+            "width": 50,
+            "height": 30,
+        }]
+        assert AppearanceAnalyzer._has_helmet_evidence(
+            person["x"], person["y"], person["width"], person["height"], nearby
+        ) is True
+
+    def test_head_detection_is_kept_for_appearance_nearby_objects(self):
+        head_event = DetectionEvent(
+            event_type=EventType.HEAD,
+            x=10,
+            y=10,
+            width=50,
+            height=30,
+            confidence=0.9,
+            timestamp=time.time(),
+            object_id=99,
+        )
+        nearby = AIAnalyzer._build_appearance_nearby_objects([], [head_event])
+        assert len(nearby) == 1
+        assert nearby[0]["event_type"] == "head"
+        assert nearby[0]["class_name"] == "head"

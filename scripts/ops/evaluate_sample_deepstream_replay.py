@@ -379,8 +379,8 @@ def _write_eval_cameras(path: Path, camera_id: str, source: str) -> None:
             "use_appearance": False,
         },
         "model_paths": {
-            "pose": "models/yolov8n-pose.engine",
-            "person": "models/yolov8n.engine",
+            "pose": "models/fall/yolov8n-pose.engine",
+            "person": "models/person/yolov8n.engine",
         },
         "zones": [],
     }

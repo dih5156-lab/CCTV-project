@@ -5,12 +5,80 @@ from __future__ import annotations
 import ctypes
 import ctypes.util
 import os
+import platform
+import re
+from importlib import metadata
 from pathlib import Path
 from typing import List, Optional, Protocol
 
 import numpy as np
 
 DEFAULT_TENSORRT_MAJOR_MINOR = "10.3"
+DEFAULT_TENSORRT_EXPECTED_CUDA_MAJOR = "12"
+
+
+def _normalize_machine(machine: Optional[str] = None) -> str:
+    value = (machine or platform.machine()).strip().lower()
+    if value in {"aarch64", "arm64"}:
+        return "arm64"
+    if value in {"x86_64", "amd64"}:
+        return "amd64"
+    return value or "unknown"
+
+
+def _installed_tensorrt_cuda_variant_majors(
+    distribution_names: Optional[List[str]] = None,
+) -> set[int]:
+    """Collect CUDA major versions from pip TensorRT package names (e.g. tensorrt_cu13)."""
+    names = distribution_names
+    if names is None:
+        names = []
+        for dist in metadata.distributions():
+            name = str(dist.metadata.get("Name") or "").strip()
+            if name:
+                names.append(name)
+
+    majors: set[int] = set()
+    for raw_name in names:
+        match = re.match(r"^tensorrt_cu(\d+)$", str(raw_name).strip().lower())
+        if match:
+            majors.add(int(match.group(1)))
+    return majors
+
+
+def validate_tensorrt_cuda_variant_compatibility(
+    *,
+    expected_cuda_major: Optional[str] = None,
+    machine: Optional[str] = None,
+    distribution_names: Optional[List[str]] = None,
+) -> None:
+    """Fail early on arm64 when pip TensorRT CUDA major mismatches the host baseline."""
+    if _normalize_machine(machine) != "arm64":
+        return
+
+    raw_expected = expected_cuda_major or os.getenv(
+        "TENSORRT_EXPECTED_CUDA_MAJOR",
+        DEFAULT_TENSORRT_EXPECTED_CUDA_MAJOR,
+    )
+    try:
+        expected_major = int(str(raw_expected).strip())
+    except (TypeError, ValueError):
+        return
+
+    variant_majors = _installed_tensorrt_cuda_variant_majors(distribution_names)
+    if not variant_majors:
+        return
+    if expected_major in variant_majors:
+        return
+
+    found = ", ".join(f"cu{major}" for major in sorted(variant_majors))
+    raise RuntimeError(
+        "TensorRT CUDA major mismatch: "
+        f"found pip TensorRT variants [{found}], expected cu{expected_major}. "
+        "On Jetson, remove pip tensorrt_cu* packages and use the system/container TensorRT binding. "
+        "If this host intentionally uses another CUDA baseline, override "
+        "TENSORRT_EXPECTED_CUDA_MAJOR."
+    )
 
 
 def validate_tensorrt_version(
@@ -243,6 +311,7 @@ def build_tensorrt_runtime(model_path: Path) -> TensorRTAttributeRuntime:
     """TensorRT engine을 로드한다."""
     import tensorrt as trt  # type: ignore
 
+    validate_tensorrt_cuda_variant_compatibility()
     validate_tensorrt_version(trt.__version__)
 
     logger = trt.Logger(trt.Logger.ERROR)
@@ -273,6 +342,7 @@ def build_tensorrt_named_runtime(model_path: Path) -> TensorRTNamedOutputsRuntim
     """Load a TensorRT engine while retaining all output tensor names."""
     import tensorrt as trt  # type: ignore
 
+    validate_tensorrt_cuda_variant_compatibility()
     validate_tensorrt_version(trt.__version__)
 
     logger = trt.Logger(trt.Logger.ERROR)
