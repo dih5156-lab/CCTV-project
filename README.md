@@ -208,17 +208,20 @@ pytest -q
 
 ## 업데이트 이력
 
-### 2026-08-28
-- 주간 자동 업데이트: 코드·설정·문서·테스트 변경사항 반영
-
-
 ### 2026-08-28 (8월 4주차, 20250824~20250828)
 
+- 외형 멀티태스크 학습 산출물을 정리하고 MobileNetV3 crop-weighted 모델의 baseline/protected 멀티태스크 결과와 색상·비색상 F1을 기록했습니다.
+- 외형 색상 검수 웹 화면을 재생성하고, 하의가 보이지 않는 샘플은 라벨링하지 않고 `unknown/exclude`로 보류하는 검수 기준을 정리했습니다.
 - Jetson 외형 속성 경로를 HSV fallback에서 PA100K TensorRT(`pa100k_tensorrt`)로 전환해 성별·나이 결과가 실제 appearance DB에 적재되도록 수정했습니다.
 - 성별 평가 스크립트의 PA100K 모델 기본 경로 오류를 수정하고, Jetson AI 엔진 재생성 후 TensorRT 모델 로드와 성별 출력(`male/female/unknown`)을 확인했습니다.
 - 얼굴등록·성별 상태를 점검했습니다. 얼굴 등록은 현재 1명·1샘플이므로 추가 각도/조명 샘플 등록이 필요합니다.
 - Jetson DeepStream 안정성 및 운영 스택을 재점검했습니다. 서비스 health 정상, 프레임 드롭 0, 처리량 약 30 FPS를 확인했습니다.
 - 헬멧·낙상·외형 모델 평가 리포트를 정리했습니다. 낙상 pose 단일 프레임 Recall과 temporal 낙상 모델 Recall을 구분해 기록했습니다.
+- 낙상 temporal 모델의 검증 결과(Recall 약 0.95)와 pose 검출 단계의 낮은 Recall을 구분하고, 미탐 원인을 평가 단계별로 정리했습니다.
+- `models/head`, `models/fall`, `models/appearance`, `models/person`, `models/legacy` 중심으로 모델 파일을 역할별 관리하도록 정리했습니다.
+- EdgeX·MQTT·AIoT 파서·Action Layer·전광판 device profile과 양방향 명령 흐름 문서를 보강했습니다.
+- Grafana/Prometheus 운영 대시보드와 DeepStream 안정성 watch를 점검하고, 서비스 health·GPU·프레임 드롭 지표를 확인했습니다.
+- 주간 Git 자동화 timer를 설치했습니다. 매주 금요일 17시에 코드·설정·문서·테스트를 자동 commit/push하며, 상세 작업 요약은 README에 직접 작성하는 방식입니다.
 - 기본 `docker-compose.yml`은 Windows/일반 환경용으로 유지하고, Jetson 운영은 `docker-compose.jetson.yml`과 `.env.jetson`을 사용하도록 문서화했습니다.
 
 ### 2026-08-26
