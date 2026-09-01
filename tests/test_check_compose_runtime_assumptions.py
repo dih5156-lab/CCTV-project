@@ -312,7 +312,7 @@ def test_appearance_model_wiring_requires_label_maps_and_runtimes():
     compose = """
 x-appearance-search-runtime:
   APPEARANCE_BACKEND: ${APPEARANCE_BACKEND:-pphuman}
-  APPEARANCE_MODEL_PATH: ${APPEARANCE_MODEL_PATH:-models/pphuman_attribute.onnx}
+  APPEARANCE_MODEL_PATH: ${APPEARANCE_MODEL_PATH:-models/appearance/pphuman_attribute.onnx}
   APPEARANCE_LABEL_MAP_PATH: ${APPEARANCE_LABEL_MAP_PATH:-config/appearance_pphuman_labels.example.json}
   APPEARANCE_RUNTIME: ${APPEARANCE_RUNTIME:-onnxruntime}
 """
@@ -320,7 +320,7 @@ x-appearance-search-runtime:
 x-appearance-runtime:
   DS_PPHUMAN_SGIE_ENABLED: ${DS_PPHUMAN_SGIE_ENABLED:-1}
   DS_PPHUMAN_INFER_CONFIG: ${DS_PPHUMAN_INFER_CONFIG:-config/deepstream/config_infer_pa100k.txt}
-  APPEARANCE_MODEL_PATH: ${APPEARANCE_MODEL_PATH:-models/pa100k_resnet50_attr.engine}
+  APPEARANCE_MODEL_PATH: ${APPEARANCE_MODEL_PATH:-models/appearance/pa100k_resnet50_attr.engine}
   APPEARANCE_LABEL_MAP_PATH: ${APPEARANCE_LABEL_MAP_PATH:-config/appearance_pa100k_labels.json}
   APPEARANCE_RUNTIME: ${APPEARANCE_RUNTIME:-tensorrt}
 """
