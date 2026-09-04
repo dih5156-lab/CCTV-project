@@ -620,6 +620,36 @@ class TestActionBridgeStatusPublishing:
         bridge._speaker.play.assert_not_called()
         bridge._executor._publish_edgex_command.assert_called_once()
 
+    def test_shadow_mode_records_direct_and_edgex_publish_comparison(self):
+        bridge = self._make_bridge()
+        bridge._executor._device_command_mode = DeviceCommandMode.SHADOW
+        bridge._executor._publish_edgex_command = MagicMock(return_value=True)
+        bridge._executor._resolve_edgex_device_ids = lambda device, camera_id: [
+            "speaker-1"
+        ]
+
+        bridge._execute_action(
+            "cctv/ai/events/camera_1/fall_detected",
+            {
+                "camera_id": "camera_1",
+                "event_id": "event-1",
+                "type": "fall_detected",
+                "severity": "critical",
+            },
+        )
+
+        command_records = [
+            call.args for call in bridge._repo.record_command.call_args_list
+            if call.args[0] == "event-1:speaker"
+        ]
+        comparison_payload = command_records[-1][3]["shadow_comparison"]
+        assert comparison_payload == {
+            "mode": "shadow",
+            "direct_status": "acknowledged",
+            "edgex_publish_status": "acknowledged",
+            "comparison": "match",
+        }
+
     def test_fall_detail_metadata_does_not_change_output_message(self):
         bridge = self._make_bridge()
         bridge._resolve_devices.return_value = [AlarmDevice.SPEAKER, AlarmDevice.SIGNBOARD]

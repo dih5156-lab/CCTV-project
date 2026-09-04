@@ -140,13 +140,14 @@ class _ActionExecutor:
         payload: Dict,
         command_id: str,
         camera_id: str,
-    ) -> None:
+        direct_status: str = "unknown",
+    ) -> Optional[Dict]:
         """기존 직접 제어와 비교할 EdgeX Command를 생성해 발행한다."""
         if (
             self._device_command_mode is not DeviceCommandMode.SHADOW
             or self._publish_edgex_command is None
         ):
-            return
+            return None
         try:
             transport = self._edgex_transport or EdgeXCommandTransport(
                 publish=self._publish_edgex_command,
@@ -170,8 +171,48 @@ class _ActionExecutor:
                     command_id,
                     result.error,
                 )
+            return {
+                "mode": "shadow",
+                "direct_status": direct_status,
+                "edgex_publish_status": result.status,
+                "comparison": (
+                    "match" if direct_status == result.status else "mismatch"
+                ),
+                **({"error": result.error} if result.error else {}),
+            }
         except Exception as exc:
             logger.warning("EdgeX shadow Command 구성 실패: command_id=%s error=%s", command_id, exc)
+            return {
+                "mode": "shadow",
+                "direct_status": direct_status,
+                "edgex_publish_status": "failed",
+                "comparison": "mismatch",
+                "error": str(exc),
+            }
+
+    def _record_shadow_comparison(
+        self,
+        *,
+        command_id: str,
+        device: str,
+        payload: Dict,
+        comparison: Optional[Dict],
+        direct_status: str,
+    ) -> Optional[Dict]:
+        """Shadow 발행 결과를 장치 결과와 명령 저장소에 함께 기록한다."""
+        if comparison is None:
+            return None
+        payload_with_comparison = {
+            **payload,
+            "shadow_comparison": comparison,
+        }
+        self._repo.record_command(
+            command_id,
+            f"device/{device}",
+            direct_status,
+            payload_with_comparison,
+        )
+        return comparison
 
     def execute(self, topic: str, payload: Dict) -> None:
         """단일 이벤트에 대한 장치 조치와 외부 전송을 수행한다."""
@@ -215,18 +256,27 @@ class _ActionExecutor:
                 if speaker_result["status"] == "acknowledged":
                     alarm_played = True
                 device_results.append(speaker_result)
-                self._publish_shadow_command(
+                speaker_payload = {
+                    "event_type": event_type,
+                    "severity": severity,
+                    "camera_id": camera_id,
+                    "text": tts_message,
+                }
+                shadow_comparison = self._publish_shadow_command(
                     event_id=get_payload_event_id(payload),
                     command_id=command_id,
                     camera_id=camera_id,
                     device="speaker",
                     action="play",
-                    payload={
-                        "event_type": event_type,
-                        "severity": severity,
-                        "camera_id": camera_id,
-                        "text": tts_message,
-                    },
+                    payload=speaker_payload,
+                    direct_status=speaker_result["status"],
+                )
+                speaker_result["shadow_comparison"] = self._record_shadow_comparison(
+                    command_id=command_id,
+                    device="speaker",
+                    payload=speaker_payload,
+                    comparison=shadow_comparison,
+                    direct_status=speaker_result["status"],
                 )
 
             if self._alarm_device_enum.SIGNBOARD in devices:
@@ -255,19 +305,29 @@ class _ActionExecutor:
                 if signboard_result["status"] == "acknowledged":
                     alarm_played = True
                 device_results.append(signboard_result)
-                self._publish_shadow_command(
+                signboard_payload = {
+                    "event_type": event_type,
+                    "severity": severity,
+                    "camera_id": camera_id,
+                    "text": signboard_text,
+                    "title": "경고!",
+                    "class_name": event_type,
+                }
+                shadow_comparison = self._publish_shadow_command(
                     event_id=get_payload_event_id(payload),
                     command_id=command_id,
                     camera_id=camera_id,
                     device="signboard",
                     action="display",
-                    payload={
-                        "event_type": event_type,
-                        "severity": severity,
-                        "camera_id": camera_id,
-                        "text": signboard_text,
-                        "title": "경고!",
-                    },
+                    payload=signboard_payload,
+                    direct_status=signboard_result["status"],
+                )
+                signboard_result["shadow_comparison"] = self._record_shadow_comparison(
+                    command_id=command_id,
+                    device="signboard",
+                    payload=signboard_payload,
+                    comparison=shadow_comparison,
+                    direct_status=signboard_result["status"],
                 )
 
             if self._alarm_device_enum.SIREN in devices:
@@ -287,16 +347,25 @@ class _ActionExecutor:
                 if siren_result["status"] == "acknowledged":
                     alarm_played = True
                 device_results.append(siren_result)
-                self._publish_shadow_command(
+                siren_payload = {
+                    "event_type": event_type,
+                    "camera_id": camera_id,
+                }
+                shadow_comparison = self._publish_shadow_command(
                     event_id=get_payload_event_id(payload),
                     command_id=command_id,
                     camera_id=camera_id,
                     device="siren",
                     action="trigger",
-                    payload={
-                        "event_type": event_type,
-                        "camera_id": camera_id,
-                    },
+                    payload=siren_payload,
+                    direct_status=siren_result["status"],
+                )
+                siren_result["shadow_comparison"] = self._record_shadow_comparison(
+                    command_id=command_id,
+                    device="siren",
+                    payload=siren_payload,
+                    comparison=shadow_comparison,
+                    direct_status=siren_result["status"],
                 )
 
         forward_decision = decide_alert_forward(

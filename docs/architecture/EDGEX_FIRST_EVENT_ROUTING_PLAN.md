@@ -122,9 +122,10 @@ eKuiper와 `SensorRuleBridge`가 같은 조건을 각각 최종 알람으로 발
 5. 전광판 직접 TCP와 EdgeX 경로 중 운영 기본 경로 하나 선택
 6. Action Layer를 직접 client 호출자가 아닌 EdgeX Command 발행자로 변경
 7. 기존 직접 경로는 feature flag와 rollback용으로 유지
-8. EdgeX shadow command와 기존 결과 비교
-9. 단일 장치·단일 카메라에서 전환
-10. 전체 현장 전환 후 직접 제어 코드 제거
+8. EdgeX shadow command와 기존 결과 비교 기록 구조 구현 완료
+9. 실제 스피커 1대에서 direct 결과·EdgeX 발행 결과·물리 동작 결과 비교
+10. 단일 장치·단일 카메라에서 전환
+11. 전체 현장 전환 후 직접 제어 코드 제거
 
 ## 실시간성 측정
 

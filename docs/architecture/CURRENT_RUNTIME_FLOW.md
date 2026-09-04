@@ -39,6 +39,7 @@ _ActionExecutor.execute
     ├─ EdgeX Shadow 경로
     │   └─ ActionBridge._publish_edgex_command
     │       └─ _publish_shadow_command
+    │           └─ direct_status / edgex_publish_status 비교 기록
     │
     └─ 감사·상태 경로
         ├─ EventRepo.record_command / save
@@ -56,6 +57,7 @@ _ActionExecutor.execute
 | EdgeX Command | 코드·테스트 준비 | Shadow 또는 호환 경계가 있으나 운영 기본 경로는 아님 |
 | 다중 디바이스 레지스트리 | 구현됨 | `device_id` 기준 장치 선택 가능 |
 | 명령 결과 수집 | 구현됨 | 결과 저장·조회 및 Action Layer 이력 반영 가능 |
+| Shadow 비교 기록 | 구현됨 | 같은 `command_id`에 직접 결과와 EdgeX 발행 결과를 함께 저장 |
 | 실제 장치 UAT | 미완료 | 물리 장치 연결 후 검증 필요 |
 
 ## 현재 환경 기준선
@@ -75,6 +77,21 @@ _ActionExecutor.execute
 | `SIREN_SERVICE_PORT` | `59992` | 사이렌 Device Service HTTP 경계 |
 
 따라서 현재 구조는 EdgeX 서비스 자체가 Compose에 포함되어 있어도, 공유 환경 템플릿 기준으로는 직접 장치 제어가 기본이고 EdgeX 명령은 opt-in 상태다. 이 값을 바꾸는 작업은 실제 장치 UAT와 shadow 비교 이후에 수행해야 한다.
+
+### Shadow 비교 결과 형식
+
+Shadow 모드에서는 직접 장치 제어를 계속 수행하고, 같은 `command_id`로 EdgeX Command를 비교 발행한다. 비교 결과는 `action_commands.payload_json.shadow_comparison`에 저장된다.
+
+```json
+{
+  "mode": "shadow",
+  "direct_status": "acknowledged",
+  "edgex_publish_status": "acknowledged",
+  "comparison": "match"
+}
+```
+
+`edgex_publish_status=acknowledged`는 EdgeX Command MQTT 발행 성공을 의미한다. 실제 스피커·사이렌·전광판이 물리적으로 동작했다는 뜻은 아니며, 물리 동작 확인은 Device Service 결과와 현장 UAT로 별도 검증해야 한다.
 
 ## 구조상 확인된 문제
 
