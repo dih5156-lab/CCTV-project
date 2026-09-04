@@ -34,6 +34,24 @@ def test_display_command_is_translated_to_dabit_device_call():
     assert display_kwargs["title"] == "경고!"
 
 
+def test_display_command_accepts_profile_display_text_field():
+    service, device = _service()
+    device.display.return_value = True
+
+    result = service.execute_request(
+        {
+            "request_id": "req-profile",
+            "event_id": "event-profile",
+            "device": "signboard",
+            "action": "display",
+            "payload": {"display_text": "프로파일 문구"},
+        }
+    )
+
+    assert result.status == "acknowledged"
+    assert device.display.call_args.kwargs["text"] == "프로파일 문구"
+
+
 def test_dry_run_does_not_call_unconnected_dabit_device():
     service, device = _service(dry_run=True)
 

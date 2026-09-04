@@ -32,4 +32,9 @@ def handle_command_request(
     }
     result = service.execute_request(request)
     body = result.to_dict()
-    return (200 if body.get("status") in {"acknowledged", "simulated"} else 502), body
+    status_code = 200 if body.get("status") in {"acknowledged", "simulated"} else 502
+    return status_code, {
+        "apiVersion": "v3",
+        "statusCode": status_code,
+        **body,
+    }

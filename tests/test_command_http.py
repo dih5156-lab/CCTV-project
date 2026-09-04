@@ -22,6 +22,8 @@ def test_core_command_path_is_converted_to_common_request():
     )
 
     assert status_code == 200
+    assert result["apiVersion"] == "v3"
+    assert result["statusCode"] == 200
     assert result["request_id"] == "cmd-1"
     assert result["status"] == "simulated"
 

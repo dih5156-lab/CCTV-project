@@ -110,7 +110,7 @@ class DabitDeviceService:
             return DabitCommandResult(request_id, target_device_id, "failed", "device_not_found")
         action = str(request.get("action") or "")
         parameters = {
-            "display_text": payload.get("text"),
+            "display_text": payload.get("text") or payload.get("display_text"),
             "title": payload.get("title"),
             "power": payload.get("power", True),
         }
