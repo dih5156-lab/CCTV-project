@@ -78,6 +78,14 @@ _ActionExecutor.execute
 
 따라서 현재 구조는 EdgeX 서비스 자체가 Compose에 포함되어 있어도, 공유 환경 템플릿 기준으로는 직접 장치 제어가 기본이고 EdgeX 명령은 opt-in 상태다. 이 값을 바꾸는 작업은 실제 장치 UAT와 shadow 비교 이후에 수행해야 한다.
 
+### 2026-09-04 실행 환경 확인
+
+- CCTV AI Engine, Action Layer, EdgeX Core Command, 전광판 Device Service가 실행 중이다.
+- Action Layer 실행 환경에 `EDGEX_COMMAND_MODE`가 지정되지 않아 현재 이벤트 장치 제어는 direct 호환 경로로 동작한다.
+- `cctv-signboard-01`은 EdgeX Core Command의 `power`, `clear`, `display` 실제 호출을 통과했다.
+- 전광판의 문구·색상·배경색·크기·속도·밝기 전달을 실제 Dabit 장치 응답으로 확인했다.
+- 따라서 다음 운영 전환은 전광판 단독 테스트가 아니라 스피커·사이렌 영향까지 포함한 Action Layer 모드 전환 검증으로 진행해야 한다.
+
 ### Shadow 비교 결과 형식
 
 Shadow 모드에서는 직접 장치 제어를 계속 수행하고, 같은 `command_id`로 EdgeX Command를 비교 발행한다. 비교 결과는 `action_commands.payload_json.shadow_comparison`에 저장된다.
