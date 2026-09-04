@@ -72,9 +72,9 @@ _ActionExecutor.execute
 | `EDGEX_COMMAND_TOPIC_PREFIX` | `edgex/commands/cctv` | 공통 명령 topic 접두사 |
 | `EDGEX_RESULT_TOPIC_PREFIX` | `edgex/results/cctv` | 명령 결과 topic 접두사 |
 | `EDGEX_COMMAND_RESULT_DB` | `/app/data/runtime/edgex_command_results.db` | 명령 결과 감사 저장소 |
-| `SPEAKER_HOST` | 비어 있음 | 실제 스피커 미연결 시 비활성 상태 |
+| `SPEAKER_HOST` | 설정 가능 | 서비스 경계는 있으나 실제 스피커 연결·동작 검증 불가 |
 | `SPEAKER_DRY_RUN` | `false` | 호스트가 설정되면 실제 호출을 시도하는 기본값 |
-| `SIREN_SERVICE_PORT` | `59992` | 사이렌 Device Service HTTP 경계 |
+| `SIREN_SERVICE_PORT` | `59992` | 사이렌 Device Service HTTP 경계만 존재하며 물리 사이렌은 없음 |
 
 따라서 현재 구조는 EdgeX 서비스 자체가 Compose에 포함되어 있어도, 공유 환경 템플릿 기준으로는 직접 장치 제어가 기본이고 EdgeX 명령은 opt-in 상태다. 이 값을 바꾸는 작업은 실제 장치 UAT와 shadow 비교 이후에 수행해야 한다.
 
@@ -83,8 +83,9 @@ _ActionExecutor.execute
 - CCTV AI Engine, Action Layer, EdgeX Core Command, 전광판 Device Service가 실행 중이다.
 - Action Layer 실행 환경에 `EDGEX_COMMAND_MODE`가 지정되지 않아 현재 이벤트 장치 제어는 direct 호환 경로로 동작한다.
 - `cctv-signboard-01`은 EdgeX Core Command의 `power`, `clear`, `display` 실제 호출을 통과했다.
+- 사이렌은 현재 물리 디바이스가 없어 실제 UAT 대상이 아니며, 스피커는 서비스 경계는 있으나 실제 연결·동작 검증이 불가능하다.
 - 전광판의 문구·색상·배경색·크기·속도·밝기 전달을 실제 Dabit 장치 응답으로 확인했다.
-- 따라서 다음 운영 전환은 전광판 단독 테스트가 아니라 스피커·사이렌 영향까지 포함한 Action Layer 모드 전환 검증으로 진행해야 한다.
+- 따라서 전체 Action Layer를 `edgex` 모드로 전환하지 않고, 전광판 단독 라우팅만 운영 검증 대상으로 삼아야 한다.
 
 ### Shadow 비교 결과 형식
 
