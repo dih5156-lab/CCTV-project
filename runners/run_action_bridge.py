@@ -20,6 +20,7 @@ from src.services.action_bridge import (
     default_alarm_topics,
     default_subscribe_topics,
 )
+from src.services.device_command_transport import normalize_device_command_mode
 
 logger = logging.getLogger("run-action-bridge")
 
@@ -67,6 +68,7 @@ class ActionBridgeRuntimeConfig:
     rest_host: str
     rest_port: int
     edgex_shadow_enabled: bool = False
+    edgex_command_mode: str = "direct"
     edgex_jetson_id: str = "jetson-01"
     edgex_command_topic_prefix: str = "edgex/commands/cctv"
     edgex_device_registry_path: Optional[str] = None
@@ -208,7 +210,13 @@ def _add_rest_arguments(parser: argparse.ArgumentParser) -> None:
 
 
 def _add_edgex_arguments(parser: argparse.ArgumentParser) -> None:
-    """비교용 EdgeX Command 발행 설정을 명령행 인자로 등록한다."""
+    """EdgeX Command 실행 모드와 발행 설정을 명령행 인자로 등록한다."""
+    parser.add_argument(
+        "--edgex-command-mode",
+        choices=("direct", "shadow", "edgex"),
+        default=_env("EDGEX_COMMAND_MODE", ""),
+        help="장치 명령 실행 모드(direct, shadow, edgex)",
+    )
     parser.add_argument(
         "--edgex-shadow-enabled",
         action="store_true",
@@ -296,6 +304,11 @@ def parse_runtime_config(
             "SIGNBOARD_CONTROL_BACKEND=edgex는 전용 Dabit Device Service 배포 후에만 사용할 수 있습니다"
         )
 
+    command_mode = args.edgex_command_mode.strip().lower()
+    if not command_mode:
+        command_mode = "shadow" if args.edgex_shadow_enabled else "direct"
+    command_mode = normalize_device_command_mode(command_mode).value
+
     return ActionBridgeRuntimeConfig(
         mqtt_broker=args.mqtt_broker,
         mqtt_port=args.mqtt_port,
@@ -311,6 +324,7 @@ def parse_runtime_config(
         rest_host=args.rest_host,
         rest_port=args.rest_port,
         edgex_shadow_enabled=args.edgex_shadow_enabled,
+        edgex_command_mode=command_mode,
         edgex_jetson_id=args.edgex_jetson_id,
         edgex_command_topic_prefix=args.edgex_command_topic_prefix,
         edgex_device_registry_path=args.edgex_device_registry_path or None,
@@ -333,6 +347,7 @@ def create_action_bridge(config: ActionBridgeRuntimeConfig) -> ActionBridge:
         rest_host=config.rest_host,
         rest_port=config.rest_port,
         edgex_shadow_enabled=config.edgex_shadow_enabled,
+        edgex_command_mode=config.edgex_command_mode,
         edgex_jetson_id=config.edgex_jetson_id,
         edgex_command_topic_prefix=config.edgex_command_topic_prefix,
         edgex_device_registry_path=config.edgex_device_registry_path,

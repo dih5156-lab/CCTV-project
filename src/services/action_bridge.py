@@ -75,6 +75,10 @@ from .cctv_metrics import (
 from .cctv_metrics import (
     pending_events as _metric_pending,
 )
+from .device_command_transport import (
+    DeviceCommandMode,
+    normalize_device_command_mode,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -121,6 +125,7 @@ class ActionBridge:
         rest_host: str = _ACTION_DEFAULTS.rest_host,
         rest_port: int = _ACTION_DEFAULTS.rest_port,
         edgex_shadow_enabled: bool = False,
+        edgex_command_mode: Optional[str] = None,
         edgex_jetson_id: str = "jetson-01",
         edgex_command_topic_prefix: str = "edgex/commands/cctv",
         edgex_device_registry_path: Optional[str] = None,
@@ -129,7 +134,11 @@ class ActionBridge:
         self.mqtt_broker = mqtt_broker
         self.mqtt_port = int(mqtt_port)
         self.subscribe_topics = subscribe_topics or default_subscribe_topics()
-        self._edgex_shadow_enabled = bool(edgex_shadow_enabled)
+        requested_command_mode = edgex_command_mode
+        if requested_command_mode is None:
+            requested_command_mode = "shadow" if edgex_shadow_enabled else "direct"
+        self._edgex_command_mode = normalize_device_command_mode(requested_command_mode)
+        self._edgex_shadow_enabled = self._edgex_command_mode is DeviceCommandMode.SHADOW
         self._edgex_jetson_id = edgex_jetson_id
         self._edgex_command_topic_prefix = edgex_command_topic_prefix
         self._edgex_device_registry = (
@@ -167,8 +176,9 @@ class ActionBridge:
             resolve_devices=self._resolve_devices,
             publish_status=self._publish_status,
             publish_edgex_command=self._publish_edgex_command
-            if self._edgex_shadow_enabled
+            if self._edgex_command_mode is not DeviceCommandMode.DIRECT
             else None,
+            device_command_mode=self._edgex_command_mode,
             resolve_edgex_device_ids=self._resolve_edgex_device_ids,
             edgex_jetson_id=self._edgex_jetson_id,
             edgex_command_topic_prefix=self._edgex_command_topic_prefix,

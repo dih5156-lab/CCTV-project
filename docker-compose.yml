@@ -633,6 +633,7 @@ services:
       EXTERNAL_API_URL: http://cctv-alert-api:8000/api/alerts
       ALARM_COOLDOWN: ${ACTION_ALARM_COOLDOWN:-10}
       EDGEX_SHADOW_ENABLED: ${EDGEX_SHADOW_ENABLED:-false}
+      EDGEX_COMMAND_MODE: ${EDGEX_COMMAND_MODE:-}
       EDGEX_JETSON_ID: ${EDGEX_JETSON_ID:-jetson-01}
       EDGEX_COMMAND_TOPIC_PREFIX: ${EDGEX_COMMAND_TOPIC_PREFIX:-edgex/commands/cctv}
       # Speaker (InterM HTTP REST + Digest auth)

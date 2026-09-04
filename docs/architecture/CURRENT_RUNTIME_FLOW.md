@@ -65,6 +65,7 @@ _ActionExecutor.execute
 | 설정 | 현재 기본값 | 의미 |
 |---|---|---|
 | `EDGEX_SHADOW_ENABLED` | `false` | EdgeX Shadow 명령 발행 비활성화 |
+| `EDGEX_COMMAND_MODE` | 비어 있음 | 비어 있으면 기존 Shadow 설정과 호환하며 `direct` 또는 `shadow`로 결정 |
 | `EDGEX_DEVICE_REGISTRY_PATH` | 비어 있음 | 다중 출력 장치 레지스트리 비활성화 |
 | `EDGEX_COMMAND_TOPIC_PREFIX` | `edgex/commands/cctv` | 공통 명령 topic 접두사 |
 | `EDGEX_RESULT_TOPIC_PREFIX` | `edgex/results/cctv` | 명령 결과 topic 접두사 |

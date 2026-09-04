@@ -94,3 +94,18 @@ def test_parse_runtime_config_uses_action_bridge_default_topics(monkeypatch):
 def test_parse_runtime_config_rejects_invalid_mqtt_port():
     with pytest.raises(SystemExit):
         parse_runtime_config(["--mqtt-port", "0"])
+
+
+def test_parse_runtime_config_supports_edgex_command_mode():
+    config = parse_runtime_config(["--edgex-command-mode", "edgex"])
+
+    assert config.edgex_command_mode == "edgex"
+
+
+def test_parse_runtime_config_keeps_shadow_compatibility(monkeypatch):
+    monkeypatch.setenv("EDGEX_SHADOW_ENABLED", "true")
+    monkeypatch.delenv("EDGEX_COMMAND_MODE", raising=False)
+
+    config = parse_runtime_config([])
+
+    assert config.edgex_command_mode == "shadow"

@@ -23,6 +23,8 @@ from .cctv_metrics import (
 )
 from .device_command_transport import (
     DeviceCommand,
+    DeviceCommandMode,
+    DeviceCommandResult,
     DirectDeviceCommandTransport,
     EdgeXCommandTransport,
 )
@@ -52,6 +54,7 @@ class _ActionExecutor:
         alarm_device_enum,
         device_transport=None,
         edgex_transport=None,
+        device_command_mode=DeviceCommandMode.DIRECT,
     ) -> None:
         """장치 실행에 필요한 저장소·클라이언트·상태 발행기를 보관한다."""
         self._repo = repo
@@ -70,6 +73,7 @@ class _ActionExecutor:
         self._alarm_device_enum = alarm_device_enum
         self._device_transport = device_transport
         self._edgex_transport = edgex_transport
+        self._device_command_mode = DeviceCommandMode(device_command_mode)
 
     def _execute_device_command(
         self,
@@ -82,21 +86,38 @@ class _ActionExecutor:
         camera_id: str,
     ) -> Dict:
         """공통 명령을 전송하고 저장소·메트릭용 결과를 만든다."""
-        transport = self._device_transport or DirectDeviceCommandTransport(
-            speaker=self._speaker,
-            signboard=self._signboard,
-            siren=self._siren,
+        command = DeviceCommand(
+            device=device,
+            action=action,
+            payload=payload,
+            command_id=command_id,
+            event_id=event_id,
+            camera_id=camera_id,
         )
-        result = transport.send(
-            DeviceCommand(
-                device=device,
-                action=action,
-                payload=payload,
-                command_id=command_id,
-                event_id=event_id,
-                camera_id=camera_id,
+        if self._device_command_mode is DeviceCommandMode.EDGEX:
+            if self._publish_edgex_command is None:
+                result = DeviceCommandResult(
+                    device=device,
+                    command_id=command_id,
+                    ok=False,
+                    status="failed",
+                    error="EdgeX 전송기가 비활성화됨",
+                )
+            else:
+                transport = self._edgex_transport or EdgeXCommandTransport(
+                    publish=self._publish_edgex_command,
+                    resolve_device_ids=self._resolve_edgex_device_ids or (lambda *_: [""]),
+                    jetson_id=self._edgex_jetson_id,
+                    topic_prefix=self._edgex_command_topic_prefix,
+                )
+                result = transport.send(command)
+        else:
+            transport = self._device_transport or DirectDeviceCommandTransport(
+                speaker=self._speaker,
+                signboard=self._signboard,
+                siren=self._siren,
             )
-        )
+            result = transport.send(command)
         _device_commands.labels(
             device=device,
             status="ok" if result.ok else "skip",
@@ -121,7 +142,10 @@ class _ActionExecutor:
         camera_id: str,
     ) -> None:
         """기존 직접 제어와 비교할 EdgeX Command를 생성해 발행한다."""
-        if self._publish_edgex_command is None:
+        if (
+            self._device_command_mode is not DeviceCommandMode.SHADOW
+            or self._publish_edgex_command is None
+        ):
             return
         try:
             transport = self._edgex_transport or EdgeXCommandTransport(

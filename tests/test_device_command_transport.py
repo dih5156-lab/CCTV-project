@@ -2,8 +2,10 @@ from types import SimpleNamespace
 
 from src.services.device_command_transport import (
     DeviceCommand,
+    DeviceCommandMode,
     DirectDeviceCommandTransport,
     EdgeXCommandTransport,
+    normalize_device_command_mode,
 )
 
 
@@ -162,3 +164,18 @@ def test_edgex_transport_returns_failed_when_one_device_publish_fails():
     assert result.status == "failed"
     assert result.error == "EdgeX 명령 발행 실패: speaker-2"
     assert len(published) == 2
+
+
+def test_normalize_device_command_mode_defaults_to_direct():
+    assert normalize_device_command_mode(None) is DeviceCommandMode.DIRECT
+    assert normalize_device_command_mode("") is DeviceCommandMode.DIRECT
+    assert normalize_device_command_mode("EDGEX") is DeviceCommandMode.EDGEX
+
+
+def test_normalize_device_command_mode_rejects_unknown_mode():
+    try:
+        normalize_device_command_mode("invalid")
+    except ValueError as exc:
+        assert str(exc) == "지원하지 않는 장치 명령 모드: invalid"
+    else:
+        raise AssertionError("알 수 없는 장치 명령 모드를 허용하면 안 된다")

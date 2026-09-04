@@ -15,6 +15,7 @@ from src.services.action_bridge import (
     _AlarmCoordinator,
     _SiteRegistry,
 )
+from src.services.device_command_transport import DeviceCommandMode
 
 # ---------------------------------------------------------------------------
 # SiteConfig
@@ -598,6 +599,26 @@ class TestActionBridgeStatusPublishing:
         )
         assert bridge._signboard.display.call_count == 1
         assert bridge._signboard.display.call_args.kwargs["text"] == "기울기 이상 감지"
+
+    def test_edgex_mode_does_not_call_direct_device(self):
+        bridge = self._make_bridge()
+        bridge._executor._device_command_mode = DeviceCommandMode.EDGEX
+        bridge._executor._publish_edgex_command = MagicMock(return_value=True)
+        bridge._executor._resolve_edgex_device_ids = lambda device, camera_id: [
+            "speaker-1"
+        ]
+
+        bridge._execute_action(
+            "cctv/ai/events/camera_1/fall_detected",
+            {
+                "camera_id": "camera_1",
+                "type": "fall_detected",
+                "severity": "critical",
+            },
+        )
+
+        bridge._speaker.play.assert_not_called()
+        bridge._executor._publish_edgex_command.assert_called_once()
 
     def test_fall_detail_metadata_does_not_change_output_message(self):
         bridge = self._make_bridge()

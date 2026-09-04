@@ -1,9 +1,29 @@
 """Action Layer의 장치별 직접 호출을 공통 명령 경계로 감싼다."""
 
 from dataclasses import dataclass
+from enum import Enum
 from typing import Any, Mapping, Protocol
 
 from ..edgex.command_contract import build_command_request, build_command_topic
+
+
+class DeviceCommandMode(str, Enum):
+    """장치 명령을 실행하는 운영 모드다."""
+
+    DIRECT = "direct"
+    SHADOW = "shadow"
+    EDGEX = "edgex"
+
+
+def normalize_device_command_mode(value: str | DeviceCommandMode | None) -> DeviceCommandMode:
+    """환경변수나 명령행 값을 안전한 장치 명령 모드로 변환한다."""
+    if isinstance(value, DeviceCommandMode):
+        return value
+    normalized = str(value or "direct").strip().lower()
+    try:
+        return DeviceCommandMode(normalized)
+    except ValueError as exc:
+        raise ValueError(f"지원하지 않는 장치 명령 모드: {normalized}") from exc
 
 
 @dataclass(frozen=True)
