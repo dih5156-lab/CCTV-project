@@ -93,7 +93,7 @@ class _OutboxMixin:
     # ── DB 초기화 ────────────────────────────────────────────────────────────
 
     def _init_outbox(self) -> None:
-        """Prepare the local SQLite outbox used for store-and-forward delivery."""
+        """Store-and-forward 전송에 사용할 로컬 SQLite outbox를 준비한다."""
         if not self.enable_store_and_forward:
             return
 
@@ -426,12 +426,7 @@ class _OutboxMixin:
         limit: Optional[int] = None,
         data_category: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
-        """Return pending outbox rows in FIFO order for replay.
-
-        Args:
-            limit: 최대 반환 행 수 (기본: outbox_flush_batch_size)
-            data_category: 'person' | 'zone' | 'sensor' | 'camera' | None(전체)
-        """
+        """재전송할 pending outbox 행을 오래된 순서로 반환한다."""
         if not self.enable_store_and_forward:
             return []
 

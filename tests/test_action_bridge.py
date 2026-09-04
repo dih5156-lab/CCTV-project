@@ -317,6 +317,26 @@ class TestAlarmCoordinator:
         coord.try_acquire_slot("cam1", "helmet")
         assert coord.try_acquire_slot("cam1", "helmet", force=True) is True
 
+    def test_higher_priority_event_preempts_existing_output(self):
+        coord = self._coord(cooldown=60)
+        assert coord.try_acquire_slot("cam1", "head", priority=2) is True
+        assert coord.try_acquire_slot("cam1", "fall_detected", priority=0) is True
+
+    def test_lower_priority_event_is_suppressed_after_fall(self):
+        coord = self._coord(cooldown=60)
+        assert coord.try_acquire_slot("cam1", "fall_detected", priority=0) is True
+        assert coord.try_acquire_slot("cam1", "head", priority=2) is False
+
+    def test_same_priority_different_objects_are_not_dropped(self):
+        coord = self._coord(cooldown=60)
+        assert coord.try_acquire_slot("cam1", "head", priority=2, object_id=101) is True
+        assert coord.try_acquire_slot("cam1", "head", priority=2, object_id=202) is True
+
+    def test_same_object_duplicate_remains_suppressed(self):
+        coord = self._coord(cooldown=60)
+        assert coord.try_acquire_slot("cam1", "head", priority=2, object_id=101) is True
+        assert coord.try_acquire_slot("cam1", "head", priority=2, object_id=101) is False
+
     def test_public_demo_metadata_marks_demo_event(self):
         coord = self._coord()
         assert coord.is_demo_event({"metadata": {"source": "public-demo-ui", "demo": True}}) is True

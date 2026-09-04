@@ -42,6 +42,36 @@ _TABLE_PROFILE_MAP = {
     "t34958": "aiot-t34958-imu",
 }
 
+_TABLE_RESOURCE_MAP = {
+    "t34950": {
+        "water_level_m": "water_level",
+        "flow_velocity_mps": "flow_velocity",
+        "rain_fall_mm": "rain_fall",
+        "reporting_period_s": "reporting_period",
+    },
+    "t34955": {
+        "angle_x_deg": "angle_x",
+        "angle_y_deg": "angle_y",
+        "reporting_period_s": "reporting_period",
+        "reporting_angle_threshold_deg": "reporting_angle_threshold",
+    },
+    "t34957": {
+        "temperature_c": "temperature",
+        "angle_x_deg": "angle_x",
+        "angle_y_deg": "angle_y",
+        "event_code": "event_code",
+    },
+    "t34958": {
+        "acc_x_g": "acc_x",
+        "acc_y_g": "acc_y",
+        "acc_z_g": "acc_z",
+        "gyro_x_dps": "gyro_x",
+        "gyro_y_dps": "gyro_y",
+        "gyro_z_dps": "gyro_z",
+        "event_code": "event_code",
+    },
+}
+
 # 정수(Int32)로 처리할 리소스 이름
 _INT32_FIELDS = {"event_code"}
 
@@ -158,9 +188,18 @@ class EdgeXForwarder(BaseMqttPublisher):
         # received_at 은 밀리초 단위 — 나노초로 변환
         origin_ns = int(received_at) * 1_000_000
 
+        resource_map = _TABLE_RESOURCE_MAP[table_name]
         readings = []
-        for resource_name, raw_value in data.items():
-            if resource_name == "tableName":
+        for raw_resource_name, raw_value in data.items():
+            if raw_resource_name == "tableName":
+                continue
+            resource_name = resource_map.get(raw_resource_name)
+            if resource_name is None:
+                logger.debug(
+                    "[EdgeXForwarder] 프로파일에 없는 리소스 제외: %s.%s",
+                    table_name,
+                    raw_resource_name,
+                )
                 continue
             try:
                 if resource_name in _INT32_FIELDS:

@@ -9,24 +9,28 @@ labels:
 
 deviceResources:
   - name: "angle_x"
+    isHidden: true
     description: "X-axis angle (degrees)"
     properties:
       valueType: "Float64"
       readWrite: "R"
       units: "degree"
   - name: "angle_y"
+    isHidden: true
     description: "Y-axis angle (degrees)"
     properties:
       valueType: "Float64"
       readWrite: "R"
       units: "degree"
   - name: "reporting_period"
+    isHidden: true
     description: "Reporting period (seconds)"
     properties:
       valueType: "Float64"
       readWrite: "R"
       units: "second"
   - name: "reporting_angle_threshold"
+    isHidden: true
     description: "Angle threshold for reporting (degrees)"
     properties:
       valueType: "Float64"
@@ -35,6 +39,7 @@ deviceResources:
 
 deviceCommands:
   - name: "inclinometer_reading"
+    isHidden: true
     readWrite: "R"
     resourceOperations:
       - { deviceResource: "angle_x" }

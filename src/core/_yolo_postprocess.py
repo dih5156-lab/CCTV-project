@@ -189,7 +189,7 @@ def detections_from_yolo_output(
     input_size: float,
     iou_threshold: float,
     max_detections: int,
-    fall_checker: Callable[[List[List[float]], int, int], Any],
+    fall_checker: Callable[[List[List[float]], int, int, int], Any],
     person_pose_validator: Callable[[List[List[float]]], bool],
     postprocess_mode: str = "vectorized",
 ) -> List[Dict[str, Any]]:
@@ -240,7 +240,7 @@ def detections_from_yolo_output(
                 frame_height,
                 input_size=input_size,
             )
-            fall_result = fall_checker(keypoints, width, height)
+            fall_result = fall_checker(keypoints, width, height, y)
             if isinstance(fall_result, dict):
                 is_fall = bool(fall_result.get("is_fall"))
                 fall_score = fall_result.get("score")

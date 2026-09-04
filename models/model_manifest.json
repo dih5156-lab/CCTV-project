@@ -8,9 +8,9 @@
       "task": "helmet_detection",
       "primary_runtime": "tensorrt",
       "artifacts": {
-        "pytorch": "models/helmet_model_ver0.5.pt",
-        "onnx": "models/helmet_model_ver0.5.onnx",
-        "tensorrt": "models/helmet_model_ver0.5.engine"
+        "pytorch": "models/legacy/helmet_model_ver0.5.pt",
+        "onnx": "models/legacy/helmet_model_ver0.5.onnx",
+        "tensorrt": "models/legacy/helmet_model_ver0.5.engine"
       },
       "input_size": 320,
       "classes": [
@@ -47,9 +47,9 @@
       "task": "helmet_detection",
       "primary_runtime": "tensorrt",
       "artifacts": {
-        "pytorch": "models/helmet_model.pt",
-        "onnx": "models/helmet_model.onnx",
-        "tensorrt": "models/helmet_model.engine"
+        "pytorch": "models/head/helmet_model.pt",
+        "onnx": "models/head/helmet_model.onnx",
+        "tensorrt": "models/head/helmet_model.engine"
       },
       "input_size": 320,
       "classes": [
@@ -63,22 +63,21 @@
         "max_avg_latency_ms": 50
       },
       "latest_evaluation": {
-        "report": "data/eval/reports/helmet_model_trt.json",
+        "report": "data/eval/reports/helmet_model_trt_320_conf015.json",
         "image_count": 100,
-        "precision": 0.835,
-        "recall": 0.9181,
-        "avg_latency_ms": 28.948,
+        "precision": 0.9014,
+        "recall": 0.911,
+        "avg_latency_ms": 21.167,
         "settings": {
           "imgsz": 320,
-          "conf": 0.25,
+          "conf": 0.15,
           "iou": 0.5,
           "device": "0",
           "target_classes": [
             "helmet"
           ],
           "warmup": 1
-        },
-        "dataset": "data/eval/helmet"
+        }
       }
     },
     {
@@ -86,9 +85,9 @@
       "task": "person_pose_fall_detection",
       "primary_runtime": "tensorrt",
       "artifacts": {
-        "pytorch": "models/yolov8n-pose.pt",
-        "onnx": "models/yolov8n-pose.onnx",
-        "tensorrt": "models/yolov8n-pose.engine"
+        "pytorch": "models/fall/yolov8n-pose.pt",
+        "onnx": "models/fall/yolov8n-pose.onnx",
+        "tensorrt": "models/fall/yolov8n-pose.engine"
       },
       "input_size": 320,
       "classes": [
@@ -124,9 +123,9 @@
       "task": "person_pose_fall_detection",
       "primary_runtime": "tensorrt",
       "artifacts": {
-        "pytorch": "models/yolov8m-pose.pt",
-        "onnx": "models/yolov8m-pose.onnx",
-        "tensorrt": "models/yolov8m-pose.engine"
+        "pytorch": "models/fall/yolov8m-pose.pt",
+        "onnx": "models/fall/yolov8m-pose.onnx",
+        "tensorrt": "models/fall/yolov8m-pose.engine"
       },
       "input_size": 640,
       "classes": [
@@ -162,9 +161,9 @@
       "task": "person_detection_fallback",
       "primary_runtime": "tensorrt",
       "artifacts": {
-        "pytorch": "models/yolov8n.pt",
-        "onnx": "models/yolov8n.onnx",
-        "tensorrt": "models/yolov8n.engine"
+        "pytorch": "models/person/yolov8n.pt",
+        "onnx": "models/person/yolov8n.onnx",
+        "tensorrt": "models/person/yolov8n.engine"
       },
       "input_size": 640,
       "classes": [
@@ -200,9 +199,9 @@
       "task": "person_attribute_classification",
       "primary_runtime": "tensorrt",
       "artifacts": {
-        "onnx": "models/pphuman_attribute.onnx",
-        "tensorrt": "models/pphuman_attribute.engine",
-        "paddle": "models/pphuman_attribute_src/PP-LCNet_x1_0_pedestrian_attribute_infer",
+        "onnx": "models/appearance/pphuman_attribute.onnx",
+        "tensorrt": "models/appearance/pphuman_attribute.engine",
+        "paddle": "models/appearance/pphuman_attribute_src/PP-LCNet_x1_0_pedestrian_attribute_infer",
         "label_map": "config/appearance_pphuman_labels.example.json"
       },
       "input_size": [
@@ -249,9 +248,9 @@
       "task": "clothing_color_classification",
       "primary_runtime": "tensorrt",
       "artifacts": {
-        "pytorch": "models/appearance_color_yolov8n.pt",
-        "onnx": "models/appearance_color_yolov8n.onnx",
-        "tensorrt": "models/appearance_color_yolov8n.engine",
+        "pytorch": "models/appearance/appearance_color_yolov8n.pt",
+        "onnx": "models/appearance/appearance_color_yolov8n.onnx",
+        "tensorrt": "models/appearance/appearance_color_yolov8n.engine",
         "label_map": "config/appearance_color_labels.json"
       },
       "checksums": {

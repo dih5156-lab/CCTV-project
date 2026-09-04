@@ -102,6 +102,21 @@ Jetson 통합 스택에서 자주 조정하는 값만 추렸습니다. 나머지
 
 `DS_H264_POC_FIX_ENABLED`는 Python buffer handoff를 사용하므로 CPU 부하와 복사가 늘어날 수 있습니다. 영상 호환 문제가 없으면 현장 부하 측정 후 비활성화를 검토합니다.
 
+### DeepStream pose 낙상 규칙
+
+| 변수 | 기본값 | 설명 |
+|---|---:|---|
+| `DS_FALL_SCORE_THRESHOLD` | `3.0` | pose 낙상 점수 판정 기준 |
+| `DS_FALL_ANGLE_HORIZONTAL` / `DS_FALL_ANGLE_INVERTED` | `55` / `125` | 몸통 수평·역수평 각도 기준(도) |
+| `DS_FALL_BBOX_ASPECT_RATIO` | `1.35` | 가로형 bbox 강한 후보 기준 |
+| `DS_FALL_SPAN_BBOX_ASPECT_RATIO` | `1.20` | 키포인트 수직 분산 규칙 적용 기준 |
+| `DS_FALL_KEYPOINT_SPAN_RATIO` | `0.55` | 가로형 pose의 수직 분산 상한 |
+| `DS_FALL_ENABLE_FOLDED_POSE` | `false` | 접힌 바닥 자세를 운영 낙상 점수에 포함 |
+| `DS_FALL_FOLDED_POSE_MAX_SPAN_RATIO` | `0.30` | 접힌 자세 후보의 하체 수직 분산 상한 |
+| `DS_FALL_SUPPRESS_SITTING_LIKE_POSE` | `false` | 앉은 자세와 유사한 가로형 후보 감점 |
+
+`DS_FALL_ENABLE_FOLDED_POSE`는 기본적으로 비활성화합니다. 활성화하기 전에 near-miss 로그를 정상/낙상으로 라벨링하고, 현장 precision과 temporal recall을 확인해야 합니다. `DS_FALL_FOLDED_POSE_MAX_SPAN_RATIO`는 활성화 여부와 별개로 후보 품질을 제한합니다.
+
 ### falldata 보조 검증
 
 | 변수 | 기본값 | 설명 |

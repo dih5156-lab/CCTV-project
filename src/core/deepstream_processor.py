@@ -407,6 +407,9 @@ class DeepStreamProcessor(BaseProcessor):
             span_ratio=float(os.environ.get("DS_FALL_KEYPOINT_SPAN_RATIO", "0.55")),
             score_threshold=float(os.environ.get("DS_FALL_SCORE_THRESHOLD", "3.0")),
             enable_folded_pose=self._env_bool("DS_FALL_ENABLE_FOLDED_POSE", False),
+            folded_pose_max_span_ratio=float(
+                os.environ.get("DS_FALL_FOLDED_POSE_MAX_SPAN_RATIO", "0.30")
+            ),
             suppress_sitting_like_pose=self._env_bool(
                 "DS_FALL_SUPPRESS_SITTING_LIKE_POSE",
                 False,
@@ -527,6 +530,10 @@ class DeepStreamProcessor(BaseProcessor):
         )
         self._fall_shadow_near_miss_temporal_enabled = self._env_bool(
             "FALLDATA_AUX_TEMPORAL_NEAR_MISS_SHADOW_ENABLED",
+            False,
+        )
+        self._fall_aux_near_miss_promote_enabled = self._env_bool(
+            "FALLDATA_AUX_NEAR_MISS_PROMOTE_ENABLED",
             False,
         )
         self._fall_shadow_near_miss_cooldown_sec = float(
@@ -1417,7 +1424,11 @@ class DeepStreamProcessor(BaseProcessor):
         )
 
     def _is_fall_pose(
-        self, keypoints: List[List[float]], width: int, height: int
+        self,
+        keypoints: List[List[float]],
+        width: int,
+        height: int,
+        bbox_y: int = 0,
     ) -> Dict[str, Any]:
         """키포인트와 bbox 크기를 이용해 낙상 자세 여부를 판정한다."""
         import numpy as np
@@ -1426,7 +1437,9 @@ class DeepStreamProcessor(BaseProcessor):
             return {"is_fall": False, "score": 0.0, "reasons": ["missing_keypoints"]}
         try:
             kpts = np.asarray(keypoints, dtype=np.float32)
-            score = self._fall_detector._score_fall(kpts, width, height)
+            score = self._fall_detector._score_fall(
+                kpts, width, height, bbox_y=bbox_y
+            )
             is_fall = score.score >= self._fall_detector.score_threshold
             near_miss = None
             folded_score = self._fall_detector.folded_floor_pose_score(kpts, height)
@@ -1737,6 +1750,22 @@ class DeepStreamProcessor(BaseProcessor):
                         result.get("confirmed"),
                         result.get("temporal_compare_model", {}).get("fall_probability"),
                     )
+                    if self._fall_aux_near_miss_promote_enabled:
+                        promoted = dict(event_payload)
+                        promoted["event_type"] = "fall_detected"
+                        promoted["severity"] = "critical"
+                        promoted_metadata = dict(promoted.get("metadata") or {})
+                        promoted_metadata.pop("falldata_aux_near_miss_shadow", None)
+                        promoted_metadata["falldata_aux_near_miss_promoted"] = True
+                        promoted_metadata["falldata_aux"] = result
+                        promoted["metadata"] = promoted_metadata
+                        if self._enqueue_aux_confirmed_fall_event(
+                            camera_name, promoted, result
+                        ):
+                            logger.info(
+                                "[%s] near-miss temporal 결과를 낙상 이벤트로 승격",
+                                camera_name,
+                            )
                     continue
                 if self._enqueue_aux_confirmed_fall_event(camera_name, event_payload, result):
                     continue

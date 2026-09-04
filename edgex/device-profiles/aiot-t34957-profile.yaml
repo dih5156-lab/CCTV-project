@@ -10,24 +10,28 @@ labels:
 
 deviceResources:
   - name: "temperature"
+    isHidden: true
     description: "Temperature (Celsius)"
     properties:
       valueType: "Float64"
       readWrite: "R"
       units: "Celsius"
   - name: "angle_x"
+    isHidden: true
     description: "X-axis angle (degrees)"
     properties:
       valueType: "Float64"
       readWrite: "R"
       units: "degree"
   - name: "angle_y"
+    isHidden: true
     description: "Y-axis angle (degrees)"
     properties:
       valueType: "Float64"
       readWrite: "R"
       units: "degree"
   - name: "event_code"
+    isHidden: true
     description: "Event flag (1=event detected)"
     properties:
       valueType: "Int32"
@@ -35,6 +39,7 @@ deviceResources:
 
 deviceCommands:
   - name: "tilt_temp_reading"
+    isHidden: true
     readWrite: "R"
     resourceOperations:
       - { deviceResource: "temperature" }

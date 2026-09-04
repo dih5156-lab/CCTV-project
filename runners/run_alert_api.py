@@ -7,6 +7,8 @@ import sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
+from prometheus_client import Counter, Gauge, generate_latest
+
 _RUNNER_DIR = Path(__file__).resolve().parent
 _PROJECT_ROOT = _RUNNER_DIR.parent
 if str(_PROJECT_ROOT) not in sys.path:
@@ -16,6 +18,17 @@ from runners._shared import setup_runner_logging
 from src.time_utils import now_kst_iso
 
 logger = logging.getLogger("alert-api")
+
+sensor_readings_received = Counter(
+    "cctv_sensor_readings_received_total",
+    "Sensor readings accepted by the alert API",
+    ["device_id", "sensor_type"],
+)
+sensor_value = Gauge(
+    "cctv_sensor_value",
+    "Latest numeric sensor value",
+    ["device_id", "sensor_type", "unit"],
+)
 
 
 class AlertHandler(BaseHTTPRequestHandler):
@@ -45,6 +58,7 @@ class AlertHandler(BaseHTTPRequestHandler):
             "service": "cctv-alert-api",
             "description": "Internal alert ingestion API",
             "health": "GET /health",
+            "metrics": "GET /metrics",
             "alerts": "POST /api/alerts",
             "sensor_readings": "POST /api/sensor-readings",
         }
@@ -79,6 +93,14 @@ class AlertHandler(BaseHTTPRequestHandler):
         if self.path in ["/api/alerts", "/api/sensor-readings"]:
             self._send_json(405, self._method_not_allowed_payload(self.path, "POST"))
             return
+        if self.path == "/metrics":
+            body = generate_latest()
+            self.send_response(200)
+            self.send_header("Content-Type", "text/plain; version=0.0.4; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
         self._send_json(404, {"error": "not found"})
 
     def do_POST(self):
@@ -110,6 +132,20 @@ class AlertHandler(BaseHTTPRequestHandler):
         log_path.parent.mkdir(parents=True, exist_ok=True)
         with log_path.open("a", encoding="utf-8") as file:
             file.write(json.dumps(entry, ensure_ascii=False) + "\n")
+
+        if log_path == self._sensor_log_path():
+            device_id = str(payload.get("device_id") or payload.get("deviceId") or "unknown")
+            sensor_type = str(payload.get("sensor_type") or payload.get("type") or "unknown")
+            telemetry = payload.get("telemetry") if isinstance(payload.get("telemetry"), dict) else {}
+            raw_value = payload.get("value")
+            if raw_value is None:
+                raw_value = telemetry.get("value")
+            unit = str(payload.get("unit") or telemetry.get("unit") or "")
+            sensor_readings_received.labels(device_id=device_id, sensor_type=sensor_type).inc()
+            try:
+                sensor_value.labels(device_id=device_id, sensor_type=sensor_type, unit=unit).set(float(raw_value))
+            except (TypeError, ValueError):
+                pass
 
         logger.info(log_msg)
         self._send_json(202, {"accepted": True})

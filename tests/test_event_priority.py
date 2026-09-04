@@ -25,6 +25,12 @@ def test_event_priority_keeps_low_value_events_low():
     assert event_risk_level(payload) == "low"
 
 
+def test_event_priority_reads_routing_priority_from_event_type_map():
+    assert event_priority({"type": "fall_detected"}) == 0
+    assert event_priority({"type": "head"}) == 2
+    assert event_priority({"type": "helmet", "severity": "low"}) == 30
+
+
 def test_event_risk_score_rewards_critical_high_confidence_events():
     payload = {
         "event_type": "fall_detected",

@@ -63,7 +63,7 @@ def test_detections_from_yolo_output_decodes_detect_rows():
         input_size=640,
         iou_threshold=0.45,
         max_detections=10,
-        fall_checker=lambda keypoints, width, height: False,
+        fall_checker=lambda keypoints, width, height, bbox_y: False,
         person_pose_validator=lambda keypoints: True,
     )
 
@@ -71,6 +71,32 @@ def test_detections_from_yolo_output_decodes_detect_rows():
     assert detections[0]["label"] == "helmet"
     assert detections[0]["class_id"] == 1
     assert detections[0]["box"] == (270, 190, 100, 100)
+
+
+def test_detections_from_yolo_output_passes_bbox_top_to_pose_checker():
+    output = np.zeros((57, 56), dtype=np.float32)
+    output[0, :5] = [320, 300, 100, 100, 0.9]
+    observed_bbox_tops = []
+
+    detections_from_yolo_output(
+        output,
+        task="pose",
+        gie_id=1,
+        labels=["person"],
+        frame_width=640,
+        frame_height=480,
+        confidence_threshold=0.5,
+        class_ids_filter={0},
+        input_size=640,
+        iou_threshold=0.45,
+        max_detections=10,
+        fall_checker=lambda keypoints, width, height, bbox_y: (
+            observed_bbox_tops.append(bbox_y) or False
+        ),
+        person_pose_validator=lambda keypoints: True,
+    )
+
+    assert observed_bbox_tops == [170]
 
 
 def test_filter_yolo_candidates_vectorizes_pose_confidence_filter():

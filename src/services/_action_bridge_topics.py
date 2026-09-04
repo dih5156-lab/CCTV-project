@@ -8,6 +8,7 @@ CMD_TOPIC_MODE = "cctv/commands/mode"  # {"site_id"?, "mode": "auto|manual"}
 CMD_TOPIC_APPROVE = "cctv/commands/approve"  # {"event_id": "..."}
 CMD_TOPIC_REJECT = "cctv/commands/reject"  # {"event_id": "..."}
 STATUS_TOPIC_PREFIX = "cctv/status/action"
+EDGEX_RESULT_TOPIC = "edgex/results/cctv/+/+"
 
 ZONE_TOPICS = {
     "cctv/ai/events/+/zone_entered",

@@ -9,6 +9,7 @@ __all__ = [
     "alerts",
     "appearances",
     "cameras",
+    "command_results",
     "control",
     "event_reviews",
     "events",

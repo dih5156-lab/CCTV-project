@@ -125,6 +125,7 @@ models/training/
 .venv-mediapipe/
 .venv-jetson-train/
 .venv-code-review-graph/
+.training_env/
 
 # 로컬 에이전트/코드리뷰 도구 설정
 .claude/
@@ -156,7 +157,13 @@ data/*.jsonl.*
 data/fall_eval/
 data/fall_review_clips/
 data/fall_dataset/
+
+# 대용량 외부 학습 데이터와 인증 파일은 원격 저장소에 올리지 않는다.
+archive*.zip
+data/datasets/coco_pose/
+kaggle.json
 data/datasets/
+tools/aihub/aihubshell
 data/backups/
 data/training/
 Sample/

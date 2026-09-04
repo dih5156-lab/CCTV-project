@@ -56,6 +56,43 @@ DEVICES = [
 PROFILES_DIR = Path(__file__).parent / "device-profiles"
 
 
+def parse_device_spec(value: str) -> tuple[str, str]:
+    """`DEVICE_ID:TABLE` 형식의 CLI 장치 지정자를 검증한다."""
+    device_id, separator, primary_table = value.rpartition(":")
+    if not separator or not device_id.strip() or not primary_table.strip():
+        raise argparse.ArgumentTypeError("device must use DEVICE_ID:TABLE format")
+    device_id = device_id.strip()
+    primary_table = primary_table.strip()
+    if primary_table not in TABLE_PROFILE_MAP:
+        supported = ", ".join(sorted(TABLE_PROFILE_MAP))
+        raise argparse.ArgumentTypeError(
+            f"unsupported table {primary_table!r}; choose one of: {supported}"
+        )
+    return device_id, primary_table
+
+
+def build_device_payload(device_id: str, primary_table: str) -> list[dict]:
+    """EdgeX Metadata에 등록할 단일 AIoT 장치 payload를 만든다."""
+    profile_name = TABLE_PROFILE_MAP.get(primary_table)
+    if not profile_name:
+        raise ValueError(f"unsupported table: {primary_table}")
+    return [{"apiVersion": "v3", "device": {
+        "name": f"aiot-{device_id}",
+        "description": f"AIoT LoRa sensor {device_id}",
+        "labels": ["aiot", "lora", primary_table],
+        "adminState": "UNLOCKED",
+        "operatingState": "UP",
+        "serviceName": DEVICE_SERVICE_NAME,
+        "profileName": profile_name,
+        "protocols": {
+            "lora": {
+                "device_id": device_id,
+                "primary_table": primary_table,
+            }
+        },
+    }}]
+
+
 def _api(url: str, method: str = "GET", body=None):
     data = json.dumps(body).encode() if body else None
     headers = {"Content-Type": "application/json"} if data else {}
@@ -110,7 +147,7 @@ def register_device_service(base: str, service_base_address: str = "http://devic
 
 
 def register_profiles(base: str):
-    for profile_file in PROFILES_DIR.glob("aiot-*.yaml"):
+    for profile_file in sorted(PROFILES_DIR.glob("*-profile.yaml")):
         content = profile_file.read_text()
         name_match = re.search(r'^name:\s*"?([^"\n]+)"?', content, re.MULTILINE)
         if not name_match:
@@ -150,8 +187,8 @@ def register_profiles(base: str):
             logger.error("Profile registration failed \u2014 %s: %s %s", profile_name, status, resp)
 
 
-def register_devices(base: str):
-    for device_id, primary_table in DEVICES:
+def register_devices(base: str, devices=None):
+    for device_id, primary_table in devices or DEVICES:
         profile_name = TABLE_PROFILE_MAP.get(primary_table)
         if not profile_name:
             logger.warning("Unknown table %s for device %s \u2014 skipping", primary_table, device_id)
@@ -163,21 +200,7 @@ def register_devices(base: str):
             logger.info("Device already exists (skipping): %s", edgex_device_name)
             continue
 
-        payload = [{"apiVersion": "v3", "device": {
-            "name": edgex_device_name,
-            "description": f"AIoT LoRa sensor {device_id}",
-            "labels": ["aiot", "lora", primary_table],
-            "adminState": "UNLOCKED",
-            "operatingState": "UP",
-            "serviceName": DEVICE_SERVICE_NAME,
-            "profileName": profile_name,
-            "protocols": {
-                "lora": {
-                    "device_id": device_id,
-                    "primary_table": primary_table,
-                }
-            },
-        }}]
+        payload = build_device_payload(device_id, primary_table)
         status, resp = _api(f"{base}/api/v3/device", "POST", payload)
         if status in (200, 201, 207):
             logger.info("Device registered: %s (%s)", edgex_device_name, profile_name)
@@ -188,6 +211,13 @@ def register_devices(base: str):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--metadata-url", default="http://localhost:59881")
+    parser.add_argument(
+        "--device",
+        dest="devices",
+        action="append",
+        type=parse_device_spec,
+        help="register DEVICE_ID:TABLE; repeat for multiple devices",
+    )
     args = parser.parse_args()
     base = args.metadata_url.rstrip("/")
 
@@ -211,7 +241,7 @@ def main():
     register_profiles(base)
 
     logger.info("[3] Devices")
-    register_devices(base)
+    register_devices(base, args.devices)
 
     logger.info("=== Done ===")
 

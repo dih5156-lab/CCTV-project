@@ -1,0 +1,31 @@
+{
+  "devices": [
+    {
+      "device_id": "cctv-speaker-01",
+      "device_type": "speaker",
+      "site_id": "factory-01",
+      "zone_id": "zone-a",
+      "camera_ids": ["cam-01"],
+      "enabled": true,
+      "connection": {"host": "192.168.88.92", "port": 80}
+    },
+    {
+      "device_id": "cctv-siren-01",
+      "device_type": "siren",
+      "site_id": "factory-01",
+      "zone_id": "zone-a",
+      "camera_ids": ["cam-01"],
+      "enabled": true,
+      "connection": {"host": "", "port": 80}
+    },
+    {
+      "device_id": "cctv-signboard-01",
+      "device_type": "signboard",
+      "site_id": "factory-01",
+      "zone_id": "zone-a",
+      "camera_ids": ["cam-01"],
+      "enabled": true,
+      "connection": {"host": "192.168.88.91", "port": 5000}
+    }
+  ]
+}

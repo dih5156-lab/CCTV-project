@@ -1,0 +1,29 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: "cctv-ai-engine"
+    static_configs:
+      - targets: ["cctv-ai-engine:8770"]
+    metrics_path: /metrics
+
+  - job_name: "cctv-action-layer"
+    static_configs:
+      - targets: ["cctv-action-layer:8080"]
+    metrics_path: /metrics
+
+  - job_name: "cctv-public-api"
+    static_configs:
+      - targets: ["cctv-public-api:9000"]
+    metrics_path: /api/v1/metrics
+
+  - job_name: "cctv-edgex-adapter"
+    static_configs:
+      - targets: ["cctv-edgex-adapter:9105"]
+    metrics_path: /metrics
+
+  - job_name: "cctv-alert-api"
+    static_configs:
+      - targets: ["cctv-alert-api:8000"]
+    metrics_path: /metrics

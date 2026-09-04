@@ -1,130 +1,160 @@
 {
-  "_comment": "event_type → 장치별 문구·우선순위·경보 레벨 매핑 테이블\n  tts_message  : 스피커 TTS 안내 문구\n  display_text : 전광판 본문 문구 (display_message 페이로드 없을 때 폴백)\n  color_code   : Dabit 전광판 색상 (0=검정 1=빨강 2=녹색 3=노랑 4=파랑 5=자주 6=하늘 7=흰색)\n  priority     : 1=낮음 2=보통 3=높음 4=긴급\n  alert_level  : info | warning | error | critical",
+  "_comment": "event_type → 장치별 문구·라우팅 우선순위·경보 레벨 매핑 테이블\n  tts_message  : 스피커 TTS 안내 문구\n  display_text : 전광판 본문 문구 (display_message 페이로드 없을 때 폴백)\n  color_code   : Dabit 전광판 색상 (0=검정 1=빨강 2=녹색 3=노랑 4=파랑 5=자주 6=하늘 7=흰색)\n  priority     : 라우팅 우선순위 (숫자가 낮을수록 위험도가 높음)\n  alert_level  : info | warning | error | critical",
+  "routing": {
+    "risk_levels": {
+      "critical": 0,
+      "warning": 2,
+      "normal": 20,
+      "info": 30,
+      "low": 30
+    },
+    "levels": {
+      "fall_detected": 0,
+      "intrusion": 1,
+      "danger_zone": 1,
+      "zone_entered": 2,
+      "zone_dwelling": 3,
+      "smoke_test_alert": 4,
+      "head": 0,
+      "face_unknown": 1,
+      "crowd_warning": 3,
+      "tilt_alert": 4,
+      "temperature_alert": 2,
+      "sensor_temperature": 2,
+      "vibration_alert": 4,
+      "zone_object": 2,
+      "zone_object_detected": 2,
+      "face_recognized": 0,
+      "zone_exited": 0,
+      "person": 0,
+      "helmet": 0
+    }
+  },
   "event_types": {
     "head": {
       "tts_message": "안전모 미착용이 감지되었습니다. 즉시 착용 바랍니다.",
       "display_text": "안전모 미착용 감지",
       "color_code": 1,
-      "priority": 3,
+      "priority": 2,
       "alert_level": "error"
     },
     "fall_detected": {
       "tts_message": "낙상이 감지되었습니다. 즉시 확인 바랍니다.",
       "display_text": "낙상 감지 - 즉시 확인",
       "color_code": 5,
-      "priority": 4,
+      "priority": 0,
       "alert_level": "critical"
     },
     "danger_zone": {
       "tts_message": "위험 구역 침입이 감지되었습니다. 즉시 대피 바랍니다.",
       "display_text": "위험 구역 침입 감지",
       "color_code": 1,
-      "priority": 4,
+      "priority": 1,
       "alert_level": "critical"
     },
     "intrusion": {
       "tts_message": "위험 구역 침입이 감지되었습니다. 즉시 대피 바랍니다.",
       "display_text": "위험 구역 침입 감지",
       "color_code": 1,
-      "priority": 4,
+      "priority": 1,
       "alert_level": "critical"
     },
     "zone_object": {
       "tts_message": "감시 구역에 객체가 감지되었습니다.",
       "display_text": "감시 구역 객체 감지",
       "color_code": 3,
-      "priority": 2,
+      "priority": 4,
       "alert_level": "warning"
     },
     "crowd_warning": {
       "tts_message": "인파 밀집이 감지되었습니다. 혼잡 주의 바랍니다.",
       "display_text": "인파 밀집 경고 - 혼잡 주의",
       "color_code": 5,
-      "priority": 3,
+      "priority": 5,
       "alert_level": "error"
     },
     "tilt_alert": {
       "tts_message": "기울기 이상이 감지되었습니다. 즉시 현장을 확인 바랍니다.",
       "display_text": "기울기 이상 감지",
       "color_code": 1,
-      "priority": 3,
+      "priority": 6,
       "alert_level": "error"
     },
     "temperature_alert": {
       "tts_message": "온도 이상이 감지되었습니다. 즉시 현장을 확인 바랍니다.",
       "display_text": "온도 이상 감지",
       "color_code": 5,
-      "priority": 3,
+      "priority": 6,
       "alert_level": "error"
     },
     "vibration_alert": {
       "tts_message": "진동 충격이 감지되었습니다. 즉시 현장을 확인 바랍니다.",
       "display_text": "진동 충격 감지",
       "color_code": 3,
-      "priority": 3,
+      "priority": 6,
       "alert_level": "warning"
     },
     "sensor_fault": {
       "tts_message": "센서 이상이 감지되었습니다. 장비 상태를 확인 바랍니다.",
       "display_text": "센서 이상 감지",
       "color_code": 6,
-      "priority": 2,
+      "priority": 6,
       "alert_level": "warning"
     },
     "critical": {
       "tts_message": "중요 위험 이벤트가 감지되었습니다.",
       "display_text": "위험 이벤트 감지",
       "color_code": 5,
-      "priority": 4,
+      "priority": 1,
       "alert_level": "critical"
     },
     "zone_entered": {
       "tts_message": "위험 구역에 진입이 감지되었습니다. 즉시 대피 바랍니다.",
       "display_text": "위험구역 진입 감지",
       "color_code": 1,
-      "priority": 4,
+      "priority": 1,
       "alert_level": "critical"
     },
     "zone_exited": {
       "tts_message": "감시 구역에서 이탈이 감지되었습니다.",
       "display_text": "감시구역 이탈 감지",
       "color_code": 3,
-      "priority": 2,
+      "priority": 12,
       "alert_level": "warning"
     },
     "zone_dwelling": {
       "tts_message": "위험 구역 체류가 감지되었습니다. 즉시 이탈 바랍니다.",
       "display_text": "위험구역 체류 감지",
       "color_code": 1,
-      "priority": 4,
+      "priority": 1,
       "alert_level": "critical"
     },
     "zone_object_detected": {
       "tts_message": "감시 구역에 객체가 감지되었습니다.",
       "display_text": "감시구역 객체 감지",
       "color_code": 3,
-      "priority": 2,
+      "priority": 4,
       "alert_level": "warning"
     },
     "person": {
       "tts_message": "사람이 감지되었습니다.",
       "display_text": "사람 감지",
       "color_code": 2,
-      "priority": 1,
+      "priority": 20,
       "alert_level": "info"
     },
     "helmet": {
       "tts_message": "헬멧 착용이 확인되었습니다.",
       "display_text": "헬멧 착용 확인",
       "color_code": 2,
-      "priority": 1,
+      "priority": 30,
       "alert_level": "info"
     },
     "face_recognized": {
       "tts_message": "등록된 얼굴이 인식되었습니다.",
       "display_text": "얼굴 인식 감지",
       "color_code": 6,
-      "priority": 2,
+      "priority": 30,
       "alert_level": "warning"
     },
     "face_unknown": {
@@ -138,14 +168,14 @@
       "tts_message": "연기가 감지되었습니다. 즉시 현장을 확인 바랍니다.",
       "display_text": "연기 감지 - 즉시 확인",
       "color_code": 5,
-      "priority": 4,
+      "priority": 1,
       "alert_level": "critical"
     },
     "sensor_temperature": {
       "tts_message": "온도 이상이 감지되었습니다. 즉시 현장을 확인 바랍니다.",
       "display_text": "온도 이상 감지",
       "color_code": 5,
-      "priority": 3,
+      "priority": 6,
       "alert_level": "error"
     }
   },
@@ -153,7 +183,7 @@
     "tts_message": "안전 이벤트가 감지되었습니다.",
     "display_text": "안전 이벤트 감지",
     "color_code": 7,
-    "priority": 1,
+    "priority": 20,
     "alert_level": "info"
   }
 }

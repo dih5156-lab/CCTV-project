@@ -10,24 +10,28 @@ labels:
 
 deviceResources:
   - name: "water_level"
+    isHidden: true
     description: "Water level (m)"
     properties:
       valueType: "Float64"
       readWrite: "R"
       units: "m"
   - name: "flow_velocity"
+    isHidden: true
     description: "Flow velocity (m/s)"
     properties:
       valueType: "Float64"
       readWrite: "R"
       units: "m/s"
   - name: "rain_fall"
+    isHidden: true
     description: "Rainfall (mm)"
     properties:
       valueType: "Float64"
       readWrite: "R"
       units: "mm"
   - name: "reporting_period"
+    isHidden: true
     description: "Reporting period (seconds)"
     properties:
       valueType: "Float64"
@@ -36,6 +40,7 @@ deviceResources:
 
 deviceCommands:
   - name: "river_reading"
+    isHidden: true
     readWrite: "R"
     resourceOperations:
       - { deviceResource: "water_level" }

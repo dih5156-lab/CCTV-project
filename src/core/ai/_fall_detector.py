@@ -55,6 +55,7 @@ class FallDetector:
         span_ratio: float = FALL_KEYPOINT_SPAN_RATIO,
         score_threshold: float = 3.0,
         enable_folded_pose: bool = False,
+        folded_pose_max_span_ratio: float = 0.30,
         suppress_sitting_like_pose: bool = False,
         sitting_like_aspect_ratio: float = 1.45,
         min_keypoint_confidence: float = MIN_KEYPOINT_CONFIDENCE,
@@ -69,6 +70,7 @@ class FallDetector:
         self.span_ratio = span_ratio
         self.score_threshold = score_threshold
         self.enable_folded_pose = enable_folded_pose
+        self.folded_pose_max_span_ratio = folded_pose_max_span_ratio
         self.suppress_sitting_like_pose = suppress_sitting_like_pose
         self.sitting_like_aspect_ratio = sitting_like_aspect_ratio
         self.min_keypoint_confidence = min_keypoint_confidence
@@ -77,13 +79,20 @@ class FallDetector:
 
     # ── 공개 API ──────────────────────────────────────────────────────
 
-    def detect(self, keypoints, idx: int, bbox_width: int, bbox_height: int) -> bool:
+    def detect(
+        self,
+        keypoints,
+        idx: int,
+        bbox_width: int,
+        bbox_height: int,
+        bbox_y: int = 0,
+    ) -> bool:
         """낙상 여부를 반환한다 (True = 낙상)."""
         kpts = extract_keypoints(keypoints, idx)
         if kpts is None:
             return False
         try:
-            return self._check_fall(kpts, bbox_width, bbox_height)
+            return self._check_fall(kpts, bbox_width, bbox_height, bbox_y=bbox_y)
         except Exception as exc:
             logger.debug(
                 "낙상 감지 키포인트 처리 실패(idx=%s): %s", idx, exc, exc_info=True
@@ -103,9 +112,11 @@ class FallDetector:
 
     # ── 낙상 감지 로직 ────────────────────────────────────────────────
 
-    def _check_fall(self, kpts: np.ndarray, bbox_w: int, bbox_h: int) -> bool:
+    def _check_fall(
+        self, kpts: np.ndarray, bbox_w: int, bbox_h: int, *, bbox_y: int = 0
+    ) -> bool:
         """낙상 점수 기반 판정."""
-        result = self._score_fall(kpts, bbox_w, bbox_h)
+        result = self._score_fall(kpts, bbox_w, bbox_h, bbox_y=bbox_y)
         is_fall = result.score >= self.score_threshold
         if is_fall:
             logger.debug(
@@ -123,7 +134,9 @@ class FallDetector:
             )
         return is_fall
 
-    def _score_fall(self, kpts: np.ndarray, bbox_w: int, bbox_h: int) -> FallScore:
+    def _score_fall(
+        self, kpts: np.ndarray, bbox_w: int, bbox_h: int, *, bbox_y: int = 0
+    ) -> FallScore:
         """단일 프레임 포즈에서 낙상 가능성 점수와 근거를 계산한다."""
         # COCO: 0-코, 5-왼쪽어깨, 6-오른쪽어깨
         #        11-왼쪽엉덩이, 12-오른쪽엉덩이
@@ -193,12 +206,12 @@ class FallDetector:
         if nose_valid:
             _inf = float("inf")
             knee_y_min = min(
-                kpts[13][1] if kpts[13][2] > self.min_hip_confidence else _inf,
-                kpts[14][1] if kpts[14][2] > self.min_hip_confidence else _inf,
+                kpts[13][1] if kpts[13][2] >= self.min_leg_confidence else _inf,
+                kpts[14][1] if kpts[14][2] >= self.min_leg_confidence else _inf,
             )
             ankle_y_min = min(
-                kpts[15][1] if kpts[15][2] > self.min_hip_confidence else _inf,
-                kpts[16][1] if kpts[16][2] > self.min_hip_confidence else _inf,
+                kpts[15][1] if kpts[15][2] >= self.min_leg_confidence else _inf,
+                kpts[16][1] if kpts[16][2] >= self.min_leg_confidence else _inf,
             )
             head_y = nose[1]
             if (knee_y_min != _inf and knee_y_min < head_y) or (
@@ -218,7 +231,7 @@ class FallDetector:
         if (
             nose_valid
             and bbox_w > bbox_h * self.bbox_aspect_ratio
-            and nose[1] > bbox_h * self.fall_height_ratio
+            and nose[1] - bbox_y > bbox_h * self.fall_height_ratio
         ):
             score += 2.0
             reasons.append(f"wide_bbox_low_head:{aspect_ratio:.2f}")
@@ -288,7 +301,7 @@ class FallDetector:
 
         # 바닥에 접힌 자세는 하체가 엉덩이 주변에 몰리고, 어깨-엉덩이 간격은
         # 어느 정도 남아 있어 단순 키포인트 노이즈와 구분된다.
-        if lower_span_ratio > 0.38:
+        if lower_span_ratio > self.folded_pose_max_span_ratio:
             return None
         if torso_gap_ratio < 0.22 or torso_gap_ratio > 0.78:
             return None

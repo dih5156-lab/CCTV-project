@@ -11,6 +11,10 @@
 | [실행 및 배포](guides/README.md) | 로컬·Docker·Jetson 실행, 설정, 운영 점검이 필요할 때 | [빠른 시작](guides/QUICK_START.md) |
 | [리뷰 정리](reviews/README.md) | 코드 리뷰, 완성도 점검, 시점별 개선 내역을 볼 때 | [최신 변경 및 검증 요약](reviews/CHANGESET_SUMMARY_2026-07-03.md) |
 | [개발 도구](tooling/README.md) | Codex 등 개발 보조 도구 설정을 확인할 때 | [Codex 멀티 에이전트 설정](tooling/CODEX_MULTI_AGENT_SETUP.md) |
+| [구조·인수인계](architecture/README.md) | 전체 구조, EdgeX, Docker, 센서, 모델 인수인계를 확인할 때 | [프로젝트 구조·운영 문서](architecture/README.md) |
+| [모델 인수인계](models/README.md) | 적용 모델, 평가 수치, 재학습·승격 절차를 확인할 때 | [모델별 상세 인수인계서](models/MODEL_HANDOVER.md) |
+| [운영 인수인계](handover/README.md) | 장비, 백업, UAT, 장애, 보안, 모니터링을 확인할 때 | [운영 인수인계 문서](handover/README.md) |
+| [EdgeX·eKuiper 인수인계](integrations/EDGEX_KUIPER_HANDOVER.md) | EdgeX 구조, 장치 등록, eKuiper 룰과 장애 대응을 확인할 때 | [EdgeX·eKuiper 상세 인수인계서](integrations/EDGEX_KUIPER_HANDOVER.md) |
 
 ## 루트 문서
 

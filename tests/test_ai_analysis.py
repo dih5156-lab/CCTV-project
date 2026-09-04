@@ -412,6 +412,42 @@ class TestAppearanceForwarding:
 
 
 class TestDetectFallFromKeypoints:
+    def test_wide_bbox_low_head_uses_bbox_relative_nose_position(self):
+        """프레임 하단의 정상 자세를 bbox 절대 높이만으로 낙상 처리하지 않는다."""
+        kpts = _make_kpts({
+            0: [100, 430, 0.9],
+            5: [90, 450, 0.9],
+            6: [110, 450, 0.9],
+            11: [90, 480, 0.2],
+            12: [110, 480, 0.2],
+            13: [90, 520, 0.8],
+            14: [110, 520, 0.8],
+        })
+
+        result = FallDetector(score_threshold=2.0)._score_fall(
+            kpts, bbox_w=200, bbox_h=100, bbox_y=400
+        )
+
+        assert "wide_bbox_low_head:2.00" not in result.reasons
+
+    def test_low_confidence_leg_does_not_trigger_leg_above_head(self):
+        """다리 전용 신뢰도 미만의 관절은 leg_above_head 신호에서 제외한다."""
+        kpts = _make_kpts({
+            0: [100, 300, 0.9],
+            5: [90, 280, 0.9],
+            6: [110, 280, 0.9],
+            11: [90, 250, 0.9],
+            12: [110, 250, 0.9],
+            13: [90, 20, 0.31],
+            14: [110, 20, 0.31],
+        })
+
+        result = FallDetector(score_threshold=2.0, min_leg_confidence=0.35)._score_fall(
+            kpts, bbox_w=50, bbox_h=50
+        )
+
+        assert "leg_above_head" not in result.reasons
+
     def test_upright_person_not_fall(self, analyzer):
         """직립 자세 (head 위 / 발목 아래) → 낙상 아님."""
         kpts = _make_kpts()  # 직립 기본값
@@ -548,6 +584,25 @@ class TestDetectFallFromKeypoints:
         assert FallDetector(enable_folded_pose=True)._check_fall(
             kpts, bbox_w=120, bbox_h=360
         ) is False
+
+    def test_folded_floor_pose_rejects_weak_lower_body_compression(self):
+        """하체 압축이 약한 후보는 folded floor pose로 승격하지 않는다."""
+        kpts = _make_kpts({
+            0: [100, 20, 0.05],
+            5: [90, 90, 0.9],
+            6: [115, 92, 0.9],
+            11: [100, 155, 0.9],
+            12: [125, 158, 0.9],
+            13: [112, 178, 0.9],
+            14: [136, 176, 0.9],
+            15: [130, 230, 0.7],
+            16: [150, 233, 0.7],
+        })
+
+        assert FallDetector(
+            enable_folded_pose=True,
+            folded_pose_max_span_ratio=0.30,
+        ).folded_floor_pose_score(kpts, bbox_height=220) is None
 
     def test_none_keypoints_returns_false(self, analyzer):
         """keypoints가 None이면 _extract_keypoints에서 None 반환 → False."""

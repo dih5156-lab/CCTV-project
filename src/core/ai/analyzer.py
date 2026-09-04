@@ -511,7 +511,9 @@ class AIAnalyzer:
                 if keypoints is not None:
                     _kpts_tmp = extract_keypoints(keypoints, idx)
                     person_keypoints = _kpts_tmp.tolist() if _kpts_tmp is not None else None
-                    is_fallen = self._fall.detect(keypoints, idx, width, height)
+                    is_fallen = self._fall.detect(
+                        keypoints, idx, width, height, bbox_y=y1
+                    )
                     if is_fallen:
                         kpts_for_fall = person_keypoints
 
@@ -813,10 +815,17 @@ class AIAnalyzer:
     # ── 하위 호환 위임 메서드 (테스트·외부 코드 호환성 유지) ──────────
 
     def _detect_fall_from_keypoints(
-        self, keypoints, idx: int, bbox_width: int, bbox_height: int
+        self,
+        keypoints,
+        idx: int,
+        bbox_width: int,
+        bbox_height: int,
+        bbox_y: int = 0,
     ) -> bool:
         """FallDetector.detect() 위임 — 기존 호출부 호환성 유지."""
-        return self._fall.detect(keypoints, idx, bbox_width, bbox_height)
+        return self._fall.detect(
+            keypoints, idx, bbox_width, bbox_height, bbox_y=bbox_y
+        )
 
     def _validate_person_keypoints(self, keypoints, idx: int) -> bool:
         """FallDetector.validate_person() 위임 — 기존 호출부 호환성 유지."""

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Dict
+from typing import Callable, Dict, List, Optional
 
 from ..canonical_event import (
     get_payload_camera_id,
@@ -13,6 +13,8 @@ from ..canonical_event import (
     get_payload_severity,
     get_payload_tts_message,
 )
+from ..edgex.command_contract import build_command_request, build_command_topic
+from ..event_priority import event_priority
 from ..event_routing import decide_alert_forward
 from .cctv_metrics import (
     device_command_results as _device_command_results,
@@ -38,9 +40,14 @@ class _ActionExecutor:
         siren,
         resolve_devices,
         publish_status,
+        publish_edgex_command: Optional[Callable[[str, Dict], bool]],
+        resolve_edgex_device_ids: Optional[Callable[[str, str], List[str]]] = None,
+        edgex_jetson_id: str,
+        edgex_command_topic_prefix: str,
         build_display_text,
         alarm_device_enum,
     ) -> None:
+        """장치 실행에 필요한 저장소·클라이언트·상태 발행기를 보관한다."""
         self._repo = repo
         self._alarm = alarm
         self._forwarder = forwarder
@@ -49,8 +56,52 @@ class _ActionExecutor:
         self._siren = siren
         self._resolve_devices = resolve_devices
         self._publish_status = publish_status
+        self._publish_edgex_command = publish_edgex_command
+        self._resolve_edgex_device_ids = resolve_edgex_device_ids
+        self._edgex_jetson_id = edgex_jetson_id
+        self._edgex_command_topic_prefix = edgex_command_topic_prefix
         self._build_display_text = build_display_text
         self._alarm_device_enum = alarm_device_enum
+
+    def _publish_shadow_command(
+        self,
+        *,
+        event_id: str,
+        device: str,
+        action: str,
+        payload: Dict,
+        command_id: str,
+        camera_id: str,
+    ) -> None:
+        """기존 직접 제어와 비교할 EdgeX Command를 생성해 발행한다."""
+        if self._publish_edgex_command is None:
+            return
+        try:
+            device_ids = (
+                self._resolve_edgex_device_ids(device, camera_id)
+                if self._resolve_edgex_device_ids
+                else [""]
+            )
+            for device_id in device_ids:
+                target_command_id = f"{command_id}:{device_id}" if device_id else command_id
+                command = build_command_request(
+                    event_id=event_id,
+                    request_id=target_command_id,
+                    device=device,
+                    device_id=device_id or None,
+                    action=action,
+                    payload=payload,
+                )
+                topic = build_command_topic(
+                    self._edgex_command_topic_prefix,
+                    self._edgex_jetson_id,
+                    device,
+                    device_id=device_id or None,
+                )
+                if not self._publish_edgex_command(topic, command):
+                    logger.warning("EdgeX shadow Command 발행 결과 실패: command_id=%s", target_command_id)
+        except Exception as exc:
+            logger.warning("EdgeX shadow Command 구성 실패: command_id=%s error=%s", command_id, exc)
 
     def execute(self, topic: str, payload: Dict) -> None:
         """단일 이벤트에 대한 장치 조치와 외부 전송을 수행한다."""
@@ -64,7 +115,11 @@ class _ActionExecutor:
         alarm_played = False
         device_results = []
         if self._alarm.should_alarm(topic, payload) and self._alarm.try_acquire_slot(
-            camera_id, event_type, force=self._alarm.is_demo_event(payload)
+            camera_id,
+            event_type,
+            priority=event_priority(payload),
+            object_id=payload.get("object_id"),
+            force=self._alarm.is_demo_event(payload),
         ):
             devices = self._resolve_devices(
                 camera_id,
@@ -89,6 +144,19 @@ class _ActionExecutor:
                 _device_command_results.labels(device="speaker", status=status).inc()
                 self._repo.record_command(command_id, "device/speaker", status, payload)
                 device_results.append({"device": "speaker", "command_id": command_id, "status": status})
+                self._publish_shadow_command(
+                    event_id=get_payload_event_id(payload),
+                    command_id=command_id,
+                    camera_id=camera_id,
+                    device="speaker",
+                    action="play",
+                    payload={
+                        "event_type": event_type,
+                        "severity": severity,
+                        "camera_id": camera_id,
+                        "text": tts_message,
+                    },
+                )
 
             if self._alarm_device_enum.SIGNBOARD in devices:
                 command_id = f"{get_payload_event_id(payload)}:signboard"
@@ -108,6 +176,21 @@ class _ActionExecutor:
                 _device_command_results.labels(device="signboard", status=status).inc()
                 self._repo.record_command(command_id, "device/signboard", status, payload)
                 device_results.append({"device": "signboard", "command_id": command_id, "status": status})
+                self._publish_shadow_command(
+                    event_id=get_payload_event_id(payload),
+                    command_id=command_id,
+                    camera_id=camera_id,
+                    device="signboard",
+                    action="display",
+                    payload={
+                        "event_type": event_type,
+                        "severity": severity,
+                        "camera_id": camera_id,
+                        "text": display_message
+                        or self._build_display_text(event_type, severity, camera_id),
+                        "title": "경고!",
+                    },
+                )
 
             if self._alarm_device_enum.SIREN in devices:
                 command_id = f"{get_payload_event_id(payload)}:siren"
@@ -122,6 +205,17 @@ class _ActionExecutor:
                 _device_command_results.labels(device="siren", status=status).inc()
                 self._repo.record_command(command_id, "device/siren", status, payload)
                 device_results.append({"device": "siren", "command_id": command_id, "status": status})
+                self._publish_shadow_command(
+                    event_id=get_payload_event_id(payload),
+                    command_id=command_id,
+                    camera_id=camera_id,
+                    device="siren",
+                    action="trigger",
+                    payload={
+                        "event_type": event_type,
+                        "camera_id": camera_id,
+                    },
+                )
 
         forward_decision = decide_alert_forward(
             payload,

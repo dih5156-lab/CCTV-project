@@ -768,6 +768,7 @@ services:
       FALLDATA_AUX_TEMPORAL_SLIDING_WINDOW_STRIDE: ${FALLDATA_AUX_TEMPORAL_SLIDING_WINDOW_STRIDE:-5}
       FALLDATA_AUX_TEMPORAL_MIN_CONFIRMED_WINDOWS: ${FALLDATA_AUX_TEMPORAL_MIN_CONFIRMED_WINDOWS:-1}
       FALLDATA_AUX_TEMPORAL_NEAR_MISS_SHADOW_ENABLED: ${FALLDATA_AUX_TEMPORAL_NEAR_MISS_SHADOW_ENABLED:-false}
+      FALLDATA_AUX_NEAR_MISS_PROMOTE_ENABLED: ${FALLDATA_AUX_NEAR_MISS_PROMOTE_ENABLED:-false}
       FALL_SHADOW_REVIEW_LOG_PATH: ${FALL_SHADOW_REVIEW_LOG_PATH:-/app/data/fall_dataset/annotations/review.jsonl}
       FALL_SHADOW_SAVE_CLIPS: ${FALL_SHADOW_SAVE_CLIPS:-false}
       FALL_SHADOW_CLIP_DIR: ${FALL_SHADOW_CLIP_DIR:-/app/data/fall_dataset/clips/pending}
@@ -1220,6 +1221,10 @@ services:
       EXTERNAL_API_URL: http://cctv-alert-api:8000/api/alerts
       ACTION_HTTP_OUTBOX_DB: /app/data/runtime/action_http_outbox.db
       ALARM_COOLDOWN: ${ACTION_ALARM_COOLDOWN:-10}
+      EDGEX_SHADOW_ENABLED: ${EDGEX_SHADOW_ENABLED:-false}
+      EDGEX_JETSON_ID: ${EDGEX_JETSON_ID:-jetson-01}
+      EDGEX_COMMAND_TOPIC_PREFIX: ${EDGEX_COMMAND_TOPIC_PREFIX:-edgex/commands/cctv}
+      EDGEX_DEVICE_REGISTRY_PATH: ${EDGEX_DEVICE_REGISTRY_PATH:-}
       SPEAKER_HOST: ${SPEAKER_HOST:-}
       SPEAKER_PORT: ${SPEAKER_PORT:-80}
       SPEAKER_USER: ${SPEAKER_USER:-}
@@ -1282,6 +1287,10 @@ services:
         target: /app/config/event_type_map.json
         read_only: true
       - type: bind
+        source: ./config/output_devices.json
+        target: /app/config/output_devices.json
+        read_only: true
+      - type: bind
         source: ./data
         target: /app/data
 
@@ -1319,6 +1328,192 @@ services:
       start_period: 5s
     restart: always
 
+  # EdgeX shadow Command를 InterM 스피커로 전달하는 전환용 Device Service
+  cctv-device-speaker:
+    container_name: cctv-device-speaker
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: action
+    user: "1000:1000"
+    env_file:
+      - path: ./.env.jetson
+        required: false
+    environment:
+      PYTHONPATH: /app
+      MQTT_BROKER: edgex-mqtt-broker
+      MQTT_PORT: "1883"
+      MQTT_USER: ${MQTT_USER:-}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-}
+      EDGEX_JETSON_ID: ${EDGEX_JETSON_ID:-jetson-01}
+      EDGEX_COMMAND_TOPIC_PREFIX: ${EDGEX_COMMAND_TOPIC_PREFIX:-edgex/commands/cctv}
+      EDGEX_RESULT_TOPIC_PREFIX: ${EDGEX_RESULT_TOPIC_PREFIX:-edgex/results/cctv}
+      SPEAKER_DEVICE_ID: ${SPEAKER_DEVICE_ID:-cctv-speaker-01}
+      SPEAKER_DRY_RUN: ${SPEAKER_DRY_RUN:-false}
+      SPEAKER_SERVICE_PORT: ${SPEAKER_SERVICE_PORT:-59991}
+      SPEAKER_HOST: ${SPEAKER_HOST:-}
+      SPEAKER_PORT: ${SPEAKER_PORT:-80}
+      SPEAKER_USER: ${SPEAKER_USER:-}
+      SPEAKER_PASSWORD: ${SPEAKER_PASSWORD:-}
+      SPEAKER_VOLUME: ${SPEAKER_VOLUME:-10}
+      SPEAKER_TTS_LANGUAGE: ${SPEAKER_TTS_LANGUAGE:-kor}
+      SPEAKER_TTS_GENDER: ${SPEAKER_TTS_GENDER:-female}
+      SPEAKER_TTS_PITCH: ${SPEAKER_TTS_PITCH:-100}
+      SPEAKER_TTS_SPEED: ${SPEAKER_TTS_SPEED:-100}
+      SPEAKER_TTS_VOLUME: ${SPEAKER_TTS_VOLUME:-1}
+    command: ["python", "runners/run_speaker_device_service.py"]
+    depends_on:
+      edgex-mqtt-broker:
+        condition: service_started
+    networks:
+      edgex-network: null
+    ports:
+      - target: 59991
+        published: "59991"
+        protocol: tcp
+    healthcheck:
+      test: ["CMD-SHELL", "kill -0 1 2>/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: always
+
+  # EdgeX shadow Command를 InterM 경광등으로 전달하는 전환용 Device Service
+  cctv-device-siren:
+    container_name: cctv-device-siren
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: action
+    user: "1000:1000"
+    env_file:
+      - path: ./.env.jetson
+        required: false
+    environment:
+      PYTHONPATH: /app
+      MQTT_BROKER: edgex-mqtt-broker
+      MQTT_PORT: "1883"
+      MQTT_USER: ${MQTT_USER:-}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-}
+      EDGEX_JETSON_ID: ${EDGEX_JETSON_ID:-jetson-01}
+      EDGEX_COMMAND_TOPIC_PREFIX: ${EDGEX_COMMAND_TOPIC_PREFIX:-edgex/commands/cctv}
+      EDGEX_RESULT_TOPIC_PREFIX: ${EDGEX_RESULT_TOPIC_PREFIX:-edgex/results/cctv}
+      SIREN_DEVICE_ID: ${SIREN_DEVICE_ID:-cctv-siren-01}
+      SIREN_DRY_RUN: ${SIREN_DRY_RUN:-false}
+      SIREN_SERVICE_HOST: ${SIREN_SERVICE_HOST:-0.0.0.0}
+      SIREN_SERVICE_PORT: ${SIREN_SERVICE_PORT:-59992}
+      SIREN_HOST: ${SIREN_HOST:-}
+      SIREN_PORT: ${SIREN_PORT:-80}
+      SIREN_USER: ${SIREN_USER:-}
+      SIREN_PASSWORD: ${SIREN_PASSWORD:-}
+      SIREN_AUTO_STOP: ${SIREN_AUTO_STOP:-10}
+    command: ["python", "runners/run_siren_device_service.py"]
+    depends_on:
+      edgex-mqtt-broker:
+        condition: service_started
+    networks:
+      edgex-network: null
+    ports:
+      - target: 59992
+        published: "59992"
+        protocol: tcp
+    healthcheck:
+      test: ["CMD-SHELL", "kill -0 1 2>/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: always
+
+  # EdgeX shadow Command를 Dabit 전광판으로 전달하는 전환용 Device Service
+  cctv-device-signboard:
+    container_name: cctv-device-signboard
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: action
+    user: "1000:1000"
+    env_file:
+      - path: ./.env.jetson
+        required: false
+    environment:
+      PYTHONPATH: /app
+      MQTT_BROKER: edgex-mqtt-broker
+      MQTT_PORT: "1883"
+      MQTT_USER: ${MQTT_USER:-}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-}
+      EDGEX_JETSON_ID: ${EDGEX_JETSON_ID:-jetson-01}
+      EDGEX_COMMAND_TOPIC_PREFIX: ${EDGEX_COMMAND_TOPIC_PREFIX:-edgex/commands/cctv}
+      EDGEX_RESULT_TOPIC_PREFIX: ${EDGEX_RESULT_TOPIC_PREFIX:-edgex/results/cctv}
+      SIGNBOARD_DEVICE_ID: ${SIGNBOARD_DEVICE_ID:-cctv-signboard-01}
+      SIGNBOARD_DRY_RUN: ${SIGNBOARD_DRY_RUN:-false}
+      SIGNBOARD_SERVICE_HOST: ${SIGNBOARD_SERVICE_HOST:-0.0.0.0}
+      SIGNBOARD_SERVICE_PORT: ${SIGNBOARD_SERVICE_PORT:-59993}
+      SIGNBOARD_HOST: ${SIGNBOARD_HOST:-}
+      SIGNBOARD_PORT: ${SIGNBOARD_PORT:-5000}
+      SIGNBOARD_BRIGHTNESS: ${SIGNBOARD_BRIGHTNESS:-10}
+      SIGNBOARD_TEXT_COLOR: ${SIGNBOARD_TEXT_COLOR:-7}
+      SIGNBOARD_BACK_COLOR: ${SIGNBOARD_BACK_COLOR:-0}
+      SIGNBOARD_TEXT_SIZE: ${SIGNBOARD_TEXT_SIZE:-2}
+      SIGNBOARD_TEXT_SPEED: ${SIGNBOARD_TEXT_SPEED:-10}
+      SIGNBOARD_IDLE_REFRESH_INTERVAL: ${SIGNBOARD_IDLE_REFRESH_INTERVAL:-10}
+    command: ["python", "runners/run_signboard_device_service.py"]
+    depends_on:
+      edgex-mqtt-broker:
+        condition: service_started
+    networks:
+      edgex-network: null
+    ports:
+      - target: 59993
+        published: "59993"
+        protocol: tcp
+    healthcheck:
+      test: ["CMD-SHELL", "kill -0 1 2>/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: always
+
+  # 세 장치의 EdgeX Command 결과를 공통 SQLite 감사 저장소에 기록하는 서비스
+  cctv-edgex-command-result:
+    container_name: cctv-edgex-command-result
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: action
+    user: "1000:1000"
+    env_file:
+      - path: ./.env.jetson
+        required: false
+    environment:
+      PYTHONPATH: /app
+      MQTT_BROKER: edgex-mqtt-broker
+      MQTT_PORT: "1883"
+      MQTT_USER: ${MQTT_USER:-}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-}
+      EDGEX_JETSON_ID: ${EDGEX_JETSON_ID:-jetson-01}
+      EDGEX_RESULT_TOPIC_PREFIX: ${EDGEX_RESULT_TOPIC_PREFIX:-edgex/results/cctv}
+      EDGEX_COMMAND_RESULT_DB: /app/data/runtime/edgex_command_results.db
+    command: ["python", "runners/run_command_result_collector.py"]
+    depends_on:
+      edgex-mqtt-broker:
+        condition: service_started
+    volumes:
+      - type: bind
+        source: ./data
+        target: /app/data
+    networks:
+      edgex-network: null
+    healthcheck:
+      test: ["CMD-SHELL", "kill -0 1 2>/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: always
+
   cctv-public-api:
     container_name: cctv-public-api
     build:
@@ -1350,6 +1545,7 @@ services:
       SENSOR_DEVICE_MAP_PATH: /app/config/sensor_devices.json
       EVENT_REVIEW_DB: ${EVENT_REVIEW_DB:-/app/data/runtime/event_reviews.db}
       ALERT_FALLBACK_LOG: /app/data/logs/public_api_fallback.jsonl
+      EDGEX_COMMAND_RESULT_DB: /app/data/runtime/edgex_command_results.db
       CAMERAS_JSON: /app/cameras.json
       PUBLIC_API_KEY: ${PUBLIC_API_KEY:-}
       PUBLIC_API_ALLOW_QUERY_KEY: ${PUBLIC_API_ALLOW_QUERY_KEY:-0}
@@ -1443,7 +1639,7 @@ services:
     environment:
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
       GF_USERS_ALLOW_SIGN_UP: "false"
-      GF_SERVER_ROOT_URL: http://localhost:3001
+      GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL:-http://localhost:3001}
     volumes:
       - type: bind
         source: ./monitoring/grafana/provisioning
@@ -1454,7 +1650,7 @@ services:
         target: /var/lib/grafana
     ports:
       - target: 3000
-        host_ip: 127.0.0.1
+        host_ip: ${GRAFANA_BIND_HOST:-127.0.0.1}
         published: "3001"
         protocol: tcp
     depends_on:

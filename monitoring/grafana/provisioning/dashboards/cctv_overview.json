@@ -158,6 +158,86 @@
           "legendFormat": "{{device}}"
         }
       ]
+    },
+    {
+      "id": 11,
+      "type": "timeseries",
+      "title": "DeepStream 처리 FPS",
+      "description": "초당 처리 프레임 수입니다. 라이브 영상의 처리 속도를 확인합니다.",
+      "gridPos": { "x": 0, "y": 20, "w": 12, "h": 8 },
+      "fieldConfig": { "defaults": { "unit": "fps", "thresholds": { "steps": [ { "value": 0, "color": "red" }, { "value": 20, "color": "yellow" }, { "value": 25, "color": "green" } ] } } },
+      "targets": [ { "expr": "cctv_processor_fps", "legendFormat": "FPS" } ]
+    },
+    {
+      "id": 12,
+      "type": "timeseries",
+      "title": "DeepStream 프레임 드롭",
+      "description": "누적 폐기 프레임 수입니다. 값이 계속 증가하면 입력 또는 처리 병목을 확인합니다.",
+      "gridPos": { "x": 12, "y": 20, "w": 12, "h": 8 },
+      "fieldConfig": { "defaults": { "unit": "short", "thresholds": { "steps": [ { "value": 0, "color": "green" }, { "value": 1, "color": "red" } ] } } },
+      "targets": [ { "expr": "cctv_processor_frames_dropped_total", "legendFormat": "dropped" } ]
+    },
+    {
+      "id": 13,
+      "type": "timeseries",
+      "title": "AI 평균 추론 시간",
+      "description": "DeepStream 후처리 기준 평균 추론 시간(ms)입니다.",
+      "gridPos": { "x": 0, "y": 28, "w": 12, "h": 8 },
+      "fieldConfig": { "defaults": { "unit": "ms", "thresholds": { "steps": [ { "value": 0, "color": "green" }, { "value": 50, "color": "yellow" }, { "value": 100, "color": "red" } ] } } },
+      "targets": [ { "expr": "cctv_processor_avg_inference_ms", "legendFormat": "avg inference" } ]
+    },
+    {
+      "id": 14,
+      "type": "timeseries",
+      "title": "AI 이벤트 전송량",
+      "description": "AI 엔진이 MQTT로 전송한 이벤트 누적량입니다.",
+      "gridPos": { "x": 12, "y": 28, "w": 12, "h": 8 },
+      "fieldConfig": { "defaults": { "unit": "short" } },
+      "targets": [ { "expr": "cctv_processor_events_sent_total", "legendFormat": "events sent" } ]
+    },
+    {
+      "id": 15,
+      "type": "timeseries",
+      "title": "이벤트 종류별 처리량",
+      "description": "fall_detected, helmet, appearance 등 이벤트 종류별 처리 속도입니다.",
+      "gridPos": { "x": 0, "y": 36, "w": 24, "h": 8 },
+      "fieldConfig": { "defaults": { "unit": "ops" } },
+      "targets": [ { "expr": "sum by (event_type) (rate(cctv_events_handled_total[1m]))", "legendFormat": "{{event_type}}" } ]
+    },
+    {
+      "id": 16,
+      "type": "timeseries",
+      "title": "센서 수신량",
+      "description": "디바이스·센서 종류별로 수신된 telemetry 수입니다.",
+      "gridPos": { "x": 0, "y": 44, "w": 12, "h": 8 },
+      "fieldConfig": { "defaults": { "unit": "ops" } },
+      "targets": [ { "expr": "sum by (device_id, sensor_type) (rate(cctv_sensor_readings_received_total[1m]))", "legendFormat": "{{device_id}} / {{sensor_type}}" } ]
+    },
+    {
+      "id": 17,
+      "type": "timeseries",
+      "title": "최신 센서값",
+      "description": "센서별 마지막으로 수신된 숫자 값입니다.",
+      "gridPos": { "x": 12, "y": 44, "w": 12, "h": 8 },
+      "fieldConfig": { "defaults": { "unit": "short" } },
+      "targets": [ { "expr": "cctv_sensor_value", "legendFormat": "{{device_id}} / {{sensor_type}} ({{unit}})" } ]
+    },
+    {
+      "id": 18,
+      "type": "timeseries",
+      "title": "출력 장치 명령 결과",
+      "description": "장치별 acknowledged/failed 실행 결과입니다.",
+      "gridPos": { "x": 0, "y": 52, "w": 12, "h": 8 },
+      "fieldConfig": { "defaults": { "unit": "ops" } },
+      "targets": [ { "expr": "sum by (device, status) (rate(cctv_device_command_results_total[1m]))", "legendFormat": "{{device}} / {{status}}" } ]
+    },
+    {
+      "id": 19,
+      "type": "table",
+      "title": "장치별 명령 결과 누적",
+      "description": "command_id가 필요한 상세 이력은 Public API /api/v1/control/commands에서 조회합니다.",
+      "gridPos": { "x": 12, "y": 52, "w": 12, "h": 8 },
+      "targets": [ { "expr": "cctv_device_command_results_total", "legendFormat": "{{device}} / {{status}}" } ]
     }
   ]
 }

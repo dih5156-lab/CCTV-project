@@ -632,6 +632,9 @@ services:
       DB_PATH: /app/data/runtime/action_events.db
       EXTERNAL_API_URL: http://cctv-alert-api:8000/api/alerts
       ALARM_COOLDOWN: ${ACTION_ALARM_COOLDOWN:-10}
+      EDGEX_SHADOW_ENABLED: ${EDGEX_SHADOW_ENABLED:-false}
+      EDGEX_JETSON_ID: ${EDGEX_JETSON_ID:-jetson-01}
+      EDGEX_COMMAND_TOPIC_PREFIX: ${EDGEX_COMMAND_TOPIC_PREFIX:-edgex/commands/cctv}
       # Speaker (InterM HTTP REST + Digest auth)
       SPEAKER_HOST: ${SPEAKER_HOST:-}
       SPEAKER_PORT: ${SPEAKER_PORT:-80}
@@ -810,6 +813,7 @@ services:
       SENSOR_DEVICE_MAP_PATH: /app/config/sensor_devices.json
       EVENT_REVIEW_DB: ${EVENT_REVIEW_DB:-/app/data/runtime/event_reviews.db}
       ALERT_FALLBACK_LOG: /app/data/logs/public_api_fallback.jsonl
+      EDGEX_COMMAND_RESULT_DB: /app/data/runtime/edgex_command_results.db
       CAMERAS_JSON: /app/cameras.json
       # API Key — 프로덕션에서는 반드시 설정할 것
       PUBLIC_API_KEY: ${PUBLIC_API_KEY:-}

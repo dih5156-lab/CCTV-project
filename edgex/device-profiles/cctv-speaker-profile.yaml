@@ -1,0 +1,27 @@
+name: "cctv-speaker"
+manufacturer: "InterM"
+model: "CCTV-Speaker"
+description: "CCTV 안내 방송 스피커"
+labels:
+  - "cctv"
+  - "output"
+  - "speaker"
+
+deviceResources:
+  - name: "text"
+    description: "방송 문구"
+    properties:
+      valueType: "String"
+      readWrite: "W"
+  - name: "volume"
+    description: "방송 음량"
+    properties:
+      valueType: "Int16"
+      readWrite: "W"
+
+deviceCommands:
+  - name: "play"
+    readWrite: "W"
+    resourceOperations:
+      - { deviceResource: "text" }
+      - { deviceResource: "volume" }

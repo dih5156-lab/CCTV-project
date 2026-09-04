@@ -11,42 +11,49 @@ labels:
 
 deviceResources:
   - name: "acc_x"
+    isHidden: true
     description: "X-axis acceleration"
     properties:
       valueType: "Float64"
       readWrite: "R"
       units: "g"
   - name: "acc_y"
+    isHidden: true
     description: "Y-axis acceleration"
     properties:
       valueType: "Float64"
       readWrite: "R"
       units: "g"
   - name: "acc_z"
+    isHidden: true
     description: "Z-axis acceleration"
     properties:
       valueType: "Float64"
       readWrite: "R"
       units: "g"
   - name: "gyro_x"
+    isHidden: true
     description: "X-axis angular velocity"
     properties:
       valueType: "Float64"
       readWrite: "R"
       units: "deg/s"
   - name: "gyro_y"
+    isHidden: true
     description: "Y-axis angular velocity"
     properties:
       valueType: "Float64"
       readWrite: "R"
       units: "deg/s"
   - name: "gyro_z"
+    isHidden: true
     description: "Z-axis angular velocity"
     properties:
       valueType: "Float64"
       readWrite: "R"
       units: "deg/s"
   - name: "event_code"
+    isHidden: true
     description: "Event flag (1=event detected)"
     properties:
       valueType: "Int32"
@@ -54,6 +61,7 @@ deviceResources:
 
 deviceCommands:
   - name: "imu_reading"
+    isHidden: true
     readWrite: "R"
     resourceOperations:
       - { deviceResource: "acc_x" }

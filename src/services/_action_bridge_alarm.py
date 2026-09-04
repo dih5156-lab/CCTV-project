@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 import time
 from threading import Lock
-from typing import Dict, Set, Tuple
+from typing import Any, Dict, Set, Tuple
 
 from ..canonical_event import get_payload_event_type, get_payload_severity
 
@@ -27,6 +27,10 @@ class _AlarmCoordinator:
         self.alarm_cooldown_seconds = max(1, int(alarm_cooldown_seconds))
         self._last_alarm_ts: Dict[Tuple[str, str], float] = {}
         self._block_until: Dict[str, float] = {}
+        # 카메라 쿨다운 중 마지막으로 출력한 이벤트의 우선순위(낮을수록 높음).
+        # 같은 카메라에서 낙상과 헬멧 이벤트가 겹칠 때 고위험 이벤트가 선점한다.
+        self._block_priority: Dict[str, int] = {}
+        self._block_event_key: Dict[str, Tuple[str, str]] = {}
         self._lock = Lock()
 
     @staticmethod
@@ -70,7 +74,13 @@ class _AlarmCoordinator:
         return metadata.get("demo") is True or metadata.get("source") == "public-demo-ui"
 
     def try_acquire_slot(
-        self, camera_id: str, event_type: str, *, force: bool = False
+        self,
+        camera_id: str,
+        event_type: str,
+        *,
+        priority: int | None = None,
+        object_id: Any = None,
+        force: bool = False,
     ) -> bool:
         if force:
             logger.info(
@@ -80,16 +90,44 @@ class _AlarmCoordinator:
             )
             return True
         now = time.time()
+        current_priority = int(priority) if priority is not None else 20
+        current_key = (event_type.lower(), "" if object_id is None else str(object_id))
         with self._lock:
             block_until = self._block_until.get(camera_id, 0.0)
             if now < block_until:
-                remaining = int(block_until - now)
-                logger.info(
-                    "재생 잠금 중 - 스킵 (camera=%s, 남은 %d초)",
-                    camera_id,
-                    remaining,
-                )
-                return False
+                blocked_priority = self._block_priority.get(camera_id, 20)
+                blocked_key = self._block_event_key.get(camera_id, ("", ""))
+                same_object_event = bool(current_key[1]) and current_key == blocked_key
+                if current_priority > blocked_priority or (
+                    current_priority == blocked_priority
+                    and (same_object_event or not current_key[1])
+                ):
+                    remaining = int(block_until - now)
+                    logger.info(
+                        "재생 잠금 중 - 낮은/동일 위험도 이벤트 스킵 "
+                        "(camera=%s, priority=%d, blocked_priority=%d, 남은 %d초)",
+                        camera_id,
+                        current_priority,
+                        blocked_priority,
+                        remaining,
+                    )
+                    return False
+                if current_priority < blocked_priority:
+                    logger.info(
+                        "고위험 이벤트가 기존 출력 선점 "
+                        "(camera=%s, priority=%d, blocked_priority=%d)",
+                        camera_id,
+                        current_priority,
+                        blocked_priority,
+                    )
+                else:
+                    logger.info(
+                        "동일 위험도·다른 객체 이벤트 허용 "
+                        "(camera=%s, priority=%d, object_id=%s)",
+                        camera_id,
+                        current_priority,
+                        object_id,
+                    )
 
             if event_type not in self._COOLDOWN_EXEMPT:
                 key = (camera_id, event_type)
@@ -105,4 +143,6 @@ class _AlarmCoordinator:
             key = (camera_id, event_type)
             self._last_alarm_ts[key] = now
             self._block_until[camera_id] = now + self.alarm_cooldown_seconds
+            self._block_priority[camera_id] = current_priority
+            self._block_event_key[camera_id] = current_key
         return True

@@ -66,6 +66,10 @@ class ActionBridgeRuntimeConfig:
     rest_enabled: bool
     rest_host: str
     rest_port: int
+    edgex_shadow_enabled: bool = False
+    edgex_jetson_id: str = "jetson-01"
+    edgex_command_topic_prefix: str = "edgex/commands/cctv"
+    edgex_device_registry_path: Optional[str] = None
 
 
 def _add_mqtt_arguments(parser: argparse.ArgumentParser) -> None:
@@ -137,6 +141,12 @@ def _add_speaker_arguments(parser: argparse.ArgumentParser) -> None:
 
 
 def _add_signboard_arguments(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--signboard-control-backend",
+        choices=("tcp", "edgex"),
+        default=_env("SIGNBOARD_CONTROL_BACKEND", "tcp"),
+        help="전광판 제어 경로. 현재 운영 경로는 tcp만 지원합니다.",
+    )
     parser.add_argument("--signboard-host", default=_env("SIGNBOARD_HOST", ""))
     parser.add_argument(
         "--signboard-port",
@@ -197,6 +207,28 @@ def _add_rest_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--rest-port", type=int, default=_env_int("REST_PORT", 8080))
 
 
+def _add_edgex_arguments(parser: argparse.ArgumentParser) -> None:
+    """비교용 EdgeX Command 발행 설정을 명령행 인자로 등록한다."""
+    parser.add_argument(
+        "--edgex-shadow-enabled",
+        action="store_true",
+        default=_env_bool("EDGEX_SHADOW_ENABLED"),
+        help="기존 direct 제어와 함께 EdgeX Command를 비교 발행한다",
+    )
+    parser.add_argument(
+        "--edgex-jetson-id",
+        default=_env("EDGEX_JETSON_ID", "jetson-01"),
+    )
+    parser.add_argument(
+        "--edgex-command-topic-prefix",
+        default=_env("EDGEX_COMMAND_TOPIC_PREFIX", "edgex/commands/cctv"),
+    )
+    parser.add_argument(
+        "--edgex-device-registry-path",
+        default=_env("EDGEX_DEVICE_REGISTRY_PATH", ""),
+    )
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Action-Bridge 액션 레이어 (알람 디바이스 + 외부 API + DB)"
@@ -208,6 +240,7 @@ def build_parser() -> argparse.ArgumentParser:
     _add_signboard_arguments(parser)
     _add_siren_arguments(parser)
     _add_rest_arguments(parser)
+    _add_edgex_arguments(parser)
 
     return parser
 
@@ -258,6 +291,10 @@ def parse_runtime_config(
 
     if args.mqtt_port <= 0:
         parser.error("--mqtt-port는 양수여야 합니다")
+    if args.signboard_control_backend == "edgex":
+        parser.error(
+            "SIGNBOARD_CONTROL_BACKEND=edgex는 전용 Dabit Device Service 배포 후에만 사용할 수 있습니다"
+        )
 
     return ActionBridgeRuntimeConfig(
         mqtt_broker=args.mqtt_broker,
@@ -273,6 +310,10 @@ def parse_runtime_config(
         rest_enabled=args.rest_enabled,
         rest_host=args.rest_host,
         rest_port=args.rest_port,
+        edgex_shadow_enabled=args.edgex_shadow_enabled,
+        edgex_jetson_id=args.edgex_jetson_id,
+        edgex_command_topic_prefix=args.edgex_command_topic_prefix,
+        edgex_device_registry_path=args.edgex_device_registry_path or None,
     )
 
 
@@ -291,6 +332,10 @@ def create_action_bridge(config: ActionBridgeRuntimeConfig) -> ActionBridge:
         rest_enabled=config.rest_enabled,
         rest_host=config.rest_host,
         rest_port=config.rest_port,
+        edgex_shadow_enabled=config.edgex_shadow_enabled,
+        edgex_jetson_id=config.edgex_jetson_id,
+        edgex_command_topic_prefix=config.edgex_command_topic_prefix,
+        edgex_device_registry_path=config.edgex_device_registry_path,
     )
 
 

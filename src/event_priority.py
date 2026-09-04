@@ -10,6 +10,7 @@ from .canonical_event import (
     get_payload_metadata,
     get_payload_severity,
 )
+from .config.event_type_map import event_type_map
 
 EVENT_TYPE_PRIORITY: dict[str, int] = {
     "fall_detected": 0,
@@ -45,21 +46,13 @@ EVENT_SEVERITY_PRIORITY: dict[str, int] = {
 def event_priority(payload: Mapping[str, Any]) -> int:
     event_type = get_payload_event_type(payload).lower()
     severity = get_payload_severity(payload).lower()
-    return min(
-        EVENT_TYPE_PRIORITY.get(event_type, 20),
-        EVENT_SEVERITY_PRIORITY.get(severity, 20),
-    )
+    return event_type_map.routing_priority(event_type, severity)
 
 
 def event_risk_level(payload: Mapping[str, Any]) -> str:
-    priority = event_priority(payload)
-    if priority <= 1:
-        return "critical"
-    if priority <= 7:
-        return "warning"
-    if priority >= 30:
-        return "low"
-    return "normal"
+    return event_type_map.routing_risk_level(
+        get_payload_event_type(payload), get_payload_severity(payload)
+    )
 
 
 def _clamp_score(value: float) -> int:

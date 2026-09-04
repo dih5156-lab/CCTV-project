@@ -1,0 +1,51 @@
+name: "cctv-signboard-dabit"
+manufacturer: "Dabit Metrix"
+model: "Dabit TCP"
+description: "CCTV 전광판 출력 장치. 실제 TCP 변환은 전용 Device Service가 담당한다."
+labels:
+  - "cctv"
+  - "output"
+  - "signboard"
+  - "dabit"
+
+deviceResources:
+  - name: "display_text"
+    description: "표시할 문자열"
+    properties:
+      valueType: "String"
+      readWrite: "W"
+      units: "text"
+  - name: "display_color"
+    description: "Dabit 글자 색상 코드 (0~7)"
+    properties:
+      valueType: "Int32"
+      readWrite: "W"
+      units: "code"
+  - name: "brightness"
+    description: "전광판 밝기 (0~100)"
+    properties:
+      valueType: "Int32"
+      readWrite: "W"
+      units: "percent"
+  - name: "power"
+    description: "전원 상태"
+    properties:
+      valueType: "Bool"
+      readWrite: "RW"
+      units: "state"
+
+deviceCommands:
+  - name: "display"
+    readWrite: "W"
+    resourceOperations:
+      - { deviceResource: "display_text" }
+      - { deviceResource: "display_color" }
+      - { deviceResource: "brightness" }
+  - name: "clear"
+    readWrite: "W"
+    resourceOperations:
+      - { deviceResource: "display_text" }
+  - name: "power"
+    readWrite: "RW"
+    resourceOperations:
+      - { deviceResource: "power" }

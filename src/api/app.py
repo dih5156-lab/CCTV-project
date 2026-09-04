@@ -34,6 +34,7 @@ from .v1 import (
     alerts,
     appearances,
     cameras,
+    command_results,
     control,
     event_reviews,
     events,
@@ -270,6 +271,7 @@ app.include_router(alerts.router, prefix=_PREFIX)
 app.include_router(events.router, prefix=_PREFIX)
 app.include_router(sensor_readings.router, prefix=_PREFIX)
 app.include_router(cameras.router, prefix=_PREFIX)
+app.include_router(command_results.router, prefix=_PREFIX)
 app.include_router(sites.router, prefix=_PREFIX)
 app.include_router(control.router, prefix=_PREFIX)
 app.include_router(event_reviews.router, prefix=_PREFIX)

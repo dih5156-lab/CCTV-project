@@ -49,6 +49,28 @@ def _last_db_row(db_path: Path) -> dict:
         return dict(row) if row else {}
 
 
+def test_edgex_device_result_updates_action_command_history(bridge: ActionBridge):
+    """EdgeX 장치 결과가 Action Layer 명령 상태를 갱신한다."""
+    bridge._on_message(
+        None,
+        None,
+        _make_mqtt_message(
+            "edgex/results/cctv/jetson-01/speaker",
+            {
+                "request_id": "event-1:speaker",
+                "event_id": "event-1",
+                "device_id": "cctv-speaker-01",
+                "status": "simulated",
+                "error_code": None,
+            },
+        ),
+    )
+
+    command = bridge._repo.list_commands(limit=1)[0]
+    assert command["command_id"] == "event-1:speaker"
+    assert command["status"] == "simulated"
+
+
 # ---------------------------------------------------------------------------
 # 픽스처
 # ---------------------------------------------------------------------------

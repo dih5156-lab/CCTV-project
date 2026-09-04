@@ -114,6 +114,8 @@ python scripts/smoke/replay_event_contract_samples.py --publish --include-critic
 
 ## 학습과 검증
 
+Pose 공개 데이터 학습 기준선과 승격 조건은 [pose_training_baseline_20260902.md](docs/operations/pose_training_baseline_20260902.md)에 기록합니다.
+
 ### 전체 낙상·방향 학습
 
 데이터셋 라벨과 영상을 자동 매칭하고, 장면 그룹 단위로 train/validation을 나눕니다.
@@ -187,6 +189,20 @@ python scripts/promote_fall_model.py \
 
 ## API 예시
 
+### 낙상 시연 녹화
+
+영상과 API 이벤트를 같은 세션 디렉터리에 저장합니다. `ffmpeg`가 설치된 Jetson에서 실행합니다.
+
+```bash
+python scripts/ops/record_fall_demo.py \
+  --source 'rtsp://user:password@camera-host/stream' \
+  --camera-id camera_1 \
+  --duration 60
+```
+
+결과는 `data/fall_demo/<시작시각>/demo.mp4`, `events.jsonl`, `session.json`으로 생성됩니다.
+`--overlay-source`에 DeepStream 처리 후 RTSP 주소를 추가하면 같은 폴더에 `overlay.mp4`도 함께 생성됩니다.
+
 ```bash
 curl "http://localhost:9000/api/v1/events?event_type=fall_detected&fall_direction=back"
 ```
@@ -207,6 +223,16 @@ pytest -q
 - 학습 manifest·모델 비교
 
 ## 업데이트 이력
+
+### 2026-09-01 ~ 2026-09-04 (9월 1주차)
+
+- Edge AIoT의 목적에 맞춰 출력 장치 제어의 기준점을 EdgeX로 두는 방향을 정리했습니다. AI 이벤트는 기존 이벤트 계약을 유지하면서 EdgeX Command와 디바이스 서비스로 전달할 수 있도록 명령 계약·결과 수집·검증 응답 흐름을 추가했습니다.
+- 스피커·사이렌·전광판(DABIT) 디바이스 서비스를 분리하고, 장치별 프로파일·등록 스크립트·실행 runner·MQTT/HTTP 명령 처리를 구성했습니다. 실제 장치가 연결되지 않은 환경에서도 시뮬레이션 모드로 계약을 검증할 수 있습니다.
+- 다중 디바이스 운영을 위해 `config/output_devices.json` 기반 장치 레지스트리를 추가했습니다. `device_id`를 기준으로 장치별 명령을 분배하고, 미등록 장치에는 명령을 보내지 않도록 보호 로직을 구성했습니다.
+- EdgeX 우선 이벤트 라우팅 계획, Kuiper 규칙, 디바이스별 API와 이벤트 payload, Docker/Jetson 운영, 모델별 운영 절차를 인수인계 문서로 정리했습니다. 문서 목차는 [docs/README.md](docs/README.md)에서 확인할 수 있습니다.
+- EdgeX 명령 계약·장치 레지스트리·장치 서비스·runner·결과 API에 대한 단위 테스트와 계약 검증 스크립트를 추가했습니다. 마지막 전체 테스트 결과는 `1659 passed, 0 failed, 72 skipped`입니다.
+- `archive (1).zip`에서 COCO 2017 Pose 데이터를 압축 해제하고 데이터 구성을 확인했습니다. 학습 데이터 118,287장, 검증 데이터 5,000장, COCO 사람 키포인트 17개 구성을 확인했으며, GPU 학습은 업무 종료 후 실행 예정으로 아직 시작하지 않았습니다.
+- 대용량 학습 데이터·압축파일·Kaggle 인증파일은 `.gitignore`에 등록해 원격 저장소에 포함되지 않도록 했습니다. 모델 바이너리와 런타임 산출물도 기존 Git 관리 원칙에 따라 제외합니다.
 
 ### 2026-09-01
 

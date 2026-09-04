@@ -1,0 +1,36 @@
+name: "cctv-siren"
+manufacturer: "InterM"
+model: "CCTV-Siren"
+description: "CCTV 경광등 및 사이렌"
+labels:
+  - "cctv"
+  - "output"
+  - "siren"
+
+deviceResources:
+  - name: "event_type"
+    description: "경보 이벤트 유형"
+    properties:
+      valueType: "String"
+      readWrite: "W"
+  - name: "camera_id"
+    description: "경보를 발생시킨 카메라 식별자"
+    properties:
+      valueType: "String"
+      readWrite: "W"
+  - name: "enabled"
+    description: "사이렌 활성 상태"
+    properties:
+      valueType: "Bool"
+      readWrite: "W"
+
+deviceCommands:
+  - name: "trigger"
+    readWrite: "W"
+    resourceOperations:
+      - { deviceResource: "event_type" }
+      - { deviceResource: "camera_id" }
+  - name: "stop"
+    readWrite: "W"
+    resourceOperations:
+      - { deviceResource: "enabled" }

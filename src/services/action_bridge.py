@@ -40,6 +40,7 @@ from ..config import ActionBridgeConfig
 from ..devices.signboard import SignboardConfig, SignboardDevice, build_display_text
 from ..devices.siren import SensorConfig, SirenDevice
 from ..devices.speaker import SpeakerConfig, SpeakerDevice
+from ..edgex.device_registry import DeviceRegistry
 from ..protocols._mqtt_factory import create_mqtt_client
 from ..protocols.http import HttpEventForwarder, HttpEventTarget
 from ..protocols.rest import RestEventReceiver
@@ -60,6 +61,7 @@ from ._action_bridge_topics import (
     CMD_TOPIC_APPROVE,
     CMD_TOPIC_MODE,
     CMD_TOPIC_REJECT,
+    EDGEX_RESULT_TOPIC,
     STATUS_TOPIC_PREFIX,
     default_alarm_topics,
     default_subscribe_topics,
@@ -118,10 +120,23 @@ class ActionBridge:
         rest_enabled: bool = False,
         rest_host: str = _ACTION_DEFAULTS.rest_host,
         rest_port: int = _ACTION_DEFAULTS.rest_port,
+        edgex_shadow_enabled: bool = False,
+        edgex_jetson_id: str = "jetson-01",
+        edgex_command_topic_prefix: str = "edgex/commands/cctv",
+        edgex_device_registry_path: Optional[str] = None,
     ) -> None:
+        """Action Layer와 장치·EdgeX shadow 설정을 초기화한다."""
         self.mqtt_broker = mqtt_broker
         self.mqtt_port = int(mqtt_port)
         self.subscribe_topics = subscribe_topics or default_subscribe_topics()
+        self._edgex_shadow_enabled = bool(edgex_shadow_enabled)
+        self._edgex_jetson_id = edgex_jetson_id
+        self._edgex_command_topic_prefix = edgex_command_topic_prefix
+        self._edgex_device_registry = (
+            DeviceRegistry.from_file(edgex_device_registry_path)
+            if edgex_device_registry_path
+            else None
+        )
 
         self._repo = _EventRepo(Path(db_path))
         self._sites = _SiteRegistry(
@@ -151,6 +166,12 @@ class ActionBridge:
             siren=self._siren,
             resolve_devices=self._resolve_devices,
             publish_status=self._publish_status,
+            publish_edgex_command=self._publish_edgex_command
+            if self._edgex_shadow_enabled
+            else None,
+            resolve_edgex_device_ids=self._resolve_edgex_device_ids,
+            edgex_jetson_id=self._edgex_jetson_id,
+            edgex_command_topic_prefix=self._edgex_command_topic_prefix,
             build_display_text=build_display_text,
             alarm_device_enum=AlarmDevice,
         )
@@ -168,6 +189,18 @@ class ActionBridge:
         )
         self._rest_action_worker_stop = _rest_queue.new_rest_action_worker_stop()
         self._rest_action_worker: Optional[object] = None
+
+    def _resolve_edgex_device_ids(self, device_type: str, camera_id: str) -> List[str]:
+        """레지스트리에서 이벤트 카메라에 연결된 물리 장치 ID를 조회한다."""
+        if self._edgex_device_registry is None:
+            return [""]
+        return [
+            target.device_id
+            for target in self._edgex_device_registry.resolve(
+                device_type,
+                camera_id=camera_id,
+            )
+        ]
 
     @property
     def default_mode(self) -> ControlMode:
@@ -280,6 +313,21 @@ class ActionBridge:
             )
         except Exception as exc:
             logger.warning("Action status 발행 실패: %s", exc)
+
+    def _publish_edgex_command(self, topic: str, payload: Dict) -> bool:
+        """비교용 EdgeX Command를 MQTT로 발행하고 발행 가능 여부를 반환한다."""
+        if not self._mqtt_client:
+            return False
+        try:
+            result = self._mqtt_client.publish(
+                topic,
+                json.dumps(payload, ensure_ascii=False),
+                qos=1,
+            )
+            return getattr(result, "rc", 0) == mqtt.MQTT_ERR_SUCCESS
+        except Exception as exc:
+            logger.warning("EdgeX shadow Command 발행 실패: topic=%s error=%s", topic, exc)
+            return False
 
     def approve_event(self, event_id: str) -> Tuple[bool, str]:
         """대기 이벤트를 승인하여 즉시 실행한다."""
@@ -508,6 +556,7 @@ class ActionBridge:
         all_topics = [
             *((t, 0) for t in self.subscribe_topics),
             *((t, 1) for t in (CMD_TOPIC_MODE, CMD_TOPIC_APPROVE, CMD_TOPIC_REJECT)),
+            (EDGEX_RESULT_TOPIC, 1),
         ]
         for topic, qos in all_topics:
             client.subscribe(topic, qos=qos)
@@ -572,6 +621,8 @@ class ActionBridge:
             payload = json.loads(msg.payload.decode("utf-8"))
             if topic in (CMD_TOPIC_MODE, CMD_TOPIC_APPROVE, CMD_TOPIC_REJECT):
                 self._dispatch_command(topic, payload)
+            elif topic.startswith("edgex/results/cctv/"):
+                self._handle_edgex_result(topic, payload)
             else:
                 payloads = payload if isinstance(payload, list) else [payload]
                 topic_prefix = "/".join(topic.split("/")[:2])
@@ -586,6 +637,28 @@ class ActionBridge:
             logger.error("JSON 파싱 실패: %s", exc)
         except Exception as exc:
             logger.error("Action 처리 오류: %s", exc, exc_info=True)
+
+    def _handle_edgex_result(self, topic: str, payload: Dict) -> None:
+        """EdgeX 장치 결과를 Action Layer 명령 이력과 상태 토픽에 반영한다."""
+        if not isinstance(payload, dict):
+            return
+        request_id = str(payload.get("request_id") or "").strip()
+        if not request_id:
+            logger.warning("request_id 없는 EdgeX 결과 무시: topic=%s", topic)
+            return
+        status = str(payload.get("status") or "failed")
+        message = str(payload.get("error_code") or "")
+        self._repo.record_command(request_id, topic, status, payload, message)
+        self._publish_status(
+            "devices/result",
+            {
+                "request_id": request_id,
+                "event_id": payload.get("event_id"),
+                "device_id": payload.get("device_id"),
+                "status": status,
+                "error_code": payload.get("error_code"),
+            },
+        )
 
     @staticmethod
     def _normalize_sensor_payload(topic: str, payload: Dict) -> Dict:

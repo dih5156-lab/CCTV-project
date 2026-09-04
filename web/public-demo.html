@@ -940,6 +940,11 @@
     }
     .kv span:nth-child(odd) { color: var(--muted); font-weight: 700; }
     .json-panel { position: sticky; top: 18px; }
+    .event-inspector {
+      border-color: rgba(51, 199, 214, .35);
+      background: rgba(16, 24, 33, .92);
+    }
+    .event-inspector pre { min-height: 240px; max-height: 520px; }
     .toast {
       position: fixed;
       right: 18px;
@@ -1331,12 +1336,16 @@
             </div>
             <div class="scroll">
               <table>
-                <thead><tr><th>시각</th><th>유형</th><th>낙상 상세</th><th>대상</th><th>카메라</th><th>신뢰도</th><th>점수</th><th>등급</th><th>object</th><th>검수</th></tr></thead>
-                <tbody id="event-rows"><tr><td colspan="10" class="muted">로딩 중</td></tr></tbody>
+                <thead><tr><th>시각</th><th>유형</th><th>낙상 상세</th><th>대상</th><th>카메라</th><th>신뢰도</th><th>점수</th><th>등급</th><th>object</th><th>상세</th><th>검수</th></tr></thead>
+                <tbody id="event-rows"><tr><td colspan="11" class="muted">로딩 중</td></tr></tbody>
               </table>
             </div>
           </div>
           <div class="panel">
+            <div class="panel event-inspector">
+              <div class="panel-head"><h2>선택 이벤트 데이터</h2><span class="muted" id="event-inspector-meta">이벤트 목록에서 상세를 선택하세요.</span></div>
+              <div class="panel-body"><pre id="event-inspector-json">-</pre></div>
+            </div>
             <div class="panel-head"><h2>이벤트 주입</h2><button class="warn" id="send-demo-event">전송</button></div>
             <div class="panel-body">
               <div class="form-grid" style="grid-template-columns:1fr 1fr">
@@ -1511,7 +1520,7 @@
                 <div class="field"><label>모드</label><select id="zone-mode"><option value="danger">위험구역</option><option value="object_watch">객체감시</option><option value="crowd_count">인파분석</option></select></div>
               </div>
               <div class="zone-stage" id="zone-stage">
-                <iframe id="zone-frame" title="구역 편집 WebRTC 화면" allow="autoplay; fullscreen"></iframe>
+                <iframe id="zone-frame" title="구역 편집 WebRTC 화면" allow="autoplay; fullscreen; picture-in-picture"></iframe>
                 <img id="zone-image" alt="zone editor camera preview">
                 <svg id="zone-svg" viewBox="0 0 1280 720" preserveAspectRatio="none"></svg>
                 <div class="zone-status" id="zone-status"></div>
@@ -1687,7 +1696,7 @@
         </div>
       </div>
       <div class="modal-body">
-        <iframe id="camera-modal-frame" title="확대 카메라 WebRTC 화면" allow="autoplay; fullscreen"></iframe>
+        <iframe id="camera-modal-frame" title="확대 카메라 WebRTC 화면" allow="autoplay; fullscreen; picture-in-picture"></iframe>
       </div>
     </div>
   </div>
@@ -1755,6 +1764,7 @@
     const state = {
       cameras: [],
       events: [],
+      selectedEventId: "",
       reviewSummary: null,
       sensorReadings: [],
       demoEvents: [],
@@ -2804,6 +2814,23 @@
       if (!cameraId) return;
       window.open(cameraWebRtcUrl(cameraId), "_blank");
     }
+    async function openCameraPictureInPicture(cameraId) {
+      const iframe = document.querySelector(`[data-camera-modal="${CSS.escape(String(cameraId))}"] iframe`);
+      if (!iframe) {
+        showToast("카메라 화면을 찾을 수 없습니다.");
+        return;
+      }
+      try {
+        const video = iframe.contentDocument?.querySelector("video");
+        if (!video || typeof video.requestPictureInPicture !== "function") {
+          showToast("현재 브라우저 또는 WebRTC 화면에서 PIP를 지원하지 않습니다.");
+          return;
+        }
+        await video.requestPictureInPicture();
+      } catch (error) {
+        showToast("PIP 실행 실패: " + (error?.message || "브라우저 권한을 확인하세요."));
+      }
+    }
     function focusCameraEvents(cameraId) {
       $("event-camera").value = cameraId;
       switchTab("events");
@@ -2847,13 +2874,14 @@
         const webRtcSrc = cameraWebRtcUrl(camera.id);
         return `
           <div class="camera-card" data-camera-modal="${escapeHtml(camera.id)}" title="클릭하면 크게 봅니다">
-            <iframe src="${escapeHtml(webRtcSrc)}" title="${escapeHtml(camera.name || camera.id)} WebRTC stream" allow="autoplay; fullscreen"></iframe>
+            <iframe src="${escapeHtml(webRtcSrc)}" title="${escapeHtml(camera.name || camera.id)} WebRTC stream" allow="autoplay; fullscreen; picture-in-picture"></iframe>
             <div class="camera-caption">
               <div><strong>${camera.name || camera.id}</strong><br><code>${camera.id}</code></div>
               <div class="camera-meta">${badge("webrtc/h264", "good")} ${badge(`${(camera.zones || []).length} zones`, "blue")} ${cameraRiskBadge(camera.id)}</div>
             </div>
             <div class="camera-actions">
               <button data-open-webrtc="${escapeHtml(camera.id)}">WebRTC/H.264</button>
+              <button data-open-pip="${escapeHtml(camera.id)}">PIP</button>
               <button data-camera-events="${escapeHtml(camera.id)}">이벤트</button>
               <button data-camera-zones="${escapeHtml(camera.id)}">구역</button>
             </div>
@@ -2881,7 +2909,11 @@
         await loadEventReviewSummary();
         const displayEvents = sortEventsForDisplay(state.events);
         $("stat-events").textContent = String(body.total ?? state.events.length);
-        renderEventRows("event-rows", displayEvents, 10);
+        if (!state.selectedEventId || !state.events.some((item) => eventReviewId(item) === state.selectedEventId)) {
+          state.selectedEventId = displayEvents.length ? eventReviewId(displayEvents[0]) : "";
+        }
+        renderEventInspector(state.events.find((item) => eventReviewId(item) === state.selectedEventId));
+        renderEventRows("event-rows", displayEvents, 11);
         renderEventRows("overview-events", displayEvents.slice(0, 8), 4, true);
         renderPriorityEvent(state.events);
         updateEventSortHint();
@@ -2889,7 +2921,11 @@
       } catch (error) {
         state.events = state.demoEvents;
         const displayEvents = sortEventsForDisplay(state.demoEvents);
-        renderEventRows("event-rows", displayEvents, 10);
+        if (!state.selectedEventId || !state.events.some((item) => eventReviewId(item) === state.selectedEventId)) {
+          state.selectedEventId = displayEvents.length ? eventReviewId(displayEvents[0]) : "";
+        }
+        renderEventInspector(state.events.find((item) => eventReviewId(item) === state.selectedEventId));
+        renderEventRows("event-rows", displayEvents, 11);
         renderEventRows("overview-events", displayEvents.slice(0, 8), 4, true);
         renderPriorityEvent(state.events);
         updateEventSortHint();
@@ -2917,9 +2953,23 @@
           <td>${eventRiskBadge(event)}</td>
           <td>${badge(event.severity || "-", statusTone(event.severity))}</td>
           <td>${event.object_id ?? "-"}</td>
+          <td><button data-inspect-event="${escapeHtml(eventReviewId(event))}" type="button">상세</button></td>
           <td>${eventReviewControls(event)}</td>
         </tr>`;
       }).join("") : `<tr><td colspan="${colSpan}">${emptyState("이벤트 없음", "필터 조건을 바꾸거나 데모 이벤트를 전송해 확인하세요.")}</td></tr>`;
+    }
+    function renderEventInspector(event) {
+      const meta = $("event-inspector-meta");
+      const output = $("event-inspector-json");
+      if (!meta || !output) return;
+      if (!event) {
+        meta.textContent = "표시할 이벤트가 없습니다.";
+        output.textContent = "-";
+        return;
+      }
+      state.selectedEventId = eventReviewId(event);
+      meta.textContent = `${eventCameraId(event) || "카메라 미상"} · ${fmtTime(event.received_at || event.timestamp)}`;
+      output.textContent = JSON.stringify(event, null, 2);
     }
     function fallDetailLabel(event) {
       if (eventTypeKey(event) !== "fall_detected") return "-";
@@ -3663,6 +3713,12 @@
     $("refresh-readiness").addEventListener("click", (event) => runAction(event.currentTarget, "확인 중", loadReadiness));
     $("reload-streams").addEventListener("click", (event) => runAction(event.currentTarget, "연결 중", async () => { await loadCameras(); renderCameraPreview(); }));
     $("camera-preview").addEventListener("click", (event) => {
+      const pipButton = event.target.closest("[data-open-pip]");
+      if (pipButton) {
+        event.stopPropagation();
+        openCameraPictureInPicture(pipButton.dataset.openPip);
+        return;
+      }
       const webRtcButton = event.target.closest("[data-open-webrtc]");
       if (webRtcButton) {
         event.stopPropagation();
@@ -3705,6 +3761,13 @@
       if (event.target.id === "crop-modal-backdrop") closeCropModal();
     });
     document.addEventListener("click", (event) => {
+      const inspectButton = event.target.closest("[data-inspect-event]");
+      if (inspectButton) {
+        event.preventDefault();
+        const selected = (state.events || []).find((item) => eventReviewId(item) === inspectButton.dataset.inspectEvent);
+        renderEventInspector(selected);
+        return;
+      }
       const reviewButton = event.target.closest("[data-review-event]");
       if (reviewButton) {
         event.preventDefault();
