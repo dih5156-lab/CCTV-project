@@ -3,6 +3,8 @@
 from dataclasses import dataclass
 from typing import Any, Mapping, Protocol
 
+from ..edgex.command_contract import build_command_request, build_command_topic
+
 
 @dataclass(frozen=True)
 class DeviceCommand:
@@ -83,3 +85,61 @@ class DirectDeviceCommandTransport:
                 command.camera_id,
             )
         raise ValueError(f"지원하지 않는 장치: {command.device}")
+
+
+class EdgeXCommandTransport:
+    """공통 명령을 EdgeX MQTT Command 계약으로 변환해 발행한다."""
+
+    def __init__(
+        self,
+        *,
+        publish,
+        resolve_device_ids,
+        jetson_id: str,
+        topic_prefix: str,
+    ) -> None:
+        """EdgeX 발행기와 물리 장치 ID 조회기를 보관한다."""
+        self._publish = publish
+        self._resolve_device_ids = resolve_device_ids
+        self._jetson_id = jetson_id
+        self._topic_prefix = topic_prefix
+
+    def send(self, command: DeviceCommand) -> DeviceCommandResult:
+        """등록된 물리 장치별로 EdgeX Command를 발행한다."""
+        device_ids = self._resolve_device_ids(command.device, command.camera_id)
+        failed_devices = []
+        for device_id in device_ids or [""]:
+            target_command_id = (
+                f"{command.command_id}:{device_id}" if device_id else command.command_id
+            )
+            payload = build_command_request(
+                event_id=command.event_id,
+                request_id=target_command_id,
+                device=command.device,
+                device_id=device_id or None,
+                action=command.action,
+                payload=dict(command.payload),
+            )
+            topic = build_command_topic(
+                self._topic_prefix,
+                self._jetson_id,
+                command.device,
+                device_id=device_id or None,
+            )
+            if not self._publish(topic, payload):
+                failed_devices.append(device_id or command.device)
+
+        if failed_devices:
+            return DeviceCommandResult(
+                device=command.device,
+                command_id=command.command_id,
+                ok=False,
+                status="failed",
+                error=f"EdgeX 명령 발행 실패: {', '.join(failed_devices)}",
+            )
+        return DeviceCommandResult(
+            device=command.device,
+            command_id=command.command_id,
+            ok=True,
+            status="acknowledged",
+        )
