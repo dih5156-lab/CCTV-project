@@ -107,7 +107,7 @@ def _center_pad(text: str, width: int = 24) -> str:
 
 
 def _buf_brightness(amount: int) -> bytes:
-    return _encode_buffer(_CODE_BRIGHTNESS + str(amount))
+    return _encode_buffer(_CODE_BRIGHTNESS + f"{amount:02}")
 
 
 def _buf_title(text: str) -> bytes:
@@ -242,6 +242,7 @@ class SignboardDevice:
         back_color: Optional[int] = None,
         text_size: Optional[int] = None,
         text_speed: Optional[int] = None,
+        brightness: Optional[int] = None,
     ) -> bool:
         """전광판에 이벤트 메시지를 표시한다.
 
@@ -263,6 +264,7 @@ class SignboardDevice:
         back  = back_color if back_color is not None else cfg.back_color
         size  = text_size  if text_size  is not None else cfg.text_size
         speed = text_speed if text_speed is not None else cfg.text_speed
+        display_brightness = brightness if brightness is not None else cfg.brightness
         title = title or "CCTV 경보"
 
         # display_time 동안 동일 (title, class) 재전송 차단 → 메시지 끊김 방지
@@ -278,7 +280,7 @@ class SignboardDevice:
         logger.info("[Signboard] 표시: title=%r text=%r color=%d back=%d", title, text, color, back)
         try:
             with self._send_lock:
-                client.set_brightness(cfg.brightness)
+                client.set_brightness(display_brightness)
                 client.send_title(title)
                 for line in text.splitlines():
                     if line.strip():

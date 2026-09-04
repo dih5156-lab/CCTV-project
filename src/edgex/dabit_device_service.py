@@ -83,6 +83,7 @@ class DabitDeviceService:
                     back_color=_optional_int(params.get("back_color")),
                     text_size=_optional_int(params.get("text_size")),
                     text_speed=_optional_int(params.get("text_speed")),
+                    brightness=_optional_int(params.get("brightness")),
                 )
             elif command == "clear":
                 ok = target_device.clear()
@@ -112,6 +113,11 @@ class DabitDeviceService:
         parameters = {
             "display_text": payload.get("text") or payload.get("display_text"),
             "title": payload.get("title"),
+            "display_color": payload.get("display_color"),
+            "back_color": payload.get("back_color"),
+            "text_size": payload.get("text_size"),
+            "text_speed": payload.get("text_speed"),
+            "brightness": payload.get("brightness"),
             "power": payload.get("power", True),
         }
         command = "power" if action in {"power_on", "power_off"} else action

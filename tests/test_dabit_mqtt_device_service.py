@@ -52,6 +52,39 @@ def test_display_command_accepts_profile_display_text_field():
     assert device.display.call_args.kwargs["text"] == "프로파일 문구"
 
 
+def test_display_command_forwards_color_and_brightness_fields():
+    service, device = _service()
+    device.display.return_value = True
+
+    result = service.execute_request(
+        {
+            "request_id": "req-style",
+            "event_id": "event-style",
+            "device": "signboard",
+            "action": "display",
+            "payload": {
+                "text": "스타일 문구",
+                "display_color": 2,
+                "back_color": 3,
+                "text_size": 3,
+                "text_speed": 20,
+                "brightness": 8,
+            },
+        }
+    )
+
+    assert result.status == "acknowledged"
+    assert device.display.call_args.kwargs == {
+        "text": "스타일 문구",
+        "title": "CCTV 알림",
+        "text_color": 2,
+        "back_color": 3,
+        "text_size": 3,
+        "text_speed": 20,
+        "brightness": 8,
+    }
+
+
 def test_dry_run_does_not_call_unconnected_dabit_device():
     service, device = _service(dry_run=True)
 

@@ -11,6 +11,7 @@ from src.devices.signboard import (
     CLASS_COLOR_MAP,
     SignboardConfig,
     SignboardDevice,
+    _buf_brightness,
     _buf_context,
     _buf_title,
     _center_pad,
@@ -111,6 +112,9 @@ class TestSignboardConfig:
 # ---------------------------------------------------------------------------
 
 class TestDabitClient:
+    def test_brightness_uses_two_digit_protocol_value(self):
+        assert _buf_brightness(8).decode("euc-kr").endswith("08!]")
+
     def _make_client(self):
         return _DabitClient(host="127.0.0.1", port=5000, timeout=3.0)
 
