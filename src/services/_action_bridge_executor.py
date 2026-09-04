@@ -22,6 +22,10 @@ from .cctv_metrics import (
 from .cctv_metrics import (
     device_commands as _device_commands,
 )
+from .device_command_transport import (
+    DeviceCommand,
+    DirectDeviceCommandTransport,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +50,7 @@ class _ActionExecutor:
         edgex_command_topic_prefix: str,
         build_display_text,
         alarm_device_enum,
+        device_transport=None,
     ) -> None:
         """장치 실행에 필요한 저장소·클라이언트·상태 발행기를 보관한다."""
         self._repo = repo
@@ -62,6 +67,46 @@ class _ActionExecutor:
         self._edgex_command_topic_prefix = edgex_command_topic_prefix
         self._build_display_text = build_display_text
         self._alarm_device_enum = alarm_device_enum
+        self._device_transport = device_transport
+
+    def _execute_device_command(
+        self,
+        *,
+        device: str,
+        action: str,
+        payload: Dict,
+        command_id: str,
+        event_id: str,
+        camera_id: str,
+    ) -> Dict:
+        """공통 명령을 전송하고 저장소·메트릭용 결과를 만든다."""
+        transport = self._device_transport or DirectDeviceCommandTransport(
+            speaker=self._speaker,
+            signboard=self._signboard,
+            siren=self._siren,
+        )
+        result = transport.send(
+            DeviceCommand(
+                device=device,
+                action=action,
+                payload=payload,
+                command_id=command_id,
+                event_id=event_id,
+                camera_id=camera_id,
+            )
+        )
+        _device_commands.labels(
+            device=device,
+            status="ok" if result.ok else "skip",
+        ).inc()
+        _device_command_results.labels(device=device, status=result.status).inc()
+        self._repo.record_command(command_id, f"device/{device}", result.status, payload)
+        return {
+            "device": device,
+            "command_id": command_id,
+            "status": result.status,
+            **({"error": result.error} if result.error else {}),
+        }
 
     def _publish_shadow_command(
         self,
@@ -129,21 +174,22 @@ class _ActionExecutor:
             if self._alarm_device_enum.SPEAKER in devices:
                 command_id = f"{get_payload_event_id(payload)}:speaker"
                 self._repo.record_command(command_id, "device/speaker", "sent", payload)
-                speaker_ok = self._speaker.play(
-                    event_type,
-                    severity,
-                    camera_id,
-                    text=tts_message,
+                speaker_result = self._execute_device_command(
+                    device="speaker",
+                    action="play",
+                    payload={
+                        "event_type": event_type,
+                        "severity": severity,
+                        "camera_id": camera_id,
+                        "text": tts_message,
+                    },
+                    command_id=command_id,
+                    event_id=get_payload_event_id(payload),
+                    camera_id=camera_id,
                 )
-                if speaker_ok:
+                if speaker_result["status"] == "acknowledged":
                     alarm_played = True
-                _device_commands.labels(
-                    device="speaker", status="ok" if speaker_ok else "skip"
-                ).inc()
-                status = "acknowledged" if speaker_ok else "failed"
-                _device_command_results.labels(device="speaker", status=status).inc()
-                self._repo.record_command(command_id, "device/speaker", status, payload)
-                device_results.append({"device": "speaker", "command_id": command_id, "status": status})
+                device_results.append(speaker_result)
                 self._publish_shadow_command(
                     event_id=get_payload_event_id(payload),
                     command_id=command_id,
@@ -161,21 +207,29 @@ class _ActionExecutor:
             if self._alarm_device_enum.SIGNBOARD in devices:
                 command_id = f"{get_payload_event_id(payload)}:signboard"
                 self._repo.record_command(command_id, "device/signboard", "sent", payload)
-                signboard_ok = self._signboard.display(
-                    text=display_message
-                    or self._build_display_text(event_type, severity, camera_id),
-                    title="경고!",
-                    class_name=event_type,
+                signboard_text = display_message or self._build_display_text(
+                    event_type,
+                    severity,
+                    camera_id,
                 )
-                if signboard_ok:
+                signboard_result = self._execute_device_command(
+                    device="signboard",
+                    action="display",
+                    payload={
+                        "event_type": event_type,
+                        "severity": severity,
+                        "camera_id": camera_id,
+                        "text": signboard_text,
+                        "title": "경고!",
+                        "class_name": event_type,
+                    },
+                    command_id=command_id,
+                    event_id=get_payload_event_id(payload),
+                    camera_id=camera_id,
+                )
+                if signboard_result["status"] == "acknowledged":
                     alarm_played = True
-                _device_commands.labels(
-                    device="signboard", status="ok" if signboard_ok else "skip"
-                ).inc()
-                status = "acknowledged" if signboard_ok else "failed"
-                _device_command_results.labels(device="signboard", status=status).inc()
-                self._repo.record_command(command_id, "device/signboard", status, payload)
-                device_results.append({"device": "signboard", "command_id": command_id, "status": status})
+                device_results.append(signboard_result)
                 self._publish_shadow_command(
                     event_id=get_payload_event_id(payload),
                     command_id=command_id,
@@ -186,8 +240,7 @@ class _ActionExecutor:
                         "event_type": event_type,
                         "severity": severity,
                         "camera_id": camera_id,
-                        "text": display_message
-                        or self._build_display_text(event_type, severity, camera_id),
+                        "text": signboard_text,
                         "title": "경고!",
                     },
                 )
@@ -195,16 +248,20 @@ class _ActionExecutor:
             if self._alarm_device_enum.SIREN in devices:
                 command_id = f"{get_payload_event_id(payload)}:siren"
                 self._repo.record_command(command_id, "device/siren", "sent", payload)
-                siren_ok = self._siren.trigger(event_type, camera_id)
-                if siren_ok:
+                siren_result = self._execute_device_command(
+                    device="siren",
+                    action="trigger",
+                    payload={
+                        "event_type": event_type,
+                        "camera_id": camera_id,
+                    },
+                    command_id=command_id,
+                    event_id=get_payload_event_id(payload),
+                    camera_id=camera_id,
+                )
+                if siren_result["status"] == "acknowledged":
                     alarm_played = True
-                _device_commands.labels(
-                    device="siren", status="ok" if siren_ok else "skip"
-                ).inc()
-                status = "acknowledged" if siren_ok else "failed"
-                _device_command_results.labels(device="siren", status=status).inc()
-                self._repo.record_command(command_id, "device/siren", status, payload)
-                device_results.append({"device": "siren", "command_id": command_id, "status": status})
+                device_results.append(siren_result)
                 self._publish_shadow_command(
                     event_id=get_payload_event_id(payload),
                     command_id=command_id,
