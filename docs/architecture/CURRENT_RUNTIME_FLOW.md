@@ -58,6 +58,23 @@ _ActionExecutor.execute
 | 명령 결과 수집 | 구현됨 | 결과 저장·조회 및 Action Layer 이력 반영 가능 |
 | 실제 장치 UAT | 미완료 | 물리 장치 연결 후 검증 필요 |
 
+## 현재 환경 기준선
+
+공유 가능한 환경 템플릿과 Jetson Compose 기준으로 현재 기본값은 다음과 같다.
+
+| 설정 | 현재 기본값 | 의미 |
+|---|---|---|
+| `EDGEX_SHADOW_ENABLED` | `false` | EdgeX Shadow 명령 발행 비활성화 |
+| `EDGEX_DEVICE_REGISTRY_PATH` | 비어 있음 | 다중 출력 장치 레지스트리 비활성화 |
+| `EDGEX_COMMAND_TOPIC_PREFIX` | `edgex/commands/cctv` | 공통 명령 topic 접두사 |
+| `EDGEX_RESULT_TOPIC_PREFIX` | `edgex/results/cctv` | 명령 결과 topic 접두사 |
+| `EDGEX_COMMAND_RESULT_DB` | `/app/data/runtime/edgex_command_results.db` | 명령 결과 감사 저장소 |
+| `SPEAKER_HOST` | 비어 있음 | 실제 스피커 미연결 시 비활성 상태 |
+| `SPEAKER_DRY_RUN` | `false` | 호스트가 설정되면 실제 호출을 시도하는 기본값 |
+| `SIREN_SERVICE_PORT` | `59992` | 사이렌 Device Service HTTP 경계 |
+
+따라서 현재 구조는 EdgeX 서비스 자체가 Compose에 포함되어 있어도, 공유 환경 템플릿 기준으로는 직접 장치 제어가 기본이고 EdgeX 명령은 opt-in 상태다. 이 값을 바꾸는 작업은 실제 장치 UAT와 shadow 비교 이후에 수행해야 한다.
+
 ## 구조상 확인된 문제
 
 현재 `_ActionExecutor.execute`가 경보 정책, 장치 선택, 직접 호출, EdgeX 발행, 저장을 동시에 다룬다. 이 구조는 기능은 동작하지만 다음 문제가 있다.
@@ -73,4 +90,3 @@ _ActionExecutor.execute
 - 이벤트 계약과 `event_id`, `request_id`, `camera_id`, `device_id` 추적 필드는 유지한다.
 - 실제 장치 UAT 전까지 직접 경로를 제거하지 않는다.
 - EdgeX 장애가 AI 이벤트 생성과 저장을 중단시키지 않도록 한다.
-
