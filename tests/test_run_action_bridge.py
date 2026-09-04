@@ -102,6 +102,14 @@ def test_parse_runtime_config_supports_edgex_command_mode():
     assert config.edgex_command_mode == "edgex"
 
 
+def test_parse_runtime_config_supports_edgex_allowed_devices():
+    config = parse_runtime_config(
+        ["--edgex-allowed-devices", "signboard,speaker"]
+    )
+
+    assert config.edgex_allowed_devices == {"signboard", "speaker"}
+
+
 def test_parse_runtime_config_keeps_shadow_compatibility(monkeypatch):
     monkeypatch.setenv("EDGEX_SHADOW_ENABLED", "true")
     monkeypatch.delenv("EDGEX_COMMAND_MODE", raising=False)

@@ -129,6 +129,7 @@ class ActionBridge:
         edgex_jetson_id: str = "jetson-01",
         edgex_command_topic_prefix: str = "edgex/commands/cctv",
         edgex_device_registry_path: Optional[str] = None,
+        edgex_allowed_devices: Optional[Set[str]] = None,
     ) -> None:
         """Action Layer와 장치·EdgeX shadow 설정을 초기화한다."""
         self.mqtt_broker = mqtt_broker
@@ -141,6 +142,11 @@ class ActionBridge:
         self._edgex_shadow_enabled = self._edgex_command_mode is DeviceCommandMode.SHADOW
         self._edgex_jetson_id = edgex_jetson_id
         self._edgex_command_topic_prefix = edgex_command_topic_prefix
+        self._edgex_allowed_devices = {
+            AlarmDevice(str(device).strip().lower())
+            for device in (edgex_allowed_devices or set())
+            if str(device).strip()
+        }
         self._edgex_device_registry = (
             DeviceRegistry.from_file(edgex_device_registry_path)
             if edgex_device_registry_path
@@ -384,6 +390,13 @@ class ActionBridge:
         force_refresh: bool = False,
     ) -> List[AlarmDevice]:
         candidates = self._sites.resolve_alarm_devices(camera_id)
+        if self._edgex_command_mode is not DeviceCommandMode.DIRECT:
+            candidates = [
+                device
+                for device in candidates
+                if not self._edgex_allowed_devices
+                or device in self._edgex_allowed_devices
+            ]
         return [
             device
             for device in candidates

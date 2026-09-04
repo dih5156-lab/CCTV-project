@@ -72,6 +72,7 @@ class ActionBridgeRuntimeConfig:
     edgex_jetson_id: str = "jetson-01"
     edgex_command_topic_prefix: str = "edgex/commands/cctv"
     edgex_device_registry_path: Optional[str] = None
+    edgex_allowed_devices: Set[str] = frozenset()
 
 
 def _add_mqtt_arguments(parser: argparse.ArgumentParser) -> None:
@@ -235,6 +236,11 @@ def _add_edgex_arguments(parser: argparse.ArgumentParser) -> None:
         "--edgex-device-registry-path",
         default=_env("EDGEX_DEVICE_REGISTRY_PATH", ""),
     )
+    parser.add_argument(
+        "--edgex-allowed-devices",
+        default=_env("EDGEX_ALLOWED_DEVICES", ""),
+        help="EdgeX 또는 Shadow에서 허용할 출력 장치 목록(comma 구분)",
+    )
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -328,6 +334,7 @@ def parse_runtime_config(
         edgex_jetson_id=args.edgex_jetson_id,
         edgex_command_topic_prefix=args.edgex_command_topic_prefix,
         edgex_device_registry_path=args.edgex_device_registry_path or None,
+        edgex_allowed_devices=_csv_set(args.edgex_allowed_devices),
     )
 
 
@@ -351,6 +358,7 @@ def create_action_bridge(config: ActionBridgeRuntimeConfig) -> ActionBridge:
         edgex_jetson_id=config.edgex_jetson_id,
         edgex_command_topic_prefix=config.edgex_command_topic_prefix,
         edgex_device_registry_path=config.edgex_device_registry_path,
+        edgex_allowed_devices=config.edgex_allowed_devices,
     )
 
 

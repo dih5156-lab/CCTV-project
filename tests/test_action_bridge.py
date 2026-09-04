@@ -620,6 +620,19 @@ class TestActionBridgeStatusPublishing:
         bridge._speaker.play.assert_not_called()
         bridge._executor._publish_edgex_command.assert_called_once()
 
+    def test_edgex_allowed_devices_can_limit_runtime_to_signboard(self):
+        bridge = self._make_bridge()
+        bridge._edgex_command_mode = DeviceCommandMode.EDGEX
+        bridge._executor._device_command_mode = DeviceCommandMode.EDGEX
+        bridge._edgex_allowed_devices = {AlarmDevice.SIGNBOARD}
+        bridge._resolve_devices = ActionBridge._resolve_devices.__get__(bridge)
+        bridge._sites.resolve_alarm_devices = MagicMock(
+            return_value=[AlarmDevice.SPEAKER, AlarmDevice.SIGNBOARD]
+        )
+        bridge._device_is_available = MagicMock(return_value=True)
+
+        assert bridge._resolve_devices("camera_1") == [AlarmDevice.SIGNBOARD]
+
     def test_shadow_mode_records_direct_and_edgex_publish_comparison(self):
         bridge = self._make_bridge()
         bridge._executor._device_command_mode = DeviceCommandMode.SHADOW

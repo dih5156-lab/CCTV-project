@@ -68,6 +68,7 @@ _ActionExecutor.execute
 |---|---|---|
 | `EDGEX_SHADOW_ENABLED` | `false` | EdgeX Shadow 명령 발행 비활성화 |
 | `EDGEX_COMMAND_MODE` | 비어 있음 | 비어 있으면 기존 Shadow 설정과 호환하며 `direct` 또는 `shadow`로 결정 |
+| `EDGEX_ALLOWED_DEVICES` | 비어 있음 | EdgeX/Shadow 모드에서 허용할 장치 목록; 예: `signboard` |
 | `EDGEX_DEVICE_REGISTRY_PATH` | 비어 있음 | 다중 출력 장치 레지스트리 비활성화 |
 | `EDGEX_COMMAND_TOPIC_PREFIX` | `edgex/commands/cctv` | 공통 명령 topic 접두사 |
 | `EDGEX_RESULT_TOPIC_PREFIX` | `edgex/results/cctv` | 명령 결과 topic 접두사 |
@@ -77,6 +78,15 @@ _ActionExecutor.execute
 | `SIREN_SERVICE_PORT` | `59992` | 사이렌 Device Service HTTP 경계만 존재하며 물리 사이렌은 없음 |
 
 따라서 현재 구조는 EdgeX 서비스 자체가 Compose에 포함되어 있어도, 공유 환경 템플릿 기준으로는 직접 장치 제어가 기본이고 EdgeX 명령은 opt-in 상태다. 이 값을 바꾸는 작업은 실제 장치 UAT와 shadow 비교 이후에 수행해야 한다.
+
+스피커와 사이렌을 사용할 수 없는 현장에서는 전체 모드를 바꾸기 전에 다음처럼 전광판만 허용한다.
+
+```env
+EDGEX_COMMAND_MODE=edgex
+EDGEX_ALLOWED_DEVICES=signboard
+```
+
+이 설정은 사이트별 장치 선택 결과에서 스피커·사이렌을 제거한다. 비워두면 기존 사이트 설정과 호환되며 모든 선택 장치를 허용한다.
 
 ### 2026-09-04 실행 환경 확인
 
