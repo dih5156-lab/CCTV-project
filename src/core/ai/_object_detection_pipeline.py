@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from typing import TYPE_CHECKING, List
 
 import numpy as np
@@ -83,6 +84,26 @@ class ObjectDetectionPipeline:
 
         if use_pose and analyzer.pose_model:
             person_events, fall_events = analyzer._run_pose_full_frame(frame)
+            pose_keypoint_count = sum(
+                1
+                for event in person_events
+                if getattr(event, "keypoints", None)
+                and len(getattr(event, "keypoints", [])) >= 5
+            )
+            pose_needs_retry = not person_events or pose_keypoint_count == 0
+            if (
+                pose_needs_retry
+                and os.environ.get("POSE_RETRY_ON_EMPTY", "1").strip().lower()
+                in {"1", "true", "yes", "on"}
+            ):
+                retry = getattr(analyzer, "_run_pose_retry_full_frame", None)
+                if callable(retry):
+                    person_events, fall_events = retry(frame)
+                    logger.debug(
+                        "포즈 결과 없음: 고해상도 재시도 후 사람 %d명, 낙상 %d건",
+                        len(person_events),
+                        len(fall_events),
+                    )
             logger.debug(
                 "포즈 모델(전체 프레임): 사람 %d명, 낙상 %d건",
                 len(person_events),

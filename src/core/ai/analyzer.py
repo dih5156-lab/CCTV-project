@@ -15,7 +15,9 @@
 from __future__ import annotations
 
 import logging
+import json
 import os
+import threading
 import time
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -150,6 +152,17 @@ class AIAnalyzer:
         self._person_warning_shown  = False
         self._helmet_warning_shown  = False
         self._last_bag_objects: List[Dict] = []
+        self._pose_diag_enabled = os.environ.get("POSE_DIAGNOSTICS_ENABLED", "1").strip().lower() in {
+            "1", "true", "yes", "on"
+        }
+        self._pose_diag_path = Path(
+            os.environ.get("POSE_DIAGNOSTICS_LOG_PATH", "data/runtime/pose_diagnostics.jsonl")
+        )
+        self._pose_diag_sample_every = max(
+            1, int(os.environ.get("POSE_DIAGNOSTICS_SAMPLE_EVERY", "30"))
+        )
+        self._pose_diag_frame_index = 0
+        self._pose_diag_lock = threading.Lock()
 
         # 전담 컴포넌트
         self._tracker      = ObjectTracker()
@@ -455,8 +468,11 @@ class AIAnalyzer:
 
     # ── 포즈 모델 추론 ────────────────────────────────────────────────
 
-    def _run_pose_full_frame(self, frame) -> Tuple[List[DetectionEvent], List[DetectionEvent]]:
+    def _run_pose_full_frame(
+        self, frame, *, _diagnostic_stage: str = "primary"
+    ) -> Tuple[List[DetectionEvent], List[DetectionEvent]]:
         """포즈 모델을 전체 프레임에서 실행 → (person_events, fall_events)."""
+        started_at = time.perf_counter()
         person_events: List[DetectionEvent] = []
         fall_events:   List[DetectionEvent] = []
 
@@ -553,11 +569,87 @@ class AIAnalyzer:
         person_events = self._remove_duplicates(
             person_events, iou_threshold=PERSON_DUPLICATE_IOU_THRESHOLD
         )
+        self._record_pose_diagnostic(
+            stage=_diagnostic_stage,
+            imgsz=imgsz,
+            conf_threshold=conf_threshold,
+            elapsed_ms=round((time.perf_counter() - started_at) * 1000, 3),
+            person_events=person_events,
+        )
         logger.debug(
             "포즈 전체 프레임: 사람 %d명 (중복 제거 후), 낙상 %d건",
             len(person_events), len(fall_events),
         )
         return person_events, fall_events
+
+    def _run_pose_retry_full_frame(self, frame) -> Tuple[List[DetectionEvent], List[DetectionEvent]]:
+        """첫 pose 추론이 비었을 때만 큰 입력 크기로 한 번 재시도한다."""
+        retry_imgsz = int(os.environ.get("POSE_RETRY_IMGSZ", "960"))
+        with _IMGSZ_LOCK:
+            original_imgsz = _MODEL_IMGSZ.get("pose", DEFAULT_IMAGE_SIZE_POSE)
+            _MODEL_IMGSZ["pose"] = max(original_imgsz, retry_imgsz)
+        try:
+            return self._run_pose_full_frame(frame, _diagnostic_stage="retry")
+        finally:
+            with _IMGSZ_LOCK:
+                _MODEL_IMGSZ["pose"] = original_imgsz
+
+    def _record_pose_diagnostic(
+        self,
+        *,
+        stage: str,
+        imgsz: int,
+        conf_threshold: float,
+        elapsed_ms: Optional[float],
+        person_events: List[DetectionEvent],
+    ) -> None:
+        """pose 품질을 저비용 JSONL 진단 로그로 남긴다."""
+        if not self._pose_diag_enabled:
+            return
+        self._pose_diag_frame_index += 1
+        keypoint_sets = [
+            getattr(event, "keypoints", None)
+            for event in person_events
+            if getattr(event, "keypoints", None)
+        ]
+        keypoint_count = sum(len(points) for points in keypoint_sets)
+        confidence_values = [
+            float(point[2])
+            for points in keypoint_sets
+            for point in points
+            if len(point) >= 3
+        ]
+        should_write = (
+            stage != "primary"
+            or not person_events
+            or not keypoint_sets
+            or self._pose_diag_frame_index % self._pose_diag_sample_every == 0
+        )
+        if not should_write:
+            return
+        record = {
+            "timestamp": time.time(),
+            "stage": stage,
+            "frame_index": self._pose_diag_frame_index,
+            "imgsz": int(imgsz),
+            "confidence_threshold": float(conf_threshold),
+            "person_count": len(person_events),
+            "keypoint_person_count": len(keypoint_sets),
+            "keypoint_count": keypoint_count,
+            "keypoint_confidence_avg": (
+                sum(confidence_values) / len(confidence_values)
+                if confidence_values
+                else None
+            ),
+            "elapsed_ms": elapsed_ms,
+        }
+        try:
+            with self._pose_diag_lock:
+                self._pose_diag_path.parent.mkdir(parents=True, exist_ok=True)
+                with self._pose_diag_path.open("a", encoding="utf-8") as handle:
+                    handle.write(json.dumps(record, ensure_ascii=False) + "\n")
+        except OSError as exc:
+            logger.debug("pose 진단 로그 기록 실패: %s", exc)
 
     # ── 헬멧 검출 ────────────────────────────────────────────────────
 
