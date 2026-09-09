@@ -30,12 +30,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 import paho.mqtt.client as mqtt
 
-from ..canonical_event import (
-    canonicalize_event_payload,
-    get_payload_camera_id,
-    get_payload_confidence,
-    get_payload_event_type,
-)
+from ..canonical_event import get_payload_camera_id, get_payload_event_type
 from ..config import ActionBridgeConfig
 from ..devices.signboard import SignboardConfig, SignboardDevice, build_display_text
 from ..devices.siren import SensorConfig, SirenDevice
@@ -66,6 +61,7 @@ from ._action_bridge_topics import (
     default_alarm_topics,
     default_subscribe_topics,
 )
+from .action_command_components import DeviceResolver
 from .cctv_metrics import (
     action_bridge_up,
     events_handled,
@@ -75,10 +71,13 @@ from .cctv_metrics import (
 from .cctv_metrics import (
     pending_events as _metric_pending,
 )
+from .command_event_handler import CommandEventHandler
 from .device_command_transport import (
     DeviceCommandMode,
     normalize_device_command_mode,
 )
+from .edgex_result_handler import EdgeXResultHandler
+from .event_intake_processor import EventIntakeProcessor
 
 logger = logging.getLogger(__name__)
 
@@ -162,11 +161,36 @@ class ActionBridge:
             alarm_topics=alarm_topics or default_alarm_topics(),
             alarm_cooldown_seconds=alarm_cooldown_seconds,
         )
+        self._event_intake_processor = EventIntakeProcessor(
+            site_registry=self._sites,
+            manual_mode=ControlMode.MANUAL,
+        )
+        self._command_event_handler = CommandEventHandler(
+            repository=self._repo,
+            publish_status=self._publish_status,
+            set_mode=self.set_mode,
+            approve_event=self.approve_event,
+            reject_event=self.reject_event,
+            control_mode_factory=ControlMode,
+            mode_topic=CMD_TOPIC_MODE,
+            approve_topic=CMD_TOPIC_APPROVE,
+            reject_topic=CMD_TOPIC_REJECT,
+        )
+        self._edgex_result_handler = EdgeXResultHandler(
+            repository=self._repo,
+            publish_status=self._publish_status,
+        )
 
         self._speaker = SpeakerDevice(speaker_config or SpeakerConfig())
         self._signboard = SignboardDevice(signboard_config or SignboardConfig())
         self._siren = SirenDevice(siren_config or SensorConfig())
         self._device_reachability_cache: Dict[str, Tuple[float, bool]] = {}
+        self._device_resolver = DeviceResolver(
+            resolve_candidates=self._sites.resolve_alarm_devices,
+            is_available=self._device_is_available,
+            command_mode=self._edgex_command_mode,
+            allowed_devices=self._edgex_allowed_devices,
+        )
 
         targets: List[HttpEventTarget] = list(http_targets or [])
         if external_api_url and not any(t.url == external_api_url for t in targets):
@@ -389,19 +413,10 @@ class ActionBridge:
         *,
         force_refresh: bool = False,
     ) -> List[AlarmDevice]:
-        candidates = self._sites.resolve_alarm_devices(camera_id)
-        if self._edgex_command_mode is not DeviceCommandMode.DIRECT:
-            candidates = [
-                device
-                for device in candidates
-                if not self._edgex_allowed_devices
-                or device in self._edgex_allowed_devices
-            ]
-        return [
-            device
-            for device in candidates
-            if self._device_is_available(device, force_refresh=force_refresh)
-        ]
+        return self._device_resolver.resolve(
+            camera_id,
+            force_refresh=force_refresh,
+        )
 
     def _device_is_available(
         self,
@@ -468,21 +483,19 @@ class ActionBridge:
         - AUTO 모드: 즉시 알람/HTTP 실행
         - MANUAL 모드: 승인 대기 큐에 추가
         """
-        payload = canonicalize_event_payload(
-            payload, source="action-layer", source_type="action"
-        )
-        camera_id = get_payload_camera_id(payload)
-        mode, site_id = self._sites.resolve_mode(camera_id)
-        action_settings = self._sites.resolve_action_settings(camera_id)
-
-        event_type = get_payload_event_type(payload).lower()
+        prepared_event = self._event_intake_processor.prepare(payload)
+        payload = prepared_event.payload
+        camera_id = prepared_event.camera_id
+        mode = prepared_event.mode
+        site_id = prepared_event.site_id
+        event_type = prepared_event.event_type
         events_handled.labels(mode=mode.value).inc()
         events_handled_by_type.labels(event_type=event_type, mode=mode.value).inc()
 
-        confidence_threshold = action_settings.get("confidence_threshold")
-        if confidence_threshold is not None:
-            confidence = get_payload_confidence(payload)
-            if confidence is not None and confidence < confidence_threshold:
+        if prepared_event.is_filtered:
+            confidence = prepared_event.confidence
+            confidence_threshold = prepared_event.confidence_threshold
+            if confidence is not None and confidence_threshold is not None:
                 logger.info(
                     "신뢰도 임계값 미달 - 조치 스킵: camera=%s confidence=%.3f threshold=%.3f",
                     camera_id,
@@ -502,18 +515,6 @@ class ActionBridge:
                     },
                 )
                 return
-
-        display_message = action_settings.get("display_message") or ""
-        tts_message = action_settings.get("tts_message") or ""
-        if display_message or tts_message:
-            payload = dict(payload)
-            event_payload = dict(payload.get("event") or {})
-            if display_message:
-                event_payload["display_message"] = display_message
-                event_payload.setdefault("message", display_message)
-            if tts_message:
-                event_payload["tts_message"] = tts_message
-            payload["event"] = event_payload
 
         if mode == ControlMode.MANUAL:
             event_id = str(uuid.uuid4())
@@ -587,51 +588,7 @@ class ActionBridge:
 
     def _dispatch_command(self, topic: str, payload: Dict) -> None:
         """MQTT 명령 토픽을 처리한다."""
-        command_id = str(payload.get("command_id", uuid.uuid4()))
-        self._repo.record_command(command_id, topic, "queued", payload)
-        command_status = "ignored"
-        message = ""
-
-        if topic == CMD_TOPIC_MODE:
-            mode_val = payload.get("mode")
-            if mode_val:
-                try:
-                    self.set_mode(ControlMode(mode_val), site_id=payload.get("site_id"))
-                    command_status = "success"
-                    message = f"mode set to {mode_val}"
-                except ValueError:
-                    logger.warning("MQTT mode 명령 오류: 알 수 없는 값 %r", mode_val)
-                    command_status = "error"
-                    message = f"invalid mode: {mode_val!r}"
-
-        elif topic == CMD_TOPIC_APPROVE:
-            event_id = payload.get("event_id")
-            if event_id:
-                ok, msg = self.approve_event(event_id)
-                logger.info("MQTT approve: %s", msg)
-                command_status = "success" if ok else "error"
-                message = msg
-
-        elif topic == CMD_TOPIC_REJECT:
-            event_id = payload.get("event_id")
-            if event_id:
-                ok, msg = self.reject_event(event_id)
-                logger.info("MQTT reject: %s", msg)
-                command_status = "success" if ok else "error"
-                message = msg
-
-        self._publish_status(
-            "commands/result",
-            {
-                "command_id": command_id,
-                "topic": topic,
-                "status": command_status,
-                "message": message,
-                "site_id": payload.get("site_id"),
-                "event_id": payload.get("event_id"),
-            },
-        )
-        self._repo.record_command(command_id, topic, command_status, payload, message)
+        self._command_event_handler.dispatch(topic, payload)
 
     def _on_message(
         self,
@@ -663,25 +620,7 @@ class ActionBridge:
 
     def _handle_edgex_result(self, topic: str, payload: Dict) -> None:
         """EdgeX 장치 결과를 Action Layer 명령 이력과 상태 토픽에 반영한다."""
-        if not isinstance(payload, dict):
-            return
-        request_id = str(payload.get("request_id") or "").strip()
-        if not request_id:
-            logger.warning("request_id 없는 EdgeX 결과 무시: topic=%s", topic)
-            return
-        status = str(payload.get("status") or "failed")
-        message = str(payload.get("error_code") or "")
-        self._repo.record_command(request_id, topic, status, payload, message)
-        self._publish_status(
-            "devices/result",
-            {
-                "request_id": request_id,
-                "event_id": payload.get("event_id"),
-                "device_id": payload.get("device_id"),
-                "status": status,
-                "error_code": payload.get("error_code"),
-            },
-        )
+        self._edgex_result_handler.handle(topic, payload)
 
     @staticmethod
     def _normalize_sensor_payload(topic: str, payload: Dict) -> Dict:

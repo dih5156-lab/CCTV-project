@@ -12,6 +12,7 @@ def test_dabit_commands_map_to_signboard_methods():
     result = service.execute("cmd-1", "display", {"display_text": "테스트", "display_color": 1})
 
     assert result.status == "acknowledged"
+    assert result.request_id == "cmd-1"
     service._device.display.assert_called_once()
     assert service._device.display.call_args.kwargs["text_color"] == 1
 

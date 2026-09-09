@@ -9,6 +9,8 @@ def test_dabit_service_contract_result_shape():
         "device_id": "signboard-01",
         "status": "acknowledged",
         "error_code": None,
+        "event_id": "",
+        "request_id": "cmd-1",
     }
 
 

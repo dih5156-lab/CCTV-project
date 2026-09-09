@@ -5,6 +5,7 @@ from enum import Enum
 from typing import Any, Mapping, Protocol
 
 from ..edgex.command_contract import build_command_request, build_command_topic
+from .command_identifiers import build_transport_request_id
 
 
 class DeviceCommandMode(str, Enum):
@@ -129,8 +130,8 @@ class EdgeXCommandTransport:
         device_ids = self._resolve_device_ids(command.device, command.camera_id)
         failed_devices = []
         for device_id in device_ids or [""]:
-            target_command_id = (
-                f"{command.command_id}:{device_id}" if device_id else command.command_id
+            target_command_id = build_transport_request_id(
+                command.command_id, device_id
             )
             payload = build_command_request(
                 event_id=command.event_id,

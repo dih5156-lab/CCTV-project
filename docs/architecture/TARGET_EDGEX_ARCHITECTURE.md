@@ -46,6 +46,19 @@ Action 이력·Public API·모니터링
 | 결과 수집 계층 | 요청·수락·완료·실패 기록 | 명령을 다시 임의로 실행 |
 | Public API/모니터링 | 조회, 감사, 운영 상태 표시 | 실시간 제어 경로 대체 |
 
+## 보완 원칙
+
+현재 구조는 전임자의 Event Receiver·Platform Bridge·Device Manager 개념을 계승하되, 다음 경계를 추가한다.
+
+- 실시간 데이터 평면과 설정·조회 관리 평면을 분리한다.
+- Action Layer는 정책·승인·cooldown·장치 매핑·공통 명령 생성에 집중한다.
+- 제조사 HTTP/TCP/GPIO 변환은 Device Service 안에만 둔다.
+- 이벤트와 명령을 분리하고 `event_id`, `request_id`, `command_id`, `device_id`를 유지한다.
+- eKuiper와 Python 규칙이 같은 최종 알람을 중복 발행하지 않도록 판정 주체를 하나로 정한다.
+- 장치별 timeout·retry·허용 command·장애 격리를 적용한다.
+
+상세 보완안은 [Edge AIoT 아키텍처 보완안](ARCHITECTURE_IMPROVEMENT_PROPOSAL.md), 결정 근거는 [ADR-002](../decisions/ADR-002-edge-aiot-control-boundary.md)에 기록한다.
+
 ## 전환 모드
 
 ### 1. direct
@@ -79,4 +92,3 @@ AI 판정 → Action 승인
 Action 승인 → EdgeX Command 수락
 Command 수락 → 장치 동작 완료
 ```
-

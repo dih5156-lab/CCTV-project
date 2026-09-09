@@ -18,12 +18,21 @@ class DabitCommandResult:
     device_id: str
     status: str
     error_code: str | None = None
+    event_id: str = ""
+    request_id: str = ""
+
+    def __post_init__(self) -> None:
+        """기존 command_id를 공통 결과 계약의 request_id로 보완한다."""
+        if not self.request_id:
+            object.__setattr__(self, "request_id", self.command_id)
 
     def to_dict(self) -> dict[str, Any]:
         """명령 결과를 API와 MQTT에서 사용하는 딕셔너리로 변환한다."""
         return {
             "command_id": self.command_id,
+            "request_id": self.request_id,
             "device_id": self.device_id,
+            "event_id": self.event_id,
             "status": self.status,
             "error_code": self.error_code,
         }
@@ -61,9 +70,12 @@ class DabitDeviceService:
         parameters: Mapping[str, Any] | None = None,
         device: Any | None = None,
         device_id: str | None = None,
+        event_id: str = "",
     ) -> DabitCommandResult:
         if command not in self.COMMANDS:
-            return DabitCommandResult(command_id, self.device_id, "failed", "unsupported_command")
+            return DabitCommandResult(
+                command_id, self.device_id, "failed", "unsupported_command", event_id
+            )
         params = parameters or {}
         # 기존 테스트와 단일 장치 사용자가 _device를 교체하는 호환 동작을 유지한다.
         target_device = device or (
@@ -71,9 +83,13 @@ class DabitDeviceService:
         )
         target_device_id = device_id or self.device_id
         if target_device is None:
-            return DabitCommandResult(command_id, target_device_id, "failed", "device_not_found")
+            return DabitCommandResult(
+                command_id, target_device_id, "failed", "device_not_found", event_id
+            )
         if self._dry_run:
-            return DabitCommandResult(command_id, target_device_id, "simulated")
+            return DabitCommandResult(
+                command_id, target_device_id, "simulated", event_id=event_id
+            )
         try:
             if command == "display":
                 ok = target_device.display(
@@ -90,8 +106,16 @@ class DabitDeviceService:
             else:
                 ok = target_device.power_on() if bool(params.get("power", True)) else target_device.power_off()
         except Exception:
-            return DabitCommandResult(command_id, target_device_id, "failed", "device_error")
-        return DabitCommandResult(command_id, target_device_id, "acknowledged" if ok else "failed", None if ok else "device_unreachable")
+            return DabitCommandResult(
+                command_id, target_device_id, "failed", "device_error", event_id
+            )
+        return DabitCommandResult(
+            command_id,
+            target_device_id,
+            "acknowledged" if ok else "failed",
+            None if ok else "device_unreachable",
+            event_id,
+        )
 
     def close(self) -> None:
         """전광판 장치의 유휴 갱신 스레드를 종료한다."""
@@ -101,6 +125,7 @@ class DabitDeviceService:
     def execute_request(self, request: Mapping[str, Any]) -> DabitCommandResult:
         """공통 Command 요청을 Dabit 명령 형식으로 변환해 실행한다."""
         request_id = str(request.get("request_id") or "")
+        event_id = str(request.get("event_id") or "")
         if not request_id or not request.get("event_id") or request.get("device") != "signboard":
             return DabitCommandResult(request_id, self.device_id, "failed", "invalid_request")
         payload = request.get("payload") or {}
@@ -129,13 +154,9 @@ class DabitDeviceService:
             parameters,
             device=self._devices[target_device_id],
             device_id=target_device_id,
+            event_id=event_id,
         )
-        return DabitCommandResult(
-            result.command_id,
-            result.device_id,
-            result.status,
-            result.error_code,
-        )
+        return result
 
 
 def _optional_int(value: Any) -> int | None:

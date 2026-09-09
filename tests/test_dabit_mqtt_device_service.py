@@ -29,6 +29,7 @@ def test_display_command_is_translated_to_dabit_device_call():
     )
 
     assert result.status == "acknowledged"
+    assert result.request_id == "req-1"
     display_kwargs = device.display.call_args.kwargs
     assert display_kwargs["text"] == "위험"
     assert display_kwargs["title"] == "경고!"

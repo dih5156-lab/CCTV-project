@@ -1,66 +1,94 @@
-from src.edgex.command_result_collector import CommandResultStore
+from dataclasses import dataclass, field
+
+from src.services.command_result_collector import CommandResultCollector
+from src.services.device_command_transport import DeviceCommand, DeviceCommandResult
 
 
-def test_result_store_saves_and_reads_device_result(tmp_path):
-    store = CommandResultStore(tmp_path / "results.db")
+@dataclass
+class FakeRepository:
+    records: list = field(default_factory=list)
 
-    store.record(
-        "edgex/results/cctv/jetson-01/speaker",
-        {
-            "request_id": "req-1",
-            "event_id": "event-1",
-            "device_id": "cctv-speaker-01",
-            "status": "simulated",
-            "error_code": None,
-        },
+    def record_command(self, *args):
+        self.records.append(args)
+
+
+class FakeMetric:
+    def __init__(self):
+        self.labels_called = []
+
+    def labels(self, **labels):
+        self.labels_called.append(labels)
+        return self
+
+    def inc(self):
+        return None
+
+
+def test_collector_records_acknowledged_device_result():
+    repository = FakeRepository()
+    command_metric = FakeMetric()
+    result_metric = FakeMetric()
+    collector = CommandResultCollector(
+        repository=repository,
+        device_commands_metric=command_metric,
+        device_results_metric=result_metric,
+    )
+    command = DeviceCommand(
+        device="signboard",
+        action="display",
+        payload={"text": "주의"},
+        command_id="event-1:signboard",
+        event_id="event-1",
+        camera_id="camera-1",
+    )
+    result = DeviceCommandResult(
+        device="signboard",
+        command_id=command.command_id,
+        ok=True,
+        status="acknowledged",
     )
 
-    result = store.get("req-1")
-    assert result["device_id"] == "cctv-speaker-01"
-    assert result["status"] == "simulated"
-    assert result["topic"].endswith("/speaker")
+    collected = collector.collect(command, result)
 
-
-def test_result_store_updates_same_request_id_without_duplicate_rows(tmp_path):
-    store = CommandResultStore(tmp_path / "results.db")
-    base = {
-        "request_id": "req-2",
-        "event_id": "event-2",
-        "device_id": "cctv-siren-01",
-        "status": "running",
+    assert collected == {
+        "device": "signboard",
+        "command_id": "event-1:signboard",
+        "status": "acknowledged",
     }
-    store.record("edgex/results/cctv/jetson-01/siren", base)
-    store.record(
-        "edgex/results/cctv/jetson-01/siren",
-        {**base, "status": "acknowledged"},
+    assert repository.records == [
+        (
+            "event-1:signboard",
+            "device/signboard",
+            "acknowledged",
+            {"text": "주의"},
+        )
+    ]
+    assert command_metric.labels_called == [{"device": "signboard", "status": "ok"}]
+    assert result_metric.labels_called == [
+        {"device": "signboard", "status": "acknowledged"}
+    ]
+
+
+def test_collector_includes_error_when_device_command_fails():
+    collector = CommandResultCollector(
+        repository=FakeRepository(),
+        device_commands_metric=FakeMetric(),
+        device_results_metric=FakeMetric(),
+    )
+    command = DeviceCommand(
+        device="speaker",
+        action="play",
+        payload={"text": "경고"},
+        command_id="event-2:speaker",
+        event_id="event-2",
+        camera_id="camera-1",
+    )
+    result = DeviceCommandResult(
+        device="speaker",
+        command_id=command.command_id,
+        ok=False,
+        status="failed",
+        error="연결 실패",
     )
 
-    assert store.get("req-2")["status"] == "acknowledged"
-    assert len(store.list_recent()) == 1
-
-
-def test_invalid_result_is_ignored(tmp_path):
-    store = CommandResultStore(tmp_path / "results.db")
-
-    assert store.record("edgex/results/cctv/jetson-01/speaker", {}) is False
-    assert store.list_recent() == []
-
-
-def test_result_store_filters_by_device_and_status(tmp_path):
-    store = CommandResultStore(tmp_path / "results.db")
-    for request_id, device_id, status in (
-        ("req-speaker", "cctv-speaker-01", "acknowledged"),
-        ("req-siren", "cctv-siren-01", "failed"),
-    ):
-        store.record(
-            "edgex/results/cctv/jetson-01/device",
-            {
-                "request_id": request_id,
-                "event_id": request_id.replace("req", "event"),
-                "device_id": device_id,
-                "status": status,
-            },
-        )
-
-    results = store.list_recent(device_id="cctv-speaker-01", status="acknowledged")
-    assert [item["request_id"] for item in results] == ["req-speaker"]
+    assert collector.collect(command, result)["error"] == "연결 실패"
