@@ -66,7 +66,12 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--max-frames", type=int, default=30)
     parser.add_argument("--frame-stride", type=int, default=6)
-    parser.add_argument("--fall-window-margin-frames", type=int, default=60)
+    parser.add_argument(
+        "--fall-window-margin-frames",
+        type=int,
+        default=120,
+        help="낙상 구간 앞뒤로 포함할 프레임 여유 범위(특징 캐시 생성기와 동일하게 유지).",
+    )
     parser.add_argument("--sequence-length", type=int, default=30)
     parser.add_argument("--min-pose-frames", type=int, default=3)
     parser.add_argument("--channels", type=int, default=32)
@@ -189,6 +194,16 @@ def _fit_summary_standardizer(
     scale = features.std(axis=0)
     scale = np.where(scale < 1e-6, 1.0, scale)
     return (features - mean) / scale, mean, scale
+
+
+def _require_binary_classes(labels: np.ndarray, *, dataset_name: str) -> None:
+    """학습과 평가 데이터에 낙상·비낙상 두 클래스가 모두 있는지 확인한다."""
+    classes = {int(value) for value in np.asarray(labels).tolist()}
+    if classes != {0, 1}:
+        raise ValueError(
+            f"{dataset_name} 데이터에 fall/non_fall 두 클래스가 모두 필요하다: "
+            f"현재 클래스={sorted(classes)}"
+        )
 
 
 def _binary_metrics(
@@ -338,6 +353,8 @@ def main() -> int:
         sequence_length=args.sequence_length,
         min_pose_frames=args.min_pose_frames,
     )
+    _require_binary_classes(train_dataset["y"], dataset_name="train")
+    _require_binary_classes(validation_dataset["y"], dataset_name="validation")
     train_indices, holdout_indices, holdout_split = _group_holdout_indices(
         train_dataset["scene_ids"],
         train_dataset["y"],

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run one fall temporal checkpoint against a buffered candidate video."""
+"""버퍼링된 후보 영상 하나에 넘어짐 시계열 체크포인트를 실행한다."""
 
 from __future__ import annotations
 
@@ -33,6 +33,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--pose-model", type=Path, required=True)
     parser.add_argument("--video", type=Path)
     parser.add_argument("--feature-json", type=Path, help="Use a cached feature JSON instead of decoding video.")
+    parser.add_argument(
+        "--output-feature-json",
+        type=Path,
+        help="Persist extracted pose features for reuse by another model.",
+    )
     parser.add_argument("--device", choices=("auto", "cuda", "cpu"), default="auto")
     parser.add_argument("--imgsz", type=int, default=320)
     parser.add_argument("--confidence-threshold", type=float, default=0.35)
@@ -96,13 +101,31 @@ def _required_frame_count(
     stride: int,
     min_confirmed_windows: int,
 ) -> int:
-    """Return enough frames to evaluate the requested consecutive windows."""
+    """요청한 연속 구간을 평가할 수 있도록 충분한 프레임을 반환한다."""
     required_windows = max(min_confirmed_windows, 1)
     if window_size <= 0:
         return sequence_length
     return max(
         sequence_length,
         window_size + max(stride, 1) * (required_windows - 1),
+    )
+
+
+def _effective_min_confirmed_windows(requested: int, available: int) -> int:
+    """실제로 계산된 window 수를 넘지 않도록 필요한 확정 개수를 조정한다."""
+    requested_windows = max(requested, 1)
+    available_windows = max(available, 0)
+    if available_windows == 0:
+        return requested_windows
+    return min(requested_windows, available_windows)
+
+
+def write_feature_summary(summary: dict, output_path: Path) -> None:
+    """추출된 pose 특징을 다른 temporal 모델이 재사용할 수 있게 저장한다."""
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(
+        json.dumps(summary, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
     )
 
 
@@ -147,6 +170,8 @@ def main() -> int:
             imgsz=args.imgsz,
             confidence_threshold=args.confidence_threshold,
         )
+    if args.output_feature_json is not None:
+        write_feature_summary(summary, args.output_feature_json)
     frame_records = list(summary.get("frame_records") or [])
     if args.sliding_window_size > 0:
         window_size = max(args.sliding_window_size, 1)
@@ -170,7 +195,10 @@ def main() -> int:
         probability = max(probabilities, default=0.0)
         print(f"sliding_windows: {len(probabilities)}")
         print("window_probabilities: " + ",".join(f"{value:.6f}" for value in probabilities))
-        required_windows = max(args.min_confirmed_windows, 1)
+        required_windows = _effective_min_confirmed_windows(
+            args.min_confirmed_windows,
+            len(probabilities),
+        )
         confirmed_windows = 0
         consecutive_windows = 0
         for value in probabilities:

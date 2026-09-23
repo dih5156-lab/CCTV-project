@@ -3,8 +3,10 @@ from __future__ import annotations
 import importlib.util
 import sys
 from pathlib import Path
+from unittest.mock import patch
 
 import numpy as np
+import pytest
 
 SCRIPT_PATH = (
     Path(__file__).resolve().parents[1]
@@ -78,3 +80,18 @@ def test_select_cached_rows_keeps_only_rows_with_matching_feature_files(
     )
 
     assert [row["scene_id"] for row in selected] == ["scene_b"]
+
+
+def test_temporal_training_default_margin_matches_pose_feature_cache_contract() -> None:
+    with patch.object(sys, "argv", ["train_fall_temporal_tcn.py"]):
+        args = train_fall_temporal_tcn.parse_args()
+
+    assert args.fall_window_margin_frames == 120
+
+
+def test_require_binary_classes_rejects_cache_with_missing_class() -> None:
+    with pytest.raises(ValueError, match="validation.*두 클래스"):
+        train_fall_temporal_tcn._require_binary_classes(
+            np.asarray([1, 1], dtype=np.int64),
+            dataset_name="validation",
+        )

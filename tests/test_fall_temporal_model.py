@@ -1,9 +1,16 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 import numpy as np
 import torch
 
-from scripts.inference.smoke_fall_temporal_model import _required_frame_count
+from scripts.inference.smoke_fall_temporal_model import (
+    _effective_min_confirmed_windows,
+    _required_frame_count,
+    write_feature_summary,
+)
 from src.core.ai.fall_temporal_model import (
     FRAME_FEATURE_NAMES,
     FallTemporalHybrid,
@@ -59,6 +66,23 @@ def test_required_frame_count_covers_consecutive_sliding_windows() -> None:
     assert _required_frame_count(60, 60, 20, 2) == 80
     assert _required_frame_count(60, 60, 20, 3) == 100
     assert _required_frame_count(60, 0, 20, 2) == 60
+
+
+def test_short_sequence_does_not_reject_one_valid_window() -> None:
+    assert _effective_min_confirmed_windows(2, 1) == 1
+
+
+def test_write_feature_summary_persists_reusable_pose_features(tmp_path: Path) -> None:
+    output_path = tmp_path / "nested" / "scene.json"
+    summary = {
+        "frames_seen": 60,
+        "frames_with_pose": 30,
+        "frame_records": [{"frame_index": 10, "fall_score": 0.8}],
+    }
+
+    write_feature_summary(summary, output_path)
+
+    assert json.loads(output_path.read_text(encoding="utf-8")) == summary
 
 
 def test_fall_temporal_tcn_returns_one_logit_per_video() -> None:
