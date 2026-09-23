@@ -1,7 +1,9 @@
 import json
 import subprocess
+from dataclasses import replace
 
 import numpy as np
+import pytest
 
 from scripts.datasets.train_yolo_pose_fall_rf import FEATURE_NAMES
 from src.core.ai._falldata_aux import (
@@ -38,6 +40,7 @@ def _pose_event(timestamp: float = 1.0) -> DetectionEvent:
         height=160,
         confidence=0.92,
         timestamp=timestamp,
+        object_id=101,
         keypoints=keypoints,
         metadata={
             "frame_num": 42,
@@ -291,7 +294,8 @@ def test_inline_pose_rf_uses_camera_pose_records_without_subprocess(
         ),
         inline_pose_rf_bundle=bundle,
     )
-    verifier.add_pose_events("cam01", [_pose_event()])
+    pose_event = _pose_event()
+    verifier.add_pose_events("cam01", [pose_event])
     verifier.add_frame(np.zeros((1080, 1920, 3), dtype=np.uint8))
     monkeypatch.setattr(
         verifier,
@@ -301,8 +305,12 @@ def test_inline_pose_rf_uses_camera_pose_records_without_subprocess(
         ),
     )
 
-    result = verifier.verify(camera_name="cam01")
-    other_camera_result = verifier.verify(camera_name="cam02")
+    result = verifier.verify(
+        camera_name="cam01", pose_scope=pose_event.metadata["falldata_pose_scope"]
+    )
+    other_camera_result = verifier.verify(
+        camera_name="cam02", pose_scope=pose_event.metadata["falldata_pose_scope"]
+    )
 
     assert result["status"] == "ok"
     assert result["confirmed"] is True
@@ -317,7 +325,7 @@ def test_inline_pose_rf_uses_camera_pose_records_without_subprocess(
         for frame_record in captured_record["frame_records"]
     } == {42}
     assert verifier.snapshot_frames() == []
-    assert other_camera_result["status"] == "no_pose_records"
+    assert other_camera_result["status"] == "missing_pose_scope"
 
 
 def test_inline_pose_rf_clip_buffer_downscales_frames() -> None:
@@ -717,6 +725,103 @@ def test_verify_records_temporal_compare_model_result(monkeypatch, tmp_path) -> 
     assert str(verifier.config.temporal_pose_model_path) in temporal_command
 
 
+def test_temporal_compare_rejects_prediction_with_too_few_pose_frames(
+    monkeypatch, tmp_path
+) -> None:
+    verifier = FallDataAuxVerifier(
+        FallDataAuxConfig(
+            enabled=True,
+            min_pose_frames=10,
+            temporal_python=tmp_path / "temporal-python",
+            temporal_compare_model_path=tmp_path / "candidate.pt",
+            temporal_pose_model_path=tmp_path / "pose.pt",
+        )
+    )
+    for path in (
+        verifier.config.temporal_python,
+        verifier.config.temporal_compare_model_path,
+        verifier.config.temporal_pose_model_path,
+    ):
+        path.write_text("", encoding="utf-8")
+
+    monkeypatch.setattr(
+        verifier,
+        "_run",
+        lambda command: subprocess.CompletedProcess(
+            command,
+            0,
+            stdout=(
+                "prediction: [1]\n"
+                "fall_probability: 0.99999583\n"
+                "threshold: 0.5\n"
+                "frames_with_pose: 0\n"
+            ),
+            stderr="",
+        ),
+    )
+
+    result = verifier._run_temporal_compare_model(tmp_path / "window.mp4")
+
+    assert result["status"] == "insufficient_pose_frames"
+    assert result["confirmed"] is False
+    assert result["frames_with_pose"] == 0
+    assert result["min_pose_frames"] == 10
+
+
+def test_temporal_shadow_preserves_insufficient_pose_status(monkeypatch) -> None:
+    verifier = FallDataAuxVerifier(FallDataAuxConfig(enabled=True))
+    verifier.add_frame(np.zeros((4, 4, 3), dtype=np.uint8))
+    monkeypatch.setattr(verifier, "_write_video", lambda path, frames: None)
+    monkeypatch.setattr(
+        verifier,
+        "_run_temporal_compare_model",
+        lambda path: {
+            "status": "insufficient_pose_frames",
+            "confirmed": False,
+            "frames_with_pose": 0,
+            "min_pose_frames": 10,
+        },
+    )
+
+    result = verifier.verify_temporal_shadow()
+
+    assert result["status"] == "insufficient_pose_frames"
+    assert result["confirmed"] is False
+
+
+def test_temporal_shadow_clip_uses_the_exact_verified_frames(monkeypatch, tmp_path) -> None:
+    verifier = FallDataAuxVerifier(FallDataAuxConfig(enabled=True, buffer_frames=4))
+    first_frame = np.full((4, 4, 3), 1, dtype=np.uint8)
+    later_frame = np.full((4, 4, 3), 2, dtype=np.uint8)
+    verifier.add_frame(first_frame)
+    monkeypatch.setattr(verifier, "_write_video", lambda path, frames: None)
+
+    def fake_temporal_compare(path):
+        verifier.add_frame(later_frame)
+        return {"status": "ok", "confirmed": False}
+
+    monkeypatch.setattr(
+        verifier,
+        "_run_temporal_compare_model",
+        fake_temporal_compare,
+    )
+
+    result = verifier.verify_temporal_shadow()
+    saved = []
+    monkeypatch.setattr(
+        verifier,
+        "_write_video",
+        lambda path, frames: saved.extend(frame.copy() for frame in frames),
+    )
+
+    frame_count = verifier.save_last_verified_clip(tmp_path / "verified.mp4")
+
+    assert frame_count == 1
+    assert result["buffered_frames"] == 1
+    assert len(saved) == 1
+    assert np.array_equal(saved[0], first_frame)
+
+
 def test_temporal_compare_model_can_use_sliding_windows(monkeypatch, tmp_path) -> None:
     verifier = FallDataAuxVerifier(
         FallDataAuxConfig(
@@ -817,3 +922,171 @@ def test_parse_smoke_outputs() -> None:
     assert FallDataAuxVerifier._parse_nonzero_frames(output) == 40
     assert FallDataAuxVerifier._parse_prediction(output) == 0
     assert FallDataAuxVerifier._parse_probability(output) == [0.9185, 0.0815]
+
+
+@pytest.mark.parametrize(
+    "outcome", ["ok", "timeout", "exit", "launch", "unparsed", "insufficient"]
+)
+def test_temporal_metrics_count_process_boundary(monkeypatch, tmp_path, outcome):
+    dependency = tmp_path / "dependency"
+    dependency.touch()
+    verifier = FallDataAuxVerifier(
+        FallDataAuxConfig(
+            enabled=True,
+            temporal_python=dependency,
+            temporal_pose_model_path=dependency,
+            temporal_compare_model_path=dependency,
+            min_pose_frames=2,
+        )
+    )
+    clock = [100.0]
+    monkeypatch.setattr("src.core.ai._falldata_aux.time.monotonic", lambda: clock[0])
+
+    def run(command, **kwargs):
+        assert kwargs["check"] is True
+        assert kwargs["timeout"] == verifier.config.timeout_seconds
+        clock[0] += 0.125
+        if outcome == "timeout":
+            raise subprocess.TimeoutExpired(command, 1)
+        if outcome == "exit":
+            raise subprocess.CalledProcessError(1, command)
+        if outcome == "launch":
+            raise OSError("cannot launch")
+        frames = 1 if outcome == "insufficient" else 3
+        output = (
+            "unreadable"
+            if outcome == "unparsed"
+            else (
+                f"prediction: [1]\nfall_probability: 0.9\nthreshold: 0.7\nframes_with_pose: {frames}\n"
+            )
+        )
+        return subprocess.CompletedProcess(command, 0, output, "")
+
+    monkeypatch.setattr(subprocess, "run", run)
+    if outcome in {"timeout", "exit", "launch"}:
+        with pytest.raises(
+            (subprocess.TimeoutExpired, subprocess.CalledProcessError, OSError)
+        ):
+            verifier._run_temporal_compare_model(tmp_path / "clip.mp4")
+    else:
+        result = verifier._run_temporal_compare_model(tmp_path / "clip.mp4")
+        assert result["confirmed"] is (outcome == "ok")
+    snapshot = verifier.temporal_metrics_snapshot()
+    assert snapshot["requests"] == snapshot["process_calls"] == 1
+    assert snapshot["process_seconds"] == 0.125
+    failed = outcome in {"timeout", "exit", "launch"}
+    assert snapshot.get("process_errors", 0) == int(failed)
+    assert snapshot.get("process_completed", 0) == int(not failed)
+    assert snapshot.get("process_timeouts", 0) == int(outcome == "timeout")
+    if not failed:
+        assert snapshot["unparsed_results"] == int(outcome == "unparsed")
+        assert snapshot["parsed_results"] == int(outcome != "unparsed")
+        assert snapshot["insufficient_pose_results"] == int(
+            outcome in {"unparsed", "insufficient"}
+        )
+        assert snapshot["window_inferences"] == int(outcome != "unparsed")
+    else:
+        assert snapshot.get("window_inferences", 0) == 0
+    snapshot["requests"] = -1
+    assert verifier.temporal_metrics_snapshot()["requests"] == 1
+
+
+def test_temporal_metrics_counts_actual_window_inferences(monkeypatch, tmp_path):
+    """sliding window 실행 시 실제 model forward 횟수를 process_calls와 별도로 센다."""
+    dependency = tmp_path / "dependency"
+    dependency.touch()
+    verifier = FallDataAuxVerifier(
+        FallDataAuxConfig(
+            enabled=True,
+            temporal_python=dependency,
+            temporal_pose_model_path=dependency,
+            temporal_compare_model_path=dependency,
+        )
+    )
+    outputs = iter(
+        [
+            "prediction: [1]\nfall_probability: 0.9\nthreshold: 0.7\n"
+            "frames_with_pose: 30\nsliding_windows: 4\n",
+            "prediction: [0]\nfall_probability: 0.2\nthreshold: 0.7\nframes_with_pose: 30\n",
+        ]
+    )
+
+    def run(command, **kwargs):
+        return subprocess.CompletedProcess(command, 0, next(outputs), "")
+
+    monkeypatch.setattr(subprocess, "run", run)
+    monkeypatch.setattr("src.core.ai._falldata_aux.time.monotonic", lambda: 0.0)
+
+    verifier._run_temporal_compare_model(tmp_path / "clip_a.mp4")
+    verifier._run_temporal_compare_model(tmp_path / "clip_b.mp4")
+
+    snapshot = verifier.temporal_metrics_snapshot()
+    assert snapshot["process_calls"] == 2
+    assert snapshot["window_inferences"] == 5
+
+    from types import SimpleNamespace
+
+    from prometheus_client import CollectorRegistry
+
+    from src.services.processor_metrics import ProcessorStatsCollector
+
+    registry = CollectorRegistry()
+    registry.register(
+        ProcessorStatsCollector(
+            SimpleNamespace(
+                get_stats=lambda: {"falldata_temporal_stats": snapshot}
+            )
+        )
+    )
+    assert (
+        registry.get_sample_value("cctv_falldata_temporal_window_inferences_total")
+        == 5
+    )
+
+
+def test_temporal_metrics_unavailable_does_not_start_process_and_exports(
+    monkeypatch, tmp_path
+):
+    from types import SimpleNamespace
+
+    from prometheus_client import CollectorRegistry
+
+    from src.services.processor_metrics import ProcessorStatsCollector
+
+    monkeypatch.setattr(
+        subprocess, "run", lambda *a, **kw: pytest.fail("must not launch")
+    )
+    verifier = FallDataAuxVerifier(FallDataAuxConfig(enabled=True))
+    assert verifier.temporal_metrics_snapshot() == {}
+    assert verifier._run_temporal_compare_model(tmp_path / "clip.mp4") is None
+    verifier.config = replace(
+        verifier.config, temporal_compare_model_path=tmp_path / "missing.pt"
+    )
+    assert (
+        verifier._run_temporal_compare_model(tmp_path / "clip.mp4")["status"]
+        == "missing_dependency"
+    )
+    assert verifier.temporal_metrics_snapshot() == {
+        "requests": 2,
+        "disabled": 1,
+        "missing_dependencies": 1,
+    }
+    registry = CollectorRegistry()
+    registry.register(
+        ProcessorStatsCollector(
+            SimpleNamespace(
+                get_stats=lambda: {
+                    "falldata_temporal_stats": verifier.temporal_metrics_snapshot()
+                }
+            )
+        )
+    )
+    assert registry.get_sample_value("cctv_falldata_temporal_requests_total") == 2
+    assert (
+        registry.get_sample_value("cctv_falldata_temporal_missing_dependencies_total")
+        == 1
+    )
+    assert (
+        registry.get_sample_value("cctv_falldata_temporal_process_completed_total")
+        is None
+    )

@@ -261,10 +261,15 @@ class FallDataAuxVerifier:
         self.config = config or FallDataAuxConfig.from_env()
         self._frames: Deque[np.ndarray] = deque(maxlen=max(self.config.buffer_frames, 1))
         self._pose_records: dict[str, Deque[dict[str, Any]]] = {}
+        self._pose_generations: dict[str, int] = {}
+        self._next_pose_generation = 0
+        self._inline_results: dict[tuple[str, int], tuple[float, dict]] = {}
+        self._inline_metrics: dict[str, dict[str, float]] = {}
+        self._temporal_metrics: dict[str, float] = {}
+        self._last_verified_frames: list[np.ndarray] = []
         self._inline_pose_rf_bundle = inline_pose_rf_bundle
         self._inline_pose_rf_bundles: dict[str, dict[str, Any]] = {}
         self._last_run_at = 0.0
-        self._last_run_by_camera: dict[str, float] = {}
         self._last_result: dict | None = None
         self._last_result_by_camera: dict[str, dict] = {}
         self._lock = Lock()
@@ -308,11 +313,21 @@ class FallDataAuxVerifier:
             return
         from scripts.datasets.train_yolo_pose_fall_rf import _pose_geometry
 
+        events = list(events)
+        for event in events:
+            metadata = dict(event.metadata or {})
+            metadata.pop("falldata_pose_scope", None)
+            event.metadata = metadata
+        pose_ids_by_box: dict[tuple, set[int]] = {}
         records: list[dict[str, Any]] = []
         for event in events:
             if event.event_type != EventType.PERSON or not event.keypoints:
                 continue
+            if type(event.object_id) is not int or not 0 <= event.object_id < 2**64 - 1:
+                continue
             metadata = dict(event.metadata or {})
+            if type(metadata.get("frame_num")) is not int or metadata["frame_num"] < 0:
+                continue
             fall_score = metadata.get("fall_score")
             if fall_score is None:
                 continue
@@ -326,8 +341,12 @@ class FallDataAuxVerifier:
                 dtype=np.float32,
             )
             keypoint_confidences = keypoints[:, 2]
+            pose_ids_by_box.setdefault(self._pose_box_key(event), set()).add(
+                event.object_id
+            )
             records.append(
                 {
+                    "object_id": event.object_id,
                     "frame_index": int(metadata.get("frame_num") or 0),
                     "timestamp": float(event.timestamp),
                     "fall_score": float(fall_score),
@@ -339,9 +358,7 @@ class FallDataAuxVerifier:
                         / max(frame_width * frame_height, 1)
                     ),
                     "visible_keypoints": int((keypoint_confidences >= 0.35).sum()),
-                    "mean_keypoint_confidence": float(
-                        keypoint_confidences.mean()
-                    ),
+                    "mean_keypoint_confidence": float(keypoint_confidences.mean()),
                     **_pose_geometry(
                         keypoints,
                         bbox=bbox,
@@ -353,10 +370,10 @@ class FallDataAuxVerifier:
             )
         if not records:
             return
-        records_by_frame: dict[int, dict[str, Any]] = {}
+        records_by_frame: dict[tuple[int, int], dict[str, Any]] = {}
         for record in records:
-            frame_index = int(record["frame_index"])
-            current = records_by_frame.get(frame_index)
+            key = (record["frame_index"], record["object_id"])
+            current = records_by_frame.get(key)
             if current is None or (
                 record["fall_score"],
                 record["detection_confidence"],
@@ -364,7 +381,7 @@ class FallDataAuxVerifier:
                 current["fall_score"],
                 current["detection_confidence"],
             ):
-                records_by_frame[frame_index] = record
+                records_by_frame[key] = record
         with self._lock:
             camera_records = self._pose_records.setdefault(
                 camera_name,
@@ -380,17 +397,72 @@ class FallDataAuxVerifier:
                     last_frame_index = int(last_record["frame_index"])
                     if frame_index < last_frame_index:
                         camera_records.clear()
-                    elif frame_index == last_frame_index:
-                        if (
-                            record["fall_score"],
-                            record["detection_confidence"],
-                        ) > (
-                            last_record["fall_score"],
-                            last_record["detection_confidence"],
-                        ):
-                            camera_records[-1] = record
-                        continue
-                camera_records.append(record)
+                        self._reset_pose_generation(camera_name)
+                if camera_name not in self._pose_generations:
+                    self._reset_pose_generation(camera_name)
+                duplicate = None
+                for index in range(len(camera_records) - 1, -1, -1):
+                    previous = camera_records[index]
+                    if previous["frame_index"] != frame_index:
+                        break
+                    if previous["object_id"] == record["object_id"]:
+                        duplicate = index
+                        break
+                if duplicate is None:
+                    camera_records.append(record)
+                elif (record["fall_score"], record["detection_confidence"]) > (
+                    camera_records[duplicate]["fall_score"],
+                    camera_records[duplicate]["detection_confidence"],
+                ):
+                    camera_records[duplicate] = record
+            generation = self._pose_generations[camera_name]
+            active_ids = {record["object_id"] for record in camera_records}
+            for key in list(self._inline_results):
+                if key[0] == camera_name and key[1] not in active_ids:
+                    self._inline_results.pop(key)
+            for event in events:
+                metadata = dict(event.metadata or {})
+                metadata.pop("falldata_pose_scope", None)
+                matching_ids = pose_ids_by_box.get(self._pose_box_key(event), set())
+                if len(matching_ids) == 1:
+                    metadata["falldata_pose_scope"] = {
+                        "camera_id": camera_name,
+                        "object_id": next(iter(matching_ids)),
+                        "generation": generation,
+                        "frame_index": metadata["frame_num"],
+                    }
+                event.metadata = metadata
+
+    @staticmethod
+    def _pose_box_key(event: DetectionEvent) -> tuple:
+        return (
+            (event.metadata or {}).get("frame_num"),
+            event.x,
+            event.y,
+            event.width,
+            event.height,
+        )
+
+    def _reset_pose_generation(self, camera_name: str) -> None:
+        """Caller holds _lock; invalidate both cached probabilities and streaks."""
+        self._next_pose_generation += 1
+        self._pose_generations[camera_name] = self._next_pose_generation
+        for key in list(self._inline_results):
+            if key[0] == camera_name:
+                self._inline_results.pop(key)
+
+    def reset_pose_records(self, camera_name: str) -> None:
+        with self._lock:
+            self._pose_records.pop(camera_name, None)
+            self._reset_pose_generation(camera_name)
+
+    def is_pose_scope_current(self, scope: dict) -> bool:
+        with self._lock:
+            return (
+                type(scope.get("generation")) is int
+                and self._pose_generations.get(scope.get("camera_id"))
+                == scope["generation"]
+            )
 
     def _write_inline_feature_capture(
         self,
@@ -408,6 +480,7 @@ class FallDataAuxVerifier:
             "captured_at": datetime.now(timezone.utc).isoformat(),
             "runtime": "deepstream_pose_inline",
             "camera_id": camera_name,
+            "pose_scope": summary.get("pose_scope"),
             "window_seconds": float(window_seconds),
             "frames_seen": int(summary["frames_seen"]),
             "frames_with_pose": int(summary["frames_with_pose"]),
@@ -416,8 +489,7 @@ class FallDataAuxVerifier:
             "feature_vector": list(summary["feature_vector"]),
             "frame_feature_names": list(FRAME_FEATURE_NAMES),
             "frame_records": [
-                dict(frame_record)
-                for frame_record in summary.get("frame_records", [])
+                dict(frame_record) for frame_record in summary.get("frame_records", [])
             ],
         }
         try:
@@ -442,8 +514,20 @@ class FallDataAuxVerifier:
                 annotated.append(event)
                 continue
 
-            result = self.verify()
             metadata = dict(event.metadata or {})
+            pose_scope = metadata.get("falldata_pose_scope")
+            result = (
+                self.verify(
+                    camera_name=(
+                        pose_scope.get("camera_id")
+                        if isinstance(pose_scope, dict)
+                        else metadata.get("camera_id")
+                    ),
+                    pose_scope=pose_scope,
+                )
+                if self.config.inline_pose_rf
+                else self.verify()
+            )
             metadata["falldata_aux"] = result
             event.metadata = metadata
             if self.config.mode == "confirm" and not result.get("confirmed", False):
@@ -467,9 +551,29 @@ class FallDataAuxVerifier:
             return False
         return str(result.get("status")) in self.UNAVAILABLE_STATUSES
 
-    def verify(self, camera_name: Optional[str] = None) -> dict:
+    def verify(
+        self, camera_name: Optional[str] = None, *, pose_scope: Optional[dict] = None
+    ) -> dict:
         if self.config.inline_pose_rf:
-            return self._verify_inline_pose_rf_with_cooldown(camera_name)
+            self._record_inline_metrics(camera_name, requests=1)
+            try:
+                result = self._verify_inline_pose_rf_with_cooldown(
+                    camera_name, pose_scope
+                )
+            except Exception:
+                self._record_inline_metrics(camera_name, error_results=1)
+                raise
+            status = result.get("status")
+            outcome = (
+                "ok_results"
+                if status == "ok"
+                else "error_results" if status == "error" else "unavailable_results"
+            )
+            self._record_inline_metrics(
+                camera_name,
+                **{outcome: 1, "cache_hits": int(bool(result.get("cache_reused")))},
+            )
+            return result
         now = time.time()
         if now - self._last_run_at < self.config.cooldown_seconds:
             return self._cooldown_result()
@@ -493,61 +597,134 @@ class FallDataAuxVerifier:
 
     def verify_temporal_shadow(self) -> dict:
         """Run buffered-video verification so near-miss events include TCN output."""
-        if not self._frames:
-            return self._result("no_frames", confirmed=False)
+        frames = self.snapshot_frames()
+        self._last_verified_frames = frames
+        if not frames:
+            return self._result("no_frames", confirmed=False, buffered_frames=0)
         try:
             with tempfile.TemporaryDirectory(prefix="falldata_temporal_shadow_") as tmp:
                 video_path = Path(tmp) / "candidate.mp4"
-                self._write_video(video_path, self.snapshot_frames())
+                self._write_video(video_path, frames)
                 temporal_result = self._run_temporal_compare_model(video_path)
             if temporal_result is None:
                 result = self._result(
                     "temporal_unavailable",
                     confirmed=False,
+                    buffered_frames=len(frames),
                     temporal_compare_model=None,
                 )
             else:
+                temporal_status = temporal_result.get("status")
                 result = self._result(
-                    "ok" if temporal_result.get("status") == "ok" else "error",
+                    (
+                        temporal_status
+                        if temporal_status in {"ok", "insufficient_pose_frames"}
+                        else "error"
+                    ),
                     confirmed=bool(temporal_result.get("confirmed")),
+                    buffered_frames=len(frames),
                     temporal_compare_model=temporal_result,
                 )
             self._last_result = dict(result)
             return result
         except Exception as exc:
             logger.warning("temporal shadow verification failed: %s", exc)
-            return self._result("error", confirmed=False, error=str(exc))
+            return self._result(
+                "error",
+                confirmed=False,
+                buffered_frames=len(frames),
+                error=str(exc),
+            )
+
+    def _record_inline_metrics(self, camera_name: Optional[str], **increments) -> None:
+        with self._lock:
+            # Only cameras with pose input can create metric labels; never track IDs.
+            if camera_name not in self._pose_generations:
+                return
+            metrics = self._inline_metrics.setdefault(camera_name, {})
+            for field, amount in increments.items():
+                metrics[field] = metrics.get(field, 0) + amount
+
+    def inline_metrics_snapshot(self) -> dict:
+        """Verifier-lifetime counters; pose/cache resets do not erase model work."""
+        with self._lock:
+            return {
+                "enabled": self.enabled and self.config.inline_pose_rf,
+                "cameras": {
+                    camera: dict(values)
+                    for camera, values in self._inline_metrics.items()
+                },
+            }
 
     def _verify_inline_pose_rf_with_cooldown(
         self,
         camera_name: Optional[str],
+        pose_scope: Optional[dict],
     ) -> dict:
         if not camera_name:
             return self._result("missing_camera", confirmed=False)
-        now = time.time()
-        last_run_at = self._last_run_by_camera.get(camera_name, 0.0)
-        if now - last_run_at < self.config.cooldown_seconds:
-            return dict(
-                self._last_result_by_camera.get(
-                    camera_name,
-                    self._result("skipped_cooldown", confirmed=False),
-                )
+        if (
+            not isinstance(pose_scope, dict)
+            or pose_scope.get("camera_id") != camera_name
+            or any(
+                type(pose_scope.get(key)) is not int or pose_scope[key] < 0
+                for key in ("object_id", "generation", "frame_index")
             )
-        self._last_run_by_camera[camera_name] = now
+            or pose_scope["object_id"] >= 2**64 - 1
+        ):
+            return self._result("missing_pose_scope", confirmed=False)
+        pose_scope = dict(pose_scope)
+        key = (camera_name, pose_scope["object_id"])
+        now = time.monotonic()
+        with self._lock:
+            if self._pose_generations.get(camera_name) != pose_scope["generation"]:
+                return self._result("stale_pose_scope", confirmed=False)
+            if not any(
+                record["object_id"] == key[1]
+                and record["frame_index"] == pose_scope["frame_index"]
+                for record in self._pose_records.get(camera_name, ())
+            ):
+                return self._result("no_pose_records", confirmed=False)
+            last_run_at, previous = self._inline_results.get(key, (0.0, {}))
+            previous_frame = (previous.get("pose_scope") or {}).get("frame_index", -1)
+            if previous and (
+                previous_frame == pose_scope["frame_index"]
+                or (
+                    previous_frame < pose_scope["frame_index"]
+                    and now - last_run_at < self.config.cooldown_seconds
+                )
+            ):
+                return {
+                    **previous,
+                    "pose_scope": pose_scope,
+                    "cache_reused": True,
+                    "cached_pose_scope": dict(previous["pose_scope"]),
+                }
         try:
-            result = self._verify_inline_pose_rf(camera_name)
+            result = self._verify_inline_pose_rf(camera_name, pose_scope)
         except Exception as exc:
             logger.warning("inline pose RF verification failed: %s", exc)
             result = self._result("error", confirmed=False, error=str(exc))
-        result = self._apply_confirmation_streak(result, camera_name)
-        self._last_result_by_camera[camera_name] = dict(result)
+        # An older queued candidate must not inherit a future window's streak.
+        if previous_frame >= pose_scope["frame_index"]:
+            previous = {}
+        result = self._apply_confirmation_streak(result, camera_name, previous=previous)
+        result.update(pose_scope=pose_scope, cache_reused=False)
+        with self._lock:
+            if self._pose_generations.get(camera_name) != pose_scope["generation"]:
+                return self._result("stale_pose_scope", confirmed=False)
+            if previous_frame < pose_scope["frame_index"]:
+                self._inline_results[key] = (now, dict(result))
         return result
 
-    def _apply_confirmation_streak(self, result: dict, camera_name: str) -> dict:
+    def _apply_confirmation_streak(
+        self, result: dict, camera_name: str, *, previous: Optional[dict] = None
+    ) -> dict:
         """Require consecutive confirmed windows before publishing a result."""
         if not result.get("confirmed"):
             return {**result, "confirmation_streak": 0}
-        previous = self._last_result_by_camera.get(camera_name) or {}
+        if previous is None:
+            previous = self._last_result_by_camera.get(camera_name) or {}
         previous_streak = int(previous.get("confirmation_streak") or 0)
         streak = previous_streak + 1
         required = max(int(self.config.min_confirmed_results), 1)
@@ -558,7 +735,7 @@ class FallDataAuxVerifier:
             "min_confirmed_results": required,
         }
 
-    def _verify_inline_pose_rf(self, camera_name: str) -> dict:
+    def _verify_inline_pose_rf(self, camera_name: str, pose_scope: dict) -> dict:
         from scripts.datasets.smoke_yolo_pose_fall_rf import (
             _fall_probability_from_classifier,
             _select_model_features,
@@ -588,7 +765,14 @@ class FallDataAuxVerifier:
             self._inline_pose_rf_bundles[bundle_key] = bundle
 
         with self._lock:
-            records = list(self._pose_records.get(camera_name, ()))
+            if self._pose_generations.get(camera_name) != pose_scope["generation"]:
+                return self._result("stale_pose_scope", confirmed=False)
+            records = [
+                record
+                for record in self._pose_records.get(camera_name, ())
+                if record["object_id"] == pose_scope["object_id"]
+                and record["frame_index"] <= pose_scope["frame_index"]
+            ]
         if not records:
             return self._result("no_pose_records", confirmed=False)
 
@@ -620,6 +804,7 @@ class FallDataAuxVerifier:
         ).astype(int)
         selected_records = [window_records[index] for index in selected_indices]
         summary = _summarize_frames(selected_records, max_frames)
+        summary["pose_scope"] = dict(pose_scope)
         classifier = bundle.get("model", bundle)
         feature_names = bundle.get("feature_names")
         expected_features = getattr(
@@ -632,7 +817,20 @@ class FallDataAuxVerifier:
             model_feature_names=feature_names,
             expected_feature_count=expected_features,
         )
-        probabilities = classifier.predict_proba(features).tolist()
+        self._record_inline_metrics(camera_name, predict_calls=1)
+        predict_started = time.monotonic()
+        predict_completed = False
+        try:
+            prediction = classifier.predict_proba(features)
+            predict_completed = True
+        finally:
+            self._record_inline_metrics(
+                camera_name,
+                predict_completed=int(predict_completed),
+                predict_errors=int(not predict_completed),
+                predict_seconds=max(0.0, time.monotonic() - predict_started),
+            )
+        probabilities = prediction.tolist()
         fall_probability = _fall_probability_from_classifier(
             classifier,
             probabilities,
@@ -837,8 +1035,10 @@ class FallDataAuxVerifier:
         }
 
     def _run_temporal_compare_model(self, video_path: Path) -> Optional[dict]:
+        self._record_temporal_metrics(requests=1)
         model_path = self.config.temporal_compare_model_path
         if model_path is None:
+            self._record_temporal_metrics(disabled=1)
             return None
         required_paths = (
             self.config.temporal_python,
@@ -848,6 +1048,7 @@ class FallDataAuxVerifier:
         )
         missing = next((path for path in required_paths if not path.exists()), None)
         if missing is not None:
+            self._record_temporal_metrics(missing_dependencies=1)
             return {
                 "status": "missing_dependency",
                 "model_path": str(model_path),
@@ -875,19 +1076,54 @@ class FallDataAuxVerifier:
                     str(self.config.temporal_min_confirmed_windows),
                 ]
             )
-        infer = self._run(command)
+        self._record_temporal_metrics(process_calls=1)
+        started = time.monotonic()
+        try:
+            infer = self._run(command)
+        except subprocess.TimeoutExpired:
+            self._record_temporal_metrics(process_errors=1, process_timeouts=1)
+            raise
+        except Exception:
+            self._record_temporal_metrics(process_errors=1)
+            raise
+        else:
+            self._record_temporal_metrics(process_completed=1)
+        finally:
+            self._record_temporal_metrics(
+                process_seconds=max(0.0, time.monotonic() - started)
+            )
         prediction = self._parse_prediction(infer.stdout)
         fall_probability = self._parse_named_float(infer.stdout, "fall_probability")
         threshold = self._parse_named_float(infer.stdout, "threshold")
         frames_with_pose = self._parse_named_int(infer.stdout, "frames_with_pose")
+        sliding_windows = self._parse_named_int(infer.stdout, "sliding_windows")
+        min_pose_frames = max(int(self.config.min_pose_frames), 0)
+        pose_frames_sufficient = min_pose_frames == 0 or (
+            frames_with_pose is not None and frames_with_pose >= min_pose_frames
+        )
+        parsed = (
+            prediction is not None
+            and fall_probability is not None
+            and threshold is not None
+        )
+        # 파싱 실패 시 실제 model forward 횟수를 알 수 없으므로 0으로 둔다.
+        # sliding window가 없으면 전체 영상 1회 추론(단일 window)으로 센다.
+        window_inferences = (sliding_windows if sliding_windows is not None else 1) if parsed else 0
+        self._record_temporal_metrics(
+            parsed_results=int(parsed),
+            unparsed_results=int(not parsed),
+            insufficient_pose_results=int(not pose_frames_sufficient),
+            window_inferences=window_inferences,
+        )
         confirmed = (
-            prediction == 1
+            pose_frames_sufficient
+            and prediction == 1
             and fall_probability is not None
             and threshold is not None
             and fall_probability >= threshold
         )
-        return {
-            "status": "ok",
+        result = {
+            "status": "ok" if pose_frames_sufficient else "insufficient_pose_frames",
             "model_path": str(model_path),
             "confirmed": confirmed,
             "prediction": prediction,
@@ -895,6 +1131,21 @@ class FallDataAuxVerifier:
             "threshold": threshold,
             "frames_with_pose": frames_with_pose,
         }
+        if not pose_frames_sufficient:
+            result["min_pose_frames"] = min_pose_frames
+        return result
+
+    def _record_temporal_metrics(self, **increments) -> None:
+        with self._lock:
+            for field, amount in increments.items():
+                self._temporal_metrics[field] = (
+                    self._temporal_metrics.get(field, 0) + amount
+                )
+
+    def temporal_metrics_snapshot(self) -> dict:
+        """Scene-level subprocess counters, not per-camera or GPU inference counts."""
+        with self._lock:
+            return dict(self._temporal_metrics)
 
     def _result(self, status: str, *, confirmed: bool, **extra: object) -> dict:
         result = {
@@ -935,6 +1186,20 @@ class FallDataAuxVerifier:
         path.parent.mkdir(parents=True, exist_ok=True)
         self._write_video(path, frames)
         return len(frames[-self.config.buffer_frames :])
+
+    def save_last_verified_clip(self, path: Path) -> int:
+        """마지막 temporal 검증에 실제 사용한 프레임을 저장하고 참조를 해제한다."""
+        frames = self._last_verified_frames
+        self._last_verified_frames = []
+        if not frames:
+            return 0
+        path.parent.mkdir(parents=True, exist_ok=True)
+        self._write_video(path, frames)
+        return len(frames)
+
+    def discard_last_verified_clip(self) -> None:
+        """클립 저장을 사용하지 않을 때 검증 프레임 참조를 해제한다."""
+        self._last_verified_frames = []
 
     def _missing_dependency(self) -> Optional[str]:
         candidates = [

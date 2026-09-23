@@ -35,6 +35,11 @@ from src.core.event_debouncer import EventDebouncer
 from src.core.events import DetectionEvent, EventType
 from src.core.processor import VideoProcessor
 
+
+def test_tracker_uses_low_level_iou_yaml() -> None:
+    assert deepstream_processor._TRACKER_CONFIG.name == "config_tracker_iou.yml"
+
+
 # ---------------------------------------------------------------------------
 # 픽스처
 # ---------------------------------------------------------------------------
@@ -361,6 +366,12 @@ def test_deepstream_get_stats_uses_common_fields_without_runtime():
     proc._events_detected = 3
     proc._events_filtered = 2
     proc._events_failed = 0
+    proc._crop_pose_results = 4
+    proc._primary_probe_frames = 12
+    proc._primary_tensor_meta_count = 11
+    proc._primary_person_rois = 9
+    proc._crop_pose_person_objects = 8
+    proc._crop_pose_tensor_meta_count = 7
     proc._output_mode = "fakesink"
     proc._preview_enabled = True
     proc._preview_store = PreviewFrameStore(max_fps=5.0)
@@ -378,6 +389,12 @@ def test_deepstream_get_stats_uses_common_fields_without_runtime():
         "events_filtered",
         "events_dropped",
         "events_failed",
+        "crop_pose_results",
+        "primary_probe_frames",
+        "primary_tensor_meta_count",
+        "primary_person_rois",
+        "crop_pose_person_objects",
+        "crop_pose_tensor_meta_count",
         "inference_errors",
         "camera_errors",
         "fps",
@@ -387,6 +404,12 @@ def test_deepstream_get_stats_uses_common_fields_without_runtime():
     assert stats["backend"] == "deepstream"
     assert stats["camera_count"] == 1
     assert stats["frames_processed"] == 12
+    assert stats["crop_pose_results"] == 4
+    assert stats["primary_probe_frames"] == 12
+    assert stats["primary_tensor_meta_count"] == 11
+    assert stats["primary_person_rois"] == 9
+    assert stats["crop_pose_person_objects"] == 8
+    assert stats["crop_pose_tensor_meta_count"] == 7
     assert stats["output_mode"] == "fakesink"
 
 
@@ -1233,6 +1256,27 @@ def test_deepstream_aux_confirmed_borderline_fall_is_enqueued():
     assert "falldata_aux_publish_pending" not in enqueued["metadata"]
 
 
+def test_deepstream_shadow_window_never_enqueues_confirmed_fall():
+    proc = object.__new__(DeepStreamProcessor)
+    proc.event_queue = Queue(maxsize=2)
+    proc._events_detected = 0
+    payload = {
+        "type": "fall_shadow_window",
+        "metadata": {"falldata_aux_shadow_window": True},
+    }
+    result = {
+        "status": "ok",
+        "confirmed": True,
+        "fall_probability": 0.99,
+    }
+
+    ok = proc._enqueue_aux_confirmed_fall_event("cam1", payload, result)
+
+    assert ok is False
+    assert proc.event_queue.empty()
+    assert proc._events_detected == 0
+
+
 def test_deepstream_aux_rejected_borderline_fall_is_not_enqueued():
     proc = object.__new__(DeepStreamProcessor)
     proc.event_queue = Queue(maxsize=2)
@@ -1282,6 +1326,27 @@ def test_deepstream_aux_unavailable_fallback_fall_is_enqueued():
     assert enqueued["metadata"]["falldata_aux"] == result
     assert enqueued["metadata"]["falldata_aux_confirm_fallback"] == "no_frames"
     assert "falldata_aux_publish_pending" not in enqueued["metadata"]
+
+
+def test_deepstream_shadow_window_never_uses_fail_open_fallback():
+    proc = object.__new__(DeepStreamProcessor)
+    proc.event_queue = Queue(maxsize=2)
+    proc._events_detected = 0
+    payload = {
+        "type": "fall_shadow_window",
+        "metadata": {"falldata_aux_shadow_window": True},
+    }
+    result = {
+        "status": "error",
+        "confirmed": False,
+        "error": "candidate input mismatch",
+    }
+
+    ok = proc._enqueue_aux_fallback_fall_event("cam1", payload, result)
+
+    assert ok is False
+    assert proc.event_queue.empty()
+    assert proc._events_detected == 0
 
 
 def test_deepstream_compare_veto_can_drop_aux_confirmed_high_score_fall():
@@ -1368,9 +1433,12 @@ def test_deepstream_uses_configured_pphuman_infer_config(monkeypatch):
     )
 
 
-def test_deepstream_sgie_injected_person_meta_has_label(monkeypatch):
+@pytest.mark.parametrize("crop_enabled", [False, True])
+def test_deepstream_sgie_injected_person_meta_has_label(monkeypatch, crop_enabled):
     proc = object.__new__(DeepStreamProcessor)
-    proc._pose_gie_id = 1
+    proc._crop_pose_enabled = crop_enabled
+    proc._person_gie_id = 1
+    proc._pose_gie_id = 2 if crop_enabled else 1
 
     injected_meta = types.SimpleNamespace(
         unique_component_id=0,
@@ -1418,6 +1486,33 @@ def test_deepstream_sgie_injected_person_meta_has_label(monkeypatch):
     assert injected_meta.class_id == 0
     assert injected_meta.obj_label == "person"
     assert injected_meta.rect_params.width == 30
+    if crop_enabled:
+        assert injected_meta.object_id == 0xFFFFFFFFFFFFFFFF
+
+
+def test_crop_primary_probe_registers_people_before_sgie(monkeypatch):
+    proc = object.__new__(DeepStreamProcessor)
+    proc._crop_pose_enabled = True
+    proc._pad_to_camera = {0: "cam1"}
+    proc._inject_primary_person_object_meta = MagicMock(return_value=2)
+    frame = types.SimpleNamespace(source_id=0)
+    batch = types.SimpleNamespace(
+        frame_meta_list=types.SimpleNamespace(data=frame, next=None)
+    )
+    monkeypatch.setattr(deepstream_processor, "Gst", types.SimpleNamespace(
+        PadProbeReturn=types.SimpleNamespace(OK=1)))
+    monkeypatch.setattr(deepstream_processor, "pyds", types.SimpleNamespace(
+        gst_buffer_get_nvds_batch_meta=lambda value: batch,
+        NvDsFrameMeta=types.SimpleNamespace(cast=lambda value: value)))
+    info = types.SimpleNamespace(get_buffer=lambda: object())
+    assert proc._on_primary_tensor_probe(None, info, None) == 1
+    proc._inject_primary_person_object_meta.assert_called_once_with(batch, frame, "cam1")
+    assert proc._primary_probe_frames == 1
+    assert proc._primary_person_rois == 2
+    proc._crop_pose_enabled = False
+    proc._inject_primary_person_object_meta.reset_mock()
+    assert proc._on_primary_tensor_probe(None, info, None) == 1
+    proc._inject_primary_person_object_meta.assert_not_called()
 
 
 def test_deepstream_sgie_shrinks_oversized_person_roi(monkeypatch):
@@ -1622,20 +1717,18 @@ def test_deepstream_event_pipeline_writes_fall_near_miss_record(tmp_path, monkey
     proc._fall_shadow_near_miss_cooldown_sec = 10.0
     proc._fall_shadow_near_miss_last_at = {}
     proc._falldata_aux = None
-    proc._assign_synthetic_object_ids = lambda events, camera_name: None
+    proc._assign_synthetic_object_ids = lambda camera_name, events: events
     proc.track_manager = MagicMock()
+    proc.track_manager.update.side_effect = lambda camera_name, events: (events, [])
     proc.violation_filter = MagicMock()
+    proc.violation_filter.filter.side_effect = lambda camera_name, events: events
     proc._submit_face_work = lambda camera_name, events: None
     proc.zone_manager = MagicMock()
     proc._enqueue_zone_events = lambda camera_name, events: None
     proc._enqueue_event = lambda event, camera_name: True
     proc._increment_stat = lambda name, delta=1: None
     monkeypatch.setattr("src.core.deepstream_processor.time.monotonic", lambda: 100.0)
-    monkeypatch.setattr(
-        "src.core.deepstream_processor.ds_apply_existing_event_pipeline",
-        lambda **kwargs: None,
-    )
-
+    proc._enqueue_event_or_defer_fall_aux = lambda event, camera_name: True
     event = DetectionEvent(
         EventType.PERSON,
         1,

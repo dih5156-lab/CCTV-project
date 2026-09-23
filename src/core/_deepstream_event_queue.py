@@ -18,13 +18,22 @@ def enqueue_queue_item(
     queue_item: Any,
     camera_name: str,
     increment_stat: Callable[[str], int],
+    video_ingest: Any = None,
 ) -> bool:
     """DeepStream 이벤트 큐 적재와 관련 통계를 한 곳에서 처리한다."""
+    if video_ingest is not None:
+        try:
+            queue_item = video_ingest.accept(queue_item, camera_name)
+        except Exception:
+            increment_stat("events_failed")
+            raise
     try:
         event_queue.put_nowait(queue_item)
         increment_stat("events_detected")
         return True
     except Full:
+        if video_ingest is not None:
+            video_ingest.defer(queue_item)
         increment_stat("events_dropped")
         logger.warning("[%s] DeepStream 이벤트 큐 가득 참", camera_name)
         return False
@@ -49,7 +58,9 @@ def apply_existing_event_pipeline(
     *,
     camera_name: str,
     events: Sequence[DetectionEvent],
-    assign_synthetic_object_ids: Callable[[str, List[DetectionEvent]], List[DetectionEvent]],
+    assign_synthetic_object_ids: Callable[
+        [str, List[DetectionEvent]], List[DetectionEvent]
+    ],
     track_manager: Any,
     violation_filter: Any,
     submit_face_work: Callable[[str, List[DetectionEvent]], None],
@@ -57,12 +68,15 @@ def apply_existing_event_pipeline(
     enqueue_zone_events_cb: Callable[[str, List[ZoneEvent]], None],
     enqueue_event: Callable[[DetectionEvent, str], bool],
     add_filtered_event_count: Callable[[int], None],
+    observe_prepared_events: Callable[[str, List[DetectionEvent]], None] | None = None,
 ) -> None:
     """DeepStream raw/tensor 이벤트에 tracking/filtering/zone 후처리를 적용한다."""
     if not events:
         return
 
     prepared_events = assign_synthetic_object_ids(camera_name, list(events))
+    if observe_prepared_events is not None:
+        observe_prepared_events(camera_name, prepared_events)
     tracked_events, removed_ids = track_manager.update(camera_name, prepared_events)
     if removed_ids:
         violation_filter.purge(camera_name, removed_ids)

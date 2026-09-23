@@ -51,6 +51,7 @@ from . import _deepstream_env as ds_env
 from ._context_event_store import ContextEventStore
 from ._deepstream_context_worker import DeepStreamContextWorker
 from ._deepstream_event_factory import (
+    detections_to_events,
     emit_tensor_events,
     filter_detections_for_camera,
     filter_events_for_camera,
@@ -73,6 +74,7 @@ from ._deepstream_labels import (
     resolve_pphuman_sgie_backend_name,
 )
 from ._deepstream_model_flags import flags_to_detection_modes, normalize_model_flags
+from ._deepstream_model_metrics import ModelInferenceMetrics
 from ._deepstream_osd import add_osd_overlays as ds_add_osd_overlays
 from ._deepstream_pipeline_builder import (
     add_pipeline_elements,
@@ -87,6 +89,7 @@ from ._deepstream_pipeline_builder import (
     stop_pipeline_runtime,
     validate_pipeline_prerequisites,
 )
+from ._deepstream_primary_metrics import PrimaryFrameMetrics
 from ._deepstream_source_health import (
     build_camera_status_map,
     build_deepstream_stats_fields,
@@ -140,6 +143,7 @@ from ._yolo_postprocess import (
     detections_from_yolo_output,
     map_yolo_box_to_frame,
     nms_detections,
+    restore_crop_keypoints,
 )
 from .ai._appearance_analyzer import BAG_CLASSES, AppearanceAnalyzer
 from .ai._appearance_pipeline import AppearancePipeline
@@ -155,9 +159,13 @@ logger = logging.getLogger(__name__)
 
 _DS_CONFIG_DIR = Path(__file__).parent.parent.parent / "config" / "deepstream"
 _INFER_CONFIG   = _DS_CONFIG_DIR / "config_infer_primary.txt"
+_PERSON_INFER_CONFIG = _DS_CONFIG_DIR / "config_infer_person_primary.txt"
+_POSE_SGIE_INFER_CONFIG = _DS_CONFIG_DIR / "config_infer_pose_sgie.txt"
 _HELMET_INFER_CONFIG = _DS_CONFIG_DIR / "config_infer_helmet.txt"
+_HELMET_SGIE_INFER_CONFIG = _DS_CONFIG_DIR / "config_infer_helmet_sgie.txt"
+_PPHUMAN_SGIE_INFER_CONFIG = _DS_CONFIG_DIR / "config_infer_pa100k_sgie.txt"
 _PPHUMAN_INFER_CONFIG = _DS_CONFIG_DIR / "config_infer_pphuman.txt"
-_TRACKER_CONFIG = _DS_CONFIG_DIR / "config_tracker.txt"
+_TRACKER_CONFIG = _DS_CONFIG_DIR / "config_tracker_iou.yml"
 _STREAMMUX_CONFIG = _DS_CONFIG_DIR / "config_streammux.txt"
 _LABELS_FILE    = _DS_CONFIG_DIR / "labels.txt"
 _HELMET_LABELS_FILE = _DS_CONFIG_DIR / "labels_helmet.txt"
@@ -248,20 +256,25 @@ class DeepStreamProcessor(BaseProcessor):
             config.events.debounce_seconds,
         )
         logger.info("설정 디렉터리: %s", _DS_CONFIG_DIR)
-        if not _INFER_CONFIG.exists():
+        primary_config = _PERSON_INFER_CONFIG if self._crop_pose_enabled else _INFER_CONFIG
+        if not primary_config.exists():
             logger.warning(
                 "nvinfer 설정 파일이 없습니다: %s\n"
                 "config/deepstream/ 디렉터리의 템플릿을 참고하세요.",
-                _INFER_CONFIG,
+                primary_config,
             )
-        if self._helmet_enabled and not _HELMET_INFER_CONFIG.exists():
-            logger.warning("helmet/head nvinfer 설정 파일이 없습니다: %s", _HELMET_INFER_CONFIG)
+        if self._crop_pose_enabled and not _POSE_SGIE_INFER_CONFIG.exists():
+            logger.warning("Pose SGIE 설정 파일이 없습니다: %s", _POSE_SGIE_INFER_CONFIG)
+        helmet_config = _HELMET_SGIE_INFER_CONFIG if self._crop_pose_enabled else _HELMET_INFER_CONFIG
+        if self._helmet_enabled and not helmet_config.exists():
+            logger.warning("helmet/head nvinfer 설정 파일이 없습니다: %s", helmet_config)
 
     def _init_runtime_state(self, config: AppConfig) -> None:
         """런타임 상태, preview, 통계 카운터를 초기화한다."""
         self.running: bool = False
         self.stop_event = Event()
         self._output_mode = os.environ.get("DS_OUTPUT_MODE", "fakesink").strip().lower()
+        self._crop_pose_enabled = self._env_bool("DS_CROP_POSE_ENABLED", False)
         self._tensor_probe_warned = False
         self._preview_enabled = self._env_bool("DS_PREVIEW_ENABLED", True)
         self._preview_camera_id: Optional[str] = None
@@ -308,11 +321,21 @@ class DeepStreamProcessor(BaseProcessor):
         self._debouncer = EventDebouncer(config, self._increment_stat)
         self._frames_processed = 0
         self._frames_dropped = 0
+        self._primary_frame_metrics = PrimaryFrameMetrics()
+        self._primary_metrics_errors = 0
+        self._model_inference_metrics = ModelInferenceMetrics()
+        self._model_metrics_errors = 0
         self._events_detected = 0
         self._events_sent = 0
         self._events_dropped = 0
         self._events_filtered = 0
         self._events_failed = 0
+        self._crop_pose_results = 0
+        self._primary_probe_frames = 0
+        self._primary_tensor_meta_count = 0
+        self._primary_person_rois = 0
+        self._crop_pose_person_objects = 0
+        self._crop_pose_tensor_meta_count = 0
         self._yolo_postprocess_calls = 0
         self._yolo_postprocess_total_seconds = 0.0
         self._yolo_postprocess_max_seconds = 0.0
@@ -348,9 +371,17 @@ class DeepStreamProcessor(BaseProcessor):
 
     def _init_yolo_settings(self) -> None:
         """DeepStream nvinfer tensor 후처리 설정을 초기화한다."""
-        self._pose_gie_id = int(os.environ.get("DS_POSE_GIE_ID", "1"))
-        self._helmet_gie_id = int(os.environ.get("DS_HELMET_GIE_ID", "2"))
-        self._pphuman_gie_id = int(os.environ.get("DS_PPHUMAN_GIE_ID", "3"))
+        crop_pose_enabled = bool(getattr(self, "_crop_pose_enabled", False))
+        self._pose_gie_id = int(
+            os.environ.get("DS_POSE_GIE_ID", "2" if crop_pose_enabled else "1")
+        )
+        self._person_gie_id = int(os.environ.get("DS_PERSON_GIE_ID", "1"))
+        self._helmet_gie_id = int(
+            os.environ.get("DS_HELMET_GIE_ID", "3" if crop_pose_enabled else "2")
+        )
+        self._pphuman_gie_id = int(
+            os.environ.get("DS_PPHUMAN_GIE_ID", "4" if crop_pose_enabled else "3")
+        )
         self._yolo_task = os.environ.get("DS_YOLO_TASK", "detect").strip().lower()
         self._yolo_conf_threshold = float(os.environ.get("DS_YOLO_CONFIDENCE", "0.35"))
         self._yolo_iou_threshold = float(os.environ.get("DS_YOLO_IOU_THRESHOLD", "0.45"))
@@ -366,9 +397,11 @@ class DeepStreamProcessor(BaseProcessor):
         self._yolo_class_ids = self._parse_class_ids("DS_YOLO_CLASS_IDS", {0})
         self._yolo_labels = self._load_yolo_labels(_LABELS_FILE, "DS_YOLO_LABELS")
         self._task_by_gie = {
-            self._pose_gie_id: self._yolo_task,
+            self._pose_gie_id: "pose" if crop_pose_enabled else self._yolo_task,
             self._helmet_gie_id: "detect",
         }
+        if crop_pose_enabled:
+            self._task_by_gie[self._person_gie_id] = "detect"
         self._labels_by_gie = {
             self._pose_gie_id: self._yolo_labels,
             self._helmet_gie_id: self._load_yolo_labels(
@@ -377,14 +410,22 @@ class DeepStreamProcessor(BaseProcessor):
                 fallback=["helmet", "head"],
             ),
         }
+        if crop_pose_enabled:
+            self._labels_by_gie[self._person_gie_id] = self._yolo_labels
         self._class_ids_by_gie = {
             self._pose_gie_id: self._yolo_class_ids,
             self._helmet_gie_id: self._parse_class_ids("DS_HELMET_CLASS_IDS", {0, 1}),
         }
+        if crop_pose_enabled:
+            self._class_ids_by_gie[self._person_gie_id] = {0}
         self._confidence_by_gie = {
             self._pose_gie_id: float(os.environ.get("DS_POSE_CONFIDENCE", str(self._yolo_conf_threshold))),
             self._helmet_gie_id: float(os.environ.get("DS_HELMET_CONFIDENCE", "0.65")),
         }
+        if crop_pose_enabled:
+            self._confidence_by_gie[self._person_gie_id] = float(
+                os.environ.get("DS_PERSON_CONFIDENCE", str(self._yolo_conf_threshold))
+            )
 
     def _init_event_filters(self, config: AppConfig) -> None:
         """기존 VideoProcessor 후처리 필터를 재사용하도록 초기화한다."""
@@ -586,6 +627,8 @@ class DeepStreamProcessor(BaseProcessor):
 
     def _init_event_publisher(self, config: AppConfig) -> None:
         """DeepStream 이벤트 전송용 MQTT 퍼블리셔를 초기화한다."""
+        from .video_event_ingest import VideoEventIngest
+        self._video_ingest = VideoEventIngest.from_env(backend="deepstream", topic_prefix=config.mqtt.topic_prefix)
         self.event_publisher = MqttEventPublisher(
             broker=config.mqtt.broker,
             port=config.mqtt.port,
@@ -865,6 +908,9 @@ class DeepStreamProcessor(BaseProcessor):
         self._synthetic_id_assigner.remove_camera(camera_id)
         remove_camera_face_cache(self._face_identity_cache, camera_id)
         self._context_event_store.clear_camera(camera_id)
+        falldata_aux = getattr(self, "_falldata_aux", None)
+        if falldata_aux is not None:
+            falldata_aux.reset_pose_records(camera_id)
         logger.info("[%s] 카메라 제거됨 (DeepStream)", camera_id)
 
     def enqueue_camera_retry(
@@ -989,6 +1035,34 @@ class DeepStreamProcessor(BaseProcessor):
             and self._preview_store.last_frame_at is not None,
         )
         stats_fields.update(self._yolo_postprocess_stats())
+        primary_metrics = getattr(self, "_primary_frame_metrics", None)
+        stats_fields["primary_camera_stats"] = (
+            primary_metrics.snapshot() if primary_metrics is not None else {}
+        )
+        stats_fields["primary_metrics_errors"] = getattr(self, "_primary_metrics_errors", 0)
+        model_metrics = getattr(self, "_model_inference_metrics", None)
+        stats_fields["model_inference_stats"] = (
+            model_metrics.snapshot() if model_metrics is not None else {}
+        )
+        stats_fields["model_metrics_errors"] = getattr(self, "_model_metrics_errors", 0)
+        falldata_aux = getattr(self, "_falldata_aux", None)
+        stats_fields["falldata_inline_stats"] = (
+            falldata_aux.inline_metrics_snapshot() if falldata_aux is not None else {}
+        )
+        stats_fields["falldata_temporal_stats"] = (
+            falldata_aux.temporal_metrics_snapshot() if falldata_aux is not None else {}
+        )
+        stats_fields["crop_pose_results"] = int(
+            getattr(self, "_crop_pose_results", 0)
+        )
+        for field_name in (
+            "primary_probe_frames",
+            "primary_tensor_meta_count",
+            "primary_person_rois",
+            "crop_pose_person_objects",
+            "crop_pose_tensor_meta_count",
+        ):
+            stats_fields[field_name] = int(getattr(self, f"_{field_name}", 0))
         return self._build_stats_payload(
             backend="deepstream",
             **stats_fields,
@@ -1154,6 +1228,7 @@ class DeepStreamProcessor(BaseProcessor):
             queue_item=event_data,
             camera_name=camera_name,
             increment_stat=self._increment_stat,
+            video_ingest=getattr(self, "_video_ingest", None),
         )
 
     def _resolve_pphuman_sgie_backend_name(self) -> str:
@@ -1278,6 +1353,19 @@ class DeepStreamProcessor(BaseProcessor):
     def _enqueue_aux_confirmed_fall_event(
         self, camera_name: str, event_payload: Dict[str, Any], result: Dict[str, Any]
     ) -> bool:
+        metadata = dict(event_payload.get("metadata") or {})
+        if metadata.get("falldata_aux_shadow_window"):
+            return False
+        if result.get("runtime") == "deepstream_pose_inline":
+            scope = result.get("pose_scope")
+            falldata_aux = getattr(self, "_falldata_aux", None)
+            if (
+                not isinstance(scope, dict)
+                or scope.get("camera_id") != camera_name
+                or falldata_aux is None
+                or not falldata_aux.is_pose_scope_current(scope)
+            ):
+                return False
         if not aux_result_confirms_fall(
             event_payload,
             result,
@@ -1287,7 +1375,6 @@ class DeepStreamProcessor(BaseProcessor):
             ),
         ):
             return False
-        metadata = dict(event_payload.get("metadata") or {})
         metadata.pop("falldata_aux_publish_pending", None)
         metadata["falldata_aux"] = result
         metadata["falldata_aux_confirmed"] = True
@@ -1305,6 +1392,7 @@ class DeepStreamProcessor(BaseProcessor):
         helmet_infer: Optional[Any],
         pphuman_infer: Optional[Any],
         n_cams: int,
+        pose_infer: Optional[Any] = None,
     ) -> None:
         """Primary/Helmet/PP-Human 추론 엘리먼트 속성을 일괄 설정한다."""
         ds_element_config.configure_infer_elements(
@@ -1312,11 +1400,24 @@ class DeepStreamProcessor(BaseProcessor):
             helmet_infer=helmet_infer,
             pphuman_infer=pphuman_infer,
             n_cams=n_cams,
-            infer_config=_INFER_CONFIG,
-            helmet_infer_config=_HELMET_INFER_CONFIG,
-            pphuman_infer_config=self._resolve_pphuman_infer_config(),
+            infer_config=_PERSON_INFER_CONFIG if self._crop_pose_enabled else _INFER_CONFIG,
+            helmet_infer_config=(
+                _HELMET_SGIE_INFER_CONFIG if self._crop_pose_enabled else _HELMET_INFER_CONFIG
+            ),
+            pphuman_infer_config=(
+                _PPHUMAN_SGIE_INFER_CONFIG
+                if self._crop_pose_enabled
+                else self._resolve_pphuman_infer_config()
+            ),
             env_int=self._env_int,
             set_property_optional=self._set_optional_property,
+            pose_infer=pose_infer,
+            pose_infer_config=_POSE_SGIE_INFER_CONFIG if self._crop_pose_enabled else None,
+            primary_interval_env_name=(
+                "DS_CROP_PERSON_INTERVAL"
+                if self._crop_pose_enabled
+                else "DS_PRIMARY_INTERVAL"
+            ),
         )
 
     def _configure_tracker(self, tracker: Any) -> None:
@@ -1508,6 +1609,7 @@ class DeepStreamProcessor(BaseProcessor):
             queue_item=queue_item,
             camera_name=camera_name,
             increment_stat=self._increment_stat,
+            video_ingest=getattr(self, "_video_ingest", None),
         )
 
     def _enqueue_zone_events(
@@ -1691,10 +1793,6 @@ class DeepStreamProcessor(BaseProcessor):
         self, camera_name: str, events: List[DetectionEvent]
     ) -> None:
         """기존 트래킹/필터/구역/얼굴 후처리 파이프라인을 적용한다."""
-        falldata_aux = getattr(self, "_falldata_aux", None)
-        if falldata_aux is not None:
-            falldata_aux.add_pose_events(camera_name, events)
-        self._write_fall_near_miss_review_records(camera_name, events)
         ds_apply_existing_event_pipeline(
             camera_name=camera_name,
             events=events,
@@ -1705,8 +1803,19 @@ class DeepStreamProcessor(BaseProcessor):
             zone_manager=self.zone_manager,
             enqueue_zone_events_cb=self._enqueue_zone_events,
             enqueue_event=self._enqueue_event_or_defer_fall_aux,
-            add_filtered_event_count=lambda delta: self._increment_stat("events_filtered", delta),
+            add_filtered_event_count=lambda delta: self._increment_stat(
+                "events_filtered", delta
+            ),
+            observe_prepared_events=self._observe_prepared_pose_events,
         )
+
+    def _observe_prepared_pose_events(
+        self, camera_name: str, events: List[DetectionEvent]
+    ) -> None:
+        falldata_aux = getattr(self, "_falldata_aux", None)
+        if falldata_aux is not None:
+            falldata_aux.add_pose_events(camera_name, events)
+        self._write_fall_near_miss_review_records(camera_name, events)
 
     def _cleanup_event_filters(self) -> None:
         """디바운서와 위반 누적 필터의 오래된 상태를 정리한다."""
@@ -1787,6 +1896,8 @@ class DeepStreamProcessor(BaseProcessor):
         result: Dict[str, Any],
     ) -> bool:
         metadata = dict(event_payload.get("metadata") or {})
+        if metadata.get("falldata_aux_shadow_window"):
+            return False
         metadata.pop("falldata_aux_publish_pending", None)
         metadata["falldata_aux"] = result
         metadata["falldata_aux_confirm_fallback"] = result.get("status")
@@ -1936,12 +2047,15 @@ class DeepStreamProcessor(BaseProcessor):
         self, batch_meta: Any, frame_meta: Any, camera_name: str
     ) -> int:
         injected = 0
+        crop_enabled = bool(getattr(self, "_crop_pose_enabled", False))
+        primary_gie_id = self._person_gie_id if crop_enabled else self._pose_gie_id
         user_meta_list = frame_meta.frame_user_meta_list
         while user_meta_list is not None:
             user_meta = pyds.NvDsUserMeta.cast(user_meta_list.data)
             if user_meta.base_meta.meta_type == pyds.NVDSINFER_TENSOR_OUTPUT_META:
                 tensor_meta = pyds.NvDsInferTensorMeta.cast(user_meta.user_meta_data)
-                if tensor_gie_id(tensor_meta, self._pose_gie_id) == self._pose_gie_id:
+                if tensor_gie_id(tensor_meta, primary_gie_id) == primary_gie_id:
+                    self._increment_stat("primary_tensor_meta_count")
                     detections = self._filter_detections_for_camera(
                         self._detections_from_tensor(tensor_meta, frame_meta), camera_name
                     )
@@ -1949,8 +2063,13 @@ class DeepStreamProcessor(BaseProcessor):
                         if self._event_type_for_label(str(detection.get("label", ""))) != EventType.PERSON:
                             continue
                         obj_meta = pyds.nvds_acquire_obj_meta_from_pool(batch_meta)
-                        x, y, width, height = self._pphuman_roi_for_detection(detection, frame_meta)
-                        obj_meta.unique_component_id = self._pose_gie_id
+                        x, y, width, height = (
+                            detection["box"] if crop_enabled
+                            else self._pphuman_roi_for_detection(detection, frame_meta)
+                        )
+                        obj_meta.unique_component_id = primary_gie_id
+                        if crop_enabled:
+                            obj_meta.object_id = 0xFFFFFFFFFFFFFFFF
                         obj_meta.class_id = int(detection.get("class_id", 0))
                         obj_meta.obj_label = str(detection.get("label") or "person")
                         obj_meta.confidence = float(detection.get("confidence", 0.0))
@@ -1959,6 +2078,19 @@ class DeepStreamProcessor(BaseProcessor):
                         obj_meta.rect_params.width = float(width)
                         obj_meta.rect_params.height = float(height)
                         pyds.nvds_add_obj_meta_to_frame(frame_meta, obj_meta, None)
+                        if (
+                            os.environ.get("DS_CROP_POSE_DIAGNOSTICS", "0") == "1"
+                            and int(getattr(self, "_primary_roi_diagnostic_count", 0)) < 3
+                        ):
+                            self._primary_roi_diagnostic_count = int(
+                                getattr(self, "_primary_roi_diagnostic_count", 0)
+                            ) + 1
+                            logger.info(
+                                "crop-pose ROI diagnostic: frame=%s box=%.1f,%.1f,%.1f,%.1f confidence=%.3f",
+                                getattr(frame_meta, "frame_num", None),
+                                float(x), float(y), float(width), float(height),
+                                float(obj_meta.confidence),
+                            )
                         injected += 1
             user_meta_list = getattr(user_meta_list, "next", None)
         return injected
@@ -1992,7 +2124,7 @@ class DeepStreamProcessor(BaseProcessor):
         self, batch_meta: Any, frame_meta: Any, camera_name: str
     ) -> int:
         """텐서 메타 기반 이벤트 생성/후처리를 수행하고 처리 건수를 반환한다."""
-        return emit_tensor_events(
+        detected = emit_tensor_events(
             batch_meta=batch_meta,
             frame_meta=frame_meta,
             camera_name=camera_name,
@@ -2004,6 +2136,167 @@ class DeepStreamProcessor(BaseProcessor):
             event_type_for_label=self._event_type_for_label,
             object_meta_events_for_frame=self._object_meta_events_from_frame,
         )
+        if self._crop_pose_enabled:
+            detected += self._emit_crop_pose_events(batch_meta, frame_meta, camera_name)
+        return detected
+
+    def _emit_crop_pose_events(
+        self, batch_meta: Any, frame_meta: Any, camera_name: str
+    ) -> int:
+        """사람 객체의 SGIE tensor에서 pose를 복원해 낙상 이벤트를 만든다.
+
+        Secondary GIE tensor는 일반적으로 frame_user_meta_list가 아니라
+        부모 사람 객체의 obj_user_meta_list에 저장된다. ROI 크기로 YOLO
+        letterbox 좌표를 먼저 복원한 뒤 부모 ROI 원점을 더해 원본 좌표로
+        변환한다.
+        """
+        events: List[DetectionEvent] = []
+        l_obj = getattr(frame_meta, "obj_meta_list", None)
+        diagnostic = (
+            os.environ.get("DS_CROP_POSE_DIAGNOSTICS", "0") == "1"
+            and int(getattr(self, "_crop_pose_diagnostic_frames", 0)) < 3
+            and l_obj is not None
+        )
+        if diagnostic:
+            self._crop_pose_diagnostic_frames = getattr(self, "_crop_pose_diagnostic_frames", 0) + 1
+        while l_obj is not None:
+            try:
+                obj_meta = pyds.NvDsObjectMeta.cast(l_obj.data)
+            except StopIteration:
+                break
+            if int(getattr(obj_meta, "class_id", -1)) == 0:
+                self._increment_stat("crop_pose_person_objects")
+                rect = obj_meta.rect_params
+                roi_width = max(1, int(round(float(rect.width))))
+                roi_height = max(1, int(round(float(rect.height))))
+                l_user = getattr(obj_meta, "obj_user_meta_list", None)
+                if diagnostic:
+                    logger.info("crop-pose diagnostic: frame=%s component=%s class=%s roi=%sx%s user_meta=%s",
+                                frame_meta.frame_num, getattr(obj_meta, "unique_component_id", None),
+                                obj_meta.class_id, roi_width, roi_height, l_user is not None)
+                while l_user is not None:
+                    try:
+                        user_meta = pyds.NvDsUserMeta.cast(l_user.data)
+                    except StopIteration:
+                        break
+                    if user_meta.base_meta.meta_type == pyds.NVDSINFER_TENSOR_OUTPUT_META:
+                        tensor_meta = pyds.NvDsInferTensorMeta.cast(user_meta.user_meta_data)
+                        gie_id = tensor_gie_id(tensor_meta, self._pose_gie_id)
+                        if diagnostic:
+                            logger.info("crop-pose diagnostic: tensor_gie=%s layers=%s", gie_id,
+                                        getattr(tensor_meta, "num_output_layers", None))
+                        has_explicit_gie_id = any(
+                            getattr(tensor_meta, attr_name, None) is not None
+                            for attr_name in ("unique_id", "gie_unique_id")
+                        )
+                        if gie_id == self._pose_gie_id:
+                            self._increment_stat("crop_pose_tensor_meta_count")
+                            detections: List[Dict[str, Any]] = []
+                            layer = select_yolo_output(tensor_meta, pyds)
+                            output = layer_to_numpy(layer, pyds) if layer is not None else None
+                            if diagnostic:
+                                max_confidence = None
+                                if output is not None and getattr(output, "ndim", 0) == 2:
+                                    confidence_values = (
+                                        output[4]
+                                        if output.shape[0] < output.shape[1]
+                                        else output[:, 4]
+                                    )
+                                    if getattr(confidence_values, "size", 0):
+                                        max_confidence = float(confidence_values.max())
+                                logger.info(
+                                    "crop-pose diagnostic: output_shape=%s max_confidence=%s threshold=%.3f",
+                                    getattr(output, "shape", None),
+                                    max_confidence,
+                                    self._confidence_by_gie.get(
+                                        self._pose_gie_id, self._yolo_conf_threshold
+                                    ),
+                                )
+                            if output is not None:
+                                detections = detections_from_yolo_output(
+                                    output,
+                                    task="pose",
+                                    gie_id=self._pose_gie_id,
+                                    labels=self._yolo_labels,
+                                    frame_width=roi_width,
+                                    frame_height=roi_height,
+                                    confidence_threshold=self._confidence_by_gie.get(
+                                        self._pose_gie_id, self._yolo_conf_threshold
+                                    ),
+                                    class_ids_filter={0},
+                                    input_size=float(os.environ.get("DS_POSE_INPUT_SIZE", "640")),
+                                    iou_threshold=self._yolo_iou_threshold,
+                                    max_detections=1,
+                                    fall_checker=self._is_fall_pose,
+                                    person_pose_validator=self._is_valid_person_pose,
+                                    postprocess_mode=self._yolo_postprocess_mode,
+                                )
+                                if detections:
+                                    self._crop_pose_results += 1
+                                    detection = detections[0]
+                                    keypoints = restore_crop_keypoints(
+                                        detection.get("keypoints"),
+                                        (
+                                            int(round(float(rect.left))),
+                                            int(round(float(rect.top))),
+                                            int(round(float(rect.left + rect.width))),
+                                            int(round(float(rect.top + rect.height))),
+                                        ),
+                                        frame_width=int(getattr(frame_meta, "source_frame_width", 0) or 1920),
+                                        frame_height=int(getattr(frame_meta, "source_frame_height", 0) or 1080),
+                                    )
+                                    detection = dict(detection)
+                                    detection["box"] = (
+                                        int(round(float(rect.left))),
+                                        int(round(float(rect.top))),
+                                        roi_width,
+                                        roi_height,
+                                    )
+                                    detection["keypoints"] = keypoints
+                                    detection["object_id"] = int(getattr(obj_meta, "object_id", -1))
+                                    if detection["object_id"] < 0 or detection["object_id"] == 0xFFFFFFFFFFFFFFFF:
+                                        detection["object_id"] = None
+                                    events.extend(
+                                        detections_to_events(
+                                            [detection],
+                                            camera_name=camera_name,
+                                            source_id=int(frame_meta.source_id),
+                                            frame_num=int(frame_meta.frame_num),
+                                            timestamp_factory=time.time,
+                                            frame_width=int(getattr(frame_meta, "source_frame_width", 0) or 0),
+                                            frame_height=int(getattr(frame_meta, "source_frame_height", 0) or 0),
+                                            event_type_for_label=self._event_type_for_label,
+                                        )
+                                    )
+                            if has_explicit_gie_id or detections:
+                                break
+                    try:
+                        l_user = l_user.next
+                    except StopIteration:
+                        break
+            try:
+                l_obj = l_obj.next
+            except StopIteration:
+                break
+        events = self._filter_events_for_camera(events, camera_name)
+        if events:
+            self._add_osd_overlays(
+                batch_meta,
+                frame_meta,
+                [
+                    {
+                        "box": (event.x, event.y, event.width, event.height),
+                        "label": event.class_name,
+                        "confidence": event.confidence,
+                        "keypoints": event.keypoints,
+                        "is_fall": event.event_type == EventType.FALL_DETECTED,
+                        "fall_score": (event.metadata or {}).get("fall_score"),
+                    }
+                    for event in events
+                ],
+            )
+            self._apply_existing_event_pipeline(camera_name, events)
+        return sum(1 for event in events if event.event_type != EventType.FALL_DETECTED)
 
     def _object_meta_events_from_frame(
         self,
@@ -2139,8 +2432,14 @@ class DeepStreamProcessor(BaseProcessor):
         validate_pipeline_prerequisites(
             deepstream_loaded=_ensure_deepstream_loaded(),
             has_cameras=bool(self._cameras),
-            infer_config_exists=_INFER_CONFIG.exists(),
-            infer_config_path=_INFER_CONFIG,
+            infer_config_exists=(
+                _PERSON_INFER_CONFIG.exists()
+                if self._crop_pose_enabled
+                else _INFER_CONFIG.exists()
+            ),
+            infer_config_path=(
+                _PERSON_INFER_CONFIG if self._crop_pose_enabled else _INFER_CONFIG
+            ),
         )
         primary_enabled, helmet_enabled, pphuman_enabled = self._inference_topology_signature()
 
@@ -2159,6 +2458,11 @@ class DeepStreamProcessor(BaseProcessor):
         if not source_entries:
             raise RuntimeError("DeepStream 파이프라인을 만들 지원 소스가 없습니다.")
         self._preview_camera_id = source_entries[0][1]
+        falldata_aux = getattr(self, "_falldata_aux", None)
+        if falldata_aux is not None:
+            for camera_id in self._cameras:
+                falldata_aux.reset_pose_records(camera_id)
+        self._primary_frame_metrics.reset(self._cameras)
 
         n_cams = len(source_entries)
         output_elements = self._create_output_elements()
@@ -2171,6 +2475,10 @@ class DeepStreamProcessor(BaseProcessor):
             primary_enabled=primary_enabled,
             helmet_enabled=helmet_enabled,
             pphuman_enabled=pphuman_enabled,
+            pose_enabled=self._crop_pose_enabled,
+            # Primary tensor probe가 추가한 Person ROI는 nvtracker에서 제거될 수
+            # 있으므로 crop-Pose 경로는 기존 synthetic IoU ID를 사용한다.
+            tracker_enabled=not self._crop_pose_enabled,
             output_elements=output_elements,
             preview_elements=preview_elements,
         )
@@ -2185,14 +2493,27 @@ class DeepStreamProcessor(BaseProcessor):
         )
         add_pipeline_elements(pipeline, elements)
 
+        self._model_inference_metrics.reset(
+            self._cameras,
+            {
+                "primary": elements.nvinfer,
+                "pose": elements.pose_infer,
+                "attributes": elements.pphuman_infer,
+                "helmet": elements.helmet_infer,
+            },
+        )
+
         probe_element = link_deepstream_pipeline_path(
             elements,
             link_or_raise=self._link_or_raise,
             gst_module=Gst,
             primary_probe_callback=self._on_primary_tensor_probe,
+            primary_metrics_callback=self._on_primary_metrics_probe,
             link_preview_branch=self._link_preview_branch,
             pphuman_gie_id=self._pphuman_gie_id,
             pphuman_infer_config=self._resolve_pphuman_infer_config(),
+            pose_gie_id=int(os.environ.get("DS_POSE_GIE_ID", "2")),
+            pose_infer_config=_POSE_SGIE_INFER_CONFIG if self._crop_pose_enabled else None,
         )
 
         attach_camera_sources_batch(
@@ -2259,15 +2580,62 @@ class DeepStreamProcessor(BaseProcessor):
             stop_runtime_cb=self._stop_runtime_loop,
         )
 
+    def _on_primary_metrics_probe(self, pad: Any, info: Any, user_data: Any) -> Any:
+        """후속 SGIE가 메타를 변경하기 전에 주 추론 여부를 관측한다."""
+        try:
+            buffer = info.get_buffer()
+            if buffer is not None:
+                batch_meta = pyds.gst_buffer_get_nvds_batch_meta(hash(buffer))
+                if batch_meta is not None:
+                    self._primary_frame_metrics.record_batch(
+                        batch_meta,
+                        pyds_module=pyds,
+                        pad_to_camera=self._pad_to_camera,
+                        primary_element=pad.get_parent_element(),
+                    )
+        except Exception as exc:
+            self._increment_stat("primary_metrics_errors")
+            logger.debug("Primary FPS 계측 실패: %s", exc)
+        return Gst.PadProbeReturn.OK
+
     def _on_primary_tensor_probe(
         self, pad: Any, info: Any, user_data: Any
     ) -> Any:  # Gst.PadProbeReturn
-        """primary nvinfer src pad probe — pphuman SGIE 활성 시 passthrough 역할.
-
-        pphuman_infer가 활성화된 경우, 주 탐지(YOLO tensor)는 pphuman_infer
-        src pad의 _on_pad_probe에서 처리된다. 이 probe는 primary GIE 직후
-        버퍼가 올바르게 흐르는지 확인하는 passthrough 역할만 한다.
-        """
+        """crop 모드에서 raw Person tensor를 tracker/SGIE용 객체 메타로 등록한다."""
+        if not getattr(self, "_crop_pose_enabled", False):
+            return Gst.PadProbeReturn.OK
+        buffer = info.get_buffer()
+        if buffer is None:
+            return Gst.PadProbeReturn.OK
+        batch_meta = pyds.gst_buffer_get_nvds_batch_meta(hash(buffer))
+        if batch_meta is None:
+            return Gst.PadProbeReturn.OK
+        node = batch_meta.frame_meta_list
+        while node is not None:
+            try:
+                frame_meta = pyds.NvDsFrameMeta.cast(node.data)
+                camera_name = self._pad_to_camera.get(frame_meta.source_id, "unknown")
+                self._increment_stat("primary_probe_frames")
+                injected = self._inject_primary_person_object_meta(
+                    batch_meta, frame_meta, camera_name
+                )
+                self._increment_stat("primary_person_rois", injected)
+                if (
+                    os.environ.get("DS_CROP_POSE_DIAGNOSTICS", "0") == "1"
+                    and int(getattr(self, "_primary_probe_diagnostic_frames", 0)) < 3
+                ):
+                    self._primary_probe_diagnostic_frames = int(
+                        getattr(self, "_primary_probe_diagnostic_frames", 0)
+                    ) + 1
+                    logger.info(
+                        "crop-pose primary diagnostic: frame=%s tensor_meta=%s injected_rois=%s",
+                        getattr(frame_meta, "frame_num", None),
+                        getattr(frame_meta, "frame_user_meta_list", None) is not None,
+                        injected,
+                    )
+                node = node.next
+            except StopIteration:
+                break
         return Gst.PadProbeReturn.OK
 
     def _on_pad_probe(
@@ -2312,6 +2680,16 @@ class DeepStreamProcessor(BaseProcessor):
         if batch_meta is None:
             return Gst.PadProbeReturn.OK
 
+        model_metrics = getattr(self, "_model_inference_metrics", None)
+        if model_metrics is not None:
+            try:
+                model_metrics.record_batch(
+                    batch_meta, pyds_module=pyds, pad_to_camera=self._pad_to_camera
+                )
+            except Exception as exc:
+                self._increment_stat("model_metrics_errors")
+                logger.debug("GIE 출력 메타 계측 실패: %s", exc)
+
         self._frames_processed, self._tensor_probe_warned = process_batch_frames(
             batch_meta=batch_meta,
             pyds_module=pyds,
@@ -2347,6 +2725,7 @@ class DeepStreamProcessor(BaseProcessor):
             mqtt_publish=self._mqtt_publish,
             event_publisher=self.event_publisher,
             increment_stat=self._increment_stat,
+            video_ingest=getattr(self, "_video_ingest", None),
         )
         logger.info("MQTT 발행 스레드 종료")
 
@@ -2356,7 +2735,8 @@ class DeepStreamProcessor(BaseProcessor):
         logger.info(
             "DeepStream stats: frames=%s frame_dropped=%s "
             "events_detected=%s sent=%s filtered=%s event_dropped=%s failed=%s cameras=%s "
-            "yolo_postprocess=%s avg_ms=%.3f max_ms=%.3f calls=%s",
+            "yolo_postprocess=%s avg_ms=%.3f max_ms=%.3f calls=%s "
+            "crop_path=%s/%s/%s/%s/%s/%s",
             stats["frames_processed"],
             stats["frames_dropped"],
             stats["events_detected"],
@@ -2369,8 +2749,13 @@ class DeepStreamProcessor(BaseProcessor):
             stats["yolo_postprocess_avg_ms"],
             stats["yolo_postprocess_max_ms"],
             stats["yolo_postprocess_calls"],
+            stats.get("primary_probe_frames", 0),
+            stats.get("primary_tensor_meta_count", 0),
+            stats.get("primary_person_rois", 0),
+            stats.get("crop_pose_person_objects", 0),
+            stats.get("crop_pose_tensor_meta_count", 0),
+            stats.get("crop_pose_results", 0),
         )
-
 
     def release_all_cameras(self) -> None:
         """호환 인터페이스용으로 전체 카메라 처리를 중지한다."""
