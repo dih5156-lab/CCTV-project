@@ -92,6 +92,25 @@ class ProcessorStatsCollector:
                 family.add_metric([], temporal_stats[field])
                 yield family
 
+        appearance_stats = stats.get("appearance_backend_stats", {})
+        for backend_key in ("color_backend", "attribute_backend"):
+            backend_fields = appearance_stats.get(backend_key, {})
+            for field in (
+                "requests",
+                "completed",
+                "errors",
+                "seconds",
+                "skipped_too_small",
+            ):
+                if field in backend_fields:
+                    family = CounterMetricFamily(
+                        f"cctv_appearance_{backend_key}_{field}",
+                        f"Appearance {backend_key} Python {field}; call bookkeeping, "
+                        "not color/attribute accuracy",
+                    )
+                    family.add_metric([], backend_fields[field])
+                    yield family
+
         camera_stats = stats.get("primary_camera_stats", {})
         if not camera_stats:
             return

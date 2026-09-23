@@ -20,6 +20,8 @@ person bbox를 상/하체로 분리한 뒤 HSV 히스토그램 기반으로
 from __future__ import annotations
 
 import logging
+import time
+from threading import Lock
 from typing import Dict, List, Optional, Tuple
 
 import cv2
@@ -180,6 +182,51 @@ class AppearanceAnalyzer:
             device=backend_device,
         )
         self._bbox_expand_ratio = max(0.0, float(bbox_expand_ratio))
+        self._lock = Lock()
+        self._backend_metrics: Dict[str, Dict[str, float]] = {}
+
+    def _record_backend_metrics(self, backend_key: str, **increments: float) -> None:
+        with self._lock:
+            bucket = self._backend_metrics.setdefault(backend_key, {})
+            for field, amount in increments.items():
+                bucket[field] = bucket.get(field, 0) + amount
+
+    def backend_metrics_snapshot(self) -> Dict[str, Dict[str, float]]:
+        """color/attribute backend별 Python 호출 계측. GPU 실행 시간이나 색상 판정 정확도가 아니다."""
+        with self._lock:
+            return {key: dict(value) for key, value in self._backend_metrics.items()}
+
+    def _call_color_backend(self, region: np.ndarray) -> Dict[str, object]:
+        self._record_backend_metrics("color_backend", requests=1)
+        started = time.monotonic()
+        try:
+            result = self._color_backend.predict(region)
+        except Exception:
+            self._record_backend_metrics("color_backend", errors=1)
+            raise
+        else:
+            self._record_backend_metrics("color_backend", completed=1)
+            return result
+        finally:
+            self._record_backend_metrics(
+                "color_backend", seconds=max(0.0, time.monotonic() - started)
+            )
+
+    def _call_attribute_backend(self, crop: AttributeCrop) -> Dict[str, object]:
+        self._record_backend_metrics("attribute_backend", requests=1)
+        started = time.monotonic()
+        try:
+            result = self._backend.predict(crop)
+        except Exception:
+            self._record_backend_metrics("attribute_backend", errors=1)
+            raise
+        else:
+            self._record_backend_metrics("attribute_backend", completed=1)
+            return result
+        finally:
+            self._record_backend_metrics(
+                "attribute_backend", seconds=max(0.0, time.monotonic() - started)
+            )
 
     @property
     def conditions(self) -> List[Dict]:
@@ -412,6 +459,7 @@ class AppearanceAnalyzer:
             or region.shape[1] < _MIN_COLOR_REGION_WIDTH
             or region.shape[0] < _MIN_COLOR_REGION_HEIGHT
         ):
+            self._record_backend_metrics("color_backend", skipped_too_small=1)
             return self._unknown_color_evidence("too_small")
         model_region = region
         mask_coverage = 1.0
@@ -423,7 +471,7 @@ class AppearanceAnalyzer:
                 model_region = np.empty_like(region)
                 model_region[:] = tuple(int(round(value)) for value in mean_bgr)
                 model_region[region_mask > 0] = region[region_mask > 0]
-        prediction = self._color_backend.predict(model_region)
+        prediction = self._call_color_backend(model_region)
         color = prediction.get("color")
         if not color:
             return evidence
@@ -497,7 +545,7 @@ class AppearanceAnalyzer:
         metadata = dict(merged.get("attribute_metadata") or {})
         color_sources = dict(metadata.get("color_sources") or {})
         color_candidates = dict(metadata.get("color_candidates") or {})
-        backend_attrs = self._backend.predict(
+        backend_attrs = self._call_attribute_backend(
             AttributeCrop(frame=frame, **self._expand_bbox(x, y, width, height))
         )
         if not backend_attrs:
@@ -582,10 +630,8 @@ class AppearanceAnalyzer:
         has_hips = has_visible([11, 12])
         has_lower_joints = has_visible([13, 14, 15, 16])
 
-        # DeepStream pose can provide partial keypoints. Missing shoulders should
-        # not block upper-color HSV fallback. If hips are visible, keep the
-        # lower-color fallback because knees/ankles are often missed even when
-        # the person bbox covers the full body.
+        # DeepStream 자세 결과는 일부 관절점만 포함할 수 있다. 어깨가 없더라도
+        # 상의 색상 HSV 보정을 막지 않고, 엉덩이가 보이면 하의 색상 보정도 유지한다.
         has_pose_evidence = has_face or has_shoulders or has_hips or has_lower_joints
         if has_face:
             result["hat_visible"] = True

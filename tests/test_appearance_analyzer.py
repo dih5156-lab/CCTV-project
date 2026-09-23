@@ -8,6 +8,8 @@
   - 조건 CRUD: add / remove / set / get_enabled
 """
 
+from types import SimpleNamespace
+
 import numpy as np
 import pytest
 
@@ -1058,3 +1060,124 @@ class TestCombinedConditions:
         assert cond["has_suitcase"] is None
         assert cond["has_helmet"] is None
         assert cond["helmet_color"] is None
+
+
+class TestBackendMetrics:
+    """color/attribute backend Python 호출 계측."""
+
+    def test_snapshot_starts_empty(self):
+        analyzer = AppearanceAnalyzer()
+        assert analyzer.backend_metrics_snapshot() == {}
+
+    def test_color_backend_counts_requests_and_completed(self):
+        class FakeColorBackend:
+            backend_name = "color_yolov8n"
+
+            def predict(self, region):
+                return {"color": "red", "confidence": 0.9}
+
+        analyzer = AppearanceAnalyzer(color_backend=FakeColorBackend())
+        frame = _two_tone_frame((0, 0, 255), (255, 0, 0))
+
+        analyzer.extract_attributes(frame, 0, 0, 100, 200)
+
+        snapshot = analyzer.backend_metrics_snapshot()
+        color = snapshot["color_backend"]
+        # upper/lower 각각 한 번씩 실제 predict 호출.
+        assert color["requests"] == color["completed"] == 2
+        assert color.get("errors", 0) == 0
+        assert color["seconds"] >= 0.0
+
+    def test_color_backend_skip_too_small_does_not_count_as_request(self):
+        analyzer = AppearanceAnalyzer()
+
+        merged = analyzer._merge_color_model_evidence(
+            {"selected": "unknown", "source": "hsv"},
+            np.zeros((2, 2, 3), dtype=np.uint8),
+        )
+
+        assert merged["source"] == "too_small"
+        assert merged["selected"] == "unknown"
+        snapshot = analyzer.backend_metrics_snapshot()
+        assert snapshot["color_backend"]["skipped_too_small"] == 1
+        assert snapshot["color_backend"].get("requests", 0) == 0
+
+    def test_color_backend_error_propagates_and_counts(self):
+        class RaisingColorBackend:
+            backend_name = "color_yolov8n"
+
+            def predict(self, region):
+                raise RuntimeError("boom")
+
+        analyzer = AppearanceAnalyzer(color_backend=RaisingColorBackend())
+        frame = _two_tone_frame((0, 0, 255), (255, 0, 0))
+
+        with pytest.raises(RuntimeError):
+            analyzer.extract_attributes(frame, 0, 0, 100, 200)
+
+        snapshot = analyzer.backend_metrics_snapshot()
+        color = snapshot["color_backend"]
+        assert color["requests"] == 1
+        assert color["errors"] == 1
+        assert color.get("completed", 0) == 0
+
+    def test_attribute_backend_counts_one_call_per_extract(self):
+        analyzer = AppearanceAnalyzer()  # 기본 hsv backend, predict는 항상 {} 반환
+        frame = _two_tone_frame((0, 0, 255), (255, 0, 0))
+
+        analyzer.extract_attributes(frame, 0, 0, 100, 200)
+        analyzer.extract_attributes(frame, 0, 0, 100, 200)
+
+        snapshot = analyzer.backend_metrics_snapshot()
+        attribute = snapshot["attribute_backend"]
+        assert attribute["requests"] == attribute["completed"] == 2
+        assert attribute.get("errors", 0) == 0
+
+    def test_attribute_backend_error_propagates_and_counts(self):
+        class RaisingAttributeBackend:
+            backend_name = "raising"
+
+            def predict(self, crop):
+                raise RuntimeError("boom")
+
+        analyzer = AppearanceAnalyzer(backend=RaisingAttributeBackend())
+        frame = _two_tone_frame((0, 0, 255), (255, 0, 0))
+
+        with pytest.raises(RuntimeError):
+            analyzer.extract_attributes(frame, 0, 0, 100, 200)
+
+        snapshot = analyzer.backend_metrics_snapshot()
+        attribute = snapshot["attribute_backend"]
+        assert attribute["requests"] == 1
+        assert attribute["errors"] == 1
+        assert attribute.get("completed", 0) == 0
+
+    def test_metrics_export_to_prometheus(self):
+        from prometheus_client import CollectorRegistry
+
+        from src.services.processor_metrics import ProcessorStatsCollector
+
+        class FakeColorBackend:
+            backend_name = "color_yolov8n"
+
+            def predict(self, region):
+                return {"color": "red", "confidence": 0.9}
+
+        analyzer = AppearanceAnalyzer(color_backend=FakeColorBackend())
+        frame = _two_tone_frame((0, 0, 255), (255, 0, 0))
+        analyzer.extract_attributes(frame, 0, 0, 100, 200)
+
+        registry = CollectorRegistry()
+        registry.register(
+            ProcessorStatsCollector(
+                SimpleNamespace(
+                    get_stats=lambda: {
+                        "appearance_backend_stats": analyzer.backend_metrics_snapshot()
+                    }
+                )
+            )
+        )
+        assert registry.get_sample_value("cctv_appearance_color_backend_requests_total") == 2
+        assert (
+            registry.get_sample_value("cctv_appearance_attribute_backend_requests_total") == 1
+        )

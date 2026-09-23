@@ -1052,6 +1052,10 @@ class DeepStreamProcessor(BaseProcessor):
         stats_fields["falldata_temporal_stats"] = (
             falldata_aux.temporal_metrics_snapshot() if falldata_aux is not None else {}
         )
+        appearance = getattr(self, "_appearance", None)
+        stats_fields["appearance_backend_stats"] = (
+            appearance.backend_metrics_snapshot() if appearance is not None else {}
+        )
         stats_fields["crop_pose_results"] = int(
             getattr(self, "_crop_pose_results", 0)
         )
