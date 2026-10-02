@@ -1,4 +1,4 @@
-"""Check host routing toward configured field alarm devices."""
+"""설정된 현장 알람 장치로 향하는 호스트 라우팅을 점검한다."""
 
 from __future__ import annotations
 
@@ -10,7 +10,11 @@ import subprocess
 from pathlib import Path
 from typing import Mapping
 
-from check_alarm_devices import DEVICE_CHECKS, load_env_file
+try:
+    from check_alarm_devices import DEVICE_CHECKS, load_env_file
+except ModuleNotFoundError:
+    # 파일 경로로 직접 실행하거나 테스트에서 불러오는 경우의 import 경로를 지원한다.
+    from scripts.health.check_alarm_devices import DEVICE_CHECKS, load_env_file
 
 
 def _env_value(env: Mapping[str, str], key: str) -> str:

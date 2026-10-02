@@ -19,6 +19,101 @@ runtime_checks = _load_script_module(
 )
 
 
+def test_edgex_mode_rollback_contract_accepts_direct_base_and_signboard_uat():
+    base = """
+services:
+  cctv-action-layer:
+    environment:
+      EDGEX_COMMAND_MODE: ${EDGEX_COMMAND_MODE:-}
+      EDGEX_ALLOWED_DEVICES: ${EDGEX_ALLOWED_DEVICES:-}
+"""
+    uat = """
+services:
+  cctv-action-layer:
+    environment:
+      EDGEX_COMMAND_MODE: edgex
+      EDGEX_ALLOWED_DEVICES: signboard
+"""
+
+    result = runtime_checks.check_edgex_mode_rollback_contract(
+        jetson_compose_text=base,
+        uat_compose_text=uat,
+        # 단위 검사는 개발자 PC의 실제 EdgeX 운영 모드에 좌우되지 않게 한다.
+        env_text="",
+        jetson_env_text="",
+    )
+
+    assert result["passed"] is True
+
+
+def test_jetson_compose_loads_pose_crop_opt_in_from_env_file():
+    compose = (Path(__file__).resolve().parents[1] / "docker-compose.jetson.yml").read_text(
+        encoding="utf-8"
+    )
+    # 현재 옵션은 서비스 env_file로 전달된다. 삭제된 Compose 직접 선언을 요구하지 않는다.
+    service = runtime_checks._compose_service_block(compose, "cctv-ai-engine")
+    assert "env_file:" in service
+    assert "path: ./.env.jetson" in service
+
+    env_example = (Path(__file__).resolve().parents[1] / ".env.jetson.example").read_text(
+        encoding="utf-8"
+    )
+    assert "POSE_CROP_MODE=0" in env_example
+    assert "DS_CROP_POSE_ENABLED=0" in env_example
+
+
+def test_edgex_mode_rollback_contract_rejects_edge_x_as_base_default():
+    base = """
+services:
+  cctv-action-layer:
+    environment:
+      EDGEX_COMMAND_MODE: edgex
+      EDGEX_ALLOWED_DEVICES: signboard
+"""
+    uat = """
+services:
+  cctv-action-layer:
+    environment:
+      EDGEX_COMMAND_MODE: edgex
+      EDGEX_ALLOWED_DEVICES: signboard
+"""
+
+    result = runtime_checks.check_edgex_mode_rollback_contract(
+        jetson_compose_text=base,
+        uat_compose_text=uat,
+    )
+
+    assert result["passed"] is False
+    assert "EDGEX_COMMAND_MODE" in result["detail"]
+
+
+def test_edgex_mode_rollback_contract_rejects_env_override():
+    base = """
+services:
+  cctv-action-layer:
+    environment:
+      EDGEX_COMMAND_MODE: ${EDGEX_COMMAND_MODE:-}
+      EDGEX_ALLOWED_DEVICES: ${EDGEX_ALLOWED_DEVICES:-}
+"""
+    uat = """
+services:
+  cctv-action-layer:
+    environment:
+      EDGEX_COMMAND_MODE: edgex
+      EDGEX_ALLOWED_DEVICES: signboard
+"""
+
+    result = runtime_checks.check_edgex_mode_rollback_contract(
+        jetson_compose_text=base,
+        uat_compose_text=uat,
+        env_text="EDGEX_COMMAND_MODE=edgex\n",
+        jetson_env_text="",
+    )
+
+    assert result["passed"] is False
+    assert ".env must not override" in result["detail"]
+
+
 def test_edgex_adapter_outbox_path_is_isolated_from_aiot_parser():
     compose = """
 services:
@@ -584,3 +679,125 @@ services:
 
     assert result["passed"] is False
     assert "app-rules-engine rendered config entrypoint" in result["detail"]
+
+
+def _candidate_config(tmp_path):
+    # 실제 비밀값·운영 DB를 사용하지 않고 검사 경계만 구성한다.
+    readonly = {"/app/models", "/app/zones_config.json", "/app/.venv-jetson-train",
+                "/app/.venv-mediapipe", "/app/.venv-falldata", "/opt/nvidia/deepstream",
+                "/usr/lib/aarch64-linux-gnu/nvidia"}
+    writable = {"/app/data", "/app/cameras.json", "/app/known_faces.json",
+                "/app/known_faces", "/root/.insightface", "/tmp/.X11-unix"}
+    mounts = []
+    for target in sorted(readonly | writable):
+        source = tmp_path / target.lstrip("/")
+        source.parent.mkdir(parents=True, exist_ok=True)
+        if target.endswith(".json"):
+            source.write_text("{}")
+        else:
+            source.mkdir(exist_ok=True)
+        if target == "/app/data":
+            source = runtime_checks.PROJECT_ROOT / "data"
+        mounts.append({"type": "bind", "source": str(source), "target": target,
+                       "read_only": target in readonly, "bind": {"create_host_path": False}})
+    mounts.append({"type": "volume", "source": "trt-cache", "target": "/app/models/trt_cache"})
+    # 읽기 전용 모델 원본 안에 중첩 캐시 볼륨의 연결 지점이 미리 있어야 한다.
+    (tmp_path / "app/models/trt_cache").mkdir(exist_ok=True)
+    return {"services": {"cctv-ai-engine": {
+        "image": "sha256:0c11b835eb42cd245f4dda0b8bc8088733c0323bf75a2f4fefe9e7705d8dbf34",
+        "pull_policy": "never", "networks": {"edgex-network": {}}, "volumes": mounts,
+        "stop_grace_period": "1m0s",
+        "environment": {"MQTT_USER": "test", "MQTT_PASSWORD": "private-test-value",
+                        "INTERNAL_SERVICE_TOKEN": "private-test-value", "STREAM_API_ENABLED": "0",
+                        "DS_OSD_PROCESS_MODE": "0",
+                        "APPEARANCES_DB": "/app/data/runtime/appearances.db",
+                        "MQTT_EVENT_OUTBOX_DB": "/app/data/runtime/mqtt_event_outbox.db",
+                        "COMMERCIAL_FACE_DATABASE": "/app/data/runtime/commercial_faces.db"},
+    }}}
+
+
+def test_candidate_accepts_existing_durable_mounts(tmp_path):
+    assert runtime_checks.check_candidate_profile(_candidate_config(tmp_path))["passed"]
+
+
+def test_candidate_rejects_gpu_or_unspecified_osd(tmp_path):
+    # GPU OSD 첫 버퍼 지연으로 매칭이 만료된 구성을 검증 후보로 통과시키지 않는다.
+    for mode in (None, "", "1"):
+        config = _candidate_config(tmp_path)
+        environment = config["services"]["cctv-ai-engine"]["environment"]
+        if mode is None:
+            environment.pop("DS_OSD_PROCESS_MODE")
+        else:
+            environment["DS_OSD_PROCESS_MODE"] = mode
+        result = runtime_checks.check_candidate_profile(config)
+        assert not result["passed"], mode
+        assert "DS_OSD_PROCESS_MODE" in result["detail"]
+        assert "private-test-value" not in result["detail"]
+
+
+def test_candidate_rejects_disabled_outbox_without_leaking_secrets(tmp_path):
+    config = _candidate_config(tmp_path)
+    env = config["services"]["cctv-ai-engine"]["environment"]
+    del env["MQTT_EVENT_OUTBOX_DB"]
+    result = runtime_checks.check_candidate_profile(config)
+    assert not result["passed"]
+    assert "MQTT_EVENT_OUTBOX_DB" in result["detail"]
+    assert "private-test-value" not in str(result)
+
+
+def test_candidate_rejects_secret_missing(tmp_path):
+    config = _candidate_config(tmp_path)
+    config["services"]["cctv-ai-engine"]["environment"]["MQTT_PASSWORD"] = " "
+    assert not runtime_checks.check_candidate_profile(config)["passed"]
+
+
+def test_candidate_rejects_short_or_missing_stop_grace(tmp_path):
+    # 정상 종료가 기본 유예보다 길었던 실측을 반영해 명시적인 60초 계약을 유지한다.
+    for value in (None, "10s"):
+        config = _candidate_config(tmp_path)
+        config["services"]["cctv-ai-engine"]["stop_grace_period"] = value
+        assert not runtime_checks.check_candidate_profile(config)["passed"]
+
+
+def test_candidate_rejects_missing_cache_mountpoint_in_readonly_models(tmp_path):
+    config = _candidate_config(tmp_path)
+    (tmp_path / "app/models/trt_cache").rmdir()
+    result = runtime_checks.check_candidate_profile(config)
+    assert not result["passed"]
+    assert "trt_cache" in result["detail"]
+
+
+def test_candidate_rejects_readonly_database_mount(tmp_path):
+    config = _candidate_config(tmp_path)
+    for mount in config["services"]["cctv-ai-engine"]["volumes"]:
+        if mount["target"] == "/app/data":
+            mount["read_only"] = True
+    assert not runtime_checks.check_candidate_profile(config)["passed"]
+
+
+def test_candidate_rejects_shadowed_image_and_database(tmp_path):
+    for target in ("/app", "/app/src/core", "/app/config", "/app/data/runtime"):
+        config = _candidate_config(tmp_path)
+        config["services"]["cctv-ai-engine"]["volumes"].append(
+            {"type": "bind", "source": str(tmp_path), "target": target})
+        assert not runtime_checks.check_candidate_profile(config)["passed"], target
+
+
+def test_candidate_rejects_missing_mount_or_automatic_directory(tmp_path):
+    for mutation in ("missing", "auto_create"):
+        config = _candidate_config(tmp_path)
+        mount = config["services"]["cctv-ai-engine"]["volumes"][0]
+        if mutation == "missing":
+            mount["source"] = str(tmp_path / "missing")
+        else:
+            mount["bind"]["create_host_path"] = True
+        assert not runtime_checks.check_candidate_profile(config)["passed"]
+
+
+def test_candidate_rejects_build_tag_or_isolated_network(tmp_path):
+    for key, value in (("build", {"context": "."}), ("image", "cctv-ai:latest"),
+                       ("network_mode", "none"), ("tmpfs", ["/app/data"]),
+                       ("volumes_from", ["another-service"])):
+        config = _candidate_config(tmp_path)
+        config["services"]["cctv-ai-engine"][key] = value
+        assert not runtime_checks.check_candidate_profile(config)["passed"], key

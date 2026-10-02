@@ -1,0 +1,8 @@
+services:
+  # 전광판 1대 기준 EdgeX 운영 경로 검증용 override다.
+  cctv-action-layer:
+    environment:
+      EDGEX_COMMAND_MODE: edgex
+      EDGEX_SHADOW_ENABLED: "false"
+      EDGEX_ALLOWED_DEVICES: signboard
+      EDGEX_DEVICE_REGISTRY_PATH: /app/config/output_devices.json

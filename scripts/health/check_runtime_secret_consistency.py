@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""Validate and optionally repair runtime secret drift for the Jetson stack.
+"""Jetson 스택의 실행 보안 값 불일치를 검증하고 필요하면 복구한다.
 
-This check intentionally validates live state, not only compose syntax:
-- .env is the single source for MQTT and AIoT DB passwords.
-- Running service containers received the same MQTT secret values.
-- Mosquitto accepts the .env credentials.
-- PostgreSQL accepts the .env AIOT_DB_PASSWORD over TCP.
+이 검사는 Compose 문법뿐 아니라 실제 실행 상태를 확인한다.
+- MQTT와 AIoT DB 비밀번호의 단일 기준은 .env 파일이다.
+- 실행 중인 서비스 컨테이너가 동일한 MQTT 보안 값을 전달받았는지 확인한다.
+- Mosquitto가 .env 인증 정보를 받아들이는지 확인한다.
+- PostgreSQL이 TCP를 통해 .env의 AIOT_DB_PASSWORD를 받아들이는지 확인한다.
 
-Use --fix only for local/edge operation recovery. It updates mosquitto/passwd
-and the existing aiot-parser-db postgres password to match .env.
+--fix 옵션은 로컬·엣지 운영 복구가 필요한 경우에만 사용한다. .env 기준으로
+mosquitto/passwd와 기존 aiot-parser-db PostgreSQL 비밀번호를 갱신한다.
 """
 
 from __future__ import annotations

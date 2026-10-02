@@ -1,4 +1,6 @@
 import importlib.util
+import json
+import subprocess
 import sys
 from pathlib import Path
 from unittest.mock import Mock
@@ -127,3 +129,84 @@ model-engine-file=model.engine
     )
 
     assert all("GStreamer plugin" not in result.name for result in results)
+
+
+def test_native_check_rejects_missing_library(monkeypatch):
+    # 버전 조회가 실패했는데 Python import만으로 배포를 통과시키는 회귀를 막는다.
+    monkeypatch.setattr(
+        check_deepstream_env.subprocess, "run",
+        lambda *args, **kwargs: subprocess.CompletedProcess(
+            args[0], 127, "",
+            "deepstream-app: error while loading shared libraries: "
+            "libgstrtspserver-1.0.so.0: cannot open shared object file",
+        ),
+    )
+    result = check_deepstream_env._check_deepstream_app(1.0)
+    assert not result.ok
+    assert "libgstrtspserver-1.0.so.0" in result.detail
+
+
+def test_native_check_requires_expected_sdk_version(monkeypatch):
+    for output, expected_ok in [
+        ("deepstream-app version 7.1.0\nDeepStreamSDK 7.1.0\n", True),
+        ("deepstream-app version 8.0.0\n", False),
+        ("deepstream-app version 7.10.0\n", False),
+        ("", False),
+    ]:
+        monkeypatch.setattr(
+            check_deepstream_env.subprocess, "run",
+            lambda *args, **kwargs: subprocess.CompletedProcess(args[0], 0, output, ""),
+        )
+        assert check_deepstream_env._check_deepstream_app(1.0).ok is expected_ok
+
+
+def test_native_check_reports_missing_command_and_timeout(monkeypatch):
+    for error in [FileNotFoundError("deepstream-app"), subprocess.TimeoutExpired("deepstream-app", 1)]:
+        def run(*args, **kwargs):
+            raise error
+        monkeypatch.setattr(check_deepstream_env.subprocess, "run", run)
+        assert not check_deepstream_env._check_deepstream_app(1.0).ok
+
+
+def test_native_check_uses_mounted_sdk_when_app_is_not_on_path(monkeypatch):
+    import shutil
+
+    monkeypatch.setattr(shutil, "which", lambda _name: None)
+    def run(args, **kwargs):
+        if args[0] != "/opt/nvidia/deepstream/deepstream/bin/deepstream-app":
+            raise FileNotFoundError(args[0])
+        return subprocess.CompletedProcess(args, 0, "deepstream-app version 7.1.0\n", "")
+    monkeypatch.setattr(check_deepstream_env.subprocess, "run", run)
+    assert check_deepstream_env._check_deepstream_app(1.0).ok
+
+
+def test_native_only_cli_checks_real_command_failure_without_model_files(tmp_path, monkeypatch, capsys):
+    # 외부 명령 경계만 대체하고 CLI의 실패 집계·종료 코드는 실제로 실행한다.
+    binary = tmp_path / "deepstream-app"
+    binary.write_text("#!/bin/sh\necho 'libgstrtspserver-1.0.so.0 missing' >&2\nexit 127\n")
+    binary.chmod(0o755)
+    monkeypatch.setenv("PATH", str(tmp_path))
+    exit_code = check_deepstream_env.main([
+        "--native-only", "--skip-gst-plugins", "--root", str(tmp_path), "--json",
+    ])
+    output = json.loads(capsys.readouterr().out)
+    assert exit_code == 1
+    assert not output["passed"]
+    assert len(output["results"]) == 1
+    assert "libgstrtspserver" in output["results"][0]["detail"]
+
+
+def test_native_only_cli_checks_plugins_and_passes_without_python_bindings(tmp_path, monkeypatch, capsys):
+    binary = tmp_path / "deepstream-app"
+    binary.write_text("#!/bin/sh\necho 'deepstream-app version 7.1.0'\n")
+    binary.chmod(0o755)
+    plugin = tmp_path / "gst-inspect-1.0"
+    plugin.write_text("#!/bin/sh\nexit 0\n")
+    plugin.chmod(0o755)
+    monkeypatch.setenv("PATH", str(tmp_path))
+    assert check_deepstream_env.main(["--native-only", "--root", str(tmp_path), "--json"]) == 0
+    output = json.loads(capsys.readouterr().out)
+    assert output["passed"]
+    assert any("nvinfer" in result["name"] for result in output["results"])
+    plugin.write_text("#!/bin/sh\necho 'No such element' >&2\nexit 1\n")
+    assert check_deepstream_env.main(["--native-only", "--root", str(tmp_path), "--json"]) == 1

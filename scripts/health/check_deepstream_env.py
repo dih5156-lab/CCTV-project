@@ -5,6 +5,8 @@ from __future__ import annotations
 import argparse
 import importlib
 import json
+import re
+import shutil
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -16,7 +18,7 @@ DEFAULT_CONFIGS = (
     "config/deepstream/config_infer_helmet.txt",
     "config/deepstream/config_infer_pphuman.txt",
 )
-DEFAULT_GST_PLUGINS = ("nvstreammux", "nvinfer", "nvtracker")
+DEFAULT_GST_PLUGINS = ("nvstreammux", "nvinfer", "nvtracker", "nvv4l2decoder", "nvvideoconvert")
 
 
 @dataclass(frozen=True)
@@ -82,6 +84,30 @@ def _check_gst_plugin(plugin_name: str, timeout: float) -> CheckResult:
     return CheckResult(f"GStreamer plugin {plugin_name}", False, detail)
 
 
+def _check_deepstream_app(timeout: float) -> CheckResult:
+    # Python import 성공만으로는 호스트 SDK의 공유 라이브러리 누락을 찾을 수 없다.
+    # 실제 실행 파일을 로드하고 지원 중인 SDK 7.1 계열인지 함께 확인한다.
+    name = "DeepStream native runtime"
+    # 현재 이미지는 SDK를 호스트에서 연결하므로 /usr/bin 링크 없이도 실제 SDK를 검사한다.
+    executable = shutil.which("deepstream-app") or "/opt/nvidia/deepstream/deepstream/bin/deepstream-app"
+    try:
+        completed = subprocess.run(
+            [executable, "--version-all"],
+            check=False, capture_output=True, text=True, timeout=timeout,
+        )
+    except OSError as exc:
+        return CheckResult(name, False, str(exc))
+    except subprocess.TimeoutExpired:
+        return CheckResult(name, False, f"{timeout:g}초 timeout")
+    output = (completed.stdout + "\n" + completed.stderr).strip()
+    if completed.returncode != 0:
+        return CheckResult(name, False, f"exit={completed.returncode}: {output[:1600]}")
+    version = re.search(r"deepstream-app version\s+(\d+\.\d+(?:\.\d+)*)", output)
+    if version is None or version.group(1).split(".")[:2] != ["7", "1"]:
+        return CheckResult(name, False, f"DeepStream 7.1 필요: {output[:1600]}")
+    return CheckResult(name, True, f"SDK {version.group(1)} 로드 성공; 영상 처리 검증은 별도")
+
+
 def _parse_property_file(path: Path) -> dict[str, str]:
     values: dict[str, str] = {}
     for raw_line in path.read_text(encoding="utf-8").splitlines():
@@ -140,14 +166,18 @@ def build_checks(
     gst_plugins: Iterable[str],
     timeout: float,
     skip_gst_plugins: bool,
+    native_only: bool = False,
 ) -> list[CheckResult]:
-    results = [
-        _check_gstreamer_python(),
-        _check_python_module("pyds"),
-    ]
+    results = [_check_deepstream_app(timeout)]
+    if not native_only:
+        results.extend([_check_gstreamer_python(), _check_python_module("pyds")])
 
     if not skip_gst_plugins:
         results.extend(_check_gst_plugin(plugin, timeout) for plugin in gst_plugins)
+
+    # 호스트 준비 단계에는 모델·pyds가 없어도 SDK 의존성을 먼저 검사할 수 있어야 한다.
+    if native_only:
+        return results
 
     for config_path_text in config_paths:
         config_path = Path(config_path_text)
@@ -183,6 +213,10 @@ def main(argv: Optional[list[str]] = None) -> int:
     )
     parser.add_argument("--timeout", type=float, default=5.0, help="gst-inspect timeout(초)")
     parser.add_argument(
+        "--native-only", action="store_true",
+        help="SDK 실행·GStreamer 플러그인만 검사 (모델/Python 바인딩 검사 제외)",
+    )
+    parser.add_argument(
         "--skip-gst-plugins",
         action="store_true",
         help="gst-inspect 플러그인 점검을 건너뜀",
@@ -198,6 +232,7 @@ def main(argv: Optional[list[str]] = None) -> int:
         gst_plugins=DEFAULT_GST_PLUGINS,
         timeout=args.timeout,
         skip_gst_plugins=args.skip_gst_plugins,
+        native_only=args.native_only,
     )
 
     if args.json:

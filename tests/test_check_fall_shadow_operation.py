@@ -1,9 +1,22 @@
+import subprocess
 from datetime import datetime, timezone
 
 from scripts.ops.check_fall_shadow_operation import (
+    _runtime_env_check,
     analyze_deepstream_stats,
     analyze_shadow_records,
+    parse_args,
 )
+
+
+def test_default_shadow_age_allows_five_minute_collection_interval(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr("sys.argv", ["check_fall_shadow_operation.py"])
+
+    args = parse_args()
+
+    assert args.max_shadow_age_seconds >= 420
 
 
 def test_analyze_shadow_records_reports_fresh_successful_shadow_activity() -> None:
@@ -45,6 +58,33 @@ def test_analyze_shadow_records_reports_fresh_successful_shadow_activity() -> No
     assert result["publish_pending_count"] == 0
 
 
+def test_analyze_shadow_records_accepts_expected_confirm_mode() -> None:
+    now = datetime(2026, 8, 13, 1, 10, tzinfo=timezone.utc)
+    rows = [
+        {
+            "created_at": "2026-08-13T01:09:50+00:00",
+            "event_type": "fall_shadow_window",
+            "falldata_aux_publish_pending": False,
+            "falldata_aux": {
+                "mode": "confirm",
+                "status": "ok",
+                "threshold": 0.78,
+            },
+        }
+    ]
+
+    result = analyze_shadow_records(
+        rows,
+        now=now,
+        max_age_seconds=90,
+        expected_threshold=0.78,
+        expected_mode="confirm",
+    )
+
+    assert result["passed"] is True
+    assert result["modes"] == ["confirm"]
+
+
 def test_analyze_shadow_records_fails_on_stale_or_risky_records() -> None:
     now = datetime(2026, 8, 13, 1, 10, tzinfo=timezone.utc)
     rows = [
@@ -71,7 +111,7 @@ def test_analyze_shadow_records_fails_on_stale_or_risky_records() -> None:
     assert result["runtime_failure_count"] == 1
     assert result["publish_pending_count"] == 1
     assert "stale_shadow_records" in result["failures"]
-    assert "non_shadow_mode" in result["failures"]
+    assert "non_expected_mode" in result["failures"]
     assert "threshold_mismatch" in result["failures"]
 
 
@@ -100,3 +140,26 @@ def test_analyze_deepstream_stats_fails_without_progress() -> None:
 
     assert result["passed"] is False
     assert "no_frame_progress" in result["failures"]
+
+
+def test_runtime_env_check_accepts_expected_confirm_mode(monkeypatch) -> None:
+    environment = "\n".join(
+        [
+            "FALLDATA_AUX_MODE=confirm",
+            "FALLDATA_AUX_COMPARE_VETO_ENABLED=false",
+            "FALLDATA_AUX_COMPARE_MODEL_PATH=/app/models/candidate.pkl",
+            "FALLDATA_AUX_COMPARE_THRESHOLD=0.78",
+        ]
+    )
+
+    monkeypatch.setattr(
+        "scripts.ops.check_fall_shadow_operation._run",
+        lambda *args, **kwargs: subprocess.CompletedProcess(
+            args[0], 0, stdout=environment, stderr=""
+        ),
+    )
+
+    result = _runtime_env_check(["docker"], "cctv-ai-engine", expected_mode="confirm")
+
+    assert result["passed"] is True
+    assert result["mode"] == "confirm"

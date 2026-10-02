@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check that repeated Public API readiness calls do not leak file descriptors."""
+"""Public API 준비 상태를 반복 호출해 파일 디스크립터 누수가 없는지 점검한다."""
 
 from __future__ import annotations
 

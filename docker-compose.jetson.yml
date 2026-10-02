@@ -47,8 +47,7 @@ x-localtime: &localtime
   read_only: true
 
 x-edgex-security: &edgex-security
-  # 기본 Compose의 동일 목록에 추가하지 않고 Jetson 보안값으로 교체한다.
-  security_opt: !override
+  security_opt:
     - no-new-privileges:true
 
 x-appearance-runtime: &appearance-runtime
@@ -56,15 +55,17 @@ x-appearance-runtime: &appearance-runtime
   DS_HELMET_ENABLED: ${DS_HELMET_ENABLED:-1}
   DS_FACE_ENABLED: ${DS_FACE_ENABLED:-1}
   DS_APPEARANCE_ENABLED: ${DS_APPEARANCE_ENABLED:-1}
+  # 반복 인물의 후처리만 초당 2회로 제한하여 큐 적체를 줄인다.
+  DS_CONTEXT_MIN_INTERVAL_SEC: ${DS_CONTEXT_MIN_INTERVAL_SEC:-0.5}
   DS_PPHUMAN_SGIE_ENABLED: ${DS_PPHUMAN_SGIE_ENABLED:-1}
   DS_PPHUMAN_INFER_CONFIG: ${DS_PPHUMAN_INFER_CONFIG:-config/deepstream/config_infer_pa100k.txt}
   APPEARANCE_BACKEND: ${APPEARANCE_BACKEND:-hsv}
-  APPEARANCE_MODEL_PATH: ${APPEARANCE_MODEL_PATH:-models/appearance/pa100k_resnet50_attr.engine}
+  APPEARANCE_MODEL_PATH: ${APPEARANCE_MODEL_PATH:-models/pa100k_resnet50_attr.engine}
   APPEARANCE_LABEL_MAP_PATH: ${APPEARANCE_LABEL_MAP_PATH:-config/appearance_pa100k_labels.json}
   APPEARANCE_RUNTIME: ${APPEARANCE_RUNTIME:-tensorrt}
   APPEARANCE_INPUT_SIZE: ${APPEARANCE_INPUT_SIZE:-224}
   APPEARANCE_SCORE_THRESHOLD: ${APPEARANCE_SCORE_THRESHOLD:-0.5}
-  APPEARANCE_COLOR_MODEL_PATH: ${APPEARANCE_COLOR_MODEL_PATH:-models/appearance/appearance_color_yolov8n.engine}
+  APPEARANCE_COLOR_MODEL_PATH: ${APPEARANCE_COLOR_MODEL_PATH:-models/appearance_color_yolov8n.engine}
   APPEARANCE_COLOR_LABEL_MAP_PATH: ${APPEARANCE_COLOR_LABEL_MAP_PATH:-config/appearance_color_labels.json}
   APPEARANCE_COLOR_INPUT_SIZE: ${APPEARANCE_COLOR_INPUT_SIZE:-160}
   APPEARANCE_COLOR_SCORE_THRESHOLD: ${APPEARANCE_COLOR_SCORE_THRESHOLD:-0.75}
@@ -595,11 +596,6 @@ services:
         host_ip: ${PUBLIC_DEMO_BIND_HOST:-127.0.0.1}
         published: "7000"
         protocol: tcp
-      # 일부 브라우저는 localhost를 먼저 IPv6(::1)로 해석한다.
-      - target: 7000
-        host_ip: "::"
-        published: "7000"
-        protocol: tcp
     restart: always
     <<: *edgex-security
     volumes:
@@ -683,6 +679,10 @@ services:
       USE_DEEPSTREAM: ${USE_DEEPSTREAM:-1}
       # DeepStream 출력 모드: rtsp-publish(MediaMTX 표준 라이브), h264-mpegts, fakesink, display
       DS_OUTPUT_MODE: ${DS_OUTPUT_MODE:-rtsp-publish}
+      # 빈 값은 SDK 기본값 유지. 0=CPU 그리기(JIT 정지 우회 후보), 1=GPU 그리기.
+      DS_OSD_PROCESS_MODE: ${DS_OSD_PROCESS_MODE:-}
+      # 빈 값은 SDK 기본값 유지. Jetson surface-array CUDA 복사 오류 우회 후보는 2(VIC).
+      DS_NVVIDEOCONVERT_COPY_HW: ${DS_NVVIDEOCONVERT_COPY_HW:-}
       DS_RTSP_LOCATION: ${DS_RTSP_LOCATION:-rtsp://cctv-media-server:8554/camera_1}
       DS_RTSP_LATENCY_MS: ${DS_RTSP_LATENCY_MS:-100}
       DS_H264_ENCODER: ${DS_H264_ENCODER:-nvv4l2h264enc}
@@ -736,15 +736,12 @@ services:
       STREAM_API_TOKEN: ${STREAM_API_TOKEN:-}
       REQUIRE_STREAM_API_TOKEN: ${REQUIRE_STREAM_API_TOKEN:-0}
       STREAM_PORT: ${STREAM_PORT:-8769}
-      METRICS_PORT: ${METRICS_PORT:-8770}
       STREAM_FPS: ${STREAM_FPS:-15}
       STREAM_JPEG_QUALITY: ${STREAM_JPEG_QUALITY:-65}
       STREAM_WIDTH: ${STREAM_WIDTH:-960}
       STREAM_HEIGHT: ${STREAM_HEIGHT:-540}
       FALLDATA_AUX_ENABLED: ${FALLDATA_AUX_ENABLED:-false}
       FALLDATA_AUX_MODE: ${FALLDATA_AUX_MODE:-shadow}
-      FALLDATA_AUX_INLINE_POSE_RF: ${FALLDATA_AUX_INLINE_POSE_RF:-true}
-      FALLDATA_AUX_INLINE_FEATURE_CAPTURE_PATH: ${FALLDATA_AUX_INLINE_FEATURE_CAPTURE_PATH:-}
       FALLDATA_AUX_THRESHOLD: ${FALLDATA_AUX_THRESHOLD:-0.7}
       FALLDATA_AUX_FALL_CLASS_INDEX: ${FALLDATA_AUX_FALL_CLASS_INDEX:-0}
       FALLDATA_AUX_MIN_NONZERO_FRAMES: ${FALLDATA_AUX_MIN_NONZERO_FRAMES:-30}
@@ -758,17 +755,22 @@ services:
       FALLDATA_AUX_COMPARE_VETO_ENABLED: ${FALLDATA_AUX_COMPARE_VETO_ENABLED:-true}
       FALLDATA_AUX_CONFIRM_MAX_FALL_SCORE: ${FALLDATA_AUX_CONFIRM_MAX_FALL_SCORE:-4.5}
       FALLDATA_AUX_COMPARE_VETO_MIN_FALL_SCORE: ${FALLDATA_AUX_COMPARE_VETO_MIN_FALL_SCORE:-3.0}
-      FALLDATA_AUX_COMPARE_MODEL_PATH: ${FALLDATA_AUX_COMPARE_MODEL_PATH:-models/experiments/yolo_pose_fall_cam2_continuous_200_80_640.pkl}
-      FALLDATA_AUX_COMPARE_MODEL_KIND: ${FALLDATA_AUX_COMPARE_MODEL_KIND:-yolo_pose_rf}
+      FALLDATA_AUX_COMPARE_MODEL_PATH: ${FALLDATA_AUX_COMPARE_MODEL_PATH:-}
       FALLDATA_AUX_COMPARE_THRESHOLD: ${FALLDATA_AUX_COMPARE_THRESHOLD:-}
+      FALLDATA_AUX_MEDIAPIPE_PYTHON: ${FALLDATA_AUX_MEDIAPIPE_PYTHON:-/app/.venv-mediapipe/bin/python}
+      FALLDATA_AUX_MODEL_PYTHON: ${FALLDATA_AUX_MODEL_PYTHON:-/app/.venv-falldata/bin/python}
+      FALLDATA_AUX_MODEL_PATH: ${FALLDATA_AUX_MODEL_PATH:-/app/falldata/2. AI학습모델파일/영상/낙상분류/FNF_RF_SMOTE_CAM_1.pkl}
       FALLDATA_AUX_TEMPORAL_PYTHON: ${FALLDATA_AUX_TEMPORAL_PYTHON:-/app/.venv-jetson-train/bin/python}
       FALLDATA_AUX_TEMPORAL_COMPARE_MODEL_PATH: ${FALLDATA_AUX_TEMPORAL_COMPARE_MODEL_PATH:-}
-      FALLDATA_AUX_TEMPORAL_POSE_MODEL_PATH: ${FALLDATA_AUX_TEMPORAL_POSE_MODEL_PATH:-/app/models/fall/yolov8n-pose.pt}
+      FALLDATA_AUX_TEMPORAL_POSE_MODEL_PATH: ${FALLDATA_AUX_TEMPORAL_POSE_MODEL_PATH:-/app/models/yolov8n-pose.pt}
+      # 보조 TCN의 Pose 전처리 크기를 평가 기준과 일치시킨다.
+      FALLDATA_AUX_TEMPORAL_POSE_IMGSZ: ${FALLDATA_AUX_TEMPORAL_POSE_IMGSZ:-640}
+      # 기본은 기존 단발 실행. 지속 모델 재사용은 별도 후보 검증 후 명시적으로 켠다.
+      FALLDATA_AUX_TEMPORAL_WORKER_ENABLED: ${FALLDATA_AUX_TEMPORAL_WORKER_ENABLED:-false}
       FALLDATA_AUX_TEMPORAL_SLIDING_WINDOW_SIZE: ${FALLDATA_AUX_TEMPORAL_SLIDING_WINDOW_SIZE:-0}
       FALLDATA_AUX_TEMPORAL_SLIDING_WINDOW_STRIDE: ${FALLDATA_AUX_TEMPORAL_SLIDING_WINDOW_STRIDE:-5}
       FALLDATA_AUX_TEMPORAL_MIN_CONFIRMED_WINDOWS: ${FALLDATA_AUX_TEMPORAL_MIN_CONFIRMED_WINDOWS:-1}
       FALLDATA_AUX_TEMPORAL_NEAR_MISS_SHADOW_ENABLED: ${FALLDATA_AUX_TEMPORAL_NEAR_MISS_SHADOW_ENABLED:-false}
-      FALLDATA_AUX_NEAR_MISS_PROMOTE_ENABLED: ${FALLDATA_AUX_NEAR_MISS_PROMOTE_ENABLED:-false}
       FALL_SHADOW_REVIEW_LOG_PATH: ${FALL_SHADOW_REVIEW_LOG_PATH:-/app/data/fall_dataset/annotations/review.jsonl}
       FALL_SHADOW_SAVE_CLIPS: ${FALL_SHADOW_SAVE_CLIPS:-false}
       FALL_SHADOW_CLIP_DIR: ${FALL_SHADOW_CLIP_DIR:-/app/data/fall_dataset/clips/pending}
@@ -853,10 +855,6 @@ services:
       - target: 8769
         published: "${STREAM_PORT:-8769}"
         protocol: tcp
-      - target: 8770
-        host_ip: 127.0.0.1
-        published: "${METRICS_PORT:-8770}"
-        protocol: tcp
     healthcheck:
       test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8765/health', timeout=3).read()\""]
       interval: 30s
@@ -905,6 +903,18 @@ services:
       - type: bind
         source: ${FALL_DATASET_HOST_PATH:-/media/sawwave/Learning11/낙상학습데이터}
         target: /app/낙상학습데이터
+        read_only: true
+      - type: bind
+        source: ./falldata
+        target: /app/falldata
+        read_only: true
+      - type: bind
+        source: ./.venv-mediapipe
+        target: /app/.venv-mediapipe
+        read_only: true
+      - type: bind
+        source: ./.venv-falldata
+        target: /app/.venv-falldata
         read_only: true
       - type: bind
         source: ./.venv-jetson-train
@@ -1128,14 +1138,25 @@ services:
       PYTHONIOENCODING: utf-8
       PYTHONUTF8: "1"
       NVIDIA_VISIBLE_DEVICES: ""
-      MQTT_USER: ${MQTT_USER:-}
-      MQTT_PASSWORD: ${MQTT_PASSWORD:-}
     command:
-      - sh
-      - -c
-      - |
-        python runners/run_kuiper_rules.py --kuiper-api http://edgex-kuiper:59720 --rules-file kuiper/rules/cctv_intrusion_rules.json --mqtt-broker edgex-mqtt-broker --mqtt-port 1883 --intrusion-confidence 0.7 --critical-confidence 0.9 --persist-hit-count 5 --retry-count 20 --retry-delay 2 &&
-        python runners/run_kuiper_rules.py --kuiper-api http://edgex-kuiper:59720 --rules-file kuiper/rules/aiot_sensor_rules.json --mqtt-broker edgex-mqtt-broker --mqtt-port 1883 --retry-count 20 --retry-delay 2
+      - python
+      - runners/run_kuiper_rules.py
+      - --kuiper-api
+      - http://edgex-kuiper:59720
+      - --mqtt-broker
+      - edgex-mqtt-broker
+      - --mqtt-port
+      - "1883"
+      - --intrusion-confidence
+      - "0.7"
+      - --critical-confidence
+      - "0.9"
+      - --persist-hit-count
+      - "5"
+      - --retry-count
+      - "20"
+      - --retry-delay
+      - "2"
     depends_on:
       rules-engine:
         condition: service_started
@@ -1221,12 +1242,6 @@ services:
       EXTERNAL_API_URL: http://cctv-alert-api:8000/api/alerts
       ACTION_HTTP_OUTBOX_DB: /app/data/runtime/action_http_outbox.db
       ALARM_COOLDOWN: ${ACTION_ALARM_COOLDOWN:-10}
-      EDGEX_SHADOW_ENABLED: ${EDGEX_SHADOW_ENABLED:-false}
-      EDGEX_COMMAND_MODE: ${EDGEX_COMMAND_MODE:-}
-      EDGEX_ALLOWED_DEVICES: ${EDGEX_ALLOWED_DEVICES:-}
-      EDGEX_JETSON_ID: ${EDGEX_JETSON_ID:-jetson-01}
-      EDGEX_COMMAND_TOPIC_PREFIX: ${EDGEX_COMMAND_TOPIC_PREFIX:-edgex/commands/cctv}
-      EDGEX_DEVICE_REGISTRY_PATH: ${EDGEX_DEVICE_REGISTRY_PATH:-}
       SPEAKER_HOST: ${SPEAKER_HOST:-}
       SPEAKER_PORT: ${SPEAKER_PORT:-80}
       SPEAKER_USER: ${SPEAKER_USER:-}
@@ -1237,7 +1252,6 @@ services:
       SPEAKER_TTS_PITCH: ${SPEAKER_TTS_PITCH:-100}
       SPEAKER_TTS_SPEED: ${SPEAKER_TTS_SPEED:-100}
       SPEAKER_TTS_VOLUME: ${SPEAKER_TTS_VOLUME:-1}
-      SIGNBOARD_CONTROL_BACKEND: ${SIGNBOARD_CONTROL_BACKEND:-tcp}
       SIGNBOARD_HOST: ${SIGNBOARD_HOST:-}
       SIGNBOARD_PORT: ${SIGNBOARD_PORT:-5000}
       SIGNBOARD_BRIGHTNESS: ${SIGNBOARD_BRIGHTNESS:-10}
@@ -1289,233 +1303,10 @@ services:
         target: /app/config/event_type_map.json
         read_only: true
       - type: bind
-        source: ./config/output_devices.json
-        target: /app/config/output_devices.json
-        read_only: true
-      - type: bind
         source: ./data
         target: /app/data
 
   # ── Public API (외부 서버/대시보드 연동) ──────────────────────────────────
-  # EdgeX 전환 전 검증용 Dabit Device Service 경계
-  cctv-device-dabit:
-    container_name: cctv-device-dabit
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: action
-    user: "1000:1000"
-    env_file:
-      - path: ./.env.jetson
-        required: false
-    environment:
-      PYTHONPATH: /app
-      DABIT_SERVICE_PORT: "59990"
-      REDIS_HOST: edgex-redis
-      REDIS_PORT: "6379"
-      SIGNBOARD_DEVICE_ID: ${SIGNBOARD_DEVICE_ID:-cctv-signboard-01}
-      SIGNBOARD_CONTROL_BACKEND: tcp
-    command: ["python", "runners/run_dabit_device_service.py"]
-    networks:
-      edgex-network: null
-    ports:
-      - target: 59990
-        published: "59990"
-        protocol: tcp
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:59990/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 5s
-    restart: always
-
-  # EdgeX shadow Command를 InterM 스피커로 전달하는 전환용 Device Service
-  cctv-device-speaker:
-    container_name: cctv-device-speaker
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: action
-    user: "1000:1000"
-    env_file:
-      - path: ./.env.jetson
-        required: false
-    environment:
-      PYTHONPATH: /app
-      MQTT_BROKER: edgex-mqtt-broker
-      MQTT_PORT: "1883"
-      MQTT_USER: ${MQTT_USER:-}
-      MQTT_PASSWORD: ${MQTT_PASSWORD:-}
-      EDGEX_JETSON_ID: ${EDGEX_JETSON_ID:-jetson-01}
-      EDGEX_COMMAND_TOPIC_PREFIX: ${EDGEX_COMMAND_TOPIC_PREFIX:-edgex/commands/cctv}
-      EDGEX_RESULT_TOPIC_PREFIX: ${EDGEX_RESULT_TOPIC_PREFIX:-edgex/results/cctv}
-      SPEAKER_DEVICE_ID: ${SPEAKER_DEVICE_ID:-cctv-speaker-01}
-      SPEAKER_DRY_RUN: ${SPEAKER_DRY_RUN:-false}
-      SPEAKER_SERVICE_PORT: ${SPEAKER_SERVICE_PORT:-59991}
-      SPEAKER_HOST: ${SPEAKER_HOST:-}
-      SPEAKER_PORT: ${SPEAKER_PORT:-80}
-      SPEAKER_USER: ${SPEAKER_USER:-}
-      SPEAKER_PASSWORD: ${SPEAKER_PASSWORD:-}
-      SPEAKER_VOLUME: ${SPEAKER_VOLUME:-10}
-      SPEAKER_TTS_LANGUAGE: ${SPEAKER_TTS_LANGUAGE:-kor}
-      SPEAKER_TTS_GENDER: ${SPEAKER_TTS_GENDER:-female}
-      SPEAKER_TTS_PITCH: ${SPEAKER_TTS_PITCH:-100}
-      SPEAKER_TTS_SPEED: ${SPEAKER_TTS_SPEED:-100}
-      SPEAKER_TTS_VOLUME: ${SPEAKER_TTS_VOLUME:-1}
-    command: ["python", "runners/run_speaker_device_service.py"]
-    depends_on:
-      edgex-mqtt-broker:
-        condition: service_started
-    networks:
-      edgex-network: null
-    ports:
-      - target: 59991
-        published: "59991"
-        protocol: tcp
-    healthcheck:
-      test: ["CMD-SHELL", "kill -0 1 2>/dev/null || exit 1"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
-    restart: always
-
-  # EdgeX shadow Command를 InterM 경광등으로 전달하는 전환용 Device Service
-  cctv-device-siren:
-    container_name: cctv-device-siren
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: action
-    user: "1000:1000"
-    env_file:
-      - path: ./.env.jetson
-        required: false
-    environment:
-      PYTHONPATH: /app
-      MQTT_BROKER: edgex-mqtt-broker
-      MQTT_PORT: "1883"
-      MQTT_USER: ${MQTT_USER:-}
-      MQTT_PASSWORD: ${MQTT_PASSWORD:-}
-      EDGEX_JETSON_ID: ${EDGEX_JETSON_ID:-jetson-01}
-      EDGEX_COMMAND_TOPIC_PREFIX: ${EDGEX_COMMAND_TOPIC_PREFIX:-edgex/commands/cctv}
-      EDGEX_RESULT_TOPIC_PREFIX: ${EDGEX_RESULT_TOPIC_PREFIX:-edgex/results/cctv}
-      SIREN_DEVICE_ID: ${SIREN_DEVICE_ID:-cctv-siren-01}
-      SIREN_DRY_RUN: ${SIREN_DRY_RUN:-false}
-      SIREN_SERVICE_HOST: ${SIREN_SERVICE_HOST:-0.0.0.0}
-      SIREN_SERVICE_PORT: ${SIREN_SERVICE_PORT:-59992}
-      SIREN_HOST: ${SIREN_HOST:-}
-      SIREN_PORT: ${SIREN_PORT:-80}
-      SIREN_USER: ${SIREN_USER:-}
-      SIREN_PASSWORD: ${SIREN_PASSWORD:-}
-      SIREN_AUTO_STOP: ${SIREN_AUTO_STOP:-10}
-    command: ["python", "runners/run_siren_device_service.py"]
-    depends_on:
-      edgex-mqtt-broker:
-        condition: service_started
-    networks:
-      edgex-network: null
-    ports:
-      - target: 59992
-        published: "59992"
-        protocol: tcp
-    healthcheck:
-      test: ["CMD-SHELL", "kill -0 1 2>/dev/null || exit 1"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
-    restart: always
-
-  # EdgeX shadow Command를 Dabit 전광판으로 전달하는 전환용 Device Service
-  cctv-device-signboard:
-    container_name: cctv-device-signboard
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: action
-    user: "1000:1000"
-    env_file:
-      - path: ./.env.jetson
-        required: false
-    environment:
-      PYTHONPATH: /app
-      MQTT_BROKER: edgex-mqtt-broker
-      MQTT_PORT: "1883"
-      MQTT_USER: ${MQTT_USER:-}
-      MQTT_PASSWORD: ${MQTT_PASSWORD:-}
-      EDGEX_JETSON_ID: ${EDGEX_JETSON_ID:-jetson-01}
-      EDGEX_COMMAND_TOPIC_PREFIX: ${EDGEX_COMMAND_TOPIC_PREFIX:-edgex/commands/cctv}
-      EDGEX_RESULT_TOPIC_PREFIX: ${EDGEX_RESULT_TOPIC_PREFIX:-edgex/results/cctv}
-      SIGNBOARD_DEVICE_ID: ${SIGNBOARD_DEVICE_ID:-cctv-signboard-01}
-      SIGNBOARD_DRY_RUN: ${SIGNBOARD_DRY_RUN:-false}
-      SIGNBOARD_SERVICE_HOST: ${SIGNBOARD_SERVICE_HOST:-0.0.0.0}
-      SIGNBOARD_SERVICE_PORT: ${SIGNBOARD_SERVICE_PORT:-59993}
-      SIGNBOARD_HOST: ${SIGNBOARD_HOST:-}
-      SIGNBOARD_PORT: ${SIGNBOARD_PORT:-5000}
-      SIGNBOARD_BRIGHTNESS: ${SIGNBOARD_BRIGHTNESS:-10}
-      SIGNBOARD_TEXT_COLOR: ${SIGNBOARD_TEXT_COLOR:-7}
-      SIGNBOARD_BACK_COLOR: ${SIGNBOARD_BACK_COLOR:-0}
-      SIGNBOARD_TEXT_SIZE: ${SIGNBOARD_TEXT_SIZE:-2}
-      SIGNBOARD_TEXT_SPEED: ${SIGNBOARD_TEXT_SPEED:-10}
-      SIGNBOARD_IDLE_REFRESH_INTERVAL: ${SIGNBOARD_IDLE_REFRESH_INTERVAL:-10}
-    command: ["python", "runners/run_signboard_device_service.py"]
-    depends_on:
-      edgex-mqtt-broker:
-        condition: service_started
-    networks:
-      edgex-network: null
-    ports:
-      - target: 59993
-        published: "59993"
-        protocol: tcp
-    healthcheck:
-      test: ["CMD-SHELL", "kill -0 1 2>/dev/null || exit 1"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
-    restart: always
-
-  # 세 장치의 EdgeX Command 결과를 공통 SQLite 감사 저장소에 기록하는 서비스
-  cctv-edgex-command-result:
-    container_name: cctv-edgex-command-result
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: action
-    user: "1000:1000"
-    env_file:
-      - path: ./.env.jetson
-        required: false
-    environment:
-      PYTHONPATH: /app
-      MQTT_BROKER: edgex-mqtt-broker
-      MQTT_PORT: "1883"
-      MQTT_USER: ${MQTT_USER:-}
-      MQTT_PASSWORD: ${MQTT_PASSWORD:-}
-      EDGEX_JETSON_ID: ${EDGEX_JETSON_ID:-jetson-01}
-      EDGEX_RESULT_TOPIC_PREFIX: ${EDGEX_RESULT_TOPIC_PREFIX:-edgex/results/cctv}
-      EDGEX_COMMAND_RESULT_DB: /app/data/runtime/edgex_command_results.db
-    command: ["python", "runners/run_command_result_collector.py"]
-    depends_on:
-      edgex-mqtt-broker:
-        condition: service_started
-    volumes:
-      - type: bind
-        source: ./data
-        target: /app/data
-    networks:
-      edgex-network: null
-    healthcheck:
-      test: ["CMD-SHELL", "kill -0 1 2>/dev/null || exit 1"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
-    restart: always
-
   cctv-public-api:
     container_name: cctv-public-api
     build:
@@ -1547,7 +1338,6 @@ services:
       SENSOR_DEVICE_MAP_PATH: /app/config/sensor_devices.json
       EVENT_REVIEW_DB: ${EVENT_REVIEW_DB:-/app/data/runtime/event_reviews.db}
       ALERT_FALLBACK_LOG: /app/data/logs/public_api_fallback.jsonl
-      EDGEX_COMMAND_RESULT_DB: /app/data/runtime/edgex_command_results.db
       CAMERAS_JSON: /app/cameras.json
       PUBLIC_API_KEY: ${PUBLIC_API_KEY:-}
       PUBLIC_API_ALLOW_QUERY_KEY: ${PUBLIC_API_ALLOW_QUERY_KEY:-0}
@@ -1604,70 +1394,6 @@ services:
         source: ./data
         target: /app/data
 
-  # ── Prometheus (Jetson 운영 지표 수집) ─────────────────────────────────────
-  prometheus:
-    container_name: cctv-prometheus
-    image: prom/prometheus:v2.51.2
-    command:
-      - --config.file=/etc/prometheus/prometheus.yml
-      - --storage.tsdb.retention.time=7d
-    volumes:
-      - type: bind
-        source: ./monitoring/prometheus.jetson.yml
-        target: /etc/prometheus/prometheus.yml
-        read_only: true
-      - type: volume
-        source: prometheus-data
-        target: /prometheus
-    ports:
-      - target: 9090
-        host_ip: 127.0.0.1
-        published: "9090"
-        protocol: tcp
-    networks:
-      edgex-network: null
-    healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:9090/-/ready"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 15s
-    restart: unless-stopped
-
-  # ── Grafana (Jetson 운영 대시보드) ─────────────────────────────────────────
-  grafana:
-    container_name: cctv-grafana
-    image: grafana/grafana:10.4.2
-    environment:
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
-      GF_USERS_ALLOW_SIGN_UP: "false"
-      GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL:-http://localhost:3001}
-    volumes:
-      - type: bind
-        source: ./monitoring/grafana/provisioning
-        target: /etc/grafana/provisioning
-        read_only: true
-      - type: volume
-        source: grafana-data
-        target: /var/lib/grafana
-    ports:
-      - target: 3000
-        host_ip: ${GRAFANA_BIND_HOST:-127.0.0.1}
-        published: "3001"
-        protocol: tcp
-    depends_on:
-      prometheus:
-        condition: service_healthy
-    networks:
-      edgex-network: null
-    healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:3000/api/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 20s
-    restart: unless-stopped
-
 # ── 네트워크 ──────────────────────────────────────────────────────────────────
 networks:
   edgex-network:
@@ -1704,11 +1430,9 @@ volumes:
     external: true
     name: edgex-jetson_kuiper-plugins
   trt-cache:
+    # 기존 이름의 TensorRT 캐시 볼륨을 재사용하며 빈 값으로 인한 Compose 검증 실패를 막는다.
     external: true
     name: edgex-jetson_trt-cache
   mosquitto-data:
     name: edgex-jetson_mosquitto-data
-  prometheus-data:
-    name: edgex-jetson_prometheus-data
-  grafana-data:
-    name: edgex-jetson_grafana-data
+  configs:

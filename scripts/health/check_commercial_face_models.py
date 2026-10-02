@@ -1,4 +1,4 @@
-"""Validate commercial face model artifacts, licenses, and TensorRT engines."""
+"""상용 얼굴 모델 산출물·라이선스·TensorRT 엔진을 검증한다."""
 
 from __future__ import annotations
 

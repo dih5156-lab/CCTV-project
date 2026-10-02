@@ -1,0 +1,6 @@
+*
+!requirements.txt
+!receiver.py
+!src/
+!src/**
+**/__pycache__

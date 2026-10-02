@@ -1,4 +1,4 @@
-"""Validate the Prometheus/Grafana wiring used by the CCTV stack."""
+"""CCTV 스택에서 사용하는 Prometheus·Grafana 연결 구성을 검증한다."""
 
 from __future__ import annotations
 

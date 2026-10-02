@@ -1,4 +1,4 @@
-"""Check that local Dockerfile COPY sources exist before attempting a build."""
+"""빌드 전에 Dockerfile의 로컬 COPY 원본이 존재하는지 확인한다."""
 
 from __future__ import annotations
 

@@ -65,6 +65,9 @@ COPY requirements/parser.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY parser-python/ .
+COPY src/__init__.py src/ingest_store.py ./src/
+COPY src/event_ingest_store.py src/sensor_record.py src/sensor_observation.py src/time_utils.py ./src/
+COPY src/protocols/__init__.py src/protocols/_mqtt_factory.py src/protocols/mqtt_subscriber.py ./src/protocols/
 
 RUN groupadd -r -g 2001 cctv && useradd -r -g cctv -u 2003 cctv \
     && mkdir -p /data && chown -R cctv:cctv /app /data \

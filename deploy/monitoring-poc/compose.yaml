@@ -1,0 +1,37 @@
+name: cctv-monitoring-poc
+services:
+  broker:
+    image: eclipse-mosquitto:2.0
+    user: "${POC_UID:?Run init_poc.py}:${POC_GID:?Run init_poc.py}"
+    command: ["mosquitto", "-c", "/state/broker.conf"]
+    volumes:
+      - ./state/broker.conf:/state/broker.conf:ro
+      - ./state/acl:/state/acl:ro
+      - ./state/private/passwords:/state/passwords:ro
+      - ./state/private/ca.crt:/state/ca.crt:ro
+      - ./state/private/server.crt:/state/server.crt:ro
+      - ./state/private/server.key:/state/server.key:ro
+    ports:
+      - "${POC_BIND_IP:-127.0.0.1}:${POC_MQTT_PORT:-18883}:8883"
+    restart: unless-stopped
+    mem_limit: 64m
+    cpus: 0.5
+    security_opt: ["no-new-privileges:true"]
+  receiver:
+    build: .
+    user: "${POC_UID:?Run init_poc.py}:${POC_GID:?Run init_poc.py}"
+    volumes:
+      - ./binding.json:/state/binding.json:ro
+      - ./state/data:/state/data
+      - ./state/private/ca.crt:/state/private/ca.crt:ro
+      - ./state/private/server.crt:/state/private/server.crt:ro
+      - ./state/private/server.key:/state/private/server.key:ro
+      - ./state/private/receiver-password:/state/private/receiver-password:ro
+      - ./state/private/api-token:/state/private/api-token:ro
+    ports:
+      - "${POC_BIND_IP:-127.0.0.1}:${POC_HTTPS_PORT:-18443}:8443"
+    depends_on: [broker]
+    restart: unless-stopped
+    mem_limit: 256m
+    cpus: 1.0
+    security_opt: ["no-new-privileges:true"]

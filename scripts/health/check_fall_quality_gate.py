@@ -1,4 +1,4 @@
-"""Evaluate a fixed fall/non-fall JSONL result set against release thresholds."""
+"""고정된 넘어짐·비넘어짐 JSONL 결과를 출시 기준값과 비교 평가한다."""
 
 from __future__ import annotations
 

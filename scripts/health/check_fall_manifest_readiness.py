@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check fall video manifest readiness before falldata RF training."""
+"""falldata RF 학습 전에 넘어짐 영상 매니페스트 준비 상태를 점검한다."""
 
 from __future__ import annotations
 

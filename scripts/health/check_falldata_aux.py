@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check falldata auxiliary fall verifier runtime readiness."""
+"""falldata 보조 넘어짐 검증기의 실행 준비 상태를 점검한다."""
 
 from __future__ import annotations
 

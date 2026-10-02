@@ -76,6 +76,8 @@ desktop.ini
 # 환경설정 (개인정보)
 .env
 .env.jetson
+# 환경 백업에도 실제 인증값이 남으므로 예제 파일과 분리한다.
+.env.*.backup*
 
 # parser code  (테스트 및 코드 리뷰용)
 parser-code/
@@ -118,6 +120,12 @@ models/commercial_face/*.onnx
 models/commercial_face/*.LICENSE
 models/experiments/
 models/training/
+# 하위 모델 폴더의 가중치도 로컬에 보존하고 명세·라벨만 버전 관리한다.
+models/**/*.pt
+models/**/*.onnx
+models/**/*.pkl
+models/**/*.joblib
+models/**/*.pdiparams
 
 .venv/
 .venv-par/
@@ -169,3 +177,4 @@ data/training/
 Sample/
 # Added by code-review-graph
 .code-review-graph/
+.codebase-memory/

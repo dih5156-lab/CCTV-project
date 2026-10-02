@@ -1,4 +1,4 @@
-"""Run offline readiness checks that do not require field devices to be powered."""
+"""현장 장치 전원이 없어도 실행할 수 있는 오프라인 준비도 검사를 수행한다."""
 
 from __future__ import annotations
 
@@ -45,7 +45,7 @@ PARSER_TESTS = (
 
 
 def build_checks(*, full: bool = False) -> list[Check]:
-    """Build an offline verification plan for the current checkout."""
+    """현재 체크아웃 상태를 기준으로 오프라인 검증 계획을 구성한다."""
     checks = [
         Check("deployment readiness", [sys.executable, "scripts/health/check_deployment_readiness.py"], timeout=90),
         Check(

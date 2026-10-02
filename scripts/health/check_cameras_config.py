@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate multi-camera configuration and optionally probe RTSP endpoints."""
+"""카메라 설정과 출력 장치 매핑을 확인하고 필요하면 영상 포트를 점검한다."""
 
 from __future__ import annotations
 
@@ -16,6 +16,15 @@ def load_cameras(path: Path) -> list[dict]:
     if not isinstance(cameras, list):
         raise ValueError("cameras.json must contain a list or a cameras list")
     return [camera for camera in cameras if isinstance(camera, dict)]
+
+
+def load_output_devices(path: Path) -> list[dict]:
+    """출력 장치 JSON에서 장치 목록을 읽는다."""
+    raw = json.loads(path.read_text(encoding="utf-8"))
+    devices = raw.get("devices", []) if isinstance(raw, dict) else raw
+    if not isinstance(devices, list):
+        raise ValueError("output device config must contain a list or a devices list")
+    return [device for device in devices if isinstance(device, dict)]
 
 
 def validate(cameras: list[dict]) -> list[str]:
@@ -39,6 +48,35 @@ def validate(cameras: list[dict]) -> list[str]:
     return errors
 
 
+def validate_output_mappings(
+    cameras: list[dict], devices: list[dict]
+) -> list[str]:
+    """활성 카메라가 하나 이상의 활성 출력 장치에 연결됐는지 확인한다."""
+    enabled_camera_ids = {
+        str(camera.get("id", "")).strip()
+        for camera in cameras
+        if bool(camera.get("enabled", True)) and str(camera.get("id", "")).strip()
+    }
+    mapped_camera_ids: set[str] = set()
+    for device in devices:
+        if not bool(device.get("enabled", True)):
+            continue
+        camera_ids = device.get("camera_ids") or []
+        if not camera_ids:
+            mapped_camera_ids.update(enabled_camera_ids)
+            continue
+        mapped_camera_ids.update(
+            str(camera_id).strip()
+            for camera_id in camera_ids
+            if str(camera_id).strip()
+        )
+
+    return [
+        f"camera[{camera_id}] has no enabled output device mapping"
+        for camera_id in sorted(enabled_camera_ids - mapped_camera_ids)
+    ]
+
+
 def probe_source(source: str, timeout: float) -> tuple[bool, str]:
     parsed = urlparse(source)
     if parsed.scheme not in {"rtsp", "rtmp"} or not parsed.hostname:
@@ -54,16 +92,24 @@ def probe_source(source: str, timeout: float) -> tuple[bool, str]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, default=Path("cameras.json"))
+    parser.add_argument(
+        "--output-devices",
+        type=Path,
+        default=Path("config/output_devices.json"),
+    )
     parser.add_argument("--probe", action="store_true")
     parser.add_argument("--timeout", type=float, default=3.0)
     args = parser.parse_args()
     try:
         cameras = load_cameras(args.config)
+        output_devices = load_output_devices(args.output_devices)
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         print(f"ERROR: {exc}")
         return 1
     errors = validate(cameras)
+    errors.extend(validate_output_mappings(cameras, output_devices))
     print(f"cameras={len(cameras)}")
+    print(f"output_devices={len(output_devices)}")
     for camera in cameras:
         source = str(camera.get("source", ""))
         if args.probe:

@@ -1,4 +1,4 @@
-"""Check alarm device configuration and TCP reachability."""
+"""알람 장치 설정과 TCP 연결 가능 여부를 점검한다."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""Check an evaluation report against models/model_manifest.json criteria."""
+"""평가 보고서를 models/model_manifest.json 기준과 비교해 점검한다."""
 
 from __future__ import annotations
 

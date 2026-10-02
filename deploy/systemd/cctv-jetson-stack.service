@@ -12,11 +12,14 @@ SupplementaryGroups=docker
 WorkingDirectory=/media/sawwave/Learning11/CCTV-project
 Environment=DISPLAY=:1
 Environment=XAUTHORITY=/run/user/1000/gdm/Xauthority
-ExecStartPre=/usr/bin/bash -c 'for attempt in {1..30}; do [ -S /tmp/.X11-unix/X1 ] && [ -r "$XAUTHORITY" ] && exit 0; sleep 2; done; exit 1'
-ExecStartPre=/usr/bin/xhost +SI:localuser:root
-ExecStart=/usr/bin/docker compose --env-file .env.jetson -f docker-compose.jetson.yml up -d --force-recreate cctv-ai-engine cctv-public-api cctv-public-demo-ui
+# 인증 실패를 재시도하고 SDK 의존성 누락이면 스택 기동 전에 중단한다.
+ExecStartPre=/usr/bin/bash scripts/ops/prepare_jetson_display.sh
+ExecStartPre=/usr/bin/python3 scripts/health/check_deepstream_env.py --native-only --timeout 15
+ExecStart=/usr/bin/docker compose --env-file .env.jetson -f docker-compose.jetson.yml up -d --force-recreate cctv-ai-engine cctv-public-api public-demo-ui
+# 호스트와 별개인 컨테이너 내부 라이브러리도 실제 로드하여 점검한다.
+ExecStartPost=/usr/bin/docker exec cctv-ai-engine python /app/scripts/health/check_deepstream_env.py --native-only --timeout 15
 RemainAfterExit=yes
-TimeoutStartSec=180
+TimeoutStartSec=300
 
 [Install]
 WantedBy=graphical.target

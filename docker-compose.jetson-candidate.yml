@@ -1,0 +1,216 @@
+# I07 검토 후보: 기본 Compose와 병합해서만 검사한다. 미해결 이슈가 있어 운영 배포는 보류한다.
+# 검증 이미지의 코드/플러그인을 로컬 bind mount가 덮어쓰지 않도록 마운트 목록을 교체한다.
+# 검증한 Compose 5.5.1의 !override/!reset을 사용한다. 실제 비밀값을 config 출력/파일에 남기지 않는다.
+services:
+  cctv-ai-engine:
+    # CPU OSD·단절 복구 및 최신 health/매칭 계측을 검증한 이미지로 고정한다.
+    image: sha256:0c11b835eb42cd245f4dda0b8bc8088733c0323bf75a2f4fefe9e7705d8dbf34
+    pull_policy: never
+    build: !reset null
+    # 보조 모델·재전송 작업 회수에 시간이 필요하므로 기본 종료 대기보다 긴 유예를 명시한다.
+    stop_grace_period: 60s
+    env_file:
+      - path: ./.env.jetson
+        required: true
+    environment:
+      DS_APPEARANCE_CONDITION_REFRESH_SEC: "10"
+      DS_APPEARANCE_ENABLED: "1"
+      DS_CROP_PERSON_INTERVAL: "0"
+      DS_CROP_POSE_DIAGNOSTICS: "0"
+      DS_CROP_POSE_ENABLED: "0"
+      DS_DISPLAY: ":1"
+      DS_EVENT_MIN_INTERVAL_SEC: "3.0"
+      DS_FACE_ENABLED: "1"
+      DS_FALL_ANGLE_HORIZONTAL: "55"
+      DS_FALL_ANGLE_INVERTED: "125"
+      DS_FALL_BBOX_ASPECT_RATIO: "1.35"
+      DS_FALL_ENABLE_FOLDED_POSE: "false"
+      DS_FALL_HEIGHT_RATIO: "0.3"
+      DS_FALL_KEYPOINT_SPAN_RATIO: "0.55"
+      DS_FALL_MIN_HIP_CONFIDENCE: "0.25"
+      DS_FALL_MIN_KEYPOINT_CONFIDENCE: "0.25"
+      DS_FALL_MIN_LEG_CONFIDENCE: "0.35"
+      DS_FALL_SCORE_THRESHOLD: "3.0"
+      DS_FALL_SITTING_LIKE_ASPECT_RATIO: "1.45"
+      DS_FALL_SPAN_BBOX_ASPECT_RATIO: "1.20"
+      DS_FALL_SUPPRESS_SITTING_LIKE_POSE: "true"
+      DS_H264_BITRATE: "6000000"
+      DS_H264_ENCODER: "nvv4l2h264enc"
+      DS_H264_FPS: "30"
+      DS_H264_HEIGHT: "1080"
+      DS_H264_IDR_INTERVAL: "30"
+      DS_H264_IFRAME_INTERVAL: "30"
+      DS_H264_POC_FIX_ENABLED: "true"
+      DS_H264_POC_TYPE: "0"
+      DS_H264_UDP_PORT: "1234"
+      DS_H264_WIDTH: "1920"
+      DS_HELMET_CLASS_IDS: "0,1"
+      DS_HELMET_CONFIDENCE: "0.35"
+      DS_HELMET_ENABLED: "1"
+      DS_HELMET_GIE_ID: "2"
+      DS_HELMET_INTERVAL: "1"
+      DS_HELMET_LABELS: "helmet,head"
+      DS_HELMET_SGIE_BATCH_SIZE: "1"
+      DS_NVBUF_MEMORY_TYPE: "0"
+      DS_OUTPUT_MODE: "rtsp-publish"
+      DS_POSE_CONFIDENCE: "0.50"
+      DS_POSE_GIE_ID: "1"
+      DS_POSE_SGIE_BATCH_SIZE: "1"
+      DS_PPHUMAN_INFER_CONFIG: "config/deepstream/config_infer_pa100k.txt"
+      DS_PPHUMAN_INTERVAL: "4"
+      DS_PPHUMAN_REINFER_INTERVAL: "15"
+      DS_PPHUMAN_SGIE_BATCH_SIZE: "1"
+      DS_PPHUMAN_SGIE_ENABLED: "1"
+      DS_PREVIEW_ENABLED: "1"
+      DS_PREVIEW_HEIGHT: "720"
+      DS_PREVIEW_MAX_FPS: "10"
+      DS_PREVIEW_WIDTH: "1280"
+      DS_PRIMARY_INTERVAL: "1"
+      DS_RTSP_LATENCY_MS: "200"
+      DS_STREAM_HEIGHT: "1080"
+      DS_STREAM_WIDTH: "1920"
+      DS_YOLO_CLASS_IDS: "0"
+      DS_YOLO_CONFIDENCE: "0.50"
+      DS_YOLO_LABELS: "person"
+      DS_YOLO_POSTPROCESS_MODE: "vectorized"
+      DS_YOLO_TASK: "pose"
+      FALLDATA_AUX_BUFFER_FRAMES: "600"
+      FALLDATA_AUX_CLIP_BUFFER_ENABLED: "true"
+      FALLDATA_AUX_CLIP_BUFFER_HEIGHT: "360"
+      FALLDATA_AUX_CLIP_BUFFER_WIDTH: "640"
+      FALLDATA_AUX_COMPARE_MODEL_KIND: "yolo_pose_rf"
+      FALLDATA_AUX_COMPARE_MODEL_PATH: "models/experiments/yolo_pose_fall_cam2_continuous_200_80_640.pkl"
+      FALLDATA_AUX_COMPARE_THRESHOLD: "0.7"
+      FALLDATA_AUX_COMPARE_VETO_ENABLED: "false"
+      FALLDATA_AUX_COMPARE_VETO_MIN_FALL_SCORE: "3.0"
+      FALLDATA_AUX_CONFIRM_BORDERLINE: "true"
+      FALLDATA_AUX_CONFIRM_MAX_FALL_SCORE: "4.5"
+      FALLDATA_AUX_COOLDOWN_SECONDS: "10"
+      FALLDATA_AUX_ENABLED: "true"
+      FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE: "true"
+      FALLDATA_AUX_FALL_CLASS_INDEX: "0"
+      FALLDATA_AUX_INLINE_FEATURE_CAPTURE_PATH: ""
+      FALLDATA_AUX_INLINE_POSE_RF: "true"
+      FALLDATA_AUX_MAX_EXTRACT_FRAMES: "120"
+      FALLDATA_AUX_MEDIAPIPE_PYTHON: ".venv-mediapipe/bin/python"
+      FALLDATA_AUX_MIN_NONZERO_FRAMES: "30"
+      FALLDATA_AUX_MIN_POSE_FRAMES: "10"
+      FALLDATA_AUX_MODE: "shadow"
+      FALLDATA_AUX_MODEL_PYTHON: ".venv-falldata/bin/python"
+      FALLDATA_AUX_NEAR_MISS_PROMOTE_ENABLED: "false"
+      FALLDATA_AUX_SEQUENCE_TRANSFORM: "postpad"
+      FALLDATA_AUX_SHADOW_ALL_WINDOWS: "true"
+      FALLDATA_AUX_SHADOW_WINDOW_INTERVAL_SEC: "10"
+      FALLDATA_AUX_TEMPORAL_COMPARE_MODEL_PATH: "/app/models/fall/fall_temporal_same_split_resume_20260908.pt"
+      FALLDATA_AUX_TEMPORAL_MIN_CONFIRMED_WINDOWS: "1"
+      FALLDATA_AUX_TEMPORAL_NEAR_MISS_SHADOW_ENABLED: "true"
+      FALLDATA_AUX_TEMPORAL_POSE_MODEL_PATH: "/app/models/fall/yolov8n-pose.pt"
+      FALLDATA_AUX_TEMPORAL_PYTHON: "/app/.venv-jetson-train/bin/python"
+      FALLDATA_AUX_TEMPORAL_SLIDING_WINDOW_SIZE: "0"
+      FALLDATA_AUX_TEMPORAL_SLIDING_WINDOW_STRIDE: "5"
+      FALLDATA_AUX_THRESHOLD: "0.7"
+      FALLDATA_AUX_TIMEOUT_SECONDS: "30"
+      DS_RTSP_RECONNECT_INTERVAL_SEC: "15"
+      DS_OSD_PROCESS_MODE: "0"
+      DS_NVVIDEOCONVERT_COPY_HW: "1"
+      DS_CONTEXT_MIN_INTERVAL_SEC: "0.5"
+      FALLDATA_AUX_TEMPORAL_POSE_IMGSZ: "640"
+      FALLDATA_AUX_TEMPORAL_WORKER_ENABLED: "true"
+      APPEARANCES_DB: "/app/data/runtime/appearances.db"
+      COMMERCIAL_FACE_DATABASE: "/app/data/runtime/commercial_faces.db"
+      MQTT_EVENT_OUTBOX_DB: "/app/data/runtime/mqtt_event_outbox.db"
+      MQTT_EVENT_OUTBOX_RETRY_INTERVAL: "5"
+      MQTT_USER: "${MQTT_USER:?MQTT_USER is required}"
+      MQTT_PASSWORD: "${MQTT_PASSWORD:?MQTT_PASSWORD is required}"
+      INTERNAL_SERVICE_TOKEN: "${INTERNAL_SERVICE_TOKEN:?INTERNAL_SERVICE_TOKEN is required}"
+      STREAM_API_ENABLED: "0"
+      REQUIRE_STREAM_API_TOKEN: "1"
+      DS_RTSP_LOCATION: "${DS_RTSP_LOCATION:-rtsp://cctv-media-server:8554/camera_1}"
+      FALL_SHADOW_REVIEW_LOG_PATH: "/app/data/fall_dataset/annotations/review.jsonl"
+      FALL_SHADOW_CLIP_DIR: "/app/data/fall_dataset/clips/pending"
+      FALLDATA_AUX_MODEL_PATH: "/app/models/legacy/falldata_mediapipe/FNF_RF_SMOTE_CAM_1.pkl"
+      APPEARANCE_MODEL_PATH: "/app/models/appearance/pa100k_resnet50_attr.engine"
+    volumes: !override
+# DB/얼굴 등록 경로는 영속 쓰기를 유지하고, 모델·가상환경·SDK는 읽기 전용으로 사용한다.
+      - type: bind
+        source: "./cameras.json"
+        target: /app/cameras.json
+        read_only: false
+        bind:
+          create_host_path: false
+      - type: bind
+        source: "./zones_config.json"
+        target: /app/zones_config.json
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: "${CCTV_CANDIDATE_MODEL_ROOT:?CCTV_CANDIDATE_MODEL_ROOT is required}"
+        target: /app/models
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: "./data"
+        target: /app/data
+        read_only: false
+        bind:
+          create_host_path: false
+      - type: bind
+        source: "./.venv-mediapipe"
+        target: /app/.venv-mediapipe
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: "./.venv-falldata"
+        target: /app/.venv-falldata
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: "./.venv-jetson-train"
+        target: /app/.venv-jetson-train
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: "./data/insightface"
+        target: /root/.insightface
+        read_only: false
+        bind:
+          create_host_path: false
+      - type: bind
+        source: "./known_faces.json"
+        target: /app/known_faces.json
+        read_only: false
+        bind:
+          create_host_path: false
+      - type: bind
+        source: "./known_faces"
+        target: /app/known_faces
+        read_only: false
+        bind:
+          create_host_path: false
+      - type: bind
+        source: "${DEEPSTREAM_ROOT:-/opt/nvidia/deepstream}"
+        target: /opt/nvidia/deepstream
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: "${NVIDIA_LIB_ROOT:-/usr/lib/aarch64-linux-gnu/nvidia}"
+        target: /usr/lib/aarch64-linux-gnu/nvidia
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: "/tmp/.X11-unix"
+        target: /tmp/.X11-unix
+        read_only: false
+        bind:
+          create_host_path: false
+      - type: volume
+        # 읽기 전용 모델 원본에도 빈 trt_cache 디렉터리를 미리 준비해야 Docker가 연결할 수 있다.
+        source: trt-cache
+        target: /app/models/trt_cache
