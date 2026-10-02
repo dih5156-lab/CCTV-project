@@ -14,12 +14,16 @@ from ._mqtt_factory import RECONNECT_MIN_DELAY, RECONNECT_MULTIPLIER, create_mqt
 logger = logging.getLogger(__name__)
 
 _RECONNECT_MIN_DELAY = RECONNECT_MIN_DELAY
-_RECONNECT_MAX_DELAY = 30.0           # subscriber: 최대 30초
+_RECONNECT_MAX_DELAY = 30.0  # subscriber: 최대 30초
 _RECONNECT_MULTIPLIER = RECONNECT_MULTIPLIER
 
 
 class MqttTopicSubscriber:
-    """지정한 MQTT 토픽 집합을 구독하는 범용 클라이언트."""
+    """지정한 MQTT 토픽 집합을 구독하는 범용 클라이언트.
+
+    durable 모드의 handler는 원본 commit 후 반환하고 실패 시 예외를 전달해야 한다.
+    소유 루프가 reconnect_if_needed를 호출해 저장 실패로 중단한 구독을 재개한다.
+    """
 
     def __init__(
         self,
@@ -33,9 +37,13 @@ class MqttTopicSubscriber:
         username: Optional[str] = None,
         password: Optional[str] = None,
         connect_timeout: float = 2.0,
+        durable: bool = False,
+        transport: str = "tcp",
     ) -> None:
         if not topics:
             raise ValueError("구독 토픽은 최소 1개 이상이어야 합니다")
+        if durable and (not client_id or not client_id.strip()):
+            raise ValueError("Durable MQTT requires an explicit stable client_id")
 
         self.broker = broker
         self.port = int(port)
@@ -49,6 +57,12 @@ class MqttTopicSubscriber:
         self.username = username
         self.password = password
         self.connect_timeout = max(0.1, float(connect_timeout))
+        self.durable = durable
+        self.transport = transport
+        self.session_present = False
+        self._pending_subscriptions: set[int] = set()
+        self._restart_requested = False
+        self._qos0_warned = False
 
         self._client: Optional[mqtt.Client] = None
         self._connected = False
@@ -66,10 +80,13 @@ class MqttTopicSubscriber:
             client_id=self.client_id,
             username=self.username,
             password=self.password,
+            durable=self.durable,
+            transport=self.transport,
         )
         client.on_connect = self._on_connect
         client.on_disconnect = self._on_disconnect
         client.on_message = self._on_message
+        client.on_subscribe = self._on_subscribe
         return client
 
     def _on_connect(self, client, userdata, flags, rc, *args) -> None:
@@ -92,13 +109,45 @@ class MqttTopicSubscriber:
             return
 
         self._reconnect_delay = _RECONNECT_MIN_DELAY
+        self.session_present = bool(
+            flags.get("session present", False)
+            if isinstance(flags, dict)
+            else getattr(flags, "session_present", False)
+        )
+        self._pending_subscriptions.clear()
+        if self.durable:
+            self._connected = False
         logger.info("External MQTT 연결 성공: %s:%s", self.broker, self.port)
         for topic in self.topics:
-            client.subscribe(topic, qos=0)
+            subscription = client.subscribe(topic, qos=1 if self.durable else 0)
+            if self.durable:
+                result, mid = subscription
+                if result != mqtt.MQTT_ERR_SUCCESS:
+                    self._request_reconnect(client)
+                    return
+                self._pending_subscriptions.add(mid)
             logger.info("External MQTT 구독: %s", topic)
+
+    def _on_subscribe(
+        self, client, userdata, mid, granted_qos, properties=None
+    ) -> None:
+        if not self.durable or self._restart_requested:
+            return
+        if mid not in self._pending_subscriptions:
+            return
+        if not granted_qos or any(
+            getattr(qos, "value", qos) != 1 for qos in granted_qos
+        ):
+            logger.error("Durable MQTT subscription did not grant QoS 1")
+            self._request_reconnect(client)
+            return
+        self._pending_subscriptions.remove(mid)
+        self._connected = not self._pending_subscriptions
 
     def _on_disconnect(self, client, userdata, rc, *args) -> None:
         self._connected = False
+        if len(args) == 2:  # Paho callback API v2: flags, reason_code, properties
+            rc = args[0]
         if rc != 0:
             logger.warning("External MQTT 예상치 못한 연결 해제 (rc=%s)", rc)
 
@@ -112,11 +161,47 @@ class MqttTopicSubscriber:
                 preview,
             )
             self.message_handler(msg.topic, bytes(msg.payload))
+            if self.durable:
+                if msg.qos == 1:
+                    if client.ack(msg.mid, msg.qos) != mqtt.MQTT_ERR_SUCCESS:
+                        self._request_reconnect(client)
+                elif msg.qos == 0 and not self._qos0_warned:
+                    logger.warning(
+                        "External MQTT QoS 0 input: broker redelivery is not guaranteed"
+                    )
+                    self._qos0_warned = True
         except Exception as exc:
             logger.error("External MQTT 메시지 처리 실패: %s", exc, exc_info=True)
+            if self.durable:
+                self._request_reconnect(client)
+
+    def _request_reconnect(self, client) -> None:
+        self._connected = False
+        self._restart_requested = True
+        self._last_attempt_time = time.monotonic()
+        # Do not join the network thread from its own callback.
+        client.disconnect()
+
+    def reconnect_if_needed(self) -> bool:
+        """Resume a rejected receipt using the same broker session, from the owner loop."""
+        if not self._restart_requested:
+            return False
+        if time.monotonic() - self._last_attempt_time < self._reconnect_delay:
+            return False
+        if self._client is not None and self._loop_running:
+            self._client.loop_stop()
+        self._client = None
+        self._loop_running = False
+        self._restart_requested = False
+        connected = self.connect()
+        if not connected:
+            self._restart_requested = True
+        return connected
 
     def connect(self) -> bool:
         """브로커 연결을 시도하고 loop를 시작한다."""
+        if self._restart_requested:
+            return self.reconnect_if_needed()
         if self._connected:
             return True
 
@@ -157,6 +242,7 @@ class MqttTopicSubscriber:
             return False
 
     def disconnect(self) -> None:
+        self._restart_requested = False
         if not self._client:
             return
         try:

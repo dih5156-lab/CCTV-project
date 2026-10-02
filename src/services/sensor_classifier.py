@@ -1,4 +1,4 @@
-"""Sensor payload classification helpers.
+"""센서 payload 분류 보조 함수.
 
 Public API와 센서 브리지에서 공통으로 쓰기 쉬운 순수 함수만 둔다.
 새 센서 호환성은 가능하면 이 파일에 추가하고, API endpoint는 호출만 하게 유지한다.
@@ -10,7 +10,7 @@ from typing import Any, Optional
 
 
 def as_float(value: Any) -> Optional[float]:
-    """Return a float value, or None when the input is empty/invalid."""
+    """입력값을 실수로 변환하고, 비어 있거나 잘못된 값이면 None을 반환한다."""
     if value in (None, ""):
         return None
     try:
@@ -20,7 +20,7 @@ def as_float(value: Any) -> Optional[float]:
 
 
 def extract_sensor_data(payload: dict[str, Any]) -> dict[str, Any]:
-    """Extract decoded sensor data from supported payload shapes."""
+    """지원하는 payload 형식에서 디코딩된 센서 데이터를 추출한다."""
     data = payload.get("data")
     if isinstance(data, dict):
         return data
@@ -45,7 +45,7 @@ def _risk(
 
 
 def classify_sensor_payload(payload: dict[str, Any]) -> dict[str, Optional[str]]:
-    """Normalize TLV/AIoT sensor values into a dashboard/action risk state."""
+    """TLV·AIoT 센서 값을 대시보드와 Action Layer용 위험 상태로 정규화한다."""
     data = extract_sensor_data(payload)
     event_type = str(payload.get("type") or payload.get("event_type") or "").strip()
     severity = str(payload.get("severity") or "").strip().lower()

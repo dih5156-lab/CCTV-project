@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from typing import Any, Mapping, Optional
 
 from ..devices.signboard import SignboardConfig, SignboardDevice
+from .request_idempotency import RequestIdempotencyCache
 
 
 @dataclass(frozen=True)
@@ -57,6 +58,7 @@ class DabitDeviceService:
         self._device = device or SignboardDevice(config)
         self._devices = dict(devices or {device_id: self._device})
         self._dry_run = bool(dry_run)
+        self._request_results = RequestIdempotencyCache[DabitCommandResult]()
 
     @property
     def device_ids(self) -> tuple[str, ...]:
@@ -134,6 +136,9 @@ class DabitDeviceService:
         target_device_id = str(request.get("device_id") or self.device_id)
         if target_device_id not in self._devices:
             return DabitCommandResult(request_id, target_device_id, "failed", "device_not_found")
+        cached_result = self._request_results.get(request_id)
+        if cached_result is not None:
+            return cached_result
         action = str(request.get("action") or "")
         parameters = {
             "display_text": payload.get("text") or payload.get("display_text"),
@@ -156,6 +161,8 @@ class DabitDeviceService:
             device_id=target_device_id,
             event_id=event_id,
         )
+        if result.status in {"acknowledged", "simulated"}:
+            self._request_results.put(request_id, result)
         return result
 
 

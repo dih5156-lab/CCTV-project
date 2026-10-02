@@ -73,6 +73,7 @@ class ActionBridgeRuntimeConfig:
     edgex_command_topic_prefix: str = "edgex/commands/cctv"
     edgex_device_registry_path: Optional[str] = None
     edgex_allowed_devices: Set[str] = frozenset()
+    device_dry_run: bool = False
 
 
 def _add_mqtt_arguments(parser: argparse.ArgumentParser) -> None:
@@ -241,6 +242,12 @@ def _add_edgex_arguments(parser: argparse.ArgumentParser) -> None:
         default=_env("EDGEX_ALLOWED_DEVICES", ""),
         help="EdgeX 또는 Shadow에서 허용할 출력 장치 목록(comma 구분)",
     )
+    parser.add_argument(
+        "--action-device-dry-run",
+        action="store_true",
+        default=_env_bool("ACTION_DEVICE_DRY_RUN"),
+        help="이벤트 처리는 유지하고 물리 장치 출력과 EdgeX 발행을 차단한다",
+    )
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -335,6 +342,7 @@ def parse_runtime_config(
         edgex_command_topic_prefix=args.edgex_command_topic_prefix,
         edgex_device_registry_path=args.edgex_device_registry_path or None,
         edgex_allowed_devices=_csv_set(args.edgex_allowed_devices),
+        device_dry_run=args.action_device_dry_run,
     )
 
 
@@ -359,6 +367,7 @@ def create_action_bridge(config: ActionBridgeRuntimeConfig) -> ActionBridge:
         edgex_command_topic_prefix=config.edgex_command_topic_prefix,
         edgex_device_registry_path=config.edgex_device_registry_path,
         edgex_allowed_devices=config.edgex_allowed_devices,
+        device_dry_run=config.device_dry_run,
     )
 
 

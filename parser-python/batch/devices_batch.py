@@ -28,14 +28,14 @@ from time_utils import now_kst
 
 logger = logging.getLogger(__name__)
 
-# DeviceUpdateCallback 타입 정의
-# Go: type DeviceUpdateCallback func(deviceMappings map[string]string) error
+# 장치 갱신 콜백 타입 정의
+# Go 원본의 DeviceUpdateCallback 정의에 해당한다.
 DeviceUpdateCallback = Callable[[Dict[str, str]], None]
 
 
 # ──────────────────────────────────────────────
 # API 응답 데이터 구조
-# Go: type APIDevice, APIDeviceIDs, APIDeviceResponse 등
+# Go 원본의 APIDevice, APIDeviceIDs, APIDeviceResponse 등에 해당한다.
 # ──────────────────────────────────────────────
 
 @dataclass
@@ -66,7 +66,7 @@ class SchedulerConfig:
 
 
 # ──────────────────────────────────────────────
-# API 호출 함수들
+# API 호출 함수 모음
 # ──────────────────────────────────────────────
 
 def get_devices_batch(api_url: str, token: str, skip_tls_verify: bool = False) -> Dict[str, str]:
@@ -107,7 +107,7 @@ def get_devices_batch(api_url: str, token: str, skip_tls_verify: bool = False) -
         raise RuntimeError(f"failed to execute request: {e.reason}")
 
     # JSON 파싱
-    # Go: json.Unmarshal(body, &apiResponse)
+    # Go 원본의 json.Unmarshal(body, &apiResponse)에 해당한다.
     try:
         api_response = json.loads(body)
     except json.JSONDecodeError as e:
@@ -171,8 +171,8 @@ def _convert_device_info_to_mapping(devices: list) -> Dict[str, str]:
 
 
 # ──────────────────────────────────────────────
-# DeviceScheduler
-# Go: type DeviceScheduler struct { ... }
+# 장치 갱신 스케줄러
+# Go 원본의 DeviceScheduler 구조체에 해당한다.
 # ──────────────────────────────────────────────
 
 class DeviceScheduler:
@@ -272,7 +272,7 @@ class DeviceScheduler:
         all_devices: Dict[str, str] = {}
         success_count = 0
 
-        # Go: Promise.all과 같은 병렬 처리
+        # Go 원본의 Promise.all과 같은 병렬 처리
         def fetch_for_app(app_id: str):
             url = f"{self._config.api_url}/applications/{app_id}/devices?field_mask=name"
             return get_devices_batch_with_retry(

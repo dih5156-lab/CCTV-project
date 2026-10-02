@@ -193,12 +193,12 @@ def _get_env_string_slice(key: str, default: List[str]) -> List[str]:
 
 
 def _get_mqtt_username(key: str) -> str:
-    """Broker-specific username, falling back to the shared compose MQTT user."""
+    """브로커 전용 사용자 이름을 반환하고, 없으면 공용 Compose MQTT 사용자를 사용한다."""
     return _get_env_string(key, _get_env_string("MQTT_USER", ""))
 
 
 def _get_mqtt_password(key: str) -> str:
-    """Broker-specific password, falling back to the shared compose MQTT password."""
+    """브로커 전용 비밀번호를 반환하고, 없으면 공용 Compose MQTT 비밀번호를 사용한다."""
     return _get_env_string(key, _get_env_string("MQTT_PASSWORD", ""))
 
 

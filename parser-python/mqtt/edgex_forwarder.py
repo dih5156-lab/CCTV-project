@@ -34,7 +34,7 @@ from mqtt.base_publisher import BaseMqttPublisher
 
 logger = logging.getLogger(__name__)
 
-# 테이블 이름 → EdgeX 프로필 이름 매핑 (edgex/register_aiot_devices.py 와 일치)
+# 테이블 이름과 EdgeX 프로필 이름의 매핑이다.
 _TABLE_PROFILE_MAP = {
     "t34950": "aiot-t34950-river",
     "t34955": "aiot-t34955-inclinometer",
@@ -72,7 +72,7 @@ _TABLE_RESOURCE_MAP = {
     },
 }
 
-# 정수(Int32)로 처리할 리소스 이름
+# 정수(Int32)로 처리할 리소스 이름이다.
 _INT32_FIELDS = {"event_code"}
 
 
@@ -105,10 +105,10 @@ class EdgeXForwarder(BaseMqttPublisher):
             "EDGEX_CORE_DATA_URL", "http://edgex-core-data:59880"
         )).rstrip("/")
 
-        # ── 아웃박스(로컬 SQLite) 초기화 ──
+        # 아웃박스(로컬 SQLite)를 초기화한다.
         self._outbox = EdgeXOutbox(outbox_db_path)
 
-        # ── 재전송 워커 ──
+        # 실패한 요청을 재전송할 워커를 시작한다.
         self._retry_stop = threading.Event()
         _retry_interval = int(os.environ.get("EDGEX_OUTBOX_RETRY_INTERVAL", "30"))
         self._retry_interval = max(5, _retry_interval)
@@ -132,8 +132,8 @@ class EdgeXForwarder(BaseMqttPublisher):
         """파싱된 센서 데이터를 aiot/sensors/{dev_eui}/{table_name} 으로 발행하고
         EdgeX Core Data 및 Alert API에 전송합니다.
 
-        Returns:
-            발행 성공 여부
+        반환값:
+            MQTT 발행 성공 여부
         """
         if not self._ensure_connected():
             return False
@@ -151,7 +151,7 @@ class EdgeXForwarder(BaseMqttPublisher):
             sensor_payload["uplink"] = uplink_metadata
         payload_json = json.dumps(sensor_payload, default=str)
 
-        # 1. MQTT 발행 (aiot/sensors/{dev_eui}/{table_name})
+        # 1. MQTT로 센서 데이터를 발행한다.
         mqtt_ok = False
         try:
             result = self._client.publish(topic, payload_json, qos=self.qos)
@@ -163,16 +163,16 @@ class EdgeXForwarder(BaseMqttPublisher):
         except Exception as e:
             logger.error("[EdgeXForwarder] MQTT 발행 오류: %s", e)
 
-        # 2. EdgeX Core Data 직접 push (EdgeX Event 포맷)
+        # 2. EdgeX Core Data에 표준 이벤트를 직접 전송한다.
         self._post_to_core_data(device_id, table_name, sensor_payload["data"], received_at)
 
-        # 3. HTTP POST → cctv-alert-api /api/sensor-readings (센서 로그 백업)
+        # 3. 센서 로그 백업을 위해 Alert API에 전송한다.
         self._post_to_alert_api(payload_json)
 
         return mqtt_ok
 
     # ──────────────────────────────────────────────────────────────
-    # Core Data push
+    # Core Data 전송
     # ──────────────────────────────────────────────────────────────
 
     def _build_edgex_event(
@@ -185,7 +185,7 @@ class EdgeXForwarder(BaseMqttPublisher):
             return None
 
         device_name = f"aiot-{device_id}"
-        # received_at 은 밀리초 단위 — 나노초로 변환
+        # received_at은 밀리초 단위이므로 나노초로 변환한다.
         origin_ns = int(received_at) * 1_000_000
 
         resource_map = _TABLE_RESOURCE_MAP[table_name]
@@ -260,13 +260,13 @@ class EdgeXForwarder(BaseMqttPublisher):
             f"/{profile_name}/{device_name}/{table_name}"
         )
 
-        # 아웃박스에 먼저 저장 (pending)
+        # 아웃박스에 먼저 pending 상태로 저장한다.
         row_id = self._outbox.save_pending(device_id, table_name, url, event_body)
 
-        # Core Data 전송 시도
+        # Core Data 전송을 시도한다.
         if self._do_post_edgex_event(url, event_body):
             self._outbox.mark_sent(row_id)
-        # 실패 시 pending 유지 → retry_worker 가 재시도
+        # 실패하면 pending 상태를 유지하고 재전송 워커가 다시 시도한다.
 
     def _do_post_edgex_event(self, url: str, event_body: dict) -> bool:
         """EdgeX Core Data POST 실행. 성공 시 True 반환."""
@@ -306,7 +306,7 @@ class EdgeXForwarder(BaseMqttPublisher):
 
     def _retry_pending_once(self) -> None:
         """pending 항목 한 번 순회하여 재전송 시도."""
-        # TTL/최대재시도 초과 항목 정리
+        # TTL 또는 최대 재시도 횟수를 넘은 항목을 정리한다.
         expired = self._outbox.expire_old_failed()
         if expired:
             logger.info("[Outbox] TTL/재시도 초과로 만료 처리: %d건", expired)
@@ -342,7 +342,7 @@ class EdgeXForwarder(BaseMqttPublisher):
         self._outbox.close()
 
     # ──────────────────────────────────────────────────────────────
-    # Alert API
+    # Alert API 전송
     # ──────────────────────────────────────────────────────────────
 
     def _post_to_alert_api(self, payload_json: str) -> None:

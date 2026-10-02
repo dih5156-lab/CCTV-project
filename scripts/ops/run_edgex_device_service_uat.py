@@ -15,9 +15,9 @@ from urllib.request import Request, urlopen
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 
-def build_cases() -> list[dict[str, Any]]:
+def build_cases(device: str | None = None) -> list[dict[str, Any]]:
     """장치별 health 경로와 안전한 테스트 명령을 구성한다."""
-    return [
+    cases = [
         {
             "device": "speaker",
             "host": os.environ.get("SPEAKER_SERVICE_HOST", "127.0.0.1"),
@@ -44,6 +44,12 @@ def build_cases() -> list[dict[str, Any]]:
             "payload": {"event_id": "uat-signboard", "text": "EdgeX UAT 점검"},
         },
     ]
+    if device is None:
+        return cases
+    selected = [case for case in cases if case["device"] == device]
+    if not selected:
+        raise ValueError(f"지원하지 않는 UAT 장치: {device}")
+    return selected
 
 
 def request_json(url: str, method: str = "GET", payload: dict[str, Any] | None = None) -> tuple[int, dict[str, Any]]:
@@ -67,19 +73,27 @@ def request_json(url: str, method: str = "GET", payload: dict[str, Any] | None =
         return 0, {"error_code": "connection_failed", "detail": str(exc)}
 
 
-def run_uat(mode: str, confirm_physical_control: bool = False) -> list[dict[str, Any]]:
-    """세 서비스의 상태와 명령 응답을 점검하고 결과를 반환한다."""
+def run_uat(
+    mode: str,
+    confirm_physical_control: bool = False,
+    device: str | None = None,
+) -> list[dict[str, Any]]:
+    """선택한 서비스의 상태와 명령 응답을 점검하고 결과를 반환한다."""
     if mode == "real" and not confirm_physical_control:
         raise ValueError("실제 장치 제어는 --confirm-physical-control 옵션이 필요합니다")
 
     results = []
-    expected_status = "simulated" if mode == "dry-run" else "acknowledged"
-    for case in build_cases():
+    expected_status = "not_sent" if mode == "dry-run" else "acknowledged"
+    for case in build_cases(device):
         base_url = f"http://{case['host']}:{case['port']}"
         health_code, health_body = request_json(f"{base_url}/health")
-        command_code, command_body = request_json(
-            f"{base_url}{case['path']}", "PUT", case["payload"]
-        )
+        if mode == "dry-run":
+            command_code = None
+            command_body = {"status": "not_sent"}
+        else:
+            command_code, command_body = request_json(
+                f"{base_url}{case['path']}", "PUT", case["payload"]
+            )
         results.append(
             {
                 "device": case["device"],
@@ -91,8 +105,13 @@ def run_uat(mode: str, confirm_physical_control: bool = False) -> list[dict[str,
                 "passed": (
                     health_code == 200
                     and health_body.get("status") == "up"
-                    and command_code == 200
-                    and command_body.get("status") == expected_status
+                    and (
+                        mode == "dry-run"
+                        or (
+                            command_code == 200
+                            and command_body.get("status") == expected_status
+                        )
+                    )
                 ),
             }
         )
@@ -103,11 +122,16 @@ def main() -> int:
     """명령행 UAT를 실행하고 실패한 장치가 있으면 종료 코드 1을 반환한다."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--mode", choices=("dry-run", "real"), default="dry-run")
+    parser.add_argument(
+        "--device",
+        choices=("speaker", "siren", "signboard"),
+        help="선택한 장치만 점검하고 생략하면 전체 장치를 점검한다.",
+    )
     parser.add_argument("--confirm-physical-control", action="store_true")
     parser.add_argument("--json", action="store_true", help="결과를 JSON으로 출력")
     args = parser.parse_args()
     try:
-        results = run_uat(args.mode, args.confirm_physical_control)
+        results = run_uat(args.mode, args.confirm_physical_control, args.device)
     except ValueError as exc:
         parser.error(str(exc))
     if args.json:

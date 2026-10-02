@@ -1,4 +1,4 @@
-"""Run post-deploy data-flow smoke checks for the CCTV stack."""
+"""배포 후 CCTV 스택의 데이터 흐름을 점검하는 smoke 검사를 수행한다."""
 
 from __future__ import annotations
 
@@ -162,15 +162,15 @@ def build_checks(host: str) -> list[RequestCheck]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Smoke-test CCTV runtime data paths.")
-    parser.add_argument("--host", default="localhost", help="Published Docker host address.")
-    parser.add_argument("--timeout", type=float, default=3.0, help="HTTP timeout in seconds.")
-    parser.add_argument("--retries", type=int, default=1, help="Attempts per check before failing.")
-    parser.add_argument("--retry-delay", type=float, default=0.0, help="Delay between retries in seconds.")
+    parser = argparse.ArgumentParser(description="CCTV 실행 데이터 경로를 smoke 검사한다.")
+    parser.add_argument("--host", default="localhost", help="Docker 포트가 공개된 호스트 주소.")
+    parser.add_argument("--timeout", type=float, default=3.0, help="HTTP 요청 제한 시간(초).")
+    parser.add_argument("--retries", type=int, default=1, help="실패한 검사별 재시도 횟수.")
+    parser.add_argument("--retry-delay", type=float, default=0.0, help="재시도 사이 대기 시간(초).")
     parser.add_argument(
         "--internal-token",
         default=os.environ.get("INTERNAL_SERVICE_TOKEN", ""),
-        help="Optional X-Internal-Token for action-layer REST endpoints.",
+        help="Action Layer REST 엔드포인트에 전달할 선택적 X-Internal-Token.",
     )
     args = parser.parse_args()
 

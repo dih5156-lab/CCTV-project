@@ -22,3 +22,27 @@ def test_dabit_unknown_command_is_rejected():
     result = service.execute("cmd-2", "unknown", {})
     assert result.status == "failed"
     assert result.error_code == "unsupported_command"
+
+
+def test_dabit_duplicate_request_id_does_not_repeat_physical_display():
+    device = MagicMock()
+    device.display.return_value = True
+    service = DabitDeviceService(
+        device_id="signboard-01",
+        config=SignboardConfig(),
+        device=device,
+    )
+    request = {
+        "request_id": "req-duplicate",
+        "event_id": "event-duplicate",
+        "device": "signboard",
+        "device_id": "signboard-01",
+        "action": "display",
+        "payload": {"text": "중복 방지"},
+    }
+
+    first = service.execute_request(request)
+    second = service.execute_request(request)
+
+    assert first.status == second.status == "acknowledged"
+    device.display.assert_called_once()

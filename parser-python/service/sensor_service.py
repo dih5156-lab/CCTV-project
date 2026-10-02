@@ -12,6 +12,7 @@ Go의 타입 어설션(type assertion) → Python의 isinstance() + dict.get() �
 import base64
 import logging
 import os
+import threading
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import List
@@ -43,7 +44,7 @@ logger = logging.getLogger(__name__)
 
 # ──────────────────────────────────────────────
 # 메시지 데이터 구조
-# Go: type MessageData struct { ... }
+# Go 원본의 MessageData 구조체에 해당한다.
 # ──────────────────────────────────────────────
 
 @dataclass
@@ -94,8 +95,8 @@ class MessageData:
 
 
 # ──────────────────────────────────────────────
-# SensorService
-# Go: type SensorService struct { db *database.DB; dataProcessor *database.DataProcessor; ... }
+# 센서 서비스
+# Go 원본의 SensorService 구조체에 해당한다.
 # ──────────────────────────────────────────────
 
 class SensorService(SensorDataProcessor):
@@ -104,7 +105,7 @@ class SensorService(SensorDataProcessor):
     Go: type SensorService struct { ... }
     """
 
-    def __init__(self, db: DB, edgex_forwarder=None):
+    def __init__(self, db: DB, edgex_forwarder=None, ingest_store=None):
         """
         Go: func NewSensorService(db *database.DB) *SensorService
 
@@ -113,11 +114,25 @@ class SensorService(SensorDataProcessor):
         """
         from datetime import timedelta
         self._db = db
-        self._data_processor = DataProcessor(db, interval=timedelta(seconds=1))
+        self._ingest_store = ingest_store
+        self._receipt_lock = threading.RLock()
+        self._data_processor = (
+            DataProcessor(db, interval=timedelta(seconds=1)) if ingest_store is None else None
+        )
         self._tlv_parser = Parser()
         self.device_info = DeviceInfoService()
         self.event_service = EventService(db)
         self._edgex_forwarder = edgex_forwarder
+        self._projection_worker = None
+        self._record_worker = None
+        if ingest_store is not None:
+            from database.sensor_projection_worker import SensorProjectionWorker
+
+            from src.sensor_record import SensorRecordStore, SensorRecordWorker
+            self._record_worker = SensorRecordWorker(SensorRecordStore(ingest_store.path))
+            self._projection_worker = SensorProjectionWorker(ingest_store, db, self._recover_receipt)
+            self._projection_worker.start()
+            self._record_worker.start()
 
     def process_sensor_data(
         self,
@@ -128,6 +143,68 @@ class SensorService(SensorDataProcessor):
         frequency: int,
         received_at: int,
         uplink_metadata: dict | None = None,
+    ) -> None:
+        raw = dict(app_id=app_id, dev_eui=dev_eui, payload=payload, channel=channel,
+                   frequency=frequency, received_at=received_at, uplink_metadata=uplink_metadata)
+        store = getattr(self, "_ingest_store", None)
+        if store is None:
+            self._process_sensor_data(**raw)
+            return
+        ingest_id = store.accept("tlv_mqtt", dev_eui, raw)
+        receipt = store.get(ingest_id)
+        if receipt["stage"] == "quarantined":
+            return
+        try:
+            self._process_sensor_data(**receipt["raw"], ingest_id=ingest_id)
+        except Exception as error:
+            store.retry(ingest_id, type(error).__name__)
+            raise
+
+    def process_mqtt_message(self, topic: str, payload: bytes) -> None:
+        """Commit original bytes before decoding; propagate failures before T1."""
+        with self._receipt_lock:
+            ingest_id = self._ingest_store.accept_mqtt("tlv_mqtt", topic, payload)
+            try:
+                self._prepare_mqtt_receipt(self._ingest_store.get(ingest_id), emit_outputs=True)
+            except Exception as error:
+                # T1 already owns this input. The worker retries this same receipt.
+                logger.warning("TLV receipt retained for recovery: %s (%s)", ingest_id, type(error).__name__)
+                try:
+                    self._ingest_store.retry(ingest_id, type(error).__name__)
+                except Exception:
+                    logger.exception("Could not record TLV retry state: %s", ingest_id)
+
+    def _prepare_mqtt_receipt(self, receipt: dict, *, emit_outputs: bool) -> None:
+        from mqtt.uplink import UplinkDecoder
+        try:
+            raw = receipt["raw"]
+            arguments = UplinkDecoder().decode(raw["topic"], base64.b64decode(raw["payload_base64"], validate=True))
+        except (ValueError, TypeError, KeyError, OverflowError, RecursionError):
+            self._ingest_store.quarantine(receipt["ingest_id"], "invalid_mqtt_envelope")
+            return
+        self._process_sensor_data(**arguments, ingest_id=receipt["ingest_id"], emit_outputs=emit_outputs)
+
+    def _recover_receipt(self, receipt: dict) -> None:
+        if receipt["raw_format"] == "mqtt_bytes_base64":
+            with self._receipt_lock:
+                receipt = self._ingest_store.get(receipt["ingest_id"])
+                if receipt["stage"] == "pending":
+                    self._prepare_mqtt_receipt(receipt, emit_outputs=False)
+            return
+        self._process_sensor_data(**receipt["raw"], ingest_id=receipt["ingest_id"], emit_outputs=False)
+
+    def _process_sensor_data(
+        self,
+        app_id: str,
+        dev_eui: str,
+        payload: str,
+        channel: int,
+        frequency: int,
+        received_at: int,
+        uplink_metadata: dict | None = None,
+        *,
+        ingest_id: str | None = None,
+        emit_outputs: bool = True,
     ) -> None:
         """
         MQTT 수신 데이터 처리 메인 로직
@@ -142,14 +219,16 @@ class SensorService(SensorDataProcessor):
           6. 이벤트 여부 확인 → 알림 큐 추가
         """
         # 1. Base64 디코딩
-        # Go: base64.StdEncoding.DecodeString(message)
+        # Go 원본의 base64.StdEncoding.DecodeString(message)에 해당한다.
         try:
             decoded_payload = base64.b64decode(payload, validate=True)
         except Exception as e:
             logger.error(f"Failed to decode base64 payload for devEUI {dev_eui}: {e}")
+            if ingest_id is not None:
+                self._ingest_store.quarantine(ingest_id, "invalid_base64")
             return
 
-        # 2. DeviceID 조회
+        # 2. 장치 ID 조회
         device_id = self.device_info.get_device_id(dev_eui)
         if not device_id:
             allow_unknown = os.environ.get("AIOT_ALLOW_UNKNOWN_DEVICES", "true").strip().lower()
@@ -163,15 +242,20 @@ class SensorService(SensorDataProcessor):
                 logger.error(f"Device ID not found for devEUI: {dev_eui}")
                 raise ValueError(f"device ID not found for devEUI: {dev_eui}")
 
-        # 3. TLV 파싱 (Go: s.tlvParser.DecodeLwM2MTLV(decodedPayload, 8))
+        # 3. TLV 파싱 (Go 원본의 s.tlvParser.DecodeLwM2MTLV(decodedPayload, 8))
         try:
             parsed_tlv = self._tlv_parser.decode_lwm2m_tlv(decoded_payload, 8)
         except Exception as e:
             logger.error(f"Failed to parse TLV for devEUI {dev_eui}: {e}")
+            if ingest_id is not None:
+                self._ingest_store.quarantine(ingest_id, "invalid_tlv")
             return
 
         if not parsed_tlv:
             logger.error(f"No TLV data parsed for devEUI: {dev_eui}")
+            if ingest_id is not None:
+                self._ingest_store.quarantine(ingest_id, "empty_tlv")
+                return
             raise ValueError(f"no TLV data parsed for devEUI: {dev_eui}")
 
         payload_hex = decoded_payload.hex()
@@ -195,12 +279,13 @@ class SensorService(SensorDataProcessor):
         )
 
         # 4. 테이블별 데이터 구조 생성 및 큐 추가
-        # Go: switch parsedTLV.TableName { case "t3": ... case "t34950": ... }
+        # Go 원본의 parsedTLV.TableName switch 분기에 해당한다.
         table = parsed_tlv.table_name
         d = parsed_tlv.data
+        records = []
 
         if table == "t3":
-            self._data_processor.add_data(T3(
+            records.append(T3(
                 app_eui=app_id, dev_eui=dev_eui, device_id=device_id,
                 payload=payload_hex, channel=channel, frequency=frequency,
                 received_at=received_dt,
@@ -217,7 +302,7 @@ class SensorService(SensorDataProcessor):
                 battery_status=_get_int(d, "battery_status"),
             ))
         elif table == "t34950":
-            self._data_processor.add_data(T34950(
+            records.append(T34950(
                 sensor_data=base,
                 water_level=_get_float(d, "water_level_m"),
                 flow_velocity=_get_float(d, "flow_velocity_mps"),
@@ -225,20 +310,20 @@ class SensorService(SensorDataProcessor):
                 reporting_period=_get_int(d, "reporting_period_s"),
             ))
         elif table == "t34952":
-            self._data_processor.add_data(T34952(
+            records.append(T34952(
                 sensor_data=base,
                 flood_level=_get_float(d, "flood_level_m"),
                 reporting_period=_get_int(d, "reporting_period_s"),
             ))
         elif table == "t34954":
-            self._data_processor.add_data(T34954(
+            records.append(T34954(
                 sensor_data=base,
                 temperature=_get_float(d, "temperature_c"),
                 humidity=_get_float(d, "humidity_pct"),
                 reporting_period=_get_int(d, "reporting_period_s"),
             ))
         elif table == "t34955":
-            self._data_processor.add_data(T34955(
+            records.append(T34955(
                 sensor_data=base,
                 angle_x=_get_float(d, "angle_x_deg"),
                 angle_y=_get_float(d, "angle_y_deg"),
@@ -247,13 +332,13 @@ class SensorService(SensorDataProcessor):
                 reporting_period=_get_int(d, "reporting_period_s"),
             ))
         elif table == "t34956":
-            self._data_processor.add_data(T34956(
+            records.append(T34956(
                 sensor_data=base,
                 fire_alarm=_get_bool(d, "fire_alarm"),
                 reporting_period=_get_int(d, "reporting_period_s"),
             ))
         elif table == "t34957":
-            self._data_processor.add_data(T34957(
+            records.append(T34957(
                 sensor_data=base,
                 temperature=_get_float(d, "temperature_c"),
                 angle_x=_get_float(d, "angle_x_deg"),
@@ -261,7 +346,7 @@ class SensorService(SensorDataProcessor):
                 event_code=_get_bool(d, "event_code"),
             ))
         elif table == "t34958":
-            self._data_processor.add_data(T34958(
+            records.append(T34958(
                 sensor_data=base,
                 acc_x=_get_float(d, "acc_x_g"),
                 acc_y=_get_float(d, "acc_y_g"),
@@ -275,9 +360,12 @@ class SensorService(SensorDataProcessor):
             ))
         else:
             logger.warning(f"Unknown table name: {table}")
+            if ingest_id is not None:
+                self._ingest_store.quarantine(ingest_id, "unsupported_tlv")
+                return
 
         # 5. 통합 원시 센서 데이터 레코드 큐 추가
-        # Go: sensorData := database.SensorData{...}
+        # Go 원본의 database.SensorData 생성에 해당한다.
         sensor_data = SensorData(
             sensor_data=DefaultSensorData(
                 app_eui=app_id,
@@ -293,7 +381,21 @@ class SensorService(SensorDataProcessor):
             payload_tlv=d,
             is_event=_get_bool(d, "event_code"),
         )
-        self._data_processor.add_data(sensor_data)
+        records.append(sensor_data)
+        if ingest_id is None:
+            for record in records:
+                self._data_processor.add_data(record)
+        else:
+            from database.sensor_projection import encode_records
+            try:
+                projection = encode_records(records)
+            except (TypeError, ValueError):
+                self._ingest_store.quarantine(ingest_id, "invalid_projection")
+                return
+            self._ingest_store.prepare(ingest_id, projection)
+
+        if not emit_outputs:
+            return
 
         # 5-b. EdgeX MQTT 발행 (EDGEX_MQTT_HOST 설정 시)
         if self._edgex_forwarder is not None:
@@ -307,7 +409,7 @@ class SensorService(SensorDataProcessor):
                 uplink_metadata=uplink_metadata,
             )
 
-        # 6. 이벤트 처리 (Go: if isEvent(parsedTLV.Data) { ... })
+        # 6. 이벤트 처리 (Go 원본의 isEvent(parsedTLV.Data) 조건에 해당한다.)
         if _is_event(d):
             user_ids, found = self.event_service.get_user_ids_by_app_eui(app_id)
             if found and user_ids:
@@ -327,13 +429,18 @@ class SensorService(SensorDataProcessor):
         서비스 리소스 정리
         Go: func (s *SensorService) Close()
         """
-        self._data_processor.close()
+        if getattr(self, "_record_worker", None) is not None:
+            self._record_worker.close()
+        if self._projection_worker is not None:
+            self._projection_worker.close()
+        if self._data_processor is not None:
+            self._data_processor.close()
         self.event_service.close()
 
 
 # ──────────────────────────────────────────────
 # 헬퍼 함수들 (TLV 딕셔너리에서 타입별 값 추출)
-# Go: getFloat64FromTLV, getStringFromTLV, getIntFromTLV, getBoolFromTLV
+# Go 원본의 getFloat64FromTLV, getStringFromTLV, getIntFromTLV, getBoolFromTLV에 해당한다.
 # ──────────────────────────────────────────────
 
 def _get_float(data: dict, key: str) -> float:
@@ -391,7 +498,7 @@ def _get_created_at(data: dict) -> datetime:
     """
     created_at = data.get("created_at")
     if isinstance(created_at, int):
-        # Go: time.UnixMilli(timestamp).UTC()
+        # Go 원본의 time.UnixMilli(timestamp).UTC()에 해당한다.
         return _unix_milli_to_kst(created_at)
     return now_kst()
 

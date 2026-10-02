@@ -1,6 +1,7 @@
 """
 test_action_bridge.py — _SiteRegistry / _AlarmCoordinator / SiteConfig / ActionBridge 단위 테스트
 """
+import json
 import time
 from types import SimpleNamespace
 from unittest.mock import MagicMock
@@ -15,7 +16,10 @@ from src.services.action_bridge import (
     _AlarmCoordinator,
     _SiteRegistry,
 )
-from src.services.device_command_transport import DeviceCommandMode
+from src.services.device_command_transport import (
+    DeviceCommandMode,
+    DirectDeviceCommandTransport,
+)
 
 # ---------------------------------------------------------------------------
 # SiteConfig
@@ -416,9 +420,15 @@ class TestActionBridgeStatusPublishing:
         # ActionBridge 초기화 시 생성된 executor가 실제 의존성을 잡고 있으므로
         # 테스트 목 객체로 재바인딩해 장치/DB 실경로를 타지 않게 한다.
         bridge._executor._repo = bridge._repo
+        bridge._executor._command_result_collector._repository = bridge._repo
         bridge._executor._forwarder = bridge._forwarder
         bridge._executor._speaker = bridge._speaker
         bridge._executor._signboard = bridge._signboard
+        bridge._executor._device_transport = DirectDeviceCommandTransport(
+            speaker=bridge._speaker,
+            signboard=bridge._signboard,
+            siren=bridge._siren,
+        )
         bridge._executor._siren = bridge._siren
         bridge._executor._resolve_devices = bridge._resolve_devices
         bridge._executor._alarm = bridge._alarm
@@ -428,10 +438,57 @@ class TestActionBridgeStatusPublishing:
         bridge = self._make_bridge()
         bridge.set_mode(ControlMode.MANUAL)
 
-        bridge._handle_event({"camera_id": "cam1", "type": "fall_detected"}, topic="t")
+        bridge._handle_event(
+            {
+                "camera_id": "cam1",
+                "type": "fall_detected",
+                "event_id": "fall-status-1",
+                "request_id": "fall-request-1",
+            },
+            topic="t",
+        )
 
         published = bridge._mqtt_client.publish.call_args_list
-        assert any("cctv/status/action/events/pending" in call.args[0] for call in published)
+        status_call = next(
+            call
+            for call in published
+            if "cctv/status/action/events/pending" in call.args[0]
+        )
+        status_payload = json.loads(status_call.args[1])
+        assert status_payload["event_id"]
+        assert status_payload["request_id"] == "fall-request-1"
+
+    def test_filtered_event_publishes_trace_ids(self):
+        bridge = self._make_bridge()
+        bridge.add_site(
+            SiteConfig(
+                site_id="site1",
+                site_name="현장1",
+                camera_ids=["cam1"],
+                confidence_threshold=0.9,
+            )
+        )
+
+        bridge._handle_event(
+            {
+                "camera_id": "cam1",
+                "type": "fall_detected",
+                "confidence": 0.5,
+                "event_id": "fall-filtered-1",
+                "request_id": "fall-request-2",
+            },
+            topic="t",
+        )
+
+        published = bridge._mqtt_client.publish.call_args_list
+        status_call = next(
+            call
+            for call in published
+            if "cctv/status/action/events/filtered" in call.args[0]
+        )
+        status_payload = json.loads(status_call.args[1])
+        assert status_payload["event_id"] == "fall-filtered-1"
+        assert status_payload["request_id"] == "fall-request-2"
 
     def test_site_confidence_threshold_filters_low_confidence_event(self):
         bridge = self._make_bridge()
@@ -599,6 +656,35 @@ class TestActionBridgeStatusPublishing:
         )
         assert bridge._signboard.display.call_count == 1
         assert bridge._signboard.display.call_args.kwargs["text"] == "기울기 이상 감지"
+
+    def test_one_device_failure_does_not_stop_other_device(self):
+        """한 장치가 실패해도 같은 이벤트의 다른 장치 명령은 계속 실행한다."""
+        bridge = self._make_bridge()
+        bridge._resolve_devices.return_value = [
+            AlarmDevice.SPEAKER,
+            AlarmDevice.SIGNBOARD,
+        ]
+        bridge._executor._speaker = bridge._speaker
+        bridge._executor._signboard = bridge._signboard
+        bridge._speaker.play.side_effect = RuntimeError("speaker unavailable")
+        bridge._signboard.display.return_value = True
+
+        bridge._execute_action(
+            "cctv/ai/events/camera_1/fall_detected",
+            {
+                "camera_id": "camera_1",
+                "event_id": "fall-isolation-1",
+                "type": "fall_detected",
+                "severity": "critical",
+            },
+        )
+
+        bridge._speaker.play.assert_called_once()
+        bridge._signboard.display.assert_called_once()
+        records = bridge._repo.record_command.call_args_list
+        statuses = {call.args[0]: call.args[2] for call in records}
+        assert statuses["fall-isolation-1:speaker"] == "failed"
+        assert statuses["fall-isolation-1:signboard"] == "acknowledged"
 
     def test_edgex_mode_does_not_call_direct_device(self):
         bridge = self._make_bridge()

@@ -1,4 +1,4 @@
-"""Event review storage for false-positive/true-positive labeling."""
+"""오탐·정탐 검토 라벨을 저장하는 모듈."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ _VALID_STATUSES = frozenset({"true_positive", "false_positive", "uncertain"})
 
 
 class EventReviewStore:
-    """Small SQLite store that keeps operator review labels separate from events."""
+    """운영자 검토 라벨을 이벤트 본문과 분리해 보관하는 SQLite 저장소."""
 
     def __init__(self, db_path: Optional[Path | str] = None) -> None:
         self.db_path = Path(

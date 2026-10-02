@@ -22,11 +22,11 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 
 # ── 설정 ─────────────────────────────────────────────────────────────
-# device-rest: already-running EdgeX device service that responds to MQTT validation.
-# aiot-parser is NOT an EdgeX SDK-based service, so we piggyback onto device-rest.
+# device-rest: MQTT 검증 요청에 응답하는 실행 중인 EdgeX 디바이스 서비스다.
+# aiot-parser는 EdgeX SDK 기반 서비스가 아니므로 기존 device-rest를 활용한다.
 DEVICE_SERVICE_NAME = "device-rest"
 
-# 프로필 → 디바이스 이름 접미사 매핑 (device_id + "-" + suffix)
+# 프로필 → 디바이스 이름 접미사 매핑 (device_id + "-" + 접미사)
 TABLE_PROFILE_MAP = {
     "t34955": "aiot-t34955-inclinometer",
     "t34957": "aiot-t34957-tilt-temp",
@@ -34,8 +34,8 @@ TABLE_PROFILE_MAP = {
     "t34950": "aiot-t34950-river",
 }
 
-# ── 실제 디바이스 목록 (device_id, primary_table)
-# 한 device_id 가 여러 table 을 가지므로 가장 많이 수신되는 table 을 primary 로 사용
+# ── 실제 디바이스 목록 (장치 ID, 대표 테이블)
+# 하나의 장치 ID가 여러 테이블을 가지므로 가장 많이 수신되는 테이블을 대표값으로 사용한다.
 DEVICES = [
     ("develop-05",  "t34957"),
     ("develop-09",  "t34957"),
@@ -119,7 +119,7 @@ def register_device_service(base: str, service_base_address: str = "http://devic
     url = f"{base}/api/v3/deviceservice"
     status, existing = _api(f"{base}/api/v3/deviceservice/name/{DEVICE_SERVICE_NAME}")
     if status == 200:
-        # baseAddress 가 다르면 업데이트
+        # 기본 주소가 다르면 등록 정보를 갱신한다.
         current_addr = existing.get("service", {}).get("baseAddress", "")
         if current_addr != service_base_address:
             patch = [{"apiVersion": "v3", "service": {
@@ -226,16 +226,16 @@ def main():
         format="%(asctime)s %(levelname)-8s %(message)s",
     )
 
-    logger.info("=== EdgeX AIoT Device Registration ===")
-    logger.info("Metadata URL: %s", base)
+    logger.info("=== EdgeX AIoT 장치 등록 ===")
+    logger.info("메타데이터 주소: %s", base)
 
-    logger.info("[1] Device Service: using existing 'device-rest' (skip registration)")
-    # Verify device-rest is reachable
+    logger.info("[1] 장치 서비스: 기존 'device-rest' 사용(등록 생략)")
+    # device-rest에 연결할 수 있는지 확인한다.
     s, _ = _api(f"{base}/api/v3/deviceservice/name/device-rest")
     if s != 200:
         logger.error("device-rest not found in metadata (status %s) — is the service running?", s)
         sys.exit(1)
-    logger.info("device-rest service confirmed in metadata")
+    logger.info("메타데이터에서 device-rest 서비스 확인 완료")
 
     logger.info("[2] Device Profiles")
     register_profiles(base)

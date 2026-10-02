@@ -125,6 +125,24 @@ def test_dry_run_returns_simulated_without_calling_unconnected_speaker(tmp_path)
     device.play.assert_not_called()
 
 
+def test_duplicate_request_id_does_not_repeat_speaker_playback():
+    service, device = _service()
+    device.play.return_value = True
+    request = {
+        "request_id": "req-duplicate",
+        "event_id": "event-duplicate",
+        "device": "speaker",
+        "action": "play",
+        "payload": {"text": "중복 방송 방지"},
+    }
+
+    first = service.execute_request(request)
+    second = service.execute_request(request)
+
+    assert first.status == second.status == "acknowledged"
+    device.play.assert_called_once()
+
+
 def test_multi_device_pool_routes_to_requested_speaker():
     first_device = MagicMock()
     second_device = MagicMock()

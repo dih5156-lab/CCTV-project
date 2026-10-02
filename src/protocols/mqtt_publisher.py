@@ -258,7 +258,7 @@ class MqttEventPublisher:
             self.replay_pending_once()
 
     def replay_pending_once(self) -> int:
-        """Replay one batch of pending outbox rows and return sent count."""
+        """대기 중인 outbox 행을 한 묶음 재전송하고 전송 건수를 반환한다."""
         if self._outbox is None:
             return 0
         if not self._ensure_connected():

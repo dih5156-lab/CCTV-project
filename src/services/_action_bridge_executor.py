@@ -58,6 +58,7 @@ class _ActionExecutor:
         device_transport=None,
         edgex_transport=None,
         device_command_mode=DeviceCommandMode.DIRECT,
+        device_dry_run: bool = False,
     ) -> None:
         """장치 실행에 필요한 저장소·클라이언트·상태 발행기를 보관한다."""
         self._repo = repo
@@ -77,6 +78,7 @@ class _ActionExecutor:
         self._device_transport = device_transport
         self._edgex_transport = edgex_transport
         self._device_command_mode = DeviceCommandMode(device_command_mode)
+        self._device_dry_run = device_dry_run
         self._command_builder = CommandBuilder()
         self._command_result_collector = CommandResultCollector(
             repository=repo,
@@ -91,6 +93,14 @@ class _ActionExecutor:
         command: DeviceCommand,
     ) -> Dict:
         """공통 명령을 전송하고 저장소·메트릭용 결과를 만든다."""
+        if self._device_dry_run:
+            result = DeviceCommandResult(
+                device=command.device,
+                command_id=command.command_id,
+                ok=True,
+                status="simulated",
+            )
+            return self._command_result_collector.collect(command, result)
         if self._device_command_mode is DeviceCommandMode.EDGEX:
             if self._publish_edgex_command is None:
                 result = DeviceCommandResult(
@@ -103,7 +113,7 @@ class _ActionExecutor:
             else:
                 transport = self._edgex_transport or EdgeXCommandTransport(
                     publish=self._publish_edgex_command,
-                    resolve_device_ids=self._resolve_edgex_device_ids or (lambda *_: [""]),
+                    resolve_device_ids=self._resolve_edgex_device_ids or (lambda *_: []),
                     jetson_id=self._edgex_jetson_id,
                     topic_prefix=self._edgex_command_topic_prefix,
                 )
@@ -113,6 +123,7 @@ class _ActionExecutor:
                 speaker=self._speaker,
                 signboard=self._signboard,
                 siren=self._siren,
+                dry_run=self._device_dry_run,
             )
             result = transport.send(command)
         return self._command_result_collector.collect(command, result)
@@ -137,7 +148,7 @@ class _ActionExecutor:
         try:
             transport = self._edgex_transport or EdgeXCommandTransport(
                 publish=self._publish_edgex_command,
-                resolve_device_ids=self._resolve_edgex_device_ids or (lambda *_: [""]),
+                resolve_device_ids=self._resolve_edgex_device_ids or (lambda *_: []),
                 jetson_id=self._edgex_jetson_id,
                 topic_prefix=self._edgex_command_topic_prefix,
             )
@@ -353,6 +364,12 @@ class _ActionExecutor:
         self._publish_status(
             "events/executed",
             {
+                "event_id": get_payload_event_id(payload),
+                **(
+                    {"request_id": str(payload["request_id"])}
+                    if payload.get("request_id")
+                    else {}
+                ),
                 "camera_id": camera_id,
                 "event_type": event_type,
                 "severity": severity,

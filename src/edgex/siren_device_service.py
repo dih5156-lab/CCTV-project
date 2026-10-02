@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Any, Mapping, Optional
 
 from ..devices.siren import SensorConfig, SirenDevice
+from .request_idempotency import RequestIdempotencyCache
 
 
 @dataclass(frozen=True)
@@ -48,6 +49,7 @@ class SirenDeviceService:
         self._device = device or SirenDevice(config)
         self._devices = dict(devices or {device_id: self._device})
         self._dry_run = bool(dry_run)
+        self._request_results = RequestIdempotencyCache[SirenCommandResult]()
 
     @property
     def device_ids(self) -> tuple[str, ...]:
@@ -74,20 +76,28 @@ class SirenDeviceService:
         payload = request.get("payload") or {}
         if not isinstance(payload, Mapping):
             return self._result(request_id, event_id, "invalid_payload")
+        cached_result = self._request_results.get(request_id)
+        if cached_result is not None:
+            return cached_result
         if self._dry_run:
-            return SirenCommandResult(request_id, event_id, self.device_id, "simulated")
+            result = SirenCommandResult(request_id, event_id, target_device_id, "simulated")
+            self._request_results.put(request_id, result)
+            return result
 
         try:
             success = self._execute_action(action, payload, target_device)
         except Exception:
             return self._result(request_id, event_id, "device_error")
-        return SirenCommandResult(
+        result = SirenCommandResult(
             request_id,
             event_id,
             target_device_id,
             "acknowledged" if success else "failed",
             None if success else "device_unreachable",
         )
+        if result.status in {"acknowledged", "simulated"}:
+            self._request_results.put(request_id, result)
+        return result
 
     def _execute_action(self, action: str, payload: Mapping[str, Any], device: Any) -> bool:
         """명령 이름에 맞는 InterM 경광등 메서드를 호출한다."""

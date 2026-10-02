@@ -5,7 +5,7 @@
       "device_type": "speaker",
       "site_id": "factory-01",
       "zone_id": "zone-a",
-      "camera_ids": ["cam-01"],
+      "camera_ids": ["cam-01", "sample_eval"],
       "enabled": true,
       "connection": {"host": "192.168.88.92", "port": 80}
     },
@@ -14,7 +14,7 @@
       "device_type": "siren",
       "site_id": "factory-01",
       "zone_id": "zone-a",
-      "camera_ids": ["cam-01"],
+      "camera_ids": ["cam-01", "sample_eval"],
       "enabled": true,
       "connection": {"host": "", "port": 80}
     },
@@ -23,7 +23,7 @@
       "device_type": "signboard",
       "site_id": "factory-01",
       "zone_id": "zone-a",
-      "camera_ids": ["cam-01"],
+      "camera_ids": ["cam-01", "sample_eval"],
       "enabled": true,
       "connection": {"host": "192.168.88.91", "port": 5000}
     }

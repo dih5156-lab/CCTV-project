@@ -108,6 +108,31 @@ def test_direct_transport_rejects_unknown_device_command():
     assert result.error == "지원하지 않는 장치: unknown"
 
 
+def test_direct_transport_dry_run_does_not_call_physical_device():
+    calls = []
+    transport = DirectDeviceCommandTransport(
+        speaker=SimpleNamespace(play=lambda *args, **kwargs: calls.append("speaker")),
+        signboard=SimpleNamespace(display=lambda **kwargs: calls.append("signboard")),
+        siren=SimpleNamespace(trigger=lambda *args: calls.append("siren")),
+        dry_run=True,
+    )
+
+    result = transport.send(
+        DeviceCommand(
+            device="signboard",
+            action="display",
+            payload={"text": "시험"},
+            command_id="event-1:signboard",
+            event_id="event-1",
+            camera_id="camera-1",
+        )
+    )
+
+    assert result.ok is True
+    assert result.status == "simulated"
+    assert calls == []
+
+
 def test_edgex_transport_publishes_one_command_per_registered_device():
     published = []
     transport = EdgeXCommandTransport(
@@ -138,6 +163,11 @@ def test_edgex_transport_publishes_one_command_per_registered_device():
         "event-1:speaker:speaker-1",
         "event-1:speaker:speaker-2",
     ]
+    assert result.device_ids == ("speaker-1", "speaker-2")
+    assert result.request_ids == (
+        "event-1:speaker:speaker-1",
+        "event-1:speaker:speaker-2",
+    )
 
 
 def test_edgex_transport_returns_failed_when_one_device_publish_fails():
@@ -164,6 +194,37 @@ def test_edgex_transport_returns_failed_when_one_device_publish_fails():
     assert result.status == "failed"
     assert result.error == "EdgeX 명령 발행 실패: speaker-2"
     assert len(published) == 2
+    assert result.device_ids == ("speaker-1", "speaker-2")
+    assert result.request_ids == (
+        "event-1:speaker:speaker-1",
+        "event-1:speaker:speaker-2",
+    )
+
+
+def test_edgex_transport_does_not_publish_without_registered_target():
+    published = []
+    transport = EdgeXCommandTransport(
+        publish=lambda topic, payload: published.append((topic, payload)) or True,
+        resolve_device_ids=lambda device, camera_id: [],
+        jetson_id="jetson-01",
+        topic_prefix="edgex/commands/cctv",
+    )
+
+    result = transport.send(
+        DeviceCommand(
+            device="signboard",
+            action="display",
+            payload={"text": "대상 없음"},
+            command_id="event-1:signboard",
+            event_id="event-1",
+            camera_id="unknown-camera",
+        )
+    )
+
+    assert result.ok is False
+    assert result.status == "failed"
+    assert result.error == "등록된 EdgeX 대상 장치 없음: signboard"
+    assert published == []
 
 
 def test_normalize_device_command_mode_defaults_to_direct():

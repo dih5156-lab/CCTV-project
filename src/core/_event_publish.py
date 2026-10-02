@@ -7,6 +7,8 @@ from queue import Empty
 from typing import Any, Callable, Dict, Optional, Tuple
 
 from ..canonical_event import canonicalize_event_payload
+from ..time_utils import now_kst_iso
+from ..video_observation import build_video_observation
 from .events import DetectionEvent
 
 logger = logging.getLogger(__name__)
@@ -24,9 +26,7 @@ def normalize_event_queue_item(
     else:
         event_data = dict(queue_item)
         event_type = str(
-            event_data.get("type")
-            or event_data.get("event_type")
-            or "unknown"
+            event_data.get("type") or event_data.get("event_type") or "unknown"
         )
 
     metadata = event_data.get("metadata") or {}
@@ -34,7 +34,20 @@ def normalize_event_queue_item(
     event_data["camera_id"] = camera_id
     if default_backend is not None:
         event_data.setdefault("backend", default_backend)
+    source_payload = event_data
     event_data = canonicalize_event_payload(event_data)
+    if (
+        isinstance(queue_item, DetectionEvent)
+        and isinstance(camera_id, str)
+        and camera_id.strip().lower() not in ("", "unknown")
+    ):
+        event_data["observation"] = build_video_observation(
+            source_payload,
+            namespace="video_detection",
+            source_record_id=event_data["event_id"],
+            device_id=str(camera_id),
+            received_at=now_kst_iso(),
+        )
     return event_data, event_type, str(camera_id)
 
 
@@ -68,21 +81,32 @@ def run_publish_loop(
     event_publisher: Any,
     increment_stat: Callable[[str], int],
     queue_timeout_sec: float = 1.0,
+    video_ingest: Any = None,
 ) -> None:
     """이벤트 큐를 소비하며 publish 통계를 누적한다."""
     while is_running() and not stop_event.is_set():
+        if video_ingest is not None:
+            video_ingest.poll_recovery()
         try:
             queue_item = event_queue.get(timeout=queue_timeout_sec)
         except Empty:
             continue
 
         try:
-            if publish_queue_item(
-                queue_item,
-                topic_prefix=topic_prefix,
-                mqtt_publish=mqtt_publish,
-                event_publisher=event_publisher,
-            ):
+            if video_ingest is not None:
+                published = video_ingest.publish(
+                    queue_item,
+                    mqtt_publish=mqtt_publish,
+                    event_publisher=event_publisher,
+                )
+            else:
+                published = publish_queue_item(
+                    queue_item,
+                    topic_prefix=topic_prefix,
+                    mqtt_publish=mqtt_publish,
+                    event_publisher=event_publisher,
+                )
+            if published:
                 increment_stat("events_sent")
                 continue
             increment_stat("events_failed")

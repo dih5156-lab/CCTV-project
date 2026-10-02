@@ -36,7 +36,7 @@ def _find_unresolved_tokens(payload: str) -> list[str]:
 def _apply_mqtt_credentials(
     rules: list[Dict[str, Any]], mqtt_user: str, mqtt_password: str
 ) -> None:
-    """Add broker credentials to MQTT sink actions as well as source config."""
+    """소스 설정뿐 아니라 MQTT sink 동작에도 브로커 인증 정보를 추가한다."""
     for rule in rules:
         for action in rule.get("actions", []):
             mqtt_action = action.get("mqtt") if isinstance(action, dict) else None

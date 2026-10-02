@@ -48,6 +48,8 @@ class DeviceCommandResult:
     ok: bool
     status: str
     error: str | None = None
+    device_ids: tuple[str, ...] = ()
+    request_ids: tuple[str, ...] = ()
 
 
 class DeviceCommandTransport(Protocol):
@@ -60,14 +62,22 @@ class DeviceCommandTransport(Protocol):
 class DirectDeviceCommandTransport:
     """기존 장치 클라이언트를 공통 명령 인터페이스로 감싼다."""
 
-    def __init__(self, *, speaker, signboard, siren) -> None:
-        """기존 스피커·전광판·사이렌 클라이언트를 보관한다."""
+    def __init__(self, *, speaker, signboard, siren, dry_run: bool = False) -> None:
+        """기존 장치 클라이언트와 물리 출력 차단 여부를 보관한다."""
         self._speaker = speaker
         self._signboard = signboard
         self._siren = siren
+        self._dry_run = dry_run
 
     def send(self, command: DeviceCommand) -> DeviceCommandResult:
         """장치 종류에 맞는 기존 클라이언트를 호출한다."""
+        if self._dry_run:
+            return DeviceCommandResult(
+                device=command.device,
+                command_id=command.command_id,
+                ok=True,
+                status="simulated",
+            )
         try:
             ok = self._send_to_device(command)
         except Exception as exc:
@@ -128,11 +138,23 @@ class EdgeXCommandTransport:
     def send(self, command: DeviceCommand) -> DeviceCommandResult:
         """등록된 물리 장치별로 EdgeX Command를 발행한다."""
         device_ids = self._resolve_device_ids(command.device, command.camera_id)
+        if not device_ids:
+            return DeviceCommandResult(
+                device=command.device,
+                command_id=command.command_id,
+                ok=False,
+                status="failed",
+                error=f"등록된 EdgeX 대상 장치 없음: {command.device}",
+            )
         failed_devices = []
-        for device_id in device_ids or [""]:
+        target_device_ids = []
+        target_request_ids = []
+        for device_id in device_ids:
             target_command_id = build_transport_request_id(
                 command.command_id, device_id
             )
+            target_device_ids.append(device_id)
+            target_request_ids.append(target_command_id)
             payload = build_command_request(
                 event_id=command.event_id,
                 request_id=target_command_id,
@@ -157,10 +179,14 @@ class EdgeXCommandTransport:
                 ok=False,
                 status="failed",
                 error=f"EdgeX 명령 발행 실패: {', '.join(failed_devices)}",
+                device_ids=tuple(target_device_ids),
+                request_ids=tuple(target_request_ids),
             )
         return DeviceCommandResult(
             device=command.device,
             command_id=command.command_id,
             ok=True,
             status="acknowledged",
+            device_ids=tuple(target_device_ids),
+            request_ids=tuple(target_request_ids),
         )

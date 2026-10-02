@@ -17,9 +17,9 @@ Go의 goroutine + sync.RWMutex → Python의 threading.RLock 으로 변환되었
 
 import json
 import logging
+import os
 import threading
 import time
-from datetime import datetime
 from typing import Optional
 
 try:
@@ -28,6 +28,7 @@ except ImportError:
     mqtt_client = None
 
 from mqtt.interfaces import SensorDataProcessor
+from mqtt.uplink import UplinkDecoder
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +61,7 @@ class ClientInfo:
             return self.connected
 
 
-class Manager:
+class Manager(UplinkDecoder):
     """
     MQTT 멀티 브로커 매니저
     Go: type Manager struct { clients map[string]*ClientInfo; processor SensorDataProcessor; mu sync.RWMutex; ... }
@@ -68,10 +69,15 @@ class Manager:
     여러 MQTT 브로커에 동시 연결하고 메시지를 단일 처리기로 라우팅합니다.
     """
 
-    def __init__(self, configs):
+    def __init__(self, configs, *, durable=False, client_id_prefix=None):
         """
         Go: func NewManager(configs config.MQTTConfigs) *Manager
         """
+        self._durable = durable
+        self._subscribers: dict = {}
+        self._client_id_prefix = (client_id_prefix or os.environ.get("AIOT_MQTT_CLIENT_ID_PREFIX", "")).strip()
+        if durable and not self._client_id_prefix:
+            raise ValueError("Durable TLV MQTT requires AIOT_MQTT_CLIENT_ID_PREFIX")
         self._clients: dict = {}
         self._processor: Optional[SensorDataProcessor] = None
         self._lock = threading.RLock()  # Go: mu sync.RWMutex
@@ -93,6 +99,22 @@ class Manager:
           - AutoReconnect: True
           - 최대 재연결 간격: 5분
         """
+        if self._durable:
+            from src.protocols.mqtt_subscriber import MqttTopicSubscriber
+            if self._processor is None or not callable(getattr(self._processor, "process_mqtt_message", None)):
+                raise ValueError("Durable TLV MQTT requires a durable sensor processor")
+            if name in self._subscribers:
+                raise ValueError(f"client {name} already exists")
+            subscriber = MqttTopicSubscriber(
+                broker=config.host, port=config.port,
+                topics=("+/+/up", "v3/+/devices/+/up"),
+                client_id=f"{self._client_id_prefix}-{name}",
+                username=config.username, password=config.password,
+                durable=True, message_handler=self._processor.process_mqtt_message,
+            )
+            self._subscribers[name] = subscriber
+            subscriber.connect()
+            return
         if mqtt_client is None:
             raise RuntimeError("paho-mqtt is not installed. Run: pip install paho-mqtt")
 
@@ -101,7 +123,7 @@ class Manager:
                 raise ValueError(f"client {name} already exists")
 
         # paho MQTT 클라이언트 옵션 설정
-        # Go: opts := mqtt.NewClientOptions()
+        # Go 원본의 mqtt.NewClientOptions() 생성에 해당한다.
         client = mqtt_client.Client(
             client_id=f"aiot-sensor-{name}-{int(time.time())}",
         )
@@ -112,7 +134,7 @@ class Manager:
         client.keepalive = 60
 
         # 연결 끊김 핸들러
-        # Go: opts.SetConnectionLostHandler(func(...) { clientInfo.Connected = false })
+        # Go 원본의 연결 끊김 콜백 등록에 해당한다.
         def on_disconnect(c, userdata, rc):
             logger.warning(f"MQTT client {name} connection lost: rc={rc}")
             with self._lock:
@@ -120,7 +142,7 @@ class Manager:
                     self._clients[name].set_connected(False)
 
         # 연결 성공 핸들러
-        # Go: opts.SetOnConnectHandler(func(...) { subscribeToTopics(...) })
+        # Go 원본의 연결 성공 후 토픽 구독 콜백 등록에 해당한다.
         def on_connect(c, userdata, flags, rc):
             if rc == 0:
                 logger.info(f"MQTT client {name} connected successfully")
@@ -226,97 +248,19 @@ class Manager:
             except Exception as e:
                 logger.error(f"Failed to process sensor data: {e}")
 
-    def _extract_app_and_device(self, topic: str, message_data: dict) -> tuple[str, str]:
-        app_id = message_data.get("app_eui") or message_data.get("application_id") or ""
-        dev_eui = message_data.get("dev_eui") or message_data.get("device_id") or ""
-
-        end_device_ids = message_data.get("end_device_ids") or {}
-        app_ids = end_device_ids.get("application_ids") or {}
-        app_id = app_id or app_ids.get("application_id", "")
-        dev_eui = dev_eui or end_device_ids.get("dev_eui") or end_device_ids.get("device_id", "")
-
-        if app_id and dev_eui:
-            return app_id, self._normalize_dev_eui(dev_eui)
-
-        try:
-            parsed_app_id, parsed_dev_eui = self._parse_topic(topic)
-        except ValueError:
-            return app_id, self._normalize_dev_eui(dev_eui)
-        return app_id or parsed_app_id, self._normalize_dev_eui(dev_eui or parsed_dev_eui)
-
-    def _extract_payload(self, message_data: dict) -> str:
-        uplink = message_data.get("uplink_message") or {}
-        return (
-            message_data.get("payload")
-            or message_data.get("frm_payload")
-            or uplink.get("frm_payload")
-            or ""
-        )
-
-    def _parse_received_at(self, value) -> int:
-        if isinstance(value, (int, float)):
-            return int(value)
-        if not value:
-            return 0
-        try:
-            return int(value)
-        except (TypeError, ValueError):
-            pass
-        try:
-            dt = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
-        except ValueError:
-            logger.debug("Failed to parse received_at time: %s", value)
-            return 0
-        return int(dt.timestamp() * 1000)
-
-    def _parse_integer(self, value) -> int:
-        """구현사별 숫자/문자열 metadata를 DB 정수 컬럼에 안전하게 맞춘다."""
-        try:
-            return int(float(value or 0))
-        except (TypeError, ValueError, OverflowError):
-            return 0
-
-    def _extract_radio_metadata(self, metadata: dict) -> dict:
-        """내부 이벤트에 필요한 첫 게이트웨이 무선 품질만 가볍게 보존한다."""
-        if not metadata:
-            return {}
-        gateway_info = metadata.get("gateway_info") or {}
-        return {
-            "gateway_id": gateway_info.get("gw_id", ""),
-            "data_rate": metadata.get("data_rate", ""),
-            "channel": metadata.get("channel", 0),
-            "frequency": metadata.get("frequency", 0),
-            "rssi": metadata.get("rssi", 0),
-            "snr": metadata.get("snr", 0),
-        }
-
-    def _normalize_dev_eui(self, dev_eui: str) -> str:
-        value = str(dev_eui or "").strip()
-        if value.lower().startswith("eui-"):
-            value = value[4:]
-        return value
-
-    def _parse_topic(self, topic: str):
-        """
-        토픽에서 appID, devEUI 추출
-        Go: func (m *Manager) parseTopic(topic string) (appID, devEUI string, err error)
-
-        토픽 형식:
-          - {appID}/{devEUI}/up
-          - v3/{appID}/devices/eui-{devEUI}/up
-        """
-        parts = topic.split("/")
-        if len(parts) >= 5 and parts[0] == "v3" and parts[2] == "devices":
-            return parts[1], parts[3]
-        if len(parts) < 3:
-            raise ValueError(f"invalid topic format: {topic}")
-        return parts[0], parts[1]
+    def poll(self) -> None:
+        """Drive retry/reconnect outside the Paho callback thread."""
+        for subscriber in self._subscribers.values():
+            subscriber.connect()
 
     def disconnect_client(self, name: str) -> None:
         """
         특정 MQTT 클라이언트 연결 해제
         Go: func (m *Manager) DisconnectClient(name string) error
         """
+        if self._durable:
+            self._subscribers.pop(name).disconnect()
+            return
         with self._lock:
             client_info = self._clients.get(name)
             if not client_info:
@@ -332,6 +276,11 @@ class Manager:
         모든 MQTT 클라이언트 연결 해제
         Go: func (m *Manager) DisconnectAll()
         """
+        if self._durable:
+            for subscriber in self._subscribers.values():
+                subscriber.disconnect()
+            self._subscribers.clear()
+            return
         with self._lock:
             for name, client_info in list(self._clients.items()):
                 client_info.client.disconnect()
@@ -344,6 +293,8 @@ class Manager:
         특정 클라이언트 연결 상태 반환
         Go: func (m *Manager) GetClientStatus(name string) (bool, error)
         """
+        if self._durable:
+            return self._subscribers[name].is_connected
         with self._lock:
             client_info = self._clients.get(name)
             if not client_info:
@@ -355,6 +306,8 @@ class Manager:
         모든 클라이언트 연결 상태 반환
         Go: func (m *Manager) GetAllClientsStatus() map[string]bool
         """
+        if self._durable:
+            return {name: sub.is_connected for name, sub in self._subscribers.items()}
         with self._lock:
             return {name: info.is_connected() for name, info in self._clients.items()}
 
@@ -398,6 +351,9 @@ class Manager:
                     self.connect_client(name, config)
                     connected_targets.add(target_key)
                 except Exception as e:
+                    if self._durable:
+                        self.disconnect_all()
+                        raise
                     logger.warning(f"Failed to connect MQTT client {name}: {e}")
 
         with self._lock:

@@ -67,6 +67,7 @@ class DataProcessor:
         self._sensor_data: List[SensorData] = []
 
         self._lock = threading.Lock()  # Go에서는 goroutine 분리로 보호됨
+        self._flush_lock = threading.Lock()
         self._stop_event = threading.Event()
 
         # Go: go dp.startBulkProcessor()
@@ -123,41 +124,39 @@ class DataProcessor:
         모든 테이블 큐에서 배치 처리 실행
         Go: func (dp *DataProcessor) processAllTables()
         """
-        with self._lock:
-            # 각 리스트에서 앞부분을 추출 (Go: batch := (*data)[:batchSize])
-            batches = {
-                "t3":          (self._t3[:_BATCH_SIZE],       "_t3"),
-                "t34950":      (self._t34950[:_BATCH_SIZE],   "_t34950"),
-                "t34952":      (self._t34952[:_BATCH_SIZE],   "_t34952"),
-                "t34954":      (self._t34954[:_BATCH_SIZE],   "_t34954"),
-                "t34955":      (self._t34955[:_BATCH_SIZE],   "_t34955"),
-                "t34956":      (self._t34956[:_BATCH_SIZE],   "_t34956"),
-                "t34957":      (self._t34957[:_BATCH_SIZE],   "_t34957"),
-                "t34958":      (self._t34958[:_BATCH_SIZE],   "_t34958"),
-                "sensor_data": (self._sensor_data[:_BATCH_SIZE], "_sensor_data"),
-            }
+        with self._flush_lock:
+            with self._lock:
+                batches = {
+                    "t3": (self._t3[:_BATCH_SIZE], "_t3"),
+                    "t34950": (self._t34950[:_BATCH_SIZE], "_t34950"),
+                    "t34952": (self._t34952[:_BATCH_SIZE], "_t34952"),
+                    "t34954": (self._t34954[:_BATCH_SIZE], "_t34954"),
+                    "t34955": (self._t34955[:_BATCH_SIZE], "_t34955"),
+                    "t34956": (self._t34956[:_BATCH_SIZE], "_t34956"),
+                    "t34957": (self._t34957[:_BATCH_SIZE], "_t34957"),
+                    "t34958": (self._t34958[:_BATCH_SIZE], "_t34958"),
+                    "sensor_data": (self._sensor_data[:_BATCH_SIZE], "_sensor_data"),
+                }
 
-            # 원본 리스트에서 처리된 부분 제거 (Go: *data = (*data)[batchSize:])
+            # DB 대기 중에도 입력은 추가할 수 있고, 성공한 배치만 제거한다.
             for table_name, (batch, attr) in batches.items():
-                if batch:
-                    current = getattr(self, attr)
-                    setattr(self, attr, current[len(batch):])
+                if batch and self._process_table_batch(batch, table_name):
+                    with self._lock:
+                        del getattr(self, attr)[: len(batch)]
 
-        # 락 해제 후 DB INSERT 수행 (Go와 동일한 구조)
-        for table_name, (batch, _) in batches.items():
-            self._process_table_batch(batch, table_name)
-
-    def _process_table_batch(self, batch: list, table_name: str) -> None:
+    def _process_table_batch(self, batch: list, table_name: str) -> bool:
         """
         단일 테이블 배치 INSERT 실행
         Go: func (dp *DataProcessor) processTableBatch(data interface{}, tableName string)
         """
         if not batch:
-            return
+            return True
         try:
             bulk_insert(self._db, table_name, batch)
         except Exception as e:
             logger.error(f"Error inserting {table_name} batch: {e}")
+            return False
+        return True
 
     def close(self) -> None:
         """

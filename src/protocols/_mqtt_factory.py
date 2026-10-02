@@ -17,7 +17,7 @@ _PAHO_V2 = hasattr(mqtt, "CallbackAPIVersion")
 # 재연결 백오프 공통 상수 (publisher/subscriber 공유)
 RECONNECT_MIN_DELAY: float = 1.0    # 최초 재시도 대기 시간 (초)
 RECONNECT_MULTIPLIER: float = 2.0   # 대기 시간 배율
-# MAX_DELAY 는 각 클라이언트마다 별도 지정 (publisher: 60s, subscriber: 30s)
+# MAX_DELAY는 클라이언트마다 별도로 지정한다 (발행기: 60초, 구독기: 30초).
 
 
 def create_mqtt_client(
@@ -25,6 +25,9 @@ def create_mqtt_client(
     client_id: Optional[str] = None,
     username: Optional[str] = None,
     password: Optional[str] = None,
+    *,
+    durable: bool = False,
+    transport: str = "tcp",
 ) -> mqtt.Client:
     """재사용 가능한 paho MQTT 클라이언트를 생성한다.
 
@@ -35,23 +38,37 @@ def create_mqtt_client(
         client_id:        지정할 경우 해당 ID 사용, None 이면 접두사+UUID 사용
         username:         MQTT 브로커 인증 사용자명 (없으면 None)
         password:         MQTT 브로커 인증 비밀번호 (없으면 None)
+        durable:          고정 ID의 지속 세션·수동 ACK (Paho 2 필수, 폴백 금지)
+        transport:        TCP 기본값; 격리 시험에서는 Unix socket 사용 가능
 
     Returns:
         콜백이 설정되지 않은 mqtt.Client 인스턴스
     """
     cid = client_id or f"{client_id_prefix}-{uuid.uuid4().hex[:8]}"
-    try:
-        if _PAHO_V2:
-            client = mqtt.Client(
-                mqtt.CallbackAPIVersion.VERSION2,
-                client_id=cid,
-                clean_session=True,
-            )
-        else:
-            client = mqtt.Client(client_id=cid, clean_session=True)
-    except Exception:
-        # 최후 폴백: 키워드 없이 시도 (구버전 paho 대응)
-        client = mqtt.Client(client_id=cid)
+    if durable:
+        if not client_id or not client_id.strip():
+            raise ValueError("Durable MQTT requires an explicit stable client_id")
+        if not _PAHO_V2:
+            raise RuntimeError("Durable MQTT requires Paho 2 with manual ACK support")
+        # Never fall back to an auto-ACK/clean-session client for durable intake.
+        client = mqtt.Client(
+            mqtt.CallbackAPIVersion.VERSION2, client_id=cid,
+            clean_session=False, manual_ack=True, transport=transport,
+        )
+    else:
+        try:
+            if _PAHO_V2:
+                client = mqtt.Client(
+                    mqtt.CallbackAPIVersion.VERSION2,
+                    client_id=cid,
+                    clean_session=True,
+                    transport=transport,
+                )
+            else:
+                client = mqtt.Client(client_id=cid, clean_session=True, transport=transport)
+        except Exception:
+            # 최후 폴백: 키워드 없이 시도 (구버전 paho 대응)
+            client = mqtt.Client(client_id=cid)
 
     resolved_username = username or os.environ.get("MQTT_USER") or None
     resolved_password = password if password is not None else os.environ.get("MQTT_PASSWORD")

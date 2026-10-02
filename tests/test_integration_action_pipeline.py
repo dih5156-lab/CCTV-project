@@ -294,12 +294,21 @@ class TestDeviceCommandIntegration:
 
         with patch.object(ab._speaker, "play", return_value=True) as mock_play:
             msg = _make_mqtt_message(
-                "cctv/rules/intrusion/critical",
-                {"camera_id": "cam-01", "type": "intrusion", "confidence": 0.95},
+                "cctv/ai/events/cam-01/fall_detected",
+                {
+                    "camera_id": "cam-01",
+                    "type": "fall_detected",
+                    "confidence": 0.95,
+                    "event_id": "fall-e2e-1",
+                    "request_id": "fall-request-1",
+                },
             )
             ab._on_message(None, None, msg)
 
         mock_play.assert_called_once()
+        command = ab._repo.list_commands(limit=1)[0]
+        assert command["command_id"] == "fall-e2e-1:speaker"
+        assert command["status"] == "acknowledged"
 
     def test_http_forwarder_called_when_target_set(self, tmp_path: Path):
         """HTTP 포워더 타겟이 있으면 forward() 가 호출된다."""

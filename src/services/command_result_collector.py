@@ -36,5 +36,8 @@ class CommandResultCollector:
             "device": command.device,
             "command_id": command.command_id,
             "status": result.status,
+            "event_id": command.event_id,
+            "device_ids": list(result.device_ids),
+            "request_ids": list(result.request_ids),
             **({"error": result.error} if result.error else {}),
         }

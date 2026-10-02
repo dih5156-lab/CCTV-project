@@ -11,8 +11,7 @@ from urllib.parse import urlparse
 
 # ──────────────────────────────────────────────
 # 유효성 검사 함수들
-# Go: func (c *Config) Validate() error
-#     func (s *ServerConfig) Validate() error  등...
+# Go 원본의 Config.Validate(), ServerConfig.Validate() 등에 해당한다.
 # ──────────────────────────────────────────────
 
 def validate_server_config(server) -> None:

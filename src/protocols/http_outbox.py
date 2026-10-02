@@ -1,4 +1,4 @@
-"""SQLite outbox for external HTTP event forwarding."""
+"""외부 HTTP 이벤트 전달을 위한 SQLite outbox."""
 
 from __future__ import annotations
 
@@ -33,7 +33,7 @@ CREATE INDEX IF NOT EXISTS idx_http_outbox_status_id
 
 
 class HttpEventOutbox:
-    """Store-and-forward queue for external HTTP event deliveries."""
+    """외부 HTTP 이벤트 전달을 저장 후 전달 방식으로 처리하는 큐."""
 
     def __init__(self, db_path: str | Path) -> None:
         self.path = Path(db_path)

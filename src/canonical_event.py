@@ -346,25 +346,32 @@ def canonicalize_event_payload(
             "metadata": normalized.get("metadata"),
             "attributes": normalized.get("attributes"),
         }
-        normalized.update(
-            build_canonical_event(
-                camera_id=camera_id,
-                event_type=event_type,
-                message_type=message_type,
-                occurred_at=occurred_at,
-                source=source,
-                source_type=source_type,
-                severity=severity,
-                confidence=confidence,
-                message_id=get_payload_message_id(normalized),
-                message=get_payload_display_message(normalized),
-                display_message=get_payload_display_message(normalized),
-                tts_message=get_payload_tts_message(normalized),
-                device={"camera_id": camera_id},
-                decoded={},
-                raw=raw_fields,
-            )
+        canonical = build_canonical_event(
+            camera_id=camera_id,
+            event_type=event_type,
+            message_type=message_type,
+            occurred_at=occurred_at,
+            source=source,
+            source_type=source_type,
+            severity=severity,
+            confidence=confidence,
+            message_id=get_payload_message_id(normalized),
+            message=get_payload_display_message(normalized),
+            display_message=get_payload_display_message(normalized),
+            tts_message=get_payload_tts_message(normalized),
+            device={"camera_id": camera_id},
+            decoded={},
+            raw=raw_fields,
         )
+        # 보강용 기본값보다 입력 생산자가 제공한 필드를 우선한다.
+        for key in ("device", "gateway", "event", "decoded", "raw"):
+            existing = normalized.get(key)
+            if isinstance(existing, Mapping):
+                canonical[key].update(existing)
+        for key in ("schema_version", "message_type"):
+            if key in normalized:
+                canonical[key] = normalized[key]
+        normalized.update(canonical)
 
     normalized.setdefault("event_id", get_payload_event_id(normalized))
     return normalized

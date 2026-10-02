@@ -67,6 +67,24 @@ def test_dry_run_does_not_call_unconnected_siren():
     device.trigger.assert_not_called()
 
 
+def test_duplicate_request_id_does_not_repeat_siren_trigger():
+    service, device = _service()
+    device.trigger.return_value = True
+    request = {
+        "request_id": "req-duplicate",
+        "event_id": "event-duplicate",
+        "device": "siren",
+        "action": "trigger",
+        "payload": {},
+    }
+
+    first = service.execute_request(request)
+    second = service.execute_request(request)
+
+    assert first.status == second.status == "acknowledged"
+    device.trigger.assert_called_once()
+
+
 def test_multi_device_pool_routes_to_requested_siren():
     first_device = MagicMock()
     second_device = MagicMock()

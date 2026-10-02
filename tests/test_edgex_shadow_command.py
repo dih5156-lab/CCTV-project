@@ -54,6 +54,13 @@ def test_registry_resolves_shadow_target_device_ids(tmp_path):
     assert bridge._resolve_edgex_device_ids("speaker", "cam-99") == []
 
 
+def test_missing_registry_does_not_return_unqualified_device_id(tmp_path):
+    """레지스트리가 없으면 공통 토픽용 빈 물리 ID를 반환하지 않는다."""
+    bridge = ActionBridge(db_path=str(tmp_path / "no-registry.db"))
+
+    assert bridge._resolve_edgex_device_ids("signboard", "cam-01") == []
+
+
 def test_registry_adds_device_id_to_shadow_topic_and_request(tmp_path):
     bridge = ActionBridge(
         db_path=str(tmp_path / "fanout.db"),

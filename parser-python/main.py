@@ -23,6 +23,7 @@ Go의 gin HTTP 서버 + goroutine graceful shutdown
 """
 
 import logging
+import os
 import signal
 import threading
 import time
@@ -38,7 +39,7 @@ logger = logging.getLogger(__name__)
 def main():
     # ──────────────────────────────────────────────
     # 1. 환경 변수 로드 (.env 파일)
-    # Go: if err := godotenv.Load(); err != nil { log.Println("No .env file found") }
+    # Go 원본의 .env 로드 처리에 해당한다.
     # ──────────────────────────────────────────────
     try:
         from dotenv import load_dotenv
@@ -49,7 +50,7 @@ def main():
 
     # ──────────────────────────────────────────────
     # 2. 설정 로드
-    # Go: cfg := config.Load(); cfg.PrintConfig()
+    # Go 원본의 설정 로드 및 출력 처리에 해당한다.
     # ──────────────────────────────────────────────
     from config.config import load as load_config
     cfg = load_config()
@@ -57,26 +58,34 @@ def main():
 
     # ──────────────────────────────────────────────
     # 3. 데이터베이스 연결 풀 초기화
-    # Go: db, err := database.Init(cfg.Database)
+    # Go 원본의 데이터베이스 연결 풀 초기화에 해당한다.
     # ──────────────────────────────────────────────
     from database.connection import init as db_init
     db = db_init(cfg.database)
 
     def shutdown_db():
-        db.close()  # Go: defer db.Close()
+        db.close()  # Go 원본에서는 defer db.Close()로 처리한다.
 
     # ──────────────────────────────────────────────
     # 4. 서비스 초기화
-    # Go: sensorService := service.NewSensorService(db)
+    # Go 원본의 센서 서비스 생성 처리에 해당한다.
     # ──────────────────────────────────────────────
     from mqtt.edgex_forwarder import create_from_env as create_edgex_forwarder
     from service.sensor_service import SensorService
     edgex_forwarder = create_edgex_forwarder()
-    sensor_service = SensorService(db, edgex_forwarder=edgex_forwarder)
+    ingest_store = None
+    ingest_path = os.environ.get("AIOT_INGEST_DB", "").strip()
+    if ingest_path:
+        from database.sensor_projection import ensure_projection_schema
+
+        from src.ingest_store import IngestStore
+        ingest_store = IngestStore(ingest_path)
+        ensure_projection_schema(db)
+    sensor_service = SensorService(db, edgex_forwarder=edgex_forwarder, ingest_store=ingest_store)
 
     # ──────────────────────────────────────────────
     # 6. 배치 매니저 생성 및 초기화
-    # Go: batchManager := batch.NewBatchManager(...)
+    # Go 원본의 배치 매니저 생성 처리에 해당한다.
     # ──────────────────────────────────────────────
     from batch.manager import BatchManager
     batch_manager = BatchManager(
@@ -90,7 +99,7 @@ def main():
 
     # ──────────────────────────────────────────────
     # 7. 디바이스 목록 갱신 완료 대기 (최대 63초)
-    # Go: for i := 0; i < 21; i++ { time.Sleep(3s); if currentCount > 0 { break } }
+    # Go 원본과 동일하게 최대 21회, 3초 간격으로 장치 목록 갱신을 확인한다.
     # ──────────────────────────────────────────────
     for i in range(21):
         time.sleep(3)
@@ -103,25 +112,27 @@ def main():
 
     # ──────────────────────────────────────────────
     # 9. MQTT 클라이언트 초기화
-    # Go: mqttManager := mqtt.NewManager(cfg.MQTT)
+    # Go 원본의 MQTT 매니저 생성 처리에 해당한다.
     # ──────────────────────────────────────────────
     from mqtt.manager import Manager as MQTTManager
-    mqtt_manager = MQTTManager(cfg.mqtt)
+    mqtt_manager = MQTTManager(cfg.mqtt, durable=ingest_store is not None)
     try:
         mqtt_manager.init(cfg.mqtt, sensor_service)
     except Exception as e:
+        if ingest_store is not None:
+            raise
         logger.warning(f"Failed to initialize MQTT clients: {e}")
 
     # ──────────────────────────────────────────────
     # 11. HTTP 서버 설정 (Flask → Go의 gin 대응)
-    # Go: router := gin.Default()
+    # Go 원본의 기본 라우터 생성 처리에 해당한다.
     # ──────────────────────────────────────────────
     try:
         from flask import Flask, jsonify
         app = Flask(__name__)
 
         # CORS 미들웨어
-        # Go: router.Use(func(c *gin.Context) { c.Header("Access-Control-Allow-Origin", "*"); ... })
+        # Go 원본의 CORS 미들웨어 설정에 해당한다.
         @app.after_request
         def add_cors_headers(response):
             response.headers["Access-Control-Allow-Origin"] = "*"
@@ -129,7 +140,7 @@ def main():
             response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
             return response
 
-        # Go: router.GET("/health", func(c *gin.Context) { ... })
+        # Go 원본의 상태 확인 라우트 설정에 해당한다.
         @app.route("/health")
         def health():
             return jsonify({
@@ -137,7 +148,7 @@ def main():
                 "timestamp": int(time.time()),
             })
 
-        # Go: router.GET("/", func(c *gin.Context) { ... })
+        # Go 원본의 서비스 정보 라우트 설정에 해당한다.
         @app.route("/")
         def index():
             return jsonify({
@@ -153,7 +164,7 @@ def main():
 
     # ──────────────────────────────────────────────
     # 12. HTTP 서버 시작 (별도 스레드)
-    # Go: go func() { srv.ListenAndServe() }()
+    # Go 원본처럼 HTTP 서버를 별도 스레드에서 실행한다.
     # ──────────────────────────────────────────────
     port = cfg.server.port or "3500"
     server_thread = None
@@ -167,8 +178,7 @@ def main():
         server_thread.start()
 
     # ──────────────────────────────────────────────
-    # Graceful shutdown 처리
-    # Go: signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM); <-quit
+    # 종료 신호를 받아 진행 중인 작업을 정리하는 우아한 종료 처리
     # ──────────────────────────────────────────────
     shutdown_event = threading.Event()
 
@@ -179,10 +189,11 @@ def main():
     signal.signal(signal.SIGINT, handle_signal)
     signal.signal(signal.SIGTERM, handle_signal)
 
-    # 종료 대기 (Go: <-quit)
-    shutdown_event.wait()
+    # 종료 신호가 들어올 때까지 대기한다.
+    while not shutdown_event.wait(1):
+        mqtt_manager.poll()
 
-    # 정리 (Go: defer 순서대로)
+    # Go 원본의 defer 정리 순서에 맞춰 자원을 해제한다.
     logger.info("Stopping MQTT connections...")
     mqtt_manager.disconnect_all()
 

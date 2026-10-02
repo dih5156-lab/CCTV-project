@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Any, Mapping, Optional
 
 from ..devices.speaker import SpeakerConfig, SpeakerDevice
+from .request_idempotency import RequestIdempotencyCache
 
 
 @dataclass(frozen=True)
@@ -48,6 +49,7 @@ class SpeakerDeviceService:
         self._device = device or SpeakerDevice(config)
         self._devices = dict(devices or {device_id: self._device})
         self._dry_run = bool(dry_run)
+        self._request_results = RequestIdempotencyCache[SpeakerCommandResult]()
 
     @property
     def device_ids(self) -> tuple[str, ...]:
@@ -97,13 +99,19 @@ class SpeakerDeviceService:
                 error_code="invalid_payload",
             )
 
+        cached_result = self._request_results.get(request_id)
+        if cached_result is not None:
+            return cached_result
+
         if self._dry_run:
-            return SpeakerCommandResult(
+            result = SpeakerCommandResult(
                 request_id=request_id,
                 event_id=event_id,
                 device_id=target_device_id,
                 status="simulated",
             )
+            self._request_results.put(request_id, result)
+            return result
 
         try:
             success = self._execute_action(action, payload, target_device)
@@ -116,13 +124,16 @@ class SpeakerDeviceService:
                 error_code="device_error",
             )
 
-        return SpeakerCommandResult(
+        result = SpeakerCommandResult(
             request_id=request_id,
             event_id=event_id,
             device_id=target_device_id,
             status="acknowledged" if success else "failed",
             error_code=None if success else "device_unreachable",
         )
+        if result.status in {"acknowledged", "simulated"}:
+            self._request_results.put(request_id, result)
+        return result
 
     def _execute_action(self, action: str, payload: Mapping[str, Any], device: Any) -> bool:
         """명령 이름에 맞는 InterM 스피커 메서드를 호출한다."""

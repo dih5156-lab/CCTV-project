@@ -217,7 +217,7 @@ class _RestHandler(BaseApiHandler):
         )
 
     def _respond_metrics(self) -> None:
-        """Prometheus テキスト형식 메트릭을 반환한다."""
+        """Prometheus 텍스트 형식 메트릭을 반환한다."""
         try:
             from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 

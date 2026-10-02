@@ -1,4 +1,4 @@
-"""Go TLV decoder HTTP client."""
+"""Go TLV 디코더 HTTP 클라이언트."""
 
 from __future__ import annotations
 

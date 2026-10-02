@@ -30,7 +30,11 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 import paho.mqtt.client as mqtt
 
-from ..canonical_event import get_payload_camera_id, get_payload_event_type
+from ..canonical_event import (
+    get_payload_camera_id,
+    get_payload_event_id,
+    get_payload_event_type,
+)
 from ..config import ActionBridgeConfig
 from ..devices.signboard import SignboardConfig, SignboardDevice, build_display_text
 from ..devices.siren import SensorConfig, SirenDevice
@@ -129,6 +133,7 @@ class ActionBridge:
         edgex_command_topic_prefix: str = "edgex/commands/cctv",
         edgex_device_registry_path: Optional[str] = None,
         edgex_allowed_devices: Optional[Set[str]] = None,
+        device_dry_run: bool = False,
     ) -> None:
         """Action Layer와 장치·EdgeX shadow 설정을 초기화한다."""
         self.mqtt_broker = mqtt_broker
@@ -151,6 +156,7 @@ class ActionBridge:
             if edgex_device_registry_path
             else None
         )
+        self._device_dry_run = device_dry_run
 
         self._repo = _EventRepo(Path(db_path))
         self._sites = _SiteRegistry(
@@ -209,6 +215,7 @@ class ActionBridge:
             if self._edgex_command_mode is not DeviceCommandMode.DIRECT
             else None,
             device_command_mode=self._edgex_command_mode,
+            device_dry_run=self._device_dry_run,
             resolve_edgex_device_ids=self._resolve_edgex_device_ids,
             edgex_jetson_id=self._edgex_jetson_id,
             edgex_command_topic_prefix=self._edgex_command_topic_prefix,
@@ -233,7 +240,7 @@ class ActionBridge:
     def _resolve_edgex_device_ids(self, device_type: str, camera_id: str) -> List[str]:
         """레지스트리에서 이벤트 카메라에 연결된 물리 장치 ID를 조회한다."""
         if self._edgex_device_registry is None:
-            return [""]
+            return []
         return [
             target.device_id
             for target in self._edgex_device_registry.resolve(
@@ -506,6 +513,12 @@ class ActionBridge:
                 self._publish_status(
                     "events/filtered",
                     {
+                        "event_id": get_payload_event_id(payload),
+                        **(
+                            {"request_id": str(payload["request_id"])}
+                            if payload.get("request_id")
+                            else {}
+                        ),
                         "camera_id": camera_id,
                         "site_id": site_id,
                         "event_type": get_payload_event_type(payload),
@@ -525,6 +538,11 @@ class ActionBridge:
                 "events/pending",
                 {
                     "event_id": event_id,
+                    **(
+                        {"request_id": str(payload["request_id"])}
+                        if payload.get("request_id")
+                        else {}
+                    ),
                     "camera_id": camera_id,
                     "site_id": site_id,
                     "event_type": get_payload_event_type(payload),

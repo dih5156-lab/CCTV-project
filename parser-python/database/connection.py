@@ -207,7 +207,7 @@ _SCHEMA_STATEMENTS = [
 
 
 def _ensure_schema(pool) -> None:
-    """Create the minimal AIoT parser schema when running on a fresh Jetson DB."""
+    """새 Jetson DB에서 실행할 때 필요한 최소 AIoT Parser 스키마를 생성한다."""
     conn = pool.getconn()
     try:
         with conn.cursor() as cur:

@@ -5,18 +5,23 @@ from __future__ import annotations
 import binascii
 import json
 import logging
+import os
 import signal
 import sqlite3
 import threading
 import time
-from base64 import b64decode
+from base64 import b64decode, b64encode
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Optional
+from uuid import uuid4
 
 from ..canonical_event import build_canonical_event, build_event_id
 from ..config import AppConfig, ExternalIngestConfig, MqttConfig
+from ..event_ingest_store import EventIngestStore
+from ..event_validation import EventValidationError, validate_event_identity
 from ..protocols import MqttEventPublisher, MqttTopicSubscriber
+from ..sensor_observation import build_sensor_observation
 from ..time_utils import now_kst_iso
 
 logger = logging.getLogger(__name__)
@@ -48,20 +53,14 @@ def _decode_base64_text(value: Any) -> Optional[str]:
         return None
 
 
-def _extract_lora_timestamp(raw_payload: Dict[str, Any]) -> Optional[str]:
+def _extract_lora_timestamp(raw_payload: Dict[str, Any]) -> Any:
     rx_metadata = raw_payload.get("rx_metadata")
     if isinstance(rx_metadata, list) and rx_metadata:
         first_meta = rx_metadata[0] or {}
         if isinstance(first_meta, dict):
-            gw_recv_time = first_meta.get("gw_recv_time")
-            if gw_recv_time:
-                return str(gw_recv_time)
-            meta_time = first_meta.get("time")
-            if meta_time is not None:
-                return str(meta_time)
-            meta_timestamp = first_meta.get("timestamp")
-            if meta_timestamp is not None:
-                return str(meta_timestamp)
+            for key in ("gw_recv_time", "time", "timestamp"):
+                if key in first_meta:
+                    return first_meta[key]
     return None
 
 
@@ -112,8 +111,20 @@ def _canonical_gateway_fields(
     }
 
 
-def normalize_external_event(raw_payload: Dict[str, Any], topic: str) -> Dict[str, Any]:
+def normalize_external_event(
+    raw_payload: Dict[str, Any], topic: str, *, received_at: Optional[str] = None
+) -> Dict[str, Any]:
     """외부 입력 payload를 프로젝트 내부 이벤트 형식으로 정규화한다."""
+    if not isinstance(raw_payload, dict):
+        raise EventValidationError([{"field": "payload", "code": "mapping_required"}])
+    for field in ("decoded", "telemetry"):
+        if (
+            field in raw_payload
+            and raw_payload[field] is not None
+            and not isinstance(raw_payload[field], dict)
+        ):
+            raise EventValidationError([{"field": field, "code": "mapping_required"}])
+    received_at = received_at if received_at is not None else _utc_now_iso()
     rx_metadata = raw_payload.get("rx_metadata")
     first_rx_meta = rx_metadata[0] if isinstance(rx_metadata, list) and rx_metadata else {}
     first_rx_meta = first_rx_meta if isinstance(first_rx_meta, dict) else {}
@@ -121,15 +132,16 @@ def normalize_external_event(raw_payload: Dict[str, Any], topic: str) -> Dict[st
     gateway_info = gateway_info if isinstance(gateway_info, dict) else {}
     is_lora_uplink = "dev_eui" in raw_payload or "app_eui" in raw_payload or "f_port" in raw_payload
 
-    camera_id = (
-        raw_payload.get("camera_id")
-        or raw_payload.get("cameraId")
-        or raw_payload.get("source_id")
-        or raw_payload.get("device_id")
-        or raw_payload.get("deviceId")
-        or raw_payload.get("dev_eui")
-        or raw_payload.get("camera")
-        or "unknown"
+    camera_id = next(
+        (
+            raw_payload[key]
+            for key in (
+                "camera_id", "cameraId", "source_id", "device_id",
+                "deviceId", "dev_eui", "camera",
+            )
+            if key in raw_payload
+        ),
+        None,
     )
     event_type = (
         raw_payload.get("type")
@@ -143,13 +155,19 @@ def normalize_external_event(raw_payload: Dict[str, Any], topic: str) -> Dict[st
     )
     sensor_type = raw_payload.get("sensor_type") or ("lora" if is_lora_uplink else None)
     payload_text = _decode_base64_text(raw_payload.get("payload")) if is_lora_uplink else None
-    timestamp = (
-        raw_payload.get("timestamp")
-        or raw_payload.get("time")
-        or raw_payload.get("ts")
-        or _extract_lora_timestamp(raw_payload)
-        or _utc_now_iso()
+    timestamp_source = next(
+        (key for key in ("occurred_at", "timestamp", "time", "ts") if key in raw_payload),
+        None,
     )
+    if timestamp_source is not None:
+        timestamp = raw_payload[timestamp_source]
+    elif any(key in first_rx_meta for key in ("gw_recv_time", "time", "timestamp")):
+        timestamp = _extract_lora_timestamp(raw_payload)
+        timestamp_source = "rx_metadata[0]"
+    else:
+        timestamp = received_at
+        timestamp_source = "received_at"
+    validate_event_identity(raw_payload, device_id=camera_id, occurred_at=timestamp)
     message = (
         raw_payload.get("message")
         or raw_payload.get("display_message")
@@ -166,6 +184,8 @@ def normalize_external_event(raw_payload: Dict[str, Any], topic: str) -> Dict[st
         "camera_id": str(camera_id),
         "type": str(event_type),
         "timestamp": str(timestamp),
+        "received_at": received_at,
+        "occurred_at_source": timestamp_source,
         "source": "external_mqtt",
         "source_type": "mqtt",
         "confidence": confidence,
@@ -224,6 +244,15 @@ def normalize_external_event(raw_payload: Dict[str, Any], topic: str) -> Dict[st
         message_id=raw_payload.get("message_id"),
         payload=raw_payload,
     )
+    observation = build_sensor_observation(
+        raw_payload,
+        namespace="external_mqtt",
+        source_record_id=normalized["event_id"],
+        device_id=str(camera_id),
+        received_at=received_at,
+    )
+    if observation is not None:
+        normalized["observation"] = observation
     return normalized
 
 
@@ -265,7 +294,7 @@ class IngestEventRepository:
             )
             conn.commit()
 
-    def save(self, *, topic: str, raw_payload: Dict[str, Any], normalized_payload: Dict[str, Any], republished: bool) -> None:
+    def save(self, *, topic: str, raw_payload: Any, normalized_payload: Dict[str, Any], republished: bool) -> None:
         with self._lock, sqlite3.connect(self.db_path) as conn:
             conn.execute(
                 """
@@ -290,6 +319,7 @@ class IngestStats:
     received_count: int = 0
     parse_fail_count: int = 0
     republish_count: int = 0
+    quarantined_count: int = 0
 
 
 class ExternalIngestService:
@@ -299,11 +329,26 @@ class ExternalIngestService:
         self,
         ingest_config: ExternalIngestConfig,
         output_config: Optional[MqttConfig] = None,
+        *,
+        ingest_store: Optional[EventIngestStore] = None,
     ) -> None:
         self.ingest_config = ingest_config
         self.output_config = output_config or MqttConfig()
+        durable_path = os.environ.get("AIOT_INGEST_DB", "").strip()
+        self._ingest_store = ingest_store
+        if self._ingest_store is None and durable_path:
+            self._ingest_store = EventIngestStore(durable_path)
+        if (
+            self._ingest_store is not None
+            and ingest_config.republish_enabled
+            and os.environ.get("MQTT_EVENT_OUTBOX_DB")
+        ):
+            raise ValueError(
+                "Common ingest and legacy MQTT outbox replay cannot run together"
+            )
         self._repo = IngestEventRepository(ingest_config.db_path)
         self._stats = IngestStats()
+        self._durable_lock = threading.Lock()
         self._running = False
         self._publisher: Optional[MqttEventPublisher] = None
         if ingest_config.republish_enabled:
@@ -324,6 +369,7 @@ class ExternalIngestService:
             username=ingest_config.mqtt_username,
             password=ingest_config.mqtt_password,
             message_handler=self.handle_message,
+            durable=self._ingest_store is not None,
         )
 
     @classmethod
@@ -332,6 +378,11 @@ class ExternalIngestService:
 
     def handle_message(self, topic: str, payload_bytes: bytes) -> None:
         self._stats.received_count += 1
+        if self._ingest_store is not None:
+            with self._durable_lock:
+                self._handle_durable_message(topic, payload_bytes)
+            return
+        received_at = _utc_now_iso()
         preview = payload_bytes[:160].decode("utf-8", errors="replace")
         logger.debug(
             "External ingest raw payload 수신: topic=%s payload_len=%d preview=%r",
@@ -341,7 +392,7 @@ class ExternalIngestService:
         )
         try:
             raw_payload = json.loads(payload_bytes.decode("utf-8"))
-        except Exception:
+        except (ValueError, UnicodeDecodeError):
             self._stats.parse_fail_count += 1
             logger.error(
                 "External ingest JSON 파싱 실패: topic=%s payload_len=%d preview=%r",
@@ -349,9 +400,24 @@ class ExternalIngestService:
                 len(payload_bytes),
                 preview,
             )
+            self._quarantine(
+                topic=topic,
+                raw_payload={"payload_base64": b64encode(payload_bytes).decode("ascii")},
+                received_at=received_at,
+                errors=[{"field": "payload", "code": "invalid_json"}],
+            )
             return
 
-        normalized = normalize_external_event(raw_payload, topic)
+        try:
+            normalized = normalize_external_event(
+                raw_payload, topic, received_at=received_at
+            )
+        except EventValidationError as exc:
+            self._quarantine(
+                topic=topic, raw_payload=raw_payload,
+                received_at=received_at, errors=exc.errors,
+            )
+            return
         republished = False
         if self._publisher:
             republished = self._publisher.publish_event(normalized)
@@ -372,8 +438,120 @@ class ExternalIngestService:
             republished,
         )
 
+    def _handle_durable_message(self, topic: str, payload_bytes: bytes) -> None:
+        destination = None
+        if self._publisher is not None:
+            destination = json.dumps(
+                {
+                    "transport": "mqtt",
+                    "broker": self.output_config.broker,
+                    "port": self.output_config.port,
+                    "topic_prefix": self.output_config.topic_prefix,
+                    "qos": self.output_config.qos,
+                    "retain": self.output_config.retain,
+                },
+                sort_keys=True,
+            )
+        ingest_id = self._ingest_store.accept_message(
+            "external_mqtt", topic, payload_bytes, destination=destination
+        )
+        try:
+            self._process_durable_receipt(ingest_id, recovery=False)
+        except Exception as exc:
+            self._ingest_store.retry_event(ingest_id, type(exc).__name__)
+            raise
+
+    def _process_durable_receipt(self, ingest_id: str, *, recovery: bool) -> None:
+        store = self._ingest_store
+        receipt = store.get_event_receipt(ingest_id)
+        if receipt["stage"] != "pending":
+            return
+        envelope = receipt["raw"]
+        try:
+            raw_payload = json.loads(
+                b64decode(envelope["payload_base64"]).decode("utf-8")
+            )
+            json.dumps(raw_payload, allow_nan=False)
+        except (ValueError, UnicodeDecodeError):
+            self._stats.parse_fail_count += 1
+            store.reject_event(
+                ingest_id,
+                [{"field": "payload", "code": "invalid_json"}],
+                converter_version="external-v1",
+            )
+            self._stats.quarantined_count += 1
+            return
+        try:
+            normalized = normalize_external_event(
+                raw_payload, envelope["topic"], received_at=receipt["received_at"]
+            )
+            json.dumps(normalized, allow_nan=False)
+        except (EventValidationError, ValueError) as exc:
+            errors = (
+                exc.errors if isinstance(exc, EventValidationError)
+                else [{"field": "payload", "code": "non_finite_normalized_value"}]
+            )
+            store.reject_event(ingest_id, errors, converter_version="external-v1")
+            self._stats.quarantined_count += 1
+            return
+        status, job_id = store.record_event(
+            ingest_id, normalized, converter_version="external-v1", recovery=recovery
+        )
+        if status == "conflict":
+            logger.warning("External ingest ID conflict: ingest_id=%s", ingest_id)
+        if recovery or job_id is None or self._publisher is None:
+            return
+        if not store.begin_live_delivery(job_id):
+            return
+        try:
+            submitted = bool(self._publisher.publish_event(normalized))
+            error = None if submitted else "publisher_returned_false"
+        except Exception as exc:
+            submitted, error = False, type(exc).__name__
+        store.finish_live_delivery(job_id, submitted=submitted, error=error)
+        if submitted:
+            self._stats.republish_count += 1
+        else:
+            logger.warning(
+                "External ingest delivery uncertain: ingest_id=%s error=%s", ingest_id, error
+            )
+
+    def recover_pending_once(self, limit: int = 100) -> int:
+        """Resume normalization only. Old alarms are never automatically published."""
+        if self._ingest_store is None:
+            return 0
+        processed = 0
+        for ingest_id in self._ingest_store.pending_events("external_mqtt", limit):
+            try:
+                with self._durable_lock:
+                    self._process_durable_receipt(ingest_id, recovery=True)
+                processed += 1
+            except Exception as exc:
+                self._ingest_store.retry_event(ingest_id, type(exc).__name__)
+                logger.warning("External ingest recovery deferred: ingest_id=%s", ingest_id)
+        return processed
+
+    def _quarantine(
+        self, *, topic: str, raw_payload: Any, received_at: str, errors: list[dict[str, str]]
+    ) -> None:
+        rejected = {
+            "event_id": f"rejected_{uuid4().hex}",
+            "message_type": "invalid_external_input",
+            "received_at": received_at,
+            "validation": {"status": "invalid", "errors": errors},
+        }
+        self._repo.save(
+            topic=topic, raw_payload=raw_payload,
+            normalized_payload=rejected, republished=False,
+        )
+        self._stats.quarantined_count += 1
+        logger.warning("External ingest 입력 격리: topic=%s errors=%s", topic, errors)
+
     def start(self) -> None:
-        self._repo.init()
+        if self._ingest_store is None:
+            self._repo.init()
+        else:
+            self.recover_pending_once()
         attempts = 0
         while not self._subscriber.connect():
             attempts += 1
@@ -395,6 +573,8 @@ class ExternalIngestService:
         signal.signal(signal.SIGTERM, self._signal_handler)
         try:
             while self._running:
+                self._subscriber.reconnect_if_needed()
+                self.recover_pending_once()
                 time.sleep(1.0)
         finally:
             self.stop()
@@ -414,4 +594,5 @@ class ExternalIngestService:
             "received_count": self._stats.received_count,
             "parse_fail_count": self._stats.parse_fail_count,
             "republish_count": self._stats.republish_count,
+            "quarantined_count": self._stats.quarantined_count,
         }

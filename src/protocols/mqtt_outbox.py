@@ -1,7 +1,7 @@
-"""SQLite backed MQTT event outbox.
+"""SQLite 기반 MQTT 이벤트 outbox.
 
-The outbox is intentionally small: store before publish, mark sent after a
-successful broker handoff, and replay pending rows in FIFO order.
+발행 전에 저장하고, 브로커 전달에 성공하면 전송 완료로 표시하며,
+대기 행은 FIFO 순서로 재전송하도록 작게 구성한다.
 """
 
 from __future__ import annotations
@@ -41,7 +41,7 @@ CREATE INDEX IF NOT EXISTS idx_mqtt_outbox_status_id
 
 
 class MqttEventOutbox:
-    """Store-and-forward queue for MQTT event publishes."""
+    """MQTT 이벤트 발행을 저장 후 전달 방식으로 처리하는 큐."""
 
     def __init__(self, db_path: str | Path, *, destination_name: str = "mqtt") -> None:
         self.path = Path(db_path)
@@ -64,7 +64,7 @@ class MqttEventOutbox:
             conn.commit()
 
     def save_pending(self, topic: str, payload: Dict) -> int:
-        """Insert a pending row if it does not already exist."""
+        """동일한 항목이 없을 때 대기 행을 추가한다."""
         event_id = get_payload_event_id(payload)
         now_ms = int(time.time() * 1000)
         payload_json = json.dumps(payload, ensure_ascii=False)

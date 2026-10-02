@@ -54,6 +54,9 @@ def test_collector_records_acknowledged_device_result():
         "device": "signboard",
         "command_id": "event-1:signboard",
         "status": "acknowledged",
+        "event_id": "event-1",
+        "device_ids": [],
+        "request_ids": [],
     }
     assert repository.records == [
         (
@@ -92,3 +95,36 @@ def test_collector_includes_error_when_device_command_fails():
     )
 
     assert collector.collect(command, result)["error"] == "연결 실패"
+
+
+def test_collector_preserves_edgex_physical_trace_ids():
+    collector = CommandResultCollector(
+        repository=FakeRepository(),
+        device_commands_metric=FakeMetric(),
+        device_results_metric=FakeMetric(),
+    )
+    command = DeviceCommand(
+        device="signboard",
+        action="display",
+        payload={},
+        command_id="event-3:signboard",
+        event_id="event-3",
+        camera_id="camera-1",
+    )
+    result = DeviceCommandResult(
+        device="signboard",
+        command_id=command.command_id,
+        ok=True,
+        status="acknowledged",
+        device_ids=("signboard-1", "signboard-2"),
+        request_ids=("event-3:signboard:signboard-1", "event-3:signboard:signboard-2"),
+    )
+
+    collected = collector.collect(command, result)
+
+    assert collected["event_id"] == "event-3"
+    assert collected["device_ids"] == ["signboard-1", "signboard-2"]
+    assert collected["request_ids"] == [
+        "event-3:signboard:signboard-1",
+        "event-3:signboard:signboard-2",
+    ]
