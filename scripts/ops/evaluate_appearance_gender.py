@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Evaluate PP-Human gender threshold behavior on saved appearance crops."""
+"""저장된 외관 crop에서 PP-Human 성별 임계값 동작을 평가한다."""
 
 from __future__ import annotations
 

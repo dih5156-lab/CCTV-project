@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Summarize falldata shadow review JSONL records for deployment decisions."""
+"""배포 결정을 위해 falldata Shadow 검수 JSONL 기록을 요약한다."""
 
 from __future__ import annotations
 

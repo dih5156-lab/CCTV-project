@@ -5,6 +5,8 @@ from __future__ import annotations
 import time
 from typing import Any, Callable, Dict, Iterable, List, Optional
 
+from ._deepstream_element_config import streammux_dimensions
+from ._preview_frame_store import read_frame_identity
 from .events import DetectionEvent, EventType
 
 _FALL_DETAIL_KEYS = (
@@ -70,7 +72,8 @@ def object_meta_to_event(
 
     rect = obj_meta.rect_params
     object_id: Optional[int] = int(obj_meta.object_id)
-    if object_id < 0:
+    # NvDsObjectMeta.UNTRACKED_OBJECT_ID is guint64 max, not a negative value.
+    if object_id < 0 or object_id == 0xFFFFFFFFFFFFFFFF:
         object_id = None
 
     metadata = {
@@ -153,7 +156,11 @@ def detections_to_events(
                 height=height,
                 confidence=float(detection["confidence"]),
                 timestamp=timestamp,
-                object_id=None,
+                object_id=(
+                    int(detection["object_id"])
+                    if detection.get("object_id") is not None
+                    else None
+                ),
                 class_idx=int(detection["class_id"]),
                 class_name=detection["label"],
                 keypoints=detection.get("keypoints"),
@@ -177,7 +184,11 @@ def detections_to_events(
                     height=height,
                     confidence=float(detection["confidence"]),
                     timestamp=timestamp_factory(),
-                    object_id=None,
+                    object_id=(
+                        int(detection["object_id"])
+                        if detection.get("object_id") is not None
+                        else None
+                    ),
                     class_idx=int(detection["class_id"]),
                     class_name=detection["label"],
                     keypoints=detection.get("keypoints"),
@@ -248,6 +259,7 @@ def emit_tensor_events(
 ) -> int:
     """frame_user_meta_list의 tensor 결과를 이벤트로 변환하고 파이프라인에 전달한다."""
     detected = 0
+    frame_width, frame_height = streammux_dimensions()
     l_user = frame_meta.frame_user_meta_list
     while l_user is not None:
         try:
@@ -270,8 +282,8 @@ def emit_tensor_events(
                 source_id=int(frame_meta.source_id),
                 frame_num=int(frame_meta.frame_num),
                 timestamp_factory=time.time,
-                frame_width=int(getattr(frame_meta, "source_frame_width", 0) or 0),
-                frame_height=int(getattr(frame_meta, "source_frame_height", 0) or 0),
+                frame_width=frame_width,
+                frame_height=frame_height,
                 event_type_for_label=event_type_for_label,
             )
             if object_meta_events_for_frame is not None:
@@ -280,6 +292,8 @@ def emit_tensor_events(
             detected += sum(
                 1 for event in events if event.event_type != EventType.FALL_DETECTED
             )
+            for event in events:
+                event.metadata["frame_identity"] = read_frame_identity(frame_meta, camera_name)
             apply_existing_event_pipeline(camera_name, events)
 
         try:
@@ -353,6 +367,7 @@ def object_meta_events_from_frame(
     attach_appearance = pphuman_sgie_enabled and flags.get("use_appearance", False)
     events: List[DetectionEvent] = []
 
+    frame_width, frame_height = streammux_dimensions()
     l_obj = frame_meta.obj_meta_list
     while l_obj is not None:
         try:
@@ -366,11 +381,12 @@ def object_meta_events_from_frame(
             source_id=int(frame_meta.source_id),
             frame_num=int(frame_meta.frame_num),
             timestamp_factory=time.time,
-            frame_width=int(getattr(frame_meta, "source_frame_width", 0) or 0),
-            frame_height=int(getattr(frame_meta, "source_frame_height", 0) or 0),
+            frame_width=frame_width,
+            frame_height=frame_height,
             event_type_for_label=event_type_for_label,
         )
         if event is not None:
+            event.metadata["frame_identity"] = read_frame_identity(frame_meta, camera_name)
             if attach_appearance and int(obj_meta.class_id) == 0:
                 pphuman_attrs = decode_pphuman_for_obj(obj_meta)
                 if pphuman_attrs:
@@ -405,6 +421,8 @@ def process_batch_frames(
     object_meta_events_for_frame: Callable[[Any, str], List[DetectionEvent]],
     apply_existing_event_pipeline: Callable[[str, List[DetectionEvent]], None],
     tensor_warn_log: Callable[[str], None],
+    prepare_frame: Optional[Callable[[Any, str], None]] = None,
+    finish_frame: Optional[Callable[[Any, str], None]] = None,
 ) -> tuple[int, bool]:
     """batch frame 순회를 처리하고 갱신된 통계/경고 상태를 반환한다."""
     l_frame = batch_meta.frame_meta_list
@@ -415,6 +433,8 @@ def process_batch_frames(
             break
 
         camera_name = pad_to_camera.get(frame_meta.source_id, "unknown")
+        if prepare_frame is not None:
+            prepare_frame(frame_meta, camera_name)
         frames_processed += 1
 
         if cleanup_interval > 0 and frames_processed % cleanup_interval == 0:
@@ -429,6 +449,9 @@ def process_batch_frames(
             camera_name,
             object_meta_events_for_frame(frame_meta, camera_name),
         )
+        # 두 메타 경로가 모두 끝나야 후처리 대상 없음이 확정된다. 예외 시에는 미확인으로 남긴다.
+        if finish_frame is not None:
+            finish_frame(frame_meta, camera_name)
 
         if (
             detected_from_tensor == 0

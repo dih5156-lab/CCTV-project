@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create a local, dependency-free HTML page for reviewing color crops."""
+"""색상 crop을 검수할 수 있는 로컬·무의존성 HTML 페이지를 만든다."""
 
 from __future__ import annotations
 

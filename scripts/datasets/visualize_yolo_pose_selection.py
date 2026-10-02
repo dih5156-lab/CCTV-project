@@ -14,11 +14,12 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from scripts.datasets.train_yolo_pose_fall_rf import (
+# 직접 실행 시 프로젝트 경로를 먼저 등록해야 내부 모듈을 가져올 수 있다.
+from scripts.datasets.train_yolo_pose_fall_rf import (  # noqa: E402
     _load_pose_model,
     _select_tracked_pose_index,
 )
-from src.core.ai._fall_detector import FallDetector
+from src.core.ai._fall_detector import FallDetector  # noqa: E402
 
 
 def _build_contact_sheet(

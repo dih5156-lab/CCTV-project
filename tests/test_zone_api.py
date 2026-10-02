@@ -485,3 +485,48 @@ def test_zone_api_requires_internal_token_when_configured(cameras_json: Path, tm
     code, body = handler._responses[0]  # type: ignore[attr-defined]
     assert code == 401
     assert body["error"] == "Unauthorized"
+
+
+@pytest.mark.parametrize("running,frames,age,expected", [
+    (True, 0, None, 503),
+    (True, 20, 31.0, 503),
+    (False, 20, 0.1, 503),
+    (True, 20, float("nan"), 503),
+    (True, 20, 0.5, 200),
+])
+def test_zone_health_requires_recent_deepstream_processing(
+    cameras_json, tmp_path, running, frames, age, expected,
+):
+    from src.utils.zone_presets import ZonePresetStore
+
+    # API가 살아 있다는 이유만으로 영상 정지를 healthy로 표시하지 않아야 한다.
+    proc = _build_processor(zone_manager=None)
+    proc.get_stats = lambda: {
+        "backend": "deepstream", "pipeline_running": running,
+        "camera_count": 1, "frames_processed": frames,
+        "last_frame_age_seconds": age,
+    }
+    handler = _make_handler(
+        proc, str(cameras_json), "/health",
+        ZonePresetStore(str(tmp_path / "zone_presets.json")),
+    )
+    handler.do_GET()
+    code, body = handler._responses[0]
+    assert code == expected
+    assert body["video_ready"] is (expected == 200)
+
+
+def test_zone_health_reports_stats_failure_as_unavailable(cameras_json, tmp_path):
+    from src.utils.zone_presets import ZonePresetStore
+
+    def broken_stats():
+        raise RuntimeError("stats unavailable")
+
+    proc = _build_processor(zone_manager=None)
+    proc.get_stats = broken_stats
+    handler = _make_handler(
+        proc, str(cameras_json), "/health",
+        ZonePresetStore(str(tmp_path / "zone_presets.json")),
+    )
+    handler.do_GET()
+    assert handler._responses[0][0] == 503

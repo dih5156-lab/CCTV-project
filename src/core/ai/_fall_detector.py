@@ -99,6 +99,27 @@ class FallDetector:
             )
             return False
 
+    def detect_keypoints(
+        self,
+        keypoints: np.ndarray | list,
+        bbox_width: int,
+        bbox_height: int,
+        bbox_y: int = 0,
+    ) -> bool:
+        """사람 단위 ``(N, 3)`` keypoint 배열로 낙상을 판정한다.
+
+        crop-pose처럼 YOLO 결과 객체와 인덱스가 없는 경로에서 사용한다.
+        잘못된 배열은 운영 루프를 중단하지 않고 미검출로 처리한다.
+        """
+        try:
+            kpts = np.asarray(keypoints, dtype=np.float32)
+            if kpts.ndim != 2 or kpts.shape[1] < 3 or kpts.shape[0] == 0:
+                return False
+            return self._check_fall(kpts[:, :3], bbox_width, bbox_height, bbox_y=bbox_y)
+        except Exception as exc:
+            logger.debug("사람 단위 키포인트 낙상 판정 실패: %s", exc)
+            return False
+
     def validate_person(self, keypoints, idx: int) -> bool:
         """실제 사람인지 키포인트로 검증한다 (False = 오탐 의심)."""
         try:
@@ -108,6 +129,17 @@ class FallDetector:
             return self._check_person(kpts)
         except Exception as exc:
             logger.debug("키포인트 검증 실패: %s", exc)
+            return True
+
+    def validate_person_keypoints(self, keypoints: np.ndarray | list) -> bool:
+        """사람 단위 ``(N, 3)`` keypoint 배열을 검증한다."""
+        try:
+            kpts = np.asarray(keypoints, dtype=np.float32)
+            if kpts.ndim != 2 or kpts.shape[1] < 3 or kpts.shape[0] == 0:
+                return True
+            return self._check_person(kpts[:, :3])
+        except Exception as exc:
+            logger.debug("사람 단위 키포인트 검증 실패: %s", exc)
             return True
 
     # ── 낙상 감지 로직 ────────────────────────────────────────────────
@@ -435,4 +467,33 @@ class FallDetector:
             return True
         except Exception as exc:
             logger.debug("어깨 위치 검증 실패: %s", exc)
+            return True
+
+    def validate_shoulder_keypoints(
+        self,
+        keypoints: np.ndarray | list,
+        bbox_y1: int,
+        bbox_height: int,
+    ) -> bool:
+        """사람 단위 ``(N, 3)`` keypoint 배열의 어깨 위치를 검증한다."""
+        try:
+            kpts = np.asarray(keypoints, dtype=np.float32)
+            if kpts.ndim != 2 or kpts.shape[1] < 3:
+                return True
+            if len(kpts) <= 6:
+                return True
+            sh_ys = [
+                kpts[index][1]
+                for index in (5, 6)
+                if kpts[index][2] > MIN_KEYPOINT_CONFIDENCE
+            ]
+            if not sh_ys:
+                return True
+            ratio = (float(sum(sh_ys) / len(sh_ys)) - bbox_y1) / max(bbox_height, 1)
+            if ratio < SHOULDER_TOP_MIN_RATIO:
+                logger.debug("어깨 bbox 상단 치우침 거부(옷걸이 오탐): ratio=%.2f", ratio)
+                return False
+            return True
+        except Exception as exc:
+            logger.debug("사람 단위 어깨 위치 검증 실패: %s", exc)
             return True

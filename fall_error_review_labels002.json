@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "dataset_version": "hard475",
+  "items": [
+    {
+      "review_id": "validation:false_negative:01076_O_E_BY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "validation:false_negative:01342_O_F_BY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "validation:false_negative:01352_O_F_BY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "validation:false_negative:01356_O_F_BY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "validation:false_negative:01762_Y_E_BY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "validation:false_negative:01802_Y_A_BY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "validation:false_negative:01917_Y_E_BY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "validation:false_negative:01874_Y_A_BY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "validation:false_negative:01845_Y_A_BY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "validation:false_negative:01923_Y_E_BY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "validation:false_negative:02009_H_A_BY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "validation:false_negative:02029_H_A_BY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "validation:false_negative:02096_H_A_BY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "validation:false_negative:02120_H_A_BY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "validation:false_negative:02148_H_A_BY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "validation:false_negative:02184_H_A_BY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "validation:false_negative:02180_H_A_BY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "validation:false_negative:02160_H_A_BY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "validation:false_negative:02230_H_A_BY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "validation:false_negative:02552_H_D_BY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "validation:false_negative:02963_L_F_BY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "validation:false_negative:02973_L_F_BY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "validation:false_negative:02964_L_F_BY_C2",
+      "label": "fall"
+    }
+  ]
+}

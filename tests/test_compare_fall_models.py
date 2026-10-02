@@ -26,3 +26,16 @@ def test_compare_reports_preserves_each_model_decision_threshold() -> None:
     assert result["baseline_decision_threshold"] == 0.71
     assert result["candidate_decision_threshold"] == 0.78
     assert result["decision_threshold"] == 0.78
+
+
+def test_dataset_version_mismatch_blocks_promotion() -> None:
+    baseline = _report(precision=0.80, recall=0.70, threshold=0.70)
+    candidate = _report(precision=0.90, recall=0.80, threshold=0.70)
+    baseline["dataset_version"] = "split-a"
+    candidate["dataset_version"] = "split-b"
+
+    result = compare_reports(baseline, candidate)
+
+    assert result["dataset_compatible"] is False
+    assert result["checks"]["dataset_compatible"] is False
+    assert result["promote_candidate"] is False

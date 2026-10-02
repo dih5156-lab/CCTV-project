@@ -33,7 +33,7 @@ class H264PocFixer:
 
     @classmethod
     def _read_ue(cls, data: bytes, pos: list) -> int:
-        """Exp-Golomb ue(v) 읽기."""
+        """Exp-Golomb ue(v) 값을 읽는다."""
         m = 0
         while pos[0] < len(data) * 8 and not cls._get_bit(data, pos[0]):
             m += 1

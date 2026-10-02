@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Export reviewed appearance colors as auditable training-source labels."""
+"""검수한 외관 색상을 추적 가능한 학습 원본 라벨로 내보낸다."""
 
 from __future__ import annotations
 

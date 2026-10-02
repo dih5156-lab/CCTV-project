@@ -182,10 +182,15 @@ class FallShadowReviewRecorder:
         camera_name: str,
         event_payload: Dict[str, Any],
     ) -> tuple[Dict[str, Any], Dict[str, Any]]:
-        if event_payload.get("type") == "fall_near_miss":
+        if event_payload.get("type") in {"fall_near_miss", "fall_shadow_window"}:
             result = self.falldata_aux.verify_temporal_shadow()
         else:
-            result = self.falldata_aux.verify(camera_name=camera_name)
+            result = self.falldata_aux.verify(
+                camera_name=camera_name,
+                pose_scope=(event_payload.get("metadata") or {}).get(
+                    "falldata_pose_scope"
+                ),
+            )
         record = self.write_record(camera_name, event_payload, result)
         return result, record
 
@@ -202,14 +207,28 @@ class FallShadowReviewRecorder:
         event_id = fall_shadow_event_id(camera_name, event_payload, now)
         clip_path: Optional[str] = None
         clip_frames: Optional[int] = None
-        if self.config.save_clips and self.falldata_aux:
+        temporal_event = event_payload.get("type") in {
+            "fall_near_miss",
+            "fall_shadow_window",
+        }
+        temporal_result = result.get("temporal_compare_model") or {}
+        temporal_has_pose = int(temporal_result.get("frames_with_pose") or 0) > 0
+        should_save_clip = self.config.save_clips and (
+            not temporal_event or temporal_has_pose
+        )
+        if should_save_clip and self.falldata_aux:
             clip_file = self.config.clip_dir / f"{event_id}.mp4"
             try:
-                clip_frames = self.falldata_aux.save_buffered_clip(clip_file)
+                if temporal_event:
+                    clip_frames = self.falldata_aux.save_last_verified_clip(clip_file)
+                else:
+                    clip_frames = self.falldata_aux.save_buffered_clip(clip_file)
                 if clip_frames:
                     clip_path = str(clip_file)
             except Exception as exc:
                 logger.warning("[%s] fall shadow clip 저장 실패: %s", camera_name, exc)
+        elif temporal_event and self.falldata_aux:
+            self.falldata_aux.discard_last_verified_clip()
 
         record: Dict[str, Any] = {
             "event_id": event_id,

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare fall and non-fall replay diagnostics without changing the model."""
+"""모델을 변경하지 않고 넘어짐·비넘어짐 재생 진단 결과를 비교한다."""
 
 from __future__ import annotations
 

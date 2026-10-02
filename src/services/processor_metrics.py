@@ -58,6 +58,58 @@ class ProcessorStatsCollector:
                 family.add_metric([], float(value))
                 yield family
 
+        for field in (
+            "source_error_identified",
+            "source_error_unidentified",
+            "source_eos_identified",
+            "source_eos_unidentified",
+            "source_unidentified_stop",
+            "source_stream_reset_events",
+            "source_stream_reset_unidentified",
+            "preview_identity_rejected",
+            "preview_frames_stored",
+            "pipeline_restart_requested",
+            "pipeline_restart_rejected",
+            "pipeline_restart_executed",
+            "pipeline_restart_failed",
+            "pipeline_restart_seconds",
+        ):
+            value = stats.get(field)
+            if isinstance(value, (int, float)):
+                family = CounterMetricFamily(
+                    f"cctv_processor_{field}",
+                    f"DeepStream {field}; lifecycle bookkeeping, not frame recovery",
+                )
+                family.add_metric([], value)
+                yield family
+
+        # 전체 프레임 드롭과 별개인 후처리 누락을 노출한다. 매칭 성공은 추론 완료가 아니다.
+        context_fields = {
+            "context_identity_rejected": "Rejected context identities before post-processing",
+            "context_match_expired": "Pending context metadata expired before matching a preview",
+            "context_match_evicted": "Pending context metadata evicted at the matching capacity limit",
+            "context_match_missed": "Preview frames without matching pending context metadata",
+            # 메타 전체 만료/제거 수와 실제 CPU 도착의 누락 사유를 혼합하지 않는다.
+            "context_match_missed_no_target": "Unmatched previews after metadata completed without an eligible context target",
+            "context_match_missed_expired": "Unmatched previews whose pending context metadata expired",
+            "context_match_missed_evicted": "Unmatched previews whose pending context metadata was evicted",
+            "context_match_missed_unknown": "Unmatched previews without retained conclusive metadata history",
+            "context_frames_matched": "Matched context tasks enqueued; not completed model inference",
+            "context_queue_dropped": "Matched context tasks discarded because the worker queue was full",
+            # 합의된 주기 조절과 실제 큐 누락·추론 실패를 서로 다른 지표로 보여 준다.
+            "context_frames_sampled": "Matched frames skipped by the per-person analysis interval",
+            "context_people_sampled": "Repeated person observations skipped by the analysis interval",
+            "context_people_busy": "Repeated person observations skipped while that track has unfinished work",
+            "context_tasks_completed": "Context tasks whose face and appearance processing completed",
+            "context_tasks_failed": "Context tasks that raised during post-processing",
+        }
+        for field, help_text in context_fields.items():
+            value = stats.get(field)
+            if isinstance(value, (int, float)):
+                family = CounterMetricFamily(f"cctv_processor_{field}", help_text)
+                family.add_metric([], value)
+                yield family
+
         yield from self._collect_model_metrics(stats.get("model_inference_stats", {}))
         yield from self._collect_falldata_inline_metrics(
             stats.get("falldata_inline_stats", {})
@@ -73,15 +125,23 @@ class ProcessorStatsCollector:
             "process_errors",
             "process_timeouts",
             "process_seconds",
+            # 재사용 프로세스에 보낸 요청이며 프로세스 시작 횟수와 구분한다.
+            "worker_calls",
+            "worker_completed",
+            "worker_errors",
+            "worker_timeouts",
+            "worker_seconds",
             "parsed_results",
             "unparsed_results",
             "insufficient_pose_results",
             "window_inferences",
+            "window_reports_missing",
+            "insufficient_window_results",
         ):
             if field in temporal_stats:
                 help_text = (
-                    "TCN actual per-call forward-pass count (sliding window sum, "
-                    "or 1 per full-video call); requires successful stdout parse"
+                    "TCN completed window calls explicitly reported by subprocess; "
+                    "absent reports are counted separately, not inferred as one"
                     if field == "window_inferences"
                     else f"TCN subprocess {field}; not GPU inference or per-camera throughput"
                 )

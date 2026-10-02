@@ -6,9 +6,19 @@ import logging
 import os
 import time
 from collections import Counter, deque
+from contextlib import nullcontext
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import TYPE_CHECKING, Deque, Dict, List, Optional, Tuple
+from typing import (
+    TYPE_CHECKING,
+    Callable,
+    ContextManager,
+    Deque,
+    Dict,
+    List,
+    Optional,
+    Tuple,
+)
 
 import cv2
 import numpy as np
@@ -49,7 +59,7 @@ class AppearancePipeline:
         ))
         if self._save_crops:
             self._crop_dir.mkdir(parents=True, exist_ok=True)
-        self._appearance_cooldown: Dict[str, float] = {}
+        self._appearance_cooldown: Dict[Tuple, float] = {}
         self._appearance_log: Optional["AppearanceLog"] = None
         self._color_smoothing_window = max(1, int(
             color_smoothing_window
@@ -81,6 +91,16 @@ class AppearancePipeline:
         )))
         self._attribute_history: Dict[str, Dict[str, Deque]] = {}
         self._representative_crop_paths: Dict[str, str] = {}
+
+    def clear_camera(self, camera_id: str) -> None:
+        """입력 세대가 바뀐 카메라의 속성 이력과 억제 상태를 제거한다."""
+        for state in (self._attribute_history, self._representative_crop_paths):
+            for key in list(state):
+                if key.rsplit(":", 1)[0] == camera_id:
+                    state.pop(key, None)
+        for key in list(self._appearance_cooldown):
+            if key[0] == camera_id:
+                self._appearance_cooldown.pop(key, None)
 
     def ensure_log(self) -> None:
         """AppearanceLog를 지연 초기화한다."""
@@ -541,7 +561,7 @@ class AppearancePipeline:
         precomputed_attrs: Optional[Dict] = None,
     ) -> None:
         """외형 속성을 추출하고 로그/DB/crop 저장까지 처리한다."""
-        log_key = f"_applog_{person.object_id}"
+        log_key = (camera_id, person.object_id, "log")
         last_log = self._appearance_cooldown.get(log_key, 0.0)
         if now - last_log < 3.0:
             return
@@ -596,11 +616,13 @@ class AppearancePipeline:
         cooldown: float = 5.0,
         nearby_objects: Optional[List[Dict]] = None,
         precomputed_attributes: Optional[Dict[int, Dict]] = None,
+        commit_guard: Callable[[], ContextManager[bool]] | None = None,
     ) -> List[DetectionEvent]:
         """외형 조건 매칭 이벤트를 생성한다."""
         if frame is None or not person_events:
             return []
 
+        guard = commit_guard or (lambda: nullcontext(True))
         appearance_events: List[DetectionEvent] = []
         now = time.time()
 
@@ -615,57 +637,63 @@ class AppearancePipeline:
             else:
                 attrs = self._extract_person_attributes(frame, person, nearby_objects or [])
                 matches = self._find_matches_from_attributes(attrs, camera_id)
-            for match in matches:
-                cooldown_key = f"{person.object_id}:{match['condition_id']}"
-                last_ts = self._appearance_cooldown.get(cooldown_key, 0.0)
-                if now - last_ts < cooldown:
-                    continue
-                self._appearance_cooldown[cooldown_key] = now
+            with guard() as current:
+                if not current:
+                    return []
+                for match in matches:
+                    cooldown_key = (camera_id, person.object_id, "match", match["condition_id"])
+                    last_ts = self._appearance_cooldown.get(cooldown_key, 0.0)
+                    if now - last_ts < cooldown:
+                        continue
+                    self._appearance_cooldown[cooldown_key] = now
 
-                attributes = {
-                    "upper_color": match["attributes"].get("upper_color"),
-                    "lower_color": match["attributes"].get("lower_color"),
-                    "has_helmet": bool(match["attributes"].get("has_helmet")),
-                    "helmet_color": match["attributes"].get("helmet_color", "unknown"),
-                    "has_backpack": match["attributes"].get("has_backpack", False),
-                    "has_handbag": match["attributes"].get("has_handbag", False),
-                    "has_suitcase": match["attributes"].get("has_suitcase", False),
-                    "gender": match["attributes"].get("gender"),
-                    "age_group": match["attributes"].get("age_group"),
-                    "attribute_backend": match["attributes"].get("attribute_backend"),
-                }
-                attributes = {
-                    key: value for key, value in attributes.items() if value is not None
-                }
-                metadata = {
-                    "condition_id": match["condition_id"],
-                    "condition_name": match["condition_name"],
-                    **attributes,
-                    "attributes": attributes,
-                    "match_score": match["score"],
-                }
+                    attributes = {
+                        "upper_color": match["attributes"].get("upper_color"),
+                        "lower_color": match["attributes"].get("lower_color"),
+                        "has_helmet": bool(match["attributes"].get("has_helmet")),
+                        "helmet_color": match["attributes"].get("helmet_color", "unknown"),
+                        "has_backpack": match["attributes"].get("has_backpack", False),
+                        "has_handbag": match["attributes"].get("has_handbag", False),
+                        "has_suitcase": match["attributes"].get("has_suitcase", False),
+                        "gender": match["attributes"].get("gender"),
+                        "age_group": match["attributes"].get("age_group"),
+                        "attribute_backend": match["attributes"].get("attribute_backend"),
+                    }
+                    attributes = {
+                        key: value for key, value in attributes.items() if value is not None
+                    }
+                    metadata = {
+                        "condition_id": match["condition_id"],
+                        "condition_name": match["condition_name"],
+                        **attributes,
+                        "attributes": attributes,
+                        "match_score": match["score"],
+                    }
 
-                appearance_events.append(
-                    DetectionEvent(
-                        event_type=EventType.APPEARANCE_MATCH,
-                        x=person.x,
-                        y=person.y,
-                        width=person.width,
-                        height=person.height,
-                        confidence=match["score"],
-                        timestamp=now,
-                        object_id=person.object_id,
-                        class_name="person",
-                        metadata=metadata,
+                    appearance_events.append(
+                        DetectionEvent(
+                            event_type=EventType.APPEARANCE_MATCH,
+                            x=person.x,
+                            y=person.y,
+                            width=person.width,
+                            height=person.height,
+                            confidence=match["score"],
+                            timestamp=now,
+                            object_id=person.object_id,
+                            class_name="person",
+                            metadata=metadata,
+                        )
                     )
-                )
 
-        stale = [
-            key for key, timestamp in self._appearance_cooldown.items()
-            if now - timestamp > cooldown * 5
-        ]
-        for key in stale:
-            self._appearance_cooldown.pop(key, None)
+        with guard() as current:
+            if not current:
+                return []
+            stale = [
+                key for key, timestamp in self._appearance_cooldown.items()
+                if now - timestamp > cooldown * 5
+            ]
+            for key in stale:
+                self._appearance_cooldown.pop(key, None)
 
         if appearance_events:
             logger.info("외형 매칭: %d건 발생", len(appearance_events))
@@ -699,6 +727,7 @@ class AppearancePipeline:
         use_appearance: bool,
         nearby_objects: Optional[List[Dict]] = None,
         precomputed_attributes: Optional[Dict[int, Dict]] = None,
+        commit_guard: Callable[[], ContextManager[bool]] | None = None,
     ) -> List[DetectionEvent]:
         """외형 속성 추출, 로그 저장, 조건 매칭을 순서대로 수행한다."""
         if not use_appearance or not person_events:
@@ -707,7 +736,7 @@ class AppearancePipeline:
         resolved_camera_id = camera_id or "unknown"
         now = time.time()
         nearby = nearby_objects or []
-        self.ensure_log()
+        guard = commit_guard or (lambda: nullcontext(True))
         face_meta_map = self._build_face_meta_map(face_events)
         smoothed_attributes: Dict[int, Dict] = {}
         active_history_keys: set[str] = set()
@@ -723,23 +752,30 @@ class AppearancePipeline:
                 if precomputed
                 else self._extract_person_attributes(frame, person, nearby)
             )
-            attrs = self._smooth_track_attributes(resolved_camera_id, person, raw_attrs)
-            history_key = self._track_history_key(resolved_camera_id, person)
-            if history_key:
-                active_history_keys.add(history_key)
-            if person.object_id is not None:
-                smoothed_attributes[int(person.object_id)] = attrs
-            self.log_person_appearance(
-                frame,
-                person,
-                now,
-                resolved_camera_id,
-                nearby,
-                face_meta_map.get(person.object_id, {}),
-                precomputed_attrs=attrs,
-            )
+            with guard() as current:
+                if not current:
+                    return []
+                self.ensure_log()
+                attrs = self._smooth_track_attributes(resolved_camera_id, person, raw_attrs)
+                history_key = self._track_history_key(resolved_camera_id, person)
+                if history_key:
+                    active_history_keys.add(history_key)
+                if person.object_id is not None:
+                    smoothed_attributes[int(person.object_id)] = attrs
+                self.log_person_appearance(
+                    frame,
+                    person,
+                    now,
+                    resolved_camera_id,
+                    nearby,
+                    face_meta_map.get(person.object_id, {}),
+                    precomputed_attrs=attrs,
+                )
 
-        self._prune_attribute_history(active_history_keys)
+        with guard() as current:
+            if not current:
+                return []
+            self._prune_attribute_history(active_history_keys)
 
         if not self._appearance.conditions:
             return []
@@ -750,4 +786,5 @@ class AppearancePipeline:
             camera_id=resolved_camera_id,
             nearby_objects=nearby,
             precomputed_attributes=smoothed_attributes,
+            commit_guard=commit_guard,
         )

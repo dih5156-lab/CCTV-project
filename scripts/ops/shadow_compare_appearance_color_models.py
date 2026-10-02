@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare baseline and candidate appearance-color models on later crops."""
+"""후속 crop에서 기준 외관 색상 모델과 후보 모델을 비교한다."""
 
 from __future__ import annotations
 

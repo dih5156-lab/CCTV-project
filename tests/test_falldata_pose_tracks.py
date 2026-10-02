@@ -58,6 +58,8 @@ def verifier(**config):
             **config,
         ),
         inline_pose_rf_bundle={
+            "model_kind": "deepstream_pose_inline_rf",
+            "feature_source": "deepstream_pose_inline",
             "model": classifier,
             "feature_names": FEATURE_NAMES,
             "inference_config": {"candidate_window_seconds": 3, "max_frames": 48},
@@ -71,6 +73,210 @@ def verify_event(instance, event, camera="camera_1"):
     return instance.verify(
         camera_name=camera, pose_scope=event.metadata.get("falldata_pose_scope")
     )
+
+
+@pytest.mark.parametrize("max_frames", [2, 48])
+def test_capture_training_reload_preserves_five_second_runtime_window(tmp_path, max_frames):
+    import joblib
+
+    from scripts.datasets.train_deepstream_pose_fall_rf import (
+        load_capture_datasets,
+        train_candidate,
+    )
+    from scripts.ops.evaluate_sample_deepstream_replay import (
+        _label_feature_capture_records,
+    )
+
+    # 시간창과 실제 표본 상한이 수집→학습→재로드에서 유지되어야 한다.
+    capture_path = tmp_path / "capture.jsonl"
+    instance, _ = verifier(inline_feature_capture_path=capture_path, min_pose_frames=1)
+    instance._inline_pose_rf_bundle["inference_config"]["candidate_window_seconds"] = 5.0
+    instance._inline_pose_rf_bundle["inference_config"]["max_frames"] = max_frames
+    expected_samples = min(max_frames, 6)
+    for label in (0, 1):
+        for group in range(4):
+            instance.reset_pose_records("camera_1")
+            for frame, timestamp in enumerate(range(7), start=1):
+                event = pose(frame=frame, timestamp=timestamp, width=80 + label * 240)
+                instance.add_pose_events("camera_1", [event])
+            assert verify_event(instance, event)["sampled_frames"] == expected_samples
+
+    rows = [json.loads(line) for line in capture_path.read_text().splitlines()]
+    assert len(rows) == 8
+    for index, row in enumerate(rows):
+        assert row["window_seconds"] == 5.0
+        assert row["sampling_contract"] == {
+            "policy": "unique_uniform_valid_pose_v1", "max_frames": max_frames,
+        }
+        # 기존 라벨 도구를 통과해도 새 표본 계약이 학습 입력까지 보존되어야 한다.
+        labeled, errors = _label_feature_capture_records([row], {
+            "is_fall": bool(index // 4), "group_id": f"g{index}",
+            "scene_id": f"s{index}", "video_path": "synthetic.mp4",
+            "fall_start_frame": 2, "fall_end_frame": 7,
+        })
+        assert errors == []
+        assert len(labeled) == 1
+        rows[index] = labeled[0]
+    capture_path.write_text("".join(json.dumps(row) + "\n" for row in rows))
+    dataset = load_capture_datasets([capture_path])
+    bundle, _ = train_candidate(dataset, random_state=42, validation_fraction=0.25)
+    assert bundle["inference_config"]["max_frames"] == max_frames
+    assert bundle["sampling_contract"] == rows[0]["sampling_contract"]
+    model_path = tmp_path / "candidate.joblib"
+    joblib.dump(bundle, model_path)
+
+    reloaded = FallDataAuxVerifier(
+        FallDataAuxConfig(
+            enabled=True,
+            inline_pose_rf=True,
+            cooldown_seconds=0,
+            min_pose_frames=1,
+            compare_model_path=model_path,
+        )
+    )
+    for frame, timestamp in enumerate(range(7), start=1):
+        event = pose(frame=frame, timestamp=timestamp)
+        reloaded.add_pose_events("camera_1", [event])
+    result = verify_event(reloaded, event)
+    assert result["status"] == "ok"
+    assert result["sampled_frames"] == expected_samples
+
+
+@pytest.mark.parametrize(
+    "metadata",
+    [
+        {},
+        {"model_kind": "yolo_pose_summary_rf"},
+        {"model_kind": "deepstream_pose_inline_rf", "feature_source": "offline_pose"},
+        {"model_kind": "yolo_pose_summary_rf", "feature_source": "deepstream_pose_inline"},
+    ],
+)
+def test_inline_rf_rejects_unknown_or_different_feature_source(metadata):
+    instance, classifier = verifier()
+    bundle = instance._inline_pose_rf_bundle
+    bundle.pop("model_kind")
+    bundle.pop("feature_source")
+    bundle.update(metadata)
+    event = pose(width=320)
+    instance.add_pose_events("camera_1", [event])
+
+    result = verify_event(instance, event)
+
+    # 열 이름만 같아도 계산 출처가 다르면 보조 판정에 사용할 수 없다.
+    assert result["status"] == "incompatible_feature_contract"
+    assert result["confirmed"] is False
+    assert classifier.inputs == []
+    assert "fall_probability" not in result
+    metrics = instance.inline_metrics_snapshot()["cameras"]["camera_1"]
+    assert metrics["unavailable_results"] == 1
+    assert metrics.get("predict_calls", 0) == 0
+
+
+@pytest.mark.parametrize("fail_open", [True, False])
+def test_incompatible_rf_respects_existing_alarm_fallback_policy(fail_open):
+    from src.core.deepstream_processor import DeepStreamProcessor
+
+    instance, classifier = verifier(mode="confirm", fail_open_on_unavailable=fail_open)
+    instance._inline_pose_rf_bundle["model_kind"] = "yolo_pose_summary_rf"
+    person = pose(width=320)
+    fall = replace(person, event_type=EventType.FALL_DETECTED, metadata=dict(person.metadata))
+    instance.add_pose_events("camera_1", [person, fall])
+
+    assert instance.annotate_events([fall]) == ([fall] if fail_open else [])
+    assert fall.metadata["falldata_aux"]["confirmed"] is False
+    assert classifier.inputs == []
+    if fail_open:
+        assert fall.metadata["falldata_aux_confirm_fallback"] == "incompatible_feature_contract"
+    processor = object.__new__(DeepStreamProcessor)
+    processor._falldata_aux = instance
+    assert processor._should_fail_open_falldata_aux_result(
+        fall.metadata["falldata_aux"]
+    ) is fail_open
+
+
+def test_incompatible_camera_model_does_not_disable_other_camera(tmp_path, monkeypatch):
+    import joblib
+
+    good_path, bad_path = tmp_path / "good.pkl", tmp_path / "bad.pkl"
+    good_path.touch()
+    bad_path.touch()
+    instance, classifier = verifier(
+        compare_model_paths_by_camera={"camera_1": bad_path, "camera_2": good_path}
+    )
+    good = dict(instance._inline_pose_rf_bundle)
+    bad_classifier = RecordingClassifier()
+    bad = {**good, "model_kind": "yolo_pose_summary_rf", "model": bad_classifier}
+    monkeypatch.setattr(joblib, "load", lambda path: good if path == good_path else bad)
+    first, second = pose(width=320), pose(width=320)
+    instance.add_pose_events("camera_1", [first])
+    instance.add_pose_events("camera_2", [second])
+
+    assert verify_event(instance, first)["status"] == "incompatible_feature_contract"
+    assert verify_event(instance, second, camera="camera_2")["status"] == "ok"
+    assert bad_classifier.inputs == []
+    assert len(classifier.inputs) == 1
+
+
+def test_three_real_poses_do_not_satisfy_ten_pose_minimum():
+    # 최소 개수는 실제 관측으로 검사한다. 반복 표본으로 부족한 관측을 채우지 않는다.
+    instance, classifier = verifier(min_pose_frames=10)
+    for frame in range(1, 4):
+        event = pose(frame=frame)
+        instance.add_pose_events("camera_1", [event])
+
+    result = verify_event(instance, event)
+
+    assert result["status"] == "insufficient_pose_records"
+    assert result["frames_with_pose"] == 3
+    assert result["min_pose_frames"] == 10
+    assert classifier.inputs == []
+
+
+@pytest.mark.parametrize("minimum_probability, captured", [(0.0, True), (0.5, False)])
+def test_incompatible_rf_can_capture_unfiltered_training_features(
+    tmp_path, minimum_probability, captured
+):
+    path = tmp_path / "features.jsonl"
+    instance, classifier = verifier(
+        inline_feature_capture_path=path,
+        inline_feature_capture_min_probability=minimum_probability,
+    )
+    instance._inline_pose_rf_bundle["model_kind"] = "yolo_pose_summary_rf"
+    event = pose()
+    instance.add_pose_events("camera_1", [event])
+
+    result = verify_event(instance, event)
+
+    # 미검증 모델의 확률로 수집하지 않되, 명시적인 무필터 특징 수집은 유지한다.
+    assert result["status"] == "incompatible_feature_contract"
+    assert path.exists() is captured
+    assert classifier.inputs == []
+    if captured:
+        assert json.loads(path.read_text())["runtime"] == "deepstream_pose_inline"
+
+
+@pytest.mark.parametrize("record_count", [3, 60])
+def test_inline_sampling_keeps_only_real_pose_records(tmp_path, record_count):
+    from scripts.datasets.train_yolo_pose_fall_rf import _summarize_frames
+
+    # 부족한 관측을 반복하면 frames_seen과 상위 점수 평균이 학습 경로와 달라진다.
+    capture = tmp_path / "features.jsonl"
+    instance, classifier = verifier(inline_feature_capture_path=capture)
+    for frame in range(1, record_count + 1):
+        event = pose(frame=frame, score=float(frame), timestamp=frame / 30)
+        instance.add_pose_events("camera_1", [event])
+    result = verify_event(instance, event)
+    records = list(instance._pose_records["camera_1"])
+    count = min(48, record_count)
+    indices = np.linspace(0, record_count - 1, num=count).astype(int)
+    expected = _summarize_frames([records[i] for i in indices], count)
+
+    assert result["sampled_frames"] == count
+    np.testing.assert_allclose(classifier.inputs[0][0], expected["feature_vector"])
+    captured = json.loads(capture.read_text())
+    frames = [record["frame_index"] for record in captured["frame_records"]]
+    assert len(frames) == len(set(frames)) == count
+    assert frames[0] == 1 and frames[-1] == record_count
 
 
 def test_alternating_high_scores_never_mix_people_in_model_inputs_or_capture(tmp_path):
@@ -246,6 +452,7 @@ def test_removed_camera_and_reused_track_cannot_publish_old_inline_result():
     processor._camera_ai_flags = {}
     processor.track_manager = Mock()
     processor.violation_filter = Mock()
+    processor._debouncer = Mock()
     processor._synthetic_id_assigner = Mock()
     processor._face_identity_cache = {}
     processor._context_event_store = Mock()
@@ -432,3 +639,35 @@ def test_inline_metrics_disabled_verifier_has_no_execution_samples():
         FallDataAuxConfig(enabled=False, inline_pose_rf=True)
     )
     assert instance.inline_metrics_snapshot() == {"enabled": False, "cameras": {}}
+
+
+@pytest.mark.parametrize("reset_signals", [1, 2])
+def test_native_reset_invalidates_pose_cache_even_with_increasing_frames(monkeypatch, reset_signals):
+    import src.core.deepstream_processor as ds
+    instance, classifier = verifier(cooldown_seconds=60, min_confirmed_results=2)
+    old, other = pose(frame=42, width=320), pose(frame=42, width=320)
+    instance.add_pose_events("camera_1", [old])
+    instance.add_pose_events("camera_2", [other])
+    verify_event(instance, old)
+    verify_event(instance, other, "camera_2")
+    other_generation = instance._pose_generations["camera_2"]
+    proc = object.__new__(ds.DeepStreamProcessor)
+    proc._pad_to_camera = {0: "camera_1", 1: "camera_2"}
+    proc._falldata_aux = instance
+    proc.track_manager = proc.violation_filter = proc._debouncer = Mock()
+    proc._synthetic_id_assigner = proc._context_event_store = Mock()
+    proc._face_identity_cache = {}
+    monkeypatch.setattr(ds, "Gst", SimpleNamespace(PadProbeReturn=SimpleNamespace(OK="ok")))
+    event = SimpleNamespace(type=103454, get_structure=lambda: SimpleNamespace(get_uint=lambda name: (True, 0)))
+    for _ in range(reset_signals):
+        proc._on_stream_event(None, SimpleNamespace(get_event=lambda: event), None)
+    assert verify_event(instance, old)["status"] == "stale_pose_scope"
+    assert instance._pose_generations["camera_2"] == other_generation
+    assert verify_event(instance, other, "camera_2")["cache_reused"] is True
+    new = pose(frame=43, width=320)
+    instance.add_pose_events("camera_1", [new])
+    result = verify_event(instance, new)
+    assert result["confirmation_streak"] == 1
+    assert result["cache_reused"] is False
+    assert [r["frame_index"] for r in instance._pose_records["camera_1"]] == [43]
+    assert len(classifier.inputs) == 3

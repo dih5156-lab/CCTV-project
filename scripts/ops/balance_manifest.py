@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create a deterministic class-balanced subset from a JSONL manifest."""
+"""JSONL 매니페스트에서 재현 가능한 클래스 균형 하위 집합을 만든다."""
 
 from __future__ import annotations
 

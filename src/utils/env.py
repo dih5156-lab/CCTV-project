@@ -1,4 +1,4 @@
-"""Small helpers for reading environment variables safely."""
+"""환경 변수를 안전하게 읽기 위한 보조 함수."""
 
 from __future__ import annotations
 
@@ -9,10 +9,10 @@ from typing import Optional, Union
 
 
 def load_dotenv_file(path: Union[str, os.PathLike[str], None] = None, *, override: bool = False) -> bool:
-    """Load key=value entries from a .env file into os.environ.
+    """.env 파일의 key=value 항목을 os.environ에 로드한다.
 
-    Missing files are ignored. Existing environment variables are preserved unless
-    override=True is explicitly requested.
+    파일이 없으면 무시한다. override=True를 명시한 경우를 제외하고
+    기존 환경 변수 값은 유지한다.
     """
     if path is None:
         project_root = Path(__file__).resolve().parents[2]
@@ -45,7 +45,7 @@ def load_dotenv_file(path: Union[str, os.PathLike[str], None] = None, *, overrid
 
 
 def get_env_bool(name: str, default: bool = False) -> bool:
-    """Return a boolean environment value using common truthy strings."""
+    """일반적인 참 문자열을 기준으로 환경 변수의 불리언 값을 반환한다."""
     raw_value = os.environ.get(name)
     if raw_value is None:
         return default
@@ -60,7 +60,7 @@ def get_env_int(
     maximum: Optional[int] = None,
     logger: Optional[logging.Logger] = None,
 ) -> int:
-    """Return an integer environment value, clamped when bounds are provided."""
+    """환경 변수의 정수 값을 반환하고, 범위가 있으면 범위 안으로 제한한다."""
     raw_value = os.environ.get(name)
     if raw_value is None or raw_value == "":
         value = default
@@ -87,7 +87,7 @@ def get_env_float(
     maximum: Optional[float] = None,
     logger: Optional[logging.Logger] = None,
 ) -> float:
-    """Return a float environment value, clamped when bounds are provided."""
+    """환경 변수의 실수 값을 반환하고, 범위가 있으면 범위 안으로 제한한다."""
     raw_value = os.environ.get(name)
     if raw_value is None or raw_value == "":
         value = default

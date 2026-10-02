@@ -4,7 +4,10 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
+import io
 import json
+import select
 import sys
 from pathlib import Path
 
@@ -38,8 +41,10 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         help="Persist extracted pose features for reuse by another model.",
     )
+    parser.add_argument("--worker", action="store_true", help="Reuse models for bounded stdin requests.")
     parser.add_argument("--device", choices=("auto", "cuda", "cpu"), default="auto")
-    parser.add_argument("--imgsz", type=int, default=320)
+    # 실시간 호출과 기존 640 기준 평가를 맞추며, 명시적 대조 시험 값은 허용한다.
+    parser.add_argument("--imgsz", type=int, default=640)
     parser.add_argument("--confidence-threshold", type=float, default=0.35)
     parser.add_argument(
         "--sliding-window-size",
@@ -112,12 +117,8 @@ def _required_frame_count(
 
 
 def _effective_min_confirmed_windows(requested: int, available: int) -> int:
-    """실제로 계산된 window 수를 넘지 않도록 필요한 확정 개수를 조정한다."""
-    requested_windows = max(requested, 1)
-    available_windows = max(available, 0)
-    if available_windows == 0:
-        return requested_windows
-    return min(requested_windows, available_windows)
+    """입력이 부족해도 사용자가 지정한 최소 연속 확정 수를 낮추지 않는다."""
+    return max(requested, 1)
 
 
 def write_feature_summary(summary: dict, output_path: Path) -> None:
@@ -129,8 +130,7 @@ def write_feature_summary(summary: dict, output_path: Path) -> None:
     )
 
 
-def main() -> int:
-    args = parse_args()
+def _load_resources(args):
     device = _resolve_device(args.device)
     checkpoint = torch.load(args.model, map_location="cpu", weights_only=False)
     model_type = str(checkpoint.get("model_type") or "")
@@ -150,6 +150,12 @@ def main() -> int:
     temporal_model.load_state_dict(checkpoint["state_dict"])
     temporal_model.to(device).eval()
 
+    pose_model = None if args.feature_json is not None else _load_pose_model(args.pose_model)
+    return device, checkpoint, model_type, temporal_model, pose_model
+
+
+def _infer(args, resources) -> int:
+    device, checkpoint, model_type, temporal_model, pose_model = resources
     if args.feature_json is not None:
         summary = json.loads(args.feature_json.read_text(encoding="utf-8"))
     else:
@@ -162,7 +168,7 @@ def main() -> int:
             int(args.min_confirmed_windows),
         )
         summary = _extract_video_features(
-            model=_load_pose_model(args.pose_model),
+            model=pose_model,
             detector=FallDetector(),
             video_path=args.video,
             max_frames=max_frames,
@@ -173,6 +179,8 @@ def main() -> int:
     if args.output_feature_json is not None:
         write_feature_summary(summary, args.output_feature_json)
     frame_records = list(summary.get("frame_records") or [])
+    window_inferences = 0
+    inference_status = "ok"
     if args.sliding_window_size > 0:
         window_size = max(args.sliding_window_size, 1)
         stride = max(args.sliding_window_stride, 1)
@@ -199,6 +207,9 @@ def main() -> int:
             args.min_confirmed_windows,
             len(probabilities),
         )
+        window_inferences = len(probabilities)
+        if window_inferences < required_windows:
+            inference_status = "insufficient_windows"
         confirmed_windows = 0
         consecutive_windows = 0
         for value in probabilities:
@@ -210,7 +221,7 @@ def main() -> int:
         prediction = int(confirmed_windows >= required_windows)
         print(f"confirmed_windows: {confirmed_windows}")
         print(f"min_confirmed_windows: {required_windows}")
-    else:
+    elif frame_records:
         probability = _predict_window(
             temporal_model,
             frame_records,
@@ -219,14 +230,60 @@ def main() -> int:
             model_type=model_type,
             device=device,
         )
+        window_inferences = 1
         prediction = int(probability >= float(checkpoint["decision_threshold"]))
+    else:
+        probability = 0.0
+        prediction = 0
+        inference_status = "insufficient_windows"
     threshold = float(checkpoint["decision_threshold"])
+    print(f"window_inferences: {window_inferences}")
+    print(f"inference_status: {inference_status}")
     print(f"prediction: [{prediction}]")
     print(f"fall_probability: {probability:.8f}")
     print(f"threshold: {threshold:.8f}")
     print(f"frames_with_pose: {int(summary.get('frames_with_pose') or 0)}")
     print(f"device: {device}")
     return 0
+
+
+def _serve(args) -> int:
+    # 로딩은 한 번만 수행하되 인물 선택·시간창·특징은 요청마다 새로 계산한다.
+    if args.feature_json is not None or args.output_feature_json is not None:
+        raise SystemExit("worker mode accepts video requests only")
+    with contextlib.redirect_stdout(sys.stderr):
+        resources = _load_resources(args)
+    while select.select([sys.stdin], [], [], 60.0)[0]:
+        line = sys.stdin.readline(4097)
+        if not line:
+            break
+        if len(line) > 4096:
+            return 1
+        request_id = None
+        try:
+            request = json.loads(line)
+            request_id = request["request_id"]
+            args.video = Path(request["video"])
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output):
+                _infer(args, resources)
+            result = {"request_id": request_id, "stdout": output.getvalue()}
+        except Exception as exc:
+            # CUDA 오류가 난 모델을 다음 요청에 넘기지 않고 부모가 새 프로세스를 만들게 한다.
+            result = {"request_id": request_id, "error": type(exc).__name__ + ": " + str(exc)}
+            print("TCN_RESULT " + json.dumps(result), flush=True)
+            return 1
+        print("TCN_RESULT " + json.dumps(result), flush=True)
+    return 0
+
+
+def main() -> int:
+    args = parse_args()
+    if args.worker:
+        return _serve(args)
+    if args.feature_json is None and args.video is None:
+        raise SystemExit("--video is required unless --feature-json is provided")
+    return _infer(args, _load_resources(args))
 
 
 if __name__ == "__main__":

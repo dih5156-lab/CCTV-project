@@ -34,6 +34,14 @@ def aux_result_confirms_fall(
     if result.get("status") != "ok" or result.get("confirmed") is not True:
         return False
     metadata = event_payload.get("metadata") or {}
+    if result.get("runtime") == "deepstream_pose_inline":
+        scope = metadata.get("falldata_pose_scope")
+        if (
+            not isinstance(scope, dict)
+            or not scope
+            or result.get("pose_scope") != scope
+        ):
+            return False
     compare_result = result.get("compare_model") or {}
     vetoed = (
         compare_veto_enabled

@@ -37,6 +37,7 @@ import logging
 import os
 import threading
 import time
+from contextlib import nullcontext
 from pathlib import Path
 from queue import Empty, Queue
 from threading import Event
@@ -137,7 +138,12 @@ from ._fall_shadow_review import (
     fall_shadow_event_id,
 )
 from ._h264_poc_fixer import H264PocFixer
-from ._preview_frame_store import PreviewFrameStore, process_preview_sample
+from ._preview_frame_store import (
+    PreviewFrameStore,
+    process_preview_sample,
+    read_frame_identity,
+    read_single_preview_identity,
+)
 from ._synthetic_object_ids import SyntheticObjectIdAssigner, event_iou
 from ._yolo_postprocess import (
     detections_from_yolo_output,
@@ -273,6 +279,8 @@ class DeepStreamProcessor(BaseProcessor):
         """런타임 상태, preview, 통계 카운터를 초기화한다."""
         self.running: bool = False
         self.stop_event = Event()
+        # 치명적 CUDA/추론 오류는 stop/start로 지우지 않고 새 프로세스에서만 해제한다.
+        self.process_restart_reason = ""
         self._output_mode = os.environ.get("DS_OUTPUT_MODE", "fakesink").strip().lower()
         self._crop_pose_enabled = self._env_bool("DS_CROP_POSE_ENABLED", False)
         self._tensor_probe_warned = False
@@ -303,6 +311,17 @@ class DeepStreamProcessor(BaseProcessor):
         self._source_failure_backoff_sec = float(os.environ.get("DS_SOURCE_FAILURE_BACKOFF_SEC", "60"))
         self._source_backoff_until: Dict[str, float] = {}
         self._source_last_error: Dict[str, str] = {}
+        # I20: 카메라 단절/오류가 전체 파이프라인 재시작으로 이어지는 빈도·소요시간 계측.
+        self._source_error_identified = 0
+        self._source_error_unidentified = 0
+        self._source_eos_identified = 0
+        self._source_eos_unidentified = 0
+        self._source_unidentified_stop = 0
+        self._pipeline_restart_requested = 0
+        self._pipeline_restart_rejected = 0
+        self._pipeline_restart_executed = 0
+        self._pipeline_restart_failed = 0
+        self._pipeline_restart_seconds = 0.0
         self._helmet_enabled = self._env_bool("DS_HELMET_ENABLED", True)
         self._pphuman_sgie_enabled = self._env_bool("DS_PPHUMAN_SGIE_ENABLED", True)
         self._face_enabled_default = self._env_bool("DS_FACE_ENABLED", False)
@@ -603,12 +622,14 @@ class DeepStreamProcessor(BaseProcessor):
             feature_flags_for_camera=self._feature_flags_for_camera,
             remember_context_events=self._remember_context_events,
             collect_context_events=self._collect_context_events,
-            get_camera_frame=self.get_camera_frame,
             run_face_recognition=self._run_face_recognition,
             log_appearance_capability_hints=self._log_appearance_capability_hints,
             refresh_appearance_conditions=self._refresh_appearance_conditions,
             appearance_pipeline=self._appearance_pipeline,
             enqueue_event=self._enqueue_event,
+            record_stat=self._increment_stat,
+            # 사용자 합의: 같은 인물의 얼굴·외형은 초당 2회, 신규 인물은 즉시 분석한다.
+            min_interval_sec=float(os.environ.get("DS_CONTEXT_MIN_INTERVAL_SEC", "0.5")),
         )
         self.zone_manager: Optional[ZoneManager] = None
         if config.zone_detection:
@@ -903,15 +924,26 @@ class DeepStreamProcessor(BaseProcessor):
         """
         self._cameras.pop(camera_id, None)
         self._camera_ai_flags.pop(camera_id, None)
-        self.track_manager.remove_camera(camera_id)
-        self.violation_filter.purge(camera_id)
-        self._synthetic_id_assigner.remove_camera(camera_id)
-        remove_camera_face_cache(self._face_identity_cache, camera_id)
-        self._context_event_store.clear_camera(camera_id)
-        falldata_aux = getattr(self, "_falldata_aux", None)
-        if falldata_aux is not None:
-            falldata_aux.reset_pose_records(camera_id)
+        self._reset_camera_tracking_state(camera_id)
         logger.info("[%s] 카메라 제거됨 (DeepStream)", camera_id)
+
+    def _reset_camera_tracking_state(self, camera_id: str) -> None:
+        """입력 경계에서 해당 카메라의 인물·판정 상태만 비운다."""
+        worker = getattr(self, "_context_worker", None)
+        reset_context = worker.reset_camera(camera_id) if worker is not None else nullcontext()
+        with reset_context:
+            self.track_manager.remove_camera(camera_id)
+            self.violation_filter.purge(camera_id)
+            self._debouncer.clear_camera(camera_id)
+            self._synthetic_id_assigner.remove_camera(camera_id)
+            remove_camera_face_cache(self._face_identity_cache, camera_id)
+            self._context_event_store.clear_camera(camera_id)
+            preview_store = getattr(self, "_preview_store", None)
+            if preview_store is not None:
+                preview_store.clear_camera(camera_id)
+            falldata_aux = getattr(self, "_falldata_aux", None)
+            if falldata_aux is not None:
+                falldata_aux.reset_pose_records(camera_id)
 
     def enqueue_camera_retry(
         self,
@@ -957,11 +989,15 @@ class DeepStreamProcessor(BaseProcessor):
           4. self._publish_thread 시작
           5. GLib 메인 루프를 백그라운드 스레드에서 실행
         """
+        if getattr(self, "process_restart_reason", ""):
+            raise RuntimeError("DeepStream process restart required after fatal inference error")
         if self.running:
             return
 
         self.running = True
         self.stop_event.clear()
+        # 재시작 전 프레임을 새 파이프라인의 정상 처리 근거로 사용하지 않는다.
+        self._last_frame_processed_at = None
         logger.info("DeepStreamProcessor.start() 호출됨")
 
         try:
@@ -983,7 +1019,9 @@ class DeepStreamProcessor(BaseProcessor):
             self._falldata_aux_thread = threading.Thread(
                 target=self._falldata_aux_worker_loop,
                 name="DeepStreamFallDataAuxWorker",
-                daemon=True,
+                # OpenCV 영상 쓰기 도중 인터프리터가 종료되면 native SIGABRT가 발생한다.
+                # stop_event로 새 작업을 막고 진행 중인 작업의 정리를 기다린다.
+                daemon=False,
             )
             self._falldata_aux_thread.start()
             logger.info("DeepStream 파이프라인 시작됨")
@@ -1011,8 +1049,13 @@ class DeepStreamProcessor(BaseProcessor):
             join_timeout_sec=2.0,
         )
         if self._falldata_aux_thread and self._falldata_aux_thread.is_alive():
-            self._falldata_aux_thread.join(timeout=2.0)
+            # 2초 경과만으로 영상 쓰기/추론 스레드를 버리지 않는다.
+            # 보조 추론의 기존 timeout은 유지하고 현재 작업이 끝난 뒤 자원을 회수한다.
+            self._falldata_aux_thread.join()
         self._falldata_aux_thread = None
+        falldata_aux = getattr(self, "_falldata_aux", None)
+        if falldata_aux is not None:
+            falldata_aux.close()
         self._pipeline = None
         self.event_publisher.disconnect()
         logger.info("DeepStreamProcessor 중지됨")
@@ -1035,6 +1078,16 @@ class DeepStreamProcessor(BaseProcessor):
             and self._preview_store.last_frame_at is not None,
         )
         stats_fields.update(self._yolo_postprocess_stats())
+        # 벽시계 보정과 관계없이 마지막 후처리 프레임의 나이로 정지 상태를 판별한다.
+        last_frame_at = getattr(self, "_last_frame_processed_at", None)
+        stop_event = getattr(self, "stop_event", None)
+        stats_fields["pipeline_running"] = bool(
+            getattr(self, "running", False)
+            and (stop_event is None or not stop_event.is_set())
+        )
+        stats_fields["last_frame_age_seconds"] = (
+            max(0.0, time.monotonic() - last_frame_at) if last_frame_at is not None else None
+        )
         primary_metrics = getattr(self, "_primary_frame_metrics", None)
         stats_fields["primary_camera_stats"] = (
             primary_metrics.snapshot() if primary_metrics is not None else {}
@@ -1045,6 +1098,41 @@ class DeepStreamProcessor(BaseProcessor):
             model_metrics.snapshot() if model_metrics is not None else {}
         )
         stats_fields["model_metrics_errors"] = getattr(self, "_model_metrics_errors", 0)
+        # I20: 카메라 단절/오류 → 전체 파이프라인 재시작 빈도·소요시간. per-camera 격리 여부와 무관하게
+        # "전체가 몇 번, 얼마나 걸려 재시작됐는지"만 보여준다.
+        for field_name in (
+            "source_error_identified",
+            "source_error_unidentified",
+            "source_eos_identified",
+            "source_eos_unidentified",
+            "source_unidentified_stop",
+            "source_stream_reset_events",
+            "source_stream_reset_unidentified",
+            "preview_identity_rejected",
+            "preview_frames_stored",
+            "context_identity_rejected",
+            "context_match_expired",
+            "context_match_evicted",
+            "context_match_missed",
+            # 기존 누락 총계를 유지하면서 CPU 도착 시점에 확인된 사유를 함께 노출한다.
+            "context_match_missed_no_target",
+            "context_match_missed_expired",
+            "context_match_missed_evicted",
+            "context_match_missed_unknown",
+            "context_frames_matched",
+            "context_queue_dropped",
+            "context_frames_sampled",
+            "context_people_sampled",
+            "context_people_busy",
+            "context_tasks_completed",
+            "context_tasks_failed",
+            "pipeline_restart_requested",
+            "pipeline_restart_rejected",
+            "pipeline_restart_executed",
+            "pipeline_restart_failed",
+            "pipeline_restart_seconds",
+        ):
+            stats_fields[field_name] = getattr(self, f"_{field_name}", 0)
         falldata_aux = getattr(self, "_falldata_aux", None)
         stats_fields["falldata_inline_stats"] = (
             falldata_aux.inline_metrics_snapshot() if falldata_aux is not None else {}
@@ -1099,7 +1187,6 @@ class DeepStreamProcessor(BaseProcessor):
         """
         return self._preview_store.get_frame(
             camera_id,
-            fallback_camera_id=getattr(self, "_preview_camera_id", None),
             copy_frame=copy_frame,
         )
 
@@ -1122,9 +1209,21 @@ class DeepStreamProcessor(BaseProcessor):
 
     def _make_element(self, factory: str, name: str) -> Any:
         """GStreamer 엘리먼트를 생성하고 실패 시 예외를 발생시킨다."""
+        copy_hw = ""
+        if factory == "nvvideoconvert":
+            # Jetson surface-array의 CUDA 복사 오류 우회: 2=VIC. 빈 값은 SDK 기본값을 유지한다.
+            copy_hw = os.environ.get("DS_NVVIDEOCONVERT_COPY_HW", "").strip()
+            if copy_hw not in ("", "1", "2"):
+                raise ValueError(
+                    "DS_NVVIDEOCONVERT_COPY_HW must be empty, 1 (GPU), or 2 (VIC)"
+                )
         element = Gst.ElementFactory.make(factory, name)
         if element is None:
             raise RuntimeError(f"GStreamer element 생성 실패: {factory} ({name})")
+        if copy_hw:
+            # 명시한 우회 설정을 지원하지 않으면 조용히 기본 복사 경로로 되돌리지 않는다.
+            element.set_property("copy-hw", int(copy_hw))
+            logger.info("%s surface copy-hw=%s", name, copy_hw)
         return element
 
     def _normalize_uri(self, source: Union[str, int]) -> str:
@@ -1669,6 +1768,7 @@ class DeepStreamProcessor(BaseProcessor):
 
     def _request_pipeline_restart(self, reason: str) -> bool:
         """중복/폭주를 막으면서 DeepStream 파이프라인 재시작을 예약한다."""
+        self._increment_stat("pipeline_restart_requested")
         now = time.monotonic()
         with self._restart_request_lock:
             if not mark_restart_pending_if_allowed(
@@ -1680,6 +1780,7 @@ class DeepStreamProcessor(BaseProcessor):
                 reason=reason,
                 set_pending_cb=self._set_pipeline_restart_pending,
             ):
+                self._increment_stat("pipeline_restart_rejected")
                 return False
 
         self._restart_pipeline_async(reason)
@@ -1703,8 +1804,10 @@ class DeepStreamProcessor(BaseProcessor):
 
     def _restart_pipeline(self, reason: str) -> None:
         with self._pipeline_restart_lock:
+            started = time.monotonic()
+            succeeded = False
             try:
-                execute_pipeline_restart(
+                succeeded = execute_pipeline_restart(
                     reason=reason,
                     stop_cb=self.stop,
                     start_cb=self.start,
@@ -1712,6 +1815,16 @@ class DeepStreamProcessor(BaseProcessor):
                     set_last_restart_at_cb=self._set_last_pipeline_restart_at,
                 )
             finally:
+                elapsed = max(0.0, time.monotonic() - started)
+                self._pipeline_restart_seconds = (
+                    float(getattr(self, "_pipeline_restart_seconds", 0.0)) + elapsed
+                )
+                # stop/start 성공만 집계한다. 실제 영상 수신 재개는 별도 검증한다.
+                self._increment_stat(
+                    "pipeline_restart_executed"
+                    if succeeded and self.running
+                    else "pipeline_restart_failed"
+                )
                 with self._restart_request_lock:
                     self._set_pipeline_restart_pending(False)
 
@@ -1751,6 +1864,8 @@ class DeepStreamProcessor(BaseProcessor):
         frame: Any,
         person_events: List[DetectionEvent],
         camera_name: str,
+        *,
+        commit_guard=None,
     ) -> List[DetectionEvent]:
         """프레임 내 사람 이벤트에 얼굴 인식 결과를 결합한다."""
         return run_deepstream_face_recognition(
@@ -1761,6 +1876,7 @@ class DeepStreamProcessor(BaseProcessor):
             cache=self._face_identity_cache,
             timestamp_factory=time.time,
             snapshot_saver=self._save_recognized_face_snapshot,
+            commit_guard=commit_guard,
         )
 
     def _save_recognized_face_snapshot(
@@ -1991,11 +2107,8 @@ class DeepStreamProcessor(BaseProcessor):
         if output is None:
             return []
 
-        frame_width = int(getattr(frame_meta, "source_frame_width", 0) or 0)
-        frame_height = int(getattr(frame_meta, "source_frame_height", 0) or 0)
-        if frame_width <= 0 or frame_height <= 0:
-            frame_width = int(os.environ.get("DS_STREAM_WIDTH", "1920"))
-            frame_height = int(os.environ.get("DS_STREAM_HEIGHT", "1080"))
+        # nvinfer 입력은 원본이 아니라 padding을 포함한 mux surface다.
+        frame_width, frame_height = ds_element_config.streammux_dimensions()
 
         postprocess_started_at = time.perf_counter()
         input_size_env = (
@@ -2033,8 +2146,7 @@ class DeepStreamProcessor(BaseProcessor):
         detection: Mapping[str, Any], frame_meta: Any
     ) -> Tuple[int, int, int, int]:
         x, y, width, height = [int(value) for value in detection.get("box", (0, 0, 0, 0))]
-        frame_width = int(getattr(frame_meta, "source_frame_width", 0) or 0)
-        frame_height = int(getattr(frame_meta, "source_frame_height", 0) or 0)
+        frame_width, frame_height = ds_element_config.streammux_dimensions()
         max_width = int(frame_width * float(os.environ.get("DS_PPHUMAN_MAX_ROI_WIDTH_RATIO", "0.65")))
         max_height = int(frame_height * float(os.environ.get("DS_PPHUMAN_MAX_ROI_HEIGHT_RATIO", "1.0")))
         keypoints = [point for point in detection.get("keypoints", []) if len(point) >= 3 and point[2] > 0]
@@ -2059,6 +2171,8 @@ class DeepStreamProcessor(BaseProcessor):
             if user_meta.base_meta.meta_type == pyds.NVDSINFER_TENSOR_OUTPUT_META:
                 tensor_meta = pyds.NvDsInferTensorMeta.cast(user_meta.user_meta_data)
                 if tensor_gie_id(tensor_meta, primary_gie_id) == primary_gie_id:
+                    # Raw tensor(network-type=100)는 tracker의 탐지 완료 표시를 직접 연결한다.
+                    frame_meta.bInferDone = True
                     self._increment_stat("primary_tensor_meta_count")
                     detections = self._filter_detections_for_camera(
                         self._detections_from_tensor(tensor_meta, frame_meta), camera_name
@@ -2066,14 +2180,20 @@ class DeepStreamProcessor(BaseProcessor):
                     for detection in detections:
                         if self._event_type_for_label(str(detection.get("label", ""))) != EventType.PERSON:
                             continue
-                        obj_meta = pyds.nvds_acquire_obj_meta_from_pool(batch_meta)
                         x, y, width, height = (
                             detection["box"] if crop_enabled
                             else self._pphuman_roi_for_detection(detection, frame_meta)
                         )
+                        frame_width, frame_height = ds_element_config.streammux_dimensions()
+                        right = min(frame_width, x + width)
+                        bottom = min(frame_height, y + height)
+                        x, y = max(0, x), max(0, y)
+                        width, height = right - x, bottom - y
+                        if width <= 0 or height <= 0:
+                            continue
+                        obj_meta = pyds.nvds_acquire_obj_meta_from_pool(batch_meta)
                         obj_meta.unique_component_id = primary_gie_id
-                        if crop_enabled:
-                            obj_meta.object_id = 0xFFFFFFFFFFFFFFFF
+                        obj_meta.object_id = 0xFFFFFFFFFFFFFFFF
                         obj_meta.class_id = int(detection.get("class_id", 0))
                         obj_meta.obj_label = str(detection.get("label") or "person")
                         obj_meta.confidence = float(detection.get("confidence", 0.0))
@@ -2151,10 +2271,11 @@ class DeepStreamProcessor(BaseProcessor):
 
         Secondary GIE tensor는 일반적으로 frame_user_meta_list가 아니라
         부모 사람 객체의 obj_user_meta_list에 저장된다. ROI 크기로 YOLO
-        letterbox 좌표를 먼저 복원한 뒤 부모 ROI 원점을 더해 원본 좌표로
+        letterbox 좌표를 먼저 복원한 뒤 부모 ROI 원점을 더해 mux 좌표로
         변환한다.
         """
         events: List[DetectionEvent] = []
+        frame_width, frame_height = ds_element_config.streammux_dimensions()
         l_obj = getattr(frame_meta, "obj_meta_list", None)
         diagnostic = (
             os.environ.get("DS_CROP_POSE_DIAGNOSTICS", "0") == "1"
@@ -2246,8 +2367,8 @@ class DeepStreamProcessor(BaseProcessor):
                                             int(round(float(rect.left + rect.width))),
                                             int(round(float(rect.top + rect.height))),
                                         ),
-                                        frame_width=int(getattr(frame_meta, "source_frame_width", 0) or 1920),
-                                        frame_height=int(getattr(frame_meta, "source_frame_height", 0) or 1080),
+                                        frame_width=frame_width,
+                                        frame_height=frame_height,
                                     )
                                     detection = dict(detection)
                                     detection["box"] = (
@@ -2267,8 +2388,8 @@ class DeepStreamProcessor(BaseProcessor):
                                             source_id=int(frame_meta.source_id),
                                             frame_num=int(frame_meta.frame_num),
                                             timestamp_factory=time.time,
-                                            frame_width=int(getattr(frame_meta, "source_frame_width", 0) or 0),
-                                            frame_height=int(getattr(frame_meta, "source_frame_height", 0) or 0),
+                                            frame_width=frame_width,
+                                            frame_height=frame_height,
                                             event_type_for_label=self._event_type_for_label,
                                         )
                                     )
@@ -2284,6 +2405,8 @@ class DeepStreamProcessor(BaseProcessor):
                 break
         events = self._filter_events_for_camera(events, camera_name)
         if events:
+            for event in events:
+                event.metadata["frame_identity"] = read_frame_identity(frame_meta, camera_name)
             self._add_osd_overlays(
                 batch_meta,
                 frame_meta,
@@ -2349,35 +2472,38 @@ class DeepStreamProcessor(BaseProcessor):
         )
 
     def _on_preview_sample(self, sink: Any) -> Any:
-        """appsink 샘플을 읽어 카메라별 최신 프레임 캐시에 저장한다."""
-        result = process_preview_sample(
+        """native 카메라/프레임 식별자가 확인된 샘플만 저장한다."""
+        return process_preview_sample(
             sink=sink,
             preview_store=self._preview_store,
             preview_camera_id=getattr(self, "_preview_camera_id", None),
             cameras=getattr(self, "_cameras", {}),
             gst_module=Gst,
+            read_frame_identity=lambda buffer: read_single_preview_identity(
+                buffer, pyds_module=pyds, pad_to_camera=self._pad_to_camera
+            ),
+            on_frame_stored=self._on_preview_frame_stored,
+            record_stat=self._increment_stat,
         )
+
+    def _on_preview_frame_stored(self, camera_id: str, frame: Any, identity: Optional[dict] = None) -> None:
+        if identity is not None:
+            self._context_worker.accept_frame(camera_id, frame, identity)
+        # 영상 clip 버퍼는 아직 camera별 저장소가 아니므로 단일 입력만 허용한다.
+        if len(self._cameras) != 1:
+            return
         try:
-            camera_id = getattr(self, "_preview_camera_id", None) or next(
-                iter(getattr(self, "_cameras", {}).keys()),
-                None,
-            )
-            if camera_id:
-                frame = self.get_camera_frame(camera_id, copy_frame=False)
-                if frame is not None:
-                    self._falldata_aux.add_frame(frame)
-                    if self._env_bool("FALLDATA_AUX_SHADOW_ALL_WINDOWS", False):
-                        now = time.monotonic()
-                        last_at = self._falldata_shadow_last_at.get(camera_id, 0.0)
-                        if now - last_at >= self._falldata_shadow_interval_sec:
-                            if self._fall_shadow_recorder().submit_shadow_window(
-                                self._falldata_aux_queue,
-                                camera_id,
-                            ):
-                                self._falldata_shadow_last_at[camera_id] = now
+            self._falldata_aux.add_frame(frame)
+            if self._env_bool("FALLDATA_AUX_SHADOW_ALL_WINDOWS", False):
+                now = time.monotonic()
+                last_at = self._falldata_shadow_last_at.get(camera_id, 0.0)
+                if now - last_at >= self._falldata_shadow_interval_sec:
+                    if self._fall_shadow_recorder().submit_shadow_window(
+                        self._falldata_aux_queue, camera_id
+                    ):
+                        self._falldata_shadow_last_at[camera_id] = now
         except Exception as exc:
             logger.debug("falldata aux preview frame 추가 실패: %s", exc)
-        return result
 
     def _build_pipeline(self) -> None:
         """GStreamer 파이프라인을 조립한다.
@@ -2462,10 +2588,8 @@ class DeepStreamProcessor(BaseProcessor):
         if not source_entries:
             raise RuntimeError("DeepStream 파이프라인을 만들 지원 소스가 없습니다.")
         self._preview_camera_id = source_entries[0][1]
-        falldata_aux = getattr(self, "_falldata_aux", None)
-        if falldata_aux is not None:
-            for camera_id in self._cameras:
-                falldata_aux.reset_pose_records(camera_id)
+        for camera_id in self._cameras:
+            self._reset_camera_tracking_state(camera_id)
         self._primary_frame_metrics.reset(self._cameras)
 
         n_cams = len(source_entries)
@@ -2537,6 +2661,7 @@ class DeepStreamProcessor(BaseProcessor):
             gst_module=Gst,
             on_pad_probe=self._on_pad_probe,
             on_bus_message=self._on_bus_message,
+            on_stream_event=self._on_stream_event,
         )
 
         self._pipeline = pipeline
@@ -2551,7 +2676,11 @@ class DeepStreamProcessor(BaseProcessor):
         )
 
     def _stop_runtime_loop(self) -> None:
-        """버스 오류/EOS 수신 시 메인 루프와 런타임 종료 플래그를 정리한다."""
+        """버스 오류/EOS 수신 시 메인 루프와 런타임 종료 플래그를 정리한다.
+
+        카메라를 식별하지 못해 재시도 없이 전체가 멈추는 경우만 호출된다(I20).
+        """
+        self._increment_stat("source_unidentified_stop")
         self.stop_event.set()
         if self._main_loop is not None:
             self._main_loop.quit()
@@ -2582,7 +2711,34 @@ class DeepStreamProcessor(BaseProcessor):
             monotonic_now=time.monotonic,
             request_pipeline_restart_cb=self._request_pipeline_restart,
             stop_runtime_cb=self._stop_runtime_loop,
+            record_stat_cb=self._increment_stat,
+            require_process_restart_cb=self._require_process_restart,
         )
+
+    def _require_process_restart(self, reason: str) -> None:
+        # 최초 치명적 사유를 유지해 뒤따르는 소스 오류가 원인을 덮지 않게 한다.
+        if not getattr(self, "process_restart_reason", ""):
+            self.process_restart_reason = reason
+            logger.critical("DeepStream 프로세스 재실행 필요: %s", reason)
+
+    def _on_stream_event(self, pad: Any, info: Any, user_data: Any) -> Any:
+        """직렬화된 native reset을 다음 출력 프레임보다 먼저 처리한다."""
+        event = info.get_event()
+        # DeepStream gst-nvevent.h: GST_EVENT_MAKE_TYPE(404, downstream |
+        # serialized | sticky | sticky_multi). GObject enum에는 등록되지 않는다.
+        if event is None or int(event.type) != ((404 << 8) | 30):
+            return Gst.PadProbeReturn.OK
+        self._increment_stat("source_stream_reset_events")
+        structure = event.get_structure()
+        valid, source_id = structure.get_uint("source-id") if structure else (False, 0)
+        camera_id = self._pad_to_camera.get(source_id) if valid else None
+        if camera_id is None:
+            self._increment_stat("source_stream_reset_unidentified")
+            logger.warning("DeepStream stream reset 카메라 식별 실패: source_id=%s", source_id)
+            return Gst.PadProbeReturn.OK
+        self._reset_camera_tracking_state(camera_id)
+        logger.info("[%s] native stream reset: 추적·Pose 상태 초기화", camera_id)
+        return Gst.PadProbeReturn.OK
 
     def _on_primary_metrics_probe(self, pad: Any, info: Any, user_data: Any) -> Any:
         """후속 SGIE가 메타를 변경하기 전에 주 추론 여부를 관측한다."""
@@ -2605,9 +2761,7 @@ class DeepStreamProcessor(BaseProcessor):
     def _on_primary_tensor_probe(
         self, pad: Any, info: Any, user_data: Any
     ) -> Any:  # Gst.PadProbeReturn
-        """crop 모드에서 raw Person tensor를 tracker/SGIE용 객체 메타로 등록한다."""
-        if not getattr(self, "_crop_pose_enabled", False):
-            return Gst.PadProbeReturn.OK
+        """Primary Person/Pose tensor를 tracker/SGIE용 객체 메타로 등록한다."""
         buffer = info.get_buffer()
         if buffer is None:
             return Gst.PadProbeReturn.OK
@@ -2694,6 +2848,7 @@ class DeepStreamProcessor(BaseProcessor):
                 self._increment_stat("model_metrics_errors")
                 logger.debug("GIE 출력 메타 계측 실패: %s", exc)
 
+        previous_frames = self._frames_processed
         self._frames_processed, self._tensor_probe_warned = process_batch_frames(
             batch_meta=batch_meta,
             pyds_module=pyds,
@@ -2706,7 +2861,12 @@ class DeepStreamProcessor(BaseProcessor):
             object_meta_events_for_frame=self._object_meta_events_from_frame,
             apply_existing_event_pipeline=self._apply_existing_event_pipeline,
             tensor_warn_log=self._log_tensor_probe_waiting,
+            prepare_frame=self._context_worker.stamp_frame,
+            finish_frame=self._context_worker.finish_frame,
         )
+        if self._frames_processed > previous_frames:
+            # 프레임이 실제 처리된 경우만 갱신하며 API 응답/빈 배치로는 갱신하지 않는다.
+            self._last_frame_processed_at = time.monotonic()
 
         return Gst.PadProbeReturn.OK
 

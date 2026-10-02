@@ -1,0 +1,27 @@
+%YAML:1.0
+# crop-Pose용 경량 IOU tracker 설정.
+# 수동 등록된 Person bbox만 사용하며 영상 특징 추출을 요구하지 않는다.
+
+BaseConfig:
+  minDetectorConfidence: 0.3
+
+TargetManagement:
+  preserveStreamUpdateOrder: 1
+  maxTargetsPerStream: 60
+  minIouDiff4NewTarget: 0.5
+  probationAge: 0
+  maxShadowTrackingAge: 30
+  earlyTerminationAge: 3
+
+TrajectoryManagement:
+  useUniqueID: 1
+
+DataAssociator:
+  dataAssociatorType: 0
+  associationMatcherType: 0
+  checkClassMatch: 1
+  minMatchingScore4Overall: 0.0
+  minMatchingScore4SizeSimilarity: 0.0
+  minMatchingScore4Iou: 0.0
+  matchingScoreWeight4SizeSimilarity: 0.4
+  matchingScoreWeight4Iou: 0.6

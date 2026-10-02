@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prepare retraining inputs from manually reviewed fall-model errors."""
+"""수동 검수한 넘어짐 모델 오류에서 재학습 입력을 준비한다."""
 
 from __future__ import annotations
 

@@ -8,10 +8,10 @@ from typing import Callable, Mapping, Optional, Sequence, Union
 
 
 def load_dotenv_file(path: Union[str, os.PathLike[str], None] = None, *, override: bool = False) -> bool:
-    """Load key=value entries from a .env file into os.environ.
+    """.env 파일의 key=value 항목을 os.environ에 로드한다.
 
-    This helper lives here to avoid a circular import through src.utils.__init__
-    while startup still needs project-local credentials before MQTT connects.
+    MQTT 연결 전 프로젝트 로컬 인증 정보가 필요할 때
+    src.utils.__init__을 통한 순환 import를 피하기 위해 이곳에 둔다.
     """
     if path is None:
         project_root = Path(__file__).resolve().parent.parent.parent
@@ -122,7 +122,7 @@ ENV_OVERRIDES: tuple[EnvOverride, ...] = (
     EnvOverride("DISPLAY_ENABLED", ("display",), parser=_parse_bool),
     EnvOverride("ZONE_DETECTION_ENABLED", ("zone_detection",), parser=_parse_bool),
     EnvOverride("COLLECT_DATASET", ("collect_dataset",), parser=_parse_bool),
-    # EdgeX
+    # EdgeX 연동 설정
     EnvOverride("EDGEX_METADATA_URL", ("edgex", "metadata_url")),
     EnvOverride("EDGEX_DATA_URL", ("edgex", "data_url")),
     EnvOverride("EDGEX_MQTT_BROKER", ("edgex", "mqtt_broker")),
@@ -130,12 +130,12 @@ ENV_OVERRIDES: tuple[EnvOverride, ...] = (
     EnvOverride("EDGEX_REDIS_HOST", ("edgex", "redis_host")),
     EnvOverride("EDGEX_REDIS_PORT", ("edgex", "redis_port"), parser=_parse_int),
     EnvOverride("EDGEX_SERVICE_BASE_URL", ("edgex", "service_base_url")),
-    # ActionBridge
+    # ActionBridge 연동 설정
     EnvOverride("ACTION_MQTT_BROKER", ("action", "mqtt_broker")),
     EnvOverride("ACTION_MQTT_PORT", ("action", "mqtt_port"), parser=_parse_int),
     EnvOverride("ACTION_REST_HOST", ("action", "rest_host")),
     EnvOverride("ACTION_REST_PORT", ("action", "rest_port"), parser=_parse_int),
-    # External ingest
+    # 외부 이벤트 수집 설정
     EnvOverride("EXTERNAL_MQTT_BROKER", ("external_ingest", "mqtt_broker")),
     EnvOverride("EXTERNAL_MQTT_PORT", ("external_ingest", "mqtt_port"), parser=_parse_int),
     EnvOverride("EXTERNAL_MQTT_TOPICS", ("external_ingest", "topics"), parser=_parse_csv_tuple),
@@ -347,6 +347,7 @@ class DetectionConfig:
     max_helmet_size: int = 500  # 최대 헬멧 크기
     fall_angle_threshold: float = 45.0  # 낙상 감지 각도 임계값
     fall_height_ratio: float = 0.3  # 낙상 감지 높이 비율
+
     
     def __post_init__(self):
         """신뢰도 및 임계값 검증"""

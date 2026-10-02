@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run a one-shot operational health check for fall Shadow inference."""
+"""넘어짐 Shadow 추론의 운영 상태를 한 번 점검한다."""
 
 from __future__ import annotations
 
@@ -44,6 +44,7 @@ def analyze_shadow_records(
     now: datetime,
     max_age_seconds: float,
     expected_threshold: float,
+    expected_mode: str = "shadow",
     window_seconds: float | None = None,
 ) -> dict[str, Any]:
     shadow_rows = []
@@ -91,8 +92,8 @@ def analyze_shadow_records(
         failures.append("no_shadow_records")
     if latest_age_seconds is None or latest_age_seconds > max_age_seconds:
         failures.append("stale_shadow_records")
-    if modes and modes != {"shadow"}:
-        failures.append("non_shadow_mode")
+    if modes and modes != {expected_mode}:
+        failures.append("non_expected_mode")
     if thresholds and any(
         abs(threshold - expected_threshold) > 1e-9 for threshold in thresholds
     ):
@@ -109,6 +110,7 @@ def analyze_shadow_records(
         "records": len(shadow_rows),
         "status_counts": dict(sorted(statuses.items())),
         "modes": sorted(modes),
+        "expected_mode": expected_mode,
         "thresholds": sorted(thresholds),
         "latest_at": latest_at.isoformat() if latest_at else None,
         "latest_age_seconds": latest_age_seconds,
@@ -262,7 +264,9 @@ def _resource_check(docker: list[str], container: str) -> dict[str, Any]:
     }
 
 
-def _runtime_env_check(docker: list[str], container: str) -> dict[str, Any]:
+def _runtime_env_check(
+    docker: list[str], container: str, *, expected_mode: str = "shadow"
+) -> dict[str, Any]:
     result = _run([*docker, "exec", container, "env"])
     if result.returncode != 0:
         return {"passed": False, "error": result.stderr.strip() or result.stdout.strip()}
@@ -274,8 +278,8 @@ def _runtime_env_check(docker: list[str], container: str) -> dict[str, Any]:
     mode = env.get("FALLDATA_AUX_MODE", "")
     veto = env.get("FALLDATA_AUX_COMPARE_VETO_ENABLED", "").lower()
     failures = []
-    if mode != "shadow":
-        failures.append("mode_not_shadow")
+    if mode != expected_mode:
+        failures.append("mode_not_expected")
     if veto not in {"false", "0", "no", "off"}:
         failures.append("compare_veto_enabled")
     if not model_path:
@@ -288,6 +292,7 @@ def _runtime_env_check(docker: list[str], container: str) -> dict[str, Any]:
     return {
         "passed": not failures,
         "mode": mode,
+        "expected_mode": expected_mode,
         "compare_veto_enabled": veto,
         "compare_model_path": model_path,
         "compare_threshold": threshold,
@@ -310,12 +315,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--container", default=DEFAULT_CONTAINER)
     parser.add_argument("--review-log", type=Path, default=DEFAULT_REVIEW_LOG)
     parser.add_argument("--api-url", default=DEFAULT_API_URL)
-    parser.add_argument("--max-shadow-age-seconds", type=float, default=120.0)
+    parser.add_argument("--max-shadow-age-seconds", type=float, default=420.0)
     parser.add_argument("--shadow-window-seconds", type=float, default=600.0)
     parser.add_argument("--max-stats-age-seconds", type=float, default=30.0)
     parser.add_argument("--log-since", default="2m")
     parser.add_argument("--max-review-lines", type=int, default=500)
     parser.add_argument("--http-timeout", type=float, default=5.0)
+    parser.add_argument(
+        "--expected-mode",
+        choices=("shadow", "confirm"),
+        default="shadow",
+        help="점검할 FALLDATA_AUX_MODE. 운영 설정과 일치해야 한다.",
+    )
     return parser.parse_args()
 
 
@@ -332,7 +343,9 @@ def main() -> int:
 
     container = _container_check(docker, args.container)
     resources = _resource_check(docker, args.container)
-    runtime_env = _runtime_env_check(docker, args.container)
+    runtime_env = _runtime_env_check(
+        docker, args.container, expected_mode=args.expected_mode
+    )
     logs_result = _run([*docker, "logs", "--since", args.log_since, args.container])
     deepstream = (
         analyze_deepstream_stats(
@@ -353,6 +366,7 @@ def main() -> int:
                 now=now,
                 max_age_seconds=args.max_shadow_age_seconds,
                 expected_threshold=float(threshold),
+                expected_mode=args.expected_mode,
                 window_seconds=args.shadow_window_seconds,
             )
             if isinstance(threshold, (int, float))

@@ -40,6 +40,43 @@ def test_tracker_uses_low_level_iou_yaml() -> None:
     assert deepstream_processor._TRACKER_CONFIG.name == "config_tracker_iou.yml"
 
 
+@pytest.mark.parametrize("mode,expected", [("", None), ("1", 1), ("2", 2)])
+def test_video_surface_copy_hardware_is_explicit(monkeypatch, mode, expected):
+    # 설정하지 않으면 SDK 기본값을 유지하고 지정한 경우에만 복사 하드웨어를 바꾼다.
+    monkeypatch.setenv("DS_NVVIDEOCONVERT_COPY_HW", mode)
+    element = MagicMock()
+    factory = MagicMock(return_value=element)
+    monkeypatch.setattr(deepstream_processor, "Gst", types.SimpleNamespace(
+        ElementFactory=types.SimpleNamespace(make=factory)))
+    processor = object.__new__(DeepStreamProcessor)
+    assert processor._make_element("nvvideoconvert", "converter") is element
+    if expected is None:
+        element.set_property.assert_not_called()
+    else:
+        element.set_property.assert_called_once_with("copy-hw", expected)
+
+
+@pytest.mark.parametrize("mode", ["0", "3", "vic", "-1"])
+def test_invalid_video_copy_mode_fails_before_allocating_element(monkeypatch, mode):
+    # 잘못된 설정을 무시하고 위험한 기본 경로로 실행하지 않는다.
+    monkeypatch.setenv("DS_NVVIDEOCONVERT_COPY_HW", mode)
+    factory = MagicMock()
+    monkeypatch.setattr(deepstream_processor, "Gst", types.SimpleNamespace(
+        ElementFactory=types.SimpleNamespace(make=factory)))
+    with pytest.raises(ValueError, match="DS_NVVIDEOCONVERT_COPY_HW"):
+        object.__new__(DeepStreamProcessor)._make_element("nvvideoconvert", "converter")
+    factory.assert_not_called()
+
+
+def test_video_copy_mode_does_not_change_inference_elements(monkeypatch):
+    monkeypatch.setenv("DS_NVVIDEOCONVERT_COPY_HW", "2")
+    element = MagicMock()
+    monkeypatch.setattr(deepstream_processor, "Gst", types.SimpleNamespace(
+        ElementFactory=types.SimpleNamespace(make=lambda factory, name: element)))
+    object.__new__(DeepStreamProcessor)._make_element("nvinfer", "primary-infer")
+    element.set_property.assert_not_called()
+
+
 # ---------------------------------------------------------------------------
 # 픽스처
 # ---------------------------------------------------------------------------
@@ -411,6 +448,66 @@ def test_deepstream_get_stats_uses_common_fields_without_runtime():
     assert stats["crop_pose_person_objects"] == 8
     assert stats["crop_pose_tensor_meta_count"] == 7
     assert stats["output_mode"] == "fakesink"
+
+
+def test_deepstream_frame_freshness_tracks_processed_batches(monkeypatch):
+    proc = object.__new__(DeepStreamProcessor)
+    for name in ["_frames_processed", "_frames_dropped", "_events_detected", "_events_filtered", "_events_failed"]:
+        setattr(proc, name, 0)
+    proc._output_mode = "fakesink"
+    proc._preview_enabled = False
+    proc._cameras = {"cam1": {}}
+    proc.running = True
+    proc.stop_event = threading.Event()
+    proc._tensor_probe_warned = False
+    proc._pad_to_camera = {0: "cam1"}
+    proc._context_worker = types.SimpleNamespace(
+        stamp_frame=lambda *args: None, finish_frame=lambda *args: None)
+    monkeypatch.setattr(deepstream_processor.time, "monotonic", lambda: 100.0)
+    assert proc.get_stats()["last_frame_age_seconds"] is None
+
+    # GPU 외부 경계만 대체하고 probe→통계→시각 갱신은 실제 구현을 실행한다.
+    monkeypatch.setattr(deepstream_processor, "Gst", types.SimpleNamespace(
+        PadProbeReturn=types.SimpleNamespace(OK="ok")))
+    monkeypatch.setattr(deepstream_processor, "pyds", types.SimpleNamespace(
+        gst_buffer_get_nvds_batch_meta=lambda _buffer: object()))
+    monkeypatch.setattr(deepstream_processor, "process_batch_frames", lambda **kwargs: (1, False))
+    info = types.SimpleNamespace(get_buffer=lambda: object())
+    assert proc._on_pad_probe(None, info, None) == "ok"
+    assert proc.get_stats()["last_frame_age_seconds"] == 0.0
+    monkeypatch.setattr(deepstream_processor.time, "monotonic", lambda: 135.0)
+    assert proc.get_stats()["last_frame_age_seconds"] == 35.0
+    assert proc.get_stats()["pipeline_running"] is True
+    proc.stop_event.set()
+    assert proc.get_stats()["pipeline_running"] is False
+
+
+def test_context_miss_reasons_reach_stats_and_prometheus():
+    from prometheus_client import CollectorRegistry, generate_latest
+
+    from src.services.processor_metrics import ProcessorStatsCollector
+
+    proc = object.__new__(DeepStreamProcessor)
+    for name in ("frames_processed", "frames_dropped", "events_detected", "events_filtered", "events_failed"):
+        setattr(proc, f"_{name}", 0)
+    proc._output_mode = "fakesink"
+    proc._preview_enabled = False
+    proc._cameras = {}
+    expected = {"no_target": 11, "expired": 1, "evicted": 2, "unknown": 3}
+    for reason, count in expected.items():
+        proc._increment_stat(f"context_match_missed_{reason}", count)
+    proc._increment_stat("context_match_missed", sum(expected.values()))
+    registry = CollectorRegistry()
+    registry.register(ProcessorStatsCollector(proc))
+
+    payload = generate_latest(registry).decode()
+
+    for reason, count in expected.items():
+        field = f"context_match_missed_{reason}"
+        assert proc.get_stats()[field] == count
+        assert registry.get_sample_value(f"cctv_processor_{field}_total") == count
+        assert f"# TYPE cctv_processor_{field}_total counter" in payload
+    assert registry.get_sample_value("cctv_processor_context_match_missed_total") == 17
 
 
 def test_frame_capture_stays_enabled_for_face_when_public_preview_is_disabled():
@@ -1486,13 +1583,14 @@ def test_deepstream_sgie_injected_person_meta_has_label(monkeypatch, crop_enable
     assert injected_meta.class_id == 0
     assert injected_meta.obj_label == "person"
     assert injected_meta.rect_params.width == 30
-    if crop_enabled:
-        assert injected_meta.object_id == 0xFFFFFFFFFFFFFFFF
+    assert injected_meta.object_id == 0xFFFFFFFFFFFFFFFF
+    assert frame_meta.bInferDone is True
 
 
-def test_crop_primary_probe_registers_people_before_sgie(monkeypatch):
+@pytest.mark.parametrize("crop_enabled", [False, True])
+def test_primary_probe_registers_people_before_sgie(monkeypatch, crop_enabled):
     proc = object.__new__(DeepStreamProcessor)
-    proc._crop_pose_enabled = True
+    proc._crop_pose_enabled = crop_enabled
     proc._pad_to_camera = {0: "cam1"}
     proc._inject_primary_person_object_meta = MagicMock(return_value=2)
     frame = types.SimpleNamespace(source_id=0)
@@ -1509,13 +1607,31 @@ def test_crop_primary_probe_registers_people_before_sgie(monkeypatch):
     proc._inject_primary_person_object_meta.assert_called_once_with(batch, frame, "cam1")
     assert proc._primary_probe_frames == 1
     assert proc._primary_person_rois == 2
+
+
+@pytest.mark.parametrize("tensor_gie", [None, 1, 2])
+def test_tracker_detection_done_requires_current_primary_tensor(monkeypatch, tensor_gie):
+    proc = object.__new__(DeepStreamProcessor)
     proc._crop_pose_enabled = False
-    proc._inject_primary_person_object_meta.reset_mock()
-    assert proc._on_primary_tensor_probe(None, info, None) == 1
-    proc._inject_primary_person_object_meta.assert_not_called()
+    proc._pose_gie_id = 1
+    proc._detections_from_tensor = MagicMock(return_value=[])
+    proc._filter_detections_for_camera = MagicMock(return_value=[])
+    tensor = types.SimpleNamespace(unique_id=tensor_gie)
+    user = types.SimpleNamespace(base_meta=types.SimpleNamespace(meta_type=100),
+                                 user_meta_data=tensor)
+    frame = types.SimpleNamespace(bInferDone=False, frame_user_meta_list=(
+        types.SimpleNamespace(data=user, next=None) if tensor_gie is not None else None))
+    monkeypatch.setattr(deepstream_processor, "pyds", types.SimpleNamespace(
+        NVDSINFER_TENSOR_OUTPUT_META=100,
+        NvDsUserMeta=types.SimpleNamespace(cast=lambda value: value),
+        NvDsInferTensorMeta=types.SimpleNamespace(cast=lambda value: value)))
+    assert proc._inject_primary_person_object_meta(object(), frame, "cam1") == 0
+    assert frame.bInferDone is (tensor_gie == 1)
 
 
 def test_deepstream_sgie_shrinks_oversized_person_roi(monkeypatch):
+    monkeypatch.setenv("DS_STREAM_WIDTH", "1280")
+    monkeypatch.setenv("DS_STREAM_HEIGHT", "720")
     proc = object.__new__(DeepStreamProcessor)
     proc._pose_gie_id = 1
     injected_meta = types.SimpleNamespace(
@@ -1857,9 +1973,34 @@ class _FakePipeline:
         self.removed.append(element)
 
 
-def test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map(monkeypatch):
+@pytest.mark.parametrize(
+    "drop_on_latency", [None, "false", "true"]
+)
+@pytest.mark.parametrize(
+    "source,reconnect,unsupported,expected",
+    [
+        ("rtsp://example/stream", None, False, None),
+        ("rtsp://example/stream", "3", False, 3),
+        ("rtsp://example/stream", "0", False, None),
+        ("rtsp://example/stream", "-1", False, None),
+        ("rtsp://example/stream", "bad", False, None),
+        ("file:///tmp/input.mp4", "3", False, None),
+        ("rtsp://example/stream", "3", True, None),
+    ],
+)
+def test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map(
+    monkeypatch, source, reconnect, unsupported, expected, drop_on_latency
+):
+    if drop_on_latency is None:
+        monkeypatch.delenv("DS_RTSP_DROP_ON_LATENCY", raising=False)
+    else:
+        monkeypatch.setenv("DS_RTSP_DROP_ON_LATENCY", drop_on_latency)
+    if reconnect is None:
+        monkeypatch.delenv("DS_RTSP_RECONNECT_INTERVAL_SEC", raising=False)
+    else:
+        monkeypatch.setenv("DS_RTSP_RECONNECT_INTERVAL_SEC", reconnect)
     proc = object.__new__(DeepStreamProcessor)
-    proc._cameras = {"cam1": {"source": "rtsp://example/stream", "pad_id": None}}
+    proc._cameras = {"cam1": {"source": source, "pad_id": None}}
     proc._pad_to_camera = {}
     proc._preview_camera_id = None
     streammux = _FakeStreamMux()
@@ -1869,6 +2010,14 @@ def test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map(monkey
     def make_element(factory, name):
         element = _FakeElement(name)
         element.static_pad = _FakePad()
+        original_set_property = element.set_property
+
+        def set_property(key, value):
+            if unsupported and key in {"rtsp-reconnect-interval", "drop-on-latency"}:
+                raise TypeError("unsupported")
+            original_set_property(key, value)
+
+        element.set_property = set_property
         created.append((factory, element))
         return element
 
@@ -1899,6 +2048,12 @@ def test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map(monkey
     assert proc._pad_to_camera == {2: "cam1"}
     assert proc._preview_camera_id == "cam1"
     assert created[0][1].synced is True
+
+    assert created[0][1].properties.get("rtsp-reconnect-interval") == expected
+    expected_drop = None
+    if drop_on_latency is not None and source.startswith("rtsp://") and not unsupported:
+        expected_drop = drop_on_latency == "true"
+    assert created[0][1].properties.get("drop-on-latency") is expected_drop
 
 
 def test_attach_camera_source_to_pipeline_detaches_existing_source(monkeypatch):
@@ -2048,6 +2203,7 @@ def test_create_output_elements_can_stream_h264_mpegts(monkeypatch):
     monkeypatch.setattr(proc, "_make_element", make_element)
     monkeypatch.setenv("DS_H264_UDP_HOST", "media")
     monkeypatch.setenv("DS_H264_UDP_PORT", "1234")
+    monkeypatch.setenv("DS_H264_FPS", "30")
     monkeypatch.setenv("DS_H264_WIDTH", "1280")
     monkeypatch.setenv("DS_H264_HEIGHT", "720")
     monkeypatch.setenv("DS_H264_BITRATE", "6000000")
@@ -2061,6 +2217,7 @@ def test_create_output_elements_can_stream_h264_mpegts(monkeypatch):
 
     assert [element.factory for element in elements] == [
         "nvvideoconvert",
+        "videorate",
         "capsfilter",
         "nvv4l2h264enc",
         "h264parse",
@@ -2069,18 +2226,18 @@ def test_create_output_elements_can_stream_h264_mpegts(monkeypatch):
         "udpsink",
     ]
     assert caps_from_string.call_args_list[0].args == (
-        "video/x-raw(memory:NVMM),format=NV12,width=1280,height=720",
+        "video/x-raw(memory:NVMM),format=NV12,width=1280,height=720,framerate=30/1",
     )
     assert caps_from_string.call_args_list[1].args == (
         "video/x-h264,stream-format=byte-stream,alignment=au",
     )
-    assert elements[2].properties["bitrate"] == 6000000
-    assert elements[2].properties["insert-sps-pps"] is True
-    assert elements[2].properties["iframeinterval"] == 30
-    assert elements[2].properties["poc-type"] == 2
-    assert elements[6].properties["host"] == "media"
-    assert elements[6].properties["port"] == 1234
-    assert elements[6].properties["sync"] is False
+    assert elements[3].properties["bitrate"] == 6000000
+    assert elements[3].properties["insert-sps-pps"] is True
+    assert elements[3].properties["iframeinterval"] == 30
+    assert elements[3].properties["poc-type"] == 2
+    assert elements[7].properties["host"] == "media"
+    assert elements[7].properties["port"] == 1234
+    assert elements[7].properties["sync"] is False
 
 
 def test_create_output_elements_can_enable_h264_poc_fix(monkeypatch):
@@ -2108,6 +2265,7 @@ def test_create_output_elements_can_enable_h264_poc_fix(monkeypatch):
 
     assert [element.factory for element in elements] == [
         "nvvideoconvert",
+        "videorate",
         "capsfilter",
         "nvv4l2h264enc",
         "h264parse",
@@ -2116,8 +2274,8 @@ def test_create_output_elements_can_enable_h264_poc_fix(monkeypatch):
         "mpegtsmux",
         "udpsink",
     ]
-    assert elements[2].properties["poc-type"] == 0
-    assert elements[5].properties["signal-handoffs"] is True
+    assert elements[3].properties["poc-type"] == 0
+    assert elements[6].properties["signal-handoffs"] is True
 
 
 def test_create_output_elements_can_enable_h264_poc_fix_for_rtsp_publish(monkeypatch):
@@ -2145,6 +2303,7 @@ def test_create_output_elements_can_enable_h264_poc_fix_for_rtsp_publish(monkeyp
 
     assert [element.factory for element in elements] == [
         "nvvideoconvert",
+        "videorate",
         "capsfilter",
         "nvv4l2h264enc",
         "h264parse",
@@ -2152,8 +2311,8 @@ def test_create_output_elements_can_enable_h264_poc_fix_for_rtsp_publish(monkeyp
         "identity",
         "rtspclientsink",
     ]
-    assert elements[2].properties["poc-type"] == 0
-    assert elements[5].properties["signal-handoffs"] is True
+    assert elements[3].properties["poc-type"] == 0
+    assert elements[6].properties["signal-handoffs"] is True
 
 
 def test_link_or_raise_raises_when_gstreamer_link_fails():
@@ -2227,7 +2386,7 @@ def test_recognized_face_snapshot_enabled_respects_cooldown(tmp_path):
 
 @pytest.mark.skipif(
     not DEEPSTREAM_AVAILABLE,
-    reason="Jetson 환경 필요 — pyds 미설치",
+    reason="DeepStream Python 모듈(gi/pyds)을 찾을 수 없음",
 )
 def test_deepstream_add_camera(mock_config):
     """add_camera() 가 True 를 반환하고 cameras 에 등록되어야 한다."""
@@ -2239,7 +2398,7 @@ def test_deepstream_add_camera(mock_config):
 
 @pytest.mark.skipif(
     not DEEPSTREAM_AVAILABLE,
-    reason="Jetson 환경 필요 — pyds 미설치",
+    reason="DeepStream Python 모듈(gi/pyds)을 찾을 수 없음",
 )
 def test_deepstream_add_camera_duplicate(mock_config):
     """동일 camera_id 를 두 번 추가하면 두 번째는 False 를 반환해야 한다."""
@@ -2251,7 +2410,7 @@ def test_deepstream_add_camera_duplicate(mock_config):
 
 @pytest.mark.skipif(
     not DEEPSTREAM_AVAILABLE,
-    reason="Jetson 환경 필요 — pyds 미설치",
+    reason="DeepStream Python 모듈(gi/pyds)을 찾을 수 없음",
 )
 def test_deepstream_remove_camera(mock_config):
     """remove_camera() 후 cameras 에서 제거되어야 한다."""
@@ -2263,7 +2422,7 @@ def test_deepstream_remove_camera(mock_config):
 
 @pytest.mark.skipif(
     not DEEPSTREAM_AVAILABLE,
-    reason="Jetson 환경 필요 — pyds 미설치",
+    reason="DeepStream Python 모듈(gi/pyds)을 찾을 수 없음",
 )
 def test_deepstream_get_stats_returns_dict(mock_config):
     """get_stats() 는 딕셔너리를 반환해야 한다."""
@@ -2271,11 +2430,30 @@ def test_deepstream_get_stats_returns_dict(mock_config):
     stats = proc.get_stats()
     assert isinstance(stats, dict)
     assert stats.get("backend") == "deepstream"
+    for field in (
+        "source_error_identified",
+        "source_error_unidentified",
+        "source_eos_identified",
+        "source_eos_unidentified",
+        "source_unidentified_stop",
+        "source_stream_reset_events",
+        "source_stream_reset_unidentified",
+        "preview_identity_rejected",
+        "preview_frames_stored",
+        "pipeline_restart_requested",
+        "pipeline_restart_rejected",
+        "pipeline_restart_executed",
+        "pipeline_restart_failed",
+        "pipeline_restart_seconds",
+    ):
+        assert stats[field] == 0
+    proc._increment_stat("source_error_unidentified")
+    assert proc.get_stats()["source_error_unidentified"] == 1
 
 
 @pytest.mark.skipif(
     not DEEPSTREAM_AVAILABLE,
-    reason="Jetson 환경 필요 — pyds 미설치",
+    reason="DeepStream Python 모듈(gi/pyds)을 찾을 수 없음",
 )
 def test_deepstream_get_camera_status(mock_config):
     """get_camera_status() 는 등록된 카메라 정보를 반환해야 한다."""
@@ -2350,3 +2528,219 @@ def test_create_processor_deepstream_fallback_when_unavailable():
             proc = create_processor(cfg)
 
     assert isinstance(proc, VideoProcessor)
+
+
+@pytest.mark.parametrize("message_type", ["ERROR", "EOS"])
+@pytest.mark.parametrize("identified", [True, False])
+def test_source_bus_metrics_follow_restart_or_stop(
+    monkeypatch, message_type, identified
+):
+    proc = object.__new__(DeepStreamProcessor)
+    proc._cameras = {"camera_1": {"source": "test"}, "camera_2": {"source": "other"}}
+    proc._source_backoff_until = {}
+    proc._source_last_error = {}
+    proc._source_failure_backoff_sec = 10.0
+    proc.stop_event = threading.Event()
+    proc._main_loop = MagicMock()
+    proc._restart_pipeline_async = MagicMock()
+    proc._restart_request_lock = threading.Lock()
+    proc._pipeline_restart_pending = False
+    proc._last_pipeline_restart_at = 0.0
+    proc._pipeline_restart_min_interval_sec = 0.0
+    proc.running = True
+    monkeypatch.setattr(
+        deepstream_processor,
+        "Gst",
+        types.SimpleNamespace(
+            MessageType=types.SimpleNamespace(
+                ERROR="ERROR", EOS="EOS", WARNING="WARNING"
+            )
+        ),
+    )
+    message = MagicMock(type=message_type)
+    message.src.get_name.return_value = "src-camera_1" if identified else "pipeline"
+    message.parse_error.return_value = (RuntimeError("lost source"), "")
+
+    assert proc._on_bus_message(None, message) is True
+    suffix = "identified" if identified else "unidentified"
+    assert getattr(proc, f"_source_{message_type.lower()}_{suffix}") == 1
+    if identified:
+        proc._restart_pipeline_async.assert_called_once_with(
+            f"source_{message_type.lower()}:camera_1"
+        )
+        assert proc._pipeline_restart_requested == 1
+        assert proc._cameras["camera_1"]["reconnect_attempts"] == 1
+        assert "camera_2" not in proc._source_backoff_until
+        assert not proc.stop_event.is_set()
+        proc._main_loop.quit.assert_not_called()
+    else:
+        assert proc._source_unidentified_stop == 1
+        assert proc.stop_event.is_set()
+        proc._main_loop.quit.assert_called_once()
+        proc._restart_pipeline_async.assert_not_called()
+        assert not proc._source_backoff_until
+
+
+@pytest.mark.parametrize(
+    "running,pending,last_restart,accepted",
+    [
+        (True, False, 0.0, True),
+        (False, False, 0.0, False),
+        (True, True, 0.0, False),
+        (True, False, 99.0, False),
+    ],
+)
+def test_restart_request_metrics_count_gate_decisions(
+    monkeypatch, running, pending, last_restart, accepted
+):
+    proc = object.__new__(DeepStreamProcessor)
+    proc.running = running
+    proc._pipeline_restart_pending = pending
+    proc._last_pipeline_restart_at = last_restart
+    proc._pipeline_restart_min_interval_sec = 10.0
+    proc._restart_request_lock = threading.Lock()
+    proc._restart_pipeline_async = MagicMock()
+    monkeypatch.setattr(deepstream_processor.time, "monotonic", lambda: 100.0)
+    assert proc._request_pipeline_restart("model_settings_changed") is accepted
+    assert proc._pipeline_restart_requested == 1
+    assert getattr(proc, "_pipeline_restart_rejected", 0) == int(not accepted)
+    assert proc._restart_pipeline_async.call_count == int(accepted)
+    assert proc._pipeline_restart_pending is (pending or accepted)
+    assert getattr(proc, "_source_error_identified", 0) == 0
+
+
+@pytest.mark.parametrize("failure", [None, "stop", "start", "not_running"])
+def test_restart_metrics_use_explicit_result_and_clear_pending(monkeypatch, failure):
+    proc = object.__new__(DeepStreamProcessor)
+    proc.running = failure != "not_running"
+    proc._pipeline_restart_lock = threading.Lock()
+    proc._restart_request_lock = threading.Lock()
+    proc._pipeline_restart_pending = True
+    proc._last_pipeline_restart_at = 0.0
+    proc.stop = MagicMock(
+        side_effect=RuntimeError("stop failed") if failure == "stop" else None
+    )
+    proc.start = MagicMock(
+        side_effect=RuntimeError("start failed") if failure == "start" else None
+    )
+    # Failure callbacks deliberately leave running=True: it must not imply success.
+    times = iter([10.0, 12.0, 14.0])
+    monkeypatch.setattr(deepstream_processor.time, "monotonic", lambda: next(times))
+    proc._restart_pipeline("source_error:camera_1")
+    assert getattr(proc, "_pipeline_restart_executed", 0) == int(failure is None)
+    assert getattr(proc, "_pipeline_restart_failed", 0) == int(failure is not None)
+    assert proc._pipeline_restart_pending is False
+    assert proc._pipeline_restart_seconds == (
+        2.0 if failure in ("stop", "start") else 4.0
+    )
+    assert proc.start.call_count == int(failure != "stop")
+    assert proc._last_pipeline_restart_at == (
+        0.0 if failure in ("stop", "start") else 12.0
+    )
+
+
+def test_source_metrics_prometheus_exports_counters_without_primary_frames():
+    from prometheus_client import CollectorRegistry, generate_latest
+
+    from src.services.processor_metrics import ProcessorStatsCollector
+
+    fields = (
+        "source_error_identified",
+        "source_error_unidentified",
+        "source_eos_identified",
+        "source_eos_unidentified",
+        "source_unidentified_stop",
+        "source_stream_reset_events",
+        "source_stream_reset_unidentified",
+        "preview_identity_rejected",
+        "preview_frames_stored",
+        "pipeline_restart_requested",
+        "pipeline_restart_rejected",
+        "pipeline_restart_executed",
+        "pipeline_restart_failed",
+        "pipeline_restart_seconds",
+    )
+    stats = {field: index + 0.5 for index, field in enumerate(fields)}
+    registry = CollectorRegistry()
+    registry.register(
+        ProcessorStatsCollector(types.SimpleNamespace(get_stats=lambda: dict(stats)))
+    )
+    payload = generate_latest(registry).decode()
+    for field, value in stats.items():
+        assert registry.get_sample_value(f"cctv_processor_{field}_total") == value
+        assert f"# TYPE cctv_processor_{field}_total counter" in payload
+
+
+@pytest.mark.parametrize("source_id,valid,event_type", [
+    (0, True, 103454), (1, True, 103454), (99, True, 103454),
+    (0, False, 103454), (0, True, 10254), (0, True, None),
+])
+def test_native_stream_reset_only_resets_identified_camera(monkeypatch, source_id, valid, event_type):
+    proc = object.__new__(DeepStreamProcessor)
+    proc._pad_to_camera = {0: "cam1", 1: "cam2"}
+    proc._reset_camera_tracking_state = MagicMock()
+    monkeypatch.setattr(deepstream_processor, "Gst", types.SimpleNamespace(
+        PadProbeReturn=types.SimpleNamespace(OK="ok")))
+    structure = types.SimpleNamespace(get_uint=lambda name: (valid, source_id))
+    event = types.SimpleNamespace(type=event_type, get_structure=lambda: structure)
+    info = types.SimpleNamespace(get_event=lambda: event if event_type else None)
+    assert proc._on_stream_event(None, info, None) == "ok"
+    if event_type == 103454 and valid and source_id in (0, 1):
+        proc._reset_camera_tracking_state.assert_called_once_with(f"cam{source_id + 1}")
+    else:
+        proc._reset_camera_tracking_state.assert_not_called()
+    assert getattr(proc, "_source_stream_reset_events", 0) == int(event_type == 103454)
+    assert getattr(proc, "_source_stream_reset_unidentified", 0) == int(
+        event_type == 103454 and (not valid or source_id == 99))
+
+
+def test_reset_camera_tracking_state_preserves_other_camera_and_registration(mock_config):
+    proc = DeepStreamProcessor(mock_config)
+    proc.add_camera("cam1", "rtsp://test/one")
+    proc.add_camera("cam2", "rtsp://test/two")
+    states = [proc.track_manager._tracks, proc.track_manager._pos_history,
+              proc._synthetic_id_assigner._tracks, proc._context_event_store._events]
+    for state in states:
+        state.update(cam1={101: "old"}, cam2={202: "keep"})
+    proc._face_identity_cache.update({("cam1", 101): {}, ("cam2", 202): {}})
+    proc.violation_filter._history.update({("cam1", 101): [], ("cam2", 202): []})
+    debounce_states = [proc._debouncer._last_events, proc._debouncer._fall_first_seen,
+        proc._debouncer._fall_last_seen, proc._debouncer._fall_alerted,
+        proc._debouncer._fall_last_bbox, proc._debouncer._head_last_seen,
+        proc._debouncer._head_alerted]
+    for state in debounce_states:
+        state.update({("cam1", 101): "old", ("cam2", 202): "keep"})
+    proc._reset_camera_tracking_state("cam1")
+    for state in states:
+        assert state == {"cam2": {202: "keep"}}
+    for state in debounce_states:
+        assert state == {("cam2", 202): "keep"}
+    assert set(proc.cameras) == {"cam1", "cam2"}
+    assert proc._face_identity_cache == {("cam2", 202): {}}
+    assert proc.violation_filter._history == {("cam2", 202): []}
+
+
+def test_missing_camera_frame_never_uses_another_cameras_preview():
+    proc = object.__new__(DeepStreamProcessor)
+    proc._preview_store = PreviewFrameStore(max_fps=5.)
+    proc._preview_camera_id = "cam1"
+    proc._preview_store.put_frame("cam1", [[1]], now_monotonic=1.)
+    assert proc.get_camera_frame("cam2") is None
+    assert proc.get_camera_frame("cam1") == [[1]]
+
+
+def test_reset_invalidates_only_target_camera_preview(mock_config):
+    proc = DeepStreamProcessor(mock_config)
+    proc._preview_store.put_frame("cam1", [[1]], now_monotonic=1.)
+    proc._preview_store.put_frame("cam2", [[2]], now_monotonic=2.)
+    proc._reset_camera_tracking_state("cam1")
+    assert proc.get_camera_frame("cam1") is None
+    assert proc.get_camera_frame("cam2") == [[2]]
+
+
+def test_shared_aux_clip_buffer_never_mixes_multiple_cameras():
+    proc = object.__new__(DeepStreamProcessor)
+    proc._cameras = {"cam1": {}, "cam2": {}}
+    proc._falldata_aux = MagicMock()
+    proc._on_preview_frame_stored("cam1", [[1]])
+    proc._falldata_aux.add_frame.assert_not_called()

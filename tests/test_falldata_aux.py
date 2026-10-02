@@ -273,6 +273,8 @@ def test_inline_pose_rf_uses_camera_pose_records_without_subprocess(
 ) -> None:
     capture_path = tmp_path / "inline-features.jsonl"
     bundle = {
+        "model_kind": "deepstream_pose_inline_rf",
+        "feature_source": "deepstream_pose_inline",
         "model": _FixedInlineClassifier(),
         "feature_names": FEATURE_NAMES,
         "fall_class_label": 1,
@@ -723,6 +725,24 @@ def test_verify_records_temporal_compare_model_result(monkeypatch, tmp_path) -> 
     )
     assert "--video" in temporal_command
     assert str(verifier.config.temporal_pose_model_path) in temporal_command
+    # 실시간 호출이 평가 스크립트의 과거 기본값(320)에 의존하지 않도록 고정한다.
+    assert temporal_command[temporal_command.index("--imgsz") + 1] == "640"
+
+
+def test_temporal_pose_input_size_is_forwarded_from_environment(monkeypatch, tmp_path):
+    from dataclasses import replace
+
+    monkeypatch.setenv("FALLDATA_AUX_TEMPORAL_POSE_IMGSZ", "320")
+    dependency = tmp_path / "dependency"
+    dependency.touch()
+    config = replace(FallDataAuxConfig.from_env(), temporal_python=dependency,
+                     temporal_compare_model_path=dependency, temporal_pose_model_path=dependency)
+    verifier = FallDataAuxVerifier(config)
+    commands = []
+    monkeypatch.setattr(verifier, "_run", lambda command: (
+        commands.append(command) or subprocess.CompletedProcess(command, 0, stdout="", stderr="")))
+    verifier._run_temporal_compare_model(tmp_path / "clip.mp4")
+    assert commands[0][commands[0].index("--imgsz") + 1] == "320"
 
 
 def test_temporal_compare_rejects_prediction_with_too_few_pose_frames(
@@ -984,7 +1004,8 @@ def test_temporal_metrics_count_process_boundary(monkeypatch, tmp_path, outcome)
         assert snapshot["insufficient_pose_results"] == int(
             outcome in {"unparsed", "insufficient"}
         )
-        assert snapshot["window_inferences"] == int(outcome != "unparsed")
+        assert "window_inferences" not in snapshot
+        assert snapshot["window_reports_missing"] == 1
     else:
         assert snapshot.get("window_inferences", 0) == 0
     snapshot["requests"] = -1
@@ -1007,7 +1028,7 @@ def test_temporal_metrics_counts_actual_window_inferences(monkeypatch, tmp_path)
         [
             "prediction: [1]\nfall_probability: 0.9\nthreshold: 0.7\n"
             "frames_with_pose: 30\nsliding_windows: 4\n",
-            "prediction: [0]\nfall_probability: 0.2\nthreshold: 0.7\nframes_with_pose: 30\n",
+            "prediction: [0]\nfall_probability: 0.2\nthreshold: 0.7\nframes_with_pose: 30\nwindow_inferences: 1\n",
         ]
     )
 
@@ -1090,3 +1111,101 @@ def test_temporal_metrics_unavailable_does_not_start_process_and_exports(
         registry.get_sample_value("cctv_falldata_temporal_process_completed_total")
         is None
     )
+
+
+@pytest.mark.parametrize(
+    "window_report", ["sliding_windows: 1", "window_inferences: 1", ""]
+)
+def test_temporal_parent_rejects_insufficient_or_unknown_windows(
+    monkeypatch, tmp_path, window_report
+):
+    dependency = tmp_path / "model"
+    dependency.touch()
+    verifier = FallDataAuxVerifier(
+        FallDataAuxConfig(
+            enabled=True,
+            temporal_python=dependency,
+            temporal_pose_model_path=dependency,
+            temporal_compare_model_path=dependency,
+            temporal_sliding_window_size=2,
+            temporal_min_confirmed_windows=2,
+            min_pose_frames=1,
+        )
+    )
+    output = f"prediction: [1]\nfall_probability: 0.9\nthreshold: 0.7\nframes_with_pose: 30\n{window_report}\n"
+    monkeypatch.setattr(
+        verifier,
+        "_run",
+        lambda command: subprocess.CompletedProcess(command, 0, output, ""),
+    )
+    verifier._frames.append(np.zeros((4, 4, 3), dtype=np.uint8))
+    monkeypatch.setattr(verifier, "_write_video", lambda *args: None)
+    result = verifier.verify_temporal_shadow()
+    assert result["status"] == "insufficient_windows"
+    assert result["confirmed"] is False
+    stats = verifier.temporal_metrics_snapshot()
+    assert stats["insufficient_window_results"] == 1
+    assert stats["window_reports_missing"] == int(not window_report)
+    assert stats.get("window_inferences") == (1 if window_report else None)
+
+
+@pytest.mark.parametrize(
+    "bad_field,bad_value",
+    [
+        ("keypoint_x", float("nan")),
+        ("keypoint_y", float("inf")),
+        ("keypoint_confidence", float("nan")),
+        ("keypoint_confidence", -0.1),
+        ("keypoint_confidence", 1.1),
+        ("keypoints", [[1.0], [2.0, 3.0]]),
+        ("keypoints", [["bad", 2.0, 0.9]] * 17),
+        ("timestamp", float("nan")),
+        ("confidence", float("inf")),
+        ("width", 0),
+        ("height", -1),
+        ("x", float("nan")),
+        ("width", "80"),
+        ("confidence", "0.9"),
+        ("fall_score", float("nan")),
+        ("frame_width", 0),
+        ("frame_height", float("inf")),
+        ("frame_width", "bad"),
+    ],
+)
+def test_invalid_pose_record_does_not_poison_valid_person(bad_field, bad_value):
+    verifier = FallDataAuxVerifier(FallDataAuxConfig(enabled=True, inline_pose_rf=True))
+    bad = _pose_event()
+    good = replace(_pose_event(), object_id=202, x=200)
+    if bad_field.startswith("keypoint_"):
+        column = {"keypoint_x": 0, "keypoint_y": 1, "keypoint_confidence": 2}[bad_field]
+        bad.keypoints[0][column] = bad_value
+    elif bad_field in {"fall_score", "frame_width", "frame_height"}:
+        bad.metadata[bad_field] = bad_value
+    else:
+        setattr(bad, bad_field, bad_value)
+    verifier.add_pose_events("camera_1", [bad, good])
+    assert [record["object_id"] for record in verifier._pose_records["camera_1"]] == [
+        202
+    ]
+    assert "falldata_pose_scope" not in bad.metadata
+    assert good.metadata["falldata_pose_scope"]["object_id"] == 202
+    assert all(
+        np.isfinite(value)
+        for value in verifier._pose_records["camera_1"][0].values()
+        if isinstance(value, float)
+    )
+
+
+def test_invalid_pose_cannot_inherit_scope_from_valid_same_box():
+    verifier = FallDataAuxVerifier(FallDataAuxConfig(enabled=True, inline_pose_rf=True))
+    bad = _pose_event()
+    bad.keypoints[0][0] = float("nan")
+    good = replace(_pose_event(), object_id=202)
+    verifier.add_pose_events("camera_1", [bad, good])
+    assert "falldata_pose_scope" not in bad.metadata
+    assert good.metadata["falldata_pose_scope"]["object_id"] == 202
+    result = verifier.verify(
+        camera_name="camera_1", pose_scope=bad.metadata.get("falldata_pose_scope")
+    )
+    assert result["confirmed"] is False
+    assert result["status"] == "missing_pose_scope"

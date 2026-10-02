@@ -1,4 +1,4 @@
-"""Evaluate YOLO-style detection models on a fixed image/label dataset.
+"""고정된 이미지·라벨 데이터 세트에서 YOLO 방식 탐지 모델을 평가한다.
 
 Expected dataset layout:
 
@@ -279,7 +279,7 @@ def _class_id_filter(class_names: dict[int, str], target_classes: set[str] | Non
 
 
 class TensorRTEnginePredictor:
-    """Direct TensorRT runner for project engines whose input binding is not named 'images'."""
+    """입력 binding 이름이 'images'가 아닌 프로젝트 엔진을 위한 직접 TensorRT 실행기."""
 
     def __init__(self, engine_path: Path, input_size: int, class_names: dict[int, str]) -> None:
         import tensorrt as trt  # type: ignore

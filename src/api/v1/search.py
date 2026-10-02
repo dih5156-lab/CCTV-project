@@ -106,6 +106,9 @@ class AppearanceRecord(BaseModel):
     datetime_str: str = Field(description="사람 읽을 수 있는 시각 문자열")
     camera_id: str
     track_id: Optional[int] = None
+    track_id_text: Optional[str] = Field(
+        default=None, description="정밀도 손실 없는 10진 추적 ID. 브라우저/외부 연동에서 사용",
+    )
     upper_color: Optional[str] = None
     lower_color: Optional[str] = None
     has_helmet: bool = False
@@ -145,6 +148,9 @@ def _to_record(row: dict) -> AppearanceRecord:
         datetime_str=dt.strftime("%Y-%m-%d %H:%M:%S"),
         camera_id=row["camera_id"],
         track_id=row.get("track_id"),
+        track_id_text=row.get("track_id_text") or (
+            str(row["track_id"]) if row.get("track_id") is not None else None
+        ),
         upper_color=row.get("upper_color"),
         lower_color=row.get("lower_color"),
         has_helmet=row.get("has_helmet", False),

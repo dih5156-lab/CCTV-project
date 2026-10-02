@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build a browser review page for false-positive/false-negative fall videos."""
+"""넘어짐 오탐·미탐 영상을 검수할 브라우저 페이지를 만든다."""
 
 from __future__ import annotations
 

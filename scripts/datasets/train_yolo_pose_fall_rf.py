@@ -217,6 +217,20 @@ def _label_for_row(row: dict[str, Any]) -> int:
     return FALL_LABEL if bool(row.get("is_fall")) else NON_FALL_LABEL
 
 
+def _slice_rows(
+    rows: list[dict[str, Any]],
+    *,
+    offset: int = 0,
+    limit: int = 0,
+) -> list[dict[str, Any]]:
+    """manifest 행을 지정한 구간으로 잘라 중단 후 재개할 수 있게 한다."""
+    if offset < 0 or limit < 0:
+        raise ValueError("offset과 limit은 0 이상이어야 한다")
+    if limit == 0:
+        return rows[offset:]
+    return rows[offset : offset + limit]
+
+
 def _select_rows(rows: list[dict[str, Any]], max_videos: int) -> list[dict[str, Any]]:
     if max_videos <= 0 or len(rows) <= max_videos:
         return rows
@@ -993,6 +1007,24 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--dataset-version", default="yolo_pose_fall_rf")
     parser.add_argument("--max-videos", type=int, default=200)
     parser.add_argument("--validation-max-videos", type=int, default=80)
+    parser.add_argument(
+        "--train-row-offset",
+        type=int,
+        default=0,
+        help="train manifest에서 건너뛸 행 수.",
+    )
+    parser.add_argument(
+        "--validation-row-offset",
+        type=int,
+        default=0,
+        help="validation manifest에서 건너뛸 행 수.",
+    )
+    parser.add_argument(
+        "--row-limit",
+        type=int,
+        default=0,
+        help="각 manifest chunk의 최대 행 수(0이면 끝까지).",
+    )
     parser.add_argument("--max-frames", type=int, default=120)
     parser.add_argument("--frame-stride", type=int, default=3)
     parser.add_argument("--fall-window-margin-frames", type=int, default=120)
@@ -1038,8 +1070,22 @@ def main() -> int:
     reviewed_hard_case_weights = _read_reviewed_hard_case_weights(
         args.reviewed_hard_cases
     )
-    train_rows = _select_rows(_read_jsonl(args.manifest), args.max_videos)
-    validation_rows = _select_rows(_read_jsonl(args.validation_manifest), args.validation_max_videos)
+    train_rows = _select_rows(
+        _slice_rows(
+            _read_jsonl(args.manifest),
+            offset=args.train_row_offset,
+            limit=args.row_limit,
+        ),
+        args.max_videos,
+    )
+    validation_rows = _select_rows(
+        _slice_rows(
+            _read_jsonl(args.validation_manifest),
+            offset=args.validation_row_offset,
+            limit=args.row_limit,
+        ),
+        args.validation_max_videos,
+    )
     if not train_rows:
         raise SystemExit("no train rows selected")
     if not validation_rows:

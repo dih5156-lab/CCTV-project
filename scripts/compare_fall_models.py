@@ -42,10 +42,18 @@ def compare_reports(
     new = _fall_metrics(candidate)
     checks = {
         "precision_not_lower": new["precision"]
-        >= max(base["precision"], min_precision),
+            >= max(base["precision"], min_precision),
         "recall_not_lower": new["recall"] >= base["recall"],
         "f1_not_lower": new["f1"] >= base["f1"],
     }
+    baseline_dataset = baseline.get("dataset_version")
+    candidate_dataset = candidate.get("dataset_version")
+    dataset_compatible = not (
+        baseline_dataset
+        and candidate_dataset
+        and baseline_dataset != candidate_dataset
+    )
+    checks["dataset_compatible"] = dataset_compatible
     candidate_wins = sum(new[key] > base[key] for key in ("precision", "recall", "f1"))
     checks["strict_improvement"] = candidate_wins >= 1
     baseline_threshold = float(
@@ -60,6 +68,9 @@ def compare_reports(
         "deltas": {key: new[key] - base[key] for key in base},
         "checks": checks,
         "promote_candidate": all(checks.values()),
+        "dataset_compatible": dataset_compatible,
+        "baseline_dataset_version": baseline_dataset,
+        "candidate_dataset_version": candidate_dataset,
         "baseline_decision_threshold": baseline_threshold,
         "candidate_decision_threshold": candidate_threshold,
         "decision_threshold": (

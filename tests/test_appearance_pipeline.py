@@ -580,3 +580,43 @@ def test_build_log_parts_uses_attribute_gender_when_face_meta_missing():
 
     assert "성별=male" in parts
     assert "나이=adult" in parts
+
+
+def test_camera_reset_clears_only_its_smoothing_crops_and_cooldowns(tmp_path):
+    pipeline = AppearancePipeline(AppearanceAnalyzer(), tmp_path)
+    for camera in ("cam", "cam:other"):
+        pipeline._attribute_history[f"{camera}:7"] = {"color": "old"}
+        pipeline._representative_crop_paths[f"{camera}:7"] = "historical.jpg"
+        pipeline._appearance_cooldown[(camera, 7, "log")] = 1.
+        pipeline._appearance_cooldown[(camera, 7, "condition")] = 1.
+    pipeline.clear_camera("cam")
+    assert pipeline._attribute_history == {"cam:other:7": {"color": "old"}}
+    assert pipeline._representative_crop_paths == {"cam:other:7": "historical.jpg"}
+    assert set(pipeline._appearance_cooldown) == {
+        ("cam:other", 7, "log"), ("cam:other", 7, "condition")}
+
+
+def test_same_track_id_in_two_cameras_does_not_share_appearance_cooldown(tmp_path):
+    from unittest.mock import Mock
+    pipeline = AppearancePipeline(AppearanceAnalyzer(), tmp_path)
+    pipeline._appearance_log = SimpleNamespace(insert=Mock())
+    person = DetectionEvent(EventType.PERSON, 1, 2, 10, 20, .9, 1000., object_id=7)
+    frame = np.zeros((80, 80, 3), dtype=np.uint8)
+    attrs = {"upper_color": "black", "lower_color": "blue"}
+    for camera in ("cam1", "cam2", "cam1"):
+        pipeline.log_person_appearance(frame, person, 1000., camera, [], {}, precomputed_attrs=attrs)
+    assert pipeline._appearance_log.insert.call_count == 2
+
+
+def test_matching_cooldown_is_separate_for_camera_and_log_record(tmp_path):
+    from unittest.mock import Mock
+    pipeline = AppearancePipeline(AppearanceAnalyzer(), tmp_path)
+    attrs = {"upper_color": "black", "lower_color": "blue"}
+    pipeline._find_matches_from_attributes = Mock(return_value=[{
+        "condition_id": "log", "condition_name": "black", "score": .9, "attributes": attrs}])
+    frame = np.zeros((80, 80, 3), dtype=np.uint8)
+    person = DetectionEvent(EventType.PERSON, 1, 2, 10, 20, .9, 1000., object_id=7)
+    pipeline._appearance_cooldown[("cam1", 7, "log")] = 10**12
+    results = [pipeline.run_matching(frame, [person], camera_id=camera,
+        precomputed_attributes={7: attrs}) for camera in ["cam1", "cam2", "cam1"]]
+    assert [len(events) for events in results] == [1, 1, 0]

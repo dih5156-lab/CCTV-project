@@ -209,6 +209,16 @@ class TestSearchAPI:
         assert body["items"] == []
         assert body["total"] == 0
 
+    def test_search_preserves_adjacent_uint64_ids_as_strings(self):
+        ids = [2**64 - 2, 2**64 - 1]
+        for track_id in ids:
+            assert self.log.insert(camera_id="cam1", track_id=track_id, timestamp=1000)
+        response = self.client.get("/api/v1/search?camera_id=cam1")
+        assert response.status_code == 200
+        items = response.json()["items"]
+        assert {item["track_id_text"] for item in items} == {str(value) for value in ids}
+        assert {item["track_id"] for item in items} == set(ids)
+
     def test_search_natural_language_color_query(self):
         self.log.insert(
             camera_id="cam01",

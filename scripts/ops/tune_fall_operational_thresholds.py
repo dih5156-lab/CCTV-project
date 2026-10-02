@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tune fall-detection thresholds from DeepStream replay result JSONL files."""
+"""DeepStream 재생 결과 JSONL 파일로 넘어짐 탐지 임계값을 조정한다."""
 
 from __future__ import annotations
 

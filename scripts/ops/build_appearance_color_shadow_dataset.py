@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Add human-reviewed shadow ROIs to a YOLO classification dataset."""
+"""사람이 검수한 Shadow ROI를 YOLO 분류 데이터 세트에 추가한다."""
 
 from __future__ import annotations
 

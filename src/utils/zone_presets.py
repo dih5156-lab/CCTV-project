@@ -48,7 +48,7 @@ class ZonePresetStore:
             return []
 
     def _write(self, presets: List[Dict]) -> None:
-        """atomic write — tmp 파일로 먼저 쓴 뒤 교체한다."""
+        """원자적 쓰기 — 임시 파일에 먼저 쓴 뒤 교체한다."""
         self.presets_path.parent.mkdir(parents=True, exist_ok=True)
         tmp = self.presets_path.with_suffix(".tmp")
         tmp.write_text(

@@ -151,7 +151,7 @@ class ZoneDrawer:
     # ------------------------------------------------------------------
 
     def handle_key(self, key: int) -> bool:
-        """True 반환이면 해당 키를 소비한 것(caller 는 추가 처리 불필요)."""
+        """True를 반환하면 해당 키를 소비한 것이므로 호출자는 추가 처리할 필요가 없다."""
         if key == ord("d"):
             with self._lock:
                 self._drawing = not self._drawing

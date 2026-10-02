@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Interactively label fall shadow review clips with OpenCV.
+"""OpenCV로 넘어짐 Shadow 검수 영상을 대화형으로 라벨링한다.
 
 Keys: F=fall, N=non-fall, S=needs review, SPACE=pause, R=replay, Q=quit.
 """
@@ -30,7 +30,7 @@ SHADOW_DISAGREEMENT_LABELS = {
 
 
 def classify_shadow_disagreement(row: dict[str, Any]) -> str | None:
-    """Return the primary/Shadow disagreement direction for a valid result."""
+    """유효한 결과에서 기존 모델과 Shadow 모델의 불일치 방향을 반환한다."""
     aux = row.get("falldata_aux")
     if not isinstance(aux, dict) or aux.get("status") != "ok":
         return None
@@ -48,7 +48,7 @@ def classify_shadow_disagreement(row: dict[str, Any]) -> str | None:
 def build_review_document(
     candidates: list[dict[str, Any]], *, base_dir: Path | None = None
 ) -> str:
-    """Build a dependency-free browser review page for selected clips."""
+    """선택한 영상의 브라우저 검수 페이지를 외부 의존성 없이 만든다."""
     rows: list[str] = []
     for candidate in candidates:
         event_id = str(candidate.get("event_id") or "")
@@ -163,7 +163,7 @@ def write_review_html(path: Path, candidates: list[dict[str, Any]]) -> None:
 
 
 def convert_clip_to_h264(source: Path, destination: Path) -> None:
-    """Create a browser-compatible H.264 copy without modifying the source clip."""
+    """원본 영상을 수정하지 않고 브라우저 호환 H.264 사본을 만든다."""
     destination.parent.mkdir(parents=True, exist_ok=True)
     temporary_path = destination.with_suffix(".tmp.mp4")
     subprocess.run(
@@ -199,7 +199,7 @@ def prepare_browser_clips(
     *,
     convert: Callable[[Path, Path], None] = convert_clip_to_h264,
 ) -> list[dict[str, Any]]:
-    """Return candidates pointing at browser-compatible H.264 clip copies."""
+    """브라우저 호환 H.264 사본을 가리키는 검수 후보를 반환한다."""
     prepared: list[dict[str, Any]] = []
     for index, candidate in enumerate(candidates):
         source = Path(str(candidate["local_clip_path"]))
@@ -237,7 +237,7 @@ def read_review_log(path: Path) -> list[dict[str, Any]]:
 def resolve_clip_path(
     raw_path: str, *, clip_dir: Path = DEFAULT_CLIP_DIR
 ) -> Path:
-    """Map container clip paths to the local project clip directory."""
+    """컨테이너 영상 경로를 로컬 프로젝트 영상 디렉터리로 매핑한다."""
     path = Path(raw_path)
     if path.exists():
         return path
@@ -330,7 +330,7 @@ def apply_label(
     clip_dir: Path = DEFAULT_CLIP_DIR,
     labeled_dir: Path | None = None,
 ) -> None:
-    """Reload and update one event so each key press is saved immediately."""
+    """키 입력마다 즉시 저장되도록 이벤트 하나를 다시 불러와 갱신한다."""
     rows = read_review_log(path)
     matches = [row for row in rows if row.get("event_id") == event_id]
     if len(matches) != 1:
@@ -375,7 +375,7 @@ def import_review_labels(
     clip_dir: Path = DEFAULT_CLIP_DIR,
     labeled_dir: Path = DEFAULT_LABELED_DIR,
 ) -> dict[str, Any]:
-    """Validate and atomically apply labels exported by the browser page."""
+    """브라우저 페이지에서 내보낸 라벨을 검증하고 원자적으로 반영한다."""
     payload = json.loads(labels_path.read_text(encoding="utf-8"))
     if payload.get("schema_version") != 1 or not isinstance(payload.get("items"), list):
         raise ValueError("expected fall review label schema_version=1 with items")

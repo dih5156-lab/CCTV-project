@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "dataset_version": "blind_cam2_80_promotion_review",
+  "items": [
+    {
+      "review_id": "blind80:new_candidate_error:00053_H_A_SY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "blind80:shared_error:00074_H_A_BY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "blind80:shared_error:00076_H_A_SY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "blind80:shared_error:00105_H_A_SY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "blind80:fixed_by_candidate:00111_H_A_FY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "blind80:shared_error:00181_H_A_FY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "blind80:shared_error:00183_H_A_BY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "blind80:shared_error:00189_H_A_FY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "blind80:shared_error:00201_H_D_FY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "blind80:shared_error:00213_H_D_FY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "blind80:shared_error:00221_H_D_FY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "blind80:shared_error:00207_H_D_BY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "blind80:fixed_by_candidate:00227_H_D_BY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "blind80:shared_error:00239_H_D_BY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "blind80:shared_error:00241_H_D_FY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "blind80:shared_error:00301_H_A_FY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "blind80:fixed_by_candidate:00319_H_A_FY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "blind80:shared_error:00506_H_D_SY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "blind80:shared_error:00609_H_D_FY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "blind80:shared_error:00680_H_D_BY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "blind80:shared_error:00633_H_D_BY_C2",
+      "label": "fall"
+    },
+    {
+      "review_id": "blind80:shared_error:00711_H_D_SY_C2",
+      "label": "fall"
+    }
+  ]
+}

@@ -1,0 +1,340 @@
+{
+  "dataset_hash": "0b09a8547983821c14263ba219afcc558706c5dd9ee9e60b5fead16038755f81",
+  "format_version": 1,
+  "head_slices": {
+    "gender": [
+      0,
+      2
+    ],
+    "items": [
+      32,
+      36
+    ],
+    "lower_clothes": [
+      27,
+      32
+    ],
+    "lower_color": [
+      13,
+      24
+    ],
+    "upper_clothes": [
+      24,
+      27
+    ],
+    "upper_color": [
+      2,
+      13
+    ]
+  },
+  "head_specs": [
+    {
+      "classes": [
+        "female",
+        "male"
+      ],
+      "multilabel": false,
+      "name": "gender"
+    },
+    {
+      "classes": [
+        "black",
+        "white",
+        "gray",
+        "red",
+        "blue",
+        "green",
+        "yellow",
+        "brown",
+        "purple",
+        "navy",
+        "orange"
+      ],
+      "multilabel": false,
+      "name": "upper_color"
+    },
+    {
+      "classes": [
+        "black",
+        "white",
+        "gray",
+        "red",
+        "blue",
+        "green",
+        "yellow",
+        "brown",
+        "purple",
+        "navy",
+        "orange"
+      ],
+      "multilabel": false,
+      "name": "lower_color"
+    },
+    {
+      "classes": [
+        "long_sleeve",
+        "short_sleeve",
+        "sleeveless"
+      ],
+      "multilabel": false,
+      "name": "upper_clothes"
+    },
+    {
+      "classes": [
+        "long_pants",
+        "short_pants",
+        "long_skirt",
+        "short_skirt",
+        "dress"
+      ],
+      "multilabel": false,
+      "name": "lower_clothes"
+    },
+    {
+      "classes": [
+        "bag",
+        "backpack",
+        "hat",
+        "mask"
+      ],
+      "multilabel": true,
+      "name": "items"
+    }
+  ],
+  "input_size": {
+    "height": 256,
+    "width": 192
+  },
+  "labels": [
+    {
+      "field": "gender",
+      "index": 0,
+      "threshold": 0.5,
+      "value": "female"
+    },
+    {
+      "field": "gender",
+      "index": 1,
+      "threshold": 0.5,
+      "value": "male"
+    },
+    {
+      "field": "upper_color",
+      "index": 2,
+      "threshold": 0.5,
+      "value": "black"
+    },
+    {
+      "field": "upper_color",
+      "index": 3,
+      "threshold": 0.5,
+      "value": "white"
+    },
+    {
+      "field": "upper_color",
+      "index": 4,
+      "threshold": 0.5,
+      "value": "gray"
+    },
+    {
+      "field": "upper_color",
+      "index": 5,
+      "threshold": 0.5,
+      "value": "red"
+    },
+    {
+      "field": "upper_color",
+      "index": 6,
+      "threshold": 0.5,
+      "value": "blue"
+    },
+    {
+      "field": "upper_color",
+      "index": 7,
+      "threshold": 0.5,
+      "value": "green"
+    },
+    {
+      "field": "upper_color",
+      "index": 8,
+      "threshold": 0.5,
+      "value": "yellow"
+    },
+    {
+      "field": "upper_color",
+      "index": 9,
+      "threshold": 0.5,
+      "value": "brown"
+    },
+    {
+      "field": "upper_color",
+      "index": 10,
+      "threshold": 0.5,
+      "value": "purple"
+    },
+    {
+      "field": "upper_color",
+      "index": 11,
+      "threshold": 0.5,
+      "value": "navy"
+    },
+    {
+      "field": "upper_color",
+      "index": 12,
+      "threshold": 0.5,
+      "value": "orange"
+    },
+    {
+      "field": "lower_color",
+      "index": 13,
+      "threshold": 0.5,
+      "value": "black"
+    },
+    {
+      "field": "lower_color",
+      "index": 14,
+      "threshold": 0.5,
+      "value": "white"
+    },
+    {
+      "field": "lower_color",
+      "index": 15,
+      "threshold": 0.5,
+      "value": "gray"
+    },
+    {
+      "field": "lower_color",
+      "index": 16,
+      "threshold": 0.5,
+      "value": "red"
+    },
+    {
+      "field": "lower_color",
+      "index": 17,
+      "threshold": 0.5,
+      "value": "blue"
+    },
+    {
+      "field": "lower_color",
+      "index": 18,
+      "threshold": 0.5,
+      "value": "green"
+    },
+    {
+      "field": "lower_color",
+      "index": 19,
+      "threshold": 0.5,
+      "value": "yellow"
+    },
+    {
+      "field": "lower_color",
+      "index": 20,
+      "threshold": 0.5,
+      "value": "brown"
+    },
+    {
+      "field": "lower_color",
+      "index": 21,
+      "threshold": 0.5,
+      "value": "purple"
+    },
+    {
+      "field": "lower_color",
+      "index": 22,
+      "threshold": 0.5,
+      "value": "navy"
+    },
+    {
+      "field": "lower_color",
+      "index": 23,
+      "threshold": 0.5,
+      "value": "orange"
+    },
+    {
+      "field": "upper_clothes",
+      "index": 24,
+      "threshold": 0.5,
+      "value": "long_sleeve"
+    },
+    {
+      "field": "upper_clothes",
+      "index": 25,
+      "threshold": 0.5,
+      "value": "short_sleeve"
+    },
+    {
+      "field": "upper_clothes",
+      "index": 26,
+      "threshold": 0.5,
+      "value": "sleeveless"
+    },
+    {
+      "field": "lower_clothes",
+      "index": 27,
+      "threshold": 0.5,
+      "value": "long_pants"
+    },
+    {
+      "field": "lower_clothes",
+      "index": 28,
+      "threshold": 0.5,
+      "value": "short_pants"
+    },
+    {
+      "field": "lower_clothes",
+      "index": 29,
+      "threshold": 0.5,
+      "value": "long_skirt"
+    },
+    {
+      "field": "lower_clothes",
+      "index": 30,
+      "threshold": 0.5,
+      "value": "short_skirt"
+    },
+    {
+      "field": "lower_clothes",
+      "index": 31,
+      "threshold": 0.5,
+      "value": "dress"
+    },
+    {
+      "field": "items",
+      "index": 32,
+      "threshold": 0.5,
+      "value": "bag"
+    },
+    {
+      "field": "items",
+      "index": 33,
+      "threshold": 0.5,
+      "value": "backpack"
+    },
+    {
+      "field": "items",
+      "index": 34,
+      "threshold": 0.5,
+      "value": "hat"
+    },
+    {
+      "field": "items",
+      "index": 35,
+      "threshold": 0.5,
+      "value": "mask"
+    }
+  ],
+  "model_version": "appearance_multitask_v1.color_baseline",
+  "preprocess": {
+    "mean": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "scale": 0.00392156862745098,
+    "std": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  }
+}

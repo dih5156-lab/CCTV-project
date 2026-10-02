@@ -345,6 +345,8 @@ def test_final_probe_observes_before_event_mutation_and_metrics_failure_does_not
     processor._pad_to_camera = {7: "camera_1"}
     processor._frames_processed = 0
     processor._tensor_probe_warned = False
+    processor._context_worker = Namespace(
+        stamp_frame=lambda frame, camera: None, finish_frame=lambda frame, camera: None)
     assert processor._on_pad_probe(None, Namespace(get_buffer=object), None) == "ok"
     assert calls == [batch]
     assert processor._frames_processed == 1
@@ -395,6 +397,8 @@ def test_pipeline_build_captures_configured_elements_before_installing_runtime_h
         "_resolve_pphuman_infer_config",
         "_on_source_pad_added",
         "_on_pad_probe",
+        "_on_stream_event",
+        "_reset_camera_tracking_state",
         "_on_bus_message",
     ):
         setattr(processor, name, Mock())
@@ -426,12 +430,13 @@ def test_pipeline_build_captures_configured_elements_before_installing_runtime_h
     )
 
     def install_hooks(**kwargs):
-        processor._falldata_aux.reset_pose_records.assert_called_once_with("camera_1")
+        processor._reset_camera_tracking_state.assert_called_once_with("camera_1")
         snapshot = metrics.snapshot()
         assert snapshot["models"]["primary"]["properties"]["interval"] == 9
         assert snapshot["models"]["pose"]["enabled"] is False
         assert snapshot["models"]["helmet"]["properties"]["unique-id"] == 2
         assert kwargs["on_pad_probe"] is processor._on_pad_probe
+        assert kwargs["on_stream_event"] is processor._on_stream_event
 
     monkeypatch.setattr(module, "register_pipeline_runtime_hooks", install_hooks)
     module.DeepStreamProcessor._build_pipeline(processor)

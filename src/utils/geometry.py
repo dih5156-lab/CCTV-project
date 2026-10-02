@@ -96,7 +96,7 @@ def calculate_bbox_iou(bbox1: dict, bbox2: dict) -> float:
 
 
 def calculate_overlap_ratio(bbox1: dict, bbox2: dict) -> float:
-    """bbox1 대비 bbox2의 겹침 비율 계산"""
+    """bbox1을 기준으로 bbox2의 겹침 비율을 계산한다."""
     if not isinstance(bbox1, dict) or not isinstance(bbox2, dict):
         raise TypeError("두 인자 모두 딕셔너리여야 함")
     

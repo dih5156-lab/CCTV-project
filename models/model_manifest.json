@@ -1,7 +1,55 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-04-28",
+  "updated_at": "2026-09-11",
   "notes": "Model inventory for CCTV MLOps tracking. Fill metrics after running scripts/ops/evaluate_detection.py on a fixed evaluation dataset.",
+  "deployment_profiles": {
+    "deepstream_crop_pose": {
+      "status": "experimental",
+      "feature_flag": "DS_CROP_POSE_ENABLED",
+      "gie_registry": "docs/architecture/DEEPSTREAM_GIE_REGISTRY.md",
+      "components": [
+        {
+          "gie_id": 1,
+          "role": "person_primary",
+          "config": "config/deepstream/config_infer_person_primary.txt",
+          "engine": "models/person/yolov8n.engine",
+          "input_size": [640, 640],
+          "precision": "fp16"
+        },
+        {
+          "gie_id": 2,
+          "role": "pose_sgie",
+          "config": "config/deepstream/config_infer_pose_sgie.txt",
+          "engine": "models/fall/yolov8n-pose.engine",
+          "input_size": [640, 640],
+          "precision": "fp16",
+          "operate_on_gie_id": 1
+        },
+        {
+          "gie_id": 3,
+          "role": "helmet_head_sgie",
+          "config": "config/deepstream/config_infer_helmet_sgie.txt",
+          "engine": "models/head/helmet_model.engine",
+          "input_size": [320, 320],
+          "precision": "fp16",
+          "operate_on_gie_id": 1
+        },
+        {
+          "gie_id": 4,
+          "role": "appearance_sgie",
+          "config": "config/deepstream/config_infer_pa100k_sgie.txt",
+          "engine": "models/appearance/pa100k_resnet50_attr.engine",
+          "input_size": [256, 192],
+          "precision": "fp16",
+          "operate_on_gie_id": 1
+        }
+      ],
+      "postprocessors": [
+        "models/fall/fall_temporal_same_split_resume_20260908.pt",
+        "models/fall/yolo_pose_same_split_resume_20260908_rf.joblib"
+      ]
+    }
+  },
   "models": [
     {
       "name": "helmet_model_ver0.5",

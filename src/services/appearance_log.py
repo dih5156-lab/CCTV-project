@@ -15,6 +15,7 @@ from __future__ import annotations
 import contextlib
 import json
 import logging
+import operator
 import os
 import sqlite3
 import threading
@@ -33,6 +34,7 @@ CREATE TABLE IF NOT EXISTS appearance_log (
     timestamp   REAL    NOT NULL,
     camera_id   TEXT    NOT NULL,
     track_id    INTEGER,
+    track_id_text TEXT,
     upper_color TEXT,
     lower_color TEXT,
     has_helmet  INTEGER DEFAULT 0,
@@ -89,6 +91,10 @@ class AppearanceLog:
             existing = {row["name"] for row in cursor.fetchall()}
         finally:
             cursor.close()
+        if "track_id_text" not in existing:
+            self._execute_and_close(
+                "ALTER TABLE appearance_log ADD COLUMN track_id_text TEXT"
+            )
         if "has_helmet" not in existing:
             self._execute_and_close(
                 "ALTER TABLE appearance_log ADD COLUMN has_helmet INTEGER DEFAULT 0"
@@ -148,6 +154,19 @@ class AppearanceLog:
         timestamp: Optional[float] = None,
     ) -> bool:
         """외형 기록 1건을 삽입한다. 쿨다운 내 중복은 무시."""
+        try:
+            if track_id is not None:
+                if isinstance(track_id, bool):
+                    raise ValueError("track_id must be an integer, not bool")
+                track_id = operator.index(track_id)
+                if not -(2**63) <= track_id < 2**64:
+                    raise ValueError("track_id exceeds int64/uint64 range")
+        except (TypeError, ValueError) as exc:
+            logger.error("외형 track_id 검증 실패: %s", exc)
+            return False
+        track_id_text = str(track_id) if track_id is not None else None
+        # 기존 정수 열은 호환용이다. uint64 상위 절반은 정확한 TEXT 열에만 저장한다.
+        legacy_track_id = track_id if track_id is None or track_id < 2**63 else None
         now = timestamp or time.time()
         cooldown_key = f"{camera_id}:{track_id}"
         resolved_event_id = event_id or build_event_id(
@@ -168,8 +187,6 @@ class AppearanceLog:
             last = self._last_insert.get(cooldown_key, 0.0)
             if now - last < _INSERT_COOLDOWN:
                 return False
-            self._last_insert[cooldown_key] = now
-
             try:
                 metadata_json = (
                     json.dumps(attribute_metadata, ensure_ascii=False, sort_keys=True)
@@ -178,15 +195,15 @@ class AppearanceLog:
                 )
                 cursor = self._conn.execute(
                     """INSERT OR IGNORE INTO appearance_log
-                       (event_id, timestamp, camera_id, track_id,
+                       (event_id, timestamp, camera_id, track_id, track_id_text,
                        upper_color, lower_color, has_helmet, helmet_color,
                        has_backpack, has_handbag, has_suitcase,
                        gender, age_group, face_name, attribute_backend,
                        attribute_metadata, crop_path,
                        bbox_x, bbox_y, bbox_w, bbox_h)
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                     (
-                        resolved_event_id, now, camera_id, track_id,
+                        resolved_event_id, now, camera_id, legacy_track_id, track_id_text,
                         upper_color, lower_color, int(has_helmet), helmet_color,
                         int(has_backpack), int(has_handbag), int(has_suitcase),
                         gender, age_group, face_name, attribute_backend,
@@ -196,8 +213,11 @@ class AppearanceLog:
                 )
                 cursor.close()
                 self._conn.commit()
+                self._last_insert[cooldown_key] = now
                 return True
             except Exception as exc:
+                with contextlib.suppress(sqlite3.Error):
+                    self._conn.rollback()
                 logger.error("외형 로그 삽입 실패: %s", exc)
                 return False
 
@@ -303,6 +323,8 @@ class AppearanceLog:
 
     @staticmethod
     def _row_to_dict(row: sqlite3.Row) -> Dict:
+        track_id_text = row["track_id_text"] if "track_id_text" in row.keys() else None
+        track_id = int(track_id_text) if track_id_text is not None else row["track_id"]
         raw_metadata = row["attribute_metadata"] if "attribute_metadata" in row.keys() else None
         try:
             attribute_metadata = json.loads(raw_metadata) if raw_metadata else None
@@ -313,7 +335,8 @@ class AppearanceLog:
             "event_id": row["event_id"],
             "timestamp": row["timestamp"],
             "camera_id": row["camera_id"],
-            "track_id": row["track_id"],
+            "track_id": track_id,
+            "track_id_text": str(track_id) if track_id is not None else None,
             "upper_color": row["upper_color"],
             "lower_color": row["lower_color"],
             "has_helmet": bool(row["has_helmet"]),

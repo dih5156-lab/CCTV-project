@@ -27,6 +27,7 @@ from typing import Any, Deque, Iterable, Optional
 import numpy as np
 
 from ..events import DetectionEvent, EventType
+from ._temporal_worker import TemporalWorker
 from .fall_temporal_model import FRAME_FEATURE_NAMES
 
 logger = logging.getLogger(__name__)
@@ -94,6 +95,10 @@ class FallDataAuxConfig:
     temporal_python: Path = DEFAULT_TEMPORAL_PYTHON
     temporal_compare_model_path: Optional[Path] = None
     temporal_pose_model_path: Path = DEFAULT_TEMPORAL_POSE_MODEL
+    # 기존 현장 비교 기준과 같은 Pose 입력 크기를 자식 프로세스에 명시한다.
+    temporal_pose_imgsz: int = 640
+    # 별도 TCN 자식만 모델을 재사용한다. 운영 기본값은 기존 1회 실행을 유지한다.
+    temporal_worker_enabled: bool = False
     temporal_sliding_window_size: int = 0
     temporal_sliding_window_stride: int = 5
     temporal_min_confirmed_windows: int = 1
@@ -206,6 +211,12 @@ class FallDataAuxConfig:
                     str(DEFAULT_TEMPORAL_POSE_MODEL),
                 )
             ),
+            temporal_pose_imgsz=_parse_int(
+                os.environ.get("FALLDATA_AUX_TEMPORAL_POSE_IMGSZ"), 640
+            ),
+            temporal_worker_enabled=_parse_bool(
+                os.environ.get("FALLDATA_AUX_TEMPORAL_WORKER_ENABLED"), False
+            ),
             temporal_sliding_window_size=_parse_int(
                 os.environ.get("FALLDATA_AUX_TEMPORAL_SLIDING_WINDOW_SIZE"), 0
             ),
@@ -248,6 +259,8 @@ class FallDataAuxVerifier:
     UNAVAILABLE_STATUSES = {
         "error",
         "missing_dependency",
+        # 입력 계약 불일치는 정상적인 비낙상 판정이 아니라 보조 모델 사용 불가다.
+        "incompatible_feature_contract",
         "no_frames",
         "skipped_cooldown",
     }
@@ -259,6 +272,7 @@ class FallDataAuxVerifier:
         inline_pose_rf_bundle: Optional[dict[str, Any]] = None,
     ) -> None:
         self.config = config or FallDataAuxConfig.from_env()
+        self._temporal_worker = TemporalWorker()
         self._frames: Deque[np.ndarray] = deque(maxlen=max(self.config.buffer_frames, 1))
         self._pose_records: dict[str, Deque[dict[str, Any]]] = {}
         self._pose_generations: dict[str, int] = {}
@@ -274,6 +288,11 @@ class FallDataAuxVerifier:
         self._last_result_by_camera: dict[str, dict] = {}
         self._lock = Lock()
         self._inline_feature_capture_lock = Lock()
+
+    def close(self) -> None:
+        # 호출 측에서 진행 중인 보조 작업을 join한 뒤 재사용 모델 자식을 회수한다.
+        # 중복 종료는 안전하며, 프로세서 재시작 시 다음 요청이 모델을 다시 준비한다.
+        self._temporal_worker.close()
 
     @property
     def enabled(self) -> bool:
@@ -320,8 +339,9 @@ class FallDataAuxVerifier:
             event.metadata = metadata
         pose_ids_by_box: dict[tuple, set[int]] = {}
         records: list[dict[str, Any]] = []
+        valid_pose_events: set[int] = set()
         for event in events:
-            if event.event_type != EventType.PERSON or not event.keypoints:
+            if event.event_type != EventType.PERSON or event.keypoints is None:
                 continue
             if type(event.object_id) is not int or not 0 <= event.object_id < 2**64 - 1:
                 continue
@@ -331,15 +351,55 @@ class FallDataAuxVerifier:
             fall_score = metadata.get("fall_score")
             if fall_score is None:
                 continue
-            keypoints = np.asarray(event.keypoints, dtype=np.float32)
-            if keypoints.shape != (17, 3):
+            try:
+                keypoints = np.asarray(event.keypoints, dtype=np.float32)
+                frame_width = int(metadata.get("frame_width") or 0)
+                frame_height = int(metadata.get("frame_height") or 0)
+                numeric_values = np.asarray(
+                    [
+                        event.x,
+                        event.y,
+                        event.width,
+                        event.height,
+                        event.timestamp,
+                        event.confidence,
+                        fall_score,
+                    ],
+                    dtype=np.float64,
+                )
+            except (TypeError, ValueError, OverflowError):
                 continue
-            frame_width = max(int(metadata.get("frame_width") or 0), 1)
-            frame_height = max(int(metadata.get("frame_height") or 0), 1)
+            if (
+                keypoints.shape != (17, 3)
+                or not np.isfinite(keypoints).all()
+                or not np.isfinite(numeric_values).all()
+                or any(
+                    not isinstance(value, (int, float, np.integer, np.floating))
+                    for value in (
+                        event.x,
+                        event.y,
+                        event.width,
+                        event.height,
+                        event.timestamp,
+                        event.confidence,
+                        fall_score,
+                    )
+                )
+                or np.any((keypoints[:, 2] < 0) | (keypoints[:, 2] > 1))
+                or not 0 <= event.confidence <= 1
+                or event.width <= 0
+                or event.height <= 0
+                or frame_width <= 0
+                or frame_height <= 0
+            ):
+                continue
             bbox = np.asarray(
                 [event.x, event.y, event.x + event.width, event.y + event.height],
                 dtype=np.float32,
             )
+            if not np.isfinite(bbox).all():
+                continue
+            valid_pose_events.add(id(event))
             keypoint_confidences = keypoints[:, 2]
             pose_ids_by_box.setdefault(self._pose_box_key(event), set()).add(
                 event.object_id
@@ -423,6 +483,12 @@ class FallDataAuxVerifier:
             for event in events:
                 metadata = dict(event.metadata or {})
                 metadata.pop("falldata_pose_scope", None)
+                if (
+                    event.event_type == EventType.PERSON
+                    and id(event) not in valid_pose_events
+                ):
+                    event.metadata = metadata
+                    continue
                 matching_ids = pose_ids_by_box.get(self._pose_box_key(event), set())
                 if len(matching_ids) == 1:
                     metadata["falldata_pose_scope"] = {
@@ -482,6 +548,8 @@ class FallDataAuxVerifier:
             "camera_id": camera_name,
             "pose_scope": summary.get("pose_scope"),
             "window_seconds": float(window_seconds),
+            # 실제 선택 단계가 전달한 기준만 기록한다. 과거 수집에 기본값을 추정하지 않는다.
+            "sampling_contract": summary.get("sampling_contract"),
             "frames_seen": int(summary["frames_seen"]),
             "frames_with_pose": int(summary["frames_with_pose"]),
             "sampled_frames": len(summary.get("frame_records", [])),
@@ -618,7 +686,8 @@ class FallDataAuxVerifier:
                 result = self._result(
                     (
                         temporal_status
-                        if temporal_status in {"ok", "insufficient_pose_frames"}
+                        if temporal_status
+                        in {"ok", "insufficient_pose_frames", "insufficient_windows"}
                         else "error"
                     ),
                     confirmed=bool(temporal_result.get("confirmed")),
@@ -797,14 +866,49 @@ class FallDataAuxVerifier:
             )
 
         max_frames = max(int(inference_config.get("max_frames") or 48), 1)
+        # 학습용 영상 추출처럼 실제 관측만 사용한다. 부족한 Pose를 반복하면
+        # 관측 수와 상위 점수 평균이 부풀려져 RF 입력 특징이 달라진다.
+        sample_count = min(max_frames, len(window_records))
         selected_indices = np.linspace(
             0,
             len(window_records) - 1,
-            num=max_frames,
+            num=sample_count,
         ).astype(int)
         selected_records = [window_records[index] for index in selected_indices]
-        summary = _summarize_frames(selected_records, max_frames)
+        summary = _summarize_frames(selected_records, sample_count)
         summary["pose_scope"] = dict(pose_scope)
+        # 관측 개수와 선택 상한은 다르므로, 학습에서도 같은 표본 정책을 재현하도록 남긴다.
+        summary["sampling_contract"] = {
+            "policy": "unique_uniform_valid_pose_v1",
+            "max_frames": max_frames,
+        }
+        # 같은 열 이름이라도 영상 재추출과 실시간 Pose는 계산 기준이 다르다.
+        # 학습 출처를 확인하지 못한 모델의 확률을 경보 판정에 사용하지 않는다.
+        if (
+            bundle.get("model_kind") != "deepstream_pose_inline_rf"
+            or bundle.get("feature_source") != "deepstream_pose_inline"
+        ):
+            capture_result = {}
+            if self.config.inline_feature_capture_path is not None:
+                # 호환 모델을 학습할 무필터 수집은 유지하되, 없는 확률로 선별하지 않는다.
+                capture_status = "skipped_probability_filter"
+                if self.config.inline_feature_capture_min_probability <= 0:
+                    capture_status = self._write_inline_feature_capture(
+                        camera_name, summary, window_seconds=window_seconds
+                    )
+                capture_result["feature_capture_status"] = capture_status
+            return self._result(
+                "incompatible_feature_contract",
+                confirmed=False,
+                runtime="deepstream_pose_inline",
+                expected_model_kind="deepstream_pose_inline_rf",
+                expected_feature_source="deepstream_pose_inline",
+                model_kind=bundle.get("model_kind"),
+                feature_source=bundle.get("feature_source"),
+                frames_with_pose=len(window_records),
+                sampled_frames=sample_count,
+                **capture_result,
+            )
         classifier = bundle.get("model", bundle)
         feature_names = bundle.get("feature_names")
         expected_features = getattr(
@@ -1062,6 +1166,8 @@ class FallDataAuxVerifier:
             str(model_path),
             "--pose-model",
             str(self.config.temporal_pose_model_path),
+            "--imgsz",
+            str(self.config.temporal_pose_imgsz),
             "--video",
             str(video_path),
         ]
@@ -1076,27 +1182,49 @@ class FallDataAuxVerifier:
                     str(self.config.temporal_min_confirmed_windows),
                 ]
             )
-        self._record_temporal_metrics(process_calls=1)
+        # 재사용 요청 횟수를 새 프로세스 실행 횟수로 잘못 표시하지 않는다.
+        metric_prefix = "worker" if self.config.temporal_worker_enabled else "process"
+        self._record_temporal_metrics(**{f"{metric_prefix}_calls": 1})
         started = time.monotonic()
         try:
-            infer = self._run(command)
+            # 기존 결과 파싱/timeout 정책은 유지하고, 선택 시 전용 자식에서만 모델을 재사용한다.
+            if self.config.temporal_worker_enabled:
+                infer = self._temporal_worker.run(command, timeout=self.config.timeout_seconds)
+            else:
+                infer = self._run(command)
         except subprocess.TimeoutExpired:
-            self._record_temporal_metrics(process_errors=1, process_timeouts=1)
+            self._record_temporal_metrics(**{
+                f"{metric_prefix}_errors": 1, f"{metric_prefix}_timeouts": 1,
+            })
             raise
         except Exception:
-            self._record_temporal_metrics(process_errors=1)
+            self._record_temporal_metrics(**{f"{metric_prefix}_errors": 1})
             raise
         else:
-            self._record_temporal_metrics(process_completed=1)
+            self._record_temporal_metrics(**{f"{metric_prefix}_completed": 1})
         finally:
-            self._record_temporal_metrics(
-                process_seconds=max(0.0, time.monotonic() - started)
-            )
+            self._record_temporal_metrics(**{
+                f"{metric_prefix}_seconds": max(0.0, time.monotonic() - started),
+            })
         prediction = self._parse_prediction(infer.stdout)
         fall_probability = self._parse_named_float(infer.stdout, "fall_probability")
         threshold = self._parse_named_float(infer.stdout, "threshold")
         frames_with_pose = self._parse_named_int(infer.stdout, "frames_with_pose")
         sliding_windows = self._parse_named_int(infer.stdout, "sliding_windows")
+        window_inferences = self._parse_named_int(infer.stdout, "window_inferences")
+        if window_inferences is None:
+            window_inferences = sliding_windows
+        if window_inferences is not None and window_inferences < 0:
+            window_inferences = None
+        windows_sufficient = window_inferences != 0 and not re.search(
+            r"^inference_status: insufficient_windows\s*$", infer.stdout, re.MULTILINE
+        )
+        if self.config.temporal_sliding_window_size > 0:
+            windows_sufficient = windows_sufficient and (
+                window_inferences is not None
+                and window_inferences
+                >= max(self.config.temporal_min_confirmed_windows, 1)
+            )
         min_pose_frames = max(int(self.config.min_pose_frames), 0)
         pose_frames_sufficient = min_pose_frames == 0 or (
             frames_with_pose is not None and frames_with_pose >= min_pose_frames
@@ -1106,24 +1234,29 @@ class FallDataAuxVerifier:
             and fall_probability is not None
             and threshold is not None
         )
-        # 파싱 실패 시 실제 model forward 횟수를 알 수 없으므로 0으로 둔다.
-        # sliding window가 없으면 전체 영상 1회 추론(단일 window)으로 센다.
-        window_inferences = (sliding_windows if sliding_windows is not None else 1) if parsed else 0
         self._record_temporal_metrics(
             parsed_results=int(parsed),
             unparsed_results=int(not parsed),
             insufficient_pose_results=int(not pose_frames_sufficient),
-            window_inferences=window_inferences,
+            insufficient_window_results=int(not windows_sufficient),
+            window_reports_missing=int(window_inferences is None),
         )
+        if window_inferences is not None:
+            self._record_temporal_metrics(window_inferences=window_inferences)
         confirmed = (
             pose_frames_sufficient
+            and windows_sufficient
             and prediction == 1
             and fall_probability is not None
             and threshold is not None
             and fall_probability >= threshold
         )
         result = {
-            "status": "ok" if pose_frames_sufficient else "insufficient_pose_frames",
+            "status": (
+                "insufficient_windows"
+                if not windows_sufficient
+                else "ok" if pose_frames_sufficient else "insufficient_pose_frames"
+            ),
             "model_path": str(model_path),
             "confirmed": confirmed,
             "prediction": prediction,

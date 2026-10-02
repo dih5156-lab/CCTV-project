@@ -420,6 +420,12 @@ def start_processor_runtime(
                 processor.stop()
                 logger.info("프로세서가 중지되었습니다.")
 
+            # CUDA 상태가 손상된 경우 파이프라인만 재시작하지 않고 외부 감독자에 오류 종료를 알린다.
+            restart_reason = getattr(processor, "process_restart_reason", "")
+            if isinstance(restart_reason, str) and restart_reason:
+                logger.critical("AI 엔진 프로세스 재실행 필요: %s", restart_reason)
+                raise SystemExit(1)
+
             if cfg.display or not restart_on_pipeline_error:
                 break
 

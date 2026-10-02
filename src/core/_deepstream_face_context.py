@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Callable, Dict, List, Tuple
+from contextlib import nullcontext
+from typing import Any, Callable, ContextManager, Dict, List, Tuple
 
 from .ai._constants import _FACE_TRACK_COOLDOWN_SEC
 from .ai._yolo_helpers import age_to_group
@@ -28,11 +29,13 @@ def run_deepstream_face_recognition(
     cache: FaceCache,
     timestamp_factory: Callable[[], float],
     snapshot_saver: Callable[[Any, str, str, Dict[str, int], float, float], str | None],
+    commit_guard: Callable[[], ContextManager[bool]] | None = None,
 ) -> List[DetectionEvent]:
     """DeepStream preview frame과 person 이벤트를 얼굴 인식 이벤트로 확장한다."""
     if frame is None or not person_events or not getattr(recognizer, "enabled", False):
         return []
 
+    guard = commit_guard or (lambda: nullcontext(True))
     face_events: List[DetectionEvent] = []
     now = timestamp_factory()
     for person in person_events:
@@ -40,33 +43,42 @@ def run_deepstream_face_recognition(
             continue
 
         cache_key = (camera_name, int(person.object_id))
-        cached_event = _cached_event(cache, cache_key, now)
-        if cached_event is not None:
-            face_events.append(cached_event)
-            continue
+        with guard() as current:
+            if not current:
+                return []
+            cached_event = _cached_event(cache, cache_key, now)
+            if cached_event is not None:
+                face_events.append(cached_event)
+                continue
 
         results = recognizer.detect_and_recognize(
             frame,
             {"x": person.x, "y": person.y, "width": person.width, "height": person.height},
         )
-        if not results:
-            cache.pop(cache_key, None)
-            continue
+        with guard() as current:
+            if not current:
+                return []
+            if not results:
+                cache.pop(cache_key, None)
+                continue
 
-        best = max(results, key=lambda item: item.confidence)
-        event = _build_face_event(
-            best=best,
-            person=person,
-            frame=frame,
-            camera_name=camera_name,
-            recognizer_name=getattr(recognizer, "backend_name", "unknown"),
-            now=now,
-            snapshot_saver=snapshot_saver,
-        )
-        face_events.append(event)
-        cache[cache_key] = {"timestamp": now, "event": event}
+            best = max(results, key=lambda item: item.confidence)
+            event = _build_face_event(
+                best=best,
+                person=person,
+                frame=frame,
+                camera_name=camera_name,
+                recognizer_name=getattr(recognizer, "backend_name", "unknown"),
+                now=now,
+                snapshot_saver=snapshot_saver,
+            )
+            face_events.append(event)
+            cache[cache_key] = {"timestamp": now, "event": event}
 
-    _cleanup_cache(cache, now)
+    with guard() as current:
+        if not current:
+            return []
+        _cleanup_cache(cache, now)
     return face_events
 
 

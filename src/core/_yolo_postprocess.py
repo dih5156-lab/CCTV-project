@@ -2,9 +2,118 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, List, Optional, Sequence, Set, Tuple
 
 import numpy as np
+
+
+def expand_bbox_for_pose_crop(
+    bbox: Tuple[float, float, float, float],
+    *,
+    frame_width: int,
+    frame_height: int,
+    margin_ratio: float = 0.15,
+) -> Tuple[int, int, int, int]:
+    """사람 bbox를 여백만큼 확장하고 프레임 내부의 정수 xyxy로 반환한다."""
+    if frame_width <= 0 or frame_height <= 0:
+        raise ValueError("frame dimensions must be positive")
+    if margin_ratio < 0:
+        raise ValueError("margin_ratio must be non-negative")
+    x1, y1, x2, y2 = (float(value) for value in bbox)
+    if x2 <= x1 or y2 <= y1:
+        raise ValueError("bbox must have positive width and height")
+    width = x2 - x1
+    height = y2 - y1
+    expanded = (
+        x1 - width * margin_ratio,
+        y1 - height * margin_ratio,
+        x2 + width * margin_ratio,
+        y2 + height * margin_ratio,
+    )
+    left = max(0, min(frame_width - 1, int(np.floor(expanded[0]))))
+    top = max(0, min(frame_height - 1, int(np.floor(expanded[1]))))
+    right = max(left + 1, min(frame_width, int(np.ceil(expanded[2]))))
+    bottom = max(top + 1, min(frame_height, int(np.ceil(expanded[3]))))
+    return left, top, right, bottom
+
+
+def restore_crop_keypoints(
+    values: Any,
+    crop_bbox: Tuple[int, int, int, int],
+    *,
+    frame_width: Optional[int] = None,
+    frame_height: Optional[int] = None,
+) -> List[List[float]]:
+    """crop 기준 YOLO keypoint에 crop 원점을 더해 원본 좌표로 복원한다."""
+    x1, y1, x2, y2 = (int(value) for value in crop_bbox)
+    if x2 <= x1 or y2 <= y1:
+        raise ValueError("crop_bbox must have positive width and height")
+    if values is None:
+        return []
+    keypoints = np.asarray(values, dtype=np.float32).reshape(-1, 3)
+    restored: List[List[float]] = []
+    for x_value, y_value, confidence in keypoints:
+        x = float(x_value) + x1
+        y = float(y_value) + y1
+        if frame_width is not None:
+            x = max(0.0, min(frame_width - 1, x))
+        if frame_height is not None:
+            y = max(0.0, min(frame_height - 1, y))
+        restored.append([x, y, float(confidence)])
+    return restored
+
+
+def extract_pose_crops(
+    frame: np.ndarray,
+    bboxes: List[Tuple[float, float, float, float]],
+    *,
+    margin_ratio: float = 0.15,
+) -> List[Tuple[np.ndarray, Tuple[int, int, int, int]]]:
+    """사람 bbox 목록에서 pose 입력 crop과 원본 좌표 bbox를 함께 만든다."""
+    if not isinstance(frame, np.ndarray) or frame.ndim < 2:
+        raise ValueError("frame must be a non-empty NumPy image")
+    frame_height, frame_width = frame.shape[:2]
+    if frame_height <= 0 or frame_width <= 0:
+        raise ValueError("frame must have positive dimensions")
+    crops: List[Tuple[np.ndarray, Tuple[int, int, int, int]]] = []
+    for bbox in bboxes:
+        crop_bbox = expand_bbox_for_pose_crop(
+            bbox,
+            frame_width=frame_width,
+            frame_height=frame_height,
+            margin_ratio=margin_ratio,
+        )
+        x1, y1, x2, y2 = crop_bbox
+        crops.append((frame[y1:y2, x1:x2].copy(), crop_bbox))
+    return crops
+
+
+def attach_pose_results_to_tracks(
+    keypoint_values: Sequence[Any],
+    crop_bboxes: Sequence[Tuple[int, int, int, int]],
+    track_ids: Sequence[int],
+    *,
+    frame_width: Optional[int] = None,
+    frame_height: Optional[int] = None,
+) -> List[Dict[str, Any]]:
+    """crop 순서의 pose 결과를 person tracker의 ID와 원본 좌표에 결합한다."""
+    if not (len(keypoint_values) == len(crop_bboxes) == len(track_ids)):
+        raise ValueError("keypoint_values, crop_bboxes, and track_ids must have equal length")
+    attached: List[Dict[str, Any]] = []
+    for values, crop_bbox, track_id in zip(keypoint_values, crop_bboxes, track_ids):
+        attached.append(
+            {
+                "track_id": int(track_id),
+                "crop_bbox": crop_bbox,
+                "keypoints": restore_crop_keypoints(
+                    values,
+                    crop_bbox,
+                    frame_width=frame_width,
+                    frame_height=frame_height,
+                ),
+            }
+        )
+    return attached
 
 
 def filter_yolo_candidates(

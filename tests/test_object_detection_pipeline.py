@@ -109,3 +109,44 @@ def test_object_detection_pipeline_forwards_yolo_context_to_appearance():
         {"class_name": "backpack", "x": 8, "y": 35, "width": 20, "height": 30},
         {"class_name": "helmet", "event_type": "helmet"},
     ]
+
+
+def test_pose_crop_mode_uses_opt_in_runner(monkeypatch):
+    analyzer = DummyAnalyzer()
+    called = []
+
+    def run_pose_crop(frame):
+        called.append(frame.shape)
+        return [_person_event()], []
+
+    analyzer._run_pose_crop = run_pose_crop
+    monkeypatch.setenv("POSE_CROP_MODE", "1")
+    pipeline = ObjectDetectionPipeline(analyzer)
+
+    people, falls = pipeline.detect_primary_people(
+        np.zeros((120, 120, 3), dtype=np.uint8), use_pose=True, use_person=False
+    )
+
+    assert called == [(120, 120, 3)]
+    assert len(people) == 1
+    assert falls == []
+
+
+def test_pose_crop_mode_defaults_to_full_frame(monkeypatch):
+    analyzer = DummyAnalyzer()
+    called = []
+
+    def run_pose_crop(frame):
+        called.append(True)
+        return [], []
+
+    analyzer._run_pose_crop = run_pose_crop
+    monkeypatch.delenv("POSE_CROP_MODE", raising=False)
+    pipeline = ObjectDetectionPipeline(analyzer)
+
+    people, _ = pipeline.detect_primary_people(
+        np.zeros((120, 120, 3), dtype=np.uint8), use_pose=True, use_person=False
+    )
+
+    assert called == []
+    assert len(people) == 1

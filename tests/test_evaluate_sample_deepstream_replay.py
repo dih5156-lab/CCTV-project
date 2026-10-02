@@ -290,9 +290,10 @@ def test_recreate_ai_engine_passes_scoped_environment(
     )
 
     command, kwargs = calls[0]
-    assert command[-4:] == [
+    assert command[-5:] == [
         "up",
         "-d",
+        "--no-deps",
         "--force-recreate",
         "cctv-ai-engine",
     ]
@@ -306,6 +307,26 @@ def test_recreate_ai_engine_passes_scoped_environment(
         kwargs["env"]["FALLDATA_AUX_COMPARE_MODEL_PATH"]
         == "/app/models/candidate.joblib"
     )
+
+
+def test_restart_or_recreate_forwards_runtime_overrides(monkeypatch):
+    captured = []
+    monkeypatch.setattr(
+        replay,
+        "_recreate_ai_engine",
+        lambda *_args, **kwargs: captured.append(kwargs),
+    )
+
+    replay._restart_or_recreate_ai_engine(
+        Path("docker-compose.jetson.yml"),
+        Path(".env.jetson"),
+        recreate=True,
+        environment_overrides={"FALL_SHADOW_REVIEW_LOG_PATH": "/app/data/review.jsonl"},
+    )
+
+    assert captured == [
+        {"environment_overrides": {"FALL_SHADOW_REVIEW_LOG_PATH": "/app/data/review.jsonl"}}
+    ]
 
 
 def test_resolve_project_container_path_maps_relative_path(tmp_path) -> None:
@@ -364,6 +385,7 @@ def test_main_parses_feature_capture_and_candidate_model_arguments(
         "models/falldata/candidate.joblib"
     )
     assert args.scene_position == "복도"
+    assert args.safe_action_layer is True
 
 
 def test_filter_manifest_rows_applies_label_position_and_limit() -> None:
@@ -569,6 +591,76 @@ def test_file_replay_restores_camera_config_when_initial_restart_fails(
         replay.evaluate(args)
 
     assert (backup_path, args.cameras_json) in copied
+
+
+def test_file_replay_restores_action_layer_after_ai_engine(
+    tmp_path,
+    monkeypatch,
+):
+    video_path = tmp_path / "sample.mp4"
+    video_path.write_bytes(b"video")
+    manifest_path = tmp_path / "manifest.jsonl"
+    manifest_path.write_text(
+        json.dumps(
+            {
+                "scene_id": "scene-1",
+                "video_path": str(video_path),
+                "label": "fall",
+                "is_fall": True,
+                "frame_count": 30,
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    cameras_json = tmp_path / "cameras.json"
+    cameras_json.write_text("original", encoding="utf-8")
+    lifecycle = []
+
+    monkeypatch.setattr(replay, "_set_action_layer_dry_run", lambda *args: lifecycle.append(args[-1]))
+    monkeypatch.setattr(replay, "_restart_ai_engine", lambda *args: lifecycle.append("ai"))
+    monkeypatch.setattr(replay, "_video_duration_seconds", lambda *args: 0.1)
+    monkeypatch.setattr(replay.time, "sleep", lambda *args: None)
+    monkeypatch.setattr(replay, "_write_jsonl", lambda *args: None)
+    monkeypatch.setattr(replay, "_write_csv", lambda *args: None)
+
+    args = SimpleNamespace(
+        manifest=manifest_path,
+        label=None,
+        scene_position=None,
+        scene_ids=None,
+        max_videos=1,
+        source_mode="file",
+        container_project_root=Path("/app"),
+        container_rtsp_url="rtsp://cctv-media-server:8554/sample_eval",
+        host_rtsp_url="rtsp://localhost:8554/sample_eval",
+        eval_cameras_json=tmp_path / "eval-cameras.json",
+        camera_id="sample_eval",
+        compose_env_file=tmp_path / ".env",
+        review_log=tmp_path / "review.jsonl",
+        prepare_only=False,
+        apply_camera_config=True,
+        cameras_json=cameras_json,
+        restart_ai_engine=True,
+        compose_file=tmp_path / "docker-compose.yml",
+        restart_wait_seconds=0.0,
+        restore_drain_seconds=0.0,
+        assumed_fps=30.0,
+        shadow_wait_seconds=0.0,
+        post_replay_drain_seconds=0.0,
+        timeout_grace_seconds=1.0,
+        runtime_result_timeout_seconds=0.0,
+        runtime_result_poll_seconds=0.1,
+        score_source="overall",
+        results_jsonl=tmp_path / "results.jsonl",
+        results_csv=tmp_path / "results.csv",
+        restore_camera_config=True,
+        safe_action_layer=True,
+    )
+
+    replay.evaluate(args)
+
+    assert lifecycle == [True, "ai", "ai", "ai", False]
 
 
 def test_feature_capture_labels_new_records_and_restores_runtime(
@@ -803,7 +895,7 @@ def test_ffmpeg_replay_rejects_nonzero_publisher_exit(tmp_path, monkeypatch):
     monkeypatch.setattr(replay.shutil, "which", lambda name: "/usr/bin/ffmpeg")
     monkeypatch.setattr(replay.subprocess, "Popen", lambda command: FailedProcess())
 
-    with pytest.raises(RuntimeError, match="ffmpeg replay failed with exit code 1"):
+    with pytest.raises(RuntimeError, match="ffmpeg replay 실패: 종료 코드 1"):
         replay._run_ffmpeg_replay(
             tmp_path / "sample.mp4",
             "rtsp://localhost:8554/sample_eval_input",
@@ -839,6 +931,23 @@ def test_resolve_review_log_keeps_explicit_argument():
     )
 
     assert resolved == explicit
+
+
+def test_recreate_ai_engine_implies_restart(monkeypatch):
+    captured = {}
+    monkeypatch.setattr(
+        replay,
+        "evaluate",
+        lambda args: captured.setdefault("args", args) and [],
+    )
+    monkeypatch.setattr(
+        replay.sys,
+        "argv",
+        ["evaluate_sample_deepstream_replay.py", "--recreate-ai-engine"],
+    )
+
+    assert replay.main() == 0
+    assert captured["args"].restart_ai_engine is True
 
 
 def test_summarize_shadow_records_counts_only_ok_confirmed_records():

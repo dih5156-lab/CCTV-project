@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build a replay manifest from camera error case IDs."""
+"""카메라 오류 사례 ID에서 재생 매니페스트를 만든다."""
 
 from __future__ import annotations
 

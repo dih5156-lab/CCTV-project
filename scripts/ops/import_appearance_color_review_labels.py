@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Import reviewed appearance color labels into a separate classification set."""
+"""검수한 외관 색상 라벨을 별도 분류 세트로 가져온다."""
 
 from __future__ import annotations
 

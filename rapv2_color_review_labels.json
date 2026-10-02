@@ -1,0 +1,3827 @@
+{
+  "schema_version": 1,
+  "items": [
+    {
+      "id": 0,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-21-20140321150021-20140321151209-tarid391-frame2269-line1.png",
+      "field": "upper_color",
+      "current_label": "black",
+      "review_label": "black"
+    },
+    {
+      "id": 1,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-04-17-20140417135035-20140417135623-tarid322-frame3537-line2.png",
+      "field": "lower_color",
+      "current_label": "black",
+      "review_label": "black"
+    },
+    {
+      "id": 2,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM19-2014-03-20-20140320161301-20140320161849-tarid265-frame3486-line1.png",
+      "field": "upper_color",
+      "current_label": "black",
+      "review_label": "black"
+    },
+    {
+      "id": 3,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM31-2014-04-24-20140424125157-20140424125737-tarid159-frame3982-line1.png",
+      "field": "lower_color",
+      "current_label": "black",
+      "review_label": "black"
+    },
+    {
+      "id": 4,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-03-25-20140325114827-20140325115410-tarid308-frame3223-line2.png",
+      "field": "upper_color",
+      "current_label": "black",
+      "review_label": "black"
+    },
+    {
+      "id": 5,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM29-2014-04-15-20140415114626-20140415115214-tarid372-frame2830-line2.png",
+      "field": "lower_color",
+      "current_label": "black",
+      "review_label": "black"
+    },
+    {
+      "id": 6,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM01-2014-02-20-20140220170007-20140220171314-tarid42-frame2927-line1.png",
+      "field": "upper_color",
+      "current_label": "black",
+      "review_label": "black"
+    },
+    {
+      "id": 7,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-02-12-20140212131438-20140212132026-tarid402-frame2763-line1.png",
+      "field": "lower_color",
+      "current_label": "black",
+      "review_label": "blue"
+    },
+    {
+      "id": 8,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM08-2014-02-26-20140226111853-20140226112441-tarid466-frame3927-line1.png",
+      "field": "upper_color",
+      "current_label": "black",
+      "review_label": "black"
+    },
+    {
+      "id": 9,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-02-14-20140214140701-20140214141209-tarid256-frame1721-line2.png",
+      "field": "lower_color",
+      "current_label": "black",
+      "review_label": "black"
+    },
+    {
+      "id": 10,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-03-25-20140325115252-20140325115856-tarid48-frame2052-line1.png",
+      "field": "upper_color",
+      "current_label": "black",
+      "review_label": "black"
+    },
+    {
+      "id": 11,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM31-2014-03-18-20140318121450-20140318122101-tarid92-frame4356-line1.png",
+      "field": "lower_color",
+      "current_label": "black",
+      "review_label": "navy"
+    },
+    {
+      "id": 12,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM10-2014-03-24-20140324131112-20140324131728-tarid115-frame1242-line1.png",
+      "field": "upper_color",
+      "current_label": "black",
+      "review_label": "black"
+    },
+    {
+      "id": 13,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM10-2014-03-28-20140328154130-20140328154714-tarid127-frame1400-line1.png",
+      "field": "lower_color",
+      "current_label": "black",
+      "review_label": "black"
+    },
+    {
+      "id": 14,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM30-2014-03-27-20140327102413-20140327103005-tarid8-frame514-line2.png",
+      "field": "upper_color",
+      "current_label": "black",
+      "review_label": "black"
+    },
+    {
+      "id": 15,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-18-20140318124032-20140318124620-tarid125-frame931-line1.png",
+      "field": "lower_color",
+      "current_label": "black",
+      "review_label": "black"
+    },
+    {
+      "id": 16,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-26-20140326141844-20140326142435-tarid524-frame3584-line1.png",
+      "field": "upper_color",
+      "current_label": "black",
+      "review_label": "black"
+    },
+    {
+      "id": 17,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2013-12-23-20131223120614-20131223121202-tarid270-frame4292-line2.png",
+      "field": "lower_color",
+      "current_label": "black",
+      "review_label": "black"
+    },
+    {
+      "id": 18,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2013-12-23-20131223123636-20131223124228-tarid8-frame283-line1.png",
+      "field": "upper_color",
+      "current_label": "black",
+      "review_label": "black"
+    },
+    {
+      "id": 19,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM01-2014-02-20-20140220170007-20140220171314-tarid42-frame2927-line1.png",
+      "field": "lower_color",
+      "current_label": "black",
+      "review_label": "black"
+    },
+    {
+      "id": 20,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM01-2014-02-20-20140220170007-20140220171314-tarid168-frame8544-line1.png",
+      "field": "upper_color",
+      "current_label": "black",
+      "review_label": "black"
+    },
+    {
+      "id": 21,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM08-2014-02-26-20140226111853-20140226112441-tarid466-frame3927-line1.png",
+      "field": "lower_color",
+      "current_label": "black",
+      "review_label": "blue"
+    },
+    {
+      "id": 22,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-20-20140320162533-20140320163133-tarid564-frame3365-line1.png",
+      "field": "upper_color",
+      "current_label": "black",
+      "review_label": "black"
+    },
+    {
+      "id": 23,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM29-2014-03-02-20140302143139-20140302143727-tarid236-frame1310-line2.png",
+      "field": "lower_color",
+      "current_label": "black",
+      "review_label": "exclude"
+    },
+    {
+      "id": 24,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM08-2014-03-27-20140327102558-20140327103910-tarid315-frame4083-line2.png",
+      "field": "upper_color",
+      "current_label": "black",
+      "review_label": "black"
+    },
+    {
+      "id": 25,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM14-2013-12-23-20131223124227-20131223124819-tarid19-frame558-line1.png",
+      "field": "lower_color",
+      "current_label": "black",
+      "review_label": "exclude"
+    },
+    {
+      "id": 26,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-18-20140318121704-20140318122256-tarid464-frame1876-line1.png",
+      "field": "upper_color",
+      "current_label": "black",
+      "review_label": "green"
+    },
+    {
+      "id": 27,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-02-15-20140215164330-20140215164830-tarid264-frame2453-line3.png",
+      "field": "lower_color",
+      "current_label": "black",
+      "review_label": "black"
+    },
+    {
+      "id": 28,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-02-12-20140212135336-20140212135920-tarid172-frame1130-line2.png",
+      "field": "upper_color",
+      "current_label": "black",
+      "review_label": "green"
+    },
+    {
+      "id": 29,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM10-2014-03-24-20140324131112-20140324131728-tarid115-frame1242-line1.png",
+      "field": "lower_color",
+      "current_label": "black",
+      "review_label": "black"
+    },
+    {
+      "id": 30,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM20-2014-03-05-20140305111020-20140305112440-tarid86-frame6072-line1.png",
+      "field": "upper_color",
+      "current_label": "black",
+      "review_label": "black"
+    },
+    {
+      "id": 31,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM30-2014-03-27-20140327102413-20140327103005-tarid8-frame514-line2.png",
+      "field": "lower_color",
+      "current_label": "black",
+      "review_label": "navy"
+    },
+    {
+      "id": 32,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM08-2014-02-15-20140215161504-20140215162444-tarid129-frame1735-line1.png",
+      "field": "upper_color",
+      "current_label": "black",
+      "review_label": "black"
+    },
+    {
+      "id": 33,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-26-20140326141844-20140326142435-tarid524-frame3584-line1.png",
+      "field": "lower_color",
+      "current_label": "black",
+      "review_label": "black"
+    },
+    {
+      "id": 34,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM08-2014-02-21-20140221122229-20140221122817-tarid134-frame837-line2.png",
+      "field": "upper_color",
+      "current_label": "black",
+      "review_label": "black"
+    },
+    {
+      "id": 35,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2013-12-23-20131223123636-20131223124228-tarid8-frame283-line1.png",
+      "field": "lower_color",
+      "current_label": "black",
+      "review_label": "black"
+    },
+    {
+      "id": 36,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-02-21-20140221120321-20140221120829-tarid204-frame1916-line1.png",
+      "field": "upper_color",
+      "current_label": "black",
+      "review_label": "exclude"
+    },
+    {
+      "id": 37,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM01-2014-02-20-20140220170007-20140220171314-tarid168-frame8544-line1.png",
+      "field": "lower_color",
+      "current_label": "black",
+      "review_label": "black"
+    },
+    {
+      "id": 38,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-03-20-20140320161827-20140320162415-tarid252-frame3071-line1.png",
+      "field": "upper_color",
+      "current_label": "black",
+      "review_label": "black"
+    },
+    {
+      "id": 39,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-03-27-20140327101912-20140327102512-tarid198-frame2353-line3.png",
+      "field": "lower_color",
+      "current_label": "black",
+      "review_label": "blue"
+    },
+    {
+      "id": 40,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-18-20140318124032-20140318124620-tarid125-frame931-line1.png",
+      "field": "upper_color",
+      "current_label": "white",
+      "review_label": "white"
+    },
+    {
+      "id": 41,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-03-18-20140318120527-20140318121115-tarid380-frame3080-line2.png",
+      "field": "lower_color",
+      "current_label": "white",
+      "review_label": "brown"
+    },
+    {
+      "id": 42,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-03-02-20140302140755-20140302141355-tarid302-frame2078-line2.png",
+      "field": "upper_color",
+      "current_label": "white",
+      "review_label": "white"
+    },
+    {
+      "id": 43,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM20-2014-03-25-20140325112817-20140325114249-tarid200-frame7974-line1.png",
+      "field": "lower_color",
+      "current_label": "white",
+      "review_label": "exclude"
+    },
+    {
+      "id": 44,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-03-10-20140310131346-20140310131942-tarid95-frame1525-line3.png",
+      "field": "upper_color",
+      "current_label": "white",
+      "review_label": "white"
+    },
+    {
+      "id": 45,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM21-2014-02-21-20140221123703-20140221124857-tarid213-frame2877-line1.png",
+      "field": "lower_color",
+      "current_label": "white",
+      "review_label": "brown"
+    },
+    {
+      "id": 46,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM14-2014-02-26-20140226114159-20140226114747-tarid53-frame1042-line1.png",
+      "field": "upper_color",
+      "current_label": "white",
+      "review_label": "white"
+    },
+    {
+      "id": 47,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM30-2014-04-23-20140423164046-20140423164606-tarid155-frame2792-line2.png",
+      "field": "lower_color",
+      "current_label": "white",
+      "review_label": "white"
+    },
+    {
+      "id": 48,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM30-2014-03-02-20140302140245-20140302140809-tarid59-frame724-line2.png",
+      "field": "upper_color",
+      "current_label": "white",
+      "review_label": "white"
+    },
+    {
+      "id": 49,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM09-2014-03-02-20140302145333-20140302145925-tarid92-frame472-line1.png",
+      "field": "lower_color",
+      "current_label": "white",
+      "review_label": "gray"
+    },
+    {
+      "id": 50,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-02-21-20140221122239-20140221122703-tarid239-frame1674-line1.png",
+      "field": "upper_color",
+      "current_label": "white",
+      "review_label": "brown"
+    },
+    {
+      "id": 51,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM21-2014-03-18-20140318124446-20140318125618-tarid736-frame7977-line1.png",
+      "field": "lower_color",
+      "current_label": "white",
+      "review_label": "white"
+    },
+    {
+      "id": 52,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-20-20140320160317-20140320161333-tarid989-frame5384-line1.png",
+      "field": "upper_color",
+      "current_label": "white",
+      "review_label": "white"
+    },
+    {
+      "id": 53,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM31-2014-04-23-20140423161528-20140423162028-tarid91-frame3116-line1.png",
+      "field": "lower_color",
+      "current_label": "white",
+      "review_label": "white"
+    },
+    {
+      "id": 54,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM29-2014-04-23-20140423163320-20140423164800-tarid651-frame4104-line2.png",
+      "field": "upper_color",
+      "current_label": "white",
+      "review_label": "white"
+    },
+    {
+      "id": 55,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-04-23-20140423160538-20140423161222-tarid127-frame1313-line2.png",
+      "field": "lower_color",
+      "current_label": "white",
+      "review_label": "white"
+    },
+    {
+      "id": 56,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM30-2014-03-03-20140303133120-20140303133644-tarid84-frame2743-line2.png",
+      "field": "upper_color",
+      "current_label": "white",
+      "review_label": "white"
+    },
+    {
+      "id": 57,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-03-27-20140327103116-20140327103740-tarid137-frame2256-line3.png",
+      "field": "lower_color",
+      "current_label": "white",
+      "review_label": "white"
+    },
+    {
+      "id": 58,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM10-2014-03-24-20140324130504-20140324131112-tarid141-frame2309-line1.png",
+      "field": "upper_color",
+      "current_label": "white",
+      "review_label": "white"
+    },
+    {
+      "id": 59,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM13-2014-04-19-20140419110001-20140419110549-tarid97-frame3746-line1.png",
+      "field": "lower_color",
+      "current_label": "white",
+      "review_label": "brown"
+    },
+    {
+      "id": 60,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-04-15-20140415112937-20140415113525-tarid214-frame3163-line1.png",
+      "field": "upper_color",
+      "current_label": "white",
+      "review_label": "white"
+    },
+    {
+      "id": 61,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM06-2014-03-18-20140318122253-20140318122841-tarid47-frame2176-line1.png",
+      "field": "lower_color",
+      "current_label": "white",
+      "review_label": "white"
+    },
+    {
+      "id": 62,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-03-26-20140326144816-20140326145408-tarid442-frame2021-line1.png",
+      "field": "upper_color",
+      "current_label": "white",
+      "review_label": "white"
+    },
+    {
+      "id": 63,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-03-05-20140305113946-20140305114538-tarid290-frame2667-line3.png",
+      "field": "lower_color",
+      "current_label": "white",
+      "review_label": "gray"
+    },
+    {
+      "id": 64,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-03-26-20140326142500-20140326143048-tarid76-frame855-line2.png",
+      "field": "upper_color",
+      "current_label": "white",
+      "review_label": "mixture"
+    },
+    {
+      "id": 65,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM31-2014-03-02-20140302140617-20140302141137-tarid322-frame2912-line1.png",
+      "field": "lower_color",
+      "current_label": "white",
+      "review_label": "brown"
+    },
+    {
+      "id": 66,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-04-22-20140422123326-20140422124253-tarid152-frame3594-line1.png",
+      "field": "upper_color",
+      "current_label": "white",
+      "review_label": "white"
+    },
+    {
+      "id": 67,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM13-2014-04-24-20140424121610-20140424122202-tarid155-frame3942-line1.png",
+      "field": "lower_color",
+      "current_label": "white",
+      "review_label": "brown"
+    },
+    {
+      "id": 68,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-03-05-20140305114538-20140305115126-tarid473-frame2603-line3.png",
+      "field": "upper_color",
+      "current_label": "white",
+      "review_label": "white"
+    },
+    {
+      "id": 69,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-03-21-20140321150441-20140321150937-tarid403-frame3162-line3.png",
+      "field": "lower_color",
+      "current_label": "white",
+      "review_label": "white"
+    },
+    {
+      "id": 70,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-03-28-20140328152911-20140328153455-tarid137-frame1253-line2.png",
+      "field": "upper_color",
+      "current_label": "white",
+      "review_label": "white"
+    },
+    {
+      "id": 71,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM20-2014-03-24-20140324130926-20140324132402-tarid67-frame3243-line1.png",
+      "field": "lower_color",
+      "current_label": "white",
+      "review_label": "white"
+    },
+    {
+      "id": 72,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM27-2014-02-12-20140212134106-20140212134738-tarid134-frame2576-line1.png",
+      "field": "upper_color",
+      "current_label": "white",
+      "review_label": "white"
+    },
+    {
+      "id": 73,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM29-2014-03-18-20140318120528-20140318121116-tarid218-frame1735-line2.png",
+      "field": "lower_color",
+      "current_label": "white",
+      "review_label": "gray"
+    },
+    {
+      "id": 74,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM16-2014-03-03-20140303133323-20140303133915-tarid14-frame387-line1.png",
+      "field": "upper_color",
+      "current_label": "white",
+      "review_label": "white"
+    },
+    {
+      "id": 75,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-04-23-20140423161111-20140423161659-tarid113-frame1352-line3.png",
+      "field": "lower_color",
+      "current_label": "white",
+      "review_label": "gray"
+    },
+    {
+      "id": 76,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM20-2014-03-25-20140325112817-20140325114249-tarid200-frame7974-line1.png",
+      "field": "upper_color",
+      "current_label": "white",
+      "review_label": "white"
+    },
+    {
+      "id": 77,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM30-2014-04-23-20140423164046-20140423164606-tarid167-frame2986-line2.png",
+      "field": "lower_color",
+      "current_label": "white",
+      "review_label": "white"
+    },
+    {
+      "id": 78,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM06-2014-04-22-20140422124409-20140422125001-tarid47-frame2387-line1.png",
+      "field": "upper_color",
+      "current_label": "white",
+      "review_label": "white"
+    },
+    {
+      "id": 79,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM01-2014-04-22-20140422123429-20140422125017-tarid190-frame9738-line1.png",
+      "field": "lower_color",
+      "current_label": "white",
+      "review_label": "white"
+    },
+    {
+      "id": 80,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM31-2014-03-18-20140318121450-20140318122101-tarid92-frame4356-line1.png",
+      "field": "upper_color",
+      "current_label": "gray",
+      "review_label": "gray"
+    },
+    {
+      "id": 81,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-04-23-20140423163414-20140423164018-tarid58-frame1675-line1.png",
+      "field": "lower_color",
+      "current_label": "gray",
+      "review_label": "exclude"
+    },
+    {
+      "id": 82,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM21-2014-02-15-20140215160258-20140215161306-tarid158-frame2043-line1.png",
+      "field": "upper_color",
+      "current_label": "gray",
+      "review_label": "gray"
+    },
+    {
+      "id": 83,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-02-15-20140215163323-20140215163923-tarid390-frame3447-line2.png",
+      "field": "lower_color",
+      "current_label": "gray",
+      "review_label": "green"
+    },
+    {
+      "id": 84,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-03-01-20140301102948-20140301103452-tarid582-frame3450-line2.png",
+      "field": "upper_color",
+      "current_label": "gray",
+      "review_label": "purple"
+    },
+    {
+      "id": 85,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-03-20140303135059-20140303135651-tarid303-frame1402-line1.png",
+      "field": "lower_color",
+      "current_label": "gray",
+      "review_label": "gray"
+    },
+    {
+      "id": 86,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-02-15-20140215164330-20140215164830-tarid264-frame2453-line3.png",
+      "field": "upper_color",
+      "current_label": "gray",
+      "review_label": "white"
+    },
+    {
+      "id": 87,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM13-2014-03-27-20140327101920-20140327102848-tarid67-frame3761-line1.png",
+      "field": "lower_color",
+      "current_label": "gray",
+      "review_label": "gray"
+    },
+    {
+      "id": 88,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-03-27-20140327101912-20140327102512-tarid198-frame2353-line3.png",
+      "field": "upper_color",
+      "current_label": "gray",
+      "review_label": "gray"
+    },
+    {
+      "id": 89,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM27-2014-03-27-20140327102134-20140327102834-tarid111-frame2624-line1.png",
+      "field": "lower_color",
+      "current_label": "gray",
+      "review_label": "white"
+    },
+    {
+      "id": 90,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-03-20140303135059-20140303135651-tarid303-frame1402-line1.png",
+      "field": "upper_color",
+      "current_label": "gray",
+      "review_label": "gray"
+    },
+    {
+      "id": 91,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM31-2014-04-24-20140424124609-20140424125157-tarid131-frame3974-line1.png",
+      "field": "lower_color",
+      "current_label": "gray",
+      "review_label": "navy"
+    },
+    {
+      "id": 92,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM18-2014-02-14-20140214140913-20140214141608-tarid173-frame4595-line1.png",
+      "field": "upper_color",
+      "current_label": "gray",
+      "review_label": "gray"
+    },
+    {
+      "id": 93,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-04-17-20140417130222-20140417130810-tarid194-frame1271-line1.png",
+      "field": "lower_color",
+      "current_label": "gray",
+      "review_label": "blue"
+    },
+    {
+      "id": 94,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-04-17-20140417133722-20140417134310-tarid678-frame2923-line1.png",
+      "field": "upper_color",
+      "current_label": "gray",
+      "review_label": "brown"
+    },
+    {
+      "id": 95,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM08-2014-02-25-20140225154156-20140225155324-tarid1214-frame8549-line1.png",
+      "field": "lower_color",
+      "current_label": "gray",
+      "review_label": "gray"
+    },
+    {
+      "id": 96,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-03-10-20140310133710-20140310134258-tarid365-frame3787-line1.png",
+      "field": "upper_color",
+      "current_label": "gray",
+      "review_label": "brown"
+    },
+    {
+      "id": 97,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-20-20140320160317-20140320161333-tarid989-frame5384-line1.png",
+      "field": "lower_color",
+      "current_label": "gray",
+      "review_label": "brown"
+    },
+    {
+      "id": 98,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM14-2014-02-21-20140221120704-20140221121808-tarid311-frame5623-line1.png",
+      "field": "upper_color",
+      "current_label": "gray",
+      "review_label": "brown"
+    },
+    {
+      "id": 99,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM21-2014-02-22-20140222102102-20140222102905-tarid582-frame5374-line1.png",
+      "field": "lower_color",
+      "current_label": "gray",
+      "review_label": "gray"
+    },
+    {
+      "id": 100,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-05-20140305114442-20140305115750-tarid1466-frame9437-line1.png",
+      "field": "upper_color",
+      "current_label": "gray",
+      "review_label": "gray"
+    },
+    {
+      "id": 101,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-03-20-20140320164728-20140320165315-tarid245-frame3339-line2.png",
+      "field": "lower_color",
+      "current_label": "gray",
+      "review_label": "gray"
+    },
+    {
+      "id": 102,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-28-20140328150122-20140328151233-tarid339-frame1850-line1.png",
+      "field": "upper_color",
+      "current_label": "gray",
+      "review_label": "gray"
+    },
+    {
+      "id": 103,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-04-22-20140422125045-20140422125637-tarid242-frame3359-line3.png",
+      "field": "lower_color",
+      "current_label": "gray",
+      "review_label": "brown"
+    },
+    {
+      "id": 104,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM20-2014-04-15-20140415112353-20140415112945-tarid98-frame3269-line1.png",
+      "field": "upper_color",
+      "current_label": "gray",
+      "review_label": "gray"
+    },
+    {
+      "id": 105,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM20-2014-03-26-20140326143712-20140326144300-tarid24-frame2471-line1.png",
+      "field": "lower_color",
+      "current_label": "gray",
+      "review_label": "exclude"
+    },
+    {
+      "id": 106,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-03-27-20140327104237-20140327104825-tarid35-frame594-line2.png",
+      "field": "upper_color",
+      "current_label": "gray",
+      "review_label": "gray"
+    },
+    {
+      "id": 107,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM18-2014-02-21-20140221124715-20140221125307-tarid134-frame2520-line1.png",
+      "field": "lower_color",
+      "current_label": "gray",
+      "review_label": "gray"
+    },
+    {
+      "id": 108,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM15-2014-03-01-20140301102824-20140301103508-tarid293-frame4201-line1.png",
+      "field": "upper_color",
+      "current_label": "gray",
+      "review_label": "brown"
+    },
+    {
+      "id": 109,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM16-2013-12-23-20131223121908-20131223122504-tarid270-frame3314-line1.png",
+      "field": "lower_color",
+      "current_label": "gray",
+      "review_label": "black"
+    },
+    {
+      "id": 110,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM20-2014-04-15-20140415114121-20140415114713-tarid79-frame2671-line1.png",
+      "field": "upper_color",
+      "current_label": "gray",
+      "review_label": "gray"
+    },
+    {
+      "id": 111,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-03-26-20140326144816-20140326145408-tarid442-frame2021-line1.png",
+      "field": "lower_color",
+      "current_label": "gray",
+      "review_label": "gray"
+    },
+    {
+      "id": 112,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-02-25-20140225152721-20140225154153-tarid947-frame6499-line1.png",
+      "field": "upper_color",
+      "current_label": "gray",
+      "review_label": "gray"
+    },
+    {
+      "id": 113,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-03-27-20140327100729-20140327101525-tarid259-frame3951-line2.png",
+      "field": "lower_color",
+      "current_label": "gray",
+      "review_label": "gray"
+    },
+    {
+      "id": 114,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-02-15-20140215162652-20140215163156-tarid112-frame1171-line1.png",
+      "field": "upper_color",
+      "current_label": "gray",
+      "review_label": "gray"
+    },
+    {
+      "id": 115,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM06-2014-02-21-20140221125128-20140221125720-tarid8-frame473-line1.png",
+      "field": "lower_color",
+      "current_label": "gray",
+      "review_label": "brown"
+    },
+    {
+      "id": 116,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM18-2014-03-01-20140301103026-20140301103714-tarid165-frame3708-line1.png",
+      "field": "upper_color",
+      "current_label": "gray",
+      "review_label": "gray"
+    },
+    {
+      "id": 117,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM01-2014-03-25-20140325112751-20140325114215-tarid79-frame6850-line1.png",
+      "field": "lower_color",
+      "current_label": "gray",
+      "review_label": "blue"
+    },
+    {
+      "id": 118,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM29-2014-03-27-20140327103024-20140327104500-tarid1053-frame8037-line2.png",
+      "field": "upper_color",
+      "current_label": "gray",
+      "review_label": "gray"
+    },
+    {
+      "id": 119,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-20-20140320162533-20140320163133-tarid826-frame4449-line1.png",
+      "field": "lower_color",
+      "current_label": "gray",
+      "review_label": "gray"
+    },
+    {
+      "id": 120,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM31-2013-12-23-20131223120935-20131223121535-tarid49-frame3330-line1.png",
+      "field": "upper_color",
+      "current_label": "red",
+      "review_label": "mixture"
+    },
+    {
+      "id": 121,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM19-2014-03-27-20140327104428-20140327104944-tarid312-frame3687-line1.png",
+      "field": "lower_color",
+      "current_label": "red",
+      "review_label": "red"
+    },
+    {
+      "id": 122,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM28-2014-02-15-20140215162030-20140215162634-tarid158-frame4406-line1.png",
+      "field": "upper_color",
+      "current_label": "red",
+      "review_label": "red"
+    },
+    {
+      "id": 123,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM30-2014-02-20-20140220170835-20140220171355-tarid71-frame1374-line2.png",
+      "field": "lower_color",
+      "current_label": "red",
+      "review_label": "red"
+    },
+    {
+      "id": 124,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-03-05-20140305111014-20140305111626-tarid33-frame395-line3.png",
+      "field": "upper_color",
+      "current_label": "red",
+      "review_label": "red"
+    },
+    {
+      "id": 125,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM30-2014-02-20-20140220170835-20140220171355-tarid75-frame1436-line2.png",
+      "field": "lower_color",
+      "current_label": "red",
+      "review_label": "red"
+    },
+    {
+      "id": 126,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM21-2014-02-21-20140221122707-20140221123703-tarid294-frame6220-line1.png",
+      "field": "upper_color",
+      "current_label": "red",
+      "review_label": "red"
+    },
+    {
+      "id": 127,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-02-21-20140221124021-20140221124649-tarid286-frame3252-line2.png",
+      "field": "lower_color",
+      "current_label": "red",
+      "review_label": "red"
+    },
+    {
+      "id": 128,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2013-12-23-20131223120026-20131223120614-tarid156-frame1250-line1.png",
+      "field": "upper_color",
+      "current_label": "red",
+      "review_label": "red"
+    },
+    {
+      "id": 129,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM30-2014-02-21-20140221122841-20140221123417-tarid108-frame3045-line2.png",
+      "field": "lower_color",
+      "current_label": "red",
+      "review_label": "red"
+    },
+    {
+      "id": 130,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-03-18-20140318120527-20140318121115-tarid380-frame3080-line2.png",
+      "field": "upper_color",
+      "current_label": "red",
+      "review_label": "red"
+    },
+    {
+      "id": 131,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM10-2014-02-14-20140214144012-20140214144804-tarid259-frame4925-line1.png",
+      "field": "lower_color",
+      "current_label": "red",
+      "review_label": "red"
+    },
+    {
+      "id": 132,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM14-2014-03-26-20140326144147-20140326144739-tarid77-frame1982-line1.png",
+      "field": "upper_color",
+      "current_label": "red",
+      "review_label": "red"
+    },
+    {
+      "id": 133,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-02-20-20140220171424-20140220172104-tarid318-frame4287-line3.png",
+      "field": "lower_color",
+      "current_label": "red",
+      "review_label": "red"
+    },
+    {
+      "id": 134,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2013-12-23-20131223120132-20131223120724-tarid251-frame1981-line1.png",
+      "field": "upper_color",
+      "current_label": "red",
+      "review_label": "red"
+    },
+    {
+      "id": 135,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-10-20140310134731-20140310135319-tarid543-frame2488-line1.png",
+      "field": "lower_color",
+      "current_label": "red",
+      "review_label": "red"
+    },
+    {
+      "id": 136,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM18-2014-04-17-20140417131443-20140417132035-tarid47-frame2970-line1.png",
+      "field": "upper_color",
+      "current_label": "red",
+      "review_label": "red"
+    },
+    {
+      "id": 137,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM21-2014-03-27-20140327104603-20140327105707-tarid798-frame7660-line1.png",
+      "field": "lower_color",
+      "current_label": "red",
+      "review_label": "red"
+    },
+    {
+      "id": 138,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM01-2014-04-22-20140422123429-20140422125017-tarid122-frame7100-line1.png",
+      "field": "upper_color",
+      "current_label": "red",
+      "review_label": "red"
+    },
+    {
+      "id": 139,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM20-2014-04-23-20140423163320-20140423164751-tarid39-frame8060-line1.png",
+      "field": "lower_color",
+      "current_label": "red",
+      "review_label": "pink"
+    },
+    {
+      "id": 140,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM16-2014-03-21-20140321152622-20140321153210-tarid146-frame1725-line1.png",
+      "field": "upper_color",
+      "current_label": "red",
+      "review_label": "red"
+    },
+    {
+      "id": 141,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM30-2014-03-12-20140312171307-20140312171847-tarid23-frame1332-line2.png",
+      "field": "lower_color",
+      "current_label": "red",
+      "review_label": "red"
+    },
+    {
+      "id": 142,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-04-24-20140424121023-20140424121615-tarid161-frame2458-line1.png",
+      "field": "upper_color",
+      "current_label": "red",
+      "review_label": "red"
+    },
+    {
+      "id": 143,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM30-2014-02-17-20140217105219-20140217105847-tarid146-frame4015-line2.png",
+      "field": "lower_color",
+      "current_label": "red",
+      "review_label": "red"
+    },
+    {
+      "id": 144,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM20-2014-03-25-20140325112817-20140325114249-tarid159-frame6456-line1.png",
+      "field": "upper_color",
+      "current_label": "red",
+      "review_label": "red"
+    },
+    {
+      "id": 145,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM18-2014-03-10-20140310134902-20140310135450-tarid222-frame2787-line1.png",
+      "field": "lower_color",
+      "current_label": "red",
+      "review_label": "red"
+    },
+    {
+      "id": 146,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM27-2014-02-14-20140214143947-20140214144623-tarid27-frame819-line1.png",
+      "field": "upper_color",
+      "current_label": "red",
+      "review_label": "red"
+    },
+    {
+      "id": 147,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM19-2013-12-23-20131223122347-20131223122935-tarid10-frame510-line1.png",
+      "field": "lower_color",
+      "current_label": "red",
+      "review_label": "red"
+    },
+    {
+      "id": 148,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM16-2014-03-26-20140326145316-20140326145903-tarid44-frame1325-line1.png",
+      "field": "upper_color",
+      "current_label": "red",
+      "review_label": "red"
+    },
+    {
+      "id": 149,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-20-20140320161933-20140320162533-tarid129-frame951-line1.png",
+      "field": "lower_color",
+      "current_label": "red",
+      "review_label": "red"
+    },
+    {
+      "id": 150,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM21-2014-03-27-20140327101619-20140327103247-tarid262-frame5864-line1.png",
+      "field": "upper_color",
+      "current_label": "red",
+      "review_label": "red"
+    },
+    {
+      "id": 151,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM21-2014-02-25-20140225150724-20140225151712-tarid298-frame4774-line1.png",
+      "field": "lower_color",
+      "current_label": "red",
+      "review_label": "red"
+    },
+    {
+      "id": 152,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM21-2014-03-25-20140325111524-20140325112648-tarid331-frame4297-line1.png",
+      "field": "upper_color",
+      "current_label": "red",
+      "review_label": "red"
+    },
+    {
+      "id": 153,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM11-2014-03-01-20140301101744-20140301102256-tarid305-frame3423-line1.png",
+      "field": "lower_color",
+      "current_label": "red",
+      "review_label": "red"
+    },
+    {
+      "id": 154,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM18-2014-02-12-20140212134353-20140212134941-tarid268-frame3833-line1.png",
+      "field": "upper_color",
+      "current_label": "red",
+      "review_label": "red"
+    },
+    {
+      "id": 155,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM30-2014-02-17-20140217100404-20140217101003-tarid21-frame2461-line2.png",
+      "field": "lower_color",
+      "current_label": "red",
+      "review_label": "red"
+    },
+    {
+      "id": 156,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-03-28-20140328152025-20140328152625-tarid125-frame1210-line1.png",
+      "field": "upper_color",
+      "current_label": "red",
+      "review_label": "red"
+    },
+    {
+      "id": 157,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM01-2014-03-18-20140318120601-20140318122013-tarid43-frame2407-line1.png",
+      "field": "lower_color",
+      "current_label": "red",
+      "review_label": "red"
+    },
+    {
+      "id": 158,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM31-2014-03-28-20140328150936-20140328151419-tarid161-frame2836-line1.png",
+      "field": "upper_color",
+      "current_label": "red",
+      "review_label": "red"
+    },
+    {
+      "id": 159,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM30-2014-02-20-20140220172439-20140220173015-tarid8-frame835-line2.png",
+      "field": "lower_color",
+      "current_label": "red",
+      "review_label": "red"
+    },
+    {
+      "id": 160,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM14-2014-03-10-20140310134144-20140310134732-tarid197-frame3509-line1.png",
+      "field": "upper_color",
+      "current_label": "green",
+      "review_label": "green"
+    },
+    {
+      "id": 161,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM06-2014-04-24-20140424122118-20140424122710-tarid43-frame1981-line1.png",
+      "field": "lower_color",
+      "current_label": "green",
+      "review_label": "green"
+    },
+    {
+      "id": 162,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-03-27-20140327103116-20140327103740-tarid183-frame3082-line3.png",
+      "field": "upper_color",
+      "current_label": "green",
+      "review_label": "green"
+    },
+    {
+      "id": 163,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM16-2014-02-25-20140225152812-20140225153400-tarid148-frame3035-line1.png",
+      "field": "lower_color",
+      "current_label": "green",
+      "review_label": "brown"
+    },
+    {
+      "id": 164,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-03-12-20140312173431-20140312174019-tarid153-frame3141-line2.png",
+      "field": "upper_color",
+      "current_label": "green",
+      "review_label": "green"
+    },
+    {
+      "id": 165,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM28-2014-03-18-20140318121303-20140318122635-tarid71-frame2793-line1.png",
+      "field": "lower_color",
+      "current_label": "green",
+      "review_label": "green"
+    },
+    {
+      "id": 166,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-04-22-20140422125045-20140422125637-tarid242-frame3359-line3.png",
+      "field": "upper_color",
+      "current_label": "green",
+      "review_label": "green"
+    },
+    {
+      "id": 167,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM06-2014-03-01-20140301104757-20140301105357-tarid73-frame2889-line1.png",
+      "field": "lower_color",
+      "current_label": "green",
+      "review_label": "exclude"
+    },
+    {
+      "id": 168,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM30-2014-02-12-20140212131118-20140212131614-tarid87-frame1734-line2.png",
+      "field": "upper_color",
+      "current_label": "green",
+      "review_label": "brown"
+    },
+    {
+      "id": 169,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM14-2014-03-27-20140327101406-20140327102730-tarid542-frame9615-line1.png",
+      "field": "lower_color",
+      "current_label": "green",
+      "review_label": "brown"
+    },
+    {
+      "id": 170,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM16-2014-02-22-20140222104355-20140222104943-tarid75-frame1267-line1.png",
+      "field": "upper_color",
+      "current_label": "green",
+      "review_label": "green"
+    },
+    {
+      "id": 171,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM06-2014-03-21-20140321153218-20140321153806-tarid47-frame2285-line1.png",
+      "field": "lower_color",
+      "current_label": "green",
+      "review_label": "green"
+    },
+    {
+      "id": 172,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-03-10-20140310134250-20140310134842-tarid116-frame2823-line1.png",
+      "field": "upper_color",
+      "current_label": "green",
+      "review_label": "green"
+    },
+    {
+      "id": 173,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-02-26-20140226112421-20140226113009-tarid344-frame3121-line1.png",
+      "field": "lower_color",
+      "current_label": "green",
+      "review_label": "brown"
+    },
+    {
+      "id": 174,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM13-2014-02-17-20140217100404-20140217100952-tarid30-frame1309-line1.png",
+      "field": "upper_color",
+      "current_label": "green",
+      "review_label": "brown"
+    },
+    {
+      "id": 175,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM27-2014-03-27-20140327101414-20140327102134-tarid257-frame5300-line1.png",
+      "field": "lower_color",
+      "current_label": "green",
+      "review_label": "brown"
+    },
+    {
+      "id": 176,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-03-28-20140328153746-20140328154318-tarid198-frame1376-line3.png",
+      "field": "upper_color",
+      "current_label": "green",
+      "review_label": "brown"
+    },
+    {
+      "id": 177,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM31-2014-02-21-20140221122001-20140221122553-tarid88-frame2774-line1.png",
+      "field": "lower_color",
+      "current_label": "green",
+      "review_label": "brown"
+    },
+    {
+      "id": 178,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-05-20140305111754-20140305113134-tarid1335-frame8987-line1.png",
+      "field": "upper_color",
+      "current_label": "green",
+      "review_label": "green"
+    },
+    {
+      "id": 179,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM31-2014-03-01-20140301105120-20140301105632-tarid38-frame893-line1.png",
+      "field": "lower_color",
+      "current_label": "green",
+      "review_label": "green"
+    },
+    {
+      "id": 180,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM13-2014-02-17-20140217104440-20140217105028-tarid5-frame251-line1.png",
+      "field": "upper_color",
+      "current_label": "green",
+      "review_label": "brown"
+    },
+    {
+      "id": 181,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-02-21-20140221121255-20140221121755-tarid122-frame503-line2.png",
+      "field": "lower_color",
+      "current_label": "green",
+      "review_label": "brown"
+    },
+    {
+      "id": 182,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-20-20140320160317-20140320161333-tarid169-frame1200-line1.png",
+      "field": "upper_color",
+      "current_label": "green",
+      "review_label": "green"
+    },
+    {
+      "id": 183,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM13-2014-03-28-20140328153339-20140328154123-tarid37-frame797-line1.png",
+      "field": "lower_color",
+      "current_label": "green",
+      "review_label": "green"
+    },
+    {
+      "id": 184,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM29-2014-03-05-20140305113928-20140305115408-tarid30-frame537-line2.png",
+      "field": "upper_color",
+      "current_label": "green",
+      "review_label": "green"
+    },
+    {
+      "id": 185,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM16-2014-03-27-20140327105246-20140327105934-tarid188-frame4809-line1.png",
+      "field": "lower_color",
+      "current_label": "green",
+      "review_label": "green"
+    },
+    {
+      "id": 186,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM16-2014-04-23-20140423162137-20140423162725-tarid146-frame2779-line1.png",
+      "field": "upper_color",
+      "current_label": "green",
+      "review_label": "green"
+    },
+    {
+      "id": 187,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-03-05-20140305112102-20140305112650-tarid116-frame978-line2.png",
+      "field": "lower_color",
+      "current_label": "green",
+      "review_label": "green"
+    },
+    {
+      "id": 188,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-03-20-20140320160651-20140320161239-tarid70-frame1762-line1.png",
+      "field": "upper_color",
+      "current_label": "green",
+      "review_label": "exclude"
+    },
+    {
+      "id": 189,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM16-2014-02-22-20140222104943-20140222105531-tarid250-frame3747-line1.png",
+      "field": "lower_color",
+      "current_label": "green",
+      "review_label": "green"
+    },
+    {
+      "id": 190,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM21-2014-03-21-20140321153116-20140321154300-tarid202-frame2276-line1.png",
+      "field": "upper_color",
+      "current_label": "green",
+      "review_label": "green"
+    },
+    {
+      "id": 191,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM18-2014-03-18-20140318122847-20140318123435-tarid184-frame2493-line1.png",
+      "field": "lower_color",
+      "current_label": "green",
+      "review_label": "brown"
+    },
+    {
+      "id": 192,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM20-2013-12-23-20131223122346-20131223122934-tarid47-frame3864-line1.png",
+      "field": "upper_color",
+      "current_label": "green",
+      "review_label": "blue"
+    },
+    {
+      "id": 193,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM27-2014-03-26-20140326140203-20140326140930-tarid58-frame1159-line1.png",
+      "field": "lower_color",
+      "current_label": "green",
+      "review_label": "brown"
+    },
+    {
+      "id": 194,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-24-20140324133427-20140324134751-tarid691-frame3634-line1.png",
+      "field": "upper_color",
+      "current_label": "green",
+      "review_label": "green"
+    },
+    {
+      "id": 195,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-25-20140325112043-20140325113503-tarid929-frame7722-line1.png",
+      "field": "lower_color",
+      "current_label": "green",
+      "review_label": "green"
+    },
+    {
+      "id": 196,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM13-2014-03-26-20140326143000-20140326143548-tarid22-frame330-line1.png",
+      "field": "upper_color",
+      "current_label": "green",
+      "review_label": "brown"
+    },
+    {
+      "id": 197,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-21-20140321150021-20140321151209-tarid1574-frame6184-line1.png",
+      "field": "lower_color",
+      "current_label": "green",
+      "review_label": "brown"
+    },
+    {
+      "id": 198,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-02-15-20140215160939-20140215161511-tarid362-frame3273-line2.png",
+      "field": "upper_color",
+      "current_label": "green",
+      "review_label": "green"
+    },
+    {
+      "id": 199,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM18-2014-03-10-20140310134902-20140310135450-tarid254-frame2994-line1.png",
+      "field": "lower_color",
+      "current_label": "green",
+      "review_label": "brown"
+    },
+    {
+      "id": 200,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM29-2014-04-15-20140415114626-20140415115214-tarid372-frame2830-line2.png",
+      "field": "upper_color",
+      "current_label": "blue",
+      "review_label": "blue"
+    },
+    {
+      "id": 201,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-03-21-20140321151345-20140321151941-tarid504-frame3354-line2.png",
+      "field": "lower_color",
+      "current_label": "blue",
+      "review_label": "blue"
+    },
+    {
+      "id": 202,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM31-2014-03-12-20140312171833-20140312172433-tarid65-frame3056-line1.png",
+      "field": "upper_color",
+      "current_label": "blue",
+      "review_label": "blue"
+    },
+    {
+      "id": 203,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-21-20140321150021-20140321151209-tarid391-frame2269-line1.png",
+      "field": "lower_color",
+      "current_label": "blue",
+      "review_label": "blue"
+    },
+    {
+      "id": 204,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2013-12-23-20131223120614-20131223121202-tarid270-frame4292-line2.png",
+      "field": "upper_color",
+      "current_label": "blue",
+      "review_label": "blue"
+    },
+    {
+      "id": 205,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-10-20140310130655-20140310131243-tarid570-frame2477-line1.png",
+      "field": "lower_color",
+      "current_label": "blue",
+      "review_label": "blue"
+    },
+    {
+      "id": 206,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM14-2014-04-19-20140419114110-20140419114702-tarid164-frame1900-line1.png",
+      "field": "upper_color",
+      "current_label": "blue",
+      "review_label": "blue"
+    },
+    {
+      "id": 207,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-02-15-20140215162235-20140215162835-tarid613-frame2977-line1.png",
+      "field": "lower_color",
+      "current_label": "blue",
+      "review_label": "blue"
+    },
+    {
+      "id": 208,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM27-2014-02-15-20140215161131-20140215161703-tarid402-frame3038-line1.png",
+      "field": "upper_color",
+      "current_label": "blue",
+      "review_label": "blue"
+    },
+    {
+      "id": 209,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-04-19-20140419111134-20140419111722-tarid528-frame2491-line1.png",
+      "field": "lower_color",
+      "current_label": "blue",
+      "review_label": "blue"
+    },
+    {
+      "id": 210,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM13-2014-03-27-20140327101920-20140327102848-tarid67-frame3761-line1.png",
+      "field": "upper_color",
+      "current_label": "blue",
+      "review_label": "blue"
+    },
+    {
+      "id": 211,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM21-2014-02-15-20140215160258-20140215161306-tarid318-frame3296-line1.png",
+      "field": "lower_color",
+      "current_label": "blue",
+      "review_label": "blue"
+    },
+    {
+      "id": 212,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM08-2014-02-15-20140215160524-20140215161504-tarid257-frame3600-line1.png",
+      "field": "upper_color",
+      "current_label": "blue",
+      "review_label": "blue"
+    },
+    {
+      "id": 213,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM19-2014-03-20-20140320161301-20140320161849-tarid265-frame3486-line1.png",
+      "field": "lower_color",
+      "current_label": "blue",
+      "review_label": "blue"
+    },
+    {
+      "id": 214,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM27-2014-03-27-20140327100118-20140327100714-tarid35-frame796-line1.png",
+      "field": "upper_color",
+      "current_label": "blue",
+      "review_label": "blue"
+    },
+    {
+      "id": 215,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-03-18-20140318121707-20140318122255-tarid462-frame3922-line3.png",
+      "field": "lower_color",
+      "current_label": "blue",
+      "review_label": "blue"
+    },
+    {
+      "id": 216,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM01-2014-02-12-20140212132553-20140212133557-tarid312-frame6689-line1.png",
+      "field": "upper_color",
+      "current_label": "blue",
+      "review_label": "blue"
+    },
+    {
+      "id": 217,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-03-25-20140325114827-20140325115410-tarid308-frame3223-line2.png",
+      "field": "lower_color",
+      "current_label": "blue",
+      "review_label": "blue"
+    },
+    {
+      "id": 218,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-03-21-20140321150137-20140321150733-tarid135-frame1548-line2.png",
+      "field": "upper_color",
+      "current_label": "blue",
+      "review_label": "blue"
+    },
+    {
+      "id": 219,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM16-2014-03-10-20140310130643-20140310131231-tarid173-frame2847-line1.png",
+      "field": "lower_color",
+      "current_label": "blue",
+      "review_label": "blue"
+    },
+    {
+      "id": 220,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM28-2014-03-18-20140318121303-20140318122635-tarid71-frame2793-line1.png",
+      "field": "upper_color",
+      "current_label": "blue",
+      "review_label": "blue"
+    },
+    {
+      "id": 221,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-04-15-20140415110518-20140415111110-tarid203-frame2768-line1.png",
+      "field": "lower_color",
+      "current_label": "blue",
+      "review_label": "blue"
+    },
+    {
+      "id": 222,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-18-20140318122844-20140318123440-tarid55-frame425-line1.png",
+      "field": "upper_color",
+      "current_label": "blue",
+      "review_label": "blue"
+    },
+    {
+      "id": 223,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM31-2014-03-12-20140312171833-20140312172433-tarid65-frame3056-line1.png",
+      "field": "lower_color",
+      "current_label": "blue",
+      "review_label": "blue"
+    },
+    {
+      "id": 224,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-03-12-20140312172219-20140312172751-tarid1-frame262-line1.png",
+      "field": "upper_color",
+      "current_label": "blue",
+      "review_label": "blue"
+    },
+    {
+      "id": 225,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-03-25-20140325112232-20140325112836-tarid147-frame3619-line1.png",
+      "field": "lower_color",
+      "current_label": "blue",
+      "review_label": "blue"
+    },
+    {
+      "id": 226,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-03-26-20140326140056-20140326140652-tarid231-frame3141-line3.png",
+      "field": "upper_color",
+      "current_label": "blue",
+      "review_label": "blue"
+    },
+    {
+      "id": 227,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-03-25-20140325115252-20140325115856-tarid48-frame2052-line1.png",
+      "field": "lower_color",
+      "current_label": "blue",
+      "review_label": "blue"
+    },
+    {
+      "id": 228,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM28-2014-04-23-20140423161310-20140423162218-tarid102-frame3048-line1.png",
+      "field": "upper_color",
+      "current_label": "blue",
+      "review_label": "blue"
+    },
+    {
+      "id": 229,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM29-2014-03-25-20140325114241-20140325115709-tarid166-frame1888-line2.png",
+      "field": "lower_color",
+      "current_label": "blue",
+      "review_label": "blue"
+    },
+    {
+      "id": 230,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM20-2014-03-26-20140326143712-20140326144300-tarid24-frame2471-line1.png",
+      "field": "upper_color",
+      "current_label": "blue",
+      "review_label": "blue"
+    },
+    {
+      "id": 231,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-03-18-20140318122843-20140318123431-tarid393-frame2972-line3.png",
+      "field": "lower_color",
+      "current_label": "blue",
+      "review_label": "blue"
+    },
+    {
+      "id": 232,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-03-25-20140325114827-20140325115410-tarid94-frame899-line1.png",
+      "field": "upper_color",
+      "current_label": "blue",
+      "review_label": "blue"
+    },
+    {
+      "id": 233,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM14-2014-04-19-20140419114110-20140419114702-tarid164-frame1900-line1.png",
+      "field": "lower_color",
+      "current_label": "blue",
+      "review_label": "blue"
+    },
+    {
+      "id": 234,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM10-2014-03-27-20140327102511-20140327103143-tarid68-frame885-line1.png",
+      "field": "upper_color",
+      "current_label": "blue",
+      "review_label": "blue"
+    },
+    {
+      "id": 235,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM27-2014-03-18-20140318123359-20140318123947-tarid196-frame2494-line1.png",
+      "field": "lower_color",
+      "current_label": "blue",
+      "review_label": "blue"
+    },
+    {
+      "id": 236,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM13-2014-03-20-20140320161242-20140320161830-tarid18-frame1319-line1.png",
+      "field": "upper_color",
+      "current_label": "blue",
+      "review_label": "blue"
+    },
+    {
+      "id": 237,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM20-2014-03-05-20140305111020-20140305112440-tarid86-frame6072-line1.png",
+      "field": "lower_color",
+      "current_label": "blue",
+      "review_label": "blue"
+    },
+    {
+      "id": 238,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-02-12-20140212133754-20140212134256-tarid700-frame2921-line1.png",
+      "field": "upper_color",
+      "current_label": "blue",
+      "review_label": "blue"
+    },
+    {
+      "id": 239,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM27-2014-03-21-20140321151441-20140321152001-tarid21-frame277-line1.png",
+      "field": "lower_color",
+      "current_label": "blue",
+      "review_label": "blue"
+    },
+    {
+      "id": 240,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM31-2014-02-15-20140215165330-20140215165734-tarid323-frame2729-line1.png",
+      "field": "upper_color",
+      "current_label": "silver",
+      "review_label": "silver"
+    },
+    {
+      "id": 241,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-02-12-20140212133202-20140212133750-tarid394-frame3698-line1.png",
+      "field": "lower_color",
+      "current_label": "silver",
+      "review_label": "gray"
+    },
+    {
+      "id": 242,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM01-2014-02-15-20140215161032-20140215162620-tarid13-frame1342-line1.png",
+      "field": "upper_color",
+      "current_label": "silver",
+      "review_label": "silver"
+    },
+    {
+      "id": 243,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM01-2014-02-26-20140226110113-20140226110701-tarid165-frame3200-line1.png",
+      "field": "lower_color",
+      "current_label": "silver",
+      "review_label": "silver"
+    },
+    {
+      "id": 244,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-02-12-20140212133202-20140212133750-tarid394-frame3698-line1.png",
+      "field": "upper_color",
+      "current_label": "silver",
+      "review_label": "gray"
+    },
+    {
+      "id": 245,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM10-2014-04-15-20140415114521-20140415115129-tarid171-frame1664-line1.png",
+      "field": "lower_color",
+      "current_label": "silver",
+      "review_label": "silver"
+    },
+    {
+      "id": 246,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM21-2014-02-15-20140215160258-20140215161306-tarid648-frame5525-line1.png",
+      "field": "upper_color",
+      "current_label": "silver",
+      "review_label": "silver"
+    },
+    {
+      "id": 247,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM21-2014-04-23-20140423161035-20140423162011-tarid509-frame6278-line1.png",
+      "field": "lower_color",
+      "current_label": "silver",
+      "review_label": "silver"
+    },
+    {
+      "id": 248,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM11-2014-02-12-20140212133324-20140212133904-tarid87-frame2350-line1.png",
+      "field": "upper_color",
+      "current_label": "silver",
+      "review_label": "silver"
+    },
+    {
+      "id": 249,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM14-2014-03-26-20140326141818-20140326142406-tarid226-frame3628-line1.png",
+      "field": "lower_color",
+      "current_label": "silver",
+      "review_label": "silver"
+    },
+    {
+      "id": 250,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-27-20140327103053-20140327104421-tarid664-frame4948-line1.png",
+      "field": "upper_color",
+      "current_label": "silver",
+      "review_label": "white"
+    },
+    {
+      "id": 251,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM29-2014-04-23-20140423161908-20140423163320-tarid1256-frame8315-line2.png",
+      "field": "lower_color",
+      "current_label": "silver",
+      "review_label": "silver"
+    },
+    {
+      "id": 252,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-03-20-20140320163944-20140320164519-tarid7-frame283-line3.png",
+      "field": "upper_color",
+      "current_label": "silver",
+      "review_label": "silver"
+    },
+    {
+      "id": 253,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM20-2014-02-14-20140214143743-20140214145206-tarid73-frame3239-line1.png",
+      "field": "upper_color",
+      "current_label": "silver",
+      "review_label": "silver"
+    },
+    {
+      "id": 254,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM01-2014-02-14-20140214142230-20140214143734-tarid55-frame5953-line1.png",
+      "field": "upper_color",
+      "current_label": "silver",
+      "review_label": "silver"
+    },
+    {
+      "id": 255,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-03-20-20140320164740-20140320165328-tarid109-frame855-line1.png",
+      "field": "upper_color",
+      "current_label": "silver",
+      "review_label": "white"
+    },
+    {
+      "id": 256,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-04-15-20140415114753-20140415115345-tarid415-frame2926-line1.png",
+      "field": "upper_color",
+      "current_label": "silver",
+      "review_label": "silver"
+    },
+    {
+      "id": 257,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-02-15-20140215160716-20140215161200-tarid587-frame3375-line2.png",
+      "field": "upper_color",
+      "current_label": "silver",
+      "review_label": "gray"
+    },
+    {
+      "id": 258,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM16-2014-03-21-20140321151446-20140321152033-tarid140-frame2979-line1.png",
+      "field": "upper_color",
+      "current_label": "silver",
+      "review_label": "gray"
+    },
+    {
+      "id": 259,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-02-21-20140221120807-20140221121255-tarid407-frame3305-line2.png",
+      "field": "upper_color",
+      "current_label": "silver",
+      "review_label": "gray"
+    },
+    {
+      "id": 260,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-02-26-20140226113621-20140226114213-tarid263-frame1934-line1.png",
+      "field": "upper_color",
+      "current_label": "silver",
+      "review_label": "gray"
+    },
+    {
+      "id": 261,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-02-15-20140215164208-20140215164716-tarid93-frame1044-line1.png",
+      "field": "upper_color",
+      "current_label": "silver",
+      "review_label": "silver"
+    },
+    {
+      "id": 262,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-02-17-20140217101540-20140217102128-tarid398-frame2693-line1.png",
+      "field": "upper_color",
+      "current_label": "silver",
+      "review_label": "silver"
+    },
+    {
+      "id": 263,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM01-2014-02-17-20140217101428-20140217102828-tarid166-frame9025-line1.png",
+      "field": "upper_color",
+      "current_label": "silver",
+      "review_label": "exclude"
+    },
+    {
+      "id": 264,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM14-2014-04-24-20140424124623-20140424125211-tarid23-frame632-line1.png",
+      "field": "upper_color",
+      "current_label": "silver",
+      "review_label": "silver"
+    },
+    {
+      "id": 265,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-27-20140327104421-20140327105725-tarid1067-frame4736-line1.png",
+      "field": "upper_color",
+      "current_label": "silver",
+      "review_label": "silver"
+    },
+    {
+      "id": 266,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM29-2014-03-25-20140325114241-20140325115709-tarid166-frame1888-line2.png",
+      "field": "upper_color",
+      "current_label": "yellow",
+      "review_label": "yellow"
+    },
+    {
+      "id": 267,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM28-2014-04-23-20140423161310-20140423162218-tarid102-frame3048-line1.png",
+      "field": "lower_color",
+      "current_label": "yellow",
+      "review_label": "yellow"
+    },
+    {
+      "id": 268,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-03-28-20140328152025-20140328152625-tarid391-frame3001-line2.png",
+      "field": "upper_color",
+      "current_label": "yellow",
+      "review_label": "yellow"
+    },
+    {
+      "id": 269,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-04-19-20140419115230-20140419115818-tarid552-frame2987-line2.png",
+      "field": "lower_color",
+      "current_label": "yellow",
+      "review_label": "yellow"
+    },
+    {
+      "id": 270,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-03-03-20140303130313-20140303130901-tarid132-frame1802-line2.png",
+      "field": "upper_color",
+      "current_label": "yellow",
+      "review_label": "brown"
+    },
+    {
+      "id": 271,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM10-2014-03-25-20140325110229-20140325110820-tarid190-frame2190-line1.png",
+      "field": "lower_color",
+      "current_label": "yellow",
+      "review_label": "brown"
+    },
+    {
+      "id": 272,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-05-20140305113134-20140305114442-tarid802-frame4139-line1.png",
+      "field": "upper_color",
+      "current_label": "yellow",
+      "review_label": "yellow"
+    },
+    {
+      "id": 273,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM28-2014-03-03-20140303131815-20140303132827-tarid52-frame460-line1.png",
+      "field": "lower_color",
+      "current_label": "yellow",
+      "review_label": "yellow"
+    },
+    {
+      "id": 274,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-04-22-20140422123153-20140422123845-tarid131-frame1408-line2.png",
+      "field": "upper_color",
+      "current_label": "yellow",
+      "review_label": "yellow"
+    },
+    {
+      "id": 275,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-04-19-20140419111730-20140419112322-tarid324-frame3431-line2.png",
+      "field": "lower_color",
+      "current_label": "yellow",
+      "review_label": "yellow"
+    },
+    {
+      "id": 276,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-26-20140326141252-20140326141843-tarid391-frame2664-line1.png",
+      "field": "upper_color",
+      "current_label": "yellow",
+      "review_label": "yellow"
+    },
+    {
+      "id": 277,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM15-2014-02-25-20140225151722-20140225152317-tarid90-frame1438-line1.png",
+      "field": "lower_color",
+      "current_label": "yellow",
+      "review_label": "brown"
+    },
+    {
+      "id": 278,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-03-20-20140320164728-20140320165315-tarid116-frame2059-line1.png",
+      "field": "upper_color",
+      "current_label": "yellow",
+      "review_label": "yellow"
+    },
+    {
+      "id": 279,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM08-2013-12-23-20131223120144-20131223120736-tarid6-frame2370-line1.png",
+      "field": "lower_color",
+      "current_label": "yellow",
+      "review_label": "yellow"
+    },
+    {
+      "id": 280,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-02-21-20140221123738-20140221124402-tarid75-frame352-line3.png",
+      "field": "upper_color",
+      "current_label": "yellow",
+      "review_label": "brown"
+    },
+    {
+      "id": 281,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM13-2014-04-19-20140419111141-20140419111729-tarid44-frame3176-line1.png",
+      "field": "lower_color",
+      "current_label": "yellow",
+      "review_label": "brown"
+    },
+    {
+      "id": 282,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM30-2014-02-12-20140212133654-20140212134154-tarid118-frame2090-line2.png",
+      "field": "upper_color",
+      "current_label": "yellow",
+      "review_label": "yellow"
+    },
+    {
+      "id": 283,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-03-25-20140325110642-20140325111242-tarid84-frame913-line3.png",
+      "field": "lower_color",
+      "current_label": "yellow",
+      "review_label": "yellow"
+    },
+    {
+      "id": 284,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-04-24-20140424123931-20140424124519-tarid158-frame1085-line2.png",
+      "field": "upper_color",
+      "current_label": "yellow",
+      "review_label": "yellow"
+    },
+    {
+      "id": 285,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-02-22-20140222103223-20140222103811-tarid607-frame2205-line1.png",
+      "field": "lower_color",
+      "current_label": "yellow",
+      "review_label": "brown"
+    },
+    {
+      "id": 286,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-03-21-20140321154838-20140321155441-tarid194-frame1957-line1.png",
+      "field": "upper_color",
+      "current_label": "yellow",
+      "review_label": "yellow"
+    },
+    {
+      "id": 287,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-02-25-20140225150701-20140225151329-tarid170-frame2013-line2.png",
+      "field": "lower_color",
+      "current_label": "yellow",
+      "review_label": "brown"
+    },
+    {
+      "id": 288,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM16-2014-03-02-20140302140656-20140302141244-tarid17-frame419-line1.png",
+      "field": "upper_color",
+      "current_label": "yellow",
+      "review_label": "yellow"
+    },
+    {
+      "id": 289,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-04-22-20140422123345-20140422123909-tarid119-frame1008-line3.png",
+      "field": "lower_color",
+      "current_label": "yellow",
+      "review_label": "brown"
+    },
+    {
+      "id": 290,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM27-2014-03-28-20140328152407-20140328152947-tarid309-frame3640-line1.png",
+      "field": "upper_color",
+      "current_label": "yellow",
+      "review_label": "yellow"
+    },
+    {
+      "id": 291,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2013-12-23-20131223123048-20131223123636-tarid131-frame1411-line1.png",
+      "field": "lower_color",
+      "current_label": "yellow",
+      "review_label": "yellow"
+    },
+    {
+      "id": 292,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-03-24-20140324131146-20140324131718-tarid141-frame2066-line3.png",
+      "field": "upper_color",
+      "current_label": "yellow",
+      "review_label": "yellow"
+    },
+    {
+      "id": 293,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM18-2014-03-01-20140301104414-20140301105110-tarid126-frame3338-line1.png",
+      "field": "lower_color",
+      "current_label": "yellow",
+      "review_label": "brown"
+    },
+    {
+      "id": 294,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-04-19-20140419111730-20140419112322-tarid341-frame3808-line1.png",
+      "field": "upper_color",
+      "current_label": "yellow",
+      "review_label": "yellow"
+    },
+    {
+      "id": 295,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-20-20140320163133-20140320163733-tarid134-frame816-line1.png",
+      "field": "lower_color",
+      "current_label": "yellow",
+      "review_label": "brown"
+    },
+    {
+      "id": 296,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM01-2014-03-26-20140326142053-20140326143236-tarid395-frame8444-line1.png",
+      "field": "upper_color",
+      "current_label": "yellow",
+      "review_label": "yellow"
+    },
+    {
+      "id": 297,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM27-2014-03-27-20140327100118-20140327100714-tarid206-frame2816-line1.png",
+      "field": "lower_color",
+      "current_label": "yellow",
+      "review_label": "exclude"
+    },
+    {
+      "id": 298,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM14-2014-03-02-20140302141259-20140302141847-tarid227-frame3468-line1.png",
+      "field": "upper_color",
+      "current_label": "yellow",
+      "review_label": "brown"
+    },
+    {
+      "id": 299,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM19-2014-02-25-20140225150448-20140225151012-tarid186-frame4004-line1.png",
+      "field": "lower_color",
+      "current_label": "yellow",
+      "review_label": "brown"
+    },
+    {
+      "id": 300,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-04-19-20140419114638-20140419115226-tarid491-frame4043-line3.png",
+      "field": "upper_color",
+      "current_label": "yellow",
+      "review_label": "yellow"
+    },
+    {
+      "id": 301,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-02-14-20140214142833-20140214143417-tarid302-frame3796-line1.png",
+      "field": "lower_color",
+      "current_label": "yellow",
+      "review_label": "yellow"
+    },
+    {
+      "id": 302,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-02-15-20140215161511-20140215162059-tarid107-frame1270-line2.png",
+      "field": "upper_color",
+      "current_label": "yellow",
+      "review_label": "brown"
+    },
+    {
+      "id": 303,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2013-12-23-20131223123048-20131223123636-tarid273-frame2600-line1.png",
+      "field": "lower_color",
+      "current_label": "yellow",
+      "review_label": "brown"
+    },
+    {
+      "id": 304,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-02-26-20140226114733-20140226115321-tarid299-frame1934-line1.png",
+      "field": "upper_color",
+      "current_label": "yellow",
+      "review_label": "gray"
+    },
+    {
+      "id": 305,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-27-20140327104421-20140327105725-tarid389-frame1057-line1.png",
+      "field": "lower_color",
+      "current_label": "yellow",
+      "review_label": "brown"
+    },
+    {
+      "id": 306,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM27-2014-03-27-20140327102134-20140327102834-tarid111-frame2624-line1.png",
+      "field": "upper_color",
+      "current_label": "brown",
+      "review_label": "orange"
+    },
+    {
+      "id": 307,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM10-2014-03-26-20140326143016-20140326143604-tarid351-frame2748-line1.png",
+      "field": "lower_color",
+      "current_label": "brown",
+      "review_label": "gray"
+    },
+    {
+      "id": 308,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM09-2014-04-19-20140419114625-20140419115213-tarid334-frame3382-line1.png",
+      "field": "upper_color",
+      "current_label": "brown",
+      "review_label": "brown"
+    },
+    {
+      "id": 309,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM14-2013-12-23-20131223123039-20131223123631-tarid59-frame2853-line1.png",
+      "field": "lower_color",
+      "current_label": "brown",
+      "review_label": "brown"
+    },
+    {
+      "id": 310,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM14-2014-04-23-20140423160834-20140423162026-tarid476-frame6565-line1.png",
+      "field": "upper_color",
+      "current_label": "brown",
+      "review_label": "brown"
+    },
+    {
+      "id": 311,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM29-2014-03-21-20140321154231-20140321155631-tarid433-frame2793-line2.png",
+      "field": "lower_color",
+      "current_label": "brown",
+      "review_label": "brown"
+    },
+    {
+      "id": 312,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM10-2014-04-24-20140424120355-20140424120951-tarid70-frame930-line1.png",
+      "field": "upper_color",
+      "current_label": "brown",
+      "review_label": "brown"
+    },
+    {
+      "id": 313,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM18-2014-04-19-20140419111118-20140419111710-tarid167-frame3920-line1.png",
+      "field": "lower_color",
+      "current_label": "brown",
+      "review_label": "brown"
+    },
+    {
+      "id": 314,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-12-20140312172058-20140312173450-tarid1354-frame10283-line1.png",
+      "field": "upper_color",
+      "current_label": "brown",
+      "review_label": "brown"
+    },
+    {
+      "id": 315,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-03-20-20140320161004-20140320161623-tarid139-frame2865-line3.png",
+      "field": "lower_color",
+      "current_label": "brown",
+      "review_label": "brown"
+    },
+    {
+      "id": 316,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM11-2014-03-27-20140327104221-20140327104733-tarid164-frame1046-line1.png",
+      "field": "upper_color",
+      "current_label": "brown",
+      "review_label": "brown"
+    },
+    {
+      "id": 317,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-03-02-20140302143123-20140302143711-tarid27-frame332-line1.png",
+      "field": "lower_color",
+      "current_label": "brown",
+      "review_label": "brown"
+    },
+    {
+      "id": 318,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-28-20140328150122-20140328151233-tarid1553-frame7486-line1.png",
+      "field": "upper_color",
+      "current_label": "brown",
+      "review_label": "red"
+    },
+    {
+      "id": 319,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM16-2014-04-24-20140424121714-20140424122302-tarid229-frame3798-line1.png",
+      "field": "lower_color",
+      "current_label": "brown",
+      "review_label": "brown"
+    },
+    {
+      "id": 320,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM13-2014-02-17-20140217103852-20140217104440-tarid63-frame2880-line1.png",
+      "field": "upper_color",
+      "current_label": "brown",
+      "review_label": "brown"
+    },
+    {
+      "id": 321,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM18-2014-03-26-20140326143316-20140326143908-tarid114-frame1671-line1.png",
+      "field": "lower_color",
+      "current_label": "brown",
+      "review_label": "brown"
+    },
+    {
+      "id": 322,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM14-2014-02-20-20140220171018-20140220172354-tarid286-frame6094-line1.png",
+      "field": "upper_color",
+      "current_label": "brown",
+      "review_label": "brown"
+    },
+    {
+      "id": 323,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM29-2014-04-19-20140419111731-20140419112323-tarid84-frame1100-line2.png",
+      "field": "lower_color",
+      "current_label": "brown",
+      "review_label": "brown"
+    },
+    {
+      "id": 324,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM01-2014-03-05-20140305110352-20140305111804-tarid147-frame8769-line1.png",
+      "field": "upper_color",
+      "current_label": "brown",
+      "review_label": "gray"
+    },
+    {
+      "id": 325,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM29-2014-03-20-20140320161240-20140320161828-tarid463-frame3675-line2.png",
+      "field": "lower_color",
+      "current_label": "brown",
+      "review_label": "brown"
+    },
+    {
+      "id": 326,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-03-24-20140324130152-20140324130952-tarid112-frame2268-line1.png",
+      "field": "upper_color",
+      "current_label": "brown",
+      "review_label": "other"
+    },
+    {
+      "id": 327,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-04-19-20140419112318-20140419112910-tarid494-frame3903-line3.png",
+      "field": "lower_color",
+      "current_label": "brown",
+      "review_label": "brown"
+    },
+    {
+      "id": 328,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM16-2014-03-01-20140301102621-20140301103209-tarid53-frame1502-line1.png",
+      "field": "upper_color",
+      "current_label": "brown",
+      "review_label": "brown"
+    },
+    {
+      "id": 329,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM16-2014-02-14-20140214144431-20140214145231-tarid132-frame3745-line1.png",
+      "field": "lower_color",
+      "current_label": "brown",
+      "review_label": "brown"
+    },
+    {
+      "id": 330,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-03-21-20140321154405-20140321154901-tarid372-frame3493-line1.png",
+      "field": "upper_color",
+      "current_label": "brown",
+      "review_label": "brown"
+    },
+    {
+      "id": 331,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM29-2014-03-20-20140320164732-20140320165320-tarid140-frame1040-line2.png",
+      "field": "lower_color",
+      "current_label": "brown",
+      "review_label": "brown"
+    },
+    {
+      "id": 332,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM01-2014-02-17-20140217104340-20140217105812-tarid138-frame5256-line1.png",
+      "field": "upper_color",
+      "current_label": "brown",
+      "review_label": "brown"
+    },
+    {
+      "id": 333,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-04-23-20140423162218-20140423163746-tarid1537-frame11533-line1.png",
+      "field": "lower_color",
+      "current_label": "brown",
+      "review_label": "brown"
+    },
+    {
+      "id": 334,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-02-14-20140214144800-20140214145336-tarid384-frame2271-line3.png",
+      "field": "upper_color",
+      "current_label": "brown",
+      "review_label": "brown"
+    },
+    {
+      "id": 335,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-03-27-20140327101525-20140327102349-tarid224-frame5922-line2.png",
+      "field": "lower_color",
+      "current_label": "brown",
+      "review_label": "brown"
+    },
+    {
+      "id": 336,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM18-2014-03-18-20140318122847-20140318123435-tarid184-frame2493-line1.png",
+      "field": "upper_color",
+      "current_label": "brown",
+      "review_label": "brown"
+    },
+    {
+      "id": 337,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM27-2014-04-17-20140417131856-20140417132536-tarid1-frame309-line1.png",
+      "field": "lower_color",
+      "current_label": "brown",
+      "review_label": "brown"
+    },
+    {
+      "id": 338,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM18-2014-02-26-20140226114200-20140226114748-tarid134-frame2963-line1.png",
+      "field": "upper_color",
+      "current_label": "brown",
+      "review_label": "brown"
+    },
+    {
+      "id": 339,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2013-12-23-20131223124228-20131223124820-tarid0-frame189-line1.png",
+      "field": "lower_color",
+      "current_label": "brown",
+      "review_label": "brown"
+    },
+    {
+      "id": 340,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM10-2014-04-22-20140422124903-20140422125451-tarid301-frame1810-line1.png",
+      "field": "upper_color",
+      "current_label": "brown",
+      "review_label": "brown"
+    },
+    {
+      "id": 341,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM19-2014-02-17-20140217103309-20140217103857-tarid57-frame1285-line1.png",
+      "field": "lower_color",
+      "current_label": "brown",
+      "review_label": "brown"
+    },
+    {
+      "id": 342,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM06-2014-02-25-20140225154356-20140225154956-tarid9-frame635-line1.png",
+      "field": "upper_color",
+      "current_label": "brown",
+      "review_label": "brown"
+    },
+    {
+      "id": 343,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-02-26-20140226113621-20140226114213-tarid308-frame2225-line1.png",
+      "field": "lower_color",
+      "current_label": "brown",
+      "review_label": "brown"
+    },
+    {
+      "id": 344,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM14-2014-02-21-20140221121808-20140221122852-tarid331-frame5948-line1.png",
+      "field": "upper_color",
+      "current_label": "brown",
+      "review_label": "brown"
+    },
+    {
+      "id": 345,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM14-2013-12-23-20131223121315-20131223121903-tarid37-frame1164-line1.png",
+      "field": "lower_color",
+      "current_label": "brown",
+      "review_label": "brown"
+    },
+    {
+      "id": 346,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM11-2014-02-21-20140221125129-20140221125717-tarid160-frame2058-line1.png",
+      "field": "upper_color",
+      "current_label": "purple",
+      "review_label": "purple"
+    },
+    {
+      "id": 347,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM10-2014-03-03-20140303130431-20140303131111-tarid103-frame1400-line1.png",
+      "field": "lower_color",
+      "current_label": "purple",
+      "review_label": "purple"
+    },
+    {
+      "id": 348,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM21-2014-03-01-20140301101838-20140301102834-tarid745-frame6333-line1.png",
+      "field": "upper_color",
+      "current_label": "purple",
+      "review_label": "purple"
+    },
+    {
+      "id": 349,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-04-23-20140423164934-20140423165602-tarid270-frame2789-line2.png",
+      "field": "lower_color",
+      "current_label": "purple",
+      "review_label": "purple"
+    },
+    {
+      "id": 350,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-03-24-20140324134415-20140324134935-tarid166-frame1709-line1.png",
+      "field": "upper_color",
+      "current_label": "purple",
+      "review_label": "exclude"
+    },
+    {
+      "id": 351,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM21-2014-02-21-20140221121727-20140221122707-tarid174-frame2877-line1.png",
+      "field": "lower_color",
+      "current_label": "purple",
+      "review_label": "purple"
+    },
+    {
+      "id": 352,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM31-2014-04-23-20140423163020-20140423163524-tarid91-frame1329-line1.png",
+      "field": "upper_color",
+      "current_label": "purple",
+      "review_label": "purple"
+    },
+    {
+      "id": 353,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM15-2014-03-28-20140328154838-20140328155438-tarid210-frame1683-line1.png",
+      "field": "lower_color",
+      "current_label": "purple",
+      "review_label": "brown"
+    },
+    {
+      "id": 354,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM21-2014-03-20-20140320164556-20140320165424-tarid153-frame1700-line1.png",
+      "field": "upper_color",
+      "current_label": "purple",
+      "review_label": "purple"
+    },
+    {
+      "id": 355,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM20-2014-02-20-20140220170640-20140220172248-tarid47-frame2366-line1.png",
+      "field": "lower_color",
+      "current_label": "purple",
+      "review_label": "purple"
+    },
+    {
+      "id": 356,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM11-2014-04-17-20140417132050-20140417132641-tarid332-frame3863-line1.png",
+      "field": "upper_color",
+      "current_label": "purple",
+      "review_label": "pink"
+    },
+    {
+      "id": 357,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM18-2014-03-03-20140303132037-20140303132629-tarid5-frame287-line1.png",
+      "field": "lower_color",
+      "current_label": "purple",
+      "review_label": "blue"
+    },
+    {
+      "id": 358,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM27-2013-12-23-20131223124050-20131223124826-tarid20-frame400-line1.png",
+      "field": "upper_color",
+      "current_label": "purple",
+      "review_label": "purple"
+    },
+    {
+      "id": 359,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM15-2014-03-27-20140327101917-20140327102517-tarid417-frame4167-line1.png",
+      "field": "lower_color",
+      "current_label": "purple",
+      "review_label": "brown"
+    },
+    {
+      "id": 360,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-03-10-20140310130758-20140310131350-tarid370-frame2856-line1.png",
+      "field": "upper_color",
+      "current_label": "purple",
+      "review_label": "purple"
+    },
+    {
+      "id": 361,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM18-2014-02-12-20140212131449-20140212132037-tarid315-frame3876-line1.png",
+      "field": "lower_color",
+      "current_label": "purple",
+      "review_label": "exclude"
+    },
+    {
+      "id": 362,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-03-01-20140301101904-20140301102436-tarid449-frame3882-line2.png",
+      "field": "upper_color",
+      "current_label": "purple",
+      "review_label": "blue"
+    },
+    {
+      "id": 363,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM10-2014-03-01-20140301100618-20140301101534-tarid119-frame3605-line1.png",
+      "field": "lower_color",
+      "current_label": "purple",
+      "review_label": "blue"
+    },
+    {
+      "id": 364,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-02-22-20140222102646-20140222103234-tarid38-frame386-line1.png",
+      "field": "upper_color",
+      "current_label": "purple",
+      "review_label": "blue"
+    },
+    {
+      "id": 365,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM14-2014-03-02-20140302145340-20140302145928-tarid203-frame3862-line1.png",
+      "field": "lower_color",
+      "current_label": "purple",
+      "review_label": "exclude"
+    },
+    {
+      "id": 366,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM13-2014-03-25-20140325112545-20140325113333-tarid31-frame1364-line1.png",
+      "field": "upper_color",
+      "current_label": "purple",
+      "review_label": "purple"
+    },
+    {
+      "id": 367,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM30-2014-02-14-20140214143320-20140214143916-tarid89-frame3416-line2.png",
+      "field": "lower_color",
+      "current_label": "purple",
+      "review_label": "navy"
+    },
+    {
+      "id": 368,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM13-2014-04-15-20140415114017-20140415114653-tarid16-frame1237-line1.png",
+      "field": "upper_color",
+      "current_label": "purple",
+      "review_label": "purple"
+    },
+    {
+      "id": 369,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-20-20140320160317-20140320161333-tarid776-frame4701-line1.png",
+      "field": "lower_color",
+      "current_label": "purple",
+      "review_label": "exclude"
+    },
+    {
+      "id": 370,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-02-14-20140214142859-20140214143550-tarid46-frame973-line2.png",
+      "field": "upper_color",
+      "current_label": "purple",
+      "review_label": "purple"
+    },
+    {
+      "id": 371,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM30-2014-03-27-20140327100121-20140327100645-tarid30-frame782-line2.png",
+      "field": "lower_color",
+      "current_label": "purple",
+      "review_label": "navy"
+    },
+    {
+      "id": 372,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-04-23-20140423162747-20140423163303-tarid484-frame2512-line3.png",
+      "field": "upper_color",
+      "current_label": "purple",
+      "review_label": "purple"
+    },
+    {
+      "id": 373,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-04-23-20140423162806-20140423163414-tarid113-frame2103-line1.png",
+      "field": "lower_color",
+      "current_label": "purple",
+      "review_label": "purple"
+    },
+    {
+      "id": 374,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM19-2014-03-25-20140325114250-20140325114710-tarid126-frame2122-line1.png",
+      "field": "upper_color",
+      "current_label": "purple",
+      "review_label": "blue"
+    },
+    {
+      "id": 375,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-04-23-20140423161930-20140423162602-tarid198-frame2525-line2.png",
+      "field": "lower_color",
+      "current_label": "purple",
+      "review_label": "purple"
+    },
+    {
+      "id": 376,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-03-10-20140310131938-20140310132526-tarid217-frame1612-line1.png",
+      "field": "upper_color",
+      "current_label": "purple",
+      "review_label": "purple"
+    },
+    {
+      "id": 377,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-04-15-20140415113125-20140415113813-tarid120-frame525-line1.png",
+      "field": "lower_color",
+      "current_label": "purple",
+      "review_label": "purple"
+    },
+    {
+      "id": 378,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-04-22-20140422123845-20140422124557-tarid63-frame557-line2.png",
+      "field": "upper_color",
+      "current_label": "purple",
+      "review_label": "purple"
+    },
+    {
+      "id": 379,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM20-2014-02-21-20140221120830-20140221122302-tarid29-frame1466-line1.png",
+      "field": "lower_color",
+      "current_label": "purple",
+      "review_label": "purple"
+    },
+    {
+      "id": 380,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-02-26-20140226114801-20140226115349-tarid77-frame517-line2.png",
+      "field": "upper_color",
+      "current_label": "purple",
+      "review_label": "purple"
+    },
+    {
+      "id": 381,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM10-2014-03-01-20140301103302-20140301103942-tarid350-frame4749-line1.png",
+      "field": "lower_color",
+      "current_label": "purple",
+      "review_label": "blue"
+    },
+    {
+      "id": 382,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM21-2014-03-03-20140303132901-20140303134129-tarid588-frame8470-line1.png",
+      "field": "upper_color",
+      "current_label": "purple",
+      "review_label": "blue"
+    },
+    {
+      "id": 383,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM21-2014-04-23-20140423164827-20140423165751-tarid352-frame4864-line1.png",
+      "field": "lower_color",
+      "current_label": "purple",
+      "review_label": "blue"
+    },
+    {
+      "id": 384,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-03-01-20140301105016-20140301105524-tarid103-frame744-line1.png",
+      "field": "upper_color",
+      "current_label": "purple",
+      "review_label": "purple"
+    },
+    {
+      "id": 385,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-04-23-20140423162202-20140423162806-tarid172-frame2988-line1.png",
+      "field": "lower_color",
+      "current_label": "purple",
+      "review_label": "purple"
+    },
+    {
+      "id": 386,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM15-2014-03-27-20140327100121-20140327100717-tarid94-frame650-line1.png",
+      "field": "upper_color",
+      "current_label": "pink",
+      "review_label": "pink"
+    },
+    {
+      "id": 387,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM23-2013-12-23-20131223123806-20131223124358-tarid21-frame509-line1.png",
+      "field": "lower_color",
+      "current_label": "pink",
+      "review_label": "white"
+    },
+    {
+      "id": 388,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM21-2014-02-12-20140212134147-20140212135759-tarid362-frame11296-line1.png",
+      "field": "upper_color",
+      "current_label": "pink",
+      "review_label": "pink"
+    },
+    {
+      "id": 389,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-02-14-20140214143626-20140214144910-tarid1166-frame6013-line1.png",
+      "field": "lower_color",
+      "current_label": "pink",
+      "review_label": "black"
+    },
+    {
+      "id": 390,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-03-18-20140318125159-20140318125747-tarid465-frame4078-line3.png",
+      "field": "upper_color",
+      "current_label": "pink",
+      "review_label": "pink"
+    },
+    {
+      "id": 391,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM20-2014-04-24-20140424125110-20140424125702-tarid34-frame2313-line1.png",
+      "field": "lower_color",
+      "current_label": "pink",
+      "review_label": "pink"
+    },
+    {
+      "id": 392,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM21-2014-03-18-20140318121514-20140318122545-tarid790-frame7106-line1.png",
+      "field": "upper_color",
+      "current_label": "pink",
+      "review_label": "pink"
+    },
+    {
+      "id": 393,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-04-23-20140423160618-20140423161506-tarid255-frame3767-line1.png",
+      "field": "lower_color",
+      "current_label": "pink",
+      "review_label": "pink"
+    },
+    {
+      "id": 394,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM20-2014-03-25-20140325111353-20140325112817-tarid142-frame10619-line1.png",
+      "field": "upper_color",
+      "current_label": "pink",
+      "review_label": "pink"
+    },
+    {
+      "id": 395,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-04-22-20140422120505-20140422121121-tarid335-frame4454-line3.png",
+      "field": "lower_color",
+      "current_label": "pink",
+      "review_label": "pink"
+    },
+    {
+      "id": 396,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-03-02-20140302144243-20140302144831-tarid414-frame3142-line2.png",
+      "field": "upper_color",
+      "current_label": "pink",
+      "review_label": "pink"
+    },
+    {
+      "id": 397,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-04-24-20140424124759-20140424125347-tarid32-frame255-line1.png",
+      "field": "lower_color",
+      "current_label": "pink",
+      "review_label": "pink"
+    },
+    {
+      "id": 398,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-02-14-20140214140152-20140214140736-tarid272-frame2170-line3.png",
+      "field": "upper_color",
+      "current_label": "pink",
+      "review_label": "pink"
+    },
+    {
+      "id": 399,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM21-2014-04-15-20140415113121-20140415114025-tarid301-frame3858-line1.png",
+      "field": "lower_color",
+      "current_label": "pink",
+      "review_label": "pink"
+    },
+    {
+      "id": 400,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-27-20140327100137-20140327101625-tarid680-frame5551-line1.png",
+      "field": "upper_color",
+      "current_label": "pink",
+      "review_label": null
+    },
+    {
+      "id": 401,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM20-2013-12-23-20131223125246-20131223125834-tarid44-frame1975-line1.png",
+      "field": "lower_color",
+      "current_label": "pink",
+      "review_label": "pink"
+    },
+    {
+      "id": 402,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM20-2014-03-18-20140318122251-20140318122839-tarid19-frame1280-line1.png",
+      "field": "upper_color",
+      "current_label": "pink",
+      "review_label": "pink"
+    },
+    {
+      "id": 403,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM13-2014-03-26-20140326145324-20140326145912-tarid100-frame1875-line1.png",
+      "field": "lower_color",
+      "current_label": "pink",
+      "review_label": "pink"
+    },
+    {
+      "id": 404,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM16-2014-04-24-20140424125206-20140424125754-tarid126-frame2391-line1.png",
+      "field": "upper_color",
+      "current_label": "pink",
+      "review_label": "pink"
+    },
+    {
+      "id": 405,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-02-15-20140215163923-20140215165231-tarid1179-frame7766-line1.png",
+      "field": "lower_color",
+      "current_label": "pink",
+      "review_label": "pink"
+    },
+    {
+      "id": 406,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM08-2014-03-05-20140305111256-20140305112228-tarid432-frame3712-line1.png",
+      "field": "upper_color",
+      "current_label": "pink",
+      "review_label": "exclude"
+    },
+    {
+      "id": 407,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-04-23-20140423160015-20140423160535-tarid276-frame2008-line3.png",
+      "field": "lower_color",
+      "current_label": "pink",
+      "review_label": "pink"
+    },
+    {
+      "id": 408,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-18-20140318124620-20140318125208-tarid519-frame2271-line1.png",
+      "field": "upper_color",
+      "current_label": "pink",
+      "review_label": "pink"
+    },
+    {
+      "id": 409,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM21-2014-04-19-20140419112039-20140419112946-tarid536-frame5779-line1.png",
+      "field": "lower_color",
+      "current_label": "pink",
+      "review_label": "pink"
+    },
+    {
+      "id": 410,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-02-22-20140222100938-20140222101526-tarid119-frame1100-line3.png",
+      "field": "upper_color",
+      "current_label": "pink",
+      "review_label": "pink"
+    },
+    {
+      "id": 411,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM18-2014-03-21-20140321152258-20140321152902-tarid123-frame2047-line1.png",
+      "field": "lower_color",
+      "current_label": "pink",
+      "review_label": "pink"
+    },
+    {
+      "id": 412,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-02-26-20140226115333-20140226115921-tarid282-frame1850-line3.png",
+      "field": "upper_color",
+      "current_label": "pink",
+      "review_label": "pink"
+    },
+    {
+      "id": 413,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM08-2014-03-27-20140327100122-20140327101302-tarid61-frame854-line1.png",
+      "field": "lower_color",
+      "current_label": "pink",
+      "review_label": "pink"
+    },
+    {
+      "id": 414,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM10-2014-02-14-20140214144012-20140214144804-tarid259-frame4925-line1.png",
+      "field": "upper_color",
+      "current_label": "pink",
+      "review_label": "pink"
+    },
+    {
+      "id": 415,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-04-22-20140422125045-20140422125637-tarid296-frame4334-line3.png",
+      "field": "lower_color",
+      "current_label": "pink",
+      "review_label": "pink"
+    },
+    {
+      "id": 416,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-25-20140325110731-20140325112043-tarid560-frame3230-line1.png",
+      "field": "upper_color",
+      "current_label": "pink",
+      "review_label": "pink"
+    },
+    {
+      "id": 417,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2013-12-23-20131223121202-20131223121750-tarid230-frame3396-line2.png",
+      "field": "lower_color",
+      "current_label": "pink",
+      "review_label": "pink"
+    },
+    {
+      "id": 418,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM21-2014-02-15-20140215164218-20140215165122-tarid646-frame5602-line1.png",
+      "field": "upper_color",
+      "current_label": "pink",
+      "review_label": "pink"
+    },
+    {
+      "id": 419,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM29-2014-04-22-20140422124040-20140422125511-tarid238-frame2961-line2.png",
+      "field": "lower_color",
+      "current_label": "pink",
+      "review_label": "pink"
+    },
+    {
+      "id": 420,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM27-2014-03-10-20140310133846-20140310134434-tarid117-frame2217-line1.png",
+      "field": "upper_color",
+      "current_label": "pink",
+      "review_label": "pink"
+    },
+    {
+      "id": 421,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM14-2014-03-25-20140325110522-20140325111622-tarid553-frame6650-line1.png",
+      "field": "lower_color",
+      "current_label": "pink",
+      "review_label": "pink"
+    },
+    {
+      "id": 422,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM13-2014-03-28-20140328152623-20140328153339-tarid122-frame3783-line1.png",
+      "field": "upper_color",
+      "current_label": "pink",
+      "review_label": "pink"
+    },
+    {
+      "id": 423,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM20-2014-04-23-20140423161848-20140423163319-tarid34-frame2461-line1.png",
+      "field": "lower_color",
+      "current_label": "pink",
+      "review_label": "pink"
+    },
+    {
+      "id": 424,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM10-2014-03-25-20140325111949-20140325112544-tarid247-frame2752-line1.png",
+      "field": "upper_color",
+      "current_label": "pink",
+      "review_label": "pink"
+    },
+    {
+      "id": 425,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM11-2014-02-12-20140212132736-20140212133324-tarid5-frame483-line1.png",
+      "field": "lower_color",
+      "current_label": "pink",
+      "review_label": "pink"
+    },
+    {
+      "id": 426,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM29-2013-12-23-20131223121206-20131223121754-tarid158-frame1917-line2.png",
+      "field": "upper_color",
+      "current_label": "orange",
+      "review_label": "orange"
+    },
+    {
+      "id": 427,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM16-2014-04-23-20140423161549-20140423162137-tarid78-frame2073-line1.png",
+      "field": "lower_color",
+      "current_label": "orange",
+      "review_label": "brown"
+    },
+    {
+      "id": 428,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-03-02-20140302141919-20140302142511-tarid579-frame2742-line3.png",
+      "field": "upper_color",
+      "current_label": "orange",
+      "review_label": "orange"
+    },
+    {
+      "id": 429,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM08-2014-03-25-20140325111903-20140325112839-tarid44-frame741-line2.png",
+      "field": "lower_color",
+      "current_label": "orange",
+      "review_label": "exclude"
+    },
+    {
+      "id": 430,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-04-24-20140424120431-20140424121022-tarid39-frame809-line1.png",
+      "field": "upper_color",
+      "current_label": "orange",
+      "review_label": "orange"
+    },
+    {
+      "id": 431,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM01-2014-02-12-20140212131321-20140212132553-tarid201-frame4736-line1.png",
+      "field": "lower_color",
+      "current_label": "orange",
+      "review_label": "red"
+    },
+    {
+      "id": 432,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-02-21-20140221122649-20140221123345-tarid113-frame1425-line2.png",
+      "field": "upper_color",
+      "current_label": "orange",
+      "review_label": "orange"
+    },
+    {
+      "id": 433,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM13-2014-03-28-20140328150343-20140328151115-tarid41-frame1024-line1.png",
+      "field": "lower_color",
+      "current_label": "orange",
+      "review_label": "brown"
+    },
+    {
+      "id": 434,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM08-2014-03-20-20140320164749-20140320165337-tarid37-frame411-line2.png",
+      "field": "upper_color",
+      "current_label": "orange",
+      "review_label": "red"
+    },
+    {
+      "id": 435,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM13-2014-03-27-20140327103748-20140327104636-tarid15-frame2224-line1.png",
+      "field": "lower_color",
+      "current_label": "orange",
+      "review_label": "brown"
+    },
+    {
+      "id": 436,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-04-24-20140424123939-20140424124527-tarid224-frame3621-line1.png",
+      "field": "upper_color",
+      "current_label": "orange",
+      "review_label": "orange"
+    },
+    {
+      "id": 437,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-25-20140325110731-20140325112043-tarid849-frame4966-line1.png",
+      "field": "lower_color",
+      "current_label": "orange",
+      "review_label": "pink"
+    },
+    {
+      "id": 438,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-28-20140328152426-20140328153634-tarid1392-frame5629-line1.png",
+      "field": "upper_color",
+      "current_label": "orange",
+      "review_label": "orange"
+    },
+    {
+      "id": 439,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM01-2014-02-26-20140226114149-20140226114741-tarid70-frame2517-line1.png",
+      "field": "lower_color",
+      "current_label": "orange",
+      "review_label": "red"
+    },
+    {
+      "id": 440,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM06-2014-03-18-20140318121113-20140318121701-tarid24-frame1925-line1.png",
+      "field": "upper_color",
+      "current_label": "orange",
+      "review_label": "orange"
+    },
+    {
+      "id": 441,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-03-28-20140328150131-20140328150639-tarid213-frame1503-line2.png",
+      "field": "lower_color",
+      "current_label": "orange",
+      "review_label": "brown"
+    },
+    {
+      "id": 442,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-04-15-20140415110349-20140415111013-tarid524-frame2186-line1.png",
+      "field": "upper_color",
+      "current_label": "orange",
+      "review_label": "orange"
+    },
+    {
+      "id": 443,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-03-26-20140326140109-20140326140701-tarid68-frame2197-line1.png",
+      "field": "lower_color",
+      "current_label": "orange",
+      "review_label": "orange"
+    },
+    {
+      "id": 444,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-04-22-20140422123326-20140422124253-tarid239-frame5081-line1.png",
+      "field": "upper_color",
+      "current_label": "orange",
+      "review_label": "orange"
+    },
+    {
+      "id": 445,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-03-28-20140328152625-20140328153229-tarid31-frame347-line1.png",
+      "field": "lower_color",
+      "current_label": "orange",
+      "review_label": "brown"
+    },
+    {
+      "id": 446,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM10-2014-02-22-20140222103803-20140222104351-tarid193-frame2772-line1.png",
+      "field": "upper_color",
+      "current_label": "orange",
+      "review_label": "orange"
+    },
+    {
+      "id": 447,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM19-2014-03-18-20140318123430-20140318124018-tarid11-frame229-line1.png",
+      "field": "lower_color",
+      "current_label": "orange",
+      "review_label": "orange"
+    },
+    {
+      "id": 448,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM10-2014-04-23-20140423161043-20140423161635-tarid464-frame4365-line1.png",
+      "field": "upper_color",
+      "current_label": "orange",
+      "review_label": "pink"
+    },
+    {
+      "id": 449,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM18-2013-12-23-20131223125241-20131223125829-tarid70-frame1414-line1.png",
+      "field": "lower_color",
+      "current_label": "orange",
+      "review_label": "brown"
+    },
+    {
+      "id": 450,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-02-12-20140212130136-20140212130628-tarid90-frame856-line3.png",
+      "field": "upper_color",
+      "current_label": "orange",
+      "review_label": "red"
+    },
+    {
+      "id": 451,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM09-2014-03-01-20140301101735-20140301102503-tarid185-frame1195-line1.png",
+      "field": "lower_color",
+      "current_label": "orange",
+      "review_label": "pink"
+    },
+    {
+      "id": 452,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM06-2014-03-03-20140303130459-20140303131051-tarid73-frame3854-line1.png",
+      "field": "upper_color",
+      "current_label": "orange",
+      "review_label": "red"
+    },
+    {
+      "id": 453,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM16-2014-04-19-20140419114042-20140419114630-tarid123-frame3857-line1.png",
+      "field": "lower_color",
+      "current_label": "orange",
+      "review_label": "orange"
+    },
+    {
+      "id": 454,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-02-25-20140225154153-20140225155501-tarid176-frame1494-line1.png",
+      "field": "upper_color",
+      "current_label": "orange",
+      "review_label": "orange"
+    },
+    {
+      "id": 455,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-02-26-20140226111837-20140226112425-tarid140-frame1411-line3.png",
+      "field": "lower_color",
+      "current_label": "orange",
+      "review_label": "red"
+    },
+    {
+      "id": 456,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM29-2013-12-23-20131223121754-20131223122342-tarid194-frame1865-line2.png",
+      "field": "upper_color",
+      "current_label": "orange",
+      "review_label": "red"
+    },
+    {
+      "id": 457,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM18-2013-12-23-20131223122929-20131223123517-tarid51-frame1937-line1.png",
+      "field": "lower_color",
+      "current_label": "orange",
+      "review_label": "brown"
+    },
+    {
+      "id": 458,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM01-2014-04-15-20140415111345-20140415112021-tarid71-frame3251-line1.png",
+      "field": "upper_color",
+      "current_label": "orange",
+      "review_label": "orange"
+    },
+    {
+      "id": 459,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM01-2014-04-23-20140423160826-20140423162330-tarid179-frame7903-line1.png",
+      "field": "lower_color",
+      "current_label": "orange",
+      "review_label": "brown"
+    },
+    {
+      "id": 460,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM08-2014-02-14-20140214141203-20140214142559-tarid1330-frame8697-line2.png",
+      "field": "upper_color",
+      "current_label": "orange",
+      "review_label": "brown"
+    },
+    {
+      "id": 461,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-02-12-20140212130136-20140212130628-tarid115-frame976-line3.png",
+      "field": "lower_color",
+      "current_label": "orange",
+      "review_label": "red"
+    },
+    {
+      "id": 462,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM13-2014-02-22-20140222102047-20140222102635-tarid6-frame431-line1.png",
+      "field": "upper_color",
+      "current_label": "orange",
+      "review_label": "orange"
+    },
+    {
+      "id": 463,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM19-2014-03-27-20140327100655-20140327101215-tarid155-frame2396-line1.png",
+      "field": "lower_color",
+      "current_label": "orange",
+      "review_label": "red"
+    },
+    {
+      "id": 464,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-04-19-20140419112910-20140419113458-tarid37-frame539-line2.png",
+      "field": "upper_color",
+      "current_label": "orange",
+      "review_label": "red"
+    },
+    {
+      "id": 465,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM13-2014-03-28-20140328150343-20140328151115-tarid64-frame1932-line1.png",
+      "field": "lower_color",
+      "current_label": "orange",
+      "review_label": "brown"
+    },
+    {
+      "id": 466,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-03-21-20140321151345-20140321151941-tarid504-frame3354-line2.png",
+      "field": "upper_color",
+      "current_label": "mixture",
+      "review_label": "mixture"
+    },
+    {
+      "id": 467,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM21-2014-02-15-20140215160258-20140215161306-tarid158-frame2043-line1.png",
+      "field": "lower_color",
+      "current_label": "mixture",
+      "review_label": "mixture"
+    },
+    {
+      "id": 468,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM19-2014-02-14-20140214144607-20140214145123-tarid32-frame455-line1.png",
+      "field": "upper_color",
+      "current_label": "mixture",
+      "review_label": "mixture"
+    },
+    {
+      "id": 469,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-03-01-20140301102948-20140301103452-tarid582-frame3450-line2.png",
+      "field": "lower_color",
+      "current_label": "mixture",
+      "review_label": "blue"
+    },
+    {
+      "id": 470,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-04-17-20140417135035-20140417135623-tarid322-frame3537-line2.png",
+      "field": "upper_color",
+      "current_label": "mixture",
+      "review_label": "red"
+    },
+    {
+      "id": 471,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM14-2014-03-05-20140305113502-20140305114602-tarid206-frame3534-line1.png",
+      "field": "lower_color",
+      "current_label": "mixture",
+      "review_label": "black"
+    },
+    {
+      "id": 472,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-10-20140310130655-20140310131243-tarid570-frame2477-line1.png",
+      "field": "upper_color",
+      "current_label": "mixture",
+      "review_label": "mixture"
+    },
+    {
+      "id": 473,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-03-10-20140310131346-20140310131942-tarid95-frame1525-line3.png",
+      "field": "lower_color",
+      "current_label": "mixture",
+      "review_label": "black"
+    },
+    {
+      "id": 474,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM27-2014-03-28-20140328151819-20140328152407-tarid167-frame1991-line1.png",
+      "field": "upper_color",
+      "current_label": "mixture",
+      "review_label": "mixture"
+    },
+    {
+      "id": 475,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM14-2014-03-10-20140310134144-20140310134732-tarid197-frame3509-line1.png",
+      "field": "lower_color",
+      "current_label": "mixture",
+      "review_label": "black"
+    },
+    {
+      "id": 476,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-04-15-20140415115301-20140415115853-tarid227-frame2208-line2.png",
+      "field": "upper_color",
+      "current_label": "mixture",
+      "review_label": "white"
+    },
+    {
+      "id": 477,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM08-2014-02-21-20140221122229-20140221122817-tarid134-frame837-line2.png",
+      "field": "lower_color",
+      "current_label": "mixture",
+      "review_label": "blue"
+    },
+    {
+      "id": 478,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-02-15-20140215162235-20140215162835-tarid613-frame2977-line1.png",
+      "field": "upper_color",
+      "current_label": "mixture",
+      "review_label": "white"
+    },
+    {
+      "id": 479,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM21-2014-04-22-20140422120815-20140422121751-tarid61-frame2025-line1.png",
+      "field": "lower_color",
+      "current_label": "mixture",
+      "review_label": "exclude"
+    },
+    {
+      "id": 480,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM31-2014-04-24-20140424125157-20140424125737-tarid159-frame3982-line1.png",
+      "field": "upper_color",
+      "current_label": "mixture",
+      "review_label": "blue"
+    },
+    {
+      "id": 481,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM30-2014-03-02-20140302140245-20140302140809-tarid59-frame724-line2.png",
+      "field": "lower_color",
+      "current_label": "mixture",
+      "review_label": "green"
+    },
+    {
+      "id": 482,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-04-23-20140423163414-20140423164018-tarid58-frame1675-line1.png",
+      "field": "upper_color",
+      "current_label": "mixture",
+      "review_label": "mixture"
+    },
+    {
+      "id": 483,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM29-2013-12-23-20131223121206-20131223121754-tarid158-frame1917-line2.png",
+      "field": "lower_color",
+      "current_label": "mixture",
+      "review_label": "black"
+    },
+    {
+      "id": 484,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-04-19-20140419111134-20140419111722-tarid528-frame2491-line1.png",
+      "field": "upper_color",
+      "current_label": "mixture",
+      "review_label": "white"
+    },
+    {
+      "id": 485,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-02-21-20140221122239-20140221122703-tarid239-frame1674-line1.png",
+      "field": "lower_color",
+      "current_label": "mixture",
+      "review_label": "exclude"
+    },
+    {
+      "id": 486,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM21-2014-02-15-20140215160258-20140215161306-tarid318-frame3296-line1.png",
+      "field": "upper_color",
+      "current_label": "mixture",
+      "review_label": "mixture"
+    },
+    {
+      "id": 487,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM27-2014-03-10-20140310130718-20140310131306-tarid287-frame3672-line1.png",
+      "field": "lower_color",
+      "current_label": "mixture",
+      "review_label": "blue"
+    },
+    {
+      "id": 488,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-03-18-20140318121707-20140318122255-tarid462-frame3922-line3.png",
+      "field": "upper_color",
+      "current_label": "mixture",
+      "review_label": "blue"
+    },
+    {
+      "id": 489,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-03-26-20140326143048-20140326143636-tarid9-frame880-line2.png",
+      "field": "lower_color",
+      "current_label": "mixture",
+      "review_label": "black"
+    },
+    {
+      "id": 490,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-02-12-20140212131438-20140212132026-tarid402-frame2763-line1.png",
+      "field": "upper_color",
+      "current_label": "mixture",
+      "review_label": "green"
+    },
+    {
+      "id": 491,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-03-01-20140301102948-20140301103452-tarid151-frame790-line2.png",
+      "field": "lower_color",
+      "current_label": "mixture",
+      "review_label": "black"
+    },
+    {
+      "id": 492,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-02-14-20140214140701-20140214141209-tarid256-frame1721-line2.png",
+      "field": "upper_color",
+      "current_label": "mixture",
+      "review_label": "mixture"
+    },
+    {
+      "id": 493,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM10-2014-02-25-20140225153459-20140225154251-tarid8-frame242-line1.png",
+      "field": "lower_color",
+      "current_label": "mixture",
+      "review_label": "red"
+    },
+    {
+      "id": 494,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM16-2014-03-10-20140310130643-20140310131231-tarid173-frame2847-line1.png",
+      "field": "upper_color",
+      "current_label": "mixture",
+      "review_label": "mixture"
+    },
+    {
+      "id": 495,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM14-2014-03-05-20140305114602-20140305115651-tarid311-frame3729-line1.png",
+      "field": "lower_color",
+      "current_label": "mixture",
+      "review_label": "black"
+    },
+    {
+      "id": 496,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM10-2014-03-28-20140328154130-20140328154714-tarid127-frame1400-line1.png",
+      "field": "upper_color",
+      "current_label": "mixture",
+      "review_label": "mixture"
+    },
+    {
+      "id": 497,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM30-2014-03-03-20140303133120-20140303133644-tarid84-frame2743-line2.png",
+      "field": "lower_color",
+      "current_label": "mixture",
+      "review_label": "green"
+    },
+    {
+      "id": 498,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-04-15-20140415110518-20140415111110-tarid203-frame2768-line1.png",
+      "field": "upper_color",
+      "current_label": "mixture",
+      "review_label": "black"
+    },
+    {
+      "id": 499,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-03-01-20140301104848-20140301105340-tarid251-frame1642-line1.png",
+      "field": "lower_color",
+      "current_label": "mixture",
+      "review_label": "black"
+    },
+    {
+      "id": 500,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM29-2014-03-02-20140302143139-20140302143727-tarid236-frame1310-line2.png",
+      "field": "upper_color",
+      "current_label": "mixture",
+      "review_label": "black"
+    },
+    {
+      "id": 501,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM08-2014-02-20-20140220171355-20140220172555-tarid1097-frame6548-line2.png",
+      "field": "lower_color",
+      "current_label": "mixture",
+      "review_label": "navy"
+    },
+    {
+      "id": 502,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM14-2013-12-23-20131223124227-20131223124819-tarid19-frame558-line1.png",
+      "field": "upper_color",
+      "current_label": "mixture",
+      "review_label": "exclude"
+    },
+    {
+      "id": 503,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-02-25-20140225152721-20140225154153-tarid947-frame6499-line1.png",
+      "field": "lower_color",
+      "current_label": "mixture",
+      "review_label": "blue"
+    },
+    {
+      "id": 504,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM14-2014-04-15-20140415114450-20140415115046-tarid367-frame4066-line1.png",
+      "field": "upper_color",
+      "current_label": "mixture",
+      "review_label": "navy"
+    },
+    {
+      "id": 505,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM18-2014-03-01-20140301103026-20140301103714-tarid165-frame3708-line1.png",
+      "field": "lower_color",
+      "current_label": "mixture",
+      "review_label": "black"
+    },
+    {
+      "id": 506,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM10-2014-03-26-20140326143016-20140326143604-tarid351-frame2748-line1.png",
+      "field": "upper_color",
+      "current_label": "other",
+      "review_label": "brown"
+    },
+    {
+      "id": 507,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM19-2014-02-14-20140214144607-20140214145123-tarid32-frame455-line1.png",
+      "field": "lower_color",
+      "current_label": "other",
+      "review_label": "brown"
+    },
+    {
+      "id": 508,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-03-27-20140327100729-20140327101525-tarid259-frame3951-line2.png",
+      "field": "upper_color",
+      "current_label": "other",
+      "review_label": "white"
+    },
+    {
+      "id": 509,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM01-2014-02-12-20140212132553-20140212133557-tarid312-frame6689-line1.png",
+      "field": "lower_color",
+      "current_label": "other",
+      "review_label": "brown"
+    },
+    {
+      "id": 510,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-02-14-20140214140152-20140214140736-tarid140-frame1065-line3.png",
+      "field": "upper_color",
+      "current_label": "other",
+      "review_label": "brown"
+    },
+    {
+      "id": 511,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-03-28-20140328151245-20140328152025-tarid66-frame679-line1.png",
+      "field": "lower_color",
+      "current_label": "other",
+      "review_label": "blue"
+    },
+    {
+      "id": 512,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM14-2014-03-21-20140321153407-20140321154527-tarid159-frame3463-line1.png",
+      "field": "upper_color",
+      "current_label": "other",
+      "review_label": "exclude"
+    },
+    {
+      "id": 513,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM29-2014-03-20-20140320161828-20140320162416-tarid514-frame3758-line2.png",
+      "field": "lower_color",
+      "current_label": "other",
+      "review_label": "exclude"
+    },
+    {
+      "id": 514,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM15-2014-03-21-20140321152541-20140321153133-tarid0-frame189-line1.png",
+      "field": "upper_color",
+      "current_label": "other",
+      "review_label": "exclude"
+    },
+    {
+      "id": 515,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-04-24-20140424121615-20140424122203-tarid38-frame1411-line1.png",
+      "field": "lower_color",
+      "current_label": "other",
+      "review_label": "brown"
+    },
+    {
+      "id": 516,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-25-20140325112043-20140325113503-tarid1286-frame10264-line1.png",
+      "field": "upper_color",
+      "current_label": "other",
+      "review_label": "purple"
+    },
+    {
+      "id": 517,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM31-2014-04-19-20140419114336-20140419114812-tarid47-frame423-line1.png",
+      "field": "lower_color",
+      "current_label": "other",
+      "review_label": "exclude"
+    },
+    {
+      "id": 518,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM20-2014-03-21-20140321150536-20140321152004-tarid78-frame6287-line1.png",
+      "field": "upper_color",
+      "current_label": "other",
+      "review_label": "exclude"
+    },
+    {
+      "id": 519,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-02-14-20140214144521-20140214145101-tarid173-frame2183-line1.png",
+      "field": "lower_color",
+      "current_label": "other",
+      "review_label": "gray"
+    },
+    {
+      "id": 520,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-04-23-20140423161930-20140423162602-tarid45-frame996-line1.png",
+      "field": "upper_color",
+      "current_label": "other",
+      "review_label": "exclude"
+    },
+    {
+      "id": 521,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM16-2014-02-14-20140214144431-20140214145231-tarid212-frame5664-line1.png",
+      "field": "lower_color",
+      "current_label": "other",
+      "review_label": "gray"
+    },
+    {
+      "id": 522,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM27-2014-03-28-20140328150107-20140328150635-tarid12-frame290-line1.png",
+      "field": "upper_color",
+      "current_label": "other",
+      "review_label": "mixture"
+    },
+    {
+      "id": 523,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-02-14-20140214140736-20140214141324-tarid391-frame2293-line2.png",
+      "field": "lower_color",
+      "current_label": "other",
+      "review_label": "gray"
+    },
+    {
+      "id": 524,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM13-2014-04-19-20140419115301-20140419115857-tarid124-frame3971-line1.png",
+      "field": "upper_color",
+      "current_label": "other",
+      "review_label": "brown"
+    },
+    {
+      "id": 525,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM10-2014-04-15-20140415113922-20140415114521-tarid90-frame1978-line1.png",
+      "field": "lower_color",
+      "current_label": "other",
+      "review_label": "white"
+    },
+    {
+      "id": 526,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM14-2014-02-21-20140221124013-20140221125137-tarid268-frame4900-line1.png",
+      "field": "upper_color",
+      "current_label": "other",
+      "review_label": "exclude"
+    },
+    {
+      "id": 527,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM01-2014-04-17-20140417133354-20140417134826-tarid112-frame6837-line1.png",
+      "field": "lower_color",
+      "current_label": "other",
+      "review_label": "brown"
+    },
+    {
+      "id": 528,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM14-2014-03-25-20140325114119-20140325115440-tarid395-frame7848-line1.png",
+      "field": "upper_color",
+      "current_label": "other",
+      "review_label": "purple"
+    },
+    {
+      "id": 529,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM31-2013-12-23-20131223121535-20131223122131-tarid111-frame4095-line1.png",
+      "field": "lower_color",
+      "current_label": "other",
+      "review_label": "exclude"
+    },
+    {
+      "id": 530,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM17-2014-03-28-20140328152625-20140328153229-tarid387-frame3802-line1.png",
+      "field": "upper_color",
+      "current_label": "other",
+      "review_label": "brown"
+    },
+    {
+      "id": 531,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-02-14-20140214141106-20140214142358-tarid134-frame1168-line1.png",
+      "field": "lower_color",
+      "current_label": "other",
+      "review_label": "exclude"
+    },
+    {
+      "id": 532,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM29-2014-03-28-20140328152202-20140328153637-tarid1057-frame6840-line2.png",
+      "field": "upper_color",
+      "current_label": "other",
+      "review_label": "exclude"
+    },
+    {
+      "id": 533,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM27-2014-04-24-20140424125106-20140424125802-tarid153-frame4306-line1.png",
+      "field": "lower_color",
+      "current_label": "other",
+      "review_label": "brown"
+    },
+    {
+      "id": 534,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM13-2014-04-23-20140423162944-20140423163656-tarid42-frame1902-line1.png",
+      "field": "upper_color",
+      "current_label": "other",
+      "review_label": "brown"
+    },
+    {
+      "id": 535,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-02-14-20140214144251-20140214144846-tarid39-frame1003-line1.png",
+      "field": "lower_color",
+      "current_label": "other",
+      "review_label": "brown"
+    },
+    {
+      "id": 536,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM22-2014-04-22-20140422123845-20140422124557-tarid388-frame4318-line2.png",
+      "field": "upper_color",
+      "current_label": "other",
+      "review_label": "brown"
+    },
+    {
+      "id": 537,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-03-27-20140327103053-20140327104421-tarid1313-frame8716-line1.png",
+      "field": "lower_color",
+      "current_label": "other",
+      "review_label": "exclude"
+    },
+    {
+      "id": 538,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM13-2014-04-23-20140423164440-20140423165208-tarid37-frame1089-line1.png",
+      "field": "upper_color",
+      "current_label": "other",
+      "review_label": "brown"
+    },
+    {
+      "id": 539,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM21-2014-04-17-20140417134441-20140417135441-tarid931-frame7249-line1.png",
+      "field": "lower_color",
+      "current_label": "other",
+      "review_label": "mixture"
+    },
+    {
+      "id": 540,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-03-25-20140325114758-20140325115406-tarid121-frame962-line3.png",
+      "field": "upper_color",
+      "current_label": "other",
+      "review_label": "gray"
+    },
+    {
+      "id": 541,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM25-2014-04-24-20140424121003-20140424121551-tarid334-frame4318-line3.png",
+      "field": "lower_color",
+      "current_label": "other",
+      "review_label": "yellow"
+    },
+    {
+      "id": 542,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM29-2014-03-20-20140320163004-20140320163552-tarid23-frame239-line2.png",
+      "field": "upper_color",
+      "current_label": "other",
+      "review_label": "brown"
+    },
+    {
+      "id": 543,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM18-2014-03-27-20140327102623-20140327103239-tarid125-frame2643-line1.png",
+      "field": "lower_color",
+      "current_label": "other",
+      "review_label": "brown"
+    },
+    {
+      "id": 544,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM12-2014-02-22-20140222101459-20140222102047-tarid631-frame3812-line1.png",
+      "field": "upper_color",
+      "current_label": "other",
+      "review_label": "brown"
+    },
+    {
+      "id": 545,
+      "image_path": "data/datasets/rapv2/RAP_dataset/CAM29-2014-02-12-20140212132034-20140212132622-tarid466-frame2770-line2.png",
+      "field": "lower_color",
+      "current_label": "other",
+      "review_label": "exclude"
+    }
+  ]
+}

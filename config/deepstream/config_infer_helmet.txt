@@ -25,9 +25,9 @@ symmetric-padding=1
 scaling-compute-hw=1
 output-tensor-meta=1
 
-# 현재는 full-frame 추가 inference로 실행한다.
-# 이후 person ROI 안에서만 helmet/head를 보려면 process-mode=2 + operate-on-gie-id=1로 전환 가능.
-process-mode=1
+# 사람/pose GIE의 ROI 안에서만 helmet/head를 추론한다.
+process-mode=2
+operate-on-gie-id=1
 
 [class-attrs-all]
 pre-cluster-threshold=0.30
@@ -40,8 +40,8 @@ detected-max-h=2160
 
 [class-attrs-0]
 # helmet
-pre-cluster-threshold=0.65
+pre-cluster-threshold=0.35
 
 [class-attrs-1]
 # head / no-helmet candidate
-pre-cluster-threshold=0.65
+pre-cluster-threshold=0.35

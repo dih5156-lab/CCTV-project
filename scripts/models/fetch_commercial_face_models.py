@@ -1,4 +1,4 @@
-"""Download and verify pinned OpenCV face model artifacts."""
+"""고정된 OpenCV 얼굴 모델 산출물을 내려받고 검증한다."""
 
 from __future__ import annotations
 
@@ -10,7 +10,6 @@ import tempfile
 import urllib.request
 from pathlib import Path
 from typing import Any
-
 
 DEFAULT_MANIFEST = Path("config/models/commercial_face_models.json")
 DEFAULT_OUTPUT_DIR = Path("models/commercial_face")

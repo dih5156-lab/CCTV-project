@@ -1,0 +1,21 @@
+# crop-Pose 목표 구성의 PA100K Appearance Secondary GIE (GIE 4)
+[property]
+gpu-id=0
+gie-unique-id=4
+model-engine-file=../../models/appearance/pa100k_resnet50_attr.engine
+model-color-format=0
+net-scale-factor=0.017124753831663668
+offsets=123.675;116.28;103.53
+network-type=100
+output-blob-names=scores
+infer-dims=3;256;192
+batch-size=1
+workspace-size=1024
+scaling-compute-hw=1
+output-tensor-meta=1
+process-mode=2
+operate-on-gie-id=1
+operate-on-class-ids=0
+
+[class-attrs-all]
+threshold=0.5

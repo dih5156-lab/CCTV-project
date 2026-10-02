@@ -250,7 +250,7 @@ class ZoneManager:
         self._load_config()
 
     def _load_config(self):
-        """JSON 설정 파일 로드"""
+        """JSON 설정 파일을 로드한다."""
         try:
             config = json.loads(Path(self.zones_config_path).read_text(encoding='utf-8'))
             self.dwelling_threshold = config.get('dwelling_threshold_seconds', 3.0)

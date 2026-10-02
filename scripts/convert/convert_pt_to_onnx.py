@@ -46,7 +46,7 @@ def convert_to_onnx(model_path, onnx_path):
     if hasattr(model, 'to'):
         model.to(device)
     if hasattr(model, 'float'):
-        # Export as FP32 ONNX; TensorRT can still build an FP16 engine later.
+        # FP32 ONNX로 변환하며, TensorRT에서 이후 FP16 엔진을 생성할 수 있다.
         model.float()
     if hasattr(model, 'eval'):
         model.eval()
@@ -63,8 +63,8 @@ def convert_to_onnx(model_path, onnx_path):
         },
     }
     if _torch_onnx_export_supports("dynamo"):
-        # dynamic_shapes is for the newer torch.export path and must use the
-        # model's real arg names. dynamic_axes keeps this script compatible.
+        # dynamic_shapes는 최신 torch.export 경로용이며 모델의 실제 인자명을
+        # 사용해야 한다. dynamic_axes를 유지해 기존 실행 환경과 호환한다.
         export_kwargs["dynamo"] = False
 
     with torch.no_grad():

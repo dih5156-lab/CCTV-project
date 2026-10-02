@@ -1,0 +1,170 @@
+{
+  "schema_version": 1,
+  "items": [
+    {
+      "id": 330498,
+      "upper_color": "gray",
+      "lower_color": "exclude"
+    },
+    {
+      "id": 330383,
+      "upper_color": "gray",
+      "lower_color": "exclude"
+    },
+    {
+      "id": 330381,
+      "upper_color": "gray",
+      "lower_color": "exclude"
+    },
+    {
+      "id": 330362,
+      "upper_color": "gray",
+      "lower_color": "exclude"
+    },
+    {
+      "id": 330339,
+      "upper_color": "gray",
+      "lower_color": "exclude"
+    },
+    {
+      "id": 330216,
+      "upper_color": "gray",
+      "lower_color": "exclude"
+    },
+    {
+      "id": 330197,
+      "upper_color": "blue",
+      "lower_color": "exclude"
+    },
+    {
+      "id": 330164,
+      "upper_color": "gray",
+      "lower_color": "exclude"
+    },
+    {
+      "id": 330156,
+      "upper_color": "gray",
+      "lower_color": "exclude"
+    },
+    {
+      "id": 330155,
+      "upper_color": "gray",
+      "lower_color": "exclude"
+    },
+    {
+      "id": 330151,
+      "upper_color": "gray",
+      "lower_color": "exclude"
+    },
+    {
+      "id": 330138,
+      "upper_color": "gray",
+      "lower_color": "exclude"
+    },
+    {
+      "id": 330132,
+      "upper_color": "gray",
+      "lower_color": "exclude"
+    },
+    {
+      "id": 330116,
+      "upper_color": "brown",
+      "lower_color": "exclude"
+    },
+    {
+      "id": 330113,
+      "upper_color": "gray",
+      "lower_color": "exclude"
+    },
+    {
+      "id": 330104,
+      "upper_color": "exclude",
+      "lower_color": "exclude"
+    },
+    {
+      "id": 330103,
+      "upper_color": "gray",
+      "lower_color": "exclude"
+    },
+    {
+      "id": 330092,
+      "upper_color": "gray",
+      "lower_color": "exclude"
+    },
+    {
+      "id": 330091,
+      "upper_color": "gray",
+      "lower_color": "exclude"
+    },
+    {
+      "id": 330088,
+      "upper_color": "white",
+      "lower_color": "exclude"
+    },
+    {
+      "id": 330080,
+      "upper_color": "black",
+      "lower_color": "exclude"
+    },
+    {
+      "id": 330079,
+      "upper_color": "black",
+      "lower_color": "exclude"
+    },
+    {
+      "id": 330072,
+      "upper_color": "black",
+      "lower_color": "exclude"
+    },
+    {
+      "id": 330071,
+      "upper_color": "black",
+      "lower_color": "exclude"
+    },
+    {
+      "id": 330069,
+      "upper_color": "black",
+      "lower_color": "exclude"
+    },
+    {
+      "id": 329978,
+      "upper_color": "gray",
+      "lower_color": "exclude"
+    },
+    {
+      "id": 329793,
+      "upper_color": "gray",
+      "lower_color": "exclude"
+    },
+    {
+      "id": 329783,
+      "upper_color": "gray",
+      "lower_color": "exclude"
+    },
+    {
+      "id": 329781,
+      "upper_color": "gray",
+      "lower_color": "exclude"
+    },
+    {
+      "id": 329642,
+      "upper_color": "exclude",
+      "lower_color": "exclude"
+    },
+    {
+      "id": 329641,
+      "upper_color": "exclude",
+      "lower_color": "exclude"
+    },
+    {
+      "id": 329311,
+      "upper_color": "black",
+      "lower_color": "exclude"
+    },
+    {
+      "id": 329298,
+      "upper_color": "white",
+      "lower_color": "exclude"
+    }
+  ]
+}

@@ -1,1 +1,1 @@
-"""Model artifact management commands."""
+"""모델 산출물 관리 명령 모음."""

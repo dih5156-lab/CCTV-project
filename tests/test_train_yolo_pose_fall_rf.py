@@ -15,6 +15,7 @@ from scripts.datasets.train_yolo_pose_fall_rf import (
     _scene_base,
     _select_rows,
     _select_tracked_pose_index,
+    _slice_rows,
     _summarize_frames,
 )
 
@@ -280,6 +281,23 @@ def test_select_rows_round_robins_across_scene_environments():
         ("집", "거실"),
         ("요양병원", "화장실"),
     }
+
+
+def test_slice_rows_supports_exact_chunk_resume_without_dropping_rows():
+    rows = [{"scene_id": f"scene_{index}"} for index in range(6)]
+
+    first = _slice_rows(rows, offset=0, limit=2)
+    second = _slice_rows(rows, offset=2, limit=2)
+    last = _slice_rows(rows, offset=4, limit=0)
+
+    assert [row["scene_id"] for row in first + second + last] == [
+        "scene_0",
+        "scene_1",
+        "scene_2",
+        "scene_3",
+        "scene_4",
+        "scene_5",
+    ]
 
 
 def test_summarize_frames_reports_temporal_fall_transition():

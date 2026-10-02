@@ -17,10 +17,19 @@ def set_optional_property(element: Any, name: str, value: Any) -> None:
         logger.debug("%s property 미지원: %s", element.get_name(), name)
 
 
+def streammux_dimensions() -> tuple[int, int]:
+    """ROI/pose/event 좌표의 기준인 패딩 포함 mux surface 크기."""
+    return (
+        int(os.environ.get("DS_STREAM_WIDTH", "1920")),
+        int(os.environ.get("DS_STREAM_HEIGHT", "1080")),
+    )
+
+
 def configure_streammux(streammux: Any, n_cams: int) -> None:
+    width, height = streammux_dimensions()
     streammux.set_property("batch-size", n_cams)
-    streammux.set_property("width", int(os.environ.get("DS_STREAM_WIDTH", "1920")))
-    streammux.set_property("height", int(os.environ.get("DS_STREAM_HEIGHT", "1080")))
+    streammux.set_property("width", width)
+    streammux.set_property("height", height)
     streammux.set_property(
         "batched-push-timeout",
         int(os.environ.get("DS_BATCH_TIMEOUT_US", "33333")),
@@ -47,14 +56,27 @@ def configure_infer_elements(
     pphuman_infer_config: Path,
     env_int: Callable[[str, int], int],
     set_property_optional: Callable[[Any, str, Any], None],
+    pose_infer: Optional[Any] = None,
+    pose_infer_config: Optional[Path] = None,
+    primary_interval_env_name: str = "DS_PRIMARY_INTERVAL",
 ) -> None:
     if nvinfer is not None:
         nvinfer.set_property("config-file-path", str(infer_config))
         nvinfer.set_property("batch-size", n_cams)
-        set_property_optional(nvinfer, "interval", env_int("DS_PRIMARY_INTERVAL", 0))
+        set_property_optional(nvinfer, "interval", env_int(primary_interval_env_name, 0))
+    if pose_infer is not None:
+        if pose_infer_config is None:
+            raise ValueError("pose_infer_config is required when pose_infer is enabled")
+        pose_infer.set_property("config-file-path", str(pose_infer_config))
+        pose_infer.set_property(
+            "batch-size", max(1, env_int("DS_POSE_SGIE_BATCH_SIZE", 1))
+        )
+        set_property_optional(pose_infer, "interval", env_int("DS_POSE_SGIE_INTERVAL", 0))
     if pphuman_infer is not None:
         pphuman_infer.set_property("config-file-path", str(pphuman_infer_config))
-        pphuman_infer.set_property("batch-size", n_cams)
+        pphuman_infer.set_property(
+            "batch-size", max(1, env_int("DS_PPHUMAN_SGIE_BATCH_SIZE", 1))
+        )
         set_property_optional(
             pphuman_infer,
             "interval",
@@ -67,7 +89,9 @@ def configure_infer_elements(
         )
     if helmet_infer is not None:
         helmet_infer.set_property("config-file-path", str(helmet_infer_config))
-        helmet_infer.set_property("batch-size", n_cams)
+        helmet_infer.set_property(
+            "batch-size", max(1, env_int("DS_HELMET_SGIE_BATCH_SIZE", 1))
+        )
         set_property_optional(helmet_infer, "interval", env_int("DS_HELMET_INTERVAL", 1))
 
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Record a fall demonstration video and API events in one session directory."""
+"""하나의 세션 디렉터리에 넘어짐 시연 영상과 API 이벤트를 기록한다."""
 
 from __future__ import annotations
 
@@ -76,7 +76,7 @@ def _event_worker(
                     }
                     stream.write(json.dumps(record, ensure_ascii=False) + "\n")
                 stream.flush()
-            except Exception as exc:  # keep recording if API briefly drops
+            except Exception as exc:  # API가 잠시 끊겨도 기록은 계속한다.
                 stream.write(json.dumps({"captured_at": datetime.now(timezone.utc).isoformat(), "error": str(exc)}, ensure_ascii=False) + "\n")
                 stream.flush()
             stop.wait(interval)

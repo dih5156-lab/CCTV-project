@@ -83,6 +83,16 @@ class ObjectDetectionPipeline:
         fall_events: List[DetectionEvent] = []
 
         if use_pose and analyzer.pose_model:
+            crop_mode_enabled = os.environ.get("POSE_CROP_MODE", "0").strip().lower() in {
+                "1",
+                "true",
+                "yes",
+                "on",
+            }
+            crop_runner = getattr(analyzer, "_run_pose_crop", None)
+            if crop_mode_enabled and callable(crop_runner):
+                logger.debug("POSE_CROP_MODE 활성화: person crop pose 경로 사용")
+                return crop_runner(frame)
             person_events, fall_events = analyzer._run_pose_full_frame(frame)
             pose_keypoint_count = sum(
                 1

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build a stratified human-review set from the canonical appearance manifest."""
+"""기준 외관 매니페스트에서 층화된 사람 검수 세트를 만든다."""
 
 from __future__ import annotations
 
@@ -30,7 +30,7 @@ def build(manifest: Path, image_root: Path, output: Path, limit: int, seed: int)
     for values in groups.values():
         rng.shuffle(values)
 
-    # Round-robin across color/camera strata prevents black/black from dominating.
+    # 색상·카메라 층을 순환 선택해 검은색/검은색 샘플이 과도하게 많아지지 않게 한다.
     selected: list[dict] = []
     buckets = list(groups.values())
     while len(selected) < limit and buckets:

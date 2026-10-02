@@ -192,16 +192,18 @@ def execute_pipeline_restart(
     start_cb: Callable[[], None],
     monotonic_now: Callable[[], float],
     set_last_restart_at_cb: Callable[[float], None],
-) -> None:
-    """파이프라인 stop/start 재시작을 수행하고 결과를 로깅한다."""
+) -> bool:
+    """stop/start 호출의 성공 여부를 반환한다. 프레임 복구를 보장하지 않는다."""
     logger.info("DeepStream 파이프라인 재시작 시작: %s", reason)
     try:
         stop_cb()
         start_cb()
         set_last_restart_at_cb(monotonic_now())
         logger.info("DeepStream 파이프라인 재시작 완료: %s", reason)
+        return True
     except Exception as exc:
         logger.exception("DeepStream 파이프라인 재시작 실패(%s): %s", reason, exc)
+        return False
 
 
 def build_camera_status_map(
@@ -279,6 +281,8 @@ def handle_bus_message(
     monotonic_now: Callable[[], float],
     request_pipeline_restart_cb: Callable[[str], bool],
     stop_runtime_cb: Callable[[], None],
+    record_stat_cb: Optional[Callable[[str], Any]] = None,
+    require_process_restart_cb: Optional[Callable[[str], None]] = None,
 ) -> bool:
     """DeepStream bus message를 해석하고 소스 복구/종료 정책을 적용한다."""
     msg_type = message.type
@@ -289,6 +293,10 @@ def handle_bus_message(
             message=message,
             debug=None,
         )
+        if record_stat_cb is not None:
+            record_stat_cb(
+                "source_eos_identified" if camera_id else "source_eos_unidentified"
+            )
         if camera_id:
             logger.warning("[%s] DeepStream 소스 EOS 수신", camera_id)
             mark_source_failed(
@@ -309,11 +317,31 @@ def handle_bus_message(
     if msg_type == gst_module.MessageType.ERROR:
         err, debug = message.parse_error()
         logger.error("DeepStream 오류: %s debug=%s", err, debug)
+        # CUDA 700 이후에는 같은 프로세스의 CUDA 상태를 재사용할 수 없다.
+        # SDK는 실제 CUDA 원인을 stderr에만 남기고 bus에는 일반 큐 실패를 보낼 수 있다.
+        error_text, debug_text = str(err), str(debug or "")
+        fatal_reason = ""
+        if any(token in error_text + debug_text for token in (
+            "cudaErrorIllegalAddress", "NVDSINFER_CUDA_ERROR",
+        )):
+            fatal_reason = "cuda_fatal"
+        elif ("Failed to queue input batch for inferencing" in error_text
+              and "gst_nvinfer_input_queue_loop" in debug_text):
+            # 큐 실패 자체를 CUDA 700으로 단정하지 않고 추론 백엔드 오류로 구분한다.
+            fatal_reason = "inference_queue_failure"
+        if fatal_reason and require_process_restart_cb is not None:
+            require_process_restart_cb(fatal_reason)
+            stop_runtime_cb()
+            return True
         camera_id = camera_id_from_message(
             cameras=cameras,
             message=message,
             debug=debug,
         )
+        if record_stat_cb is not None:
+            record_stat_cb(
+                "source_error_identified" if camera_id else "source_error_unidentified"
+            )
         if camera_id:
             mark_source_failed(
                 cameras=cameras,

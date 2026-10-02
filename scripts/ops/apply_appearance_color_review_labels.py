@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Apply reviewed upper/lower appearance colors to SQLite safely."""
+"""검수한 상·하의 외관 색상을 SQLite에 안전하게 반영한다."""
 
 from __future__ import annotations
 

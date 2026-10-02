@@ -1,4 +1,4 @@
-"""Small helpers for assembling DeepStream GStreamer pipelines."""
+"""DeepStream GStreamer 파이프라인 조립을 위한 보조 함수."""
 
 from __future__ import annotations
 
@@ -24,6 +24,13 @@ class DeepStreamPipelineElements:
     output_queue: Optional[Any]
     preview_elements: List[Any]
     output_elements: List[Any]
+    # crop-Pose 전환 시 Person Primary 뒤에 연결되는 Pose SGIE.
+    # 기본값 None으로 두어 기존 full-frame 토폴로지를 그대로 유지한다.
+    pose_infer: Optional[Any] = None
+    # Primary tensor metadata가 준비된 뒤 ROI를 등록하기 위한 동기화 경계.
+    primary_tensor_queue: Optional[Any] = None
+    # Tracker와 모든 SGIE가 메타를 붙인 뒤 최종 probe를 실행하는 경계.
+    metadata_probe_queue: Optional[Any] = None
 
     def all_elements(self) -> List[Any]:
         elements = [self.streammux]
@@ -31,9 +38,12 @@ class DeepStreamPipelineElements:
             element
             for element in (
                 self.nvinfer,
+                self.primary_tensor_queue,
+                self.pose_infer,
                 self.pphuman_infer,
                 self.helmet_infer,
                 self.tracker,
+                self.metadata_probe_queue,
             )
             if element is not None
         )
@@ -60,24 +70,70 @@ def link_deepstream_pipeline_path(
     link_preview_branch: Callable[..., Any],
     pphuman_gie_id: int,
     pphuman_infer_config: Any,
+    pose_gie_id: int = 2,
+    pose_infer_config: Any = None,
+    primary_metrics_callback: Optional[Callable[[Any, Any, Any], Any]] = None,
 ) -> Any:
-    """Link the main inference/output path and return the element to probe."""
+    """주 추론·출력 경로를 연결하고 probe를 설치할 엘리먼트를 반환한다."""
     previous = elements.streammux
     probe_element = elements.streammux
+    tracker_linked = False
 
     if elements.nvinfer is not None:
         link_or_raise(previous, elements.nvinfer, "nvstreammux -> nvinfer link 실패")
+        if primary_metrics_callback is not None:
+            primary_metrics_pad = elements.nvinfer.get_static_pad("src")
+            if primary_metrics_pad is None:
+                raise RuntimeError("Primary FPS 계측용 src pad를 찾을 수 없습니다.")
+            primary_metrics_pad.add_probe(
+                gst_module.PadProbeType.BUFFER, primary_metrics_callback, None
+            )
         previous = elements.nvinfer
         probe_element = elements.nvinfer
-        if elements.pphuman_infer is not None:
-            primary_srcpad = elements.nvinfer.get_static_pad("src")
+        if any(element is not None for element in (
+            elements.pose_infer, elements.pphuman_infer, elements.helmet_infer
+        )):
+            if elements.primary_tensor_queue is None:
+                raise RuntimeError("Primary tensor probe용 queue가 없습니다.")
+            link_or_raise(
+                previous,
+                elements.primary_tensor_queue,
+                "primary-infer -> primary-tensor-queue link 실패",
+            )
+            previous = elements.primary_tensor_queue
+            primary_srcpad = elements.primary_tensor_queue.get_static_pad("src")
             if primary_srcpad is None:
-                raise RuntimeError("primary-infer src pad를 찾을 수 없습니다.")
+                raise RuntimeError("primary-tensor-queue src pad를 찾을 수 없습니다.")
             primary_srcpad.add_probe(
                 gst_module.PadProbeType.BUFFER,
                 primary_probe_callback,
                 None,
             )
+
+    # SGIE가 tracker의 object_id를 받을 수 있도록 crop-Pose 경로에서는
+    # tracker를 Person Primary 바로 뒤에 둔다.
+    if elements.pose_infer is not None and elements.tracker is not None:
+        link_or_raise(
+            previous,
+            elements.tracker,
+            f"{previous.get_name()} -> tracker link 실패",
+        )
+        previous = elements.tracker
+        tracker_linked = True
+
+    if elements.pose_infer is not None:
+        link_or_raise(
+            previous,
+            elements.pose_infer,
+            f"{previous.get_name()} -> pose-infer link 실패",
+        )
+        previous = elements.pose_infer
+        probe_element = elements.pose_infer
+        logger.info(
+            "Pose SGIE 파이프라인 연결 완료: gie_id=%d, config=%s",
+            pose_gie_id,
+            pose_infer_config,
+        )
 
     if elements.pphuman_infer is not None:
         link_or_raise(
@@ -102,13 +158,22 @@ def link_deepstream_pipeline_path(
         previous = elements.helmet_infer
         probe_element = elements.helmet_infer
 
-    if elements.tracker is not None:
+    if elements.tracker is not None and not tracker_linked:
         link_or_raise(
             previous,
             elements.tracker,
             f"{previous.get_name()} -> nvtracker link 실패",
         )
         previous = elements.tracker
+
+    if elements.metadata_probe_queue is not None:
+        link_or_raise(
+            previous,
+            elements.metadata_probe_queue,
+            f"{previous.get_name()} -> metadata-probe-queue link 실패",
+        )
+        previous = elements.metadata_probe_queue
+        probe_element = elements.metadata_probe_queue
 
     link_or_raise(
         previous,
@@ -141,6 +206,12 @@ def create_h264_encoder_elements(
     gst_module: Any,
 ) -> List[Any]:
     converter = make_element("nvvideoconvert", "h264-nvvidconv")
+    rate = make_element("videorate", "h264-videorate")
+    # mux의 0/1 프레임률로 인한 H.264 시간 헤더 오류를 출력 경로에서 보정한다.
+    # 프레임 반복은 100ms 이내 간격으로 제한하며, 출력 FPS는 AI 추론 FPS와 구분한다.
+    rate.set_property("drop-only", False)
+    rate.set_property("max-duplication-time", 100_000_000)
+    rate.set_property("skip-to-first", True)
     capsfilter = make_element("capsfilter", "h264-caps")
     encoder_name = os.environ.get("DS_H264_ENCODER", "nvv4l2h264enc").strip().lower()
     use_x264 = encoder_name in {"x264", "x264enc", "software"}
@@ -150,11 +221,13 @@ def create_h264_encoder_elements(
 
     width = env_int("DS_H264_WIDTH", 1280)
     height = env_int("DS_H264_HEIGHT", 720)
+    # 0 또는 음수 설정이 인코더에 전달되지 않도록 최소 1FPS를 사용한다.
+    fps = max(1, env_int("DS_H264_FPS", 30))
     memory = "" if use_x264 else "(memory:NVMM)"
     capsfilter.set_property(
         "caps",
         gst_module.Caps.from_string(
-            f"video/x-raw{memory},format=NV12,width={width},height={height}"
+            f"video/x-raw{memory},format=NV12,width={width},height={height},framerate={fps}/1"
         ),
     )
 
@@ -179,7 +252,9 @@ def create_h264_encoder_elements(
         set_optional_property(encoder, "maxperf-enable", True)
         set_optional_property(encoder, "insert-aud", True)
         set_optional_property(encoder, "insert-sps-pps", True)
-        set_optional_property(encoder, "insert-vui", False)
+        # 양수 출력 FPS를 SPS에도 기록해 수신기가 프레임률을 추측하지 않게 한다.
+        # 앞단 videorate/FPS caps 보정과 함께 유지해야 0/0 시간 헤더를 피할 수 있다.
+        set_optional_property(encoder, "insert-vui", True)
         set_optional_property(encoder, "iframeinterval", iframe_interval)
         set_optional_property(encoder, "idrinterval", idr_interval)
         set_optional_property(encoder, "control-rate", 1)
@@ -204,7 +279,7 @@ def create_h264_encoder_elements(
         "caps",
         gst_module.Caps.from_string("video/x-h264,stream-format=byte-stream,alignment=au"),
     )
-    return [converter, capsfilter, encoder, parser, parsed_capsfilter]
+    return [converter, rate, capsfilter, encoder, parser, parsed_capsfilter]
 
 
 def create_preview_elements(
@@ -235,6 +310,9 @@ def create_preview_elements(
     appsink.set_property("max-buffers", 1)
     appsink.set_property("drop", True)
     appsink.set_property("sync", False)
+    # 파일 입력에서 RTSP 송출의 상태 전환과 첫 preview 버퍼 대기가 서로 막히지 않게 한다.
+    # 최신 프레임용 분기이므로 첫 버퍼 수신을 전체 파이프라인의 시작 조건으로 삼지 않는다.
+    appsink.set_property("async", False)
     appsink.connect("new-sample", on_preview_sample)
     return [queue, converter, capsfilter, appsink]
 
@@ -351,12 +429,15 @@ def register_pipeline_runtime_hooks(
     gst_module: Any,
     on_pad_probe: Callable[[Any, Any, Any], Any],
     on_bus_message: Callable[[Any, Any], bool],
+    on_stream_event: Optional[Callable[[Any, Any, Any], Any]] = None,
 ) -> None:
     """파이프라인 실행에 필요한 src pad probe와 bus watch를 등록한다."""
     srcpad = probe_element.get_static_pad("src")
     if srcpad is None:
         raise RuntimeError(f"{probe_element.get_name()} src pad를 찾을 수 없습니다.")
     srcpad.add_probe(gst_module.PadProbeType.BUFFER, on_pad_probe, None)
+    if on_stream_event is not None:
+        srcpad.add_probe(gst_module.PadProbeType.EVENT_DOWNSTREAM, on_stream_event, None)
 
     bus = pipeline.get_bus()
     bus.add_signal_watch()
@@ -412,7 +493,19 @@ def stop_pipeline_runtime(
 ) -> None:
     """DeepStream 런타임을 종료하고 관련 스레드를 조인한다."""
     if pipeline is not None:
+        # RTSP 송출이 연결된 상태에서는 NULL 전환만으로 streaming 대기가 풀리지 않을 수 있다.
+        # 종료 시 버퍼 처리를 중단하고 대기 중인 분기를 먼저 깨워 native join의 순환 대기를 막는다.
+        pipeline.send_event(gst_module.Event.new_flush_start())
+        # RTSP 출력 자원을 먼저 회수해야 인코더 버퍼 풀의 종료 대기가 남지 않는다.
+        # 부모가 PAUSED를 거칠 때 이미 종료한 출력 bin을 다시 열지 못하도록 잠근다.
+        rtsp_sink = pipeline.get_by_name("h264-rtsp-sink")
+        if rtsp_sink is not None:
+            rtsp_sink.set_locked_state(True)
+            rtsp_sink.set_state(gst_module.State.NULL)
         pipeline.set_state(gst_module.State.NULL)
+        if rtsp_sink is not None:
+            # 부모까지 NULL이 된 뒤 해제하여 다음 명시적 시작도 기존처럼 동작시킨다.
+            rtsp_sink.set_locked_state(False)
 
     if main_loop is not None and main_loop.is_running():
         main_loop.quit()
@@ -434,21 +527,50 @@ def create_pipeline_elements_bundle(
     pphuman_enabled: bool,
     output_elements: List[Any],
     preview_elements: List[Any],
+    pose_enabled: bool = False,
+    tracker_enabled: bool = True,
 ) -> DeepStreamPipelineElements:
     """DeepStream main path element 묶음을 생성한다."""
+    # GPU OSD 최초 JIT 정지의 우회용 선택 설정이며, 미설정은 SDK 기본값을 유지한다.
+    osd_process_mode = os.environ.get("DS_OSD_PROCESS_MODE", "").strip()
+    if osd_process_mode not in ("", "0", "1"):
+        raise ValueError("DS_OSD_PROCESS_MODE must be empty, 0 (CPU), or 1 (GPU)")
     streammux = make_element("nvstreammux", "streammux")
     nvinfer = make_element("nvinfer", "primary-infer") if primary_enabled else None
+    pose_infer = (
+        make_element("nvinfer", "pose-infer")
+        if pose_enabled and primary_enabled
+        else None
+    )
     pphuman_infer = (
         make_element("nvinfer", "pphuman-infer")
         if pphuman_enabled and nvinfer is not None
         else None
     )
+    primary_tensor_queue = (
+        make_element("queue", "primary-tensor-queue")
+        if nvinfer is not None and (pose_infer is not None or pphuman_infer is not None or helmet_enabled)
+        else None
+    )
     helmet_infer = make_element("nvinfer", "helmet-infer") if helmet_enabled else None
-    tracker = make_element("nvtracker", "tracker") if (nvinfer or helmet_infer) else None
+    tracker = (
+        make_element("nvtracker", "tracker")
+        if tracker_enabled and (nvinfer or helmet_infer)
+        else None
+    )
     converter = make_element("nvvideoconvert", "converter")
     osd = make_element("nvdsosd", "osd")
+    if osd_process_mode:
+        # 추론 장치는 바꾸지 않는다. CPU OSD는 앞단 converter와 RGBA를 협상한다.
+        osd.set_property("process-mode", int(osd_process_mode))
+        logger.info("DeepStream OSD process-mode=%s", osd_process_mode)
     tee = make_element("tee", "preview-tee") if preview_enabled else None
     output_queue = make_element("queue", "output-queue") if tee is not None else None
+    metadata_probe_queue = (
+        make_element("queue", "metadata-probe-queue")
+        if nvinfer is not None or helmet_infer is not None
+        else None
+    )
 
     return DeepStreamPipelineElements(
         streammux=streammux,
@@ -462,6 +584,9 @@ def create_pipeline_elements_bundle(
         output_queue=output_queue,
         preview_elements=preview_elements,
         output_elements=output_elements,
+        pose_infer=pose_infer,
+        primary_tensor_queue=primary_tensor_queue,
+        metadata_probe_queue=metadata_probe_queue,
     )
 
 
@@ -500,6 +625,7 @@ def configure_pipeline_elements_bundle(
         elements.helmet_infer,
         elements.pphuman_infer,
         n_cams,
+        pose_infer=elements.pose_infer,
     )
     if elements.tracker is not None:
         configure_tracker(elements.tracker)

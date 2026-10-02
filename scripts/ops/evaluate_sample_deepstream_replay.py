@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
-"""Replay Sample fall videos through DeepStream and score shadow logs.
+"""Sample 넘어짐 영상을 DeepStream으로 재생하고 Shadow 로그를 평가한다.
 
-Typical flow on Jetson:
+Jetson에서의 일반적인 실행 흐름:
 
-  1. Build the manifest:
+  1. manifest를 생성한다.
      python scripts/datasets/build_sample_fall_manifest.py
 
-  2. Run a quick file-source replay through the Jetson compose stack:
+  2. Jetson Compose 스택에서 파일 입력 replay를 실행한다.
      python scripts/ops/evaluate_sample_deepstream_replay.py \
        --source-mode file --apply-camera-config --restart-ai-engine
 
-In file mode, the script rewrites the evaluation camera to a `file:///app/...`
-source and restarts `cctv-ai-engine` for each video. In RTSP mode, it publishes
-each mp4 to MediaMTX with ffmpeg. Both modes wait for `fall_shadow_review.jsonl`
-records and write per-video TP/FN/FP/TN results.
+파일 모드에서는 평가 카메라를 `file:///app/...` 입력으로 바꾸고 영상마다
+`cctv-ai-engine`을 재시작한다. RTSP 모드에서는 ffmpeg로 각 mp4를
+MediaMTX에 발행한다. 두 모드 모두 `fall_shadow_review.jsonl` 기록을
+기다린 뒤 영상별 TP/FN/FP/TN 결과를 저장한다.
 """
 
 from __future__ import annotations
@@ -405,12 +405,32 @@ def _restart_ai_engine(compose_file: Path, compose_env_file: Path | None = None)
     subprocess.run(command, check=True)
 
 
-def _recreate_ai_engine(
+def _restart_or_recreate_ai_engine(
     compose_file: Path,
-    compose_env_file: Path | None = None,
+    compose_env_file: Path | None,
+    *,
+    recreate: bool,
+    environment_overrides: dict[str, str] | None = None,
+) -> None:
+    """평가 환경 변경 여부에 따라 재시작 또는 재생성을 수행한다."""
+    if recreate:
+        _recreate_ai_engine(
+            compose_file,
+            compose_env_file,
+            environment_overrides=environment_overrides,
+        )
+    else:
+        _restart_ai_engine(compose_file, compose_env_file)
+
+
+def _recreate_compose_service(
+    compose_file: Path,
+    compose_env_file: Path | None,
+    service: str,
     *,
     environment_overrides: dict[str, str] | None = None,
 ) -> None:
+    """Compose 서비스를 지정한 임시 환경변수로 재생성한다."""
     command = ["docker", "compose"]
     if compose_env_file:
         command.extend(["--env-file", str(compose_env_file)])
@@ -420,13 +440,42 @@ def _recreate_ai_engine(
             str(compose_file),
             "up",
             "-d",
+            "--no-deps",
             "--force-recreate",
-            "cctv-ai-engine",
+            service,
         ]
     )
     environment = os.environ.copy()
     environment.update(environment_overrides or {})
     subprocess.run(command, check=True, env=environment)
+
+
+def _set_action_layer_dry_run(
+    compose_file: Path,
+    compose_env_file: Path | None,
+    enabled: bool,
+) -> None:
+    """replay 중 Action Layer 물리 출력 차단 여부를 적용한다."""
+    _recreate_compose_service(
+        compose_file,
+        compose_env_file,
+        "cctv-action-layer",
+        environment_overrides={"ACTION_DEVICE_DRY_RUN": "true"} if enabled else {},
+    )
+
+
+def _recreate_ai_engine(
+    compose_file: Path,
+    compose_env_file: Path | None = None,
+    *,
+    environment_overrides: dict[str, str] | None = None,
+) -> None:
+    _recreate_compose_service(
+        compose_file,
+        compose_env_file,
+        "cctv-ai-engine",
+        environment_overrides=environment_overrides,
+    )
 
 
 def _run_ffmpeg_replay(
@@ -475,7 +524,7 @@ def _run_ffmpeg_replay(
             proc.kill()
             return_code = proc.wait(timeout=5.0)
     if return_code != 0:
-        raise RuntimeError(f"ffmpeg replay failed with exit code {return_code}")
+        raise RuntimeError(f"ffmpeg replay 실패: 종료 코드 {return_code}")
     return return_code
 
 
@@ -488,7 +537,7 @@ def _resolve_video_paths(
     *,
     dataset_host_root: Path | None,
 ) -> tuple[Path, Path]:
-    """Return host path for probing and container path for DeepStream."""
+    """점검용 호스트 경로와 DeepStream용 컨테이너 경로를 반환한다."""
     container_dataset_root = Path("/app/낙상학습데이터")
     if dataset_host_root is not None:
         if video_path.is_relative_to(container_dataset_root):
@@ -791,6 +840,19 @@ def evaluate(args: argparse.Namespace) -> list[dict[str, Any]]:
         env_values,
         args.container_project_root,
     )
+    if getattr(args, "recreate_ai_engine", False) and args.review_log != DEFAULT_REVIEW_LOG:
+        try:
+            _, container_review_log = _resolve_project_container_path(
+                Path(args.review_log),
+                host_project_root=host_project_root,
+                container_project_root=args.container_project_root,
+            )
+        except ValueError:
+            container_review_log = None
+        if container_review_log is not None:
+            runtime_overrides["FALL_SHADOW_REVIEW_LOG_PATH"] = str(
+                container_review_log
+            )
     print(f"review log: {args.review_log}")
     compare_veto_enabled = _runtime_bool(
         env_values,
@@ -809,6 +871,7 @@ def evaluate(args: argparse.Namespace) -> list[dict[str, Any]]:
         )
 
     backup: Path | None = None
+    safe_action_layer = bool(getattr(args, "safe_action_layer", False))
     if args.prepare_only:
         return []
 
@@ -817,6 +880,13 @@ def evaluate(args: argparse.Namespace) -> list[dict[str, Any]]:
         if args.apply_camera_config:
             backup = _apply_camera_config(args.eval_cameras_json, args.cameras_json)
             print(f"applied camera config: {args.cameras_json} (backup: {backup})")
+            if safe_action_layer:
+                _set_action_layer_dry_run(
+                    args.compose_file,
+                    args.compose_env_file,
+                    True,
+                )
+                print("action layer: physical output disabled for replay")
             if args.restart_ai_engine and args.source_mode == "file":
                 if runtime_overrides:
                     _recreate_ai_engine(
@@ -825,7 +895,12 @@ def evaluate(args: argparse.Namespace) -> list[dict[str, Any]]:
                         environment_overrides=runtime_overrides,
                     )
                 else:
-                    _restart_ai_engine(args.compose_file, args.compose_env_file)
+                    _restart_or_recreate_ai_engine(
+                        args.compose_file,
+                        args.compose_env_file,
+                        recreate=getattr(args, "recreate_ai_engine", False),
+                        environment_overrides=runtime_overrides,
+                    )
                 time.sleep(args.restart_wait_seconds)
 
         for idx, row in enumerate(rows, start=1):
@@ -850,7 +925,7 @@ def evaluate(args: argparse.Namespace) -> list[dict[str, Any]]:
                 )
             duration = _video_duration_seconds(
                 video_path,
-                int(row.get("scene_length") or 0),
+                int(row.get("scene_length") or row.get("frame_count") or 0),
                 args.assumed_fps,
             )
             print(f"[{idx}/{len(rows)}] replay {row['scene_id']} ({row['label']}, {duration:.1f}s)")
@@ -863,7 +938,12 @@ def evaluate(args: argparse.Namespace) -> list[dict[str, Any]]:
                 if args.apply_camera_config:
                     shutil.copy2(args.eval_cameras_json, args.cameras_json)
                 if args.restart_ai_engine:
-                    _restart_ai_engine(args.compose_file, args.compose_env_file)
+                    _restart_or_recreate_ai_engine(
+                        args.compose_file,
+                        args.compose_env_file,
+                        recreate=getattr(args, "recreate_ai_engine", False),
+                        environment_overrides=runtime_overrides,
+                    )
                     time.sleep(args.restart_wait_seconds)
                 time.sleep(
                     duration
@@ -875,7 +955,12 @@ def evaluate(args: argparse.Namespace) -> list[dict[str, Any]]:
                 if args.apply_camera_config and args.restart_ai_engine:
 
                     def on_publisher_started() -> None:
-                        _restart_ai_engine(args.compose_file, args.compose_env_file)
+                        _restart_or_recreate_ai_engine(
+                            args.compose_file,
+                            args.compose_env_file,
+                            recreate=getattr(args, "recreate_ai_engine", False),
+                            environment_overrides=runtime_overrides,
+                        )
                         time.sleep(args.restart_wait_seconds)
 
                 _run_ffmpeg_replay(
@@ -1008,7 +1093,20 @@ def evaluate(args: argparse.Namespace) -> list[dict[str, Any]]:
                         args.compose_env_file,
                     )
                 else:
-                    _restart_ai_engine(args.compose_file, args.compose_env_file)
+                    _restart_or_recreate_ai_engine(
+                        args.compose_file,
+                        args.compose_env_file,
+                        recreate=getattr(args, "recreate_ai_engine", False),
+                    )
+                if safe_action_layer:
+                    time.sleep(max(getattr(args, "restore_drain_seconds", 5.0), 0.0))
+            if safe_action_layer:
+                _set_action_layer_dry_run(
+                    args.compose_file,
+                    args.compose_env_file,
+                    False,
+                )
+                print("action layer: restored to compose runtime settings")
 
     return results
 
@@ -1049,7 +1147,7 @@ def main() -> int:
         action="append",
         dest="scene_ids",
         default=None,
-        help="Exact scene ID to replay; repeat for multiple scenes.",
+        help="재생할 scene ID를 지정한다. 여러 scene은 옵션을 반복한다.",
     )
     parser.add_argument(
         "--score-source",
@@ -1070,9 +1168,29 @@ def main() -> int:
     parser.add_argument("--prepare-only", action="store_true")
     parser.add_argument("--apply-camera-config", action="store_true")
     parser.add_argument("--restart-ai-engine", action="store_true")
+    parser.add_argument(
+        "--recreate-ai-engine",
+        action="store_true",
+        help="평가 환경변수를 반영해 cctv-ai-engine을 재생성한다.",
+    )
+    parser.add_argument(
+        "--allow-physical-output",
+        action="store_true",
+        help="replay 중 실제 출력 장치 호출을 허용한다(기본값: 차단)",
+    )
+    parser.add_argument(
+        "--restore-drain-seconds",
+        type=float,
+        default=5.0,
+        help="AI Engine 복원 후 Action Layer를 운영 모드로 되돌리기 전 대기 시간",
+    )
     parser.add_argument("--no-restore-camera-config", dest="restore_camera_config", action="store_false")
     parser.set_defaults(restore_camera_config=True)
     args = parser.parse_args()
+    # 재생성은 재시작보다 강한 실행 방식이므로 별도 플래그를 함께 요구하지 않는다.
+    if args.recreate_ai_engine:
+        args.restart_ai_engine = True
+    args.safe_action_layer = not args.allow_physical_output
 
     results = evaluate(args)
     if results:

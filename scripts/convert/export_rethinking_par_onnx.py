@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Export a Rethinking_of_PAR pedestrian-attribute checkpoint to ONNX."""
+"""Rethinking_of_PAR 보행자 속성 체크포인트를 ONNX로 변환한다."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ from torch import nn
 
 
 class AttributeLogitsWrapper(nn.Module):
-    """Rethinking_of_PAR returns ([logits], feature); expose only logits."""
+    """Rethinking_of_PAR의 ([logits], feature) 출력 중 logits만 노출한다."""
 
     def __init__(self, model: nn.Module) -> None:
         super().__init__()
@@ -36,7 +36,7 @@ def _strip_module_prefix(state_dict: Mapping[str, torch.Tensor]) -> dict[str, to
 def _build_model(repo_root: Path, nattr: int, backbone_name: str, classifier_name: str) -> nn.Module:
     sys.path.insert(0, str(repo_root))
 
-    # Imports register backbones/classifiers in the external repository registry.
+    # 외부 저장소의 레지스트리에 backbone과 classifier를 등록하기 위해 import한다.
     from models.backbone import resnet  # noqa: F401
     from models.base_block import FeatClassifier
     from models.model_factory import build_backbone, build_classifier
@@ -68,8 +68,8 @@ def export_onnx(
     opset: int,
 ) -> None:
     model = _build_model(repo_root, nattr, backbone_name, classifier_name)
-    # Local training checkpoints include metadata objects, so disable
-    # weights-only mode introduced as the default in PyTorch 2.6.
+    # 로컬 학습 체크포인트에는 메타데이터 객체가 포함되므로
+    # PyTorch 2.6부터 기본값이 된 weights-only 모드를 비활성화한다.
     checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
     state_key = "state_dict_ema" if use_ema and "state_dict_ema" in checkpoint else "state_dicts"
     state_dict = _strip_module_prefix(checkpoint[state_key])

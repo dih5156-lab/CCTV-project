@@ -6,6 +6,7 @@ import logging
 import os
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
+from ..utils.env import get_env_bool, get_env_int
 from ._deepstream_source_state import (
     clear_source_state,
     remove_pad_mapping,
@@ -94,6 +95,25 @@ def attach_camera_source_to_pipeline(
         src.set_property("latency", int(os.environ.get("DS_RTSP_LATENCY_MS", "200")))
     except TypeError:
         logger.debug("nvurisrcbin latency property 미지원")
+
+    if source_uri.lower().startswith(("rtsp://", "rtsps://")):
+        if "DS_RTSP_DROP_ON_LATENCY" in os.environ:
+            try:
+                src.set_property(
+                    "drop-on-latency", get_env_bool("DS_RTSP_DROP_ON_LATENCY", True)
+                )
+            except TypeError:
+                logger.warning("[%s] nvurisrcbin drop-on-latency property 미지원", camera_id)
+        reconnect_seconds = get_env_int(
+            "DS_RTSP_RECONNECT_INTERVAL_SEC", 0, minimum=0, logger=logger
+        )
+        if reconnect_seconds > 0:
+            try:
+                src.set_property("rtsp-reconnect-interval", reconnect_seconds)
+            except TypeError:
+                logger.warning(
+                    "[%s] nvurisrcbin RTSP reconnect property 미지원", camera_id
+                )
 
     sinkpad = streammux.get_request_pad(f"sink_{pad_id}")
     if sinkpad is None:

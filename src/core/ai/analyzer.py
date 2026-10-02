@@ -14,8 +14,8 @@
 
 from __future__ import annotations
 
-import logging
 import json
+import logging
 import os
 import threading
 import time
@@ -25,6 +25,7 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 
 from ...utils.geometry import boxes_overlap, is_helmet_worn
+from .._yolo_postprocess import extract_pose_crops, restore_crop_keypoints
 from ..events import DetectionEvent, EventType
 from ._appearance_analyzer import BAG_CLASSES, AppearanceAnalyzer
 from ._appearance_pipeline import AppearancePipeline
@@ -272,7 +273,10 @@ class AIAnalyzer:
         self.last_load_errors.clear()
         self._try_load("helmet", self.helmet_model_path)
         self._try_load("pose",   self.pose_model_path)
-        if self.pose_model is None:
+        crop_mode_enabled = os.environ.get("POSE_CROP_MODE", "0").strip().lower() in {
+            "1", "true", "yes", "on"
+        }
+        if self.pose_model is None or crop_mode_enabled:
             self._try_load("person", self.person_model_path)
         elif self.person_model_path:
             logger.info("pose 모델이 활성화되어 person 모델 로드는 건너뜁니다.")
@@ -287,11 +291,128 @@ class AIAnalyzer:
 
         # TRT .engine 파일 imgsz 자동 감지
         _MODEL_IMGSZ["helmet"] = detect_engine_imgsz(self.helmet_model, DEFAULT_IMAGE_SIZE_HELMET)
-        _MODEL_IMGSZ["pose"]   = detect_engine_imgsz(self.pose_model,   DEFAULT_IMAGE_SIZE_POSE)
+        _MODEL_IMGSZ["pose"] = detect_engine_imgsz(self.pose_model, DEFAULT_IMAGE_SIZE_POSE)
         logger.info(
             "imgsz 설정 → helmet=%d, pose=%d, person=%d",
             _MODEL_IMGSZ["helmet"], _MODEL_IMGSZ["pose"], _MODEL_IMGSZ["person"],
         )
+
+    def _run_pose_crop(self, frame) -> Tuple[List[DetectionEvent], List[DetectionEvent]]:
+        """person tracker crop 위에서 pose를 실행하는 실험 경로."""
+        started_at = time.perf_counter()
+        person_events: List[DetectionEvent] = []
+        fall_events: List[DetectionEvent] = []
+        conf_threshold = getattr(self, "pose_threshold", self.confidence_threshold)
+        with _IMGSZ_LOCK:
+            imgsz = _MODEL_IMGSZ.get("pose", DEFAULT_IMAGE_SIZE_POSE)
+        if frame is None or self.person_model is None or self.pose_model is None:
+            self._record_pose_diagnostic(
+                stage="crop", imgsz=imgsz, conf_threshold=conf_threshold,
+                elapsed_ms=round((time.perf_counter() - started_at) * 1000, 3),
+                person_events=person_events,
+            )
+            return person_events, fall_events
+
+        detected_people = self._run_single_model(
+            self.person_model, frame, use_tracking=True, model_type="person"
+        )
+        if not detected_people:
+            self._record_pose_diagnostic(
+                stage="crop", imgsz=imgsz, conf_threshold=conf_threshold,
+                elapsed_ms=round((time.perf_counter() - started_at) * 1000, 3),
+                person_events=person_events,
+            )
+            return person_events, fall_events
+        bboxes = [
+            (event.x, event.y, event.x + event.width, event.y + event.height)
+            for event in detected_people
+        ]
+        crops_with_boxes = extract_pose_crops(frame, bboxes)
+        crops = [crop for crop, _ in crops_with_boxes]
+        crop_boxes = [bbox for _, bbox in crops_with_boxes]
+        try:
+            results = list(
+                self.pose_model.predict(
+                    crops, conf=conf_threshold, imgsz=imgsz, verbose=False
+                )
+            )
+        except Exception as exc:
+            logger.warning("crop-pose 추론 실패: %s", exc)
+            self._record_pose_diagnostic(
+                stage="crop", imgsz=imgsz, conf_threshold=conf_threshold,
+                elapsed_ms=round((time.perf_counter() - started_at) * 1000, 3),
+                person_events=person_events,
+            )
+            return person_events, fall_events
+
+        for event, crop_bbox, result in zip(detected_people, crop_boxes, results):
+            keypoints_obj = getattr(result, "keypoints", None)
+            crop_keypoints = (
+                extract_keypoints(keypoints_obj, 0) if keypoints_obj is not None else None
+            )
+            keypoints = restore_crop_keypoints(
+                crop_keypoints,
+                crop_bbox,
+                frame_width=frame.shape[1],
+                frame_height=frame.shape[0],
+            )
+            is_fall = bool(
+                keypoints
+                and self._fall.detect_keypoints(
+                    keypoints, event.width, event.height, bbox_y=event.y
+                )
+            )
+            if not is_fall and keypoints:
+                if not self._fall.validate_person_keypoints(keypoints):
+                    continue
+                if not self._fall.validate_shoulder_keypoints(
+                    keypoints, event.y, event.height
+                ):
+                    continue
+            person_event = DetectionEvent(
+                event_type=EventType.PERSON,
+                x=event.x,
+                y=event.y,
+                width=event.width,
+                height=event.height,
+                confidence=event.confidence,
+                timestamp=time.time(),
+                object_id=event.object_id,
+                class_idx=0,
+                class_name="person",
+                keypoints=keypoints or None,
+            )
+            person_events.append(person_event)
+            if is_fall:
+                fall_events.append(
+                    DetectionEvent(
+                        event_type=EventType.FALL_DETECTED,
+                        x=event.x,
+                        y=event.y,
+                        width=event.width,
+                        height=event.height,
+                        confidence=event.confidence,
+                        timestamp=time.time(),
+                        object_id=event.object_id,
+                        class_idx=0,
+                        class_name="person",
+                        keypoints=keypoints,
+                    )
+                )
+        person_events = self._remove_duplicates(
+            person_events, iou_threshold=PERSON_DUPLICATE_IOU_THRESHOLD
+        )
+        fall_events = self._remove_duplicates(
+            fall_events, iou_threshold=PERSON_DUPLICATE_IOU_THRESHOLD
+        )
+        self._record_pose_diagnostic(
+            stage="crop",
+            imgsz=imgsz,
+            conf_threshold=conf_threshold,
+            elapsed_ms=round((time.perf_counter() - started_at) * 1000, 3),
+            person_events=person_events,
+        )
+        return person_events, fall_events
 
     def get_loaded_model_names(self) -> Dict[str, Optional[Dict[int, str]]]:
         """로드된 모델 클래스명 조회 (디버깅용)."""

@@ -1,5 +1,6 @@
 import json
 import sys
+from dataclasses import replace
 from pathlib import Path
 
 import numpy as np
@@ -19,6 +20,8 @@ def _capture_record(
     return {
         "schema_version": 1,
         "runtime": "deepstream_pose_inline",
+        "window_seconds": 3.0,
+        "sampling_contract": {"policy": "unique_uniform_valid_pose_v1", "max_frames": 48},
         "camera_id": "sample_eval",
         "label": label,
         "is_fall": label == 1,
@@ -268,6 +271,8 @@ def _balanced_grouped_dataset() -> trainer.CaptureDataset:
         scene_ids=tuple(scene_ids),
         feature_names=["a", "b"],
         source_paths=(Path("dataset.jsonl"),),
+        window_seconds=3.0,
+        sampling_contract={"policy": "unique_uniform_valid_pose_v1", "max_frames": 48},
     )
 
 
@@ -378,3 +383,77 @@ def test_main_refuses_to_overwrite_candidate_without_flag(
 
     with pytest.raises(SystemExit, match="already exists"):
         trainer.main()
+
+
+@pytest.mark.parametrize("window", [None, 0, -1, 0.01, float("nan"), float("inf"), True, "3"])
+def test_capture_rejects_unknown_or_invalid_window(tmp_path, window):
+    # 알 수 없는 수집 시간창을 정상 3초로 간주하면 학습과 추론 의미가 달라진다.
+    rows = [_capture_record(label=i, group_id=f"g{i}", scene_id=f"s{i}") for i in (0, 1)]
+    if window is None:
+        rows[0].pop("window_seconds")
+    else:
+        rows[0]["window_seconds"] = window
+    path = _write_records(tmp_path / "invalid-window.jsonl", rows)
+    with pytest.raises(ValueError, match="window_seconds"):
+        trainer.load_capture_datasets([path])
+
+
+def test_capture_rejects_mixed_windows_across_files(tmp_path):
+    # 파일마다 유효하더라도 서로 다른 시간창은 같은 후보로 조용히 합치지 않는다.
+    paths = []
+    for label, window in ((0, 3.0), (1, 5.0)):
+        row = _capture_record(label=label, group_id=f"g{label}", scene_id=f"s{label}")
+        row["window_seconds"] = window
+        paths.append(_write_records(tmp_path / f"{label}.jsonl", [row]))
+    with pytest.raises(ValueError, match="window_seconds mismatch"):
+        trainer.load_capture_datasets(paths)
+
+
+def test_training_preserves_observed_window_in_bundle_and_metrics(tmp_path):
+    # 5초 수집을 실제 학습·직렬화해도 추론 설정이 임의의 3초로 바뀌지 않아야 한다.
+    rows = []
+    for label in (0, 1):
+        for index in range(4):
+            row = _capture_record(label=label, group_id=f"g{label}-{index}", scene_id=f"s{label}-{index}")
+            row["window_seconds"] = 5.0
+            rows.append(row)
+    dataset = trainer.load_capture_datasets([_write_records(tmp_path / "five-seconds.jsonl", rows)])
+    bundle, metrics = trainer.train_candidate(dataset, random_state=42, validation_fraction=0.25)
+    import joblib
+
+    path = tmp_path / "candidate.joblib"
+    joblib.dump(bundle, path)
+    assert joblib.load(path)["inference_config"]["candidate_window_seconds"] == 5.0
+    assert metrics["dataset_summary"]["window_seconds"] == 5.0
+
+
+@pytest.mark.parametrize("window", [float("nan"), 0.0])
+def test_training_rejects_invalid_direct_dataset_window(window):
+    # CLI 외 직접 호출도 잘못된 시간창으로 모델을 만들지 않는다.
+    dataset = replace(_balanced_grouped_dataset(), window_seconds=window)
+    with pytest.raises(ValueError, match="window_seconds"):
+        trainer.train_candidate(dataset, random_state=42, validation_fraction=0.25)
+
+
+@pytest.mark.parametrize("contract", [None, {}, {"policy": "repeat", "max_frames": 48},
+                                     {"policy": "unique_uniform_valid_pose_v1", "max_frames": 0},
+                                     {"policy": "unique_uniform_valid_pose_v1", "max_frames": True},
+                                     {"policy": "unique_uniform_valid_pose_v1", "max_frames": 2.5}])
+def test_capture_rejects_unknown_sampling_contract(tmp_path, contract):
+    # 표본 반복 여부와 선택 상한을 모르면 학습 입력을 재현할 수 없다.
+    rows = [_capture_record(label=i, group_id=f"g{i}", scene_id=f"s{i}") for i in (0, 1)]
+    rows[0]["sampling_contract"] = contract
+    path = _write_records(tmp_path / "unknown-sampling.jsonl", rows)
+    with pytest.raises(ValueError, match="sampling_contract"):
+        trainer.load_capture_datasets([path])
+
+
+def test_capture_rejects_mixed_sampling_limits_across_files(tmp_path):
+    # 같은 시간창이라도 상한이 다르면 요약 특징의 분포가 달라진다.
+    paths = []
+    for label, cap in ((0, 2), (1, 48)):
+        row = _capture_record(label=label, group_id=f"g{label}", scene_id=f"s{label}")
+        row["sampling_contract"]["max_frames"] = cap
+        paths.append(_write_records(tmp_path / f"{label}.jsonl", [row]))
+    with pytest.raises(ValueError, match="sampling_contract mismatch"):
+        trainer.load_capture_datasets(paths)

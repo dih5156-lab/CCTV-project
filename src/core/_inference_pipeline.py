@@ -133,7 +133,7 @@ class _InferencePipeline:
         events: List[DetectionEvent],
         zone_events: List[ZoneEvent],
     ) -> None:
-        """디바운싱을 적용해 이벤트 큐에 비블로킹 적재한다."""
+        """디바운싱 후 이벤트 접수와 큐 적재를 요청한다."""
 
         for event in events:
             event_id = event.object_id if event.object_id is not None else 0
@@ -147,9 +147,7 @@ class _InferencePipeline:
                 event_id,
                 event=event,
             ):
-                event_data = event.to_dict()
-                event_data["camera_id"] = camera_id
-                self._event_dispatcher.enqueue(camera_id, event_data)
+                self._event_dispatcher.enqueue(camera_id, event)
 
         for zone_event in zone_events:
             event_dict = zone_event.to_dict()

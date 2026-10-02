@@ -21,6 +21,35 @@ class CaptureDataset:
     scene_ids: tuple[str, ...]
     feature_names: list[str]
     source_paths: tuple[Path, ...]
+    # 수집에서 확인한 시간창을 보존하며 과거 자료에 임의 기본값을 붙이지 않는다.
+    window_seconds: float
+    # 관측 수에서 상한을 역추정하지 않고 수집기가 기록한 표본 정책을 사용한다.
+    sampling_contract: dict[str, Any]
+
+
+def _validate_sampling_contract(value: Any) -> dict[str, Any]:
+    # 반복 표본이 섞인 과거 자료를 현재의 고유 표본 정책으로 조용히 재해석하지 않는다.
+    if (
+        not isinstance(value, dict)
+        or set(value) != {"policy", "max_frames"}
+        or value.get("policy") != "unique_uniform_valid_pose_v1"
+        or type(value.get("max_frames")) is not int
+        or value["max_frames"] < 1
+    ):
+        raise ValueError("sampling_contract requires supported policy and positive integer max_frames")
+    return dict(value)
+
+
+def _validate_window_seconds(value: Any) -> float:
+    # 실시간 경로가 최소 0.1초로 자르므로 그보다 짧은 학습 계약은 허용하지 않는다.
+    if (
+        isinstance(value, bool)
+        or not isinstance(value, (int, float))
+        or not np.isfinite(value)
+        or value < 0.1
+    ):
+        raise ValueError("window_seconds must be a finite number >= 0.1")
+    return float(value)
 
 
 def _read_jsonl(path: Path) -> list[dict]:
@@ -59,6 +88,8 @@ def load_capture_datasets(paths: Sequence[Path]) -> CaptureDataset:
     groups: list[str] = []
     scene_ids: list[str] = []
     group_labels: dict[str, int] = {}
+    window_seconds: float | None = None
+    sampling_contract: dict[str, Any] | None = None
 
     for path in source_paths:
         for record_index, record in enumerate(_read_jsonl(path)):
@@ -81,6 +112,26 @@ def load_capture_datasets(paths: Sequence[Path]) -> CaptureDataset:
                     )
             if record.get("runtime") != "deepstream_pose_inline":
                 raise ValueError(f"{record_location}: unexpected runtime")
+
+            # 서로 다른 시간창의 특징을 섞으면 모델의 추론 설정으로 재현할 수 없다.
+            try:
+                record_window = _validate_window_seconds(record.get("window_seconds"))
+            except ValueError as exc:
+                raise ValueError(f"{record_location}: {exc}") from exc
+            if window_seconds is None:
+                window_seconds = record_window
+            elif record_window != window_seconds:
+                raise ValueError(f"{record_location}: window_seconds mismatch")
+
+            # 파일을 나눠 수집했더라도 표본 선택 기준이 다르면 같은 모델로 학습하지 않는다.
+            try:
+                record_sampling = _validate_sampling_contract(record.get("sampling_contract"))
+            except ValueError as exc:
+                raise ValueError(f"{record_location}: {exc}") from exc
+            if sampling_contract is None:
+                sampling_contract = record_sampling
+            elif record_sampling != sampling_contract:
+                raise ValueError(f"{record_location}: sampling_contract mismatch")
 
             feature_names = record.get("feature_names")
             feature_vector = record.get("feature_vector")
@@ -130,7 +181,7 @@ def load_capture_datasets(paths: Sequence[Path]) -> CaptureDataset:
 
     if set(labels) != {0, 1}:
         raise ValueError("capture datasets must contain both fall and non-fall")
-    if feature_schema is None:
+    if feature_schema is None or window_seconds is None or sampling_contract is None:
         raise ValueError("capture datasets contain no feature schema")
 
     return CaptureDataset(
@@ -140,6 +191,8 @@ def load_capture_datasets(paths: Sequence[Path]) -> CaptureDataset:
         scene_ids=tuple(scene_ids),
         feature_names=feature_schema,
         source_paths=source_paths,
+        window_seconds=window_seconds,
+        sampling_contract=sampling_contract,
     )
 
 
@@ -240,6 +293,9 @@ def train_candidate(
     from sklearn.ensemble import RandomForestClassifier
     from sklearn.model_selection import GroupShuffleSplit
 
+    # 로더를 거치지 않는 직접 호출도 시간창을 검증하고 모델/평가 기록에 함께 남긴다.
+    window_seconds = _validate_window_seconds(dataset.window_seconds)
+    sampling_contract = _validate_sampling_contract(dataset.sampling_contract)
     if not 0.0 < validation_fraction < 1.0:
         raise ValueError("validation_fraction must be between 0 and 1")
     if len(set(dataset.groups.tolist())) < 4:
@@ -292,6 +348,8 @@ def train_candidate(
         threshold=threshold,
     )
     dataset_summary = {
+        "window_seconds": window_seconds,
+        "sampling_contract": sampling_contract,
         "rows": int(dataset.x.shape[0]),
         "groups": len(set(dataset.groups.tolist())),
         "class_counts": {
@@ -305,12 +363,14 @@ def train_candidate(
         "model_kind": "deepstream_pose_inline_rf",
         "feature_schema_version": 1,
         "feature_source": "deepstream_pose_inline",
+        "sampling_contract": sampling_contract,
         "feature_names": list(dataset.feature_names),
         "fall_class_label": 1,
         "model": model,
         "inference_config": {
-            "max_frames": 48,
-            "candidate_window_seconds": 3.0,
+            # 학습 수집의 상한을 보존하고 부족한 실제 표본을 48개로 간주하지 않는다.
+            "max_frames": sampling_contract["max_frames"],
+            "candidate_window_seconds": window_seconds,
         },
         "training_config": {
             "min_pose_frames": 1,

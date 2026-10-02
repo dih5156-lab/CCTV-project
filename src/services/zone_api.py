@@ -168,13 +168,36 @@ class ZoneApiHandler(BaseApiHandler):
 
     def _health(self) -> None:
         cameras = self._load_cameras()
+        code = 200
+        video_fields = {}
+        try:
+            get_stats = getattr(self._processor(), "get_stats", None)
+            stats = get_stats() if callable(get_stats) else {}
+            if stats.get("backend") == "deepstream":
+                # Docker가 사용하는 health에는 API 생존뿐 아니라 실제 영상 진행이 필요하다.
+                # 전체 파이프라인 기준이며 카메라별 품질/추론 정확도 합격을 뜻하지 않는다.
+                age = stats.get("last_frame_age_seconds")
+                ready = bool(
+                    stats.get("pipeline_running") is True
+                    and stats.get("camera_count", 0) > 0
+                    and stats.get("frames_processed", 0) > 0
+                    and isinstance(age, (int, float))
+                    and 0 <= age <= 30.0
+                )
+                code = 200 if ready else 503
+                video_fields = {"video_ready": ready}
+        except Exception:
+            logger.exception("영상 health 통계 조회 실패")
+            code = 503
+            video_fields = {"video_ready": False}
         self._respond(
-            200,
+            code,
             self._build_health_payload(
                 service="cctv-zone-api",
-                status="ok",
+                status="ok" if code == 200 else "degraded",
                 camera_count=len(cameras),
                 preset_count=len(self._presets().list_all()),
+                **video_fields,
             ),
         )
 

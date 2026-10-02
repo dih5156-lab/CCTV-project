@@ -164,6 +164,8 @@ class VideoProcessor(BaseProcessor):
         )
 
         # ── MQTT 퍼블리셔 ─────────────────────────────────────────────
+        from .video_event_ingest import VideoEventIngest
+        self._video_ingest = VideoEventIngest.from_env(backend="opencv", topic_prefix=config.mqtt.topic_prefix)
         self.event_publisher = MqttEventPublisher(
             broker=config.mqtt.broker,
             port=config.mqtt.port,
@@ -176,7 +178,8 @@ class VideoProcessor(BaseProcessor):
         # ── 이벤트 큐 ────────────────────────────────────────────────
         self.event_queue = Queue(maxsize=config.events.queue_max_size * 3)
         self._event_dispatcher = EventDispatcher(
-            self.event_queue, self._debouncer, self._increment_stat
+            self.event_queue, self._debouncer, self._increment_stat,
+            video_ingest=self._video_ingest,
         )
 
         # ── 탐지 스냅샷 저장소 ──────────────────────────────────────
@@ -904,10 +907,17 @@ class VideoProcessor(BaseProcessor):
         """이벤트 MQTT 발행 워커."""
         consecutive_failures = 0
         while self.running and not self.stop_event.is_set():
+            video_ingest = getattr(self, "_video_ingest", None)
+            if video_ingest is not None:
+                video_ingest.poll_recovery()
             try:
                 event_data = self.event_queue.get(timeout=1.0)
                 try:
-                    if self.event_publisher.publish_event(event_data):
+                    published = (
+                        video_ingest.publish(event_data, mqtt_publish=None, event_publisher=self.event_publisher)
+                        if video_ingest is not None else self.event_publisher.publish_event(event_data)
+                    )
+                    if published:
                         self._increment_stat("events_sent")
                         consecutive_failures = 0
                     else:

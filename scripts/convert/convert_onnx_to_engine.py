@@ -5,8 +5,8 @@ from dataclasses import dataclass
 
 MODEL_DIR = "models"
 INPUT_NAME = os.environ.get("TRT_INPUT_NAME", "input")
-# Project helmet deployment is validated on a static 320x320 input for low latency
-# and consistent TensorRT engine/profile matching.
+# 프로젝트 헬멧 배포는 낮은 지연시간과 일관된 TensorRT 엔진·프로파일 매칭을 위해
+# 고정된 320x320 입력으로 검증한다.
 MIN_IMGSZ = int(os.environ.get("TRT_MIN_IMGSZ", "320"))
 OPT_IMGSZ = int(os.environ.get("TRT_OPT_IMGSZ", "320"))
 MAX_IMGSZ = int(os.environ.get("TRT_MAX_IMGSZ", "320"))

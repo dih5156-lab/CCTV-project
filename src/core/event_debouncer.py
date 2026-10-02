@@ -237,6 +237,18 @@ class EventDebouncer:
         second_area = max(0, second[2]) * max(0, second[3])
         return abs(first_area - second_area) / max(first_area, second_area, 1)
 
+    def clear_camera(self, camera_id: str) -> None:
+        """재연결 이전 인물의 누적 판정·중복 억제 상태를 제거한다."""
+        with self._lock:
+            for state in (
+                self._last_events, self._fall_first_seen, self._fall_last_seen,
+                self._fall_alerted, self._fall_last_bbox,
+                self._head_last_seen, self._head_alerted,
+            ):
+                for key in list(state):
+                    if key[0] == camera_id:
+                        state.pop(key)
+
     def cleanup(self, max_age_hours: Optional[int] = None) -> int:
         """보존 기간이 지난 이벤트 키를 제거하고 제거 수를 반환한다."""
         if max_age_hours is None:

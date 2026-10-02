@@ -412,6 +412,40 @@ class TestAppearanceForwarding:
 
 
 class TestDetectFallFromKeypoints:
+    def test_detect_keypoints_accepts_person_array_without_yolo_wrapper(self):
+        kpts = _make_kpts({
+            0: [100, 80, 0.9],
+            5: [40, 70, 0.9],
+            6: [160, 72, 0.9],
+            11: [40, 75, 0.9],
+            12: [160, 77, 0.9],
+        })
+        detector = FallDetector(score_threshold=2.0)
+        assert detector.detect_keypoints(kpts, bbox_width=200, bbox_height=100) is True
+
+    def test_detect_keypoints_invalid_array_returns_false(self):
+        detector = FallDetector()
+        assert detector.detect_keypoints(None, bbox_width=100, bbox_height=100) is False
+        assert detector.detect_keypoints([[1, 2]], bbox_width=100, bbox_height=100) is False
+
+    def test_validate_person_keypoints_accepts_person_array(self):
+        kpts = _make_kpts({
+            0: [100, 30, 0.9],
+            5: [90, 70, 0.9],
+            6: [110, 70, 0.9],
+            11: [90, 140, 0.9],
+            12: [110, 140, 0.9],
+            15: [90, 200, 0.9],
+        })
+        assert FallDetector().validate_person_keypoints(kpts) is True
+
+    def test_validate_shoulder_keypoints_matches_bbox_position_rule(self):
+        kpts = _make_kpts({
+            5: [90, 10, 0.9],
+            6: [110, 10, 0.9],
+        })
+        assert FallDetector().validate_shoulder_keypoints(kpts, 0, 100) is False
+
     def test_wide_bbox_low_head_uses_bbox_relative_nose_position(self):
         """프레임 하단의 정상 자세를 bbox 절대 높이만으로 낙상 처리하지 않는다."""
         kpts = _make_kpts({
