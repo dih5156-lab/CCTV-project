@@ -1,0 +1,31 @@
+{
+  "schema_version":1,
+  "diagram_type":"dataflow",
+  "meta":{"title":"공통 저장·관제 — 선택 경로의 데이터 흐름","quality_profile":"showcase","viewBox":[1080,660]},
+  "stages":[{"label":"입력"},{"label":"원본 보존"},{"label":"해석·정규화"},{"label":"공통 기록"},{"label":"관제 전달"}],
+  "nodes":[
+    {"id":"video_result","type":"backend","label":"영상 탐지 결과","sublabel":"CCTV → AI 분석 후","stage":0,"row":0},
+    {"id":"sensor_bytes","type":"messagebus","label":"센서 MQTT 원본","sublabel":"topic + bytes","stage":0,"row":3},
+    {"id":"raw_receipts","type":"database","label":"원본 SQLite","sublabel":"ingest_id · hash","tag":"T1 commit","stage":1,"row":1},
+    {"id":"normalize_video","type":"backend","label":"영상 이벤트 정규화","sublabel":"VideoEventIngest","stage":2,"row":0},
+    {"id":"normalize_sensor","type":"backend","label":"TLV·센서 관측","sublabel":"파싱 → SensorRecord","stage":2,"row":3},
+    {"id":"canonical","type":"database","label":"공통 레코드","sublabel":"canonical_records","tag":"같은 source SQLite","stage":3,"row":1},
+    {"id":"monitor_sender","type":"backend","label":"관제 송신 worker","sublabel":"고정 ID·bytes·재시도","stage":4,"row":0},
+    {"id":"monitor_receiver","type":"database","label":"노트북 수신 DB","sublabel":"MQTT 수신·SQLite","tag":"POC 저장 ACK","stage":4,"row":3}
+  ],
+  "flows":[
+    {"id":"video_raw","from":"video_result","to":"raw_receipts","label":"탐지 원본","variant":"emphasis"},
+    {"id":"sensor_raw","from":"sensor_bytes","to":"raw_receipts","label":"센서 bytes"},
+    {"id":"read_video","from":"raw_receipts","to":"normalize_video","label":"영상 접수"},
+    {"id":"read_sensor","from":"raw_receipts","to":"normalize_sensor","label":"센서 접수"},
+    {"id":"video_record","from":"normalize_video","to":"canonical","label":"영상 레코드"},
+    {"id":"sensor_record","from":"normalize_sensor","to":"canonical","label":"센서 관측"},
+    {"id":"record_delivery","from":"canonical","to":"monitor_sender","label":"전달 대기"},
+    {"id":"mqtt_record","from":"monitor_sender","to":"monitor_receiver","label":"MQTT / TLS","labelAt":[960,330]}
+  ],
+  "cards":[
+    {"dot":"cyan","title":"선택 경로 · 운영 전체 전환 전","items":["AIOT_INGEST_DB 설정으로 원본 접수를 선택한다.","센서값이 영상 AI를 거치는 구조가 아니다."]},
+    {"dot":"emerald","title":"영속 보존과 저장 확인","items":["원본·공통 레코드는 같은 source DB의 논리 구분이다.","관제 저장 ACK는 FastAPI HTTPS 조회로 확인한다."]},
+    {"dot":"amber","title":"완료 범위 · 2026-09-22","items":["실제 노트북 합성 4건 ACK, 격리 혼합 48건 대조.","외부 관제 화면·장시간 부하·물리 경보 연동은 잔여."]}
+  ]
+}

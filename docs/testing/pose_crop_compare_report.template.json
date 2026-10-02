@@ -1,0 +1,39 @@
+{
+  "mode": "full-frame",
+  "model_paths": {
+    "person": "",
+    "pose": ""
+  },
+  "runtime_config": {
+    "pose_crop_mode": 0,
+    "imgsz": 640,
+    "confidence": 0.5,
+    "frame_stride": 1
+  },
+  "metrics": {
+    "person_count": 0,
+    "pose_generation_rate": 0.0,
+    "fall_tp": 0,
+    "fall_fp": 0,
+    "fall_fn": 0,
+    "fall_recall": 0.0,
+    "avg_latency_ms": 0.0,
+    "p95_latency_ms": 0.0,
+    "fps": 0.0,
+    "frame_drop_count": 0,
+    "gpu_memory_mb": 0.0
+  },
+  "video_cases": [
+    {
+      "case_id": "",
+      "video": "",
+      "fall_type": "side|back|front|upper_body_occluded|lower_body_occluded",
+      "ground_truth_falls": 0,
+      "detected_falls": 0,
+      "false_positives": 0
+    }
+  ],
+  "decision": "hold",
+  "operator": "",
+  "measured_at": ""
+}

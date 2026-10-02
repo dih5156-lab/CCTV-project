@@ -1,0 +1,131 @@
+{
+  "recorded_at": "2026-09-21T01:26:54.687014+00:00",
+  "wbs": "P2.3",
+  "status": "IN_PROGRESS",
+  "plan_version": "0.14",
+  "completed_slice": "local monitoring receiver persistence, commit ACK, scoped lookup, validation",
+  "next_slice": "source binding, frozen bytes/hash, persisted consumer ACK and retry worker",
+  "changed_application_and_test_files": [
+    "src/monitoring_contract.py",
+    "src/monitoring_receiver.py",
+    "tests/test_monitoring_contract.py",
+    "tests/test_monitoring_receiver.py",
+    "tests/test_monitoring_receiver_integration.py"
+  ],
+  "existing_source_hashes_unchanged_since_P1_4": {
+    "src/record_delivery.py": true,
+    "src/protocols/record_mqtt.py": true,
+    "src/event_ingest_store.py": true,
+    "src/sensor_record.py": true
+  },
+  "schema": {
+    "database": "separate opt-in consumer database only",
+    "application_id": 1129598257,
+    "user_version": 1,
+    "tables": [
+      "monitoring_identity",
+      "monitoring_bindings",
+      "monitoring_records",
+      "monitoring_receipts",
+      "monitoring_rejected"
+    ],
+    "source_v1_v2_v3_migrated": false,
+    "journal": "DELETE",
+    "synchronous": "EXTRA"
+  },
+  "verification": {
+    "passed": 158,
+    "new_tests": 28,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "pytest_reported_seconds": 62.88,
+    "junit": {
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "tests": "158",
+      "time": "62.875",
+      "timestamp": "2026-09-21T10:20:17.946450+09:00",
+      "hostname": "ubuntu"
+    },
+    "ruff_files_passed": 5,
+    "black_check_files_passed": 5,
+    "py_compile_files_passed": 5,
+    "markdown_files": 21,
+    "local_links_checked": 387,
+    "wbs_rows": 33,
+    "wbs_states": {
+      "DONE": 7,
+      "BLOCKED": 2,
+      "READY": 2,
+      "IN_PROGRESS": 1,
+      "PLANNED": 14,
+      "VERIFY": 7
+    },
+    "links_anchors_dependencies_cycle_whitespace": "PASS"
+  },
+  "failure_injection": {
+    "process_exit_code": 42,
+    "real_process_boundaries": [
+      "after record/ledger inserts before commit",
+      "after commit before ACK construction"
+    ],
+    "other_db_failures": [
+      "receipt INSERT trigger",
+      "deferred FK failure at COMMIT",
+      "rejected-row INSERT trigger",
+      "receipt table missing on read"
+    ]
+  },
+  "initial_runs": [
+    {
+      "artifact": "monitoring_receiver_contract_red_20260921.xml",
+      "cause": "test fixture tried to UTF-8 encode an unpaired surrogate before collection",
+      "kind": "fixture error"
+    },
+    {
+      "artifact": "monitoring_receiver_contract_missing_20260921.xml",
+      "kind": "expected missing contract module"
+    },
+    {
+      "artifact": "monitoring_receiver_red_20260921.xml",
+      "kind": "expected missing receiver module"
+    },
+    {
+      "kind": "ruff I001 import order, corrected and rechecked"
+    }
+  ],
+  "not_done": [
+    "source frozen payload/consumer ACK persistence",
+    "automatic post-PUBACK lookup/retry",
+    "snapshot API/reconciliation",
+    "latency metrics",
+    "service lifecycle wiring",
+    "MQTT/HTTP consumer adapter/auth",
+    "actual monitoring UI",
+    "load/capacity and power failure"
+  ],
+  "operations_changed": false,
+  "production_db_changed": false,
+  "new_dependencies_or_configuration": false,
+  "gpu_or_physical_device_tests": false,
+  "open_decisions": [
+    "D04",
+    "D06"
+  ],
+  "issues_kept_open": [
+    "I10",
+    "I13",
+    "I17"
+  ],
+  "graph_review": "5 changed files reported, 0 indexed functions/flows; direct source and test review used",
+  "source_sha256": {
+    "src/monitoring_contract.py": "932ea70fcd4649eec55b9f625a623fcbccde27b4df1feec3fe53126309408e2f",
+    "src/monitoring_receiver.py": "543b98ba265f505762cffd61b25fb1cc237adec3752ce0232972ee2ba778f6d8",
+    "tests/test_monitoring_contract.py": "240422c42a0ffcd20bbd8dd70f10f7b1e1536bdf1a58456755a88074c48a90ae",
+    "tests/test_monitoring_receiver.py": "698e41f6e14631154afc9a6104de5d36694d63ea7ce10ada54387b14ad4fe588",
+    "tests/test_monitoring_receiver_integration.py": "b24211dcfaa9c1d978773b3425728210feab2accbb84cfd2d54c26fb06c78a42"
+  }
+}

@@ -1,0 +1,315 @@
+{
+  "date": "2026-09-30",
+  "scope": "P5.1 local preprocessing contract audit; no deployment or model retraining",
+  "files_sha256": {
+    "src/core/ai/_falldata_aux.py": "99c38d51e330fe3dff136c2e827ebebcc45efce0353c5b786c02435af701f849",
+    "scripts/inference/smoke_fall_temporal_model.py": "ec95d56bdd932a2601dc7222c377a4e20cf0ad40a28fd0e3d8bcc21d77a19f01",
+    ".env.jetson.example": "0c868df54101818bcbe99d93b0949d428aa444dbf0d3d5c1f80f69a553b8d40d",
+    "docker-compose.jetson.yml": "7c0b39751533fc1dda359f0ef9cb60c47663ccbd6da90463381312d99a6c8392",
+    "tests/test_falldata_aux.py": "926ffee188c05820aa51da3f7a723ef5020681815992989066891570337ebb1b",
+    "tests/test_fall_temporal_model.py": "11397a3f54fb7ae05c030b4bce9e66f2d5b4ee1f66f18f1390cb4f2d0985d17a"
+  },
+  "tests": {
+    "red": {
+      "failed": 2,
+      "cause": "missing --imgsz in temporal child command"
+    },
+    "green": {
+      "passed": 75,
+      "files": [
+        "tests/test_falldata_aux.py",
+        "tests/test_fall_temporal_model.py"
+      ]
+    },
+    "adjacent": {
+      "passed": 95,
+      "warnings": 1,
+      "warning_scope": "host torch CUDA initialization while CPU tests; not isolated app CUDA700"
+    },
+    "ruff": "PASS",
+    "compose_config": "PASS"
+  },
+  "fixed_local": {
+    "temporal_pose_imgsz_default": 640,
+    "explicit_env": "FALLDATA_AUX_TEMPORAL_POSE_IMGSZ",
+    "explicit_320_supported": true,
+    "historical_basis": "data/fall_eval/yesterday_20260910_temporal_runtime_comparison_imgsz640.json"
+  },
+  "rf_contract": {
+    "imgsz": 640,
+    "confidence_threshold": 0.35,
+    "max_frames": 48,
+    "frame_stride": 3,
+    "candidate_window_seconds": 3.0,
+    "training_min_pose_frames": 6,
+    "feature_count": 50
+  },
+  "remaining": [
+    "RF feature threshold and time window alignment; historic detector settings absent from model metadata",
+    "TCN subprocess 30-second timeouts under full model load",
+    "Original CUDA700 root cause unconfirmed",
+    "Real-world labeled accuracy and operating deployment not verified"
+  ],
+  "experiments": {
+    "live_30m": {
+      "experiment": {
+        "scope": "RC4 direct live camera_1 as live_1; bridge, unpublished ports; local MQTT:9",
+        "completed_experiment": true,
+        "steady_observation_seconds": 1800,
+        "receiver_media_seconds": 120,
+        "max_no_progress_seconds": 0.0,
+        "receiver_exit": 0,
+        "output_bytes": 70316679,
+        "app_alive": true,
+        "server_alive": true,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 55.566
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 55.977
+          }
+        ],
+        "sample_count": 1710,
+        "elapsed_seconds": 1864.8006512220018
+      },
+      "cuda_signatures": {
+        "cudaErrorIllegalAddress": 0,
+        "status=700": 0,
+        "err_no:700": 0,
+        "NVDSINFER_CUDA_ERROR": 0,
+        "Failed in mem copy": 0
+      },
+      "last_metrics": {
+        "cctv_processor_frames_processed_total:{}": 39906.0,
+        "cctv_processor_events_detected_total:{}": 1097.0,
+        "cctv_processor_events_sent_total:{}": 0.0,
+        "cctv_processor_events_filtered_total:{}": 82731.0,
+        "cctv_processor_events_failed_total:{}": 1097.0,
+        "cctv_processor_source_stream_reset_events_total:{}": 0.0,
+        "cctv_processor_pipeline_restart_requested_total:{}": 0.0,
+        "cctv_processor_pipeline_restart_rejected_total:{}": 0.0,
+        "cctv_processor_pipeline_restart_executed_total:{}": 0.0,
+        "cctv_processor_pipeline_restart_failed_total:{}": 0.0,
+        "cctv_processor_pipeline_restart_seconds_total:{}": 0.0,
+        "cctv_processor_context_identity_rejected_total:{}": 0.0,
+        "cctv_processor_context_match_expired_total:{}": 13101.0,
+        "cctv_processor_context_match_evicted_total:{}": 12098.0,
+        "cctv_processor_context_match_missed_total:{}": 122.0,
+        "cctv_processor_context_frames_matched_total:{}": 3520.0,
+        "cctv_processor_context_queue_dropped_total:{}": 0.0,
+        "cctv_processor_context_frames_sampled_total:{}": 10576.0,
+        "cctv_processor_context_people_sampled_total:{}": 7570.0,
+        "cctv_processor_context_people_busy_total:{}": 8502.0,
+        "cctv_processor_context_tasks_completed_total:{}": 3519.0,
+        "cctv_processor_context_tasks_failed_total:{}": 0.0,
+        "cctv_falldata_temporal_requests_total:{}": 38.0,
+        "cctv_falldata_temporal_process_calls_total:{}": 38.0,
+        "cctv_falldata_temporal_process_completed_total:{}": 13.0,
+        "cctv_falldata_temporal_process_errors_total:{}": 24.0,
+        "cctv_falldata_temporal_process_timeouts_total:{}": 24.0,
+        "cctv_falldata_temporal_process_seconds_total:{}": 957.2188667638693,
+        "cctv_falldata_temporal_parsed_results_total:{}": 13.0,
+        "cctv_falldata_temporal_unparsed_results_total:{}": 0.0,
+        "cctv_falldata_temporal_insufficient_pose_results_total:{}": 1.0,
+        "cctv_falldata_temporal_window_inferences_total:{}": 13.0,
+        "cctv_falldata_temporal_window_reports_missing_total:{}": 0.0,
+        "cctv_falldata_temporal_insufficient_window_results_total:{}": 0.0
+      },
+      "context_timing_count": 3522,
+      "queue_wait_ms": {
+        "mean": 10.119,
+        "p95": 35.728,
+        "max": 447.817
+      },
+      "container_memory_mib_after_300s": {
+        "first": 2439.8,
+        "last": 2688.5,
+        "max": 3225.9,
+        "scope": "whole cgroup memory, not dedicated GPU memory or proof of no leak"
+      },
+      "appearance_db": {
+        "integrity": "ok",
+        "rows": 847,
+        "unique_event_ids": 847,
+        "missing_track_text": 0
+      },
+      "scope_limit": "isolated appearance DB only; MQTT localhost:9 intentionally unavailable; event persistence/remote ACK not retested"
+    },
+    "recovery": {
+      "experiment": {
+        "scope": "one local RTSP input, IOU, full candidate models, bounded publisher stop/restart experiment",
+        "input": "/baseline/camera_1_capture.mkv",
+        "completed_experiment": true,
+        "receivers": {
+          "before": {
+            "exit": 0,
+            "bytes": 5161580
+          },
+          "after": {
+            "exit": 0,
+            "bytes": 5307134
+          }
+        },
+        "app_alive": true,
+        "outage_publisher_stopped": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 41.768,
+            "monotonic": 1210254.534476321
+          },
+          {
+            "name": "publisher_stop_requested",
+            "elapsed": 63.247,
+            "monotonic": 1210276.013262892
+          },
+          {
+            "name": "publisher_stopped",
+            "elapsed": 63.319,
+            "monotonic": 1210276.085478012
+          },
+          {
+            "name": "publisher_restarted",
+            "elapsed": 88.759,
+            "monotonic": 1210301.524928833
+          },
+          {
+            "name": "frames_resumed",
+            "elapsed": 96.587,
+            "monotonic": 1210309.352970541
+          }
+        ],
+        "sample_count": 182,
+        "elapsed_seconds": 130.18780296109617
+      },
+      "cuda_signatures": {
+        "cudaErrorIllegalAddress": 0,
+        "status=700": 0,
+        "err_no:700": 0,
+        "NVDSINFER_CUDA_ERROR": 0,
+        "Failed in mem copy": 0
+      },
+      "last_metrics": {
+        "cctv_processor_frames_processed_total:{}": 1294.0,
+        "cctv_processor_events_detected_total:{}": 17.0,
+        "cctv_processor_events_sent_total:{}": 0.0,
+        "cctv_processor_events_filtered_total:{}": 1923.0,
+        "cctv_processor_events_failed_total:{}": 17.0,
+        "cctv_processor_source_stream_reset_events_total:{}": 2.0,
+        "cctv_processor_pipeline_restart_requested_total:{}": 0.0,
+        "cctv_processor_pipeline_restart_rejected_total:{}": 0.0,
+        "cctv_processor_pipeline_restart_executed_total:{}": 0.0,
+        "cctv_processor_pipeline_restart_failed_total:{}": 0.0,
+        "cctv_processor_pipeline_restart_seconds_total:{}": 0.0,
+        "cctv_processor_context_identity_rejected_total:{}": 0.0,
+        "cctv_processor_context_match_expired_total:{}": 130.0,
+        "cctv_processor_context_match_evicted_total:{}": 703.0,
+        "cctv_processor_context_match_missed_total:{}": 1.0,
+        "cctv_processor_context_frames_matched_total:{}": 86.0,
+        "cctv_processor_context_queue_dropped_total:{}": 0.0,
+        "cctv_processor_context_frames_sampled_total:{}": 310.0,
+        "cctv_processor_context_people_sampled_total:{}": 286.0,
+        "cctv_processor_context_people_busy_total:{}": 24.0,
+        "cctv_processor_context_tasks_completed_total:{}": 86.0,
+        "cctv_processor_context_tasks_failed_total:{}": 0.0,
+        "cctv_falldata_temporal_requests_total:{}": 1.0,
+        "cctv_falldata_temporal_process_calls_total:{}": 1.0,
+        "cctv_falldata_temporal_process_completed_total:{}": 1.0,
+        "cctv_falldata_temporal_process_seconds_total:{}": 15.11367790796794,
+        "cctv_falldata_temporal_parsed_results_total:{}": 1.0,
+        "cctv_falldata_temporal_unparsed_results_total:{}": 0.0,
+        "cctv_falldata_temporal_insufficient_pose_results_total:{}": 1.0,
+        "cctv_falldata_temporal_window_inferences_total:{}": 1.0,
+        "cctv_falldata_temporal_window_reports_missing_total:{}": 0.0,
+        "cctv_falldata_temporal_insufficient_window_results_total:{}": 0.0
+      },
+      "context_timing_count": 0,
+      "queue_wait_ms": {
+        "mean": null,
+        "p95": null,
+        "max": null
+      },
+      "appearance_db": {
+        "integrity": "ok",
+        "rows": 15,
+        "unique_event_ids": 15,
+        "missing_track_text": 0
+      },
+      "scope_limit": "isolated appearance DB only; MQTT localhost:9 intentionally unavailable; event persistence/remote ACK not retested"
+    }
+  },
+  "temporal_standalone": [
+    {
+      "imgsz": 320,
+      "timeout_seconds": 30.0,
+      "result": {
+        "status": "ok",
+        "model_path": "/app/models/fall/fall_temporal_same_split_resume_20260908.pt",
+        "confirmed": false,
+        "prediction": 0,
+        "fall_probability": 3.034e-05,
+        "threshold": 0.5,
+        "frames_with_pose": 30
+      },
+      "elapsed_seconds": 16.535,
+      "explicit_imgsz": "320"
+    },
+    {
+      "imgsz": 640,
+      "timeout_seconds": 30.0,
+      "result": {
+        "status": "ok",
+        "model_path": "/app/models/fall/fall_temporal_same_split_resume_20260908.pt",
+        "confirmed": false,
+        "prediction": 0,
+        "fall_probability": 0.43023801,
+        "threshold": 0.5,
+        "frames_with_pose": 30
+      },
+      "elapsed_seconds": 16.187,
+      "explicit_imgsz": "640"
+    }
+  ],
+  "recovery_db_counts": {
+    "before_outage": 7,
+    "after_frames_resumed": 7
+  },
+  "recovery_seconds": 7.828,
+  "video_decode": {
+    "live_30m/result.mkv": "PASS exit0, 120.230s, H264 1920x1080 30/1",
+    "recovery/before.mkv": "PASS exit0",
+    "recovery/after.mkv": "PASS exit0"
+  },
+  "production": {
+    "name": "cctv-ai-engine",
+    "health": "healthy",
+    "restart_count": 0,
+    "started_at": "2026-09-16T23:45:46.903505745Z",
+    "deployment_performed": false
+  },
+  "publication": {
+    "url": "http://192.168.2.141:18081/",
+    "previous_url": "http://192.168.2.242:18081/",
+    "artifacts": {
+      "index.html": {
+        "bytes": 22647,
+        "sha256": "b4a8eff8ba04cf28b0f80509ad0004a91357ecd1f6f245f372ad96e3454c3913",
+        "http_bytes_match": true
+      },
+      "CCTV_project_progress.pdf": {
+        "bytes": 122850,
+        "sha256": "173142846a97f28c702c89cce91157385a3d4613207d03d4e33d4acd46b20156",
+        "http_bytes_match": true
+      }
+    },
+    "png_first_page_review": "PASS",
+    "browser_interaction_tested": false,
+    "other_pc_access_tested": false,
+    "wbs_33_rows_match": true
+  },
+  "isolated_containers_remaining": 0
+}

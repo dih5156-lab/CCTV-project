@@ -1,0 +1,99 @@
+{
+  "observed_at": "2026-09-21T06:31:18.587946+00:00",
+  "environment": "Jetson ARM64; isolated Docker; loopback TLS 21883/21443; temporary SQLite databases",
+  "tests": {
+    "unit": {
+      "tests": 73,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "tls": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "restart": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "unix_regression": {
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "checks": {
+    "ruff": "pass",
+    "black": "pass",
+    "compile": "pass",
+    "python_files": 11
+  },
+  "tls_synthetic": {
+    "sensor_observation": 1,
+    "video_event": 1,
+    "source_stored": 2,
+    "receiver_records_after_duplicate": 2,
+    "receiver_receipts_after_duplicate": 2,
+    "id_hash_ack_match": true,
+    "receiver_container_restart_ack_preserved": true,
+    "cli_repeat_exit": 0,
+    "wrong_http_token_rejected": true,
+    "wrong_binding_rejected": true,
+    "untrusted_ca_rejected": true,
+    "wrong_mqtt_password_rejected": true
+  },
+  "archive": {
+    "path": "dist/monitoring/cctv-monitoring-poc.tar.gz",
+    "bytes": 18505,
+    "sha256": "b0816a6beae99d49505252b4b50ea18527bcdb515e9d66b2239870d2844a843e",
+    "binding": {
+      "origin_id": "origin_a50ce2623e7b4d6d838f8d7bc69c0235",
+      "consumer_id": "laptop-poc-8260472c6c65",
+      "destination": "record-mqtt:cctv/records/v1/laptop-poc-8260472c6c65"
+    },
+    "source_db": "data/runtime/monitoring_remote_20260921/source.db",
+    "credentials_in_archive": false
+  },
+  "sha256": {
+    "src/monitoring_api.py": "e3190b15a747f9e197fac6577353338342564dbecd8c3127da52d9c65a19910e",
+    "src/protocols/monitoring_http.py": "fd94c2d899897b2f58356188788026986dbacc3dcaba21212a95949673465618",
+    "src/protocols/monitoring_local.py": "db1115d111e9dcb957d2d30a76714a95562efefb0cfbe7438b5b176c38fde15d",
+    "deploy/monitoring-poc/receiver.py": "4027f06383c1caed823728b1f19861f949fce10ecade681b04ebb7fd8a131ba0",
+    "deploy/monitoring-poc/init_poc.py": "5f42ffb90977c0b7afbd0ee5b714aafd0780b700d530f95da9a126260761bd87",
+    "scripts/ops/build_monitoring_poc_bundle.py": "d7e0466061790c2d952bc1883bf04c35bbc5072affde4284c1ba18393541c02e",
+    "runners/run_monitoring_remote_poc.py": "1124696c296777689663afce3d133fb182e6bc3219de70f7f92861f09070f5bc",
+    "tests/test_monitoring_api.py": "dab6f56c026256d727c07c761d58aca9b7f7d6364bc9325f6b59ab12edd34b28",
+    "tests/test_monitoring_http.py": "f6e5e7dea023b0f0f50eb74c77e4fb64c67c34aa14817eb62f10eee8689ae0a8",
+    "tests/test_monitoring_poc_bundle.py": "c94b0d7ea5e44faff9c18a3e614aac66f1fcd550e6f9a819693386928b4cc3ba",
+    "tests/test_monitoring_remote_live.py": "dcc64c3fb79c8a56c6cc711a95d8602eb79b29957661f73cc48c388302cf8fc7"
+  },
+  "limitations": [
+    "Laptop install and two-host data transfer not executed",
+    "Windows/WSL x86_64 image build not yet verified",
+    "No operational DB/config/device/AI changes",
+    "Capacity, stale-data, active-write contention, real monitoring UI not complete",
+    "Test graph missing these untracked modules; manual source/test review performed"
+  ],
+  "previous_contention_files_unchanged": {
+    "src/monitoring_delivery.py": true,
+    "tests/test_monitoring_contention.py": true,
+    "tests/test_monitoring_contention_load.py": true
+  },
+  "cleanup": {
+    "tls_compose_containers_and_network_removed": true,
+    "unix_regression_broker_removed": true,
+    "test_databases_preserved": true
+  },
+  "documentation": {
+    "documents_checked": 8,
+    "local_links_checked": 274,
+    "missing_links": 0,
+    "plan_version": "0.20",
+    "wbs_status": "IN_PROGRESS"
+  }
+}

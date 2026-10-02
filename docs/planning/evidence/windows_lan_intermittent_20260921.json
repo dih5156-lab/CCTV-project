@@ -1,0 +1,45 @@
+{
+  "observed_at_kst": "2026-09-21T13:54:20+09:00",
+  "reported_by_user": "Previously accessible, intermittently becomes unreachable, sometimes connects again after about one hour. Exact transition times and recovery mechanism are not measured.",
+  "windows_failure_followup_reported_by_user": {
+    "internet_and_localhost_18080_remain_normal": true,
+    "relation_to_sleep_wake_or_movement": "not specified"
+  },
+  "jetson_current_wireless": {
+    "interface": "wlP1p1s0",
+    "ssid": "SAW_DV_AX_5G",
+    "bssid": "7c:4f:7d:00:7a:b0",
+    "frequency_mhz": 5745,
+    "signal_dbm": -47,
+    "rx_bitrate_mbps": 780.0,
+    "tx_bitrate_mbps": 780.0,
+    "power_save": "on"
+  },
+  "network_manager_log_scope": "journalctl -u NetworkManager --since '2 hours ago' --no-pager -n 100 -o short-iso",
+  "dhcp_events": [
+    ["12:05:47", "192.168.2.242"],
+    ["12:16:42", "192.168.2.242"],
+    ["12:28:08", "192.168.2.242"],
+    ["12:39:35", "192.168.2.242"],
+    ["12:50:45", "192.168.2.242"],
+    ["13:02:15", "192.168.2.242"],
+    ["13:13:36", "192.168.2.242"],
+    ["13:25:17", "192.168.2.242"],
+    ["13:36:47", "192.168.2.242"],
+    ["13:48:28", "192.168.2.242"]
+  ],
+  "connectivity_state_changes": [
+    ["12:05:47", "CONNECTED_SITE -> CONNECTED_GLOBAL"],
+    ["13:35:47", "CONNECTED_SITE"],
+    ["13:35:49", "CONNECTED_GLOBAL"]
+  ],
+  "interpretation_limits": [
+    "No IP change or explicit Wi-Fi disconnect appears in the retrieved log excerpt; this does not rule out roaming or missing lower-level events.",
+    "Power saving enabled is an observation, not proof of a power-saving fault.",
+    "One current BSSID/signal reading does not describe conditions during every failure or recovery.",
+    "About one hour is user-reported, not a measured DHCP/ARP/session expiry interval.",
+    "Permanent AP isolation alone is not established. Investigate AP/controller forwarding state, roaming/policy differences, sleep/driver behavior, and address conflicts using matched failure/success captures."
+  ],
+  "pending": ["matched good/bad BSSID, neighbor and HTTP results", "AP/controller logs at matching timestamps", "relationship to sleep/wake or movement, if observed"],
+  "network_or_runtime_configuration_changed": false
+}

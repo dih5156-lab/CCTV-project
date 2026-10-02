@@ -43,13 +43,13 @@ Action Layer도 `edgex/results/cctv/+/+`를 구독해 `request_id`에 해당하�
 
 실제 장치가 없는 개발 환경에서는 `python scripts/ops/check_edgex_device_service_contracts.py --json`을 실행한다. 이 점검은 세 Device Service를 `dry-run`으로 생성하고 공통 HTTP 변환 경계를 통과시켜 HTTP 200과 `simulated` 결과를 확인한다. 실제 네트워크 연결, MQTT 브로커, 장치 동작까지 검증하는 현장 UAT를 대체하지는 않는다.
 
-Jetson에서 Device Service 컨테이너가 실행된 뒤에는 `python scripts/ops/run_edgex_device_service_uat.py --mode dry-run --json`으로 세 HTTP 엔드포인트의 health와 명령 응답을 점검한다. 실제 장치 검증은 `--mode real --confirm-physical-control`을 함께 지정해야 하며, 이 경우 스피커 안내·사이렌 동작·전광판 표시가 발생할 수 있으므로 현장 승인 후 실행한다. 하나라도 health가 아니거나 기대한 결과 상태가 아니면 종료 코드 1을 반환한다.
+Jetson에서 Device Service 컨테이너가 실행된 뒤에는 `python scripts/ops/run_edgex_device_service_uat.py --mode dry-run --json`으로 세 HTTP 엔드포인트의 health와 명령 응답을 점검한다. 일부 장치만 연결된 현장에서는 `--device signboard`처럼 대상 장치를 선택할 수 있다. 실제 장치 검증은 `--mode real --confirm-physical-control`을 함께 지정해야 하며, 이 경우 스피커 안내·사이렌 동작·전광판 표시가 발생할 수 있으므로 현장 승인 후 실행한다. 하나라도 health가 아니거나 기대한 결과 상태가 아니면 종료 코드 1을 반환한다.
 
 EdgeX Metadata 등록은 `python edgex/register_output_devices.py --metadata-url http://127.0.0.1:59881`로 실행한다. 이 스크립트는 스피커·사이렌·전광판 프로파일을 업로드하고, 각 Device Service를 등록한 뒤 장치와 서비스의 연결을 확인한다. 기존에 `cctv-device-dabit`로 등록된 전광판이 있으면 새 `cctv-device-signboard` 서비스 연결로 갱신한다.
 
 2026-09-03 실행 환경에서 세 서비스와 장치 등록을 완료했다. 등록 검증 결과는 `cctv-speaker-01 → cctv-device-speaker`, `cctv-siren-01 → cctv-device-siren`, `cctv-signboard-01 → cctv-device-signboard`이며, 세 Device Service의 `validate/device` 응답기도 정상 기동했다. 실제 장치 명령은 운영 환경의 `DRY_RUN=false` 설정 때문에 이번 검증에서 호출하지 않았다.
 
-다중 장치 라우팅은 `config/output_devices.json`에 장치별 `device_id`, `device_type`, `site_id`, `zone_id`, `camera_ids`, `connection.host`, `connection.port`를 등록하고 `EDGEX_DEVICE_REGISTRY_PATH=/app/config/output_devices.json`로 활성화한다. 인증정보는 레지스트리에 저장하지 않고 기존 환경변수에서 읽는다. 레지스트리 경로를 비워두면 기존 단일 장치 호환 동작을 유지한다.
+다중 장치 라우팅은 `config/output_devices.json`에 장치별 `device_id`, `device_type`, `site_id`, `zone_id`, `camera_ids`, `connection.host`, `connection.port`를 등록하고 `EDGEX_DEVICE_REGISTRY_PATH=/app/config/output_devices.json`로 활성화한다. 인증정보는 레지스트리에 저장하지 않고 기존 환경변수에서 읽는다. EdgeX 또는 Shadow 모드에서 레지스트리 대상이 없으면 물리 장치 ID 없는 공통 토픽으로 발행하지 않고 실패 처리한다. Direct 모드는 기존 장치 클라이언트를 계속 사용한다.
 
 다중 장치 shadow 토픽은 `edgex/commands/cctv/{jetson_id}/{device_type}/{device_id}` 형식이며, Command payload에도 `device_id`를 포함한다. 동일 이벤트가 여러 장치를 대상으로 하면 장치별 `request_id`를 생성해 결과를 분리한다. Device Service 러너는 레지스트리가 활성화되면 장치별 클라이언트 풀을 만들고, MQTT 하위 토픽과 HTTP 경로의 `device_id`를 허용 목록과 대조한다.
 

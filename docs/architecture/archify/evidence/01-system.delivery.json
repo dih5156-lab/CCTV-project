@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "deliver",
+  "type": "architecture",
+  "input": "/media/sawwave/Learning11/CCTV-project/docs/architecture/archify/01-system-r2.architecture.json",
+  "output": "/media/sawwave/Learning11/CCTV-project/docs/architecture/archify/01-system.html",
+  "specification": {
+    "sha256": "86f00b8a0f9d75914caaecefaef3c8b0ca08999555bca1b0faa0abbb0b40f107",
+    "bytes": 5661
+  },
+  "artifact": {
+    "sha256": "b0126c1b2618bc6f681571103030180051b263cea76429ed9b3faeeb13e4704a",
+    "bytes": 814650
+  },
+  "validation": {
+    "checksPassed": 9,
+    "checkCount": 9,
+    "compositionProfile": "showcase",
+    "compositionStatus": "pass",
+    "errors": 0,
+    "warnings": 0
+  }
+}

@@ -1,0 +1,464 @@
+{
+  "version": "0.61",
+  "date": "2026-09-29",
+  "wbs": "P5.1",
+  "status": "IN_PROGRESS",
+  "scope": "RC2 prerecorded single camera RTSP replay; isolated network; each 90sec observation/60sec receiver",
+  "trials": {
+    "baseline1": {
+      "outcome": {
+        "scope": "one local RTSP input, IOU, full candidate models, captured real camera video replay; no live camera connection",
+        "input": "/baseline/camera_1_capture.mkv",
+        "completed_experiment": true,
+        "steady_observation_seconds": 90,
+        "receiver_media_seconds": 60,
+        "receiver_exit": 0,
+        "output_bytes": 37295198,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 31.539
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 32.164
+          }
+        ],
+        "sample_count": 117,
+        "elapsed_seconds": 125.09846448898315
+      },
+      "cuda_700_messages": 0,
+      "final_stats_snapshot": {
+        "frames_processed": 2641,
+        "frames_dropped": 0,
+        "inference_errors": 0,
+        "source_error_identified": 0,
+        "source_error_unidentified": 0,
+        "pipeline_restart_executed": 0,
+        "context_identity_rejected": 0,
+        "context_match_expired": 87,
+        "context_match_evicted": 1813,
+        "context_match_missed": 0,
+        "context_frames_matched": 706,
+        "context_queue_dropped": 3,
+        "falldata_temporal_stats": {
+          "requests": 1,
+          "process_calls": 1,
+          "process_completed": 1,
+          "process_seconds": 13.912136818049476,
+          "parsed_results": 1,
+          "unparsed_results": 0,
+          "insufficient_pose_results": 1,
+          "insufficient_window_results": 0,
+          "window_reports_missing": 0,
+          "window_inferences": 1
+        },
+        "appearance_backend_stats": {
+          "color_backend": {
+            "requests": 1072,
+            "completed": 1072,
+            "seconds": 28.696538644609973
+          },
+          "attribute_backend": {
+            "requests": 706,
+            "completed": 706,
+            "seconds": 0.004124026047065854
+          }
+        }
+      },
+      "queue_drop_changes": [
+        {
+          "seconds_from_first_stats": 20.143932169070467,
+          "dropped": 3
+        }
+      ],
+      "context_metrics_exported": {},
+      "media": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 1920,
+            "height": 1080,
+            "r_frame_rate": "30/1",
+            "avg_frame_rate": "30/1"
+          }
+        ],
+        "format": {
+          "duration": "60.211000"
+        },
+        "packets": 1649,
+        "pts_time_non_increasing": 0,
+        "dts_time_non_increasing": 0,
+        "decode_exit": 0,
+        "decode_stderr_lines": 0
+      }
+    },
+    "shadow_off": {
+      "outcome": {
+        "scope": "one local RTSP input, IOU, full candidate models, captured real camera video replay; no live camera connection",
+        "input": "/baseline/camera_1_capture.mkv",
+        "completed_experiment": true,
+        "steady_observation_seconds": 90,
+        "receiver_media_seconds": 60,
+        "receiver_exit": 0,
+        "output_bytes": 35445962,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 12.309
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 13.323
+          }
+        ],
+        "sample_count": 96,
+        "elapsed_seconds": 105.60842349682935
+      },
+      "cuda_700_messages": 0,
+      "final_stats_snapshot": {
+        "frames_processed": 2389,
+        "frames_dropped": 0,
+        "inference_errors": 0,
+        "source_error_identified": 0,
+        "source_error_unidentified": 0,
+        "pipeline_restart_executed": 0,
+        "context_identity_rejected": 0,
+        "context_match_expired": 295,
+        "context_match_evicted": 1330,
+        "context_match_missed": 0,
+        "context_frames_matched": 724,
+        "context_queue_dropped": 8,
+        "falldata_temporal_stats": {},
+        "appearance_backend_stats": {
+          "color_backend": {
+            "requests": 1202,
+            "completed": 1201,
+            "seconds": 50.49226385517977
+          },
+          "attribute_backend": {
+            "requests": 723,
+            "completed": 723,
+            "seconds": 0.004680595127865672
+          }
+        }
+      },
+      "queue_drop_changes": [
+        {
+          "seconds_from_first_stats": 40.195108235115185,
+          "dropped": 4
+        },
+        {
+          "seconds_from_first_stats": 45.1972482111305,
+          "dropped": 5
+        },
+        {
+          "seconds_from_first_stats": 65.36811502696946,
+          "dropped": 8
+        }
+      ],
+      "context_metrics_exported": {},
+      "media": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 1920,
+            "height": 1080,
+            "r_frame_rate": "30/1",
+            "avg_frame_rate": "30/1"
+          }
+        ],
+        "format": {
+          "duration": "60.178000"
+        },
+        "packets": 1563,
+        "pts_time_non_increasing": 0,
+        "dts_time_non_increasing": 0,
+        "decode_exit": 0,
+        "decode_stderr_lines": 0
+      }
+    },
+    "baseline2": {
+      "outcome": {
+        "scope": "one local RTSP input, IOU, full candidate models, captured real camera video replay; no live camera connection",
+        "input": "/baseline/camera_1_capture.mkv",
+        "completed_experiment": true,
+        "steady_observation_seconds": 90,
+        "receiver_media_seconds": 60,
+        "receiver_exit": 0,
+        "output_bytes": 35187990,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 12.391
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 13.619
+          }
+        ],
+        "sample_count": 96,
+        "elapsed_seconds": 112.32910365611315
+      },
+      "cuda_700_messages": 0,
+      "final_stats_snapshot": {
+        "frames_processed": 2466,
+        "frames_dropped": 0,
+        "inference_errors": 0,
+        "source_error_identified": 0,
+        "source_error_unidentified": 0,
+        "pipeline_restart_executed": 0,
+        "context_identity_rejected": 0,
+        "context_match_expired": 297,
+        "context_match_evicted": 1402,
+        "context_match_missed": 0,
+        "context_frames_matched": 735,
+        "context_queue_dropped": 6,
+        "falldata_temporal_stats": {
+          "requests": 1,
+          "process_calls": 1,
+          "process_completed": 1,
+          "process_seconds": 13.808036411879584,
+          "parsed_results": 1,
+          "unparsed_results": 0,
+          "insufficient_pose_results": 1,
+          "insufficient_window_results": 0,
+          "window_reports_missing": 0,
+          "window_inferences": 1
+        },
+        "appearance_backend_stats": {
+          "color_backend": {
+            "requests": 1177,
+            "completed": 1176,
+            "seconds": 46.45749091403559
+          },
+          "attribute_backend": {
+            "requests": 732,
+            "completed": 732,
+            "seconds": 0.004495885455980897
+          }
+        }
+      },
+      "queue_drop_changes": [
+        {
+          "seconds_from_first_stats": 40.23028139118105,
+          "dropped": 2
+        },
+        {
+          "seconds_from_first_stats": 70.5367057591211,
+          "dropped": 6
+        }
+      ],
+      "context_metrics_exported": {},
+      "media": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 1920,
+            "height": 1080,
+            "r_frame_rate": "30/1",
+            "avg_frame_rate": "30/1"
+          }
+        ],
+        "format": {
+          "duration": "60.130000"
+        },
+        "packets": 1566,
+        "pts_time_non_increasing": 0,
+        "dts_time_non_increasing": 0,
+        "decode_exit": 0,
+        "decode_stderr_lines": 0
+      }
+    },
+    "metrics": {
+      "outcome": {
+        "scope": "one local RTSP input, IOU, full candidate models, captured real camera video replay; no live camera connection",
+        "input": "/baseline/camera_1_capture.mkv",
+        "completed_experiment": true,
+        "steady_observation_seconds": 90,
+        "receiver_media_seconds": 60,
+        "receiver_exit": 0,
+        "output_bytes": 36604226,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 12.412
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 13.679
+          }
+        ],
+        "sample_count": 97,
+        "elapsed_seconds": 106.66085790493526
+      },
+      "cuda_700_messages": 0,
+      "final_stats_snapshot": {
+        "frames_processed": 2546,
+        "frames_dropped": 0,
+        "inference_errors": 0,
+        "source_error_identified": 0,
+        "source_error_unidentified": 0,
+        "pipeline_restart_executed": 0,
+        "context_identity_rejected": 0,
+        "context_match_expired": 94,
+        "context_match_evicted": 1681,
+        "context_match_missed": 0,
+        "context_frames_matched": 734,
+        "context_queue_dropped": 5,
+        "falldata_temporal_stats": {
+          "requests": 1,
+          "process_calls": 1,
+          "process_completed": 1,
+          "process_seconds": 13.45762763894163,
+          "parsed_results": 1,
+          "unparsed_results": 0,
+          "insufficient_pose_results": 1,
+          "insufficient_window_results": 0,
+          "window_reports_missing": 0,
+          "window_inferences": 1
+        },
+        "appearance_backend_stats": {
+          "color_backend": {
+            "requests": 1192,
+            "completed": 1191,
+            "seconds": 47.86046872800216
+          },
+          "attribute_backend": {
+            "requests": 733,
+            "completed": 733,
+            "seconds": 0.008987644920125604
+          }
+        }
+      },
+      "queue_drop_changes": [
+        {
+          "seconds_from_first_stats": 10.064623580081388,
+          "dropped": 4
+        },
+        {
+          "seconds_from_first_stats": 65.29525907104835,
+          "dropped": 5
+        }
+      ],
+      "context_metrics_exported": {
+        "cctv_processor_context_identity_rejected_total": 0.0,
+        "cctv_processor_context_match_expired_total": 104.0,
+        "cctv_processor_context_match_evicted_total": 1686.0,
+        "cctv_processor_context_match_missed_total": 0.0,
+        "cctv_processor_context_frames_matched_total": 742.0,
+        "cctv_processor_context_queue_dropped_total": 5.0
+      },
+      "media": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 1920,
+            "height": 1080,
+            "r_frame_rate": "30/1",
+            "avg_frame_rate": "30/1"
+          }
+        ],
+        "format": {
+          "duration": "60.216000"
+        },
+        "packets": 1628,
+        "pts_time_non_increasing": 0,
+        "dts_time_non_increasing": 0,
+        "decode_exit": 0,
+        "decode_stderr_lines": 0
+      }
+    }
+  },
+  "stage_profile_baseline2": {
+    "face": {
+      "calls_completed": 743,
+      "mean_seconds": 0.019377985141900634,
+      "p95_seconds": 0.04490721388719976,
+      "max_seconds": 0.08994675194844604
+    },
+    "appearance": {
+      "calls_completed": 743,
+      "mean_seconds": 0.09219341111415809,
+      "p95_seconds": 0.1863686649594456,
+      "max_seconds": 0.53826376888901
+    },
+    "context": {
+      "calls_completed": 743,
+      "mean_seconds": 0.11532984010049194,
+      "p95_seconds": 0.21742195100523531,
+      "max_seconds": 0.5548177070450038
+    },
+    "temporal": {
+      "calls_completed": 1,
+      "mean_seconds": 13.81991811399348,
+      "p95_seconds": 13.81991811399348,
+      "max_seconds": 13.81991811399348
+    }
+  },
+  "trial_differences": {
+    "baseline1": "RC2 unchanged, light observer",
+    "shadow_off": "Only periodic and near-miss temporal shadow triggers disabled; RF/face/appearance retained",
+    "baseline2": "RC2 unchanged plus test-only stage timing; timing instrumentation differs from baseline1",
+    "metrics": "RC2 plus one readonly metrics collector file, light observer; original shadow settings"
+  },
+  "source_manifest_files_rechecked": 357,
+  "metrics_candidate_sha256": "33a75a9f694eba6f37c2f0d190f1cc241c4abe178832a96159d0abe3a8c057d0",
+  "regression": {
+    "red": "queue overflow metrics test failed because matched metric was absent",
+    "green_passed": 213,
+    "green_skipped": 2,
+    "ruff": "PASS",
+    "diff_check": "PASS"
+  },
+  "conclusions": [
+    "CUDA700 did not recur in these runs; original v0.60 failure remains unresolved I34.",
+    "TCN off still had 8 context queue drops; TCN is not the sole cause.",
+    "Appearance wall time dominated context worker in the profiled trial; not a GPU-kernel attribution.",
+    "Missing context counters in Prometheus corrected locally; queue capacity and discard policy unchanged."
+  ],
+  "raw_directory": "data/runtime/p51_triage_20260929_v061",
+  "operating_deployment": false,
+  "publication": {
+    "url": "http://192.168.2.242:18081/",
+    "files": {
+      "HTML": {
+        "bytes": 22661,
+        "sha256": "27f2988fdcdd604c374f3a69e3aabbc70f1b59028df2d977f7828b99f8a9b261",
+        "served_equals_local": true
+      },
+      "PDF": {
+        "bytes": 125186,
+        "sha256": "52cc984f8ce1917ebc471338f0d411a6d7e4fede82547a2030599271d3e58cb7",
+        "served_equals_local": true
+      }
+    },
+    "browser_interaction_retested": false,
+    "other_pc_retested": false
+  },
+  "production": {
+    "status": "running healthy",
+    "started_at": "2026-09-16T23:45:46.903505745Z",
+    "restart_count": 0,
+    "deployed": false
+  },
+  "validation": {
+    "wbs_rows_statuses": 33,
+    "python_ast_files": 4,
+    "test_containers_remaining": 0,
+    "render": "PASS",
+    "served_bytes": "PASS"
+  }
+}

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="2" time="0.682" timestamp="2026-09-21T10:57:09.333851+09:00" hostname="ubuntu"><testcase classname="tests.test_monitoring_delivery_mqtt" name="test_puback_then_late_consumer_receives_frozen_retry[video_detection]" time="0.216"><failure message="AssertionError: PermissionError&#10;assert None == 'broker_puback'">tests/test_monitoring_delivery_mqtt.py:48: in test_puback_then_late_consumer_receives_frozen_retry
+    assert connection.execute("SELECT ack_kind FROM record_delivery_state").fetchone()[0] == "broker_puback", store.get_monitoring(job_id)["last_error"]
+E   AssertionError: PermissionError
+E   assert None == 'broker_puback'</failure></testcase><testcase classname="tests.test_monitoring_delivery_mqtt" name="test_puback_then_late_consumer_receives_frozen_retry[tlv_mqtt]" time="0.242"><failure message="AssertionError: PermissionError&#10;assert None == 'broker_puback'">tests/test_monitoring_delivery_mqtt.py:48: in test_puback_then_late_consumer_receives_frozen_retry
+    assert connection.execute("SELECT ack_kind FROM record_delivery_state").fetchone()[0] == "broker_puback", store.get_monitoring(job_id)["last_error"]
+E   AssertionError: PermissionError
+E   assert None == 'broker_puback'</failure></testcase></testsuite></testsuites>

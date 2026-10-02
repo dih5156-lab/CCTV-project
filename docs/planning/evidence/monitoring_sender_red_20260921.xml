@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.444" timestamp="2026-09-21T10:41:42.566773+09:00" hostname="ubuntu"><testcase classname="tests.test_monitoring_delivery" name="test_v4_preserves_old_writers_and_reserves_monitoring_destination" time="0.084"><failure message="ModuleNotFoundError: No module named 'src.monitoring_delivery'">tests/test_monitoring_delivery.py:39: in test_v4_preserves_old_writers_and_reserves_monitoring_destination
+    store, binding = prepared(path)
+tests/test_monitoring_delivery.py:29: in prepared
+    module = importlib.import_module("src.monitoring_delivery")
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+&lt;frozen importlib._bootstrap&gt;:1050: in _gcd_import
+    ???
+&lt;frozen importlib._bootstrap&gt;:1027: in _find_and_load
+    ???
+&lt;frozen importlib._bootstrap&gt;:1004: in _find_and_load_unlocked
+    ???
+E   ModuleNotFoundError: No module named 'src.monitoring_delivery'</failure></testcase></testsuite></testsuites>

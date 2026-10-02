@@ -1,0 +1,168 @@
+{
+  "recorded_at": "2026-09-21T03:45:10.515610+00:00",
+  "wbs": "P2.3",
+  "status": "DONE",
+  "completion_scope": "internal local monitoring model only",
+  "plan_version": "0.17",
+  "next_wbs": "P2.4",
+  "next_status": "READY",
+  "changed_application_and_test_files": [
+    "src/ingest_store.py",
+    "src/event_ingest_store.py",
+    "src/monitoring_delivery.py",
+    "src/monitoring_worker.py",
+    "src/monitoring_metrics.py",
+    "src/monitoring_service.py",
+    "src/protocols/monitoring_local.py",
+    "runners/run_monitoring_local.py",
+    "tests/test_monitoring_commit_observations.py",
+    "tests/test_monitoring_service.py",
+    "tests/test_monitoring_local.py",
+    "tests/test_monitoring_service_mqtt.py"
+  ],
+  "previous_receiver_reconciliation_files_unchanged": {
+    "src/monitoring_snapshot.py": true,
+    "src/monitoring_reconciliation.py": true,
+    "tests/test_monitoring_snapshot.py": true,
+    "tests/test_monitoring_reconciliation.py": true,
+    "tests/test_monitoring_metrics.py": true,
+    "src/monitoring_contract.py": true,
+    "src/monitoring_receiver.py": true,
+    "tests/test_monitoring_contract.py": true,
+    "tests/test_monitoring_receiver.py": true,
+    "tests/test_monitoring_receiver_integration.py": true
+  },
+  "schema_changes": false,
+  "source_version": 4,
+  "receiver_version": 1,
+  "verification": {
+    "passed": 277,
+    "new_tests": 19,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 5,
+    "pytest_reported_seconds": 90.24,
+    "junit": {
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "5",
+      "tests": "282",
+      "time": "90.242",
+      "timestamp": "2026-09-21T12:35:10.688153+09:00",
+      "hostname": "ubuntu"
+    },
+    "skips": [
+      {
+        "class": "parser-python.tests.test_sensor_record_integration",
+        "test": "test_pg_rejection_does_not_prevent_common_record_puback",
+        "reason": "CCTV_TEST_PG_DSN must point to an isolated test PostgreSQL"
+      },
+      {
+        "class": "parser-python.tests.test_sensor_record_integration",
+        "test": "test_process_exit_recovers_same_tlv_observation_and_pg[prepared]",
+        "reason": "CCTV_TEST_PG_DSN must point to an isolated test PostgreSQL"
+      },
+      {
+        "class": "parser-python.tests.test_sensor_record_integration",
+        "test": "test_process_exit_recovers_same_tlv_observation_and_pg[canonical]",
+        "reason": "CCTV_TEST_PG_DSN must point to an isolated test PostgreSQL"
+      },
+      {
+        "class": "parser-python.tests.test_sensor_record_integration",
+        "test": "test_process_exit_recovers_same_tlv_observation_and_pg[enqueued]",
+        "reason": "CCTV_TEST_PG_DSN must point to an isolated test PostgreSQL"
+      },
+      {
+        "class": "parser-python.tests.test_sensor_record_integration",
+        "test": "test_process_exit_recovers_same_tlv_observation_and_pg[acknowledged]",
+        "reason": "CCTV_TEST_PG_DSN must point to an isolated test PostgreSQL"
+      }
+    ],
+    "ruff_files_passed": 12,
+    "black_check_files_passed": 12,
+    "py_compile_files_passed": 12,
+    "cli_help": "PASS",
+    "markdown_files": 24,
+    "local_links_checked": 454,
+    "wbs_rows": 33,
+    "wbs_states": {
+      "DONE": 8,
+      "BLOCKED": 2,
+      "READY": 3,
+      "PLANNED": 13,
+      "VERIFY": 7
+    },
+    "links_anchors_dependencies_cycle_whitespace": "PASS"
+  },
+  "real_mqtt": {
+    "image": "eclipse-mosquitto:2.0",
+    "network": "none",
+    "published_ports": [],
+    "memory": "64m",
+    "cpus": 0.5,
+    "new_tests": 3,
+    "previous_mqtt_regressions": 8,
+    "socket": "/tmp/cctv-p22-mqtt-service-20260921/broker.sock",
+    "container_stopped": true,
+    "status_reader": "same-host SQLite, not remote authenticated ACK API"
+  },
+  "sample": {
+    "video_events": 5,
+    "sensor_observations": 5,
+    "matched": 10,
+    "end_to_end_latency": {
+      "name": "received_to_ack_commit",
+      "clock": "wall",
+      "clock_sync": "confirmed",
+      "valid": 10,
+      "invalid": 0,
+      "unknown": 0,
+      "p50_ms": 462.4752998352051,
+      "p95_ms": 730.4046154022217,
+      "max_ms": 730.4046154022217
+    },
+    "clock_assumption": "same host; confirmed flag applies only to this lab interval; no NTP/remote certification",
+    "performance_acceptance": false
+  },
+  "initial_failures": [
+    "expected missing commit_observer keyword before implementation"
+  ],
+  "not_done": [
+    "actual monitoring product/API/auth/UI",
+    "production auto-start/deployment",
+    "long-outage/capacity/disk-full and power-failure tests",
+    "D04 performance acceptance",
+    "general device/time history filters",
+    "durable timing retention and manifest cleanup",
+    "current PostgreSQL-specific regression (5 skipped)"
+  ],
+  "operations_changed": false,
+  "production_db_changed": false,
+  "new_dependencies_or_configuration": false,
+  "gpu_or_physical_device_tests": false,
+  "open_decisions": [
+    "D04",
+    "D06"
+  ],
+  "issues_kept_open": [
+    "I10",
+    "I13",
+    "I17"
+  ],
+  "graph_review": "12 changed files; 0 indexed functions/flows; current source and tests reviewed",
+  "source_sha256": {
+    "src/ingest_store.py": "05c35c33de6cc0f2ed934e0f73bb2e34e6532fe40fc492f52fb709305cae5a77",
+    "src/event_ingest_store.py": "a90db8f9bf55311e892bc6b18bc958e7e19a456b5a7bffb2ffa7df74c7212c99",
+    "src/monitoring_delivery.py": "84d547c079a82c15d7abb4851a02c0ffa3f29e018e4d38947191e1c8f4a6d1a5",
+    "src/monitoring_worker.py": "71893c0d49a1e6e04352ad11e335d828eb4a4bdfff16008f4b331207aced86eb",
+    "src/monitoring_metrics.py": "693261deb16505744677da2163b18d881da675c5c6313c44d0ecd73598c23626",
+    "src/monitoring_service.py": "4cee0dab5bcee9a1ace7ce3cdbacc6a4d04d3206f0fd0e5a6e21b60147eeab81",
+    "src/protocols/monitoring_local.py": "69597e1f0239f051056cbfb797f10c5ef934d0e3a6291bf0ef449541cf0a54ae",
+    "runners/run_monitoring_local.py": "fb0d5bbde416de3a8398a9b99508973fab1f1c1d866019516b383457ed5ff286",
+    "tests/test_monitoring_commit_observations.py": "11ce2613fea4a88dafcec3b3396adac606eabbceb668117918a533f13bdd2668",
+    "tests/test_monitoring_service.py": "0e6e2e01f9eb6a731edef4ddaea2347b177c839497a8048bc80b879e6167799f",
+    "tests/test_monitoring_local.py": "2916cb79634dc8ddc7c465decf3a50fa5841e50025dd4daf45566b1d647db7a8",
+    "tests/test_monitoring_service_mqtt.py": "7771722253ee6b0523a8fc5cc6bafee032d341925efff6600ba94f5a474f7dbd"
+  }
+}

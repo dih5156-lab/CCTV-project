@@ -1,0 +1,1100 @@
+{
+  "audit_date": "2026-09-18",
+  "wbs": "P0.3",
+  "source_measurement_date": "2026-09-17",
+  "method": {
+    "baseline": "unique sample with monotonic == last_sample.monotonic - report.elapsed_seconds (absolute tolerance 1e-6)",
+    "tensor_fps": "(last.tensor_frames - baseline.tensor_frames) / (last.monotonic - baseline.monotonic)",
+    "lag_change_seconds": "((last.output_running_time_ns - last.source_pts_ns) - (baseline.output_running_time_ns - baseline.source_pts_ns)) / 1e9",
+    "verification": "all selected reports finished without errors; recomputed counts/FPS/available lag match report summary (absolute tolerance 1e-9)",
+    "selection": "26 reports in four named experiment directories; excludes earlier batching/output-ablation intermediates, not an exhaustive performance audit"
+  },
+  "limits": [
+    "decode_and_primary_only; not every operating AI model",
+    "recorded input; not acceptance of four physical cameras",
+    "shared GPU/desktop load; comparisons are not isolated causal estimates",
+    "lag is source PTS versus pipeline clock; not end-to-end latency",
+    "old inferred_flag FPS is invalid; independent tensor count used instead",
+    "no GPU run, runtime restart or physical output in this audit"
+  ],
+  "aggregates": {
+    "resolution_720p": {
+      "runs": 3,
+      "mean_minimum_tensor_fps": 13.160327454473117,
+      "sample_stdev": 0.4219558739951334,
+      "min": 12.916710928263358,
+      "max": 13.647560129347537,
+      "lag_change_range_seconds": [
+        16.3720501,
+        17.15630226
+      ]
+    },
+    "resolution_1080p": {
+      "runs": 3,
+      "mean_minimum_tensor_fps": 13.926011706155931,
+      "sample_stdev": 0.5676770585651538,
+      "min": 13.581605182139995,
+      "max": 14.581221544188109,
+      "lag_change_range_seconds": [
+        15.369150749000001,
+        16.480816497
+      ]
+    },
+    "build_l1": {
+      "runs": 3,
+      "mean_minimum_tensor_fps": 13.393154398720897,
+      "sample_stdev": 0.328039134206689,
+      "min": 13.016177502453113,
+      "max": 13.613673899464795,
+      "lag_change_range_seconds": [
+        16.359166502,
+        17.011131259
+      ]
+    },
+    "build_l3": {
+      "runs": 3,
+      "mean_minimum_tensor_fps": 13.992111514080834,
+      "sample_stdev": 0.36361800654656856,
+      "min": 13.583783485024039,
+      "max": 14.280946776384642,
+      "lag_change_range_seconds": [
+        15.756485287999999,
+        16.422637812
+      ]
+    }
+  },
+  "reports": [
+    {
+      "report": "data/benchmarks/primary_20260917/control_1ch_interval1_v3/report.json",
+      "sha256": "783b5c9a250f0d002202035880c73f6017d1da5f282d495e684a4e8454802f4b",
+      "scope": "decode_and_primary_only",
+      "commercial_acceptance": "NOT_EVALUATED",
+      "channels": 1,
+      "interval": 1,
+      "mux_resolution": [
+        1920,
+        1080
+      ],
+      "topology": "independent_batch1_branches",
+      "inference_batch_size": null,
+      "metric_evidence": "legacy_flag_invalid_use_independent_tensor_frames",
+      "baseline_sample_index": 5,
+      "end_sample_index": 15,
+      "elapsed_seconds": 10.01167540899769,
+      "cameras": {
+        "replay_1": {
+          "tensor_frame_delta": 150,
+          "tensor_fps": 14.982507309934565
+        }
+      },
+      "minimum_tensor_fps": 14.982507309934565,
+      "maximum_lag_change_seconds": null
+    },
+    {
+      "report": "data/benchmarks/primary_20260917/load_1ch_interval0/report.json",
+      "sha256": "a5e4fa2d2b983e074deb0108fab2e3a15b106155d6cfc796f14c4432f453e60a",
+      "scope": "decode_and_primary_only",
+      "commercial_acceptance": "NOT_EVALUATED",
+      "channels": 1,
+      "interval": 0,
+      "mux_resolution": [
+        1920,
+        1080
+      ],
+      "topology": "independent_batch1_branches",
+      "inference_batch_size": null,
+      "metric_evidence": "legacy_flag_invalid_use_independent_tensor_frames",
+      "baseline_sample_index": 5,
+      "end_sample_index": 25,
+      "elapsed_seconds": 20.024768604998826,
+      "cameras": {
+        "replay_1": {
+          "tensor_frame_delta": 600,
+          "tensor_fps": 29.962893046874996
+        }
+      },
+      "minimum_tensor_fps": 29.962893046874996,
+      "maximum_lag_change_seconds": null
+    },
+    {
+      "report": "data/benchmarks/primary_20260917/load_2ch_interval0/report.json",
+      "sha256": "c9b23faf8611cfc12bf9ccfd44f43fbf158970a679911a8741d1ddb603559c6f",
+      "scope": "decode_and_primary_only",
+      "commercial_acceptance": "NOT_EVALUATED",
+      "channels": 2,
+      "interval": 0,
+      "mux_resolution": [
+        1920,
+        1080
+      ],
+      "topology": "independent_batch1_branches",
+      "inference_batch_size": null,
+      "metric_evidence": "legacy_flag_invalid_use_independent_tensor_frames",
+      "baseline_sample_index": 5,
+      "end_sample_index": 35,
+      "elapsed_seconds": 30.03941861000203,
+      "cameras": {
+        "replay_1": {
+          "tensor_frame_delta": 878,
+          "tensor_fps": 29.228262084528428
+        },
+        "replay_2": {
+          "tensor_frame_delta": 870,
+          "tensor_fps": 28.961945345717236
+        }
+      },
+      "minimum_tensor_fps": 28.961945345717236,
+      "maximum_lag_change_seconds": null
+    },
+    {
+      "report": "data/benchmarks/primary_20260917/load_4ch_interval0/report.json",
+      "sha256": "21a62db1cf0b8f51178f197ead475fe9999028a9777171507867f9b2fc3eba40",
+      "scope": "decode_and_primary_only",
+      "commercial_acceptance": "NOT_EVALUATED",
+      "channels": 4,
+      "interval": 0,
+      "mux_resolution": [
+        1920,
+        1080
+      ],
+      "topology": "independent_batch1_branches",
+      "inference_batch_size": null,
+      "metric_evidence": "legacy_flag_invalid_use_independent_tensor_frames",
+      "baseline_sample_index": 6,
+      "end_sample_index": 26,
+      "elapsed_seconds": 20.026392661005957,
+      "cameras": {
+        "replay_1": {
+          "tensor_frame_delta": 289,
+          "tensor_fps": 14.43095643294368
+        },
+        "replay_2": {
+          "tensor_frame_delta": 292,
+          "tensor_fps": 14.580758748856589
+        },
+        "replay_3": {
+          "tensor_frame_delta": 296,
+          "tensor_fps": 14.780495170073802
+        },
+        "replay_4": {
+          "tensor_frame_delta": 291,
+          "tensor_fps": 14.530824643552286
+        }
+      },
+      "minimum_tensor_fps": 14.43095643294368,
+      "maximum_lag_change_seconds": null
+    },
+    {
+      "report": "data/benchmarks/primary_20260917/metrics_fix_1ch_interval0/report.json",
+      "sha256": "4ea1da2d072c4f823a48bafb237466562b7dd0788f7d9faf261f824ce8817fd1",
+      "scope": "decode_and_primary_only",
+      "commercial_acceptance": "NOT_EVALUATED",
+      "channels": 1,
+      "interval": 0,
+      "mux_resolution": [
+        1920,
+        1080
+      ],
+      "topology": "independent_batch1_branches",
+      "inference_batch_size": null,
+      "metric_evidence": "primary_tensor_meta",
+      "baseline_sample_index": 5,
+      "end_sample_index": 25,
+      "elapsed_seconds": 20.02597278400208,
+      "cameras": {
+        "replay_1": {
+          "tensor_frame_delta": 600,
+          "tensor_fps": 29.96109135229202
+        }
+      },
+      "minimum_tensor_fps": 29.96109135229202,
+      "maximum_lag_change_seconds": null
+    },
+    {
+      "report": "data/benchmarks/primary_20260917/metrics_fix_1ch_interval1/report.json",
+      "sha256": "aab5fb6ae6386c9dc05f2299bd2367d0009ea8b96da3981cd429f0cfcfe0295a",
+      "scope": "decode_and_primary_only",
+      "commercial_acceptance": "NOT_EVALUATED",
+      "channels": 1,
+      "interval": 1,
+      "mux_resolution": [
+        1920,
+        1080
+      ],
+      "topology": "independent_batch1_branches",
+      "inference_batch_size": null,
+      "metric_evidence": "primary_tensor_meta",
+      "baseline_sample_index": 5,
+      "end_sample_index": 25,
+      "elapsed_seconds": 20.02559946400288,
+      "cameras": {
+        "replay_1": {
+          "tensor_frame_delta": 300,
+          "tensor_fps": 14.980824945553643
+        }
+      },
+      "minimum_tensor_fps": 14.980824945553643,
+      "maximum_lag_change_seconds": null
+    },
+    {
+      "report": "data/benchmarks/pose_resolution_20260917.Hgx7sU/1080p_4ch_run1/report.json",
+      "sha256": "7bb65ed970bdfb065dd3ec001ede7e57d8b0984b7bcf5b33f09bdd8eaacd22cc",
+      "scope": "decode_and_primary_only",
+      "commercial_acceptance": "NOT_EVALUATED",
+      "channels": 4,
+      "interval": 0,
+      "mux_resolution": [
+        1920,
+        1080
+      ],
+      "topology": "batched",
+      "inference_batch_size": 4,
+      "metric_evidence": "primary_tensor_meta",
+      "baseline_sample_index": 10,
+      "end_sample_index": 40,
+      "elapsed_seconds": 30.03993682800501,
+      "cameras": {
+        "replay_1": {
+          "tensor_frame_delta": 409,
+          "tensor_fps": 13.61520839213969,
+          "source_timeline_seconds": 13.646,
+          "lag_change_seconds": 16.36453243
+        },
+        "replay_2": {
+          "tensor_frame_delta": 409,
+          "tensor_fps": 13.61520839213969,
+          "source_timeline_seconds": 13.646,
+          "lag_change_seconds": 16.36453243
+        },
+        "replay_3": {
+          "tensor_frame_delta": 409,
+          "tensor_fps": 13.61520839213969,
+          "source_timeline_seconds": 13.646,
+          "lag_change_seconds": 16.364532429999997
+        },
+        "replay_4": {
+          "tensor_frame_delta": 409,
+          "tensor_fps": 13.61520839213969,
+          "source_timeline_seconds": 13.646,
+          "lag_change_seconds": 16.364532429999997
+        }
+      },
+      "minimum_tensor_fps": 13.61520839213969,
+      "maximum_lag_change_seconds": 16.36453243
+    },
+    {
+      "report": "data/benchmarks/pose_resolution_20260917.Hgx7sU/1080p_4ch_run2/report.json",
+      "sha256": "cbfcd546a44f051be17e06f666df7cc340fbb17dd1675be035be1732138c654c",
+      "scope": "decode_and_primary_only",
+      "commercial_acceptance": "NOT_EVALUATED",
+      "channels": 4,
+      "interval": 0,
+      "mux_resolution": [
+        1920,
+        1080
+      ],
+      "topology": "batched",
+      "inference_batch_size": 4,
+      "metric_evidence": "primary_tensor_meta",
+      "baseline_sample_index": 11,
+      "end_sample_index": 41,
+      "elapsed_seconds": 30.04063176100317,
+      "cameras": {
+        "replay_1": {
+          "tensor_frame_delta": 408,
+          "tensor_fps": 13.581605182139995,
+          "source_timeline_seconds": 13.612,
+          "lag_change_seconds": 16.480816497
+        },
+        "replay_2": {
+          "tensor_frame_delta": 408,
+          "tensor_fps": 13.581605182139995,
+          "source_timeline_seconds": 13.612,
+          "lag_change_seconds": 16.480816497
+        },
+        "replay_3": {
+          "tensor_frame_delta": 408,
+          "tensor_fps": 13.581605182139995,
+          "source_timeline_seconds": 13.612,
+          "lag_change_seconds": 16.480816497
+        },
+        "replay_4": {
+          "tensor_frame_delta": 408,
+          "tensor_fps": 13.581605182139995,
+          "source_timeline_seconds": 13.612,
+          "lag_change_seconds": 16.480816497
+        }
+      },
+      "minimum_tensor_fps": 13.581605182139995,
+      "maximum_lag_change_seconds": 16.480816497
+    },
+    {
+      "report": "data/benchmarks/pose_resolution_20260917.Hgx7sU/1080p_4ch_run3/report.json",
+      "sha256": "1fe49f5711d103cfa2c7d2bab8b0a325b72f066b79a737aff1374e4e722d70ea",
+      "scope": "decode_and_primary_only",
+      "commercial_acceptance": "NOT_EVALUATED",
+      "channels": 4,
+      "interval": 0,
+      "mux_resolution": [
+        1920,
+        1080
+      ],
+      "topology": "batched",
+      "inference_batch_size": 4,
+      "metric_evidence": "primary_tensor_meta",
+      "baseline_sample_index": 10,
+      "end_sample_index": 40,
+      "elapsed_seconds": 30.038635560995317,
+      "cameras": {
+        "replay_1": {
+          "tensor_frame_delta": 438,
+          "tensor_fps": 14.581221544188109,
+          "source_timeline_seconds": 14.613,
+          "lag_change_seconds": 15.369150749000001
+        },
+        "replay_2": {
+          "tensor_frame_delta": 438,
+          "tensor_fps": 14.581221544188109,
+          "source_timeline_seconds": 14.613,
+          "lag_change_seconds": 15.369150749000001
+        },
+        "replay_3": {
+          "tensor_frame_delta": 438,
+          "tensor_fps": 14.581221544188109,
+          "source_timeline_seconds": 14.613,
+          "lag_change_seconds": 15.369150749000001
+        },
+        "replay_4": {
+          "tensor_frame_delta": 438,
+          "tensor_fps": 14.581221544188109,
+          "source_timeline_seconds": 14.613,
+          "lag_change_seconds": 15.369150749000001
+        }
+      },
+      "minimum_tensor_fps": 14.581221544188109,
+      "maximum_lag_change_seconds": 15.369150749000001
+    },
+    {
+      "report": "data/benchmarks/pose_resolution_20260917.Hgx7sU/720p_1ch_sanity/report.json",
+      "sha256": "8a9f1d0259cf2e30179149db6df54e16f6e31f558e01e05cbadce2e9b2106adb",
+      "scope": "decode_and_primary_only",
+      "commercial_acceptance": "NOT_EVALUATED",
+      "channels": 1,
+      "interval": 0,
+      "mux_resolution": [
+        1280,
+        720
+      ],
+      "topology": "batched",
+      "inference_batch_size": 1,
+      "metric_evidence": "primary_tensor_meta",
+      "baseline_sample_index": 5,
+      "end_sample_index": 25,
+      "elapsed_seconds": 20.02897879500233,
+      "cameras": {
+        "replay_1": {
+          "tensor_frame_delta": 601,
+          "tensor_fps": 30.00652235699419,
+          "source_timeline_seconds": 20.051,
+          "lag_change_seconds": 0.006317442
+        }
+      },
+      "minimum_tensor_fps": 30.00652235699419,
+      "maximum_lag_change_seconds": 0.006317442
+    },
+    {
+      "report": "data/benchmarks/pose_resolution_20260917.Hgx7sU/720p_2ch_sanity/report.json",
+      "sha256": "f52dc9daa2fdca1ea113f1293c4c6fab9d2c86e6991872e44c406f40e5c169db",
+      "scope": "decode_and_primary_only",
+      "commercial_acceptance": "NOT_EVALUATED",
+      "channels": 2,
+      "interval": 0,
+      "mux_resolution": [
+        1280,
+        720
+      ],
+      "topology": "batched",
+      "inference_batch_size": 2,
+      "metric_evidence": "primary_tensor_meta",
+      "baseline_sample_index": 10,
+      "end_sample_index": 40,
+      "elapsed_seconds": 30.038618756007054,
+      "cameras": {
+        "replay_1": {
+          "tensor_frame_delta": 690,
+          "tensor_fps": 22.970430351828856,
+          "source_timeline_seconds": 23.02,
+          "lag_change_seconds": 7.000491597
+        },
+        "replay_2": {
+          "tensor_frame_delta": 690,
+          "tensor_fps": 22.970430351828856,
+          "source_timeline_seconds": 23.02,
+          "lag_change_seconds": 7.000491597
+        }
+      },
+      "minimum_tensor_fps": 22.970430351828856,
+      "maximum_lag_change_seconds": 7.000491597
+    },
+    {
+      "report": "data/benchmarks/pose_resolution_20260917.Hgx7sU/720p_4ch_run1/report.json",
+      "sha256": "c2932ae40a28a1ee97225442d053920ff6a1e0429155e764166dfc659fc25e20",
+      "scope": "decode_and_primary_only",
+      "commercial_acceptance": "NOT_EVALUATED",
+      "channels": 4,
+      "interval": 0,
+      "mux_resolution": [
+        1280,
+        720
+      ],
+      "topology": "batched",
+      "inference_batch_size": 4,
+      "metric_evidence": "primary_tensor_meta",
+      "baseline_sample_index": 10,
+      "end_sample_index": 40,
+      "elapsed_seconds": 30.041999896988273,
+      "cameras": {
+        "replay_1": {
+          "tensor_frame_delta": 410,
+          "tensor_fps": 13.647560129347537,
+          "source_timeline_seconds": 13.678,
+          "lag_change_seconds": 16.3720501
+        },
+        "replay_2": {
+          "tensor_frame_delta": 410,
+          "tensor_fps": 13.647560129347537,
+          "source_timeline_seconds": 13.678,
+          "lag_change_seconds": 16.3720501
+        },
+        "replay_3": {
+          "tensor_frame_delta": 410,
+          "tensor_fps": 13.647560129347537,
+          "source_timeline_seconds": 13.678,
+          "lag_change_seconds": 16.3720501
+        },
+        "replay_4": {
+          "tensor_frame_delta": 410,
+          "tensor_fps": 13.647560129347537,
+          "source_timeline_seconds": 13.678,
+          "lag_change_seconds": 16.3720501
+        }
+      },
+      "minimum_tensor_fps": 13.647560129347537,
+      "maximum_lag_change_seconds": 16.3720501
+    },
+    {
+      "report": "data/benchmarks/pose_resolution_20260917.Hgx7sU/720p_4ch_run2/report.json",
+      "sha256": "1b8496a0c3b747697acdf590b22d9abad2f68b6c9f9dd966980cb351e94b5077",
+      "scope": "decode_and_primary_only",
+      "commercial_acceptance": "NOT_EVALUATED",
+      "channels": 4,
+      "interval": 0,
+      "mux_resolution": [
+        1280,
+        720
+      ],
+      "topology": "batched",
+      "inference_batch_size": 4,
+      "metric_evidence": "primary_tensor_meta",
+      "baseline_sample_index": 10,
+      "end_sample_index": 40,
+      "elapsed_seconds": 30.03860674399766,
+      "cameras": {
+        "replay_1": {
+          "tensor_frame_delta": 388,
+          "tensor_fps": 12.916710928263358,
+          "source_timeline_seconds": 12.945,
+          "lag_change_seconds": 17.15630226
+        },
+        "replay_2": {
+          "tensor_frame_delta": 388,
+          "tensor_fps": 12.916710928263358,
+          "source_timeline_seconds": 12.945,
+          "lag_change_seconds": 17.15630226
+        },
+        "replay_3": {
+          "tensor_frame_delta": 388,
+          "tensor_fps": 12.916710928263358,
+          "source_timeline_seconds": 12.945,
+          "lag_change_seconds": 17.15630226
+        },
+        "replay_4": {
+          "tensor_frame_delta": 388,
+          "tensor_fps": 12.916710928263358,
+          "source_timeline_seconds": 12.945,
+          "lag_change_seconds": 17.15630226
+        }
+      },
+      "minimum_tensor_fps": 12.916710928263358,
+      "maximum_lag_change_seconds": 17.15630226
+    },
+    {
+      "report": "data/benchmarks/pose_resolution_20260917.Hgx7sU/720p_4ch_run3/report.json",
+      "sha256": "78913cd1eef683dd128df2f6b463b5fa454c83d8998872d7b75cdcd2cbf094d0",
+      "scope": "decode_and_primary_only",
+      "commercial_acceptance": "NOT_EVALUATED",
+      "channels": 4,
+      "interval": 0,
+      "mux_resolution": [
+        1280,
+        720
+      ],
+      "topology": "batched",
+      "inference_batch_size": 4,
+      "metric_evidence": "primary_tensor_meta",
+      "baseline_sample_index": 10,
+      "end_sample_index": 40,
+      "elapsed_seconds": 30.038605865993304,
+      "cameras": {
+        "replay_1": {
+          "tensor_frame_delta": 388,
+          "tensor_fps": 12.916711305808459,
+          "source_timeline_seconds": 12.945,
+          "lag_change_seconds": 17.085965012
+        },
+        "replay_2": {
+          "tensor_frame_delta": 388,
+          "tensor_fps": 12.916711305808459,
+          "source_timeline_seconds": 12.945,
+          "lag_change_seconds": 17.085965012
+        },
+        "replay_3": {
+          "tensor_frame_delta": 388,
+          "tensor_fps": 12.916711305808459,
+          "source_timeline_seconds": 12.945,
+          "lag_change_seconds": 17.085965012
+        },
+        "replay_4": {
+          "tensor_frame_delta": 388,
+          "tensor_fps": 12.916711305808459,
+          "source_timeline_seconds": 12.945,
+          "lag_change_seconds": 17.085965012
+        }
+      },
+      "minimum_tensor_fps": 12.916711305808459,
+      "maximum_lag_change_seconds": 17.085965012
+    },
+    {
+      "report": "data/benchmarks/pose_resolution_20260917.Hgx7sU/original_1080p_4ch_control/report.json",
+      "sha256": "93adb708c66c67870ad4b493e9620693424f0578a944946d131e2f4b5f8caede",
+      "scope": "decode_and_primary_only",
+      "commercial_acceptance": "NOT_EVALUATED",
+      "channels": 4,
+      "interval": 0,
+      "mux_resolution": [
+        1920,
+        1080
+      ],
+      "topology": "batched",
+      "inference_batch_size": 4,
+      "metric_evidence": "primary_tensor_meta",
+      "baseline_sample_index": 10,
+      "end_sample_index": 40,
+      "elapsed_seconds": 30.04018432900193,
+      "cameras": {
+        "replay_1": {
+          "tensor_frame_delta": 406,
+          "tensor_fps": 13.515229985058122,
+          "source_timeline_seconds": 13.545,
+          "lag_change_seconds": 16.507614087
+        },
+        "replay_2": {
+          "tensor_frame_delta": 406,
+          "tensor_fps": 13.515229985058122,
+          "source_timeline_seconds": 13.546,
+          "lag_change_seconds": 16.506614087
+        },
+        "replay_3": {
+          "tensor_frame_delta": 406,
+          "tensor_fps": 13.515229985058122,
+          "source_timeline_seconds": 13.545,
+          "lag_change_seconds": 16.507614087
+        },
+        "replay_4": {
+          "tensor_frame_delta": 406,
+          "tensor_fps": 13.515229985058122,
+          "source_timeline_seconds": 13.545,
+          "lag_change_seconds": 16.507614087
+        }
+      },
+      "minimum_tensor_fps": 13.515229985058122,
+      "maximum_lag_change_seconds": 16.507614087
+    },
+    {
+      "report": "data/benchmarks/pose_l3_build_20260917.1QDRpB/l1_4ch_run1/report.json",
+      "sha256": "d29fad775297ea04361704fcf69fdc7c9885f7a61e266b5d3a3fe79bff29862e",
+      "scope": "decode_and_primary_only",
+      "commercial_acceptance": "NOT_EVALUATED",
+      "channels": 4,
+      "interval": 0,
+      "mux_resolution": [
+        1920,
+        1080
+      ],
+      "topology": "batched",
+      "inference_batch_size": 4,
+      "metric_evidence": "primary_tensor_meta",
+      "baseline_sample_index": 10,
+      "end_sample_index": 40,
+      "elapsed_seconds": 30.039541172998725,
+      "cameras": {
+        "replay_1": {
+          "tensor_frame_delta": 391,
+          "tensor_fps": 13.016177502453113,
+          "source_timeline_seconds": 13.044,
+          "lag_change_seconds": 17.011131259
+        },
+        "replay_2": {
+          "tensor_frame_delta": 391,
+          "tensor_fps": 13.016177502453113,
+          "source_timeline_seconds": 13.044,
+          "lag_change_seconds": 17.011131259
+        },
+        "replay_3": {
+          "tensor_frame_delta": 391,
+          "tensor_fps": 13.016177502453113,
+          "source_timeline_seconds": 13.044,
+          "lag_change_seconds": 17.011131259
+        },
+        "replay_4": {
+          "tensor_frame_delta": 391,
+          "tensor_fps": 13.016177502453113,
+          "source_timeline_seconds": 13.044,
+          "lag_change_seconds": 17.011131259
+        }
+      },
+      "minimum_tensor_fps": 13.016177502453113,
+      "maximum_lag_change_seconds": 17.011131259
+    },
+    {
+      "report": "data/benchmarks/pose_l3_build_20260917.1QDRpB/l1_4ch_run2/report.json",
+      "sha256": "7e79fa81b53b13fb15d79ae06e6293edbb01061a63c72731e7f0629125b0fc5d",
+      "scope": "decode_and_primary_only",
+      "commercial_acceptance": "NOT_EVALUATED",
+      "channels": 4,
+      "interval": 0,
+      "mux_resolution": [
+        1920,
+        1080
+      ],
+      "topology": "batched",
+      "inference_batch_size": 4,
+      "metric_evidence": "primary_tensor_meta",
+      "baseline_sample_index": 10,
+      "end_sample_index": 40,
+      "elapsed_seconds": 30.04332283999247,
+      "cameras": {
+        "replay_1": {
+          "tensor_frame_delta": 409,
+          "tensor_fps": 13.613673899464795,
+          "source_timeline_seconds": 13.646,
+          "lag_change_seconds": 16.359166502
+        },
+        "replay_2": {
+          "tensor_frame_delta": 409,
+          "tensor_fps": 13.613673899464795,
+          "source_timeline_seconds": 13.646,
+          "lag_change_seconds": 16.359166502
+        },
+        "replay_3": {
+          "tensor_frame_delta": 409,
+          "tensor_fps": 13.613673899464795,
+          "source_timeline_seconds": 13.646,
+          "lag_change_seconds": 16.359166502
+        },
+        "replay_4": {
+          "tensor_frame_delta": 409,
+          "tensor_fps": 13.613673899464795,
+          "source_timeline_seconds": 13.646,
+          "lag_change_seconds": 16.359166502
+        }
+      },
+      "minimum_tensor_fps": 13.613673899464795,
+      "maximum_lag_change_seconds": 16.359166502
+    },
+    {
+      "report": "data/benchmarks/pose_l3_build_20260917.1QDRpB/l1_4ch_run3/report.json",
+      "sha256": "bb8833deb92202ba79622b7f06b25486c548c48758019d7df47cb5d898d145b6",
+      "scope": "decode_and_primary_only",
+      "commercial_acceptance": "NOT_EVALUATED",
+      "channels": 4,
+      "interval": 0,
+      "mux_resolution": [
+        1920,
+        1080
+      ],
+      "topology": "batched",
+      "inference_batch_size": 4,
+      "metric_evidence": "primary_tensor_meta",
+      "baseline_sample_index": 11,
+      "end_sample_index": 41,
+      "elapsed_seconds": 30.037760946986964,
+      "cameras": {
+        "replay_1": {
+          "tensor_frame_delta": 407,
+          "tensor_fps": 13.549611794244786,
+          "source_timeline_seconds": 13.579,
+          "lag_change_seconds": 16.462257277
+        },
+        "replay_2": {
+          "tensor_frame_delta": 407,
+          "tensor_fps": 13.549611794244786,
+          "source_timeline_seconds": 13.578,
+          "lag_change_seconds": 16.463257277
+        },
+        "replay_3": {
+          "tensor_frame_delta": 407,
+          "tensor_fps": 13.549611794244786,
+          "source_timeline_seconds": 13.578,
+          "lag_change_seconds": 16.463257277
+        },
+        "replay_4": {
+          "tensor_frame_delta": 407,
+          "tensor_fps": 13.549611794244786,
+          "source_timeline_seconds": 13.579,
+          "lag_change_seconds": 16.462257277
+        }
+      },
+      "minimum_tensor_fps": 13.549611794244786,
+      "maximum_lag_change_seconds": 16.463257277
+    },
+    {
+      "report": "data/benchmarks/pose_l3_build_20260917.1QDRpB/l3_1ch_sanity/report.json",
+      "sha256": "d5e9fec08f67fbc99824d001f7399a218b91bbce6aac18f41e0dfe4e8360bcd1",
+      "scope": "decode_and_primary_only",
+      "commercial_acceptance": "NOT_EVALUATED",
+      "channels": 1,
+      "interval": 0,
+      "mux_resolution": [
+        1920,
+        1080
+      ],
+      "topology": "batched",
+      "inference_batch_size": 1,
+      "metric_evidence": "primary_tensor_meta",
+      "baseline_sample_index": 10,
+      "end_sample_index": 70,
+      "elapsed_seconds": 60.07910705500399,
+      "cameras": {
+        "replay_1": {
+          "tensor_frame_delta": 1800,
+          "tensor_fps": 29.96049855321673,
+          "source_timeline_seconds": 60.054,
+          "lag_change_seconds": 0.005386574000000002
+        }
+      },
+      "minimum_tensor_fps": 29.96049855321673,
+      "maximum_lag_change_seconds": 0.005386574000000002
+    },
+    {
+      "report": "data/benchmarks/pose_l3_build_20260917.1QDRpB/l3_2ch_sanity/report.json",
+      "sha256": "893d55c2da294615060a94530f19877c7b8aa67b35bd6e4addbe56c69e222b18",
+      "scope": "decode_and_primary_only",
+      "commercial_acceptance": "NOT_EVALUATED",
+      "channels": 2,
+      "interval": 0,
+      "mux_resolution": [
+        1920,
+        1080
+      ],
+      "topology": "batched",
+      "inference_batch_size": 2,
+      "metric_evidence": "primary_tensor_meta",
+      "baseline_sample_index": 10,
+      "end_sample_index": 40,
+      "elapsed_seconds": 30.041877230003593,
+      "cameras": {
+        "replay_1": {
+          "tensor_frame_delta": 734,
+          "tensor_fps": 24.43256106735352,
+          "source_timeline_seconds": 24.488,
+          "lag_change_seconds": 5.586385115000001
+        },
+        "replay_2": {
+          "tensor_frame_delta": 734,
+          "tensor_fps": 24.43256106735352,
+          "source_timeline_seconds": 24.488,
+          "lag_change_seconds": 5.586385115000001
+        }
+      },
+      "minimum_tensor_fps": 24.43256106735352,
+      "maximum_lag_change_seconds": 5.586385115000001
+    },
+    {
+      "report": "data/benchmarks/pose_l3_build_20260917.1QDRpB/l3_4ch_run1/report.json",
+      "sha256": "46fa2cb6b9df95716b0fe8fbeafe3fdf6bb6823b97b3dc94706634b3e3476ac3",
+      "scope": "decode_and_primary_only",
+      "commercial_acceptance": "NOT_EVALUATED",
+      "channels": 4,
+      "interval": 0,
+      "mux_resolution": [
+        1920,
+        1080
+      ],
+      "topology": "batched",
+      "inference_batch_size": 4,
+      "metric_evidence": "primary_tensor_meta",
+      "baseline_sample_index": 10,
+      "end_sample_index": 40,
+      "elapsed_seconds": 30.0400251270039,
+      "cameras": {
+        "replay_1": {
+          "tensor_frame_delta": 429,
+          "tensor_fps": 14.280946776384642,
+          "source_timeline_seconds": 14.313,
+          "lag_change_seconds": 15.756485287999999
+        },
+        "replay_2": {
+          "tensor_frame_delta": 429,
+          "tensor_fps": 14.280946776384642,
+          "source_timeline_seconds": 14.313,
+          "lag_change_seconds": 15.756485287999999
+        },
+        "replay_3": {
+          "tensor_frame_delta": 429,
+          "tensor_fps": 14.280946776384642,
+          "source_timeline_seconds": 14.313,
+          "lag_change_seconds": 15.756485287999999
+        },
+        "replay_4": {
+          "tensor_frame_delta": 429,
+          "tensor_fps": 14.280946776384642,
+          "source_timeline_seconds": 14.313,
+          "lag_change_seconds": 15.756485287999999
+        }
+      },
+      "minimum_tensor_fps": 14.280946776384642,
+      "maximum_lag_change_seconds": 15.756485287999999
+    },
+    {
+      "report": "data/benchmarks/pose_l3_build_20260917.1QDRpB/l3_4ch_run2/report.json",
+      "sha256": "5be68c25481b32966b1ff7da2b2337cf558d2729b3ef9a3ca35625a66a3a4deb",
+      "scope": "decode_and_primary_only",
+      "commercial_acceptance": "NOT_EVALUATED",
+      "channels": 4,
+      "interval": 0,
+      "mux_resolution": [
+        1920,
+        1080
+      ],
+      "topology": "batched",
+      "inference_batch_size": 4,
+      "metric_evidence": "primary_tensor_meta",
+      "baseline_sample_index": 10,
+      "end_sample_index": 40,
+      "elapsed_seconds": 30.046194008988095,
+      "cameras": {
+        "replay_1": {
+          "tensor_frame_delta": 424,
+          "tensor_fps": 14.111604280833824,
+          "source_timeline_seconds": 14.146,
+          "lag_change_seconds": 15.941110024
+        },
+        "replay_2": {
+          "tensor_frame_delta": 424,
+          "tensor_fps": 14.111604280833824,
+          "source_timeline_seconds": 14.146,
+          "lag_change_seconds": 15.941110024
+        },
+        "replay_3": {
+          "tensor_frame_delta": 424,
+          "tensor_fps": 14.111604280833824,
+          "source_timeline_seconds": 14.146,
+          "lag_change_seconds": 15.941110024
+        },
+        "replay_4": {
+          "tensor_frame_delta": 424,
+          "tensor_fps": 14.111604280833824,
+          "source_timeline_seconds": 14.146,
+          "lag_change_seconds": 15.941110024
+        }
+      },
+      "minimum_tensor_fps": 14.111604280833824,
+      "maximum_lag_change_seconds": 15.941110024
+    },
+    {
+      "report": "data/benchmarks/pose_l3_build_20260917.1QDRpB/l3_4ch_run3/report.json",
+      "sha256": "ffe6dfb36f2267c4100decc8ab60a5b3c54743c54e2bd94a2b851e5f346870ae",
+      "scope": "decode_and_primary_only",
+      "commercial_acceptance": "NOT_EVALUATED",
+      "channels": 4,
+      "interval": 0,
+      "mux_resolution": [
+        1920,
+        1080
+      ],
+      "topology": "batched",
+      "inference_batch_size": 4,
+      "metric_evidence": "primary_tensor_meta",
+      "baseline_sample_index": 10,
+      "end_sample_index": 40,
+      "elapsed_seconds": 30.035814429007587,
+      "cameras": {
+        "replay_1": {
+          "tensor_frame_delta": 408,
+          "tensor_fps": 13.583783485024039,
+          "source_timeline_seconds": 13.612,
+          "lag_change_seconds": 16.422637811999998
+        },
+        "replay_2": {
+          "tensor_frame_delta": 408,
+          "tensor_fps": 13.583783485024039,
+          "source_timeline_seconds": 13.612,
+          "lag_change_seconds": 16.422637811999998
+        },
+        "replay_3": {
+          "tensor_frame_delta": 408,
+          "tensor_fps": 13.583783485024039,
+          "source_timeline_seconds": 13.612,
+          "lag_change_seconds": 16.422637812
+        },
+        "replay_4": {
+          "tensor_frame_delta": 408,
+          "tensor_fps": 13.583783485024039,
+          "source_timeline_seconds": 13.612,
+          "lag_change_seconds": 16.422637812
+        }
+      },
+      "minimum_tensor_fps": 13.583783485024039,
+      "maximum_lag_change_seconds": 16.422637812
+    },
+    {
+      "report": "data/benchmarks/pose_dispatch_profile_20260917.BvPTry/l3_4ch_after_restore/report.json",
+      "sha256": "7a2810d8b43a49b558e9af911ad1c9c258d3cccf1d4d071fc09f21e219011326",
+      "scope": "decode_and_primary_only",
+      "commercial_acceptance": "NOT_EVALUATED",
+      "channels": 4,
+      "interval": 0,
+      "mux_resolution": [
+        1920,
+        1080
+      ],
+      "topology": "batched",
+      "inference_batch_size": 4,
+      "metric_evidence": "primary_tensor_meta",
+      "baseline_sample_index": 11,
+      "end_sample_index": 41,
+      "elapsed_seconds": 30.04063147600391,
+      "cameras": {
+        "replay_1": {
+          "tensor_frame_delta": 435,
+          "tensor_fps": 14.480388015394174,
+          "source_timeline_seconds": 14.513,
+          "lag_change_seconds": 15.524893476
+        },
+        "replay_2": {
+          "tensor_frame_delta": 435,
+          "tensor_fps": 14.480388015394174,
+          "source_timeline_seconds": 14.513,
+          "lag_change_seconds": 15.524893475999999
+        },
+        "replay_3": {
+          "tensor_frame_delta": 435,
+          "tensor_fps": 14.480388015394174,
+          "source_timeline_seconds": 14.513,
+          "lag_change_seconds": 15.524893475999999
+        },
+        "replay_4": {
+          "tensor_frame_delta": 435,
+          "tensor_fps": 14.480388015394174,
+          "source_timeline_seconds": 14.513,
+          "lag_change_seconds": 15.524893475999999
+        }
+      },
+      "minimum_tensor_fps": 14.480388015394174,
+      "maximum_lag_change_seconds": 15.524893476
+    },
+    {
+      "report": "data/benchmarks/pose_dispatch_profile_20260917.BvPTry/l3_4ch_ai_paused/report.json",
+      "sha256": "6e5e10212ef5ce301f7d2d110a2830b7e411edfb51e2ac3db77501d2db31a766",
+      "scope": "decode_and_primary_only",
+      "commercial_acceptance": "NOT_EVALUATED",
+      "channels": 4,
+      "interval": 0,
+      "mux_resolution": [
+        1920,
+        1080
+      ],
+      "topology": "batched",
+      "inference_batch_size": 4,
+      "metric_evidence": "primary_tensor_meta",
+      "baseline_sample_index": 11,
+      "end_sample_index": 41,
+      "elapsed_seconds": 30.040001103989198,
+      "cameras": {
+        "replay_1": {
+          "tensor_frame_delta": 654,
+          "tensor_fps": 21.770971237186515,
+          "source_timeline_seconds": 21.82,
+          "lag_change_seconds": 8.189794048000001
+        },
+        "replay_2": {
+          "tensor_frame_delta": 654,
+          "tensor_fps": 21.770971237186515,
+          "source_timeline_seconds": 21.82,
+          "lag_change_seconds": 8.189794048000001
+        },
+        "replay_3": {
+          "tensor_frame_delta": 654,
+          "tensor_fps": 21.770971237186515,
+          "source_timeline_seconds": 21.82,
+          "lag_change_seconds": 8.189794048000001
+        },
+        "replay_4": {
+          "tensor_frame_delta": 654,
+          "tensor_fps": 21.770971237186515,
+          "source_timeline_seconds": 21.819,
+          "lag_change_seconds": 8.190794048
+        }
+      },
+      "minimum_tensor_fps": 21.770971237186515,
+      "maximum_lag_change_seconds": 8.190794048
+    },
+    {
+      "report": "data/benchmarks/pose_dispatch_profile_20260917.BvPTry/l3_4ch_before_pause/report.json",
+      "sha256": "1ac30f13492d3b457fab301495a1a842c31dcfea25842b6f963477b49eb9dee8",
+      "scope": "decode_and_primary_only",
+      "commercial_acceptance": "NOT_EVALUATED",
+      "channels": 4,
+      "interval": 0,
+      "mux_resolution": [
+        1920,
+        1080
+      ],
+      "topology": "batched",
+      "inference_batch_size": 4,
+      "metric_evidence": "primary_tensor_meta",
+      "baseline_sample_index": 10,
+      "end_sample_index": 40,
+      "elapsed_seconds": 30.044452381989686,
+      "cameras": {
+        "replay_1": {
+          "tensor_frame_delta": 865,
+          "tensor_fps": 28.79067286706577,
+          "source_timeline_seconds": 28.859,
+          "lag_change_seconds": 1.1649307430000002
+        },
+        "replay_2": {
+          "tensor_frame_delta": 865,
+          "tensor_fps": 28.79067286706577,
+          "source_timeline_seconds": 28.859,
+          "lag_change_seconds": 1.1649307430000002
+        },
+        "replay_3": {
+          "tensor_frame_delta": 865,
+          "tensor_fps": 28.79067286706577,
+          "source_timeline_seconds": 28.859,
+          "lag_change_seconds": 1.1649307430000002
+        },
+        "replay_4": {
+          "tensor_frame_delta": 865,
+          "tensor_fps": 28.79067286706577,
+          "source_timeline_seconds": 28.859,
+          "lag_change_seconds": 1.1649307430000002
+        }
+      },
+      "minimum_tensor_fps": 28.79067286706577,
+      "maximum_lag_change_seconds": 1.1649307430000002
+    }
+  ]
+}

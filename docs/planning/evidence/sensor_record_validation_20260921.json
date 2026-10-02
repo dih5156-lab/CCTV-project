@@ -1,0 +1,196 @@
+{
+  "recorded_at": "2026-09-21T00:17:57.645775+00:00",
+  "plan_version": "0.12",
+  "wbs": "P2.2",
+  "status": "DONE",
+  "scope": "local optional durable intake and record-only recovery; not production/consumer storage ACK",
+  "junit": {
+    "path": "docs/planning/evidence/sensor_record_final_20260921.xml",
+    "tests": 495,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 5,
+    "passed": 490,
+    "suite_elapsed_seconds": 123.463
+  },
+  "test_classes": {
+    "tests.test_sensor_record": 11,
+    "parser-python.tests.test_sensor_record_integration": 7,
+    "parser-python.tests.test_tlv_mqtt_durable": 17,
+    "parser-python.tests.test_sensor_projection": 19,
+    "parser-python.tests.test_tlv_mqtt_integration": 9,
+    "tests.test_record_delivery": 18,
+    "tests.test_record_delivery_mqtt": 6,
+    "tests.test_event_ingest_store": 11,
+    "tests.test_ingest_store": 9,
+    "tests.test_external_ingest_durable": 20,
+    "tests.test_video_event_ingest": 26,
+    "tests.test_sensor_observation": 26,
+    "tests.test_video_observation": 37,
+    "tests.test_canonical_event": 7,
+    "tests.test_external_ingest": 44,
+    "tests.test_mqtt_durable_subscriber": 13,
+    "tests.test_mqtt.TestMqttEventPublisherInit": 8,
+    "tests.test_mqtt.TestMqttClientFactory": 3,
+    "tests.test_mqtt.TestPublishWhenDisconnected": 4,
+    "tests.test_mqtt.TestPublishWhenConnected": 10,
+    "tests.test_mqtt.TestPublishWithOutbox": 3,
+    "tests.test_mqtt.TestReconnectBackoff": 6,
+    "tests.test_mqtt.TestGetStats": 3,
+    "tests.test_mqtt_outbox": 3,
+    "tests.test_event_publish": 12,
+    "tests.test_events.TestEventType": 5,
+    "tests.test_events.TestEventSeverity": 2,
+    "tests.test_events.TestDetectionEvent": 7,
+    "tests.test_processor_unit.TestCameraRegistryRegister": 6,
+    "tests.test_processor_unit.TestCameraRegistryUnregister": 5,
+    "tests.test_processor_unit.TestCameraRegistryStopFlag": 4,
+    "tests.test_processor_unit.TestCameraRegistryRetry": 6,
+    "tests.test_processor_unit.TestParseDetections": 7,
+    "tests.test_processor_unit.TestCameraStatusContract": 1,
+    "tests.test_processor_unit.TestProcessorStatsContract": 4,
+    "tests.test_processor_unit.TestModelSettingsHelpers": 4,
+    "tests.test_processor_unit.TestVideoProcessorStats": 5,
+    "tests.test_processor_unit.TestUpdateZonesNoManager": 1,
+    "tests.test_processor_unit.TestBuildDisplayEvents": 4,
+    "tests.test_processor_unit.TestProcessInferenceErrorHandling": 3,
+    "tests.test_deepstream_processor": 95,
+    "tests.test_event_dispatcher": 2,
+    "tests.test_deepstream_event_factory": 2
+  },
+  "new_tests": {
+    "unit_and_sqlite": 11,
+    "parser_and_lifecycle": 2,
+    "real_pg_mqtt": 5,
+    "real_process_exit_cases_within_pg_mqtt": 4
+  },
+  "skipped_tests": [
+    {
+      "class": "tests.test_deepstream_processor",
+      "name": "test_deepstream_add_camera",
+      "reason": "Jetson 환경 필요 — pyds 미설치"
+    },
+    {
+      "class": "tests.test_deepstream_processor",
+      "name": "test_deepstream_add_camera_duplicate",
+      "reason": "Jetson 환경 필요 — pyds 미설치"
+    },
+    {
+      "class": "tests.test_deepstream_processor",
+      "name": "test_deepstream_remove_camera",
+      "reason": "Jetson 환경 필요 — pyds 미설치"
+    },
+    {
+      "class": "tests.test_deepstream_processor",
+      "name": "test_deepstream_get_stats_returns_dict",
+      "reason": "Jetson 환경 필요 — pyds 미설치"
+    },
+    {
+      "class": "tests.test_deepstream_processor",
+      "name": "test_deepstream_get_camera_status",
+      "reason": "Jetson 환경 필요 — pyds 미설치"
+    }
+  ],
+  "checks": {
+    "ruff_files": 7,
+    "black_files": 6,
+    "py_compile_app_files": 4,
+    "final_results": "PASS",
+    "tracked_diff_check": "PASS",
+    "graph_limit": "zero changed symbols for five changed app/build files; actual source and tests reviewed"
+  },
+  "environment": {
+    "python_version": "3.10.12",
+    "sqlite_version": "3.37.2",
+    "paho_version": "2.1.0",
+    "mqtt_image": "eclipse-mosquitto:2.0",
+    "pg_image": "postgres:16-alpine",
+    "pg_server_version": "16.13",
+    "network": "none",
+    "published_ports": [],
+    "transport": "unix",
+    "broker_persistence": false,
+    "mqtt_memory_bytes": 67108864,
+    "mqtt_cpus": 0.5,
+    "pg_memory_bytes": 402653184,
+    "pg_cpus": 1,
+    "test_containers_stopped_and_removed": true,
+    "production_deployed": false,
+    "physical_outputs": false,
+    "gpu_inference": false
+  },
+  "schema": {
+    "new_tables_this_slice": [],
+    "new_schema_version_this_slice": false,
+    "sensor_record_store": "reuse existing v1 to v2 additive migration; accept v3",
+    "record_delivery_store": "reuse existing v3 tables",
+    "pg_schema_changed": false
+  },
+  "identity": {
+    "namespace": "tlv_mqtt",
+    "observation_source_record_id": "ingest_id",
+    "canonical_key": [
+      "source_namespace",
+      "observation_id"
+    ],
+    "wire_sensor_id_field": "observation_id",
+    "wire_event_id_field_unchanged": "event_id"
+  },
+  "verified_boundaries": [
+    "ready/PG-complete/PG-quarantined frozen projection becomes common observation",
+    "real zero, missing, invalid values/time preserved for all three supported profiles",
+    "same receipt concurrent/repeated processing commits one record and revision",
+    "canonical/revision transaction failure rollback and retry",
+    "unsupported/malformed projection retained independently of PG stage",
+    "separate receipts with equal measurements remain separate observations",
+    "SensorService starts and stops independent common record worker",
+    "real TLV parser and parser Dockerfile COPY isolated import/instantiation",
+    "PG constraint rejection does not block common record PUBACK delivery",
+    "real os._exit(42) after frozen projection, canonical commit, enqueue and ACK commit",
+    "same receipt PG rows/canonical/revision/job remain singular after recovery",
+    "recovery does not reemit EdgeX output"
+  ],
+  "ack_scope": "broker PUBACK; not consumer DB storage, UI or physical execution",
+  "not_validated": [
+    "sensor producer identity D02/I19 and separate redelivery business deduplication",
+    "monitoring consumer contract/DB ACK/query/UI P1.4/P2.3",
+    "production record sender lifecycle/TCP/TLS/ACL/broker power loss",
+    "capacity/retention/one-second scan cost/SQLite contention/long-run load P2.4",
+    "image build and deployed runtime imports",
+    "physical devices/priority scheduling/four real cameras/all AI/every frame 30FPS"
+  ],
+  "source_sha256": {
+    "src/sensor_record.py": "d5a32cc41f4510c1ad3644f5713e829bc351cea6fea60e1b0bfd45152d4b1f9a",
+    "src/event_ingest_store.py": "4c6fddfb00b643a1493c4e9054e3ecd32e0762c70ea397f151fe61fa412a5baa",
+    "src/record_delivery.py": "180757867a38dd5590c68d277aa2c27d5588589b61665839147be2c0e1d55c03",
+    "parser-python/service/sensor_service.py": "920a9cef341c3acefa4366ed693e99c381e4668991a481f2324940d0df315d1c",
+    "Dockerfile": "37dbb3ab1e2ae81bf8cb8b1a0656950d4838a4258155892f64d00ba0aeb40a9f",
+    "tests/test_sensor_record.py": "a3f8499729f5fd56957d950d7d6710567bf983c8a274e352f4145bb1bf595163",
+    "parser-python/tests/test_sensor_record_integration.py": "3e141c18314e55a5f2e64b6ddb3e1dceb2f559208a67ab764622013094574d67",
+    "parser-python/tests/test_tlv_mqtt_durable.py": "fe405a6f95b1893955699538fcc44859c10949e622cc7fdd713ed53dd408fe2a"
+  },
+  "earlier_attempts": [
+    "sensor_record_red_20260921.xml",
+    "sensor_record_envelope_red_20260921.xml",
+    "sensor_record_wiring_red_20260921.xml",
+    "sensor_record_packaging_red_20260921.xml",
+    "sensor_record_slice_20260921.xml",
+    "sensor_record_environment_failure_20260921.xml",
+    "sensor_record_polling_failure_20260921.xml",
+    "sensor_record_polling_fix_20260921.xml"
+  ],
+  "documentation": {
+    "markdown_files": 18,
+    "local_links_checked": 332,
+    "wbs_rows": 33,
+    "states": {
+      "DONE": 6,
+      "BLOCKED": 2,
+      "READY": 3,
+      "PLANNED": 15,
+      "VERIFY": 7
+    },
+    "dependencies_and_cycles": "PASS",
+    "whitespace": "PASS"
+  }
+}

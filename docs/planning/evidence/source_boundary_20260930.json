@@ -1,0 +1,1312 @@
+{
+  "version": "0.77",
+  "date": "2026-09-30",
+  "scope": "Input watchdog/decoder/encoder boundaries; original357-file snapshot; no deployment",
+  "manifest": {
+    "scope": "Input boundary probes; original357-file snapshot; new observer only; network none",
+    "sdk_source": "/opt/nvidia/deepstream/deepstream-7.1/sources/gst-plugins/gst-nvurisrcbin/gstdsnvurisrcbin.cpp",
+    "sdk_source_sha256": "76bd11c6251ec7f59f8bd85635e9bd172be1b2eb1271db087e6ceecc2fb5390f",
+    "observer_sha256": "5c09ce355d9b7a0295c9b606d7159f38290917b7be0184385b0956bada27c36f",
+    "base_manifest": "/media/sawwave/Learning11/CCTV-project/data/runtime/p51_cuda_capture_20260930_v077/manifest.json",
+    "limitations": [
+      "SDK source provided with installed package; source/binary build correspondence not independently rebuilt.",
+      "All probes perturb timing; shared operating GPU workload.",
+      "RTP buffer/list callbacks are not video-frame counts."
+    ],
+    "sdk_plugin_path": "/opt/nvidia/deepstream/deepstream-7.1/lib/gst-plugins/libnvdsgst_nvurisrcbin.so",
+    "sdk_plugin_sha256": "65d71eed89f2e5128346f32c3b3c7287648335e70a3fa2cc8758d08931b8130e",
+    "observer_with_encoder_sha256": "2166d524a76b0c67aa170a70efd50a09cf59a25e50604fa4c861dbfce7580d26",
+    "native_file_input": {
+      "path": "data/runtime/p51_source_boundary_20260930_v078/input40.mkv",
+      "sha256": "dfd08691157046da6971259a580fcc530c902698d754e4b92af38395a5f6ed40",
+      "decoded_frames": 40,
+      "reencoded": false
+    }
+  },
+  "trials": {
+    "normal15": {
+      "experiment": {
+        "sanitizer_enabled": false,
+        "output_mode": "rtsp-publish",
+        "copy_hw": null,
+        "scope": "Original fault snapshot CLI, loopback RTSP recorded replay, unchanged models; stop after >=40 processed frames",
+        "timed_out": false,
+        "exit": 0,
+        "elapsed_seconds": 21.90900970902294,
+        "zero_error_summary": false,
+        "target_stats": {
+          "backend": "deepstream",
+          "camera_count": 1,
+          "frames_processed": 40,
+          "frames_dropped": 0,
+          "events_detected": 1,
+          "events_sent": 0,
+          "events_filtered": 59,
+          "events_dropped": 0,
+          "events_failed": 1,
+          "inference_errors": 0,
+          "camera_errors": 0,
+          "fps": 0.0,
+          "uptime_seconds": 0.0,
+          "avg_inference_ms": 0.0,
+          "output_mode": "rtsp-publish",
+          "preview_enabled": true,
+          "preview_max_fps": 10.0,
+          "preview_ready": true,
+          "cameras": 1,
+          "yolo_postprocess_mode": "vectorized",
+          "yolo_postprocess_calls": 41,
+          "yolo_postprocess_avg_ms": 11.71,
+          "yolo_postprocess_max_ms": 62.655,
+          "primary_camera_stats": {
+            "replay_1": {
+              "frames_seen": 42,
+              "frames_inferred": 21,
+              "frames_skipped": 21,
+              "frames_inference_unknown": 0,
+              "last_frame_age_seconds": 0.017701118951663375
+            }
+          },
+          "primary_metrics_errors": 0,
+          "model_inference_stats": {
+            "pipeline_generation": 1,
+            "metadata_errors": 0,
+            "models": {
+              "primary": {
+                "enabled": true,
+                "properties": {
+                  "unique-id": 1,
+                  "process-mode": 1,
+                  "batch-size": 1,
+                  "interval": 1,
+                  "output-tensor-meta": true
+                },
+                "property_observed_at": "pipeline_build",
+                "cameras": {
+                  "replay_1": {
+                    "frames_seen": 40,
+                    "frames_tensor_output": 20,
+                    "frames_no_objects": 0,
+                    "frames_classifier_only": 0,
+                    "frames_unobserved": 20,
+                    "frames_unknown": 0,
+                    "objects_with_tensor": 0,
+                    "objects_classifier_only": 0,
+                    "last_frame_age_seconds": 0.0010927198454737663,
+                    "last_tensor_age_seconds": 0.04394071991555393
+                  }
+                },
+                "unique_id_conflict": false
+              },
+              "pose": {
+                "enabled": false,
+                "properties": {
+                  "unique-id": null,
+                  "process-mode": null,
+                  "batch-size": null,
+                  "interval": null,
+                  "output-tensor-meta": null
+                },
+                "property_observed_at": "pipeline_build",
+                "cameras": {
+                  "replay_1": {
+                    "frames_seen": 0,
+                    "frames_tensor_output": 0,
+                    "frames_no_objects": 0,
+                    "frames_classifier_only": 0,
+                    "frames_unobserved": 0,
+                    "frames_unknown": 0,
+                    "objects_with_tensor": 0,
+                    "objects_classifier_only": 0,
+                    "last_frame_age_seconds": null,
+                    "last_tensor_age_seconds": null
+                  }
+                },
+                "unique_id_conflict": false
+              },
+              "attributes": {
+                "enabled": true,
+                "properties": {
+                  "unique-id": 3,
+                  "process-mode": 2,
+                  "batch-size": 1,
+                  "interval": 4,
+                  "output-tensor-meta": true
+                },
+                "property_observed_at": "pipeline_build",
+                "cameras": {
+                  "replay_1": {
+                    "frames_seen": 40,
+                    "frames_tensor_output": 20,
+                    "frames_no_objects": 0,
+                    "frames_classifier_only": 0,
+                    "frames_unobserved": 20,
+                    "frames_unknown": 0,
+                    "objects_with_tensor": 20,
+                    "objects_classifier_only": 0,
+                    "last_frame_age_seconds": 0.0010927198454737663,
+                    "last_tensor_age_seconds": 0.04394071991555393
+                  }
+                },
+                "unique_id_conflict": false
+              },
+              "helmet": {
+                "enabled": true,
+                "properties": {
+                  "unique-id": 2,
+                  "process-mode": 2,
+                  "batch-size": 1,
+                  "interval": 1,
+                  "output-tensor-meta": true
+                },
+                "property_observed_at": "pipeline_build",
+                "cameras": {
+                  "replay_1": {
+                    "frames_seen": 40,
+                    "frames_tensor_output": 20,
+                    "frames_no_objects": 0,
+                    "frames_classifier_only": 0,
+                    "frames_unobserved": 20,
+                    "frames_unknown": 0,
+                    "objects_with_tensor": 20,
+                    "objects_classifier_only": 0,
+                    "last_frame_age_seconds": 0.0010927198454737663,
+                    "last_tensor_age_seconds": 0.04394071991555393
+                  }
+                },
+                "unique_id_conflict": false
+              }
+            }
+          },
+          "model_metrics_errors": 0,
+          "source_error_identified": 0,
+          "source_error_unidentified": 0,
+          "source_eos_identified": 0,
+          "source_eos_unidentified": 0,
+          "source_unidentified_stop": 0,
+          "source_stream_reset_events": 0,
+          "source_stream_reset_unidentified": 0,
+          "preview_identity_rejected": 0,
+          "preview_frames_stored": 21,
+          "context_identity_rejected": 0,
+          "context_match_expired": 5,
+          "context_match_evicted": 0,
+          "context_match_missed": 0,
+          "context_frames_matched": 21,
+          "context_queue_dropped": 0,
+          "pipeline_restart_requested": 0,
+          "pipeline_restart_rejected": 0,
+          "pipeline_restart_executed": 0,
+          "pipeline_restart_failed": 0,
+          "pipeline_restart_seconds": 0.0,
+          "falldata_inline_stats": {
+            "enabled": true,
+            "cameras": {}
+          },
+          "falldata_temporal_stats": {
+            "requests": 1,
+            "process_calls": 1
+          },
+          "appearance_backend_stats": {
+            "color_backend": {
+              "requests": 27,
+              "completed": 27,
+              "seconds": 1.1063961738254875
+            },
+            "attribute_backend": {
+              "requests": 15,
+              "completed": 15,
+              "seconds": 0.0001259900163859129
+            }
+          },
+          "crop_pose_results": 0,
+          "primary_probe_frames": 42,
+          "primary_tensor_meta_count": 21,
+          "primary_person_rois": 21,
+          "crop_pose_person_objects": 0,
+          "crop_pose_tensor_meta_count": 0
+        },
+        "completed": true,
+        "rtsp_published": true
+      },
+      "log_counts": {
+        "source_timeout_warning_lines": 0,
+        "bad_file_descriptor": 0,
+        "encoder_process_failed_lines": 0,
+        "cuda700_lines": 0,
+        "python_tracebacks": 0,
+        "tcn_timeout_lines": 0,
+        "h264_time_info_warning_lines": 0
+      },
+      "trace_event_count": 4597,
+      "stage_count": 31,
+      "stage_counts": {
+        "src-replay_1/src:recv_rtp_src_0_3295690479_96": 1341,
+        "src-replay_1/depay:sink": 1341,
+        "src-replay_1/depay:src": 99,
+        "src-replay_1/parser:sink": 99,
+        "src-replay_1/parser:src": 99,
+        "src-replay_1/dec_que:sink": 99,
+        "src-replay_1/dec_que:src": 99,
+        "src-replay_1/h264parse0:sink": 99,
+        "src-replay_1/h264parse0:src": 99,
+        "src-replay_1/nvv4l2decoder0:sink": 99,
+        "src-replay_1/nvv4l2decoder0:src": 65,
+        "src-replay_1/queue:sink": 65,
+        "src-replay_1/queue:src": 63,
+        "src-replay_1:vsrc_0": 63,
+        "streammux:src": 63,
+        "primary-infer:sink": 63,
+        "primary-infer:src": 62,
+        "pphuman-infer:sink": 53,
+        "pphuman-infer:src": 53,
+        "helmet-infer:sink": 50,
+        "helmet-infer:src": 50,
+        "tracker:sink": 50,
+        "tracker:src": 50,
+        "converter:sink": 42,
+        "converter:src": 42,
+        "osd:sink": 42,
+        "osd:src": 42,
+        "h264-nvvidconv:sink": 34,
+        "preview-nvvidconv:sink": 36,
+        "preview-nvvidconv:src": 36,
+        "h264-nvvidconv:src": 34
+      },
+      "captured": []
+    },
+    "memcheck15": {
+      "experiment": {
+        "sanitizer_enabled": true,
+        "output_mode": "rtsp-publish",
+        "copy_hw": null,
+        "scope": "Original fault snapshot CLI, loopback RTSP recorded replay, unchanged models; stop after >=40 processed frames",
+        "timed_out": true,
+        "exit": -15,
+        "elapsed_seconds": 183.05689397710375,
+        "zero_error_summary": false,
+        "target_stats": {},
+        "completed": false,
+        "rtsp_published": true
+      },
+      "log_counts": {
+        "source_timeout_warning_lines": 2,
+        "bad_file_descriptor": 3,
+        "encoder_process_failed_lines": 2,
+        "cuda700_lines": 0,
+        "python_tracebacks": 0,
+        "tcn_timeout_lines": 1,
+        "h264_time_info_warning_lines": 0
+      },
+      "trace_event_count": 2585,
+      "stage_count": 31,
+      "stage_counts": {
+        "src-replay_1/src:recv_rtp_src_0_1779678124_96": 697,
+        "src-replay_1/depay:sink": 697,
+        "src-replay_1/depay:src": 52,
+        "src-replay_1/parser:sink": 52,
+        "src-replay_1/parser:src": 52,
+        "src-replay_1/dec_que:sink": 52,
+        "src-replay_1/dec_que:src": 52,
+        "src-replay_1/h264parse0:sink": 52,
+        "src-replay_1/h264parse0:src": 52,
+        "src-replay_1/nvv4l2decoder0:sink": 51,
+        "src-replay_1/nvv4l2decoder0:src": 37,
+        "src-replay_1/queue:sink": 37,
+        "src-replay_1/queue:src": 37,
+        "src-replay_1:vsrc_0": 37,
+        "streammux:src": 37,
+        "primary-infer:sink": 37,
+        "primary-infer:src": 37,
+        "pphuman-infer:sink": 37,
+        "pphuman-infer:src": 37,
+        "helmet-infer:sink": 37,
+        "helmet-infer:src": 37,
+        "tracker:sink": 37,
+        "tracker:src": 37,
+        "converter:sink": 35,
+        "converter:src": 35,
+        "osd:sink": 35,
+        "osd:src": 35,
+        "h264-nvvidconv:sink": 30,
+        "preview-nvvidconv:sink": 13,
+        "h264-nvvidconv:src": 30,
+        "preview-nvvidconv:src": 13
+      },
+      "captured": [
+        "bus",
+        "source_timeout"
+      ],
+      "warning_snapshot": {
+        "observer_elapsed_seconds": 29.195306143024936,
+        "stages": {
+          "src-replay_1/src:recv_rtp_src_0_1779678124_96": {
+            "count": 697,
+            "last_buffer_age_seconds": 14.98753973399289,
+            "last_queue_buffers": null,
+            "properties": {
+              "latency": 200
+            }
+          },
+          "src-replay_1/depay:sink": {
+            "count": 697,
+            "last_buffer_age_seconds": 14.987457138020545,
+            "last_queue_buffers": null,
+            "properties": {}
+          },
+          "src-replay_1/depay:src": {
+            "count": 52,
+            "last_buffer_age_seconds": 14.987314189085737,
+            "last_queue_buffers": null,
+            "properties": {}
+          },
+          "src-replay_1/parser:sink": {
+            "count": 52,
+            "last_buffer_age_seconds": 14.98722080909647,
+            "last_queue_buffers": null,
+            "properties": {}
+          },
+          "src-replay_1/parser:src": {
+            "count": 52,
+            "last_buffer_age_seconds": 14.987074051052332,
+            "last_queue_buffers": null,
+            "properties": {}
+          },
+          "src-replay_1/dec_que:sink": {
+            "count": 52,
+            "last_buffer_age_seconds": 14.986960319103673,
+            "last_queue_buffers": 31,
+            "properties": {
+              "max-size-buffers": 200,
+              "max-size-bytes": 10485760,
+              "max-size-time": 1000000000
+            }
+          },
+          "src-replay_1/dec_que:src": {
+            "count": 30,
+            "last_buffer_age_seconds": 0.03430537320673466,
+            "last_queue_buffers": 21,
+            "properties": {
+              "max-size-buffers": 200,
+              "max-size-bytes": 10485760,
+              "max-size-time": 1000000000
+            }
+          },
+          "src-replay_1/h264parse0:sink": {
+            "count": 30,
+            "last_buffer_age_seconds": 0.0340977490413934,
+            "last_queue_buffers": null,
+            "properties": {}
+          },
+          "src-replay_1/h264parse0:src": {
+            "count": 30,
+            "last_buffer_age_seconds": 0.03389252512715757,
+            "last_queue_buffers": null,
+            "properties": {}
+          },
+          "src-replay_1/nvv4l2decoder0:sink": {
+            "count": 30,
+            "last_buffer_age_seconds": 0.03376903315074742,
+            "last_queue_buffers": null,
+            "properties": {}
+          },
+          "src-replay_1/nvv4l2decoder0:src": {
+            "count": 16,
+            "last_buffer_age_seconds": 0.03301246021874249,
+            "last_queue_buffers": null,
+            "properties": {}
+          },
+          "src-replay_1/queue:sink": {
+            "count": 16,
+            "last_buffer_age_seconds": 0.032836997183039784,
+            "last_queue_buffers": 0,
+            "properties": {
+              "max-size-buffers": 200,
+              "max-size-bytes": 10485760,
+              "max-size-time": 1000000000
+            }
+          },
+          "src-replay_1/queue:src": {
+            "count": 16,
+            "last_buffer_age_seconds": 0.03261426812969148,
+            "last_queue_buffers": 0,
+            "properties": {
+              "max-size-buffers": 200,
+              "max-size-bytes": 10485760,
+              "max-size-time": 1000000000
+            }
+          },
+          "src-replay_1:vsrc_0": {
+            "count": 16,
+            "last_buffer_age_seconds": 0.032463991083204746,
+            "last_queue_buffers": null,
+            "properties": {
+              "rtsp-reconnect-interval": 15,
+              "latency": 200
+            }
+          },
+          "streammux:src": {
+            "count": 15,
+            "last_buffer_age_seconds": 0.0453227530233562,
+            "last_queue_buffers": null,
+            "properties": {
+              "compute-hw": 0,
+              "nvbuf-memory-type": 4,
+              "batch-size": 1
+            }
+          },
+          "primary-infer:sink": {
+            "count": 15,
+            "last_buffer_age_seconds": 0.045182876056060195,
+            "last_queue_buffers": null,
+            "properties": {
+              "batch-size": 1,
+              "interval": 1,
+              "config-file-path": "/app/config/deepstream/config_infer_primary.txt"
+            }
+          },
+          "primary-infer:src": {
+            "count": 14,
+            "last_buffer_age_seconds": 0.045975226210430264,
+            "last_queue_buffers": null,
+            "properties": {
+              "batch-size": 1,
+              "interval": 1,
+              "config-file-path": "/app/config/deepstream/config_infer_primary.txt"
+            }
+          },
+          "pphuman-infer:sink": {
+            "count": 13,
+            "last_buffer_age_seconds": 0.03641601302661002,
+            "last_queue_buffers": null,
+            "properties": {
+              "batch-size": 1,
+              "interval": 4,
+              "config-file-path": "config/deepstream/config_infer_pa100k.txt"
+            }
+          },
+          "pphuman-infer:src": {
+            "count": 12,
+            "last_buffer_age_seconds": 2.493759971112013,
+            "last_queue_buffers": null,
+            "properties": {
+              "batch-size": 1,
+              "interval": 4,
+              "config-file-path": "config/deepstream/config_infer_pa100k.txt"
+            }
+          },
+          "helmet-infer:sink": {
+            "count": 12,
+            "last_buffer_age_seconds": 2.493591677164659,
+            "last_queue_buffers": null,
+            "properties": {
+              "batch-size": 1,
+              "interval": 1,
+              "config-file-path": "/app/config/deepstream/config_infer_helmet.txt"
+            }
+          },
+          "helmet-infer:src": {
+            "count": 12,
+            "last_buffer_age_seconds": 0.11985020409338176,
+            "last_queue_buffers": null,
+            "properties": {
+              "batch-size": 1,
+              "interval": 1,
+              "config-file-path": "/app/config/deepstream/config_infer_helmet.txt"
+            }
+          },
+          "tracker:sink": {
+            "count": 12,
+            "last_buffer_age_seconds": 0.11974911205470562,
+            "last_queue_buffers": null,
+            "properties": {
+              "compute-hw": 0
+            }
+          },
+          "tracker:src": {
+            "count": 12,
+            "last_buffer_age_seconds": 0.10989936022087932,
+            "last_queue_buffers": null,
+            "properties": {
+              "compute-hw": 0
+            }
+          },
+          "converter:sink": {
+            "count": 12,
+            "last_buffer_age_seconds": 0.05344203906133771,
+            "last_queue_buffers": null,
+            "properties": {
+              "copy-hw": 1,
+              "compute-hw": 0,
+              "nvbuf-memory-type": 0
+            }
+          },
+          "converter:src": {
+            "count": 12,
+            "last_buffer_age_seconds": 0.035642384085804224,
+            "last_queue_buffers": null,
+            "properties": {
+              "copy-hw": 1,
+              "compute-hw": 0,
+              "nvbuf-memory-type": 0
+            }
+          },
+          "osd:sink": {
+            "count": 12,
+            "last_buffer_age_seconds": 0.03552263509482145,
+            "last_queue_buffers": null,
+            "properties": {}
+          },
+          "osd:src": {
+            "count": 12,
+            "last_buffer_age_seconds": 0.033524095080792904,
+            "last_queue_buffers": null,
+            "properties": {}
+          },
+          "h264-nvvidconv:sink": {
+            "count": 12,
+            "last_buffer_age_seconds": 0.033292150124907494,
+            "last_queue_buffers": null,
+            "properties": {
+              "copy-hw": 1,
+              "compute-hw": 0,
+              "nvbuf-memory-type": 0
+            }
+          },
+          "preview-nvvidconv:sink": {
+            "count": 12,
+            "last_buffer_age_seconds": 0.013307708082720637,
+            "last_queue_buffers": null,
+            "properties": {
+              "copy-hw": 1,
+              "compute-hw": 0,
+              "nvbuf-memory-type": 0
+            }
+          },
+          "h264-nvvidconv:src": {
+            "count": 12,
+            "last_buffer_age_seconds": 0.02209351514466107,
+            "last_queue_buffers": null,
+            "properties": {
+              "copy-hw": 1,
+              "compute-hw": 0,
+              "nvbuf-memory-type": 0
+            }
+          },
+          "preview-nvvidconv:src": {
+            "count": 11,
+            "last_buffer_age_seconds": 0.032033862080425024,
+            "last_queue_buffers": null,
+            "properties": {
+              "copy-hw": 1,
+              "compute-hw": 0,
+              "nvbuf-memory-type": 0
+            }
+          }
+        }
+      },
+      "chronology_line_numbers": {
+        "source_warning": 153,
+        "intentional_stop": 156,
+        "decoder_bad_fd": 164,
+        "encoder_failure": 168
+      },
+      "intentional_stop_request_after_warning_seconds": 3
+    },
+    "memcheck60": {
+      "experiment": {
+        "sanitizer_enabled": true,
+        "output_mode": "rtsp-publish",
+        "copy_hw": null,
+        "scope": "Original fault snapshot CLI, loopback RTSP recorded replay, unchanged models; stop after >=40 processed frames",
+        "timed_out": false,
+        "exit": 0,
+        "elapsed_seconds": 95.42029605805874,
+        "zero_error_summary": true,
+        "target_stats": {
+          "backend": "deepstream",
+          "camera_count": 1,
+          "frames_processed": 40,
+          "frames_dropped": 0,
+          "events_detected": 10,
+          "events_sent": 0,
+          "events_filtered": 50,
+          "events_dropped": 0,
+          "events_failed": 10,
+          "inference_errors": 0,
+          "camera_errors": 0,
+          "fps": 0.0,
+          "uptime_seconds": 0.0,
+          "avg_inference_ms": 0.0,
+          "output_mode": "rtsp-publish",
+          "preview_enabled": true,
+          "preview_max_fps": 10.0,
+          "preview_ready": true,
+          "cameras": 1,
+          "yolo_postprocess_mode": "vectorized",
+          "yolo_postprocess_calls": 40,
+          "yolo_postprocess_avg_ms": 3.397,
+          "yolo_postprocess_max_ms": 8.408,
+          "primary_camera_stats": {
+            "replay_1": {
+              "frames_seen": 40,
+              "frames_inferred": 20,
+              "frames_skipped": 20,
+              "frames_inference_unknown": 0,
+              "last_frame_age_seconds": 2.4479084878694266
+            }
+          },
+          "primary_metrics_errors": 0,
+          "model_inference_stats": {
+            "pipeline_generation": 1,
+            "metadata_errors": 0,
+            "models": {
+              "primary": {
+                "enabled": true,
+                "properties": {
+                  "unique-id": 1,
+                  "process-mode": 1,
+                  "batch-size": 1,
+                  "interval": 1,
+                  "output-tensor-meta": true
+                },
+                "property_observed_at": "pipeline_build",
+                "cameras": {
+                  "replay_1": {
+                    "frames_seen": 40,
+                    "frames_tensor_output": 20,
+                    "frames_no_objects": 0,
+                    "frames_classifier_only": 0,
+                    "frames_unobserved": 20,
+                    "frames_unknown": 0,
+                    "objects_with_tensor": 0,
+                    "objects_classifier_only": 0,
+                    "last_frame_age_seconds": 0.0013136318884789944,
+                    "last_tensor_age_seconds": 0.021995709976181388
+                  }
+                },
+                "unique_id_conflict": false
+              },
+              "pose": {
+                "enabled": false,
+                "properties": {
+                  "unique-id": null,
+                  "process-mode": null,
+                  "batch-size": null,
+                  "interval": null,
+                  "output-tensor-meta": null
+                },
+                "property_observed_at": "pipeline_build",
+                "cameras": {
+                  "replay_1": {
+                    "frames_seen": 0,
+                    "frames_tensor_output": 0,
+                    "frames_no_objects": 0,
+                    "frames_classifier_only": 0,
+                    "frames_unobserved": 0,
+                    "frames_unknown": 0,
+                    "objects_with_tensor": 0,
+                    "objects_classifier_only": 0,
+                    "last_frame_age_seconds": null,
+                    "last_tensor_age_seconds": null
+                  }
+                },
+                "unique_id_conflict": false
+              },
+              "attributes": {
+                "enabled": true,
+                "properties": {
+                  "unique-id": 3,
+                  "process-mode": 2,
+                  "batch-size": 1,
+                  "interval": 4,
+                  "output-tensor-meta": true
+                },
+                "property_observed_at": "pipeline_build",
+                "cameras": {
+                  "replay_1": {
+                    "frames_seen": 40,
+                    "frames_tensor_output": 20,
+                    "frames_no_objects": 0,
+                    "frames_classifier_only": 0,
+                    "frames_unobserved": 20,
+                    "frames_unknown": 0,
+                    "objects_with_tensor": 20,
+                    "objects_classifier_only": 0,
+                    "last_frame_age_seconds": 0.0013136318884789944,
+                    "last_tensor_age_seconds": 0.021995709976181388
+                  }
+                },
+                "unique_id_conflict": false
+              },
+              "helmet": {
+                "enabled": true,
+                "properties": {
+                  "unique-id": 2,
+                  "process-mode": 2,
+                  "batch-size": 1,
+                  "interval": 1,
+                  "output-tensor-meta": true
+                },
+                "property_observed_at": "pipeline_build",
+                "cameras": {
+                  "replay_1": {
+                    "frames_seen": 40,
+                    "frames_tensor_output": 20,
+                    "frames_no_objects": 0,
+                    "frames_classifier_only": 0,
+                    "frames_unobserved": 20,
+                    "frames_unknown": 0,
+                    "objects_with_tensor": 20,
+                    "objects_classifier_only": 0,
+                    "last_frame_age_seconds": 0.0013136318884789944,
+                    "last_tensor_age_seconds": 0.021995709976181388
+                  }
+                },
+                "unique_id_conflict": false
+              }
+            }
+          },
+          "model_metrics_errors": 0,
+          "source_error_identified": 0,
+          "source_error_unidentified": 0,
+          "source_eos_identified": 0,
+          "source_eos_unidentified": 0,
+          "source_unidentified_stop": 0,
+          "source_stream_reset_events": 0,
+          "source_stream_reset_unidentified": 0,
+          "preview_identity_rejected": 0,
+          "preview_frames_stored": 26,
+          "context_identity_rejected": 0,
+          "context_match_expired": 11,
+          "context_match_evicted": 0,
+          "context_match_missed": 0,
+          "context_frames_matched": 19,
+          "context_queue_dropped": 7,
+          "pipeline_restart_requested": 0,
+          "pipeline_restart_rejected": 0,
+          "pipeline_restart_executed": 0,
+          "pipeline_restart_failed": 0,
+          "pipeline_restart_seconds": 0.0,
+          "falldata_inline_stats": {
+            "enabled": true,
+            "cameras": {}
+          },
+          "falldata_temporal_stats": {
+            "requests": 1,
+            "process_calls": 1,
+            "process_errors": 1,
+            "process_timeouts": 1,
+            "process_seconds": 30.24635857506655
+          },
+          "appearance_backend_stats": {
+            "color_backend": {
+              "requests": 17,
+              "completed": 16,
+              "seconds": 37.667350145755336
+            },
+            "attribute_backend": {
+              "requests": 10,
+              "completed": 10,
+              "seconds": 0.0001070760190486908
+            }
+          },
+          "crop_pose_results": 0,
+          "primary_probe_frames": 40,
+          "primary_tensor_meta_count": 20,
+          "primary_person_rois": 20,
+          "crop_pose_person_objects": 0,
+          "crop_pose_tensor_meta_count": 0
+        },
+        "completed": true,
+        "rtsp_published": true
+      },
+      "log_counts": {
+        "source_timeout_warning_lines": 0,
+        "bad_file_descriptor": 0,
+        "encoder_process_failed_lines": 0,
+        "cuda700_lines": 0,
+        "python_tracebacks": 0,
+        "tcn_timeout_lines": 1,
+        "h264_time_info_warning_lines": 0
+      },
+      "trace_event_count": 4388,
+      "stage_count": 33,
+      "stage_counts": {
+        "src-replay_1/src:recv_rtp_src_0_1789148756_96": 1281,
+        "src-replay_1/depay:sink": 1281,
+        "src-replay_1/depay:src": 84,
+        "src-replay_1/parser:sink": 84,
+        "src-replay_1/parser:src": 84,
+        "src-replay_1/dec_que:sink": 84,
+        "src-replay_1/dec_que:src": 84,
+        "src-replay_1/h264parse0:sink": 84,
+        "src-replay_1/h264parse0:src": 84,
+        "src-replay_1/nvv4l2decoder0:sink": 84,
+        "src-replay_1/nvv4l2decoder0:src": 57,
+        "src-replay_1/queue:sink": 57,
+        "src-replay_1/queue:src": 57,
+        "src-replay_1:vsrc_0": 57,
+        "streammux:src": 57,
+        "primary-infer:sink": 57,
+        "primary-infer:src": 57,
+        "pphuman-infer:sink": 55,
+        "pphuman-infer:src": 55,
+        "helmet-infer:sink": 52,
+        "helmet-infer:src": 50,
+        "tracker:sink": 50,
+        "tracker:src": 50,
+        "converter:sink": 41,
+        "converter:src": 41,
+        "osd:sink": 40,
+        "osd:src": 40,
+        "h264-nvvidconv:sink": 40,
+        "preview-nvvidconv:sink": 40,
+        "h264-nvvidconv:src": 40,
+        "h264-encoder:sink": 26,
+        "preview-nvvidconv:src": 40,
+        "h264-encoder:src": 26
+      },
+      "captured": []
+    },
+    "native15": {
+      "experiment": {
+        "sanitizer_enabled": true,
+        "output_mode": "rtsp-publish",
+        "copy_hw": null,
+        "scope": "Native gst-launch NVDEC -> Primary GPU infer -> NVENC, no Python callbacks or app postprocessing; identity EOS after40 buffers",
+        "timed_out": true,
+        "exit": -15,
+        "elapsed_seconds": 183.06770922406577,
+        "zero_error_summary": false,
+        "target_stats": {},
+        "completed": false,
+        "rtsp_published": false,
+        "encoded_bytes": 9881616,
+        "command": [
+          "/usr/local/cuda-12.6/compute-sanitizer/compute-sanitizer",
+          "--tool",
+          "memcheck",
+          "--target-processes",
+          "application-only",
+          "--error-exitcode",
+          "99",
+          "--log-file",
+          "/output/sanitizer.log",
+          "gst-launch-1.0",
+          "-e",
+          "nvurisrcbin",
+          "uri=rtsp://127.0.0.1:18554/replay_1",
+          "rtsp-reconnect-interval=15",
+          "latency=200",
+          "!",
+          "mux.sink_0",
+          "nvstreammux",
+          "name=mux",
+          "batch-size=1",
+          "width=1920",
+          "height=1080",
+          "nvbuf-memory-type=4",
+          "live-source=1",
+          "batched-push-timeout=40000",
+          "!",
+          "nvinfer",
+          "name=primary-infer",
+          "config-file-path=/app/config/deepstream/config_infer_primary.txt",
+          "batch-size=1",
+          "interval=1",
+          "!",
+          "identity",
+          "eos-after=41",
+          "!",
+          "nvvideoconvert",
+          "copy-hw=1",
+          "!",
+          "video/x-raw(memory:NVMM),format=NV12",
+          "!",
+          "nvv4l2h264enc",
+          "name=h264-encoder",
+          "bitrate=6000000",
+          "!",
+          "h264parse",
+          "!",
+          "video/x-h264,stream-format=byte-stream,alignment=au",
+          "!",
+          "filesink",
+          "location=/output/native.h264",
+          "sync=false"
+        ]
+      },
+      "log_counts": {
+        "source_timeout_warning_lines": 2,
+        "bad_file_descriptor": 4,
+        "encoder_process_failed_lines": 0,
+        "cuda700_lines": 0,
+        "python_tracebacks": 0,
+        "tcn_timeout_lines": 0,
+        "h264_time_info_warning_lines": 2
+      }
+    },
+    "native_fps60": {
+      "experiment": {
+        "sanitizer_enabled": true,
+        "output_mode": "rtsp-publish",
+        "copy_hw": null,
+        "scope": "Native gst-launch NVDEC -> Primary GPU infer -> NVENC, no Python callbacks or app postprocessing; explicit30fps; identity EOS after40 encoded buffers; reconnect60",
+        "timed_out": false,
+        "exit": 1,
+        "elapsed_seconds": 8.755667212884873,
+        "zero_error_summary": true,
+        "target_stats": {},
+        "completed": false,
+        "rtsp_published": false,
+        "encoded_bytes": 0,
+        "command": [
+          "/usr/local/cuda-12.6/compute-sanitizer/compute-sanitizer",
+          "--tool",
+          "memcheck",
+          "--target-processes",
+          "application-only",
+          "--error-exitcode",
+          "99",
+          "--log-file",
+          "/output/sanitizer.log",
+          "gst-launch-1.0",
+          "-e",
+          "nvurisrcbin",
+          "uri=rtsp://127.0.0.1:18554/replay_1",
+          "rtsp-reconnect-interval=60",
+          "latency=200",
+          "!",
+          "mux.sink_0",
+          "nvstreammux",
+          "name=mux",
+          "batch-size=1",
+          "width=1920",
+          "height=1080",
+          "nvbuf-memory-type=4",
+          "live-source=1",
+          "batched-push-timeout=40000",
+          "!",
+          "nvinfer",
+          "name=primary-infer",
+          "config-file-path=/app/config/deepstream/config_infer_primary.txt",
+          "batch-size=1",
+          "interval=1",
+          "!",
+          "nvvideoconvert",
+          "copy-hw=1",
+          "!",
+          "videorate",
+          "drop-only=true",
+          "!",
+          "video/x-raw(memory:NVMM),format=NV12,framerate=30/1",
+          "!",
+          "nvv4l2h264enc",
+          "name=h264-encoder",
+          "bitrate=6000000",
+          "!",
+          "h264parse",
+          "!",
+          "video/x-h264,stream-format=byte-stream,alignment=au",
+          "!",
+          "identity",
+          "eos-after=41",
+          "!",
+          "filesink",
+          "location=/output/native.h264",
+          "sync=false"
+        ]
+      },
+      "log_counts": {
+        "source_timeout_warning_lines": 0,
+        "bad_file_descriptor": 0,
+        "encoder_process_failed_lines": 0,
+        "cuda700_lines": 0,
+        "python_tracebacks": 0,
+        "tcn_timeout_lines": 0,
+        "h264_time_info_warning_lines": 0
+      }
+    },
+    "native_rate60": {
+      "experiment": {
+        "sanitizer_enabled": true,
+        "output_mode": "rtsp-publish",
+        "copy_hw": null,
+        "scope": "Native gst-launch NVDEC -> Primary GPU infer -> NVENC, no Python callbacks or app postprocessing; explicit30fps; identity EOS after40 encoded buffers; reconnect60",
+        "timed_out": true,
+        "exit": -15,
+        "elapsed_seconds": 183.0654658258427,
+        "zero_error_summary": false,
+        "target_stats": {},
+        "completed": false,
+        "rtsp_published": false,
+        "encoded_bytes": 1008486,
+        "command": [
+          "/usr/local/cuda-12.6/compute-sanitizer/compute-sanitizer",
+          "--tool",
+          "memcheck",
+          "--target-processes",
+          "application-only",
+          "--error-exitcode",
+          "99",
+          "--log-file",
+          "/output/sanitizer.log",
+          "gst-launch-1.0",
+          "-e",
+          "nvurisrcbin",
+          "uri=rtsp://127.0.0.1:18554/replay_1",
+          "rtsp-reconnect-interval=60",
+          "latency=200",
+          "!",
+          "mux.sink_0",
+          "nvstreammux",
+          "name=mux",
+          "batch-size=1",
+          "width=1920",
+          "height=1080",
+          "nvbuf-memory-type=4",
+          "live-source=1",
+          "batched-push-timeout=40000",
+          "!",
+          "nvinfer",
+          "name=primary-infer",
+          "config-file-path=/app/config/deepstream/config_infer_primary.txt",
+          "batch-size=1",
+          "interval=1",
+          "!",
+          "nvvideoconvert",
+          "copy-hw=1",
+          "!",
+          "videorate",
+          "drop-only=false",
+          "max-duplication-time=100000000",
+          "skip-to-first=true",
+          "!",
+          "video/x-raw(memory:NVMM),format=NV12,framerate=30/1",
+          "!",
+          "nvv4l2h264enc",
+          "name=h264-encoder",
+          "bitrate=6000000",
+          "insert-vui=true",
+          "insert-sps-pps=true",
+          "insert-aud=true",
+          "num-B-Frames=0",
+          "profile=0",
+          "!",
+          "h264parse",
+          "!",
+          "video/x-h264,stream-format=byte-stream,alignment=au",
+          "!",
+          "identity",
+          "eos-after=41",
+          "!",
+          "filesink",
+          "location=/output/native.h264",
+          "sync=false"
+        ]
+      },
+      "log_counts": {
+        "source_timeout_warning_lines": 4,
+        "bad_file_descriptor": 4,
+        "encoder_process_failed_lines": 0,
+        "cuda700_lines": 0,
+        "python_tracebacks": 0,
+        "tcn_timeout_lines": 0,
+        "h264_time_info_warning_lines": 0
+      }
+    },
+    "native_file": {
+      "experiment": {
+        "sanitizer_enabled": true,
+        "output_mode": "rtsp-publish",
+        "copy_hw": null,
+        "scope": "Native finite40-frame file -> NVDEC -> Primary GPU inference -> NVENC; source EOF, no Python video callbacks, no RTSP input",
+        "timed_out": false,
+        "exit": 0,
+        "elapsed_seconds": 21.727193512022495,
+        "zero_error_summary": true,
+        "target_stats": {},
+        "completed": true,
+        "rtsp_published": false,
+        "encoded_bytes": 905633,
+        "command": [
+          "/usr/local/cuda-12.6/compute-sanitizer/compute-sanitizer",
+          "--tool",
+          "memcheck",
+          "--target-processes",
+          "application-only",
+          "--error-exitcode",
+          "99",
+          "--log-file",
+          "/output/sanitizer.log",
+          "gst-launch-1.0",
+          "-e",
+          "filesrc",
+          "location=/audit/input40.mkv",
+          "!",
+          "matroskademux",
+          "!",
+          "h264parse",
+          "!",
+          "nvv4l2decoder",
+          "!",
+          "mux.sink_0",
+          "nvstreammux",
+          "name=mux",
+          "batch-size=1",
+          "width=1920",
+          "height=1080",
+          "nvbuf-memory-type=4",
+          "live-source=0",
+          "batched-push-timeout=40000",
+          "!",
+          "nvinfer",
+          "name=primary-infer",
+          "config-file-path=/app/config/deepstream/config_infer_primary.txt",
+          "batch-size=1",
+          "interval=1",
+          "!",
+          "nvvideoconvert",
+          "copy-hw=1",
+          "!",
+          "videorate",
+          "drop-only=false",
+          "max-duplication-time=100000000",
+          "skip-to-first=true",
+          "!",
+          "video/x-raw(memory:NVMM),format=NV12,framerate=30/1",
+          "!",
+          "nvv4l2h264enc",
+          "name=h264-encoder",
+          "bitrate=6000000",
+          "insert-vui=true",
+          "insert-sps-pps=true",
+          "insert-aud=true",
+          "num-B-Frames=0",
+          "profile=0",
+          "!",
+          "h264parse",
+          "!",
+          "video/x-h264,stream-format=byte-stream,alignment=au",
+          "!",
+          "filesink",
+          "location=/output/native.h264",
+          "sync=false"
+        ]
+      },
+      "log_counts": {
+        "source_timeout_warning_lines": 0,
+        "bad_file_descriptor": 0,
+        "encoder_process_failed_lines": 0,
+        "cuda700_lines": 0,
+        "python_tracebacks": 0,
+        "tcn_timeout_lines": 0,
+        "h264_time_info_warning_lines": 0
+      },
+      "video_validation": {
+        "probe_exit": 0,
+        "probe": {
+          "programs": [],
+          "streams": [
+            {
+              "width": 1920,
+              "height": 1080,
+              "avg_frame_rate": "30/1",
+              "nb_read_frames": "40"
+            }
+          ]
+        },
+        "probe_stderr": "",
+        "decode_exit": 0,
+        "decode_stderr": ""
+      }
+    }
+  },
+  "actual_native_output": "H264 filesink; copied launcher output_mode env is unused by gst-launch command",
+  "operating": {
+    "status": "running",
+    "health": "healthy",
+    "restart_count": 0,
+    "started_at": "2026-09-16T23:45:46.903505745Z",
+    "trial_containers_remaining": 0,
+    "unchanged_from_before": true
+  },
+  "validation": {
+    "unit_tests_passed": 9,
+    "ruff": "PASS",
+    "diff_check": "PASS"
+  },
+  "limitations": [
+    "Shared operating GPU/clock/cache; probes and sanitizer perturb timing.",
+    "Installed SDK source supplied with package, not rebuilt for source/binary equivalence.",
+    "RTP callback counts, decoded frame counts, encoded output counts are different units; in-flight shutdown counts not loss measurements.",
+    "memcheck15 intentional SIGINT requested3s after warning; decoder/encoder failures then observed during stop; timed out, not clean memcheck pass.",
+    "memcheck60 adds encoder probes compared with15 trial; no statistically controlled single-variable proof.",
+    "Both full-app memcheck trials had one old TCN timeout; application-only memcheck excludes that child.",
+    "Native paths omit SGIE, tracking, Python postprocessing and preview; not full application/performance equivalence.",
+    "native15 has invalid H264 timing metadata and EOS/timeout failure; preserved as incomplete experiment. native_fps60 changes timing, EOS position and timeout, failed caps negotiation. native_rate60 reuses project videorate configuration; not a single-variable comparison.",
+    "Compute Sanitizer0 is CUDA memory-check evidence, not exhaustive NVDEC/NVENC hardware/driver correctness.",
+    "CUDA700 not reproduced/root-caused; C++ rewrite not justified as a cure.",
+    "Native RTSP middle-EOS condition can itself stop upstream flow and trigger watchdog; exclude these failures from root-cause attribution. Native finite file does not test RTSP/full app equivalence."
+  ],
+  "source_sha256": {
+    "scripts/ops/trace_deepstream_startup.py": "2166d524a76b0c67aa170a70efd50a09cf59a25e50604fa4c861dbfce7580d26",
+    "tests/test_trace_deepstream_startup.py": "c4fc8883ac92da3a8a99c4b1e06d9827cff359927540a30eb55ef123446a3108",
+    "data/runtime/p51_source_boundary_20260930_v078/trace_before_encoder.py": "5c09ce355d9b7a0295c9b606d7159f38290917b7be0184385b0956bada27c36f",
+    "data/runtime/p51_source_boundary_20260930_v078/observe_memcheck_rtsp.py": "c31d6bffd954a70deeb34f44199b2bd934ec46994e7f91ef9f52c7fd0b30c77a",
+    "data/runtime/p51_source_boundary_20260930_v078/run_memcheck_rtsp_queue.py": "2295aa0b863ce899823dbb58cd0c872d19728da70895ca092b3397a9988a43e7",
+    "data/runtime/p51_source_boundary_20260930_v078/run_native.py": "5c176db2abb35364e204ff55ce4959000303a309d3fb0375e58c577a4defe4db",
+    "data/runtime/p51_source_boundary_20260930_v078/run_native_fps60.py": "e05b66413dd85d9dfa2689293a501c4b9d9eb24349bf8cadb3d4766a81968100",
+    "data/runtime/p51_source_boundary_20260930_v078/trace_deepstream_startup.py": "2166d524a76b0c67aa170a70efd50a09cf59a25e50604fa4c861dbfce7580d26",
+    "data/runtime/p51_source_boundary_20260930_v078/run_native_rate60.py": "acae69736f462c62148ca0e32a6ba56aee176293200b634571d50f52b7fd988f",
+    "data/runtime/p51_source_boundary_20260930_v078/run_native_file.py": "924e90d7a6619952af87b4ba9bd6250b4335696250603a795d028a6dc47f4591",
+    "data/runtime/p51_source_boundary_20260930_v078/compose_normal15.json": "e43a5bd88ca7edebb47d649e10fea2ef352d640734c1940087b514435537948b",
+    "data/runtime/p51_source_boundary_20260930_v078/compose_native15.json": "1ff8f32cf2f4cb36d1f5c436f2f3675f813795e1841be1e47b63b06581675186",
+    "data/runtime/p51_source_boundary_20260930_v078/compose_memcheck60.json": "ad01e49e0600cc4ef29affb253dceabac931a350b55600d3eca04dc508b8c810",
+    "data/runtime/p51_source_boundary_20260930_v078/compose_native_fps60.json": "bfcbc25bc9a5499e64ef2d14c8197453e690cc4590f62e5ea9403ee15d4fa38f",
+    "data/runtime/p51_source_boundary_20260930_v078/compose_memcheck15.json": "efd254e6fa0073db5a32f193905980f10dffbc6ae4837af9075977c4cd7f6bd1",
+    "data/runtime/p51_source_boundary_20260930_v078/compose_native_rate60.json": "3262766ba2df657e98c894e8cd2a218e71767286bb82c5dcbeafb2b9d56fe6cd",
+    "data/runtime/p51_source_boundary_20260930_v078/compose_native_file.json": "e62dcf862a9adc42cdb3f2c6866682860347b6f5ddb7aa47c9c5845a7049506c"
+  },
+  "artifact_sha256": {
+    "data/runtime/p51_source_boundary_20260930_v078/native_file/sanitizer.log": "a9d061cee538182f762e132abeea7bac7bddb844338f25751bbbb043f242c425",
+    "data/runtime/p51_source_boundary_20260930_v078/native_file/video_validation.json": "419bcef3b99546bb4f55c95887f3c5d6819cb04a2b219d83fc24b819413456e7",
+    "data/runtime/p51_source_boundary_20260930_v078/native_file/experiment.json": "e1de2fc50bd7312de4c8fc4ecc9099054ccfe22b4f9132289caa8b98c82b42a1",
+    "data/runtime/p51_source_boundary_20260930_v078/native15/sanitizer.log": "ff67e023dd2522f48f581b468aabc5051838da0db7df008d6df233343f9ba767",
+    "data/runtime/p51_source_boundary_20260930_v078/native15/experiment.json": "a599ba5ee5a134b24956d0e7042b6c80e945d685eacb3388e111caf4e6959048",
+    "data/runtime/p51_source_boundary_20260930_v078/native_fps60/sanitizer.log": "e4997030beeba60c3daafcdec4550e3274570f4ef4cc222409f66c31d39cca81",
+    "data/runtime/p51_source_boundary_20260930_v078/native_fps60/experiment.json": "d8021554743bd6bbc09d51901015179eec7f495c9ac3cf75e7424e0b8d5a4829",
+    "data/runtime/p51_source_boundary_20260930_v078/normal15/trace_latest.json": "7fc804296ae2e100351cff68bb4f98b780339980304881c5f062bba3f3f5bce7",
+    "data/runtime/p51_source_boundary_20260930_v078/normal15/experiment.json": "fdea5920888ad0e86e659efac1bc90a6a8ddaf68a9f2d33c677d979cff2e3a5b",
+    "data/runtime/p51_source_boundary_20260930_v078/native_rate60/sanitizer.log": "ff67e023dd2522f48f581b468aabc5051838da0db7df008d6df233343f9ba767",
+    "data/runtime/p51_source_boundary_20260930_v078/native_rate60/experiment.json": "6561ac2d9abc8bb162a790252f53ed00132b74678ba40128c5dfe75b811d6c9d",
+    "data/runtime/p51_source_boundary_20260930_v078/memcheck15/first_bus.json": "d4065183a43434b4be2f2d13c0d6feca0f19320aaf5c28b72360a6ed328d274e",
+    "data/runtime/p51_source_boundary_20260930_v078/memcheck15/first_source_timeout.json": "2966dd6859aa920bb6b8a699070736b67aea95b3b1550f86fca74f66dabbddc4",
+    "data/runtime/p51_source_boundary_20260930_v078/memcheck15/sanitizer.log": "ff67e023dd2522f48f581b468aabc5051838da0db7df008d6df233343f9ba767",
+    "data/runtime/p51_source_boundary_20260930_v078/memcheck15/trace_latest.json": "7de67b83cfe8be6f7578b39b55767018e917eca29bae63f6643e508c631f776c",
+    "data/runtime/p51_source_boundary_20260930_v078/memcheck15/experiment.json": "c0f24c603d3a30dc2599e5446ea5e93edb31cf6a568c1acef9075ff6174fcb6a",
+    "data/runtime/p51_source_boundary_20260930_v078/memcheck60/sanitizer.log": "a9d061cee538182f762e132abeea7bac7bddb844338f25751bbbb043f242c425",
+    "data/runtime/p51_source_boundary_20260930_v078/memcheck60/trace_latest.json": "84fc084828b6a751163a04323d39e42c1b9b6f1be56982f40e085c5a647c51cc",
+    "data/runtime/p51_source_boundary_20260930_v078/memcheck60/experiment.json": "49050576a9fcb85a07ebea620254d4bd150f665a84841159d4ea93d45189ee09"
+  },
+  "publication": {
+    "url": "http://192.168.2.141:18081/",
+    "wbs_rows_match": 33,
+    "png_first_page_checked": true,
+    "browser_interaction_tested": false,
+    "other_pc_tested": false,
+    "artifacts": {
+      "index.html": {
+        "bytes": 22497,
+        "sha256": "4d68ed9189447af5dec61ab23d423ae365f00c70d1303e8c2385e516cf9964b3",
+        "http_bytes_match": true
+      },
+      "CCTV_project_progress.pdf": {
+        "bytes": 124196,
+        "sha256": "7c0d34f6c2d9c0c3a964005c28804d00c146b4223c40d9a76b54cb0061878191",
+        "http_bytes_match": true
+      }
+    }
+  }
+}

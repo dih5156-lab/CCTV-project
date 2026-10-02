@@ -1,0 +1,480 @@
+{
+  "version": "0.90",
+  "date": "2026-10-01 14:58 KST",
+  "scope": "P5.1/I07 isolated full candidate startup and recovery dependency inventory",
+  "initial_mount_failure": {
+    "stage": "OCI mount before main.py",
+    "reason": "readonly /app/models has no trt_cache mountpoint",
+    "cuda_executed": false,
+    "resolution": "prepare empty mountpoint and reject absence in profile preflight"
+  },
+  "normal_experiment": {
+    "codec_mode": "rtsp",
+    "completed": true,
+    "scope": "merged production candidate profile, direct main.py, isolated storage and RTSP, no operating deployment",
+    "scenario": "normal",
+    "loaded_rtsp_plugin": [
+      "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstrtspclientsink.so"
+    ],
+    "receiver_exit": 0,
+    "output_bytes": 90698874,
+    "last_frames": 5106.0,
+    "app_exit": 0,
+    "stop_seconds": 25.116310653975233,
+    "elapsed_seconds": 254.2953204580117,
+    "transitions": [
+      {
+        "name": "input_ready",
+        "elapsed": 48.227
+      },
+      {
+        "name": "output_ready",
+        "elapsed": 49.072
+      },
+      {
+        "name": "sigint_requested",
+        "elapsed": 229.127
+      }
+    ],
+    "sample_count": 203
+  },
+  "sigterm_experiment": {
+    "codec_mode": "rtsp",
+    "completed": true,
+    "scope": "merged production candidate profile, direct main.py, isolated storage and RTSP, no operating deployment",
+    "scenario": "normal",
+    "loaded_rtsp_plugin": [
+      "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstrtspclientsink.so"
+    ],
+    "receiver_exit": 0,
+    "output_bytes": 21718194,
+    "last_frames": 1633.0,
+    "app_exit": 0,
+    "stop_seconds": 4.860338957048953,
+    "elapsed_seconds": 90.4938251520507,
+    "transitions": [
+      {
+        "name": "input_ready",
+        "elapsed": 24.671
+      },
+      {
+        "name": "output_ready",
+        "elapsed": 25.524
+      },
+      {
+        "name": "sigterm_requested",
+        "elapsed": 85.587
+      }
+    ],
+    "sample_count": 74
+  },
+  "normal_metrics": {
+    "cctv_processor_frames_processed_total:{}": 5104.0,
+    "cctv_processor_context_tasks_completed_total:{}": 317.0,
+    "cctv_processor_context_queue_dropped_total:{}": 0.0,
+    "cctv_processor_context_tasks_failed_total:{}": 0.0,
+    "cctv_processor_pipeline_restart_executed_total:{}": 0.0,
+    "cctv_falldata_temporal_requests_total:{}": 13.0,
+    "cctv_falldata_temporal_worker_completed_total:{}": 12.0,
+    "cctv_falldata_temporal_insufficient_pose_results_total:{}": 1.0
+  },
+  "primary_observed_rate": 28.266038532477058,
+  "cuda_signatures": {
+    "cudaErrorIllegalAddress": 0,
+    "status=700": 0,
+    "err_no:700": 0,
+    "NVDSINFER_CUDA_ERROR": 0,
+    "Failed in mem copy": 0
+  },
+  "databases_normal": {
+    "runtime/mqtt_event_outbox.db": {
+      "integrity": "ok",
+      "rows": {
+        "mqtt_event_outbox": 61
+      },
+      "status_counts": [
+        [
+          "pending",
+          61,
+          0,
+          0
+        ]
+      ],
+      "unique_events": 61
+    },
+    "runtime/appearances.db": {
+      "integrity": "ok",
+      "rows": {
+        "appearance_log": 54,
+        "search_conditions": 0
+      }
+    }
+  },
+  "databases_after_sigterm": {
+    "runtime/mqtt_event_outbox.db": {
+      "integrity": "ok",
+      "rows": {
+        "mqtt_event_outbox": 82
+      },
+      "status_counts": [
+        [
+          "pending",
+          82,
+          0,
+          0
+        ]
+      ],
+      "unique_events": 82
+    },
+    "runtime/appearances.db": {
+      "integrity": "ok",
+      "rows": {
+        "appearance_log": 73,
+        "search_conditions": 0
+      }
+    }
+  },
+  "video_normal": {
+    "packets": 4048,
+    "pts_time": {
+      "missing": 0,
+      "duplicates": 0,
+      "backwards": 0,
+      "max_gap_ms": 641.0000000000053,
+      "duration": 150.298
+    },
+    "dts_time": {
+      "missing": 0,
+      "duplicates": 0,
+      "backwards": 0,
+      "max_gap_ms": 641.0000000000053,
+      "duration": 150.298
+    },
+    "decode_passthrough_exit": 0,
+    "decode_passthrough_stderr_lines": 64,
+    "decode_source_timebase_exit": 0,
+    "decode_source_timebase_stderr_lines": 0,
+    "decoded_frames": 4048
+  },
+  "video_sigterm": {
+    "packets": 967,
+    "pts_time": {
+      "missing": 0,
+      "duplicates": 0,
+      "backwards": 0,
+      "max_gap_ms": 529.9999999999993,
+      "duration": 40.294
+    },
+    "dts_time": {
+      "missing": 0,
+      "duplicates": 0,
+      "backwards": 0,
+      "max_gap_ms": 529.9999999999993,
+      "duration": 40.294
+    },
+    "decode_exit": 0,
+    "decode_stderr_lines": 0,
+    "decoded_frames": 967
+  },
+  "dependencies": {
+    ".venv-jetson-train": {
+      "interpreter_exit": 0,
+      "pyvenv_cfg_sha256": "db6c8a96f25493eda9f74f23f0b5f248a8b50a5b469b15c5ee7313875b416364",
+      "metadata": {
+        "python": "3.10.12",
+        "executable": "/app/.venv-jetson-train/bin/python",
+        "prefix": "/app/.venv-jetson-train",
+        "packages": {
+          "numpy": "1.26.4",
+          "scikit-learn": "1.7.2",
+          "torch": "2.8.0",
+          "ultralytics": "8.4.104"
+        }
+      }
+    },
+    ".venv-mediapipe": {
+      "interpreter_exit": 0,
+      "pyvenv_cfg_sha256": "db6c8a96f25493eda9f74f23f0b5f248a8b50a5b469b15c5ee7313875b416364",
+      "metadata": {
+        "python": "3.10.12",
+        "executable": "/app/.venv-mediapipe/bin/python",
+        "prefix": "/app/.venv-mediapipe",
+        "packages": {
+          "mediapipe": "0.10.14",
+          "numpy": "2.2.6"
+        }
+      }
+    },
+    ".venv-falldata": {
+      "interpreter_exit": 0,
+      "pyvenv_cfg_sha256": "db6c8a96f25493eda9f74f23f0b5f248a8b50a5b469b15c5ee7313875b416364",
+      "metadata": {
+        "python": "3.10.12",
+        "executable": "/app/.venv-falldata/bin/python",
+        "prefix": "/app/.venv-falldata",
+        "packages": {
+          "scikit-learn": "1.7.2",
+          "numpy": "1.26.1"
+        }
+      }
+    },
+    "/opt/nvidia/deepstream/deepstream/lib/libnvds_infer.so": {
+      "resolved": "/opt/nvidia/deepstream/deepstream-7.1/lib/libnvds_infer.so",
+      "bytes": 1045696,
+      "sha256": "d655698ef107f9e5e315d1f01f4a9987896f93b606431f99c2f476992e51df83"
+    },
+    "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstrtspclientsink.so": {
+      "resolved": "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstrtspclientsink.so",
+      "bytes": 351360,
+      "sha256": "b6e3862ffb17e51defdfae753701b8dfc5422563d8140d227b824d89ec14f96a"
+    }
+  },
+  "dependency_inventory": {
+    "scope": "dependency inventory, not complete dependency backup",
+    "root": "/media/sawwave/Learning11/CCTV-project",
+    "items": [
+      {
+        "path": "/media/sawwave/Learning11/CCTV-project/.venv-jetson-train",
+        "allocated_bytes": 5310586880,
+        "separate_backup_in_v088_bundle": false,
+        "distribution_metadata_count": 60,
+        "distribution_metadata_sha256": {
+          "lib/python3.10/site-packages/nvidia_cuda_cupti-13.0.85.dist-info/METADATA": "ae42b56aa16feaa9994af204b6c82ac546fed7d67cf584cc10d1f2b7119b5eac",
+          "lib/python3.10/site-packages/nvidia_cuda_nvrtc-13.0.88.dist-info/METADATA": "27505676fa8577b448021d935306228d06c6236b2bf5247c148425e5130ad4c8",
+          "lib/python3.10/site-packages/cuda_toolkit-13.0.3.0.dist-info/METADATA": "3e28bf0013ae8db8cf863ae392897248f4a1ff6c946fe966547fd4b6c44c0057",
+          "lib/python3.10/site-packages/numpy-1.26.4.dist-info/METADATA": "cd7a5f30fae1d746a914838bfc713f412f5ccc3cec445b39483f304546398401",
+          "lib/python3.10/site-packages/pip-22.0.2.dist-info/METADATA": "622c5ad0b2a4cb38d3d8de4940ee6a6038197264ece99e9d83851bc013724f60",
+          "lib/python3.10/site-packages/scipy-1.15.3.dist-info/METADATA": "c75caf32b67a13a9fc16aacf993a8bb883b7a69744ffe77cbbd4f3bfbad28f3d",
+          "lib/python3.10/site-packages/nvidia_cusparselt_cu13-0.8.1.dist-info/METADATA": "353669bafb80cbf22f1324121ac05049d36a6b0fb44b1fed3fab00b513231171",
+          "lib/python3.10/site-packages/nvidia_nvjitlink-13.3.33.dist-info/METADATA": "908bff94497d21be5d218bf2905aec3f0751242e1e4cc9af07d0380bda91e6d0",
+          "lib/python3.10/site-packages/certifi-2026.7.22.dist-info/METADATA": "ef5af1638fbb23676ac3c5777dfcfc2cd9c348fe4172ed5ba3d277655b248090",
+          "lib/python3.10/site-packages/setuptools-83.0.0.dist-info/METADATA": "26e45e90de763c6938d93d1df2ecd6782a0f1514d41cbd22ebef4e0ab6475771",
+          "lib/python3.10/site-packages/nvidia_ml_py-13.610.43.dist-info/METADATA": "4b681b648e302800c83919435504193df847cb7229fecb4e0d6471aa6847f063",
+          "lib/python3.10/site-packages/charset_normalizer-3.4.9.dist-info/METADATA": "0dd3de17609b0db64bd1d4643c5bd0dd35b5eb3c5be77f8b17bc190f2f4a2ac0",
+          "lib/python3.10/site-packages/scikit_learn-1.7.2.dist-info/METADATA": "a301770d816e5ef5e2a262886115f1e6002637324f3bfe73f92378897dea8c63",
+          "lib/python3.10/site-packages/kiwisolver-1.5.0.dist-info/METADATA": "bb843307a98b7bd2a7055f831cbfa2fe7c864716dea9d04c7a5c03e51f648b79",
+          "lib/python3.10/site-packages/psutil-7.2.2.dist-info/METADATA": "525f8ba78523cf7bc3759d62a105e7c57fd679ea702402b9449fb0746aa0217f",
+          "lib/python3.10/site-packages/networkx-3.4.2.dist-info/METADATA": "2e5265dda876ef3c44fefa9e9553499bc564c89a16c95e38bdaf9babc556d1d7",
+          "lib/python3.10/site-packages/markupsafe-3.0.3.dist-info/METADATA": "12b4cc61a7fa288cf7667ee3f213786d9619db57fb33ff6f934afbcb5c12ec81",
+          "lib/python3.10/site-packages/sympy-1.14.0.dist-info/METADATA": "b756c2fbfd5be05ac5bdb0ebca61f55618f30f633ed92d88a5687429313a7595",
+          "lib/python3.10/site-packages/polars-1.43.0.dist-info/METADATA": "b2f3d3a85077e739bf6e681e8a1eb1c32fa7854a4bbcc1dae65e4982d431a8ea",
+          "lib/python3.10/site-packages/nvidia_cuda_runtime-13.0.96.dist-info/METADATA": "30699e3ca76f6f41f5252e7a0fce2c2d303c465b86c1b022e03a2799bd15098b",
+          "lib/python3.10/site-packages/polars_runtime_32-1.43.0.dist-info/METADATA": "bf813e4bc3fc8741d83b3d592b221c9dc113cf7dde8174f3af6cb0613947189d",
+          "lib/python3.10/site-packages/mpmath-1.3.0.dist-info/METADATA": "44b66ea444b9c0d19ae94815d356bf047ae6b680c19268b5c265687cd6a81406",
+          "lib/python3.10/site-packages/ultralytics_thop-2.0.20.dist-info/METADATA": "4d36c232f79666efaa67b230da283efae4a2848c5c31641d892b65dafce9bce2",
+          "lib/python3.10/site-packages/contourpy-1.3.2.dist-info/METADATA": "0d860f7cb8af8e85005c209499e0ca25da8515b4b67915ee8b88b8852c316c08",
+          "lib/python3.10/site-packages/torchvision-0.23.0.dist-info/METADATA": "787f1fc15f00e816bb29141ce7ed8efacfa5b32ec78f65f2fefd0b7e7cba77ce",
+          "lib/python3.10/site-packages/nvidia_nvshmem_cu13-3.4.5.dist-info/METADATA": "825ae32b105cfd50f7b375b9132e551f24dc32896c67c425349f6565d3b3fe46",
+          "lib/python3.10/site-packages/torch-2.8.0.dist-info/METADATA": "c73bcbb8bd306ebe1145959042dd6aaf7fc72672ea20dce1a9f49c40bebb8be1",
+          "lib/python3.10/site-packages/requests-2.34.2.dist-info/METADATA": "8c384ba3e979480faae2859d3c5e6c1276dd2c3616e322e124d52c8cfc556f27",
+          "lib/python3.10/site-packages/packaging-26.2.dist-info/METADATA": "4f9cbcd7933415a4793f7767c98a2b6a512c823fc81c87337815705f230ecabf",
+          "lib/python3.10/site-packages/pyyaml-6.0.3.dist-info/METADATA": "03c3b415ed38d09faedc49360e930769b40c58f68585e6de00e2e4916a858d34",
+          "lib/python3.10/site-packages/fonttools-4.63.0.dist-info/METADATA": "878374d811bfa83c045c55eabbcaa09e646f426fd4777b5e7f716e4e2198fbc1",
+          "lib/python3.10/site-packages/opencv_python_headless-4.11.0.86.dist-info/METADATA": "33b8bffb26546642a9e96d317d6e0776f041939c7c695a8ac39e566822af08f3",
+          "lib/python3.10/site-packages/fsspec-2026.6.0.dist-info/METADATA": "20c85c024a69a059237c3a7985d381a3745017ae1d634c554b0c5901dde81095",
+          "lib/python3.10/site-packages/nvidia_cusolver-12.0.4.66.dist-info/METADATA": "88d296b4407f82253bf358667db12776dcb521170c7ff5b8eff38eb272ff729f",
+          "lib/python3.10/site-packages/opencv_python-4.11.0.86.dist-info/METADATA": "654b82764b82fe35a006ae6b67051be82888ff87d03ca5911776055a8a3d0e4e",
+          "lib/python3.10/site-packages/urllib3-2.7.0.dist-info/METADATA": "66147856d30bbb6bed01c6ce3326d0f48d84ed5f286ac177633a1486b82eace5",
+          "lib/python3.10/site-packages/triton-3.7.1.dist-info/METADATA": "c0067ae183ac3e221330fc16dd9539a4bc7f2e56a34245cca63335e9da14a8ce",
+          "lib/python3.10/site-packages/pillow-12.3.0.dist-info/METADATA": "8fc07146cab33ef7582361dab6eac596d340b03ec648f18217da7894f73838c8",
+          "lib/python3.10/site-packages/cuda_bindings-13.3.1.dist-info/METADATA": "0bfcbe77dade61b1cba9f201c0465f2353f5b50adf4e4f554bca35a35033166f",
+          "lib/python3.10/site-packages/python_dateutil-2.9.0.post0.dist-info/METADATA": "a9d436da322be808332f98d88325998e87cb693a678a9969feb4cfad729a6e93",
+          "lib/python3.10/site-packages/cycler-0.12.1.dist-info/METADATA": "23289e19b76f1e01394227696e6af2b6cd1ce79e89731209bf9195148b18ed36",
+          "lib/python3.10/site-packages/nvidia_cusparse-12.6.3.3.dist-info/METADATA": "d7b8582e9cf38072a8bb9960822e89f41a64bc7f68995eec783304c828e9734e",
+          "lib/python3.10/site-packages/nvidia_cublas-13.1.1.3.dist-info/METADATA": "775b12e0b38858a03e93019f6a18104b10fce80f64f969fe9bb7ed6153ab2804",
+          "lib/python3.10/site-packages/matplotlib-3.10.9.dist-info/METADATA": "bea8a4672bbe4f26b7a4fe5bc5e5023a08c4fb7069cc951f39eef26a403c7ea6",
+          "lib/python3.10/site-packages/nvidia_nccl_cu13-2.29.7.dist-info/METADATA": "1a0f592f961f6e5b260131f57c59f23c05bec4e78279ab64a585e483894aacb4",
+          "lib/python3.10/site-packages/joblib-1.5.3.dist-info/METADATA": "cee9c60896ae4e7a965a840fbde50d111d2f8018f61201d1ed2e9fc3dd4883e6",
+          "lib/python3.10/site-packages/idna-3.18.dist-info/METADATA": "46dfe6e5ac462d0f680ecd9abcf66e829b6a2334824b4d9e3979b31135caf281",
+          "lib/python3.10/site-packages/threadpoolctl-3.6.0.dist-info/METADATA": "a45df8d07ea1883d772183a501d7d526076aa70dfcfddb276a2cbdc04def5341",
+          "lib/python3.10/site-packages/filelock-3.32.0.dist-info/METADATA": "d964d7bb976411acbc7b7641476c55193c33b919956fdc8a183c0733cd2db660",
+          "lib/python3.10/site-packages/nvidia_cufft-12.0.0.61.dist-info/METADATA": "f519e642db9f4983f5e24d131a52972210b3222800a07e099d40926d18d183d8",
+          "lib/python3.10/site-packages/jinja2-3.1.6.dist-info/METADATA": "68c5548fb67c4132a13898d9b31ec50c6bea2abdd915d921f214355c3a6499c8",
+          "lib/python3.10/site-packages/nvidia_cufile-1.15.1.6.dist-info/METADATA": "35ef649dd5370d74512351b45aa9ddc81715ae8c806326c2c5ec61d80dc97aca",
+          "lib/python3.10/site-packages/ultralytics-8.4.104.dist-info/METADATA": "650266f8dc0dfceabe5af0cbee1c7b4f173debef23b1e7f5cbe37ee7cd35970c",
+          "lib/python3.10/site-packages/nvidia_curand-10.4.0.35.dist-info/METADATA": "0a7d6e8b87aa972f3f2bc454f12fee898e8ef5d1a09d92b418acd38e8582076d",
+          "lib/python3.10/site-packages/six-1.17.0.dist-info/METADATA": "562042078c2752549f6d8a7c86dbc5dd708088a7be6d80672ec7b07100b72468",
+          "lib/python3.10/site-packages/cuda_pathfinder-1.6.0.dist-info/METADATA": "0b224d8df48997cd2d336dbf9debc7a7afa000cc242e1555c5c90ac654cccb7f",
+          "lib/python3.10/site-packages/nvidia_cudnn_cu13-9.20.0.48.dist-info/METADATA": "905598a1f0fa9ec98b73133b7340bb60fb3666262eaaaf87f8fb8e3461261d38",
+          "lib/python3.10/site-packages/typing_extensions-4.16.0.dist-info/METADATA": "b05084ca1d50879865178d9fff9fabeab61bdfb1f361bfbde95421ffc8f9be46",
+          "lib/python3.10/site-packages/nvidia_nvtx-13.0.85.dist-info/METADATA": "4777c4d7b040cdead515e13febe9da861052e4690bdfc2c67664b13aaf605be5",
+          "lib/python3.10/site-packages/pyparsing-3.3.2.dist-info/METADATA": "3311a8b949d70f71a2b9788a9327f11d9d5a6a8012d6c046ca254ad2de877f45"
+        },
+        "python_symlink": "python3"
+      },
+      {
+        "path": "/media/sawwave/Learning11/CCTV-project/.venv-mediapipe",
+        "allocated_bytes": 926920704,
+        "separate_backup_in_v088_bundle": false,
+        "distribution_metadata_count": 28,
+        "distribution_metadata_sha256": {
+          "lib/python3.10/site-packages/pip-22.0.2.dist-info/METADATA": "622c5ad0b2a4cb38d3d8de4940ee6a6038197264ece99e9d83851bc013724f60",
+          "lib/python3.10/site-packages/jax-0.6.2.dist-info/METADATA": "b57bbdf64c64b2208eb13f6bd9d8ece815b6cdbbf262153f0596e2761a491f1d",
+          "lib/python3.10/site-packages/scipy-1.15.3.dist-info/METADATA": "c75caf32b67a13a9fc16aacf993a8bb883b7a69744ffe77cbbd4f3bfbad28f3d",
+          "lib/python3.10/site-packages/absl_py-2.5.0.dist-info/METADATA": "24eb8b2dbab3053ea20e46ae02ddb3b9157b5be7e7a38ad931fd0c596f517015",
+          "lib/python3.10/site-packages/setuptools-59.6.0.dist-info/METADATA": "32b16b4bfaf761e537f92e4e73dd06035ad429502f89641cec80e50d2c53469d",
+          "lib/python3.10/site-packages/opt_einsum-3.4.0.dist-info/METADATA": "9f6791140c5e1be4f1b189365e6312d711a1eaaeb399b5dd6741f7a4bd99d03b",
+          "lib/python3.10/site-packages/kiwisolver-1.5.0.dist-info/METADATA": "bb843307a98b7bd2a7055f831cbfa2fe7c864716dea9d04c7a5c03e51f648b79",
+          "lib/python3.10/site-packages/flatbuffers-25.12.19.dist-info/METADATA": "9f38239f96faa21522a6aadab6912e1e560708bbe9c9f696a0679c9403fa089e",
+          "lib/python3.10/site-packages/mediapipe-0.10.14.dist-info/METADATA": "f9080513c6f6cba640256c39045c3ff3ceb31fb1bbda67ed40ad5b5321d03ddb",
+          "lib/python3.10/site-packages/numpy-2.2.6.dist-info/METADATA": "77c8e31c559eae4dfab00dee334c3a57ec23d0b7cf7249472bf35648eddca83b",
+          "lib/python3.10/site-packages/attrs-26.1.0.dist-info/METADATA": "4cd40e690f23bf37cbcad34efd6758e062df1df07c86833f7e3ce95bf1fa38cc",
+          "lib/python3.10/site-packages/contourpy-1.3.2.dist-info/METADATA": "0d860f7cb8af8e85005c209499e0ca25da8515b4b67915ee8b88b8852c316c08",
+          "lib/python3.10/site-packages/packaging-26.2.dist-info/METADATA": "4f9cbcd7933415a4793f7767c98a2b6a512c823fc81c87337815705f230ecabf",
+          "lib/python3.10/site-packages/opencv_contrib_python-5.0.0.93.dist-info/METADATA": "1c75e2c6b056a4d411f020c090d88626e55eb3f59d585d9b651cecf7a1983bd0",
+          "lib/python3.10/site-packages/fonttools-4.63.0.dist-info/METADATA": "878374d811bfa83c045c55eabbcaa09e646f426fd4777b5e7f716e4e2198fbc1",
+          "lib/python3.10/site-packages/protobuf-4.25.9.dist-info/METADATA": "3da5f3926e76da3e27271c4d8832d173d24c5a0a9d766ad89f3b47a3dc7b0de8",
+          "lib/python3.10/site-packages/sounddevice-0.5.5.dist-info/METADATA": "06084da6630a6dc02ef6c62e67d55ae7323cb22f0a559618c8286cb5234e241d",
+          "lib/python3.10/site-packages/opencv_python_headless-4.13.0.92.dist-info/METADATA": "e4a77fb9b25b744ca4db9cdaef315e0dad2ddf173ee741cd95ba543c1cf28e20",
+          "lib/python3.10/site-packages/cffi-2.1.0.dist-info/METADATA": "a35079b9bb45bc0558e6e6b20b2eea49b9ebce2f87a7264b95574a1b741b5611",
+          "lib/python3.10/site-packages/pillow-12.3.0.dist-info/METADATA": "8fc07146cab33ef7582361dab6eac596d340b03ec648f18217da7894f73838c8",
+          "lib/python3.10/site-packages/python_dateutil-2.9.0.post0.dist-info/METADATA": "a9d436da322be808332f98d88325998e87cb693a678a9969feb4cfad729a6e93",
+          "lib/python3.10/site-packages/cycler-0.12.1.dist-info/METADATA": "23289e19b76f1e01394227696e6af2b6cd1ce79e89731209bf9195148b18ed36",
+          "lib/python3.10/site-packages/ml_dtypes-0.5.4.dist-info/METADATA": "51b5729b48ce71736748bbf43d4f355485f42b44977d6016717bbd6b11b7dfc0",
+          "lib/python3.10/site-packages/matplotlib-3.10.9.dist-info/METADATA": "bea8a4672bbe4f26b7a4fe5bc5e5023a08c4fb7069cc951f39eef26a403c7ea6",
+          "lib/python3.10/site-packages/pycparser-3.0.dist-info/METADATA": "f547a60b0ab54cc2f242213d1f87960ad80df7dd5dfeb98d17a444d48bfb6b93",
+          "lib/python3.10/site-packages/jaxlib-0.6.2.dist-info/METADATA": "1e79f43686df36f57bba60850d3c8634a86c811a5ef04841111edada5192d6ea",
+          "lib/python3.10/site-packages/six-1.17.0.dist-info/METADATA": "562042078c2752549f6d8a7c86dbc5dd708088a7be6d80672ec7b07100b72468",
+          "lib/python3.10/site-packages/pyparsing-3.3.2.dist-info/METADATA": "3311a8b949d70f71a2b9788a9327f11d9d5a6a8012d6c046ca254ad2de877f45"
+        },
+        "python_symlink": "python3.10"
+      },
+      {
+        "path": "/media/sawwave/Learning11/CCTV-project/.venv-falldata",
+        "allocated_bytes": 260624384,
+        "separate_backup_in_v088_bundle": false,
+        "distribution_metadata_count": 7,
+        "distribution_metadata_sha256": {
+          "lib/python3.10/site-packages/pip-22.0.2.dist-info/METADATA": "622c5ad0b2a4cb38d3d8de4940ee6a6038197264ece99e9d83851bc013724f60",
+          "lib/python3.10/site-packages/setuptools-59.6.0.dist-info/METADATA": "32b16b4bfaf761e537f92e4e73dd06035ad429502f89641cec80e50d2c53469d",
+          "lib/python3.10/site-packages/scikit_learn-1.7.2.dist-info/METADATA": "a301770d816e5ef5e2a262886115f1e6002637324f3bfe73f92378897dea8c63",
+          "lib/python3.10/site-packages/scipy-1.11.3.dist-info/METADATA": "13844629e8b70bceffc656e36a34b96d9127efab365f94ff7dc9fc87184bdd2c",
+          "lib/python3.10/site-packages/threadpoolctl-3.6.0.dist-info/METADATA": "a45df8d07ea1883d772183a501d7d526076aa70dfcfddb276a2cbdc04def5341",
+          "lib/python3.10/site-packages/joblib-1.3.2.dist-info/METADATA": "c5ba55a16690b1aaa2434cd11dc5e9b08dbca2c560836a59ebf49b42fa8d5576",
+          "lib/python3.10/site-packages/numpy-1.26.1.dist-info/METADATA": "980e340e98f3008b73250e3205b28135f8ae1fc51395568dac6db2e3b04fce64"
+        },
+        "python_symlink": "python3.10"
+      },
+      {
+        "path": "/opt/nvidia/deepstream",
+        "allocated_bytes": 782426112,
+        "separate_backup_in_v088_bundle": false
+      },
+      {
+        "path": "/usr/lib/aarch64-linux-gnu/nvidia",
+        "allocated_bytes": 412102656,
+        "separate_backup_in_v088_bundle": false
+      }
+    ],
+    "total_allocated_bytes": 7692660736
+  },
+  "isolation": {
+    "candidate_image": "sha256:809693da4ed0c288e68744235f4ff0156612d73ca59f5e6282ffcedf3e9aee49",
+    "candidate_contract_passed": true,
+    "changed_environment_keys_for_isolation": [
+      "AIOT_DB_PASSWORD",
+      "AUDIT_CODEC_MODE",
+      "AUDIT_INPUT",
+      "AUDIT_SCENARIO",
+      "CORS_ORIGINS",
+      "DS_RTSP_LOCATION",
+      "INTERNAL_SERVICE_TOKEN",
+      "METRICS_PORT",
+      "MQTT_PASSWORD",
+      "MQTT_USER",
+      "NC_API_RUI",
+      "PROXY_MQTT_HOST",
+      "PROXY_MQTT_ID",
+      "PROXY_MQTT_PORT",
+      "PROXY_MQTT_PW",
+      "PUBLIC_API_KEY",
+      "SPEAKER_PASSWORD",
+      "STREAM_PORT"
+    ],
+    "secret_keys_substituted": [
+      "AIOT_DB_PASSWORD",
+      "INTERNAL_SERVICE_TOKEN",
+      "MQTT_PASSWORD",
+      "MQTT_USER",
+      "PUBLIC_API_KEY",
+      "SIREN_PASSWORD",
+      "SPEAKER_PASSWORD",
+      "STREAM_API_TOKEN"
+    ],
+    "command_argument_changes": [
+      "mqtt-broker",
+      "mqtt-port",
+      "mqtt-topic-prefix"
+    ],
+    "network": "none",
+    "all_writable_mounts_isolated": true,
+    "mount_targets": [
+      "/app/cameras.json",
+      "/app/zones_config.json",
+      "/app/models",
+      "/app/data",
+      "/app/.venv-mediapipe",
+      "/app/.venv-falldata",
+      "/app/.venv-jetson-train",
+      "/root/.insightface",
+      "/app/known_faces.json",
+      "/app/known_faces",
+      "/opt/nvidia/deepstream",
+      "/usr/lib/aarch64-linux-gnu/nvidia",
+      "/tmp/.X11-unix",
+      "/app/models/trt_cache",
+      "/audit",
+      "/output",
+      "/experiment",
+      "/harness",
+      "/baseline"
+    ]
+  },
+  "validation": {
+    "tests_passed": 46,
+    "cache_regression_failed_before_fix": true,
+    "ruff": "pass",
+    "candidate_cli": "pass",
+    "graph_review": "no symbol coverage; direct change review used",
+    "models_unchanged": 8,
+    "diff_check": "pass"
+  },
+  "production_deployed": false,
+  "operating": {
+    "started_at": "2026-09-16T23:45:46.903505745Z",
+    "health": "healthy",
+    "restart_count": 0
+  },
+  "next": "P5.1/I07: 확인한 외부 의존성(가상환경3개·SDK·호스트 라이브러리 약7.69GB)과 비밀설정/마운트를 복구 묶음에 포함하고, 이전 이미지로 격리 복귀를 확인한다. DB 복원·후보 통합 기동 근거는 재사용하며 I32/I34/I37/I38 잔여와 운영 배포 보류를 유지한다.",
+  "limits": [
+    "Direct signals to main.py child, not real operating docker stop",
+    "61 then cumulative 82 pending events; no broker delivery or monitoring ACK",
+    "Shutdown 25.12 seconds cause unresolved despite SIGTERM 4.86 seconds",
+    "External dependency inventory is not complete rollback backup",
+    "CUDA700 cause and I32/I37/I38 remain open"
+  ],
+  "source_sha256": {
+    "docker-compose.jetson-candidate.yml": "31edddf4559fdda02cb22b617f25bf2666c6f62d432a8406688934c80dc6a839",
+    "scripts/health/check_compose_runtime_assumptions.py": "29829d28a083fc2c2fc494758cf4f22cd14550cd919ccb21e59ab5f2b8f8f61c",
+    "tests/test_check_compose_runtime_assumptions.py": "9ee11ce85193005177297f2e0e0fa6c421910c4cbd30cb324c787f1983c0fd18"
+  },
+  "publication": {
+    "version": "0.90",
+    "files": {
+      "index.html": {
+        "http": 200,
+        "bytes": 23029,
+        "sha256": "aff66f5262ee1f1a0fef8939e55492db78d82480188053fb9c095f450c09a2bf"
+      },
+      "CCTV_project_progress.pdf": {
+        "http": 200,
+        "bytes": 125471,
+        "sha256": "f1ced8f0aa4876d3d17e7fe9a05231dbea96b18fb74764b559223aa421b08dc6"
+      }
+    },
+    "html_wbs_json_rows_equal": 33,
+    "first_page_visual_check": "pass",
+    "browser_other_pc_retested": false
+  },
+  "trial_cleanup": "both isolated projects down; data and images preserved"
+}

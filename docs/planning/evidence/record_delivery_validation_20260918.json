@@ -1,0 +1,184 @@
+{
+  "recorded_at": "2026-09-18T08:41:18.578184+00:00",
+  "plan_version": "0.11",
+  "wbs": "P2.2",
+  "status": "IN_PROGRESS",
+  "slice_status": "record delivery module locally verified; not deployed or automatically enabled",
+  "scope": "canonical event reconciliation to separate record-only MQTT destination; lease, PUBACK and retry",
+  "junit": {
+    "path": "docs/planning/evidence/record_delivery_final_20260918.xml",
+    "tests": 432,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 5,
+    "passed": 427,
+    "suite_elapsed_seconds": 30.893
+  },
+  "test_classes": {
+    "tests.test_record_delivery": 18,
+    "tests.test_record_delivery_mqtt": 6,
+    "tests.test_video_event_ingest": 26,
+    "tests.test_event_ingest_store": 11,
+    "tests.test_external_ingest_durable": 20,
+    "tests.test_ingest_store": 9,
+    "tests.test_event_publish": 12,
+    "tests.test_event_dispatcher": 2,
+    "tests.test_processor_unit.TestCameraRegistryRegister": 6,
+    "tests.test_processor_unit.TestCameraRegistryUnregister": 5,
+    "tests.test_processor_unit.TestCameraRegistryStopFlag": 4,
+    "tests.test_processor_unit.TestCameraRegistryRetry": 6,
+    "tests.test_processor_unit.TestParseDetections": 7,
+    "tests.test_processor_unit.TestCameraStatusContract": 1,
+    "tests.test_processor_unit.TestProcessorStatsContract": 4,
+    "tests.test_processor_unit.TestModelSettingsHelpers": 4,
+    "tests.test_processor_unit.TestVideoProcessorStats": 5,
+    "tests.test_processor_unit.TestUpdateZonesNoManager": 1,
+    "tests.test_processor_unit.TestBuildDisplayEvents": 4,
+    "tests.test_processor_unit.TestProcessInferenceErrorHandling": 3,
+    "tests.test_deepstream_processor": 95,
+    "tests.test_deepstream_event_factory": 2,
+    "tests.test_canonical_event": 7,
+    "tests.test_video_observation": 37,
+    "tests.test_sensor_observation": 26,
+    "tests.test_external_ingest": 44,
+    "tests.test_mqtt_durable_subscriber": 13,
+    "tests.test_mqtt.TestMqttEventPublisherInit": 8,
+    "tests.test_mqtt.TestMqttClientFactory": 3,
+    "tests.test_mqtt.TestPublishWhenDisconnected": 4,
+    "tests.test_mqtt.TestPublishWhenConnected": 10,
+    "tests.test_mqtt.TestPublishWithOutbox": 3,
+    "tests.test_mqtt.TestReconnectBackoff": 6,
+    "tests.test_mqtt.TestGetStats": 3,
+    "tests.test_mqtt_outbox": 3,
+    "tests.test_events.TestEventType": 5,
+    "tests.test_events.TestEventSeverity": 2,
+    "tests.test_events.TestDetectionEvent": 7
+  },
+  "new_tests": {
+    "database_and_unit": 18,
+    "real_mqtt": 6,
+    "real_process_exit_cases_within_mqtt": 4
+  },
+  "skipped_tests": [
+    {
+      "class": "tests.test_deepstream_processor",
+      "name": "test_deepstream_add_camera",
+      "reason": "Jetson 환경 필요 — pyds 미설치"
+    },
+    {
+      "class": "tests.test_deepstream_processor",
+      "name": "test_deepstream_add_camera_duplicate",
+      "reason": "Jetson 환경 필요 — pyds 미설치"
+    },
+    {
+      "class": "tests.test_deepstream_processor",
+      "name": "test_deepstream_remove_camera",
+      "reason": "Jetson 환경 필요 — pyds 미설치"
+    },
+    {
+      "class": "tests.test_deepstream_processor",
+      "name": "test_deepstream_get_stats_returns_dict",
+      "reason": "Jetson 환경 필요 — pyds 미설치"
+    },
+    {
+      "class": "tests.test_deepstream_processor",
+      "name": "test_deepstream_get_camera_status",
+      "reason": "Jetson 환경 필요 — pyds 미설치"
+    }
+  ],
+  "checks": {
+    "ruff_files": 6,
+    "black_files": 6,
+    "py_compile_app_files": 4,
+    "final_results": "PASS",
+    "tracked_diff_check": "PASS",
+    "graph_limit": "zero changed symbols returned for four changed app files; actual source and tests reviewed"
+  },
+  "environment": {
+    "python_version": "3.10.12",
+    "sqlite_version": "3.37.2",
+    "paho_version": "2.1.0",
+    "database": "temporary SQLite",
+    "mqtt_image": "eclipse-mosquitto:2.0",
+    "container": "cctv-p22-record-test",
+    "network": "none",
+    "published_ports": [],
+    "transport": "unix",
+    "broker_persistence": false,
+    "memory_bytes": 67108864,
+    "nano_cpus": 500000000,
+    "test_container_stopped_and_removed": true,
+    "physical_outputs": "none; record-only subscriber in isolated broker",
+    "production_deployed": false,
+    "gpu_inference": false
+  },
+  "schema": {
+    "version": 3,
+    "migration": "additive v2 to v3, original tables unchanged",
+    "tables_added": [
+      "record_delivery_targets",
+      "record_delivery_state",
+      "record_delivery_attempts"
+    ],
+    "old_v2_only_code_compatible": false,
+    "new_sensor_and_event_writers_accept_v3": true
+  },
+  "verified_boundaries": [
+    "migration and failure rollback preserve existing sensor and alarm records",
+    "bounded reconciliation creates one record delivery per canonical key and destination",
+    "job/state enqueue is atomic and can resume after rollback",
+    "concurrent atomic claim, lease expiry, rejection of stale completion token",
+    "network wait outside database transaction permits other intake",
+    "failure backoff and identical retry delivery ID/payload",
+    "destination-specific progress and frozen endpoint identity",
+    "legacy live publisher cannot claim or complete record jobs",
+    "video raw recovery to canonical to record delivery without alarm replay",
+    "real broker PUBACK and real disconnect before Paho processes PUBACK",
+    "real child os._exit(42) after enqueue, claim, PUBACK and SQLite ACK commit",
+    "actual lease timeout awaited during process exit recovery tests",
+    "SQLite ACK transaction rollback preserves lease and uncertain outcome"
+  ],
+  "ack_scope": "MQTT 3.1.1 QoS 1 PUBACK; not broker power-loss durability, consumer storage or physical device success",
+  "delivery_semantics": "at-least-once attempts; receiver deduplication by delivery ID required after uncertain delivery",
+  "not_validated": [
+    "direct TLV sensor observation to canonical record delivery integration",
+    "sensor producer identity D02/I19",
+    "consumer database ACK, monitoring API/UI, physical alarms or priority scheduling",
+    "automatic production service lifecycle, packaging/build or deployment",
+    "production TCP/TLS/ACL, broker restart or power loss",
+    "capacity, retention, scan/connection overhead, fairness, long-run load",
+    "wall-clock jumps, OS DNS delays, four real cameras/all AI/every frame 30FPS"
+  ],
+  "source_sha256": {
+    "src/record_delivery.py": "71e986a329e7783925ad301d567d3e62240f11e59ce803d59e16ba60dbcb311f",
+    "src/protocols/record_mqtt.py": "2ca2032fc7bda2898986e145c1d49e7cfc6cd757877dd8faa1b7675d5fe456c4",
+    "src/ingest_store.py": "158383b3c2f06788a267f0d8d3f1a4818bb346063f8c95a76f1b61958fe10c19",
+    "src/event_ingest_store.py": "1749f04d486d847a8a258942c83d54d37f36184640f9bba0824ebd5c4464178b",
+    "tests/test_record_delivery.py": "fccfd695285ca51426efe7978787a3cc2281b13752839c8e976372aa249f3d72",
+    "tests/test_record_delivery_mqtt.py": "bb271456ec9289b4d3ec3c0f5e1d409a76f6c5b78329edc95327210cb89f6378"
+  },
+  "earlier_attempts": {
+    "store_red_8_failures": "docs/planning/evidence/record_delivery_red_20260918.xml",
+    "worker_red_2_failures_1_pass": "docs/planning/evidence/record_worker_red_20260918.xml",
+    "transport_red_2_failures": "docs/planning/evidence/record_transport_red_20260918.xml",
+    "socket_permission_failure": "docs/planning/evidence/record_transport_environment_failure_20260918.xml",
+    "initial_14_pass": "docs/planning/evidence/record_delivery_slice_20260918.xml",
+    "boundaries_24_pass": "docs/planning/evidence/record_delivery_boundaries_20260918.xml"
+  },
+  "primary_reference": "https://eclipse.dev/paho/files/paho.mqtt.python/html/client.html#paho.mqtt.client.Client.on_publish",
+  "documentation": {
+    "markdown_files": 17,
+    "local_links_checked": 298,
+    "wbs_rows": 33,
+    "states": {
+      "DONE": 5,
+      "BLOCKED": 2,
+      "READY": 3,
+      "IN_PROGRESS": 1,
+      "PLANNED": 15,
+      "VERIFY": 7
+    },
+    "dependency_check": "PASS",
+    "whitespace_check": "PASS"
+  }
+}

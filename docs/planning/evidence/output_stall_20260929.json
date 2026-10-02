@@ -1,0 +1,1046 @@
+{
+  "version": "0.56",
+  "production_after": {
+    "status": "running",
+    "health": "healthy",
+    "started_at": "2026-09-16T23:45:46.903505745Z",
+    "restart_count": 0,
+    "v056_test_containers_remaining": 0
+  },
+  "date": "2026-09-29",
+  "fixture": "data/runtime/p51_output_20260929_v056",
+  "trials": {
+    "camera2997": {
+      "experiment": {
+        "scope": "isolated replay, no production endpoints; successful driver completion does not imply absence of stalls",
+        "input": "/baseline/camera_1_capture.mkv",
+        "completed_experiment": true,
+        "receiver_exit": 0,
+        "output_bytes": 9617519,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 21.533
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 22.328
+          }
+        ],
+        "sample_count": 101,
+        "elapsed_seconds": 76.09351013205014
+      },
+      "performance_comparison_eligible": true,
+      "last_frames": 1001,
+      "stats_observation_gaps_over3s": [
+        {
+          "from_frames": 1,
+          "to_frames": 2,
+          "gap_seconds": 8.736
+        }
+      ],
+      "h264-nvvidconv:sink_initial40_max_gap_seconds": 0.918,
+      "h264-encoder:src_initial40_max_gap_seconds": 1.434,
+      "media_probe": {
+        "programs": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "r_frame_rate": "30/1",
+            "avg_frame_rate": "30/1",
+            "nb_read_frames": "415"
+          }
+        ],
+        "format": {
+          "duration": "20.220000"
+        }
+      },
+      "media_validation": {
+        "ffprobe_exit": 0,
+        "ffprobe_stderr_bytes": 0,
+        "decode_exit": 0,
+        "decode_stderr_bytes": 0
+      },
+      "header_trace": {
+        "exit": 0,
+        "timing_fields": [
+          "95          timing_info_present_flag                                    1 = 1",
+          "96          num_units_in_tick            00000000000000000000000000000001 = 1",
+          "128         time_scale                   00000000000000000000000000111100 = 60",
+          "160         fixed_frame_rate_flag                                       1 = 1",
+          "95          timing_info_present_flag                                    1 = 1",
+          "96          num_units_in_tick            00000000000000000000000000000001 = 1",
+          "128         time_scale                   00000000000000000000000000111100 = 60",
+          "160         fixed_frame_rate_flag                                       1 = 1"
+        ]
+      }
+    },
+    "capssetter": {
+      "experiment": {
+        "scope": "isolated replay, no production endpoints; successful driver completion does not imply absence of stalls",
+        "input": "/previous/fall_clip.mp4",
+        "completed_experiment": true,
+        "receiver_exit": 0,
+        "output_bytes": 2030891,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 21.444
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 22.057
+          }
+        ],
+        "sample_count": 101,
+        "elapsed_seconds": 72.05941876210272
+      },
+      "performance_comparison_eligible": true,
+      "last_frames": 476,
+      "stats_observation_gaps_over3s": [
+        {
+          "from_frames": 1,
+          "to_frames": 10,
+          "gap_seconds": 14.852
+        }
+      ],
+      "h264-nvvidconv:sink_initial40_max_gap_seconds": 14.713,
+      "h264-encoder:src_initial40_max_gap_seconds": 13.691
+    },
+    "copy_before_rate": {
+      "experiment": {
+        "scope": "isolated replay, no production endpoints; successful driver completion does not imply absence of stalls",
+        "input": "/previous/fall_clip.mp4",
+        "completed_experiment": true,
+        "receiver_exit": 0,
+        "output_bytes": 3283236,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 21.443
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 22.478
+          }
+        ],
+        "sample_count": 100,
+        "elapsed_seconds": 76.33790312404744
+      },
+      "performance_comparison_eligible": true,
+      "last_frames": 526,
+      "stats_observation_gaps_over3s": [
+        {
+          "from_frames": 1,
+          "to_frames": 10,
+          "gap_seconds": 11.458
+        }
+      ],
+      "h264-nvvidconv:sink_initial40_max_gap_seconds": 11.17,
+      "h264-encoder:src_initial40_max_gap_seconds": 10.109
+    },
+    "diagnostic": {
+      "experiment": {
+        "scope": "isolated replay, no production endpoints; successful driver completion does not imply absence of stalls",
+        "input": "/previous/fall_clip.mp4",
+        "completed_experiment": true,
+        "receiver_exit": 0,
+        "output_bytes": 1577669,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 11.338
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 11.946
+          }
+        ],
+        "sample_count": 90,
+        "elapsed_seconds": 61.96621935092844
+      },
+      "performance_comparison_eligible": true,
+      "last_frames": 431,
+      "stats_observation_gaps_over3s": [
+        {
+          "from_frames": 1,
+          "to_frames": 10,
+          "gap_seconds": 16.27
+        }
+      ],
+      "h264-nvvidconv:sink_initial40_max_gap_seconds": 16.113,
+      "h264-encoder:src_initial40_max_gap_seconds": 15.198,
+      "media_probe": {
+        "programs": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "r_frame_rate": "1000/1",
+            "avg_frame_rate": "0/0",
+            "nb_read_frames": "54"
+          }
+        ],
+        "format": {
+          "duration": "19.998000"
+        }
+      },
+      "media_validation": {
+        "ffprobe_exit": 0,
+        "ffprobe_stderr_bytes": 0,
+        "decode_exit": 0,
+        "decode_stderr_bytes": 0
+      },
+      "header_trace": {
+        "exit": 0,
+        "timing_fields": []
+      }
+    },
+    "file_output": {
+      "experiment": {
+        "scope": "isolated replay, no production endpoints; successful driver completion does not imply absence of stalls",
+        "input": "/previous/fall_clip.mp4",
+        "completed_experiment": true,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 11.291
+          }
+        ],
+        "sample_count": 118,
+        "elapsed_seconds": 79.87270903610624
+      },
+      "performance_comparison_eligible": true,
+      "last_frames": 688,
+      "stats_observation_gaps_over3s": [
+        {
+          "from_frames": 1,
+          "to_frames": 10,
+          "gap_seconds": 14.791
+        }
+      ],
+      "h264-nvvidconv:sink_initial40_max_gap_seconds": 14.608,
+      "h264-encoder:src_initial40_max_gap_seconds": 14.604
+    },
+    "keep_late_packets": {
+      "experiment": {
+        "scope": "isolated replay, no production endpoints; successful driver completion does not imply absence of stalls",
+        "input": "/previous/fall_clip.mp4",
+        "completed_experiment": true,
+        "receiver_exit": 0,
+        "output_bytes": 1504871,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 31.506
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 31.943
+          }
+        ],
+        "sample_count": 112,
+        "elapsed_seconds": 81.45456609292887
+      },
+      "performance_comparison_eligible": true,
+      "last_frames": 446,
+      "stats_observation_gaps_over3s": [
+        {
+          "from_frames": 9,
+          "to_frames": 10,
+          "gap_seconds": 14.666
+        }
+      ],
+      "h264-nvvidconv:sink_initial40_max_gap_seconds": 15.628,
+      "h264-encoder:src_initial40_max_gap_seconds": 14.639
+    },
+    "native_capture": {
+      "experiment": {
+        "scope": "isolated replay, no production endpoints; successful driver completion does not imply absence of stalls",
+        "input": "/previous/fall_clip.mp4",
+        "completed_experiment": true,
+        "receiver_exit": 0,
+        "output_bytes": 1192198,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 36.981
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 36.982
+          }
+        ],
+        "sample_count": 83,
+        "elapsed_seconds": 87.79050014005043
+      },
+      "performance_comparison_eligible": false,
+      "last_frames": 105,
+      "stats_observation_gaps_over3s": [
+        {
+          "from_frames": 1,
+          "to_frames": 6,
+          "gap_seconds": 15.479
+        },
+        {
+          "from_frames": 77,
+          "to_frames": 83,
+          "gap_seconds": 29.736
+        },
+        {
+          "from_frames": 83,
+          "to_frames": 90,
+          "gap_seconds": 10.522
+        }
+      ],
+      "h264-nvvidconv:sink_initial40_max_gap_seconds": 42.476,
+      "h264-encoder:src_initial40_max_gap_seconds": 41.825
+    },
+    "native_stacks": {
+      "experiment": {
+        "scope": "isolated replay, no production endpoints; successful driver completion does not imply absence of stalls",
+        "input": "/previous/fall_clip.mp4",
+        "completed_experiment": true,
+        "receiver_exit": 0,
+        "output_bytes": 2847148,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 11.289
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 11.91
+          }
+        ],
+        "sample_count": 91,
+        "elapsed_seconds": 61.48525186488405
+      },
+      "performance_comparison_eligible": false,
+      "last_frames": 501,
+      "stats_observation_gaps_over3s": [
+        {
+          "from_frames": 1,
+          "to_frames": 10,
+          "gap_seconds": 13.196
+        }
+      ],
+      "h264-nvvidconv:sink_initial40_max_gap_seconds": 13.018,
+      "h264-encoder:src_initial40_max_gap_seconds": 12.025
+    },
+    "native_user": {
+      "experiment": {
+        "scope": "isolated replay, no production endpoints; successful driver completion does not imply absence of stalls",
+        "input": "/previous/fall_clip.mp4",
+        "completed_experiment": true,
+        "receiver_exit": 0,
+        "output_bytes": 3021304,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 21.435
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 21.84
+          }
+        ],
+        "sample_count": 102,
+        "elapsed_seconds": 71.91608416615054
+      },
+      "performance_comparison_eligible": false,
+      "last_frames": 509,
+      "stats_observation_gaps_over3s": [
+        {
+          "from_frames": 1,
+          "to_frames": 10,
+          "gap_seconds": 12.981
+        }
+      ],
+      "h264-nvvidconv:sink_initial40_max_gap_seconds": 12.832,
+      "h264-encoder:src_initial40_max_gap_seconds": 11.888
+    },
+    "no_tcn": {
+      "experiment": {
+        "scope": "isolated replay, no production endpoints; successful driver completion does not imply absence of stalls",
+        "input": "/previous/fall_clip.mp4",
+        "completed_experiment": true,
+        "receiver_exit": 0,
+        "output_bytes": 4962839,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 21.424
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 22.045
+          }
+        ],
+        "sample_count": 103,
+        "elapsed_seconds": 69.91739027993754
+      },
+      "performance_comparison_eligible": true,
+      "last_frames": 550,
+      "stats_observation_gaps_over3s": [
+        {
+          "from_frames": 1,
+          "to_frames": 10,
+          "gap_seconds": 11.157
+        }
+      ],
+      "h264-nvvidconv:sink_initial40_max_gap_seconds": 10.987,
+      "h264-encoder:src_initial40_max_gap_seconds": 9.981
+    },
+    "pool8": {
+      "experiment": {
+        "scope": "isolated replay, no production endpoints; successful driver completion does not imply absence of stalls",
+        "input": "/previous/fall_clip.mp4",
+        "completed_experiment": true,
+        "receiver_exit": 0,
+        "output_bytes": 6446636,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 21.419
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 22.233
+          }
+        ],
+        "sample_count": 102,
+        "elapsed_seconds": 72.5427923630923
+      },
+      "performance_comparison_eligible": true,
+      "last_frames": 587,
+      "stats_observation_gaps_over3s": [
+        {
+          "from_frames": 1,
+          "to_frames": 10,
+          "gap_seconds": 9.753
+        }
+      ],
+      "h264-nvvidconv:sink_initial40_max_gap_seconds": 9.588,
+      "h264-encoder:src_initial40_max_gap_seconds": 8.473
+    },
+    "reorder_copy": {
+      "experiment": {
+        "scope": "isolated replay, no production endpoints; successful driver completion does not imply absence of stalls",
+        "input": "/previous/fall_clip.mp4",
+        "completed_experiment": false,
+        "receiver_exit": null,
+        "output_bytes": 0,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 29.524
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 30.561
+          }
+        ],
+        "sample_count": 103,
+        "elapsed_seconds": 83.96784079517238
+      },
+      "performance_comparison_eligible": true,
+      "last_frames": 10,
+      "stats_observation_gaps_over3s": [
+        {
+          "from_frames": 1,
+          "to_frames": 10,
+          "gap_seconds": 16.739
+        }
+      ],
+      "h264-nvvidconv:sink_initial40_max_gap_seconds": 16.377,
+      "h264-encoder:src_initial40_max_gap_seconds": 15.432
+    },
+    "stacks": {
+      "experiment": {
+        "scope": "isolated replay, no production endpoints; successful driver completion does not imply absence of stalls",
+        "input": "/previous/fall_clip.mp4",
+        "completed_experiment": true,
+        "receiver_exit": 0,
+        "output_bytes": 1531893,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 11.287
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 11.894
+          }
+        ],
+        "sample_count": 91,
+        "elapsed_seconds": 62.22673810715787
+      },
+      "performance_comparison_eligible": true,
+      "last_frames": 453,
+      "stats_observation_gaps_over3s": [
+        {
+          "from_frames": 1,
+          "to_frames": 10,
+          "gap_seconds": 15.972
+        }
+      ],
+      "h264-nvvidconv:sink_initial40_max_gap_seconds": 15.83,
+      "h264-encoder:src_initial40_max_gap_seconds": 14.845
+    }
+  },
+  "previous_v055_reanalysis": {
+    "natural": {
+      "last_frames": 10,
+      "max_observation_gap_seconds": 17.892
+    },
+    "no_output": {
+      "last_frames": 809,
+      "max_observation_gap_seconds": 9.272
+    },
+    "pre_timing_fix": {
+      "last_frames": 666,
+      "max_observation_gap_seconds": 9.796
+    },
+    "rf_component": {
+      "last_frames": 795,
+      "max_observation_gap_seconds": 10.079
+    }
+  },
+  "minimal_trials": {
+    "minimal_reorder": {
+      "case": "reorder",
+      "counts": {
+        "source:src": 91,
+        "source-caps:sink": 91,
+        "source-caps:src": 91,
+        "upload:sink": 91,
+        "upload:src": 91,
+        "nv-caps:sink": 91,
+        "nv-caps:src": 91,
+        "h264-videorate:sink": 91,
+        "h264-videorate:src": 180,
+        "h264-nvvidconv:sink": 180,
+        "h264-nvvidconv:src": 180,
+        "h264-caps:sink": 180,
+        "h264-caps:src": 180,
+        "h264-encoder:sink": 180,
+        "h264-encoder:src": 180,
+        "h264-parser:sink": 180,
+        "h264-parser:src": 180,
+        "h264-parsed-caps:sink": 180,
+        "h264-parsed-caps:src": 180,
+        "sink:sink": 180
+      },
+      "last_at": {
+        "source:src": 6.033,
+        "source-caps:sink": 6.033,
+        "source-caps:src": 6.033,
+        "upload:sink": 6.033,
+        "upload:src": 6.035,
+        "nv-caps:sink": 6.035,
+        "nv-caps:src": 6.035,
+        "h264-videorate:sink": 6.035,
+        "h264-videorate:src": 6.04,
+        "h264-nvvidconv:sink": 6.04,
+        "h264-nvvidconv:src": 6.042,
+        "h264-caps:sink": 6.042,
+        "h264-caps:src": 6.042,
+        "h264-encoder:sink": 6.042,
+        "h264-encoder:src": 6.047,
+        "h264-parser:sink": 6.047,
+        "h264-parser:src": 6.047,
+        "h264-parsed-caps:sink": 6.047,
+        "h264-parsed-caps:src": 6.047,
+        "sink:sink": 6.047
+      },
+      "videorate": {
+        "in": 91,
+        "out": 180,
+        "drop": 0,
+        "duplicate": 90
+      },
+      "errors": []
+    },
+    "minimal_reorder_copy": {
+      "case": "reorder_copy",
+      "counts": {
+        "source:src": 91,
+        "source-caps:sink": 91,
+        "source-caps:src": 91,
+        "upload:sink": 91,
+        "upload:src": 91,
+        "nv-caps:sink": 91,
+        "nv-caps:src": 91,
+        "h264-videorate:sink": 91,
+        "h264-videorate:src": 180,
+        "h264-nvvidconv:sink": 180,
+        "h264-nvvidconv:src": 180,
+        "h264-caps:sink": 180,
+        "h264-caps:src": 180,
+        "h264-encoder:sink": 180,
+        "h264-encoder:src": 178,
+        "h264-parser:sink": 178,
+        "h264-parser:src": 178,
+        "h264-parsed-caps:sink": 178,
+        "h264-parsed-caps:src": 178,
+        "sink:sink": 178
+      },
+      "last_at": {
+        "source:src": 6.017,
+        "source-caps:sink": 6.017,
+        "source-caps:src": 6.017,
+        "upload:sink": 6.017,
+        "upload:src": 6.019,
+        "nv-caps:sink": 6.02,
+        "nv-caps:src": 6.02,
+        "h264-videorate:sink": 6.02,
+        "h264-videorate:src": 6.025,
+        "h264-nvvidconv:sink": 6.025,
+        "h264-nvvidconv:src": 6.031,
+        "h264-caps:sink": 6.031,
+        "h264-caps:src": 6.031,
+        "h264-encoder:sink": 6.031,
+        "h264-encoder:src": 6.026,
+        "h264-parser:sink": 6.026,
+        "h264-parser:src": 6.026,
+        "h264-parsed-caps:sink": 6.026,
+        "h264-parsed-caps:src": 6.026,
+        "sink:sink": 6.026
+      },
+      "videorate": {
+        "in": 91,
+        "out": 180,
+        "drop": 0,
+        "duplicate": 90
+      },
+      "errors": []
+    },
+    "minimal_before": {
+      "case": "before",
+      "counts": {
+        "source:src": 90,
+        "source-caps:sink": 90,
+        "source-caps:src": 90,
+        "upload:sink": 90,
+        "upload:src": 90,
+        "nv-caps:sink": 90,
+        "nv-caps:src": 90,
+        "h264-nvvidconv:sink": 90,
+        "h264-nvvidconv:src": 90,
+        "h264-videorate:sink": 90,
+        "h264-videorate:src": 177,
+        "h264-caps:sink": 177,
+        "h264-caps:src": 177,
+        "h264-encoder:sink": 177,
+        "h264-encoder:src": 177,
+        "h264-parser:sink": 177,
+        "h264-parser:src": 177,
+        "h264-parsed-caps:sink": 177,
+        "h264-parsed-caps:src": 177,
+        "sink:sink": 177
+      },
+      "last_at": {
+        "source:src": 6.039,
+        "source-caps:sink": 6.039,
+        "source-caps:src": 6.039,
+        "upload:sink": 6.039,
+        "upload:src": 6.043,
+        "nv-caps:sink": 6.043,
+        "nv-caps:src": 6.043,
+        "h264-nvvidconv:sink": 6.043,
+        "h264-nvvidconv:src": 6.044,
+        "h264-videorate:sink": 6.045,
+        "h264-videorate:src": 6.045,
+        "h264-caps:sink": 6.045,
+        "h264-caps:src": 6.045,
+        "h264-encoder:sink": 6.045,
+        "h264-encoder:src": 6.049,
+        "h264-parser:sink": 6.049,
+        "h264-parser:src": 6.049,
+        "h264-parsed-caps:sink": 6.049,
+        "h264-parsed-caps:src": 6.049,
+        "sink:sink": 6.049
+      },
+      "videorate": {
+        "in": 90,
+        "out": 177,
+        "drop": 0,
+        "duplicate": 88
+      },
+      "errors": []
+    },
+    "minimal_nv12_reorder": {
+      "case": "nv12_reorder",
+      "counts": {
+        "source:src": 91,
+        "source-caps:sink": 91,
+        "source-caps:src": 91,
+        "upload:sink": 91,
+        "upload:src": 91,
+        "nv-caps:sink": 91,
+        "nv-caps:src": 91,
+        "h264-videorate:sink": 91,
+        "h264-videorate:src": 180,
+        "h264-nvvidconv:sink": 180,
+        "h264-nvvidconv:src": 180,
+        "h264-caps:sink": 180,
+        "h264-caps:src": 180,
+        "h264-encoder:sink": 180,
+        "h264-encoder:src": 177,
+        "h264-parser:sink": 177,
+        "h264-parser:src": 177,
+        "h264-parsed-caps:sink": 177,
+        "h264-parsed-caps:src": 177,
+        "sink:sink": 177
+      },
+      "last_at": {
+        "source:src": 6.02,
+        "source-caps:sink": 6.02,
+        "source-caps:src": 6.02,
+        "upload:sink": 6.02,
+        "upload:src": 6.021,
+        "nv-caps:sink": 6.021,
+        "nv-caps:src": 6.021,
+        "h264-videorate:sink": 6.021,
+        "h264-videorate:src": 6.021,
+        "h264-nvvidconv:sink": 6.021,
+        "h264-nvvidconv:src": 6.021,
+        "h264-caps:sink": 6.021,
+        "h264-caps:src": 6.021,
+        "h264-encoder:sink": 6.022,
+        "h264-encoder:src": 5.959,
+        "h264-parser:sink": 5.959,
+        "h264-parser:src": 5.959,
+        "h264-parsed-caps:sink": 5.959,
+        "h264-parsed-caps:src": 5.959,
+        "sink:sink": 5.959
+      },
+      "videorate": {
+        "in": 91,
+        "out": 180,
+        "drop": 0,
+        "duplicate": 90
+      },
+      "errors": []
+    },
+    "minimal_nv12_reorder_copy": {
+      "case": "nv12_reorder_copy",
+      "counts": {
+        "source:src": 90,
+        "source-caps:sink": 90,
+        "source-caps:src": 90,
+        "upload:sink": 90,
+        "upload:src": 90,
+        "nv-caps:sink": 90,
+        "nv-caps:src": 90,
+        "h264-videorate:sink": 90,
+        "h264-videorate:src": 177,
+        "h264-nvvidconv:sink": 177,
+        "h264-nvvidconv:src": 177,
+        "h264-caps:sink": 177,
+        "h264-caps:src": 177,
+        "h264-encoder:sink": 177,
+        "h264-encoder:src": 177,
+        "h264-parser:sink": 177,
+        "h264-parser:src": 177,
+        "h264-parsed-caps:sink": 177,
+        "h264-parsed-caps:src": 177,
+        "sink:sink": 177
+      },
+      "last_at": {
+        "source:src": 5.956,
+        "source-caps:sink": 5.956,
+        "source-caps:src": 5.956,
+        "upload:sink": 5.956,
+        "upload:src": 5.956,
+        "nv-caps:sink": 5.957,
+        "nv-caps:src": 5.957,
+        "h264-videorate:sink": 5.957,
+        "h264-videorate:src": 5.957,
+        "h264-nvvidconv:sink": 5.957,
+        "h264-nvvidconv:src": 5.958,
+        "h264-caps:sink": 5.958,
+        "h264-caps:src": 5.958,
+        "h264-encoder:sink": 5.958,
+        "h264-encoder:src": 5.963,
+        "h264-parser:sink": 5.963,
+        "h264-parser:src": 5.963,
+        "h264-parsed-caps:sink": 5.963,
+        "h264-parsed-caps:src": 5.963,
+        "sink:sink": 5.963
+      },
+      "videorate": {
+        "in": 90,
+        "out": 177,
+        "drop": 0,
+        "duplicate": 88
+      },
+      "errors": []
+    },
+    "mux_before": {
+      "case": "before",
+      "counts": {
+        "source:src": 91,
+        "source-caps:sink": 91,
+        "source-caps:src": 91,
+        "upload:sink": 91,
+        "upload:src": 91,
+        "nv-caps:sink": 91,
+        "nv-caps:src": 91,
+        "mux:src": 91,
+        "h264-nvvidconv:sink": 91,
+        "h264-nvvidconv:src": 91,
+        "h264-videorate:sink": 91,
+        "h264-videorate:src": 178,
+        "h264-caps:sink": 178,
+        "h264-caps:src": 178,
+        "h264-encoder:sink": 178,
+        "h264-encoder:src": 178,
+        "h264-parser:sink": 178,
+        "h264-parser:src": 178,
+        "h264-parsed-caps:sink": 178,
+        "h264-parsed-caps:src": 178,
+        "sink:sink": 178
+      },
+      "last_at": {
+        "source:src": 6.012,
+        "source-caps:sink": 6.012,
+        "source-caps:src": 6.012,
+        "upload:sink": 6.012,
+        "upload:src": 6.012,
+        "nv-caps:sink": 6.012,
+        "nv-caps:src": 6.012,
+        "mux:src": 6.012,
+        "h264-nvvidconv:sink": 6.012,
+        "h264-nvvidconv:src": 6.012,
+        "h264-videorate:sink": 6.012,
+        "h264-videorate:src": 6.013,
+        "h264-caps:sink": 6.013,
+        "h264-caps:src": 6.013,
+        "h264-encoder:sink": 6.013,
+        "h264-encoder:src": 6.017,
+        "h264-parser:sink": 6.017,
+        "h264-parser:src": 6.018,
+        "h264-parsed-caps:sink": 6.018,
+        "h264-parsed-caps:src": 6.018,
+        "sink:sink": 6.018
+      },
+      "videorate": {
+        "in": 91,
+        "out": 178,
+        "drop": 0,
+        "duplicate": 88
+      },
+      "errors": []
+    },
+    "mux_copy": {
+      "case": "copy",
+      "counts": {
+        "source:src": 90,
+        "source-caps:sink": 90,
+        "source-caps:src": 90,
+        "upload:sink": 90,
+        "upload:src": 90,
+        "nv-caps:sink": 90,
+        "nv-caps:src": 90,
+        "mux:src": 90,
+        "h264-nvvidconv:sink": 90,
+        "h264-nvvidconv:src": 90,
+        "h264-videorate:sink": 90,
+        "h264-videorate:src": 177,
+        "h264-caps:sink": 177,
+        "h264-caps:src": 177,
+        "h264-encoder:sink": 177,
+        "h264-encoder:src": 177,
+        "h264-parser:sink": 177,
+        "h264-parser:src": 177,
+        "h264-parsed-caps:sink": 177,
+        "h264-parsed-caps:src": 177,
+        "sink:sink": 177
+      },
+      "last_at": {
+        "source:src": 5.979,
+        "source-caps:sink": 5.979,
+        "source-caps:src": 5.979,
+        "upload:sink": 5.98,
+        "upload:src": 5.98,
+        "nv-caps:sink": 5.98,
+        "nv-caps:src": 5.98,
+        "mux:src": 5.98,
+        "h264-nvvidconv:sink": 5.98,
+        "h264-nvvidconv:src": 5.984,
+        "h264-videorate:sink": 5.984,
+        "h264-videorate:src": 5.984,
+        "h264-caps:sink": 5.984,
+        "h264-caps:src": 5.984,
+        "h264-encoder:sink": 5.984,
+        "h264-encoder:src": 5.993,
+        "h264-parser:sink": 5.993,
+        "h264-parser:src": 5.993,
+        "h264-parsed-caps:sink": 5.993,
+        "h264-parsed-caps:src": 5.993,
+        "sink:sink": 5.993
+      },
+      "videorate": {
+        "in": 90,
+        "out": 177,
+        "drop": 0,
+        "duplicate": 88
+      },
+      "errors": []
+    },
+    "mux_reorder_copy": {
+      "case": "reorder_copy",
+      "counts": {
+        "source:src": 90,
+        "source-caps:sink": 90,
+        "source-caps:src": 90,
+        "upload:sink": 90,
+        "upload:src": 90,
+        "nv-caps:sink": 90,
+        "nv-caps:src": 90,
+        "mux:src": 90,
+        "h264-videorate:sink": 90,
+        "h264-videorate:src": 177,
+        "h264-nvvidconv:sink": 177,
+        "h264-nvvidconv:src": 177,
+        "h264-caps:sink": 177,
+        "h264-caps:src": 177,
+        "h264-encoder:sink": 177,
+        "h264-encoder:src": 177,
+        "h264-parser:sink": 177,
+        "h264-parser:src": 177,
+        "h264-parsed-caps:sink": 177,
+        "h264-parsed-caps:src": 177,
+        "sink:sink": 177
+      },
+      "last_at": {
+        "source:src": 5.962,
+        "source-caps:sink": 5.962,
+        "source-caps:src": 5.962,
+        "upload:sink": 5.962,
+        "upload:src": 5.963,
+        "nv-caps:sink": 5.963,
+        "nv-caps:src": 5.963,
+        "mux:src": 5.963,
+        "h264-videorate:sink": 5.963,
+        "h264-videorate:src": 5.964,
+        "h264-nvvidconv:sink": 5.964,
+        "h264-nvvidconv:src": 5.967,
+        "h264-caps:sink": 5.967,
+        "h264-caps:src": 5.967,
+        "h264-encoder:sink": 5.967,
+        "h264-encoder:src": 5.985,
+        "h264-parser:sink": 5.985,
+        "h264-parser:src": 5.985,
+        "h264-parsed-caps:sink": 5.985,
+        "h264-parsed-caps:src": 5.985,
+        "sink:sink": 5.985
+      },
+      "videorate": {
+        "in": 90,
+        "out": 177,
+        "drop": 0,
+        "duplicate": 88
+      },
+      "errors": []
+    }
+  },
+  "findings": {
+    "regression_claim": "v0.55 output-change causality was premature; startup stalls pre-exist in no-output and pre-fix paths",
+    "mux_pool": "4 slots, repeated wait-for-free log; observation, not proof of initiating cause",
+    "confirmed_fix": false,
+    "product_code_changes": false,
+    "production_restart_requested": false,
+    "deployment": "HOLD",
+    "I20": "OPEN",
+    "I33": "OPEN",
+    "P5.1": "IN_PROGRESS",
+    "next": "native wait localization during early frames and reconnect interaction"
+  },
+  "limits": [
+    "one short run per diagnostic configuration, shared production GPU",
+    "first40 pad samples bound initial-gap metrics; stats sampling is not per-frame latency",
+    "synthetic minimal cases do not reproduce full model pipeline",
+    "15 and29.97 recordings have different content",
+    "driver completed_experiment does not mean no stalls",
+    "native GDB sudo authentication unavailable; unprivileged attach had namespace/symbol restrictions and40s timeout; native capture excluded from timing comparison"
+  ],
+  "sources": [
+    "https://gstreamer.freedesktop.org/documentation/videorate/index.html",
+    "https://gstreamer.freedesktop.org/documentation/debug/capssetter.html",
+    "https://docs.nvidia.com/metropolis/deepstream/7.1/text/DS_plugin_gst-nvvideoconvert.html"
+  ],
+  "product_builder_sha256": "f4557dc59d316249159b864d83d1d96d014e4641c5b498eb6b8b62b14ab3b2e4",
+  "tested_frozen_builder_sha256": "0178260d7797d2c5caa9ce9f33436975f2714bdeea48fc6871ee8871be030b2c",
+  "validation": {
+    "wbs_rows": 33,
+    "wbs_status_and_counts_match": true,
+    "fixture_python_syntax_files": 14,
+    "renderer_ruff": "PASS",
+    "renderer_syntax": "PASS",
+    "diff_check": "PASS",
+    "product_tests_repeated": false,
+    "reason": "No product code modification or adopted fix",
+    "browser_visual_retest": false
+  },
+  "publication": {
+    "url": "http://192.168.2.242:18081/",
+    "checked_from": "Jetson own LAN address",
+    "html": {
+      "bytes": 22707,
+      "sha256": "b8e027dc6e2989b9fd61aec33877d9de1c08430363165400c5d8bf1467e9de88",
+      "bytes_match": true,
+      "http_fetch_success": true
+    },
+    "pdf": {
+      "bytes": 124706,
+      "sha256": "b526a38edb6692d9cdeff8819d5bb600c6f61f30acb359d6dee0c410af9a2ac3",
+      "bytes_match": true,
+      "http_fetch_success": true
+    }
+  }
+}

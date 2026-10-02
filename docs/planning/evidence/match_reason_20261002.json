@@ -1,0 +1,359 @@
+{
+  "version": "0.95",
+  "checked_at": "2026-10-02T11:33:38.177318+09:00",
+  "wbs": "P5.1",
+  "status": "IN_PROGRESS",
+  "new_jetson": {
+    "available": true,
+    "user_decision": "project functionality complete, then clean-device installation before release",
+    "tested": false
+  },
+  "isolated_scope": {
+    "image": "sha256:1ace5b7832a50d6675b66146b0edc307021795732fc7c9a770e2cd628d7fd261",
+    "network": "none",
+    "cpus": 2,
+    "memory_bytes": 8589934592,
+    "source": "preserved rollback code",
+    "runtime_logs": "data/runtime/p51_match_reason_20261002_v095",
+    "limits": [
+      "same image, code, model mounts, container environment and CPU2/memory8g as rollback baseline except observer command and isolated paths",
+      "host operational AI now processing after v0.94 recovery; shared-host load is not identical to v0.92",
+      "trial DB copied from post-rollback isolated state, not the original pre-rollback snapshot",
+      "initial raw file copy rejected because WAL existed; SQLite backup included WAL, table counts and integrity checked"
+    ]
+  },
+  "runs": {
+    "initial": {
+      "processed_frames": 2391,
+      "cpu_arrivals": 733,
+      "missed": 24,
+      "reasons": {
+        "expired": 1,
+        "unregistered_unresolved": 23
+      },
+      "matched": 156,
+      "sampled": 553,
+      "context_queue_dropped": 0,
+      "context_tasks_failed": 0,
+      "app_exit": 0,
+      "receiver_exit": 0,
+      "stop_seconds": 2.3285823308397084,
+      "observed_seconds": 90,
+      "elapsed_seconds": 137.62607127707452,
+      "intentional_mqtt_failures": 31,
+      "tcn": [
+        {
+          "seconds": 28.457815191010013,
+          "status": "insufficient_pose_frames",
+          "frames_with_pose": 1,
+          "min_pose_frames": 10
+        }
+      ]
+    },
+    "event_inputs": {
+      "processed_frames": 2453,
+      "cpu_arrivals": 731,
+      "missed": 12,
+      "reasons": {
+        "expired": 1,
+        "no_person_metadata": 11
+      },
+      "matched": 162,
+      "sampled": 557,
+      "context_queue_dropped": 0,
+      "context_tasks_failed": 0,
+      "app_exit": 0,
+      "receiver_exit": 0,
+      "stop_seconds": 2.690311391139403,
+      "observed_seconds": 90,
+      "elapsed_seconds": 121.59187081991695,
+      "intentional_mqtt_failures": 32,
+      "tcn": [
+        {
+          "seconds": 16.17365113692358,
+          "status": "insufficient_pose_frames",
+          "frames_with_pose": 1,
+          "min_pose_frames": 10
+        }
+      ]
+    }
+  },
+  "event_input_proof": {
+    "all_11_have_zero_pipeline_events": true,
+    "first_frame_expired_after_seconds": 7.945486397948116,
+    "historic_13_classified": false,
+    "accuracy_validated": false
+  },
+  "videos": {
+    "output": {
+      "decoded_frames": 1551,
+      "decode_exit": 0,
+      "decode_stderr_bytes": 0,
+      "seconds": 10.982,
+      "probe": {
+        "programs": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "time_base": "1/1000"
+          }
+        ],
+        "format": {
+          "duration": "60.328000"
+        }
+      },
+      "timestamps": {
+        "pts_time": {
+          "count": 1551,
+          "duplicates": 0,
+          "backwards": 0,
+          "max_gap_seconds": 1.5450000000000017
+        },
+        "dts_time": {
+          "count": 1551,
+          "duplicates": 0,
+          "backwards": 0,
+          "max_gap_seconds": 1.5450000000000017
+        }
+      },
+      "sha256": "ccef9a4d9d2c62ffe09d263fc8859e2ef4656543a568a13a9951b6079d823a91"
+    },
+    "output_events": {
+      "decoded_frames": 1571,
+      "decode_exit": 0,
+      "decode_stderr_bytes": 0,
+      "seconds": 7.962,
+      "probe": {
+        "programs": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "time_base": "1/1000"
+          }
+        ],
+        "format": {
+          "duration": "60.215000"
+        }
+      },
+      "timestamps": {
+        "pts_time": {
+          "count": 1571,
+          "duplicates": 0,
+          "backwards": 0,
+          "max_gap_seconds": 0.3340000000000032
+        },
+        "dts_time": {
+          "count": 1571,
+          "duplicates": 0,
+          "backwards": 0,
+          "max_gap_seconds": 0.3340000000000032
+        }
+      },
+      "sha256": "9bbe079ba15dde902e26f617e6f38370d3fbc6df4d47a1efba234e4b4f5ea3a4"
+    }
+  },
+  "databases": {
+    "mqtt_event_outbox.db": {
+      "integrity": "ok",
+      "table_counts": {
+        "mqtt_event_outbox": 173893
+      }
+    },
+    "appearances.db": {
+      "integrity": "ok",
+      "table_counts": {
+        "search_conditions": 0,
+        "appearance_log": 531800
+      }
+    },
+    "commercial_faces.db": {
+      "integrity": "ok",
+      "table_counts": {
+        "face_persons": 1,
+        "face_samples": 1
+      }
+    }
+  },
+  "fatal_signature_counts": {
+    "output": {
+      "CUDA_ERROR_ILLEGAL_ADDRESS": 0,
+      "cudaErrorIllegalAddress": 0,
+      "cudaErrorLaunchFailure": 0,
+      "Traceback_header": 0,
+      "import_traceback_module_lines": 3
+    },
+    "output_events": {
+      "CUDA_ERROR_ILLEGAL_ADDRESS": 0,
+      "cudaErrorIllegalAddress": 0,
+      "cudaErrorLaunchFailure": 0,
+      "Traceback_header": 0,
+      "import_traceback_module_lines": 3
+    }
+  },
+  "packaging": {
+    "dockerfile_copy_sources": "PASS",
+    "compose_resolved": true,
+    "model_settings": {
+      "APPEARANCE_MODEL_PATH": "models/pa100k_resnet50_attr.engine",
+      "FALLDATA_AUX_INLINE_POSE_RF": null,
+      "FALLDATA_AUX_COMPARE_MODEL_PATH": "models/experiments/yolo_pose_fall_cam2_continuous_200_80_640.pkl",
+      "FALLDATA_AUX_COMPARE_MODEL_KIND": null,
+      "FALLDATA_AUX_INLINE_FEATURE_CAPTURE_PATH": null
+    },
+    "action_mode": {
+      "EDGEX_COMMAND_MODE": "edgex",
+      "EDGEX_ALLOWED_DEVICES": "speaker,signboard,siren"
+    },
+    "new_device_rehearsal": "deferred by user until project functionality complete",
+    "legacy_runtime_checks": {
+      "passed": false,
+      "checks": [
+        {
+          "name": "default compose architecture",
+          "passed": true,
+          "detail": "Jetson target selected; deployment uses docker-compose.jetson.yml"
+        },
+        {
+          "name": "TensorRT CUDA binding alignment",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "aiot parser database config",
+          "passed": true,
+          "detail": "parser .env uses localhost, but docker-compose.yml overrides DB_HOST to aiot-parser-db"
+        },
+        {
+          "name": "runtime secret source",
+          "passed": true,
+          "detail": ".env provides MQTT and AIoT DB secrets"
+        },
+        {
+          "name": "aiot database secret wiring",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "runtime path convergence",
+          "passed": true,
+          "detail": "runtime artifacts use /app/data/runtime and logs use /app/data/logs"
+        },
+        {
+          "name": "appearance model wiring",
+          "passed": false,
+          "detail": "missing: docker-compose.jetson.yml missing APPEARANCE_MODEL_PATH: ${APPEARANCE_MODEL_PATH:-models/appearance/pa100k_resnet50_attr.engine}"
+        },
+        {
+          "name": "falldata aux safety wiring",
+          "passed": false,
+          "detail": "missing: docker-compose.jetson.yml missing FALLDATA_AUX_INLINE_POSE_RF: ${FALLDATA_AUX_INLINE_POSE_RF:-true}, docker-compose.jetson.yml missing FALLDATA_AUX_COMPARE_MODEL_PATH: ${FALLDATA_AUX_COMPARE_MODEL_PATH:-models/experiments/yolo_pose_fall_cam2_continuous_200_80_640.pkl}, docker-compose.jetson.yml missing FALLDATA_AUX_COMPARE_MODEL_KIND: ${FALLDATA_AUX_COMPARE_MODEL_KIND:-yolo_pose_rf}, docker-compose.jetson.yml missing FALLDATA_AUX_INLINE_FEATURE_CAPTURE_PATH: ${FALLDATA_AUX_INLINE_FEATURE_CAPTURE_PATH:-}"
+        },
+        {
+          "name": "H.264 WebRTC compatibility wiring",
+          "passed": true,
+          "detail": "Jetson NVENC POC guard is wired"
+        },
+        {
+          "name": "network exposure defaults",
+          "passed": true,
+          "detail": "externally reachable services bind to localhost by default"
+        },
+        {
+          "name": "public API shared secret alignment",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "mqtt authentication config",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "EdgeX outbox path isolation",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "EdgeX mode rollback contract",
+          "passed": false,
+          "detail": "docker-compose.jetson.yml EDGEX_COMMAND_MODE must default to empty, docker-compose.jetson.yml EDGEX_ALLOWED_DEVICES must default to empty, .env.jetson must not override EDGEX_COMMAND_MODE during Direct rollback, .env.jetson must not override EDGEX_ALLOWED_DEVICES during Direct rollback"
+        }
+      ]
+    },
+    "model_path_files_exist": {
+      "APPEARANCE_MODEL_PATH": false,
+      "FALLDATA_AUX_COMPARE_MODEL_PATH": true
+    },
+    "edgex_policy_note": "docs/architecture/EDGEX_OPERATING_MODE_POLICY.md:3-5 already records current edgex mode and speaker,signboard,siren; checker still assumes Direct rollback",
+    "decision": "do not change model settings or live output-device mode to satisfy old textual defaults; reconcile checks with intended deployment profile before release",
+    "runtime_observed": {
+      "APPEARANCE_MODEL_PATH": "models/pa100k_resnet50_attr.engine",
+      "appearance_file_exists": false,
+      "DS_PPHUMAN_SGIE_ENABLED": "1",
+      "DS_APPEARANCE_ENABLED": "1",
+      "FALLDATA_AUX_INLINE_POSE_RF": "true",
+      "FALLDATA_AUX_COMPARE_MODEL_KIND": "yolo_pose_rf"
+    },
+    "rf_recreation_alignment": {
+      "changed_file": ".env.jetson",
+      "added_nonsecret_settings": {
+        "FALLDATA_AUX_INLINE_POSE_RF": "true",
+        "FALLDATA_AUX_COMPARE_MODEL_KIND": "yolo_pose_rf"
+      },
+      "resolved_matches_running": true,
+      "running_container_recreated": false
+    }
+  },
+  "validation": {
+    "compose_regression_passed": 63,
+    "analyzer_synthetic_cases_passed": 10,
+    "ruff": "PASS",
+    "source_files_unchanged": 206,
+    "whole_suite_rerun": false,
+    "previous_whole_suite_I45": "still OPEN; isolated pass does not resolve whole-suite contention failure"
+  },
+  "operational_changes": {
+    "source_changed": false,
+    "services_restarted": false,
+    "env_jetson_added": {
+      "FALLDATA_AUX_INLINE_POSE_RF": "true",
+      "FALLDATA_AUX_COMPARE_MODEL_KIND": "yolo_pose_rf"
+    },
+    "reboot_tested": false
+  },
+  "remaining": [
+    "I32 no-target vs true expired frame metrics, startup delay",
+    "I38 insufficient pose and earlier timeout cause",
+    "I46 absent appearance model path and outdated deployment checker assumptions",
+    "I45 DB concurrency failure",
+    "I34 original CUDA issue",
+    "new-device/reboot/long-duration/multi-camera validation deferred or pending"
+  ],
+  "operational_after": {
+    "status": "running",
+    "health": "healthy",
+    "started_at": "2026-10-02T01:33:58.362007997Z",
+    "unchanged_start": true
+  },
+  "publication": {
+    "checked_at": "2026-10-02T11:39:54.644432+09:00",
+    "version": "0.95",
+    "assets": {
+      "index.html": {
+        "bytes": 23311,
+        "sha256": "d64059135f72a6db680a13f2bc5cdae29967bc8d94a4f94cd6a32cf8e1ba5d7f",
+        "served_bytes_equal": true
+      },
+      "CCTV_project_progress.pdf": {
+        "bytes": 127820,
+        "sha256": "f70bf5fa9fd4b4a6f94eec5b5b7b52e1bc6c09badf60ebd5144a47860e06fb52",
+        "served_bytes_equal": true
+      }
+    },
+    "wbs_rows_statuses_unchanged": true
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "started_at": "2026-09-21T07:29:09.170340+00:00",
+  "user_report": "POC receiver stopped",
+  "binding": {
+    "origin_id": "origin_a50ce2623e7b4d6d838f8d7bc69c0235",
+    "consumer_id": "laptop-poc-8260472c6c65",
+    "destination": "record-mqtt:cctv/records/v1/laptop-poc-8260472c6c65"
+  },
+  "result": "offline_phase_pass",
+  "stage": "await_receiver_restart",
+  "recovery_verified": false,
+  "source_db": "data/runtime/monitoring_remote_20260921/source.db",
+  "broker_tcp_reachable": true,
+  "receiver_health_unavailable": true,
+  "receiver_health_error": "ConnectionError",
+  "sensor_ingest_id": "ing_5ad07526f4874e70ab09c368c7e3a75d",
+  "video_ingest_id": "ing_a5a7cba2be594812a1917cbaf1faa64c",
+  "new_records": [
+    {
+      "delivery_id": "job_6ba4ea0278f7423d8577b19c12325deb",
+      "record_type": "event",
+      "payload_sha256": "d3ded4001436d0f960379c1872001b34d773a7323c58828c3c6bc638fb5f99a9",
+      "wire_payload_utf8": "{\"delivery_id\": \"job_6ba4ea0278f7423d8577b19c12325deb\", \"event_id\": \"poc-video-outage-1\", \"record\": {\"demo\": true, \"event_id\": \"poc-video-outage-1\", \"trial\": \"receiver-outage-20260921\", \"value\": 1}, \"schema_version\": \"1.0\", \"source_namespace\": \"video_detection\"}"
+    },
+    {
+      "delivery_id": "job_808919ed944a4e5daf0074492305e5f5",
+      "record_type": "sensor_observation",
+      "payload_sha256": "df362509bbae955cd9ec36b573e39796bd7300f3326f4fd96dfac652e19ee7bb",
+      "wire_payload_utf8": "{\"delivery_id\": \"job_808919ed944a4e5daf0074492305e5f5\", \"observation_id\": \"obs_18f75b2f6973855b4684782b2872bb752779c4b3f260bea0c94c5d685a73681a\", \"record\": {\"device_id\": \"poc-sensor-outage-1\", \"measurements\": {\"humidity\": {\"quality\": \"missing\", \"source_field\": \"humidity_pct\", \"unit\": \"%\", \"value\": null}, \"temperature\": {\"quality\": \"valid\", \"source_field\": \"temperature_c\", \"unit\": \"degC\", \"value\": 27.0}}, \"message_type\": \"sensor_observation\", \"observation_id\": \"obs_18f75b2f6973855b4684782b2872bb752779c4b3f260bea0c94c5d685a73681a\", \"observed_at\": \"1970-01-01T09:00:00+09:00\", \"observed_at_quality\": \"valid\", \"observed_at_source\": \"data.created_at\", \"profile\": \"t34954\", \"received_at\": \"2026-09-21T07:29:09.201915+00:00\", \"schema_version\": \"1.0\", \"source_namespace\": \"tlv_mqtt\", \"source_record_id\": \"ing_5ad07526f4874e70ab09c368c7e3a75d\"}, \"schema_version\": \"1.0\", \"source_namespace\": \"tlv_mqtt\"}"
+    }
+  ],
+  "sender_exit_code": 1,
+  "sender_summary": {
+    "binding": {
+      "origin_id": "origin_a50ce2623e7b4d6d838f8d7bc69c0235",
+      "consumer_id": "laptop-poc-8260472c6c65",
+      "destination": "record-mqtt:cctv/records/v1/laptop-poc-8260472c6c65"
+    },
+    "states": {
+      "stored": 2,
+      "uncertain": 2
+    },
+    "total": 4,
+    "stored": 2
+  },
+  "canonical_records": 4,
+  "physical_delivery_jobs": 0,
+  "pending_records": [
+    {
+      "job_id": "job_6ba4ea0278f7423d8577b19c12325deb",
+      "state": "uncertain",
+      "attempts": 4,
+      "last_error": "ConnectionError",
+      "acked_at": null,
+      "next_attempt_at": 1789975765.095082
+    },
+    {
+      "job_id": "job_808919ed944a4e5daf0074492305e5f5",
+      "state": "uncertain",
+      "attempts": 4,
+      "last_error": "ConnectionError",
+      "acked_at": null,
+      "next_attempt_at": 1789975765.123452
+    }
+  ],
+  "old_two_acks_unchanged": true,
+  "new_id_bytes_hash_preserved": true,
+  "new_false_ack_count": 0,
+  "finished_at": "2026-09-21T07:29:18.289602+00:00",
+  "elapsed_seconds": 9.119
+}

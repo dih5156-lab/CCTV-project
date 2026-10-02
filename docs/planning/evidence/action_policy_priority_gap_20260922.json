@@ -1,0 +1,45 @@
+{
+  "issue": "I23",
+  "scenario": "warning head active, new critical zone_dwelling on same camera",
+  "priority_samples": [
+    {
+      "type": "fall_detected",
+      "risk": "critical",
+      "priority": 0
+    },
+    {
+      "type": "intrusion",
+      "risk": "critical",
+      "priority": 1
+    },
+    {
+      "type": "zone_entered",
+      "risk": "critical",
+      "priority": 2
+    },
+    {
+      "type": "zone_dwelling",
+      "risk": "critical",
+      "priority": 3
+    },
+    {
+      "type": "smoke_test_alert",
+      "risk": "critical",
+      "priority": 4
+    },
+    {
+      "type": "head",
+      "risk": "warning",
+      "priority": 2
+    },
+    {
+      "type": "temperature_alert",
+      "risk": "warning",
+      "priority": 4
+    }
+  ],
+  "warning_accepted": true,
+  "critical_accepted": false,
+  "higher_risk_first_contract_met": false,
+  "scope": "local coordinator only, no device output"
+}

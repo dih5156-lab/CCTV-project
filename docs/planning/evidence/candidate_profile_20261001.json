@@ -1,0 +1,176 @@
+{
+  "version": "0.89",
+  "date": "2026-10-01 14:31 KST",
+  "scope": "P5.1/I07 candidate profile contract and isolated storage probe",
+  "profile": {
+    "name": "candidate profile contract",
+    "passed": true,
+    "detail": "",
+    "unchanged_other_services": true,
+    "command_ports_healthcheck_preserved": true,
+    "environment_changed_keys": [
+      "APPEARANCE_MODEL_PATH",
+      "COMMERCIAL_FACE_DATABASE",
+      "DS_CROP_PERSON_INTERVAL",
+      "DS_CROP_POSE_DIAGNOSTICS",
+      "DS_CROP_POSE_ENABLED",
+      "DS_HELMET_SGIE_BATCH_SIZE",
+      "DS_NVVIDEOCONVERT_COPY_HW",
+      "DS_OSD_PROCESS_MODE",
+      "DS_POSE_SGIE_BATCH_SIZE",
+      "DS_PPHUMAN_SGIE_BATCH_SIZE",
+      "DS_RTSP_RECONNECT_INTERVAL_SEC",
+      "DS_STREAM_HEIGHT",
+      "DS_STREAM_WIDTH",
+      "FALLDATA_AUX_COMPARE_MODEL_KIND",
+      "FALLDATA_AUX_INLINE_FEATURE_CAPTURE_PATH",
+      "FALLDATA_AUX_INLINE_POSE_RF",
+      "FALLDATA_AUX_MODEL_PATH",
+      "FALLDATA_AUX_NEAR_MISS_PROMOTE_ENABLED",
+      "FALLDATA_AUX_SHADOW_WINDOW_INTERVAL_SEC",
+      "FALLDATA_AUX_TEMPORAL_POSE_MODEL_PATH",
+      "FALLDATA_AUX_TEMPORAL_WORKER_ENABLED"
+    ],
+    "image": "sha256:809693da4ed0c288e68744235f4ff0156612d73ca59f5e6282ffcedf3e9aee49",
+    "mount_targets": [
+      {
+        "type": "bind",
+        "target": "/app/cameras.json"
+      },
+      {
+        "type": "bind",
+        "target": "/app/zones_config.json",
+        "read_only": true
+      },
+      {
+        "type": "bind",
+        "target": "/app/models",
+        "read_only": true
+      },
+      {
+        "type": "bind",
+        "target": "/app/data"
+      },
+      {
+        "type": "bind",
+        "target": "/app/.venv-mediapipe",
+        "read_only": true
+      },
+      {
+        "type": "bind",
+        "target": "/app/.venv-falldata",
+        "read_only": true
+      },
+      {
+        "type": "bind",
+        "target": "/app/.venv-jetson-train",
+        "read_only": true
+      },
+      {
+        "type": "bind",
+        "target": "/root/.insightface"
+      },
+      {
+        "type": "bind",
+        "target": "/app/known_faces.json"
+      },
+      {
+        "type": "bind",
+        "target": "/app/known_faces"
+      },
+      {
+        "type": "bind",
+        "target": "/opt/nvidia/deepstream",
+        "read_only": true
+      },
+      {
+        "type": "bind",
+        "target": "/usr/lib/aarch64-linux-gnu/nvidia",
+        "read_only": true
+      },
+      {
+        "type": "bind",
+        "target": "/tmp/.X11-unix"
+      },
+      {
+        "type": "volume",
+        "target": "/app/models/trt_cache"
+      }
+    ]
+  },
+  "injection": {
+    "secrets_match_running": {
+      "MQTT_USER": true,
+      "MQTT_PASSWORD": true,
+      "INTERNAL_SERVICE_TOKEN": true
+    },
+    "operating_started_at": "2026-09-16T23:45:46.903505745Z",
+    "operating_restart_count": 0,
+    "operating_health": "healthy",
+    "compose_missing_password_rejected": true
+  },
+  "probes": [
+    {
+      "pending_before": 0,
+      "pending_after": 2,
+      "models_verified": 8,
+      "db_integrity": "ok",
+      "network": true
+    },
+    {
+      "pending_before": 2,
+      "pending_after": 2,
+      "models_verified": 8,
+      "image_files_verified": 359,
+      "db_integrity": "ok",
+      "network": true
+    }
+  ],
+  "tests": {
+    "passed": 44,
+    "new_candidate_cases": 7,
+    "initial_existing_failures": 2,
+    "initial_failures_fixed": "environment-dependent fixture and obsolete compose option assertion"
+  },
+  "production_deployed": false,
+  "wbs_done": 9,
+  "wbs_total": 33,
+  "limits": [
+    "Not a full main.py/GPU/RTSP integration start with new profile",
+    "No broker authentication connection or final monitoring ACK in this trial",
+    "External SDK/venvs and private configuration still required",
+    "Full previous-configuration rollback and CUDA700 root cause remain unresolved"
+  ],
+  "next": "P5.1/I07: 새 후보 프로필의 전체 AI 통합 기동을 격리 환경에서 확인하고, 이전 구성 복구에 필요한 가상환경·SDK·설정 의존성을 점검한다. 기존 DB 복원 근거는 재사용하며 I32/I34/I37/I38 잔여와 운영 배포 보류를 유지한다.",
+  "publication": {
+    "files": {
+      "index.html": {
+        "http": 200,
+        "bytes": 22995,
+        "sha256": "20f7d1c3dd5efb4183b78d6d3c82e0327772540adf2b37caba7168f57dc4fc33"
+      },
+      "CCTV_project_progress.pdf": {
+        "http": 200,
+        "bytes": 123800,
+        "sha256": "a82ca50616dc5005324ead4939520b1e15b5ccf1837ce620f516e6bb253f6ff6"
+      }
+    },
+    "wbs_json_rows_equal": 33,
+    "version": "0.89",
+    "browser_other_pc_retested": false,
+    "html_wbs_json_rows_equal": 33,
+    "first_page_visual_check": "pass"
+  },
+  "validation": {
+    "ruff": "pass",
+    "diff_check": "pass",
+    "documented_cli": "pass",
+    "graph_review": "returned no symbol coverage; direct diff reviewed"
+  },
+  "artifacts": {
+    "docker-compose.jetson-candidate.yml": "5d0fbb5e619df7df8263be7776cf339281f35607f1a853eb8e8173602d90f651",
+    "scripts/health/check_compose_runtime_assumptions.py": "b0a99ce97730cf3d70757d10d46807bcf84242daef761da53b6c3dc1fd3df176",
+    "tests/test_check_compose_runtime_assumptions.py": "295bad382d8fe39d9343fbbaac7995a4d5ff021df2eef3200d608b69fe816e05"
+  },
+  "trial_containers_remaining": 0
+}

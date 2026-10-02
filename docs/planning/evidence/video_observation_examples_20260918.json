@@ -1,0 +1,337 @@
+{
+  "synthetic": true,
+  "scope": "pure builder; not real camera/GPU evidence",
+  "examples": [
+    {
+      "name": "normal_track_zero",
+      "input": {
+        "type": "person",
+        "object_id": 0,
+        "timestamp": 1700000000,
+        "metadata": {
+          "has_helmet": false,
+          "lower_color": "black",
+          "frame_num": 0,
+          "backend": "deepstream_tensor",
+          "model_task": "detect",
+          "gie_id": 1
+        }
+      },
+      "context": {
+        "namespace": "video_detection",
+        "source_record_id": "example-normal_track_zero",
+        "device_id": "example-camera",
+        "received_at": "2026-09-18T12:00:00+09:00"
+      },
+      "observation": {
+        "schema_version": "1.0",
+        "message_type": "video_observation",
+        "observation_id": "obs_88abee4765541f929778704ab6b8f2e09a2d62618667f2dbc25282a4bd4125e3",
+        "source_namespace": "video_detection",
+        "source_record_id": "example-normal_track_zero",
+        "device_id": "example-camera",
+        "profile": "detection",
+        "received_at": "2026-09-18T12:00:00+09:00",
+        "observed_at": null,
+        "observed_at_source": null,
+        "observed_at_quality": "missing",
+        "processed_at": "2023-11-15T07:13:20+09:00",
+        "processed_at_source": "timestamp",
+        "processed_at_quality": "valid",
+        "track_id": {
+          "value": 0,
+          "quality": "valid",
+          "source_field": "object_id"
+        },
+        "frame_num": 0,
+        "model": {
+          "backend": "deepstream_tensor",
+          "task": "detect",
+          "gie_id": 1,
+          "version": null,
+          "attribute_backend": null
+        },
+        "measurements": {
+          "has_helmet": {
+            "value": false,
+            "unit": null,
+            "quality": "valid",
+            "source_field": "metadata.has_helmet"
+          },
+          "has_backpack": {
+            "value": null,
+            "unit": null,
+            "quality": "missing",
+            "source_field": null
+          },
+          "has_handbag": {
+            "value": null,
+            "unit": null,
+            "quality": "missing",
+            "source_field": null
+          },
+          "has_suitcase": {
+            "value": null,
+            "unit": null,
+            "quality": "missing",
+            "source_field": null
+          },
+          "upper_color": {
+            "value": null,
+            "unit": null,
+            "quality": "missing",
+            "source_field": null
+          },
+          "lower_color": {
+            "value": "black",
+            "unit": null,
+            "quality": "valid",
+            "source_field": "metadata.lower_color"
+          },
+          "helmet_color": {
+            "value": null,
+            "unit": null,
+            "quality": "missing",
+            "source_field": null
+          },
+          "gender": {
+            "value": null,
+            "unit": null,
+            "quality": "missing",
+            "source_field": null
+          },
+          "age_group": {
+            "value": null,
+            "unit": null,
+            "quality": "missing",
+            "source_field": null
+          },
+          "face_name": {
+            "value": null,
+            "unit": null,
+            "quality": "missing",
+            "source_field": null
+          }
+        }
+      }
+    },
+    {
+      "name": "unknown_and_missing",
+      "input": {
+        "type": "appearance_match",
+        "object_id": null,
+        "metadata": {
+          "upper_color": "unknown",
+          "has_backpack": null,
+          "attribute_backend": "hsv"
+        }
+      },
+      "context": {
+        "namespace": "video_detection",
+        "source_record_id": "example-unknown_and_missing",
+        "device_id": "example-camera",
+        "received_at": "2026-09-18T12:00:00+09:00"
+      },
+      "observation": {
+        "schema_version": "1.0",
+        "message_type": "video_observation",
+        "observation_id": "obs_0a92e209e4716f57e57d8357d0221b26bd5d1c4ea202abce6635f8e299c4a565",
+        "source_namespace": "video_detection",
+        "source_record_id": "example-unknown_and_missing",
+        "device_id": "example-camera",
+        "profile": "detection",
+        "received_at": "2026-09-18T12:00:00+09:00",
+        "observed_at": null,
+        "observed_at_source": null,
+        "observed_at_quality": "missing",
+        "processed_at": null,
+        "processed_at_source": null,
+        "processed_at_quality": "missing",
+        "track_id": {
+          "value": null,
+          "quality": "missing",
+          "source_field": "object_id"
+        },
+        "frame_num": null,
+        "model": {
+          "backend": null,
+          "task": null,
+          "gie_id": null,
+          "version": null,
+          "attribute_backend": "hsv"
+        },
+        "measurements": {
+          "has_helmet": {
+            "value": null,
+            "unit": null,
+            "quality": "missing",
+            "source_field": null
+          },
+          "has_backpack": {
+            "value": null,
+            "unit": null,
+            "quality": "missing",
+            "source_field": "metadata.has_backpack"
+          },
+          "has_handbag": {
+            "value": null,
+            "unit": null,
+            "quality": "missing",
+            "source_field": null
+          },
+          "has_suitcase": {
+            "value": null,
+            "unit": null,
+            "quality": "missing",
+            "source_field": null
+          },
+          "upper_color": {
+            "value": null,
+            "unit": null,
+            "quality": "unknown",
+            "source_field": "metadata.upper_color"
+          },
+          "lower_color": {
+            "value": null,
+            "unit": null,
+            "quality": "missing",
+            "source_field": null
+          },
+          "helmet_color": {
+            "value": null,
+            "unit": null,
+            "quality": "missing",
+            "source_field": null
+          },
+          "gender": {
+            "value": null,
+            "unit": null,
+            "quality": "missing",
+            "source_field": null
+          },
+          "age_group": {
+            "value": null,
+            "unit": null,
+            "quality": "missing",
+            "source_field": null
+          },
+          "face_name": {
+            "value": null,
+            "unit": null,
+            "quality": "missing",
+            "source_field": null
+          }
+        }
+      }
+    },
+    {
+      "name": "invalid_values",
+      "input": {
+        "type": "appearance_match",
+        "object_id": 18446744073709551615,
+        "timestamp": "invalid",
+        "metadata": {
+          "has_helmet": "false",
+          "upper_color": 0
+        }
+      },
+      "context": {
+        "namespace": "video_detection",
+        "source_record_id": "example-invalid_values",
+        "device_id": "example-camera",
+        "received_at": "2026-09-18T12:00:00+09:00"
+      },
+      "observation": {
+        "schema_version": "1.0",
+        "message_type": "video_observation",
+        "observation_id": "obs_a3c7d763af82e447cc54cd49999f0e1ce999d9de5be4535494412ac3889998c6",
+        "source_namespace": "video_detection",
+        "source_record_id": "example-invalid_values",
+        "device_id": "example-camera",
+        "profile": "detection",
+        "received_at": "2026-09-18T12:00:00+09:00",
+        "observed_at": null,
+        "observed_at_source": null,
+        "observed_at_quality": "missing",
+        "processed_at": null,
+        "processed_at_source": "timestamp",
+        "processed_at_quality": "invalid",
+        "track_id": {
+          "value": null,
+          "quality": "unknown",
+          "source_field": "object_id"
+        },
+        "frame_num": null,
+        "model": {
+          "backend": null,
+          "task": null,
+          "gie_id": null,
+          "version": null,
+          "attribute_backend": null
+        },
+        "measurements": {
+          "has_helmet": {
+            "value": null,
+            "unit": null,
+            "quality": "invalid",
+            "source_field": "metadata.has_helmet"
+          },
+          "has_backpack": {
+            "value": null,
+            "unit": null,
+            "quality": "missing",
+            "source_field": null
+          },
+          "has_handbag": {
+            "value": null,
+            "unit": null,
+            "quality": "missing",
+            "source_field": null
+          },
+          "has_suitcase": {
+            "value": null,
+            "unit": null,
+            "quality": "missing",
+            "source_field": null
+          },
+          "upper_color": {
+            "value": null,
+            "unit": null,
+            "quality": "invalid",
+            "source_field": "metadata.upper_color"
+          },
+          "lower_color": {
+            "value": null,
+            "unit": null,
+            "quality": "missing",
+            "source_field": null
+          },
+          "helmet_color": {
+            "value": null,
+            "unit": null,
+            "quality": "missing",
+            "source_field": null
+          },
+          "gender": {
+            "value": null,
+            "unit": null,
+            "quality": "missing",
+            "source_field": null
+          },
+          "age_group": {
+            "value": null,
+            "unit": null,
+            "quality": "missing",
+            "source_field": null
+          },
+          "face_name": {
+            "value": null,
+            "unit": null,
+            "quality": "missing",
+            "source_field": null
+          }
+        }
+      }
+    }
+  ]
+}

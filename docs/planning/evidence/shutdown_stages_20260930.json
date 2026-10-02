@@ -1,0 +1,389 @@
+{
+  "version": "0.82",
+  "date": "2026-09-30",
+  "manifest": {
+    "candidate": "data/runtime/p51_candidate_gate_20260930_v079/candidate_fixed",
+    "source_files_verified": 359,
+    "source_manifest_sha256": "8c54c0355f6871efc48be93f0225b4991f96ce978a93f018af733dc91761190e",
+    "image": "sha256:1ace5b7832a50d6675b66146b0edc307021795732fc7c9a770e2cd628d7fd261",
+    "configuration_base": "data/runtime/p51_candidate_gate_20260930_v079/compose_rtsp_ready_fixed.json",
+    "changes": [
+      "shutdown-stage timing, Python stack every5s",
+      "native stack only after30s shutdown budget exceeded",
+      "isolated container SYS_PTRACE capability, no host PID namespace"
+    ],
+    "limitations": [
+      "shared GPU with operating service",
+      "single recorded input",
+      "no accuracy labels, no monitoring ACK, no operating deployment"
+    ]
+  },
+  "trials": {
+    "stages": {
+      "experiment": {
+        "codec_mode": "rtsp",
+        "completed": true,
+        "scope": "unchanged candidate, model call observation, recorded loopback RTSP, no operating deployment",
+        "receiver_exit": 0,
+        "output_bytes": 23660466,
+        "last_frames": 1372.0,
+        "app_exit": 0,
+        "stop_seconds": 9.876498939935118,
+        "elapsed_seconds": 114.42814798816107,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 13.387
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 14.007
+          },
+          {
+            "name": "sigint_requested",
+            "elapsed": 104.512
+          }
+        ],
+        "sample_count": 98
+      },
+      "stage_times": [
+        {
+          "stage": "pipeline.send_event",
+          "phase": "return",
+          "seconds": 0.25064887781627476
+        },
+        {
+          "stage": "pipeline.set_state",
+          "phase": "return",
+          "seconds": 7.468655340140685
+        },
+        {
+          "stage": "main_loop.quit",
+          "phase": "return",
+          "seconds": 0.00010211090557277203
+        },
+        {
+          "stage": "main_loop_thread.join",
+          "phase": "return",
+          "seconds": 0.0008926040027290583
+        },
+        {
+          "stage": "_falldata_aux.close",
+          "phase": "return",
+          "seconds": 0.33622005698271096
+        },
+        {
+          "stage": "processor.stop",
+          "phase": "return",
+          "seconds": 8.059749566949904
+        },
+        {
+          "stage": "_falldata_aux.close",
+          "phase": "return",
+          "seconds": 5.974317900836468e-05
+        },
+        {
+          "stage": "processor.stop",
+          "phase": "return",
+          "seconds": 0.0010127949062734842
+        }
+      ],
+      "pending_stages": [],
+      "native_attach_succeeded": false,
+      "native_capture_marker": false,
+      "cuda700_signatures": 0,
+      "source_sha256": {
+        "shutdown_stages.jsonl": "6c74ab02beff6642541e1c537da70bf04b83f987c4c4e789737d82636fdea092",
+        "app.log": "4ca3596216b64d22836eed69732bc72392ecd453cd2d6275050c83794a4f3374",
+        "experiment.json": "2d4e946c886501fe0db153207e2deb646dcd46e3a41fe74d3e6955bb695390c3"
+      }
+    },
+    "native": {
+      "experiment": {
+        "codec_mode": "rtsp",
+        "completed": true,
+        "scope": "unchanged candidate, model call observation, recorded loopback RTSP, no operating deployment",
+        "receiver_exit": 0,
+        "output_bytes": 24230142,
+        "last_frames": 1350.0,
+        "debugger_attached_after_seconds": 3,
+        "debugger_exit": 0,
+        "app_exit": 0,
+        "stop_seconds": 3.933590773958713,
+        "elapsed_seconds": 108.6438408959657,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 13.379
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 13.796
+          },
+          {
+            "name": "sigint_requested",
+            "elapsed": 104.671
+          }
+        ],
+        "sample_count": 98
+      },
+      "stage_times": [
+        {
+          "stage": "pipeline.send_event",
+          "phase": "return",
+          "seconds": 0.05766876810230315
+        },
+        {
+          "stage": "pipeline.set_state",
+          "phase": "return",
+          "seconds": 0.11846491391770542
+        },
+        {
+          "stage": "main_loop.quit",
+          "phase": "return",
+          "seconds": 0.0019832539837807417
+        },
+        {
+          "stage": "publish_thread.join",
+          "phase": "return",
+          "seconds": 0.530913001159206
+        },
+        {
+          "stage": "_falldata_aux_thread.join",
+          "phase": "return",
+          "seconds": 1.1137347638141364
+        },
+        {
+          "stage": "_falldata_aux.close",
+          "phase": "return",
+          "seconds": 0.33327203313820064
+        },
+        {
+          "stage": "processor.stop",
+          "phase": "return",
+          "seconds": 2.161249347962439
+        },
+        {
+          "stage": "_falldata_aux.close",
+          "phase": "return",
+          "seconds": 6.428686901926994e-05
+        },
+        {
+          "stage": "processor.stop",
+          "phase": "return",
+          "seconds": 0.0010775299742817879
+        }
+      ],
+      "pending_stages": [],
+      "native_attach_succeeded": false,
+      "native_capture_marker": false,
+      "cuda700_signatures": 0,
+      "source_sha256": {
+        "shutdown_stages.jsonl": "45ce5e22585396b277fbd3f7169c9d671010e80b9de5c4402b977e9e5d79ab32",
+        "native_shutdown_stack.txt": "6bf979778d9421db3b6c13fc6106ee357537032f096e3cc7c71a33904238a90f",
+        "app.log": "5ffb858f99940a3d520459c300b682ec4cb988ebef8a8391a3083aaa394cae48",
+        "experiment.json": "0dbb8ef5fa89df18e1efe8b9467d05721d7f33c3e351e22137bbf724bc2b39df"
+      }
+    },
+    "parent_gdb": {
+      "experiment": {
+        "codec_mode": "rtsp",
+        "completed": false,
+        "scope": "unchanged candidate, model call observation, recorded loopback RTSP, no operating deployment",
+        "error": "RuntimeError: app exit during startup: 0",
+        "elapsed_seconds": 24.399815103970468,
+        "transitions": [],
+        "sample_count": 20
+      },
+      "stage_times": [],
+      "pending_stages": [],
+      "native_attach_succeeded": false,
+      "native_capture_marker": false,
+      "cuda700_signatures": 0,
+      "source_sha256": {
+        "shutdown_stages.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "app.log": "e7ce3156d3a60303a9586e3ea1f6462a0e7331bd6ba9b72b6291c87739a780eb",
+        "experiment.json": "a97a1d16d87ce01d2a90f2626763f1e75a82647d92eeabb572b4a794a24953b7"
+      }
+    },
+    "parent_retry": {
+      "experiment": {
+        "codec_mode": "rtsp",
+        "completed": true,
+        "scope": "unchanged candidate, model call observation, recorded loopback RTSP, no operating deployment",
+        "receiver_exit": 0,
+        "output_bytes": 27393157,
+        "last_frames": 1528.0,
+        "debugger_exit": 0,
+        "app_exit": 0,
+        "native_stack_captured": false,
+        "stop_seconds": 6.583575975848362,
+        "elapsed_seconds": 118.15577550791204,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 19.487
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 20.701
+          },
+          {
+            "name": "sigint_requested",
+            "elapsed": 111.529
+          }
+        ],
+        "sample_count": 105
+      },
+      "stage_times": [
+        {
+          "stage": "pipeline.send_event",
+          "phase": "return",
+          "seconds": 0.0037919480819255114
+        },
+        {
+          "stage": "pipeline.set_state",
+          "phase": "return",
+          "seconds": 0.2817057690117508
+        },
+        {
+          "stage": "main_loop.quit",
+          "phase": "return",
+          "seconds": 9.523192420601845e-05
+        },
+        {
+          "stage": "publish_thread.join",
+          "phase": "return",
+          "seconds": 0.39234812487848103
+        },
+        {
+          "stage": "_falldata_aux_thread.join",
+          "phase": "return",
+          "seconds": 3.5334193150047213
+        },
+        {
+          "stage": "_falldata_aux.close",
+          "phase": "return",
+          "seconds": 0.3413015471305698
+        },
+        {
+          "stage": "processor.stop",
+          "phase": "return",
+          "seconds": 4.5648667339701205
+        },
+        {
+          "stage": "_falldata_aux.close",
+          "phase": "return",
+          "seconds": 8.83189495652914e-05
+        },
+        {
+          "stage": "processor.stop",
+          "phase": "return",
+          "seconds": 0.0014136889949440956
+        }
+      ],
+      "pending_stages": [],
+      "native_attach_succeeded": false,
+      "native_capture_marker": false,
+      "cuda700_signatures": 0,
+      "source_sha256": {
+        "shutdown_stages.jsonl": "81e7c9a9fb4608d41df7f25c50ce05e66df745bc5eca5908a324fb574b13a097",
+        "app.log": "998d8860eb6aed77487893e1568a4ba49bce8a5c6d37a879c0aaac5595ed371c",
+        "experiment.json": "93e7fb34b926f768d6a0f4a4bc9988414548b81661d1d2701b3e1714f7384582"
+      }
+    }
+  },
+  "operating": {
+    "observed_at": "2026-09-30 16:44 KST",
+    "running_containers_at_observation": 34,
+    "persistent_containers": 33,
+    "isolated_test_containers": 1,
+    "created_utc": "2026-09-16T23:45:39.360658576Z",
+    "started_utc": "2026-09-16T23:45:46.903505745Z",
+    "restart_count": 0,
+    "status": "running",
+    "health": "healthy",
+    "image": "sha256:1ace5b7832a50d6675b66146b0edc307021795732fc7c9a770e2cd628d7fd261",
+    "settings": {
+      "METRICS_PORT": "8770",
+      "DS_CONTEXT_MIN_INTERVAL_SEC": null,
+      "FALLDATA_AUX_TEMPORAL_WORKER_ENABLED": null,
+      "DS_OSD_PROCESS_MODE": null,
+      "DS_PRIMARY_INTERVAL": "1"
+    },
+    "metrics_http_status": 200,
+    "metric_family_present": {
+      "cctv_camera_primary_": false,
+      "cctv_model_": false,
+      "cctv_falldata_temporal_": false,
+      "cctv_processor_context_tasks_completed": false,
+      "cctv_processor_frames_processed": true
+    },
+    "source_mounts": [
+      "/app/src",
+      "/app/scripts",
+      "/app/config/deepstream",
+      "/app/models"
+    ],
+    "limitation": "Bind-mounted files may change without process recreation; loaded memory is not a verified old or new full release.",
+    "after_trials": {
+      "status": "running",
+      "health": "healthy",
+      "restart_count": 0,
+      "started_utc": "2026-09-16T23:45:46.903505745Z",
+      "diagnostic_containers_remaining": 0
+    }
+  },
+  "product_code_changed": false,
+  "new_product_unit_tests_run": false,
+  "limitations": [
+    "Original30second shutdown timeout not reproduced; I40 remains open.",
+    "No native wait stack captured. Attach returned0 but text reported ptrace failure.",
+    "Parent debugger first attempt stopped on deliberate MQTT SIGPIPE; excluded from application failure.",
+    "Corrected parent debugger exited normally; NULL transition below0.5second did not trigger stack.",
+    "Shared GPU, single recording, no output decoding/accuracy/monitoring/deployment acceptance this unit.",
+    "CUDA700 not reproduced; I34 remains open."
+  ],
+  "publication": {
+    "url": "http://192.168.2.141:18081/",
+    "wbs_rows_match": 33,
+    "png_first_page_checked": true,
+    "browser_interaction_tested": false,
+    "other_pc_tested": false,
+    "artifacts": {
+      "index.html": {
+        "bytes": 22704,
+        "sha256": "b70ad552dbf0480f7815a9d2aca6ce0b77924e52a9ac8dbb72ad3159f58f2cb2",
+        "http_bytes_match": true
+      },
+      "CCTV_project_progress.pdf": {
+        "bytes": 126102,
+        "sha256": "4d9af18b4f631de83735f18a530ce37b203c5dec883964aba522b7f8eac94503",
+        "http_bytes_match": true
+      }
+    }
+  },
+  "harness_sha256": {
+    "cameras-one.json": "9011e45cb30a331c428568f9f86c28e5dab3f4e058979fe01d04aa9a7f3fc81a",
+    "parent_gdb_retry.cmd": "15c5730d699212bd402da9daa4cfbbc2299a4dadcb633a18688b35fbf3f7b3b1",
+    "run_parent_gdb.py": "603d2fb0d174b28c6d4f8b53a041975f002ad5aeba9f3f7b2a65872ffc2710c9",
+    "compose_stages.json": "a25f45b6ac9b80fe552fbd2d626a00cf4ab8bb5e473df0429e7e3ad8c1e772e6",
+    "run_trial.py": "5ce7192bf2db5d0f43c6fd8f15666b2952f71d7f46b619c1e7784d6414aa5c10",
+    "compose_native.json": "a0565ecfdbe9bb7f923054911e4252e9b23a6b9bb65d783d1a98274fe29e67bd",
+    "compose_parent_gdb.json": "64b0886499b509ad92652164ac8475e0c9788cf60eaeea5ec8aa0d21ff645c90",
+    "run_parent_retry.py": "d67e6550cd9f09b3d69545c5a39118d1ed825e1c910ab9032dce1a57ecc86169",
+    "run_native.py": "d875b0b31b816d6a03ef5d42f41247b90284dfb547910fa8ea35c013886109c1",
+    "compose_parent_retry.json": "098207c3301d28b51d3219095d4788c891250f1776d70c2691187f9a386d3a38",
+    "manifest.json": "f7f61df494dcea36317e32a481390cac6c5c42aa155b97453c903ec15a28c889",
+    "trace_deepstream_startup.py": "bc50e4be29dd2c72b2978b585bc27cfff51c7967c70a5ae3fb91f3a2436f7a68",
+    "parent_gdb.cmd": "a4198174eb1d1a44d232b79268995f9f7d3cad8782ef3d1eff10d096342e27f8",
+    "observe_parent_gdb.py": "4fbeaf9dd90d533dc46e866845b11eab995f7b2a0b8513b30c7937fe47a32020",
+    "observe.py": "b98139f203d32e40d4bcd1c65e0e1d4138eaba66dd11ec073024b81d4d7b1457"
+  },
+  "validation": {
+    "ruff": "PASS",
+    "syntax_files": 8,
+    "diff_check": "PASS",
+    "new_product_tests_run": false
+  }
+}

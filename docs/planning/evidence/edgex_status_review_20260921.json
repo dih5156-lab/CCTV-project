@@ -1,0 +1,35 @@
+{
+  "observed_date": "2026-09-21",
+  "method": "rtk proxy docker ps --format {{.Names}}|{{.Status}}; read-only output recorded in this session",
+  "core_containers_running": [
+    "edgex-core-data",
+    "edgex-core-metadata",
+    "edgex-core-command",
+    "edgex-mqtt-broker",
+    "edgex-app-rules-engine",
+    "edgex-kuiper"
+  ],
+  "core_health": "Not reported by docker ps for these containers; running is not an end-to-end health test.",
+  "custom_containers_healthy": [
+    "aiot-parser",
+    "cctv-sensor-rule-bridge",
+    "cctv-edgex-adapter",
+    "cctv-action-layer",
+    "cctv-edgex-command-result",
+    "cctv-device-signboard",
+    "cctv-device-speaker",
+    "cctv-device-siren"
+  ],
+  "historical_signboard_test": "docs/handover/EDGEX_SIGNBOARD_UAT_20260917.md",
+  "physical_output_tested_this_turn": false,
+  "configuration_changed": false,
+  "service_restarted": false,
+  "remaining": [
+    "P1.3/P3 queue priority and device isolation",
+    "P3.4 physical visual confirmation and monitoring correlation",
+    "P3.5 speaker physical output",
+    "P3.6 siren unavailable",
+    "P4 current sensor specification and end-to-end integration",
+    "I06 mode policy inconsistency"
+  ]
+}

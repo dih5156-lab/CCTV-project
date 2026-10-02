@@ -1,0 +1,728 @@
+{
+  "version": "0.92",
+  "date": "2026-10-01T16:35:14.545012+09:00",
+  "scope": "candidate run, container removal, previous image and v0.88 selected disk code on the same isolated DB; no production switch",
+  "contract": {
+    "candidate": {
+      "image": "sha256:809693da4ed0c288e68744235f4ff0156612d73ca59f5e6282ffcedf3e9aee49",
+      "network": "none",
+      "same_db_root": true,
+      "code_source": "image",
+      "dependencies": "v0.91 backup",
+      "worker_enabled": "true",
+      "shadow_interval": "10",
+      "cpus": 2,
+      "memory": "8g"
+    },
+    "rollback": {
+      "image": "sha256:1ace5b7832a50d6675b66146b0edc307021795732fc7c9a770e2cd628d7fd261",
+      "network": "none",
+      "same_db_root": true,
+      "code_source": "v0.88 selected disk code backup",
+      "dependencies": "v0.91 backup",
+      "worker_enabled": "unset",
+      "shadow_interval": "300",
+      "cpus": 2,
+      "memory": "8g"
+    }
+  },
+  "stages": {
+    "candidate": {
+      "experiment": {
+        "codec_mode": "rtsp",
+        "completed": true,
+        "scope": "candidate phase on same isolated persistent database",
+        "scenario": "normal",
+        "loaded_rtsp_plugin": [
+          "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstrtspclientsink.so"
+        ],
+        "receiver_exit": 0,
+        "output_bytes": 36357002,
+        "last_frames": 2404.0,
+        "app_exit": 0,
+        "stop_seconds": 6.369969799881801,
+        "elapsed_seconds": 139.0055287028663,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 41.011
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 41.833
+          },
+          {
+            "name": "sigterm_requested",
+            "elapsed": 132.588
+          }
+        ],
+        "sample_count": 120
+      },
+      "last_metrics": {
+        "cctv_processor_frames_processed_total:{}": 2401.0,
+        "cctv_processor_frames_dropped_total:{}": 0.0,
+        "cctv_processor_pipeline_restart_executed_total:{}": 0.0,
+        "cctv_processor_context_match_missed_total:{}": 0.0,
+        "cctv_processor_context_queue_dropped_total:{}": 0.0,
+        "cctv_processor_context_tasks_completed_total:{}": 163.0,
+        "cctv_processor_context_tasks_failed_total:{}": 0.0,
+        "cctv_falldata_temporal_requests_total:{}": 7.0,
+        "cctv_falldata_temporal_worker_calls_total:{}": 7.0,
+        "cctv_falldata_temporal_worker_completed_total:{}": 7.0,
+        "cctv_falldata_temporal_worker_seconds_total:{}": 33.96903157699853,
+        "cctv_falldata_temporal_parsed_results_total:{}": 7.0,
+        "cctv_falldata_temporal_unparsed_results_total:{}": 0.0,
+        "cctv_falldata_temporal_insufficient_pose_results_total:{}": 1.0,
+        "cctv_falldata_temporal_window_inferences_total:{}": 7.0,
+        "cctv_falldata_temporal_window_reports_missing_total:{}": 0.0,
+        "cctv_falldata_temporal_insufficient_window_results_total:{}": 0.0
+      },
+      "video": {
+        "packets": 1613,
+        "pts_time": {
+          "count": 1613,
+          "duplicate": 0,
+          "backward": 0,
+          "max_gap_s": 0.4139999999999997,
+          "span_s": 60.176
+        },
+        "dts_time": {
+          "count": 1613,
+          "duplicate": 0,
+          "backward": 0,
+          "max_gap_s": 0.4139999999999997,
+          "span_s": 60.176
+        },
+        "decode_exit": 0,
+        "stderr_bytes": 0,
+        "decoded_frames": 1613
+      },
+      "cuda_signatures": {
+        "CUDA_ERROR_ILLEGAL_ADDRESS": 0,
+        "cudaErrorIllegalAddress": 0,
+        "CUDA error.*700": 0,
+        "error-code: 700": 0
+      }
+    },
+    "rollback": {
+      "experiment": {
+        "codec_mode": "rtsp",
+        "completed": true,
+        "scope": "rollback phase on same isolated persistent database",
+        "scenario": "normal",
+        "loaded_rtsp_plugin": [
+          "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstrtspclientsink.so"
+        ],
+        "receiver_exit": 0,
+        "output_bytes": 33152194,
+        "last_frames": 2001.0,
+        "app_exit": 0,
+        "stop_seconds": 3.491119925165549,
+        "elapsed_seconds": 134.49488047603518,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 39.417
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 40.062
+          },
+          {
+            "name": "sigterm_requested",
+            "elapsed": 130.955
+          }
+        ],
+        "sample_count": 123
+      },
+      "last_metrics": {
+        "cctv_processor_frames_processed_total:{}": 1998.0,
+        "cctv_processor_frames_dropped_total:{}": 0.0,
+        "cctv_processor_pipeline_restart_executed_total:{}": 0.0,
+        "cctv_processor_context_match_missed_total:{}": 13.0,
+        "cctv_processor_context_queue_dropped_total:{}": 0.0,
+        "cctv_processor_context_tasks_completed_total:{}": 162.0,
+        "cctv_processor_context_tasks_failed_total:{}": 0.0,
+        "cctv_falldata_temporal_requests_total:{}": 1.0,
+        "cctv_falldata_temporal_process_calls_total:{}": 1.0,
+        "cctv_falldata_temporal_process_completed_total:{}": 1.0,
+        "cctv_falldata_temporal_process_seconds_total:{}": 20.321764447027817,
+        "cctv_falldata_temporal_parsed_results_total:{}": 1.0,
+        "cctv_falldata_temporal_unparsed_results_total:{}": 0.0,
+        "cctv_falldata_temporal_insufficient_pose_results_total:{}": 1.0,
+        "cctv_falldata_temporal_window_inferences_total:{}": 1.0,
+        "cctv_falldata_temporal_window_reports_missing_total:{}": 0.0,
+        "cctv_falldata_temporal_insufficient_window_results_total:{}": 0.0
+      },
+      "video": {
+        "packets": 1396,
+        "pts_time": {
+          "count": 1396,
+          "duplicate": 0,
+          "backward": 0,
+          "max_gap_s": 0.4580000000000002,
+          "span_s": 60.196
+        },
+        "dts_time": {
+          "count": 1396,
+          "duplicate": 0,
+          "backward": 0,
+          "max_gap_s": 0.4580000000000002,
+          "span_s": 60.196
+        },
+        "decode_exit": 0,
+        "stderr_bytes": 0,
+        "decoded_frames": 1396
+      },
+      "cuda_signatures": {
+        "CUDA_ERROR_ILLEGAL_ADDRESS": 0,
+        "cudaErrorIllegalAddress": 0,
+        "CUDA error.*700": 0,
+        "error-code: 700": 0
+      }
+    }
+  },
+  "databases": {
+    "before": {
+      "phase": "before",
+      "databases": {
+        "appearances.db": {
+          "integrity": "ok",
+          "tables": {
+            "appearance_log": {
+              "rows": 531689,
+              "all_rows_sha256": "4652f787a179efd4c26d40fb6fd5dd5e963f322501d2cc4409a516cba02751d2",
+              "columns": [
+                "id",
+                "event_id",
+                "timestamp",
+                "camera_id",
+                "track_id",
+                "upper_color",
+                "lower_color",
+                "has_helmet",
+                "helmet_color",
+                "has_backpack",
+                "has_handbag",
+                "has_suitcase",
+                "gender",
+                "age_group",
+                "face_name",
+                "attribute_backend",
+                "crop_path",
+                "bbox_x",
+                "bbox_y",
+                "bbox_w",
+                "bbox_h",
+                "attribute_metadata",
+                "track_id_text"
+              ]
+            },
+            "search_conditions": {
+              "rows": 0,
+              "all_rows_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "columns": [
+                "id",
+                "name",
+                "payload",
+                "enabled",
+                "created_at"
+              ]
+            }
+          }
+        },
+        "mqtt_event_outbox.db": {
+          "integrity": "ok",
+          "tables": {
+            "mqtt_event_outbox": {
+              "rows": 173767,
+              "all_rows_sha256": "e912b9ba359a97c45a4c4160e471dc5db6799498c10d5a9cf5921f74bda7a26f",
+              "columns": [
+                "id",
+                "event_id",
+                "destination_name",
+                "topic",
+                "payload_json",
+                "status",
+                "created_at_ms",
+                "last_attempt_ms",
+                "sent_at_ms",
+                "retry_count",
+                "last_error"
+              ]
+            }
+          },
+          "status_counts": {
+            "pending": 32,
+            "sent": 173735
+          },
+          "duplicate_event_destination_groups": 0
+        },
+        "commercial_faces.db": {
+          "integrity": "ok",
+          "tables": {
+            "face_persons": {
+              "rows": 1,
+              "all_rows_sha256": "2305a0edfb22f656b9daf5fabe5cfbd349686fd02db27d787bd1be6cbe7d8609",
+              "columns": [
+                "person_id",
+                "name",
+                "phone",
+                "category",
+                "active",
+                "model_id",
+                "created_at"
+              ]
+            },
+            "face_samples": {
+              "rows": 1,
+              "all_rows_sha256": "92fb587c6731124b35faa1ac79b6e45815b5b8bcf8fe6fedaf7700f1a480e8b1",
+              "columns": [
+                "sample_id",
+                "person_id",
+                "image_path",
+                "embedding",
+                "dimension",
+                "model_id",
+                "created_at"
+              ]
+            }
+          }
+        }
+      },
+      "comparison": {},
+      "passed": true
+    },
+    "candidate": {
+      "phase": "candidate",
+      "databases": {
+        "appearances.db": {
+          "integrity": "ok",
+          "tables": {
+            "appearance_log": {
+              "rows": 531717,
+              "all_rows_sha256": "a91192160331a56b4032297dda94628a455075546970a7666eb2c8e9701c920a",
+              "columns": [
+                "id",
+                "event_id",
+                "timestamp",
+                "camera_id",
+                "track_id",
+                "upper_color",
+                "lower_color",
+                "has_helmet",
+                "helmet_color",
+                "has_backpack",
+                "has_handbag",
+                "has_suitcase",
+                "gender",
+                "age_group",
+                "face_name",
+                "attribute_backend",
+                "crop_path",
+                "bbox_x",
+                "bbox_y",
+                "bbox_w",
+                "bbox_h",
+                "attribute_metadata",
+                "track_id_text"
+              ]
+            },
+            "search_conditions": {
+              "rows": 0,
+              "all_rows_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "columns": [
+                "id",
+                "name",
+                "payload",
+                "enabled",
+                "created_at"
+              ]
+            }
+          }
+        },
+        "mqtt_event_outbox.db": {
+          "integrity": "ok",
+          "tables": {
+            "mqtt_event_outbox": {
+              "rows": 173798,
+              "all_rows_sha256": "4353aaf9bcd996a0e08c299a1c3e5b175348c7329d06a1ab42a0a744b81ada68",
+              "columns": [
+                "id",
+                "event_id",
+                "destination_name",
+                "topic",
+                "payload_json",
+                "status",
+                "created_at_ms",
+                "last_attempt_ms",
+                "sent_at_ms",
+                "retry_count",
+                "last_error"
+              ]
+            }
+          },
+          "status_counts": {
+            "pending": 63,
+            "sent": 173735
+          },
+          "duplicate_event_destination_groups": 0
+        },
+        "commercial_faces.db": {
+          "integrity": "ok",
+          "tables": {
+            "face_persons": {
+              "rows": 1,
+              "all_rows_sha256": "2305a0edfb22f656b9daf5fabe5cfbd349686fd02db27d787bd1be6cbe7d8609",
+              "columns": [
+                "person_id",
+                "name",
+                "phone",
+                "category",
+                "active",
+                "model_id",
+                "created_at"
+              ]
+            },
+            "face_samples": {
+              "rows": 1,
+              "all_rows_sha256": "92fb587c6731124b35faa1ac79b6e45815b5b8bcf8fe6fedaf7700f1a480e8b1",
+              "columns": [
+                "sample_id",
+                "person_id",
+                "image_path",
+                "embedding",
+                "dimension",
+                "model_id",
+                "created_at"
+              ]
+            }
+          }
+        }
+      },
+      "comparison": {
+        "appearances.db": {
+          "search_conditions": {
+            "prior_rows_compared": 0,
+            "missing_or_reordered_rows": 0,
+            "changed_fields": {},
+            "forbidden_value_changes": 0,
+            "retry_count_decreases": 0,
+            "added_columns": [],
+            "new_rows": 0
+          },
+          "appearance_log": {
+            "prior_rows_compared": 531689,
+            "missing_or_reordered_rows": 0,
+            "changed_fields": {},
+            "forbidden_value_changes": 0,
+            "retry_count_decreases": 0,
+            "added_columns": [],
+            "new_rows": 28
+          }
+        },
+        "mqtt_event_outbox.db": {
+          "mqtt_event_outbox": {
+            "prior_rows_compared": 173767,
+            "missing_or_reordered_rows": 0,
+            "changed_fields": {},
+            "forbidden_value_changes": 0,
+            "retry_count_decreases": 0,
+            "added_columns": [],
+            "new_rows": 31
+          }
+        },
+        "commercial_faces.db": {
+          "face_persons": {
+            "prior_rows_compared": 1,
+            "missing_or_reordered_rows": 0,
+            "changed_fields": {},
+            "forbidden_value_changes": 0,
+            "retry_count_decreases": 0,
+            "added_columns": [],
+            "new_rows": 0
+          },
+          "face_samples": {
+            "prior_rows_compared": 1,
+            "missing_or_reordered_rows": 0,
+            "changed_fields": {},
+            "forbidden_value_changes": 0,
+            "retry_count_decreases": 0,
+            "added_columns": [],
+            "new_rows": 0
+          }
+        }
+      },
+      "passed": true
+    },
+    "rollback": {
+      "phase": "rollback",
+      "databases": {
+        "appearances.db": {
+          "integrity": "ok",
+          "tables": {
+            "appearance_log": {
+              "rows": 531745,
+              "all_rows_sha256": "334c3644376c5d18868b15c65af9db05c30e79f6b0b91343cfa40683eb1a8c83",
+              "columns": [
+                "id",
+                "event_id",
+                "timestamp",
+                "camera_id",
+                "track_id",
+                "upper_color",
+                "lower_color",
+                "has_helmet",
+                "helmet_color",
+                "has_backpack",
+                "has_handbag",
+                "has_suitcase",
+                "gender",
+                "age_group",
+                "face_name",
+                "attribute_backend",
+                "crop_path",
+                "bbox_x",
+                "bbox_y",
+                "bbox_w",
+                "bbox_h",
+                "attribute_metadata",
+                "track_id_text"
+              ]
+            },
+            "search_conditions": {
+              "rows": 0,
+              "all_rows_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "columns": [
+                "id",
+                "name",
+                "payload",
+                "enabled",
+                "created_at"
+              ]
+            }
+          }
+        },
+        "mqtt_event_outbox.db": {
+          "integrity": "ok",
+          "tables": {
+            "mqtt_event_outbox": {
+              "rows": 173830,
+              "all_rows_sha256": "b9e028290836d279229bf40baaa3bff13927931ad339fe8d5af901ecf61139e8",
+              "columns": [
+                "id",
+                "event_id",
+                "destination_name",
+                "topic",
+                "payload_json",
+                "status",
+                "created_at_ms",
+                "last_attempt_ms",
+                "sent_at_ms",
+                "retry_count",
+                "last_error"
+              ]
+            }
+          },
+          "status_counts": {
+            "pending": 95,
+            "sent": 173735
+          },
+          "duplicate_event_destination_groups": 0
+        },
+        "commercial_faces.db": {
+          "integrity": "ok",
+          "tables": {
+            "face_persons": {
+              "rows": 1,
+              "all_rows_sha256": "2305a0edfb22f656b9daf5fabe5cfbd349686fd02db27d787bd1be6cbe7d8609",
+              "columns": [
+                "person_id",
+                "name",
+                "phone",
+                "category",
+                "active",
+                "model_id",
+                "created_at"
+              ]
+            },
+            "face_samples": {
+              "rows": 1,
+              "all_rows_sha256": "92fb587c6731124b35faa1ac79b6e45815b5b8bcf8fe6fedaf7700f1a480e8b1",
+              "columns": [
+                "sample_id",
+                "person_id",
+                "image_path",
+                "embedding",
+                "dimension",
+                "model_id",
+                "created_at"
+              ]
+            }
+          }
+        }
+      },
+      "comparison": {
+        "appearances.db": {
+          "search_conditions": {
+            "prior_rows_compared": 0,
+            "missing_or_reordered_rows": 0,
+            "changed_fields": {},
+            "forbidden_value_changes": 0,
+            "retry_count_decreases": 0,
+            "added_columns": [],
+            "new_rows": 0
+          },
+          "appearance_log": {
+            "prior_rows_compared": 531717,
+            "missing_or_reordered_rows": 0,
+            "changed_fields": {},
+            "forbidden_value_changes": 0,
+            "retry_count_decreases": 0,
+            "added_columns": [],
+            "new_rows": 28
+          }
+        },
+        "mqtt_event_outbox.db": {
+          "mqtt_event_outbox": {
+            "prior_rows_compared": 173798,
+            "missing_or_reordered_rows": 0,
+            "changed_fields": {},
+            "forbidden_value_changes": 0,
+            "retry_count_decreases": 0,
+            "added_columns": [],
+            "new_rows": 32
+          }
+        },
+        "commercial_faces.db": {
+          "face_persons": {
+            "prior_rows_compared": 1,
+            "missing_or_reordered_rows": 0,
+            "changed_fields": {},
+            "forbidden_value_changes": 0,
+            "retry_count_decreases": 0,
+            "added_columns": [],
+            "new_rows": 0
+          },
+          "face_samples": {
+            "prior_rows_compared": 1,
+            "missing_or_reordered_rows": 0,
+            "changed_fields": {},
+            "forbidden_value_changes": 0,
+            "retry_count_decreases": 0,
+            "added_columns": [],
+            "new_rows": 0
+          }
+        }
+      },
+      "passed": true
+    }
+  },
+  "model_manifest_match": {
+    "head/helmet_model.engine": true,
+    "appearance/appearance_color_yolov8n.engine": true,
+    "appearance/pa100k_resnet50_attr.engine": true,
+    "fall/yolov8n-pose.engine": true,
+    "fall/fall_temporal_same_split_resume_20260908.pt": true,
+    "fall/yolov8n-pose.pt": true,
+    "legacy/falldata_mediapipe/FNF_RF_SMOTE_CAM_1.pkl": true,
+    "experiments/yolo_pose_fall_cam2_continuous_200_80_640.pkl": true
+  },
+  "comparison_checker_selfcheck": {
+    "unchanged": true,
+    "retry_allowed": true,
+    "payload_rejected": true,
+    "status_rejected": true,
+    "delete_rejected": true
+  },
+  "duplicate_probe": {
+    "same_returned_row": true,
+    "all_business_rows_unchanged": true,
+    "rows_before": 173830,
+    "rows_after": 173830,
+    "payload_sha256": "86373abfebeaabaf7aff9fe3a4ef9e36c222ff2332946e6c82a85811c87dd68b",
+    "implementation_sha256": "7982bda5f635e1d3892d69b420cd7e4e25ee98b3ff72854e0623065aefdf438f",
+    "scope": "existing candidate-created event through rollback outbox API; no broker delivery"
+  },
+  "source_sha256": {
+    "contract.json": "e3f3623555eb665004a007cd2e033171743a1922af1a8d5b84b5f9cd1aca9d55",
+    "run_transition.py": "7e810072705a54611d929bd3f2e53b40d6c674fd1970b5b8b8f127867bc27f57",
+    "audit_state.py": "94850ed0f7b5bf046e669f3ea248dbcf61c5e6bcea5ea12e001fd6e6d2a47059",
+    "probe_duplicate.py": "b5ee4104659f7b8ef8f7f63607c252999e7fb54a7833945ad7e25ff9ba89ba89",
+    "reports/before_db.json": "9c0dd41660a4f5a81c1727cb18b4bcc8805533360707800bdf470a2aa64244b5",
+    "reports/candidate_db.json": "d66e739c1f17fd7666a9545ef5fb46dbbda0bd11c358129f4c476cbc644b03a5",
+    "reports/checker_selfcheck.json": "b1aabc2ef56a4bd0161e8b8a104d9708245db267b85629793b0369dfbf189fcf",
+    "reports/model_manifest_check.json": "854bcfac872d0e106a88918a95729eb7d62c10c5225405fd65b799d2a34b2150",
+    "reports/rollback_db.json": "30454a3da0bb567c53cc4969adc5f1464a2b631ad2f30222cbb2980e087e55ea",
+    "output_candidate/experiment.json": "90869a98ff5e5c0de09d28956591af18e5e9216557a9a3aa7b373c9822417406",
+    "output_candidate/video_check.json": "ead813596ea917cac50de6a45e77acc790390e6f9f1aa0407ea4e198c076cf31",
+    "output_rollback/experiment.json": "1f7ec4561a915f81a697d55e093bca298505cad3a40037109848bfdf394d3d79",
+    "output_rollback/video_check.json": "d9624aeba8b636fe5bd210deea41f1ccd95ac45dc467693491df51f6b94a3ef1",
+    "scripts/ops/render_progress_snapshot.py": "88ec36b0d6718282d856cf1fcdc0a356c3db4419256f661bc63157826173462d",
+    "scripts/ops/progress_snapshot_template.html": "ee43a3acf3bb9af191446bcb663ac799f36819c518b8ce6f2e2e50eac2f0503f",
+    "docs/planning/figma_exports/progress_v092.json": "958a4e39cf6428daaadd12aea62f1c332afbb11be3fb44c9558a09e4508e8c0a"
+  },
+  "production_deployed": false,
+  "limits": [
+    "Same-Jetson one recorded stream, isolated network and offline broker; no production camera/monitoring/device test.",
+    "Clean SIGTERM to main.py child; not forced crash, Docker stop or all-service restart verification.",
+    "Rollback code is selected current-disk snapshot, not September 17 in-memory code. Historical defects may remain.",
+    "Code/image/environment change together. Performance differences do not prove one causal setting.",
+    "Existing three AI DBs tested, not all EdgeX/parser/monitoring stores or image crop files.",
+    "Append-only business data checked; schema is already migrated in the v0.91 source DB. Reverse destructive migration is not tested.",
+    "Duplicate probe covers an existing event ID/destination; semantic duplicate detection across newly assigned IDs and device exactly-once execution not tested.",
+    "CUDA700 root cause remains OPEN; P5.1 remains IN_PROGRESS and operating deployment is withheld."
+  ],
+  "next": "P5.1/I32·I38: 이번 후보0/복귀13 매칭 누락의 발생 시각과 TCN 시작/반환·CPU 지표를 기존 기록으로 대조한다. 새 원인 구별 조건 없이 GPU 시험을 반복하지 않는다. I07 격리 전환 근거를 재사용하며 I34 등 필수 조건 충족 전 운영 배포는 보류한다.",
+  "operating": {
+    "health": "healthy",
+    "restart_count": 0,
+    "started_at": "2026-09-16T23:45:46.903505745Z"
+  },
+  "trial_cleanup": {
+    "candidate_removed": true,
+    "rollback_removed": true,
+    "snapshots_and_evidence_retained": true
+  },
+  "publication": {
+    "checked_at": "2026-10-01T17:01:17.439824+09:00",
+    "url": "http://192.168.2.141:18081/",
+    "version": "0.92",
+    "wbs_json_html_rows_equal": true,
+    "rows": 33,
+    "counts": {
+      "DONE": 9,
+      "BLOCKED": 3,
+      "PLANNED": 13,
+      "VERIFY": 7,
+      "IN_PROGRESS": 1
+    },
+    "local_lan_http_verified": true,
+    "remote_pc_browser_retested": false,
+    "pdf_first_page_visual_check": true,
+    "assets": {
+      "index.html": {
+        "bytes": 23244,
+        "sha256": "09b78fe1a63baf729968f5d5cf0a6b6eff2853bd259f9ef462e10ce610a84406",
+        "served_bytes_equal": true
+      },
+      "CCTV_project_progress.pdf": {
+        "bytes": 126191,
+        "sha256": "2e0540b16020a4962d0702561ec668a0d4b663c80e5364e838df8f1b83989bca",
+        "served_bytes_equal": true
+      }
+    }
+  },
+  "validation": {
+    "comparison_checker_cases_passed": 5,
+    "model_manifest_matches": 8,
+    "database_snapshots_integrity_ok": 9,
+    "duplicate_probe_passed": true,
+    "decoded_frames": 3009,
+    "render_exit": 0,
+    "ruff_exit": 0,
+    "git_diff_check_exit": 0,
+    "graph_coverage": "no changed symbols indexed; direct review of template and text used",
+    "runtime_artifacts_git_ignored": true
+  }
+}

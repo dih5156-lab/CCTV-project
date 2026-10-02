@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "deliver",
+  "type": "dataflow",
+  "input": "/media/sawwave/Learning11/CCTV-project/docs/architecture/archify/02-storage.dataflow.json",
+  "output": "/media/sawwave/Learning11/CCTV-project/docs/architecture/archify/02-storage.html",
+  "specification": {
+    "sha256": "b40f8760d6ebe7d5e4f4f745c52357319ebdd03b1435fb4cedfe1f2ae96bcc5a",
+    "bytes": 2868
+  },
+  "artifact": {
+    "sha256": "331db0f5c085d03c7347be828d215e38a1961f8321209e7aa5aa7ad52ed99975",
+    "bytes": 809984
+  },
+  "validation": {
+    "checksPassed": 9,
+    "checkCount": 9,
+    "compositionProfile": "showcase",
+    "compositionStatus": "pass",
+    "errors": 0,
+    "warnings": 0
+  }
+}

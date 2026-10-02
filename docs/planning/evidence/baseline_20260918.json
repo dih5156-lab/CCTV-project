@@ -1,0 +1,5494 @@
+{
+  "captured_at": "2026-09-18T09:40:09.020269+09:00",
+  "scope": "Read-only Git/Docker/file snapshot. No environment file content, credentials or endpoint values captured. No restart, deploy or physical output.",
+  "head": "1c76eac0d6d4b90d1de8890eeac40d2085347f1c",
+  "branch": "260907-260911-9월2주차",
+  "last_commit": "1c76eac 2026-09-09T10:01:39+09:00 docs: API 인수인계 문서 추가",
+  "git_counts": {
+    "entries": 1112,
+    "staged": 185,
+    "unstaged_tracked": 37,
+    "untracked": 905
+  },
+  "git_entries": [
+    {
+      "status": " M",
+      "path": ".env.jetson.example"
+    },
+    {
+      "status": " M",
+      "path": "COMMANDS.md"
+    },
+    {
+      "status": "M ",
+      "path": "README.md"
+    },
+    {
+      "status": "M ",
+      "path": "config/deepstream/config_infer_helmet.txt"
+    },
+    {
+      "status": "A ",
+      "path": "config/deepstream/config_infer_helmet_sgie.txt"
+    },
+    {
+      "status": "A ",
+      "path": "config/deepstream/config_infer_pa100k_sgie.txt"
+    },
+    {
+      "status": "A ",
+      "path": "config/deepstream/config_infer_person_primary.txt"
+    },
+    {
+      "status": "A ",
+      "path": "config/deepstream/config_infer_pose_sgie.txt"
+    },
+    {
+      "status": "A ",
+      "path": "config/deepstream/config_tracker_iou.yml"
+    },
+    {
+      "status": "M ",
+      "path": "config/deepstream/config_tracker_nvdcf.yml"
+    },
+    {
+      "status": "A ",
+      "path": "config/deepstream/crop_pose.env.example"
+    },
+    {
+      "status": "M ",
+      "path": "config/output_devices.json"
+    },
+    {
+      "status": " M",
+      "path": "deploy/systemd/cctv-jetson-stack.service"
+    },
+    {
+      "status": "A ",
+      "path": "docker-compose.edgex-uat.yml"
+    },
+    {
+      "status": "MM",
+      "path": "docker-compose.jetson.yml"
+    },
+    {
+      "status": "M ",
+      "path": "docs/API_HANDOVER.md"
+    },
+    {
+      "status": "M ",
+      "path": "docs/HANDOVER_CCTV_AIOT_SAFETY_SYSTEM.md"
+    },
+    {
+      "status": "MM",
+      "path": "docs/README.md"
+    },
+    {
+      "status": "M ",
+      "path": "docs/architecture/COMMAND_CORRELATION_CONTRACT.md"
+    },
+    {
+      "status": "A ",
+      "path": "docs/architecture/DEEPSTREAM_GIE_REGISTRY.md"
+    },
+    {
+      "status": "M ",
+      "path": "docs/architecture/EDGEX_FIRST_EVENT_ROUTING_PLAN.md"
+    },
+    {
+      "status": "A ",
+      "path": "docs/architecture/EDGEX_OPERATING_MODE_POLICY.md"
+    },
+    {
+      "status": "A ",
+      "path": "docs/architecture/EDGE_PLATFORM_MATURITY_ASSESSMENT.md"
+    },
+    {
+      "status": "A ",
+      "path": "docs/architecture/MULTI_JETSON_FAILOVER_ARCHITECTURE.md"
+    },
+    {
+      "status": "A ",
+      "path": "docs/architecture/POSE_CROP_PIPELINE_PLAN.md"
+    },
+    {
+      "status": "A ",
+      "path": "docs/architecture/figma_exports/README.md"
+    },
+    {
+      "status": "A ",
+      "path": "docs/architecture/figma_exports/multi_jetson_failover_architecture.png"
+    },
+    {
+      "status": "A ",
+      "path": "docs/architecture/figma_exports/multi_site_jetson_input_failover_latest.png"
+    },
+    {
+      "status": "A ",
+      "path": "docs/architecture/figma_exports/pipeline_v2.png"
+    },
+    {
+      "status": "A ",
+      "path": "docs/architecture/figma_exports/system_architecture_v4.png"
+    },
+    {
+      "status": "A ",
+      "path": "docs/decisions/ADR-003-edge-device-timeout-retry-policy.md"
+    },
+    {
+      "status": "M ",
+      "path": "docs/guides/DEPLOYMENT_ENVIRONMENT_VARIABLES.md"
+    },
+    {
+      "status": "M ",
+      "path": "docs/guides/OPERATIONS_RUNBOOK.md"
+    },
+    {
+      "status": "A ",
+      "path": "docs/guides/REALTIME_MODEL_SHADOW_TEST_20260910.md"
+    },
+    {
+      "status": "A ",
+      "path": "docs/handover/DEPLOYMENT_READINESS_20260907.md"
+    },
+    {
+      "status": "M ",
+      "path": "docs/handover/EDGEX_LIVE_UAT_20260904.md"
+    },
+    {
+      "status": "M ",
+      "path": "docs/handover/EDGEX_MIGRATION_STATUS.md"
+    },
+    {
+      "status": "AM",
+      "path": "docs/handover/EDGEX_UAT_RUNBOOK.md"
+    },
+    {
+      "status": "M ",
+      "path": "docs/handover/EVIDENCE_REGISTER.md"
+    },
+    {
+      "status": "M ",
+      "path": "docs/handover/README.md"
+    },
+    {
+      "status": "A ",
+      "path": "docs/handover/WORKLOG_20260909.md"
+    },
+    {
+      "status": "A ",
+      "path": "docs/models/FALLDATA_FN_ANALYSIS_20260910.md"
+    },
+    {
+      "status": "A ",
+      "path": "docs/models/FALL_ERROR_REVIEW_GUIDE.md"
+    },
+    {
+      "status": "A ",
+      "path": "docs/models/FALL_MODEL_COMPARISON_20260909.md"
+    },
+    {
+      "status": "A ",
+      "path": "docs/models/FALL_MODEL_COMPARISON_20260910.md"
+    },
+    {
+      "status": "A ",
+      "path": "docs/models/FALL_MODEL_COMPARISON_SAME_SPLIT_20260911.md"
+    },
+    {
+      "status": "A ",
+      "path": "docs/models/FALL_TEMPORAL_ERROR_ANALYSIS_20260910.md"
+    },
+    {
+      "status": "M ",
+      "path": "docs/models/MODEL_HANDOVER.md"
+    },
+    {
+      "status": "A ",
+      "path": "docs/models/MODEL_READINESS_MATRIX.md"
+    },
+    {
+      "status": "M ",
+      "path": "docs/models/README.md"
+    },
+    {
+      "status": "A ",
+      "path": "docs/testing/CROP_POSE_RUNTIME_TEST_20260911.md"
+    },
+    {
+      "status": "A ",
+      "path": "docs/testing/FALL_MODEL_COMPARISON_RUNBOOK.md"
+    },
+    {
+      "status": "A ",
+      "path": "docs/testing/FALL_TEST_DATA_COLLECTION.md"
+    },
+    {
+      "status": "A ",
+      "path": "docs/testing/POSE_CROP_COMPARISON_CHECKLIST.md"
+    },
+    {
+      "status": "A ",
+      "path": "docs/testing/README.md"
+    },
+    {
+      "status": "A ",
+      "path": "docs/testing/pose_crop_compare_report.template.json"
+    },
+    {
+      "status": "A ",
+      "path": "docs/tooling/CODEX_SKILL_ADOPTION.md"
+    },
+    {
+      "status": "M ",
+      "path": "docs/tooling/README.md"
+    },
+    {
+      "status": " M",
+      "path": "edgex/register_aiot_devices.py"
+    },
+    {
+      "status": " M",
+      "path": "models/model_manifest.json"
+    },
+    {
+      "status": " M",
+      "path": "parser-python/batch/devices_batch.py"
+    },
+    {
+      "status": " M",
+      "path": "parser-python/config/config.py"
+    },
+    {
+      "status": " M",
+      "path": "parser-python/config/validation.py"
+    },
+    {
+      "status": " M",
+      "path": "parser-python/database/connection.py"
+    },
+    {
+      "status": " M",
+      "path": "parser-python/main.py"
+    },
+    {
+      "status": " M",
+      "path": "parser-python/mqtt/edgex_forwarder.py"
+    },
+    {
+      "status": " M",
+      "path": "parser-python/mqtt/manager.py"
+    },
+    {
+      "status": " M",
+      "path": "parser-python/service/sensor_service.py"
+    },
+    {
+      "status": " M",
+      "path": "runners/run_action_bridge.py"
+    },
+    {
+      "status": " M",
+      "path": "runners/run_kuiper_rules.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/compare_fall_models.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/convert/convert_onnx_to_engine.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/convert/convert_pt_to_onnx.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/convert/export_rethinking_par_onnx.py"
+    },
+    {
+      "status": "MM",
+      "path": "scripts/datasets/build_fall_test_manifest.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/datasets/train_fall_temporal_tcn.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/datasets/train_yolo_pose_fall_rf.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/health/check_alarm_devices.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/health/check_cameras_config.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/health/check_commercial_face_models.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/health/check_compose_runtime_assumptions.py"
+    },
+    {
+      "status": "A ",
+      "path": "scripts/health/check_crop_pose_gie_registry.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/health/check_deployment_readiness.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/health/check_dockerfile_sources.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/health/check_fall_manifest_readiness.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/health/check_fall_quality_gate.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/health/check_falldata_aux.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/health/check_field_network.py"
+    },
+    {
+      "status": "A ",
+      "path": "scripts/health/check_internal_port_exposure.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/health/check_model_layout.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/health/check_model_report.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/health/check_monitoring_config.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/health/check_offline_readiness.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/health/check_public_api_fd_stability.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/health/check_runtime_secret_consistency.py"
+    },
+    {
+      "status": "MM",
+      "path": "scripts/inference/smoke_fall_temporal_model.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/models/__init__.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/models/fetch_commercial_face_models.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/ops/analyze_fall_replay_diagnostics.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/ops/apply_appearance_color_review_labels.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/ops/balance_manifest.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/ops/build_appearance_color_shadow_dataset.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/ops/build_appearance_representative_review_manifest.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/ops/build_appearance_review_html.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/ops/build_camera_error_manifest.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/ops/build_fall_error_review.py"
+    },
+    {
+      "status": "MM",
+      "path": "scripts/ops/check_fall_shadow_operation.py"
+    },
+    {
+      "status": "A ",
+      "path": "scripts/ops/check_fall_test_dataset.py"
+    },
+    {
+      "status": "A ",
+      "path": "scripts/ops/check_model_evaluation_readiness.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/ops/evaluate_appearance_gender.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/ops/evaluate_detection.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/ops/evaluate_sample_deepstream_replay.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/ops/export_appearance_color_review_labels.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/ops/import_appearance_color_review_labels.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/ops/label_fall_shadow_clips.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/ops/prepare_reviewed_fall_retraining.py"
+    },
+    {
+      "status": "A ",
+      "path": "scripts/ops/record_cctv_test_windows.ps1"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/ops/record_fall_demo.py"
+    },
+    {
+      "status": "A ",
+      "path": "scripts/ops/render_fall_model_comparison_markdown.py"
+    },
+    {
+      "status": "A ",
+      "path": "scripts/ops/run_action_layer_fall_trace.py"
+    },
+    {
+      "status": "MM",
+      "path": "scripts/ops/run_edgex_device_service_uat.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/ops/shadow_compare_appearance_color_models.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/ops/summarize_fall_shadow_review.py"
+    },
+    {
+      "status": "A ",
+      "path": "scripts/ops/summarize_fall_test_results.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/ops/tune_fall_operational_thresholds.py"
+    },
+    {
+      "status": "A ",
+      "path": "scripts/ops/validate_pose_crop_compare_report.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/smoke/smoke_test_data_flow.py"
+    },
+    {
+      "status": "M ",
+      "path": "scripts/train_yolo_pose_fall_gpu.sh"
+    },
+    {
+      "status": "M ",
+      "path": "src/config/config.py"
+    },
+    {
+      "status": "M ",
+      "path": "src/core/_deepstream_element_config.py"
+    },
+    {
+      "status": "M ",
+      "path": "src/core/_deepstream_event_factory.py"
+    },
+    {
+      "status": "MM",
+      "path": "src/core/_deepstream_pipeline_builder.py"
+    },
+    {
+      "status": " M",
+      "path": "src/core/_fall_shadow_review.py"
+    },
+    {
+      "status": "M ",
+      "path": "src/core/_h264_poc_fixer.py"
+    },
+    {
+      "status": "M ",
+      "path": "src/core/_yolo_postprocess.py"
+    },
+    {
+      "status": "M ",
+      "path": "src/core/ai/_appearance_analyzer.py"
+    },
+    {
+      "status": "M ",
+      "path": "src/core/ai/_fall_detector.py"
+    },
+    {
+      "status": " M",
+      "path": "src/core/ai/_falldata_aux.py"
+    },
+    {
+      "status": "M ",
+      "path": "src/core/ai/_object_detection_pipeline.py"
+    },
+    {
+      "status": "M ",
+      "path": "src/core/ai/analyzer.py"
+    },
+    {
+      "status": "MM",
+      "path": "src/core/deepstream_processor.py"
+    },
+    {
+      "status": "M ",
+      "path": "src/edgex/dabit_device_service.py"
+    },
+    {
+      "status": "A ",
+      "path": "src/edgex/request_idempotency.py"
+    },
+    {
+      "status": "M ",
+      "path": "src/edgex/siren_device_service.py"
+    },
+    {
+      "status": "M ",
+      "path": "src/edgex/speaker_device_service.py"
+    },
+    {
+      "status": "M ",
+      "path": "src/protocols/_mqtt_factory.py"
+    },
+    {
+      "status": "M ",
+      "path": "src/protocols/http_outbox.py"
+    },
+    {
+      "status": "M ",
+      "path": "src/protocols/mqtt_outbox.py"
+    },
+    {
+      "status": "M ",
+      "path": "src/protocols/mqtt_publisher.py"
+    },
+    {
+      "status": "M ",
+      "path": "src/protocols/rest.py"
+    },
+    {
+      "status": "M ",
+      "path": "src/protocols/tlv_decoder.py"
+    },
+    {
+      "status": "M ",
+      "path": "src/services/_action_bridge_executor.py"
+    },
+    {
+      "status": "M ",
+      "path": "src/services/action_bridge.py"
+    },
+    {
+      "status": "M ",
+      "path": "src/services/command_result_collector.py"
+    },
+    {
+      "status": "M ",
+      "path": "src/services/device_command_transport.py"
+    },
+    {
+      "status": "M ",
+      "path": "src/services/event_review.py"
+    },
+    {
+      "status": "MM",
+      "path": "src/services/processor_metrics.py"
+    },
+    {
+      "status": "M ",
+      "path": "src/services/sensor_classifier.py"
+    },
+    {
+      "status": "M ",
+      "path": "src/utils/env.py"
+    },
+    {
+      "status": "M ",
+      "path": "src/utils/geometry.py"
+    },
+    {
+      "status": "M ",
+      "path": "src/utils/zone_detection.py"
+    },
+    {
+      "status": "M ",
+      "path": "src/utils/zone_drawer.py"
+    },
+    {
+      "status": "M ",
+      "path": "src/utils/zone_presets.py"
+    },
+    {
+      "status": " M",
+      "path": "tasks/edge_aiot_structure_todo.md"
+    },
+    {
+      "status": " M",
+      "path": "tasks/plan.md"
+    },
+    {
+      "status": " M",
+      "path": "tasks/todo.md"
+    },
+    {
+      "status": "M ",
+      "path": "tests/test_action_bridge.py"
+    },
+    {
+      "status": "M ",
+      "path": "tests/test_ai_analysis.py"
+    },
+    {
+      "status": "A ",
+      "path": "tests/test_api_handover_docs.py"
+    },
+    {
+      "status": "MM",
+      "path": "tests/test_build_fall_test_manifest.py"
+    },
+    {
+      "status": "M ",
+      "path": "tests/test_canonical_event.py"
+    },
+    {
+      "status": "A ",
+      "path": "tests/test_check_cameras_config.py"
+    },
+    {
+      "status": "M ",
+      "path": "tests/test_check_compose_runtime_assumptions.py"
+    },
+    {
+      "status": "A ",
+      "path": "tests/test_check_crop_pose_gie_registry.py"
+    },
+    {
+      "status": "M ",
+      "path": "tests/test_check_deployment_readiness.py"
+    },
+    {
+      "status": "MM",
+      "path": "tests/test_check_fall_shadow_operation.py"
+    },
+    {
+      "status": "A ",
+      "path": "tests/test_check_fall_test_dataset.py"
+    },
+    {
+      "status": "A ",
+      "path": "tests/test_check_internal_port_exposure.py"
+    },
+    {
+      "status": "A ",
+      "path": "tests/test_check_model_evaluation_readiness.py"
+    },
+    {
+      "status": "A ",
+      "path": "tests/test_check_model_layout.py"
+    },
+    {
+      "status": "M ",
+      "path": "tests/test_command_result_collector.py"
+    },
+    {
+      "status": "M ",
+      "path": "tests/test_compare_fall_models.py"
+    },
+    {
+      "status": " M",
+      "path": "tests/test_compose_stack.py"
+    },
+    {
+      "status": "M ",
+      "path": "tests/test_dabit_device_service.py"
+    },
+    {
+      "status": "A ",
+      "path": "tests/test_deepstream_element_config.py"
+    },
+    {
+      "status": "M ",
+      "path": "tests/test_deepstream_event_factory.py"
+    },
+    {
+      "status": "M ",
+      "path": "tests/test_deepstream_pipeline_builder.py"
+    },
+    {
+      "status": "MM",
+      "path": "tests/test_deepstream_processor.py"
+    },
+    {
+      "status": "M ",
+      "path": "tests/test_device_command_transport.py"
+    },
+    {
+      "status": "MM",
+      "path": "tests/test_edgex_device_service_uat.py"
+    },
+    {
+      "status": "M ",
+      "path": "tests/test_edgex_shadow_command.py"
+    },
+    {
+      "status": "M ",
+      "path": "tests/test_evaluate_sample_deepstream_replay.py"
+    },
+    {
+      "status": "MM",
+      "path": "tests/test_fall_temporal_model.py"
+    },
+    {
+      "status": " M",
+      "path": "tests/test_falldata_aux.py"
+    },
+    {
+      "status": "M ",
+      "path": "tests/test_integration_action_pipeline.py"
+    },
+    {
+      "status": "M ",
+      "path": "tests/test_object_detection_pipeline.py"
+    },
+    {
+      "status": "A ",
+      "path": "tests/test_pose_crop_analyzer.py"
+    },
+    {
+      "status": "A ",
+      "path": "tests/test_render_fall_model_comparison_markdown.py"
+    },
+    {
+      "status": "A ",
+      "path": "tests/test_run_action_layer_fall_trace.py"
+    },
+    {
+      "status": "M ",
+      "path": "tests/test_siren_device_service.py"
+    },
+    {
+      "status": "M ",
+      "path": "tests/test_speaker_device_service.py"
+    },
+    {
+      "status": "A ",
+      "path": "tests/test_summarize_fall_test_results.py"
+    },
+    {
+      "status": "A ",
+      "path": "tests/test_testing_docs_index.py"
+    },
+    {
+      "status": "M ",
+      "path": "tests/test_train_fall_temporal_tcn.py"
+    },
+    {
+      "status": "M ",
+      "path": "tests/test_train_yolo_pose_fall_rf.py"
+    },
+    {
+      "status": "A ",
+      "path": "tests/test_validate_pose_crop_compare_report.py"
+    },
+    {
+      "status": "A ",
+      "path": "tests/test_yolo_postprocess_pose_crop.py"
+    },
+    {
+      "status": "??",
+      "path": ".codebase-memory/.gitattributes"
+    },
+    {
+      "status": "??",
+      "path": ".codebase-memory/artifact.json"
+    },
+    {
+      "status": "??",
+      "path": ".codebase-memory/graph.db.zst"
+    },
+    {
+      "status": "??",
+      "path": ".env.jetson.backup_1080p_before_20260911"
+    },
+    {
+      "status": "??",
+      "path": ".env.jetson.backup_20260911"
+    },
+    {
+      "status": "??",
+      "path": ".env.jetson.backup_fps_before_20260911"
+    },
+    {
+      "status": "??",
+      "path": ".env.jetson.backup_pose_before_crop_20260911"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/0. 엣지 플랫폼 커리큘럼.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/1. 디바이스 제어 사전 지식.pptx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/2. 디바이스 연동_스피커.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/3. 디바이스 연동_전광판.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/4. 디바이스 연동_DID.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/5. 디바이스 연동_경광등.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/6. AIoT 실증 관련 시연.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/7. SEdge-Platform (Sawwave Edge-Platform).pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/Nvidia Jetson 관련 파일/001. JETSON_설치가이드_Orin시리즈_v1.1.1.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/Nvidia Jetson 관련 파일/002. JETSON_유저매뉴얼_JP5_v1.0.0.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/smartpole/behavior_v332_lrre0001.pt"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/smartpole/main.py"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/smartpole/message.py"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/smartpole/smartpole.py"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/smartpole/yolov8n-pose.pt"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/~$1. 디바이스 제어 사전 지식.pptx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/디바이스 연동 소스코드/Control-Metrix/api.py"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/디바이스 연동 소스코드/Control-Metrix/communicate.py"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/디바이스 연동 소스코드/Control-Metrix/control.py"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/디바이스 연동 소스코드/Control-Metrix/dtos/option.py"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/디바이스 연동 소스코드/Control-Metrix/dtos/request.py"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/디바이스 연동 소스코드/Control-Metrix/dtos/response.py"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/디바이스 연동 소스코드/Control-Metrix/main.py"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/디바이스 연동 소스코드/Control-Metrix/parameter.py"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/디바이스 연동 소스코드/Control-Signage/control.py"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/디바이스 연동 소스코드/Control-Signage/dtos/option.py"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/디바이스 연동 소스코드/Control-Signage/dtos/request.py"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/디바이스 연동 소스코드/Control-Signage/dtos/response.py"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/디바이스 연동 소스코드/Control-Signage/implement.py"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/디바이스 연동 소스코드/Control-Signage/main.py"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/디바이스 연동 소스코드/Control-Speaker/api.py"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/디바이스 연동 소스코드/Control-Speaker/communicate.py"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/디바이스 연동 소스코드/Control-Speaker/control.py"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/디바이스 연동 소스코드/Control-Speaker/dtos/option.py"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/디바이스 연동 소스코드/Control-Speaker/dtos/request.py"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/디바이스 연동 소스코드/Control-Speaker/dtos/response.py"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/디바이스 연동 소스코드/Control-Speaker/main.py"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/디바이스 연동 소스코드/Control-Speaker/parameter.py"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/디바이스 연동 소스코드/Control-Warnlight/control.py"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/디바이스 연동 소스코드/Control-Warnlight/dtos/option.py"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/디바이스 연동 소스코드/Control-Warnlight/dtos/request.py"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/디바이스 연동 소스코드/Control-Warnlight/dtos/response.py"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/디바이스 연동 소스코드/Control-Warnlight/implement.py"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/디바이스 연동 소스코드/Control-Warnlight/main.py"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/엣지 플랫폼/(릴리즈) 개발용_서비스시나리오_도시공원_AI_Algo_231031.hwp"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/엣지 플랫폼/KETI 연동 정보/[AIoT] 쏘우웨이브 API 환경 변수.postman_environment.json"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/엣지 플랫폼/KETI 연동 정보/쏘우웨이브 CCTV 이벤트 API 가이드.postman_collection.json"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/엣지 플랫폼/SEdge-Platform/"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/비상벨_이레씨즈/3-1. 비상벨 서버_카다로그.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/비상벨_이레씨즈/3-2. 비상벨 컨트롤 유닛_카다로그.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/비상벨_이레씨즈/3. 비상벨_API설명서.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/비상벨_이레씨즈/3. 비상벨_카다로그.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/스피커_에펠/애펄_스피커_카달로그.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/스피커_에펠/애펠_스피커_API.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/1. 스미트폴 설치 관련 장비 설치비용-원가(0926).xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/1. 스미트폴 설치 관련 장비 설치비용-원가(0927).xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/1. 스미트폴 설치 관련 장비 설치비용-원가(1004).xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/1. 스미트폴 설치 관련 장비 설치비용-원가(1005).xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/9월 19일 64모듈 2단 24열 양면 접점 방식 (주)쏘우웨이브 (2).xls"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/AI 폴 개발 및 제작 견적 수정 -쏘우 9.20..xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/AI 폴구조 제안 샘플.pptx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/AIOT 통신설비 구축공사비 양식.xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/AIoT 디바이스 설치 예상도.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/AI스마트 폴 설치 장비 가격(0913)-제출.xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/AI폴 디자인 개발및 설치 견적 9.21..xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/AI폴 디자인 개발및 설치 견적 9.21.V2.xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/KakaoTalk_20230829_131259712.jpg"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/KakaoTalk_20230829_131259712_01.jpg"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/KakaoTalk_20230829_131259712_02.jpg"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/LED전광판 견적서(사이즈별).zip"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/국토부 과제 성남시 설치장치 기술기준(2022-11-07_).hwp"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/20230425184-00_1681692828596_제안요청서 (4)-송파.hwp"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/20230441711-01_1683531061218_제안요청서_및_과업지시서-관악구.hwpx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/20230908585-00_1694147983930_제안요청서(ICT_융합_강서형_스마트폴_구축) (1).hwp"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/20231015 디바이스 나라장터 쇼핑몰 비교 검토안 V2.xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/23년도 과제 사업비 집행 예정 현황 10.13...xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/23년도 과제 사업비 집행 예정 현황 10.15..xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/23년도 과제 사업비 집행 예정 현황 10.16. 견적대비 검토.xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/23년도 과제 사업비 집행 현황 10.11..xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/23년도 과제 사업비 집행 현황 10.13...xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/9.26. 사업비 잔액현황.xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/LED전광판 비교견적/(2)시스템 LED전광판 견적서(상세내역)-쏘우웨이브(프로토콜공개용)_RPGB64mm24열2단_엘이디멀티넷(20231005) (3).pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/LED전광판 비교견적/10월 10일 128모듈 2단 12열 양면 접점 방식 (주)쏘우웨이브 (1).xls"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/LED전광판 비교견적/10월 11일 128모듈 2단 12열 양면 접점 방식 (주)쏘우웨이브.xls"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/LED전광판 비교견적/10월 11일 64모듈 4단 24열 양면 접점 방식 (주)쏘우웨이브.xls"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/LED전광판 비교견적/LED전광판 견적서 - 애드트로닉(선정).pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/LED전광판 비교견적/복사본 9월 20일 64모듈 2단 24열 양면 접점 방식 LED 프라자.xls"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/LED전광판 비교견적/스마트 폴 디지털사이니지 시스템 구축(27인치 옥외형)_견적서 (2).pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/ai폴 디바이스 품목.xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/공사비 비교 검토.hwp"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/나라장터 스마트폴 구축 입찰현황 2023.xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/디바이스 검토 보고 10.13..hwp"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/디바이스 나라장터 쇼핑몰 비교 V2.xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/디바이스 나라장터 쇼핑몰 비교 V3.xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/디바이스 나라장터 쇼핑몰 비교.xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/비상벨 및 스피커 비교표.hwp"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/옥외통신설비공사_유비프라임(UP23-MS0925-01)_검토본.xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/옥외형 DID모니터 검토서.hwp"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/옥외형 DID모니터, LED 전광판 검토서.hwp"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/원가검토 10.12..xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/최종발주/23년도 과제 사업비 집행 예정 현황 10.16. 견적대비 검토.xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/최종발주/AIOT 통신설비 구축공사비(20231013)-비교견적 우진파워텍.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/최종발주/[견적서-3]공사원가계산서(산출내역서)_20231016 (2).pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/최종발주/[견적서-4]AIOT옥외통신설비공사_유비프라임(20231017) (1).pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/최종발주/[견적서-4]AIOT옥외통신설비공사_유비프라임(20231017).pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/최종발주/거래명세서(우진파워텍)-AIOT통신설비 구축 디바이스 납품 건(20231017제출) (1).pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/최종발주/견적서(우진파워텍)-AIOT통신설비 구축 디바이스 납품 건(20231016제출) (1).pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/최종발주/견적서-AIOT통신설비 구축 디바이스 납품 건(20231016제출.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/최종발주/계약 내역 및 선급금(우진파워텍)-AIOT통신설비 구축 디바이스 납품 건(20231024제출).xls"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/최종발주/구매 발주서-씨엔에프 미덩.xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/최종발주/구매 발주서-씨엔에프 미디어. 10.17..xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/최종발주/구매 발주서-씨엔에프 미디어. 10.23.xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/최종발주/구매 발주서-우진파워텍. 10.24.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/최종발주/구매 발주서-우진파워텍. 10.24.xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/최종발주/구매 발주서.xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/최종발주/디바이스 납품검수 10.30.-10.31..pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/최종발주/디바이스 품목검토서.xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/최종발주/발주서-AIOT통신설비 구축 디바이스 납품 건.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/최종발주/스마트 폴 설치 장비(크기 정리) -10.31..hwp"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/최종발주/시공 발주서 율동공원 10.30..pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/최종발주/시공 발주서-유비프라임. 10.17. 초안.xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/최종발주/시공 발주서-유비프라임. 10.17..xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/최종발주/시공 발주서-유비프라임. 10.17..xlsx.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/최종발주/시공 발주서-유비프라임. 10.18 .xlsx.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/최종발주/시공 발주서-유비프라임. 10.18..xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/최종발주/시공 발주서-유비프라임. 10.30..xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/최종발주/우진파워텍-사업자등록증 (1).pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/최종발주/우진파워텍-사업자등록증.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/최종발주/우진파워텍-통장사본(하나은행).pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/최종발주/최종 납품 내역(우진파워텍)-AIOT통신설비 구축 디바이스 납품 건(20231106제출).xls"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/카메라 검토 스피드돔 포함.xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/디바이스 및 견적보고/카메라 검토서(20231011).xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/복사본 9월 20일 64모듈 2단 24열 양면 접점 방식 LED 프라자.xls"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/비상벨 및 스피커 비교표.hwp"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/산업용 PoE 스위치 비교표.hwp"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/산업용 스위치.zip"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/스마트 폴 설치 장비(크기 정리) -9.27..hwp"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/스마트 폴 설치 장비(크기 정리).hwp"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/스마트 폴 설치장비 관련 자료(견적,시방서,카라로그,프로토콜등).zip"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/스마트 폴 설치장비 관련 자료(견적,시방서,카라로그,프로토콜등)/0. 시방서 비교표(0915-제출).hwp"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/스마트 폴 설치장비 관련 자료(견적,시방서,카라로그,프로토콜등)/1. IP 카메라(TTA인증 제품) 견적서.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/스마트 폴 설치장비 관련 자료(견적,시방서,카라로그,프로토콜등)/2. LED전광판 견적서(화면 높이-128mm).pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/스마트 폴 설치장비 관련 자료(견적,시방서,카라로그,프로토콜등)/2. LED전광판 견적서(화면 높이-256mm).pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/스마트 폴 설치장비 관련 자료(견적,시방서,카라로그,프로토콜등)/3. IP 비상벨 견적서-230913.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/스마트 폴 설치장비 관련 자료(견적,시방서,카라로그,프로토콜등)/4. IP 스피커 견적서.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/스마트 폴 설치장비 관련 자료(견적,시방서,카라로그,프로토콜등)/5. 누전차단기 견적서(조달등록 제품).pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/스마트 폴 설치장비 관련 자료(견적,시방서,카라로그,프로토콜등)/카다로그 및 메뉴얼/1. IP 카메라 매뉴얼 v1.0.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/스마트 폴 설치장비 관련 자료(견적,시방서,카라로그,프로토콜등)/카다로그 및 메뉴얼/1. IP 카메라(뷸렛카메라) 카다로그.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/스마트 폴 설치장비 관련 자료(견적,시방서,카라로그,프로토콜등)/카다로그 및 메뉴얼/1. IP 카메라(스피드 돔 카메라) 카다로그.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/스마트 폴 설치장비 관련 자료(견적,시방서,카라로그,프로토콜등)/카다로그 및 메뉴얼/2. IP 스피커 메뉴얼.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/스마트 폴 설치장비 관련 자료(견적,시방서,카라로그,프로토콜등)/카다로그 및 메뉴얼/2. IP 스피커 카다로그.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/스마트 폴 설치장비 관련 자료(견적,시방서,카라로그,프로토콜등)/카다로그 및 메뉴얼/3-1. IP 비상벨 서버 카다로그 메뉴얼.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/스마트 폴 설치장비 관련 자료(견적,시방서,카라로그,프로토콜등)/카다로그 및 메뉴얼/3-2. IP 비상벨 컨트롤 유닛 메뉴얼.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/스마트 폴 설치장비 관련 자료(견적,시방서,카라로그,프로토콜등)/카다로그 및 메뉴얼/3-2. IP 비상벨 컨트롤 유닛 카다로그.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/스마트 폴 설치장비 관련 자료(견적,시방서,카라로그,프로토콜등)/카다로그 및 메뉴얼/3. IP 비상벨 메뉴얼.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/스마트 폴 설치장비 관련 자료(견적,시방서,카라로그,프로토콜등)/카다로그 및 메뉴얼/3. IP 비상벨 카다로그.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/스마트 폴 설치장비 관련 자료(견적,시방서,카라로그,프로토콜등)/카다로그 및 메뉴얼/4. 산업용 스위치 카다로그.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/스마트 폴 설치장비 관련 자료(견적,시방서,카라로그,프로토콜등)/카다로그 및 메뉴얼/LED프라자 (1).zip"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/스마트 폴 설치장비 관련 자료(견적,시방서,카라로그,프로토콜등)/카다로그 및 메뉴얼/카다로그 및 메뉴얼 (디바이스).zip"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/스마트 폴 설치장비 관련 자료(견적,시방서,카라로그,프로토콜등)/카다로그 및 메뉴얼/카다로그 및 메뉴얼.zip"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/스마트 폴 설치장비 관련 자료(견적,시방서,카라로그,프로토콜등)/프로토콜/CCTV API/Discovery API version 2.04.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/스마트 폴 설치장비 관련 자료(견적,시방서,카라로그,프로토콜등)/프로토콜/CCTV API/Event Streaming API version 2.00.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/스마트 폴 설치장비 관련 자료(견적,시방서,카라로그,프로토콜등)/프로토콜/CCTV API/HTTP API version 2.25.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/스마트 폴 설치장비 관련 자료(견적,시방서,카라로그,프로토콜등)/프로토콜/CCTV API/Media Streaming API version 2.03.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/스마트 폴 설치장비 관련 자료(견적,시방서,카라로그,프로토콜등)/프로토콜/IP스피커/IP스피커-프로토콜.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/스마트 폴 설치장비 관련 자료(견적,시방서,카라로그,프로토콜등)/프로토콜/비상벨/비상벨 프로토콜 관련.hwp"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/스마트 폴 설치장비 관련 자료(견적,시방서,카라로그,프로토콜등)/프로토콜/비상벨/비상벨_EventServer_배포용_rev2.5_pw.zip"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/스마트 폴 설치장비 관련 자료(견적,시방서,카라로그,프로토콜등)/프로토콜/전광판 API/프로토콜 설명 자료.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/스마트 폴 설치장비 관련 자료(견적,시방서,카라로그,프로토콜등)/프로토콜/전광판 API/프로토콜 설명 자료.zip"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/스마트 폴 설치장비 관련 자료(견적,시방서,카라로그,프로토콜등)/프로토콜/전광판 API/프로토콜 설명 자료/20200921_Marvel문자표출프로토콜전광판Ver1_5_20200921.hwp"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/스마트 폴 설치장비 관련 자료(견적,시방서,카라로그,프로토콜등)/프로토콜/전광판 API/프로토콜 설명 자료/20200921_Marvel문자표출프로토콜전광판Ver1_5_20200921.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/시방서 비교표(0913) (2)-쏘우웨이브 검토 10.04..hwp"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/시방서 비교표(0913) (2)-쏘우웨이브 검토 10.11..hwp"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/시방서 비교표(0913) (2)-쏘우웨이브 검토 9.20..hwp"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/업체 견적 정리.zip"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/업체 견적 정리/IP 스피커 견적서 - 광수전자.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/업체 견적 정리/IP 스피커 견적서 - 리더스지노.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/업체 견적 정리/IP 스피커 견적서 - 에펠(선정).pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/업체 견적 정리/IP 카메라(TTA인증 제품) 견적서 - 두원전자.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/업체 견적 정리/IP 카메라(TTA인증 제품) 견적서 - 세오.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/업체 견적 정리/IP 카메라(TTA인증 제품) 견적서 - 큐릭스(선정).pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/업체 견적 정리/IP비상벨 견적서 - 미코정보통신.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/업체 견적 정리/IP비상벨 견적서 - 이레씨즈(선정).pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/업체 견적 정리/IP비상벨 견적서 - 한미.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/업체 견적 정리/LED전광판 견적서 - 애드트로닉(선정).pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/업체 견적 정리/LED전광판 견적서 - 코레드.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/업체 견적 정리/LED전광판 견적서 - 티이케이.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/업체 견적 정리/LED전광판 견적서(사이즈별)/LED전광판견적서-(1280 x 256mm-128모듈).pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/업체 견적 정리/LED전광판 견적서(사이즈별)/LED전광판견적서-(1408 x 128mm-64모듈).pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/업체 견적 정리/LED전광판 견적서(사이즈별)/LED전광판견적서-(1536 x 256mm-128모듈).pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/업체 견적 정리/LED전광판 견적서(사이즈별)/LED프라자 (1).zip"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/업체 견적 정리/LED전광판 견적서(사이즈별)/LED프라자 (1)/9월 20일 64모듈 2단 24열 양면 접점 방식 (주)쏘우웨이브.xls"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/업체 견적 정리/LED전광판 견적서(사이즈별)/LED프라자 (1)/M30 컨트롤보드 사양/M30 1.jpg"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/업체 견적 정리/LED전광판 견적서(사이즈별)/LED프라자 (1)/M30 컨트롤보드 사양/M30 2.jpg"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/업체 견적 정리/LED전광판 견적서(사이즈별)/LED프라자 (1)/M30 컨트롤보드 사양/M30 3.jpg"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/업체 견적 정리/LED전광판 견적서(사이즈별)/LED프라자 (1)/MPlayer_v2.0.2_Setup/MPlayer_v2.0.2_Setup.exe"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/업체 견적 정리/LED전광판 견적서(사이즈별)/LED프라자 (1)/Mplayer_v2.x_M20_M30_설명서.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/업체 견적 정리/LED전광판 견적서(사이즈별)/비상벨 LED 안내판-복사.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/업체 견적 정리/LED전광판 견적서(사이즈별)/서비스 시나리오 현장설비 액션 시나리오 8.23.V3.xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/업체 견적 정리/산업용 PoE 스위치 견적서 - 어웨이프롬.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/업체 견적 정리/산업용 PoE 스위치 견적서 - 엔에스티정보통신(선정).pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/업체 견적 정리/산업용 PoE 스위치 견적서 - 지인테크.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/업체 견적 정리/써지보호기 및 누전차단기 견적서 - 에스이티(선정).pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/업체 견적 정리/안내 표지판 견적서 - 다원테크(선정).pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/업체 견적 정리/안내 표지판 견적서 - 조은기업.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/엣지서버 디바이스 인터페이스 자료/2. IP 스피커 메뉴얼.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/엣지서버 디바이스 인터페이스 자료/20230441711-01_1683531061218_제안요청서_및_과업지시서-관악구.hwpx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/엣지서버 디바이스 인터페이스 자료/3-1. IP 비상벨 서버 카다로그 메뉴얼.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/엣지서버 디바이스 인터페이스 자료/프로토콜.zip"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/엣지서버 디바이스 인터페이스 자료/프로토콜/CCTV API/Discovery API version 2.04.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/엣지서버 디바이스 인터페이스 자료/프로토콜/CCTV API/Event Streaming API version 2.00.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/엣지서버 디바이스 인터페이스 자료/프로토콜/CCTV API/HTTP API version 2.25.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/엣지서버 디바이스 인터페이스 자료/프로토콜/CCTV API/Media Streaming API version 2.03.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/엣지서버 디바이스 인터페이스 자료/프로토콜/IP스피커/IP스피커-프로토콜.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/엣지서버 디바이스 인터페이스 자료/프로토콜/비상벨/비상벨 프로토콜 관련.hwp"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/엣지서버 디바이스 인터페이스 자료/프로토콜/비상벨/비상벨_EventServer_배포용_rev2.5_pw.zip"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/엣지서버 디바이스 인터페이스 자료/프로토콜/전광판 API/프로토콜 설명 자료.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/엣지서버 디바이스 인터페이스 자료/프로토콜/전광판 API/프로토콜 설명 자료.zip"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/엣지서버 디바이스 인터페이스 자료/프로토콜/전광판 API/프로토콜 설명 자료/20200921_Marvel문자표출프로토콜전광판Ver1_5_20200921.hwp"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/엣지서버 디바이스 인터페이스 자료/프로토콜/전광판 API/프로토콜 설명 자료/20200921_Marvel문자표출프로토콜전광판Ver1_5_20200921.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/연구소 공동검토/1. 스미트폴 설치 관련 장비 설치비용-원가(1004).xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/연구소 공동검토/20230441711-01_1683531061218_제안요청서_및_과업지시서-관악구.hwpx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/연구소 공동검토/간편 메뉴얼 영상렉스코스.zip"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/연구소 공동검토/관리자매뉴얼_2204렉스코스.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/연구소 공동검토/디바이스 연구소 검토 자료모음.zip"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/연구소 공동검토/비상벨 및 스피커 비교표.hwp"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/연구소 공동검토/사용자매뉴얼_151005렉스코스.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/연구소 공동검토/서비스 시나리오 및 비상벨, 스피커 기능.pptx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/연구소 공동검토/시방서 비교표(0913) (2)-쏘우웨이브 검토 10.04..hwp"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/연구소 공동검토/카다로그 및 메뉴얼.zip"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/연구소 공동검토/카다로그 및 메뉴얼/1. IP 카메라 매뉴얼 v1.0.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/연구소 공동검토/카다로그 및 메뉴얼/1. IP 카메라(뷸렛카메라) 카다로그.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/연구소 공동검토/카다로그 및 메뉴얼/1. IP 카메라(스피드 돔 카메라) 카다로그.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/연구소 공동검토/카다로그 및 메뉴얼/2. IP 스피커 메뉴얼.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/연구소 공동검토/카다로그 및 메뉴얼/2. IP 스피커 카다로그.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/연구소 공동검토/카다로그 및 메뉴얼/3-1. IP 비상벨 서버 카다로그 메뉴얼.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/연구소 공동검토/카다로그 및 메뉴얼/3-2. IP 비상벨 컨트롤 유닛 메뉴얼.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/연구소 공동검토/카다로그 및 메뉴얼/3-2. IP 비상벨 컨트롤 유닛 카다로그.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/연구소 공동검토/카다로그 및 메뉴얼/3. IP 비상벨 메뉴얼.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/연구소 공동검토/카다로그 및 메뉴얼/3. IP 비상벨 카다로그.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/연구소 공동검토/카다로그 및 메뉴얼/4. 산업용 스위치 카다로그.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/연구소 공동검토/카다로그 및 메뉴얼/LED프라자 (1).zip"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/연구소 공동검토/카다로그 및 메뉴얼/LED프라자 (1)/9월 20일 64모듈 2단 24열 양면 접점 방식 (주)쏘우웨이브.xls"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/연구소 공동검토/카다로그 및 메뉴얼/LED프라자 (1)/M30 컨트롤보드 사양/M30 1.jpg"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/연구소 공동검토/카다로그 및 메뉴얼/LED프라자 (1)/M30 컨트롤보드 사양/M30 2.jpg"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/연구소 공동검토/카다로그 및 메뉴얼/LED프라자 (1)/M30 컨트롤보드 사양/M30 3.jpg"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/연구소 공동검토/카다로그 및 메뉴얼/LED프라자 (1)/MPlayer_v2.0.2_Setup/MPlayer_v2.0.2_Setup.exe"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/연구소 공동검토/카다로그 및 메뉴얼/LED프라자 (1)/Mplayer_v2.x_M20_M30_설명서.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/연구소 공동검토/카다로그 및 메뉴얼/카다로그 및 메뉴얼.zip"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/오성균.jpg"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/원가검토 10.10..xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/폴 디자인.jpg"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/입사전 검토자료/디바이스 규격검토/폴 전시 제원규격 9.25..pptx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/전광판_애드트로닉/0. 프로그램 설명.txt"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/전광판_애드트로닉/SerialProject.exe"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/전광판_애드트로닉/WIZ1x0SR_config_v3.0.2.zip"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/전광판_애드트로닉/tcpIpLAN_Converter_WizNet테스트설정.png"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/전광판_애드트로닉/광고삭제및변경하기.txt"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/전광판_애드트로닉/애드트로닉_전광판_API.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/전광판_애드트로닉/애드트로닉_전광판_카달로그.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/카메라_투투/투투_사용자메뉴얼.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/카메라_투투/투투_카메라(Bullet)_도면.dwg"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/카메라_투투/투투_카메라(Bullet)_카탈로그.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/카메라_투투/투투_카메라(Dome)_도면.dwg"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 디바이스 교체 전 (2023년 설치)/카메라_투투/투투_카메라(Dome)_카탈로그.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/1. 사내 디바이스 정보.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. SmartPole 설치 현황(성남).pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/(견적 금액 정리)실증관제 디바이스_250523.xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/AI폴 장비 연동 요구사항.docx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/CCTV/1. 비전정보통신/Bullet형 카메라_B2004XN.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/CCTV/1. 비전정보통신/PTZ형 카메라_SD2033XN.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/CCTV/1. 비전정보통신/비전정보통신_CCTV_견적서.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/CCTV/2. 세연테크/Bullet형 카메라_FW7901-FTM.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/CCTV/2. 세연테크/Bullet형 카메라_tta.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/CCTV/2. 세연테크/PTZ형 카메라_FW9709-FNR.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/CCTV/2. 세연테크/PTZ형 카메라_tta.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/CCTV/2. 세연테크/세연테크 메뉴얼.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/CCTV/2. 세연테크/세연테크_cctv_견적서.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/CCTV/3. 솔디아/Bullet_PTZ형 카메라.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/CCTV/3. 솔디아/Bullet형 카메라_tta.PDF"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/CCTV/3. 솔디아/PTZ형 카메라_tta.PDF"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/CCTV/3. 솔디아/솔디아_cctv_견적서.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/CCTV/4. 아이디스/Bullet형 카메라_T3642HRX.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/CCTV/4. 아이디스/PTZ형 카메라_S8662HRXL.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/CCTV/4. 아이디스/아디디스 메뉴얼.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/CCTV/4. 아이디스/아이디스_cctv_견적서.xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/CCTV/5. 트루엔/Bullet형 카메라_B3204U6R.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/CCTV/5. 트루엔/PTZ형 카메라_P5236N20R.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/CCTV/5. 트루엔/트루엔 메뉴얼.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/CCTV/5. 트루엔/트루엔 카메라 비교표(Bullet).pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/CCTV/5. 트루엔/트루엔 카메라 비교표(Speed Dome Camera).pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/CCTV/5. 트루엔/트루엔_cctv_견적서.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/CCTV/6. 한국씨텍/Bullet형 카메라_XV-251U.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/CCTV/6. 한국씨텍/PTZ형 카메라_XV-8300IRD.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/CCTV/6. 한국씨텍/PTZ형 카메라_XV-8400IRD.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/CCTV/6. 한국씨텍/XV-220U_사용설명서.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/CCTV/6. 한국씨텍/~$스피드돔(8300),불렛(251)_사양비교표.xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/CCTV/6. 한국씨텍/스피드돔(8300),불렛(251)_사양비교표.xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/CCTV/6. 한국씨텍/한국씨텍_cctv_견적서.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/NVR/1. 서브/서브_API설명서.docx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/NVR/1. 서브/서브_NVR(VMS)_견적서.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/NVR/2. 아이디스/NVR_IR-310D-AT.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/NVR/2. 아이디스/아디디스_NVR_견적.xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/NVR/3. 엠스톤/엠스톤_API.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/NVR/4. 이노댑/VURIX-NVR64RSe.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/NVR/4. 이노댑/이노댑 메뉴얼.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/NVR/4. 이노댑/제출_250218_성남시 스마트도시 인프라 NVR 견적.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/NVR/4. 이노댑/제출_250218_성남시 스마트도시 인프라 NVR 견적.xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/스피커/1. 인터엠/스피커_IP-1015WS.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/스피커/1. 인터엠/인터엠_API 설명서.zip"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/스피커/1. 인터엠/인터엠_API 설명서/InterM-API_Audio.docx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/스피커/1. 인터엠/인터엠_API 설명서/InterM-API_Contact.docx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/스피커/1. 인터엠/인터엠_API 설명서/InterM-API_Controller.docx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/스피커/1. 인터엠/인터엠_API 설명서/InterM-API_DSP.docx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/스피커/1. 인터엠/인터엠_API 설명서/InterM-API_Introduction.docx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/스피커/1. 인터엠/인터엠_API 설명서/InterM-API_Network.docx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/스피커/1. 인터엠/인터엠_API 설명서/InterM-API_SIP.docx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/스피커/1. 인터엠/인터엠_API 설명서/InterM-API_System.docx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/스피커/1. 인터엠/인터엠_API 설명서/InterM-API_TTS.docx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/스피커/1. 인터엠/인터엠_API 설명서/~$terM-API_Audio.docx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/스피커/1. 인터엠/인터엠_API 설명서/~$terM-API_TTS.docx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/스피커/1. 인터엠/인터엠_메뉴얼.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/스피커/1. 인터엠/인터엠_스피커_견적서.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/스피커/2. 디피엠/DPN_스피커_가격정보.txt"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/스피커/2. 디피엠/스피커_DPA-840.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/전광판/1. 와이케이전광/P8mm 7color 2단12열 양면 250212_1.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/전광판/1. 와이케이전광/다빛솔루션 메뉴얼.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/전광판/2. 마블사인/마블사인 128MM-SMD-풀컬러2단12열 양면-4대 견적서.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/전광판/2. 마블사인/마블사인 메뉴얼.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/전광판/3. 하늘전광/다빛솔루션 메뉴얼.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/견적서 검토/전광판/3. 하늘전광/하늘전광 LED 견적서 20250212 쏘우웨이브 p8 2단12열 (1).xls"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/경광등_큐라이트/큐라이트_경광등_도면.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/경광등_큐라이트/큐라이트_경광등_카탈로그.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/디바이스_교체_사유.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/비상벨_현진ict/현진ict_비상벨_견적서.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/성남시 AI Pole 이설 실사보고서.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/스피커_인터엠/요구사항 명세서_스피커.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/스피커_인터엠/인터엠_스피커_API설명서(1.0.0).zip"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/스피커_인터엠/인터엠_스피커_API설명서(1.5.0).zip"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/스피커_인터엠/인터엠_스피커_견적서.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/스피커_인터엠/인터엠_스피커_도면.dwg"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/스피커_인터엠/인터엠_스피커_카탈로그.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/영상분석장치 요구사항_250514.pptx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/인공지능모델&엣지보드 사양서.pptx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/다빛솔루션_전광판_API.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/요구사항 명세서_전광판.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/DABITPreview.exe"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/DABITPreview.ini"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/DABITSimulator.exe"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/DABITSimulator.ini"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/DabitNet_S.exe"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/DabitNet_S.ini"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/Sys/ASCIIData1.dat"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/Sys/ASCIIData2.dat"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/Sys/ASCIIData3.dat"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/Sys/ASCIIMessageData.dat"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/Sys/DirectIPData.dat"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/Sys/EnvData00.dat"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/Sys/ProtocolData.dat"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/log.txt"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/다빛채/DabitChe.exe"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/다빛채/DabitChe.ini"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/다빛채/Data/Image/2x12-03B-N1F-.dat"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/다빛채/Data/Image/2x6-03B-N1F-ORI.dat"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/다빛채/Data/Image/NoTile.bmp"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/다빛채/Data/Image/방범용(212).dat"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/다빛채/Data/Playlist/2x12-03B-.pla"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/다빛채/Data/Playlist/2x12-03B-.~pla"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/다빛채/Data/Playlist/2x6-03B-.pla"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/다빛채/Data/Playlist/2x6-03B-.~pla"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/다빛채/Data/Playlist/Default.pla"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/다빛채/Memory/Write/2x12-03B-N1F-.dat"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/다빛채/Memory/Write/main_000.pla"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/다빛채/Memory/Write/param000.set"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/다빛채/Memory/Write/방범용(212).dat"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/다빛채/Sys/Default.isf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/다빛채/Sys/Default.msf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/다빛채/Sys/Default.ssf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/다빛채/Sys/DirectIPData.dat"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/다빛채/Sys/Edittemp.dat"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/다빛채/Sys/ProtocolData.dat"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/다빛채/Sys/RetryRun.ini"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/다빛채/Sys/Template.bmp"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/다빛채/Sys/TimeSetData.dat"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/다빛채/Sys/lang/dv_korea.ini"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/다빛채/Sys/temp.bzp"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/다빛채/Sys/temp.dat"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/전광판 관련 프로그램/다빛채/Sys/temp.rbc"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/카메라_투투 (유지)/요구사항 명세서_카메라(Bullet).pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/카메라_투투 (유지)/요구사항 명세서_카메라(Speed Dome).pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/카메라_투투 (유지)/투투_사용자 메뉴얼.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/카메라_투투 (유지)/투투_카메라(Bullet)_도면.dwg"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/카메라_투투 (유지)/투투_카메라(Bullet)_카탈로그.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/카메라_투투 (유지)/투투_카메라(Dome)_도면.dwg"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/카메라_투투 (유지)/투투_카메라(Dome)_카탈로그.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/3. SmartPole 디바이스 선정.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/YOLOv8/yolov8n-pose.pt"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/YOLOv8/yolov8n.pt"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/동의대 버전/DangerBehavior.py"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/동의대 버전/model.pt"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/동의대 버전/model_test.py"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/동의대 버전/result/behavior_v3128_lr.pt"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/동의대 버전/result/behavior_v316.pt"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/동의대 버전/result/behavior_v332.pt"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/동의대 버전/result/behavior_v332_lr.pt"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/동의대 버전/result/behavior_v332_lrre.pt"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/동의대 버전/result/behavior_v364_lr.pt"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/동의대 버전/result/result_model/behavior_do.pt"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/동의대 버전/result/result_model/behavior_doalr.pt"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/동의대 버전/result/result_model/behavior_doslr.pt"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/동의대 버전/result/result_model/behavior_no.pt"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/동의대 버전/result/result_model/behavior_noalr.pt"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/동의대 버전/result/result_model/behavior_noslr.pt"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/동의대 버전/result/result_model/behavior_re.pt"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/동의대 버전/result/result_model/behavior_re9.pt"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/동의대 버전/result/result_model/behavior_realr.pt"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/동의대 버전/result/result_model/behavior_realr9.pt"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/동의대 버전/result/result_model/behavior_reslr.pt"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/동의대 버전/result/result_model/behavior_reslr9.pt"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/동의대 버전/result/result_model/result/behavior_v3128.pt"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/동의대 버전/result/result_model/result/behavior_v316.pt"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/동의대 버전/result/result_model/result/behavior_v332.pt"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/동의대 버전/result/result_model/result/behavior_v332_lrre.pt"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/동의대 버전/result/result_model/result/behavior_v332_lrre0001.pt"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/동의대 버전/result/result_model/result/behavior_v332_lrre04.pt"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/동의대 버전/result/result_model/result/behavior_v332_re.pt"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/동의대 버전/result/result_model/result/behavior_v332_relr05.pt"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/동의대 버전/result/result_model/result/behavior_v332plr.pt"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/동의대 버전/result/result_model/result/behavior_v364.pt"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/동의대 버전/딥러닝 자세 추정 모델을 사용한 각도 기반 위험 행동 분류 엣지 시스템 구현.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/이상행동 모델 성능 비교.xlsx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/학습 데이터 수집/output_1032_1.mp4"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/학습 데이터 수집/output_1032_2.mp4"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/학습 데이터 수집/output_1032_3.mp4"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/학습 데이터 수집/output_1032_walldam.mp4"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/학습 데이터 수집/output_554.avi"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/학습 데이터 수집/output_554_1.mp4"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/학습 데이터 수집/output_554_2.mp4"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/학습 데이터 수집/output_554_walldam.mp4"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/학습 데이터 수집/데이터 시나리오/이상행동 DEMO 시나리오 계획.pdf"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/학습 데이터 수집/데이터 시나리오/이상행동 DEMO 시나리오 계획.pptx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/학습 데이터 수집/데이터 시나리오/이상행동 DEMO 시나리오 계획_2차.pptx"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/학습 모델 (YOLO기반)/behavior_r823s.pt"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/학습 모델 (YOLO기반)/behavior_re9.pt"
+    },
+    {
+      "status": "??",
+      "path": "AIoT개발팀_오세영_인수인계자료/이상행동 검출 모델 구현/학습 모델 (YOLO기반)/behavior_v332_lrre0001.pt"
+    },
+    {
+      "status": "??",
+      "path": "appearance_color_review_labels.json"
+    },
+    {
+      "status": "??",
+      "path": "appearance_color_review_labels0825.json"
+    },
+    {
+      "status": "??",
+      "path": "appearance_color_shadow_labels.json"
+    },
+    {
+      "status": "??",
+      "path": "appearance_multitask_shadow_review_labels.json"
+    },
+    {
+      "status": "??",
+      "path": "appearance_shadow_exclude_reasons.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_batch_candidate_20260917.vHdXep/batched_1ch_interval0/primary.txt"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_batch_candidate_20260917.vHdXep/batched_1ch_interval0/report.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_batch_candidate_20260917.vHdXep/batched_2ch_interval0/primary.txt"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_batch_candidate_20260917.vHdXep/batched_2ch_interval0/report.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_batch_candidate_20260917.vHdXep/batched_4ch_interval0/primary.txt"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_batch_candidate_20260917.vHdXep/batched_4ch_interval0/report.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_batch_candidate_20260917.vHdXep/layers_l0.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_batch_candidate_20260917.vHdXep/paired_tensor_comparison.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_dispatch_profile_20260917.BvPTry/dispatch_and_pause_summary.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_dispatch_profile_20260917.BvPTry/experiment_plan.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_dispatch_profile_20260917.BvPTry/l1_plain_1_profile.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_dispatch_profile_20260917.BvPTry/l1_plain_1_times.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_dispatch_profile_20260917.BvPTry/l1_plain_2_profile.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_dispatch_profile_20260917.BvPTry/l1_plain_2_times.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_dispatch_profile_20260917.BvPTry/l1_plain_3_profile.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_dispatch_profile_20260917.BvPTry/l1_plain_3_times.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_dispatch_profile_20260917.BvPTry/l3_4ch_after_restore/primary.txt"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_dispatch_profile_20260917.BvPTry/l3_4ch_after_restore/report.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_dispatch_profile_20260917.BvPTry/l3_4ch_ai_paused/primary.txt"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_dispatch_profile_20260917.BvPTry/l3_4ch_ai_paused/report.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_dispatch_profile_20260917.BvPTry/l3_4ch_before_pause/primary.txt"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_dispatch_profile_20260917.BvPTry/l3_4ch_before_pause/report.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_dispatch_profile_20260917.BvPTry/l3_graph_1_profile.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_dispatch_profile_20260917.BvPTry/l3_graph_1_times.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_dispatch_profile_20260917.BvPTry/l3_graph_2_profile.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_dispatch_profile_20260917.BvPTry/l3_graph_2_times.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_dispatch_profile_20260917.BvPTry/l3_graph_3_profile.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_dispatch_profile_20260917.BvPTry/l3_graph_3_times.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_dispatch_profile_20260917.BvPTry/l3_plain_1_profile.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_dispatch_profile_20260917.BvPTry/l3_plain_1_times.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_dispatch_profile_20260917.BvPTry/l3_plain_2_profile.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_dispatch_profile_20260917.BvPTry/l3_plain_2_times.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_dispatch_profile_20260917.BvPTry/l3_plain_3_profile.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_dispatch_profile_20260917.BvPTry/l3_plain_3_times.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_dispatch_profile_20260917.BvPTry/maintenance_execution.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_dispatch_profile_20260917.BvPTry/maintenance_plan.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_l3_build_20260917.1QDRpB/dynamic_l3.cache"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_l3_build_20260917.1QDRpB/dynamic_l3.cache.lock"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_l3_build_20260917.1QDRpB/dynamic_l3_layers.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_l3_build_20260917.1QDRpB/experiment_plan.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_l3_build_20260917.1QDRpB/l1_4ch_run1/primary.txt"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_l3_build_20260917.1QDRpB/l1_4ch_run1/report.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_l3_build_20260917.1QDRpB/l1_4ch_run2/primary.txt"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_l3_build_20260917.1QDRpB/l1_4ch_run2/report.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_l3_build_20260917.1QDRpB/l1_4ch_run3/primary.txt"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_l3_build_20260917.1QDRpB/l1_4ch_run3/report.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_l3_build_20260917.1QDRpB/l3_1ch_sanity/primary.txt"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_l3_build_20260917.1QDRpB/l3_1ch_sanity/report.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_l3_build_20260917.1QDRpB/l3_2ch_sanity/primary.txt"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_l3_build_20260917.1QDRpB/l3_2ch_sanity/report.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_l3_build_20260917.1QDRpB/l3_4ch_run1/primary.txt"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_l3_build_20260917.1QDRpB/l3_4ch_run1/report.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_l3_build_20260917.1QDRpB/l3_4ch_run2/primary.txt"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_l3_build_20260917.1QDRpB/l3_4ch_run2/report.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_l3_build_20260917.1QDRpB/l3_4ch_run3/primary.txt"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_l3_build_20260917.1QDRpB/l3_4ch_run3/report.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_l3_build_20260917.1QDRpB/l3_comparison_summary.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_l3_build_20260917.1QDRpB/paired_l1_vs_l3.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_l3_build_20260917.1QDRpB/paired_production_vs_l3.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_optimized_build_20260917.A24MGb/dynamic_l1.cache"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_optimized_build_20260917.A24MGb/dynamic_l1.cache.lock"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_optimized_build_20260917.A24MGb/dynamic_l1_layers.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_optimized_build_20260917.A24MGb/l0_b4_control1_profile.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_optimized_build_20260917.A24MGb/l0_b4_control1_times.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_optimized_build_20260917.A24MGb/l0_b4_control2_profile.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_optimized_build_20260917.A24MGb/l0_b4_control2_times.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_optimized_build_20260917.A24MGb/l0_b4_control3_profile.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_optimized_build_20260917.A24MGb/l0_b4_control3_times.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_optimized_build_20260917.A24MGb/l1_1ch_run1/primary.txt"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_optimized_build_20260917.A24MGb/l1_1ch_run1/report.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_optimized_build_20260917.A24MGb/l1_1ch_timing_60s/primary.txt"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_optimized_build_20260917.A24MGb/l1_1ch_timing_60s/report.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_optimized_build_20260917.A24MGb/l1_2ch_timing_30s/primary.txt"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_optimized_build_20260917.A24MGb/l1_2ch_timing_30s/report.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_optimized_build_20260917.A24MGb/l1_4ch_timing_30s/primary.txt"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_optimized_build_20260917.A24MGb/l1_4ch_timing_30s/report.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_optimized_build_20260917.A24MGb/l1_b4_run1_profile.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_optimized_build_20260917.A24MGb/l1_b4_run1_times.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_optimized_build_20260917.A24MGb/l1_b4_run2_profile.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_optimized_build_20260917.A24MGb/l1_b4_run2_times.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_optimized_build_20260917.A24MGb/l1_b4_run3_profile.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_optimized_build_20260917.A24MGb/l1_b4_run3_times.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_optimized_build_20260917.A24MGb/paired_production_vs_l1.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_optimized_build_20260917.A24MGb/repeated_l0_l1_summary.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_output_ablation_20260917.iyeGAL/all_outputs_l0_b1_profile.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_output_ablation_20260917.iyeGAL/all_outputs_l0_b1_times.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_output_ablation_20260917.iyeGAL/all_outputs_l0_b4_profile.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_output_ablation_20260917.iyeGAL/all_outputs_l0_b4_run2_profile.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_output_ablation_20260917.iyeGAL/all_outputs_l0_b4_run2_times.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_output_ablation_20260917.iyeGAL/all_outputs_l0_b4_run3_profile.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_output_ablation_20260917.iyeGAL/all_outputs_l0_b4_run3_times.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_output_ablation_20260917.iyeGAL/all_outputs_l0_b4_times.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_output_ablation_20260917.iyeGAL/layers_output_only_l0.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_output_ablation_20260917.iyeGAL/layers_output_only_l0_softmax_fp32.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_output_ablation_20260917.iyeGAL/output_only_l0_4ch_run1/primary.txt"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_output_ablation_20260917.iyeGAL/output_only_l0_4ch_run1/report.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_output_ablation_20260917.iyeGAL/output_only_l0_b4_profile.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_output_ablation_20260917.iyeGAL/output_only_l0_b4_run2_profile.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_output_ablation_20260917.iyeGAL/output_only_l0_b4_run2_times.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_output_ablation_20260917.iyeGAL/output_only_l0_b4_run3_profile.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_output_ablation_20260917.iyeGAL/output_only_l0_b4_run3_times.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_output_ablation_20260917.iyeGAL/output_only_l0_b4_times.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_output_ablation_20260917.iyeGAL/paired_all_vs_output_only_l0.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_output_ablation_20260917.iyeGAL/paired_softmax_fp32.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_output_ablation_20260917.iyeGAL/pose_output_only.manifest.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_output_ablation_20260917.iyeGAL/pose_output_only.onnx"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_output_ablation_20260917.iyeGAL/production_b1_profile.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_output_ablation_20260917.iyeGAL/production_b1_times.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_output_ablation_20260917.iyeGAL/repeated_profile_summary.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_output_ablation_20260917.iyeGAL/softmax_fp32_b4_profile.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_output_ablation_20260917.iyeGAL/softmax_fp32_b4_runtime_layers.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_output_ablation_20260917.iyeGAL/softmax_fp32_b4_times.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_resolution_20260917.Hgx7sU/1080p_4ch_run1/primary.txt"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_resolution_20260917.Hgx7sU/1080p_4ch_run1/report.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_resolution_20260917.Hgx7sU/1080p_4ch_run2/primary.txt"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_resolution_20260917.Hgx7sU/1080p_4ch_run2/report.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_resolution_20260917.Hgx7sU/1080p_4ch_run3/primary.txt"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_resolution_20260917.Hgx7sU/1080p_4ch_run3/report.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_resolution_20260917.Hgx7sU/720p_1ch_sanity/primary.txt"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_resolution_20260917.Hgx7sU/720p_1ch_sanity/report.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_resolution_20260917.Hgx7sU/720p_2ch_sanity/primary.txt"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_resolution_20260917.Hgx7sU/720p_2ch_sanity/report.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_resolution_20260917.Hgx7sU/720p_4ch_run1/primary.txt"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_resolution_20260917.Hgx7sU/720p_4ch_run1/report.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_resolution_20260917.Hgx7sU/720p_4ch_run2/primary.txt"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_resolution_20260917.Hgx7sU/720p_4ch_run2/report.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_resolution_20260917.Hgx7sU/720p_4ch_run3/primary.txt"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_resolution_20260917.Hgx7sU/720p_4ch_run3/report.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_resolution_20260917.Hgx7sU/experiment_plan.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_resolution_20260917.Hgx7sU/input_validation.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_resolution_20260917.Hgx7sU/original_1080p_4ch_control/primary.txt"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_resolution_20260917.Hgx7sU/original_1080p_4ch_control/report.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_resolution_20260917.Hgx7sU/replay_1080p_frame_timestamps.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_resolution_20260917.Hgx7sU/replay_1080p_pts.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_resolution_20260917.Hgx7sU/replay_720p.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_resolution_20260917.Hgx7sU/replay_720p_frame_timestamps.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_resolution_20260917.Hgx7sU/replay_720p_pts.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_resolution_20260917.Hgx7sU/resolution_summary.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_resolution_20260917.Hgx7sU/source_frame_timestamps.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/pose_resolution_20260917.Hgx7sU/timing_probe_720p.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/primary_20260917/control_1ch_interval1/primary.txt"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/primary_20260917/control_1ch_interval1_v2/primary.txt"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/primary_20260917/control_1ch_interval1_v3/primary.txt"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/primary_20260917/control_1ch_interval1_v3/report.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/primary_20260917/load_1ch_interval0/primary.txt"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/primary_20260917/load_1ch_interval0/report.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/primary_20260917/load_2ch_interval0/primary.txt"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/primary_20260917/load_2ch_interval0/report.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/primary_20260917/load_4ch_interval0/primary.txt"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/primary_20260917/load_4ch_interval0/report.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/primary_20260917/metrics_fix_1ch_interval0/primary.txt"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/primary_20260917/metrics_fix_1ch_interval0/report.json"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/primary_20260917/metrics_fix_1ch_interval1/primary.txt"
+    },
+    {
+      "status": "??",
+      "path": "data/benchmarks/primary_20260917/metrics_fix_1ch_interval1/report.json"
+    },
+    {
+      "status": "??",
+      "path": "data/eval/reports/helmet_model_trt_320.json"
+    },
+    {
+      "status": "??",
+      "path": "data/eval/reports/helmet_model_trt_320_conf015.json"
+    },
+    {
+      "status": "??",
+      "path": "data/eval/reports/helmet_model_trt_640.json"
+    },
+    {
+      "status": "??",
+      "path": "data/eval/reports/helmet_model_ver0.5_trt_recheck_640.json"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_data_260901/20260901_125803/events.jsonl"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_data_260901/20260901_125803/session.json"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_data_260901/20260901_125821/demo.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_data_260901/20260901_125821/events.jsonl"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_data_260901/20260901_125821/session.json"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_data_260901/20260901_130308/demo.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_data_260901/20260901_130308/events.jsonl"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_data_260901/20260901_130308/session.json"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_data_260901/20260901_130355/demo.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_data_260901/20260901_130355/events.jsonl"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_data_260901/20260901_130355/session.json"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_data_260901/20260901_131638/demo.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_data_260901/20260901_131638/events.jsonl"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_data_260901/20260901_131638/session.json"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_data_260901/20260901_134040/demo.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_data_260901/20260901_134040/events.jsonl"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_data_260901/20260901_134040/session.json"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_data_260901/20260901_134258/demo.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_data_260901/20260901_134258/events.jsonl"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_data_260901/20260901_134258/overlay.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_data_260901/20260901_134258/session.json"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_data_260901/20260901_134347/demo.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_data_260901/20260901_134347/events.jsonl"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_data_260901/20260901_134347/overlay.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_data_260901/20260901_134347/session.json"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_demo/20260901_125355/events.jsonl"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_demo/20260901_125355/session.json"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_demo/20260901_135459/events.jsonl"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_demo/20260901_135459/session.json"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_demo/20260901_135638/demo.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_demo/20260901_135638/events.jsonl"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_demo/20260901_135638/overlay.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_demo/20260901_135638/session.json"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_demo/20260901_135958/demo.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_demo/20260901_135958/events.jsonl"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_demo/20260901_135958/overlay.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_demo/20260901_135958/session.json"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_demo/20260901_140049/demo.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_demo/20260901_140049/events.jsonl"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_demo/20260901_140049/overlay.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_demo/20260901_140049/session.json"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_demo/20260901_142339/demo.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_demo/20260901_142339/events.jsonl"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_demo/20260901_142339/overlay.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_demo/20260901_142339/session.json"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_demo/20260901_144958/demo.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_demo/20260901_144958/events.jsonl"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_demo/20260901_144958/overlay.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_demo/20260901_144958/session.json"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_demo/20260902_142824/demo.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_demo/20260902_142824/events.jsonl"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_demo/20260902_142824/overlay.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_demo/20260902_142824/session.json"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_demo/20260902_162233/demo.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_demo/20260902_162233/events.jsonl"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_demo/20260902_162233/overlay.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_demo/20260902_162233/session.json"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/blind_cam2_204_hard475_back_fn/fall_error_review_manifest.jsonl"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/blind_cam2_204_hard475_back_fn/index.html"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/blind_cam2_80/fall_error_review_manifest.jsonl"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/blind_cam2_80/index.html"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T002146282504Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T002213529517Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T002243706176Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T002314046880Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T002344406385Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T002414392305Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T002428555431Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T002428814390Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T002443995177Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T002518298943Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T002545892297Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T002615714972Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T002645991524Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T002715730816Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T002745636673Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T002747305412Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T002747306258Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T002815757648Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T002845921392Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T002915865418Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T002945835010Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T002959244242Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T002959555077Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T003015883712Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T003045806318Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T003115828731Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T003145915549Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T003211016776Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T003211155666Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T003215700412Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T003245969642Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T003315989575Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T003346079726Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T003416004574Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T003446043621Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T003516017608Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T003546002281Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T003616019896Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T003646044615Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T003716071865Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T003746134823Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T003816194234Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T003846228096Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T003916211552Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T003946215336Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T004016305083Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T004046391023Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T004116309072Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T004146455234Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T004216499857Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T004246952358Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T004316393380Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T004346485998Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T004416541260Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T004448211651Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T004515854311Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T004545851080Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T004616027841Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T004646383728Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T004716149534Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T004746008571Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T004816012676Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T004846101748Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T004916145945Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T004946097586Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T005016088766Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T005026356267Z_objunknown.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/browser_clips/sample_eval_20260803T005026574030Z_objunknown.tmp.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/full_14702/fall_error_review_manifest.jsonl"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_error_review/full_14702/index.html"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/20260909/manifest.csv"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/20260910/README.md"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/20260910/dataset_check.json"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/20260910/fall/20260910_135943_forward_fall.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/20260910/fall/20260910_140156_forward_fall.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/20260910/fall/20260910_140519_backward_fall.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/20260910/fall/20260910_140854_backward_fall.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/20260910/fall/20260910_141112_backward_fall.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/20260910/fall/20260910_141230_left_fall.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/20260910/fall/20260910_141314_left_fall.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/20260910/fall/20260910_141532_left_fall.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/20260910/fall/20260910_141722_right_fall.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/20260910/fall/20260910_141753_right_fall.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/20260910/fall/20260910_141827_right_fall.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/20260910/fall/20260910_142038_right_fall.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/20260910/fall/20260910_142111_right_fall.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/20260910/fall/20260910_151123_lower_body_occluded.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/20260910/fall/20260910_151412_upper_body_occluded.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/20260910/fall/20260910_151413_upper_body_occluded.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/20260910/manifest.csv"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/20260910/notfall/20260910_131526_walking.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/20260910/notfall/20260910_131910_walking.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/20260910/notfall/20260910_132353_walking.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/20260910/notfall/20260910_133208_walking.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/20260910/notfall/20260910_133505_walking.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/20260910/notfall/20260910_143101_walking.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/20260910/notfall/20260910_143306_walking.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/20260910/recording_quality_20260910.json"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/20260910/result_summary_pending.json"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/20260911/raw/20260911_103215_walking.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/20260911/raw/20260911_104744_walking.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/20260911/raw/20260911_105843_walking.mkv"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/20260911/raw/20260911_110844_walking.mkv"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/open_data_direction_summary.csv"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/rerecord_20260914/event_clips/left_fall_standing_event_18_38.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/rerecord_20260914/event_clips/right_fall_standing_event_12_34.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/rerecord_20260914/event_clips_comparison.csv"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/rerecord_20260914/event_clips_comparison.json"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/rerecord_20260914/event_clips_manifest.jsonl"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/rerecord_20260914/left_fall_standing_raw_120s.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/rerecord_20260914/raw_120s_comparison.csv"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/rerecord_20260914/raw_120s_comparison.json"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/rerecord_20260914/raw_120s_manifest.jsonl"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/rerecord_20260914/right_fall_standing_raw_120s.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/rerecord_20260914/tail_from_30s/left_fall_standing_from_30s.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/rerecord_20260914/tail_from_30s/right_fall_standing_from_30s.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/rerecord_20260914/tail_from_30s_comparison.csv"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/rerecord_20260914/tail_from_30s_comparison.json"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/rerecord_20260914/tail_from_30s_manifest.jsonl"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/rerecord_20260914/tail_from_30s_pose_cache/20260914_left_fall_standing_from_30s_172b87d768533c4d.json"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/rerecord_20260914/tail_from_30s_pose_cache/20260914_right_fall_standing_from_30s_07fedf17309832cc.json"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/rerecord_20260914/timeline_10s/left_00_10.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/rerecord_20260914/timeline_10s/left_10_20.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/rerecord_20260914/timeline_10s/left_20_30.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/rerecord_20260914/timeline_10s/left_30_40.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/rerecord_20260914/timeline_10s/left_40_50.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/rerecord_20260914/timeline_10s/right_00_10.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/rerecord_20260914/timeline_10s/right_10_20.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/rerecord_20260914/timeline_10s/right_20_30.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/rerecord_20260914/timeline_10s/right_30_40.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/rerecord_20260914/timeline_10s/right_40_50.mp4"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/rerecord_20260914/timeline_10s_comparison.csv"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/rerecord_20260914/timeline_10s_comparison.json"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/rerecord_20260914/timeline_10s_manifest.jsonl"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/rerecord_20260914/timeline_10s_pose_cache/left_00_10_92b29d7573417d6c.json"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/rerecord_20260914/timeline_10s_pose_cache/left_10_20_ae02f18906494552.json"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/rerecord_20260914/timeline_10s_pose_cache/left_20_30_c59c5e0dcdb81e2b.json"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/rerecord_20260914/timeline_10s_pose_cache/left_30_40_fd3afb4fc34270bb.json"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/rerecord_20260914/timeline_10s_pose_cache/left_40_50_8971a0b96770ed8f.json"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/rerecord_20260914/timeline_10s_pose_cache/right_00_10_a0185f8145538431.json"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/rerecord_20260914/timeline_10s_pose_cache/right_10_20_cae16bedcf72f8b4.json"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/rerecord_20260914/timeline_10s_pose_cache/right_20_30_e8250d9f37aae771.json"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/rerecord_20260914/timeline_10s_pose_cache/right_30_40_3d65fa56c5230bf0.json"
+    },
+    {
+      "status": "??",
+      "path": "data/fall_test/rerecord_20260914/timeline_10s_pose_cache/right_40_50_8f9b7d1e6366ae79.json"
+    },
+    {
+      "status": "??",
+      "path": "docs/handover/EDGEX_SIGNBOARD_UAT_20260917.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/handover/FIELD_UAT_AND_MODEL_SHADOW_PLAN_20260916.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/models/FALL_FN_FP_TRIAGE_AND_RETRAINING_PLAN_20260914.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/models/FALL_OPEN_DATA_RUNTIME_COMPARISON_20260914.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/models/FALL_RECORDED_VIDEO_TIMELINE_ANALYSIS_20260916.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/models/FALL_TEMPORAL_RECORDED_VIDEO_COMPARISON_20260914.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/planning/PROGRESS.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/planning/README.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/planning/WBS.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/planning/figma_exports/01_roadmap_20260918.png"
+    },
+    {
+      "status": "??",
+      "path": "docs/planning/figma_exports/01_roadmap_20260918.svg"
+    },
+    {
+      "status": "??",
+      "path": "docs/planning/figma_exports/02_wbs_20260918.png"
+    },
+    {
+      "status": "??",
+      "path": "docs/planning/figma_exports/02_wbs_20260918.svg"
+    },
+    {
+      "status": "??",
+      "path": "docs/planning/figma_exports/03_modules_sdlc_20260918.png"
+    },
+    {
+      "status": "??",
+      "path": "docs/planning/figma_exports/03_modules_sdlc_20260918.svg"
+    },
+    {
+      "status": "??",
+      "path": "docs/planning/figma_exports/README.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/reports/PROJECT_CODE_AUDIT_20260917.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/reports/TRAINED_MODEL_AUDIT_20260917.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/reports/model_audit_20260917.py"
+    },
+    {
+      "status": "??",
+      "path": "docs/testing/JETSON_POSE_BATCH_CANDIDATE_20260917.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/testing/JETSON_POSE_DISPATCH_AND_COLOAD_20260917.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/testing/JETSON_POSE_L3_COMPARISON_20260917.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/testing/JETSON_POSE_OPTIMIZED_BUILD_20260917.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/testing/JETSON_POSE_OUTPUT_OPTIMIZATION_20260917.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/testing/JETSON_POSE_RESOLUTION_COMPARISON_20260917.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/testing/JETSON_PRIMARY_LOAD_TEST_20260917.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/testing/MULTICAMERA_30FPS_ACCEPTANCE.md"
+    },
+    {
+      "status": "??",
+      "path": "fall_error_review_labels.json"
+    },
+    {
+      "status": "??",
+      "path": "fall_error_review_labels001.json"
+    },
+    {
+      "status": "??",
+      "path": "fall_error_review_labels002.json"
+    },
+    {
+      "status": "??",
+      "path": "fall_review_labels.json"
+    },
+    {
+      "status": "??",
+      "path": "models/appearance/aihub_kreid_continue5_refine_20260819.onnx"
+    },
+    {
+      "status": "??",
+      "path": "models/appearance/appearance_color_yolov8n.onnx"
+    },
+    {
+      "status": "??",
+      "path": "models/appearance/appearance_color_yolov8n.pt"
+    },
+    {
+      "status": "??",
+      "path": "models/appearance/candidates/appearance_multitask_v1_rapv2_reviewed/appearance_multitask_v1_rapv2_reviewed.onnx"
+    },
+    {
+      "status": "??",
+      "path": "models/appearance/candidates/appearance_multitask_v1_rapv2_reviewed/appearance_multitask_v1_rapv2_reviewed_label_map.json"
+    },
+    {
+      "status": "??",
+      "path": "models/appearance/candidates/appearance_multitask_v1_rapv2_reviewed/onnx_export_report.json"
+    },
+    {
+      "status": "??",
+      "path": "models/appearance/candidates/appearance_multitask_v1_rapv2_reviewed/roi_v2/appearance_multitask_v1_rapv2_reviewed_roi_v2.onnx"
+    },
+    {
+      "status": "??",
+      "path": "models/appearance/candidates/appearance_multitask_v1_rapv2_reviewed/roi_v2/appearance_multitask_v1_rapv2_reviewed_roi_v2_label_map.json"
+    },
+    {
+      "status": "??",
+      "path": "models/appearance/candidates/appearance_multitask_v1_rapv2_reviewed/roi_v2/onnx_export_report.json"
+    },
+    {
+      "status": "??",
+      "path": "models/appearance/pa100k_resnet50_attr.onnx"
+    },
+    {
+      "status": "??",
+      "path": "models/appearance/pphuman_attribute.onnx"
+    },
+    {
+      "status": "??",
+      "path": "models/appearance/pphuman_attribute_src/PP-LCNet_x1_0_pedestrian_attribute_infer/inference.json"
+    },
+    {
+      "status": "??",
+      "path": "models/appearance/pphuman_attribute_src/PP-LCNet_x1_0_pedestrian_attribute_infer/inference.pdiparams"
+    },
+    {
+      "status": "??",
+      "path": "models/appearance/pphuman_attribute_src/PP-LCNet_x1_0_pedestrian_attribute_infer/inference.yml"
+    },
+    {
+      "status": "??",
+      "path": "models/fall/fall_temporal_baseline_same_split_20260910.pt"
+    },
+    {
+      "status": "??",
+      "path": "models/fall/fall_temporal_same_split_resume_20260908.pt"
+    },
+    {
+      "status": "??",
+      "path": "models/fall/yolo11n-pose.pt"
+    },
+    {
+      "status": "??",
+      "path": "models/fall/yolo_pose_same_split_resume_20260908_rf.joblib"
+    },
+    {
+      "status": "??",
+      "path": "models/fall/yolov8m-pose.onnx"
+    },
+    {
+      "status": "??",
+      "path": "models/fall/yolov8m-pose.pt"
+    },
+    {
+      "status": "??",
+      "path": "models/fall/yolov8n-pose.onnx"
+    },
+    {
+      "status": "??",
+      "path": "models/fall/yolov8n-pose.pt"
+    },
+    {
+      "status": "??",
+      "path": "models/head/helmet_model.onnx"
+    },
+    {
+      "status": "??",
+      "path": "models/head/helmet_model.pt"
+    },
+    {
+      "status": "??",
+      "path": "models/legacy/falldata_mediapipe/FNF_RF_SMOTE_CAM_1.pkl"
+    },
+    {
+      "status": "??",
+      "path": "models/legacy/falldata_mediapipe/FNF_RF_SMOTE_CAM_2.pkl"
+    },
+    {
+      "status": "??",
+      "path": "models/legacy/falldata_mediapipe/FNF_RF_SMOTE_CAM_3.pkl"
+    },
+    {
+      "status": "??",
+      "path": "models/legacy/falldata_mediapipe/FNF_RF_SMOTE_CAM_4.pkl"
+    },
+    {
+      "status": "??",
+      "path": "models/legacy/falldata_mediapipe/FNF_RF_SMOTE_CAM_5.pkl"
+    },
+    {
+      "status": "??",
+      "path": "models/legacy/falldata_mediapipe/FNF_RF_SMOTE_CAM_6.pkl"
+    },
+    {
+      "status": "??",
+      "path": "models/legacy/falldata_mediapipe/FNF_RF_SMOTE_CAM_7.pkl"
+    },
+    {
+      "status": "??",
+      "path": "models/legacy/falldata_mediapipe/FNF_RF_SMOTE_CAM_8.pkl"
+    },
+    {
+      "status": "??",
+      "path": "models/legacy/falldata_mediapipe/README.md"
+    },
+    {
+      "status": "??",
+      "path": "models/legacy/helmet_model_ver0.5.onnx"
+    },
+    {
+      "status": "??",
+      "path": "models/legacy/helmet_model_ver0.5.pt"
+    },
+    {
+      "status": "??",
+      "path": "models/person/yolov8n.onnx"
+    },
+    {
+      "status": "??",
+      "path": "models/person/yolov8n.pt"
+    },
+    {
+      "status": "??",
+      "path": "rapv2_color_review_labels.json"
+    },
+    {
+      "status": "??",
+      "path": "scripts/ops/benchmark_deepstream_primary.py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/ops/compare_fall_temporal_runtime.py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/ops/compare_tensorrt_pose_candidate.py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/ops/finalize_fall_open_data_batch.py"
+    },
+    {
+      "status": "??",
+      "path": "scripts/ops/run_unattended_fall_batch_followup.sh"
+    },
+    {
+      "status": "??",
+      "path": "skills/README.md"
+    },
+    {
+      "status": "??",
+      "path": "skills/cctv-model-evaluation/SKILL.md"
+    },
+    {
+      "status": "??",
+      "path": "src/core/_deepstream_primary_metrics.py"
+    },
+    {
+      "status": "??",
+      "path": "tasks/legacy_handover_material_plan.md"
+    },
+    {
+      "status": "??",
+      "path": "tasks/legacy_handover_material_todo.md"
+    },
+    {
+      "status": "??",
+      "path": "tests/test_benchmark_deepstream_primary.py"
+    },
+    {
+      "status": "??",
+      "path": "tests/test_compare_fall_temporal_runtime.py"
+    },
+    {
+      "status": "??",
+      "path": "tests/test_compare_tensorrt_pose_candidate.py"
+    },
+    {
+      "status": "??",
+      "path": "tests/test_deepstream_primary_metrics.py"
+    },
+    {
+      "status": "??",
+      "path": "tests/test_fall_shadow_review.py"
+    },
+    {
+      "status": "??",
+      "path": "tests/test_finalize_fall_open_data_batch.py"
+    }
+  ],
+  "containers": [
+    {
+      "name": "cctv-action-layer",
+      "image_reference": "edgex-jetson-cctv-action-layer",
+      "image_id": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+      "container_id": "f8cc0cae0b006f493bbc71da5093e30fdc1a37f192d57a62fc04c41af4786ce3",
+      "status": "running",
+      "health": "healthy",
+      "started_at": "2026-09-17T00:15:22.470866507Z",
+      "paused": false,
+      "restart_count": 0,
+      "environment_allowlist": {
+        "EDGEX_ALLOWED_DEVICES": "speaker,signboard,siren",
+        "FALLDATA_AUX_MODE": "shadow",
+        "SIREN_HOST": false,
+        "EDGEX_COMMAND_MODE": "edgex",
+        "EDGEX_SHADOW_ENABLED": "false",
+        "FALLDATA_AUX_COMPARE_VETO_ENABLED": "false",
+        "SIREN_PORT": true,
+        "DS_FALL_SCORE_THRESHOLD": "3.0",
+        "EDGEX_DEVICE_REGISTRY_PATH": "/app/config/output_devices.json",
+        "APPEARANCE_COLOR_MODEL_PATH": "models/appearance/appearance_color_yolov8n.engine",
+        "APPEARANCE_MODEL_PATH": "models/pa100k_resnet50_attr.engine",
+        "APPEARANCE_BACKEND": "hsv"
+      },
+      "mounts": [
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/data",
+          "destination": "/app/data",
+          "rw": true
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/runners",
+          "destination": "/app/runners",
+          "rw": false
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/src",
+          "destination": "/app/src",
+          "rw": false
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/config/event_type_map.json",
+          "destination": "/app/config/event_type_map.json",
+          "rw": false
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/config/output_devices.json",
+          "destination": "/app/config/output_devices.json",
+          "rw": false
+        }
+      ]
+    },
+    {
+      "name": "cctv-alert-api",
+      "image_reference": "edgex-jetson-cctv-alert-api",
+      "image_id": "sha256:017ce3b2c1c0c09148ecd71fbaa05863452c5e115ad29e69e766a6ffd5003a8c",
+      "container_id": "f409be471c45577af83c2ff878103219efa49cab3f03fff78285571e0e526493",
+      "status": "running",
+      "health": "healthy",
+      "started_at": "2026-09-17T00:07:28.058336357Z",
+      "paused": false,
+      "restart_count": 0,
+      "environment_allowlist": {
+        "FALLDATA_AUX_COMPARE_VETO_ENABLED": "false",
+        "APPEARANCE_MODEL_PATH": "models/pa100k_resnet50_attr.engine",
+        "SIREN_HOST": false,
+        "EDGEX_DEVICE_REGISTRY_PATH": "/app/config/output_devices.json",
+        "DS_FALL_SCORE_THRESHOLD": "3.0",
+        "EDGEX_COMMAND_MODE": "edgex",
+        "APPEARANCE_COLOR_MODEL_PATH": "models/appearance/appearance_color_yolov8n.engine",
+        "APPEARANCE_BACKEND": "hsv",
+        "FALLDATA_AUX_MODE": "shadow",
+        "EDGEX_ALLOWED_DEVICES": "speaker,signboard,siren",
+        "SIREN_PORT": true
+      },
+      "mounts": [
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/data",
+          "destination": "/app/data",
+          "rw": true
+        }
+      ]
+    },
+    {
+      "name": "cctv-ai-engine",
+      "image_reference": "edgex-jetson-cctv-ai-engine",
+      "image_id": "sha256:1ace5b7832a50d6675b66146b0edc307021795732fc7c9a770e2cd628d7fd261",
+      "container_id": "5cf45e7eb909a7ccde631d74b172197192ad9440f8f850ad3d1425e00e2de02b",
+      "status": "running",
+      "health": "healthy",
+      "started_at": "2026-09-16T23:45:46.903505745Z",
+      "paused": false,
+      "restart_count": 0,
+      "environment_allowlist": {
+        "APPEARANCE_MODEL_PATH": "models/pa100k_resnet50_attr.engine",
+        "DS_CROP_POSE_ENABLED": "0",
+        "FALLDATA_AUX_NEAR_MISS_PROMOTE_ENABLED": "false",
+        "SIREN_HOST": false,
+        "DS_FALL_SCORE_THRESHOLD": "3.0",
+        "SIREN_PORT": true,
+        "APPEARANCE_COLOR_MODEL_PATH": "models/appearance/appearance_color_yolov8n.engine",
+        "FALLDATA_AUX_COMPARE_VETO_ENABLED": "false",
+        "FALLDATA_AUX_MODE": "shadow",
+        "APPEARANCE_BACKEND": "hsv"
+      },
+      "mounts": [
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/.venv-jetson-train",
+          "destination": "/app/.venv-jetson-train",
+          "rw": false
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/Sample",
+          "destination": "/app/Sample",
+          "rw": false
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/cameras.json",
+          "destination": "/app/cameras.json",
+          "rw": true
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/data",
+          "destination": "/app/data",
+          "rw": true
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/known_faces",
+          "destination": "/app/known_faces",
+          "rw": true
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/known_faces.json",
+          "destination": "/app/known_faces.json",
+          "rw": true
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/models",
+          "destination": "/app/models",
+          "rw": true
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/scripts",
+          "destination": "/app/scripts",
+          "rw": false
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/src",
+          "destination": "/app/src",
+          "rw": false
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/zones_config.json",
+          "destination": "/app/zones_config.json",
+          "rw": false
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/낙상학습데이터",
+          "destination": "/app/낙상학습데이터",
+          "rw": false
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/data/insightface",
+          "destination": "/root/.insightface",
+          "rw": true
+        },
+        {
+          "type": "bind",
+          "source": "/tmp/.X11-unix",
+          "destination": "/tmp/.X11-unix",
+          "rw": true
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/config/appearance_color_labels.json",
+          "destination": "/app/config/appearance_color_labels.json",
+          "rw": false
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/config/appearance_pa100k_labels.json",
+          "destination": "/app/config/appearance_pa100k_labels.json",
+          "rw": false
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/config/deepstream",
+          "destination": "/app/config/deepstream",
+          "rw": false
+        },
+        {
+          "type": "volume",
+          "source": "/media/sawwave/Learning11/docker/volumes/edgex-jetson_trt-cache/_data",
+          "destination": "/app/models/trt_cache",
+          "rw": true
+        },
+        {
+          "type": "bind",
+          "source": "/opt/nvidia/deepstream",
+          "destination": "/opt/nvidia/deepstream",
+          "rw": false
+        },
+        {
+          "type": "bind",
+          "source": "/usr/lib/aarch64-linux-gnu/nvidia",
+          "destination": "/usr/lib/aarch64-linux-gnu/nvidia",
+          "rw": false
+        }
+      ]
+    },
+    {
+      "name": "aiot-parser",
+      "image_reference": "edgex-jetson-aiot-parser",
+      "image_id": "sha256:e28e84c7e1daac4ad0aac610a0f372d8abd1c5c281c708f8f4de839071098179",
+      "container_id": "ecac3c50c98a08544a0ad5dd85f668240017852f3c00ff3191463c498a6f385c",
+      "status": "running",
+      "health": "healthy",
+      "started_at": "2026-09-16T01:32:22.719194777Z",
+      "paused": false,
+      "restart_count": 0,
+      "environment_allowlist": {},
+      "mounts": [
+        {
+          "type": "volume",
+          "source": "/media/sawwave/Learning11/docker/volumes/edgex-jetson_aiot-parser-data/_data",
+          "destination": "/data",
+          "rw": true
+        }
+      ]
+    },
+    {
+      "name": "cctv-public-demo-ui",
+      "image_reference": "nginx:1.27-alpine",
+      "image_id": "sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10",
+      "container_id": "0ce21ff0428bc2e0b8498c13d5b59a2ef87b4510b462691ef44b0549ff33c553",
+      "status": "running",
+      "health": "not_configured",
+      "started_at": "2026-09-16T00:52:52.933066565Z",
+      "paused": false,
+      "restart_count": 0,
+      "environment_allowlist": {},
+      "mounts": [
+        {
+          "type": "bind",
+          "source": "/etc/localtime",
+          "destination": "/etc/localtime",
+          "rw": false
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/config/nginx/public-demo.conf.template",
+          "destination": "/etc/nginx/templates/default.conf.template",
+          "rw": false
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/web/public-demo.html",
+          "destination": "/usr/share/nginx/html/public-demo.html",
+          "rw": false
+        }
+      ]
+    },
+    {
+      "name": "cctv-media-server",
+      "image_reference": "bluenviron/mediamtx:1",
+      "image_id": "sha256:f8628851106cc053f9175b248050bb5f362a6e65abd72297c167a1cb5a9a3be2",
+      "container_id": "a2b1369a3598485980000d1e6da5ef09d79145da54b220cc37baaa00b7376c03",
+      "status": "running",
+      "health": "not_configured",
+      "started_at": "2026-09-16T00:52:53.23711413Z",
+      "paused": false,
+      "restart_count": 0,
+      "environment_allowlist": {},
+      "mounts": [
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/config/mediamtx.yml",
+          "destination": "/mediamtx.yml",
+          "rw": false
+        }
+      ]
+    },
+    {
+      "name": "cctv-public-api",
+      "image_reference": "edgex-jetson-cctv-public-api",
+      "image_id": "sha256:ca4376b086a99f2ad42d2132cb21b1cf75178571fae530ec464c1ed071f3175c",
+      "container_id": "1b39a4ff7ee4d0d9bc7580418c51f5d880e320707bb5b00060af08ff4580a4a0",
+      "status": "running",
+      "health": "healthy",
+      "started_at": "2026-09-16T00:29:28.140565963Z",
+      "paused": false,
+      "restart_count": 0,
+      "environment_allowlist": {
+        "APPEARANCE_COLOR_MODEL_PATH": "models/appearance_color_yolov8n.engine",
+        "APPEARANCE_MODEL_PATH": "models/pa100k_resnet50_attr.engine",
+        "APPEARANCE_BACKEND": "hsv"
+      },
+      "mounts": [
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/cameras.json",
+          "destination": "/app/cameras.json",
+          "rw": false
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/data",
+          "destination": "/app/data",
+          "rw": true
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/runners",
+          "destination": "/app/runners",
+          "rw": false
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/src",
+          "destination": "/app/src",
+          "rw": false
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/config/sensor_devices.json",
+          "destination": "/app/config/sensor_devices.json",
+          "rw": false
+        }
+      ]
+    },
+    {
+      "name": "cctv-edgex-adapter",
+      "image_reference": "edgex-jetson-cctv-edgex-adapter",
+      "image_id": "sha256:b146c351ec53303c7c57dc0836b81b4dc86df13d351055c0a4d50f40f1a83c10",
+      "container_id": "64c16ac5a15eb14697be4327f593658f0fca95fd3cb3794ff376f01aac763033",
+      "status": "running",
+      "health": "healthy",
+      "started_at": "2026-09-16T00:14:06.810675594Z",
+      "paused": false,
+      "restart_count": 0,
+      "environment_allowlist": {},
+      "mounts": [
+        {
+          "type": "volume",
+          "source": "/media/sawwave/Learning11/docker/volumes/edgex-jetson_aiot-parser-data/_data",
+          "destination": "/data",
+          "rw": true
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/data",
+          "destination": "/app/data",
+          "rw": true
+        }
+      ]
+    },
+    {
+      "name": "cctv-edgex-command-result",
+      "image_reference": "edgex-jetson-cctv-edgex-command-result",
+      "image_id": "sha256:91f458bd94f6459d8ae84b10a6fb5ad1d3094fe794749f8276537785a604ef25",
+      "container_id": "589787a68cd563f3a2c3bbf93a6ba4854f74e433d000e0cbac0e63ca4cd905d9",
+      "status": "running",
+      "health": "healthy",
+      "started_at": "2026-09-16T00:14:01.357093043Z",
+      "paused": false,
+      "restart_count": 0,
+      "environment_allowlist": {
+        "FALLDATA_AUX_MODE": "shadow",
+        "FALLDATA_AUX_COMPARE_VETO_ENABLED": "false",
+        "SIREN_PORT": true,
+        "APPEARANCE_BACKEND": "hsv",
+        "APPEARANCE_MODEL_PATH": "models/pa100k_resnet50_attr.engine",
+        "SIREN_HOST": false,
+        "APPEARANCE_COLOR_MODEL_PATH": "models/appearance_color_yolov8n.engine",
+        "DS_FALL_SCORE_THRESHOLD": "3.0"
+      },
+      "mounts": [
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/data",
+          "destination": "/app/data",
+          "rw": true
+        }
+      ]
+    },
+    {
+      "name": "cctv-device-speaker",
+      "image_reference": "edgex-jetson-cctv-device-speaker",
+      "image_id": "sha256:4daca5e8c9865c5f19dde37d7dbdfcc37ea5c413fa8375802e80c7f8185bba30",
+      "container_id": "a8ff5823d34ad72dd2c5b236cc88f210b16feb05ef53532e6549601d2beafb7a",
+      "status": "running",
+      "health": "healthy",
+      "started_at": "2026-09-16T00:14:04.839252312Z",
+      "paused": false,
+      "restart_count": 0,
+      "environment_allowlist": {
+        "APPEARANCE_BACKEND": "hsv",
+        "APPEARANCE_MODEL_PATH": "models/pa100k_resnet50_attr.engine",
+        "APPEARANCE_COLOR_MODEL_PATH": "models/appearance_color_yolov8n.engine",
+        "FALLDATA_AUX_COMPARE_VETO_ENABLED": "false",
+        "SPEAKER_DRY_RUN": "false",
+        "SIREN_PORT": true,
+        "SIREN_HOST": false,
+        "FALLDATA_AUX_MODE": "shadow",
+        "DS_FALL_SCORE_THRESHOLD": "3.0"
+      },
+      "mounts": []
+    },
+    {
+      "name": "cctv-device-siren",
+      "image_reference": "edgex-jetson-cctv-device-siren",
+      "image_id": "sha256:610552d415f5d0c7336e77c00b94f99a4e6e8fbdafa350da67c7f5b2c19e023e",
+      "container_id": "9bdc877613d8d607f7f064ef9d42588466f8a6dc5906998d9851c3d57fa0be01",
+      "status": "running",
+      "health": "healthy",
+      "started_at": "2026-09-16T00:14:05.329311453Z",
+      "paused": false,
+      "restart_count": 0,
+      "environment_allowlist": {
+        "SIREN_HOST": false,
+        "SIREN_DRY_RUN": "false",
+        "APPEARANCE_BACKEND": "hsv",
+        "FALLDATA_AUX_COMPARE_VETO_ENABLED": "false",
+        "DS_FALL_SCORE_THRESHOLD": "3.0",
+        "FALLDATA_AUX_MODE": "shadow",
+        "APPEARANCE_MODEL_PATH": "models/pa100k_resnet50_attr.engine",
+        "APPEARANCE_COLOR_MODEL_PATH": "models/appearance_color_yolov8n.engine",
+        "SIREN_PORT": true
+      },
+      "mounts": []
+    },
+    {
+      "name": "cctv-device-signboard",
+      "image_reference": "edgex-jetson-cctv-device-signboard",
+      "image_id": "sha256:7146fd550900b6e967e6a23606920762165035120b44b2e50c43390a7cf8f65e",
+      "container_id": "fca78eeb63cf1846c523ff633d626b41e2b5b2274661c9a9dd0f1323a8345020",
+      "status": "running",
+      "health": "healthy",
+      "started_at": "2026-09-16T00:14:04.153670852Z",
+      "paused": false,
+      "restart_count": 0,
+      "environment_allowlist": {
+        "DS_FALL_SCORE_THRESHOLD": "3.0",
+        "APPEARANCE_BACKEND": "hsv",
+        "SIREN_HOST": false,
+        "APPEARANCE_MODEL_PATH": "models/pa100k_resnet50_attr.engine",
+        "FALLDATA_AUX_COMPARE_VETO_ENABLED": "false",
+        "SIGNBOARD_DRY_RUN": "false",
+        "APPEARANCE_COLOR_MODEL_PATH": "models/appearance_color_yolov8n.engine",
+        "FALLDATA_AUX_MODE": "shadow",
+        "SIREN_PORT": true
+      },
+      "mounts": []
+    },
+    {
+      "name": "cctv-sensor-rule-bridge",
+      "image_reference": "edgex-jetson-cctv-sensor-rule-bridge",
+      "image_id": "sha256:fb26bbabe1d61b0f98e865ee170af45c6c80b17f223bb8ae5b700e3d5de48fb5",
+      "container_id": "2ee109f4f7b84699c76cf80d5f69cb92a86a82ef2d715ffa4bddef559eb4ae46",
+      "status": "running",
+      "health": "healthy",
+      "started_at": "2026-09-16T00:14:08.567259608Z",
+      "paused": false,
+      "restart_count": 0,
+      "environment_allowlist": {},
+      "mounts": []
+    },
+    {
+      "name": "cctv-grafana",
+      "image_reference": "grafana/grafana:10.4.2",
+      "image_id": "sha256:7d5faae481a4c6f436c99e98af11534f7fd5e8d3e35213552dd1dd02bc393d2e",
+      "container_id": "6709ebb4de578bb55684d06e81fd0189998c733471fc1f06a923c331a80597c1",
+      "status": "running",
+      "health": "healthy",
+      "started_at": "2026-09-16T00:14:08.082285894Z",
+      "paused": false,
+      "restart_count": 0,
+      "environment_allowlist": {},
+      "mounts": [
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/monitoring/grafana/provisioning",
+          "destination": "/etc/grafana/provisioning",
+          "rw": false
+        },
+        {
+          "type": "volume",
+          "source": "/media/sawwave/Learning11/docker/volumes/edgex-jetson_grafana-data/_data",
+          "destination": "/var/lib/grafana",
+          "rw": true
+        }
+      ]
+    },
+    {
+      "name": "edgex-mqtt-broker",
+      "image_reference": "eclipse-mosquitto:2.0",
+      "image_id": "sha256:914f529386804c8278a4e581526b9be5e1604df44b30daabc70aa97dcefe5268",
+      "container_id": "2f1c7751643d8cb71328210666e4dfcfc37343b775137f91282f0834aac62e79",
+      "status": "running",
+      "health": "not_configured",
+      "started_at": "2026-09-16T00:14:01.012066908Z",
+      "paused": false,
+      "restart_count": 0,
+      "environment_allowlist": {},
+      "mounts": [
+        {
+          "type": "volume",
+          "source": "/media/sawwave/Learning11/docker/volumes/edgex-jetson_mosquitto-data/_data",
+          "destination": "/mosquitto/data",
+          "rw": true
+        },
+        {
+          "type": "volume",
+          "source": "/media/sawwave/Learning11/docker/volumes/1c687f2081a854c3c467d91d11c15a61b4aa69f0744a8be8ed11a7ad137ad14e/_data",
+          "destination": "/mosquitto/log",
+          "rw": true
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/mosquitto/mosquitto.conf",
+          "destination": "/mosquitto/config/mosquitto.conf",
+          "rw": false
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/mosquitto/passwd",
+          "destination": "/mosquitto/config/passwd",
+          "rw": false
+        }
+      ]
+    },
+    {
+      "name": "edgex-ui-go",
+      "image_reference": "nginx:1.27-alpine",
+      "image_id": "sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10",
+      "container_id": "3f72e5aa05a9ee7d0aa1826dfad0a908c36ce2d96eecbc7b918ba66cb7ad98bc",
+      "status": "running",
+      "health": "not_configured",
+      "started_at": "2026-09-16T00:14:03.797408433Z",
+      "paused": false,
+      "restart_count": 0,
+      "environment_allowlist": {},
+      "mounts": [
+        {
+          "type": "bind",
+          "source": "/etc/localtime",
+          "destination": "/etc/localtime",
+          "rw": false
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/config/nginx/edgex-status.conf",
+          "destination": "/etc/nginx/conf.d/default.conf",
+          "rw": false
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/web/edgex-status.html",
+          "destination": "/usr/share/nginx/html/edgex-status.html",
+          "rw": false
+        }
+      ]
+    },
+    {
+      "name": "edgex-kuiper",
+      "image_reference": "lfedge/ekuiper:1.11.4-alpine",
+      "image_id": "sha256:7f4962946a721ece5ec630150e47614c4a461ee2c29600f24d96ef5e35a9d4da",
+      "container_id": "6249a0c22b5712d01242c176abfce736685579514bfb389952062c3fd9392576",
+      "status": "running",
+      "health": "not_configured",
+      "started_at": "2026-09-16T00:14:02.039274663Z",
+      "paused": false,
+      "restart_count": 0,
+      "environment_allowlist": {},
+      "mounts": [
+        {
+          "type": "bind",
+          "source": "/etc/localtime",
+          "destination": "/etc/localtime",
+          "rw": false
+        },
+        {
+          "type": "volume",
+          "source": "/media/sawwave/Learning11/docker/volumes/edgex-jetson_kuiper-data/_data",
+          "destination": "/kuiper/data",
+          "rw": true
+        },
+        {
+          "type": "volume",
+          "source": "/media/sawwave/Learning11/docker/volumes/edgex-jetson_kuiper-etc/_data",
+          "destination": "/kuiper/etc",
+          "rw": true
+        },
+        {
+          "type": "volume",
+          "source": "/media/sawwave/Learning11/docker/volumes/edgex-jetson_kuiper-log/_data",
+          "destination": "/kuiper/log",
+          "rw": true
+        },
+        {
+          "type": "volume",
+          "source": "/media/sawwave/Learning11/docker/volumes/edgex-jetson_kuiper-plugins/_data",
+          "destination": "/kuiper/plugins",
+          "rw": true
+        }
+      ]
+    },
+    {
+      "name": "cctv-prometheus",
+      "image_reference": "prom/prometheus:v2.51.2",
+      "image_id": "sha256:4f6c47e39a9064028766e8c95890ed15690c30f00c4ba14e7ce6ae1ded0295b1",
+      "container_id": "1d13831d072018233fcd22305be7e7b6fca7062191364a0cd4a355986196110f",
+      "status": "running",
+      "health": "healthy",
+      "started_at": "2026-09-16T00:14:00.382062688Z",
+      "paused": false,
+      "restart_count": 0,
+      "environment_allowlist": {},
+      "mounts": [
+        {
+          "type": "volume",
+          "source": "/media/sawwave/Learning11/docker/volumes/edgex-jetson_prometheus-data/_data",
+          "destination": "/prometheus",
+          "rw": true
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/monitoring/prometheus.jetson.yml",
+          "destination": "/etc/prometheus/prometheus.yml",
+          "rw": false
+        }
+      ]
+    },
+    {
+      "name": "aiot-parser-db",
+      "image_reference": "postgres:16-alpine",
+      "image_id": "sha256:4e6e670bb069649261c9c18031f0aded7bb249a5b6664ddec29c013a89310d50",
+      "container_id": "118472f5aeed0881b938915994377311fca6a7caa359cd97f4769c0d36bc5167",
+      "status": "running",
+      "health": "healthy",
+      "started_at": "2026-09-16T00:14:00.717644034Z",
+      "paused": false,
+      "restart_count": 0,
+      "environment_allowlist": {},
+      "mounts": [
+        {
+          "type": "volume",
+          "source": "/media/sawwave/Learning11/docker/volumes/edgex-jetson_aiot-db-data/_data",
+          "destination": "/var/lib/postgresql/data",
+          "rw": true
+        }
+      ]
+    },
+    {
+      "name": "edgex-app-rules-engine",
+      "image_reference": "edgexfoundry/app-service-configurable:3.1.1",
+      "image_id": "sha256:de5506942654c8a1a8271486bdf2a5392bc8444d51a265be9a57e639e9d849c4",
+      "container_id": "ac9d4613800ff7c022573596a9699e644eed63ce5b17eba6176312deb8734241",
+      "status": "running",
+      "health": "not_configured",
+      "started_at": "2026-09-16T00:14:06.38927163Z",
+      "paused": false,
+      "restart_count": 0,
+      "environment_allowlist": {},
+      "mounts": [
+        {
+          "type": "bind",
+          "source": "/etc/localtime",
+          "destination": "/etc/localtime",
+          "rw": false
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/edgex/asc/cctv-external-http",
+          "destination": "/res/cctv-external-http",
+          "rw": false
+        }
+      ]
+    },
+    {
+      "name": "edgex-core-common-config-bootstrapper",
+      "image_reference": "edgexfoundry/core-common-config-bootstrapper:3.1.1",
+      "image_id": "sha256:6da4dc8fb74974979118bf616927dfc538e62b3e521f0e7cb6d291ac52b273fc",
+      "container_id": "2026a3b6bb0a51662038528f602125c94945a8ec555398cb871b05b22a911a72",
+      "status": "running",
+      "health": "not_configured",
+      "started_at": "2026-09-16T00:14:02.853614493Z",
+      "paused": false,
+      "restart_count": 0,
+      "environment_allowlist": {},
+      "mounts": [
+        {
+          "type": "bind",
+          "source": "/etc/localtime",
+          "destination": "/etc/localtime",
+          "rw": false
+        }
+      ]
+    },
+    {
+      "name": "edgex-support-notifications",
+      "image_reference": "edgexfoundry/support-notifications:3.1.1",
+      "image_id": "sha256:a0df8bc385816bc3848f925656c712e08e1328c4146006c5bb6fa21862f730c3",
+      "container_id": "746e673415b9485c48eb33d2b5a9597c84331f983e37bda3f89143dc0585a777",
+      "status": "running",
+      "health": "not_configured",
+      "started_at": "2026-09-16T00:14:02.451403501Z",
+      "paused": false,
+      "restart_count": 0,
+      "environment_allowlist": {},
+      "mounts": [
+        {
+          "type": "bind",
+          "source": "/etc/localtime",
+          "destination": "/etc/localtime",
+          "rw": false
+        }
+      ]
+    },
+    {
+      "name": "edgex-support-scheduler",
+      "image_reference": "edgexfoundry/support-scheduler:3.1.1",
+      "image_id": "sha256:d8d2d0c6b28c63bf01545983c9dbb295c2bdea9003394a3a97e6fe8046857728",
+      "container_id": "c7448aca4f7d5e9255d17c0c297f5fbf12bd7489c3c1298b92dfd3601b5df61a",
+      "status": "running",
+      "health": "not_configured",
+      "started_at": "2026-09-16T00:14:03.457984714Z",
+      "paused": false,
+      "restart_count": 0,
+      "environment_allowlist": {},
+      "mounts": [
+        {
+          "type": "bind",
+          "source": "/etc/localtime",
+          "destination": "/etc/localtime",
+          "rw": false
+        }
+      ]
+    },
+    {
+      "name": "edgex-device-virtual",
+      "image_reference": "edgexfoundry/device-virtual:3.1.1",
+      "image_id": "sha256:a285c7a76c84113475134774d96b156080290e7ada65aa597691afd050c262a1",
+      "container_id": "5d7049bb56d064ede2cff8d5b82787716ad7fe85040df092514d045bfaaf5439",
+      "status": "running",
+      "health": "not_configured",
+      "started_at": "2026-09-16T00:14:05.904816142Z",
+      "paused": false,
+      "restart_count": 0,
+      "environment_allowlist": {},
+      "mounts": [
+        {
+          "type": "bind",
+          "source": "/etc/localtime",
+          "destination": "/etc/localtime",
+          "rw": false
+        }
+      ]
+    },
+    {
+      "name": "cctv-device-dabit",
+      "image_reference": "edgex-jetson-cctv-device-dabit",
+      "image_id": "sha256:bb0f35eee47d16c4bc8b30417717bc04b9d2c40ce6f2556d97d081f736a006fd",
+      "container_id": "f51a40001b1cdd706b69941702a76e10044002740582f2da9c20c8648aa36a0d",
+      "status": "running",
+      "health": "healthy",
+      "started_at": "2026-09-16T00:14:01.65654875Z",
+      "paused": false,
+      "restart_count": 0,
+      "environment_allowlist": {
+        "SIREN_HOST": false,
+        "FALLDATA_AUX_MODE": "shadow",
+        "FALLDATA_AUX_COMPARE_VETO_ENABLED": "false",
+        "APPEARANCE_COLOR_MODEL_PATH": "models/appearance_color_yolov8n.engine",
+        "APPEARANCE_BACKEND": "hsv",
+        "SIREN_PORT": true,
+        "DS_FALL_SCORE_THRESHOLD": "3.0",
+        "APPEARANCE_MODEL_PATH": "models/pa100k_resnet50_attr.engine"
+      },
+      "mounts": []
+    },
+    {
+      "name": "edgex-device-rest",
+      "image_reference": "edgexfoundry/device-rest:3.1.1",
+      "image_id": "sha256:bc4c93d0f73d7ea22c47269000eeef1cd9e3dfbc18324c2d4916e6987f459c48",
+      "container_id": "3a534e8a48317ab81af9bc0ba3723e8884a5a9d78ccc5086499ad92f90d8df27",
+      "status": "running",
+      "health": "not_configured",
+      "started_at": "2026-09-16T00:05:47.84049782Z",
+      "paused": false,
+      "restart_count": 1,
+      "environment_allowlist": {},
+      "mounts": [
+        {
+          "type": "bind",
+          "source": "/etc/localtime",
+          "destination": "/etc/localtime",
+          "rw": false
+        }
+      ]
+    },
+    {
+      "name": "edgex-core-command",
+      "image_reference": "edgexfoundry/core-command:3.1.1",
+      "image_id": "sha256:03d842378532a9a6a8a1076bd1cdca4249b2a8c64649226a0a9f0585ba221490",
+      "container_id": "135a0431ddbf798c357569d7ed7f80f6d63ef920a7b987ea7fb10395d312be00",
+      "status": "running",
+      "health": "not_configured",
+      "started_at": "2026-09-16T00:05:32.6775032Z",
+      "paused": false,
+      "restart_count": 1,
+      "environment_allowlist": {},
+      "mounts": [
+        {
+          "type": "bind",
+          "source": "/etc/localtime",
+          "destination": "/etc/localtime",
+          "rw": false
+        }
+      ]
+    },
+    {
+      "name": "edgex-core-data",
+      "image_reference": "edgexfoundry/core-data:3.1.1",
+      "image_id": "sha256:d5d4e2d3a69666d86ace3538f24fabaf3663bfbd8fb45a0c0a49f754dec3f5be",
+      "container_id": "fa3e84dfbabf7731cec9bcc49d967bcf0daba84a7b57569ed685ae8388ad6bbb",
+      "status": "running",
+      "health": "not_configured",
+      "started_at": "2026-09-16T00:05:41.639556086Z",
+      "paused": false,
+      "restart_count": 1,
+      "environment_allowlist": {},
+      "mounts": [
+        {
+          "type": "bind",
+          "source": "/etc/localtime",
+          "destination": "/etc/localtime",
+          "rw": false
+        }
+      ]
+    },
+    {
+      "name": "edgex-core-metadata",
+      "image_reference": "edgexfoundry/core-metadata:3.1.1",
+      "image_id": "sha256:85c7c220e71f55ee2ca85f943467cbf3531996330feac8a8aeaef3546c9304ed",
+      "container_id": "2e7b3da73a544316ca45f19de90fc7bdd0a6cd32163d107aeace03741bc10d4d",
+      "status": "running",
+      "health": "not_configured",
+      "started_at": "2026-09-16T00:05:33.363788941Z",
+      "paused": false,
+      "restart_count": 1,
+      "environment_allowlist": {},
+      "mounts": [
+        {
+          "type": "bind",
+          "source": "/etc/localtime",
+          "destination": "/etc/localtime",
+          "rw": false
+        }
+      ]
+    },
+    {
+      "name": "edgex-core-consul",
+      "image_reference": "hashicorp/consul:1.16.2",
+      "image_id": "sha256:e1ce8eb1b6893249a27bbc3648b9ae3e97508f9aa013b73b3a954e18f935e0f6",
+      "container_id": "ecb7e55482d1613a10f549502a1ba5753ed0c82d780d2845d70cf9e8e9d01683",
+      "status": "running",
+      "health": "healthy",
+      "started_at": "2026-09-16T00:03:49.526243669Z",
+      "paused": false,
+      "restart_count": 0,
+      "environment_allowlist": {},
+      "mounts": [
+        {
+          "type": "volume",
+          "source": "/media/sawwave/Learning11/docker/volumes/edgex-jetson_consul-config/_data",
+          "destination": "/consul/config",
+          "rw": true
+        },
+        {
+          "type": "volume",
+          "source": "/media/sawwave/Learning11/docker/volumes/edgex-jetson_consul-data/_data",
+          "destination": "/consul/data",
+          "rw": true
+        }
+      ]
+    },
+    {
+      "name": "edgex-redis",
+      "image_reference": "redis:7.0.14-alpine",
+      "image_id": "sha256:45de526e9fbc1a4b183957ab93a448294181fae10ced9184fc6efe9956ca0ccc",
+      "container_id": "b646e206b36686338381d54c7f0441831f5fe91795ced55365a976b2a01fc8a0",
+      "status": "running",
+      "health": "healthy",
+      "started_at": "2026-09-16T00:03:49.775864565Z",
+      "paused": false,
+      "restart_count": 0,
+      "environment_allowlist": {},
+      "mounts": [
+        {
+          "type": "volume",
+          "source": "/media/sawwave/Learning11/docker/volumes/edgex-jetson_db-data/_data",
+          "destination": "/data",
+          "rw": true
+        }
+      ]
+    },
+    {
+      "name": "cctv-appearance-review",
+      "image_reference": "nginx:1.27-alpine",
+      "image_id": "sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10",
+      "container_id": "0ceb741184f88c62e432821fef0091c15904681cebca48bf69fabddf6f33ee25",
+      "status": "running",
+      "health": "not_configured",
+      "started_at": "2026-09-16T00:03:49.730228213Z",
+      "paused": false,
+      "restart_count": 0,
+      "environment_allowlist": {},
+      "mounts": [
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/reports/appearance/shadow/20260831_roi_v2",
+          "destination": "/usr/share/nginx/html",
+          "rw": false
+        }
+      ]
+    }
+  ],
+  "files": [
+    {
+      "path": "docker-compose.jetson.yml",
+      "exists": true,
+      "sha256": "4a9eaa3a7cb0b73607072fbd1fbb08cb82b8ebca2767a97cc7f8962ce4a432d0",
+      "size": 61269,
+      "mtime": "2026-09-16T14:29:52.043364+09:00"
+    },
+    {
+      "path": "models/model_manifest.json",
+      "exists": true,
+      "sha256": "2ae31f3969fed58b831e959c9c3a06a4aa398d1b9580af0ed74c93f65df682a2",
+      "size": 9662,
+      "mtime": "2026-09-11T13:22:39.182757+09:00"
+    },
+    {
+      "path": "config/output_devices.json",
+      "exists": true,
+      "sha256": "e8edc1b18b945118541933bd6d5523e4a7386814acd59b2a440c0562d6727880",
+      "size": 818,
+      "mtime": "2026-09-04T17:23:17.164487+09:00"
+    },
+    {
+      "path": "config/deepstream/config_infer_primary.txt",
+      "exists": true,
+      "sha256": "277ab2e76c826804b82fa7c56b9e8edc4a59037fbfe01c23b014c3263e2fa2ae",
+      "size": 3090,
+      "mtime": "2026-08-27T13:43:22.375238+09:00"
+    },
+    {
+      "path": "config/deepstream/config_infer_helmet_sgie.txt",
+      "exists": true,
+      "sha256": "d0a8010431d2fba5e4bed4fdab743f3df44401c5ff746bac0560e0fe7f1902e3",
+      "size": 656,
+      "mtime": "2026-09-11T14:09:35.604117+09:00"
+    },
+    {
+      "path": "src/core/deepstream_processor.py",
+      "exists": true,
+      "sha256": "795e6a6275ecfa2df39e864803dd90217b5236816b56237af77a22a2ecdc2937",
+      "size": 121368,
+      "mtime": "2026-09-17T13:19:00.537047+09:00"
+    },
+    {
+      "path": "src/core/_deepstream_primary_metrics.py",
+      "exists": true,
+      "sha256": "4db05a4ea09ec83049ba197c15979f2d2559a6a9a695b88be89f222f2fde1f60",
+      "size": 4450,
+      "mtime": "2026-09-17T13:19:00.213061+09:00"
+    },
+    {
+      "path": "src/canonical_event.py",
+      "exists": true,
+      "sha256": "2af1572e7ee2e2b4bc19bfc0d418410f0fe4a9ce8437709fbf73a9401a3a5d63",
+      "size": 13343,
+      "mtime": "2026-07-16T12:24:28.842880+09:00"
+    },
+    {
+      "path": "src/services/_action_bridge_executor.py",
+      "exists": true,
+      "sha256": "44409aa4a9873b684e2b21e3a1c319dd80686985eb8c84398145877cee98bef8",
+      "size": 15320,
+      "mtime": "2026-09-07T14:21:58.014224+09:00"
+    },
+    {
+      "path": "parser-python/database/processor.py",
+      "exists": true,
+      "sha256": "73fd477baa79ddbeadb7b6312a51976072b5472922d183669905139ad65f46f5",
+      "size": 6184,
+      "mtime": "2026-06-08T14:12:52.071267+09:00"
+    },
+    {
+      "path": "parser-python/service/sensor_service.py",
+      "exists": true,
+      "sha256": "0c38515b9d34961c32a2120877c22a93ffaf69a7fb9cc12043c8ff183d2d65ab",
+      "size": 15026,
+      "mtime": "2026-09-07T12:08:58.997727+09:00"
+    }
+  ],
+  "limitations": [
+    "Container disk files and bind mounts do not prove which Python code is already loaded in process memory.",
+    "Health is not evidence of model accuracy, physical output or end-to-end acceptance.",
+    "This snapshot is not a database/volume backup or a restore rehearsal."
+  ]
+}

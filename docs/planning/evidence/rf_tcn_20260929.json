@@ -1,0 +1,612 @@
+{
+  "version": "0.55",
+  "date": "2026-09-29",
+  "fixture": "data/runtime/p51_rf_tcn_20260929_v055",
+  "input": {
+    "source": "Sample/01.원천데이터/영상/Y/BY/00151_H_A_BY_C2/00151_H_A_BY_C2.mp4",
+    "source_sha256": "c907aa93856e357ea2fa05f39a2820e1d73c58e55192b51e18046972efc108e2",
+    "fixture_sha256": "55c69666166de2d99f6c41f097cf3764351e712c306b6f546dc4f9a70be9b8ae",
+    "transform": "1080p15 H264, no audio; call-path validation, not camera30FPS or accuracy benchmark"
+  },
+  "trials": {
+    "natural": {
+      "experiment": {
+        "scope": "one local RTSP input from existing Sample clip converted to1080p15; isolated model-call validation, no live camera connection",
+        "input": "/audit/fall_clip.mp4",
+        "completed_experiment": false,
+        "receiver_exit": null,
+        "output_bytes": 0,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 21.405
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 22.242
+          }
+        ],
+        "sample_count": 106,
+        "elapsed_seconds": 69.66917153005488
+      },
+      "frames_processed": 10,
+      "inference_errors": 0,
+      "model_metrics_errors": 0,
+      "source_resets": 0,
+      "inline_rf": {
+        "enabled": true,
+        "cameras": {}
+      },
+      "temporal": {
+        "requests": 1,
+        "process_calls": 1,
+        "process_completed": 1,
+        "process_seconds": 17.51145449304022,
+        "parsed_results": 1,
+        "unparsed_results": 0,
+        "insufficient_pose_results": 1,
+        "insufficient_window_results": 0,
+        "window_reports_missing": 0,
+        "window_inferences": 1
+      },
+      "observed_calls": [
+        {
+          "method": "verify_temporal_shadow",
+          "seconds": 17.533608954865485,
+          "result": {
+            "enabled": true,
+            "mode": "shadow",
+            "status": "insufficient_pose_frames",
+            "confirmed": false,
+            "buffered_frames": 1,
+            "temporal_compare_model": {
+              "status": "insufficient_pose_frames",
+              "model_path": "/app/models/fall/fall_temporal_same_split_resume_20260908.pt",
+              "confirmed": false,
+              "prediction": 1,
+              "fall_probability": 0.95011497,
+              "threshold": 0.5,
+              "frames_with_pose": 1,
+              "min_pose_frames": 10
+            }
+          }
+        },
+        {
+          "method": "verify_temporal_shadow",
+          "seconds": 11.104629346169531,
+          "result": {
+            "enabled": true,
+            "mode": "shadow",
+            "status": "insufficient_pose_frames",
+            "confirmed": false,
+            "buffered_frames": 3,
+            "temporal_compare_model": {
+              "status": "insufficient_pose_frames",
+              "model_path": "/app/models/fall/fall_temporal_same_split_resume_20260908.pt",
+              "confirmed": false,
+              "prediction": 1,
+              "fall_probability": 0.72030789,
+              "threshold": 0.5,
+              "frames_with_pose": 3,
+              "min_pose_frames": 10
+            }
+          }
+        },
+        {
+          "method": "verify_temporal_shadow",
+          "seconds": 12.197192953899503,
+          "result": {
+            "enabled": true,
+            "mode": "shadow",
+            "status": "insufficient_pose_frames",
+            "confirmed": false,
+            "buffered_frames": 5,
+            "temporal_compare_model": {
+              "status": "insufficient_pose_frames",
+              "model_path": "/app/models/fall/fall_temporal_same_split_resume_20260908.pt",
+              "confirmed": false,
+              "prediction": 1,
+              "fall_probability": 0.8545211,
+              "threshold": 0.5,
+              "frames_with_pose": 4,
+              "min_pose_frames": 10
+            }
+          }
+        }
+      ],
+      "review_event_types": {
+        "fall_shadow_window": 1,
+        "fall_near_miss": 2
+      },
+      "queue_full_warnings": 0
+    },
+    "no_output": {
+      "experiment": {
+        "scope": "one local RTSP input from existing Sample clip converted to1080p15; isolated model-call validation, no live camera connection",
+        "input": "/audit/fall_clip.mp4",
+        "completed_experiment": true,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 31.868
+          }
+        ],
+        "sample_count": 143,
+        "elapsed_seconds": 96.7444599091541
+      },
+      "frames_processed": 809,
+      "inference_errors": 0,
+      "model_metrics_errors": 0,
+      "source_resets": 0,
+      "inline_rf": {
+        "enabled": true,
+        "cameras": {}
+      },
+      "temporal": {
+        "requests": 5,
+        "process_calls": 5,
+        "process_completed": 4,
+        "process_seconds": 48.1035557850264,
+        "parsed_results": 4,
+        "unparsed_results": 0,
+        "insufficient_pose_results": 1,
+        "insufficient_window_results": 0,
+        "window_reports_missing": 0,
+        "window_inferences": 4
+      },
+      "observed_calls": [
+        {
+          "method": "verify_temporal_shadow",
+          "seconds": 10.998483903007582,
+          "result": {
+            "enabled": true,
+            "mode": "shadow",
+            "status": "insufficient_pose_frames",
+            "confirmed": false,
+            "buffered_frames": 1,
+            "temporal_compare_model": {
+              "status": "insufficient_pose_frames",
+              "model_path": "/app/models/fall/fall_temporal_same_split_resume_20260908.pt",
+              "confirmed": false,
+              "prediction": 1,
+              "fall_probability": 0.95011497,
+              "threshold": 0.5,
+              "frames_with_pose": 1,
+              "min_pose_frames": 10
+            }
+          }
+        },
+        {
+          "method": "verify_temporal_shadow",
+          "seconds": 11.637078623985872,
+          "result": {
+            "enabled": true,
+            "mode": "shadow",
+            "status": "ok",
+            "confirmed": false,
+            "buffered_frames": 15,
+            "temporal_compare_model": {
+              "status": "ok",
+              "model_path": "/app/models/fall/fall_temporal_same_split_resume_20260908.pt",
+              "confirmed": false,
+              "prediction": 0,
+              "fall_probability": 0.03432529,
+              "threshold": 0.5,
+              "frames_with_pose": 11
+            }
+          }
+        },
+        {
+          "method": "verify_temporal_shadow",
+          "seconds": 13.074875962920487,
+          "result": {
+            "enabled": true,
+            "mode": "shadow",
+            "status": "ok",
+            "confirmed": true,
+            "buffered_frames": 98,
+            "temporal_compare_model": {
+              "status": "ok",
+              "model_path": "/app/models/fall/fall_temporal_same_split_resume_20260908.pt",
+              "confirmed": true,
+              "prediction": 1,
+              "fall_probability": 0.7998122,
+              "threshold": 0.5,
+              "frames_with_pose": 17
+            }
+          }
+        },
+        {
+          "method": "verify_temporal_shadow",
+          "seconds": 14.290746816899627,
+          "result": {
+            "enabled": true,
+            "mode": "shadow",
+            "status": "ok",
+            "confirmed": false,
+            "buffered_frames": 189,
+            "temporal_compare_model": {
+              "status": "ok",
+              "model_path": "/app/models/fall/fall_temporal_same_split_resume_20260908.pt",
+              "confirmed": false,
+              "prediction": 0,
+              "fall_probability": 0.06882392,
+              "threshold": 0.5,
+              "frames_with_pose": 18
+            }
+          }
+        }
+      ],
+      "review_event_types": {
+        "fall_shadow_window": 1,
+        "fall_near_miss": 3
+      },
+      "queue_full_warnings": 126
+    },
+    "rf_component": {
+      "experiment": {
+        "scope": "one local RTSP input from existing Sample clip converted to1080p15; isolated model-call validation, no live camera connection",
+        "input": "/audit/fall_clip.mp4",
+        "completed_experiment": true,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 21.428
+          }
+        ],
+        "sample_count": 131,
+        "elapsed_seconds": 86.83825810998678
+      },
+      "frames_processed": 795,
+      "inference_errors": 0,
+      "model_metrics_errors": 0,
+      "source_resets": 0,
+      "inline_rf": {
+        "enabled": true,
+        "cameras": {
+          "replay_1": {
+            "requests": 1,
+            "predict_calls": 1,
+            "predict_completed": 1,
+            "predict_errors": 0,
+            "predict_seconds": 0.4363949140533805,
+            "ok_results": 1,
+            "cache_hits": 0
+          }
+        }
+      },
+      "temporal": {
+        "requests": 5,
+        "process_calls": 5,
+        "process_completed": 4,
+        "process_seconds": 48.91068396391347,
+        "parsed_results": 4,
+        "unparsed_results": 0,
+        "insufficient_pose_results": 2,
+        "insufficient_window_results": 0,
+        "window_reports_missing": 0,
+        "window_inferences": 4
+      },
+      "observed_calls": [
+        {
+          "method": "verify_temporal_shadow",
+          "seconds": 11.233065956039354,
+          "result": {
+            "enabled": true,
+            "mode": "shadow",
+            "status": "insufficient_pose_frames",
+            "confirmed": false,
+            "buffered_frames": 1,
+            "temporal_compare_model": {
+              "status": "insufficient_pose_frames",
+              "model_path": "/app/models/fall/fall_temporal_same_split_resume_20260908.pt",
+              "confirmed": false,
+              "prediction": 1,
+              "fall_probability": 0.95011497,
+              "threshold": 0.5,
+              "frames_with_pose": 1,
+              "min_pose_frames": 10
+            }
+          }
+        },
+        {
+          "method": "verify",
+          "seconds": 8.345746593084186,
+          "result": {
+            "enabled": true,
+            "mode": "shadow",
+            "status": "ok",
+            "confirmed": false,
+            "buffered_frames": 63,
+            "runtime": "deepstream_pose_inline",
+            "fall_probability": 0.03997228708668426,
+            "threshold": 0.7,
+            "frames_with_pose": 19,
+            "sampled_frames": 48,
+            "probability": [
+              0.9600277129133158,
+              0.03997228708668426
+            ],
+            "confirmation_streak": 0,
+            "pose_scope": {
+              "camera_id": "replay_1",
+              "object_id": 12849867762457116672,
+              "generation": 1,
+              "frame_index": 46
+            },
+            "cache_reused": false
+          }
+        },
+        {
+          "method": "verify_temporal_shadow",
+          "seconds": 11.32790945796296,
+          "result": {
+            "enabled": true,
+            "mode": "shadow",
+            "status": "insufficient_pose_frames",
+            "confirmed": false,
+            "buffered_frames": 10,
+            "temporal_compare_model": {
+              "status": "insufficient_pose_frames",
+              "model_path": "/app/models/fall/fall_temporal_same_split_resume_20260908.pt",
+              "confirmed": false,
+              "prediction": 0,
+              "fall_probability": 0.11094352,
+              "threshold": 0.5,
+              "frames_with_pose": 8,
+              "min_pose_frames": 10
+            }
+          }
+        },
+        {
+          "method": "verify_temporal_shadow",
+          "seconds": 11.931154233170673,
+          "result": {
+            "enabled": true,
+            "mode": "shadow",
+            "status": "ok",
+            "confirmed": true,
+            "buffered_frames": 84,
+            "temporal_compare_model": {
+              "status": "ok",
+              "model_path": "/app/models/fall/fall_temporal_same_split_resume_20260908.pt",
+              "confirmed": true,
+              "prediction": 1,
+              "fall_probability": 0.78771812,
+              "threshold": 0.5,
+              "frames_with_pose": 18
+            }
+          }
+        },
+        {
+          "method": "verify_temporal_shadow",
+          "seconds": 16.10145108611323,
+          "result": {
+            "enabled": true,
+            "mode": "shadow",
+            "status": "ok",
+            "confirmed": false,
+            "buffered_frames": 170,
+            "temporal_compare_model": {
+              "status": "ok",
+              "model_path": "/app/models/fall/fall_temporal_same_split_resume_20260908.pt",
+              "confirmed": false,
+              "prediction": 0,
+              "fall_probability": 0.22214557,
+              "threshold": 0.5,
+              "frames_with_pose": 20
+            }
+          }
+        }
+      ],
+      "review_event_types": {
+        "fall_shadow_window": 1,
+        "fall_near_miss": 3
+      },
+      "queue_full_warnings": 118
+    },
+    "pre_timing_fix": {
+      "experiment": {
+        "scope": "one local RTSP input from existing Sample clip converted to1080p15; isolated model-call validation, no live camera connection",
+        "input": "/audit/fall_clip.mp4",
+        "completed_experiment": true,
+        "receiver_exit": 0,
+        "output_bytes": 13852847,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 32.815
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 32.834
+          }
+        ],
+        "sample_count": 113,
+        "elapsed_seconds": 82.60773841803893
+      },
+      "frames_processed": 666,
+      "inference_errors": 0,
+      "model_metrics_errors": 0,
+      "source_resets": 0,
+      "inline_rf": {
+        "enabled": true,
+        "cameras": {}
+      },
+      "temporal": {
+        "requests": 4,
+        "process_calls": 4,
+        "process_completed": 3,
+        "process_seconds": 39.24127658782527,
+        "parsed_results": 3,
+        "unparsed_results": 0,
+        "insufficient_pose_results": 2,
+        "insufficient_window_results": 0,
+        "window_reports_missing": 0,
+        "window_inferences": 3
+      },
+      "observed_calls": [
+        {
+          "method": "verify_temporal_shadow",
+          "seconds": 11.214937706943601,
+          "result": {
+            "enabled": true,
+            "mode": "shadow",
+            "status": "insufficient_pose_frames",
+            "confirmed": false,
+            "buffered_frames": 1,
+            "temporal_compare_model": {
+              "status": "insufficient_pose_frames",
+              "model_path": "/app/models/fall/fall_temporal_same_split_resume_20260908.pt",
+              "confirmed": false,
+              "prediction": 1,
+              "fall_probability": 0.95011497,
+              "threshold": 0.5,
+              "frames_with_pose": 1,
+              "min_pose_frames": 10
+            }
+          }
+        },
+        {
+          "method": "verify_temporal_shadow",
+          "seconds": 14.919910481199622,
+          "result": {
+            "enabled": true,
+            "mode": "shadow",
+            "status": "insufficient_pose_frames",
+            "confirmed": false,
+            "buffered_frames": 5,
+            "temporal_compare_model": {
+              "status": "insufficient_pose_frames",
+              "model_path": "/app/models/fall/fall_temporal_same_split_resume_20260908.pt",
+              "confirmed": false,
+              "prediction": 1,
+              "fall_probability": 0.77623296,
+              "threshold": 0.5,
+              "frames_with_pose": 4,
+              "min_pose_frames": 10
+            }
+          }
+        },
+        {
+          "method": "verify_temporal_shadow",
+          "seconds": 14.561720727942884,
+          "result": {
+            "enabled": true,
+            "mode": "shadow",
+            "status": "ok",
+            "confirmed": false,
+            "buffered_frames": 109,
+            "temporal_compare_model": {
+              "status": "ok",
+              "model_path": "/app/models/fall/fall_temporal_same_split_resume_20260908.pt",
+              "confirmed": false,
+              "prediction": 0,
+              "fall_probability": 0.00053253,
+              "threshold": 0.5,
+              "frames_with_pose": 26
+            }
+          }
+        },
+        {
+          "method": "verify_temporal_shadow",
+          "seconds": 16.406902172835544,
+          "result": {
+            "enabled": true,
+            "mode": "shadow",
+            "status": "ok",
+            "confirmed": false,
+            "buffered_frames": 210,
+            "temporal_compare_model": {
+              "status": "ok",
+              "model_path": "/app/models/fall/fall_temporal_same_split_resume_20260908.pt",
+              "confirmed": false,
+              "prediction": 0,
+              "fall_probability": 0.00169056,
+              "threshold": 0.5,
+              "frames_with_pose": 23
+            }
+          }
+        }
+      ],
+      "review_event_types": {
+        "fall_shadow_window": 1,
+        "fall_near_miss": 3
+      },
+      "queue_full_warnings": 79
+    }
+  },
+  "rf_component_trigger": {
+    "kind": "explicit_component_check_not_natural_fall_event",
+    "real_pose_frame_count": 20,
+    "scope": {
+      "camera_id": "replay_1",
+      "object_id": 12849867762457116672,
+      "generation": 1,
+      "frame_index": 46
+    }
+  },
+  "conclusion": {
+    "rf_predict_completed": 1,
+    "rf_component_only": true,
+    "rf_natural_fall_trigger": "NOT_OBSERVED",
+    "tcn_valid_pose_results": "observed via native near-miss path; quality not evaluated",
+    "output_regression": "I33 REOPEN: fixed output stalled on this 1080p15 clip, fakesink and pre-I33 output continued",
+    "causality_limit": "one sequential comparison per condition on shared GPU; internal blocking mechanism not yet isolated",
+    "next": "isolate and fix I33 output regression before deployment",
+    "limits": [
+      "one selected prerecorded clip, not held-out model-quality evaluation",
+      "CPU2/memory8GB, models and thresholds unchanged",
+      "RF diagnostic call uses real object/frame/generation scope, not a natural fall alarm",
+      "TCN initial shadow call at1frame insufficient, later near-miss windows succeed; queue saturation observed",
+      "MQTT loopback intentionally unavailable; physical outputs and monitoring delivery not tested",
+      "no product source or deployment setting change in this step"
+    ]
+  },
+  "production_after": {
+    "status": "running",
+    "health": "healthy",
+    "started_at": "2026-09-16T23:45:46.903505745Z",
+    "restart_count": 0,
+    "v055_test_containers_remaining": 0
+  },
+  "validation": {
+    "wbs_rows": 33,
+    "wbs_status_and_counts_match": true,
+    "fixture_python_syntax_files": 5,
+    "renderer_ruff": "PASS",
+    "renderer_syntax": "PASS",
+    "diff_check": "PASS",
+    "product_tests_repeated": false,
+    "reason": "No product code changes in v0.55; actual isolated model runs recorded above",
+    "browser_visual_retest": false
+  },
+  "publication": {
+    "url": "http://192.168.2.242:18081/",
+    "checked_from": "Jetson own LAN address",
+    "html": {
+      "bytes": 22654,
+      "sha256": "4fef3121728165e21ead1a7779d8a9d20d9a815346edb254059a8fb975283738",
+      "http_fetch_success": true,
+      "bytes_match": true
+    },
+    "pdf": {
+      "bytes": 122076,
+      "sha256": "00e5888617580bd6393d47eeba84846ce06e9ac08087ede67d37f043a452fc2d",
+      "http_fetch_success": true,
+      "bytes_match": true
+    }
+  }
+}

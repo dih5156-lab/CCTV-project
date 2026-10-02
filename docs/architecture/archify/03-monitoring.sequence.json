@@ -1,0 +1,35 @@
+{
+  "schema_version":1,
+  "diagram_type":"sequence",
+  "meta":{"title":"관제 전달 — PUBACK와 DB 저장 ACK의 차이","quality_profile":"showcase","column_fit":"spread","viewBox":[1080,750]},
+  "participants":[
+    {"id":"source_db","type":"database","label":"송신 SQLite","sublabel":"원본·전달 상태"},
+    {"id":"sender","type":"backend","label":"송신 worker","sublabel":"Jetson"},
+    {"id":"broker","type":"messagebus","label":"MQTT broker","sublabel":"노트북 POC"},
+    {"id":"receiver","type":"backend","label":"Receiver / API","sublabel":"MQTT + FastAPI"},
+    {"id":"consumer_db","type":"database","label":"수신 SQLite","sublabel":"레코드·중복 장부"}
+  ],
+  "messages":[
+    {"id":"claim","from":"sender","to":"source_db","y":165,"label":"작업 lease 확보"},
+    {"id":"frozen_wire","from":"source_db","to":"sender","y":198,"label":"고정 ID·bytes·hash","variant":"return"},
+    {"id":"lookup_first","from":"sender","to":"receiver","y":231,"label":"HTTPS 저장 상태 조회"},
+    {"id":"not_stored","from":"receiver","to":"sender","y":264,"label":"404 · 아직 저장 안 됨","variant":"return"},
+    {"id":"publish","from":"sender","to":"broker","y":297,"label":"MQTT QoS 1 PUBLISH","variant":"emphasis"},
+    {"id":"broker_ack","from":"broker","to":"sender","y":330,"label":"PUBACK · 브로커 확인","variant":"return"},
+    {"id":"delivery","from":"broker","to":"receiver","y":363,"label":"레코드 수신"},
+    {"id":"commit_record","from":"receiver","to":"consumer_db","y":396,"label":"레코드·장부 저장"},
+    {"id":"commit_done","from":"consumer_db","to":"receiver","y":429,"label":"COMMIT 완료","variant":"return"},
+    {"id":"receiver_puback","from":"receiver","to":"broker","y":462,"label":"수신 측 PUBACK","variant":"return"},
+    {"id":"lookup_again","from":"sender","to":"receiver","y":505,"label":"후속 주기: HTTPS 재조회"},
+    {"id":"read_ledger","from":"receiver","to":"consumer_db","y":538,"label":"저장 장부 조회"},
+    {"id":"ledger_result","from":"consumer_db","to":"receiver","y":571,"label":"DB 저장 근거","variant":"return"},
+    {"id":"consumer_ack","from":"receiver","to":"sender","y":604,"label":"저장 ACK · delivery_id + hash","variant":"return"},
+    {"id":"persist_ack","from":"sender","to":"source_db","y":637,"label":"ACK 검증·stored 저장","variant":"emphasis"},
+    {"id":"source_done","from":"source_db","to":"sender","y":666,"label":"로컬 COMMIT 완료","variant":"return"}
+  ],
+  "cards":[
+    {"dot":"emerald","title":"완료 판정","items":["PUBACK만으로 관제 저장 완료가 되지 않는다.","수신 DB 근거를 검증하고 송신 DB에 남겨야 stored다."]},
+    {"dot":"amber","title":"응답 유실·재시작","items":["이미 저장됐으면 재조회로 확인하고 중복 전송을 줄인다.","미저장 재전송은 같은 전달 ID·bytes·hash를 사용한다."]},
+    {"dot":"cyan","title":"시퀀스의 범위","items":["정상 전달의 가능한 순서이며 실제 시간 비율은 아니다.","broker PUBACK와 수신 DB commit의 상대 순서는 달라질 수 있다."]}
+  ]
+}

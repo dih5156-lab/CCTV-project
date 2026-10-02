@@ -1,0 +1,246 @@
+{
+  "version": "0.96",
+  "checked_at": "2026-10-02T12:35:05.789852+09:00",
+  "wbs": "P5.1",
+  "status": "IN_PROGRESS",
+  "change": "bounded per-camera context miss reasons after both metadata paths complete",
+  "source_changes": {
+    "source_baseline_count": 206,
+    "source_files_changed": [
+      "src/core/_deepstream_event_factory.py",
+      "src/core/deepstream_processor.py",
+      "src/core/_deepstream_context_worker.py",
+      "src/services/processor_metrics.py"
+    ]
+  },
+  "metrics_contract": {
+    "legacy_total_preserved": true,
+    "reasons": [
+      "no_target",
+      "expired",
+      "evicted",
+      "unknown"
+    ],
+    "max_history_per_camera": 256,
+    "image_history": false,
+    "pending_limit_unchanged": 32,
+    "pending_age_sec_unchanged": 2,
+    "sampling_and_inference_policy_changed": false
+  },
+  "validation": {
+    "new_reproduction_tests": 19,
+    "related": {
+      "passed": 245,
+      "skipped": 2
+    },
+    "full": {
+      "passed": 2737,
+      "skipped": 52,
+      "failed": 0,
+      "seconds": 327.33
+    },
+    "ruff": "PASS",
+    "prior_I45_intermittent_issue_closed": false
+  },
+  "trial": {
+    "image": "sha256:1ace5b7832a50d6675b66146b0edc307021795732fc7c9a770e2cd628d7fd261",
+    "network": "none",
+    "cpus": 2,
+    "memory_bytes": 8589934592,
+    "source": "preserved rollback bundle plus four current production source files; deepstream_processor also includes v0.94 frame health fix",
+    "new_metrics_operating_applied": false,
+    "observed_seconds": 90,
+    "frames_processed_at_final": 1931,
+    "cpu_arrivals": 706,
+    "matched": 160,
+    "sampled": 522,
+    "tasks_completed": 160,
+    "context_queue_dropped": 0,
+    "context_tasks_failed": 0,
+    "misses": 24,
+    "reasons": {
+      "no_target": 23,
+      "expired": 1,
+      "evicted": 0,
+      "unknown": 0
+    },
+    "per_arrival_observer_equal": true,
+    "counter_partition_equal": true,
+    "prometheus_counts_equal": true,
+    "experiment": {
+      "codec_mode": "rtsp",
+      "completed": true,
+      "scope": "per-reason counters plus first preview stage timestamps; offline replay with isolated copied DB",
+      "scenario": "normal",
+      "loaded_rtsp_plugin": [
+        "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstrtspclientsink.so"
+      ],
+      "receiver_exit": 0,
+      "output_bytes": 31778028,
+      "last_frames": 1930.0,
+      "app_exit": 0,
+      "stop_seconds": 2.4247427491936833,
+      "elapsed_seconds": 120.13903730292805,
+      "transitions": [
+        {
+          "name": "input_ready",
+          "elapsed": 26.352
+        },
+        {
+          "name": "output_ready",
+          "elapsed": 27.206
+        },
+        {
+          "name": "sigterm_requested",
+          "elapsed": 117.665
+        }
+      ],
+      "sample_count": 110
+    },
+    "intentional_isolated_mqtt_failures": 32,
+    "tcn": [
+      {
+        "seconds": 23.43984626000747,
+        "status": "insufficient_pose_frames",
+        "frames_with_pose": 1,
+        "min_pose_frames": 10
+      }
+    ]
+  },
+  "first_frame": {
+    "first_frame_segments": [
+      {
+        "from": "meta_stamped",
+        "to": "registered",
+        "seconds": 0.03361154114827514
+      },
+      {
+        "from": "registered",
+        "to": "meta_finished",
+        "seconds": 0.0022443789057433605
+      },
+      {
+        "from": "meta_finished",
+        "to": "preview-queue.sink",
+        "seconds": 10.294559014961123
+      },
+      {
+        "from": "preview-queue.sink",
+        "to": "preview-queue.src",
+        "seconds": 0.004605529131367803
+      },
+      {
+        "from": "preview-queue.src",
+        "to": "preview-nvvidconv.sink",
+        "seconds": 0.00040284288115799427
+      },
+      {
+        "from": "preview-nvvidconv.sink",
+        "to": "preview-nvvidconv.src",
+        "seconds": 0.02789437212049961
+      },
+      {
+        "from": "preview-nvvidconv.src",
+        "to": "preview-appsink.sink",
+        "seconds": 0.000327669782564044
+      },
+      {
+        "from": "preview-appsink.sink",
+        "to": "callback.enter",
+        "seconds": 0.0003261980600655079
+      },
+      {
+        "from": "callback.enter",
+        "to": "cpu_arrived",
+        "seconds": 0.009528519120067358
+      },
+      {
+        "from": "cpu_arrived",
+        "to": "callback.exit",
+        "seconds": 0.0021505458280444145
+      }
+    ],
+    "registration_to_cpu_seconds": 10.33988852496259,
+    "metadata_finished_to_preview_queue_seconds": 10.294559014961123,
+    "converter_seconds": 0.02789437212049961,
+    "tcn_started_after_first_cpu_seconds": 0.07967333984561265
+  },
+  "video": {
+    "decoded_frames": 1333,
+    "decode_exit": 0,
+    "decode_stderr_bytes": 976,
+    "seconds": 20.540364221902564,
+    "pts": {
+      "count": 1333,
+      "duplicate": 0,
+      "backwards": 0,
+      "max_gap_sec": 0.32099999999999795
+    },
+    "dts": {
+      "count": 1333,
+      "duplicate": 0,
+      "backwards": 0,
+      "max_gap_sec": 0.32099999999999795
+    },
+    "initial_null_mux_timestamp_warnings": 8,
+    "source_timebase_decode": {
+      "exit": 0,
+      "stderr_bytes": 0,
+      "enc_time_base": "1:1000",
+      "vsync": "0"
+    }
+  },
+  "databases": {
+    "mqtt_event_outbox.db": {
+      "integrity": "ok"
+    },
+    "appearances.db": {
+      "integrity": "ok"
+    },
+    "commercial_faces.db": {
+      "integrity": "ok"
+    }
+  },
+  "operating": {
+    "container": "cctv-ai-engine",
+    "started_at_utc": "2026-10-02T01:33:58.362007997Z",
+    "health": "healthy",
+    "restarted": false,
+    "sdk_changes": false,
+    "new_image_built": false,
+    "isolated_container_removed": true
+  },
+  "new_jetson": {
+    "available": true,
+    "tested": false,
+    "user_decision": "after project functionality complete, before formal release"
+  },
+  "limits": [
+    "no_target means no eligible postprocessed context metadata, not no person in video or detection accuracy",
+    "one instrumented isolated run on shared Jetson; timing has observer and concurrent workload effects",
+    "10.29 seconds localizes metadata completion to preview queue input; internal element or initialization cause unresolved",
+    "historical 13 missed frames not retrospectively classified",
+    "TCN input insufficient; original I38 timeout not resolved",
+    "I32/I34/I38/I45/I46 and release/reboot/long/multi-camera checks remain open"
+  ],
+  "next": "probe metadata completion to preview branch entry to identify first-buffer startup delay without changing thresholds",
+  "raw_evidence": "data/runtime/p51_match_metrics_20261002_v096",
+  "publication": {
+    "url": "http://192.168.2.141:18081/",
+    "version": "0.96",
+    "files": {
+      "index.html": {
+        "http_status": 200,
+        "bytes": 23211,
+        "sha256": "b8581b04f1dc458ad8970f37d0fe2adcc4b969ca06106e559b42226abe887d46",
+        "local_equal": true
+      },
+      "CCTV_project_progress.pdf": {
+        "http_status": 200,
+        "bytes": 127990,
+        "sha256": "c4d9e71a7d0dcab84639d8cc71b2c02bd146a7e93aed4957cbc67b7ffc86fd44",
+        "local_equal": true
+      }
+    }
+  }
+}

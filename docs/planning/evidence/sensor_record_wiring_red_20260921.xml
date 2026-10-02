@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="22.874" timestamp="2026-09-21T08:37:32.448127+09:00" hostname="ubuntu"><testcase classname="parser-python.tests.test_sensor_record_integration" name="test_sensor_service_starts_and_closes_independent_record_worker" time="19.738"><failure message="AssertionError: SensorService did not run common record recovery">parser-python/tests/test_sensor_record_integration.py:34: in test_sensor_service_starts_and_closes_independent_record_worker
+    raise AssertionError("SensorService did not run common record recovery")
+E   AssertionError: SensorService did not run common record recovery</failure></testcase></testsuite></testsuites>

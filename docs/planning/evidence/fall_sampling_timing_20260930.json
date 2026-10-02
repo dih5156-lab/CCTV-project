@@ -1,0 +1,494 @@
+{
+  "date": "2026-09-30",
+  "scope": "P5.1 RF sampling fix and TCN stage diagnosis; no AI deployment",
+  "rf_fix": {
+    "before": "repeat short pose records to48",
+    "after": "sample min(48,actual_records) without repetition",
+    "red_failed": 1,
+    "red_control_passed": 1,
+    "green_passed": 116,
+    "ruff": "PASS",
+    "actual_model_synthetic": {
+      "scope": "synthetic pose, actual saved RF; compatibility only, not accuracy",
+      "results": [
+        {
+          "real_pose_records": 6,
+          "before": {
+            "status": "ok",
+            "frames_with_pose": 6,
+            "sampled_frames": 48,
+            "fall_probability": 0.5405110297967651
+          },
+          "after": {
+            "status": "ok",
+            "frames_with_pose": 6,
+            "sampled_frames": 6,
+            "fall_probability": 0.49479874993139616
+          }
+        },
+        {
+          "real_pose_records": 12,
+          "before": {
+            "status": "ok",
+            "frames_with_pose": 12,
+            "sampled_frames": 48,
+            "fall_probability": 0.5449095838926564
+          },
+          "after": {
+            "status": "ok",
+            "frames_with_pose": 12,
+            "sampled_frames": 12,
+            "fall_probability": 0.5249828434675575
+          }
+        },
+        {
+          "real_pose_records": 60,
+          "before": {
+            "status": "ok",
+            "frames_with_pose": 60,
+            "sampled_frames": 48,
+            "fall_probability": 0.5302894570588156
+          },
+          "after": {
+            "status": "ok",
+            "frames_with_pose": 60,
+            "sampled_frames": 48,
+            "fall_probability": 0.5302894570588155
+          }
+        }
+      ]
+    }
+  },
+  "fixed_video_trials": {
+    "profile": [
+      {
+        "tag": "alone640",
+        "imgsz": 640,
+        "result": {
+          "status": "ok",
+          "model_path": "/app/models/fall/fall_temporal_same_split_resume_20260908.pt",
+          "confirmed": false,
+          "prediction": 0,
+          "fall_probability": 4.312e-05,
+          "threshold": 0.5,
+          "frames_with_pose": 30
+        },
+        "seconds": 11.132584028178826
+      },
+      {
+        "tag": "loaded0_320",
+        "imgsz": 320,
+        "result": {
+          "status": "ok",
+          "model_path": "/app/models/fall/fall_temporal_same_split_resume_20260908.pt",
+          "confirmed": false,
+          "prediction": 0,
+          "fall_probability": 0.00793166,
+          "threshold": 0.5,
+          "frames_with_pose": 30
+        },
+        "seconds": 15.348928480176255
+      },
+      {
+        "tag": "loaded1_640",
+        "imgsz": 640,
+        "result": {
+          "status": "ok",
+          "model_path": "/app/models/fall/fall_temporal_same_split_resume_20260908.pt",
+          "confirmed": false,
+          "prediction": 0,
+          "fall_probability": 4.312e-05,
+          "threshold": 0.5,
+          "frames_with_pose": 30
+        },
+        "seconds": 19.195039527956396
+      },
+      {
+        "tag": "loaded2_640",
+        "imgsz": 640,
+        "result": {
+          "status": "ok",
+          "model_path": "/app/models/fall/fall_temporal_same_split_resume_20260908.pt",
+          "confirmed": false,
+          "prediction": 0,
+          "fall_probability": 4.312e-05,
+          "threshold": 0.5,
+          "frames_with_pose": 30
+        },
+        "seconds": 14.972395913908258
+      },
+      {
+        "tag": "loaded3_320",
+        "imgsz": 320,
+        "result": {
+          "status": "ok",
+          "model_path": "/app/models/fall/fall_temporal_same_split_resume_20260908.pt",
+          "confirmed": false,
+          "prediction": 0,
+          "fall_probability": 0.00793166,
+          "threshold": 0.5,
+          "frames_with_pose": 30
+        },
+        "seconds": 16.48549491306767
+      }
+    ],
+    "profile_cpu4": [
+      {
+        "tag": "alone640",
+        "imgsz": 640,
+        "result": {
+          "status": "ok",
+          "model_path": "/app/models/fall/fall_temporal_same_split_resume_20260908.pt",
+          "confirmed": false,
+          "prediction": 0,
+          "fall_probability": 4.312e-05,
+          "threshold": 0.5,
+          "frames_with_pose": 30
+        },
+        "seconds": 11.469833050854504
+      },
+      {
+        "tag": "loaded0_320",
+        "imgsz": 320,
+        "result": {
+          "status": "ok",
+          "model_path": "/app/models/fall/fall_temporal_same_split_resume_20260908.pt",
+          "confirmed": false,
+          "prediction": 0,
+          "fall_probability": 0.00793166,
+          "threshold": 0.5,
+          "frames_with_pose": 30
+        },
+        "seconds": 15.775801551993936
+      },
+      {
+        "tag": "loaded1_640",
+        "imgsz": 640,
+        "result": {
+          "status": "ok",
+          "model_path": "/app/models/fall/fall_temporal_same_split_resume_20260908.pt",
+          "confirmed": false,
+          "prediction": 0,
+          "fall_probability": 4.312e-05,
+          "threshold": 0.5,
+          "frames_with_pose": 30
+        },
+        "seconds": 18.217543504899368
+      },
+      {
+        "tag": "loaded2_640",
+        "imgsz": 640,
+        "result": {
+          "status": "ok",
+          "model_path": "/app/models/fall/fall_temporal_same_split_resume_20260908.pt",
+          "confirmed": false,
+          "prediction": 0,
+          "fall_probability": 4.312e-05,
+          "threshold": 0.5,
+          "frames_with_pose": 30
+        },
+        "seconds": 17.608370886184275
+      },
+      {
+        "tag": "loaded3_320",
+        "imgsz": 320,
+        "result": {
+          "status": "ok",
+          "model_path": "/app/models/fall/fall_temporal_same_split_resume_20260908.pt",
+          "confirmed": false,
+          "prediction": 0,
+          "fall_probability": 0.00793166,
+          "threshold": 0.5,
+          "frames_with_pose": 30
+        },
+        "seconds": 15.667072371812537
+      }
+    ]
+  },
+  "fixed_video_cpu2_stages": [
+    {
+      "tag": "alone640",
+      "durations": {
+        "imports": 4.086,
+        "resolve_device": 0.012,
+        "load_pose": 0.297,
+        "decode_sample": 0.278,
+        "pose_predict": 4.007,
+        "extract_features": 4.345,
+        "temporal_forward": 0.051,
+        "main": 4.902
+      }
+    },
+    {
+      "tag": "loaded0_320",
+      "durations": {
+        "imports": 4.898,
+        "resolve_device": 0.021,
+        "load_pose": 0.375,
+        "decode_sample": 0.438,
+        "pose_predict": 5.873,
+        "extract_features": 6.83,
+        "temporal_forward": 0.105,
+        "main": 7.617
+      }
+    },
+    {
+      "tag": "loaded1_640",
+      "durations": {
+        "imports": 5.531,
+        "resolve_device": 0.028,
+        "load_pose": 0.6,
+        "decode_sample": 0.518,
+        "pose_predict": 9.065,
+        "extract_features": 9.872,
+        "temporal_forward": 0.08,
+        "main": 10.984
+      }
+    },
+    {
+      "tag": "loaded2_640",
+      "durations": {
+        "imports": 5.426,
+        "resolve_device": 0.026,
+        "load_pose": 0.441,
+        "decode_sample": 0.435,
+        "pose_predict": 5.409,
+        "extract_features": 6.075,
+        "temporal_forward": 0.041,
+        "main": 6.79
+      }
+    },
+    {
+      "tag": "loaded3_320",
+      "durations": {
+        "imports": 6.116,
+        "resolve_device": 0.019,
+        "load_pose": 0.325,
+        "decode_sample": 0.34,
+        "pose_predict": 6.339,
+        "extract_features": 6.826,
+        "temporal_forward": 0.07,
+        "main": 7.576
+      }
+    }
+  ],
+  "live": {
+    "experiment": {
+      "scope": "RC4 direct live camera_1 as live_1; bridge, unpublished ports; local MQTT:9",
+      "completed_experiment": true,
+      "steady_observation_seconds": 600,
+      "receiver_media_seconds": 30,
+      "max_no_progress_seconds": 0.0,
+      "receiver_exit": 0,
+      "output_bytes": 18589510,
+      "app_alive": true,
+      "server_alive": true,
+      "transitions": [
+        {
+          "name": "input_ready",
+          "elapsed": 17.2
+        },
+        {
+          "name": "output_ready",
+          "elapsed": 17.614
+        }
+      ],
+      "sample_count": 569,
+      "elapsed_seconds": 626.8097032171208
+    },
+    "calls": [
+      {
+        "tag": "live_0",
+        "status": "ok",
+        "seconds": 15.224298269953579
+      },
+      {
+        "tag": "live_1",
+        "status": "ok",
+        "seconds": 15.974855661857873
+      },
+      {
+        "tag": "live_2",
+        "status": "ok",
+        "seconds": 17.754604319110513
+      },
+      {
+        "tag": "live_3",
+        "status": "ok",
+        "seconds": 17.82522289804183
+      },
+      {
+        "tag": "live_4",
+        "status": "ok",
+        "seconds": 23.427767406217754
+      },
+      {
+        "tag": "live_5",
+        "status": "ok",
+        "seconds": 17.728657473111525
+      },
+      {
+        "tag": "live_6",
+        "status": "ok",
+        "seconds": 17.221221276093274
+      },
+      {
+        "tag": "live_7",
+        "status": "ok",
+        "seconds": 23.25776713201776
+      },
+      {
+        "tag": "live_8",
+        "status": "ok",
+        "seconds": 18.89414197904989
+      },
+      {
+        "tag": "live_9",
+        "status": "ok",
+        "seconds": 17.774356015957892
+      },
+      {
+        "tag": "live_10",
+        "status": "ok",
+        "seconds": 17.645726372953504
+      },
+      {
+        "tag": "live_11",
+        "status": "ok",
+        "seconds": 15.205951100913808
+      },
+      {
+        "tag": "live_12",
+        "status": "ok",
+        "seconds": 15.47804651898332
+      },
+      {
+        "tag": "live_13",
+        "status": "ok",
+        "seconds": 20.03119633393362
+      },
+      {
+        "tag": "live_14",
+        "status": "ok",
+        "seconds": 15.975069226929918
+      },
+      {
+        "tag": "live_15",
+        "status": "ok",
+        "seconds": 16.5347330160439
+      },
+      {
+        "tag": "live_16",
+        "status": "ok",
+        "seconds": 23.387196839088574
+      },
+      {
+        "tag": "live_17",
+        "status": "ok",
+        "seconds": 16.868977508042008
+      },
+      {
+        "tag": "live_18",
+        "status": "ok",
+        "seconds": 16.671042871894315
+      },
+      {
+        "tag": "live_19",
+        "status": "ok",
+        "seconds": 16.486061749979854
+      },
+      {
+        "tag": "live_20",
+        "status": "ok",
+        "seconds": 18.20855821389705
+      },
+      {
+        "tag": "live_21",
+        "status": "ok",
+        "seconds": 18.015828845091164
+      }
+    ],
+    "call_count": 22,
+    "call_seconds": {
+      "min": 15.205951100913808,
+      "max": 23.427767406217754,
+      "mean": 17.981421864961952
+    },
+    "cuda_signatures": {
+      "cudaErrorIllegalAddress": 0,
+      "status=700": 0,
+      "err_no:700": 0,
+      "NVDSINFER_CUDA_ERROR": 0,
+      "Failed in mem copy": 0
+    },
+    "last_metrics": {
+      "cctv_processor_frames_processed_total:{}": 12194.0,
+      "cctv_processor_pipeline_restart_executed_total:{}": 0.0,
+      "cctv_processor_context_match_missed_total:{}": 0.0,
+      "cctv_processor_context_queue_dropped_total:{}": 0.0,
+      "cctv_processor_context_tasks_completed_total:{}": 1400.0,
+      "cctv_processor_context_tasks_failed_total:{}": 0.0,
+      "cctv_falldata_inline_enabled:{}": 1.0,
+      "cctv_falldata_temporal_requests_total:{}": 22.0,
+      "cctv_falldata_temporal_process_calls_total:{}": 22.0,
+      "cctv_falldata_temporal_process_completed_total:{}": 22.0,
+      "cctv_falldata_temporal_process_seconds_total:{}": 395.72251487593167,
+      "cctv_falldata_temporal_parsed_results_total:{}": 22.0,
+      "cctv_falldata_temporal_unparsed_results_total:{}": 0.0,
+      "cctv_falldata_temporal_insufficient_pose_results_total:{}": 1.0,
+      "cctv_falldata_temporal_window_inferences_total:{}": 22.0,
+      "cctv_falldata_temporal_window_reports_missing_total:{}": 0.0,
+      "cctv_falldata_temporal_insufficient_window_results_total:{}": 0.0
+    },
+    "appearance_db": {
+      "integrity": "ok",
+      "rows": 361
+    }
+  },
+  "live_video_decode": "PASS exit0",
+  "source_sha256": {
+    "src/core/ai/_falldata_aux.py": "e22c5b0cf8a63ffeafdd522babea305157705219ee36073a48ea92a5faad311b",
+    "tests/test_falldata_pose_tracks.py": "949cc1e8351befb778901f09dcb703d6e7efe895bf68076892df07f57ea8ff87"
+  },
+  "production_limits": {
+    "NanoCpus": 0,
+    "CpuQuota": 0,
+    "CpuPeriod": 0,
+    "Memory": 0,
+    "note": "no explicit container limits; isolated tests CPU2/4 Memory8GiB differ"
+  },
+  "limits": [
+    "Synthetic RF compatibility is not accuracy evidence",
+    "Natural inline RF alarm call not confirmed in this live test",
+    "Prior24 timeouts did not reproduce; cause not confirmed",
+    "CPU2 versus4 was sequential, limited trials, host load uncontrolled; no causal improvement established",
+    "I37 remaining feature/time contract, I38 prior timeout, I32, I34 and I07 remain open",
+    "Isolated appearance DB only; MQTT localhost:9 deliberately fails, not remote ACK verification"
+  ],
+  "publication": {
+    "url": "http://192.168.2.141:18081/",
+    "artifacts": {
+      "index.html": {
+        "bytes": 22692,
+        "sha256": "e5048f0a1e212771290a6dcfe01280c1b57561cac5edcc87577e736ac07714e8",
+        "http_bytes_match": true
+      },
+      "CCTV_project_progress.pdf": {
+        "bytes": 124254,
+        "sha256": "9da44500e2b2f0adb5ce1edb70edb5b60ece1a8122c3b8ada3e6a9e7fd386494",
+        "http_bytes_match": true
+      }
+    },
+    "wbs33_status_rows_match": true,
+    "png_first_page_review": "PASS",
+    "browser_interaction_tested": false,
+    "other_pc_tested": false
+  },
+  "production": {
+    "healthy": true,
+    "restart_count": 0,
+    "started_at": "2026-09-16T23:45:46.903505745Z",
+    "ai_deployment": false
+  },
+  "test_containers_remaining": 0
+}

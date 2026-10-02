@@ -1,0 +1,131 @@
+{
+  "version": "0.38",
+  "scope": "isolated local file decode+primary and restored snapshot regressions; not full app rollback or source outage recovery",
+  "source_snapshot_version": "0.37",
+  "source_files_verified_per_slot": 321,
+  "inputs_sha256": {
+    "models/fall/yolov8n-pose.engine": "cc6cd0ee490e4f2ae46acf853989cf8c8806aadab47853e39c1e97cdf6732a74",
+    "config/deepstream/config_infer_primary.txt": "277ab2e76c826804b82fa7c56b9e8edc4a59037fbfe01c23b014c3263e2fa2ae",
+    "config/deepstream/labels.txt": "02753e2b4d2ed7e11ec207b12b0d5dfbc7c9ba40e27f11867538560bc5b92a48",
+    "Sample/01.원천데이터/영상/Y/FY/00003_H_A_FY_C1/00003_H_A_FY_C1.mp4": "dac53f39f7f81d0849255d62cf208550e16269b341e5caf9021086c2b3c53093"
+  },
+  "isolation": {
+    "network": "none",
+    "ports": [],
+    "read_only_root_and_sources": true,
+    "only_writable_bind": "private /output",
+    "shared_hardware": "same Jetson CPU/GPU; zero performance impact not established"
+  },
+  "runs": {
+    "candidate": {
+      "scope": "decode_and_primary_only",
+      "commercial_acceptance": "NOT_EVALUATED",
+      "finished": true,
+      "errors": [],
+      "channels": 1,
+      "interval": 0,
+      "mux_resolution": [
+        1280,
+        720
+      ],
+      "topology": "independent",
+      "inference_batch_size": 1,
+      "observed_decode_caps": {
+        "replay_1": "video/x-raw(memory:NVMM), format=(string){ I420, NV12, P010_10LE, BGRx, RGBA, GRAY8 }, width=(int)[ 1, 2147483647 ], height=(int)[ 1, 2147483647 ], framerate=(fraction)[ 0/1, 2147483647/1 ]"
+      },
+      "metric_evidence": "primary_tensor_meta",
+      "elapsed_seconds": 3.000381942023523,
+      "cameras": {
+        "replay_1": {
+          "frames_seen": 190,
+          "frames_inferred": 190,
+          "frames_skipped": 0,
+          "frames_inference_unknown": 0,
+          "tensor_frames": 190,
+          "seen_fps": 63.325271139266974,
+          "inferred_fps": 63.325271139266974,
+          "tensor_fps": 63.325271139266974,
+          "last_frame_age_seconds": 0.004032691940665245,
+          "replay_timing": {
+            "source_timeline_seconds": 3.169833334,
+            "source_to_wall_ratio": 1.0564766070622977,
+            "output_lag_start_seconds": 13.866626280000002,
+            "output_lag_end_seconds": 13.697796743000001,
+            "output_lag_change_seconds": -0.16882953700000058,
+            "scope": "source_pts_vs_pipeline_clock_not_end_to_end"
+          }
+        }
+      }
+    },
+    "restored": {
+      "scope": "decode_and_primary_only",
+      "commercial_acceptance": "NOT_EVALUATED",
+      "finished": true,
+      "errors": [],
+      "channels": 1,
+      "interval": 0,
+      "mux_resolution": [
+        1280,
+        720
+      ],
+      "topology": "independent",
+      "inference_batch_size": 1,
+      "observed_decode_caps": {
+        "replay_1": "video/x-raw(memory:NVMM), format=(string){ I420, NV12, P010_10LE, BGRx, RGBA, GRAY8 }, width=(int)[ 1, 2147483647 ], height=(int)[ 1, 2147483647 ], framerate=(fraction)[ 0/1, 2147483647/1 ]"
+      },
+      "metric_evidence": "primary_tensor_meta",
+      "elapsed_seconds": 3.006049326970242,
+      "cameras": {
+        "replay_1": {
+          "frames_seen": 215,
+          "frames_inferred": 215,
+          "frames_skipped": 0,
+          "frames_inference_unknown": 0,
+          "tensor_frames": 215,
+          "seen_fps": 71.52244577992195,
+          "inferred_fps": 71.52244577992195,
+          "tensor_fps": 71.52244577992195,
+          "last_frame_age_seconds": 0.009989831945858896,
+          "replay_timing": {
+            "source_timeline_seconds": 3.5869166660000005,
+            "source_to_wall_ratio": 1.193232803539923,
+            "output_lag_start_seconds": 0.5909162340000003,
+            "output_lag_end_seconds": 0.018664536000000176,
+            "output_lag_change_seconds": -0.5722516980000001,
+            "scope": "source_pts_vs_pipeline_clock_not_end_to_end"
+          }
+        }
+      }
+    }
+  },
+  "tests": {
+    "passed": 225,
+    "skipped": 2,
+    "failed": 0,
+    "seconds": 7.009
+  },
+  "operating_checks": {
+    "started_at_utc": "2026-09-16T23:45:46.903505745Z",
+    "restart_count_before": 0,
+    "restart_count_after": 0,
+    "health_before": "healthy",
+    "health_after": "healthy",
+    "frames_before": 28513894.0,
+    "frames_after": 28535555.0,
+    "frames_delta": 21661.0,
+    "continuous_per_camera_monitoring": false
+  },
+  "remaining_test_containers": 0,
+  "setup_fixes": [
+    "nested mount target directories",
+    "match output UID to host user",
+    "mount existing pytest pure-Python dependencies only",
+    "run pytest from writable container /tmp"
+  ],
+  "not_verified": [
+    "full application with all models/event publishing",
+    "actual two-camera disconnect/reconnect",
+    "restoring the source loaded by operating process on Sep17",
+    "field accuracy and sustained throughput"
+  ]
+}

@@ -1,0 +1,762 @@
+{
+  "version": "0.75",
+  "date": "2026-09-30",
+  "scope": "Primary GPU/VIC paired 120-frame fixed-input comparison; selected pipeline, no deployment",
+  "runs": {
+    "gpu1": {
+      "scaling": 1,
+      "frames": 120,
+      "eos": true,
+      "errors": [],
+      "pipeline_seconds": 3.6017484900075942,
+      "completed": true,
+      "boundary_ms_after_first_10": {
+        "count": 110,
+        "min": 32.04324399121106,
+        "median": 53.282121545635164,
+        "p95": 62.26017668377608,
+        "max": 65.74008404277265
+      }
+    },
+    "vic1": {
+      "scaling": 2,
+      "frames": 120,
+      "eos": true,
+      "errors": [],
+      "pipeline_seconds": 3.377830480923876,
+      "completed": true,
+      "boundary_ms_after_first_10": {
+        "count": 110,
+        "min": 32.44841005653143,
+        "median": 45.847901375964284,
+        "p95": 59.99640872469172,
+        "max": 66.82906090281904
+      },
+      "cuda_signatures": {
+        "cudaErrorIllegalAddress": 0,
+        "status=700": 0,
+        "NVDSINFER_CUDA_ERROR": 0,
+        "Failed in mem copy": 0
+      }
+    },
+    "vic2": {
+      "scaling": 2,
+      "frames": 120,
+      "eos": true,
+      "errors": [],
+      "pipeline_seconds": 3.1976209320127964,
+      "completed": true,
+      "boundary_ms_after_first_10": {
+        "count": 110,
+        "min": 19.7116918861866,
+        "median": 42.82233049161732,
+        "p95": 60.564763424918056,
+        "max": 65.19604008644819
+      },
+      "cuda_signatures": {
+        "cudaErrorIllegalAddress": 0,
+        "status=700": 0,
+        "NVDSINFER_CUDA_ERROR": 0,
+        "Failed in mem copy": 0
+      }
+    },
+    "gpu2": {
+      "scaling": 1,
+      "frames": 120,
+      "eos": true,
+      "errors": [],
+      "pipeline_seconds": 3.7439738439861685,
+      "completed": true,
+      "boundary_ms_after_first_10": {
+        "count": 110,
+        "min": 15.923016937449574,
+        "median": 52.95774794649333,
+        "p95": 63.680545426905155,
+        "max": 67.16680503450334
+      },
+      "cuda_signatures": {
+        "cudaErrorIllegalAddress": 0,
+        "status=700": 0,
+        "NVDSINFER_CUDA_ERROR": 0,
+        "Failed in mem copy": 0
+      }
+    }
+  },
+  "comparisons": {
+    "gpu1_gpu2": {
+      "paired_frames": 120,
+      "raw_tensor_exact": true,
+      "raw_tensor_nonzero_differences": 0,
+      "raw_tensor_max_abs": 0.0,
+      "raw_tensor_mean_abs": 0.0,
+      "bbox_iou": {
+        "count": 120,
+        "min": 1.0,
+        "median": 1.0,
+        "p95": 1.0,
+        "max": 1.0
+      },
+      "person_confidence_abs_diff": {
+        "count": 120,
+        "min": 0.0,
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "joint_xy_pixels_both_conf_ge_025": {
+        "count": 991,
+        "min": 0.0,
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "joint_confidence_abs_diff": {
+        "count": 2040,
+        "min": 0.0,
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "joint_confidence_025_crossings": 0,
+      "joint_not_both_confident_count": 1049,
+      "fall_boolean_differences": 0,
+      "fall_reason_differences": 0
+    },
+    "vic1_vic2": {
+      "paired_frames": 120,
+      "raw_tensor_exact": true,
+      "raw_tensor_nonzero_differences": 0,
+      "raw_tensor_max_abs": 0.0,
+      "raw_tensor_mean_abs": 0.0,
+      "bbox_iou": {
+        "count": 120,
+        "min": 1.0,
+        "median": 1.0,
+        "p95": 1.0,
+        "max": 1.0
+      },
+      "person_confidence_abs_diff": {
+        "count": 120,
+        "min": 0.0,
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "joint_xy_pixels_both_conf_ge_025": {
+        "count": 926,
+        "min": 0.0,
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "joint_confidence_abs_diff": {
+        "count": 2040,
+        "min": 0.0,
+        "median": 0.0,
+        "p95": 0.0,
+        "max": 0.0
+      },
+      "joint_confidence_025_crossings": 0,
+      "joint_not_both_confident_count": 1114,
+      "fall_boolean_differences": 0,
+      "fall_reason_differences": 0
+    },
+    "gpu1_vic1": {
+      "paired_frames": 120,
+      "raw_tensor_exact": false,
+      "raw_tensor_nonzero_differences": 52498700,
+      "raw_tensor_max_abs": 218.25,
+      "raw_tensor_mean_abs": 1.3793599660733968,
+      "bbox_iou": {
+        "count": 120,
+        "min": 0.9610027855153204,
+        "median": 0.9805540122231923,
+        "p95": 0.9914542055167055,
+        "max": 0.9943181818181818
+      },
+      "person_confidence_abs_diff": {
+        "count": 120,
+        "min": 0.0,
+        "median": 0.008922219276428223,
+        "p95": 0.03023996055126189,
+        "max": 0.04605388641357422
+      },
+      "joint_xy_pixels_both_conf_ge_025": {
+        "count": 899,
+        "min": 0.0,
+        "median": 3.7783110996349945,
+        "p95": 18.074999999999932,
+        "max": 81.0
+      },
+      "joint_confidence_abs_diff": {
+        "count": 2040,
+        "min": 0.0,
+        "median": 0.00927734375,
+        "p95": 0.08574218749999996,
+        "max": 0.205078125
+      },
+      "joint_confidence_025_crossings": 119,
+      "joint_not_both_confident_count": 1141,
+      "fall_boolean_differences": 0,
+      "fall_reason_differences": 0
+    },
+    "gpu2_vic2": {
+      "paired_frames": 120,
+      "raw_tensor_exact": false,
+      "raw_tensor_nonzero_differences": 52498700,
+      "raw_tensor_max_abs": 218.25,
+      "raw_tensor_mean_abs": 1.3793599660733968,
+      "bbox_iou": {
+        "count": 120,
+        "min": 0.9610027855153204,
+        "median": 0.9805540122231923,
+        "p95": 0.9914542055167055,
+        "max": 0.9943181818181818
+      },
+      "person_confidence_abs_diff": {
+        "count": 120,
+        "min": 0.0,
+        "median": 0.008922219276428223,
+        "p95": 0.03023996055126189,
+        "max": 0.04605388641357422
+      },
+      "joint_xy_pixels_both_conf_ge_025": {
+        "count": 899,
+        "min": 0.0,
+        "median": 3.7783110996349945,
+        "p95": 18.074999999999932,
+        "max": 81.0
+      },
+      "joint_confidence_abs_diff": {
+        "count": 2040,
+        "min": 0.0,
+        "median": 0.00927734375,
+        "p95": 0.08574218749999996,
+        "max": 0.205078125
+      },
+      "joint_confidence_025_crossings": 119,
+      "joint_not_both_confident_count": 1141,
+      "fall_boolean_differences": 0,
+      "fall_reason_differences": 0
+    }
+  },
+  "original_cuda700_root_fixed": false,
+  "limitations": [
+    "one partially visible person at frame edge; no ground-truth fall labels or accuracy acceptance",
+    "interval0/batch1 Primary-only pipeline, not complete operating application",
+    "same encoded input SHA and frame_num/source PTS equality, not direct NVMM pixel hashes",
+    "boundary duration includes preprocessing/inference/scheduling; not CUDA kernel time or end-to-end latency",
+    "host GPU shared with unchanged operating AI; clocks/load not fully controlled",
+    "first GPU native stdout not saved to trial file; exit/probe results preserved",
+    "0.25 joint confidence used for comparison grouping, not a newly approved quality threshold",
+    "original CUDA700 not root-caused; comparisons cannot prove stability or correctness",
+    "pipeline_seconds includes final artifact write and is not used for latency conclusions",
+    "recovery metrics last5 TCN completions vs observer6 through shutdown; separate sample times",
+    "one context matching miss during recovery remains I32; no zero-loss acceptance"
+  ],
+  "sha256": {
+    "data/runtime/p51_preprocess_compare_20260930_v076/compose_vic1.json": "fc7679fdeb300440570565b3530d101167bd057a8f83bf40485eada08ff3a4dc",
+    "data/runtime/p51_preprocess_compare_20260930_v076/primary_gpu.txt": "c2e4f591f13cf2f682ad8f16fe180abff3cea4ee6dcf34558d87ea9929570988",
+    "data/runtime/p51_preprocess_compare_20260930_v076/input_120.mkv": "c1a48dc9b1f2c719866d6f173d4b256caa04b049e92f60184dbe1fcab94c34d8",
+    "data/runtime/p51_preprocess_compare_20260930_v076/compose_gpu1.json": "d278ab6b8cc8acbc4491f900c12cc8eb763017be79613ef588afa9e0f54d5435",
+    "data/runtime/p51_preprocess_compare_20260930_v076/compose_gpu2.json": "fbd042a8bd8cc5ed80411bba571943f632d4858f485ef0e64ff902789ec4dd5d",
+    "data/runtime/p51_preprocess_compare_20260930_v076/compare_probe.py": "43a25e9bf4866ba62e07768ce7b0b0a2979a704169782f8eef7ee3250641cd9b",
+    "data/runtime/p51_preprocess_compare_20260930_v076/launch_probe.py": "5bc1ff91d8e16dcf6b99972b4cc2d803e33157969520a198fe2f82311f4cbf52",
+    "data/runtime/p51_preprocess_compare_20260930_v076/compose_vic2.json": "e0f58804cd96fad5267b099fa97d810f87ad692d6f9a86e405021e5474b2e3c1",
+    "data/runtime/p51_preprocess_compare_20260930_v076/primary_vic.txt": "4a837131cac2034841a5b6753810c16dc362129d1e035ee481afb92f24ec4b81",
+    "data/runtime/p51_preprocess_compare_20260930_v076/vic2/progress.json": "2288ac7c399981e32da14ccb3c69ea6a70ae7f3e7e300a0d9c2e85b98bdadee2",
+    "data/runtime/p51_preprocess_compare_20260930_v076/vic2/experiment.json": "ad95c2718555992d230883e0b4acd454ae84c75649557972d2a3c1d48913458a",
+    "data/runtime/p51_preprocess_compare_20260930_v076/vic2/frames.json": "970c1ecbc94f7b85f80b5dfa9013c8177e30fc72e7600707b06f992a027c42d7",
+    "data/runtime/p51_preprocess_compare_20260930_v076/gpu2/progress.json": "2288ac7c399981e32da14ccb3c69ea6a70ae7f3e7e300a0d9c2e85b98bdadee2",
+    "data/runtime/p51_preprocess_compare_20260930_v076/gpu2/experiment.json": "5075caa8aa2b12bbacf1c82eb9287e3d7e3bb0f5bcc5a9549c7203a3ccb11a06",
+    "data/runtime/p51_preprocess_compare_20260930_v076/gpu2/frames.json": "72b97fec0f98d55b070d1b0faee66f204c7cb8da4eb731c06d11e91b3b448dae",
+    "data/runtime/p51_preprocess_compare_20260930_v076/vic1/progress.json": "2288ac7c399981e32da14ccb3c69ea6a70ae7f3e7e300a0d9c2e85b98bdadee2",
+    "data/runtime/p51_preprocess_compare_20260930_v076/vic1/experiment.json": "4e21cdc218d618cbc3dbf98bd8830e2b6a126e1d45135a8c2e8dfe462846940b",
+    "data/runtime/p51_preprocess_compare_20260930_v076/vic1/frames.json": "8f281ab8e6cb57b1f1c07832bbd0640e5a3d3862168afc4062a245d2b85d9c60",
+    "data/runtime/p51_preprocess_compare_20260930_v076/gpu1/progress.json": "2288ac7c399981e32da14ccb3c69ea6a70ae7f3e7e300a0d9c2e85b98bdadee2",
+    "data/runtime/p51_preprocess_compare_20260930_v076/gpu1/experiment.json": "84259e69d70b1dc4ad30f9fda97c990717c13c194de97ec064cf7d5754b163d8",
+    "data/runtime/p51_preprocess_compare_20260930_v076/gpu1/frames.json": "cf7bcf4ac9f89c9bd6556ccce26b2cef4f67432f34864cf94521059fa1a8fcd2",
+    "data/runtime/p51_preprocess_compare_20260930_v076/cameras-one.json": "9011e45cb30a331c428568f9f86c28e5dab3f4e058979fe01d04aa9a7f3fc81a",
+    "data/runtime/p51_preprocess_compare_20260930_v076/observe_worker.py": "3fcb766ad1b6cac7daebe157dc292dfdf924d920597b6496d4cc49cd016d1867",
+    "data/runtime/p51_preprocess_compare_20260930_v076/run_recovery.py": "e8bf83262e16447057a98d26a2670e664ad29a27a5872492833fd5d590fad7db",
+    "data/runtime/p51_preprocess_compare_20260930_v076/observe_actual.py": "4466196c653a7c16366063e6c1a9c6942ae23b7a9a994508c2e320614ed717b5",
+    "data/runtime/p51_preprocess_compare_20260930_v076/observe_context.py": "2e821f53df90604e52ee137881e0588201412b9e9adf5146e62b52fd9c89e0bb",
+    "data/runtime/p51_preprocess_compare_20260930_v076/compose_recovery.json": "c2312e3ee251ede2f0f13ae80d82e92a5a0d48b00d87ef11df1e6350cea0f64e",
+    "data/runtime/p51_preprocess_compare_20260930_v076/recovery/context_timing.jsonl": "717252a2a6dc7bd7f8acc3f9ae96e339f98f3a1a9eda0aa5ef54ce81617844a5",
+    "data/runtime/p51_preprocess_compare_20260930_v076/recovery/tcn_calls.jsonl": "966ef99d7bf053f20dcd8adc7aac74b8adbed5b49c985e4191f811b5ac3a4e9d",
+    "data/runtime/p51_preprocess_compare_20260930_v076/recovery/boundaries.jsonl": "f9d7e382d8da24bb3a03b62a2089798e71a2162850f417269a87120bc039adb6",
+    "data/runtime/p51_preprocess_compare_20260930_v076/recovery/samples.jsonl": "210b470d70a4c62e1193333fbf08fe2449ed1dbc6983992d2c3b51b7f1663d77",
+    "data/runtime/p51_preprocess_compare_20260930_v076/recovery/fall_shadow_review.jsonl": "c154d7ca6b3e41f91a9c0129f3f503a5b6f244141d3b02727eec9d39a3896fd8",
+    "data/runtime/p51_preprocess_compare_20260930_v076/recovery/copy_properties.jsonl": "5d3fb9a274a444fc5494b02ce01aa9081dfb49cf94d8217180504da53a7e932e",
+    "data/runtime/p51_preprocess_compare_20260930_v076/recovery/experiment.json": "013e56b12c90c25b5c34f3d4dfa4812b113cceccad1992aedf3a0ee9768705e8",
+    "data/runtime/p51_preprocess_compare_20260930_v076/recovery/stats.jsonl": "eb68887de2969de24565b5a2036bc00768229baa6cb544af397514d1d1b38db6"
+  },
+  "recovery": {
+    "experiment": {
+      "scope": "one local RTSP input, IOU, full candidate models, bounded publisher stop/restart experiment",
+      "input": "/baseline/camera_1_capture.mkv",
+      "completed_experiment": true,
+      "receivers": {
+        "before": {
+          "exit": 0,
+          "bytes": 4913319
+        },
+        "after": {
+          "exit": 0,
+          "bytes": 4694580
+        }
+      },
+      "app_alive": true,
+      "outage_publisher_stopped": true,
+      "restored_publisher_alive": true,
+      "transitions": [
+        {
+          "name": "input_ready",
+          "elapsed": 12.384,
+          "monotonic": 1223542.673899998
+        },
+        {
+          "name": "publisher_stop_requested",
+          "elapsed": 33.011,
+          "monotonic": 1223563.300077703
+        },
+        {
+          "name": "publisher_stopped",
+          "elapsed": 33.043,
+          "monotonic": 1223563.33233124
+        },
+        {
+          "name": "publisher_restarted",
+          "elapsed": 58.46,
+          "monotonic": 1223588.749072598
+        },
+        {
+          "name": "frames_resumed",
+          "elapsed": 66.525,
+          "monotonic": 1223596.814215009
+        }
+      ],
+      "sample_count": 158,
+      "elapsed_seconds": 95.85091035603546
+    },
+    "resume_after_restart_seconds": 8.065142411040142,
+    "last_stats": {
+      "backend": "deepstream",
+      "camera_count": 1,
+      "frames_processed": 1282,
+      "frames_dropped": 0,
+      "events_detected": 17,
+      "events_sent": 0,
+      "events_filtered": 1905,
+      "events_dropped": 0,
+      "events_failed": 17,
+      "inference_errors": 0,
+      "camera_errors": 0,
+      "fps": 0.0,
+      "uptime_seconds": 0.0,
+      "avg_inference_ms": 0.0,
+      "output_mode": "rtsp-publish",
+      "preview_enabled": true,
+      "preview_max_fps": 10.0,
+      "preview_ready": true,
+      "cameras": 1,
+      "yolo_postprocess_mode": "vectorized",
+      "yolo_postprocess_calls": 1283,
+      "yolo_postprocess_avg_ms": 9.646,
+      "yolo_postprocess_max_ms": 106.099,
+      "primary_camera_stats": {
+        "replay_1": {
+          "frames_seen": 1284,
+          "frames_inferred": 642,
+          "frames_skipped": 642,
+          "frames_inference_unknown": 0,
+          "last_frame_age_seconds": 0.03843539208173752
+        }
+      },
+      "primary_metrics_errors": 0,
+      "model_inference_stats": {
+        "pipeline_generation": 1,
+        "metadata_errors": 0,
+        "models": {
+          "primary": {
+            "enabled": true,
+            "properties": {
+              "unique-id": 1,
+              "process-mode": 1,
+              "batch-size": 1,
+              "interval": 1,
+              "output-tensor-meta": true
+            },
+            "property_observed_at": "pipeline_build",
+            "cameras": {
+              "replay_1": {
+                "frames_seen": 1282,
+                "frames_tensor_output": 641,
+                "frames_no_objects": 0,
+                "frames_classifier_only": 0,
+                "frames_unobserved": 641,
+                "frames_unknown": 0,
+                "objects_with_tensor": 0,
+                "objects_classifier_only": 0,
+                "last_frame_age_seconds": 0.001433124067261815,
+                "last_tensor_age_seconds": 0.034569921204820275
+              }
+            },
+            "unique_id_conflict": false
+          },
+          "pose": {
+            "enabled": false,
+            "properties": {
+              "unique-id": null,
+              "process-mode": null,
+              "batch-size": null,
+              "interval": null,
+              "output-tensor-meta": null
+            },
+            "property_observed_at": "pipeline_build",
+            "cameras": {
+              "replay_1": {
+                "frames_seen": 0,
+                "frames_tensor_output": 0,
+                "frames_no_objects": 0,
+                "frames_classifier_only": 0,
+                "frames_unobserved": 0,
+                "frames_unknown": 0,
+                "objects_with_tensor": 0,
+                "objects_classifier_only": 0,
+                "last_frame_age_seconds": null,
+                "last_tensor_age_seconds": null
+              }
+            },
+            "unique_id_conflict": false
+          },
+          "attributes": {
+            "enabled": true,
+            "properties": {
+              "unique-id": 3,
+              "process-mode": 2,
+              "batch-size": 1,
+              "interval": 4,
+              "output-tensor-meta": true
+            },
+            "property_observed_at": "pipeline_build",
+            "cameras": {
+              "replay_1": {
+                "frames_seen": 1282,
+                "frames_tensor_output": 641,
+                "frames_no_objects": 1,
+                "frames_classifier_only": 0,
+                "frames_unobserved": 640,
+                "frames_unknown": 0,
+                "objects_with_tensor": 641,
+                "objects_classifier_only": 0,
+                "last_frame_age_seconds": 0.001433124067261815,
+                "last_tensor_age_seconds": 0.034569921204820275
+              }
+            },
+            "unique_id_conflict": false
+          },
+          "helmet": {
+            "enabled": true,
+            "properties": {
+              "unique-id": 2,
+              "process-mode": 2,
+              "batch-size": 1,
+              "interval": 1,
+              "output-tensor-meta": true
+            },
+            "property_observed_at": "pipeline_build",
+            "cameras": {
+              "replay_1": {
+                "frames_seen": 1282,
+                "frames_tensor_output": 641,
+                "frames_no_objects": 1,
+                "frames_classifier_only": 0,
+                "frames_unobserved": 640,
+                "frames_unknown": 0,
+                "objects_with_tensor": 641,
+                "objects_classifier_only": 0,
+                "last_frame_age_seconds": 0.001433124067261815,
+                "last_tensor_age_seconds": 0.034569921204820275
+              }
+            },
+            "unique_id_conflict": false
+          }
+        }
+      },
+      "model_metrics_errors": 0,
+      "source_error_identified": 0,
+      "source_error_unidentified": 0,
+      "source_eos_identified": 0,
+      "source_eos_unidentified": 0,
+      "source_unidentified_stop": 0,
+      "source_stream_reset_events": 2,
+      "source_stream_reset_unidentified": 0,
+      "preview_identity_rejected": 0,
+      "preview_frames_stored": 388,
+      "context_identity_rejected": 0,
+      "context_match_expired": 102,
+      "context_match_evicted": 729,
+      "context_match_missed": 1,
+      "context_frames_matched": 84,
+      "context_queue_dropped": 0,
+      "context_frames_sampled": 303,
+      "context_people_sampled": 275,
+      "context_people_busy": 28,
+      "context_tasks_completed": 84,
+      "context_tasks_failed": 0,
+      "pipeline_restart_requested": 0,
+      "pipeline_restart_rejected": 0,
+      "pipeline_restart_executed": 0,
+      "pipeline_restart_failed": 0,
+      "pipeline_restart_seconds": 0.0,
+      "falldata_inline_stats": {
+        "enabled": true,
+        "cameras": {}
+      },
+      "falldata_temporal_stats": {
+        "requests": 5,
+        "worker_calls": 5,
+        "worker_completed": 5,
+        "worker_seconds": 17.04633662989363,
+        "parsed_results": 5,
+        "unparsed_results": 0,
+        "insufficient_pose_results": 1,
+        "insufficient_window_results": 0,
+        "window_reports_missing": 0,
+        "window_inferences": 5
+      },
+      "appearance_backend_stats": {
+        "color_backend": {
+          "requests": 137,
+          "completed": 137,
+          "seconds": 3.93901972589083
+        },
+        "attribute_backend": {
+          "requests": 84,
+          "completed": 84,
+          "seconds": 0.00041812495328485966
+        }
+      },
+      "crop_pose_results": 0,
+      "primary_probe_frames": 1284,
+      "primary_tensor_meta_count": 642,
+      "primary_person_rois": 642,
+      "crop_pose_person_objects": 0,
+      "crop_pose_tensor_meta_count": 0
+    },
+    "last_metrics": {
+      "cctv_processor_frames_processed_total:{}": 1288.0,
+      "cctv_processor_frames_dropped_total:{}": 0.0,
+      "cctv_processor_events_detected_total:{}": 17.0,
+      "cctv_processor_events_sent_total:{}": 0.0,
+      "cctv_processor_events_filtered_total:{}": 1914.0,
+      "cctv_processor_events_failed_total:{}": 17.0,
+      "cctv_processor_fps:{}": 29.288636558298094,
+      "cctv_processor_avg_inference_ms:{}": 9.63,
+      "cctv_processor_yolo_postprocess_avg_ms:{}": 9.63,
+      "cctv_processor_yolo_postprocess_max_ms:{}": 106.099,
+      "cctv_processor_cameras:{}": 1.0,
+      "cctv_processor_primary_metrics_errors_total:{}": 0.0,
+      "cctv_processor_model_metrics_errors_total:{}": 0.0,
+      "cctv_processor_source_error_identified_total:{}": 0.0,
+      "cctv_processor_source_error_unidentified_total:{}": 0.0,
+      "cctv_processor_source_eos_identified_total:{}": 0.0,
+      "cctv_processor_source_eos_unidentified_total:{}": 0.0,
+      "cctv_processor_source_unidentified_stop_total:{}": 0.0,
+      "cctv_processor_source_stream_reset_events_total:{}": 2.0,
+      "cctv_processor_source_stream_reset_unidentified_total:{}": 0.0,
+      "cctv_processor_preview_identity_rejected_total:{}": 0.0,
+      "cctv_processor_preview_frames_stored_total:{}": 391.0,
+      "cctv_processor_pipeline_restart_requested_total:{}": 0.0,
+      "cctv_processor_pipeline_restart_rejected_total:{}": 0.0,
+      "cctv_processor_pipeline_restart_executed_total:{}": 0.0,
+      "cctv_processor_pipeline_restart_failed_total:{}": 0.0,
+      "cctv_processor_pipeline_restart_seconds_total:{}": 0.0,
+      "cctv_processor_context_identity_rejected_total:{}": 0.0,
+      "cctv_processor_context_match_expired_total:{}": 102.0,
+      "cctv_processor_context_match_evicted_total:{}": 733.0,
+      "cctv_processor_context_match_missed_total:{}": 1.0,
+      "cctv_processor_context_frames_matched_total:{}": 85.0,
+      "cctv_processor_context_queue_dropped_total:{}": 0.0,
+      "cctv_processor_context_frames_sampled_total:{}": 305.0,
+      "cctv_processor_context_people_sampled_total:{}": 277.0,
+      "cctv_processor_context_people_busy_total:{}": 28.0,
+      "cctv_processor_context_tasks_completed_total:{}": 85.0,
+      "cctv_processor_context_tasks_failed_total:{}": 0.0,
+      "cctv_model_pipeline_generation:{}": 1.0,
+      "cctv_model_metadata_errors:{}": 0.0,
+      "cctv_model_enabled:{\"model\": \"primary\"}": 1.0,
+      "cctv_model_enabled:{\"model\": \"pose\"}": 0.0,
+      "cctv_model_enabled:{\"model\": \"attributes\"}": 1.0,
+      "cctv_model_enabled:{\"model\": \"helmet\"}": 1.0,
+      "cctv_model_build_property:{\"model\": \"primary\", \"property\": \"unique-id\"}": 1.0,
+      "cctv_model_build_property:{\"model\": \"primary\", \"property\": \"process-mode\"}": 1.0,
+      "cctv_model_build_property:{\"model\": \"primary\", \"property\": \"batch-size\"}": 1.0,
+      "cctv_model_build_property:{\"model\": \"primary\", \"property\": \"interval\"}": 1.0,
+      "cctv_model_build_property:{\"model\": \"primary\", \"property\": \"output-tensor-meta\"}": 1.0,
+      "cctv_model_build_property:{\"model\": \"attributes\", \"property\": \"unique-id\"}": 3.0,
+      "cctv_model_build_property:{\"model\": \"attributes\", \"property\": \"process-mode\"}": 2.0,
+      "cctv_model_build_property:{\"model\": \"attributes\", \"property\": \"batch-size\"}": 1.0,
+      "cctv_model_build_property:{\"model\": \"attributes\", \"property\": \"interval\"}": 4.0,
+      "cctv_model_build_property:{\"model\": \"attributes\", \"property\": \"output-tensor-meta\"}": 1.0,
+      "cctv_model_build_property:{\"model\": \"helmet\", \"property\": \"unique-id\"}": 2.0,
+      "cctv_model_build_property:{\"model\": \"helmet\", \"property\": \"process-mode\"}": 2.0,
+      "cctv_model_build_property:{\"model\": \"helmet\", \"property\": \"batch-size\"}": 1.0,
+      "cctv_model_build_property:{\"model\": \"helmet\", \"property\": \"interval\"}": 1.0,
+      "cctv_model_build_property:{\"model\": \"helmet\", \"property\": \"output-tensor-meta\"}": 1.0,
+      "cctv_model_unique_id_conflict:{\"model\": \"primary\"}": 0.0,
+      "cctv_model_unique_id_conflict:{\"model\": \"pose\"}": 0.0,
+      "cctv_model_unique_id_conflict:{\"model\": \"attributes\"}": 0.0,
+      "cctv_model_unique_id_conflict:{\"model\": \"helmet\"}": 0.0,
+      "cctv_model_frames_seen_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 1288.0,
+      "cctv_model_frames_seen_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+      "cctv_model_frames_seen_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 1288.0,
+      "cctv_model_frames_seen_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 1288.0,
+      "cctv_model_frames_tensor_output_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 644.0,
+      "cctv_model_frames_tensor_output_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+      "cctv_model_frames_tensor_output_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 644.0,
+      "cctv_model_frames_tensor_output_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 644.0,
+      "cctv_model_frames_no_objects_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.0,
+      "cctv_model_frames_no_objects_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+      "cctv_model_frames_no_objects_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 1.0,
+      "cctv_model_frames_no_objects_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 1.0,
+      "cctv_model_frames_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.0,
+      "cctv_model_frames_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+      "cctv_model_frames_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 0.0,
+      "cctv_model_frames_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 0.0,
+      "cctv_model_frames_unobserved_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 644.0,
+      "cctv_model_frames_unobserved_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+      "cctv_model_frames_unobserved_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 643.0,
+      "cctv_model_frames_unobserved_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 643.0,
+      "cctv_model_frames_unknown_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.0,
+      "cctv_model_frames_unknown_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+      "cctv_model_frames_unknown_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 0.0,
+      "cctv_model_frames_unknown_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 0.0,
+      "cctv_model_objects_with_tensor_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.0,
+      "cctv_model_objects_with_tensor_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+      "cctv_model_objects_with_tensor_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 644.0,
+      "cctv_model_objects_with_tensor_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 644.0,
+      "cctv_model_objects_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.0,
+      "cctv_model_objects_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+      "cctv_model_objects_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 0.0,
+      "cctv_model_objects_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 0.0,
+      "cctv_model_last_frame_age_seconds:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.04672170290723443,
+      "cctv_model_last_frame_age_seconds:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 0.04672170290723443,
+      "cctv_model_last_frame_age_seconds:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 0.04672170290723443,
+      "cctv_model_last_tensor_age_seconds:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.13433575094677508,
+      "cctv_model_last_tensor_age_seconds:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 0.13433575094677508,
+      "cctv_model_last_tensor_age_seconds:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 0.13433575094677508,
+      "cctv_falldata_inline_enabled:{}": 1.0,
+      "cctv_falldata_temporal_requests_total:{}": 5.0,
+      "cctv_falldata_temporal_worker_calls_total:{}": 5.0,
+      "cctv_falldata_temporal_worker_completed_total:{}": 5.0,
+      "cctv_falldata_temporal_worker_seconds_total:{}": 17.04633662989363,
+      "cctv_falldata_temporal_parsed_results_total:{}": 5.0,
+      "cctv_falldata_temporal_unparsed_results_total:{}": 0.0,
+      "cctv_falldata_temporal_insufficient_pose_results_total:{}": 1.0,
+      "cctv_falldata_temporal_window_inferences_total:{}": 5.0,
+      "cctv_falldata_temporal_window_reports_missing_total:{}": 0.0,
+      "cctv_falldata_temporal_insufficient_window_results_total:{}": 0.0,
+      "cctv_appearance_color_backend_requests_total:{}": 138.0,
+      "cctv_appearance_color_backend_completed_total:{}": 138.0,
+      "cctv_appearance_color_backend_seconds_total:{}": 3.9816610547713935,
+      "cctv_appearance_attribute_backend_requests_total:{}": 85.0,
+      "cctv_appearance_attribute_backend_completed_total:{}": 85.0,
+      "cctv_appearance_attribute_backend_seconds_total:{}": 0.0004889378324151039,
+      "cctv_camera_primary_frames_seen_total:{\"camera_id\": \"replay_1\"}": 1292.0,
+      "cctv_camera_primary_frames_inferred_total:{\"camera_id\": \"replay_1\"}": 646.0,
+      "cctv_camera_primary_frames_skipped_total:{\"camera_id\": \"replay_1\"}": 646.0,
+      "cctv_camera_primary_frames_inference_unknown_total:{\"camera_id\": \"replay_1\"}": 0.0,
+      "cctv_camera_primary_last_frame_age_seconds:{\"camera_id\": \"replay_1\"}": 0.017394186928868294
+    },
+    "tcn_observed_calls": 6,
+    "after_resume_preview_count": 208,
+    "after_resume_generations": [
+      3
+    ],
+    "first_match_miss": {
+      "elapsed": 66.439,
+      "phase": "recovery_wait",
+      "count": 1
+    },
+    "decode": {
+      "before": {
+        "exit": 0,
+        "stderr": ""
+      },
+      "after": {
+        "exit": 0,
+        "stderr": ""
+      }
+    },
+    "cuda_signatures": {
+      "cudaErrorIllegalAddress": 0,
+      "status=700": 0,
+      "NVDSINFER_CUDA_ERROR": 0,
+      "Failed in mem copy": 0
+    }
+  },
+  "operating": {
+    "healthy": true,
+    "restart_count": 0,
+    "started_at": "2026-09-16T23:45:46.903505745Z",
+    "deployed": false,
+    "trial_containers_remaining": 0
+  },
+  "frozen_candidate": {
+    "directory": "data/runtime/p51_tcn_loaded_20260930_v074/candidate",
+    "verified_files": 359,
+    "hash_mismatches": 0,
+    "decision": "retain GPU scaling1, VIC not promoted"
+  },
+  "closure_assessment": {
+    "requested_window": [
+      "2026-09-30",
+      "2026-10-01"
+    ],
+    "review_target": "2026-10-01",
+    "done_committed": false,
+    "remaining_review_hours_estimate": [
+      4,
+      7
+    ],
+    "estimate_excludes": [
+      "new defects",
+      "root-causing original CUDA700",
+      "operating deployment approval/scheduling"
+    ],
+    "blocking_or_unverified": [
+      "I34 root cause",
+      "final candidate model/quality/status and output matching",
+      "I07 operating application/rollback evidence"
+    ],
+    "status": "IN_PROGRESS"
+  },
+  "publication": {
+    "url": "http://192.168.2.141:18081/",
+    "wbs_rows_match": 33,
+    "png_first_page_checked": true,
+    "browser_interaction_tested": false,
+    "other_pc_tested": false,
+    "artifacts": {
+      "index.html": {
+        "bytes": 22553,
+        "sha256": "6703eb95563f8e3cfbc707f219c9cb02e99fe789c15c72fd0dd87fc18b013079",
+        "http_bytes_match": true
+      },
+      "CCTV_project_progress.pdf": {
+        "bytes": 123545,
+        "sha256": "7d457af86735719e5efd74b1c3dc4d842a5c26b2175c7e39086e8850faf212c2",
+        "http_bytes_match": true
+      }
+    }
+  },
+  "validation": {
+    "ruff_renderer": "PASS",
+    "git_diff_check": "PASS",
+    "product_code_changed": false,
+    "new_unit_tests_run": false,
+    "reason": "isolated GPU diagnostics and planning/display updates; no new product behavior"
+  }
+}

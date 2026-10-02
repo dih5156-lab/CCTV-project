@@ -1,0 +1,22 @@
+{
+  "scope": "synthetic input buffering only; no classifier or physical output",
+  "input_tracks_each_frame": [
+    101,
+    202
+  ],
+  "expected_high_score_track_sequence": [
+    101,
+    202,
+    101
+  ],
+  "observed_track_sequence_from_synthetic_bbox_aspect": [
+    101,
+    202,
+    101
+  ],
+  "buffer_count": 1,
+  "record_count": 3,
+  "record_has_track_identity": false,
+  "single_track_window_contract_met": false,
+  "actual_false_alarm_observed": false
+}

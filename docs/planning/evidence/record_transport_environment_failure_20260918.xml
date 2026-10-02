@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="2" failures="0" skipped="0" tests="2" time="0.648" timestamp="2026-09-18T17:24:34.319864+09:00" hostname="ubuntu"><testcase classname="tests.test_record_delivery_mqtt" name="test_real_puback_records_receipt_without_releasing_alarm" time="0.003"><error message="failed on setup with &quot;PermissionError: [Errno 13] Permission denied&quot;">tests/test_record_delivery_mqtt.py:24: in consumer
+    client.connect(broker)
+.venv/lib/python3.10/site-packages/paho/mqtt/client.py:1435: in connect
+    return self.reconnect()
+.venv/lib/python3.10/site-packages/paho/mqtt/client.py:1598: in reconnect
+    self._sock = self._create_socket()
+.venv/lib/python3.10/site-packages/paho/mqtt/client.py:4607: in _create_socket
+    sock = self._create_unix_socket_connection()
+.venv/lib/python3.10/site-packages/paho/mqtt/client.py:4629: in _create_unix_socket_connection
+    unix_socket.connect(self._host)
+E   PermissionError: [Errno 13] Permission denied</error></testcase><testcase classname="tests.test_record_delivery_mqtt" name="test_disconnect_before_puback_remains_retryable" time="0.002"><error message="failed on setup with &quot;PermissionError: [Errno 13] Permission denied&quot;">tests/test_record_delivery_mqtt.py:24: in consumer
+    client.connect(broker)
+.venv/lib/python3.10/site-packages/paho/mqtt/client.py:1435: in connect
+    return self.reconnect()
+.venv/lib/python3.10/site-packages/paho/mqtt/client.py:1598: in reconnect
+    self._sock = self._create_socket()
+.venv/lib/python3.10/site-packages/paho/mqtt/client.py:4607: in _create_socket
+    sock = self._create_unix_socket_connection()
+.venv/lib/python3.10/site-packages/paho/mqtt/client.py:4629: in _create_unix_socket_connection
+    unix_socket.connect(self._host)
+E   PermissionError: [Errno 13] Permission denied</error></testcase></testsuite></testsuites>

@@ -1,0 +1,522 @@
+{
+  "version": "0.100",
+  "date": "2026-10-02T15:30:17.647294+09:00",
+  "wbs": "P5.1",
+  "status": "IN_PROGRESS",
+  "issue": "I40 OPEN",
+  "scope": "Recorded CCTV NVDEC/NVENC shutdown; mux and preview CPU mapping comparisons",
+  "operating_applied": false,
+  "raw_artifacts": "data/runtime/p51_encoder_decode_20261002_v100",
+  "image": "sha256:0c11b835eb42cd245f4dda0b8bc8088733c0323bf75a2f4fefe9e7705d8dbf34",
+  "isolation": {
+    "network": "none",
+    "cpus": 2,
+    "memory": "2GB",
+    "sequential": true
+  },
+  "input": {
+    "data/runtime/p51_camera_20260928_v050/camera_1_capture.mkv": {
+      "bytes": 13208214,
+      "sha256": "c7df52d9b46939c1f7d7439354793969ae3dac8663cf2f8bbeab2b72fe916202"
+    },
+    "data/runtime/p51_encoder_decode_20261002_v100/replay.mkv": {
+      "bytes": 57992568,
+      "sha256": "95ba1d41833f38f4ec4b378acb4390b7dcd05105391a8221d2aa0d7ad930d508"
+    }
+  },
+  "input_preparation": "Original 24.989s H264 1080p30000/1001 capture repeated with ffmpeg -stream_loop -1 -t 110 -c:v copy; replay duration110.029s; no re-encoding. Output loss90s after worker spawn, normal stop90s after PLAYING request. Actual run durations are recorded per trial.",
+  "trials": {
+    "file_normal_linked": {
+      "result": {
+        "case": "rtsp",
+        "flush": true,
+        "completed": true,
+        "exit_code": 0,
+        "worker": {
+          "case": "rtsp",
+          "input": "file",
+          "input_caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, interlace-mode=(string)progressive, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, pixel-aspect-ratio=(fraction)1/1, framerate=(fraction)30000/1001, format=(string)RGBA, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, colorimetry=(string)1:1:5:1",
+          "flush": true,
+          "encoded_buffers": 2700,
+          "run_seconds": 90.06996973208152,
+          "bus_error": null,
+          "bus_debug": null,
+          "decoded": {
+            "buffers": 2701,
+            "first_pts_ns": 0,
+            "last_pts_ns": 90046000000,
+            "last_at": 1404938.524873969
+          },
+          "eos_seen": false,
+          "stop_started": 1404938.536402413,
+          "stop_seconds": 0.038930191192775965,
+          "null_state": true
+        },
+        "rtsp_published": true
+      },
+      "proof": {
+        "all_trace_pairs_complete": true,
+        "streamoff": [
+          {
+            "device": "encoder",
+            "type": 10,
+            "duration_ms": 0.16,
+            "return": 0
+          },
+          {
+            "device": "encoder",
+            "type": 9,
+            "duration_ms": 0.179,
+            "return": 0
+          },
+          {
+            "device": "decoder",
+            "type": 10,
+            "duration_ms": 0.264,
+            "return": 0
+          },
+          {
+            "device": "decoder",
+            "type": 9,
+            "duration_ms": 0.27,
+            "return": 0
+          }
+        ],
+        "rtsp_published": true
+      }
+    },
+    "file_loss": {
+      "result": {
+        "case": "loss",
+        "flush": true,
+        "completed": true,
+        "exit_code": 0,
+        "worker": {
+          "case": "loss",
+          "input": "file",
+          "input_caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, interlace-mode=(string)progressive, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, pixel-aspect-ratio=(fraction)1/1, framerate=(fraction)30000/1001, format=(string)RGBA, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, colorimetry=(string)1:1:5:1",
+          "flush": true,
+          "encoded_buffers": 2659,
+          "run_seconds": 88.72420799010433,
+          "bus_error": "gst-resource-error-quark: Could not open resource for reading and writing. (7)",
+          "bus_debug": "gstrtspclientsink.c(2361): gst_rtsp_client_sink_loop_rx (): /GstPipeline:minimal-encoder/GstRTSPClientSink:h264-rtsp-sink:\nCould not connect to server. (Generic error)",
+          "decoded": {
+            "buffers": 2661,
+            "first_pts_ns": 0,
+            "last_pts_ns": 88711000000,
+            "last_at": 1405087.562553386
+          },
+          "eos_seen": false,
+          "stop_started": 1405087.565677388,
+          "stop_seconds": 0.04643675684928894,
+          "null_state": true
+        },
+        "rtsp_published": true,
+        "output_loss_before_stop": true
+      },
+      "proof": {
+        "all_trace_pairs_complete": true,
+        "streamoff": [
+          {
+            "device": "encoder",
+            "type": 10,
+            "duration_ms": 0.201,
+            "return": 0
+          },
+          {
+            "device": "encoder",
+            "type": 9,
+            "duration_ms": 0.322,
+            "return": 0
+          },
+          {
+            "device": "decoder",
+            "type": 10,
+            "duration_ms": 0.255,
+            "return": 0
+          },
+          {
+            "device": "decoder",
+            "type": 9,
+            "duration_ms": 0.145,
+            "return": 0
+          }
+        ],
+        "rtsp_published": true,
+        "loss_to_stop_ms": 8.190283086150885
+      }
+    },
+    "mux_normal": {
+      "result": {
+        "case": "rtsp",
+        "flush": true,
+        "completed": true,
+        "exit_code": 0,
+        "worker": {
+          "case": "rtsp",
+          "input": "file_mux",
+          "input_caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)30000/1001, format=(string)RGBA, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "flush": true,
+          "encoded_buffers": 2664,
+          "run_seconds": 90.03685867297463,
+          "bus_error": null,
+          "bus_debug": null,
+          "decoded": {
+            "buffers": 2697,
+            "first_pts_ns": 0,
+            "last_pts_ns": 89912000000,
+            "last_at": 1405182.112540448
+          },
+          "eos_seen": false,
+          "stop_started": 1405182.117886435,
+          "stop_seconds": 0.058679043082520366,
+          "null_state": true
+        },
+        "rtsp_published": true
+      },
+      "proof": {
+        "all_trace_pairs_complete": true,
+        "streamoff": [
+          {
+            "device": "encoder",
+            "type": 10,
+            "duration_ms": 0.191,
+            "return": 0
+          },
+          {
+            "device": "encoder",
+            "type": 9,
+            "duration_ms": 0.228,
+            "return": 0
+          },
+          {
+            "device": "decoder",
+            "type": 10,
+            "duration_ms": 0.236,
+            "return": 0
+          },
+          {
+            "device": "decoder",
+            "type": 9,
+            "duration_ms": 0.208,
+            "return": 0
+          }
+        ],
+        "rtsp_published": true
+      }
+    },
+    "mux_loss": {
+      "result": {
+        "case": "loss",
+        "flush": true,
+        "completed": true,
+        "exit_code": 0,
+        "worker": {
+          "case": "loss",
+          "input": "file_mux",
+          "input_caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)30000/1001, format=(string)RGBA, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "flush": true,
+          "encoded_buffers": 2629,
+          "run_seconds": 88.8219434840139,
+          "bus_error": "gst-resource-error-quark: Could not open resource for reading and writing. (7)",
+          "bus_debug": "gstrtspclientsink.c(2361): gst_rtsp_client_sink_loop_rx (): /GstPipeline:minimal-encoder/GstRTSPClientSink:h264-rtsp-sink:\nCould not connect to server. (Generic error)",
+          "decoded": {
+            "buffers": 2661,
+            "first_pts_ns": 0,
+            "last_pts_ns": 88711000000,
+            "last_at": 1405275.201218177
+          },
+          "eos_seen": false,
+          "stop_started": 1405275.219778279,
+          "stop_seconds": 0.05908938986249268,
+          "null_state": true
+        },
+        "rtsp_published": true,
+        "output_loss_before_stop": true
+      },
+      "proof": {
+        "all_trace_pairs_complete": true,
+        "streamoff": [
+          {
+            "device": "encoder",
+            "type": 10,
+            "duration_ms": 0.167,
+            "return": 0
+          },
+          {
+            "device": "encoder",
+            "type": 9,
+            "duration_ms": 15.222,
+            "return": 0
+          },
+          {
+            "device": "decoder",
+            "type": 10,
+            "duration_ms": 0.319,
+            "return": 0
+          },
+          {
+            "device": "decoder",
+            "type": 9,
+            "duration_ms": 0.566,
+            "return": 0
+          }
+        ],
+        "rtsp_published": true,
+        "loss_to_stop_ms": 15.538878040388227
+      }
+    },
+    "preview_normal": {
+      "result": {
+        "case": "rtsp",
+        "flush": true,
+        "completed": true,
+        "exit_code": 0,
+        "worker": {
+          "case": "rtsp",
+          "input": "file_mux",
+          "input_caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)30000/1001, format=(string)RGBA, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "flush": true,
+          "encoded_buffers": 2666,
+          "run_seconds": 90.00729436101392,
+          "bus_error": null,
+          "bus_debug": null,
+          "decoded": {
+            "buffers": 2696,
+            "first_pts_ns": 0,
+            "last_pts_ns": 89879000000,
+            "last_at": 1405421.623703429
+          },
+          "eos_seen": false,
+          "preview": {
+            "buffers": 2692,
+            "mapped_bytes": 9923788800,
+            "last_at": 1405421.633436751
+          },
+          "stop_started": 1405421.635016226,
+          "stop_seconds": 0.04523279098793864,
+          "null_state": true
+        },
+        "rtsp_published": true
+      },
+      "proof": {
+        "all_trace_pairs_complete": true,
+        "streamoff": [
+          {
+            "device": "encoder",
+            "type": 10,
+            "duration_ms": 0.137,
+            "return": 0
+          },
+          {
+            "device": "encoder",
+            "type": 9,
+            "duration_ms": 7.439,
+            "return": 0
+          },
+          {
+            "device": "decoder",
+            "type": 10,
+            "duration_ms": 0.21,
+            "return": 0
+          },
+          {
+            "device": "decoder",
+            "type": 9,
+            "duration_ms": 0.228,
+            "return": 0
+          }
+        ],
+        "rtsp_published": true
+      }
+    },
+    "preview_loss": {
+      "result": {
+        "case": "loss",
+        "flush": true,
+        "completed": true,
+        "exit_code": 0,
+        "worker": {
+          "case": "loss",
+          "input": "file_mux",
+          "input_caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)30000/1001, format=(string)RGBA, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "flush": true,
+          "encoded_buffers": 2632,
+          "run_seconds": 88.85179370618425,
+          "bus_error": "gst-resource-error-quark: Could not open resource for reading and writing. (7)",
+          "bus_debug": "gstrtspclientsink.c(2361): gst_rtsp_client_sink_loop_rx (): /GstPipeline:minimal-encoder/GstRTSPClientSink:h264-rtsp-sink:\nCould not connect to server. (Generic error)",
+          "decoded": {
+            "buffers": 2661,
+            "first_pts_ns": 0,
+            "last_pts_ns": 88711000000,
+            "last_at": 1405514.654572739
+          },
+          "eos_seen": false,
+          "preview": {
+            "buffers": 2655,
+            "mapped_bytes": 9787392000,
+            "last_at": 1405514.67106309
+          },
+          "stop_started": 1405514.676543191,
+          "stop_seconds": 0.04923528083600104,
+          "null_state": true
+        },
+        "rtsp_published": true,
+        "output_loss_before_stop": true
+      },
+      "proof": {
+        "all_trace_pairs_complete": true,
+        "streamoff": [
+          {
+            "device": "encoder",
+            "type": 10,
+            "duration_ms": 0.149,
+            "return": 0
+          },
+          {
+            "device": "encoder",
+            "type": 9,
+            "duration_ms": 8.608,
+            "return": 0
+          },
+          {
+            "device": "decoder",
+            "type": 10,
+            "duration_ms": 0.805,
+            "return": 0
+          },
+          {
+            "device": "decoder",
+            "type": 9,
+            "duration_ms": 0.206,
+            "return": 0
+          }
+        ],
+        "rtsp_published": true,
+        "loss_to_stop_ms": 8.287830045446754
+      }
+    }
+  },
+  "summary": {
+    "passed": 6,
+    "encoded_buffers": 15950,
+    "preview_buffers": 5347,
+    "stop_min_ms": 38.930191192775965,
+    "stop_max_ms": 59.08938986249268,
+    "streamoff_calls_returned_zero": 24
+  },
+  "fixture_failures": {
+    "excluded": [
+      "file_normal",
+      "file_debug"
+    ],
+    "encoded_buffers": 0,
+    "reason": "matroskademux not-linked before first frame; disabled automatic ghosting of temporarily unlinked parser sink, exposed source pad explicitly. Not an I40 shutdown reproduction.",
+    "reference": "https://gstreamer.freedesktop.org/documentation/gstreamer/gstutils.html"
+  },
+  "review": {
+    "skill": "ponytail-review",
+    "version": "4.10.0",
+    "scope": "minimal.py changes versus v0.99; native correctness assessed separately",
+    "skill_path": "/home/sawwave/.codex/plugins/cache/ponytail/ponytail/4.10.0/skills/ponytail-review/SKILL.md",
+    "result": "Lean already. Ship.",
+    "findings": [],
+    "limits": [
+      "Not a full dirty-tree code review",
+      "Not evidence that I40 is resolved",
+      "Plugin skill read and applied directly; automatic host hook execution not verified"
+    ],
+    "reused": [
+      "create_h264_encoder_elements",
+      "create_output_elements",
+      "create_preview_elements",
+      "stop_pipeline_runtime",
+      "H264PocFixer",
+      "v0.98 trace_v4l2.so"
+    ],
+    "diagnostic_sha256": "642d654652a21c7d704f6ee8cde13a93bb1762d3001b1e55df21bca12215c5c1"
+  },
+  "product_source": {
+    "files": 206,
+    "changed": []
+  },
+  "operating": {
+    "states": {
+      "cctv-p51-encoder-decode-v100": {
+        "Status": "exited",
+        "ExitCode": 0,
+        "OOMKilled": false,
+        "StartedAt": "2026-10-02T06:26:47.047653397Z",
+        "FinishedAt": "2026-10-02T06:28:18.051880488Z",
+        "health": null
+      },
+      "cctv-ai-engine": {
+        "Status": "running",
+        "ExitCode": 0,
+        "OOMKilled": false,
+        "StartedAt": "2026-10-02T01:33:58.362007997Z",
+        "FinishedAt": "2026-10-02T01:33:57.89393094Z",
+        "health": "healthy"
+      }
+    },
+    "health": {
+      "service": "cctv-zone-api",
+      "status": "ok",
+      "checked_at": "2026-10-02T15:30:17.640804+09:00",
+      "camera_count": 1,
+      "preset_count": 0,
+      "video_ready": true
+    }
+  },
+  "validation": {
+    "python_ast": "PASS",
+    "diagnostic_ruff": "PASS",
+    "publication": "PASS",
+    "renderer_ruff": "PASS",
+    "git_diff_check": "PASS",
+    "product_test_suite_rerun": false,
+    "product_test_suite_reason": "Product source206files unchanged; validation scoped to real hardware diagnostic and report generation."
+  },
+  "limits": [
+    "Each condition run once; not an estimated failure rate or long-duration qualification.",
+    "File-fed decoder, no RTSP input source/reconnect logic.",
+    "No AI inference, OSD, or asynchronous AI worker buffers; preview callback maps and releases immediately.",
+    "CPU2/memory2GB differs from full AI trial memory8GB.",
+    "No native hang in these six conditions; original I40 and CUDA700 remain unresolved.",
+    "Encoded buffer counts and RTSP publication checked; receiver decode/image quality not assessed."
+  ],
+  "next": "Reuse fixed candidate input and trace; compare model inference and asynchronous postprocessing buffer ownership/stop order, one condition at a time. No identical minimum reruns without a new discriminating hypothesis.",
+  "publication": {
+    "wbs_rows_match": true,
+    "row_count": 33,
+    "done_count": 9,
+    "index.html": {
+      "http": 200,
+      "matches_local": true,
+      "bytes": 23251,
+      "sha256": "36a3f7e5ce73db2d131c835aeee7f6190d616ba3ae4775fbe0dd68afc07637a3"
+    },
+    "CCTV_project_progress.pdf": {
+      "http": 200,
+      "matches_local": true,
+      "bytes": 128697,
+      "sha256": "f62afffdbb93a5f3f79b470ddff03fa53ed0608b784ff1bb7a4c55843e6c06d1"
+    },
+    "browser_interaction_retested": false,
+    "first_page_visual": "PASS: inspected rendered first-page PNG; text and layout legible",
+    "checked_at": "2026-10-02T15:36:32.406470+09:00"
+  },
+  "diagnostic_sha256": {
+    "minimal.py": "642d654652a21c7d704f6ee8cde13a93bb1762d3001b1e55df21bca12215c5c1",
+    "minimal.diff": "48ec062e7f2b272f1c3c0e21542fb2b46b092610d17e6b363aeaf7f0dc664898",
+    "review.json": "e627c31de97c5df9840fc27dab5e3afab4f997415ab4ee2f0835b291691226f4",
+    "compose_file_debug.json": "1829b8a257b720017c9c3c1e905703db07528a6bb90c945ce50d5a0ede1998df",
+    "compose_file_loss.json": "4ad541e95bd762819ecb08d2444aaa779a742b39a8ecd9e369394612ff8eaeb5",
+    "compose_file_normal.json": "fb217f951ef75dbcb808027d695b15bf3a711d4ff9fe4453c377b06d0a0a6c4a",
+    "compose_file_normal_linked.json": "a987b68d98a64b62eb4525138671a795d571d07630e2f03164a97104f091f13e",
+    "compose_mux_loss.json": "51c0f320fd3999b7719138c51589e818b027cca1d29461e21a851f7b02897026",
+    "compose_mux_normal.json": "dfd58f800635d627c6723cffda274522c036db7ac955839c482b6d9bc29befb0",
+    "compose_preview_loss.json": "9a70abe73b7baa42044d728b0c54fc1294225a9d05804730efa18b17a92da6a9",
+    "compose_preview_normal.json": "aada1ea222ac001bcdde9586085e1b0da15d1170cb316e62be5814142509b220"
+  }
+}

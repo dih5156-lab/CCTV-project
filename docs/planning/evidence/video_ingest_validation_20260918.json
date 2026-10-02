@@ -1,0 +1,151 @@
+{
+  "recorded_at": "2026-09-18T07:59:26.736064+00:00",
+  "plan_version": "0.10",
+  "wbs": "P2.2",
+  "status": "IN_PROGRESS",
+  "slice_status": "local verification complete; production not applied",
+  "scope": "DeepStream/OpenCV event raw intake before queue, canonical storage and record-only recovery",
+  "junit": {
+    "path": "docs/planning/evidence/video_ingest_final_20260918.xml",
+    "tests": 408,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 5,
+    "passed": 403,
+    "suite_elapsed_seconds": 25.649
+  },
+  "test_files": [
+    "tests/test_video_event_ingest.py",
+    "tests/test_event_ingest_store.py",
+    "tests/test_external_ingest_durable.py",
+    "tests/test_ingest_store.py",
+    "tests/test_event_publish.py",
+    "tests/test_event_dispatcher.py",
+    "tests/test_processor_unit.py",
+    "tests/test_deepstream_processor.py",
+    "tests/test_deepstream_event_factory.py",
+    "tests/test_canonical_event.py",
+    "tests/test_video_observation.py",
+    "tests/test_sensor_observation.py",
+    "tests/test_external_ingest.py",
+    "tests/test_mqtt_durable_subscriber.py",
+    "tests/test_mqtt.py",
+    "tests/test_mqtt_outbox.py",
+    "tests/test_events.py"
+  ],
+  "new_tests": {
+    "total": 26,
+    "real_process_exit_cases": 5
+  },
+  "skipped_tests": [
+    {
+      "class": "tests.test_deepstream_processor",
+      "name": "test_deepstream_add_camera",
+      "reason": "Jetson 환경 필요 — pyds 미설치"
+    },
+    {
+      "class": "tests.test_deepstream_processor",
+      "name": "test_deepstream_add_camera_duplicate",
+      "reason": "Jetson 환경 필요 — pyds 미설치"
+    },
+    {
+      "class": "tests.test_deepstream_processor",
+      "name": "test_deepstream_remove_camera",
+      "reason": "Jetson 환경 필요 — pyds 미설치"
+    },
+    {
+      "class": "tests.test_deepstream_processor",
+      "name": "test_deepstream_get_stats_returns_dict",
+      "reason": "Jetson 환경 필요 — pyds 미설치"
+    },
+    {
+      "class": "tests.test_deepstream_processor",
+      "name": "test_deepstream_get_camera_status",
+      "reason": "Jetson 환경 필요 — pyds 미설치"
+    }
+  ],
+  "checks": {
+    "ruff_files": 9,
+    "black_files": 6,
+    "py_compile_app_files": 8,
+    "final_results": "PASS",
+    "tracked_diff_check": "PASS",
+    "graph_limit": "detect_changes returned zero changed symbols despite source changes; reviewed source/diff and regressions instead"
+  },
+  "environment": {
+    "python_version": "3.10.12",
+    "sqlite_version": "3.37.2",
+    "paho_version": "2.1.0",
+    "database": "temporary SQLite databases",
+    "network_integration": "none; no real MQTT broker or PostgreSQL tested in this slice",
+    "test_containers_created": false,
+    "physical_outputs": "mock callbacks; child publish writes a local marker file",
+    "process_exit": "real child os._exit(42)",
+    "gpu_inference": false,
+    "production_deployed": false
+  },
+  "verified_boundaries": [
+    "DeepStream DetectionEvent and dict entry points persist before queue",
+    "OpenCV DetectionEvent persists before to_dict conversion",
+    "queue full preserves raw and recovery creates held delivery job",
+    "live queued or publishing receipts excluded from local recovery",
+    "T1 failure rolls back raw and state and does not enqueue",
+    "T2 failure rolls back canonical/revision/job and retains raw for retry",
+    "immutable intake snapshot, frozen time/backend/destination",
+    "invalid values including converted NaN quarantined",
+    "epoch zero stable identity and explicit event ID conflict retention",
+    "output destination does not change raw source hash",
+    "publish exception or explicit False retains uncertain delivery job",
+    "publish callback runs outside intake lock",
+    "real process exit after T1, enqueue, T2, delivery claim, publish callback",
+    "recovery performs no outbound delivery or physical alarm replay",
+    "legacy MQTT outbox and new ingest mode collision rejected"
+  ],
+  "operating_constraints": [
+    "one active video ingest process per common DB; no distributed recovery lease",
+    "T1 serialization and SQLite commit synchronously run on producer thread",
+    "submitted is callback return status, not broker/monitoring/device ACK",
+    "existing pending/sending/uncertain delivery jobs await destination worker",
+    "raw scope is selected output event, not every frame or filtered candidate",
+    "non-JSON object repr is diagnostic, not lossless object serialization"
+  ],
+  "not_validated": [
+    "GPU inference, RTSP outage, four real cameras/all AI/every frame 30FPS",
+    "long-term throughput, p95 latency, capacity and retention policy",
+    "power loss, multiple video receiver processes",
+    "destination worker, distributed lease, actual broker/monitoring/device ACK and retry",
+    "physical alarm expiry across same-process pipeline stop/start",
+    "sensor producer identity contract D02/I19",
+    "image build or production deployment"
+  ],
+  "source_sha256": {
+    "src/event_ingest_store.py": "0cde86329a5548a028e4c8ae0706192d7ee7f27c4f703bce65e18d8be61e3929",
+    "src/core/video_event_ingest.py": "36d326e99a5e98a33f91bea5370b12a0602cb4e5422935da6ccdcb01800d84ca",
+    "src/core/_deepstream_event_queue.py": "a43d00dddce62bbea4d93c4d46f98fb6e58f9b42474cc9986c0726865a575006",
+    "src/core/_event_publish.py": "ca6b2a3672831c6cc66d927cb30bd6af0d9d2a10388b0a5bd895665c6e048e61",
+    "src/core/deepstream_processor.py": "e981f477d6180390412ce52acbf43413bfcaf2d0db2ed149aa708cbb8293ffeb",
+    "src/core/event_dispatcher.py": "dafbf47906ff8e93cb2bffbbaa9c92e912e58a8ff79b2b0d8e98ab9336c9008a",
+    "src/core/_inference_pipeline.py": "4fb469761f2f2f1ba4108ef0c63697cc7374ee9581af49d447f3094863d4aeb4",
+    "src/core/processor.py": "adb0d8c19bdf0d7566c9b0d5c39001eab9a1939ae1ce1b31783da16dcd4f7d5f",
+    "tests/test_video_event_ingest.py": "60b8429b3e6e1a941e670f08551c35ba8f2030448f4781a8f469abea3c587faf"
+  },
+  "earlier_attempts": {
+    "red_10_failures": "docs/planning/evidence/video_ingest_red_20260918.xml",
+    "intermediate_22_passed": "docs/planning/evidence/video_ingest_slice_20260918.xml"
+  },
+  "documentation": {
+    "markdown_files": 16,
+    "local_links_checked": 274,
+    "wbs_rows": 33,
+    "states": {
+      "DONE": 5,
+      "BLOCKED": 2,
+      "READY": 3,
+      "IN_PROGRESS": 1,
+      "PLANNED": 15,
+      "VERIFY": 7
+    },
+    "dependency_check": "PASS",
+    "whitespace_check": "PASS"
+  }
+}

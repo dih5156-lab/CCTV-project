@@ -1,0 +1,135 @@
+{
+  "recorded_at": "2026-09-21T02:06:51.750557+00:00",
+  "wbs": "P2.3",
+  "status": "IN_PROGRESS",
+  "plan_version": "0.15",
+  "completed_slice": "source frozen payload, consumer ACK persistence, status lookup and retry worker",
+  "next_slice": "snapshot reconciliation and latency/backlog instrumentation",
+  "changed_application_and_test_files": [
+    "src/ingest_store.py",
+    "src/record_delivery.py",
+    "src/monitoring_delivery.py",
+    "src/monitoring_worker.py",
+    "tests/test_monitoring_delivery.py",
+    "tests/test_monitoring_worker.py",
+    "tests/test_monitoring_sender_crash.py",
+    "tests/test_monitoring_delivery_mqtt.py"
+  ],
+  "receiver_files_unchanged": {
+    "src/monitoring_contract.py": true,
+    "src/monitoring_receiver.py": true,
+    "tests/test_monitoring_contract.py": true,
+    "tests/test_monitoring_receiver.py": true,
+    "tests/test_monitoring_receiver_integration.py": true
+  },
+  "schema": {
+    "source_user_version": 4,
+    "migration_boundary": "v3 to v4 in one transaction",
+    "new_tables": [
+      "monitoring_origin",
+      "monitoring_targets",
+      "monitoring_delivery",
+      "monitoring_attempts"
+    ],
+    "journal": "DELETE",
+    "synchronous": "EXTRA",
+    "operational_requirement": "all source DB writers and previous workers must run compatible code before enabling"
+  },
+  "verification": {
+    "passed": 187,
+    "new_tests": 23,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "pytest_reported_seconds": 116.48,
+    "junit": {
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "tests": "187",
+      "time": "116.476",
+      "timestamp": "2026-09-21T11:01:01.918444+09:00",
+      "hostname": "ubuntu"
+    },
+    "ruff_files_passed": 8,
+    "black_check_files_passed": 8,
+    "py_compile_files_passed": 8,
+    "markdown_files": 22,
+    "local_links_checked": 409,
+    "wbs_rows": 33,
+    "wbs_states": {
+      "DONE": 7,
+      "BLOCKED": 2,
+      "READY": 2,
+      "IN_PROGRESS": 1,
+      "PLANNED": 14,
+      "VERIFY": 7
+    },
+    "links_anchors_dependencies_cycle_whitespace": "PASS"
+  },
+  "failure_injection": {
+    "process_exit_code": 42,
+    "new_real_process_boundaries": [
+      "after frozen payload commit",
+      "after claim",
+      "after consumer commit before source broker ACK save",
+      "after source broker ACK commit",
+      "after source consumer ACK commit"
+    ],
+    "transport_in_process_exit_tests": "in-process test transport; real source/consumer SQLite",
+    "db_faults": [
+      "v4 DDL collision",
+      "frozen payload insert trigger",
+      "consumer ACK update trigger"
+    ]
+  },
+  "mqtt": {
+    "image": "eclipse-mosquitto:2.0",
+    "network": "none",
+    "published_ports": [],
+    "socket": "/tmp/cctv-p22-mqtt-monitoring-20260921/broker.sock",
+    "memory_limit": "64m",
+    "cpu_limit": 0.5,
+    "new_real_mqtt_tests": 2,
+    "existing_real_mqtt_regressions": 6,
+    "consumer_status_reader": "local SQLite; no network ACK adapter",
+    "test_container_stopped": true
+  },
+  "initial_failures": [
+    "module/method missing before implementation",
+    "MQTT sandbox EPERM and temporary socket filesystem permissions; corrected and rerun"
+  ],
+  "not_done": [
+    "snapshot API/reconciliation",
+    "latency/backlog metrics",
+    "service lifecycle wiring",
+    "network consumer adapter/auth",
+    "actual monitoring UI",
+    "load/capacity and power failure"
+  ],
+  "operations_changed": false,
+  "production_db_changed": false,
+  "new_dependencies_or_configuration": false,
+  "gpu_or_physical_device_tests": false,
+  "open_decisions": [
+    "D04",
+    "D06"
+  ],
+  "issues_kept_open": [
+    "I10",
+    "I13",
+    "I17"
+  ],
+  "graph_review": "8 changed files; 0 indexed functions/flows; current source and tests reviewed",
+  "source_sha256": {
+    "src/ingest_store.py": "50d99e254f2c06f3ba40becaca256b9a5df5f91a5babf12640b88706d78526e1",
+    "src/record_delivery.py": "bcf12dc1c32b5b4cf7940fa89c66396524d20c35fc5815a7f637d39e3aa65164",
+    "src/monitoring_delivery.py": "519ece7c4a47f7ea626467fa43b50762ed47ede4a02f938daf4f1c62f434fcd9",
+    "src/monitoring_worker.py": "889d6e705ee9ebfbef93621c4984b7989f12c67cdb8e6b762c849478a328cf69",
+    "tests/test_monitoring_delivery.py": "d77c16aab5a03f46239b57c1df13c0f14bf35a005833532b235c5439bebbfbfd",
+    "tests/test_monitoring_worker.py": "4b95a75d2945becbdf8c1ec32a36d2cce74c6c9e1b4f2caccb2526125cbb0d04",
+    "tests/test_monitoring_sender_crash.py": "e4daefddc2441e8d1367ac3d8e47b031b49b9c758ed06c4cbca326696159e846",
+    "tests/test_monitoring_delivery_mqtt.py": "93ac4f1fb8e0444c1be95724afae223057472e2c5e040276a68ac70be2be3394"
+  }
+}

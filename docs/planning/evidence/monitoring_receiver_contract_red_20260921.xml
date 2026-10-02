@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="1" failures="0" skipped="0" tests="1" time="0.345" timestamp="2026-09-21T10:10:28.601404+09:00" hostname="ubuntu"><testcase classname="" name="tests.test_monitoring_contract" time="0.000"><error message="collection failure">tests/test_monitoring_contract.py:45: in &lt;module&gt;
+    wire(record={"event_id": "evt_1", "label": "\ud800"}),
+tests/test_monitoring_contract.py:22: in wire
+    return json.dumps(payload, ensure_ascii=False, sort_keys=True).encode()
+E   UnicodeEncodeError: 'utf-8' codec can't encode character '\ud800' in position 88: surrogates not allowed</error></testcase></testsuite></testsuites>

@@ -1,0 +1,318 @@
+{
+  "manifest": "data/fall_eval/retraining_clips_manifest_20260914.jsonl",
+  "baseline_model": "models/fall/fall_temporal_baseline_same_split_20260910.pt",
+  "candidate_model": "models/fall/fall_temporal_same_split_resume_20260908.pt",
+  "pose_model": "models/fall/yolov8n-pose.pt",
+  "device": "cpu",
+  "pose_extraction": {
+    "imgsz": 640,
+    "confidence_threshold": 0.35,
+    "feature_cache_dir": "/tmp/tcn_feature_cache_smoke"
+  },
+  "videos": [
+    {
+      "scene_id": "20260910_140519_backward_fall_trimmed",
+      "video_path": "data/fall_eval/retraining_clips_20260914/20260910_140519_backward_fall_5p5_10p5.mp4",
+      "is_fall": true,
+      "baseline": {
+        "prediction": 0,
+        "fall_probability": 0.00236613,
+        "threshold": 0.5,
+        "frames_with_pose": 30,
+        "error": null,
+        "elapsed_seconds": 59.573779418016784,
+        "command": [
+          "/media/sawwave/Learning11/CCTV-project/.venv/bin/python",
+          "/media/sawwave/Learning11/CCTV-project/scripts/inference/smoke_fall_temporal_model.py",
+          "--model",
+          "models/fall/fall_temporal_baseline_same_split_20260910.pt",
+          "--pose-model",
+          "models/fall/yolov8n-pose.pt",
+          "--video",
+          "data/fall_eval/retraining_clips_20260914/20260910_140519_backward_fall_5p5_10p5.mp4",
+          "--output-feature-json",
+          "/tmp/tcn_feature_cache_smoke/20260910_140519_backward_fall_trimmed_b3a2ff883ab97699.json",
+          "--device",
+          "cpu",
+          "--imgsz",
+          "640",
+          "--confidence-threshold",
+          "0.35"
+        ]
+      },
+      "candidate": {
+        "prediction": 0,
+        "fall_probability": 0.00551088,
+        "threshold": 0.5,
+        "frames_with_pose": 30,
+        "error": null,
+        "elapsed_seconds": 10.524437590967864,
+        "command": [
+          "/media/sawwave/Learning11/CCTV-project/.venv/bin/python",
+          "/media/sawwave/Learning11/CCTV-project/scripts/inference/smoke_fall_temporal_model.py",
+          "--model",
+          "models/fall/fall_temporal_same_split_resume_20260908.pt",
+          "--pose-model",
+          "models/fall/yolov8n-pose.pt",
+          "--feature-json",
+          "/tmp/tcn_feature_cache_smoke/20260910_140519_backward_fall_trimmed_b3a2ff883ab97699.json",
+          "--device",
+          "cpu",
+          "--imgsz",
+          "640",
+          "--confidence-threshold",
+          "0.35"
+        ]
+      },
+      "baseline_result": "FN",
+      "candidate_result": "FN",
+      "execution_order": [
+        "baseline",
+        "candidate"
+      ],
+      "delta": {
+        "prediction": 0,
+        "fall_probability": 0.00314475
+      }
+    },
+    {
+      "scene_id": "20260910_141112_backward_fall_trimmed",
+      "video_path": "data/fall_eval/retraining_clips_20260914/20260910_141112_backward_fall_16_23.mp4",
+      "is_fall": true,
+      "baseline": {
+        "prediction": 1,
+        "fall_probability": 0.81793118,
+        "threshold": 0.5,
+        "frames_with_pose": 24,
+        "error": null,
+        "elapsed_seconds": 7.538083620951511,
+        "command": [
+          "/media/sawwave/Learning11/CCTV-project/.venv/bin/python",
+          "/media/sawwave/Learning11/CCTV-project/scripts/inference/smoke_fall_temporal_model.py",
+          "--model",
+          "models/fall/fall_temporal_baseline_same_split_20260910.pt",
+          "--pose-model",
+          "models/fall/yolov8n-pose.pt",
+          "--feature-json",
+          "/tmp/tcn_feature_cache_smoke/20260910_141112_backward_fall_trimmed_a1f543611b3f3fb4.json",
+          "--device",
+          "cpu",
+          "--imgsz",
+          "640",
+          "--confidence-threshold",
+          "0.35"
+        ]
+      },
+      "candidate": {
+        "prediction": 0,
+        "fall_probability": 2.582e-05,
+        "threshold": 0.5,
+        "frames_with_pose": 24,
+        "error": null,
+        "elapsed_seconds": 17.571119702071883,
+        "command": [
+          "/media/sawwave/Learning11/CCTV-project/.venv/bin/python",
+          "/media/sawwave/Learning11/CCTV-project/scripts/inference/smoke_fall_temporal_model.py",
+          "--model",
+          "models/fall/fall_temporal_same_split_resume_20260908.pt",
+          "--pose-model",
+          "models/fall/yolov8n-pose.pt",
+          "--video",
+          "data/fall_eval/retraining_clips_20260914/20260910_141112_backward_fall_16_23.mp4",
+          "--output-feature-json",
+          "/tmp/tcn_feature_cache_smoke/20260910_141112_backward_fall_trimmed_a1f543611b3f3fb4.json",
+          "--device",
+          "cpu",
+          "--imgsz",
+          "640",
+          "--confidence-threshold",
+          "0.35"
+        ]
+      },
+      "baseline_result": "TP",
+      "candidate_result": "FN",
+      "execution_order": [
+        "candidate",
+        "baseline"
+      ],
+      "delta": {
+        "prediction": -1,
+        "fall_probability": -0.81790536
+      }
+    },
+    {
+      "scene_id": "20260910_141753_right_fall_trimmed",
+      "video_path": "data/fall_eval/retraining_clips_20260914/20260910_141753_right_fall_0p5_3p5.mp4",
+      "is_fall": true,
+      "baseline": {
+        "prediction": 0,
+        "fall_probability": 0.1643775,
+        "threshold": 0.5,
+        "frames_with_pose": 30,
+        "error": null,
+        "elapsed_seconds": 11.222300455905497,
+        "command": [
+          "/media/sawwave/Learning11/CCTV-project/.venv/bin/python",
+          "/media/sawwave/Learning11/CCTV-project/scripts/inference/smoke_fall_temporal_model.py",
+          "--model",
+          "models/fall/fall_temporal_baseline_same_split_20260910.pt",
+          "--pose-model",
+          "models/fall/yolov8n-pose.pt",
+          "--video",
+          "data/fall_eval/retraining_clips_20260914/20260910_141753_right_fall_0p5_3p5.mp4",
+          "--output-feature-json",
+          "/tmp/tcn_feature_cache_smoke/20260910_141753_right_fall_trimmed_f4691e554bc4c305.json",
+          "--device",
+          "cpu",
+          "--imgsz",
+          "640",
+          "--confidence-threshold",
+          "0.35"
+        ]
+      },
+      "candidate": {
+        "prediction": 1,
+        "fall_probability": 0.85324925,
+        "threshold": 0.5,
+        "frames_with_pose": 30,
+        "error": null,
+        "elapsed_seconds": 8.269747758982703,
+        "command": [
+          "/media/sawwave/Learning11/CCTV-project/.venv/bin/python",
+          "/media/sawwave/Learning11/CCTV-project/scripts/inference/smoke_fall_temporal_model.py",
+          "--model",
+          "models/fall/fall_temporal_same_split_resume_20260908.pt",
+          "--pose-model",
+          "models/fall/yolov8n-pose.pt",
+          "--feature-json",
+          "/tmp/tcn_feature_cache_smoke/20260910_141753_right_fall_trimmed_f4691e554bc4c305.json",
+          "--device",
+          "cpu",
+          "--imgsz",
+          "640",
+          "--confidence-threshold",
+          "0.35"
+        ]
+      },
+      "baseline_result": "FN",
+      "candidate_result": "TP",
+      "execution_order": [
+        "baseline",
+        "candidate"
+      ],
+      "delta": {
+        "prediction": 1,
+        "fall_probability": 0.68887175
+      }
+    },
+    {
+      "scene_id": "20260910_141827_right_fall_trimmed",
+      "video_path": "data/fall_eval/retraining_clips_20260914/20260910_141827_right_fall_63_80.mp4",
+      "is_fall": true,
+      "baseline": {
+        "prediction": 1,
+        "fall_probability": 0.59585345,
+        "threshold": 0.5,
+        "frames_with_pose": 30,
+        "error": null,
+        "elapsed_seconds": 7.918492947006598,
+        "command": [
+          "/media/sawwave/Learning11/CCTV-project/.venv/bin/python",
+          "/media/sawwave/Learning11/CCTV-project/scripts/inference/smoke_fall_temporal_model.py",
+          "--model",
+          "models/fall/fall_temporal_baseline_same_split_20260910.pt",
+          "--pose-model",
+          "models/fall/yolov8n-pose.pt",
+          "--feature-json",
+          "/tmp/tcn_feature_cache_smoke/20260910_141827_right_fall_trimmed_f5036a54c66d3c49.json",
+          "--device",
+          "cpu",
+          "--imgsz",
+          "640",
+          "--confidence-threshold",
+          "0.35"
+        ]
+      },
+      "candidate": {
+        "prediction": 1,
+        "fall_probability": 0.74775201,
+        "threshold": 0.5,
+        "frames_with_pose": 30,
+        "error": null,
+        "elapsed_seconds": 12.56449809204787,
+        "command": [
+          "/media/sawwave/Learning11/CCTV-project/.venv/bin/python",
+          "/media/sawwave/Learning11/CCTV-project/scripts/inference/smoke_fall_temporal_model.py",
+          "--model",
+          "models/fall/fall_temporal_same_split_resume_20260908.pt",
+          "--pose-model",
+          "models/fall/yolov8n-pose.pt",
+          "--video",
+          "data/fall_eval/retraining_clips_20260914/20260910_141827_right_fall_63_80.mp4",
+          "--output-feature-json",
+          "/tmp/tcn_feature_cache_smoke/20260910_141827_right_fall_trimmed_f5036a54c66d3c49.json",
+          "--device",
+          "cpu",
+          "--imgsz",
+          "640",
+          "--confidence-threshold",
+          "0.35"
+        ]
+      },
+      "baseline_result": "TP",
+      "candidate_result": "TP",
+      "execution_order": [
+        "candidate",
+        "baseline"
+      ],
+      "delta": {
+        "prediction": 0,
+        "fall_probability": 0.15189856
+      }
+    }
+  ],
+  "summary": {
+    "baseline": {
+      "counts": {
+        "TP": 2,
+        "FN": 2,
+        "FP": 0,
+        "TN": 0,
+        "NO_RESULT": 0
+      },
+      "precision": 1.0,
+      "recall": 0.5,
+      "f1": 0.6666666666666666,
+      "average_execution_seconds": 21.563164110470098,
+      "attempted_average_execution_seconds": 21.563164110470098
+    },
+    "candidate": {
+      "counts": {
+        "TP": 2,
+        "FN": 2,
+        "FP": 0,
+        "TN": 0,
+        "NO_RESULT": 0
+      },
+      "precision": 1.0,
+      "recall": 0.5,
+      "f1": 0.6666666666666666,
+      "average_execution_seconds": 12.23245078601758,
+      "attempted_average_execution_seconds": 12.23245078601758
+    }
+  },
+  "candidate_minus_baseline": {
+    "counts": {
+      "TP": 0,
+      "FN": 0,
+      "FP": 0,
+      "TN": 0,
+      "NO_RESULT": 0
+    },
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "average_execution_seconds": -9.33071332,
+    "attempted_average_execution_seconds": -9.33071332
+  }
+}

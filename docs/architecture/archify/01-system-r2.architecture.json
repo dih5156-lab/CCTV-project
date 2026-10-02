@@ -1,0 +1,293 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "CCTV·AIoT — 기존 장치 제어 구조",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1320,
+      730
+    ]
+  },
+  "components": [
+    {
+      "id": "camera",
+      "type": "external",
+      "label": "CCTV",
+      "sublabel": "보유 1~2대 · RTSP",
+      "pos": [
+        30,
+        70
+      ],
+      "size": [
+        190,
+        76
+      ]
+    },
+    {
+      "id": "vision",
+      "type": "backend",
+      "label": "영상 AI",
+      "sublabel": "DeepStream / GStreamer",
+      "tag": "낙상·헬멧·외형",
+      "pos": [
+        290,
+        70
+      ],
+      "size": [
+        190,
+        76
+      ]
+    },
+    {
+      "id": "ai_adapter",
+      "type": "backend",
+      "label": "AI 이벤트 분기",
+      "sublabel": "직접 구독 / 규칙 경유",
+      "pos": [
+        550,
+        70
+      ],
+      "size": [
+        190,
+        76
+      ]
+    },
+    {
+      "id": "action",
+      "type": "backend",
+      "label": "Action Layer",
+      "sublabel": "정책·장치별 명령 생성",
+      "tag": "P1.3 / P3 보완 대기",
+      "pos": [
+        810,
+        70
+      ],
+      "size": [
+        190,
+        76
+      ]
+    },
+    {
+      "id": "device_service",
+      "type": "backend",
+      "label": "Device Service",
+      "sublabel": "EdgeX 명령·결과",
+      "pos": [
+        1070,
+        70
+      ],
+      "size": [
+        190,
+        76
+      ]
+    },
+    {
+      "id": "sensors",
+      "type": "external",
+      "label": "온습도·기울기 센서",
+      "sublabel": "게이트웨이 / AP",
+      "pos": [
+        30,
+        330
+      ],
+      "size": [
+        190,
+        76
+      ]
+    },
+    {
+      "id": "tlv",
+      "type": "backend",
+      "label": "TLV 파서",
+      "sublabel": "검증·단위·센서값",
+      "pos": [
+        290,
+        330
+      ],
+      "size": [
+        190,
+        76
+      ]
+    },
+    {
+      "id": "sensor_forwarder",
+      "type": "backend",
+      "label": "EdgeXForwarder",
+      "sublabel": "센서 MQTT·HTTP 분기",
+      "pos": [
+        550,
+        330
+      ],
+      "size": [
+        190,
+        76
+      ]
+    },
+    {
+      "id": "sensor_rules",
+      "type": "backend",
+      "label": "센서 규칙 브리지",
+      "sublabel": "임계값 → 경보 이벤트",
+      "pos": [
+        810,
+        330
+      ],
+      "size": [
+        190,
+        76
+      ]
+    },
+    {
+      "id": "outputs",
+      "type": "external",
+      "label": "현장 출력 장치",
+      "sublabel": "전광판·스피커",
+      "tag": "사이렌 실물 없음",
+      "pos": [
+        1070,
+        330
+      ],
+      "size": [
+        190,
+        76
+      ]
+    },
+    {
+      "id": "sensor_db",
+      "type": "database",
+      "label": "PostgreSQL",
+      "sublabel": "센서값·투영 이력",
+      "pos": [
+        290,
+        580
+      ],
+      "size": [
+        190,
+        76
+      ]
+    },
+    {
+      "id": "core_data",
+      "type": "backend",
+      "label": "EdgeX Core Data",
+      "sublabel": "센서 Event / Reading",
+      "pos": [
+        550,
+        580
+      ],
+      "size": [
+        190,
+        76
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "video_stream",
+      "from": "camera",
+      "to": "vision",
+      "label": "RTSP",
+      "variant": "emphasis"
+    },
+    {
+      "id": "ai_event",
+      "from": "vision",
+      "to": "ai_adapter",
+      "label": "MQTT"
+    },
+    {
+      "id": "event_to_action",
+      "from": "ai_adapter",
+      "to": "action",
+      "label": "MQTT 이벤트"
+    },
+    {
+      "id": "device_command",
+      "from": "action",
+      "to": "device_service",
+      "label": "MQTT 명령"
+    },
+    {
+      "id": "physical_output",
+      "from": "device_service",
+      "to": "outputs",
+      "label": "장치 제어",
+      "labelAt": [
+        1165,
+        240
+      ]
+    },
+    {
+      "id": "sensor_input",
+      "from": "sensors",
+      "to": "tlv",
+      "label": "MQTT / TLV"
+    },
+    {
+      "id": "sensor_push",
+      "from": "tlv",
+      "to": "sensor_forwarder",
+      "label": "파싱 결과"
+    },
+    {
+      "id": "sensor_readings",
+      "from": "sensor_forwarder",
+      "to": "sensor_rules",
+      "label": "MQTT 센서값"
+    },
+    {
+      "id": "sensor_alarm",
+      "from": "sensor_rules",
+      "to": "action",
+      "label": "MQTT 경보"
+    },
+    {
+      "id": "sensor_projection",
+      "from": "tlv",
+      "to": "sensor_db",
+      "label": "센서 DB 투영",
+      "labelAt": [
+        385,
+        500
+      ]
+    },
+    {
+      "id": "core_sensor_push",
+      "from": "sensor_forwarder",
+      "to": "core_data",
+      "label": "HTTP push",
+      "labelAt": [
+        645,
+        500
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "코드 구조 · 2026-09-22",
+      "items": [
+        "AI 직접 구독과 어댑터·규칙 경유가 함께 존재한다.",
+        "새 공통 저장·관제 경로는 02 데이터 흐름에서 확인한다.",
+        "센서 규칙은 Core Data 뒤가 아닌 MQTT 분기에서 받는다."
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "운영 확인 범위",
+      "items": [
+        "서비스 실행 확인은 09-21 기록 기준이다.",
+        "명령 발행 성공과 실제 장치 작동 성공은 다르다."
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "남은 통합 작업",
+      "items": [
+        "우선순위·만료·장치 장애 격리: P1.3 / P3.",
+        "전광판 실물 대조·스피커 음성·센서 최신 규격은 후속 검증."
+      ]
+    }
+  ]
+}

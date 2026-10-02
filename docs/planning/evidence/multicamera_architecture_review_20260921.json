@@ -1,0 +1,90 @@
+{
+  "recorded_at": "2026-09-21T00:39:32.830763+00:00",
+  "source_discussion": "https://chatgpt.com/share/6ab07846-ee1c-83ee-8f83-39240909ee3f",
+  "discussion_access": "web open cache miss; public HTML fetched and serialized conversation parsed without executing page scripts",
+  "review_status": "complete; applicability assessment only",
+  "plan_version": "0.12",
+  "next_wbs": "P1.4",
+  "wbs_statuses_changed": false,
+  "new_issue": {
+    "id": "I20",
+    "status": "OPEN",
+    "evidence": "source error/EOS requests whole pipeline stop/start; unidentified ERROR stops runtime",
+    "runtime_fault_reproduction": false,
+    "followup": [
+      "P5.1",
+      "P6.3"
+    ]
+  },
+  "runtime_read_only_inspection": {
+    "container": "cctv-ai-engine",
+    "python": "3.10.12",
+    "pyds": "1.2.0",
+    "pyds_import": "PASS",
+    "pyds_path": "/usr/local/lib/python3.10/dist-packages/pyds.so",
+    "nvinfer_plugin_version": "7.1.0",
+    "nvurisrcbin_plugin_version": "7.1.0",
+    "sdk_directory": "/opt/nvidia/deepstream/deepstream-7.1",
+    "nvunixfd": {
+      "registered": true,
+      "plugin_version": "0.0.1",
+      "plugin_path": "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstnvunixfd.so",
+      "ipc_metadata_buffer_lifetime_tested": false
+    },
+    "interpipesink_registered": false,
+    "selected_environment": {
+      "USE_DEEPSTREAM": "1",
+      "DS_OUTPUT_MODE": "rtsp-publish",
+      "DS_PREVIEW_ENABLED": "1",
+      "DS_CROP_POSE_ENABLED": "0",
+      "DS_CROP_PERSON_INTERVAL": "0",
+      "DS_PRIMARY_INTERVAL": "1",
+      "DS_POSE_SGIE_INTERVAL": null,
+      "DS_HELMET_INTERVAL": "1",
+      "DS_PPHUMAN_INTERVAL": "4",
+      "DS_PPHUMAN_REINFER_INTERVAL": "15"
+    },
+    "deepstream_app_cli": "not found on PATH; plugin version and SDK directory used instead",
+    "live_element_properties_or_completion_fps_read": false,
+    "service_restart": false,
+    "inference_benchmark": false,
+    "fault_injection": false
+  },
+  "application_code_config_db_changed": false,
+  "verification": {
+    "type": "read-only source/runtime inspection and document checks",
+    "new_application_tests_run": false,
+    "markdown_files": 19,
+    "local_links_checked": 351,
+    "wbs_rows": 33,
+    "wbs_states": {
+      "DONE": 6,
+      "BLOCKED": 2,
+      "READY": 3,
+      "PLANNED": 15,
+      "VERIFY": 7
+    },
+    "dependency_and_whitespace_check": "PASS"
+  },
+  "graph_limit": "indexed symbols found; some snippet line ranges drifted, current files checked directly",
+  "source_sha256": {
+    "src/core/deepstream_processor.py": "e981f477d6180390412ce52acbf43413bfcaf2d0db2ed149aa708cbb8293ffeb",
+    "src/core/_deepstream_pipeline_builder.py": "e1ac9e9f040c7c14a0a9535430f782576927c770b20fe38c2e25ddc20bbf968a",
+    "src/core/_deepstream_source_health.py": "326ff29647a793c33f0f482f931df661e619ec13dd5fc55fd040d5a0b641f418",
+    "src/core/_deepstream_source_manager.py": "db52577b635150fc0f1b580ffbe61a5cf2f61af86a247e170eb302ab0512cdac",
+    "src/core/_deepstream_element_config.py": "f000151aceb8df276d35ee226a64740fc8f4962b679f87d751b75cb5b7c97072",
+    "src/core/_deepstream_tensor_utils.py": "27c9ca247318888d98910324b9538deea1a7cf822660c8f2ffd518da53973fc9",
+    "config/deepstream/config_infer_primary.txt": "277ab2e76c826804b82fa7c56b9e8edc4a59037fbfe01c23b014c3263e2fa2ae",
+    "config/deepstream/config_infer_helmet.txt": "74ec560b96f0306cd91501ed38b30c7d9892f176ef8b08d0dad6ccc1a55fd960",
+    "config/deepstream/config_infer_pphuman.txt": "1432d1957883ea7e1b440e932dc21016c4caf21d095b81a6bac3ba0a4ff02686",
+    "config/deepstream/config_infer_person_primary.txt": "09076b6a181b6fe80faae9205c14857ecf0dbeac12ce38f2a0a39ecdee963486"
+  },
+  "recommendation": "retain shared inference; verify per-source recovery and output isolation before selective changes",
+  "not_established": [
+    "measured FPS improvement",
+    "uninterrupted healthy sources during failure",
+    "four real cameras/all AI/every frame 30FPS",
+    "PyServiceMaker migration compatibility",
+    "local nvunixfd equivalence to latest NVIDIA documented functionality"
+  ]
+}

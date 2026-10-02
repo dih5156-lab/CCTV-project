@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.218" timestamp="2026-09-21T10:13:52.713089+09:00" hostname="ubuntu"><testcase classname="tests.test_monitoring_receiver" name="test_commit_then_reopen_lookup_and_duplicate" time="0.004"><failure message="ModuleNotFoundError: No module named 'src.monitoring_receiver'">tests/test_monitoring_receiver.py:37: in test_commit_then_reopen_lookup_and_duplicate
+    store = receiver(tmp_path / "consumer.db")
+tests/test_monitoring_receiver.py:16: in receiver
+    module = importlib.import_module("src.monitoring_receiver")
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+&lt;frozen importlib._bootstrap&gt;:1050: in _gcd_import
+    ???
+&lt;frozen importlib._bootstrap&gt;:1027: in _find_and_load
+    ???
+&lt;frozen importlib._bootstrap&gt;:1004: in _find_and_load_unlocked
+    ???
+E   ModuleNotFoundError: No module named 'src.monitoring_receiver'</failure></testcase></testsuite></testsuites>

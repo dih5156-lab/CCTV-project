@@ -1,0 +1,33 @@
+# HELP cctv_processor_frames_processed_total CCTV processor frames_processed
+# TYPE cctv_processor_frames_processed_total gauge
+cctv_processor_frames_processed_total 2.8730127e+07
+# HELP cctv_processor_frames_dropped_total CCTV processor frames_dropped
+# TYPE cctv_processor_frames_dropped_total gauge
+cctv_processor_frames_dropped_total 0.0
+# HELP cctv_processor_events_detected_total CCTV processor events_detected
+# TYPE cctv_processor_events_detected_total gauge
+cctv_processor_events_detected_total 2083.0
+# HELP cctv_processor_events_sent_total CCTV processor events_sent
+# TYPE cctv_processor_events_sent_total gauge
+cctv_processor_events_sent_total 2083.0
+# HELP cctv_processor_events_filtered_total CCTV processor events_filtered
+# TYPE cctv_processor_events_filtered_total gauge
+cctv_processor_events_filtered_total 58953.0
+# HELP cctv_processor_events_failed_total CCTV processor events_failed
+# TYPE cctv_processor_events_failed_total gauge
+cctv_processor_events_failed_total 0.0
+# HELP cctv_processor_fps CCTV processor fps
+# TYPE cctv_processor_fps gauge
+cctv_processor_fps 29.79757051268968
+# HELP cctv_processor_avg_inference_ms CCTV processor avg_inference_ms
+# TYPE cctv_processor_avg_inference_ms gauge
+cctv_processor_avg_inference_ms 3.992
+# HELP cctv_processor_yolo_postprocess_avg_ms CCTV processor yolo_postprocess_avg_ms
+# TYPE cctv_processor_yolo_postprocess_avg_ms gauge
+cctv_processor_yolo_postprocess_avg_ms 3.992
+# HELP cctv_processor_yolo_postprocess_max_ms CCTV processor yolo_postprocess_max_ms
+# TYPE cctv_processor_yolo_postprocess_max_ms gauge
+cctv_processor_yolo_postprocess_max_ms 289.81
+# HELP cctv_processor_cameras CCTV processor cameras
+# TYPE cctv_processor_cameras gauge
+cctv_processor_cameras 1.0

@@ -1,0 +1,249 @@
+{
+  "version": "0.39",
+  "scope": "actual main.py CLI, two local replay RTSP inputs, Pose-primary candidate profile; physical output and external MQTT disconnected",
+  "results": {
+    "default_0_seconds": {
+      "experiment": {
+        "scope": "real CLI with two local replay RTSP inputs; primary Pose profile; external output disconnected",
+        "completed_experiment": true,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "both_inputs_ready",
+            "elapsed": 25.629
+          },
+          {
+            "name": "publisher_1_stopped",
+            "elapsed": 30.858
+          },
+          {
+            "name": "publisher_1_restarted",
+            "elapsed": 43.222
+          }
+        ],
+        "sample_count": 117,
+        "elapsed_seconds": 75.82913849595934
+      },
+      "phases": {
+        "baseline": {
+          "samples": 10,
+          "cameras": {
+            "replay_1": {
+              "first": 12.0,
+              "last": 106.0,
+              "delta": 94.0,
+              "counter_decreased": false,
+              "max_frame_age_seconds": 0.0855715450597927
+            },
+            "replay_2": {
+              "first": 12.0,
+              "last": 106.0,
+              "delta": 94.0,
+              "counter_decreased": false,
+              "max_frame_age_seconds": 0.0855715450597927
+            }
+          }
+        },
+        "disconnected": {
+          "samples": 24,
+          "cameras": {
+            "replay_1": {
+              "first": 120.0,
+              "last": 195.0,
+              "delta": 75.0,
+              "counter_decreased": false,
+              "max_frame_age_seconds": 8.132307004067115
+            },
+            "replay_2": {
+              "first": 120.0,
+              "last": 488.0,
+              "delta": 368.0,
+              "counter_decreased": false,
+              "max_frame_age_seconds": 0.10911153699271381
+            }
+          }
+        },
+        "restored": {
+          "samples": 59,
+          "cameras": {
+            "replay_1": {
+              "first": 195.0,
+              "last": 195.0,
+              "delta": 0.0,
+              "counter_decreased": false,
+              "max_frame_age_seconds": 38.50534744199831
+            },
+            "replay_2": {
+              "first": 510.0,
+              "last": 1564.0,
+              "delta": 1054.0,
+              "counter_decreased": false,
+              "max_frame_age_seconds": 0.052068603108637035
+            }
+          }
+        }
+      },
+      "first_observed_resume_seconds_from_publisher_process_start": null,
+      "final_restart_counters": {
+        "cctv_processor_source_error_identified_total": 0.0,
+        "cctv_processor_source_error_unidentified_total": 0.0,
+        "cctv_processor_pipeline_restart_requested_total": 0.0,
+        "cctv_processor_pipeline_restart_rejected_total": 0.0,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_processor_pipeline_restart_failed_total": 0.0,
+        "cctv_processor_pipeline_restart_seconds_total": 0.0
+      },
+      "events_sent": 0.0,
+      "events_failed": 29.0
+    },
+    "trial_3_seconds": {
+      "experiment": {
+        "scope": "real CLI with two local replay RTSP inputs; primary Pose profile; external output disconnected",
+        "completed_experiment": false,
+        "error": "both inputs did not produce primary frames within 90 seconds",
+        "transitions": [],
+        "sample_count": 86,
+        "elapsed_seconds": 95.47618540900294
+      },
+      "phases": {},
+      "first_observed_resume_seconds_from_publisher_process_start": null,
+      "final_restart_counters": {
+        "cctv_processor_source_error_identified_total": 0.0,
+        "cctv_processor_source_error_unidentified_total": 0.0,
+        "cctv_processor_pipeline_restart_requested_total": 0.0,
+        "cctv_processor_pipeline_restart_rejected_total": 0.0,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_processor_pipeline_restart_failed_total": 0.0,
+        "cctv_processor_pipeline_restart_seconds_total": 0.0
+      },
+      "events_sent": 0.0,
+      "events_failed": 4.0
+    },
+    "trial_15_seconds": {
+      "experiment": {
+        "scope": "real CLI with two local replay RTSP inputs; primary Pose profile; external output disconnected",
+        "completed_experiment": true,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "both_inputs_ready",
+            "elapsed": 20.487
+          },
+          {
+            "name": "publisher_1_stopped",
+            "elapsed": 25.689
+          },
+          {
+            "name": "publisher_1_restarted",
+            "elapsed": 45.762
+          }
+        ],
+        "sample_count": 156,
+        "elapsed_seconds": 93.14690476399846
+      },
+      "phases": {
+        "baseline": {
+          "samples": 10,
+          "cameras": {
+            "replay_1": {
+              "first": 16.0,
+              "last": 104.0,
+              "delta": 88.0,
+              "counter_decreased": false,
+              "max_frame_age_seconds": 0.0922489429358393
+            },
+            "replay_2": {
+              "first": 16.0,
+              "last": 104.0,
+              "delta": 88.0,
+              "counter_decreased": false,
+              "max_frame_age_seconds": 0.0922489429358393
+            }
+          }
+        },
+        "disconnected": {
+          "samples": 39,
+          "cameras": {
+            "replay_1": {
+              "first": 118.0,
+              "last": 198.0,
+              "delta": 80.0,
+              "counter_decreased": false,
+              "max_frame_age_seconds": 15.389413892989978
+            },
+            "replay_2": {
+              "first": 118.0,
+              "last": 614.0,
+              "delta": 496.0,
+              "counter_decreased": false,
+              "max_frame_age_seconds": 0.10231937991920859
+            }
+          }
+        },
+        "restored": {
+          "samples": 88,
+          "cameras": {
+            "replay_1": {
+              "first": 198.0,
+              "last": 762.0,
+              "delta": 564.0,
+              "counter_decreased": false,
+              "max_frame_age_seconds": 30.257482734974474
+            },
+            "replay_2": {
+              "first": 628.0,
+              "last": 1602.0,
+              "delta": 974.0,
+              "counter_decreased": false,
+              "max_frame_age_seconds": 0.11558831401634961
+            }
+          }
+        }
+      },
+      "first_observed_resume_seconds_from_publisher_process_start": 14.859,
+      "final_restart_counters": {
+        "cctv_processor_source_error_identified_total": 0.0,
+        "cctv_processor_source_error_unidentified_total": 0.0,
+        "cctv_processor_pipeline_restart_requested_total": 0.0,
+        "cctv_processor_pipeline_restart_rejected_total": 0.0,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_processor_pipeline_restart_failed_total": 0.0,
+        "cctv_processor_pipeline_restart_seconds_total": 0.0
+      },
+      "events_sent": 0.0,
+      "events_failed": 58.0
+    }
+  },
+  "local_change": {
+    "setting": "DS_RTSP_RECONNECT_INTERVAL_SEC",
+    "default": 0,
+    "tested_values": [
+      0,
+      3,
+      15
+    ],
+    "production_enabled": false
+  },
+  "test_fixture_manifest_sha256": "06a14180431015d3151cb7a1531bdf3e24877c0c9c35b66bbfb9b718dae75ad3",
+  "operating": {
+    "started_at_utc": "2026-09-16T23:45:46.903505745Z",
+    "restarts": 0,
+    "health": "healthy",
+    "frames_before": 28578840.0,
+    "frames_after": 28619177.0,
+    "input_model_hash_unchanged": true,
+    "remaining_test_containers": 0
+  },
+  "limits": [
+    "same sample file published to two local endpoints",
+    "batch1-4 candidate engine; production default Pose engine rejected batch2",
+    "15-second setting is an experimental value, not a production recommendation",
+    "0.5-second target polling; actual sampling intervals vary",
+    "no tracker/cache epoch or all-model accuracy acceptance",
+    "native reconnect not represented by application whole-pipeline restart counters"
+  ]
+}

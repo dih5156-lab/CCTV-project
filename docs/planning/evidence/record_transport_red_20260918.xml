@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="2" time="0.367" timestamp="2026-09-18T17:28:18.209264+09:00" hostname="ubuntu"><testcase classname="tests.test_record_delivery_mqtt" name="test_real_puback_records_receipt_without_releasing_alarm" time="0.067"><failure message="ModuleNotFoundError: No module named 'src.protocols.record_mqtt'">tests/test_record_delivery_mqtt.py:46: in test_real_puback_records_receipt_without_releasing_alarm
+    store, worker = make_worker(path, broker, destination)
+tests/test_record_delivery_mqtt.py:36: in make_worker
+    transport = importlib.import_module("src.protocols.record_mqtt").MqttRecordTransport(broker, transport="unix")
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+&lt;frozen importlib._bootstrap&gt;:1050: in _gcd_import
+    ???
+&lt;frozen importlib._bootstrap&gt;:1027: in _find_and_load
+    ???
+&lt;frozen importlib._bootstrap&gt;:1004: in _find_and_load_unlocked
+    ???
+E   ModuleNotFoundError: No module named 'src.protocols.record_mqtt'</failure></testcase><testcase classname="tests.test_record_delivery_mqtt" name="test_disconnect_before_puback_remains_retryable" time="0.070"><failure message="ModuleNotFoundError: No module named 'src.protocols.record_mqtt'">tests/test_record_delivery_mqtt.py:64: in test_disconnect_before_puback_remains_retryable
+    store, worker = make_worker(path, broker, destination)
+tests/test_record_delivery_mqtt.py:36: in make_worker
+    transport = importlib.import_module("src.protocols.record_mqtt").MqttRecordTransport(broker, transport="unix")
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+&lt;frozen importlib._bootstrap&gt;:1050: in _gcd_import
+    ???
+&lt;frozen importlib._bootstrap&gt;:1027: in _find_and_load
+    ???
+&lt;frozen importlib._bootstrap&gt;:1004: in _find_and_load_unlocked
+    ???
+E   ModuleNotFoundError: No module named 'src.protocols.record_mqtt'</failure></testcase></testsuite></testsuites>

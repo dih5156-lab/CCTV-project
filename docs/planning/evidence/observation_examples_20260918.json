@@ -1,0 +1,144 @@
+{
+  "scope": "Synthetic examples; not physical sensor packets or field acceptance",
+  "date": "2026-09-18",
+  "examples": [
+    {
+      "case": "temperature_humidity_zero",
+      "input": {
+        "table": "t34954",
+        "data": {
+          "temperature_c": 0,
+          "humidity_pct": 55.5,
+          "created_at": 0
+        }
+      },
+      "context": {
+        "namespace": "contract-example",
+        "device_id": "sample-sensor",
+        "source_record_id": "temperature_humidity_zero",
+        "received_at": "2026-09-18T11:00:00+09:00"
+      },
+      "observation": {
+        "schema_version": "1.0",
+        "message_type": "sensor_observation",
+        "observation_id": "obs_28ad0393fed020b16abca3792a5171614f3da5e5416f991895404389d62f1757",
+        "source_namespace": "contract-example",
+        "source_record_id": "temperature_humidity_zero",
+        "device_id": "sample-sensor",
+        "profile": "t34954",
+        "received_at": "2026-09-18T11:00:00+09:00",
+        "observed_at": "1970-01-01T09:00:00+09:00",
+        "observed_at_source": "data.created_at",
+        "observed_at_quality": "valid",
+        "measurements": {
+          "temperature": {
+            "value": 0.0,
+            "unit": "degC",
+            "quality": "valid",
+            "source_field": "temperature_c"
+          },
+          "humidity": {
+            "value": 55.5,
+            "unit": "%",
+            "quality": "valid",
+            "source_field": "humidity_pct"
+          }
+        }
+      }
+    },
+    {
+      "case": "tilt_missing",
+      "input": {
+        "table": "t34955",
+        "data": {
+          "angle_x_deg": null,
+          "angle_y_deg": 0
+        }
+      },
+      "context": {
+        "namespace": "contract-example",
+        "device_id": "sample-sensor",
+        "source_record_id": "tilt_missing",
+        "received_at": "2026-09-18T11:00:00+09:00"
+      },
+      "observation": {
+        "schema_version": "1.0",
+        "message_type": "sensor_observation",
+        "observation_id": "obs_3563825a081bd0d1714b16c979ff40834b8bda98a446bc1d9a1a1d9153cd93f7",
+        "source_namespace": "contract-example",
+        "source_record_id": "tilt_missing",
+        "device_id": "sample-sensor",
+        "profile": "t34955",
+        "received_at": "2026-09-18T11:00:00+09:00",
+        "observed_at": null,
+        "observed_at_source": null,
+        "observed_at_quality": "missing",
+        "measurements": {
+          "angle_x": {
+            "value": null,
+            "unit": "deg",
+            "quality": "missing",
+            "source_field": "angle_x_deg"
+          },
+          "angle_y": {
+            "value": 0.0,
+            "unit": "deg",
+            "quality": "valid",
+            "source_field": "angle_y_deg"
+          }
+        }
+      }
+    },
+    {
+      "case": "tilt_temperature_invalid",
+      "input": {
+        "table": "t34957",
+        "data": {
+          "temperature_c": "invalid",
+          "angle_x_deg": false,
+          "angle_y_deg": 1.5,
+          "created_at": "invalid"
+        }
+      },
+      "context": {
+        "namespace": "contract-example",
+        "device_id": "sample-sensor",
+        "source_record_id": "tilt_temperature_invalid",
+        "received_at": "2026-09-18T11:00:00+09:00"
+      },
+      "observation": {
+        "schema_version": "1.0",
+        "message_type": "sensor_observation",
+        "observation_id": "obs_bac8108942facdda17872e1d5b18c21a32806dd540f69ab93baa1474f7f235f8",
+        "source_namespace": "contract-example",
+        "source_record_id": "tilt_temperature_invalid",
+        "device_id": "sample-sensor",
+        "profile": "t34957",
+        "received_at": "2026-09-18T11:00:00+09:00",
+        "observed_at": null,
+        "observed_at_source": "data.created_at",
+        "observed_at_quality": "invalid",
+        "measurements": {
+          "temperature": {
+            "value": null,
+            "unit": "degC",
+            "quality": "invalid",
+            "source_field": "temperature_c"
+          },
+          "angle_x": {
+            "value": null,
+            "unit": "deg",
+            "quality": "invalid",
+            "source_field": "angle_x_deg"
+          },
+          "angle_y": {
+            "value": 1.5,
+            "unit": "deg",
+            "quality": "valid",
+            "source_field": "angle_y_deg"
+          }
+        }
+      }
+    }
+  ]
+}

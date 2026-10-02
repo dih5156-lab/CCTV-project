@@ -1,0 +1,23 @@
+{
+  "source": "local on-disk RF artifact metadata; no running-process identity claim",
+  "model_path": "models/experiments/yolo_pose_fall_cam2_continuous_200_80_640.pkl",
+  "sha256": "0fd6610ee86d9263e402b82e6607da0ff361a39ab0487a7cb0f6edd019195397",
+  "feature_count": 50,
+  "inference_config": {
+    "max_frames": 48,
+    "frame_stride": 3,
+    "imgsz": 640,
+    "confidence_threshold": 0.35,
+    "candidate_window_frames": 0,
+    "candidate_window_seconds": 3.0
+  },
+  "training_config": {
+    "prediction_batch_size": 4,
+    "min_pose_frames": 6,
+    "decision_threshold": 0.7
+  },
+  "current_training_selector": "_select_tracked_pose_index: confidence minus 0.35 * normalized center distance",
+  "training_source_sha256": "8e50958ee5d2070e6f7417a0f248f3d9a819693a122150c7e6c6644e47d25021",
+  "original_training_source_version_verified": false,
+  "real_classifier_prediction_executed": false
+}

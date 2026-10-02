@@ -1,0 +1,1627 @@
+{
+  "scope": "I34 SGIE/Python/preview/color native memory boundary investigation; finite recorded camera input, 12 frames per case",
+  "cases": {
+    "primary": {
+      "stage": "primary",
+      "copy_hw": 1,
+      "completed": true,
+      "timed_out": false,
+      "exit": 0,
+      "elapsed_seconds": 13.66912009101361,
+      "zero_error_summary": true,
+      "probe": {
+        "stage": "primary",
+        "primary_tensors": 12,
+        "rois": 0,
+        "object_tensors": {},
+        "sink_buffers": 12,
+        "errors": [],
+        "eos": true
+      }
+    },
+    "pa100k": {
+      "stage": "pa100k",
+      "copy_hw": 1,
+      "completed": true,
+      "timed_out": false,
+      "exit": 0,
+      "elapsed_seconds": 26.41956901620142,
+      "zero_error_summary": true,
+      "probe": {
+        "stage": "pa100k",
+        "primary_tensors": 12,
+        "rois": 24,
+        "object_tensors": {
+          "3": 24
+        },
+        "sink_buffers": 12,
+        "errors": [],
+        "eos": true
+      }
+    },
+    "helmet": {
+      "stage": "helmet",
+      "copy_hw": 1,
+      "completed": true,
+      "timed_out": false,
+      "exit": 0,
+      "elapsed_seconds": 23.29258601902984,
+      "zero_error_summary": true,
+      "probe": {
+        "stage": "helmet",
+        "primary_tensors": 12,
+        "rois": 24,
+        "object_tensors": {
+          "2": 24
+        },
+        "sink_buffers": 12,
+        "errors": [],
+        "eos": true
+      }
+    },
+    "both": {
+      "stage": "both",
+      "copy_hw": 1,
+      "completed": true,
+      "timed_out": false,
+      "exit": 0,
+      "elapsed_seconds": 37.2745507908985,
+      "zero_error_summary": true,
+      "probe": {
+        "stage": "both",
+        "primary_tensors": 12,
+        "rois": 24,
+        "object_tensors": {
+          "2": 24,
+          "3": 24
+        },
+        "sink_buffers": 12,
+        "errors": [],
+        "eos": true
+      }
+    },
+    "actual": {
+      "stage": "actual",
+      "copy_hw": 1,
+      "completed": true,
+      "timed_out": false,
+      "exit": 0,
+      "elapsed_seconds": 30.486382766161114,
+      "zero_error_summary": true,
+      "probe": {
+        "stage": "actual",
+        "primary_tensors": 12,
+        "rois": 12,
+        "object_tensors": {
+          "2": 12,
+          "3": 12
+        },
+        "sink_buffers": 12,
+        "errors": [],
+        "eos": true
+      }
+    },
+    "combined": {
+      "stage": "combined",
+      "copy_hw": 1,
+      "completed": true,
+      "timed_out": false,
+      "exit": 0,
+      "elapsed_seconds": 45.28391217486933,
+      "zero_error_summary": true,
+      "probe": {
+        "stage": "combined",
+        "primary_tensors": 12,
+        "rois": 12,
+        "object_tensors": {
+          "2": 12,
+          "3": 12
+        },
+        "sink_buffers": 12,
+        "errors": [],
+        "eos": true,
+        "preview_buffers": 12,
+        "color_completed": 12,
+        "encoded_buffers": 12
+      }
+    },
+    "callbacks": {
+      "stage": "callbacks",
+      "copy_hw": 1,
+      "completed": true,
+      "timed_out": false,
+      "exit": 0,
+      "elapsed_seconds": 47.42001943103969,
+      "zero_error_summary": true,
+      "probe": {
+        "stage": "callbacks",
+        "primary_tensors": 12,
+        "rois": 12,
+        "object_tensors": {
+          "2": 12,
+          "3": 12
+        },
+        "sink_buffers": 12,
+        "errors": [],
+        "eos": true,
+        "preview_buffers": 12,
+        "color_completed": 0,
+        "encoded_buffers": 12,
+        "product_frames_processed": 12,
+        "product_primary_rois": 0,
+        "product_preview_stored": 12,
+        "product_context_processed": 0,
+        "product_context_stats": {
+          "_context_frames_matched": 12
+        }
+      }
+    },
+    "sourcebin_retry": {
+      "stage": "sourcebin",
+      "copy_hw": 1,
+      "completed": true,
+      "timed_out": false,
+      "exit": 0,
+      "elapsed_seconds": 44.71940018492751,
+      "zero_error_summary": true,
+      "probe": {
+        "stage": "sourcebin",
+        "primary_tensors": 12,
+        "rois": 12,
+        "object_tensors": {
+          "2": 12,
+          "3": 12
+        },
+        "sink_buffers": 12,
+        "errors": [],
+        "eos": true,
+        "preview_buffers": 12,
+        "color_completed": 0,
+        "encoded_buffers": 12,
+        "context_worker": {
+          "completed": 12,
+          "failed": 0
+        },
+        "product_frames_processed": 12,
+        "product_primary_rois": 0,
+        "product_preview_stored": 12,
+        "product_context_processed": 0,
+        "product_context_stats": {
+          "_context_frames_matched": 12
+        }
+      }
+    }
+  },
+  "source": "data/runtime/p51_cuda_20260929_v066",
+  "product_code_changed": true,
+  "original_cuda700_reproduced": false,
+  "root_cause_fixed": false,
+  "limitations": [
+    "Passing finite cases cannot exclude intermittent CUDA700",
+    "Synthetic ROI cases are not detection accuracy validation",
+    "TCN subprocess, RTSP transport and full application lifecycle are not covered",
+    "callbacks case observed 12 matches; worker-completed placeholder is not a real counter and must not be interpreted as failed or zero actual work",
+    "Original CUDA700 root cause remains unresolved; I35 lifecycle fix is independently reproduced",
+    "Sanitizer application-only excludes GPU kernels in TCN subprocesses",
+    "Whole CLI normal RTSP baseline and startup-only candidate did not terminate; these are failures, not memory-check passes"
+  ],
+  "excluded_setup_failure": {
+    "stage": "pa100k",
+    "copy_hw": 1,
+    "completed": false,
+    "timed_out": false,
+    "exit": 1,
+    "elapsed_seconds": 2.3473631138913333,
+    "zero_error_summary": true,
+    "probe": {}
+  },
+  "diagnostic_hashes": {
+    "actual_probe.py": "4f1e80065a8b6ebdbc67879eef06b16de330f38099d46dd56f1e1a1b6ab4d6f0",
+    "callbacks_probe.py": "ac87e4bcd14e2a39aa2150be9100ac6472e5edec33b1a61bb67278c68e90d3c9",
+    "candidate_final_pipeline_builder.py": "f05ac75ae231e14571d292eebfaded3b543d356a6c89477a609b07ddd15c14a2",
+    "candidate_pipeline_builder.py": "973833263b95ca52fe768b38b0108e66923d4be46e200abe8a57e7f36212c220",
+    "combined_probe.py": "12af3a07128ef94c7bc836ca7b1be96225f0b0662894cd0c3c40f288df2cd72b",
+    "observe_cli.py": "30f3d6bef0987375dbb346d11cf0b657cc3cd8c9e47bc4807fce388ae5a7ee36",
+    "observe_cli_async.py": "662994937a7feb6480384ad748fa776a123ff8ee1f222c67e2f8d19f6458048b",
+    "observe_cli_boundary.py": "92abf1f629db4edb87eece131806f9dc1ad71650e8b3c967033e4243304f6284",
+    "observe_cli_candidate.py": "b1072d1324178eddd292ed0988c8221eca26758881d86b32c676d2ff82654e29",
+    "observe_cli_flush.py": "bbc770b1489834e354d11f90e64d253b6dcff53c0091014d5190678957bd4079",
+    "observe_cli_preview_async.py": "83695cfa600646c12a6dce5d5fd16fedb94f0f857b246ac374e9ca5dc5aa3c0d",
+    "run_candidate_cli.py": "d4dd37f776b61373334f5b26e77c1f0842d932f371e3fdcf63dc4faaec58cfbd",
+    "run_candidate_flush.py": "4dc75e739cfd9afd61014f11c165116785e54c2aacbb6136d77435d1565f36dc",
+    "run_cli_async.py": "625ba5433ef9dba601a1c38ecfe53ee009b9f7986eb69a20b5581217f15cd3f2",
+    "run_cli_boundary.py": "e33e92f2bd929e1ad366a236fa3f06ebe7ea7996764f54b285d4324b0da0ed18",
+    "run_cli_control.py": "7db5b9ccb7c36a91b6f1611c7872bd7023b7221b7814534b5f2fe55965ead07c",
+    "run_cli_preview_async.py": "590012c1a59863848f5b6e6e4bf94227ce5235a7d71a7301657441c74c2b56a6",
+    "run_full_cli.py": "15c95155eb8612caf8762a5f46b47a9ea4d45d1254eb842a7def501f0841b044",
+    "run_sgie_memcheck.py": "fe6c54e317b280ae4c302f682c475001b628c9135577960e2b70dd19178ad58b",
+    "run_sourcebin_trace.py": "1241b4b9654636d1be59a286e0aad3ff2f3a553375d2ef390a87381b9b5f8663",
+    "run_tracker_memcheck.py": "56024c472c9efe10d520bc9b40304ca767e34e5b53af1c5d2a488158fe1fe0c7",
+    "sgie_probe.py": "5abc582455542f28d8c0842c5172557d20f9e1a386895a25d00c74701c1bf9a0",
+    "sourcebin_probe.py": "8561059350c0b59d2f3c705c7c49f1568bcead5590ab089e25d0e7a410b48d05",
+    "sourcebin_trace.py": "42b7f3a27f437a95227827f941f544c2238d5cfdae136c452c31ac294c2b9116",
+    "tracker_minimal.py": "60e7a5135fb9a3f9828e654e2615e3d51bb5b17553ea7702545e878158458bd2",
+    "tracker_probe.py": "a28d18f176cbc32842d870573e48ec14c272d7565dabbc273a0c52ef838bc8cd"
+  },
+  "incomplete_sourcebin_attempt": {
+    "stage": "sourcebin",
+    "copy_hw": 1,
+    "completed": false,
+    "timed_out": true,
+    "exit": -15,
+    "elapsed_seconds": 210.00436329003423,
+    "zero_error_summary": false,
+    "probe": {}
+  },
+  "incomplete_sourcebin_note": "Timed out before probe.json was written; exact location unobserved. This script also omitted SGIE stage selection, so it is excluded from SGIE coverage. Corrected retry completed with both SGIEs and 12 actual context worker completions. Not a reproduction of original CUDA700.",
+  "full_cli": {
+    "scope": "Actual RC4 main CLI, recorded input, all configured models and local RTSP output; stop after >=12 processed frames",
+    "timed_out": true,
+    "exit": -15,
+    "elapsed_seconds": 151.01990443398245,
+    "zero_error_summary": false,
+    "target_stats": {},
+    "completed": false
+  },
+  "tracker_attempt": {
+    "stage": "sourcebin",
+    "copy_hw": 1,
+    "completed": false,
+    "timed_out": true,
+    "exit": -15,
+    "elapsed_seconds": 120.01377520780079,
+    "zero_error_summary": false,
+    "probe": {}
+  },
+  "tracker_attempt_note": "faulthandler twice located wait in build_tensorrt_runtime line318 trt.Runtime(logger), before pipeline construction; not evidence of tracker fault.",
+  "cli_controls": {
+    "cli_copy1": {
+      "scope": "Actual RC4 main CLI, recorded input, all configured models and local RTSP output; stop after >=12 processed frames",
+      "timed_out": true,
+      "exit": -15,
+      "elapsed_seconds": 76.02271240996197,
+      "zero_error_summary": false,
+      "target_stats": {},
+      "completed": false
+    },
+    "cli_fake": {
+      "output_mode": "fakesink",
+      "copy_hw": "1",
+      "scope": "Actual RC4 main CLI, recorded input, all configured models and local RTSP output; stop after >=12 processed frames",
+      "timed_out": false,
+      "exit": 0,
+      "elapsed_seconds": 36.71121637895703,
+      "zero_error_summary": true,
+      "target_stats": {
+        "backend": "deepstream",
+        "camera_count": 1,
+        "frames_processed": 12,
+        "frames_dropped": 0,
+        "events_detected": 3,
+        "events_sent": 0,
+        "events_filtered": 15,
+        "events_dropped": 0,
+        "events_failed": 3,
+        "inference_errors": 0,
+        "camera_errors": 0,
+        "fps": 0.0,
+        "uptime_seconds": 0.0,
+        "avg_inference_ms": 0.0,
+        "output_mode": "fakesink",
+        "preview_enabled": true,
+        "preview_max_fps": 10.0,
+        "preview_ready": true,
+        "cameras": 1,
+        "yolo_postprocess_mode": "vectorized",
+        "yolo_postprocess_calls": 13,
+        "yolo_postprocess_avg_ms": 4.488,
+        "yolo_postprocess_max_ms": 12.105,
+        "primary_camera_stats": {
+          "replay_1": {
+            "frames_seen": 14,
+            "frames_inferred": 7,
+            "frames_skipped": 7,
+            "frames_inference_unknown": 0,
+            "last_frame_age_seconds": 0.35395977506414056
+          }
+        },
+        "primary_metrics_errors": 0,
+        "model_inference_stats": {
+          "pipeline_generation": 1,
+          "metadata_errors": 0,
+          "models": {
+            "primary": {
+              "enabled": true,
+              "properties": {
+                "unique-id": 1,
+                "process-mode": 1,
+                "batch-size": 1,
+                "interval": 1,
+                "output-tensor-meta": true
+              },
+              "property_observed_at": "pipeline_build",
+              "cameras": {
+                "replay_1": {
+                  "frames_seen": 12,
+                  "frames_tensor_output": 6,
+                  "frames_no_objects": 0,
+                  "frames_classifier_only": 0,
+                  "frames_unobserved": 6,
+                  "frames_unknown": 0,
+                  "objects_with_tensor": 0,
+                  "objects_classifier_only": 0,
+                  "last_frame_age_seconds": 0.00127271912060678,
+                  "last_tensor_age_seconds": 0.019494180101901293
+                }
+              },
+              "unique_id_conflict": false
+            },
+            "pose": {
+              "enabled": false,
+              "properties": {
+                "unique-id": null,
+                "process-mode": null,
+                "batch-size": null,
+                "interval": null,
+                "output-tensor-meta": null
+              },
+              "property_observed_at": "pipeline_build",
+              "cameras": {
+                "replay_1": {
+                  "frames_seen": 0,
+                  "frames_tensor_output": 0,
+                  "frames_no_objects": 0,
+                  "frames_classifier_only": 0,
+                  "frames_unobserved": 0,
+                  "frames_unknown": 0,
+                  "objects_with_tensor": 0,
+                  "objects_classifier_only": 0,
+                  "last_frame_age_seconds": null,
+                  "last_tensor_age_seconds": null
+                }
+              },
+              "unique_id_conflict": false
+            },
+            "attributes": {
+              "enabled": true,
+              "properties": {
+                "unique-id": 3,
+                "process-mode": 2,
+                "batch-size": 1,
+                "interval": 4,
+                "output-tensor-meta": true
+              },
+              "property_observed_at": "pipeline_build",
+              "cameras": {
+                "replay_1": {
+                  "frames_seen": 12,
+                  "frames_tensor_output": 6,
+                  "frames_no_objects": 0,
+                  "frames_classifier_only": 0,
+                  "frames_unobserved": 6,
+                  "frames_unknown": 0,
+                  "objects_with_tensor": 6,
+                  "objects_classifier_only": 0,
+                  "last_frame_age_seconds": 0.00127271912060678,
+                  "last_tensor_age_seconds": 0.019494180101901293
+                }
+              },
+              "unique_id_conflict": false
+            },
+            "helmet": {
+              "enabled": true,
+              "properties": {
+                "unique-id": 2,
+                "process-mode": 2,
+                "batch-size": 1,
+                "interval": 1,
+                "output-tensor-meta": true
+              },
+              "property_observed_at": "pipeline_build",
+              "cameras": {
+                "replay_1": {
+                  "frames_seen": 12,
+                  "frames_tensor_output": 6,
+                  "frames_no_objects": 0,
+                  "frames_classifier_only": 0,
+                  "frames_unobserved": 6,
+                  "frames_unknown": 0,
+                  "objects_with_tensor": 6,
+                  "objects_classifier_only": 0,
+                  "last_frame_age_seconds": 0.00127271912060678,
+                  "last_tensor_age_seconds": 0.019494180101901293
+                }
+              },
+              "unique_id_conflict": false
+            }
+          }
+        },
+        "model_metrics_errors": 0,
+        "source_error_identified": 0,
+        "source_error_unidentified": 0,
+        "source_eos_identified": 0,
+        "source_eos_unidentified": 0,
+        "source_unidentified_stop": 0,
+        "source_stream_reset_events": 0,
+        "source_stream_reset_unidentified": 0,
+        "preview_identity_rejected": 0,
+        "preview_frames_stored": 8,
+        "context_identity_rejected": 0,
+        "context_match_expired": 2,
+        "context_match_evicted": 0,
+        "context_match_missed": 0,
+        "context_frames_matched": 8,
+        "context_queue_dropped": 0,
+        "pipeline_restart_requested": 0,
+        "pipeline_restart_rejected": 0,
+        "pipeline_restart_executed": 0,
+        "pipeline_restart_failed": 0,
+        "pipeline_restart_seconds": 0.0,
+        "falldata_inline_stats": {
+          "enabled": true,
+          "cameras": {}
+        },
+        "falldata_temporal_stats": {
+          "requests": 1,
+          "process_calls": 1
+        },
+        "appearance_backend_stats": {
+          "color_backend": {
+            "requests": 7,
+            "completed": 6,
+            "seconds": 9.136861429084092
+          },
+          "attribute_backend": {
+            "requests": 4,
+            "completed": 4,
+            "seconds": 0.00011796317994594574
+          }
+        },
+        "crop_pose_results": 0,
+        "primary_probe_frames": 14,
+        "primary_tensor_meta_count": 7,
+        "primary_person_rois": 7,
+        "crop_pose_person_objects": 0,
+        "crop_pose_tensor_meta_count": 0
+      },
+      "completed": true
+    },
+    "cli_udp": {
+      "output_mode": "h264-mpegts",
+      "copy_hw": "1",
+      "scope": "Actual RC4 main CLI, recorded input, all configured models and local RTSP output; stop after >=12 processed frames",
+      "timed_out": false,
+      "exit": 0,
+      "elapsed_seconds": 51.37524313596077,
+      "zero_error_summary": true,
+      "target_stats": {
+        "backend": "deepstream",
+        "camera_count": 1,
+        "frames_processed": 12,
+        "frames_dropped": 0,
+        "events_detected": 3,
+        "events_sent": 0,
+        "events_filtered": 15,
+        "events_dropped": 0,
+        "events_failed": 3,
+        "inference_errors": 0,
+        "camera_errors": 0,
+        "fps": 0.0,
+        "uptime_seconds": 0.0,
+        "avg_inference_ms": 0.0,
+        "output_mode": "h264-mpegts",
+        "preview_enabled": true,
+        "preview_max_fps": 10.0,
+        "preview_ready": true,
+        "cameras": 1,
+        "yolo_postprocess_mode": "vectorized",
+        "yolo_postprocess_calls": 13,
+        "yolo_postprocess_avg_ms": 3.244,
+        "yolo_postprocess_max_ms": 5.65,
+        "primary_camera_stats": {
+          "replay_1": {
+            "frames_seen": 14,
+            "frames_inferred": 7,
+            "frames_skipped": 7,
+            "frames_inference_unknown": 0,
+            "last_frame_age_seconds": 0.9128282649908215
+          }
+        },
+        "primary_metrics_errors": 0,
+        "model_inference_stats": {
+          "pipeline_generation": 1,
+          "metadata_errors": 0,
+          "models": {
+            "primary": {
+              "enabled": true,
+              "properties": {
+                "unique-id": 1,
+                "process-mode": 1,
+                "batch-size": 1,
+                "interval": 1,
+                "output-tensor-meta": true
+              },
+              "property_observed_at": "pipeline_build",
+              "cameras": {
+                "replay_1": {
+                  "frames_seen": 12,
+                  "frames_tensor_output": 6,
+                  "frames_no_objects": 0,
+                  "frames_classifier_only": 0,
+                  "frames_unobserved": 6,
+                  "frames_unknown": 0,
+                  "objects_with_tensor": 0,
+                  "objects_classifier_only": 0,
+                  "last_frame_age_seconds": 0.0012528609950095415,
+                  "last_tensor_age_seconds": 0.01966239116154611
+                }
+              },
+              "unique_id_conflict": false
+            },
+            "pose": {
+              "enabled": false,
+              "properties": {
+                "unique-id": null,
+                "process-mode": null,
+                "batch-size": null,
+                "interval": null,
+                "output-tensor-meta": null
+              },
+              "property_observed_at": "pipeline_build",
+              "cameras": {
+                "replay_1": {
+                  "frames_seen": 0,
+                  "frames_tensor_output": 0,
+                  "frames_no_objects": 0,
+                  "frames_classifier_only": 0,
+                  "frames_unobserved": 0,
+                  "frames_unknown": 0,
+                  "objects_with_tensor": 0,
+                  "objects_classifier_only": 0,
+                  "last_frame_age_seconds": null,
+                  "last_tensor_age_seconds": null
+                }
+              },
+              "unique_id_conflict": false
+            },
+            "attributes": {
+              "enabled": true,
+              "properties": {
+                "unique-id": 3,
+                "process-mode": 2,
+                "batch-size": 1,
+                "interval": 4,
+                "output-tensor-meta": true
+              },
+              "property_observed_at": "pipeline_build",
+              "cameras": {
+                "replay_1": {
+                  "frames_seen": 12,
+                  "frames_tensor_output": 6,
+                  "frames_no_objects": 0,
+                  "frames_classifier_only": 0,
+                  "frames_unobserved": 6,
+                  "frames_unknown": 0,
+                  "objects_with_tensor": 6,
+                  "objects_classifier_only": 0,
+                  "last_frame_age_seconds": 0.0012528609950095415,
+                  "last_tensor_age_seconds": 0.01966239116154611
+                }
+              },
+              "unique_id_conflict": false
+            },
+            "helmet": {
+              "enabled": true,
+              "properties": {
+                "unique-id": 2,
+                "process-mode": 2,
+                "batch-size": 1,
+                "interval": 1,
+                "output-tensor-meta": true
+              },
+              "property_observed_at": "pipeline_build",
+              "cameras": {
+                "replay_1": {
+                  "frames_seen": 12,
+                  "frames_tensor_output": 6,
+                  "frames_no_objects": 0,
+                  "frames_classifier_only": 0,
+                  "frames_unobserved": 6,
+                  "frames_unknown": 0,
+                  "objects_with_tensor": 6,
+                  "objects_classifier_only": 0,
+                  "last_frame_age_seconds": 0.0012528609950095415,
+                  "last_tensor_age_seconds": 0.01966239116154611
+                }
+              },
+              "unique_id_conflict": false
+            }
+          }
+        },
+        "model_metrics_errors": 0,
+        "source_error_identified": 0,
+        "source_error_unidentified": 0,
+        "source_eos_identified": 0,
+        "source_eos_unidentified": 0,
+        "source_unidentified_stop": 0,
+        "source_stream_reset_events": 0,
+        "source_stream_reset_unidentified": 0,
+        "preview_identity_rejected": 0,
+        "preview_frames_stored": 5,
+        "context_identity_rejected": 0,
+        "context_match_expired": 5,
+        "context_match_evicted": 0,
+        "context_match_missed": 0,
+        "context_frames_matched": 5,
+        "context_queue_dropped": 0,
+        "pipeline_restart_requested": 0,
+        "pipeline_restart_rejected": 0,
+        "pipeline_restart_executed": 0,
+        "pipeline_restart_failed": 0,
+        "pipeline_restart_seconds": 0.0,
+        "falldata_inline_stats": {
+          "enabled": true,
+          "cameras": {}
+        },
+        "falldata_temporal_stats": {
+          "requests": 1,
+          "process_calls": 1
+        },
+        "appearance_backend_stats": {
+          "color_backend": {
+            "requests": 5,
+            "completed": 4,
+            "seconds": 9.41700097383
+          },
+          "attribute_backend": {
+            "requests": 4,
+            "completed": 4,
+            "seconds": 2.4001114070415497e-05
+          }
+        },
+        "crop_pose_results": 0,
+        "primary_probe_frames": 14,
+        "primary_tensor_meta_count": 7,
+        "primary_person_rois": 7,
+        "crop_pose_person_objects": 0,
+        "crop_pose_tensor_meta_count": 0
+      },
+      "completed": true
+    },
+    "cli_normal": {
+      "output_mode": "rtsp-publish",
+      "copy_hw": "1",
+      "scope": "Actual RC4 main CLI, recorded input, all configured models and local RTSP output; stop after >=12 processed frames",
+      "timed_out": true,
+      "exit": 0,
+      "elapsed_seconds": 78.36816409393214,
+      "zero_error_summary": false,
+      "target_stats": {},
+      "sanitizer_enabled": false,
+      "completed": false
+    },
+    "cli_async": {
+      "output_mode": "rtsp-publish",
+      "copy_hw": "1",
+      "scope": "Actual RC4 main CLI, recorded input, all configured models and local RTSP output; stop after >=12 processed frames",
+      "timed_out": true,
+      "exit": 0,
+      "elapsed_seconds": 78.26411447604187,
+      "zero_error_summary": false,
+      "target_stats": {},
+      "sanitizer_enabled": false,
+      "completed": false
+    },
+    "cli_preview_async": {
+      "output_mode": "rtsp-publish",
+      "copy_hw": "1",
+      "scope": "Actual RC4 main CLI, recorded input, all configured models and local RTSP output; stop after >=12 processed frames",
+      "timed_out": true,
+      "exit": -9,
+      "elapsed_seconds": 81.3365595007781,
+      "zero_error_summary": false,
+      "target_stats": {
+        "backend": "deepstream",
+        "camera_count": 1,
+        "frames_processed": 12,
+        "frames_dropped": 0,
+        "events_detected": 1,
+        "events_sent": 0,
+        "events_filtered": 17,
+        "events_dropped": 0,
+        "events_failed": 1,
+        "inference_errors": 0,
+        "camera_errors": 0,
+        "fps": 0.0,
+        "uptime_seconds": 0.0,
+        "avg_inference_ms": 0.0,
+        "output_mode": "rtsp-publish",
+        "preview_enabled": true,
+        "preview_max_fps": 10.0,
+        "preview_ready": true,
+        "cameras": 1,
+        "yolo_postprocess_mode": "vectorized",
+        "yolo_postprocess_calls": 13,
+        "yolo_postprocess_avg_ms": 6.177,
+        "yolo_postprocess_max_ms": 27.092,
+        "primary_camera_stats": {
+          "replay_1": {
+            "frames_seen": 14,
+            "frames_inferred": 7,
+            "frames_skipped": 7,
+            "frames_inference_unknown": 0,
+            "last_frame_age_seconds": 0.053018487989902496
+          }
+        },
+        "primary_metrics_errors": 0,
+        "model_inference_stats": {
+          "pipeline_generation": 1,
+          "metadata_errors": 0,
+          "models": {
+            "primary": {
+              "enabled": true,
+              "properties": {
+                "unique-id": 1,
+                "process-mode": 1,
+                "batch-size": 1,
+                "interval": 1,
+                "output-tensor-meta": true
+              },
+              "property_observed_at": "pipeline_build",
+              "cameras": {
+                "replay_1": {
+                  "frames_seen": 12,
+                  "frames_tensor_output": 6,
+                  "frames_no_objects": 0,
+                  "frames_classifier_only": 0,
+                  "frames_unobserved": 6,
+                  "frames_unknown": 0,
+                  "objects_with_tensor": 0,
+                  "objects_classifier_only": 0,
+                  "last_frame_age_seconds": 0.0014550250489264727,
+                  "last_tensor_age_seconds": 0.049910124856978655
+                }
+              },
+              "unique_id_conflict": false
+            },
+            "pose": {
+              "enabled": false,
+              "properties": {
+                "unique-id": null,
+                "process-mode": null,
+                "batch-size": null,
+                "interval": null,
+                "output-tensor-meta": null
+              },
+              "property_observed_at": "pipeline_build",
+              "cameras": {
+                "replay_1": {
+                  "frames_seen": 0,
+                  "frames_tensor_output": 0,
+                  "frames_no_objects": 0,
+                  "frames_classifier_only": 0,
+                  "frames_unobserved": 0,
+                  "frames_unknown": 0,
+                  "objects_with_tensor": 0,
+                  "objects_classifier_only": 0,
+                  "last_frame_age_seconds": null,
+                  "last_tensor_age_seconds": null
+                }
+              },
+              "unique_id_conflict": false
+            },
+            "attributes": {
+              "enabled": true,
+              "properties": {
+                "unique-id": 3,
+                "process-mode": 2,
+                "batch-size": 1,
+                "interval": 4,
+                "output-tensor-meta": true
+              },
+              "property_observed_at": "pipeline_build",
+              "cameras": {
+                "replay_1": {
+                  "frames_seen": 12,
+                  "frames_tensor_output": 6,
+                  "frames_no_objects": 0,
+                  "frames_classifier_only": 0,
+                  "frames_unobserved": 6,
+                  "frames_unknown": 0,
+                  "objects_with_tensor": 6,
+                  "objects_classifier_only": 0,
+                  "last_frame_age_seconds": 0.0014550250489264727,
+                  "last_tensor_age_seconds": 0.049910124856978655
+                }
+              },
+              "unique_id_conflict": false
+            },
+            "helmet": {
+              "enabled": true,
+              "properties": {
+                "unique-id": 2,
+                "process-mode": 2,
+                "batch-size": 1,
+                "interval": 1,
+                "output-tensor-meta": true
+              },
+              "property_observed_at": "pipeline_build",
+              "cameras": {
+                "replay_1": {
+                  "frames_seen": 12,
+                  "frames_tensor_output": 6,
+                  "frames_no_objects": 0,
+                  "frames_classifier_only": 0,
+                  "frames_unobserved": 6,
+                  "frames_unknown": 0,
+                  "objects_with_tensor": 6,
+                  "objects_classifier_only": 0,
+                  "last_frame_age_seconds": 0.0014550250489264727,
+                  "last_tensor_age_seconds": 0.049910124856978655
+                }
+              },
+              "unique_id_conflict": false
+            }
+          }
+        },
+        "model_metrics_errors": 0,
+        "source_error_identified": 0,
+        "source_error_unidentified": 0,
+        "source_eos_identified": 0,
+        "source_eos_unidentified": 0,
+        "source_unidentified_stop": 0,
+        "source_stream_reset_events": 0,
+        "source_stream_reset_unidentified": 0,
+        "preview_identity_rejected": 0,
+        "preview_frames_stored": 3,
+        "context_identity_rejected": 0,
+        "context_match_expired": 0,
+        "context_match_evicted": 0,
+        "context_match_missed": 0,
+        "context_frames_matched": 3,
+        "context_queue_dropped": 0,
+        "pipeline_restart_requested": 0,
+        "pipeline_restart_rejected": 0,
+        "pipeline_restart_executed": 0,
+        "pipeline_restart_failed": 0,
+        "pipeline_restart_seconds": 0.0,
+        "falldata_inline_stats": {
+          "enabled": true,
+          "cameras": {}
+        },
+        "falldata_temporal_stats": {
+          "requests": 1,
+          "process_calls": 1
+        },
+        "appearance_backend_stats": {
+          "color_backend": {
+            "requests": 1
+          }
+        },
+        "crop_pose_results": 0,
+        "primary_probe_frames": 14,
+        "primary_tensor_meta_count": 7,
+        "primary_person_rois": 7,
+        "crop_pose_person_objects": 0,
+        "crop_pose_tensor_meta_count": 0
+      },
+      "sanitizer_enabled": false,
+      "completed": false
+    }
+  },
+  "findings": {
+    "startup": "File input plus RTSP output reproducibly blocked at 4 upstream buffers/0 metadata output with and without sanitizer. RTSP async-handling=True alone did not resolve. Preview appsink async=False resumed metadata and RTSP publishing.",
+    "shutdown": "Preview-fixed short trial processed frames and published RTSP, but blocked inside pipeline.set_state(NULL) and required timeout termination. Must not count as fully passed execution.",
+    "cuda700": "Original CUDA700 remains unreproduced; startup deadlock is a distinct confirmed defect."
+  },
+  "candidate_startup_only": {
+    "sanitizer_enabled": false,
+    "output_mode": "rtsp-publish",
+    "copy_hw": "1",
+    "scope": "Actual RC4 main CLI, recorded input, all configured models and local RTSP output; stop after >=12 processed frames",
+    "timed_out": true,
+    "exit": -9,
+    "elapsed_seconds": 156.34737587510608,
+    "zero_error_summary": false,
+    "target_stats": {
+      "backend": "deepstream",
+      "camera_count": 1,
+      "frames_processed": 60,
+      "frames_dropped": 0,
+      "events_detected": 2,
+      "events_sent": 0,
+      "events_filtered": 88,
+      "events_dropped": 0,
+      "events_failed": 2,
+      "inference_errors": 0,
+      "camera_errors": 0,
+      "fps": 0.0,
+      "uptime_seconds": 0.0,
+      "avg_inference_ms": 0.0,
+      "output_mode": "rtsp-publish",
+      "preview_enabled": true,
+      "preview_max_fps": 10.0,
+      "preview_ready": true,
+      "cameras": 1,
+      "yolo_postprocess_mode": "vectorized",
+      "yolo_postprocess_calls": 61,
+      "yolo_postprocess_avg_ms": 10.488,
+      "yolo_postprocess_max_ms": 42.672,
+      "primary_camera_stats": {
+        "replay_1": {
+          "frames_seen": 62,
+          "frames_inferred": 31,
+          "frames_skipped": 31,
+          "frames_inference_unknown": 0,
+          "last_frame_age_seconds": 0.03179386886768043
+        }
+      },
+      "primary_metrics_errors": 0,
+      "model_inference_stats": {
+        "pipeline_generation": 1,
+        "metadata_errors": 0,
+        "models": {
+          "primary": {
+            "enabled": true,
+            "properties": {
+              "unique-id": 1,
+              "process-mode": 1,
+              "batch-size": 1,
+              "interval": 1,
+              "output-tensor-meta": true
+            },
+            "property_observed_at": "pipeline_build",
+            "cameras": {
+              "replay_1": {
+                "frames_seen": 60,
+                "frames_tensor_output": 30,
+                "frames_no_objects": 0,
+                "frames_classifier_only": 0,
+                "frames_unobserved": 30,
+                "frames_unknown": 0,
+                "objects_with_tensor": 0,
+                "objects_classifier_only": 0,
+                "last_frame_age_seconds": 0.001541562844067812,
+                "last_tensor_age_seconds": 0.04576508887112141
+              }
+            },
+            "unique_id_conflict": false
+          },
+          "pose": {
+            "enabled": false,
+            "properties": {
+              "unique-id": null,
+              "process-mode": null,
+              "batch-size": null,
+              "interval": null,
+              "output-tensor-meta": null
+            },
+            "property_observed_at": "pipeline_build",
+            "cameras": {
+              "replay_1": {
+                "frames_seen": 0,
+                "frames_tensor_output": 0,
+                "frames_no_objects": 0,
+                "frames_classifier_only": 0,
+                "frames_unobserved": 0,
+                "frames_unknown": 0,
+                "objects_with_tensor": 0,
+                "objects_classifier_only": 0,
+                "last_frame_age_seconds": null,
+                "last_tensor_age_seconds": null
+              }
+            },
+            "unique_id_conflict": false
+          },
+          "attributes": {
+            "enabled": true,
+            "properties": {
+              "unique-id": 3,
+              "process-mode": 2,
+              "batch-size": 1,
+              "interval": 4,
+              "output-tensor-meta": true
+            },
+            "property_observed_at": "pipeline_build",
+            "cameras": {
+              "replay_1": {
+                "frames_seen": 60,
+                "frames_tensor_output": 30,
+                "frames_no_objects": 0,
+                "frames_classifier_only": 0,
+                "frames_unobserved": 30,
+                "frames_unknown": 0,
+                "objects_with_tensor": 30,
+                "objects_classifier_only": 0,
+                "last_frame_age_seconds": 0.001541562844067812,
+                "last_tensor_age_seconds": 0.04576508887112141
+              }
+            },
+            "unique_id_conflict": false
+          },
+          "helmet": {
+            "enabled": true,
+            "properties": {
+              "unique-id": 2,
+              "process-mode": 2,
+              "batch-size": 1,
+              "interval": 1,
+              "output-tensor-meta": true
+            },
+            "property_observed_at": "pipeline_build",
+            "cameras": {
+              "replay_1": {
+                "frames_seen": 60,
+                "frames_tensor_output": 30,
+                "frames_no_objects": 0,
+                "frames_classifier_only": 0,
+                "frames_unobserved": 30,
+                "frames_unknown": 0,
+                "objects_with_tensor": 30,
+                "objects_classifier_only": 0,
+                "last_frame_age_seconds": 0.001541562844067812,
+                "last_tensor_age_seconds": 0.04576508887112141
+              }
+            },
+            "unique_id_conflict": false
+          }
+        }
+      },
+      "model_metrics_errors": 0,
+      "source_error_identified": 0,
+      "source_error_unidentified": 0,
+      "source_eos_identified": 0,
+      "source_eos_unidentified": 0,
+      "source_unidentified_stop": 0,
+      "source_stream_reset_events": 0,
+      "source_stream_reset_unidentified": 0,
+      "preview_identity_rejected": 0,
+      "preview_frames_stored": 24,
+      "context_identity_rejected": 0,
+      "context_match_expired": 9,
+      "context_match_evicted": 0,
+      "context_match_missed": 0,
+      "context_frames_matched": 24,
+      "context_queue_dropped": 0,
+      "pipeline_restart_requested": 0,
+      "pipeline_restart_rejected": 0,
+      "pipeline_restart_executed": 0,
+      "pipeline_restart_failed": 0,
+      "pipeline_restart_seconds": 0.0,
+      "falldata_inline_stats": {
+        "enabled": true,
+        "cameras": {}
+      },
+      "falldata_temporal_stats": {
+        "requests": 1,
+        "process_calls": 1
+      },
+      "appearance_backend_stats": {
+        "color_backend": {
+          "requests": 34,
+          "completed": 34,
+          "seconds": 1.183890111045912
+        },
+        "attribute_backend": {
+          "requests": 23,
+          "completed": 23,
+          "seconds": 0.00010029040277004242
+        }
+      },
+      "crop_pose_results": 0,
+      "primary_probe_frames": 62,
+      "primary_tensor_meta_count": 31,
+      "primary_person_rois": 31,
+      "crop_pose_person_objects": 0,
+      "crop_pose_tensor_meta_count": 0
+    },
+    "completed": false,
+    "rtsp_published": true
+  },
+  "candidate_flush_control": {
+    "sanitizer_enabled": false,
+    "output_mode": "rtsp-publish",
+    "copy_hw": "1",
+    "scope": "Actual RC4 main CLI, recorded input, all configured models and local RTSP output; stop after >=12 processed frames",
+    "timed_out": false,
+    "exit": 0,
+    "elapsed_seconds": 16.924272255972028,
+    "zero_error_summary": false,
+    "target_stats": {
+      "backend": "deepstream",
+      "camera_count": 1,
+      "frames_processed": 60,
+      "frames_dropped": 0,
+      "events_detected": 1,
+      "events_sent": 0,
+      "events_filtered": 89,
+      "events_dropped": 0,
+      "events_failed": 1,
+      "inference_errors": 0,
+      "camera_errors": 0,
+      "fps": 0.0,
+      "uptime_seconds": 0.0,
+      "avg_inference_ms": 0.0,
+      "output_mode": "rtsp-publish",
+      "preview_enabled": true,
+      "preview_max_fps": 10.0,
+      "preview_ready": true,
+      "cameras": 1,
+      "yolo_postprocess_mode": "vectorized",
+      "yolo_postprocess_calls": 61,
+      "yolo_postprocess_avg_ms": 6.549,
+      "yolo_postprocess_max_ms": 26.936,
+      "primary_camera_stats": {
+        "replay_1": {
+          "frames_seen": 62,
+          "frames_inferred": 31,
+          "frames_skipped": 31,
+          "frames_inference_unknown": 0,
+          "last_frame_age_seconds": 0.07662334106862545
+        }
+      },
+      "primary_metrics_errors": 0,
+      "model_inference_stats": {
+        "pipeline_generation": 1,
+        "metadata_errors": 0,
+        "models": {
+          "primary": {
+            "enabled": true,
+            "properties": {
+              "unique-id": 1,
+              "process-mode": 1,
+              "batch-size": 1,
+              "interval": 1,
+              "output-tensor-meta": true
+            },
+            "property_observed_at": "pipeline_build",
+            "cameras": {
+              "replay_1": {
+                "frames_seen": 60,
+                "frames_tensor_output": 30,
+                "frames_no_objects": 0,
+                "frames_classifier_only": 0,
+                "frames_unobserved": 30,
+                "frames_unknown": 0,
+                "objects_with_tensor": 0,
+                "objects_classifier_only": 0,
+                "last_frame_age_seconds": 0.0012776118237525225,
+                "last_tensor_age_seconds": 0.05141698196530342
+              }
+            },
+            "unique_id_conflict": false
+          },
+          "pose": {
+            "enabled": false,
+            "properties": {
+              "unique-id": null,
+              "process-mode": null,
+              "batch-size": null,
+              "interval": null,
+              "output-tensor-meta": null
+            },
+            "property_observed_at": "pipeline_build",
+            "cameras": {
+              "replay_1": {
+                "frames_seen": 0,
+                "frames_tensor_output": 0,
+                "frames_no_objects": 0,
+                "frames_classifier_only": 0,
+                "frames_unobserved": 0,
+                "frames_unknown": 0,
+                "objects_with_tensor": 0,
+                "objects_classifier_only": 0,
+                "last_frame_age_seconds": null,
+                "last_tensor_age_seconds": null
+              }
+            },
+            "unique_id_conflict": false
+          },
+          "attributes": {
+            "enabled": true,
+            "properties": {
+              "unique-id": 3,
+              "process-mode": 2,
+              "batch-size": 1,
+              "interval": 4,
+              "output-tensor-meta": true
+            },
+            "property_observed_at": "pipeline_build",
+            "cameras": {
+              "replay_1": {
+                "frames_seen": 60,
+                "frames_tensor_output": 30,
+                "frames_no_objects": 0,
+                "frames_classifier_only": 0,
+                "frames_unobserved": 30,
+                "frames_unknown": 0,
+                "objects_with_tensor": 30,
+                "objects_classifier_only": 0,
+                "last_frame_age_seconds": 0.0012776118237525225,
+                "last_tensor_age_seconds": 0.05141698196530342
+              }
+            },
+            "unique_id_conflict": false
+          },
+          "helmet": {
+            "enabled": true,
+            "properties": {
+              "unique-id": 2,
+              "process-mode": 2,
+              "batch-size": 1,
+              "interval": 1,
+              "output-tensor-meta": true
+            },
+            "property_observed_at": "pipeline_build",
+            "cameras": {
+              "replay_1": {
+                "frames_seen": 60,
+                "frames_tensor_output": 30,
+                "frames_no_objects": 0,
+                "frames_classifier_only": 0,
+                "frames_unobserved": 30,
+                "frames_unknown": 0,
+                "objects_with_tensor": 30,
+                "objects_classifier_only": 0,
+                "last_frame_age_seconds": 0.0012776118237525225,
+                "last_tensor_age_seconds": 0.05141698196530342
+              }
+            },
+            "unique_id_conflict": false
+          }
+        }
+      },
+      "model_metrics_errors": 0,
+      "source_error_identified": 0,
+      "source_error_unidentified": 0,
+      "source_eos_identified": 0,
+      "source_eos_unidentified": 0,
+      "source_unidentified_stop": 0,
+      "source_stream_reset_events": 0,
+      "source_stream_reset_unidentified": 0,
+      "preview_identity_rejected": 0,
+      "preview_frames_stored": 20,
+      "context_identity_rejected": 0,
+      "context_match_expired": 2,
+      "context_match_evicted": 6,
+      "context_match_missed": 0,
+      "context_frames_matched": 20,
+      "context_queue_dropped": 0,
+      "pipeline_restart_requested": 0,
+      "pipeline_restart_rejected": 0,
+      "pipeline_restart_executed": 0,
+      "pipeline_restart_failed": 0,
+      "pipeline_restart_seconds": 0.0,
+      "falldata_inline_stats": {
+        "enabled": true,
+        "cameras": {}
+      },
+      "falldata_temporal_stats": {
+        "requests": 1,
+        "process_calls": 1
+      },
+      "appearance_backend_stats": {
+        "color_backend": {
+          "requests": 30,
+          "completed": 30,
+          "seconds": 0.995423142099753
+        },
+        "attribute_backend": {
+          "requests": 19,
+          "completed": 19,
+          "seconds": 0.00013900967314839363
+        }
+      },
+      "crop_pose_results": 0,
+      "primary_probe_frames": 62,
+      "primary_tensor_meta_count": 31,
+      "primary_person_rois": 31,
+      "crop_pose_person_objects": 0,
+      "crop_pose_tensor_meta_count": 0
+    },
+    "completed": true,
+    "rtsp_published": true
+  },
+  "candidate_final_memcheck": {
+    "sanitizer_enabled": true,
+    "output_mode": "rtsp-publish",
+    "copy_hw": "1",
+    "scope": "Actual RC4 main CLI, recorded input, all configured models and local RTSP output; stop after >=12 processed frames",
+    "timed_out": false,
+    "exit": 0,
+    "elapsed_seconds": 59.50287584704347,
+    "zero_error_summary": true,
+    "target_stats": {
+      "backend": "deepstream",
+      "camera_count": 1,
+      "frames_processed": 30,
+      "frames_dropped": 0,
+      "events_detected": 8,
+      "events_sent": 0,
+      "events_filtered": 37,
+      "events_dropped": 0,
+      "events_failed": 8,
+      "inference_errors": 0,
+      "camera_errors": 0,
+      "fps": 0.0,
+      "uptime_seconds": 0.0,
+      "avg_inference_ms": 0.0,
+      "output_mode": "rtsp-publish",
+      "preview_enabled": true,
+      "preview_max_fps": 10.0,
+      "preview_ready": true,
+      "cameras": 1,
+      "yolo_postprocess_mode": "vectorized",
+      "yolo_postprocess_calls": 31,
+      "yolo_postprocess_avg_ms": 3.361,
+      "yolo_postprocess_max_ms": 7.942,
+      "primary_camera_stats": {
+        "replay_1": {
+          "frames_seen": 32,
+          "frames_inferred": 16,
+          "frames_skipped": 16,
+          "frames_inference_unknown": 0,
+          "last_frame_age_seconds": 0.5843025241047144
+        }
+      },
+      "primary_metrics_errors": 0,
+      "model_inference_stats": {
+        "pipeline_generation": 1,
+        "metadata_errors": 0,
+        "models": {
+          "primary": {
+            "enabled": true,
+            "properties": {
+              "unique-id": 1,
+              "process-mode": 1,
+              "batch-size": 1,
+              "interval": 1,
+              "output-tensor-meta": true
+            },
+            "property_observed_at": "pipeline_build",
+            "cameras": {
+              "replay_1": {
+                "frames_seen": 30,
+                "frames_tensor_output": 15,
+                "frames_no_objects": 0,
+                "frames_classifier_only": 0,
+                "frames_unobserved": 15,
+                "frames_unknown": 0,
+                "objects_with_tensor": 0,
+                "objects_classifier_only": 0,
+                "last_frame_age_seconds": 0.001326276920735836,
+                "last_tensor_age_seconds": 0.020681943045929074
+              }
+            },
+            "unique_id_conflict": false
+          },
+          "pose": {
+            "enabled": false,
+            "properties": {
+              "unique-id": null,
+              "process-mode": null,
+              "batch-size": null,
+              "interval": null,
+              "output-tensor-meta": null
+            },
+            "property_observed_at": "pipeline_build",
+            "cameras": {
+              "replay_1": {
+                "frames_seen": 0,
+                "frames_tensor_output": 0,
+                "frames_no_objects": 0,
+                "frames_classifier_only": 0,
+                "frames_unobserved": 0,
+                "frames_unknown": 0,
+                "objects_with_tensor": 0,
+                "objects_classifier_only": 0,
+                "last_frame_age_seconds": null,
+                "last_tensor_age_seconds": null
+              }
+            },
+            "unique_id_conflict": false
+          },
+          "attributes": {
+            "enabled": true,
+            "properties": {
+              "unique-id": 3,
+              "process-mode": 2,
+              "batch-size": 1,
+              "interval": 4,
+              "output-tensor-meta": true
+            },
+            "property_observed_at": "pipeline_build",
+            "cameras": {
+              "replay_1": {
+                "frames_seen": 30,
+                "frames_tensor_output": 15,
+                "frames_no_objects": 0,
+                "frames_classifier_only": 0,
+                "frames_unobserved": 15,
+                "frames_unknown": 0,
+                "objects_with_tensor": 15,
+                "objects_classifier_only": 0,
+                "last_frame_age_seconds": 0.001326276920735836,
+                "last_tensor_age_seconds": 0.020681943045929074
+              }
+            },
+            "unique_id_conflict": false
+          },
+          "helmet": {
+            "enabled": true,
+            "properties": {
+              "unique-id": 2,
+              "process-mode": 2,
+              "batch-size": 1,
+              "interval": 1,
+              "output-tensor-meta": true
+            },
+            "property_observed_at": "pipeline_build",
+            "cameras": {
+              "replay_1": {
+                "frames_seen": 30,
+                "frames_tensor_output": 15,
+                "frames_no_objects": 0,
+                "frames_classifier_only": 0,
+                "frames_unobserved": 15,
+                "frames_unknown": 0,
+                "objects_with_tensor": 15,
+                "objects_classifier_only": 0,
+                "last_frame_age_seconds": 0.001326276920735836,
+                "last_tensor_age_seconds": 0.020681943045929074
+              }
+            },
+            "unique_id_conflict": false
+          }
+        }
+      },
+      "model_metrics_errors": 0,
+      "source_error_identified": 0,
+      "source_error_unidentified": 0,
+      "source_eos_identified": 0,
+      "source_eos_unidentified": 0,
+      "source_unidentified_stop": 0,
+      "source_stream_reset_events": 0,
+      "source_stream_reset_unidentified": 0,
+      "preview_identity_rejected": 0,
+      "preview_frames_stored": 16,
+      "context_identity_rejected": 0,
+      "context_match_expired": 12,
+      "context_match_evicted": 0,
+      "context_match_missed": 0,
+      "context_frames_matched": 16,
+      "context_queue_dropped": 0,
+      "pipeline_restart_requested": 0,
+      "pipeline_restart_rejected": 0,
+      "pipeline_restart_executed": 0,
+      "pipeline_restart_failed": 0,
+      "pipeline_restart_seconds": 0.0,
+      "falldata_inline_stats": {
+        "enabled": true,
+        "cameras": {}
+      },
+      "falldata_temporal_stats": {
+        "requests": 1,
+        "process_calls": 1,
+        "process_errors": 1,
+        "process_timeouts": 1,
+        "process_seconds": 30.36104601691477
+      },
+      "appearance_backend_stats": {
+        "color_backend": {
+          "requests": 15,
+          "completed": 14,
+          "seconds": 32.84085485688411
+        },
+        "attribute_backend": {
+          "requests": 11,
+          "completed": 11,
+          "seconds": 6.115180440247059e-05
+        }
+      },
+      "crop_pose_results": 0,
+      "primary_probe_frames": 32,
+      "primary_tensor_meta_count": 16,
+      "primary_person_rois": 16,
+      "crop_pose_person_objects": 0,
+      "crop_pose_tensor_meta_count": 0
+    },
+    "completed": true,
+    "rtsp_published": true
+  },
+  "candidate_change": {
+    "base": "RC4",
+    "changed_file": "src/core/_deepstream_pipeline_builder.py",
+    "sha256": "f05ac75ae231e14571d292eebfaded3b543d356a6c89477a609b07ddd15c14a2",
+    "changes": [
+      "preview appsink async=False",
+      "FLUSH_START before pipeline NULL"
+    ]
+  },
+  "fixed_local_issue": "I35 file-input/RTSP lifecycle: preview preroll wait and blocked NULL transition",
+  "validation": {
+    "pytest": "182 PASS / 2 SKIP (DeepStream pipeline builder, processor, fatal-error tests)",
+    "red_regression": "new real Gst appsink PAUSED test failed ASYNC before fix",
+    "ruff": "PASS",
+    "product_files": [
+      "src/core/_deepstream_pipeline_builder.py"
+    ],
+    "tests_files": [
+      "tests/test_deepstream_pipeline_builder.py"
+    ],
+    "wbs_counts": {
+      "DONE": 9,
+      "BLOCKED": 3,
+      "PLANNED": 13,
+      "VERIFY": 7,
+      "IN_PROGRESS": 1
+    },
+    "diff_check": "PASS",
+    "board_lan_bytes": "HTML/PDF match",
+    "pdf_first_page_visual": "PASS"
+  },
+  "references": {
+    "preroll": "https://gstreamer.freedesktop.org/documentation/additional/design/preroll.html",
+    "latency_state_changes": "https://gstreamer.freedesktop.org/documentation/additional/design/latency.html",
+    "lifetime_hypothesis_not_adopted": "https://raw.githubusercontent.com/NVIDIA/TensorRT/release/10.3/python/src/infer/pyCore.cpp"
+  },
+  "candidate_live": {
+    "scope": "RC4 direct live camera_1 as live_1; bridge, unpublished ports; local MQTT:9",
+    "completed_experiment": true,
+    "steady_observation_seconds": 60,
+    "receiver_media_seconds": 30,
+    "max_no_progress_seconds": 0.0,
+    "receiver_exit": 0,
+    "output_bytes": 17553335,
+    "app_alive": true,
+    "server_alive": true,
+    "transitions": [
+      {
+        "name": "input_ready",
+        "elapsed": 12.158
+      },
+      {
+        "name": "output_ready",
+        "elapsed": 12.814
+      }
+    ],
+    "sample_count": 69,
+    "elapsed_seconds": 79.4288849979639,
+    "maxima": {
+      "cctv_processor_frames_processed_total:{}": 1422.0,
+      "cctv_processor_preview_frames_stored_total:{}": 494.0,
+      "cctv_processor_pipeline_restart_executed_total:{}": 0,
+      "cctv_processor_context_queue_dropped_total:{}": 307.0
+    },
+    "cuda_signatures": 0,
+    "media": {
+      "width": 1920,
+      "height": 1080,
+      "duration": 30.203,
+      "packets": 693,
+      "r_frame_rate": "30/1",
+      "avg_frame_rate": "30/1",
+      "decode_exit": 0,
+      "decode_error_output": ""
+    }
+  },
+  "production_observation": {
+    "health": "healthy",
+    "restart_count": 0,
+    "started_at": "2026-09-16T23:45:46.903505745Z",
+    "test_containers_remaining": 0,
+    "deployed": false
+  },
+  "publication": {
+    "html": {
+      "bytes": 22564,
+      "sha256": "270c3decb2b5b23e5c7eb4b7ef7ed4cb1ac24f3044ba895ec74cdae920886647",
+      "lan_matches": true
+    },
+    "pdf": {
+      "bytes": 123980,
+      "sha256": "d72643eb336ef1b86d1e65ad0dc74f5053000396166a521954bfcbf4e703be22",
+      "lan_matches": true
+    }
+  }
+}

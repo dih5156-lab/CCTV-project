@@ -1,0 +1,475 @@
+{
+  "date": "2026-10-02",
+  "version": "0.97",
+  "wbs": "P5.1",
+  "status": "IN_PROGRESS",
+  "operating_applied": false,
+  "candidate": {
+    "base_image": "sha256:809693da4ed0c288e68744235f4ff0156612d73ca59f5e6282ffcedf3e9aee49",
+    "files": {
+      "core/_deepstream_event_factory.py": "15722df14fdb38edf422280ba6a1f624e79a6c2b202779b44357bad94ac27a33",
+      "core/deepstream_processor.py": "4007c3564908da69de28999106d3ec78d06237d14f7ee6be235aef56d69237dc",
+      "core/_deepstream_context_worker.py": "ef9d1bc7d49872491e5187f106ac814c8e5d54d97b91db30636fae6df02da887",
+      "services/processor_metrics.py": "7e73ba03b056a261176c28937db82d937ffe1c670bc7bc954e5e449736206103",
+      "services/zone_api.py": "0d698c67761a77bc8e7e3b28addba7eeea43fee759457550905c20ebae178a57"
+    },
+    "image": "sha256:0c11b835eb42cd245f4dda0b8bc8088733c0323bf75a2f4fefe9e7705d8dbf34",
+    "source_verification": {
+      "files": 206,
+      "different": []
+    },
+    "runtime_src_changed_this_turn": false,
+    "osd_mode": "0",
+    "operating_applied": false,
+    "build_initial_failure": "FROM image ID parsed as registry repository; corrected with local alias of verified base image",
+    "cuda_dump_capture": "lightweight exception-only, no manual trigger, no CPU dump"
+  },
+  "ab": {
+    "output_trace": {
+      "cpu_arrivals": 702,
+      "missed": 23,
+      "reasons": {
+        "expired": 1,
+        "no_person_metadata": 22
+      },
+      "startup": {
+        "osd_mode": 1,
+        "osd_seconds": 10.866286328993738,
+        "registration_to_cpu_seconds": 10.965547282947227,
+        "first_cpu_admitted": false,
+        "first_cpu_counters": {
+          "context_match_missed": 1,
+          "context_match_missed_expired": 1
+        }
+      },
+      "queue_dropped": 0,
+      "tasks_failed": 0
+    },
+    "output_cpu": {
+      "cpu_arrivals": 715,
+      "missed": 0,
+      "reasons": {},
+      "startup": {
+        "osd_mode": 0,
+        "osd_seconds": 0.01764234690926969,
+        "registration_to_cpu_seconds": 0.11140064289793372,
+        "first_cpu_admitted": true,
+        "first_cpu_counters": {
+          "context_frames_matched": 1
+        }
+      },
+      "queue_dropped": 0,
+      "tasks_failed": 0
+    }
+  },
+  "trials": [
+    {
+      "artifact": "output_trace",
+      "completed": true,
+      "app_exit": 0,
+      "receiver_exit": 0,
+      "stop_seconds": 2.855420653009787,
+      "elapsed_seconds": 120.88214339292608,
+      "recovery_seconds": null
+    },
+    {
+      "artifact": "output_cpu",
+      "completed": true,
+      "app_exit": 0,
+      "receiver_exit": 0,
+      "stop_seconds": 2.7803344421554357,
+      "elapsed_seconds": 106.4503219940234,
+      "recovery_seconds": null
+    },
+    {
+      "artifact": "output_candidate",
+      "completed": true,
+      "app_exit": 0,
+      "receiver_exit": 0,
+      "stop_seconds": 10.345033727120608,
+      "elapsed_seconds": 244.88046702719294,
+      "recovery_seconds": 8.155976159963757
+    },
+    {
+      "artifact": "output_models_debug",
+      "completed": true,
+      "app_exit": 0,
+      "receiver_exit": 0,
+      "stop_seconds": 7.865736165083945,
+      "elapsed_seconds": 112.77327548712492,
+      "recovery_seconds": null
+    },
+    {
+      "artifact": "output_stop_stages_1",
+      "completed": true,
+      "app_exit": 0,
+      "receiver_exit": 0,
+      "stop_seconds": 5.775120554026216,
+      "elapsed_seconds": 108.37839354597963,
+      "recovery_seconds": null
+    },
+    {
+      "artifact": "output_stop_stages_2",
+      "completed": true,
+      "app_exit": 0,
+      "receiver_exit": 0,
+      "stop_seconds": 19.056892751948908,
+      "elapsed_seconds": 124.17527134600095,
+      "recovery_seconds": null
+    },
+    {
+      "artifact": "output_models",
+      "completed": false,
+      "stop_budget_exceeded": true,
+      "budget_seconds": 30,
+      "container_exit": 1,
+      "final_model_counts_available": false,
+      "evidence": "models_failure.json",
+      "native_stack": "not captured: container namespace already gone"
+    },
+    {
+      "artifact": "output_release",
+      "completed": false,
+      "app_exit": null,
+      "receiver_exit": 0,
+      "stop_seconds": 87.11064301501028,
+      "elapsed_seconds": 208.58512692013755,
+      "stop_budget_exceeded": true,
+      "stop_budget_seconds": 60.009750600904226,
+      "gdb_exit": 0,
+      "diagnostic_only_early_attach": true
+    },
+    {
+      "artifact": "output_native_stop",
+      "completed": true,
+      "app_exit": 0,
+      "receiver_exit": 0,
+      "stop_seconds": 6.604854795848951,
+      "elapsed_seconds": 111.49535306496546,
+      "stop_budget_exceeded": null,
+      "stop_budget_seconds": null,
+      "gdb_exit": null,
+      "diagnostic_only_early_attach": null
+    }
+  ],
+  "integrated_candidate": {
+    "experiment": {
+      "codec_mode": "rtsp",
+      "completed": true,
+      "scope": "new pinned candidate image, all current 206 source files, CPU OSD and persistent TCN, normal replay then disconnect/recovery",
+      "scenario": "normal",
+      "loaded_rtsp_plugin": [
+        "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstrtspclientsink.so"
+      ],
+      "frames_before_input_loss": 2756.0,
+      "recovery_seconds": 8.155976159963757,
+      "frames_at_recovery": 2791.0,
+      "receiver_exit": 0,
+      "output_bytes": 74148036,
+      "last_frames": 5500.0,
+      "app_exit": 0,
+      "stop_seconds": 10.345033727120608,
+      "elapsed_seconds": 244.88046702719294,
+      "transitions": [
+        {
+          "name": "input_ready",
+          "elapsed": 19.377
+        },
+        {
+          "name": "output_ready",
+          "elapsed": 19.991
+        },
+        {
+          "name": "input_publisher_stopped",
+          "elapsed": 110.429
+        },
+        {
+          "name": "input_publisher_restarted",
+          "elapsed": 135.985
+        },
+        {
+          "name": "input_recovered",
+          "elapsed": 144.143
+        },
+        {
+          "name": "sigterm_requested",
+          "elapsed": 234.488
+        }
+      ],
+      "sample_count": 227
+    },
+    "cpu_match": {
+      "all_cpu_arrivals_have_prior_exact_identity_registration": true,
+      "cpu_arrivals_by_generation": {
+        "1": 735,
+        "3": 715
+      },
+      "arrivals": 1450,
+      "matched_completed": 324,
+      "sampled": 1126,
+      "source_reset_generations_observed": 2
+    },
+    "tcn_status_counts": {
+      "insufficient_pose_frames": 1,
+      "ok": 17
+    },
+    "tcn_after_first_seconds": {
+      "min": 1.2407622060272843,
+      "max": 2.549367417115718
+    },
+    "final_context": {
+      "context_identity_rejected": 0,
+      "context_match_expired": 88,
+      "context_match_evicted": 3897,
+      "context_match_missed": 0,
+      "context_match_missed_no_target": 0,
+      "context_match_missed_expired": 0,
+      "context_match_missed_evicted": 0,
+      "context_match_missed_unknown": 0,
+      "context_frames_matched": 324,
+      "context_queue_dropped": 0,
+      "context_frames_sampled": 1126,
+      "context_people_sampled": 1079,
+      "context_people_busy": 47,
+      "context_tasks_completed": 324,
+      "context_tasks_failed": 0
+    },
+    "tensor_frame_counts": {
+      "primary": 2750,
+      "pose": 0,
+      "attributes": 2750,
+      "helmet": 2750
+    }
+  },
+  "model_audit_success": {
+    "counts": {
+      "event.person": 4107,
+      "pose_events": 1369,
+      "pose_scope_assigned": 1369,
+      "face_request.calls": 161,
+      "face_opencv.calls": 161,
+      "tcn_verify.calls": 9,
+      "face_opencv.returned": 161,
+      "face_opencv.no_face_returned": 161,
+      "face_request.returned": 161,
+      "face_request.no_face_returned": 161,
+      "color_result.calls": 252,
+      "color_runtime.calls": 252,
+      "color_runtime.returned": 252,
+      "color_result.returned": 252,
+      "color_result.color": 187,
+      "python_attribute.calls": 161,
+      "python_attribute.returned": 161,
+      "python_attribute.empty": 161,
+      "color_result.below_threshold": 65,
+      "tcn_verify.returned": 9,
+      "tcn_verify.insufficient_pose_frames": 1,
+      "tcn_verify.ok": 8
+    },
+    "capabilities": {
+      "face_enabled": true,
+      "face_backend": "opencv_haar_baseline",
+      "attribute_backend": "NullAttributeBackend",
+      "color_backend": "OnnxColorClassificationBackend",
+      "color_runtime": "TensorRTAttributeRuntime",
+      "color_labels": 11,
+      "color_input_size": 160,
+      "rf_enabled": true,
+      "rf_mode": "shadow",
+      "camera_flags": {
+        "replay_1": {
+          "use_helmet": true,
+          "use_pose": true,
+          "use_person": false,
+          "use_face": true,
+          "use_appearance": true
+        }
+      }
+    }
+  },
+  "video": {
+    "output_trace": {
+      "decode_exit": 0,
+      "stderr_bytes": 0,
+      "packet_count": 1236,
+      "timing": {
+        "pts_time": {
+          "count": 1236,
+          "duplicate": 0,
+          "backwards": 0,
+          "max_gap_sec": 0.26599999999999824
+        },
+        "dts_time": {
+          "count": 1236,
+          "duplicate": 0,
+          "backwards": 0,
+          "max_gap_sec": 0.26599999999999824
+        }
+      }
+    },
+    "output_cpu": {
+      "decode_exit": 0,
+      "stderr_bytes": 0,
+      "packet_count": 1688,
+      "timing": {
+        "pts_time": {
+          "count": 1688,
+          "duplicate": 0,
+          "backwards": 0,
+          "max_gap_sec": 0.17800000000000082
+        },
+        "dts_time": {
+          "count": 1688,
+          "duplicate": 0,
+          "backwards": 0,
+          "max_gap_sec": 0.17800000000000082
+        }
+      }
+    },
+    "output_candidate": {
+      "decode_exit": 0,
+      "stderr_bytes": 0,
+      "packet_count": 3278,
+      "timing": {
+        "pts_time": {
+          "count": 3278,
+          "duplicate": 0,
+          "backwards": 0,
+          "max_gap_sec": 32.794
+        },
+        "dts_time": {
+          "count": 3278,
+          "duplicate": 0,
+          "backwards": 0,
+          "max_gap_sec": 32.794
+        }
+      }
+    }
+  },
+  "db_after_first_three_runs": {
+    "mqtt_event_outbox.db": {
+      "integrity": "ok",
+      "table_count_delta": {
+        "mqtt_event_outbox": 125
+      }
+    },
+    "appearances.db": {
+      "integrity": "ok",
+      "table_count_delta": {
+        "search_conditions": 0,
+        "appearance_log": 112
+      }
+    },
+    "commercial_faces.db": {
+      "integrity": "ok",
+      "table_count_delta": {
+        "face_persons": 0,
+        "face_samples": 0
+      }
+    }
+  },
+  "cuda": {
+    "createTexture status=700": 0,
+    "cudaErrorIllegalAddress": 0,
+    "NVDSINFER_CUDA_ERROR": 0,
+    "Failed in mem copy": 0,
+    "cudaErrorLaunchFailure": 0
+  },
+  "tests": {
+    "current": "85 PASS: candidate checker, pipeline builder, compose stack; Ruff PASS; merged candidate checker PASS",
+    "previous_reused": "v0.96 whole suite 2737 PASS / 52 SKIP; not rerun this turn",
+    "runtime_src_unchanged": 206,
+    "ruff_final": "PASS: candidate checker, candidate checker tests, progress renderer"
+  },
+  "limitations": [
+    "One sequential GPU/CPU OSD comparison does not establish long-run stability or infer historical missed-frame causes.",
+    "Initial model audit lacks native stack/final counters. Diagnostic trial reproduced pipeline NULL stall and captured native buffer-pool/driver wait; subsequent passes do not resolve I40.",
+    "Model validity and code execution are not labeled fall detection accuracy.",
+    "RF verify was not called; face detection returned no face; Python attribute backend was Null while native SGIE tensors were observed.",
+    "CUDA700 original cause, I32/I37/I38 historic cases, I45 DB race, I46 deployment alignment and operating application remain open.",
+    "Spare Jetson installation test deferred by user until functionality complete and before release."
+  ],
+  "raw_artifacts": "data/runtime/p51_startup_delay_20261002_v097",
+  "shutdown_native": {
+    "trial": "output_release",
+    "status": "FAIL",
+    "pre_attach_wait_seconds": 60.009750600904226,
+    "phase": "pipeline.set_state(NULL), after RTSP sink NULL returned",
+    "source": "src/core/_deepstream_pipeline_builder.py:505",
+    "main_native_frames": [
+      "gst_buffer_pool_set_active",
+      "libgstnvvideo4linux2.so",
+      "v4l2_ioctl",
+      "TegraV4L2_Ioctl",
+      "libnvmmlite_video.so",
+      "libnvos.so",
+      "pthread_cond_wait"
+    ],
+    "gdb_exit": 0,
+    "limitations": [
+      "No pipeline release request was reached; early release debugger did not attach. GDB attached only after 60 second timeout.",
+      "Limited GDB Python helpers produced warnings but native stack and successful detach were captured.",
+      "Decoder versus encoder and the underlying driver wait trigger remain unproven.",
+      "Does not prove the original 30 second failure has the identical native cause."
+    ],
+    "artifact": "output_release/native_stop_stacks.txt"
+  },
+  "final_db_integrity": {
+    "mqtt_event_outbox.db": {
+      "integrity": [
+        "ok"
+      ]
+    },
+    "appearances.db": {
+      "integrity": [
+        "ok"
+      ]
+    },
+    "commercial_faces.db": {
+      "integrity": [
+        "ok"
+      ]
+    }
+  },
+  "updated_kst": "2026-10-02T13:44:03.316481",
+  "publication": {
+    "index.html": {
+      "http": 200,
+      "matches_local": true,
+      "bytes": 23276,
+      "sha256": "23950db4677c42626b46789a9b5c24c15d760c9610960a95af72b202d682d52f"
+    },
+    "CCTV_project_progress.pdf": {
+      "http": 200,
+      "matches_local": true,
+      "bytes": 128713,
+      "sha256": "2b07b32ed8c34cd55d7632fc7b10d8983366c3df141bf1cae9d8c4f850467464"
+    }
+  },
+  "final_container_states": {
+    "cctv-p51-native-stop-v097": {
+      "Status": "exited",
+      "ExitCode": 0,
+      "OOMKilled": false,
+      "StartedAt": "2026-10-02T04:37:49.520045041Z",
+      "FinishedAt": "2026-10-02T04:39:42.276245963Z",
+      "health": null
+    },
+    "cctv-p51-models-v097": {
+      "Status": "exited",
+      "ExitCode": 1,
+      "OOMKilled": false,
+      "StartedAt": "2026-10-02T04:11:39.358447045Z",
+      "FinishedAt": "2026-10-02T04:15:35.924397045Z",
+      "health": null
+    },
+    "cctv-ai-engine": {
+      "Status": "running",
+      "ExitCode": 0,
+      "OOMKilled": false,
+      "StartedAt": "2026-10-02T01:33:58.362007997Z",
+      "FinishedAt": "2026-10-02T01:33:57.89393094Z",
+      "health": "healthy"
+    }
+  }
+}

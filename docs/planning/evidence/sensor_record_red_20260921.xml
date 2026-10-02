@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="6" skipped="0" tests="6" time="7.952" timestamp="2026-09-21T08:35:39.398035+09:00" hostname="ubuntu"><testcase classname="tests.test_sensor_record" name="test_ready_and_completed_projection_becomes_observation_once[ready]" time="0.212"><failure message="ModuleNotFoundError: No module named 'src.sensor_record'">tests/test_sensor_record.py:38: in test_ready_and_completed_projection_becomes_observation_once
+    store = module().SensorRecordStore(path)
+tests/test_sensor_record.py:14: in module
+    return importlib.import_module("src.sensor_record")
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+&lt;frozen importlib._bootstrap&gt;:1050: in _gcd_import
+    ???
+&lt;frozen importlib._bootstrap&gt;:1027: in _find_and_load
+    ???
+&lt;frozen importlib._bootstrap&gt;:1004: in _find_and_load_unlocked
+    ???
+E   ModuleNotFoundError: No module named 'src.sensor_record'</failure></testcase><testcase classname="tests.test_sensor_record" name="test_ready_and_completed_projection_becomes_observation_once[complete]" time="0.305"><failure message="ModuleNotFoundError: No module named 'src.sensor_record'">tests/test_sensor_record.py:38: in test_ready_and_completed_projection_becomes_observation_once
+    store = module().SensorRecordStore(path)
+tests/test_sensor_record.py:14: in module
+    return importlib.import_module("src.sensor_record")
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+&lt;frozen importlib._bootstrap&gt;:1050: in _gcd_import
+    ???
+&lt;frozen importlib._bootstrap&gt;:1027: in _find_and_load
+    ???
+&lt;frozen importlib._bootstrap&gt;:1004: in _find_and_load_unlocked
+    ???
+E   ModuleNotFoundError: No module named 'src.sensor_record'</failure></testcase><testcase classname="tests.test_sensor_record" name="test_record_delivery_uses_observation_id_not_alarm_event_id" time="0.089"><failure message="ModuleNotFoundError: No module named 'src.sensor_record'">tests/test_sensor_record.py:64: in test_record_delivery_uses_observation_id_not_alarm_event_id
+    module().SensorRecordWorker(module().SensorRecordStore(path)).drain_once()
+tests/test_sensor_record.py:14: in module
+    return importlib.import_module("src.sensor_record")
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+&lt;frozen importlib._bootstrap&gt;:1050: in _gcd_import
+    ???
+&lt;frozen importlib._bootstrap&gt;:1027: in _find_and_load
+    ???
+&lt;frozen importlib._bootstrap&gt;:1004: in _find_and_load_unlocked
+    ???
+E   ModuleNotFoundError: No module named 'src.sensor_record'</failure></testcase><testcase classname="tests.test_sensor_record" name="test_failed_canonical_commit_leaves_receipt_retryable" time="0.070"><failure message="ModuleNotFoundError: No module named 'src.sensor_record'">tests/test_sensor_record.py:79: in test_failed_canonical_commit_leaves_receipt_retryable
+    store = module().SensorRecordStore(path)
+tests/test_sensor_record.py:14: in module
+    return importlib.import_module("src.sensor_record")
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+&lt;frozen importlib._bootstrap&gt;:1050: in _gcd_import
+    ???
+&lt;frozen importlib._bootstrap&gt;:1027: in _find_and_load
+    ???
+&lt;frozen importlib._bootstrap&gt;:1004: in _find_and_load_unlocked
+    ???
+E   ModuleNotFoundError: No module named 'src.sensor_record'</failure></testcase><testcase classname="tests.test_sensor_record" name="test_unsupported_profile_retained_without_blocking_next_sensor" time="0.097"><failure message="ModuleNotFoundError: No module named 'src.sensor_record'">tests/test_sensor_record.py:100: in test_unsupported_profile_retained_without_blocking_next_sensor
+    store = module().SensorRecordStore(path)
+tests/test_sensor_record.py:14: in module
+    return importlib.import_module("src.sensor_record")
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+&lt;frozen importlib._bootstrap&gt;:1050: in _gcd_import
+    ???
+&lt;frozen importlib._bootstrap&gt;:1027: in _find_and_load
+    ???
+&lt;frozen importlib._bootstrap&gt;:1004: in _find_and_load_unlocked
+    ???
+E   ModuleNotFoundError: No module named 'src.sensor_record'</failure></testcase><testcase classname="tests.test_sensor_record" name="test_separate_receipts_remain_separate_observations" time="0.099"><failure message="ModuleNotFoundError: No module named 'src.sensor_record'">tests/test_sensor_record.py:113: in test_separate_receipts_remain_separate_observations
+    module().SensorRecordWorker(module().SensorRecordStore(path)).drain_once()
+tests/test_sensor_record.py:14: in module
+    return importlib.import_module("src.sensor_record")
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+&lt;frozen importlib._bootstrap&gt;:1050: in _gcd_import
+    ???
+&lt;frozen importlib._bootstrap&gt;:1027: in _find_and_load
+    ???
+&lt;frozen importlib._bootstrap&gt;:1004: in _find_and_load_unlocked
+    ???
+E   ModuleNotFoundError: No module named 'src.sensor_record'</failure></testcase></testsuite></testsuites>

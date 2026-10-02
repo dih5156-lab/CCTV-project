@@ -1,0 +1,594 @@
+{
+  "version": "0.48",
+  "updated_at": "2026-09-28 15:33 KST",
+  "wbs": "P5.1 IN_PROGRESS",
+  "fixture_root": "data/runtime/p51_input_rate_20260928_v048",
+  "application_change": false,
+  "production_change": false,
+  "trials": {
+    "original_60": {
+      "scope": "one local RTSP input, IOU, full candidate models, bounded rate-profile experiment",
+      "input": "/input/01.원천데이터/영상/Y/FY/00003_H_A_FY_C1/00003_H_A_FY_C1.mp4",
+      "completed_experiment": true,
+      "app_alive": true,
+      "continuous_publisher_alive": true,
+      "restored_publisher_alive": true,
+      "transitions": [
+        {
+          "name": "input_ready",
+          "elapsed": 21.424
+        }
+      ],
+      "sample_count": 98,
+      "elapsed_seconds": 63.78529173694551,
+      "timeline": {
+        "samples": 145,
+        "wall_span_sec": 35.374,
+        "source_pts_span_sec": 35.369,
+        "relative_backlog_growth_sec": 0.005,
+        "source_time_rate": 0.9998,
+        "max_preview_gap_sec": 0.452,
+        "generations": [
+          1
+        ]
+      },
+      "tail20_timeline": {
+        "samples": 81,
+        "wall_span_sec": 19.802,
+        "source_pts_span_sec": 20.037,
+        "relative_backlog_growth_sec": -0.235,
+        "source_time_rate": 1.0119
+      },
+      "server_discard_warning_count": 0,
+      "server_discard_log_units": 0,
+      "last_stats": {
+        "frames_processed": 979,
+        "inference_errors": 0,
+        "source_stream_reset_events": 0,
+        "preview_frames_stored": 163,
+        "context_identity_rejected": 0,
+        "context_frames_matched": 124,
+        "pipeline_restart_executed": 0
+      },
+      "primary_fps": 24.477,
+      "overflow_count": 0,
+      "transform_error_count": 0,
+      "preview_images": [
+        "cpu_0.png",
+        "cpu_210.png",
+        "cpu_240.png",
+        "cpu_330.png",
+        "cpu_60.png",
+        "cpu_600.png",
+        "cpu_690.png",
+        "cpu_720.png",
+        "cpu_780.png",
+        "cpu_930.png"
+      ],
+      "profile": {
+        "input_fps": 59.94,
+        "drop_on_latency": true,
+        "mediamtx_write_queue_size": 512,
+        "steady_observation_sec": 40
+      },
+      "visual_samples": {
+        "cpu_330.png": {
+          "judgment": "no severe corruption observed",
+          "sha256": "bd13a3023ccd2d2a19064ac8f676cef6a54f33b84755b8c107ecf3fc2843ed2a"
+        },
+        "cpu_780.png": {
+          "judgment": "severe corruption",
+          "sha256": "72be94eb75c0ccbf51ab8232558f42190458abb6319b182aff79940bc60afb81"
+        }
+      },
+      "quality_verdict": "corruption reproduced",
+      "raw_artifacts": {
+        "experiment.json": "bf4387eacb0e2b1ceab5e35ed4fd12dc24cc11585204a2b11ec8dbdcadd45181",
+        "boundaries.jsonl": "54eaeae2af6d850451ed03517fc964782c945fc92840f3cfafb44f44e7fb7c41",
+        "stats.jsonl": "a25d012d9c6e69996517d64d2376a0ef66a6542af33422f7a927e80eb861e04d",
+        "samples.jsonl": "3221ddb3e4c56a75ad2125bb93d73afb92261d691e11a52289a91c8e46aae830",
+        "mediamtx.log": "ed3c68540ebfbed3367cacbf6bfc1a36120865d47e250d8a2a27aa96f239d5d2",
+        "app.log": "c4169287245ad7244013859e5f9969bc73cc82b3ff1a6a848055179e1e9a54c6"
+      }
+    },
+    "rate15_queue_1": {
+      "scope": "one local RTSP input, IOU, full candidate models, bounded rate-profile experiment",
+      "input": "/audit/replay_4k15.mp4",
+      "completed_experiment": true,
+      "app_alive": true,
+      "continuous_publisher_alive": true,
+      "restored_publisher_alive": true,
+      "transitions": [
+        {
+          "name": "input_ready",
+          "elapsed": 33.559
+        }
+      ],
+      "sample_count": 110,
+      "elapsed_seconds": 76.47445686580613,
+      "timeline": {
+        "samples": 137,
+        "wall_span_sec": 35.478,
+        "source_pts_span_sec": 41.466,
+        "relative_backlog_growth_sec": -5.988,
+        "source_time_rate": 1.1688,
+        "max_preview_gap_sec": 0.448,
+        "generations": [
+          1
+        ]
+      },
+      "tail20_timeline": {
+        "samples": 75,
+        "wall_span_sec": 19.765,
+        "source_pts_span_sec": 19.867,
+        "relative_backlog_growth_sec": -0.101,
+        "source_time_rate": 1.0051
+      },
+      "server_discard_warning_count": 0,
+      "server_discard_log_units": 0,
+      "last_stats": {
+        "frames_processed": 731,
+        "inference_errors": 0,
+        "source_stream_reset_events": 0,
+        "preview_frames_stored": 154,
+        "context_identity_rejected": 0,
+        "context_frames_matched": 152,
+        "pipeline_restart_executed": 0
+      },
+      "primary_fps": 18.067,
+      "overflow_count": 0,
+      "transform_error_count": 0,
+      "preview_images": [
+        "cpu_0.png",
+        "cpu_120.png",
+        "cpu_210.png",
+        "cpu_30.png",
+        "cpu_390.png",
+        "cpu_450.png",
+        "cpu_510.png",
+        "cpu_570.png",
+        "cpu_90.png"
+      ],
+      "profile": {
+        "input_fps": 15,
+        "drop_on_latency": false,
+        "mediamtx_write_queue_size": 4096,
+        "steady_observation_sec": 40
+      },
+      "visual_samples": {
+        "cpu_210.png": {
+          "judgment": "no severe corruption observed",
+          "sha256": "77a9540d29505ca6b8d83d07e97fd5d65691502810e3a2c45359c14662fe40d5"
+        },
+        "cpu_570.png": {
+          "judgment": "no severe corruption observed",
+          "sha256": "0ebbb0dde72d87f0cd459f54216aedd68baad35beb872da9c3789eeada6ee1ce"
+        }
+      },
+      "quality_verdict": "selected samples improved; not full quality acceptance",
+      "raw_artifacts": {
+        "experiment.json": "d214c58606c21175c33a6c395dba24fe122326e1837bcfef43e158995297c757",
+        "boundaries.jsonl": "15c32cf865e019f85c07bd01d26b963b67f5509de27589f277b8f933294747d3",
+        "stats.jsonl": "f40bf2bf2aeb1920862fdc196f1d8fe702f05946ce6c76e1da8974947c3f62fa",
+        "samples.jsonl": "93f32699c1fc223dc5da856f63872ccdbd3d3bb877c1e085adb583788465900d",
+        "mediamtx.log": "1f12458efea895ac5780a502966a26d49701e130b507a0c4fcfd88a53b6bbea8",
+        "app.log": "9e78e21b2cb0e146932f769a3f0e0d024256c2507b03bb17e5dbd3fe4faa96ef"
+      }
+    },
+    "rate15_3": {
+      "scope": "one local RTSP input, IOU, full candidate models, bounded rate-profile experiment",
+      "input": "/audit/replay_4k15.mp4",
+      "completed_experiment": true,
+      "app_alive": true,
+      "continuous_publisher_alive": true,
+      "restored_publisher_alive": true,
+      "transitions": [
+        {
+          "name": "input_ready",
+          "elapsed": 30.62
+        }
+      ],
+      "sample_count": 104,
+      "elapsed_seconds": 72.53967925300822,
+      "timeline": {
+        "samples": 136,
+        "wall_span_sec": 35.029,
+        "source_pts_span_sec": 46.067,
+        "relative_backlog_growth_sec": -11.038,
+        "source_time_rate": 1.3151,
+        "max_preview_gap_sec": 0.604,
+        "generations": [
+          1
+        ]
+      },
+      "tail20_timeline": {
+        "samples": 73,
+        "wall_span_sec": 19.805,
+        "source_pts_span_sec": 19.8,
+        "relative_backlog_growth_sec": 0.005,
+        "source_time_rate": 0.9998
+      },
+      "server_discard_warning_count": 27,
+      "server_discard_log_units": 24138,
+      "last_stats": {
+        "frames_processed": 683,
+        "inference_errors": 0,
+        "source_stream_reset_events": 0,
+        "preview_frames_stored": 156,
+        "context_identity_rejected": 0,
+        "context_frames_matched": 151,
+        "pipeline_restart_executed": 0
+      },
+      "primary_fps": 16.963,
+      "overflow_count": 0,
+      "transform_error_count": 0,
+      "preview_images": [
+        "cpu_0.png",
+        "cpu_150.png",
+        "cpu_210.png",
+        "cpu_360.png",
+        "cpu_390.png",
+        "cpu_420.png",
+        "cpu_450.png",
+        "cpu_480.png",
+        "cpu_510.png",
+        "cpu_600.png",
+        "cpu_660.png",
+        "cpu_90.png"
+      ],
+      "profile": {
+        "input_fps": 15,
+        "drop_on_latency": false,
+        "mediamtx_write_queue_size": 512,
+        "steady_observation_sec": 40
+      },
+      "visual_samples": {
+        "cpu_420.png": {
+          "judgment": "severe corruption",
+          "sha256": "3f2faabbe57584438b23e508f3673883fdec966b1dfe38d5741472086f516cf7"
+        }
+      },
+      "quality_verdict": "corruption reproduced",
+      "raw_artifacts": {
+        "experiment.json": "05af45cf60af0cbe685c35d739b64948c2f5831b2ee051945722ebc32dc7f8a2",
+        "boundaries.jsonl": "1369913955689867c13c420c9459fd6a026b74feeee5efb6d0634f2ffef80df3",
+        "stats.jsonl": "dcce6b6007753e211051e3748e75850f1160ea6bef637e72591752c363c6ef6a",
+        "samples.jsonl": "673e3cea5f6e65743eb3a69df9a3b09dbd9a6621ddb49f00de749d503aad8dfd",
+        "mediamtx.log": "e84dc41784b0141e9e520d9946150f563341644d7eeb687c79eb8bd739f1d198",
+        "app.log": "f107212489e136ef667df24f3a72a1fe6123c2fbc692b87198473536217edcc4"
+      }
+    },
+    "rate15_1": {
+      "scope": "one local RTSP input, IOU, full candidate models, bounded rate-profile experiment",
+      "input": "/audit/replay_4k15.mp4",
+      "completed_experiment": true,
+      "app_alive": true,
+      "continuous_publisher_alive": true,
+      "restored_publisher_alive": true,
+      "transitions": [
+        {
+          "name": "input_ready",
+          "elapsed": 57.918
+        }
+      ],
+      "sample_count": 133,
+      "elapsed_seconds": 100.46845117397606,
+      "timeline": {
+        "samples": 132,
+        "wall_span_sec": 35.983,
+        "source_pts_span_sec": 36.066,
+        "relative_backlog_growth_sec": -0.084,
+        "source_time_rate": 1.0023,
+        "max_preview_gap_sec": 0.621,
+        "generations": [
+          1
+        ]
+      },
+      "tail20_timeline": {
+        "samples": 76,
+        "wall_span_sec": 19.976,
+        "source_pts_span_sec": 20.066,
+        "relative_backlog_growth_sec": -0.091,
+        "source_time_rate": 1.0045
+      },
+      "server_discard_warning_count": 40,
+      "server_discard_log_units": 10153,
+      "last_stats": {
+        "frames_processed": 612,
+        "inference_errors": 0,
+        "source_stream_reset_events": 0,
+        "preview_frames_stored": 151,
+        "context_identity_rejected": 0,
+        "context_frames_matched": 141,
+        "pipeline_restart_executed": 0
+      },
+      "primary_fps": 14.837,
+      "overflow_count": 0,
+      "transform_error_count": 0,
+      "preview_images": [
+        "cpu_0.png",
+        "cpu_180.png",
+        "cpu_210.png",
+        "cpu_300.png",
+        "cpu_330.png",
+        "cpu_420.png",
+        "cpu_450.png",
+        "cpu_540.png"
+      ],
+      "profile": {
+        "input_fps": 15,
+        "drop_on_latency": true,
+        "mediamtx_write_queue_size": 512,
+        "steady_observation_sec": 40
+      },
+      "visual_samples": {
+        "cpu_180.png": {
+          "judgment": "no severe corruption observed",
+          "sha256": "b2d239cacd6b7426d177e0bf4c9daab87ae9987e910a67ca91f5d01cb779f333"
+        },
+        "cpu_300.png": {
+          "judgment": "severe corruption",
+          "sha256": "331b03d5333777d64b4f72d4129465c9c63beb5817722c0f54d264c87d093b17"
+        },
+        "cpu_540.png": {
+          "judgment": "severe corruption",
+          "sha256": "64b076d3ea294efc09ba2800eba1ce253497c3e0172cca8922c9df621c824835"
+        }
+      },
+      "quality_verdict": "corruption reproduced",
+      "raw_artifacts": {
+        "experiment.json": "bc24ba6bc619dc829f78245d415bf5422664db043d6fd94baccf306ba8245871",
+        "boundaries.jsonl": "049045371921460b579881fb3e3d050bb072374c6a0f17a7c85c9a6cc2a5a2c9",
+        "stats.jsonl": "33256db5376199ec371d3457834de12667e7d4bc229480297df84b54899316e5",
+        "samples.jsonl": "bfc81c64ac695da2d93fefb91a4607403072bfaf0735c8f4de323b82e4cfdda9",
+        "mediamtx.log": "887633fcddbbf1f372336b12b8776ff19427a5142fdbf7f9ef9e2f973afb185b",
+        "app.log": "3f022c18052c32ecb0214db2b9ddc9e587f4bf0ed55decc6b5fbd1429b2b9bb2"
+      }
+    },
+    "rate15_2": {
+      "scope": "one local RTSP input, IOU, full candidate models, bounded rate-profile experiment",
+      "input": "/audit/replay_4k15.mp4",
+      "completed_experiment": true,
+      "app_alive": true,
+      "continuous_publisher_alive": true,
+      "restored_publisher_alive": true,
+      "transitions": [
+        {
+          "name": "input_ready",
+          "elapsed": 30.597
+        }
+      ],
+      "sample_count": 107,
+      "elapsed_seconds": 72.88401143811643,
+      "timeline": {
+        "samples": 138,
+        "wall_span_sec": 36.434,
+        "source_pts_span_sec": 43.066,
+        "relative_backlog_growth_sec": -6.632,
+        "source_time_rate": 1.182,
+        "max_preview_gap_sec": 0.671,
+        "generations": [
+          1
+        ]
+      },
+      "tail20_timeline": {
+        "samples": 72,
+        "wall_span_sec": 19.726,
+        "source_pts_span_sec": 19.8,
+        "relative_backlog_growth_sec": -0.073,
+        "source_time_rate": 1.0037
+      },
+      "server_discard_warning_count": 29,
+      "server_discard_log_units": 8164,
+      "last_stats": {
+        "frames_processed": 719,
+        "inference_errors": 0,
+        "source_stream_reset_events": 0,
+        "preview_frames_stored": 155,
+        "context_identity_rejected": 0,
+        "context_frames_matched": 117,
+        "pipeline_restart_executed": 0
+      },
+      "primary_fps": 17.557,
+      "overflow_count": 0,
+      "transform_error_count": 0,
+      "preview_images": [
+        "cpu_0.png",
+        "cpu_120.png",
+        "cpu_180.png",
+        "cpu_300.png",
+        "cpu_390.png",
+        "cpu_420.png",
+        "cpu_510.png",
+        "cpu_540.png",
+        "cpu_570.png",
+        "cpu_600.png",
+        "cpu_630.png"
+      ],
+      "profile": {
+        "input_fps": 15,
+        "drop_on_latency": false,
+        "mediamtx_write_queue_size": 512,
+        "steady_observation_sec": 40
+      },
+      "visual_samples": {
+        "cpu_420.png": {
+          "judgment": "severe corruption",
+          "sha256": "905818ecff99d26a199d37b71a2634c8c256f442c022642380944a507530475f"
+        },
+        "cpu_630.png": {
+          "judgment": "severe corruption",
+          "sha256": "6bc0505a7e731d049ffd6ee710ff0598d2c4eda19e0027f4ef808d7a0c1ccebe"
+        }
+      },
+      "quality_verdict": "corruption reproduced",
+      "raw_artifacts": {
+        "experiment.json": "3f3487839a27caca051397c85d2c4799b5d0f1f5239c8b11871a8e570aec19d6",
+        "boundaries.jsonl": "7ecf10a886b6c7ae3d31c996e5816b61e8eb3544a2c4f048580b98d869a10e61",
+        "stats.jsonl": "857b5f85a661f8c468d86d190dc1a635b01aa92afd60bd8b16b84739ec909dce",
+        "samples.jsonl": "c97205767c7119c2af9f6a32a497997ad3ebf533489f49f4a0c0f7435e65c940",
+        "mediamtx.log": "e72f2b0b4acdd2e386bd5579f947995742ad96959fe59dfe2c33ecd96768526b",
+        "app.log": "3ded8b124216a2f910be62b624aaafeff3a4a13b6b9b76d43839fdc1ed37ab29"
+      }
+    },
+    "rate15_queue_2": {
+      "scope": "one local RTSP input, IOU, full candidate models, bounded rate-profile experiment",
+      "input": "/audit/replay_4k15.mp4",
+      "completed_experiment": true,
+      "app_alive": true,
+      "continuous_publisher_alive": true,
+      "restored_publisher_alive": true,
+      "transitions": [
+        {
+          "name": "input_ready",
+          "elapsed": 19.393
+        }
+      ],
+      "sample_count": 95,
+      "elapsed_seconds": 61.272256650961936,
+      "timeline": {
+        "samples": 139,
+        "wall_span_sec": 35.183,
+        "source_pts_span_sec": 41.2,
+        "relative_backlog_growth_sec": -6.017,
+        "source_time_rate": 1.171,
+        "max_preview_gap_sec": 0.38,
+        "generations": [
+          1
+        ]
+      },
+      "tail20_timeline": {
+        "samples": 76,
+        "wall_span_sec": 19.731,
+        "source_pts_span_sec": 19.733,
+        "relative_backlog_growth_sec": -0.002,
+        "source_time_rate": 1.0001
+      },
+      "server_discard_warning_count": 0,
+      "server_discard_log_units": 0,
+      "last_stats": {
+        "frames_processed": 725,
+        "inference_errors": 0,
+        "source_stream_reset_events": 0,
+        "preview_frames_stored": 158,
+        "context_identity_rejected": 0,
+        "context_frames_matched": 156,
+        "pipeline_restart_executed": 0
+      },
+      "primary_fps": 18.023,
+      "overflow_count": 0,
+      "transform_error_count": 0,
+      "preview_images": [
+        "cpu_0.png",
+        "cpu_120.png",
+        "cpu_150.png",
+        "cpu_180.png",
+        "cpu_450.png",
+        "cpu_480.png",
+        "cpu_60.png",
+        "cpu_600.png",
+        "cpu_660.png",
+        "cpu_720.png"
+      ],
+      "profile": {
+        "input_fps": 15,
+        "drop_on_latency": false,
+        "mediamtx_write_queue_size": 4096,
+        "steady_observation_sec": 40
+      },
+      "visual_samples": {
+        "cpu_180.png": {
+          "judgment": "no severe corruption observed",
+          "sha256": "00d1940fc5149645807abbe5053b0824ec896fa342a298fc17ac04dd19dce133"
+        },
+        "cpu_450.png": {
+          "judgment": "no severe motion corruption observed; fine quality not graded",
+          "sha256": "a26870eeea92dc8bedcdd4ddf7c27a85f2a792fc9254028e091184280191dff1"
+        },
+        "cpu_720.png": {
+          "judgment": "no severe corruption observed",
+          "sha256": "8aefb4e3d71b540d1381581798ad2c0517158eb1b9ac0a3752bfdaf4c54afde6"
+        }
+      },
+      "quality_verdict": "selected samples improved; not full quality acceptance",
+      "raw_artifacts": {
+        "experiment.json": "d291c74356dd1c628cc8e3f08c15a7da1fd6f5d8b01e78d6c809fb40ae35e6f3",
+        "boundaries.jsonl": "8a01c97481e5abf80ecc209d1b5eaa21bade428b6fe5a791990eef2a5402f90c",
+        "stats.jsonl": "9742ea7cdf0f7e06287ab69549429a6ab91e23f40b34ac642df9f49db04bcd55",
+        "samples.jsonl": "63a470e5a35c8b58ff1e3c96ab57606bcf7f9c57cf73a1793158c9c220f2843c",
+        "mediamtx.log": "db8e1df72c271b6240c613ffbafee5f99c1d062bcf70d996a4c745d4610abc91",
+        "app.log": "8195952f386c9201c08c9100128851112558b786bfa9125f9f28fe8ab023c207"
+      }
+    }
+  },
+  "limitations": [
+    "15fps re-encode differs in bitrate/GOP/compression; not FPS-only control",
+    "sampled PNG visual inspection; not all frames",
+    "wall minus source PTS measures relative backlog change, not absolute end-to-end latency",
+    "finite 40sec observation after startup; not sustained operation",
+    "server discard counts are log units, not decoded frame losses",
+    "no recovery injection or real CCTV validation this turn"
+  ],
+  "production_check": {
+    "started_at": "2026-09-16T23:45:46.903505745Z",
+    "restart_count": 0,
+    "health": "healthy",
+    "remaining_trial_containers": 0
+  },
+  "fixture_hashes": {
+    "run_compare.py": "8e423b10a2651fe1f16121e4d5465131ee7fa7120e02c6f6c7e10760e389e788",
+    "run_stacks.py": "16338f2b25bde9af74e51fa9b28fece95375e5e2465004a5808bb10db0c421cf",
+    "run_queue.py": "7de1bc2c2b95a982632c9333ef6e345f060b0872ce3867af9162c652faa16286",
+    "observe_compare.py": "13a608ee80997f5bd9c2598dcb3f284e21e664bf75493a023ce5f3381e5be065",
+    "observe_stacks.py": "74047726484cad9cdf5884a705de37ee3d47658e4d1396468544fde33e8753c1",
+    "summarize.py": "6187fcc2a9ec8c4aca62e3124159d1cc596bb5a2a4ff0eb5705d5e7830d6c934",
+    "replay_4k15.mp4": "5f81b390bfef38ffcbe8e43321af86a8243d0bd0cafd1c59358b405c87f62c49",
+    "compose_rate15_2.json": "f8ecb5eff115bef57f48c116e0c7636cda9ae5c2c02b6eb5baaa0ea97bb2f51d",
+    "compose_rate15_queue_1.json": "5da48ea687e910b1401dfecdf85d090beffbd59a9e15f4260180235260951c43",
+    "compose_rate15_queue_2.json": "6c31c7d7275bd85d46f6f47e517b56ff369cd7ebb8e1afbd0d39530e3561ef21",
+    "compose_rate15_1.json": "2223f3e983c4346d6637808cdadfc3a8893969706fbf2d3a08622365afd33d44",
+    "compose_original_60.json": "68b8989e3c132fe662ca8b7761348c27a0a2d4c1d94f0773cdaf8daa6c63c46b",
+    "compose_rate15_3.json": "f3797c9d42ef7035d203f5daca56a1bf65aa5f96907b64ae29a48b6df675a835"
+  },
+  "reference": "https://raw.githubusercontent.com/bluenviron/mediamtx/v1.18.2/mediamtx.yml",
+  "publication": {
+    "url": "http://192.168.2.242:18081/",
+    "version": "0.48",
+    "files": {
+      "html": {
+        "http_fetch": "success",
+        "bytes": 22600,
+        "sha256": "b4a9b14f36459bb7cd1559a0e23066dc6eaf8a4ce6742b2e17adc261dea5eeaa",
+        "matches_local": true
+      },
+      "pdf": {
+        "http_fetch": "success",
+        "bytes": 125310,
+        "sha256": "c2a96d928f018eb5c21898eb5e032b7011e1cd52c4ddbd512b263b78652f01a3",
+        "matches_local": true
+      }
+    },
+    "wbs_rows_verified": 33,
+    "browser_retested": false,
+    "ruff": "PASS",
+    "document_whitespace": "PASS",
+    "syntax": "PASS"
+  },
+  "original_video": {
+    "path": "Sample/01.원천데이터/영상/Y/FY/00003_H_A_FY_C1/00003_H_A_FY_C1.mp4",
+    "bytes": 13039888,
+    "sha256": "dac53f39f7f81d0849255d62cf208550e16269b341e5caf9021086c2b3c53093",
+    "fps": "60000/1001",
+    "duration_sec": 10.048,
+    "has_b_frames": 1
+  },
+  "reencoded_video": {
+    "path": "data/runtime/p51_input_rate_20260928_v048/replay_4k15.mp4",
+    "fps": 15,
+    "duration_sec": 10,
+    "has_b_frames": 0,
+    "encoder": "libx264",
+    "options": "-vf fps=15 -preset ultrafast -crf 20 -pix_fmt yuv420p -g 30 -bf 0 -threads 2",
+    "bytes": 41845737
+  }
+}

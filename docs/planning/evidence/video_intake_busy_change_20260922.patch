@@ -1,0 +1,503 @@
+--- a/src/event_ingest_store.py
++++ b/src/event_ingest_store.py
+@@ -2,12 +2,16 @@
+ 
+ import hashlib
+ import json
++import logging
++import sqlite3
+ import time
+ from base64 import b64encode
+ from datetime import datetime, timezone
+ from uuid import uuid4
+ 
+ from .ingest_store import IngestStore
++
++logger = logging.getLogger(__name__)
+ 
+ 
+ class EventIngestStore(IngestStore):
+@@ -70,9 +74,14 @@
+         )
+ 
+     def accept_event_json(
+-        self, namespace: str, raw: dict, *, destination: str | None
++        self,
++        namespace: str,
++        raw: dict,
++        *,
++        destination: str | None,
++        busy_retries: int = 0,
+     ) -> str:
+-        """Freeze event input before normalization, including diagnostic invalid values."""
++        """Freeze input; optionally retry one rolled-back SQLITE_BUSY transaction."""
+         try:
+             payload = json.dumps(
+                 raw, ensure_ascii=False, sort_keys=True, allow_nan=False
+@@ -86,29 +95,54 @@
+                 )
+             except (TypeError, ValueError, OverflowError, RecursionError):
+                 payload = json.dumps({"representation": repr(raw)}, ensure_ascii=False)
+-        return self._accept_event_raw(namespace, payload, raw_format, destination)
+-
+-    def _accept_event_raw(self, namespace, payload, raw_format, destination) -> str:
++        return self._accept_event_raw(
++            namespace, payload, raw_format, destination, busy_retries=busy_retries
++        )
++
++    def _accept_event_raw(
++        self, namespace, payload, raw_format, destination, *, busy_retries=0
++    ) -> str:
++        if type(busy_retries) is not int or busy_retries not in (0, 1):
++            raise ValueError("busy_retries must be 0 or 1")
+         ingest_id = "ing_" + uuid4().hex
+         received_at = datetime.now(timezone.utc).isoformat()
+-        with self._connect() as connection:
+-            connection.execute(
+-                "INSERT INTO ingest_receipts "
+-                "(ingest_id, source_namespace, received_at, raw_format, raw_payload, raw_sha256) "
+-                "VALUES (?, ?, ?, ?, ?, ?)",
+-                (
++        raw_sha256 = hashlib.sha256(payload.encode()).hexdigest()
++        for attempt in range(busy_retries + 1):
++            try:
++                with self._connect() as connection:
++                    connection.execute(
++                        "INSERT INTO ingest_receipts "
++                        "(ingest_id, source_namespace, received_at, raw_format, raw_payload, raw_sha256) "
++                        "VALUES (?, ?, ?, ?, ?, ?)",
++                        (
++                            ingest_id,
++                            namespace,
++                            received_at,
++                            raw_format,
++                            payload,
++                            raw_sha256,
++                        ),
++                    )
++                    connection.execute(
++                        "INSERT INTO event_ingest_state(ingest_id, destination) VALUES (?, ?)",
++                        (ingest_id, destination),
++                    )
++                break
++            except sqlite3.OperationalError as error:
++                code = getattr(error, "sqlite_errorcode", None)
++                busy = (
++                    code & 0xFF == 5
++                    if code is not None
++                    else str(error) == "database is locked"
++                )
++                if not busy or attempt >= busy_retries:
++                    raise
++                # _connect has rolled back and closed; reuse the frozen receipt.
++                logger.warning(
++                    "Event intake busy; retrying ingest_id=%s retry=%s",
+                     ingest_id,
+-                    namespace,
+-                    received_at,
+-                    raw_format,
+-                    payload,
+-                    hashlib.sha256(payload.encode()).hexdigest(),
+-                ),
+-            )
+-            connection.execute(
+-                "INSERT INTO event_ingest_state(ingest_id, destination) VALUES (?, ?)",
+-                (ingest_id, destination),
+-            )
++                    attempt + 1,
++                )
+         self._notify_commit(
+             "ingest_commit_completed_at", ingest_id, received_at=received_at
+         )
+--- a/src/core/video_event_ingest.py
++++ b/src/core/video_event_ingest.py
+@@ -63,7 +63,7 @@
+         }
+         with self._lock:
+             ingest_id = self.store.accept_event_json(
+-                NAMESPACE, raw, destination=f"mqtt:{self.topic_prefix}"
++                NAMESPACE, raw, destination=f"mqtt:{self.topic_prefix}", busy_retries=1
+             )
+             self._live_receipts.add(ingest_id)
+         return VideoReceipt(ingest_id)
+--- /dev/null
++++ b/tests/test_video_intake_busy.py
+@@ -0,0 +1,174 @@
++"""Bounded first-intake retries preserve bytes and never imply durable success."""
++
++import sqlite3
++from contextlib import closing, contextmanager
++from queue import Queue
++from unittest.mock import Mock
++
++import pytest
++
++from src.core._deepstream_event_queue import enqueue_queue_item
++from src.core.event_dispatcher import EventDispatcher
++from tests.test_monitoring_capacity import FULL_ERROR, LARGE_VALUE, capped_store
++from tests.test_video_event_ingest import detection, enqueue, ingestor, rows
++
++
++@pytest.mark.parametrize("failure_phase", ["insert", "commit"])
++def test_one_busy_retry_freezes_original_and_commits_one_receipt(
++    tmp_path, monkeypatch, failure_phase
++):
++    video = ingestor(tmp_path)
++    observer = Mock()
++    video.store.commit_observer = observer
++    event, queue = detection(), Queue()
++    original = video.store._connect
++    attempts, inserts = [], []
++    with closing(sqlite3.connect(video.store.path)) as blocker:
++        if failure_phase == "insert":
++            blocker.execute("BEGIN IMMEDIATE")
++        else:
++            blocker.execute("BEGIN")
++            blocker.execute("SELECT * FROM ingest_receipts").fetchall()
++
++        @contextmanager
++        def connected():
++            attempts.append(1)
++            try:
++                with original() as connection:
++                    connection.set_trace_callback(
++                        lambda sql: (
++                            inserts.append(sql)
++                            if sql.startswith("INSERT INTO ingest_receipts")
++                            else None
++                        )
++                    )
++                    yield connection
++            except sqlite3.OperationalError as error:
++                assert str(error) == "database is locked"
++                blocker.rollback()
++                event.metadata["frame_num"] = 999
++                raise
++
++        with monkeypatch.context() as patch:
++            patch.setattr(video.store, "_connect", connected)
++            assert enqueue(video, queue, event)
++    assert len(attempts) == 2
++    assert len(inserts) == 2 and inserts[0] == inserts[1]
++    assert queue.qsize() == 1
++    receipt = video.store.get_event_receipt(queue.get_nowait().ingest_id)
++    assert receipt["raw"]["payload"]["metadata"]["frame_num"] == 7
++    assert len(rows(video.store, "ingest_receipts")) == 1
++    assert len(rows(video.store, "event_ingest_state")) == 1
++    observer.assert_called_once_with(
++        "ingest_commit_completed_at",
++        receipt["ingest_id"],
++        received_at=receipt["received_at"],
++    )
++
++
++@pytest.mark.parametrize("backend", ["deepstream", "opencv"])
++@pytest.mark.parametrize("failure_phase", ["insert", "commit"])
++def test_exhausted_retry_reports_failure_once_without_receipt_or_queue(
++    tmp_path, monkeypatch, backend, failure_phase
++):
++    video, queue, stats = ingestor(tmp_path), Queue(), []
++    backup, observer = Mock(), Mock()
++    video.store.commit_observer = observer
++    if backend == "opencv":
++        dispatcher = EventDispatcher(queue, backup, stats.append, video_ingest=video)
++
++        def submit():
++            return dispatcher.enqueue("cam1", detection())
++
++    else:
++
++        def submit():
++            return enqueue_queue_item(
++                event_queue=queue,
++                queue_item=detection(),
++                camera_name="cam1",
++                increment_stat=stats.append,
++                video_ingest=video,
++            )
++
++    original, attempts = video.store._connect, []
++
++    @contextmanager
++    def connected():
++        attempts.append(1)
++        with original() as connection:
++            yield connection
++
++    with closing(sqlite3.connect(video.store.path)) as blocker:
++        blocker.execute("BEGIN IMMEDIATE" if failure_phase == "insert" else "BEGIN")
++        blocker.execute("SELECT * FROM ingest_receipts").fetchall()
++        with monkeypatch.context() as patch:
++            patch.setattr(video.store, "_connect", connected)
++            with pytest.raises(sqlite3.OperationalError, match="database is locked"):
++                submit()
++        blocker.rollback()
++    assert len(attempts) == 2
++    assert queue.empty() and stats == ["events_failed"]
++    observer.assert_not_called()
++    backup.save_locally.assert_not_called()
++    assert not video._live_receipts
++    video.recover_pending()
++    assert rows(video.store, "ingest_receipts") == []
++    assert rows(video.store, "event_ingest_state") == []
++    assert submit()
++    assert stats == ["events_failed", "events_detected"]
++    assert len(rows(video.store, "ingest_receipts")) == queue.qsize() == 1
++
++
++@pytest.mark.parametrize(
++    "error_code,message,expected_attempts",
++    [
++        (None, "database is locked", 2),  # Python 3.10 sqlite exceptions.
++        (517, "extended busy", 2),  # SQLITE_BUSY_SNAPSHOT on newer Python.
++        (None, "database table is locked", 1),
++        (None, "disk I/O error", 1),
++        (13, "database is locked", 1),  # Code takes priority over text.
++    ],
++)
++def test_only_busy_is_retried(
++    tmp_path, monkeypatch, error_code, message, expected_attempts
++):
++    video = ingestor(tmp_path)
++    error = sqlite3.OperationalError(message)
++    if error_code is not None:
++        error.sqlite_errorcode = error_code
++    connect = Mock(side_effect=error)
++    monkeypatch.setattr(video.store, "_connect", connect)
++    with pytest.raises(sqlite3.OperationalError) as raised:
++        video.accept(detection(), "cam1")
++    assert raised.value is error
++    assert connect.call_count == expected_attempts
++
++
++def test_generic_event_intake_keeps_single_attempt_default(tmp_path, monkeypatch):
++    store = ingestor(tmp_path).store
++    connect = Mock(side_effect=sqlite3.OperationalError("database is locked"))
++    monkeypatch.setattr(store, "_connect", connect)
++    with pytest.raises(sqlite3.OperationalError):
++        store.accept_event_json("external_mqtt", {"value": 1}, destination=None)
++    assert connect.call_count == 1
++
++
++def test_video_full_is_not_retried_or_reported_as_committed(
++    tmp_path, monkeypatch, record_property
++):
++    video = ingestor(tmp_path)
++    event = detection()
++    event.metadata["large_value"] = LARGE_VALUE
++    observer = Mock()
++    video.store.commit_observer = observer
++    with capped_store(video.store, monkeypatch, record_property):
++        connect = Mock(wraps=video.store._connect)
++        with monkeypatch.context() as patch:
++            patch.setattr(video.store, "_connect", connect)
++            with pytest.raises(sqlite3.OperationalError, match=FULL_ERROR):
++                video.accept(event, "cam1")
++        assert connect.call_count == 1
++    observer.assert_not_called()
++    assert rows(video.store, "ingest_receipts") == []
++    assert rows(video.store, "event_ingest_state") == []
+--- /dev/null
++++ b/tests/test_monitoring_active_contention.py
+@@ -0,0 +1,201 @@
++"""Active shared-DB writers; video intake has no test-producer retry."""
++
++import hashlib
++import json
++import time
++from concurrent.futures import ThreadPoolExecutor
++from contextlib import contextmanager
++from threading import Event
++
++from src.core.video_event_ingest import VideoEventIngest
++from src.monitoring_contract import MonitoringBinding
++from src.monitoring_delivery import MonitoringDeliveryStore
++from src.monitoring_receiver import MonitoringReceiverStore
++from src.monitoring_reconciliation import current_delivery, reconcile
++from src.monitoring_service import MonitoringService
++from src.monitoring_snapshot import MonitoringSnapshots
++from src.monitoring_worker import MonitoringDeliveryWorker
++from src.sensor_record import SensorRecordStore, SensorRecordWorker
++from tests.test_monitoring_delivery import DESTINATION, seed
++from tests.test_monitoring_outage_mqtt import deliveries, retry_busy
++from tests.test_monitoring_service import wait_until
++from tests.test_monitoring_worker import Broker, Reader
++
++
++def test_video_and_sensor_intake_during_monitoring_writes(
++    tmp_path, monkeypatch, record_property, caplog
++):
++    source = MonitoringDeliveryStore(tmp_path / "source.db")
++    inputs = SensorRecordStore(source.path)
++    video = VideoEventIngest(inputs, backend="test", topic_prefix="cctv/ai/events")
++    sensor_worker = SensorRecordWorker(inputs)
++    binding = MonitoringBinding(source.origin_id, "active-consumer", DESTINATION)
++    receiver = MonitoringReceiverStore(
++        tmp_path / "receiver.db", consumer_id=binding.consumer_id
++    )
++    receiver.register_binding(binding)
++    sender, reader = Broker(receiver, binding), Reader(receiver, None)
++    workers = [
++        MonitoringDeliveryWorker(
++            source,
++            sender,
++            reader,
++            namespace=namespace,
++            binding=binding,
++            timeout=0.5,
++            lease_seconds=4,
++            ack_wait=0.02,
++        )
++        for namespace in ("tlv_mqtt", "video_detection")
++    ]
++    for number in range(8):
++        seed(source.path, f"preload-{number}")
++
++    producing, start = Event(), Event()
++    monitor_writes, video_seconds, sensor_retries = [], [], []
++    connect = source._connect
++
++    def trace(statement):
++        if producing.is_set() and statement.startswith(
++            ("INSERT INTO monitoring_delivery", "UPDATE monitoring_delivery")
++        ):
++            monitor_writes.append(statement.split()[0])
++
++    @contextmanager
++    def monitored_connect():
++        with connect() as connection:
++            connection.set_trace_callback(trace)
++            yield connection
++
++    monkeypatch.setattr(source, "_connect", monitored_connect)
++
++    def produce_video():
++        assert start.wait(5)
++        for number in range(20):
++            before = time.monotonic()
++            # An exhausted initial save fails this test; never hide it by resubmitting.
++            reference = video.accept(
++                {
++                    "event_id": f"active-{number}",
++                    "type": "fall",
++                    "camera_id": "camera-1",
++                    "occurred_at": number,
++                },
++                "camera-1",
++            )
++            video_seconds.append(time.monotonic() - before)
++            video.defer(reference)
++            time.sleep(0.005)
++
++    def produce_sensor():
++        assert start.wait(5)
++        for number in range(20):
++            # Explicit sensor producer redelivery, separate from video's bounded policy.
++            receipt = retry_busy(
++                lambda: inputs.accept("tlv_mqtt", "sensor-1", {"raw": number}),
++                sensor_retries,
++            )
++            projection = json.dumps(
++                {
++                    "sensor_data": [
++                        {
++                            "device_id": "sensor-1",
++                            "object_id": "34954",
++                            "payload_tlv": {
++                                "temperature_c": number,
++                                "created_at": number,
++                            },
++                        }
++                    ]
++                }
++            )
++            retry_busy(lambda: inputs.prepare(receipt, projection), sensor_retries)
++            retry_busy(sensor_worker.drain_once, sensor_retries)
++
++    service = MonitoringService(workers, interval=0.02)
++    started = time.monotonic()
++    producing.set()
++    service.start()
++    try:
++        with ThreadPoolExecutor(max_workers=2) as pool:
++            pending = [pool.submit(produce_video), pool.submit(produce_sensor)]
++            start.set()
++            for future in pending:
++                future.result(timeout=30)
++        producing.clear()
++
++        def all_stored():
++            video.poll_recovery()
++            return (
++                sum(row["state"] == "stored" for row in deliveries(source).values())
++                == 48
++            )
++
++        wait_until(all_stored, timeout=30)
++    finally:
++        producing.clear()
++        service.close()
++
++    final = deliveries(source)
++    assert len(video_seconds) == 20 and monitor_writes
++    assert len(final) == 48
++    for delivery_id, row in final.items():
++        ack = json.loads(row["ack_json"])
++        assert row["state"] == "stored"
++        assert ack["ack_kind"] == "consumer_committed"
++        assert ack["delivery_id"] == delivery_id
++        assert (
++            ack["payload_sha256"]
++            == row["payload_sha256"]
++            == hashlib.sha256(row["wire_payload"]).hexdigest()
++        )
++    audit = MonitoringSnapshots(tmp_path / "snapshots.db")
++    result = reconcile(
++        audit,
++        binding,
++        audit.create_source(source, binding)["snapshot_id"],
++        audit.create_consumer(receiver, binding)["snapshot_id"],
++        lookup_current=lambda b, d: current_delivery(source, b, d),
++    )
++    assert result["all_inputs_accounted"] and result["counts"]["matched"] == 48
++    with inputs._connect() as connection:
++        assert (
++            connection.execute("SELECT count(*) FROM ingest_receipts").fetchone()[0]
++            == 48
++        )
++        assert (
++            connection.execute("SELECT count(*) FROM canonical_records").fetchone()[0]
++            == 48
++        )
++        assert (
++            connection.execute(
++                "SELECT count(*) FROM delivery_jobs WHERE state='held'"
++            ).fetchone()[0]
++            == 28
++        )
++        assert connection.execute("PRAGMA quick_check").fetchone()[0] == "ok"
++    assert deliveries(MonitoringDeliveryStore(source.path)) == final
++    record_property(
++        "active_contention_result",
++        json.dumps(
++            {
++                "preloaded_video_records": 8,
++                "offered_video_records": 20,
++                "accepted_video_records": len(video_seconds),
++                "sensor_records": 20,
++                "video_test_producer_retries": 0,
++                "video_busy_retry_logs": sum(
++                    "Event intake busy; retrying" in record.message
++                    for record in caplog.records
++                ),
++                "sensor_test_producer_retries": len(sensor_retries),
++                "monitoring_write_statements_during_producers": len(monitor_writes),
++                "stored_and_matched_records": len(final),
++                "service_failed_cycles": service.status()["failed_cycles"],
++                "elapsed_seconds": time.monotonic() - started,
++                "video_intake_max_seconds": max(video_seconds),
++                "transport": "in-process test model",
++            },
++            sort_keys=True,
++        ),
++    )

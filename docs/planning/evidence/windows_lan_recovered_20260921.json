@@ -1,0 +1,16 @@
+{
+  "recorded_date_kst": "2026-09-21",
+  "source": "User-provided Jetson terminal output; not independently rerun by agent",
+  "command": "rtk proxy curl --noproxy '*' --max-time 5 -I http://192.168.2.79:18080/",
+  "status_line": "HTTP/1.1 200 OK",
+  "server_header": "nginx/1.31.6",
+  "server_date_header": "Mon, 21 Sep 2026 05:48:25 GMT",
+  "server_date_header_kst": "2026-09-21 14:48:25 +09:00",
+  "content_type": "text/html",
+  "content_length": 896,
+  "user_statement": "노트북 연결했다",
+  "verified_scope": "HTTP HEAD response from laptop Wi-Fi address TCP 18080 at the reported attempt",
+  "issue": "I21 OPEN / HTTP connection recovered; intermittent cause unresolved",
+  "not_verified": ["long-term connection stability", "AP or endpoint root cause", "MQTT record delivery", "receiver database commit and ACK", "monitoring UI"],
+  "agent_network_or_configuration_changes": false
+}

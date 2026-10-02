@@ -1,0 +1,105 @@
+{
+  "recorded_at": "2026-09-21T01:05:17.648397+00:00",
+  "wbs": "P1.4",
+  "status": "DONE: internal contract and executable reference examples only",
+  "plan_version": "0.13",
+  "next_wbs": "P2.3",
+  "next_status": "READY; not started",
+  "application_code_config_schema_changed": false,
+  "production_restart_or_deployment": false,
+  "gpu_or_physical_outputs": false,
+  "test_result": {
+    "passed": 55,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "pytest_reported_seconds": 47.89,
+    "junit": {
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "tests": "55",
+      "time": "47.891",
+      "timestamp": "2026-09-21T09:59:04.480120+09:00",
+      "hostname": "ubuntu"
+    }
+  },
+  "initial_run": {
+    "passed": 7,
+    "errors": 48,
+    "cause": "example fixture omitted mandatory destination=None",
+    "classification": "fixture setup error, not an application regression",
+    "junit": {
+      "name": "pytest",
+      "errors": "48",
+      "failures": "0",
+      "skipped": "0",
+      "tests": "55",
+      "time": "30.939",
+      "timestamp": "2026-09-21T09:58:14.461699+09:00",
+      "hostname": "ubuntu"
+    }
+  },
+  "checks": {
+    "ruff": "PASS: 1 file",
+    "black_check": "PASS: 1 file",
+    "py_compile": "PASS: 1 file"
+  },
+  "verification": {
+    "markdown_files": 20,
+    "local_links_checked": 370,
+    "wbs_rows": 33,
+    "wbs_states": {
+      "DONE": 7,
+      "BLOCKED": 2,
+      "READY": 3,
+      "PLANNED": 14,
+      "VERIFY": 7
+    },
+    "links_anchors_dependencies_cycle_whitespace": "PASS"
+  },
+  "scope": [
+    "existing source event/sensor envelope acceptance",
+    "temporary SQLite record/ledger transaction",
+    "ACK loss after commit and reopen lookup/retry",
+    "delivery/business conflicts retained",
+    "wrong or incomplete ACK rejected",
+    "invalid JSON/identity rejected",
+    "frozen manifest paging and next-snapshot late records",
+    "ID/hash comparison vs equal counts"
+  ],
+  "not_implemented_or_tested": [
+    "production consumer/source final ACK worker",
+    "transport authentication",
+    "sender ACK persistence/restart",
+    "HTTP API/ACK MQTT listener",
+    "lifecycle wiring",
+    "snapshot TTL/auth/limit enforcement",
+    "SIGKILL/power-loss/network faults",
+    "actual monitoring UI",
+    "approved field latency thresholds",
+    "long-duration load/capacity"
+  ],
+  "open_decisions": [
+    "D04 latency limits and load",
+    "D06 monitoring product/retention/authentication"
+  ],
+  "open_issues_preserved": [
+    "I10",
+    "I13",
+    "I17",
+    "I19",
+    "I20"
+  ],
+  "graph_discovery": "search_graph returned no indexed record_delivery/protocol symbols; current files inspected",
+  "official_source": "https://docs.oasis-open.org/mqtt/mqtt/v3.1.1/os/mqtt-v3.1.1-os.html",
+  "source_sha256": {
+    "docs/planning/MONITORING_DELIVERY_CONTRACT.md": "f1979d73701ca0fcdec518f96489fe716275f578599430a3ea5254bed8f7e228",
+    "docs/planning/evidence/test_monitoring_contract.py": "dee89b97e32ab729cc6f11cac29a2f39ab2f772b26c3c4be5f9be126dc64832b",
+    "src/record_delivery.py": "180757867a38dd5590c68d277aa2c27d5588589b61665839147be2c0e1d55c03",
+    "src/protocols/record_mqtt.py": "2ca2032fc7bda2898986e145c1d49e7cfc6cd757877dd8faa1b7675d5fe456c4",
+    "src/event_ingest_store.py": "4c6fddfb00b643a1493c4e9054e3ecd32e0762c70ea397f151fe61fa412a5baa",
+    "src/sensor_record.py": "d5a32cc41f4510c1ad3644f5713e829bc351cea6fea60e1b0bfd45152d4b1f9a"
+  }
+}

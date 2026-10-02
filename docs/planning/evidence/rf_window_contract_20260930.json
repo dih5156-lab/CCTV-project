@@ -1,0 +1,76 @@
+{
+  "date": "2026-09-30",
+  "version": "0.70",
+  "scope": "P5.1 RF training window validation and preservation; local only",
+  "red": {
+    "failed": 12,
+    "behavior_failures": 10,
+    "missing_new_field": 2
+  },
+  "green": {
+    "passed": 155,
+    "ruff": "PASS",
+    "integration": "actual capture function -> synthetic labels -> sklearn RF training -> joblib file -> fresh verifier predict; five-second window retains timestamps 2 and 6, excludes 0"
+  },
+  "candidate": {
+    "path": "models/experiments/deepstream_pose_inline_rf_hardcase_candidate_20260731.joblib",
+    "rows_metadata": 196,
+    "groups_metadata": 111,
+    "window_seconds_metadata": 3.0,
+    "features": 50,
+    "source_paths": [
+      {
+        "path": "data/fall_eval/deepstream_dataset_train_fall40_20260729.jsonl",
+        "exists_at_recorded_path": false
+      },
+      {
+        "path": "data/fall_eval/deepstream_dataset_train_notfall40_20260729.jsonl",
+        "exists_at_recorded_path": false
+      },
+      {
+        "path": "data/fall_eval/runtime_aligned_hardcase_fall_chunk1_dataset_20260731.jsonl",
+        "exists_at_recorded_path": false
+      },
+      {
+        "path": "data/fall_eval/runtime_aligned_hardcase_fall_chunk2_dataset_20260731.jsonl",
+        "exists_at_recorded_path": false
+      },
+      {
+        "path": "data/fall_eval/runtime_aligned_hardcase_notfall_dataset_20260731.jsonl",
+        "exists_at_recorded_path": false
+      }
+    ],
+    "promoted": false
+  },
+  "source_sha256": {
+    "scripts/datasets/train_deepstream_pose_fall_rf.py": "caa76185108fb8e2752cef6867246ad64a3ed7ba34273e24585fe042887e233b",
+    "tests/test_train_deepstream_pose_fall_rf.py": "1c9ac11e5ba48fd5eded5a961462bb5a51a2ca750c6d03dfd8dc3134e2427fc5",
+    "tests/test_falldata_pose_tracks.py": "6cf70d1e33298571915889b06d4b3e2616fce8efc0a33ad5e114d6ffd8ff54d8"
+  },
+  "limitations": [
+    "No GPU/live CCTV test, accuracy evaluation or production deployment",
+    "Old candidate feature/score/sampling history not established",
+    "Window is configured horizon, not evidence of complete observations across that interval",
+    "Sampling max_frames/feature thresholds and historical metadata remain I37 work",
+    "I38 timeout, I32, I34 and I07 remain open"
+  ],
+  "publication": {
+    "url": "http://192.168.2.141:18081/",
+    "wbs_rows_match": 33,
+    "png_first_page_checked": true,
+    "browser_interaction_tested": false,
+    "other_pc_tested": false,
+    "artifacts": {
+      "index.html": {
+        "bytes": 22588,
+        "sha256": "6b40d54d7dc6ccffd84e08d9bdfa0893f5059474da64372d8c83125574a6c27d",
+        "http_bytes_match": true
+      },
+      "CCTV_project_progress.pdf": {
+        "bytes": 126335,
+        "sha256": "b832470a2c059f1e62f05fff17085c92cdcbfe820ee27e09c8900bc68530a6ff",
+        "http_bytes_match": true
+      }
+    }
+  }
+}

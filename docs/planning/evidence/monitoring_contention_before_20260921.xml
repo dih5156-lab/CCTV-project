@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="5" time="1.577" timestamp="2026-09-21T14:40:20.511158+09:00" hostname="ubuntu"><testcase classname="tests.test_monitoring_contention" name="test_idle_poll_can_read_while_input_writer_holds_database[enqueue]" time="0.434"><failure message="sqlite3.OperationalError: database is locked">tests/test_monitoring_contention.py:21: in test_idle_poll_can_read_while_input_writer_holds_database
+    assert store.enqueue_monitoring("video_detection", binding, BROKER, READER) == 0
+src/monitoring_delivery.py:99: in enqueue_monitoring
+    connection.execute("BEGIN IMMEDIATE")
+E   sqlite3.OperationalError: database is locked</failure></testcase><testcase classname="tests.test_monitoring_contention" name="test_idle_poll_can_read_while_input_writer_holds_database[claim]" time="0.413"><failure message="sqlite3.OperationalError: database is locked">tests/test_monitoring_contention.py:23: in test_idle_poll_can_read_while_input_writer_holds_database
+    assert store.claim_monitoring(binding, BROKER, READER, lease_seconds=30, now=101) is None
+src/monitoring_delivery.py:162: in claim_monitoring
+    connection.execute("BEGIN IMMEDIATE")
+E   sqlite3.OperationalError: database is locked</failure></testcase><testcase classname="tests.test_monitoring_contention" name="test_concurrent_enqueue_rechecks_records_before_inserting" time="0.201" /><testcase classname="tests.test_monitoring_contention" name="test_idle_poll_still_rejects_changed_binding" time="0.108" /><testcase classname="tests.test_monitoring_contention" name="test_idle_poll_does_not_forget_new_records_or_expired_leases" time="0.173" /></testsuite></testsuites>

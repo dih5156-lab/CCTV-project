@@ -1,0 +1,187 @@
+{
+  "verified_at": "2026-09-22T14:50:59.589831+09:00",
+  "scope": "I24 explicit track input/cache isolation; local CPU regression and progress publication",
+  "wbs": {
+    "version": "0.31",
+    "current": "P5.1",
+    "status": "IN_PROGRESS",
+    "counts": {
+      "DONE": 9,
+      "BLOCKED": 3,
+      "PLANNED": 13,
+      "VERIFY": 7,
+      "IN_PROGRESS": 1
+    },
+    "total": 33,
+    "done_task_percent": 27.3,
+    "overall_project_completion_percent": null
+  },
+  "issues": {
+    "I24": "FIXED_LOCAL",
+    "I07": "OPEN",
+    "I20": "OPEN"
+  },
+  "pytest": {
+    "runs": [
+      {
+        "tests": 296,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 5,
+        "passed": 291,
+        "new_i24_passed": 20,
+        "junit_seconds": 13.48,
+        "evidence": "pose_track_isolation_20260922.xml"
+      },
+      {
+        "tests": 296,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 5,
+        "passed": 291,
+        "new_i24_passed": 20,
+        "junit_seconds": 34.093,
+        "evidence": "pose_track_isolation_current_tree_20260922.xml"
+      }
+    ],
+    "skip_reason": "existing local tests require pyds; no claim about container dependency",
+    "repeat_reason": "config.py changed after first regression; preserved and reran same targeted regression on current tree"
+  },
+  "quality": {
+    "black_changed_ranges": [
+      "src/core/ai/_falldata_aux.py",
+      "src/core/deepstream_processor.py",
+      "src/core/_deepstream_event_queue.py",
+      "src/core/_fall_shadow_review.py",
+      "src/core/_fall_aux_policy.py",
+      "tests/test_falldata_aux.py",
+      "tests/test_fall_shadow_review.py",
+      "tests/test_deepstream_processor.py",
+      "tests/test_deepstream_model_metrics.py"
+    ],
+    "black_whole_files": [
+      "tests/test_falldata_pose_tracks.py",
+      "docs/planning/evidence/verify_pose_track_isolation_20260922.py",
+      "scripts/ops/render_progress_snapshot.py"
+    ],
+    "compile_passed": [
+      "src/core/ai/_falldata_aux.py",
+      "src/core/deepstream_processor.py",
+      "src/core/_deepstream_event_queue.py",
+      "src/core/_fall_shadow_review.py",
+      "src/core/_fall_aux_policy.py",
+      "tests/test_falldata_aux.py",
+      "tests/test_fall_shadow_review.py",
+      "tests/test_deepstream_processor.py",
+      "tests/test_deepstream_model_metrics.py",
+      "tests/test_falldata_pose_tracks.py",
+      "docs/planning/evidence/verify_pose_track_isolation_20260922.py",
+      "scripts/ops/render_progress_snapshot.py"
+    ],
+    "ruff": {
+      "files": 12,
+      "result": "PASS"
+    },
+    "git_diff_check": "PASS for selected implementation/test/renderer/PROGRESS files",
+    "graph_review": "insufficient graph coverage; direct source/baseline delta review performed",
+    "local_markdown_links": {
+      "files": 9,
+      "file_targets_checked": 327,
+      "result": "PASS",
+      "anchors_checked": false
+    }
+  },
+  "source_scope": {
+    "baseline_src_python_files": 205,
+    "changed_by_this_work": [
+      "src/core/_deepstream_event_queue.py",
+      "src/core/_fall_aux_policy.py",
+      "src/core/_fall_shadow_review.py",
+      "src/core/ai/_falldata_aux.py",
+      "src/core/deepstream_processor.py"
+    ],
+    "additional_change_observed_and_preserved": [
+      "src/config/config.py"
+    ],
+    "unchanged_since_baseline": 199,
+    "added_src_python_files": [],
+    "sha256_after": {
+      "src/config/config.py": "56292492a717f3377e402462553008dc507ef2d487fbba56047aa8c4169777fd",
+      "src/core/_deepstream_event_queue.py": "cb3bb6573b5e6b70c437919f3af5f35d8733f56087b60fc4b117d843457b9cce",
+      "src/core/_fall_aux_policy.py": "b1170bdfb9921d2127a930df865a45c77573be9b8938216142b28b9c828a1c50",
+      "src/core/_fall_shadow_review.py": "ad166f7b1e879d9ac2ed9c74ecc567ee874b9477f35de169ca0602cd2d03c746",
+      "src/core/ai/_falldata_aux.py": "ab1c737089bf31f5d524422624546ae0b0249fc87dfef7bdf39aba289a03d691",
+      "src/core/deepstream_processor.py": "dc59e8aaa6ab6b7f42d8a0ac3397432faffdfa9aa710f830cd74676cd675e89b"
+    }
+  },
+  "synthetic_reproduction": {
+    "scope": "CPU synthetic input/model-feature isolation; no real classifier, GPU or physical output",
+    "before": "pose_track_gap_20260922.json (historical pre-fix evidence)",
+    "alternating_high_score_tracks": [
+      101,
+      202,
+      101
+    ],
+    "buffered_records": 6,
+    "model_input_mean_bbox_aspects": [
+      0.5,
+      2.0
+    ],
+    "verified_tracks": [
+      101,
+      202
+    ],
+    "frames_per_track": [
+      3,
+      3
+    ],
+    "same_camera_other_track_cache_reused": false,
+    "distinct_track_input_isolated": true,
+    "physical_identity_accuracy_verified": false
+  },
+  "model_contract": {
+    "evidence": "pose_track_model_contract_20260922.json",
+    "feature_count": 50,
+    "artifact_hash_matches": true,
+    "real_classifier_prediction_executed": false
+  },
+  "publication": {
+    "url": "http://192.168.2.242:18081/",
+    "html_http_status": 200,
+    "pdf_http_status": 200,
+    "wbs_json_rows_equal": true,
+    "wbs_html_id_status_equal": true,
+    "html_live_bytes_equal": true,
+    "pdf_live_bytes_equal": true,
+    "html_sha256": "50088ea9f051d28960027107efeb3b7e6409351341b2425823342781c93db1c6",
+    "pdf_sha256": "03d7d17f3ccf132eff289086e803389f799f4ba0ea3f577b34d938d60b817493",
+    "browser_screenshot": "progress_browser_v031_20260922.png",
+    "browser": "Firefox headless 1366x1800",
+    "visual_review": "Korean text and layout checked on browser screenshot and rendered PDF overview",
+    "filter_validation": "actual page JavaScript: all/READY/DONE/Korean search/no-result/reset/refresh PASS in Node DOM model; not real browser click automation",
+    "other_company_pc_access_verified": false,
+    "background_auto_sync": false
+  },
+  "impact_of_this_work": {
+    "new_libraries": false,
+    "db_schema_changed": false,
+    "model_or_threshold_changed": false,
+    "internal_metadata_added": [
+      "falldata_pose_scope",
+      "pose_scope",
+      "cached_pose_scope",
+      "cache_reused"
+    ],
+    "operational_ai_restarted": false,
+    "physical_device_command_sent": false,
+    "running_code_activation_verified": false,
+    "gpu_inference_executed": false,
+    "real_video_tracking_or_accuracy_verified": false
+  },
+  "remaining": [
+    "Python model execution/cache instrumentation",
+    "input quality and disconnect/reconnect boundaries",
+    "real video tracker identity continuity and accuracy",
+    "reviewable operational activation and rollback verification"
+  ]
+}

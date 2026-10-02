@@ -1,0 +1,230 @@
+{
+  "scope": "temporary DBs; in-process simulated transport/PUBACK; real monotonic measurements",
+  "actual_mqtt_network": false,
+  "performance_acceptance": false,
+  "inputs": {
+    "video_events": 10,
+    "sensor_observations": 10
+  },
+  "before": {
+    "source_snapshot_id": "snap_8f020fcabaa4440da7ac08180e23068e",
+    "consumer_snapshot_id": "snap_69fe2bff291d451fb8288637c87bd744",
+    "complete": true,
+    "source_set_matches": false,
+    "all_inputs_accounted": false,
+    "sets_equal": false,
+    "error": null,
+    "counts": {
+      "matched": 0,
+      "missing": 20,
+      "conflict": 0,
+      "unexpected": 0,
+      "out_of_snapshot": 0,
+      "unverifiable": 0
+    },
+    "details": [
+      {
+        "delivery_id": "job_13146e41ed814ed3b4938603b1cef283",
+        "result": "missing"
+      },
+      {
+        "delivery_id": "job_4d167b3e27e74575a57a9a5b4089a629",
+        "result": "missing"
+      },
+      {
+        "delivery_id": "job_495f73acbc73459c9b4ff65382091f57",
+        "result": "missing"
+      },
+      {
+        "delivery_id": "job_94231e73628648a8af023a99ccbff636",
+        "result": "missing"
+      },
+      {
+        "delivery_id": "job_b5101060a92246e2b02abe68327b2791",
+        "result": "missing"
+      },
+      {
+        "delivery_id": "job_91a7b93ac43b4376b00fe2209e767cda",
+        "result": "missing"
+      },
+      {
+        "delivery_id": "job_a260297883c34023b11dbd0ddeea4d5b",
+        "result": "missing"
+      },
+      {
+        "delivery_id": "job_a292d9e2470e40879e2b41b623090523",
+        "result": "missing"
+      },
+      {
+        "delivery_id": "job_0d152397bb0c42f4873f606be6a0a941",
+        "result": "missing"
+      },
+      {
+        "delivery_id": "job_c3014c885408426a9831af96a996e825",
+        "result": "missing"
+      },
+      {
+        "delivery_id": "job_7177903f2d114f6085d9cb2a5e9747e3",
+        "result": "missing"
+      },
+      {
+        "delivery_id": "job_149cb16883af48bfac4a8f59d5bf9e05",
+        "result": "missing"
+      },
+      {
+        "delivery_id": "job_3d1c5ed49ba94325b55f128bd61884b7",
+        "result": "missing"
+      },
+      {
+        "delivery_id": "job_54cfbdd2892a42c5b1494747472b31c0",
+        "result": "missing"
+      },
+      {
+        "delivery_id": "job_30a3e9dac27846e19bbfdef58d3dfd02",
+        "result": "missing"
+      },
+      {
+        "delivery_id": "job_abffef655f734d66aa4a2f56ef4613da",
+        "result": "missing"
+      },
+      {
+        "delivery_id": "job_cc9dacf1b8ca47f585ba59a141f8097e",
+        "result": "missing"
+      },
+      {
+        "delivery_id": "job_798eb84ab98d4ec481177bfd9a8ab6c3",
+        "result": "missing"
+      },
+      {
+        "delivery_id": "job_c8f3cd1ca4d54771a75c419b7850c67e",
+        "result": "missing"
+      },
+      {
+        "delivery_id": "job_a842cae67fca450bad620106a8cb5e82",
+        "result": "missing"
+      }
+    ],
+    "details_truncated": 0,
+    "pending_normalization": 0,
+    "pending_delivery_creation": 0,
+    "normalization_rejected": 0
+  },
+  "after": {
+    "source_snapshot_id": "snap_25d2c793eb034f288e6b96c76f46f626",
+    "consumer_snapshot_id": "snap_df0893d8eb50464db77c81ef7a7f3ac4",
+    "complete": true,
+    "source_set_matches": true,
+    "all_inputs_accounted": true,
+    "sets_equal": true,
+    "error": null,
+    "counts": {
+      "matched": 20,
+      "missing": 0,
+      "conflict": 0,
+      "unexpected": 0,
+      "out_of_snapshot": 0,
+      "unverifiable": 0
+    },
+    "details": [],
+    "details_truncated": 0,
+    "pending_normalization": 0,
+    "pending_delivery_creation": 0,
+    "normalization_rejected": 0
+  },
+  "source_metrics": {
+    "source_namespace": null,
+    "destination": "record-mqtt:cctv/records/v1/monitor",
+    "measured_at": "2026-09-21T03:09:51.977135+00:00",
+    "clock_sync": "unknown",
+    "states": {
+      "pending": 0,
+      "awaiting_ack": 0,
+      "uncertain": 0,
+      "quarantined": 0,
+      "blocked": 0,
+      "stored": 20
+    },
+    "pending_normalization": 0,
+    "pending_delivery_creation": 0,
+    "normalization_rejected": 0,
+    "unconfirmed_age": {
+      "valid": 0,
+      "invalid": 0,
+      "unknown": 0,
+      "oldest_seconds": null
+    },
+    "active_leases": 0,
+    "publish_retries_total": 0,
+    "ack_invalid_total": 0,
+    "conflict_total": 0,
+    "window_seconds": 3600,
+    "ingest_count_in_window": null,
+    "consumer_ack_recorded_in_window": null,
+    "invalid_arrival_times": 0,
+    "ingest_per_hour": null,
+    "consumer_ack_recorded_per_hour": null,
+    "database_bytes": 217088,
+    "filesystem_free_bytes": 13737820160,
+    "not_measured": [
+      "ingest_commit_completed_at",
+      "normalize_completed_at",
+      "consumer_ack_persisted_at",
+      "received_to_ack_commit",
+      "displayed_at",
+      "consumer_duplicate_attempts"
+    ]
+  },
+  "worker_timings": {
+    "consumer_lookup": {
+      "unit": "ms",
+      "clock": "monotonic",
+      "lifetime": "current_process",
+      "window": "last_samples",
+      "max_samples": 1000,
+      "window_start_monotonic": 443199.279155991,
+      "window_end_monotonic": 443208.707366666,
+      "valid": 40,
+      "invalid": 0,
+      "raised": 0,
+      "total_seen": 40,
+      "evicted": 0,
+      "p50_ms": 1.0763279860839248,
+      "p95_ms": 2.072054019663483,
+      "max_ms": 2.737715025432408
+    },
+    "mqtt_publish": {
+      "unit": "ms",
+      "clock": "monotonic",
+      "lifetime": "current_process",
+      "window": "last_samples",
+      "max_samples": 1000,
+      "window_start_monotonic": 443199.296297062,
+      "window_end_monotonic": 443207.926378738,
+      "valid": 20,
+      "invalid": 0,
+      "raised": 0,
+      "total_seen": 20,
+      "evicted": 0,
+      "p50_ms": 20.902509975712746,
+      "p95_ms": 30.415141955018044,
+      "max_ms": 33.350798999890685
+    },
+    "consumer_ack_commit": {
+      "unit": "ms",
+      "clock": "monotonic",
+      "lifetime": "current_process",
+      "window": "last_samples",
+      "max_samples": 1000,
+      "window_start_monotonic": 443207.959266905,
+      "window_end_monotonic": 443208.725416107,
+      "valid": 20,
+      "invalid": 0,
+      "raised": 0,
+      "total_seen": 20,
+      "evicted": 0,
+      "p50_ms": 18.01337901270017,
+      "p95_ms": 31.100866966880858,
+      "max_ms": 35.606427991297096
+    }
+  }
+}

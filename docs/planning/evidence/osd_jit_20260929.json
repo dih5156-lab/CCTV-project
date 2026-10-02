@@ -1,0 +1,274 @@
+{
+  "version": "0.57",
+  "date": "2026-09-29",
+  "fixture": "data/runtime/p51_native_20260929_v057",
+  "scope": "network-none local replay; no live camera, production restart, MQTT/device output",
+  "native_capture": {
+    "capture_exit": {
+      "exit": 0
+    },
+    "stack": "data/runtime/p51_native_20260929_v057/capture_deep/gdb.log",
+    "stack_sha256": "f34c7d7bbbc34a36f729f86291e1489cddf4b053cf6c47ee66b54f4371cea038",
+    "finding": "metadata-probe streaming thread: libnvdsgst_osd -> libnvds_osd -> libcuda -> libnvidia-ptxjitcompiler. Upstream mux/decoder waiting for buffers. Debugger-attached runs are diagnostic only."
+  },
+  "trials": {
+    "cpu15": {
+      "experiment": {
+        "scope": "one local RTSP input, IOU, full candidate models, captured real camera video replay; no live camera connection",
+        "input": "/previous/fall_clip.mp4",
+        "completed_experiment": true,
+        "receiver_exit": 0,
+        "output_bytes": 10781028,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 11.32
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 12.138
+          }
+        ],
+        "sample_count": 90,
+        "elapsed_seconds": 65.96352426684462
+      },
+      "observation": {
+        "frame_count": 40,
+        "scope": "first 40 buffers only",
+        "seconds": 3.275,
+        "max_gap_seconds": 0.818,
+        "initial40_max_gap_seconds": 0.818
+      },
+      "media": {
+        "ffprobe_exit": 0,
+        "ffprobe": {
+          "programs": [],
+          "streams": [
+            {
+              "width": 1920,
+              "height": 1080,
+              "r_frame_rate": "60/1",
+              "avg_frame_rate": "60/1",
+              "nb_read_frames": "436"
+            }
+          ],
+          "format": {
+            "duration": "19.995000"
+          }
+        },
+        "ffprobe_stderr_bytes": 0,
+        "decode_exit": 0,
+        "decode_stderr_bytes": 0,
+        "timing_headers": [
+          "85          vui_parameters_present_flag                                 0 = 0"
+        ]
+      },
+      "cpu_average_cores": 1.745,
+      "stage_counts": {
+        "h264-nvvidconv:sink": 646,
+        "h264-nvvidconv:src": 646,
+        "h264-videorate:sink": 646,
+        "h264-videorate:src": 1000,
+        "h264-caps:sink": 1000,
+        "h264-caps:src": 1000,
+        "h264-encoder:sink": 1000,
+        "h264-encoder:src": 991,
+        "h264-parser:sink": 991,
+        "h264-parser:src": 991,
+        "h264-parsed-caps:sink": 991,
+        "h264-parsed-caps:src": 991
+      }
+    },
+    "candidate15": {
+      "experiment": {
+        "scope": "one local RTSP input, IOU, full candidate models, captured real camera video replay; no live camera connection",
+        "input": "/previous/fall_clip.mp4",
+        "completed_experiment": true,
+        "receiver_exit": 0,
+        "output_bytes": 7727254,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 21.559
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 22.603
+          }
+        ],
+        "sample_count": 99,
+        "elapsed_seconds": 76.51751826284453
+      },
+      "observation": {
+        "frame_count": 635,
+        "scope": "all observed buffers",
+        "seconds": 47.262,
+        "max_gap_seconds": 0.761,
+        "initial40_max_gap_seconds": 0.556
+      },
+      "media": {
+        "ffprobe_exit": 0,
+        "ffprobe": {
+          "programs": [],
+          "streams": [
+            {
+              "width": 1920,
+              "height": 1080,
+              "r_frame_rate": "1000/1",
+              "avg_frame_rate": "0/0",
+              "nb_read_frames": "301"
+            }
+          ],
+          "format": {
+            "duration": "19.985000"
+          }
+        },
+        "ffprobe_stderr_bytes": 0,
+        "decode_exit": 0,
+        "decode_stderr_bytes": 0,
+        "timing_headers": [
+          "85          vui_parameters_present_flag                                 0 = 0"
+        ]
+      },
+      "cpu_average_cores": 1.678,
+      "stage_counts": {
+        "h264-nvvidconv:sink": 635,
+        "h264-nvvidconv:src": 635,
+        "h264-videorate:sink": 635,
+        "h264-videorate:src": 795,
+        "h264-caps:sink": 795,
+        "h264-caps:src": 795,
+        "h264-encoder:sink": 793,
+        "h264-encoder:src": 783,
+        "h264-parser:sink": 783,
+        "h264-parser:src": 783,
+        "h264-parsed-caps:sink": 783,
+        "h264-parsed-caps:src": 783
+      }
+    },
+    "candidate2997": {
+      "experiment": {
+        "scope": "one local RTSP input, IOU, full candidate models, captured real camera video replay; no live camera connection",
+        "input": "/baseline/camera_1_capture.mkv",
+        "completed_experiment": true,
+        "receiver_exit": 0,
+        "output_bytes": 11286096,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 14.407
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 14.821
+          }
+        ],
+        "sample_count": 95,
+        "elapsed_seconds": 62.37128453492187
+      },
+      "observation": {
+        "frame_count": 1057,
+        "scope": "all observed buffers",
+        "seconds": 47.018,
+        "max_gap_seconds": 0.84,
+        "initial40_max_gap_seconds": 0.84
+      },
+      "media": {
+        "ffprobe_exit": 0,
+        "ffprobe": {
+          "programs": [],
+          "streams": [
+            {
+              "width": 1920,
+              "height": 1080,
+              "r_frame_rate": "30/1",
+              "avg_frame_rate": "30/1",
+              "nb_read_frames": "497"
+            }
+          ],
+          "format": {
+            "duration": "20.002000"
+          }
+        },
+        "ffprobe_stderr_bytes": 0,
+        "decode_exit": 0,
+        "decode_stderr_bytes": 0,
+        "timing_headers": [
+          "85          vui_parameters_present_flag                                 0 = 0"
+        ]
+      },
+      "cpu_average_cores": 1.464,
+      "stage_counts": {
+        "h264-nvvidconv:sink": 1057,
+        "h264-nvvidconv:src": 1057,
+        "h264-videorate:sink": 1057,
+        "h264-videorate:src": 1131,
+        "h264-caps:sink": 1131,
+        "h264-caps:src": 1131,
+        "h264-encoder:sink": 1131,
+        "h264-encoder:src": 1131,
+        "h264-parser:sink": 1131,
+        "h264-parser:src": 1131,
+        "h264-parsed-caps:sink": 1131,
+        "h264-parsed-caps:src": 1131
+      }
+    }
+  },
+  "validation": {
+    "unit_tests": {
+      "passed": 167,
+      "skipped": 2,
+      "files": [
+        "tests/test_deepstream_pipeline_builder.py",
+        "tests/test_deepstream_processor.py"
+      ]
+    },
+    "red_before_change": {
+      "failed": 7,
+      "passed": 2
+    },
+    "ruff_product": "PASS",
+    "syntax": "PASS",
+    "compose_default": "PASS",
+    "wbs_33_rows_counts": "PASS",
+    "ruff_renderer": "PASS",
+    "diff_check": "Changed source/tests/docs/render files PASS; full Compose diff reports pre-existing whitespace at lines1425/1430, outside this change"
+  },
+  "production_after": {
+    "status": "running",
+    "health": "healthy",
+    "started_at": "2026-09-16T23:45:46.903505745Z",
+    "restart_count": 0,
+    "remaining_test_containers": 0
+  },
+  "source_sha256": "f079d810cd7ff6945c7db0fc120c9a0a47e65d881f789982d5c67ffae9f021e6",
+  "candidate_sha256": "f079d810cd7ff6945c7db0fc120c9a0a47e65d881f789982d5c67ffae9f021e6",
+  "limits": [
+    "short one-camera replay only; no multi-camera/long-duration/absolute end-to-end latency acceptance",
+    "15fps MKV avg_frame_rate 0/0; I33 OPEN; no VUI in inspected SPS, not a timing-header pass",
+    "CPU cgroup measurement includes app, local input publisher and output receiver",
+    "I20 full failure/recovery and I07 operating validation remain OPEN; P5.1 IN_PROGRESS"
+  ],
+  "source_url": "https://docs.nvidia.com/metropolis/deepstream/7.1/text/DS_plugin_gst-nvdsosd.html",
+  "publication": {
+    "html": {
+      "bytes": 22648,
+      "sha256": "facd3e6f70586ab1be178a24b52acac8202adf185c75aec39c5c6c6c26abfa56",
+      "matches": true
+    },
+    "pdf": {
+      "bytes": 125429,
+      "sha256": "9c615cddae64b18e7c7101f039e67383e80ecce6fb986501b7348a0f0f003bab",
+      "matches": true
+    }
+  }
+}

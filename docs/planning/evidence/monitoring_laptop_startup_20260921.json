@@ -1,0 +1,24 @@
+{
+  "observed_at": "2026-09-21T07:07:23.508769+00:00",
+  "user_report": "노트북 broker, receiver 모두 정상 실행",
+  "user_report_independently_verified": false,
+  "tcp_probes": [
+    {
+      "host": "192.168.2.79",
+      "port": 18883,
+      "tcp_connected": true
+    },
+    {
+      "host": "192.168.2.79",
+      "port": 18443,
+      "tcp_connected": true
+    },
+    {
+      "host": "127.0.0.1",
+      "port": 22,
+      "tcp_connected": true
+    }
+  ],
+  "client_files_present": false,
+  "scope": "TCP connect only; no credentials, MQTT publish, TLS authentication, or storage ACK verification"
+}

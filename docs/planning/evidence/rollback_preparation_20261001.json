@@ -1,0 +1,1824 @@
+{
+  "version": "0.88",
+  "date": "2026-10-01",
+  "scope": "I07 operating/candidate inventory and isolated SQLite restore; I41 backup coverage fix",
+  "code_changes": [
+    "scripts/ops/backup_runtime_databases.sh",
+    "tests/test_runtime_database_backup.py"
+  ],
+  "regressions": {
+    "before_fix_failed": 3,
+    "after_fix_passed": 5,
+    "cases": [
+      "durable queue and committed WAL coverage",
+      "preserve previous backups in rehearsal",
+      "private permissions",
+      "corrupt source leaves no completed backup",
+      "enabled retention preserves legacy behavior"
+    ]
+  },
+  "configuration": {
+    "operating": {
+      "image": "sha256:1ace5b7832a50d6675b66146b0edc307021795732fc7c9a770e2cd628d7fd261",
+      "started_at": "2026-09-16T23:45:46.903505745Z",
+      "health": "healthy",
+      "restart_count": 0,
+      "network_mode": "edgex-jetson_edgex-network",
+      "mounts": [
+        {
+          "Type": "bind",
+          "Name": null,
+          "Source": "/media/sawwave/Learning11/CCTV-project/.venv-jetson-train",
+          "Destination": "/app/.venv-jetson-train",
+          "RW": false
+        },
+        {
+          "Type": "bind",
+          "Name": null,
+          "Source": "/media/sawwave/Learning11/CCTV-project/Sample",
+          "Destination": "/app/Sample",
+          "RW": false
+        },
+        {
+          "Type": "bind",
+          "Name": null,
+          "Source": "/media/sawwave/Learning11/CCTV-project/cameras.json",
+          "Destination": "/app/cameras.json",
+          "RW": true
+        },
+        {
+          "Type": "bind",
+          "Name": null,
+          "Source": "/media/sawwave/Learning11/CCTV-project/data",
+          "Destination": "/app/data",
+          "RW": true
+        },
+        {
+          "Type": "bind",
+          "Name": null,
+          "Source": "/media/sawwave/Learning11/CCTV-project/known_faces",
+          "Destination": "/app/known_faces",
+          "RW": true
+        },
+        {
+          "Type": "bind",
+          "Name": null,
+          "Source": "/media/sawwave/Learning11/CCTV-project/known_faces.json",
+          "Destination": "/app/known_faces.json",
+          "RW": true
+        },
+        {
+          "Type": "bind",
+          "Name": null,
+          "Source": "/media/sawwave/Learning11/CCTV-project/models",
+          "Destination": "/app/models",
+          "RW": true
+        },
+        {
+          "Type": "bind",
+          "Name": null,
+          "Source": "/media/sawwave/Learning11/CCTV-project/scripts",
+          "Destination": "/app/scripts",
+          "RW": false
+        },
+        {
+          "Type": "bind",
+          "Name": null,
+          "Source": "/media/sawwave/Learning11/CCTV-project/src",
+          "Destination": "/app/src",
+          "RW": false
+        },
+        {
+          "Type": "bind",
+          "Name": null,
+          "Source": "/media/sawwave/Learning11/CCTV-project/zones_config.json",
+          "Destination": "/app/zones_config.json",
+          "RW": false
+        },
+        {
+          "Type": "bind",
+          "Name": null,
+          "Source": "/media/sawwave/Learning11/낙상학습데이터",
+          "Destination": "/app/낙상학습데이터",
+          "RW": false
+        },
+        {
+          "Type": "bind",
+          "Name": null,
+          "Source": "/media/sawwave/Learning11/CCTV-project/data/insightface",
+          "Destination": "/root/.insightface",
+          "RW": true
+        },
+        {
+          "Type": "bind",
+          "Name": null,
+          "Source": "/tmp/.X11-unix",
+          "Destination": "/tmp/.X11-unix",
+          "RW": true
+        },
+        {
+          "Type": "bind",
+          "Name": null,
+          "Source": "/media/sawwave/Learning11/CCTV-project/config/appearance_color_labels.json",
+          "Destination": "/app/config/appearance_color_labels.json",
+          "RW": false
+        },
+        {
+          "Type": "bind",
+          "Name": null,
+          "Source": "/media/sawwave/Learning11/CCTV-project/config/appearance_pa100k_labels.json",
+          "Destination": "/app/config/appearance_pa100k_labels.json",
+          "RW": false
+        },
+        {
+          "Type": "bind",
+          "Name": null,
+          "Source": "/media/sawwave/Learning11/CCTV-project/config/deepstream",
+          "Destination": "/app/config/deepstream",
+          "RW": false
+        },
+        {
+          "Type": "volume",
+          "Name": "edgex-jetson_trt-cache",
+          "Source": "/media/sawwave/Learning11/docker/volumes/edgex-jetson_trt-cache/_data",
+          "Destination": "/app/models/trt_cache",
+          "RW": true
+        },
+        {
+          "Type": "bind",
+          "Name": null,
+          "Source": "/opt/nvidia/deepstream",
+          "Destination": "/opt/nvidia/deepstream",
+          "RW": false
+        },
+        {
+          "Type": "bind",
+          "Name": null,
+          "Source": "/usr/lib/aarch64-linux-gnu/nvidia",
+          "Destination": "/usr/lib/aarch64-linux-gnu/nvidia",
+          "RW": false
+        }
+      ],
+      "environment_names": [
+        "ACTION_ALARM_COOLDOWN",
+        "AIOT_ALLOW_UNKNOWN_DEVICES",
+        "AIOT_DB_NAME",
+        "AIOT_DB_PASSWORD",
+        "AIOT_DB_USER",
+        "AI_DEVICE",
+        "ALARM_TOPICS",
+        "APPEARANCES_DB",
+        "APPEARANCE_BACKEND",
+        "APPEARANCE_BOOL_MIN_SAMPLES",
+        "APPEARANCE_BOOL_SMOOTHING_WINDOW",
+        "APPEARANCE_BOOL_TRUE_RATIO",
+        "APPEARANCE_COLOR_INPUT_SIZE",
+        "APPEARANCE_COLOR_LABEL_MAP_PATH",
+        "APPEARANCE_COLOR_MIN_SAMPLES",
+        "APPEARANCE_COLOR_MODEL_PATH",
+        "APPEARANCE_COLOR_SCORE_THRESHOLD",
+        "APPEARANCE_COLOR_SMOOTHING_WINDOW",
+        "APPEARANCE_CROP_CONTEXT_RATIO",
+        "APPEARANCE_CROP_DIR",
+        "APPEARANCE_ENABLED",
+        "APPEARANCE_GENDER_FEMALE_MIN_SCORE",
+        "APPEARANCE_GENDER_MALE_MAX_SCORE",
+        "APPEARANCE_GENDER_MIN_SAMPLES",
+        "APPEARANCE_INPUT_SIZE",
+        "APPEARANCE_LABEL_MAP_PATH",
+        "APPEARANCE_MODEL_PATH",
+        "APPEARANCE_RUNTIME",
+        "APPEARANCE_SAVE_CROPS",
+        "APPEARANCE_SCORE_THRESHOLD",
+        "APP_ENV",
+        "BATCH_SKIP_TLS_VERIFY",
+        "CAMERA_MODEL_API_PORT",
+        "COMMERCIAL_FACE_DATABASE",
+        "COMMERCIAL_FACE_MODEL_DIR",
+        "CONFIDENCE",
+        "CORS_ORIGINS",
+        "CUDA_HOME",
+        "DB_PATH",
+        "DEBIAN_FRONTEND",
+        "DEBOUNCE",
+        "DISPLAY",
+        "DS_APPEARANCE_CONDITION_REFRESH_SEC",
+        "DS_APPEARANCE_ENABLED",
+        "DS_CROP_PERSON_INTERVAL",
+        "DS_CROP_POSE_DIAGNOSTICS",
+        "DS_CROP_POSE_ENABLED",
+        "DS_DISPLAY",
+        "DS_EVENT_MIN_INTERVAL_SEC",
+        "DS_FACE_ENABLED",
+        "DS_FALL_ANGLE_HORIZONTAL",
+        "DS_FALL_ANGLE_INVERTED",
+        "DS_FALL_BBOX_ASPECT_RATIO",
+        "DS_FALL_ENABLE_FOLDED_POSE",
+        "DS_FALL_HEIGHT_RATIO",
+        "DS_FALL_KEYPOINT_SPAN_RATIO",
+        "DS_FALL_MIN_HIP_CONFIDENCE",
+        "DS_FALL_MIN_KEYPOINT_CONFIDENCE",
+        "DS_FALL_MIN_LEG_CONFIDENCE",
+        "DS_FALL_SCORE_THRESHOLD",
+        "DS_FALL_SITTING_LIKE_ASPECT_RATIO",
+        "DS_FALL_SPAN_BBOX_ASPECT_RATIO",
+        "DS_FALL_SUPPRESS_SITTING_LIKE_POSE",
+        "DS_H264_BITRATE",
+        "DS_H264_ENCODER",
+        "DS_H264_FPS",
+        "DS_H264_HEIGHT",
+        "DS_H264_IDR_INTERVAL",
+        "DS_H264_IFRAME_INTERVAL",
+        "DS_H264_POC_FIX_ENABLED",
+        "DS_H264_POC_TYPE",
+        "DS_H264_UDP_HOST",
+        "DS_H264_UDP_PORT",
+        "DS_H264_WIDTH",
+        "DS_HELMET_CLASS_IDS",
+        "DS_HELMET_CONFIDENCE",
+        "DS_HELMET_ENABLED",
+        "DS_HELMET_GIE_ID",
+        "DS_HELMET_INTERVAL",
+        "DS_HELMET_LABELS",
+        "DS_HELMET_SGIE_BATCH_SIZE",
+        "DS_NVBUF_MEMORY_TYPE",
+        "DS_OUTPUT_MODE",
+        "DS_POSE_CONFIDENCE",
+        "DS_POSE_GIE_ID",
+        "DS_POSE_SGIE_BATCH_SIZE",
+        "DS_PPHUMAN_INFER_CONFIG",
+        "DS_PPHUMAN_INTERVAL",
+        "DS_PPHUMAN_REINFER_INTERVAL",
+        "DS_PPHUMAN_SGIE_BATCH_SIZE",
+        "DS_PPHUMAN_SGIE_ENABLED",
+        "DS_PREVIEW_ENABLED",
+        "DS_PREVIEW_HEIGHT",
+        "DS_PREVIEW_MAX_FPS",
+        "DS_PREVIEW_WIDTH",
+        "DS_PRIMARY_INTERVAL",
+        "DS_RTSP_LATENCY_MS",
+        "DS_RTSP_LOCATION",
+        "DS_STREAM_HEIGHT",
+        "DS_STREAM_WIDTH",
+        "DS_YOLO_CLASS_IDS",
+        "DS_YOLO_CONFIDENCE",
+        "DS_YOLO_LABELS",
+        "DS_YOLO_POSTPROCESS_MODE",
+        "DS_YOLO_TASK",
+        "FACE_API_PORT",
+        "FACE_DEVICE",
+        "FACE_RECOGNITION_BACKEND",
+        "FACE_SNAPSHOT_COOLDOWN_SEC",
+        "FACE_SNAPSHOT_DIR",
+        "FACE_SNAPSHOT_ENABLED",
+        "FALLDATA_AUX_BUFFER_FRAMES",
+        "FALLDATA_AUX_CLIP_BUFFER_ENABLED",
+        "FALLDATA_AUX_CLIP_BUFFER_HEIGHT",
+        "FALLDATA_AUX_CLIP_BUFFER_WIDTH",
+        "FALLDATA_AUX_COMPARE_MODEL_KIND",
+        "FALLDATA_AUX_COMPARE_MODEL_PATH",
+        "FALLDATA_AUX_COMPARE_THRESHOLD",
+        "FALLDATA_AUX_COMPARE_VETO_ENABLED",
+        "FALLDATA_AUX_COMPARE_VETO_MIN_FALL_SCORE",
+        "FALLDATA_AUX_CONFIRM_BORDERLINE",
+        "FALLDATA_AUX_CONFIRM_MAX_FALL_SCORE",
+        "FALLDATA_AUX_COOLDOWN_SECONDS",
+        "FALLDATA_AUX_ENABLED",
+        "FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE",
+        "FALLDATA_AUX_FALL_CLASS_INDEX",
+        "FALLDATA_AUX_INLINE_FEATURE_CAPTURE_PATH",
+        "FALLDATA_AUX_INLINE_POSE_RF",
+        "FALLDATA_AUX_MAX_EXTRACT_FRAMES",
+        "FALLDATA_AUX_MEDIAPIPE_PYTHON",
+        "FALLDATA_AUX_MIN_NONZERO_FRAMES",
+        "FALLDATA_AUX_MIN_POSE_FRAMES",
+        "FALLDATA_AUX_MODE",
+        "FALLDATA_AUX_MODEL_PYTHON",
+        "FALLDATA_AUX_NEAR_MISS_PROMOTE_ENABLED",
+        "FALLDATA_AUX_SEQUENCE_TRANSFORM",
+        "FALLDATA_AUX_SHADOW_ALL_WINDOWS",
+        "FALLDATA_AUX_SHADOW_WINDOW_INTERVAL_SEC",
+        "FALLDATA_AUX_TEMPORAL_COMPARE_MODEL_PATH",
+        "FALLDATA_AUX_TEMPORAL_MIN_CONFIRMED_WINDOWS",
+        "FALLDATA_AUX_TEMPORAL_NEAR_MISS_SHADOW_ENABLED",
+        "FALLDATA_AUX_TEMPORAL_POSE_MODEL_PATH",
+        "FALLDATA_AUX_TEMPORAL_PYTHON",
+        "FALLDATA_AUX_TEMPORAL_SLIDING_WINDOW_SIZE",
+        "FALLDATA_AUX_TEMPORAL_SLIDING_WINDOW_STRIDE",
+        "FALLDATA_AUX_THRESHOLD",
+        "FALLDATA_AUX_TIMEOUT_SECONDS",
+        "FALL_GAP_RESET_SECONDS",
+        "FALL_RESEND_COOLDOWN",
+        "FALL_SHADOW_CLIP_DIR",
+        "FALL_SHADOW_NEAR_MISS_COOLDOWN_SECONDS",
+        "FALL_SHADOW_NEAR_MISS_LOG",
+        "FALL_SHADOW_REVIEW_LOG_PATH",
+        "FALL_SHADOW_SAVE_CLIPS",
+        "FALL_SUSTAINED_SECONDS",
+        "FPS",
+        "FRAME_SKIP",
+        "GST_PLUGIN_PATH",
+        "INTERNAL_SERVICE_TOKEN",
+        "L4T_TAG",
+        "LAB_MQTT_HOST",
+        "LAB_MQTT_ID",
+        "LAB_MQTT_PORT",
+        "LAB_TEST_MQTT_HOST",
+        "LAB_TEST_MQTT_ID",
+        "LAB_TEST_MQTT_PORT",
+        "LD_LIBRARY_PATH",
+        "LOCAL_MQTT_HOST",
+        "LOCAL_MQTT_ID",
+        "LOCAL_MQTT_PORT",
+        "LOCAL_MQTT_PW",
+        "MEDIA_BIND_HOST",
+        "METRICS_PORT",
+        "MQTT_EVENT_OUTBOX_DB",
+        "MQTT_EVENT_OUTBOX_RETRY_INTERVAL",
+        "MQTT_PASSWORD",
+        "MQTT_QOS",
+        "MQTT_USER",
+        "NC_API_RUI",
+        "NC_APPLICATION_IDS",
+        "NC_PW",
+        "NS_PARK_MQTT_HOST",
+        "NS_PARK_MQTT_ID",
+        "NS_PARK_MQTT_PORT",
+        "NVIDIA_DRIVER_CAPABILITIES",
+        "NVIDIA_VISIBLE_DEVICES",
+        "PATH",
+        "POSE_CONFIDENCE",
+        "POSE_CROP_MODE",
+        "PROXY_MQTT_HOST",
+        "PROXY_MQTT_ID",
+        "PROXY_MQTT_PORT",
+        "PROXY_MQTT_PW",
+        "PUBLIC_API_KEY",
+        "PUBLIC_DEMO_BIND_HOST",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONIOENCODING",
+        "PYTHONPATH",
+        "PYTHONUNBUFFERED",
+        "PYTHONUTF8",
+        "QT_X11_NO_MITSHM",
+        "REQUIRE_CORS_ORIGINS",
+        "REQUIRE_PUBLIC_API_KEY",
+        "REQUIRE_STREAM_API_TOKEN",
+        "RTSP_BUFFER_SIZE",
+        "SIGNBOARD_BACK_COLOR",
+        "SIGNBOARD_BRIGHTNESS",
+        "SIGNBOARD_HOST",
+        "SIGNBOARD_PORT",
+        "SIGNBOARD_TEXT_COLOR",
+        "SIGNBOARD_TEXT_SIZE",
+        "SIGNBOARD_TEXT_SPEED",
+        "SIREN_AUTO_STOP",
+        "SIREN_HOST",
+        "SIREN_PASSWORD",
+        "SIREN_PORT",
+        "SIREN_USER",
+        "SPEAKER_HOST",
+        "SPEAKER_PASSWORD",
+        "SPEAKER_PORT",
+        "SPEAKER_TTS_GENDER",
+        "SPEAKER_TTS_LANGUAGE",
+        "SPEAKER_TTS_PITCH",
+        "SPEAKER_TTS_SPEED",
+        "SPEAKER_TTS_VOLUME",
+        "SPEAKER_USER",
+        "SPEAKER_VOLUME",
+        "STREAM_API_ENABLED",
+        "STREAM_API_TOKEN",
+        "STREAM_FPS",
+        "STREAM_HEIGHT",
+        "STREAM_JPEG_QUALITY",
+        "STREAM_PORT",
+        "STREAM_WIDTH",
+        "SUBSCRIBE_TOPICS",
+        "TENSORRT_EXPECTED_VERSION",
+        "TORCH_CUDNN_BENCHMARK",
+        "TORCH_CUDNN_V8_API_ENABLED",
+        "TZ",
+        "USE_DEEPSTREAM",
+        "USE_GSTREAMER",
+        "ZONE_API_PORT"
+      ]
+    },
+    "candidate": {
+      "image": "sha256:809693da4ed0c288e68744235f4ff0156612d73ca59f5e6282ffcedf3e9aee49",
+      "network_mode": "none",
+      "mounts": [
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/.venv-jetson-train",
+          "target": "/app/.venv-jetson-train",
+          "read_only": true
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/data/runtime/p51_profile_20260928_v052/rc1_models/models",
+          "target": "/app/models",
+          "read_only": true
+        },
+        {
+          "type": "bind",
+          "source": "/opt/nvidia/deepstream",
+          "target": "/opt/nvidia/deepstream",
+          "read_only": true
+        },
+        {
+          "type": "bind",
+          "source": "/usr/lib/aarch64-linux-gnu/nvidia",
+          "target": "/usr/lib/aarch64-linux-gnu/nvidia",
+          "read_only": true
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/data/runtime/p51_app_20260928_v039",
+          "target": "/experiment",
+          "read_only": true
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/data/runtime/p51_match_tcn_20261001_v088/normal",
+          "target": "/output",
+          "read_only": false
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/data/runtime/p51_match_tcn_20261001_v088",
+          "target": "/audit",
+          "read_only": true
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/data/runtime/p51_camera_20260928_v050",
+          "target": "/baseline",
+          "read_only": true
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/.venv-mediapipe",
+          "target": "/app/.venv-mediapipe",
+          "read_only": true
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/.venv-falldata",
+          "target": "/app/.venv-falldata",
+          "read_only": true
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/known_faces.json",
+          "target": "/app/known_faces.json",
+          "read_only": true
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/known_faces",
+          "target": "/app/known_faces",
+          "read_only": true
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/data/runtime/p51_match_tcn_20261001_v088/normal",
+          "target": "/app/data",
+          "read_only": false
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/data/runtime/p51_tcn_loaded_20260930_v074",
+          "target": "/harness",
+          "read_only": true
+        },
+        {
+          "type": "bind",
+          "source": "/media/sawwave/Learning11/CCTV-project/data/runtime/p51_shutdown_20261001_v086",
+          "target": "/audit86",
+          "read_only": true
+        }
+      ],
+      "environment_names": [
+        "AI_ENGINE_RESTART_DELAY_SEC",
+        "APPEARANCES_DB",
+        "APPEARANCE_BACKEND",
+        "APPEARANCE_BOOL_MIN_SAMPLES",
+        "APPEARANCE_BOOL_SMOOTHING_WINDOW",
+        "APPEARANCE_BOOL_TRUE_RATIO",
+        "APPEARANCE_COLOR_INPUT_SIZE",
+        "APPEARANCE_COLOR_LABEL_MAP_PATH",
+        "APPEARANCE_COLOR_MIN_SAMPLES",
+        "APPEARANCE_COLOR_MODEL_PATH",
+        "APPEARANCE_COLOR_SCORE_THRESHOLD",
+        "APPEARANCE_COLOR_SMOOTHING_WINDOW",
+        "APPEARANCE_CROP_CONTEXT_RATIO",
+        "APPEARANCE_CROP_DIR",
+        "APPEARANCE_ENABLED",
+        "APPEARANCE_GENDER_FEMALE_MIN_SCORE",
+        "APPEARANCE_GENDER_MALE_MAX_SCORE",
+        "APPEARANCE_GENDER_MIN_SAMPLES",
+        "APPEARANCE_INPUT_SIZE",
+        "APPEARANCE_LABEL_MAP_PATH",
+        "APPEARANCE_MODEL_PATH",
+        "APPEARANCE_RUNTIME",
+        "APPEARANCE_SAVE_CROPS",
+        "APPEARANCE_SCORE_THRESHOLD",
+        "AUDIT_CODEC_MODE",
+        "AUDIT_CUDA_COREDUMP",
+        "AUDIT_INPUT",
+        "AUDIT_SANITIZER",
+        "AUDIT_SCENARIO",
+        "AUDIT_STARTUP_TRACE",
+        "AUDIT_STOP_ON_SOURCE_TIMEOUT",
+        "AUDIT_TARGET_FRAMES",
+        "AUDIT_VARIANT",
+        "DS_APPEARANCE_CONDITION_REFRESH_SEC",
+        "DS_APPEARANCE_ENABLED",
+        "DS_CONTEXT_MIN_INTERVAL_SEC",
+        "DS_CROP_PERSON_INTERVAL",
+        "DS_CROP_POSE_DIAGNOSTICS",
+        "DS_CROP_POSE_ENABLED",
+        "DS_DISPLAY",
+        "DS_EVENT_MIN_INTERVAL_SEC",
+        "DS_FACE_ENABLED",
+        "DS_FALL_ANGLE_HORIZONTAL",
+        "DS_FALL_ANGLE_INVERTED",
+        "DS_FALL_BBOX_ASPECT_RATIO",
+        "DS_FALL_ENABLE_FOLDED_POSE",
+        "DS_FALL_HEIGHT_RATIO",
+        "DS_FALL_KEYPOINT_SPAN_RATIO",
+        "DS_FALL_MIN_HIP_CONFIDENCE",
+        "DS_FALL_MIN_KEYPOINT_CONFIDENCE",
+        "DS_FALL_MIN_LEG_CONFIDENCE",
+        "DS_FALL_SCORE_THRESHOLD",
+        "DS_FALL_SITTING_LIKE_ASPECT_RATIO",
+        "DS_FALL_SPAN_BBOX_ASPECT_RATIO",
+        "DS_FALL_SUPPRESS_SITTING_LIKE_POSE",
+        "DS_H264_BITRATE",
+        "DS_H264_ENCODER",
+        "DS_H264_FPS",
+        "DS_H264_HEIGHT",
+        "DS_H264_IDR_INTERVAL",
+        "DS_H264_IFRAME_INTERVAL",
+        "DS_H264_POC_FIX_ENABLED",
+        "DS_H264_POC_TYPE",
+        "DS_H264_UDP_PORT",
+        "DS_H264_WIDTH",
+        "DS_HELMET_CLASS_IDS",
+        "DS_HELMET_CONFIDENCE",
+        "DS_HELMET_ENABLED",
+        "DS_HELMET_GIE_ID",
+        "DS_HELMET_INTERVAL",
+        "DS_HELMET_LABELS",
+        "DS_HELMET_SGIE_BATCH_SIZE",
+        "DS_NVBUF_MEMORY_TYPE",
+        "DS_NVVIDEOCONVERT_COPY_HW",
+        "DS_OSD_PROCESS_MODE",
+        "DS_OUTPUT_MODE",
+        "DS_POSE_CONFIDENCE",
+        "DS_POSE_GIE_ID",
+        "DS_POSE_SGIE_BATCH_SIZE",
+        "DS_PPHUMAN_INFER_CONFIG",
+        "DS_PPHUMAN_INTERVAL",
+        "DS_PPHUMAN_REINFER_INTERVAL",
+        "DS_PPHUMAN_SGIE_BATCH_SIZE",
+        "DS_PPHUMAN_SGIE_ENABLED",
+        "DS_PREVIEW_ENABLED",
+        "DS_PREVIEW_HEIGHT",
+        "DS_PREVIEW_MAX_FPS",
+        "DS_PREVIEW_WIDTH",
+        "DS_PRIMARY_INTERVAL",
+        "DS_RTSP_LATENCY_MS",
+        "DS_RTSP_LOCATION",
+        "DS_RTSP_RECONNECT_INTERVAL_SEC",
+        "DS_STREAM_HEIGHT",
+        "DS_STREAM_WIDTH",
+        "DS_YOLO_CLASS_IDS",
+        "DS_YOLO_CONFIDENCE",
+        "DS_YOLO_LABELS",
+        "DS_YOLO_POSTPROCESS_MODE",
+        "DS_YOLO_TASK",
+        "FACE_API_PORT",
+        "FACE_DEVICE",
+        "FACE_RECOGNITION_BACKEND",
+        "FACE_SNAPSHOT_COOLDOWN_SEC",
+        "FACE_SNAPSHOT_DIR",
+        "FACE_SNAPSHOT_ENABLED",
+        "FALLDATA_AUX_BUFFER_FRAMES",
+        "FALLDATA_AUX_CLIP_BUFFER_ENABLED",
+        "FALLDATA_AUX_CLIP_BUFFER_HEIGHT",
+        "FALLDATA_AUX_CLIP_BUFFER_WIDTH",
+        "FALLDATA_AUX_COMPARE_MODEL_KIND",
+        "FALLDATA_AUX_COMPARE_MODEL_PATH",
+        "FALLDATA_AUX_COMPARE_THRESHOLD",
+        "FALLDATA_AUX_COMPARE_VETO_ENABLED",
+        "FALLDATA_AUX_COMPARE_VETO_MIN_FALL_SCORE",
+        "FALLDATA_AUX_CONFIRM_BORDERLINE",
+        "FALLDATA_AUX_CONFIRM_MAX_FALL_SCORE",
+        "FALLDATA_AUX_COOLDOWN_SECONDS",
+        "FALLDATA_AUX_ENABLED",
+        "FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE",
+        "FALLDATA_AUX_FALL_CLASS_INDEX",
+        "FALLDATA_AUX_INLINE_FEATURE_CAPTURE_PATH",
+        "FALLDATA_AUX_INLINE_POSE_RF",
+        "FALLDATA_AUX_MAX_EXTRACT_FRAMES",
+        "FALLDATA_AUX_MEDIAPIPE_PYTHON",
+        "FALLDATA_AUX_MIN_NONZERO_FRAMES",
+        "FALLDATA_AUX_MIN_POSE_FRAMES",
+        "FALLDATA_AUX_MODE",
+        "FALLDATA_AUX_MODEL_PYTHON",
+        "FALLDATA_AUX_NEAR_MISS_PROMOTE_ENABLED",
+        "FALLDATA_AUX_SEQUENCE_TRANSFORM",
+        "FALLDATA_AUX_SHADOW_ALL_WINDOWS",
+        "FALLDATA_AUX_SHADOW_WINDOW_INTERVAL_SEC",
+        "FALLDATA_AUX_TEMPORAL_COMPARE_MODEL_PATH",
+        "FALLDATA_AUX_TEMPORAL_MIN_CONFIRMED_WINDOWS",
+        "FALLDATA_AUX_TEMPORAL_NEAR_MISS_SHADOW_ENABLED",
+        "FALLDATA_AUX_TEMPORAL_POSE_IMGSZ",
+        "FALLDATA_AUX_TEMPORAL_POSE_MODEL_PATH",
+        "FALLDATA_AUX_TEMPORAL_PYTHON",
+        "FALLDATA_AUX_TEMPORAL_SLIDING_WINDOW_SIZE",
+        "FALLDATA_AUX_TEMPORAL_SLIDING_WINDOW_STRIDE",
+        "FALLDATA_AUX_TEMPORAL_WORKER_ENABLED",
+        "FALLDATA_AUX_THRESHOLD",
+        "FALLDATA_AUX_TIMEOUT_SECONDS",
+        "FALL_SHADOW_CLIP_DIR",
+        "FALL_SHADOW_REVIEW_LOG_PATH",
+        "GST_DEBUG",
+        "GST_PLUGIN_PATH",
+        "GST_REGISTRY",
+        "LD_LIBRARY_PATH",
+        "METRICS_PORT",
+        "MPLCONFIGDIR",
+        "NVIDIA_DRIVER_CAPABILITIES",
+        "NVIDIA_VISIBLE_DEVICES",
+        "OMP_NUM_THREADS",
+        "OPENBLAS_NUM_THREADS",
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD",
+        "PYTHONDONTWRITEBYTECODE",
+        "PYTHONPATH",
+        "STREAM_API_ENABLED",
+        "STREAM_PORT",
+        "USE_DEEPSTREAM",
+        "XDG_CACHE_HOME",
+        "YOLO_CONFIG_DIR"
+      ]
+    },
+    "environment_differences": [
+      {
+        "key": "ACTION_ALARM_COOLDOWN",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "AIOT_ALLOW_UNKNOWN_DEVICES",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "AIOT_DB_NAME",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "AIOT_DB_PASSWORD",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "AIOT_DB_USER",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "AI_DEVICE",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "AI_ENGINE_RESTART_DELAY_SEC",
+        "operating_present": false,
+        "candidate_present": true
+      },
+      {
+        "key": "ALARM_TOPICS",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "APPEARANCES_DB",
+        "operating_present": true,
+        "candidate_present": true,
+        "operating": "/app/data/runtime/appearances.db",
+        "candidate": "/output/appearances.db"
+      },
+      {
+        "key": "APPEARANCE_CROP_DIR",
+        "operating_present": true,
+        "candidate_present": true
+      },
+      {
+        "key": "APP_ENV",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "AUDIT_CODEC_MODE",
+        "operating_present": false,
+        "candidate_present": true
+      },
+      {
+        "key": "AUDIT_CUDA_COREDUMP",
+        "operating_present": false,
+        "candidate_present": true
+      },
+      {
+        "key": "AUDIT_INPUT",
+        "operating_present": false,
+        "candidate_present": true
+      },
+      {
+        "key": "AUDIT_SANITIZER",
+        "operating_present": false,
+        "candidate_present": true
+      },
+      {
+        "key": "AUDIT_SCENARIO",
+        "operating_present": false,
+        "candidate_present": true
+      },
+      {
+        "key": "AUDIT_STARTUP_TRACE",
+        "operating_present": false,
+        "candidate_present": true
+      },
+      {
+        "key": "AUDIT_STOP_ON_SOURCE_TIMEOUT",
+        "operating_present": false,
+        "candidate_present": true
+      },
+      {
+        "key": "AUDIT_TARGET_FRAMES",
+        "operating_present": false,
+        "candidate_present": true
+      },
+      {
+        "key": "AUDIT_VARIANT",
+        "operating_present": false,
+        "candidate_present": true
+      },
+      {
+        "key": "BATCH_SKIP_TLS_VERIFY",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "CAMERA_MODEL_API_PORT",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "COMMERCIAL_FACE_DATABASE",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "COMMERCIAL_FACE_MODEL_DIR",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "CONFIDENCE",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "CORS_ORIGINS",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "CUDA_HOME",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "DB_PATH",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "DEBIAN_FRONTEND",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "DEBOUNCE",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "DISPLAY",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "DS_CONTEXT_MIN_INTERVAL_SEC",
+        "operating_present": false,
+        "candidate_present": true,
+        "operating": null,
+        "candidate": "0.5"
+      },
+      {
+        "key": "DS_H264_UDP_HOST",
+        "operating_present": true,
+        "candidate_present": false,
+        "operating": "cctv-media-server",
+        "candidate": null
+      },
+      {
+        "key": "DS_NVVIDEOCONVERT_COPY_HW",
+        "operating_present": false,
+        "candidate_present": true,
+        "operating": null,
+        "candidate": "1"
+      },
+      {
+        "key": "DS_OSD_PROCESS_MODE",
+        "operating_present": false,
+        "candidate_present": true,
+        "operating": null,
+        "candidate": "0"
+      },
+      {
+        "key": "DS_RTSP_LOCATION",
+        "operating_present": true,
+        "candidate_present": true
+      },
+      {
+        "key": "DS_RTSP_RECONNECT_INTERVAL_SEC",
+        "operating_present": false,
+        "candidate_present": true,
+        "operating": null,
+        "candidate": "15"
+      },
+      {
+        "key": "FACE_API_PORT",
+        "operating_present": true,
+        "candidate_present": true,
+        "operating": "8767",
+        "candidate": "18767"
+      },
+      {
+        "key": "FACE_SNAPSHOT_DIR",
+        "operating_present": true,
+        "candidate_present": true
+      },
+      {
+        "key": "FALLDATA_AUX_SHADOW_WINDOW_INTERVAL_SEC",
+        "operating_present": true,
+        "candidate_present": true,
+        "operating": "300",
+        "candidate": "10"
+      },
+      {
+        "key": "FALLDATA_AUX_TEMPORAL_POSE_IMGSZ",
+        "operating_present": false,
+        "candidate_present": true,
+        "operating": null,
+        "candidate": "640"
+      },
+      {
+        "key": "FALLDATA_AUX_TEMPORAL_WORKER_ENABLED",
+        "operating_present": false,
+        "candidate_present": true,
+        "operating": null,
+        "candidate": "true"
+      },
+      {
+        "key": "FALL_GAP_RESET_SECONDS",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "FALL_RESEND_COOLDOWN",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "FALL_SHADOW_CLIP_DIR",
+        "operating_present": true,
+        "candidate_present": true
+      },
+      {
+        "key": "FALL_SHADOW_NEAR_MISS_COOLDOWN_SECONDS",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "FALL_SHADOW_NEAR_MISS_LOG",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "FALL_SHADOW_REVIEW_LOG_PATH",
+        "operating_present": true,
+        "candidate_present": true
+      },
+      {
+        "key": "FALL_SHADOW_SAVE_CLIPS",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "FALL_SUSTAINED_SECONDS",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "FPS",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "FRAME_SKIP",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "GST_DEBUG",
+        "operating_present": false,
+        "candidate_present": true
+      },
+      {
+        "key": "GST_REGISTRY",
+        "operating_present": false,
+        "candidate_present": true
+      },
+      {
+        "key": "INTERNAL_SERVICE_TOKEN",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "L4T_TAG",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "LAB_MQTT_HOST",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "LAB_MQTT_ID",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "LAB_MQTT_PORT",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "LAB_TEST_MQTT_HOST",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "LAB_TEST_MQTT_ID",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "LAB_TEST_MQTT_PORT",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "LD_LIBRARY_PATH",
+        "operating_present": true,
+        "candidate_present": true
+      },
+      {
+        "key": "LOCAL_MQTT_HOST",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "LOCAL_MQTT_ID",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "LOCAL_MQTT_PORT",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "LOCAL_MQTT_PW",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "MEDIA_BIND_HOST",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "METRICS_PORT",
+        "operating_present": true,
+        "candidate_present": true,
+        "operating": "8770",
+        "candidate": "18770"
+      },
+      {
+        "key": "MPLCONFIGDIR",
+        "operating_present": false,
+        "candidate_present": true
+      },
+      {
+        "key": "MQTT_EVENT_OUTBOX_DB",
+        "operating_present": true,
+        "candidate_present": false,
+        "operating": "/app/data/runtime/mqtt_event_outbox.db",
+        "candidate": null
+      },
+      {
+        "key": "MQTT_EVENT_OUTBOX_RETRY_INTERVAL",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "MQTT_PASSWORD",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "MQTT_QOS",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "MQTT_USER",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "NC_API_RUI",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "NC_APPLICATION_IDS",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "NC_PW",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "NS_PARK_MQTT_HOST",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "NS_PARK_MQTT_ID",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "NS_PARK_MQTT_PORT",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "OMP_NUM_THREADS",
+        "operating_present": false,
+        "candidate_present": true
+      },
+      {
+        "key": "OPENBLAS_NUM_THREADS",
+        "operating_present": false,
+        "candidate_present": true
+      },
+      {
+        "key": "PATH",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "POSE_CONFIDENCE",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "POSE_CROP_MODE",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "PROXY_MQTT_HOST",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "PROXY_MQTT_ID",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "PROXY_MQTT_PORT",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "PROXY_MQTT_PW",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "PUBLIC_API_KEY",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "PUBLIC_DEMO_BIND_HOST",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "PYTEST_DISABLE_PLUGIN_AUTOLOAD",
+        "operating_present": false,
+        "candidate_present": true
+      },
+      {
+        "key": "PYTHONIOENCODING",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "PYTHONUNBUFFERED",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "PYTHONUTF8",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "QT_X11_NO_MITSHM",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "REQUIRE_CORS_ORIGINS",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "REQUIRE_PUBLIC_API_KEY",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "REQUIRE_STREAM_API_TOKEN",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "RTSP_BUFFER_SIZE",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "SIGNBOARD_BACK_COLOR",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "SIGNBOARD_BRIGHTNESS",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "SIGNBOARD_HOST",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "SIGNBOARD_PORT",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "SIGNBOARD_TEXT_COLOR",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "SIGNBOARD_TEXT_SIZE",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "SIGNBOARD_TEXT_SPEED",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "SIREN_AUTO_STOP",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "SIREN_HOST",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "SIREN_PASSWORD",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "SIREN_PORT",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "SIREN_USER",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "SPEAKER_HOST",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "SPEAKER_PASSWORD",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "SPEAKER_PORT",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "SPEAKER_TTS_GENDER",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "SPEAKER_TTS_LANGUAGE",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "SPEAKER_TTS_PITCH",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "SPEAKER_TTS_SPEED",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "SPEAKER_TTS_VOLUME",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "SPEAKER_USER",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "SPEAKER_VOLUME",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "STREAM_API_TOKEN",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "STREAM_FPS",
+        "operating_present": true,
+        "candidate_present": false,
+        "operating": "10",
+        "candidate": null
+      },
+      {
+        "key": "STREAM_HEIGHT",
+        "operating_present": true,
+        "candidate_present": false,
+        "operating": "720",
+        "candidate": null
+      },
+      {
+        "key": "STREAM_JPEG_QUALITY",
+        "operating_present": true,
+        "candidate_present": false,
+        "operating": "70",
+        "candidate": null
+      },
+      {
+        "key": "STREAM_PORT",
+        "operating_present": true,
+        "candidate_present": true,
+        "operating": "8769",
+        "candidate": "18769"
+      },
+      {
+        "key": "STREAM_WIDTH",
+        "operating_present": true,
+        "candidate_present": false,
+        "operating": "1280",
+        "candidate": null
+      },
+      {
+        "key": "SUBSCRIBE_TOPICS",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "TENSORRT_EXPECTED_VERSION",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "TORCH_CUDNN_BENCHMARK",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "TORCH_CUDNN_V8_API_ENABLED",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "TZ",
+        "operating_present": true,
+        "candidate_present": false
+      },
+      {
+        "key": "USE_GSTREAMER",
+        "operating_present": true,
+        "candidate_present": false,
+        "operating": "1",
+        "candidate": null
+      },
+      {
+        "key": "XDG_CACHE_HOME",
+        "operating_present": false,
+        "candidate_present": true
+      },
+      {
+        "key": "YOLO_CONFIG_DIR",
+        "operating_present": false,
+        "candidate_present": true
+      },
+      {
+        "key": "ZONE_API_PORT",
+        "operating_present": true,
+        "candidate_present": false
+      }
+    ],
+    "operating_database_environment": {
+      "APPEARANCES_DB": "/app/data/runtime/appearances.db",
+      "MQTT_EVENT_OUTBOX_DB": "/app/data/runtime/mqtt_event_outbox.db"
+    },
+    "limits": [
+      "Environment comparison is explicit environment only; absent keys do not prove resolved defaults.",
+      "Live bind files are current disk state, not a reconstruction of all modules loaded at startup.",
+      "No secret values or complete restart environment are retained by this inventory."
+    ]
+  },
+  "source_comparison": {
+    "same_count": 345,
+    "changed": [
+      "scripts/ops/render_progress_snapshot.py",
+      "scripts/datasets/train_deepstream_pose_fall_rf.py",
+      "runners/run_kuiper_rules.py",
+      "runners/run_alert_api.py",
+      "runners/run_action_bridge.py",
+      "config/event_type_map.json"
+    ],
+    "missing_in_operating": [
+      "runners/run_monitoring_remote_poc.py",
+      "runners/run_signboard_device_service.py",
+      "runners/run_speaker_device_service.py",
+      "runners/run_monitoring_local.py",
+      "runners/run_dabit_device_service.py",
+      "runners/run_siren_device_service.py",
+      "runners/run_command_result_collector.py"
+    ],
+    "opened_db_paths": [
+      "/app/data/runtime/appearances.db",
+      "/app/data/runtime/appearances.db-wal"
+    ]
+  },
+  "operating_disk_snapshot": {
+    "files": 351,
+    "manifest": "data/runtime/p51_rollback_20261001_v089/operating_disk_manifest.json",
+    "scope": "selected candidate-list files currently visible in container; not all mounts or startup memory"
+  },
+  "candidate_models": {
+    "head/helmet_model.engine": {
+      "sha256": "618c54a48d43844662fb3635d9fed3dc3bdf6e2c6018e6de09a52265a6ea19f6",
+      "bytes": 8173652
+    },
+    "appearance/appearance_color_yolov8n.engine": {
+      "sha256": "26a24c630d496ce7d075bf9e996e4d2b8469b0c55d263dcbbbebb1fd79cfaae1",
+      "bytes": 3874876
+    },
+    "appearance/pa100k_resnet50_attr.engine": {
+      "sha256": "151d44ea5e120b6b703c3605f2ea807eb892031190c43c26be9fb368dd8ecd0a",
+      "bytes": 60557540
+    },
+    "fall/yolov8n-pose.engine": {
+      "sha256": "cc6cd0ee490e4f2ae46acf853989cf8c8806aadab47853e39c1e97cdf6732a74",
+      "bytes": 8956700
+    },
+    "fall/fall_temporal_same_split_resume_20260908.pt": {
+      "sha256": "8cf336f8080122cca0f6369c1b2c6edc099624f9ce8c4647915a6eab0d445e22",
+      "bytes": 31259
+    },
+    "fall/yolov8n-pose.pt": {
+      "sha256": "c6fa93dd1ee4a2c18c900a45c1d864a1c6f7aba75d84f91648a30b7fb641d212",
+      "bytes": 6832633
+    },
+    "legacy/falldata_mediapipe/FNF_RF_SMOTE_CAM_1.pkl": {
+      "sha256": "da2a6a080e19beea01973a0d17282d7e151891ecd8daf6ef0eefbd10b1833bcd",
+      "bytes": 1433417
+    },
+    "experiments/yolo_pose_fall_cam2_continuous_200_80_640.pkl": {
+      "sha256": "0fd6610ee86d9263e402b82e6607da0ff361a39ab0487a7cb0f6edd019195397",
+      "bytes": 2545406
+    }
+  },
+  "model_comparison": {
+    "head/helmet_model.engine": {
+      "operating_disk_present": true,
+      "same_as_candidate": true
+    },
+    "appearance/appearance_color_yolov8n.engine": {
+      "operating_disk_present": true,
+      "same_as_candidate": true
+    },
+    "appearance/pa100k_resnet50_attr.engine": {
+      "operating_disk_present": true,
+      "same_as_candidate": true
+    },
+    "fall/yolov8n-pose.engine": {
+      "operating_disk_present": true,
+      "same_as_candidate": true
+    },
+    "fall/fall_temporal_same_split_resume_20260908.pt": {
+      "operating_disk_present": true,
+      "same_as_candidate": true
+    },
+    "fall/yolov8n-pose.pt": {
+      "operating_disk_present": true,
+      "same_as_candidate": true
+    },
+    "legacy/falldata_mediapipe/FNF_RF_SMOTE_CAM_1.pkl": {
+      "operating_disk_present": true,
+      "same_as_candidate": true
+    },
+    "experiments/yolo_pose_fall_cam2_continuous_200_80_640.pkl": {
+      "operating_disk_present": true,
+      "same_as_candidate": true
+    }
+  },
+  "backup": {
+    "scope": "eight separate read-only online SQLite backups; no common snapshot barrier",
+    "files": {
+      "mqtt_event_outbox.db": {
+        "bytes": 3103817728,
+        "mode": "0o600"
+      },
+      "event_reviews.db": {
+        "bytes": 28672,
+        "mode": "0o600"
+      },
+      "edgex_command_results.db": {
+        "bytes": 24576,
+        "mode": "0o600"
+      },
+      "action_http_outbox.db": {
+        "bytes": 2138353664,
+        "mode": "0o600"
+      },
+      "event_outbox.db": {
+        "bytes": 24576,
+        "mode": "0o600"
+      },
+      "appearances.db": {
+        "bytes": 678203392,
+        "mode": "0o600"
+      },
+      "commercial_faces.db": {
+        "bytes": 28672,
+        "mode": "0o600"
+      },
+      "action_events.db": {
+        "bytes": 2935099392,
+        "mode": "0o600"
+      }
+    }
+  },
+  "restored": {
+    "action_events.db": {
+      "backup_bytes": 2935099392,
+      "restored_bytes": 2923888640,
+      "seconds": 219.07582276198082,
+      "integrity": "ok",
+      "logical_equal": true,
+      "schema_sha256": "a59577cfb0b5d736ae00ddd0e196fc6decafc765e6772b0f2233af35994b581d",
+      "tables": {
+        "action_commands": {
+          "rows": 5649,
+          "content_sha256": "d6aebbbc75f7b24bda10873be61142af7b8d4b93d4c9ad2987ff610a5e13f868",
+          "status_counts": [
+            [
+              "acknowledged",
+              904
+            ],
+            [
+              "error",
+              1
+            ],
+            [
+              "failed",
+              4652
+            ],
+            [
+              "sent",
+              3
+            ],
+            [
+              "simulated",
+              89
+            ]
+          ]
+        },
+        "action_events": {
+          "rows": 922799,
+          "content_sha256": "bed84a6d420dfa4dbc6c4cd3a9197f68a5bdc7a5c585f664e4db03f36ad9f3ac"
+        },
+        "sqlite_sequence": {
+          "rows": 1,
+          "content_sha256": "0a767006ca2153e91e0736cee605440e534dded5fde2413ff58950ed887519d8"
+        }
+      }
+    },
+    "action_http_outbox.db": {
+      "backup_bytes": 2138353664,
+      "restored_bytes": 226672640,
+      "seconds": 8.37825428089127,
+      "integrity": "ok",
+      "logical_equal": true,
+      "schema_sha256": "fd2be0c7149c689a1b7fa94e880af8968a2f7934cb11d0b36a281d556dc50365",
+      "tables": {
+        "http_event_outbox": {
+          "rows": 83691,
+          "content_sha256": "854de205243718889d780f696943130040d81667cfd876b1b5f8a536f5f24a92",
+          "status_counts": [
+            [
+              "pending",
+              1
+            ],
+            [
+              "sent",
+              83690
+            ]
+          ]
+        },
+        "sqlite_sequence": {
+          "rows": 1,
+          "content_sha256": "20858518f5671462f6b38882c79f87a2ab7acd8d7523e1ad6e7c310a0d751db2"
+        }
+      }
+    },
+    "appearances.db": {
+      "backup_bytes": 678203392,
+      "restored_bytes": 660078592,
+      "seconds": 51.84921774500981,
+      "integrity": "ok",
+      "logical_equal": true,
+      "schema_sha256": "492294c06400dc59e35932732458bbb10ddd7f0fc36ade568120ebc75658feb8",
+      "tables": {
+        "appearance_log": {
+          "rows": 531661,
+          "content_sha256": "636c42102e101d879a168c954e5403415ef5ae652f49434c2f13741116831a9d"
+        },
+        "search_conditions": {
+          "rows": 0,
+          "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "sqlite_sequence": {
+          "rows": 1,
+          "content_sha256": "045df7530b5209b7d9a00d5e2b10a20b18b0506fc5c7f4783701064efd229f73"
+        }
+      }
+    },
+    "commercial_faces.db": {
+      "backup_bytes": 28672,
+      "restored_bytes": 28672,
+      "seconds": 0.008523314958438277,
+      "integrity": "ok",
+      "logical_equal": true,
+      "schema_sha256": "f8a752e30df781280166694b7b064b515140d4618531caf3b76121d75c0e8514",
+      "tables": {
+        "face_persons": {
+          "rows": 1,
+          "content_sha256": "0b9e2ab047374eb4e201fb28807a0d1aa8f84c8434e5337dedb47f58099850b5"
+        },
+        "face_samples": {
+          "rows": 1,
+          "content_sha256": "f8ab9a5b5f590690d5e0c8a35a8f7eda56ecb47df15e1550b5f7775cee47058e"
+        }
+      }
+    },
+    "edgex_command_results.db": {
+      "backup_bytes": 24576,
+      "restored_bytes": 24576,
+      "seconds": 0.0042298659682273865,
+      "integrity": "ok",
+      "logical_equal": true,
+      "schema_sha256": "5c8803441ea1c30e1141a8c5fe48abb6e1722b943a84cc0e2d13bc19ab2e8a9e",
+      "tables": {
+        "command_results": {
+          "rows": 28,
+          "content_sha256": "03c570ee7d23b0eb33ef7382b7b04b046874f2e82615a5a3af9a562fb20b64fd",
+          "status_counts": [
+            [
+              "acknowledged",
+              26
+            ],
+            [
+              "failed",
+              2
+            ]
+          ]
+        }
+      }
+    },
+    "event_outbox.db": {
+      "backup_bytes": 24576,
+      "restored_bytes": 24576,
+      "seconds": 0.0036871491465717554,
+      "integrity": "ok",
+      "logical_equal": true,
+      "schema_sha256": "0b3143ebfb4fdc59bf83758647f97cc5ff707c42a63e8c6d6890fa9871983a68",
+      "tables": {
+        "event_outbox": {
+          "rows": 0,
+          "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "status_counts": []
+        },
+        "sqlite_sequence": {
+          "rows": 0,
+          "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    "event_reviews.db": {
+      "backup_bytes": 28672,
+      "restored_bytes": 28672,
+      "seconds": 0.005374498898163438,
+      "integrity": "ok",
+      "logical_equal": true,
+      "schema_sha256": "a016f3018ab281b405e393b91ca5d1f3588efe280e4388c067cbf33c04a72096",
+      "tables": {
+        "event_reviews": {
+          "rows": 1,
+          "content_sha256": "41e295088b637f47d8941ac03dfdc76442268e00174c18f0d375c9d98a581b24",
+          "status_counts": [
+            [
+              "false_positive",
+              1
+            ]
+          ]
+        },
+        "sqlite_sequence": {
+          "rows": 1,
+          "content_sha256": "1e88cfa24492b51dbd307386392eb0fa42bbdf24f42ea1daa8eb20dfa2dc11c1"
+        }
+      }
+    },
+    "mqtt_event_outbox.db": {
+      "backup_bytes": 3103817728,
+      "restored_bytes": 675254272,
+      "seconds": 93.68542338302359,
+      "integrity": "ok",
+      "logical_equal": true,
+      "schema_sha256": "78488d04689bdf93b4031221e3b8d7a13a569b2c05d5278483ca7f6db85caf09",
+      "tables": {
+        "mqtt_event_outbox": {
+          "rows": 173735,
+          "content_sha256": "60e9d94fa04b1cbc1dd8463e875023afa48358031c139cd360ad2b7d8fb678d1",
+          "status_counts": [
+            [
+              "sent",
+              173735
+            ]
+          ]
+        },
+        "sqlite_sequence": {
+          "rows": 1,
+          "content_sha256": "8796e70f7e9431e7411458eae28e7e5e2bfecaa08157c4a3b608ff36e811318e"
+        }
+      }
+    }
+  },
+  "repository_read": {
+    "scope": "current repository reads restored snapshot only; no publisher or replay worker created",
+    "destinations": [
+      {
+        "destination_sha256": "31da3730131b34fe46ef3c9b0f5eec6d89f88ab4a99560793843b67a6c3273d7",
+        "pending_count": 0,
+        "loaded_sample_count": 0,
+        "pending_ids_match": true
+      }
+    ],
+    "schema_unchanged_after_open": true
+  },
+  "application_rows": 1717566,
+  "backup_bytes": 8855580672,
+  "restored_bytes": 4486000640,
+  "operating_after": {
+    "health": "healthy",
+    "restart_count": 0,
+    "started_at": "2026-09-16T23:45:46.903505745Z"
+  },
+  "secrets_captured": false,
+  "operating_ai_recreated": false,
+  "operating_database_overwritten": false,
+  "limitations": [
+    "Eight individually consistent SQLite snapshots, not a cross-service point-in-time backup.",
+    "Writes after backup, external ACK state and physical outputs require cutover/reconciliation; not covered by this restore.",
+    "Current disk subset is not the startup in-memory code or a complete previous-release rollback bundle.",
+    "Environment comparison covers explicit keys; absent keys do not prove resolved defaults. Secret values and full restart configuration were not retained.",
+    "Candidate image has no baked MQTT_EVENT_OUTBOX_DB; laboratory compose intentionally omits it. A production profile must preserve durable queue configuration.",
+    "External venv/Jetson host libraries, named volumes, PostgreSQL/Redis and complete secret/face config restoration were not tested.",
+    "CUDA700 and historical I32/I38 conditions remain unresolved; no AI deployment authorized by this preparation."
+  ],
+  "artifact_sha256": {
+    "inventory.py": "70ae9e6102ac35e50bd5ef0454b212c055b993a9d6db54d9fa15dd61e5233279",
+    "source_inventory.py": "11398e301a786076c4e6c5b8fd0c65793b30d65f0d112ef85fe3972edfd4a6e8",
+    "restore_check.py": "0512ef072f50f9c6f3c761c78c37aa5f6849d052f5bc39d1b6da37d0fb750715",
+    "configuration.json": "389aaefdfa024f023d26d2603628787c386ce98864b930e45c8c1030e74a72a2",
+    "operating_files.json": "05e5fbb5101ce235b7e8d3a3c8cff38ac77155eb04d2d34a6f36b1c734735d36",
+    "source_comparison.json": "11928bb621c154f767d9ca29266c18ced8da9d4e14ab912fb0957ed797be595c",
+    "operating_disk_manifest.json": "2889c866acd6eecac7c7a4d224e67c541182ab32e8761736be12860b8a58d726",
+    "candidate_models.json": "298b29793b0ec539563896adc99a7ab7242556b641fd7948e21001025ba27c93",
+    "model_comparison.json": "1aa9bbbdcc7ad4940e2b54e2307fd4228a532bef13690430c62bce01ee5fada7",
+    "backup_manifest.json": "2aa7a7bb5e74e3f49309eb0845ced21327df9fd69d06ebce4d53c744e33fce8e",
+    "restore_results.json": "c17cfd620e0be6d6e786f9f84eaa5edf923b92194c8a3229a27be51176ea433b",
+    "repository_read.json": "1eb494a440195ac2b70f279eb143c834fa5a8ff174991b26e1aab65646848d7f",
+    "backup_tests.xml": "32e8486df103fddbcf09514fdf715ef5a4edc510690e7055cefbe07a1d1275d3"
+  },
+  "publication": {
+    "version": "0.88",
+    "wbs_rows": 33,
+    "html_http": 200,
+    "pdf_http": 200,
+    "browser_interaction_retested": false,
+    "other_pc_retested": false,
+    "index.html": {
+      "bytes": 23121,
+      "sha256": "8d276cf612705650b892861e85ff0ecce0f1fbde6ad9bc9288aacd869aa14208",
+      "remote_equal": true
+    },
+    "CCTV_project_progress.pdf": {
+      "bytes": 124531,
+      "sha256": "9c66a9bd38ac5affeeadaa81c845e7c8e6572e459e98d397729a1f332dbec053",
+      "remote_equal": true
+    },
+    "pdf_first_page_visual_check": "PASS"
+  },
+  "validation": {
+    "regression_tests": 5,
+    "ruff": "PASS",
+    "bash_syntax": "PASS",
+    "python_compile_files": 5,
+    "git_diff_check": "PASS",
+    "raw_secrets_excluded": "PASS",
+    "code_review_graph": "no function coverage for changed shell/new test; direct diff reviewed"
+  },
+  "changed_file_sha256": {
+    "scripts/ops/backup_runtime_databases.sh": "fe1a2799fd0ad6d06697b02a4f02da90f1c49637df3603a582d81b67ef774983",
+    "tests/test_runtime_database_backup.py": "93df89d0a015c30b9b145975f1e883afe4a02609aad1c450f772ca7049a2934e"
+  }
+}

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="12" skipped="0" tests="13" time="0.565" timestamp="2026-09-18T15:08:43.887698+09:00" hostname="ubuntu"><testcase classname="tests.test_mqtt_durable_subscriber" name="test_durable_factory_requires_stable_id_and_paho2" time="0.003"><failure message="TypeError: create_mqtt_client() got an unexpected keyword argument 'durable'">tests/test_mqtt_durable_subscriber.py:24: in test_durable_factory_requires_stable_id_and_paho2
+    _mqtt_factory.create_mqtt_client("test", durable=True)
+E   TypeError: create_mqtt_client() got an unexpected keyword argument 'durable'</failure></testcase><testcase classname="tests.test_mqtt_durable_subscriber" name="test_durable_factory_never_falls_back_to_auto_ack" time="0.014"><failure message="AssertionError: Regex pattern did not match.&#10; Regex: 'unsupported'&#10; Input: &quot;create_mqtt_client() got an unexpected keyword argument 'durable'&quot;">tests/test_mqtt_durable_subscriber.py:34: in test_durable_factory_never_falls_back_to_auto_ack
+    _mqtt_factory.create_mqtt_client("test", client_id="stable", durable=True)
+E   TypeError: create_mqtt_client() got an unexpected keyword argument 'durable'
+
+During handling of the above exception, another exception occurred:
+tests/test_mqtt_durable_subscriber.py:33: in test_durable_factory_never_falls_back_to_auto_ack
+    with pytest.raises(TypeError, match="unsupported"):
+E   AssertionError: Regex pattern did not match.
+E    Regex: 'unsupported'
+E    Input: "create_mqtt_client() got an unexpected keyword argument 'durable'"</failure></testcase><testcase classname="tests.test_mqtt_durable_subscriber" name="test_durable_factory_options" time="0.012"><failure message="TypeError: create_mqtt_client() got an unexpected keyword argument 'durable'">tests/test_mqtt_durable_subscriber.py:41: in test_durable_factory_options
+    _mqtt_factory.create_mqtt_client("test", client_id="stable", durable=True)
+E   TypeError: create_mqtt_client() got an unexpected keyword argument 'durable'</failure></testcase><testcase classname="tests.test_mqtt_durable_subscriber" name="test_durable_subscriber_rejects_missing_id" time="0.002"><failure message="TypeError: MqttTopicSubscriber.__init__() got an unexpected keyword argument 'durable'">tests/test_mqtt_durable_subscriber.py:49: in test_durable_subscriber_rejects_missing_id
+    MqttTopicSubscriber(message_handler=Mock(), durable=True)
+E   TypeError: MqttTopicSubscriber.__init__() got an unexpected keyword argument 'durable'</failure></testcase><testcase classname="tests.test_mqtt_durable_subscriber" name="test_ack_occurs_only_after_handler_returns" time="0.005"><failure message="TypeError: MqttTopicSubscriber.__init__() got an unexpected keyword argument 'durable'">tests/test_mqtt_durable_subscriber.py:54: in test_ack_occurs_only_after_handler_returns
+    instance = subscriber(lambda topic, raw: order.append(("commit", raw)))
+tests/test_mqtt_durable_subscriber.py:12: in subscriber
+    return MqttTopicSubscriber(
+E   TypeError: MqttTopicSubscriber.__init__() got an unexpected keyword argument 'durable'</failure></testcase><testcase classname="tests.test_mqtt_durable_subscriber" name="test_failure_skips_ack_disconnects_and_requests_reconnect" time="0.002"><failure message="TypeError: MqttTopicSubscriber.__init__() got an unexpected keyword argument 'durable'">tests/test_mqtt_durable_subscriber.py:63: in test_failure_skips_ack_disconnects_and_requests_reconnect
+    instance = subscriber(Mock(side_effect=OSError("disk full")))
+tests/test_mqtt_durable_subscriber.py:12: in subscriber
+    return MqttTopicSubscriber(
+E   TypeError: MqttTopicSubscriber.__init__() got an unexpected keyword argument 'durable'</failure></testcase><testcase classname="tests.test_mqtt_durable_subscriber" name="test_ack_error_requests_reconnect_after_saved_receipt" time="0.002"><failure message="TypeError: MqttTopicSubscriber.__init__() got an unexpected keyword argument 'durable'">tests/test_mqtt_durable_subscriber.py:74: in test_ack_error_requests_reconnect_after_saved_receipt
+    instance = subscriber(handler)
+tests/test_mqtt_durable_subscriber.py:12: in subscriber
+    return MqttTopicSubscriber(
+E   TypeError: MqttTopicSubscriber.__init__() got an unexpected keyword argument 'durable'</failure></testcase><testcase classname="tests.test_mqtt_durable_subscriber" name="test_qos0_is_saved_without_claiming_ack" time="0.003"><failure message="TypeError: MqttTopicSubscriber.__init__() got an unexpected keyword argument 'durable'">tests/test_mqtt_durable_subscriber.py:85: in test_qos0_is_saved_without_claiming_ack
+    instance = subscriber(handler)
+tests/test_mqtt_durable_subscriber.py:12: in subscriber
+    return MqttTopicSubscriber(
+E   TypeError: MqttTopicSubscriber.__init__() got an unexpected keyword argument 'durable'</failure></testcase><testcase classname="tests.test_mqtt_durable_subscriber" name="test_subscription_ready_only_after_qos1_suback" time="0.003"><failure message="TypeError: MqttTopicSubscriber.__init__() got an unexpected keyword argument 'durable'">tests/test_mqtt_durable_subscriber.py:94: in test_subscription_ready_only_after_qos1_suback
+    instance = subscriber()
+tests/test_mqtt_durable_subscriber.py:12: in subscriber
+    return MqttTopicSubscriber(
+E   TypeError: MqttTopicSubscriber.__init__() got an unexpected keyword argument 'durable'</failure></testcase><testcase classname="tests.test_mqtt_durable_subscriber" name="test_rejected_or_downgraded_subscription_is_not_ready[granted0]" time="0.005"><failure message="TypeError: MqttTopicSubscriber.__init__() got an unexpected keyword argument 'durable'">tests/test_mqtt_durable_subscriber.py:107: in test_rejected_or_downgraded_subscription_is_not_ready
+    instance = subscriber()
+tests/test_mqtt_durable_subscriber.py:12: in subscriber
+    return MqttTopicSubscriber(
+E   TypeError: MqttTopicSubscriber.__init__() got an unexpected keyword argument 'durable'</failure></testcase><testcase classname="tests.test_mqtt_durable_subscriber" name="test_rejected_or_downgraded_subscription_is_not_ready[granted1]" time="0.009"><failure message="TypeError: MqttTopicSubscriber.__init__() got an unexpected keyword argument 'durable'">tests/test_mqtt_durable_subscriber.py:107: in test_rejected_or_downgraded_subscription_is_not_ready
+    instance = subscriber()
+tests/test_mqtt_durable_subscriber.py:12: in subscriber
+    return MqttTopicSubscriber(
+E   TypeError: MqttTopicSubscriber.__init__() got an unexpected keyword argument 'durable'</failure></testcase><testcase classname="tests.test_mqtt_durable_subscriber" name="test_reconnect_waits_and_joins_old_loop_outside_callback" time="0.003"><failure message="TypeError: MqttTopicSubscriber.__init__() got an unexpected keyword argument 'durable'">tests/test_mqtt_durable_subscriber.py:118: in test_reconnect_waits_and_joins_old_loop_outside_callback
+    instance = subscriber(Mock(side_effect=OSError("full")))
+tests/test_mqtt_durable_subscriber.py:12: in subscriber
+    return MqttTopicSubscriber(
+E   TypeError: MqttTopicSubscriber.__init__() got an unexpected keyword argument 'durable'</failure></testcase><testcase classname="tests.test_mqtt_durable_subscriber" name="test_legacy_subscriber_keeps_qos0_and_auto_ack_behavior" time="0.007" /></testsuite></testsuites>

@@ -1,0 +1,122 @@
+{
+  "recorded_at": "2026-09-22T08:42:30.127029+09:00",
+  "plan_version": "0.25",
+  "wbs": "P2.4",
+  "wbs_status": "IN_PROGRESS",
+  "issue": "I22 OPEN (operating load and pre-commit failure risk remain)",
+  "python": "3.10.12",
+  "sqlite": "3.37.2",
+  "app_changes": [
+    "src/event_ingest_store.py",
+    "src/core/video_event_ingest.py"
+  ],
+  "new_tests": [
+    "tests/test_video_intake_busy.py",
+    "tests/test_monitoring_active_contention.py"
+  ],
+  "policy": {
+    "scope": "VideoEventIngest selected durable path",
+    "busy_retries": 1,
+    "generic_default_retries": 0,
+    "connection_timeout_seconds_unchanged": 0.25,
+    "strict_total_latency_bound": false,
+    "retry_identity": "same raw bytes, receipt id, received_at, raw hash",
+    "retry_exhausted": "raise; no receipt, queue insertion, or automatic post-restart recovery",
+    "full_or_other_sqlite_errors": "no retry"
+  },
+  "before": {
+    "tests": 2,
+    "failures": 2,
+    "phases": [
+      "INSERT",
+      "COMMIT"
+    ]
+  },
+  "final": {
+    "tests": 200,
+    "passed": 200,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "new_tests": 14,
+    "seconds": 87.195,
+    "properties": [
+      {
+        "accepted_video_records": 20,
+        "elapsed_seconds": 6.343480976007413,
+        "monitoring_write_statements_during_producers": 35,
+        "offered_video_records": 20,
+        "preloaded_video_records": 8,
+        "sensor_records": 20,
+        "sensor_test_producer_retries": 0,
+        "service_failed_cycles": 2,
+        "stored_and_matched_records": 48,
+        "transport": "in-process test model",
+        "video_busy_retry_logs": 1,
+        "video_intake_max_seconds": 0.2660164100234397,
+        "video_test_producer_retries": 0
+      },
+      {
+        "elapsed_seconds": 6.344482424960006,
+        "idle_worker_calls": 40,
+        "idle_write_transactions": 0,
+        "input_records": 24,
+        "interval_seconds": 1.0,
+        "pair_submission_max_seconds": 0.30247779499040917,
+        "service_failed_cycles": 0,
+        "source_busy_retries": 0,
+        "stored_records": 24,
+        "transport": "in-process test model"
+      },
+      {
+        "elapsed_seconds": 4.2736324619618244,
+        "idle_worker_calls": 40,
+        "idle_write_transactions": 0,
+        "input_records": 24,
+        "interval_seconds": 0.02,
+        "pair_submission_max_seconds": 0.33007205300964415,
+        "service_failed_cycles": 0,
+        "source_busy_retries": 0,
+        "stored_records": 24,
+        "transport": "in-process test model"
+      }
+    ]
+  },
+  "checks": {
+    "ruff": "PASS",
+    "black_check": "PASS",
+    "py_compile": "PASS"
+  },
+  "unchanged_baseline_files": {
+    "src/core/_deepstream_event_queue.py": true,
+    "src/core/event_dispatcher.py": true,
+    "src/monitoring_delivery.py": true,
+    "src/ingest_store.py": true
+  },
+  "baseline_sha256": {
+    "src/event_ingest_store.py": "a90db8f9bf55311e892bc6b18bc958e7e19a456b5a7bffb2ffa7df74c7212c99",
+    "src/core/video_event_ingest.py": "36d326e99a5e98a33f91bea5370b12a0602cb4e5422935da6ccdcb01800d84ca",
+    "src/core/_deepstream_event_queue.py": "a43d00dddce62bbea4d93c4d46f98fb6e58f9b42474cc9986c0726865a575006",
+    "src/core/event_dispatcher.py": "dafbf47906ff8e93cb2bffbbaa9c92e912e58a8ff79b2b0d8e98ab9336c9008a",
+    "src/monitoring_delivery.py": "cfb1a3e3480c4ebe87118a445580b838ccf832da986b48083a135a4e6b0a1bb2",
+    "src/ingest_store.py": "05c35c33de6cc0f2ed934e0f73bb2e34e6532fe40fc492f52fb709305cae5a77"
+  },
+  "sha256": {
+    "src/event_ingest_store.py": "57fa5d1d4084f79209295b94d9297a27f6f8c07be9f091be798179977b004810",
+    "src/core/video_event_ingest.py": "7158836647b520c8ac84872fe6752bf9c610abe740e5a6c8945be8a68c6b4163",
+    "tests/test_video_intake_busy.py": "032f730ba1a42db7fa2e30ff8b9961c1cafea5c3f727f559f5cda6349b41658c",
+    "tests/test_monitoring_active_contention.py": "834f3e17d380fb0bec934a12a3f13e544e7dc3987876d1c1049471175b7b570b",
+    "docs/planning/evidence/video_intake_busy_change_20260922.patch": "eaa405ccc9d69773ae93e1240c1730607bf657110630a9fc37de3706052d72c5",
+    "docs/planning/evidence/video_intake_busy_before_20260922.xml": "765ac608b0acea9a5b9ac7a941d5e29441342b8bea9978f6066b773646a959da",
+    "docs/planning/evidence/video_intake_busy_final_20260922.xml": "b9a447fa8f85da59843e1f07da1e6bb62d7319d8cf55db749c3dee80cd605613",
+    "docs/planning/evidence/monitoring_active_contention_20260922.xml": "55b0e0d9019a4d9e0f865c3f55e1238cbf04b902d6360bd241113cf3ae8901cd"
+  },
+  "graph": "Module nodes absent in both graphs; targeted source, baseline patch, callers and tests reviewed instead. Zero graph risk is not evidence of no impact.",
+  "scope_limits": [
+    "temporary SQLite databases, in-process receiver transport",
+    "no new actual MQTT/LAN, GPU/RTSP throughput or physical output test",
+    "no deployment/service restart",
+    "no claim of recovery for input not committed after exhaustion or process termination before T1",
+    "D02/D04/D06 operating load, retention and freshness thresholds pending"
+  ]
+}

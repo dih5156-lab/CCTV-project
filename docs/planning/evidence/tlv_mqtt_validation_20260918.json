@@ -1,0 +1,108 @@
+{
+  "recorded_at": "2026-09-18T07:21:24.368980+00:00",
+  "plan_version": "0.9",
+  "wbs": "P2.2",
+  "status": "IN_PROGRESS",
+  "scope": "direct TLV MQTT raw intake, ACK and same-receipt PostgreSQL recovery",
+  "junit": {
+    "path": "docs/planning/evidence/tlv_mqtt_final_20260918.xml",
+    "tests": 298,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "suite_elapsed_seconds": 133.112
+  },
+  "new_tests": {
+    "unit_and_packaging": 17,
+    "integration": 9
+  },
+  "checks": {
+    "ruff_files": 7,
+    "black_files": 4,
+    "py_compile_app_files": 5,
+    "final_results": "PASS",
+    "tracked_diff_check": "PASS",
+    "graph_limit": "detect_changes returned zero changed symbols despite source changes; reviewed source/diff instead"
+  },
+  "environment": {
+    "sqlite_version": "3.37.2",
+    "paho_version": "2.1.0",
+    "mosquitto_version": "2.0.22",
+    "postgres_version": "16.13",
+    "mqtt_image": "eclipse-mosquitto:2.0",
+    "postgres_image": "postgres:16-alpine",
+    "network": "none",
+    "published_ports": [],
+    "transport": "unix",
+    "broker_persistence": false,
+    "mqtt_memory_mib": 64,
+    "mqtt_cpu": 0.5,
+    "pg_memory_mib": 384,
+    "pg_cpu": 1,
+    "pg_shared_buffers_mib": 16,
+    "pg_tmpfs_data_mib": 128,
+    "test_containers_stopped_and_removed": true,
+    "physical_outputs": "mock",
+    "process_exit": "real child os._exit(42)",
+    "production_deployed": false
+  },
+  "verified_boundaries": [
+    "raw bytes before decoding",
+    "no ACK on T1 failure",
+    "same MQTT mid/DUP on retry via Manager.poll",
+    "invalid envelope quarantine and ACK",
+    "T1-success prepare failure ACK and same-receipt retry",
+    "persistent session offline queue",
+    "process exit before T1/after T1/before ACK/after broker ACK",
+    "same receipt PG commit retry without duplicate",
+    "recovery emits no live outputs",
+    "live/recovery race",
+    "Docker COPY isolated import"
+  ],
+  "identity_limit": "separate MQTT redeliveries retained as separate receipts and PG projections; producer identity contract pending I19/D02",
+  "not_validated": [
+    "video pre-queue intake",
+    "destination worker/lease/monitoring or device ACK",
+    "broker restart/power loss",
+    "production TCP/TLS/ACL",
+    "QoS 0 redelivery",
+    "capacity/performance",
+    "image build/production deployment"
+  ],
+  "source_sha256": {
+    "src/ingest_store.py": "4c0f34a8686685ade970e62ced4c4bf63ef82844a41aa843373b225625b2db64",
+    "parser-python/mqtt/manager.py": "480b8d6eef1826636e62e04671d8da298c76cc40de53ae10a554a23fee321ad2",
+    "parser-python/mqtt/uplink.py": "58745425dd9d448219449fe1f924175b3454519d7d25f08004fae21c25c1d622",
+    "parser-python/service/sensor_service.py": "94803c7175938981eda93cde0612f8f8fec8a606002548e329e87aa426e50dd6",
+    "parser-python/main.py": "23d8c187a1e92b10da94e6a409626ce5fdb28601c9dfc9d92e84b3d0b0ecf61a",
+    "Dockerfile": "07255c5dbc404df62ad69fe26228ed19aeb85b740cfb61536b0876e81b5a2ae7",
+    "parser-python/tests/test_tlv_mqtt_durable.py": "bf4a0b67b86b93ef3336bc0c83c25f907d9bbbfaf489f476b01fde90d5a443fd",
+    "parser-python/tests/test_tlv_mqtt_integration.py": "2ca7a249b5295e261d1cbd3ddec141be97ab27710d02ebb11a5bc6fe8063cc99",
+    "src/protocols/_mqtt_factory.py": "122ff049430c257b24e6c253952fc897b1d60f6dd5cb45c5d2ada68740676f98",
+    "src/protocols/mqtt_subscriber.py": "a690f72af9b05fdc054b71ae1a50420954ffacbec69cd3a7937fd9e3e314eee3",
+    "parser-python/database/sensor_projection.py": "dc8aa45a44c2e28521852eec1f9bbc708c83401a71a87151a4f5fa8c239142e1",
+    "parser-python/database/sensor_projection_worker.py": "f825dcd1b36809f64127122dfd5fe63de95f51104a6d05b6d88241e0b4cc64d3"
+  },
+  "earlier_attempts": {
+    "red": "docs/planning/evidence/tlv_mqtt_red_20260918.xml",
+    "test_environment_failure": "docs/planning/evidence/tlv_mqtt_environment_failure_20260918.xml",
+    "test_readiness_failure": "docs/planning/evidence/tlv_mqtt_readiness_failure_20260918.xml",
+    "test_ack_wait_failure": "docs/planning/evidence/tlv_mqtt_ack_wait_failure_20260918.xml",
+    "isolated_integration_pass": "docs/planning/evidence/tlv_mqtt_integration_20260918.xml"
+  },
+  "documentation": {
+    "markdown_files": 15,
+    "local_links_checked": 247,
+    "wbs_rows": 33,
+    "states": {
+      "DONE": 5,
+      "BLOCKED": 2,
+      "READY": 3,
+      "IN_PROGRESS": 1,
+      "PLANNED": 15,
+      "VERIFY": 7
+    },
+    "dependency_check": "PASS",
+    "whitespace_check": "PASS"
+  }
+}

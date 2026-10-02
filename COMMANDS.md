@@ -149,6 +149,32 @@ rtk python scripts/health/check_falldata_model_report.py \
 `confirm` 모드는 보조모델이 낙상을 확인하지 못하면 기존 pose 낙상 이벤트를 버릴 수 있으므로,
 현장 shadow 로그를 확인한 뒤에만 사용하세요.
 
+### 모델 비교 전 준비 상태 점검
+
+최종 모델과 validation/holdout metrics가 모두 준비됐는지 먼저 확인합니다. `partial`,
+`smoke`, `probe` 산출물은 자동으로 `hold` 처리됩니다. 이 명령은 모델을 로드하지 않고
+파일과 JSON 구조만 검사합니다.
+
+```bash
+rtk python scripts/ops/check_model_evaluation_readiness.py \
+  --model models/experiments/<final-model>.pt \
+  --metrics models/experiments/<final-model>_metrics.json
+```
+
+준비 상태가 통과한 뒤 baseline과 candidate metrics를 비교하고, 결과를 인수인계용
+Markdown으로 변환합니다. 비교 도구는 데이터셋 버전이 다르면 자동 승격을 막습니다.
+
+```bash
+rtk python scripts/compare_fall_models.py \
+  --baseline-metrics <baseline_metrics.json> \
+  --candidate-metrics <candidate_metrics.json> \
+  --output /tmp/fall_model_comparison.json
+
+rtk python scripts/ops/render_fall_model_comparison_markdown.py \
+  /tmp/fall_model_comparison.json \
+  --output docs/models/FALL_MODEL_COMPARISON_<date>.md
+```
+
 ### 다중 카메라 (cameras.json)
 
 ```bash
@@ -500,9 +526,9 @@ DS_PPHUMAN_INFER_CONFIG=config/deepstream/config_infer_pa100k.txt
 APPEARANCE_LABEL_MAP_PATH=config/appearance_pa100k_labels.json
 ```
 
-현재 primary YOLO는 raw tensor를 Python에서 직접 파싱하므로 DeepStream SGIE ROI 연결이
-제한될 수 있습니다. 운영에서는 외형 worker가 TensorRT engine을 직접 실행하도록 아래
-설정을 함께 사용합니다.
+기존 full-frame 경로의 primary YOLO는 raw tensor를 Python에서 직접 파싱합니다.
+crop-Pose 실험 경로에서는 Person Primary와 SGIE ROI 연결을 사용하며, 외형 worker를
+별도로 사용할 때는 아래 설정을 함께 사용합니다.
 
 ```bash
 APPEARANCE_MODEL_PATH=models/pa100k_resnet50_attr.engine
@@ -516,6 +542,37 @@ APPEARANCE_LABEL_MAP_PATH=config/appearance_pa100k_labels.json
 - 상/하의 색상은 PA100K 라벨에 없으므로 기존 HSV 색상 추정과 함께 사용해야 합니다.
 - 현재 Jetson 기본 Python 환경의 `onnxruntime`는 native crash가 날 수 있습니다. 이 경우 바로 운영에
   연결하지 말고 ONNXRuntime 패키지/컨테이너를 정리하거나 TensorRT 실행 어댑터를 별도로 추가합니다.
+
+### DeepStream crop-Pose 실험
+
+crop-Pose는 Person Primary가 한 번 사람을 찾은 뒤 같은 사람 ROI를 Pose, Helmet/Head,
+Appearance SGIE가 공유하는 구성입니다. GIE ID와 모델 경로는
+`docs/architecture/DEEPSTREAM_GIE_REGISTRY.md`와 `models/model_manifest.json`에서
+관리합니다. 운영 기본값은 `DS_CROP_POSE_ENABLED=0`입니다.
+
+모델·설정 경로를 먼저 점검합니다.
+
+```bash
+rtk python scripts/health/check_model_layout.py
+rtk python scripts/health/check_crop_pose_gie_registry.py
+```
+
+검증용 환경에서는 `config/deepstream/crop_pose.env.example` 값을 별도 env 파일에
+복사한 뒤 AI 엔진만 재생성합니다. 녹화 영상 평가 시에는 평가 스크립트의
+`--recreate-ai-engine` 옵션을 사용해야 새 GIE 설정이 컨테이너에 반영됩니다.
+
+```bash
+rtk python scripts/ops/evaluate_sample_deepstream_replay.py \
+  --source-mode file \
+  --manifest data/fall_eval/yesterday_recordings_manifest.jsonl \
+  --compose-env-file /path/to/crop_pose.env \
+  --apply-camera-config \
+  --restart-ai-engine \
+  --recreate-ai-engine
+```
+
+검증이 끝나면 `DS_CROP_POSE_ENABLED=0`으로 복구하고, Pose 생성률·낙상 TP/FN·FPS·
+frame drop을 기존 full-frame 결과와 비교한 뒤 운영 전환 여부를 결정합니다.
 
 ### 헬멧/낙상 감지 + MQTT 전송
 

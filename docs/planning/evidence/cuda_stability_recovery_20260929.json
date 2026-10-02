@@ -1,0 +1,624 @@
+{
+  "version": "0.63",
+  "date": "2026-09-29",
+  "issue": "I34",
+  "scope": "isolated single captured-camera replay, CPU2, IOU, RC3 600sec plus RC4 alternating startup/fault injection; no production deployment",
+  "original_failure": {
+    "application_log": "data/runtime/p51_sustained_20260929_v060/light2997/app.log",
+    "kernel_log": "data/runtime/p51_cuda_20260929_v062/original_kernel_fault.log",
+    "kernel_time": "2026-09-29T12:51:31+09:00",
+    "confirmed": "GPU MMU fault: invalid pte, virt read; CUDA700 createTexture followed by preprocessing/copy errors",
+    "not_confirmed": "originating kernel or physical hardware fault; not proven to originate in nvvideoconvert"
+  },
+  "workaround": {
+    "setting": "DS_NVVIDEOCONVERT_COPY_HW=2",
+    "meaning": "nvvideoconvert surface copy via VIC, memory type 0 on Jetson",
+    "default": "empty retains SDK default; production environment unchanged",
+    "reference": "https://docs.nvidia.com/metropolis/deepstream/7.1/text/DS_troubleshooting.html"
+  },
+  "regression": {
+    "passed": 255,
+    "skipped": 2,
+    "ruff": "passed",
+    "red": "new failure-boundary tests: 4 failed, 1 passed before fix"
+  },
+  "trials": {
+    "vic_long": {
+      "experiment": {
+        "scope": "one local RTSP input, IOU, full candidate models, captured real camera video replay; no live camera connection",
+        "input": "/baseline/camera_1_capture.mkv",
+        "completed_experiment": true,
+        "steady_observation_seconds": 600,
+        "receiver_media_seconds": 570,
+        "receiver_exit": 0,
+        "output_bytes": 310706462,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "max_no_progress_seconds": 0.0,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 13.348
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 13.761
+          }
+        ],
+        "sample_count": 570,
+        "elapsed_seconds": 622.4440540990327
+      },
+      "copy_properties": [
+        {
+          "name": "h264-nvvidconv",
+          "copy_hw": 2,
+          "memory_type": 0
+        },
+        {
+          "name": "preview-nvvidconv",
+          "copy_hw": 2,
+          "memory_type": 0
+        },
+        {
+          "name": "converter",
+          "copy_hw": 2,
+          "memory_type": 0
+        }
+      ],
+      "cuda_error_lines": [],
+      "max_stats": {
+        "frames_processed": 14389,
+        "inference_errors": 0,
+        "context_queue_dropped": 40,
+        "pipeline_restart_executed": 0
+      },
+      "media": {
+        "result.mkv": {
+          "bytes": 310706462,
+          "streams": [
+            {
+              "width": 1920,
+              "height": 1080,
+              "r_frame_rate": "30/1",
+              "avg_frame_rate": "30/1",
+              "disposition": {
+                "default": 1,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0
+              },
+              "tags": {
+                "DURATION": "00:09:30.231000000"
+              }
+            }
+          ],
+          "duration": "570.231000",
+          "packet_count": 13762,
+          "timing": {
+            "pts_time": {
+              "count": 13762,
+              "backwards": 0,
+              "equal": 0
+            },
+            "dts_time": {
+              "count": 13762,
+              "backwards": 0,
+              "equal": 0
+            }
+          },
+          "decode_exit": 0,
+          "decode_stderr_bytes": 0
+        }
+      }
+    },
+    "gpu_start1": {
+      "experiment": {
+        "scope": "one local RTSP input, IOU, full candidate models, captured real camera video replay; no live camera connection",
+        "input": "/baseline/camera_1_capture.mkv",
+        "completed_experiment": true,
+        "steady_observation_seconds": 45,
+        "receiver_media_seconds": 20,
+        "receiver_exit": 0,
+        "output_bytes": 9738707,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "max_no_progress_seconds": 0.0,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 26.484
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 27.537
+          }
+        ],
+        "sample_count": 64,
+        "elapsed_seconds": 80.4284934788011
+      },
+      "copy_properties": [
+        {
+          "name": "h264-nvvidconv",
+          "copy_hw": 1,
+          "memory_type": 0
+        },
+        {
+          "name": "preview-nvvidconv",
+          "copy_hw": 1,
+          "memory_type": 0
+        },
+        {
+          "name": "converter",
+          "copy_hw": 1,
+          "memory_type": 0
+        }
+      ],
+      "cuda_error_lines": [],
+      "max_stats": {
+        "frames_processed": 1039,
+        "inference_errors": 0,
+        "context_queue_dropped": 12,
+        "pipeline_restart_executed": 0
+      },
+      "media": {
+        "result.mkv": {
+          "bytes": 9738707,
+          "streams": [
+            {
+              "width": 1920,
+              "height": 1080,
+              "r_frame_rate": "30/1",
+              "avg_frame_rate": "30/1",
+              "disposition": {
+                "default": 1,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0
+              },
+              "tags": {
+                "DURATION": "00:00:20.297000000"
+              }
+            }
+          ],
+          "duration": "20.297000",
+          "packet_count": 431,
+          "timing": {
+            "pts_time": {
+              "count": 431,
+              "backwards": 0,
+              "equal": 0
+            },
+            "dts_time": {
+              "count": 431,
+              "backwards": 0,
+              "equal": 0
+            }
+          },
+          "decode_exit": 0,
+          "decode_stderr_bytes": 0
+        }
+      }
+    },
+    "vic_start1": {
+      "experiment": {
+        "scope": "one local RTSP input, IOU, full candidate models, captured real camera video replay; no live camera connection",
+        "input": "/baseline/camera_1_capture.mkv",
+        "completed_experiment": true,
+        "steady_observation_seconds": 45,
+        "receiver_media_seconds": 20,
+        "receiver_exit": 0,
+        "output_bytes": 12017047,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "max_no_progress_seconds": 0.0,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 12.354
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 13.383
+          }
+        ],
+        "sample_count": 54,
+        "elapsed_seconds": 61.04171897401102
+      },
+      "copy_properties": [
+        {
+          "name": "h264-nvvidconv",
+          "copy_hw": 2,
+          "memory_type": 0
+        },
+        {
+          "name": "preview-nvvidconv",
+          "copy_hw": 2,
+          "memory_type": 0
+        },
+        {
+          "name": "converter",
+          "copy_hw": 2,
+          "memory_type": 0
+        }
+      ],
+      "cuda_error_lines": [],
+      "max_stats": {
+        "frames_processed": 1179,
+        "inference_errors": 0,
+        "context_queue_dropped": 8,
+        "pipeline_restart_executed": 0
+      },
+      "media": {
+        "result.mkv": {
+          "bytes": 12017047,
+          "streams": [
+            {
+              "width": 1920,
+              "height": 1080,
+              "r_frame_rate": "30/1",
+              "avg_frame_rate": "30/1",
+              "disposition": {
+                "default": 1,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0
+              },
+              "tags": {
+                "DURATION": "00:00:20.342000000"
+              }
+            }
+          ],
+          "duration": "20.342000",
+          "packet_count": 539,
+          "timing": {
+            "pts_time": {
+              "count": 539,
+              "backwards": 0,
+              "equal": 0
+            },
+            "dts_time": {
+              "count": 539,
+              "backwards": 0,
+              "equal": 0
+            }
+          },
+          "decode_exit": 0,
+          "decode_stderr_bytes": 0
+        }
+      }
+    },
+    "gpu_start2": {
+      "experiment": {
+        "scope": "one local RTSP input, IOU, full candidate models, captured real camera video replay; no live camera connection",
+        "input": "/baseline/camera_1_capture.mkv",
+        "completed_experiment": true,
+        "steady_observation_seconds": 45,
+        "receiver_media_seconds": 20,
+        "receiver_exit": 0,
+        "output_bytes": 10837583,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "max_no_progress_seconds": 0.0,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 12.408
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 13.431
+          }
+        ],
+        "sample_count": 54,
+        "elapsed_seconds": 61.43493133294396
+      },
+      "copy_properties": [
+        {
+          "name": "h264-nvvidconv",
+          "copy_hw": 1,
+          "memory_type": 0
+        },
+        {
+          "name": "preview-nvvidconv",
+          "copy_hw": 1,
+          "memory_type": 0
+        },
+        {
+          "name": "converter",
+          "copy_hw": 1,
+          "memory_type": 0
+        }
+      ],
+      "cuda_error_lines": [],
+      "max_stats": {
+        "frames_processed": 1119,
+        "inference_errors": 0,
+        "context_queue_dropped": 0,
+        "pipeline_restart_executed": 0
+      },
+      "media": {
+        "result.mkv": {
+          "bytes": 10837583,
+          "streams": [
+            {
+              "width": 1920,
+              "height": 1080,
+              "r_frame_rate": "30/1",
+              "avg_frame_rate": "30/1",
+              "disposition": {
+                "default": 1,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0
+              },
+              "tags": {
+                "DURATION": "00:00:20.122000000"
+              }
+            }
+          ],
+          "duration": "20.122000",
+          "packet_count": 491,
+          "timing": {
+            "pts_time": {
+              "count": 491,
+              "backwards": 0,
+              "equal": 0
+            },
+            "dts_time": {
+              "count": 491,
+              "backwards": 0,
+              "equal": 0
+            }
+          },
+          "decode_exit": 0,
+          "decode_stderr_bytes": 0
+        }
+      }
+    },
+    "vic_start2": {
+      "experiment": {
+        "scope": "one local RTSP input, IOU, full candidate models, captured real camera video replay; no live camera connection",
+        "input": "/baseline/camera_1_capture.mkv",
+        "completed_experiment": true,
+        "steady_observation_seconds": 45,
+        "receiver_media_seconds": 20,
+        "receiver_exit": 0,
+        "output_bytes": 10945891,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "max_no_progress_seconds": 0.0,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 12.396
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 13.632
+          }
+        ],
+        "sample_count": 54,
+        "elapsed_seconds": 61.38942827493884
+      },
+      "copy_properties": [
+        {
+          "name": "h264-nvvidconv",
+          "copy_hw": 2,
+          "memory_type": 0
+        },
+        {
+          "name": "preview-nvvidconv",
+          "copy_hw": 2,
+          "memory_type": 0
+        },
+        {
+          "name": "converter",
+          "copy_hw": 2,
+          "memory_type": 0
+        }
+      ],
+      "cuda_error_lines": [],
+      "max_stats": {
+        "frames_processed": 1198,
+        "inference_errors": 0,
+        "context_queue_dropped": 7,
+        "pipeline_restart_executed": 0
+      },
+      "media": {
+        "result.mkv": {
+          "bytes": 10945891,
+          "streams": [
+            {
+              "width": 1920,
+              "height": 1080,
+              "r_frame_rate": "30/1",
+              "avg_frame_rate": "30/1",
+              "disposition": {
+                "default": 1,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0
+              },
+              "tags": {
+                "DURATION": "00:00:20.229000000"
+              }
+            }
+          ],
+          "duration": "20.229000",
+          "packet_count": 488,
+          "timing": {
+            "pts_time": {
+              "count": 488,
+              "backwards": 0,
+              "equal": 0
+            },
+            "dts_time": {
+              "count": 488,
+              "backwards": 0,
+              "equal": 0
+            }
+          },
+          "decode_exit": 0,
+          "decode_stderr_bytes": 0
+        }
+      }
+    },
+    "fatal_injection": {
+      "experiment": {
+        "scope": "one local RTSP input, IOU, full candidate models, captured real camera video replay; no live camera connection",
+        "input": "/baseline/camera_1_capture.mkv",
+        "completed_experiment": false,
+        "steady_observation_seconds": 45,
+        "receiver_media_seconds": 20,
+        "error": "app exited during observation: 1",
+        "max_no_progress_seconds": 3.082,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 13.381
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 14.012
+          }
+        ],
+        "sample_count": 20,
+        "elapsed_seconds": 22.891328867990524,
+        "expected_process_exit_verified": true
+      },
+      "copy_properties": [
+        {
+          "name": "h264-nvvidconv",
+          "copy_hw": 2,
+          "memory_type": 0
+        },
+        {
+          "name": "preview-nvvidconv",
+          "copy_hw": 2,
+          "memory_type": 0
+        },
+        {
+          "name": "converter",
+          "copy_hw": 2,
+          "memory_type": 0
+        }
+      ],
+      "cuda_error_lines": [],
+      "max_stats": {
+        "frames_processed": 89,
+        "inference_errors": 0,
+        "context_queue_dropped": 0,
+        "pipeline_restart_executed": 0
+      },
+      "media": {}
+    }
+  },
+  "candidate": {
+    "id": "P5.1-RC4-20260929",
+    "source_file_count": 357,
+    "source_mismatches": [],
+    "archive_sha256": "f8e8729b94847fed9b7a23983cdd2f60cc253738052d80185fb1c310ba8fe881",
+    "archive_matches": true,
+    "model_reference": "data/runtime/p51_profile_20260928_v052/rc1_models",
+    "model_count": 8
+  },
+  "limitations": [
+    "I34 OPEN: workaround passed bounded local tests only; original fault not deterministically reproduced",
+    "No live/multi-camera, long-duration or production acceptance",
+    "MQTT localhost:9 deliberately unavailable; event delivery not evaluated",
+    "I32 context queue saturation remains; no lossless-processing claim",
+    "GPU-copy controls also passed; VIC causal effectiveness not established",
+    "RC3 600-second result does not certify RC4 long-duration behavior",
+    "inference_errors metric is not a complete CUDA fault detector; app logs/process state were also checked",
+    "Synthetic bus injection does not test teardown under an actually corrupted CUDA context"
+  ],
+  "publication": {
+    "html": {
+      "bytes": 22624,
+      "sha256": "7a9dc3b081e63e35cca6290ce75f7268a2618f5d9d75be0ad1a5176a6ffde7fc",
+      "lan_matches": true
+    },
+    "pdf": {
+      "bytes": 123419,
+      "sha256": "55c67be5c995fcd897c7e7d1e0653a154c0d45ec349113848764492238de730f",
+      "lan_matches": true
+    }
+  },
+  "production_observation": {
+    "state": "running",
+    "health": "healthy",
+    "started_at": "2026-09-16T23:45:46.903505745Z",
+    "restart_count": 0,
+    "trial_containers_remaining": 0
+  },
+  "validation": {
+    "wbs_33_rows_and_statuses_match": true,
+    "python_ast": "passed",
+    "candidate_changed_sources_equal_workspace": true,
+    "png_first_page_visual_check": "passed",
+    "browser_and_other_pc_retested": false,
+    "changed_code_docs_diff_check": "passed; unrelated pre-existing Compose whitespace excluded"
+  },
+  "prior_v062_sanitizer": {
+    "memcheck": "30 primary frames; terminated process group; no final summary",
+    "memcheck_exit": "maximum 37 processed frames, target 60 not reached; interrupted target; ERROR SUMMARY: 0 errors",
+    "memcheck_file": "end processed 0, early primary 4; interrupted target; ERROR SUMMARY: 0 errors",
+    "memcheck_vic": "end processed 0, early primary 4; interrupted target; no final summary",
+    "conclusion": "instrumentation stalls/incomplete coverage; no sanitizer clean-pass claim"
+  },
+  "fault_injection": {
+    "injection": {
+      "primary_frames": 102,
+      "monotonic": 1144313.27634864,
+      "kind": "synthetic SDK bus error; not CUDA fault"
+    },
+    "real_cuda_illegal_access_injected": false,
+    "app_start_log_count": 1,
+    "same_process_retry_log_count": 0
+  }
+}

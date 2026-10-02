@@ -1,0 +1,123 @@
+{
+  "date": "2026-09-30",
+  "scope": "P5.1 inline RF model source compatibility guard; local only",
+  "pose_explanation": {
+    "pose_record": "one observed person at one time, derived from17 keypoints; not one body part",
+    "three_records": "regression example; frozen candidate minimum10 prevents inference on3",
+    "rf_input": "summary vector, not repeated raw body parts"
+  },
+  "validation": {
+    "red_failed": 8,
+    "final_passed": 142,
+    "ruff": "PASS",
+    "actual_artifacts": [
+      {
+        "path": "data/runtime/p51_profile_20260928_v052/rc1_models/models/experiments/yolo_pose_fall_cam2_continuous_200_80_640.pkl",
+        "model_kind": "yolo_pose_summary_rf",
+        "feature_source": null,
+        "predict_calls": 0,
+        "predict_input_shapes": [],
+        "result": {
+          "enabled": true,
+          "mode": "shadow",
+          "status": "incompatible_feature_contract",
+          "confirmed": false,
+          "buffered_frames": 0,
+          "runtime": "deepstream_pose_inline",
+          "expected_model_kind": "deepstream_pose_inline_rf",
+          "expected_feature_source": "deepstream_pose_inline",
+          "model_kind": "yolo_pose_summary_rf",
+          "feature_source": null,
+          "frames_with_pose": 12,
+          "sampled_frames": 12,
+          "confirmation_streak": 0,
+          "pose_scope": {
+            "camera_id": "synthetic_1",
+            "object_id": 101,
+            "generation": 1,
+            "frame_index": 11
+          },
+          "cache_reused": false
+        }
+      },
+      {
+        "path": "models/experiments/deepstream_pose_inline_rf_hardcase_candidate_20260731.joblib",
+        "model_kind": "deepstream_pose_inline_rf",
+        "feature_source": "deepstream_pose_inline",
+        "predict_calls": 1,
+        "predict_input_shapes": [
+          [
+            1,
+            50
+          ]
+        ],
+        "result": {
+          "enabled": true,
+          "mode": "shadow",
+          "status": "ok",
+          "confirmed": false,
+          "buffered_frames": 0,
+          "runtime": "deepstream_pose_inline",
+          "fall_probability": 0.6713989203632416,
+          "threshold": 0.7,
+          "frames_with_pose": 12,
+          "sampled_frames": 12,
+          "probability": [
+            0.3286010796367577,
+            0.6713989203632416
+          ],
+          "confirmation_streak": 0,
+          "pose_scope": {
+            "camera_id": "synthetic_1",
+            "object_id": 101,
+            "generation": 1,
+            "frame_index": 11
+          },
+          "cache_reused": false
+        }
+      }
+    ],
+    "deepstream_fall_integration_passed": 32,
+    "total_passed": 174
+  },
+  "behavior": {
+    "expected_model_kind": "deepstream_pose_inline_rf",
+    "expected_feature_source": "deepstream_pose_inline",
+    "mismatch_status": "incompatible_feature_contract",
+    "predict_on_mismatch": false,
+    "alarm_fallback": "existing fail_open_on_unavailable policy; tested true and false",
+    "unfiltered_feature_capture": "preserved when explicitly configured and min_probability<=0",
+    "probability_filtered_capture": "skipped on mismatch because no valid probability exists",
+    "camera_isolation": "mismatched camera does not block compatible camera"
+  },
+  "source_sha256": {
+    "src/core/ai/_falldata_aux.py": "78bf03b94fa8e020b84432e4a66a49a61ffa64fc48e0f4718ece1ae45e2042db",
+    "tests/test_falldata_pose_tracks.py": "5571f68277e93ff250a0aff6fd1c154819c9d3f324c9d23ba02337a23a784219",
+    "tests/test_falldata_aux.py": "e10d1cdb41f20e862e15f7664a9c67845fd97122a6ea32f9afdb42dc8e1243ce"
+  },
+  "limitations": [
+    "Metadata source agreement is necessary, not proof of full preprocessing/time/accuracy equivalence",
+    "Existing configured offline RF is deliberately unavailable on inline path after this candidate is applied",
+    "Compatible candidate used only for synthetic compatibility check; not promoted",
+    "No model metadata relabeling, production config change, AI deployment or new live GPU test",
+    "I37 detailed contract, I38 prior timeout, I32/I34/I07 remain open"
+  ],
+  "publication": {
+    "url": "http://192.168.2.141:18081/",
+    "artifacts": {
+      "index.html": {
+        "bytes": 22724,
+        "sha256": "3ad08ee80751a4e4f4fd1eb149eb9099defd80e78d205db43853b2c1761c23bf",
+        "http_bytes_match": true
+      },
+      "CCTV_project_progress.pdf": {
+        "bytes": 127072,
+        "sha256": "5204a9f7b158bfa7b51d1de64caab6db271a3795edf9386634c1eaef67202d66",
+        "http_bytes_match": true
+      }
+    },
+    "wbs33_status_rows_match": true,
+    "browser_interaction_tested": false,
+    "other_pc_tested": false
+  }
+}

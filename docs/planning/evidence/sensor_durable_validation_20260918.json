@@ -1,0 +1,50 @@
+{
+  "date": "2026-09-18",
+  "plan_version": "0.6",
+  "sqlite_host": "3.37.2",
+  "postgres_test_image": "postgres:16-alpine",
+  "postgres_network": "none",
+  "host_ports": [],
+  "test_container_stopped": true,
+  "markdown_files": 12,
+  "local_links_checked": 174,
+  "wbs_tasks": 33,
+  "wbs_counts": {
+    "DONE": 5,
+    "IN_PROGRESS": 0,
+    "READY": 4,
+    "VERIFY": 7,
+    "BLOCKED": 2,
+    "PLANNED": 15
+  },
+  "test_suite": {
+    "name": "pytest",
+    "errors": "0",
+    "failures": "0",
+    "skipped": "0",
+    "tests": "57",
+    "time": "58.502",
+    "timestamp": "2026-09-18T14:21:54.435560+09:00",
+    "hostname": "ubuntu"
+  },
+  "restart_cases": [
+    "test_process_exit_and_restart_recovers_without_outputs[receipt]",
+    "test_process_exit_and_restart_recovers_without_outputs[prepared]",
+    "test_process_exit_and_restart_recovers_without_outputs[before_commit]",
+    "test_process_exit_and_restart_recovers_without_outputs[after_commit]"
+  ],
+  "ruff": "7 files PASS",
+  "black": "5 new Python files PASS",
+  "py_compile": "5 application files PASS",
+  "source_sha256": {
+    "src/ingest_store.py": "e13891921edc926e06dcdaf6f16983eef1ce574300ceb325031085f15356f5c9",
+    "parser-python/database/sensor_projection.py": "dc8aa45a44c2e28521852eec1f9bbc708c83401a71a87151a4f5fa8c239142e1",
+    "parser-python/database/sensor_projection_worker.py": "f825dcd1b36809f64127122dfd5fe63de95f51104a6d05b6d88241e0b4cc64d3",
+    "parser-python/service/sensor_service.py": "2bf7cf76ed599ade0271ce49539e8242697def305b37215ca0e6efd944e7f0fa",
+    "parser-python/main.py": "196453209d4a432c1d54570cd8deb085e834f5ea68599db9b3ce9be4b64eac10",
+    "Dockerfile": "54f7c0fb9c41569fe779ec9fbd29b338a1d6284e63fbd92a05f8b5edfed93324",
+    "tests/test_ingest_store.py": "52d5620336cd90dbfe2f92929c637080806e1c208f69f74f4094082ceb4cceaf",
+    "parser-python/tests/test_sensor_projection.py": "5aacb4b28ea2cb2b397d7a186ff9d35b265fe88e14f8560c2148fd6a50f56d7e"
+  },
+  "limits": "Opt-in local implementation. No production activation, image build, broker ACK, power-loss, load, GPU, hardware or real monitoring test."
+}

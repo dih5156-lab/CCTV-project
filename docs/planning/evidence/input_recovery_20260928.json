@@ -1,0 +1,302 @@
+{
+  "version": "0.49",
+  "updated_at": "2026-09-28 15:48 KST",
+  "wbs": "P5.1 IN_PROGRESS",
+  "fixture_root": "data/runtime/p51_recovery_20260928_v049",
+  "baseline_fixture": "data/runtime/p51_input_rate_20260928_v048",
+  "profile": {
+    "sdk": "7.1",
+    "tracker": "IOU",
+    "input": "4K H264 re-encoded 15fps",
+    "drop_on_latency": false,
+    "mediamtx_write_queue_size": 4096,
+    "rtsp_reconnect_interval_sec": 15,
+    "cpu_limit": 2,
+    "memory_limit": "8g",
+    "network": "none",
+    "before_outage_sec": 20,
+    "publisher_outage_sec": 25,
+    "after_recovery_sec": 25
+  },
+  "trials": {
+    "trial_1": {
+      "scope": "one local RTSP input, IOU, full candidate models, bounded publisher stop/restart experiment",
+      "input": "/baseline/replay_4k15.mp4",
+      "completed_experiment": true,
+      "app_alive": true,
+      "outage_publisher_stopped": true,
+      "restored_publisher_alive": true,
+      "transitions": [
+        {
+          "name": "input_ready",
+          "elapsed": 35.639,
+          "monotonic": 1060664.787241366
+        },
+        {
+          "name": "publisher_stop_requested",
+          "elapsed": 55.814,
+          "monotonic": 1060684.961952799
+        },
+        {
+          "name": "publisher_stopped",
+          "elapsed": 55.851,
+          "monotonic": 1060684.999310642
+        },
+        {
+          "name": "publisher_restarted",
+          "elapsed": 81.148,
+          "monotonic": 1060710.295638861
+        },
+        {
+          "name": "frames_resumed",
+          "elapsed": 90.435,
+          "monotonic": 1060719.583035628
+        }
+      ],
+      "sample_count": 189,
+      "elapsed_seconds": 118.03262056712992,
+      "context_observations": 188,
+      "context_identity_or_hash_mismatches": 0,
+      "context_stale_generation_at_entry": 0,
+      "cpu_generations": [
+        1,
+        3
+      ],
+      "pts_backwards_within_generation": {
+        "1": 0,
+        "3": 0
+      },
+      "after_publisher_restart": {
+        "cpu_samples": 97,
+        "context_observations": 97,
+        "generations": [
+          3
+        ]
+      },
+      "resume_after_republish_sec": 9.287,
+      "tail20_relative_backlog_growth_sec": 0.054,
+      "cpu_samples": 189,
+      "last_stats": {
+        "frames_processed": 861,
+        "inference_errors": 0,
+        "source_stream_reset_events": 2,
+        "preview_frames_stored": 188,
+        "context_identity_rejected": 0,
+        "context_frames_matched": 187,
+        "pipeline_restart_executed": 0
+      },
+      "outage_last5_primary_delta": 0.0,
+      "server_discard_warnings": 0,
+      "overflow_count": 0,
+      "transform_error_count": 0,
+      "preview_images": [
+        "cpu_g1_0.png",
+        "cpu_g1_120.png",
+        "cpu_g1_150.png",
+        "cpu_g1_390.png",
+        "cpu_g3_480.png",
+        "cpu_g3_570.png",
+        "cpu_g3_600.png",
+        "cpu_g3_630.png",
+        "cpu_g3_690.png",
+        "cpu_g3_720.png",
+        "cpu_g3_780.png",
+        "cpu_g3_810.png",
+        "cpu_g3_840.png"
+      ],
+      "artifacts": {
+        "publisher-1-initial.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "python_stacks.log": "8a6091b0f5fc3892cee99d015a189f5f291e2bd713a4540211e405eb1853b26e",
+        "publisher-1-restored.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "mediamtx.log": "61557f525364998db2ff4be23198b5bccfdfaeabafdc09f5d1e7f76a78a94f14",
+        "boundaries.jsonl": "f193a33ea8ad1e97d50bcfc63eb47414c856d537911c3946a009cbe511c8fdeb",
+        "samples.jsonl": "0f9a0c010c359200d81dc93857c9b01e527d68a09f22a52635b5d28c77b72e07",
+        "app.log": "bc09d8e401eb7c908402b530fbdce13de61ed95d4b46768ad389fa2098545d14",
+        "context.jsonl": "6158b5cc513c5a542eb81cddcac7d90e1c66f8ae8d311a7d9400dbbd47aa56b1",
+        "store.jsonl": "f7ae9f5a19cf581d4776d01a1050b250cbdd61b04294220570465bc13e574c8e",
+        "experiment.json": "83e7ba765343d2de00ab3e30b5f23e8718496c566ba9da349e2462ad9888d07b",
+        "stats.jsonl": "b8780a53cf7dc9f141d662bac84f3ebe6c6aed5a1abffdf5477262db6ebd0f6d"
+      },
+      "visual_samples": {
+        "cpu_g1_150.png": {
+          "sha256": "a776c028278c2a6e4ed789ccb37cf388f5a74f1143f3b88264817464e7567f63",
+          "observation": "no severe motion corruption observed; sample review only"
+        },
+        "cpu_g3_570.png": {
+          "sha256": "4d86ded571d04c7499201d8ef41ab85621cfb7128c5166918fd6f0e7f04230e5",
+          "observation": "no severe motion corruption observed; sample review only"
+        },
+        "cpu_g3_840.png": {
+          "sha256": "78ddfb5cd29537839714ddef04caac73b4a788e21d24ddba9fc49c593bf7f9fc",
+          "observation": "no severe motion corruption observed; sample review only"
+        }
+      }
+    },
+    "trial_2": {
+      "scope": "one local RTSP input, IOU, full candidate models, bounded publisher stop/restart experiment",
+      "input": "/baseline/replay_4k15.mp4",
+      "completed_experiment": true,
+      "app_alive": true,
+      "outage_publisher_stopped": true,
+      "restored_publisher_alive": true,
+      "transitions": [
+        {
+          "name": "input_ready",
+          "elapsed": 22.525,
+          "monotonic": 1060836.439563394
+        },
+        {
+          "name": "publisher_stop_requested",
+          "elapsed": 42.865,
+          "monotonic": 1060856.779594216
+        },
+        {
+          "name": "publisher_stopped",
+          "elapsed": 42.903,
+          "monotonic": 1060856.817013195
+        },
+        {
+          "name": "publisher_restarted",
+          "elapsed": 68.13,
+          "monotonic": 1060882.044454967
+        },
+        {
+          "name": "frames_resumed",
+          "elapsed": 77.438,
+          "monotonic": 1060891.352391351
+        }
+      ],
+      "sample_count": 177,
+      "elapsed_seconds": 104.85713423695415,
+      "context_observations": 183,
+      "context_identity_or_hash_mismatches": 0,
+      "context_stale_generation_at_entry": 0,
+      "cpu_generations": [
+        1,
+        3
+      ],
+      "pts_backwards_within_generation": {
+        "1": 0,
+        "3": 0
+      },
+      "after_publisher_restart": {
+        "cpu_samples": 98,
+        "context_observations": 98,
+        "generations": [
+          3
+        ]
+      },
+      "resume_after_republish_sec": 9.308,
+      "tail20_relative_backlog_growth_sec": 0.051,
+      "cpu_samples": 184,
+      "last_stats": {
+        "frames_processed": 843,
+        "inference_errors": 0,
+        "source_stream_reset_events": 2,
+        "preview_frames_stored": 182,
+        "context_identity_rejected": 0,
+        "context_frames_matched": 181,
+        "pipeline_restart_executed": 0
+      },
+      "outage_last5_primary_delta": 0.0,
+      "server_discard_warnings": 0,
+      "overflow_count": 0,
+      "transform_error_count": 0,
+      "preview_images": [
+        "cpu_g1_0.png",
+        "cpu_g1_210.png",
+        "cpu_g1_270.png",
+        "cpu_g1_420.png",
+        "cpu_g1_90.png",
+        "cpu_g3_510.png",
+        "cpu_g3_540.png",
+        "cpu_g3_630.png",
+        "cpu_g3_720.png",
+        "cpu_g3_810.png",
+        "cpu_g3_840.png"
+      ],
+      "artifacts": {
+        "publisher-1-initial.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "python_stacks.log": "88009afb857289968b01af14f5e6d42b46e372775f432de0c62ee203ade9ca9c",
+        "publisher-1-restored.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "mediamtx.log": "d37a57c4859de8ff5751f0e193b160002662ac63b804496dbd8c55347d665e3a",
+        "boundaries.jsonl": "b7f533be7f413c1158ca1ea7ec7be6f9423758ef637ee1836ef3cd5690be7aeb",
+        "samples.jsonl": "b1796ded15c5969303049a43efb03da17b6a52c688abc90ed0063da9faa5ec09",
+        "app.log": "f8d900f477dbf2cc8b9e52c42756f047ba211884234bc6b685163022cfbbccd4",
+        "context.jsonl": "da8f8c6272f6de5a32e2da736b18d9217db555ca836f355fe151c98f30c76964",
+        "store.jsonl": "215147efdd3dd2d1e9c9feee087794eeed36cd912fa3910017e470f8150be6fe",
+        "experiment.json": "065bdd19d4735618a5a1ec347a73b4d3b450fcec761b2652942421bce6674d68",
+        "stats.jsonl": "6cf1119da9d1ba0f65b422051617bba64e67af559a21bd47bebc92f2ad06e2a4"
+      },
+      "visual_samples": {
+        "cpu_g3_510.png": {
+          "sha256": "d0d8519a290c22a2cd8e31b228f696f40820a4df76479491e34390438c109eee",
+          "observation": "no severe motion corruption observed; sample review only"
+        },
+        "cpu_g3_810.png": {
+          "sha256": "d0d8519a290c22a2cd8e31b228f696f40820a4df76479491e34390438c109eee",
+          "observation": "no severe motion corruption observed; sample review only"
+        }
+      }
+    }
+  },
+  "application_change": false,
+  "production_change": false,
+  "snapshot_source_check": {
+    "python_files": 205,
+    "different_from_current": 0
+  },
+  "identity_fields": [
+    "camera_id",
+    "source_id",
+    "frame_num",
+    "source_pts_ns",
+    "generation",
+    "frame_token"
+  ],
+  "analysis_correction": "CPU-only buffer_pts_ns excluded from identity key; source PTS and six contract fields plus SHA256 compared. Initial whole-dict comparison produced false mismatches; original logs retained.",
+  "limitations": [
+    "two finite process starts, not reliability statistics",
+    "publisher termination/republish only, not packet blackhole or real camera/network outage",
+    "observed context entry identity/hash, not all downstream commits under races",
+    "sampled PNG visual inspection only",
+    "PTS drift is relative backlog, not absolute latency",
+    "production metrics/application deployment remains I07"
+  ],
+  "fixture_hashes": {
+    "cameras-one.json": "12e9c61cc0f48e337511564d418e29df5f184f8541205735cff1781b258c7b66",
+    "compose_trial_2.json": "47462a895bde5fb6388cb47a7fc1350a935190718347cc8aec7fc73f7111b189",
+    "observe_recovery.py": "3571b5846f4620a6d08579fea2a2e269b56c77a2c33e7c5547bb3981aed7b1e3",
+    "run_recovery.py": "d47f469cccf7daac3580ffba61c2554577d279d82f11a5067f093f8105d75e27",
+    "summarize.py": "c13960c446894e0beb1adf8bd28979e58aa21e66f1e3c91bb1d9e2a29ebe7448",
+    "summary.json": "bbe594c3271a895bef7325754b7b58de17f51c3b3dec647d02759a86a6374999",
+    "compose_trial_1.json": "0523a54f75c826d54d9cfb656b396c188c3648df28efbf263d807bbf110fbaef"
+  },
+  "production_check": {
+    "started_at": "2026-09-16T23:45:46.903505745Z",
+    "restart_count": 0,
+    "health": "healthy",
+    "remaining_trial_containers": 0
+  },
+  "publication": {
+    "version": "0.49",
+    "url": "http://192.168.2.242:18081/",
+    "files": {
+      "html": {
+        "bytes": 22575,
+        "sha256": "0aa779d1263db1b05590e1c24515c929d6d634335957716c78de3b59926a2772",
+        "matches_published": true
+      },
+      "pdf": {
+        "bytes": 124344,
+        "sha256": "b8274e4fd2f59e67d84d81dee58cd92e7c20a5f18d53fa997bcb18691b34e787",
+        "matches_published": true
+      }
+    },
+    "wbs_rows_checked": 33,
+    "ruff": "PASS",
+    "syntax": "PASS",
+    "document_whitespace": "PASS",
+    "browser_retested": false
+  }
+}

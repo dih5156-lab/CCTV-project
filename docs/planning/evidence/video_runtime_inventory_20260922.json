@@ -1,0 +1,304 @@
+{
+  "captured_at": "2026-09-22T12:40:54.379838+09:00",
+  "scope": "read-only; no GPU pipeline created, no restart, no device commands",
+  "container": {
+    "name": "cctv-ai-engine",
+    "started_at": "2026-09-16T23:45:46.903505745Z",
+    "status": "running",
+    "image_id": "sha256:1ace5b7832a50d6675b66146b0edc307021795732fc7c9a770e2cd628d7fd261",
+    "restart_count": 0
+  },
+  "environment_allowlist": {
+    "USE_DEEPSTREAM": "1",
+    "DS_CROP_POSE_ENABLED": "0",
+    "DS_PRIMARY_INTERVAL": "1",
+    "DS_HELMET_ENABLED": "1",
+    "DS_HELMET_INTERVAL": "1",
+    "DS_HELMET_SGIE_BATCH_SIZE": "1",
+    "DS_PPHUMAN_SGIE_ENABLED": "1",
+    "DS_PPHUMAN_INFER_CONFIG": "config/deepstream/config_infer_pa100k.txt",
+    "DS_PPHUMAN_INTERVAL": "4",
+    "DS_PPHUMAN_REINFER_INTERVAL": "15",
+    "DS_PPHUMAN_SGIE_BATCH_SIZE": "1",
+    "DS_APPEARANCE_ENABLED": "1",
+    "DS_FACE_ENABLED": "1",
+    "DS_OUTPUT_MODE": "rtsp-publish",
+    "DS_PREVIEW_ENABLED": "1",
+    "FALLDATA_AUX_ENABLED": "true",
+    "FALLDATA_AUX_MODE": "shadow",
+    "FALLDATA_AUX_MODEL_PATH": null,
+    "FALLDATA_AUX_COMPARE_MODEL_PATH": "models/experiments/yolo_pose_fall_cam2_continuous_200_80_640.pkl",
+    "FALLDATA_AUX_INLINE_POSE_RF": "true",
+    "FALLDATA_AUX_TEMPORAL_COMPARE_MODEL_PATH": "/app/models/fall/fall_temporal_same_split_resume_20260908.pt",
+    "FALLDATA_AUX_CONFIRM_BORDERLINE": "true",
+    "FALLDATA_AUX_SHADOW_ALL_WINDOWS": "true",
+    "APPEARANCE_COLOR_MODEL_PATH": "models/appearance/appearance_color_yolov8n.engine",
+    "APPEARANCE_DEVICE": null,
+    "VIDEO_INGEST_ENABLED": null,
+    "FALLDATA_AUX_COMPARE_MODEL_MAP": null,
+    "FALLDATA_AUX_COMPARE_MODEL_KIND": "yolo_pose_rf",
+    "FALLDATA_AUX_TEMPORAL_POSE_MODEL_PATH": "/app/models/fall/yolov8n-pose.pt"
+  },
+  "stream_health": {
+    "service": "cctv-stream-api",
+    "status": "ok",
+    "checked_at": "2026-09-22T12:27:43.783630+09:00",
+    "camera_count": 1,
+    "cameras": [
+      "camera_1"
+    ],
+    "stream_fps": 10.0,
+    "jpeg_quality": 70,
+    "stream_size": {
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "camera_file_safe_summary": [
+    {
+      "enabled": true,
+      "id": "camera_1",
+      "source_kind": "rtsp"
+    }
+  ],
+  "configured_gie_properties": {
+    "config_infer_primary.txt": {
+      "gie-unique-id": "1",
+      "model-engine-file": "../../models/fall/yolov8n-pose.engine",
+      "infer-dims": "3;640;640",
+      "batch-size": "8",
+      "process-mode": null,
+      "network-mode": null,
+      "network-type": "100",
+      "net-scale-factor": "0.0039215697906911373",
+      "offsets": null,
+      "model-color-format": "0",
+      "maintain-aspect-ratio": "1",
+      "symmetric-padding": "1",
+      "output-tensor-meta": "1",
+      "operate-on-gie-id": null,
+      "operate-on-class-ids": null,
+      "input-object-min-width": null,
+      "input-object-min-height": null,
+      "classifier-async-mode": null
+    },
+    "config_infer_helmet.txt": {
+      "gie-unique-id": "2",
+      "model-engine-file": "../../models/head/helmet_model.engine",
+      "infer-dims": "3;320;320",
+      "batch-size": "8",
+      "process-mode": "2",
+      "network-mode": null,
+      "network-type": "100",
+      "net-scale-factor": "0.0039215697906911373",
+      "offsets": null,
+      "model-color-format": "0",
+      "maintain-aspect-ratio": "1",
+      "symmetric-padding": "1",
+      "output-tensor-meta": "1",
+      "operate-on-gie-id": "1",
+      "operate-on-class-ids": null,
+      "input-object-min-width": null,
+      "input-object-min-height": null,
+      "classifier-async-mode": null
+    },
+    "config_infer_pa100k.txt": {
+      "gie-unique-id": "3",
+      "model-engine-file": "../../models/appearance/pa100k_resnet50_attr.engine",
+      "infer-dims": "3;256;192",
+      "batch-size": "8",
+      "process-mode": "2",
+      "network-mode": null,
+      "network-type": "100",
+      "net-scale-factor": "0.017124753831663668",
+      "offsets": "123.675;116.28;103.53",
+      "model-color-format": "0",
+      "maintain-aspect-ratio": null,
+      "symmetric-padding": null,
+      "output-tensor-meta": "1",
+      "operate-on-gie-id": "1",
+      "operate-on-class-ids": "0",
+      "input-object-min-width": null,
+      "input-object-min-height": null,
+      "classifier-async-mode": null
+    }
+  },
+  "on_disk_files": {
+    "src/core/deepstream_processor.py": {
+      "exists": true,
+      "bytes": 121730,
+      "sha256": "e981f477d6180390412ce52acbf43413bfcaf2d0db2ed149aa708cbb8293ffeb",
+      "modified_at": "2026-09-18T07:36:10.072507+00:00",
+      "modified_after_container_start": true
+    },
+    "src/core/_deepstream_primary_metrics.py": {
+      "exists": true,
+      "bytes": 4450,
+      "sha256": "4db05a4ea09ec83049ba197c15979f2d2559a6a9a695b88be89f222f2fde1f60",
+      "modified_at": "2026-09-17T04:19:00.213061+00:00",
+      "modified_after_container_start": true
+    },
+    "src/core/_deepstream_pipeline_builder.py": {
+      "exists": true,
+      "bytes": 22649,
+      "sha256": "e1ac9e9f040c7c14a0a9535430f782576927c770b20fe38c2e25ddc20bbf968a",
+      "modified_at": "2026-09-17T02:28:52.957989+00:00",
+      "modified_after_container_start": true
+    },
+    "src/services/processor_metrics.py": {
+      "exists": true,
+      "bytes": 3957,
+      "sha256": "b27396122772dca7de43638c023989f2335d17c25a37e96f580585977afb8566",
+      "modified_at": "2026-09-17T02:30:32.443727+00:00",
+      "modified_after_container_start": true
+    },
+    "src/core/_deepstream_event_factory.py": {
+      "exists": true,
+      "bytes": 16738,
+      "sha256": "28b5ab40db3ea37e2129c947188abb100edc8ee63956391e4c24bf32f15e2c6c",
+      "modified_at": "2026-09-11T05:55:23.333313+00:00",
+      "modified_after_container_start": false
+    },
+    "src/core/ai/_falldata_aux.py": {
+      "exists": true,
+      "bytes": 41928,
+      "sha256": "2406d946b27efcf2c5fb21aeda27b5692d010f3ad207be4f54e404c987c8d66a",
+      "modified_at": "2026-09-16T23:39:21.894032+00:00",
+      "modified_after_container_start": false
+    },
+    "src/video_observation.py": {
+      "exists": true,
+      "bytes": 5170,
+      "sha256": "073185939c0410c47bc2ba921ca6eda2966ad34b45ab8abe0249584889ab224e",
+      "modified_at": "2026-09-18T03:33:53.536852+00:00",
+      "modified_after_container_start": true
+    },
+    "models/fall/yolov8n-pose.engine": {
+      "exists": true,
+      "bytes": 8956700,
+      "sha256": "cc6cd0ee490e4f2ae46acf853989cf8c8806aadab47853e39c1e97cdf6732a74",
+      "modified_at": "2026-04-22T02:05:49.318842+00:00",
+      "modified_after_container_start": false
+    },
+    "models/head/helmet_model.engine": {
+      "exists": true,
+      "bytes": 8173652,
+      "sha256": "618c54a48d43844662fb3635d9fed3dc3bdf6e2c6018e6de09a52265a6ea19f6",
+      "modified_at": "2026-08-20T02:22:15.242298+00:00",
+      "modified_after_container_start": false
+    },
+    "models/appearance/pa100k_resnet50_attr.engine": {
+      "exists": true,
+      "bytes": 60557540,
+      "sha256": "151d44ea5e120b6b703c3605f2ea807eb892031190c43c26be9fb368dd8ecd0a",
+      "modified_at": "2026-06-22T00:03:03.579045+00:00",
+      "modified_after_container_start": false
+    },
+    "models/appearance/appearance_color_yolov8n.engine": {
+      "exists": true,
+      "bytes": 3874876,
+      "sha256": "26a24c630d496ce7d075bf9e996e4d2b8469b0c55d263dcbbbebb1fd79cfaae1",
+      "modified_at": "2026-09-16T02:05:19.052133+00:00",
+      "modified_after_container_start": false
+    },
+    "models/fall/fall_temporal_same_split_resume_20260908.pt": {
+      "exists": true,
+      "bytes": 31259,
+      "sha256": "8cf336f8080122cca0f6369c1b2c6edc099624f9ce8c4647915a6eab0d445e22",
+      "modified_at": "2026-09-09T15:21:17.260940+00:00",
+      "modified_after_container_start": false
+    },
+    "models/fall/yolo_pose_same_split_resume_20260908_rf.joblib": {
+      "exists": true,
+      "bytes": 3895742,
+      "sha256": "2104505bca880e86e79bfab0c61491eb456971149bffec1194d636a747225f0f",
+      "modified_at": "2026-09-09T15:17:17.550569+00:00",
+      "modified_after_container_start": false
+    },
+    "models/experiments/yolo_pose_fall_cam2_continuous_200_80_640.pkl": {
+      "exists": true,
+      "bytes": 2545406,
+      "sha256": "0fd6610ee86d9263e402b82e6607da0ff361a39ab0487a7cb0f6edd019195397",
+      "modified_at": "2026-07-29T01:31:39.562568+00:00",
+      "modified_after_container_start": false
+    },
+    "models/fall/yolov8n-pose.pt": {
+      "exists": true,
+      "bytes": 6832633,
+      "sha256": "c6fa93dd1ee4a2c18c900a45c1d864a1c6f7aba75d84f91648a30b7fb641d212",
+      "modified_at": "2026-04-21T04:43:02.826693+00:00",
+      "modified_after_container_start": false
+    },
+    "config/deepstream/config_infer_primary.txt": {
+      "exists": true,
+      "bytes": 3090,
+      "sha256": "277ab2e76c826804b82fa7c56b9e8edc4a59037fbfe01c23b014c3263e2fa2ae",
+      "modified_at": "2026-08-27T04:43:22.375238+00:00",
+      "modified_after_container_start": false
+    },
+    "config/deepstream/config_infer_helmet.txt": {
+      "exists": true,
+      "bytes": 1343,
+      "sha256": "74ec560b96f0306cd91501ed38b30c7d9892f176ef8b08d0dad6ccc1a55fd960",
+      "modified_at": "2026-09-10T06:33:13.561144+00:00",
+      "modified_after_container_start": false
+    },
+    "config/deepstream/config_infer_pa100k.txt": {
+      "exists": true,
+      "bytes": 1197,
+      "sha256": "0091952cbe88c07fea3f091a1878446a6e521f93f26f4b8bb56ccb4f57fcba6f",
+      "modified_at": "2026-08-27T04:42:44.675402+00:00",
+      "modified_after_container_start": false
+    }
+  },
+  "metrics_samples": [
+    {
+      "captured_file_modified_at": "2026-09-22T03:28:39.519558+00:00",
+      "file": "video_runtime_metrics_before_20260922.prom",
+      "values": {
+        "cctv_processor_frames_processed_total": 13313358.0,
+        "cctv_processor_frames_dropped_total": 0.0,
+        "cctv_processor_events_detected_total": 1866.0,
+        "cctv_processor_events_sent_total": 1866.0,
+        "cctv_processor_events_filtered_total": 58280.0,
+        "cctv_processor_events_failed_total": 0.0,
+        "cctv_processor_fps": 29.92729430109079,
+        "cctv_processor_avg_inference_ms": 3.82,
+        "cctv_processor_yolo_postprocess_avg_ms": 3.82,
+        "cctv_processor_yolo_postprocess_max_ms": 289.81,
+        "cctv_processor_cameras": 1.0
+      },
+      "primary_camera_metrics_present": false
+    },
+    {
+      "captured_file_modified_at": "2026-09-22T03:30:15.358838+00:00",
+      "file": "video_runtime_metrics_after_20260922.prom",
+      "values": {
+        "cctv_processor_frames_processed_total": 13316224.0,
+        "cctv_processor_frames_dropped_total": 0.0,
+        "cctv_processor_events_detected_total": 1866.0,
+        "cctv_processor_events_sent_total": 1866.0,
+        "cctv_processor_events_filtered_total": 58280.0,
+        "cctv_processor_events_failed_total": 0.0,
+        "cctv_processor_fps": 28.772216136947527,
+        "cctv_processor_avg_inference_ms": 3.82,
+        "cctv_processor_yolo_postprocess_avg_ms": 3.82,
+        "cctv_processor_yolo_postprocess_max_ms": 289.81,
+        "cctv_processor_cameras": 1.0
+      },
+      "primary_camera_metrics_present": false
+    }
+  ],
+  "recent_model_or_stats_log_lines": [
+    "2026-09-22 03:39:41 [INFO] src.core.deepstream_processor: DeepStream stats: frames=13333210 frame_dropped=0 events_detected=1866 sent=1866 filtered=58280 event_dropped=0 failed=0 cameras=1 yolo_postprocess=vectorized avg_ms=3.820 max_ms=289.810 calls=6666605 crop_path=0/0/0/0/0/0",
+    "2026-09-22 03:39:51 [INFO] src.core.deepstream_processor: DeepStream stats: frames=13333510 frame_dropped=0 events_detected=1866 sent=1866 filtered=58280 event_dropped=0 failed=0 cameras=1 yolo_postprocess=vectorized avg_ms=3.820 max_ms=289.810 calls=6666755 crop_path=0/0/0/0/0/0",
+    "2026-09-22 03:40:01 [INFO] src.core.deepstream_processor: DeepStream stats: frames=13333807 frame_dropped=0 events_detected=1866 sent=1866 filtered=58280 event_dropped=0 failed=0 cameras=1 yolo_postprocess=vectorized avg_ms=3.820 max_ms=289.810 calls=6666904 crop_path=0/0/0/0/0/0",
+    "2026-09-22 03:40:11 [INFO] src.core.deepstream_processor: DeepStream stats: frames=13334111 frame_dropped=0 events_detected=1866 sent=1866 filtered=58280 event_dropped=0 failed=0 cameras=1 yolo_postprocess=vectorized avg_ms=3.820 max_ms=289.810 calls=6667056 crop_path=0/0/0/0/0/0",
+    "2026-09-22 03:40:21 [INFO] src.core.deepstream_processor: DeepStream stats: frames=13334411 frame_dropped=0 events_detected=1866 sent=1866 filtered=58280 event_dropped=0 failed=0 cameras=1 yolo_postprocess=vectorized avg_ms=3.820 max_ms=289.810 calls=6667206 crop_path=0/0/0/0/0/0",
+    "2026-09-22 03:40:31 [INFO] src.core.deepstream_processor: DeepStream stats: frames=13334712 frame_dropped=0 events_detected=1866 sent=1866 filtered=58280 event_dropped=0 failed=0 cameras=1 yolo_postprocess=vectorized avg_ms=3.820 max_ms=289.810 calls=6667356 crop_path=0/0/0/0/0/0",
+    "2026-09-22 03:40:42 [INFO] src.core.deepstream_processor: DeepStream stats: frames=13335012 frame_dropped=0 events_detected=1866 sent=1866 filtered=58280 event_dropped=0 failed=0 cameras=1 yolo_postprocess=vectorized avg_ms=3.820 max_ms=289.810 calls=6667506 crop_path=0/0/0/0/0/0",
+    "2026-09-22 03:40:52 [INFO] src.core.deepstream_processor: DeepStream stats: frames=13335312 frame_dropped=0 events_detected=1866 sent=1866 filtered=58280 event_dropped=0 failed=0 cameras=1 yolo_postprocess=vectorized avg_ms=3.820 max_ms=289.810 calls=6667656 crop_path=0/0/0/0/0/0"
+  ],
+  "loaded_model_proof": "environment, disk files and recent logs are not in-process engine identity/element-property proof",
+  "application_baseline_files": 204
+}

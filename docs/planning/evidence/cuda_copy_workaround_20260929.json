@@ -1,0 +1,431 @@
+{
+  "version": "0.62",
+  "date": "2026-09-29",
+  "issue": "I34",
+  "scope": "isolated single captured-camera replay, CPU2, IOU, RC3; no production deployment",
+  "original_failure": {
+    "application_log": "data/runtime/p51_sustained_20260929_v060/light2997/app.log",
+    "kernel_log": "data/runtime/p51_cuda_20260929_v062/original_kernel_fault.log",
+    "kernel_time": "2026-09-29T12:51:31+09:00",
+    "confirmed": "GPU MMU fault: invalid pte, virt read; CUDA700 createTexture followed by preprocessing/copy errors",
+    "not_confirmed": "originating kernel or physical hardware fault; not proven to originate in nvvideoconvert"
+  },
+  "workaround": {
+    "setting": "DS_NVVIDEOCONVERT_COPY_HW=2",
+    "meaning": "nvvideoconvert surface copy via VIC, memory type 0 on Jetson",
+    "default": "empty retains SDK default; production environment unchanged",
+    "reference": "https://docs.nvidia.com/metropolis/deepstream/7.1/text/DS_troubleshooting.html"
+  },
+  "sanitizer": {
+    "memcheck": "30 primary frames; terminated process group; no final summary",
+    "memcheck_exit": "maximum 37 processed frames, target 60 not reached; interrupted target; ERROR SUMMARY: 0 errors",
+    "memcheck_file": "end processed 0, early primary 4; interrupted target; ERROR SUMMARY: 0 errors",
+    "memcheck_vic": "end processed 0, early primary 4; interrupted target; no final summary",
+    "conclusion": "instrumentation stalls/incomplete coverage; no sanitizer clean-pass claim"
+  },
+  "regression": {
+    "passed": 248,
+    "skipped": 2,
+    "ruff": "passed"
+  },
+  "trials": {
+    "vic_start1": {
+      "experiment": {
+        "scope": "one local RTSP input, IOU, full candidate models, captured real camera video replay; no live camera connection",
+        "input": "/baseline/camera_1_capture.mkv",
+        "completed_experiment": true,
+        "steady_observation_seconds": 90,
+        "receiver_media_seconds": 60,
+        "receiver_exit": 0,
+        "output_bytes": 35993321,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 12.441
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 13.486
+          }
+        ],
+        "sample_count": 97,
+        "elapsed_seconds": 112.65987440012395
+      },
+      "copy_properties": [
+        {
+          "name": "h264-nvvidconv",
+          "copy_hw": 2,
+          "memory_type": 0
+        },
+        {
+          "name": "preview-nvvidconv",
+          "copy_hw": 2,
+          "memory_type": 0
+        },
+        {
+          "name": "converter",
+          "copy_hw": 2,
+          "memory_type": 0
+        }
+      ],
+      "cuda_error_lines": [],
+      "max_stats": {
+        "frames_processed": 2561,
+        "inference_errors": 0,
+        "context_queue_dropped": 3,
+        "pipeline_restart_executed": 0
+      },
+      "media": {
+        "result.mkv": {
+          "bytes": 35993321,
+          "streams": [
+            {
+              "width": 1920,
+              "height": 1080,
+              "r_frame_rate": "30/1",
+              "avg_frame_rate": "30/1",
+              "disposition": {
+                "default": 1,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0
+              },
+              "tags": {
+                "DURATION": "00:01:00.309000000"
+              }
+            }
+          ],
+          "duration": "60.309000",
+          "packet_count": 1607,
+          "timing": {
+            "pts_time": {
+              "count": 1607,
+              "backwards": 0,
+              "equal": 0
+            },
+            "dts_time": {
+              "count": 1607,
+              "backwards": 0,
+              "equal": 0
+            }
+          },
+          "decode_exit": 0,
+          "decode_stderr_bytes": 0
+        }
+      }
+    },
+    "vic_start2": {
+      "experiment": {
+        "scope": "one local RTSP input, IOU, full candidate models, captured real camera video replay; no live camera connection",
+        "input": "/baseline/camera_1_capture.mkv",
+        "completed_experiment": true,
+        "steady_observation_seconds": 90,
+        "receiver_media_seconds": 60,
+        "receiver_exit": 0,
+        "output_bytes": 36705407,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 13.377
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 13.582
+          }
+        ],
+        "sample_count": 98,
+        "elapsed_seconds": 106.5635778629221
+      },
+      "copy_properties": [
+        {
+          "name": "h264-nvvidconv",
+          "copy_hw": 2,
+          "memory_type": 0
+        },
+        {
+          "name": "preview-nvvidconv",
+          "copy_hw": 2,
+          "memory_type": 0
+        },
+        {
+          "name": "converter",
+          "copy_hw": 2,
+          "memory_type": 0
+        }
+      ],
+      "cuda_error_lines": [],
+      "max_stats": {
+        "frames_processed": 2545,
+        "inference_errors": 0,
+        "context_queue_dropped": 8,
+        "pipeline_restart_executed": 0
+      },
+      "media": {
+        "result.mkv": {
+          "bytes": 36705407,
+          "streams": [
+            {
+              "width": 1920,
+              "height": 1080,
+              "r_frame_rate": "30/1",
+              "avg_frame_rate": "30/1",
+              "disposition": {
+                "default": 1,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0
+              },
+              "tags": {
+                "DURATION": "00:01:00.211000000"
+              }
+            }
+          ],
+          "duration": "60.211000",
+          "packet_count": 1643,
+          "timing": {
+            "pts_time": {
+              "count": 1643,
+              "backwards": 0,
+              "equal": 0
+            },
+            "dts_time": {
+              "count": 1643,
+              "backwards": 0,
+              "equal": 0
+            }
+          },
+          "decode_exit": 0,
+          "decode_stderr_bytes": 0
+        }
+      }
+    },
+    "vic_start3": {
+      "experiment": {
+        "scope": "one local RTSP input, IOU, full candidate models, bounded publisher stop/restart experiment",
+        "input": "/baseline/camera_1_capture.mkv",
+        "completed_experiment": true,
+        "receivers": {
+          "before": {
+            "exit": 0,
+            "bytes": 4272858
+          },
+          "after": {
+            "exit": 0,
+            "bytes": 5033787
+          }
+        },
+        "app_alive": true,
+        "outage_publisher_stopped": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 13.334,
+            "monotonic": 1142395.259632199
+          },
+          {
+            "name": "publisher_stop_requested",
+            "elapsed": 35.095,
+            "monotonic": 1142417.020443367
+          },
+          {
+            "name": "publisher_stopped",
+            "elapsed": 35.133,
+            "monotonic": 1142417.05824388
+          },
+          {
+            "name": "publisher_restarted",
+            "elapsed": 60.163,
+            "monotonic": 1142442.088794717
+          },
+          {
+            "name": "frames_resumed",
+            "elapsed": 68.039,
+            "monotonic": 1142449.964547732
+          }
+        ],
+        "sample_count": 159,
+        "elapsed_seconds": 101.83381314598955
+      },
+      "copy_properties": [
+        {
+          "name": "h264-nvvidconv",
+          "copy_hw": 2,
+          "memory_type": 0
+        },
+        {
+          "name": "preview-nvvidconv",
+          "copy_hw": 2,
+          "memory_type": 0
+        },
+        {
+          "name": "converter",
+          "copy_hw": 2,
+          "memory_type": 0
+        }
+      ],
+      "cuda_error_lines": [],
+      "max_stats": {
+        "frames_processed": 1252,
+        "inference_errors": 0,
+        "context_queue_dropped": 0,
+        "pipeline_restart_executed": 0
+      },
+      "media": {
+        "after.mkv": {
+          "bytes": 5033787,
+          "streams": [
+            {
+              "width": 1920,
+              "height": 1080,
+              "r_frame_rate": "30/1",
+              "avg_frame_rate": "30/1",
+              "disposition": {
+                "default": 1,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0
+              },
+              "tags": {
+                "DURATION": "00:00:08.218000000"
+              }
+            }
+          ],
+          "duration": "8.218000",
+          "packet_count": 229,
+          "timing": {
+            "pts_time": {
+              "count": 229,
+              "backwards": 0,
+              "equal": 0
+            },
+            "dts_time": {
+              "count": 229,
+              "backwards": 0,
+              "equal": 0
+            }
+          },
+          "decode_exit": 0,
+          "decode_stderr_bytes": 0
+        },
+        "before.mkv": {
+          "bytes": 4272858,
+          "streams": [
+            {
+              "width": 1920,
+              "height": 1080,
+              "r_frame_rate": "30/1",
+              "avg_frame_rate": "30/1",
+              "disposition": {
+                "default": 1,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0
+              },
+              "tags": {
+                "DURATION": "00:00:08.091000000"
+              }
+            }
+          ],
+          "duration": "8.091000",
+          "packet_count": 197,
+          "timing": {
+            "pts_time": {
+              "count": 197,
+              "backwards": 0,
+              "equal": 0
+            },
+            "dts_time": {
+              "count": 197,
+              "backwards": 0,
+              "equal": 0
+            }
+          },
+          "decode_exit": 0,
+          "decode_stderr_bytes": 0
+        }
+      },
+      "seconds_to_resume_from_republish": 7.876
+    }
+  },
+  "candidate": {
+    "id": "P5.1-RC3-20260929",
+    "source_file_count": 357,
+    "source_mismatches": [],
+    "archive_sha256": "a6235139cbc3e21fbadaaccbb0558047adbb7afd325802fcc6ca7459508df822",
+    "archive_matches": true,
+    "model_reference": "data/runtime/p51_profile_20260928_v052/rc1_models",
+    "model_count": 8
+  },
+  "limitations": [
+    "I34 OPEN: workaround passed bounded local tests only; original fault not deterministically reproduced",
+    "No live/multi-camera, long-duration or production acceptance",
+    "MQTT localhost:9 deliberately unavailable; event delivery not evaluated",
+    "I32 context queue saturation remains; no lossless-processing claim"
+  ],
+  "publication": {
+    "html": {
+      "bytes": 22601,
+      "sha256": "2568beb26d704fa450fc1235d4c663df34ff56b6583fa2e0b46fd2e8a5a943c5",
+      "lan_matches": true
+    },
+    "pdf": {
+      "bytes": 124344,
+      "sha256": "eadfe275bd98952628a73db9b8d38f0f652dc5d70b7b121175e8f4af993d0f0e",
+      "lan_matches": true
+    }
+  },
+  "production_observation": {
+    "state": "running",
+    "health": "healthy",
+    "started_at": "2026-09-16T23:45:46.903505745Z",
+    "restart_count": 0,
+    "trial_containers_remaining": 0
+  },
+  "validation": {
+    "wbs_33_rows_and_statuses_match": true,
+    "python_ast": "passed",
+    "candidate_two_changed_sources_equal_workspace": true,
+    "png_first_page_visual_check": "passed",
+    "browser_and_other_pc_retested": false,
+    "changed_code_docs_diff_check": "passed; unrelated pre-existing Compose whitespace excluded"
+  }
+}

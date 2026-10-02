@@ -1,0 +1,52 @@
+{
+  "version": "0.52",
+  "candidate_id": "P5.1-RC1-20260928",
+  "source_file_count": 357,
+  "changed_config_files": [
+    "config/deepstream/config_infer_primary.txt"
+  ],
+  "archived_source_sha256": "405c04040490c0e03ab2c5bf305da8461f86b3db64935053bd0644e58f625ed5",
+  "copied_model_count": 8,
+  "copied_model_bytes": 92405483,
+  "archive_member_hash_check": "PASS",
+  "model_copy_hash_check": "PASS",
+  "integrated_candidate_runtime": "NOT_RUN",
+  "production_modified": false,
+  "profile_sha256": "1720236c41796fe0f6a643378a33d8a425bf5aabfc80d55187d0ebe8f9fc0035",
+  "fixture": "data/runtime/p51_profile_20260928_v052",
+  "production_observation": {
+    "image": "sha256:1ace5b7832a50d6675b66146b0edc307021795732fc7c9a770e2cd628d7fd261",
+    "started_at": "2026-09-16T23:45:46.903505745Z",
+    "restart_count": 0,
+    "health": "healthy",
+    "nano_cpus": 0,
+    "memory": 0
+  },
+  "validation": {
+    "wbs_rows": 33,
+    "wbs_status_counts": "PASS",
+    "candidate_python_syntax": 339,
+    "renderer_syntax": "PASS",
+    "renderer_ruff": "PASS",
+    "document_trailing_whitespace": "PASS",
+    "validation_note": "Initial WBS parser included 8 historical schedule rows; restricted to rows with status enum, no WBS data changed."
+  },
+  "publication": {
+    "HTML": {
+      "bytes": 22628,
+      "sha256": "ef6dd5951de90873c355b5f97304f2ee171bd888b72c901db78b2d0995d98664",
+      "matches_served_file": true
+    },
+    "PDF": {
+      "bytes": 123832,
+      "sha256": "5bb49edebcd1433d9fa837ba554a7829c9d3d5c0acaa4df7efaabd21eb9ebc3e",
+      "matches_served_file": true
+    }
+  },
+  "production_final": {
+    "status": "running",
+    "health": "healthy",
+    "started_at": "2026-09-16T23:45:46.903505745Z",
+    "restart_count": 0
+  }
+}

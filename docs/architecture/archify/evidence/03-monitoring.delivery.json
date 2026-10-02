@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "deliver",
+  "type": "sequence",
+  "input": "/media/sawwave/Learning11/CCTV-project/docs/architecture/archify/03-monitoring.sequence.json",
+  "output": "/media/sawwave/Learning11/CCTV-project/docs/architecture/archify/03-monitoring.html",
+  "specification": {
+    "sha256": "c9ba3124935b7c274e4d8b6b10dae35df48ee2702d1e641f57ce1bd414366da6",
+    "bytes": 3142
+  },
+  "artifact": {
+    "sha256": "47a07ff7a2dabf9beb92322d2af657dc25eb723a6fc592f12fb11dae2670713b",
+    "bytes": 810258
+  },
+  "validation": {
+    "checksPassed": 9,
+    "checkCount": 9,
+    "compositionProfile": "showcase",
+    "compositionStatus": "pass",
+    "errors": 0,
+    "warnings": 0
+  }
+}

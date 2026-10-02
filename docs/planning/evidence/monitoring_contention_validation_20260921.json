@@ -1,0 +1,298 @@
+{
+  "recorded_at": "2026-09-21T14:56:47.920820+09:00",
+  "plan_version": "0.19",
+  "wbs": "P2.4",
+  "status": "IN_PROGRESS",
+  "issue_status": {
+    "I22": "OPEN / unnecessary idle write locks fixed locally; active load and video pre-commit failure policy remain",
+    "I21": "OPEN / HTTP recovered per user; intermittent cause and stability unresolved"
+  },
+  "changed_application_files": [
+    "src/monitoring_delivery.py"
+  ],
+  "new_test_files": [
+    "tests/test_monitoring_contention.py",
+    "tests/test_monitoring_contention_load.py"
+  ],
+  "new_test_cases": [
+    "test_idle_poll_can_read_while_input_writer_holds_database[enqueue]",
+    "test_idle_poll_can_read_while_input_writer_holds_database[claim]",
+    "test_concurrent_enqueue_rechecks_records_before_inserting",
+    "test_idle_poll_still_rejects_changed_binding",
+    "test_idle_poll_does_not_forget_new_records_or_expired_leases",
+    "test_mqtt_source_lock_leaves_message_unacked_until_resubmission",
+    "test_video_source_lock_is_reported_before_queueing_and_needs_resubmission",
+    "test_mixed_input_with_periodic_delivery[1.0]",
+    "test_mixed_input_with_periodic_delivery[0.02]"
+  ],
+  "verification": {
+    "runs": {
+      "monitoring_contention_before_20260921.xml": {
+        "suite": {
+          "name": "pytest",
+          "errors": "0",
+          "failures": "2",
+          "skipped": "0",
+          "tests": "5",
+          "time": "1.577",
+          "timestamp": "2026-09-21T14:40:20.511158+09:00",
+          "hostname": "ubuntu"
+        },
+        "measurements": []
+      },
+      "monitoring_contention_load_before_20260921.xml": {
+        "suite": {
+          "name": "pytest",
+          "errors": "0",
+          "failures": "2",
+          "skipped": "0",
+          "tests": "2",
+          "time": "10.976",
+          "timestamp": "2026-09-21T14:42:06.826521+09:00",
+          "hostname": "ubuntu"
+        },
+        "measurements": [
+          {
+            "contention_result": {
+              "elapsed_seconds": 6.045781031018123,
+              "idle_worker_calls": 40,
+              "idle_write_transactions": 80,
+              "input_records": 24,
+              "interval_seconds": 1.0,
+              "pair_submission_max_seconds": 0.40914435702143237,
+              "service_failed_cycles": 0,
+              "source_busy_retries": 2,
+              "stored_records": 24,
+              "transport": "in-process test model"
+            }
+          },
+          {
+            "contention_result": {
+              "elapsed_seconds": 3.711304972996004,
+              "idle_worker_calls": 40,
+              "idle_write_transactions": 80,
+              "input_records": 24,
+              "interval_seconds": 0.02,
+              "pair_submission_max_seconds": 0.543497113045305,
+              "service_failed_cycles": 0,
+              "source_busy_retries": 0,
+              "stored_records": 24,
+              "transport": "in-process test model"
+            }
+          }
+        ]
+      },
+      "monitoring_contention_targeted_20260921.xml": {
+        "suite": {
+          "name": "pytest",
+          "errors": "0",
+          "failures": "0",
+          "skipped": "0",
+          "tests": "23",
+          "time": "14.228",
+          "timestamp": "2026-09-21T14:43:34.590258+09:00",
+          "hostname": "ubuntu"
+        },
+        "measurements": [
+          {
+            "contention_result": {
+              "elapsed_seconds": 5.488122269976884,
+              "idle_worker_calls": 40,
+              "idle_write_transactions": 0,
+              "input_records": 24,
+              "interval_seconds": 1.0,
+              "pair_submission_max_seconds": 0.16921813797671348,
+              "service_failed_cycles": 0,
+              "source_busy_retries": 0,
+              "stored_records": 24,
+              "transport": "in-process test model"
+            }
+          },
+          {
+            "contention_result": {
+              "elapsed_seconds": 3.261595832009334,
+              "idle_worker_calls": 40,
+              "idle_write_transactions": 0,
+              "input_records": 24,
+              "interval_seconds": 0.02,
+              "pair_submission_max_seconds": 0.28356067201821133,
+              "service_failed_cycles": 0,
+              "source_busy_retries": 0,
+              "stored_records": 24,
+              "transport": "in-process test model"
+            }
+          }
+        ]
+      },
+      "monitoring_contention_final_20260921.xml": {
+        "suite": {
+          "name": "pytest",
+          "errors": "0",
+          "failures": "0",
+          "skipped": "0",
+          "tests": "197",
+          "time": "76.477",
+          "timestamp": "2026-09-21T14:47:28.947363+09:00",
+          "hostname": "ubuntu"
+        },
+        "measurements": [
+          {
+            "contention_result": {
+              "elapsed_seconds": 5.592373700987082,
+              "idle_worker_calls": 40,
+              "idle_write_transactions": 0,
+              "input_records": 24,
+              "interval_seconds": 1.0,
+              "pair_submission_max_seconds": 0.4749388449708931,
+              "service_failed_cycles": 0,
+              "source_busy_retries": 0,
+              "stored_records": 24,
+              "transport": "in-process test model"
+            }
+          },
+          {
+            "contention_result": {
+              "elapsed_seconds": 3.3103900039568543,
+              "idle_worker_calls": 40,
+              "idle_write_transactions": 0,
+              "input_records": 24,
+              "interval_seconds": 0.02,
+              "pair_submission_max_seconds": 0.28884856798686087,
+              "service_failed_cycles": 0,
+              "source_busy_retries": 0,
+              "stored_records": 24,
+              "transport": "in-process test model"
+            }
+          },
+          {
+            "outage_result": {
+              "duplicate_business_records": 0,
+              "false_storage_acks": 0,
+              "lock_mode": "IMMEDIATE",
+              "outage_seconds": 3.4622695720172487,
+              "physical_jobs_held": 12,
+              "reconciliation": {
+                "conflict": 0,
+                "matched": 24,
+                "missing": 0,
+                "out_of_snapshot": 0,
+                "unexpected": 0,
+                "unverifiable": 0
+              },
+              "recovery_seconds": 2.0933213249663822,
+              "sensor_records": 12,
+              "service_recreated": false,
+              "source_busy_retries": 0,
+              "stored_after_recovery": 24,
+              "unconfirmed_before_recovery": 24,
+              "video_records": 12,
+              "wire_bytes_and_hashes_unchanged": true
+            }
+          },
+          {
+            "outage_result": {
+              "duplicate_business_records": 0,
+              "false_storage_acks": 0,
+              "lock_mode": "EXCLUSIVE",
+              "outage_seconds": 9.538330344017595,
+              "physical_jobs_held": 12,
+              "reconciliation": {
+                "conflict": 0,
+                "matched": 24,
+                "missing": 0,
+                "out_of_snapshot": 0,
+                "unexpected": 0,
+                "unverifiable": 0
+              },
+              "recovery_seconds": 3.795568846981041,
+              "sensor_records": 12,
+              "service_recreated": true,
+              "source_busy_retries": 0,
+              "stored_after_recovery": 24,
+              "unconfirmed_before_recovery": 24,
+              "video_records": 12,
+              "wire_bytes_and_hashes_unchanged": true
+            }
+          }
+        ]
+      }
+    },
+    "ruff": "PASS: 3 files",
+    "black_check": "PASS: 3 files",
+    "py_compile": "PASS: 3 files"
+  },
+  "source_sha256": {
+    "src/monitoring_delivery.py": "cfb1a3e3480c4ebe87118a445580b838ccf832da986b48083a135a4e6b0a1bb2",
+    "tests/test_monitoring_contention.py": "71fb45ea1796aaef2d87e2d50f02aaeab8e83633339219e534a7ba38c180e7a2",
+    "tests/test_monitoring_contention_load.py": "12152c6c97d0e41a6aaff851bb28d45aff586a88b27833e5c93e589b5e93f8b3"
+  },
+  "pre_change_application_sha256": "84d547c079a82c15d7abb4851a02c0ffa3f29e018e4d38947191e1c8f4a6d1a5",
+  "previous_p23_files_unchanged": {
+    "src/ingest_store.py": true,
+    "src/event_ingest_store.py": true,
+    "src/monitoring_delivery.py": false,
+    "src/monitoring_worker.py": true,
+    "src/monitoring_metrics.py": true,
+    "src/monitoring_service.py": true,
+    "src/protocols/monitoring_local.py": true,
+    "runners/run_monitoring_local.py": true,
+    "tests/test_monitoring_commit_observations.py": true,
+    "tests/test_monitoring_service.py": true,
+    "tests/test_monitoring_local.py": true,
+    "tests/test_monitoring_service_mqtt.py": true
+  },
+  "junit_sha256": {
+    "monitoring_contention_before_20260921.xml": "a2f914672c358af9eb31fef7d200a48f11fd72bfb3c5b3c6124f7c0f1f46cda0",
+    "monitoring_contention_load_before_20260921.xml": "593980ab7d46e523588f50350b9555d7a217f266162f3e91691f30ed87cd7470",
+    "monitoring_contention_targeted_20260921.xml": "904342ef841876bb0d5b58e35fb4b6a0edfb027cc1e0c1298e91dd5bd815971b",
+    "monitoring_contention_final_20260921.xml": "467970a05e11f3b2302cbaf43716baf19aa3cf8aa4c64e17c45a7d40fd5988ae"
+  },
+  "patch_sha256": "20b9e83e8161eeba3a83c009e8a79d0462c10595a6b901f883ebbb289a7677d7",
+  "observed_improvement": "40 idle worker calls: 80 to 0 write transactions at both 1.0s and 0.02s service intervals",
+  "measurement_scope": "24 mixed records per interval; real SQLite with in-process transport model; not a throughput or capacity acceptance test",
+  "input_failure_boundaries": {
+    "mqtt": "Real source SQLite lock with mock subscriber client: no ACK, reconnect requested; explicit simulated redelivery succeeds",
+    "video": "Initial source commit failure propagates before queueing; no receipt to recover; explicit caller resubmission required"
+  },
+  "schema_changes": false,
+  "public_api_changes": false,
+  "configuration_or_dependencies_changed": false,
+  "runtime_deployment": false,
+  "production_db_changed": false,
+  "physical_outputs_or_gpu_tests": false,
+  "isolated_broker": {
+    "container": "cctv-test-contention-20260921",
+    "image": "eclipse-mosquitto:2.0",
+    "network": "none",
+    "published_ports": [],
+    "user": "1000:1000",
+    "memory_mib": 64,
+    "cpu_limit": 0.5,
+    "stopped": true
+  },
+  "graph_review": "Search, impact, changes, affected flows and tests_for did not cover the untracked module. Reviewed exact pre-turn diff and exercised affected behavior; zero graph risk not treated as proof.",
+  "not_done": [
+    "active production input rates and contention",
+    "automatic video pre-commit retry/failure policy",
+    "capacity/disk-full and stale data",
+    "remote receiver and authenticated storage ACK",
+    "D04/D06 thresholds and deployment"
+  ],
+  "next_slice": "Prepare laptop remote receiver and authenticated storage ACK after user-reported HTTP recovery",
+  "network_success_evidence": "windows_lan_recovered_20260921.json",
+  "documentation": {
+    "files": 8,
+    "local_links_checked": 269,
+    "missing_links": [],
+    "wbs_rows": 33,
+    "states": {
+      "DONE": 8,
+      "BLOCKED": 2,
+      "READY": 2,
+      "IN_PROGRESS": 1,
+      "PLANNED": 13,
+      "VERIFY": 7
+    },
+    "trailing_whitespace": "PASS"
+  }
+}

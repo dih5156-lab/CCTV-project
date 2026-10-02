@@ -1,0 +1,228 @@
+{
+  "verified_at": "2026-09-21T16:51:42.681710+09:00",
+  "scope": "isolated SQLite page-limit failures; test adapters without network",
+  "python": "3.10.12",
+  "sqlite": "3.37.2",
+  "method": "PRAGMA max_page_count=current page_count on each connection of a temporary store instance",
+  "failure": "sqlite3.OperationalError: database or disk is full",
+  "filesystem_enospc_tested": false,
+  "production_deployed": false,
+  "validation": {
+    "pytest": {
+      "passed": 71,
+      "failed": 0,
+      "skipped": 0,
+      "new_capacity_cases": 6,
+      "junit_xml": "docs/planning/evidence/monitoring_capacity_20260921.xml"
+    },
+    "ruff": "pass",
+    "compileall": "pass",
+    "black_check": "pass",
+    "documentation": {
+      "files": 8,
+      "local_links_checked": 312,
+      "wbs_counts": "pass"
+    },
+    "review": "Graph tests_for returned not_found for new test file; source reviewed directly. Only temporary store instances are capped; no runtime code/config changed."
+  },
+  "cases": [
+    {
+      "test": "test_full_raw_intake_requires_explicit_resubmit[sensor]",
+      "properties": {
+        "capacity_bytes": "139264"
+      }
+    },
+    {
+      "test": "test_full_raw_intake_requires_explicit_resubmit[video]",
+      "properties": {
+        "capacity_bytes": "139264"
+      }
+    },
+    {
+      "test": "test_full_normalization_preserves_committed_raw_for_retry",
+      "properties": {
+        "capacity_bytes": "204800"
+      }
+    },
+    {
+      "test": "test_full_enqueue_rolls_back_new_job_and_preserves_existing_wire",
+      "properties": {
+        "capacity_bytes": "335872"
+      }
+    },
+    {
+      "test": "test_full_receiver_withholds_ack_then_replay_stores_once",
+      "properties": {
+        "capacity_bytes": "49152"
+      }
+    },
+    {
+      "test": "test_full_source_ack_save_recovers_by_lookup_without_republish",
+      "properties": {
+        "capacity_bytes": "159744",
+        "acks_saved_before_full": "3",
+        "receiver_committed_records": "24"
+      }
+    }
+  ],
+  "application_sources_unchanged": true,
+  "application_sha256": {
+    "src/ingest_store.py": "05c35c33de6cc0f2ed934e0f73bb2e34e6532fe40fc492f52fb709305cae5a77",
+    "src/event_ingest_store.py": "a90db8f9bf55311e892bc6b18bc958e7e19a456b5a7bffb2ffa7df74c7212c99",
+    "src/record_delivery.py": "bcf12dc1c32b5b4cf7940fa89c66396524d20c35fc5815a7f637d39e3aa65164",
+    "src/monitoring_delivery.py": "cfb1a3e3480c4ebe87118a445580b838ccf832da986b48083a135a4e6b0a1bb2",
+    "src/monitoring_receiver.py": "543b98ba265f505762cffd61b25fb1cc237adec3752ce0232972ee2ba778f6d8",
+    "src/monitoring_worker.py": "71893c0d49a1e6e04352ad11e335d828eb4a4bdfff16008f4b331207aced86eb",
+    "src/protocols/monitoring_local.py": "db1115d111e9dcb957d2d30a76714a95562efefb0cfbe7438b5b176c38fde15d",
+    "src/sensor_record.py": "d5a32cc41f4510c1ad3644f5713e829bc351cea6fea60e1b0bfd45152d4b1f9a"
+  },
+  "test_sha256": "bd91ce67086483750ca8c8da7c56531c61a55fcca5604d13575096c32108a84b",
+  "wbs": {
+    "total": 33,
+    "counts": {
+      "DONE": 8,
+      "BLOCKED": 2,
+      "READY": 2,
+      "IN_PROGRESS": 1,
+      "PLANNED": 13,
+      "VERIFY": 7
+    },
+    "done_by_task_count_percent": 24.2,
+    "weighted_implementation_progress": null,
+    "active": "P2.4",
+    "rows": [
+      {
+        "id": "P0.1",
+        "status": "DONE"
+      },
+      {
+        "id": "P0.2",
+        "status": "BLOCKED"
+      },
+      {
+        "id": "P0.3",
+        "status": "DONE"
+      },
+      {
+        "id": "P1.1",
+        "status": "DONE"
+      },
+      {
+        "id": "P1.2",
+        "status": "DONE"
+      },
+      {
+        "id": "P1.3",
+        "status": "READY"
+      },
+      {
+        "id": "P1.4",
+        "status": "DONE"
+      },
+      {
+        "id": "P2.1",
+        "status": "DONE"
+      },
+      {
+        "id": "P2.2",
+        "status": "DONE"
+      },
+      {
+        "id": "P2.3",
+        "status": "DONE"
+      },
+      {
+        "id": "P2.4",
+        "status": "IN_PROGRESS"
+      },
+      {
+        "id": "P3.1",
+        "status": "PLANNED"
+      },
+      {
+        "id": "P3.2",
+        "status": "PLANNED"
+      },
+      {
+        "id": "P3.3",
+        "status": "PLANNED"
+      },
+      {
+        "id": "P3.4",
+        "status": "VERIFY"
+      },
+      {
+        "id": "P3.5",
+        "status": "PLANNED"
+      },
+      {
+        "id": "P3.6",
+        "status": "BLOCKED"
+      },
+      {
+        "id": "P4.1",
+        "status": "VERIFY"
+      },
+      {
+        "id": "P4.2",
+        "status": "VERIFY"
+      },
+      {
+        "id": "P4.3",
+        "status": "PLANNED"
+      },
+      {
+        "id": "P5.1",
+        "status": "READY"
+      },
+      {
+        "id": "P5.2",
+        "status": "VERIFY"
+      },
+      {
+        "id": "P5.3",
+        "status": "VERIFY"
+      },
+      {
+        "id": "P5.4",
+        "status": "VERIFY"
+      },
+      {
+        "id": "P5.5",
+        "status": "VERIFY"
+      },
+      {
+        "id": "P5.6",
+        "status": "PLANNED"
+      },
+      {
+        "id": "P6.1",
+        "status": "PLANNED"
+      },
+      {
+        "id": "P6.2",
+        "status": "PLANNED"
+      },
+      {
+        "id": "P6.3",
+        "status": "PLANNED"
+      },
+      {
+        "id": "P6.4",
+        "status": "PLANNED"
+      },
+      {
+        "id": "P7.1",
+        "status": "PLANNED"
+      },
+      {
+        "id": "P7.2",
+        "status": "PLANNED"
+      },
+      {
+        "id": "P7.3",
+        "status": "PLANNED"
+      }
+    ]
+  }
+}

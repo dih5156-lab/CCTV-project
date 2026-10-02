@@ -1,0 +1,246 @@
+{
+  "generated_at": "2026-09-22T09:41:24.555288+09:00",
+  "wbs": "P2.4",
+  "plan_version": "0.27",
+  "unit_status": "complete",
+  "wbs_status": "IN_PROGRESS",
+  "environment": {
+    "python": "3.10.12",
+    "sqlite": "3.37.2"
+  },
+  "scope": {
+    "video_records": 150,
+    "sensor_records": 150,
+    "batches": 3,
+    "raw_padding_bytes_per_input": 2048,
+    "transport": "in-process Broker/Reader test doubles",
+    "clock": "injected; retry/lease boundaries advanced without waiting",
+    "process_start_method": "spawn",
+    "crash_exit_code": 42,
+    "journal_mode": "delete",
+    "synchronous": "EXTRA",
+    "input_producers": "sequential; no test-producer intake retries",
+    "sensor_parsing": "predecoded synthetic projection supplied via prepare; no TLV byte parser"
+  },
+  "tests": {
+    "name": "pytest",
+    "errors": "0",
+    "failures": "0",
+    "skipped": "0",
+    "tests": "108",
+    "time": "108.403",
+    "timestamp": "2026-09-22T09:38:02.162443+09:00",
+    "hostname": "ubuntu",
+    "passed": 108,
+    "new_scenarios": 1,
+    "new_scenario_seconds": 69.573
+  },
+  "measurements": {
+    "outage_build_seconds": 35.3767810940044,
+    "checkpoints": [
+      {
+        "records": 0,
+        "source": {
+          "file_bytes": 139264,
+          "page_bytes": 4096,
+          "pages": 34,
+          "free_pages": 0,
+          "used_page_bytes": 139264
+        },
+        "receiver": {
+          "file_bytes": 49152,
+          "page_bytes": 4096,
+          "pages": 12,
+          "free_pages": 0,
+          "used_page_bytes": 49152
+        }
+      },
+      {
+        "records": 100,
+        "source": {
+          "file_bytes": 1585152,
+          "page_bytes": 4096,
+          "pages": 387,
+          "free_pages": 0,
+          "used_page_bytes": 1585152
+        },
+        "receiver": {
+          "file_bytes": 49152,
+          "page_bytes": 4096,
+          "pages": 12,
+          "free_pages": 0,
+          "used_page_bytes": 49152
+        }
+      },
+      {
+        "records": 200,
+        "source": {
+          "file_bytes": 3026944,
+          "page_bytes": 4096,
+          "pages": 739,
+          "free_pages": 0,
+          "used_page_bytes": 3026944
+        },
+        "receiver": {
+          "file_bytes": 49152,
+          "page_bytes": 4096,
+          "pages": 12,
+          "free_pages": 0,
+          "used_page_bytes": 49152
+        }
+      },
+      {
+        "records": 300,
+        "source": {
+          "file_bytes": 4493312,
+          "page_bytes": 4096,
+          "pages": 1097,
+          "free_pages": 0,
+          "used_page_bytes": 4493312
+        },
+        "receiver": {
+          "file_bytes": 49152,
+          "page_bytes": 4096,
+          "pages": 12,
+          "free_pages": 0,
+          "used_page_bytes": 49152
+        }
+      }
+    ],
+    "processes": [
+      {
+        "pid": 14,
+        "point": "consumer_commit",
+        "published": 37,
+        "completed": 0,
+        "elapsed_seconds": 2.6854063129867427,
+        "retry_clock_start": 1000,
+        "retry_clock_end": 1000,
+        "exit_code": 42
+      },
+      {
+        "pid": 15,
+        "point": "ack_save",
+        "published": 263,
+        "completed": 51,
+        "elapsed_seconds": 20.664530932030175,
+        "retry_clock_start": 2000,
+        "retry_clock_end": 2061,
+        "exit_code": 42
+      },
+      {
+        "pid": 16,
+        "point": "recovery",
+        "published": 0,
+        "completed": 249,
+        "elapsed_seconds": 8.371819456049707,
+        "retry_clock_start": 3000,
+        "retry_clock_end": 3061,
+        "exit_code": 0
+      }
+    ],
+    "reconciliation": {
+      "source_snapshot_id": "snap_ce88fe5c69854ab8b238ff71d2a0bde4",
+      "consumer_snapshot_id": "snap_1e74519c392f497299a488e643b658de",
+      "complete": true,
+      "source_set_matches": true,
+      "all_inputs_accounted": true,
+      "sets_equal": true,
+      "error": null,
+      "counts": {
+        "matched": 300,
+        "missing": 0,
+        "conflict": 0,
+        "unexpected": 0,
+        "out_of_snapshot": 0,
+        "unverifiable": 0
+      },
+      "details": [],
+      "details_truncated": 0,
+      "pending_normalization": 0,
+      "pending_delivery_creation": 0,
+      "normalization_rejected": 0
+    },
+    "final_sizes": {
+      "source": {
+        "file_bytes": 5132288,
+        "page_bytes": 4096,
+        "pages": 1253,
+        "free_pages": 0,
+        "used_page_bytes": 5132288
+      },
+      "receiver": {
+        "file_bytes": 2023424,
+        "page_bytes": 4096,
+        "pages": 494,
+        "free_pages": 0,
+        "used_page_bytes": 2023424
+      },
+      "snapshot": {
+        "file_bytes": 2207744,
+        "page_bytes": 4096,
+        "pages": 539,
+        "free_pages": 0,
+        "used_page_bytes": 2207744
+      }
+    },
+    "recovery_wall_seconds": 33.74752500897739,
+    "monitoring_attempts": 1200,
+    "raw_utf8_bytes": 658240,
+    "wire_bytes": 853573,
+    "physical_jobs_held": 150
+  },
+  "checks": {
+    "ruff": "PASS",
+    "black_check": "PASS",
+    "py_compile": "PASS",
+    "source_and_receiver_integrity": "ok",
+    "all_source_receiver_bytes_and_ack_hashes_match": true,
+    "application_files_unchanged": 204
+  },
+  "graph_review": {
+    "new_test_and_monitoring_worker_not_covered": true,
+    "fallback": "read source/call boundaries, compare 204 application hashes, run focused regression",
+    "risk_zero_used_as_no_impact_evidence": false
+  },
+  "baseline_manifest_sha256": "f5fd862cac44142743d48322ab579ad07406ee8fd53c2c5478ea49ee3e75073e",
+  "sha256": {
+    "docs/planning/evidence/monitoring_backlog_restart_20260922.xml": "f6f659a1cb21e82b1eee70e001648d914d91a1dfd7f46e45904d263c5c0e0509",
+    "tests/test_monitoring_backlog_restart.py": "34cdb4542c3fe27f1a0aedac422620b36b5d928a8063d1634126242afa7e5166",
+    "src/monitoring_delivery.py": "cfb1a3e3480c4ebe87118a445580b838ccf832da986b48083a135a4e6b0a1bb2",
+    "src/monitoring_worker.py": "71893c0d49a1e6e04352ad11e335d828eb4a4bdfff16008f4b331207aced86eb",
+    "src/monitoring_receiver.py": "543b98ba265f505762cffd61b25fb1cc237adec3752ce0232972ee2ba778f6d8",
+    "src/core/video_event_ingest.py": "7158836647b520c8ac84872fe6752bf9c610abe740e5a6c8945be8a68c6b4163",
+    "src/sensor_record.py": "d5a32cc41f4510c1ad3644f5713e829bc351cea6fea60e1b0bfd45152d4b1f9a",
+    "src/ingest_store.py": "05c35c33de6cc0f2ed934e0f73bb2e34e6532fe40fc492f52fb709305cae5a77"
+  },
+  "limitations": [
+    "No real MQTT/TLS/LAN, GPU inference or physical device output in this run",
+    "No production or notebook deployment; API, DB schema and configuration unchanged",
+    "Process exits at committed boundaries; not a host power loss test",
+    "Not real outage duration, sustainable rate, latency SLO or retention capacity acceptance",
+    "DB sizes sampled after transactions; transient journals and filesystem peak use excluded",
+    "Existing failed initial intake cannot recover from a DB receipt that was never committed"
+  ],
+  "next_work": "P1.3 priority, expiry and physical replay contract; P2.4 real-load acceptance remains pending D02/D04/D06",
+  "documentation_checks": {
+    "relative_links": "PASS",
+    "wbs_counts": {
+      "DONE": 8,
+      "BLOCKED": 2,
+      "READY": 2,
+      "IN_PROGRESS": 1,
+      "PLANNED": 13,
+      "VERIFY": 7
+    },
+    "plan_version": "0.27",
+    "updated_documents": [
+      "docs/planning/README.md",
+      "docs/planning/PROGRESS.md",
+      "docs/planning/WBS.md",
+      "docs/planning/STATUS.md",
+      "docs/planning/MONITORING_BACKLOG_RESTART.md",
+      "docs/planning/figma_exports/README.md"
+    ]
+  }
+}

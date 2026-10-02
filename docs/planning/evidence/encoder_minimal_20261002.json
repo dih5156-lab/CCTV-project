@@ -1,0 +1,315 @@
+{
+  "version": "0.99",
+  "date": "2026-10-02T14:50:35.613601+09:00",
+  "wbs": "P5.1",
+  "status": "IN_PROGRESS",
+  "issue": "I40 OPEN",
+  "scope": "Ponytail review of shutdown path and minimal encoder reproduction",
+  "operating_applied": false,
+  "product_source": {
+    "files": 206,
+    "changed": []
+  },
+  "raw_artifacts": "data/runtime/p51_encoder_minimal_20261002_v099",
+  "review": {
+    "scope": [
+      "src/core/_deepstream_pipeline_builder.py:484-518",
+      "src/core/deepstream_processor.py:1037-1061",
+      "tests/test_deepstream_pipeline_builder.py:337-378",
+      "tests/test_deepstream_shutdown.py",
+      "v0.98 diagnosis and report"
+    ],
+    "ponytail_command_installed": null,
+    "rules": "Project AGENTS.md and official Ponytail AGENTS.md",
+    "findings": [
+      {
+        "priority": "P1",
+        "known_issue": "I40",
+        "location": "src/core/_deepstream_pipeline_builder.py:505",
+        "finding": "Synchronous native NULL transition has no deadline; join_timeout_sec does not bound it. Confirmed by two v0.98 failures; no new issue created."
+      },
+      {
+        "priority": "P2",
+        "location": "tests/test_deepstream_pipeline_builder.py:337",
+        "finding": "Bin state regression verifies reactivation fix, not actual NVENC/RTSP stop. Preserve minimal hardware reproducer as the relevant check.",
+        "kind": "known coverage limit, not new runtime defect"
+      },
+      {
+        "priority": "P2",
+        "kind": "diagnostic false-positive guard",
+        "location": "minimal.py parent completion predicate",
+        "finding": "An output-loss trial could previously be counted complete without proving RTSP publication or that shutdown followed injected loss.",
+        "resolution": "Added publication and ordering gates. All six archived successful trials satisfy both applicable gates."
+      }
+    ],
+    "reuse": [
+      "create_h264_encoder_elements",
+      "create_output_elements",
+      "stop_pipeline_runtime",
+      "H264PocFixer",
+      "v0.98 trace_v4l2.so"
+    ],
+    "rejected_changes": [
+      "No new dependencies",
+      "No SDK replacement without causal evidence",
+      "Do not skip resource cleanup by a timed background thread",
+      "Do not treat successful repeated exits as root-cause fix"
+    ],
+    "graph_limitation": "Review graph returned zero changed nodes despite source changes; call graph lacks actual caller, so targeted actual source/AST used.",
+    "ponytail_status": {
+      "project_rules_applied": true,
+      "documented_since": "2026-09-22",
+      "source": "AGENTS.md:3",
+      "dedicated_command_registration": "not verified in current session/local configuration",
+      "local_checks": [
+        "Codex plugin cache/config/hooks",
+        "user/project Claude settings/skills",
+        "user agent skills and skill lock",
+        "OpenCode config paths"
+      ],
+      "plugin_search_matches": 0,
+      "limitation": "Current checks do not establish that the user never installed it elsewhere or previously."
+    }
+  },
+  "trials": {
+    "output": {
+      "result": {
+        "case": "fake",
+        "flush": true,
+        "completed": true,
+        "exit_code": 0,
+        "worker": {
+          "case": "fake",
+          "flush": true,
+          "encoded_buffers": 449,
+          "run_seconds": 15.0529982841108,
+          "bus_error": null,
+          "stop_started": 1402777.124513277,
+          "stop_seconds": 0.03492887085303664,
+          "null_state": true
+        }
+      },
+      "proof": {
+        "trace_pairs_complete": true,
+        "encoder_stop_types": [
+          10,
+          9
+        ]
+      }
+    },
+    "rtsp_flush_1": {
+      "result": {
+        "case": "rtsp",
+        "flush": true,
+        "completed": true,
+        "exit_code": 0,
+        "worker": {
+          "case": "rtsp",
+          "flush": true,
+          "encoded_buffers": 448,
+          "run_seconds": 15.059969914145768,
+          "bus_error": null,
+          "stop_started": 1402853.877506171,
+          "stop_seconds": 0.03114787908270955,
+          "null_state": true
+        }
+      },
+      "proof": {
+        "trace_pairs_complete": true,
+        "encoder_stop_types": [
+          10,
+          9
+        ],
+        "rtsp_published": true
+      }
+    },
+    "loss_flush_1": {
+      "result": {
+        "case": "loss",
+        "flush": true,
+        "completed": true,
+        "exit_code": 0,
+        "worker": {
+          "case": "loss",
+          "flush": true,
+          "encoded_buffers": 180,
+          "run_seconds": 6.114231929183006,
+          "bus_error": "gst-resource-error-quark: Could not open resource for reading and writing. (7)",
+          "stop_started": 1402866.246481891,
+          "stop_seconds": 0.03104650997556746,
+          "null_state": true
+        }
+      },
+      "proof": {
+        "trace_pairs_complete": true,
+        "encoder_stop_types": [
+          10,
+          9
+        ],
+        "rtsp_published": true,
+        "stop_after_output_loss": true,
+        "loss_to_stop_seconds": 0.0062320909928530455
+      }
+    },
+    "loss_flush_0": {
+      "result": {
+        "case": "loss",
+        "flush": false,
+        "completed": true,
+        "exit_code": 0,
+        "worker": {
+          "case": "loss",
+          "flush": false,
+          "encoded_buffers": 179,
+          "run_seconds": 6.07931939791888,
+          "bus_error": "gst-resource-error-quark: Could not open resource for reading and writing. (7)",
+          "stop_started": 1402877.32867021,
+          "stop_seconds": 0.021183572011068463,
+          "null_state": true
+        }
+      },
+      "proof": {
+        "trace_pairs_complete": true,
+        "encoder_stop_types": [
+          10,
+          9
+        ],
+        "rtsp_published": true,
+        "stop_after_output_loss": true,
+        "loss_to_stop_seconds": 0.0058794289361685514
+      }
+    },
+    "nvmm_loss_flush_0": {
+      "result": {
+        "case": "loss",
+        "flush": false,
+        "completed": true,
+        "exit_code": 0,
+        "worker": {
+          "case": "loss",
+          "input": "nvmm",
+          "input_caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, framerate=(fraction)30/1, multiview-mode=(string)mono, pixel-aspect-ratio=(fraction)1/1, interlace-mode=(string)progressive, format=(string)RGBA, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0",
+          "flush": false,
+          "encoded_buffers": 408,
+          "run_seconds": 13.700607943814248,
+          "bus_error": "gst-resource-error-quark: Could not open resource for reading and writing. (7)",
+          "stop_started": 1402984.100502601,
+          "stop_seconds": 0.027478694217279553,
+          "null_state": true
+        }
+      },
+      "proof": {
+        "trace_pairs_complete": true,
+        "encoder_stop_types": [
+          10,
+          9
+        ],
+        "rtsp_published": true,
+        "stop_after_output_loss": true,
+        "loss_to_stop_seconds": 0.008263438008725643
+      }
+    },
+    "mux_loss_flush_0_retry": {
+      "result": {
+        "case": "loss",
+        "flush": false,
+        "completed": true,
+        "exit_code": 0,
+        "worker": {
+          "case": "loss",
+          "input": "mux",
+          "input_caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, framerate=(fraction)30/1, multiview-mode=(string)mono, format=(string)RGBA, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "flush": false,
+          "encoded_buffers": 385,
+          "run_seconds": 13.72439513891004,
+          "bus_error": "gst-resource-error-quark: Could not read from resource. (9)",
+          "stop_started": 1403052.269616214,
+          "stop_seconds": 0.024110822938382626,
+          "null_state": true
+        }
+      },
+      "proof": {
+        "trace_pairs_complete": true,
+        "encoder_stop_types": [
+          10,
+          9
+        ],
+        "rtsp_published": true,
+        "stop_after_output_loss": true,
+        "loss_to_stop_seconds": 0.00536965811625123
+      }
+    }
+  },
+  "excluded_fixture_failure": {
+    "trial": "mux_loss_flush_0",
+    "reason": "Missing explicit nvstreammux request pad; no encoded frames; fixture corrected and rerun, not counted as native shutdown failure."
+  },
+  "operating": {
+    "states": {
+      "cctv-p51-encoder-minimal-v099": {
+        "Status": "exited",
+        "ExitCode": 0,
+        "OOMKilled": false,
+        "StartedAt": "2026-10-02T05:46:59.690108344Z",
+        "FinishedAt": "2026-10-02T05:47:15.657027896Z",
+        "health": null
+      },
+      "cctv-ai-engine": {
+        "Status": "running",
+        "ExitCode": 0,
+        "OOMKilled": false,
+        "StartedAt": "2026-10-02T01:33:58.362007997Z",
+        "FinishedAt": "2026-10-02T01:33:57.89393094Z",
+        "health": "healthy"
+      }
+    },
+    "health": {
+      "service": "cctv-zone-api",
+      "status": "ok",
+      "checked_at": "2026-10-02T14:49:52.975391+09:00",
+      "camera_count": 1,
+      "preset_count": 0,
+      "video_ready": true
+    }
+  },
+  "validation": {
+    "python_ast": "PASS",
+    "diagnostic_ruff": "PASS after import/lambda cleanup",
+    "completion_gates": "All six archived results satisfy applicable publication and loss-order checks; guard addition replayed against captured evidence.",
+    "product_test_suite_rerun": false,
+    "product_test_suite_reason": "No product source or deployment configuration changed."
+  },
+  "limits": [
+    "Synthetic single input; no camera decoder, AI, preview tee or auxiliary workers.",
+    "Short observed processing intervals 6.08–15.06s, not equivalent to original 90s integrated failure.",
+    "No native hang reproduced in minimum configurations; does not clear prior I40 failures.",
+    "Review is scoped to shutdown and related diagnostics/tests, not all existing dirty-tree changes."
+  ],
+  "next": "Add original recorded camera input and decoder to the same minimal harness; compare buffer lifetime and stop sequence.",
+  "official_rules": "https://github.com/DietrichGebert/ponytail/blob/main/AGENTS.md",
+  "publication": {
+    "wbs_rows_match": true,
+    "row_count": 33,
+    "done_count": 9,
+    "index.html": {
+      "http": 200,
+      "matches_local": true,
+      "bytes": 23232,
+      "sha256": "620bd3cb10761a0ad4a8c7a07f900ac2864c7f3b64025beeb1139eb438b465e5"
+    },
+    "CCTV_project_progress.pdf": {
+      "http": 200,
+      "matches_local": true,
+      "bytes": 128882,
+      "sha256": "d83445db24ea7fdea31a760a13b174145a876ea23bc8d1e9fe91cc68e666bf81"
+    },
+    "first_page_visual": "PASS: text/layout inspected",
+    "browser_interaction_retested": false
+  },
+  "diagnostic_sha256": {
+    "minimal.py": "e46da08e69d19a2d8c5ac0af6d3df85b8818df1b4b46191dfea0a054fdc7ff81",
+    "minimal_v1.py": "04ef24b6aeae44a603dffe2e7d6254edb1604c087db3aedc0714f04eff85654d",
+    "validated_trials.json": "0f77cbed1af690c1bd094e865614dcc126dbf6b223a961afbb6814c1e1483b8a",
+    "review.json": "c4915b499414461ffe9937ccb6bae97be47d6d78ae7bf704ec32e1377a53a53e"
+  }
+}

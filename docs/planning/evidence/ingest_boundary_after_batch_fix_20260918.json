@@ -1,0 +1,187 @@
+{
+  "synthetic": true,
+  "scope": "CPU, temporary SQLite, mock publisher/DB failure; no broker/GPU/device/service startup",
+  "limits": "Probes current functions, not process restart, MQTT ACK, power loss or full pipeline durability.",
+  "source_sha256": {
+    "src/core/_event_publish.py": "15d45e786367c25d3d0361f091cd71a00aed140e7147a90063349a355993e3e3",
+    "src/services/external_ingest.py": "a8f98e701c4162e71dd80d0a332e4e513292f31290999004e3708006b5868c55",
+    "src/protocols/mqtt_subscriber.py": "4211d0c3c2cc33e6bcfc37293746d32387776c4e1190e3f9171a925e047e41bd",
+    "parser-python/service/sensor_service.py": "0c38515b9d34961c32a2120877c22a93ffaf69a7fb9cc12043c8ff183d2d65ab",
+    "parser-python/database/processor.py": "c3bdb9d313c9d7aea48a43f3f4e90221e811c7c975eb3fe8059b674b4c4beb88",
+    "parser-python/tlv/parser.py": "ad73cb87564a9a78e14e1a75d5d4d053aac6908503f7e2bcbd2197f26949dd85"
+  },
+  "cases": [
+    {
+      "id": "B01",
+      "kind": "failure_boundary",
+      "scenario": "video_invalid_timestamp",
+      "observed": {
+        "queue_remaining": 0,
+        "counters": {
+          "events_failed": 1
+        },
+        "publish_calls": 0
+      },
+      "expected": "Failed input must remain available for quarantine or retry.",
+      "meets_target": false,
+      "issues": [
+        "I12"
+      ]
+    },
+    {
+      "id": "B02",
+      "kind": "failure_boundary",
+      "scenario": "video_publish_exception",
+      "observed": {
+        "queue_remaining": 0,
+        "counters": {
+          "events_failed": 1
+        },
+        "publish_calls": 1
+      },
+      "expected": "Failed input must remain available for quarantine or retry.",
+      "meets_target": false,
+      "issues": [
+        "I17"
+      ]
+    },
+    {
+      "id": "B03",
+      "kind": "failure_boundary",
+      "scenario": "tlv_invalid_base64",
+      "observed": {
+        "queued_record_types": [],
+        "forward_calls": 0,
+        "exception_to_caller": null
+      },
+      "expected": "Malformed source must reach an error store or propagate a failure.",
+      "meets_target": false,
+      "issues": [
+        "I12"
+      ]
+    },
+    {
+      "id": "B04",
+      "kind": "failure_boundary",
+      "scenario": "tlv_truncated_bytes",
+      "observed": {
+        "queued_record_types": [],
+        "forward_calls": 0,
+        "exception_to_caller": null
+      },
+      "expected": "Malformed source must reach an error store or propagate a failure.",
+      "meets_target": false,
+      "issues": [
+        "I12"
+      ]
+    },
+    {
+      "id": "B05",
+      "kind": "control",
+      "scenario": "tlv_valid_fixture",
+      "observed": {
+        "queued_record_types": [
+          "T34954",
+          "SensorData"
+        ],
+        "forward_calls": 1,
+        "exception_to_caller": null
+      },
+      "expected": "Existing valid parser fixture queues typed and raw rows; this is not DB commit.",
+      "meets_target": true,
+      "issues": []
+    },
+    {
+      "id": "B06",
+      "kind": "failure_boundary",
+      "scenario": "sensor_batch_db_failure_then_recovery",
+      "observed": {
+        "input_rows": 2,
+        "failed_insert_calls": 2,
+        "queue_rows_after_failure": 2,
+        "retried_rows_after_recovery": 2
+      },
+      "expected": "Failed rows must still be retried after DB recovery.",
+      "meets_target": true,
+      "issues": [
+        "I01"
+      ]
+    },
+    {
+      "id": "B07",
+      "kind": "failure_boundary",
+      "scenario": "external_db_failure",
+      "observed": {
+        "call_order": [
+          "publish",
+          "save"
+        ],
+        "stored_rows": 0,
+        "raw_preserved": false,
+        "exception_from_subscriber": null,
+        "stats": {
+          "received_count": 1,
+          "parse_fail_count": 0,
+          "republish_count": 1,
+          "quarantined_count": 0
+        }
+      },
+      "expected": "Original input must survive a DB/publisher failure; current callback has no retry store.",
+      "meets_target": false,
+      "issues": [
+        "I13"
+      ]
+    },
+    {
+      "id": "B08",
+      "kind": "control",
+      "scenario": "external_invalid_quarantine",
+      "observed": {
+        "call_order": [
+          "save"
+        ],
+        "stored_rows": 1,
+        "raw_preserved": true,
+        "exception_from_subscriber": null,
+        "stats": {
+          "received_count": 1,
+          "parse_fail_count": 0,
+          "republish_count": 0,
+          "quarantined_count": 1
+        }
+      },
+      "expected": "Keep original input without normal publish.",
+      "meets_target": true,
+      "issues": []
+    },
+    {
+      "id": "B09",
+      "kind": "failure_boundary",
+      "scenario": "external_publish_failure",
+      "observed": {
+        "call_order": [
+          "publish"
+        ],
+        "stored_rows": 0,
+        "raw_preserved": false,
+        "exception_from_subscriber": null,
+        "stats": {
+          "received_count": 1,
+          "parse_fail_count": 0,
+          "republish_count": 0,
+          "quarantined_count": 0
+        }
+      },
+      "expected": "Original input must survive a DB/publisher failure; current callback has no retry store.",
+      "meets_target": false,
+      "issues": [
+        "I13"
+      ]
+    }
+  ],
+  "summary": {
+    "total": 9,
+    "controls": 2,
+    "unmet_targets": 6
+  }
+}

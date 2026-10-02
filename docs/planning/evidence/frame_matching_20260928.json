@@ -1,0 +1,217 @@
+{
+  "version": "0.43",
+  "date": "2026-09-28",
+  "issue": "I27",
+  "status": "FIXED_LOCAL",
+  "scope": "Single-input native frame identity and exact CPU preview / context task pairing; real Primary Pose inference; face backend disabled; no face/appearance quality claim",
+  "tests": {
+    "name": "pytest",
+    "errors": "0",
+    "failures": "0",
+    "skipped": "2",
+    "tests": "237",
+    "time": "13.968",
+    "timestamp": "2026-09-28T12:38:30.040074+09:00",
+    "hostname": "ubuntu"
+  },
+  "new_cases": 13,
+  "trials": {
+    "first_trial": {
+      "experiment": {
+        "scope": "real CLI with one configured RTSP input; preview enabled; primary Pose profile; external output disconnected",
+        "completed_experiment": true,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 21.436
+          },
+          {
+            "name": "stop_publisher",
+            "elapsed": 26.597
+          },
+          {
+            "name": "restore_publisher",
+            "elapsed": 47.09
+          }
+        ],
+        "sample_count": 167,
+        "elapsed_seconds": 99.45945617486723
+      },
+      "accepted_frames": 208,
+      "context_tasks": 120,
+      "tasks_by_generation": {
+        "1": 19,
+        "3": 101
+      },
+      "identity_or_sha256_mismatches": 0,
+      "old_generation_tasks_after_last_native_reset": 0,
+      "native_reset_events": 2,
+      "log_counts": {
+        "buffer transform failed": 0,
+        "Unable to acquire a user meta buffer": 0,
+        "Traceback": 0
+      },
+      "last_metrics": {
+        "elapsed": 96.683,
+        "phase": "recovery",
+        "metrics": {
+          "cctv_processor_frames_processed_total": 1865.0,
+          "cctv_processor_frames_dropped_total": 0.0,
+          "cctv_processor_events_detected_total": 20.0,
+          "cctv_processor_events_sent_total": 0.0,
+          "cctv_processor_events_filtered_total": 1017.0,
+          "cctv_processor_events_failed_total": 20.0,
+          "cctv_processor_fps": 38.18824188585118,
+          "cctv_processor_avg_inference_ms": 6.562,
+          "cctv_processor_yolo_postprocess_avg_ms": 6.562,
+          "cctv_processor_yolo_postprocess_max_ms": 99.951,
+          "cctv_processor_cameras": 1.0,
+          "cctv_processor_primary_metrics_errors_total": 0.0,
+          "cctv_processor_model_metrics_errors_total": 0.0,
+          "cctv_processor_source_error_identified_total": 0.0,
+          "cctv_processor_source_error_unidentified_total": 0.0,
+          "cctv_processor_source_eos_identified_total": 0.0,
+          "cctv_processor_source_eos_unidentified_total": 0.0,
+          "cctv_processor_source_unidentified_stop_total": 0.0,
+          "cctv_processor_source_stream_reset_events_total": 2.0,
+          "cctv_processor_source_stream_reset_unidentified_total": 0.0,
+          "cctv_processor_preview_identity_rejected_total": 0.0,
+          "cctv_processor_preview_frames_stored_total": 205.0,
+          "cctv_processor_pipeline_restart_requested_total": 0.0,
+          "cctv_processor_pipeline_restart_rejected_total": 0.0,
+          "cctv_processor_pipeline_restart_executed_total": 0.0,
+          "cctv_processor_pipeline_restart_failed_total": 0.0,
+          "cctv_processor_pipeline_restart_seconds_total": 0.0,
+          "cctv_camera_primary_frames_seen_total:replay_1": 1865.0,
+          "cctv_camera_primary_frames_inferred_total:replay_1": 933.0,
+          "cctv_camera_primary_frames_skipped_total:replay_1": 932.0,
+          "cctv_camera_primary_frames_inference_unknown_total:replay_1": 0.0,
+          "cctv_camera_primary_last_frame_age_seconds:replay_1": 0.01972418394871056
+        }
+      }
+    },
+    "output": {
+      "experiment": {
+        "scope": "real CLI with one configured RTSP input; preview enabled; primary Pose profile; external output disconnected",
+        "completed_experiment": true,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 21.542
+          },
+          {
+            "name": "stop_publisher",
+            "elapsed": 26.709
+          },
+          {
+            "name": "restore_publisher",
+            "elapsed": 46.773
+          }
+        ],
+        "sample_count": 166,
+        "elapsed_seconds": 99.18903173995204
+      },
+      "accepted_frames": 204,
+      "context_tasks": 128,
+      "tasks_by_generation": {
+        "1": 20,
+        "3": 108
+      },
+      "identity_or_sha256_mismatches": 0,
+      "old_generation_tasks_after_last_native_reset": 0,
+      "native_reset_events": 2,
+      "log_counts": {
+        "buffer transform failed": 0,
+        "Unable to acquire a user meta buffer": 0,
+        "Traceback": 0
+      },
+      "last_metrics": {
+        "elapsed": 96.262,
+        "phase": "recovery",
+        "metrics": {
+          "cctv_processor_frames_processed_total": 2026.0,
+          "cctv_processor_frames_dropped_total": 0.0,
+          "cctv_processor_events_detected_total": 23.0,
+          "cctv_processor_events_sent_total": 0.0,
+          "cctv_processor_events_filtered_total": 1150.0,
+          "cctv_processor_events_failed_total": 23.0,
+          "cctv_processor_fps": 32.0964999955065,
+          "cctv_processor_avg_inference_ms": 5.789,
+          "cctv_processor_yolo_postprocess_avg_ms": 5.789,
+          "cctv_processor_yolo_postprocess_max_ms": 49.937,
+          "cctv_processor_cameras": 1.0,
+          "cctv_processor_primary_metrics_errors_total": 0.0,
+          "cctv_processor_model_metrics_errors_total": 0.0,
+          "cctv_processor_source_error_identified_total": 0.0,
+          "cctv_processor_source_error_unidentified_total": 0.0,
+          "cctv_processor_source_eos_identified_total": 0.0,
+          "cctv_processor_source_eos_unidentified_total": 0.0,
+          "cctv_processor_source_unidentified_stop_total": 0.0,
+          "cctv_processor_source_stream_reset_events_total": 2.0,
+          "cctv_processor_source_stream_reset_unidentified_total": 0.0,
+          "cctv_processor_preview_identity_rejected_total": 0.0,
+          "cctv_processor_preview_frames_stored_total": 201.0,
+          "cctv_processor_pipeline_restart_requested_total": 0.0,
+          "cctv_processor_pipeline_restart_rejected_total": 0.0,
+          "cctv_processor_pipeline_restart_executed_total": 0.0,
+          "cctv_processor_pipeline_restart_failed_total": 0.0,
+          "cctv_processor_pipeline_restart_seconds_total": 0.0,
+          "cctv_camera_primary_frames_seen_total:replay_1": 2026.0,
+          "cctv_camera_primary_frames_inferred_total:replay_1": 1013.0,
+          "cctv_camera_primary_frames_skipped_total:replay_1": 1013.0,
+          "cctv_camera_primary_frames_inference_unknown_total:replay_1": 0.0,
+          "cctv_camera_primary_last_frame_age_seconds:replay_1": 0.06528419116511941
+        }
+      }
+    }
+  },
+  "manifest": "data/runtime/p51_matching_20260928_v043/manifest.json",
+  "limits": [
+    "I28 batch2 CPU preview conversion remains OPEN",
+    "I07 operating model metrics not activated",
+    "Live model quality, crop geometry and sustained IO/reset latency remain unverified",
+    "Pending event metadata bound: 32 frames per camera; reject over 2 seconds old at next access; no image retention in pending map"
+  ],
+  "operating": {
+    "started_at": "2026-09-16T23:45:46.903505745Z",
+    "restart_count": 0,
+    "health": "healthy",
+    "operating_restart_or_config_change": false
+  },
+  "checks": {
+    "ruff": "PASS",
+    "py_compile": "PASS",
+    "repository_diff_check": "Existing unrelated whitespace in docker-compose.jetson.yml:1423/1428; left unchanged",
+    "changed_paths_diff_check": "PASS"
+  },
+  "publication": {
+    "version": "0.43",
+    "wbs_rows": 33,
+    "counts": {
+      "DONE": 9,
+      "BLOCKED": 3,
+      "PLANNED": 13,
+      "VERIFY": 7,
+      "IN_PROGRESS": 1
+    },
+    "local_markdown_links": "PASS",
+    "files": {
+      "index.html": {
+        "sha256": "4b7e03c26b39bec1c38f2f75e264ada7845c7127db6c310a439fa68757142813",
+        "bytes": 22817,
+        "http_bytes_match": true
+      },
+      "CCTV_project_progress.pdf": {
+        "sha256": "1c9162ccd8accf0b0afa170a979a9427cc679738bd4af062b6a728e3540a2296",
+        "bytes": 127753,
+        "http_bytes_match": true
+      }
+    }
+  }
+}

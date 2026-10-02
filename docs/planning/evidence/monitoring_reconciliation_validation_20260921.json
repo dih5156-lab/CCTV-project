@@ -1,0 +1,136 @@
+{
+  "recorded_at": "2026-09-21T03:15:08.232730+00:00",
+  "wbs": "P2.3",
+  "status": "IN_PROGRESS",
+  "plan_version": "0.16",
+  "completed_slice": "frozen source/consumer manifests, ID/hash reconciliation, backlog and bounded monotonic stage timing",
+  "next_slice": "optional lifecycle/periodic execution, local transport adapters and receipt-to-ACK commit timing",
+  "changed_application_and_test_files": [
+    "src/monitoring_snapshot.py",
+    "src/monitoring_reconciliation.py",
+    "src/monitoring_metrics.py",
+    "src/monitoring_worker.py",
+    "tests/test_monitoring_snapshot.py",
+    "tests/test_monitoring_reconciliation.py",
+    "tests/test_monitoring_metrics.py"
+  ],
+  "previous_files_unchanged_except_worker": {
+    "src/ingest_store.py": true,
+    "src/record_delivery.py": true,
+    "src/monitoring_delivery.py": true,
+    "tests/test_monitoring_delivery.py": true,
+    "tests/test_monitoring_worker.py": true,
+    "tests/test_monitoring_sender_crash.py": true,
+    "tests/test_monitoring_delivery_mqtt.py": true,
+    "src/monitoring_contract.py": true,
+    "src/monitoring_receiver.py": true,
+    "tests/test_monitoring_contract.py": true,
+    "tests/test_monitoring_receiver.py": true,
+    "tests/test_monitoring_receiver_integration.py": true
+  },
+  "schema": {
+    "source_user_version_unchanged": 4,
+    "receiver_user_version_unchanged": 1,
+    "new_snapshot_db": {
+      "application_id": 1129598258,
+      "user_version": 1,
+      "tables": [
+        "snapshots",
+        "snapshot_items"
+      ],
+      "journal": "DELETE",
+      "synchronous": "EXTRA"
+    }
+  },
+  "verification": {
+    "passed": 202,
+    "new_tests": 23,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "pytest_reported_seconds": 135.81,
+    "junit": {
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "tests": "202",
+      "time": "135.810",
+      "timestamp": "2026-09-21T12:08:07.228570+09:00",
+      "hostname": "ubuntu"
+    },
+    "ruff_files_passed": 7,
+    "black_check_files_passed": 7,
+    "py_compile_files_passed": 7,
+    "markdown_files": 23,
+    "local_links_checked": 430,
+    "wbs_rows": 33,
+    "wbs_states": {
+      "DONE": 7,
+      "BLOCKED": 2,
+      "READY": 2,
+      "IN_PROGRESS": 1,
+      "PLANNED": 14,
+      "VERIFY": 7
+    },
+    "links_anchors_dependencies_cycle_whitespace": "PASS"
+  },
+  "process_failure": {
+    "exit_code": 42,
+    "boundary": "after first manifest item insert before transaction commit",
+    "result": "header and items rolled back; re-created snapshot succeeds"
+  },
+  "sample": {
+    "video_events": 10,
+    "sensor_observations": 10,
+    "missing_before": 20,
+    "matched_after": 20,
+    "stored": 20,
+    "timing_samples": {
+      "consumer_lookup": 40,
+      "mqtt_publish": 20,
+      "consumer_ack_commit": 20
+    },
+    "transport": "in-process simulated broker/PUBACK",
+    "clock": "real monotonic",
+    "performance_acceptance": false
+  },
+  "initial_failures": [
+    "expected missing snapshot module",
+    "test import order fixed by Ruff"
+  ],
+  "not_done": [
+    "service lifecycle and periodic execution",
+    "network consumer adapter/auth",
+    "receipt/normalization commit markers and receipt-to-ACK commit latency",
+    "general device/period history filters",
+    "manifest retention/cleanup and capacity tests",
+    "receiver duplicate-attempt telemetry",
+    "actual monitoring UI",
+    "load/capacity and power failure"
+  ],
+  "operations_changed": false,
+  "production_db_changed": false,
+  "new_dependencies_or_configuration": false,
+  "real_mqtt_this_slice": false,
+  "gpu_or_physical_device_tests": false,
+  "open_decisions": [
+    "D04",
+    "D06"
+  ],
+  "issues_kept_open": [
+    "I10",
+    "I13",
+    "I17"
+  ],
+  "graph_review": "7 changed files; 0 indexed functions/flows; current source and tests reviewed",
+  "source_sha256": {
+    "src/monitoring_snapshot.py": "5d0d5955541586d5e6d95aff0877d8bfb34b464630b16769b7302697b735b7a8",
+    "src/monitoring_reconciliation.py": "ba657286c0fbe957efa294d3764a294e6c5bc6706550bd9058e3467a2dc29594",
+    "src/monitoring_metrics.py": "d49738c82b690b691f5d299e4d95895a62eef2355bc240feed06b204a6f7859d",
+    "src/monitoring_worker.py": "28625263755d90b255a9379cfda3b354d53384145bc7cc10a84afab5e086b235",
+    "tests/test_monitoring_snapshot.py": "2fc8d284feb6b28553ac7133fc52c2fd3fd9a3bb4cbd83ddb13281cce89e3d6f",
+    "tests/test_monitoring_reconciliation.py": "60489a0d6eba2df93b345d5e26ab4631870e132d767158dda9ab9ecb3a258fbb",
+    "tests/test_monitoring_metrics.py": "02144099580a1dd848dc2ea3031754055728caf4a68ec356cb4f0218be8c54eb"
+  }
+}

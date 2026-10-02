@@ -1,0 +1,397 @@
+{
+  "version": "0.59",
+  "date": "2026-09-29",
+  "fixture": "data/runtime/p51_content_20260929_v059",
+  "experiment": {
+    "scope": "one local RTSP input, IOU, full candidate models, captured real camera video replay; no live camera connection",
+    "input": "/baseline/camera_1_capture.mkv",
+    "completed_experiment": true,
+    "receiver_exit": 0,
+    "output_bytes": 10379904,
+    "app_alive": true,
+    "continuous_publisher_alive": true,
+    "restored_publisher_alive": true,
+    "transitions": [
+      {
+        "name": "input_ready",
+        "elapsed": 15.458
+      },
+      {
+        "name": "output_ready",
+        "elapsed": 15.881
+      }
+    ],
+    "sample_count": 93,
+    "elapsed_seconds": 63.82464923406951
+  },
+  "identity": {
+    "key_fields": [
+      "camera_id",
+      "source_id",
+      "frame_num",
+      "source_pts_ns",
+      "generation",
+      "frame_token"
+    ],
+    "context_observations": 327,
+    "cpu_observations": 368,
+    "identity_hash_mismatches": 0,
+    "native_preview_pairs": 11,
+    "native_pts_matches": [
+      0,
+      10,
+      1000,
+      14,
+      18,
+      300,
+      4,
+      6,
+      7,
+      8,
+      900
+    ],
+    "limits": "buffer_pts_ns is a downstream transport timestamp present only in CPU observation; not part of canonical source identity"
+  },
+  "pixel_pairs": [
+    {
+      "frame": 0,
+      "native": "tracker_0.jpg",
+      "preview": "cpu_g1_0.png",
+      "blurred_mae": 7.499,
+      "correlation": 0.992132
+    },
+    {
+      "frame": 10,
+      "native": "tracker_10.jpg",
+      "preview": "cpu_g1_10.png",
+      "blurred_mae": 7.45,
+      "correlation": 0.992231
+    },
+    {
+      "frame": 1000,
+      "native": "tracker_1000.jpg",
+      "preview": "cpu_g1_1000.png",
+      "blurred_mae": 7.464,
+      "correlation": 0.991238
+    },
+    {
+      "frame": 14,
+      "native": "tracker_14.jpg",
+      "preview": "cpu_g1_14.png",
+      "blurred_mae": 7.469,
+      "correlation": 0.992032
+    },
+    {
+      "frame": 18,
+      "native": "tracker_18.jpg",
+      "preview": "cpu_g1_18.png",
+      "blurred_mae": 7.468,
+      "correlation": 0.99199
+    },
+    {
+      "frame": 300,
+      "native": "tracker_300.jpg",
+      "preview": "cpu_g1_300.png",
+      "blurred_mae": 7.478,
+      "correlation": 0.991756
+    },
+    {
+      "frame": 4,
+      "native": "tracker_4.jpg",
+      "preview": "cpu_g1_4.png",
+      "blurred_mae": 7.46,
+      "correlation": 0.992242
+    },
+    {
+      "frame": 6,
+      "native": "tracker_6.jpg",
+      "preview": "cpu_g1_6.png",
+      "blurred_mae": 7.512,
+      "correlation": 0.991073
+    },
+    {
+      "frame": 7,
+      "native": "tracker_7.jpg",
+      "preview": "cpu_g1_7.png",
+      "blurred_mae": 7.357,
+      "correlation": 0.99354
+    },
+    {
+      "frame": 8,
+      "native": "tracker_8.jpg",
+      "preview": "cpu_g1_8.png",
+      "blurred_mae": 7.48,
+      "correlation": 0.992042
+    },
+    {
+      "frame": 900,
+      "native": "tracker_900.jpg",
+      "preview": "cpu_g1_900.png",
+      "blurred_mae": 7.494,
+      "correlation": 0.990712
+    }
+  ],
+  "visual_review": {
+    "frames": [
+      0,
+      1000
+    ],
+    "finding": "same scene and person box position; no gross distortion in reviewed samples",
+    "limits": "JPEG/scale/OSD differ; correlation is descriptive, not accuracy threshold or exact-pixel equality"
+  },
+  "relative_drift": {
+    "light15": {
+      "samples": 140,
+      "wall_seconds": 19.923,
+      "source_pts_seconds": 20.267,
+      "relative_backlog_growth_seconds": -0.343
+    },
+    "light2997": {
+      "samples": 161,
+      "wall_seconds": 19.82,
+      "source_pts_seconds": 19.182,
+      "relative_backlog_growth_seconds": 0.638
+    },
+    "light15_repeat": {
+      "samples": 143,
+      "wall_seconds": 19.907,
+      "source_pts_seconds": 19.999,
+      "relative_backlog_growth_seconds": -0.092
+    },
+    "content_heavy": {
+      "samples": 164,
+      "wall_seconds": 19.938,
+      "source_pts_seconds": 20.651,
+      "relative_backlog_growth_seconds": -0.713
+    }
+  },
+  "source_manifest": "data/runtime/p51_content_20260929_v059/candidate_manifest.json",
+  "source_archive_file_count": 357,
+  "source_archive_sha256": "38d74eaa61d4a28bbf90e0d1e90ef52955712ad9a74e70d5d9f44dab7ce247de",
+  "model_hashes_rechecked": 8,
+  "workspace_differences": [
+    "scripts/ops/render_progress_snapshot.py (documentation renderer only)"
+  ],
+  "db_copy": {
+    "source_open_mode": "ro",
+    "source_file": "/media/sawwave/Learning11/CCTV-project/data/runtime/appearances.db",
+    "backup_bytes": 599642112,
+    "existing_rows": 485568,
+    "existing_projection_sha256": "10c7137edd3d2162f221c5d9c1080ef64c7934ec2f9e4f1771c5391f2849db6b",
+    "rows_and_values_preserved": true,
+    "added_columns": [
+      "track_id_text"
+    ],
+    "large_id_roundtrips": 3,
+    "backup_unchanged": true,
+    "quick_check": "ok",
+    "elapsed_seconds": 67.853,
+    "limits": "copy migration only; no operating DB write, no previous operating code rollback validation",
+    "operating_env_path_verified": "/app/data/runtime/appearances.db"
+  },
+  "media": {
+    "probe": {
+      "programs": [],
+      "streams": [
+        {
+          "r_frame_rate": "30/1",
+          "avg_frame_rate": "30/1",
+          "nb_read_frames": "466"
+        }
+      ],
+      "format": {
+        "duration": "20.205000"
+      }
+    },
+    "probe_exit": 0,
+    "probe_stderr_bytes": 0,
+    "decode_exit": 0,
+    "decode_stderr_bytes": 0
+  },
+  "stats": {
+    "frames_processed": 1141,
+    "inference_errors": 0,
+    "context_identity_rejected": 0,
+    "context_frames_matched": 327,
+    "pipeline_restart_executed": 0,
+    "model_inference_stats": {
+      "pipeline_generation": 1,
+      "metadata_errors": 0,
+      "models": {
+        "primary": {
+          "enabled": true,
+          "properties": {
+            "unique-id": 1,
+            "process-mode": 1,
+            "batch-size": 1,
+            "interval": 1,
+            "output-tensor-meta": true
+          },
+          "property_observed_at": "pipeline_build",
+          "cameras": {
+            "replay_1": {
+              "frames_seen": 1141,
+              "frames_tensor_output": 571,
+              "frames_no_objects": 0,
+              "frames_classifier_only": 0,
+              "frames_unobserved": 570,
+              "frames_unknown": 0,
+              "objects_with_tensor": 0,
+              "objects_classifier_only": 0,
+              "last_frame_age_seconds": 0.015911485999822617,
+              "last_tensor_age_seconds": 0.015911485999822617
+            }
+          },
+          "unique_id_conflict": false
+        },
+        "pose": {
+          "enabled": false,
+          "properties": {
+            "unique-id": null,
+            "process-mode": null,
+            "batch-size": null,
+            "interval": null,
+            "output-tensor-meta": null
+          },
+          "property_observed_at": "pipeline_build",
+          "cameras": {
+            "replay_1": {
+              "frames_seen": 0,
+              "frames_tensor_output": 0,
+              "frames_no_objects": 0,
+              "frames_classifier_only": 0,
+              "frames_unobserved": 0,
+              "frames_unknown": 0,
+              "objects_with_tensor": 0,
+              "objects_classifier_only": 0,
+              "last_frame_age_seconds": null,
+              "last_tensor_age_seconds": null
+            }
+          },
+          "unique_id_conflict": false
+        },
+        "attributes": {
+          "enabled": true,
+          "properties": {
+            "unique-id": 3,
+            "process-mode": 2,
+            "batch-size": 1,
+            "interval": 4,
+            "output-tensor-meta": true
+          },
+          "property_observed_at": "pipeline_build",
+          "cameras": {
+            "replay_1": {
+              "frames_seen": 1141,
+              "frames_tensor_output": 571,
+              "frames_no_objects": 0,
+              "frames_classifier_only": 0,
+              "frames_unobserved": 570,
+              "frames_unknown": 0,
+              "objects_with_tensor": 571,
+              "objects_classifier_only": 0,
+              "last_frame_age_seconds": 0.015911485999822617,
+              "last_tensor_age_seconds": 0.015911485999822617
+            }
+          },
+          "unique_id_conflict": false
+        },
+        "helmet": {
+          "enabled": true,
+          "properties": {
+            "unique-id": 2,
+            "process-mode": 2,
+            "batch-size": 1,
+            "interval": 1,
+            "output-tensor-meta": true
+          },
+          "property_observed_at": "pipeline_build",
+          "cameras": {
+            "replay_1": {
+              "frames_seen": 1141,
+              "frames_tensor_output": 571,
+              "frames_no_objects": 0,
+              "frames_classifier_only": 0,
+              "frames_unobserved": 570,
+              "frames_unknown": 0,
+              "objects_with_tensor": 571,
+              "objects_classifier_only": 0,
+              "last_frame_age_seconds": 0.015911485999822617,
+              "last_tensor_age_seconds": 0.015911485999822617
+            }
+          },
+          "unique_id_conflict": false
+        }
+      }
+    },
+    "falldata_inline_stats": {
+      "enabled": true,
+      "cameras": {}
+    },
+    "falldata_temporal_stats": {
+      "requests": 1,
+      "process_calls": 1,
+      "process_completed": 1,
+      "process_seconds": 15.278142818016931,
+      "parsed_results": 1,
+      "unparsed_results": 0,
+      "insufficient_pose_results": 1,
+      "insufficient_window_results": 0,
+      "window_reports_missing": 0,
+      "window_inferences": 1
+    },
+    "appearance_backend_stats": {
+      "color_backend": {
+        "requests": 531,
+        "completed": 530,
+        "seconds": 23.852389483246952
+      },
+      "attribute_backend": {
+        "requests": 325,
+        "completed": 325,
+        "seconds": 0.0018834101501852274
+      }
+    }
+  },
+  "production_after": {
+    "status": "running",
+    "health": "healthy",
+    "started_at": "2026-09-16T23:45:46.903505745Z",
+    "restart_count": 0,
+    "test_containers_remaining": 0
+  },
+  "preparation_findings": [
+    "first start blocked by missing known_faces.json mountpoint in readonly /app; empty mountpoint added, source archive unchanged",
+    "initial comparison included downstream-only buffer_pts_ns; corrected to documented six-field identity; all327 hashes/identities match"
+  ],
+  "validation": {
+    "source_archive_members": "PASS",
+    "source_files_after_execution": "PASS",
+    "model_hashes": "PASS",
+    "fixture_syntax": "PASS",
+    "new_product_code_changes": false,
+    "unit_tests": "not repeated: no product change; v0.58 167PASS/2SKIP remains prior evidence",
+    "wbs_33_rows_counts": "PASS",
+    "renderer_ruff_syntax": "PASS",
+    "diff_check_docs_renderer": "PASS"
+  },
+  "limits": [
+    "one recorded scene and one short trial; no new real-person/full-body test",
+    "relative backlog is not absolute end-to-end latency, no duration or threshold acceptance",
+    "new candidate snapshot is not previous production rollback; operating code image/env/DB transition remains untested",
+    "DB copy verification covers appearance_log only; private raw backup is not published"
+  ],
+  "next": "I32 light long-window backlog check; finalize operating candidate and rollback scope before I07 activation",
+  "publication": {
+    "HTML": {
+      "bytes": 22719,
+      "sha256": "fcfcd1a1e6cdc258eab12decbd90911787f85002f43b302d65fbfd22961926df",
+      "matches": true
+    },
+    "PDF": {
+      "bytes": 127120,
+      "sha256": "9ccd31e3aece27f7c85dae62c8bf3a869aac218e3f9e6189bfa800979f6ee315",
+      "matches": true
+    }
+  }
+}

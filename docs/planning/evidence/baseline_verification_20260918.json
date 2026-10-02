@@ -1,0 +1,114 @@
+{
+  "captured_at": "2026-09-18T09:45:27.381362+09:00",
+  "camera_config_count": 1,
+  "camera_safe_fields": [
+    {
+      "id": "camera_1",
+      "name": "현장 CCTV",
+      "enabled": true
+    }
+  ],
+  "local_model_assets": [
+    {
+      "path": "models/fall/yolov8n-pose.engine",
+      "exists": true,
+      "size": 8956700,
+      "sha256": "cc6cd0ee490e4f2ae46acf853989cf8c8806aadab47853e39c1e97cdf6732a74"
+    },
+    {
+      "path": "models/head/helmet_model.engine",
+      "exists": true,
+      "size": 8173652,
+      "sha256": "618c54a48d43844662fb3635d9fed3dc3bdf6e2c6018e6de09a52265a6ea19f6"
+    },
+    {
+      "path": "models/appearance/pa100k_resnet50_attr.engine",
+      "exists": true,
+      "size": 60557540,
+      "sha256": "151d44ea5e120b6b703c3605f2ea807eb892031190c43c26be9fb368dd8ecd0a"
+    },
+    {
+      "path": "models/appearance/appearance_color_yolov8n.engine",
+      "exists": true,
+      "size": 3874876,
+      "sha256": "26a24c630d496ce7d075bf9e996e4d2b8469b0c55d263dcbbbebb1fd79cfaae1"
+    },
+    {
+      "path": "models/fall/fall_temporal_same_split_resume_20260908.pt",
+      "exists": true,
+      "size": 31259,
+      "sha256": "8cf336f8080122cca0f6369c1b2c6edc099624f9ce8c4647915a6eab0d445e22"
+    },
+    {
+      "path": "models/experiments/yolo_pose_fall_cam2_continuous_200_80_640.pkl",
+      "exists": true,
+      "size": 2545406,
+      "sha256": "0fd6610ee86d9263e402b82e6607da0ff361a39ab0487a7cb0f6edd019195397"
+    }
+  ],
+  "runtime_model_path_observation": {
+    "container": "cctv-ai-engine",
+    "FALLDATA_AUX_COMPARE_MODEL_PATH": "models/experiments/yolo_pose_fall_cam2_continuous_200_80_640.pkl",
+    "FALLDATA_AUX_COMPARE_MODEL_KIND": "yolo_pose_rf",
+    "FALLDATA_AUX_MODEL_PATH": null,
+    "DS_PRIMARY_CONFIG_PATH": null,
+    "DS_INFER_INTERVAL": null
+  },
+  "tests": {
+    "groups": {
+      "tests.test_canonical_event": {
+        "passed": 4,
+        "failed": 0,
+        "skipped": 0
+      },
+      "tests.test_http_outbox": {
+        "passed": 2,
+        "failed": 0,
+        "skipped": 0
+      },
+      "tests.test_mqtt_outbox": {
+        "passed": 3,
+        "failed": 0,
+        "skipped": 0
+      },
+      "tests.test_sensor_rule_bridge": {
+        "passed": 8,
+        "failed": 0,
+        "skipped": 0
+      },
+      "tests.test_edgex_device_service_contracts": {
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0
+      },
+      "tests.test_deepstream_primary_metrics": {
+        "passed": 23,
+        "failed": 0,
+        "skipped": 0
+      },
+      "tests.test_check_compose_runtime_assumptions": {
+        "passed": 36,
+        "failed": 1,
+        "skipped": 0
+      },
+      "parser-python.tests.test_tlv_parser": {
+        "passed": 16,
+        "failed": 0,
+        "skipped": 0
+      },
+      "parser-python.tests.test_edgex_outbox": {
+        "passed": 7,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    "failures": [
+      "tests.test_check_compose_runtime_assumptions::test_edgex_mode_rollback_contract_accepts_direct_base_and_signboard_uat"
+    ],
+    "scope": "9 selected test files, CPU/mock/temp SQLite, not full test suite or physical device tests"
+  },
+  "limitations": [
+    "Local model hashes identify files, not proof of which artifact is loaded in GPU/process memory.",
+    "Camera configuration count is not a live frame/connection test."
+  ]
+}

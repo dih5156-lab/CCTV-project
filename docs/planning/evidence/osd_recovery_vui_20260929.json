@@ -1,0 +1,517 @@
+{
+  "version": "0.58",
+  "date": "2026-09-29",
+  "fixture": "data/runtime/p51_recovery_20260929_v058",
+  "scope": "CPU OSD, network-none, single local RTSP replay, 25-second publisher outage, new receiver before and after recovery; no production or device output",
+  "source_sha256": "7b5eb9ee6d93f5ac7c16465dd3ec64eec0a490d2b406fa95ad40cd1b966b31a7",
+  "candidate_sha256": "7b5eb9ee6d93f5ac7c16465dd3ec64eec0a490d2b406fa95ad40cd1b966b31a7",
+  "trials": {
+    "fixed15": {
+      "experiment": {
+        "scope": "one local RTSP input, IOU, full candidate models, bounded publisher stop/restart experiment",
+        "input": "/previous/fall_clip.mp4",
+        "completed_experiment": true,
+        "receivers": {
+          "before": {
+            "exit": 0,
+            "bytes": 3419557
+          },
+          "after": {
+            "exit": 0,
+            "bytes": 4014845
+          }
+        },
+        "app_alive": true,
+        "outage_publisher_stopped": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 21.518,
+            "monotonic": 1131075.266197725
+          },
+          {
+            "name": "publisher_stop_requested",
+            "elapsed": 42.331,
+            "monotonic": 1131096.078957548
+          },
+          {
+            "name": "publisher_stopped",
+            "elapsed": 42.381,
+            "monotonic": 1131096.129145295
+          },
+          {
+            "name": "publisher_restarted",
+            "elapsed": 67.442,
+            "monotonic": 1131121.190561343
+          },
+          {
+            "name": "frames_resumed",
+            "elapsed": 78.426,
+            "monotonic": 1131132.173915234
+          }
+        ],
+        "sample_count": 171,
+        "elapsed_seconds": 112.25251582288183
+      },
+      "recovery_seconds": 10.984,
+      "recovery_criterion": "primary counter increased by more than10 since outage end; excludes25-second imposed outage",
+      "cpu_frame_generations": [
+        1,
+        3
+      ],
+      "post_recovery_generations": [
+        3
+      ],
+      "post_recovery_preview_count": 178,
+      "stats": {
+        "frames_processed": 719,
+        "source_stream_reset_events": 2,
+        "pipeline_restart_executed": 0,
+        "pipeline_restart_failed": 0,
+        "inference_errors": 0,
+        "context_frames_matched": 273
+      },
+      "buffer_observation": {
+        "before": {
+          "count": 286,
+          "max_gap_seconds": 0.968
+        },
+        "after": {
+          "count": 363,
+          "max_gap_seconds": 0.333
+        }
+      },
+      "media": {
+        "before": {
+          "probe": {
+            "programs": [],
+            "streams": [
+              {
+                "r_frame_rate": "30/1",
+                "avg_frame_rate": "30/1",
+                "nb_read_frames": "134"
+              }
+            ],
+            "format": {
+              "duration": "8.165000"
+            }
+          },
+          "probe_exit": 0,
+          "probe_stderr_bytes": 0,
+          "decode_exit": 0,
+          "decode_stderr_bytes": 0,
+          "timing_fields": [
+            "85          vui_parameters_present_flag                                 1 = 1",
+            "119         timing_info_present_flag                                    1 = 1",
+            "120         num_units_in_tick            00000000000000000000000000000001 = 1",
+            "152         time_scale                   00000000000000000000000000111100 = 60",
+            "184         fixed_frame_rate_flag                                       1 = 1"
+          ]
+        },
+        "after": {
+          "probe": {
+            "programs": [],
+            "streams": [
+              {
+                "r_frame_rate": "30/1",
+                "avg_frame_rate": "30/1",
+                "nb_read_frames": "151"
+              }
+            ],
+            "format": {
+              "duration": "8.572000"
+            }
+          },
+          "probe_exit": 0,
+          "probe_stderr_bytes": 0,
+          "decode_exit": 0,
+          "decode_stderr_bytes": 0,
+          "timing_fields": [
+            "85          vui_parameters_present_flag                                 1 = 1",
+            "119         timing_info_present_flag                                    1 = 1",
+            "120         num_units_in_tick            00000000000000000000000000000001 = 1",
+            "152         time_scale                   00000000000000000000000000111100 = 60",
+            "184         fixed_frame_rate_flag                                       1 = 1"
+          ]
+        }
+      }
+    },
+    "fixed2997": {
+      "experiment": {
+        "scope": "one local RTSP input, IOU, full candidate models, bounded publisher stop/restart experiment",
+        "input": "/baseline/camera_1_capture.mkv",
+        "completed_experiment": true,
+        "receivers": {
+          "before": {
+            "exit": 0,
+            "bytes": 3364122
+          },
+          "after": {
+            "exit": 0,
+            "bytes": 4314019
+          }
+        },
+        "app_alive": true,
+        "outage_publisher_stopped": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 13.398,
+            "monotonic": 1131351.469072268
+          },
+          {
+            "name": "publisher_stop_requested",
+            "elapsed": 34.335,
+            "monotonic": 1131372.406509191
+          },
+          {
+            "name": "publisher_stopped",
+            "elapsed": 34.374,
+            "monotonic": 1131372.444730116
+          },
+          {
+            "name": "publisher_restarted",
+            "elapsed": 59.441,
+            "monotonic": 1131397.511525071
+          },
+          {
+            "name": "frames_resumed",
+            "elapsed": 67.235,
+            "monotonic": 1131405.306095973
+          }
+        ],
+        "sample_count": 157,
+        "elapsed_seconds": 101.15825770888478
+      },
+      "recovery_seconds": 7.794,
+      "recovery_criterion": "primary counter increased by more than10 since outage end; excludes25-second imposed outage",
+      "cpu_frame_generations": [
+        1,
+        3
+      ],
+      "post_recovery_generations": [
+        3
+      ],
+      "post_recovery_preview_count": 206,
+      "stats": {
+        "frames_processed": 1033,
+        "source_stream_reset_events": 2,
+        "pipeline_restart_executed": 0,
+        "pipeline_restart_failed": 0,
+        "inference_errors": 0,
+        "context_frames_matched": 370
+      },
+      "buffer_observation": {
+        "before": {
+          "count": 358,
+          "max_gap_seconds": 1.079
+        },
+        "after": {
+          "count": 463,
+          "max_gap_seconds": 0.584
+        }
+      },
+      "media": {
+        "before": {
+          "probe": {
+            "programs": [],
+            "streams": [
+              {
+                "r_frame_rate": "30/1",
+                "avg_frame_rate": "30/1",
+                "nb_read_frames": "140"
+              }
+            ],
+            "format": {
+              "duration": "8.167000"
+            }
+          },
+          "probe_exit": 0,
+          "probe_stderr_bytes": 0,
+          "decode_exit": 0,
+          "decode_stderr_bytes": 0,
+          "timing_fields": [
+            "85          vui_parameters_present_flag                                 1 = 1",
+            "119         timing_info_present_flag                                    1 = 1",
+            "120         num_units_in_tick            00000000000000000000000000000001 = 1",
+            "152         time_scale                   00000000000000000000000000111100 = 60",
+            "184         fixed_frame_rate_flag                                       1 = 1"
+          ]
+        },
+        "after": {
+          "probe": {
+            "programs": [],
+            "streams": [
+              {
+                "r_frame_rate": "30/1",
+                "avg_frame_rate": "30/1",
+                "nb_read_frames": "183"
+              }
+            ],
+            "format": {
+              "duration": "8.217000"
+            }
+          },
+          "probe_exit": 0,
+          "probe_stderr_bytes": 0,
+          "decode_exit": 0,
+          "decode_stderr_bytes": 0,
+          "timing_fields": [
+            "85          vui_parameters_present_flag                                 1 = 1",
+            "119         timing_info_present_flag                                    1 = 1",
+            "120         num_units_in_tick            00000000000000000000000000000001 = 1",
+            "152         time_scale                   00000000000000000000000000111100 = 60",
+            "184         fixed_frame_rate_flag                                       1 = 1"
+          ]
+        }
+      }
+    },
+    "repeat15": {
+      "experiment": {
+        "scope": "one local RTSP input, IOU, full candidate models, bounded publisher stop/restart experiment",
+        "input": "/previous/fall_clip.mp4",
+        "completed_experiment": true,
+        "receivers": {
+          "before": {
+            "exit": 0,
+            "bytes": 4347686
+          },
+          "after": {
+            "exit": 0,
+            "bytes": 4386635
+          }
+        },
+        "app_alive": true,
+        "outage_publisher_stopped": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 27.505,
+            "monotonic": 1131577.967315682
+          },
+          {
+            "name": "publisher_stop_requested",
+            "elapsed": 48.743,
+            "monotonic": 1131599.205192298
+          },
+          {
+            "name": "publisher_stopped",
+            "elapsed": 48.808,
+            "monotonic": 1131599.270261509
+          },
+          {
+            "name": "publisher_restarted",
+            "elapsed": 74.338,
+            "monotonic": 1131624.80008272
+          },
+          {
+            "name": "frames_resumed",
+            "elapsed": 85.262,
+            "monotonic": 1131635.725032692
+          }
+        ],
+        "sample_count": 175,
+        "elapsed_seconds": 118.88981397799216
+      },
+      "recovery_seconds": 10.924,
+      "recovery_criterion": "primary counter increased by more than10 since outage end; excludes25-second imposed outage",
+      "cpu_frame_generations": [
+        1,
+        3
+      ],
+      "post_recovery_generations": [
+        3
+      ],
+      "post_recovery_preview_count": 180,
+      "stats": {
+        "frames_processed": 725,
+        "source_stream_reset_events": 2,
+        "pipeline_restart_executed": 0,
+        "pipeline_restart_failed": 0,
+        "inference_errors": 0,
+        "context_frames_matched": 250
+      },
+      "buffer_observation": {
+        "before": {
+          "count": 305,
+          "max_gap_seconds": 0.604
+        },
+        "after": {
+          "count": 341,
+          "max_gap_seconds": 0.615
+        }
+      },
+      "media": {
+        "before": {
+          "probe": {
+            "programs": [],
+            "streams": [
+              {
+                "r_frame_rate": "30/1",
+                "avg_frame_rate": "30/1",
+                "nb_read_frames": "178"
+              }
+            ],
+            "format": {
+              "duration": "8.206000"
+            }
+          },
+          "probe_exit": 0,
+          "probe_stderr_bytes": 0,
+          "decode_exit": 0,
+          "decode_stderr_bytes": 0,
+          "timing_fields": [
+            "85          vui_parameters_present_flag                                 1 = 1",
+            "119         timing_info_present_flag                                    1 = 1",
+            "120         num_units_in_tick            00000000000000000000000000000001 = 1",
+            "152         time_scale                   00000000000000000000000000111100 = 60",
+            "184         fixed_frame_rate_flag                                       1 = 1"
+          ]
+        },
+        "after": {
+          "probe": {
+            "programs": [],
+            "streams": [
+              {
+                "r_frame_rate": "30/1",
+                "avg_frame_rate": "30/1",
+                "nb_read_frames": "178"
+              }
+            ],
+            "format": {
+              "duration": "8.199000"
+            }
+          },
+          "probe_exit": 0,
+          "probe_stderr_bytes": 0,
+          "decode_exit": 0,
+          "decode_stderr_bytes": 0,
+          "timing_fields": [
+            "85          vui_parameters_present_flag                                 1 = 1",
+            "119         timing_info_present_flag                                    1 = 1",
+            "120         num_units_in_tick            00000000000000000000000000000001 = 1",
+            "152         time_scale                   00000000000000000000000000111100 = 60",
+            "184         fixed_frame_rate_flag                                       1 = 1"
+          ]
+        }
+      }
+    }
+  },
+  "baseline": {
+    "experiment": {
+      "scope": "one local RTSP input, IOU, full candidate models, bounded publisher stop/restart experiment",
+      "input": "/previous/fall_clip.mp4",
+      "completed_experiment": false,
+      "receivers": {
+        "before": {
+          "exit": 1,
+          "bytes": 0
+        },
+        "after": {
+          "exit": 0,
+          "bytes": 3676645
+        }
+      },
+      "error": "before/after RTSP receiver did not finish",
+      "transitions": [
+        {
+          "name": "input_ready",
+          "elapsed": 11.306,
+          "monotonic": 1130726.039288017
+        },
+        {
+          "name": "publisher_stop_requested",
+          "elapsed": 31.489,
+          "monotonic": 1130746.222413344
+        },
+        {
+          "name": "publisher_stopped",
+          "elapsed": 31.558,
+          "monotonic": 1130746.290908956
+        },
+        {
+          "name": "publisher_restarted",
+          "elapsed": 57.037,
+          "monotonic": 1130771.770783705
+        },
+        {
+          "name": "frames_resumed",
+          "elapsed": 68.004,
+          "monotonic": 1130782.737014222
+        }
+      ],
+      "sample_count": 162,
+      "elapsed_seconds": 97.91887774388306
+    },
+    "finding": "before receiver got404 because test driver did not wait for published RTSP path; test driver fixed; not a production-code failure or a passed end-to-end trial",
+    "media": {
+      "after": {
+        "probe": {
+          "programs": [],
+          "streams": [
+            {
+              "r_frame_rate": "30/1",
+              "avg_frame_rate": "30/1",
+              "nb_read_frames": "147"
+            }
+          ],
+          "format": {
+            "duration": "7.937000"
+          }
+        },
+        "probe_exit": 0,
+        "probe_stderr_bytes": 0,
+        "decode_exit": 0,
+        "decode_stderr_bytes": 0,
+        "timing_fields": [
+          "85          vui_parameters_present_flag                                 0 = 0"
+        ]
+      }
+    }
+  },
+  "validation": {
+    "red_before_fix": {
+      "failed": 4,
+      "passed": 4
+    },
+    "unit_tests": {
+      "passed": 167,
+      "skipped": 2
+    },
+    "ruff": "PASS",
+    "syntax_fixture_and_config": "PASS",
+    "diff_check_source_tests": "PASS",
+    "wbs33_status_count": "PASS",
+    "renderer_ruff_syntax": "PASS",
+    "diff_check_source_test_docs": "PASS"
+  },
+  "production_after": {
+    "status": "running",
+    "health": "healthy",
+    "started_at": "2026-09-16T23:45:46.903505745Z",
+    "restart_count": 0,
+    "test_containers_remaining": 0
+  },
+  "limits": [
+    "nominal30fps SPS/stream metadata is not measured AI FPS or guaranteed30 frames per second",
+    "single recorded input; no live camera absolute latency, multi-camera or long-run acceptance",
+    "fresh receiver on each side of outage; continuity of an already-connected external client is not tested",
+    "generation identity checked; this turn does not add image-hash or accuracy validation"
+  ],
+  "source_url": "https://docs.nvidia.com/jetson/archives/r36.4.4/DeveloperGuide/SD/Multimedia/AcceleratedGstreamer.html",
+  "publication": {
+    "HTML": {
+      "bytes": 22673,
+      "sha256": "34f15d97daa528b1800c1d189958c1d911e37562cdf2ee3b9843b5bb526914bb",
+      "matches": true
+    },
+    "PDF": {
+      "bytes": 124871,
+      "sha256": "0081d445165db98653493c9e742605114a660bd1eb1b3bbc61e6338f85d1316a",
+      "matches": true
+    }
+  }
+}

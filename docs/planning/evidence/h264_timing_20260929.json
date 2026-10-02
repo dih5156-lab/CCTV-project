@@ -1,0 +1,195 @@
+{
+  "version": "0.54",
+  "date": "2026-09-29",
+  "issue": "I33",
+  "status": "FIXED_LOCAL",
+  "fixture": "data/runtime/p51_timing_20260928_v054",
+  "cause": "streammux output caps 0/1 reach H264 encoder; invalid timing already present before parser and RTSP",
+  "diagnosis": {
+    "stages": {
+      "converter_input": {
+        "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+        "pts": 1249267635,
+        "duration": 18446744073709551615
+      },
+      "encoder_input": {
+        "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+        "pts": 1249267635,
+        "duration": 18446744073709551615
+      },
+      "encoder_output": {
+        "caps": "video/x-h264, stream-format=(string)byte-stream, alignment=(string)au, profile=(string)NULL, level=(string)NULL, width=(int)1920, height=(int)1080, pixel-aspect-ratio=(fraction)1/1, framerate=(fraction)0/1, interlace-mode=(string)progressive, colorimetry=(string)bt709, chroma-site=(string)mpeg2, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono",
+        "pts": 1249267635,
+        "duration": 18446744073709551615
+      },
+      "parser_output": {
+        "caps": "video/x-h264, stream-format=(string)byte-stream, alignment=(string)au, profile=(string)constrained-baseline, level=(string)4, width=(int)1920, height=(int)1080, pixel-aspect-ratio=(fraction)1/1, framerate=(fraction)0/1, interlace-mode=(string)progressive, colorimetry=(string)bt709, chroma-site=(string)mpeg2, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, chroma-format=(string)4:2:0, bit-depth-luma=(uint)8, bit-depth-chroma=(uint)8, parsed=(boolean)true",
+        "pts": 1249267635,
+        "duration": 18446744073709551615
+      }
+    },
+    "explicit_fps_only": "negotiation failed, no output",
+    "drop_only_videorate": "negotiation failed for 0/1 input, no output",
+    "bounded_videorate": "encoder/parser num_units_in_tick=1,time_scale=60; initial receiver 404 startup race",
+    "trial_success_contract": "fixed driver waits DESCRIBE 200 before receiver and requires receiver exit0/nonempty file"
+  },
+  "fix": {
+    "source": "src/core/_deepstream_pipeline_builder.py",
+    "output_branch_only": true,
+    "fps": "max(1,DS_H264_FPS), default30",
+    "rate_policy": "videorate,drop-only=false,skip-to-first=true,max-duplication-time=100000000ns",
+    "preserved": "POC setting, input inference, tracking, DB schema, deployment config"
+  },
+  "fixed_run": {
+    "experiment": {
+      "scope": "one local RTSP input, IOU, full candidate models, captured real camera video replay; no live camera connection",
+      "input": "/baseline/camera_1_capture.mkv",
+      "completed_experiment": true,
+      "receiver_exit": 0,
+      "output_bytes": 9067987,
+      "app_alive": true,
+      "continuous_publisher_alive": true,
+      "restored_publisher_alive": true,
+      "transitions": [
+        {
+          "name": "input_ready",
+          "elapsed": 31.578
+        },
+        {
+          "name": "output_ready",
+          "elapsed": 32.606
+        }
+      ],
+      "sample_count": 108,
+      "elapsed_seconds": 80.45159991388209
+    },
+    "inspection": {
+      "probe_exit": 0,
+      "probe": {
+        "programs": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "r_frame_rate": "30/1",
+            "avg_frame_rate": "30/1",
+            "nb_read_frames": "386"
+          }
+        ],
+        "format": {
+          "duration": "20.210000",
+          "size": "9067987"
+        }
+      },
+      "probe_stderr": "",
+      "decode_exit": 0,
+      "decode_stderr": "",
+      "headers": {
+        "encoder_output": [
+          "95          timing_info_present_flag                                    1 = 1",
+          "96          num_units_in_tick            00000000000000000000000000000001 = 1",
+          "128         time_scale                   00000000000000000000000000111100 = 60",
+          "160         fixed_frame_rate_flag                                       1 = 1"
+        ],
+        "parser_output": [
+          "95          timing_info_present_flag                                    1 = 1",
+          "96          num_units_in_tick            00000000000000000000000000000001 = 1",
+          "128         time_scale                   00000000000000000000000000111100 = 60",
+          "160         fixed_frame_rate_flag                                       1 = 1"
+        ],
+        "received": [
+          "95          timing_info_present_flag                                    1 = 1",
+          "96          num_units_in_tick            00000000000000000000000000000001 = 1",
+          "128         time_scale                   00000000000000000000000000111100 = 60",
+          "160         fixed_frame_rate_flag                                       1 = 1"
+        ]
+      }
+    },
+    "frames_processed": 964,
+    "inference_errors": 0,
+    "model_metrics_errors": 0,
+    "pipeline_restarts": 0,
+    "videorate_last_sample": {
+      "in": 933,
+      "out": 1045,
+      "drop": 106,
+      "duplicate": 257
+    },
+    "db": {
+      "rows": 16,
+      "integrity": "ok"
+    },
+    "stages": {
+      "converter_input": {
+        "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+        "pts": 1283099284,
+        "duration": 18446744073709551615
+      },
+      "encoder_input": {
+        "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)30/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+        "pts": 1283099284,
+        "duration": 33333333
+      },
+      "encoder_output": {
+        "caps": "video/x-h264, stream-format=(string)byte-stream, alignment=(string)au, profile=(string)NULL, level=(string)NULL, width=(int)1920, height=(int)1080, pixel-aspect-ratio=(fraction)1/1, framerate=(fraction)30/1, interlace-mode=(string)progressive, colorimetry=(string)bt709, chroma-site=(string)mpeg2, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono",
+        "pts": 1283099284,
+        "duration": 33333333
+      },
+      "parser_output": {
+        "caps": "video/x-h264, stream-format=(string)byte-stream, alignment=(string)au, profile=(string)constrained-baseline, level=(string)4, width=(int)1920, height=(int)1080, pixel-aspect-ratio=(fraction)1/1, framerate=(fraction)30/1, interlace-mode=(string)progressive, colorimetry=(string)bt709, chroma-site=(string)mpeg2, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, chroma-format=(string)4:2:0, bit-depth-luma=(uint)8, bit-depth-chroma=(uint)8, parsed=(boolean)true",
+        "pts": 1283099284,
+        "duration": 33333333
+      }
+    },
+    "output_sha256": "f983e28ccab1f76601be91447a282c16c4dd040553577d7a1403948a3fb4dd63"
+  },
+  "validation": {
+    "tests_passed": 158,
+    "tests_skipped": 2,
+    "skip_reason": "DeepStream-unavailable tests in DeepStream-installed environment",
+    "red_cases": 8,
+    "ruff": "PASS",
+    "code_diff_whitespace": "PASS",
+    "wbs_rows": 33,
+    "wbs_status_counts": "PASS",
+    "documentation_whitespace": "PASS",
+    "fixture_syntax": "PASS",
+    "renderer_ruff": "PASS"
+  },
+  "candidate_delta": {
+    "baseline": "P5.1-RC1-20260928",
+    "files_checked": 357,
+    "changed_files": [
+      "src/core/_deepstream_pipeline_builder.py"
+    ],
+    "new_sha256": "0178260d7797d2c5caa9ce9f33436975f2714bdeea48fc6871ee8871be030b2c",
+    "candidate_not_deployed": true
+  },
+  "limits": [
+    "single prerecorded partial-body input; CPU2/memory8GB, shared GPU",
+    "output rate conversion can repeat/drop display frames; header30/1 is not measured inference30fps",
+    "deployment and long-run/multi-camera performance not verified",
+    "RF actual call and TCN valid pose/quality remain P5.1 follow-up",
+    "operating container not restarted or reconfigured"
+  ],
+  "production_final": {
+    "status": "running",
+    "health": "healthy",
+    "started_at": "2026-09-16T23:45:46.903505745Z",
+    "restart_count": 0,
+    "remaining_test_containers": 0
+  },
+  "publication": {
+    "HTML": {
+      "bytes": 22595,
+      "sha256": "17c602a01cd6b3932ee54b3d8b9c3b3ae2373d8c7d675761a8a58b9bbbd578b4",
+      "matches_served_file": true
+    },
+    "PDF": {
+      "bytes": 125695,
+      "sha256": "1f32b3235c206a33f0eb4f6ff17b74fbd1c00a57ae43586a202616b60df06891",
+      "matches_served_file": true
+    }
+  }
+}

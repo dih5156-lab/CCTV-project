@@ -1,0 +1,152 @@
+{
+  "recorded_at": "2026-09-21T14:34:12.194851+09:00",
+  "plan_version": "0.18",
+  "wbs": "P2.4",
+  "wbs_status": "IN_PROGRESS",
+  "scope": "DB lock and mixed backlog recovery first slice; not capacity or production acceptance",
+  "verification": {
+    "pytest": {
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "tests": "158",
+      "time": "81.320",
+      "timestamp": "2026-09-21T14:28:31.628061+09:00",
+      "hostname": "ubuntu"
+    },
+    "new_tests": [
+      "test_mixed_backlog_survives_receiver_lock[IMMEDIATE-False]",
+      "test_mixed_backlog_survives_receiver_lock[EXCLUSIVE-True]",
+      "test_video_normalization_lock_preserves_receipt_for_recovery",
+      "test_source_lock_rejects_intake_before_commit"
+    ],
+    "ruff": "PASS",
+    "black_check": "PASS",
+    "py_compile": "PASS"
+  },
+  "scenarios": [
+    {
+      "duplicate_business_records": 0,
+      "false_storage_acks": 0,
+      "lock_mode": "IMMEDIATE",
+      "outage_seconds": 3.408374064019881,
+      "physical_jobs_held": 12,
+      "reconciliation": {
+        "conflict": 0,
+        "matched": 24,
+        "missing": 0,
+        "out_of_snapshot": 0,
+        "unexpected": 0,
+        "unverifiable": 0
+      },
+      "recovery_seconds": 2.4664992470061406,
+      "sensor_records": 12,
+      "service_recreated": false,
+      "source_busy_retries": 0,
+      "stored_after_recovery": 24,
+      "unconfirmed_before_recovery": 24,
+      "video_records": 12,
+      "wire_bytes_and_hashes_unchanged": true
+    },
+    {
+      "duplicate_business_records": 0,
+      "false_storage_acks": 0,
+      "lock_mode": "EXCLUSIVE",
+      "outage_seconds": 9.968640465987846,
+      "physical_jobs_held": 12,
+      "reconciliation": {
+        "conflict": 0,
+        "matched": 24,
+        "missing": 0,
+        "out_of_snapshot": 0,
+        "unexpected": 0,
+        "unverifiable": 0
+      },
+      "recovery_seconds": 3.8317725820234045,
+      "sensor_records": 12,
+      "service_recreated": true,
+      "source_busy_retries": 0,
+      "stored_after_recovery": 24,
+      "unconfirmed_before_recovery": 24,
+      "video_records": 12,
+      "wire_bytes_and_hashes_unchanged": true
+    }
+  ],
+  "initial_failures": [
+    {
+      "artifact": "monitoring_outage_initial_regression_20260921.xml",
+      "passed": 129,
+      "failed": 1,
+      "reason": "Test producer called normalization directly and bypassed video recovery"
+    },
+    {
+      "artifact": "monitoring_outage_ingest_contention_20260921.xml",
+      "passed": 156,
+      "failed": 1,
+      "reason": "Concurrent source intake hit SQLite busy timeout; I22 OPEN"
+    },
+    {
+      "reason": "Sandbox Unix socket denial and socket filesystem permissions prevented initial MQTT setup; resolved for isolated test broker"
+    }
+  ],
+  "source_busy_policy": "Test producer retries explicit database-is-locked failures for up to 10 seconds, preserving issued receipts; not a runtime change",
+  "application_code_changed": false,
+  "schema_changed": false,
+  "production_changed": false,
+  "new_dependencies": false,
+  "real_camera_sensor_or_output_test": false,
+  "service_restart_scope": "Service and database objects recreated in the same Python process",
+  "previous_p23_file_hash_matches": {
+    "src/ingest_store.py": true,
+    "src/event_ingest_store.py": true,
+    "src/monitoring_delivery.py": true,
+    "src/monitoring_worker.py": true,
+    "src/monitoring_metrics.py": true,
+    "src/monitoring_service.py": true,
+    "src/protocols/monitoring_local.py": true,
+    "runners/run_monitoring_local.py": true,
+    "tests/test_monitoring_commit_observations.py": true,
+    "tests/test_monitoring_service.py": true,
+    "tests/test_monitoring_local.py": true,
+    "tests/test_monitoring_service_mqtt.py": true
+  },
+  "test_sha256": "41fe05b6510bda145b7a2d16351839a49d9a583dc17511a955c02716b119a5a0",
+  "junit_sha256": "4010d08be495e1ac2c3428ef47ca36b91566fc18d308b6f38604dc4cceaa8a71",
+  "broker": {
+    "image": "eclipse-mosquitto:2.0",
+    "network": "none",
+    "published_ports": [],
+    "memory_limit_mib": 64,
+    "cpu_limit": 0.5,
+    "container": "cctv-test-outage-20260921",
+    "stop_command_succeeded": true
+  },
+  "graph_review": "Explicit new test file review returned zero indexed symbols; inspected test source directly; graph score is not a coverage guarantee",
+  "open_issues": [
+    "I22 source write contention",
+    "I21 laptop network diagnosis paused by user"
+  ],
+  "not_done": [
+    "capacity and disk-full failure boundaries",
+    "stale data and long outages",
+    "real load thresholds D04/D06",
+    "external monitoring UI/authentication",
+    "runtime deployment"
+  ],
+  "documentation": {
+    "files": 6,
+    "local_links_checked": 238,
+    "missing_links": [],
+    "wbs_rows": 33,
+    "wbs_states": {
+      "DONE": 8,
+      "BLOCKED": 2,
+      "READY": 2,
+      "IN_PROGRESS": 1,
+      "PLANNED": 13,
+      "VERIFY": 7
+    },
+    "trailing_whitespace": "PASS"
+  }
+}

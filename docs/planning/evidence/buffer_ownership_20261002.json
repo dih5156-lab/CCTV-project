@@ -1,0 +1,1502 @@
+{
+  "version": "0.101",
+  "date": "2026-10-02",
+  "wbs": "P5.1",
+  "status": "IN_PROGRESS",
+  "issue": "I40 OPEN",
+  "scope": "Fixed full AI candidate, CPU frame ownership and one-factor asynchronous work comparisons; one diagnostic no-flush prior-failure comparison.",
+  "operating_applied": false,
+  "raw_artifacts": "data/runtime/p51_buffer_owner_20261002_v101",
+  "image": "sha256:0c11b835eb42cd245f4dda0b8bc8088733c0323bf75a2f4fefe9e7705d8dbf34",
+  "isolation": {
+    "network_mode": "none",
+    "cpus": 2,
+    "memory": "8GB",
+    "serial_gpu_trials": true,
+    "real_output_devices": false,
+    "database_seed": "SQLite backup from same isolated v098 seed, three databases per trial",
+    "shared_host": "Operating AI remained active; first four media CPU validation overlapped diagnostic no-flush trial, so timings are not controlled performance comparisons."
+  },
+  "input": {
+    "path": "/baseline/camera_1_capture.mkv",
+    "source": "Previously captured real CCTV recording, ffmpeg loop to isolated local RTSP input",
+    "observe_after_output_ready_seconds": 90,
+    "output_loss_before_sigterm_seconds": 17
+  },
+  "trials": [
+    {
+      "name": "full",
+      "outcome": {
+        "codec_mode": "rtsp",
+        "completed": true,
+        "scope": "p51_v101_buffer_ownership_full",
+        "scenario": "normal",
+        "loaded_rtsp_plugin": [
+          "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstrtspclientsink.so"
+        ],
+        "receiver_exit": 0,
+        "output_bytes": 39470416,
+        "last_frames": 0,
+        "app_exit": 0,
+        "stop_seconds": 7.852089934982359,
+        "elapsed_seconds": 113.70937934704125,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 12.964
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 13.588
+          },
+          {
+            "name": "sigterm_requested",
+            "elapsed": 105.825
+          }
+        ],
+        "sample_count": 92
+      },
+      "cpu_owned_frames": 645,
+      "counts": {
+        "metadata_callback.entered": 2492,
+        "metadata_callback.exited": 2492,
+        "preview_callback.entered": 2466,
+        "frame.accepted_callback": 645,
+        "frame.owns_data": 645,
+        "frame.no_base": 645,
+        "context.entered": 144,
+        "preview_callback.exited": 2466,
+        "temporal.entered": 8,
+        "context.exited": 144,
+        "temporal.exited": 8,
+        "stop.entered": 3,
+        "stop.exited": 3
+      },
+      "active_at_first_stop": {
+        "metadata_callback": 0,
+        "preview_callback": 1,
+        "context": 0,
+        "temporal": 1,
+        "stop": 1
+      },
+      "stop_entries": [
+        {
+          "at": 1406739.692699968,
+          "stage": "stop.enter",
+          "mode": "full",
+          "counts": {
+            "metadata_callback.entered": 2490,
+            "metadata_callback.exited": 2490,
+            "preview_callback.entered": 2466,
+            "frame.accepted_callback": 644,
+            "frame.owns_data": 644,
+            "frame.no_base": 644,
+            "context.entered": 144,
+            "preview_callback.exited": 2465,
+            "temporal.entered": 8,
+            "context.exited": 144,
+            "temporal.exited": 7,
+            "stop.entered": 1
+          },
+          "active": {
+            "metadata_callback": 0,
+            "preview_callback": 1,
+            "context": 0,
+            "temporal": 1,
+            "stop": 1
+          },
+          "thread": "MainThread",
+          "queued_context": 0,
+          "queued_aux": 1
+        },
+        {
+          "at": 1406744.777947068,
+          "stage": "stop.enter",
+          "mode": "full",
+          "counts": {
+            "metadata_callback.entered": 2492,
+            "metadata_callback.exited": 2492,
+            "preview_callback.entered": 2466,
+            "frame.accepted_callback": 645,
+            "frame.owns_data": 645,
+            "frame.no_base": 645,
+            "context.entered": 144,
+            "preview_callback.exited": 2466,
+            "temporal.entered": 8,
+            "context.exited": 144,
+            "temporal.exited": 8,
+            "stop.entered": 2,
+            "stop.exited": 1
+          },
+          "active": {
+            "metadata_callback": 0,
+            "preview_callback": 0,
+            "context": 0,
+            "temporal": 0,
+            "stop": 1
+          },
+          "thread": "MainThread",
+          "queued_context": 0,
+          "queued_aux": 2
+        },
+        {
+          "at": 1406744.947713906,
+          "stage": "stop.enter",
+          "mode": "full",
+          "counts": {
+            "metadata_callback.entered": 2492,
+            "metadata_callback.exited": 2492,
+            "preview_callback.entered": 2466,
+            "frame.accepted_callback": 645,
+            "frame.owns_data": 645,
+            "frame.no_base": 645,
+            "context.entered": 144,
+            "preview_callback.exited": 2466,
+            "temporal.entered": 8,
+            "context.exited": 144,
+            "temporal.exited": 8,
+            "stop.entered": 3,
+            "stop.exited": 2
+          },
+          "active": {
+            "metadata_callback": 0,
+            "preview_callback": 0,
+            "context": 0,
+            "temporal": 0,
+            "stop": 1
+          },
+          "thread": "MainThread",
+          "queued_context": 0,
+          "queued_aux": 2
+        }
+      ],
+      "max_stop_depth": 1,
+      "native_streamoff": [
+        {
+          "device": "encoder",
+          "type": 10,
+          "return": 0,
+          "duration_ms": 0.344184,
+          "returned_after_first_stop_ms": 40.236991830170155
+        },
+        {
+          "device": "encoder",
+          "type": 9,
+          "return": 0,
+          "duration_ms": 0.171324,
+          "returned_after_first_stop_ms": 40.65816686488688
+        },
+        {
+          "device": "decoder",
+          "type": 10,
+          "return": 0,
+          "duration_ms": 6.300756,
+          "returned_after_first_stop_ms": 60.27449783869088
+        },
+        {
+          "device": "decoder",
+          "type": 9,
+          "return": 0,
+          "duration_ms": 11.842745,
+          "returned_after_first_stop_ms": 72.36120477318764
+        }
+      ],
+      "model_audit": {
+        "counts": {
+          "event.person": 3738,
+          "pose_events": 1246,
+          "pose_scope_assigned": 1246,
+          "face_request.calls": 144,
+          "face_opencv.calls": 144,
+          "tcn_verify.calls": 8,
+          "face_opencv.returned": 144,
+          "face_opencv.no_face_returned": 144,
+          "face_request.returned": 144,
+          "face_request.no_face_returned": 144,
+          "color_result.calls": 237,
+          "color_runtime.calls": 237,
+          "color_runtime.returned": 237,
+          "color_result.returned": 237,
+          "color_result.color": 182,
+          "python_attribute.calls": 144,
+          "python_attribute.returned": 144,
+          "python_attribute.empty": 144,
+          "color_result.below_threshold": 55,
+          "tcn_verify.returned": 8,
+          "tcn_verify.insufficient_pose_frames": 1,
+          "tcn_verify.ok": 7
+        },
+        "capabilities": {
+          "face_enabled": true,
+          "face_backend": "opencv_haar_baseline",
+          "attribute_backend": "NullAttributeBackend",
+          "color_backend": "OnnxColorClassificationBackend",
+          "color_runtime": "TensorRTAttributeRuntime",
+          "color_labels": 11,
+          "color_input_size": 160,
+          "rf_enabled": true,
+          "rf_mode": "shadow",
+          "camera_flags": {
+            "replay_1": {
+              "use_helmet": true,
+              "use_pose": true,
+              "use_person": false,
+              "use_face": true,
+              "use_appearance": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "context_off",
+      "outcome": {
+        "codec_mode": "rtsp",
+        "completed": true,
+        "scope": "p51_v101_buffer_ownership_context_off",
+        "scenario": "normal",
+        "loaded_rtsp_plugin": [
+          "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstrtspclientsink.so"
+        ],
+        "receiver_exit": 0,
+        "output_bytes": 38332075,
+        "last_frames": 2770.0,
+        "app_exit": 0,
+        "stop_seconds": 5.352717521833256,
+        "elapsed_seconds": 109.61125473002903,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 12.922
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 13.564
+          },
+          {
+            "name": "sigterm_requested",
+            "elapsed": 104.203
+          }
+        ],
+        "sample_count": 100
+      },
+      "cpu_owned_frames": 731,
+      "counts": {
+        "metadata_callback.entered": 2771,
+        "metadata_callback.exited": 2771,
+        "preview_callback.entered": 2747,
+        "frame.accepted_callback": 731,
+        "frame.owns_data": 731,
+        "frame.no_base": 731,
+        "context.entered": 164,
+        "context.skipped": 164,
+        "context.exited": 164,
+        "preview_callback.exited": 2747,
+        "temporal.entered": 9,
+        "temporal.exited": 9,
+        "stop.entered": 3,
+        "stop.exited": 3
+      },
+      "active_at_first_stop": {
+        "metadata_callback": 0,
+        "preview_callback": 1,
+        "context": 0,
+        "temporal": 0,
+        "stop": 1
+      },
+      "stop_entries": [
+        {
+          "at": 1406964.89544298,
+          "stage": "stop.enter",
+          "mode": "context_off",
+          "counts": {
+            "metadata_callback.entered": 2769,
+            "metadata_callback.exited": 2769,
+            "preview_callback.entered": 2746,
+            "frame.accepted_callback": 730,
+            "frame.owns_data": 730,
+            "frame.no_base": 730,
+            "context.entered": 163,
+            "context.skipped": 163,
+            "context.exited": 163,
+            "preview_callback.exited": 2745,
+            "temporal.entered": 9,
+            "temporal.exited": 9,
+            "stop.entered": 1
+          },
+          "active": {
+            "metadata_callback": 0,
+            "preview_callback": 1,
+            "context": 0,
+            "temporal": 0,
+            "stop": 1
+          },
+          "thread": "MainThread",
+          "queued_context": 0,
+          "queued_aux": 1
+        },
+        {
+          "at": 1406968.029256441,
+          "stage": "stop.enter",
+          "mode": "context_off",
+          "counts": {
+            "metadata_callback.entered": 2771,
+            "metadata_callback.exited": 2771,
+            "preview_callback.entered": 2747,
+            "frame.accepted_callback": 731,
+            "frame.owns_data": 731,
+            "frame.no_base": 731,
+            "context.entered": 164,
+            "context.skipped": 164,
+            "context.exited": 164,
+            "preview_callback.exited": 2747,
+            "temporal.entered": 9,
+            "temporal.exited": 9,
+            "stop.entered": 2,
+            "stop.exited": 1
+          },
+          "active": {
+            "metadata_callback": 0,
+            "preview_callback": 0,
+            "context": 0,
+            "temporal": 0,
+            "stop": 1
+          },
+          "thread": "MainThread",
+          "queued_context": 0,
+          "queued_aux": 1
+        },
+        {
+          "at": 1406968.218673937,
+          "stage": "stop.enter",
+          "mode": "context_off",
+          "counts": {
+            "metadata_callback.entered": 2771,
+            "metadata_callback.exited": 2771,
+            "preview_callback.entered": 2747,
+            "frame.accepted_callback": 731,
+            "frame.owns_data": 731,
+            "frame.no_base": 731,
+            "context.entered": 164,
+            "context.skipped": 164,
+            "context.exited": 164,
+            "preview_callback.exited": 2747,
+            "temporal.entered": 9,
+            "temporal.exited": 9,
+            "stop.entered": 3,
+            "stop.exited": 2
+          },
+          "active": {
+            "metadata_callback": 0,
+            "preview_callback": 0,
+            "context": 0,
+            "temporal": 0,
+            "stop": 1
+          },
+          "thread": "MainThread",
+          "queued_context": 0,
+          "queued_aux": 1
+        }
+      ],
+      "max_stop_depth": 1,
+      "native_streamoff": [
+        {
+          "device": "encoder",
+          "type": 10,
+          "return": 0,
+          "duration_ms": 1.342465,
+          "returned_after_first_stop_ms": 59.76011883467436
+        },
+        {
+          "device": "encoder",
+          "type": 9,
+          "return": 0,
+          "duration_ms": 5.959606,
+          "returned_after_first_stop_ms": 65.9479119349271
+        },
+        {
+          "device": "decoder",
+          "type": 10,
+          "return": 0,
+          "duration_ms": 0.673872,
+          "returned_after_first_stop_ms": 90.72215296328068
+        },
+        {
+          "device": "decoder",
+          "type": 9,
+          "return": 0,
+          "duration_ms": 22.088224,
+          "returned_after_first_stop_ms": 112.96230996958911
+        }
+      ],
+      "model_audit": {
+        "counts": {
+          "event.person": 4157,
+          "pose_events": 1386,
+          "pose_scope_assigned": 1386,
+          "tcn_verify.calls": 9,
+          "tcn_verify.returned": 9,
+          "tcn_verify.insufficient_pose_frames": 1,
+          "tcn_verify.ok": 8
+        },
+        "capabilities": {
+          "face_enabled": true,
+          "face_backend": "opencv_haar_baseline",
+          "attribute_backend": "NullAttributeBackend",
+          "color_backend": "OnnxColorClassificationBackend",
+          "color_runtime": "TensorRTAttributeRuntime",
+          "color_labels": 11,
+          "color_input_size": 160,
+          "rf_enabled": true,
+          "rf_mode": "shadow",
+          "camera_flags": {
+            "replay_1": {
+              "use_helmet": true,
+              "use_pose": true,
+              "use_person": false,
+              "use_face": true,
+              "use_appearance": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "temporal_off",
+      "outcome": {
+        "codec_mode": "rtsp",
+        "completed": true,
+        "scope": "p51_v101_buffer_ownership_temporal_off",
+        "scenario": "normal",
+        "loaded_rtsp_plugin": [
+          "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstrtspclientsink.so"
+        ],
+        "receiver_exit": 0,
+        "output_bytes": 40346786,
+        "last_frames": 2780.0,
+        "app_exit": 0,
+        "stop_seconds": 3.418343849014491,
+        "elapsed_seconds": 108.19951634900644,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 13.326
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 13.737
+          },
+          {
+            "name": "sigterm_requested",
+            "elapsed": 104.733
+          }
+        ],
+        "sample_count": 101
+      },
+      "cpu_owned_frames": 706,
+      "counts": {
+        "metadata_callback.entered": 2781,
+        "metadata_callback.exited": 2781,
+        "preview_callback.entered": 2766,
+        "frame.accepted_callback": 706,
+        "frame.owns_data": 706,
+        "frame.no_base": 706,
+        "context.entered": 163,
+        "preview_callback.exited": 2766,
+        "temporal.entered": 10,
+        "temporal.skipped": 10,
+        "temporal.exited": 10,
+        "context.exited": 163,
+        "stop.entered": 3,
+        "stop.exited": 3
+      },
+      "active_at_first_stop": {
+        "metadata_callback": 0,
+        "preview_callback": 0,
+        "context": 0,
+        "temporal": 0,
+        "stop": 1
+      },
+      "stop_entries": [
+        {
+          "at": 1407080.972826331,
+          "stage": "stop.enter",
+          "mode": "temporal_off",
+          "counts": {
+            "metadata_callback.entered": 2778,
+            "metadata_callback.exited": 2778,
+            "preview_callback.entered": 2765,
+            "frame.accepted_callback": 705,
+            "frame.owns_data": 705,
+            "frame.no_base": 705,
+            "context.entered": 162,
+            "preview_callback.exited": 2765,
+            "temporal.entered": 10,
+            "temporal.skipped": 10,
+            "temporal.exited": 10,
+            "context.exited": 162,
+            "stop.entered": 1
+          },
+          "active": {
+            "metadata_callback": 0,
+            "preview_callback": 0,
+            "context": 0,
+            "temporal": 0,
+            "stop": 1
+          },
+          "thread": "MainThread",
+          "queued_context": 0,
+          "queued_aux": 0
+        },
+        {
+          "at": 1407082.021317809,
+          "stage": "stop.enter",
+          "mode": "temporal_off",
+          "counts": {
+            "metadata_callback.entered": 2781,
+            "metadata_callback.exited": 2781,
+            "preview_callback.entered": 2766,
+            "frame.accepted_callback": 706,
+            "frame.owns_data": 706,
+            "frame.no_base": 706,
+            "context.entered": 163,
+            "preview_callback.exited": 2766,
+            "temporal.entered": 10,
+            "temporal.skipped": 10,
+            "temporal.exited": 10,
+            "context.exited": 163,
+            "stop.entered": 2,
+            "stop.exited": 1
+          },
+          "active": {
+            "metadata_callback": 0,
+            "preview_callback": 0,
+            "context": 0,
+            "temporal": 0,
+            "stop": 1
+          },
+          "thread": "MainThread",
+          "queued_context": 0,
+          "queued_aux": 0
+        },
+        {
+          "at": 1407082.229630735,
+          "stage": "stop.enter",
+          "mode": "temporal_off",
+          "counts": {
+            "metadata_callback.entered": 2781,
+            "metadata_callback.exited": 2781,
+            "preview_callback.entered": 2766,
+            "frame.accepted_callback": 706,
+            "frame.owns_data": 706,
+            "frame.no_base": 706,
+            "context.entered": 163,
+            "preview_callback.exited": 2766,
+            "temporal.entered": 10,
+            "temporal.skipped": 10,
+            "temporal.exited": 10,
+            "context.exited": 163,
+            "stop.entered": 3,
+            "stop.exited": 2
+          },
+          "active": {
+            "metadata_callback": 0,
+            "preview_callback": 0,
+            "context": 0,
+            "temporal": 0,
+            "stop": 1
+          },
+          "thread": "MainThread",
+          "queued_context": 0,
+          "queued_aux": 0
+        }
+      ],
+      "max_stop_depth": 1,
+      "native_streamoff": [
+        {
+          "device": "encoder",
+          "type": 10,
+          "return": 0,
+          "duration_ms": 0.172252,
+          "returned_after_first_stop_ms": 130.52870705723763
+        },
+        {
+          "device": "encoder",
+          "type": 9,
+          "return": 0,
+          "duration_ms": 10.867489,
+          "returned_after_first_stop_ms": 141.55526412650943
+        },
+        {
+          "device": "decoder",
+          "type": 10,
+          "return": 0,
+          "duration_ms": 0.522324,
+          "returned_after_first_stop_ms": 181.84906896203756
+        },
+        {
+          "device": "decoder",
+          "type": 9,
+          "return": 0,
+          "duration_ms": 0.250779,
+          "returned_after_first_stop_ms": 182.31485015712678
+        }
+      ],
+      "model_audit": {
+        "counts": {
+          "event.person": 4172,
+          "pose_events": 1391,
+          "pose_scope_assigned": 1391,
+          "face_request.calls": 163,
+          "face_opencv.calls": 163,
+          "tcn_verify.calls": 10,
+          "tcn_verify.returned": 10,
+          "tcn_verify.diagnostic_skipped": 10,
+          "face_opencv.returned": 163,
+          "face_opencv.no_face_returned": 163,
+          "face_request.returned": 163,
+          "face_request.no_face_returned": 163,
+          "color_result.calls": 239,
+          "color_runtime.calls": 239,
+          "color_runtime.returned": 239,
+          "color_result.returned": 239,
+          "color_result.color": 180,
+          "python_attribute.calls": 163,
+          "python_attribute.returned": 163,
+          "python_attribute.empty": 163,
+          "color_result.below_threshold": 59
+        },
+        "capabilities": {
+          "face_enabled": true,
+          "face_backend": "opencv_haar_baseline",
+          "attribute_backend": "NullAttributeBackend",
+          "color_backend": "OnnxColorClassificationBackend",
+          "color_runtime": "TensorRTAttributeRuntime",
+          "color_labels": 11,
+          "color_input_size": 160,
+          "rf_enabled": true,
+          "rf_mode": "shadow",
+          "camera_flags": {
+            "replay_1": {
+              "use_helmet": true,
+              "use_pose": true,
+              "use_person": false,
+              "use_face": true,
+              "use_appearance": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "full_output_loss",
+      "outcome": {
+        "codec_mode": "rtsp",
+        "completed": true,
+        "scope": "p51_v101_buffer_ownership_full_output_loss",
+        "scenario": "output_loss",
+        "loaded_rtsp_plugin": [
+          "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstrtspclientsink.so"
+        ],
+        "receiver_exit": 0,
+        "output_bytes": 38703156,
+        "last_frames": 2767.0,
+        "output_server_exit": -9,
+        "input_server_alive": true,
+        "input_publisher_alive": true,
+        "frames_after_output_loss": 0.0,
+        "app_exit_before_sigint": null,
+        "app_exit": 0,
+        "stop_seconds": 2.1778475458268076,
+        "elapsed_seconds": 122.347958215978,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 11.737
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 12.367
+          },
+          {
+            "name": "output_server_killed",
+            "elapsed": 102.787
+          },
+          {
+            "name": "sigterm_requested",
+            "elapsed": 120.146
+          }
+        ],
+        "sample_count": 117
+      },
+      "cpu_owned_frames": 738,
+      "counts": {
+        "metadata_callback.entered": 2775,
+        "metadata_callback.exited": 2775,
+        "preview_callback.entered": 2749,
+        "frame.accepted_callback": 738,
+        "frame.owns_data": 738,
+        "frame.no_base": 738,
+        "context.entered": 161,
+        "preview_callback.exited": 2749,
+        "temporal.entered": 9,
+        "context.exited": 161,
+        "temporal.exited": 9,
+        "stop.entered": 4,
+        "stop.exited": 4
+      },
+      "active_at_first_stop": {
+        "metadata_callback": 0,
+        "preview_callback": 0,
+        "context": 0,
+        "temporal": 0,
+        "stop": 1
+      },
+      "stop_entries": [
+        {
+          "at": 1407333.230955873,
+          "stage": "stop.enter",
+          "mode": "full",
+          "counts": {
+            "metadata_callback.entered": 2773,
+            "metadata_callback.exited": 2773,
+            "preview_callback.entered": 2748,
+            "frame.accepted_callback": 738,
+            "frame.owns_data": 738,
+            "frame.no_base": 738,
+            "context.entered": 161,
+            "preview_callback.exited": 2748,
+            "temporal.entered": 9,
+            "context.exited": 161,
+            "temporal.exited": 9,
+            "stop.entered": 1
+          },
+          "active": {
+            "metadata_callback": 0,
+            "preview_callback": 0,
+            "context": 0,
+            "temporal": 0,
+            "stop": 1
+          },
+          "thread": "MainThread",
+          "queued_context": 0,
+          "queued_aux": 1
+        },
+        {
+          "at": 1407346.672564886,
+          "stage": "stop.enter",
+          "mode": "full",
+          "counts": {
+            "metadata_callback.entered": 2775,
+            "metadata_callback.exited": 2775,
+            "preview_callback.entered": 2749,
+            "frame.accepted_callback": 738,
+            "frame.owns_data": 738,
+            "frame.no_base": 738,
+            "context.entered": 161,
+            "preview_callback.exited": 2749,
+            "temporal.entered": 9,
+            "context.exited": 161,
+            "temporal.exited": 9,
+            "stop.entered": 2,
+            "stop.exited": 1
+          },
+          "active": {
+            "metadata_callback": 0,
+            "preview_callback": 0,
+            "context": 0,
+            "temporal": 0,
+            "stop": 1
+          },
+          "thread": "MainThread",
+          "queued_context": 0,
+          "queued_aux": 1
+        },
+        {
+          "at": 1407350.239338575,
+          "stage": "stop.enter",
+          "mode": "full",
+          "counts": {
+            "metadata_callback.entered": 2775,
+            "metadata_callback.exited": 2775,
+            "preview_callback.entered": 2749,
+            "frame.accepted_callback": 738,
+            "frame.owns_data": 738,
+            "frame.no_base": 738,
+            "context.entered": 161,
+            "preview_callback.exited": 2749,
+            "temporal.entered": 9,
+            "context.exited": 161,
+            "temporal.exited": 9,
+            "stop.entered": 3,
+            "stop.exited": 2
+          },
+          "active": {
+            "metadata_callback": 0,
+            "preview_callback": 0,
+            "context": 0,
+            "temporal": 0,
+            "stop": 1
+          },
+          "thread": "MainThread",
+          "queued_context": 0,
+          "queued_aux": 1
+        },
+        {
+          "at": 1407350.426760822,
+          "stage": "stop.enter",
+          "mode": "full",
+          "counts": {
+            "metadata_callback.entered": 2775,
+            "metadata_callback.exited": 2775,
+            "preview_callback.entered": 2749,
+            "frame.accepted_callback": 738,
+            "frame.owns_data": 738,
+            "frame.no_base": 738,
+            "context.entered": 161,
+            "preview_callback.exited": 2749,
+            "temporal.entered": 9,
+            "context.exited": 161,
+            "temporal.exited": 9,
+            "stop.entered": 4,
+            "stop.exited": 3
+          },
+          "active": {
+            "metadata_callback": 0,
+            "preview_callback": 0,
+            "context": 0,
+            "temporal": 0,
+            "stop": 1
+          },
+          "thread": "MainThread",
+          "queued_context": 0,
+          "queued_aux": 1
+        }
+      ],
+      "max_stop_depth": 1,
+      "native_streamoff": [
+        {
+          "device": "encoder",
+          "type": 10,
+          "return": 0,
+          "duration_ms": 11.897122,
+          "returned_after_first_stop_ms": 44.4143891800195
+        },
+        {
+          "device": "encoder",
+          "type": 9,
+          "return": 0,
+          "duration_ms": 10.880219,
+          "returned_after_first_stop_ms": 55.536586092785
+        },
+        {
+          "device": "decoder",
+          "type": 10,
+          "return": 0,
+          "duration_ms": 0.17078,
+          "returned_after_first_stop_ms": 150.12033097445965
+        },
+        {
+          "device": "decoder",
+          "type": 9,
+          "return": 0,
+          "duration_ms": 0.402359,
+          "returned_after_first_stop_ms": 150.66255815327168
+        }
+      ],
+      "model_audit": {
+        "counts": {
+          "event.person": 4163,
+          "pose_events": 1388,
+          "pose_scope_assigned": 1388,
+          "face_request.calls": 161,
+          "face_opencv.calls": 161,
+          "tcn_verify.calls": 9,
+          "face_opencv.returned": 161,
+          "face_opencv.no_face_returned": 161,
+          "face_request.returned": 161,
+          "face_request.no_face_returned": 161,
+          "color_result.calls": 253,
+          "color_runtime.calls": 253,
+          "color_runtime.returned": 253,
+          "color_result.returned": 253,
+          "color_result.color": 190,
+          "python_attribute.calls": 161,
+          "python_attribute.returned": 161,
+          "python_attribute.empty": 161,
+          "color_result.below_threshold": 63,
+          "tcn_verify.returned": 9,
+          "tcn_verify.insufficient_pose_frames": 1,
+          "tcn_verify.ok": 8
+        },
+        "capabilities": {
+          "face_enabled": true,
+          "face_backend": "opencv_haar_baseline",
+          "attribute_backend": "NullAttributeBackend",
+          "color_backend": "OnnxColorClassificationBackend",
+          "color_runtime": "TensorRTAttributeRuntime",
+          "color_labels": 11,
+          "color_input_size": 160,
+          "rf_enabled": true,
+          "rf_mode": "shadow",
+          "camera_flags": {
+            "replay_1": {
+              "use_helmet": true,
+              "use_pose": true,
+              "use_person": false,
+              "use_face": true,
+              "use_appearance": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "no_flush_output_loss",
+      "outcome": {
+        "codec_mode": "rtsp",
+        "completed": true,
+        "scope": "p51_v101_buffer_ownership_no_flush_output_loss",
+        "scenario": "output_loss",
+        "loaded_rtsp_plugin": [
+          "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstrtspclientsink.so"
+        ],
+        "receiver_exit": 0,
+        "output_bytes": 36677334,
+        "last_frames": 2382.0,
+        "output_server_exit": -9,
+        "input_server_alive": true,
+        "input_publisher_alive": true,
+        "frames_after_output_loss": 0.0,
+        "app_exit_before_sigint": null,
+        "app_exit": 0,
+        "stop_seconds": 14.647148504154757,
+        "elapsed_seconds": 136.03479693294503,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 12.271
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 12.896
+          },
+          {
+            "name": "output_server_killed",
+            "elapsed": 103.925
+          },
+          {
+            "name": "sigterm_requested",
+            "elapsed": 121.347
+          }
+        ],
+        "sample_count": 116
+      },
+      "cpu_owned_frames": 745,
+      "counts": {
+        "metadata_callback.entered": 2385,
+        "metadata_callback.exited": 2385,
+        "preview_callback.entered": 2337,
+        "frame.accepted_callback": 745,
+        "frame.owns_data": 745,
+        "frame.no_base": 745,
+        "context.entered": 164,
+        "preview_callback.exited": 2337,
+        "temporal.entered": 9,
+        "context.exited": 164,
+        "temporal.exited": 9,
+        "stop.entered": 4,
+        "stop.exited": 4
+      },
+      "active_at_first_stop": {
+        "metadata_callback": 1,
+        "preview_callback": 0,
+        "context": 0,
+        "temporal": 0,
+        "stop": 1
+      },
+      "stop_entries": [
+        {
+          "at": 1407817.416749476,
+          "stage": "stop.enter",
+          "mode": "full",
+          "counts": {
+            "metadata_callback.entered": 2385,
+            "metadata_callback.exited": 2384,
+            "preview_callback.entered": 2337,
+            "frame.accepted_callback": 745,
+            "frame.owns_data": 745,
+            "frame.no_base": 745,
+            "context.entered": 164,
+            "preview_callback.exited": 2337,
+            "temporal.entered": 8,
+            "context.exited": 164,
+            "temporal.exited": 8,
+            "stop.entered": 1
+          },
+          "active": {
+            "metadata_callback": 1,
+            "preview_callback": 0,
+            "context": 0,
+            "temporal": 0,
+            "stop": 1
+          },
+          "thread": "MainThread",
+          "queued_context": 0,
+          "queued_aux": 2
+        },
+        {
+          "at": 1407831.114956581,
+          "stage": "stop.enter",
+          "mode": "full",
+          "counts": {
+            "metadata_callback.entered": 2385,
+            "metadata_callback.exited": 2385,
+            "preview_callback.entered": 2337,
+            "frame.accepted_callback": 745,
+            "frame.owns_data": 745,
+            "frame.no_base": 745,
+            "context.entered": 164,
+            "preview_callback.exited": 2337,
+            "temporal.entered": 9,
+            "context.exited": 164,
+            "temporal.exited": 8,
+            "stop.entered": 2,
+            "stop.exited": 1
+          },
+          "active": {
+            "metadata_callback": 0,
+            "preview_callback": 0,
+            "context": 0,
+            "temporal": 1,
+            "stop": 1
+          },
+          "thread": "MainThread",
+          "queued_context": 0,
+          "queued_aux": 1
+        },
+        {
+          "at": 1407834.592885853,
+          "stage": "stop.enter",
+          "mode": "full",
+          "counts": {
+            "metadata_callback.entered": 2385,
+            "metadata_callback.exited": 2385,
+            "preview_callback.entered": 2337,
+            "frame.accepted_callback": 745,
+            "frame.owns_data": 745,
+            "frame.no_base": 745,
+            "context.entered": 164,
+            "preview_callback.exited": 2337,
+            "temporal.entered": 9,
+            "context.exited": 164,
+            "temporal.exited": 8,
+            "stop.entered": 3,
+            "stop.exited": 1
+          },
+          "active": {
+            "metadata_callback": 0,
+            "preview_callback": 0,
+            "context": 0,
+            "temporal": 1,
+            "stop": 2
+          },
+          "thread": "MainThread",
+          "queued_context": 0,
+          "queued_aux": 1
+        },
+        {
+          "at": 1407846.896305398,
+          "stage": "stop.enter",
+          "mode": "full",
+          "counts": {
+            "metadata_callback.entered": 2385,
+            "metadata_callback.exited": 2385,
+            "preview_callback.entered": 2337,
+            "frame.accepted_callback": 745,
+            "frame.owns_data": 745,
+            "frame.no_base": 745,
+            "context.entered": 164,
+            "preview_callback.exited": 2337,
+            "temporal.entered": 9,
+            "context.exited": 164,
+            "temporal.exited": 9,
+            "stop.entered": 4,
+            "stop.exited": 3
+          },
+          "active": {
+            "metadata_callback": 0,
+            "preview_callback": 0,
+            "context": 0,
+            "temporal": 0,
+            "stop": 1
+          },
+          "thread": "MainThread",
+          "queued_context": 0,
+          "queued_aux": 1
+        }
+      ],
+      "max_stop_depth": 2,
+      "native_streamoff": [
+        {
+          "device": "encoder",
+          "type": 10,
+          "return": 0,
+          "duration_ms": 4.630203,
+          "returned_after_first_stop_ms": 14.116239035502076
+        },
+        {
+          "device": "encoder",
+          "type": 9,
+          "return": 0,
+          "duration_ms": 15.825261,
+          "returned_after_first_stop_ms": 30.19916289485991
+        },
+        {
+          "device": "decoder",
+          "type": 10,
+          "return": 0,
+          "duration_ms": 1.086111,
+          "returned_after_first_stop_ms": 112.84053395502269
+        },
+        {
+          "device": "decoder",
+          "type": 9,
+          "return": 0,
+          "duration_ms": 10.543443,
+          "returned_after_first_stop_ms": 123.55290399864316
+        }
+      ],
+      "model_audit": {
+        "counts": {
+          "event.person": 3578,
+          "pose_events": 1193,
+          "pose_scope_assigned": 1193,
+          "face_request.calls": 164,
+          "face_opencv.calls": 164,
+          "tcn_verify.calls": 10,
+          "face_opencv.returned": 164,
+          "face_opencv.no_face_returned": 164,
+          "face_request.returned": 164,
+          "face_request.no_face_returned": 164,
+          "color_result.calls": 260,
+          "color_runtime.calls": 260,
+          "color_runtime.returned": 260,
+          "color_result.returned": 260,
+          "color_result.color": 195,
+          "python_attribute.calls": 164,
+          "python_attribute.returned": 164,
+          "python_attribute.empty": 164,
+          "color_result.below_threshold": 65,
+          "tcn_verify.returned": 10,
+          "tcn_verify.insufficient_pose_frames": 1,
+          "tcn_verify.ok": 9
+        },
+        "capabilities": {
+          "face_enabled": true,
+          "face_backend": "opencv_haar_baseline",
+          "attribute_backend": "NullAttributeBackend",
+          "color_backend": "OnnxColorClassificationBackend",
+          "color_runtime": "TensorRTAttributeRuntime",
+          "color_labels": 11,
+          "color_input_size": 160,
+          "rf_enabled": true,
+          "rf_mode": "shadow",
+          "camera_flags": {
+            "replay_1": {
+              "use_helmet": true,
+              "use_pose": true,
+              "use_person": false,
+              "use_face": true,
+              "use_appearance": true
+            }
+          }
+        }
+      }
+    }
+  ],
+  "summary": {
+    "trials": 5,
+    "normal_exits": 5,
+    "cpu_owned_frames": 3565,
+    "borrowed_frames": 0,
+    "native_streamoff_returned": 20,
+    "max_native_return_after_first_stop_ms": 182.31485015712678
+  },
+  "new_observation": {
+    "case": "no_flush_output_loss",
+    "max_stop_depth": 2,
+    "thread": "MainThread",
+    "first_stop_at": 1407817.416749476,
+    "second_stop_at": 1407831.114956581,
+    "nested_stop_at": 1407834.592885853,
+    "native_streamoff_complete_before_nested_stop": true,
+    "active_when_nested": {
+      "temporal": 1,
+      "context": 0,
+      "preview_callback": 0,
+      "metadata_callback": 0
+    },
+    "log_signal": "2026-10-02 07:06:57 UTC SIGTERM received",
+    "static_path": "src/bootstrap/runtime.py register_shutdown_handlers._sig_handler -> _release_all -> release_all_cameras -> DeepStreamProcessor.stop",
+    "conclusion": "Same-thread stop reentry observed. Association with signal handler supported by timestamp/static call path; no per-entry stack captured. No causal proof for original native encoder hang."
+  },
+  "product_source": {
+    "files": 206,
+    "changed": 0,
+    "hashes_match": true
+  },
+  "operating": {
+    "states": {
+      "cctv-p51-buffer-owner-v101": {
+        "Status": "exited",
+        "ExitCode": 0,
+        "OOMKilled": false,
+        "StartedAt": "2026-10-02T07:04:55.400807379Z",
+        "FinishedAt": "2026-10-02T07:07:12.480085082Z",
+        "health": null
+      },
+      "cctv-ai-engine": {
+        "Status": "running",
+        "ExitCode": 0,
+        "OOMKilled": false,
+        "StartedAt": "2026-10-02T01:33:58.362007997Z",
+        "FinishedAt": "2026-10-02T01:33:57.89393094Z",
+        "health": "healthy"
+      }
+    },
+    "health": {
+      "service": "cctv-zone-api",
+      "status": "ok",
+      "checked_at": "2026-10-02T16:09:35.081864+09:00",
+      "camera_count": 1,
+      "preset_count": 0,
+      "video_ready": true
+    }
+  },
+  "validation": {
+    "ast": "PASS",
+    "diagnostic_ruff": "PASS",
+    "ownership_and_completion_assertions": "PASS",
+    "video_decoded_frames": 8588,
+    "video_files": 5,
+    "database_quick_checks": 15,
+    "original_dts_non_increasing": 0,
+    "timestamp_preserving_decode": "PASS",
+    "renderer_ruff": "PASS",
+    "git_diff_check": "PASS",
+    "saved_results_check": "PASS",
+    "saved_results_check_command": "rtk proxy python3 data/runtime/p51_buffer_owner_20261002_v101/check_results.py"
+  },
+  "media_db_validation": {
+    "full": {
+      "video": {
+        "programs": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "nb_read_frames": "1726"
+          }
+        ]
+      },
+      "decode_exit": 0,
+      "decode_stderr": "[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 524 >= 524\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 527 >= 527\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 530 >= 530\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 533 >= 533\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 536 >= 536\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 539 >= 539\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 542 >= 542\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 545 >= 545\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 548 >= 548\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 551 >= 551\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 554 >= 554\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 557 >= 557\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 560 >= 560\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 563 >= 563\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 566 >= 566\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 569 >= 569\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 572 >= 572\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 575 >= 575\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 578 >= 578\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 581 >= 581\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 584 >= 584\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 587 >= 587\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 590 >= 590\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 593 >= 593\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 596 >= 596\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 599 >= 599\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 602 >= 602\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 605 >= 605\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 608 >= 608\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 611 >= 611\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 614 >= 614\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 617 >= 617\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 620 >= 620\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 623 >= 623\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 626 >= 626\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 629 >= 629\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 632 >= 632\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 635 >= 635\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 638 >= 638\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 641 >= 641\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 644 >= 644\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 647 >= 647\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 650 >= 650\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 653 >= 653\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 656 >= 656\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 659 >= 659\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 662 >= 662\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 665 >= 665\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 668 >= 668\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 671 >= 671\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 674 >= 674\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 677 >= 677\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 680 >= 680\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 683 >= 683\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 686 >= 686\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 689 >= 689\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 692 >= 692\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 695 >= 695\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 698 >= 698\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 701 >= 701\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 704 >= 704\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 707 >= 707\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 710 >= 710\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 713 >= 713\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 716 >= 716\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 719 >= 719\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 722 >= 722\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 725 >= 725\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 728 >= 728\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 731 >= 731\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 734 >= 734\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 737 >= 737\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 740 >= 740\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 743 >= 743\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 746 >= 746\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 749 >= 749\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 752 >= 752\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 755 >= 755\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 758 >= 758\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 761 >= 761\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 764 >= 764\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 767 >= 767\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 770 >= 770\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 773 >= 773\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 776 >= 776\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 779 >= 779\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 782 >= 782\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 785 >= 785\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 788 >= 788\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 791 >= 791\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 794 >= 794\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 797 >= 797\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 800 >= 800\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 803 >= 803\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 806 >= 806\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 809 >= 809\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 812 >= 812\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 815 >= 815\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 818 >= 818\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 821 >= 821\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 824 >= 824\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 827 >= 827\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 830 >= 830\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 833 >= 833\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 836 >= 836\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 839 >= 839\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 842 >= 842\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 845 >= 845\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 848 >= 848\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 851 >= 851\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 854 >= 854\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 857 >= 857\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 860 >= 860\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 863 >= 863\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 866 >= 866\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 869 >= 869\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 872 >= 872\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 875 >= 875\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 878 >= 878\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 881 >= 881\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 884 >= 884\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 887 >= 887\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 890 >= 890\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 893 >= 893\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 896 >= 896\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 899 >= 899\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 902 >= 902\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 905 >= 905\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 908 >= 908\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 911 >= 911\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 914 >= 914\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 917 >= 917\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 920 >= 920\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 923 >= 923\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 926 >= 926\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 929 >= 929\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1004 >= 1004\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1007 >= 1007\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1010 >= 1010\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1013 >= 1013\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1016 >= 1016\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1019 >= 1019\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1022 >= 1022\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1025 >= 1025\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1028 >= 1028\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1031 >= 1031\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1034 >= 1034\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1037 >= 1037\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1040 >= 1040\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1043 >= 1043\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1046 >= 1046\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1049 >= 1049\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1052 >= 1052\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1055 >= 1055\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1058 >= 1058\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1061 >= 1061\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1064 >= 1064\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1067 >= 1067\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1070 >= 1070\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1073 >= 1073\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1076 >= 1076\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1079 >= 1079\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1082 >= 1082\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1085 >= 1085\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1088 >= 1088\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1091 >= 1091\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1094 >= 1094\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1097 >= 1097\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1100 >= 1100\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1103 >= 1103\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1106 >= 1106\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1109 >= 1109\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1112 >= 1112\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1115 >= 1115\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1118 >= 1118\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1121 >= 1121\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1124 >= 1124\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1127 >= 1127\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1130 >= 1130\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1133 >= 1133\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1136 >= 1136\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1139 >= 1139\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1142 >= 1142\n[null @ 0xaaab01713d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 1145 >= 1145\n",
+      "databases": {
+        "runtime/mqtt_event_outbox.db": [
+          "ok"
+        ],
+        "runtime/appearances.db": [
+          "ok"
+        ],
+        "runtime/commercial_faces.db": [
+          "ok"
+        ]
+      },
+      "original_packet_timestamps": {
+        "packets": 1726,
+        "dts_present": 1726,
+        "non_increasing_dts": 0
+      },
+      "timestamp_preserving_recheck": {
+        "exit": 0,
+        "stderr": ""
+      }
+    },
+    "context_off": {
+      "video": {
+        "programs": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "nb_read_frames": "1698"
+          }
+        ]
+      },
+      "decode_exit": 0,
+      "decode_stderr": "",
+      "databases": {
+        "runtime/mqtt_event_outbox.db": [
+          "ok"
+        ],
+        "runtime/appearances.db": [
+          "ok"
+        ],
+        "runtime/commercial_faces.db": [
+          "ok"
+        ]
+      },
+      "original_packet_timestamps": {
+        "packets": 1698,
+        "dts_present": 1698,
+        "non_increasing_dts": 0
+      }
+    },
+    "temporal_off": {
+      "video": {
+        "programs": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "nb_read_frames": "1773"
+          }
+        ]
+      },
+      "decode_exit": 0,
+      "decode_stderr": "",
+      "databases": {
+        "runtime/mqtt_event_outbox.db": [
+          "ok"
+        ],
+        "runtime/appearances.db": [
+          "ok"
+        ],
+        "runtime/commercial_faces.db": [
+          "ok"
+        ]
+      },
+      "original_packet_timestamps": {
+        "packets": 1773,
+        "dts_present": 1773,
+        "non_increasing_dts": 0
+      }
+    },
+    "full_output_loss": {
+      "video": {
+        "programs": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "nb_read_frames": "1729"
+          }
+        ]
+      },
+      "decode_exit": 0,
+      "decode_stderr": "[null @ 0xaaaacc938d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 50 >= 50\n[null @ 0xaaaacc938d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 53 >= 53\n[null @ 0xaaaacc938d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 56 >= 56\n[null @ 0xaaaacc938d70] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 59 >= 59\n",
+      "databases": {
+        "runtime/mqtt_event_outbox.db": [
+          "ok"
+        ],
+        "runtime/appearances.db": [
+          "ok"
+        ],
+        "runtime/commercial_faces.db": [
+          "ok"
+        ]
+      },
+      "original_packet_timestamps": {
+        "packets": 1729,
+        "dts_present": 1729,
+        "non_increasing_dts": 0
+      },
+      "timestamp_preserving_recheck": {
+        "exit": 0,
+        "stderr": ""
+      }
+    },
+    "no_flush_output_loss": {
+      "video": {
+        "programs": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "nb_read_frames": "1662"
+          }
+        ]
+      },
+      "decode_exit": 0,
+      "decode_stderr": "[null @ 0xaaaaec0f5e90] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 335 >= 335\n[null @ 0xaaaaec0f5e90] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 338 >= 338\n[null @ 0xaaaaec0f5e90] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 341 >= 341\n[null @ 0xaaaaec0f5e90] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 344 >= 344\n[null @ 0xaaaaec0f5e90] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 347 >= 347\n[null @ 0xaaaaec0f5e90] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 350 >= 350\n[null @ 0xaaaaec0f5e90] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 353 >= 353\n[null @ 0xaaaaec0f5e90] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 356 >= 356\n[null @ 0xaaaaec0f5e90] Application provided invalid, non monotonically increasing dts to muxer in stream 0: 359 >= 359\n",
+      "databases": {
+        "runtime/mqtt_event_outbox.db": [
+          "ok"
+        ],
+        "runtime/appearances.db": [
+          "ok"
+        ],
+        "runtime/commercial_faces.db": [
+          "ok"
+        ]
+      },
+      "original_packet_timestamps": {
+        "packets": 1662,
+        "dts_present": 1662,
+        "non_increasing_dts": 0
+      },
+      "timestamp_preserving_recheck": {
+        "exit": 0,
+        "stderr": "",
+        "command": "ffmpeg -nostdin -v error -threads 2 -i result.mkv -vsync 0 -enc_time_base -1 -f null -",
+        "verification": "exec session 22665 completed exit0 with empty output"
+      }
+    }
+  },
+  "limits": [
+    "Each condition ran once; native I40 hang was not reproduced. Five exits do not establish a fix or failure rate.",
+    "Independent CPU arrays exclude borrowing for measured accept_frame inputs only, not all native Gst/NVMM buffer lifetimes.",
+    "Full means enabled candidate paths, not model-quality acceptance: face OpenCV Haar returned no faces, Python attribute backend is NullAttributeBackend, RF verify was not triggered, and TCN has insufficient-pose cases.",
+    "stop_seconds measures parent SIGTERM to process exit. In output-loss cases automatic restart cleanup already started before SIGTERM.",
+    "full last_frames=0 is an HTTP metrics timeout fallback, not evidence of zero processed frames; callbacks and recorded video progressed.",
+    "no-flush comparison previously failed in v098 but passed here; omission of FLUSH_START is not adopted as a fix.",
+    "Initial default ffmpeg null output warned about non-increasing DTS in three files. All original packet DTS strictly increased; preserving source time base decoded without warnings.",
+    "No full product regression rerun: all206 src Python files unchanged. Real hardware diagnostics, media/DB checks and report checks are scoped evidence.",
+    "Stop-entry counters count nested calls, not unique threads. Latest stop_return includes atexit calls after ownership_final.",
+    "Observer path selector for the reused no-flush wrapper was added after the four baseline comparisons; their default wrapper behavior was retained."
+  ],
+  "next": "P5.1: 종료 중 SIGTERM으로 stop()이 재진입하는 경로를 결정적으로 재현해 중복 정리·자원 수명 영향을 검증한다. 이번 5조건 통과나 CPU 복사본 확인을 I40 해결로 세지 않는다. I34·모델 잔여·배포 정합/운영 반영은 후속, 별도 Jetson은 기능 완성 후·정식 배포 전에 시험한다.",
+  "diagnostic_sha256": {
+    "observe_ownership.py": "ecff972321a2681e8ec9c3bdbe02e78626a30d06df014edc1716ffcb5ca1a096",
+    "command.json": "6dc211124efa5d54aa43ffd5d42da3392854531adf168259047506614c73f86d",
+    "check_results.py": "888786216df8cfecc0a23d24f33dc97be0f550062e4dae8ce49ba227b927f838"
+  },
+  "publication": {
+    "status": "PASS",
+    "files": {
+      "index.html": {
+        "http_status": 200,
+        "bytes": 23280,
+        "sha256": "e8679aab2c756b1d8c6f2654bfee97aa611010fda277035733ee6b9f613f78ae",
+        "local_bytes_match": true
+      },
+      "CCTV_project_progress.pdf": {
+        "http_status": 200,
+        "bytes": 129801,
+        "sha256": "07040c446bad7753f8be2b945699e8ec04e349740da37da8cc0783e39a4b160c",
+        "local_bytes_match": true
+      }
+    },
+    "wbs_rows_match": 33,
+    "done_rows": 9,
+    "pdf_first_page_visual": "PASS",
+    "browser_interaction_retested": false,
+    "other_pc_access_retested": false
+  }
+}

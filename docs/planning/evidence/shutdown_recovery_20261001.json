@@ -1,0 +1,413 @@
+{
+  "version": "0.83",
+  "updated_at": "2026-10-01 08:34 KST",
+  "observations_span": "2026-09-30~2026-10-01 KST",
+  "candidate_manifest": "data/runtime/p51_shutdown_20260930_v084/candidate_manifest.json",
+  "candidate_file_count": 359,
+  "changed_product_files": [
+    "src/core/_deepstream_pipeline_builder.py"
+  ],
+  "trials": {
+    "rtsp_trace": {
+      "path": "data/runtime/p51_shutdown_20260930_v084/rtsp_trace",
+      "outcome": {
+        "codec_mode": "rtsp",
+        "completed": false,
+        "scope": "unchanged candidate, model call observation, recorded loopback RTSP, no operating deployment",
+        "receiver_exit": 0,
+        "output_bytes": 22641416,
+        "last_frames": 1292.0,
+        "stop_budget_exceeded": true,
+        "debugger_exit": 0,
+        "stop_seconds": 40.121546055190265,
+        "error": "TimeoutExpired: Command '['python3', '/audit/observe.py', '--cameras', '/audit/cameras-one.json', '--device', 'cuda', '--mqtt-broker', '127.0.0.1', '--mqtt-port', '9', '--mqtt-topic-prefix', 'isolated/p51/events']' timed out after 10 seconds",
+        "elapsed_seconds": 153.17121526109986,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 13.417
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 13.624
+          },
+          {
+            "name": "sigint_requested",
+            "elapsed": 104.559
+          }
+        ],
+        "sample_count": 97
+      },
+      "stage_seconds": {
+        "pipeline.send_event": [
+          0.01908738911151886
+        ]
+      },
+      "stages_without_return": [
+        "pipeline.set_state",
+        "processor.stop"
+      ],
+      "native_stack_captured": false,
+      "cuda700_signatures": 0,
+      "dmabuf_mapped_entry_warnings": 0,
+      "evidence_sha256": {
+        "experiment.json": "1cb2f0f7011d48cfa412dc3422e8a4c51a52791d7c9441fdfd1d73fb4a57c18f",
+        "shutdown_stages.jsonl": "9b78764bf04eac52cd3d0ec7bcba33ac5879fd58961e9818f9c902d3271538e6",
+        "app.log": "f0b2ca0002cb80a6f50a03a6ee5963b84d9b29ce3c33bc2176b2a8f0eac054e6",
+        "mediamtx.log": "a0999f8d705586d348c1a16731062c499727add85b775b36284f2148a3e81477"
+      }
+    },
+    "rtsp_native": {
+      "path": "data/runtime/p51_shutdown_20260930_v084/rtsp_native",
+      "outcome": {
+        "codec_mode": "rtsp",
+        "completed": false,
+        "scope": "unchanged candidate, model call observation, recorded loopback RTSP, no operating deployment",
+        "receiver_exit": 0,
+        "output_bytes": 22930971,
+        "last_frames": 1260.0,
+        "stop_seconds": 30.004574490943924,
+        "error": "TimeoutExpired: Command '['/debug/gdb-deps/ld-linux-aarch64.so.1', '--library-path', '/debug/gdb-deps', '/debug/gdb', '-q', '-batch', '-nx', '-x', '/audit/parent_gdb_retry.cmd', '--args', 'python3', '/audit/observe_parent_gdb.py', '--cameras', '/audit/cameras-one.json', '--device', 'cuda', '--mqtt-broker', '127.0.0.1', '--mqtt-port', '9', '--mqtt-topic-prefix', 'isolated/p51/events']' timed out after 30 seconds",
+        "elapsed_seconds": 154.60537560284138,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 32.185
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 33.644
+          },
+          {
+            "name": "sigint_requested",
+            "elapsed": 123.871
+          }
+        ],
+        "sample_count": 110
+      },
+      "stage_seconds": {
+        "pipeline.send_event": [
+          0.041807631962001324
+        ]
+      },
+      "stages_without_return": [
+        "pipeline.set_state",
+        "processor.stop"
+      ],
+      "native_stack_captured": true,
+      "cuda700_signatures": 0,
+      "dmabuf_mapped_entry_warnings": 0,
+      "evidence_sha256": {
+        "experiment.json": "64d795cf48cf904bd45fd80c2813a8c53ac30c53461c1950df80a7da208b88aa",
+        "shutdown_stages.jsonl": "e34d7bb6137fceebc931bb1064b7c4299c16613854ab5d6b65c6a29da378dfda",
+        "app.log": "37cbdcb46898f049da1277beace6a42417b486c1803f9d0c44379901fa4af826",
+        "mediamtx.log": "cf3f3137ada46604e68fa96e165c35307a5dc129cda0a028a7b7ba25ba33d39d"
+      }
+    },
+    "sink_first": {
+      "path": "data/runtime/p51_shutdown_20260930_v084/sink_first",
+      "outcome": {
+        "codec_mode": "rtsp",
+        "completed": true,
+        "scope": "unchanged candidate, model call observation, recorded loopback RTSP, no operating deployment",
+        "receiver_exit": 0,
+        "output_bytes": 23540982,
+        "last_frames": 1330.0,
+        "app_exit": 0,
+        "stop_seconds": 5.188013188075274,
+        "elapsed_seconds": 117.08019290701486,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 20.515
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 20.927
+          },
+          {
+            "name": "sigint_requested",
+            "elapsed": 111.868
+          }
+        ],
+        "sample_count": 105
+      },
+      "stage_seconds": {
+        "pipeline.send_event": [
+          0.06722962390631437
+        ],
+        "rtsp_sink.set_state": [
+          0.040153006091713905
+        ],
+        "pipeline.set_state": [
+          0.3198627349920571
+        ],
+        "main_loop.quit": [
+          8.012796752154827e-05
+        ],
+        "publish_thread.join": [
+          0.30208663106895983
+        ],
+        "_falldata_aux_thread.join": [
+          2.266503289807588
+        ],
+        "_falldata_aux.close": [
+          0.33186550717800856,
+          6.867200136184692e-05
+        ],
+        "processor.stop": [
+          3.3142882140818983,
+          0.0010073280427604914
+        ]
+      },
+      "stages_without_return": [],
+      "native_stack_captured": false,
+      "cuda700_signatures": 0,
+      "dmabuf_mapped_entry_warnings": 1,
+      "final_stats": {
+        "frames_processed": 1330,
+        "context_match_missed": 0,
+        "context_queue_dropped": 0,
+        "context_tasks_failed": 0,
+        "context_tasks_completed": 163,
+        "pipeline_restart_executed": 0
+      },
+      "evidence_sha256": {
+        "experiment.json": "651646d4c0312fa7fef6575b095ed934ca147a0d2ac2949f14b18c848c740ee5",
+        "shutdown_stages.jsonl": "f7f70c73441da683c85ab21896baccd5d70bef572fa4949a0a07f7da718d2c81",
+        "app.log": "989e02a7bab0434915b2869746384f209b4b93fc96f52febcd14ea2fd0d800d4",
+        "mediamtx.log": "735d028846a2cda89871131bb85fd00838c27bddc27acbcc731586af66119101"
+      }
+    },
+    "candidate_normal": {
+      "path": "data/runtime/p51_shutdown_20260930_v084/candidate_normal",
+      "outcome": {
+        "codec_mode": "rtsp",
+        "completed": true,
+        "scope": "sink-first candidate, shutdown stage observation, recorded loopback RTSP, no operating deployment",
+        "receiver_exit": 0,
+        "output_bytes": 21486716,
+        "last_frames": 1316.0,
+        "app_exit": 0,
+        "stop_seconds": 7.228629042161629,
+        "elapsed_seconds": 144.25902153900824,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 44.887
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 45.92
+          },
+          {
+            "name": "sigint_requested",
+            "elapsed": 136.981
+          }
+        ],
+        "sample_count": 119
+      },
+      "stage_seconds": {
+        "pipeline.send_event": [
+          0.05259362910874188
+        ],
+        "pipeline.set_state": [
+          0.14189870283007622
+        ],
+        "main_loop.quit": [
+          8.143787272274494e-05
+        ],
+        "main_loop_thread.join": [
+          0.00048142788000404835
+        ],
+        "_falldata_aux_thread.join": [
+          4.099938049912453
+        ],
+        "_falldata_aux.close": [
+          0.47019491507671773,
+          7.750187069177628e-05
+        ],
+        "processor.stop": [
+          4.876576742855832,
+          0.007515724981203675
+        ]
+      },
+      "stages_without_return": [],
+      "native_stack_captured": false,
+      "cuda700_signatures": 0,
+      "dmabuf_mapped_entry_warnings": 0,
+      "final_stats": {
+        "frames_processed": 1316,
+        "context_match_missed": 0,
+        "context_queue_dropped": 0,
+        "context_tasks_failed": 0,
+        "context_tasks_completed": 160,
+        "pipeline_restart_executed": 0
+      },
+      "decode": {
+        "command": [
+          "ffmpeg",
+          "-v",
+          "error",
+          "-i",
+          "data/runtime/p51_shutdown_20260930_v084/candidate_normal/result.mkv",
+          "-map",
+          "0:v:0",
+          "-vsync",
+          "0",
+          "-enc_time_base",
+          "-1",
+          "-f",
+          "null",
+          "-"
+        ],
+        "exit_code": 0,
+        "stderr_bytes": 0
+      },
+      "evidence_sha256": {
+        "experiment.json": "daaccd60e8d9725df7967ce301925f3692112817c4e28e445c40e5b2f04cd08e",
+        "shutdown_stages.jsonl": "b6040d19399f1b69ebb36aabde9be0f913435acd0273f4641def56dd133fd32c",
+        "app.log": "a95fcdea9bbb002e321f0f5d8007ced3db0cac14194e9691c64860e3e5596306",
+        "mediamtx.log": "16d2dbab38fdf97da432fcccff698dda28911ccec17ea949ede715ea1195152b"
+      }
+    },
+    "candidate_disconnect": {
+      "path": "data/runtime/p51_shutdown_20260930_v084/candidate_disconnect",
+      "outcome": {
+        "codec_mode": "rtsp",
+        "completed": true,
+        "scope": "sink-first candidate, shutdown stage observation, recorded loopback RTSP, no operating deployment",
+        "receiver_exit": 0,
+        "output_bytes": 22922244,
+        "publisher_exit": 255,
+        "last_frames": 1374.0,
+        "app_exit": 0,
+        "stop_seconds": 2.4861651239916682,
+        "elapsed_seconds": 149.27887690300122,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 37.127
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 38.365
+          },
+          {
+            "name": "publisher_stopped",
+            "elapsed": 129.204
+          },
+          {
+            "name": "sigint_requested",
+            "elapsed": 146.785
+          }
+        ],
+        "sample_count": 134
+      },
+      "stage_seconds": {
+        "pipeline.send_event": [
+          0.0005084869917482138
+        ],
+        "pipeline.set_state": [
+          0.11704135313630104
+        ],
+        "main_loop.quit": [
+          7.98739492893219e-05
+        ],
+        "publish_thread.join": [
+          0.16024351306259632
+        ],
+        "_falldata_aux.close": [
+          0.32118521095253527,
+          5.622510798275471e-05
+        ],
+        "processor.stop": [
+          0.6163122891448438,
+          0.0008528130128979683
+        ]
+      },
+      "stages_without_return": [],
+      "native_stack_captured": false,
+      "cuda700_signatures": 0,
+      "dmabuf_mapped_entry_warnings": 0,
+      "final_stats": {
+        "frames_processed": 1374,
+        "context_match_missed": 0,
+        "context_queue_dropped": 0,
+        "context_tasks_failed": 0,
+        "context_tasks_completed": 168,
+        "pipeline_restart_executed": 0
+      },
+      "decode": {
+        "command": [
+          "ffmpeg",
+          "-v",
+          "error",
+          "-i",
+          "data/runtime/p51_shutdown_20260930_v084/candidate_disconnect/result.mkv",
+          "-map",
+          "0:v:0",
+          "-vsync",
+          "0",
+          "-enc_time_base",
+          "-1",
+          "-f",
+          "null",
+          "-"
+        ],
+        "exit_code": 0,
+        "stderr_bytes": 0
+      },
+      "evidence_sha256": {
+        "experiment.json": "5d24d7357a7c70aea0dd0e25d267a2b14bd08dcb42534a8a3fc3d10331963672",
+        "shutdown_stages.jsonl": "21e3a2b50e66189b1fe19c8782027e2c20f14a0f67acfddf6f119bf5747cf79e",
+        "app.log": "4d85fbd29933325ed34559a4bf56065d260359ebe3ebebd6a613d2a5bf093362",
+        "mediamtx.log": "ba10c58200e24b54c6890ca3a98d69b6aea323ba1535b5615c16ba4288e062b8"
+      }
+    }
+  },
+  "validation": {
+    "targeted_tests_passed": 46,
+    "ruff": "PASS",
+    "diff_check": "PASS"
+  },
+  "interpretation": "Reproduced shutdown timeout and observed V4L2 buffer-pool deactivation wait. RTSP sink-first candidate passed two actual-code trials; I40 remains OPEN pending output-server-loss/uninstrumented checks. Not CUDA700 root-cause closure.",
+  "deployment_performed": false,
+  "operating_check": {
+    "checked_at": "2026-10-01 08:34 KST",
+    "status": "healthy",
+    "started_at": "2026-09-16T23:45:46.903505745Z",
+    "restart_count": 0,
+    "isolated_v084_containers_remaining": 0
+  },
+  "publication": {
+    "url": "http://192.168.2.141:18081/",
+    "wbs_rows_match": 33,
+    "png_first_page_checked": false,
+    "browser_interaction_tested": false,
+    "other_pc_tested": false,
+    "artifacts": {
+      "index.html": {
+        "bytes": 22741,
+        "sha256": "b279e5b0143dc9fa2ab08d6db821819064386e6403f7d2c711918bca82a4583e",
+        "http_bytes_match": true
+      },
+      "CCTV_project_progress.pdf": {
+        "bytes": 124231,
+        "sha256": "3fdfc0c3bdfe231f49662bb70ab5d4ebd7d29bee586c1297ae74503709fd2f35",
+        "http_bytes_match": true
+      }
+    }
+  },
+  "schedule_update": {
+    "requested_on": "2026-10-01",
+    "target_date": "2026-10-02",
+    "bounded_work_estimate_hours": "5-9",
+    "excludes": [
+      "CUDA700 root-cause fix",
+      "operating maintenance wait",
+      "new defects or missing rollback artifacts"
+    ],
+    "completion_guaranteed": false
+  }
+}

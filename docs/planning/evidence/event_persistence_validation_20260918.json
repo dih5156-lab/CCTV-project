@@ -1,0 +1,72 @@
+{
+  "recorded_at": "2026-09-18T06:01:25.280987+00:00",
+  "plan_version": "0.7",
+  "wbs": "P2.2",
+  "status": "IN_PROGRESS",
+  "scope": "external MQTT durable receipts and atomic event/job persistence; local slice",
+  "junit": {
+    "path": "docs/planning/evidence/event_persistence_slice_20260918.xml",
+    "tests": 231,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "console_elapsed_seconds": 12.29,
+    "suite_elapsed_seconds": 12.29
+  },
+  "new_tests": {
+    "event_store": 11,
+    "external_service": 20
+  },
+  "crash_checkpoints": [
+    "after_T1_receipt_commit",
+    "after_T2_event_job_commit",
+    "during_mock_publisher",
+    "after_submission_state_commit"
+  ],
+  "checks": {
+    "ruff_files": 5,
+    "black_new_files": 3,
+    "py_compile_app_files": 3,
+    "final_results": "PASS",
+    "tracked_diff_check": "PASS"
+  },
+  "environment": {
+    "sqlite_version": "3.37.2",
+    "databases": "pytest temporary SQLite files",
+    "publisher": "mock",
+    "process_exit": "real child os._exit(42)"
+  },
+  "not_validated": [
+    "real MQTT QoS/session/ACK/redelivery",
+    "video pre-queue intake",
+    "delivery worker lease/retry/consumer ACK",
+    "PostgreSQL in this run",
+    "power loss",
+    "throughput/latency capacity",
+    "Docker image build",
+    "production deployment",
+    "physical devices or monitoring system"
+  ],
+  "source_sha256": {
+    "src/ingest_store.py": "2435775e7e4397583e2fbdc020a161b0072b034251dc6081248da038e9fe90e1",
+    "src/event_ingest_store.py": "be25973a8419a64861ee94adf64e261293e0ee16b8ea2a3b8e3641142b9872dd",
+    "src/services/external_ingest.py": "6dacac0c7430cbd021308fd3fb9a581eb949c8b9ac6dde195ed0992b31af59de",
+    "tests/test_event_ingest_store.py": "3e8fa90b8fc2cc4eb0cb764a973f9c2f987c932d3b8d690b13376f0cd316881c",
+    "tests/test_external_ingest_durable.py": "a6c408cd746356cdb48c1d9bc346b799be04549365c754e75b21e9090605db5b"
+  },
+  "documentation": {
+    "markdown_files": 13,
+    "local_links_checked": 197,
+    "wbs_rows": 33,
+    "states": {
+      "DONE": 5,
+      "BLOCKED": 2,
+      "READY": 3,
+      "IN_PROGRESS": 1,
+      "PLANNED": 15,
+      "VERIFY": 7
+    },
+    "dependency_check": "PASS",
+    "whitespace_check": "PASS"
+  }
+}

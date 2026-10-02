@@ -1,0 +1,92 @@
+{
+  "recorded_at": "2026-09-18T06:29:05.421721+00:00",
+  "plan_version": "0.8",
+  "wbs": "P2.2",
+  "status": "IN_PROGRESS",
+  "scope": "external MQTT optional durable subscription ACK and broker redelivery",
+  "junit": {
+    "path": "docs/planning/evidence/mqtt_ack_final_20260918.xml",
+    "tests": 253,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "console_elapsed_seconds": 26.63,
+    "suite_elapsed_seconds": 26.627
+  },
+  "new_tests": {
+    "subscriber_unit": 13,
+    "real_broker_integration": 7
+  },
+  "real_broker_cases": [
+    "normal_and_quarantined_ack_no_redelivery",
+    "sqlite_failure_no_ack_owner_loop_reconnect_duplicate_flag",
+    "offline_persistent_session_queue",
+    "exit_before_T1",
+    "exit_after_T1",
+    "exit_before_ACK",
+    "exit_after_broker_received_ACK"
+  ],
+  "checks": {
+    "ruff_files": 6,
+    "black_files": 4,
+    "py_compile_app_files": 3,
+    "final_results": "PASS",
+    "tracked_diff_check": "PASS"
+  },
+  "environment": {
+    "sqlite_version": "3.37.2",
+    "paho_version": "2.1.0",
+    "mosquitto_version": "2.0.22",
+    "image_tag": "eclipse-mosquitto:2.0",
+    "image_short_id": "914f52938680",
+    "network": "none",
+    "published_ports": [],
+    "broker_persistence": false,
+    "transport": "unix",
+    "cpu_limit": 0.5,
+    "memory_limit_mib": 64,
+    "test_container": "cctv-p22-mqtt-20260918",
+    "test_container_stopped_and_removed": true,
+    "databases": "pytest temporary SQLite files",
+    "physical_output_republish": false,
+    "process_exit": "real child os._exit(42)"
+  },
+  "not_validated": [
+    "direct TLV outer JSON and MQTT ACK",
+    "video pre-queue intake",
+    "delivery worker or monitoring/device ACK",
+    "broker restart/power loss",
+    "production TCP/TLS/ACL",
+    "QoS 0 redelivery",
+    "performance/capacity",
+    "image build/production deployment"
+  ],
+  "source_sha256": {
+    "src/protocols/_mqtt_factory.py": "122ff049430c257b24e6c253952fc897b1d60f6dd5cb45c5d2ada68740676f98",
+    "src/protocols/mqtt_subscriber.py": "a690f72af9b05fdc054b71ae1a50420954ffacbec69cd3a7937fd9e3e314eee3",
+    "src/services/external_ingest.py": "edab33ce3e4ca976b441c072437dd74143906116a541a67a279327434706af13",
+    "tests/test_mqtt_durable_subscriber.py": "03c6bebda4d62a5db08d245bf3670684152268b52899220940a4c9ecd6f1992d",
+    "tests/test_mqtt_durable_integration.py": "05659f66e5aeae4f2ba5c0bc97e1f18c8b62d6e6a14ff2b89d917e2c91b48c2b",
+    "tests/test_external_ingest_durable.py": "770357e88042b5a04f6def73a7e10974b15f41c95b4c323fc909a7e2e4f4dfe6"
+  },
+  "official_references": [
+    "https://eclipse.dev/paho/files/paho.mqtt.python/html/client.html",
+    "https://eclipse.dev/paho/files/paho.mqtt.python/html/index.html#known-limitations",
+    "https://mosquitto.org/man/mosquitto-conf-5.html"
+  ],
+  "documentation": {
+    "markdown_files": 14,
+    "local_links_checked": 217,
+    "wbs_rows": 33,
+    "states": {
+      "DONE": 5,
+      "BLOCKED": 2,
+      "READY": 3,
+      "IN_PROGRESS": 1,
+      "PLANNED": 15,
+      "VERIFY": 7
+    },
+    "dependency_check": "PASS",
+    "whitespace_check": "PASS"
+  }
+}

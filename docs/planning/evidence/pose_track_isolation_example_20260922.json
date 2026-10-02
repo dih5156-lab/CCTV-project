@@ -1,0 +1,25 @@
+{
+  "scope": "CPU synthetic input/model-feature isolation; no real classifier, GPU or physical output",
+  "before": "pose_track_gap_20260922.json (historical pre-fix evidence)",
+  "alternating_high_score_tracks": [
+    101,
+    202,
+    101
+  ],
+  "buffered_records": 6,
+  "model_input_mean_bbox_aspects": [
+    0.5,
+    2.0
+  ],
+  "verified_tracks": [
+    101,
+    202
+  ],
+  "frames_per_track": [
+    3,
+    3
+  ],
+  "same_camera_other_track_cache_reused": false,
+  "distinct_track_input_isolated": true,
+  "physical_identity_accuracy_verified": false
+}

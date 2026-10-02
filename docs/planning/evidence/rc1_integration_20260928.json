@@ -1,0 +1,277 @@
+{
+  "version": "0.53",
+  "fixture": "data/runtime/p51_rc1_20260928_v053",
+  "candidate": "P5.1-RC1-20260928",
+  "scope": "single recorded input with production feature settings; isolated loopback RTSP receiver and DB; CPU2/mem8GB",
+  "setup_failure": "read-only /app/logs; preserved setup_readonly_logs, temporary log mount added",
+  "trials": {
+    "baseline": {
+      "experiment": {
+        "scope": "one local RTSP input, IOU, full candidate models, captured real camera video replay; no live camera connection",
+        "input": "/baseline/camera_1_capture.mkv",
+        "completed_experiment": true,
+        "receiver_exit": 0,
+        "output_bytes": 8433340,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 39.829
+          }
+        ],
+        "sample_count": 121,
+        "elapsed_seconds": 87.73757642391138
+      },
+      "frames_processed": 843,
+      "frames_dropped_counter": 0,
+      "models": {
+        "primary": {
+          "enabled": true,
+          "unique_id": 1,
+          "tensor_frames": 422
+        },
+        "pose": {
+          "enabled": false,
+          "unique_id": null,
+          "tensor_frames": 0
+        },
+        "attributes": {
+          "enabled": true,
+          "unique_id": 3,
+          "tensor_frames": 399
+        },
+        "helmet": {
+          "enabled": true,
+          "unique_id": 2,
+          "tensor_frames": 399
+        }
+      },
+      "appearance_backends": {
+        "color_backend": {
+          "requests": 525,
+          "completed": 525,
+          "seconds": 12.11539807380177
+        },
+        "attribute_backend": {
+          "requests": 333,
+          "completed": 333,
+          "seconds": 0.0021586453076452017
+        }
+      },
+      "temporal": {
+        "requests": 1,
+        "process_calls": 1,
+        "process_completed": 1,
+        "process_seconds": 12.092606483027339,
+        "parsed_results": 1,
+        "unparsed_results": 0,
+        "insufficient_pose_results": 1,
+        "insufficient_window_results": 0,
+        "window_reports_missing": 0,
+        "window_inferences": 1
+      },
+      "inline_rf": {
+        "enabled": true,
+        "cameras": {}
+      },
+      "face_calls": "not instrumented; worker start only",
+      "inference_errors": 0,
+      "model_metrics_errors": 0,
+      "pipeline_restarts": 0,
+      "context_matched": 333,
+      "context_missed": 12,
+      "context_expired": 433,
+      "db_rows": 16,
+      "db_text_id_rows": 16,
+      "db_integrity": "ok",
+      "crop_files": 1,
+      "output": {
+        "programs": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "r_frame_rate": "1000/1",
+            "avg_frame_rate": "0/0",
+            "nb_read_frames": "354"
+          }
+        ],
+        "format": {
+          "duration": "19.950000",
+          "size": "8433340"
+        }
+      },
+      "output_sha256": "09e8e65d8cc1d0a42f2398bfa781149804758f5ba00a90293a8293a69f239ad0",
+      "output_timing_warning": true,
+      "tail_wall_seconds": 19.823,
+      "tail_source_pts_seconds": 20.685,
+      "tail_relative_backlog_seconds": -0.862,
+      "cpu_throttling_events_delta": 8,
+      "decode_exit": 0,
+      "decode_nonmonotonic_dts_warnings": 0,
+      "sps_num_units_in_tick": 0
+    },
+    "no_poc": {
+      "experiment": {
+        "scope": "one local RTSP input, IOU, full candidate models, captured real camera video replay; no live camera connection",
+        "input": "/baseline/camera_1_capture.mkv",
+        "completed_experiment": true,
+        "receiver_exit": 0,
+        "output_bytes": 11593703,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 53.752
+          }
+        ],
+        "sample_count": 133,
+        "elapsed_seconds": 101.50508741498925
+      },
+      "frames_processed": 1078,
+      "frames_dropped_counter": 0,
+      "models": {
+        "primary": {
+          "enabled": true,
+          "unique_id": 1,
+          "tensor_frames": 539
+        },
+        "pose": {
+          "enabled": false,
+          "unique_id": null,
+          "tensor_frames": 0
+        },
+        "attributes": {
+          "enabled": true,
+          "unique_id": 3,
+          "tensor_frames": 487
+        },
+        "helmet": {
+          "enabled": true,
+          "unique_id": 2,
+          "tensor_frames": 487
+        }
+      },
+      "appearance_backends": {
+        "color_backend": {
+          "requests": 549,
+          "completed": 549,
+          "seconds": 9.856981288641691
+        },
+        "attribute_backend": {
+          "requests": 336,
+          "completed": 336,
+          "seconds": 0.0049620207864791155
+        }
+      },
+      "temporal": {
+        "requests": 1,
+        "process_calls": 1,
+        "process_completed": 1,
+        "process_seconds": 13.855224044062197,
+        "parsed_results": 1,
+        "unparsed_results": 0,
+        "insufficient_pose_results": 1,
+        "insufficient_window_results": 0,
+        "window_reports_missing": 0,
+        "window_inferences": 1
+      },
+      "inline_rf": {
+        "enabled": true,
+        "cameras": {}
+      },
+      "face_calls": {
+        "requests": 344,
+        "completed": 344,
+        "errors": 0,
+        "results": 0,
+        "seconds": 4.534605576889589
+      },
+      "inference_errors": 0,
+      "model_metrics_errors": 0,
+      "pipeline_restarts": 0,
+      "context_matched": 336,
+      "context_missed": 23,
+      "context_expired": 381,
+      "db_rows": 16,
+      "db_text_id_rows": 16,
+      "db_integrity": "ok",
+      "crop_files": 2,
+      "output": {
+        "programs": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080,
+            "r_frame_rate": "1000/1",
+            "avg_frame_rate": "0/0",
+            "nb_read_frames": "490"
+          }
+        ],
+        "format": {
+          "duration": "19.974000",
+          "size": "11593703"
+        }
+      },
+      "output_sha256": "e692564cd9daabe482a494b37eb5fa4e0aeb8d79af26c79090caaa6fa56a24b1",
+      "output_timing_warning": true,
+      "tail_wall_seconds": 19.908,
+      "tail_source_pts_seconds": 19.651,
+      "tail_relative_backlog_seconds": 0.257,
+      "cpu_throttling_events_delta": 0,
+      "decode_exit": 0,
+      "decode_nonmonotonic_dts_warnings": 187,
+      "sps_num_units_in_tick": 0
+    }
+  },
+  "conclusion": {
+    "integrated_model_and_rtsp_execution": "observed",
+    "deployment_ready": false,
+    "new_issue": "I33: invalid H264 timing metadata (0/0) persists with POC fixer enabled and disabled",
+    "limits": [
+      "partial body input: inline RF actual execution unobserved; TCN reported insufficient pose",
+      "face calls complete but zero recognized/detected face results; no quality pass",
+      "network isolation intentionally causes MQTT failures; device/monitoring delivery not tested",
+      "short sequential tests on shared GPU and CPU2/memory8GB do not prove production or multi-camera performance",
+      "no production code/config/DB changes; no production restart",
+      "DB is new isolated DB, not production migration/restore validation"
+    ]
+  },
+  "source_manifest_check": {
+    "files": 357,
+    "status": "PASS"
+  },
+  "validation": {
+    "wbs_rows": 33,
+    "status_counts": "PASS",
+    "fixture_python_syntax": 3,
+    "renderer_syntax": "PASS",
+    "document_whitespace": "PASS",
+    "renderer_ruff": "PASS"
+  },
+  "production_final": {
+    "status": "running",
+    "health": "healthy",
+    "started_at": "2026-09-16T23:45:46.903505745Z",
+    "restart_count": 0,
+    "remaining_test_containers": 0
+  },
+  "publication": {
+    "HTML": {
+      "bytes": 22628,
+      "sha256": "549703772729b1ff4c5309b4c7164d42c0a90ad320d9b9f4fa3d25270be46939",
+      "matches_served_file": true
+    },
+    "PDF": {
+      "bytes": 125043,
+      "sha256": "77aff1ff760912c41a40ae2184366618854f89576c62affd15564c19b489b9c2",
+      "matches_served_file": true
+    }
+  }
+}

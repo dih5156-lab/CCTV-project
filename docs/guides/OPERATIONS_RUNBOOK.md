@@ -29,10 +29,22 @@ edgex-mqtt-broker   Up, healthy, 127.0.0.1:1883->1883
 
 주의:
 
-- `cctv-public-api`만 호스트 외부 접근이 가능한 `0.0.0.0:9000`으로 열려 있습니다.
-- `alert-api`, `action-layer`, `mqtt`는 로컬 호스트에만 바인딩되어 있습니다.
+- 현재 Jetson compose 기준으로 `cctv-alert-api`의 8000 포트는 `host_ip` 제한이
+  없어 모든 인터페이스에 공개될 수 있습니다. 외부 공개가 필요하지 않다면
+  `127.0.0.1:8000` 바인딩 또는 방화벽 정책을 적용해야 합니다.
+- `cctv-action-layer`와 AI 엔진 디버그 포트도 compose의 `host_ip` 설정을
+  전수 확인한 뒤 외부 접근을 제한합니다. 이 문서는 설정을 자동 변경하지 않습니다.
 - 운영 환경에서는 `PUBLIC_API_KEY`, `INTERNAL_SERVICE_TOKEN`, `GRAFANA_ADMIN_PASSWORD`를 반드시 실제 값으로 설정해야 합니다.
 - MQTT 브로커는 익명 접속을 허용하지 않습니다. 실행 전 `mosquitto/passwd`를 생성하고 `MQTT_USER`, `MQTT_PASSWORD`를 설정해야 합니다.
+
+내부 포트 공개 여부는 아래 읽기 전용 점검으로 확인할 수 있습니다. 현재 Compose의
+Alert API·Action Layer·AI 디버그 포트가 `host_ip` 없이 정의되어 있으면 `passed: false`가
+나옵니다. 설정을 자동으로 바꾸지 않으므로 결과를 검토한 뒤 별도 변경 절차를 진행합니다.
+
+```bash
+.venv/bin/python scripts/health/check_internal_port_exposure.py \
+  --compose docker-compose.jetson.yml --warn-only
+```
 
 ## 서비스 구성 요약
 
@@ -159,6 +171,20 @@ curl -fsS \
 .venv/bin/python scripts/smoke/smoke_test_deployment.py
 .venv/bin/python scripts/smoke/smoke_test_data_flow.py
 ```
+
+운영 환경에서 Action Layer에 `INTERNAL_SERVICE_TOKEN`이 설정되어 있으면
+데이터 흐름 smoke 실행 전에 토큰을 셸 환경에 주입해야 합니다. 토큰 값은
+출력하지 말고 다음처럼 `.env.jetson`에서 읽습니다.
+
+```bash
+set -a
+source .env.jetson
+set +a
+.venv/bin/python scripts/smoke/smoke_test_data_flow.py
+```
+
+또는 이미 환경변수를 주입한 셸에서는 그대로 실행합니다. 토큰을 전달하지
+않으면 Action Layer 이벤트 검사에서 `401 Unauthorized`가 발생합니다.
 
 기대 결과:
 
@@ -452,12 +478,21 @@ docker compose --env-file .env.jetson -f docker-compose.jetson.yml logs cctv-ai-
 확인 방법:
 
 ```bash
+.venv/bin/python scripts/health/check_cameras_config.py \
+  --config cameras.json \
+  --output-devices config/output_devices.json
 .venv/bin/python scripts/health/check_field_network.py --allow-unconfigured
 .venv/bin/python scripts/health/check_alarm_devices.py
 docker compose logs --tail 120 cctv-ai-engine
 docker compose logs --tail 120 cctv-action-layer
 docker compose exec cctv-action-layer env | grep -E 'SPEAKER|SIREN|SIGNBOARD'
 ```
+
+첫 번째 검사에서 `has no enabled output device mapping`이 나오면
+`cameras.json`의 활성 카메라 ID와 `output_devices.json`의 `camera_ids`가
+일치하지 않는 상태다. EdgeX/Shadow 모드에서는 이 경우 물리 장치 ID 없는
+명령을 발행하지 않고 실패 처리하므로, 장치에 명령을 보내기 전에 매핑을
+먼저 수정한다.
 
 Docker socket 권한이 막혀 있으면 `sudo`로 확인합니다.
 
@@ -492,6 +527,39 @@ nc -vz <스피커_IP> 80
 nc -vz <경광등_IP> 80
 nc -vz <전광판_IP> 5000
 ```
+
+### Docker 컨테이너가 `Created` 상태에서 시작되지 않음
+
+다음과 같은 오류가 반복되면 애플리케이션 코드보다 Docker/containerd
+런타임의 shim 상태를 먼저 확인한다.
+
+```text
+failed to start shim
+failed to create TTRPC connection
+unsupported protocol
+```
+
+확인 순서:
+
+```bash
+docker ps -a --filter name=cctv-action-layer
+docker info --format 'server={{.ServerVersion}} runtime={{.DefaultRuntime}}'
+sudo journalctl -u docker --since '30 min ago' --no-pager | tail -120
+sudo journalctl -u containerd --since '30 min ago' --no-pager | tail -120
+```
+
+동일한 shim 오류가 확인되면 실행 중인 서비스에 짧은 영향이 생길 수
+있음을 공지한 뒤 containerd를 재시작한다.
+
+```bash
+sudo systemctl restart containerd
+docker compose -f docker-compose.jetson.yml up -d --no-deps cctv-action-layer
+docker compose -f docker-compose.jetson.yml ps cctv-action-layer
+```
+
+Action Layer 데이터는 Compose의 `/app/data` bind mount를 통해 호스트
+`data`에 저장되므로 컨테이너 재생성만으로 DB를 삭제하지 않는다. 단,
+`docker compose down -v`는 볼륨 삭제 위험이 있으므로 운영 복구에 사용하지 않는다.
 
 스피커/경광등은 InterM HTTP 장비이므로 80번 포트가 열려 있어야 합니다.
 전광판은 Dabit TCP 장비이므로 기본 5000번 포트가 열려 있어야 합니다.
@@ -671,10 +739,20 @@ docker compose up -d aiot-parser-db aiot-parser
 Jetson 배포 전에는 대상 호스트를 명시해 readiness를 실행합니다.
 
 ```bash
-CCTV_DEPLOYMENT_TARGET=jetson .venv/bin/python scripts/health/check_deployment_readiness.py
+.venv/bin/python scripts/health/check_deployment_readiness.py --deployment-target jetson
 ```
 
 낙상 모델은 고정 평가 세트의 품질 게이트도 통과해야 운영 승격할 수 있습니다.
+
+비교 전에 모델 파일과 metrics가 최종 산출물인지 먼저 확인합니다. `partial`, `smoke`,
+`probe` 모델이거나 validation/holdout 지표가 없으면 명령은 종료 코드 2와 함께 `hold`를
+반환합니다.
+
+```bash
+.venv/bin/python scripts/ops/check_model_evaluation_readiness.py \
+  --model <model.pt> \
+  --metrics <metrics.json>
+```
 
 ```bash
 .venv/bin/python scripts/health/check_deployment_readiness.py --require-model-quality

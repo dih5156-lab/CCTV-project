@@ -1,0 +1,62 @@
+{
+  "date": "2026-09-28",
+  "scope": "deterministic threaded module tests; synthetic inference outputs; actual worker, reset, face-cache and appearance pipeline code; no real video/model benchmark",
+  "tests": {
+    "passed": 211,
+    "skipped": 2,
+    "failed": 0,
+    "new_cases": [
+      "test_reset_blocks_old_context_side_effects_without_waiting_for_inference[cam1-queued]",
+      "test_reset_blocks_old_context_side_effects_without_waiting_for_inference[cam1-face]",
+      "test_reset_blocks_old_context_side_effects_without_waiting_for_inference[cam1-appearance]",
+      "test_reset_blocks_old_context_side_effects_without_waiting_for_inference[cam2-queued]",
+      "test_reset_blocks_old_context_side_effects_without_waiting_for_inference[cam2-face]",
+      "test_reset_blocks_old_context_side_effects_without_waiting_for_inference[cam2-appearance]",
+      "test_camera_reset_clears_only_its_smoothing_crops_and_cooldowns",
+      "test_same_track_id_in_two_cameras_does_not_share_appearance_cooldown",
+      "test_matching_cooldown_is_separate_for_camera_and_log_record"
+    ]
+  },
+  "source_changes": {
+    "src/core/_deepstream_context_worker.py": {
+      "before": "65cd201e53c7ea9f2c8e557d2733bfab3f217a30491f9aea7210158b616e98da",
+      "after": "cbfc08d5cb9a26708dd4b0120db37544423735438725f3058f6ff2820d57ecb3"
+    },
+    "src/core/_deepstream_face_context.py": {
+      "before": "23ec96a4492bfbda65617af55b74730207e5083920264d4df930b0817530ef4a",
+      "after": "40db102cebddbf192e5c38fa1dae9c35793bd759595ffb09cb9f86c73e6115af"
+    },
+    "src/core/deepstream_processor.py": {
+      "before": "14c2340ebf3b6d9c550d2b69c1cbbb821a0c70a2d90bfe04f9ee8165ec3623b5",
+      "after": "8f4b51b9572d0de7e78c7c354594d7b3ae95ea03ff7466ca448c2619bc40c893"
+    },
+    "src/core/ai/_appearance_pipeline.py": {
+      "before": "4c050383ae0ce37979f1bf88b17389ec824fadcd536181efbf084f2842719d89",
+      "after": "c6fbc9accdda50b501f1da6a1955be63b122505fff1315f9d4d0174b4fa5c322"
+    },
+    "tests/test_deepstream_context_worker.py": {
+      "before": "c0e50042b04e5da5edf9169ed388aedfa918b919fa24c70f934b12c18e32e8ae",
+      "after": "80bcc1767f71ec307da35f105d947130a40e578de5799af240938ed41fdf0e50"
+    },
+    "tests/test_appearance_pipeline.py": {
+      "before": "86807069e95870bd0a7f723961f3be55ae429a8740c1b87e89b8c4662ffa844c",
+      "after": "594cfece919b449a9703a515bd934711e8d640d1bad1b473c5aaeacac2f63d49"
+    },
+    "tests/test_deepstream_model_metrics.py": {
+      "before": "571fbb8c0a2a54a701773869719971af0f90629092133806ecdb3246f0c4e1af",
+      "after": "5943727084fd97c1011d553ba048170bba7e17765c8018bdd511f0d8acfafbad"
+    }
+  },
+  "operating": {
+    "started_at": "2026-09-16T23:45:46.903505745Z",
+    "restart_count": 0,
+    "health": "healthy",
+    "restarted_by_this_task": false
+  },
+  "limitations": [
+    "snapshot/crop/DB/enqueue commits are serialized with reset; slow IO/reset latency unmeasured",
+    "model inference is outside the lock; controlled blocked inference/reset verified with events, not FPS acceptance",
+    "timestamps/preview-frame correspondence, actual native tracker IDs and full model replay remain unverified",
+    "pre-reset committed historical DB records/snapshots are retained; uncommitted stale work is rejected"
+  ]
+}

@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="1" time="0.272" timestamp="2026-09-21T15:23:11.442283+09:00" hostname="ubuntu"><testcase classname="tests.test_monitoring_remote_live" name="test_existing_committed_status_lookup" time="0.139" /></testsuite></testsuites>

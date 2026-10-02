@@ -1,0 +1,126 @@
+{
+  "started_at": "2026-09-21T07:19:03.185704+00:00",
+  "scope": "Actual Jetson to laptop; dedicated POC DB; one synthetic sensor observation and one synthetic video event",
+  "binding": {
+    "origin_id": "origin_a50ce2623e7b4d6d838f8d7bc69c0235",
+    "consumer_id": "laptop-poc-8260472c6c65",
+    "destination": "record-mqtt:cctv/records/v1/laptop-poc-8260472c6c65"
+  },
+  "source_db": "data/runtime/monitoring_remote_20260921/source.db",
+  "result": "pass",
+  "physical_outputs": false,
+  "stage": "complete",
+  "https_status": 200,
+  "tls_verified": true,
+  "receiver_ready": true,
+  "sender_exit_code": 0,
+  "sender_summary": {
+    "binding": {
+      "origin_id": "origin_a50ce2623e7b4d6d838f8d7bc69c0235",
+      "consumer_id": "laptop-poc-8260472c6c65",
+      "destination": "record-mqtt:cctv/records/v1/laptop-poc-8260472c6c65"
+    },
+    "states": {
+      "stored": 2
+    },
+    "total": 2,
+    "stored": 2
+  },
+  "source_canonical_records": 2,
+  "physical_delivery_jobs": 0,
+  "records": [
+    {
+      "delivery_id": "job_5df69987f4544fe293c393e6772769f6",
+      "record_type": "event",
+      "payload_sha256": "e08afa8a96d222b4e87f3129d6634620e21ff1b3a9312abca047ae9189c00113",
+      "source_state": "stored",
+      "persisted_ack": {
+        "ack_emitted_at": "2026-09-21T07:19:04.908649+00:00",
+        "ack_kind": "consumer_committed",
+        "ack_schema_version": "1.0",
+        "consumer_id": "laptop-poc-8260472c6c65",
+        "delivery_id": "job_5df69987f4544fe293c393e6772769f6",
+        "destination": "record-mqtt:cctv/records/v1/laptop-poc-8260472c6c65",
+        "origin_id": "origin_a50ce2623e7b4d6d838f8d7bc69c0235",
+        "payload_sha256": "e08afa8a96d222b4e87f3129d6634620e21ff1b3a9312abca047ae9189c00113",
+        "receiver_record_id": "rec_283487ac021245308c3955434623b083",
+        "record_id": "poc-video-1",
+        "record_type": "event",
+        "source_namespace": "video_detection",
+        "status": "duplicate",
+        "stored_at": "2026-09-21T07:19:03.616105+00:00"
+      },
+      "fresh_remote_ack": {
+        "ack_schema_version": "1.0",
+        "ack_kind": "consumer_committed",
+        "origin_id": "origin_a50ce2623e7b4d6d838f8d7bc69c0235",
+        "consumer_id": "laptop-poc-8260472c6c65",
+        "destination": "record-mqtt:cctv/records/v1/laptop-poc-8260472c6c65",
+        "delivery_id": "job_5df69987f4544fe293c393e6772769f6",
+        "source_namespace": "video_detection",
+        "record_type": "event",
+        "record_id": "poc-video-1",
+        "payload_sha256": "e08afa8a96d222b4e87f3129d6634620e21ff1b3a9312abca047ae9189c00113",
+        "receiver_record_id": "rec_283487ac021245308c3955434623b083",
+        "stored_at": "2026-09-21T07:19:03.616105+00:00",
+        "status": "duplicate",
+        "ack_emitted_at": "2026-09-21T07:19:05.147628+00:00"
+      }
+    },
+    {
+      "delivery_id": "job_164c3d6de44741deba1e43b416a32d95",
+      "record_type": "sensor_observation",
+      "payload_sha256": "9c8d213b7eeaa886432be91544bca508e82bfab7a139372a8d1ade8ce3c9ff6e",
+      "source_state": "stored",
+      "persisted_ack": {
+        "ack_emitted_at": "2026-09-21T07:19:04.995809+00:00",
+        "ack_kind": "consumer_committed",
+        "ack_schema_version": "1.0",
+        "consumer_id": "laptop-poc-8260472c6c65",
+        "delivery_id": "job_164c3d6de44741deba1e43b416a32d95",
+        "destination": "record-mqtt:cctv/records/v1/laptop-poc-8260472c6c65",
+        "origin_id": "origin_a50ce2623e7b4d6d838f8d7bc69c0235",
+        "payload_sha256": "9c8d213b7eeaa886432be91544bca508e82bfab7a139372a8d1ade8ce3c9ff6e",
+        "receiver_record_id": "rec_1af50abb93a34b978d757069619c219f",
+        "record_id": "obs_6d1a968c4cdfd426353c138fe1fbda3c8072c17467d7062f662bc63646fe43e6",
+        "record_type": "sensor_observation",
+        "source_namespace": "tlv_mqtt",
+        "status": "duplicate",
+        "stored_at": "2026-09-21T07:19:03.837044+00:00"
+      },
+      "fresh_remote_ack": {
+        "ack_schema_version": "1.0",
+        "ack_kind": "consumer_committed",
+        "origin_id": "origin_a50ce2623e7b4d6d838f8d7bc69c0235",
+        "consumer_id": "laptop-poc-8260472c6c65",
+        "destination": "record-mqtt:cctv/records/v1/laptop-poc-8260472c6c65",
+        "delivery_id": "job_164c3d6de44741deba1e43b416a32d95",
+        "source_namespace": "tlv_mqtt",
+        "record_type": "sensor_observation",
+        "record_id": "obs_6d1a968c4cdfd426353c138fe1fbda3c8072c17467d7062f662bc63646fe43e6",
+        "payload_sha256": "9c8d213b7eeaa886432be91544bca508e82bfab7a139372a8d1ade8ce3c9ff6e",
+        "receiver_record_id": "rec_1af50abb93a34b978d757069619c219f",
+        "stored_at": "2026-09-21T07:19:03.837044+00:00",
+        "status": "duplicate",
+        "ack_emitted_at": "2026-09-21T07:19:05.224321+00:00"
+      }
+    }
+  ],
+  "finished_at": "2026-09-21T07:19:05.462557+00:00",
+  "elapsed_seconds": 2.277,
+  "documentation_check": {
+    "plan_version": "0.21",
+    "documents": 7,
+    "valid_local_links": 288,
+    "wbs_counts": {
+      "DONE": 8,
+      "BLOCKED": 2,
+      "READY": 2,
+      "IN_PROGRESS": 1,
+      "PLANNED": 13,
+      "VERIFY": 7
+    }
+  },
+  "implementation_matches_previous_validation": true,
+  "next_step": "Stop only laptop POC receiver, verify 2 new pending records, restart and reconcile 4 stored records; outage not yet injected"
+}

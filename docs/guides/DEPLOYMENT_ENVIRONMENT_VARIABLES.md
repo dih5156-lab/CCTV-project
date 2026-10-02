@@ -82,12 +82,21 @@ Jetson 통합 스택에서 자주 조정하는 값만 추렸습니다. 나머지
 | `DS_YOLO_TASK`, `DS_YOLO_CLASS_IDS`, `DS_YOLO_LABELS` | DeepStream 추론 라우팅 |
 | `DS_YOLO_POSTPROCESS_MODE` | `vectorized`가 운영 기본값이며, 장애 시 `legacy`로 즉시 롤백 |
 | `DS_HELMET_ENABLED`, `DS_FACE_ENABLED`, `DS_APPEARANCE_ENABLED` | 기능 on/off |
+| `DS_CONTEXT_MIN_INTERVAL_SEC` | 기본 `0.5`: 카메라·추적 인물별 얼굴/의상/색상 후처리 최소 간격(초). 새 인물/재연결 후 첫 관측은 즉시 대상, `0`은 제한 해제. 사람·헬멧·낙상 탐지와 생성된 이벤트 저장 주기는 변경하지 않음. 샘플 수 기반 속성 평활화는 실제 시간상 더 오래 걸릴 수 있음 |
 | `DS_PREVIEW_ENABLED`, `STREAM_API_ENABLED`, `STREAM_PORT`, `STREAM_FPS`, `STREAM_JPEG_QUALITY`, `STREAM_API_TOKEN`, `REQUIRE_STREAM_API_TOKEN` | 미리보기/스트림 API |
+| `DS_RTSP_DROP_ON_LATENCY` | 미설정 시 SDK 기본값 유지(7.1: true). RTSP/RTSPS에만 적용. false는 격리 재생의 압축 패킷 폐기 대조용이며 처리량 부족 시 영상 지연/메모리가 누적될 수 있다. 운영 변경 전 입력 FPS·처리량·지연을 함께 검증한다. |
+| `DS_NVVIDEOCONVERT_COPY_HW` | 빈 값: SDK 기본값 유지. `1`: GPU 복사, `2`: VIC 복사. Jetson surface-array 메모리의 CUDA 복사 오류에 대한 NVIDIA 우회 후보. OSD 앞·H.264·preview의 nvvideoconvert에 적용하며 모델 추론 장치는 바꾸지 않는다. 그 외 값은 시작 실패로 처리한다. |
 | `ZONE_API_PORT`, `CAMERA_MODEL_API_PORT`, `FACE_API_PORT` | 내부 관리 API 포트 |
 | `APPEARANCE_ENABLED`, `APPEARANCE_BACKEND`, `APPEARANCE_SAVE_CROPS` | 외형 검색 기본 동작 |
 | `FACE_RECOGNITION_BACKEND`, `FACE_SNAPSHOT_ENABLED` | 얼굴 인식/스냅샷 |
 
 ### 스트림과 H.264 출력 튜닝
+
+2026-09-29 v0.62: `DS_NVVIDEOCONVERT_COPY_HW=2`는 격리 RC3에서 시험하는 설정이다.
+Compose 기본값은 빈 값이며 운영 `.env.jetson`은 변경하지 않았다. VIC는 Jetson용이고,
+surface-array(메모리 유형0/4) 환경을 전제로 검증한다. CUDA 메모리 유형이나 dGPU에 그대로 적용하지 않는다.
+[NVIDIA 오류 대응](https://docs.nvidia.com/metropolis/deepstream/7.1/text/DS_troubleshooting.html)과
+[시험 결과·제약](../planning/TRACKER_VALIDATION.md#v062--cuda-메모리-오류-진단과-vic-복사-후보)을 함께 확인한다.
 
 | 변수 | 일반 Compose 기본값 | Jetson Compose 기본값 | 설명 |
 |---|---:|---:|---|
@@ -96,9 +105,16 @@ Jetson 통합 스택에서 자주 조정하는 값만 추렸습니다. 나머지
 | `STREAM_JPEG_QUALITY` | `65` | `.env.jetson.example`은 `75` | JPEG 품질. 코드에서 `30~95`로 보정 |
 | `DS_H264_ENCODER` | 구성별 값 | `nvv4l2h264enc` | H.264 인코더 |
 | `DS_H264_WIDTH`, `DS_H264_HEIGHT` | `1280`, `720` | `960`, `540` | H.264 출력 해상도 |
+| `DS_H264_FPS` | 코드 fallback `30` | Compose fallback `20` | H.264 출력 목표 프레임률(최소1). 출력 videorate 반복/드랍 가능, AI 추론 FPS와 구분 |
 | `DS_H264_BITRATE` | `4000000` | `3000000` | H.264 bitrate |
 | `DS_H264_POC_FIX_ENABLED` | `.env.example`은 `false` | Compose fallback `true` | H.264 POC 보정 활성화 |
 | `DS_H264_POC_TYPE` | `2` | `2` | POC 보정값 |
+
+**2026-09-29 v0.56 판단 보완:** 수정 전/출력 없는 경로에도 초기 정지가 있어 출력 변경 원인 단정은 정정한다. 확정 수정안과 통합 판정이 없어 운영 보류는 유지한다.
+
+**2026-09-29 v0.55 당시 적용 보류:** 아래 출력 수정 후보가 15FPS 입력에서 정지하여 I33을 재개했다. 출력 제외/수정 전 대조는 진행됐으나 내부 원인은 추가 검증이 필요하다.
+
+2026-09-29 v0.54 당시 I33 로컬 수정: H.264 출력에 videorate를 사용해 mux의0/1 FPS가 인코더에 전달되는 것을 방지한다. 초기 프레임 전 생성은 건너뛰며 반복 가능한 간격은100ms로 제한한다. 운영 적용·장시간/다중 성능 검증은 별도다.
 
 `DS_H264_POC_FIX_ENABLED`는 Python buffer handoff를 사용하므로 CPU 부하와 복사가 늘어날 수 있습니다. 영상 호환 문제가 없으면 현장 부하 측정 후 비활성화를 검토합니다.
 
@@ -106,6 +122,7 @@ Jetson 통합 스택에서 자주 조정하는 값만 추렸습니다. 나머지
 
 | 변수 | 기본값 | 설명 |
 |---|---:|---|
+| `POSE_CROP_MODE` | `0` | crop-pose POC 활성화. 기본값 `0`; `_run_pose_crop()`가 없으면 full-frame으로 fallback |
 | `DS_FALL_SCORE_THRESHOLD` | `3.0` | pose 낙상 점수 판정 기준 |
 | `DS_FALL_ANGLE_HORIZONTAL` / `DS_FALL_ANGLE_INVERTED` | `55` / `125` | 몸통 수평·역수평 각도 기준(도) |
 | `DS_FALL_BBOX_ASPECT_RATIO` | `1.35` | 가로형 bbox 강한 후보 기준 |
@@ -127,11 +144,20 @@ Jetson 통합 스택에서 자주 조정하는 값만 추렸습니다. 나머지
 | `FALLDATA_AUX_FAIL_OPEN_ON_UNAVAILABLE` | `true` | 검증기 장애 시 원본 낙상 알람 유지 |
 | `FALLDATA_AUX_CONFIRM_BORDERLINE` | `false` | DeepStream borderline 후보 확인 실험 옵션 |
 | `FALLDATA_AUX_COMPARE_MODEL_PATH` | 미설정 | 후보 모델 비교 결과 기록 |
+| `FALLDATA_AUX_TEMPORAL_POSE_IMGSZ` | `640` | 보조 TCN Pose 입력 크기. 2026-09-10 현장 비교 기준이며 자식 프로세스에 `--imgsz`로 명시 전달; 운영 적용 전 처리 시간 재검증 필요 |
+| `FALLDATA_AUX_TEMPORAL_WORKER_ENABLED` | `false` | 선택 시 TCN/Pose 모델을 전용 자식 프로세스에서 재사용. 최초 호출/모델 교체/오류 후에는 다시 로딩. 기존 timeout을 대기·시작·응답에 적용하며 실패 시 자식 종료, 다음 호출에서 새로 시작. 60초 유휴 또는 부모 파이프 EOF 시 종료. GPU 메모리를 유지하므로 전체 AI 동시 부하·장시간 검증 후 적용 |
 | `FALLDATA_AUX_TEMPORAL_SLIDING_WINDOW_SIZE` | `0` | `0`이면 기존 전체 영상 추론, 양수면 겹치는 temporal window 사용 |
 | `FALLDATA_AUX_TEMPORAL_SLIDING_WINDOW_STRIDE` | `5` | sliding window 이동 간격 |
 | `FALLDATA_AUX_TEMPORAL_MIN_CONFIRMED_WINDOWS` | `1` | 연속 window 확인 개수; shadow 튜닝에서만 변경 |
 | `FALLDATA_AUX_TEMPORAL_NEAR_MISS_SHADOW_ENABLED` | `false` | 원본 detector near-miss를 temporal 모델에 shadow-only로 전달 |
 | `FALLDATA_AUX_COMPARE_VETO_ENABLED` | `false` | compare 결과 기반 차단 실험 옵션 |
+
+`FALLDATA_AUX_INLINE_POSE_RF=true` 후보에서는 모델 번들의
+`model_kind=deepstream_pose_inline_rf`, `feature_source=deepstream_pose_inline`이 필요하다.
+메타데이터 누락/다른 출처는 `incompatible_feature_contract`로 예측하지 않는다.
+confirm 모드의 기존 fail-open 설정은 유지한다. 확률 필터 없는 명시적 특징 수집은 가능하지만
+불일치 모델의 확률로 수집을 선별하지 않는다. 모델 파일에 출처 이름만 바꿔 넣어 우회하지 않는다.
+현재 설정된 영상 추출 RF의 전환 영향은 [출처 검사 기록](../planning/MODEL_INFERENCE_METRICS.md#rf-source-v069)에 있다.
 
 현재 코드 점검 기준으로 OpenCV 경로는 위 설정을 직접 읽습니다. DeepStream의 borderline/compare 정책은 처리 메서드는 있지만 초기화 연결이 확인되지 않았으므로, 환경변수만 설정하고 활성화되었다고 판단하지 않습니다. 자세한 상태는 [falldata 통합 문서](../features/FALLDATA_INTEGRATION.md)를 참고합니다.
 

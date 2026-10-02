@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="2" time="4.350" timestamp="2026-09-22T08:29:32.553038+09:00" hostname="ubuntu"><testcase classname="tests.test_video_intake_busy" name="test_one_busy_retry_freezes_original_and_commits_one_receipt[insert]" time="0.380"><failure message="sqlite3.OperationalError: database is locked">tests/test_video_intake_busy.py:45: in test_one_busy_retry_freezes_original_and_commits_one_receipt
+    assert enqueue(video, queue, event)
+tests/test_video_event_ingest.py:54: in enqueue
+    return enqueue_queue_item(
+src/core/_deepstream_event_queue.py:26: in enqueue_queue_item
+    queue_item = video_ingest.accept(queue_item, camera_name)
+src/core/video_event_ingest.py:65: in accept
+    ingest_id = self.store.accept_event_json(
+src/event_ingest_store.py:89: in accept_event_json
+    return self._accept_event_raw(namespace, payload, raw_format, destination)
+src/event_ingest_store.py:95: in _accept_event_raw
+    connection.execute(
+E   sqlite3.OperationalError: database is locked</failure></testcase><testcase classname="tests.test_video_intake_busy" name="test_one_busy_retry_freezes_original_and_commits_one_receipt[commit]" time="0.316"><failure message="sqlite3.OperationalError: database is locked">tests/test_video_intake_busy.py:45: in test_one_busy_retry_freezes_original_and_commits_one_receipt
+    assert enqueue(video, queue, event)
+tests/test_video_event_ingest.py:54: in enqueue
+    return enqueue_queue_item(
+src/core/_deepstream_event_queue.py:26: in enqueue_queue_item
+    queue_item = video_ingest.accept(queue_item, camera_name)
+src/core/video_event_ingest.py:65: in accept
+    ingest_id = self.store.accept_event_json(
+src/event_ingest_store.py:89: in accept_event_json
+    return self._accept_event_raw(namespace, payload, raw_format, destination)
+src/event_ingest_store.py:94: in _accept_event_raw
+    with self._connect() as connection:
+/usr/lib/python3.10/contextlib.py:142: in __exit__
+    next(self.gen)
+tests/test_video_intake_busy.py:31: in connected
+    with original() as connection:
+/usr/lib/python3.10/contextlib.py:142: in __exit__
+    next(self.gen)
+src/ingest_store.py:70: in _connect
+    with connection:
+E   sqlite3.OperationalError: database is locked</failure></testcase></testsuite></testsuites>

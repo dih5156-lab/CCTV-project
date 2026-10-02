@@ -1,0 +1,160 @@
+{
+  "scope": "decode_and_primary_only",
+  "commercial_acceptance": "NOT_EVALUATED",
+  "finished": true,
+  "errors": [],
+  "channels": 1,
+  "interval": 0,
+  "mux_resolution": [
+    1280,
+    720
+  ],
+  "topology": "independent",
+  "inference_batch_size": 1,
+  "observed_decode_caps": {
+    "replay_1": "video/x-raw(memory:NVMM), format=(string){ I420, NV12, P010_10LE, BGRx, RGBA, GRAY8 }, width=(int)[ 1, 2147483647 ], height=(int)[ 1, 2147483647 ], framerate=(fraction)[ 0/1, 2147483647/1 ]"
+  },
+  "samples": [
+    {
+      "monotonic": 1038416.936303701,
+      "cameras": {
+        "replay_1": {
+          "frames_seen": 0,
+          "frames_inferred": 0,
+          "frames_skipped": 0,
+          "frames_inference_unknown": 0,
+          "last_frame_age_seconds": null,
+          "tensor_frames": 0
+        }
+      },
+      "temperature_max_c": 54.312,
+      "memory_kib": {
+        "MemAvailable": 32324768,
+        "SwapFree": 32102816
+      }
+    },
+    {
+      "monotonic": 1038417.936489683,
+      "cameras": {
+        "replay_1": {
+          "frames_seen": 52,
+          "frames_inferred": 52,
+          "frames_skipped": 0,
+          "frames_inference_unknown": 0,
+          "last_frame_age_seconds": 0.0032904590480029583,
+          "tensor_frames": 52,
+          "source_pts_ns": 867533333,
+          "output_running_time_ns": 1757740543
+        }
+      },
+      "temperature_max_c": 54.343,
+      "memory_kib": {
+        "MemAvailable": 32062820,
+        "SwapFree": 32102816
+      }
+    },
+    {
+      "monotonic": 1038418.937134963,
+      "cameras": {
+        "replay_1": {
+          "frames_seen": 129,
+          "frames_inferred": 129,
+          "frames_skipped": 0,
+          "frames_inference_unknown": 0,
+          "last_frame_age_seconds": 0.018639324931427836,
+          "tensor_frames": 129,
+          "source_pts_ns": 2152150000,
+          "output_running_time_ns": 2743066234
+        }
+      },
+      "temperature_max_c": 54.593,
+      "memory_kib": {
+        "MemAvailable": 32042360,
+        "SwapFree": 32102816
+      }
+    },
+    {
+      "monotonic": 1038419.938830212,
+      "cameras": {
+        "replay_1": {
+          "frames_seen": 203,
+          "frames_inferred": 203,
+          "frames_skipped": 0,
+          "frames_inference_unknown": 0,
+          "last_frame_age_seconds": 0.008816037094220519,
+          "tensor_frames": 203,
+          "source_pts_ns": 3386716666,
+          "output_running_time_ns": 3754520074
+        }
+      },
+      "temperature_max_c": 54.187,
+      "memory_kib": {
+        "MemAvailable": 32021244,
+        "SwapFree": 32102816
+      }
+    },
+    {
+      "monotonic": 1038420.94012286,
+      "cameras": {
+        "replay_1": {
+          "frames_seen": 279,
+          "frames_inferred": 279,
+          "frames_skipped": 0,
+          "frames_inference_unknown": 0,
+          "last_frame_age_seconds": 0.003607825026847422,
+          "tensor_frames": 279,
+          "source_pts_ns": 4654650000,
+          "output_running_time_ns": 4761059169
+        }
+      },
+      "temperature_max_c": 54.281,
+      "memory_kib": {
+        "MemAvailable": 32013704,
+        "SwapFree": 32102816
+      }
+    },
+    {
+      "monotonic": 1038421.94318429,
+      "cameras": {
+        "replay_1": {
+          "frames_seen": 344,
+          "frames_inferred": 344,
+          "frames_skipped": 0,
+          "frames_inference_unknown": 0,
+          "last_frame_age_seconds": 0.009989831945858896,
+          "tensor_frames": 344,
+          "source_pts_ns": 5739066666,
+          "output_running_time_ns": 5757731202
+        }
+      },
+      "temperature_max_c": 54.687,
+      "memory_kib": {
+        "MemAvailable": 31936780,
+        "SwapFree": 32102816
+      }
+    }
+  ],
+  "metric_evidence": "primary_tensor_meta",
+  "elapsed_seconds": 3.006049326970242,
+  "cameras": {
+    "replay_1": {
+      "frames_seen": 215,
+      "frames_inferred": 215,
+      "frames_skipped": 0,
+      "frames_inference_unknown": 0,
+      "tensor_frames": 215,
+      "seen_fps": 71.52244577992195,
+      "inferred_fps": 71.52244577992195,
+      "tensor_fps": 71.52244577992195,
+      "last_frame_age_seconds": 0.009989831945858896,
+      "replay_timing": {
+        "source_timeline_seconds": 3.5869166660000005,
+        "source_to_wall_ratio": 1.193232803539923,
+        "output_lag_start_seconds": 0.5909162340000003,
+        "output_lag_end_seconds": 0.018664536000000176,
+        "output_lag_change_seconds": -0.5722516980000001,
+        "scope": "source_pts_vs_pipeline_clock_not_end_to_end"
+      }
+    }
+  }
+}

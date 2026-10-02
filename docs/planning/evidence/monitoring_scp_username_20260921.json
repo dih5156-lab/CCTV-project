@@ -1,0 +1,56 @@
+{
+  "observed_at": "2026-09-21T07:14:58.531270+00:00",
+  "source": "Jetson ssh service journal",
+  "invalid_user_attempts": [
+    {
+      "timestamp_us": "1789974710169241",
+      "supplied_username": " sawwave",
+      "username_codepoints": [
+        32,
+        115,
+        97,
+        119,
+        119,
+        97,
+        118,
+        101
+      ],
+      "message": "Invalid user  sawwave from 192.168.2.79 port 59760"
+    },
+    {
+      "timestamp_us": "1789974760719910",
+      "supplied_username": " sawwave",
+      "username_codepoints": [
+        32,
+        115,
+        97,
+        119,
+        119,
+        97,
+        118,
+        101
+      ],
+      "message": "Invalid user  sawwave from 192.168.2.79 port 59728"
+    },
+    {
+      "timestamp_us": "1789974788768058",
+      "supplied_username": " sawwave",
+      "username_codepoints": [
+        32,
+        115,
+        97,
+        119,
+        119,
+        97,
+        118,
+        101
+      ],
+      "message": "Invalid user  sawwave from 192.168.2.79 port 59682"
+    }
+  ],
+  "existing_account": "sawwave (uid 1000); passwd status P",
+  "confirmed_cause": "SSH username contains a leading ASCII space (U+0020); supplied username does not match sawwave",
+  "possible_command_cause": "Backslash followed by a space when entering the earlier multiline scp command; client command was not observed",
+  "action": "Provide a single-line scp command; no password reset or sshd configuration change",
+  "verification_pending": "Successful login and client transfer"
+}

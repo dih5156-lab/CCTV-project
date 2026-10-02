@@ -1,0 +1,482 @@
+{
+  "version": "0.85",
+  "updated_at": "2026-10-01T11:30:09.854290+09:00",
+  "wbs": "P5.1",
+  "wbs_status": "IN_PROGRESS",
+  "issue": "I40",
+  "issue_status": "FIXED_LOCAL",
+  "operating_deployment": false,
+  "cuda700_issue_I34": "OPEN",
+  "source_change": {
+    "path": "src/core/_deepstream_pipeline_builder.py",
+    "before_sha256": "acb5e4b8913d7322573c4dc252ea4a23905e64df9f5778a23e9d9e11b881aa35",
+    "after_sha256": "781804ae3283c6d78413e58dbdfdc75a13f5137702f216cff93257a5d6262d71",
+    "fix": "Lock the RTSP output bin before early NULL; unlock only after parent NULL."
+  },
+  "candidate_manifest": {
+    "path": "data/runtime/p51_shutdown_20261001_v086/candidate_manifest.json",
+    "sha256": "be78a50321185ec8af3173788d8a6a48fea814cd440274bd431dfa1845e396a9",
+    "files": 359
+  },
+  "candidate_image": {
+    "id": "sha256:809693da4ed0c288e68744235f4ff0156612d73ca59f5e6282ffcedf3e9aee49",
+    "tag": "cctv-ai-engine:p51-v085-rtsp-shutdown",
+    "base_image": "sha256:1ace5b7832a50d6675b66146b0edc307021795732fc7c9a770e2cd628d7fd261",
+    "context": "data/runtime/p51_shutdown_20261001_v086/image_context",
+    "contents": {
+      "source_files_checked": 359,
+      "source_differences": [
+        "known_faces.json"
+      ],
+      "rtsp_sha256": "b6e3862ffb17e51defdfae753701b8dfc5422563d8140d227b824d89ec14f96a",
+      "plugin_details": [
+        "Filename                 /usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstrtspclientsink.so",
+        "Version                  1.20.1.1"
+      ]
+    },
+    "source_note": "358 source/config files match; known_faces.json is explicitly overridden by the unchanged read-only runtime data mount.",
+    "no_app_source_bind": true,
+    "rtsp_version": "1.20.1.1 (local backport, not official 1.20.2 binary)",
+    "upstream_commit": "4ac544d5aa9ed100398570795d08b8022a5a45c5"
+  },
+  "tests": {
+    "red": "New real-Gst regression failed on NULL_TO_READY before the source fix.",
+    "green_command": ".venv/bin/python -m pytest -q tests/test_deepstream_pipeline_builder.py tests/test_deepstream_shutdown.py tests/test_deepstream_fatal_error.py",
+    "passed": 36,
+    "ruff": "PASS"
+  },
+  "trials": {
+    "patched_output_loss_attach": {
+      "codec_mode": "rtsp",
+      "completed": false,
+      "scope": "frozen sink-first candidate, direct main.py without diagnostic hooks, separate input/output RTSP servers, no operating deployment",
+      "scenario": "output_loss",
+      "loaded_rtsp_plugin": [
+        "/audit/plugin_build/patched/libgstrtspclientsink.so"
+      ],
+      "receiver_exit": 0,
+      "output_bytes": 28544501,
+      "last_frames": 2074.0,
+      "output_server_exit": -9,
+      "input_server_alive": true,
+      "input_publisher_alive": true,
+      "frames_after_output_loss": 2077.0,
+      "app_exit_before_sigint": null,
+      "stop_budget_exceeded": true,
+      "app_exit": null,
+      "stop_budget_seconds": 30.000412245979533,
+      "diagnostic_abort_exit": -6,
+      "stop_seconds": 70.79003515397198,
+      "elapsed_seconds": 196.7829250760842,
+      "transitions": [
+        {
+          "name": "input_ready",
+          "elapsed": 17.933
+        },
+        {
+          "name": "output_ready",
+          "elapsed": 17.944
+        },
+        {
+          "name": "output_server_killed",
+          "elapsed": 108.603
+        },
+        {
+          "name": "sigint_requested",
+          "elapsed": 125.953
+        }
+      ],
+      "sample_count": 118
+    },
+    "lock_patched_loss": {
+      "codec_mode": "rtsp",
+      "completed": true,
+      "scope": "frozen locked-sink candidate, direct main.py without diagnostic hooks, separate input/output RTSP servers, no operating deployment",
+      "scenario": "output_loss",
+      "loaded_rtsp_plugin": [
+        "/audit/plugin_build/patched/libgstrtspclientsink.so"
+      ],
+      "receiver_exit": 0,
+      "output_bytes": 37224913,
+      "last_frames": 2722.0,
+      "output_server_exit": -9,
+      "input_server_alive": true,
+      "input_publisher_alive": true,
+      "frames_after_output_loss": 0.0,
+      "app_exit_before_sigint": null,
+      "app_exit": 0,
+      "stop_seconds": 1.6209918891545385,
+      "elapsed_seconds": 124.23592319199815,
+      "transitions": [
+        {
+          "name": "input_ready",
+          "elapsed": 13.334
+        },
+        {
+          "name": "output_ready",
+          "elapsed": 14.573
+        },
+        {
+          "name": "output_server_killed",
+          "elapsed": 105.213
+        },
+        {
+          "name": "sigint_requested",
+          "elapsed": 122.592
+        }
+      ],
+      "sample_count": 115
+    },
+    "lock_stock_loss": {
+      "codec_mode": "rtsp",
+      "completed": false,
+      "scope": "frozen locked-sink candidate, direct main.py without diagnostic hooks, separate input/output RTSP servers, no operating deployment",
+      "scenario": "output_loss",
+      "loaded_rtsp_plugin": [
+        "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstrtspclientsink.so"
+      ],
+      "receiver_exit": 0,
+      "output_bytes": 37121490,
+      "last_frames": 2490.0,
+      "output_server_exit": -9,
+      "input_server_alive": true,
+      "input_publisher_alive": true,
+      "frames_after_output_loss": 2509.0,
+      "app_exit_before_sigint": null,
+      "stop_budget_exceeded": true,
+      "app_exit": null,
+      "stop_seconds": 30.000357123091817,
+      "elapsed_seconds": 161.74187942105345,
+      "transitions": [
+        {
+          "name": "input_ready",
+          "elapsed": 13.411
+        },
+        {
+          "name": "output_ready",
+          "elapsed": 14.641
+        },
+        {
+          "name": "output_server_killed",
+          "elapsed": 105.75
+        },
+        {
+          "name": "sigint_requested",
+          "elapsed": 123.132
+        }
+      ],
+      "sample_count": 116
+    },
+    "lock_patched_recovery": {
+      "codec_mode": "rtsp",
+      "completed": false,
+      "scope": "frozen locked-sink candidate, direct main.py without diagnostic hooks, separate input/output RTSP servers, no operating deployment",
+      "scenario": "output_recovery",
+      "loaded_rtsp_plugin": [
+        "/audit/plugin_build/patched/libgstrtspclientsink.so"
+      ],
+      "receiver_exit": 0,
+      "output_bytes": 35062512,
+      "last_frames": 2400.0,
+      "output_server_exit": -9,
+      "input_server_alive": true,
+      "input_publisher_alive": true,
+      "frames_after_output_loss": 0.0,
+      "app_exit_before_sigint": null,
+      "output_recovery_seconds": 9.387925967108458,
+      "error": "RuntimeError: no primary progress for 30 seconds",
+      "elapsed_seconds": 144.10511701297946,
+      "transitions": [
+        {
+          "name": "input_ready",
+          "elapsed": 14.358
+        },
+        {
+          "name": "output_ready",
+          "elapsed": 15.383
+        },
+        {
+          "name": "output_server_killed",
+          "elapsed": 106.484
+        },
+        {
+          "name": "output_server_restored",
+          "elapsed": 123.844
+        },
+        {
+          "name": "output_recovered",
+          "elapsed": 133.232
+        }
+      ],
+      "sample_count": 138
+    },
+    "lock_patched_recovery_retry": {
+      "codec_mode": "rtsp",
+      "completed": true,
+      "scope": "frozen locked-sink candidate, direct main.py without diagnostic hooks, separate input/output RTSP servers, no operating deployment",
+      "scenario": "output_recovery",
+      "loaded_rtsp_plugin": [
+        "/audit/plugin_build/patched/libgstrtspclientsink.so"
+      ],
+      "receiver_exit": 0,
+      "output_bytes": 37157113,
+      "last_frames": 2574.0,
+      "output_server_exit": -9,
+      "input_server_alive": true,
+      "input_publisher_alive": true,
+      "frames_after_output_loss": 0.0,
+      "app_exit_before_sigint": null,
+      "output_recovery_seconds": 6.358535812934861,
+      "recovered_frame_advance": 882.0,
+      "restored_receiver_exit": 0,
+      "restored_output_bytes": 6257725,
+      "app_exit": 0,
+      "stop_seconds": 5.273923346074298,
+      "elapsed_seconds": 165.45722975907847,
+      "transitions": [
+        {
+          "name": "input_ready",
+          "elapsed": 13.42
+        },
+        {
+          "name": "output_ready",
+          "elapsed": 14.466
+        },
+        {
+          "name": "output_server_killed",
+          "elapsed": 105.446
+        },
+        {
+          "name": "output_server_restored",
+          "elapsed": 122.929
+        },
+        {
+          "name": "output_recovered",
+          "elapsed": 129.288
+        },
+        {
+          "name": "sigint_requested",
+          "elapsed": 160.126
+        }
+      ],
+      "sample_count": 159
+    },
+    "lock_patched_normal": {
+      "codec_mode": "rtsp",
+      "completed": true,
+      "scope": "frozen locked-sink candidate, direct main.py without diagnostic hooks, separate input/output RTSP servers, no operating deployment",
+      "scenario": "normal",
+      "loaded_rtsp_plugin": [
+        "/audit/plugin_build/patched/libgstrtspclientsink.so"
+      ],
+      "receiver_exit": 0,
+      "output_bytes": 37276317,
+      "last_frames": 2518.0,
+      "app_exit": 0,
+      "stop_seconds": 4.237800611881539,
+      "elapsed_seconds": 109.47478954377584,
+      "transitions": [
+        {
+          "name": "input_ready",
+          "elapsed": 13.463
+        },
+        {
+          "name": "output_ready",
+          "elapsed": 14.501
+        },
+        {
+          "name": "sigint_requested",
+          "elapsed": 105.194
+        }
+      ],
+      "sample_count": 97
+    },
+    "lock_patched_input_loss": {
+      "codec_mode": "rtsp",
+      "completed": true,
+      "scope": "frozen locked-sink candidate, direct main.py without diagnostic hooks, separate input/output RTSP servers, no operating deployment",
+      "scenario": "input_loss",
+      "loaded_rtsp_plugin": [
+        "/audit/plugin_build/patched/libgstrtspclientsink.so"
+      ],
+      "receiver_exit": 0,
+      "output_bytes": 38083562,
+      "last_frames": 2774.0,
+      "input_server_exit": -9,
+      "output_server_alive": true,
+      "app_exit": 0,
+      "stop_seconds": 3.300157019170001,
+      "elapsed_seconds": 129.26120594795793,
+      "transitions": [
+        {
+          "name": "input_ready",
+          "elapsed": 16.391
+        },
+        {
+          "name": "output_ready",
+          "elapsed": 17.618
+        },
+        {
+          "name": "input_server_killed",
+          "elapsed": 108.626
+        },
+        {
+          "name": "sigint_requested",
+          "elapsed": 125.94
+        }
+      ],
+      "sample_count": 119
+    },
+    "image_output_loss": {
+      "codec_mode": "rtsp",
+      "completed": true,
+      "scope": "frozen locked-sink candidate, direct main.py without diagnostic hooks, separate input/output RTSP servers, no operating deployment",
+      "scenario": "output_loss",
+      "loaded_rtsp_plugin": [
+        "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstrtspclientsink.so"
+      ],
+      "receiver_exit": 0,
+      "output_bytes": 36907630,
+      "last_frames": 2581.0,
+      "output_server_exit": -9,
+      "input_server_alive": true,
+      "input_publisher_alive": true,
+      "frames_after_output_loss": 0.0,
+      "app_exit_before_sigint": null,
+      "app_exit": 0,
+      "stop_seconds": 1.793117315042764,
+      "elapsed_seconds": 127.71595744299702,
+      "transitions": [
+        {
+          "name": "input_ready",
+          "elapsed": 17.346
+        },
+        {
+          "name": "output_ready",
+          "elapsed": 18.408
+        },
+        {
+          "name": "output_server_killed",
+          "elapsed": 108.453
+        },
+        {
+          "name": "sigint_requested",
+          "elapsed": 125.883
+        }
+      ],
+      "sample_count": 119
+    }
+  },
+  "passed_trial_count": 5,
+  "media": [
+    {
+      "file": "data/runtime/p51_shutdown_20261001_v086/lock_patched_loss/result.mkv",
+      "bytes": 37224913,
+      "sha256": "b881d33e8051404e1a0c903d1e5ac7bb957707f9c6868b17d1e657de0374b132",
+      "decode_exit": 0,
+      "stderr_bytes": 0,
+      "packets": 1644,
+      "non_increasing_packet_dts": 0
+    },
+    {
+      "file": "data/runtime/p51_shutdown_20261001_v086/lock_patched_recovery_retry/restored.mkv",
+      "bytes": 6257725,
+      "sha256": "43d177caf33354beddfe52153ae52cfa5bb190208f31090ca9599d2bb5613c26",
+      "decode_exit": 0,
+      "stderr_bytes": 0,
+      "packets": 285,
+      "non_increasing_packet_dts": 0
+    },
+    {
+      "file": "data/runtime/p51_shutdown_20261001_v086/lock_patched_recovery_retry/result.mkv",
+      "bytes": 37157113,
+      "sha256": "49969f00f05a11329c6cef3ffb5cd4f819d70a7b81ed96e5870c34d63dff9bc2",
+      "decode_exit": 0,
+      "stderr_bytes": 0,
+      "packets": 1647,
+      "non_increasing_packet_dts": 0
+    },
+    {
+      "file": "data/runtime/p51_shutdown_20261001_v086/lock_patched_normal/result.mkv",
+      "bytes": 37276317,
+      "sha256": "5c1befa76a5e288de3a935d4e10b0a98b02e1e26d6d76ad4e8b47101cc7dbd45",
+      "decode_exit": 0,
+      "stderr_bytes": 0,
+      "packets": 1666,
+      "non_increasing_packet_dts": 0
+    },
+    {
+      "file": "data/runtime/p51_shutdown_20261001_v086/lock_patched_input_loss/result.mkv",
+      "bytes": 38083562,
+      "sha256": "924cd67face5b48aa372f678eba719fb6636d037038b2331d460e7f8cbb67982",
+      "decode_exit": 0,
+      "stderr_bytes": 0,
+      "packets": 1696,
+      "non_increasing_packet_dts": 0
+    },
+    {
+      "file": "data/runtime/p51_shutdown_20261001_v086/image_output_loss/result.mkv",
+      "bytes": 36907630,
+      "sha256": "8df13ef80bf995e2c3933c9f622f8b87b77c1c6e5cb5ed05805323b55d9f1694",
+      "decode_exit": 0,
+      "stderr_bytes": 0,
+      "packets": 1671,
+      "non_increasing_packet_dts": 0
+    }
+  ],
+  "diagnostic_limits": [
+    "The first default-timebase null decode emitted repeated rounded output DTS warnings with exit 0. Input-timebase passthrough decoding and raw packet DTS were checked separately; the initial stderr is preserved.",
+    "Post-timeout root attach succeeded but /proc/PID/mem read was denied; native symbols/unwinding were not usable. No claim of a captured remaining native wait.",
+    "The first recovery test reused the pre-restart frame high-water mark and falsely failed despite 50 -> 78 -> 105 new frames. Its outcome is excluded; the corrected generation baseline retry passed.",
+    "The first image build treated a raw sha256 ID as a registry name and failed; a local base tag bound to the known image ID rebuilt successfully.",
+    "Stock plugin plus state lock still failed. Runtime qualification applies to the combined source/plugin candidate image.",
+    "GPU was shared with the operating service; this is shutdown/recovery verification, not throughput or detector accuracy acceptance.",
+    "MQTT was blocked at loopback port 9. No monitoring ACK or physical device acceptance is claimed."
+  ],
+  "operating_before": {
+    "started_at": "2026-09-16T23:45:46.903505745Z",
+    "restarts": 0
+  },
+  "operating_after": {
+    "started_at": "2026-09-16T23:45:46.903505745Z",
+    "restarts": 0,
+    "status": "running",
+    "health": "healthy",
+    "checked_at": "2026-10-01T12:06:51.046845+09:00",
+    "trial_containers_remaining": 0
+  },
+  "publication": {
+    "url": "http://192.168.2.141:18081/",
+    "checked_at": "2026-10-01T12:06:51.046845+09:00",
+    "wbs_json_html_rows_match": 33,
+    "counts": {
+      "DONE": 9,
+      "BLOCKED": 3,
+      "PLANNED": 13,
+      "VERIFY": 7,
+      "IN_PROGRESS": 1
+    },
+    "png_first_page_checked": true,
+    "browser_interaction_tested": false,
+    "other_pc_tested": false,
+    "artifacts": {
+      "index.html": {
+        "bytes": 22769,
+        "sha256": "a880d450495c1a53417219e725fe2ea09aff2b069747f4dd0b3dcfff7e1952c0",
+        "http_status": 200,
+        "http_bytes_match": true
+      },
+      "CCTV_project_progress.pdf": {
+        "bytes": 123765,
+        "sha256": "794dfbc6a95a0a2115210af1af0668a480bf92289c108bbe834731f15f02568e",
+        "http_status": 200,
+        "http_bytes_match": true
+      }
+    }
+  },
+  "documentation_checks": {
+    "ruff_source_test_renderer": "PASS",
+    "scoped_diff_check": "PASS",
+    "current_i40_card": "FIXED_LOCAL"
+  }
+}

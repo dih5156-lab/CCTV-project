@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CCTV·AIoT 개발 진행 현황</title>
+<style>
+:root{color-scheme:light;--ink:#17263b;--muted:#58677a;--blue:#255cc2;--border:#dce4ef}
+*{box-sizing:border-box}body{margin:0;background:#f4f7fb;color:var(--ink);font:16px/1.65 system-ui,-apple-system,"Malgun Gothic",sans-serif}
+main{max-width:1160px;margin:auto;padding:40px 24px 64px}h1,h2,h3,p{margin:0}h1{font-size:clamp(25px,4vw,38px);letter-spacing:-.04em;margin:5px 0 10px}h2{font-size:21px;margin-bottom:14px}h3{font-size:16px;margin-bottom:6px}
+.eyebrow{color:var(--blue);font-size:13px;font-weight:750;letter-spacing:.08em}.muted,small{color:var(--muted)}.top{display:flex;justify-content:space-between;gap:20px;align-items:center;margin-bottom:28px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}a,button{color:var(--blue)}button,.link-button{border:1px solid var(--border);background:white;border-radius:9px;padding:9px 14px;text-decoration:none;font:inherit;cursor:pointer}
+.card{background:white;border:1px solid var(--border);border-radius:16px;padding:25px;margin-bottom:20px}.stats{display:grid;grid-template-columns:1.2fr 1fr;gap:30px}.number{font-size:54px;line-height:1.2;letter-spacing:-.04em;font-weight:750;color:var(--blue)}.number span{font-size:24px;color:var(--muted);font-weight:500}progress{appearance:none;width:100%;height:12px;margin:20px 0 10px;border:none;border-radius:8px;background:#e7edf6}progress::-webkit-progress-bar{background:#e7edf6;border-radius:8px}progress::-webkit-progress-value{background:var(--blue);border-radius:8px}progress::-moz-progress-bar{background:var(--blue);border-radius:8px}
+.columns{display:grid;grid-template-columns:1fr 1fr;gap:20px}.columns .card{height:100%;margin:0}.columns{margin-bottom:20px}.line{margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}.tag{display:inline-block;border-radius:6px;padding:2px 8px;background:#eaf1ff;color:var(--blue);font-weight:700;font-size:12px;margin-bottom:8px}.warning{background:#fff8f1;border-color:#eed8c3}.warning .tag{background:#fbe6d9;color:#973a20}
+ul{padding-left:20px;margin:9px 0}li{margin:7px 0}.filters{display:flex;gap:12px;flex-wrap:wrap;align-items:end;margin:18px 0}label{font-size:13px;color:var(--muted)}input,select{display:block;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font:inherit;background:#fff;color:var(--ink)}input{min-width:270px}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;text-align:left;font-size:14px}th{color:var(--muted);font-weight:600;background:#f4f7fb}td,th{padding:14px 13px;border-bottom:1px solid var(--border);vertical-align:top}th:first-child{width:85px}th:last-child{width:92px}.task-id{color:var(--blue);font-weight:700;white-space:nowrap}summary{color:var(--muted);cursor:pointer;font-size:12px;margin-top:5px}details p{padding:7px 0 0;max-width:650px}details p:last-child{color:var(--muted)}.badge{display:inline-block;padding:3px 9px;border-radius:20px;white-space:nowrap;font-size:12px;background:#eef1f5;color:#526276}.DONE{color:#1d6a40;background:#e6f4eb}.IN_PROGRESS{color:#255cc2;background:#eaf1ff}.BLOCKED{color:#963d24;background:#fff0e6}.READY{color:#73520d;background:#fff5d4}.VERIFY{color:#684197;background:#f1eafa}
+footer{font-size:13px;color:var(--muted);border-top:1px solid var(--border);padding-top:20px}footer p+p{margin-top:7px}#result-count{font-size:13px;color:var(--muted)}[hidden]{display:none!important}
+@media(max-width:700px){main{padding:24px 14px 40px}.top{align-items:flex-start;flex-direction:column}.stats,.columns{grid-template-columns:1fr}.stats{gap:20px}.card{padding:19px}input{min-width:0;width:100%}.filters label:first-child{flex:1}th,td{padding:12px 8px}.number{font-size:45px}}
+@media print{body{background:white}main{padding:0}.actions,.filters,details{display:none}.card{break-inside:avoid}tr{break-inside:avoid}[hidden]{display:table-row!important}footer{margin-top:20px}}
+</style>
+</head>
+<body><main>
+<header class="top"><div><p class="eyebrow">PROJECT STATUS · 사내 열람용</p><h1>CCTV·AIoT 개발 진행 현황</h1><p class="muted">{{updated_date}} · 문서 v{{version}} · 작업 종료 시 갱신</p></div><nav class="actions" aria-label="자료"><button id="refresh" type="button">새로고침</button><a class="link-button" href="CCTV_project_progress.pdf">PDF 받기</a></nav></header>
+<section class="card stats" aria-labelledby="progress-heading"><div><h2 id="progress-heading">WBS 작업 완료</h2><p class="number">{{done}} <span>/ {{total}}개 · {{percent}}%</span></p><progress value="{{done}}" max="{{total}}" aria-label="WBS 작업 수 기준 완료율"></progress><p class="muted">{{counts}}</p><p><small>작업 수 기준입니다. 전체 기능 구현률이나 남은 공수 비율은 아닙니다.</small></p></div><div><h3>목표 종료 · 2026년 12월 31일</h3><p>모듈 정리 → 통합 검증 → 현장팀 POC → 보완·인계</p><div class="line"><h3>다음 작업 · P5.1</h3><p>I40 종료 중 SIGTERM 재진입의 자원 수명 영향 재현</p><small>현재 IN_PROGRESS. 10/02 완료 목표지만 종료 멈춤이 재현됐습니다. I40·CUDA·모델 잔여·운영 반영 조건 충족 후 완료를 판정합니다.</small></div></div></section>
+<!-- 실제 입력·최소 경로 검사 통과를 전체 CUDA 원인 제거로 확대하지 않는다. -->
+<!-- 종료 SIGABRT의 로컬 수정과 원 CUDA700 미해결을 구분한다. -->
+<!-- 진단 기능 검증·수동719와 원 CUDA700을 구분한다. -->
+<!-- 매칭 성공·정상 제한·Pose 부족을 구분하며 전체 영상 처분/정확도 합격으로 확대하지 않는다. -->
+<!-- 개별 DB 논리 복원과 운영 전체 같은 시점 복구·배포를 구분한다. -->
+<div class="columns"><!-- 복구본 기동 결과와 남은 품질 문제를 함께 표시한다. -->
+<!-- 신규 데이터 보존과 남은 영상 품질 이슈를 함께 표시한다. -->
+<!-- 소유권 확인·5조건 종료를 native 멈춤 해결로 확대하지 않는다. -->
+<section class="card"><span class="tag">이번 검증 · v0.101</span><h2>실제 AI 후처리·버퍼 소유권5조건</h2><ul><li>고정 후보·기존 진단 도구로 후처리 분리 대조</li><li>CPU 영상3565개 모두 독립 메모리 소유</li><li>인코더/디코더 중지20요청 모두 정상 반환</li><li>SIGTERM 이후2.18~14.65초 내 종료</li></ul><p class="muted">제품206파일·SDK·운영 서비스는 변경하지 않았습니다. 각 조건1회로 실패율·성능 개선 판정은 하지 않습니다.</p></section><section class="card warning"><span class="tag">종료 결함 · I40 OPEN</span><h2>종료 중 stop() 재진입 관측</h2><p>flush 제외 대조에서 SIGTERM 시 같은 MainThread의 stop()이 중첩됐습니다. 이번 인코더 중지 요청은 모두 반환됐으므로 기존 native 멈춤과의 인과관계는 미확정입니다.</p><p class="line">P5.1 진행 중·운영 미반영. 다음은 종료 재진입의 중복 정리·자원 수명 영향 재현입니다. 별도 Jetson은 기능 완성 후·정식 배포 전에 시험합니다.</p></section><section class="card"><h2>운영 기준 대기 · P2.4</h2><p>저장·관제 장애 및 용량 시험</p><ul><li>혼합 300건 적체, 두 차례 프로세스 강제 종료 후 총 300건 ACK·ID/hash 대조</li><li>관련 회귀 108 PASS, 실제 노트북 4건 저장 ACK는 앞선 별도 시험에서 확인</li><li>BLOCKED: 실제 부하·보관/지연 기준 합의 후 장시간 시험 재개</li></ul><small>내부 복구 시험과 현장 처리 성능 합격을 구분합니다.</small></section><section class="card"><h2>확인·협력 대기</h2><ul><li>D02/D04/D06: 센서 부하·지연·보관 및 실제 관제 기준</li><li>I23: 경보 우선순위 역전 수정은 후속 P3 범위</li><li>I15: 온습도 t34954의 EdgeX Core Data 매핑</li><li>사이렌 장비 없음, 실물 4카메라·현장팀 POC 일정 미확정</li></ul><p class="line muted">확인된 자원: 하루 6시간 이상, CCTV 1~2대·온습도/기울기·전광판·스피커·노트북 시험 서버</p></section></div>
+<section class="card" aria-labelledby="wbs-heading"><h2 id="wbs-heading">전체 WBS</h2><p class="muted">각 작업을 펼치면 완료 기준과 선행 작업을 볼 수 있습니다.</p><div class="filters"><label>작업 검색<input id="search" type="search" placeholder="작업 ID 또는 이름" autocomplete="off"></label><label>상태<select id="status"><option value="">전체</option value="DONE">완료</option><option value="IN_PROGRESS">진행</option><option value="READY">준비</option><option value="VERIFY">재검증</option><option value="BLOCKED">대기</option><option value="PLANNED">계획</option></select></label><span id="result-count" role="status" aria-live="polite">{{total}}개 작업</span></div><div class="table-wrap"><table><thead><tr><th scope="col">ID</th><th scope="col">작업·산출물</th><th scope="col">상태</th></tr></thead><tbody>{{rows}}</tbody></table></div><p id="empty" hidden>검색 조건에 맞는 작업이 없습니다.</p></section>
+<footer><p>원본: docs/planning/WBS.md · PROGRESS.md · STATUS.md · 계획 v{{version}}</p><p>업무 종료 후 원본 문서와 이 페이지를 함께 갱신합니다. 실시간 장비 상태 화면이나 자동 개발 진척 수집기는 아닙니다. 새로고침하면 마지막 게시본을 확인할 수 있습니다.</p><p>Jetson과 Docker가 실행 중일 때 같은 회사 네트워크에서 열람할 수 있습니다. IP가 바뀌면 접속 주소도 바뀝니다.</p></footer>
+</main><script>
+const rows = [...document.querySelectorAll('tbody tr')];
+const search = document.getElementById('search');
+const status = document.getElementById('status');
+function filterRows() {
+  const query = search.value.trim().toLocaleLowerCase();
+  let visible = 0;
+  for (const row of rows) {
+    row.hidden = !(row.textContent.toLocaleLowerCase().includes(query) && (!status.value || row.dataset.status === status.value));
+    if (!row.hidden) visible++;
+  }
+  document.getElementById('result-count').textContent = `${visible} / ${rows.length}개 작업`;
+  document.getElementById('empty').hidden = visible !== 0;
+}
+search.addEventListener('input', filterRows);
+status.addEventListener('change', filterRows);
+document.getElementById('refresh').addEventListener('click', () => location.reload());
+</script></body></html>

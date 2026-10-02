@@ -1,0 +1,96 @@
+{
+  "verified_at": "2026-09-21T17:18:08.387181+09:00",
+  "scope": "internal snapshot read model; temporary SQLite and simulated time",
+  "operational_deployment": false,
+  "remote_laptop_updated": false,
+  "database_schema_changed": false,
+  "wire_or_ack_changed": false,
+  "validation": {
+    "pytest": {
+      "passed": 131,
+      "failed": 0,
+      "skipped": 0,
+      "new_tests": 30,
+      "junit": "monitoring_freshness_20260921.xml",
+      "warnings": 6,
+      "warning_reason": "Existing capacity tests use record_property with default xunit2 reporting; test assertions all passed."
+    },
+    "ruff": "pass",
+    "black": "pass",
+    "compileall": "pass",
+    "documentation": {
+      "files": 8,
+      "local_links_checked": 324,
+      "wbs_counts": {
+        "DONE": 8,
+        "BLOCKED": 2,
+        "READY": 2,
+        "IN_PROGRESS": 1,
+        "PLANNED": 13,
+        "VERIFY": 7
+      },
+      "new_edgex_anchor": "pass"
+    },
+    "review": "Graph tests_for returned not_found for snapshot module; changed source reviewed directly and 131 targeted/regression tests passed."
+  },
+  "before_sha256": {
+    "src/monitoring_snapshot.py": "5d0d5955541586d5e6d95aff0877d8bfb34b464630b16769b7302697b735b7a8",
+    "src/monitoring_contract.py": "932ea70fcd4649eec55b9f625a623fcbccde27b4df1feec3fe53126309408e2f",
+    "src/monitoring_receiver.py": "543b98ba265f505762cffd61b25fb1cc237adec3752ce0232972ee2ba778f6d8",
+    "src/monitoring_delivery.py": "cfb1a3e3480c4ebe87118a445580b838ccf832da986b48083a135a4e6b0a1bb2",
+    "src/monitoring_reconciliation.py": "ba657286c0fbe957efa294d3764a294e6c5bc6706550bd9058e3467a2dc29594",
+    "src/sensor_observation.py": "7e960e031af76d376f334f6149d47a8acac84d7cd69ea53eb07fad104268c91e"
+  },
+  "after_sha256": {
+    "src/monitoring_contract.py": "932ea70fcd4649eec55b9f625a623fcbccde27b4df1feec3fe53126309408e2f",
+    "src/monitoring_delivery.py": "cfb1a3e3480c4ebe87118a445580b838ccf832da986b48083a135a4e6b0a1bb2",
+    "src/monitoring_freshness.py": "81f071f41100b50817529415914f4f4b4560eee26e4479ede18eee608cd7c1d5",
+    "src/monitoring_receiver.py": "543b98ba265f505762cffd61b25fb1cc237adec3752ce0232972ee2ba778f6d8",
+    "src/monitoring_reconciliation.py": "ba657286c0fbe957efa294d3764a294e6c5bc6706550bd9058e3467a2dc29594",
+    "src/monitoring_snapshot.py": "f1965b176b696d315624ec06a91c13bf69e6b08ceb47683a64738fd2054a5e5b",
+    "src/sensor_observation.py": "7e960e031af76d376f334f6149d47a8acac84d7cd69ea53eb07fad104268c91e",
+    "tests/test_monitoring_freshness.py": "bb52253b6a438d9c46e9a0c037b08c8bf8e4d0c188203429a771ed5209e6f6dc",
+    "tests/test_monitoring_freshness_snapshot.py": "966ad989065b3c0fdb507d07f1260a91f87136b335aceaae650c49f3370e5db1"
+  },
+  "changed_existing_application_files": [
+    "src/monitoring_snapshot.py"
+  ],
+  "test_cases": [
+    "test_delayed_arrival_keeps_measurement_age_and_original_value",
+    "test_threshold_and_utc_offset[100-fresh]",
+    "test_threshold_and_utc_offset[160-fresh]",
+    "test_threshold_and_utc_offset[160.01-stale]",
+    "test_bad_or_untrusted_time_is_not_replaced_by_arrival[None-missing-observed_at_missing]",
+    "test_bad_or_untrusted_time_is_not_replaced_by_arrival[None-invalid-observed_at_invalid]",
+    "test_bad_or_untrusted_time_is_not_replaced_by_arrival[garbage-valid-observed_at_invalid]",
+    "test_bad_or_untrusted_time_is_not_replaced_by_arrival[1970-01-01T00:01:40-valid-observed_at_invalid]",
+    "test_bad_or_untrusted_time_is_not_replaced_by_arrival[1970-01-01T00:01:40Z-missing-observed_at_missing]",
+    "test_bad_or_untrusted_time_is_not_replaced_by_arrival[1970-01-01T00:05:00Z-valid-future_observed_at]",
+    "test_no_policy_or_unconfirmed_clock_never_claims_freshness",
+    "test_invalid_threshold_is_rejected[0]",
+    "test_invalid_threshold_is_rejected[-1]",
+    "test_invalid_threshold_is_rejected[True]",
+    "test_invalid_threshold_is_rejected[60]",
+    "test_invalid_threshold_is_rejected[nan]",
+    "test_invalid_threshold_is_rejected[inf]",
+    "test_zero_epoch_and_invalid_arrival_are_independent_of_current_age",
+    "test_invalid_query_time_is_rejected[True]",
+    "test_invalid_query_time_is_rejected[nan]",
+    "test_invalid_query_time_is_rejected[inf]",
+    "test_invalid_query_time_is_rejected[200]",
+    "test_bad_clock_setting_and_non_sensor_or_corrupt_records",
+    "test_sensor_observation_inside_event_uses_observation_time",
+    "test_same_snapshot_ages_on_read_and_reopen_without_changing_databases[source]",
+    "test_same_snapshot_ages_on_read_and_reopen_without_changing_databases[consumer]",
+    "test_stored_ack_and_late_arrival_are_independent",
+    "test_late_old_record_is_retained_and_marked_stale_after_newer_arrival",
+    "test_default_policy_does_not_assume_threshold_or_clock_sync",
+    "test_corrupt_wire_cannot_be_presented_as_fresh"
+  ],
+  "remaining": [
+    "real per-sensor freshness policy and clock synchronization",
+    "monitoring UI and remote deployment",
+    "I22 active writes and unaccepted video retry policy",
+    "D04/D06 backlog retention and long outage limits"
+  ]
+}

@@ -1,0 +1,372 @@
+{
+  "date": "2026-09-28",
+  "version": "0.46",
+  "wbs": "P5.1",
+  "status": "IN_PROGRESS",
+  "runtime_root": "data/runtime/p51_tracking_20260928_v046",
+  "hardware": "Jetson AGX Orin / DeepStream 7.1 / L4T R36.5.2",
+  "input": "4K H264, 59.94005994 fps, 600 frames, replay loop over isolated local RTSP TCP",
+  "isolation": {
+    "network": "none (loopback only)",
+    "cpus": 2,
+    "memory": "8g",
+    "physical_outputs": "disconnected",
+    "production_restart": false
+  },
+  "tests": {
+    "passed": 172,
+    "skipped": 2,
+    "junit": "tracking_20260928.xml",
+    "ruff": "PASS",
+    "scoped_diff_check": "PASS",
+    "workspace_diff_check": "FAIL: pre-existing docker-compose.jetson.yml whitespace, unchanged this turn"
+  },
+  "trials": {
+    "boundary": {
+      "scope": "real CLI with one configured RTSP input; preview enabled; Pose + Helmet + PA100K + color + inline RF candidate profile; external output disconnected",
+      "completed_experiment": true,
+      "app_alive": true,
+      "continuous_publisher_alive": true,
+      "restored_publisher_alive": true,
+      "transitions": [
+        {
+          "name": "input_ready",
+          "elapsed": 26.771
+        }
+      ],
+      "sample_count": 92,
+      "elapsed_seconds": 64.46866505383514,
+      "primary_fps_over_steady_samples": 32.8,
+      "last_stats": {
+        "frames_processed": 1183,
+        "preview_frames_stored": 157,
+        "context_frames_matched": 127,
+        "context_identity_rejected": 0,
+        "inference_errors": 0
+      },
+      "tracker_observed_frames": 23,
+      "sampled_cpu_frames": 5,
+      "tracker_unique_ids": 2,
+      "tracker_empty_frames": 0,
+      "sqlite_overflow_count": 0,
+      "preview_png_count": 5,
+      "source_pts_span_sec": 20.637,
+      "last_scraped_primary_frames": 1190.0
+    },
+    "raw_control": {
+      "scope": "real CLI with one configured RTSP input; preview enabled; Pose + Helmet + PA100K + color + inline RF candidate profile; external output disconnected",
+      "completed_experiment": true,
+      "app_alive": true,
+      "continuous_publisher_alive": true,
+      "restored_publisher_alive": true,
+      "transitions": [
+        {
+          "name": "input_ready",
+          "elapsed": 19.439
+        }
+      ],
+      "sample_count": 84,
+      "elapsed_seconds": 56.730460519203916,
+      "primary_fps_over_steady_samples": 23.91,
+      "last_stats": {
+        "frames_processed": 841,
+        "preview_frames_stored": 142,
+        "context_frames_matched": 98,
+        "context_identity_rejected": 0,
+        "inference_errors": 0
+      },
+      "tracker_observed_frames": 23,
+      "sampled_cpu_frames": 144,
+      "tracker_unique_ids": 3,
+      "tracker_empty_frames": 5,
+      "sqlite_overflow_count": 15,
+      "preview_png_count": 144,
+      "source_pts_span_sec": 40.201,
+      "last_scraped_primary_frames": 842.0
+    },
+    "surface": {
+      "scope": "real CLI with one configured RTSP input; preview enabled; Pose + Helmet + PA100K + color + inline RF candidate profile; external output disconnected",
+      "completed_experiment": true,
+      "app_alive": true,
+      "continuous_publisher_alive": true,
+      "restored_publisher_alive": true,
+      "transitions": [
+        {
+          "name": "input_ready",
+          "elapsed": 27.245
+        }
+      ],
+      "sample_count": 89,
+      "elapsed_seconds": 65.4877042460721,
+      "primary_fps_over_steady_samples": 22.3,
+      "last_stats": {
+        "frames_processed": 781,
+        "preview_frames_stored": 135,
+        "context_frames_matched": 104,
+        "context_identity_rejected": 0,
+        "inference_errors": 0
+      },
+      "tracker_observed_frames": 23,
+      "sampled_cpu_frames": 138,
+      "tracker_unique_ids": 2,
+      "tracker_empty_frames": 2,
+      "sqlite_overflow_count": 11,
+      "preview_png_count": 138,
+      "source_pts_span_sec": 45.413,
+      "last_scraped_primary_frames": 789.0
+    },
+    "nodrop_retry": {
+      "scope": "real CLI with one configured RTSP input; preview enabled; Pose + Helmet + PA100K + color + inline RF candidate profile; external output disconnected",
+      "completed_experiment": true,
+      "app_alive": true,
+      "continuous_publisher_alive": true,
+      "restored_publisher_alive": true,
+      "transitions": [
+        {
+          "name": "input_ready",
+          "elapsed": 19.394
+        }
+      ],
+      "sample_count": 84,
+      "elapsed_seconds": 56.808226617984474,
+      "primary_fps_over_steady_samples": 21.47,
+      "last_stats": {
+        "frames_processed": 768,
+        "preview_frames_stored": 142,
+        "context_frames_matched": 138,
+        "context_identity_rejected": 0,
+        "inference_errors": 0
+      },
+      "tracker_observed_frames": 23,
+      "sampled_cpu_frames": 145,
+      "tracker_unique_ids": 2,
+      "tracker_empty_frames": 0,
+      "sqlite_overflow_count": 14,
+      "preview_png_count": 145,
+      "source_pts_span_sec": 12.904,
+      "last_scraped_primary_frames": 772.0
+    },
+    "iou_nodrop": {
+      "scope": "real CLI with one configured RTSP input; preview enabled; Pose + Helmet + PA100K + color + inline RF candidate profile; external output disconnected",
+      "completed_experiment": true,
+      "app_alive": true,
+      "continuous_publisher_alive": true,
+      "restored_publisher_alive": true,
+      "transitions": [
+        {
+          "name": "input_ready",
+          "elapsed": 20.449
+        }
+      ],
+      "sample_count": 83,
+      "elapsed_seconds": 57.92104724003002,
+      "primary_fps_over_steady_samples": 17.55,
+      "last_stats": {
+        "frames_processed": 625,
+        "preview_frames_stored": 137,
+        "context_frames_matched": 134,
+        "context_identity_rejected": 0,
+        "inference_errors": 0
+      },
+      "tracker_observed_frames": 636,
+      "sampled_cpu_frames": 139,
+      "tracker_unique_ids": 2,
+      "tracker_empty_frames": 8,
+      "sqlite_overflow_count": 0,
+      "preview_png_count": 139,
+      "source_pts_span_sec": 10.418,
+      "last_scraped_primary_frames": 626.0
+    },
+    "nvdcf_nodrop": {
+      "scope": "real CLI with one configured RTSP input; preview enabled; Pose + Helmet + PA100K + color + inline RF candidate profile; external output disconnected",
+      "completed_experiment": false,
+      "error": "single input did not produce primary frames within 150 seconds",
+      "transitions": [],
+      "sample_count": 148,
+      "elapsed_seconds": 155.55122640309855,
+      "primary_fps_over_steady_samples": null,
+      "last_stats": {
+        "frames_processed": 2,
+        "preview_frames_stored": 0,
+        "context_frames_matched": 0,
+        "context_identity_rejected": 0,
+        "inference_errors": 0
+      },
+      "tracker_observed_frames": 10,
+      "sampled_cpu_frames": 3,
+      "tracker_unique_ids": 1,
+      "tracker_empty_frames": 4,
+      "sqlite_overflow_count": 0,
+      "preview_png_count": 3,
+      "source_pts_span_sec": 0.133,
+      "last_scraped_primary_frames": 10.0
+    },
+    "nvdcf_no_preview": {
+      "scope": "NvDCF retry; DS_PREVIEW_ENABLED=false but appearance requires CPU capture, so preview/capture branch remained active; full model profile",
+      "completed_experiment": true,
+      "app_alive": true,
+      "continuous_publisher_alive": true,
+      "restored_publisher_alive": true,
+      "transitions": [
+        {
+          "name": "input_ready",
+          "elapsed": 20.423
+        }
+      ],
+      "sample_count": 86,
+      "elapsed_seconds": 58.43259675381705,
+      "primary_fps_over_steady_samples": 17.89,
+      "tracker_observed_frames": 654,
+      "tracker_unique_ids": 4,
+      "tracker_empty_frames": 29,
+      "last_stats": {
+        "frames_processed": 643,
+        "preview_frames_stored": 146,
+        "context_frames_matched": 144,
+        "context_identity_rejected": 0,
+        "inference_errors": 0
+      },
+      "last_scraped_primary_frames": 644.0,
+      "actual_capture_branch_enabled": true,
+      "actual_preview_png_count": 149,
+      "interpretation": "35-sec bounded success, not evidence that disabling preview fixes startup stall"
+    }
+  },
+  "visual_review": {
+    "raw_control": [
+      "cpu_0.png: box follows person",
+      "cpu_428.png: severe corruption"
+    ],
+    "surface": [
+      "cpu_0.png: box follows person",
+      "cpu_186.png: corruption",
+      "cpu_384.png: corruption",
+      "cpu_578.png: corruption",
+      "cpu_792.png: corruption"
+    ],
+    "nodrop_retry": [
+      "cpu_236.png: no obvious corruption, bbox follows person",
+      "cpu_488.png: no obvious corruption, pose aligns"
+    ],
+    "iou_nodrop": [
+      "cpu_0.png",
+      "cpu_208.png",
+      "cpu_408.png",
+      "cpu_628.png"
+    ],
+    "method": "manual selected-frame inspection only; not all frames, not a labeled tracking-quality evaluation"
+  },
+  "decisions": [
+    "Keep SDK 7.1 and active IOU configuration",
+    "Optional DS_RTSP_DROP_ON_LATENCY added; SDK default preserved unless explicit override",
+    "NVMM CPU-copy alternative did not resolve corruption; not retained in application",
+    "I32 remains OPEN: drop-on-latency=false improved selected images but source-time backlog remains",
+    "I31 uint64 SQLite overflow remains OPEN; random run IDs can mask it",
+    "I20 remains OPEN: first NvDCF run stalled at 10 frames; retry passed with capture branch still active; causality unproven"
+  ],
+  "limitations": [
+    "No production activation; no multi-camera/physical-output/long-run/IDF1 test",
+    "Observers and CPU quota affect timing; trials do not start at identical source frames",
+    "35 seconds steady observation is not stability approval",
+    "Native JPEG encoder sync can change timing; boundary trial is diagnostic only",
+    "No absolute capture-to-display latency measured"
+  ],
+  "artifacts": {
+    "data/runtime/p51_tracking_20260928_v046/candidate__preview_frame_store.py": {
+      "sha256": "d2d1c514fb8826a3bea1f318bcd2de521fadee227cd80f226efb42a50e01d4ae",
+      "bytes": 8679
+    },
+    "data/runtime/p51_tracking_20260928_v046/run_one.py": {
+      "sha256": "302f76184c7866bd663492c7ad594fd2121038a547863618e56339dfed2cb583",
+      "bytes": 5379
+    },
+    "data/runtime/p51_tracking_20260928_v046/test_candidate_surface.py": {
+      "sha256": "97145c852ee9b6ae1d803ebf5d300870a9d0a66b45bc4b8efcbc51962cc9e3f0",
+      "bytes": 8137
+    },
+    "data/runtime/p51_tracking_20260928_v046/run_surface.py": {
+      "sha256": "2dd58300c31bcd75ee856e603f6ad37f16d285b5c38987051b03f66b5f395f98",
+      "bytes": 5383
+    },
+    "data/runtime/p51_tracking_20260928_v046/observe_app.py": {
+      "sha256": "e5c21b6ad23de312b2f2899d7a4496b56afbd3c19e2ce0253f954d5008565d95",
+      "bytes": 3088
+    },
+    "data/runtime/p51_tracking_20260928_v046/observe_compare.py": {
+      "sha256": "eb357047f0589e0b82544a5f18e0bac66cafa7b4424b9da9b33420b6525446dd",
+      "bytes": 3386
+    },
+    "data/runtime/p51_tracking_20260928_v046/observe_nodrop.py": {
+      "sha256": "4ca790953c6d4bd7b35a6b6acb6b31acb9813e7a00f2f215270ac7e097860f24",
+      "bytes": 3526
+    },
+    "data/runtime/p51_tracking_20260928_v046/observe_surface.py": {
+      "sha256": "45965e1e7234d2b1b9c56d29ec56eead3514abae02da44b7de4694c584936336",
+      "bytes": 3241
+    },
+    "data/runtime/p51_tracking_20260928_v046/run_compare.py": {
+      "sha256": "d760515c02b8519f1f8578cc32424a55245e32059b0457c80a5c076f48a3524f",
+      "bytes": 5383
+    },
+    "data/runtime/p51_tracking_20260928_v046/candidate__deepstream_pipeline_builder.py": {
+      "sha256": "f83c6de3d862d446efb7886e1218334a5f3cde7c85b91214d1256f3029cf98f2",
+      "bytes": 23057
+    },
+    "data/runtime/p51_tracking_20260928_v046/run_nodrop.py": {
+      "sha256": "15218ac95edc1928d32bc55c7cbd0f3439d8587f0bf0b55336f23521e34602a2",
+      "bytes": 5382
+    },
+    "data/runtime/p51_tracking_20260928_v046/compose_nvdcf_no_preview.json": {
+      "sha256": "53d86b91b021754f16842d4fc97e36440c16d4f1510c38774e7a205570493312",
+      "bytes": 5023
+    },
+    "data/runtime/p51_tracking_20260928_v046/compose_nodrop.json": {
+      "sha256": "ebc007600f716fed9b4515196cbc81354ebf4e79b51ea47a66580535fdaf96e8",
+      "bytes": 4984
+    },
+    "data/runtime/p51_tracking_20260928_v046/compose_raw_control.json": {
+      "sha256": "b18920034f64f044aa76087008d47c7220bbf96698c0783f1cefad5a24c47b40",
+      "bytes": 4990
+    },
+    "data/runtime/p51_tracking_20260928_v046/compose_boundary.json": {
+      "sha256": "fae1eea699e345269fc7aa33ff33342d651d4273a95866a147424b29d1a011c7",
+      "bytes": 4937
+    },
+    "data/runtime/p51_tracking_20260928_v046/compose_surface.json": {
+      "sha256": "b00b0e0f9ad3b5c5b683cd7da9f97d042d51ffe81afc104ad96f3b7125ad19fa",
+      "bytes": 4985
+    },
+    "data/runtime/p51_tracking_20260928_v046/compose_iou_nodrop.json": {
+      "sha256": "6525ee503102d153a6027712927c3f9b9e52c524fd3837737026bae1e2ffa762",
+      "bytes": 5014
+    },
+    "data/runtime/p51_tracking_20260928_v046/compose_nvdcf_nodrop.json": {
+      "sha256": "db8a5ef12154f85f2868b6f6bb9895cecd3e182105e28327c033f7294bb2b070",
+      "bytes": 5018
+    },
+    "data/runtime/p51_tracking_20260928_v046/compose_nodrop_retry.json": {
+      "sha256": "00a60a52f8b40bd7fb642909c45e4247cd1d55d13dae9dde34a2dee0a8603a92",
+      "bytes": 4990
+    },
+    "data/runtime/p51_tracking_20260928_v046/config_nvdcf_test.yml": {
+      "sha256": "f4b7c7b062e71063abd6c56ea37f7041a00ad7663e6d71499fbc7fc82f1d5ab7",
+      "bytes": 5141
+    },
+    "src/core/_deepstream_source_manager.py": {
+      "sha256": "877c58ffb8db07f190884ba0e5629d78eb10d08c7ce93fe98040c9d8fb00ca7b",
+      "bytes": 6023
+    },
+    "tests/test_deepstream_processor.py": {
+      "sha256": "5cbbdcfcdc594f7e2a04b2567accadb538b1a617008717d640a6ff454d7def07",
+      "bytes": 91863
+    }
+  },
+  "operating_after": {
+    "started_at": "2026-09-16T23:45:46.903505745Z",
+    "restart_count": 0,
+    "health": "healthy"
+  },
+  "discarded_experiment": {
+    "nodrop": "Observer wrapper signature error; stopped only isolated container, fixed and reran as nodrop_retry"
+  }
+}

@@ -1,0 +1,837 @@
+{
+  "version": "0.84",
+  "updated_at": "2026-10-01 09:52 KST",
+  "manifest": {
+    "candidate": "data/runtime/p51_shutdown_20260930_v084/candidate_sink_first",
+    "candidate_files_verified": 359,
+    "product_file": "src/core/_deepstream_pipeline_builder.py",
+    "product_sha256": "acb5e4b8913d7322573c4dc252ea4a23905e64df9f5778a23e9d9e11b881aa35",
+    "candidate_manifest": "data/runtime/p51_shutdown_20260930_v084/candidate_manifest.json",
+    "scope": "I40 direct CLI normal and output-only server loss shutdown, recorded replay, shared GPU",
+    "shutdown_budget_seconds": 30,
+    "diagnostic_hooks": false,
+    "source_harness": "data/runtime/p51_shutdown_20260930_v084/run_candidate.py"
+  },
+  "plugin_build": {
+    "upstream_commit": "4ac544d5aa9ed100398570795d08b8022a5a45c5",
+    "source_sha256": {
+      "gstrtspclientsink.c": "2455857c9a6ce1e7aadf56f765bf1d35a2a296fb8269412f25e7dd3d58b2ed78",
+      "gstrtspclientsink.h": "8d2dfe6080025324e91cc8befe1fa09859ab3751cb09865daf17cfd25564018c",
+      "plugin.c": "cc97014443192cdb8f839ea935f41b4bbc241bfffbaddb8c8a7db35a3e7e6000",
+      "upstream.patch": "f1c29670eb285c9683da6a2a5561226938520d2886ffc1414696cee56bfdd844"
+    },
+    "builds": {
+      "original": {
+        "sha256": "9e444b19881510186c561b1fcceb282665632fc65f6cfe8d5fa10c735857b677",
+        "command": [
+          "gcc",
+          "-shared",
+          "-fPIC",
+          "-g",
+          "-O2",
+          "-DHAVE_CONFIG_H",
+          "-Werror=implicit-function-declaration",
+          "-I/audit/plugin_headers/extracted/usr/include/gstreamer-1.0",
+          "-o",
+          "libgstrtspclientsink.so",
+          "gstrtspclientsink.c",
+          "plugin.c",
+          "-Wl,-z,defs",
+          "-l:libgstrtspserver-1.0.so.0",
+          "-pthread",
+          "-I/usr/include/gstreamer-1.0",
+          "-I/usr/include/gio-unix-2.0",
+          "-I/usr/include/libmount",
+          "-I/usr/include/blkid",
+          "-I/usr/include/gstreamer-1.0",
+          "-I/usr/include/orc-0.4",
+          "-I/usr/include/gstreamer-1.0",
+          "-I/usr/include/aarch64-linux-gnu",
+          "-I/usr/include/glib-2.0",
+          "-I/usr/lib/aarch64-linux-gnu/glib-2.0/include",
+          "-lgstrtsp-1.0",
+          "-lgio-2.0",
+          "-lgstsdp-1.0",
+          "-lgstnet-1.0",
+          "-lgstrtp-1.0",
+          "-lgstbase-1.0",
+          "-lgstreamer-1.0",
+          "-lgobject-2.0",
+          "-lglib-2.0"
+        ]
+      },
+      "patched": {
+        "sha256": "b6e3862ffb17e51defdfae753701b8dfc5422563d8140d227b824d89ec14f96a",
+        "command": [
+          "gcc",
+          "-shared",
+          "-fPIC",
+          "-g",
+          "-O2",
+          "-DHAVE_CONFIG_H",
+          "-Werror=implicit-function-declaration",
+          "-I/audit/plugin_headers/extracted/usr/include/gstreamer-1.0",
+          "-o",
+          "libgstrtspclientsink.so",
+          "gstrtspclientsink.c",
+          "plugin.c",
+          "-Wl,-z,defs",
+          "-l:libgstrtspserver-1.0.so.0",
+          "-pthread",
+          "-I/usr/include/gstreamer-1.0",
+          "-I/usr/include/gio-unix-2.0",
+          "-I/usr/include/libmount",
+          "-I/usr/include/blkid",
+          "-I/usr/include/gstreamer-1.0",
+          "-I/usr/include/orc-0.4",
+          "-I/usr/include/gstreamer-1.0",
+          "-I/usr/include/aarch64-linux-gnu",
+          "-I/usr/include/glib-2.0",
+          "-I/usr/lib/aarch64-linux-gnu/glib-2.0/include",
+          "-lgstrtsp-1.0",
+          "-lgio-2.0",
+          "-lgstsdp-1.0",
+          "-lgstnet-1.0",
+          "-lgstrtp-1.0",
+          "-lgstbase-1.0",
+          "-lgstreamer-1.0",
+          "-lgobject-2.0",
+          "-lglib-2.0"
+        ]
+      }
+    }
+  },
+  "upstream_patch_url": "https://gitlab.freedesktop.org/gstreamer/gstreamer/-/merge_requests/2278",
+  "trials": {
+    "normal": {
+      "path": "data/runtime/p51_shutdown_20261001_v085/normal",
+      "outcome": {
+        "codec_mode": "rtsp",
+        "completed": true,
+        "scope": "frozen sink-first candidate, direct main.py without diagnostic hooks, separate input/output RTSP servers, no operating deployment",
+        "scenario": "normal",
+        "receiver_exit": 0,
+        "output_bytes": 35851340,
+        "last_frames": 2642.0,
+        "app_exit": 0,
+        "stop_seconds": 6.245392143027857,
+        "elapsed_seconds": 127.84635566407815,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 29.723
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 30.559
+          },
+          {
+            "name": "sigint_requested",
+            "elapsed": 121.549
+          }
+        ],
+        "sample_count": 106
+      },
+      "trial_valid_for_shutdown": true,
+      "stage_seconds": {},
+      "stages_without_return": [],
+      "last_metric_snapshot": {
+        "cctv_processor_context_match_missed_total": 0.0,
+        "cctv_processor_context_queue_dropped_total": 0.0,
+        "cctv_processor_context_tasks_failed_total": 0.0
+      },
+      "cuda700_signature_count": 0,
+      "full_pipeline_restarts_logged": 0,
+      "native_stack_captured": false,
+      "sha256": {
+        "experiment.json": "16271d7b1847621b42d0ee43ac9f3cd28b5c69471bd28ec758db27d19c0caccd",
+        "app.log": "e6204512508a7304fa624166609acdc983c53849626b90b0af29e8ccbbbaec63",
+        "samples.jsonl": "08824af46053c178bdf5e03511cf519ac4646402b21f8e6c11e7cb599c3344ba",
+        "output-server.log": "4dfadb634225ac306469cd55bac54ecaf6338657169bc72c20ebcd5302beb26f",
+        "mediamtx.log": "17c7a99a7257e78dba2e1174aaf82a25e7969ca891217ce54a1d5a0b8f34b331"
+      },
+      "decode": {
+        "exit": 0,
+        "stderr_bytes": 0
+      }
+    },
+    "output_loss": {
+      "path": "data/runtime/p51_shutdown_20261001_v085/output_loss",
+      "outcome": {
+        "codec_mode": "rtsp",
+        "completed": false,
+        "scope": "frozen sink-first candidate, direct main.py without diagnostic hooks, separate input/output RTSP servers, no operating deployment",
+        "scenario": "output_loss",
+        "receiver_exit": 0,
+        "output_bytes": 34901449,
+        "last_frames": 2427.0,
+        "output_server_exit": -9,
+        "input_server_alive": true,
+        "input_publisher_alive": true,
+        "frames_after_output_loss": 324.0,
+        "app_exit_before_sigint": null,
+        "stop_budget_exceeded": true,
+        "app_exit": null,
+        "stop_seconds": 30.000259118154645,
+        "elapsed_seconds": 183.30484136915766,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 35.385
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 36.426
+          },
+          {
+            "name": "output_server_killed",
+            "elapsed": 127.303
+          },
+          {
+            "name": "sigint_requested",
+            "elapsed": 144.725
+          }
+        ],
+        "sample_count": 132
+      },
+      "trial_valid_for_shutdown": true,
+      "stage_seconds": {},
+      "stages_without_return": [],
+      "last_metric_snapshot": {
+        "cctv_processor_context_match_missed_total": 0.0,
+        "cctv_processor_context_queue_dropped_total": 0.0,
+        "cctv_processor_context_tasks_failed_total": 0.0
+      },
+      "cuda700_signature_count": 0,
+      "full_pipeline_restarts_logged": 1,
+      "native_stack_captured": false,
+      "sha256": {
+        "experiment.json": "decf3e759fdb6dfc28c37fcf1f6123dc2c9d6b18c1f2b009cb9df31dc0a4e7da",
+        "app.log": "2c0c9c783caf5631386987f194ebdeaae1e439047c5a40279cd1777ef9ab133c",
+        "samples.jsonl": "1ec3632800c551a13a34b7aa699c8e7028be7a6e7f2a7be0ec0c37eb8fa201b5",
+        "output-server.log": "d9d6083d7abc35708db00221f2e896543dcd57e9df6753b032291bfd8c0c3007",
+        "mediamtx.log": "96537f5f85fe0d1dd88d1abd4ef451589722e3ea91f134191c7206c3640dc444"
+      },
+      "decode": {
+        "exit": 0,
+        "stderr_bytes": 0
+      }
+    },
+    "output_loss_native": {
+      "path": "data/runtime/p51_shutdown_20261001_v085/output_loss_native",
+      "outcome": {
+        "codec_mode": "rtsp",
+        "completed": false,
+        "scope": "frozen sink-first candidate, parent GDB with shutdown-only observation, separate input/output RTSP servers, no operating deployment",
+        "scenario": "output_loss",
+        "receiver_exit": 0,
+        "output_bytes": 37216455,
+        "last_frames": 2630.0,
+        "output_server_exit": -9,
+        "input_server_alive": true,
+        "input_publisher_alive": true,
+        "frames_after_output_loss": 253.0,
+        "app_exit_before_sigint": null,
+        "stop_budget_exceeded": true,
+        "app_exit": null,
+        "stop_seconds": 30.000800461973995,
+        "elapsed_seconds": 171.04399404791184,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 31.222
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 32.053
+          },
+          {
+            "name": "output_server_killed",
+            "elapsed": 123.053
+          },
+          {
+            "name": "sigint_requested",
+            "elapsed": 140.479
+          }
+        ],
+        "sample_count": 129
+      },
+      "trial_valid_for_shutdown": true,
+      "stage_seconds": {
+        "pipeline.send_event": [
+          0.03634213889017701,
+          0.01729755289852619
+        ],
+        "h264-rtsp-sink.set_state": [
+          0.03804006683640182
+        ],
+        "pipeline.set_state": [
+          0.2827115471009165
+        ],
+        "processor.stop": [
+          0.6800026937853545
+        ]
+      },
+      "stages_without_return": [
+        "h264-rtsp-sink.set_state",
+        "processor.stop"
+      ],
+      "last_metric_snapshot": {
+        "cctv_processor_context_match_missed_total": 0.0,
+        "cctv_processor_context_queue_dropped_total": 0.0,
+        "cctv_processor_context_tasks_failed_total": 0.0
+      },
+      "cuda700_signature_count": 0,
+      "full_pipeline_restarts_logged": 1,
+      "native_stack_captured": true,
+      "sha256": {
+        "experiment.json": "d6df52fabe7feb1396d3e88df717bfed80ac0eaadf5e1ed9cbee2159c3233c21",
+        "app.log": "5e6b528c2dc472c6aa5b6ca53d9ba4c7cfa5ebb338c2bcdf72fbe2f94e547d97",
+        "samples.jsonl": "b4690884949a20110fdca933214c71cfc7ad0d0ec6a8bcf17bf92de30f8696d6",
+        "output-server.log": "568cb42904ea2efa87b2f5536932036b6101c91f1c7811ba8e801d55ea146a8c",
+        "mediamtx.log": "ad81662cf3cb1b32852da244c932d64e7458a104c432b7bfff9cb81b8129ad86",
+        "native_shutdown_stack_clean.txt": "a4470272ec9b0c46421241116d908b70503932ef02f3fb12d51cff8dcb8de6f2"
+      }
+    },
+    "patched_output_loss": {
+      "path": "data/runtime/p51_shutdown_20261001_v085/patched_output_loss",
+      "outcome": {
+        "codec_mode": "rtsp",
+        "completed": false,
+        "scope": "frozen sink-first candidate, direct main.py without diagnostic hooks, separate input/output RTSP servers, no operating deployment",
+        "scenario": "output_loss",
+        "loaded_rtsp_plugin": [
+          "/audit/plugin_build/patched/libgstrtspclientsink.so"
+        ],
+        "receiver_exit": 0,
+        "output_bytes": 34565083,
+        "last_frames": 2366.0,
+        "output_server_exit": -9,
+        "input_server_alive": true,
+        "input_publisher_alive": true,
+        "frames_after_output_loss": 2382.0,
+        "app_exit_before_sigint": null,
+        "stop_budget_exceeded": true,
+        "app_exit": null,
+        "stop_seconds": 30.000260130967945,
+        "elapsed_seconds": 160.7633422750514,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 13.343
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 13.756
+          },
+          {
+            "name": "output_server_killed",
+            "elapsed": 104.632
+          },
+          {
+            "name": "sigint_requested",
+            "elapsed": 122.051
+          }
+        ],
+        "sample_count": 115
+      },
+      "trial_valid_for_shutdown": true,
+      "stage_seconds": {},
+      "stages_without_return": [],
+      "last_metric_snapshot": {
+        "cctv_processor_context_match_missed_total": 0.0,
+        "cctv_processor_context_queue_dropped_total": 0.0,
+        "cctv_processor_context_tasks_failed_total": 0.0
+      },
+      "cuda700_signature_count": 0,
+      "full_pipeline_restarts_logged": 0,
+      "native_stack_captured": false,
+      "sha256": {
+        "experiment.json": "3b9b6a0f53ca7cab349ba620d092e11cbcb388f6f4a46a9494d5a4a599644cf8",
+        "app.log": "03a0358420ded470a9b1ff562e613b2171ccaa3c2f52e2ebfc1f08b2c1144f04",
+        "samples.jsonl": "73c8242ebef6f93ff1b4d90c58428d332557ecdb772c2b39b869f7040d26a24d",
+        "output-server.log": "d8780e98bb3b0a3b6d6ddb3c4b3b3ae8efdfd895b71677215ef59056c094bfa6",
+        "mediamtx.log": "3e33e80c2cbad52984e0c13376f3fb087fade3a4dd80bde585c2157628792d2d"
+      }
+    },
+    "patched_output_loss_native": {
+      "path": "data/runtime/p51_shutdown_20261001_v085/patched_output_loss_native",
+      "outcome": {
+        "codec_mode": "rtsp",
+        "completed": true,
+        "scope": "frozen sink-first candidate, parent GDB with shutdown-only observation, separate input/output RTSP servers, no operating deployment",
+        "scenario": "output_loss",
+        "receiver_exit": 0,
+        "output_bytes": 33218704,
+        "last_frames": 2256.0,
+        "output_server_exit": -9,
+        "input_server_alive": true,
+        "input_publisher_alive": true,
+        "frames_after_output_loss": 0.0,
+        "app_exit_before_sigint": null,
+        "app_exit": 0,
+        "stop_seconds": 2.1024272518698126,
+        "elapsed_seconds": 136.00901263509877,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 24.606
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 26.069
+          },
+          {
+            "name": "output_server_killed",
+            "elapsed": 116.31
+          },
+          {
+            "name": "sigint_requested",
+            "elapsed": 133.864
+          }
+        ],
+        "sample_count": 125
+      },
+      "trial_valid_for_shutdown": true,
+      "stage_seconds": {
+        "pipeline.send_event": [
+          0.06559973396360874,
+          0.009013165952637792
+        ],
+        "h264-rtsp-sink.set_state": [
+          0.0766583289951086,
+          0.0036173241678625345
+        ],
+        "pipeline.set_state": [
+          0.22465754486620426,
+          0.17889497615396976
+        ],
+        "publish_thread.join": [
+          0.004250216064974666
+        ],
+        "processor.stop": [
+          0.7303636171855032,
+          12.588426295202225,
+          0.0013148719444870949
+        ]
+      },
+      "stages_without_return": [],
+      "last_metric_snapshot": {
+        "cctv_processor_context_match_missed_total": 0.0,
+        "cctv_processor_context_queue_dropped_total": 0.0,
+        "cctv_processor_context_tasks_failed_total": 0.0
+      },
+      "cuda700_signature_count": 0,
+      "full_pipeline_restarts_logged": 2,
+      "native_stack_captured": false,
+      "sha256": {
+        "experiment.json": "cbc547a78eb2e15fce5058e6b80701214b921c9199030505a3440dc49714acf7",
+        "app.log": "266486717a8414bc87fbdc691480079965961e99eca2a7697d3b74ffed51c461",
+        "samples.jsonl": "64c9933b5b4b3912a9171a41c16dc37df9676402bf606dd192b8879753fc2e89",
+        "output-server.log": "36599c58d7fd424bd622bd03a89b18df2c7d7d46f8fcccfe9f2cbfd700c649b5",
+        "mediamtx.log": "f0cf4faefa875223b3bbecfb4fd1168644919ca3aaa7d4c2e2aa0c131466ae37"
+      },
+      "inferior_exited_normally": true
+    },
+    "patched_output_loss_quiet": {
+      "path": "data/runtime/p51_shutdown_20261001_v085/patched_output_loss_quiet",
+      "outcome": {
+        "codec_mode": "rtsp",
+        "completed": true,
+        "scope": "frozen sink-first candidate, parent GDB with shutdown-only observation, separate input/output RTSP servers, no operating deployment",
+        "scenario": "output_loss",
+        "receiver_exit": 0,
+        "output_bytes": 33504480,
+        "last_frames": 2288.0,
+        "output_server_exit": -9,
+        "input_server_alive": true,
+        "input_publisher_alive": true,
+        "frames_after_output_loss": 0.0,
+        "app_exit_before_sigint": null,
+        "app_exit": 0,
+        "stop_seconds": 2.282958896132186,
+        "elapsed_seconds": 157.75253107282333,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 45.968
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 47.008
+          },
+          {
+            "name": "output_server_killed",
+            "elapsed": 137.985
+          },
+          {
+            "name": "sigint_requested",
+            "elapsed": 155.422
+          }
+        ],
+        "sample_count": 146
+      },
+      "trial_valid_for_shutdown": true,
+      "stage_seconds": {
+        "pipeline.send_event": [
+          0.050138897029682994,
+          0.007107472978532314,
+          0.0012531760148704052,
+          0.007646381156519055,
+          0.0065889800898730755
+        ],
+        "h264-rtsp-sink.set_state": [
+          0.039468119852244854,
+          0.015054073883220553,
+          0.004313219105824828,
+          0.010997334029525518,
+          0.021311504067853093
+        ],
+        "pipeline.set_state": [
+          0.2893529129214585,
+          0.11938790208660066,
+          0.13768134615384042,
+          0.11924185091629624,
+          0.16337009612470865
+        ],
+        "processor.stop": [
+          4.4865362690761685,
+          0.43822873709723353,
+          0.3796934769488871,
+          0.4703095972072333,
+          0.4992264520842582,
+          0.0053670359775424
+        ],
+        "publish_thread.join": [
+          0.2432378539815545,
+          0.20198865607380867,
+          0.29611723497509956,
+          0.2755798988509923
+        ]
+      },
+      "stages_without_return": [],
+      "last_metric_snapshot": {
+        "cctv_processor_context_match_missed_total": 0.0,
+        "cctv_processor_context_queue_dropped_total": 0.0,
+        "cctv_processor_context_tasks_failed_total": 0.0
+      },
+      "cuda700_signature_count": 0,
+      "full_pipeline_restarts_logged": 5,
+      "native_stack_captured": false,
+      "sha256": {
+        "experiment.json": "e61555df7a2230ad78e68eef34c82c3e606d120f6276049cd1a4b757d4f9967d",
+        "app.log": "1625eb7fb80b4e5e83b584e8cd824774e7541d769a41262f9f3d5ed7d7c077d1",
+        "samples.jsonl": "92dd0accbd81d17014486e8f78dd8f8f3b6a6d2cf1cf3db05364d3246cb7f7fe",
+        "output-server.log": "78eb0441ed576f1ed7248ceebd7b052157ddf1d145d669df709061b2ef0edee4",
+        "mediamtx.log": "6705de1d179b55bc950b2462f3b83f686376cbd23eaaafc24f030b9152b3ae4c"
+      },
+      "inferior_exited_normally": true
+    },
+    "patched_output_loss_abort": {
+      "path": "data/runtime/p51_shutdown_20261001_v085/patched_output_loss_abort",
+      "outcome": {
+        "codec_mode": "rtsp",
+        "completed": false,
+        "scope": "frozen sink-first candidate, direct main.py without diagnostic hooks, separate input/output RTSP servers, no operating deployment",
+        "scenario": "output_loss",
+        "loaded_rtsp_plugin": [
+          "/audit/plugin_build/patched/libgstrtspclientsink.so"
+        ],
+        "receiver_exit": 0,
+        "output_bytes": 35786794,
+        "last_frames": 2338.0,
+        "output_server_exit": -9,
+        "input_server_alive": true,
+        "input_publisher_alive": true,
+        "frames_after_output_loss": 2344.0,
+        "app_exit_before_sigint": null,
+        "stop_budget_exceeded": true,
+        "app_exit": null,
+        "diagnostic_abort_exit": -6,
+        "stop_seconds": 30.464883141918108,
+        "elapsed_seconds": 153.50912944204174,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 14.414
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 15.48
+          },
+          {
+            "name": "output_server_killed",
+            "elapsed": 105.629
+          },
+          {
+            "name": "sigint_requested",
+            "elapsed": 122.996
+          }
+        ],
+        "sample_count": 115
+      },
+      "trial_valid_for_shutdown": true,
+      "stage_seconds": {},
+      "stages_without_return": [],
+      "last_metric_snapshot": {
+        "cctv_processor_context_match_missed_total": 0.0,
+        "cctv_processor_context_queue_dropped_total": 0.0,
+        "cctv_processor_context_tasks_failed_total": 0.0
+      },
+      "cuda700_signature_count": 0,
+      "full_pipeline_restarts_logged": 0,
+      "native_stack_captured": false,
+      "sha256": {
+        "experiment.json": "11b94fa2a9d592cd55974ec91a6d442412da47d9380c9606dafe14293e9cadf5",
+        "app.log": "fd30645a5621ffabc4438696df78bbd3eb4073dd354476522eb66f3b654e7bc5",
+        "samples.jsonl": "90afb6e84b1e79cd62c66c8fcebeb18ef6b3d2a9dd68f32b6b070691e2a1bec8",
+        "output-server.log": "cf0b4146b48a5dcc7580554e901ee5deebbefb8a363e645a0ec5699822c7f31d",
+        "mediamtx.log": "6c886ce609c751a32435760eacb541768d3dc0ccfaca9db0f6066170591c5c91",
+        "python_shutdown_stack.txt": "e80e7adc4e31b84f419e9da4ea38269ce26a966039eeba816129d202c177c532"
+      }
+    },
+    "pause_output_loss": {
+      "path": "data/runtime/p51_shutdown_20261001_v085/pause_output_loss",
+      "outcome": {
+        "codec_mode": "rtsp",
+        "completed": false,
+        "scope": "frozen sink-first candidate, direct main.py without diagnostic hooks, separate input/output RTSP servers, no operating deployment",
+        "scenario": "output_loss",
+        "loaded_rtsp_plugin": [
+          "/audit/plugin_build/patched/libgstrtspclientsink.so"
+        ],
+        "receiver_exit": 0,
+        "output_bytes": 32549015,
+        "last_frames": 2188.0,
+        "output_server_exit": -9,
+        "input_server_alive": true,
+        "input_publisher_alive": true,
+        "frames_after_output_loss": 2193.0,
+        "app_exit_before_sigint": null,
+        "stop_budget_exceeded": true,
+        "app_exit": null,
+        "stop_seconds": 30.00029097404331,
+        "elapsed_seconds": 161.38497104402632,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 13.589
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 14.827
+          },
+          {
+            "name": "output_server_killed",
+            "elapsed": 105.476
+          },
+          {
+            "name": "sigint_requested",
+            "elapsed": 122.888
+          }
+        ],
+        "sample_count": 114
+      },
+      "trial_valid_for_shutdown": true,
+      "stage_seconds": {},
+      "stages_without_return": [],
+      "last_metric_snapshot": {
+        "cctv_processor_context_match_missed_total": 0.0,
+        "cctv_processor_context_queue_dropped_total": 0.0,
+        "cctv_processor_context_tasks_failed_total": 0.0
+      },
+      "cuda700_signature_count": 0,
+      "full_pipeline_restarts_logged": 0,
+      "native_stack_captured": false,
+      "sha256": {
+        "experiment.json": "bbd67a416763bfc25ea9d992a6b8612cfe4e27c8ed25b498188351b8905a6d0b",
+        "app.log": "656181f2cabb3a1f2fe137efe3609e2fc2bcaf7f342643eead3525b269f2b559",
+        "samples.jsonl": "e599d8e1bace6456f04177339772f7fdb1a317606152286e0b27da24ec2d61c8",
+        "output-server.log": "3e765518ffb516cf65cb8cce0b39b488c688bd16f42bf64ccb1786e81c7ce78d",
+        "mediamtx.log": "b27718098f521fb2822d93d4292e91b5b30b55b8130ea396f30dbb17a88fecc6"
+      }
+    },
+    "patched_output_loss_post_native": {
+      "path": "data/runtime/p51_shutdown_20261001_v085/patched_output_loss_post_native",
+      "outcome": {
+        "codec_mode": "rtsp",
+        "completed": false,
+        "scope": "frozen sink-first candidate, direct main.py under parent GDB, no Python shutdown hooks; stack captured only after timeout, separate input/output RTSP servers, no operating deployment",
+        "scenario": "output_loss",
+        "error": "FileNotFoundError: [Errno 2] No such file or directory: '/proc/37/task/37/children'",
+        "elapsed_seconds": 35.85238479007967,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 35.284
+          }
+        ],
+        "sample_count": 32
+      },
+      "trial_valid_for_shutdown": false,
+      "stage_seconds": {},
+      "stages_without_return": [],
+      "last_metric_snapshot": {
+        "cctv_processor_context_match_missed_total": 0.0,
+        "cctv_processor_context_queue_dropped_total": 0.0,
+        "cctv_processor_context_tasks_failed_total": 0.0
+      },
+      "cuda700_signature_count": 0,
+      "full_pipeline_restarts_logged": 0,
+      "native_stack_captured": false,
+      "sha256": {
+        "experiment.json": "6a5aa7e61ece7da5d1a695da36dbdf7200ce8014ad5f1f4b718d904a8841e28f",
+        "app.log": "be8124d8af04cbff3d57be073ee4d3b6311adbc7a9fbbe3a805b33c586ae16e6",
+        "samples.jsonl": "03c293c4f4f9205521cdaf3f90e860ead6e02754edab36bbb70f70035ed85ce9",
+        "output-server.log": "616cb35cb27871ee6db3ce9b6278c6285ddd766474d11ab439dca3bc46a8027b",
+        "mediamtx.log": "24114fc5d4c61ecaf599ae608f93bb14589a2c7c305713dd00e057ef7c3f6a01"
+      }
+    },
+    "patched_output_loss_post_native_retry": {
+      "path": "data/runtime/p51_shutdown_20261001_v085/patched_output_loss_post_native_retry",
+      "outcome": {
+        "codec_mode": "rtsp",
+        "completed": true,
+        "scope": "frozen sink-first candidate, direct main.py under parent GDB, no Python shutdown hooks; stack captured only after timeout, separate input/output RTSP servers, no operating deployment",
+        "scenario": "output_loss",
+        "loaded_rtsp_plugin": [
+          "/audit/plugin_build/patched/libgstrtspclientsink.so"
+        ],
+        "receiver_exit": 0,
+        "output_bytes": 33118986,
+        "last_frames": 2256.0,
+        "output_server_exit": -9,
+        "input_server_alive": true,
+        "input_publisher_alive": true,
+        "frames_after_output_loss": 0.0,
+        "app_exit_before_sigint": null,
+        "app_exit": 0,
+        "stop_seconds": 3.5134394420310855,
+        "elapsed_seconds": 137.63288539997302,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 24.924
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 25.747
+          },
+          {
+            "name": "output_server_killed",
+            "elapsed": 116.555
+          },
+          {
+            "name": "sigint_requested",
+            "elapsed": 134.047
+          }
+        ],
+        "sample_count": 125
+      },
+      "trial_valid_for_shutdown": true,
+      "stage_seconds": {},
+      "stages_without_return": [],
+      "last_metric_snapshot": {
+        "cctv_processor_context_match_missed_total": 0.0,
+        "cctv_processor_context_queue_dropped_total": 0.0,
+        "cctv_processor_context_tasks_failed_total": 0.0
+      },
+      "cuda700_signature_count": 0,
+      "full_pipeline_restarts_logged": 5,
+      "native_stack_captured": false,
+      "sha256": {
+        "experiment.json": "3dab0ef27a07b8f63c84b23828a686d4777f960584292675349152fdaa521cae",
+        "app.log": "0b675bb409e1778726a99838bbac94dcbb327794e7068aa5c71a5f189b025199",
+        "samples.jsonl": "6dda84845d7f925febe905dae8c9913d409ddcd2d3b9f920cfd114d02f1fb8d2",
+        "output-server.log": "3b34991abfa97872000b72a51d971a038c949c71b79100b9f173a02828ddd0ac",
+        "mediamtx.log": "207e50ea1dd32324fb507c2d180f380406038b50c31e32572d1bd6f0a36153a0"
+      },
+      "inferior_exited_normally": true
+    }
+  },
+  "minimal_nonreproductions": {
+    "caps_comparison": {
+      "stock": {
+        "exit": 0,
+        "timeout": false,
+        "seconds": 1.9357927488163114
+      },
+      "original": {
+        "exit": 0,
+        "timeout": false,
+        "seconds": 1.7328220361378044
+      },
+      "patched": {
+        "exit": 0,
+        "timeout": false,
+        "seconds": 1.69045802205801
+      }
+    },
+    "caps_comparison_direct": {
+      "stock": {
+        "exit": 0,
+        "timeout": false,
+        "seconds": 1.8896467939484864
+      },
+      "original": {
+        "exit": 0,
+        "timeout": false,
+        "seconds": 1.732817597920075
+      },
+      "patched": {
+        "exit": 0,
+        "timeout": false,
+        "seconds": 1.7282879420090467
+      }
+    },
+    "caps_comparison_live": {
+      "stock": {
+        "exit": 0,
+        "timeout": false,
+        "seconds": 2.431181335123256
+      },
+      "original": {
+        "exit": 0,
+        "timeout": false,
+        "seconds": 1.9623121730983257
+      },
+      "patched": {
+        "exit": 0,
+        "timeout": false,
+        "seconds": 1.801644766004756
+      }
+    }
+  },
+  "interpretation": "Normal direct shutdown passed. Output-only outage reproduced shutdown timeout; original native wait is RTSP sink caps/preroll shutdown lock. Upstream patch built in isolation; an uninstrumented patched run still timed out, so successful diagnostic runs do not close I40.",
+  "pause_hypothesis_manifest": "data/runtime/p51_shutdown_20261001_v085/candidate_pause_manifest.json",
+  "product_source_changes_this_unit": [],
+  "deployment_performed": false,
+  "diagnostic_abort_policy": "SIGABRT only after shutdown timeout; core disabled; do not count intentional abort as spontaneous I39 recurrence",
+  "validation": {
+    "prior_related_unit_tests": "v0.83: 46 PASS; unchanged product source, not rerun",
+    "ruff": "PASS: renderer and two actual trial supervisors",
+    "diff_check": "PASS",
+    "operating_ai_status": "running; StartedAt=2026-09-16T23:45:46.903505745Z; RestartCount=0",
+    "remaining_v085_containers": 0
+  },
+  "publication": {
+    "url": "http://192.168.2.141:18081/",
+    "wbs_rows_match": 33,
+    "png_first_page_checked": true,
+    "browser_interaction_tested": false,
+    "other_pc_tested": false,
+    "artifacts": {
+      "index.html": {
+        "bytes": 22801,
+        "sha256": "1b64b2583b4db1962c0ab6a0edae93df36dce8c0076107bbc47de9758395f514",
+        "http_bytes_match": true
+      },
+      "CCTV_project_progress.pdf": {
+        "bytes": 124416,
+        "sha256": "7eda9a5f937cc7477f2ea3edd5f2a15686af81c0969a23bb39cad49b922539ce",
+        "http_bytes_match": true
+      }
+    }
+  },
+  "remaining_wait_location": "Uninstrumented patched run: stop_pipeline_runtime line 504, whole pipeline set_state(NULL); native subframe not captured. GDB parent runs passed and cannot close this failure."
+}

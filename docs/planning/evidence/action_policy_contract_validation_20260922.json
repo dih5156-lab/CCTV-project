@@ -1,0 +1,98 @@
+{
+  "checked_at": "2026-09-22T11:16:22.179704+09:00",
+  "wbs": {
+    "P1.3": "DONE_CONTRACT_ONLY",
+    "next": "P5.1_READY",
+    "counts": {
+      "DONE": 9,
+      "BLOCKED": 2,
+      "IN_PROGRESS": 1,
+      "PLANNED": 13,
+      "VERIFY": 7,
+      "READY": 1
+    },
+    "completed_task_percent": 27.3
+  },
+  "regression": {
+    "tests": 87,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 2.446,
+    "junit": "action_policy_baseline_20260922.xml",
+    "command": ".venv/bin/python -m pytest tests/test_action_bridge.py tests/test_action_policy.py tests/test_event_priority.py tests/test_device_command_transport.py tests/test_run_action_bridge.py -q -o addopts=--tb=short -o junit_family=xunit1 --junitxml=docs/planning/evidence/action_policy_baseline_20260922.xml"
+  },
+  "contract_examples": {
+    "count": 14,
+    "ids": [
+      "A01",
+      "A02",
+      "A03",
+      "A04",
+      "A05",
+      "A06",
+      "A07",
+      "A08",
+      "A09",
+      "A10",
+      "A11",
+      "A12",
+      "A13",
+      "A14"
+    ],
+    "validation": "document/specification review, not future implementation tests"
+  },
+  "priority_inversion": {
+    "issue": "I23",
+    "status": "OPEN",
+    "higher_risk_first_contract_met": false,
+    "evidence": "action_policy_priority_gap_20260922.json"
+  },
+  "application_baseline": {
+    "files_checked": 205,
+    "sha256_unchanged": true,
+    "scope": "204 src Python files plus config/event_type_map.json"
+  },
+  "document_tools": {
+    "ruff": "PASS",
+    "black_check": "PASS",
+    "py_compile": "PASS",
+    "wbs_source_snapshot_html_match": true,
+    "local_markdown_links": "PASS",
+    "git_diff_check": "PASS for selected tracked paths"
+  },
+  "online": {
+    "url": "http://192.168.2.242:18081/",
+    "http_status": 200,
+    "served_html_matches_local": true,
+    "html_sha256": "d383505a9e00095aebf509685b961863554c733fb4f46a4f0f224236bf6c223d",
+    "wbs_ids_and_statuses_matched": 33,
+    "pdf_http_status": 200,
+    "served_pdf_matches_local": true,
+    "pdf_sha256": "355ed335c93b3e41092255f02673f7f8a5d7b197918ee5cfb4d2602a6474fcdb",
+    "pdf_pages": 3,
+    "pdf_text_extraction": "FAIL; CJK font glyph encoding. Use searchable HTML.",
+    "unpublished_path_http_status": 404,
+    "nginx_configuration_test": "PASS",
+    "container": "cctv-progress-web",
+    "container_status": "running",
+    "bind": "192.168.2.242:18081",
+    "read_only_root_and_document_mounts": true,
+    "restart_policy": "unless-stopped",
+    "tested_from": "Jetson self LAN address; another company PC not yet tested",
+    "sync": "regenerate and verify after each work unit; no background automatic sync",
+    "browser_screenshot": "PASS: Firefox headless 1366x1800, Korean layout visually checked; progress_browser_20260922.png",
+    "alternatives": {
+      "figma": "partial title only, Starter tool quota reached",
+      "google_docs": "create denied 403",
+      "google_drive_pdf": "upload denied storageQuotaExceeded"
+    },
+    "filter_validation": "PASS: served page JavaScript in Node DOM model; all/READY/DONE/Korean search/no-result/reset/refresh; not browser click automation"
+  },
+  "remaining": [
+    "I23 runtime fix/P3 device queue",
+    "D02/D04/D06 production criteria",
+    "real device/POC validation"
+  ],
+  "deployment_scope": "new independent documentation nginx only; existing application containers not restarted; no physical output"
+}

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="3" skipped="0" tests="7" time="0.230" timestamp="2026-09-18T10:24:19.788402+09:00" hostname="ubuntu"><testcase classname="tests.test_canonical_event" name="test_edgex_projection_excludes_raw_and_keeps_media_reference" time="0.003" /><testcase classname="tests.test_canonical_event" name="test_payload_accessors_accept_legacy_and_canonical_shapes" time="0.002" /><testcase classname="tests.test_canonical_event" name="test_payload_camera_id_prefers_device_mapping" time="0.002" /><testcase classname="tests.test_canonical_event" name="test_canonicalize_event_payload_preserves_supplied_event_id_for_legacy_shape" time="0.002" /><testcase classname="tests.test_canonical_event" name="test_canonicalize_partial_payload_preserves_producer_fields[missing_fields0]" time="0.003"><failure message="AssertionError: assert {} == {'temperature': 32.5}&#10;  &#10;  Right contains 1 more item:&#10;  {'temperature': 32.5}&#10;  Use -v to get more diff">tests/test_canonical_event.py:105: in test_canonicalize_partial_payload_preserves_producer_fields
+    assert normalized["decoded"] == original["decoded"]
+E   AssertionError: assert {} == {'temperature': 32.5}
+E     
+E     Right contains 1 more item:
+E     {'temperature': 32.5}
+E     Use -v to get more diff</failure></testcase><testcase classname="tests.test_canonical_event" name="test_canonicalize_partial_payload_preserves_producer_fields[missing_fields1]" time="0.003"><failure message="AssertionError: assert {} == {'temperature': 32.5}&#10;  &#10;  Right contains 1 more item:&#10;  {'temperature': 32.5}&#10;  Use -v to get more diff">tests/test_canonical_event.py:105: in test_canonicalize_partial_payload_preserves_producer_fields
+    assert normalized["decoded"] == original["decoded"]
+E   AssertionError: assert {} == {'temperature': 32.5}
+E     
+E     Right contains 1 more item:
+E     {'temperature': 32.5}
+E     Use -v to get more diff</failure></testcase><testcase classname="tests.test_canonical_event" name="test_canonicalize_partial_payload_preserves_producer_fields[missing_fields2]" time="0.003"><failure message="AssertionError: assert {} == {'temperature': 32.5}&#10;  &#10;  Right contains 1 more item:&#10;  {'temperature': 32.5}&#10;  Use -v to get more diff">tests/test_canonical_event.py:105: in test_canonicalize_partial_payload_preserves_producer_fields
+    assert normalized["decoded"] == original["decoded"]
+E   AssertionError: assert {} == {'temperature': 32.5}
+E     
+E     Right contains 1 more item:
+E     {'temperature': 32.5}
+E     Use -v to get more diff</failure></testcase></testsuite></testsuites>

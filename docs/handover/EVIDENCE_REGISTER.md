@@ -15,11 +15,11 @@
 | EV-MQTT-001 | 이벤트 전달·재전송 | 코드·테스트 | `parser-python/mqtt`, `parser-python/tests/test_edgex_forwarder_contract.py` | 구현·자동 검증 | 운영 브로커 시험 로그 등록 |
 | EV-RULE-001 | 규칙 처리 | 코드·설정·테스트 | `kuiper/`, `runners/run_kuiper_rules.py`, `src/services/sensor_rule_bridge.py` | 구현·진행 | eKuiper와 Python 규칙의 최종 판정 주체 확정 |
 | EV-EDGEX-001 | 출력 명령 표준화 | 코드·테스트 | `src/services/action_bridge.py`, `src/edgex/command_contract.py`, `tests/test_action_bridge.py` | 구현·자동 검증 | 운영 모드 전환 승인 기록 |
-| EV-SIGN-001 | 전광판 Device Service | 코드·테스트 | `src/edgex/dabit_device_service.py`, `runners/run_signboard_device_service.py`, `tests/test_dabit_device_service.py` | 구현·자동 검증 | 물리 화면 육안 촬영 증빙 |
-| EV-SIGN-002 | 전광판 EdgeX 명령 | 로그·DB·실장치 | [2026-09-04 전광판 EdgeX 실장치 UAT](EDGEX_LIVE_UAT_20260904.md) | 실제 명령·결과 DB·물리 호출 로그 확인 | 육안 촬영 사진 등록 |
+| EV-SIGN-001 | 전광판 Device Service | 코드·테스트·API 계약 | `src/edgex/dabit_device_service.py`, `runners/run_signboard_device_service.py`, `tests/test_dabit_device_service.py`, `scripts/ops/check_edgex_device_service_contracts.py` | 구현·API `simulated` 응답 검증·canary 물리 출력 | 운영 전환 후 재검증 |
+| EV-SIGN-002 | 전광판 EdgeX 명령 | 로그·DB·실장치 | [전광판 EdgeX 실장치 UAT](EDGEX_LIVE_UAT_20260904.md) 9월 2주차 재검증 포함 | 실제 명령·결과 DB·물리 호출 로그 확인 | 육안 촬영 사진 등록 |
 | EV-SPEAKER-001 | 스피커 Device Service | 코드·dry-run | `src/edgex/speaker_device_service.py`, `scripts/ops/check_edgex_device_service_contracts.py` | dry-run | 실제 스피커 연결 후 UAT |
 | EV-SIREN-001 | 사이렌·경광등 경계 | 코드·dry-run | `src/edgex/siren_device_service.py`, `runners/run_siren_device_service.py` | dry-run | 실제 장치·릴레이 확보 후 UAT |
-| EV-MULTI-001 | 다중 장치 라우팅 | 설정·테스트 | `config/output_devices.json`, `tests/test_device_command_transport.py` | 구현·자동 검증 | 2대 이상 실제 장치 장애 격리 시험 |
+| EV-MULTI-001 | 다중 장치 라우팅 | 설정·테스트·안전 UAT | `config/output_devices.json`, `tests/test_device_command_transport.py`, `docs/handover/EDGEX_LIVE_UAT_20260904.md#15-다중-디바이스-격리-uat-재검증` | `safe-002`에서 연결 불가 장치 제외와 전광판 simulated 결과 확인 | 2대 이상 실제 장치 장애 격리 시험 |
 | EV-AUDIT-001 | 명령 결과·감사 | 코드·DB·테스트 | `src/aiot/contracts.py`, `data/runtime/edgex_command_results.db`, 관련 테스트 | 구현·자동 검증 | 운영 보존기간과 백업 증빙 |
 | EV-OPS-001 | Docker·Jetson 운영 | 런북·점검 | `docs/architecture/DOCKER_AND_EXECUTION.md`, `scripts/health/`, `docs/guides/JETSON_EDGEX_FIELD_CHECKLIST.md` | 문서·점검 가능 | 실제 배포 로그와 복구 결과 등록 |
 | EV-EXT-001 | 외부 CCTV 이벤트 계약 | API 자료 | 전임자 `엣지 플랫폼/KETI 연동 정보/쏘우웨이브 CCTV 이벤트 API 가이드.postman_collection.json` | 참고·계약 후보 | 공식 연동 시험 결과와 버전 확정 |

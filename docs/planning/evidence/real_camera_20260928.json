@@ -1,0 +1,149 @@
+{
+  "version": "0.50",
+  "updated_at": "2026-09-28 16:13 KST",
+  "fixture_root": "data/runtime/p51_camera_20260928_v050",
+  "camera_id": "camera_1",
+  "replay_alias": "replay_1",
+  "summary": {
+    "experiment": {
+      "scope": "one local RTSP input, IOU, full candidate models, captured real camera video replay; no live camera connection",
+      "input": "/audit/camera_1_capture.mkv",
+      "completed_experiment": true,
+      "app_alive": true,
+      "continuous_publisher_alive": true,
+      "restored_publisher_alive": true,
+      "transitions": [
+        {
+          "name": "input_ready",
+          "elapsed": 22.566
+        }
+      ],
+      "sample_count": 97,
+      "elapsed_seconds": 65.3394290280994
+    },
+    "context_observations": 183,
+    "identity_hash_mismatches": 0,
+    "cpu_samples": 184,
+    "generations": [
+      1
+    ],
+    "tail20": {
+      "wall_sec": 19.967,
+      "pts_sec": 17.283,
+      "relative_backlog_growth_sec": 2.684
+    },
+    "stats": {
+      "frames_processed": 1101,
+      "inference_errors": 0,
+      "context_frames_matched": 181,
+      "context_identity_rejected": 0,
+      "preview_frames_stored": 182,
+      "pipeline_restart_executed": 0,
+      "source_stream_reset_events": 0
+    },
+    "transform_error_count": 0,
+    "overflow_count": 0,
+    "server_discard_warning_count": 0
+  },
+  "capture": {
+    "camera_id": "camera_1",
+    "started_epoch": 1790579231.909154,
+    "elapsed_sec": 25.375,
+    "exit_code": 0,
+    "stderr": ""
+  },
+  "video": {
+    "codec": "h264",
+    "width": 1920,
+    "height": 1080,
+    "fps": "30000/1001",
+    "duration_sec": 24.989,
+    "bytes": 13208214,
+    "sha256": "c7df52d9b46939c1f7d7439354793969ae3dac8663cf2f8bbeab2b72fe916202"
+  },
+  "application_change": false,
+  "production_change": false,
+  "user_constraint": "full-body walk test unavailable; validate current view only",
+  "candidate_archive": {
+    "file_count": 357,
+    "sha256": "01d145fdb48e86e319d3278901c2ea33e129e6c67980a3e4a1e1c67e66844ebf",
+    "verified_against_manifest": true,
+    "is_previous_production_rollback": false
+  },
+  "model_hashes": {
+    "data/runtime/p51_app_20260928_v039/pose_b1_4_fp16_l0.engine": "8205a516a93b6892f2437a5c15982f1dc61f579ac6044fc7ebb3ad6f87c625c9",
+    "models/head/helmet_model.engine": "618c54a48d43844662fb3635d9fed3dc3bdf6e2c6018e6de09a52265a6ea19f6",
+    "models/appearance/pa100k_resnet50_attr.engine": "151d44ea5e120b6b703c3605f2ea807eb892031190c43c26be9fb368dd8ecd0a",
+    "models/experiments/yolo_pose_fall_cam2_continuous_200_80_640.pkl": "0fd6610ee86d9263e402b82e6607da0ff361a39ab0487a7cb0f6edd019195397"
+  },
+  "production": {
+    "started_at": "2026-09-16T23:45:46.903505745Z",
+    "restart_count": 0,
+    "health": "healthy",
+    "frames_before": 29220039,
+    "frames_after": 29224320,
+    "frame_delta": 4281,
+    "primary_metric_samples": 0,
+    "model_metric_samples": 0
+  },
+  "limitations": [
+    "captured real camera video replay, not live candidate camera connection",
+    "CPU2/memory8GB/shared GPU + diagnostic overhead, not production performance benchmark",
+    "partial person at image edge; full-body pose/multi-person quality untested",
+    "relative backlog +2.684sec in last19.967sec; no latency pass",
+    "source/config snapshot excludes runtime model/venv/SDK dependencies and secrets",
+    "archive hash verified, previous in-memory production version not recoverable from this archive"
+  ],
+  "visual_samples": {
+    "cpu_g1_120.png": "64db810e704607b68531cccab5cc8096d033230647ed9e37283d568bbf9b4609",
+    "cpu_g1_780.png": "66f048a2f40cdfa935b24e53c7269cf9990bcc123cac866905b51b2b7cc83d86",
+    "cpu_g1_990.png": "1e2cd14da148878722f40df201bc1ff0b12e4814a6ae11a3c14795fd0caa56df"
+  },
+  "artifacts": {
+    "cameras-one.json": "12e9c61cc0f48e337511564d418e29df5f184f8541205735cff1781b258c7b66",
+    "compose.json": "bc688a47c3e2317ae8ce85d4778896367d9e4675090130c8cbdcd471d0653720",
+    "candidate_manifest.json": "4ba80903f80f2e3fce19cdcd8e2352ddfecca7baf4b636559899e05547c5e7a0",
+    "observe_camera.py": "3571b5846f4620a6d08579fea2a2e269b56c77a2c33e7c5547bb3981aed7b1e3",
+    "run_camera.py": "4b4c17c7bfedcbdd9cdf2cc7c74dc6c8a25adc7393259b3650bd61a05a1bce33",
+    "capture.json": "39b441933bf378ce3e74036c38964855e9e7b930cd55510493ad1f3cb481a308",
+    "production_after.prom": "38424d2866a5de8c8e54248ea9dba16d0039bfd5266c77f785653968a3144012",
+    "summary.json": "f597102eec00f1345c2c1984aee82f608bdf2677de99809f2f27df2314a17500",
+    "production_before.prom": "063b12c234488026f6063f753f74524cbffed0ece7543bd281abbcffff73df08",
+    "capture_option_failure.json": "efa21a57c2d3cc440ca8d0b2373cd8d26ea2212311e9047402a28a3274f2c166",
+    "capture.py": "65016f9139bf6e8cd4bf7c4c53da4567867b6f1a4ff0f56de2bb4919d60ddd2f",
+    "output/publisher-1-initial.log": "2be0a092d80c5dea54154f1725053be80a0438a8ec3a679ae7410116e98554ae",
+    "output/python_stacks.log": "7c52f820daa6f7bf0f6e68923d8ae1a1c5c6cb164e8ba6b812e3f7f67acca1f8",
+    "output/mediamtx.log": "5ebbcaa0c74109fc09fdf064c7a7f049c8f49951ed08f11211e4cdd079c97159",
+    "output/boundaries.jsonl": "f0b95ab42edc7e0a7888dc6a4d708e0ee7e9903bb3e5a552cfbfc6ac31c73f3e",
+    "output/last.prom": "1670ac607dfbe0f3b9bb066deda630437b8907da4419f71d2375745d48d56f19",
+    "output/samples.jsonl": "c03a8e328284e4e07fa8732e1d8bdb3c2d2827196c85d7f247d621fd63fadff4",
+    "output/app.log": "dadc4f400db5d9635966a9857629d392e5734fd1b1ce9fc473540e34e4114889",
+    "output/context.jsonl": "2fc4f7207dba14e433849d9e8390e26fac95f8e549a7b3e39cdce68dacca0a4a",
+    "output/store.jsonl": "ad98e4778c9c6c752a72184ae3ace1e2003f5d731c20e7da39a75c9c078086ef",
+    "output/experiment.json": "620019888d5c26be11a5c4d6c2e313ef1e177eeafb015aec41d94d45c8deead8",
+    "output/stats.jsonl": "6114bbc45a9eab0b97340dec7f807a766f0f1662af07bbcf96d5988c4e9b1b15"
+  },
+  "capture_correction": "installed FFmpeg -timeout is deprecated listen timeout; changed to -stimeout per local RTSP demuxer help. Original failure retained.",
+  "publication": {
+    "version": "0.50",
+    "url": "http://192.168.2.242:18081/",
+    "files": {
+      "html": {
+        "bytes": 22521,
+        "sha256": "02a01e8b94f40eedbf6fb1355beedb6cfa54eaaac1b91ff3d2059270014c01e6",
+        "matches_local": true
+      },
+      "pdf": {
+        "bytes": 124876,
+        "sha256": "80b86b8994d8aebb634b7f0667dd76f6f744204bbb5693f080d48c1cb909e243",
+        "matches_local": true
+      }
+    },
+    "wbs_rows_verified": 33,
+    "ruff": "PASS",
+    "syntax": "PASS",
+    "document_whitespace": "PASS",
+    "browser_retested": false
+  },
+  "remaining_trial_containers": 0
+}

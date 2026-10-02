@@ -1,0 +1,300 @@
+{
+  "date": "2026-09-28",
+  "tests": {
+    "passed": 172,
+    "skipped": 2,
+    "new_cases": 17,
+    "red_before_fix": 2
+  },
+  "runtime_artifacts": "data/runtime/p51_frames_20260928_v042",
+  "results": {
+    "two_input_preview_failure": {
+      "experiment": {
+        "scope": "real CLI with two local replay RTSP inputs; primary Pose profile; external output disconnected",
+        "completed_experiment": true,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "both_inputs_ready",
+            "elapsed": 20.455
+          }
+        ],
+        "sample_count": 45,
+        "elapsed_seconds": 36.297585882944986
+      },
+      "preview_observations": 0,
+      "accepted_observations": 0,
+      "first_accepted": [],
+      "last_accepted": [],
+      "pts_different_count": 0,
+      "transform_errors": 1,
+      "meta_pool_warnings": 0,
+      "last_metrics": {
+        "cctv_processor_frames_processed_total": 6.0,
+        "cctv_processor_frames_dropped_total": 0.0,
+        "cctv_processor_events_detected_total": 4.0,
+        "cctv_processor_events_sent_total": 0.0,
+        "cctv_processor_events_filtered_total": 0.0,
+        "cctv_processor_events_failed_total": 4.0,
+        "cctv_processor_fps": 0.0,
+        "cctv_processor_avg_inference_ms": 7.576,
+        "cctv_processor_yolo_postprocess_avg_ms": 7.576,
+        "cctv_processor_yolo_postprocess_max_ms": 9.923,
+        "cctv_processor_cameras": 2.0,
+        "cctv_processor_primary_metrics_errors_total": 0.0,
+        "cctv_processor_model_metrics_errors_total": 0.0,
+        "cctv_processor_source_error_identified_total": 0.0,
+        "cctv_processor_source_error_unidentified_total": 0.0,
+        "cctv_processor_source_eos_identified_total": 0.0,
+        "cctv_processor_source_eos_unidentified_total": 0.0,
+        "cctv_processor_source_unidentified_stop_total": 0.0,
+        "cctv_processor_source_stream_reset_events_total": 0.0,
+        "cctv_processor_source_stream_reset_unidentified_total": 0.0,
+        "cctv_processor_pipeline_restart_requested_total": 0.0,
+        "cctv_processor_pipeline_restart_rejected_total": 0.0,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_processor_pipeline_restart_failed_total": 0.0,
+        "cctv_processor_pipeline_restart_seconds_total": 0.0,
+        "cctv_camera_primary_frames_seen_total:replay_1": 290.0,
+        "cctv_camera_primary_frames_seen_total:replay_2": 290.0,
+        "cctv_camera_primary_frames_inferred_total:replay_1": 145.0,
+        "cctv_camera_primary_frames_inferred_total:replay_2": 145.0,
+        "cctv_camera_primary_frames_skipped_total:replay_1": 145.0,
+        "cctv_camera_primary_frames_skipped_total:replay_2": 145.0,
+        "cctv_camera_primary_frames_inference_unknown_total:replay_1": 0.0,
+        "cctv_camera_primary_frames_inference_unknown_total:replay_2": 0.0,
+        "cctv_camera_primary_last_frame_age_seconds:replay_1": 0.02719237597193569,
+        "cctv_camera_primary_last_frame_age_seconds:replay_2": 0.02719237597193569
+      },
+      "trace_sha256": "be75a666802ca624dd0afb1ffa8552103edc115b3cac6ef289ab62093bccb77b",
+      "acceptance": "FAIL_PREVIEW"
+    },
+    "one_input_before": {
+      "experiment": {
+        "scope": "real CLI with two local replay RTSP inputs; primary Pose profile; external output disconnected",
+        "completed_experiment": true,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "both_inputs_ready",
+            "elapsed": 27.404
+          }
+        ],
+        "sample_count": 49,
+        "elapsed_seconds": 49.62835808796808
+      },
+      "preview_observations": 14,
+      "accepted_observations": 0,
+      "first_accepted": [],
+      "last_accepted": [],
+      "pts_different_count": 14,
+      "transform_errors": 0,
+      "meta_pool_warnings": 125,
+      "last_metrics": {
+        "cctv_processor_frames_processed_total": 312.0,
+        "cctv_processor_frames_dropped_total": 0.0,
+        "cctv_processor_events_detected_total": 6.0,
+        "cctv_processor_events_sent_total": 0.0,
+        "cctv_processor_events_filtered_total": 187.0,
+        "cctv_processor_events_failed_total": 6.0,
+        "cctv_processor_fps": 38.80089504643917,
+        "cctv_processor_avg_inference_ms": 9.162,
+        "cctv_processor_yolo_postprocess_avg_ms": 9.162,
+        "cctv_processor_yolo_postprocess_max_ms": 62.411,
+        "cctv_processor_cameras": 1.0,
+        "cctv_processor_primary_metrics_errors_total": 0.0,
+        "cctv_processor_model_metrics_errors_total": 0.0,
+        "cctv_processor_source_error_identified_total": 0.0,
+        "cctv_processor_source_error_unidentified_total": 0.0,
+        "cctv_processor_source_eos_identified_total": 0.0,
+        "cctv_processor_source_eos_unidentified_total": 0.0,
+        "cctv_processor_source_unidentified_stop_total": 0.0,
+        "cctv_processor_source_stream_reset_events_total": 0.0,
+        "cctv_processor_source_stream_reset_unidentified_total": 0.0,
+        "cctv_processor_pipeline_restart_requested_total": 0.0,
+        "cctv_processor_pipeline_restart_rejected_total": 0.0,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_processor_pipeline_restart_failed_total": 0.0,
+        "cctv_processor_pipeline_restart_seconds_total": 0.0,
+        "cctv_camera_primary_frames_seen_total:replay_1": 312.0,
+        "cctv_camera_primary_frames_inferred_total:replay_1": 156.0,
+        "cctv_camera_primary_frames_skipped_total:replay_1": 156.0,
+        "cctv_camera_primary_frames_inference_unknown_total:replay_1": 0.0,
+        "cctv_camera_primary_last_frame_age_seconds:replay_1": 0.05401143792551011
+      },
+      "trace_sha256": "3ab8203b97524c19b6d19a4402b3c10efd48f9777eb69f58ce13459c6332ca69",
+      "acceptance": "OBSERVATION_ONLY"
+    },
+    "one_input_observer_retention": {
+      "experiment": {
+        "scope": "real CLI with one configured RTSP input; preview enabled; primary Pose profile; external output disconnected",
+        "completed_experiment": true,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 23.503
+          }
+        ],
+        "sample_count": 48,
+        "elapsed_seconds": 45.76055758702569
+      },
+      "preview_observations": 14,
+      "accepted_observations": 0,
+      "first_accepted": [],
+      "last_accepted": [],
+      "pts_different_count": 14,
+      "transform_errors": 0,
+      "meta_pool_warnings": 137,
+      "last_metrics": {
+        "cctv_processor_frames_processed_total": 328.0,
+        "cctv_processor_frames_dropped_total": 0.0,
+        "cctv_processor_events_detected_total": 8.0,
+        "cctv_processor_events_sent_total": 0.0,
+        "cctv_processor_events_filtered_total": 120.0,
+        "cctv_processor_events_failed_total": 8.0,
+        "cctv_processor_fps": 37.04166290864511,
+        "cctv_processor_avg_inference_ms": 4.928,
+        "cctv_processor_yolo_postprocess_avg_ms": 4.928,
+        "cctv_processor_yolo_postprocess_max_ms": 42.312,
+        "cctv_processor_cameras": 1.0,
+        "cctv_processor_primary_metrics_errors_total": 0.0,
+        "cctv_processor_model_metrics_errors_total": 0.0,
+        "cctv_processor_source_error_identified_total": 0.0,
+        "cctv_processor_source_error_unidentified_total": 0.0,
+        "cctv_processor_source_eos_identified_total": 0.0,
+        "cctv_processor_source_eos_unidentified_total": 0.0,
+        "cctv_processor_source_unidentified_stop_total": 0.0,
+        "cctv_processor_source_stream_reset_events_total": 0.0,
+        "cctv_processor_source_stream_reset_unidentified_total": 0.0,
+        "cctv_processor_preview_identity_rejected_total": 0.0,
+        "cctv_processor_preview_frames_stored_total": 56.0,
+        "cctv_processor_pipeline_restart_requested_total": 0.0,
+        "cctv_processor_pipeline_restart_rejected_total": 0.0,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_processor_pipeline_restart_failed_total": 0.0,
+        "cctv_processor_pipeline_restart_seconds_total": 0.0,
+        "cctv_camera_primary_frames_seen_total:replay_1": 328.0,
+        "cctv_camera_primary_frames_inferred_total:replay_1": 164.0,
+        "cctv_camera_primary_frames_skipped_total:replay_1": 164.0,
+        "cctv_camera_primary_frames_inference_unknown_total:replay_1": 0.0,
+        "cctv_camera_primary_last_frame_age_seconds:replay_1": 0.04285745299421251
+      },
+      "trace_sha256": "c04c742cb9b8a1ce4582e44fe4e556b35c11b8512c6bb4f2588a5c598cc7e676",
+      "acceptance": "OBSERVATION_ONLY"
+    },
+    "output": {
+      "experiment": {
+        "scope": "real CLI with one configured RTSP input; preview enabled; primary Pose profile; external output disconnected",
+        "completed_experiment": true,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 23.771
+          }
+        ],
+        "sample_count": 47,
+        "elapsed_seconds": 39.03621924004983
+      },
+      "preview_observations": 14,
+      "accepted_observations": 65,
+      "first_accepted": [
+        {
+          "monotonic": 1045748.061658675,
+          "kind": "accepted_frame",
+          "camera": "replay_1",
+          "identity": {
+            "camera_id": "replay_1",
+            "source_id": 0,
+            "frame_num": 0,
+            "source_pts_ns": 1513000112,
+            "buffer_pts_ns": 1773871959,
+            "received_monotonic": 1045748.035959395,
+            "received_at": 1790562731.2170398
+          }
+        }
+      ],
+      "last_accepted": [
+        {
+          "monotonic": 1045762.200254049,
+          "kind": "accepted_frame",
+          "camera": "replay_1",
+          "identity": {
+            "camera_id": "replay_1",
+            "source_id": 0,
+            "frame_num": 673,
+            "source_pts_ns": 26742489258,
+            "buffer_pts_ns": 27998765674,
+            "received_monotonic": 1045762.179721733,
+            "received_at": 1790562745.3556674
+          }
+        }
+      ],
+      "pts_different_count": 14,
+      "transform_errors": 0,
+      "meta_pool_warnings": 0,
+      "last_metrics": {
+        "cctv_processor_frames_processed_total": 646.0,
+        "cctv_processor_frames_dropped_total": 0.0,
+        "cctv_processor_events_detected_total": 9.0,
+        "cctv_processor_events_sent_total": 0.0,
+        "cctv_processor_events_filtered_total": 360.0,
+        "cctv_processor_events_failed_total": 9.0,
+        "cctv_processor_fps": 54.85311719699586,
+        "cctv_processor_avg_inference_ms": 6.041,
+        "cctv_processor_yolo_postprocess_avg_ms": 6.041,
+        "cctv_processor_yolo_postprocess_max_ms": 42.135,
+        "cctv_processor_cameras": 1.0,
+        "cctv_processor_primary_metrics_errors_total": 0.0,
+        "cctv_processor_model_metrics_errors_total": 0.0,
+        "cctv_processor_source_error_identified_total": 0.0,
+        "cctv_processor_source_error_unidentified_total": 0.0,
+        "cctv_processor_source_eos_identified_total": 0.0,
+        "cctv_processor_source_eos_unidentified_total": 0.0,
+        "cctv_processor_source_unidentified_stop_total": 0.0,
+        "cctv_processor_source_stream_reset_events_total": 0.0,
+        "cctv_processor_source_stream_reset_unidentified_total": 0.0,
+        "cctv_processor_preview_identity_rejected_total": 0.0,
+        "cctv_processor_preview_frames_stored_total": 62.0,
+        "cctv_processor_pipeline_restart_requested_total": 0.0,
+        "cctv_processor_pipeline_restart_rejected_total": 0.0,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_processor_pipeline_restart_failed_total": 0.0,
+        "cctv_processor_pipeline_restart_seconds_total": 0.0,
+        "cctv_camera_primary_frames_seen_total:replay_1": 646.0,
+        "cctv_camera_primary_frames_inferred_total:replay_1": 323.0,
+        "cctv_camera_primary_frames_skipped_total:replay_1": 323.0,
+        "cctv_camera_primary_frames_inference_unknown_total:replay_1": 0.0,
+        "cctv_camera_primary_last_frame_age_seconds:replay_1": 0.04499338800087571
+      },
+      "trace_sha256": "b1e16c162d7acb812a1477529af76104bb17d52550f2f4243577351cc5ddafa6",
+      "acceptance": "PASS_SINGLE_INPUT_IDENTITY_SCOPE"
+    }
+  },
+  "operating": {
+    "started_at": "2026-09-16T23:45:46.903505745Z",
+    "restart_count": 0,
+    "health": "healthy",
+    "primary_metrics_present": false,
+    "model_label_present": false
+  },
+  "limitations": [
+    "frame identity storage does not align detection metadata and CPU context input yet",
+    "batch2 preview conversion failed before any sample; not an accepted 2-channel preview test",
+    "historical driver completed_experiment indicates sequence completion only, not acceptance",
+    "single-input test still has an unused second publisher; camera config contains one input",
+    "source PTS differs from converted buffer PTS; neither is a verified UTC capture timestamp",
+    "in-flight old preview after reset and frame/metadata matching remain I27 work",
+    "initial per-call observation adapter retained Gst.Sample through class lifetime; final adapter uses a stable class and no metadata pool warnings were observed"
+  ],
+  "manifest_sha256": "8c430ce5a71bed5acf40b45cdb0787df1399fb21fc2930677cc240c1dc809487"
+}

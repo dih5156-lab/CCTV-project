@@ -1,0 +1,2443 @@
+{
+  "version": "0.74",
+  "date": "2026-09-30",
+  "issue": "I34",
+  "root_cause_fixed": false,
+  "original_cuda700_reproduced": false,
+  "trials": {
+    "original1": {
+      "experiment": {
+        "scope": "one local RTSP input, IOU, full candidate models, captured real camera video replay; no live camera connection",
+        "input": "/baseline/camera_1_capture.mkv",
+        "completed_experiment": true,
+        "steady_observation_seconds": 35,
+        "receiver_media_seconds": 15,
+        "receiver_exit": 0,
+        "output_bytes": 5680611,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "max_no_progress_seconds": 0.0,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 34.748
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 35.786
+          }
+        ],
+        "sample_count": 66,
+        "elapsed_seconds": 79.98583628004417
+      },
+      "first_stages": {
+        "streammux/src": {
+          "monotonic": 1221978.123898857,
+          "element": "streammux",
+          "factory": "nvstreammux",
+          "pad": "src",
+          "count": 1,
+          "pts": 2101582389,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {
+            "nvbuf-memory-type": 4,
+            "batch-size": 1
+          }
+        },
+        "primary-infer/sink": {
+          "monotonic": 1221978.124464978,
+          "element": "primary-infer",
+          "factory": "nvinfer",
+          "pad": "sink",
+          "count": 1,
+          "pts": 2101582389,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {
+            "batch-size": 1,
+            "interval": 1,
+            "config-file-path": "/app/config/deepstream/config_infer_primary.txt",
+            "process-mode": 1
+          }
+        },
+        "primary-infer/src": {
+          "monotonic": 1221978.400130884,
+          "element": "primary-infer",
+          "factory": "nvinfer",
+          "pad": "src",
+          "count": 1,
+          "pts": 2101582389,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {
+            "batch-size": 1,
+            "interval": 1,
+            "config-file-path": "/app/config/deepstream/config_infer_primary.txt",
+            "process-mode": 1
+          }
+        },
+        "pphuman-infer/sink": {
+          "monotonic": 1221978.408317144,
+          "element": "pphuman-infer",
+          "factory": "nvinfer",
+          "pad": "sink",
+          "count": 1,
+          "pts": 2101582389,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {
+            "batch-size": 1,
+            "interval": 4,
+            "config-file-path": "config/deepstream/config_infer_pa100k.txt",
+            "process-mode": 2
+          }
+        },
+        "pphuman-infer/src": {
+          "monotonic": 1221978.431006019,
+          "element": "pphuman-infer",
+          "factory": "nvinfer",
+          "pad": "src",
+          "count": 1,
+          "pts": 2101582389,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {
+            "batch-size": 1,
+            "interval": 4,
+            "config-file-path": "config/deepstream/config_infer_pa100k.txt",
+            "process-mode": 2
+          }
+        },
+        "helmet-infer/sink": {
+          "monotonic": 1221978.431520334,
+          "element": "helmet-infer",
+          "factory": "nvinfer",
+          "pad": "sink",
+          "count": 1,
+          "pts": 2101582389,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {
+            "batch-size": 1,
+            "interval": 1,
+            "config-file-path": "/app/config/deepstream/config_infer_helmet.txt",
+            "process-mode": 2
+          }
+        },
+        "helmet-infer/src": {
+          "monotonic": 1221978.456848269,
+          "element": "helmet-infer",
+          "factory": "nvinfer",
+          "pad": "src",
+          "count": 1,
+          "pts": 2101582389,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {
+            "batch-size": 1,
+            "interval": 1,
+            "config-file-path": "/app/config/deepstream/config_infer_helmet.txt",
+            "process-mode": 2
+          }
+        },
+        "tracker/sink": {
+          "monotonic": 1221978.457325274,
+          "element": "tracker",
+          "factory": "nvtracker",
+          "pad": "sink",
+          "count": 1,
+          "pts": 2101582389,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {}
+        },
+        "tracker/src": {
+          "monotonic": 1221978.489931283,
+          "element": "tracker",
+          "factory": "nvtracker",
+          "pad": "src",
+          "count": 1,
+          "pts": 2101582389,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {}
+        },
+        "converter/sink": {
+          "monotonic": 1221978.546666684,
+          "element": "converter",
+          "factory": "nvvideoconvert",
+          "pad": "sink",
+          "count": 1,
+          "pts": 2101582389,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {
+            "copy-hw": 1,
+            "nvbuf-memory-type": 0
+          }
+        },
+        "converter/src": {
+          "monotonic": 1221978.572374444,
+          "element": "converter",
+          "factory": "nvvideoconvert",
+          "pad": "src",
+          "count": 1,
+          "pts": 2101582389,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, batch-size=(int)1, num-surfaces-per-frame=(int)1, format=(string)RGBA, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0",
+          "properties": {
+            "copy-hw": 1,
+            "nvbuf-memory-type": 0
+          }
+        },
+        "osd/sink": {
+          "monotonic": 1221978.573376932,
+          "element": "osd",
+          "factory": "nvdsosd",
+          "pad": "sink",
+          "count": 1,
+          "pts": 2101582389,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, batch-size=(int)1, num-surfaces-per-frame=(int)1, format=(string)RGBA, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0",
+          "properties": {
+            "process-mode": 0
+          }
+        },
+        "osd/src": {
+          "monotonic": 1221978.597227903,
+          "element": "osd",
+          "factory": "nvdsosd",
+          "pad": "src",
+          "count": 1,
+          "pts": 2101582389,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, batch-size=(int)1, num-surfaces-per-frame=(int)1, format=(string)RGBA, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0",
+          "properties": {
+            "process-mode": 0
+          }
+        },
+        "h264-nvvidconv/sink": {
+          "monotonic": 1221978.601111394,
+          "element": "h264-nvvidconv",
+          "factory": "nvvideoconvert",
+          "pad": "sink",
+          "count": 1,
+          "pts": 2101582389,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, batch-size=(int)1, num-surfaces-per-frame=(int)1, format=(string)RGBA, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0",
+          "properties": {
+            "copy-hw": 1,
+            "nvbuf-memory-type": 0
+          }
+        },
+        "preview-nvvidconv/sink": {
+          "monotonic": 1221978.608466328,
+          "element": "preview-nvvidconv",
+          "factory": "nvvideoconvert",
+          "pad": "sink",
+          "count": 1,
+          "pts": 2101582389,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, batch-size=(int)1, num-surfaces-per-frame=(int)1, format=(string)RGBA, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0",
+          "properties": {
+            "copy-hw": 1,
+            "nvbuf-memory-type": 0
+          }
+        },
+        "preview-nvvidconv/src": {
+          "monotonic": 1221978.677045634,
+          "element": "preview-nvvidconv",
+          "factory": "nvvideoconvert",
+          "pad": "src",
+          "count": 1,
+          "pts": 2101582389,
+          "dts": 18446744073709551615,
+          "bytes": 3686400,
+          "caps": "video/x-raw, width=(int)1280, height=(int)720, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, batch-size=(int)1, num-surfaces-per-frame=(int)1, format=(string)BGRx, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0",
+          "properties": {
+            "copy-hw": 1,
+            "nvbuf-memory-type": 0
+          }
+        },
+        "h264-nvvidconv/src": {
+          "monotonic": 1221978.67398451,
+          "element": "h264-nvvidconv",
+          "factory": "nvvideoconvert",
+          "pad": "src",
+          "count": 1,
+          "pts": 2101582389,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, batch-size=(int)1, num-surfaces-per-frame=(int)1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0",
+          "properties": {
+            "copy-hw": 1,
+            "nvbuf-memory-type": 0
+          }
+        }
+      },
+      "last_metrics": {
+        "cctv_processor_frames_processed_total:{}": 694.0,
+        "cctv_processor_frames_dropped_total:{}": 0.0,
+        "cctv_processor_events_detected_total:{}": 13.0,
+        "cctv_processor_events_sent_total:{}": 0.0,
+        "cctv_processor_events_filtered_total:{}": 1028.0,
+        "cctv_processor_events_failed_total:{}": 13.0,
+        "cctv_processor_fps:{}": 17.935469292346234,
+        "cctv_processor_avg_inference_ms:{}": 10.776,
+        "cctv_processor_yolo_postprocess_avg_ms:{}": 10.776,
+        "cctv_processor_yolo_postprocess_max_ms:{}": 111.952,
+        "cctv_processor_cameras:{}": 1.0,
+        "cctv_processor_primary_metrics_errors_total:{}": 0.0,
+        "cctv_processor_model_metrics_errors_total:{}": 0.0,
+        "cctv_processor_source_error_identified_total:{}": 0.0,
+        "cctv_processor_source_error_unidentified_total:{}": 0.0,
+        "cctv_processor_source_eos_identified_total:{}": 0.0,
+        "cctv_processor_source_eos_unidentified_total:{}": 0.0,
+        "cctv_processor_source_unidentified_stop_total:{}": 0.0,
+        "cctv_processor_source_stream_reset_events_total:{}": 0.0,
+        "cctv_processor_source_stream_reset_unidentified_total:{}": 0.0,
+        "cctv_processor_preview_identity_rejected_total:{}": 0.0,
+        "cctv_processor_preview_frames_stored_total:{}": 280.0,
+        "cctv_processor_pipeline_restart_requested_total:{}": 0.0,
+        "cctv_processor_pipeline_restart_rejected_total:{}": 0.0,
+        "cctv_processor_pipeline_restart_executed_total:{}": 0.0,
+        "cctv_processor_pipeline_restart_failed_total:{}": 0.0,
+        "cctv_processor_pipeline_restart_seconds_total:{}": 0.0,
+        "cctv_model_pipeline_generation:{}": 1.0,
+        "cctv_model_metadata_errors:{}": 0.0,
+        "cctv_model_enabled:{\"model\": \"primary\"}": 1.0,
+        "cctv_model_enabled:{\"model\": \"pose\"}": 0.0,
+        "cctv_model_enabled:{\"model\": \"attributes\"}": 1.0,
+        "cctv_model_enabled:{\"model\": \"helmet\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"primary\", \"property\": \"unique-id\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"primary\", \"property\": \"process-mode\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"primary\", \"property\": \"batch-size\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"primary\", \"property\": \"interval\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"primary\", \"property\": \"output-tensor-meta\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"attributes\", \"property\": \"unique-id\"}": 3.0,
+        "cctv_model_build_property:{\"model\": \"attributes\", \"property\": \"process-mode\"}": 2.0,
+        "cctv_model_build_property:{\"model\": \"attributes\", \"property\": \"batch-size\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"attributes\", \"property\": \"interval\"}": 4.0,
+        "cctv_model_build_property:{\"model\": \"attributes\", \"property\": \"output-tensor-meta\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"helmet\", \"property\": \"unique-id\"}": 2.0,
+        "cctv_model_build_property:{\"model\": \"helmet\", \"property\": \"process-mode\"}": 2.0,
+        "cctv_model_build_property:{\"model\": \"helmet\", \"property\": \"batch-size\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"helmet\", \"property\": \"interval\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"helmet\", \"property\": \"output-tensor-meta\"}": 1.0,
+        "cctv_model_unique_id_conflict:{\"model\": \"primary\"}": 0.0,
+        "cctv_model_unique_id_conflict:{\"model\": \"pose\"}": 0.0,
+        "cctv_model_unique_id_conflict:{\"model\": \"attributes\"}": 0.0,
+        "cctv_model_unique_id_conflict:{\"model\": \"helmet\"}": 0.0,
+        "cctv_model_frames_seen_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 694.0,
+        "cctv_model_frames_seen_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+        "cctv_model_frames_seen_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 694.0,
+        "cctv_model_frames_seen_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 694.0,
+        "cctv_model_frames_tensor_output_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 347.0,
+        "cctv_model_frames_tensor_output_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+        "cctv_model_frames_tensor_output_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 347.0,
+        "cctv_model_frames_tensor_output_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 347.0,
+        "cctv_model_frames_no_objects_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.0,
+        "cctv_model_frames_no_objects_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+        "cctv_model_frames_no_objects_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 0.0,
+        "cctv_model_frames_no_objects_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 0.0,
+        "cctv_model_frames_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.0,
+        "cctv_model_frames_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+        "cctv_model_frames_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 0.0,
+        "cctv_model_frames_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 0.0,
+        "cctv_model_frames_unobserved_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 347.0,
+        "cctv_model_frames_unobserved_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+        "cctv_model_frames_unobserved_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 347.0,
+        "cctv_model_frames_unobserved_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 347.0,
+        "cctv_model_frames_unknown_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.0,
+        "cctv_model_frames_unknown_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+        "cctv_model_frames_unknown_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 0.0,
+        "cctv_model_frames_unknown_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 0.0,
+        "cctv_model_objects_with_tensor_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.0,
+        "cctv_model_objects_with_tensor_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+        "cctv_model_objects_with_tensor_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 347.0,
+        "cctv_model_objects_with_tensor_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 347.0,
+        "cctv_model_objects_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.0,
+        "cctv_model_objects_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+        "cctv_model_objects_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 0.0,
+        "cctv_model_objects_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 0.0,
+        "cctv_model_last_frame_age_seconds:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.04758687107823789,
+        "cctv_model_last_frame_age_seconds:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 0.04758687107823789,
+        "cctv_model_last_frame_age_seconds:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 0.04758687107823789,
+        "cctv_model_last_tensor_age_seconds:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.09956703591160476,
+        "cctv_model_last_tensor_age_seconds:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 0.09956703591160476,
+        "cctv_model_last_tensor_age_seconds:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 0.09956703591160476,
+        "cctv_falldata_inline_enabled:{}": 1.0,
+        "cctv_falldata_temporal_requests_total:{}": 1.0,
+        "cctv_falldata_temporal_process_calls_total:{}": 1.0,
+        "cctv_falldata_temporal_process_completed_total:{}": 1.0,
+        "cctv_falldata_temporal_process_seconds_total:{}": 18.375906988047063,
+        "cctv_falldata_temporal_parsed_results_total:{}": 1.0,
+        "cctv_falldata_temporal_unparsed_results_total:{}": 0.0,
+        "cctv_falldata_temporal_insufficient_pose_results_total:{}": 1.0,
+        "cctv_falldata_temporal_window_inferences_total:{}": 1.0,
+        "cctv_falldata_temporal_window_reports_missing_total:{}": 0.0,
+        "cctv_falldata_temporal_insufficient_window_results_total:{}": 0.0,
+        "cctv_appearance_color_backend_requests_total:{}": 411.0,
+        "cctv_appearance_color_backend_completed_total:{}": 410.0,
+        "cctv_appearance_color_backend_seconds_total:{}": 18.474619454005733,
+        "cctv_appearance_attribute_backend_requests_total:{}": 255.0,
+        "cctv_appearance_attribute_backend_completed_total:{}": 255.0,
+        "cctv_appearance_attribute_backend_seconds_total:{}": 0.0018203393556177616,
+        "cctv_camera_primary_frames_seen_total:{\"camera_id\": \"replay_1\"}": 698.0,
+        "cctv_camera_primary_frames_inferred_total:{\"camera_id\": \"replay_1\"}": 349.0,
+        "cctv_camera_primary_frames_skipped_total:{\"camera_id\": \"replay_1\"}": 349.0,
+        "cctv_camera_primary_frames_inference_unknown_total:{\"camera_id\": \"replay_1\"}": 0.0,
+        "cctv_camera_primary_last_frame_age_seconds:{\"camera_id\": \"replay_1\"}": 0.01252131606452167
+      },
+      "cuda_signatures": {
+        "cudaErrorIllegalAddress": 0,
+        "status=700": 0,
+        "err_no:700": 0,
+        "NVDSINFER_CUDA_ERROR": 0,
+        "Failed in mem copy": 0
+      },
+      "decode": {
+        "exit": 0,
+        "stderr": ""
+      }
+    },
+    "candidate1": {
+      "experiment": {
+        "scope": "one local RTSP input, IOU, full candidate models, captured real camera video replay; no live camera connection",
+        "input": "/baseline/camera_1_capture.mkv",
+        "completed_experiment": true,
+        "steady_observation_seconds": 35,
+        "receiver_media_seconds": 15,
+        "receiver_exit": 0,
+        "output_bytes": 8807399,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "max_no_progress_seconds": 0.0,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 13.368
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 13.983
+          }
+        ],
+        "sample_count": 45,
+        "elapsed_seconds": 51.626224894076586
+      },
+      "first_stages": {
+        "streammux/src": {
+          "monotonic": 1222055.686360833,
+          "element": "streammux",
+          "factory": "nvstreammux",
+          "pad": "src",
+          "count": 1,
+          "pts": 1900447473,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {
+            "nvbuf-memory-type": 4,
+            "batch-size": 1
+          }
+        },
+        "primary-infer/sink": {
+          "monotonic": 1222055.687017062,
+          "element": "primary-infer",
+          "factory": "nvinfer",
+          "pad": "sink",
+          "count": 1,
+          "pts": 1900447473,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {
+            "batch-size": 1,
+            "interval": 1,
+            "config-file-path": "/app/config/deepstream/config_infer_primary.txt",
+            "process-mode": 1
+          }
+        },
+        "primary-infer/src": {
+          "monotonic": 1222056.213147176,
+          "element": "primary-infer",
+          "factory": "nvinfer",
+          "pad": "src",
+          "count": 1,
+          "pts": 1900447473,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {
+            "batch-size": 1,
+            "interval": 1,
+            "config-file-path": "/app/config/deepstream/config_infer_primary.txt",
+            "process-mode": 1
+          }
+        },
+        "pphuman-infer/sink": {
+          "monotonic": 1222056.224593623,
+          "element": "pphuman-infer",
+          "factory": "nvinfer",
+          "pad": "sink",
+          "count": 1,
+          "pts": 1900447473,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {
+            "batch-size": 1,
+            "interval": 4,
+            "config-file-path": "config/deepstream/config_infer_pa100k.txt",
+            "process-mode": 2
+          }
+        },
+        "pphuman-infer/src": {
+          "monotonic": 1222056.261083533,
+          "element": "pphuman-infer",
+          "factory": "nvinfer",
+          "pad": "src",
+          "count": 1,
+          "pts": 1900447473,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {
+            "batch-size": 1,
+            "interval": 4,
+            "config-file-path": "config/deepstream/config_infer_pa100k.txt",
+            "process-mode": 2
+          }
+        },
+        "helmet-infer/sink": {
+          "monotonic": 1222056.26156073,
+          "element": "helmet-infer",
+          "factory": "nvinfer",
+          "pad": "sink",
+          "count": 1,
+          "pts": 1900447473,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {
+            "batch-size": 1,
+            "interval": 1,
+            "config-file-path": "/app/config/deepstream/config_infer_helmet.txt",
+            "process-mode": 2
+          }
+        },
+        "helmet-infer/src": {
+          "monotonic": 1222056.288471124,
+          "element": "helmet-infer",
+          "factory": "nvinfer",
+          "pad": "src",
+          "count": 1,
+          "pts": 1900447473,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {
+            "batch-size": 1,
+            "interval": 1,
+            "config-file-path": "/app/config/deepstream/config_infer_helmet.txt",
+            "process-mode": 2
+          }
+        },
+        "tracker/sink": {
+          "monotonic": 1222056.28897808,
+          "element": "tracker",
+          "factory": "nvtracker",
+          "pad": "sink",
+          "count": 1,
+          "pts": 1900447473,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {}
+        },
+        "tracker/src": {
+          "monotonic": 1222056.332314047,
+          "element": "tracker",
+          "factory": "nvtracker",
+          "pad": "src",
+          "count": 1,
+          "pts": 1900447473,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {}
+        },
+        "converter/sink": {
+          "monotonic": 1222056.397641825,
+          "element": "converter",
+          "factory": "nvvideoconvert",
+          "pad": "sink",
+          "count": 1,
+          "pts": 1900447473,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {
+            "copy-hw": 1,
+            "nvbuf-memory-type": 0
+          }
+        },
+        "converter/src": {
+          "monotonic": 1222056.424664663,
+          "element": "converter",
+          "factory": "nvvideoconvert",
+          "pad": "src",
+          "count": 1,
+          "pts": 1900447473,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, batch-size=(int)1, num-surfaces-per-frame=(int)1, format=(string)RGBA, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0",
+          "properties": {
+            "copy-hw": 1,
+            "nvbuf-memory-type": 0
+          }
+        },
+        "osd/sink": {
+          "monotonic": 1222056.425352828,
+          "element": "osd",
+          "factory": "nvdsosd",
+          "pad": "sink",
+          "count": 1,
+          "pts": 1900447473,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, batch-size=(int)1, num-surfaces-per-frame=(int)1, format=(string)RGBA, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0",
+          "properties": {
+            "process-mode": 0
+          }
+        },
+        "osd/src": {
+          "monotonic": 1222056.486827034,
+          "element": "osd",
+          "factory": "nvdsosd",
+          "pad": "src",
+          "count": 1,
+          "pts": 1900447473,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, batch-size=(int)1, num-surfaces-per-frame=(int)1, format=(string)RGBA, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0",
+          "properties": {
+            "process-mode": 0
+          }
+        },
+        "preview-nvvidconv/sink": {
+          "monotonic": 1222056.488531733,
+          "element": "preview-nvvidconv",
+          "factory": "nvvideoconvert",
+          "pad": "sink",
+          "count": 1,
+          "pts": 1900447473,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, batch-size=(int)1, num-surfaces-per-frame=(int)1, format=(string)RGBA, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0",
+          "properties": {
+            "copy-hw": 1,
+            "nvbuf-memory-type": 0
+          }
+        },
+        "h264-nvvidconv/sink": {
+          "monotonic": 1222056.4899343,
+          "element": "h264-nvvidconv",
+          "factory": "nvvideoconvert",
+          "pad": "sink",
+          "count": 1,
+          "pts": 1900447473,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, batch-size=(int)1, num-surfaces-per-frame=(int)1, format=(string)RGBA, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0",
+          "properties": {
+            "copy-hw": 1,
+            "nvbuf-memory-type": 0
+          }
+        },
+        "preview-nvvidconv/src": {
+          "monotonic": 1222056.532368512,
+          "element": "preview-nvvidconv",
+          "factory": "nvvideoconvert",
+          "pad": "src",
+          "count": 1,
+          "pts": 1900447473,
+          "dts": 18446744073709551615,
+          "bytes": 3686400,
+          "caps": "video/x-raw, width=(int)1280, height=(int)720, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, batch-size=(int)1, num-surfaces-per-frame=(int)1, format=(string)BGRx, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0",
+          "properties": {
+            "copy-hw": 1,
+            "nvbuf-memory-type": 0
+          }
+        },
+        "h264-nvvidconv/src": {
+          "monotonic": 1222056.568349258,
+          "element": "h264-nvvidconv",
+          "factory": "nvvideoconvert",
+          "pad": "src",
+          "count": 1,
+          "pts": 1900447473,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, batch-size=(int)1, num-surfaces-per-frame=(int)1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0",
+          "properties": {
+            "copy-hw": 1,
+            "nvbuf-memory-type": 0
+          }
+        }
+      },
+      "last_metrics": {
+        "cctv_processor_frames_processed_total:{}": 755.0,
+        "cctv_processor_frames_dropped_total:{}": 0.0,
+        "cctv_processor_events_detected_total:{}": 12.0,
+        "cctv_processor_events_sent_total:{}": 0.0,
+        "cctv_processor_events_filtered_total:{}": 1121.0,
+        "cctv_processor_events_failed_total:{}": 12.0,
+        "cctv_processor_fps:{}": 29.67676433240211,
+        "cctv_processor_avg_inference_ms:{}": 9.566,
+        "cctv_processor_yolo_postprocess_avg_ms:{}": 9.566,
+        "cctv_processor_yolo_postprocess_max_ms:{}": 79.763,
+        "cctv_processor_cameras:{}": 1.0,
+        "cctv_processor_primary_metrics_errors_total:{}": 0.0,
+        "cctv_processor_model_metrics_errors_total:{}": 0.0,
+        "cctv_processor_source_error_identified_total:{}": 0.0,
+        "cctv_processor_source_error_unidentified_total:{}": 0.0,
+        "cctv_processor_source_eos_identified_total:{}": 0.0,
+        "cctv_processor_source_eos_unidentified_total:{}": 0.0,
+        "cctv_processor_source_unidentified_stop_total:{}": 0.0,
+        "cctv_processor_source_stream_reset_events_total:{}": 0.0,
+        "cctv_processor_source_stream_reset_unidentified_total:{}": 0.0,
+        "cctv_processor_preview_identity_rejected_total:{}": 0.0,
+        "cctv_processor_preview_frames_stored_total:{}": 277.0,
+        "cctv_processor_pipeline_restart_requested_total:{}": 0.0,
+        "cctv_processor_pipeline_restart_rejected_total:{}": 0.0,
+        "cctv_processor_pipeline_restart_executed_total:{}": 0.0,
+        "cctv_processor_pipeline_restart_failed_total:{}": 0.0,
+        "cctv_processor_pipeline_restart_seconds_total:{}": 0.0,
+        "cctv_processor_context_identity_rejected_total:{}": 0.0,
+        "cctv_processor_context_match_expired_total:{}": 365.0,
+        "cctv_processor_context_match_evicted_total:{}": 81.0,
+        "cctv_processor_context_match_missed_total:{}": 0.0,
+        "cctv_processor_context_frames_matched_total:{}": 63.0,
+        "cctv_processor_context_queue_dropped_total:{}": 0.0,
+        "cctv_processor_context_frames_sampled_total:{}": 214.0,
+        "cctv_processor_context_people_sampled_total:{}": 190.0,
+        "cctv_processor_context_people_busy_total:{}": 24.0,
+        "cctv_processor_context_tasks_completed_total:{}": 63.0,
+        "cctv_processor_context_tasks_failed_total:{}": 0.0,
+        "cctv_model_pipeline_generation:{}": 1.0,
+        "cctv_model_metadata_errors:{}": 0.0,
+        "cctv_model_enabled:{\"model\": \"primary\"}": 1.0,
+        "cctv_model_enabled:{\"model\": \"pose\"}": 0.0,
+        "cctv_model_enabled:{\"model\": \"attributes\"}": 1.0,
+        "cctv_model_enabled:{\"model\": \"helmet\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"primary\", \"property\": \"unique-id\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"primary\", \"property\": \"process-mode\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"primary\", \"property\": \"batch-size\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"primary\", \"property\": \"interval\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"primary\", \"property\": \"output-tensor-meta\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"attributes\", \"property\": \"unique-id\"}": 3.0,
+        "cctv_model_build_property:{\"model\": \"attributes\", \"property\": \"process-mode\"}": 2.0,
+        "cctv_model_build_property:{\"model\": \"attributes\", \"property\": \"batch-size\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"attributes\", \"property\": \"interval\"}": 4.0,
+        "cctv_model_build_property:{\"model\": \"attributes\", \"property\": \"output-tensor-meta\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"helmet\", \"property\": \"unique-id\"}": 2.0,
+        "cctv_model_build_property:{\"model\": \"helmet\", \"property\": \"process-mode\"}": 2.0,
+        "cctv_model_build_property:{\"model\": \"helmet\", \"property\": \"batch-size\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"helmet\", \"property\": \"interval\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"helmet\", \"property\": \"output-tensor-meta\"}": 1.0,
+        "cctv_model_unique_id_conflict:{\"model\": \"primary\"}": 0.0,
+        "cctv_model_unique_id_conflict:{\"model\": \"pose\"}": 0.0,
+        "cctv_model_unique_id_conflict:{\"model\": \"attributes\"}": 0.0,
+        "cctv_model_unique_id_conflict:{\"model\": \"helmet\"}": 0.0,
+        "cctv_model_frames_seen_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 755.0,
+        "cctv_model_frames_seen_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+        "cctv_model_frames_seen_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 755.0,
+        "cctv_model_frames_seen_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 755.0,
+        "cctv_model_frames_tensor_output_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 378.0,
+        "cctv_model_frames_tensor_output_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+        "cctv_model_frames_tensor_output_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 378.0,
+        "cctv_model_frames_tensor_output_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 378.0,
+        "cctv_model_frames_no_objects_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.0,
+        "cctv_model_frames_no_objects_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+        "cctv_model_frames_no_objects_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 0.0,
+        "cctv_model_frames_no_objects_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 0.0,
+        "cctv_model_frames_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.0,
+        "cctv_model_frames_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+        "cctv_model_frames_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 0.0,
+        "cctv_model_frames_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 0.0,
+        "cctv_model_frames_unobserved_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 377.0,
+        "cctv_model_frames_unobserved_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+        "cctv_model_frames_unobserved_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 377.0,
+        "cctv_model_frames_unobserved_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 377.0,
+        "cctv_model_frames_unknown_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.0,
+        "cctv_model_frames_unknown_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+        "cctv_model_frames_unknown_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 0.0,
+        "cctv_model_frames_unknown_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 0.0,
+        "cctv_model_objects_with_tensor_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.0,
+        "cctv_model_objects_with_tensor_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+        "cctv_model_objects_with_tensor_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 378.0,
+        "cctv_model_objects_with_tensor_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 378.0,
+        "cctv_model_objects_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.0,
+        "cctv_model_objects_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+        "cctv_model_objects_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 0.0,
+        "cctv_model_objects_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 0.0,
+        "cctv_model_last_frame_age_seconds:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.013319874182343483,
+        "cctv_model_last_frame_age_seconds:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 0.013319874182343483,
+        "cctv_model_last_frame_age_seconds:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 0.013319874182343483,
+        "cctv_model_last_tensor_age_seconds:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.013319874182343483,
+        "cctv_model_last_tensor_age_seconds:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 0.013319874182343483,
+        "cctv_model_last_tensor_age_seconds:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 0.013319874182343483,
+        "cctv_falldata_inline_enabled:{}": 1.0,
+        "cctv_falldata_temporal_requests_total:{}": 4.0,
+        "cctv_falldata_temporal_worker_calls_total:{}": 4.0,
+        "cctv_falldata_temporal_worker_completed_total:{}": 3.0,
+        "cctv_falldata_temporal_worker_seconds_total:{}": 15.652012604754418,
+        "cctv_falldata_temporal_parsed_results_total:{}": 3.0,
+        "cctv_falldata_temporal_unparsed_results_total:{}": 0.0,
+        "cctv_falldata_temporal_insufficient_pose_results_total:{}": 1.0,
+        "cctv_falldata_temporal_window_inferences_total:{}": 3.0,
+        "cctv_falldata_temporal_window_reports_missing_total:{}": 0.0,
+        "cctv_falldata_temporal_insufficient_window_results_total:{}": 0.0,
+        "cctv_appearance_color_backend_requests_total:{}": 104.0,
+        "cctv_appearance_color_backend_completed_total:{}": 104.0,
+        "cctv_appearance_color_backend_seconds_total:{}": 3.060852383263409,
+        "cctv_appearance_attribute_backend_requests_total:{}": 63.0,
+        "cctv_appearance_attribute_backend_completed_total:{}": 63.0,
+        "cctv_appearance_attribute_backend_seconds_total:{}": 0.0003044975455850363,
+        "cctv_camera_primary_frames_seen_total:{\"camera_id\": \"replay_1\"}": 758.0,
+        "cctv_camera_primary_frames_inferred_total:{\"camera_id\": \"replay_1\"}": 379.0,
+        "cctv_camera_primary_frames_skipped_total:{\"camera_id\": \"replay_1\"}": 379.0,
+        "cctv_camera_primary_frames_inference_unknown_total:{\"camera_id\": \"replay_1\"}": 0.0,
+        "cctv_camera_primary_last_frame_age_seconds:{\"camera_id\": \"replay_1\"}": 0.019633408868685365
+      },
+      "cuda_signatures": {
+        "cudaErrorIllegalAddress": 0,
+        "status=700": 0,
+        "err_no:700": 0,
+        "NVDSINFER_CUDA_ERROR": 0,
+        "Failed in mem copy": 0
+      },
+      "decode": {
+        "exit": 0,
+        "stderr": ""
+      }
+    },
+    "original2": {
+      "experiment": {
+        "scope": "one local RTSP input, IOU, full candidate models, captured real camera video replay; no live camera connection",
+        "input": "/baseline/camera_1_capture.mkv",
+        "completed_experiment": true,
+        "steady_observation_seconds": 35,
+        "receiver_media_seconds": 15,
+        "receiver_exit": 0,
+        "output_bytes": 8597451,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "max_no_progress_seconds": 0.0,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 13.424
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 13.843
+          }
+        ],
+        "sample_count": 45,
+        "elapsed_seconds": 51.27159227291122
+      },
+      "first_stages": {
+        "streammux/src": {
+          "monotonic": 1222148.914720406,
+          "element": "streammux",
+          "factory": "nvstreammux",
+          "pad": "src",
+          "count": 1,
+          "pts": 1585039140,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {
+            "nvbuf-memory-type": 4,
+            "batch-size": 1
+          }
+        },
+        "primary-infer/sink": {
+          "monotonic": 1222148.915658224,
+          "element": "primary-infer",
+          "factory": "nvinfer",
+          "pad": "sink",
+          "count": 1,
+          "pts": 1585039140,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {
+            "batch-size": 1,
+            "interval": 1,
+            "config-file-path": "/app/config/deepstream/config_infer_primary.txt",
+            "process-mode": 1
+          }
+        },
+        "primary-infer/src": {
+          "monotonic": 1222149.311662994,
+          "element": "primary-infer",
+          "factory": "nvinfer",
+          "pad": "src",
+          "count": 1,
+          "pts": 1585039140,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {
+            "batch-size": 1,
+            "interval": 1,
+            "config-file-path": "/app/config/deepstream/config_infer_primary.txt",
+            "process-mode": 1
+          }
+        },
+        "pphuman-infer/sink": {
+          "monotonic": 1222149.318277893,
+          "element": "pphuman-infer",
+          "factory": "nvinfer",
+          "pad": "sink",
+          "count": 1,
+          "pts": 1585039140,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {
+            "batch-size": 1,
+            "interval": 4,
+            "config-file-path": "config/deepstream/config_infer_pa100k.txt",
+            "process-mode": 2
+          }
+        },
+        "pphuman-infer/src": {
+          "monotonic": 1222149.342221876,
+          "element": "pphuman-infer",
+          "factory": "nvinfer",
+          "pad": "src",
+          "count": 1,
+          "pts": 1585039140,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {
+            "batch-size": 1,
+            "interval": 4,
+            "config-file-path": "config/deepstream/config_infer_pa100k.txt",
+            "process-mode": 2
+          }
+        },
+        "helmet-infer/sink": {
+          "monotonic": 1222149.3427935,
+          "element": "helmet-infer",
+          "factory": "nvinfer",
+          "pad": "sink",
+          "count": 1,
+          "pts": 1585039140,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {
+            "batch-size": 1,
+            "interval": 1,
+            "config-file-path": "/app/config/deepstream/config_infer_helmet.txt",
+            "process-mode": 2
+          }
+        },
+        "helmet-infer/src": {
+          "monotonic": 1222149.389243797,
+          "element": "helmet-infer",
+          "factory": "nvinfer",
+          "pad": "src",
+          "count": 1,
+          "pts": 1585039140,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {
+            "batch-size": 1,
+            "interval": 1,
+            "config-file-path": "/app/config/deepstream/config_infer_helmet.txt",
+            "process-mode": 2
+          }
+        },
+        "tracker/sink": {
+          "monotonic": 1222149.389925017,
+          "element": "tracker",
+          "factory": "nvtracker",
+          "pad": "sink",
+          "count": 1,
+          "pts": 1585039140,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {}
+        },
+        "tracker/src": {
+          "monotonic": 1222149.438975784,
+          "element": "tracker",
+          "factory": "nvtracker",
+          "pad": "src",
+          "count": 1,
+          "pts": 1585039140,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {}
+        },
+        "converter/sink": {
+          "monotonic": 1222149.491194485,
+          "element": "converter",
+          "factory": "nvvideoconvert",
+          "pad": "sink",
+          "count": 1,
+          "pts": 1585039140,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {
+            "copy-hw": 1,
+            "nvbuf-memory-type": 0
+          }
+        },
+        "converter/src": {
+          "monotonic": 1222149.529638037,
+          "element": "converter",
+          "factory": "nvvideoconvert",
+          "pad": "src",
+          "count": 1,
+          "pts": 1585039140,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, batch-size=(int)1, num-surfaces-per-frame=(int)1, format=(string)RGBA, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0",
+          "properties": {
+            "copy-hw": 1,
+            "nvbuf-memory-type": 0
+          }
+        },
+        "osd/sink": {
+          "monotonic": 1222149.530264315,
+          "element": "osd",
+          "factory": "nvdsosd",
+          "pad": "sink",
+          "count": 1,
+          "pts": 1585039140,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, batch-size=(int)1, num-surfaces-per-frame=(int)1, format=(string)RGBA, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0",
+          "properties": {
+            "process-mode": 0
+          }
+        },
+        "osd/src": {
+          "monotonic": 1222149.58426528,
+          "element": "osd",
+          "factory": "nvdsosd",
+          "pad": "src",
+          "count": 1,
+          "pts": 1585039140,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, batch-size=(int)1, num-surfaces-per-frame=(int)1, format=(string)RGBA, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0",
+          "properties": {
+            "process-mode": 0
+          }
+        },
+        "h264-nvvidconv/sink": {
+          "monotonic": 1222149.586312908,
+          "element": "h264-nvvidconv",
+          "factory": "nvvideoconvert",
+          "pad": "sink",
+          "count": 1,
+          "pts": 1585039140,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, batch-size=(int)1, num-surfaces-per-frame=(int)1, format=(string)RGBA, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0",
+          "properties": {
+            "copy-hw": 1,
+            "nvbuf-memory-type": 0
+          }
+        },
+        "preview-nvvidconv/sink": {
+          "monotonic": 1222149.604263856,
+          "element": "preview-nvvidconv",
+          "factory": "nvvideoconvert",
+          "pad": "sink",
+          "count": 1,
+          "pts": 1585039140,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, batch-size=(int)1, num-surfaces-per-frame=(int)1, format=(string)RGBA, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0",
+          "properties": {
+            "copy-hw": 1,
+            "nvbuf-memory-type": 0
+          }
+        },
+        "h264-nvvidconv/src": {
+          "monotonic": 1222149.657000392,
+          "element": "h264-nvvidconv",
+          "factory": "nvvideoconvert",
+          "pad": "src",
+          "count": 1,
+          "pts": 1585039140,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, batch-size=(int)1, num-surfaces-per-frame=(int)1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0",
+          "properties": {
+            "copy-hw": 1,
+            "nvbuf-memory-type": 0
+          }
+        },
+        "preview-nvvidconv/src": {
+          "monotonic": 1222149.665385874,
+          "element": "preview-nvvidconv",
+          "factory": "nvvideoconvert",
+          "pad": "src",
+          "count": 1,
+          "pts": 1585039140,
+          "dts": 18446744073709551615,
+          "bytes": 3686400,
+          "caps": "video/x-raw, width=(int)1280, height=(int)720, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, batch-size=(int)1, num-surfaces-per-frame=(int)1, format=(string)BGRx, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0",
+          "properties": {
+            "copy-hw": 1,
+            "nvbuf-memory-type": 0
+          }
+        }
+      },
+      "last_metrics": {
+        "cctv_processor_frames_processed_total:{}": 760.0,
+        "cctv_processor_frames_dropped_total:{}": 0.0,
+        "cctv_processor_events_detected_total:{}": 12.0,
+        "cctv_processor_events_sent_total:{}": 0.0,
+        "cctv_processor_events_filtered_total:{}": 1128.0,
+        "cctv_processor_events_failed_total:{}": 12.0,
+        "cctv_processor_fps:{}": 21.37700039629514,
+        "cctv_processor_avg_inference_ms:{}": 9.955,
+        "cctv_processor_yolo_postprocess_avg_ms:{}": 9.955,
+        "cctv_processor_yolo_postprocess_max_ms:{}": 100.79,
+        "cctv_processor_cameras:{}": 1.0,
+        "cctv_processor_primary_metrics_errors_total:{}": 0.0,
+        "cctv_processor_model_metrics_errors_total:{}": 0.0,
+        "cctv_processor_source_error_identified_total:{}": 0.0,
+        "cctv_processor_source_error_unidentified_total:{}": 0.0,
+        "cctv_processor_source_eos_identified_total:{}": 0.0,
+        "cctv_processor_source_eos_unidentified_total:{}": 0.0,
+        "cctv_processor_source_unidentified_stop_total:{}": 0.0,
+        "cctv_processor_source_stream_reset_events_total:{}": 0.0,
+        "cctv_processor_source_stream_reset_unidentified_total:{}": 0.0,
+        "cctv_processor_preview_identity_rejected_total:{}": 0.0,
+        "cctv_processor_preview_frames_stored_total:{}": 282.0,
+        "cctv_processor_pipeline_restart_requested_total:{}": 0.0,
+        "cctv_processor_pipeline_restart_rejected_total:{}": 0.0,
+        "cctv_processor_pipeline_restart_executed_total:{}": 0.0,
+        "cctv_processor_pipeline_restart_failed_total:{}": 0.0,
+        "cctv_processor_pipeline_restart_seconds_total:{}": 0.0,
+        "cctv_model_pipeline_generation:{}": 1.0,
+        "cctv_model_metadata_errors:{}": 0.0,
+        "cctv_model_enabled:{\"model\": \"primary\"}": 1.0,
+        "cctv_model_enabled:{\"model\": \"pose\"}": 0.0,
+        "cctv_model_enabled:{\"model\": \"attributes\"}": 1.0,
+        "cctv_model_enabled:{\"model\": \"helmet\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"primary\", \"property\": \"unique-id\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"primary\", \"property\": \"process-mode\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"primary\", \"property\": \"batch-size\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"primary\", \"property\": \"interval\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"primary\", \"property\": \"output-tensor-meta\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"attributes\", \"property\": \"unique-id\"}": 3.0,
+        "cctv_model_build_property:{\"model\": \"attributes\", \"property\": \"process-mode\"}": 2.0,
+        "cctv_model_build_property:{\"model\": \"attributes\", \"property\": \"batch-size\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"attributes\", \"property\": \"interval\"}": 4.0,
+        "cctv_model_build_property:{\"model\": \"attributes\", \"property\": \"output-tensor-meta\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"helmet\", \"property\": \"unique-id\"}": 2.0,
+        "cctv_model_build_property:{\"model\": \"helmet\", \"property\": \"process-mode\"}": 2.0,
+        "cctv_model_build_property:{\"model\": \"helmet\", \"property\": \"batch-size\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"helmet\", \"property\": \"interval\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"helmet\", \"property\": \"output-tensor-meta\"}": 1.0,
+        "cctv_model_unique_id_conflict:{\"model\": \"primary\"}": 0.0,
+        "cctv_model_unique_id_conflict:{\"model\": \"pose\"}": 0.0,
+        "cctv_model_unique_id_conflict:{\"model\": \"attributes\"}": 0.0,
+        "cctv_model_unique_id_conflict:{\"model\": \"helmet\"}": 0.0,
+        "cctv_model_frames_seen_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 760.0,
+        "cctv_model_frames_seen_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+        "cctv_model_frames_seen_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 760.0,
+        "cctv_model_frames_seen_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 760.0,
+        "cctv_model_frames_tensor_output_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 380.0,
+        "cctv_model_frames_tensor_output_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+        "cctv_model_frames_tensor_output_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 380.0,
+        "cctv_model_frames_tensor_output_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 380.0,
+        "cctv_model_frames_no_objects_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.0,
+        "cctv_model_frames_no_objects_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+        "cctv_model_frames_no_objects_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 0.0,
+        "cctv_model_frames_no_objects_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 0.0,
+        "cctv_model_frames_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.0,
+        "cctv_model_frames_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+        "cctv_model_frames_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 0.0,
+        "cctv_model_frames_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 0.0,
+        "cctv_model_frames_unobserved_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 380.0,
+        "cctv_model_frames_unobserved_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+        "cctv_model_frames_unobserved_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 380.0,
+        "cctv_model_frames_unobserved_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 380.0,
+        "cctv_model_frames_unknown_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.0,
+        "cctv_model_frames_unknown_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+        "cctv_model_frames_unknown_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 0.0,
+        "cctv_model_frames_unknown_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 0.0,
+        "cctv_model_objects_with_tensor_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.0,
+        "cctv_model_objects_with_tensor_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+        "cctv_model_objects_with_tensor_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 380.0,
+        "cctv_model_objects_with_tensor_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 380.0,
+        "cctv_model_objects_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.0,
+        "cctv_model_objects_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+        "cctv_model_objects_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 0.0,
+        "cctv_model_objects_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 0.0,
+        "cctv_model_last_frame_age_seconds:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.07282035192474723,
+        "cctv_model_last_frame_age_seconds:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 0.07282035192474723,
+        "cctv_model_last_frame_age_seconds:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 0.07282035192474723,
+        "cctv_model_last_tensor_age_seconds:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.10717949294485152,
+        "cctv_model_last_tensor_age_seconds:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 0.10717949294485152,
+        "cctv_model_last_tensor_age_seconds:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 0.10717949294485152,
+        "cctv_falldata_inline_enabled:{}": 1.0,
+        "cctv_falldata_temporal_requests_total:{}": 1.0,
+        "cctv_falldata_temporal_process_calls_total:{}": 1.0,
+        "cctv_falldata_temporal_process_completed_total:{}": 1.0,
+        "cctv_falldata_temporal_process_seconds_total:{}": 13.516158600104973,
+        "cctv_falldata_temporal_parsed_results_total:{}": 1.0,
+        "cctv_falldata_temporal_unparsed_results_total:{}": 0.0,
+        "cctv_falldata_temporal_insufficient_pose_results_total:{}": 1.0,
+        "cctv_falldata_temporal_window_inferences_total:{}": 1.0,
+        "cctv_falldata_temporal_window_reports_missing_total:{}": 0.0,
+        "cctv_falldata_temporal_insufficient_window_results_total:{}": 0.0,
+        "cctv_appearance_color_backend_requests_total:{}": 452.0,
+        "cctv_appearance_color_backend_completed_total:{}": 451.0,
+        "cctv_appearance_color_backend_seconds_total:{}": 18.83833502861671,
+        "cctv_appearance_attribute_backend_requests_total:{}": 274.0,
+        "cctv_appearance_attribute_backend_completed_total:{}": 274.0,
+        "cctv_appearance_attribute_backend_seconds_total:{}": 0.0013386656064540148,
+        "cctv_camera_primary_frames_seen_total:{\"camera_id\": \"replay_1\"}": 764.0,
+        "cctv_camera_primary_frames_inferred_total:{\"camera_id\": \"replay_1\"}": 382.0,
+        "cctv_camera_primary_frames_skipped_total:{\"camera_id\": \"replay_1\"}": 382.0,
+        "cctv_camera_primary_frames_inference_unknown_total:{\"camera_id\": \"replay_1\"}": 0.0,
+        "cctv_camera_primary_last_frame_age_seconds:{\"camera_id\": \"replay_1\"}": 0.021600716980174184
+      },
+      "cuda_signatures": {
+        "cudaErrorIllegalAddress": 0,
+        "status=700": 0,
+        "err_no:700": 0,
+        "NVDSINFER_CUDA_ERROR": 0,
+        "Failed in mem copy": 0
+      },
+      "decode": {
+        "exit": 0,
+        "stderr": ""
+      }
+    },
+    "candidate2": {
+      "experiment": {
+        "scope": "one local RTSP input, IOU, full candidate models, captured real camera video replay; no live camera connection",
+        "input": "/baseline/camera_1_capture.mkv",
+        "completed_experiment": true,
+        "steady_observation_seconds": 35,
+        "receiver_media_seconds": 15,
+        "receiver_exit": 0,
+        "output_bytes": 8143018,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "max_no_progress_seconds": 0.0,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 13.466
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 13.669
+          }
+        ],
+        "sample_count": 45,
+        "elapsed_seconds": 51.16858504409902
+      },
+      "first_stages": {
+        "streammux/src": {
+          "monotonic": 1222222.441345868,
+          "element": "streammux",
+          "factory": "nvstreammux",
+          "pad": "src",
+          "count": 1,
+          "pts": 2006227127,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {
+            "nvbuf-memory-type": 4,
+            "batch-size": 1
+          }
+        },
+        "primary-infer/sink": {
+          "monotonic": 1222222.442291781,
+          "element": "primary-infer",
+          "factory": "nvinfer",
+          "pad": "sink",
+          "count": 1,
+          "pts": 2006227127,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {
+            "batch-size": 1,
+            "interval": 1,
+            "config-file-path": "/app/config/deepstream/config_infer_primary.txt",
+            "process-mode": 1
+          }
+        },
+        "primary-infer/src": {
+          "monotonic": 1222222.802862659,
+          "element": "primary-infer",
+          "factory": "nvinfer",
+          "pad": "src",
+          "count": 1,
+          "pts": 2006227127,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {
+            "batch-size": 1,
+            "interval": 1,
+            "config-file-path": "/app/config/deepstream/config_infer_primary.txt",
+            "process-mode": 1
+          }
+        },
+        "pphuman-infer/sink": {
+          "monotonic": 1222222.809611727,
+          "element": "pphuman-infer",
+          "factory": "nvinfer",
+          "pad": "sink",
+          "count": 1,
+          "pts": 2006227127,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {
+            "batch-size": 1,
+            "interval": 4,
+            "config-file-path": "config/deepstream/config_infer_pa100k.txt",
+            "process-mode": 2
+          }
+        },
+        "pphuman-infer/src": {
+          "monotonic": 1222222.830177702,
+          "element": "pphuman-infer",
+          "factory": "nvinfer",
+          "pad": "src",
+          "count": 1,
+          "pts": 2006227127,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {
+            "batch-size": 1,
+            "interval": 4,
+            "config-file-path": "config/deepstream/config_infer_pa100k.txt",
+            "process-mode": 2
+          }
+        },
+        "helmet-infer/sink": {
+          "monotonic": 1222222.830652658,
+          "element": "helmet-infer",
+          "factory": "nvinfer",
+          "pad": "sink",
+          "count": 1,
+          "pts": 2006227127,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {
+            "batch-size": 1,
+            "interval": 1,
+            "config-file-path": "/app/config/deepstream/config_infer_helmet.txt",
+            "process-mode": 2
+          }
+        },
+        "helmet-infer/src": {
+          "monotonic": 1222222.868480774,
+          "element": "helmet-infer",
+          "factory": "nvinfer",
+          "pad": "src",
+          "count": 1,
+          "pts": 2006227127,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {
+            "batch-size": 1,
+            "interval": 1,
+            "config-file-path": "/app/config/deepstream/config_infer_helmet.txt",
+            "process-mode": 2
+          }
+        },
+        "tracker/sink": {
+          "monotonic": 1222222.86903048,
+          "element": "tracker",
+          "factory": "nvtracker",
+          "pad": "sink",
+          "count": 1,
+          "pts": 2006227127,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {}
+        },
+        "tracker/src": {
+          "monotonic": 1222222.899137248,
+          "element": "tracker",
+          "factory": "nvtracker",
+          "pad": "src",
+          "count": 1,
+          "pts": 2006227127,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {}
+        },
+        "converter/sink": {
+          "monotonic": 1222222.941067212,
+          "element": "converter",
+          "factory": "nvvideoconvert",
+          "pad": "sink",
+          "count": 1,
+          "pts": 2006227127,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {
+            "copy-hw": 1,
+            "nvbuf-memory-type": 0
+          }
+        },
+        "converter/src": {
+          "monotonic": 1222222.96258118,
+          "element": "converter",
+          "factory": "nvvideoconvert",
+          "pad": "src",
+          "count": 1,
+          "pts": 2006227127,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, batch-size=(int)1, num-surfaces-per-frame=(int)1, format=(string)RGBA, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0",
+          "properties": {
+            "copy-hw": 1,
+            "nvbuf-memory-type": 0
+          }
+        },
+        "osd/sink": {
+          "monotonic": 1222222.96325072,
+          "element": "osd",
+          "factory": "nvdsosd",
+          "pad": "sink",
+          "count": 1,
+          "pts": 2006227127,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, batch-size=(int)1, num-surfaces-per-frame=(int)1, format=(string)RGBA, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0",
+          "properties": {
+            "process-mode": 0
+          }
+        },
+        "osd/src": {
+          "monotonic": 1222222.997621218,
+          "element": "osd",
+          "factory": "nvdsosd",
+          "pad": "src",
+          "count": 1,
+          "pts": 2006227127,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, batch-size=(int)1, num-surfaces-per-frame=(int)1, format=(string)RGBA, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0",
+          "properties": {
+            "process-mode": 0
+          }
+        },
+        "h264-nvvidconv/sink": {
+          "monotonic": 1222223.000261206,
+          "element": "h264-nvvidconv",
+          "factory": "nvvideoconvert",
+          "pad": "sink",
+          "count": 1,
+          "pts": 2006227127,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, batch-size=(int)1, num-surfaces-per-frame=(int)1, format=(string)RGBA, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0",
+          "properties": {
+            "copy-hw": 1,
+            "nvbuf-memory-type": 0
+          }
+        },
+        "preview-nvvidconv/sink": {
+          "monotonic": 1222223.004271954,
+          "element": "preview-nvvidconv",
+          "factory": "nvvideoconvert",
+          "pad": "sink",
+          "count": 1,
+          "pts": 2006227127,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, batch-size=(int)1, num-surfaces-per-frame=(int)1, format=(string)RGBA, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0",
+          "properties": {
+            "copy-hw": 1,
+            "nvbuf-memory-type": 0
+          }
+        },
+        "preview-nvvidconv/src": {
+          "monotonic": 1222223.037918929,
+          "element": "preview-nvvidconv",
+          "factory": "nvvideoconvert",
+          "pad": "src",
+          "count": 1,
+          "pts": 2006227127,
+          "dts": 18446744073709551615,
+          "bytes": 3686400,
+          "caps": "video/x-raw, width=(int)1280, height=(int)720, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, batch-size=(int)1, num-surfaces-per-frame=(int)1, format=(string)BGRx, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0",
+          "properties": {
+            "copy-hw": 1,
+            "nvbuf-memory-type": 0
+          }
+        },
+        "h264-nvvidconv/src": {
+          "monotonic": 1222223.047718464,
+          "element": "h264-nvvidconv",
+          "factory": "nvvideoconvert",
+          "pad": "src",
+          "count": 1,
+          "pts": 2006227127,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, batch-size=(int)1, num-surfaces-per-frame=(int)1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0",
+          "properties": {
+            "copy-hw": 1,
+            "nvbuf-memory-type": 0
+          }
+        }
+      },
+      "last_metrics": {
+        "cctv_processor_frames_processed_total:{}": 769.0,
+        "cctv_processor_frames_dropped_total:{}": 0.0,
+        "cctv_processor_events_detected_total:{}": 12.0,
+        "cctv_processor_events_sent_total:{}": 0.0,
+        "cctv_processor_events_filtered_total:{}": 1142.0,
+        "cctv_processor_events_failed_total:{}": 12.0,
+        "cctv_processor_fps:{}": 22.35479501164012,
+        "cctv_processor_avg_inference_ms:{}": 9.158,
+        "cctv_processor_yolo_postprocess_avg_ms:{}": 9.158,
+        "cctv_processor_yolo_postprocess_max_ms:{}": 77.422,
+        "cctv_processor_cameras:{}": 1.0,
+        "cctv_processor_primary_metrics_errors_total:{}": 0.0,
+        "cctv_processor_model_metrics_errors_total:{}": 0.0,
+        "cctv_processor_source_error_identified_total:{}": 0.0,
+        "cctv_processor_source_error_unidentified_total:{}": 0.0,
+        "cctv_processor_source_eos_identified_total:{}": 0.0,
+        "cctv_processor_source_eos_unidentified_total:{}": 0.0,
+        "cctv_processor_source_unidentified_stop_total:{}": 0.0,
+        "cctv_processor_source_stream_reset_events_total:{}": 0.0,
+        "cctv_processor_source_stream_reset_unidentified_total:{}": 0.0,
+        "cctv_processor_preview_identity_rejected_total:{}": 0.0,
+        "cctv_processor_preview_frames_stored_total:{}": 281.0,
+        "cctv_processor_pipeline_restart_requested_total:{}": 0.0,
+        "cctv_processor_pipeline_restart_rejected_total:{}": 0.0,
+        "cctv_processor_pipeline_restart_executed_total:{}": 0.0,
+        "cctv_processor_pipeline_restart_failed_total:{}": 0.0,
+        "cctv_processor_pipeline_restart_seconds_total:{}": 0.0,
+        "cctv_processor_context_identity_rejected_total:{}": 0.0,
+        "cctv_processor_context_match_expired_total:{}": 316.0,
+        "cctv_processor_context_match_evicted_total:{}": 142.0,
+        "cctv_processor_context_match_missed_total:{}": 0.0,
+        "cctv_processor_context_frames_matched_total:{}": 63.0,
+        "cctv_processor_context_queue_dropped_total:{}": 0.0,
+        "cctv_processor_context_frames_sampled_total:{}": 218.0,
+        "cctv_processor_context_people_sampled_total:{}": 198.0,
+        "cctv_processor_context_people_busy_total:{}": 20.0,
+        "cctv_processor_context_tasks_completed_total:{}": 63.0,
+        "cctv_processor_context_tasks_failed_total:{}": 0.0,
+        "cctv_model_pipeline_generation:{}": 1.0,
+        "cctv_model_metadata_errors:{}": 0.0,
+        "cctv_model_enabled:{\"model\": \"primary\"}": 1.0,
+        "cctv_model_enabled:{\"model\": \"pose\"}": 0.0,
+        "cctv_model_enabled:{\"model\": \"attributes\"}": 1.0,
+        "cctv_model_enabled:{\"model\": \"helmet\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"primary\", \"property\": \"unique-id\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"primary\", \"property\": \"process-mode\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"primary\", \"property\": \"batch-size\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"primary\", \"property\": \"interval\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"primary\", \"property\": \"output-tensor-meta\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"attributes\", \"property\": \"unique-id\"}": 3.0,
+        "cctv_model_build_property:{\"model\": \"attributes\", \"property\": \"process-mode\"}": 2.0,
+        "cctv_model_build_property:{\"model\": \"attributes\", \"property\": \"batch-size\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"attributes\", \"property\": \"interval\"}": 4.0,
+        "cctv_model_build_property:{\"model\": \"attributes\", \"property\": \"output-tensor-meta\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"helmet\", \"property\": \"unique-id\"}": 2.0,
+        "cctv_model_build_property:{\"model\": \"helmet\", \"property\": \"process-mode\"}": 2.0,
+        "cctv_model_build_property:{\"model\": \"helmet\", \"property\": \"batch-size\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"helmet\", \"property\": \"interval\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"helmet\", \"property\": \"output-tensor-meta\"}": 1.0,
+        "cctv_model_unique_id_conflict:{\"model\": \"primary\"}": 0.0,
+        "cctv_model_unique_id_conflict:{\"model\": \"pose\"}": 0.0,
+        "cctv_model_unique_id_conflict:{\"model\": \"attributes\"}": 0.0,
+        "cctv_model_unique_id_conflict:{\"model\": \"helmet\"}": 0.0,
+        "cctv_model_frames_seen_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 769.0,
+        "cctv_model_frames_seen_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+        "cctv_model_frames_seen_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 769.0,
+        "cctv_model_frames_seen_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 769.0,
+        "cctv_model_frames_tensor_output_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 385.0,
+        "cctv_model_frames_tensor_output_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+        "cctv_model_frames_tensor_output_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 385.0,
+        "cctv_model_frames_tensor_output_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 385.0,
+        "cctv_model_frames_no_objects_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.0,
+        "cctv_model_frames_no_objects_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+        "cctv_model_frames_no_objects_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 0.0,
+        "cctv_model_frames_no_objects_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 0.0,
+        "cctv_model_frames_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.0,
+        "cctv_model_frames_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+        "cctv_model_frames_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 0.0,
+        "cctv_model_frames_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 0.0,
+        "cctv_model_frames_unobserved_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 384.0,
+        "cctv_model_frames_unobserved_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+        "cctv_model_frames_unobserved_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 384.0,
+        "cctv_model_frames_unobserved_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 384.0,
+        "cctv_model_frames_unknown_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.0,
+        "cctv_model_frames_unknown_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+        "cctv_model_frames_unknown_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 0.0,
+        "cctv_model_frames_unknown_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 0.0,
+        "cctv_model_objects_with_tensor_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.0,
+        "cctv_model_objects_with_tensor_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+        "cctv_model_objects_with_tensor_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 385.0,
+        "cctv_model_objects_with_tensor_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 385.0,
+        "cctv_model_objects_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.0,
+        "cctv_model_objects_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+        "cctv_model_objects_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 0.0,
+        "cctv_model_objects_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 0.0,
+        "cctv_model_last_frame_age_seconds:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.02300353697501123,
+        "cctv_model_last_frame_age_seconds:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 0.02300353697501123,
+        "cctv_model_last_frame_age_seconds:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 0.02300353697501123,
+        "cctv_model_last_tensor_age_seconds:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.02300353697501123,
+        "cctv_model_last_tensor_age_seconds:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 0.02300353697501123,
+        "cctv_model_last_tensor_age_seconds:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 0.02300353697501123,
+        "cctv_falldata_inline_enabled:{}": 1.0,
+        "cctv_falldata_temporal_requests_total:{}": 4.0,
+        "cctv_falldata_temporal_worker_calls_total:{}": 4.0,
+        "cctv_falldata_temporal_worker_completed_total:{}": 3.0,
+        "cctv_falldata_temporal_worker_seconds_total:{}": 14.780188278062269,
+        "cctv_falldata_temporal_parsed_results_total:{}": 3.0,
+        "cctv_falldata_temporal_unparsed_results_total:{}": 0.0,
+        "cctv_falldata_temporal_insufficient_pose_results_total:{}": 1.0,
+        "cctv_falldata_temporal_window_inferences_total:{}": 3.0,
+        "cctv_falldata_temporal_window_reports_missing_total:{}": 0.0,
+        "cctv_falldata_temporal_insufficient_window_results_total:{}": 0.0,
+        "cctv_appearance_color_backend_requests_total:{}": 107.0,
+        "cctv_appearance_color_backend_completed_total:{}": 107.0,
+        "cctv_appearance_color_backend_seconds_total:{}": 2.8204398422967643,
+        "cctv_appearance_attribute_backend_requests_total:{}": 63.0,
+        "cctv_appearance_attribute_backend_completed_total:{}": 63.0,
+        "cctv_appearance_attribute_backend_seconds_total:{}": 0.0005197233986109495,
+        "cctv_camera_primary_frames_seen_total:{\"camera_id\": \"replay_1\"}": 772.0,
+        "cctv_camera_primary_frames_inferred_total:{\"camera_id\": \"replay_1\"}": 386.0,
+        "cctv_camera_primary_frames_skipped_total:{\"camera_id\": \"replay_1\"}": 386.0,
+        "cctv_camera_primary_frames_inference_unknown_total:{\"camera_id\": \"replay_1\"}": 0.0,
+        "cctv_camera_primary_last_frame_age_seconds:{\"camera_id\": \"replay_1\"}": 0.038798345951363444
+      },
+      "cuda_signatures": {
+        "cudaErrorIllegalAddress": 0,
+        "status=700": 0,
+        "err_no:700": 0,
+        "NVDSINFER_CUDA_ERROR": 0,
+        "Failed in mem copy": 0
+      },
+      "decode": {
+        "exit": 0,
+        "stderr": ""
+      }
+    },
+    "primary_vic": {
+      "experiment": {
+        "scope": "one local RTSP input, IOU, full candidate models, captured real camera video replay; no live camera connection",
+        "input": "/baseline/camera_1_capture.mkv",
+        "completed_experiment": true,
+        "steady_observation_seconds": 35,
+        "receiver_media_seconds": 15,
+        "receiver_exit": 0,
+        "output_bytes": 6789009,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "max_no_progress_seconds": 0.0,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 13.657
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 14.064
+          }
+        ],
+        "sample_count": 45,
+        "elapsed_seconds": 51.74610304413363
+      },
+      "first_stages": {
+        "streammux/src": {
+          "monotonic": 1222343.313225834,
+          "element": "streammux",
+          "factory": "nvstreammux",
+          "pad": "src",
+          "count": 1,
+          "pts": 1363604625,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {
+            "nvbuf-memory-type": 4,
+            "batch-size": 1
+          }
+        },
+        "primary-infer/sink": {
+          "monotonic": 1222343.320222571,
+          "element": "primary-infer",
+          "factory": "nvinfer",
+          "pad": "sink",
+          "count": 1,
+          "pts": 1363604625,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {
+            "batch-size": 1,
+            "interval": 1,
+            "config-file-path": "/app/config/deepstream/config_infer_primary.txt",
+            "process-mode": 1
+          }
+        },
+        "primary-infer/src": {
+          "monotonic": 1222343.600881634,
+          "element": "primary-infer",
+          "factory": "nvinfer",
+          "pad": "src",
+          "count": 1,
+          "pts": 1363604625,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {
+            "batch-size": 1,
+            "interval": 1,
+            "config-file-path": "/app/config/deepstream/config_infer_primary.txt",
+            "process-mode": 1
+          }
+        },
+        "pphuman-infer/sink": {
+          "monotonic": 1222343.61269654,
+          "element": "pphuman-infer",
+          "factory": "nvinfer",
+          "pad": "sink",
+          "count": 1,
+          "pts": 1363604625,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {
+            "batch-size": 1,
+            "interval": 4,
+            "config-file-path": "config/deepstream/config_infer_pa100k.txt",
+            "process-mode": 2
+          }
+        },
+        "pphuman-infer/src": {
+          "monotonic": 1222343.77390595,
+          "element": "pphuman-infer",
+          "factory": "nvinfer",
+          "pad": "src",
+          "count": 1,
+          "pts": 1363604625,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {
+            "batch-size": 1,
+            "interval": 4,
+            "config-file-path": "config/deepstream/config_infer_pa100k.txt",
+            "process-mode": 2
+          }
+        },
+        "helmet-infer/sink": {
+          "monotonic": 1222343.774417289,
+          "element": "helmet-infer",
+          "factory": "nvinfer",
+          "pad": "sink",
+          "count": 1,
+          "pts": 1363604625,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {
+            "batch-size": 1,
+            "interval": 1,
+            "config-file-path": "/app/config/deepstream/config_infer_helmet.txt",
+            "process-mode": 2
+          }
+        },
+        "helmet-infer/src": {
+          "monotonic": 1222343.811913412,
+          "element": "helmet-infer",
+          "factory": "nvinfer",
+          "pad": "src",
+          "count": 1,
+          "pts": 1363604625,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {
+            "batch-size": 1,
+            "interval": 1,
+            "config-file-path": "/app/config/deepstream/config_infer_helmet.txt",
+            "process-mode": 2
+          }
+        },
+        "tracker/sink": {
+          "monotonic": 1222343.812476813,
+          "element": "tracker",
+          "factory": "nvtracker",
+          "pad": "sink",
+          "count": 1,
+          "pts": 1363604625,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {}
+        },
+        "tracker/src": {
+          "monotonic": 1222343.869724574,
+          "element": "tracker",
+          "factory": "nvtracker",
+          "pad": "src",
+          "count": 1,
+          "pts": 1363604625,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {}
+        },
+        "converter/sink": {
+          "monotonic": 1222343.920513687,
+          "element": "converter",
+          "factory": "nvvideoconvert",
+          "pad": "sink",
+          "count": 1,
+          "pts": 1363604625,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0, batch-size=(int)1, num-surfaces-per-frame=(int)1",
+          "properties": {
+            "copy-hw": 1,
+            "nvbuf-memory-type": 0
+          }
+        },
+        "converter/src": {
+          "monotonic": 1222343.95438596,
+          "element": "converter",
+          "factory": "nvvideoconvert",
+          "pad": "src",
+          "count": 1,
+          "pts": 1363604625,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, batch-size=(int)1, num-surfaces-per-frame=(int)1, format=(string)RGBA, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0",
+          "properties": {
+            "copy-hw": 1,
+            "nvbuf-memory-type": 0
+          }
+        },
+        "osd/sink": {
+          "monotonic": 1222343.955233349,
+          "element": "osd",
+          "factory": "nvdsosd",
+          "pad": "sink",
+          "count": 1,
+          "pts": 1363604625,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, batch-size=(int)1, num-surfaces-per-frame=(int)1, format=(string)RGBA, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0",
+          "properties": {
+            "process-mode": 0
+          }
+        },
+        "osd/src": {
+          "monotonic": 1222343.99590067,
+          "element": "osd",
+          "factory": "nvdsosd",
+          "pad": "src",
+          "count": 1,
+          "pts": 1363604625,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, batch-size=(int)1, num-surfaces-per-frame=(int)1, format=(string)RGBA, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0",
+          "properties": {
+            "process-mode": 0
+          }
+        },
+        "h264-nvvidconv/sink": {
+          "monotonic": 1222343.996514917,
+          "element": "h264-nvvidconv",
+          "factory": "nvvideoconvert",
+          "pad": "sink",
+          "count": 1,
+          "pts": 1363604625,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, batch-size=(int)1, num-surfaces-per-frame=(int)1, format=(string)RGBA, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0",
+          "properties": {
+            "copy-hw": 1,
+            "nvbuf-memory-type": 0
+          }
+        },
+        "preview-nvvidconv/sink": {
+          "monotonic": 1222344.010710782,
+          "element": "preview-nvvidconv",
+          "factory": "nvvideoconvert",
+          "pad": "sink",
+          "count": 1,
+          "pts": 1363604625,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, batch-size=(int)1, num-surfaces-per-frame=(int)1, format=(string)RGBA, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0",
+          "properties": {
+            "copy-hw": 1,
+            "nvbuf-memory-type": 0
+          }
+        },
+        "preview-nvvidconv/src": {
+          "monotonic": 1222344.067327752,
+          "element": "preview-nvvidconv",
+          "factory": "nvvideoconvert",
+          "pad": "src",
+          "count": 1,
+          "pts": 1363604625,
+          "dts": 18446744073709551615,
+          "bytes": 3686400,
+          "caps": "video/x-raw, width=(int)1280, height=(int)720, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, batch-size=(int)1, num-surfaces-per-frame=(int)1, format=(string)BGRx, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0",
+          "properties": {
+            "copy-hw": 1,
+            "nvbuf-memory-type": 0
+          }
+        },
+        "h264-nvvidconv/src": {
+          "monotonic": 1222344.072619374,
+          "element": "h264-nvvidconv",
+          "factory": "nvvideoconvert",
+          "pad": "src",
+          "count": 1,
+          "pts": 1363604625,
+          "dts": 18446744073709551615,
+          "bytes": 64,
+          "caps": "video/x-raw(memory:NVMM), width=(int)1920, height=(int)1080, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, framerate=(fraction)0/1, batch-size=(int)1, num-surfaces-per-frame=(int)1, format=(string)NV12, block-linear=(boolean)false, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0",
+          "properties": {
+            "copy-hw": 1,
+            "nvbuf-memory-type": 0
+          }
+        }
+      },
+      "last_metrics": {
+        "cctv_processor_frames_processed_total:{}": 693.0,
+        "cctv_processor_frames_dropped_total:{}": 0.0,
+        "cctv_processor_events_detected_total:{}": 12.0,
+        "cctv_processor_events_sent_total:{}": 0.0,
+        "cctv_processor_events_filtered_total:{}": 1028.0,
+        "cctv_processor_events_failed_total:{}": 12.0,
+        "cctv_processor_fps:{}": 23.03326332914614,
+        "cctv_processor_avg_inference_ms:{}": 9.69,
+        "cctv_processor_yolo_postprocess_avg_ms:{}": 9.69,
+        "cctv_processor_yolo_postprocess_max_ms:{}": 87.164,
+        "cctv_processor_cameras:{}": 1.0,
+        "cctv_processor_primary_metrics_errors_total:{}": 0.0,
+        "cctv_processor_model_metrics_errors_total:{}": 0.0,
+        "cctv_processor_source_error_identified_total:{}": 0.0,
+        "cctv_processor_source_error_unidentified_total:{}": 0.0,
+        "cctv_processor_source_eos_identified_total:{}": 0.0,
+        "cctv_processor_source_eos_unidentified_total:{}": 0.0,
+        "cctv_processor_source_unidentified_stop_total:{}": 0.0,
+        "cctv_processor_source_stream_reset_events_total:{}": 0.0,
+        "cctv_processor_source_stream_reset_unidentified_total:{}": 0.0,
+        "cctv_processor_preview_identity_rejected_total:{}": 0.0,
+        "cctv_processor_preview_frames_stored_total:{}": 278.0,
+        "cctv_processor_pipeline_restart_requested_total:{}": 0.0,
+        "cctv_processor_pipeline_restart_rejected_total:{}": 0.0,
+        "cctv_processor_pipeline_restart_executed_total:{}": 0.0,
+        "cctv_processor_pipeline_restart_failed_total:{}": 0.0,
+        "cctv_processor_pipeline_restart_seconds_total:{}": 0.0,
+        "cctv_processor_context_identity_rejected_total:{}": 0.0,
+        "cctv_processor_context_match_expired_total:{}": 362.0,
+        "cctv_processor_context_match_evicted_total:{}": 25.0,
+        "cctv_processor_context_match_missed_total:{}": 0.0,
+        "cctv_processor_context_frames_matched_total:{}": 63.0,
+        "cctv_processor_context_queue_dropped_total:{}": 0.0,
+        "cctv_processor_context_frames_sampled_total:{}": 215.0,
+        "cctv_processor_context_people_sampled_total:{}": 191.0,
+        "cctv_processor_context_people_busy_total:{}": 24.0,
+        "cctv_processor_context_tasks_completed_total:{}": 63.0,
+        "cctv_processor_context_tasks_failed_total:{}": 0.0,
+        "cctv_model_pipeline_generation:{}": 1.0,
+        "cctv_model_metadata_errors:{}": 0.0,
+        "cctv_model_enabled:{\"model\": \"primary\"}": 1.0,
+        "cctv_model_enabled:{\"model\": \"pose\"}": 0.0,
+        "cctv_model_enabled:{\"model\": \"attributes\"}": 1.0,
+        "cctv_model_enabled:{\"model\": \"helmet\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"primary\", \"property\": \"unique-id\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"primary\", \"property\": \"process-mode\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"primary\", \"property\": \"batch-size\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"primary\", \"property\": \"interval\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"primary\", \"property\": \"output-tensor-meta\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"attributes\", \"property\": \"unique-id\"}": 3.0,
+        "cctv_model_build_property:{\"model\": \"attributes\", \"property\": \"process-mode\"}": 2.0,
+        "cctv_model_build_property:{\"model\": \"attributes\", \"property\": \"batch-size\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"attributes\", \"property\": \"interval\"}": 4.0,
+        "cctv_model_build_property:{\"model\": \"attributes\", \"property\": \"output-tensor-meta\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"helmet\", \"property\": \"unique-id\"}": 2.0,
+        "cctv_model_build_property:{\"model\": \"helmet\", \"property\": \"process-mode\"}": 2.0,
+        "cctv_model_build_property:{\"model\": \"helmet\", \"property\": \"batch-size\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"helmet\", \"property\": \"interval\"}": 1.0,
+        "cctv_model_build_property:{\"model\": \"helmet\", \"property\": \"output-tensor-meta\"}": 1.0,
+        "cctv_model_unique_id_conflict:{\"model\": \"primary\"}": 0.0,
+        "cctv_model_unique_id_conflict:{\"model\": \"pose\"}": 0.0,
+        "cctv_model_unique_id_conflict:{\"model\": \"attributes\"}": 0.0,
+        "cctv_model_unique_id_conflict:{\"model\": \"helmet\"}": 0.0,
+        "cctv_model_frames_seen_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 693.0,
+        "cctv_model_frames_seen_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+        "cctv_model_frames_seen_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 693.0,
+        "cctv_model_frames_seen_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 693.0,
+        "cctv_model_frames_tensor_output_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 347.0,
+        "cctv_model_frames_tensor_output_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+        "cctv_model_frames_tensor_output_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 347.0,
+        "cctv_model_frames_tensor_output_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 347.0,
+        "cctv_model_frames_no_objects_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.0,
+        "cctv_model_frames_no_objects_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+        "cctv_model_frames_no_objects_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 0.0,
+        "cctv_model_frames_no_objects_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 0.0,
+        "cctv_model_frames_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.0,
+        "cctv_model_frames_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+        "cctv_model_frames_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 0.0,
+        "cctv_model_frames_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 0.0,
+        "cctv_model_frames_unobserved_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 346.0,
+        "cctv_model_frames_unobserved_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+        "cctv_model_frames_unobserved_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 346.0,
+        "cctv_model_frames_unobserved_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 346.0,
+        "cctv_model_frames_unknown_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.0,
+        "cctv_model_frames_unknown_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+        "cctv_model_frames_unknown_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 0.0,
+        "cctv_model_frames_unknown_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 0.0,
+        "cctv_model_objects_with_tensor_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.0,
+        "cctv_model_objects_with_tensor_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+        "cctv_model_objects_with_tensor_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 347.0,
+        "cctv_model_objects_with_tensor_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 347.0,
+        "cctv_model_objects_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.0,
+        "cctv_model_objects_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+        "cctv_model_objects_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 0.0,
+        "cctv_model_objects_classifier_only_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 0.0,
+        "cctv_model_last_frame_age_seconds:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.03446811786852777,
+        "cctv_model_last_frame_age_seconds:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 0.03446811786852777,
+        "cctv_model_last_frame_age_seconds:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 0.03446811786852777,
+        "cctv_model_last_tensor_age_seconds:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.03446811786852777,
+        "cctv_model_last_tensor_age_seconds:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 0.03446811786852777,
+        "cctv_model_last_tensor_age_seconds:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 0.03446811786852777,
+        "cctv_falldata_inline_enabled:{}": 1.0,
+        "cctv_falldata_temporal_requests_total:{}": 4.0,
+        "cctv_falldata_temporal_worker_calls_total:{}": 4.0,
+        "cctv_falldata_temporal_worker_completed_total:{}": 3.0,
+        "cctv_falldata_temporal_worker_seconds_total:{}": 16.879882786190137,
+        "cctv_falldata_temporal_parsed_results_total:{}": 3.0,
+        "cctv_falldata_temporal_unparsed_results_total:{}": 0.0,
+        "cctv_falldata_temporal_insufficient_pose_results_total:{}": 1.0,
+        "cctv_falldata_temporal_window_inferences_total:{}": 3.0,
+        "cctv_falldata_temporal_window_reports_missing_total:{}": 0.0,
+        "cctv_falldata_temporal_insufficient_window_results_total:{}": 0.0,
+        "cctv_appearance_color_backend_requests_total:{}": 96.0,
+        "cctv_appearance_color_backend_completed_total:{}": 96.0,
+        "cctv_appearance_color_backend_seconds_total:{}": 3.145888808183372,
+        "cctv_appearance_attribute_backend_requests_total:{}": 63.0,
+        "cctv_appearance_attribute_backend_completed_total:{}": 63.0,
+        "cctv_appearance_attribute_backend_seconds_total:{}": 0.0003387059550732374,
+        "cctv_camera_primary_frames_seen_total:{\"camera_id\": \"replay_1\"}": 696.0,
+        "cctv_camera_primary_frames_inferred_total:{\"camera_id\": \"replay_1\"}": 348.0,
+        "cctv_camera_primary_frames_skipped_total:{\"camera_id\": \"replay_1\"}": 348.0,
+        "cctv_camera_primary_frames_inference_unknown_total:{\"camera_id\": \"replay_1\"}": 0.0,
+        "cctv_camera_primary_last_frame_age_seconds:{\"camera_id\": \"replay_1\"}": 0.04435020801611245
+      },
+      "cuda_signatures": {
+        "cudaErrorIllegalAddress": 0,
+        "status=700": 0,
+        "err_no:700": 0,
+        "NVDSINFER_CUDA_ERROR": 0,
+        "Failed in mem copy": 0
+      },
+      "decode": {
+        "exit": 0,
+        "stderr": ""
+      }
+    }
+  },
+  "product_code_changed": false,
+  "reference": "https://docs.nvidia.com/metropolis/deepstream/7.1/text/DS_plugin_gst-nvinfer.html",
+  "limitations": [
+    "same recorded scene, two starts per revision, not reliability/accuracy acceptance",
+    "probes change timing; logs show reported error boundary, not originating CUDA kernel",
+    "old/new revisions differ in multiple files/settings; not a single-fix causal comparison",
+    "startup probes read buffer metadata/caps only; no buffer map/CUDA calls added",
+    "Primary VIC scaling is distinct from downstream nvvideoconvert copy-hw",
+    "sanitizer application-only does not inspect TCN child GPU kernels",
+    "no deployment, network none, no device output or monitoring ACK verification"
+  ],
+  "memcheck": {
+    "sanitizer_enabled": true,
+    "output_mode": "rtsp-publish",
+    "copy_hw": "1",
+    "scope": "Current frozen candidate CLI, recorded file, selected model combination, local RTSP output; stop after >=120 processed frames",
+    "timed_out": false,
+    "exit": 0,
+    "elapsed_seconds": 169.30253615393303,
+    "zero_error_summary": true,
+    "target_stats": {
+      "backend": "deepstream",
+      "camera_count": 1,
+      "frames_processed": 120,
+      "frames_dropped": 0,
+      "events_detected": 32,
+      "events_sent": 0,
+      "events_filtered": 148,
+      "events_dropped": 0,
+      "events_failed": 32,
+      "inference_errors": 0,
+      "camera_errors": 0,
+      "fps": 0.0,
+      "uptime_seconds": 0.0,
+      "avg_inference_ms": 0.0,
+      "output_mode": "rtsp-publish",
+      "preview_enabled": true,
+      "preview_max_fps": 10.0,
+      "preview_ready": true,
+      "cameras": 1,
+      "yolo_postprocess_mode": "vectorized",
+      "yolo_postprocess_calls": 121,
+      "yolo_postprocess_avg_ms": 3.478,
+      "yolo_postprocess_max_ms": 14.269,
+      "primary_camera_stats": {
+        "replay_1": {
+          "frames_seen": 122,
+          "frames_inferred": 61,
+          "frames_skipped": 61,
+          "frames_inference_unknown": 0,
+          "last_frame_age_seconds": 0.5893868547864258
+        }
+      },
+      "primary_metrics_errors": 0,
+      "model_inference_stats": {
+        "pipeline_generation": 1,
+        "metadata_errors": 0,
+        "models": {
+          "primary": {
+            "enabled": true,
+            "properties": {
+              "unique-id": 1,
+              "process-mode": 1,
+              "batch-size": 1,
+              "interval": 1,
+              "output-tensor-meta": true
+            },
+            "property_observed_at": "pipeline_build",
+            "cameras": {
+              "replay_1": {
+                "frames_seen": 120,
+                "frames_tensor_output": 60,
+                "frames_no_objects": 0,
+                "frames_classifier_only": 0,
+                "frames_unobserved": 60,
+                "frames_unknown": 0,
+                "objects_with_tensor": 0,
+                "objects_classifier_only": 0,
+                "last_frame_age_seconds": 0.001278602983802557,
+                "last_tensor_age_seconds": 0.01916727190837264
+              }
+            },
+            "unique_id_conflict": false
+          },
+          "pose": {
+            "enabled": false,
+            "properties": {
+              "unique-id": null,
+              "process-mode": null,
+              "batch-size": null,
+              "interval": null,
+              "output-tensor-meta": null
+            },
+            "property_observed_at": "pipeline_build",
+            "cameras": {
+              "replay_1": {
+                "frames_seen": 0,
+                "frames_tensor_output": 0,
+                "frames_no_objects": 0,
+                "frames_classifier_only": 0,
+                "frames_unobserved": 0,
+                "frames_unknown": 0,
+                "objects_with_tensor": 0,
+                "objects_classifier_only": 0,
+                "last_frame_age_seconds": null,
+                "last_tensor_age_seconds": null
+              }
+            },
+            "unique_id_conflict": false
+          },
+          "attributes": {
+            "enabled": true,
+            "properties": {
+              "unique-id": 3,
+              "process-mode": 2,
+              "batch-size": 1,
+              "interval": 4,
+              "output-tensor-meta": true
+            },
+            "property_observed_at": "pipeline_build",
+            "cameras": {
+              "replay_1": {
+                "frames_seen": 120,
+                "frames_tensor_output": 60,
+                "frames_no_objects": 0,
+                "frames_classifier_only": 0,
+                "frames_unobserved": 60,
+                "frames_unknown": 0,
+                "objects_with_tensor": 60,
+                "objects_classifier_only": 0,
+                "last_frame_age_seconds": 0.001278602983802557,
+                "last_tensor_age_seconds": 0.01916727190837264
+              }
+            },
+            "unique_id_conflict": false
+          },
+          "helmet": {
+            "enabled": true,
+            "properties": {
+              "unique-id": 2,
+              "process-mode": 2,
+              "batch-size": 1,
+              "interval": 1,
+              "output-tensor-meta": true
+            },
+            "property_observed_at": "pipeline_build",
+            "cameras": {
+              "replay_1": {
+                "frames_seen": 120,
+                "frames_tensor_output": 60,
+                "frames_no_objects": 0,
+                "frames_classifier_only": 0,
+                "frames_unobserved": 60,
+                "frames_unknown": 0,
+                "objects_with_tensor": 60,
+                "objects_classifier_only": 0,
+                "last_frame_age_seconds": 0.001278602983802557,
+                "last_tensor_age_seconds": 0.01916727190837264
+              }
+            },
+            "unique_id_conflict": false
+          }
+        }
+      },
+      "model_metrics_errors": 0,
+      "source_error_identified": 0,
+      "source_error_unidentified": 0,
+      "source_eos_identified": 0,
+      "source_eos_unidentified": 0,
+      "source_unidentified_stop": 0,
+      "source_stream_reset_events": 0,
+      "source_stream_reset_unidentified": 0,
+      "preview_identity_rejected": 0,
+      "preview_frames_stored": 66,
+      "context_identity_rejected": 0,
+      "context_match_expired": 52,
+      "context_match_evicted": 0,
+      "context_match_missed": 0,
+      "context_frames_matched": 55,
+      "context_queue_dropped": 0,
+      "context_frames_sampled": 11,
+      "context_people_sampled": 0,
+      "context_people_busy": 11,
+      "context_tasks_completed": 55,
+      "context_tasks_failed": 0,
+      "pipeline_restart_requested": 0,
+      "pipeline_restart_rejected": 0,
+      "pipeline_restart_executed": 0,
+      "pipeline_restart_failed": 0,
+      "pipeline_restart_seconds": 0.0,
+      "falldata_inline_stats": {
+        "enabled": true,
+        "cameras": {}
+      },
+      "falldata_temporal_stats": {
+        "requests": 5,
+        "worker_calls": 5,
+        "worker_errors": 4,
+        "worker_timeouts": 4,
+        "worker_seconds": 121.20633447403088
+      },
+      "appearance_backend_stats": {
+        "color_backend": {
+          "requests": 67,
+          "completed": 67,
+          "seconds": 79.5944874084089
+        },
+        "attribute_backend": {
+          "requests": 55,
+          "completed": 55,
+          "seconds": 0.0002978148404508829
+        }
+      },
+      "crop_pose_results": 0,
+      "primary_probe_frames": 122,
+      "primary_tensor_meta_count": 61,
+      "primary_person_rois": 61,
+      "crop_pose_person_objects": 0,
+      "crop_pose_tensor_meta_count": 0
+    },
+    "completed": true,
+    "rtsp_published": true
+  },
+  "memcheck_summary": "========= COMPUTE-SANITIZER\n========= ERROR SUMMARY: 0 errors\n",
+  "source_differences": {
+    "scripts/inference/smoke_fall_temporal_model.py": [
+      "dd088e0552b61146ab765c5796125745c78f57ca58a8b2a16a6cf48444461e97",
+      "99bb20571b54bcb092527628d2e816025a9a84e3c5e43629d8ff8940392cdece"
+    ],
+    "src/bootstrap/runtime.py": [
+      "5446b6f9e3d185ea7df331cb56e3f6d3ae103b297f2550ce62ab8c120256676c",
+      "aac0eba5868725bdd8c0743c35f6b6175cab87acf4c80c441cb3a72f50e9f7ec"
+    ],
+    "src/core/deepstream_processor.py": [
+      "fb2186d536028b66ea7502961e73a289dd3831f97e2300646506770305c1c9f2",
+      "2ba141968e149ed944a45461598c4c6419065fc4038ccebd041c07aec50b5704"
+    ],
+    "src/core/_deepstream_pipeline_builder.py": [
+      "7b5eb9ee6d93f5ac7c16465dd3ec64eec0a490d2b406fa95ad40cd1b966b31a7",
+      "f05ac75ae231e14571d292eebfaded3b543d356a6c89477a609b07ddd15c14a2"
+    ],
+    "src/core/_deepstream_context_worker.py": [
+      "38dd2ea880e38a504c2121d23ea13107812d113d8fb90597e2e547ac676b1548",
+      "e9f5b6880bfce7a59bd441080748616c0a3d1ec0528115d2cc10138fd2fee0b7"
+    ],
+    "src/core/_deepstream_source_health.py": [
+      "cfdea53fef808be080fc996cac23713921027f180ee2a24c11c000f7f3b9c525",
+      "1f08b48b1382dffa7a34ea46b608b66ca41a86421f8929ce4fcd74c8d2794719"
+    ],
+    "src/core/ai/_falldata_aux.py": [
+      "7e20bd22c460440917866b2cc211cff6667e3c644445eb6ef0b5f5eb00f75215",
+      "c0430fa93194f0f68155ddf14376f0c922c5c366435a32c539b05cc00f1b1305"
+    ],
+    "src/core/ai/_attribute_runtimes.py": [
+      "ae66c860ed4be5074965022c879de37fc9bde393d16f6b43c5dd66548c110245",
+      "945f31731b1cb19701b6629ddd4bedf5db6b406a5df4988bf646218432b959d1"
+    ],
+    "src/services/processor_metrics.py": [
+      "38bda519f68e3929c6e474fc335f527643c1b082ebe9d8ec8f7622664f57f897",
+      "a5bdffee1b86db08a38714a72beaceb6c540a6856450827b217901abde2a2c4b"
+    ]
+  },
+  "sha256": {
+    "data/runtime/p51_cuda_start_20260930_v075/run_memcheck.py": "5e84e5b06ce46f86262c404662cc36a64090c3a8e76ef293595cb235e4b9f3e7",
+    "data/runtime/p51_cuda_start_20260930_v075/cameras-one.json": "9011e45cb30a331c428568f9f86c28e5dab3f4e058979fe01d04aa9a7f3fc81a",
+    "data/runtime/p51_cuda_start_20260930_v075/compose_candidate1.json": "fa7e33fb1cf958a4cea52cde75de0301a7aaeb4fcc8c9fdec9e6efdb9c690f24",
+    "data/runtime/p51_cuda_start_20260930_v075/compose_candidate2.json": "986287151aa416ca65c338cdd028f443363f1720371f4a19ab2ea12004942243",
+    "data/runtime/p51_cuda_start_20260930_v075/source_manifest.json": "d412a883e93e1307fb41fcdad20c50b6b8dc016c8762dcd1c1e9b181c3d52c23",
+    "data/runtime/p51_cuda_start_20260930_v075/cameras-file.json": "da6273c6619320106ec1b6db0b612fc335c000e8ff52abf77c5ffe25a89b9a61",
+    "data/runtime/p51_cuda_start_20260930_v075/observe_memcheck.py": "daf565f3c561e8144b74e25d4d479d485626f067d325f568f0dffd2aa30666cb",
+    "data/runtime/p51_cuda_start_20260930_v075/run_trial.py": "056fca3666093f5aad6657d62eff8f0cb1cbb879c55c5afcdfbee9def222dcf3",
+    "data/runtime/p51_cuda_start_20260930_v075/compose_original1.json": "018b0ef0c0da4bdaaefcb850bc1508135a9879e22f043ce1494dcbc476e2e7de",
+    "data/runtime/p51_cuda_start_20260930_v075/compose_primary_vic.json": "35a6198fa397065bd8fed7fb4052e71a316ff1a05a1659c483991e23a8000893",
+    "data/runtime/p51_cuda_start_20260930_v075/compose_original2.json": "c96a2cb8bcba93bc7503e85e5eeb82d39055b0729717e49f4efb9b87a2795564",
+    "data/runtime/p51_cuda_start_20260930_v075/observe_start.py": "2fc85559125622b310c07e88b5f7332ab4a2dac5d5ffae9b27af2de81785a13f",
+    "data/runtime/p51_cuda_start_20260930_v075/compose_memcheck.json": "3c3613696979d7c79728478581492df8eac571819bfe9cd839ab07b78a930687",
+    "data/runtime/p51_cuda_start_20260930_v075/primary_vic.txt": "7f23906a06c043f672aef378e782e3e2447e75af663c8d3cbd4dc4dd4e0e8a92",
+    "data/runtime/p51_cuda_start_20260930_v075/original1/startup_stages.jsonl": "53bb94b3db11b6a31d1484cbc6661e77993579569605308bca07427187d22fef",
+    "data/runtime/p51_cuda_start_20260930_v075/original1/experiment.json": "f7b9edcc727b23c6f1e88f582f128610347d071e2f6569bd21d1d092f35f8612",
+    "data/runtime/p51_cuda_start_20260930_v075/original2/startup_stages.jsonl": "ff7d7a6db57c52520b53ce7c0ce5fd7e850583a155c22a564cc864ccf5dc6802",
+    "data/runtime/p51_cuda_start_20260930_v075/original2/experiment.json": "da0fd8e074af20fa2163f632892d1783f3718568a528066a124fb86c3192996e",
+    "data/runtime/p51_cuda_start_20260930_v075/candidate2/startup_stages.jsonl": "7d782578793e24d69d67d4e46c5b8ae6bde9046f0737b06db96a1347f098a18f",
+    "data/runtime/p51_cuda_start_20260930_v075/candidate2/experiment.json": "1f4d8d8c95d9bf201184a13d5067c33c789bbb26a8298bd474a8e4db4190c2f6",
+    "data/runtime/p51_cuda_start_20260930_v075/primary_vic/startup_stages.jsonl": "749786efd0c12dbb8082f9d38a27a1888bab4dd8e27ef19540435e260a980182",
+    "data/runtime/p51_cuda_start_20260930_v075/primary_vic/experiment.json": "8f76a8250d09845df089c671641099f7ce9fedf7052ff8bda68733cbc2c64c4f",
+    "data/runtime/p51_cuda_start_20260930_v075/memcheck/sanitizer.log": "a9d061cee538182f762e132abeea7bac7bddb844338f25751bbbb043f242c425",
+    "data/runtime/p51_cuda_start_20260930_v075/memcheck/startup_stages.jsonl": "5f8971bc6a69d0fd3fbf8cd81ae707b3b7724bbd7bbb3d9ceeae0f32d1b900cc",
+    "data/runtime/p51_cuda_start_20260930_v075/memcheck/experiment.json": "1488e69b23072f845bf0696e4ef66bb947c88faeb4441c1f04a3f644ed129c17",
+    "data/runtime/p51_cuda_start_20260930_v075/candidate1/startup_stages.jsonl": "f6d56c769ac2d3c06d1309ad67110d04548f537f32d517ce09e765ff4558090b",
+    "data/runtime/p51_cuda_start_20260930_v075/candidate1/experiment.json": "1478333732c60fda95b7080eb8f8e9f1f79337f16c9ef5d6cdff33c1dafc2f66"
+  },
+  "operating": {
+    "healthy": true,
+    "restart_count": 0,
+    "started_at": "2026-09-16T23:45:46.903505745Z",
+    "deployed": false,
+    "trial_containers_remaining": 0
+  },
+  "kernel_check": {
+    "since_local": "2026-09-30 12:20:00",
+    "patterns": "MMU|invalid pte|cudaErrorIllegalAddress|nvgpu.*fault",
+    "journal_exit": 1,
+    "stdout": "",
+    "stderr": "",
+    "interpretation": "no matching entries returned; not all system logs or all GPU errors"
+  },
+  "image": "sha256:1ace5b7832a50d6675b66146b0edc307021795732fc7c9a770e2cd628d7fd261",
+  "input_primary_engine_sha256": {
+    "data/runtime/p51_profile_20260928_v052/rc1_models/models/fall/yolov8n-pose.engine": "cc6cd0ee490e4f2ae46acf853989cf8c8806aadab47853e39c1e97cdf6732a74",
+    "data/runtime/p51_camera_20260928_v050/camera_1_capture.mkv": "c7df52d9b46939c1f7d7439354793969ae3dac8663cf2f8bbeab2b72fe916202"
+  },
+  "publication": {
+    "url": "http://192.168.2.141:18081/",
+    "wbs_rows_match": 33,
+    "png_first_page_checked": true,
+    "browser_interaction_tested": false,
+    "other_pc_tested": false,
+    "artifacts": {
+      "index.html": {
+        "bytes": 22422,
+        "sha256": "ffbaf460f8eeb2e7e54f9dca2e4b338d64159e34c25c043f159c8d86ffec4e24",
+        "http_bytes_match": true
+      },
+      "CCTV_project_progress.pdf": {
+        "bytes": 122050,
+        "sha256": "ce2866b702a84cbb0fe84235b929eff7aba31af33762d4dbc9fa1f6ce567d310",
+        "http_bytes_match": true
+      }
+    }
+  },
+  "validation": {
+    "ruff_renderer": "PASS",
+    "git_diff_check": "PASS",
+    "new_product_unit_tests_run": false,
+    "reason": "test-only runtime instrumentation, isolated config and documentation changes"
+  }
+}

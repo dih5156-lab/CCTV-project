@@ -1,0 +1,66 @@
+{
+  "date": "2026-09-30",
+  "version": "0.71",
+  "scope": "P5.1 RF sampling contract capture/training preservation; local only",
+  "red_failed": 9,
+  "validation": {
+    "passed": 205,
+    "seconds": 24.6,
+    "integration_after_label_step": {
+      "passed": 2,
+      "seconds": 21.8,
+      "included_in_205": true
+    },
+    "ruff": "PASS"
+  },
+  "sampling_contract": {
+    "policy": "unique_uniform_valid_pose_v1",
+    "max_frames": "actual effective positive integer, not observed count"
+  },
+  "integration": "synthetic timestamps 0..6, window5: cap2 selects2, cap48 selects6; capture -> label helper -> RF fit -> joblib -> fresh verifier predict",
+  "search": {
+    "recorded_host_paths_found": 0,
+    "recorded_container_paths_found": 0,
+    "git_representative_paths_checked": 2,
+    "git_history_found": false,
+    "project_and_history_filename_search_matches": 0,
+    "data_zip_entries": 25,
+    "data_zip_matches": 0,
+    "docker_backup_permission_denied_paths": 2,
+    "docker_backup_date": "2026-04-28",
+    "exhaustive_search": false,
+    "restored": false
+  },
+  "source_sha256": {
+    "src/core/ai/_falldata_aux.py": "b893df9147374c80d6135f7de0d742f7c0077abb2e351376298ce424c12c9056",
+    "scripts/datasets/train_deepstream_pose_fall_rf.py": "6afb5ceab8eccca6dc8700c668e82e74c0af0270d7a0530935954cd609df36c8",
+    "tests/test_train_deepstream_pose_fall_rf.py": "f1f05980c54d24f80028a3544212342620090b9373100f601d565789fff70814",
+    "tests/test_falldata_pose_tracks.py": "cd87445812fe952a9aa9adcb71968cf2943a725f969f51db0ef31f4296973054"
+  },
+  "limitations": [
+    "Original candidate data/score/preprocessing provenance remains unverified",
+    "New capture sampling metadata is not full feature/score provenance",
+    "Old models not rewritten or promoted; runtime probability logic unchanged",
+    "No GPU/live-camera/accuracy/operating deployment test",
+    "I37/I38/I32/I34/I07 remain OPEN"
+  ],
+  "publication": {
+    "url": "http://192.168.2.141:18081/",
+    "wbs_rows_match": 33,
+    "png_first_page_checked": true,
+    "browser_interaction_tested": false,
+    "other_pc_tested": false,
+    "artifacts": {
+      "index.html": {
+        "bytes": 22579,
+        "sha256": "bc383a1674586d347eac7ab5bf48a3fb8b12fb372082ab9919ba49d4979e59ec",
+        "http_bytes_match": true
+      },
+      "CCTV_project_progress.pdf": {
+        "bytes": 125775,
+        "sha256": "ff5db88f515b0f49e7dbfb97855081a089acbb8e8d472cd0090a574847950f86",
+        "http_bytes_match": true
+      }
+    }
+  }
+}

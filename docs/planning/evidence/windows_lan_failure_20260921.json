@@ -1,0 +1,36 @@
+{
+  "date_kst": "2026-09-21",
+  "scope": "Jetson to temporary Windows monitoring test server; read-only diagnostics",
+  "target_reported_by_user": "192.168.2.79:18080",
+  "source_interface": "wlP1p1s0",
+  "source_connection_name": "SAW_DV_AX_5G",
+  "source_ipv4": "192.168.2.242/24",
+  "default_gateway": "192.168.2.254",
+  "route_get": "192.168.2.79 dev wlP1p1s0 src 192.168.2.242 uid 1000 cache",
+  "neighbor_before_probes": "192.168.2.79 dev wlP1p1s0 FAILED",
+  "target_ping": {"transmitted": 2, "received": 0, "exit_code": 1},
+  "gateway_ping": {"transmitted": 2, "received": 2, "exit_code": 0},
+  "http_head": {
+    "command": "rtk proxy curl --noproxy '*' --connect-timeout 4 --max-time 5 -I http://192.168.2.79:18080/",
+    "exit_code": 7,
+    "elapsed_reported_ms": 3077,
+    "error": "Failed to connect to 192.168.2.79 port 18080: 호스트로 갈 루트가 없음",
+    "http_response_received": false
+  },
+  "windows_followup_reported_by_user": {
+    "localhost_18080_nginx_welcome": true,
+    "wifi_ipv4": "192.168.2.79",
+    "subnet_mask": "255.255.255.0",
+    "default_gateway": "192.168.2.254",
+    "same_network_confirmed": true,
+    "neighbor_state_for_192_168_2_242": "Unreachable",
+    "reverse_ping_result": null,
+    "network_management": "company shared AP"
+  },
+  "neighbor_recheck": {"target": "FAILED", "gateway": "REACHABLE"},
+  "assessment": "Jetson neighbor resolution fails and Windows reports the Jetson neighbor Unreachable. The gateway responds, Windows localhost server works, and the user confirms the same network/subnet/gateway. AP/client isolation or other peer link filtering is a leading hypothesis, not a confirmed root cause. No router setting or reverse ping output has been inspected.",
+  "pending": ["network administrator confirmation of peer communication policy on company AP", "authorized test-device exception or approved development LAN", "HTTP retest after an authorized network correction"],
+  "changes_to_network_or_runtime": false,
+  "status": "OPEN; intermittent recovery reported, local diagnosis resumed; AP/controller evidence requires network administrator cooperation",
+  "followup_evidence": "windows_lan_intermittent_20260921.json"
+}

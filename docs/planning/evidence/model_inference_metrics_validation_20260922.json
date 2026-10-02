@@ -1,0 +1,95 @@
+{
+  "checked_at": "2026-09-22T13:19:41.685145+09:00",
+  "plan_version": "0.30",
+  "wbs": {
+    "P5.1": "IN_PROGRESS",
+    "unit": "GIE output metadata instrumentation local implementation complete",
+    "next": "I24 training input/window review and person-mixing guard",
+    "counts": {
+      "DONE": 9,
+      "BLOCKED": 3,
+      "PLANNED": 13,
+      "VERIFY": 7,
+      "IN_PROGRESS": 1
+    },
+    "completed_task_percent": 27.3
+  },
+  "tests": {
+    "tests": 222,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 5,
+    "passed": 217,
+    "new_cases_passed": 28,
+    "seconds": 16.539,
+    "junit": "model_inference_metrics_20260922.xml",
+    "skipped_reason": "5 existing processor construction tests require pyds unavailable in local .venv",
+    "gpu_validation": false
+  },
+  "scope": {
+    "changed_existing_app_files": [
+      "src/core/deepstream_processor.py",
+      "src/services/processor_metrics.py"
+    ],
+    "new_app_files": [
+      "src/core/_deepstream_model_metrics.py"
+    ],
+    "preexisting_app_files": 204,
+    "unchanged_existing_app_files": 202,
+    "test_file": "tests/test_deepstream_model_metrics.py",
+    "new_dependencies": false
+  },
+  "quality": {
+    "ruff_app_and_test_files": 4,
+    "ruff": "PASS",
+    "black_helper_exporter_tests": "PASS: 3 files",
+    "compile": "PASS: 4 files",
+    "render_script_ruff_black": "PASS",
+    "selected_tracked_diff_check": "PASS",
+    "graph_review": "0 changed symbols; insufficient graph coverage, baseline diff reviewed directly",
+    "local_markdown_links": "PASS"
+  },
+  "sdk_property_check": {
+    "method": "read-only docker exec cctv-ai-engine gst-inspect-1.0 nvinfer",
+    "plugin_version": "7.1.0",
+    "supported_properties": [
+      "unique-id",
+      "process-mode",
+      "batch-size",
+      "interval",
+      "output-tensor-meta"
+    ],
+    "running_pipeline_property_values_observed": false
+  },
+  "online": {
+    "url": "http://192.168.2.242:18081/",
+    "version": "0.30",
+    "html_http_status": 200,
+    "pdf_http_status": 200,
+    "wbs_ids_statuses_matched": 33,
+    "served_html_matches_local": true,
+    "served_pdf_matches_local": true,
+    "html_sha256": "0ff604b1d4010a036c942a91745b51e8019d783c98cd1a04ec6eb0b52155e8fd",
+    "pdf_sha256": "134cba7ae5e3ea392ce6e230ac10c06fd04c0298a57158f1a069b6d79ffe7828",
+    "browser_screenshot": "progress_browser_v030_20260922.png",
+    "visual_check": "PASS: actual Firefox 1366x1800 Korean layout; PDF overview image inspected",
+    "filter_check": "PASS: actual inline JavaScript in Node DOM model; not browser click automation",
+    "other_company_pc_access": "not tested"
+  },
+  "deployment": {
+    "application_restart": false,
+    "running_code_activation": "unverified; source bind mount visible, I07 remains OPEN",
+    "model_or_interval_settings_changed": false,
+    "event_payload_or_database_schema_changed": false,
+    "internal_stats_and_prometheus_fields_added": true,
+    "physical_device_commands": false,
+    "progress_page_updated": true
+  },
+  "remaining": [
+    "I07 runtime activation proof",
+    "I24 person/window isolation",
+    "actual cache/eligible ROI observations",
+    "Python fall/appearance/color execution instrumentation",
+    "camera disconnect and low-quality input validation"
+  ]
+}

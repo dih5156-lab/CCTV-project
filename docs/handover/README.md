@@ -19,6 +19,11 @@
 | [정부과제 요구사항 추적표](REQUIREMENT_TRACEABILITY.md) | 요구사항·구현·시험·실증 연결 |
 | [정부과제 증빙 등록 양식](EVIDENCE_REGISTER_TEMPLATE.md) | 로그·영상·스크린샷·모델 결과 등록 |
 | [정부과제 증빙 초기 등록 목록](EVIDENCE_REGISTER.md) | 현재 저장소에서 확인된 증빙 목록 |
+| [Jetson 배포 준비도 검증 기록](DEPLOYMENT_READINESS_20260907.md) | ARM64 현장 대상 배포 전 검사 결과 |
+| [Edge AIoT 플랫폼 성숙도 평가](../architecture/EDGE_PLATFORM_MATURITY_ASSESSMENT.md) | 현재 기술 수준·운영 증거·승급 조건 |
 | [Edge AIoT 아키텍처 보완안](../architecture/ARCHITECTURE_IMPROVEMENT_PROPOSAL.md) | 전임자 구조와 현재 구조의 보완 방향 |
 | [명령 식별자 상관관계 계약](../architecture/COMMAND_CORRELATION_CONTRACT.md) | event·command·request ID 추적 규칙 |
+| [EdgeX 운영 모드 전환 정책](../architecture/EDGEX_OPERATING_MODE_POLICY.md) | Direct·Shadow·EdgeX 전환 및 복구 기준 |
 | [전광판 EdgeX 실장치 UAT](EDGEX_LIVE_UAT_20260904.md) | 실제 MQTT 명령·물리 출력·결과 DB 검증 |
+| [EdgeX 운영 전환 UAT 런북](EDGEX_UAT_RUNBOOK.md) | 운영 영향 최소화 전환·복귀 절차 |
+| [2026-09-09 작업 로그](WORKLOG_20260909.md) | crop-pose POC·비교 도구·검증 결과 |

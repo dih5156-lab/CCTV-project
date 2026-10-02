@@ -1,0 +1,39 @@
+{
+  "date": "2026-09-18",
+  "plan_version": "0.5",
+  "sqlite_host": "3.37.2",
+  "markdown_files": 11,
+  "local_links_checked": 157,
+  "wbs_tasks": 33,
+  "wbs_counts": {
+    "DONE": 4,
+    "BLOCKED": 2,
+    "READY": 3,
+    "IN_PROGRESS": 1,
+    "PLANNED": 16,
+    "VERIFY": 7
+  },
+  "test_suite": {
+    "name": "pytest",
+    "errors": "0",
+    "failures": "0",
+    "skipped": "0",
+    "tests": "29",
+    "time": "12.063",
+    "timestamp": "2026-09-18T13:29:44.271953+09:00",
+    "hostname": "ubuntu"
+  },
+  "boundary_summary": {
+    "total": 9,
+    "controls": 2,
+    "unmet_targets": 6
+  },
+  "source_sha256": {
+    "parser-python/database/processor.py": "c3bdb9d313c9d7aea48a43f3f4e90221e811c7c975eb3fe8059b674b4c4beb88",
+    "parser-python/tests/test_data_processor.py": "0ddc279cd2ad7df38715dc936484830032a13ef1054beca34df1746c1f8d98ea",
+    "docs/planning/evidence/test_storage_design.py": "90af309109593b9711e290d5d8f63bbff1acaabda981c750157af8675d8fc082",
+    "docs/planning/evidence/storage_design_schema.sql": "9486f12305e6f62dbef7eb3126ee7a4231588b2214c617746e17fc73bd788fc7",
+    "docs/planning/evidence/ingest_boundary_probe_20260918.py": "e67cfbbbaf3c982eb0b08d9dbc308c5c07faac24d6a7cbc9258671e282e72856"
+  },
+  "limits": "Local mock DB/temporary SQLite only. No PostgreSQL restart, broker ACK, power loss, load, GPU or hardware test."
+}

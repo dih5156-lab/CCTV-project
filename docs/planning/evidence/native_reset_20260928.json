@@ -1,0 +1,389 @@
+{
+  "date": "2026-09-28",
+  "scope": "isolated actual CLI, two local RTSP replay inputs; primary Pose and inline pose buffering; missing RF artifact deliberately configured, no RF/TCN accuracy claim",
+  "runtime_artifacts": "data/runtime/p51_reset_20260928_v040",
+  "results": {
+    "baseline": {
+      "reset_event_count": 2,
+      "before": {
+        "monotonic": 1042358.703554048,
+        "kind": "frame",
+        "camera": "replay_1",
+        "frame": 206,
+        "pts": 16636661744,
+        "native_ids": [],
+        "synthetic_ids": [
+          5
+        ],
+        "state": {
+          "generations": {
+            "replay_1": 1,
+            "replay_2": 2
+          },
+          "records": {
+            "replay_1": {
+              "count": 100,
+              "first": 0,
+              "last": 206
+            },
+            "replay_2": {
+              "count": 104,
+              "first": 0,
+              "last": 206
+            }
+          },
+          "inline_keys": []
+        }
+      },
+      "reset_events": [
+        {
+          "monotonic": 1042391.205227982,
+          "kind": "event",
+          "event_type": 103454,
+          "seqnum": 1158,
+          "structure": "nv-stream-reset-0-2, source-id=(uint)0;",
+          "state": {
+            "generations": {
+              "replay_1": 1,
+              "replay_2": 2
+            },
+            "records": {
+              "replay_1": {
+                "count": 101,
+                "first": 0,
+                "last": 210
+              },
+              "replay_2": {
+                "count": 276,
+                "first": 0,
+                "last": 1130
+              }
+            },
+            "inline_keys": []
+          }
+        },
+        {
+          "monotonic": 1042391.205593587,
+          "kind": "event",
+          "event_type": 103454,
+          "seqnum": 1159,
+          "structure": "nv-stream-reset-0-3, source-id=(uint)0;",
+          "state": {
+            "generations": {
+              "replay_1": 1,
+              "replay_2": 2
+            },
+            "records": {
+              "replay_1": {
+                "count": 101,
+                "first": 0,
+                "last": 210
+              },
+              "replay_2": {
+                "count": 276,
+                "first": 0,
+                "last": 1130
+              }
+            },
+            "inline_keys": []
+          }
+        }
+      ],
+      "first_observed_frame_after_reset": {
+        "monotonic": 1042391.306813141,
+        "kind": "frame",
+        "camera": "replay_1",
+        "frame": 212,
+        "pts": 51253597722,
+        "native_ids": [],
+        "synthetic_ids": [
+          18
+        ],
+        "state": {
+          "generations": {
+            "replay_1": 1,
+            "replay_2": 2
+          },
+          "records": {
+            "replay_1": {
+              "count": 102,
+              "first": 0,
+              "last": 212
+            },
+            "replay_2": {
+              "count": 277,
+              "first": 0,
+              "last": 1132
+            }
+          },
+          "inline_keys": []
+        }
+      },
+      "last_observed_frame": {
+        "monotonic": 1042421.755816679,
+        "kind": "frame",
+        "camera": "replay_2",
+        "frame": 1878,
+        "pts": 78472380099,
+        "native_ids": [],
+        "synthetic_ids": [
+          50
+        ],
+        "state": {
+          "generations": {
+            "replay_1": 1,
+            "replay_2": 2
+          },
+          "records": {
+            "replay_1": {
+              "count": 259,
+              "first": 0,
+              "last": 906
+            },
+            "replay_2": {
+              "count": 460,
+              "first": 0,
+              "last": 1876
+            }
+          },
+          "inline_keys": []
+        }
+      },
+      "healthy_frame_increases": {
+        "disconnected": 536.0,
+        "restored": 1162.0
+      },
+      "counters": {
+        "cctv_processor_pipeline_restart_requested_total": 0.0,
+        "cctv_processor_pipeline_restart_rejected_total": 0.0,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_processor_pipeline_restart_failed_total": 0.0,
+        "cctv_processor_pipeline_restart_seconds_total": 0.0
+      },
+      "experiment": {
+        "scope": "real CLI with two local replay RTSP inputs; primary Pose profile; external output disconnected",
+        "completed_experiment": true,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "both_inputs_ready",
+            "elapsed": 21.446
+          },
+          {
+            "name": "publisher_1_stopped",
+            "elapsed": 26.679
+          },
+          {
+            "name": "publisher_1_restarted",
+            "elapsed": 46.806
+          }
+        ],
+        "sample_count": 157,
+        "elapsed_seconds": 94.91856786306016
+      },
+      "trace_sha256": "e46358f0cae60362c2661e41c18e83294daaa5379869022707835516bf5c0717"
+    },
+    "output": {
+      "reset_event_count": 2,
+      "before": {
+        "monotonic": 1042845.479000341,
+        "kind": "frame",
+        "camera": "replay_1",
+        "frame": 169,
+        "pts": 16960936080,
+        "native_ids": [],
+        "synthetic_ids": [
+          3,
+          7,
+          8
+        ],
+        "state": {
+          "generations": {
+            "replay_1": 1,
+            "replay_2": 2
+          },
+          "records": {
+            "replay_1": {
+              "count": 84,
+              "first": 0,
+              "last": 168
+            },
+            "replay_2": {
+              "count": 61,
+              "first": 0,
+              "last": 168
+            }
+          },
+          "inline_keys": []
+        }
+      },
+      "reset_events": [
+        {
+          "monotonic": 1042877.581609925,
+          "kind": "event",
+          "event_type": 103454,
+          "seqnum": 1068,
+          "structure": "nv-stream-reset-0-2, source-id=(uint)0;",
+          "state": {
+            "generations": {
+              "replay_1": 1,
+              "replay_2": 2
+            },
+            "records": {
+              "replay_1": {
+                "count": 90,
+                "first": 0,
+                "last": 180
+              },
+              "replay_2": {
+                "count": 214,
+                "first": 0,
+                "last": 1066
+              }
+            },
+            "inline_keys": []
+          }
+        },
+        {
+          "monotonic": 1042877.583449806,
+          "kind": "event",
+          "event_type": 103454,
+          "seqnum": 1071,
+          "structure": "nv-stream-reset-0-3, source-id=(uint)0;",
+          "state": {
+            "generations": {
+              "replay_1": 3,
+              "replay_2": 2
+            },
+            "records": {
+              "replay_2": {
+                "count": 214,
+                "first": 0,
+                "last": 1066
+              }
+            },
+            "inline_keys": []
+          }
+        }
+      ],
+      "first_observed_frame_after_reset": {
+        "monotonic": 1042877.637537667,
+        "kind": "frame",
+        "camera": "replay_1",
+        "frame": 182,
+        "pts": 52208949341,
+        "native_ids": [],
+        "synthetic_ids": [
+          27
+        ],
+        "state": {
+          "generations": {
+            "replay_1": 4,
+            "replay_2": 2
+          },
+          "records": {
+            "replay_2": {
+              "count": 215,
+              "first": 0,
+              "last": 1068
+            },
+            "replay_1": {
+              "count": 1,
+              "first": 182,
+              "last": 182
+            }
+          },
+          "inline_keys": []
+        }
+      },
+      "last_observed_frame": {
+        "monotonic": 1042908.902871314,
+        "kind": "frame",
+        "camera": "replay_1",
+        "frame": 830,
+        "pts": 79752235638,
+        "native_ids": [],
+        "synthetic_ids": [
+          42,
+          47
+        ],
+        "state": {
+          "generations": {
+            "replay_1": 4,
+            "replay_2": 2
+          },
+          "records": {
+            "replay_2": {
+              "count": 510,
+              "first": 0,
+              "last": 1716
+            },
+            "replay_1": {
+              "count": 268,
+              "first": 182,
+              "last": 830
+            }
+          },
+          "inline_keys": []
+        }
+      },
+      "healthy_frame_increases": {
+        "disconnected": 556.0,
+        "restored": 1006.0
+      },
+      "counters": {
+        "cctv_processor_source_stream_reset_events_total": 2.0,
+        "cctv_processor_source_stream_reset_unidentified_total": 0.0,
+        "cctv_processor_pipeline_restart_requested_total": 0.0,
+        "cctv_processor_pipeline_restart_rejected_total": 0.0,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_processor_pipeline_restart_failed_total": 0.0,
+        "cctv_processor_pipeline_restart_seconds_total": 0.0
+      },
+      "experiment": {
+        "scope": "real CLI with two local replay RTSP inputs; primary Pose profile; external output disconnected",
+        "completed_experiment": true,
+        "app_alive": true,
+        "continuous_publisher_alive": true,
+        "restored_publisher_alive": true,
+        "transitions": [
+          {
+            "name": "both_inputs_ready",
+            "elapsed": 24.59
+          },
+          {
+            "name": "publisher_1_stopped",
+            "elapsed": 30.001
+          },
+          {
+            "name": "publisher_1_restarted",
+            "elapsed": 50.084
+          }
+        ],
+        "sample_count": 158,
+        "elapsed_seconds": 97.35593885497656
+      },
+      "trace_sha256": "8b5c11b833acd8e2a3f26268c331c5ec0c8e8cfbddcaeb3f7d6e3a4850c7ff57"
+    }
+  },
+  "tests": {
+    "passed": 258,
+    "skipped": 2,
+    "failed": 0
+  },
+  "operating": {
+    "started_at": "2026-09-16T23:45:46.903505745Z",
+    "restart_count": 0,
+    "health": "healthy",
+    "before_after_unchanged": true
+  },
+  "limitations": [
+    "native tracker object metadata empty; synthetic IDs observed only",
+    "face/appearance async work, real CCTV, full models and other ERROR/EOS boundaries not validated",
+    "2 reset events do not mean 2 reconnect attempts",
+    "shares physical GPU/CPU with operating app; no continuous operational latency measurement"
+  ],
+  "manifest_sha256": "e6054cea0823e1dbd185b64e48a946af7cd6c0ff5aa3c9900482f42ad230fb7b"
+}

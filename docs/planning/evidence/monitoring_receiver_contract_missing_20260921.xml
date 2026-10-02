@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.181" timestamp="2026-09-21T10:10:51.841709+09:00" hostname="ubuntu"><testcase classname="tests.test_monitoring_contract" name="test_wire_hash_uses_original_bytes_and_preserves_zero" time="0.004"><failure message="ModuleNotFoundError: No module named 'src.monitoring_contract'">tests/test_monitoring_contract.py:26: in test_wire_hash_uses_original_bytes_and_preserves_zero
+    contract = module()
+tests/test_monitoring_contract.py:10: in module
+    return importlib.import_module("src.monitoring_contract")
+/usr/lib/python3.10/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+&lt;frozen importlib._bootstrap&gt;:1050: in _gcd_import
+    ???
+&lt;frozen importlib._bootstrap&gt;:1027: in _find_and_load
+    ???
+&lt;frozen importlib._bootstrap&gt;:1004: in _find_and_load_unlocked
+    ???
+E   ModuleNotFoundError: No module named 'src.monitoring_contract'</failure></testcase></testsuite></testsuites>

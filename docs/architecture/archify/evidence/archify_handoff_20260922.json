@@ -1,0 +1,77 @@
+{
+  "date": "2026-09-22",
+  "skill": "archify",
+  "skill_metadata_version": "2.17",
+  "install_path": "/home/sawwave/.agents/skills/archify",
+  "install_command": "npx --yes skills add tt-a1i/archify -g --skill archify --agent codex --yes",
+  "language": "Korean authored content; English fixed viewer UI",
+  "artifacts": [
+    {
+      "diagram_type": "architecture",
+      "output": "/media/sawwave/Learning11/CCTV-project/docs/architecture/archify/01-system.html",
+      "specification_sha256": "86f00b8a0f9d75914caaecefaef3c8b0ca08999555bca1b0faa0abbb0b40f107",
+      "artifact_sha256": "b0126c1b2618bc6f681571103030180051b263cea76429ed9b3faeeb13e4704a",
+      "validation": "9/9 showcase, 0 errors, 0 warnings",
+      "browser_evidence": "skipped",
+      "visual_review": "not performed: no captured browser image",
+      "correction_rounds": 0
+    },
+    {
+      "diagram_type": "dataflow",
+      "output": "/media/sawwave/Learning11/CCTV-project/docs/architecture/archify/02-storage.html",
+      "specification_sha256": "b40f8760d6ebe7d5e4f4f745c52357319ebdd03b1435fb4cedfe1f2ae96bcc5a",
+      "artifact_sha256": "331db0f5c085d03c7347be828d215e38a1961f8321209e7aa5aa7ad52ed99975",
+      "validation": "9/9 showcase, 0 errors, 0 warnings",
+      "browser_evidence": "skipped",
+      "visual_review": "not performed: no captured browser image",
+      "correction_rounds": 0
+    },
+    {
+      "diagram_type": "sequence",
+      "output": "/media/sawwave/Learning11/CCTV-project/docs/architecture/archify/03-monitoring.html",
+      "specification_sha256": "c9ba3124935b7c274e4d8b6b10dae35df48ee2702d1e641f57ce1bd414366da6",
+      "artifact_sha256": "47a07ff7a2dabf9beb92322d2af657dc25eb723a6fc592f12fb11dae2670713b",
+      "validation": "9/9 showcase, 0 errors, 0 warnings",
+      "browser_evidence": "skipped",
+      "visual_review": "not performed: no captured browser image",
+      "correction_rounds": 0
+    }
+  ],
+  "runtime_code_changed": false,
+  "production_deployment": false,
+  "sources": {
+    "src/core/video_event_ingest.py": "7158836647b520c8ac84872fe6752bf9c610abe740e5a6c8945be8a68c6b4163",
+    "src/event_ingest_store.py": "57fa5d1d4084f79209295b94d9297a27f6f8c07be9f091be798179977b004810",
+    "src/ingest_store.py": "05c35c33de6cc0f2ed934e0f73bb2e34e6532fe40fc492f52fb709305cae5a77",
+    "src/sensor_record.py": "d5a32cc41f4510c1ad3644f5713e829bc351cea6fea60e1b0bfd45152d4b1f9a",
+    "src/monitoring_worker.py": "71893c0d49a1e6e04352ad11e335d828eb4a4bdfff16008f4b331207aced86eb",
+    "src/monitoring_receiver.py": "543b98ba265f505762cffd61b25fb1cc237adec3752ce0232972ee2ba778f6d8",
+    "src/monitoring_api.py": "e3190b15a747f9e197fac6577353338342564dbecd8c3127da52d9c65a19910e",
+    "src/services/device_command_transport.py": "ea659231956a92272b53adacfed4d7775c6e69c1724ea5c581d1530fd2ff8d9c",
+    "src/services/_action_bridge_topics.py": "59c8ae4fd476eca3e18b1bd8585c954ba83bef5388449a1ea32df36b8119684f",
+    "parser-python/service/sensor_service.py": "920a9cef341c3acefa4366ed693e99c381e4668991a481f2324940d0df315d1c",
+    "parser-python/mqtt/edgex_forwarder.py": "9ca85039a7b411243dd1d306b5e517a075884837b5f065aecadc069ca095e38e",
+    "runners/run_sensor_rule_bridge.py": "528f5648d5ab3d5484b7e7104b6116fd02499f015ec6cee45881fb27cb6cd23a",
+    "runners/run_edgex_adapter.py": "8c562e4e66669955b83cabf7c35852b3231df5a183feb78b4faba2a5664acb6e",
+    "docker-compose.jetson.yml": "4a9eaa3a7cb0b73607072fbd1fbb08cb82b8ebca2767a97cc7f8962ce4a432d0"
+  },
+  "manual_browser_attempts": [
+    {
+      "browser": "Firefox Snap",
+      "profile": "/tmp/cctv-archify-firefox-profile-20260922",
+      "result": "profile directory unavailable",
+      "exit_code": 1
+    },
+    {
+      "browser": "Firefox Snap",
+      "profile": "data/runtime/archify_browser_20260922",
+      "viewport": [
+        1440,
+        900
+      ],
+      "result": "45-second timeout; no screenshot",
+      "exit_code": 124
+    }
+  ],
+  "correction_rounds_scope": "Visual-review corrections only; none performed because no browser image was captured."
+}

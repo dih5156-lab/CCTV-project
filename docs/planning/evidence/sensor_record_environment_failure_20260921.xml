@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="5" failures="0" skipped="0" tests="7" time="7.497" timestamp="2026-09-21T08:46:16.505998+09:00" hostname="ubuntu"><testcase classname="parser-python.tests.test_sensor_record_integration" name="test_sensor_service_starts_and_closes_independent_record_worker" time="2.689" /><testcase classname="parser-python.tests.test_sensor_record_integration" name="test_actual_tlv_parser_preserves_decoded_measurements_without_replaying_outputs" time="4.427" /><testcase classname="parser-python.tests.test_sensor_record_integration" name="test_pg_rejection_does_not_prevent_common_record_puback" time="0.007"><error message="failed on setup with &quot;psycopg2.OperationalError: connection to server on socket &quot;/tmp/cctv-p22-sensor-record-pg-qwugbh2z/.s.PGSQL.5432&quot; failed: Connection refused&#10;&#09;Is the server running locally and accepting connections on that socket?&quot;">parser-python/tests/test_sensor_projection.py:65: in pg_db
+    admin = psycopg2.connect(dsn)
+.venv/lib/python3.10/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+E   psycopg2.OperationalError: connection to server on socket "/tmp/cctv-p22-sensor-record-pg-qwugbh2z/.s.PGSQL.5432" failed: Connection refused
+E   	Is the server running locally and accepting connections on that socket?</error></testcase><testcase classname="parser-python.tests.test_sensor_record_integration" name="test_process_exit_recovers_same_tlv_observation_and_pg[prepared]" time="0.006"><error message="failed on setup with &quot;psycopg2.OperationalError: connection to server on socket &quot;/tmp/cctv-p22-sensor-record-pg-qwugbh2z/.s.PGSQL.5432&quot; failed: Connection refused&#10;&#09;Is the server running locally and accepting connections on that socket?&quot;">parser-python/tests/test_sensor_projection.py:65: in pg_db
+    admin = psycopg2.connect(dsn)
+.venv/lib/python3.10/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+E   psycopg2.OperationalError: connection to server on socket "/tmp/cctv-p22-sensor-record-pg-qwugbh2z/.s.PGSQL.5432" failed: Connection refused
+E   	Is the server running locally and accepting connections on that socket?</error></testcase><testcase classname="parser-python.tests.test_sensor_record_integration" name="test_process_exit_recovers_same_tlv_observation_and_pg[canonical]" time="0.005"><error message="failed on setup with &quot;psycopg2.OperationalError: connection to server on socket &quot;/tmp/cctv-p22-sensor-record-pg-qwugbh2z/.s.PGSQL.5432&quot; failed: Connection refused&#10;&#09;Is the server running locally and accepting connections on that socket?&quot;">parser-python/tests/test_sensor_projection.py:65: in pg_db
+    admin = psycopg2.connect(dsn)
+.venv/lib/python3.10/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+E   psycopg2.OperationalError: connection to server on socket "/tmp/cctv-p22-sensor-record-pg-qwugbh2z/.s.PGSQL.5432" failed: Connection refused
+E   	Is the server running locally and accepting connections on that socket?</error></testcase><testcase classname="parser-python.tests.test_sensor_record_integration" name="test_process_exit_recovers_same_tlv_observation_and_pg[enqueued]" time="0.005"><error message="failed on setup with &quot;psycopg2.OperationalError: connection to server on socket &quot;/tmp/cctv-p22-sensor-record-pg-qwugbh2z/.s.PGSQL.5432&quot; failed: Connection refused&#10;&#09;Is the server running locally and accepting connections on that socket?&quot;">parser-python/tests/test_sensor_projection.py:65: in pg_db
+    admin = psycopg2.connect(dsn)
+.venv/lib/python3.10/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+E   psycopg2.OperationalError: connection to server on socket "/tmp/cctv-p22-sensor-record-pg-qwugbh2z/.s.PGSQL.5432" failed: Connection refused
+E   	Is the server running locally and accepting connections on that socket?</error></testcase><testcase classname="parser-python.tests.test_sensor_record_integration" name="test_process_exit_recovers_same_tlv_observation_and_pg[acknowledged]" time="0.005"><error message="failed on setup with &quot;psycopg2.OperationalError: connection to server on socket &quot;/tmp/cctv-p22-sensor-record-pg-qwugbh2z/.s.PGSQL.5432&quot; failed: Connection refused&#10;&#09;Is the server running locally and accepting connections on that socket?&quot;">parser-python/tests/test_sensor_projection.py:65: in pg_db
+    admin = psycopg2.connect(dsn)
+.venv/lib/python3.10/site-packages/psycopg2/__init__.py:122: in connect
+    conn = _connect(dsn, connection_factory=connection_factory, **kwasync)
+E   psycopg2.OperationalError: connection to server on socket "/tmp/cctv-p22-sensor-record-pg-qwugbh2z/.s.PGSQL.5432" failed: Connection refused
+E   	Is the server running locally and accepting connections on that socket?</error></testcase></testsuite></testsuites>

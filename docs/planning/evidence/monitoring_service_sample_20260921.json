@@ -1,0 +1,426 @@
+{
+  "actual_mqtt": true,
+  "socket": "/tmp/cctv-p22-mqtt-service-20260921/broker.sock",
+  "source_and_consumer": "temporary SQLite",
+  "inputs": {
+    "video_events": 5,
+    "sensor_observations": 5
+  },
+  "service": {
+    "state": "stopped",
+    "running": false,
+    "completed": 10,
+    "failed_cycles": 0,
+    "last_error": null,
+    "last_cycle_at": 1789961934.3528996,
+    "commit_observer_errors": 0
+  },
+  "receiver": {
+    "ready": false,
+    "stored": 10,
+    "duplicates": 0,
+    "rejected": 0,
+    "storage_or_transport_failures": 0,
+    "last_error": null
+  },
+  "reconciliation": {
+    "source_snapshot_id": "snap_eaec2eb361284a15a2470ad8977680a4",
+    "consumer_snapshot_id": "snap_96c9a87f2ee94dbab7ec535200b27a42",
+    "complete": true,
+    "source_set_matches": true,
+    "all_inputs_accounted": true,
+    "sets_equal": true,
+    "error": null,
+    "counts": {
+      "matched": 10,
+      "missing": 0,
+      "conflict": 0,
+      "unexpected": 0,
+      "out_of_snapshot": 0,
+      "unverifiable": 0
+    },
+    "details": [],
+    "details_truncated": 0,
+    "pending_normalization": 0,
+    "pending_delivery_creation": 0,
+    "normalization_rejected": 0
+  },
+  "worker_timings": {
+    "consumer_lookup": {
+      "unit": "ms",
+      "clock": "monotonic",
+      "lifetime": "current_process",
+      "window": "last_samples",
+      "max_samples": 1000,
+      "window_start_monotonic": 444950.64707338,
+      "window_end_monotonic": 444951.189741472,
+      "valid": 20,
+      "invalid": 0,
+      "raised": 0,
+      "total_seen": 20,
+      "evicted": 0,
+      "p50_ms": 1.0187459993176162,
+      "p95_ms": 1.2280180235393345,
+      "max_ms": 1.2311849859543145
+    },
+    "mqtt_publish": {
+      "unit": "ms",
+      "clock": "monotonic",
+      "lifetime": "current_process",
+      "window": "last_samples",
+      "max_samples": 1000,
+      "window_start_monotonic": 444950.656399716,
+      "window_end_monotonic": 444951.077755555,
+      "valid": 10,
+      "invalid": 0,
+      "raised": 0,
+      "total_seen": 10,
+      "evicted": 0,
+      "p50_ms": 3.6417829687707126,
+      "p95_ms": 5.343605997040868,
+      "max_ms": 5.343605997040868
+    },
+    "consumer_ack_commit": {
+      "unit": "ms",
+      "clock": "monotonic",
+      "lifetime": "current_process",
+      "window": "last_samples",
+      "max_samples": 1000,
+      "window_start_monotonic": 444950.821741316,
+      "window_end_monotonic": 444951.197312194,
+      "valid": 10,
+      "invalid": 0,
+      "raised": 0,
+      "total_seen": 10,
+      "evicted": 0,
+      "p50_ms": 9.32534399908036,
+      "p95_ms": 15.929894987493753,
+      "max_ms": 15.929894987493753
+    }
+  },
+  "commit_observations": {
+    "lifetime": "current_process",
+    "window": "last_samples",
+    "max_samples": 1000,
+    "total_seen": 30,
+    "evicted": 0,
+    "samples": [
+      {
+        "phase": "ingest_commit_completed_at",
+        "ingest_id": "ing_ada6d26ef68b4832ad4a64c4d17d3c0e",
+        "delivery_id": null,
+        "received_at": "2026-09-21T03:38:53.522364+00:00",
+        "commit_observed_at": "2026-09-21T03:38:53.529614+00:00",
+        "clock_sync": "confirmed",
+        "quality": "valid",
+        "elapsed_ms": 7.250070571899414
+      },
+      {
+        "phase": "normalize_completed_at",
+        "ingest_id": "ing_ada6d26ef68b4832ad4a64c4d17d3c0e",
+        "delivery_id": null,
+        "received_at": "2026-09-21T03:38:53.522364+00:00",
+        "commit_observed_at": "2026-09-21T03:38:53.537639+00:00",
+        "clock_sync": "confirmed",
+        "quality": "valid",
+        "elapsed_ms": 15.274763107299805
+      },
+      {
+        "phase": "ingest_commit_completed_at",
+        "ingest_id": "ing_df4520bdd3ce4ff081b83cc328208a11",
+        "delivery_id": null,
+        "received_at": "2026-09-21T03:38:53.537924+00:00",
+        "commit_observed_at": "2026-09-21T03:38:53.545860+00:00",
+        "clock_sync": "confirmed",
+        "quality": "valid",
+        "elapsed_ms": 7.935762405395508
+      },
+      {
+        "phase": "ingest_commit_completed_at",
+        "ingest_id": "ing_9bb64e5d775c4e039cbdcd68bb4a50e0",
+        "delivery_id": null,
+        "received_at": "2026-09-21T03:38:53.554831+00:00",
+        "commit_observed_at": "2026-09-21T03:38:53.563679+00:00",
+        "clock_sync": "confirmed",
+        "quality": "valid",
+        "elapsed_ms": 8.848190307617188
+      },
+      {
+        "phase": "normalize_completed_at",
+        "ingest_id": "ing_9bb64e5d775c4e039cbdcd68bb4a50e0",
+        "delivery_id": null,
+        "received_at": "2026-09-21T03:38:53.554831+00:00",
+        "commit_observed_at": "2026-09-21T03:38:53.573658+00:00",
+        "clock_sync": "confirmed",
+        "quality": "valid",
+        "elapsed_ms": 18.827438354492188
+      },
+      {
+        "phase": "ingest_commit_completed_at",
+        "ingest_id": "ing_b7982aaf3341411f8b26355f4bf6ddcd",
+        "delivery_id": null,
+        "received_at": "2026-09-21T03:38:53.573928+00:00",
+        "commit_observed_at": "2026-09-21T03:38:53.580402+00:00",
+        "clock_sync": "confirmed",
+        "quality": "valid",
+        "elapsed_ms": 6.474018096923828
+      },
+      {
+        "phase": "ingest_commit_completed_at",
+        "ingest_id": "ing_34f66f50f713479c8546afb6ac149794",
+        "delivery_id": null,
+        "received_at": "2026-09-21T03:38:53.587683+00:00",
+        "commit_observed_at": "2026-09-21T03:38:53.594562+00:00",
+        "clock_sync": "confirmed",
+        "quality": "valid",
+        "elapsed_ms": 6.879091262817383
+      },
+      {
+        "phase": "normalize_completed_at",
+        "ingest_id": "ing_34f66f50f713479c8546afb6ac149794",
+        "delivery_id": null,
+        "received_at": "2026-09-21T03:38:53.587683+00:00",
+        "commit_observed_at": "2026-09-21T03:38:53.602959+00:00",
+        "clock_sync": "confirmed",
+        "quality": "valid",
+        "elapsed_ms": 15.276193618774414
+      },
+      {
+        "phase": "ingest_commit_completed_at",
+        "ingest_id": "ing_a6a4e7efacfd452880c5a09ee3f40507",
+        "delivery_id": null,
+        "received_at": "2026-09-21T03:38:53.603323+00:00",
+        "commit_observed_at": "2026-09-21T03:38:53.610964+00:00",
+        "clock_sync": "confirmed",
+        "quality": "valid",
+        "elapsed_ms": 7.641315460205078
+      },
+      {
+        "phase": "ingest_commit_completed_at",
+        "ingest_id": "ing_3e6552ce81e14f938825f2f128e2064d",
+        "delivery_id": null,
+        "received_at": "2026-09-21T03:38:53.622411+00:00",
+        "commit_observed_at": "2026-09-21T03:38:53.630693+00:00",
+        "clock_sync": "confirmed",
+        "quality": "valid",
+        "elapsed_ms": 8.281707763671875
+      },
+      {
+        "phase": "normalize_completed_at",
+        "ingest_id": "ing_3e6552ce81e14f938825f2f128e2064d",
+        "delivery_id": null,
+        "received_at": "2026-09-21T03:38:53.622411+00:00",
+        "commit_observed_at": "2026-09-21T03:38:53.641077+00:00",
+        "clock_sync": "confirmed",
+        "quality": "valid",
+        "elapsed_ms": 18.665552139282227
+      },
+      {
+        "phase": "ingest_commit_completed_at",
+        "ingest_id": "ing_6c787bbd9a664efaa46e6682fab98ee7",
+        "delivery_id": null,
+        "received_at": "2026-09-21T03:38:53.641355+00:00",
+        "commit_observed_at": "2026-09-21T03:38:53.648044+00:00",
+        "clock_sync": "confirmed",
+        "quality": "valid",
+        "elapsed_ms": 6.689310073852539
+      },
+      {
+        "phase": "ingest_commit_completed_at",
+        "ingest_id": "ing_622d72ed97eb492a9ad568467a2448d9",
+        "delivery_id": null,
+        "received_at": "2026-09-21T03:38:53.655217+00:00",
+        "commit_observed_at": "2026-09-21T03:38:53.662980+00:00",
+        "clock_sync": "confirmed",
+        "quality": "valid",
+        "elapsed_ms": 7.762670516967773
+      },
+      {
+        "phase": "normalize_completed_at",
+        "ingest_id": "ing_622d72ed97eb492a9ad568467a2448d9",
+        "delivery_id": null,
+        "received_at": "2026-09-21T03:38:53.655217+00:00",
+        "commit_observed_at": "2026-09-21T03:38:53.673665+00:00",
+        "clock_sync": "confirmed",
+        "quality": "valid",
+        "elapsed_ms": 18.448352813720703
+      },
+      {
+        "phase": "ingest_commit_completed_at",
+        "ingest_id": "ing_c915ab88e0524c7996f30cb0014b81a8",
+        "delivery_id": null,
+        "received_at": "2026-09-21T03:38:53.673933+00:00",
+        "commit_observed_at": "2026-09-21T03:38:53.680588+00:00",
+        "clock_sync": "confirmed",
+        "quality": "valid",
+        "elapsed_ms": 6.655216217041016
+      },
+      {
+        "phase": "normalize_completed_at",
+        "ingest_id": "ing_df4520bdd3ce4ff081b83cc328208a11",
+        "delivery_id": null,
+        "received_at": "2026-09-21T03:38:53.537924+00:00",
+        "commit_observed_at": "2026-09-21T03:38:53.706009+00:00",
+        "clock_sync": "confirmed",
+        "quality": "valid",
+        "elapsed_ms": 168.08462142944336
+      },
+      {
+        "phase": "normalize_completed_at",
+        "ingest_id": "ing_b7982aaf3341411f8b26355f4bf6ddcd",
+        "delivery_id": null,
+        "received_at": "2026-09-21T03:38:53.573928+00:00",
+        "commit_observed_at": "2026-09-21T03:38:53.722223+00:00",
+        "clock_sync": "confirmed",
+        "quality": "valid",
+        "elapsed_ms": 148.29444885253906
+      },
+      {
+        "phase": "normalize_completed_at",
+        "ingest_id": "ing_a6a4e7efacfd452880c5a09ee3f40507",
+        "delivery_id": null,
+        "received_at": "2026-09-21T03:38:53.603323+00:00",
+        "commit_observed_at": "2026-09-21T03:38:53.741618+00:00",
+        "clock_sync": "confirmed",
+        "quality": "valid",
+        "elapsed_ms": 138.29493522644043
+      },
+      {
+        "phase": "normalize_completed_at",
+        "ingest_id": "ing_6c787bbd9a664efaa46e6682fab98ee7",
+        "delivery_id": null,
+        "received_at": "2026-09-21T03:38:53.641355+00:00",
+        "commit_observed_at": "2026-09-21T03:38:53.760948+00:00",
+        "clock_sync": "confirmed",
+        "quality": "valid",
+        "elapsed_ms": 119.59338188171387
+      },
+      {
+        "phase": "normalize_completed_at",
+        "ingest_id": "ing_c915ab88e0524c7996f30cb0014b81a8",
+        "delivery_id": null,
+        "received_at": "2026-09-21T03:38:53.673933+00:00",
+        "commit_observed_at": "2026-09-21T03:38:53.780100+00:00",
+        "clock_sync": "confirmed",
+        "quality": "valid",
+        "elapsed_ms": 106.16707801818848
+      },
+      {
+        "phase": "consumer_ack_persisted_at",
+        "ingest_id": "ing_ada6d26ef68b4832ad4a64c4d17d3c0e",
+        "delivery_id": "job_12cdd99c0d99498380be979ac7371248",
+        "received_at": "2026-09-21T03:38:53.522364+00:00",
+        "commit_observed_at": "2026-09-21T03:38:53.984839+00:00",
+        "clock_sync": "confirmed",
+        "quality": "valid",
+        "elapsed_ms": 462.4752998352051
+      },
+      {
+        "phase": "consumer_ack_persisted_at",
+        "ingest_id": "ing_9bb64e5d775c4e039cbdcd68bb4a50e0",
+        "delivery_id": "job_93dc06f7e90548b4b28f69ac0f173679",
+        "received_at": "2026-09-21T03:38:53.554831+00:00",
+        "commit_observed_at": "2026-09-21T03:38:54.000400+00:00",
+        "clock_sync": "confirmed",
+        "quality": "valid",
+        "elapsed_ms": 445.5692768096924
+      },
+      {
+        "phase": "consumer_ack_persisted_at",
+        "ingest_id": "ing_34f66f50f713479c8546afb6ac149794",
+        "delivery_id": "job_db7fb42910714fd28e0c5fa394e41b4e",
+        "received_at": "2026-09-21T03:38:53.587683+00:00",
+        "commit_observed_at": "2026-09-21T03:38:54.019075+00:00",
+        "clock_sync": "confirmed",
+        "quality": "valid",
+        "elapsed_ms": 431.39195442199707
+      },
+      {
+        "phase": "consumer_ack_persisted_at",
+        "ingest_id": "ing_3e6552ce81e14f938825f2f128e2064d",
+        "delivery_id": "job_65b21f7c92f0464b8215f5990c4f480c",
+        "received_at": "2026-09-21T03:38:53.622411+00:00",
+        "commit_observed_at": "2026-09-21T03:38:54.039217+00:00",
+        "clock_sync": "confirmed",
+        "quality": "valid",
+        "elapsed_ms": 416.8057441711426
+      },
+      {
+        "phase": "consumer_ack_persisted_at",
+        "ingest_id": "ing_622d72ed97eb492a9ad568467a2448d9",
+        "delivery_id": "job_4c97572814fb4b8e8b0b22a14749f4a3",
+        "received_at": "2026-09-21T03:38:53.655217+00:00",
+        "commit_observed_at": "2026-09-21T03:38:54.058520+00:00",
+        "clock_sync": "confirmed",
+        "quality": "valid",
+        "elapsed_ms": 403.3029079437256
+      },
+      {
+        "phase": "consumer_ack_persisted_at",
+        "ingest_id": "ing_df4520bdd3ce4ff081b83cc328208a11",
+        "delivery_id": "job_ce4631052fe24890816259bf32bb50ab",
+        "received_at": "2026-09-21T03:38:53.537924+00:00",
+        "commit_observed_at": "2026-09-21T03:38:54.268329+00:00",
+        "clock_sync": "confirmed",
+        "quality": "valid",
+        "elapsed_ms": 730.4046154022217
+      },
+      {
+        "phase": "consumer_ack_persisted_at",
+        "ingest_id": "ing_b7982aaf3341411f8b26355f4bf6ddcd",
+        "delivery_id": "job_9e3b8b26ff164bcb98ea956cbd4308b5",
+        "received_at": "2026-09-21T03:38:53.573928+00:00",
+        "commit_observed_at": "2026-09-21T03:38:54.295868+00:00",
+        "clock_sync": "confirmed",
+        "quality": "valid",
+        "elapsed_ms": 721.9400405883789
+      },
+      {
+        "phase": "consumer_ack_persisted_at",
+        "ingest_id": "ing_a6a4e7efacfd452880c5a09ee3f40507",
+        "delivery_id": "job_7ab0e96449a14fb5bcfa7f3b5c68356a",
+        "received_at": "2026-09-21T03:38:53.603323+00:00",
+        "commit_observed_at": "2026-09-21T03:38:54.315887+00:00",
+        "clock_sync": "confirmed",
+        "quality": "valid",
+        "elapsed_ms": 712.56422996521
+      },
+      {
+        "phase": "consumer_ack_persisted_at",
+        "ingest_id": "ing_6c787bbd9a664efaa46e6682fab98ee7",
+        "delivery_id": "job_2d0e752aa73b4cffb32fbd66ee74b219",
+        "received_at": "2026-09-21T03:38:53.641355+00:00",
+        "commit_observed_at": "2026-09-21T03:38:54.336588+00:00",
+        "clock_sync": "confirmed",
+        "quality": "valid",
+        "elapsed_ms": 695.2333450317383
+      },
+      {
+        "phase": "consumer_ack_persisted_at",
+        "ingest_id": "ing_c915ab88e0524c7996f30cb0014b81a8",
+        "delivery_id": "job_6cff5b063e8a494ab5c8d2987ef9d443",
+        "received_at": "2026-09-21T03:38:53.673933+00:00",
+        "commit_observed_at": "2026-09-21T03:38:54.352801+00:00",
+        "clock_sync": "confirmed",
+        "quality": "valid",
+        "elapsed_ms": 678.8678169250488
+      }
+    ],
+    "latency": {
+      "name": "received_to_ack_commit",
+      "clock": "wall",
+      "clock_sync": "confirmed",
+      "valid": 10,
+      "invalid": 0,
+      "unknown": 0,
+      "p50_ms": 462.4752998352051,
+      "p95_ms": 730.4046154022217,
+      "max_ms": 730.4046154022217
+    }
+  },
+  "clock_assumption": "same host; confirmed flag applies only to this lab interval; no NTP/remote certification",
+  "wall_elapsed": 0.8423757553100586,
+  "monotonic_elapsed": 0.8423755000112578,
+  "performance_acceptance": false,
+  "devices_or_gpu_used": false
+}

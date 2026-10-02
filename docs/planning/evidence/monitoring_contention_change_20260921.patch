@@ -1,0 +1,125 @@
+--- a/src/monitoring_delivery.py
++++ b/src/monitoring_delivery.py
+@@ -58,32 +58,48 @@
+                 "SELECT origin_id FROM monitoring_origin WHERE singleton=1"
+             ).fetchone()[0]
+ 
+-    def _bind_monitoring(self, connection, binding, endpoint, reader_endpoint):
++    def _monitoring_bound(self, connection, binding, endpoint, reader_endpoint):
+         if (
+             binding.origin_id != self.origin_id
+             or not isinstance(reader_endpoint, str)
+             or not reader_endpoint.strip()
+         ):
+             raise MonitoringContractError("binding_mismatch")
+-        self._bind_target(connection, binding.destination, endpoint)
++        record_topic(binding.destination)
++        if not isinstance(endpoint, str) or not endpoint.strip():
++            raise ValueError("A stable endpoint identity is required")
+         target = connection.execute(
+-            "SELECT consumer_id, reader_endpoint FROM monitoring_targets WHERE destination=?",
++            "SELECT t.endpoint,m.consumer_id,m.reader_endpoint FROM record_delivery_targets t "
++            "LEFT JOIN monitoring_targets m USING(destination) WHERE t.destination=?",
+             (binding.destination,),
+         ).fetchone()
+         if target is None:
+-            if connection.execute(
+-                "SELECT 1 FROM delivery_jobs WHERE destination=? AND (attempts>0 OR state!='pending') LIMIT 1",
+-                (binding.destination,),
+-            ).fetchone():
+-                raise ValueError(
+-                    "Previously attempted destination requires a new destination version"
+-                )
+-            connection.execute(
+-                "INSERT INTO monitoring_targets VALUES (?, ?, ?)",
+-                (binding.destination, binding.consumer_id, reader_endpoint),
++            return False
++        if target[0] != endpoint:
++            raise ValueError(
++                "Destination endpoint changed; use a new destination version"
+             )
+-        elif (target[0], target[1]) != (binding.consumer_id, reader_endpoint):
++        if target[1] is None:
++            return False
++        if (target[1], target[2]) != (binding.consumer_id, reader_endpoint):
+             raise MonitoringContractError("binding_mismatch")
++        return True
++
++    def _bind_monitoring(self, connection, binding, endpoint, reader_endpoint):
++        if self._monitoring_bound(connection, binding, endpoint, reader_endpoint):
++            return
++        self._bind_target(connection, binding.destination, endpoint)
++        if connection.execute(
++            "SELECT 1 FROM delivery_jobs WHERE destination=? AND (attempts>0 OR state!='pending') LIMIT 1",
++            (binding.destination,),
++        ).fetchone():
++            raise ValueError(
++                "Previously attempted destination requires a new destination version"
++            )
++        connection.execute(
++            "INSERT INTO monitoring_targets VALUES (?, ?, ?)",
++            (binding.destination, binding.consumer_id, reader_endpoint),
++        )
+ 
+     def enqueue_monitoring(
+         self, namespace, binding, endpoint, reader_endpoint, limit=100
+@@ -96,13 +112,25 @@
+         ):
+             raise ValueError("namespace and limit 1..1000 are required")
+         with self._connect() as connection:
+-            connection.execute("BEGIN IMMEDIATE")
+-            self._bind_monitoring(connection, binding, endpoint, reader_endpoint)
+-            rows = connection.execute(
++            query = (
+                 "SELECT c.*, j.job_id FROM canonical_records c LEFT JOIN delivery_jobs j "
+                 "ON j.source_namespace=c.source_namespace AND j.source_record_id=c.source_record_id AND j.destination=? "
+                 "WHERE c.source_namespace=? AND NOT EXISTS "
+-                "(SELECT 1 FROM monitoring_delivery m WHERE m.job_id=j.job_id) ORDER BY c.rowid LIMIT ?",
++                "(SELECT 1 FROM monitoring_delivery m WHERE m.job_id=j.job_id) ORDER BY c.rowid LIMIT ?"
++            )
++            if self._monitoring_bound(connection, binding, endpoint, reader_endpoint):
++                if (
++                    connection.execute(
++                        query, (binding.destination, namespace, 1)
++                    ).fetchone()
++                    is None
++                ):
++                    return 0
++            # Recheck under the writer lock: another worker may have enqueued it.
++            connection.execute("BEGIN IMMEDIATE")
++            self._bind_monitoring(connection, binding, endpoint, reader_endpoint)
++            rows = connection.execute(
++                query,
+                 (binding.destination, namespace, limit),
+             ).fetchall()
+             for row in rows:
+@@ -159,18 +187,23 @@
+         if not math.isfinite(lease_seconds) or lease_seconds <= 0:
+             raise ValueError("positive finite lease is required")
+         with self._connect() as connection:
+-            connection.execute("BEGIN IMMEDIATE")
+-            self._bind_monitoring(connection, binding, endpoint, reader_endpoint)
+-            row = connection.execute(
++            query = (
+                 "SELECT m.*, j.destination,c.first_ingest_id,r.received_at FROM monitoring_delivery m "
+                 "JOIN delivery_jobs j USING(job_id) JOIN canonical_records c "
+                 "ON c.source_namespace=j.source_namespace AND c.source_record_id=j.source_record_id "
+                 "JOIN ingest_receipts r ON r.ingest_id=c.first_ingest_id "
+                 "WHERE j.destination=? AND m.state IN ('pending','awaiting_ack','uncertain') "
+                 "AND m.next_attempt_at<=? AND (m.lease_token IS NULL OR m.lease_until<=?) "
+-                "ORDER BY m.next_attempt_at, m.rowid LIMIT 1",
+-                (binding.destination, now, now),
+-            ).fetchone()
++                "ORDER BY m.next_attempt_at, m.rowid LIMIT 1"
++            )
++            parameters = (binding.destination, now, now)
++            if self._monitoring_bound(connection, binding, endpoint, reader_endpoint):
++                if connection.execute(query, parameters).fetchone() is None:
++                    return None
++            # A candidate is advisory until checked again under the writer lock.
++            connection.execute("BEGIN IMMEDIATE")
++            self._bind_monitoring(connection, binding, endpoint, reader_endpoint)
++            row = connection.execute(query, parameters).fetchone()
+             if row is None:
+                 return None
+             job = dict(row)

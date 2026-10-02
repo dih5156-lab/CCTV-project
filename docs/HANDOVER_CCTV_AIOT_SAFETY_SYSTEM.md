@@ -321,6 +321,11 @@ python scripts/quality_gate_fall_replay.py \
   --min-precision 0.90 --min-recall 0.80
 ```
 
+카메라 설정을 적용하는 replay는 기본적으로 `ACTION_DEVICE_DRY_RUN=true`로
+Action Layer를 재생성한다. replay 종료 후 AI Engine을 먼저 원래 설정으로
+복원한 다음 Action Layer를 운영 설정으로 되돌린다. 물리 장치 출력은
+`--allow-physical-output`을 명시한 경우에만 허용한다.
+
 `falldata`는 현재 YOLO keypoint와 입력 형식이 다르므로 직접 대체 모델로 사용하지 않습니다. 운영 전에는 `shadow`로 현장 데이터를 수집하고, 정탐/오탐 검수 후 `confirm` 전환 여부를 결정합니다.
 
 ---

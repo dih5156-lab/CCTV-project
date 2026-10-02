@@ -1,0 +1,687 @@
+{
+  "version": "0.64",
+  "date": "2026-09-29",
+  "scope": "RC4 live camera_1 direct input, isolated bridge app; no deployment",
+  "trials": {
+    "live_vic": {
+      "experiment": {
+        "scope": "RC4 direct live camera_1 as live_1; bridge, unpublished ports; local MQTT:9",
+        "completed_experiment": true,
+        "steady_observation_seconds": 600,
+        "receiver_media_seconds": 570,
+        "max_no_progress_seconds": 0.0,
+        "receiver_exit": 0,
+        "output_bytes": 338010260,
+        "app_alive": true,
+        "server_alive": true,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 10.112
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 10.73
+          }
+        ],
+        "sample_count": 578,
+        "elapsed_seconds": 618.879143036902
+      },
+      "cuda_signature_count": 0,
+      "max_stats": {
+        "frames_processed": 13925,
+        "context_queue_dropped": 1535,
+        "pipeline_restart_executed": 0,
+        "primary_person_rois": 5551,
+        "preview_frames_stored": 4557
+      },
+      "last_model_stats": {
+        "model_inference_stats": {
+          "pipeline_generation": 1,
+          "metadata_errors": 0,
+          "models": {
+            "primary": {
+              "enabled": true,
+              "properties": {
+                "unique-id": 1,
+                "process-mode": 1,
+                "batch-size": 1,
+                "interval": 1,
+                "output-tensor-meta": true
+              },
+              "property_observed_at": "pipeline_build",
+              "cameras": {
+                "live_1": {
+                  "frames_seen": 13925,
+                  "frames_tensor_output": 6963,
+                  "frames_no_objects": 0,
+                  "frames_classifier_only": 0,
+                  "frames_unobserved": 6962,
+                  "frames_unknown": 0,
+                  "objects_with_tensor": 0,
+                  "objects_classifier_only": 0,
+                  "last_frame_age_seconds": 0.07473405287601054,
+                  "last_tensor_age_seconds": 0.07473405287601054
+                }
+              },
+              "unique_id_conflict": false
+            },
+            "pose": {
+              "enabled": false,
+              "properties": {
+                "unique-id": null,
+                "process-mode": null,
+                "batch-size": null,
+                "interval": null,
+                "output-tensor-meta": null
+              },
+              "property_observed_at": "pipeline_build",
+              "cameras": {
+                "live_1": {
+                  "frames_seen": 0,
+                  "frames_tensor_output": 0,
+                  "frames_no_objects": 0,
+                  "frames_classifier_only": 0,
+                  "frames_unobserved": 0,
+                  "frames_unknown": 0,
+                  "objects_with_tensor": 0,
+                  "objects_classifier_only": 0,
+                  "last_frame_age_seconds": null,
+                  "last_tensor_age_seconds": null
+                }
+              },
+              "unique_id_conflict": false
+            },
+            "attributes": {
+              "enabled": true,
+              "properties": {
+                "unique-id": 3,
+                "process-mode": 2,
+                "batch-size": 1,
+                "interval": 4,
+                "output-tensor-meta": true
+              },
+              "property_observed_at": "pipeline_build",
+              "cameras": {
+                "live_1": {
+                  "frames_seen": 13925,
+                  "frames_tensor_output": 3024,
+                  "frames_no_objects": 7878,
+                  "frames_classifier_only": 0,
+                  "frames_unobserved": 3023,
+                  "frames_unknown": 0,
+                  "objects_with_tensor": 5549,
+                  "objects_classifier_only": 0,
+                  "last_frame_age_seconds": 0.07473405287601054,
+                  "last_tensor_age_seconds": 0.07473405287601054
+                }
+              },
+              "unique_id_conflict": false
+            },
+            "helmet": {
+              "enabled": true,
+              "properties": {
+                "unique-id": 2,
+                "process-mode": 2,
+                "batch-size": 1,
+                "interval": 1,
+                "output-tensor-meta": true
+              },
+              "property_observed_at": "pipeline_build",
+              "cameras": {
+                "live_1": {
+                  "frames_seen": 13925,
+                  "frames_tensor_output": 3024,
+                  "frames_no_objects": 7878,
+                  "frames_classifier_only": 0,
+                  "frames_unobserved": 3023,
+                  "frames_unknown": 0,
+                  "objects_with_tensor": 5549,
+                  "objects_classifier_only": 0,
+                  "last_frame_age_seconds": 0.07473405287601054,
+                  "last_tensor_age_seconds": 0.07473405287601054
+                }
+              },
+              "unique_id_conflict": false
+            }
+          }
+        },
+        "appearance_backend_stats": {
+          "color_backend": {
+            "requests": 2139,
+            "completed": 2139,
+            "seconds": 103.11707203858532,
+            "skipped_too_small": 13
+          },
+          "attribute_backend": {
+            "requests": 1826,
+            "completed": 1826,
+            "seconds": 0.01242060773074627
+          }
+        },
+        "falldata_temporal_stats": {
+          "requests": 13,
+          "process_calls": 13,
+          "process_completed": 13,
+          "process_seconds": 227.47738805529661,
+          "parsed_results": 13,
+          "unparsed_results": 0,
+          "insufficient_pose_results": 3,
+          "insufficient_window_results": 1,
+          "window_reports_missing": 0,
+          "window_inferences": 12
+        }
+      },
+      "copy_properties": [
+        {
+          "name": "h264-nvvidconv",
+          "copy_hw": 2,
+          "memory_type": 0
+        },
+        {
+          "name": "preview-nvvidconv",
+          "copy_hw": 2,
+          "memory_type": 0
+        },
+        {
+          "name": "converter",
+          "copy_hw": 2,
+          "memory_type": 0
+        }
+      ],
+      "media": {
+        "duration": "570.220000",
+        "packet_count": 13928,
+        "streams": [
+          {
+            "width": 1920,
+            "height": 1080,
+            "r_frame_rate": "30/1",
+            "avg_frame_rate": "30/1",
+            "disposition": {
+              "default": 1,
+              "dub": 0,
+              "original": 0,
+              "comment": 0,
+              "lyrics": 0,
+              "karaoke": 0,
+              "forced": 0,
+              "hearing_impaired": 0,
+              "visual_impaired": 0,
+              "clean_effects": 0,
+              "attached_pic": 0,
+              "timed_thumbnails": 0
+            },
+            "tags": {
+              "DURATION": "00:09:30.220000000"
+            }
+          }
+        ],
+        "timing": {
+          "pts_time": {
+            "count": 13928,
+            "backwards": 0,
+            "equal": 0
+          },
+          "dts_time": {
+            "count": 13928,
+            "backwards": 0,
+            "equal": 0
+          }
+        },
+        "decode_exit": 0,
+        "decode_error_bytes": 0
+      }
+    },
+    "live_gpu": {
+      "experiment": {
+        "scope": "RC4 direct live camera_1 as live_1; bridge, unpublished ports; local MQTT:9",
+        "completed_experiment": true,
+        "steady_observation_seconds": 180,
+        "receiver_media_seconds": 150,
+        "max_no_progress_seconds": 0.0,
+        "receiver_exit": 0,
+        "output_bytes": 64340273,
+        "app_alive": true,
+        "server_alive": true,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 16.927
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 17.136
+          }
+        ],
+        "sample_count": 182,
+        "elapsed_seconds": 200.82632937002927
+      },
+      "cuda_signature_count": 0,
+      "max_stats": {
+        "frames_processed": 3021,
+        "context_queue_dropped": 821,
+        "pipeline_restart_executed": 0,
+        "primary_person_rois": 2789,
+        "preview_frames_stored": 1374
+      },
+      "last_model_stats": {
+        "model_inference_stats": {
+          "pipeline_generation": 1,
+          "metadata_errors": 0,
+          "models": {
+            "primary": {
+              "enabled": true,
+              "properties": {
+                "unique-id": 1,
+                "process-mode": 1,
+                "batch-size": 1,
+                "interval": 1,
+                "output-tensor-meta": true
+              },
+              "property_observed_at": "pipeline_build",
+              "cameras": {
+                "live_1": {
+                  "frames_seen": 3021,
+                  "frames_tensor_output": 1511,
+                  "frames_no_objects": 0,
+                  "frames_classifier_only": 0,
+                  "frames_unobserved": 1510,
+                  "frames_unknown": 0,
+                  "objects_with_tensor": 0,
+                  "objects_classifier_only": 0,
+                  "last_frame_age_seconds": 0.05223103309981525,
+                  "last_tensor_age_seconds": 0.05223103309981525
+                }
+              },
+              "unique_id_conflict": false
+            },
+            "pose": {
+              "enabled": false,
+              "properties": {
+                "unique-id": null,
+                "process-mode": null,
+                "batch-size": null,
+                "interval": null,
+                "output-tensor-meta": null
+              },
+              "property_observed_at": "pipeline_build",
+              "cameras": {
+                "live_1": {
+                  "frames_seen": 0,
+                  "frames_tensor_output": 0,
+                  "frames_no_objects": 0,
+                  "frames_classifier_only": 0,
+                  "frames_unobserved": 0,
+                  "frames_unknown": 0,
+                  "objects_with_tensor": 0,
+                  "objects_classifier_only": 0,
+                  "last_frame_age_seconds": null,
+                  "last_tensor_age_seconds": null
+                }
+              },
+              "unique_id_conflict": false
+            },
+            "attributes": {
+              "enabled": true,
+              "properties": {
+                "unique-id": 3,
+                "process-mode": 2,
+                "batch-size": 1,
+                "interval": 4,
+                "output-tensor-meta": true
+              },
+              "property_observed_at": "pipeline_build",
+              "cameras": {
+                "live_1": {
+                  "frames_seen": 3021,
+                  "frames_tensor_output": 1511,
+                  "frames_no_objects": 0,
+                  "frames_classifier_only": 0,
+                  "frames_unobserved": 1510,
+                  "frames_unknown": 0,
+                  "objects_with_tensor": 2787,
+                  "objects_classifier_only": 0,
+                  "last_frame_age_seconds": 0.05223103309981525,
+                  "last_tensor_age_seconds": 0.05223103309981525
+                }
+              },
+              "unique_id_conflict": false
+            },
+            "helmet": {
+              "enabled": true,
+              "properties": {
+                "unique-id": 2,
+                "process-mode": 2,
+                "batch-size": 1,
+                "interval": 1,
+                "output-tensor-meta": true
+              },
+              "property_observed_at": "pipeline_build",
+              "cameras": {
+                "live_1": {
+                  "frames_seen": 3021,
+                  "frames_tensor_output": 1511,
+                  "frames_no_objects": 0,
+                  "frames_classifier_only": 0,
+                  "frames_unobserved": 1510,
+                  "frames_unknown": 0,
+                  "objects_with_tensor": 2787,
+                  "objects_classifier_only": 0,
+                  "last_frame_age_seconds": 0.05223103309981525,
+                  "last_tensor_age_seconds": 0.05223103309981525
+                }
+              },
+              "unique_id_conflict": false
+            }
+          }
+        },
+        "appearance_backend_stats": {
+          "color_backend": {
+            "requests": 1640,
+            "completed": 1640,
+            "seconds": 76.71613386436366
+          },
+          "attribute_backend": {
+            "requests": 1033,
+            "completed": 1033,
+            "seconds": 0.011578703299164772
+          }
+        },
+        "falldata_temporal_stats": {
+          "requests": 8,
+          "process_calls": 8,
+          "process_completed": 7,
+          "process_seconds": 110.58080373518169,
+          "parsed_results": 7,
+          "unparsed_results": 0,
+          "insufficient_pose_results": 1,
+          "insufficient_window_results": 0,
+          "window_reports_missing": 0,
+          "window_inferences": 7
+        }
+      },
+      "copy_properties": [
+        {
+          "name": "h264-nvvidconv",
+          "copy_hw": 1,
+          "memory_type": 0
+        },
+        {
+          "name": "preview-nvvidconv",
+          "copy_hw": 1,
+          "memory_type": 0
+        },
+        {
+          "name": "converter",
+          "copy_hw": 1,
+          "memory_type": 0
+        }
+      ],
+      "media": {
+        "duration": "150.612000",
+        "packet_count": 2573,
+        "streams": [
+          {
+            "width": 1920,
+            "height": 1080,
+            "r_frame_rate": "30/1",
+            "avg_frame_rate": "30/1",
+            "disposition": {
+              "default": 1,
+              "dub": 0,
+              "original": 0,
+              "comment": 0,
+              "lyrics": 0,
+              "karaoke": 0,
+              "forced": 0,
+              "hearing_impaired": 0,
+              "visual_impaired": 0,
+              "clean_effects": 0,
+              "attached_pic": 0,
+              "timed_thumbnails": 0
+            },
+            "tags": {
+              "DURATION": "00:02:30.612000000"
+            }
+          }
+        ],
+        "timing": {
+          "pts_time": {
+            "count": 2573,
+            "backwards": 0,
+            "equal": 0
+          },
+          "dts_time": {
+            "count": 2573,
+            "backwards": 0,
+            "equal": 0
+          }
+        },
+        "decode_exit": 0,
+        "decode_error_bytes": 0
+      }
+    }
+  },
+  "production_changed": false,
+  "product_code_changed": false,
+  "privacy": "Camera URI, credentials and raw application logs excluded from this summary",
+  "primary_memcheck": {
+    "scope": "Primary TensorRT engine only, generated input; no DeepStream preprocessing",
+    "requested_iterations": 10,
+    "completed": true,
+    "timed_out": false,
+    "exit": 0,
+    "elapsed_seconds": 8.542212209897116,
+    "zero_error_summary": true,
+    "timing_count": 10,
+    "trtexec_passed": true
+  },
+  "candidate": {
+    "id": "P5.1-RC4-20260929",
+    "source_files": 357,
+    "hash_mismatches": []
+  },
+  "original_fault_localization": {
+    "observed_tensor_output_maxima": {
+      "cctv_model_frames_tensor_output_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.0,
+      "cctv_model_frames_tensor_output_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+      "cctv_model_frames_tensor_output_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 0.0,
+      "cctv_model_frames_tensor_output_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 0.0,
+      "cctv_model_objects_with_tensor_total:{\"camera_id\": \"replay_1\", \"model\": \"primary\"}": 0.0,
+      "cctv_model_objects_with_tensor_total:{\"camera_id\": \"replay_1\", \"model\": \"pose\"}": 0.0,
+      "cctv_model_objects_with_tensor_total:{\"camera_id\": \"replay_1\", \"model\": \"attributes\"}": 0.0,
+      "cctv_model_objects_with_tensor_total:{\"camera_id\": \"replay_1\", \"model\": \"helmet\"}": 0.0
+    },
+    "interpretation": "No tensor output observed in last available samples; prioritize initial conversion/primary path. Sampled metrics cannot prove no GPU kernel executed."
+  },
+  "limitations": [
+    "I34 OPEN: original fault not reproduced, causal fix not established",
+    "Live GPU/VIC scenes differ over time; not matched performance or accuracy benchmark",
+    "Context queue loss is separate I32, no lossless event/vision claim",
+    "MQTT localhost:9 deliberately unavailable; no output device commands",
+    "Standalone TensorRT memcheck excludes decoder/mux/conversion/OSD and concurrent app workload"
+  ],
+  "memory_checks": {
+    "primary_memcheck": {
+      "scope": "Primary TensorRT engine only, generated input; no DeepStream preprocessing",
+      "requested_iterations": 10,
+      "completed": true,
+      "timed_out": false,
+      "exit": 0,
+      "elapsed_seconds": 8.542212209897116,
+      "zero_error_summary": true,
+      "timing_count": 10,
+      "trtexec_passed": true
+    },
+    "transform_gpu": {
+      "scope": "12 synthetic NV12 frames, system-to-NVMM copy -> mux -> Primary -> identity -> sink; no decoder/OSD/app",
+      "copy_hw": 1,
+      "completed": true,
+      "timed_out": false,
+      "exit": 0,
+      "elapsed_seconds": 11.94707806315273,
+      "zero_error_summary": true,
+      "sink_buffers": 12,
+      "eos": true
+    },
+    "transform_vic": {
+      "scope": "12 synthetic NV12 frames, system-to-NVMM copy -> mux -> Primary -> identity -> sink; no decoder/OSD/app",
+      "copy_hw": 2,
+      "completed": true,
+      "timed_out": false,
+      "exit": 0,
+      "elapsed_seconds": 12.801411716965958,
+      "zero_error_summary": true,
+      "sink_buffers": 12,
+      "eos": true
+    },
+    "decoder_memcheck": {
+      "scope": "12 recorded camera frames -> hardware decoder -> mux -> Primary -> sink; no OSD/app",
+      "nvinfer_scaling_compute_hw": 1,
+      "completed": true,
+      "timed_out": false,
+      "exit": 0,
+      "elapsed_seconds": 13.437599329045042,
+      "zero_error_summary": true,
+      "sink_buffers": 12,
+      "eos": true
+    }
+  },
+  "setup_failures": {
+    "primary_input_name": {
+      "scope": "Primary TensorRT engine only, generated input; no DeepStream preprocessing",
+      "requested_iterations": 10,
+      "completed": false,
+      "timed_out": false,
+      "exit": 1,
+      "elapsed_seconds": 1.2442885318305343,
+      "zero_error_summary": true,
+      "timing_count": 0,
+      "trtexec_passed": false
+    },
+    "decoder_bind_path": {
+      "completed": false,
+      "cause": "relative bind source resolved under compose directory; output permission error before GPU test",
+      "fix": "absolute bind source",
+      "gpu_memory_test_started": false
+    }
+  },
+  "engine_io": {
+    "input": {
+      "name": "input",
+      "shape": [
+        1,
+        3,
+        640,
+        640
+      ]
+    },
+    "main_output": {
+      "name": "output",
+      "shape": [
+        1,
+        56,
+        8400
+      ]
+    },
+    "output_tensor_count": 7,
+    "method": "TensorRT engine introspection"
+  },
+  "validation": {
+    "product_code_changed": false,
+    "unit_tests_repeated": false,
+    "previous_regression": "v0.63: 255 passed, 2 skipped",
+    "diagnostic_script_ast_files": 4,
+    "wbs_33_rows_match": true,
+    "renderer_ruff": "passed",
+    "diff_check": "passed",
+    "png_first_page": "visually checked",
+    "browser_other_pc_retested": false
+  },
+  "production_observation": {
+    "health": "healthy",
+    "restart_count": 0,
+    "started_at": "2026-09-16T23:45:46.903505745Z",
+    "trial_containers_remaining": 0
+  },
+  "output_branch_followup": {
+    "results": {
+      "osd_gpu": {
+        "stage": "osd",
+        "copy_hw": 1,
+        "scope": "12 recorded camera frames -> decoder -> mux -> Primary -> converter -> CPU OSD; dual adds encoder and CPU preview conversion; no Python callbacks/SGIE",
+        "nvinfer_scaling_compute_hw": 1,
+        "completed": true,
+        "timed_out": false,
+        "exit": 0,
+        "elapsed_seconds": 12.201588236959651,
+        "zero_error_summary": true,
+        "sink_buffers": 12,
+        "eos": true,
+        "preview_buffers": 0
+      },
+      "dual_gpu": {
+        "stage": "dual",
+        "copy_hw": 1,
+        "scope": "12 recorded camera frames -> decoder -> mux -> Primary -> converter -> CPU OSD; dual adds encoder and CPU preview conversion; no Python callbacks/SGIE",
+        "nvinfer_scaling_compute_hw": 1,
+        "completed": true,
+        "timed_out": false,
+        "exit": 0,
+        "elapsed_seconds": 13.162193699972704,
+        "zero_error_summary": true,
+        "sink_buffers": 12,
+        "eos": true,
+        "preview_buffers": 12
+      },
+      "dual_vic": {
+        "stage": "dual",
+        "copy_hw": 2,
+        "scope": "12 recorded camera frames -> decoder -> mux -> Primary -> converter -> CPU OSD; dual adds encoder and CPU preview conversion; no Python callbacks/SGIE",
+        "nvinfer_scaling_compute_hw": 1,
+        "completed": true,
+        "timed_out": false,
+        "exit": 0,
+        "elapsed_seconds": 12.806875411886722,
+        "zero_error_summary": true,
+        "sink_buffers": 12,
+        "eos": true,
+        "preview_buffers": 12
+      }
+    },
+    "artifacts": "data/runtime/p51_cuda_20260929_v065",
+    "product_code_changed": false,
+    "limitations": [
+      "12 frames per case; no SGIE, tracker or Python metadata callbacks",
+      "Preview branch uses fakesink, not production appsink callback",
+      "Passing cases do not establish CUDA700 root cause or VIC causal benefit"
+    ],
+    "source_review": "process_preview_sample copies BGR/BGRx before buffer.unmap; no escaping borrowed pixel view found in this block"
+  },
+  "publication_before_output_branch_followup": {
+    "html": {
+      "bytes": 22583,
+      "sha256": "7e592b1a628a7a402e882f0db33f64292fc766a26162c73bf3ad3159704e4468",
+      "lan_matches": true
+    },
+    "pdf": {
+      "bytes": 123223,
+      "sha256": "749083093367915f629fdc0faff8a0b1efdb9d85dd8e0541ebe3ebefd4cee89a",
+      "lan_matches": true
+    }
+  },
+  "publication": {
+    "html": {
+      "bytes": 22687,
+      "sha256": "0aedd4114a51508d180b2a387620da3e6391772fa196bc341e2c578a90db33a3",
+      "lan_matches": true
+    },
+    "pdf": {
+      "bytes": 123493,
+      "sha256": "ad816cb832914ea15968323b0bd084c5020e248b713c9b685db226252c1db420",
+      "lan_matches": null
+    },
+    "note": "Output-branch followup: HTML LAN bytes checked; PDF LAN fetch/browser visual check not repeated."
+  }
+}

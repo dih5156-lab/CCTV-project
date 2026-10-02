@@ -169,6 +169,10 @@ python scripts/ops/evaluate_sample_deepstream_replay.py \
   --results-csv data/fall_eval/test_replay_results.csv
 ```
 
+`--apply-camera-config`를 사용하는 replay는 기본적으로 Action Layer를
+물리 출력 차단 모드로 재생성하고, AI Engine 복원 후 운영 설정으로 되돌립니다.
+실제 장치 출력이 필요한 경우에만 `--allow-physical-output`을 명시합니다.
+
 재생 결과에 대해 운영 품질 기준을 확인합니다.
 
 ```bash
@@ -224,8 +228,31 @@ pytest -q
 
 ## 업데이트 이력
 
+### 2026-09-11
+- 주간 자동 업데이트: 코드·설정·문서·테스트 변경사항 반영
+
+
 ### 2026-09-04
 - 주간 자동 업데이트: 코드·설정·문서·테스트 변경사항 반영
+
+### 2026-09-07 ~ 2026-09-11 (9월 2주차)
+
+- 작업 기준 브랜치를 `260907-260911-9월2주차`로 전환하고, 이번 주부터 구현·검증·문서 변경사항을 해당 브랜치에서 관리합니다.
+- 다중 장치 장애 격리 단위 테스트를 유지하면서, 기본 Jetson Compose는 Direct로 복귀하고 EdgeX는 UAT override에서만 활성화되는 롤백 계약 검사를 추가했습니다.
+- `scripts/health/check_compose_runtime_assumptions.py`에 EdgeX 운영 모드 검사를 연결해 기본값·허용 장치 목록·UAT 설정이 바뀌면 배포 readiness 단계에서 탐지하도록 했습니다.
+- `scripts/ops/run_edgex_device_service_uat.py`에 `--device` 선택 옵션을 추가해 스피커·사이렌이 없는 환경에서도 연결된 전광판만 독립적으로 UAT할 수 있도록 했습니다.
+- EdgeX 다중 물리 장치 발행 결과에 `device_ids`·`request_ids`를 보존해 `event_id → command_id → request_id` 추적이 실행 응답에서도 이어지도록 보강했습니다.
+- 다중 물리 장치 실행 결과 예시와 Direct 모드에서 물리 ID가 비어 있는 이유를 명령 상관관계 계약 문서에 추가했습니다.
+- 런타임 복구 후 전광판 단독 EdgeX canary를 실제 실행해 `acknowledged` 결과와 전광판 표시 로그를 확인하고, 시험 후 기본 Direct 모드로 롤백했습니다.
+- 실제 CCTV 로그와 Action DB를 대조해 영상 파이프라인 처리 상태를 확인했습니다. 최근 낙상 기록은 모두 `uat-` 합성 이벤트였으므로 실제 영상 낙상 E2E는 미검증으로 유지했습니다.
+- 새 롤백 계약 테스트를 포함한 Compose 가정 검사 35건, Ruff, diff 형식 검사를 통과했습니다. 실제 장치 UAT는 현재 런타임 접속 불가 상태로 아직 수행하지 않았습니다.
+- 실제 낙상 영상(`old_demo_overlay_20260902_142824`)을 replay해 AI Engine → MQTT → Action Layer 이벤트 경로를 검증했습니다. replay 전용 `ACTION_DEVICE_DRY_RUN` 안전 스위치를 추가했고, `fall_detected` 명령 6건이 `simulated`로 기록되는 것을 확인했습니다.
+- 복원 순서 오류로 잔여 이벤트 1건이 전광판에 실제 출력된 사실도 인수인계 문서에 기록했습니다. 향후 replay 종료 확인 후 운영 모드로 복원하도록 절차를 보강해야 합니다.
+- `cam-01` 다중 디바이스 격리 UAT는 Action Layer의 dry-run 적용을 컨테이너 내부에서 먼저 확인한 뒤 재실행했습니다. `safe-002` 이벤트가 `signboard: simulated`으로 기록되고 물리 출력이 없음을 확인했으며, 시험 후 운영 모드로 복원했습니다.
+- 낙상 후보 모델의 오류 영상을 C1~C4 우선 검수 페이지와 전체 미탐·오탐 검수 페이지로 분리하고, 원본 평가 데이터에서 18,128건 manifest를 복구했습니다. 영상 누락은 0건입니다.
+- C2·C4 대표 미탐 영상을 실제로 확인해 시간 변화·보행 보조기·침대 주변 가림이 주요 hard-case임을 확인하고 모델 운영 승격 매트릭스와 검수·재학습 가이드를 갱신했습니다.
+- temporal 후처리에서 유효 window가 1개뿐인데 `min_confirmed_windows=2`를 적용해 높은 확률을 prediction 0으로 버리던 문제를 수정했습니다. C2·C4 실제 CUDA 영상에서 각각 확률 0.999966·0.999830, prediction 1을 재검증했습니다.
+- 수정 후 전체 테스트 `1727 passed, 72 skipped`와 Jetson 최근 15분 런타임 점검(AI Engine healthy, frame drop 0, failed 0)을 확인했습니다. 모델 정확도 승격은 사람 검수 라벨 확보 전까지 보류합니다.
 
 
 ### 2026-09-01 ~ 2026-09-04 (9월 1주차)

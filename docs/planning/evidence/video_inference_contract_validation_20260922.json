@@ -1,0 +1,93 @@
+{
+  "checked_at": "2026-09-22T12:48:06.393019+09:00",
+  "plan_version": "0.29",
+  "wbs": {
+    "P5.1": "IN_PROGRESS",
+    "first_unit": "runtime audit/input contract/measurement plan complete",
+    "P2.4": "BLOCKED: D02/D04/D06 operating criteria",
+    "counts": {
+      "DONE": 9,
+      "BLOCKED": 3,
+      "PLANNED": 13,
+      "VERIFY": 7,
+      "IN_PROGRESS": 1
+    },
+    "completed_task_percent": 27.3
+  },
+  "runtime_audit": {
+    "inventory": "video_runtime_inventory_20260922.json",
+    "camera_count": 1,
+    "metrics_http_status": 200,
+    "primary_metrics_present_in_both_samples": false,
+    "I07": "OPEN",
+    "in_process_model_identity": "unverified"
+  },
+  "pose_track_gap": {
+    "issue": "I24",
+    "status": "OPEN",
+    "evidence": "pose_track_gap_20260922.json",
+    "single_track_window_contract_met": false,
+    "actual_classifier_or_physical_output_executed": false,
+    "reproduce_command": "rtk proxy .venv/bin/python -m docs.planning.evidence.reproduce_pose_track_gap_20260922"
+  },
+  "baseline_regression": {
+    "tests": 194,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 5,
+    "passed": 189,
+    "seconds": 18.371,
+    "junit": "video_inference_baseline_20260922.xml",
+    "skip_reason": "local .venv pyds unavailable; 5 real DeepStreamProcessor construction tests",
+    "gpu_or_field_validation": false
+  },
+  "specification_scenarios": {
+    "ids": [
+      "V01",
+      "V02",
+      "V03",
+      "V04",
+      "V05",
+      "V06",
+      "V07",
+      "V08",
+      "V09"
+    ],
+    "scope": "mix of existing regression, gap reproduction and pending acceptance; not 9 new automated tests"
+  },
+  "application_sources": {
+    "count": 204,
+    "sha256_unchanged": true
+  },
+  "quality": {
+    "ruff": "PASS",
+    "black": "PASS",
+    "py_compile": "PASS",
+    "selected_tracked_diff_check": "PASS",
+    "local_markdown_links": "PASS"
+  },
+  "online": {
+    "url": "http://192.168.2.242:18081/",
+    "http_status": 200,
+    "version": "0.29",
+    "wbs_id_status_match_count": 33,
+    "html_sha256": "2f3162ce109ade89675997991722cc97c390509afb89e6e76b54016d991df206",
+    "served_html_matches_local": true,
+    "pdf_http_status": 200,
+    "pdf_sha256": "79d8f77578b7e6d6e7b5a3862ff8779e4943fb3b5684cc81c84f01697f09ab93",
+    "served_pdf_matches_local": true,
+    "browser_screenshot": "progress_browser_v029_20260922.png",
+    "visual_check": "PASS: Firefox 1366x1800 Korean text/layout and generated report overview",
+    "filter_logic": "PASS: actual page JS in Node DOM model; all/READY(empty)/IN_PROGRESS(P5.1)/DONE/search/no-result/reset/refresh; not browser click automation",
+    "another_company_pc_connection": "not tested",
+    "automatic_background_sync": false
+  },
+  "deployment": {
+    "application_restart": false,
+    "inference_settings_changed": false,
+    "api_or_schema_changed": false,
+    "physical_device_commands": false,
+    "progress_page_regenerated": true
+  },
+  "next": "P5.1 model-specific runtime properties/completion instrumentation; I24 input window and later permitted runtime verification"
+}

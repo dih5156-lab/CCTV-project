@@ -1,0 +1,394 @@
+{
+  "checked_at": "2026-10-02T09:39:35.939733+09:00",
+  "scope": "read-only host and running AI container environment audit; no installation, power change, X ACL change or restart",
+  "host": {
+    "model": "NVIDIA Jetson AGX Orin Developer Kit",
+    "mem_total_kib": 64335704,
+    "l4t": "36.5.2-20260716114719",
+    "ubuntu": "22.04.5 LTS",
+    "cuda_nvcc_cudart": "12.6.68",
+    "tensorrt_package": "10.3.0.30-1+cuda12.5",
+    "cudnn_package": "9.3.0.75-1",
+    "nvidia_jetpack_meta_installed": false,
+    "deepstream_package": "7.1.0-1",
+    "deepstream_version_command_exit": 127,
+    "missing_library": "libgstrtspserver-1.0.so.0",
+    "apt_simulation": {
+      "new_packages": [
+        "gstreamer1.0-plugins-bad",
+        "libgstrtspserver-1.0-0"
+      ],
+      "upgrades": 0,
+      "removals": 0,
+      "executed_installation": false
+    },
+    "jetson_stats": "4.3.2",
+    "jtop_l4t_mapping_contains_36_5_2": false,
+    "power_mode": "MODE_30W",
+    "power_mode_id": 2,
+    "cpu_online": "0-7",
+    "cpu_offline": "8-11",
+    "cpu_max_khz": 1728000,
+    "gpu_max_hz": 612000000
+  },
+  "container": {
+    "name": "cctv-ai-engine",
+    "image": "sha256:1ace5b7832a50d6675b66146b0edc307021795732fc7c9a770e2cd628d7fd261",
+    "started_at": "2026-10-01T23:40:25.056684868Z",
+    "restart_count": 0,
+    "health": "healthy",
+    "nano_cpus": 0,
+    "cpu_quota": 0,
+    "memory_limit": 0,
+    "deepstream_version": "7.1.0",
+    "version_command_exit": 0,
+    "version_command_warnings": [
+      "X11 authorization required",
+      "Could not get EGL display connection"
+    ],
+    "cudnnGetVersion": 90300,
+    "cudnn_package": "9.3.0.75-1",
+    "cudnn_loaded_by_main": "/usr/lib/aarch64-linux-gnu/libcudnn.so.9.3.0",
+    "rtspserver_package": "1.20.1-1",
+    "main_deepstream_infer_library_loaded": true,
+    "uid": 0,
+    "DISPLAY": ":1",
+    "XAUTHORITY": null,
+    "root_xauthority_exists": false,
+    "mounted_x_sockets": [
+      "X1"
+    ]
+  },
+  "xserver": {
+    "access_control_enabled": true,
+    "authorized_local_users": [
+      "sawwave"
+    ],
+    "root_allowed": false,
+    "read_query": "DISPLAY=:1 XAUTHORITY=/run/user/1000/gdm/Xauthority xhost",
+    "acl_modified": false
+  },
+  "pipeline": {
+    "current_status": "repeated PLAYING transition failure",
+    "observed_log_times_utc": [
+      "2026-10-02 00:31:02",
+      "2026-10-02 00:31:12",
+      "2026-10-02 00:31:33"
+    ],
+    "signatures": [
+      "Authorization required, but no authorization protocol specified",
+      "nvbufsurface: Can't get EGL display",
+      "Failed to set buffer pool to active",
+      "파이프라인을 PLAYING 상태로 전환하는 데 실패했습니다.",
+      "AI 엔진 프로세스는 유지하고 10초 후 파이프라인만 재시작합니다."
+    ],
+    "likely_cause": "X11 access denied to container root without an authentication cookie",
+    "not_verified": [
+      "successful recovery after access fix",
+      "whether session restart cleared an earlier ACL",
+      "end-to-end frame processing",
+      "thermal or multi-camera performance"
+    ]
+  },
+  "official_sources": {
+    "jetpack_l4t_and_deepstream_support": "https://developer.nvidia.com/embedded/jetpack-sdk-623",
+    "egl_display_troubleshooting": "https://docs.nvidia.com/metropolis/deepstream/7.1/text/DS_troubleshooting.html#deepstream-plugins-failing-to-load-without-display-variable-set-when-launching-ds-dockers"
+  },
+  "next": "I43: restore the narrowly scoped X11 access for the existing root container and verify actual pipeline frames; investigate startup/session persistence and health reporting. No repair executed in this read-only audit.",
+  "publication": {
+    "checked_at": "2026-10-02T09:41:07.739628+09:00",
+    "assets": {
+      "index.html": {
+        "bytes": 23295,
+        "sha256": "308cdc1f2a36a3f351e7b55550ec2d19bb25cd163971285aad8c6971adb1902c",
+        "served_bytes_equal": true
+      },
+      "CCTV_project_progress.pdf": {
+        "bytes": 128189,
+        "sha256": "55276f254f7de485689a8be6c3fcb4d1a0d763ad2c2054344f154393fda15bce",
+        "served_bytes_equal": true
+      }
+    },
+    "ruff_exit": 0,
+    "renderer_exit": 0,
+    "wbs_status_changed": false,
+    "remote_browser_retested": false
+  },
+  "repair_followup": {
+    "recorded_at": "2026-10-02T09:57:07.617377+09:00",
+    "authorized_change": "DISPLAY=:1 XAUTHORITY=/run/user/1000/gdm/Xauthority xhost +SI:localuser:root",
+    "change_exit_code": 0,
+    "pipeline_started_log_at": "2026-10-02T09:43:42+09:00",
+    "fresh_stats_observation": {
+      "from": "2026-10-02T09:46:52+09:00",
+      "through": "2026-10-02T09:49:42+09:00",
+      "frames": 0,
+      "yolo_calls": 0,
+      "camera_count": 1
+    },
+    "health": {
+      "http_status": 200,
+      "status": "ok",
+      "service": "cctv-zone-api",
+      "camera_count": 1,
+      "checks_pipeline_progress": false
+    },
+    "camera": {
+      "ping_packet_loss_percent": 0,
+      "rtsp_options_status": 200,
+      "rtsp_describe_status": 200,
+      "video_rtpmap": "H264/90000",
+      "actual_rtp_decode_verified": false
+    },
+    "autostart": {
+      "unit": "cctv-jetson-stack.service",
+      "state": "failed",
+      "failure_at": "2026-10-01T17:33:47+09:00",
+      "error": "xhost unable to open display :1",
+      "precheck": "waits for socket and readable authority file, then attempts xhost once",
+      "failure_was_current_boot_time": false
+    },
+    "version_changes": false,
+    "package_installations": false,
+    "power_changes": false,
+    "container_or_service_restarts": false,
+    "product_code_changes": false,
+    "status": "I43 OPEN; X11 authorization recovery is partial, end-to-end frame processing not verified",
+    "next": "P5.1/I43 운영 안정화 우선: X11 권한 복구 후에도 처리 통계가 0인 입력→디코드→추론 경로를 확인한다. 실제 프레임 복구, 자동 시작의 인증 재시도·영상 상태 판정 보완, 연속 운전 검증 뒤 I32/I38 분석을 재개한다. SDK 일괄 교체는 진행하지 않는다.",
+    "publication": {
+      "checked_at": "2026-10-02T09:59:14.873849+09:00",
+      "assets": {
+        "index.html": {
+          "bytes": 23396,
+          "sha256": "1d8cb050b9549abf11f9f7eb9d90c6c26312800f8895ada421f04f733f5b2b4d",
+          "served_bytes_equal": true
+        },
+        "CCTV_project_progress.pdf": {
+          "bytes": 129272,
+          "sha256": "4adcd20feededdfe2d8e7ce3f26f8a7721bb3e167393c203d48022990838a4a6",
+          "served_bytes_equal": true
+        }
+      },
+      "ruff_exit": 0,
+      "renderer_exit": 0,
+      "source_files_hash_unchanged": 206,
+      "wbs_status_changed": false,
+      "browser_retested": false,
+      "initial_loopback_probe": "connection refused; verified using configured LAN binding"
+    }
+  },
+  "stabilization": {
+    "recorded_at": "2026-10-02T10:59:24.143800+09:00",
+    "host_installation": {
+      "performed_by": "user after sudo authentication requirement",
+      "installed": {
+        "libgstrtspserver-1.0-0": "1.20.1-1",
+        "gstreamer1.0-plugins-bad": "1.20.3-0ubuntu1.1"
+      },
+      "package_upgrades": 0,
+      "package_removals": 0,
+      "core_sdk_changed": false,
+      "repeat_dry_run": {
+        "new_packages": 0,
+        "upgrades": 0,
+        "removals": 0
+      }
+    },
+    "native_checks": {
+      "host": {
+        "passed": true,
+        "checks": 6
+      },
+      "container": {
+        "passed": true,
+        "checks": 6
+      },
+      "scope": "SDK7.1 executable load plus nvstreammux,nvinfer,nvtracker,nvv4l2decoder,nvvideoconvert; not all application functionality",
+      "host_sandbox_attempts": "5s/30s timeout, passed with real display/GPU access",
+      "container_path_resolution": "SDK mount path used when deepstream-app is not on PATH"
+    },
+    "camera_decode_probe": {
+      "duration_seconds": 10,
+      "decoded_frames": 257,
+      "bus_errors": 0
+    },
+    "operational_changes": [
+      "local-root-only X11 access",
+      "AI container restarted twice with same image",
+      "frame freshness health deployed through existing source mounts",
+      "systemd unit installed by user and daemon-reload confirmed"
+    ],
+    "health_rule": {
+      "backend": "deepstream",
+      "requires_running": true,
+      "requires_processed_frame": true,
+      "max_age_seconds": 30,
+      "failure_http_status": 503,
+      "scope": "whole pipeline, not per-camera quality or detector accuracy"
+    },
+    "systemd": {
+      "installed_matches_repository": true,
+      "enabled": true,
+      "need_daemon_reload": false,
+      "timeout_start_seconds": 300,
+      "prechecks": [
+        "bounded X11 authentication retry",
+        "host native SDK check"
+      ],
+      "postcheck": "container native SDK check",
+      "full_unit_restart_tested": false,
+      "reboot_tested": false
+    },
+    "frame_observation": {
+      "sample_count": 7,
+      "first": {
+        "index": 0,
+        "at": "2026-10-02T01:38:02.897173+00:00",
+        "exit": 0,
+        "http_status": 200,
+        "video_ready": true,
+        "status": "ok",
+        "cctv_processor_frames_processed_total": 6942.0,
+        "cctv_processor_frames_dropped_total": 0.0,
+        "cctv_processor_events_sent_total": 135.0,
+        "cctv_processor_events_failed_total": 0.0
+      },
+      "last": {
+        "index": 6,
+        "at": "2026-10-02T01:41:09.681037+00:00",
+        "exit": 0,
+        "http_status": 200,
+        "video_ready": true,
+        "status": "ok",
+        "cctv_processor_frames_processed_total": 12535.0,
+        "cctv_processor_frames_dropped_total": 0.0,
+        "cctv_processor_events_sent_total": 243.0,
+        "cctv_processor_events_failed_total": 0.0
+      },
+      "elapsed_seconds": 186.783864,
+      "processed_counter_increase": 5593.0,
+      "counter_per_second": 29.94370006179977,
+      "counters_monotonic": true,
+      "reported_frame_drops": 0,
+      "reported_event_failures": 0,
+      "samples": "data/runtime/p51_environment_stabilization_20261002/health_samples_verified.jsonl"
+    },
+    "container_after": {
+      "Status": "running",
+      "StartedAt": "2026-10-02T01:33:58.362007997Z",
+      "FinishedAt": "2026-10-02T01:33:57.89393094Z",
+      "OOMKilled": false,
+      "health": "healthy"
+    },
+    "product_source_changes": [
+      "src/core/deepstream_processor.py",
+      "src/services/zone_api.py"
+    ],
+    "tests": {
+      "initial_related": {
+        "passed": 176,
+        "skipped": 29
+      },
+      "real_http_zone_api": {
+        "passed": 42
+      },
+      "deployment_tools": {
+        "passed": 15
+      },
+      "lint": "PASS",
+      "shell_syntax": "PASS",
+      "systemd_verify": "exit0; unrelated host unit/inotify warnings",
+      "compose_correction": {
+        "production_config_changed": false,
+        "verification": "actual Compose config resolves both true and false through isolated env_file",
+        "source_text_assumption_removed": true,
+        "passed": 8
+      },
+      "full_suite_before_compose_correction": {
+        "passed": 2716,
+        "skipped": 52,
+        "failed": 1,
+        "failed_test": "tests/test_compose_stack.py::test_jetson_compose_wires_temporal_fall_shadow_runtime",
+        "finding": "stale source-text expectation; production env_file already forwards the variable; replacement validates resolved Compose environment"
+      },
+      "full_suite": {
+        "passed": 2717,
+        "skipped": 52,
+        "failed": 1,
+        "duration_seconds": 259.41,
+        "failed_test": "tests/test_monitoring_active_contention.py::test_video_and_sensor_intake_during_monitoring_writes",
+        "error": "sqlite3.OperationalError: database is locked",
+        "failure_location": "src/ingest_store.py:66 PRAGMA journal_mode",
+        "log": "data/runtime/p51_environment_stabilization_20261002/pytest_full_after_compose_correction.log",
+        "all_passed": false
+      },
+      "db_contention_followup": {
+        "issue": "I45",
+        "status": "OPEN",
+        "isolated_rerun_passed": 1,
+        "isolated_rerun_seconds": 6.02,
+        "source_unchanged_from_before_stabilization": [
+          "src/ingest_store.py",
+          "src/event_ingest_store.py",
+          "src/core/video_event_ingest.py",
+          "src/monitoring_service.py"
+        ],
+        "root_cause": "not established; keep failed full run, do not count isolated pass as resolution",
+        "runtime_database_failure_established": false
+      }
+    },
+    "remaining": [
+      "new-device installation rehearsal",
+      "reboot/session-change automatic recovery",
+      "long-duration/multiple-camera test",
+      "I32/I38 matching/temporal issues and I34 CUDA issue remain separate",
+      "I45 intermittent DB contention in full regression; isolated rerun passed but root cause unresolved"
+    ],
+    "runtime_logs": "data/runtime/p51_environment_stabilization_20261002/runtime_summary.log",
+    "publication": {
+      "checked_at": "2026-10-02T11:00:37.187912+09:00",
+      "assets": {
+        "index.html": {
+          "bytes": 23442,
+          "sha256": "90cd931926ba23d3432269d0367cb815c115d155f6d75322994e1624ddbe711d",
+          "served_bytes_equal": true
+        },
+        "CCTV_project_progress.pdf": {
+          "bytes": 127224,
+          "sha256": "af3ad9fb01fef9c02ede01bdc31d85fba5f79202d5145f159c877de92238cb14",
+          "served_bytes_equal": true
+        }
+      },
+      "version": "0.94",
+      "wbs_status_changed": false
+    }
+  },
+  "git_checkpoint_20261002": {
+    "scope": "Accumulated project source, tests, curated documentation and labels; credentials/runtime media/DB/model weights excluded",
+    "candidate_files": 785,
+    "source_snapshot_matches_staged_blobs": true,
+    "checks": {
+      "sensitive_defaults": "PASS",
+      "root_generated_files_in_candidate": "PASS",
+      "ruff": "PASS",
+      "pytest": {
+        "passed": 2737,
+        "skipped": 52,
+        "failed": 1,
+        "seconds": 232.66,
+        "failure": "tests/test_monitoring_active_contention.py::test_video_and_sensor_intake_during_monitoring_writes",
+        "error": "sqlite3.OperationalError: database is locked",
+        "issue": "I45 OPEN"
+      }
+    },
+    "validation_environment": {
+      "snapshot": "HEAD plus reviewed working-tree files",
+      "external_dependencies": "Existing local model artifacts, Rethinking_of_PAR and virtual environments linked only into validation copy",
+      "custom_tmp_path": "tmp_test_dirs fixture linked to project SSD; CLI basetemp alone is ignored by this fixture",
+      "sandbox_testclient": "A stalled sandbox API test passed outside sandbox; final suite ran with loopback access"
+    },
+    "raw_artifacts": "data/runtime/git_checkpoint_20261002",
+    "log_sha256": "04eac61cde842027fceadf3fa3780a3d90ae6dfeb9091152f52cade5875f8d17",
+    "operating_applied": false
+  }
+}
