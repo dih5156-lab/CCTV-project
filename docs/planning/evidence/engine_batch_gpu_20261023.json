@@ -1,0 +1,1861 @@
+{
+  "recorded_at": "2026-10-23T11:57:36+09:00",
+  "status": "BATCH_GPU_PASS_QUALITY_AND_APP_PENDING",
+  "worktree": "/home/sawwave/.codex/worktrees/multicamera-engine-batch/CCTV-project",
+  "base_commit": "fefa4ab04ee2ca26bbc0ee433381e4b7648265e7",
+  "result_commit": null,
+  "gpu_window": {
+    "start": "2026-10-23T11:38:24+09:00",
+    "deadline": "2026-10-23T11:53:24+09:00",
+    "released_at": "2026-10-23T11:51:15.128141+09:00"
+  },
+  "build": {
+    "elapsed_seconds": 52.13919783796882,
+    "returncode": 0,
+    "engine": "/home/sawwave/.codex/worktrees/multicamera-engine-batch/CCTV-project/data/runtime/engine_batch_20261023/yolov8n-pose-b1-4.engine",
+    "engine_bytes": 12850340,
+    "engine_sha256": "a9da4a16e1f9c15c8c905b2aefc05b611aae79fb9cb0ad52d2d01bd0bd975e38",
+    "onnx_sha256": "67ae9087ca8ed813f934660f5323842a96dc2e884e37547862061217b398ee9d",
+    "profile": [
+      [
+        1,
+        3,
+        640,
+        640
+      ],
+      [
+        4,
+        3,
+        640,
+        640
+      ],
+      [
+        4,
+        3,
+        640,
+        640
+      ]
+    ]
+  },
+  "reference_engine": {
+    "sha256": "cc6cd0ee490e4f2ae46acf853989cf8c8806aadab47853e39c1e97cdf6732a74",
+    "profile": [
+      [
+        1,
+        3,
+        640,
+        640
+      ],
+      [
+        1,
+        3,
+        640,
+        640
+      ],
+      [
+        1,
+        3,
+        640,
+        640
+      ]
+    ],
+    "batch1_supported": true,
+    "batch2_and_batch4_supported": false
+  },
+  "gpu_validation": {
+    "status": "PASS",
+    "scope": "raw Pose output on four distinct frames from one real video; not four cameras or full application",
+    "source_scene": "00610_H_D_SY_C5",
+    "source_video_sha256": "99c4ad21a1e03508575a64e9d0201c61d02ed669b7b7875c871525f0c1d52461",
+    "samples": [
+      {
+        "requested_seconds": 1,
+        "input_sha256": "58fc193f4352feed5399689e5fd15c54a64d77249028fc0f63985c07f70cc0bc"
+      },
+      {
+        "requested_seconds": 3,
+        "input_sha256": "d3262a5cd638e93bfa1096df29eb7f46b0692e06da862b72ff13617d9be649d9"
+      },
+      {
+        "requested_seconds": 5,
+        "input_sha256": "c8e5b422038967a48e7aaae3d19fd905a4167fa4210c26b23fb170ba720e3fcb"
+      },
+      {
+        "requested_seconds": 8,
+        "input_sha256": "6fb2bfebe72c7fb3b42a7ec78a378adf770144d5d7409488b4b1f337f07becf8"
+      }
+    ],
+    "actual_inference_batches": [
+      1,
+      2,
+      4
+    ],
+    "candidate_batch1_vs_batched": {
+      "2": {
+        "shape": [
+          4,
+          56,
+          8400
+        ],
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "p99_abs": 0.0,
+        "person_score_max_abs": 0.0,
+        "foreground_proposals": 27,
+        "foreground_max_abs": 0.0,
+        "numerically_close": true,
+        "tolerance": {
+          "atol": 0.001,
+          "rtol": 0.001
+        }
+      },
+      "4": {
+        "shape": [
+          4,
+          56,
+          8400
+        ],
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "p99_abs": 0.0,
+        "person_score_max_abs": 0.0,
+        "foreground_proposals": 27,
+        "foreground_max_abs": 0.0,
+        "numerically_close": true,
+        "tolerance": {
+          "atol": 0.001,
+          "rtol": 0.001
+        }
+      }
+    },
+    "reference_vs_candidate_batch1": {
+      "shape": [
+        4,
+        56,
+        8400
+      ],
+      "max_abs": 5.75,
+      "mean_abs": 0.04378552400299544,
+      "p99_abs": 0.5,
+      "person_score_max_abs": 0.008678615093231201,
+      "foreground_proposals": 27,
+      "foreground_max_abs": 0.25,
+      "numerically_close": false,
+      "tolerance": {
+        "atol": 0.001,
+        "rtol": 0.001
+      }
+    },
+    "batch5_rejected": true,
+    "quality_acceptance": "NOT_EVALUATED"
+  },
+  "operating_preservation": {
+    "source_hashes_unchanged_reported": {
+      "/media/sawwave/Learning11/CCTV-project/models/fall/yolov8n-pose.engine": true,
+      "/media/sawwave/Learning11/CCTV-project/models/fall/yolov8n-pose.onnx": true,
+      "/media/sawwave/Learning11/CCTV-project/config/deepstream/config_infer_primary.txt": true
+    },
+    "current_source_sha256": {
+      "models/fall/yolov8n-pose.engine": "cc6cd0ee490e4f2ae46acf853989cf8c8806aadab47853e39c1e97cdf6732a74",
+      "models/fall/yolov8n-pose.onnx": "67ae9087ca8ed813f934660f5323842a96dc2e884e37547862061217b398ee9d",
+      "config/deepstream/config_infer_primary.txt": "277ab2e76c826804b82fa7c56b9e8edc4a59037fbfe01c23b014c3263e2fa2ae"
+    },
+    "observed_container_identity_unchanged": true,
+    "observed_errors_restarts_drops_delta_zero": true,
+    "build_observation_count": 6,
+    "operating_engine_replaced": false,
+    "production_config_changed": false,
+    "current_engine_onnx_config_hashes_match_baseline": true
+  },
+  "cleanup": {
+    "validation_container_removed_recorded": true,
+    "trial_containers_and_trtexec_validation_processes_zero": "WORKER_RELEASE_REPORT",
+    "release_report_received": true,
+    "trial_processes_remaining": 0,
+    "trial_containers_remaining": 0
+  },
+  "earlier_attempts": [
+    {
+      "attempt": 1,
+      "returncode": 125,
+      "cause_reported": "read-only nested mount prevented validation container startup"
+    },
+    {
+      "attempt": 2,
+      "returncode": 1,
+      "cause_reported": "input-diversity assertion failed on repeated frames; raw comparison artifact retained"
+    }
+  ],
+  "regression_tests": {
+    "passed": 77,
+    "ruff": "PASS",
+    "scope": "earlier integrated preflight CPU tests; not rerun for documentation-only update"
+  },
+  "remaining": [
+    "labeled fall/normal accuracy and alarm timing comparison",
+    "shared application batch2/batch4 metadata, order and preview path",
+    "multi-channel latency, throughput, temperature and memory measurements",
+    "deployment approval and operating engine replacement"
+  ],
+  "raw_evidence_sha256": {
+    "batch4_build_result.json": "b185789a31a8933dc3d7a3652edac89222d9dd0b0042ce47bebcd9a24d914c92",
+    "batch4_build_observation.json": "8604e02551c3e2a284948f5675b9ebf0ecd531592933a73c7629483c407e10d3",
+    "batch4_profile_checks.json": "a9f9ca90c4b346bda0508c5c43d36d97d7ba942342cdb9776e0a19366f3590d9",
+    "batch4_distinct_tensor_comparison.json": "0f9cadaa69f9496a5875825940183a025f59d550484909b0120568911cc42589",
+    "batch4_validation_run.json": "c5b69bf3e9a23c7ca98aa001319a8004bd505ce91e901a6c8812d73790107324",
+    "batch4_validation_attempt2_run.json": "357100250dbe4c64de115686e2fb63348205852ed656e893f822c177e06f35cb",
+    "batch4_validation_attempt3_run.json": "735b13343a9fffae467e10f8649fe43ebe187f3e3fffd0c3a7e8eb28de134c21",
+    "batch4_tensor_comparison.json": "b28c6c76ffbdf8cb60ffc06161384e84416db405f87fea1ce9f9f562bc4fc108",
+    "gpu_validation_baseline.json": "eb857379f489f26ddb1b28df3ffe79669bad8bfcbd8601739883bc4026e45780",
+    "batch4_candidate.json": "e1742aa9845d7b55afa20a6937d7821cfa461e979d9a244ececc3c814694f174"
+  },
+  "raw_evidence_backup": "/media/sawwave/Learning11/CCTV-project/data/runtime/engine_batch_gpu_record_20261023_pombun71/raw",
+  "final_manifest": {
+    "state": "BUILT_BATCH_VALIDATED_NOT_DEPLOYED",
+    "status": "PASS_BATCH_1_2_4_QUALITY_NOT_EVALUATED",
+    "operating_engine_replaced": false
+  },
+  "quality_four_input_followup_1329": {
+    "recorded_at": "2026-10-23T13:38:27+09:00",
+    "status": "RETURNED_PREFLIGHT_GUARD_STOP",
+    "reason": "operating_throughput",
+    "slot_start": "2026-10-23T13:29:00+09:00",
+    "slot_end": "2026-10-23T13:44:00+09:00",
+    "started_at": "2026-10-23T13:29:29.251478+09:00",
+    "finished_at": "2026-10-23T13:29:34.705085+09:00",
+    "planned_preflight_seconds": 30,
+    "observed_seconds": 5.022897759999978,
+    "frames_before": 27480.0,
+    "frames_after": 27606.0,
+    "frames_delta": 126.0,
+    "primary_before": 13741.0,
+    "primary_after": 13804.0,
+    "primary_delta": 63.0,
+    "fps": 25.085121382203994,
+    "primary_hz": 12.542560691101997,
+    "memory_available_gib": 36.70134735107422,
+    "temperature_max_c": 55.062,
+    "frame_age_seconds": 0.07522267600006671,
+    "error_drop_restart_deltas": {
+      "cctv_processor_source_error_identified_total": 0.0,
+      "cctv_processor_source_error_unidentified_total": 0.0,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_processor_frames_dropped_total": 0.0
+    },
+    "preflight_pass": false,
+    "gpu_trials_executed": 0,
+    "video_conversions": 0,
+    "planned_runs": 9,
+    "runs_not_run": 9,
+    "per_camera_results_not_run": 12,
+    "quality_acceptance": "NOT_EVALUATED",
+    "four_input_performance": "NOT_RUN",
+    "physical_four_cameras": "NOT_CONNECTED",
+    "cleanup": {
+      "trial_containers_remaining": [],
+      "runner_exit_code_reported": 1,
+      "release_report_received": true,
+      "released_at": null,
+      "release_timestamp_note": "담당의 현재 시점 반환 보고 수신. 정확한 반환 시각은 미기재이며 실행 종료 시각과 구분한다.",
+      "cleanup_confirmed_at": "2026-10-23T13:29:34.705085+09:00",
+      "return_notice_receipt_id_reported": "01a16707-586c-7cd1-8c94-81232d248360"
+    },
+    "operating_preservation": {
+      "before": [
+        "c6aac881db6d7beb390b23a34b974338c7a6aed996caa7636c2b9b130f766e0c",
+        "sha256:ccbfe02abcbffe212c3ca09a2d08dd09983ee20fcfd7bf7b1ae7cda52a76cfe5",
+        "2026-10-23T04:04:48.011112903Z",
+        "0"
+      ],
+      "after": [
+        "c6aac881db6d7beb390b23a34b974338c7a6aed996caa7636c2b9b130f766e0c",
+        "sha256:ccbfe02abcbffe212c3ca09a2d08dd09983ee20fcfd7bf7b1ae7cda52a76cfe5",
+        "2026-10-23T04:04:48.011112903Z",
+        "0"
+      ],
+      "container_unchanged_within_this_attempt": true,
+      "fixed_files_unchanged": true,
+      "scope": "이번 실행 전후 동일. 이전 시험 이후 연속 동일 상태였다는 의미는 아니다."
+    },
+    "automatic_retry": false,
+    "remaining_slot_returned": true,
+    "new_allocation": false,
+    "performance_cause": "UNDETERMINED",
+    "next_requires": [
+      "operating performance recovery confirmed",
+      "new explicit allocation",
+      "fresh operating preflight PASS"
+    ],
+    "source_directory": "/home/sawwave/.codex/worktrees/multicamera-engine-batch/CCTV-project/data/runtime/engine_quality_four_input_20261023",
+    "raw_evidence_sha256": {
+      "run.json": "cae28931b0c7e56289133e97596c76f3a304bd60981bdc9b4642ec940927f673",
+      "operating_samples.json": "4316263e9a749f89a327b4ac97ccf63678c4b170bae683c6849625ee613a1874",
+      "plan.json": "8f3261b60ebbf25251b9e271697bb9104888a59bf53dc6dd2fae700c8e1550e6",
+      "preparation_checks.json": "c3182788b8940ecb12ac4a5d1661ab0adca93dacdff37dbb52d4ebc0f54f71a2",
+      "comparison.json": "e7f64170a5a507ba74ab40d303754693454d0bd72ecd314ac90a158deb5d5e1c"
+    },
+    "raw_evidence_backup": "data/runtime/engine_quality_record_20261023_20bzh6d1/raw",
+    "same_window_reconfirmation": {
+      "recorded_at": "2026-10-23T13:42:40+09:00",
+      "same_reservation_reconfirmed": true,
+      "slot_start": "2026-10-23T13:29:00+09:00",
+      "slot_end": "2026-10-23T13:44:00+09:00",
+      "cleanup_confirmed_at": "2026-10-23T13:29:34.705085+09:00",
+      "return_notice_receipt_id_reported": "01a16707-586c-7cd1-8c94-81232d248360",
+      "new_trial_started": false,
+      "automatic_retry": false,
+      "source": "담당의 직접 재확인 메시지 및 기존 run.json 대조; 접수 ID는 담당 보고"
+    }
+  },
+  "operating_fps_diagnosis_1345": {
+    "recorded_at": "2026-10-23T13:53:50+09:00",
+    "source_owner": "01a160c8-885d-77d3-90ba-02c9528e9ad7",
+    "finding": "CPU scheduling contention; seven concurrent indexing workers are the dominant observed competing workload",
+    "confidence": "strong observational evidence, not controlled isolation or exclusive causal attribution",
+    "slow_intervals": [
+      {
+        "from": "2026-10-23T13:40:23.106271+09:00",
+        "to": "2026-10-23T13:40:44.331508+09:00",
+        "seconds": 13.860852660000091,
+        "fps": 17.603534644310862,
+        "cpu_busy_percent": 99.95288574793875,
+        "index_workers": 7,
+        "index_worker_core_equivalents": 3.9364
+      },
+      {
+        "from": "2026-10-23T13:40:44.331508+09:00",
+        "to": "2026-10-23T13:40:57.235475+09:00",
+        "seconds": 13.071262835499965,
+        "fps": 17.213333006274443,
+        "cpu_busy_percent": 99.99042145593869,
+        "index_workers": 7,
+        "index_worker_core_equivalents": 5.1117
+      },
+      {
+        "from": "2026-10-23T13:40:57.235475+09:00",
+        "to": "2026-10-23T13:41:10.196089+09:00",
+        "seconds": 15.694223192499976,
+        "fps": 16.56660522862004,
+        "cpu_busy_percent": 99.84408497368933,
+        "index_workers": 7,
+        "index_worker_core_equivalents": 5.072299999999999
+      }
+    ],
+    "recovery_intervals": [
+      {
+        "from": "2026-10-23T13:44:51.910738+09:00",
+        "to": "2026-10-23T13:45:02.011917+09:00",
+        "seconds": 10.099846458999764,
+        "fps": 29.80243325697146,
+        "cpu_busy_percent": 54.27217163527504
+      },
+      {
+        "from": "2026-10-23T13:45:02.011917+09:00",
+        "to": "2026-10-23T13:45:12.111911+09:00",
+        "seconds": 10.09599904400011,
+        "fps": 30.11093787500528,
+        "cpu_busy_percent": 48.90438247011952
+      },
+      {
+        "from": "2026-10-23T13:45:12.111911+09:00",
+        "to": "2026-10-23T13:45:22.203907+09:00",
+        "seconds": 10.091709412,
+        "fps": 30.123736979437314,
+        "cpu_busy_percent": 46.970074812967574
+      }
+    ],
+    "recovery": {
+      "from": "2026-10-23T13:44:51.910738+09:00",
+      "to": "2026-10-23T13:45:22.203907+09:00",
+      "seconds": 30.287554914999873,
+      "fps": 30.012326929362626,
+      "frames_before": 50229.0,
+      "frames_after": 51138.0,
+      "index_worker_counts": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "error_restart_drop_deltas": {
+        "cctv_processor_frames_dropped_total": 0.0,
+        "cctv_processor_source_error_identified_total": 0.0,
+        "cctv_processor_source_error_unidentified_total": 0.0,
+        "cctv_processor_pipeline_restart_requested_total": 0.0,
+        "cctv_processor_pipeline_restart_rejected_total": 0.0,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_processor_pipeline_restart_failed_total": 0.0,
+        "cctv_processor_pipeline_restart_seconds_total": 0.0
+      },
+      "primary_hz_measured": false,
+      "long_term_stability_validated": false,
+      "gpu_start_authorized": false
+    },
+    "host_boot_kst": "2026-10-23T13:03:28+09:00",
+    "operating_container_started_kst": "2026-10-23T13:04:48.011112903+09:00",
+    "reboot_cause": "UNDETERMINED",
+    "power_mode_observed": "MODE_30W (2), CPUs 0-7 online; unchanged by this task",
+    "memory_available_gib_range": [
+      33.823890686035156,
+      37.04405212402344
+    ],
+    "cpu_temperature_range": [
+      55.156,
+      55.343
+    ],
+    "limitations": [
+      "No controlled index pause/resume comparison",
+      "GPU load is four instantaneous readings, not continuous utilization",
+      "No new CCTV/RTSP connection; network cause not fully excluded",
+      "Reboot cause, power-mode history and individual chat ownership of index workers not determined",
+      "30-second recovery is not a long-term stability guarantee"
+    ],
+    "production_changes": false,
+    "process_signals_sent": false,
+    "new_inference_or_capture": false,
+    "raw_source_directory": "/home/sawwave/.codex/worktrees/edge-auto-failback/CCTV-project/edge-auto-failback-trial",
+    "raw_evidence_backup": "data/runtime/engine_quality_record_20261023_20bzh6d1/operating_fps_diagnosis_6m2tnywq/raw",
+    "raw_evidence_sha256": {
+      "operating-fps-diagnosis-20261023.json": "3ccf9eea338f14e864887d806e70c1875bb275936f9d453b3bdd986a5847e33f",
+      "operating-fps-log-excerpts-20261023.json": "a3dbb1cfd86198f5e28c1e13f6fb21957abf3e40abe6744607f6c792cde95438",
+      "HANDOFF.md": "113e4ce8582adde695a4d85dd6a7535c82a58910f4b394db26a7275fbb6bc9c4"
+    },
+    "counter_rates_recomputed": true
+  },
+  "development_tool_coordination": {
+    "updated_at": "2026-10-23T14:38:50.793506+09:00",
+    "development_tool_change_owner": "01a160c8-885d-77d3-90ba-02c9528e9ad7",
+    "owner_worktree": "/home/sawwave/.codex/worktrees/edge-auto-failback/CCTV-project",
+    "scope": "codebase-memory-mcp duplicate indexing launch/watcher/lock/concurrency; minimal user development launcher/config changes if needed",
+    "phase": "INDEXING_FIX_COMPLETE_NEW_OPERATING_DROP_GPU_UNALLOCATED",
+    "exact_shared_write_paths": [
+      "/home/sawwave/.cache/codebase-memory-mcp/_config.db",
+      "/home/sawwave/.codex/config.toml",
+      "/home/sawwave/.local/bin/cctv-code-index"
+    ],
+    "other_assigned_shared_config_writers": [],
+    "operating_readonly_observation_owner": null,
+    "roi_scope": "own runner/mock tests/handoff only; record guard raw FPS/Hz/memory/temperature; preserve frozen verification and pilot evidence; no device work or reindex request",
+    "integration_scope": "common records and existing evidence review only; no duplicate host collection",
+    "gpu_allocation_active": false,
+    "requires_before_new_gpu_slot": [
+      "A/B development tool change/validation impact settled",
+      "engine fresh operating recovery evidence including Primary Hz",
+      "explicit new integration allocation",
+      "fresh operating preflight PASS within new slot"
+    ],
+    "production_or_other_chat_interruptions_allowed": false,
+    "queue_notices": {
+      "diagnosis_to_engine": {
+        "id": "01a16716-7a26-78a1-b287-98c43fe9daf5",
+        "registered": true,
+        "delivery_confirmed": true,
+        "acknowledged_public_commentary_at": "2026-10-23T13:49:09.001+09:00"
+      },
+      "owner_to_ab": {
+        "id": "01a16719-18df-7a80-b7bb-6bba44300325",
+        "registered": true,
+        "delivery_confirmed": false
+      },
+      "owner_to_engine": {
+        "id": "01a16719-1b62-7a23-917e-28d750f90b70",
+        "registered": true,
+        "delivery_confirmed": true,
+        "acknowledged_public_commentary_at": "2026-10-23T13:52:54.341+09:00"
+      }
+    },
+    "engine_recovery_report": {
+      "summary": {
+        "started_at": "2026-10-23T13:48:11.814914+09:00",
+        "ended_at": "2026-10-23T13:48:41.834021+09:00",
+        "seconds": 30.02398877600035,
+        "frames_before": 56160.0,
+        "frames_after": 57060.0,
+        "inferred_before": 28081.0,
+        "inferred_after": 28531.0,
+        "fps": 29.976030390719245,
+        "hz": 14.988015195359623,
+        "min_mem_available_gib": 41.208351135253906,
+        "max_temperature_c": 53.875,
+        "max_frame_age_seconds": 0.016679410000051575,
+        "error_restart_drop_deltas": {
+          "cctv_processor_frames_dropped_total": 0.0,
+          "cctv_processor_source_error_identified_total": 0.0,
+          "cctv_processor_source_error_unidentified_total": 0.0,
+          "cctv_processor_pipeline_restart_requested_total": 0.0,
+          "cctv_processor_pipeline_restart_rejected_total": 0.0,
+          "cctv_processor_pipeline_restart_executed_total": 0.0,
+          "cctv_processor_pipeline_restart_failed_total": 0.0,
+          "cctv_processor_pipeline_restart_seconds_total": 0.0
+        },
+        "operating_cpu_quota": "unlimited",
+        "cpu_throttled_delta": 0,
+        "gpu_started": false,
+        "operating_changes": false,
+        "cause_assessment": "CPU_CONTENTION_PRIMARY_SUSPECT_FROM_AB_REPORT_NOT_EXCLUSIVE_CAUSE",
+        "sustained_recovery_scope": "30_SECONDS_ONLY"
+      },
+      "recomputed_intervals": [
+        {
+          "seconds": 5.004970198000137,
+          "fps": 29.970208426003477,
+          "hz": 14.985104213001739
+        },
+        {
+          "seconds": 5.003020289000233,
+          "fps": 29.981889205965004,
+          "hz": 14.990944602982502
+        },
+        {
+          "seconds": 5.004384382999888,
+          "fps": 29.9737167491683,
+          "hz": 14.98685837458415
+        },
+        {
+          "seconds": 5.003622630999871,
+          "fps": 29.978279950745524,
+          "hz": 14.989139975372762
+        },
+        {
+          "seconds": 5.003985104000094,
+          "fps": 29.976108418087165,
+          "hz": 14.988054209043582
+        },
+        {
+          "seconds": 5.004006171000128,
+          "fps": 29.975982217867685,
+          "hz": 14.987991108933842
+        }
+      ],
+      "raw_verified": true,
+      "long_term_stability": false,
+      "source": "/home/sawwave/.codex/worktrees/multicamera-engine-batch/CCTV-project/data/runtime/engine_quality_four_input_20261023/diagnosis_134811"
+    },
+    "roi_latest_report": {
+      "recorded_at": "2026-10-23T14:14:40+09:00",
+      "worktree": "/home/sawwave/.codex/worktrees/two-camera-baseline/CCTV-project",
+      "base_commit": "fefa4ab04ee2ca26bbc0ee433381e4b7648265e7",
+      "result_commit": null,
+      "status": "WORKER_GUARD_FIX_DELIVERED_MOCK_PASS_HARDWARE_NOT_RUN",
+      "changes": [
+        "scripts/ops/run_two_camera_cadence.py",
+        "tests/test_two_camera_cadence.py",
+        "docs/planning/TWO_CAMERA_BASELINE_HANDOFF_20261023.md",
+        "docs/planning/evidence/two_camera_cadence_20261023.json"
+      ],
+      "source_hashes": {
+        "scripts/ops/run_two_camera_cadence.py": "fe7e49939d8140e147eeb8b3a18ad0c59e4b7eb96a908ee491d70dcce62412e1",
+        "tests/test_two_camera_cadence.py": "f7c910748ad3c090ca288800fb55980cb150789672ac4c702cc892b958f2e34d"
+      },
+      "handoff_evidence_sha256": {
+        "scripts/ops/run_two_camera_cadence.py": "fe7e49939d8140e147eeb8b3a18ad0c59e4b7eb96a908ee491d70dcce62412e1",
+        "tests/test_two_camera_cadence.py": "f7c910748ad3c090ca288800fb55980cb150789672ac4c702cc892b958f2e34d",
+        "docs/planning/TWO_CAMERA_BASELINE_HANDOFF_20261023.md": "aa22c5802afea9951cb2b9d4d06844df3a8f3b3816d9a39509946a0aa6e619de",
+        "docs/planning/evidence/two_camera_cadence_20261023.json": "17307c10d690af2768a0545e191137e9883f318cd420fec044fceb2574da3204"
+      },
+      "worker_validation": {
+        "pytest_passed": 31,
+        "new_cases": 8,
+        "ruff": "PASS",
+        "rerun_by_integrator": false
+      },
+      "checks": {
+        "worker_source_hashes_match": true,
+        "frozen_verification_3_hashes_match_plan": true,
+        "base_commit_matches": true,
+        "worker_index_no_staged_changes": true,
+        "root_index_unchanged": true
+      },
+      "frozen_verification_sha256": {
+        "verification/run_two_camera_cadence.py": "888ee6e717e836f905f5d1d418c2025ba04076a1af09f8b6ddfe35d191eb55d5",
+        "verification/capture_fall_cadence.py": "a06485af9d172988c06f1c33979dcb22cd7918e2092c91f29ac64aeadd6d3a6c",
+        "verification/two_camera_cadence.py": "a7b32e99aec01d7acb74fffb6d42436d29888019bfc356d54f2321e9680b3f4a"
+      },
+      "historic_pilot_failure_window": "NOT_RECORDED_NOT_RECOVERABLE",
+      "new_runtime_package_prepared": false,
+      "new_hardware_test": false,
+      "operating_changes": false,
+      "gpu_allocation": false,
+      "p62_status": "PLANNED",
+      "quality_and_two_camera_performance": "NOT_EVALUATED",
+      "shared_document_update": "RECORDED_BY_INTEGRATOR",
+      "source_integration": "NOT_APPLIED",
+      "source_review": "NOT_REVIEWED_BY_INTEGRATOR; metadata and fixed hashes verified",
+      "next": [
+        "separate new runtime package",
+        "explicit new device slot",
+        "fresh operating identity and preflight PASS"
+      ],
+      "recorded_in_common_at": "2026-10-23T14:38:50.793506+09:00"
+    },
+    "last_completed_readonly_observation_owner": "01a1664c-5d6a-7ea2-a22e-04e379c47d30",
+    "rtsp_diagnosis_followup": {
+      "recorded_at": "2026-10-23T14:52:31.315832+09:00",
+      "request": "new user request delegated to A/B for operating FPS decline and RTSP input failure analysis",
+      "evidence_and_source_analysis_owner": "01a160c8-885d-77d3-90ba-02c9528e9ad7",
+      "evidence_owner": "01a1664c-5d6a-7ea2-a22e-04e379c47d30",
+      "engine_own_active_diagnostics_reported": 0,
+      "engine_own_planned_live_checks_reported": 0,
+      "engine_public_ack_at": "2026-10-23T14:51:11.069+09:00",
+      "engine_report_scope": "own work status, not a new host-wide inspection",
+      "additional_live_check_owner": null,
+      "additional_live_check_authorized": false,
+      "analysis_scope": [
+        "existing evidence and logs",
+        "relevant source flow",
+        "chronological correlation and missing evidence identification"
+      ],
+      "prohibited_actions": [
+        "operating/other-chat changes",
+        "restarts",
+        "new RTSP connections",
+        "video collection",
+        "load tests",
+        "indexing"
+      ],
+      "existing_work_interrupt_requested": false,
+      "ab_failback_three_files_remain_frozen": true,
+      "common_document_writer": "01a1661c-05e7-7112-a4d3-a8de0930f0ef",
+      "latest_engine_summary_at": "2026-10-23T14:42:20.058263+09:00",
+      "existing_evidence_sha256": {
+        "/home/sawwave/.codex/worktrees/multicamera-engine-batch/CCTV-project/data/runtime/engine_quality_four_input_20261023_attempt2/post_return_diagnosis/summary.json": "9f511f14fc5a91012208e850049cdad06f74f7f0976bdce1f65bcc9e8c19a2d4",
+        "/home/sawwave/.codex/worktrees/multicamera-engine-batch/CCTV-project/data/runtime/engine_quality_four_input_20261023_attempt2/post_return_diagnosis/resources_and_metrics.json": "79cf06b50a1ca3ca83d67d3cc1695f62b9be03bd07d6a68d4c2dd4156619fb3c",
+        "/home/sawwave/.codex/worktrees/multicamera-engine-batch/CCTV-project/data/runtime/engine_quality_four_input_20261023_attempt2/post_return_diagnosis/filtered_operating_logs.json": "05d39befb1b02b98caa79978364c0550c5bf8f4b68f44513ffa44c2cf23e658d",
+        "/home/sawwave/.codex/worktrees/multicamera-engine-batch/CCTV-project/data/runtime/engine_quality_four_input_20261023_attempt2/post_return_diagnosis/rtsp_error_context.json": "c01bd1f7d0e698764326daf9c8dd153c63019ab4a315d53a7543dd9377615aaf",
+        "/home/sawwave/.codex/worktrees/multicamera-engine-batch/CCTV-project/data/runtime/engine_quality_four_input_20261023_attempt2/post_return_diagnosis/prometheus_existing_history.json": "962a621a96eaabc0086c65d84a4a49b9a1935b66d9d281323d1aafa7669cf162",
+        "/home/sawwave/.codex/worktrees/multicamera-engine-batch/CCTV-project/data/runtime/engine_quality_four_input_20261023_attempt2/post_return_diagnosis/passive_network_path.json": "b9d7794921ba64a15259e235a3d76e189c88354d30f58bac4f5dd8b93736d3d1",
+        "/home/sawwave/.codex/worktrees/multicamera-engine-batch/CCTV-project/data/runtime/engine_quality_four_input_20261023_attempt2/post_return_diagnosis/passive_socket_state.json": "2d91f366bef6090adc1f45cc5335755fd3d117bd9e77189b7d6b4f260f4800e2"
+      },
+      "uncertainties": [
+        "same cause for 14:25 slow throughput and 14:34+ EOS/RTSP failure",
+        "camera RTSP service/session versus path cause",
+        "host reboot cause and specific chat attribution"
+      ],
+      "next_live_check_rule": "agree owner, missing metric, bounded read-only method and time first; only one owner runs it",
+      "bounded_existing_data_query": {
+        "assigned_at": "2026-10-23T14:54:48.107966+09:00",
+        "owner": "01a160c8-885d-77d3-90ba-02c9528e9ad7",
+        "operating_logs": {
+          "time_from": "2026-10-23T14:20:00+09:00",
+          "time_to": "2026-10-23T14:35:00+09:00",
+          "reads": 1,
+          "timeout_seconds": 30
+        },
+        "existing_prometheus": {
+          "scope": "presence of already retained CPU/network metrics for the same window only",
+          "max_queries": 2,
+          "timeout_seconds_each": 15
+        },
+        "automatic_retry": false,
+        "new_host_sampling": false,
+        "fresh_camera_or_network_probe": false,
+        "integrator_or_engine_duplicate_queries": false,
+        "status": "COMPLETED_OWNER_REPORTED"
+      },
+      "camera_offload_history": {
+        "latest_public_reply_at": "2026-10-23T14:51:54.824+09:00",
+        "reported_operating_device_shared_tool_changes": false,
+        "specific_post_1420_connection_change_timeline_reply": "OWNER_ACTIVITY_AUDIT_RECEIVED",
+        "source": "/home/sawwave/.codex/worktrees/camera-offload/CCTV-project/camera-offload-trial/verification.json",
+        "prior_request_already_queued": true,
+        "owner_audit_recorded_at": "2026-10-23T06:03:49.569227+00:00",
+        "operating_rtsp_or_settings_change_in_own_record": "NONE_FOUND",
+        "historical_cpu_mock_tests_present": true,
+        "causality": "UNDETERMINED"
+      },
+      "passive_link_followup": {
+        "status": "COMPLETED_OWNER_REPORTED",
+        "owner": "01a160c8-885d-77d3-90ba-02c9528e9ad7",
+        "kernel_window": [
+          "14:15",
+          "14:45"
+        ],
+        "route_neighbor_reads": "one pass",
+        "raw_source": "/home/sawwave/.codex/worktrees/edge-auto-failback/CCTV-project/edge-auto-failback-trial/fps-rtsp-followup-20261023.json",
+        "additional_queries_reserved": false,
+        "earlier_log_query_matching_rows": 0,
+        "log_gap_reason": "UNKNOWN"
+      },
+      "latest_result": {
+        "recorded_at": "2026-10-23T15:07:11.253453+09:00",
+        "source": "/home/sawwave/.codex/worktrees/edge-auto-failback/CCTV-project/edge-auto-failback-trial/fps-rtsp-followup-20261023.json",
+        "source_sha256": "66f60b8e1ac243e2f681ccc7c1477ce9905860c4011e1de0679bcca8a4e5fc36",
+        "raw_backup": "data/runtime/link_recovery_integration_l_wsfskb",
+        "findings": {
+          "status": "RTSP_INTERRUPTION_LINK_DOWN_CAUSE_IDENTIFIED_INPUT_RECOVERED_EARLIER_SLOWDOWN_UNRESOLVED",
+          "recorded_at": "2026-10-23T15:00:02.015807+09:00",
+          "physical_change_user_report": "PoE 스위치에 Jetson 보드·CCTV1대·미니PC 연결",
+          "link_down": "2026-10-23T14:34:25+09:00",
+          "link_up": "2026-10-23T14:37:44+09:00",
+          "link_down_seconds": 199.0,
+          "causal_assessment": "A eno1 물리적 링크 단절이 EOS와 두 RTSP SDP 시간초과를 설명하는 직접 네트워크 원인. 사용자 스위치 배선 변경 보고와 부합하며 PoE 전원 재부팅 여부까지는 미확인.",
+          "first_recovery_counter_evaluation": "2026-10-23T14:38:00+09:00",
+          "automatic_recovery": "기존 운영 자체 파이프라인 복구 흐름과 부합. A/B 수동 재시작/설정 변경0. 컨테이너ID/시작시각/재시작횟수0 불변.",
+          "stored_metrics_last_five_minutes": {
+            "from": "2026-10-23T14:53:00+09:00",
+            "to": "2026-10-23T14:58:00+09:00",
+            "seconds": 300,
+            "fps": 29.30666666666667,
+            "primary_hz": 14.65
+          },
+          "last_30_second_fps": 27.2,
+          "last_30_second_primary_hz": 13.566666666666666,
+          "last_primary_age_seconds": 0.013319310000042606,
+          "source_failure_count_last": 2.0,
+          "pipeline_restart_failed_last": 2.0,
+          "earlier_slowdown": "14:22~14:28 4~10FPS 저하는14:34:25단절보다 먼저 시작했으며14:29~34회복. 동일원인 단정불가;14:25 index-worker0 근거는 유지.",
+          "limits": [
+            "Prometheus 30초 평가 차분이며 실제 scrape 시각과 다를 수 있음; 새 운영 사전점검 합격/장기 안정 판정 아님",
+            "14:25 호스트 CPU/GPU/카메라 전송률 과거 지표가 저장돼 있지 않아 추가 원인 확정 불가",
+            "기존 로그 범위 조회0건; 보존된 엔진 로그를 사용하며 로그 회수 공백의 이유는 미확인",
+            "다른 담당의 사용자 연결 변경 이력은 담당자 보고 기준",
+            "Jetson A 연결은 사용자 확인. 미니PC 유선IP/PoE 전원 전환 세부는 미확인; IP 중복을 확인하거나 배제하지 않았다."
+          ],
+          "actions_not_taken": [
+            "운영/AP/네트워크/모델 설정 변경",
+            "컨테이너·프로세스 중지/재시작",
+            "새 RTSP·카메라 관리 접속",
+            "ping·ARP탐색·패킷캡처",
+            "GPU/CPU 부하 시험",
+            "MCP reload·인덱싱"
+          ],
+          "source_checks": {
+            "postprocess_max_preexisting_ms": 7869.646,
+            "avg_inference_metric_is_postprocess_alias": true,
+            "postprocess_timing_is_cumulative": true,
+            "eos_unidentified_causes_existing_runtime_stop_and_retry": true
+          }
+        },
+        "user_clarification": {
+          "jetson_connected_to_switch": "A (Wi-Fi192.168.2.141)",
+          "mini_pc": "Wi-Fi 모듈이 없어 Wi-Fi 연결 불가라고 응답; 현재 유선 IPv4는 미확인",
+          "exact_rewiring_time": "사용자 시각 미확인, kernel 링크 이력14:34:25~14:37:44",
+          "poe_power_changed": "미확인"
+        },
+        "integrator_validation": {
+          "link_duration_and_eos_two_timeouts_within_outage": true,
+          "five_minute_and_last_30_second_rates_recomputed": true,
+          "primary_reset_present_and_excluded": true,
+          "first_recovery_counter_progress_verified": true,
+          "postprocess_max_preexisting_verified": true,
+          "metric_alias_source_check_basis": "A/B source review report",
+          "new_host_queries": 0
+        },
+        "ab_queries_finished_reported": true,
+        "ab_next_diagnostic_or_load_reservations_reported": 0,
+        "new_preflight_pass": false,
+        "new_gpu_allocation": false
+      }
+    }
+  },
+  "indexing_fix_1418": {
+    "status": "APPLIED_AND_VERIFIED",
+    "source": "/home/sawwave/.codex/worktrees/edge-auto-failback/CCTV-project/edge-auto-failback-trial/indexing-fix",
+    "fps": 29.99995619541862,
+    "primary_hz": 14.99997809770931,
+    "seconds": 45.20006599899898,
+    "old_index_workers_zero": true,
+    "helper_and_config_hashes_match": true,
+    "auto_settings": {
+      "auto_index": "false",
+      "auto_watch": "false"
+    },
+    "recorded_at": "2026-10-23T14:38:50.793506+09:00",
+    "scope_review": {
+      "reviewed_at": "2026-10-23T14:28:28.195947+09:00",
+      "documentation": "https://learn.chatgpt.com/docs/app-server",
+      "documented_scope": "reload MCP server configuration from disk and queue a refresh for loaded threads",
+      "actual_call": {
+        "method": "config/mcpServer/reload",
+        "params": {},
+        "ack_at": "2026-10-23T14:13:56.508750+09:00"
+      },
+      "scope_assessment": "설정 수정은 codebase-memory 항목에 한정했으나 reload 요청은 서버·스레드를 지정하지 않은 loaded threads 대상 MCP 설정 갱신이다. codebase-memory 전용 재연결로 한정됐다고 주장하지 않는다.",
+      "other_mcp_reconnections": "당시 다른 MCP별 연결의 전후 계측이 없어 실제 재연결 대상·개수·일시적 지연은 미확인. 다른 MCP도 설정 갱신 영향 범위에 포함될 수 있다.",
+      "verified_effects": [
+        "기존 codebase-memory 마지막 서버/worker 종료",
+        "후속 search_graph PASS",
+        "14:15:30~14:16:15 인덱서0 및 30FPS/15Hz",
+        "14:24:57 auto_watch/auto_index=false 유지 및 인덱서0"
+      ],
+      "no_additional_reload_or_workload": true,
+      "limitations": "명시적 turn/interrupt·프로세스 kill/stop·앱/운영 재시작 요청0과 다른 MCP 영향0은 다른 주장이다. 후자는 검증하지 않았다.",
+      "integration_delivery": {
+        "at": "2026-10-23T14:28:28.450584+09:00",
+        "target": "01a1661c-05e7-7112-a4d3-a8de0930f0ef",
+        "method": "turn/steer",
+        "turn": "01a1672f-a45b-75a0-8ebb-c7b695e3b0d4",
+        "server_acknowledged": true
+      }
+    },
+    "raw_backup": "data/runtime/coordination_1433_as3hte41/raw/ab",
+    "manual_reindex_requires_coordination": true,
+    "search_uses_last_indexed_snapshot": true,
+    "real_full_project_reindex_performed": false,
+    "worker_mock_checks_passed": 5,
+    "worker_search_graph": "PASS",
+    "tests_rerun_by_integrator": false
+  },
+  "engine_recovery_1348": {
+    "summary": {
+      "started_at": "2026-10-23T13:48:11.814914+09:00",
+      "ended_at": "2026-10-23T13:48:41.834021+09:00",
+      "seconds": 30.02398877600035,
+      "frames_before": 56160.0,
+      "frames_after": 57060.0,
+      "inferred_before": 28081.0,
+      "inferred_after": 28531.0,
+      "fps": 29.976030390719245,
+      "hz": 14.988015195359623,
+      "min_mem_available_gib": 41.208351135253906,
+      "max_temperature_c": 53.875,
+      "max_frame_age_seconds": 0.016679410000051575,
+      "error_restart_drop_deltas": {
+        "cctv_processor_frames_dropped_total": 0.0,
+        "cctv_processor_source_error_identified_total": 0.0,
+        "cctv_processor_source_error_unidentified_total": 0.0,
+        "cctv_processor_pipeline_restart_requested_total": 0.0,
+        "cctv_processor_pipeline_restart_rejected_total": 0.0,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_processor_pipeline_restart_failed_total": 0.0,
+        "cctv_processor_pipeline_restart_seconds_total": 0.0
+      },
+      "operating_cpu_quota": "unlimited",
+      "cpu_throttled_delta": 0,
+      "gpu_started": false,
+      "operating_changes": false,
+      "cause_assessment": "CPU_CONTENTION_PRIMARY_SUSPECT_FROM_AB_REPORT_NOT_EXCLUSIVE_CAUSE",
+      "sustained_recovery_scope": "30_SECONDS_ONLY"
+    },
+    "recomputed_intervals": [
+      {
+        "seconds": 5.004970198000137,
+        "fps": 29.970208426003477,
+        "hz": 14.985104213001739
+      },
+      {
+        "seconds": 5.003020289000233,
+        "fps": 29.981889205965004,
+        "hz": 14.990944602982502
+      },
+      {
+        "seconds": 5.004384382999888,
+        "fps": 29.9737167491683,
+        "hz": 14.98685837458415
+      },
+      {
+        "seconds": 5.003622630999871,
+        "fps": 29.978279950745524,
+        "hz": 14.989139975372762
+      },
+      {
+        "seconds": 5.003985104000094,
+        "fps": 29.976108418087165,
+        "hz": 14.988054209043582
+      },
+      {
+        "seconds": 5.004006171000128,
+        "fps": 29.975982217867685,
+        "hz": 14.987991108933842
+      }
+    ],
+    "raw_verified": true,
+    "long_term_stability": false,
+    "source": "/home/sawwave/.codex/worktrees/multicamera-engine-batch/CCTV-project/data/runtime/engine_quality_four_input_20261023/diagnosis_134811"
+  },
+  "attempt2_preparation": {
+    "path": "/home/sawwave/.codex/worktrees/multicamera-engine-batch/CCTV-project/data/runtime/engine_quality_four_input_20261023_attempt2",
+    "plan_sha256": "557a74230f54a4f6be4f5adb68553de426805151e9774a688df1deda54fc2ca4",
+    "fixed_hashes_verified": 177,
+    "video_label_hashes_verified": 8,
+    "isolated_composes_verified": 9,
+    "gpu_start_allowed": false,
+    "window_start": null,
+    "window_end": null
+  },
+  "quality_four_input_attempt2_1425": {
+    "recorded_at": "2026-10-23T14:38:50.793506+09:00",
+    "status": "RETURNED_PREFLIGHT_GUARD_STOP",
+    "slot_start": "2026-10-23T14:25:00+09:00",
+    "slot_end": "2026-10-23T14:40:00+09:00",
+    "started_at": "2026-10-23T14:25:33.379696+09:00",
+    "cleanup_confirmed_at": "2026-10-23T14:25:38.504054+09:00",
+    "returned_at": "2026-10-23T14:27:02.015114+09:00",
+    "return_acknowledged_at": "2026-10-23T14:38:50.793506+09:00",
+    "return_notice_queue_id": "01a1673a-15be-7d13-8c7e-2bd96acd75dc",
+    "observed_seconds": 5.013944395999715,
+    "fps": 4.188319283467616,
+    "primary_hz": 1.9944377540321985,
+    "raw_frames": [
+      116011.0,
+      116032.0
+    ],
+    "raw_primary": [
+      58006.0,
+      58016.0
+    ],
+    "memory_available_gib": 38.75373840332031,
+    "temperature_max_c": 49.875,
+    "age_seconds": 0.09668452900041302,
+    "preflight_pass": false,
+    "full_30_second_preflight_completed": false,
+    "gpu_trials_executed": 0,
+    "planned_runs": 9,
+    "per_camera_results_not_run": 12,
+    "video_conversions": 0,
+    "trial_containers_remaining": [],
+    "quality_acceptance": "NOT_EVALUATED",
+    "four_input_performance": "NOT_RUN",
+    "operating_before_after_equal": true,
+    "fixed_files_unchanged": true,
+    "counter_rates_recomputed_by_integrator": true,
+    "automatic_retry": false,
+    "new_allocation": false,
+    "cause": "UNDETERMINED",
+    "source": "/home/sawwave/.codex/worktrees/multicamera-engine-batch/CCTV-project/data/runtime/engine_quality_four_input_20261023_attempt2",
+    "raw_backup": "data/runtime/coordination_1433_as3hte41/raw/engine"
+  },
+  "operating_drop_1425_after_indexing_fix": {
+    "source": "/home/sawwave/.codex/worktrees/edge-auto-failback/CCTV-project/edge-auto-failback-trial/indexing-fix/coordination-recheck.json",
+    "from": "2026-10-23T14:25:48.624183+09:00",
+    "to": "2026-10-23T14:25:53.653871+09:00",
+    "seconds": 5.0310383295000065,
+    "fps": 4.77038703109725,
+    "primary_hz": 2.385193515548625,
+    "workers_checked_at": "2026-10-23T14:24:57.513692+09:00",
+    "index_workers": 0,
+    "mcp_search_servers": 24,
+    "search_servers_are_not_index_workers": true,
+    "auto_settings": {
+      "auto_index": "false",
+      "auto_watch": "false"
+    },
+    "counter_rates_recomputed_by_integrator": true,
+    "cause": "UNDETERMINED_NOT_PROVEN_INDEXING_RECURRENCE",
+    "new_trial_precheck_pass": false,
+    "gpu_start_allowed": false
+  },
+  "post_return_rtsp_diagnosis_1442": {
+    "recorded_at": "2026-10-23T14:42:20.058263+09:00",
+    "status": "GPU_HOLD_RTSP_INPUT_FAILURE_CONFIRMED_UNDERLYING_CAUSE_UNRESOLVED",
+    "scope": "existing_evidence_and_low_priority_read_only_diagnosis",
+    "operating_changes": false,
+    "gpu_started": false,
+    "new_camera_connections": false,
+    "resource_observation": {
+      "from": "2026-10-23T14:36:39.803832+09:00",
+      "to": "2026-10-23T14:36:49.832178+09:00",
+      "seconds": 10.030266771998868,
+      "frames_before": 127556.0,
+      "frames_after": 127556.0,
+      "inferred_before": 0.0,
+      "inferred_after": 0.0,
+      "fps": 0.0,
+      "hz": 0.0,
+      "index_worker_counts": [
+        0,
+        0,
+        0
+      ],
+      "cpu_busy_percent": 16.94111776447106,
+      "gpu_load_samples": [
+        {
+          "/sys/devices/platform/bus@0/17000000.gpu/load": "0"
+        },
+        {
+          "/sys/devices/platform/bus@0/17000000.gpu/load": "0"
+        },
+        {
+          "/sys/devices/platform/bus@0/17000000.gpu/load": "0"
+        }
+      ],
+      "operating_container": {
+        "id": "c6aac881db6d7beb390b23a34b974338c7a6aed996caa7636c2b9b130f766e0c",
+        "pid": 10064,
+        "started_at": "2026-10-23T04:04:48.011112903Z",
+        "restart_count": 0
+      }
+    },
+    "existing_history_timeline": [
+      {
+        "time": "14:22~14:28 KST",
+        "finding": "운영 처리율 저하;14:24~28 약4~5FPS/2~3Hz 구간,30초 간격 기존 카운터 차분 참고치"
+      },
+      {
+        "time": "14:29~14:34 KST",
+        "finding": "구간별 회복/변동;지속 안정 또는 신규 사전점검 PASS로 판정하지 않음"
+      },
+      {
+        "time": "14:34:51 KST",
+        "finding": "기존 운영 로그 EOS;기존 런타임이 파이프라인 복구 시작"
+      },
+      {
+        "time": "14:35:32 / 14:36:52 KST",
+        "finding": "RTSP SDP 취득 중 서버 응답 시간초과,60초 backoff와 자동 복구 실패"
+      },
+      {
+        "time": "14:36:39~49 KST",
+        "finding": "읽기 관측에서 프레임 진행0,인덱서0·CPU약17%"
+      }
+    ],
+    "counter_resets": [
+      {
+        "metric": "cctv_camera_primary_frames_inferred_total",
+        "sample_time": "2026-10-23T14:35:30+09:00",
+        "before": 63778.0,
+        "after": 0.0,
+        "rate_valid": false
+      }
+    ],
+    "passive_network_evidence": "passive_network_path.json / passive_socket_state.json",
+    "confirmed_findings": [
+      "현재0FPS와함께RTSP입력열기실패/서버응답시간초과가관측됨",
+      "관측구간에인덱싱작업이나호스트CPU포화가없음",
+      "14:39:32eno1링크up·1Gbps/full·카메라이웃REACHABLE·인터페이스누적오류0",
+      "14:40:20기존운영namespace의카메라554/TCP연결ESTABLISHED"
+    ],
+    "unresolved": [
+      "14:25저하와14:34이후EOS/RTSP응답실패의동일원인여부",
+      "카메라RTSP서비스/세션상태및경로문제의정확한원인",
+      "호스트재부팅원인과특정채팅책임"
+    ],
+    "minimal_next_step": "통합담당이camera-offload/현장담당의기존카메라연결변경이력과카메라측RTSP서비스/세션상태확인을조율;새접속/재시작/설정변경은별도범위합의전실행하지않음",
+    "limitations": [
+      "Prometheus30초평가시점은실제scrape시각과다를수있어구간별차분은추이참고치",
+      "counter감소구간은RESET으로표시하며음수추론율/성능실패수치로사용하지않음",
+      "수동관측의TCP연결/ARP존재만으로RTSP서비스정상이나네트워크전체정상을보증하지않음",
+      "현재자원관측으로14:25원인을역추정하지않음"
+    ],
+    "integrator_review": {
+      "at": "2026-10-23T14:45:26.658306+09:00",
+      "frame_and_primary_counter_deltas_recomputed": true,
+      "rtsp_sdp_timeout_log_present": true,
+      "new_device_queries_by_integrator": false,
+      "cpu_network_details_basis": "worker report and saved evidence; no independent live query",
+      "raw_sha256": {
+        "summary.json": "9f511f14fc5a91012208e850049cdad06f74f7f0976bdce1f65bcc9e8c19a2d4",
+        "resources_and_metrics.json": "79cf06b50a1ca3ca83d67d3cc1695f62b9be03bd07d6a68d4c2dd4156619fb3c",
+        "filtered_operating_logs.json": "05d39befb1b02b98caa79978364c0550c5bf8f4b68f44513ffa44c2cf23e658d",
+        "rtsp_error_context.json": "c01bd1f7d0e698764326daf9c8dd153c63019ab4a315d53a7543dd9377615aaf"
+      },
+      "raw_backup": "data/runtime/coordination_1433_as3hte41/raw/engine-post-return"
+    }
+  },
+  "historical_indexing_recurrence_1405": {
+    "observed_from": "2026-10-23T14:05:00.044710+09:00",
+    "observed_to": "2026-10-23T14:05:30.368069+09:00",
+    "recorded_at": "2026-10-23T14:48:32.242253+09:00",
+    "interpretation": "Historical recurrence before MCP reload at 14:13:56; not a current observation or new allocation",
+    "status_at_observation": "NOT_RECOVERED",
+    "summary": {
+      "recorded_at": "2026-10-23T14:05:35.557166+09:00",
+      "start": "2026-10-23T14:05:00.044710+09:00",
+      "end": "2026-10-23T14:05:30.368069+09:00",
+      "duration_seconds": 30.323360147999665,
+      "frames_before": 83885.0,
+      "frames_after": 84747.0,
+      "inferred_before": 41944.0,
+      "inferred_after": 42376.0,
+      "fps": 28.426928803167726,
+      "inference_hz": 14.246442277225588,
+      "interval_failures": [
+        {
+          "kst": "2026-10-23T14:05:30.368069+09:00",
+          "reason": "operating_throughput"
+        }
+      ],
+      "minimum_fps": 22.551955159602667,
+      "minimum_inference_hz": 11.56510521005265,
+      "maximum_age_seconds": 0.09163033200002246,
+      "minimum_memory_available_gib": 18.404876708984375,
+      "maximum_temperature_c": 54.687,
+      "error_deltas": {
+        "cctv_processor_source_error_identified_total": 0.0,
+        "cctv_processor_source_error_unidentified_total": 0.0,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_processor_frames_dropped_total": 0.0
+      },
+      "index_worker_counts": [
+        13,
+        13,
+        13,
+        13,
+        13,
+        13,
+        13
+      ],
+      "cpu_busy_percent": [
+        99.87110079917505,
+        99.85738055621583,
+        99.89415189203493,
+        99.8272884283247,
+        99.76047904191617,
+        99.90356798457087
+      ],
+      "operating_container_unchanged": true,
+      "observer_cpu_seconds": 0.37861376,
+      "gpu_started": false,
+      "gpu_slot_granted": false,
+      "recovery_status": "NOT_RECOVERED",
+      "failing_interval_raw": {
+        "from": "2026-10-23T14:05:25.180047+09:00",
+        "to": "2026-10-23T14:05:30.368069+09:00",
+        "monotonic_before": 3716.436179958,
+        "monotonic_after": 3721.624200206,
+        "seconds": 5.188020247999702,
+        "frames_before": 84630.0,
+        "frames_after": 84747.0,
+        "inferred_before": 42316.0,
+        "inferred_after": 42376.0,
+        "fps": 22.551955159602667,
+        "hz": 11.56510521005265
+      },
+      "execution_ready": false,
+      "cpu_preparation_ready": true,
+      "automatic_reobservation": false,
+      "measurement_limitations": [
+        "프로세스별 /proc 읽기는 원자적이지 않으므로 observation의 surviving_index_worker_cpu_cores는 기여율 판정에 사용하지 않는다.",
+        "운영 metrics HTTP 응답과 호스트 카운터는 순차 수집이므로 동일 순간의 정밀 프로파일링 결과가 아니다.",
+        "30초 관측이며 장기 안정성이나 인덱싱의 단독 원인/특정 채팅 책임을 판정하지 않는다."
+      ]
+    },
+    "verification": {
+      "overall_and_failing_window_rates_recomputed": true,
+      "six_cpu_intervals_recomputed": true,
+      "seven_samples_13_workers_verified": true,
+      "operating_identity_and_zero_error_deltas_verified": true,
+      "source_limitations_preserved": true
+    },
+    "source": "/home/sawwave/.codex/worktrees/multicamera-engine-batch/CCTV-project/data/runtime/engine_quality_four_input_20261023/followup_140458",
+    "raw_sha256": {
+      "observation.json": "cf9b57cea60b105efceeee4909c8fb8432afb336c54c83ac7180e5d9891be739",
+      "summary.json": "da3ad7202ca831c6a2b20eafb4ea191319d38c2eadc35cdd5299fbc63e86b5b3"
+    },
+    "backup": "data/runtime/delayed_engine_1405_vczpjss6",
+    "new_device_queries": false,
+    "superseded_by": [
+      "indexing_fix_1418",
+      "quality_four_input_attempt2_1425",
+      "post_return_rtsp_diagnosis_1442"
+    ]
+  },
+  "link_interruption_and_recovery_1500": {
+    "recorded_at": "2026-10-23T15:07:11.253453+09:00",
+    "source": "/home/sawwave/.codex/worktrees/edge-auto-failback/CCTV-project/edge-auto-failback-trial/fps-rtsp-followup-20261023.json",
+    "source_sha256": "66f60b8e1ac243e2f681ccc7c1477ce9905860c4011e1de0679bcca8a4e5fc36",
+    "raw_backup": "data/runtime/link_recovery_integration_l_wsfskb",
+    "findings": {
+      "status": "RTSP_INTERRUPTION_LINK_DOWN_CAUSE_IDENTIFIED_INPUT_RECOVERED_EARLIER_SLOWDOWN_UNRESOLVED",
+      "recorded_at": "2026-10-23T15:00:02.015807+09:00",
+      "physical_change_user_report": "PoE 스위치에 Jetson 보드·CCTV1대·미니PC 연결",
+      "link_down": "2026-10-23T14:34:25+09:00",
+      "link_up": "2026-10-23T14:37:44+09:00",
+      "link_down_seconds": 199.0,
+      "causal_assessment": "A eno1 물리적 링크 단절이 EOS와 두 RTSP SDP 시간초과를 설명하는 직접 네트워크 원인. 사용자 스위치 배선 변경 보고와 부합하며 PoE 전원 재부팅 여부까지는 미확인.",
+      "first_recovery_counter_evaluation": "2026-10-23T14:38:00+09:00",
+      "automatic_recovery": "기존 운영 자체 파이프라인 복구 흐름과 부합. A/B 수동 재시작/설정 변경0. 컨테이너ID/시작시각/재시작횟수0 불변.",
+      "stored_metrics_last_five_minutes": {
+        "from": "2026-10-23T14:53:00+09:00",
+        "to": "2026-10-23T14:58:00+09:00",
+        "seconds": 300,
+        "fps": 29.30666666666667,
+        "primary_hz": 14.65
+      },
+      "last_30_second_fps": 27.2,
+      "last_30_second_primary_hz": 13.566666666666666,
+      "last_primary_age_seconds": 0.013319310000042606,
+      "source_failure_count_last": 2.0,
+      "pipeline_restart_failed_last": 2.0,
+      "earlier_slowdown": "14:22~14:28 4~10FPS 저하는14:34:25단절보다 먼저 시작했으며14:29~34회복. 동일원인 단정불가;14:25 index-worker0 근거는 유지.",
+      "limits": [
+        "Prometheus 30초 평가 차분이며 실제 scrape 시각과 다를 수 있음; 새 운영 사전점검 합격/장기 안정 판정 아님",
+        "14:25 호스트 CPU/GPU/카메라 전송률 과거 지표가 저장돼 있지 않아 추가 원인 확정 불가",
+        "기존 로그 범위 조회0건; 보존된 엔진 로그를 사용하며 로그 회수 공백의 이유는 미확인",
+        "다른 담당의 사용자 연결 변경 이력은 담당자 보고 기준",
+        "Jetson A 연결은 사용자 확인. 미니PC 유선IP/PoE 전원 전환 세부는 미확인; IP 중복을 확인하거나 배제하지 않았다."
+      ],
+      "actions_not_taken": [
+        "운영/AP/네트워크/모델 설정 변경",
+        "컨테이너·프로세스 중지/재시작",
+        "새 RTSP·카메라 관리 접속",
+        "ping·ARP탐색·패킷캡처",
+        "GPU/CPU 부하 시험",
+        "MCP reload·인덱싱"
+      ],
+      "source_checks": {
+        "postprocess_max_preexisting_ms": 7869.646,
+        "avg_inference_metric_is_postprocess_alias": true,
+        "postprocess_timing_is_cumulative": true,
+        "eos_unidentified_causes_existing_runtime_stop_and_retry": true
+      }
+    },
+    "user_clarification": {
+      "jetson_connected_to_switch": "A (Wi-Fi192.168.2.141)",
+      "mini_pc": "Wi-Fi 모듈이 없어 Wi-Fi 연결 불가라고 응답; 현재 유선 IPv4는 미확인",
+      "exact_rewiring_time": "사용자 시각 미확인, kernel 링크 이력14:34:25~14:37:44",
+      "poe_power_changed": "미확인"
+    },
+    "integrator_validation": {
+      "link_duration_and_eos_two_timeouts_within_outage": true,
+      "five_minute_and_last_30_second_rates_recomputed": true,
+      "primary_reset_present_and_excluded": true,
+      "first_recovery_counter_progress_verified": true,
+      "postprocess_max_preexisting_verified": true,
+      "metric_alias_source_check_basis": "A/B source review report",
+      "new_host_queries": 0
+    },
+    "ab_queries_finished_reported": true,
+    "ab_next_diagnostic_or_load_reservations_reported": 0,
+    "new_preflight_pass": false,
+    "new_gpu_allocation": false
+  },
+  "camera_offload_activity_audit_1503": {
+    "recorded_at_utc": "2026-10-23T06:03:49.569227+00:00",
+    "period_kst": {
+      "from": "2026-10-23T14:20:00+09:00",
+      "to": "2026-10-23T14:55:41.163+09:00"
+    },
+    "scope": "이 채팅의 기존 실행 기록과 보존된 시험/소스 준비 기록. 전체 호스트 감사 또는 패킷 계측이 아님.",
+    "conclusions_from_records": {
+      "operating_camera_or_rtsp_connections": "none_found",
+      "docker_commands_or_changes": "none_found",
+      "network_ap_route_dns_firewall_changes": "none_found",
+      "operating_source_config_database_service_changes": "none_found",
+      "gpu_inference_or_video_collection": "none_found",
+      "manual_indexing_or_shared_development_tool_changes": "none_found",
+      "exceptions_to_no_activity": "CPU 모형시험, 임시 DB, 127.0.0.1 임의 포트 HTTP, 소스/인계 쓰기, 정적검사, 채팅 조율, 기존 읽기 전용 프로세스 확인은 있었다."
+    },
+    "test_intervals": [
+      {
+        "command_issued_kst": "2026-10-23T14:18:41.133+09:00",
+        "completion_observed_kst": "2026-10-23T14:20:56.864+09:00",
+        "scope": "edge_orchestrator/ownership/handoff/auto_handoff/view/preview",
+        "summary": "1 failed, 154 passed in 113.85s",
+        "result_call_id": "call_94e2e13e6f854b5699c1647d3b082876",
+        "note": "14:20 이전 시작했지만 대상 구간에 겹치는 실행으로 포함. 화면 정적 파일 누락 실패."
+      },
+      {
+        "command_issued_kst": "2026-10-23T14:23:22.797+09:00",
+        "completion_observed_kst": "2026-10-23T14:23:51.284+09:00",
+        "scope": "당시 camera_offload 11개 + view 정적 화면 1개",
+        "summary": "1 failed, 11 passed in 7.61s",
+        "result_call_id": "call_b77d6ae714ee479db2b7d9cc349b0371",
+        "note": "자동 인계 시험 시계 진행 실패. 이후 추가한 모형 자식4개 실행 시험은 이 실행에 포함되지 않았으며 아직 미실행."
+      }
+    ],
+    "test_boundaries": {
+      "resources": "CPU0 한 코어, nice19; 실제 GPU/카메라 없음",
+      "connections": "모형 Peer/Mock 및 127.0.0.1 HTTP 임의 포트. RTSP 입력 없음.",
+      "writes": "전용 worktree 및 /tmp/camera-offload-* 임시 시험 DB/캐시",
+      "after_1425": "새 pytest/모형 프로세스 실행 기록 없음",
+      "historical_process_checks": "14:44 ps는 sandbox namespace 읽기, 14:46 자체 pytest/fixture PID 기록은 없음. 이번 요청에서 새 조회하지 않음."
+    },
+    "causality": "직접 카메라 접근/운영 변경 기록은 없으나 이 기록만으로 앞선 FPS 저하와 이후 EOS/SDP timeout의 원인 또는 무영향을 판정하지 않는다.",
+    "new_device_access_for_this_audit": false,
+    "received_at": "2026-10-23T15:11:38.374377+09:00",
+    "source": "/home/sawwave/.codex/worktrees/camera-offload/CCTV-project/camera-offload-trial/verification.json",
+    "source_sha256": "5ae45d5e5f9cd7f2ad43802b5fef476be04f8eae10065a495c98fa764d14117d",
+    "integrator_independent_device_audit": false
+  },
+  "mini_pc_address_report_20261023": {
+    "recorded_at": "2026-10-23T15:38:55.245212+09:00",
+    "source": "user-forwarded mini-PC storage thread handoff",
+    "thread": "01a16768-1af3-7073-89ab-66375066d5ca",
+    "user_confirmed_address": "192.168.0.20",
+    "user_confirmed_connected": true,
+    "ping_report": {
+      "sent": 2,
+      "received": 2,
+      "loss_percent": 0,
+      "average_ms": 1.231,
+      "basis": "owner report; not independently repeated"
+    },
+    "device_identity_os_disks_ssh_verified_by_integrator": false,
+    "inactive_b_profile": {
+      "name": "cctv-b-test",
+      "address": "192.168.0.20/24",
+      "autoconnect": false,
+      "active": false,
+      "basis": "existing 10-22 preserved profile evidence; no current B query"
+    },
+    "duplicate_active_address_confirmed": false,
+    "require_address_coordination_before_b_profile_activation": true,
+    "mini_pc_subnet_and_dhcp_reservation": "NOT_CONFIRMED",
+    "new_live_queries_by_integrator": 0,
+    "source_write_scope": "original checkout read-only; no worktree/source writer assigned",
+    "storage_work": "reuse existing monitoring-poc receipt/ACK and DB backup tools under review; no shared operating DB or migration approved by this handoff",
+    "followup_thread_note": "Windows 10 and 128GB are user-confirmed specifications; authenticated device identity, free capacity and actual transfer are not verified. Owner acknowledged ROI hold at 15:52:46 KST.",
+    "clarified_at": "2026-10-23T16:57:16.085157+09:00",
+    "user_confirmed_os": "Windows 10",
+    "user_reported_storage_capacity_gb": 128,
+    "available_storage_gb": null,
+    "user_confirmed_connection": "Jetson and mini-PC connected through switch",
+    "os_plan": "Keep Windows for test; Ubuntu only a possible later decision",
+    "included_storage": [
+      "detection results",
+      "sensor values",
+      "event images"
+    ],
+    "excluded_storage": [
+      "continuous video recording"
+    ],
+    "transfer_proposal": {
+      "transport": "Windows OpenSSH/SFTP",
+      "artifacts": [
+        "completed JSONL",
+        "completed images",
+        "consistent DB backup copies"
+      ],
+      "state": "UNDER_REVIEW_AUTHENTICATION_AND_TRANSFER_NOT_VERIFIED",
+      "reuse": "existing monitoring-poc receipt/ACK and DB backup tools"
+    },
+    "prior_tcp22_probe_report": {
+      "attempts": 1,
+      "result": "CONNECTION_REFUSED",
+      "errno": 111,
+      "observed_at": null,
+      "basis": "owner handoff; not repeated by integrator",
+      "cause": "UNKNOWN: OpenSSH missing/stopped/firewall not distinguished"
+    },
+    "later_ssh_report": {
+      "public_commentary_at": "2026-10-23T15:49:29.888+09:00",
+      "result": "owner reports SSH server response; host key confirmation and account authentication pending",
+      "actual_storage_transfer_verified": false,
+      "basis": "public owner commentary, not a new integrator probe"
+    },
+    "storage_poc_limitations": [
+      "no UI in current storage viewing POC",
+      "automatic image transfer and failure recovery not implemented/validated",
+      "actual free space and retention not measured"
+    ],
+    "excluded_changes": [
+      "live SQLite sharing",
+      "operating DB path changes",
+      "Docker installation",
+      "OS migration",
+      "production migration"
+    ],
+    "openssh_user_confirmation": {
+      "installed": true,
+      "service_state": "Running",
+      "basis": "user statement forwarded by mini-PC owner; not independently queried"
+    },
+    "host_key_verification": {
+      "status": "OWNER_REPORTED_DIFFERENT_SHA256_VALUES_IDENTITY_UNCONFIRMED",
+      "latest_public_explanation_at": "2026-10-23T16:28:40.386+09:00",
+      "explanation": "Owner later reports user-supplied SHA256 fingerprint from Windows server public key differs from prior SSH prompt SHA256 fingerprint. Device identity, reason and active IP collision remain unconfirmed.",
+      "new_connection_by_integrator": false,
+      "different_fingerprint_values_reported": true,
+      "previous_format_only_explanation": "16:14:55 public key text versus fingerprint format difference did not establish mismatch",
+      "windows_fingerprint_abbreviation_as_reported": "SHA256:bQNew0…bpps",
+      "prior_ssh_fingerprint_abbreviation_as_reported": "SHA256:7cUq1a…It9G4",
+      "independent_full_key_comparison_by_integrator": false,
+      "windows_ip_mac_evidence_pending": true,
+      "key_regeneration_or_verification_bypass": false,
+      "full_fingerprint_report_recorded_at": "2026-10-23T16:57:16.085157+09:00",
+      "windows_public_key_file_user_confirmed": "C:\\ProgramData\\ssh\\ssh_host_ed25519_key.pub",
+      "windows_fingerprint_as_reported": "SHA256:bQNew0MCh81BWafZBdYYeXeI1Y/2ZsX9PmsfVntbpps",
+      "prior_ssh_fingerprint_as_reported": "SHA256:7cUq1ai7u1Hon31bz+6CL+zWLIwMIB29EwsAANIt9G4",
+      "supplied_full_fingerprint_strings_equal": false,
+      "comparison_basis": "사용자 제공 Windows 공개키 파일 지문과 기존 SSH 관측 지문의 전체 문자열 대조. 키 파일·응답 장비를 통합 담당이 새로 조회하거나 실제 공개키에서 지문을 재계산한 것은 아님.",
+      "cause": "UNDETERMINED: IP collision, another responding device, changed host key or sshd HostKey configuration are not distinguished",
+      "next_evidence": "사용자 Windows ipconfig /all의 연결된 이더넷 IPv4·MAC 확인",
+      "trust_authentication_and_transfer": "ON_HOLD"
+    },
+    "first_storage_trial_proposal": {
+      "status": "WAITING_HOST_IDENTITY_AND_KEY_RECONCILIATION_THEN_NEW_SLOT",
+      "read_checks": [
+        "authenticated OS identity",
+        "disk capacity and free space"
+      ],
+      "write_scope": "small completed detection and sensor records plus event image under a dedicated POC child directory; read back and compare SHA256",
+      "operating_data_or_settings_changes": false,
+      "product_code_changes": "separate worktree and file ownership required if needed",
+      "allocated_start": null,
+      "allocated_end": null,
+      "prepared_synthetic_payload_bytes_reported": 3348,
+      "prepared_payload": "one detection record, one sensor record, one test image",
+      "expected_seconds_after_authentication": [
+        180,
+        300
+      ]
+    },
+    "latest_resource_note": "새 배정 없음. 전체 지문 문자열 불일치 확인; Windows 이더넷 IP/MAC·실제 sshd 키 대조 완료와 별도 구간 확정 전 SSH/포트/저장시험 보류.",
+    "user_confirmed_ssh_account": "ecs",
+    "account_authenticated": false
+  },
+  "engine_attempt3_allocation": {
+    "recorded_at": "2026-10-23T16:07:56.001004+09:00",
+    "owner": "01a1664c-5d6a-7ea2-a22e-04e379c47d30",
+    "worktree": "/home/sawwave/.codex/worktrees/multicamera-engine-batch/CCTV-project",
+    "output_path": "/home/sawwave/.codex/worktrees/multicamera-engine-batch/CCTV-project/data/runtime/engine_quality_four_input_20261023_attempt3",
+    "status": "RETURNED_AFTER_FIRST_REFERENCE_TRIAL_GUARD_STOP",
+    "start_at": "2026-10-23T16:12:00+09:00",
+    "end_at": "2026-10-23T16:27:00+09:00",
+    "stop_new_trials_at": "2026-10-23T16:24:00+09:00",
+    "maximum_seconds": 900,
+    "cleanup_reserve_seconds": 180,
+    "per_trial_timeout_seconds": 120,
+    "preflight_seconds": 30,
+    "plan_sha256": "0dd0a2406f73a4d27cc83bab8fc685c4399328a912df4fa50695612af9f474e9",
+    "fixed_hashes_verified": 177,
+    "video_label_hashes_verified": 8,
+    "compose_isolation_verified": 9,
+    "trial_sequence": [
+      "operating reference batch1 x4",
+      "candidate batch1 x4",
+      "candidate shared batch4 x1"
+    ],
+    "trial_count": 9,
+    "physical_four_cameras": "NOT_CONNECTED",
+    "quality_scope": "development regression 2 fall + 2 normal; no independent field accuracy acceptance",
+    "new_conversion_allowed": false,
+    "operating_engine_changes_allowed": false,
+    "automatic_retry": false,
+    "automatic_extension": false,
+    "first_guard_failure": "save raw sample before exception, stop/clean only owned trial resources, return remaining slot",
+    "guard": {
+      "fps_min": 27,
+      "primary_hz_min": 13.5,
+      "frame_age_max_seconds": 1,
+      "memory_available_min_gib": 8,
+      "temperature_below_c": 80,
+      "error_drop_restart_delta_max": 0
+    },
+    "preflight_passed": true,
+    "gpu_started": null,
+    "runtime_status": "FIRST_TRIAL_GUARD_STOP_NO_VALID_RESULT",
+    "prior_attempts_preserved": true,
+    "operating_recovery_before_allocation": "NOT_MEASURED_AFTER_ROI_RETURN; new in-slot preflight required",
+    "previous_owner_release": {
+      "owner": "ROI",
+      "finished_at": "2026-10-23T15:57:11.323231+09:00",
+      "cleanup_verified_at": "2026-10-23T15:58:16.992244+09:00",
+      "returned_at": "2026-10-23T15:59:24.352801+09:00",
+      "source": "/home/sawwave/.codex/worktrees/two-camera-baseline/CCTV-project/data/runtime/two_camera_cadence_20261023_attempt2"
+    },
+    "other_owner_hold_evidence": {
+      "ab_public_at": "2026-10-23T16:04:36.598+09:00",
+      "roi_public_at": "2026-10-23T16:05:14.069+09:00",
+      "camera_public_at": "2026-10-23T16:04:51.760+09:00",
+      "mini_pc_public_at": "2026-10-23T16:04:44.934+09:00",
+      "basis": "public owner acknowledgements; no new host process scan",
+      "conditions": "all new CPU/GPU/transform/index/network/storage trials held until engine actual return and reallocation"
+    },
+    "owner_accepted_at": "2026-10-23T16:08:47.336+09:00",
+    "notices": {
+      "ab": {
+        "registered_at": "2026-10-23T16:08:55.203173+09:00",
+        "exit_code": 0,
+        "stdout": "Queued message 01a16797-5bec-74e2-aaef-92d2266904da for thread 01a160c8-885d-77d3-90ba-02c9528e9ad7.\n",
+        "stderr": "",
+        "receipt_confirmed": true,
+        "public_ack_at": "2026-10-23T16:09:01.329+09:00"
+      },
+      "roi": {
+        "registered_at": "2026-10-23T16:08:55.683602+09:00",
+        "exit_code": 0,
+        "stdout": "Queued message 01a16797-5da6-7281-a8f2-b7d90cf5fcf8 for thread 01a16614-0692-7512-b98a-45d253a29e3a.\n",
+        "stderr": "",
+        "receipt_confirmed": true,
+        "public_ack_at": "2026-10-23T16:09:03.765+09:00"
+      },
+      "camera": {
+        "registered_at": "2026-10-23T16:08:56.405062+09:00",
+        "exit_code": 0,
+        "stdout": "Queued message 01a16797-5f70-72d1-ab17-31af986e593f for thread 01a16718-1469-7223-bd53-b5381cb8ab3c.\n",
+        "stderr": "",
+        "receipt_confirmed": true,
+        "public_ack_at": "2026-10-23T16:09:05.207+09:00"
+      },
+      "mini_pc": {
+        "registered_at": "2026-10-23T16:08:57.118331+09:00",
+        "exit_code": 0,
+        "stdout": "Queued message 01a16797-6272-7b53-8162-dd221a23cef9 for thread 01a16768-1af3-7073-89ab-66375066d5ca.\n",
+        "stderr": "",
+        "receipt_confirmed": true,
+        "public_ack_at": "2026-10-23T16:09:05.199+09:00"
+      },
+      "engine": {
+        "registered_at": "2026-10-23T16:08:57.775725+09:00",
+        "exit_code": 0,
+        "stdout": "Queued message 01a16797-652a-7b33-89cf-f6148002afa5 for thread 01a1664c-5d6a-7ea2-a22e-04e379c47d30.\n",
+        "stderr": "",
+        "receipt_confirmed": true,
+        "public_ack_at": "2026-10-23T16:08:47.336+09:00"
+      }
+    },
+    "all_other_owners_hold_confirmed": true,
+    "trial_containers_started": 1,
+    "actual_gpu_inference": "UNCONFIRMED",
+    "returned_at": "2026-10-23T16:15:59.591102+09:00",
+    "gpu_trial_container_started": true,
+    "gpu_started_note": "Actual GPU inference unconfirmed; one trial container started and was cleaned up"
+  },
+  "camera_offload_ready_revision_1555": {
+    "checked_at": "2026-10-23T16:12:25.097905+09:00",
+    "status": "READY_VERIFIED_AWAITING_ENGINE_RETURN_AND_NEW_CPU_ALLOCATION",
+    "worktree": "/home/sawwave/.codex/worktrees/camera-offload/CCTV-project",
+    "ready_manifest_sha256": "050731d2c46f36cd7ced3312775a81eb088b1d52999abbee269df57dd81a1fd1",
+    "fixed_files_verified": 614,
+    "patch_sha256": "542e63d2d7be4e468dbef83913a4b6649c4f185e4d5c78bd8b2e03962dffa271",
+    "runner_sha256": "998a5506d0e95f00a8ac88e18a5d50bfd97c6df130375586052e6edded3c9b41",
+    "revision_reason": "HTTP 크기 경계 시험의 모의 노드만 3개에서 4개로 수정. 제품/실행기/지원사본 불변. 수정 후 실행 검증 없음.",
+    "supersedes_manifest_sha256": "6babe481f01f6e6381df0fd68086eb3b833238cd8e31513aee25276d3ddfeb8b",
+    "delayed_handoff_manifest_sha256": "df6fa96a5f64d34cafbc637bb1047be447b179cae5e093b1793961c73b92dbbf",
+    "delayed_handoff_files": 612,
+    "delayed_handoff_does_not_replace_current": true,
+    "requested_max_seconds": 300,
+    "estimated_total_seconds": [
+      180,
+      240
+    ],
+    "cleanup_reserve_seconds": 60,
+    "start_at": null,
+    "end_at": null,
+    "new_run_started": false,
+    "prior_result": "24 PASS / 1 FAIL / 174 NOT_RUN preserved",
+    "new_result": "NOT_RUN",
+    "requires_engine_actual_return": true,
+    "engine_allocated_slot": [
+      "2026-10-23T16:12:00+09:00",
+      "2026-10-23T16:27:00+09:00"
+    ],
+    "operating_changes": 0,
+    "host_observations_by_integrator": 0
+  },
+  "engine_attempt3_result": {
+    "recorded_at": "2026-10-23T16:18:38.859827+09:00",
+    "status": "RETURNED_AFTER_FIRST_REFERENCE_TRIAL_GUARD_STOP",
+    "source": "/home/sawwave/.codex/worktrees/multicamera-engine-batch/CCTV-project/data/runtime/engine_quality_four_input_20261023_attempt3",
+    "started_at": "2026-10-23T16:12:49.349939+09:00",
+    "finished_at": "2026-10-23T16:13:55.580339+09:00",
+    "returned_at": "2026-10-23T16:15:59.591102+09:00",
+    "preflight": {
+      "passed": true,
+      "start_at": "2026-10-23T16:12:49.419034+09:00",
+      "end_at": "2026-10-23T16:13:19.751136+09:00",
+      "seconds": 30.332098009999754,
+      "frames_before": 295348.0,
+      "frames_after": 296257.0,
+      "primary_before": 83897.0,
+      "primary_after": 84351.0,
+      "fps": 29.968253422507235,
+      "primary_hz": 14.967642523452458
+    },
+    "failure_window": {
+      "start_at": "2026-10-23T16:13:29.791757+09:00",
+      "end_at": "2026-10-23T16:13:35.802017+09:00",
+      "seconds": 6.010259541000778,
+      "frames_before": 296558.0,
+      "frames_after": 296644.0,
+      "primary_before": 84502.0,
+      "primary_after": 84546.0,
+      "fps": 14.308866266643786,
+      "primary_hz": 7.3208152992131,
+      "age_seconds": 0.007262208999236464,
+      "memory_available_gib": 32.38522720336914,
+      "temperature_max_c": 52.531,
+      "guard_reason": "operating_throughput"
+    },
+    "trial_containers_started": 1,
+    "trials_completed": 0,
+    "actual_gpu_inference": "UNCONFIRMED_NO_CAPTURE_OR_RUNTIME_LOG",
+    "trial_0": "INVALID",
+    "remaining_8_trials": "NOT_RUN",
+    "quality_acceptance": "NOT_EVALUATED",
+    "shared_four_input_performance": "NOT_RUN",
+    "cleanup_returncode": 0,
+    "trial_containers_remaining": [],
+    "owner_reports_active_tests": 0,
+    "operating_identity_unchanged": true,
+    "fixed_files_unchanged": true,
+    "automatic_retry": false,
+    "post_cleanup_recovery": "NOT_MEASURED",
+    "return_queue_receipt": "01a1679d-d72b-7a92-a08f-78022bc53bb1",
+    "integrator_new_host_queries": 0,
+    "trial_summary": {
+      "planned": 9,
+      "containers_started": 1,
+      "completed": 0,
+      "invalid": 1,
+      "not_run": 8,
+      "valid_results": 0
+    },
+    "camera_result_summary": {
+      "planned": 12,
+      "invalid": 1,
+      "not_run": 11,
+      "valid_results": 0
+    },
+    "final_comparison_verification": {
+      "checked_at": "2026-10-23T16:47:07.211466+09:00",
+      "comparison_path": "/home/sawwave/.codex/worktrees/multicamera-engine-batch/CCTV-project/data/runtime/engine_quality_four_input_20261023_attempt3/comparison.json",
+      "comparison_sha256": "2916fdc34820680c5c18f842f4a849ea39b8be915ce72f04154b49d931b7d7c8",
+      "comparison_status": "STOPPED_AFTER_PREFLIGHT_PASS_FIRST_REFERENCE_TRIAL_INVALID",
+      "raw_evidence_sha256": {
+        "run.json": "c3874aecee10a940858aa14d645a95b5515add6f3769f6032b3b33fe74e498bb",
+        "operating_samples.json": "1a760ea7959f0d787a16323ace2f20061cdd24fd37f96feb154997bbdc313e9b",
+        "execution_stdout.log": "280314cc5dc17e54674e89a58e0dc5b54f2065830c85926c8824d296d055e127",
+        "trial_00_reference/run.log": "a91502d08bfc923450d3554e49a76a8889861794937222f3e71d13a178920d96",
+        "plan.json": "0dd0a2406f73a4d27cc83bab8fc685c4399328a912df4fa50695612af9f474e9"
+      },
+      "raw_hash_checks_pass": true,
+      "raw_file_count": 5,
+      "trial_counts_match": true,
+      "camera_result_counts_match": true,
+      "return_and_failure_values_match": true,
+      "new_operating_observation": false,
+      "fixed_177_files_unchanged_basis": "owner report; integrator did not repeat the full file hash check"
+    }
+  },
+  "camera_offload_cpu_retry_allocation": {
+    "recorded_at": "2026-10-23T16:18:38.859827+09:00",
+    "owner": "01a16718-1469-7223-bd53-b5381cb8ab3c",
+    "worktree": "/home/sawwave/.codex/worktrees/camera-offload/CCTV-project",
+    "branch": "codex/camera-offload",
+    "status": "RETURNED_PREFLIGHT_GUARD_STOP",
+    "start_at": "2026-10-23T16:20:00+09:00",
+    "end_at": "2026-10-23T16:25:00+09:00",
+    "stop_pytest_and_cleanup_at": "2026-10-23T16:24:00+09:00",
+    "maximum_seconds": 300,
+    "cleanup_reserve_seconds": 60,
+    "expected_total_seconds": [
+      180,
+      240
+    ],
+    "ready_manifest_sha256": "050731d2c46f36cd7ced3312775a81eb088b1d52999abbee269df57dd81a1fd1",
+    "fixed_files_verified": 614,
+    "patch_sha256": "542e63d2d7be4e468dbef83913a4b6649c4f185e4d5c78bd8b2e03962dffa271",
+    "runner_sha256": "998a5506d0e95f00a8ac88e18a5d50bfd97c6df130375586052e6edded3c9b41",
+    "cpu_affinity": [
+      0
+    ],
+    "nice": 19,
+    "test_targets": [
+      "camera-offload-trial/test_guarded_runner.py",
+      "tests/test_edge_camera_offload.py",
+      "tests/test_edge_orchestrator.py",
+      "tests/test_edge_ownership.py",
+      "tests/test_edge_handoff.py",
+      "tests/test_edge_auto_handoff.py",
+      "tests/test_edge_view.py",
+      "tests/test_edge_preview.py"
+    ],
+    "command": "rtk proxy taskset -c 0 nice -n 19 env PYTHONDONTWRITEBYTECODE=1 /media/sawwave/Learning11/CCTV-project/.venv/bin/python camera-offload-trial/run_guarded_tests.py --start-at '2026-10-23T16:20:00+09:00' --end-at '2026-10-23T16:25:00+09:00' --ready-sha256 050731d2c46f36cd7ced3312775a81eb088b1d52999abbee269df57dd81a1fd1",
+    "preflight_seconds": 30,
+    "guard_interval_seconds": 5,
+    "guard": {
+      "minimum_fps": 27,
+      "minimum_primary_hz": 13.5,
+      "maximum_frame_age_seconds": 1,
+      "minimum_available_memory_gib": 8,
+      "stop_temperature_c": 80,
+      "stop_on": [
+        "source errors increase",
+        "executed pipeline restart increase",
+        "frame drops increase",
+        "counter reset",
+        "missing/nonfinite metrics",
+        "observation failure"
+      ],
+      "metrics_endpoint": "http://127.0.0.1:8770/metrics",
+      "scope": "camera_1 primary Hz/age plus total processor FPS and error counters; no Docker container inspection",
+      "sources": [
+        "/proc/meminfo",
+        "/sys/class/thermal/thermal_zone*/temp"
+      ],
+      "final_success_requires_final_five_second_sample": true
+    },
+    "scope": "7 selected product regression files plus guard mock tests; loopback mock children and private temporary DBs",
+    "excluded_scope": [
+      "full edge_service/bootstrap suites",
+      "real RTSP",
+      "GPU",
+      "Docker",
+      "operating DB",
+      "manual indexing",
+      "deployment"
+    ],
+    "prior_24_pass_1_fail_174_not_run_preserved": true,
+    "new_result": "NOT_RUN_PRECHECK_FAILED",
+    "source_changes_during_slot_allowed": false,
+    "automatic_retry": false,
+    "automatic_extension": false,
+    "first_failure": "stop and clean only owned children, return without retry",
+    "previous_owner_return": "2026-10-23T16:15:59.591102+09:00",
+    "previous_owner": "engine-quality-attempt3",
+    "current_operating_recovery": "NOT_MEASURED; new in-slot preflight required",
+    "new_live_observations_by_integrator": 0,
+    "accepted_at": "2026-10-23T16:20:19.208+09:00",
+    "notices": {
+      "engine": {
+        "registered_at": "2026-10-23T16:19:45.193549+09:00",
+        "exit_code": 0,
+        "stdout": "Queued message 01a167a1-46bd-7e71-80a4-049d1ea4d80d for thread 01a1664c-5d6a-7ea2-a22e-04e379c47d30.\n",
+        "stderr": "",
+        "receipt_confirmed": false
+      },
+      "ab": {
+        "registered_at": "2026-10-23T16:19:45.640783+09:00",
+        "exit_code": 0,
+        "stdout": "Queued message 01a167a1-4884-7c52-bed7-067cfa69e0cb for thread 01a160c8-885d-77d3-90ba-02c9528e9ad7.\n",
+        "stderr": "",
+        "receipt_confirmed": true,
+        "public_ack_at": "2026-10-23T16:19:53.883+09:00"
+      },
+      "roi": {
+        "registered_at": "2026-10-23T16:19:46.169022+09:00",
+        "exit_code": 0,
+        "stdout": "Queued message 01a167a1-4a76-7f43-9431-d419575e3b17 for thread 01a16614-0692-7512-b98a-45d253a29e3a.\n",
+        "stderr": "",
+        "receipt_confirmed": true,
+        "public_ack_at": "2026-10-23T16:19:53.909+09:00"
+      },
+      "mini_pc": {
+        "registered_at": "2026-10-23T16:19:46.826493+09:00",
+        "exit_code": 0,
+        "stdout": "Queued message 01a167a1-4d06-7dc2-a876-9b9542ff5db2 for thread 01a16768-1af3-7073-89ab-66375066d5ca.\n",
+        "stderr": "",
+        "receipt_confirmed": true,
+        "public_ack_at": "2026-10-23T16:19:56.635+09:00"
+      },
+      "camera": {
+        "registered_at": "2026-10-23T16:19:47.522934+09:00",
+        "exit_code": 0,
+        "stdout": "Queued message 01a167a1-4fd8-7f20-8b44-b8399e2debee for thread 01a16718-1469-7223-bd53-b5381cb8ab3c.\n",
+        "stderr": "",
+        "receipt_confirmed": true,
+        "public_ack_at": "2026-10-23T16:20:19.208+09:00"
+      }
+    },
+    "preflight_passed": false,
+    "finished_at": "2026-10-23T16:21:18.059034+09:00",
+    "return_notice_registered_at": "2026-10-23T16:22:31.204000+09:00"
+  },
+  "camera_offload_cpu_retry_result": {
+    "recorded_at": "2026-10-23T16:26:06.705478+09:00",
+    "status": "RETURNED_PREFLIGHT_GUARD_STOP_NO_ALLOCATION",
+    "source": "/tmp/camera-offload-final-juk_ldgs",
+    "ready_sha256": "050731d2c46f36cd7ced3312775a81eb088b1d52999abbee269df57dd81a1fd1",
+    "preflight_passed": false,
+    "full_30_second_preflight_completed": false,
+    "preflight_observed_seconds": 10.112629914998251,
+    "failure_window": {
+      "start_at": "2026-10-23T16:21:12.792825+09:00",
+      "end_at": "2026-10-23T16:21:17.836068+09:00",
+      "seconds": 5.073462891999952,
+      "frames_before": 310337.0,
+      "frames_after": 310425.0,
+      "primary_before": 91391.0,
+      "primary_after": 91436.0,
+      "fps": 17.345154951022124,
+      "primary_hz": 8.869681509045405,
+      "age_seconds": 0.0037132639990886673,
+      "memory_available_gib": 31.157283782958984,
+      "max_temperature_c": 53.75,
+      "error_deltas": {
+        "cctv_processor_source_error_identified_total": 0.0,
+        "cctv_processor_source_error_unidentified_total": 0.0,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_processor_frames_dropped_total": 0.0
+      }
+    },
+    "finished_at": "2026-10-23T16:21:18.059034+09:00",
+    "pytest_started": false,
+    "mock_children_started": false,
+    "gpu_started": false,
+    "cleanup_remaining": [],
+    "owner_public_cleanup_confirmation_at": "2026-10-23T16:22:08.959+09:00",
+    "return_declared_at": null,
+    "new_test_result": "NOT_RUN",
+    "prior_24_pass_1_fail_174_not_run_preserved": true,
+    "automatic_retry": false,
+    "post_cleanup_recovery": "NOT_MEASURED",
+    "cause": "UNDETERMINED; throughput failed before pytest started",
+    "integrator_new_host_queries": 0,
+    "return_notice_registered_at": "2026-10-23T16:22:31.204000+09:00",
+    "return_queue_receipt": "01a167a3-c44f-75c2-b156-51784643c89f",
+    "return_public_confirmation_at": "2026-10-23T16:25:08.434+09:00",
+    "independent_cleanup_checked_at": "2026-10-23T16:21:39+09:00",
+    "durable_evidence": "/home/sawwave/.codex/worktrees/camera-offload/CCTV-project/camera-offload-trial/final-attempt-20261023T162107",
+    "frozen_files_unchanged": 614,
+    "return_timestamp_note": "반환 선언이 담긴 통보의 접수 확인 시각은16:22:31.204000+09:00이다. 종료16:21:18.059034·자체잔여확인16:21:39·통합ACK와 구분한다. return_declared_at=null은 별도의 선언 작성시각 미기록을 뜻하며 반환 선언 부재를 뜻하지 않는다.",
+    "durable_evidence_verification": {
+      "checked_at": "2026-10-23T16:49:36.355963+09:00",
+      "summary_path": "/home/sawwave/.codex/worktrees/camera-offload/CCTV-project/camera-offload-trial/final-attempt-20261023T162107/summary.json",
+      "summary_sha256": "a9de48f0b8477affd92035392e423501a64c3b9b77635fbac68dcfbb932281bc",
+      "summary_status": "PRECHECK_GUARD_STOP_RETURNED_NO_TESTS",
+      "raw_sha256": {
+        "operating_check.json": "23a37eceb0560675b501a686dacc12361750491d14ece643d748e20f6272b743",
+        "result.json": "0cd060fbab1363ec654a295e6f257360300ffaf08256fa24f9147e70f193e86b",
+        "tested-ready-manifest.json": "050731d2c46f36cd7ced3312775a81eb088b1d52999abbee269df57dd81a1fd1"
+      },
+      "raw_file_count": 3,
+      "raw_hash_checks_pass": true,
+      "saved_counter_recalculation_pass": true,
+      "common_cleanup_and_return_receipt_match": true,
+      "source_error_identified_total_before": 2,
+      "source_error_identified_total_after": 2,
+      "source_error_identified_delta": 0,
+      "runner_exit_code_owner_report": 1,
+      "pytest_pid": null,
+      "pytest_log_exists_owner_report": false,
+      "forced_kill_path": "NOT_TRIGGERED",
+      "frozen_614_files_unchanged_basis": "owner report; integrator verified the saved READY manifest hash, not all live source files again",
+      "integrator_new_operating_or_process_observations": 0
+    },
+    "return_declaration_confirmation": {
+      "recorded_at": "2026-10-23T16:51:13.904900+09:00",
+      "explicit_return_declaration_confirmed": true,
+      "basis": "owner clarification in integration chat; saved summary coordination_receipts.return matches the receipt and timestamp",
+      "return_notice_text": "pytest/모형자식 실행0, 선택회귀 전체NOT_RUN, 재시도/연장0으로 현재 반환합니다",
+      "recipient_thread_id": "01a1661c-05e7-7112-a4d3-a8de0930f0ef",
+      "final_evidence_handoff_queue_receipt_owner_report": "01a167a6-913c-7823-9dd8-7ea233c3630e",
+      "trial_uuid": "38499f3b12d24a348bc0734f9e89fc94",
+      "new_host_queries": 0,
+      "new_test_runs": 0
+    }
+  },
+  "camera_offload_cpu_first_attempt_evidence": {
+    "verified_at": "2026-10-23T16:34:36.352808+09:00",
+    "summary_path": "/home/sawwave/.codex/worktrees/camera-offload/CCTV-project/camera-offload-trial/final-attempt-20261023T154227/summary.json",
+    "summary_sha256": "a39e685faf27648ef4617ebd807426d0248486acb3003b3c82de988b1e80a43f",
+    "raw_and_tested_ready_hashes_checked": {
+      "operating_check.json": true,
+      "execution.guard.json": true,
+      "result.json": true,
+      "pytest.log": true,
+      "junit.xml": true,
+      "tested-ready-manifest.json": true
+    },
+    "raw_and_tested_ready_count": 6,
+    "historical_slot": [
+      "2026-10-23T15:42:00+09:00",
+      "2026-10-23T15:47:00+09:00"
+    ],
+    "status": "FIRST_TEST_FAILURE_RETURNED_NO_RETRY",
+    "pytest": {
+      "collected": 199,
+      "passed": 24,
+      "failed": 1,
+      "not_run": 174,
+      "duration_seconds": 15.12,
+      "exit_code": 1,
+      "failures": [
+        {
+          "name": "tests.test_edge_camera_offload::test_multi_camera_reports_cross_http_size_boundaries",
+          "message": "assert 63915 > 65536"
+        }
+      ],
+      "reruns": 0
+    },
+    "cleanup_finished_at": "2026-10-23T15:43:17.610299+09:00",
+    "independent_cleanup_check_at": "2026-10-23T15:44:17+09:00",
+    "own_pids_remaining": [],
+    "forced_kill_real_load_path": "NOT_TRIGGERED",
+    "latest_retry_result_not_replaced": true,
+    "source_integration": false,
+    "deployment": false
+  }
+}

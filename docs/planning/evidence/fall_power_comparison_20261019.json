@@ -1,0 +1,314 @@
+{
+  "date": "2026-10-19",
+  "state": "COMPARISON_FAIL_ROLLBACK_OBSERVED",
+  "approval": "50W 비교 승인·현장 관리자 작업 가능",
+  "candidate_id": "fall-single-1080p05-20261019-r4",
+  "resolution": [
+    1920,
+    1080
+  ],
+  "confidence": 0.5,
+  "power_before": {
+    "id": 2,
+    "name": "MODE_30W"
+  },
+  "power_target": {
+    "id": 3,
+    "name": "MODE_50W"
+  },
+  "scope": "전체 재부팅 후 동일r4 GPU9·정상30분, 시험45분+AI복구5분; 미채택 시30W 복귀(추가 재부팅 가능)",
+  "operating_deployment": false,
+  "power_changed": true,
+  "reboot_performed": true,
+  "new_gpu_runs": 10,
+  "runtime_root": "data/runtime/p52_power50_20261019",
+  "input_hash_count": 270,
+  "engine_sha256": "68d8c70ef45e6c445d829d077badc8f901c11f95304f157e7ef55e7b9524b0bc",
+  "source_file_count": 211,
+  "tests": {
+    "runner_recovery_power_gate": "17 PASS",
+    "read_only_preflight": "PASS",
+    "operating_mutation_during_dry_run": false
+  },
+  "preboot_containers": 37,
+  "preboot_running": 31,
+  "boot_preservation": {
+    "installed_dropin": "/etc/systemd/system/cctv-jetson-stack.service.d/10-live-profile.conf",
+    "installed_dropin_sha256": "8a0fbd70f71be48f67f09de6c4c84ead3f4c7de0c83ae1ef1ae40974f3d466c5",
+    "installed_dropin_matches_repo": true,
+    "resolved_execstart_uses_live_profile": true,
+    "needs_daemon_reload": false,
+    "ai_image_equal": true,
+    "ai_declared_environment_equal": true,
+    "ai_command_equal": true,
+    "additional_installation_needed": false,
+    "correction": "이전 검토가 기본 unit만 읽고 이미 설치·적용된 drop-in을 놓쳤다. AI환경12항목 차이는 기본 Compose 단독 비교의 차이이며 실제 부팅 명령에는 해당 운영 override가 이미 포함돼 있다.",
+    "sources": {
+      "docker-compose.jetson.yml": "0c67afdf038e79118f40d219dc4eb153f3a1dfd7d99371c48f354a6182f4cee2",
+      "data/runtime/live_refresh_20261008/candidate.yml": "f19766ac0f900a404dae8634ce0a3b556304dcb675d947746e6cc9a78255ddb7",
+      "/etc/systemd/system/cctv-jetson-stack.service.d/10-live-profile.conf": "8a0fbd70f71be48f67f09de6c4c84ead3f4c7de0c83ae1ef1ae40974f3d466c5"
+    }
+  },
+  "noninteractive_sudo_available": false,
+  "administrator_command": "rtk proxy sudo nvpmodel -m 3 --force",
+  "rollback_command": "rtk proxy sudo nvpmodel -m 2 --force",
+  "postboot_requirements": [
+    "전력모드3·새boot_id 확인",
+    "기동 전31서비스의 이미지·환경·명령·마운트/상태 대조",
+    "운영 AI healthy·처리율 확인",
+    "재생성된 AI ID를 실제 검증 후 plan 및 해시에 재고정",
+    "동일GPU9/정상30분 실행 및 같은 AI복구·처리율 확인"
+  ],
+  "acceptance": {
+    "normal_false_alarms": 0,
+    "window_seconds": 30,
+    "minimum_inferences_per_second": 14.25,
+    "playback_ratio": [
+      0.95,
+      1.05
+    ],
+    "max_delay_variation_seconds": 0.5,
+    "alarm_latency_target_seconds": 3,
+    "alarm_latency_limit_seconds": 5
+  },
+  "wbs": {
+    "task": "P5.2",
+    "status": "IN_PROGRESS",
+    "issue": "I56 OPEN",
+    "done": 9,
+    "total": 37
+  },
+  "postboot_check": {
+    "passed": true,
+    "boot_id": "6f364eeb-af72-4432-b847-485f34d251f8",
+    "containers_compared": 37,
+    "running": 31,
+    "differences": [],
+    "rates": {
+      "cctv_processor_frames_processed_total": 30.006238391437975,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 15.003119195718988
+    }
+  },
+  "boot_service_observation": {
+    "state": "failed",
+    "cause": "ExecStartPre DeepStream native 15s timeout at boot",
+    "native_recheck": "PASS with same 15s limit",
+    "containers_recovered_by": "existing Docker restart policies",
+    "settings_changed": false,
+    "remaining": "boot-time timeout robustness; systemd failed state clearing requires administrator"
+  },
+  "video_gpu_runs": 9,
+  "normal_soak_runs": 1,
+  "power_decision": "50W 미채택·후속 읽기 전용 점검에서30W 복귀 확인",
+  "operating_recovery_passed": true,
+  "comparison_control": {
+    "same_fields": {
+      "candidate_id": true,
+      "image": true,
+      "engine_sha256": true,
+      "source_sha256": true,
+      "confidence": true,
+      "input_resolution": true,
+      "observation_seconds": true,
+      "runs": true
+    },
+    "scope": "50W/재부팅 외 후보·영상·동일 판정/시험 설정 비교; 호스트 부하 완전 동일 보장은 아님"
+  },
+  "video_result": {
+    "status": "PASS",
+    "detected_falls": 8,
+    "median": 3.1374416665,
+    "p95": 4.3424325,
+    "max": 4.4460500000000005,
+    "above_target_3s": 4,
+    "above_limit_5s": 0,
+    "max_wall_delay": 4.496823951999963,
+    "scope": "핵심 GPU9 회귀(낙상8·정상1); 전체 GPU100 재실행·독립 품질 아님"
+  },
+  "soak_result": {
+    "passed": false,
+    "delay_growth_range_seconds": 0.8734865310000828,
+    "throughput_passed": false,
+    "status": "FAIL",
+    "errors": [],
+    "rss_growth_mib": 0.09375,
+    "rss_review_threshold_mib": 256,
+    "scope": "단일 입력30분; 반복 영상이며 독립 정상표본·24시간·다중 합격 아님",
+    "observation_seconds": 1800.783317756,
+    "false_alarms": 0,
+    "windows": 49,
+    "inference_min": 14.924393238783448,
+    "inference_median": 14.994656785750871,
+    "windows_below14_25": 0,
+    "inference_rate_passed": true,
+    "postprocess_avg_ms": 15.254,
+    "postprocess_max_ms": 822.468
+  },
+  "telemetry": {
+    "samples": 60,
+    "gpu_util_min": 0,
+    "gpu_util_median": 68.0,
+    "gpu_util_max": 99,
+    "gpu_util_ge97_count": 18,
+    "temperature_c": {
+      "gpu": {
+        "min": 49.906,
+        "max": 50.875
+      },
+      "cpu": {
+        "min": 53.593,
+        "max": 54.468
+      }
+    }
+  },
+  "recovery": {
+    "same_container": true,
+    "same_image": true,
+    "healthy": true,
+    "passed": true,
+    "rates": {
+      "cctv_processor_frames_processed_total": 29.690831477148205,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 14.812130053061605
+    },
+    "snapshot": [
+      {
+        "name": "/cctv-ai-engine",
+        "id": "c8a71163c84b458197b98a4bde8e0e06719afc5cf5964e6fbd0b716109ce0377",
+        "image": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+        "started_at": "2026-10-19T04:11:39.474631375Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-media-server",
+        "id": "957101f7ab7336585817a176154f7711de977caee7cfbf34257f2fb68810dea4",
+        "image": "sha256:f8628851106cc053f9175b248050bb5f362a6e65abd72297c167a1cb5a9a3be2",
+        "started_at": "2026-10-19T03:26:25.99475696Z",
+        "status": "running",
+        "health": null,
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-action-layer",
+        "id": "74deaeb0b5bdd64c8f2e2a141daa25c193a75cf235b214fee6ef8b4dcdceedeb",
+        "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+        "started_at": "2026-10-19T03:26:26.46548944Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-device-signboard",
+        "id": "29aeb393bd52e7a9f8241be9214b970e82e8442253fdfe2e73dbbf5d153feaa8",
+        "image": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+        "started_at": "2026-10-19T03:26:26.48474256Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-device-speaker",
+        "id": "a8ff5823d34ad72dd2c5b236cc88f210b16feb05ef53532e6549601d2beafb7a",
+        "image": "sha256:4daca5e8c9865c5f19dde37d7dbdfcc37ea5c413fa8375802e80c7f8185bba30",
+        "started_at": "2026-10-19T03:26:26.372757792Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      }
+    ],
+    "recovery_seconds": 43.14763267199987
+  },
+  "test_seconds": 2041.7918121814728,
+  "baseline30w": {
+    "video_max_wall_delay": 4.985894528939388,
+    "normal_false_alarms": 0,
+    "inference_min": 13.6343590645,
+    "inference_median": 14.1357160977,
+    "windows_below14_25": 38,
+    "windows": 49,
+    "delay_range": 0.653740886057335
+  },
+  "remaining": "r4 전체GPU100·독립 평가·다중·운영 승격 잔여; 싸움 보류",
+  "lag_review": {
+    "delay_range_seconds": 0.8734865310000828,
+    "peak_observed_seconds": 668.729880051,
+    "peak_neighbors": [
+      {
+        "observed_seconds": 664.315164314,
+        "relative_lag_seconds": 0.0185118809999949,
+        "postprocess_max_ms": 639.002,
+        "postprocess_avg_ms": 14.097,
+        "frame_age_seconds": 0.00017600399996808846
+      },
+      {
+        "observed_seconds": 666.3198913250001,
+        "relative_lag_seconds": 0.002940133000095102,
+        "postprocess_max_ms": 639.002,
+        "postprocess_avg_ms": 14.099,
+        "frame_age_seconds": 0.00013331500008462172
+      },
+      {
+        "observed_seconds": 668.729880051,
+        "relative_lag_seconds": 0.8249113640000587,
+        "postprocess_max_ms": 822.468,
+        "postprocess_avg_ms": 14.183,
+        "frame_age_seconds": 0.00026442099988344125
+      },
+      {
+        "observed_seconds": 670.8872902969999,
+        "relative_lag_seconds": 0.11076843299997563,
+        "postprocess_max_ms": 822.468,
+        "postprocess_avg_ms": 14.175,
+        "frame_age_seconds": 0.00018320399999538495
+      },
+      {
+        "observed_seconds": 672.9072382310001,
+        "relative_lag_seconds": 0.13814319500011152,
+        "postprocess_max_ms": 822.468,
+        "postprocess_avg_ms": 14.188,
+        "frame_age_seconds": 0.00012809899999410845
+      }
+    ],
+    "steady_cpu_quota_throttle_count_delta": 0,
+    "steady_cpu_quota_throttle_usec_delta": 0,
+    "interpretation": "지연 최대 구간의 후처리 최대시간 증가와 인접 관측의 회복을 기록한다. 동시 발생은 원인 확정이 아니며 이번 AUDIT_TRACE=0 기록만으로 계산/스케줄 대기/GIL/장치 동기화 시간을 분리할 수 없다."
+  },
+  "rollback_status": "CONFIRMED_MODE_30W_READ_ONLY",
+  "publication_verification": {
+    "local_generation": "PASS",
+    "visual_first_page": "PASS",
+    "ruff": "PASS",
+    "wbs_evidence_consistency": "PASS",
+    "http_verification": "NOT_EXECUTED_APPROVAL_REVIEW_CAPACITY_ERROR",
+    "optional_docker_memory_snapshot": "NOT_EXECUTED_APPROVAL_REVIEW_CAPACITY_ERROR",
+    "reason": "Selected model is at capacity; approval review could not complete, not an unsafe-action determination",
+    "files": {
+      "index.html": {
+        "bytes": 135382,
+        "sha256": "214fd15f5fc45ed80523ab0bf94bd1ba32927dc07d968f2a4efac52298aeb4c1"
+      },
+      "CCTV_project_progress.pdf": {
+        "bytes": 154813,
+        "sha256": "38decc50c6edd7db624787dfaf3adbbdc60a0acf1390776da682b92c66314f63"
+      },
+      "CCTV_project_progress.png": {
+        "bytes": 217195,
+        "sha256": "196a72f10bb7f31de3265708afa0ce3aeec2b16b73af6e87748e07b0011cf2d7"
+      }
+    }
+  },
+  "rollback_followup": {
+    "evidence": "fall_pose_filter_20261019.json",
+    "power": "NV Power Mode: MODE_30W\n2\n",
+    "systemd": "Result=success\nExecMainStatus=0\nActiveState=active\nSubState=exited\n",
+    "rates": {
+      "cctv_processor_frames_processed_total": 29.996697585744297,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 14.965093030581967
+    },
+    "scope": "현재30W·운영5서비스·systemd 관측; 이번 에이전트 전력 변경/재부팅 없음, 37컨테이너 전수재대조/부팅 재발 시험 아님"
+  }
+}

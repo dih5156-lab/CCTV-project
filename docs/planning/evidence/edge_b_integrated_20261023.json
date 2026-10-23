@@ -1,0 +1,432 @@
+{
+  "status": "CORE_PATH_AND_REPLAY_VERIFIED_WITH_LIMITATIONS",
+  "updated_at": "2026-10-23T00:56:01.523414+00:00",
+  "scope": {
+    "devices": [
+      "Jetson A",
+      "Jetson B"
+    ],
+    "camera_count": 1,
+    "source": "real CCTV over temporary SSH TCP forwarding through A",
+    "inference": "B DeepStream 6.3 / TensorRT 8.5.2.2 GPU; pose primary + helmet SGIE",
+    "dds": "physical A/B Wi-Fi UDP unicast, ROS 2 Humble, SROS2 Enforce, domain 73",
+    "preview": "current-owner authenticated JPEG preview, not continuous video"
+  },
+  "isolation": {
+    "b_candidate_path": "/home/sawwave/cctv-edge-lab/integrated-20261023-fxo2r_aq",
+    "ap_configuration_changed": false,
+    "production_configuration_changed": false,
+    "system_packages_installed": false,
+    "a_production_containers_unchanged_during_test": 37,
+    "b_existing_engines_unchanged": true
+  },
+  "fixes": [
+    {
+      "problem": "terminal stdin inherited heredoc",
+      "change": "private helper explicitly uses /dev/tty",
+      "validation": "PTY regression reproduced old false/new true"
+    },
+    {
+      "problem": "OCI manifest digest used as B Docker local image ID",
+      "change": "verified archive config ID; reuse loaded image and preserve first baseline",
+      "validation": [
+        {
+          "version": "failed",
+          "image_already_present": true,
+          "expected_outcome_confirmed": true
+        },
+        {
+          "version": "fixed",
+          "image_already_present": true,
+          "expected_outcome_confirmed": true
+        },
+        {
+          "version": "fixed",
+          "image_already_present": false,
+          "expected_outcome_confirmed": true
+        }
+      ]
+    },
+    {
+      "problem": "models have group write permission 0664",
+      "change": "isolated copies0444, same hashes, manifest/environment/native configs aligned",
+      "validation": {
+        "supervisor_pid": 683339,
+        "manifest": "b-trt85-integrated-preview-20261023-r2",
+        "engines": [
+          {
+            "model_id": "yolov8n-pose",
+            "hash_match": true,
+            "copy_mode": "0o444",
+            "original_mode": "0o664"
+          },
+          {
+            "model_id": "helmet_model",
+            "hash_match": true,
+            "copy_mode": "0o444",
+            "original_mode": "0o664"
+          }
+        ]
+      }
+    },
+    {
+      "problem": "preview enabled with B default OSD caused zero frames",
+      "change": "existing DS_OSD_PROCESS_MODE=0 with GPU inference unchanged",
+      "validation": "preview OFF worked; preview ON + CPU OSD worked; precise native cause not isolated"
+    },
+    {
+      "problem": "Firefox pattern v syntax and blocked implicit favicon",
+      "change": "web/edge-viewer.html hyphen escape and data URI favicon; CSP unchanged",
+      "validation": "JS7 + live Firefox PASS"
+    }
+  ],
+  "five_minute": {
+    "duration_seconds": 301.24462485313416,
+    "frames": {
+      "a": 7657.0,
+      "b": 8887.0
+    },
+    "b_processed_fps": 29.50094131748469,
+    "model_tensor_deltas": {
+      "cctv_model_frames_tensor_output_total{camera_id=\"camera_1\",model=\"primary\"}": 8887.0,
+      "cctv_model_frames_tensor_output_total{camera_id=\"camera_1\",model=\"helmet\"}": 8887.0
+    },
+    "dds": {
+      "count": 555,
+      "id_sha256_match": true,
+      "kind_counts": {
+        "event": 280,
+        "observation": 275
+      },
+      "decisions": {
+        "accepted": 280,
+        "observed": 275
+      },
+      "delivery_states": {
+        "observation_not_forwarded": 275,
+        "event_delivered": 278,
+        "event_expired_after_observer_exit": 2
+      }
+    },
+    "preview_requests": 131,
+    "preview_successes": 130,
+    "preview_unique_images": 130,
+    "preview_stale_blocked": 1,
+    "preview_recovered_next_poll": true,
+    "observer_errors_after_harness_fix": [],
+    "original_consumer_count_including_pre_window_backlog": 306,
+    "source_and_pipeline_error_deltas": {
+      "a": {
+        "cctv_processor_source_error_identified_total": 0.0,
+        "cctv_processor_source_error_unidentified_total": 0.0,
+        "cctv_processor_pipeline_restart_requested_total": 0.0,
+        "cctv_processor_pipeline_restart_rejected_total": 0.0,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_processor_pipeline_restart_failed_total": 0.0,
+        "cctv_processor_pipeline_restart_seconds_total": 0.0
+      },
+      "b": {
+        "cctv_processor_source_error_identified_total": 0.0,
+        "cctv_processor_source_error_unidentified_total": 0.0,
+        "cctv_processor_pipeline_restart_requested_total": 0.0,
+        "cctv_processor_pipeline_restart_rejected_total": 0.0,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_processor_pipeline_restart_failed_total": 0.0,
+        "cctv_processor_pipeline_restart_seconds_total": 0.0
+      }
+    }
+  },
+  "browser": {
+    "status": "PASS",
+    "target": "https://192.168.2.141:19041/viewer",
+    "real_controller": true,
+    "screenshots_saved": false,
+    "image_bytes_saved": false,
+    "continuous_video_verified": false,
+    "samples": [
+      {
+        "owner": "jetson-b",
+        "state": "추론·결과 저장 확인",
+        "preview_status": "담당 영상의 새 프레임 확인 · 2초 간격 미리보기",
+        "visible": true,
+        "width": 640,
+        "height": 360,
+        "token_input_cleared": true,
+        "image_sha256": "3e1278a7c16267c970efd3621f61a6ef6d798eaccdcdd0985cb41bf697d1457b",
+        "elapsed_seconds": 3.718
+      },
+      {
+        "owner": "jetson-b",
+        "state": "추론·결과 저장 확인",
+        "preview_status": "담당 영상의 새 프레임 확인 · 2초 간격 미리보기",
+        "visible": true,
+        "width": 640,
+        "height": 360,
+        "token_input_cleared": true,
+        "image_sha256": "18b503fae9d7f33b6b52bf9ab546dbce12531ce555b5daeda8861417bfbddab8",
+        "elapsed_seconds": 5.739
+      },
+      {
+        "owner": "jetson-b",
+        "state": "추론·결과 저장 확인",
+        "preview_status": "담당 영상의 새 프레임 확인 · 2초 간격 미리보기",
+        "visible": true,
+        "width": 640,
+        "height": 360,
+        "token_input_cleared": true,
+        "image_sha256": "22a3e0662c3018891f9868f4105b7b7bfe8a806883887dd00f1d29e6d6a41faa",
+        "elapsed_seconds": 8.079
+      },
+      {
+        "owner": "jetson-b",
+        "state": "추론·결과 저장 확인",
+        "preview_status": "담당 영상의 새 프레임 확인 · 2초 간격 미리보기",
+        "visible": true,
+        "width": 640,
+        "height": 360,
+        "token_input_cleared": true,
+        "image_sha256": "c38a6b5e95dabef8f31916c8a78833ccb0fa010179fb1cc729e8efb506f5a2f6",
+        "elapsed_seconds": 10.178
+      }
+    ],
+    "browser_version": "157.0.1",
+    "phase": "live_preview_observation",
+    "last_state": {
+      "owner": "jetson-b",
+      "state": "추론·결과 저장 확인",
+      "preview_status": "담당 영상의 새 프레임 확인 · 2초 간격 미리보기"
+    },
+    "preview_verified": true,
+    "image_changes": 3,
+    "browser_error_count": 0,
+    "browser_errors": [],
+    "cadence_note": "Viewer polls every 2000 ms after the preceding request finishes; observed timings retained.",
+    "isolated_profile_removed": true,
+    "cleanup_check": {
+      "profile_parent_exists": false,
+      "matching_test_browser_processes": []
+    },
+    "html_sha256": "56741cd1d01e140d78f6b24b238a91529bbf45ad54543c10eecd852ed6265123",
+    "observed_frame_intervals_seconds": [
+      2.021,
+      2.34,
+      2.099
+    ],
+    "fixes": [
+      "HTML pattern literal hyphen escaped for Unicode sets v mode",
+      "data URI favicon declared within unchanged img-src data CSP"
+    ],
+    "javascript_regression": {
+      "command": "rtk proxy node tests/test_edge_viewer.cjs",
+      "node_version": "v20.20.2",
+      "passed": 7,
+      "failed": 0,
+      "duration_ms": 71.48356
+    }
+  },
+  "registry_transient": {
+    "recorded_at": "2026-10-23T00:18:00.941123+00:00",
+    "scope": "isolated A controller and source read-only diagnosis; no production DB access",
+    "root_cause_confirmed": false,
+    "hypothesis": "A/B status-report write contention plus intermittent durable commit latency on /dev/sda1; fsync timing not measured",
+    "ssl_response_errors": [
+      {
+        "timestamp_utc": "2026-10-23T00:02:44.049609216Z",
+        "client_ip": "192.168.2.141",
+        "operation": "POST registry register/report success-body write",
+        "exception": "ssl.SSLEOFError"
+      },
+      {
+        "timestamp_utc": "2026-10-23T00:07:14.608701906Z",
+        "client_ip": "192.168.2.141",
+        "operation": "POST registry register/report success-body write",
+        "exception": "ssl.SSLEOFError"
+      }
+    ],
+    "database_locked_warning_times_utc": [
+      "2026-10-23T00:02:37.668345020Z",
+      "2026-10-23T00:02:40.704158922Z",
+      "2026-10-23T00:02:41.438151486Z",
+      "2026-10-23T00:07:13.074513047Z"
+    ],
+    "code_findings": {
+      "registry_schema": "NodeRegistry.__init__ only; no per-request schema or PRAGMA updates",
+      "registry_write": "new connection timeout=2; BEGIN IMMEDIATE; validate/update one row; context-manager commit then close before HTTP 200 response",
+      "registry_read": "fetchall and close connection before building response/service freshness",
+      "client_timeout_seconds": 3,
+      "registry_busy_timeout_seconds": 2,
+      "ownership_database_separate": true,
+      "ownership_threads": "single persistent SQLite connection serialized by RLock; ownership methods may read registry but registry methods do not call ownership",
+      "metrics_inside_registry_transaction": false,
+      "source_generation_direct_registry_write_path_found": false,
+      "ack_retry": "Agent preserves pending payload until ACK; registry returns duplicate ACK for same sequence and exact payload without report_count increment",
+      "source_locations": [
+        "src/services/edge_orchestrator.py:128",
+        "src/services/edge_orchestrator.py:184",
+        "src/services/edge_orchestrator.py:259",
+        "src/services/edge_orchestrator.py:331",
+        "src/services/edge_node_agent.py:57",
+        "src/services/edge_node_agent.py:145",
+        "src/services/edge_ownership.py:109",
+        "runners/run_edge_orchestration.py:161"
+      ]
+    },
+    "read_only_db_observation": {
+      "uri_mode": "ro",
+      "mount_source": "/dev/sda1[/CCTV-project]",
+      "filesystem": "ext4",
+      "nodes": {
+        "journal_mode": "delete",
+        "synchronous": 2,
+        "page_count": 5,
+        "page_size": 4096,
+        "read_seconds": 0.0012443,
+        "rows": [
+          {
+            "node_id": "jetson-a",
+            "last_sequence": 1747,
+            "report_count": 1747
+          },
+          {
+            "node_id": "jetson-b",
+            "last_sequence": 1718,
+            "report_count": 1718
+          }
+        ]
+      },
+      "ownership": {
+        "journal_mode": "delete",
+        "synchronous": 2,
+        "page_count": 11,
+        "page_size": 4096,
+        "read_seconds": 0.0024062
+      }
+    },
+    "isolated_controller_cgroup_observation": {
+      "cpu_limit_cores": 0.5,
+      "memory_limit_bytes": 536870912,
+      "cpu_usage_usec": 50600882,
+      "nr_periods": 15376,
+      "nr_throttled": 16,
+      "throttled_usec": 712696,
+      "memory_max_events": 0,
+      "oom_events": 0,
+      "oom_kill_events": 0,
+      "device": "8:0",
+      "write_bytes": 91398144,
+      "write_ios": 22280,
+      "interpretation": "CPU quota/OOM currently weak causes; I/O counts are consistent with repeated durable journal commits but do not prove latency source"
+    },
+    "regression": {
+      "test": "tests/test_edge_orchestration_integration.py::test_lost_report_ack_retries_identical_payload_once",
+      "command": "rtk proxy .venv/bin/python -m pytest tests/test_edge_orchestration_integration.py::test_lost_report_ack_retries_identical_payload_once -q --disable-warnings",
+      "fixture": "pytest temporary SQLite and ephemeral localhost HTTP; no production endpoints",
+      "initial_sandbox_attempt": "fixture setup blocked by socket PermissionError errno1 before test body",
+      "reviewed_localhost_retry": "PASS",
+      "passed": 1,
+      "pytest_seconds": 1.02,
+      "assertions": [
+        "pending payload retained after simulated lost ACK",
+        "next retry succeeds",
+        "registry report_count remains 1",
+        "agent sequence 1 and pending cleared"
+      ]
+    },
+    "changes": "diagnostic JSON only; no product source or runtime configuration changes",
+    "not_performed": [
+      "fsync benchmark",
+      "production database access",
+      "AP/network configuration changes",
+      "WAL/durability/timeout changes"
+    ],
+    "limitations": [
+      "Warnings do not distinguish BEGIN contention from commit latency",
+      "POST traceback does not expose exact register vs report URL",
+      "Actual TLS timeout recovery is inferred from code and logs; regression simulates lost ACK over local HTTP",
+      "Database and cgroup counters are point observations, not continuous tracing"
+    ]
+  },
+  "shutdown_recovery": {
+    "status": "PASS",
+    "trigger": "test-only 1800-second DDS deadline expired before AI stop",
+    "ai_stopped": true,
+    "producer_started_for_replay": false,
+    "replay_max_seconds": 180,
+    "expired_records_must_not_be_forwarded": true,
+    "pending_before": 161,
+    "pending_after": 0,
+    "all_records_committed": 1962,
+    "exit": 0,
+    "replay_duration_seconds": 25.400866508483887,
+    "replayed_events_delivered_as_current": 0,
+    "final_original_verification": {
+      "originals": 1962,
+      "all_ids_and_sha256_match": true,
+      "replayed": 161,
+      "replayed_events_delivered": 0,
+      "replay_decisions": {
+        "('observation', 'observed', 'preparation_sample', 'none', None)": 2,
+        "('observation', 'rejected', 'expired', 'none', None)": 84,
+        "('event', 'rejected', 'expired', 'none', None)": 73,
+        "('event', 'accepted', 'current_owner', 'discarded', 'expired')": 2
+      },
+      "central_pending": 0
+    }
+  },
+  "not_verified": [
+    "continuous video",
+    "automatic live AI handoff between A and B",
+    "all-model accuracy",
+    "long-duration operation",
+    "CCTV route independent of A",
+    "packet loss and calibrated end-to-end latency"
+  ],
+  "evidence_root": "/media/sawwave/Learning11/CCTV-project/edge-b-integration-20261023-fxo2r_aq",
+  "product_html_sha256": "56741cd1d01e140d78f6b24b238a91529bbf45ad54543c10eecd852ed6265123",
+  "cleanup": {
+    "complete": true,
+    "a_production_containers_unchanged": 37,
+    "a_production_metric_deltas_since_trial_preparation": {
+      "cctv_processor_frames_processed_total": 144292.0,
+      "cctv_processor_source_error_identified_total": 0.0,
+      "cctv_processor_source_error_unidentified_total": 0.0,
+      "cctv_processor_pipeline_restart_requested_total": 0.0,
+      "cctv_processor_pipeline_restart_rejected_total": 0.0,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_processor_pipeline_restart_failed_total": 0.0,
+      "cctv_processor_pipeline_restart_seconds_total": 0.0
+    },
+    "a_network_unchanged": true,
+    "b_network_unchanged": true,
+    "b_original_engine_sizes_unchanged": true,
+    "b_original_engine_hashes": {
+      "helmet_model.engine": "8c2f3c52f707d987fa68d23cf400d6e698c3b86f9623dcd2736147085c606afa",
+      "yolov8n-pose.engine": "e8320e6d327a5bf2ce1e4bb1ad0904139c87a583f4678859f94562ddec43d37d"
+    },
+    "trial_processes_stopped": true,
+    "temporary_credentials_removed": true,
+    "ssh_master_and_forwardings_closed": true,
+    "test_ports_free": true,
+    "b_candidate_retained": "/home/sawwave/cctv-edge-lab/integrated-20261023-fxo2r_aq",
+    "ros_image_retained_as_cache": true,
+    "operating_applied": false
+  },
+  "source_snapshot": {
+    "path": "docs/planning/evidence/edge_b_integrated_sources_20261023.tar.gz",
+    "file_count": 48,
+    "runtime_copy_mismatch_count": 0,
+    "note": "Source/config examples/tests only. B runtime-specific model paths and CPU OSD config are isolated overrides."
+  },
+  "artifacts": {
+    "edge_b_integrated_sources_20261023.tar.gz": {
+      "path": "docs/planning/evidence/edge_b_integrated_sources_20261023.tar.gz",
+      "bytes": 165434,
+      "sha256": "37d64d1b632a0236568d49ff189a40e330b3e5e6321f353d76af7d26d3f1df57"
+    },
+    "edge_b_integrated_20261023_telemetry.tar.gz": {
+      "path": "docs/planning/evidence/edge_b_integrated_20261023_telemetry.tar.gz",
+      "bytes": 453167,
+      "sha256": "de3e3c5eca18c1d448211b2385c3887e51c6c79afe3235532be4001aeb936fff"
+    }
+  }
+}

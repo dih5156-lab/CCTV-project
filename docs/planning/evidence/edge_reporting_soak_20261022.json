@@ -1,0 +1,876 @@
+{
+  "date": "2026-10-22",
+  "scope": "실제 Jetson 2대의 30분 자원 보고와 Agent별 중지·재접속, 기존 운영 미변경",
+  "result": "PASS",
+  "source_basis": "현재 프로젝트 소스의 격리 복사본; 제공 PDF/HWPX는 요구사항 근거",
+  "passed_attempt": {
+    "manifest": {
+      "root": "/media/sawwave/Learning11/CCTV-project/.edge-report-test-3_n3w74s",
+      "source_sha256": {
+        "src/services/edge_node_agent.py": "658d5ba889ae06e1b5bc38191eec1ffdb10203ecb91ac66e78c19fd349ebbe41",
+        "src/services/edge_orchestrator.py": "bb4f4ddfc5561828deee7bdbb1d153f8a91418e1237cbee9459de35a5c75c9ef",
+        "src/services/jetson_resources.py": "c702d6716913e07d2a78eee5c6027185c815f6ebd0483fa904dc8f9148781cac",
+        "src/_http_server.py": "efe041163b8a3adb2c1ffedda36ceaccb6ad807acda1de3d2beea2a90e614410",
+        "src/time_utils.py": "0fe78734eb6fddd6bc2d5778dae24ac09c3d3e57ced59758f6ccf3272f8516df",
+        "runners/run_edge_orchestration.py": "2a210f1ade75266f2d40a5a180b9c037231b8c6cfc413c35b06e00eb0afa5ac3"
+      },
+      "duration_seconds": 1800,
+      "interval_seconds": 1,
+      "stale_after_seconds": 10,
+      "interruptions": [
+        [
+          "jetson-b",
+          300,
+          20
+        ],
+        [
+          "jetson-a",
+          900,
+          20
+        ]
+      ],
+      "previous_failed_root": "/tmp/cctv-edge-soak-rs038o2y",
+      "state_device": "/dev/sda1",
+      "correction": "isolated test state/log directory moved from eMMC to separate mounted project volume; identical source and SQLite durability"
+    },
+    "elapsed_seconds": 1800.1200745720125,
+    "observations": 1798,
+    "query_errors": 0,
+    "all_observations_have_both_nodes": true,
+    "unexpected_stale": 0,
+    "server_errors": [],
+    "server_duplicate_reports": 0,
+    "query_seconds": {
+      "count": 1798,
+      "median": 0.009347378509119153,
+      "p95": 0.0454649509920273,
+      "p99": 0.3001986470189877,
+      "max": 1.039231931004906
+    },
+    "nodes": {
+      "jetson-a": {
+        "accepted": 1703,
+        "generations": [
+          {
+            "boot": "86907679-7a0b-4ea7-8823-e6c82e042a7d",
+            "accepted": 862,
+            "max_sequence": 862,
+            "contiguous": true
+          },
+          {
+            "boot": "3cb94e8e-07aa-4fd4-9429-08474ef1ca02",
+            "accepted": 841,
+            "max_sequence": 841,
+            "contiguous": true
+          }
+        ],
+        "client_errors": [],
+        "duplicate_acks": 0,
+        "request_seconds": {
+          "count": 1703,
+          "median": 0.024568191001890227,
+          "p95": 0.0777728509856388,
+          "p99": 0.5444807629974093,
+          "max": 1.0443196739943232
+        },
+        "database_save_seconds": {
+          "count": 1703,
+          "median": 0.014814389985986054,
+          "p95": 0.04845562900300138,
+          "p99": 0.5365047770028468,
+          "max": 1.0355507299827877
+        },
+        "same_boot_report_gap_seconds": {
+          "count": 1701,
+          "median": 1.026632308959961,
+          "p95": 1.0821421146392822,
+          "p99": 1.5460026264190674,
+          "max": 2.101815938949585
+        },
+        "unexpected_null_resources": {},
+        "resources": {
+          "cpu_percent": {
+            "min": 15.74,
+            "max": 100.0,
+            "median": 40.51
+          },
+          "gpu_percent": {
+            "min": 0.0,
+            "max": 99.7,
+            "median": 56.6
+          },
+          "memory_percent": {
+            "min": 26.2,
+            "max": 41.37,
+            "median": 33.66
+          }
+        },
+        "interruption": {
+          "stopped_seconds": 20.955543279647827,
+          "other_reports_during_stop": 20,
+          "other_online_in_all_observations": true,
+          "observations": 21,
+          "at": 900,
+          "duration": 20,
+          "stopped": true,
+          "restarted": true,
+          "recovered": true,
+          "saw_stale": true,
+          "stopped_at": 900.0675308190112,
+          "restarted_at": 921.0219990950136,
+          "recovery_seconds": 1.999091995996423,
+          "stale_after_stop_seconds": 9.95479965209961
+        }
+      },
+      "jetson-b": {
+        "accepted": 1669,
+        "generations": [
+          {
+            "boot": "e8842d4c-f69a-461f-8a21-ffbbf419d704",
+            "accepted": 280,
+            "max_sequence": 280,
+            "contiguous": true
+          },
+          {
+            "boot": "55f3a962-c410-46e0-8ca9-49f0e166f5b8",
+            "accepted": 1389,
+            "max_sequence": 1389,
+            "contiguous": true
+          }
+        ],
+        "client_errors": [],
+        "duplicate_acks": 0,
+        "request_seconds": {
+          "count": 1669,
+          "median": 0.04272893999996086,
+          "p95": 0.1292345319998276,
+          "p99": 0.5270406879999427,
+          "max": 1.3467046490004577
+        },
+        "database_save_seconds": {
+          "count": 1669,
+          "median": 0.014570720988558605,
+          "p95": 0.04371369400178082,
+          "p99": 0.44375474797561765,
+          "max": 1.3197045990091283
+        },
+        "same_boot_report_gap_seconds": {
+          "count": 1667,
+          "median": 1.045198917388916,
+          "p95": 1.129699945449829,
+          "p99": 1.5384838581085205,
+          "max": 2.3491592407226562
+        },
+        "unexpected_null_resources": {},
+        "resources": {
+          "cpu_percent": {
+            "min": 23.16,
+            "max": 36.54,
+            "median": 27.27
+          },
+          "gpu_percent": {
+            "min": 0.0,
+            "max": 77.3,
+            "median": 20.1
+          },
+          "memory_percent": {
+            "min": 6.85,
+            "max": 7.32,
+            "median": 7.12
+          }
+        },
+        "interruption": {
+          "stopped_seconds": 20.908112049102783,
+          "other_reports_during_stop": 21,
+          "other_online_in_all_observations": true,
+          "observations": 21,
+          "at": 300,
+          "duration": 20,
+          "stopped": true,
+          "restarted": true,
+          "recovered": true,
+          "saw_stale": true,
+          "stopped_at": 300.4442013090011,
+          "restarted_at": 321.3522207410133,
+          "recovery_seconds": 2.000188818987226,
+          "stale_after_stop_seconds": 9.907898664474487
+        }
+      }
+    },
+    "cleanup": {
+      "controller_exit": 0,
+      "remote_temporary_removed": true,
+      "listener_closed": true
+    },
+    "database_integrity": [
+      [
+        "ok"
+      ]
+    ],
+    "operating_unchanged": true,
+    "operating_before": [
+      {
+        "id": "c6aac881db6d7beb390b23a34b974338c7a6aed996caa7636c2b9b130f766e0c",
+        "name": "/cctv-ai-engine",
+        "image": "sha256:ccbfe02abcbffe212c3ca09a2d08dd09983ee20fcfd7bf7b1ae7cda52a76cfe5",
+        "status": "running",
+        "started_at": "2026-10-19T08:40:12.347649183Z"
+      },
+      {
+        "id": "922d80edd866e451665534775729087ae8480733004dbff567aa2c751020c78f",
+        "name": "/cctv-public-api",
+        "image": "sha256:ca4376b086a99f2ad42d2132cb21b1cf75178571fae530ec464c1ed071f3175c",
+        "status": "running",
+        "started_at": "2026-10-19T04:35:34.121987945Z"
+      },
+      {
+        "id": "a1c5702a54396807133a5bfce7fc5b78ee8a2ecf05ff120e163490b35f31394d",
+        "name": "/cctv-public-demo-ui",
+        "image": "sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10",
+        "status": "running",
+        "started_at": "2026-10-19T04:35:33.544644097Z"
+      },
+      {
+        "id": "8314d05912aa48380ef2a671c2209fd2a282addf3bad56c02a78622d7c53e024",
+        "name": "/cctv-progress-web",
+        "image": "sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.255910016Z"
+      },
+      {
+        "id": "6bb51352f9dc42b80a9d41e9b5bbea55c2f7747f6e17b6317f2dcb8f14c0cc7b",
+        "name": "/cctv-kuiper-rule-loader",
+        "image": "sha256:2f22e8c91de618d6e9378ca55f8f7ce0980de6bccffdf37f6cd7363be3a51ff8",
+        "status": "created",
+        "started_at": "0001-01-01T00:00:00Z"
+      },
+      {
+        "id": "74deaeb0b5bdd64c8f2e2a141daa25c193a75cf235b214fee6ef8b4dcdceedeb",
+        "name": "/cctv-action-layer",
+        "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.718149472Z"
+      },
+      {
+        "id": "8e3b45eaa7c610e0501071584365b19e0a55874e90144e18acfcb303ee6a9560",
+        "name": "/cctv-alert-api",
+        "image": "sha256:017ce3b2c1c0c09148ecd71fbaa05863452c5e115ad29e69e766a6ffd5003a8c",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.706187136Z"
+      },
+      {
+        "id": "957101f7ab7336585817a176154f7711de977caee7cfbf34257f2fb68810dea4",
+        "name": "/cctv-media-server",
+        "image": "sha256:f8628851106cc053f9175b248050bb5f362a6e65abd72297c167a1cb5a9a3be2",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.529492192Z"
+      },
+      {
+        "id": "29aeb393bd52e7a9f8241be9214b970e82e8442253fdfe2e73dbbf5d153feaa8",
+        "name": "/cctv-device-signboard",
+        "image": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.818044288Z"
+      },
+      {
+        "id": "ecac3c50c98a08544a0ad5dd85f668240017852f3c00ff3191463c498a6f385c",
+        "name": "/aiot-parser",
+        "image": "sha256:e28e84c7e1daac4ad0aac610a0f372d8abd1c5c281c708f8f4de839071098179",
+        "status": "running",
+        "started_at": "2026-10-19T04:33:35.034096532Z"
+      },
+      {
+        "id": "64c16ac5a15eb14697be4327f593658f0fca95fd3cb3794ff376f01aac763033",
+        "name": "/cctv-edgex-adapter",
+        "image": "sha256:b146c351ec53303c7c57dc0836b81b4dc86df13d351055c0a4d50f40f1a83c10",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.617063968Z"
+      },
+      {
+        "id": "589787a68cd563f3a2c3bbf93a6ba4854f74e433d000e0cbac0e63ca4cd905d9",
+        "name": "/cctv-edgex-command-result",
+        "image": "sha256:91f458bd94f6459d8ae84b10a6fb5ad1d3094fe794749f8276537785a604ef25",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.66473168Z"
+      },
+      {
+        "id": "a8ff5823d34ad72dd2c5b236cc88f210b16feb05ef53532e6549601d2beafb7a",
+        "name": "/cctv-device-speaker",
+        "image": "sha256:4daca5e8c9865c5f19dde37d7dbdfcc37ea5c413fa8375802e80c7f8185bba30",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.744499456Z"
+      },
+      {
+        "id": "9bdc877613d8d607f7f064ef9d42588466f8a6dc5906998d9851c3d57fa0be01",
+        "name": "/cctv-device-siren",
+        "image": "sha256:610552d415f5d0c7336e77c00b94f99a4e6e8fbdafa350da67c7f5b2c19e023e",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.526276928Z"
+      },
+      {
+        "id": "2ee109f4f7b84699c76cf80d5f69cb92a86a82ef2d715ffa4bddef559eb4ae46",
+        "name": "/cctv-sensor-rule-bridge",
+        "image": "sha256:fb26bbabe1d61b0f98e865ee170af45c6c80b17f223bb8ae5b700e3d5de48fb5",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.777103168Z"
+      },
+      {
+        "id": "6709ebb4de578bb55684d06e81fd0189998c733471fc1f06a923c331a80597c1",
+        "name": "/cctv-grafana",
+        "image": "sha256:7d5faae481a4c6f436c99e98af11534f7fd5e8d3e35213552dd1dd02bc393d2e",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.68607424Z"
+      },
+      {
+        "id": "2f1c7751643d8cb71328210666e4dfcfc37343b775137f91282f0834aac62e79",
+        "name": "/edgex-mqtt-broker",
+        "image": "sha256:914f529386804c8278a4e581526b9be5e1604df44b30daabc70aa97dcefe5268",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.70201472Z"
+      },
+      {
+        "id": "3f72e5aa05a9ee7d0aa1826dfad0a908c36ce2d96eecbc7b918ba66cb7ad98bc",
+        "name": "/edgex-ui-go",
+        "image": "sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.7746584Z"
+      },
+      {
+        "id": "6249a0c22b5712d01242c176abfce736685579514bfb389952062c3fd9392576",
+        "name": "/edgex-kuiper",
+        "image": "sha256:7f4962946a721ece5ec630150e47614c4a461ee2c29600f24d96ef5e35a9d4da",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.290632608Z"
+      },
+      {
+        "id": "1d13831d072018233fcd22305be7e7b6fca7062191364a0cd4a355986196110f",
+        "name": "/cctv-prometheus",
+        "image": "sha256:4f6c47e39a9064028766e8c95890ed15690c30f00c4ba14e7ce6ae1ded0295b1",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.539839392Z"
+      },
+      {
+        "id": "118472f5aeed0881b938915994377311fca6a7caa359cd97f4769c0d36bc5167",
+        "name": "/aiot-parser-db",
+        "image": "sha256:4e6e670bb069649261c9c18031f0aded7bb249a5b6664ddec29c013a89310d50",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.698492Z"
+      },
+      {
+        "id": "ac9d4613800ff7c022573596a9699e644eed63ce5b17eba6176312deb8734241",
+        "name": "/edgex-app-rules-engine",
+        "image": "sha256:de5506942654c8a1a8271486bdf2a5392bc8444d51a265be9a57e639e9d849c4",
+        "status": "running",
+        "started_at": "2026-10-19T04:33:34.972463195Z"
+      },
+      {
+        "id": "2026a3b6bb0a51662038528f602125c94945a8ec555398cb871b05b22a911a72",
+        "name": "/edgex-core-common-config-bootstrapper",
+        "image": "sha256:6da4dc8fb74974979118bf616927dfc538e62b3e521f0e7cb6d291ac52b273fc",
+        "status": "exited",
+        "started_at": "2026-09-16T00:14:02.853614493Z"
+      },
+      {
+        "id": "746e673415b9485c48eb33d2b5a9597c84331f983e37bda3f89143dc0585a777",
+        "name": "/edgex-support-notifications",
+        "image": "sha256:a0df8bc385816bc3848f925656c712e08e1328c4146006c5bb6fa21862f730c3",
+        "status": "running",
+        "started_at": "2026-10-19T04:33:34.991080063Z"
+      },
+      {
+        "id": "c7448aca4f7d5e9255d17c0c297f5fbf12bd7489c3c1298b92dfd3601b5df61a",
+        "name": "/edgex-support-scheduler",
+        "image": "sha256:d8d2d0c6b28c63bf01545983c9dbb295c2bdea9003394a3a97e6fe8046857728",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.750586368Z"
+      },
+      {
+        "id": "5d7049bb56d064ede2cff8d5b82787716ad7fe85040df092514d045bfaaf5439",
+        "name": "/edgex-device-virtual",
+        "image": "sha256:a285c7a76c84113475134774d96b156080290e7ada65aa597691afd050c262a1",
+        "status": "running",
+        "started_at": "2026-10-19T04:33:35.0647887Z"
+      },
+      {
+        "id": "f51a40001b1cdd706b69941702a76e10044002740582f2da9c20c8648aa36a0d",
+        "name": "/cctv-device-dabit",
+        "image": "sha256:bb0f35eee47d16c4bc8b30417717bc04b9d2c40ce6f2556d97d081f736a006fd",
+        "status": "exited",
+        "started_at": "2026-10-01T23:40:25.229113157Z"
+      },
+      {
+        "id": "3a534e8a48317ab81af9bc0ba3723e8884a5a9d78ccc5086499ad92f90d8df27",
+        "name": "/edgex-device-rest",
+        "image": "sha256:bc4c93d0f73d7ea22c47269000eeef1cd9e3dfbc18324c2d4916e6987f459c48",
+        "status": "running",
+        "started_at": "2026-10-19T04:33:37.210225867Z"
+      },
+      {
+        "id": "135a0431ddbf798c357569d7ed7f80f6d63ef920a7b987ea7fb10395d312be00",
+        "name": "/edgex-core-command",
+        "image": "sha256:03d842378532a9a6a8a1076bd1cdca4249b2a8c64649226a0a9f0585ba221490",
+        "status": "running",
+        "started_at": "2026-10-19T04:33:35.060441837Z"
+      },
+      {
+        "id": "fa3e84dfbabf7731cec9bcc49d967bcf0daba84a7b57569ed685ae8388ad6bbb",
+        "name": "/edgex-core-data",
+        "image": "sha256:d5d4e2d3a69666d86ace3538f24fabaf3663bfbd8fb45a0c0a49f754dec3f5be",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.71103136Z"
+      },
+      {
+        "id": "2e7b3da73a544316ca45f19de90fc7bdd0a6cd32163d107aeace03741bc10d4d",
+        "name": "/edgex-core-metadata",
+        "image": "sha256:85c7c220e71f55ee2ca85f943467cbf3531996330feac8a8aeaef3546c9304ed",
+        "status": "running",
+        "started_at": "2026-10-19T04:33:35.054281881Z"
+      },
+      {
+        "id": "ecb7e55482d1613a10f549502a1ba5753ed0c82d780d2845d70cf9e8e9d01683",
+        "name": "/edgex-core-consul",
+        "image": "sha256:e1ce8eb1b6893249a27bbc3648b9ae3e97508f9aa013b73b3a954e18f935e0f6",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.579229952Z"
+      },
+      {
+        "id": "b646e206b36686338381d54c7f0441831f5fe91795ced55365a976b2a01fc8a0",
+        "name": "/edgex-redis",
+        "image": "sha256:45de526e9fbc1a4b183957ab93a448294181fae10ced9184fc6efe9956ca0ccc",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.465489792Z"
+      },
+      {
+        "id": "0ceb741184f88c62e432821fef0091c15904681cebca48bf69fabddf6f33ee25",
+        "name": "/cctv-appearance-review",
+        "image": "sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.6870952Z"
+      },
+      {
+        "id": "052f94f81510340dfb9eb5a9220f4d127008c3ed35e0bd9fbf157fae82a500fc",
+        "name": "/cctv-appearance-rapv2-color-train",
+        "image": "sha256:cce2564011213a59bcf4984337bc52249e43ed2cf3f41da2e0ad2bd0078852b2",
+        "status": "exited",
+        "started_at": "2026-08-28T04:04:36.563214246Z"
+      },
+      {
+        "id": "37a781537f8661d61ab60edad76c8e7fdde54947bc56be84601669c94c707e0d",
+        "name": "/appearance-training-jetson-appearance-multitask-train-1",
+        "image": "sha256:cce2564011213a59bcf4984337bc52249e43ed2cf3f41da2e0ad2bd0078852b2",
+        "status": "exited",
+        "started_at": "2026-08-26T23:34:15.546369346Z"
+      },
+      {
+        "id": "a49749b1d57469d784fedf026f77035eb737cebba0c41bc2f140d629c3cfd07d",
+        "name": "/cctv-fall-training",
+        "image": "sha256:1ace5b7832a50d6675b66146b0edc307021795732fc7c9a770e2cd628d7fd261",
+        "status": "exited",
+        "started_at": "2026-07-27T02:29:31.59916121Z"
+      }
+    ],
+    "operating_after": [
+      {
+        "id": "c6aac881db6d7beb390b23a34b974338c7a6aed996caa7636c2b9b130f766e0c",
+        "name": "/cctv-ai-engine",
+        "image": "sha256:ccbfe02abcbffe212c3ca09a2d08dd09983ee20fcfd7bf7b1ae7cda52a76cfe5",
+        "status": "running",
+        "started_at": "2026-10-19T08:40:12.347649183Z"
+      },
+      {
+        "id": "922d80edd866e451665534775729087ae8480733004dbff567aa2c751020c78f",
+        "name": "/cctv-public-api",
+        "image": "sha256:ca4376b086a99f2ad42d2132cb21b1cf75178571fae530ec464c1ed071f3175c",
+        "status": "running",
+        "started_at": "2026-10-19T04:35:34.121987945Z"
+      },
+      {
+        "id": "a1c5702a54396807133a5bfce7fc5b78ee8a2ecf05ff120e163490b35f31394d",
+        "name": "/cctv-public-demo-ui",
+        "image": "sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10",
+        "status": "running",
+        "started_at": "2026-10-19T04:35:33.544644097Z"
+      },
+      {
+        "id": "8314d05912aa48380ef2a671c2209fd2a282addf3bad56c02a78622d7c53e024",
+        "name": "/cctv-progress-web",
+        "image": "sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.255910016Z"
+      },
+      {
+        "id": "6bb51352f9dc42b80a9d41e9b5bbea55c2f7747f6e17b6317f2dcb8f14c0cc7b",
+        "name": "/cctv-kuiper-rule-loader",
+        "image": "sha256:2f22e8c91de618d6e9378ca55f8f7ce0980de6bccffdf37f6cd7363be3a51ff8",
+        "status": "created",
+        "started_at": "0001-01-01T00:00:00Z"
+      },
+      {
+        "id": "74deaeb0b5bdd64c8f2e2a141daa25c193a75cf235b214fee6ef8b4dcdceedeb",
+        "name": "/cctv-action-layer",
+        "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.718149472Z"
+      },
+      {
+        "id": "8e3b45eaa7c610e0501071584365b19e0a55874e90144e18acfcb303ee6a9560",
+        "name": "/cctv-alert-api",
+        "image": "sha256:017ce3b2c1c0c09148ecd71fbaa05863452c5e115ad29e69e766a6ffd5003a8c",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.706187136Z"
+      },
+      {
+        "id": "957101f7ab7336585817a176154f7711de977caee7cfbf34257f2fb68810dea4",
+        "name": "/cctv-media-server",
+        "image": "sha256:f8628851106cc053f9175b248050bb5f362a6e65abd72297c167a1cb5a9a3be2",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.529492192Z"
+      },
+      {
+        "id": "29aeb393bd52e7a9f8241be9214b970e82e8442253fdfe2e73dbbf5d153feaa8",
+        "name": "/cctv-device-signboard",
+        "image": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.818044288Z"
+      },
+      {
+        "id": "ecac3c50c98a08544a0ad5dd85f668240017852f3c00ff3191463c498a6f385c",
+        "name": "/aiot-parser",
+        "image": "sha256:e28e84c7e1daac4ad0aac610a0f372d8abd1c5c281c708f8f4de839071098179",
+        "status": "running",
+        "started_at": "2026-10-19T04:33:35.034096532Z"
+      },
+      {
+        "id": "64c16ac5a15eb14697be4327f593658f0fca95fd3cb3794ff376f01aac763033",
+        "name": "/cctv-edgex-adapter",
+        "image": "sha256:b146c351ec53303c7c57dc0836b81b4dc86df13d351055c0a4d50f40f1a83c10",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.617063968Z"
+      },
+      {
+        "id": "589787a68cd563f3a2c3bbf93a6ba4854f74e433d000e0cbac0e63ca4cd905d9",
+        "name": "/cctv-edgex-command-result",
+        "image": "sha256:91f458bd94f6459d8ae84b10a6fb5ad1d3094fe794749f8276537785a604ef25",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.66473168Z"
+      },
+      {
+        "id": "a8ff5823d34ad72dd2c5b236cc88f210b16feb05ef53532e6549601d2beafb7a",
+        "name": "/cctv-device-speaker",
+        "image": "sha256:4daca5e8c9865c5f19dde37d7dbdfcc37ea5c413fa8375802e80c7f8185bba30",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.744499456Z"
+      },
+      {
+        "id": "9bdc877613d8d607f7f064ef9d42588466f8a6dc5906998d9851c3d57fa0be01",
+        "name": "/cctv-device-siren",
+        "image": "sha256:610552d415f5d0c7336e77c00b94f99a4e6e8fbdafa350da67c7f5b2c19e023e",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.526276928Z"
+      },
+      {
+        "id": "2ee109f4f7b84699c76cf80d5f69cb92a86a82ef2d715ffa4bddef559eb4ae46",
+        "name": "/cctv-sensor-rule-bridge",
+        "image": "sha256:fb26bbabe1d61b0f98e865ee170af45c6c80b17f223bb8ae5b700e3d5de48fb5",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.777103168Z"
+      },
+      {
+        "id": "6709ebb4de578bb55684d06e81fd0189998c733471fc1f06a923c331a80597c1",
+        "name": "/cctv-grafana",
+        "image": "sha256:7d5faae481a4c6f436c99e98af11534f7fd5e8d3e35213552dd1dd02bc393d2e",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.68607424Z"
+      },
+      {
+        "id": "2f1c7751643d8cb71328210666e4dfcfc37343b775137f91282f0834aac62e79",
+        "name": "/edgex-mqtt-broker",
+        "image": "sha256:914f529386804c8278a4e581526b9be5e1604df44b30daabc70aa97dcefe5268",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.70201472Z"
+      },
+      {
+        "id": "3f72e5aa05a9ee7d0aa1826dfad0a908c36ce2d96eecbc7b918ba66cb7ad98bc",
+        "name": "/edgex-ui-go",
+        "image": "sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.7746584Z"
+      },
+      {
+        "id": "6249a0c22b5712d01242c176abfce736685579514bfb389952062c3fd9392576",
+        "name": "/edgex-kuiper",
+        "image": "sha256:7f4962946a721ece5ec630150e47614c4a461ee2c29600f24d96ef5e35a9d4da",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.290632608Z"
+      },
+      {
+        "id": "1d13831d072018233fcd22305be7e7b6fca7062191364a0cd4a355986196110f",
+        "name": "/cctv-prometheus",
+        "image": "sha256:4f6c47e39a9064028766e8c95890ed15690c30f00c4ba14e7ce6ae1ded0295b1",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.539839392Z"
+      },
+      {
+        "id": "118472f5aeed0881b938915994377311fca6a7caa359cd97f4769c0d36bc5167",
+        "name": "/aiot-parser-db",
+        "image": "sha256:4e6e670bb069649261c9c18031f0aded7bb249a5b6664ddec29c013a89310d50",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.698492Z"
+      },
+      {
+        "id": "ac9d4613800ff7c022573596a9699e644eed63ce5b17eba6176312deb8734241",
+        "name": "/edgex-app-rules-engine",
+        "image": "sha256:de5506942654c8a1a8271486bdf2a5392bc8444d51a265be9a57e639e9d849c4",
+        "status": "running",
+        "started_at": "2026-10-19T04:33:34.972463195Z"
+      },
+      {
+        "id": "2026a3b6bb0a51662038528f602125c94945a8ec555398cb871b05b22a911a72",
+        "name": "/edgex-core-common-config-bootstrapper",
+        "image": "sha256:6da4dc8fb74974979118bf616927dfc538e62b3e521f0e7cb6d291ac52b273fc",
+        "status": "exited",
+        "started_at": "2026-09-16T00:14:02.853614493Z"
+      },
+      {
+        "id": "746e673415b9485c48eb33d2b5a9597c84331f983e37bda3f89143dc0585a777",
+        "name": "/edgex-support-notifications",
+        "image": "sha256:a0df8bc385816bc3848f925656c712e08e1328c4146006c5bb6fa21862f730c3",
+        "status": "running",
+        "started_at": "2026-10-19T04:33:34.991080063Z"
+      },
+      {
+        "id": "c7448aca4f7d5e9255d17c0c297f5fbf12bd7489c3c1298b92dfd3601b5df61a",
+        "name": "/edgex-support-scheduler",
+        "image": "sha256:d8d2d0c6b28c63bf01545983c9dbb295c2bdea9003394a3a97e6fe8046857728",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.750586368Z"
+      },
+      {
+        "id": "5d7049bb56d064ede2cff8d5b82787716ad7fe85040df092514d045bfaaf5439",
+        "name": "/edgex-device-virtual",
+        "image": "sha256:a285c7a76c84113475134774d96b156080290e7ada65aa597691afd050c262a1",
+        "status": "running",
+        "started_at": "2026-10-19T04:33:35.0647887Z"
+      },
+      {
+        "id": "f51a40001b1cdd706b69941702a76e10044002740582f2da9c20c8648aa36a0d",
+        "name": "/cctv-device-dabit",
+        "image": "sha256:bb0f35eee47d16c4bc8b30417717bc04b9d2c40ce6f2556d97d081f736a006fd",
+        "status": "exited",
+        "started_at": "2026-10-01T23:40:25.229113157Z"
+      },
+      {
+        "id": "3a534e8a48317ab81af9bc0ba3723e8884a5a9d78ccc5086499ad92f90d8df27",
+        "name": "/edgex-device-rest",
+        "image": "sha256:bc4c93d0f73d7ea22c47269000eeef1cd9e3dfbc18324c2d4916e6987f459c48",
+        "status": "running",
+        "started_at": "2026-10-19T04:33:37.210225867Z"
+      },
+      {
+        "id": "135a0431ddbf798c357569d7ed7f80f6d63ef920a7b987ea7fb10395d312be00",
+        "name": "/edgex-core-command",
+        "image": "sha256:03d842378532a9a6a8a1076bd1cdca4249b2a8c64649226a0a9f0585ba221490",
+        "status": "running",
+        "started_at": "2026-10-19T04:33:35.060441837Z"
+      },
+      {
+        "id": "fa3e84dfbabf7731cec9bcc49d967bcf0daba84a7b57569ed685ae8388ad6bbb",
+        "name": "/edgex-core-data",
+        "image": "sha256:d5d4e2d3a69666d86ace3538f24fabaf3663bfbd8fb45a0c0a49f754dec3f5be",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.71103136Z"
+      },
+      {
+        "id": "2e7b3da73a544316ca45f19de90fc7bdd0a6cd32163d107aeace03741bc10d4d",
+        "name": "/edgex-core-metadata",
+        "image": "sha256:85c7c220e71f55ee2ca85f943467cbf3531996330feac8a8aeaef3546c9304ed",
+        "status": "running",
+        "started_at": "2026-10-19T04:33:35.054281881Z"
+      },
+      {
+        "id": "ecb7e55482d1613a10f549502a1ba5753ed0c82d780d2845d70cf9e8e9d01683",
+        "name": "/edgex-core-consul",
+        "image": "sha256:e1ce8eb1b6893249a27bbc3648b9ae3e97508f9aa013b73b3a954e18f935e0f6",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.579229952Z"
+      },
+      {
+        "id": "b646e206b36686338381d54c7f0441831f5fe91795ced55365a976b2a01fc8a0",
+        "name": "/edgex-redis",
+        "image": "sha256:45de526e9fbc1a4b183957ab93a448294181fae10ced9184fc6efe9956ca0ccc",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.465489792Z"
+      },
+      {
+        "id": "0ceb741184f88c62e432821fef0091c15904681cebca48bf69fabddf6f33ee25",
+        "name": "/cctv-appearance-review",
+        "image": "sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10",
+        "status": "running",
+        "started_at": "2026-10-19T04:31:54.6870952Z"
+      },
+      {
+        "id": "052f94f81510340dfb9eb5a9220f4d127008c3ed35e0bd9fbf157fae82a500fc",
+        "name": "/cctv-appearance-rapv2-color-train",
+        "image": "sha256:cce2564011213a59bcf4984337bc52249e43ed2cf3f41da2e0ad2bd0078852b2",
+        "status": "exited",
+        "started_at": "2026-08-28T04:04:36.563214246Z"
+      },
+      {
+        "id": "37a781537f8661d61ab60edad76c8e7fdde54947bc56be84601669c94c707e0d",
+        "name": "/appearance-training-jetson-appearance-multitask-train-1",
+        "image": "sha256:cce2564011213a59bcf4984337bc52249e43ed2cf3f41da2e0ad2bd0078852b2",
+        "status": "exited",
+        "started_at": "2026-08-26T23:34:15.546369346Z"
+      },
+      {
+        "id": "a49749b1d57469d784fedf026f77035eb737cebba0c41bc2f140d629c3cfd07d",
+        "name": "/cctv-fall-training",
+        "image": "sha256:1ace5b7832a50d6675b66146b0edc307021795732fc7c9a770e2cd628d7fd261",
+        "status": "exited",
+        "started_at": "2026-07-27T02:29:31.59916121Z"
+      }
+    ],
+    "sources_unchanged": true,
+    "pass": true
+  },
+  "first_attempt": {
+    "elapsed_seconds": 181.90929585299455,
+    "query_errors": 17,
+    "unexpected_stale_observations": 13,
+    "result": "STOPPED_AFTER_STORAGE_FAILURE",
+    "max_sqlite_commit_seconds": 35.1896180830081,
+    "kernel_wait": "wait_on_page_bit_common",
+    "state_device": "/dev/mmcblk0p1 ext4",
+    "database_integrity": [
+      [
+        "ok"
+      ]
+    ],
+    "operating_unchanged": true,
+    "cleanup": {
+      "controller_exit": 0,
+      "remote_temporary_removed": true,
+      "listener_closed": true
+    }
+  },
+  "correction": {
+    "cause_observed": "eMMC의 동기 commit 완료 대기 중 SQLite 쓰기 잠금이 유지되어 다른 요청이 잠금 오류/timeout으로 실패",
+    "action": "시험 전용 state/log 경로를 /dev/sda1 ext4로 이동하고 전체 30분 재시험",
+    "code_or_sqlite_durability_changed": false,
+    "broader_storage_root_cause_confirmed": false,
+    "fsync_4k_three_samples": {
+      "/media/sawwave/Learning11/CCTV-project": [
+        0.005827459011925384,
+        0.006119957979535684,
+        0.005217085999902338
+      ],
+      "/tmp": [
+        0.14569025600212626,
+        0.06233201501891017,
+        0.10486684201168828
+      ]
+    }
+  },
+  "regression": {
+    "passed": 103,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 11.28,
+    "execution": {
+      "command": [
+        ".venv/bin/python",
+        "-m",
+        "pytest",
+        "-q",
+        "tests/test_jetson_resources.py",
+        "tests/test_edge_orchestrator.py",
+        "tests/test_edge_orchestration_integration.py",
+        "tests/test_edge_orchestration_remote.py",
+        "--basetemp",
+        "/media/sawwave/Learning11/CCTV-project/.edge-report-test-3_n3w74s/regression-temp/pytest",
+        "--junitxml",
+        "/media/sawwave/Learning11/CCTV-project/.edge-report-test-3_n3w74s/regression.xml"
+      ],
+      "returncode": 0,
+      "seconds": 13.367374638008187,
+      "temporary_device": "/dev/sda1",
+      "production_changes": false
+    }
+  },
+  "raw_evidence": {
+    "path": "docs/planning/evidence/edge_reporting_soak_20261022_logs.tar.gz",
+    "sha256": "9d1618bc5a3474a853bd236931635ba5251d9d05bba89ef10950d4f86bd81279",
+    "bytes": 503097,
+    "files": 30,
+    "contains_credentials": false
+  },
+  "additional_installations": 0,
+  "operating_changes": false,
+  "not_tested": [
+    "30분을 넘는 장기 안정성",
+    "eMMC 지연을 일으킨 전체 시스템 원인/장치 건강",
+    "AI 수명주기·CCTV 인계·ROS 2/DDS·네트워크 단절",
+    "전체 제품 회귀·추론 엔진 호환성"
+  ],
+  "final_cleanup": {
+    "local_test_processes": [],
+    "remote_check": {
+      "temporary_removed": true,
+      "test_processes": []
+    },
+    "temporary_ssh_closed": true,
+    "local_runtime_directories_removed": true,
+    "credentials_removed": true,
+    "user_ssh_configuration_changed": false,
+    "helper_removed": true
+  },
+  "final_checks": {
+    "renderer_ruff": "PASS",
+    "renderer_execution": "PASS",
+    "pdf_first_page_visual": "PASS",
+    "document_consistency": {
+      "wbs_rows": 37,
+      "counts": {
+        "DONE": 9,
+        "BLOCKED": 3,
+        "PLANNED": 16,
+        "VERIFY": 7,
+        "IN_PROGRESS": 2
+      },
+      "plan_links": 64,
+      "baseline_files": 1156,
+      "changed_non_document_files": [
+        "scripts/ops/progress_snapshot_template.html",
+        "scripts/ops/render_progress_snapshot.py"
+      ],
+      "source_test_files_unchanged": [
+        "runners/run_edge_orchestration.py",
+        "runners/run_edge_orchestration_demo.py",
+        "src/services/edge_node_agent.py",
+        "src/services/edge_orchestrator.py",
+        "src/services/jetson_resources.py",
+        "tests/test_edge_orchestrator.py",
+        "tests/test_edge_orchestration_remote.py",
+        "tests/test_jetson_resources.py",
+        "tests/test_edge_orchestration_integration.py"
+      ]
+    },
+    "online": [
+      {
+        "url": "http://192.168.2.141:18081/",
+        "http_status": 200,
+        "bytes": 142179,
+        "sha256": "a2a337fda961f8d0cbaf7b8dfaddf04e27364153da53a80ae9d76b3d0c4f9a87",
+        "matches_local": true
+      },
+      {
+        "url": "http://192.168.2.141:18081/CCTV_project_progress.pdf",
+        "http_status": 200,
+        "bytes": 159459,
+        "sha256": "76864f8551bb433413468bdb6c010c396fe3575fbadd1c9e4d1497a3c2e29d9e",
+        "matches_local": true
+      }
+    ]
+  }
+}

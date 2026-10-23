@@ -1,0 +1,1617 @@
+{
+  "status": "PASS_SCOPED_AUTOMATIC_DDS_INTEGRATION_AND_30MIN_SOAK",
+  "date_kst": "2026-10-23",
+  "scope": "Authenticated controlled CPU/GPU/memory reports → automatic decision → existing handoff → actual intake/outbox → SROS2 DDS/HTTPS receipt. Inference is a fixture, not GPU inference.",
+  "source_requirements": {
+    "functional_definition": "F-29/F-30",
+    "annual_report_printed_pages": [
+      16,
+      17,
+      18
+    ],
+    "thresholds_from_report": false
+  },
+  "implementation": {
+    "new_dependency": false,
+    "automatic_default_enabled": false,
+    "operating_configuration_changed": false,
+    "rest_contract_changed": false,
+    "persistent_auto_state_separate": true,
+    "same_resource_sustained": true,
+    "stale_and_duplicate_reports_rejected": true,
+    "decision_guard_before_prepare": [
+      "controller_boot_id",
+      "assignment_id",
+      "epoch",
+      "source_execution",
+      "decided_at",
+      "expires_at"
+    ],
+    "committed_command_resume_same_id": true,
+    "reconcile_required_blocks_new_work": true,
+    "healthy_failback": false
+  },
+  "tests": {
+    "unit_and_handoff": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "tests": 74,
+      "time": 17.524
+    },
+    "dds_short": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "tests": 1,
+      "time": 214.783
+    },
+    "mqtt_short": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "tests": 1,
+      "time": 89.347
+    },
+    "ruff": "PASS",
+    "python38_syntax_files": 3,
+    "python38_runtime_tested": false,
+    "dds_long": {
+      "errors": 0,
+      "failures": 0,
+      "skipped": 0,
+      "tests": 1,
+      "time": 1917.689
+    }
+  },
+  "dds_short": {
+    "automatic": {
+      "status": "PASS",
+      "resources": "controlled_authenticated_reports",
+      "ai": "fixture_no_gpu_inference",
+      "short_spike_did_not_move": true,
+      "resumed_same_decision_and_ai_session": true,
+      "healthy_failback_after_cooldown": false,
+      "high_report_to_completion_seconds": 19.713641142006963,
+      "decision": {
+        "camera_id": "camera_1",
+        "decided_at": 1792702214.410093,
+        "decision_id": "771e217d-ea70-423a-945b-84fd8c03bedd",
+        "execution_seconds": 3.49585347896209,
+        "expected_owner": {
+          "assignment_id": "3eff078d-15da-4d9b-92df-e2c371c08438",
+          "controller_boot_id": "5e097c9c-3125-4c65-af0d-3b8b4377fc16",
+          "decided_at": 1792702214.410093,
+          "epoch": 1,
+          "expires_at": 1792702219.410093
+        },
+        "finished_at": 1792702218.657272,
+        "manifest_id": "lab-v1",
+        "observed_sequences": {
+          "jetson-a": 172,
+          "jetson-b": 351
+        },
+        "outcome": {
+          "candidate_stop": null,
+          "completed_at": 1792702218.6486595,
+          "effective_intent": null,
+          "history": [
+            {
+              "at": 1792702214.5890985,
+              "status": "preparing"
+            },
+            {
+              "at": 1792702214.7816224,
+              "status": "starting_target"
+            },
+            {
+              "at": 1792702215.2060678,
+              "status": "waiting_for_ready"
+            },
+            {
+              "at": 1792702217.0492282,
+              "status": "activating_target"
+            },
+            {
+              "at": 1792702217.1236796,
+              "status": "waiting_for_activation_report"
+            },
+            {
+              "at": 1792702217.2573524,
+              "status": "activating_controller"
+            },
+            {
+              "at": 1792702217.427053,
+              "status": "waiting_for_result"
+            },
+            {
+              "at": 1792702218.4227204,
+              "status": "stopping_previous"
+            },
+            {
+              "at": 1792702218.6486652,
+              "status": "complete"
+            }
+          ],
+          "intent": {
+            "camera_id": "camera_1",
+            "manifest_id": "lab-v1",
+            "target_node": "jetson-b"
+          },
+          "last_error": null,
+          "operation_id": "dd326e0e-3adb-42cb-bde4-563f79673559",
+          "previous_stop": "stopped",
+          "proof": {
+            "capture_to_receive_seconds": 1.0748202800750732,
+            "captured_at": "2026-10-22T20:50:17.286031+00:00",
+            "event_id": "be55956f-4269-44f8-ab19-208d7f9f272e",
+            "event_sequence": 10,
+            "expires_at": "2026-10-22T20:50:47.286031+00:00",
+            "kind": "event",
+            "received_at": "2026-10-22T20:50:18.360851+00:00",
+            "sha256": "56c6fc2a3e6b3d0bced5e3dd390123871267c9da45a4d9ce6eec2596ff7c7ba0"
+          },
+          "rollback": null,
+          "started_at": 1792702214.4334333,
+          "status": "complete"
+        },
+        "reasons": [
+          "cpu_percent"
+        ],
+        "resources": {
+          "jetson-a": {
+            "cpu_percent": 95,
+            "gpu_percent": 10,
+            "memory_percent": 20,
+            "network_rx_bytes_per_second": 0,
+            "network_tx_bytes_per_second": 0
+          },
+          "jetson-b": {
+            "cpu_percent": 10,
+            "gpu_percent": 10,
+            "memory_percent": 20,
+            "network_rx_bytes_per_second": 0,
+            "network_tx_bytes_per_second": 0
+          }
+        },
+        "source_node": "jetson-a",
+        "status": "complete",
+        "sustained_seconds": {
+          "cpu_percent": 15.252154110989068
+        },
+        "target_node": "jetson-b"
+      },
+      "policy": {
+        "camera_id": "camera_1",
+        "manifests": {
+          "jetson-a": "lab-v1",
+          "jetson-b": "lab-v1"
+        },
+        "overload_percent": {
+          "cpu_percent": 85,
+          "gpu_percent": 90,
+          "memory_percent": 85
+        },
+        "available_percent": {
+          "cpu_percent": 60,
+          "gpu_percent": 60,
+          "memory_percent": 70
+        },
+        "sustain_seconds": 15,
+        "min_samples": 3,
+        "max_report_age_seconds": 5,
+        "cooldown_seconds": 5,
+        "poll_seconds": 0.2,
+        "handoff_timeout_seconds": 45
+      }
+    },
+    "phases": [
+      {
+        "owner": "jetson-a",
+        "seconds": 60.268531823996454,
+        "consumed": 262,
+        "stale_observed": true
+      },
+      {
+        "owner": "jetson-b",
+        "seconds": 60.378100006026216,
+        "consumed": 222,
+        "stale_observed": true
+      }
+    ],
+    "faults": [
+      {
+        "node": "jetson-a",
+        "kind": "agent_stop",
+        "at": 1792702148.0012212
+      },
+      {
+        "node": "jetson-a",
+        "kind": "agent_restart",
+        "at": 1792702169.3044443
+      },
+      {
+        "node": "jetson-b",
+        "kind": "agent_stop",
+        "at": 1792702242.1343055
+      },
+      {
+        "node": "jetson-b",
+        "kind": "agent_restart",
+        "at": 1792702263.1965728
+      },
+      {
+        "kind": "dds_relay_stop",
+        "at": 1792702266.3280869
+      },
+      {
+        "kind": "dds_relay_restart",
+        "at": 1792702279.2874064
+      }
+    ],
+    "final_reconciliation": {
+      "jetson-a": {
+        "node_originals": 643,
+        "central_originals": 643,
+        "missing_or_changed": 0,
+        "accepted_video_records": 533,
+        "video_raw_states": {
+          "accepted": 533
+        }
+      },
+      "jetson-b": {
+        "node_originals": 528,
+        "central_originals": 528,
+        "missing_or_changed": 0,
+        "accepted_video_records": 449,
+        "video_raw_states": {
+          "accepted": 449
+        }
+      }
+    },
+    "final_pending": 0,
+    "capture_to_receive_seconds": {
+      "jetson-a:event:rejected:not_current_owner": {
+        "count": 39,
+        "min": 0.27382469177246094,
+        "max": 5.8659515380859375,
+        "p50": 1.0559418201446533,
+        "p95": 2.018855333328247
+      },
+      "jetson-a:observation:observed:preparation_sample": {
+        "count": 95,
+        "min": 0.30396127700805664,
+        "max": 1.6356334686279297,
+        "p50": 0.9933838844299316,
+        "p95": 1.4623103141784668
+      },
+      "jetson-a:event:rejected:inactive_execution": {
+        "count": 5,
+        "min": 1.1796422004699707,
+        "max": 1.3676862716674805,
+        "p50": 1.2233123779296875,
+        "p95": 1.3248379230499268
+      },
+      "jetson-a:event:accepted:current_owner": {
+        "count": 489,
+        "min": 0.34840941429138184,
+        "max": 1.7220051288604736,
+        "p50": 1.009427547454834,
+        "p95": 1.4363644123077393
+      },
+      "jetson-a:observation:rejected:current_owner": {
+        "count": 12,
+        "min": 0.5123295783996582,
+        "max": 1.3505594730377197,
+        "p50": 0.9664876461029053,
+        "p95": 1.3072404861450195
+      },
+      "jetson-b:event:rejected:not_current_owner": {
+        "count": 134,
+        "min": 0.12623834609985352,
+        "max": 5.0355377197265625,
+        "p50": 1.2342214584350586,
+        "p95": 4.1669065952301025
+      },
+      "jetson-b:observation:observed:preparation_sample": {
+        "count": 51,
+        "min": 0.3997318744659424,
+        "max": 9.456916093826294,
+        "p50": 1.0586729049682617,
+        "p95": 4.21360969543457
+      },
+      "jetson-b:event:rejected:inactive_execution": {
+        "count": 5,
+        "min": 1.1188163757324219,
+        "max": 1.3712379932403564,
+        "p50": 1.2926247119903564,
+        "p95": 1.3046362400054932
+      },
+      "jetson-a:observation:rejected:not_current_owner": {
+        "count": 3,
+        "min": 1.0809576511383057,
+        "max": 1.4517488479614258,
+        "p50": 1.155505657196045,
+        "p95": 1.155505657196045
+      },
+      "jetson-b:event:accepted:current_owner": {
+        "count": 310,
+        "min": 0.36876916885375977,
+        "max": 19.51314926147461,
+        "p50": 1.2342052459716797,
+        "p95": 16.57065773010254
+      },
+      "jetson-b:observation:rejected:current_owner": {
+        "count": 20,
+        "min": 0.3980827331542969,
+        "max": 18.798736333847046,
+        "p50": 1.2818269729614258,
+        "p95": 17.932103157043457
+      },
+      "jetson-b:observation:rejected:not_current_owner": {
+        "count": 8,
+        "min": 0.4777657985687256,
+        "max": 4.809845209121704,
+        "p50": 1.3016788959503174,
+        "p95": 4.158483028411865
+      }
+    },
+    "source_hashes_unchanged": true
+  },
+  "mqtt_short": {
+    "status": "PASS",
+    "resources": "controlled_authenticated_reports",
+    "ai": "fixture_no_gpu_inference",
+    "short_spike_did_not_move": true,
+    "resumed_same_decision_and_ai_session": true,
+    "healthy_failback_after_cooldown": false,
+    "high_report_to_completion_seconds": 18.2258320460096,
+    "decision": {
+      "camera_id": "camera_1",
+      "decided_at": 1792702393.7876704,
+      "decision_id": "3c4fd496-f95c-4fc0-b17a-dd0dc404dba8",
+      "execution_seconds": 2.3308369769947603,
+      "expected_owner": {
+        "assignment_id": "b4e2ac96-2943-4960-a7e3-4d9a667f4e7a",
+        "controller_boot_id": "e695f456-9d18-4a93-8d3f-edf56402d191",
+        "decided_at": 1792702393.7876704,
+        "epoch": 1,
+        "expires_at": 1792702398.7876704
+      },
+      "finished_at": 1792702396.746664,
+      "manifest_id": "lab-v1",
+      "observed_sequences": {
+        "jetson-a": 86,
+        "jetson-b": 86
+      },
+      "outcome": {
+        "candidate_stop": null,
+        "completed_at": 1792702396.7387857,
+        "effective_intent": null,
+        "history": [
+          {
+            "at": 1792702393.9608114,
+            "status": "preparing"
+          },
+          {
+            "at": 1792702394.129484,
+            "status": "starting_target"
+          },
+          {
+            "at": 1792702394.4366384,
+            "status": "waiting_for_ready"
+          },
+          {
+            "at": 1792702395.4104784,
+            "status": "activating_target"
+          },
+          {
+            "at": 1792702395.4654343,
+            "status": "waiting_for_activation_report"
+          },
+          {
+            "at": 1792702395.6026194,
+            "status": "activating_controller"
+          },
+          {
+            "at": 1792702395.8005533,
+            "status": "waiting_for_result"
+          },
+          {
+            "at": 1792702396.5385306,
+            "status": "stopping_previous"
+          },
+          {
+            "at": 1792702396.738792,
+            "status": "complete"
+          }
+        ],
+        "intent": {
+          "camera_id": "camera_1",
+          "manifest_id": "lab-v1",
+          "target_node": "jetson-b"
+        },
+        "last_error": null,
+        "operation_id": "f1d50cdb-26bd-48ad-83e9-84db55492ccd",
+        "previous_stop": "stopped",
+        "proof": {
+          "capture_to_receive_seconds": 0.8554253578186035,
+          "captured_at": "2026-10-22T20:53:15.641267+00:00",
+          "event_id": "7011deed-19cb-4da1-8c18-3134ed48a870",
+          "event_sequence": 7,
+          "expires_at": "2026-10-22T20:53:45.641267+00:00",
+          "kind": "event",
+          "received_at": "2026-10-22T20:53:16.496692+00:00",
+          "sha256": "95b31dcf71e629f26e871193d4bed16289c74e7463b7b1349df778f2b2e219ff"
+        },
+        "rollback": null,
+        "started_at": 1792702393.8140132,
+        "status": "complete"
+      },
+      "reasons": [
+        "cpu_percent"
+      ],
+      "resources": {
+        "jetson-a": {
+          "cpu_percent": 95,
+          "gpu_percent": 10,
+          "memory_percent": 20,
+          "network_rx_bytes_per_second": 0,
+          "network_tx_bytes_per_second": 0
+        },
+        "jetson-b": {
+          "cpu_percent": 10,
+          "gpu_percent": 10,
+          "memory_percent": 20,
+          "network_rx_bytes_per_second": 0,
+          "network_tx_bytes_per_second": 0
+        }
+      },
+      "source_node": "jetson-a",
+      "status": "complete",
+      "sustained_seconds": {
+        "cpu_percent": 15.01320745900739
+      },
+      "target_node": "jetson-b"
+    },
+    "policy": {
+      "camera_id": "camera_1",
+      "manifests": {
+        "jetson-a": "lab-v1",
+        "jetson-b": "lab-v1"
+      },
+      "overload_percent": {
+        "cpu_percent": 85,
+        "gpu_percent": 90,
+        "memory_percent": 85
+      },
+      "available_percent": {
+        "cpu_percent": 60,
+        "gpu_percent": 60,
+        "memory_percent": 70
+      },
+      "sustain_seconds": 15,
+      "min_samples": 3,
+      "max_report_age_seconds": 5,
+      "cooldown_seconds": 5,
+      "poll_seconds": 0.2,
+      "handoff_timeout_seconds": 45
+    }
+  },
+  "preserved_failures": [
+    {
+      "file": "edge-auto-mqtt-20261023.xml",
+      "cause": "Fixture deliberately withheld readiness but waited for running; wait corrected to detect created AI session. HTTP timeout and cleanup timeout observed."
+    },
+    {
+      "file": "edge-auto-mqtt-fixed-20261023.xml",
+      "cause": "Supervisor endpoint startup exceeded 20 seconds before automatic phase on eMMC /tmp. Exact cause unconfirmed; identical corrected code passed on separate /dev/sda1 storage. Historical eMMC commit delay evidence retained separately."
+    }
+  ],
+  "long_soak": {
+    "status": "PASS_SCOPED_AUTOMATIC_INTEGRATION",
+    "requested_seconds": 1800,
+    "phases": [
+      {
+        "owner": "jetson-a",
+        "seconds": 900.4419714430114,
+        "consumed": 3107,
+        "stale_observed": true
+      },
+      {
+        "owner": "jetson-b",
+        "seconds": 900.2102960590273,
+        "consumed": 3132,
+        "stale_observed": true
+      }
+    ],
+    "faults": [
+      {
+        "node": "jetson-a",
+        "kind": "agent_stop",
+        "at": 1792702725.7798512
+      },
+      {
+        "node": "jetson-a",
+        "kind": "agent_restart",
+        "at": 1792702747.1948805
+      },
+      {
+        "node": "jetson-b",
+        "kind": "agent_stop",
+        "at": 1792703660.9022958
+      },
+      {
+        "node": "jetson-b",
+        "kind": "agent_restart",
+        "at": 1792703682.2077575
+      },
+      {
+        "kind": "dds_relay_stop",
+        "at": 1792704021.3308446
+      },
+      {
+        "kind": "dds_relay_restart",
+        "at": 1792704034.245142
+      }
+    ],
+    "automatic": {
+      "status": "PASS",
+      "resources": "controlled_authenticated_reports",
+      "ai": "fixture_no_gpu_inference",
+      "short_spike_did_not_move": true,
+      "resumed_same_decision_and_ai_session": true,
+      "healthy_failback_after_cooldown": false,
+      "high_report_to_completion_seconds": 21.548655961989425,
+      "decision": {
+        "camera_id": "camera_1",
+        "decided_at": 1792703422.109154,
+        "decision_id": "ceb0788a-6e59-48a1-8b1d-84cacb314ff2",
+        "execution_seconds": 5.156730739050545,
+        "expected_owner": {
+          "assignment_id": "d14af259-4f5a-41a2-ba83-76f2d5a3e6a1",
+          "controller_boot_id": "379e99ca-65bf-4ae6-bc97-386727de1e7c",
+          "decided_at": 1792703422.109154,
+          "epoch": 1,
+          "expires_at": 1792703427.109154
+        },
+        "finished_at": 1792703428.03265,
+        "manifest_id": "lab-v1",
+        "observed_sequences": {
+          "jetson-a": 2314,
+          "jetson-b": 3630
+        },
+        "outcome": {
+          "candidate_stop": null,
+          "completed_at": 1792703428.0033162,
+          "effective_intent": null,
+          "history": [
+            {
+              "at": 1792703422.3115194,
+              "status": "preparing"
+            },
+            {
+              "at": 1792703422.5417252,
+              "status": "starting_target"
+            },
+            {
+              "at": 1792703422.8978348,
+              "status": "waiting_for_ready"
+            },
+            {
+              "at": 1792703425.8086624,
+              "status": "activating_target"
+            },
+            {
+              "at": 1792703425.9814346,
+              "status": "waiting_for_activation_report"
+            },
+            {
+              "at": 1792703426.3841443,
+              "status": "activating_controller"
+            },
+            {
+              "at": 1792703426.6193316,
+              "status": "waiting_for_result"
+            },
+            {
+              "at": 1792703427.6690302,
+              "status": "stopping_previous"
+            },
+            {
+              "at": 1792703428.0033255,
+              "status": "complete"
+            }
+          ],
+          "intent": {
+            "camera_id": "camera_1",
+            "manifest_id": "lab-v1",
+            "target_node": "jetson-b"
+          },
+          "last_error": null,
+          "operation_id": "1f2f7aef-cfde-4938-9d87-a763da05cf88",
+          "previous_stop": "stopped",
+          "proof": {
+            "capture_to_receive_seconds": 1.6306548118591309,
+            "captured_at": "2026-10-22T21:10:25.938908+00:00",
+            "event_id": "1503df8a-b5e1-450b-8443-5fab890b1503",
+            "event_sequence": 13,
+            "expires_at": "2026-10-22T21:10:55.938908+00:00",
+            "kind": "event",
+            "received_at": "2026-10-22T21:10:27.569563+00:00",
+            "sha256": "a1d7851fe7616f5f5a42cf4e188cb24f09d068736caaf65e5ebcb47835eb34e2"
+          },
+          "rollback": null,
+          "started_at": 1792703422.1601303,
+          "status": "complete"
+        },
+        "reasons": [
+          "cpu_percent"
+        ],
+        "resources": {
+          "jetson-a": {
+            "cpu_percent": 95,
+            "gpu_percent": 10,
+            "memory_percent": 20,
+            "network_rx_bytes_per_second": 0,
+            "network_tx_bytes_per_second": 0
+          },
+          "jetson-b": {
+            "cpu_percent": 10,
+            "gpu_percent": 10,
+            "memory_percent": 20,
+            "network_rx_bytes_per_second": 0,
+            "network_tx_bytes_per_second": 0
+          }
+        },
+        "source_node": "jetson-a",
+        "status": "complete",
+        "sustained_seconds": {
+          "cpu_percent": 15.149396276043262
+        },
+        "target_node": "jetson-b"
+      },
+      "policy": {
+        "camera_id": "camera_1",
+        "manifests": {
+          "jetson-a": "lab-v1",
+          "jetson-b": "lab-v1"
+        },
+        "overload_percent": {
+          "cpu_percent": 85,
+          "gpu_percent": 90,
+          "memory_percent": 85
+        },
+        "available_percent": {
+          "cpu_percent": 60,
+          "gpu_percent": 60,
+          "memory_percent": 70
+        },
+        "sustain_seconds": 15,
+        "min_samples": 3,
+        "max_report_age_seconds": 5,
+        "cooldown_seconds": 5,
+        "poll_seconds": 0.2,
+        "handoff_timeout_seconds": 45
+      }
+    },
+    "originals": 8407,
+    "video_event_records": 6653,
+    "final_reconciliation": {
+      "jetson-a": {
+        "node_originals": 4278,
+        "central_originals": 4278,
+        "missing_or_changed": 0,
+        "accepted_video_records": 3381,
+        "video_raw_states": {
+          "accepted": 3381
+        }
+      },
+      "jetson-b": {
+        "node_originals": 4129,
+        "central_originals": 4129,
+        "missing_or_changed": 0,
+        "accepted_video_records": 3272,
+        "video_raw_states": {
+          "accepted": 3272
+        }
+      }
+    },
+    "pending": 0,
+    "expired_total": 0,
+    "expired_retained_ids": 0,
+    "expired_other_ids": 0,
+    "expired_records": [],
+    "retained_intake_observation": {
+      "records": [
+        {
+          "ingest_id": "ing_1eb4c80cd8a941b2b8d1323f1383e3e1",
+          "raw_sha256": "5c1d0b60222ef7717f91954ea834a64cb5e0d6d9bd01f54648cd783f60662d2d",
+          "stamp": {
+            "edge": {
+              "activation_id": "6d9b556b-b113-416c-84cc-2c949329ddac",
+              "assignment_id": "317ab8c4-9bd4-45e7-b9a8-81186f7f0915",
+              "camera_id": "camera_1",
+              "captured_at": "2026-10-22T21:25:42.223206+00:00",
+              "epoch": 3,
+              "event_sequence": 21,
+              "expires_at": "2026-10-22T21:26:12.223206+00:00",
+              "node_id": "jetson-a",
+              "session_id": "619f4f17-a605-43c4-b4cd-9cdbe13ec2a2",
+              "supervisor_boot_id": "270ae075-fcf8-4d3a-8fa7-1a6b44665dde"
+            },
+            "event_id": "6b2ddc10-ee51-4153-b588-4770d1acdab8"
+          },
+          "first_seen_at": 1792704342.3346934,
+          "raw_hash_unchanged": true,
+          "stage": "accepted",
+          "last_seen_at": 1792704397.1856537,
+          "local": [
+            "31bc84b0fe43b7bbc6456367fc497e80b287a75e81ba185db469784f1b6baed7",
+            "committed"
+          ],
+          "central": [
+            "31bc84b0fe43b7bbc6456367fc497e80b287a75e81ba185db469784f1b6baed7",
+            "accepted",
+            "current_owner"
+          ]
+        }
+      ],
+      "read_errors": 19,
+      "elapsed_seconds": 1925.0268540900433,
+      "original_a_owner_records": 0
+    },
+    "capture_to_receive_seconds": {
+      "jetson-a:event:rejected:not_current_owner": {
+        "count": 45,
+        "min": 0.5883297920227051,
+        "max": 10.614470720291138,
+        "p50": 2.060077667236328,
+        "p95": 3.556656837463379
+      },
+      "jetson-a:observation:observed:preparation_sample": {
+        "count": 867,
+        "min": 0.7117149829864502,
+        "max": 9.497966051101685,
+        "p50": 1.853428840637207,
+        "p95": 3.040354013442993
+      },
+      "jetson-a:event:rejected:inactive_execution": {
+        "count": 53,
+        "min": 1.7416625022888184,
+        "max": 12.132880210876465,
+        "p50": 7.586346864700317,
+        "p95": 11.558420419692993
+      },
+      "jetson-a:observation:rejected:inactive_execution": {
+        "count": 4,
+        "min": 2.395815134048462,
+        "max": 11.155296325683594,
+        "p50": 3.1385247707366943,
+        "p95": 10.261873483657837
+      },
+      "jetson-a:event:accepted:current_owner": {
+        "count": 3283,
+        "min": 0.6441154479980469,
+        "max": 14.245646715164185,
+        "p50": 1.849229097366333,
+        "p95": 2.8454513549804688
+      },
+      "jetson-a:observation:rejected:current_owner": {
+        "count": 19,
+        "min": 1.1024832725524902,
+        "max": 14.091343402862549,
+        "p50": 2.231217384338379,
+        "p95": 13.481811046600342
+      },
+      "jetson-b:event:rejected:not_current_owner": {
+        "count": 93,
+        "min": 0.3348197937011719,
+        "max": 3.250211715698242,
+        "p50": 1.8827300071716309,
+        "p95": 3.1319265365600586
+      },
+      "jetson-b:observation:observed:preparation_sample": {
+        "count": 816,
+        "min": 0.5081772804260254,
+        "max": 9.790752410888672,
+        "p50": 1.8724324703216553,
+        "p95": 3.8816280364990234
+      },
+      "jetson-a:observation:rejected:not_current_owner": {
+        "count": 7,
+        "min": 1.5157794952392578,
+        "max": 3.386291265487671,
+        "p50": 2.469395399093628,
+        "p95": 3.2293965816497803
+      },
+      "jetson-b:event:rejected:inactive_execution": {
+        "count": 9,
+        "min": 1.533865213394165,
+        "max": 2.5094757080078125,
+        "p50": 1.7586874961853027,
+        "p95": 2.419872760772705
+      },
+      "jetson-b:event:accepted:current_owner": {
+        "count": 3170,
+        "min": 0.7522823810577393,
+        "max": 26.74872326850891,
+        "p50": 1.9186880588531494,
+        "p95": 5.034446477890015
+      },
+      "jetson-b:observation:rejected:current_owner": {
+        "count": 31,
+        "min": 1.3684580326080322,
+        "max": 26.567519187927246,
+        "p50": 11.495012760162354,
+        "p95": 17.00476312637329
+      },
+      "jetson-b:observation:rejected:not_current_owner": {
+        "count": 10,
+        "min": 0.6153364181518555,
+        "max": 2.9844295978546143,
+        "p50": 2.4992501735687256,
+        "p95": 2.9613442420959473
+      }
+    },
+    "diagnostics": {
+      "driver_storage_read_retries": 0,
+      "processes": {
+        "jetson-b-agent": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "jetson-b-agent-after-auto": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "automatic-resumed": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "handoff-repeat": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "handoff-failed": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "jetson-b-supervisor": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "jetson-a-supervisor": {
+          "database_locked": 1,
+          "storage_failures": 1,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "handoff-intake-restart": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "handoff-0": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "handoff-2": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "jetson-a-dds": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "handoff-resumed": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "jetson-b-dds-restarted": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "automatic-initial": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "jetson-a-agent-restarted": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 1,
+          "metrics_timeouts": 0
+        },
+        "jetson-b-dds": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "jetson-a-agent": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "handoff-interrupted": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "controller": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "jetson-a-agent-after-auto": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "jetson-b-agent-restarted": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        }
+      }
+    },
+    "queue_observation_errors": 125,
+    "sources_unchanged": true,
+    "dds_recovery": {
+      "interruption_seconds": 12.914297342300415,
+      "observed_peak_pending": 127,
+      "first_observed_pending_at_most20_seconds": 45.20607352256775
+    }
+  },
+  "limitations": [
+    "New integrated code has not run on physical B GPU or two-host wireless DDS.",
+    "Controlled resource values and fixture AI are not physical overload or accuracy verification.",
+    "No AI latency/packet-loss measurement; no agreed video analysis-gap threshold.",
+    "SSH camera path depends on A; full A-host failure is not covered.",
+    "ROS std_msgs/String test interface is not confirmed institutional ROS IDL/gRPC contract.",
+    "execution_seconds only sums calls that returned; killed-call time is excluded."
+  ],
+  "source_sha256": {
+    "src/services/edge_auto_handoff.py": "ef7a0e4407e03d6e4d26d440882fa780547003bbed93cc928bbaacf7d6da16ea",
+    "src/services/edge_handoff.py": "9214a29880e6f3c8fe8149bd6031e8432757b5aa742a6212ac1a5d804baf37f4",
+    "src/services/edge_result_context.py": "b14d5fbc54328134f0315785332eb92b61d4398c845187d4a563b42d21230c94",
+    "src/services/edge_result_delivery.py": "295f413ccd53edc8d7a9a4f287fa1e7d75a7525952fa9948ea7aa01d8f73f5de",
+    "src/services/edge_result_dds.py": "5fefa0904b509f2d0693d6e4eb7a7bc8e645cdfa7aabbe8b904b53771df4172c",
+    "src/services/edge_ownership.py": "4ab1851d7b2be005f2c8a0966ae64d4567a1bb98e2d2c306923cf68878bdffc4",
+    "src/services/edge_controller_api.py": "c4ad9ec36d58191079a0faa2bb403a6c9515c194b165d5982d6a659112886e86",
+    "src/services/edge_node_agent.py": "deb4a4ba93b6e1bbfd5427e2218507daff4e75b746962ac65eae1a5e5c103d29",
+    "src/services/edge_service.py": "80db650bbf45b09cc0f2015b3fdc5b9c89c7b31efa93495e28d56d73d54f8781",
+    "src/services/edge_orchestrator.py": "18ac8badb9500039a8146a587c0b132c65d2e47dcb53355f2e104f2563feb790",
+    "src/core/video_event_ingest.py": "c40c6447f78251cdbf9f0bbc5b8c03088941adc8e1eb4ba688837867eb6612e1",
+    "runners/run_edge_orchestration.py": "99f6e0f04292fc99a50fa6e154f36c7a82bc821f7c36ce0a4e004b379e6e04d0",
+    "tests/test_edge_full_pipeline.py": "995c7aaba18fe772acf911c701ccfb2f84351f93e9a0a0861cc28093e80c067b",
+    "tests/fixtures/edge_ai_process.py": "a2f4333730a66409badce36b24978951b0348ef141b8da530cd9d09d6e9f83f0",
+    "tests/test_edge_auto_handoff.py": "e764365348bc91ec2a89341cdd24e319efcf4ce71dc71629e1131f6426e10f13",
+    "config/deepstream/edge-auto-policy.example.json": "0f00e56c2282d0daa61e6017a6a855862443f068652f14ea58b67caae8f980e9"
+  },
+  "evidence_archive": {
+    "path": "docs/planning/evidence/edge_automatic_handoff_20261023_telemetry.tar.gz",
+    "sha256": "9e83c8af6e5ecb9920570df514d8db589ae9456d5a61eef3a89199366c9cc3d2",
+    "members": 27,
+    "private_keys_credentials_databases_included": false
+  },
+  "source_bundle": {
+    "path": "docs/planning/evidence/edge_b_automatic_integration_sources_20261023.tar.gz",
+    "sha256": "95584bd4dfdcc52217f55e28db7ecfccf210e8b4495b6d5ee3d0bc26ba9b8aa1",
+    "source_files": 31,
+    "not_standalone": true,
+    "deployed_to_B": false
+  },
+  "operating_before": {
+    "at": "2026-10-22T20:46:03.447776+00:00",
+    "containers": [
+      {
+        "id": "c6aac881db6d7beb390b23a34b974338c7a6aed996caa7636c2b9b130f766e0c",
+        "name": "/cctv-ai-engine",
+        "started_at": "2026-10-19T08:40:12.347649183Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "922d80edd866e451665534775729087ae8480733004dbff567aa2c751020c78f",
+        "name": "/cctv-public-api",
+        "started_at": "2026-10-19T04:35:34.121987945Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "a1c5702a54396807133a5bfce7fc5b78ee8a2ecf05ff120e163490b35f31394d",
+        "name": "/cctv-public-demo-ui",
+        "started_at": "2026-10-19T04:35:33.544644097Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "8314d05912aa48380ef2a671c2209fd2a282addf3bad56c02a78622d7c53e024",
+        "name": "/cctv-progress-web",
+        "started_at": "2026-10-19T04:31:54.255910016Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "6bb51352f9dc42b80a9d41e9b5bbea55c2f7747f6e17b6317f2dcb8f14c0cc7b",
+        "name": "/cctv-kuiper-rule-loader",
+        "started_at": "0001-01-01T00:00:00Z",
+        "status": "created",
+        "restart_count": 0
+      },
+      {
+        "id": "74deaeb0b5bdd64c8f2e2a141daa25c193a75cf235b214fee6ef8b4dcdceedeb",
+        "name": "/cctv-action-layer",
+        "started_at": "2026-10-19T04:31:54.718149472Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "8e3b45eaa7c610e0501071584365b19e0a55874e90144e18acfcb303ee6a9560",
+        "name": "/cctv-alert-api",
+        "started_at": "2026-10-19T04:31:54.706187136Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "957101f7ab7336585817a176154f7711de977caee7cfbf34257f2fb68810dea4",
+        "name": "/cctv-media-server",
+        "started_at": "2026-10-19T04:31:54.529492192Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "29aeb393bd52e7a9f8241be9214b970e82e8442253fdfe2e73dbbf5d153feaa8",
+        "name": "/cctv-device-signboard",
+        "started_at": "2026-10-19T04:31:54.818044288Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "ecac3c50c98a08544a0ad5dd85f668240017852f3c00ff3191463c498a6f385c",
+        "name": "/aiot-parser",
+        "started_at": "2026-10-19T04:33:35.034096532Z",
+        "status": "running",
+        "restart_count": 1
+      },
+      {
+        "id": "64c16ac5a15eb14697be4327f593658f0fca95fd3cb3794ff376f01aac763033",
+        "name": "/cctv-edgex-adapter",
+        "started_at": "2026-10-19T04:31:54.617063968Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "589787a68cd563f3a2c3bbf93a6ba4854f74e433d000e0cbac0e63ca4cd905d9",
+        "name": "/cctv-edgex-command-result",
+        "started_at": "2026-10-19T04:31:54.66473168Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "a8ff5823d34ad72dd2c5b236cc88f210b16feb05ef53532e6549601d2beafb7a",
+        "name": "/cctv-device-speaker",
+        "started_at": "2026-10-19T04:31:54.744499456Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "9bdc877613d8d607f7f064ef9d42588466f8a6dc5906998d9851c3d57fa0be01",
+        "name": "/cctv-device-siren",
+        "started_at": "2026-10-19T04:31:54.526276928Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "2ee109f4f7b84699c76cf80d5f69cb92a86a82ef2d715ffa4bddef559eb4ae46",
+        "name": "/cctv-sensor-rule-bridge",
+        "started_at": "2026-10-19T04:31:54.777103168Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "6709ebb4de578bb55684d06e81fd0189998c733471fc1f06a923c331a80597c1",
+        "name": "/cctv-grafana",
+        "started_at": "2026-10-19T04:31:54.68607424Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "2f1c7751643d8cb71328210666e4dfcfc37343b775137f91282f0834aac62e79",
+        "name": "/edgex-mqtt-broker",
+        "started_at": "2026-10-19T04:31:54.70201472Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "3f72e5aa05a9ee7d0aa1826dfad0a908c36ce2d96eecbc7b918ba66cb7ad98bc",
+        "name": "/edgex-ui-go",
+        "started_at": "2026-10-19T04:31:54.7746584Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "6249a0c22b5712d01242c176abfce736685579514bfb389952062c3fd9392576",
+        "name": "/edgex-kuiper",
+        "started_at": "2026-10-19T04:31:54.290632608Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "1d13831d072018233fcd22305be7e7b6fca7062191364a0cd4a355986196110f",
+        "name": "/cctv-prometheus",
+        "started_at": "2026-10-19T04:31:54.539839392Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "118472f5aeed0881b938915994377311fca6a7caa359cd97f4769c0d36bc5167",
+        "name": "/aiot-parser-db",
+        "started_at": "2026-10-19T04:31:54.698492Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "ac9d4613800ff7c022573596a9699e644eed63ce5b17eba6176312deb8734241",
+        "name": "/edgex-app-rules-engine",
+        "started_at": "2026-10-19T04:33:34.972463195Z",
+        "status": "running",
+        "restart_count": 1
+      },
+      {
+        "id": "2026a3b6bb0a51662038528f602125c94945a8ec555398cb871b05b22a911a72",
+        "name": "/edgex-core-common-config-bootstrapper",
+        "started_at": "2026-09-16T00:14:02.853614493Z",
+        "status": "exited",
+        "restart_count": 0
+      },
+      {
+        "id": "746e673415b9485c48eb33d2b5a9597c84331f983e37bda3f89143dc0585a777",
+        "name": "/edgex-support-notifications",
+        "started_at": "2026-10-19T04:33:34.991080063Z",
+        "status": "running",
+        "restart_count": 1
+      },
+      {
+        "id": "c7448aca4f7d5e9255d17c0c297f5fbf12bd7489c3c1298b92dfd3601b5df61a",
+        "name": "/edgex-support-scheduler",
+        "started_at": "2026-10-19T04:31:54.750586368Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "5d7049bb56d064ede2cff8d5b82787716ad7fe85040df092514d045bfaaf5439",
+        "name": "/edgex-device-virtual",
+        "started_at": "2026-10-19T04:33:35.0647887Z",
+        "status": "running",
+        "restart_count": 1
+      },
+      {
+        "id": "f51a40001b1cdd706b69941702a76e10044002740582f2da9c20c8648aa36a0d",
+        "name": "/cctv-device-dabit",
+        "started_at": "2026-10-01T23:40:25.229113157Z",
+        "status": "exited",
+        "restart_count": 0
+      },
+      {
+        "id": "3a534e8a48317ab81af9bc0ba3723e8884a5a9d78ccc5086499ad92f90d8df27",
+        "name": "/edgex-device-rest",
+        "started_at": "2026-10-19T04:33:37.210225867Z",
+        "status": "running",
+        "restart_count": 2
+      },
+      {
+        "id": "135a0431ddbf798c357569d7ed7f80f6d63ef920a7b987ea7fb10395d312be00",
+        "name": "/edgex-core-command",
+        "started_at": "2026-10-19T04:33:35.060441837Z",
+        "status": "running",
+        "restart_count": 1
+      },
+      {
+        "id": "fa3e84dfbabf7731cec9bcc49d967bcf0daba84a7b57569ed685ae8388ad6bbb",
+        "name": "/edgex-core-data",
+        "started_at": "2026-10-19T04:31:54.71103136Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "2e7b3da73a544316ca45f19de90fc7bdd0a6cd32163d107aeace03741bc10d4d",
+        "name": "/edgex-core-metadata",
+        "started_at": "2026-10-19T04:33:35.054281881Z",
+        "status": "running",
+        "restart_count": 1
+      },
+      {
+        "id": "ecb7e55482d1613a10f549502a1ba5753ed0c82d780d2845d70cf9e8e9d01683",
+        "name": "/edgex-core-consul",
+        "started_at": "2026-10-19T04:31:54.579229952Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "b646e206b36686338381d54c7f0441831f5fe91795ced55365a976b2a01fc8a0",
+        "name": "/edgex-redis",
+        "started_at": "2026-10-19T04:31:54.465489792Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "0ceb741184f88c62e432821fef0091c15904681cebca48bf69fabddf6f33ee25",
+        "name": "/cctv-appearance-review",
+        "started_at": "2026-10-19T04:31:54.6870952Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "052f94f81510340dfb9eb5a9220f4d127008c3ed35e0bd9fbf157fae82a500fc",
+        "name": "/cctv-appearance-rapv2-color-train",
+        "started_at": "2026-08-28T04:04:36.563214246Z",
+        "status": "exited",
+        "restart_count": 0
+      },
+      {
+        "id": "37a781537f8661d61ab60edad76c8e7fdde54947bc56be84601669c94c707e0d",
+        "name": "/appearance-training-jetson-appearance-multitask-train-1",
+        "started_at": "2026-08-26T23:34:15.546369346Z",
+        "status": "exited",
+        "restart_count": 0
+      },
+      {
+        "id": "a49749b1d57469d784fedf026f77035eb737cebba0c41bc2f140d629c3cfd07d",
+        "name": "/cctv-fall-training",
+        "started_at": "2026-07-27T02:29:31.59916121Z",
+        "status": "exited",
+        "restart_count": 0
+      }
+    ],
+    "metrics": [
+      "cctv_processor_frames_processed_total 9.06729e+06",
+      "cctv_processor_source_error_identified_total 0.0",
+      "cctv_processor_source_error_unidentified_total 0.0",
+      "cctv_processor_pipeline_restart_requested_total 0.0",
+      "cctv_processor_pipeline_restart_rejected_total 0.0",
+      "cctv_processor_pipeline_restart_executed_total 0.0",
+      "cctv_processor_pipeline_restart_failed_total 0.0",
+      "cctv_processor_pipeline_restart_seconds_total 0.0"
+    ]
+  },
+  "updated_at": "2026-10-22T21:33:55.744322+00:00",
+  "operating_after": {
+    "at": "2026-10-22T21:27:14.890578+00:00",
+    "containers": [
+      {
+        "id": "c6aac881db6d7beb390b23a34b974338c7a6aed996caa7636c2b9b130f766e0c",
+        "name": "/cctv-ai-engine",
+        "started_at": "2026-10-19T08:40:12.347649183Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "922d80edd866e451665534775729087ae8480733004dbff567aa2c751020c78f",
+        "name": "/cctv-public-api",
+        "started_at": "2026-10-19T04:35:34.121987945Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "a1c5702a54396807133a5bfce7fc5b78ee8a2ecf05ff120e163490b35f31394d",
+        "name": "/cctv-public-demo-ui",
+        "started_at": "2026-10-19T04:35:33.544644097Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "8314d05912aa48380ef2a671c2209fd2a282addf3bad56c02a78622d7c53e024",
+        "name": "/cctv-progress-web",
+        "started_at": "2026-10-19T04:31:54.255910016Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "6bb51352f9dc42b80a9d41e9b5bbea55c2f7747f6e17b6317f2dcb8f14c0cc7b",
+        "name": "/cctv-kuiper-rule-loader",
+        "started_at": "0001-01-01T00:00:00Z",
+        "status": "created",
+        "restart_count": 0
+      },
+      {
+        "id": "74deaeb0b5bdd64c8f2e2a141daa25c193a75cf235b214fee6ef8b4dcdceedeb",
+        "name": "/cctv-action-layer",
+        "started_at": "2026-10-19T04:31:54.718149472Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "8e3b45eaa7c610e0501071584365b19e0a55874e90144e18acfcb303ee6a9560",
+        "name": "/cctv-alert-api",
+        "started_at": "2026-10-19T04:31:54.706187136Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "957101f7ab7336585817a176154f7711de977caee7cfbf34257f2fb68810dea4",
+        "name": "/cctv-media-server",
+        "started_at": "2026-10-19T04:31:54.529492192Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "29aeb393bd52e7a9f8241be9214b970e82e8442253fdfe2e73dbbf5d153feaa8",
+        "name": "/cctv-device-signboard",
+        "started_at": "2026-10-19T04:31:54.818044288Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "ecac3c50c98a08544a0ad5dd85f668240017852f3c00ff3191463c498a6f385c",
+        "name": "/aiot-parser",
+        "started_at": "2026-10-19T04:33:35.034096532Z",
+        "status": "running",
+        "restart_count": 1
+      },
+      {
+        "id": "64c16ac5a15eb14697be4327f593658f0fca95fd3cb3794ff376f01aac763033",
+        "name": "/cctv-edgex-adapter",
+        "started_at": "2026-10-19T04:31:54.617063968Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "589787a68cd563f3a2c3bbf93a6ba4854f74e433d000e0cbac0e63ca4cd905d9",
+        "name": "/cctv-edgex-command-result",
+        "started_at": "2026-10-19T04:31:54.66473168Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "a8ff5823d34ad72dd2c5b236cc88f210b16feb05ef53532e6549601d2beafb7a",
+        "name": "/cctv-device-speaker",
+        "started_at": "2026-10-19T04:31:54.744499456Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "9bdc877613d8d607f7f064ef9d42588466f8a6dc5906998d9851c3d57fa0be01",
+        "name": "/cctv-device-siren",
+        "started_at": "2026-10-19T04:31:54.526276928Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "2ee109f4f7b84699c76cf80d5f69cb92a86a82ef2d715ffa4bddef559eb4ae46",
+        "name": "/cctv-sensor-rule-bridge",
+        "started_at": "2026-10-19T04:31:54.777103168Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "6709ebb4de578bb55684d06e81fd0189998c733471fc1f06a923c331a80597c1",
+        "name": "/cctv-grafana",
+        "started_at": "2026-10-19T04:31:54.68607424Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "2f1c7751643d8cb71328210666e4dfcfc37343b775137f91282f0834aac62e79",
+        "name": "/edgex-mqtt-broker",
+        "started_at": "2026-10-19T04:31:54.70201472Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "3f72e5aa05a9ee7d0aa1826dfad0a908c36ce2d96eecbc7b918ba66cb7ad98bc",
+        "name": "/edgex-ui-go",
+        "started_at": "2026-10-19T04:31:54.7746584Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "6249a0c22b5712d01242c176abfce736685579514bfb389952062c3fd9392576",
+        "name": "/edgex-kuiper",
+        "started_at": "2026-10-19T04:31:54.290632608Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "1d13831d072018233fcd22305be7e7b6fca7062191364a0cd4a355986196110f",
+        "name": "/cctv-prometheus",
+        "started_at": "2026-10-19T04:31:54.539839392Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "118472f5aeed0881b938915994377311fca6a7caa359cd97f4769c0d36bc5167",
+        "name": "/aiot-parser-db",
+        "started_at": "2026-10-19T04:31:54.698492Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "ac9d4613800ff7c022573596a9699e644eed63ce5b17eba6176312deb8734241",
+        "name": "/edgex-app-rules-engine",
+        "started_at": "2026-10-19T04:33:34.972463195Z",
+        "status": "running",
+        "restart_count": 1
+      },
+      {
+        "id": "2026a3b6bb0a51662038528f602125c94945a8ec555398cb871b05b22a911a72",
+        "name": "/edgex-core-common-config-bootstrapper",
+        "started_at": "2026-09-16T00:14:02.853614493Z",
+        "status": "exited",
+        "restart_count": 0
+      },
+      {
+        "id": "746e673415b9485c48eb33d2b5a9597c84331f983e37bda3f89143dc0585a777",
+        "name": "/edgex-support-notifications",
+        "started_at": "2026-10-19T04:33:34.991080063Z",
+        "status": "running",
+        "restart_count": 1
+      },
+      {
+        "id": "c7448aca4f7d5e9255d17c0c297f5fbf12bd7489c3c1298b92dfd3601b5df61a",
+        "name": "/edgex-support-scheduler",
+        "started_at": "2026-10-19T04:31:54.750586368Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "5d7049bb56d064ede2cff8d5b82787716ad7fe85040df092514d045bfaaf5439",
+        "name": "/edgex-device-virtual",
+        "started_at": "2026-10-19T04:33:35.0647887Z",
+        "status": "running",
+        "restart_count": 1
+      },
+      {
+        "id": "f51a40001b1cdd706b69941702a76e10044002740582f2da9c20c8648aa36a0d",
+        "name": "/cctv-device-dabit",
+        "started_at": "2026-10-01T23:40:25.229113157Z",
+        "status": "exited",
+        "restart_count": 0
+      },
+      {
+        "id": "3a534e8a48317ab81af9bc0ba3723e8884a5a9d78ccc5086499ad92f90d8df27",
+        "name": "/edgex-device-rest",
+        "started_at": "2026-10-19T04:33:37.210225867Z",
+        "status": "running",
+        "restart_count": 2
+      },
+      {
+        "id": "135a0431ddbf798c357569d7ed7f80f6d63ef920a7b987ea7fb10395d312be00",
+        "name": "/edgex-core-command",
+        "started_at": "2026-10-19T04:33:35.060441837Z",
+        "status": "running",
+        "restart_count": 1
+      },
+      {
+        "id": "fa3e84dfbabf7731cec9bcc49d967bcf0daba84a7b57569ed685ae8388ad6bbb",
+        "name": "/edgex-core-data",
+        "started_at": "2026-10-19T04:31:54.71103136Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "2e7b3da73a544316ca45f19de90fc7bdd0a6cd32163d107aeace03741bc10d4d",
+        "name": "/edgex-core-metadata",
+        "started_at": "2026-10-19T04:33:35.054281881Z",
+        "status": "running",
+        "restart_count": 1
+      },
+      {
+        "id": "ecb7e55482d1613a10f549502a1ba5753ed0c82d780d2845d70cf9e8e9d01683",
+        "name": "/edgex-core-consul",
+        "started_at": "2026-10-19T04:31:54.579229952Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "b646e206b36686338381d54c7f0441831f5fe91795ced55365a976b2a01fc8a0",
+        "name": "/edgex-redis",
+        "started_at": "2026-10-19T04:31:54.465489792Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "0ceb741184f88c62e432821fef0091c15904681cebca48bf69fabddf6f33ee25",
+        "name": "/cctv-appearance-review",
+        "started_at": "2026-10-19T04:31:54.6870952Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      {
+        "id": "052f94f81510340dfb9eb5a9220f4d127008c3ed35e0bd9fbf157fae82a500fc",
+        "name": "/cctv-appearance-rapv2-color-train",
+        "started_at": "2026-08-28T04:04:36.563214246Z",
+        "status": "exited",
+        "restart_count": 0
+      },
+      {
+        "id": "37a781537f8661d61ab60edad76c8e7fdde54947bc56be84601669c94c707e0d",
+        "name": "/appearance-training-jetson-appearance-multitask-train-1",
+        "started_at": "2026-08-26T23:34:15.546369346Z",
+        "status": "exited",
+        "restart_count": 0
+      },
+      {
+        "id": "a49749b1d57469d784fedf026f77035eb737cebba0c41bc2f140d629c3cfd07d",
+        "name": "/cctv-fall-training",
+        "started_at": "2026-07-27T02:29:31.59916121Z",
+        "status": "exited",
+        "restart_count": 0
+      }
+    ],
+    "metrics": [
+      "cctv_processor_frames_processed_total 9.141362e+06",
+      "cctv_processor_source_error_identified_total 0.0",
+      "cctv_processor_source_error_unidentified_total 0.0",
+      "cctv_processor_pipeline_restart_requested_total 0.0",
+      "cctv_processor_pipeline_restart_rejected_total 0.0",
+      "cctv_processor_pipeline_restart_executed_total 0.0",
+      "cctv_processor_pipeline_restart_failed_total 0.0",
+      "cctv_processor_pipeline_restart_seconds_total 0.0"
+    ],
+    "remaining_dds_test_containers": []
+  },
+  "operating_containers_unchanged": 37,
+  "cleanup": {
+    "runtime_processes_remaining": 0,
+    "dds_containers_remaining": 0,
+    "temporary_root_removed": true,
+    "private_keys_removed": true,
+    "cached_ros_image_retained_on_A": true,
+    "at": "2026-10-22T21:29:03.149620+00:00"
+  },
+  "publication": {
+    "files": {
+      "index.html": {
+        "status": 200,
+        "sha256": "d4902611e79cfe3f275710c56633acbdc6ff3f36fe37bfc1da40132e36958c42",
+        "bytes": 158427
+      },
+      "CCTV_project_progress.pdf": {
+        "status": 200,
+        "sha256": "9992c17f6dde9ce5f54fb34e290b5cab844ea42c55ef7b0c185512eafb1728f1",
+        "bytes": 157186
+      }
+    },
+    "first_page_visual_check": "PASS",
+    "wbs_rows": 37,
+    "done": 9,
+    "local_links_checked": 2023,
+    "local_link_check": "PASS",
+    "wbs_json_status_check": "PASS",
+    "P6.2_path_check": "PASS",
+    "renderer_ruff": "PASS",
+    "targeted_diff_whitespace_check": "PASS"
+  }
+}

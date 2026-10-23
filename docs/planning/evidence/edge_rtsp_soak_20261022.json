@@ -1,0 +1,267 @@
+{
+  "recorded_at": "2026-10-22T06:31:01.783262+00:00",
+  "status": "PASS_AFTER_TEMPORARY_RECEIVER_CORRECTION",
+  "hardware_test_started": true,
+  "requested_receive_seconds": 1800,
+  "report_reassessment": {
+    "printed_pages": [
+      15,
+      16,
+      17,
+      18,
+      30,
+      39,
+      53
+    ],
+    "diagram_pdf_page": 25,
+    "diagram_step_4": "AEC #1 forwards original data to other AECs",
+    "compute_offload_requires_A_independent_path": false,
+    "A_host_failure_requires_independent_path": true,
+    "SSH_specified_by_report": false,
+    "current_control_scope": "node registration and resource reporting; no placement or AI lifecycle command",
+    "functional_mapping": [
+      "F-03 input prerequisite",
+      "F-23 resource report partial",
+      "F-29/F-30 not implemented",
+      "F-31/F-32 evidence only"
+    ]
+  },
+  "source_sha256": {
+    "annual_pdf": "561e87870322d231d41a56bf6dd09cba895779fe5d7d20592b91e04f3068f8c3",
+    "functional_hwpx": "05f44cf9329b8d1efdfa4a97cfbab345f21e50263dffbb9a12b1077f4d1ba680"
+  },
+  "probe_self_checks": [
+    {
+      "case": "old-stall",
+      "probe_pass": true,
+      "expected": true,
+      "frames": 3,
+      "receive_span": 0.0667689960100688,
+      "errors": []
+    },
+    {
+      "case": "new-stall",
+      "probe_pass": false,
+      "expected": false,
+      "frames": 3,
+      "receive_span": 0.06678480299888179,
+      "errors": [
+        "Decoded frame stall exceeded configured limit"
+      ]
+    },
+    {
+      "case": "new-eos",
+      "probe_pass": false,
+      "expected": false,
+      "frames": 3,
+      "receive_span": 0.06810991599923,
+      "errors": [
+        "Unexpected EOS before requested reception duration"
+      ]
+    },
+    {
+      "case": "new-duration",
+      "probe_pass": true,
+      "expected": true,
+      "frames": 61,
+      "receive_span": 2.000096745963674,
+      "errors": []
+    }
+  ],
+  "operating_guard_checks_passed": 6,
+  "product_code_changed": false,
+  "operating_configuration_changed": false,
+  "additional_installations": 0,
+  "hardware_result": {
+    "b": {
+      "started_at": 1792648628.6860783,
+      "frames": 53970,
+      "warnings": [],
+      "errors": [],
+      "max_gap_seconds": 0.601641462999396,
+      "camera_id": "camera_1",
+      "pipeline_ready_seconds": 0.05243686099856859,
+      "play_requested_seconds": 0.08018801499929396,
+      "source_caps": [
+        "application/x-rtp, media=(string)application, payload=(int)107, clock-rate=(int)90000, encoding-name=(string)VND.ONVIF.METADATA, a-bc=(string)0, a-tool=(string)\"streamer\\ 2.3.2\", clock-base=(uint)0, seqnum-base=(uint)0, npt-start=(guint64)0, play-speed=(double)1, play-scale=(double)1, ssrc=(uint)1226306703",
+        "application/x-rtp, media=(string)video, payload=(int)96, clock-rate=(int)90000, encoding-name=(string)H264, packetization-mode=(string)1, profile-level-id=(string)4D002A, sprop-parameter-sets=(string)\"Z00AKpY1QPAET8s3AQEBAg\\=\\=\\,aO48gA\\=\\=\", a-bc=(string)0, a-tool=(string)\"streamer\\ 2.3.2\", x-dimensions=(string)\"1920\\,1080\", clock-base=(uint)0, seqnum-base=(uint)0, npt-start=(guint64)0, play-speed=(double)1, play-scale=(double)1, ssrc=(uint)2373385795"
+      ],
+      "encoded_buffers": 57573,
+      "parser_caps": "video/x-h264, stream-format=(string)byte-stream, alignment=(string)au, width=(int)1920, height=(int)1080, framerate=(fraction)0/1, interlace-mode=(string)progressive, chroma-format=(string)4:2:0, bit-depth-luma=(uint)8, bit-depth-chroma=(uint)8, parsed=(boolean)true, profile=(string)main, level=(string)4.2",
+      "first_frame_seconds": 0.9485172259992396,
+      "first_frame_at": 1792648629.6345942,
+      "caps": "video/x-raw(memory:NVMM), format=(string)NV12, width=(int)1920, height=(int)1080, interlace-mode=(string)progressive, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, pixel-aspect-ratio=(fraction)1/1, chroma-site=(string)mpeg2, colorimetry=(string)bt709, framerate=(fraction)0/1, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0",
+      "last_frame_seconds": 1801.1301472119994,
+      "last_frame_at": 1792650429.8162193,
+      "elapsed_seconds": 1801.2123171849998,
+      "ended_at": 1792650429.898399,
+      "decoded_fps": 29.97975265441394,
+      "receive_span_seconds": 1800.1816299860002,
+      "requested_receive_seconds": 1800.0,
+      "interrupted": false,
+      "pass": true
+    },
+    "a_operating": {
+      "frames_delta": 54100.0,
+      "average_counter_fps": 29.974043183858548,
+      "frame_counter_sample_rate_min": 28.32584488221534,
+      "frame_counter_sample_rate_max": 31.538439239455126,
+      "instantaneous_fps_min": 24.379345343105292,
+      "instantaneous_fps_max": 46.20676802475885,
+      "sample_count": 360,
+      "every_sample_advanced": true,
+      "metrics_errors": 0,
+      "error_restart_deltas": {
+        "cctv_processor_source_error_identified_total": 0.0,
+        "cctv_processor_source_error_unidentified_total": 0.0,
+        "cctv_processor_pipeline_restart_executed_total": 0.0
+      }
+    },
+    "controller_window_kst": [
+      "2026-10-22T14:57:08.219011+09:00",
+      "2026-10-22T15:27:13.120365+09:00"
+    ]
+  },
+  "limitations": [
+    "Maximum decoded frame gap 0.602 seconds; packet loss and end-to-end latency not measured",
+    "No B AI inference or automatic placement/handoff verified",
+    "SSH transport depends on A remaining alive; no whole-host failure recovery",
+    "Same AP only; no inter-AP wireless backhaul test",
+    "SPS/PPS correction recovered reception; first failure single cause not conclusively isolated",
+    "No validation beyond the requested 30 minutes"
+  ],
+  "first_attempt": {
+    "pass": false,
+    "frames": 0,
+    "elapsed_seconds": 15.144448325001576,
+    "error": "No buffer within 15 seconds after PLAYING request",
+    "decoder_stdout": "Stream format not found, dropping the frame",
+    "source_caps_received": true,
+    "operating_error_restart_delta": 0
+  },
+  "temporary_receiver_correction": {
+    "h264parse_config_interval": -1,
+    "parser_output_count_added": true,
+    "initial_recovery_observed": {
+      "frames": 1065,
+      "elapsed_seconds": 36.12007665299825
+    },
+    "full_soak_pass": true,
+    "cause_scope": "RTSP/RTP established; B decoding startup failed. SPS/PPS reinsertion is effective in the retry; single cause not yet isolated."
+  },
+  "technical_reference": [
+    "https://gstreamer.freedesktop.org/documentation/videoparsersbad/h264parse.html"
+  ],
+  "operating_preservation": {
+    "a_containers": 37,
+    "a_id_image_state_start_unchanged": true,
+    "a_routes_unchanged": true,
+    "b_routes_unchanged": true,
+    "b_addresses_unchanged_excluding_lease_lifetimes": true,
+    "b_connections_unchanged": true,
+    "b_original_gstreamer_cache_unchanged": true,
+    "b_profile_still_inactive_autoconnect_off": true
+  },
+  "cleanup": {
+    "test_processes": [],
+    "remote_runtime_removed": true,
+    "listener_removed": true,
+    "ssh_exit_code": 0,
+    "ssh_socket_removed": true,
+    "auth_helpers_removed": true,
+    "local_runtime_removed": true,
+    "state_file_removed": true
+  },
+  "raw_evidence": {
+    "archive": "docs/planning/evidence/edge_rtsp_soak_20261022_logs.tar.gz",
+    "sha256": "ca78dc88789c70fe8808b8f84551ec6f1d7f1cf708d8ff63ba95744d459034f1",
+    "members_sha256": {
+      "rtsp_probe.py": "7d1ebab9dfcf069387b849464cc3c9f106171193550e1ac12ee39fb1f943d7eb",
+      "run_concurrent.py": "eedfa14bac2e594c5842378a480e73a4a00418d2c87064887f34b9859d4ee971",
+      "probe-self-checks.json": "91499428842eeda6989b386e0552fc937eab234dd2edd2a280a84f3132af15b3",
+      "old-stall.py": "cf4ea528a3b918e74ed7af61ec697d34e5685112c22a444fed7f69257e0d1c19",
+      "new-stall.py": "2b4c7e6fe09388039f70e5cff1ce56fc71513d3eb7f42eef29cc4fe443e17aed",
+      "new-eos.py": "baa6f5328d7bb9499df21c83935431ba520a684b4b61f6c4b6e4c29d50504873",
+      "new-duration.py": "b66a1fa2904a490c93812d28d86727532192d811f7c570880b129a69834642c3",
+      "old-stall.json": "c7d226917b09be9abbd5ebcc1acd37e6eabd2aeb40f5a353b84acd693d9b195d",
+      "new-stall.json": "9983fae6e3c082d234ab5e43f8bf91f5921c5134605cbb828e939abd6bf0f6c8",
+      "new-eos.json": "e3917a2c17319b0bd352bd77ddd90e5618f3e73a3c751e22de66cb133cb7b701",
+      "new-duration.json": "ada1a9f7e82b377b0f33a86967fa004258c71b39965bb3d46ec949a57ce7c325",
+      "b-self-test.stdout": "5c5b06cbc30ab5168f6236fcdb2c20fa78196de8f641c9f75de3924f88d0f740",
+      "b-self-test.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "b-self-test.json": "9f0c8234b2c803778668f9ec2e52d2fcb4835e913943ce8751ecd52d59f73d34",
+      "b-rtsp-result.json": "5da0e80ca0be89df1bd1348ce9ef6aaf07578c07644816ecbcfd57f1681d8e3d",
+      "b-rtsp-progress.jsonl": "2ce8c8c2770b6794315827d641da2417a971124bb6383c2e36eaf26d167d1aa1",
+      "rtsp-result-attempt1.json": "02bf8ad57cdb2f76c2144e5da5e17c883abafcc18e5f9cfd565d1aafb74fdf9d",
+      "rtsp-b.stdout": "8c4c14bea76772a1b2435cfaac1cc69718ff90e04f09dd876d90d06673f6b431",
+      "rtsp-b.stderr": "423c7b233a066de31a2d64fc59252de48119931df5c6e677ef3d5d6135131cf9",
+      "rtsp-concurrent-watch.json": "c6934c1c0e1f6a19d8e85c6cedc61ca03c63317510acaff735539383a48d1be0",
+      "operating-progress.jsonl": "f1d051d91fd84467f73c4fcb89fda9bddd4d40c4b2f7a8216e5e834196b8b115",
+      "operating-before.json": "064580e3e53548910e2a52888f21f2fe414f66fe7eb3a7f9b0c7aba8b69785c6",
+      "operating-test-before.json": "5bf9bb8472b1db6dec8ad11879b50c9e5dcd03b350e8b1c259d14707cdc42a4b",
+      "operating-after.json": "5bf9bb8472b1db6dec8ad11879b50c9e5dcd03b350e8b1c259d14707cdc42a4b",
+      "routes-a-before.json": "2ebd8f9c020c327ed3d4c7a2f814044efc00a607a317407901de320158d092ec",
+      "routes-a-after.json": "dcfbf15b7af2b78c4dd37decfcf321b69a563524bfd188d7fe597c7d051cbae4",
+      "baseline-b.json": "985436de00e0e16f10031770fdb62680c33e3fdc486c7c5838e996fcb7939b30",
+      "baseline-b-after.json": "06206992b7cff8d09d1016a95122cb3c3f55612f97316f567b7daf25f1493ae2",
+      "gst-b-plugin-inspection.json": "e7885cf574cdeb60c791754a8887dc8a8c4857f2a7bec83e6305c1681657d3cf",
+      "tunnel-listener.txt": "c65efb22d2b6aa34ef717b970f760762ba034987fc38c449a89756a45e8ada77",
+      "cleanup.json": "e9bb786ec307df1ebaf3f0da83a2e586c6a2cbcf350c9bb4eb51ebca828487fb",
+      "summary.json": "95a4893a392d912b4fdc02cdb43048472329c0f6f757cfaa2f524955bfa5adb0",
+      "attempt1/rtsp-progress.jsonl": "2e79939cb0967149a3e67ca8dab78254fe684df0c8109ae4768a908a6a0bd398",
+      "attempt1/rtsp-b.stderr": "423c7b233a066de31a2d64fc59252de48119931df5c6e677ef3d5d6135131cf9",
+      "attempt1/rtsp_probe.py": "a88ceb42de76417c1be6fefe3d0739a76c8b64698546afec7978dea4d909060e",
+      "attempt1/rtsp-b.stdout": "5e88c04bdb4ad0febbaa13e5110a8693934c535c85cc8809c5461d9cc468eef9",
+      "attempt1/rtsp-concurrent-watch.json": "a75f85fb8cc0c9781bad19c64f1df3210f25f2e5b4e0a882a476c6b866f5fce9",
+      "attempt1/operating-progress.jsonl": "aa7766b0bd04cf84c1f7a00d13bbe2cdcdc93e909a2b87a9ae65dce967936c91"
+    },
+    "csv": "docs/planning/evidence/edge_rtsp_soak_20261022.csv",
+    "csv_sha256": "0572f41874e8e8bb2106a56cd6bfb78a199d1bc6d56dddf776c10879650ca91d",
+    "credential_scan_passed": true
+  },
+  "probe_sha256": "7d1ebab9dfcf069387b849464cc3c9f106171193550e1ac12ee39fb1f943d7eb",
+  "probe_original_sha256": "56dc32bc2d0fb4b1c576321ff89cf5bd796fc57ee6b8dab745a3801d6e238c7f",
+  "product_source_sha256": {
+    "src/services/jetson_resources.py": "c702d6716913e07d2a78eee5c6027185c815f6ebd0483fa904dc8f9148781cac",
+    "src/services/edge_node_agent.py": "658d5ba889ae06e1b5bc38191eec1ffdb10203ecb91ac66e78c19fd349ebbe41",
+    "src/services/edge_orchestrator.py": "bb4f4ddfc5561828deee7bdbb1d153f8a91418e1237cbee9459de35a5c75c9ef",
+    "runners/run_edge_orchestration.py": "2a210f1ade75266f2d40a5a180b9c037231b8c6cfc413c35b06e00eb0afa5ac3"
+  },
+  "final_checks": {
+    "wbs_rows": 37,
+    "done": 9,
+    "local_links_checked": 1956,
+    "non_document_source_baseline_files": 1161,
+    "changed_non_document_files": [
+      "scripts/ops/progress_snapshot_template.html",
+      "scripts/ops/render_progress_snapshot.py"
+    ],
+    "archive_csv_member_hashes_pass": true,
+    "renderer_ruff": "PASS",
+    "html_pdf_generation": "PASS",
+    "pdf_first_page_visual_review": "PASS",
+    "existing_http": [
+      {
+        "uri": "/",
+        "status": 200,
+        "local_bytes_match": true
+      },
+      {
+        "uri": "/CCTV_project_progress.pdf",
+        "status": 200,
+        "local_bytes_match": true
+      }
+    ],
+    "product_tests_rerun": false,
+    "product_tests_reason": "No product code changed; temporary receiver regression checks, actual 30-minute reception and renderer checks were run.",
+    "post_cleanup_operating_metrics": {
+      "cctv_processor_frames_processed_total": 7535322.0,
+      "cctv_processor_cameras": 1.0,
+      "cctv_processor_fps": 30.02771713214087,
+      "cctv_processor_source_error_identified_total": 0.0,
+      "cctv_processor_source_error_unidentified_total": 0.0,
+      "cctv_processor_pipeline_restart_executed_total": 0.0
+    }
+  },
+  "completed_at": "2026-10-22T06:35:02.269698+00:00"
+}

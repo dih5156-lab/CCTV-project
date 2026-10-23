@@ -1,0 +1,414 @@
+{
+  "date": "2026-10-19",
+  "wbs": "P5.1 IN_PROGRESS",
+  "issue": "I54 OPEN",
+  "state": "H264_IMAGE_PROMOTED_3MIN_PASS_BROWSER_AND_LONG_RUN_PENDING",
+  "user_report": "프로젝트 웹 화면이 잠깐 멈췄다가 다시 움직임; 추론/출력 코드 및 C++ 전환 검토 요청",
+  "operating_observation": {
+    "metric_samples": 15,
+    "metric_errors": 0,
+    "probe_errors": "",
+    "observer_is_packet_timing_not_decode_or_unique_frame_fps": true,
+    "metric_seconds": 43.207415405000575,
+    "rates": {
+      "cctv_processor_frames_processed_total": 26.56951334022949,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 13.26161249473127
+    },
+    "max_frame_age": 0.0894603239994467,
+    "output": {
+      "packets": 1040,
+      "seconds": 39.993095286001335,
+      "packets_per_second": 25.97948452276156,
+      "max_observed_arrival_gap": 0.3853764539999247,
+      "max_pts_step": 0.33293299999999704,
+      "pts_steps_over_100ms": 42,
+      "negative_pts_steps": 0
+    }
+  },
+  "cpu_function_baseline": {
+    "sample_seconds_requested": 4,
+    "bytes": 3106162,
+    "sha256": "4db23ad2a29891519c2075e888d284637e751b30043cdf2b621df64bd21c62ca",
+    "nals": 248,
+    "scan_ms": [
+      1366.6794250002567,
+      1326.2727969995467,
+      1353.1432639993
+    ],
+    "process_ms": [
+      1332.8951690000395,
+      1357.4731810003868,
+      1338.3432520004135
+    ],
+    "scan_median_ms": 1353.1432639993,
+    "process_median_ms": 1338.3432520004135,
+    "gpu_inference_added": false,
+    "decoded": false
+  },
+  "cpu_function_comparison": {
+    "sample_bytes": 3106162,
+    "sample_sha256": "4db23ad2a29891519c2075e888d284637e751b30043cdf2b621df64bd21c62ca",
+    "nal_units": 248,
+    "access_unit_chunks": 120,
+    "runs_per_version": 3,
+    "nal_boundaries_equal": true,
+    "processed_bytes_equal_every_run": true,
+    "processed_sha256": "4db23ad2a29891519c2075e888d284637e751b30043cdf2b621df64bd21c62ca",
+    "timings": {
+      "before": {
+        "wall_ms": [
+          1397.398843,
+          1371.054085,
+          1366.240452
+        ],
+        "thread_cpu_ms": [
+          1367.978464,
+          1359.988352,
+          1358.909888
+        ],
+        "per_frame_wall_ms": {
+          "median": 7.719791000000001,
+          "p95": 42.484378,
+          "max": 81.182625
+        },
+        "wall_median_ms": 1371.054085,
+        "thread_cpu_median_ms": 1359.988352
+      },
+      "after": {
+        "wall_ms": [
+          6.411433,
+          6.349001,
+          6.443785
+        ],
+        "thread_cpu_ms": [
+          6.382976,
+          6.303584,
+          6.386848
+        ],
+        "per_frame_wall_ms": {
+          "median": 0.0348805,
+          "p95": 0.105954,
+          "max": 0.257956
+        },
+        "wall_median_ms": 6.411433,
+        "thread_cpu_median_ms": 6.382976
+      }
+    },
+    "operating_code_changed": false,
+    "limit": "이미 받은 송출 데이터의 CPU 보정 함수 비교이며 실제 운영 송출·브라우저 개선/종단 지연 실측 아님"
+  },
+  "tests": {
+    "passed": 41,
+    "files": [
+      "tests/test_h264_poc_fixer.py",
+      "tests/test_deepstream_pipeline_builder.py"
+    ],
+    "random_boundary_inputs": 1000,
+    "ruff": "PASS"
+  },
+  "implementation": "H264PocFixer._iter_nals의 바이트별 Python 순회를 bytes.find로 교체. 3/4바이트 시작 코드·기존 POC 상태/출력 보존. 새 라이브러리·API·DB·모델/임계값 변경 없음.",
+  "limits": [
+    "운영 보완 이미지의 3분 지표는 통과했지만 원격 PC WebRTC 수신/디코드/표시와 장기 운전은 미검증",
+    "45초 임시 비교와 180초 운영 관측은 길이·장면·외부 부하가 달라 개선율이나 전체 원인 비중을 확정하지 않음",
+    "마지막 관측 최대 출력 공백0.302초·PTS 간격100ms 초과175회가 남음; 패킷 도착 공백은 종단 지연이 아님",
+    "모델/엔진/임계값은 그대로이며 이번 실행은 낙상 고정후보 GPU100/정상30분 평가가 아님",
+    "기존 보호된 자동기동 profile 경로를 유지했지만 새 이미지 전환 후 OS 재부팅은 하지 않음",
+    "C++ 전환·NX 실장비 시험은 하지 않음; 후속 낙상 시험 복구 기준은 현재 AI c6aac881/ccbfe02a로 갱신 필요"
+  ],
+  "next": "고정 H264 이미지의 원격 PC 웹 화면 연속성·장시간 송출 확인 → 고정 낙상 후보 GPU100/정상30분 재검증 → 단일 판정 → 다중",
+  "external_reference": {
+    "url": "https://github.com/Prajwal-Mangaluru/SS25-Anomaly_Detection_Project",
+    "tree": "8367d372c445722fa2c247a8420cc2570cbfce6e",
+    "read_paths": [
+      "Commands.txt",
+      "Anomaly_Detection_Camera/deepstream_reference_apps/anomaly/README.md",
+      "Anomaly_Detection_Camera/deepstream_reference_apps/anomaly/apps/deepstream-anomaly-detection-test/deepstream_anomaly_detection_test.c",
+      "Anomaly_Detection_Camera/deepstream_reference_apps/anomaly/plugins/gst-dsdirection/dsdirection_lib/dsdirection_lib.cpp",
+      "Anomaly_Detection_Camera/deepstream_reference_apps/deepstream_parallel_inference_app/README.md"
+    ],
+    "finding": "참고 C/C++ 앱은 추론→광학흐름→방향계산→tee→로컬 화면2개. 추론 이전의 라이브 분리가 아니며 H264/WebRTC 송출 안정성 증거가 아님. Commands의720p/sync0과 C앱 입력800p·mux720p/sink sync1 차이 존재.",
+    "adoption": "C/C++ GStreamer 플러그인과 NVMM 경로는 참고; 기존 API/장치제어 유지, 큐 상한·역압·카메라ID/PTS 결과 대응·RTSP 복구를 별도 설계/검증",
+    "executed": false
+  },
+  "candidate_image": {
+    "state": "DEPLOYED_3MIN_PASS",
+    "id": "sha256:ccbfe02abcbffe212c3ca09a2d08dd09983ee20fcfd7bf7b1ae7cda52a76cfe5",
+    "tag": "cctv-ai:h264-scan-20261019",
+    "base": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+    "one_copy_layer_added": true,
+    "runtime_config_unchanged": true,
+    "changed_source_files": [
+      "src/core/_h264_poc_fixer.py"
+    ],
+    "cpu_smoke": {
+      "source_sha256": "5c390b4f7985fc63b450ea0f0c3026714055b33528805cdbcec9f2033ac90d1f",
+      "sample_bytes": 3106162,
+      "sample_output_sha256": "4db23ad2a29891519c2075e888d284637e751b30043cdf2b621df64bd21c62ca",
+      "sample_output_equal": true,
+      "nal_units": 248
+    },
+    "operating": {
+      "name": "/cctv-ai-engine",
+      "id": "c6aac881db6d7beb390b23a34b974338c7a6aed996caa7636c2b9b130f766e0c",
+      "image": "sha256:ccbfe02abcbffe212c3ca09a2d08dd09983ee20fcfd7bf7b1ae7cda52a76cfe5",
+      "started_at": "2026-10-19T08:40:12.347649183Z",
+      "health": "healthy",
+      "status": "running",
+      "config_hash": "660eb7582a9929b831c1c0a59d194b1e1efd97b2658030a7aeb99dbcf8d96d3b"
+    },
+    "gpu_pipeline_tested": true,
+    "deployed": true,
+    "patched_source_gpu_pipeline_tested": true
+  },
+  "source_sha256": {
+    "src/core/_h264_poc_fixer.py": "5c390b4f7985fc63b450ea0f0c3026714055b33528805cdbcec9f2033ac90d1f",
+    "tests/test_h264_poc_fixer.py": "47ab14ac34595865cfa991aca9135a0703af4001e675fe8c063bbc4715779d1a"
+  },
+  "publication": {
+    "files": {
+      "index.html": {
+        "http_status": 200,
+        "bytes": 140405,
+        "sha256": "1032dda6492c63b21b53ea4f6caf27a3b462a69200b26b0d271988f9ecf6c226",
+        "matches_local": true
+      },
+      "CCTV_project_progress.pdf": {
+        "http_status": 200,
+        "bytes": 158021,
+        "sha256": "b1bbf945cf9791a764d8134663fda87a33c23c1b2098c72ab8f459ab15b08466",
+        "matches_local": true
+      }
+    },
+    "wbs_counts": "37 rows / DONE9 unchanged",
+    "render": "PASS",
+    "first_page_visual": "PASS",
+    "browser_interaction": "NOT_RUN",
+    "renderer_ruff": "PASS"
+  },
+  "gstreamer_integration": {
+    "runs": 4,
+    "frames_per_run": 120,
+    "same_output_bytes": true,
+    "same_buffer_metadata": true,
+    "valid_pts_in_raw_sample": 0,
+    "timestamp_fixture_cases_per_version": 6,
+    "medians": {
+      "before": {
+        "callback_wall_total_ms": 6450.490080999999,
+        "callback_thread_cpu_total_ms": 1409.733872,
+        "callback_p95_ms": 185.34162550000002
+      },
+      "after": {
+        "callback_wall_total_ms": 52.1579335,
+        "callback_thread_cpu_total_ms": 23.286256,
+        "callback_p95_ms": 1.7161515
+      }
+    },
+    "decode": {
+      "returncode": 0,
+      "decoded_frames": 120,
+      "stderr": "",
+      "decoded_frame_manifest_sha256": "f1bc64968d46df8c8fa87cb01b2148c158238da3a326476b72473cc40693d6be",
+      "scope": "CPU decode of byte-identical GStreamer result; no GPU/streaming/browser check"
+    },
+    "setup_limit": "Raw H264 contains no full per-frame timestamps; compare metadata including unknown and separately verify duplicate/backwards/unknown timestamps using Gst.Buffer fixtures"
+  },
+  "runtime_source_overlay_comparison": {
+    "scope": "Same operating container; one frozen H264 source file; two AI restarts; original source restored; no image promotion",
+    "baseline": {
+      "metric_samples": 15,
+      "metric_errors": 0,
+      "probe_errors": "",
+      "observer_is_packet_timing_not_decode_or_unique_frame_fps": true,
+      "metric_seconds": 43.10817610999948,
+      "rates": {
+        "cctv_processor_frames_processed_total": 28.16171106154495,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 14.104052986342117
+      },
+      "max_frame_age": 0.15960343100050522,
+      "output": {
+        "packets": 1027,
+        "seconds": 40.020120609000514,
+        "packets_per_second": 25.637104146289175,
+        "max_observed_arrival_gap": 0.45502829999895766,
+        "max_pts_step": 0.3372779999999995,
+        "pts_steps_over_100ms": 45,
+        "negative_pts_steps": 0
+      }
+    },
+    "candidate": {
+      "metric_samples": 15,
+      "metric_errors": 0,
+      "probe_errors": "",
+      "observer_is_packet_timing_not_decode_or_unique_frame_fps": true,
+      "metric_seconds": 42.71522229999937,
+      "rates": {
+        "cctv_processor_frames_processed_total": 30.082952418581208,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 15.053181638247251
+      },
+      "max_frame_age": 0.12345048400129599,
+      "output": {
+        "packets": 1100,
+        "seconds": 40.046386601999984,
+        "packets_per_second": 27.443175108965114,
+        "max_observed_arrival_gap": 0.1782805439997901,
+        "max_pts_step": 0.1456109999999997,
+        "pts_steps_over_100ms": 30,
+        "negative_pts_steps": 0
+      }
+    },
+    "restored": {
+      "metric_samples": 15,
+      "metric_errors": 0,
+      "probe_errors": "",
+      "observer_is_packet_timing_not_decode_or_unique_frame_fps": true,
+      "metric_seconds": 43.075290656001016,
+      "rates": {
+        "cctv_processor_frames_processed_total": 24.70093605396878,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 12.35046802698439
+      },
+      "max_frame_age": 0.08916941999996197,
+      "output": {
+        "packets": 945,
+        "seconds": 39.94756916699953,
+        "packets_per_second": 23.630974792324366,
+        "max_observed_arrival_gap": 0.47902118700039864,
+        "max_pts_step": 0.232687999999996,
+        "pts_steps_over_100ms": 68,
+        "negative_pts_steps": 0
+      }
+    },
+    "followup_after_restore": {
+      "metric_samples": 15,
+      "metric_errors": 0,
+      "probe_errors": "",
+      "observer_is_packet_timing_not_decode_or_unique_frame_fps": true,
+      "metric_seconds": 43.178670557999794,
+      "rates": {
+        "cctv_processor_frames_processed_total": 22.117401662869526,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 11.07028062288129
+      },
+      "max_frame_age": 0.15360467499886,
+      "output": {
+        "packets": 912,
+        "seconds": 39.688712961999045,
+        "packets_per_second": 22.953629180977973,
+        "max_observed_arrival_gap": 0.48546144099964295,
+        "max_pts_step": 0.3222890000000005,
+        "pts_steps_over_100ms": 71,
+        "negative_pts_steps": 0
+      }
+    },
+    "elapsed_seconds": 208.5853360380006,
+    "recovery_seconds": 78.8126110280009,
+    "same_container_image_config_restored": true,
+    "other_six_services_unchanged": true,
+    "final_ai": {
+      "name": "/cctv-ai-engine",
+      "id": "8a44bd5723233753bc7cefc6778c5dde6b9674c8829a5096e64a9421b09c4ba2",
+      "image": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+      "started_at": "2026-10-19T08:24:44.261673152Z",
+      "health": "healthy",
+      "status": "running",
+      "config_hash": "3227e98ce16dc8a2732a0864e13b212aaf3b2cfcfcc0e6f8985ed30d823a01c8"
+    },
+    "recovery_guard_tests": 7,
+    "ruff": "PASS",
+    "browser_checked": false,
+    "performance_recovery_above_25fps": false,
+    "readiness": "Short comparison only; per-run 45 seconds; external load/scene not controlled; no long-term or user-PC WebRTC conclusion"
+  },
+  "browser_tool_attempt": {
+    "chrome_devtools_mcp_available": false,
+    "firefox_geckodriver_installed": true,
+    "start_result": "version/start probe timeout; no browser session established",
+    "browser_result": "NOT_TESTED"
+  },
+  "image_promotion": {
+    "promoted": true,
+    "image": "sha256:ccbfe02abcbffe212c3ca09a2d08dd09983ee20fcfd7bf7b1ae7cda52a76cfe5",
+    "old_image": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+    "profile": "data/runtime/live_refresh_20261008/candidate.yml",
+    "profile_changed_fields": [
+      "services.cctv-ai-engine.image"
+    ],
+    "observation": {
+      "metric_samples": 60,
+      "metric_errors": 0,
+      "probe_errors": "",
+      "observer_is_packet_timing_not_decode_or_unique_frame_fps": true,
+      "metric_seconds": 179.43559623200053,
+      "rates": {
+        "cctv_processor_frames_processed_total": 29.97175651283002,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 14.98587825641501
+      },
+      "max_frame_age": 0.08358711700020649,
+      "output": {
+        "packets": 4616,
+        "seconds": 174.94051208400015,
+        "packets_per_second": 26.380396084493242,
+        "max_observed_arrival_gap": 0.3023572630008857,
+        "max_pts_step": 0.22690000000000055,
+        "pts_steps_over_100ms": 175,
+        "negative_pts_steps": 0
+      }
+    },
+    "elapsed_seconds": 209.39589019499908,
+    "final_ai": {
+      "name": "/cctv-ai-engine",
+      "id": "c6aac881db6d7beb390b23a34b974338c7a6aed996caa7636c2b9b130f766e0c",
+      "image": "sha256:ccbfe02abcbffe212c3ca09a2d08dd09983ee20fcfd7bf7b1ae7cda52a76cfe5",
+      "started_at": "2026-10-19T08:40:12.347649183Z",
+      "health": "healthy",
+      "status": "running",
+      "config_hash": "660eb7582a9929b831c1c0a59d194b1e1efd97b2658030a7aeb99dbcf8d96d3b"
+    },
+    "other_six_services_unchanged": true,
+    "image_rollout_guard_tests": 5,
+    "ruff": "PASS",
+    "runtime_and_boot_profile_equal": true,
+    "windows": [
+      {
+        "seconds": 30.492422981000345,
+        "fps": 29.974659625097953,
+        "inferences_per_second": 14.987329812548976
+      },
+      {
+        "seconds": 30.431248888000482,
+        "fps": 29.969193947857192,
+        "inferences_per_second": 14.951736015652438
+      },
+      {
+        "seconds": 30.50665041100001,
+        "fps": 29.993460038145376,
+        "inferences_per_second": 15.013119887945992
+      },
+      {
+        "seconds": 30.359810382999058,
+        "fps": 29.940898461902894,
+        "inferences_per_second": 14.9869183720196
+      },
+      {
+        "seconds": 30.322109880000426,
+        "fps": 30.011104227288925,
+        "inferences_per_second": 14.972572878229858
+      }
+    ],
+    "browser_checked": false,
+    "source_overlay_retained": false,
+    "long_run_passed": false
+  },
+  "initial_local_limits": [
+    "라이브 처리26.57FPS·송출간격 최대0.385초를 관측했으나 전체 근본 원인 확정은 아님",
+    "함수 비용 개선은 수신한 4초/120프레임의 CPU 재생 비교이며 실제 화면 지연 개선 아님",
+    "코드 분석 프로세스 CPU 경쟁도 관측; 순수 인코더/GPU/네트워크/브라우저 원인 분리 미완료",
+    "운영 GPU/엔진/카메라·AI 컨테이너 미변경; 새 전체 GPU 추론 시험 없음",
+    "C++ 전환 미실행; 대상 JetPack/SDK별 빌드·동일 입력/PTS/이벤트 결과 검증 필요"
+  ]
+}

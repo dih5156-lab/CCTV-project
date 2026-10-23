@@ -1,0 +1,576 @@
+{
+  "date": "2026-10-19",
+  "state": "DIAGNOSTIC_COMPLETE_RESTORED_CANDIDATE_NOT_ACCEPTED",
+  "scope": "정상RTSP30분 원인 진단 1회; 시험38분/동일AI복구5분; 고정r2/1080p/0.5; 계측만 추가·운영 모델/설정/실물 출력 변경 없음",
+  "authorization": "authorization_20261019.json",
+  "observation_seconds": 1800.5570133459987,
+  "candidate_id": "fall-single-1080p05-20261016-r2",
+  "input_resolution": [
+    1920,
+    1080
+  ],
+  "confidence": 0.5,
+  "source_count": 211,
+  "runtime_source_engine_matches": true,
+  "saved_tensors": 8,
+  "postprocess": {
+    "logged_calls": 808,
+    "slow_calls_ge100ms": 754,
+    "largest_calls": [
+      {
+        "type": "postprocess",
+        "call": 12652,
+        "thread_id": 93,
+        "start": 587534.478656101,
+        "end": 587534.909765701,
+        "wall_ms": 431.1096000019461,
+        "thread_ms": 11.380736000006664,
+        "detections": 1,
+        "minor_faults": 0,
+        "major_faults": 0,
+        "voluntary_switches": 113,
+        "involuntary_switches": 0,
+        "gc_overlaps": []
+      },
+      {
+        "type": "postprocess",
+        "call": 17177,
+        "thread_id": 93,
+        "start": 587857.713548221,
+        "end": 587857.996710128,
+        "wall_ms": 283.16190699115396,
+        "thread_ms": 14.687423999987459,
+        "detections": 1,
+        "minor_faults": 0,
+        "major_faults": 0,
+        "voluntary_switches": 69,
+        "involuntary_switches": 6,
+        "gc_overlaps": []
+      },
+      {
+        "type": "postprocess",
+        "call": 9331,
+        "thread_id": 93,
+        "start": 587297.774546247,
+        "end": 587297.958963198,
+        "wall_ms": 184.41695102956146,
+        "thread_ms": 13.513759999995045,
+        "detections": 1,
+        "minor_faults": 0,
+        "major_faults": 0,
+        "voluntary_switches": 63,
+        "involuntary_switches": 4,
+        "gc_overlaps": []
+      },
+      {
+        "type": "postprocess",
+        "call": 18279,
+        "thread_id": 93,
+        "start": 587937.466545006,
+        "end": 587937.648735837,
+        "wall_ms": 182.19083093572408,
+        "thread_ms": 15.89488000001893,
+        "detections": 2,
+        "minor_faults": 0,
+        "major_faults": 0,
+        "voluntary_switches": 59,
+        "involuntary_switches": 36,
+        "gc_overlaps": []
+      },
+      {
+        "type": "postprocess",
+        "call": 21511,
+        "thread_id": 93,
+        "start": 588168.735200606,
+        "end": 588168.915745462,
+        "wall_ms": 180.54485600441694,
+        "thread_ms": 11.643647999960649,
+        "detections": 2,
+        "minor_faults": 0,
+        "major_faults": 0,
+        "voluntary_switches": 63,
+        "involuntary_switches": 0,
+        "gc_overlaps": []
+      },
+      {
+        "type": "postprocess",
+        "call": 22835,
+        "thread_id": 93,
+        "start": 588263.600398635,
+        "end": 588263.779705963,
+        "wall_ms": 179.3073279550299,
+        "thread_ms": 15.570783999976356,
+        "detections": 1,
+        "minor_faults": 0,
+        "major_faults": 0,
+        "voluntary_switches": 49,
+        "involuntary_switches": 2,
+        "gc_overlaps": []
+      },
+      {
+        "type": "postprocess",
+        "call": 12667,
+        "thread_id": 93,
+        "start": 587535.862052095,
+        "end": 587536.038721155,
+        "wall_ms": 176.66906001977623,
+        "thread_ms": 12.899135999987266,
+        "detections": 1,
+        "minor_faults": 0,
+        "major_faults": 0,
+        "voluntary_switches": 67,
+        "involuntary_switches": 14,
+        "gc_overlaps": []
+      },
+      {
+        "type": "postprocess",
+        "call": 5954,
+        "thread_id": 93,
+        "start": 587056.24247597,
+        "end": 587056.418271674,
+        "wall_ms": 175.7957040099427,
+        "thread_ms": 15.35987199999056,
+        "detections": 1,
+        "minor_faults": 0,
+        "major_faults": 0,
+        "voluntary_switches": 60,
+        "involuntary_switches": 2,
+        "gc_overlaps": []
+      },
+      {
+        "type": "postprocess",
+        "call": 12393,
+        "thread_id": 93,
+        "start": 587516.20233547,
+        "end": 587516.376508255,
+        "wall_ms": 174.17278501670808,
+        "thread_ms": 16.436351999999488,
+        "detections": 1,
+        "minor_faults": 0,
+        "major_faults": 0,
+        "voluntary_switches": 64,
+        "involuntary_switches": 61,
+        "gc_overlaps": []
+      },
+      {
+        "type": "postprocess",
+        "call": 18115,
+        "thread_id": 93,
+        "start": 587925.743769454,
+        "end": 587925.915108723,
+        "wall_ms": 171.33926902897656,
+        "thread_ms": 9.413215999984459,
+        "detections": 1,
+        "minor_faults": 0,
+        "major_faults": 0,
+        "voluntary_switches": 60,
+        "involuntary_switches": 0,
+        "gc_overlaps": []
+      }
+    ],
+    "largest_wait_ms": 419.7288640019394,
+    "largest_wait_fraction": 0.9736012930355639,
+    "gc_events_logged": 0,
+    "largest_call_had_gc": false
+  },
+  "quota_after_warmup": {
+    "nr_throttled": 0,
+    "throttled_usec": 0
+  },
+  "window_result": {
+    "passed": false,
+    "windows": [
+      {
+        "seconds": 30.411825111950748,
+        "inferences_per_second": 14.073473013357935,
+        "playback_ratio": 1.001079880603297
+      },
+      {
+        "seconds": 30.46265302505344,
+        "inferences_per_second": 14.017163890775429,
+        "playback_ratio": 0.9983004336158489
+      },
+      {
+        "seconds": 30.553287980961613,
+        "inferences_per_second": 13.8119340957005,
+        "playback_ratio": 1.0007572419064292
+      },
+      {
+        "seconds": 30.53024289594032,
+        "inferences_per_second": 14.18265820798881,
+        "playback_ratio": 1.0004753158731539
+      },
+      {
+        "seconds": 30.620754715055227,
+        "inferences_per_second": 14.108078132626812,
+        "playback_ratio": 1.0002961813328628
+      },
+      {
+        "seconds": 30.468661746941507,
+        "inferences_per_second": 13.883117135673391,
+        "playback_ratio": 0.9973535403815496
+      },
+      {
+        "seconds": 30.17801497306209,
+        "inferences_per_second": 13.950553088922474,
+        "playback_ratio": 1.0020924454770892
+      },
+      {
+        "seconds": 30.446370793040842,
+        "inferences_per_second": 13.926126134446019,
+        "playback_ratio": 1.000688982345441
+      },
+      {
+        "seconds": 30.51821599295363,
+        "inferences_per_second": 14.12271281189942,
+        "playback_ratio": 0.999636294075768
+      },
+      {
+        "seconds": 30.32372106600087,
+        "inferences_per_second": 13.98245284861795,
+        "playback_ratio": 0.9997989544229219
+      },
+      {
+        "seconds": 30.38058734103106,
+        "inferences_per_second": 14.153775079234746,
+        "playback_ratio": 0.9999939413932656
+      },
+      {
+        "seconds": 30.49354019900784,
+        "inferences_per_second": 13.740615135714314,
+        "playback_ratio": 0.9969526857360149
+      },
+      {
+        "seconds": 30.51315336395055,
+        "inferences_per_second": 13.993964992961846,
+        "playback_ratio": 0.9982530911074722
+      },
+      {
+        "seconds": 30.38378490495961,
+        "inferences_per_second": 14.119373255896548,
+        "playback_ratio": 1.0048833146530132
+      },
+      {
+        "seconds": 30.24044239509385,
+        "inferences_per_second": 14.186300398488882,
+        "playback_ratio": 1.0000766862758108
+      },
+      {
+        "seconds": 30.405447399942204,
+        "inferences_per_second": 13.846203098488209,
+        "playback_ratio": 0.9993379283101014
+      },
+      {
+        "seconds": 30.51713378902059,
+        "inferences_per_second": 14.057676679791763,
+        "playback_ratio": 1.0006626999809098
+      },
+      {
+        "seconds": 30.816406453959644,
+        "inferences_per_second": 14.018506688812566,
+        "playback_ratio": 0.9995230720693666
+      },
+      {
+        "seconds": 30.521177479997277,
+        "inferences_per_second": 13.990285934408783,
+        "playback_ratio": 0.9991131280234841
+      },
+      {
+        "seconds": 30.652081062085927,
+        "inferences_per_second": 13.865290227412638,
+        "playback_ratio": 0.9978798075095034
+      },
+      {
+        "seconds": 30.41531587089412,
+        "inferences_per_second": 13.775954252079995,
+        "playback_ratio": 1.0017114217497145
+      },
+      {
+        "seconds": 30.42748570407275,
+        "inferences_per_second": 13.934769508189996,
+        "playback_ratio": 1.0019488123502531
+      },
+      {
+        "seconds": 30.41454004100524,
+        "inferences_per_second": 13.94070071184237,
+        "playback_ratio": 0.9995351899129107
+      },
+      {
+        "seconds": 30.491739742923528,
+        "inferences_per_second": 14.134975689605437,
+        "playback_ratio": 1.001603826691713
+      },
+      {
+        "seconds": 30.470412737107836,
+        "inferences_per_second": 14.14486911347658,
+        "playback_ratio": 0.9999988468450316
+      },
+      {
+        "seconds": 30.401299692923203,
+        "inferences_per_second": 13.848092162257133,
+        "playback_ratio": 0.9979174089738689
+      },
+      {
+        "seconds": 30.50555767607875,
+        "inferences_per_second": 14.226915783949938,
+        "playback_ratio": 0.9976059858713542
+      },
+      {
+        "seconds": 30.508714532945305,
+        "inferences_per_second": 13.996001029112435,
+        "playback_ratio": 1.0023019625418454
+      },
+      {
+        "seconds": 30.30921409802977,
+        "inferences_per_second": 14.286084706767335,
+        "playback_ratio": 1.0005468007489944
+      },
+      {
+        "seconds": 30.53871633799281,
+        "inferences_per_second": 14.113232371322649,
+        "playback_ratio": 0.9999013747022149
+      },
+      {
+        "seconds": 30.480799344019033,
+        "inferences_per_second": 13.352668196343147,
+        "playback_ratio": 1.0002978657770256
+      },
+      {
+        "seconds": 30.47141570399981,
+        "inferences_per_second": 13.816227118871202,
+        "playback_ratio": 1.00034279611757
+      },
+      {
+        "seconds": 30.489280723966658,
+        "inferences_per_second": 14.136115702500144,
+        "playback_ratio": 0.9993144210860236
+      },
+      {
+        "seconds": 30.24295628000982,
+        "inferences_per_second": 13.887531235748082,
+        "playback_ratio": 1.0000684860954399
+      },
+      {
+        "seconds": 30.615292349946685,
+        "inferences_per_second": 13.849287968688575,
+        "playback_ratio": 1.000613624878658
+      },
+      {
+        "seconds": 30.306252214009874,
+        "inferences_per_second": 14.08950196100486,
+        "playback_ratio": 0.9998523633678531
+      },
+      {
+        "seconds": 30.418300079065375,
+        "inferences_per_second": 14.103352221686063,
+        "playback_ratio": 0.9973253918577334
+      },
+      {
+        "seconds": 30.488132120925002,
+        "inferences_per_second": 13.90705072774842,
+        "playback_ratio": 0.9975139334668199
+      },
+      {
+        "seconds": 30.57918363797944,
+        "inferences_per_second": 14.061853484732623,
+        "playback_ratio": 1.0052273092020034
+      },
+      {
+        "seconds": 30.348480701097287,
+        "inferences_per_second": 14.102847658681151,
+        "playback_ratio": 0.9997341223049431
+      },
+      {
+        "seconds": 30.36256856599357,
+        "inferences_per_second": 13.60227475822203,
+        "playback_ratio": 1.0008868444034273
+      },
+      {
+        "seconds": 30.360502271912992,
+        "inferences_per_second": 14.130201014390828,
+        "playback_ratio": 0.9991315844291093
+      },
+      {
+        "seconds": 30.269932322087698,
+        "inferences_per_second": 14.04033532278106,
+        "playback_ratio": 1.0008545826477924
+      },
+      {
+        "seconds": 30.52904887800105,
+        "inferences_per_second": 13.855656024214037,
+        "playback_ratio": 0.9992240934168729
+      },
+      {
+        "seconds": 30.61461868393235,
+        "inferences_per_second": 14.04557752096646,
+        "playback_ratio": 0.9985231997040656
+      },
+      {
+        "seconds": 30.401930395979434,
+        "inferences_per_second": 14.078053413891169,
+        "playback_ratio": 1.0019666726501182
+      },
+      {
+        "seconds": 30.56622108607553,
+        "inferences_per_second": 13.806090023743318,
+        "playback_ratio": 0.997346250854919
+      },
+      {
+        "seconds": 30.433974824962206,
+        "inferences_per_second": 14.030372386645038,
+        "playback_ratio": 1.002347787544964
+      },
+      {
+        "seconds": 30.329492839053273,
+        "inferences_per_second": 13.913849540425504,
+        "playback_ratio": 0.9997526190730227
+      }
+    ],
+    "delay_growth_range_seconds": 0.26709834297025736
+  },
+  "inference_per_second": {
+    "min": 13.352668196343147,
+    "median": 14.017163890775429,
+    "max": 14.286084706767335,
+    "below_14_25": 48,
+    "windows": 49
+  },
+  "accepted_fall_alarms": 53,
+  "fall_queue_rows": 53,
+  "pipeline_errors": {
+    "inference_errors": 0,
+    "camera_errors": 0,
+    "frames_dropped": 0,
+    "pipeline_restart_executed": 0
+  },
+  "rss_growth_mib": -0.2578125,
+  "operating_recovery": {
+    "same_container": true,
+    "same_image": true,
+    "healthy": true,
+    "passed": true,
+    "rates": {
+      "cctv_processor_frames_processed_total": 29.98048528131199,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 14.990242640655994
+    },
+    "snapshot": [
+      {
+        "name": "/cctv-ai-engine",
+        "id": "c8a71163c84b458197b98a4bde8e0e06719afc5cf5964e6fbd0b716109ce0377",
+        "image": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+        "started_at": "2026-10-18T23:52:13.763291631Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-media-server",
+        "id": "957101f7ab7336585817a176154f7711de977caee7cfbf34257f2fb68810dea4",
+        "image": "sha256:f8628851106cc053f9175b248050bb5f362a6e65abd72297c167a1cb5a9a3be2",
+        "started_at": "2026-10-12T23:35:15.324861031Z",
+        "status": "running",
+        "health": null,
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-action-layer",
+        "id": "74deaeb0b5bdd64c8f2e2a141daa25c193a75cf235b214fee6ef8b4dcdceedeb",
+        "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+        "started_at": "2026-10-12T23:35:15.475740705Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-device-signboard",
+        "id": "29aeb393bd52e7a9f8241be9214b970e82e8442253fdfe2e73dbbf5d153feaa8",
+        "image": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+        "started_at": "2026-10-12T23:35:15.45875226Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-device-speaker",
+        "id": "a8ff5823d34ad72dd2c5b236cc88f210b16feb05ef53532e6549601d2beafb7a",
+        "image": "sha256:4daca5e8c9865c5f19dde37d7dbdfcc37ea5c413fa8375802e80c7f8185bba30",
+        "started_at": "2026-10-12T23:35:15.455773133Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      }
+    ],
+    "recovery_seconds": 43.84746647696011
+  },
+  "non_target_containers_unchanged": true,
+  "runtime_root": "data/runtime/p52_postprocess_stall_20261016",
+  "limits": [
+    "계측이 추가된 정상 영상 반복 진단이며 독립 평가·현장 오경보율·후보 합격 근거가 아님.",
+    "대기 비중과 GC/페이지폴트/CPU quota 관측으로 범위를 좁혔으나 실제 GIL 소유 스레드/정확한 잠금 원인은 아직 미식별.",
+    "이번 시험의 정상 영상 경보·처리율 저하는 별도 재현·원인 분리가 필요하며 종전 r2 0건 결과를 일반화하지 않음."
+  ],
+  "timing": {
+    "test_seconds_by_artifact_time": 1884.9644248485565,
+    "recovery_seconds": 43.84746647696011,
+    "total_seconds_by_artifact_time": 1928.8122055530548,
+    "approved_test_seconds": 2280,
+    "approved_recovery_seconds": 300,
+    "within_authorization": true
+  },
+  "input_hashes_verified_after_run": 223,
+  "cpu_comparison": {
+    "state": "PASS",
+    "summary": {
+      "alone": {
+        "calls": 16,
+        "median_wall_ms": 6.160817050840706,
+        "max_wall_ms": 15.731154009699821,
+        "median_thread_ms": 5.79180800000012,
+        "max_thread_ms": 8.039007999999903
+      },
+      "contended_default": {
+        "calls": 16,
+        "median_wall_ms": 20.425817521754652,
+        "max_wall_ms": 98.05397503077984,
+        "median_thread_ms": 7.129776000000199,
+        "max_thread_ms": 8.237536000000212
+      },
+      "contended_1ms": {
+        "calls": 16,
+        "median_wall_ms": 17.38960901275277,
+        "max_wall_ms": 29.77629902306944,
+        "median_thread_ms": 6.843680000000241,
+        "max_thread_ms": 8.452128000000059
+      }
+    },
+    "original_switch_interval": 0.005,
+    "restored_switch_interval": 0.005,
+    "same_outputs_across_48_calls": true,
+    "gpu_inference_runs": 0,
+    "operating_setting_changes": 0,
+    "limits": [
+      "보존 텐서 8개·통제된 CPU 경쟁 재현이며 실제 GPU 앱에서 GIL을 점유한 스레드를 직접 식별한 결과는 아님.",
+      "1ms는 이 시험 프로세스에서만 사용하고 복구했으며 운영 설정에 적용하지 않음.",
+      "GPU 원본과의 대조는 검출 수이며 전체 결과 해시는 CPU 조건 사이에서만 비교함."
+    ]
+  },
+  "cpu_comparison_record": "data/runtime/p52_postprocess_stall_20261016/slow_tensor_cpu_comparison.json",
+  "operating_model_promoted": false,
+  "new_gpu_diagnostics_executed": 1,
+  "next": "정상 반복 RTSP의 입력 간격·추적 전환과 53경보 재현 대조; Python 스레드 대기 구간 분리 → 최소 보완 → 고정 후보 재검증 → 단일 후보 판정 → 다중 카메라",
+  "artifact_sha256": {
+    "data/runtime/p52_postprocess_stall_20261016/authorization_20261019.json": "0bf3994c0cc27999c4903e49cb8ddcca8fbbf348ad3398733a241c34caba7722",
+    "data/runtime/p52_postprocess_stall_20261016/diagnostic_result.json": "d908f7e12ca1c4e345ee413069aac32e1fa6e2184b26ffe11015e432b6fd9a27",
+    "data/runtime/p52_postprocess_stall_20261016/diagnostic_operating_before.json": "ee30619444dd9f2c2c38846fc09aca79ecccb7606136a0d4ec467ccb7729c766",
+    "data/runtime/p52_postprocess_stall_20261016/diagnostic_operating_after.json": "ac2a40e28c8bfe15ba259b0e39eac0fed002e0c8eeca90e784bf298112d4448c",
+    "data/runtime/p52_postprocess_stall_20261016/slow_tensor_cpu_comparison.json": "05d0979c05249b0528a3b02ad23dabe4784e1bd89569679abacd1fbcf0cdd340",
+    "data/runtime/p52_postprocess_stall_20261016/thread_wait_snapshot.json": "d151cb383364d51f0d6a18d9957d10d9bcde388adb4ca95564cf1fc853cd87e1",
+    "data/runtime/p52_postprocess_stall_20261016/host_process_snapshot.json": "3e5600bebd7e6f6552cf7ae87294eedaf7e908c32d7b84468b52abf87641785b",
+    "data/runtime/p52_postprocess_stall_20261016/clock_thermal_snapshot.json": "f47a83892677afd4ffdb32ddd3174dca9aee9c4f00cf2a49e00b202c10cf7236",
+    "data/runtime/p52_postprocess_stall_20261016/trial/output/experiment.json": "bf3b1f00de406d3b4d3dd1a1f3f1ec20050285d737773aabaab4503d19912304",
+    "data/runtime/p52_postprocess_stall_20261016/trial/output/runtime_proof.json": "b8015796f765481b9bbecdc5a7142f088ef8ac1207b96ba3432e0df328f77f79",
+    "data/runtime/p52_postprocess_stall_20261016/trial/output/postprocess_trace.jsonl": "cc6bcda31b9334b64a998582496c4f413102daa2556c1dca2f87c4516fcd605f",
+    "data/runtime/p52_postprocess_stall_20261016/trial/output/fall_queue.jsonl": "c4c79640e1a46627f0f7e0f12899885c8418a801fd02f296bc510232063ece47"
+  }
+}

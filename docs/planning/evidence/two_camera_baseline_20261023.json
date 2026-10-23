@@ -1,0 +1,548 @@
+{
+  "date": "2026-10-23",
+  "wbs": "P6.2 preliminary baseline; P5.1/I56 cross-reference",
+  "state": "BLOCKED_CURRENT_TWO_CHANNEL_MEASUREMENT",
+  "observations": [
+    {
+      "observation": "idle",
+      "seconds": 36.02533636899898,
+      "processed_fps": 16.294087971518106,
+      "primary_inferences_per_second": 8.160923106688795,
+      "cpu_active_core_mean_percent_median": 100,
+      "gpu_busy_percent_median": 79,
+      "gpu_busy_percent_max": 98,
+      "temperature_max_c": 53.718,
+      "ram_mib_median": 33075,
+      "error_restart_drop_counter_deltas": {
+        "cctv_processor_frames_dropped_total": 0.0,
+        "cctv_processor_primary_metrics_errors_total": 0.0,
+        "cctv_processor_model_metrics_errors_total": 0.0,
+        "cctv_processor_source_error_identified_total": 0.0,
+        "cctv_processor_source_error_unidentified_total": 0.0,
+        "cctv_processor_pipeline_restart_requested_total": 0.0,
+        "cctv_processor_pipeline_restart_rejected_total": 0.0,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_processor_pipeline_restart_failed_total": 0.0,
+        "cctv_processor_pipeline_restart_seconds_total": 0.0,
+        "cctv_processor_context_queue_dropped_total": 0.0,
+        "cctv_falldata_inline_error_results_total{camera_id=\"camera_1\"}": 0.0,
+        "cctv_falldata_inline_predict_errors_total{camera_id=\"camera_1\"}": 0.0,
+        "cctv_falldata_temporal_process_errors_total": 0.0
+      },
+      "primary_last_frame_age_max_seconds": 0.20302727597299963
+    },
+    {
+      "observation": "followup",
+      "seconds": 36.843659587961156,
+      "processed_fps": 18.374939068789274,
+      "primary_inferences_per_second": 9.173898678361558,
+      "cpu_active_core_mean_percent_median": 100.0,
+      "gpu_busy_percent_median": 70.0,
+      "gpu_busy_percent_max": 98,
+      "temperature_max_c": 54.187,
+      "ram_mib_median": 26881.5,
+      "error_restart_drop_counter_deltas": {
+        "cctv_processor_frames_dropped_total": 0.0,
+        "cctv_processor_primary_metrics_errors_total": 0.0,
+        "cctv_processor_model_metrics_errors_total": 0.0,
+        "cctv_processor_source_error_identified_total": 0.0,
+        "cctv_processor_source_error_unidentified_total": 0.0,
+        "cctv_processor_pipeline_restart_requested_total": 0.0,
+        "cctv_processor_pipeline_restart_rejected_total": 0.0,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_processor_pipeline_restart_failed_total": 0.0,
+        "cctv_processor_pipeline_restart_seconds_total": 0.0,
+        "cctv_processor_context_queue_dropped_total": 0.0,
+        "cctv_falldata_inline_error_results_total{camera_id=\"camera_1\"}": 0.0,
+        "cctv_falldata_inline_predict_errors_total{camera_id=\"camera_1\"}": 0.0,
+        "cctv_falldata_temporal_process_errors_total": 0.0
+      },
+      "primary_last_frame_age_max_seconds": 0.10775430902140215
+    }
+  ],
+  "physical_cameras_registered": 1,
+  "network_interface_aggregate": {
+    "wlP1p1s0": {
+      "rx_mbps": 0.36652537716102107,
+      "tx_mbps": 8.39013112616216
+    },
+    "eno1": {
+      "rx_mbps": 8.726327404135636,
+      "tx_mbps": 0.04310965993745567
+    }
+  },
+  "network_limits": "NIC 전체 합계이며 카메라별·RTSP별·WebRTC별 실측이 아님",
+  "operating_container_count": 38,
+  "operating_first_window_unchanged": true,
+  "current_two_channel_gpu_runs": 0,
+  "signals_sent": 0,
+  "user_condition": "다른 Codex 채팅에 관계없을 때만 개발 인덱싱 일시정지 허용. 공통 app-server 아래여서 채팅 귀속을 확인할 수 없어 중지하지 않음.",
+  "historical_two_channel": {
+    "date": "2026-10-07",
+    "scope": "decode_and_primary_only",
+    "topology": "independent",
+    "model": "yolov8m-pose",
+    "shared_operating_gpu": true,
+    "cpu_limit": 2,
+    "cameras": {
+      "replay_1": {
+        "frames_seen": 279,
+        "frames_inferred": 279,
+        "frames_skipped": 0,
+        "frames_inference_unknown": 0,
+        "tensor_frames": 279,
+        "seen_fps": 9.29346443529462,
+        "inferred_fps": 9.29346443529462,
+        "tensor_fps": 9.29346443529462,
+        "last_frame_age_seconds": 0.1038356029894203,
+        "replay_timing": {
+          "source_timeline_seconds": 18.6186,
+          "source_to_wall_ratio": 0.6201838599819943,
+          "output_lag_start_seconds": 2.8470689929999997,
+          "output_lag_end_seconds": 14.185373180000003,
+          "output_lag_change_seconds": 11.338304187000002,
+          "scope": "source_pts_vs_pipeline_clock_not_end_to_end"
+        },
+        "pilot_pass": false
+      },
+      "replay_2": {
+        "frames_seen": 278,
+        "frames_inferred": 278,
+        "frames_skipped": 0,
+        "frames_inference_unknown": 0,
+        "tensor_frames": 278,
+        "seen_fps": 9.260154526924389,
+        "inferred_fps": 9.260154526924389,
+        "tensor_fps": 9.260154526924389,
+        "last_frame_age_seconds": 0.0747239519841969,
+        "replay_timing": {
+          "source_timeline_seconds": 18.551866666000002,
+          "source_to_wall_ratio": 0.6179609787412144,
+          "output_lag_start_seconds": 2.490439611,
+          "output_lag_end_seconds": 13.975411681999997,
+          "output_lag_change_seconds": 11.484972070999998,
+          "scope": "source_pts_vs_pipeline_clock_not_end_to_end"
+        },
+        "pilot_pass": false
+      }
+    },
+    "not_current_baseline": true
+  },
+  "prepared_replay": {
+    "image": "sha256:ccbfe02abcbffe212c3ca09a2d08dd09983ee20fcfd7bf7b1ae7cda52a76cfe5",
+    "model": "models/fall/yolov8n-pose.engine",
+    "model_sha256": "cc6cd0ee490e4f2ae46acf853989cf8c8806aadab47853e39c1e97cdf6732a74",
+    "input": "data/runtime/p62_replay_20261007_v126/repeat.mp4",
+    "input_sha256": "731d9ffc17f8ddd3c71794facc7992e9a6e8bef17c9996a124297a717330517a",
+    "input_width": 1920,
+    "input_height": 1080,
+    "input_fps": 29.97002997002997,
+    "channels": [
+      1,
+      2
+    ],
+    "topology": "independent_batch1_decode_and_primary_only",
+    "primary_interval": 1,
+    "warmup_seconds": 5,
+    "measurement_seconds": 30,
+    "network": "none",
+    "no_automatic_engine_build": true,
+    "not_full_application": true
+  },
+  "verified_code_findings": [
+    "zone check follows submit_face_work and does not filter objects before primary or secondary inference",
+    "preview CPU BGRx conversion occurs before Python max-FPS acceptance",
+    "single preview identity rejects batches larger than one",
+    "one RTSP publisher output path; no per-camera demux in inspected builder",
+    "primary mux and inference batch are set to camera count"
+  ],
+  "api_read_limits": {
+    "media_paths_api": 401,
+    "active_camera_zones_api": 401
+  },
+  "validation": {
+    "pytest_command": "python -m pytest -q tests/test_benchmark_deepstream_primary.py tests/test_preview_frame_store.py tests/test_deepstream_element_config.py",
+    "passed": 42,
+    "failed": 0,
+    "compose_configs_valid": 2,
+    "documents": {
+      "evidence_sha256_files": 14,
+      "added_document_links_and_anchor": "PASS",
+      "wbs_snapshot_rows": 37,
+      "done_rows": 9,
+      "p62_criteria_consistent": true,
+      "html_contains_observation": true,
+      "pdf_generated": true,
+      "visual_inspection": "NOT_PERFORMED"
+    },
+    "progress_render": "PASS",
+    "initial_document_check": "HTML not yet generated during first check; final check passed after renderer completed"
+  },
+  "source_comparison": {
+    "deepstream_processor.py": {
+      "operating_sha256": "d88633c2e73825bdeeed5259b2efac8d6f5d2330b1e062112bb976784214975a",
+      "workspace_matches": false
+    },
+    "_deepstream_pipeline_builder.py": {
+      "operating_sha256": "781804ae3283c6d78413e58dbdfdc75a13f5137702f216cff93257a5d6262d71",
+      "workspace_matches": true
+    },
+    "_deepstream_element_config.py": {
+      "operating_sha256": "b530da40295dcb627d547b490ba7072e1a61d431e68ef97612032408b8961ad7",
+      "workspace_matches": true
+    },
+    "_preview_frame_store.py": {
+      "operating_sha256": "83751f6764c17d0e0223aa9bc56ba90c633fb25c1f68a9087d2c32896a2e7063",
+      "workspace_matches": false
+    },
+    "_deepstream_event_queue.py": {
+      "operating_sha256": "cb3bb6573b5e6b70c437919f3af5f35d8733f56087b60fc4b117d843457b9cce",
+      "workspace_matches": true
+    },
+    "_deepstream_source_manager.py": {
+      "operating_sha256": "877c58ffb8db07f190884ba0e5629d78eb10d08c7ce93fe98040c9d8fb00ca7b",
+      "workspace_matches": false
+    }
+  },
+  "artifacts_sha256": {
+    "data/runtime/two_camera_baseline_20261023/channel_1.compose.json": "554647be886ad875a84fe76c146a1933bc35121e96abb3df4180c6afd54583ad",
+    "data/runtime/two_camera_baseline_20261023/channel_2.compose.json": "21c848965a039bb18d68f61fce7e943749a96f253c03aa7d1c2ba0a10f48c5a0",
+    "data/runtime/two_camera_baseline_20261023/followup_tegrastats.log": "7c44002c3e1598fee95d01db8addf09fbe5776741e1c321f5fbaee1bf9b0ee64",
+    "data/runtime/two_camera_baseline_20261023/idle_tegrastats.log": "244395459596898d848f6733c99365f32027664ec8bb784b6844abd06c2a9eb4",
+    "data/runtime/two_camera_baseline_20261023/index_process_ownership.json": "c86f4700fc3c8926f1d2e93d73c847e62c7b04ff010bf2eeb6402e7721acc62d",
+    "data/runtime/two_camera_baseline_20261023/operating_followup.json": "002ef19504701c060bf8c4025c2006a91112914020b0935a18066777e7bb3a2f",
+    "data/runtime/two_camera_baseline_20261023/operating_idle.json": "9a7842e6a13038e2dbd8324ec739cbe62722bf824e29508b90c7fb81df1db681",
+    "data/runtime/two_camera_baseline_20261023/operating_source/_deepstream_element_config.py": "b530da40295dcb627d547b490ba7072e1a61d431e68ef97612032408b8961ad7",
+    "data/runtime/two_camera_baseline_20261023/operating_source/_deepstream_event_queue.py": "cb3bb6573b5e6b70c437919f3af5f35d8733f56087b60fc4b117d843457b9cce",
+    "data/runtime/two_camera_baseline_20261023/operating_source/_deepstream_pipeline_builder.py": "781804ae3283c6d78413e58dbdfdc75a13f5137702f216cff93257a5d6262d71",
+    "data/runtime/two_camera_baseline_20261023/operating_source/_deepstream_source_manager.py": "877c58ffb8db07f190884ba0e5629d78eb10d08c7ce93fe98040c9d8fb00ca7b",
+    "data/runtime/two_camera_baseline_20261023/operating_source/_preview_frame_store.py": "83751f6764c17d0e0223aa9bc56ba90c633fb25c1f68a9087d2c32896a2e7063",
+    "data/runtime/two_camera_baseline_20261023/operating_source/deepstream_processor.py": "d88633c2e73825bdeeed5259b2efac8d6f5d2330b1e062112bb976784214975a",
+    "data/runtime/two_camera_baseline_20261023/operating_final.json": "adb98777a71b06973afd74aaeebc49e5d78c373766f6ed042f1aead99b010a39"
+  },
+  "operating_final": {
+    "containers": 38,
+    "all_initial_containers_unchanged": true,
+    "added_names": [],
+    "removed_names": [],
+    "owned_test_containers": []
+  },
+  "saved_camera_zones": 0,
+  "deployed": false,
+  "product_code_changed": false,
+  "cadence_pilot_1228": {
+    "status": "GUARD_STOP_DURING_CONVERSION_NO_GPU_COMPARISON",
+    "returned_at": "2026-10-23T12:35:02+09:00",
+    "cleanup_verified_at": "2026-10-23T12:32:28+09:00",
+    "slot_start": "2026-10-23T12:28:00+09:00",
+    "slot_end": "2026-10-23T12:43:00+09:00",
+    "pilot_record": "/home/sawwave/.codex/worktrees/two-camera-baseline/CCTV-project/data/runtime/two_camera_cadence_20261023/pilot_122940.json",
+    "pilot_started_at_local": "2026-10-23T12:29:40+09:00",
+    "pilot_finished_at": "2026-10-23T12:30:17.224462+09:00",
+    "stop_reason": "운영 처리율이 회복 기준 30FPS/15Hz의 90% 미만",
+    "preflight": {
+      "passed": true,
+      "seconds": 30.1772443849477,
+      "fps": 29.49242113186215,
+      "hz": 14.746210565931076
+    },
+    "post_stop": {
+      "seconds": 10.02960373996757,
+      "fps": 31.70613797360535,
+      "hz": 15.75336415040769,
+      "frame_age": 0.017672673042397946,
+      "error_deltas_from_preflight": {
+        "cctv_processor_source_error_identified_total": 0.0,
+        "cctv_processor_source_error_unidentified_total": 0.0,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_processor_frames_dropped_total": 0.0
+      }
+    },
+    "owned_trial_containers": [],
+    "owned_trial_processes": [],
+    "operating_identity_unchanged": true,
+    "model_hash_unchanged": true,
+    "validated_converted_videos": 0,
+    "gpu_cases_started": 0,
+    "completed_conditions": [],
+    "pilot_rows_not_run": 6,
+    "incomplete_video_preserved": [
+      {
+        "name": "00610_H_D_SY_C5.partial.mp4",
+        "bytes": 312735
+      },
+      {
+        "name": "00610_H_D_SY_C5.log",
+        "bytes": 0
+      }
+    ],
+    "quality_evaluation": "NOT_EVALUATED",
+    "exact_failure_window_rates": "NOT_RECORDED; guard exception confirms FPS<27 or primary Hz<13.5, not which rate or its magnitude",
+    "next_trial_requires_reallocation": true,
+    "recorded_by_integrator_at": "2026-10-23T12:38:16+09:00",
+    "scope": "one fall/normal pair; independent two-channel 1080p24; target12/8/6Hz; GPU comparisons not started",
+    "source_worktree": "/home/sawwave/.codex/worktrees/two-camera-baseline/CCTV-project",
+    "raw_evidence_sha256": {
+      "/home/sawwave/.codex/worktrees/two-camera-baseline/CCTV-project/data/runtime/two_camera_cadence_20261023/pilot_122940.json": "041175da79b752398fbbb0784c0918d14b5e8c5a97d5644a9bb5a00b04fdc517",
+      "/home/sawwave/.codex/worktrees/two-camera-baseline/CCTV-project/data/runtime/two_camera_cadence_20261023/operating_check_1228_preflight.json": "3bf6719bbfe07366fc85b7fe8961ccd0e85b398c9c2de9f1f4e350f13c56a703",
+      "/home/sawwave/.codex/worktrees/two-camera-baseline/CCTV-project/data/runtime/two_camera_cadence_20261023/pilot_slot_1228_after.json": "988a74be2777aab696c23d32f242b0ee25261896d1e9bdc1a6460f6eb22bad1b",
+      "/home/sawwave/.codex/worktrees/two-camera-baseline/CCTV-project/docs/planning/evidence/two_camera_cadence_20261023.json": "c82b19bf1ceb0515963c35cca74db5aebb3803d050dbffbf8223ab3aa1c060f0",
+      "/home/sawwave/.codex/worktrees/two-camera-baseline/CCTV-project/docs/planning/TWO_CAMERA_BASELINE_HANDOFF_20261023.md": "2ea4284120c61d4fda53f8f550e96443b397d99854fe30dfbf3bd823ae3b788b"
+    },
+    "raw_evidence_backup": "/media/sawwave/Learning11/CCTV-project/data/runtime/roi_pilot_integration_20261023_bv62_q9z/raw",
+    "counter_rates_recomputed_match": true,
+    "post_stop_is_short_recovery_observation_not_sustained_performance": true,
+    "worker_report_validation": {
+      "pytest_passed": 23,
+      "ruff": "PASS"
+    },
+    "source_partial_video_preserved": true,
+    "automatic_retry_allowed": false
+  },
+  "guard_recording_followup": {
+    "recorded_at": "2026-10-23T14:14:40+09:00",
+    "worktree": "/home/sawwave/.codex/worktrees/two-camera-baseline/CCTV-project",
+    "base_commit": "fefa4ab04ee2ca26bbc0ee433381e4b7648265e7",
+    "result_commit": null,
+    "status": "WORKER_GUARD_FIX_DELIVERED_MOCK_PASS_HARDWARE_NOT_RUN",
+    "changes": [
+      "scripts/ops/run_two_camera_cadence.py",
+      "tests/test_two_camera_cadence.py",
+      "docs/planning/TWO_CAMERA_BASELINE_HANDOFF_20261023.md",
+      "docs/planning/evidence/two_camera_cadence_20261023.json"
+    ],
+    "source_hashes": {
+      "scripts/ops/run_two_camera_cadence.py": "fe7e49939d8140e147eeb8b3a18ad0c59e4b7eb96a908ee491d70dcce62412e1",
+      "tests/test_two_camera_cadence.py": "f7c910748ad3c090ca288800fb55980cb150789672ac4c702cc892b958f2e34d"
+    },
+    "handoff_evidence_sha256": {
+      "scripts/ops/run_two_camera_cadence.py": "fe7e49939d8140e147eeb8b3a18ad0c59e4b7eb96a908ee491d70dcce62412e1",
+      "tests/test_two_camera_cadence.py": "f7c910748ad3c090ca288800fb55980cb150789672ac4c702cc892b958f2e34d",
+      "docs/planning/TWO_CAMERA_BASELINE_HANDOFF_20261023.md": "aa22c5802afea9951cb2b9d4d06844df3a8f3b3816d9a39509946a0aa6e619de",
+      "docs/planning/evidence/two_camera_cadence_20261023.json": "17307c10d690af2768a0545e191137e9883f318cd420fec044fceb2574da3204"
+    },
+    "worker_validation": {
+      "pytest_passed": 31,
+      "new_cases": 8,
+      "ruff": "PASS",
+      "rerun_by_integrator": false
+    },
+    "checks": {
+      "worker_source_hashes_match": true,
+      "frozen_verification_3_hashes_match_plan": true,
+      "base_commit_matches": true,
+      "worker_index_no_staged_changes": true,
+      "root_index_unchanged": true
+    },
+    "frozen_verification_sha256": {
+      "verification/run_two_camera_cadence.py": "888ee6e717e836f905f5d1d418c2025ba04076a1af09f8b6ddfe35d191eb55d5",
+      "verification/capture_fall_cadence.py": "a06485af9d172988c06f1c33979dcb22cd7918e2092c91f29ac64aeadd6d3a6c",
+      "verification/two_camera_cadence.py": "a7b32e99aec01d7acb74fffb6d42436d29888019bfc356d54f2321e9680b3f4a"
+    },
+    "historic_pilot_failure_window": "NOT_RECORDED_NOT_RECOVERABLE",
+    "new_runtime_package_prepared": false,
+    "new_hardware_test": false,
+    "operating_changes": false,
+    "gpu_allocation": false,
+    "p62_status": "PLANNED",
+    "quality_and_two_camera_performance": "NOT_EVALUATED",
+    "shared_document_update": "RECORDED_BY_INTEGRATOR",
+    "source_integration": "NOT_APPLIED",
+    "source_review": "NOT_REVIEWED_BY_INTEGRATOR; metadata and fixed hashes verified",
+    "next": [
+      "separate new runtime package",
+      "explicit new device slot",
+      "fresh operating identity and preflight PASS"
+    ],
+    "recorded_in_common_at": "2026-10-23T14:38:50.793506+09:00"
+  },
+  "roi_reallocation_preparation": {
+    "received_at": "2026-10-23T15:31:40.869782+09:00",
+    "owner": "01a16614-0692-7512-b98a-45d253a29e3a",
+    "status": "PREPARE_SEPARATE_FROZEN_PACKAGE_NO_ALLOCATION",
+    "scene_ids": [
+      "00610_H_D_SY_C5",
+      "00533_H_D_N_C8"
+    ],
+    "independent_channels": 2,
+    "input_fps": 24,
+    "inference_hz": [
+      12,
+      8,
+      6
+    ],
+    "case_count": 3,
+    "channel_results": 6,
+    "engine": "existing operating batch1; candidate max4 excluded",
+    "max_slot_seconds": 900,
+    "cleanup_reserve_seconds": 300,
+    "start_at": null,
+    "end_at": null,
+    "preflight_seconds": 30,
+    "first_failure_stop_owned_only": true,
+    "automatic_retry": false,
+    "package_preparation_only_allowed": true,
+    "live_observation_or_conversion_or_gpu_or_cpu_regression_allowed": false,
+    "historical_failure_files_preserved": true,
+    "camera_cpu_request_pending_first": true,
+    "engine_and_ab_new_load_reservations": 0,
+    "latest_recovery_source": "link_interruption_and_recovery_1500",
+    "current_live_stability_verified": false,
+    "next": "Return new package path, fixed source/input/engine hashes, bounded pilot command, isolation and expected duration; integrator assigns explicit future slot after resource coordination. Fresh preflight runs inside that slot."
+  },
+  "roi_attempt2_allocation": {
+    "recorded_at": "2026-10-23T15:51:16.666627+09:00",
+    "owner": "01a16614-0692-7512-b98a-45d253a29e3a",
+    "worktree": "/home/sawwave/.codex/worktrees/two-camera-baseline/CCTV-project",
+    "status": "RETURNED_AFTER_CONVERSION_GUARD_STOP",
+    "start_at": "2026-10-23T15:55:00+09:00",
+    "end_at": "2026-10-23T16:10:00+09:00",
+    "stop_new_work_at": "2026-10-23T16:05:00+09:00",
+    "max_seconds": 900,
+    "preflight_seconds": 30,
+    "cleanup_reserve_seconds": 300,
+    "scene_ids": [
+      "00610_H_D_SY_C5",
+      "00533_H_D_N_C8"
+    ],
+    "input_fps": 24,
+    "independent_channels": 2,
+    "inference_hz": [
+      12,
+      8,
+      6
+    ],
+    "case_count": 3,
+    "channel_results": 6,
+    "engine": "existing operating batch1 only",
+    "ready_sha256": "bac02f2cab557ade9c5f75bc9843f3ec72f6400c2bf00df0b2efdf68ac27ac63",
+    "plan_sha256": "a8cf624edad0e2787c688ea4bdebf511bc9c5093e4404ea8ec8e7e93a2a18405",
+    "fixed_files_verified": 40,
+    "inputs_and_engine_hashes_verified": true,
+    "frozen_package": "/home/sawwave/.codex/worktrees/two-camera-baseline/CCTV-project/data/runtime/two_camera_cadence_20261023_attempt2",
+    "operating_guard": {
+      "preflight_seconds": 30,
+      "fps_min": 27,
+      "primary_hz_min": 13.5,
+      "max_frame_age_seconds": 1,
+      "memory_min_gib": 8,
+      "temperature_below_c": 80,
+      "error_drop_restart_delta_max": 0
+    },
+    "conversion_included_in_slot_and_guard": true,
+    "first_failure_cleanup_owned_only": true,
+    "automatic_retry": false,
+    "operating_changes_allowed": false,
+    "full_30_cases_or_max4_allowed": false,
+    "previous_failed_evidence_preserved": true,
+    "preflight_passed": true,
+    "gpu_started": false,
+    "runtime_status": "CPU_CONVERSION_GUARD_STOP_GPU_NOT_RUN",
+    "previous_owner_return_basis": {
+      "source": "/home/sawwave/.codex/worktrees/camera-offload/CCTV-project/camera-offload-trial/verification.json",
+      "status": "FIRST_TEST_FAILURE_RETURNED_NO_RETRY",
+      "cleanup_finished_at": "2026-10-23T15:43:17.610299+09:00",
+      "independent_cleanup_check_at": "2026-10-23T15:44:17+09:00",
+      "return_queue_receipt": "01a16781-c59b-7a22-9cd9-b27c13ec11ec",
+      "return_recorded_at": "2026-10-23T15:47:38.408736+09:00"
+    },
+    "command": "rtk proxy python -B /home/sawwave/.codex/worktrees/two-camera-baseline/CCTV-project/data/runtime/two_camera_cadence_20261023_attempt2/verification/run_two_camera_cadence.py pilot --output /home/sawwave/.codex/worktrees/two-camera-baseline/CCTV-project/data/runtime/two_camera_cadence_20261023_attempt2 --start-at 2026-10-23T15:55:00+09:00 --end-at 2026-10-23T16:10:00+09:00",
+    "cleanup_verified_at": "2026-10-23T15:58:16.992244+09:00",
+    "returned_at": "2026-10-23T15:59:24.352801+09:00"
+  },
+  "roi_attempt2_result": {
+    "integrator_recorded_at": "2026-10-23T16:03:11.936554+09:00",
+    "status": "RETURNED_AFTER_CONVERSION_GUARD_STOP_NO_ALLOCATION",
+    "source": "/home/sawwave/.codex/worktrees/two-camera-baseline/CCTV-project/data/runtime/two_camera_cadence_20261023_attempt2",
+    "preflight": {
+      "passed": true,
+      "duration_seconds": 30.19194185500055,
+      "frames_before": 265048.0,
+      "frames_after": 265952.0,
+      "frames_delta": 904.0,
+      "primary_before": 68747.0,
+      "primary_after": 69200.0,
+      "primary_delta": 453.0,
+      "fps": 29.941764075379428,
+      "primary_hz": 15.00400345812708,
+      "start_at": "2026-10-23T15:55:50.083458+09:00",
+      "end_at": "2026-10-23T15:56:20.255929+09:00"
+    },
+    "failure_window": {
+      "duration_seconds": 5.063292578999608,
+      "frames_before": 267314.0,
+      "frames_after": 267437.0,
+      "frames_delta": 123.0,
+      "primary_before": 69880.0,
+      "primary_after": 69942.0,
+      "primary_delta": 62.0,
+      "fps": 24.29249309237074,
+      "primary_hz": 12.244996518105575,
+      "start_at": "2026-10-23T15:57:05.763986+09:00",
+      "end_at": "2026-10-23T15:57:10.818289+09:00",
+      "age_seconds": 0.06406638900079997,
+      "memory_available_gib": 33.24934768676758,
+      "max_temperature_c": 54.75,
+      "error_deltas": {
+        "cctv_processor_source_error_identified_total": 0.0,
+        "cctv_processor_source_error_unidentified_total": 0.0,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_processor_frames_dropped_total": 0.0
+      }
+    },
+    "pilot_finished_at": "2026-10-23T15:57:11.323231+09:00",
+    "cleanup_verified_at": "2026-10-23T15:58:16.992244+09:00",
+    "returned_at": "2026-10-23T15:59:24.352801+09:00",
+    "return_queue_receipt": "01a1678e-a79d-7303-a85f-53d689ad6442",
+    "validated_converted_videos": 1,
+    "validated_scene": "00610_H_D_SY_C5",
+    "normal_partial_video": "preserved; invalid/not ready for replay",
+    "gpu_cases_started": 0,
+    "collectors_started": 0,
+    "channel_results_not_run": 6,
+    "quality_evaluation": "NOT_EVALUATED",
+    "performance_evaluation": "NOT_EVALUATED",
+    "owned_containers_remaining": [],
+    "owned_processes_remaining": [],
+    "operating_identity_unchanged": true,
+    "automatic_retry": false,
+    "new_allocation_required": true,
+    "post_stop_operating_recovery": "NOT_MEASURED; resource cleanup does not prove operating recovery",
+    "guard_causality": "throughput threshold failed during CPU conversion; sole cause/contribution not established",
+    "historical_1228_evidence": "preserved; missing failure rates not retroactively filled",
+    "integrator_new_host_queries": 0,
+    "final_handoff_verification": {
+      "verified_at": "2026-10-23T16:39:03.859356+09:00",
+      "result_path": "/home/sawwave/.codex/worktrees/two-camera-baseline/CCTV-project/data/runtime/two_camera_cadence_20261023_attempt2/result_1555.json",
+      "result_sha256": "c2ba43397be445842f07ee6f72e86456e2cf48fafa42c6797bd47e9a8cb4eb51",
+      "actual_result_status": "RETURNED_AFTER_CONVERSION_GUARD_STOP_NOT_EVALUATED",
+      "readiness_and_plan_are_preparation_snapshots": true,
+      "preparation_started_at": "2026-10-23T15:55:33.828758+09:00",
+      "pilot_started_at": "2026-10-23T15:55:50.083458+09:00",
+      "pilot_finished_at": "2026-10-23T15:57:11.323231+09:00",
+      "returned_at": "2026-10-23T15:59:24.352801+09:00",
+      "failure_counter_recalculation": "PASS",
+      "converted_video": {
+        "00610_H_D_SY_C5": {
+          "sha256": "05a40a5b7685a85bd8bbc342590274d47065d3b647e2c27d27fd5e4b64a34979",
+          "probe": {
+            "width": 1920,
+            "height": 1080,
+            "avg_frame_rate": "24/1",
+            "duration": "10.000000",
+            "nb_frames": "240"
+          }
+        }
+      },
+      "owner_reported_unchanged": {
+        "fixed_files": 40,
+        "historical_evidence_files": 47,
+        "engine_sha256": "cc6cd0ee490e4f2ae46acf853989cf8c8806aadab47853e39c1e97cdf6732a74",
+        "basis": "owner final handoff; no repeated full artifact hashing by integrator"
+      },
+      "partial_video_preserved": "/home/sawwave/.codex/worktrees/two-camera-baseline/CCTV-project/data/runtime/two_camera_cadence_20261023_attempt2/videos/00533_H_D_N_C8.partial.mp4",
+      "return_ack_previously_recorded": true,
+      "new_host_observations_or_tests": 0
+    }
+  }
+}

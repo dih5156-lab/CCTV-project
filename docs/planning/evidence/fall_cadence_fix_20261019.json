@@ -1,0 +1,1924 @@
+{
+  "date": "2026-10-19",
+  "state": "R4_RETEST_FAIL_RESTORED",
+  "candidate_id": "fall-single-1080p05-20261019-r4",
+  "input_resolution": [
+    1920,
+    1080
+  ],
+  "confidence": 0.5,
+  "power_mode": "MODE_30W (2)",
+  "engine_sha256": "68d8c70ef45e6c445d829d077badc8f901c11f95304f157e7ef55e7b9524b0bc",
+  "changed_product_files": [
+    "src/core/_yolo_postprocess.py",
+    "src/core/ai/_fall_detector.py"
+  ],
+  "runtime_sources_verified": 211,
+  "prior_normal_comparison": {
+    "same_input_sha256": "9a6546cdbe357aa16fd15e54a40ca43da06ec90d62cec63aff82b32d3feda080",
+    "r2_original": {
+      "alarm": 0,
+      "prepared_fall_candidates": 720,
+      "track_reconnections": 0
+    },
+    "r2_diagnostic": {
+      "alarm": 53,
+      "prepared_fall_candidates": 1919,
+      "track_reconnections": 83
+    },
+    "candidate_definition": "자세 전환 후 event.fall_detected 횟수; 원시 모델 출력 수 아님",
+    "same_engine_source": true,
+    "historical_power_and_host_load_equivalence": "NOT_PROVEN",
+    "fixed_thinning_replay": {
+      "cases": 50,
+      "false_alarms": 0
+    },
+    "short_gpu_ab": {
+      "seconds_each": 120,
+      "baseline_alarms": 3,
+      "timing_trace_alarms": 3,
+      "common_pose_capture": true,
+      "exact_cpu_event_and_alarm_reproduction": true
+    }
+  },
+  "root_cause": "발목 상승 보정으로 하강 과장·과거 하강 유지로 착석 승격; 후보 공백/추적 재연결이 경보로 증폭. 원래53건 전수 자세 이력은 없음. r3 장시간 잔여6건 원인 추적 중.",
+  "postprocess_parity": {
+    "videos": 100,
+    "frames": 15005,
+    "all_outputs_equal": true,
+    "pose_score_calls": {
+      "before": 150395,
+      "after": 15598
+    },
+    "median_thread_ms": {
+      "before": 5.626112000001626,
+      "after": 2.250783999997452
+    },
+    "total_thread_ms": {
+      "before": 89637.13472000018,
+      "after": 35398.64102399866
+    }
+  },
+  "cpu_regression": {
+    "summary": {
+      "TP": 50,
+      "TN": 50
+    },
+    "max_delay": 4.4460500000000005,
+    "early": 0
+  },
+  "cpu_changed_alarm_videos": [
+    {
+      "index": 34,
+      "verdict": "TP",
+      "queue_frames": [
+        230
+      ],
+      "previous_queue_frames": [
+        202
+      ],
+      "delay": 3.2499999993333333,
+      "early": 0
+    },
+    {
+      "index": 66,
+      "verdict": "TP",
+      "queue_frames": [
+        220
+      ],
+      "previous_queue_frames": [
+        218
+      ],
+      "delay": 2.4666666663333334,
+      "early": 0
+    }
+  ],
+  "rejected_candidates": {
+    "unconditional_negative_ankle_clamp": {
+      "false_negatives": 2,
+      "adopted": false
+    },
+    "gap_1_second": {
+      "summary": {
+        "TP": 46,
+        "TN": 50,
+        "FN": 4
+      },
+      "false_negative_indices": [
+        16,
+        34,
+        88,
+        90
+      ],
+      "duplicate_index": 1,
+      "adopted": false
+    }
+  },
+  "gpu6": {
+    "status": "PASS",
+    "trials": [
+      {
+        "index": 16,
+        "is_fall": true,
+        "expected_queue_pts": [
+          8.4
+        ],
+        "queue_pts": [
+          8.4
+        ],
+        "delay_seconds": 4.4460500000000005,
+        "wall_delay_seconds": 4.7445581280581655,
+        "problems": []
+      },
+      {
+        "index": 34,
+        "is_fall": true,
+        "expected_queue_pts": [
+          7.666666666666667
+        ],
+        "queue_pts": [
+          7.666666666
+        ],
+        "delay_seconds": 3.2499999993333333,
+        "wall_delay_seconds": 3.5197637884023907,
+        "problems": []
+      },
+      {
+        "index": 39,
+        "is_fall": false,
+        "expected_queue_pts": [],
+        "queue_pts": [],
+        "delay_seconds": null,
+        "wall_delay_seconds": null,
+        "problems": []
+      },
+      {
+        "index": 42,
+        "is_fall": true,
+        "expected_queue_pts": [
+          6.666666666666667
+        ],
+        "queue_pts": [
+          6.666666666
+        ],
+        "delay_seconds": 2.5792499993333333,
+        "wall_delay_seconds": 2.905080789360528,
+        "problems": []
+      },
+      {
+        "index": 46,
+        "is_fall": true,
+        "expected_queue_pts": [
+          7.533333333333333
+        ],
+        "queue_pts": [
+          7.533333333
+        ],
+        "delay_seconds": 2.2780833329999997,
+        "wall_delay_seconds": 2.5772510180706156,
+        "problems": []
+      },
+      {
+        "index": 66,
+        "is_fall": true,
+        "expected_queue_pts": [
+          7.333333333333333
+        ],
+        "queue_pts": [
+          7.333333333
+        ],
+        "delay_seconds": 2.4666666663333334,
+        "wall_delay_seconds": 2.826397125407433,
+        "problems": []
+      }
+    ],
+    "detected_falls": 5,
+    "median": 2.5792499993333333,
+    "p95": 4.206839999866666,
+    "max": 4.4460500000000005,
+    "above_target_3s": 2,
+    "above_limit_5s": 0,
+    "max_wall_delay": 4.7445581280581655,
+    "scope": "핵심 GPU6 회귀(낙상5·정상1); 전체 GPU100 재실행·독립 품질 아님"
+  },
+  "normal_rtsp30": {
+    "observation_seconds": 1800.1436152670067,
+    "false_alarm_count": 6,
+    "prepared_fall_candidates": 672,
+    "windows": 49,
+    "windows_below_minimum": 41,
+    "inferences_per_second_min": 13.696193033341627,
+    "inferences_per_second_median": 14.0217195989588,
+    "postprocess_avg_ms": 11.153,
+    "postprocess_max_ms": 325.86,
+    "verdict": {
+      "passed": false,
+      "windows": [
+        {
+          "seconds": 30.37644870695658,
+          "inferences_per_second": 13.958182014308301,
+          "playback_ratio": 0.9983911338870436
+        },
+        {
+          "seconds": 30.412074106978253,
+          "inferences_per_second": 13.941831080265269,
+          "playback_ratio": 0.9991917922831639
+        },
+        {
+          "seconds": 30.47568074602168,
+          "inferences_per_second": 14.20805013704326,
+          "playback_ratio": 1.0006625796531536
+        },
+        {
+          "seconds": 30.36656908201985,
+          "inferences_per_second": 13.863930392099368,
+          "playback_ratio": 1.0002096322427125
+        },
+        {
+          "seconds": 30.49891415797174,
+          "inferences_per_second": 13.869346226853692,
+          "playback_ratio": 0.9989621714134546
+        },
+        {
+          "seconds": 30.347641219035722,
+          "inferences_per_second": 14.267995224894065,
+          "playback_ratio": 1.0010463219772203
+        },
+        {
+          "seconds": 30.325416708015837,
+          "inferences_per_second": 14.2125004958654,
+          "playback_ratio": 1.000613451223549
+        },
+        {
+          "seconds": 30.466998473973945,
+          "inferences_per_second": 13.98234225021888,
+          "playback_ratio": 0.9978474089585829
+        },
+        {
+          "seconds": 30.33991857501678,
+          "inferences_per_second": 14.07386769823471,
+          "playback_ratio": 0.9976406574447525
+        },
+        {
+          "seconds": 30.38039319892414,
+          "inferences_per_second": 14.252613426192713,
+          "playback_ratio": 1.0030394653048509
+        },
+        {
+          "seconds": 30.683922928990796,
+          "inferences_per_second": 14.307166688429655,
+          "playback_ratio": 0.9972097558976104
+        },
+        {
+          "seconds": 30.59619485307485,
+          "inferences_per_second": 14.348189443429483,
+          "playback_ratio": 1.003284832293943
+        },
+        {
+          "seconds": 30.344260354992002,
+          "inferences_per_second": 14.236629759503455,
+          "playback_ratio": 0.9951342672629121
+        },
+        {
+          "seconds": 30.37709972995799,
+          "inferences_per_second": 13.924963336208034,
+          "playback_ratio": 1.0067177687421147
+        },
+        {
+          "seconds": 30.61528862104751,
+          "inferences_per_second": 13.947279912508957,
+          "playback_ratio": 0.9985007001039358
+        },
+        {
+          "seconds": 30.525050712982193,
+          "inferences_per_second": 13.922990791928449,
+          "playback_ratio": 0.9997208670982299
+        },
+        {
+          "seconds": 30.48553094197996,
+          "inferences_per_second": 14.105052026759045,
+          "playback_ratio": 0.9989547912732568
+        },
+        {
+          "seconds": 30.331568090012297,
+          "inferences_per_second": 13.781021764504182,
+          "playback_ratio": 1.0016378964265966
+        },
+        {
+          "seconds": 30.338142439024523,
+          "inferences_per_second": 14.008768033645808,
+          "playback_ratio": 0.9980658428859823
+        },
+        {
+          "seconds": 30.520516754942946,
+          "inferences_per_second": 13.925059113921103,
+          "playback_ratio": 1.00175653009048
+        },
+        {
+          "seconds": 30.514021851005964,
+          "inferences_per_second": 14.124653973982493,
+          "playback_ratio": 0.9997994982098447
+        },
+        {
+          "seconds": 30.53961616999004,
+          "inferences_per_second": 13.916350409722213,
+          "playback_ratio": 1.0001909613721895
+        },
+        {
+          "seconds": 30.437995976069942,
+          "inferences_per_second": 13.962811491733257,
+          "playback_ratio": 1.0000935802058815
+        },
+        {
+          "seconds": 30.452768732910044,
+          "inferences_per_second": 13.923200340788286,
+          "playback_ratio": 0.9998970082839577
+        },
+        {
+          "seconds": 30.448351775063202,
+          "inferences_per_second": 14.253645097316573,
+          "playback_ratio": 0.9997117188435011
+        },
+        {
+          "seconds": 30.29963665897958,
+          "inferences_per_second": 13.960563447041864,
+          "playback_ratio": 1.0003235569829025
+        },
+        {
+          "seconds": 30.41759934707079,
+          "inferences_per_second": 13.939298600197754,
+          "playback_ratio": 0.9980468438553317
+        },
+        {
+          "seconds": 30.410270836902782,
+          "inferences_per_second": 13.942657803806112,
+          "playback_ratio": 1.0027713863368473
+        },
+        {
+          "seconds": 30.44427719700616,
+          "inferences_per_second": 14.05847139120415,
+          "playback_ratio": 0.9991190825181162
+        },
+        {
+          "seconds": 30.629971349029802,
+          "inferences_per_second": 13.810003123408029,
+          "playback_ratio": 0.9998439856513299
+        },
+        {
+          "seconds": 30.519429667969234,
+          "inferences_per_second": 13.696193033341627,
+          "playback_ratio": 0.999988558044071
+        },
+        {
+          "seconds": 30.38651204109192,
+          "inferences_per_second": 14.01937805247002,
+          "playback_ratio": 0.9998228097359565
+        },
+        {
+          "seconds": 30.36412476899568,
+          "inferences_per_second": 14.26024966285639,
+          "playback_ratio": 0.9961648023817045
+        },
+        {
+          "seconds": 30.643441928899847,
+          "inferences_per_second": 14.097633059704712,
+          "playback_ratio": 0.9990324482814744
+        },
+        {
+          "seconds": 30.458339402102865,
+          "inferences_per_second": 14.117644245907657,
+          "playback_ratio": 1.0040432328654343
+        },
+        {
+          "seconds": 30.515620293910615,
+          "inferences_per_second": 13.927293494499558,
+          "playback_ratio": 1.0002104110625163
+        },
+        {
+          "seconds": 30.509640688076615,
+          "inferences_per_second": 14.15945878932716,
+          "playback_ratio": 1.0007126560140671
+        },
+        {
+          "seconds": 30.475089613930322,
+          "inferences_per_second": 13.880188880778368,
+          "playback_ratio": 0.9998599675018389
+        },
+        {
+          "seconds": 30.468721060082316,
+          "inferences_per_second": 14.014372285531252,
+          "playback_ratio": 0.995788569798211
+        },
+        {
+          "seconds": 30.338503362960182,
+          "inferences_per_second": 14.20636986748006,
+          "playback_ratio": 1.001251813531652
+        },
+        {
+          "seconds": 30.45461619296111,
+          "inferences_per_second": 14.053698699999458,
+          "playback_ratio": 1.0026250576113767
+        },
+        {
+          "seconds": 30.623037297977135,
+          "inferences_per_second": 14.041716235260717,
+          "playback_ratio": 1.0011676897583646
+        },
+        {
+          "seconds": 30.489547125063837,
+          "inferences_per_second": 14.004799685889266,
+          "playback_ratio": 0.9965725523034111
+        },
+        {
+          "seconds": 30.315736370976083,
+          "inferences_per_second": 14.315997298865097,
+          "playback_ratio": 1.0045587077065437
+        },
+        {
+          "seconds": 30.524073526030406,
+          "inferences_per_second": 14.0217195989588,
+          "playback_ratio": 0.998741076481891
+        },
+        {
+          "seconds": 30.44353432196658,
+          "inferences_per_second": 14.058814442289504,
+          "playback_ratio": 0.9991354547836586
+        },
+        {
+          "seconds": 30.461843236000277,
+          "inferences_per_second": 14.11602038224067,
+          "playback_ratio": 0.9964773767900735
+        },
+        {
+          "seconds": 30.357990590971895,
+          "inferences_per_second": 14.032549312624377,
+          "playback_ratio": 0.9998007444216781
+        },
+        {
+          "seconds": 30.609090398065746,
+          "inferences_per_second": 14.276804515158508,
+          "playback_ratio": 1.0041687357015456
+        }
+      ],
+      "delay_growth_range_seconds": 0.25954163101391714,
+      "throughput_passed": false,
+      "status": "FAIL",
+      "errors": [
+        "false_fall_alarm"
+      ],
+      "rss_growth_mib": 0.3828125,
+      "rss_review_threshold_mib": 256,
+      "scope": "단일 입력30분; 반복 영상이며 독립 정상표본·24시간·다중 합격 아님"
+    }
+  },
+  "recovery": {
+    "same_container": true,
+    "same_image": true,
+    "healthy": true,
+    "passed": true,
+    "rates": {
+      "cctv_processor_frames_processed_total": 30.17767159552494,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 15.08883579776247
+    },
+    "snapshot": [
+      {
+        "name": "/cctv-ai-engine",
+        "id": "c8a71163c84b458197b98a4bde8e0e06719afc5cf5964e6fbd0b716109ce0377",
+        "image": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+        "started_at": "2026-10-19T01:11:31.472978399Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-media-server",
+        "id": "957101f7ab7336585817a176154f7711de977caee7cfbf34257f2fb68810dea4",
+        "image": "sha256:f8628851106cc053f9175b248050bb5f362a6e65abd72297c167a1cb5a9a3be2",
+        "started_at": "2026-10-12T23:35:15.324861031Z",
+        "status": "running",
+        "health": null,
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-action-layer",
+        "id": "74deaeb0b5bdd64c8f2e2a141daa25c193a75cf235b214fee6ef8b4dcdceedeb",
+        "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+        "started_at": "2026-10-12T23:35:15.475740705Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-device-signboard",
+        "id": "29aeb393bd52e7a9f8241be9214b970e82e8442253fdfe2e73dbbf5d153feaa8",
+        "image": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+        "started_at": "2026-10-12T23:35:15.45875226Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-device-speaker",
+        "id": "a8ff5823d34ad72dd2c5b236cc88f210b16feb05ef53532e6549601d2beafb7a",
+        "image": "sha256:4daca5e8c9865c5f19dde37d7dbdfcc37ea5c413fa8375802e80c7f8185bba30",
+        "started_at": "2026-10-12T23:35:15.455773133Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      }
+    ],
+    "recovery_seconds": 43.41181165294256
+  },
+  "test_seconds_approx": 1973.9172446727753,
+  "prior_short_diagnostic_recovery": {
+    "same_container": true,
+    "same_image": true,
+    "healthy": true,
+    "passed": true,
+    "rates": {
+      "cctv_processor_frames_processed_total": 30.407553324855357,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 15.170508004523022
+    },
+    "snapshot": [
+      {
+        "name": "/cctv-ai-engine",
+        "id": "c8a71163c84b458197b98a4bde8e0e06719afc5cf5964e6fbd0b716109ce0377",
+        "image": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+        "started_at": "2026-10-19T00:21:06.452291787Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-media-server",
+        "id": "957101f7ab7336585817a176154f7711de977caee7cfbf34257f2fb68810dea4",
+        "image": "sha256:f8628851106cc053f9175b248050bb5f362a6e65abd72297c167a1cb5a9a3be2",
+        "started_at": "2026-10-12T23:35:15.324861031Z",
+        "status": "running",
+        "health": null,
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-action-layer",
+        "id": "74deaeb0b5bdd64c8f2e2a141daa25c193a75cf235b214fee6ef8b4dcdceedeb",
+        "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+        "started_at": "2026-10-12T23:35:15.475740705Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-device-signboard",
+        "id": "29aeb393bd52e7a9f8241be9214b970e82e8442253fdfe2e73dbbf5d153feaa8",
+        "image": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+        "started_at": "2026-10-12T23:35:15.45875226Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-device-speaker",
+        "id": "a8ff5823d34ad72dd2c5b236cc88f210b16feb05ef53532e6549601d2beafb7a",
+        "image": "sha256:4daca5e8c9865c5f19dde37d7dbdfcc37ea5c413fa8375802e80c7f8185bba30",
+        "started_at": "2026-10-12T23:35:15.455773133Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      }
+    ],
+    "recovery_seconds": 43.45619212696329
+  },
+  "residual_diagnostic": {
+    "first_attempt": "FAILED_BEFORE_INFERENCE_MISSING_TEST_DB",
+    "failure_path": "data/runtime/p52_cadence_residual_20261019",
+    "recovery": {
+      "same_container": true,
+      "same_image": true,
+      "healthy": true,
+      "passed": true,
+      "rates": {
+        "cctv_processor_frames_processed_total": 29.98063972871692,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 14.973682439425765
+      },
+      "snapshot": [
+        {
+          "name": "/cctv-ai-engine",
+          "id": "c8a71163c84b458197b98a4bde8e0e06719afc5cf5964e6fbd0b716109ce0377",
+          "image": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+          "started_at": "2026-10-19T01:13:17.70727206Z",
+          "status": "running",
+          "health": "healthy",
+          "restart_count": 0
+        },
+        {
+          "name": "/cctv-media-server",
+          "id": "957101f7ab7336585817a176154f7711de977caee7cfbf34257f2fb68810dea4",
+          "image": "sha256:f8628851106cc053f9175b248050bb5f362a6e65abd72297c167a1cb5a9a3be2",
+          "started_at": "2026-10-12T23:35:15.324861031Z",
+          "status": "running",
+          "health": null,
+          "restart_count": 0
+        },
+        {
+          "name": "/cctv-action-layer",
+          "id": "74deaeb0b5bdd64c8f2e2a141daa25c193a75cf235b214fee6ef8b4dcdceedeb",
+          "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+          "started_at": "2026-10-12T23:35:15.475740705Z",
+          "status": "running",
+          "health": "healthy",
+          "restart_count": 0
+        },
+        {
+          "name": "/cctv-device-signboard",
+          "id": "29aeb393bd52e7a9f8241be9214b970e82e8442253fdfe2e73dbbf5d153feaa8",
+          "image": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+          "started_at": "2026-10-12T23:35:15.45875226Z",
+          "status": "running",
+          "health": "healthy",
+          "restart_count": 0
+        },
+        {
+          "name": "/cctv-device-speaker",
+          "id": "a8ff5823d34ad72dd2c5b236cc88f210b16feb05ef53532e6549601d2beafb7a",
+          "image": "sha256:4daca5e8c9865c5f19dde37d7dbdfcc37ea5c413fa8375802e80c7f8185bba30",
+          "started_at": "2026-10-12T23:35:15.455773133Z",
+          "status": "running",
+          "health": "healthy",
+          "restart_count": 0
+        }
+      ],
+      "recovery_seconds": 43.32218943897169
+    },
+    "retry_path": "data/runtime/p52_cadence_residual_20261019_r1",
+    "retry_status": "COMPLETE_RESTORED",
+    "retry_tests": "12 PASS",
+    "retry_seconds": 1200.2488,
+    "retry_false_alarms": 7,
+    "r3_cpu_exact_alarm_reproduction": true,
+    "r4_cpu_alarm_count": 0,
+    "retry_recovery": {
+      "same_container": true,
+      "same_image": true,
+      "healthy": true,
+      "passed": true,
+      "rates": {
+        "cctv_processor_frames_processed_total": 30.09970668456331,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 15.016557206568642
+      },
+      "snapshot": [
+        {
+          "name": "/cctv-ai-engine",
+          "id": "c8a71163c84b458197b98a4bde8e0e06719afc5cf5964e6fbd0b716109ce0377",
+          "image": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+          "started_at": "2026-10-19T01:39:48.633229441Z",
+          "status": "running",
+          "health": "healthy",
+          "restart_count": 0
+        },
+        {
+          "name": "/cctv-media-server",
+          "id": "957101f7ab7336585817a176154f7711de977caee7cfbf34257f2fb68810dea4",
+          "image": "sha256:f8628851106cc053f9175b248050bb5f362a6e65abd72297c167a1cb5a9a3be2",
+          "started_at": "2026-10-12T23:35:15.324861031Z",
+          "status": "running",
+          "health": null,
+          "restart_count": 0
+        },
+        {
+          "name": "/cctv-action-layer",
+          "id": "74deaeb0b5bdd64c8f2e2a141daa25c193a75cf235b214fee6ef8b4dcdceedeb",
+          "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+          "started_at": "2026-10-12T23:35:15.475740705Z",
+          "status": "running",
+          "health": "healthy",
+          "restart_count": 0
+        },
+        {
+          "name": "/cctv-device-signboard",
+          "id": "29aeb393bd52e7a9f8241be9214b970e82e8442253fdfe2e73dbbf5d153feaa8",
+          "image": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+          "started_at": "2026-10-12T23:35:15.45875226Z",
+          "status": "running",
+          "health": "healthy",
+          "restart_count": 0
+        },
+        {
+          "name": "/cctv-device-speaker",
+          "id": "a8ff5823d34ad72dd2c5b236cc88f210b16feb05ef53532e6549601d2beafb7a",
+          "image": "sha256:4daca5e8c9865c5f19dde37d7dbdfcc37ea5c413fa8375802e80c7f8185bba30",
+          "started_at": "2026-10-12T23:35:15.455773133Z",
+          "status": "running",
+          "health": "healthy",
+          "restart_count": 0
+        }
+      ],
+      "recovery_seconds": 43.282823411980644
+    }
+  },
+  "validation": {
+    "product_tests": "374 PASS / 2 SKIP",
+    "ruff": "PASS",
+    "postprocess_new_cases_fail_before": 3,
+    "pose_new_cases_fail_before": 5,
+    "r3_runner_recovery_tests": "9 PASS",
+    "graph_review_limit": "이전 변경까지 섞인 결과·신규 흐름 미수록. 실제 호출부/최소diff/입력 동일성/회귀 시험으로 범위를 보완.",
+    "r4_residual_cases_fail_before": 7,
+    "r4_runner_recovery_tests": "12 PASS",
+    "skip_reasons": [
+      "DeepStream 설치 환경이므로 Windows/미설치 환경 검사 제외",
+      "DeepStream 설치 환경이므로 CPU-only 초기화 오류 검사 제외"
+    ]
+  },
+  "power_review": {
+    "date": "2026-10-19",
+    "user_constraint": "전력 제한 없음 — 상위 모드 검토 가능",
+    "device": "NVIDIA Jetson AGX Orin Developer Kit",
+    "configuration": "/etc/nvpmodel/nvpmodel_p3701_0000.conf",
+    "configuration_sha256": "0c853c04def357dac284bbadffe8a2fbea3693a79a06fdec2befeb3b136e28aa",
+    "profiles": {
+      "< POWER_MODEL ID=0 NAME=MAXN >": [
+        "CPU_ONLINE CORE_0 1",
+        "CPU_ONLINE CORE_1 1",
+        "CPU_ONLINE CORE_2 1",
+        "CPU_ONLINE CORE_3 1",
+        "CPU_ONLINE CORE_4 1",
+        "CPU_ONLINE CORE_5 1",
+        "CPU_ONLINE CORE_6 1",
+        "CPU_ONLINE CORE_7 1",
+        "CPU_ONLINE CORE_8 1",
+        "CPU_ONLINE CORE_9 1",
+        "CPU_ONLINE CORE_10 1",
+        "CPU_ONLINE CORE_11 1",
+        "TPC_POWER_GATING TPC_PG_MASK 0",
+        "GPU MIN_FREQ 0",
+        "GPU MAX_FREQ -1",
+        "EMC MAX_FREQ -1"
+      ],
+      "< POWER_MODEL ID=1 NAME=MODE_15W >": [
+        "CPU_ONLINE CORE_0 1",
+        "CPU_ONLINE CORE_1 1",
+        "CPU_ONLINE CORE_2 1",
+        "CPU_ONLINE CORE_3 1",
+        "CPU_ONLINE CORE_4 0",
+        "CPU_ONLINE CORE_5 0",
+        "CPU_ONLINE CORE_6 0",
+        "CPU_ONLINE CORE_7 0",
+        "CPU_ONLINE CORE_8 0",
+        "CPU_ONLINE CORE_9 0",
+        "CPU_ONLINE CORE_10 0",
+        "CPU_ONLINE CORE_11 0",
+        "TPC_POWER_GATING TPC_PG_MASK 248",
+        "GPU MIN_FREQ 0",
+        "GPU MAX_FREQ 408000000",
+        "EMC MAX_FREQ 2133000000"
+      ],
+      "< POWER_MODEL ID=2 NAME=MODE_30W >": [
+        "CPU_ONLINE CORE_0 1",
+        "CPU_ONLINE CORE_1 1",
+        "CPU_ONLINE CORE_2 1",
+        "CPU_ONLINE CORE_3 1",
+        "CPU_ONLINE CORE_4 1",
+        "CPU_ONLINE CORE_5 1",
+        "CPU_ONLINE CORE_6 1",
+        "CPU_ONLINE CORE_7 1",
+        "CPU_ONLINE CORE_8 0",
+        "CPU_ONLINE CORE_9 0",
+        "CPU_ONLINE CORE_10 0",
+        "CPU_ONLINE CORE_11 0",
+        "TPC_POWER_GATING TPC_PG_MASK 240",
+        "GPU MIN_FREQ 0",
+        "GPU MAX_FREQ 612000000",
+        "EMC MAX_FREQ -1"
+      ],
+      "< POWER_MODEL ID=3 NAME=MODE_50W >": [
+        "CPU_ONLINE CORE_0 1",
+        "CPU_ONLINE CORE_1 1",
+        "CPU_ONLINE CORE_2 1",
+        "CPU_ONLINE CORE_3 1",
+        "CPU_ONLINE CORE_4 1",
+        "CPU_ONLINE CORE_5 1",
+        "CPU_ONLINE CORE_6 1",
+        "CPU_ONLINE CORE_7 1",
+        "CPU_ONLINE CORE_8 1",
+        "CPU_ONLINE CORE_9 1",
+        "CPU_ONLINE CORE_10 1",
+        "CPU_ONLINE CORE_11 1",
+        "TPC_POWER_GATING TPC_PG_MASK 0",
+        "GPU MIN_FREQ 0",
+        "GPU MAX_FREQ 816000000",
+        "EMC MAX_FREQ -1"
+      ]
+    },
+    "current_mode": {
+      "id": 2,
+      "name": "MODE_30W",
+      "gpu_max_mhz": 612,
+      "tpc_pg_mask": 240
+    },
+    "comparison_candidate": {
+      "id": 3,
+      "name": "MODE_50W",
+      "gpu_max_mhz": 816,
+      "tpc_pg_mask": 0
+    },
+    "applied": false,
+    "sudo_noninteractive_available": false,
+    "reboot_required_for_tpc_mask_change": true,
+    "source": "https://docs.nvidia.com/jetson/archives/r36.4.3/DeveloperGuide/SD/PlatformPowerAndPerformance/JetsonOrinNanoSeriesJetsonOrinNxSeriesAndJetsonAgxOrinSeries.html#power-mode-controls",
+    "next": "사용자50W 비교 승인 완료. 운영 보존 drop-in은 이미 설치·적용돼 추가 설치 불필요. 현장 관리자50W 전환·전체 재부팅 후 동일r4 GPU9/정상30분 시험45분·AI복구5분. 미채택 시30W 복귀.",
+    "reboot_readiness": {
+      "scope": "읽기 전용 검토; 재부팅/전력 전환 미실시",
+      "unit_enabled": true,
+      "boot_service_force_recreates": [
+        "cctv-ai-engine",
+        "cctv-public-api",
+        "public-demo-ui"
+      ],
+      "services": [
+        {
+          "service": "cctv-ai-engine",
+          "container": "cctv-ai-engine",
+          "current_id": "c8a71163c84b458197b98a4bde8e0e06719afc5cf5964e6fbd0b716109ce0377",
+          "current_image_id": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+          "current_image_reference": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+          "boot_image_reference": null,
+          "environment_keys_different": [
+            "APPEARANCE_MODEL_PATH",
+            "DS_CONTEXT_MIN_INTERVAL_SEC",
+            "DS_NVVIDEOCONVERT_COPY_HW",
+            "DS_OSD_PROCESS_MODE",
+            "EDGEX_ALLOWED_DEVICES",
+            "EDGEX_COMMAND_MODE",
+            "EDGEX_DEVICE_REGISTRY_PATH",
+            "FALLDATA_AUX_MODEL_PATH",
+            "FALLDATA_AUX_TEMPORAL_POSE_IMGSZ",
+            "FALLDATA_AUX_TEMPORAL_POSE_MODEL_PATH",
+            "FALLDATA_AUX_TEMPORAL_WORKER_ENABLED",
+            "MEDIA_WEBRTC_ADDITIONAL_HOSTS"
+          ],
+          "current_declared_environment_sha256": "ea0cd37711f4afb341266039e83bd460248103f3d8ee0e02ff44dcd71c825b66",
+          "boot_environment_sha256": "cbe974fdd0063f4ddbb084ed1cd8fa8bba200e09e704314234e0e6b7bef4a01c",
+          "status": "exited",
+          "health": "unhealthy",
+          "restart_policy": "always"
+        },
+        {
+          "service": "cctv-public-api",
+          "container": "cctv-public-api",
+          "current_id": "cac3e58c1fa022fbf246ecc4fb84edecbc7801f783228c1b38e32367e7298f9d",
+          "current_image_id": "sha256:ca4376b086a99f2ad42d2132cb21b1cf75178571fae530ec464c1ed071f3175c",
+          "current_image_reference": "edgex-jetson-cctv-public-api",
+          "boot_image_reference": null,
+          "environment_keys_different": [],
+          "current_declared_environment_sha256": "44bcf84e3976481ac09708dc72fcbf1c890b7b951916b08e955628db0dcc8fea",
+          "boot_environment_sha256": "44bcf84e3976481ac09708dc72fcbf1c890b7b951916b08e955628db0dcc8fea",
+          "status": "running",
+          "health": "unhealthy",
+          "restart_policy": "always"
+        },
+        {
+          "service": "public-demo-ui",
+          "container": "cctv-public-demo-ui",
+          "current_id": "52175dbeaf0c6d26a8ee0cc3cefbd28b10919f33061675274db974ecce4f95f5",
+          "current_image_id": "sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10",
+          "current_image_reference": "nginx:1.27-alpine",
+          "boot_image_reference": "nginx:1.27-alpine",
+          "environment_keys_different": [],
+          "current_declared_environment_sha256": "3272c3c3072b37799050070aa67b58720da1f8d637f9d32967350ec8e1d7a5d1",
+          "boot_environment_sha256": "3272c3c3072b37799050070aa67b58720da1f8d637f9d32967350ec8e1d7a5d1",
+          "status": "running",
+          "health": null,
+          "restart_policy": "always"
+        }
+      ],
+      "reboot_permission": "별도 장비 전체 재부팅 범위 미승인",
+      "noninteractive_admin_available": false,
+      "existing_live_override_comparison": [
+        {
+          "service": "cctv-ai-engine",
+          "candidate_image": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+          "current_image": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+          "different_environment_keys": [],
+          "command_equal": true,
+          "entrypoint_candidate": null,
+          "entrypoint_current": null
+        },
+        {
+          "service": "cctv-public-api",
+          "candidate_image": null,
+          "current_image": "edgex-jetson-cctv-public-api",
+          "different_environment_keys": [],
+          "command_equal": true,
+          "entrypoint_candidate": null,
+          "entrypoint_current": null
+        },
+        {
+          "service": "public-demo-ui",
+          "candidate_image": "nginx:1.27-alpine",
+          "current_image": "nginx:1.27-alpine",
+          "different_environment_keys": [],
+          "command_equal": false,
+          "entrypoint_candidate": null,
+          "entrypoint_current": [
+            "/docker-entrypoint.sh"
+          ]
+        }
+      ],
+      "existing_live_override_files": [
+        "docker-compose.jetson.yml",
+        "data/runtime/live_refresh_20261008/candidate.yml"
+      ],
+      "source_hashes": {
+        "docker-compose.jetson.yml": "0c67afdf038e79118f40d219dc4eb153f3a1dfd7d99371c48f354a6182f4cee2",
+        "data/runtime/live_refresh_20261008/candidate.yml": "f19766ac0f900a404dae8634ce0a3b556304dcb675d947746e6cc9a78255ddb7"
+      },
+      "boot_preservation_draft": {
+        "path": "data/runtime/p52_cadence_final_20261019/50w-preserve-operating.conf.draft",
+        "installed": false,
+        "reuses": "data/runtime/live_refresh_20261008/candidate.yml",
+        "ai_image_environment_command_match": true,
+        "scope": "기존 운영 오버라이드를 부팅 ExecStart에도 포함하는 초안. 현재 시험 r4 배포가 아님. 설치·재부팅·실물 출력 미실시.",
+        "rollback": "전력 모드2 복귀와 필요 재부팅. 운영 보존 오버라이드는 유지; 원래 누락 상태로 되돌리면 운영 조건이 바뀌므로 별도 판단.",
+        "unit_verify": {
+          "exit_code": 0,
+          "clean_host_validation": false,
+          "warnings": [
+            "sandbox IPC permission failures",
+            "host inotify watch allocation unavailable",
+            "unrelated installed unit deprecation/unknown-key warnings"
+          ],
+          "scope": "초안 구문 점검만 수행; 설치/부팅 동작 검증 아님"
+        }
+      },
+      "power_change_sequence": [
+        "현재 r4 GPU9/정상30분 종료 및 동일 운영 AI 복구 확인",
+        "관리자·장비 전체 재부팅 범위 승인 후 운영 보존 구성 설치·재검증",
+        "관리자가 MODE_50W(3) 적용 및 장비 재부팅; 전체 서비스/전력/온도/AI 처리율 확인",
+        "동일 r4·엔진·1080p·0.5로 GPU9/정상30분을 시험45분·운영 AI 복구5분 범위로 비교",
+        "기동/안정성 실패 또는 50W 미채택이면 MODE_30W(2) 복귀·필요 재부팅 및 서비스 확인"
+      ],
+      "current_ai_source_overlay_mounts": [],
+      "current_ai_mount_targets": [
+        "/app/.venv-jetson-train",
+        "/app/Sample",
+        "/app/cameras.json",
+        "/app/data",
+        "/app/known_faces",
+        "/app/known_faces.json",
+        "/app/models",
+        "/app/scripts",
+        "/app/zones_config.json",
+        "/app/낙상학습데이터",
+        "/root/.insightface",
+        "/tmp/.X11-unix",
+        "/app/config/appearance_color_labels.json",
+        "/app/config/appearance_pa100k_labels.json",
+        "/app/config/deepstream",
+        "/app/models/trt_cache",
+        "/opt/nvidia/deepstream",
+        "/usr/lib/aarch64-linux-gnu/nvidia"
+      ]
+    },
+    "r4_steady_gpu_60s": {
+      "gpu_utilization_percent": {
+        "min": 2.0,
+        "median": 98.0,
+        "max": 99.0
+      },
+      "gpu_celsius": {
+        "min": 51.687,
+        "median": 52.312,
+        "max": 52.75
+      },
+      "cpu_celsius": {
+        "min": 54.843,
+        "median": 55.234,
+        "max": 56.031
+      },
+      "memory_mb": {
+        "min": 24732.0,
+        "median": 24761.0,
+        "max": 24792.0
+      },
+      "swap_mb": {
+        "min": 3561.0,
+        "median": 3561.0,
+        "max": 3561.0
+      },
+      "gpu_frequency_in_tegrastats": false,
+      "gpu_at_least_97_percent_samples": 57
+    },
+    "r4_clock_snapshot": {
+      "checked_at": 1792375947.0415332,
+      "gpu": [
+        {
+          "path": "/sys/class/devfreq/17000000.gpu",
+          "cur_freq": "612000000",
+          "min_freq": "306000000",
+          "max_freq": "612000000",
+          "governor": "nvhost_podgov"
+        }
+      ]
+    },
+    "followup_correction": {
+      "evidence": "evidence/fall_power_comparison_20261019.json",
+      "message": "이전 검토가 기본 unit만 읽고 이미 설치·적용된 drop-in을 놓쳤다. AI환경12항목 차이는 기본 Compose 단독 비교의 차이이며 실제 부팅 명령에는 해당 운영 override가 이미 포함돼 있다.",
+      "actual_boot_preservation_installed": true,
+      "comparison_approved": true,
+      "power_change_performed": false
+    }
+  },
+  "input_rate_spot_probe": {
+    "exit_code": 0,
+    "records": [
+      {
+        "frame": 0,
+        "out_time_us": 0,
+        "elapsed": 3.79653099400457
+      },
+      {
+        "frame": 0,
+        "out_time_us": 0,
+        "elapsed": 4.35642267903313
+      },
+      {
+        "frame": 0,
+        "out_time_us": 0,
+        "elapsed": 4.891014450113289
+      },
+      {
+        "frame": 0,
+        "out_time_us": 0,
+        "elapsed": 5.3927597410511225
+      },
+      {
+        "frame": 0,
+        "out_time_us": 0,
+        "elapsed": 5.885921196080744
+      },
+      {
+        "frame": 0,
+        "out_time_us": 0,
+        "elapsed": 6.389343282091431
+      },
+      {
+        "frame": 0,
+        "out_time_us": 0,
+        "elapsed": 6.890334908035584
+      },
+      {
+        "frame": 0,
+        "out_time_us": 0,
+        "elapsed": 7.424084924045019
+      },
+      {
+        "frame": 4,
+        "out_time_us": 7762844,
+        "elapsed": 8.00443205202464
+      },
+      {
+        "frame": 20,
+        "out_time_us": 8296178,
+        "elapsed": 8.484756663092412
+      },
+      {
+        "frame": 35,
+        "out_time_us": 8796178,
+        "elapsed": 8.986767128109932
+      },
+      {
+        "frame": 50,
+        "out_time_us": 9296178,
+        "elapsed": 9.491647523012944
+      },
+      {
+        "frame": 65,
+        "out_time_us": 9796178,
+        "elapsed": 9.990526598063298
+      },
+      {
+        "frame": 81,
+        "out_time_us": 10329511,
+        "elapsed": 10.524075471097603
+      },
+      {
+        "frame": 97,
+        "out_time_us": 10862844,
+        "elapsed": 11.056774427066557
+      },
+      {
+        "frame": 113,
+        "out_time_us": 11396178,
+        "elapsed": 11.590782226063311
+      },
+      {
+        "frame": 128,
+        "out_time_us": 11896178,
+        "elapsed": 12.083858918049373
+      },
+      {
+        "frame": 143,
+        "out_time_us": 12396178,
+        "elapsed": 12.58440704504028
+      },
+      {
+        "frame": 158,
+        "out_time_us": 12896178,
+        "elapsed": 13.085411569103599
+      },
+      {
+        "frame": 173,
+        "out_time_us": 13396178,
+        "elapsed": 13.588846585014835
+      },
+      {
+        "frame": 188,
+        "out_time_us": 13896178,
+        "elapsed": 14.088100462104194
+      },
+      {
+        "frame": 204,
+        "out_time_us": 14429511,
+        "elapsed": 14.624276685062796
+      },
+      {
+        "frame": 220,
+        "out_time_us": 14962844,
+        "elapsed": 15.155694640008733
+      },
+      {
+        "frame": 235,
+        "out_time_us": 15462844,
+        "elapsed": 15.656818360090256
+      },
+      {
+        "frame": 250,
+        "out_time_us": 15962844,
+        "elapsed": 16.157552657066844
+      },
+      {
+        "frame": 266,
+        "out_time_us": 16496178,
+        "elapsed": 16.691829150076956
+      },
+      {
+        "frame": 281,
+        "out_time_us": 16996178,
+        "elapsed": 17.1844144720817
+      },
+      {
+        "frame": 296,
+        "out_time_us": 17496178,
+        "elapsed": 17.68474725005217
+      },
+      {
+        "frame": 300,
+        "out_time_us": 17629511,
+        "elapsed": 17.82458489004057
+      }
+    ],
+    "steady_input_fps": 30.00003069472785,
+    "scope": "동일 로컬 RTSP 입력300프레임 복사 수신. 초기 접속/키프레임 대기와 최종 꼬리 제외, GPU추론 없음",
+    "steady_window": {
+      "first": {
+        "frame": 20,
+        "out_time_us": 8296178,
+        "elapsed": 8.484756663092412
+      },
+      "last": {
+        "frame": 296,
+        "out_time_us": 17496178,
+        "elapsed": 17.68474725005217
+      },
+      "frames": 276
+    },
+    "calculation_correction": "최초 계산은 frame=0 키프레임 대기를 포함했다. 양수 프레임 시작 뒤20→296만 사용해 수정. 전체30분 입력률 입증은 아님."
+  },
+  "operating_deployment": false,
+  "wbs": {
+    "task": "P5.2",
+    "status": "IN_PROGRESS",
+    "issue": "I56 OPEN",
+    "done": 9,
+    "total": 37
+  },
+  "remaining": [
+    "30W 처리율·경보 지연 여유 확보; 50W는 운영 보존 부팅 설정·관리자/전체 재부팅 범위 필요",
+    "고정 r4 전체 GPU100 및 독립 정상/유사 행동 평가",
+    "단일 후보 판정 → 다중 카메라 → 운영 준비; 싸움 보류"
+  ],
+  "r3_candidate_id": "fall-single-1080p05-20261019-r3",
+  "r3_history_fields": [
+    "cpu_regression",
+    "cpu_changed_alarm_videos",
+    "gpu6",
+    "normal_rtsp30",
+    "recovery",
+    "test_seconds_approx"
+  ],
+  "r4_cpu": {
+    "videos": 100,
+    "matches_cpu_candidate": true,
+    "summary": {
+      "TP": 50,
+      "TN": 50
+    },
+    "max_pts_delay": 4.4460500000000005,
+    "early": 0,
+    "normal_rtsp_input_minutes": 20,
+    "normal_rtsp_alarms_before": 7,
+    "normal_rtsp_alarms_after": 0,
+    "changed_rows": [
+      {
+        "before": {
+          "index": 22,
+          "verdict": "TP",
+          "queue_frames": [
+            222
+          ],
+          "previous_queue_frames": [
+            222
+          ],
+          "delay": 3.1123833333333337,
+          "early": 0
+        },
+        "after": {
+          "index": 22,
+          "verdict": "TP",
+          "queue_frames": [
+            228
+          ],
+          "delay": 3.312383333333333,
+          "early": 0
+        }
+      },
+      {
+        "before": {
+          "index": 32,
+          "verdict": "TP",
+          "queue_frames": [
+            228
+          ],
+          "previous_queue_frames": [
+            228
+          ],
+          "delay": 3.0166666666666666,
+          "early": 0
+        },
+        "after": {
+          "index": 32,
+          "verdict": "TP",
+          "queue_frames": [
+            246
+          ],
+          "delay": 3.6166666666666663,
+          "early": 0
+        }
+      },
+      {
+        "before": {
+          "index": 62,
+          "verdict": "TP",
+          "queue_frames": [
+            224
+          ],
+          "previous_queue_frames": [
+            224
+          ],
+          "delay": 2.549999999333333,
+          "early": 0
+        },
+        "after": {
+          "index": 62,
+          "verdict": "TP",
+          "queue_frames": [
+            230
+          ],
+          "delay": 2.7499999993333333,
+          "early": 0
+        }
+      },
+      {
+        "before": {
+          "index": 64,
+          "verdict": "TP",
+          "queue_frames": [
+            238
+          ],
+          "previous_queue_frames": [
+            238
+          ],
+          "delay": 3.283333333,
+          "early": 0
+        },
+        "after": {
+          "index": 64,
+          "verdict": "TP",
+          "queue_frames": [
+            264
+          ],
+          "delay": 4.15,
+          "early": 0
+        }
+      },
+      {
+        "before": {
+          "index": 88,
+          "verdict": "TP",
+          "queue_frames": [
+            212
+          ],
+          "previous_queue_frames": [
+            212
+          ],
+          "delay": 2.8958333326666663,
+          "early": 0
+        },
+        "after": {
+          "index": 88,
+          "verdict": "TP",
+          "queue_frames": [
+            214
+          ],
+          "delay": 2.962499999666667,
+          "early": 0
+        }
+      }
+    ],
+    "source_sha256": {
+      "src/core/_yolo_postprocess.py": "c5962175a6bf1a6a2514d19bd3ba386302f33f998a79869225adb168db088011",
+      "src/core/ai/_fall_detector.py": "e14ccbe980a518c46c1781c07c638f4b6b2e16f31f1d6807e3dfe2deccdf355e"
+    }
+  },
+  "r4_gpu9": {
+    "status": "PASS",
+    "trials": [
+      {
+        "index": 16,
+        "is_fall": true,
+        "expected_queue_pts": [
+          8.4
+        ],
+        "queue_pts": [
+          8.4
+        ],
+        "delay_seconds": 4.4460500000000005,
+        "wall_delay_seconds": 4.66165480191838,
+        "problems": []
+      },
+      {
+        "index": 22,
+        "is_fall": true,
+        "expected_queue_pts": [
+          7.6
+        ],
+        "queue_pts": [
+          7.6
+        ],
+        "delay_seconds": 3.312383333333333,
+        "wall_delay_seconds": 3.651898567304512,
+        "problems": []
+      },
+      {
+        "index": 32,
+        "is_fall": true,
+        "expected_queue_pts": [
+          8.2
+        ],
+        "queue_pts": [
+          8.2
+        ],
+        "delay_seconds": 3.6166666666666663,
+        "wall_delay_seconds": 3.9255628656052677,
+        "problems": []
+      },
+      {
+        "index": 39,
+        "is_fall": false,
+        "expected_queue_pts": [],
+        "queue_pts": [],
+        "delay_seconds": null,
+        "wall_delay_seconds": null,
+        "problems": []
+      },
+      {
+        "index": 46,
+        "is_fall": true,
+        "expected_queue_pts": [
+          7.533333333333333
+        ],
+        "queue_pts": [
+          7.533333333
+        ],
+        "delay_seconds": 2.2780833329999997,
+        "wall_delay_seconds": 2.660433335973881,
+        "problems": []
+      },
+      {
+        "index": 62,
+        "is_fall": true,
+        "expected_queue_pts": [
+          7.666666666666667
+        ],
+        "queue_pts": [
+          7.666666666
+        ],
+        "delay_seconds": 2.7499999993333333,
+        "wall_delay_seconds": 3.017839151395795,
+        "problems": []
+      },
+      {
+        "index": 64,
+        "is_fall": true,
+        "expected_queue_pts": [
+          8.8
+        ],
+        "queue_pts": [
+          8.8
+        ],
+        "delay_seconds": 4.15,
+        "wall_delay_seconds": 4.985894528939388,
+        "problems": []
+      },
+      {
+        "index": 66,
+        "is_fall": true,
+        "expected_queue_pts": [
+          7.333333333333333
+        ],
+        "queue_pts": [
+          7.333333333
+        ],
+        "delay_seconds": 2.4666666663333334,
+        "wall_delay_seconds": 3.6482130723617354,
+        "problems": []
+      },
+      {
+        "index": 88,
+        "is_fall": true,
+        "expected_queue_pts": [
+          7.133333333333334
+        ],
+        "queue_pts": [
+          7.133333333
+        ],
+        "delay_seconds": 2.962499999666667,
+        "wall_delay_seconds": 3.225823096643823,
+        "problems": []
+      }
+    ],
+    "detected_falls": 8,
+    "median": 3.1374416665,
+    "p95": 4.3424325,
+    "max": 4.4460500000000005,
+    "above_target_3s": 4,
+    "above_limit_5s": 0,
+    "max_wall_delay": 4.985894528939388,
+    "scope": "핵심 GPU9 회귀(낙상8·정상1); 전체 GPU100 재실행·독립 품질 아님"
+  },
+  "r4_runtime_root": "data/runtime/p52_cadence_final_20261019",
+  "r4_changes": [
+    "직립 직후1초의 실제 하강만 현재 진행 근거로 인정",
+    "이력만 남은 자세는 충분한 높이 감소 또는 옆으로 펼쳐진 형태로 교차 확인",
+    "양다리 투영 경로의 높이 감소 기준을 통일",
+    "골반만 낮은 착석은 이력 해제, 실제 높이 감소/수평 몸통은 보존"
+  ],
+  "r4_normal_rtsp30": {
+    "false_alarm_count": 0,
+    "windows_below_minimum": 38,
+    "inferences_per_second_min": 13.634359064532388,
+    "inferences_per_second_median": 14.13571609770507,
+    "last_observation_elapsed": 1813.206,
+    "verdict": {
+      "passed": false,
+      "windows": [
+        {
+          "seconds": 30.404887752025388,
+          "inferences_per_second": 13.71490016345224,
+          "playback_ratio": 0.9993180485915786
+        },
+        {
+          "seconds": 30.67933635402005,
+          "inferences_per_second": 13.950758095323572,
+          "playback_ratio": 0.9969400224327946
+        },
+        {
+          "seconds": 30.52806281298399,
+          "inferences_per_second": 13.790590073764626,
+          "playback_ratio": 1.0041768348288964
+        },
+        {
+          "seconds": 30.736689553945325,
+          "inferences_per_second": 14.18500190903075,
+          "playback_ratio": 0.9991199444592804
+        },
+        {
+          "seconds": 30.449671009089798,
+          "inferences_per_second": 14.3843918664753,
+          "playback_ratio": 1.0009152524472886
+        },
+        {
+          "seconds": 30.48363575397525,
+          "inferences_per_second": 14.302755862812164,
+          "playback_ratio": 0.9990965153173483
+        },
+        {
+          "seconds": 30.426901628961787,
+          "inferences_per_second": 13.770708733654816,
+          "playback_ratio": 0.9979389218223228
+        },
+        {
+          "seconds": 30.50859338697046,
+          "inferences_per_second": 13.73383540451739,
+          "playback_ratio": 1.0024817671227635
+        },
+        {
+          "seconds": 30.536461719078943,
+          "inferences_per_second": 14.08152666657314,
+          "playback_ratio": 0.9954826700503825
+        },
+        {
+          "seconds": 30.246582724968903,
+          "inferences_per_second": 14.018112520525603,
+          "playback_ratio": 1.004742042674219
+        },
+        {
+          "seconds": 30.537426698952913,
+          "inferences_per_second": 14.310308602885133,
+          "playback_ratio": 1.0001729791478229
+        },
+        {
+          "seconds": 30.48794321808964,
+          "inferences_per_second": 14.235135407313784,
+          "playback_ratio": 1.0013597896917417
+        },
+        {
+          "seconds": 30.419399839942344,
+          "inferences_per_second": 14.13571609770507,
+          "playback_ratio": 0.9984141778866064
+        },
+        {
+          "seconds": 30.481979397009127,
+          "inferences_per_second": 13.778632762976349,
+          "playback_ratio": 0.999668860086884
+        },
+        {
+          "seconds": 30.372485729982145,
+          "inferences_per_second": 14.19047501846512,
+          "playback_ratio": 1.0006921558941455
+        },
+        {
+          "seconds": 30.371060298988596,
+          "inferences_per_second": 14.289919276030442,
+          "playback_ratio": 0.9996417632482539
+        },
+        {
+          "seconds": 30.49730691802688,
+          "inferences_per_second": 14.099605619466292,
+          "playback_ratio": 0.9960242904282408
+        },
+        {
+          "seconds": 30.35875288094394,
+          "inferences_per_second": 13.834560386821167,
+          "playback_ratio": 1.0038284226467358
+        },
+        {
+          "seconds": 30.462339260033332,
+          "inferences_per_second": 13.820343749908698,
+          "playback_ratio": 1.0003953048669005
+        },
+        {
+          "seconds": 30.565435123979114,
+          "inferences_per_second": 14.264478756199694,
+          "playback_ratio": 0.9999148776724899
+        },
+        {
+          "seconds": 30.434226473094895,
+          "inferences_per_second": 13.997398631984337,
+          "playback_ratio": 1.000039428138782
+        },
+        {
+          "seconds": 30.572308713919483,
+          "inferences_per_second": 13.639794230199602,
+          "playback_ratio": 0.9998737793748064
+        },
+        {
+          "seconds": 30.473950118059292,
+          "inferences_per_second": 14.208857017961648,
+          "playback_ratio": 0.9946086135068545
+        },
+        {
+          "seconds": 30.46139965998009,
+          "inferences_per_second": 14.280368100468445,
+          "playback_ratio": 1.0052746168860718
+        },
+        {
+          "seconds": 30.474115247023292,
+          "inferences_per_second": 13.979076883671352,
+          "playback_ratio": 0.9972155351078952
+        },
+        {
+          "seconds": 30.406967849936336,
+          "inferences_per_second": 14.240157129014973,
+          "playback_ratio": 1.0045562852155268
+        },
+        {
+          "seconds": 30.427562103024684,
+          "inferences_per_second": 14.394843678799365,
+          "playback_ratio": 0.9982379696131044
+        },
+        {
+          "seconds": 30.511151865008287,
+          "inferences_per_second": 13.634359064532388,
+          "playback_ratio": 1.0018496416078095
+        },
+        {
+          "seconds": 30.573450958938338,
+          "inferences_per_second": 14.29344697093281,
+          "playback_ratio": 0.9971925447325649
+        },
+        {
+          "seconds": 30.492475944105536,
+          "inferences_per_second": 14.03624949264693,
+          "playback_ratio": 1.0013121672693226
+        },
+        {
+          "seconds": 30.44986330892425,
+          "inferences_per_second": 14.187255805295829,
+          "playback_ratio": 0.9997730443695547
+        },
+        {
+          "seconds": 30.393113278085366,
+          "inferences_per_second": 14.279550634680493,
+          "playback_ratio": 1.0001196771413758
+        },
+        {
+          "seconds": 30.64609517797362,
+          "inferences_per_second": 13.933259605187784,
+          "playback_ratio": 1.0000211671021255
+        },
+        {
+          "seconds": 30.551879397942685,
+          "inferences_per_second": 14.336270260005485,
+          "playback_ratio": 0.9962781799292406
+        },
+        {
+          "seconds": 30.494448147015646,
+          "inferences_per_second": 14.166513127809393,
+          "playback_ratio": 1.0032710507992622
+        },
+        {
+          "seconds": 30.361178201041184,
+          "inferences_per_second": 14.162823232770785,
+          "playback_ratio": 1.0002277286116183
+        },
+        {
+          "seconds": 30.533383882953785,
+          "inferences_per_second": 14.21395026714658,
+          "playback_ratio": 0.9976625707380691
+        },
+        {
+          "seconds": 30.7021778060589,
+          "inferences_per_second": 14.005521130007331,
+          "playback_ratio": 1.0038383686878996
+        },
+        {
+          "seconds": 30.360316934995353,
+          "inferences_per_second": 14.097349540730857,
+          "playback_ratio": 0.9979508236647016
+        },
+        {
+          "seconds": 30.477958495961502,
+          "inferences_per_second": 14.206988307874193,
+          "playback_ratio": 0.9974586516031982
+        },
+        {
+          "seconds": 30.369954423978925,
+          "inferences_per_second": 14.290439621382198,
+          "playback_ratio": 1.0029179161675366
+        },
+        {
+          "seconds": 30.584858293063007,
+          "inferences_per_second": 14.091940393189779,
+          "playback_ratio": 0.9995734252244037
+        },
+        {
+          "seconds": 30.543417109991424,
+          "inferences_per_second": 14.111060280122043,
+          "playback_ratio": 1.0005787312842216
+        },
+        {
+          "seconds": 30.485564849921502,
+          "inferences_per_second": 14.203443568509604,
+          "playback_ratio": 1.0001351542967558
+        },
+        {
+          "seconds": 30.450832719099708,
+          "inferences_per_second": 14.186804150319219,
+          "playback_ratio": 0.9994031753329259
+        },
+        {
+          "seconds": 30.32854202494491,
+          "inferences_per_second": 14.112119192804403,
+          "playback_ratio": 1.0013729418651527
+        },
+        {
+          "seconds": 30.403642973979004,
+          "inferences_per_second": 14.175932810711924,
+          "playback_ratio": 0.9985417636295444
+        },
+        {
+          "seconds": 30.350071851047687,
+          "inferences_per_second": 14.06915944369535,
+          "playback_ratio": 0.9989518998108536
+        },
+        {
+          "seconds": 30.396788054029457,
+          "inferences_per_second": 13.981740414302134,
+          "playback_ratio": 1.0033100827558392
+        }
+      ],
+      "delay_growth_range_seconds": 0.653740886057335,
+      "throughput_passed": false,
+      "status": "FAIL",
+      "errors": [],
+      "rss_growth_mib": 0.11328125,
+      "rss_review_threshold_mib": 256,
+      "scope": "단일 입력30분; 반복 영상이며 독립 정상표본·24시간·다중 합격 아님"
+    },
+    "observation_seconds": 1800.5575251029804,
+    "postprocess_avg_ms": 11.263,
+    "postprocess_max_ms": 162.126,
+    "prepared_fall_candidates": 418,
+    "lag_review": {
+      "lag_range": 0.653740886057335,
+      "extrema": {
+        "min": [
+          {
+            "elapsed": 1682.6124997480074,
+            "lag": 0.01197607799144862,
+            "pts": 1684.340866183,
+            "post_avg_ms": 11.228,
+            "post_max_ms": 162.126,
+            "last_frame_age_seconds": 0.00013866089284420013,
+            "frames": 47357
+          },
+          {
+            "elapsed": 1684.6207774260547,
+            "lag": -0.007131327961133138,
+            "pts": 1686.368251267,
+            "post_avg_ms": 11.23,
+            "post_max_ms": 162.126,
+            "last_frame_age_seconds": 0.00016532291192561388,
+            "frames": 47417
+          },
+          {
+            "elapsed": 1686.6241300309775,
+            "lag": -0.07072239103831635,
+            "pts": 1688.435194935,
+            "post_avg_ms": 11.23,
+            "post_max_ms": 162.126,
+            "last_frame_age_seconds": 0.00016477901954203844,
+            "frames": 47474
+          },
+          {
+            "elapsed": 1688.6302854970563,
+            "lag": -0.01989546595950742,
+            "pts": 1690.390523476,
+            "post_avg_ms": 11.23,
+            "post_max_ms": 162.126,
+            "last_frame_age_seconds": 0.00021285400725901127,
+            "frames": 47533
+          },
+          {
+            "elapsed": 1690.6679636320332,
+            "lag": -0.008791089982651101,
+            "pts": 1692.417097235,
+            "post_avg_ms": 11.23,
+            "post_max_ms": 162.126,
+            "last_frame_age_seconds": 0.00018135702703148127,
+            "frames": 47589
+          }
+        ],
+        "max": [
+          {
+            "elapsed": 1147.8033104799688,
+            "lag": -0.009244116047057105,
+            "pts": 1149.552897109,
+            "post_avg_ms": 11.134,
+            "post_max_ms": 162.126,
+            "last_frame_age_seconds": 0.000184281961992383,
+            "frames": 32228
+          },
+          {
+            "elapsed": 1149.812822684995,
+            "lag": -0.05918013202096972,
+            "pts": 1151.61234533,
+            "post_avg_ms": 11.133,
+            "post_max_ms": 162.126,
+            "last_frame_age_seconds": 0.00021970504894852638,
+            "frames": 32284
+          },
+          {
+            "elapsed": 1151.9351432450349,
+            "lag": 0.5830184950190187,
+            "pts": 1153.092467263,
+            "post_avg_ms": 11.13,
+            "post_max_ms": 162.126,
+            "last_frame_age_seconds": 0.00017068302258849144,
+            "frames": 32327
+          },
+          {
+            "elapsed": 1153.9745257280301,
+            "lag": -0.05785774598575699,
+            "pts": 1155.772725987,
+            "post_avg_ms": 11.131,
+            "post_max_ms": 162.126,
+            "last_frame_age_seconds": 0.00016002601478248835,
+            "frames": 32387
+          },
+          {
+            "elapsed": 1155.9825874400558,
+            "lag": -0.007950338960085901,
+            "pts": 1157.730880292,
+            "post_avg_ms": 11.126,
+            "post_max_ms": 162.126,
+            "last_frame_age_seconds": 0.0002701670164242387,
+            "frames": 32446
+          }
+        ]
+      },
+      "interpretation": "기존 고정 기준으로 지연변동 미달 유지; 특정 후처리 최대 호출과 동시 발생 여부만 비교하며 원인 확정 아님"
+    }
+  },
+  "r4_recovery": {
+    "same_container": true,
+    "same_image": true,
+    "healthy": true,
+    "passed": true,
+    "rates": {
+      "cctv_processor_frames_processed_total": 29.990161350377868,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 14.978437966337447
+    },
+    "snapshot": [
+      {
+        "name": "/cctv-ai-engine",
+        "id": "c8a71163c84b458197b98a4bde8e0e06719afc5cf5964e6fbd0b716109ce0377",
+        "image": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+        "started_at": "2026-10-19T02:30:38.103109763Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-media-server",
+        "id": "957101f7ab7336585817a176154f7711de977caee7cfbf34257f2fb68810dea4",
+        "image": "sha256:f8628851106cc053f9175b248050bb5f362a6e65abd72297c167a1cb5a9a3be2",
+        "started_at": "2026-10-12T23:35:15.324861031Z",
+        "status": "running",
+        "health": null,
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-action-layer",
+        "id": "74deaeb0b5bdd64c8f2e2a141daa25c193a75cf235b214fee6ef8b4dcdceedeb",
+        "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+        "started_at": "2026-10-12T23:35:15.475740705Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-device-signboard",
+        "id": "29aeb393bd52e7a9f8241be9214b970e82e8442253fdfe2e73dbbf5d153feaa8",
+        "image": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+        "started_at": "2026-10-12T23:35:15.45875226Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-device-speaker",
+        "id": "a8ff5823d34ad72dd2c5b236cc88f210b16feb05ef53532e6549601d2beafb7a",
+        "image": "sha256:4daca5e8c9865c5f19dde37d7dbdfcc37ea5c413fa8375802e80c7f8185bba30",
+        "started_at": "2026-10-12T23:35:15.455773133Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      }
+    ],
+    "recovery_seconds": 43.29825407790486
+  },
+  "r4_timing": {
+    "test_seconds_approx": 2013.334683115012,
+    "test_budget_seconds": 2700,
+    "recovery_seconds": 43.29825407790486,
+    "recovery_budget_seconds": 300,
+    "within_budget": true
+  }
+}

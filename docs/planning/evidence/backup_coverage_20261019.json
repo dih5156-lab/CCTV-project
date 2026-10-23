@@ -1,0 +1,78 @@
+{
+  "updated_date": "2026-10-19",
+  "observed_at": "2026-10-16T12:57:21.589760+00:00",
+  "state": "LOCAL_FIX_VERIFIED_TIMER_ENV_NOT_APPLIED",
+  "issue": "I41",
+  "wbs": "P6.3 선행; 용량은 I22/P2.4 연계",
+  "findings": {
+    "timer_last_observed_success": true,
+    "scheduled_backup_missing": [
+      "adapter/event_outbox.db",
+      "adapter/aiot_commands.db"
+    ],
+    "backups_observed": 8,
+    "backup_logical_file_bytes": 79191085574,
+    "latest_backup_logical_bytes": 10134594197,
+    "adapter_snapshot_logical_bytes": 3674968064,
+    "database_reusable_free_page_bytes": 4483407872,
+    "disk_available_bytes_at_observation": 68166574080,
+    "backup_permissions": "8개 디렉터리0700·파일0600"
+  },
+  "capacity_scenario": {
+    "assumptions": "10-16 관측 크기·8묶음·다른 파일 증가 없음. 실제 보관 개수 상한/용량 보장 아님. 파일 크기 합은 공유 블록을 공제하지 않음.",
+    "additional_bytes_for_8_adapter_snapshots": 29399744512,
+    "projected_available_bytes": 38766829568,
+    "projected_new_full_snapshot_bytes": 13809562261,
+    "temporary_available_before_pruning": 24957267307
+  },
+  "change": {
+    "files": [
+      "scripts/ops/backup_runtime_databases.sh",
+      "tests/test_runtime_database_backup.py"
+    ],
+    "environment_key": "CCTV_EDGEX_ADAPTER_DATA_DIR",
+    "namespaced_destination": "<snapshot>/edgex-adapter/",
+    "configured_missing_database": "fail before backup creation",
+    "unconfigured_behavior": "기존 목록 유지, 어댑터 자동 탐색 없음",
+    "sqlite_backup_block_unchanged": true,
+    "pruning_policy_unchanged": true,
+    "new_dependencies": 0
+  },
+  "validation": {
+    "red_tests_failed": 3,
+    "tests_passed": 11,
+    "ruff": "PASS",
+    "bash_syntax": "PASS",
+    "fixture_wal_commits_preserved": true,
+    "same_name_outboxes_distinct": true,
+    "source_rows_preserved": true,
+    "private_permissions_preserved": true
+  },
+  "operating_application": {
+    "script_modified": true,
+    "timer_reads_workspace_script": true,
+    "timer_environment_applied": false,
+    "new_full_backup_run": false,
+    "production_db_deleted_or_vacuumed": false,
+    "extra_backup_draft": "data/runtime/p63_backup_coverage_20261016/cctv-runtime-backup.env.draft",
+    "manual_adapter_backups": "data/runtime/p63_adapter_metrics_20261016/release/backup_result.json"
+  },
+  "limits": [
+    "새 정기 경로를 실제 타이머에 적용하고 전체 실행 결과를 확인하는 단계는 잔여.",
+    "개별 DB 스냅샷은 서비스 전체의 같은 시점 백업이 아님.",
+    "빈 페이지는 이미 파일 안에 있는 재사용 공간이며 현재 OS 여유 공간이나 즉시 삭제 가능한 이벤트를 뜻하지 않음.",
+    "운영 원본 VACUUM·완료 이력 삭제·보관 기간 변경·외부 저장소 복구는 하지 않음."
+  ],
+  "artifacts": {
+    "data/runtime/p63_backup_coverage_20261016/timer_inventory.json": "bb613bc40e086319fc2df3651825d5233a9abed0ae4addd0b5258b9f5ed40621",
+    "data/runtime/p63_backup_coverage_20261016/storage_inventory.json": "52e33f5d0075fe1fc58b44fd066b16be67c914b29f4f9f3582d81a001a202205",
+    "data/runtime/p63_backup_coverage_20261016/page_inventory.json": "e8628962257eee24e4684a278ba0e62990791153cfe15eb71bfb497a807b175a",
+    "data/runtime/p63_backup_coverage_20261016/adapter_paths.json": "b088e53cc601080e7b286eeef1592da4647aa886ed1adcc6493a93f3b9cad45d",
+    "data/runtime/p63_backup_coverage_20261016/config_inventory.json": "734ecd1890d5d633ab160c5587d79efe79134f5eeaa6f414b5adb9c37dc76a03",
+    "data/runtime/p63_backup_coverage_20261016/red_test.log": "05fde05ca37a0363455f41c4b7f66909df5cdcf232b090703414fc4f12135c39",
+    "data/runtime/p63_backup_coverage_20261016/backup_tests.xml": "7a3d5b52976f58f13de7c796e1c3dc4a351eee89fc36695acc14fd74c8884158",
+    "data/runtime/p63_backup_coverage_20261016/cctv-runtime-backup.env.draft": "5b21f66480ea83a28f5b01bd34cf1ecf873535b51af3ceef10bd80999f4bdb55",
+    "scripts/ops/backup_runtime_databases.sh": "65a12afe26c68bd76687cc1830f2ab20c1acab3588787dc03e73f2c14884436f",
+    "tests/test_runtime_database_backup.py": "4c23853289343aa5a57e3cd8bf123a7c8106f2f73349cebfe25be2021db6d282"
+  }
+}

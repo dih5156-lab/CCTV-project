@@ -1,0 +1,230 @@
+{
+  "date": "2026-10-19",
+  "state": "LOCAL_VERIFIED_GPU_RETEST_PENDING",
+  "task": "P5.2",
+  "issue": "I56 OPEN",
+  "scope": "Pose의 동일 클래스0 배열 검색을 단일 포함 여부 검사로 축소; 신뢰도0.5·출력 순서·dtype·비정상 점수 필터 유지",
+  "product_files": [
+    "src/core/_yolo_postprocess.py"
+  ],
+  "test_files": [
+    "tests/test_yolo_postprocess.py"
+  ],
+  "api_schema_config_dependency_changes": false,
+  "new_gpu_runs": 0,
+  "operating_stopped": false,
+  "operating_deployed": false,
+  "verification": {
+    "videos": 100,
+    "frames": 15005,
+    "all_outputs_equal": true,
+    "source_sha256": {
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/p52_pose_filter_20261019/postprocess_before.py": "c5962175a6bf1a6a2514d19bd3ba386302f33f998a79869225adb168db088011",
+      "src/core/_yolo_postprocess.py": "d3b8a363b473c6972d76a8ec42d682c7f2c337eeca8d0d767332f3930add8621"
+    },
+    "full_output_cpu_median_ms": {
+      "before": 2.1790400000014643,
+      "after": 1.8210559999971565
+    },
+    "scope": "GPU 저장 후보를 CPU로 재생; 전체 출력 동등성 비교이며 새 GPU 실행 아님",
+    "slow_tensor_comparison": {
+      "alone_before": {
+        "calls": 160,
+        "median_wall_ms": 2.0259249999980966,
+        "p95_wall_ms": 2.9317196499505362,
+        "max_wall_ms": 4.126987000063309,
+        "median_thread_ms": 2.0010880000000952,
+        "median_voluntary_switches": 0.0
+      },
+      "alone_after": {
+        "calls": 160,
+        "median_wall_ms": 1.688385000022663,
+        "p95_wall_ms": 2.4857555500943813,
+        "max_wall_ms": 4.211563000012575,
+        "median_thread_ms": 1.6602239999996549,
+        "median_voluntary_switches": 0.0
+      },
+      "contended_before": {
+        "calls": 160,
+        "median_wall_ms": 3.1151360000194472,
+        "p95_wall_ms": 32.96256539992441,
+        "max_wall_ms": 149.13497099996675,
+        "median_thread_ms": 2.740367999999549,
+        "median_voluntary_switches": 0.0
+      },
+      "contended_after": {
+        "calls": 160,
+        "median_wall_ms": 2.359416500041789,
+        "p95_wall_ms": 22.951570049991666,
+        "max_wall_ms": 64.7551920000069,
+        "median_thread_ms": 2.1529599999996485,
+        "median_voluntary_switches": 0.0
+      }
+    },
+    "all_640_timed_outputs_equal": true,
+    "limits": [
+      "통제된 Python 경쟁이며 실제 GPU 지연 원인 확정 아님",
+      "운영 배포·전력 설정 변경·GPU 추론 없음"
+    ]
+  },
+  "tests": {
+    "targeted": "56 PASS",
+    "new_cases": 10,
+    "ruff": "PASS",
+    "diff_check": "PASS"
+  },
+  "operating_observation": {
+    "duration_seconds": 30.069976784000005,
+    "before": [
+      {
+        "name": "/cctv-ai-engine",
+        "id": "8a44bd5723233753bc7cefc6778c5dde6b9674c8829a5096e64a9421b09c4ba2",
+        "image": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+        "started_at": "2026-10-19T04:35:35.07840193Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-media-server",
+        "id": "957101f7ab7336585817a176154f7711de977caee7cfbf34257f2fb68810dea4",
+        "image": "sha256:f8628851106cc053f9175b248050bb5f362a6e65abd72297c167a1cb5a9a3be2",
+        "started_at": "2026-10-19T04:31:54.529492192Z",
+        "status": "running",
+        "health": null,
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-action-layer",
+        "id": "74deaeb0b5bdd64c8f2e2a141daa25c193a75cf235b214fee6ef8b4dcdceedeb",
+        "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+        "started_at": "2026-10-19T04:31:54.718149472Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-device-signboard",
+        "id": "29aeb393bd52e7a9f8241be9214b970e82e8442253fdfe2e73dbbf5d153feaa8",
+        "image": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+        "started_at": "2026-10-19T04:31:54.818044288Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-device-speaker",
+        "id": "a8ff5823d34ad72dd2c5b236cc88f210b16feb05ef53532e6549601d2beafb7a",
+        "image": "sha256:4daca5e8c9865c5f19dde37d7dbdfcc37ea5c413fa8375802e80c7f8185bba30",
+        "started_at": "2026-10-19T04:31:54.744499456Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      }
+    ],
+    "after": [
+      {
+        "name": "/cctv-ai-engine",
+        "id": "8a44bd5723233753bc7cefc6778c5dde6b9674c8829a5096e64a9421b09c4ba2",
+        "image": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+        "started_at": "2026-10-19T04:35:35.07840193Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-media-server",
+        "id": "957101f7ab7336585817a176154f7711de977caee7cfbf34257f2fb68810dea4",
+        "image": "sha256:f8628851106cc053f9175b248050bb5f362a6e65abd72297c167a1cb5a9a3be2",
+        "started_at": "2026-10-19T04:31:54.529492192Z",
+        "status": "running",
+        "health": null,
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-action-layer",
+        "id": "74deaeb0b5bdd64c8f2e2a141daa25c193a75cf235b214fee6ef8b4dcdceedeb",
+        "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+        "started_at": "2026-10-19T04:31:54.718149472Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-device-signboard",
+        "id": "29aeb393bd52e7a9f8241be9214b970e82e8442253fdfe2e73dbbf5d153feaa8",
+        "image": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+        "started_at": "2026-10-19T04:31:54.818044288Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-device-speaker",
+        "id": "a8ff5823d34ad72dd2c5b236cc88f210b16feb05ef53532e6549601d2beafb7a",
+        "image": "sha256:4daca5e8c9865c5f19dde37d7dbdfcc37ea5c413fa8375802e80c7f8185bba30",
+        "started_at": "2026-10-19T04:31:54.744499456Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      }
+    ],
+    "before_metrics": {
+      "cctv_processor_frames_processed_total": 19022.0,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 9513.0,
+      "cctv_camera_primary_last_frame_age_seconds{camera_id=\"camera_1\"}": 0.02357319700001881
+    },
+    "after_metrics": {
+      "cctv_processor_frames_processed_total": 19924.0,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 9963.0,
+      "cctv_camera_primary_last_frame_age_seconds{camera_id=\"camera_1\"}": 0.012327769999956217
+    },
+    "rates": {
+      "cctv_processor_frames_processed_total": 29.996697585744297,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 14.965093030581967
+    },
+    "power": "NV Power Mode: MODE_30W\n2\n",
+    "systemd": "Result=success\nExecMainStatus=0\nActiveState=active\nSubState=exited\n",
+    "passed": true
+  },
+  "initial_verification_failure": "전체100영상 동등성 통과 뒤 저장 텐서 차원을 (1,56,18900)으로 잘못 가정한 시험 스크립트 assert 실패. 실제 (56,18900) 확인 후 소스 해시 대조·시간 측정만 재실행, 640/640 동일 출력 확인.",
+  "review_limit": "code-review-graph의 변경 함수 목록이 요청 범위 밖 노드를 포함했고 영향 흐름은0으로 반환됨. 이를 영향 없음으로 해석하지 않고 실제 호출·콜백 참조 검색, 이번 diff와 관련 테스트·저장 출력으로 보완.",
+  "limits": [
+    "기존100영상은 회귀 자료이며 독립 품질 평가가 아니다.",
+    "전수 출력 비교는 보존 후보를 8400행에 복원한 기존 도구 재사용; 시간 비교의 실제 느린 텐서는56×18900 8개다.",
+    "경쟁 시험의 p95/최대 개선은 해당 CPU 측정 결과이며 GPU 지연0.5초 기준 충족을 증명하지 않는다.",
+    "현재30W·systemd 정상 관측으로 과거 부팅 timeout의 재발 방지가 검증된 것은 아니다."
+  ],
+  "next": "현재 소스/엔진/입력 고정 및 실행·복구 사전점검 → 승인된 새 GPU100·정상30분 재검증 → 단일 판정 → 다중 → 운영 준비; 싸움 보류",
+  "wbs": {
+    "status": "IN_PROGRESS",
+    "done": 9,
+    "total": 37
+  },
+  "artifacts": {
+    "data/runtime/p52_pose_filter_20261019/verify.py": "a77d617de4c39a6b566a7a4c3d496da7a014213d1369c6f20383a0d15fa038f5",
+    "data/runtime/p52_pose_filter_20261019/parity.json": "d38719d831caa1d5efd9c4225d265c397f2e15066b9e7f9290812918d7e28d6c",
+    "data/runtime/p52_pose_filter_20261019/verification.json": "9614d1faa89408a85cdbe4e64e587bd80ee2548c6af4e34dcfd632121b8c8c03",
+    "data/runtime/p52_pose_filter_20261019/timing_samples.json": "4a78db1966b9cecb63ea10bd7df2978740db26ae0b8e588f7934d3fdae771218",
+    "data/runtime/p52_pose_filter_20261019/operating_check.json": "2a65f9b3e212206226b5b3cc3bde8ee876270171c2fbe8d5872820a7a9a0b8c4"
+  },
+  "publication": {
+    "html_pdf_http_content_match": true,
+    "visual_first_page": "PASS",
+    "browser_interaction": "NOT_RUN",
+    "files": {
+      "docs/planning/online/index.html": {
+        "bytes": 136330,
+        "sha256": "3dc439973fc5a9b4aba4c8e293127cab450353d39eaddd836b14a23d183e6e2d"
+      },
+      "docs/planning/online/CCTV_project_progress.pdf": {
+        "bytes": 155860,
+        "sha256": "1ac9ff2cfca4eb23e14bff316a02a67174381547a2a9778233b5c9f3988c6c2a"
+      }
+    },
+    "note": "진행판은192.168.2.141에만 바인딩되므로127.0.0.1 접속거부를 게시실패로 판정하지 않음"
+  }
+}
