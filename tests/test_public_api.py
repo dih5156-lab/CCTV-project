@@ -242,6 +242,7 @@ class TestAlerts:
         assert body["data"]["accepted"] is True
         assert body["data"]["camera_id"] == "cam-01"
         assert body["data"]["event_type"] == "helmet"
+        assert posted_payloads[1].pop("event_id").startswith("evt_")
         assert posted_payloads[1] == {
             "camera_id": "cam-01",
             "type": "helmet",
@@ -494,9 +495,11 @@ class TestSensorReadings:
         assert body["data"]["status"] == "normal"
         assert body["data"]["action_dispatched"] is False
 
+    @pytest.mark.parametrize("source_id", [None, "original-sensor-id"])
     def test_post_sensor_reading_dispatches_action_for_high_temperature(
         self,
         client: SyncASGIClient,
+        source_id: str | None,
     ) -> None:
         payload = {
             "device_id": "demo-tlv-02",
@@ -504,6 +507,8 @@ class TestSensorReadings:
             "data": {"temperature": 72.5, "angle_x": 3.1},
             "received_at": 1778720400000,
         }
+        if source_id:
+            payload["event_id"] = source_id
         posted: list[tuple[str, dict]] = []
 
         async def _mock_post(self, url, *args, **kwargs):
@@ -526,6 +531,14 @@ class TestSensorReadings:
         assert len(posted) == 2
         assert posted[1][1]["camera_id"] == "demo-tlv-02"
         assert posted[1][1]["type"] == "temperature_alert"
+        if source_id:
+            assert posted[1][1]["event_id"] == source_id
+        else:
+            assert posted[1][1]["event_id"].startswith("evt_")
+        assert posted[1][1]["timestamp"] == 1778720400.0
+        with patch("httpx.AsyncClient.post", new=_mock_post):
+            assert client.post("/api/v1/sensor-readings", json=payload).status_code == 202
+        assert posted[1][1]["event_id"] == posted[3][1]["event_id"]
 
     def test_get_sensor_readings_marks_tilt_alert(
         self,

@@ -19,6 +19,9 @@ Usage::
     threading.Thread(target=server.serve_forever, daemon=True).start()
 """
 
+# Jetson B의 Python 3.8에서도 API 핸들러 타입 표기를 읽을 수 있게 한다.
+from __future__ import annotations
+
 import json
 import logging
 import os

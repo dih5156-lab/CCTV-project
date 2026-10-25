@@ -61,6 +61,7 @@ class SignboardConfig:
     text_speed: int = 10        # 1~99
     socket_timeout: float = 3.0
     idle_refresh_interval: float = 10.0
+    idle_enabled: bool = True  # 같은 전광판의 유휴 화면은 한 서비스만 갱신한다.
 
     @property
     def is_configured(self) -> bool:
@@ -186,14 +187,21 @@ class _DabitClient:
         if len(response) >= 3 and response[-3] == ord("F"):
             raise RuntimeError(f"Dabit 오류 응답: {response!r}")
 
-    def set_brightness(self, amount: int) -> None:
-        self._check(self._send(_buf_brightness(amount)))
+    def set_brightness(self, amount: int) -> bool:
+        response = self._send(_buf_brightness(amount))
+        self._check(response)
+        return response == b"![00500!]"
 
-    def send_title(self, text: str) -> None:
-        self._check(self._send(_buf_title(text)))
+    def send_title(self, text: str) -> bool:
+        response = self._send(_buf_title(text))
+        self._check(response)
+        return response == b"![0000!]"
 
-    def send_context(self, text: str, size: int, speed: int, back: int, color: int) -> None:
-        self._check(self._send(_buf_context(text, size, speed, back, color)))
+    def send_context(self, text: str, size: int, speed: int, back: int, color: int) -> bool:
+        response = self._send(_buf_context(text, size, speed, back, color))
+        self._check(response)
+        # 10-08 실장비 캡처의 정상 프레임만 완료 근거로 쓴다. 빈/미등록 응답은 제외한다.
+        return response == b"![0000!]"
 
     def show_basic(self) -> None:
         self._check(self._send(_buf_basic()))
@@ -213,7 +221,7 @@ class SignboardDevice:
     """전광판 디바이스 컨트롤러.
 
     탐지 이벤트 발생 시 display()로 메시지를 전송하며,
-    탐지가 없는 idle 상태에서는 백그라운드 스레드가 현재 시각을 1초마다 갱신한다.
+    유휴 표시를 담당하는 인스턴스만 설정 주기에 따라 현재 시각을 갱신한다.
     """
 
     def __init__(self, config: SignboardConfig) -> None:
@@ -221,12 +229,13 @@ class SignboardDevice:
         self._client: Optional[_DabitClient] = None
         # (title, class_name) → 마지막 전송 시각
         self._last_display_ts: Dict[Tuple[str, str], float] = {}
-        # 마지막 이벤트 수신 시각 (idle 감지용)
+        # 마지막 경보 전송 완료 시각부터 유휴 화면 복귀를 지연한다.
         self._last_event_ts: float = 0.0
+        self._on_idle: Optional[Callable[[], bool]] = None
         self._idle_stop = threading.Event()
         self._send_lock = threading.Lock()
         self._idle_thread: Optional[threading.Thread] = None
-        if config.is_configured:
+        if config.is_configured and config.idle_enabled:
             self._start_idle_thread()
 
     # ------------------------------------------------------------------
@@ -243,6 +252,7 @@ class SignboardDevice:
         text_size: Optional[int] = None,
         text_speed: Optional[int] = None,
         brightness: Optional[int] = None,
+        on_idle: Optional[Callable[[], bool]] = None,
     ) -> bool:
         """전광판에 이벤트 메시지를 표시한다.
 
@@ -267,24 +277,28 @@ class SignboardDevice:
         display_brightness = brightness if brightness is not None else cfg.brightness
         title = title or "CCTV 경보"
 
-        # display_time 동안 동일 (title, class) 재전송 차단 → 메시지 끊김 방지
         slot: Tuple[str, str] = (title, class_name or text)
-        now = time.time()
-        elapsed = now - self._last_display_ts.get(slot, 0.0)
-        if elapsed < cfg.display_time:
-            logger.debug("[Signboard] 쿨다운 - 스킵 (남은 %ds)", int(cfg.display_time - elapsed))
-            return True
-        self._last_display_ts[slot] = now
-        self._last_event_ts = now   # idle 타이머 리셋
-
-        logger.info("[Signboard] 표시: title=%r text=%r color=%d back=%d", title, text, color, back)
         try:
             with self._send_lock:
-                client.set_brightness(display_brightness)
-                client.send_title(title)
+                # 대기 중 다른 요청이 성공했을 수 있어 전송 잠금 안에서 중복을 판단한다.
+                elapsed = time.time() - self._last_display_ts.get(slot, 0.0)
+                if elapsed < cfg.display_time:
+                    logger.debug("[Signboard] 쿨다운 - 스킵 (남은 %ds)", int(cfg.display_time - elapsed))
+                    return True
+                # 다른 출력이 끼어들면 이전 요청의 종료를 추정하지 않는다.
+                self._on_idle = None
+                logger.info("[Signboard] 표시: title=%r text=%r color=%d back=%d", title, text, color, back)
+                confirmed = client.set_brightness(display_brightness) is True
+                confirmed = (client.send_title(title) is True) and confirmed
+                has_content = False
                 for line in text.splitlines():
                     if line.strip():
-                        client.send_context(line, size, speed, back, color)
+                        has_content = True
+                        confirmed = (client.send_context(line, size, speed, back, color) is True) and confirmed
+                # 느린 전송도 표시 시간을 보장하고, 실패한 요청의 재시도는 막지 않는다.
+                self._last_display_ts[slot] = self._last_event_ts = time.time()
+                if confirmed and has_content:
+                    self._on_idle = on_idle
             logger.info("[Signboard] 방송 시작 완료")
             return True
         except Exception as exc:
@@ -341,6 +355,7 @@ class SignboardDevice:
             return False
         try:
             with self._send_lock:
+                self._on_idle = None
                 fn(client)
             logger.info("[Signboard] %s 완료", label)
             return True
@@ -349,7 +364,7 @@ class SignboardDevice:
             return False
 
     # ------------------------------------------------------------------
-    # Idle 스레드 (탐지 없을 때 현재 시각 1초 갱신)
+    # 유휴 스레드 (설정 주기에 따라 현재 시각 갱신)
     # ------------------------------------------------------------------
 
     def _start_idle_thread(self) -> None:
@@ -383,9 +398,15 @@ class SignboardDevice:
         )
         try:
             with self._send_lock:
-                client.set_brightness(cfg.brightness)
-                client.send_title("현재 시간")
-                client.send_context(_center_pad(dt_text, width=32), 2, 1, 0, 5)
+                # 유휴 판단 뒤 경보가 먼저 전송됐으면 시간 표시로 덮어쓰지 않는다.
+                if time.time() - self._last_event_ts < cfg.display_time:
+                    return
+                confirmed = client.set_brightness(cfg.brightness) is True
+                confirmed = (client.send_title("현재 시간") is True) and confirmed
+                confirmed = (client.send_context(_center_pad(dt_text, width=32), 2, 1, 0, 5) is True) and confirmed
+                # 타이머 경과가 아니라 유휴 화면 전체 ACK와 결과 저장 성공으로 소유권을 끝낸다.
+                if confirmed and self._on_idle is not None and self._on_idle():
+                    self._on_idle = None
             logger.debug("[Signboard] idle 표시: %s", dt_text)
         except Exception as exc:
             logger.debug("[Signboard] idle 표시 오류: %s", exc)

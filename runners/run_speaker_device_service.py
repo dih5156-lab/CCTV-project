@@ -10,12 +10,14 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from threading import Event, Thread
 
 from src.devices.speaker import SpeakerConfig, SpeakerDevice
-from src.edgex.command_contract import build_command_topic
-from src.edgex.command_http import handle_command_request
+from src.edgex.command_contract import build_command_topic, handle_mqtt_request
+from src.edgex.command_http import handle_command_request, handle_request_status
+from src.edgex.device_mqtt_workers import DeviceMqttWorkers
 from src.edgex.device_registry import DeviceRegistry
 from src.edgex.speaker_device_service import SpeakerDeviceService
 from src.edgex.validation_responder import start_validation_responder
 from src.protocols._mqtt_factory import create_mqtt_client
+from src.protocols.mqtt_subscriber import MqttTopicSubscriber
 
 logger = logging.getLogger("run-speaker-device-service")
 
@@ -31,7 +33,9 @@ class _CommandHandler(BaseHTTPRequestHandler):
         if self.path == "/health":
             self._write_json(200, {"service": "cctv-device-speaker", "status": "up"})
             return
-        self._write_json(404, {"error_code": "not_found"})
+        # 상태 조회는 장치 execute_request를 호출하지 않아 미확인 작업을 다시 실행하지 않는다.
+        status, result = handle_request_status(self.service, self.path)
+        self._write_json(status, result)
 
     def do_PUT(self):  # noqa: N802
         """EdgeX v3 Command PUT 요청을 실행한다."""
@@ -49,7 +53,7 @@ class _CommandHandler(BaseHTTPRequestHandler):
                 self.device_id,
                 self.path,
                 payload,
-                self.headers.get("X-Command-Id", "edgex-command"),
+                self.headers.get("X-Command-Id", ""),
             )
             self._write_json(status, result)
         except (ValueError, json.JSONDecodeError):
@@ -91,10 +95,12 @@ def create_service() -> SpeakerDeviceService:
     """환경변수 또는 장치 레지스트리로 스피커 서비스를 생성한다."""
     default_id = _env("SPEAKER_DEVICE_ID", "cctv-speaker-01")
     base_config = _speaker_config()
+    # 컨테이너 재생성 후에도 이력을 유지하도록 배포 시 이 경로를 영속 볼륨에 둔다.
+    request_db_path = _env("DEVICE_REQUEST_DB_PATH") or "data/device_requests/speaker.sqlite3"
     registry_path = _env("EDGEX_DEVICE_REGISTRY_PATH")
     targets = DeviceRegistry.from_file(registry_path).targets("speaker") if registry_path else []
     if not targets:
-        return SpeakerDeviceService(device_id=default_id, config=base_config, dry_run=_env_bool("SPEAKER_DRY_RUN"))
+        return SpeakerDeviceService(device_id=default_id, config=base_config, dry_run=_env_bool("SPEAKER_DRY_RUN"), request_db_path=request_db_path)
     devices = {
         target.device_id: SpeakerDevice(
             SpeakerConfig(**{**base_config.__dict__, **_connection_values(target.connection)})
@@ -106,6 +112,7 @@ def create_service() -> SpeakerDeviceService:
         config=base_config,
         devices=devices,
         dry_run=_env_bool("SPEAKER_DRY_RUN"),
+        request_db_path=request_db_path,
     )
 
 
@@ -143,7 +150,21 @@ def main() -> None:
         "speaker",
     )
     stop_event = Event()
-    client = create_mqtt_client("cctv-edgex-speaker-device")
+    workers = None
+    if _env_bool("DEVICE_WORKERS_ENABLED"):
+        # 고정 세션과 원본 commit 뒤 ACK를 함께 사용해 작업자 분리로 입력을 잃지 않는다.
+        workers = DeviceMqttWorkers(
+            service, "speaker",
+            lambda result: client.publish(result_topic, json.dumps(result, ensure_ascii=False), qos=1).rc == 0,
+            timeout_seconds=float(_env("DEVICE_WORKER_TIMEOUT_SECONDS", "30")),
+        )
+        client = MqttTopicSubscriber(
+            broker=broker, port=port, topics=[command_topic + "/#"], durable=True,
+            client_id=_env("DEVICE_MQTT_CLIENT_ID") or f"cctv-{jetson_id}-speaker",
+            message_handler=workers.accept,
+        )
+    else:
+        client = create_mqtt_client("cctv-edgex-speaker-device")
     validation_thread = start_validation_responder("cctv-device-speaker", stop_event)
     _CommandHandler.service = service
     _CommandHandler.device_id = service.device_ids
@@ -166,19 +187,25 @@ def main() -> None:
             payload = json.loads(message.payload.decode("utf-8"))
             if not isinstance(payload, dict):
                 raise ValueError("Command payload는 JSON object여야 합니다")
-            result = service.execute_request(payload)
+            result = handle_mqtt_request(service, payload, "speaker")
             mqtt_client.publish(
                 result_topic,
-                json.dumps(result.to_dict(), ensure_ascii=False),
+                json.dumps(result, ensure_ascii=False),
                 qos=1,
             )
         except Exception as exc:
             logger.warning("스피커 Command 처리 실패: %s", exc)
 
-    client.on_connect = on_connect
-    client.on_message = on_message
-    client.connect(broker, port, keepalive=60)
-    client.loop_start()
+    if workers is not None:
+        workers.start()
+        if not client.connect():
+            workers.stop()
+            raise ConnectionError("장치 영속 MQTT 구독 확인 실패")
+    else:
+        client.on_connect = on_connect
+        client.on_message = on_message
+        client.connect(broker, port, keepalive=60)
+        client.loop_start()
     http_server_thread = Thread(
         target=http_server.serve_forever,
         daemon=True,
@@ -189,13 +216,25 @@ def main() -> None:
     signal.signal(signal.SIGINT, lambda *_: stop_event.set())
     logger.info("스피커 EdgeX Device Service 시작: %s:%s", broker, port)
     try:
-        stop_event.wait()
+        while not stop_event.wait(0.25):
+            if workers is not None:
+                client.reconnect_if_needed()
+                try:
+                    workers.expire_active()
+                except Exception:
+                    logger.exception("장치 실행 제한시간 기록 실패")
     finally:
+        # 실행 중 작업자를 취소한 것으로 간주하지 않는다. 종료 실패 시 소유 잠금을 유지한다.
+        if workers is not None:
+            client.disconnect()
+            if not workers.stop():
+                raise RuntimeError("장치 작업자가 아직 실행 중입니다")
         service.close()
         http_server.shutdown()
         http_server.server_close()
-        client.loop_stop()
-        client.disconnect()
+        if workers is None:
+            client.loop_stop()
+            client.disconnect()
         validation_thread.join(timeout=2)
 
 

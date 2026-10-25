@@ -150,8 +150,12 @@ def filter_yolo_candidates(
 
     mask = np.isfinite(confidences) & (confidences >= confidence_threshold)
     if class_ids_filter:
-        allowed_class_ids = np.fromiter(class_ids_filter, dtype=np.int32)
-        mask &= np.isin(class_ids, allowed_class_ids)
+        if task == "pose":
+            # Pose는 사람(0)만 출력하므로 모든 후보의 동일한 클래스 검사를 반복하지 않는다.
+            mask &= 0 in class_ids_filter
+        else:
+            allowed_class_ids = np.fromiter(class_ids_filter, dtype=np.int32)
+            mask &= np.isin(class_ids, allowed_class_ids)
 
     return rows[mask], class_ids[mask], confidences[mask]
 
@@ -338,10 +342,7 @@ def detections_from_yolo_output(
         )
         label = labels[class_id] if class_id < len(labels) else f"class_{class_id}"
         keypoints = None
-        is_fall = False
-        fall_score = None
-        fall_reasons = None
-        fall_near_miss = None
+        fall_result = None
         if task == "pose" and row.shape[0] >= 56:
             keypoints = map_yolo_keypoints_to_frame(
                 row[5:56],
@@ -349,16 +350,11 @@ def detections_from_yolo_output(
                 frame_height,
                 input_size=input_size,
             )
-            fall_result = fall_checker(keypoints, width, height, y)
-            if isinstance(fall_result, dict):
-                is_fall = bool(fall_result.get("is_fall"))
-                fall_score = fall_result.get("score")
-                fall_reasons = fall_result.get("reasons")
-                fall_near_miss = fall_result.get("near_miss")
-            else:
-                is_fall = bool(fall_result)
-            if not is_fall and not person_pose_validator(keypoints):
-                continue
+            # 정상 사람 후보의 비싼 자세 계산은 중복 제거 뒤로 미루되 낙상 예외는 보존한다.
+            if not person_pose_validator(keypoints):
+                fall_result = fall_checker(keypoints, width, height, y)
+                if not (fall_result.get("is_fall") if isinstance(fall_result, dict) else fall_result):
+                    continue
 
         detections.append(
             {
@@ -367,16 +363,32 @@ def detections_from_yolo_output(
                 "class_id": class_id,
                 "label": label,
                 "keypoints": keypoints,
-                "is_fall": is_fall,
-                "fall_score": fall_score,
-                "fall_reasons": fall_reasons,
-                "fall_near_miss": fall_near_miss,
+                "_fall_result": fall_result,
+                "is_fall": False,
+                "fall_score": None,
+                "fall_reasons": None,
+                "fall_near_miss": None,
                 "gie_id": gie_id,
                 "task": task,
             }
         )
-    return nms_detections(
+    detections = nms_detections(
         detections,
         iou_threshold=iou_threshold,
         max_detections=max_detections,
     )
+    for detection in detections:
+        fall_result = detection.pop("_fall_result")
+        if detection["keypoints"] is None:
+            continue
+        if fall_result is None:
+            _, y, width, height = detection["box"]
+            fall_result = fall_checker(detection["keypoints"], width, height, y)
+        if isinstance(fall_result, dict):
+            detection.update(is_fall=bool(fall_result.get("is_fall")),
+                             fall_score=fall_result.get("score"),
+                             fall_reasons=fall_result.get("reasons"),
+                             fall_near_miss=fall_result.get("near_miss"))
+        else:
+            detection["is_fall"] = bool(fall_result)
+    return detections

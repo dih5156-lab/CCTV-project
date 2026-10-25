@@ -23,7 +23,7 @@
       "device_type": "signboard",
       "site_id": "factory-01",
       "zone_id": "zone-a",
-      "camera_ids": ["cam-01", "sample_eval"],
+      "camera_ids": ["cam-01", "sample_eval", "camera_1"],
       "enabled": true,
       "connection": {"host": "192.168.88.91", "port": 5000}
     }

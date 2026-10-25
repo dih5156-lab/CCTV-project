@@ -1,5 +1,8 @@
 """이벤트 큐 적재와 큐 포화 시 백업 처리를 담당하는 헬퍼."""
 
+# Jetson B의 Python 3.8에서 union 타입 표기의 즉시 평가를 피한다.
+from __future__ import annotations
+
 import logging
 from queue import Full, Queue
 from typing import Dict

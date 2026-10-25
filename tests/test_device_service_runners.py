@@ -36,6 +36,7 @@ def test_runner_builds_client_pool_from_registry(tmp_path, monkeypatch, module_n
         ),
         encoding="utf-8",
     )
+    monkeypatch.setenv("DEVICE_REQUEST_DB_PATH", str(tmp_path / "requests.db"))
     monkeypatch.setenv("EDGEX_DEVICE_REGISTRY_PATH", str(registry_path))
     monkeypatch.setenv(f"{prefix}_DRY_RUN", "true")
 

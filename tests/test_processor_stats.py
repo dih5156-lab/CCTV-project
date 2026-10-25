@@ -148,42 +148,43 @@ class TestEventDebouncer:
         time.sleep(0.03)
         assert d.should_send("cam1", "head", 1) is True   # cooldown 경과 후 재전송
 
-    def test_fall_detected_requires_sustained_duration(self):
+    def test_fall_detected_requires_sustained_duration(self, debounce_clock):
         """낙상은 sustained_seconds 이상 지속되어야 전송된다 (연속 감지 시뮬레이션)."""
         cfg = self._make_config(fall_sustained_seconds=0.05, fall_resend_cooldown=9999.0, fall_gap_reset_seconds=0.1)
         d = _EventDebouncer(cfg, MagicMock())
         # 첫 감지 (t≈0): first_seen 설정, duration=0 → False
         assert d.should_send("cam1", "fall_detected", 1) is False
-        time.sleep(0.01)
+        debounce_clock.now += 0.01
         # gap(0.01) < gap_reset(0.1) → 리셋 안 됨, duration≈0.01 < sustained(0.05) → False
         assert d.should_send("cam1", "fall_detected", 1) is False
-        time.sleep(0.06)
+        debounce_clock.now += 0.06
         # gap(0.06) < gap_reset(0.1) → 리셋 안 됨, duration≈0.07 > sustained(0.05) → True
         assert d.should_send("cam1", "fall_detected", 1) is True
 
-    def test_fall_detected_resend_cooldown(self):
+    def test_fall_detected_resend_cooldown(self, debounce_clock):
         """낙상 전송 후 cooldown 동안 재전송 억제"""
         cfg = self._make_config(fall_sustained_seconds=0.01, fall_resend_cooldown=9999.0, fall_gap_reset_seconds=0.1)
         d = _EventDebouncer(cfg, MagicMock())
         # 첫 감지 (t≈0): first_seen 설정
         d.should_send("cam1", "fall_detected", 1)
-        time.sleep(0.02)
+        debounce_clock.now += 0.02
         # gap(0.02) < gap_reset(0.1) → 리셋 안 됨, duration≈0.02 > sustained(0.01) → True
         assert d.should_send("cam1", "fall_detected", 1) is True
         # 즉시 재호출 → cooldown(9999s) 이내 → False
         assert d.should_send("cam1", "fall_detected", 1) is False
 
-    def test_fall_detected_timer_resets_on_gap(self):
-        """낙상이 gap_reset_seconds 이상 끊기면 타이머 리셋"""
+    def test_fall_detected_timer_resets_on_gap(self, debounce_clock):
+        """낙상이 gap_reset_seconds를 초과해 끊기면 타이머 리셋"""
         cfg = self._make_config(fall_sustained_seconds=0.05, fall_resend_cooldown=9999.0, fall_gap_reset_seconds=0.02)
         d = _EventDebouncer(cfg, MagicMock())
         d.should_send("cam1", "fall_detected", 1)   # 첫 감지 (t≈0)
-        time.sleep(0.03)  # gap(0.03) > gap_reset(0.02) → 타이머 리셋
-        d.should_send("cam1", "fall_detected", 1)   # 리셋 후 first_seen 재설정
-        time.sleep(0.01)  # duration≈0.01 < sustained(0.05)
+        # 최초 감지부터는 sustained를 넘겨도 단절 후 누적 시간은 다시 시작해야 한다.
+        debounce_clock.now += 0.06
+        assert d.should_send("cam1", "fall_detected", 1) is False
+        debounce_clock.now += 0.01  # 리셋 이후 duration=0.01 < sustained(0.05)
         assert d.should_send("cam1", "fall_detected", 1) is False  # 리셋 때문에 미전송
 
-    def test_fall_detected_reassociates_changed_object_id_by_bbox(self):
+    def test_fall_detected_reassociates_changed_object_id_by_bbox(self, debounce_clock):
         """낙상 중 track id가 바뀌어도 bbox가 같으면 지속 시간을 이어간다."""
         cfg = self._make_config(
             fall_sustained_seconds=0.05,
@@ -195,10 +196,10 @@ class TestEventDebouncer:
         second = make_event("fall_detected", x=105, y=103, width=120, height=70, object_id=2)
 
         assert d.should_send("cam1", "fall_detected", 1, event=first) is False
-        time.sleep(0.06)
+        debounce_clock.now += 0.06
         assert d.should_send("cam1", "fall_detected", 2, event=second) is True
 
-    def test_fall_detected_distant_new_object_id_starts_new_timer(self):
+    def test_fall_detected_distant_new_object_id_starts_new_timer(self, debounce_clock):
         """멀리 떨어진 새 object_id는 다른 사람으로 보고 낙상 타이머를 새로 시작한다."""
         cfg = self._make_config(
             fall_sustained_seconds=0.05,
@@ -210,8 +211,31 @@ class TestEventDebouncer:
         second = make_event("fall_detected", x=500, y=400, width=120, height=70, object_id=2)
 
         assert d.should_send("cam1", "fall_detected", 1, event=first) is False
-        time.sleep(0.06)
+        debounce_clock.now += 0.06
         assert d.should_send("cam1", "fall_detected", 2, event=second) is False
+
+    @pytest.mark.parametrize("object_id", [1, 2], ids=["same_id", "changed_id"])
+    @pytest.mark.parametrize(
+        "elapsed,expected",
+        [(0.125, False), (0.25, True), (0.5, True), (1.0, True), (1.125, False)],
+    )
+    def test_fall_duration_and_gap_boundaries(
+        self, debounce_clock, object_id, elapsed, expected
+    ):
+        # 정확히 표현되는 시각으로 지속 기준은 이상, gap 초기화는 초과임을 검증한다.
+        cfg = self._make_config(
+            fall_sustained_seconds=0.25,
+            fall_resend_cooldown=10.0,
+            fall_gap_reset_seconds=1.0,
+        )
+        d = _EventDebouncer(cfg, MagicMock())
+        first = make_event("fall_detected", x=100, y=100, width=120, height=70, object_id=1)
+        second = make_event(
+            "fall_detected", x=105, y=103, width=120, height=70, object_id=object_id
+        )
+        assert d.should_send("cam1", "fall_detected", 1, event=first) is False
+        debounce_clock.now += elapsed
+        assert d.should_send("cam1", "fall_detected", object_id, event=second) is expected
 
     def test_different_cameras_independent(self):
         cfg = self._make_config(debounce_seconds=9999.0)

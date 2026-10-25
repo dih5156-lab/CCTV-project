@@ -1,0 +1,43 @@
+{
+  "manifest_id": "b-trt85-pose-helmet-v2",
+  "service_id": "cctv-ai",
+  "camera_id": "camera_1",
+  "argv": [
+    "/home/sawwave/cctv-edge-lab/trt85-20261022/venv/bin/python",
+    "/home/sawwave/cctv-edge-lab/trt85-20261022/application/main.py",
+    "--cameras",
+    "/home/sawwave/cctv-edge-lab/trt85-20261022/work/service-cameras-private.json",
+    "--device",
+    "cuda",
+    "--mqtt-broker",
+    "127.0.0.1",
+    "--mqtt-port",
+    "18885",
+    "--mqtt-topic-prefix",
+    "edge-lab/b/events",
+    "--api-port",
+    "0"
+  ],
+  "cwd": "/home/sawwave/cctv-edge-lab/trt85-20261022/application",
+  "environment_file": "/home/sawwave/cctv-edge-lab/trt85-20261022/work/service-env.json",
+  "models": [
+    {
+      "model_id": "yolov8n-pose",
+      "metric_name": "primary",
+      "path": "/home/sawwave/cctv-edge-lab/trt85-20261022/engines/yolov8n-pose.engine",
+      "sha256": "e8320e6d327a5bf2ce1e4bb1ad0904139c87a583f4678859f94562ddec43d37d",
+      "allow_empty": false
+    },
+    {
+      "model_id": "helmet_model",
+      "metric_name": "helmet",
+      "path": "/home/sawwave/cctv-edge-lab/trt85-20261022/engines/helmet_model.engine",
+      "sha256": "8c2f3c52f707d987fa68d23cf400d6e698c3b86f9623dcd2736147085c606afa",
+      "allow_empty": true
+    }
+  ],
+  "metrics_url": "http://127.0.0.1:18770/metrics",
+  "ready_timeout_seconds": 60,
+  "stop_timeout_seconds": 35,
+  "stale_after_seconds": 5
+}

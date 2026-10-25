@@ -5,11 +5,12 @@ from __future__ import annotations
 import time
 from collections import deque
 from threading import Lock
-from typing import Callable, Dict, List, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
 
 from .events import DetectionEvent, EventType
 
-_EventKey = Tuple[str, int, int, int, int, int | None]
+# 타입 별칭은 future annotations로 지연되지 않으므로 Python 3.8 표기를 쓴다.
+_EventKey = Tuple[str, int, int, int, int, Optional[int]]
 
 
 class ContextEventStore:

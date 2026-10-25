@@ -9,6 +9,7 @@ class FakeRepository:
 
     def record_command(self, *args):
         self.records.append(args)
+        return {"status": args[2], "payload": {"device_results": [args[3]]}}
 
 
 def test_handler_records_and_publishes_edgex_result():

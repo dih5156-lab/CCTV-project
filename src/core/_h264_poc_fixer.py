@@ -96,17 +96,12 @@ class H264PocFixer:
     def _iter_nals(data: bytes):
         """Annex B 바이트 스트림에서 (start_offset, end_offset) 쌍을 생성."""
         starts = []
-        i = 0
         n = len(data)
-        while i < n - 2:
-            if i + 3 < n and data[i : i + 4] == b"\x00\x00\x00\x01":
-                starts.append(i + 4)
-                i += 4
-            elif data[i : i + 3] == b"\x00\x00\x01":
-                starts.append(i + 3)
-                i += 3
-            else:
-                i += 1
+        # 송출 스레드의 바이트별 Python 순회를 피한다. 4바이트 시작 코드도 같은 끝 위치로 찾는다.
+        i = data.find(b"\x00\x00\x01")
+        while i >= 0:
+            starts.append(i + 3)
+            i = data.find(b"\x00\x00\x01", i + 3)
         for j, s in enumerate(starts):
             if j + 1 < len(starts):
                 e = starts[j + 1]

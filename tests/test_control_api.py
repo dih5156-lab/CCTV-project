@@ -54,7 +54,7 @@ def test_normalize_pending_item_supports_nested_event_confidence() -> None:
 
     assert item.confidence == 0.87
     assert item.severity == "warning"
-    assert item.priority == 2
+    assert item.priority == 10
     assert item.risk_level == "warning"
     assert item.display_message == "안전모 미착용 확인"
     assert item.tts_message == "안전모를 착용해 주세요."

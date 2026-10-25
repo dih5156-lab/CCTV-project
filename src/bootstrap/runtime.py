@@ -239,6 +239,18 @@ def connect_cameras_parallel(
     return results
 
 
+def _wait_for_shutdown(processor: BaseProcessor, seconds: float) -> bool:
+    """초기 연결·재시작 대기 중에도 종료 요청을 확인한다."""
+    deadline = time.monotonic() + seconds
+    while not getattr(processor, "_shutdown_requested", False):
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            return False
+        # 시그널 핸들러에서 Event 잠금이나 예외로 현재 정리를 끊지 않도록 폴링한다.
+        time.sleep(min(0.5, remaining))
+    return True
+
+
 def initial_retry(
     active_cameras: list[tuple], processor: BaseProcessor, max_attempts: int = 3
 ) -> int:
@@ -246,12 +258,15 @@ def initial_retry(
     for attempt in range(1, max_attempts + 1):
         logger.info("초기 연결 재시도 %d/%d (30초 대기)...", attempt, max_attempts)
         try:
-            time.sleep(30)
+            if _wait_for_shutdown(processor, 30):
+                return 0
         except KeyboardInterrupt:
             logger.info("초기 재시도 중단 (Ctrl+C)")
             raise
 
         for camera_id, source, detections, model_paths, zones_data in active_cameras:
+            if getattr(processor, "_shutdown_requested", False):
+                return 0
             if camera_id not in processor.cameras and processor.add_camera(
                 camera_id,
                 source,
@@ -307,6 +322,7 @@ def start_processor_runtime(
 ) -> None:
     """프로세서를 생성하고 카메라 연결부터 실행 루프까지 담당한다."""
     processor = create_processor(cfg)
+    processor._shutdown_requested = False
     if processor_refs is not None:
         processor_refs.append(processor)
 
@@ -329,8 +345,8 @@ def start_processor_runtime(
     def _keep_api_runtime_alive(reason: str) -> None:
         logger.error("%s API 서버는 유지하고 추론 파이프라인은 시작하지 않습니다.", reason)
         try:
-            while True:
-                time.sleep(30)
+            while not _wait_for_shutdown(processor, 30):
+                pass
         except KeyboardInterrupt:
             logger.info("사용자가 중단함 (Ctrl+C)")
 
@@ -344,6 +360,8 @@ def start_processor_runtime(
         return
 
     results = connect_cameras_parallel(active_cameras, processor)
+    if processor._shutdown_requested:
+        return
 
     added_count = 0
     for camera_id, source, _det, _paths, _zones in active_cameras:
@@ -379,10 +397,12 @@ def start_processor_runtime(
     )
 
     try:
-        while True:
+        while not processor._shutdown_requested:
             next_restart_delay_sec = float(restart_delay_sec)
             try:
                 processor.start()
+                if processor._shutdown_requested:
+                    break
                 logger.info("프로세서가 시작되었습니다. 중지하려면 Ctrl+C를 누르세요.")
 
                 if cfg.display:
@@ -390,7 +410,11 @@ def start_processor_runtime(
                     processor.start_display_loop()
                 else:
                     last_stats = time.time()
-                    while processor.running and not processor.stop_event.is_set():
+                    while (
+                        not processor._shutdown_requested
+                        and processor.running
+                        and not processor.stop_event.is_set()
+                    ):
                         time.sleep(0.5)
                         if time.time() - last_stats >= 10:
                             processor.print_stats()
@@ -426,7 +450,8 @@ def start_processor_runtime(
                 logger.critical("AI 엔진 프로세스 재실행 필요: %s", restart_reason)
                 raise SystemExit(1)
 
-            if cfg.display or not restart_on_pipeline_error:
+            # SIGTERM은 finally의 stop()이 끝난 뒤 처리하여 정리 재진입과 재시작을 막는다.
+            if processor._shutdown_requested or cfg.display or not restart_on_pipeline_error:
                 break
 
             source_retry_delay = (
@@ -441,7 +466,7 @@ def start_processor_runtime(
                 "AI 엔진 프로세스는 유지하고 %.0f초 후 파이프라인만 재시작합니다.",
                 next_restart_delay_sec,
             )
-            time.sleep(next_restart_delay_sec)
+            _wait_for_shutdown(processor, next_restart_delay_sec)
     except KeyboardInterrupt:
         logger.info("사용자가 중단함 (Ctrl+C)")
 
@@ -463,6 +488,12 @@ def register_shutdown_handlers(processor_refs: list) -> None:
             pass
 
     def _sig_handler(signum, frame) -> None:
+        if processor_refs:
+            # 핸들러의 stop()/sys.exit()는 이미 진행 중인 정리를 재진입·중단할 수 있다.
+            # 잠금 없는 요청만 기록하고 실행 루프와 atexit이 기존 순서대로 정리하게 한다.
+            processor_refs[0]._shutdown_requested = True
+            processor_refs[0].running = False
+            return
         logger.info("시그널 %s 수신 → 종료", signum)
         _release_all()
         sys.exit(0)

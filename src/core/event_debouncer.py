@@ -4,6 +4,7 @@ import json
 import logging
 import os
 import time
+from collections.abc import Mapping
 from threading import Lock
 from typing import Dict, Optional, Tuple
 
@@ -30,6 +31,9 @@ class EventDebouncer:
         self._fall_last_seen: Dict[Tuple[str, int], float] = {}
         self._fall_alerted: Dict[Tuple[str, int], float] = {}
         self._fall_last_bbox: Dict[Tuple[str, int], BBox] = {}
+        # 영상 PTS와 epoch 시각을 섞지 않도록 보존·재알림은 수신 시계로 관리한다.
+        self._fall_received_at: Dict[Tuple[str, int], float] = {}
+        self._fall_clocks: Dict[str, Tuple[Optional[int], Optional[float]]] = {}
         # 헬멧 미착용(head) 상태 추적 (camera_id, object_id) 기준
         self._head_last_seen: Dict[Tuple[str, int], float] = {}
         self._head_alerted: Dict[Tuple[str, int], float] = {}
@@ -88,11 +92,19 @@ class EventDebouncer:
     def _should_send_fall(self, camera_id: str, object_id: int, event=None) -> bool:
         """낙상이 sustained_seconds 이상 지속될 때만 True 반환."""
         cfg = self._config.events
-        now = time.time()
+        received_at = time.time()
         with self._lock:
+            now = self._fall_observation_time(camera_id, event, received_at)
+            if now is None:
+                self._increment_stat("events_filtered")
+                return False
             key = self._resolve_fall_key(camera_id, object_id, event, now)
-            last_seen = self._fall_last_seen.get(key, 0)
-            if now - last_seen > cfg.fall_gap_reset_seconds:
+            last_seen = self._fall_last_seen.get(key)
+            if self._fall_clocks[camera_id][1] is not None and now == last_seen:
+                # 정지·중복 프레임으로 지속 시간이나 재알림을 늘리지 않는다.
+                self._increment_stat("events_filtered")
+                return False
+            if last_seen is None or not 0 <= now - last_seen <= cfg.fall_gap_reset_seconds:
                 self._fall_first_seen[key] = now
                 logger.info(
                     "[%s] 낙상 후보 감지 시작 (object_id=%s, sustained=%.1fs, gap_reset=%.1fs)",
@@ -102,6 +114,7 @@ class EventDebouncer:
                     cfg.fall_gap_reset_seconds,
                 )
             self._fall_last_seen[key] = now
+            self._fall_received_at[key] = received_at
             bbox = self._event_bbox(event)
             if bbox is not None:
                 self._fall_last_bbox[key] = bbox
@@ -118,12 +131,12 @@ class EventDebouncer:
                 self._increment_stat("events_filtered")
                 return False
 
-            last_alert = self._fall_alerted.get(key, 0)
-            if now - last_alert < cfg.fall_resend_cooldown:
+            last_alert = self._fall_alerted.get(key)
+            if last_alert is not None and received_at - last_alert < cfg.fall_resend_cooldown:
                 self._increment_stat("events_filtered")
                 return False
 
-            self._fall_alerted[key] = now
+            self._fall_alerted[key] = received_at
             logger.info(
                 "[%s] 낙상 지속 %.1f초 확인 -> 이벤트 전송 (object_id=%s)",
                 camera_id,
@@ -131,6 +144,58 @@ class EventDebouncer:
                 object_id,
             )
             return True
+
+    def _fall_observation_time(self, camera_id: str, event, received_at: float) -> Optional[float]:
+        """잠금 안에서 영상시계를 선택하고 입력 경계의 누적 상태를 초기화한다."""
+        metadata = getattr(event, "metadata", None)
+        if metadata is None:
+            metadata = {}
+        elif not isinstance(metadata, Mapping):
+            self._reset_fall_timing(camera_id)
+            return None
+        previous_generation, previous_pts = self._fall_clocks.get(camera_id, (None, None))
+        generation, pts = previous_generation, None
+        # 기존 Python 경로처럼 식별자가 없는 이벤트는 수신 시각을 계속 사용한다.
+        # 식별자를 제공했는데 깨진 경우에는 처리 시각으로 대신 판정하지 않는다.
+        if "frame_identity" in metadata:
+            identity = metadata["frame_identity"]
+            if isinstance(identity, Mapping):
+                generation = identity.get("generation")
+                pts_ns = identity.get("source_pts_ns")
+            else:
+                generation = pts_ns = None
+            if (
+                not isinstance(identity, Mapping)
+                or identity.get("camera_id") != camera_id
+                or type(generation) is not int or generation < 0
+                or type(pts_ns) is not int or not 0 <= pts_ns < 2**64 - 1
+            ):
+                self._reset_fall_timing(camera_id)
+                return None
+            if previous_generation is not None and generation < previous_generation:
+                return None
+            pts = pts_ns / 1_000_000_000
+
+        new_generation = previous_generation is not None and generation != previous_generation
+        if (
+            new_generation
+            or (pts is None) != (previous_pts is None)
+            or (pts is not None and previous_pts is not None and pts < previous_pts)
+        ):
+            # PTS 역행·시계 전환은 누적만 초기화한다. 재접속 세대 변경만 재알림도 비운다.
+            self._reset_fall_timing(camera_id, clear_alerts=new_generation)
+        self._fall_clocks[camera_id] = (generation, pts)
+        return received_at if pts is None else pts
+
+    def _reset_fall_timing(self, camera_id: str, *, clear_alerts: bool = False) -> None:
+        """호출자가 잠금을 보유한 상태에서 해당 카메라의 낙상 누적을 비운다."""
+        states = [self._fall_first_seen, self._fall_last_seen, self._fall_last_bbox]
+        if clear_alerts:
+            states.extend([self._fall_alerted, self._fall_received_at])
+        for state in states:
+            for key in list(state):
+                if key[0] == camera_id:
+                    state.pop(key)
 
     def _resolve_fall_key(
         self,
@@ -152,7 +217,7 @@ class EventDebouncer:
             candidate_camera, _ = candidate_key
             if candidate_camera != camera_id:
                 continue
-            if now - last_seen > cfg.fall_gap_reset_seconds:
+            if not 0 <= now - last_seen <= cfg.fall_gap_reset_seconds:
                 continue
             candidate_bbox = self._fall_last_bbox.get(candidate_key)
             if candidate_bbox is None:
@@ -169,8 +234,11 @@ class EventDebouncer:
         self._fall_last_seen[key] = self._fall_last_seen.pop(best_key, now)
         if best_key in self._fall_alerted:
             self._fall_alerted[key] = self._fall_alerted.pop(best_key)
+        if best_key in self._fall_received_at:
+            self._fall_received_at[key] = self._fall_received_at.pop(best_key)
         if best_key in self._fall_last_bbox:
-            self._fall_last_bbox.pop(best_key, None)
+            # 중복 PTS가 뒤에서 거절되어도 다음 ID의 재연결 근거는 유지한다.
+            self._fall_last_bbox[key] = self._fall_last_bbox.pop(best_key)
         logger.info(
             "[%s] 낙상 후보 track 재연결: old_object_id=%s -> new_object_id=%s",
             camera_id,
@@ -242,12 +310,13 @@ class EventDebouncer:
         with self._lock:
             for state in (
                 self._last_events, self._fall_first_seen, self._fall_last_seen,
-                self._fall_alerted, self._fall_last_bbox,
+                self._fall_alerted, self._fall_last_bbox, self._fall_received_at,
                 self._head_last_seen, self._head_alerted,
             ):
                 for key in list(state):
                     if key[0] == camera_id:
                         state.pop(key)
+            self._fall_clocks.pop(camera_id, None)
 
     def cleanup(self, max_age_hours: Optional[int] = None) -> int:
         """보존 기간이 지난 이벤트 키를 제거하고 제거 수를 반환한다."""
@@ -259,18 +328,20 @@ class EventDebouncer:
             self._last_events = {
                 k: v for k, v in self._last_events.items() if v > cutoff
             }
-            self._fall_first_seen = {
-                k: v for k, v in self._fall_first_seen.items() if v > cutoff
+            # 0초부터 시작하는 영상 PTS를 epoch 보존 기준과 비교하면 모두 만료된다.
+            self._fall_received_at = {
+                k: v for k, v in self._fall_received_at.items() if v > cutoff
             }
-            self._fall_last_seen = {
-                k: v for k, v in self._fall_last_seen.items() if v > cutoff
-            }
-            self._fall_alerted = {
-                k: v for k, v in self._fall_alerted.items() if v > cutoff
-            }
-            self._fall_last_bbox = {
-                k: v for k, v in self._fall_last_bbox.items()
-                if self._fall_last_seen.get(k, 0) > cutoff
+            for state in (
+                self._fall_first_seen, self._fall_last_seen,
+                self._fall_alerted, self._fall_last_bbox,
+            ):
+                for key in list(state):
+                    if key not in self._fall_received_at:
+                        state.pop(key)
+            active_cameras = {key[0] for key in self._fall_received_at}
+            self._fall_clocks = {
+                k: v for k, v in self._fall_clocks.items() if k in active_cameras
             }
             self._head_last_seen = {
                 k: v for k, v in self._head_last_seen.items() if v > cutoff

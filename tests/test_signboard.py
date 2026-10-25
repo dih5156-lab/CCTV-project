@@ -3,6 +3,7 @@ test_signboard.py — SignboardDevice / _DabitClient / 헬퍼 함수 단위 테�
 
 전략: TCP 소켓을 mock 처리하여 실제 전광판 없이 Dabit 프로토콜 로직을 검증한다.
 """
+from datetime import datetime
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -193,6 +194,45 @@ class TestBufferBuilders:
 # ---------------------------------------------------------------------------
 
 class TestSignboardDevice:
+    def test_display_duration_starts_after_slow_send(self, monkeypatch):
+        """전송에 걸린 시간만큼 실제 경보 유지 시간이 줄어들면 안 된다."""
+        clock = [100.0]
+        monkeypatch.setattr("src.devices.signboard.time.time", lambda: clock[0])
+        device = SignboardDevice(SignboardConfig(host="192.0.2.1", display_time=10, idle_enabled=False))
+        client = MagicMock()
+        client.send_context.side_effect = lambda *args: clock.__setitem__(0, 112.0)
+        device._client = client
+        assert device.display("낙상 연동 시험", title="시험")
+        clock[0] = 119.0
+        device._idle_stop = MagicMock()
+        device._idle_stop.wait.side_effect = [False, True]
+        device._idle_worker()
+        assert client.send_title.call_count == 1
+        clock[0] = 122.0
+        device._idle_stop.wait.side_effect = [False, True]
+        device._idle_worker()
+        assert client.send_title.call_count == 2
+
+    def test_idle_frame_rechecks_after_event_display(self):
+        """유휴 판단 뒤 경보가 먼저 출력됐으면 시간 표시를 취소한다."""
+        device = SignboardDevice(SignboardConfig(host="192.0.2.1", display_time=10, idle_enabled=False))
+        client = MagicMock()
+        device._client = client
+        assert device.display("낙상 연동 시험", title="시험")
+        device._send_idle_frame(client, datetime.now())
+        assert client.send_title.call_count == 1
+
+    def test_failed_display_does_not_suppress_retry(self):
+        """실패한 전송은 쿨다운 성공으로 기록하지 않아 실제 재시도를 허용한다."""
+        device = SignboardDevice(SignboardConfig(host="192.0.2.1", display_time=10, idle_enabled=False))
+        client = MagicMock()
+        client.set_brightness.side_effect = [OSError("전송 실패"), None]
+        device._client = client
+        assert not device.display("낙상 연동 시험", title="시험")
+        assert device.display("낙상 연동 시험", title="시험")
+        assert client.set_brightness.call_count == 2
+        client.send_context.assert_called_once()
+
     def _make_device(self, **kwargs) -> SignboardDevice:
         cfg = SignboardConfig(host="192.168.0.1", **kwargs)
         # idle 스레드가 실제 소켓 접근하지 않도록 패치

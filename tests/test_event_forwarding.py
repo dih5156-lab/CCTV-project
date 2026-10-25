@@ -22,7 +22,9 @@ def test_build_alert_action_payload_keeps_optional_fields():
         metadata={"zone_id": "zone-A"},
     )
 
-    assert build_alert_action_payload(alert) == {
+    payload = build_alert_action_payload(alert)
+    assert payload.pop("event_id").startswith("evt_")
+    assert payload == {
         "camera_id": "cam-01",
         "type": "helmet",
         "severity": "normal",

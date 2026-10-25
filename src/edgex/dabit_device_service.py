@@ -1,7 +1,7 @@
 """Dabit 전광판용 EdgeX Command 변환 경계.
 
 EdgeX Device Service 프로세스가 사용할 장치별 명령 계약을 고정한다.
-현재 운영 경로(Action Layer 직접 TCP)는 유지하며, 이 모듈은 전환 전 검증용이다.
+MQTT·HTTP 요청의 장치 실행과 결과를 같은 경계에서 처리한다.
 """
 
 from __future__ import annotations
@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from typing import Any, Mapping, Optional
 
 from ..devices.signboard import SignboardConfig, SignboardDevice
-from .request_idempotency import RequestIdempotencyCache
+from .request_idempotency import RequestIdempotencyCache, RequestIdempotencyError
 
 
 @dataclass(frozen=True)
@@ -21,6 +21,9 @@ class DabitCommandResult:
     error_code: str | None = None
     event_id: str = ""
     request_id: str = ""
+    execution_completed: bool = False
+    resource_idle: bool = False
+    completion_evidence: str | None = None
 
     def __post_init__(self) -> None:
         """기존 command_id를 공통 결과 계약의 request_id로 보완한다."""
@@ -36,6 +39,9 @@ class DabitCommandResult:
             "event_id": self.event_id,
             "status": self.status,
             "error_code": self.error_code,
+            "execution_completed": self.execution_completed,
+            "resource_idle": self.resource_idle,
+            "completion_evidence": self.completion_evidence,
         }
 
 
@@ -52,13 +58,15 @@ class DabitDeviceService:
         device: Optional[Any] = None,
         devices: Optional[Mapping[str, Any]] = None,
         dry_run: bool = False,
+        request_db_path: str | None = None,
     ) -> None:
         """전광판 식별자와 Dabit 장치 클라이언트를 초기화한다."""
         self.device_id = device_id
         self._device = device or SignboardDevice(config)
         self._devices = dict(devices or {device_id: self._device})
         self._dry_run = bool(dry_run)
-        self._request_results = RequestIdempotencyCache[DabitCommandResult]()
+        self._request_results = RequestIdempotencyCache[DabitCommandResult](database_path=request_db_path)
+        self.on_completion = None
 
     @property
     def device_ids(self) -> tuple[str, ...]:
@@ -73,6 +81,7 @@ class DabitDeviceService:
         device: Any | None = None,
         device_id: str | None = None,
         event_id: str = "",
+        on_idle=None,
     ) -> DabitCommandResult:
         if command not in self.COMMANDS:
             return DabitCommandResult(
@@ -102,6 +111,7 @@ class DabitDeviceService:
                     text_size=_optional_int(params.get("text_size")),
                     text_speed=_optional_int(params.get("text_speed")),
                     brightness=_optional_int(params.get("brightness")),
+                    **({"on_idle": on_idle} if on_idle is not None else {}),
                 )
             elif command == "clear":
                 ok = target_device.clear()
@@ -124,6 +134,20 @@ class DabitDeviceService:
         for device in self._devices.values():
             device.stop_idle()
 
+    def get_request_status(self, request_id: str) -> dict[str, Any]:
+        """출력 명령을 재전송하지 않고 보존된 실행 상태를 조회한다."""
+        return self._request_results.lookup(request_id)
+
+    def _complete_display(self, request_id: str, event_id: str, device_id: str) -> bool:
+        """유휴 복귀 ACK를 먼저 보존해 MQTT 결과 유실 후에도 조회할 수 있게 한다."""
+        result = self._request_results.complete(
+            request_id, event_id=event_id, device_id=device_id,
+            result_type=DabitCommandResult, evidence="dabit_idle_frame_ack",
+        )
+        if result is None:
+            return False
+        return self.on_completion(result.to_dict()) if self.on_completion is not None else True
+
     def execute_request(self, request: Mapping[str, Any]) -> DabitCommandResult:
         """공통 Command 요청을 Dabit 명령 형식으로 변환해 실행한다."""
         request_id = str(request.get("request_id") or "")
@@ -136,34 +160,46 @@ class DabitDeviceService:
         target_device_id = str(request.get("device_id") or self.device_id)
         if target_device_id not in self._devices:
             return DabitCommandResult(request_id, target_device_id, "failed", "device_not_found")
-        cached_result = self._request_results.get(request_id)
-        if cached_result is not None:
-            return cached_result
-        action = str(request.get("action") or "")
-        parameters = {
-            "display_text": payload.get("text") or payload.get("display_text"),
-            "title": payload.get("title"),
-            "display_color": payload.get("display_color"),
-            "back_color": payload.get("back_color"),
-            "text_size": payload.get("text_size"),
-            "text_speed": payload.get("text_speed"),
-            "brightness": payload.get("brightness"),
-            "power": payload.get("power", True),
-        }
-        command = "power" if action in {"power_on", "power_off"} else action
-        if action == "power_off":
-            parameters["power"] = False
-        result = self.execute(
-            request_id,
-            command,
-            parameters,
-            device=self._devices[target_device_id],
-            device_id=target_device_id,
-            event_id=event_id,
-        )
-        if result.status in {"acknowledged", "simulated"}:
-            self._request_results.put(request_id, result)
-        return result
+        if str(request.get("action") or "") not in self.COMMANDS | {"power_on", "power_off"}:
+            return DabitCommandResult(request_id, target_device_id, "failed", "unsupported_command", event_id)
+        # 기본 대상·모의 실행 여부도 고정 내용에 포함해 다른 작업의 이력을 재사용하지 않는다.
+        def execute():
+            action = str(request.get("action") or "")
+            parameters = {
+                "display_text": payload.get("text") or payload.get("display_text"),
+                "title": payload.get("title"),
+                "display_color": payload.get("display_color"),
+                "back_color": payload.get("back_color"),
+                "text_size": payload.get("text_size"),
+                "text_speed": payload.get("text_speed"),
+                "brightness": payload.get("brightness"),
+                "power": payload.get("power", True),
+            }
+            command = "power" if action in {"power_on", "power_off"} else action
+            if action == "power_off":
+                parameters["power"] = False
+            result = self.execute(
+                request_id,
+                command,
+                parameters,
+                device=self._devices[target_device_id],
+                device_id=target_device_id,
+                event_id=event_id,
+                on_idle=(lambda: self._complete_display(request_id, event_id, target_device_id))
+                if action == "display" and isinstance(self._devices[target_device_id], SignboardDevice) else None,
+            )
+            return result
+
+        try:
+            return self._request_results.run(
+                request_id, execute, request={**request, "device_id": target_device_id,
+                    "payload": dict(payload), "dry_run": self._dry_run}, result_type=DabitCommandResult,
+            )
+        except RequestIdempotencyError as exc:
+            return DabitCommandResult(
+                command_id=request_id, request_id=request_id, event_id=event_id,
+                device_id=target_device_id, status=exc.status, error_code=exc.error_code,
+            )
 
 
 def _optional_int(value: Any) -> int | None:

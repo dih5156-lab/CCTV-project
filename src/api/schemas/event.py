@@ -38,6 +38,8 @@ class BboxIn(BaseModel):
 class AlertIn(BaseModel):
     """POST /api/v1/alerts 요청 바디."""
 
+    # 생산자 ID를 중계 중 버리지 않아 재전달도 같은 사건으로 처리한다.
+    event_id: Optional[str] = Field(default=None, min_length=1)
     camera_id: str = Field(min_length=1, max_length=128)
     event_type: EventTypeOut
     severity: SeverityOut = SeverityOut.NORMAL

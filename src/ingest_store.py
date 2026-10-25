@@ -1,14 +1,44 @@
 """Durable input receipts. Sensor projection state is the first consumer."""
 
+# Jetson B의 Python 3.8에서도 영속 접수 경로의 타입 표기를 읽는다.
+from __future__ import annotations
+
 import base64
 import hashlib
 import json
+import os
 import sqlite3
 import time
-from contextlib import contextmanager
+from contextlib import closing, contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
+from threading import Lock, RLock
 from uuid import uuid4
+from weakref import WeakValueDictionary
+
+_connection_locks = WeakValueDictionary()
+_connection_locks_guard = Lock()
+
+
+def _reset_connection_locks():
+    global _connection_locks, _connection_locks_guard
+    # fork 자식에는 다른 부모 스레드가 잡은 잠금을 물려주지 않는다.
+    _connection_locks = WeakValueDictionary()
+    _connection_locks_guard = Lock()
+
+
+if hasattr(os, "register_at_fork"):
+    os.register_at_fork(after_in_child=_reset_connection_locks)
+
+
+def _connection_lock(path):
+    key = path.resolve()
+    with _connection_locks_guard:
+        lock = _connection_locks.get(key)
+        if lock is None:
+            lock = RLock()
+            _connection_locks[key] = lock
+        return lock
 
 
 class IngestStore:
@@ -60,17 +90,23 @@ class IngestStore:
 
     @contextmanager
     def _connect(self):
-        connection = sqlite3.connect(self.path, timeout=0.25)
+        # 같은 DB의 로컬 연결 경합을 줄이되, 오래 열린 연결만으로 새 BUSY를 만들지 않는다.
+        # ponytail: 250ms 안에 조정하지 못하면 SQLite에 맡긴다. 지속 경합은 별도 쓰기 조정이 필요하다.
+        lock = _connection_lock(self.path)
+        acquired = lock.acquire(timeout=0.25)
         try:
-            connection.row_factory = sqlite3.Row
-            if connection.execute("PRAGMA journal_mode").fetchone()[0] != "delete":
-                raise ValueError("Ingest store requires DELETE journal mode")
-            connection.execute("PRAGMA synchronous=EXTRA")
-            connection.execute("PRAGMA foreign_keys=ON")
-            with connection:
-                yield connection
+            # closing은 설정·commit/rollback 실패에도 연결을 닫고, 바깥 finally는 진입 잠금을 푼다.
+            with closing(sqlite3.connect(self.path, timeout=0.25)) as connection:
+                connection.row_factory = sqlite3.Row
+                if connection.execute("PRAGMA journal_mode").fetchone()[0] != "delete":
+                    raise ValueError("Ingest store requires DELETE journal mode")
+                connection.execute("PRAGMA synchronous=EXTRA")
+                connection.execute("PRAGMA foreign_keys=ON")
+                with connection:
+                    yield connection
         finally:
-            connection.close()
+            if acquired:
+                lock.release()
 
     def accept(self, namespace: str, device_id: str, raw: dict) -> str:
         try:
@@ -143,16 +179,19 @@ class IngestStore:
         result["raw"] = json.loads(result["raw_payload"])
         return result
 
-    def pending(self, limit: int = 100, namespace: str = "tlv_mqtt") -> list[str]:
+    def pending(self, limit: int = 100, namespace: str | tuple[str, ...] = "tlv_mqtt") -> list[str]:
+        # MQTT와 REST를 함께 소비할 때도 원래 접수 순서와 조회 상한을 유지한다.
+        namespaces = (namespace,) if isinstance(namespace, str) else namespace
+        placeholders = ",".join("?" for _ in namespaces)
         with self._connect() as connection:
             return [
                 row[0]
                 for row in connection.execute(
                     "SELECT s.ingest_id FROM sensor_ingest_state s "
                     "JOIN ingest_receipts r USING (ingest_id) "
-                    "WHERE r.source_namespace=? AND s.stage IN ('pending','ready') "
+                    f"WHERE r.source_namespace IN ({placeholders}) AND s.stage IN ('pending','ready') "
                     "AND s.next_attempt_at <= ? ORDER BY s.rowid LIMIT ?",
-                    (namespace, time.time(), limit),
+                    (*namespaces, time.time(), limit),
                 )
             ]
 

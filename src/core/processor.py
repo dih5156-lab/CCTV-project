@@ -137,6 +137,8 @@ class VideoProcessor(BaseProcessor):
                         공유하여 중복 로드를 방지한다.
     """
 
+    edge_runtime_backend = "video_processor"
+
     def __init__(self, config: AppConfig) -> None:
         super().__init__(config)
         self._analyzers: Dict[str, AIAnalyzer] = {}

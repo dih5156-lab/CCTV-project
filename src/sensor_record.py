@@ -31,18 +31,25 @@ class SensorRecordStore(EventIngestStore):
     def project_sensor(self, ingest_id: str) -> None:
         with self._connect() as connection:
             receipt = connection.execute(
-                "SELECT r.*, p.projection_json FROM ingest_receipts r "
+                "SELECT r.*, p.projection_json, s.stage AS event_stage FROM ingest_receipts r "
                 "JOIN sensor_ingest_state p USING(ingest_id) "
+                "LEFT JOIN event_ingest_state s USING(ingest_id) "
                 "WHERE r.ingest_id=? AND r.source_namespace='tlv_mqtt' "
                 "AND p.projection_json IS NOT NULL",
                 (ingest_id,),
             ).fetchone()
             if receipt is None:
                 raise ValueError("A frozen TLV projection is required")
-            connection.execute(
-                "INSERT OR IGNORE INTO event_ingest_state(ingest_id) VALUES (?)",
-                (ingest_id,),
-            )
+            # 완료된 접수는 읽기만으로 종료하고, 재시도 중인 상태도 불필요한 쓰기를 피한다.
+            # 최초 동시 준비는 INSERT OR IGNORE와 정규화 transaction의 상태 재검사로 보호한다.
+            if receipt["event_stage"] is not None:
+                if receipt["event_stage"] != "pending":
+                    return
+            else:
+                connection.execute(
+                    "INSERT OR IGNORE INTO event_ingest_state(ingest_id) VALUES (?)",
+                    (ingest_id,),
+                )
         if self.get_event_receipt(ingest_id)["stage"] != "pending":
             return
         try:

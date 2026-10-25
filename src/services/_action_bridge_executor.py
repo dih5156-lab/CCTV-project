@@ -86,13 +86,22 @@ class _ActionExecutor:
             device_results_metric=_device_command_results,
         )
         self._action_policy = ActionPolicy(alarm)
+        self._expiry_policy = None
+        self._physical_queue = None
 
     def _execute_device_command(
         self,
         *,
         command: DeviceCommand,
+        execution_context=None,
     ) -> Dict:
         """공통 명령을 전송하고 저장소·메트릭용 결과를 만든다."""
+        if self._expiry_policy is not None:
+            reason = self._expiry_policy.check(execution_context, command.device)
+            if reason:
+                result = DeviceCommandResult(command.device, command.command_id, False,
+                                             "expired" if reason == "expired" else "held", reason)
+                return self._command_result_collector.collect(command, result)
         if self._device_dry_run:
             result = DeviceCommandResult(
                 device=command.device,
@@ -100,6 +109,9 @@ class _ActionExecutor:
                 ok=True,
                 status="simulated",
             )
+            return self._command_result_collector.collect(command, result)
+        if self._physical_queue is not None:
+            result = self._physical_queue.enqueue(command, execution_context)
             return self._command_result_collector.collect(command, result)
         if self._device_command_mode is DeviceCommandMode.EDGEX:
             if self._publish_edgex_command is None:
@@ -116,8 +128,14 @@ class _ActionExecutor:
                     resolve_device_ids=self._resolve_edgex_device_ids or (lambda *_: []),
                     jetson_id=self._edgex_jetson_id,
                     topic_prefix=self._edgex_command_topic_prefix,
+                    register_targets=self._command_result_collector.register_targets,
                 )
-                result = transport.send(command)
+                if self._expiry_policy is None:
+                    result = transport.send(command)
+                else:
+                    # 앞 장치/대상 발행이 지연된 경우에도 각 실제 발행 직전에 같은 기한을 검사한다.
+                    result = transport.send(command, before_publish=lambda device_id: self._expiry_policy.check(
+                        execution_context, command.device, device_id))
         else:
             transport = self._device_transport or DirectDeviceCommandTransport(
                 speaker=self._speaker,
@@ -173,7 +191,8 @@ class _ActionExecutor:
                 "direct_status": direct_status,
                 "edgex_publish_status": result.status,
                 "comparison": (
-                    "match" if direct_status == result.status else "mismatch"
+                    # 전송 접수만으로 직접 실행과 장치 결과가 일치한다고 판단하지 않는다.
+                    "awaiting_device_result" if result.status == "accepted" else "mismatch"
                 ),
                 **({"error": result.error} if result.error else {}),
             }
@@ -211,8 +230,18 @@ class _ActionExecutor:
         )
         return comparison
 
-    def execute(self, topic: str, payload: Dict) -> None:
+    def execute(self, topic: str, payload: Dict, *, execution_context=None) -> None:
         """단일 이벤트에 대한 장치 조치와 외부 전송을 수행한다."""
+        if self._expiry_policy is not None:
+            reason = self._expiry_policy.check(execution_context)
+            if not reason and (execution_context["event_id"] != get_payload_event_id(payload)
+                               or execution_context["camera_id"] != get_payload_camera_id(payload)):
+                reason = "event_context_mismatch"
+            if reason:
+                decision = {"status": "expired" if reason == "expired" else "held", "reason": reason}
+                self._repo.save(topic, {**payload, "action_decision": decision}, alarm_played=False, http_sent=False)
+                self._publish_status("events/held", {"event_id": get_payload_event_id(payload), **decision})
+                return
         camera_id = get_payload_camera_id(payload)
         event_type = get_payload_event_type(payload).lower()
         severity = get_payload_severity(payload).lower()
@@ -222,7 +251,10 @@ class _ActionExecutor:
 
         alarm_played = False
         device_results = []
-        if self._action_policy.should_execute(topic, payload):
+        # 영속 큐에서는 카메라 메모리 슬롯이 유효한 대기 경보를 버리지 않게 한다.
+        should_execute = (self._alarm.should_alarm(topic, payload) if self._physical_queue is not None
+                          else self._action_policy.should_execute(topic, payload))
+        if should_execute:
             devices = self._resolve_devices(
                 camera_id,
                 force_refresh=force_reachability_refresh,
@@ -245,6 +277,7 @@ class _ActionExecutor:
                 self._repo.record_command(command_id, "device/speaker", "sent", payload)
                 speaker_result = self._execute_device_command(
                     command=speaker_command,
+                    execution_context=execution_context,
                 )
                 if speaker_result["status"] == "acknowledged":
                     alarm_played = True
@@ -288,6 +321,7 @@ class _ActionExecutor:
                 self._repo.record_command(command_id, "device/signboard", "sent", payload)
                 signboard_result = self._execute_device_command(
                     command=signboard_command,
+                    execution_context=execution_context,
                 )
                 if signboard_result["status"] == "acknowledged":
                     alarm_played = True
@@ -325,6 +359,7 @@ class _ActionExecutor:
                 self._repo.record_command(command_id, "device/siren", "sent", payload)
                 siren_result = self._execute_device_command(
                     command=siren_command,
+                    execution_context=execution_context,
                 )
                 if siren_result["status"] == "acknowledged":
                     alarm_played = True

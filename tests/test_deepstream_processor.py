@@ -968,6 +968,56 @@ def test_deepstream_should_enqueue_event_uses_common_debouncer(mock_config):
     assert proc._should_enqueue_event(event, "fallback_cam") is False
 
 
+@pytest.mark.parametrize(
+    "object_id,x,elapsed,camera_id,expected",
+    [
+        (1, 105, 0.5, "cam1", True),
+        (2, 105, 0.5, "cam1", True),
+        (2, 500, 0.5, "cam1", False),
+        (2, 105, 1.125, "cam1", False),
+        (2, 105, 0.5, "cam2", False),
+    ],
+    ids=["same_id", "near_new_id", "distant_new_id", "expired", "other_camera"],
+)
+def test_deepstream_fall_reassociation_controls_queue_and_cooldown(
+    mock_config, debounce_clock, object_id, x, elapsed, camera_id, expected
+):
+    # 실제 공통 판정과 큐를 사용해 이벤트/bbox 전달 누락 및 ID 변경 후 재알림을 잡는다.
+    mock_config.events.fall_sustained_seconds = 0.25
+    mock_config.events.fall_gap_reset_seconds = 1.0
+    mock_config.events.fall_resend_cooldown = 10.0
+    proc = object.__new__(DeepStreamProcessor)
+    proc.event_queue = Queue(maxsize=3)
+    proc._events_detected = 0
+    proc._debouncer = EventDebouncer(mock_config, proc._increment_stat)
+    first = DetectionEvent(
+        EventType.FALL_DETECTED, 100, 100, 120, 70, 0.9, 1.0,
+        object_id=1, metadata={"camera_id": "cam1"},
+    )
+    second = DetectionEvent(
+        EventType.FALL_DETECTED, x, 103, 120, 70, 0.9, 1.5,
+        object_id=object_id, metadata={"camera_id": camera_id},
+    )
+    assert proc._enqueue_event(first, "fallback_cam") is False
+    debounce_clock.now += elapsed
+    assert proc._enqueue_event(second, "fallback_cam") is expected
+    assert proc.event_queue.qsize() == int(expected)
+    assert proc._events_detected == int(expected)
+    if expected:
+        assert proc.event_queue.get_nowait() is second
+        # 또 다른 ID로 이어져도 기존 알림 cooldown을 유지한다.
+        third = DetectionEvent(
+            EventType.FALL_DETECTED, x, 103, 120, 70, 0.9, 1.625,
+            object_id=3, metadata={"camera_id": camera_id},
+        )
+        debounce_clock.now += 0.125
+        assert proc._enqueue_event(third, "fallback_cam") is False
+        debounce_clock.now += 0.5
+        assert proc._enqueue_event(third, "fallback_cam") is False
+        assert proc.event_queue.empty()
+        assert proc._events_detected == 1
+
+
 def test_deepstream_event_queue_full_counts_event_drop_not_frame_drop():
     proc = object.__new__(DeepStreamProcessor)
     proc.event_queue = Queue(maxsize=1)
@@ -1531,7 +1581,8 @@ def test_deepstream_uses_configured_pphuman_infer_config(monkeypatch):
 
 
 @pytest.mark.parametrize("crop_enabled", [False, True])
-def test_deepstream_sgie_injected_person_meta_has_label(monkeypatch, crop_enabled):
+@pytest.mark.parametrize("null_keypoints", [False, True])
+def test_deepstream_sgie_injected_person_meta_has_label(monkeypatch, crop_enabled, null_keypoints):
     proc = object.__new__(DeepStreamProcessor)
     proc._crop_pose_enabled = crop_enabled
     proc._person_gie_id = 1
@@ -1563,6 +1614,8 @@ def test_deepstream_sgie_injected_person_meta_has_label(monkeypatch, crop_enable
                 "class_id": 0,
                 "confidence": 0.91,
                 "box": (10, 20, 30, 40),
+                # 사람 전용 모델은 관절 키를 생략하거나 None으로 반환한다.
+                **({"keypoints": None} if null_keypoints else {}),
             }
         ],
     )
@@ -1988,9 +2041,14 @@ class _FakePipeline:
         ("rtsp://example/stream", "3", True, None),
     ],
 )
+@pytest.mark.parametrize("tcp_only", [False, True])
 def test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map(
-    monkeypatch, source, reconnect, unsupported, expected, drop_on_latency
+    monkeypatch, source, reconnect, unsupported, expected, drop_on_latency, tcp_only
 ):
+    if tcp_only:
+        monkeypatch.setenv("DS_RTSP_TCP_ONLY", "1")
+    else:
+        monkeypatch.delenv("DS_RTSP_TCP_ONLY", raising=False)
     if drop_on_latency is None:
         monkeypatch.delenv("DS_RTSP_DROP_ON_LATENCY", raising=False)
     else:
@@ -2054,6 +2112,8 @@ def test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map(
     if drop_on_latency is not None and source.startswith("rtsp://") and not unsupported:
         expected_drop = drop_on_latency == "true"
     assert created[0][1].properties.get("drop-on-latency") is expected_drop
+    expected_protocol = 4 if tcp_only and source.startswith("rtsp://") else None
+    assert created[0][1].properties.get("select-rtp-protocol") == expected_protocol
 
 
 def test_attach_camera_source_to_pipeline_detaches_existing_source(monkeypatch):

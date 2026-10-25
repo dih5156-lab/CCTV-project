@@ -532,8 +532,9 @@ class TestDetectFallFromKeypoints:
             0:  [100, 300, 0.9],   # nose: 아래에 있음 (y=300 큰 값)
             5:  [90,  280, 0.9],
             6:  [110, 280, 0.9],
-            11: [90,  250, 0.9],
-            12: [110, 250, 0.9],
+            # 몸통 역전은 별도 신호이므로 이 시험에서는 어깨 아래에 엉덩이를 둔다.
+            11: [90,  320, 0.9],
+            12: [110, 320, 0.9],
             13: [90,   20, 0.9],   # left knee: y=20 < nose y=300 → 머리 위
             14: [110,  20, 0.9],
         })
@@ -565,8 +566,8 @@ class TestDetectFallFromKeypoints:
             kpts, bbox_w=300, bbox_h=100
         ) is True
 
-    def test_folded_floor_pose_without_visible_face_is_fall(self):
-        """후면/측면에서 얼굴이 안 보여도 하체가 접혀 바닥에 앉은 자세는 낙상 후보로 본다."""
+    def test_folded_floor_pose_without_visible_face_requires_transition(self):
+        """얼굴이 안 보이는 접힌 자세도 단일 프레임만으로 낙상 승격하지 않는다."""
         kpts = _make_kpts({
             0:  [100, 20, 0.05],
             5:  [90,  90, 0.9],
@@ -581,7 +582,7 @@ class TestDetectFallFromKeypoints:
 
         assert FallDetector(enable_folded_pose=True)._check_fall(
             kpts, bbox_w=110, bbox_h=220
-        ) is True
+        ) is False
 
     def test_folded_floor_pose_can_be_scored_without_enabling_alarm(self):
         """운영 알람 기준과 분리해 후면/측면 후보 신호만 산출할 수 있다."""

@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_CANDIDATE_IMAGE_ID = "sha256:0c11b835eb42cd245f4dda0b8bc8088733c0323bf75a2f4fefe9e7705d8dbf34"
 
 # 기본 Compose 파일에서 ARM64 호환 태그나 플랫폼 지정 없이 내려받으면
 # ARM64 호스트에서 실행 형식 오류가 발생할 가능성이 있는 이미지 목록이다.
@@ -152,12 +153,13 @@ def check_edgex_outbox_path_isolation(
 
 def check_edgex_mode_rollback_contract(
     *,
+    profile: str = "direct-rollback",
     jetson_compose_text: str | None = None,
     uat_compose_text: str | None = None,
     env_text: str | None = None,
     jetson_env_text: str | None = None,
 ) -> dict[str, Any]:
-    """기본 운영은 Direct로 복귀하고 UAT만 EdgeX를 쓰는지 확인한다."""
+    """현행 env_file 구성과 과거 Direct 복귀 구성을 별도 계약으로 검사한다."""
     jetson = (
         jetson_compose_text
         if jetson_compose_text is not None
@@ -180,10 +182,31 @@ def check_edgex_mode_rollback_contract(
         "EDGEX_COMMAND_MODE": "${EDGEX_COMMAND_MODE:-}",
         "EDGEX_ALLOWED_DEVICES": "${EDGEX_ALLOWED_DEVICES:-}",
     }
-    for key, expected in expected_base_values.items():
-        actual = _compose_service_env_value(jetson, "cctv-action-layer", key)
-        if actual != expected:
-            failures.append(f"docker-compose.jetson.yml {key} must default to empty")
+    if profile == "deployment":
+        # 현재 운영은 env_file만으로 모드를 전달한다. 허용 목록 일치는 실물 검증 승인이 아니다.
+        service = _compose_service_block(jetson, "cctv-action-layer")
+        if "env_file:" not in service or "path: ./.env.jetson" not in service:
+            failures.append("cctv-action-layer must load .env.jetson via env_file")
+        values = _parse_env_values(jetson_env)
+        for key, expected in (("EDGEX_COMMAND_MODE", "edgex"),
+                              ("EDGEX_ALLOWED_DEVICES", "speaker,signboard,siren")):
+            # 빈 environment 선언도 env_file을 덮으므로 값이 아니라 선언 유무를 검사한다.
+            if any(line.strip().startswith(f"{key}:") for line in service.splitlines()):
+                failures.append(f"cctv-action-layer must not override env_file {key}")
+            if values.get(key, "").strip() != expected:
+                failures.append(f".env.jetson {key} differs from recorded deployment profile")
+    elif profile == "direct-rollback":
+        for key, expected in expected_base_values.items():
+            actual = _compose_service_env_value(jetson, "cctv-action-layer", key)
+            if actual != expected:
+                failures.append(f"docker-compose.jetson.yml {key} must default to empty")
+        for label, text in ((".env", env), (".env.jetson", jetson_env)):
+            values = _parse_env_values(text)
+            for key in expected_base_values:
+                if values.get(key, "").strip():
+                    failures.append(f"{label} must not override {key} during Direct rollback")
+    else:
+        failures.append("unknown EdgeX profile")
 
     if _compose_service_env_value(uat, "cctv-action-layer", "EDGEX_COMMAND_MODE") != "edgex":
         failures.append("docker-compose.edgex-uat.yml EDGEX_COMMAND_MODE must be edgex")
@@ -193,14 +216,8 @@ def check_edgex_mode_rollback_contract(
         failures.append("docker-compose.jetson.yml missing cctv-action-layer")
     if "cctv-action-layer:" not in uat:
         failures.append("docker-compose.edgex-uat.yml missing cctv-action-layer")
-    for label, text in ((".env", env), (".env.jetson", jetson_env)):
-        values = _parse_env_values(text)
-        for key in ("EDGEX_COMMAND_MODE", "EDGEX_ALLOWED_DEVICES"):
-            if values.get(key, "").strip():
-                failures.append(f"{label} must not override {key} during Direct rollback")
-
     return {
-        "name": "EdgeX mode rollback contract",
+        "name": "EdgeX deployment mode contract" if profile == "deployment" else "EdgeX mode rollback contract",
         "passed": not failures,
         "detail": ", ".join(failures),
     }
@@ -803,7 +820,7 @@ def check_mqtt_auth_config(
     }
 
 
-def run_checks() -> list[dict[str, Any]]:
+def run_checks(*, edgex_profile: str = "deployment") -> list[dict[str, Any]]:
     return [
         check_default_compose_architecture(),
         check_tensorrt_binding_cuda_alignment(),
@@ -818,11 +835,14 @@ def run_checks() -> list[dict[str, Any]]:
         check_public_api_shared_secret_alignment(),
         check_mqtt_auth_config(),
         check_edgex_outbox_path_isolation(),
-        check_edgex_mode_rollback_contract(),
+        check_edgex_mode_rollback_contract(profile=edgex_profile),
     ]
 
 
-def check_candidate_profile(config: dict[str, Any], *, check_paths: bool = True) -> dict[str, Any]:
+def check_candidate_profile(
+    config: dict[str, Any], *, check_paths: bool = True,
+    expected_image_id: str = DEFAULT_CANDIDATE_IMAGE_ID,
+) -> dict[str, Any]:
     """병합된 후보 Compose의 영속 저장·고정 코드·비밀값 연결만 검사한다."""
     # 비밀값을 포함하는 config는 메모리에서만 읽고 실패에도 값이나 전체 명령을 출력하지 않는다.
     failures: list[str] = []
@@ -833,10 +853,11 @@ def check_candidate_profile(config: dict[str, Any], *, check_paths: bool = True)
     # tmpfs 별칭과 다른 컨테이너의 볼륨 상속도 영속 경로를 가릴 수 있어 후보에서 허용하지 않는다.
     if service.get("tmpfs") or service.get("volumes_from"):
         failures.append("tmpfs and volumes_from are not allowed in candidate")
-    # 후보 Compose와 동일한 실검증 이미지여야 health/계측 보완이 함께 배포된다.
-    expected_image = "sha256:0c11b835eb42cd245f4dda0b8bc8088733c0323bf75a2f4fefe9e7705d8dbf34"
-    if service.get("image") != expected_image or service.get("build"):
-        failures.append("tested image required; build must be absent")
+    # 보드별 검증 기록에서 고른 고정 ID를 대조한다. 구성 자체에서 기대값을 추출하지 않는다.
+    if not re.fullmatch(r"sha256:[0-9a-f]{64}", expected_image_id):
+        failures.append("expected image must be a full sha256 ID")
+    if service.get("image") != expected_image_id or service.get("build"):
+        failures.append("expected image ID required; build must be absent")
     if service.get("pull_policy") != "never":
         failures.append("pull_policy must be never")
     # 정규화된 Compose JSON은 60초를 1m0s로 표시한다. 회수 중 강제 종료되는 후보를 막는다.
@@ -909,8 +930,12 @@ def check_candidate_profile(config: dict[str, Any], *, check_paths: bool = True)
 def main() -> int:
     parser = argparse.ArgumentParser(description="Check runtime assumptions for CCTV compose deployment.")
     parser.add_argument("--json", action="store_true", help="Print JSON output.")
+    parser.add_argument("--edgex-profile", choices=("deployment", "direct-rollback"), default="deployment",
+                        help="Check recorded deployment wiring (default) or the historical Direct rollback contract.")
     parser.add_argument("--candidate-compose-json", metavar="PATH",
                         help="Validate merged candidate Compose JSON; '-' reads stdin without saving secrets.")
+    parser.add_argument("--expected-image-id", default=DEFAULT_CANDIDATE_IMAGE_ID,
+                        help="후보 검증 기록의 전체 sha256 이미지 ID. 미지정 시 기존 AGX 후보를 검사한다.")
     args = parser.parse_args()
 
     # 후보 검사만 선택하면 기존 전체 스택 검사를 실행하거나 운영 서비스를 변경하지 않는다.
@@ -918,12 +943,12 @@ def main() -> int:
         try:
             raw = (sys.stdin.read() if args.candidate_compose_json == "-"
                    else Path(args.candidate_compose_json).read_text(encoding="utf-8"))
-            checks = [check_candidate_profile(json.loads(raw))]
+            checks = [check_candidate_profile(json.loads(raw), expected_image_id=args.expected_image_id)]
         except (OSError, ValueError, TypeError, KeyError, AttributeError):
             checks = [{"name": "candidate profile contract", "passed": False,
                        "detail": "invalid or unreadable Compose JSON"}]
     else:
-        checks = run_checks()
+        checks = run_checks(edgex_profile=args.edgex_profile)
     passed = all(check["passed"] for check in checks)
     payload = {"passed": passed, "checks": checks}
 

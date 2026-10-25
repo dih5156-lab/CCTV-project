@@ -24,6 +24,7 @@ import logging
 import os
 import re
 import secrets
+import sqlite3
 import threading
 import time
 import zlib
@@ -40,6 +41,7 @@ logger = logging.getLogger(__name__)
 
 _RE_STREAM = re.compile(r"^/stream/([^/]+)$")
 _RE_SNAPSHOT = re.compile(r"^/snapshot/([^/]+)$")
+_RE_EDGE_PREVIEW = re.compile(r"^/edge-preview/([A-Za-z0-9_.-]{1,128})$")
 _JPEG_CACHE_LOCK = threading.Lock()
 _JPEG_CACHE: dict[str, tuple[tuple[Any, ...], bytes]] = {}
 
@@ -171,6 +173,13 @@ class StreamApiHandler(BaseApiHandler):
 
     _LOG_PREFIX = "[StreamAPI]"
 
+    def end_headers(self):
+        if _RE_EDGE_PREVIEW.fullmatch(self.path.split("?")[0].rstrip("/")):
+            # 담당 영상은 캐시가 남아 다음 실행의 프레임처럼 보이지 않도록 한다.
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("X-Content-Type-Options", "nosniff")
+        super().end_headers()
+
     def _processor(self) -> "BaseProcessor":
         return self.server.processor  # type: ignore[attr-defined]
 
@@ -224,9 +233,31 @@ class StreamApiHandler(BaseApiHandler):
             if not self._check_stream_token():
                 return
             self._snapshot(m.group(1))
+        elif m := _RE_EDGE_PREVIEW.fullmatch(path):
+            self._edge_preview_snapshot(m.group(1))
         else:
             self._consume_body()
             self._respond(404, {"error": "Not Found"})
+
+    def _edge_preview_snapshot(self, camera_id):
+        from .edge_orchestrator import RegistryError
+
+        source = getattr(self.server, "edge_preview", None)
+        if source is None:
+            self._respond(404, {"error": "preview_disabled"})
+            return
+        token = _configured_stream_token()
+        # 평문 영상 API의 새 경로는 로컬/SSH 끝점과 명시적 토큰에서만 허용한다.
+        if (self.client_address[0] != "127.0.0.1" or not token
+                or not secrets.compare_digest(self.headers.get("Authorization", ""), "Bearer " + token)):
+            self._respond(401, {"error": "Unauthorized"})
+            return
+        try:
+            self._respond(200, source.frame(camera_id))
+        except RegistryError as error:
+            self._respond(error.status, {"error": error.code})
+        except (OSError, sqlite3.Error, ValueError, KeyError, TypeError, ImportError):
+            self._respond(503, {"error": "preview_unavailable"})
 
     def _list_cameras(self) -> None:
         cameras = list(self._processor().cameras.keys())
@@ -364,6 +395,13 @@ def start_stream_api_server(
     try:
         server = ThreadingApiServer(("", port), StreamApiHandler)
         server.processor = processor  # type: ignore[attr-defined]
+        server.edge_preview = None
+        if os.environ.get("EDGE_RESULT_CONTEXT_DB") and getattr(processor, "edge_session_id", None):
+            from .edge_preview import EdgePreviewSource
+
+            server.edge_preview = EdgePreviewSource(
+                processor, os.environ["EDGE_RESULT_CONTEXT_DB"], processor.edge_session_id
+            )
         thread = threading.Thread(target=server.serve_forever, daemon=True, name="StreamAPI")
         thread.start()
         logger.info(

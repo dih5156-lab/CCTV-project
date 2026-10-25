@@ -50,7 +50,7 @@ class FallShadowReviewRecorder:
         camera_name: str,
         filtered_events: Iterable[DetectionEvent],
     ) -> Optional[DetectionEvent]:
-        """Submit the first fall event to the background falldata verifier."""
+        """발행 대기 낙상을 우선 선택하고 접수 시점의 Pose를 보조 큐에 보관한다."""
         if not self.falldata_aux or not self.falldata_aux.enabled:
             return None
 
@@ -70,8 +70,14 @@ class FallShadowReviewRecorder:
         if fall_event is None:
             return None
 
+        payload = fall_event.to_dict()
+        if self.falldata_aux.config.inline_pose_rf:
+            # 원 경보 메타데이터에는 넣지 않아 외부 발행·저장 형식을 유지한다.
+            payload["_falldata_pose_records"] = self.falldata_aux.snapshot_pose_records(
+                camera_name, (payload.get("metadata") or {}).get("falldata_pose_scope")
+            )
         try:
-            queue.put_nowait((camera_name, fall_event.to_dict()))
+            queue.put_nowait((camera_name, payload))
             return fall_event
         except Full:
             logger.warning(
@@ -185,11 +191,16 @@ class FallShadowReviewRecorder:
         if event_payload.get("type") in {"fall_near_miss", "fall_shadow_window"}:
             result = self.falldata_aux.verify_temporal_shadow()
         else:
+            # 빈 스냅샷도 그대로 전달해 접수 후의 Pose로 과거 입력을 대체하지 않는다.
+            pose_input = {}
+            if "_falldata_pose_records" in event_payload:
+                pose_input["pose_records"] = event_payload.pop("_falldata_pose_records")
             result = self.falldata_aux.verify(
                 camera_name=camera_name,
                 pose_scope=(event_payload.get("metadata") or {}).get(
                     "falldata_pose_scope"
                 ),
+                **pose_input,
             )
         record = self.write_record(camera_name, event_payload, result)
         return result, record

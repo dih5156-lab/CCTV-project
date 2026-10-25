@@ -1,5 +1,6 @@
 import json
 from dataclasses import replace
+from queue import Queue
 from types import SimpleNamespace
 from unittest.mock import Mock
 
@@ -8,6 +9,10 @@ import pytest
 
 from scripts.datasets.train_yolo_pose_fall_rf import FEATURE_NAMES
 from src.core._fall_aux_policy import aux_result_confirms_fall
+from src.core._fall_shadow_review import (
+    FallShadowReviewConfig,
+    FallShadowReviewRecorder,
+)
 from src.core._synthetic_object_ids import SyntheticObjectIdAssigner
 from src.core.ai._falldata_aux import FallDataAuxConfig, FallDataAuxVerifier
 from src.core.events import DetectionEvent, EventType
@@ -419,6 +424,67 @@ def test_evicted_tracks_and_old_candidates_do_not_leave_unbounded_cached_results
     assert len(instance._pose_records["camera_1"]) == 2
     assert len(instance._inline_results) == 2
     assert verify_event(instance, old)["status"] == "no_pose_records"
+
+
+@pytest.mark.parametrize("reset_at", [None, "queued", "predict"])
+def test_queued_rf_keeps_admitted_pose_but_rejects_reset_generation(tmp_path, reset_at):
+    instance, classifier = verifier(buffer_frames=4, min_pose_frames=1)
+    recorder = FallShadowReviewRecorder(
+        FallShadowReviewConfig(tmp_path / "review.jsonl", tmp_path / "clips"),
+        falldata_aux=instance,
+    )
+    queue = Queue(maxsize=2)
+    for frame in (1, 2):
+        person = pose(frame=frame, width=320)
+        instance.add_pose_events("camera_1", [person, pose(202, frame=frame)])
+    fall = replace(person, event_type=EventType.FALL_DETECTED)
+    original_payload = fall.to_dict()
+    assert recorder.submit_shadow_window(queue, "camera_1")
+    assert recorder.submit_aux_work(queue, "camera_1", [fall]) is fall
+
+    # 앞선 TCN 작업 동안 새 관측이 들어와도 접수한 사람·과거 창을 보존한다.
+    assert queue.get_nowait()[1]["type"] == "fall_shadow_window"
+    for frame in range(3, 8):
+        instance.add_pose_events("camera_1", [pose(frame=frame, width=80)])
+    assert verify_event(instance, fall)["status"] == "no_pose_records"
+    if reset_at == "queued":
+        instance.reset_pose_records("camera_1")
+    elif reset_at == "predict":
+        classifier.on_predict = lambda: instance.reset_pose_records("camera_1")
+
+    result, record = recorder.verify_and_write_aux_record(*queue.get_nowait())
+    assert fall.to_dict() == original_payload
+    assert len(classifier.inputs) == (0 if reset_at == "queued" else 1)
+    if reset_at:
+        assert result["status"] == "stale_pose_scope" and not result["confirmed"]
+        assert not instance._inline_results
+    else:
+        assert result["status"] == "ok" and result["confirmed"]
+        assert result["frames_with_pose"] == 2
+        assert result["pose_scope"] == fall.metadata["falldata_pose_scope"]
+        assert classifier.inputs[0][0, FEATURE_NAMES.index("mean_bbox_aspect")] == 2.0
+    assert "_falldata_pose_records" not in json.dumps(record)
+
+
+def test_queued_rf_does_not_backfill_missing_pose_from_later_frames(tmp_path):
+    instance, classifier = verifier(min_pose_frames=1)
+    person = pose()
+    instance.add_pose_events("camera_1", [person])
+    fall = replace(person, event_type=EventType.FALL_DETECTED, metadata={
+        **person.metadata,
+        "falldata_pose_scope": {**person.metadata["falldata_pose_scope"], "object_id": 202},
+    })
+    recorder = FallShadowReviewRecorder(
+        FallShadowReviewConfig(tmp_path / "review.jsonl", tmp_path / "clips"),
+        falldata_aux=instance,
+    )
+    queue = Queue(maxsize=1)
+    assert recorder.submit_aux_work(queue, "camera_1", [fall]) is fall
+    # 접수 때 없었던 관측은 같은 프레임에 나중에 도착해도 후보 입력이 아니다.
+    instance.add_pose_events("camera_1", [pose(202, width=320)])
+    result, _ = recorder.verify_and_write_aux_record(*queue.get_nowait())
+    assert result["status"] == "no_pose_records"
+    assert not classifier.inputs
 
 
 def test_pose_binding_rejects_ambiguous_same_box():

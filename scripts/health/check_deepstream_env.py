@@ -110,9 +110,14 @@ def _check_deepstream_app(timeout: float) -> CheckResult:
 
 def _parse_property_file(path: Path) -> dict[str, str]:
     values: dict[str, str] = {}
+    in_properties = False
     for raw_line in path.read_text(encoding="utf-8").splitlines():
         line = raw_line.split("#", 1)[0].strip()
-        if not line or line.startswith("[") or "=" not in line:
+        # 클래스별 속성이 모델 경로를 덮거나 필수 [property] 누락을 숨기지 않게 한다.
+        if line.startswith("["):
+            in_properties = line == "[property]"
+            continue
+        if not in_properties or "=" not in line:
             continue
         key, value = line.split("=", 1)
         values[key.strip()] = value.strip()
@@ -127,25 +132,80 @@ def _resolve_config_value(config_path: Path, value: str) -> Path:
 
 
 def _check_path(name: str, path: Path) -> CheckResult:
-    if not path.exists():
-        return CheckResult(name, False, f"없음: {path}")
-    if path.is_file():
-        return CheckResult(name, True, f"{path} ({path.stat().st_size} bytes)")
-    return CheckResult(name, True, str(path))
+    # 빈 파일·자동 생성된 디렉터리를 준비된 모델/설정으로 오인하지 않는다.
+    try:
+        if not path.is_file():
+            return CheckResult(name, False, f"파일 없음: {path}")
+        size = path.stat().st_size
+    except OSError as exc:
+        return CheckResult(name, False, f"{path}: {exc}")
+    return CheckResult(name, size > 0, f"{path} ({size} bytes)")
 
 
-def _check_infer_config(config_path: Path) -> list[CheckResult]:
+def _check_engine_load(path: Path, *, batch_size: Optional[int] = None) -> CheckResult:
+    """엔진 로드와 지정한 배치의 profile 범위를 검사한다. 실제 추론 검증은 별도다."""
+    name = f"TensorRT engine load {path}"
+    batch_detail = "배치 미검증"
+    try:
+        trt = importlib.import_module("tensorrt")
+        logger = trt.Logger(trt.Logger.ERROR)
+        if not trt.init_libnvinfer_plugins(logger, ""):
+            return CheckResult(name, False, "TensorRT 플러그인 초기화 실패")
+        with trt.Runtime(logger) as runtime:
+            engine = runtime.deserialize_cuda_engine(path.read_bytes())
+            if engine is None:
+                return CheckResult(name, False, "역직렬화 실패: 대상 GPU/TensorRT에서 엔진 재생성 필요")
+            try:
+                if batch_size is not None:
+                    if batch_size <= 0:
+                        raise ValueError("batch-size는 양수여야 합니다")
+                    names = (engine.get_tensor_name(index) for index in range(engine.num_io_tensors))
+                    inputs = [name for name in names if engine.get_tensor_mode(name) == trt.TensorIOMode.INPUT]
+                    if len(inputs) != 1 or len(engine.get_tensor_shape(inputs[0])) != 4:
+                        raise ValueError("배치 검사는 단일 4차원 영상 입력 엔진만 지원합니다")
+                    # nvinfer가 사용하는 profile 0을 검사해야 다른 profile의 범위로 오판하지 않는다.
+                    shapes = engine.get_tensor_profile_shape(inputs[0], 0)
+                    minimum, optimum, maximum = (int(shape[0]) for shape in shapes)
+                    batch_detail = (
+                        f"요청 batch={batch_size}; {inputs[0]} profile=0 "
+                        f"min/opt/max={minimum}/{optimum}/{maximum}"
+                    )
+                    if not 0 < minimum <= optimum <= maximum:
+                        raise ValueError(f"잘못된 배치 profile: {batch_detail}")
+                    if not minimum <= batch_size <= maximum:
+                        raise ValueError(f"배치 불일치: {batch_detail}; 요청 범위를 지원하는 엔진 필요")
+            finally:
+                # 실패한 배치 검사도 다음 모델 검사 전에 공유 GPU 메모리를 해제한다.
+                del engine
+    except Exception as exc:
+        return CheckResult(name, False, f"{type(exc).__name__}: {exc}")
+    return CheckResult(name, True, f"대상 GPU 로드 성공; {batch_detail}; 실제 추론·메모리/성능 검증은 별도")
+
+
+def _check_infer_config(
+    config_path: Path, *, load_engines: bool = False, batch_size: Optional[int] = None,
+) -> list[CheckResult]:
     results = [_check_path(f"nvinfer config {config_path.name}", config_path)]
-    if not config_path.exists():
+    if not results[0].ok:
         return results
 
     try:
         values = _parse_property_file(config_path)
-    except OSError as exc:
+    except (OSError, UnicodeError) as exc:
         return [
             *results,
             CheckResult(f"nvinfer config parse {config_path.name}", False, str(exc)),
         ]
+
+    if load_engines:
+        try:
+            # 앱의 카메라 수 override를 명시하지 않으면 설정 파일의 배치를 검사한다.
+            batch_size = int(values.get("batch-size", "1")) if batch_size is None else batch_size
+            if batch_size <= 0:
+                raise ValueError("batch-size는 양수여야 합니다")
+        except ValueError as exc:
+            results.append(CheckResult(f"{config_path.name} batch-size", False, str(exc)))
+            return results
 
     for key in ("model-engine-file", "labelfile-path"):
         value = values.get(key)
@@ -155,7 +215,10 @@ def _check_infer_config(config_path: Path) -> list[CheckResult]:
             results.append(CheckResult(f"{config_path.name} {key}", False, "설정값 없음"))
             continue
         resolved = _resolve_config_value(config_path, value)
-        results.append(_check_path(f"{config_path.name} {key}", resolved))
+        path_result = _check_path(f"{config_path.name} {key}", resolved)
+        results.append(path_result)
+        if key == "model-engine-file" and load_engines and path_result.ok:
+            results.append(_check_engine_load(resolved, batch_size=batch_size))
     return results
 
 
@@ -167,13 +230,19 @@ def build_checks(
     timeout: float,
     skip_gst_plugins: bool,
     native_only: bool = False,
+    load_engines: bool = False,
+    files_only: bool = False,
+    batch_size: Optional[int] = None,
 ) -> list[CheckResult]:
-    results = [_check_deepstream_app(timeout)]
-    if not native_only:
-        results.extend([_check_gstreamer_python(), _check_python_module("pyds")])
+    results = []
+    # NX가 없어도 복사할 파일을 검사하며 SDK/GPU 접근이나 엔진 생성을 하지 않는다.
+    if not files_only:
+        results.append(_check_deepstream_app(timeout))
+        if not native_only:
+            results.extend([_check_gstreamer_python(), _check_python_module("pyds")])
 
-    if not skip_gst_plugins:
-        results.extend(_check_gst_plugin(plugin, timeout) for plugin in gst_plugins)
+        if not skip_gst_plugins:
+            results.extend(_check_gst_plugin(plugin, timeout) for plugin in gst_plugins)
 
     # 호스트 준비 단계에는 모델·pyds가 없어도 SDK 의존성을 먼저 검사할 수 있어야 한다.
     if native_only:
@@ -183,17 +252,20 @@ def build_checks(
         config_path = Path(config_path_text)
         if not config_path.is_absolute():
             config_path = root / config_path
-        results.extend(_check_infer_config(config_path.resolve()))
+        results.extend(_check_infer_config(
+            config_path.resolve(), load_engines=load_engines, batch_size=batch_size,
+        ))
 
-    tracker_config = root / "config/deepstream/config_tracker.txt"
+    # 실제 DeepStreamProcessor의 tracker 설정과 같은 파일을 검사한다.
+    tracker_config = root / "config/deepstream/config_tracker_iou.yml"
     results.append(_check_path("DeepStream tracker config", tracker_config))
     return results
 
 
-def _summarize(results: list[CheckResult]) -> int:
+def _summarize(results: list[CheckResult], *, files_only: bool = False) -> int:
     failures = [result for result in results if not result.ok]
     if not failures:
-        print("\nDeepStream 환경 점검 통과")
+        print("\nDeepStream 파일 점검 통과 (SDK/GPU 미검증)" if files_only else "\nDeepStream 환경 점검 통과")
         return 0
 
     print("\n확인이 필요한 항목")
@@ -212,9 +284,22 @@ def main(argv: Optional[list[str]] = None) -> int:
         help="추가 또는 대체할 nvinfer config 경로. 여러 번 지정 가능",
     )
     parser.add_argument("--timeout", type=float, default=5.0, help="gst-inspect timeout(초)")
-    parser.add_argument(
+    runtime_mode = parser.add_mutually_exclusive_group()
+    runtime_mode.add_argument(
         "--native-only", action="store_true",
         help="SDK 실행·GStreamer 플러그인만 검사 (모델/Python 바인딩 검사 제외)",
+    )
+    runtime_mode.add_argument(
+        "--load-engines", action="store_true",
+        help="엔진 로드와 설정 배치를 검사 (GPU 메모리 사용, 실제 추론/성능 검사는 별도)",
+    )
+    runtime_mode.add_argument(
+        "--files-only", action="store_true",
+        help="SDK/GPU 없이 설정·엔진·라벨·tracker 파일만 검사 (엔진 생성/로드 제외)",
+    )
+    parser.add_argument(
+        "--batch-size", type=int,
+        help="앱이 실제 요청하는 배치로 검사 (--load-engines와 단일 --config 필요)",
     )
     parser.add_argument(
         "--skip-gst-plugins",
@@ -223,6 +308,10 @@ def main(argv: Optional[list[str]] = None) -> int:
     )
     parser.add_argument("--json", action="store_true", help="결과를 JSON 으로 출력")
     args = parser.parse_args(argv)
+    if args.batch_size is not None and (
+        args.batch_size <= 0 or not args.load_engines or not args.configs or len(args.configs) != 1
+    ):
+        parser.error("--batch-size는 양수이며 --load-engines와 단일 --config가 필요합니다")
 
     root = Path(args.root).resolve()
     config_paths = args.configs if args.configs else DEFAULT_CONFIGS
@@ -233,11 +322,15 @@ def main(argv: Optional[list[str]] = None) -> int:
         timeout=args.timeout,
         skip_gst_plugins=args.skip_gst_plugins,
         native_only=args.native_only,
+        load_engines=args.load_engines,
+        files_only=args.files_only,
+        batch_size=args.batch_size,
     )
 
     if args.json:
         payload = {
             "passed": all(result.ok for result in results),
+            "files_only": args.files_only,
             "results": [
                 {"name": result.name, "ok": result.ok, "detail": result.detail}
                 for result in results
@@ -248,7 +341,7 @@ def main(argv: Optional[list[str]] = None) -> int:
 
     for result in results:
         _print_result(result)
-    return _summarize(results)
+    return _summarize(results, files_only=args.files_only)
 
 
 if __name__ == "__main__":

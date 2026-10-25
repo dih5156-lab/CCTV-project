@@ -15,11 +15,13 @@ Routes:
     GET    /commands            → 출력 제어 명령 상태 조회
     POST   /mode                → 전역/사이트 모드 설정
     POST   /events              → 이벤트 수신
+    GET    /receipts/{ingest_id} → 영속 REST 접수 상태
 """
 
 import logging
 import os
 import secrets
+import sqlite3
 from threading import Thread
 from typing import Optional
 from urllib.parse import parse_qs, urlparse
@@ -78,6 +80,7 @@ class _RestHandler(BaseApiHandler):
             "commands": "GET /commands",
             "pending": "GET /pending",
             "events": "POST /events",
+            "receipts": "GET /receipts/{ingest_id}",
             "approve": "POST /approve/{event_id}",
             "reject": "POST /reject/{event_id}",
         }
@@ -113,6 +116,13 @@ class _RestHandler(BaseApiHandler):
             except ValueError:
                 limit = 50
             self._respond(200, layer.list_commands(limit=limit))
+        elif path.startswith("/receipts/"):
+            try:
+                self._respond(200, layer.get_rest_receipt(path[len("/receipts/"):]))
+            except KeyError:
+                self._respond(404, {"error": "receipt not found"})
+            except (OSError, sqlite3.Error):
+                self._respond(503, {"error": "receipt storage unavailable"})
         elif path == "/metrics":
             self._respond_metrics()
         else:
@@ -125,8 +135,11 @@ class _RestHandler(BaseApiHandler):
         path  = self.path
 
         if path == "/events":
+            if getattr(layer, "_mqtt_intake", None) is not None:
+                self._receive_durable_event(layer)
+                return
             payload = self._read_json()
-            if payload is None:
+            if not isinstance(payload, dict):
                 self._respond(400, {"error": "Invalid JSON"})
                 return
             topic = str(payload.pop("topic", "rest/inbound") or "rest/inbound")
@@ -188,6 +201,27 @@ class _RestHandler(BaseApiHandler):
 
         else:
             self._respond(404, {"error": "Not Found"})
+
+    def _receive_durable_event(self, layer) -> None:
+        """인증 후 크기를 제한해 원본 바이트를 보존하고 commit 뒤에만 202를 반환한다."""
+        try:
+            length = int(self.headers.get("Content-Length", "0"))
+            if self.headers.get("Transfer-Encoding") or length <= 0:
+                raise ValueError("Content-Length가 있는 JSON 본문이 필요합니다")
+            if length > 1024 * 1024:
+                self._respond(413, {"error": "event body too large"})
+                return
+            raw = self.rfile.read(length)
+            if len(raw) != length:
+                raise ValueError("요청 본문이 완전하지 않습니다")
+            result = layer.accept_rest_event(raw)
+        except (ValueError, UnicodeError):
+            self._respond(400, {"error": "invalid event, event_id or topic"})
+        except (OSError, sqlite3.Error, RuntimeError):
+            logger.exception("REST 영속 접수 실패")
+            self._respond(503, {"error": "durable intake unavailable"})
+        else:
+            self._respond(202, result)
 
     def _respond_health(self, layer) -> None:
         mqtt_ok = False

@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import re
 from datetime import datetime
 from typing import Any, Mapping
 
@@ -50,14 +51,41 @@ def _attribute(payload: Mapping[str, Any], field: str) -> dict[str, Any]:
 
 def _track_reference(value: Any) -> dict[str, Any]:
     result = {"value": None, "quality": "invalid", "source_field": "object_id"}
+    # uint64를 float로 거치면 인접 ID가 합쳐지므로 정규 10진 문자열만 받는다.
+    if isinstance(value, str):
+        if re.fullmatch(r"0|[1-9][0-9]{0,19}", value) is None:
+            return result
+        value = int(value)
     if value is None:
         result["quality"] = "missing"
     elif isinstance(value, int) and not isinstance(value, bool):
         if value < 0 or value == 0xFFFFFFFFFFFFFFFF:
             result["quality"] = "unknown"
         elif value < 0xFFFFFFFFFFFFFFFF:
-            result.update(value=value, quality="valid")
+            result.update(value=str(value), quality="valid")
     return result
+
+
+def normalize_tracking_ids(payload: Any) -> Any:
+    """원본을 보존하면서 알려진 추적 ID 필드만 문자열/null로 직렬화한다."""
+    if isinstance(payload, Mapping):
+        normalized = {}
+        for key, value in payload.items():
+            if key == "track_id" and isinstance(value, Mapping):
+                reference = dict(value)
+                if reference.get("value") is not None or reference.get("quality") == "valid":
+                    checked = _track_reference(reference.get("value"))
+                    reference.update(value=checked["value"], quality=checked["quality"])
+                # 이미 null인 관측의 missing/unknown/invalid 원인은 유지한다.
+                normalized[key] = reference
+            elif key in ("object_id", "person_object_id", "track_id"):
+                normalized[key] = _track_reference(value)["value"]
+            else:
+                normalized[key] = normalize_tracking_ids(value)
+        return normalized
+    if isinstance(payload, (list, tuple)):
+        return [normalize_tracking_ids(value) for value in payload]
+    return payload
 
 
 def _processing_time(value: Any) -> tuple[str | None, str]:

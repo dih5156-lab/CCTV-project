@@ -1,5 +1,8 @@
 """Event receipts and atomic normalization; no network or device operations."""
 
+# Jetson B의 Python 3.8에서도 영속 이벤트 저장소의 타입 표기를 읽는다.
+from __future__ import annotations
+
 import hashlib
 import json
 import logging

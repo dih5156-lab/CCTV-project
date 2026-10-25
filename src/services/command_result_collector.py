@@ -26,18 +26,37 @@ class CommandResultCollector:
             device=command.device,
             status=result.status,
         ).inc()
-        self._repository.record_command(
+        # 발행 전에 보류된 명령도 만료/정책 사유를 남겨 장치 실패와 구분한다.
+        payload = command.payload
+        if result.target_results:
+            payload = {**payload, "event_id": command.event_id,
+                       "device_results": list(result.target_results)}
+        elif result.status in {"expired", "held"}:
+            payload = {**payload, "action_decision": {"status": result.status, "reason": result.error}}
+        stored = self._repository.record_command(
             command.command_id,
             f"device/{command.device}",
             result.status,
-            command.payload,
+            payload,
         )
+        # 비동기 장치 결과가 먼저 왔다면 저장소에서 병합한 상태를 응답에도 사용한다.
+        status = stored["status"] if result.target_results and isinstance(stored, dict) else result.status
         return {
             "device": command.device,
             "command_id": command.command_id,
-            "status": result.status,
+            "status": status,
             "event_id": command.event_id,
             "device_ids": list(result.device_ids),
             "request_ids": list(result.request_ids),
+            **({"device_results": stored["payload"]["device_results"]
+                if isinstance(stored, dict) else list(result.target_results)} if result.target_results else {}),
             **({"error": result.error} if result.error else {}),
         }
+
+    def register_targets(self, command: DeviceCommand, targets: list[Dict]) -> bool:
+        """전체 대상을 영속 기록한 뒤에만 발행해 응답 유실을 성공으로 오인하지 않는다."""
+        return self._repository.record_command(
+            command.command_id, f"device/{command.device}", "pending",
+            {**command.payload, "event_id": command.event_id,
+             "target_request_ids": [row["request_id"] for row in targets], "device_results": targets},
+        ) is not None

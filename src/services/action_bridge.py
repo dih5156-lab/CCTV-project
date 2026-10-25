@@ -25,6 +25,7 @@ import logging
 import signal
 import time
 import uuid
+from dataclasses import replace
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
 
@@ -42,6 +43,7 @@ from ..devices.speaker import SpeakerConfig, SpeakerDevice
 from ..edgex.device_registry import DeviceRegistry
 from ..protocols._mqtt_factory import create_mqtt_client
 from ..protocols.http import HttpEventForwarder, HttpEventTarget
+from ..protocols.mqtt_subscriber import MqttTopicSubscriber
 from ..protocols.rest import RestEventReceiver
 from ..time_utils import now_kst_iso
 from . import _action_bridge_rest_queue as _rest_queue
@@ -66,6 +68,9 @@ from ._action_bridge_topics import (
     default_subscribe_topics,
 )
 from .action_command_components import DeviceResolver
+from .action_device_queue import ActionDeviceQueue
+from .action_expiry import ActionExpiryPolicy
+from .action_mqtt_intake import ActionMqttIntake
 from .cctv_metrics import (
     action_bridge_up,
     events_handled,
@@ -134,10 +139,24 @@ class ActionBridge:
         edgex_device_registry_path: Optional[str] = None,
         edgex_allowed_devices: Optional[Set[str]] = None,
         device_dry_run: bool = False,
+        command_response_timeout_seconds: float = 30.0,
+        mqtt_intake_db: Optional[str] = None,
+        mqtt_client_id: Optional[str] = None,
+        mqtt_capture_only: bool = False,
+        action_expiry_policy_path: Optional[str] = None,
+        physical_queue_enabled: bool = False,
     ) -> None:
         """Action Layer와 장치·EdgeX shadow 설정을 초기화한다."""
         self.mqtt_broker = mqtt_broker
         self.mqtt_port = int(mqtt_port)
+        if mqtt_intake_db and not (mqtt_client_id and mqtt_client_id.strip()):
+            raise ValueError("영속 MQTT 수신에는 고정 mqtt_client_id가 필요합니다")
+        if mqtt_capture_only and not mqtt_intake_db:
+            raise ValueError("저장 전용 수신에는 영속 수신 DB가 필요합니다")
+        if action_expiry_policy_path and not mqtt_intake_db:
+            raise ValueError("만료·안전 재개에는 영속 수신 DB가 필요합니다")
+        if physical_queue_enabled and not action_expiry_policy_path:
+            raise ValueError("물리 장치 큐에는 명시적인 만료 정책이 필요합니다")
         self.subscribe_topics = subscribe_topics or default_subscribe_topics()
         requested_command_mode = edgex_command_mode
         if requested_command_mode is None:
@@ -158,7 +177,7 @@ class ActionBridge:
         )
         self._device_dry_run = device_dry_run
 
-        self._repo = _EventRepo(Path(db_path))
+        self._repo = _EventRepo(Path(db_path), response_timeout_seconds=command_response_timeout_seconds)
         self._sites = _SiteRegistry(
             default_mode=default_mode,
             initial_sites=initial_sites,
@@ -188,7 +207,11 @@ class ActionBridge:
         )
 
         self._speaker = SpeakerDevice(speaker_config or SpeakerConfig())
-        self._signboard = SignboardDevice(signboard_config or SignboardConfig())
+        signboard_settings = signboard_config or SignboardConfig()
+        # EdgeX가 출력할 때 로컬 유휴 표시가 원격 경보를 덮지 않도록 한다.
+        if self._edgex_command_mode is DeviceCommandMode.EDGEX:
+            signboard_settings = replace(signboard_settings, idle_enabled=False)
+        self._signboard = SignboardDevice(signboard_settings)
         self._siren = SirenDevice(siren_config or SensorConfig())
         self._device_reachability_cache: Dict[str, Tuple[float, bool]] = {}
         self._device_resolver = DeviceResolver(
@@ -229,7 +252,35 @@ class ActionBridge:
                 host=rest_host, port=rest_port, action_layer=self
             )
 
-        self._mqtt_client: Optional[mqtt.Client] = None
+        if mqtt_intake_db and self._edgex_command_mode is not DeviceCommandMode.EDGEX:
+            raise ValueError("영속 수신은 동일 요청 ID를 전달하는 EdgeX 장치 모드에서만 사용합니다")
+        self._mqtt_intake = (ActionMqttIntake(
+            mqtt_intake_db, lambda topic, raw, **kwargs: self._process_mqtt_payload(topic, raw, **kwargs),
+            capture_only=mqtt_capture_only,
+            rest_handler=lambda topic, raw, **kwargs: self._process_rest_payload(topic, raw, **kwargs),
+        ) if mqtt_intake_db else None)
+        if action_expiry_policy_path:
+            from ..config.event_type_map import event_type_map
+            # 승인되지 않은 TTL은 파일의 빈 규칙으로 보류하고 운영 기본 경로에는 자동 적용하지 않는다.
+            expiry = ActionExpiryPolicy(
+                self._mqtt_intake.store, action_expiry_policy_path,
+                resolve_targets=self._expiry_targets,
+                resolve_mode=lambda camera_id: self._sites.resolve_mode(camera_id)[0].value,
+                priority_policy=event_type_map.routing_snapshot if physical_queue_enabled else None,
+            )
+            self._mqtt_intake.expiry_policy = expiry
+            self._executor._expiry_policy = expiry
+            if physical_queue_enabled:
+                queue = ActionDeviceQueue(
+                    expiry=expiry, repository=self._repo,
+                    publish=lambda topic, payload: self._executor._publish_edgex_command(topic, payload),
+                    jetson_id=self._edgex_jetson_id, topic_prefix=self._edgex_command_topic_prefix,
+                )
+                self._mqtt_intake.device_queue = queue
+                self._executor._physical_queue = queue
+                self._edgex_result_handler.on_result = queue.observe_result
+        self._mqtt_client_id = mqtt_client_id
+        self._mqtt_client: Optional[mqtt.Client | MqttTopicSubscriber] = None
         self._running = False
         self._rest_action_queue = _rest_queue.new_rest_action_queue(
             _REST_ACTION_QUEUE_MAX_SIZE
@@ -272,7 +323,15 @@ class ActionBridge:
 
     def list_commands(self, limit: int = 50) -> List[Dict]:
         """재시작 후에도 남아 있는 출력 제어 명령 상태를 반환한다."""
+        self._expire_command_responses()
         return self._repo.list_commands(limit=limit)
+
+    def _expire_command_responses(self) -> None:
+        """확정 저장한 미응답 상태만 관제에 알리고 재발행하지 않는다."""
+        for result in self._repo.expire_command_responses():
+            if self._mqtt_intake is not None and self._mqtt_intake.device_queue is not None:
+                self._mqtt_intake.device_queue.observe_result(result)
+            self._publish_status("devices/result", result)
 
     def list_output_devices(self) -> List[Dict]:
         """출력 디바이스 설정 상태를 UI/API용으로 반환한다."""
@@ -378,6 +437,9 @@ class ActionBridge:
 
     def approve_event(self, event_id: str) -> Tuple[bool, str]:
         """대기 이벤트를 승인하여 즉시 실행한다."""
+        # 영속 승인 계약 전에는 REST가 저장 전용/만료 보류를 우회하지 못하게 한다.
+        if self._mqtt_intake is not None and (self._mqtt_intake.capture_only or self._mqtt_intake.expiry_policy is not None):
+            return False, "영속 수신의 보류 해제·승인 절차가 필요합니다"
         info = self._sites.pop_pending(event_id)
         if info is None:
             return False, f"이벤트 없음: {event_id}"
@@ -484,7 +546,13 @@ class ActionBridge:
             )
         return reachable
 
-    def _handle_event(self, payload: Dict, topic: str = "rest/inbound") -> None:
+    def _expiry_targets(self, camera_id: str) -> Dict:
+        """수신 ACK 전에 네트워크 접근 없이 물리 대상 설정을 고정한다."""
+        return {device.value: sorted(self._resolve_edgex_device_ids(device.value, camera_id))
+                for device in self._sites.resolve_alarm_devices(camera_id)
+                if not self._edgex_allowed_devices or device in self._edgex_allowed_devices}
+
+    def _handle_event(self, payload: Dict, topic: str = "rest/inbound", *, execution_context=None) -> None:
         """수신된 이벤트를 처리한다 (MQTT·REST 공통 경로).
 
         - AUTO 모드: 즉시 알람/HTTP 실행
@@ -550,15 +618,52 @@ class ActionBridge:
                 },
             )
         else:
-            self._execute_action(topic, payload)
+            if execution_context is None:
+                self._execute_action(topic, payload)
+            else:
+                self._execute_action(topic, payload, execution_context=execution_context)
 
     def enqueue_rest_event(self, payload: Dict, topic: str = "rest/inbound") -> bool:
-        """REST 수신 이벤트를 백그라운드 큐에 넣는다.
-
-        HTTP 요청 스레드가 실제 장비 제어 timeout에 묶이지 않도록 REST 경로만
-        비동기로 분리한다. MQTT 경로는 기존 동기 동작을 유지한다.
-        """
+        """직접 호출도 영속 수신을 우회하지 않으며 기존 비영속 큐 계약은 유지한다."""
+        if self._mqtt_intake is not None:
+            self.accept_rest_event(json.dumps({**payload, "topic": topic}, allow_nan=False).encode())
+            return True
         return _rest_queue.enqueue_rest_event(self, payload, topic=topic)
+
+    def accept_rest_event(self, raw: bytes) -> Dict:
+        """접수 완료만 반환하며 실제 장치 실행·완료를 HTTP 성공으로 오인하지 않는다."""
+        payload = json.loads(raw)
+        if not isinstance(payload, dict) or not isinstance(payload.get("event_id"), str) or not payload["event_id"].strip():
+            raise ValueError("event_id가 있는 JSON 객체가 필요합니다")
+        topic = payload.pop("topic", "rest/inbound")
+        if topic is None or topic == "":
+            topic = "rest/inbound"
+        # 이벤트 API로 MQTT 제어/완료 응답을 위조해 만료·점유 검사를 우회하지 못하게 한다.
+        if (not isinstance(topic, str) or not topic.strip()
+                or topic.startswith(("cctv/commands/", "edgex/results/"))):
+            raise ValueError("REST 이벤트의 topic이 유효하지 않습니다")
+        normalized = json.dumps(payload, ensure_ascii=False, allow_nan=False).encode()
+        if self._mqtt_intake is None:
+            raise RuntimeError("영속 수신이 설정되지 않았습니다")
+        ingest_id = self._mqtt_intake.accept_rest(topic, raw, normalized)
+        return {"status": "accepted", "queued": True, "durable": True,
+                "ingest_id": ingest_id, "event_id": payload["event_id"]}
+
+    def get_rest_receipt(self, ingest_id: str) -> Dict:
+        """원본 내용은 노출하지 않고 REST 입력의 처리/보류 상태만 조회한다."""
+        if self._mqtt_intake is None:
+            raise KeyError(ingest_id)
+        receipt = self._mqtt_intake.store.get(ingest_id)
+        if receipt["source_namespace"] != "action_rest":
+            raise KeyError(ingest_id)
+        return {"ingest_id": ingest_id, "received_at": receipt["received_at"],
+                "stage": receipt["stage"], "reason": receipt["last_error"]}
+
+    def _process_rest_payload(self, topic: str, raw: bytes, **kwargs) -> None:
+        """REST는 이벤트만 처리하고 같은 문자열의 MQTT 제어 경로로 보내지 않는다."""
+        payload = json.loads(raw)
+        payload.pop("topic", None)
+        self._handle_event(payload, topic=topic, **kwargs)
 
     def _start_rest_action_worker(self) -> None:
         """REST action worker를 필요할 때 시작한다."""
@@ -572,10 +677,10 @@ class ActionBridge:
         """REST action worker를 종료한다."""
         _rest_queue.stop_rest_action_worker(self)
 
-    def _execute_action(self, topic: str, payload: Dict) -> None:
+    def _execute_action(self, topic: str, payload: Dict, *, execution_context=None) -> None:
         """디바이스 조치 + HTTP 전송을 즉시 실행한다."""
         self._executor._resolve_devices = self._resolve_devices
-        self._executor.execute(topic, payload)
+        self._executor.execute(topic, payload, execution_context=execution_context)
 
     # ------------------------------------------------------------------
     # MQTT 콜백
@@ -615,26 +720,32 @@ class ActionBridge:
         msg: mqtt.MQTTMessage,
     ) -> None:
         try:
-            topic = msg.topic
-            payload = json.loads(msg.payload.decode("utf-8"))
-            if topic in (CMD_TOPIC_MODE, CMD_TOPIC_APPROVE, CMD_TOPIC_REJECT):
-                self._dispatch_command(topic, payload)
-            elif topic.startswith("edgex/results/cctv/"):
-                self._handle_edgex_result(topic, payload)
-            else:
-                payloads = payload if isinstance(payload, list) else [payload]
-                topic_prefix = "/".join(topic.split("/")[:2])
-                mqtt_events_received.labels(topic_prefix=topic_prefix).inc()
-                for single in payloads:
-                    if not isinstance(single, dict):
-                        continue
-                    if topic.startswith("aiot/rules/sensor/"):
-                        single = self._normalize_sensor_payload(topic, single)
-                    self._handle_event(single, topic=topic)
+            self._process_mqtt_payload(msg.topic, msg.payload)
         except json.JSONDecodeError as exc:
             logger.error("JSON 파싱 실패: %s", exc)
         except Exception as exc:
             logger.error("Action 처리 오류: %s", exc, exc_info=True)
+
+    def _process_mqtt_payload(self, topic: str, raw: bytes, *, execution_context=None) -> None:
+        """영속 작업자가 오류를 보류할 수 있도록 실제 처리의 예외를 전달한다."""
+        payload = json.loads(raw.decode("utf-8"))
+        if topic in (CMD_TOPIC_MODE, CMD_TOPIC_APPROVE, CMD_TOPIC_REJECT):
+            self._dispatch_command(topic, payload)
+        elif topic.startswith("edgex/results/cctv/"):
+            self._handle_edgex_result(topic, payload)
+        else:
+            payloads = payload if isinstance(payload, list) else [payload]
+            topic_prefix = "/".join(topic.split("/")[:2])
+            mqtt_events_received.labels(topic_prefix=topic_prefix).inc()
+            for single in payloads:
+                if not isinstance(single, dict):
+                    continue
+                if topic.startswith("aiot/rules/sensor/"):
+                    single = self._normalize_sensor_payload(topic, single)
+                if execution_context is None:
+                    self._handle_event(single, topic=topic)
+                else:
+                    self._handle_event(single, topic=topic, execution_context=execution_context)
 
     def _handle_edgex_result(self, topic: str, payload: Dict) -> None:
         """EdgeX 장치 결과를 Action Layer 명령 이력과 상태 토픽에 반영한다."""
@@ -647,47 +758,70 @@ class ActionBridge:
     def start(self) -> None:
         """서비스를 시작한다."""
         self._repo.init()
-        self._forwarder.start()
-
-        self._mqtt_client = create_mqtt_client("cctv-action-layer")
-        self._mqtt_client.on_connect = self._on_connect
-        self._mqtt_client.on_message = self._on_message
-
-        for attempt in range(1, self._MQTT_MAX_ATTEMPTS + 1):
-            try:
-                self._mqtt_client.connect(
-                    self.mqtt_broker, self.mqtt_port, keepalive=60
-                )
-                logger.info("MQTT 연결 성공: %s:%d", self.mqtt_broker, self.mqtt_port)
-                break
-            except (ConnectionRefusedError, OSError) as exc:
-                if attempt >= self._MQTT_MAX_ATTEMPTS:
-                    logger.error("MQTT 연결 실패 - 포기 (%d회 시도): %s", attempt, exc)
-                    raise
-                logger.warning(
-                    "MQTT 연결 실패 (시도 %d/%d): %s - 5초 후 재시도...",
-                    attempt,
-                    self._MQTT_MAX_ATTEMPTS,
-                    exc,
-                )
-                time.sleep(5)
-
-        self._mqtt_client.loop_start()
-
-        self._start_rest_action_worker()
-
-        if self._rest_receiver:
-            self._rest_receiver.start()
-
-        self._running = True
-        action_bridge_up.set(1)
-        logger.info("Speaker-Bridge Action Layer 실행 중 (Ctrl+C 종료)")
-
-        signal.signal(signal.SIGINT, self._signal_handler)
-        signal.signal(signal.SIGTERM, self._signal_handler)
-
+        # 연결/구독 실패도 같은 종료 경로를 거쳐 수신 작업자 소유권을 반납한다.
         try:
+            capture_only = self._mqtt_intake is not None and self._mqtt_intake.capture_only
+            if not capture_only:
+                self._forwarder.start()
+
+            if self._mqtt_intake is not None:
+                self._mqtt_intake.start()
+                self._mqtt_client = MqttTopicSubscriber(
+                    broker=self.mqtt_broker, port=self.mqtt_port,
+                    topics=sorted(self.subscribe_topics | {
+                        CMD_TOPIC_MODE, CMD_TOPIC_APPROVE, CMD_TOPIC_REJECT, EDGEX_RESULT_TOPIC,
+                    }),
+                    client_id=self._mqtt_client_id, durable=True,
+                    message_handler=self._mqtt_intake.accept,
+                )
+            else:
+                self._mqtt_client = create_mqtt_client("cctv-action-layer")
+                self._mqtt_client.on_connect = self._on_connect
+                self._mqtt_client.on_message = self._on_message
+
+            for attempt in range(1, self._MQTT_MAX_ATTEMPTS + 1):
+                try:
+                    if self._mqtt_intake is not None:
+                        if not self._mqtt_client.connect():
+                            raise ConnectionError("영속 MQTT 구독 확인 대기")
+                    else:
+                        self._mqtt_client.connect(
+                            self.mqtt_broker, self.mqtt_port, keepalive=60
+                        )
+                    logger.info("MQTT 연결 성공: %s:%d", self.mqtt_broker, self.mqtt_port)
+                    break
+                except (ConnectionRefusedError, OSError) as exc:
+                    if attempt >= self._MQTT_MAX_ATTEMPTS:
+                        logger.error("MQTT 연결 실패 - 포기 (%d회 시도): %s", attempt, exc)
+                        raise
+                    logger.warning(
+                        "MQTT 연결 실패 (시도 %d/%d): %s - 5초 후 재시도...",
+                        attempt,
+                        self._MQTT_MAX_ATTEMPTS,
+                        exc,
+                    )
+                    time.sleep(5)
+
+            if self._mqtt_intake is None:
+                self._mqtt_client.loop_start()
+
+            if not capture_only:
+                self._start_rest_action_worker()
+
+            if self._rest_receiver:
+                self._rest_receiver.start()
+
+            self._running = True
+            action_bridge_up.set(1)
+            logger.info("Speaker-Bridge Action Layer 실행 중 (Ctrl+C 종료)")
+
+            signal.signal(signal.SIGINT, self._signal_handler)
+            signal.signal(signal.SIGTERM, self._signal_handler)
+
             while self._running:
+                if self._mqtt_intake is not None:
+                    self._mqtt_client.reconnect_if_needed()
+                self._expire_command_responses()
                 time.sleep(1.0)
         finally:
             self.stop()
@@ -698,13 +832,19 @@ class ActionBridge:
 
     def stop(self) -> None:
         """서비스를 안전하게 종료한다."""
+        self._running = False
         action_bridge_up.set(0)
         logger.info("Speaker-Bridge 종료 중...")
-        self._stop_rest_action_worker()
-        self._forwarder.stop()
         if self._rest_receiver:
             self._rest_receiver.stop()
-        if self._mqtt_client:
+        if self._mqtt_intake is not None:
+            # 입력을 먼저 닫고 실행 소유자가 끝난 뒤 기존 출력 자원을 해제한다.
+            if self._mqtt_client:
+                self._mqtt_client.disconnect()
+            self._mqtt_intake.stop()
+        self._stop_rest_action_worker()
+        self._forwarder.stop()
+        if self._mqtt_client and self._mqtt_intake is None:
             self._mqtt_client.loop_stop()
             self._mqtt_client.disconnect()
         logger.info("Speaker-Bridge 종료 완료")

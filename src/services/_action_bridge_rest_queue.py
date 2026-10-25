@@ -36,6 +36,9 @@ def enqueue_rest_event(bridge: Any, payload: Dict, topic: str = "rest/inbound") 
 
 def start_rest_action_worker(bridge: Any) -> None:
     """REST action worker를 필요할 때 시작한다."""
+    # 영속 수신 사용 시 MQTT와 같은 소유자/복구 규칙을 거치므로 메모리 소비자를 만들지 않는다.
+    if bridge._mqtt_intake is not None:
+        return
     if bridge._rest_action_worker and bridge._rest_action_worker.is_alive():
         return
     bridge._rest_action_worker_stop.clear()

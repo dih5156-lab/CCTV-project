@@ -226,7 +226,7 @@ class TestSiteRegistry:
         by_id = {p["event_id"]: p for p in pending}
         assert by_id["e1"]["priority"] == 30
         assert by_id["e1"]["risk_level"] == "low"
-        assert by_id["e2"]["priority"] == 2
+        assert by_id["e2"]["priority"] == 10
         assert by_id["e2"]["risk_level"] == "warning"
 
     def test_pending_thread_safe(self):
@@ -745,8 +745,8 @@ class TestActionBridgeStatusPublishing:
         assert comparison_payload == {
             "mode": "shadow",
             "direct_status": "acknowledged",
-            "edgex_publish_status": "acknowledged",
-            "comparison": "match",
+            "edgex_publish_status": "accepted",
+            "comparison": "awaiting_device_result",
         }
 
     def test_fall_detail_metadata_does_not_change_output_message(self):

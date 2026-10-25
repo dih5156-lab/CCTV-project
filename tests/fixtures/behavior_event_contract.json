@@ -1,0 +1,148 @@
+{
+  "synthetic_only": true,
+  "examples": [
+    {
+      "event_id": "evt_contract_fall_detected_001",
+      "type": "fall_detected",
+      "camera_id": "contract-camera-1",
+      "timestamp": 1792029600.0,
+      "confidence": 0.87,
+      "severity": "critical",
+      "object_id": "0",
+      "bbox": {
+        "x": 100,
+        "y": 200,
+        "width": 180,
+        "height": 360
+      },
+      "metadata": {
+        "synthetic": true,
+        "behavior": {
+          "contract_version": "1.0",
+          "stream_session_id": "contract-session-001",
+          "window_start_pts_seconds": 10.0,
+          "window_end_pts_seconds": 12.0,
+          "decision_pts_seconds": 12.1,
+          "frame_size": {
+            "width": 1920,
+            "height": 1080
+          },
+          "participants": [
+            {
+              "object_id": "0",
+              "bbox": {
+                "x": 100,
+                "y": 200,
+                "width": 180,
+                "height": 360
+              }
+            }
+          ],
+          "model_version": "synthetic-contract-model",
+          "decision_policy_version": "synthetic-contract-policy",
+          "person_confidence_threshold": 0.5
+        }
+      }
+    },
+    {
+      "event_id": "evt_contract_fight_detected_001",
+      "type": "fight_detected",
+      "camera_id": "contract-camera-1",
+      "timestamp": 1792029600.0,
+      "confidence": 0.87,
+      "severity": "critical",
+      "object_id": null,
+      "bbox": {
+        "x": 100,
+        "y": 200,
+        "width": 380,
+        "height": 360
+      },
+      "metadata": {
+        "synthetic": true,
+        "behavior": {
+          "contract_version": "1.0",
+          "stream_session_id": "contract-session-001",
+          "window_start_pts_seconds": 10.0,
+          "window_end_pts_seconds": 12.0,
+          "decision_pts_seconds": 12.1,
+          "frame_size": {
+            "width": 1920,
+            "height": 1080
+          },
+          "participants": [
+            {
+              "object_id": "0",
+              "bbox": {
+                "x": 100,
+                "y": 200,
+                "width": 180,
+                "height": 360
+              }
+            },
+            {
+              "object_id": "18446744073709551614",
+              "bbox": {
+                "x": 300,
+                "y": 200,
+                "width": 180,
+                "height": 360
+              }
+            }
+          ],
+          "model_version": "synthetic-contract-model",
+          "decision_policy_version": "synthetic-contract-policy",
+          "person_confidence_threshold": 0.5
+        }
+      }
+    },
+    {
+      "event_id": "evt_contract_fence_climb_detected_001",
+      "type": "fence_climb_detected",
+      "camera_id": "contract-camera-1",
+      "timestamp": 1792029600.0,
+      "confidence": 0.87,
+      "severity": "critical",
+      "object_id": "18446744073709551614",
+      "bbox": {
+        "x": 100,
+        "y": 200,
+        "width": 180,
+        "height": 360
+      },
+      "metadata": {
+        "synthetic": true,
+        "behavior": {
+          "contract_version": "1.0",
+          "stream_session_id": "contract-session-001",
+          "window_start_pts_seconds": 10.0,
+          "window_end_pts_seconds": 12.0,
+          "decision_pts_seconds": 12.1,
+          "frame_size": {
+            "width": 1920,
+            "height": 1080
+          },
+          "participants": [
+            {
+              "object_id": "18446744073709551614",
+              "bbox": {
+                "x": 100,
+                "y": 200,
+                "width": 180,
+                "height": 360
+              }
+            }
+          ],
+          "model_version": "synthetic-contract-model",
+          "decision_policy_version": "synthetic-contract-policy",
+          "person_confidence_threshold": 0.5,
+          "boundary": {
+            "id": "contract-fence-1",
+            "version": "1",
+            "direction": "outside_to_inside"
+          }
+        }
+      }
+    }
+  ]
+}

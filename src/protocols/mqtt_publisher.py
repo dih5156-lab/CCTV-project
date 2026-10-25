@@ -4,6 +4,9 @@ AI 추론 결과 이벤트를 MQTT 브로커로 발행하는 클라이언트.
 재연결 백오프, 연결 상태 추적, 발행 통계를 제공한다.
 """
 
+# Jetson B의 Python 3.8에서 union 타입 표기의 즉시 평가를 피한다.
+from __future__ import annotations
+
 import json
 import logging
 import os
@@ -18,6 +21,7 @@ from ..canonical_event import (
     get_payload_camera_id,
     get_payload_event_type,
 )
+from ..video_observation import normalize_tracking_ids
 from ._mqtt_factory import RECONNECT_MIN_DELAY, RECONNECT_MULTIPLIER, create_mqtt_client
 from .mqtt_outbox import MqttEventOutbox
 
@@ -197,6 +201,8 @@ class MqttEventPublisher:
         반환값:
             발행 성공 시 True, 실패 시 False.
         """
+        if os.environ.get("EDGE_RESULT_CONTEXT_DB"):
+            raise ValueError("edge results cannot bypass the central ownership gate")
         event_data = canonicalize_event_payload(event_data)
         topic = self._event_topic(event_data)
         outbox_row_id = self._store_outbox_pending(topic, event_data)
@@ -218,10 +224,15 @@ class MqttEventPublisher:
         return False
 
     def _publish_serialized(self, topic: str, event_data: Dict) -> tuple[bool, str]:
+        if os.environ.get("EDGE_RESULT_CONTEXT_DB"):
+            return False, "edge results cannot use legacy MQTT replay"
         try:
             client = self._client
             if client is None:
                 return False, "mqtt client is not connected"
+            # 예전 outbox의 숫자 ID도 발행 경계에서 바꾸되 저장된 event_id는 유지한다.
+            if event_data.get("message_type", "ai_detection_event") == "ai_detection_event":
+                event_data = normalize_tracking_ids(event_data)
             payload = json.dumps(event_data, ensure_ascii=False)
             result = client.publish(topic, payload, qos=self.qos, retain=self.retain)
             if result.rc == 0:

@@ -1,0 +1,14 @@
+{
+  "nodes": {
+    "jetson-a": {
+      "url": "http://127.0.0.1:18971",
+      "ca_file": null,
+      "credentials_file": "/absolute/private/jetson-a-preview-token.json"
+    },
+    "jetson-b": {
+      "url": "http://127.0.0.1:18972",
+      "ca_file": null,
+      "credentials_file": "/absolute/private/jetson-b-preview-token.json"
+    }
+  }
+}

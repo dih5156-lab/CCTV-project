@@ -14,6 +14,7 @@ from typing import Dict, Optional
 from urllib.parse import urlparse
 
 from ..time_utils import coerce_timestamp_seconds, now_kst_iso
+from ..video_observation import normalize_tracking_ids
 
 logger = logging.getLogger(__name__)
 
@@ -182,7 +183,8 @@ class _PayloadMixin:
         resource_name: str,
     ) -> Dict[str, object]:
         """EdgeX 이벤트 페이로드의 value 필드 구성."""
-        return {
+        # 직접 EdgeX로 보내는 경로도 MQTT와 같은 추적 ID 문자열 계약을 사용한다.
+        return normalize_tracking_ids({
             "type": event_type,
             "device": device_name,
             "resource": resource_name,
@@ -195,7 +197,7 @@ class _PayloadMixin:
                 "service": self.service_name,
                 "version": "v1",
             },
-        }
+        })
 
     def _build_event_payload(
         self,

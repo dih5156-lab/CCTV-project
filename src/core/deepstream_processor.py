@@ -1,31 +1,12 @@
-"""deepstream_processor.py — NVIDIA DeepStream 기반 프로세서 (Jetson 전용).
+"""Jetson의 DeepStream 입력·추론·이벤트 전달을 조정한다.
 
-[실행 환경 요구사항]
-  - NVIDIA Jetson (또는 Linux + dGPU) 에서만 동작
-  - DeepStream SDK 6.x / 7.x + Python bindings (pyds)
-  - GStreamer 1.0 + gst-python (gi.repository.Gst)
+실행에는 DeepStream SDK, pyds, GStreamer의 파이썬 바인딩이 필요하다.
+SDK가 없는 환경에서도 모듈은 가져올 수 있지만 프로세서 생성은 제한한다.
 
-[Windows / CPU 전용 환경]
-  import 는 성공하지만 인스턴스 생성 시 RuntimeError 를 발생시킵니다.
-  테스트는 @pytest.mark.skipif(not DEEPSTREAM_AVAILABLE, ...) 로 건너뜁니다.
-
-[파이프라인 구조]
-  nvurisrcbin  →  nvstreammux  →  nvinfer (TensorRT)
-               →  nvtracker   →  nvdsosd  →  fakesink
-               probe 콜백에서 bbox 메타데이터 추출 → DetectionEvent 생성
-
-[설정 파일 경로]
-  config/deepstream/config_infer_primary.txt  — nvinfer TensorRT 설정
-  config/deepstream/config_tracker.txt        — nvtracker 설정
-  config/deepstream/config_streammux.txt      — nvstreammux 설정
-  config/deepstream/labels.txt                — 클래스 레이블
-
-[구현 순서]
-  1. _build_pipeline()          : GStreamer 파이프라인 엘리먼트 생성·연결
-  2. _on_bus_message()          : EOS / Error 이벤트 처리
-  3. _on_pad_probe()            : nvinfer 출력 패드 → DetectionEvent 변환
-  4. _publish_loop()            : event_queue → MQTT 발행 스레드
-  5. enqueue_camera_retry()     : GStreamer 버스 에러 핸들러 기반 자동 재연결
+추론·추적·미리보기 구성은 설정에 따라 달라지므로 실제 연결은
+`_build_pipeline()`과 `_deepstream_pipeline_builder`에서 확인한다.
+배치 메타데이터는 공통 이벤트 후처리를 거치며, 발행 스레드는 선택된
+영속 접수 경로 또는 기존 MQTT 경로로 전달한다.
 """
 
 from __future__ import annotations
@@ -38,6 +19,7 @@ import os
 import threading
 import time
 from contextlib import nullcontext
+from dataclasses import replace
 from pathlib import Path
 from queue import Empty, Queue
 from threading import Event
@@ -135,7 +117,6 @@ from ._fall_aux_policy import aux_result_confirms_fall, should_confirm_fall_with
 from ._fall_shadow_review import (
     FallShadowReviewConfig,
     FallShadowReviewRecorder,
-    fall_shadow_event_id,
 )
 from ._h264_poc_fixer import H264PocFixer
 from ._preview_frame_store import (
@@ -235,6 +216,8 @@ class DeepStreamProcessor(BaseProcessor):
         USE_DEEPSTREAM=1 환경변수를 설정하면 runtime.py 에서
         VideoProcessor 대신 이 클래스를 자동으로 선택합니다.
     """
+
+    edge_runtime_backend = "deepstream"
 
     def __init__(self, config: AppConfig) -> None:
         if not DEEPSTREAM_AVAILABLE:
@@ -672,6 +655,8 @@ class DeepStreamProcessor(BaseProcessor):
             callback: fn(topic: str, payload: dict) 형태의 함수.
                       ActionBridge 또는 MqttPublisher 에서 wrap 하여 주입.
         """
+        if os.environ.get("EDGE_RESULT_CONTEXT_DB"):
+            raise ValueError("edge results cannot bypass the central ownership gate")
         self._mqtt_publish = callback
         logger.info("MQTT 발행 콜백 등록됨")
 
@@ -936,6 +921,9 @@ class DeepStreamProcessor(BaseProcessor):
             self.violation_filter.purge(camera_id)
             self._debouncer.clear_camera(camera_id)
             self._synthetic_id_assigner.remove_camera(camera_id)
+            fall_detector = getattr(self, "_fall_detector", None)
+            if isinstance(fall_detector, FallDetector):
+                fall_detector.clear_camera_history(camera_id)
             remove_camera_face_cache(self._face_identity_cache, camera_id)
             self._context_event_store.clear_camera(camera_id)
             preview_store = getattr(self, "_preview_store", None)
@@ -991,6 +979,9 @@ class DeepStreamProcessor(BaseProcessor):
         """
         if getattr(self, "process_restart_reason", ""):
             raise RuntimeError("DeepStream process restart required after fatal inference error")
+        # 비동기 소스 복구도 프로세스 종료 요청 이후에는 새 파이프라인을 열지 않는다.
+        if getattr(self, "_shutdown_requested", False):
+            return
         if self.running:
             return
 
@@ -1189,6 +1180,13 @@ class DeepStreamProcessor(BaseProcessor):
             camera_id,
             copy_frame=copy_frame,
         )
+
+    def get_camera_preview(self, camera_id: str):
+        """현재 파이프라인 세대의 영상/식별 정보 쌍만 제공한다."""
+        packet = self._preview_store.get_frame_with_info(camera_id)
+        if packet is None or not self._context_worker.is_current_frame(camera_id, packet[1]):
+            return None
+        return packet
 
     def _frame_capture_enabled(self) -> bool:
         """공개 preview 또는 CPU 후처리가 프레임을 요구하면 appsink를 유지한다."""
@@ -1431,10 +1429,6 @@ class DeepStreamProcessor(BaseProcessor):
             )
         except Exception as exc:
             logger.warning("[%s] fall event review 기록 실패: %s", camera_name, exc)
-
-    @staticmethod
-    def _fall_shadow_event_id(camera_name: str, event_payload: Dict[str, Any], created_at: Any) -> str:
-        return fall_shadow_event_id(camera_name, event_payload, created_at)
 
     def _should_confirm_fall_with_aux_before_publish(self, event: DetectionEvent) -> bool:
         falldata_aux = getattr(self, "_falldata_aux", None)
@@ -1932,6 +1926,28 @@ class DeepStreamProcessor(BaseProcessor):
     def _observe_prepared_pose_events(
         self, camera_name: str, events: List[DetectionEvent]
     ) -> None:
+        # 실제 관측의 시간·ID가 확정된 뒤 자세 변화를 보완하고 기존 지속2초 경로를 탄다.
+        fall_detector = getattr(self, "_fall_detector", None)
+        if isinstance(fall_detector, FallDetector):
+            existing_falls = {
+                (event.x, event.y, event.width, event.height)
+                for event in events if event.event_type == EventType.FALL_DETECTED
+            }
+            for event in tuple(events):
+                if event.event_type != EventType.PERSON or event.keypoints is None:
+                    continue
+                transition = fall_detector.observe_floor_transition(camera_name, event)
+                box = (event.x, event.y, event.width, event.height)
+                if not transition or box in existing_falls or fall_detector.score_threshold > 3.0:
+                    continue
+                metadata = dict(event.metadata or {})
+                metadata.pop("fall_near_miss", None)
+                metadata.update(
+                    derived_from="pose_transition", fall_score=3.0,
+                    fall_reasons=["standing_to_floor"], fall_detail_status="unclassified",
+                )
+                events.append(replace(event, event_type=EventType.FALL_DETECTED, metadata=metadata))
+                existing_falls.add(box)
         falldata_aux = getattr(self, "_falldata_aux", None)
         if falldata_aux is not None:
             falldata_aux.add_pose_events(camera_name, events)
@@ -1958,7 +1974,7 @@ class DeepStreamProcessor(BaseProcessor):
         self._context_worker.run_loop(self.stop_event)
 
     def _falldata_aux_worker_loop(self) -> None:
-        """borderline 낙상 후보를 보조 모델로 검증하고 confirmed일 때만 발행한다."""
+        """보조 결과를 기록하고 발행 대기 후보에만 확인/실패 정책을 적용한다."""
         logger.info("falldata aux 비동기 워커 시작")
         while not self.stop_event.is_set():
             try:
@@ -1970,6 +1986,10 @@ class DeepStreamProcessor(BaseProcessor):
                     camera_name,
                     event_payload,
                 )
+                # 이미 발행한 shadow 경보는 모델 확정·오류 결과로 다시 발행하지 않는다.
+                # 작업 제출 시 표식을 사용해 대기 중 모드가 바뀌어도 기록 전용을 유지한다.
+                if (event_payload.get("metadata") or {}).get("falldata_aux_shadow_only"):
+                    continue
                 if (event_payload.get("metadata") or {}).get(
                     "falldata_aux_near_miss_shadow"
                 ):
@@ -2036,10 +2056,30 @@ class DeepStreamProcessor(BaseProcessor):
         camera_name: str,
     ) -> bool:
         if not self._should_confirm_fall_with_aux_before_publish(event):
-            return self._enqueue_event(event, camera_name)
+            enqueued = self._enqueue_event(event, camera_name)
+            falldata_aux = getattr(self, "_falldata_aux", None)
+            aux_mode = getattr(getattr(falldata_aux, "config", None), "mode", "")
+            if (
+                enqueued
+                and event.event_type == EventType.FALL_DETECTED
+                and falldata_aux is not None
+                and falldata_aux.enabled
+                and str(aux_mode).strip().lower() == "shadow"
+            ):
+                # 원 경보의 중복 억제·큐 적재가 성공한 뒤 비교만 비동기로 요청한다.
+                # 이미 발행 큐에 전달한 원본 메타데이터는 변경하지 않는다.
+                shadow_event = replace(event, metadata={
+                    **(event.metadata or {}), "falldata_aux_shadow_only": True,
+                })
+                self._submit_falldata_aux_work(camera_name, [shadow_event])
+            return enqueued
         if not self._should_enqueue_event(event, camera_name):
             return False
 
+        # 비동기 aux 대기 중 담당자가 바뀌어도 최초 접수의 실행·sequence를 보존한다.
+        video_ingest = getattr(self, "_video_ingest", None)
+        if video_ingest is not None:
+            video_ingest.stamp(event, camera_name)
         metadata = dict(event.metadata or {})
         metadata["falldata_aux_publish_pending"] = True
         event.metadata = metadata
@@ -2053,22 +2093,32 @@ class DeepStreamProcessor(BaseProcessor):
             )
             return False
 
+        # 제출 실패 후보는 앞에서 이미 허용됐으므로 중복 억제를 다시 검사하지 않는다.
+        metadata.pop("falldata_aux_publish_pending", None)
         metadata["falldata_aux_confirm_fallback"] = "submit_failed"
         event.metadata = metadata
         logger.warning("[%s] falldata aux 제출 실패 - borderline 후보 fail-open 발행", camera_name)
-        return self._enqueue_event(event, camera_name)
+        return self._enqueue_accepted_event(event, camera_name)
 
     def _should_enqueue_event(self, event: DetectionEvent, camera_name: str) -> bool:
         """동일 이벤트가 프레임마다 MQTT로 발행되지 않도록 제한한다."""
         metadata = event.metadata or {}
         camera_id = str(metadata.get("camera_id") or camera_name)
         object_id = int(event.object_id) if event.object_id is not None else 0
-        return self._debouncer.should_send(camera_id, event.event_type.value, object_id)
+        # ID 변경 시 bbox로 낙상 누적 시간·재알림 억제를 이어가도록 원본 이벤트도 전달한다.
+        return self._debouncer.should_send(
+            camera_id, event.event_type.value, object_id, event=event
+        )
 
     def _enqueue_event(self, event: DetectionEvent, camera_name: str) -> bool:
         """디바운싱 검증 후 이벤트를 내부 큐에 적재한다."""
         if not self._should_enqueue_event(event, camera_name):
             return False
+        return self._enqueue_accepted_event(event, camera_name)
+
+    def _enqueue_accepted_event(self, event: DetectionEvent, camera_name: str) -> bool:
+        """중복 억제를 통과한 이벤트의 큐 적재와 리뷰 기록을 처리한다."""
+        # 일반 발행과 aux 제출 실패가 같은 적재·기록 절차를 사용하도록 분리한다.
         enqueued = self._enqueue_queue_item(event, camera_name)
         if enqueued:
             self._write_fall_event_review_record(camera_name, event)
@@ -2149,7 +2199,11 @@ class DeepStreamProcessor(BaseProcessor):
         frame_width, frame_height = ds_element_config.streammux_dimensions()
         max_width = int(frame_width * float(os.environ.get("DS_PPHUMAN_MAX_ROI_WIDTH_RATIO", "0.65")))
         max_height = int(frame_height * float(os.environ.get("DS_PPHUMAN_MAX_ROI_HEIGHT_RATIO", "1.0")))
-        keypoints = [point for point in detection.get("keypoints", []) if len(point) >= 3 and point[2] > 0]
+        # 사람 전용 검출의 관절 None은 정상 입력이므로 원 bbox를 SGIE에 전달한다.
+        points = detection.get("keypoints")
+        keypoints = [] if points is None else [
+            point for point in points if len(point) >= 3 and point[2] > 0
+        ]
         if frame_width and width > max_width and keypoints:
             xs = [int(point[0]) for point in keypoints]
             margin = max(10, int((max(xs) - min(xs)) * 0.35))
@@ -2799,36 +2853,10 @@ class DeepStreamProcessor(BaseProcessor):
     def _on_pad_probe(
         self, pad: Any, info: Any, camera_id: str
     ) -> Any:  # Gst.PadProbeReturn
-        """nvinfer 출력 패드 프로브 콜백 — bbox 메타데이터 → DetectionEvent 변환.
+        """배치 메타데이터를 계측하고 카메라별 이벤트 후처리로 전달한다.
 
-        Args:
-            pad:       Gst.Pad (nvinfer src pad)
-            info:      Gst.PadProbeInfo
-            camera_id: 사용하지 않음 — frame_meta.source_id 로 카메라 구분
-
-        Returns:
-            Gst.PadProbeReturn.OK
-
-        [다중 카메라 핵심]
-          배치 내 각 프레임은 frame_meta.source_id 로 어느 카메라에서 왔는지 구분:
-            frame_meta.source_id  →  nvstreammux 의 pad_id (sink_0, sink_1, ...)
-            pad_id → camera_id 역매핑:
-              _pad_to_camera = {info["pad_id"]: cam_id for cam_id, info in self._cameras.items()}
-              cam_id = _pad_to_camera.get(frame_meta.source_id, "unknown")
-
-        구현 체크리스트:
-          [ ] info.get_buffer() → Gst.Buffer
-          [ ] pyds.gst_buffer_get_nvds_batch_meta(hash(buffer)) 로 배치 메타 추출
-          [ ] frame_meta_list 순회 → NvDsFrameMeta
-          [ ] frame_meta.source_id → pad_id → camera_id 역매핑
-          [ ] object_meta_list 순회 → NvDsObjectMeta
-          [ ] NvDsObjectMeta.rect_params → x, y, width, height (절대 좌표)
-          [ ] NvDsObjectMeta.class_id → EventType 매핑
-          [ ] NvDsObjectMeta.confidence → DetectionEvent.confidence
-          [ ] NvDsObjectMeta.object_id → track ID (nvtracker 결과)
-          [ ] NvDsObjectMeta.classifier_meta_list → 헬멧 분류 결과
-          [ ] DetectionEvent 생성 후 _enqueue_event() 로 디바운싱/큐 적재
-          [ ] self._frames_processed += 1
+        콜백 인자 camera_id 대신 각 프레임의 source_id와 _pad_to_camera로
+        카메라를 구분해야 다중 입력 배치의 이벤트가 섞이지 않는다.
         """
         buffer = info.get_buffer()
         if buffer is None:
@@ -2871,14 +2899,9 @@ class DeepStreamProcessor(BaseProcessor):
         return Gst.PadProbeReturn.OK
 
     def _publish_loop(self) -> None:
-        """event_queue 에서 DetectionEvent 를 꺼내 MQTT 로 발행하는 스레드.
+        """이벤트 큐를 소비하며 공통 발행 루프의 종료·저장 정책을 적용한다.
 
-        구현 체크리스트:
-          [ ] while self.running: event_queue.get(timeout=1.0)
-          [ ] MQTT 토픽: f"{topic_prefix}/{camera_id}/{event.event_type.value}"
-          [ ] publish_queue_item() 로 DetectionEvent/dict 발행
-          [ ] 성공 시 events_sent, 실패 시 events_failed 증가
-          [ ] queue.Empty 예외는 continue 로 처리
+        영속 접수를 사용할 때는 큐의 접수 참조를 전달해 저장된 원본을 발행한다.
         """
         logger.info("MQTT 발행 스레드 시작")
         run_publish_loop(

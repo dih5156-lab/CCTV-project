@@ -1,0 +1,10 @@
+{
+  "client_id": "edge-result-collector-lab",
+  "mqtt": {
+    "host": "192.168.2.141",
+    "port": 18886,
+    "ca_file": "/private/broker-ca.crt",
+    "username": "collector",
+    "password": "REPLACE_ME"
+  }
+}

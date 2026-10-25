@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "policy_version": "p3.1-unset",
+  "_comment": "현장 TTL·시계 검증 전에는 출력하지 않는다. 규칙은 토픽·이벤트·시간 기준·장치별 초 단위를 명시한다.",
+  "clock_verified": false,
+  "rules": []
+}

@@ -70,6 +70,15 @@ class PreviewFrameStore:
             info = self._frame_info.get(camera_id)
             return dict(info) if info is not None else None
 
+    def get_frame_with_info(self, camera_id: str):
+        """갱신 중에도 영상과 식별 정보가 같은 프레임을 가리키도록 함께 읽는다."""
+        with self._lock:
+            frame = self._frames.get(camera_id)
+            info = self._frame_info.get(camera_id)
+            if frame is None or info is None:
+                return None
+            return frame.copy(), dict(info)
+
     def clear_camera(self, camera_id: str) -> None:
         with self._lock:
             self._frames.pop(camera_id, None)

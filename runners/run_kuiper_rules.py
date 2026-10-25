@@ -115,6 +115,11 @@ def upsert_rule(kuiper_api: str, rule: Dict[str, Any]) -> None:
         "actions": rule["actions"],
         "options": {
             "isEventTime": False,
+            # 브로커 기동 지연으로 멈춘 규칙은 최대 20회, 간격 최대 30초로 재시도한다.
+            "restartStrategy": {
+                "attempts": 20, "delay": 1000, "maxDelay": 30000,
+                "multiplier": 2, "jitter": 0.1,
+            },
         },
     }
 

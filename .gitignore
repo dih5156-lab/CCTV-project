@@ -48,6 +48,8 @@ data/archive/
 data/face_snapshots/
 data/insightface/
 data/runtime/
+# 보드별 모델 준비본은 로컬 산출물이며 원본 해시는 진행 기록에 보존한다.
+data/deploy/
 snapshots/
 logs/
 tmp_probe_dir/
@@ -147,6 +149,8 @@ models/**/*.pdiparams
 .mcp.json
 opencode.jsonc
 AGENTS.md
+# 프로젝트 공통 Codex 규칙은 새 작업 폴더에도 전달되도록 관리한다.
+!/AGENTS.md
 CLAUDE.md
 CODEBUDDY.md
 GEMINI.md

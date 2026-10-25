@@ -1,0 +1,6 @@
+# 격리 브로커 전용: 노드는 자신의 원본 토픽에만 쓰고 기존 출력 토픽 권한은 받지 않는다.
+pattern write poc/edge/raw/%u/+/+/+
+
+user collector
+topic read poc/edge/raw/jetson-a/+/+/+
+topic read poc/edge/raw/jetson-b/+/+/+

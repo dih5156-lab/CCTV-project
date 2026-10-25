@@ -8,6 +8,7 @@ import urllib.error
 import urllib.request
 import uuid
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -71,6 +72,16 @@ def http_request(method: str, url: str, body: dict | None = None):
 # ---------------------------------------------------------------------------
 # 픽스처
 # ---------------------------------------------------------------------------
+
+
+@pytest.fixture
+def debounce_clock(monkeypatch):
+    # 실제 sleep 지연이 gap 판정을 바꾸지 않도록 이 모듈의 시계만 제어한다.
+    clock = SimpleNamespace(now=1_000_000.0)
+    monkeypatch.setattr(
+        "src.core.event_debouncer.time", SimpleNamespace(time=lambda: clock.now)
+    )
+    return clock
 
 
 @pytest.fixture

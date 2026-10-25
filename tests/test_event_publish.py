@@ -218,7 +218,7 @@ def test_detection_observation_keeps_id_track_zero_and_attribute_quality():
     assert topic == "cctv/events/cam01/appearance_match"
     assert payload["event_id"] == expected_id == observation["source_record_id"]
     assert observation["device_id"] == "cam01"
-    assert observation["track_id"]["value"] == 0
+    assert observation["track_id"]["value"] == "0"
     assert observation["measurements"]["has_helmet"]["value"] is False
     assert observation["measurements"]["upper_color"]["quality"] == "unknown"
     assert observation["measurements"]["lower_color"]["quality"] == "missing"

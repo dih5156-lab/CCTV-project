@@ -7,6 +7,7 @@ import json
 from typing import Any, Dict, Mapping, Optional
 
 from .time_utils import now_kst_iso, timestamp_to_kst_iso
+from .video_observation import normalize_tracking_ids
 
 SKIP_ALERT_FORWARD_METADATA_KEY = "skip_alert_forward"
 
@@ -374,6 +375,9 @@ def canonicalize_event_payload(
         normalized.update(canonical)
 
     normalized.setdefault("event_id", get_payload_event_id(normalized))
+    # 기존 이벤트 ID 계산 뒤 표현만 바꿔 재처리 ID와 센서 원본 계약을 보존한다.
+    if normalized.get("message_type") == "ai_detection_event":
+        normalized = normalize_tracking_ids(normalized)
     return normalized
 
 

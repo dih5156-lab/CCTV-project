@@ -10,10 +10,12 @@ import sqlite3
 import time
 from pathlib import Path
 from types import SimpleNamespace
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
+from src.devices.signboard import SignboardConfig
+from src.edgex.dabit_device_service import DabitDeviceService
 from src.services.action_bridge import (
     ActionBridge,
     ControlMode,
@@ -69,6 +71,121 @@ def test_edgex_device_result_updates_action_command_history(bridge: ActionBridge
     command = bridge._repo.list_commands(limit=1)[0]
     assert command["command_id"] == "event-1:speaker"
     assert command["status"] == "simulated"
+
+
+def test_camera_alarm_reaches_only_registered_signboard_and_records_result(tmp_path):
+    """일반 탐지·저신뢰·미등록 입력은 차단하고 낙상 명령의 중복·실패 회신을 확인한다."""
+    registry = tmp_path / "devices.json"
+    registry.write_text(json.dumps({"devices": [{
+        "device_id": "test-signboard", "device_type": "signboard",
+        "camera_ids": ["camera_1"], "enabled": True,
+    }]}))
+    bridge = ActionBridge(
+        db_path=str(tmp_path / "events.db"), edgex_command_mode="edgex",
+        edgex_allowed_devices={"signboard"}, edgex_device_registry_path=str(registry),
+        signboard_config=SignboardConfig(host="192.0.2.1"),
+    )
+    bridge._repo.init()
+    bridge._sites.set_default_action_settings(confidence_threshold=0.7)
+    published = []
+    bridge._mqtt_client = SimpleNamespace(
+        publish=lambda topic, payload, **kwargs: published.append((topic, json.loads(payload)))
+        or SimpleNamespace(rc=0)
+    )
+
+    def deliver(event_id, event_type, confidence=0.95, camera_id="camera_1"):
+        bridge._on_message(None, None, _make_mqtt_message(
+            f"cctv/ai/events/{camera_id}/{event_type}",
+            {"event_id": event_id, "camera_id": camera_id, "type": event_type,
+             "confidence": confidence, "severity": "critical"},
+        ))
+
+    deliver("normal", "person")
+    deliver("low", "fall_detected", confidence=0.6)
+    deliver("fall", "fall_detected")
+    deliver("fall", "fall_detected")
+    deliver("unmapped", "fall_detected", camera_id="camera_other")
+    commands = [(topic, payload) for topic, payload in published if topic.startswith("edgex/commands/")]
+    assert len(commands) == 1
+    topic, request = commands[0]
+    assert topic.endswith("/signboard/test-signboard")
+    assert request["event_id"] == "fall"
+    assert request["request_id"] == "fall:signboard:test-signboard"
+    device = MagicMock()
+    device.display.return_value = True
+    service = DabitDeviceService(device_id="test-signboard", config=SignboardConfig(), device=device)
+    result = service.execute_request(request)
+    assert service.execute_request(request) == result
+    device.display.assert_called_once()
+    result_topic = "edgex/results/cctv/jetson-01/signboard"
+    bridge._on_message(None, None, _make_mqtt_message(result_topic, result.to_dict()))
+    command = next(row for row in bridge.list_commands() if row["command_id"] == "fall:signboard")
+    assert command["status"] == "acknowledged"
+
+    # 장치 실패는 성공 캐시에 남기지 않아 같은 요청의 복구 재시도를 허용한다.
+    failed_request = {**request, "request_id": "recovery:signboard:test-signboard", "event_id": "recovery"}
+    device.display.return_value = False
+    failed = service.execute_request(failed_request)
+    assert failed.status == "failed" and failed.error_code == "device_unreachable"
+    bridge._on_message(None, None, _make_mqtt_message(result_topic, failed.to_dict()))
+    assert bridge.list_commands()[0]["status"] == "failed"
+    device.display.return_value = True
+    recovered = service.execute_request(failed_request)
+    bridge._on_message(None, None, _make_mqtt_message(result_topic, recovered.to_dict()))
+    assert bridge.list_commands()[0]["status"] == "acknowledged"
+    assert device.display.call_count == 3
+
+
+@pytest.mark.parametrize("rule_first", [False, True])
+def test_raw_and_rule_routes_share_command_identity_after_cooldown(tmp_path, rule_first):
+    """서로 다른 토픽의 동일 이벤트가 쿨다운 이후에도 장치를 재실행하지 않는다."""
+    bridge = ActionBridge(
+        db_path=str(tmp_path / "events.db"), edgex_command_mode="edgex",
+        edgex_allowed_devices={"signboard"},
+        edgex_device_registry_path="config/output_devices.json",
+        signboard_config=SignboardConfig(host="192.0.2.1"),
+    )
+    bridge._repo.init()
+    published = []
+    bridge._mqtt_client = SimpleNamespace(
+        publish=lambda topic, payload, **kwargs: published.append((topic, json.loads(payload)))
+        or SimpleNamespace(rc=0)
+    )
+    event = {"event_id": "original-fall", "camera_id": "camera_1",
+             "type": "fall_detected", "confidence": 0.95,
+             "timestamp": "2026-10-12T15:00:00+09:00", "object_id": "12123278610165399591"}
+    routes = [
+        ("cctv/ai/events/camera_1/fall_detected", event),
+        ("cctv/rules/intrusion/critical", [{**event, "severity": "critical"}]),
+    ]
+    if rule_first:
+        routes.reverse()
+    for index, (topic, payload) in enumerate(routes):
+        # 시간 제한에 가려진 중복이 아니라 request_id에 의한 억제를 확인한다.
+        with patch("src.services._action_bridge_alarm.time.time", return_value=1700000000 + index * 600):
+            bridge._on_message(None, None, _make_mqtt_message(topic, payload))
+
+    requests = [payload for topic, payload in published if topic.startswith("edgex/commands/")]
+    assert len(requests) == 2
+    assert {request["event_id"] for request in requests} == {"original-fall"}
+    assert {request["request_id"] for request in requests} == {
+        "original-fall:signboard:cctv-signboard-01"
+    }
+    device = MagicMock()
+    device.display.return_value = True
+    service = DabitDeviceService(device_id="cctv-signboard-01", config=SignboardConfig(), device=device)
+    for request in requests:
+        result = service.execute_request(request)
+        bridge._on_message(None, None, _make_mqtt_message(
+            "edgex/results/cctv/jetson-01/signboard", result.to_dict(),
+        ))
+    device.display.assert_called_once()
+    assert len(bridge.list_recent_events()) == 1
+    assert {row["event_id"] for row in bridge.list_recent_events()} == {"original-fall"}
+    commands = bridge.list_commands()
+    assert len(commands) == 1
+    assert commands[0]["command_id"] == "original-fall:signboard"
+    assert commands[0]["status"] == "acknowledged"
 
 
 # ---------------------------------------------------------------------------

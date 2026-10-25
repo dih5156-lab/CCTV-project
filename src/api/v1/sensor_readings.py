@@ -12,6 +12,7 @@ import httpx
 from fastapi import APIRouter, Body, Depends, Query, Request, status
 from pydantic import BaseModel, Field
 
+from ...canonical_event import get_payload_event_id
 from ...services.sensor_classifier import (
     classify_sensor_payload as _classify_sensor_payload,
 )
@@ -369,6 +370,15 @@ async def receive_sensor_reading(
                 "data": data,
             },
         }
+        # 현재 시각으로 ID/기한을 새로 만들지 않는다. 원본 ID·시각 모두 없으면 영속 REST가 거부한다.
+        timestamp = coerce_timestamp_seconds(payload.get("occurred_at") or payload.get("timestamp") or payload.get("received_at"))
+        if timestamp > 0:
+            action_payload["timestamp"] = timestamp
+        event_id = payload.get("event_id")
+        if isinstance(event_id, str) and event_id.strip():
+            action_payload["event_id"] = event_id
+        elif timestamp > 0:
+            action_payload["event_id"] = get_payload_event_id(action_payload)
         action_target = f"{_ACTION_LAYER_URL.rstrip('/')}/events"
         try:
             action_response = await client.post(action_target, json=action_payload)

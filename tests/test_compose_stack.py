@@ -59,6 +59,54 @@ def test_jetson_systemd_unit_uses_compose_service_names():
     assert "cctv-ai-engine cctv-public-api cctv-public-demo-ui" not in unit_text
 
 
+@pytest.mark.parametrize("board", ["agx", "nx16", "nx16_custom"])
+def test_jetson_board_paths_preserve_runtime_contract(tmp_path, board):
+    if shutil.which("docker") is None:
+        pytest.skip("Docker Compose 실행 도구 필요")
+    root = compose_stack.PROJECT_ROOT
+    compose_file = tmp_path / "docker-compose.jetson.yml"
+    compose_file.write_text((root / compose_file.name).read_text())
+    settings = {}
+    if board.startswith("nx16"):
+        for line in (root / ".env.jetson.nx16.example").read_text().splitlines():
+            if line and not line.startswith("#"):
+                key, value = line.split("=", 1)
+                settings[key] = value
+    if board == "nx16_custom":
+        settings["MODELS_HOST_PATH"] = str(tmp_path / "NX models")
+        settings["JETSON_TORCH_VENV_HOST_PATH"] = str(tmp_path / "NX torch venv")
+    env_file = tmp_path / ".env.jetson"
+    env_file.write_text("\n".join(f"{key}={value}" for key, value in settings.items()) + "\n")
+    asc_env = tmp_path / "edgex/asc/cctv_asc.env"
+    asc_env.parent.mkdir(parents=True)
+    asc_env.write_text("")
+    path_keys = {"MODELS_HOST_PATH", "DEEPSTREAM_CONFIG_HOST_PATH", "JETSON_TORCH_VENV_HOST_PATH", "TRT_CACHE_VOLUME"}
+    result = subprocess.run(
+        ["docker", "compose", "--project-directory", str(tmp_path), "--env-file", str(env_file),
+         "-f", str(compose_file), "config", "--format", "json"],
+        env={key: value for key, value in os.environ.items() if key not in path_keys},
+        capture_output=True, text=True, timeout=30,
+    )
+    assert result.returncode == 0, result.stderr
+    config = json.loads(result.stdout)
+    service = config["services"]["cctv-ai-engine"]
+    mounts = {mount["target"]: mount for mount in service["volumes"]}
+    for target, key, default in [
+        ("/app/models", "MODELS_HOST_PATH", "./models"),
+        ("/app/config/deepstream", "DEEPSTREAM_CONFIG_HOST_PATH", "./config/deepstream"),
+        ("/app/.venv-jetson-train", "JETSON_TORCH_VENV_HOST_PATH", "./.venv-jetson-train"),
+    ]:
+        assert mounts[target]["source"] == str(tmp_path / settings.get(key, default))
+        assert mounts[target].get("bind", {}).get("create_host_path", False) is False
+    assert config["volumes"]["trt-cache"]["name"] == settings.get("TRT_CACHE_VOLUME", "edgex-jetson_trt-cache")
+    assert config["volumes"]["trt-cache"]["external"] is True
+    assert mounts["/app/models/trt_cache"]["source"] == "trt-cache"
+    # 보드 경로 선택이 추론/기능 설정을 바꾸지 않아야 한다.
+    assert service["environment"]["PYTHONPATH"] == "/app/.venv-jetson-train/lib/python3.10/site-packages:/app"
+    assert "DS_HELMET_ENABLED" not in settings
+    assert "--confidence" in service["command"]
+
+
 def test_detects_jetson_from_model_marker(tmp_path):
     marker = tmp_path / "model"
     marker.write_text("NVIDIA Jetson AGX Orin")

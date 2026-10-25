@@ -52,7 +52,7 @@ def test_attributes_keep_false_unknown_missing_and_invalid_separate():
     assert measurements["gender"]["quality"] == "missing"
     assert measurements["has_suitcase"]["quality"] == "missing"
     assert measurements["has_handbag"]["quality"] == "invalid"
-    assert observation["track_id"]["value"] == 0
+    assert observation["track_id"]["value"] == "0"
     assert observation["frame_num"] == 0
     assert observation["model"] == {
         "backend": "deepstream_tensor",
@@ -103,7 +103,7 @@ def test_invalid_category_is_not_a_label(value):
         (-1, "unknown"),
         (2**64 - 1, "unknown"),
         (True, "invalid"),
-        ("7", "invalid"),
+        ("07", "invalid"),
         (1.5, "invalid"),
         (2**64, "invalid"),
     ],

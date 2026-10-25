@@ -10,6 +10,44 @@ from src.core._deepstream_pipeline_builder import (
 from src.services.processor_metrics import ProcessorStatsCollector
 
 
+@pytest.mark.parametrize("backend", ["deepstream", "video_processor"])
+def test_edge_identity_uses_actual_processor_class(monkeypatch, backend):
+    import uuid
+
+    from src.core.base_processor import BaseProcessor
+
+    session = str(uuid.uuid4())
+    monkeypatch.setenv("EDGE_SERVICE_SESSION_ID", session)
+    monkeypatch.setenv("USE_DEEPSTREAM", "true")
+    processor = SimpleNamespace(edge_runtime_backend=backend, get_stats=lambda: {})
+    BaseProcessor.__init__(processor, SimpleNamespace())
+    registry = CollectorRegistry()
+    registry.register(ProcessorStatsCollector(processor))
+    assert registry.get_sample_value("cctv_edge_service_info", {"session_id": session, "backend": backend}) == 1
+    monkeypatch.delenv("EDGE_SERVICE_SESSION_ID")
+    BaseProcessor.__init__(processor, SimpleNamespace())
+    assert registry.get_sample_value("cctv_edge_service_info", {"session_id": session, "backend": backend}) is None
+
+
+def test_metrics_server_can_be_restricted_to_loopback(monkeypatch):
+    from urllib.request import urlopen
+
+    from src.services.processor_metrics import start_processor_metrics_server
+
+    monkeypatch.setenv("METRICS_HOST", "127.0.0.1")
+    processor = SimpleNamespace(get_stats=lambda: {"frames_processed": 7})
+    server, thread = start_processor_metrics_server(processor, 0)
+    try:
+        host, port = server.server_address[:2]
+        assert host == "127.0.0.1"
+        with urlopen(f"http://{host}:{port}/metrics", timeout=5) as response:
+            assert b"cctv_processor_frames_processed_total 7.0" in response.read()
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=5)
+
+
 def _metrics(camera_ids=("camera_1", "camera_2"), clock=lambda: 100.0):
     from src.core._deepstream_primary_metrics import PrimaryFrameMetrics
 

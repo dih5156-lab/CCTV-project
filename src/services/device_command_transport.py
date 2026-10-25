@@ -50,6 +50,7 @@ class DeviceCommandResult:
     error: str | None = None
     device_ids: tuple[str, ...] = ()
     request_ids: tuple[str, ...] = ()
+    target_results: tuple[dict[str, Any], ...] = ()
 
 
 class DeviceCommandTransport(Protocol):
@@ -128,14 +129,16 @@ class EdgeXCommandTransport:
         resolve_device_ids,
         jetson_id: str,
         topic_prefix: str,
+        register_targets=None,
     ) -> None:
         """EdgeX 발행기와 물리 장치 ID 조회기를 보관한다."""
         self._publish = publish
         self._resolve_device_ids = resolve_device_ids
         self._jetson_id = jetson_id
         self._topic_prefix = topic_prefix
+        self._register_targets = register_targets
 
-    def send(self, command: DeviceCommand) -> DeviceCommandResult:
+    def send(self, command: DeviceCommand, *, before_publish=None) -> DeviceCommandResult:
         """등록된 물리 장치별로 EdgeX Command를 발행한다."""
         device_ids = self._resolve_device_ids(command.device, command.camera_id)
         if not device_ids:
@@ -146,10 +149,19 @@ class EdgeXCommandTransport:
                 status="failed",
                 error=f"등록된 EdgeX 대상 장치 없음: {command.device}",
             )
+        # 응답이 발행 함수 반환보다 빨라도 전체 대상과 미응답 상태를 먼저 보존한다.
+        target_results = [{
+            "request_id": build_transport_request_id(command.command_id, device_id),
+            "event_id": command.event_id, "device_id": device_id,
+            "status": "pending", "error_code": None,
+        } for device_id in device_ids]
+        if self._register_targets is not None and not self._register_targets(command, target_results):
+            return DeviceCommandResult(command.device, command.command_id, False, "failed",
+                                       "장치 대상 저장 실패")
         failed_devices = []
         target_device_ids = []
         target_request_ids = []
-        for device_id in device_ids:
+        for device_id, target_result in zip(device_ids, target_results):
             target_command_id = build_transport_request_id(
                 command.command_id, device_id
             )
@@ -169,24 +181,43 @@ class EdgeXCommandTransport:
                 command.device,
                 device_id=device_id or None,
             )
-            if not self._publish(topic, payload):
+            try:
+                reason = before_publish(device_id) if before_publish is not None else None
+                if reason:
+                    target_result["status"] = "expired" if reason == "expired" else "held"
+                    target_result["error_code"] = reason
+                else:
+                    accepted = self._publish(topic, payload)
+                    target_result["status"] = "accepted" if accepted else "failed"
+                    target_result["error_code"] = None if accepted else "publish_failed"
+            except Exception:
+                # 발행 중 예외는 전달 여부를 단정할 수 없으며 다른 대상의 전송은 계속한다.
+                target_result["status"] = "uncertain"
+                target_result["error_code"] = "publish_error"
+            if target_result["status"] != "accepted":
                 failed_devices.append(device_id or command.device)
 
         if failed_devices:
+            statuses = {row["status"] for row in target_results}
             return DeviceCommandResult(
                 device=command.device,
                 command_id=command.command_id,
                 ok=False,
-                status="failed",
+                status=(next(iter(statuses)) if statuses in ({"expired"}, {"held"})
+                        else "uncertain" if any(row["status"] == "uncertain" for row in target_results)
+                        else "failed" if len(failed_devices) == len(device_ids) else "partial_failure"),
                 error=f"EdgeX 명령 발행 실패: {', '.join(failed_devices)}",
                 device_ids=tuple(target_device_ids),
                 request_ids=tuple(target_request_ids),
+                target_results=tuple(target_results),
             )
         return DeviceCommandResult(
             device=command.device,
             command_id=command.command_id,
             ok=True,
-            status="acknowledged",
+            # MQTT 발행 접수는 장치의 성공 응답이 아니다.
+            status="accepted",
             device_ids=tuple(target_device_ids),
             request_ids=tuple(target_request_ids),
+            target_results=tuple(target_results),
         )

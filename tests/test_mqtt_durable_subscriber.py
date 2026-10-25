@@ -145,3 +145,12 @@ def test_legacy_subscriber_keeps_qos0_and_auto_ack_behavior():
     instance._on_message(client, None, message(qos=0))
     client.ack.assert_not_called()
     client.disconnect.assert_not_called()
+
+
+def test_running_network_loop_owns_pending_reconnect():
+    instance = subscriber()
+    instance._client = Mock()
+    instance._loop_running = True
+    instance._connected = False
+    assert instance.connect() is False
+    instance._client.connect.assert_not_called()

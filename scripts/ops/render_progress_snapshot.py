@@ -1,10 +1,13 @@
 """Render a read-only progress page and PDF from the checked-in WBS snapshot."""
 
 import argparse
+import csv
 import json
 from collections import Counter
 from html import escape
 from pathlib import Path
+from textwrap import fill
+from urllib.parse import quote_from_bytes
 
 import matplotlib
 
@@ -50,9 +53,28 @@ def render_html(model, output):
         "percent": f'{100 * counts["DONE"] / len(rows):.1f}',
         "counts": " · ".join(f"{STATUS[s]} {counts[s]}" for s in STATUS),
         "rows": "\n".join(table_rows),
+        # 정답 성적과 실행 관측을 같은 데이터에서 보여 주되 서로 다른 열에 둔다.
+        "model_rows": "\n".join(
+            "<tr>" + "".join(f"<td>{escape(row[key])}</td>" for key in
+                             ("name", "scope", "runtime", "quality", "remaining")) + "</tr>"
+            for row in model.get("model_results", [])
+        ),
     }
     for key, value in replacements.items():
         template = template.replace("{{" + key + "}}", value)
+    with output.with_name("model_test_results.csv").open("w", encoding="utf-8-sig", newline="") as stream:
+        # 생성 CSV도 저장소의 LF 규칙을 따라 결과 갱신 시 공백 오류를 막는다.
+        writer = csv.writer(stream, lineterminator="\n")
+        writer.writerow(["모델", "시험 조건", "실행·지연", "품질 근거", "판정·남은 검증"])
+        writer.writerows(
+            [row[key] for key in ("name", "scope", "runtime", "quality", "remaining")]
+            for row in model.get("model_results", [])
+        )
+    # 문서 서버의 허용 경로를 늘리지 않고 브라우저가 표의 CSV를 바로 저장한다.
+    template = template.replace(
+        "{{model_csv_href}}",
+        "data:text/csv;charset=utf-8," + quote_from_bytes(output.with_name("model_test_results.csv").read_bytes()),
+    )
     output.with_name("index.html").write_text(template, encoding="utf-8")
 
 
@@ -89,12 +111,14 @@ def render(model, output):
     )
     plt.rcParams.update({"font.family": "Noto Sans CJK JP", "pdf.fonttype": 3})
     rows, counts = model["rows"], model["counts"]
-    if len(rows) != 33 or sum(counts.values()) != len(rows):
+    # 사양서 추가 작업도 집계하되 빈 작업판과 상태 합계 불일치는 거부한다.
+    if not rows or sum(counts.values()) != len(rows):
         raise ValueError("WBS snapshot counts do not match")
     output.parent.mkdir(parents=True, exist_ok=True)
     render_html(model, output)
+    # 1차 범위는 확정했지만 앞당긴 현장 날짜는 제안이므로 확정 일정으로 표시하지 않는다.
     subtitle = (
-        f"{model['updated_date']}  ·  문서 v{model['version']}  ·  목표 종료 2026-12-31"
+        f"{model['updated_date']}  ·  문서 v{model['version']}  ·  11월 1차 POC / 범위 확정·현장일 미정"
     )
     with PdfPages(output) as pdf:
         fig, ax = new_page("CCTV · AIoT 개발 진행 현황", subtitle, 1)
@@ -130,22 +154,22 @@ def render(model, output):
         block(
             ax,
             0.657,
-            # 소유권·종료 통과와 재진입 관측을 native 멈춤의 원인 확정으로 확대하지 않는다.
-            "이번 검증: 실제 AI 후처리·버퍼 소유권5조건",
+            # 합성 미리보기 통합과 실제 B GPU·연속 영상 실측을 구분한다.
+            "O5 담당 영상 미리보기 통합 PASS",
             [
-                "CPU 영상3565개 독립 소유 · 중지20요청 반환 · SIGTERM 후2.18~14.65초 종료",
-                "flush 제외 대조: 같은 스레드 stop() 중첩1건 · I40 원 실패 인과 미확정",
-                "제품206파일/SDK/운영 변경 없음 · P5.1 진행 중 · I40 OPEN",
+                "Python134·JS7·Firefox1 PASS · 합성 JPEG",
+                "A→B 영상 전환·오래된 프레임/이전 실행 차단",
+                "2초 미리보기 · 연속 영상/B GPU·무선 잔여",
             ],
         )
         block(
             ax,
             0.518,
-            "다음 작업과 진행 중인 검증",
+            "11월 1차 POC · 범위 확정/현장 일정 미정",
             [
-                "P5.1: 종료 중 SIGTERM 재진입의 중복 정리·자원 수명 영향 재현",
-                "P2.4 BLOCKED: 내부 복구 시험 보존, 실제 부하·보관/지연 기준 합의 대기",
-                "P3 장치 큐·격리·출력 결과 구현은 미착수. 실물 전광판·스피커 시험 후속",
+                "11/20 준비 → 11/23~27 현장 제안 · 전체 요구사항 유지",
+                "준비150h 가정 중 작업120h·여유30h · 이후 가용시간 미확정",
+                "미완료28행 · 오케스트레이션 추가 공수 재배정 필요 · 12/31 목표 유지",
             ],
         )
         block(
@@ -153,11 +177,12 @@ def render(model, output):
             0.379,
             "주요 이슈·결정 대기",
             [
-                # 별도 Jetson 보유와 설치 합격을 구분하고 사용자 지정 검증 시점을 표시한다.
-                "I40 OPEN: native NULL 대기는2초 join 제한 밖 · 단위 시험 범위와 구분",
-                "I32/I37/I38·I46 배포 정합 잔여 · I45 DB 경합·I34 CUDA OPEN",
-                "별도 Jetson 설치 시험은 기능 완성 후·정식 배포 전(사용자 결정)",
-                "I43 재부팅·장시간 검증 및 D02/D04/D06 운영 기준은 별도 잔여",
+                # 배포 설정의 로컬 검증을 실제 NX 설치·성능 합격으로 표시하지 않는다.
+                "I68: 새 B GPU·무선 DDS·실제 지연/패킷 손실·기관 계약",
+                "30W·systemd 정상 확인 · 부팅 timeout 재발 검증 I43 OPEN",
+                "I15 센서 실수신·실물 가동 대기 · 대상/ID 수정 운영 반영 잔여",
+                "AGX/NX 후보 구성·복구92시험 통과 · 실장비 전환/성능 대기",
+                "I56 CPU 보완·GPU 지연 개선 미확인 · I64 운영 미반영",
             ],
             color="#9D3C22",
         )
@@ -166,8 +191,8 @@ def render(model, output):
             0.213,
             "최근 근거와 갱신 방식",
             [
-                "다중 부하 P6.2, 추적 품질 P5.2~5.5/P6.2, 장비 P3/P4 후속",
-                "현재 디스크 보존은 시작 당시 메모리/전체 복구본과 구분",
+                "다음: 새 통합본 B GPU·무선 DDS/영상 인계 실측",
+                "기존 H264 3분29.97FPS · 원격/장기·낙상·센서 검증 잔여",
                 "매 작업 종료 시 원본 문서와 사내 HTML/PDF를 같은 주소로 갱신",
                 "실시간 자동 동기화는 아님. 기준일과 버전을 확인하세요",
             ],
@@ -175,8 +200,10 @@ def render(model, output):
         pdf.savefig(fig)
         fig.savefig(output.with_suffix(".png"), dpi=130)
         plt.close(fig)
-        for page, subset in enumerate((rows[:17], rows[17:]), start=2):
-            fig, ax = new_page(f"전체 WBS · {page-1}/2", subtitle, page)
+        # 작업 증가 시 페이지를 나눠 마지막 행이 하단 안내와 겹치지 않게 한다.
+        subsets = [rows[start:start + 17] for start in range(0, len(rows), 17)]
+        for page, subset in enumerate(subsets, start=2):
+            fig, ax = new_page(f"전체 WBS · {page-1}/{len(subsets)}", subtitle, page)
             ax.text(0.065, 0.835, "ID", fontsize=11, weight="bold", color=INK)
             ax.text(0.19, 0.835, "작업·산출물", fontsize=11, weight="bold", color=INK)
             ax.text(
@@ -215,6 +242,29 @@ def render(model, output):
             )
             pdf.savefig(fig)
             fig.savefig(output.with_name(f"{output.stem}_page{page}.png"), dpi=130)
+            plt.close(fig)
+
+        if model.get("model_results"):
+            # 사양서 반영으로 기존 모델 시험을 새로 통과한 것처럼 표시하지 않는다.
+            model_page = len(subsets) + 2
+            fig, ax = new_page("전체 모델 결과 · 기존 검증 이력", subtitle, model_page)
+            ax.text(0.065, 0.835, "실행 확인과 정확도 합격은 별도입니다. P=정밀도, R=재현율, F1=조화평균.",
+                    fontsize=9, color=MUTED)
+            values = [[fill(row[key], width=18) for key in ("name", "runtime", "quality", "remaining")]
+                      for row in model["model_results"]]
+            table = ax.table(cellText=values, colLabels=["모델", "실행·지연", "품질 근거", "판정·남은 일"],
+                             cellLoc="left", colLoc="left", bbox=[0.06, 0.13, 0.88, 0.67],
+                             colWidths=[0.18, 0.27, 0.29, 0.26])
+            table.auto_set_font_size(False)
+            table.set_fontsize(8)
+            for (row_index, _), cell in table.get_celld().items():
+                cell.set_edgecolor("#DCE3EE")
+                cell.set_facecolor("#EAF1FF" if row_index == 0 else "white" if row_index % 2 else "#F4F7FB")
+                cell.set_text_props(color=INK)
+            ax.text(0.065, 0.09, "기존 시험 이력입니다. 싸움·월담의 새 품질 근거나 KISA 합격 성적은 포함하지 않습니다.",
+                    fontsize=8, color=MUTED)
+            pdf.savefig(fig)
+            fig.savefig(output.with_name(f"{output.stem}_page{model_page}.png"), dpi=130)
             plt.close(fig)
 
 

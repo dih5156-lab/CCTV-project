@@ -14,6 +14,9 @@
   ④ POST /interm-api/Audio/Output/PlayCtrl (Play)
 """
 
+# Jetson B의 Python 3.8에서 장치 타입 표기를 import 시 평가하지 않는다.
+from __future__ import annotations
+
 import json
 import logging
 import re

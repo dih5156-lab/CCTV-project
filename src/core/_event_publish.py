@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from queue import Empty
 from typing import Any, Callable, Dict, Optional, Tuple
 
@@ -60,6 +61,8 @@ def publish_queue_item(
     backend: Optional[str] = "deepstream",
 ) -> bool:
     """큐 항목 1개를 발행하고 성공 여부를 반환한다."""
+    if os.environ.get("EDGE_RESULT_CONTEXT_DB"):
+        raise ValueError("edge results require durable video intake")
     event_data, event_type, camera_id = normalize_event_queue_item(
         queue_item,
         default_backend=backend,

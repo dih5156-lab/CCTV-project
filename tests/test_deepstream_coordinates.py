@@ -11,6 +11,9 @@ from src.core._deepstream_event_factory import (
     emit_tensor_events,
     object_meta_events_from_frame,
 )
+from src.core._preview_frame_store import FRAME_IDENTITY_MARKER
+from src.core.event_debouncer import EventDebouncer
+from src.core.events import EventType
 
 
 @pytest.fixture
@@ -134,3 +137,55 @@ def test_crop_pose_restores_points_and_metadata_to_mux(coordinate_case, source_s
     assert event.keypoints[0][:2] == pytest.approx([1584.375, 671.875])
     assert (event.metadata["frame_width"], event.metadata["frame_height"]) == (1920, 1080)
     assert event.object_id == 37
+
+
+@pytest.mark.parametrize("path", ["tensor", "object", "crop"])
+def test_all_deepstream_paths_deliver_pts_to_fall_debouncer(
+    coordinate_case, monkeypatch, debounce_clock, path
+):
+    """모델 연산만 대체하고 실제 메타 변환·공통 판정 경로의 영상시계를 확인한다."""
+    proc, frame, _, pyds, _ = coordinate_case
+    proc._debouncer = EventDebouncer(NS(events=NS(
+        debounce_enabled=True, fall_sustained_seconds=2.,
+        fall_gap_reset_seconds=5., fall_resend_cooldown=60.,
+    )), lambda *_: None)
+    proc._crop_pose_results = 0
+    proc._filter_events_for_camera = lambda events, camera: events
+    proc._add_osd_overlays = lambda *_: None
+    detections = [dict(box=(100, 100, 120, 70), confidence=.9, class_id=0,
+                       label="person", object_id=37, is_fall=True)]
+    monkeypatch.setattr(ds, "detections_from_yolo_output", lambda *args, **kwargs: detections)
+    frame.obj_meta_list = NS(data=NS(
+        class_id=0, object_id=37, obj_label="fall_detected", confidence=.9,
+        rect_params=NS(left=100, top=100, width=120, height=70),
+        obj_user_meta_list=frame.frame_user_meta_list), next=None)
+    decisions = []
+
+    def consume(camera, events):
+        for event in events:
+            if event.event_type == EventType.FALL_DETECTED:
+                assert event.timestamp > 1_000_000_000
+                decisions.append(proc._should_enqueue_event(event, camera))
+
+    proc._apply_existing_event_pipeline = consume
+    for seconds in range(3):
+        debounce_clock.now = 1_000_000 + seconds * 4
+        frame.frame_num, frame.buf_pts = seconds * 30, seconds * 1_000_000_000
+        frame.misc_frame_info = [FRAME_IDENTITY_MARKER, 1, seconds + 1]
+        if path == "tensor":
+            emit_tensor_events(
+                batch_meta=object(), frame_meta=frame, camera_name="cam", pyds_module=pyds,
+                detections_from_tensor=lambda *_: detections, add_osd_overlays=lambda *_: None,
+                apply_existing_event_pipeline=consume,
+                feature_flags_for_camera=lambda _: {"use_pose": True},
+                event_type_for_label=proc._event_type_for_label,
+            )
+        elif path == "object":
+            consume("cam", object_meta_events_from_frame(
+                frame_meta=frame, camera_name="cam", pyds_module=pyds,
+                pphuman_sgie_enabled=False, feature_flags_for_camera=lambda _: {"use_pose": True},
+                decode_pphuman_for_obj=lambda _: {}, event_type_for_label=proc._event_type_for_label,
+            ))
+        else:
+            proc._emit_crop_pose_events(object(), frame, "cam")
+    assert decisions == [False, False, True]

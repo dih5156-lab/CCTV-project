@@ -6,9 +6,10 @@ config/event_type_map.json 을 읽어 런타임에 사용한다.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Dict
 
@@ -46,26 +47,23 @@ class EventTypeMap:
     def __init__(self, path: Path = _MAP_PATH) -> None:
         self._entries: Dict[str, EventTypeEntry] = {}
         self._defaults = EventTypeEntry(**_BUILTIN_DEFAULTS)
-        self._risk_levels: Dict[str, int] = {
-            "critical": 0,
-            "warning": 1,
-            "warn": 1,
-            "error": 1,
-            "normal": 2,
-            "info": 3,
-            "low": 4,
-        }
         self._routing_levels: Dict[str, int] = {}
         self._risk_order: Dict[str, int] = {
             "critical": 0,
             "warning": 1,
-            "warn": 1,
-            "error": 1,
             "normal": 2,
             "info": 3,
             "low": 4,
         }
+        # 유형 순서가 0~9이므로 설정이 없어도 위험 등급 사이에 10칸을 확보한다.
+        self._risk_levels = {name: rank * 10 for name, rank in self._risk_order.items()}
         self._load(path)
+
+    @staticmethod
+    def _normalize_risk(value: str) -> str:
+        """별칭의 표시와 정렬이 서로 다른 등급을 쓰지 않도록 통일한다."""
+        name = str(value or "").strip().lower()
+        return {"emergency": "critical", "warn": "warning", "error": "warning"}.get(name, name)
 
     def _load(self, path: Path) -> None:
         try:
@@ -81,13 +79,21 @@ class EventTypeMap:
         routing = raw.get("routing", {})
         configured_risk_levels = routing.get("risk_levels", {})
         if isinstance(configured_risk_levels, dict):
+            candidate_levels = self._risk_levels.copy()
             for name, value in configured_risk_levels.items():
                 try:
                     numeric = int(value)
                 except (TypeError, ValueError):
                     continue
-                if 0 <= numeric <= 99:
-                    self._risk_levels[str(name).lower()] = numeric
+                normalized_risk = self._normalize_risk(name)
+                if 0 <= numeric <= 99 and normalized_risk in candidate_levels:
+                    candidate_levels[normalized_risk] = numeric
+            # 구형 설정의 warning=2는 critical=3보다 앞서므로 구간 전체를 검증한다.
+            ordered_levels = [candidate_levels[name] for name in self._risk_order]
+            if all(lower - higher >= 10 for higher, lower in zip(ordered_levels, ordered_levels[1:])):
+                self._risk_levels = candidate_levels
+            else:
+                logger.warning("라우팅 위험 등급 구간 겹침/역전 — 안전한 기본 구간 사용")
         configured_levels = routing.get("levels", {})
         if isinstance(configured_levels, dict):
             for name, value in configured_levels.items():
@@ -127,11 +133,9 @@ class EventTypeMap:
         """위험도 그룹과 그룹 내부 레벨을 결합한 장치 라우팅 우선순위."""
         normalized_type = event_type.lower()
         entry = self.get(normalized_type)
-        configured_risk = str(entry.alert_level or "normal").lower()
-        if configured_risk in {"error", "warn"}:
-            configured_risk = "warning"
+        configured_risk = self._normalize_risk(entry.alert_level or "normal")
         configured_order = self._risk_order.get(configured_risk, self._risk_order["normal"])
-        severity_name = str(severity or "").lower()
+        severity_name = self._normalize_risk(severity)
         severity_order = self._risk_order.get(severity_name)
         effective_risk = configured_risk
         if severity_name and severity_order is None and configured_order >= self._risk_order["normal"]:
@@ -147,9 +151,9 @@ class EventTypeMap:
 
     def routing_risk_level(self, event_type: str, severity: str = "") -> str:
         entry = self.get(event_type)
-        configured_risk = str(entry.alert_level or "normal").lower()
+        configured_risk = self._normalize_risk(entry.alert_level or "normal")
         configured_order = self._risk_order.get(configured_risk, self._risk_order["normal"])
-        severity_name = str(severity or "").lower()
+        severity_name = self._normalize_risk(severity)
         severity_order = self._risk_order.get(severity_name)
         if severity_name and severity_order is None:
             if configured_order < self._risk_order["normal"]:
@@ -163,9 +167,19 @@ class EventTypeMap:
             if severity_order >= self._risk_order["normal"]:
                 return "normal"
             return "info"
-        if configured_risk in {"error", "warn"}:
-            return "warning"
         return configured_risk if configured_risk in self._risk_order else "normal"
+
+    def routing_snapshot(self, event_type: str, severity: str) -> dict:
+        """영속 큐의 위험/유형 순서를 고정하고 미등록 입력은 임의로 승격하지 않는다."""
+        if event_type.lower() not in self._entries or self._normalize_risk(severity) not in self._risk_order:
+            raise ValueError("priority_policy_unset")
+        priority = self.routing_priority(event_type, severity)
+        risk = max((name for name, base in self._risk_levels.items() if base <= priority),
+                   key=self._risk_levels.__getitem__)
+        policy = {"entries": {name: asdict(entry) for name, entry in self._entries.items()},
+                  "levels": self._routing_levels, "risk_levels": self._risk_levels}
+        return {"risk_rank": self._risk_order[risk], "within_risk_rank": priority - self._risk_levels[risk],
+                "policy_hash": hashlib.sha256(json.dumps(policy, sort_keys=True).encode()).hexdigest()}
 
     def tts_message(self, event_type: str, severity: str = "") -> str:
         entry = self._entries.get(event_type.lower())

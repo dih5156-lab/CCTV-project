@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>엣지 담당 상태 조회</title>
+  <!-- 기존 img-src data: 정책 안에서 기본 favicon 요청을 방지한다. -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'/%3E">
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, sans-serif; background: #0f172a; color: #e2e8f0; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    main { max-width: 64rem; margin: auto; padding: 1.5rem; }
+    h1 { font-size: 1.75rem; margin: 0 0 .5rem; }
+    h2 { font-size: 1.125rem; margin-top: 0; }
+    p { line-height: 1.6; }
+    .muted { color: #cbd5e1; }
+    section, form { margin-top: 1.5rem; padding: 1.25rem; border: 1px solid #475569; border-radius: .5rem; }
+    form { display: flex; gap: 1rem; align-items: end; flex-wrap: wrap; }
+    label { display: grid; gap: .5rem; flex: 1; min-width: 12rem; }
+    input, button { font: inherit; border: 1px solid #64748b; border-radius: .25rem; padding: .625rem .75rem; }
+    input { background: #1e293b; color: inherit; width: 100%; }
+    button { background: #e2e8f0; color: #0f172a; cursor: pointer; }
+    button.secondary { color: #e2e8f0; background: #334155; }
+    :focus-visible { outline: 3px solid #7dd3fc; outline-offset: 3px; }
+    .summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; }
+    dt { color: #cbd5e1; margin-top: .75rem; }
+    dd { margin: .25rem 0 0; overflow-wrap: anywhere; }
+    #connection { min-height: 1.5rem; color: #fde68a; }
+    #preview-image { width: 100%; height: auto; margin-top: 1rem; }
+    .table-scroll { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th, td { padding: .75rem .5rem; border-bottom: 1px solid #475569; white-space: nowrap; }
+    caption { text-align: left; padding-bottom: .75rem; color: #cbd5e1; }
+    @media (max-width: 40rem) { main { padding: 1rem; } .summary { grid-template-columns: 1fr; gap: 0; } form { align-items: stretch; } label { min-width: 100%; } }
+  </style>
+  <script src="/viewer.js" defer></script>
+</head>
+<body>
+<main>
+  <header><h1>엣지 담당 상태 조회</h1><p class="muted">현재 CCTV를 분석하는 노드와 최근 배정 이력을 확인합니다. 이 화면에서 AI를 시작하거나 중지하지 않습니다.</p></header>
+  <form id="connect-form">
+    <!-- 최신 브라우저의 pattern /v 문법에서도 하이픈을 문자로 검사한다. -->
+    <label for="camera-id">카메라 ID<input id="camera-id" value="camera_1" pattern="[A-Za-z0-9_.\-]+" maxlength="128" required></label>
+    <label for="reader-token">읽기 전용 토큰<input id="reader-token" type="password" autocomplete="off" minlength="32" maxlength="128" required></label>
+    <button type="submit">연결</button><button id="disconnect" class="secondary" type="button">연결 해제</button>
+  </form>
+  <p id="connection" role="status" aria-live="polite">연결 전입니다. 토큰은 브라우저 저장소에 보관하지 않습니다.</p>
+  <div class="summary">
+    <section aria-labelledby="current-heading"><h2 id="current-heading">현재 담당</h2><dl>
+      <dt>상태</dt><dd id="state">미확인</dd><dt>담당 노드</dt><dd id="owner">—</dd>
+      <dt>배정 번호</dt><dd id="epoch">—</dd><dt>전환 대상</dt><dd id="candidate">—</dd>
+      <dt>마지막 조회</dt><dd id="updated">—</dd>
+    </dl></section>
+    <section aria-labelledby="result-heading"><h2 id="result-heading">추론 결과와 영상</h2><dl>
+      <dt>현재 실행의 결과 저장</dt><dd id="result">미확인</dd><dt>영상 미리보기</dt><dd id="preview-status">미연결</dd>
+    </dl><img id="preview-image" alt="현재 담당 노드의 CCTV 미리보기" hidden><p class="muted">미리보기는 2초 간격으로 갱신하며 오래된 프레임은 지웁니다. 연속 영상 재생과 별도로 제공하는 POC 기능입니다.</p></section>
+  </div>
+  <section aria-labelledby="history-heading"><h2 id="history-heading">최근 배정 이력</h2>
+    <div class="table-scroll"><table><caption>최근 20개 배정의 현재 상태입니다. 자동 판단 사유 전체 이력은 포함하지 않습니다.</caption>
+      <thead><tr><th scope="col">배정 번호</th><th scope="col">노드</th><th scope="col">상태</th><th scope="col">준비 시각</th><th scope="col">활성화 시각</th></tr></thead>
+      <tbody id="history"><tr><td colspan="5">조회 전입니다.</td></tr></tbody>
+    </table></div>
+  </section>
+</main>
+</body>
+</html>

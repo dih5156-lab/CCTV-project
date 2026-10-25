@@ -9,6 +9,7 @@ from typing import Any
 
 import httpx
 
+from ..canonical_event import get_payload_event_id
 from ..event_routing import mark_alert_stored_by_public_api
 from ..time_utils import now_kst_iso
 from .dependencies._settings import INTERNAL_SERVICE_TOKEN as _INTERNAL_TOKEN
@@ -65,7 +66,7 @@ def _set_if_not_none(payload: dict[str, Any], key: str, value: Any) -> None:
 
 
 def build_alert_action_payload(alert: AlertIn) -> dict[str, Any]:
-    """Build the Action Layer payload for a validated alert request."""
+    """생산자 ID 또는 원래 시각·내용으로 REST 재전달에도 같은 사건 ID를 보존한다."""
     metadata = mark_alert_stored_by_public_api(alert.metadata)
     action_payload: dict[str, Any] = {
         "camera_id": alert.camera_id,
@@ -81,6 +82,7 @@ def build_alert_action_payload(alert: AlertIn) -> dict[str, Any]:
     )
     _set_if_not_none(action_payload, "object_id", alert.object_id)
     action_payload["metadata"] = metadata
+    action_payload["event_id"] = alert.event_id or get_payload_event_id(action_payload)
     return action_payload
 
 

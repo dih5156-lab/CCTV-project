@@ -1,5 +1,8 @@
 """중앙화된 애플리케이션 설정 모듈"""
 
+# Jetson B의 Python 3.8에서도 최신 타입 표기를 import 시 평가하지 않는다.
+from __future__ import annotations
+
 import logging
 import os
 from dataclasses import dataclass, field

@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import Any, Mapping, Optional
 
 from ..devices.speaker import SpeakerConfig, SpeakerDevice
-from .request_idempotency import RequestIdempotencyCache
+from .request_idempotency import RequestIdempotencyCache, RequestIdempotencyError
 
 
 @dataclass(frozen=True)
@@ -43,18 +43,23 @@ class SpeakerDeviceService:
         device: Optional[Any] = None,
         devices: Optional[Mapping[str, Any]] = None,
         dry_run: bool = False,
+        request_db_path: str | None = None,
     ) -> None:
         """스피커 식별자와 InterM 장치 클라이언트를 초기화한다."""
         self.device_id = device_id
         self._device = device or SpeakerDevice(config)
         self._devices = dict(devices or {device_id: self._device})
         self._dry_run = bool(dry_run)
-        self._request_results = RequestIdempotencyCache[SpeakerCommandResult]()
+        self._request_results = RequestIdempotencyCache[SpeakerCommandResult](database_path=request_db_path)
 
     @property
     def device_ids(self) -> tuple[str, ...]:
         """현재 서비스가 처리할 수 있는 장치 식별자 목록을 반환한다."""
         return tuple(self._devices)
+
+    def get_request_status(self, request_id: str) -> dict[str, Any]:
+        """출력 명령을 재전송하지 않고 보존된 실행 상태를 조회한다."""
+        return self._request_results.lookup(request_id)
 
     def execute_request(self, request: Mapping[str, Any]) -> SpeakerCommandResult:
         """공통 Command 요청을 검증하고 스피커 동작으로 실행한다."""
@@ -99,41 +104,47 @@ class SpeakerDeviceService:
                 error_code="invalid_payload",
             )
 
-        cached_result = self._request_results.get(request_id)
-        if cached_result is not None:
-            return cached_result
+        # 기본 대상·모의 실행 여부도 고정 내용에 포함해 다른 작업의 이력을 재사용하지 않는다.
+        def execute():
+            if self._dry_run:
+                result = SpeakerCommandResult(
+                    request_id=request_id,
+                    event_id=event_id,
+                    device_id=target_device_id,
+                    status="simulated",
+                )
+                return result
 
-        if self._dry_run:
+            try:
+                success = self._execute_action(action, payload, target_device)
+            except Exception:
+                return SpeakerCommandResult(
+                    request_id=request_id,
+                    event_id=event_id,
+                    device_id=target_device_id,
+                    status="failed",
+                    error_code="device_error",
+                )
+
             result = SpeakerCommandResult(
                 request_id=request_id,
                 event_id=event_id,
                 device_id=target_device_id,
-                status="simulated",
+                status="acknowledged" if success else "failed",
+                error_code=None if success else "device_unreachable",
             )
-            self._request_results.put(request_id, result)
             return result
 
         try:
-            success = self._execute_action(action, payload, target_device)
-        except Exception:
-            return SpeakerCommandResult(
-                request_id=request_id,
-                event_id=event_id,
-                device_id=target_device_id,
-                status="failed",
-                error_code="device_error",
+            return self._request_results.run(
+                request_id, execute, request={**request, "device_id": target_device_id,
+                    "payload": dict(payload), "dry_run": self._dry_run}, result_type=SpeakerCommandResult,
             )
-
-        result = SpeakerCommandResult(
-            request_id=request_id,
-            event_id=event_id,
-            device_id=target_device_id,
-            status="acknowledged" if success else "failed",
-            error_code=None if success else "device_unreachable",
-        )
-        if result.status in {"acknowledged", "simulated"}:
-            self._request_results.put(request_id, result)
-        return result
+        except RequestIdempotencyError as exc:
+            return SpeakerCommandResult(
+                request_id=request_id, event_id=event_id,
+                device_id=target_device_id, status=exc.status, error_code=exc.error_code,
+            )
 
     def _execute_action(self, action: str, payload: Mapping[str, Any], device: Any) -> bool:
         """명령 이름에 맞는 InterM 스피커 메서드를 호출한다."""

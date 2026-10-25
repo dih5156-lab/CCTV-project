@@ -97,6 +97,9 @@ def attach_camera_source_to_pipeline(
         logger.debug("nvurisrcbin latency property 미지원")
 
     if source_uri.lower().startswith(("rtsp://", "rtsps://")):
+        if get_env_bool("DS_RTSP_TCP_ONLY", False):
+            # SSH 포워딩은 TCP만 전달하므로 UDP RTP로 우회하지 않도록 강제한다.
+            src.set_property("select-rtp-protocol", 4)
         if "DS_RTSP_DROP_ON_LATENCY" in os.environ:
             try:
                 src.set_property(

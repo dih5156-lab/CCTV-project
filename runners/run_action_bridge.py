@@ -74,11 +74,25 @@ class ActionBridgeRuntimeConfig:
     edgex_device_registry_path: Optional[str] = None
     edgex_allowed_devices: Set[str] = frozenset()
     device_dry_run: bool = False
+    command_response_timeout_seconds: float = 30.0
+    mqtt_intake_db: Optional[str] = None
+    mqtt_client_id: Optional[str] = None
+    mqtt_capture_only: bool = False
+    action_expiry_policy_path: Optional[str] = None
+    physical_queue_enabled: bool = False
 
 
 def _add_mqtt_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--mqtt-broker", default=_env("MQTT_BROKER", "localhost"))
     parser.add_argument("--mqtt-port", type=int, default=_env_int("MQTT_PORT", 1883))
+    # 명시한 후보에서만 영속 수신을 켜고 기존 운영 연결은 그대로 유지한다.
+    parser.add_argument("--mqtt-intake-db", default=_env("ACTION_MQTT_INTAKE_DB", ""))
+    parser.add_argument("--mqtt-client-id", default=_env("ACTION_MQTT_CLIENT_ID", ""))
+    parser.add_argument("--action-expiry-policy", default=_env("ACTION_EXPIRY_POLICY_PATH", ""))
+    parser.add_argument("--physical-queue", action="store_true",
+                        default=_env_bool("ACTION_PHYSICAL_QUEUE_ENABLED", False))
+    parser.add_argument("--mqtt-capture-only", action="store_true",
+                        default=_env_bool("ACTION_MQTT_CAPTURE_ONLY", False))
     parser.add_argument(
         "--subscribe-topics",
         default=_env(
@@ -93,6 +107,9 @@ def _add_mqtt_arguments(parser: argparse.ArgumentParser) -> None:
 
 
 def _add_storage_arguments(parser: argparse.ArgumentParser) -> None:
+    # 현장 SLA 확정 전 조정 가능한 초기값이며 미응답을 자동 재실행하는 시간은 아니다.
+    parser.add_argument("--command-response-timeout", type=float,
+                        default=_env_float("COMMAND_RESPONSE_TIMEOUT_SECONDS", 30.0))
     parser.add_argument(
         "--db-path",
         default=_env("DB_PATH", "/app/data/runtime/action_events.db"),
@@ -343,6 +360,12 @@ def parse_runtime_config(
         edgex_device_registry_path=args.edgex_device_registry_path or None,
         edgex_allowed_devices=_csv_set(args.edgex_allowed_devices),
         device_dry_run=args.action_device_dry_run,
+        command_response_timeout_seconds=args.command_response_timeout,
+        mqtt_intake_db=args.mqtt_intake_db or None,
+        mqtt_client_id=args.mqtt_client_id or None,
+        mqtt_capture_only=args.mqtt_capture_only,
+        action_expiry_policy_path=args.action_expiry_policy or None,
+        physical_queue_enabled=args.physical_queue,
     )
 
 
@@ -368,6 +391,12 @@ def create_action_bridge(config: ActionBridgeRuntimeConfig) -> ActionBridge:
         edgex_device_registry_path=config.edgex_device_registry_path,
         edgex_allowed_devices=config.edgex_allowed_devices,
         device_dry_run=config.device_dry_run,
+        command_response_timeout_seconds=config.command_response_timeout_seconds,
+        mqtt_intake_db=config.mqtt_intake_db,
+        mqtt_client_id=config.mqtt_client_id,
+        mqtt_capture_only=config.mqtt_capture_only,
+        action_expiry_policy_path=config.action_expiry_policy_path,
+        physical_queue_enabled=config.physical_queue_enabled,
     )
 
 

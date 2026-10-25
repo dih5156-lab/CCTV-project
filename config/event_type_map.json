@@ -1,12 +1,13 @@
 {
   "_comment": "event_type → 장치별 문구·라우팅 우선순위·경보 레벨 매핑 테이블\n  tts_message  : 스피커 TTS 안내 문구\n  display_text : 전광판 본문 문구 (display_message 페이로드 없을 때 폴백)\n  color_code   : Dabit 전광판 색상 (0=검정 1=빨강 2=녹색 3=노랑 4=파랑 5=자주 6=하늘 7=흰색)\n  priority     : 라우팅 우선순위 (숫자가 낮을수록 위험도가 높음)\n  alert_level  : info | warning | error | critical",
   "routing": {
+    "_comment": "유형 순서 0~9가 위험 등급을 넘지 않도록 기본값 간 10칸 이상 확보한다. warning=10은 I23 역전 방지용이며 공개 API priority 값도 바뀐다.",
     "risk_levels": {
       "critical": 0,
-      "warning": 2,
+      "warning": 10,
       "normal": 20,
       "info": 30,
-      "low": 30
+      "low": 40
     },
     "levels": {
       "fall_detected": 0,

@@ -7,6 +7,22 @@ from typing import Any, Dict, Mapping, Optional
 from uuid import uuid4
 
 
+def handle_mqtt_request(service, request: Mapping[str, Any], device_type: str) -> dict[str, Any]:
+    """상태 대조 요청은 실행 경로에 넣지 않고 영속 이력만 조회한다."""
+    if request.get("action") != "request_status":
+        return service.execute_request(request).to_dict()
+    from ..services.command_identifiers import resolve_logical_command_id
+
+    request_id = request.get("request_id")
+    device_id = request.get("device_id")
+    if (not isinstance(request_id, str) or not request_id or not isinstance(device_id, str)
+            or device_id not in service.device_ids or request.get("device") != device_type
+            or not request.get("event_id")
+            or resolve_logical_command_id(request_id, device_id) != f"{request['event_id']}:{device_type}"):
+        raise ValueError("상태 조회 요청의 장치/이벤트 식별자가 일치하지 않습니다")
+    return service.get_request_status(request_id)
+
+
 def build_command_topic(
     topic_prefix: str,
     jetson_id: str,

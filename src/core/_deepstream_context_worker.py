@@ -181,6 +181,12 @@ class DeepStreamContextWorker:
             generation=identity["generation"], frame_identity=dict(identity)))
         self._remember_match_state(camera_name, key, "registered")
 
+    def is_current_frame(self, camera_name: str, identity: dict) -> bool:
+        """재연결 이전 프레임을 현재 영상으로 제공하지 않도록 세대를 확인한다."""
+        with self._state_lock:
+            return (self._identity_key(camera_name, identity) is not None
+                    and identity["generation"] == self._generations.get(camera_name, 0))
+
     def accept_frame(self, camera_name: str, frame: Any, identity: dict) -> bool:
         """일치하는 영상만 큐에 전달한다. 누락/늦은 영상은 기다리지 않는다."""
         with self._state_lock:

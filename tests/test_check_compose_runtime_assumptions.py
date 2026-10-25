@@ -1,6 +1,10 @@
 import importlib.util
+import io
+import json
 import sys
 from pathlib import Path
+
+import pytest
 
 
 def _load_script_module(name: str, relative_path: str):
@@ -17,6 +21,86 @@ runtime_checks = _load_script_module(
     "check_compose_runtime_assumptions",
     "scripts/health/check_compose_runtime_assumptions.py",
 )
+
+
+def test_jetson_compose_keeps_signboard_recreation_path():
+    # 실행 중인 장치가 Compose에서 누락되면 재생성 시 복구할 수 없으므로 원본 정의를 검사한다.
+    compose = (runtime_checks.PROJECT_ROOT / "docker-compose.jetson.yml").read_text(encoding="utf-8")
+    service = runtime_checks._compose_service_block(compose, "cctv-device-signboard")
+    assert "runners/run_signboard_device_service.py" in service
+    assert "target: action" in service
+    assert "path: ./.env.jetson" in service
+    assert "edgex-mqtt-broker:" in service
+    assert "edgex-network:" in service
+    # 장치 실행 이력이 이미지 교체 시 초기화되면 재전송으로 실물이 반복 작동한다.
+    assert "./data/device_requests:/app/data/device_requests" in service
+    assert runtime_checks._compose_service_env_value(
+        compose, "cctv-device-signboard", "DEVICE_REQUEST_DB_PATH"
+    ) == "/app/data/device_requests/signboard.sqlite3"
+    # 빈 Compose 보간값으로 env_file의 장치 주소·인증값을 덮어쓰지 않는다.
+    for key in ("SIGNBOARD_HOST", "MQTT_USER", "MQTT_PASSWORD"):
+        assert runtime_checks._compose_service_env_value(compose, "cctv-device-signboard", key) == ""
+
+
+@pytest.mark.parametrize(
+    ("mode", "devices", "override", "passed"),
+    [
+        ("edgex", "speaker,signboard,siren", "", True),
+        ("", "speaker,signboard,siren", "", False),
+        ("shadow", "speaker,signboard,siren", "", False),
+        ("edgex", "", "", False),
+        ("edgex", "speaker,signboard,siren,unknown", "", False),
+        ("edgex", "speaker,signboard,siren", "      EDGEX_COMMAND_MODE: shadow\n", False),
+        ("edgex", "speaker,signboard,siren", "      EDGEX_COMMAND_MODE:\n", False),
+    ],
+)
+def test_edgex_deployment_profile_checks_env_file_and_override(mode, devices, override, passed):
+    # 현행 env_file 전달과 과거 Direct 복귀를 구분하되 environment 우선순위로 인한 우회를 막는다.
+    base = (
+        "services:\n  cctv-action-layer:\n    env_file:\n"
+        "      - path: ./.env.jetson\n        required: false\n"
+        "    environment:\n" + override
+    )
+    result = runtime_checks.check_edgex_mode_rollback_contract(
+        profile="deployment",
+        jetson_compose_text=base,
+        uat_compose_text=("services:\n  cctv-action-layer:\n    environment:\n"
+                          "      EDGEX_COMMAND_MODE: edgex\n      EDGEX_ALLOWED_DEVICES: signboard\n"),
+        env_text="",
+        jetson_env_text=f"EDGEX_COMMAND_MODE={mode}\nEDGEX_ALLOWED_DEVICES={devices}\n",
+    )
+    assert result["passed"] is passed
+
+
+@pytest.mark.parametrize("missing", ["env_file", "uat_limit"])
+def test_edgex_deployment_rejects_missing_env_source_or_broader_uat(missing):
+    base = "services:\n  cctv-action-layer:\n"
+    if missing != "env_file":
+        base += "    env_file:\n      - path: ./.env.jetson\n"
+    devices = "speaker,signboard" if missing == "uat_limit" else "signboard"
+    result = runtime_checks.check_edgex_mode_rollback_contract(
+        profile="deployment", jetson_compose_text=base,
+        uat_compose_text=("services:\n  cctv-action-layer:\n    environment:\n"
+                          f"      EDGEX_COMMAND_MODE: edgex\n      EDGEX_ALLOWED_DEVICES: {devices}\n"),
+        env_text="", jetson_env_text="EDGEX_COMMAND_MODE=edgex\nEDGEX_ALLOWED_DEVICES=speaker,signboard,siren\n",
+    )
+    assert not result["passed"]
+
+
+def test_jetson_model_defaults_match_deployment_contract():
+    # 저장소 기본값 자체가 회귀하면 합성 문자열 시험이 통과해도 실제 배포 검사에서 잡는다.
+    assert runtime_checks.check_appearance_model_wiring()["passed"]
+    assert runtime_checks.check_falldata_aux_wiring()["passed"]
+
+
+@pytest.mark.parametrize("profile", ["deployment", "direct-rollback"])
+def test_cli_selects_edgex_profile(monkeypatch, capsys, profile):
+    seen = []
+    monkeypatch.setattr(sys, "argv", ["check", "--json", "--edgex-profile", profile])
+    monkeypatch.setattr(runtime_checks, "run_checks", lambda **kwargs: seen.append(kwargs) or [])
+    assert runtime_checks.main() == 0
+    assert seen == [{"edgex_profile": profile}]
+    assert '"passed": true' in capsys.readouterr().out
 
 
 def test_edgex_mode_rollback_contract_accepts_direct_base_and_signboard_uat():
@@ -718,6 +802,47 @@ def _candidate_config(tmp_path):
 
 def test_candidate_accepts_existing_durable_mounts(tmp_path):
     assert runtime_checks.check_candidate_profile(_candidate_config(tmp_path))["passed"]
+
+
+def test_candidate_accepts_explicit_image_id_without_changing_default(tmp_path):
+    config = _candidate_config(tmp_path)
+    image_id = "sha256:" + "a" * 64
+    config["services"]["cctv-ai-engine"]["image"] = image_id
+    assert not runtime_checks.check_candidate_profile(config)["passed"]
+    assert runtime_checks.check_candidate_profile(config, expected_image_id=image_id)["passed"]
+
+
+@pytest.mark.parametrize("image_id", ["", "cctv-ai:latest", "sha256:abc", "sha256:" + "z" * 64])
+def test_candidate_rejects_mutable_or_invalid_expected_image(tmp_path, image_id):
+    config = _candidate_config(tmp_path)
+    config["services"]["cctv-ai-engine"]["image"] = image_id
+    result = runtime_checks.check_candidate_profile(config, expected_image_id=image_id)
+    assert not result["passed"]
+    assert "private-test-value" not in str(result)
+
+
+def test_candidate_new_image_still_enforces_data_and_code_protection(tmp_path):
+    config = _candidate_config(tmp_path)
+    image_id = "sha256:" + "b" * 64
+    config["services"]["cctv-ai-engine"]["image"] = image_id
+    config["services"]["cctv-ai-engine"]["volumes"].append(
+        {"type": "bind", "source": str(tmp_path), "target": "/app/data/runtime"})
+    result = runtime_checks.check_candidate_profile(config, expected_image_id=image_id)
+    assert not result["passed"]
+    assert "nested data mount" in result["detail"]
+
+
+def test_candidate_cli_checks_selected_image_without_printing_config(tmp_path, monkeypatch, capsys):
+    config = _candidate_config(tmp_path)
+    image_id = "sha256:" + "c" * 64
+    config["services"]["cctv-ai-engine"]["image"] = image_id
+    monkeypatch.setattr(sys, "stdin", io.StringIO(json.dumps(config)))
+    monkeypatch.setattr(sys, "argv", ["check", "--candidate-compose-json", "-",
+                                     "--expected-image-id", image_id, "--json"])
+    assert runtime_checks.main() == 0
+    output = capsys.readouterr().out
+    assert json.loads(output)["passed"]
+    assert "private-test-value" not in output
 
 
 def test_candidate_rejects_gpu_or_unspecified_osd(tmp_path):

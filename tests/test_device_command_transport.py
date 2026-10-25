@@ -154,7 +154,7 @@ def test_edgex_transport_publishes_one_command_per_registered_device():
     )
 
     assert result.ok is True
-    assert result.status == "acknowledged"
+    assert result.status == "accepted"
     assert [topic for topic, _ in published] == [
         "edgex/commands/cctv/jetson-01/speaker/speaker-1",
         "edgex/commands/cctv/jetson-01/speaker/speaker-2",
@@ -170,7 +170,7 @@ def test_edgex_transport_publishes_one_command_per_registered_device():
     )
 
 
-def test_edgex_transport_returns_failed_when_one_device_publish_fails():
+def test_edgex_transport_preserves_each_publish_result_when_one_device_fails():
     published = []
     transport = EdgeXCommandTransport(
         publish=lambda topic, payload: published.append(topic) or topic.endswith("speaker-1"),
@@ -191,7 +191,8 @@ def test_edgex_transport_returns_failed_when_one_device_publish_fails():
     )
 
     assert result.ok is False
-    assert result.status == "failed"
+    assert result.status == "partial_failure"
+    assert [row["status"] for row in result.target_results] == ["accepted", "failed"]
     assert result.error == "EdgeX 명령 발행 실패: speaker-2"
     assert len(published) == 2
     assert result.device_ids == ("speaker-1", "speaker-2")

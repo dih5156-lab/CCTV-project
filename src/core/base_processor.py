@@ -31,7 +31,9 @@ VideoProcessor (현재 파이프라인) 와 DeepStreamProcessor (Jetson 전용) 
 
 from __future__ import annotations
 
+import os
 import time
+import uuid
 from abc import ABC, abstractmethod
 from threading import Event
 from typing import Any, Dict, List, Optional, Union
@@ -45,9 +47,15 @@ class BaseProcessor(ABC):
 
     running: bool
     stop_event: Event
+    edge_runtime_backend = "unknown"
 
     def __init__(self, config: AppConfig) -> None:
+        if os.environ.get("EDGE_RESULT_CONTEXT_DB") and self.edge_runtime_backend != "deepstream":
+            raise ValueError("edge results require the supervised DeepStream backend")
         self.config = config
+        # 감독자가 시작한 새 실행의 지표만 준비 판정에 쓰고 과거 프로세스 지표는 거부한다.
+        session = os.environ.get("EDGE_SERVICE_SESSION_ID")
+        self.edge_session_id = str(uuid.UUID(session)) if session else None
 
     # ------------------------------------------------------------------
     # 필수 구현 메서드

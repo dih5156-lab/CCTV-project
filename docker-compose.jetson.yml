@@ -60,7 +60,8 @@ x-appearance-runtime: &appearance-runtime
   DS_PPHUMAN_SGIE_ENABLED: ${DS_PPHUMAN_SGIE_ENABLED:-1}
   DS_PPHUMAN_INFER_CONFIG: ${DS_PPHUMAN_INFER_CONFIG:-config/deepstream/config_infer_pa100k.txt}
   APPEARANCE_BACKEND: ${APPEARANCE_BACKEND:-hsv}
-  APPEARANCE_MODEL_PATH: ${APPEARANCE_MODEL_PATH:-models/pa100k_resnet50_attr.engine}
+  # HSV에서는 이 경로를 쓰지 않지만 백엔드 전환 시에도 실제 SGIE 모델 위치와 일치시킨다.
+  APPEARANCE_MODEL_PATH: ${APPEARANCE_MODEL_PATH:-models/appearance/pa100k_resnet50_attr.engine}
   APPEARANCE_LABEL_MAP_PATH: ${APPEARANCE_LABEL_MAP_PATH:-config/appearance_pa100k_labels.json}
   APPEARANCE_RUNTIME: ${APPEARANCE_RUNTIME:-tensorrt}
   APPEARANCE_INPUT_SIZE: ${APPEARANCE_INPUT_SIZE:-224}
@@ -667,8 +668,7 @@ services:
       TZ: Asia/Seoul
       PYTHONIOENCODING: utf-8
       PYTHONUTF8: "1"
-      # Jetson CUDA 12.6 PyTorch wheel is kept in the project-mounted training venv.
-      # Do not bind-mount empty host site-packages over the image runtime.
+      # 보드에 맞게 준비한 CUDA PyTorch venv를 연결하며 컨테이너 내부 경로는 유지한다.
       PYTHONPATH: /app/.venv-jetson-train/lib/python3.10/site-packages:/app
       APP_ENV: ${APP_ENV:-development}
       NVIDIA_VISIBLE_DEVICES: all
@@ -755,14 +755,19 @@ services:
       FALLDATA_AUX_COMPARE_VETO_ENABLED: ${FALLDATA_AUX_COMPARE_VETO_ENABLED:-true}
       FALLDATA_AUX_CONFIRM_MAX_FALL_SCORE: ${FALLDATA_AUX_CONFIRM_MAX_FALL_SCORE:-4.5}
       FALLDATA_AUX_COMPARE_VETO_MIN_FALL_SCORE: ${FALLDATA_AUX_COMPARE_VETO_MIN_FALL_SCORE:-3.0}
-      FALLDATA_AUX_COMPARE_MODEL_PATH: ${FALLDATA_AUX_COMPARE_MODEL_PATH:-}
+      # 재생성 시 현재 인라인 RF 설정을 유지하고 진단용 특징 저장은 기본으로 끈다.
+      FALLDATA_AUX_INLINE_POSE_RF: ${FALLDATA_AUX_INLINE_POSE_RF:-true}
+      FALLDATA_AUX_COMPARE_MODEL_PATH: ${FALLDATA_AUX_COMPARE_MODEL_PATH:-models/experiments/yolo_pose_fall_cam2_continuous_200_80_640.pkl}
+      FALLDATA_AUX_COMPARE_MODEL_KIND: ${FALLDATA_AUX_COMPARE_MODEL_KIND:-yolo_pose_rf}
+      FALLDATA_AUX_INLINE_FEATURE_CAPTURE_PATH: ${FALLDATA_AUX_INLINE_FEATURE_CAPTURE_PATH:-}
       FALLDATA_AUX_COMPARE_THRESHOLD: ${FALLDATA_AUX_COMPARE_THRESHOLD:-}
       FALLDATA_AUX_MEDIAPIPE_PYTHON: ${FALLDATA_AUX_MEDIAPIPE_PYTHON:-/app/.venv-mediapipe/bin/python}
       FALLDATA_AUX_MODEL_PYTHON: ${FALLDATA_AUX_MODEL_PYTHON:-/app/.venv-falldata/bin/python}
-      FALLDATA_AUX_MODEL_PATH: ${FALLDATA_AUX_MODEL_PATH:-/app/falldata/2. AI학습모델파일/영상/낙상분류/FNF_RF_SMOTE_CAM_1.pkl}
+      # AGX/NX 준비본 모두 모델 마운트 내부의 정규 경로를 사용한다.
+      FALLDATA_AUX_MODEL_PATH: ${FALLDATA_AUX_MODEL_PATH:-/app/models/legacy/falldata_mediapipe/FNF_RF_SMOTE_CAM_1.pkl}
       FALLDATA_AUX_TEMPORAL_PYTHON: ${FALLDATA_AUX_TEMPORAL_PYTHON:-/app/.venv-jetson-train/bin/python}
       FALLDATA_AUX_TEMPORAL_COMPARE_MODEL_PATH: ${FALLDATA_AUX_TEMPORAL_COMPARE_MODEL_PATH:-}
-      FALLDATA_AUX_TEMPORAL_POSE_MODEL_PATH: ${FALLDATA_AUX_TEMPORAL_POSE_MODEL_PATH:-/app/models/yolov8n-pose.pt}
+      FALLDATA_AUX_TEMPORAL_POSE_MODEL_PATH: ${FALLDATA_AUX_TEMPORAL_POSE_MODEL_PATH:-/app/models/fall/yolov8n-pose.pt}
       # 보조 TCN의 Pose 전처리 크기를 평가 기준과 일치시킨다.
       FALLDATA_AUX_TEMPORAL_POSE_IMGSZ: ${FALLDATA_AUX_TEMPORAL_POSE_IMGSZ:-640}
       # 기본은 기존 단발 실행. 지속 모델 재사용은 별도 후보 검증 후 명시적으로 켠다.
@@ -879,12 +884,17 @@ services:
         target: /app/zones_config.json
         read_only: true
       - type: bind
-        source: ./models
+        # NX 엔진은 별도 디렉터리에 생성하며 AGX 기본 경로는 유지한다.
+        source: ${MODELS_HOST_PATH:-./models}
         target: /app/models
+        bind:
+          create_host_path: false
       - type: bind
-        source: ./config/deepstream
+        source: ${DEEPSTREAM_CONFIG_HOST_PATH:-./config/deepstream}
         target: /app/config/deepstream
         read_only: true
+        bind:
+          create_host_path: false
       - type: bind
         source: ./config/appearance_pa100k_labels.json
         target: /app/config/appearance_pa100k_labels.json
@@ -917,9 +927,12 @@ services:
         target: /app/.venv-falldata
         read_only: true
       - type: bind
-        source: ./.venv-jetson-train
+        source: ${JETSON_TORCH_VENV_HOST_PATH:-./.venv-jetson-train}
         target: /app/.venv-jetson-train
         read_only: true
+        # 누락된 venv를 빈 디렉터리로 생성하면 GPU 의존성 설치 실패가 숨겨진다.
+        bind:
+          create_host_path: false
       - type: bind
         source: ./data/insightface
         target: /root/.insightface
@@ -1128,6 +1141,8 @@ services:
   # ── Kuiper 룰 로더 ────────────────────────────────────────────────────────
   cctv-kuiper-rule-loader:
     container_name: cctv-kuiper-rule-loader
+    # 재배포 시 추적 ID 문자열 규격과 브로커 연결 실패 재시도 정책을 함께 유지한다.
+    image: cctv-kuiper-loader:track-id-20261012-01
     build:
       context: .
       dockerfile: Dockerfile
@@ -1216,6 +1231,48 @@ services:
       - type: bind
         source: ./data
         target: /app/data
+
+  # 실행 중인 전광판을 재생성할 수 있도록 정의를 복구한다. 실제 출력 검증은 별도다.
+  cctv-device-signboard:
+    container_name: cctv-device-signboard
+    # 재생성 때도 실물 시험에 사용한 수정 이미지를 유지한다.
+    image: cctv-signboard:validation-20261012-01
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: action
+    user: "1000:1000"
+    env_file:
+      - path: ./.env.jetson
+        required: false
+    environment:
+      PYTHONPATH: /app
+      DEVICE_REQUEST_DB_PATH: /app/data/device_requests/signboard.sqlite3
+      # 공용 env_file의 다장치 레지스트리가 현재 단일 전광판 설정을 바꾸지 않게 한다.
+      EDGEX_DEVICE_REGISTRY_PATH: ""
+      # 장치 주소·인증값은 env_file로 전달하며 빈 보간 기본값으로 덮어쓰지 않는다.
+      MQTT_BROKER: edgex-mqtt-broker
+      MQTT_PORT: "1883"
+    # 실행 이력은 이미지 교체·재생성으로 사라지면 중복 출력 위험이 생긴다.
+    volumes:
+      - ./data/device_requests:/app/data/device_requests
+    command: ["python", "runners/run_signboard_device_service.py"]
+    depends_on:
+      edgex-mqtt-broker:
+        condition: service_started
+    networks:
+      edgex-network: null
+    ports:
+      - target: 59993
+        published: "59993"
+        protocol: tcp
+    healthcheck:
+      test: ["CMD-SHELL", "kill -0 1 2>/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: always
 
   # ── Action Layer (스피커 / 전광판 / 사이렌 연동) ────────────────────────────
   cctv-action-layer:
@@ -1430,9 +1487,9 @@ volumes:
     external: true
     name: edgex-jetson_kuiper-plugins
   trt-cache:
-    # 기존 이름의 TensorRT 캐시 볼륨을 재사용하며 빈 값으로 인한 Compose 검증 실패를 막는다.
+    # 보드/스택별 캐시를 선택하고 미지정 시 기존 AGX 볼륨을 유지한다.
     external: true
-    name: edgex-jetson_trt-cache
+    name: ${TRT_CACHE_VOLUME:-edgex-jetson_trt-cache}
   mosquitto-data:
     name: edgex-jetson_mosquitto-data
   configs:

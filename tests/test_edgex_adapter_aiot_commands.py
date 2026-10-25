@@ -3,6 +3,10 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock
 
+import pytest
+from prometheus_client import REGISTRY
+
+from runners import run_edgex_adapter
 from runners.run_edgex_adapter import configure_aiot_commands
 from src.edgex.adapter_service import EdgeXDeviceAdapterService
 from src.services.aiot_command_service import AiotCommandService
@@ -65,3 +69,23 @@ def test_jetson_compose_keeps_aiot_disabled_and_mounts_runtime_data():
     assert "read_only: false" in adapter_section
     assert "host_ip: 127.0.0.1" in adapter_section
     assert 'published: "${AIOT_METRICS_PORT:-9105}"' in adapter_section
+
+
+@pytest.mark.parametrize("enabled, port", [(False, 9105), (True, 19105)])
+def test_adapter_metrics_start_independently_of_commands(monkeypatch, enabled, port):
+    adapter = SimpleNamespace(aiot_commands_enabled=False, start=Mock())
+    server = Mock()
+    monkeypatch.setattr(run_edgex_adapter, "EdgeXDeviceAdapterService", lambda **kwargs: adapter)
+    monkeypatch.setattr(run_edgex_adapter, "configure_aiot_commands",
+                        lambda service: setattr(service, "aiot_commands_enabled", enabled))
+    monkeypatch.setattr(run_edgex_adapter, "start_http_server", server)
+    monkeypatch.setattr(run_edgex_adapter, "setup_runner_logging", lambda: None)
+    monkeypatch.setattr(run_edgex_adapter.sys, "argv", ["run_edgex_adapter.py"])
+    monkeypatch.setenv("AIOT_METRICS_PORT", str(port))
+
+    run_edgex_adapter.main()
+
+    server.assert_called_once_with(port)
+    assert adapter.aiot_commands_enabled is enabled
+    assert REGISTRY.get_sample_value("cctv_edgex_adapter_aiot_commands_enabled") == float(enabled)
+    adapter.start.assert_called_once_with()

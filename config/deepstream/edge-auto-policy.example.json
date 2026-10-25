@@ -1,0 +1,16 @@
+{
+  "camera_id": "camera_1",
+  "manifests": {
+    "jetson-a": "replace-with-a-tested-manifest",
+    "jetson-b": "b-trt85-pose-helmet-v2"
+  },
+  "overload_percent": {"cpu_percent": 85, "gpu_percent": 90, "memory_percent": 85},
+  "available_percent": {"cpu_percent": 60, "gpu_percent": 60, "memory_percent": 70},
+  "sustain_seconds": 15,
+  "min_samples": 3,
+  "max_report_age_seconds": 5,
+  "cooldown_seconds": 60,
+  "poll_seconds": 1,
+  "handoff_timeout_seconds": 60,
+  "failback": {"preferred_node": "jetson-a", "sustain_seconds": 30}
+}

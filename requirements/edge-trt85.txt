@@ -1,0 +1,10 @@
+# Jetson B: Python 3.8 / DeepStream 6.3 / TensorRT 8.5 격리 실행용 검증 조합.
+# CUDA·TensorRT·OpenCV·GI는 호스트 SDK를 system-site-packages로 사용한다.
+# A용 jetson.txt/학습용 PyTorch 의존성을 이 환경에 함께 설치하지 않는다.
+numpy==1.23.5
+onnx==1.14.1
+protobuf==4.25.8
+pyds @ https://github.com/NVIDIA-AI-IOT/deepstream_python_apps/releases/download/v1.1.8/pyds-1.1.8-py3-none-linux_aarch64.whl
+paho-mqtt==2.1.0
+prometheus-client==0.21.1
+python-dotenv==1.0.1

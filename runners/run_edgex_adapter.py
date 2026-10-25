@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 from typing import Mapping
 
-from prometheus_client import start_http_server
+from prometheus_client import Gauge, start_http_server
 
 _RUNNER_DIR = Path(__file__).resolve().parent
 _PROJECT_ROOT = _RUNNER_DIR.parent
@@ -24,6 +24,9 @@ from src.services.aiot_command_service import AiotCommandService
 from src.services.appearance_log import AppearanceLog
 
 logger = logging.getLogger("run-edgex-adapter")
+_AIOT_COMMANDS_ENABLED = Gauge(
+    "cctv_edgex_adapter_aiot_commands_enabled", "AIoT 명령 기능 활성 여부(0 또는 1)"
+)
 
 
 def _env_bool(name: str, default: bool = False) -> bool:
@@ -118,10 +121,11 @@ def main() -> None:
         service_name=args.service_name,
     )
     configure_aiot_commands(service)
-    if service.aiot_commands_enabled:
-        metrics_port = int(os.environ.get("AIOT_METRICS_PORT", "9105"))
-        start_http_server(metrics_port)
-        logger.info("AIoT Prometheus 메트릭 서버 시작: port=%s", metrics_port)
+    # 명령 기능이 꺼져도 지표 수집을 유지하고, 비활성과 수집 장애를 구분한다.
+    _AIOT_COMMANDS_ENABLED.set(service.aiot_commands_enabled)
+    metrics_port = int(os.environ.get("AIOT_METRICS_PORT", "9105"))
+    start_http_server(metrics_port)
+    logger.info("EdgeX Adapter Prometheus 메트릭 서버 시작: port=%s", metrics_port)
     logger.info(
         "EdgeX Adapter 시작: ai-mqtt=%s:%s edgex-data=%s",
         args.ai_mqtt_broker,

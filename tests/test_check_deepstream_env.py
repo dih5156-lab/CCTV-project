@@ -3,7 +3,9 @@ import json
 import subprocess
 import sys
 from pathlib import Path
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock
+
+import pytest
 
 
 def _load_script_module(name: str, relative_path: str):
@@ -22,7 +24,7 @@ check_deepstream_env = _load_script_module(
 )
 
 
-def test_parse_property_file_ignores_comments_and_sections(tmp_path):
+def test_parse_property_file_only_reads_property_section(tmp_path):
     config = tmp_path / "config.txt"
     config.write_text(
         """
@@ -32,6 +34,7 @@ labelfile-path=labels.txt # inline comment
 
 [class-attrs-all]
 threshold=0.5
+model-engine-file=wrong-section.engine
 """,
         encoding="utf-8",
     )
@@ -40,7 +43,7 @@ threshold=0.5
 
     assert values["model-engine-file"] == "../../models/sample.engine"
     assert values["labelfile-path"] == "labels.txt"
-    assert values["threshold"] == "0.5"
+    assert "threshold" not in values
 
 
 def test_check_infer_config_resolves_paths_relative_to_config_file(tmp_path):
@@ -89,6 +92,218 @@ model-engine-file=missing.engine
     ]
 
 
+@pytest.mark.parametrize("artifact", ["missing", "empty", "directory"])
+def test_engine_check_rejects_unprepared_artifacts_without_loading(tmp_path, monkeypatch, artifact):
+    config = tmp_path / "config.txt"
+    config.write_text("[property]\nmodel-engine-file=model.engine\n")
+    engine = tmp_path / "model.engine"
+    if artifact == "empty":
+        engine.touch()
+    elif artifact == "directory":
+        engine.mkdir()
+    loader = Mock()
+    monkeypatch.setattr(check_deepstream_env, "_check_engine_load", loader)
+    results = check_deepstream_env._check_infer_config(config, load_engines=True)
+    assert not all(result.ok for result in results)
+    assert results[-1].name == "config.txt model-engine-file"
+    loader.assert_not_called()
+
+
+@pytest.mark.parametrize("load_engines", [False, True])
+def test_engine_loading_is_opt_in_and_failure_reaches_cli(tmp_path, monkeypatch, capsys, load_engines):
+    config = tmp_path / "config.txt"
+    config.write_text("[property]\nmodel-engine-file=model.engine\n")
+    (tmp_path / "model.engine").write_bytes(b"engine")
+    tracker = tmp_path / "config/deepstream/config_tracker_iou.yml"
+    tracker.parent.mkdir(parents=True)
+    tracker.write_text("tracker")
+    passed = check_deepstream_env.CheckResult("dependency", True, "ok")
+    monkeypatch.setattr(check_deepstream_env, "_check_deepstream_app", lambda _: passed)
+    monkeypatch.setattr(check_deepstream_env, "_check_gstreamer_python", lambda: passed)
+    monkeypatch.setattr(check_deepstream_env, "_check_python_module", lambda _: passed)
+    loader = Mock(return_value=check_deepstream_env.CheckResult("engine", False, "incompatible"))
+    monkeypatch.setattr(check_deepstream_env, "_check_engine_load", loader)
+    args = ["--root", str(tmp_path), "--config", str(config), "--skip-gst-plugins", "--json"]
+    if load_engines:
+        args.append("--load-engines")
+    assert check_deepstream_env.main(args) == int(load_engines)
+    assert json.loads(capsys.readouterr().out)["passed"] is not load_engines
+    assert loader.call_count == int(load_engines)
+
+
+@pytest.mark.parametrize("outcome", ["loaded", "incompatible", "exception", "plugin_failure", "missing_module"])
+def test_engine_deserialization_result(tmp_path, monkeypatch, outcome):
+    engine_path = tmp_path / "model.engine"
+    engine_path.write_bytes(b"serialized-model")
+    trt = MagicMock()
+    trt.init_libnvinfer_plugins.return_value = outcome != "plugin_failure"
+    runtime = trt.Runtime.return_value.__enter__.return_value
+    runtime.deserialize_cuda_engine.return_value = None if outcome == "incompatible" else object()
+    if outcome == "exception":
+        runtime.deserialize_cuda_engine.side_effect = RuntimeError("CUDA unavailable")
+    importer = Mock(return_value=trt)
+    if outcome == "missing_module":
+        importer.side_effect = ImportError("tensorrt missing")
+    monkeypatch.setattr(check_deepstream_env.importlib, "import_module", importer)
+    result = check_deepstream_env._check_engine_load(engine_path)
+    assert result.ok is (outcome == "loaded")
+    if outcome in {"loaded", "incompatible", "exception"}:
+        runtime.deserialize_cuda_engine.assert_called_once_with(b"serialized-model")
+        trt.Runtime.return_value.__exit__.assert_called_once()
+    else:
+        runtime.deserialize_cuda_engine.assert_not_called()
+
+
+def test_native_only_cannot_silently_skip_requested_engine_load():
+    with pytest.raises(SystemExit) as exc:
+        check_deepstream_env.main(["--native-only", "--load-engines"])
+    assert exc.value.code == 2
+
+
+@pytest.mark.parametrize(
+    "profile_batch,requested,expected",
+    [((1, 1, 1), 1, True), ((1, 1, 1), 2, False),
+     ((1, 2, 4), 2, True), ((1, 2, 4), 4, True),
+     ((1, 2, 4), 5, False), ((2, 2, 4), 1, False)],
+)
+def test_engine_load_checks_requested_batch(tmp_path, monkeypatch, profile_batch, requested, expected):
+    # GPU 없이 실제 회귀 조건인 고정 batch1/요청2와 동적 profile 경계를 검사한다.
+    engine_path = tmp_path / "model.engine"
+    engine_path.write_bytes(b"serialized-model")
+    trt = MagicMock()
+    engine = trt.Runtime.return_value.__enter__.return_value.deserialize_cuda_engine.return_value
+    engine.num_io_tensors = 2
+    engine.num_optimization_profiles = 2
+    engine.get_tensor_name.side_effect = ["images", "output"]
+    engine.get_tensor_mode.side_effect = [trt.TensorIOMode.INPUT, trt.TensorIOMode.OUTPUT]
+    engine.get_tensor_shape.return_value = (-1, 3, 640, 640)
+    engine.get_tensor_profile_shape.return_value = [(batch, 3, 640, 640) for batch in profile_batch]
+    monkeypatch.setattr(check_deepstream_env.importlib, "import_module", Mock(return_value=trt))
+
+    config = tmp_path / "infer.txt"
+    config.write_text(f"[property]\nmodel-engine-file={engine_path}\nbatch-size={requested}\n")
+    results = check_deepstream_env._check_infer_config(config, load_engines=True)
+
+    assert all(result.ok for result in results) is expected
+    engine.get_tensor_profile_shape.assert_called_once_with("images", 0)
+    assert any(f"batch={requested}" in result.detail for result in results)
+
+
+@pytest.mark.parametrize("configured", ["0", "-1", "bad", "1.5"])
+def test_invalid_configured_batch_fails_before_gpu_load(tmp_path, monkeypatch, configured):
+    config = tmp_path / "infer.txt"
+    config.write_text(f"[property]\nmodel-engine-file=model.engine\nbatch-size={configured}\n")
+    (tmp_path / "model.engine").write_bytes(b"engine")
+    loader = Mock()
+    monkeypatch.setattr(check_deepstream_env, "_check_engine_load", loader)
+    results = check_deepstream_env._check_infer_config(config, load_engines=True)
+    assert not all(result.ok for result in results)
+    loader.assert_not_called()
+
+
+@pytest.mark.parametrize("shape,profile", [
+    ((3, 640, 640), ((1,), (1,), (1,))),
+    ((-1, 3, 640, 640), ((0,), (1,), (2,))),
+    ((-1, 3, 640, 640), ((1,), (4,), (2,))),
+    ((-1, 3, 640, 640), ()),
+])
+def test_unsupported_engine_shape_or_profile_fails_closed(tmp_path, monkeypatch, shape, profile):
+    engine_path = tmp_path / "model.engine"
+    engine_path.write_bytes(b"engine")
+    trt = MagicMock()
+    runtime = trt.Runtime.return_value.__enter__.return_value
+    engine = runtime.deserialize_cuda_engine.return_value
+    engine.num_io_tensors = 1
+    engine.get_tensor_name.return_value = "images"
+    engine.get_tensor_mode.return_value = trt.TensorIOMode.INPUT
+    engine.get_tensor_shape.return_value = shape
+    engine.get_tensor_profile_shape.return_value = profile
+    monkeypatch.setattr(check_deepstream_env.importlib, "import_module", Mock(return_value=trt))
+    result = check_deepstream_env._check_engine_load(engine_path, batch_size=2)
+    assert not result.ok
+    # 추론 컨텍스트를 만드는 실제 엔진 객체에서 GPU 추론 미실행을 확인한다.
+    engine.create_execution_context.assert_not_called()
+    trt.Runtime.return_value.__exit__.assert_called_once()
+
+
+def test_runtime_batch_override_reaches_engine_check(tmp_path, monkeypatch, capsys):
+    config = tmp_path / "infer.txt"
+    config.write_text("[property]\nmodel-engine-file=model.engine\nbatch-size=8\n")
+    (tmp_path / "model.engine").write_bytes(b"engine")
+    tracker = tmp_path / "config/deepstream/config_tracker_iou.yml"
+    tracker.parent.mkdir(parents=True)
+    tracker.write_text("tracker")
+    passed = check_deepstream_env.CheckResult("dependency", True, "ok")
+    for name in ("_check_deepstream_app", "_check_gstreamer_python", "_check_python_module"):
+        monkeypatch.setattr(check_deepstream_env, name, Mock(return_value=passed))
+    loader = Mock(return_value=check_deepstream_env.CheckResult("engine", False, "batch mismatch"))
+    monkeypatch.setattr(check_deepstream_env, "_check_engine_load", loader)
+    assert check_deepstream_env.main([
+        "--root", str(tmp_path), "--config", str(config), "--load-engines",
+        "--batch-size", "2", "--skip-gst-plugins", "--json",
+    ]) == 1
+    assert json.loads(capsys.readouterr().out)["passed"] is False
+    loader.assert_called_once_with(tmp_path / "model.engine", batch_size=2)
+
+
+@pytest.mark.parametrize("args", [
+    ["--files-only", "--batch-size", "2"],
+    ["--load-engines", "--batch-size", "2"],
+    ["--load-engines", "--config", "one.txt", "--config", "two.txt", "--batch-size", "2"],
+    ["--load-engines", "--config", "one.txt", "--batch-size", "0"],
+    ["--load-engines", "--config", "one.txt", "--batch-size", "-1"],
+])
+def test_runtime_batch_requires_one_config_and_engine_load(args):
+    with pytest.raises(SystemExit) as exc:
+        check_deepstream_env.main(args)
+    assert exc.value.code == 2
+
+
+@pytest.mark.parametrize("missing", [None, "engine", "tracker", "broken_symlink"])
+def test_files_only_checks_runtime_assets_without_sdk_or_gpu(tmp_path, monkeypatch, capsys, missing):
+    config_dir = tmp_path / "config/deepstream"
+    config_dir.mkdir(parents=True)
+    (config_dir / "infer.txt").write_text("[property]\nmodel-engine-file=../../models/test.engine\n")
+    (config_dir / "config_tracker.txt").write_text("legacy tracker")
+    if missing != "tracker":
+        (config_dir / "config_tracker_iou.yml").write_text("BaseConfig: {}\n")
+    engine = tmp_path / "models/test.engine"
+    engine.parent.mkdir()
+    if missing == "broken_symlink":
+        engine.symlink_to(tmp_path / "missing-agx-model.engine")
+    elif missing != "engine":
+        engine.write_bytes(b"test engine")
+    # 오프라인 준비 검사는 SDK 실행·Python 바인딩·GPU 로드 없이 동작해야 한다.
+    forbidden = Mock(side_effect=AssertionError("runtime access forbidden"))
+    monkeypatch.setattr(check_deepstream_env.subprocess, "run", forbidden)
+    monkeypatch.setattr(check_deepstream_env.importlib, "import_module", forbidden)
+    assert check_deepstream_env.main([
+        "--files-only", "--root", str(tmp_path), "--config", "config/deepstream/infer.txt", "--json",
+    ]) == int(missing is not None)
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["files_only"] is True
+    assert payload["passed"] is (missing is None)
+    if missing == "tracker":
+        assert payload["results"][-1]["ok"] is False
+        assert "config_tracker_iou.yml" in payload["results"][-1]["detail"]
+    forbidden.assert_not_called()
+
+
+@pytest.mark.parametrize("other_mode", ["--native-only", "--load-engines"])
+def test_files_only_rejects_runtime_check_options(other_mode):
+    with pytest.raises(SystemExit) as exc:
+        check_deepstream_env.main(["--files-only", other_mode])
+    assert exc.value.code == 2
+
+
+@pytest.mark.parametrize("content", [b"model-engine-file=model.engine\n", b"[property]\n\xff"])
+def test_invalid_config_does_not_pass_file_readiness(tmp_path, content):
+    config = tmp_path / "infer.txt"
+    config.write_bytes(content)
+    (tmp_path / "model.engine").write_bytes(b"engine")
+    assert not all(result.ok for result in check_deepstream_env._check_infer_config(config))
+
+
 def test_check_gst_plugin_reports_success(monkeypatch):
     completed = Mock(returncode=0, stdout="ok", stderr="")
     monkeypatch.setattr(check_deepstream_env.subprocess, "run", Mock(return_value=completed))
@@ -100,6 +315,11 @@ def test_check_gst_plugin_reports_success(monkeypatch):
 
 
 def test_build_checks_can_skip_gst_plugins(monkeypatch, tmp_path):
+    # 파일 점검 시험이 병행 실장비 시험의 SDK를 실행하지 않도록 경계를 격리한다.
+    monkeypatch.setattr(
+        check_deepstream_env, "_check_deepstream_app",
+        Mock(return_value=check_deepstream_env.CheckResult("sdk", True, "ok")),
+    )
     monkeypatch.setattr(
         check_deepstream_env,
         "_check_gstreamer_python",

@@ -28,7 +28,6 @@ import numpy as np
 
 from ..events import DetectionEvent, EventType
 from ._temporal_worker import TemporalWorker
-from .fall_temporal_model import FRAME_FEATURE_NAMES
 
 logger = logging.getLogger(__name__)
 
@@ -530,6 +529,33 @@ class FallDataAuxVerifier:
                 == scope["generation"]
             )
 
+    @staticmethod
+    def _valid_pose_scope(camera_name: str, pose_scope: Optional[dict]) -> bool:
+        return (
+            isinstance(pose_scope, dict)
+            and pose_scope.get("camera_id") == camera_name
+            and all(
+                type(pose_scope.get(key)) is int and pose_scope[key] >= 0
+                for key in ("object_id", "generation", "frame_index")
+            )
+            and pose_scope["object_id"] < 2**64 - 1
+        )
+
+    def snapshot_pose_records(self, camera_name: str, pose_scope: Optional[dict]) -> tuple:
+        """큐 대기 중 삭제될 수 있는 후보의 동일 인물·과거 Pose만 보존한다."""
+        if not self._valid_pose_scope(camera_name, pose_scope):
+            return ()
+        with self._lock:
+            if self._pose_generations.get(camera_name) != pose_scope["generation"]:
+                return ()
+            # 기록은 추가 후 수정하지 않고 교체하므로 참조만 보관해도 입력이 유지된다.
+            # ponytail: 기본 큐4건×Pose 버퍼까지만 보관하며, 증설 시 메모리를 재측정한다.
+            return tuple(
+                record for record in self._pose_records.get(camera_name, ())
+                if record["object_id"] == pose_scope["object_id"]
+                and record["frame_index"] <= pose_scope["frame_index"]
+            )
+
     def _write_inline_feature_capture(
         self,
         camera_name: str,
@@ -540,6 +566,9 @@ class FallDataAuxVerifier:
         path = self.config.inline_feature_capture_path
         if path is None:
             return None
+
+        # 비활성 보조 모델 때문에 TensorRT 전용 엣지에 PyTorch 설치를 강제하지 않는다.
+        from .fall_temporal_model import FRAME_FEATURE_NAMES
 
         record = {
             "schema_version": 2,
@@ -620,13 +649,14 @@ class FallDataAuxVerifier:
         return str(result.get("status")) in self.UNAVAILABLE_STATUSES
 
     def verify(
-        self, camera_name: Optional[str] = None, *, pose_scope: Optional[dict] = None
+        self, camera_name: Optional[str] = None, *, pose_scope: Optional[dict] = None,
+        pose_records: Optional[tuple] = None,
     ) -> dict:
         if self.config.inline_pose_rf:
             self._record_inline_metrics(camera_name, requests=1)
             try:
                 result = self._verify_inline_pose_rf_with_cooldown(
-                    camera_name, pose_scope
+                    camera_name, pose_scope, pose_records
                 )
             except Exception:
                 self._record_inline_metrics(camera_name, error_results=1)
@@ -729,20 +759,15 @@ class FallDataAuxVerifier:
         self,
         camera_name: Optional[str],
         pose_scope: Optional[dict],
+        pose_records: Optional[tuple] = None,
     ) -> dict:
         if not camera_name:
             return self._result("missing_camera", confirmed=False)
-        if (
-            not isinstance(pose_scope, dict)
-            or pose_scope.get("camera_id") != camera_name
-            or any(
-                type(pose_scope.get(key)) is not int or pose_scope[key] < 0
-                for key in ("object_id", "generation", "frame_index")
-            )
-            or pose_scope["object_id"] >= 2**64 - 1
-        ):
+        if not self._valid_pose_scope(camera_name, pose_scope):
             return self._result("missing_pose_scope", confirmed=False)
         pose_scope = dict(pose_scope)
+        if pose_records is None:
+            pose_records = self.snapshot_pose_records(camera_name, pose_scope)
         key = (camera_name, pose_scope["object_id"])
         now = time.monotonic()
         with self._lock:
@@ -751,7 +776,7 @@ class FallDataAuxVerifier:
             if not any(
                 record["object_id"] == key[1]
                 and record["frame_index"] == pose_scope["frame_index"]
-                for record in self._pose_records.get(camera_name, ())
+                for record in pose_records
             ):
                 return self._result("no_pose_records", confirmed=False)
             last_run_at, previous = self._inline_results.get(key, (0.0, {}))
@@ -770,11 +795,11 @@ class FallDataAuxVerifier:
                     "cached_pose_scope": dict(previous["pose_scope"]),
                 }
         try:
-            result = self._verify_inline_pose_rf(camera_name, pose_scope)
+            result = self._verify_inline_pose_rf(camera_name, pose_scope, pose_records)
         except Exception as exc:
             logger.warning("inline pose RF verification failed: %s", exc)
             result = self._result("error", confirmed=False, error=str(exc))
-        # An older queued candidate must not inherit a future window's streak.
+        # 대기하던 과거 후보에 미래 창의 연속 확정 횟수를 적용하지 않는다.
         if previous_frame >= pose_scope["frame_index"]:
             previous = {}
         result = self._apply_confirmation_streak(result, camera_name, previous=previous)
@@ -804,7 +829,9 @@ class FallDataAuxVerifier:
             "min_confirmed_results": required,
         }
 
-    def _verify_inline_pose_rf(self, camera_name: str, pose_scope: dict) -> dict:
+    def _verify_inline_pose_rf(
+        self, camera_name: str, pose_scope: dict, pose_records: tuple
+    ) -> dict:
         from scripts.datasets.smoke_yolo_pose_fall_rf import (
             _fall_probability_from_classifier,
             _select_model_features,
@@ -836,12 +863,11 @@ class FallDataAuxVerifier:
         with self._lock:
             if self._pose_generations.get(camera_name) != pose_scope["generation"]:
                 return self._result("stale_pose_scope", confirmed=False)
-            records = [
-                record
-                for record in self._pose_records.get(camera_name, ())
-                if record["object_id"] == pose_scope["object_id"]
-                and record["frame_index"] <= pose_scope["frame_index"]
-            ]
+        records = [
+            record for record in pose_records
+            if record["object_id"] == pose_scope["object_id"]
+            and record["frame_index"] <= pose_scope["frame_index"]
+        ]
         if not records:
             return self._result("no_pose_records", confirmed=False)
 

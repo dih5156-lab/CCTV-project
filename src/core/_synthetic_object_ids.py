@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import time
+from collections.abc import Mapping
 from typing import Dict, List, Optional, Tuple
 
 from .events import DetectionEvent
@@ -30,29 +31,84 @@ class SyntheticObjectIdAssigner:
         self._track_iou = track_iou
         self._track_timeout = track_timeout
         self._tracks: Dict[str, Dict[int, Tuple[float, DetectionEvent]]] = {}
+        self._clocks: Dict[str, Tuple[Optional[int], Optional[float]]] = {}
         self._next_object_id = 1
 
     def remove_camera(self, camera_id: str) -> None:
         self._tracks.pop(camera_id, None)
+        self._clocks.pop(camera_id, None)
 
     def assign(self, camera_name: str, events: List[DetectionEvent]) -> List[DetectionEvent]:
         """Raw tensor 결과에 기존 후처리용 stable object_id를 붙인다."""
-        now = time.time()
+        if not events:
+            return []
+        now = self._observation_time(camera_name, events)
+        if now is None:
+            return []
         tracks = self._tracks.setdefault(camera_name, {})
         self._purge_stale(tracks, now)
+
+        # 같은 프레임의 두 사람을 합치지 않도록 이전 트랙은 한 관측에만 배정한다.
+        reserved_ids = {event.object_id for event in events if event.object_id is not None}
+        available_tracks = {key: value for key, value in tracks.items() if key not in reserved_ids}
 
         for event in events:
             if event.object_id is not None:
                 continue
 
-            best_track_id, best_iou = self._find_best_track(event, tracks)
+            best_track_id, best_iou = self._find_best_track(event, available_tracks)
             if best_track_id is None or best_iou < self._track_iou:
                 best_track_id = self._allocate()
+                while best_track_id in reserved_ids:
+                    best_track_id = self._allocate()
 
             event.object_id = best_track_id
+            available_tracks.pop(best_track_id, None)
             tracks[best_track_id] = (now, event)
 
         return events
+
+    def _observation_time(
+        self, camera_name: str, events: List[DetectionEvent]
+    ) -> Optional[float]:
+        """처리 지연을 검출 공백으로 오인하지 않고 같은 영상 세대에서만 연결한다."""
+        clocks = []
+        for event in events:
+            metadata = event.metadata if event.metadata is not None else {}
+            if not isinstance(metadata, Mapping):
+                self._tracks.pop(camera_name, None)
+                return None
+            if "frame_identity" not in metadata:
+                clocks.append((None, None))
+                continue
+            identity = metadata["frame_identity"]
+            if not isinstance(identity, Mapping):
+                self._tracks.pop(camera_name, None)
+                return None
+            generation, pts = identity.get("generation"), identity.get("source_pts_ns")
+            if (
+                identity.get("camera_id") != camera_name
+                or type(generation) is not int or generation < 0
+                or type(pts) is not int or not 0 <= pts < 2**64 - 1
+            ):
+                self._tracks.pop(camera_name, None)
+                return None
+            clocks.append((generation, pts / 1_000_000_000))
+        generation, pts = clocks[0]
+        if any(clock != clocks[0] for clock in clocks):
+            self._tracks.pop(camera_name, None)
+            return None
+        previous_generation, previous_pts = self._clocks.get(camera_name, (None, None))
+        if generation is not None and previous_generation is not None and generation < previous_generation:
+            return None
+        if (
+            generation != previous_generation
+            or (pts is None) != (previous_pts is None)
+            or (pts is not None and previous_pts is not None and pts < previous_pts)
+        ):
+            self._tracks.pop(camera_name, None)
+        self._clocks[camera_name] = (generation, pts)
+        return time.time() if pts is None else pts
 
     def _purge_stale(
         self,

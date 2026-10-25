@@ -4,6 +4,7 @@ import importlib
 import json
 import sqlite3
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import closing
 
 import pytest
 
@@ -140,6 +141,76 @@ def test_concurrent_projection_commits_one_observation(tmp_path):
             job.result()
     assert len(rows(path, "canonical_records")) == 1
     assert len(rows(path, "ingest_revisions")) == 1
+
+
+@pytest.mark.parametrize("table,stage", [("t34954", "accepted"), ("t99999", "invalid")])
+def test_finished_projection_does_not_need_another_write_lock(tmp_path, table, stage):
+    path = tmp_path / "common.db"
+    receipt = prepared(path, table=table)
+    store = module().SensorRecordStore(path)
+    store.project_sensor(receipt)
+    assert store.get_event_receipt(receipt)["stage"] == stage
+    tables = (
+        "ingest_receipts",
+        "event_ingest_state",
+        "canonical_records",
+        "ingest_revisions",
+    )
+    before = {name: rows(path, name) for name in tables}
+
+    # 다른 입력의 쓰기 예약 중에도 끝난 접수의 중복 호출은 읽기만으로 종료해야 한다.
+    with closing(sqlite3.connect(path)) as blocker:
+        blocker.execute("BEGIN IMMEDIATE")
+        store.project_sensor(receipt)
+        blocker.rollback()
+
+    assert {name: rows(path, name) for name in tables} == before
+
+
+@pytest.mark.parametrize("phase", ["state", "canonical"])
+@pytest.mark.parametrize("lock", ["write", "commit"])
+def test_locked_projection_preserves_receipt_and_worker_recovers_once(
+    tmp_path, monkeypatch, phase, lock
+):
+    path = tmp_path / "common.db"
+    receipt = prepared(path)
+    store = module().SensorRecordStore(path)
+    original_receipt = store.get(receipt)
+
+    with closing(sqlite3.connect(path)) as blocker:
+
+        def hold_lock():
+            blocker.execute("BEGIN IMMEDIATE" if lock == "write" else "BEGIN")
+            blocker.execute("SELECT * FROM ingest_receipts").fetchall()
+
+        # 상태 준비와 정규화 각각의 쓰기/커밋을 실제 SQLite 잠금으로 실패시킨다.
+        if phase == "state":
+            hold_lock()
+        else:
+            record_observation = store.record_observation
+
+            def blocked_record(*args, **kwargs):
+                hold_lock()
+                return record_observation(*args, **kwargs)
+
+            monkeypatch.setattr(store, "record_observation", blocked_record)
+        with pytest.raises(sqlite3.OperationalError, match="database is locked"):
+            store.project_sensor(receipt)
+        blocker.rollback()
+
+    assert store.get(receipt) == original_receipt
+    assert rows(path, "canonical_records") == []
+    assert rows(path, "ingest_revisions") == []
+    # 새 저장소로 재개해 인메모리 상태 없이 원본 접수에서 복구되는지 확인한다.
+    worker = module().SensorRecordWorker(module().SensorRecordStore(path))
+    worker.drain_once()
+    worker.drain_once()
+    assert store.get(receipt) == original_receipt
+    assert store.get_event_receipt(receipt)["stage"] == "accepted"
+    assert len(rows(path, "ingest_receipts")) == 1
+    assert len(rows(path, "canonical_records")) == 1
+    assert len(rows(path, "ingest_revisions")) == 1
+    assert rows(path, "delivery_jobs") == []
 
 
 @pytest.mark.parametrize(

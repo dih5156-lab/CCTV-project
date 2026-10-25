@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import os
 import time
 from typing import Any
 
@@ -37,6 +38,17 @@ class ProcessorStatsCollector:
         self._last_scrape_at = time.monotonic()
 
     def collect(self):
+        session = getattr(self._processor, "edge_session_id", None)
+        if isinstance(session, str) and session:
+            # 설정의 USE_DEEPSTREAM 값이 아니라 실제 생성된 프로세서 구현을 노출한다.
+            info = GaugeMetricFamily(
+                "cctv_edge_service_info", "Observed edge service process identity",
+                labels=["session_id", "backend"],
+            )
+            info.add_metric(
+                [session, self._processor.edge_runtime_backend], 1,
+            )
+            yield info
         try:
             stats = self._processor.get_stats()
         except Exception as exc:
@@ -302,6 +314,8 @@ def start_processor_metrics_server(processor: Any, port: int) -> Any:
     """백그라운드 Prometheus HTTP 서버를 시작하고 서버 핸들을 반환한다."""
     registry = CollectorRegistry(auto_describe=True)
     registry.register(ProcessorStatsCollector(processor))
-    server, thread = start_http_server(port, registry=registry)
+    # 격리 엣지 시험은 loopback으로 제한하고 운영의 기존 바인딩 기본값은 유지한다.
+    host = os.environ.get("METRICS_HOST", "0.0.0.0")
+    server, thread = start_http_server(port, addr=host, registry=registry)
     logger.info("CCTV processor Prometheus metrics server started: port=%s", port)
     return server, thread

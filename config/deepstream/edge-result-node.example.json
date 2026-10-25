@@ -1,0 +1,12 @@
+{
+  "controller_url": "https://192.168.2.141:18443",
+  "controller_ca_file": "/private/controller-ca.crt",
+  "node_token": "REPLACE_ME",
+  "mqtt": {
+    "host": "192.168.2.141",
+    "port": 18886,
+    "ca_file": "/private/broker-ca.crt",
+    "username": "jetson-b",
+    "password": "REPLACE_ME"
+  }
+}

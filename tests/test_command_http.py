@@ -1,5 +1,10 @@
+from unittest.mock import MagicMock
+
+import pytest
+
+from src.devices.speaker import SpeakerConfig
 from src.edgex.command_http import handle_command_request
-from src.edgex.speaker_device_service import SpeakerCommandResult
+from src.edgex.speaker_device_service import SpeakerCommandResult, SpeakerDeviceService
 
 
 class _FakeService:
@@ -81,3 +86,44 @@ def test_core_command_path_rejects_unregistered_multiple_device():
 
     assert status_code == 404
     assert result["error_code"] == "device_not_found"
+
+
+def test_http_command_executes_selected_physical_device():
+    first, second = MagicMock(), MagicMock()
+    second.play.return_value = True
+    service = SpeakerDeviceService(device_id="speaker-1", config=SpeakerConfig(),
+        device=first, devices={"speaker-1": first, "speaker-2": second})
+    status_code, result = handle_command_request(service, service.device_ids,
+        "/api/v3/device/name/speaker-2/play", {"event_id": "event-1", "text": "안내"},
+        "event-1:speaker:speaker-2")
+    assert status_code == 200
+    assert result["device_id"] == "speaker-2"
+    first.play.assert_not_called()
+    second.play.assert_called_once()
+
+
+@pytest.mark.parametrize("command_id", ["", " "])
+def test_http_command_requires_explicit_id(command_id):
+    service = MagicMock()
+    status, result = handle_command_request(service, "speaker-1", "/api/v3/device/name/speaker-1/play",
+                                            {"text": "안내"}, command_id)
+    assert status == 400
+    assert result["error_code"] == "missing_request_id"
+    service.execute_request.assert_not_called()
+
+
+def test_http_and_mqtt_share_identity_and_report_conflict(tmp_path):
+    device = MagicMock()
+    service = SpeakerDeviceService(device_id="speaker-1", config=SpeakerConfig(), device=device,
+                                   request_db_path=tmp_path / "requests.db")
+    request_id = "event-1:speaker:speaker-1"
+    service.execute_request({"request_id": request_id, "event_id": "event-1", "device": "speaker",
+                             "device_id": "speaker-1", "action": "play", "payload": {"text": "안내"}})
+    path = "/api/v3/device/name/speaker-1/play"
+    assert handle_command_request(service, service.device_ids, path,
+                                  {"event_id": "event-1", "text": "안내"}, request_id)[0] == 200
+    status, result = handle_command_request(service, service.device_ids, path,
+                                            {"event_id": "event-1", "text": "변경"}, request_id)
+    assert status == 409
+    assert result["error_code"] == "request_id_conflict"
+    device.play.assert_called_once()

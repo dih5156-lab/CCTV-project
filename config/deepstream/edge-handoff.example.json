@@ -1,0 +1,19 @@
+{
+  "controller": {
+    "url": "https://controller.example.invalid:18443",
+    "ca_file": "/absolute/private-lab/ca.crt",
+    "credentials_file": "/absolute/private-lab/controller-secrets.json"
+  },
+  "nodes": {
+    "jetson-a": {
+      "url": "https://jetson-a.example.invalid:18444",
+      "ca_file": "/absolute/private-lab/ca.crt",
+      "credentials_file": "/absolute/private-lab/jetson-a-secrets.json"
+    },
+    "jetson-b": {
+      "url": "https://jetson-b.example.invalid:18444",
+      "ca_file": "/absolute/private-lab/ca.crt",
+      "credentials_file": "/absolute/private-lab/jetson-b-secrets.json"
+    }
+  }
+}

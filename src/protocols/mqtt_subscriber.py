@@ -39,6 +39,8 @@ class MqttTopicSubscriber:
         connect_timeout: float = 2.0,
         durable: bool = False,
         transport: str = "tcp",
+        tls_context=None,
+        keepalive: int = 60,
     ) -> None:
         if not topics:
             raise ValueError("구독 토픽은 최소 1개 이상이어야 합니다")
@@ -59,6 +61,10 @@ class MqttTopicSubscriber:
         self.connect_timeout = max(0.1, float(connect_timeout))
         self.durable = durable
         self.transport = transport
+        self.tls_context = tls_context
+        if type(keepalive) is not int or not 1 <= keepalive <= 65535:
+            raise ValueError("MQTT keepalive must be within [1,65535]")
+        self.keepalive = keepalive
         self.session_present = False
         self._pending_subscriptions: set[int] = set()
         self._restart_requested = False
@@ -74,6 +80,12 @@ class MqttTopicSubscriber:
     def is_connected(self) -> bool:
         return self._connected
 
+    def publish(self, *args, **kwargs):
+        """저장 실패 후 클라이언트가 교체되어도 현재 연결로 결과를 발행한다."""
+        if self._client is None:
+            raise ConnectionError("MQTT 연결이 준비되지 않았습니다")
+        return self._client.publish(*args, **kwargs)
+
     def _build_client(self) -> mqtt.Client:
         client = create_mqtt_client(
             client_id_prefix=self.client_id_prefix,
@@ -83,6 +95,9 @@ class MqttTopicSubscriber:
             durable=self.durable,
             transport=self.transport,
         )
+        if self.tls_context is not None:
+            client.tls_set_context(self.tls_context)
+        client.connect_timeout = self.connect_timeout
         client.on_connect = self._on_connect
         client.on_disconnect = self._on_disconnect
         client.on_message = self._on_message
@@ -204,6 +219,9 @@ class MqttTopicSubscriber:
             return self.reconnect_if_needed()
         if self._connected:
             return True
+        if self._loop_running:
+            # Paho의 재접속/CONNACK 대기 중 소유 루프가 같은 소켓을 다시 열지 않는다.
+            return False
 
         now = time.monotonic()
         wait_remaining = self._reconnect_delay - (now - self._last_attempt_time)
@@ -217,7 +235,7 @@ class MqttTopicSubscriber:
             self._client = self._build_client()
 
         try:
-            self._client.connect(self.broker, self.port, keepalive=60)
+            self._client.connect(self.broker, self.port, keepalive=self.keepalive)
             if not self._loop_running:
                 self._client.loop_start()
                 self._loop_running = True

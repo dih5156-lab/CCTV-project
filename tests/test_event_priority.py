@@ -14,7 +14,7 @@ def test_event_priority_uses_canonical_event_shape():
         }
     }
 
-    assert event_priority(payload) == 4
+    assert event_priority(payload) == 12
     assert event_risk_level(payload) == "warning"
 
 
@@ -27,7 +27,7 @@ def test_event_priority_keeps_low_value_events_low():
 
 def test_event_priority_reads_routing_priority_from_event_type_map():
     assert event_priority({"type": "fall_detected"}) == 0
-    assert event_priority({"type": "head"}) == 2
+    assert event_priority({"type": "head"}) == 10
     assert event_priority({"type": "helmet", "severity": "low"}) == 30
 
 
