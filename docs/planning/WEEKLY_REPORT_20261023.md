@@ -139,3 +139,5 @@ Git의 기존 pre-commit 훅은 그래프 갱신, pre-push 훅은 전체 `ruff -
 - camera-offload 최신614파일 후보는 최종 회귀가 남아 전용 작업판에 보존한다. 싸움 데이터/모델 개발·benchmark 의존성과 raw 압축자료도 별도 검토 대상으로 유지한다.
 
 검증을 대신 숨기지 않도록 전체 pytest 자동실행·전체 ruff --fix·그래프 갱신을 하는 Git hook은 해당 commit/push 명령에서만 제외한다. 공유 hook/config는 바꾸지 않는다. GPU·새 RTSP·장치 출력·운영 재시작·모델 교체는 이번 통합에서 실행하지 않았다. HTML/PDF/PNG는 기존 기준일의 보존본이며 오늘 새로 렌더링하거나 브라우저 시험하지 않았다. 상세 파일 목록·기존 근거·원시 표본은 [통합 검토 기록](evidence/integration_review_20261026.json)에 있다.
+
+후속 대조에서 Kuiper 규칙1파일도 같은 검증 사본 및 기존 Action intake 근거의 해시와 일치함을 확인해 함께 커밋했다. 규칙 경유 `event_id` 보존·문자열 `object_id`·QoS1이 Action 중복 처리 방지와 짝을 이루므로 빠뜨리지 않았다. 검토 코드/시험/설정은 총205파일이며 실제 규칙 reload는 실행하지 않았다.

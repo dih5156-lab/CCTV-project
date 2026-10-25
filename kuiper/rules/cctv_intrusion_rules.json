@@ -1,19 +1,19 @@
 {
   "stream": {
     "name": "ai_events_stream",
-    "sql": "CREATE STREAM ai_events_stream (camera_id STRING, type STRING, confidence FLOAT, timestamp STRING, object_id BIGINT) WITH (DATASOURCE=\"cctv/ai/events/+/+\", TYPE=\"mqtt\", FORMAT=\"json\", SHARED=\"true\")"
+    "sql": "CREATE STREAM ai_events_stream (event_id STRING, camera_id STRING, type STRING, confidence FLOAT, timestamp STRING, object_id STRING) WITH (DATASOURCE=\"cctv/ai/events/+/+\", TYPE=\"mqtt\", FORMAT=\"json\", SHARED=\"true\")"
   },
   "rules": [
     {
       "id": "intrusion_confidence_filter",
-      "description": "intrusion 이벤트 confidence 필터링",
-      "sql": "SELECT camera_id, type, confidence, timestamp, object_id FROM ai_events_stream WHERE type IN ('danger_zone', 'person', 'helmet', 'fall_detected', 'unsafe_behavior') AND confidence >= {{INTRUSION_CONFIDENCE}}",
+      "description": "원본 이벤트 ID를 보존해 직접 수신 경로와 명령 ID가 달라지지 않게 한다.",
+      "sql": "SELECT event_id, camera_id, type, confidence, timestamp, object_id FROM ai_events_stream WHERE type IN ('danger_zone', 'person', 'helmet', 'fall_detected', 'unsafe_behavior') AND confidence >= {{INTRUSION_CONFIDENCE}}",
       "actions": [
         {
           "mqtt": {
             "server": "tcp://{{MQTT_BROKER}}:{{MQTT_PORT}}",
             "topic": "cctv/rules/intrusion/filtered",
-            "qos": 0,
+            "qos": 1,
             "retain": false
           }
         }
@@ -28,7 +28,7 @@
           "mqtt": {
             "server": "tcp://{{MQTT_BROKER}}:{{MQTT_PORT}}",
             "topic": "cctv/rules/intrusion/persisted",
-            "qos": 0,
+            "qos": 1,
             "retain": false
           }
         }
@@ -36,14 +36,14 @@
     },
     {
       "id": "intrusion_high_confidence_routing",
-      "description": "고신뢰 intrusion 라우팅",
-      "sql": "SELECT camera_id, type, confidence, timestamp, object_id, 'critical' AS severity FROM ai_events_stream WHERE type IN ('danger_zone', 'fall_detected', 'unsafe_behavior') AND confidence >= {{CRITICAL_CONFIDENCE}}",
+      "description": "고신뢰 이벤트도 원본 ID를 보존해 규칙 경유 재수신을 같은 명령으로 식별한다.",
+      "sql": "SELECT event_id, camera_id, type, confidence, timestamp, object_id, 'critical' AS severity FROM ai_events_stream WHERE type IN ('danger_zone', 'fall_detected', 'unsafe_behavior') AND confidence >= {{CRITICAL_CONFIDENCE}}",
       "actions": [
         {
           "mqtt": {
             "server": "tcp://{{MQTT_BROKER}}:{{MQTT_PORT}}",
             "topic": "cctv/rules/intrusion/critical",
-            "qos": 0,
+            "qos": 1,
             "retain": false
           }
         }

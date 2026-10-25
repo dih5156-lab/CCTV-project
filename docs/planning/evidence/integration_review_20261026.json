@@ -6,8 +6,8 @@
   "initial_staged_files": 125,
   "initial_changed_tracked_files": 218,
   "staged_working_mismatches": 25,
-  "reviewed_code_files": 204,
-  "historical_hash_supported_files": 150,
+  "reviewed_code_files": 205,
+  "historical_hash_supported_files": 151,
   "integrated_handoffs": [
     {
       "source": "/home/sawwave/.codex/worktrees/edge-auto-failback/CCTV-project/src/services/edge_auto_handoff.py",
@@ -1572,6 +1572,14 @@
       "existing_hash_evidence": [
         "docs/planning/evidence/edge_owner_preview_20261023.json"
       ]
+    },
+    {
+      "path": "kuiper/rules/cctv_intrusion_rules.json",
+      "sha256": "45b8ab144742324c3c55c0600434ed7fad95973f85cdaac856c2baf70b693653",
+      "existing_hash_evidence": [
+        "docs/planning/evidence/action_intake_20261013.json"
+      ],
+      "also_in_tested_isolated_snapshot": true
     }
   ],
   "preservation": {
@@ -2045,5 +2053,11 @@
     "end_at": null,
     "converted_fall_reuse": true,
     "gpu_results": 0
+  },
+  "additional_configuration": {
+    "path": "kuiper/rules/cctv_intrusion_rules.json",
+    "reason": "Rule routes must preserve event_id and uint64-compatible string object_id; QoS1 matches durable intake. Paired with committed Action/EdgeX changes.",
+    "validation": "exact current hash in prior 302+4 host/candidate evidence; same bytes present in fresh 528 PASS/11 SKIP snapshot; JSON parse/diff review PASS",
+    "live_rule_reload": false
   }
 }
