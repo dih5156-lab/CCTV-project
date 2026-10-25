@@ -1,0 +1,753 @@
+{
+  "date": "2026-10-08",
+  "updated_kst": "2026-10-08T11:39:39.368831+09:00",
+  "wbs": "P5.1",
+  "deployed": true,
+  "decision": "REFRESH_APPLIED_USER_REPORTS_LESS_STUTTER_FULL_STABILITY_NOT_ACCEPTED",
+  "scope": "AI 컨테이너 하나 교체. nano·보조 모델·임계값·카메라 유지. CPU OSD 명시. 개발 src 마운트 제거 및 scripts/config 스냅샷 사용.",
+  "before_image": "sha256:1ace5b7832a50d6675b66146b0edc307021795732fc7c9a770e2cd628d7fd261",
+  "after_image": "sha256:294e52234fc170904e2a09b180b422e0562d6e11b5aa28ebcf287a1b47c9ed55",
+  "before_started_utc": "2026-10-02T01:33:58.362007997Z",
+  "after_started_utc": "2026-10-08T02:12:38.915243484Z",
+  "runtime_verification": {
+    "image": "sha256:294e52234fc170904e2a09b180b422e0562d6e11b5aa28ebcf287a1b47c9ed55",
+    "started": "2026-10-08T02:12:38.915243484Z",
+    "restart_count": 0,
+    "health": "healthy",
+    "environment_delta": {
+      "DS_OSD_PROCESS_MODE": {
+        "before": null,
+        "after": "0"
+      }
+    },
+    "source_files_matched": 206,
+    "development_src_mount_removed": true,
+    "camera_and_primary_config_unchanged": true,
+    "native_fatal_error_lines": 0,
+    "engine_paths_in_logs": [
+      "/app/models/appearance/pa100k_resnet50_attr.engine",
+      "/app/models/fall/yolov8n-pose.engine",
+      "/app/models/head/helmet_model.engine",
+      "/app/models/person/yolov8n.engine",
+      "models/appearance/appearance_color_yolov8n.engine"
+    ]
+  },
+  "before": {
+    "metric_samples": 12,
+    "metric_errors": 0,
+    "probe_errors": "",
+    "observer_is_packet_timing_not_decode_or_unique_frame_fps": true,
+    "metric_seconds": 33.51511261402629,
+    "rates": {
+      "cctv_processor_frames_processed_total": 29.926797846421017,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 14.978317566204737
+    },
+    "max_frame_age": 0.10992023698054254,
+    "output": {
+      "packets": 878,
+      "seconds": 30.006509449100122,
+      "packets_per_second": 29.226991612858214,
+      "max_observed_arrival_gap": 0.2684818299021572,
+      "max_pts_step": 0.14353300000000146,
+      "pts_steps_over_100ms": 7,
+      "negative_pts_steps": 0
+    }
+  },
+  "after": {
+    "metric_samples": 98,
+    "metric_errors": 0,
+    "probe_errors": "",
+    "observer_is_packet_timing_not_decode_or_unique_frame_fps": true,
+    "metric_seconds": 297.1729109219741,
+    "rates": {
+      "cctv_processor_frames_processed_total": 29.965719191471333,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 14.98454211786882
+    },
+    "max_frame_age": 0.11905872193165123,
+    "output": {
+      "packets": 8438,
+      "seconds": 295.04482603096403,
+      "packets_per_second": 28.59565481454863,
+      "max_observed_arrival_gap": 0.40644007199443877,
+      "max_pts_step": 0.40037800000001766,
+      "pts_steps_over_100ms": 113,
+      "negative_pts_steps": 0
+    }
+  },
+  "matched_output_windows": {
+    "before": {
+      "first_30s": {
+        "seconds": 29.96778124407865,
+        "packet_rate": 29.231393304203635,
+        "pts_steps_over_100ms": 7,
+        "pts_step_max": 0.14353300000000146,
+        "arrival_gap_max": 0.2684818299021572,
+        "pts_to_wall_ratio": 1.0012664186117832
+      },
+      "last_30s": {
+        "seconds": 29.988192554097623,
+        "packet_rate": 29.211497105726778,
+        "pts_steps_over_100ms": 7,
+        "pts_step_max": 0.14353300000000146,
+        "arrival_gap_max": 0.2684818299021572,
+        "pts_to_wall_ratio": 1.000584911740537
+      }
+    },
+    "after": {
+      "first_30s": {
+        "seconds": 29.96975786308758,
+        "packet_rate": 28.92916265659408,
+        "pts_steps_over_100ms": 9,
+        "pts_step_max": 0.15762199999999993,
+        "arrival_gap_max": 0.2151361219584942,
+        "pts_to_wall_ratio": 0.9999109481264489
+      },
+      "last_30s": {
+        "seconds": 29.94677932281047,
+        "packet_rate": 28.917967794298587,
+        "pts_steps_over_100ms": 10,
+        "pts_step_max": 0.16380000000003747,
+        "arrival_gap_max": 0.23322157398797572,
+        "pts_to_wall_ratio": 1.0026988103234185
+      }
+    }
+  },
+  "user_observation": {
+    "page": "http://192.168.2.141:7000/",
+    "device": "separate PC/laptop",
+    "after_refresh": "끊김이 줄어듦",
+    "method": "사용자 육안 비교",
+    "limits": "클라이언트 FPS·손실률·freezeCount 계측값은 아님"
+  },
+  "checks": {
+    "processed_frame_gate": true,
+    "primary_inference_gate": true,
+    "no_observed_pipeline_restart": true,
+    "no_metric_read_errors": true,
+    "frame_age_under_5s": true,
+    "native_fatal_log_patterns_absent": true,
+    "health_http_200": true,
+    "running_expected_image": true
+  },
+  "regression": {
+    "passed": 289,
+    "skipped": 2,
+    "groups": [
+      "deepstream event factory/shutdown",
+      "bootstrap runtime",
+      "fall pose tracks",
+      "processor stats",
+      "ingest concurrency",
+      "sensor record",
+      "deepstream processor/shadow RF"
+    ],
+    "native_check_exit": 0
+  },
+  "backup": {
+    "validated_databases": 3,
+    "method": "SQLite backup API, DB별 일관된 복사본; DB 간 동일 시각 원자적 스냅샷은 아님",
+    "quick_check": "ok",
+    "private_directory": "data/runtime/live_refresh_20261008/db_backup"
+  },
+  "data_after_switch": {
+    "appearances.db": {
+      "schema_unchanged": true,
+      "backup_sequence": {
+        "appearance_log": 615977
+      },
+      "current_sequence": {
+        "appearance_log": 616754
+      }
+    },
+    "mqtt_event_outbox.db": {
+      "schema_unchanged": true,
+      "backup_sequence": {
+        "mqtt_event_outbox": 1125072
+      },
+      "current_sequence": {
+        "mqtt_event_outbox": 1125601
+      }
+    },
+    "commercial_faces.db": {
+      "schema_unchanged": true,
+      "backup_sequence": {},
+      "current_sequence": {}
+    }
+  },
+  "preparation_issue": {
+    "initial_native_start_timeouts_seconds": [
+      70,
+      30
+    ],
+    "backup_wait_observed": "do_get_write_access/D state",
+    "original_backup_terminated": true,
+    "pinned_backup_retry_completed": true,
+    "subsequent_native_start_seconds": 0.81,
+    "subsequent_native_check_exit": 0,
+    "kernel_storage_errors_observed": false,
+    "interpretation": "초기 준비 중 중복 백업·I/O 대기와 기동 지연이 겹침. 정상 라이브 끊김이나 장치 결함의 원인 확정 아님."
+  },
+  "operating_config": {
+    "candidate_override": "data/runtime/live_refresh_20261008/candidate.yml",
+    "apply_command": "data/runtime/live_refresh_20261008/candidate_up.sh",
+    "rollback_override": "data/runtime/live_refresh_20261008/rollback.yml",
+    "rollback_command": "data/runtime/live_refresh_20261008/rollback_up.sh",
+    "base_compose_modified_this_turn": false,
+    "systemd_modified": false,
+    "boot_persistence": "재부팅 systemd는 기존 기본 Compose를 강제 재생성하므로 시험 구성이 그대로 유지된다고 보장하지 않음"
+  },
+  "remaining": [
+    "로컬 출력 PTS 간격100ms 초과113회/295초·최대0.400초로 송출 불규칙성 잔존",
+    "브라우저 getStats와 종단 지연 미계측",
+    "운영 구성30분 처리 관측 통과. 재시작/자동 시작 고정·종단 지연 검증은 미완료",
+    "중복 라벨·tensor 후처리 재사용 수정 미구현",
+    "코드/이미지·OSD·재시작·재연결을 함께 바꿔 개선의 단일 원인 미확정",
+    "복귀 코드는 보존된 v088이며 이전 프로세스 메모리와 완전 동등성 미검증",
+    "사용자 기준 끊김은 해소됐으나 약1–2초 지연 및 다인/움직임 증가 시 지연 악화가 남음. 원인·종단 지연 합격 미확정."
+  ],
+  "limits": [
+    "프레임 계수·RTSP 패킷 수는 고유 영상/브라우저 표시 FPS가 아님",
+    "교체 전35초와 교체 후300초의 최대값을 같은 관측 길이로 취급하지 않음. 양쪽30초 구간도 별도 제공",
+    "DB 스키마와 증가 ID를 확인했지만 운영 전체 과거 행을 다시 해시 대조한 것은 아님",
+    "5분 기동/처리 게이트 통과를 I54 해결·P5.1 완료·모델 품질/다중 카메라 합격으로 세지 않음"
+  ],
+  "next": "Jetson 디코더 버퍼 대기/하류 역압을 분리하는 최소 조건 비교를 준비한다. 첫 후보는 지원되는 disable-dpb 한 가지이며 실제 개선·영상 오류·추론 처리율을 함께 확인하기 전 운영 채택하지 않는다.",
+  "sha256": {
+    "data/runtime/live_refresh_20261008/plan.json": "743812db18d2458e42127860191d451bb9aa3c68b70d88648d083f5f27d503ed",
+    "data/runtime/live_refresh_20261008/compose_validation.json": "abea5f99b42197b1b97c096f7814b1d837db27048385e8d4272867a40650aa6d",
+    "data/runtime/live_refresh_20261008/source_comparison.json": "234d3166be9be782bda07c2f3798b9b999be8e14e7c680bc6b9ff5d5303abb97",
+    "data/runtime/live_refresh_20261008/candidate_source_hashes.json": "00ced0b2a55a8741b8d378fbd56b2e237672180df3f62329febf3da80c614583",
+    "data/runtime/live_refresh_20261008/native_preflight.json": "9db4dd31677da000d37151f5b359ba6a25b3ae71ae47add1b2c146bf3638c403",
+    "data/runtime/live_refresh_20261008/native_preflight.log": "2bbef33fa873f15432e818454e4d17bd54ef0570de614e179ae9ebc271100e07",
+    "data/runtime/live_refresh_20261008/db_backup_report.json": "8b2e31af64cfbd8c96e079d1cc259620ec387b34c2ae68f640f978937b73f96a",
+    "data/runtime/live_refresh_20261008/db_copy_report.json": "db443179e8b3afface895901e317610b8d4ac39e079e262204a7fc8db17e1175",
+    "data/runtime/live_refresh_20261008/before.json": "d588f4943af13c48eb873e32d2950ed2f3d56f05e3f6563d231263e4975c99d3",
+    "data/runtime/live_refresh_20261008/before_summary.json": "a2997b1fbcfb291c7d02e79de2e3f9979c239be7e4848a54b8e4324be886baa1",
+    "data/runtime/live_refresh_20261008/after.json": "087749d54d924a5c4c28751ce723b70370c08740328a7656afb43f886f80c7f7",
+    "data/runtime/live_refresh_20261008/after_summary.json": "1121a7cf1cff8b796e67b8dc0e95c104c635f3415f762e8c9ed65129c021c023",
+    "data/runtime/live_refresh_20261008/matched_output_windows.json": "3aebcdd5ec1aafa2d8b62ccb6569e14b57ba846041144be9711694ae3d9ddacb",
+    "data/runtime/live_refresh_20261008/candidate_ready.json": "66224ddb9995d028483fc2f918ff2647c810f2b645c4debca7b46de3a5d76dc7",
+    "data/runtime/live_refresh_20261008/candidate_verification.json": "e6de0fc42c8605ce43b954d37ebac6cf9b63b440eb1a0d735baa4ba585e651c5",
+    "data/runtime/live_refresh_20261008/data_after_switch.json": "8742b9dc40662aa0f57dfd36f216382a2abea087ea6378a7d32b553fd85b65dd",
+    "data/runtime/live_refresh_20261008/final_runtime.json": "5aa95a6917458c428bbbefd0a6315221c13d9f6cbec40e6026838a68cebe86b7",
+    "data/runtime/live_refresh_20261008/user_observation.json": "5f9551440d85f35be7201d7ae749dc49400842a2439e97c86e72547a72056aae",
+    "data/runtime/live_refresh_20261008/runtime_input_hashes.json": "c5b93f779a56683d23d43bcf87a4445062728c60cb5b699ba36d31880b112f2f",
+    "data/runtime/live_refresh_20261008/observe.py": "fd231b8a3ade244fe660c42c64a2e2b3e8cb5648b92969a9510810299fd626ab",
+    "data/runtime/live_refresh_20261008/latency_followup_113624.json": "66524d349b47bf1d7fe54da508992ab3fc80371fedbf769015974c0a225cc6b3",
+    "data/runtime/live_refresh_20261008/latency_followup_113624_summary.json": "1fc15d208ff811e5d77958d8c1a1d929c7985eaff220c53648b4654ba76b4c75",
+    "data/runtime/live_refresh_20261008/activity_comparison_121711.json": "3b48583fae5d74df4bca290b30238b3c7320bd3f64d926c033f02a8fce17588c",
+    "data/runtime/live_refresh_20261008/activity_comparison_121711_summary.json": "319f568755e33e34e34b9cb6ae3073240a7878a08f35344f7a89980ee4c7b01c",
+    "data/runtime/live_refresh_20261008/activity_comparison_121711.log": "09b2c937cc008d463e709456869e91d797e07713e173bded6f18f9748d7c67b0",
+    "data/runtime/live_refresh_20261008/activity_analysis.json": "a19b0885849aceb2174c68aa3ecc4aa539d4f9a72a62b64008317cde42b2d199",
+    "data/runtime/live_refresh_20261008/activity_resources_1217.log": "9cde5b71c402920ce44f53c616fd96f340695ce3098672262d57c74c27d815de",
+    "data/runtime/live_refresh_20261008/activity_resources_summary.json": "3edab386c0ac52f8b2eef54d66761d045e3259d17fcb98a90eba34b33d5ffa5b",
+    "data/runtime/live_refresh_20261008/activity_media_api_initial.json": "0d0b343f1c790f077ca34ec7dbe1929a3997b40c404c2216f5f150cc557c3bf5",
+    "data/runtime/live_refresh_20261008/activity_media_samples_1225.jsonl": "48041ad86e304eabc29d2c73a3e8b4f904abb7021cd6b9447892dbb6fe84d591",
+    "data/runtime/live_refresh_20261008/raw_latency_probe.py": "61e52c6bf65d8506afbc7dd2e93a538583f3f18f47c6bdfe484015002bd6eb11",
+    "data/runtime/live_refresh_20261008/raw_latency_preflight.log": "ed07870e51a7478e2aecf3fb2bf617157147c412ed6995e2b9e336957692eff4",
+    "data/runtime/live_refresh_20261008/raw_latency_run.log": "05f44b0c9dd82611242714821b9ceefdb0bd72ecb065f73b88d0dd6e6f1e01d1",
+    "data/runtime/live_refresh_20261008/raw_latency_codec_check.json": "677139ba41ac211bff3a39b1e8eee5bdc5b344882b89bafe7ae234f0c806dc8a",
+    "data/runtime/live_refresh_20261008/raw_latency_media_samples.jsonl": "90505c98c06f806155fccbc78c1fabfdeed37beac83314fbea9d371d88f206ca",
+    "data/runtime/live_refresh_20261008/client_diagnostic/index.html": "83a613ffb3957c831e43b3a5f8011a8826cb869bb99ff015452b240f1ddad276",
+    "data/runtime/live_refresh_20261008/client_diagnostic/diagnostic.js": "8658b2759fd358c745646a3756a04cee52376e75d58085528100084588f0d7d4",
+    "data/runtime/live_refresh_20261008/client_diagnostic/serve.py": "8815fe846760b7dcf980ed5ccb0cc4f66d98cda5fa68d96692810f4997844365",
+    "data/runtime/live_refresh_20261008/client_diagnostic/check.cjs": "c1b7a4ae876222d214f92d69e4af9bdca1d1dc3e425896926d1c65990c680420",
+    "data/runtime/live_refresh_20261008/activity_runtime_final.json": "1115d1d982e19e19e6d68c3b8af089a8a8068b8ca6dbe573e55433562f81e21d",
+    "data/runtime/live_refresh_20261008/client_diagnostic/reports.jsonl": "d2a5c3c4de9fff63245965f3199bb1b8277dd5ad5c0e7d308fadfbd581fe55e8",
+    "data/runtime/live_refresh_20261008/client_diagnostic/analysis.json": "b8c00270cc08f2cbcbf726decfdf0aedad3f12839c8431b2ecf7a63e8c807ba1",
+    "data/runtime/live_refresh_20261008/stage_latency/compose.json": "a9c5fca79ed23559bb75ad011fd6d7f882a22302ab4056b288fb89bde9160c26",
+    "data/runtime/live_refresh_20261008/stage_latency/self_check_analysis.json": "a5cbdc70fe08ce81eeb4a3260e9f6bd1394a1cf73bb90a74e84e5c8245246b8b",
+    "data/runtime/live_refresh_20261008/stage_latency/focused_run.jsonl": "7543992a4a555bbf090be5a92c8998211fb531b20a5d6cf44cc77fa00be4c93a",
+    "data/runtime/live_refresh_20261008/stage_latency/operating_restored.json": "491199265cf88dab6f897b7bbd2a818cd664b459d0c29cc759934f29626bde11",
+    "data/runtime/live_refresh_20261008/stage_latency/boundaries.json": "b2c7cf57a8063cea6eb3565d7a9379a663bd62a9b661bba55033cd946656eaff",
+    "data/runtime/live_refresh_20261008/stage_latency/operating_during.json": "4c49ab6c2781b2a2c92ac3363a67b8e1dda38224fb70c06a176713479e185450",
+    "data/runtime/live_refresh_20261008/stage_latency/final_error_counts.json": "c916895a23add3ea1e352321daeb7ea0e97cb6df0880e47f31ddb4981b66fa50",
+    "data/runtime/live_refresh_20261008/stage_latency/metrics_before.prom": "ac82d584172686651c5a46ed0edc66ed9099c768a1fd053ec6cceb9b4b6f1a6c",
+    "data/runtime/live_refresh_20261008/stage_latency/decoder_capabilities.json": "8184cbc88641cae5c4a5a9f8183ea6014da011fe9d2fd41647989693499d3280",
+    "data/runtime/live_refresh_20261008/stage_latency/focused_apply.log": "c98d81b8e5498f825e66a568f8127a56a15b125ba90019c4f22a472a303dc5b5",
+    "data/runtime/live_refresh_20261008/stage_latency/analyze.py": "52f27b1d85bfeceec2130d3ebbc4c2ac898ea0965b1fedd2f485e1c13a55fc84",
+    "data/runtime/live_refresh_20261008/stage_latency/focused_restore.log": "36ddf6f8e67bc092d936ded565ade246bf3a70898dde51df85aa8871dd28c047",
+    "data/runtime/live_refresh_20261008/stage_latency/boundaries_analysis.json": "54ed83916547c646fbf4e02fb0c239539e49278fcfe215fabcc211db720a47fa",
+    "data/runtime/live_refresh_20261008/stage_latency/trace_metrics.json": "19c7bb007d5ba415a65a03998db31e17e2c89ab2ba8535161e74d6eae076f0cf",
+    "data/runtime/live_refresh_20261008/stage_latency/final_operating.json": "31ff5ea15702030780643750ef717c0d84ca5582efa6a4b195ac2c9b1bf5d97b",
+    "data/runtime/live_refresh_20261008/stage_latency/final_observation.json": "c55a7703635af16a105f31ba4bdaf0138787e0ef744dfc32c61e2ecc2bfeda76",
+    "data/runtime/live_refresh_20261008/stage_latency/focused_metrics.json": "79b1653f1da32ba4936cf2d6686a4d815e55b416a861c2cfd864f13a0d5b90a5",
+    "data/runtime/live_refresh_20261008/stage_latency/restored_baseline.json": "9adfbc66bf6473bb9d05a2259c68ce9085c8b452e2ba1393da9eb81759dc8b64",
+    "data/runtime/live_refresh_20261008/stage_latency/apply.log": "fe756237b2102e67a3997e02843f188977695de7cdd11d69fd5020f516cf7334",
+    "data/runtime/live_refresh_20261008/stage_latency/focused_before.json": "491199265cf88dab6f897b7bbd2a818cd664b459d0c29cc759934f29626bde11",
+    "data/runtime/live_refresh_20261008/stage_latency/runtime_before.json": "24a51a6b3b9e5d95c0c70646a3e2cd64dcc1da62dfc087fcc698ca84a032d14a",
+    "data/runtime/live_refresh_20261008/stage_latency/restore.log": "428da1aa9c765432f310a07e3e245f18f90962ee9ac33c702c02a9a5bec91b4e",
+    "data/runtime/live_refresh_20261008/stage_latency/operating_before.json": "e37457f48c10175b8ec33e2132ec437af27a3a01f4538b07e75c1071f1cc69e9",
+    "data/runtime/live_refresh_20261008/stage_latency/trace_container.log": "b5012a86823534d273c4c6d6449de27729fed493fa6c5fcc2cf02805c3276119",
+    "data/runtime/live_refresh_20261008/stage_latency/self_check.json": "a1a242f6fbf2a7c35e335f982460ac159c8e103c563f38becd37ff5ea32cc76f",
+    "data/runtime/live_refresh_20261008/stage_latency/check.py": "f318ce9880d1ef488ce1864c489d95611e92d2e40f98015f0869651b0be12fdd",
+    "data/runtime/live_refresh_20261008/stage_latency/run.jsonl": "7cdcc9db36cf63455d574060f80953c92f56ea665b4e918d7f294aea0dfbd2ae",
+    "data/runtime/live_refresh_20261008/stage_latency/focused_restored.json": "31ff5ea15702030780643750ef717c0d84ca5582efa6a4b195ac2c9b1bf5d97b",
+    "data/runtime/live_refresh_20261008/stage_latency/boundaries_focused.json": "01e50663b900fc51b027752c280d8423147d9ca7959ff96d065023d974a9a58f",
+    "data/runtime/live_refresh_20261008/stage_latency/final_container.log": "fac4d506c6407c65c718a5ab5935d872cab3c8768bc5ef565fdcaa4b2f20e46f",
+    "data/runtime/live_refresh_20261008/stage_latency/plan.json": "84d8af76ce81cf6990f10a2c6b1ad0ab3bd4acd1d8733f847634b170d5adb988",
+    "data/runtime/live_refresh_20261008/stage_latency/boundaries_focused_analysis.json": "29e7b225df9131adf14c4e6760566a799c47a378a33c34fc184a53b1d8e6d525",
+    "data/runtime/live_refresh_20261008/stage_latency/trace.py": "27a1582161e2831f804186c8f368e73c9398a7b2bf147dd40d40f5decbdb4df0",
+    "data/runtime/live_refresh_20261008/stage_latency/full/compose.json": "a9c5fca79ed23559bb75ad011fd6d7f882a22302ab4056b288fb89bde9160c26",
+    "data/runtime/live_refresh_20261008/stage_latency/full/self_check_analysis.json": "a5cbdc70fe08ce81eeb4a3260e9f6bd1394a1cf73bb90a74e84e5c8245246b8b",
+    "data/runtime/live_refresh_20261008/stage_latency/full/operating_restored.json": "491199265cf88dab6f897b7bbd2a818cd664b459d0c29cc759934f29626bde11",
+    "data/runtime/live_refresh_20261008/stage_latency/full/boundaries.json": "b2c7cf57a8063cea6eb3565d7a9379a663bd62a9b661bba55033cd946656eaff",
+    "data/runtime/live_refresh_20261008/stage_latency/full/operating_during.json": "4c49ab6c2781b2a2c92ac3363a67b8e1dda38224fb70c06a176713479e185450",
+    "data/runtime/live_refresh_20261008/stage_latency/full/metrics_before.prom": "ac82d584172686651c5a46ed0edc66ed9099c768a1fd053ec6cceb9b4b6f1a6c",
+    "data/runtime/live_refresh_20261008/stage_latency/full/analyze.py": "80fae82523083930f0b15e9f24a28e948b8cd5558095c8e82bedaafeabed9c48",
+    "data/runtime/live_refresh_20261008/stage_latency/full/boundaries_analysis.json": "54ed83916547c646fbf4e02fb0c239539e49278fcfe215fabcc211db720a47fa",
+    "data/runtime/live_refresh_20261008/stage_latency/full/trace_metrics.json": "19c7bb007d5ba415a65a03998db31e17e2c89ab2ba8535161e74d6eae076f0cf",
+    "data/runtime/live_refresh_20261008/stage_latency/full/apply.log": "fe756237b2102e67a3997e02843f188977695de7cdd11d69fd5020f516cf7334",
+    "data/runtime/live_refresh_20261008/stage_latency/full/runtime_before.json": "24a51a6b3b9e5d95c0c70646a3e2cd64dcc1da62dfc087fcc698ca84a032d14a",
+    "data/runtime/live_refresh_20261008/stage_latency/full/restore.log": "428da1aa9c765432f310a07e3e245f18f90962ee9ac33c702c02a9a5bec91b4e",
+    "data/runtime/live_refresh_20261008/stage_latency/full/operating_before.json": "e37457f48c10175b8ec33e2132ec437af27a3a01f4538b07e75c1071f1cc69e9",
+    "data/runtime/live_refresh_20261008/stage_latency/full/trace_container.log": "b5012a86823534d273c4c6d6449de27729fed493fa6c5fcc2cf02805c3276119",
+    "data/runtime/live_refresh_20261008/stage_latency/full/self_check.json": "285cbf31e7dddf55bca08c524062e40dd7f25fedf56f8e4ec7dceac83dc89f6e",
+    "data/runtime/live_refresh_20261008/stage_latency/full/check.py": "6da339b2e77214d7674b75a99cc1be41ae125a33bacdc7ba8b8e87acb40cfc04",
+    "data/runtime/live_refresh_20261008/stage_latency/full/run.jsonl": "7cdcc9db36cf63455d574060f80953c92f56ea665b4e918d7f294aea0dfbd2ae",
+    "data/runtime/live_refresh_20261008/stage_latency/full/plan.json": "5a4ac4d0458189733271149085c1018dc6b53c1ae628c6e80fbb7ca53afc0f5a",
+    "data/runtime/live_refresh_20261008/stage_latency/full/trace.py": "53086317e5ca17eb0b658cd02a9cd0ed9d02b6ff71f77227a865a3c9b0e874df"
+  },
+  "latency_followup": {
+    "user_report": {
+      "stutter": "끊기지는 않음",
+      "estimated_glass_to_glass_seconds": [
+        1,
+        2
+      ],
+      "activity_effect": "사람들이 많아지거나 행동이 늘어날 때마다 조금씩 딜레이가 더 생김",
+      "method": "사용자 체감, 동시 계측 아님"
+    },
+    "observation_started_kst": "2026-10-08T11:36:24.840577+09:00",
+    "observation_ended_kst": "2026-10-08T11:37:28.969249+09:00",
+    "metrics_seconds": 64.1286375138443,
+    "frame_rate": 29.97100943529437,
+    "primary_inference_rate": 14.969911060292715,
+    "restart_delta": 0.0,
+    "metric_errors": 0,
+    "probe_errors": "",
+    "context_counter_deltas": {
+      "cctv_processor_context_frames_matched_total": 0.0,
+      "cctv_processor_context_tasks_completed_total": 0.0,
+      "cctv_processor_context_queue_dropped_total": 0.0,
+      "cctv_processor_context_tasks_failed_total": 0.0,
+      "cctv_appearance_color_backend_requests_total": 0.0,
+      "cctv_appearance_attribute_backend_requests_total": 0.0
+    },
+    "output": {
+      "packets": 1639,
+      "seconds": 60.00509896199219,
+      "packets_per_second": 27.29768016943902,
+      "max_observed_arrival_gap": 0.26722349994815886,
+      "max_pts_step": 0.16859999999999786,
+      "pts_steps_over_100ms": 44,
+      "negative_pts_steps": 0
+    },
+    "output_pts_wall_ratio": 1.0003077744779576,
+    "configuration_readback": {
+      "input_and_rtsp_publish_latency_ms": 200,
+      "h264_width": 1920,
+      "h264_height": 1080,
+      "h264_fps": 30,
+      "h264_bitrate": 6000000
+    },
+    "source_findings": [
+      "외형 속성·헬멧 추론 경로는 OSD/인코딩보다 앞에 연결되어 있다.",
+      "출력 분기 큐는 max-size-buffers=2·leaky=2이며, 이 큐의 실시간 점유율은 이번 지표에 없다.",
+      "얼굴/색상 등 context 워커는 별도 비동기 경로다. 이 워커의 드롭0을 전체 영상 경로 정상으로 해석하지 않는다."
+    ],
+    "limits": [
+      "이번 구간 context 신규 접수·보조 backend 요청 증가0으로 다인/큰 움직임 조건을 재현한 시험이 아니다.",
+      "처리 FPS·최근 프레임 수신 경과는 카메라에서 PC까지의 지연이 아니다.",
+      "RTSP 패킷 간격은 브라우저 표시 FPS·종단 지연이 아니다.",
+      "사람 수와 지연의 동시 측정, 입력/출력 대기열 점유율, 원격 PC 수신·재생 통계는 미확보다."
+    ],
+    "decision": "LATENCY_OPEN_ACTIVITY_CORRELATION_NOT_YET_REPRODUCED",
+    "operating_changes": false,
+    "next": "동일 구성의 지속 관측에서 저활동/다인·움직임 구간과 PC 지연을 함께 구분한다. 지연 증가가 재현되는 구간을 좁힌 뒤 단일 변경을 검증한다."
+  },
+  "activity_comparison": {
+    "state": "OBSERVATION_AND_CLIENT_MEASUREMENT_COMPLETED_LATENCY_OPEN",
+    "started_kst": "2026-10-08T12:17:11+09:00",
+    "planned_seconds": 1800,
+    "user_acknowledgement": "네",
+    "user_activity_comparison_result": {
+      "raw_reply": "1초, 2,3초",
+      "low_activity_estimated_seconds": 1,
+      "higher_activity_estimated_seconds": [
+        2,
+        3
+      ],
+      "recovery_after_motion_stops": "약 1초로 다시 줄어듦",
+      "method": "사용자 체감, 활동 구간의 정확한 시각과 객관적 종단 시각은 미확보",
+      "pattern": "활동 증가 시 일시적으로 커지고 휴지 후 회복하는 체감 지연. 원인은 미확정."
+    },
+    "artifacts": [
+      "data/runtime/live_refresh_20261008/activity_comparison_121711.json",
+      "data/runtime/live_refresh_20261008/activity_comparison_121711_summary.json",
+      "data/runtime/live_refresh_20261008/activity_resources_1217.log",
+      "data/runtime/live_refresh_20261008/activity_media_api_initial.json",
+      "data/runtime/live_refresh_20261008/activity_media_samples_1225.jsonl"
+    ],
+    "operating_changes": false,
+    "limits": [
+      "사용자의 네 응답은 시험 수행 가능 확인이며 두 활동 구간의 지연 결과가 아니다.",
+      "미디어 서버의 WebRTC inbound 손실0은 원격 PC의 수신 손실0을 뜻하지 않는다.",
+      "추가 RTSP 읽기 연결과 제한된 읽기 전용 API 계측을 사용한다. 기존 운영 컨테이너 재시작·모델 변경·인증 변경은 하지 않았다."
+    ],
+    "next": "현재 구성의 Jetson 입력→AI/OSD→인코딩→송출 구간별 프레임 시각/대기를 계측한다. PC 버퍼 강제 축소나 모델 교체는 근거 없이 시행하지 않는다.",
+    "raw_comparison": {
+      "state": "COMPLETED_REMOVED",
+      "script": "data/runtime/live_refresh_20261008/raw_latency_probe.py",
+      "self_check": "PASS",
+      "scope": "같은 카메라의 원본 RTSP를 재인코딩 없이 임시 on-demand 경로로 전달. 기존 경로 해시 확인·600초 후 또는 조기 종료 시 삭제. 30분 동일 구성 관측 종료 후에만 실행.",
+      "user_result": "원본은 움직여도 거의 지연 없음",
+      "codec_check": {
+        "returncode": 0,
+        "streams": [
+          {
+            "codec_name": "h264",
+            "profile": "Main",
+            "codec_type": "video",
+            "width": 1920,
+            "height": 1080,
+            "has_b_frames": 0
+          },
+          {
+            "codec_type": "data"
+          }
+        ],
+        "stderr": ""
+      },
+      "raw_path_removed_kst": "2026-10-08T12:54:13.295579+09:00",
+      "existing_paths_restored": true,
+      "media_rates": [
+        {
+          "from": "2026-10-08T12:51:13.860238+09:00",
+          "to": "2026-10-08T12:51:43.890049+09:00",
+          "path": "camera_1",
+          "input_mbps": 5.546436971166688,
+          "outbound_mbps": 11.092873942333377,
+          "readers_first": 2,
+          "readers_last": 2
+        },
+        {
+          "from": "2026-10-08T12:51:13.860238+09:00",
+          "to": "2026-10-08T12:51:43.890049+09:00",
+          "path": "camera_1_raw_latency_20261008",
+          "input_mbps": 4.229171490632083,
+          "outbound_mbps": 4.229171490632083,
+          "readers_first": 1,
+          "readers_last": 1
+        },
+        {
+          "from": "2026-10-08T12:51:43.890049+09:00",
+          "to": "2026-10-08T12:52:13.921849+09:00",
+          "path": "camera_1",
+          "input_mbps": 5.680924299719169,
+          "outbound_mbps": 11.361848599438337,
+          "readers_first": 2,
+          "readers_last": 2
+        },
+        {
+          "from": "2026-10-08T12:51:43.890049+09:00",
+          "to": "2026-10-08T12:52:13.921849+09:00",
+          "path": "camera_1_raw_latency_20261008",
+          "input_mbps": 4.2358817894833525,
+          "outbound_mbps": 4.2358817894833525,
+          "readers_first": 1,
+          "readers_last": 1
+        }
+      ],
+      "limits": [
+        "원본 Main/처리 영상 Baseline으로 인코딩 경로가 다르며 모델 계산만 분리한 시험은 아니다.",
+        "기존 처리 영상의 다른 수신 연결도 관측되어 전체 수신 부하를 엄밀히 고정한 A/B 시험은 아니다."
+      ],
+      "interpretation": "추가 지연은 AI 처리·재인코딩·해당 스트림의 수신/재생 경로를 우선 확인한다. 모델 자체의 한계로 확정하지 않는다."
+    },
+    "analysis_artifact": "data/runtime/live_refresh_20261008/activity_analysis.json",
+    "backend_checks": {
+      "observed_at_least_30_minutes": true,
+      "frame_rate_at_least_28_47": true,
+      "primary_inference_rate_at_least_14_235764": true,
+      "no_observed_restarts": true,
+      "no_metric_errors": true,
+      "no_probe_errors": true
+    },
+    "browser_diagnostic": {
+      "state": "COMPLETED_TEMPORARY_SERVER_STOPPED",
+      "page": "http://192.168.2.141:18123/",
+      "scope": "같은 MediaMTX 기본 reader로 AI 영상을 재생하고 숫자 통계만 수집하는 한시적 별도 HTTP 서버. 기존 관제·보고서·운영 컨테이너 수정/재시작 없음.",
+      "checks": [
+        "수신 통계 계산 Node assert PASS",
+        "숫자 입력 검증 self-check PASS",
+        "화면/JS HTTP200",
+        "비공개 파일 경로 HTTP404",
+        "자동 측정 playing 이벤트→16표본→POST 모형 회귀 PASS",
+        "변경 HTML/JS HTTP200·버튼 제거 확인"
+      ],
+      "automatic_stop_after_seconds": 600,
+      "button_issue": {
+        "user_report": "영상은 보이는데 30초 측정 버튼이 안 눌림",
+        "cause": "미확정. 영상 연결 성공 확인으로 연결 불가 가설은 기각.",
+        "change": "버튼 제거·실제 playing 이벤트 뒤10초 준비+30초 자동 수집, 한 번만 실행."
+      },
+      "real_client_validation": "원격 PC16표본·30.332초 보고 POST 수신 및 사용자 측정 완료 확인.",
+      "cleanup": "보고 수신 후 임시 HTTP 서버만 종료. 기존 운영 컨테이너 유지. 사용자 진단 탭을 닫으면 해당 WebRTC 읽기 연결도 종료된다.",
+      "user_result": "측정완료",
+      "analysis_artifact": "data/runtime/live_refresh_20261008/client_diagnostic/analysis.json",
+      "summary": {
+        "seconds": 30.33236083984375,
+        "decoded_fps": 29.176759589299376,
+        "received_fps": 29.308631949025024,
+        "jitter_buffer_ms": 159.67429943502825,
+        "jitter_target_ms": 182.39121920903952,
+        "minimum_jitter_buffer_ms": 182.39121920903952,
+        "decode_ms_per_frame": 16.923221468926553,
+        "processing_ms_per_frame": 176.66183276836153,
+        "packets_lost_delta": 0,
+        "frames_dropped_delta": 3,
+        "freeze_count_delta": 2,
+        "freeze_seconds_delta": 0.566,
+        "nack_delta": 0,
+        "pli_delta": 0
+      },
+      "received_kst": "2026-10-08T13:14:37.925635+09:00",
+      "interpretation": "수신 버퍼 평균159.7ms·디코드16.9ms/프레임·수신부터 디코드까지 평균176.7ms. 2–3초 체감 전체를 PC 수신 버퍼만으로 설명하기 어렵다. Jetson 입력/처리/인코딩/송출 구간을 우선 계측하되 절대 종단 시각이 없어 모델/인코더 단독 원인 확정은 아니다.",
+      "limits": [
+        "이30초는 사용자 체감2–3초와 정확히 동기화된 종단 시각 시험이 아니다.",
+        "totalProcessingDelay는 jitter buffer/decode를 포함하므로 세 값을 중복 합산하지 않는다.",
+        "프레임 드롭3·일시정지2회/합0.566초를 관측했으며 끊김0 합격은 아니다.",
+        "패킷 손실 증가0은 이 표본에서만 확인한 값이며 전송 지연이나 향후 손실을 배제하지 않는다."
+      ]
+    },
+    "backend_summary": {
+      "observed_seconds": 1800.0325747800525,
+      "from": "2026-10-08T12:17:11.294085+09:00",
+      "to": "2026-10-08T12:47:10.271035+09:00",
+      "metrics": {
+        "samples": 589,
+        "errors": 0,
+        "deltas": {
+          "cctv_processor_frames_processed_total": 53919.0,
+          "cctv_processor_context_frames_matched_total": 3435.0,
+          "cctv_processor_context_tasks_completed_total": 3435.0,
+          "cctv_processor_context_tasks_failed_total": 0.0,
+          "cctv_processor_context_queue_dropped_total": 0.0,
+          "cctv_processor_pipeline_restart_executed_total": 0.0
+        },
+        "frame_fps": 29.97203517384259,
+        "primary_inferences_per_second": 14.986295522669119,
+        "last_processed_frame_age_seconds_max": 0.21929501881822944
+      },
+      "output": {
+        "packets": 50931,
+        "seconds": 1795.0198341209907,
+        "packets_per_second": 28.372945541819085,
+        "max_observed_arrival_gap": 0.5042229541577399,
+        "max_pts_step": 0.37836700000002566,
+        "pts_steps_over_100ms": 814,
+        "negative_pts_steps": 0
+      },
+      "relative_local_pts_wall_drift_seconds": {
+        "min": -0.06380803401648905,
+        "max": 0.7141919350078751,
+        "last": 0.17130112099084727
+      }
+    },
+    "operating_final_check": "data/runtime/live_refresh_20261008/activity_runtime_final.json",
+    "finished_kst": "2026-10-08T13:16:56.262122"
+  },
+  "stage_latency": {
+    "state": "COMPLETED_LOCATION_NARROWED_NOT_FIXED",
+    "started_kst": "2026-10-08T13:34:18+09:00",
+    "finished_kst": "2026-10-08T14:07:39.539402",
+    "wbs": "P5.1",
+    "issue": "I54 OPEN",
+    "user_approval": "지금 계측 진행",
+    "scope": "같은 이미지·모델·환경·포트를 유지한 임시 관측.1차60 pad/2차12 pad 계측 각각 시작·원복해 AI만 총4회 재생성. 미디어/API/UI는 기동 상태 동일. 최종 원래 명령·동일 이미지·healthy 복원.",
+    "full_trial": {
+      "processor_fps": 23.804763688217157,
+      "decision": "계측 영향이 의심되고 처리 기준 미달로 원래 운영 지연 대표값에서 제외",
+      "restored_baseline_fps": 29.978641204184097,
+      "raw_artifact": "data/runtime/live_refresh_20261008/stage_latency/full/boundaries.json"
+    },
+    "focused_trial": {
+      "processor_fps": 28.99719881433658,
+      "metric_seconds": 39.34862837288529,
+      "capture_seconds": 30,
+      "trace_pads": 12,
+      "errors": [],
+      "truncated": {},
+      "minimum_processor_fps_gate": 28.47,
+      "processor_gate_pass": true,
+      "analysis_artifact": "data/runtime/live_refresh_20261008/stage_latency/boundaries_focused_analysis.json",
+      "pairs": {
+        "/GstPipeline:cctv-deepstream/nvv4l2h264enc:h264-encoder": {
+          "factory": "nvv4l2h264enc",
+          "state": "MATCHED",
+          "before_count": 826,
+          "after_count": 828,
+          "matched": 825,
+          "matched_fraction": 0.9987893462469734,
+          "negative_count": 0,
+          "median_ms": 29.473432,
+          "p95_ms": 113.791388,
+          "max_ms": 243.115111
+        },
+        "/GstPipeline:cctv-deepstream/GstNvInfer:primary-infer": {
+          "factory": "nvinfer",
+          "state": "MATCHED",
+          "before_count": 886,
+          "after_count": 886,
+          "matched": 886,
+          "matched_fraction": 1.0,
+          "negative_count": 0,
+          "median_ms": 15.694645,
+          "p95_ms": 34.492117,
+          "max_ms": 122.380447
+        },
+        "/GstPipeline:cctv-deepstream/GstDsNvUriSrcBin:src-camera_1/GstQueue:dec_que": {
+          "factory": "queue",
+          "state": "MATCHED",
+          "before_count": 899,
+          "after_count": 892,
+          "matched": 892,
+          "matched_fraction": 1.0,
+          "negative_count": 0,
+          "median_ms": 2.3120005,
+          "p95_ms": 315.056764,
+          "max_ms": 439.155118
+        },
+        "/GstPipeline:cctv-deepstream/GstDsNvUriSrcBin:src-camera_1/GstDecodeBin:decodebin/nvv4l2decoder:nvv4l2decoder0": {
+          "factory": "nvv4l2decoder",
+          "state": "MATCHED",
+          "before_count": 891,
+          "after_count": 885,
+          "matched": 877,
+          "matched_fraction": 0.9909604519774011,
+          "negative_count": 0,
+          "median_ms": 194.566649,
+          "p95_ms": 545.882555,
+          "max_ms": 727.470467
+        },
+        "mux_to_:metadata-probe-queue:src": {
+          "state": "MATCHED",
+          "before_count": 886,
+          "after_count": 886,
+          "matched": 883,
+          "matched_fraction": 0.9966139954853274,
+          "negative_count": 0,
+          "median_ms": 108.440608,
+          "p95_ms": 180.388217,
+          "max_ms": 330.025049
+        },
+        "mux_to_:h264-videorate:sink": {
+          "state": "MATCHED",
+          "before_count": 886,
+          "after_count": 887,
+          "matched": 883,
+          "matched_fraction": 0.9966139954853274,
+          "negative_count": 0,
+          "median_ms": 126.711971,
+          "p95_ms": 204.894763,
+          "max_ms": 353.657208
+        },
+        "mux_to_:h264-encoder:sink": {
+          "state": "LOW_MATCH_COVERAGE",
+          "before_count": 886,
+          "after_count": 826,
+          "matched": 20,
+          "matched_fraction": 0.024213075060532687,
+          "negative_count": 0,
+          "median_ms": 157.2309125,
+          "p95_ms": 310.870617,
+          "max_ms": 315.087007
+        },
+        "mux_to_:h264-encoder:src": {
+          "state": "LOW_MATCH_COVERAGE",
+          "before_count": 886,
+          "after_count": 828,
+          "matched": 20,
+          "matched_fraction": 0.024154589371980676,
+          "negative_count": 0,
+          "median_ms": 183.6811015,
+          "p95_ms": 334.773302,
+          "max_ms": 348.499163
+        },
+        "decoder_output_to_mux": {
+          "state": "MATCHED",
+          "before_count": 885,
+          "after_count": 886,
+          "matched": 885,
+          "matched_fraction": 1.0,
+          "negative_count": 0,
+          "median_ms": 1.121049,
+          "p95_ms": 73.934859,
+          "max_ms": 210.746659
+        },
+        "input_queue_to_mux": {
+          "state": "MATCHED",
+          "before_count": 899,
+          "after_count": 886,
+          "matched": 877,
+          "matched_fraction": 0.989841986455982,
+          "negative_count": 0,
+          "median_ms": 209.847313,
+          "p95_ms": 787.264682,
+          "max_ms": 920.845276
+        },
+        "input_queue_to_decoder_output": {
+          "state": "MATCHED",
+          "before_count": 899,
+          "after_count": 885,
+          "matched": 877,
+          "matched_fraction": 0.9909604519774011,
+          "negative_count": 0,
+          "median_ms": 201.23185,
+          "p95_ms": 778.968033,
+          "max_ms": 910.271011
+        }
+      }
+    },
+    "restored_observation": {
+      "at_kst": "2026-10-08T14:03:15.956039",
+      "seconds": 30.267196129076183,
+      "frame_fps": 29.867318933172417,
+      "pipeline_restarts_delta": 0.0
+    },
+    "restored_error_patterns": {
+      "Traceback": 0,
+      "cudaError": 0,
+      "NVDSINFER_CUDA_ERROR": 0,
+      "TypeError": 0,
+      "AttributeError": 0
+    },
+    "interpretation": "입력 대기열→mux 프레임 체류 중앙값209.85ms/P95 787.26ms, AI/메타 처리 중앙값108.44ms/P95 180.39ms. 입력 버퍼·디코더·하류 역압을 우선 분리 검증한다. 순수 디코딩 연산 시간이나 종단 지연으로 해석하지 않는다.",
+    "limits": [
+      "재기동 뒤10초 준비+30초 표본으로 다인/고활동 체감2–3초와 동시 시각 대조는 아니다.",
+      "관측 코드 비용이 남을 수 있으며 처리율 예비 통과가 완전한 무간섭을 뜻하지 않는다.",
+      "videorate 이후 PTS 대응은 약2.4%라 mux→인코더 전체 지연 계산을 근거에서 제외했다. 개별 인코더 입력/출력 대응은99.9%로 구분한다.",
+      "각 구간 중앙값/P95를 더해서 종단 지연으로 계산하지 않는다.",
+      "decoder 체류에는 내부 버퍼와 뒤쪽 처리 대기가 포함될 수 있어 DPB 원인 확정이나 개선 완료가 아니다."
+    ],
+    "decoder_capabilities": {
+      "installed_jetson_disable_dpb_supported": true,
+      "installed_decoder_low_latency_mode_property_present": false,
+      "candidate": "disable-dpb 단일 변수 대조를 검토. 속성 지원 확인만 완료했으며 활성화·성능 검증은 하지 않았다."
+    },
+    "next": "Jetson 디코더 버퍼 대기/하류 역압을 분리하는 최소 조건 비교를 준비한다. 첫 후보는 지원되는 disable-dpb 한 가지이며 실제 개선·영상 오류·추론 처리율을 함께 확인하기 전 운영 채택하지 않는다.",
+    "references": [
+      "https://docs.nvidia.com/metropolis/deepstream/7.1/text/DS_plugin_gst-nvvideo4linux2.html",
+      "https://docs.nvidia.com/metropolis/deepstream/7.1/text/DS_plugin_gst-nvurisrcbin.html"
+    ],
+    "checks": [
+      "운영 이미지 CPU 합성영상 PTS39개 보존·5ms 지연 검출·관측 자동 해제 PASS",
+      "중복/재연결 PTS 제외·원본 PTS 대응·낮은 대응률 제외 체크 PASS",
+      "Compose 명령 외 모든 구성 동일·기존 환경값 일치",
+      "최종 명령/이미지 복원·AI healthy·다른3컨테이너 기동 상태 동일"
+    ]
+  }
+}

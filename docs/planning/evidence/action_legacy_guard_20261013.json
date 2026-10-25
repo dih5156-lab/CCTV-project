@@ -1,0 +1,121 @@
+{
+  "started_date": "2026-10-12",
+  "completed_date": "2026-10-13",
+  "wbs": "P3.3",
+  "status": "FIXED_LOCAL_CANDIDATE_VALIDATED",
+  "summary": "과거 논리/물리/이벤트별 요청 ID를 실행 여부 미확정으로 보류해 새 실행 이력 전환 때 기록된 과거 출력의 재실행을 차단",
+  "product_files": [
+    {
+      "path": "src/edgex/request_idempotency.py",
+      "before_sha256": "4f6b2473c3be4844482b8562a346dc13ae7616e494d22a98711a17296708eea2",
+      "after_sha256": "35439d98e95dad754e07a6415044bcf9359fc8a703039eaeba69e0c24fa8490f"
+    },
+    {
+      "path": "scripts/ops/seed_legacy_device_requests.py",
+      "before_sha256": null,
+      "after_sha256": "16a18f0228469121a425a6b0a95148687897e0bca509002cee210bc8e004894b"
+    }
+  ],
+  "test_file": "tests/test_legacy_device_requests.py",
+  "implementation": {
+    "schema_changed": false,
+    "dependencies_added": 0,
+    "marker": "기존 device_requests의 request_hash 빈 문자열, result_json NULL; 실제 SHA256와 구별하며 성공 이력을 생성하지 않음",
+    "claim": "BEGIN IMMEDIATE 안에서 기존 요청 조회→과거 논리 ID/이벤트+장치 별칭 대조→보류된 수신 ID commit. 정상 신규 요청은 기존 영속 실행 유지",
+    "response": "uncertain/legacy_execution_unconfirmed, 조회 retry_allowed=false. 새 수신 ID의 보류도 저장해 재시작/조회에 유지",
+    "import": "Action DB 읽기 전용 transaction; device/<kind>·edgex/results/.../<kind>만 이관. 정상/실패/모의/미응답 상태 모두 소급 실행 금지. 새 DB만600권한·완성 후 원자적 hardlink, 기존/경합 생성 DB 덮어쓰기 금지"
+  },
+  "validation": {
+    "before": "장치3종에서 과거 논리 ID 이후 새 물리 요청이 acknowledged/모의 실행되는3 FAIL 재현",
+    "new_tests": 22,
+    "host_regression": {
+      "passed": 252,
+      "failed": 0,
+      "junit": "data/runtime/action_legacy_guard_20261012/regression.xml"
+    },
+    "candidate_regression": {
+      "passed": 252,
+      "failed": 0,
+      "junit": "data/runtime/action_legacy_guard_20261012/container_regression.xml",
+      "conditions": "network none·CPU1·512MiB·UID1000, src/runners/seed 도구는 후보 내장. 외부 pytest/시험/기존 event_type_map/백업 스크립트만 연결; 운영DB/장치/GPU 미연결"
+    },
+    "snapshot_replay": {
+      "source_commands": 5775,
+      "selected_legacy_commands": 5774,
+      "seeded_identifiers": 5815,
+      "legacy_device_calls": 0,
+      "new_request_calls_across_restart_and_replay": 1,
+      "source_sha256_unchanged": "3c6ffd385144a0bc2c9d3ad36d94bd88d98c9a01eb33295f08fbcde71759d151",
+      "seconds": 46.372,
+      "device": "mock_only",
+      "operating_deployment": false
+    },
+    "source_scope": "10-12 보존 명령5775행; 출력5774행·모드 변경1행 제외. 과거 식별자5815개 중복 제거 후 보류",
+    "cases": [
+      "장치3종·재시작/새 요청 정상",
+      "과거 실패/모의/미응답도 보류",
+      "request_id/대상 변경·콜론 포함 물리ID·이벤트 별칭",
+      "손상 본문/없는 원본/기존 대상/대상 생성 경합에서 부분 이관·덮어쓰기 방지",
+      "보류 commit 실패 무출력",
+      "백업 복원·독립 서비스2개/동시20회 무출력",
+      "CLI 실행·원본 hash 보존·600권한"
+    ],
+    "lint": "Ruff PASS·git diff --check PASS",
+    "review": "그래프3파일 분석 심볼/흐름0으로 실제 시작본 diff·호출경로·252시험으로 검토 보완"
+  },
+  "image": {
+    "tag": "cctv-action:prepared-20261012-02",
+    "id": "sha256:0f27de36c0c3ae58b9e32b5e5c9fba006c1f4948a4d436be15c5734099d5c9bd",
+    "base": "sha256:28789d9e71443047c08100bf7488d5fe0287569ce2eee8ff3ebde575ef95efb1",
+    "overlay_files": 2,
+    "accumulated_files_matched": 18,
+    "manifest": "data/runtime/action_legacy_guard_20261012/full_manifest.json",
+    "new_dependencies": 0
+  },
+  "deployment": {
+    "operating_deployed": false,
+    "physical_output": false,
+    "operating_database_changed": false,
+    "full_operating_backup": false,
+    "observed_20261013_same_ids_images_started_at": [
+      "cctv-ai-engine",
+      "edgex-kuiper",
+      "cctv-action-layer",
+      "cctv-device-signboard"
+    ],
+    "candidate_compose": "data/runtime/action_release_20261012/candidate.yml",
+    "plan": "data/runtime/action_release_20261012/plan.json",
+    "state": "PREPARED_NOT_RELEASE_READY",
+    "candidate_compose_validation": "PASS"
+  },
+  "limits": [
+    "보존 원본에 없는 과거 요청이나 요청/이벤트 식별자가 모두 바뀐 사건까지 소급 판별하지 않는다.",
+    "시험 저널에는 모의 신규 실행도 들어 있으므로 운영으로 복사하지 않는다. 실제 전환은 입력/발행 통제·미확정 outbox/MQTT 대조 후 최종 정지 시점 원본으로 새로 이관한다.",
+    "기존 운영 상태를 성공으로 간주하지 않는다. 보류 해제/승인 재시도·실물 상태 대조는 미구현.",
+    "조회할 실제 물리 요청 ID가 아직 저장되지 않으면 unknown일 수 있으나 재실행을 허용하지 않는다.",
+    "기존 Dabit 직접 실행/메모리 전용 생성은 이 보호 범위 밖이며 운영 구형 서비스는 계속 비활성 상태 유지.",
+    "실제 전환/복귀·실장비/전원 차단·운영 지연 무영향은 이번에 검증하지 않음."
+  ],
+  "next": "P3.3 실행 중 환경·볼륨과 후보를 대조하고, 최종 백업/요청 이관/전환의 중단 범위와 실행안을 고정한다. 운영 반영·실물 재시험과 P3.1/P3.2 선행은 별도 잔여다.",
+  "schedule": {
+    "poc_month": "2026-12",
+    "readiness_target": "2026-11-27",
+    "completed_tasks": 9,
+    "total_tasks": 33
+  },
+  "publication": {
+    "url": "http://192.168.2.242:18081/",
+    "artifacts": {
+      "docs/planning/online/index.html": {
+        "sha256": "67516fe493b137be284273470b807513b7e7377510ebc07e2228f80816bbbc99",
+        "served_bytes_equal": true
+      },
+      "docs/planning/online/CCTV_project_progress.pdf": {
+        "sha256": "8809144e4f5c2d17f5ebffbb62aab3f25fb06c46ccc2fa1f5052008f3f08ce9f",
+        "served_bytes_equal": true
+      }
+    },
+    "first_pdf_page_visually_checked": true,
+    "WBS33_model8_states_unchanged": true
+  }
+}

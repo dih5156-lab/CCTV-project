@@ -1,0 +1,642 @@
+{
+  "checked_at": "2026-10-16T12:49:31.172983+09:00",
+  "wbs": "P5.2",
+  "issue": "I56",
+  "state": "LOCAL_DESCENT_IMPROVEMENT_VERIFIED_RESIDUAL_QUALITY_GAPS",
+  "resolution": "1920x1080@30",
+  "confidence": 0.5,
+  "new_gpu_runs": 0,
+  "operating_stops": 0,
+  "operating_applied": false,
+  "model_weights_or_engine_changed": false,
+  "new_dependencies": 0,
+  "implementation": "공통 FallDetector에 동일 인물·영상PTS의 짧은 어깨/골반 하강을 추가. 발목 이동 보정·하강 전 세운 몸통·현재 고신뢰 관측·회복/8초 만료·1초 공백/카메라/세대 초기화·256ID 상한. 기존 단일 자세/접힘 경로 보존.",
+  "baseline_gpu_reproduction": {
+    "videos": 100,
+    "queue_frames_and_prepared_ids": "100/100 exact match"
+  },
+  "cpu_replay": {
+    "development20": {
+      "counts": {
+        "TP": 10,
+        "TN": 10
+      },
+      "early_alerts": 0,
+      "duplicate_alerts": 0,
+      "detected_delay_seconds": {
+        "minimum": 0.47934999933333344,
+        "median": 2.521425,
+        "maximum": 4.4460500000000005
+      },
+      "scope": "기존 GPU 출력 재사용·보완에 사용한 회귀 표본. 독립 성능 아님"
+    },
+    "expanded80": {
+      "counts": {
+        "TP": 38,
+        "TN": 39,
+        "FP": 1,
+        "FN": 2
+      },
+      "early_alerts": 1,
+      "duplicate_alerts": 0,
+      "detected_delay_seconds": {
+        "minimum": 1.5134499996666668,
+        "median": 2.556216666333333,
+        "maximum": 4.312983333333333
+      },
+      "scope": "기존 GPU 출력 재사용·보완에 사용한 회귀 표본. 독립 성능 아님"
+    }
+  },
+  "changes": [
+    {
+      "partition": "development20",
+      "index": 2,
+      "scene": "00727_H_D_SY_C4",
+      "before": {
+        "verdict": "TP",
+        "queue_pts": [
+          8.133333333
+        ],
+        "delay_seconds": 2.5110499996666658
+      },
+      "after": {
+        "verdict": "TP",
+        "queue_pts": [
+          8.0
+        ],
+        "delay_seconds": 2.3777166666666663
+      }
+    },
+    {
+      "partition": "development20",
+      "index": 4,
+      "scene": "00903_O_E_BY_C1",
+      "before": {
+        "verdict": "TP",
+        "queue_pts": [
+          6.533333333
+        ],
+        "delay_seconds": 2.5460166663333332
+      },
+      "after": {
+        "verdict": "TP",
+        "queue_pts": [
+          4.466666666
+        ],
+        "delay_seconds": 0.47934999933333344
+      }
+    },
+    {
+      "partition": "expanded80",
+      "index": 0,
+      "scene": "00571_H_D_SY_C6",
+      "before": {
+        "verdict": "FN",
+        "queue_pts": [],
+        "delay_seconds": null
+      },
+      "after": {
+        "verdict": "TP",
+        "queue_pts": [
+          5.866666666
+        ],
+        "delay_seconds": 2.4298999993333337
+      }
+    },
+    {
+      "partition": "expanded80",
+      "index": 8,
+      "scene": "00923_O_E_BY_C2",
+      "before": {
+        "verdict": "TP",
+        "queue_pts": [
+          6.6
+        ],
+        "delay_seconds": 2.612683333333333
+      },
+      "after": {
+        "verdict": "TP",
+        "queue_pts": [
+          6.466666666
+        ],
+        "delay_seconds": 2.4793499993333334
+      }
+    },
+    {
+      "partition": "expanded80",
+      "index": 20,
+      "scene": "00950_O_E_BY_C7",
+      "before": {
+        "verdict": "TP",
+        "queue_pts": [
+          7.333333333
+        ],
+        "delay_seconds": 2.7120499996666663
+      },
+      "after": {
+        "verdict": "TP",
+        "queue_pts": [
+          7.066666666
+        ],
+        "delay_seconds": 2.4453833326666663
+      }
+    },
+    {
+      "partition": "expanded80",
+      "index": 22,
+      "scene": "00920_O_E_FY_C4",
+      "before": {
+        "verdict": "FN",
+        "queue_pts": [],
+        "delay_seconds": null
+      },
+      "after": {
+        "verdict": "TP",
+        "queue_pts": [
+          6.666666666
+        ],
+        "delay_seconds": 2.5792499993333333
+      }
+    },
+    {
+      "partition": "expanded80",
+      "index": 26,
+      "scene": "00737_H_D_BY_C3",
+      "before": {
+        "verdict": "FN",
+        "queue_pts": [],
+        "delay_seconds": null
+      },
+      "after": {
+        "verdict": "TP",
+        "queue_pts": [
+          7.533333333
+        ],
+        "delay_seconds": 2.2780833329999997
+      }
+    },
+    {
+      "partition": "expanded80",
+      "index": 32,
+      "scene": "00768_O_E_BY_C6",
+      "before": {
+        "verdict": "TP",
+        "queue_pts": [
+          7.4
+        ],
+        "delay_seconds": 3.429366666666667
+      },
+      "after": {
+        "verdict": "TP",
+        "queue_pts": [
+          6.666666666
+        ],
+        "delay_seconds": 2.696033332666667
+      }
+    },
+    {
+      "partition": "expanded80",
+      "index": 48,
+      "scene": "00732_H_D_SY_C1",
+      "before": {
+        "verdict": "TP",
+        "queue_pts": [
+          9.533333333
+        ],
+        "delay_seconds": 4.027833332999999
+      },
+      "after": {
+        "verdict": "TP",
+        "queue_pts": [
+          7.866666666
+        ],
+        "delay_seconds": 2.361166666
+      }
+    },
+    {
+      "partition": "expanded80",
+      "index": 56,
+      "scene": "00952_O_E_BY_C8",
+      "before": {
+        "verdict": "TP",
+        "queue_pts": [
+          9.533333333
+        ],
+        "delay_seconds": 5.2123499996666665
+      },
+      "after": {
+        "verdict": "TP",
+        "queue_pts": [
+          6.8
+        ],
+        "delay_seconds": 2.4790166666666664
+      }
+    },
+    {
+      "partition": "expanded80",
+      "index": 60,
+      "scene": "00615_H_D_SY_C1",
+      "before": {
+        "verdict": "TP",
+        "queue_pts": [
+          7.666666666
+        ],
+        "delay_seconds": 2.9166666660000002
+      },
+      "after": {
+        "verdict": "TP",
+        "queue_pts": [
+          7.533333333
+        ],
+        "delay_seconds": 2.783333333
+      }
+    },
+    {
+      "partition": "expanded80",
+      "index": 62,
+      "scene": "00721_H_D_BY_C7",
+      "before": {
+        "verdict": "TP",
+        "queue_pts": [
+          7.666666666
+        ],
+        "delay_seconds": 2.394733332666667
+      },
+      "after": {
+        "verdict": "TP",
+        "queue_pts": [
+          7.6
+        ],
+        "delay_seconds": 2.3280666666666665
+      }
+    },
+    {
+      "partition": "expanded80",
+      "index": 78,
+      "scene": "00956_O_E_BY_C5",
+      "before": {
+        "verdict": "TP",
+        "queue_pts": [
+          7.066666666
+        ],
+        "delay_seconds": 2.7123166659999995
+      },
+      "after": {
+        "verdict": "TP",
+        "queue_pts": [
+          6.933333333
+        ],
+        "delay_seconds": 2.578983333
+      }
+    }
+  ],
+  "remaining": [
+    {
+      "partition": "expanded80",
+      "index": 19,
+      "scene": "00932_O_E_N_C3",
+      "is_fall": false,
+      "onset": null,
+      "verdict": "FP",
+      "queue_pts": [
+        4.666666666
+      ],
+      "queue_frames": [
+        140
+      ],
+      "candidate_frames": 47,
+      "transition_frames": [
+        122,
+        124,
+        126,
+        128,
+        130,
+        132,
+        134,
+        138,
+        140,
+        142,
+        144,
+        146,
+        148,
+        150,
+        152,
+        154,
+        156,
+        158,
+        160,
+        164,
+        166,
+        168,
+        190,
+        192,
+        194,
+        196,
+        198,
+        200,
+        202,
+        204,
+        206,
+        208,
+        210,
+        214,
+        216,
+        218,
+        220,
+        226,
+        236,
+        238,
+        240,
+        290,
+        298
+      ],
+      "delay_seconds": null,
+      "early_alerts": 0,
+      "duplicate_alerts": 0
+    },
+    {
+      "partition": "expanded80",
+      "index": 46,
+      "scene": "00683_H_D_FY_C8",
+      "is_fall": true,
+      "onset": 4.866666666666666,
+      "verdict": "FN",
+      "queue_pts": [],
+      "queue_frames": [],
+      "candidate_frames": 21,
+      "transition_frames": [],
+      "delay_seconds": null,
+      "early_alerts": 0,
+      "duplicate_alerts": 0
+    },
+    {
+      "partition": "expanded80",
+      "index": 74,
+      "scene": "00795_O_E_BY_C4",
+      "is_fall": true,
+      "onset": 4.187516666666666,
+      "verdict": "FN",
+      "queue_pts": [
+        2.0
+      ],
+      "queue_frames": [
+        60
+      ],
+      "candidate_frames": 43,
+      "transition_frames": [],
+      "delay_seconds": null,
+      "early_alerts": 1,
+      "duplicate_alerts": 0
+    }
+  ],
+  "validation": {
+    "unique_tests_passed": 408,
+    "unique_tests_skipped": 2,
+    "regression_run": "407 PASS / 2 SKIP",
+    "motion_boundary_run": "24 PASS (23 overlap with regression)",
+    "skip_reason": "DeepStream 미설치/CPU 예외 전용2건: 현재 Jetson은 DeepStream 설치됨",
+    "ruff": "PASS",
+    "speed_invariance_cases": 300,
+    "input_hashes_same_as_verified_gpu_baseline": 400,
+    "source_hashes_verified": true,
+    "existing_tp_tn_regressions": 0,
+    "additional_early_alerts": 0,
+    "existing_tp_latency_regressions": 0,
+    "graph_review": "도구 호출 결과에 무관한 다른 모듈 기호가 섞여 실제 변경 diff·직접 호출/초기화 경로·회귀시험으로 보완 확인",
+    "documentation": {
+      "checked_at": "2026-10-16T12:53:38.945449+09:00",
+      "urls": [
+        {
+          "url": "http://192.168.2.141:18081/index.html",
+          "status": 200,
+          "sha256": "4260bed75b7e4a2cabaaeaf7765bb5075704cbe4948f328db71f7fa20db5d4f8",
+          "local_matches": true
+        },
+        {
+          "url": "http://192.168.2.141:18081/CCTV_project_progress.pdf",
+          "status": 200,
+          "sha256": "cddc07cf0383e5b09feb5d7f7557d851e6ee61bff2acf45f4fa29509b7d66caf",
+          "local_matches": true
+        }
+      ],
+      "wbs_board_html_rows": 37,
+      "evidence_board_match": true,
+      "artifact_hashes": 24,
+      "passed": true,
+      "pdf_first_page_visual_check": "PASS: updated current results visible; no clipping",
+      "ruff": "PASS",
+      "diff_check": "PASS"
+    }
+  },
+  "rejected_candidates": [
+    {
+      "name": "v1",
+      "scope": "예외7개 집중 재생",
+      "summary": {
+        "development20": {},
+        "expanded80": {
+          "TP": 4,
+          "TN": 1,
+          "FN": 2
+        }
+      },
+      "decision": "전체 채택 안 함; 기존 자세 경로 과도 제한"
+    },
+    {
+      "name": "v2",
+      "scope": "100개 재생",
+      "summary": {
+        "development20": {
+          "FN": 2,
+          "TP": 8,
+          "TN": 10
+        },
+        "expanded80": {
+          "TP": 33,
+          "TN": 40,
+          "FN": 7
+        }
+      },
+      "early_alerts": 2,
+      "decision": "기존 TP를 놓치고 조기 추가. 정적 점수 변경/접힘 경로 삭제 철회"
+    }
+  ],
+  "operating_during_cpu_replay": {
+    "checked_at": "2026-10-16T12:46:50.037018+09:00",
+    "elapsed_seconds": 30.16108832601458,
+    "snapshot": [
+      {
+        "name": "/cctv-ai-engine",
+        "id": "c8a71163c84b458197b98a4bde8e0e06719afc5cf5964e6fbd0b716109ce0377",
+        "image": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+        "started_at": "2026-10-16T02:50:25.26180535Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-media-server",
+        "id": "957101f7ab7336585817a176154f7711de977caee7cfbf34257f2fb68810dea4",
+        "image": "sha256:f8628851106cc053f9175b248050bb5f362a6e65abd72297c167a1cb5a9a3be2",
+        "started_at": "2026-10-12T23:35:15.324861031Z",
+        "status": "running",
+        "health": null,
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-action-layer",
+        "id": "74deaeb0b5bdd64c8f2e2a141daa25c193a75cf235b214fee6ef8b4dcdceedeb",
+        "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+        "started_at": "2026-10-12T23:35:15.475740705Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-device-signboard",
+        "id": "29aeb393bd52e7a9f8241be9214b970e82e8442253fdfe2e73dbbf5d153feaa8",
+        "image": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+        "started_at": "2026-10-12T23:35:15.45875226Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-device-speaker",
+        "id": "a8ff5823d34ad72dd2c5b236cc88f210b16feb05ef53532e6549601d2beafb7a",
+        "image": "sha256:4daca5e8c9865c5f19dde37d7dbdfcc37ea5c413fa8375802e80c7f8185bba30",
+        "started_at": "2026-10-12T23:35:15.455773133Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      }
+    ],
+    "before_metrics": {
+      "cctv_processor_frames_processed_total": 98206.0,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 49104.0,
+      "cctv_camera_primary_last_frame_age_seconds{camera_id=\"camera_1\"}": 0.06066174397710711
+    },
+    "after_metrics": {
+      "cctv_processor_frames_processed_total": 98968.0,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 49486.0,
+      "cctv_camera_primary_last_frame_age_seconds{camera_id=\"camera_1\"}": 0.029483505990356207
+    },
+    "rates": {
+      "cctv_processor_frames_processed_total": 25.264340323646703,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 12.665325464085356
+    },
+    "same_ai_and_other_four_containers": true,
+    "operating_stops_this_followup": 0,
+    "operating_deployments_this_followup": 0,
+    "passed": true
+  },
+  "operating_after_cpu_replay": {
+    "checked_at": "2026-10-16T12:48:19.382918+09:00",
+    "phase": "CPU 재생 종료 후 읽기 전용 관측",
+    "elapsed_seconds": 30.080205536971334,
+    "snapshot": [
+      {
+        "name": "/cctv-ai-engine",
+        "id": "c8a71163c84b458197b98a4bde8e0e06719afc5cf5964e6fbd0b716109ce0377",
+        "image": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+        "started_at": "2026-10-16T02:50:25.26180535Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-media-server",
+        "id": "957101f7ab7336585817a176154f7711de977caee7cfbf34257f2fb68810dea4",
+        "image": "sha256:f8628851106cc053f9175b248050bb5f362a6e65abd72297c167a1cb5a9a3be2",
+        "started_at": "2026-10-12T23:35:15.324861031Z",
+        "status": "running",
+        "health": null,
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-action-layer",
+        "id": "74deaeb0b5bdd64c8f2e2a141daa25c193a75cf235b214fee6ef8b4dcdceedeb",
+        "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+        "started_at": "2026-10-12T23:35:15.475740705Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-device-signboard",
+        "id": "29aeb393bd52e7a9f8241be9214b970e82e8442253fdfe2e73dbbf5d153feaa8",
+        "image": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+        "started_at": "2026-10-12T23:35:15.45875226Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-device-speaker",
+        "id": "a8ff5823d34ad72dd2c5b236cc88f210b16feb05ef53532e6549601d2beafb7a",
+        "image": "sha256:4daca5e8c9865c5f19dde37d7dbdfcc37ea5c413fa8375802e80c7f8185bba30",
+        "started_at": "2026-10-12T23:35:15.455773133Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      }
+    ],
+    "before_metrics": {
+      "cctv_processor_frames_processed_total": 100654.0,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 50329.0,
+      "cctv_camera_primary_last_frame_age_seconds{camera_id=\"camera_1\"}": 0.006277497974224389
+    },
+    "after_metrics": {
+      "cctv_processor_frames_processed_total": 101574.0,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 50789.0,
+      "cctv_camera_primary_last_frame_age_seconds{camera_id=\"camera_1\"}": 0.03233543102396652
+    },
+    "rates": {
+      "cctv_processor_frames_processed_total": 30.58489739603792,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 15.29244869801896
+    },
+    "same_ai_and_other_four_containers": true,
+    "operating_stops_this_followup": 0,
+    "operating_deployments_this_followup": 0,
+    "passed": true
+  },
+  "limitations": [
+    "동일100개로 보완했으므로 이후 결과는 회귀 성적; 배우/현장 독립 홀드아웃 필요",
+    "미탐2(전방 후보 시간 부족·청소 조기경보만 발생)·착석 오탐1·조기1 잔여",
+    "GPU 전체 경로·새 코드 처리비용·다중카메라·장시간·현장·운영 배포 미검증",
+    "CPU 재생 중 기존 운영 처리율25.26FPS/12.67회 관측; 종료 후30.58FPS/15.29회. 지속 여유 합격 아님"
+  ],
+  "next": "잔여 전방/청소/착석 구간의 판정 근거·정상 유사 행동 대조를 보완하고 고정 후보의 GPU 재검증 범위를 준비. 이후 다중 카메라→운영 적용 준비; 싸움 보류 유지.",
+  "artifact_sha256": {
+    "data/runtime/p52_temporal_followup_20261016/baseline_source/_fall_detector.py": "a2da7d2844c49c14a695be82deb9b5731bc07f983a1965a797a2fb249ea80da0",
+    "data/runtime/p52_temporal_followup_20261016/baseline.json": "3aa64f36834de754075248b4ec8ecbf1fb1fffca5c7722ee36cb18b873c9d848",
+    "data/runtime/p52_temporal_followup_20261016/candidate_focus_v1.json": "22112f32ce56ef550890f9d3652113d5157d776dbec1018af7fcfc8917c1584b",
+    "data/runtime/p52_temporal_followup_20261016/candidate_v1.py": "344cbfca435c6edf12d30a7dc3fe93d6dc5e8982d31117410c5a0cc5bede2246",
+    "data/runtime/p52_temporal_followup_20261016/candidate_v2.json": "e8bbaad94ccc15b0f41a7fbf121509251294cece6ef98c60d0f76f26acf7d98d",
+    "data/runtime/p52_temporal_followup_20261016/candidate_v2.py": "793e44546b13fc386a54f17ac71253cd5ecae35e806793a3638a59769bdc5fef",
+    "data/runtime/p52_temporal_followup_20261016/candidate_v2_motion_tests.py": "31e96a8b51c236756ee1ebb7702980988eb3d23e2db1b246e82a58dc5186f4e3",
+    "data/runtime/p52_temporal_followup_20261016/final_replay.json": "3cc4b86d040eaeb171b27390cb3a80c81d30acec848a57b2cc2e868b0b6001b3",
+    "data/runtime/p52_temporal_followup_20261016/replay.py": "1404444c932feb2c4236880bf9c08354e2f135df8ea75334e4e98ec29db7d42e",
+    "data/runtime/p52_temporal_followup_20261016/before_tests.xml": "0f376f6a54305930cda1c27f1ed3d6ccba3e25849c8c1d72f50348ee3065b31c",
+    "data/runtime/p52_temporal_followup_20261016/first_candidate_tests.xml": "ed6adcb3419cd8b27041e03d4c8fe224c08b03687be42b02334264e7c3574912",
+    "data/runtime/p52_temporal_followup_20261016/second_candidate_tests.xml": "daa3f41208ba09b588225c90bbacbcfbbbc8be69260401983250280b2d499e3e",
+    "data/runtime/p52_temporal_followup_20261016/third_candidate_tests.xml": "b14af7048ccb8655291b3cca72247b461ae7a951a8e550f35ab074b8279a4998",
+    "data/runtime/p52_temporal_followup_20261016/regression_tests.xml": "03b9bea5afc102748106bece581b67c87baadb10e5e8009ebc2b1e8f91b33a1d",
+    "data/runtime/p52_temporal_followup_20261016/motion_boundaries.xml": "151e93cfa9adb9736fd5274d3c332d206497a51b1a4007e42d75654894ecf35b",
+    "data/runtime/p52_temporal_followup_20261016/operating_observation.json": "25bd1433a288f1d09915c6f0bb7505dc8396fd467a34daf5b1776269c7582ae7",
+    "data/runtime/p52_temporal_followup_20261016/operating_after_replay.json": "6de1c4aa34a67672448b74435cf25d5bf520edd1de4d46d593c95615e8058420",
+    "data/runtime/p52_temporal_followup_20261016/motion_by_track.json": "4e2e5b4df300b8014232832b9b24c72381c399beb0d29b7e426b9404e0c3ddf6",
+    "data/runtime/p52_temporal_followup_20261016/case32_t0.jpg": "edb4e08cc0d22523e19377b3304ee564718abc0944b50cfe6b82e33807a17cd1",
+    "data/runtime/p52_temporal_followup_20261016/case32_t1.jpg": "a201abc49889b35991c6a805159a94249b5fa347480429f6848ad0ccaf480570",
+    "src/core/ai/_fall_detector.py": "66c7995aa5fcf3521570801bef507e25d3d5c3502b11edf914b212dd6390958c",
+    "tests/test_fall_motion.py": "d0cb0d3ff409a6dbe9b958515d43d5743c37ce7b2132f90a5d26b6ea4671f7e8",
+    "tests/test_fall_transition.py": "2534ecdfbac20f61fdfd102e3100e3c67e03755fdb483413b013f3ea094e6650",
+    "tests/fixtures/fall_motion_20261016.json": "230c47c0fe774f691c3e6ef6110fe3dc2d3e96326f660885997697e8f3f7b7c4"
+  }
+}

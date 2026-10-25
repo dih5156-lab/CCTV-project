@@ -1,0 +1,313 @@
+{
+  "version": "0.109",
+  "date": "2026-10-06 KST",
+  "wbs": "P5.1 IN_PROGRESS",
+  "scope": "Restart only isolated output RTSP server; prove new-generation inference/output and post-recovery model/database progress.",
+  "candidate": {
+    "image": "sha256:b01ff1e4bdec6d1992826e8472149899e1715cae1fab876bdd160439180de9c6",
+    "tag": "cctv-ai-candidate:p51-v108",
+    "source_files_match": 206,
+    "product_source_changed_this_unit": false
+  },
+  "isolation": {
+    "network": "none",
+    "cpus": 2,
+    "memory": "8g",
+    "writable_binds": "Trial-local DB/cache/output",
+    "source_binds": false,
+    "operating_restarted": false,
+    "baseline_egl_socket": "Read-only /tmp/.X11-unix restored for GPU buffer initialization"
+  },
+  "trial": {
+    "exit_code": 0,
+    "elapsed": 249.59223976521753,
+    "diagnostic_attach": false,
+    "outcome": {
+      "codec_mode": "rtsp",
+      "completed": true,
+      "scope": "p51_v109_output_recovery; new image, no source bind, isolated database",
+      "scenario": "output_recovery",
+      "loaded_rtsp_plugin": [
+        "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstrtspclientsink.so"
+      ],
+      "receiver_exit": 0,
+      "output_bytes": 37795474,
+      "last_frames": 2764.0,
+      "output_server_exit": -9,
+      "input_server_alive": true,
+      "input_publisher_alive": true,
+      "recovered": true,
+      "recovery_seconds": 22.494492291938514,
+      "database_at_recovery": {
+        "appearance_log": 532475,
+        "mqtt_event_outbox": 174651
+      },
+      "after_receiver_exit": 0,
+      "after_output_bytes": 37760241,
+      "database_after_recovery": {
+        "appearance_log": 532502,
+        "mqtt_event_outbox": 174682
+      },
+      "app_exit_before_sigterm": null,
+      "app_exit": 0,
+      "stop_seconds": 5.4007200468331575,
+      "elapsed_seconds": 247.22127971495502,
+      "transitions": [
+        {
+          "name": "input_ready",
+          "elapsed": 11.723
+        },
+        {
+          "name": "output_ready",
+          "elapsed": 12.538
+        },
+        {
+          "name": "output_server_killed",
+          "elapsed": 102.757
+        },
+        {
+          "name": "output_server_restart_requested",
+          "elapsed": 128.233
+        },
+        {
+          "name": "output_recovered",
+          "elapsed": 150.74
+        },
+        {
+          "name": "sigterm_requested",
+          "elapsed": 241.771
+        }
+      ],
+      "sample_count": 234
+    }
+  },
+  "validation": {
+    "runner_pass": true,
+    "operating_unchanged": true,
+    "videos": {
+      "result.mkv": {
+        "probe_exit": 0,
+        "probe_error_empty": true,
+        "metadata": {
+          "programs": [],
+          "streams": [
+            {
+              "codec_name": "h264",
+              "width": 1920,
+              "height": 1080
+            }
+          ],
+          "format": {
+            "duration": "60.217000"
+          }
+        },
+        "decode_exit": 0,
+        "decoded_frames": 1699,
+        "decode_error_empty": true,
+        "sha256": "89a59005c9173b68bac56e451579fc4533236158da429f9ce735d737dcb3cf84",
+        "passed": true
+      },
+      "result-after.mkv": {
+        "probe_exit": 0,
+        "probe_error_empty": true,
+        "metadata": {
+          "programs": [],
+          "streams": [
+            {
+              "codec_name": "h264",
+              "width": 1920,
+              "height": 1080
+            }
+          ],
+          "format": {
+            "duration": "60.215000"
+          }
+        },
+        "decode_exit": 0,
+        "decoded_frames": 1701,
+        "decode_error_empty": true,
+        "sha256": "da80f1ca5898f4045ad7fd4f8271c02c3f56baf854f2dbaac870d18365a15a84",
+        "passed": true
+      }
+    },
+    "databases": {
+      "appearances.db": {
+        "integrity": "ok",
+        "counts": {
+          "search_conditions": 0,
+          "appearance_log": 532502
+        },
+        "row_deltas": {
+          "search_conditions": 0,
+          "appearance_log": 56
+        }
+      },
+      "mqtt_event_outbox.db": {
+        "integrity": "ok",
+        "counts": {
+          "mqtt_event_outbox": 174682
+        },
+        "row_deltas": {
+          "mqtt_event_outbox": 63
+        }
+      },
+      "commercial_faces.db": {
+        "integrity": "ok",
+        "counts": {
+          "face_persons": 1,
+          "face_samples": 1
+        },
+        "row_deltas": {
+          "face_persons": 0,
+          "face_samples": 0
+        }
+      }
+    },
+    "generations": {
+      "1": {
+        "primary": 1382,
+        "pose": 0,
+        "attributes": 1382,
+        "helmet": 1382
+      },
+      "3": {
+        "primary": 1388,
+        "pose": 0,
+        "attributes": 1388,
+        "helmet": 1388
+      }
+    },
+    "model_counts": {
+      "event.person": 8327,
+      "pose_events": 2776,
+      "pose_scope_assigned": 2776,
+      "face_request.calls": 325,
+      "face_opencv.calls": 325,
+      "tcn_verify.calls": 16,
+      "face_opencv.returned": 325,
+      "face_opencv.no_face_returned": 325,
+      "face_request.returned": 325,
+      "face_request.no_face_returned": 325,
+      "color_result.calls": 506,
+      "color_runtime.calls": 506,
+      "color_runtime.returned": 506,
+      "color_result.returned": 506,
+      "color_result.color": 384,
+      "python_attribute.calls": 325,
+      "python_attribute.returned": 325,
+      "python_attribute.empty": 325,
+      "color_result.below_threshold": 122,
+      "tcn_verify.returned": 16,
+      "tcn_verify.insufficient_pose_frames": 1,
+      "tcn_verify.ok": 15
+    },
+    "rf_verify_calls": 0,
+    "final_stats": {
+      "frames_processed": 5551,
+      "events_detected": 63,
+      "events_failed": 63,
+      "inference_errors": 0,
+      "context_tasks_failed": 0,
+      "model_metrics_errors": 0,
+      "primary_metrics_errors": 0
+    },
+    "after_recovery_model_deltas": {
+      "event.person": 4013,
+      "pose_events": 1338,
+      "pose_scope_assigned": 1338,
+      "face_request.calls": 158,
+      "face_opencv.calls": 158,
+      "tcn_verify.calls": 5,
+      "face_opencv.returned": 158,
+      "face_opencv.no_face_returned": 158,
+      "face_request.returned": 158,
+      "face_request.no_face_returned": 158,
+      "color_result.calls": 252,
+      "color_runtime.calls": 251,
+      "color_runtime.returned": 251,
+      "color_result.returned": 251,
+      "color_result.color": 194,
+      "python_attribute.calls": 157,
+      "python_attribute.returned": 157,
+      "python_attribute.empty": 157,
+      "color_result.below_threshold": 57,
+      "tcn_verify.returned": 6,
+      "tcn_verify.insufficient_pose_frames": 0,
+      "tcn_verify.ok": 6
+    },
+    "after_recovery_db_deltas": {
+      "appearance_log": 27,
+      "mqtt_event_outbox": 31
+    },
+    "observed_model_gate": true,
+    "storage_gate": true,
+    "source_files_match": true,
+    "passed": true
+  },
+  "review": {
+    "skill": "superpowers:requesting-code-review",
+    "reviewer": "candidate_verification_review",
+    "critical": 0,
+    "important": 0,
+    "applied_findings": [
+      "Require auxiliary model successes/returns and database row increases strictly after recovery.",
+      "Correct scenario label; preserve initial startup failure and restore baseline EGL socket."
+    ],
+    "scope": "Independent review of isolated harness, validation, and actual trial/video/database/model artifacts."
+  },
+  "observer_regression": {
+    "original": {
+      "test.calls": 3,
+      "test.returned": 3
+    },
+    "corrected": {
+      "test.calls": 1,
+      "test.returned": 1
+    }
+  },
+  "initial_configuration_failure": {
+    "completed": false,
+    "stage": "startup",
+    "error": "EGL display connection / nvinfer buffer pool activation after removing baseline read-only X11 socket",
+    "changes_for_retry": [
+      "restore baseline read-only /tmp/.X11-unix mount",
+      "correct AUDIT_SCENARIO label to output_recovery"
+    ],
+    "product_source_changed": false,
+    "operating_unchanged": true,
+    "artifacts": "startup_without_x11"
+  },
+  "limits": [
+    "One short instrumented replay trial; does not establish long-run stability, throughput or accuracy.",
+    "Output loss interrupts inference until pipeline retry. This is recovery, not uninterrupted processing.",
+    "Original native encoder I40 and intermittent SQLite I45 remain OPEN; I34 CUDA cause remains unresolved.",
+    "RF verify calls and face outcomes are reported as observed, not assumed quality passes.",
+    "Closed-loopback MQTT failures are persisted in outbox; external delivery and PUBACK are not tested.",
+    "No production deployment; candidate Compose remains pinned to v0.97; separate Jetson rehearsal deferred by user.",
+    "No product source change or new full pytest run in this verification unit."
+  ],
+  "private_artifacts": "data/runtime/p51_output_recovery_20261006_v109",
+  "artifacts_sha256": {
+    "operating_after.json": "7e4f3b164849160be952fe7745e8d15e57344d83db1f321699f6ff15a53a342e",
+    "source_manifest.json": "b863f13a5529fae3c45f93a046a4e7f26783054500cc49ead4c45d3791c14b32",
+    "run_recovery.py": "53d44a49f8beeefc15682159ce7077dd7a7a14733185f0488f0af06b5e6715da",
+    "prepare.py": "34388f99a0da3cdf00514aa6ab6eecb94e4786fcc504f058714cb66884157385",
+    "new_image_manifest.json": "1eb612643a1bde3b10b02bad5c2c477d47af749c1324d429801e07237f537af6",
+    "initial_operating_after.json": "7e4f3b164849160be952fe7745e8d15e57344d83db1f321699f6ff15a53a342e",
+    "initial_trial_results.json": "6be6b1ef435bdd2f4b3a8c8df6fb30cbaeea1b25cfb9270b1798d8d90538bff4",
+    "initial_operating_before.json": "7e4f3b164849160be952fe7745e8d15e57344d83db1f321699f6ff15a53a342e",
+    "review.json": "e7ca33350d1270e604dc4c849e8e0d6c70c5cfe68a7f7737c99eddaa6cd75e2a",
+    "observe_models.py": "375637562e646d107efbf3094e58d1436388096540f432f2173919be1df8ca3c",
+    "preflight.json": "6d70eb91c7f07f146129a95163c566f261b1d248eaa4a8f0473859113b50f1aa",
+    "initial_preflight.json": "6d70eb91c7f07f146129a95163c566f261b1d248eaa4a8f0473859113b50f1aa",
+    "trial_results.json": "fc325dca3d987329b2f9dcbfa566990777445d777de909478587ba6067663a00",
+    "image.id": "202c0346695f2082a075d85b68cf83c4ed65e561ff5678135312468cd1c88579",
+    "operating_before.json": "7e4f3b164849160be952fe7745e8d15e57344d83db1f321699f6ff15a53a342e",
+    "run.py": "74b9681ea6c7f42d5f397eaa3d40718d14daac015ed253b24548440de11aede6",
+    "initial_configuration_failure.json": "a22f959d3e64fdbeee7fd62dbfa93525212bc200d9486bd61109239a18c77586",
+    "validate.py": "027ceb4d51271791379bc1cccc2bef12880a7de8b5a8b7409566c5f338615a00",
+    "observer_regression.json": "fbf65311a5f8a2aea70fcb8d061a1440e351da5860e76060c41ade2accc73cb4",
+    "validation.json": "b79e09c014c5fdc8a4a21956f112966115d4693dfb364944d5fcf4f0317b1b90",
+    "models_command.json": "c97a7c7293dd3eb4eb4da30a1d1e0a4f44f41a604c076494b767fa7b83163858"
+  }
+}

@@ -1,0 +1,790 @@
+{
+  "date": "2026-10-13",
+  "updated_at_utc": "2026-10-14T23:33:48.611311+00:00",
+  "wbs": "P5.2",
+  "issue": "I56",
+  "status": "CROP_GPU_COMPLETE_CANDIDATE_REJECTED",
+  "operating_deployed": false,
+  "constraints": {
+    "person_confidence_threshold": 0.5,
+    "pose_detection_confidence_threshold": 0.5,
+    "fall_score_threshold": 3.0,
+    "fall_sustained_seconds": 2.0,
+    "global_threshold_lowered": false
+  },
+  "change": {
+    "product_files": [
+      "src/core/ai/_fall_detector.py"
+    ],
+    "description": "머리가 양 골반보다 bbox높이20% 이상 아래일 때 보조1점. 머리·양 골반 신뢰도0.5와 양 발목 관측을 요구하고 기존 leg_above_head와 중복 가산하지 않음.",
+    "new_dependencies": 0,
+    "callers": [
+      "DeepStream 전체화면/crop Pose",
+      "Python FallDetector 호출",
+      "Pose RF 특징 생성"
+    ],
+    "rf_quality_verified": false
+  },
+  "local_validation": {
+    "initial_regression": "1 FAIL/19 PASS: 실제00898 frame440 점수2.5로 미탐 근거 재현",
+    "unit_pass": 284,
+    "unit_skip": 2,
+    "projection_tests": 26,
+    "new_projection_tests": 15,
+    "recovery_runner_pass": 13,
+    "ruff": "PASS: 제품 판정부·투영 테스트·진행판 렌더러",
+    "diff_check": "PASS",
+    "gpu_analysis_assertions": "PASS: 20개 전체 영상·원본PTS/세대38건·신뢰도0.5·206소스 증명·원자료SHA·집계 경계 자체검사",
+    "current_change_ruff": "PASS: 결과 집계기·진행판 렌더러"
+  },
+  "replay": {
+    "method": "앞선 실제 GPU 원시 출력3001프레임을 기존 후처리·추적 ID·영상PTS 지속 판정으로 재생. 새 GPU 모델 추론이 아님.",
+    "videos": 20,
+    "new_unseen_videos": 0,
+    "confidence_threshold": 0.5,
+    "before": {
+      "TP": 8,
+      "FN": 2,
+      "FP": 0,
+      "TN": 10
+    },
+    "after": {
+      "TP": 8,
+      "FN": 2,
+      "FP": 0,
+      "TN": 10
+    },
+    "early_alerts": 0,
+    "duplicate_alerts": 0,
+    "changed_delays": [
+      {
+        "scene": "00847_O_E_SY_C7",
+        "before_delay_seconds": [
+          2.8194833333333333
+        ],
+        "after_delay_seconds": [
+          2.752749999333333
+        ]
+      },
+      {
+        "scene": "00898_O_E_FY_C7",
+        "before_delay_seconds": [
+          5.321983333
+        ],
+        "after_delay_seconds": [
+          2.585916666
+        ]
+      }
+    ],
+    "normal_observed_seconds": 100.1
+  },
+  "input_candidate": {
+    "path": "기존 Person nano PGIE → Pose medium SGIE → mux 좌표 복원·공통 판정",
+    "person_model_sha256": "c2075ac595d71e22701f5c586665228dbd7b935683fb2c27499384cc6694bb96",
+    "pose_model_sha256": "29c1f210e88971df79b7f6001944aabf4714975d6d572d830347a135d0a98275",
+    "batch": 1,
+    "planned_gpu_trials": 20,
+    "preflight": "PASS: 고정95입력·두 엔진 해시·기존batch1 성공 이력·요청batch1·단일입력·Compose·운영healthy 확인. 신규 GPUprofile조회 미실행.",
+    "recovery_budget_seconds": 300,
+    "test_budget_seconds": 900,
+    "gpu_trials_executed": 20,
+    "profile_limit": "기존 성공 기록의 같은 엔진/요청batch1 재사용. 새 배치/엔진으로 확대하지 않음.",
+    "decision": "REJECTED_FOR_OPERATION_QUALITY_REGRESSION"
+  },
+  "approval": {
+    "state": "APPROVED",
+    "automatic_review": "10-13 승인 부재 거부는10-15 사용자 명시 승인으로 해소",
+    "question_sent": true,
+    "production_stop_executed": true,
+    "authorized_on": "2026-10-15"
+  },
+  "remaining": [
+    "전체화면 Pose를 기준으로 신뢰도0.5 유지·검출 단절 구간의 입력/추적 보완과 후면 자세 변화 검증 → 미사용80영상 → 배치 지원2채널 → 운영 준비",
+    "머리-골반 보완 단독 전체화면 GPU 재검증",
+    "실제2채널·장시간 품질·운영nano·RF/TCN·실물 경보 검증"
+  ],
+  "coverage": {
+    "unique_clips_seen": 20,
+    "unseen_clips": 80,
+    "p52_status": "VERIFY",
+    "i56_status": "OPEN",
+    "done": 9,
+    "total": 33
+  },
+  "review": {
+    "focused_diff": "공통 점수함수12줄 추가·호출/회귀 대조",
+    "graph_limit": "code-review-graph의 지정 파일 조회가 다른 변경132함수와 파일not_found를 반환해 영향 없음으로 사용하지 않음. codebase-memory 호출 경로와 실제 소스/테스트로 보완."
+  },
+  "artifacts": {
+    "src/core/ai/_fall_detector.py": "aa22a6a47b4fe7c707cb13fb9f0cc1c17e25e69765c724d3e32e2c12cc7c1adb",
+    "tests/test_fall_projection.py": "556fae1cc0f8d16e26ece0c3bee6021b68ba219f6f1d7f435603a706ab8ae6e3",
+    "tests/fixtures/fall_projection_20261013.json": "7a6e1f786f658e0312ee7730c605fdfbf4b4a8f830922ac2f2bdd1eb7a172ccd",
+    "data/runtime/p52_pose_refinement_20261013/candidate_replay.json": "4280898657c5d7cde7f4afb953e30d146ff1111eff7d54abff3c50697a6a28ca",
+    "data/runtime/p52_pose_refinement_20261013/unit_tests.xml": "ebf3e617212ae5b5c1d2199228b70d92ca684d502a01b76e27e74b23b4f762d8",
+    "data/runtime/p52_pose_refinement_20261013/runner_tests.xml": "c3021a9d75ef3ce874962a5bb487465b9874da45f78c514f61553e08b7aedabd",
+    "data/runtime/p52_pose_refinement_20261013/plan.json": "17577548e515af2ad772e62c1e0ad7333dbfe5486c7cc613e8959a7f63f67727",
+    "data/runtime/p52_pose_refinement_20261013/input_hashes.json": "0acf3bbd7ba39810256da849e2b79a132d4c8de68122cc500c9ef49d1143e8ae",
+    "data/runtime/p52_pose_refinement_20261013/operating_before.json": "b99eee84eeb9c4111b5660cc12279c1b215afb673873e72cf972059f5889af1f",
+    "data/runtime/p52_pose_refinement_20261013/online_validation.json": "69fa21b0c19ff0cb4e3868804ece142efa85f99be3884379d9dcff393e0b188c",
+    "data/runtime/p52_pose_refinement_20261013/approval.json": "17054f0e91c7e46d864bdc3ef6f6e32abb50c15d46335ecac389b164e828e3e1",
+    "data/runtime/p52_pose_refinement_20261013/operating_before_preparation_20261013.json": "ebd66cb809c9ed54e3e6d716c61c4c88133ee72dddfdf4bc4436ed59b8c66438",
+    "data/runtime/p52_pose_refinement_20261013/batch_00_started.json": "acebab1683430e635cd9d4ebe3ac02fe9f736f391e542a61ac9eac9b43b8da77",
+    "data/runtime/p52_pose_refinement_20261013/batch_00_results.json": "e308dc1dde33887f5c037fe09761ffd25170e446447efc4cef11ab35a3fa93a9",
+    "data/runtime/p52_pose_refinement_20261013/batch_00_recovery.json": "1853f5379debf58ef2010d5b07ea28e6e17daba25c73caebf5560d2975bf0910",
+    "data/runtime/p52_pose_refinement_20261013/batch_00_analysis.json": "0517fa64ccf51f2f52c6798f3767f0c5a747939afd6c7822273b73490ddc8468",
+    "data/runtime/p52_pose_refinement_20261013/analyze_batch_00.py": "10eccb00642bc4238c01c479a14f5bb6fa1d5a498fdd5d22890c02496141c771",
+    "data/runtime/p52_pose_refinement_20261013/operating_after_batch_00.json": "a9b586176a974122511a693e9ecdf3a743eedbb835fd07035061978d383935f3",
+    "data/runtime/p52_pose_refinement_20261013/online_validation_20261015.json": "837d44e26205f736ed128750b885dbb039959e2ae25d69095a17b7f9ef91b9c3",
+    "scripts/ops/render_progress_snapshot.py": "e1c4e6df76b60f249911e5602b557eb8d4ead52bf4950d258c8b4aaf55755b83",
+    "scripts/ops/progress_snapshot_template.html": "a0de04b0fcea3eaa3374f961b49341ff651856769fa13a4bdc026c720891a8b4",
+    "docs/planning/figma_exports/progress_v138.json": "0ce07fa47d5b4a222654db16c05e9c3794ba01d768b9a9ecaed7a8b112649afe"
+  },
+  "execution_date": "2026-10-15",
+  "gpu_comparison": {
+    "executed_on": "2026-10-15",
+    "completed_trials": 20,
+    "unique_clips": 20,
+    "new_unseen_clips": 0,
+    "confidence_threshold": 0.5,
+    "frames": 12002,
+    "primary_tensor_frames": 3001,
+    "pose_tensor_meta_frames": 2367,
+    "time_basis_decisions": 38,
+    "normal_video_seconds": 100.10000000000001,
+    "summary": {
+      "crop_gpu": {
+        "TP": 3,
+        "FN": 7,
+        "FP": 0,
+        "TN": 10,
+        "early_alerts": 0,
+        "duplicate_alerts": 0,
+        "delay_min_seconds": 4.237566665999999,
+        "delay_max_seconds": 5.455449999999999,
+        "delay_median_seconds": 4.254249999666666
+      },
+      "whole_frame_gpu_baseline": {
+        "TP": 8,
+        "FN": 2,
+        "FP": 0,
+        "TN": 10,
+        "early_alerts": 0,
+        "duplicate_alerts": 0,
+        "delay_min_seconds": 2.252249999666666,
+        "delay_max_seconds": 5.321983333,
+        "delay_median_seconds": 3.0113416666666666
+      },
+      "whole_frame_head_cue_cpu_replay": {
+        "TP": 8,
+        "FN": 2,
+        "FP": 0,
+        "TN": 10,
+        "early_alerts": 0,
+        "duplicate_alerts": 0,
+        "delay_min_seconds": 2.252249999666666,
+        "delay_max_seconds": 3.586916666,
+        "delay_median_seconds": 2.6693333326666666
+      }
+    },
+    "scope": "단일 입력·GPU→경보 큐. SGIE tensor 메타 관측 수는 GPU 커널 실행 횟수가 아님. 전체화면 머리-골반 보완값은 저장 GPU의 CPU 후처리 재생이며 새 GPU 성적과 구분.",
+    "trials": [
+      {
+        "index": 0,
+        "scene": "00610_H_D_SY_C5",
+        "verdict": "FN",
+        "delay_seconds": null,
+        "whole_frame_gpu_baseline": {
+          "verdict": "FN",
+          "delay_seconds": null,
+          "early_alerts": 0,
+          "duplicate_alerts": 0
+        },
+        "detect_stage": {
+          "tensor_metadata_frames": 150,
+          "decoded_frames": 91,
+          "last_tensor_pts": 9.933333333,
+          "last_decoded_pts": 6.266666666
+        },
+        "pose_stage": {
+          "tensor_metadata_frames": 91,
+          "decoded_frames": 65,
+          "last_tensor_pts": 6.266666666,
+          "last_decoded_pts": 4.333333333
+        }
+      },
+      {
+        "index": 1,
+        "scene": "00709_H_D_BY_C4",
+        "verdict": "FN",
+        "delay_seconds": null,
+        "whole_frame_gpu_baseline": {
+          "verdict": "FN",
+          "delay_seconds": null,
+          "early_alerts": 0,
+          "duplicate_alerts": 0
+        },
+        "detect_stage": {
+          "tensor_metadata_frames": 150,
+          "decoded_frames": 140,
+          "last_tensor_pts": 9.943266666,
+          "last_decoded_pts": 9.943266666
+        },
+        "pose_stage": {
+          "tensor_metadata_frames": 140,
+          "decoded_frames": 70,
+          "last_tensor_pts": 9.943266666,
+          "last_decoded_pts": 8.341666666
+        }
+      },
+      {
+        "index": 2,
+        "scene": "00898_O_E_FY_C7",
+        "verdict": "TP",
+        "delay_seconds": 5.455449999999999,
+        "whole_frame_gpu_baseline": {
+          "verdict": "TP",
+          "delay_seconds": 5.321983333,
+          "early_alerts": 0,
+          "duplicate_alerts": 0
+        },
+        "detect_stage": {
+          "tensor_metadata_frames": 150,
+          "decoded_frames": 136,
+          "last_tensor_pts": 9.95995,
+          "last_decoded_pts": 9.95995
+        },
+        "pose_stage": {
+          "tensor_metadata_frames": 136,
+          "decoded_frames": 126,
+          "last_tensor_pts": 9.95995,
+          "last_decoded_pts": 9.95995
+        }
+      },
+      {
+        "index": 3,
+        "scene": "00772_O_E_FY_C3",
+        "verdict": "FN",
+        "delay_seconds": null,
+        "whole_frame_gpu_baseline": {
+          "verdict": "TP",
+          "delay_seconds": 3.586916666,
+          "early_alerts": 0,
+          "duplicate_alerts": 0
+        },
+        "detect_stage": {
+          "tensor_metadata_frames": 151,
+          "decoded_frames": 47,
+          "last_tensor_pts": 10.026683333,
+          "last_decoded_pts": 3.15315
+        },
+        "pose_stage": {
+          "tensor_metadata_frames": 47,
+          "decoded_frames": 47,
+          "last_tensor_pts": 3.15315,
+          "last_decoded_pts": 3.15315
+        }
+      },
+      {
+        "index": 4,
+        "scene": "00533_H_D_N_C8",
+        "verdict": "TN",
+        "delay_seconds": null,
+        "whole_frame_gpu_baseline": {
+          "verdict": "TN",
+          "delay_seconds": null,
+          "early_alerts": 0,
+          "duplicate_alerts": 0
+        },
+        "detect_stage": {
+          "tensor_metadata_frames": 150,
+          "decoded_frames": 150,
+          "last_tensor_pts": 9.95995,
+          "last_decoded_pts": 9.95995
+        },
+        "pose_stage": {
+          "tensor_metadata_frames": 150,
+          "decoded_frames": 142,
+          "last_tensor_pts": 9.95995,
+          "last_decoded_pts": 9.95995
+        }
+      },
+      {
+        "index": 5,
+        "scene": "00727_H_D_SY_C4",
+        "verdict": "TP",
+        "delay_seconds": 4.254249999666666,
+        "whole_frame_gpu_baseline": {
+          "verdict": "TP",
+          "delay_seconds": 2.252249999666666,
+          "early_alerts": 0,
+          "duplicate_alerts": 0
+        },
+        "detect_stage": {
+          "tensor_metadata_frames": 150,
+          "decoded_frames": 101,
+          "last_tensor_pts": 9.943266666,
+          "last_decoded_pts": 9.876533333
+        },
+        "pose_stage": {
+          "tensor_metadata_frames": 101,
+          "decoded_frames": 96,
+          "last_tensor_pts": 9.876533333,
+          "last_decoded_pts": 9.876533333
+        }
+      },
+      {
+        "index": 6,
+        "scene": "00762_O_E_N_C7",
+        "verdict": "TN",
+        "delay_seconds": null,
+        "whole_frame_gpu_baseline": {
+          "verdict": "TN",
+          "delay_seconds": null,
+          "early_alerts": 0,
+          "duplicate_alerts": 0
+        },
+        "detect_stage": {
+          "tensor_metadata_frames": 150,
+          "decoded_frames": 150,
+          "last_tensor_pts": 9.95995,
+          "last_decoded_pts": 9.95995
+        },
+        "pose_stage": {
+          "tensor_metadata_frames": 150,
+          "decoded_frames": 150,
+          "last_tensor_pts": 9.95995,
+          "last_decoded_pts": 9.95995
+        }
+      },
+      {
+        "index": 7,
+        "scene": "00903_O_E_BY_C1",
+        "verdict": "FN",
+        "delay_seconds": null,
+        "whole_frame_gpu_baseline": {
+          "verdict": "TP",
+          "delay_seconds": 2.5024999993333337,
+          "early_alerts": 0,
+          "duplicate_alerts": 0
+        },
+        "detect_stage": {
+          "tensor_metadata_frames": 150,
+          "decoded_frames": 96,
+          "last_tensor_pts": 9.95995,
+          "last_decoded_pts": 7.424083333
+        },
+        "pose_stage": {
+          "tensor_metadata_frames": 96,
+          "decoded_frames": 91,
+          "last_tensor_pts": 7.424083333,
+          "last_decoded_pts": 7.424083333
+        }
+      },
+      {
+        "index": 8,
+        "scene": "00734_H_D_N_C1",
+        "verdict": "TN",
+        "delay_seconds": null,
+        "whole_frame_gpu_baseline": {
+          "verdict": "TN",
+          "delay_seconds": null,
+          "early_alerts": 0,
+          "duplicate_alerts": 0
+        },
+        "detect_stage": {
+          "tensor_metadata_frames": 150,
+          "decoded_frames": 148,
+          "last_tensor_pts": 9.943266666,
+          "last_decoded_pts": 9.943266666
+        },
+        "pose_stage": {
+          "tensor_metadata_frames": 148,
+          "decoded_frames": 148,
+          "last_tensor_pts": 9.943266666,
+          "last_decoded_pts": 9.943266666
+        }
+      },
+      {
+        "index": 9,
+        "scene": "00933_O_E_FY_C2",
+        "verdict": "FN",
+        "delay_seconds": null,
+        "whole_frame_gpu_baseline": {
+          "verdict": "TP",
+          "delay_seconds": 3.4033999999999995,
+          "early_alerts": 0,
+          "duplicate_alerts": 0
+        },
+        "detect_stage": {
+          "tensor_metadata_frames": 150,
+          "decoded_frames": 78,
+          "last_tensor_pts": 9.95995,
+          "last_decoded_pts": 5.288616666
+        },
+        "pose_stage": {
+          "tensor_metadata_frames": 78,
+          "decoded_frames": 77,
+          "last_tensor_pts": 5.288616666,
+          "last_decoded_pts": 5.288616666
+        }
+      },
+      {
+        "index": 10,
+        "scene": "00811_O_E_N_C2",
+        "verdict": "TN",
+        "delay_seconds": null,
+        "whole_frame_gpu_baseline": {
+          "verdict": "TN",
+          "delay_seconds": null,
+          "early_alerts": 0,
+          "duplicate_alerts": 0
+        },
+        "detect_stage": {
+          "tensor_metadata_frames": 150,
+          "decoded_frames": 57,
+          "last_tensor_pts": 9.95995,
+          "last_decoded_pts": 4.487816666
+        },
+        "pose_stage": {
+          "tensor_metadata_frames": 57,
+          "decoded_frames": 54,
+          "last_tensor_pts": 4.487816666,
+          "last_decoded_pts": 4.487816666
+        }
+      },
+      {
+        "index": 11,
+        "scene": "00847_O_E_SY_C7",
+        "verdict": "FN",
+        "delay_seconds": null,
+        "whole_frame_gpu_baseline": {
+          "verdict": "TP",
+          "delay_seconds": 2.8194833333333333,
+          "early_alerts": 0,
+          "duplicate_alerts": 0
+        },
+        "detect_stage": {
+          "tensor_metadata_frames": 150,
+          "decoded_frames": 85,
+          "last_tensor_pts": 9.95995,
+          "last_decoded_pts": 5.689016666
+        },
+        "pose_stage": {
+          "tensor_metadata_frames": 85,
+          "decoded_frames": 85,
+          "last_tensor_pts": 5.689016666,
+          "last_decoded_pts": 5.689016666
+        }
+      },
+      {
+        "index": 12,
+        "scene": "00560_H_D_N_C3",
+        "verdict": "TN",
+        "delay_seconds": null,
+        "whole_frame_gpu_baseline": {
+          "verdict": "TN",
+          "delay_seconds": null,
+          "early_alerts": 0,
+          "duplicate_alerts": 0
+        },
+        "detect_stage": {
+          "tensor_metadata_frames": 150,
+          "decoded_frames": 141,
+          "last_tensor_pts": 9.95995,
+          "last_decoded_pts": 9.95995
+        },
+        "pose_stage": {
+          "tensor_metadata_frames": 141,
+          "decoded_frames": 135,
+          "last_tensor_pts": 9.95995,
+          "last_decoded_pts": 9.95995
+        }
+      },
+      {
+        "index": 13,
+        "scene": "00909_O_E_N_C6",
+        "verdict": "TN",
+        "delay_seconds": null,
+        "whole_frame_gpu_baseline": {
+          "verdict": "TN",
+          "delay_seconds": null,
+          "early_alerts": 0,
+          "duplicate_alerts": 0
+        },
+        "detect_stage": {
+          "tensor_metadata_frames": 150,
+          "decoded_frames": 150,
+          "last_tensor_pts": 9.95995,
+          "last_decoded_pts": 9.95995
+        },
+        "pose_stage": {
+          "tensor_metadata_frames": 150,
+          "decoded_frames": 139,
+          "last_tensor_pts": 9.95995,
+          "last_decoded_pts": 9.95995
+        }
+      },
+      {
+        "index": 14,
+        "scene": "00828_O_E_FY_C8",
+        "verdict": "TP",
+        "delay_seconds": 4.237566665999999,
+        "whole_frame_gpu_baseline": {
+          "verdict": "TP",
+          "delay_seconds": 2.5024999999999995,
+          "early_alerts": 0,
+          "duplicate_alerts": 0
+        },
+        "detect_stage": {
+          "tensor_metadata_frames": 150,
+          "decoded_frames": 95,
+          "last_tensor_pts": 9.95995,
+          "last_decoded_pts": 9.75975
+        },
+        "pose_stage": {
+          "tensor_metadata_frames": 95,
+          "decoded_frames": 95,
+          "last_tensor_pts": 9.75975,
+          "last_decoded_pts": 9.75975
+        }
+      },
+      {
+        "index": 15,
+        "scene": "00823_O_E_N_C5",
+        "verdict": "TN",
+        "delay_seconds": null,
+        "whole_frame_gpu_baseline": {
+          "verdict": "TN",
+          "delay_seconds": null,
+          "early_alerts": 0,
+          "duplicate_alerts": 0
+        },
+        "detect_stage": {
+          "tensor_metadata_frames": 150,
+          "decoded_frames": 133,
+          "last_tensor_pts": 9.95995,
+          "last_decoded_pts": 9.95995
+        },
+        "pose_stage": {
+          "tensor_metadata_frames": 133,
+          "decoded_frames": 129,
+          "last_tensor_pts": 9.95995,
+          "last_decoded_pts": 9.95995
+        }
+      },
+      {
+        "index": 16,
+        "scene": "00547_H_D_N_C2",
+        "verdict": "TN",
+        "delay_seconds": null,
+        "whole_frame_gpu_baseline": {
+          "verdict": "TN",
+          "delay_seconds": null,
+          "early_alerts": 0,
+          "duplicate_alerts": 0
+        },
+        "detect_stage": {
+          "tensor_metadata_frames": 150,
+          "decoded_frames": 125,
+          "last_tensor_pts": 9.95995,
+          "last_decoded_pts": 9.95995
+        },
+        "pose_stage": {
+          "tensor_metadata_frames": 125,
+          "decoded_frames": 97,
+          "last_tensor_pts": 9.95995,
+          "last_decoded_pts": 9.95995
+        }
+      },
+      {
+        "index": 17,
+        "scene": "00925_O_E_BY_C5",
+        "verdict": "FN",
+        "delay_seconds": null,
+        "whole_frame_gpu_baseline": {
+          "verdict": "TP",
+          "delay_seconds": 3.2032,
+          "early_alerts": 0,
+          "duplicate_alerts": 0
+        },
+        "detect_stage": {
+          "tensor_metadata_frames": 150,
+          "decoded_frames": 150,
+          "last_tensor_pts": 9.95995,
+          "last_decoded_pts": 9.95995
+        },
+        "pose_stage": {
+          "tensor_metadata_frames": 150,
+          "decoded_frames": 118,
+          "last_tensor_pts": 9.95995,
+          "last_decoded_pts": 8.291616666
+        }
+      },
+      {
+        "index": 18,
+        "scene": "00874_O_E_N_C3",
+        "verdict": "TN",
+        "delay_seconds": null,
+        "whole_frame_gpu_baseline": {
+          "verdict": "TN",
+          "delay_seconds": null,
+          "early_alerts": 0,
+          "duplicate_alerts": 0
+        },
+        "detect_stage": {
+          "tensor_metadata_frames": 150,
+          "decoded_frames": 144,
+          "last_tensor_pts": 9.95995,
+          "last_decoded_pts": 9.95995
+        },
+        "pose_stage": {
+          "tensor_metadata_frames": 144,
+          "decoded_frames": 140,
+          "last_tensor_pts": 9.95995,
+          "last_decoded_pts": 9.95995
+        }
+      },
+      {
+        "index": 19,
+        "scene": "00559_H_D_N_C8",
+        "verdict": "TN",
+        "delay_seconds": null,
+        "whole_frame_gpu_baseline": {
+          "verdict": "TN",
+          "delay_seconds": null,
+          "early_alerts": 0,
+          "duplicate_alerts": 0
+        },
+        "detect_stage": {
+          "tensor_metadata_frames": 150,
+          "decoded_frames": 150,
+          "last_tensor_pts": 9.95995,
+          "last_decoded_pts": 9.95995
+        },
+        "pose_stage": {
+          "tensor_metadata_frames": 150,
+          "decoded_frames": 148,
+          "last_tensor_pts": 9.95995,
+          "last_decoded_pts": 9.95995
+        }
+      }
+    ]
+  },
+  "operating_recovery": {
+    "checked_at_utc": "2026-10-14T23:33:28.600983+00:00",
+    "duration_seconds": 30.11721419400419,
+    "before_metrics": {
+      "cctv_processor_frames_processed_total": 1174.0,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 589.0,
+      "cctv_camera_primary_last_frame_age_seconds{camera_id=\"camera_1\"}": 0.0016315709799528122
+    },
+    "after_metrics": {
+      "cctv_processor_frames_processed_total": 2077.0,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 1039.0,
+      "cctv_camera_primary_last_frame_age_seconds{camera_id=\"camera_1\"}": 0.028481682995334268
+    },
+    "rates": {
+      "cctv_processor_frames_processed_total": 29.982852802493646,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 14.941620997920422
+    },
+    "snapshot": [
+      {
+        "name": "/cctv-ai-engine",
+        "id": "c8a71163c84b458197b98a4bde8e0e06719afc5cf5964e6fbd0b716109ce0377",
+        "image": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+        "started_at": "2026-10-14T23:31:11.340144608Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-media-server",
+        "id": "957101f7ab7336585817a176154f7711de977caee7cfbf34257f2fb68810dea4",
+        "image": "sha256:f8628851106cc053f9175b248050bb5f362a6e65abd72297c167a1cb5a9a3be2",
+        "started_at": "2026-10-12T23:35:15.324861031Z",
+        "status": "running",
+        "health": null,
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-action-layer",
+        "id": "74deaeb0b5bdd64c8f2e2a141daa25c193a75cf235b214fee6ef8b4dcdceedeb",
+        "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+        "started_at": "2026-10-12T23:35:15.475740705Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-device-signboard",
+        "id": "29aeb393bd52e7a9f8241be9214b970e82e8442253fdfe2e73dbbf5d153feaa8",
+        "image": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+        "started_at": "2026-10-12T23:35:15.45875226Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-device-speaker",
+        "id": "a8ff5823d34ad72dd2c5b236cc88f210b16feb05ef53532e6549601d2beafb7a",
+        "image": "sha256:4daca5e8c9865c5f19dde37d7dbdfcc37ea5c413fa8375802e80c7f8185bba30",
+        "started_at": "2026-10-12T23:35:15.455773133Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      }
+    ],
+    "same_ai_container_and_image": true,
+    "other_four_containers_unchanged": true,
+    "healthy": true,
+    "monitor_container_stable": true,
+    "trial_containers_remaining": 0,
+    "maintenance_start_to_ai_started_seconds": 708.5011978149414
+  },
+  "previous_online_validation_20261013": {
+    "checks": [
+      {
+        "file": "docs/planning/online/index.html",
+        "status": 200,
+        "bytes": 88291,
+        "sha256": "8a481e42bed54d3eb7957c56e18dbd392017a7dc6b105a83b4cf1883f0bc5d94",
+        "local_matches_http": true
+      },
+      {
+        "file": "docs/planning/online/CCTV_project_progress.pdf",
+        "status": 200,
+        "bytes": 149222,
+        "sha256": "184cf6b234e0ea3e6ddbf350cb445e63fa7e75b81e2ccc7dfebd91866260a086",
+        "local_matches_http": true
+      }
+    ],
+    "page_1_visual_check": "PASS: 제목/수치/승인 대기 표시 확인",
+    "browser_interaction": "NOT_CHECKED"
+  },
+  "online_validation": {
+    "checked_at_utc": "2026-10-14T23:34:39.405258+00:00",
+    "checks": [
+      {
+        "file": "docs/planning/online/index.html",
+        "status": 200,
+        "bytes": 87945,
+        "sha256": "19f79e79d73734b2a9abdd70398e8f081b519d27d35b9d00a3080d2e91b321e5",
+        "local_matches_http": true
+      },
+      {
+        "file": "docs/planning/online/CCTV_project_progress.pdf",
+        "status": 200,
+        "bytes": 148872,
+        "sha256": "ea94f629b1d30cd4ef91bcb4e8f1493ea96bc8f1ff7c0fac2bd32f5ee496cfb8",
+        "local_matches_http": true
+      }
+    ],
+    "wbs_rows": 33,
+    "model_rows": 8,
+    "browser_interaction_verified": false,
+    "pdf_first_page_visual_check": "PASS: 10-15·GPU20회·3/10·29.98FPS·WBS9/33 표시"
+  }
+}

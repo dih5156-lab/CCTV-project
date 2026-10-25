@@ -1,0 +1,263 @@
+{
+  "version": "0.104",
+  "date": "2026-10-06 KST",
+  "wbs": "P2.4",
+  "issue": "I45",
+  "status": "OPEN",
+  "operating_applied": false,
+  "scope": "Read-only SQL/transaction timing on isolated SSD test databases; no product/schema/journal/timeout/retry change",
+  "raw_artifacts": "data/runtime/i45_contention_20261006_v104",
+  "validation_tree": "/tmp/cctv-p51-shutdown-20261006/tree",
+  "database_root": "/media/sawwave/Learning11/CCTV-project/.pytest_workspace_tmp/p51_shutdown_20261006",
+  "sql_summary": {
+    "single": {
+      "events": 5778,
+      "successful_writer_spans": 462,
+      "max_transaction_seconds": 0.027278853114694357,
+      "busy_observations": [
+        {
+          "thread": "ThreadPoolExecutor-0_0",
+          "db": "source.db",
+          "sql": "INSERT INTO ingest_receipts (ingest_id, source_namespace, received_at, raw_format, raw_payload, raw_sha256) VALUES (?, ?, ?, ?, ?, ?)",
+          "error": "OperationalError: database is locked",
+          "seconds": 0.25280700088478625,
+          "overlapping_writer_transactions": {
+            "MonitoringDelivery": 1,
+            "ThreadPoolExecutor-0_1": 21
+          },
+          "max_overlapping_transaction_seconds": 0.014557456132024527
+        },
+        {
+          "thread": "MonitoringDelivery",
+          "db": "source.db",
+          "sql": "BEGIN IMMEDIATE",
+          "error": "OperationalError: database is locked",
+          "seconds": 0.2511886451393366,
+          "overlapping_writer_transactions": {
+            "ThreadPoolExecutor-0_1": 22
+          },
+          "max_overlapping_transaction_seconds": 0.014557456132024527
+        },
+        {
+          "thread": "ThreadPoolExecutor-0_1",
+          "db": "source.db",
+          "sql": "INSERT OR IGNORE INTO event_ingest_state(ingest_id) VALUES (?)",
+          "error": "OperationalError: database is locked",
+          "seconds": 0.2518767169676721,
+          "overlapping_writer_transactions": {
+            "ThreadPoolExecutor-0_0": 4,
+            "MonitoringDelivery": 13
+          },
+          "max_overlapping_transaction_seconds": 0.01816505193710327
+        },
+        {
+          "thread": "ThreadPoolExecutor-0_0",
+          "db": "source.db",
+          "sql": "INSERT INTO ingest_receipts (ingest_id, source_namespace, received_at, raw_format, raw_payload, raw_sha256) VALUES (?, ?, ?, ?, ?, ?)",
+          "error": "OperationalError: database is locked",
+          "seconds": 0.25123714678920805,
+          "overlapping_writer_transactions": {
+            "ThreadPoolExecutor-0_1": 4,
+            "MonitoringDelivery": 14
+          },
+          "max_overlapping_transaction_seconds": 0.02591778594069183
+        },
+        {
+          "thread": "ThreadPoolExecutor-0_1",
+          "db": "source.db",
+          "sql": "UPDATE sensor_ingest_state SET stage='ready', projection_json=?, last_error=NULL, next_attempt_at=0 WHERE ingest_id=? AND stage='pending'",
+          "error": "OperationalError: database is locked",
+          "seconds": 0.2511321429628879,
+          "overlapping_writer_transactions": {
+            "MonitoringDelivery": 17
+          },
+          "max_overlapping_transaction_seconds": 0.026811202988028526
+        }
+      ],
+      "max_status_select_seconds": 0.33050838112831116
+    },
+    "full": {
+      "events": 5793,
+      "successful_writer_spans": 461,
+      "max_transaction_seconds": 0.04216199088841677,
+      "busy_observations": [
+        {
+          "thread": "ThreadPoolExecutor-2_0",
+          "db": "source.db",
+          "sql": "INSERT INTO ingest_receipts (ingest_id, source_namespace, received_at, raw_format, raw_payload, raw_sha256) VALUES (?, ?, ?, ?, ?, ?)",
+          "error": "OperationalError: database is locked",
+          "seconds": 0.25714509398676455,
+          "overlapping_writer_transactions": {
+            "ThreadPoolExecutor-2_1": 12,
+            "MonitoringDelivery": 6
+          },
+          "max_overlapping_transaction_seconds": 0.015140404924750328
+        },
+        {
+          "thread": "MonitoringDelivery",
+          "db": "source.db",
+          "sql": "PRAGMA journal_mode",
+          "error": "OperationalError: database is locked",
+          "seconds": 0.2518842131830752,
+          "overlapping_writer_transactions": {
+            "ThreadPoolExecutor-2_1": 15,
+            "ThreadPoolExecutor-2_0": 6
+          },
+          "max_overlapping_transaction_seconds": 0.015140404924750328
+        },
+        {
+          "thread": "MainThread",
+          "db": "source.db",
+          "sql": "BEGIN IMMEDIATE",
+          "error": "OperationalError: database is locked",
+          "seconds": 0.25130091491155326,
+          "overlapping_writer_transactions": {
+            "MonitoringDelivery": 16
+          },
+          "max_overlapping_transaction_seconds": 0.0149574289098382
+        }
+      ],
+      "max_status_select_seconds": 0.1793030658736825
+    }
+  },
+  "target_test_full": {
+    "seconds": 5.987,
+    "properties": {
+      "active_contention_result": {
+        "accepted_video_records": 20,
+        "elapsed_seconds": 5.697344274027273,
+        "monitoring_write_statements_during_producers": 40,
+        "offered_video_records": 20,
+        "preloaded_video_records": 8,
+        "sensor_records": 20,
+        "sensor_test_producer_retries": 0,
+        "service_failed_cycles": 1,
+        "stored_and_matched_records": 48,
+        "transport": "in-process test model",
+        "video_busy_retry_logs": 1,
+        "video_intake_max_seconds": 0.36594453314319253,
+        "video_test_producer_retries": 0
+      }
+    }
+  },
+  "validation": {
+    "target_single": "1 PASS in 6.08s; 48 stored and ID/hash/ACK matched",
+    "full": {
+      "passed": 2744,
+      "skipped": 52,
+      "failed": 2,
+      "seconds": 227.51,
+      "failures": [
+        {
+          "test": "tests.test_processor_stats.TestEventDebouncer::test_fall_detected_reassociates_changed_object_id_by_bbox",
+          "seconds": 0.601,
+          "failure": "tests/test_processor_stats.py:199: in test_fall_detected_reassociates_changed_object_id_by_bbox\n    assert d.should_send(\"cam1\", \"fall_detected\", 2, event=second) is True\nE   AssertionError: assert False is True\nE    +  where False = should_send('cam1', 'fall_detected', 2, event=DetectionEvent(type=fall_detected, bbox=(105,103,120,70), conf=0.90, id=2))\nE    +    where should_send = <src.core.event_debouncer.EventDebouncer object at 0xffff0feab280>.should_send"
+        },
+        {
+          "test": "tests.test_sensor_record::test_concurrent_projection_commits_one_observation",
+          "seconds": 0.989,
+          "failure": "tests/test_sensor_record.py:140: in test_concurrent_projection_commits_one_observation\n    job.result()\n/usr/lib/python3.10/concurrent/futures/_base.py:458: in result\n    return self.__get_result()\n/usr/lib/python3.10/concurrent/futures/_base.py:403: in __get_result\n    raise self._exception\n/usr/lib/python3.10/concurrent/futures/thread.py:58: in run\n    result = self.fn(*self.args, **self.kwargs)\nsrc/sensor_record.py:42: in project_sensor\n    connection.execute(\nE   sqlite3.OperationalError: database is locked"
+        }
+      ]
+    },
+    "failed_tests_individual_recheck": "2 PASS in 5.41s; intermittent failures remain open",
+    "spawn_guard_check": "backlog restart 1 PASS in 56.85s"
+  },
+  "source_hashes": {
+    "src/bootstrap/runtime.py": {
+      "workspace_sha256": "93eb6bdf2755b2d6346707870cb065e5e8d208590eb45e856f8b99d66038daca",
+      "snapshot_sha256": "93eb6bdf2755b2d6346707870cb065e5e8d208590eb45e856f8b99d66038daca"
+    },
+    "src/core/deepstream_processor.py": {
+      "workspace_sha256": "533752443e8bd8ea07ac11f20e1939c92c51303a49dc16fb36b5a1d7e3873402",
+      "snapshot_sha256": "533752443e8bd8ea07ac11f20e1939c92c51303a49dc16fb36b5a1d7e3873402"
+    },
+    "tests/test_bootstrap_runtime.py": {
+      "workspace_sha256": "134d981cede12e1e0e123ba14079ee4edb376e60ad257d6cfed4cc335dfb0245",
+      "snapshot_sha256": "134d981cede12e1e0e123ba14079ee4edb376e60ad257d6cfed4cc335dfb0245"
+    },
+    "tests/test_deepstream_shutdown.py": {
+      "workspace_sha256": "4fdc4768d853107aac5cd54faaa1b0567826ce26103def3ca1631b5714d18109",
+      "snapshot_sha256": "4fdc4768d853107aac5cd54faaa1b0567826ce26103def3ca1631b5714d18109"
+    },
+    "src/ingest_store.py": {
+      "workspace_sha256": "05c35c33de6cc0f2ed934e0f73bb2e34e6532fe40fc492f52fb709305cae5a77",
+      "snapshot_sha256": "05c35c33de6cc0f2ed934e0f73bb2e34e6532fe40fc492f52fb709305cae5a77"
+    },
+    "src/event_ingest_store.py": {
+      "workspace_sha256": "57fa5d1d4084f79209295b94d9297a27f6f8c07be9f091be798179977b004810",
+      "snapshot_sha256": "57fa5d1d4084f79209295b94d9297a27f6f8c07be9f091be798179977b004810"
+    },
+    "src/monitoring_delivery.py": {
+      "workspace_sha256": "cfb1a3e3480c4ebe87118a445580b838ccf832da986b48083a135a4e6b0a1bb2",
+      "snapshot_sha256": "cfb1a3e3480c4ebe87118a445580b838ccf832da986b48083a135a4e6b0a1bb2"
+    },
+    "src/monitoring_worker.py": {
+      "workspace_sha256": "71893c0d49a1e6e04352ad11e335d828eb4a4bdfff16008f4b331207aced86eb",
+      "snapshot_sha256": "71893c0d49a1e6e04352ad11e335d828eb4a4bdfff16008f4b331207aced86eb"
+    },
+    "src/monitoring_service.py": {
+      "workspace_sha256": "4cee0dab5bcee9a1ace7ce3cdbacc6a4d04d3206f0fd0e5a6e21b60147eeab81",
+      "snapshot_sha256": "4cee0dab5bcee9a1ace7ce3cdbacc6a4d04d3206f0fd0e5a6e21b60147eeab81"
+    },
+    "src/sensor_record.py": {
+      "workspace_sha256": "d5a32cc41f4510c1ad3644f5713e829bc351cea6fea60e1b0bfd45152d4b1f9a",
+      "snapshot_sha256": "d5a32cc41f4510c1ad3644f5713e829bc351cea6fea60e1b0bfd45152d4b1f9a"
+    },
+    "src/core/video_event_ingest.py": {
+      "workspace_sha256": "7158836647b520c8ac84872fe6752bf9c610abe740e5a6c8945be8a68c6b4163",
+      "snapshot_sha256": "7158836647b520c8ac84872fe6752bf9c610abe740e5a6c8945be8a68c6b4163"
+    },
+    "tests/test_monitoring_active_contention.py": {
+      "workspace_sha256": "834f3e17d380fb0bec934a12a3f13e544e7dc3987876d1c1049471175b7b570b",
+      "snapshot_sha256": "834f3e17d380fb0bec934a12a3f13e544e7dc3987876d1c1049471175b7b570b"
+    },
+    "tests/test_monitoring_outage_mqtt.py": {
+      "workspace_sha256": "41fe05b6510bda145b7a2d16351839a49d9a583dc17511a955c02716b119a5a0",
+      "snapshot_sha256": "41fe05b6510bda145b7a2d16351839a49d9a583dc17511a955c02716b119a5a0"
+    }
+  },
+  "invalid_diagnostic_run": {
+    "invalid_run": "full_observed (renamed invalid_runner_*)",
+    "observed": "2745 pass, 52 skip, 1 backlog process timeout",
+    "cause": "diagnostic Python pytest.main entry lacked __main__ guard; multiprocessing spawn re-executed entire test entrypoint",
+    "action": "guarded entry; backlog regression first, then correct full validation",
+    "product_change": false
+  },
+  "interpretation": [
+    "Successful target runs still observe 251-257ms SQLITE_BUSY attempts overlapping 16-22 short writer transaction spans; attempts recover and 48 records match.",
+    "Successful writer spans are observed from first write/BEGIN return to context exit, not an OS-level exact lock-owner measurement.",
+    "Historical video retry exhaustion and 5s status SELECT failure did not recur in these instrumented target runs; no fix claimed.",
+    "Concurrent sensor projection fails at INSERT OR IGNORE in full suite; SQL instrumentation covered active-contention target only, not this new failed test. Same root cause not established.",
+    "I47 fall ID reassociation test failed under full load and passed alone; real-time sleep dependency is a candidate, actual sleep duration was not captured."
+  ],
+  "next": "Instrument source common.db during two concurrent sensor projections; record first write/commit and retry failure timing without changing DELETE/EXTRA or bounded intake contract. Track I47 separately.",
+  "files_sha256": {
+    "observe_sql.py": "1a76e3f0ebc36bd58579ef5cbc2196d25ec487f23f238e0991c5cb65949f5e25",
+    "full_observed.xml": "7e6d6d4c802ff31736e7aa5451e402041dbda105faa1ad27c4affe01d28e01cd",
+    "full_sql_trace.json": "fcb771c06cb5c9fb268746afd2f35696b11d1a937d7e16f86337d82bac85c077",
+    "observed.xml": "63f2366dbb5a787662ddcbf2375bc99960915284002b9a84bc9dda9dd79a40ab",
+    "failure_recheck.xml": "64a75179e34b900bd48e4396138d092cef2e292ab4ca9ff8bff846bc2713534e"
+  },
+  "publication": {
+    "version": "0.104",
+    "url": "http://192.168.2.141:18081/",
+    "files": {
+      "index.html": {
+        "bytes": 24459,
+        "sha256": "8c8f8ce4ff812daa3027116e66952ca7d5d75df45134b90730b9835fbc7daeae",
+        "http_matches": true
+      },
+      "CCTV_project_progress.pdf": {
+        "bytes": 130444,
+        "sha256": "9cdd7a7bfbb18a69f1bbe2db4542233180b2da3bfbf6ab08a065b4c5350fc077",
+        "http_matches": true
+      }
+    },
+    "visual_check": "first-page PNG inspected; no clipping",
+    "wbs_check": "33 IDs/states/counts match WBS source",
+    "ruff": "PASS render_progress_snapshot.py",
+    "diff_check": "PASS"
+  },
+  "correction_v105": "The sensor concurrency test uses two stores and two threads. Earlier four-thread wording was incorrect; historical test outcomes remain unchanged."
+}

@@ -1,0 +1,405 @@
+{
+  "version": "0.110",
+  "date": "2026-10-06 KST",
+  "wbs": "P5.1 IN_PROGRESS",
+  "new_issue": "I49 OPEN",
+  "scope": "Diagnose RF zero calls using immutable candidate image, current settings and synthetic event/pose boundaries; no video pipeline startup.",
+  "candidate_image": "sha256:b01ff1e4bdec6d1992826e8472149899e1715cae1fab876bdd160439180de9c6",
+  "probe": {
+    "settings": {
+      "enabled": true,
+      "mode": "shadow",
+      "inline_pose_rf": true,
+      "min_pose_frames": 10,
+      "cooldown_seconds": 10.0,
+      "fail_open": true
+    },
+    "routing": {
+      "shadow_person": {
+        "mode": "shadow",
+        "event_type": "person",
+        "enabled": true,
+        "score": 4.0,
+        "published": true,
+        "event_queue": 1,
+        "aux_queue": 0,
+        "metrics": {
+          "enabled": true,
+          "cameras": {}
+        }
+      },
+      "shadow_fall": {
+        "mode": "shadow",
+        "event_type": "fall_detected",
+        "enabled": true,
+        "score": 4.0,
+        "published": true,
+        "event_queue": 1,
+        "aux_queue": 0,
+        "metrics": {
+          "enabled": true,
+          "cameras": {}
+        }
+      },
+      "confirm_person": {
+        "mode": "confirm",
+        "event_type": "person",
+        "enabled": true,
+        "score": 4.0,
+        "published": true,
+        "event_queue": 1,
+        "aux_queue": 0,
+        "metrics": {
+          "enabled": true,
+          "cameras": {}
+        }
+      },
+      "confirm_borderline": {
+        "mode": "confirm",
+        "event_type": "fall_detected",
+        "enabled": true,
+        "score": 4.0,
+        "published": false,
+        "event_queue": 0,
+        "aux_queue": 1,
+        "rf_result": {
+          "enabled": true,
+          "mode": "confirm",
+          "status": "incompatible_feature_contract",
+          "confirmed": false,
+          "buffered_frames": 0,
+          "runtime": "deepstream_pose_inline",
+          "expected_model_kind": "deepstream_pose_inline_rf",
+          "expected_feature_source": "deepstream_pose_inline",
+          "model_kind": "yolo_pose_summary_rf",
+          "feature_source": null,
+          "frames_with_pose": 12,
+          "sampled_frames": 12,
+          "confirmation_streak": 0,
+          "pose_scope": {
+            "camera_id": "replay_1",
+            "object_id": 7,
+            "generation": 1,
+            "frame_index": 12
+          },
+          "cache_reused": false
+        },
+        "metrics": {
+          "enabled": true,
+          "cameras": {
+            "replay_1": {
+              "requests": 1,
+              "unavailable_results": 1,
+              "cache_hits": 0
+            }
+          }
+        }
+      },
+      "confirm_clear": {
+        "mode": "confirm",
+        "event_type": "fall_detected",
+        "enabled": true,
+        "score": 6.0,
+        "published": true,
+        "event_queue": 1,
+        "aux_queue": 0,
+        "metrics": {
+          "enabled": true,
+          "cameras": {}
+        }
+      },
+      "disabled_fall": {
+        "mode": "confirm",
+        "event_type": "fall_detected",
+        "enabled": false,
+        "score": 4.0,
+        "published": true,
+        "event_queue": 1,
+        "aux_queue": 0,
+        "metrics": {
+          "enabled": false,
+          "cameras": {}
+        }
+      }
+    },
+    "contracts": {
+      "selected_sufficient": {
+        "result": {
+          "enabled": true,
+          "mode": "shadow",
+          "status": "incompatible_feature_contract",
+          "confirmed": false,
+          "buffered_frames": 0,
+          "runtime": "deepstream_pose_inline",
+          "expected_model_kind": "deepstream_pose_inline_rf",
+          "expected_feature_source": "deepstream_pose_inline",
+          "model_kind": "yolo_pose_summary_rf",
+          "feature_source": null,
+          "frames_with_pose": 12,
+          "sampled_frames": 12,
+          "confirmation_streak": 0,
+          "pose_scope": {
+            "camera_id": "replay_1",
+            "object_id": 7,
+            "generation": 1,
+            "frame_index": 12
+          },
+          "cache_reused": false
+        },
+        "metrics": {
+          "enabled": true,
+          "cameras": {
+            "replay_1": {
+              "requests": 1,
+              "unavailable_results": 1,
+              "cache_hits": 0
+            }
+          }
+        }
+      },
+      "selected_insufficient": {
+        "result": {
+          "enabled": true,
+          "mode": "shadow",
+          "status": "insufficient_pose_records",
+          "confirmed": false,
+          "buffered_frames": 0,
+          "frames_with_pose": 9,
+          "min_pose_frames": 10,
+          "confirmation_streak": 0,
+          "pose_scope": {
+            "camera_id": "replay_1",
+            "object_id": 7,
+            "generation": 1,
+            "frame_index": 9
+          },
+          "cache_reused": false
+        },
+        "metrics": {
+          "enabled": true,
+          "cameras": {
+            "replay_1": {
+              "requests": 1,
+              "unavailable_results": 1,
+              "cache_hits": 0
+            }
+          }
+        }
+      },
+      "compatible_sufficient": {
+        "result": {
+          "enabled": true,
+          "mode": "shadow",
+          "status": "ok",
+          "confirmed": false,
+          "buffered_frames": 0,
+          "runtime": "deepstream_pose_inline",
+          "fall_probability": 0.6495110381501847,
+          "threshold": 0.7,
+          "frames_with_pose": 12,
+          "sampled_frames": 12,
+          "probability": [
+            0.3504889618498147,
+            0.6495110381501847
+          ],
+          "confirmation_streak": 0,
+          "pose_scope": {
+            "camera_id": "replay_1",
+            "object_id": 7,
+            "generation": 1,
+            "frame_index": 12
+          },
+          "cache_reused": false
+        },
+        "metrics": {
+          "enabled": true,
+          "cameras": {
+            "replay_1": {
+              "requests": 1,
+              "predict_calls": 1,
+              "predict_completed": 1,
+              "predict_errors": 0,
+              "predict_seconds": 0.09453313006088138,
+              "ok_results": 1,
+              "cache_hits": 0
+            }
+          }
+        },
+        "cached_result": {
+          "enabled": true,
+          "mode": "shadow",
+          "status": "ok",
+          "confirmed": false,
+          "buffered_frames": 0,
+          "runtime": "deepstream_pose_inline",
+          "fall_probability": 0.6495110381501847,
+          "threshold": 0.7,
+          "frames_with_pose": 12,
+          "sampled_frames": 12,
+          "probability": [
+            0.3504889618498147,
+            0.6495110381501847
+          ],
+          "confirmation_streak": 0,
+          "pose_scope": {
+            "camera_id": "replay_1",
+            "object_id": 7,
+            "generation": 1,
+            "frame_index": 12
+          },
+          "cache_reused": true,
+          "cached_pose_scope": {
+            "camera_id": "replay_1",
+            "object_id": 7,
+            "generation": 1,
+            "frame_index": 12
+          }
+        },
+        "metrics_after_cache": {
+          "enabled": true,
+          "cameras": {
+            "replay_1": {
+              "requests": 2,
+              "predict_calls": 1,
+              "predict_completed": 1,
+              "predict_errors": 0,
+              "predict_seconds": 0.09453313006088138,
+              "ok_results": 2,
+              "cache_hits": 1
+            }
+          }
+        }
+      },
+      "missing_scope": {
+        "result": {
+          "enabled": true,
+          "mode": "shadow",
+          "status": "missing_pose_scope",
+          "confirmed": false,
+          "buffered_frames": 0
+        },
+        "metrics": {
+          "enabled": true,
+          "cameras": {
+            "replay_1": {
+              "requests": 1,
+              "unavailable_results": 1,
+              "cache_hits": 0
+            }
+          }
+        }
+      },
+      "stale_scope": {
+        "result": {
+          "enabled": true,
+          "mode": "shadow",
+          "status": "stale_pose_scope",
+          "confirmed": false,
+          "buffered_frames": 0
+        },
+        "metrics": {
+          "enabled": true,
+          "cameras": {
+            "replay_1": {
+              "requests": 1,
+              "unavailable_results": 1,
+              "cache_hits": 0
+            }
+          }
+        }
+      }
+    },
+    "models": {
+      "selected": {
+        "path": "models/experiments/yolo_pose_fall_cam2_continuous_200_80_640.pkl",
+        "sha256": "0fd6610ee86d9263e402b82e6607da0ff361a39ab0487a7cb0f6edd019195397",
+        "model_kind": "yolo_pose_summary_rf",
+        "feature_source": null,
+        "classifier": "ExtraTreesClassifier",
+        "feature_count": 50,
+        "inference_config": {
+          "max_frames": 48,
+          "frame_stride": 3,
+          "imgsz": 640,
+          "confidence_threshold": 0.35,
+          "candidate_window_frames": 0,
+          "candidate_window_seconds": 3.0
+        },
+        "sampling_contract": null
+      },
+      "compatible_comparison_only": {
+        "path": "/app/models/experiments/deepstream_pose_inline_rf_hardcase_candidate_20260731.joblib",
+        "sha256": "1946f248eef5c7f656a3ab9258c00b6a7f5345a9cbbad008ab15b9a4e530440f",
+        "model_kind": "deepstream_pose_inline_rf",
+        "feature_source": "deepstream_pose_inline",
+        "classifier": "RandomForestClassifier",
+        "feature_count": 50,
+        "inference_config": {
+          "max_frames": 48,
+          "candidate_window_seconds": 3.0
+        },
+        "sampling_contract": null
+      }
+    }
+  },
+  "validation": {
+    "diagnostic_assertions_passed": true,
+    "routing_cases": 6,
+    "contract_cases": 5,
+    "cache_reuse": true,
+    "shadow_rf_observation_contract": "FAIL: fall published but RF work never submitted",
+    "selected_model_contract": "FAIL: incompatible_feature_contract, predict_calls=0",
+    "compatible_candidate_smoke": "PASS: synthetic12poses, predict completed1, not quality/approval",
+    "source_files_match": 206,
+    "product_source_unchanged": true,
+    "operating_unchanged": true
+  },
+  "tests": {
+    "tests": 269,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 2,
+    "passed": 267
+  },
+  "findings": [
+    "v109 input had PERSON events only; no FALL events. That absence alone did not reproduce the shadow routing defect.",
+    "Synthetic FALL in shadow enters original event queue once but creates no RF queue work. A confirm-mode borderline FALL does create RF work.",
+    "Shadow contract requires RF comparison records without delaying original alerts. Only confirm mode currently submits RF, so classify missing shadow observation route as I49.",
+    "Current selected model has yolo_pose_summary_rf model_kind and missing feature_source; sufficient valid scoped poses return incompatible_feature_contract with zero predict calls. This is existing I37, not missing libraries.",
+    "Comparison-only inline candidate loads and predicts once with 12 synthetic poses; repeat uses cache. It lacks sampling_contract metadata and is not selected or approved.",
+    "Missing pose scope, stale scope and 9 poses against minimum10 all prevent model prediction."
+  ],
+  "review": {
+    "skill": "superpowers:requesting-code-review",
+    "reviewer": "candidate_verification_review",
+    "scope": "Independent actual artifact, routing, model and JUnit review",
+    "additional_critical": 0,
+    "additional_important": 0,
+    "product_finding": "I49 OPEN, shadow RF comparison route missing",
+    "limits": [
+      "In-memory queue only, no external delivery",
+      "Debounce accepts input in probe",
+      "Recorder invoked directly, worker final publish not exercised",
+      "Comparison model source identifiers and synthetic execution only; sampling_contract missing"
+    ]
+  },
+  "limits": [
+    "267 existing tests passing does not mean the uncovered shadow contract passes.",
+    "No actual fall video, accuracy evaluation, full pipeline end-to-end RF, external MQTT, deployment or model selection.",
+    "Boundary probe accepts debounce in memory and uses synthetic poses. Published in probe means internal event queue, not external delivery.",
+    "Original I40/I45 and I34 CUDA remain OPEN; P5.1 remains IN_PROGRESS.",
+    "No product code/config/model changed; independent image/source hashes all206 match. No fresh full-suite run."
+  ],
+  "private_artifacts": "data/runtime/p51_rf_contract_20261006_v110",
+  "artifacts_sha256": {
+    "run.log": "c29b42a208398a75053b759b26dfe09795031d4379f10c793380d384b9a9e043",
+    "operating_after.json": "a81687e232fb1956433faaafb184ab20b2701841e7e3191623d1f1c218c70310",
+    "probe.py": "60c6cff04d625c9996a499cccfea03c462e876f298ccd4b20e07daf0c14b654f",
+    "source_manifest_before.json": "b863f13a5529fae3c45f93a046a4e7f26783054500cc49ead4c45d3791c14b32",
+    "operating_before.json": "a81687e232fb1956433faaafb184ab20b2701841e7e3191623d1f1c218c70310",
+    "run.py": "1178aed3e2d3999dcdf4f91098c32fc1be7e406910d6597c419c75663e838340",
+    "validation.json": "78116a932aec77c0b8396dd5110f030e05a08aad9b1cc289c0ca9d3cd238c85c",
+    "run_result.json": "122db8f8c00dc83cf943c5d98016f0d046903a9bb9f243b2e6febe24b68d8573",
+    "tests.xml": "1809705e2581f95c8a9ddd408d7c02acff1eb49ace936fd1c0f90647f29da63d"
+  }
+}

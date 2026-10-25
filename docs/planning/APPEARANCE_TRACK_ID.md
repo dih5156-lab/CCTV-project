@@ -2,6 +2,8 @@
 
 2026-09-28 · v0.47 · **FIXED_LOCAL / 운영 미반영** · [검증 근거](evidence/appearance_track_id_20260928.json)
 
+10-12 후속 I63: 아래는 기존 DB 저장/조회 계약이다. 신규 AI 이벤트·관측·MQTT/EdgeX의 문자열 규격은 [공통 추적 ID 계약](../features/EVENT_SCHEMA_STANDARD.md#추적-id-계약--2026-10-12--i63)을 따른다. 과거 DB 행을 고치지 않으며 uint64 최댓값은 신규 추적 관측에서 미추적 값으로 구분한다.
+
 DeepStream의 uint64 ID는 SQLite INTEGER의 signed int64 범위를 넘을 수 있다.
 기존에는 `15509195771361624064` 같은 ID를 바인딩할 때 OverflowError가 발생해 의상 기록이 누락됐다.
 또한 실패 전에 쿨다운을 갱신해 정상 재시도가 억제될 수 있었다.

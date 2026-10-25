@@ -1,0 +1,256 @@
+{
+  "date": "2026-10-22",
+  "recorded_at": "2026-10-22T12:51:17.158038+09:00",
+  "wbs_task": "O1",
+  "status": "TEMPORARY_TUNNEL_PASS_DIRECT_PATH_BLOCKED",
+  "root_cause_confirmed": true,
+  "permanent_direct_connectivity_fixed": false,
+  "source_basis": "사용자가 확인한 A-CCTV 직결 배선·양쪽 ip/nmcli/TCP/TTL 실측·기존 RTSP 검사기 재사용·기존 A 운영 계수",
+  "root_cause": {
+    "physical_topology": "User confirmed CCTV directly connected to A",
+    "a_camera_network": "192.168.0.10/24 eno1 -> 192.168.0.100:554",
+    "b_ethernet": "NO-CARRIER, no IPv4",
+    "b_camera_route": "192.168.0.100 via 192.168.2.1 dev wlan0 src 192.168.2.203",
+    "b_default_path_probes": {
+      "tcp": [
+        {
+          "connected": true,
+          "host": "192.168.2.141",
+          "port": 22,
+          "seconds": 0.006325641999865184
+        },
+        {
+          "connected": false,
+          "error": "timed out",
+          "host": "192.168.0.100",
+          "port": 554,
+          "seconds": 4.004059019000124
+        }
+      ],
+      "hops": [
+        {
+          "ttl": 1,
+          "response": {
+            "errno": 113,
+            "origin": 2,
+            "icmp_type": 11,
+            "icmp_code": 0,
+            "router": "192.168.2.1"
+          }
+        },
+        {
+          "ttl": 2,
+          "response": {
+            "errno": 113,
+            "origin": 2,
+            "icmp_type": 11,
+            "icmp_code": 0,
+            "router": "192.168.88.254"
+          }
+        },
+        {
+          "ttl": 3,
+          "response": {
+            "errno": 113,
+            "origin": 2,
+            "icmp_type": 11,
+            "icmp_code": 0,
+            "router": "122.129.242.126"
+          }
+        }
+      ]
+    },
+    "a_source_probes": [
+      {
+        "source": "192.168.0.10",
+        "connected": true,
+        "response": "RTSP/1.0 200 OK",
+        "seconds": 0.11796199300442822
+      },
+      {
+        "source": "192.168.2.141",
+        "connected": false,
+        "error": "timed out",
+        "seconds": 4.003099266992649
+      }
+    ],
+    "conclusion": "B has no physical connection to the camera network; default route sends camera traffic upstream instead of to A camera link."
+  },
+  "temporary_workaround": {
+    "transport": "RTSP/TCP over SSH remote loopback forwarding through A",
+    "binding": "B 127.0.0.1:18554 -> A -> 192.168.0.100:554",
+    "rtsp_options": {
+      "rtsp_response": "RTSP/1.0 200 OK",
+      "listeners": [
+        "LISTEN  0        128            127.0.0.1:18554          0.0.0.0:*              "
+      ]
+    },
+    "requires_A_available": true,
+    "production_network_configuration_changed": false,
+    "removed_after_test": true
+  },
+  "simultaneous_rtsp": {
+    "a": "Existing operating direct CCTV session, single camera",
+    "b": {
+      "started_at": 1792640904.927547,
+      "frames": 1756,
+      "warnings": [],
+      "errors": [],
+      "max_gap_seconds": 0.2014200229987182,
+      "camera_id": "camera_1",
+      "pipeline_ready_seconds": 0.18951933999960602,
+      "play_requested_seconds": 0.2168491320007888,
+      "source_caps": [
+        "application/x-rtp, media=(string)application, payload=(int)107, clock-rate=(int)90000, encoding-name=(string)VND.ONVIF.METADATA, a-bc=(string)0, a-tool=(string)\"streamer\\ 2.3.2\", clock-base=(uint)0, seqnum-base=(uint)0, npt-start=(guint64)0, play-speed=(double)1, play-scale=(double)1, ssrc=(uint)469699410",
+        "application/x-rtp, media=(string)video, payload=(int)96, clock-rate=(int)90000, encoding-name=(string)H264, packetization-mode=(string)1, profile-level-id=(string)4D002A, sprop-parameter-sets=(string)\"Z00AKpY1QPAET8s3AQEBAg\\=\\=\\,aO48gA\\=\\=\", a-bc=(string)0, a-tool=(string)\"streamer\\ 2.3.2\", x-dimensions=(string)\"1920\\,1080\", clock-base=(uint)0, seqnum-base=(uint)0, npt-start=(guint64)0, play-speed=(double)1, play-scale=(double)1, ssrc=(uint)3433099605"
+      ],
+      "first_frame_seconds": 1.718110555999374,
+      "first_frame_at": 1792640906.645663,
+      "caps": "video/x-raw(memory:NVMM), format=(string)NV12, width=(int)1920, height=(int)1080, interlace-mode=(string)progressive, multiview-mode=(string)mono, multiview-flags=(GstVideoMultiviewFlagsSet)0:ffffffff:/right-view-first/left-flipped/left-flopped/right-flipped/right-flopped/half-aspect/mixed-mono, pixel-aspect-ratio=(fraction)1/1, chroma-site=(string)mpeg2, colorimetry=(string)bt709, framerate=(fraction)0/1, nvbuf-memory-type=(string)nvbuf-mem-surface-array, gpu-id=(int)0",
+      "last_frame_seconds": 60.269559661999665,
+      "last_frame_at": 1792640965.1971219,
+      "elapsed_seconds": 60.30460544900052,
+      "ended_at": 1792640965.2321541,
+      "decoded_fps": 29.97363902681188,
+      "pass": true
+    },
+    "a_observation_seconds": 60.1950249671936,
+    "a_processed_frames_delta": 1799.0,
+    "a_per_sample_frame_gains": [
+      151.0,
+      150.0,
+      150.0,
+      145.0,
+      154.0,
+      148.0,
+      145.0,
+      152.0,
+      154.0,
+      150.0,
+      150.0,
+      150.0
+    ],
+    "a_fps_range": [
+      28.790466058016822,
+      30.746820195165707
+    ],
+    "a_error_restart_deltas": {
+      "cctv_processor_source_error_identified_total": 0.0,
+      "cctv_processor_source_error_unidentified_total": 0.0,
+      "cctv_processor_pipeline_restart_executed_total": 0.0
+    },
+    "both_jetsons_received": true,
+    "both_directly_connected": false,
+    "recording": false,
+    "new_AI_inference_on_B": false
+  },
+  "first_three_session_attempt": {
+    "configuration": "A operating session + A extra probe + B tunneled probe",
+    "a_extra_probe": {
+      "started_at": 1792640751.3631082,
+      "frames": 0,
+      "warnings": [],
+      "errors": [
+        "No buffer within 15 seconds after PLAYING request"
+      ],
+      "max_gap_seconds": 0,
+      "camera_id": "camera_1",
+      "pipeline_ready_seconds": 6.313465451996308,
+      "play_requested_seconds": 6.320557483995799,
+      "source_caps": [
+        "application/x-rtp, media=(string)application, payload=(int)107, clock-rate=(int)90000, encoding-name=(string)VND.ONVIF.METADATA, a-bc=(string)0, a-tool=(string)\"streamer\\ 2.3.2\", clock-base=(uint)0, seqnum-base=(uint)0, npt-start=(guint64)0, play-speed=(double)1, play-scale=(double)1, onvif-mode=(boolean)false, ssrc=(uint)2604195700",
+        "application/x-rtp, media=(string)video, payload=(int)96, clock-rate=(int)90000, encoding-name=(string)H264, packetization-mode=(string)1, profile-level-id=(string)4D002A, sprop-parameter-sets=(string)\"Z00AKpY1QPAET8s3AQEBAg\\=\\=\\,aO48gA\\=\\=\", a-bc=(string)0, a-tool=(string)\"streamer\\ 2.3.2\", x-dimensions=(string)\"1920\\,1080\", clock-base=(uint)0, seqnum-base=(uint)0, npt-start=(guint64)0, play-speed=(double)1, play-scale=(double)1, onvif-mode=(boolean)false, ssrc=(uint)288443779"
+      ],
+      "elapsed_seconds": 21.40739246600424,
+      "ended_at": 1792640772.7705052,
+      "decoded_fps": null,
+      "pass": false
+    },
+    "b_frames": 1758,
+    "b_fps": 29.972634463412355,
+    "a_operating_continued": true,
+    "a_extra_no_frames_cause": "Not established; no maximum-session-limit claim",
+    "followup": "Revalidated requested two-Jetson topology using existing A operating session and B probe."
+  },
+  "operating_check": {
+    "containers_unchanged": 37,
+    "fields": [
+      "Id",
+      "Image",
+      "Status",
+      "StartedAt",
+      "Restarting"
+    ],
+    "network_configuration_changes": 0,
+    "package_installations": 0,
+    "product_code_changes": 0,
+    "camera_configuration_changes": 0
+  },
+  "raw_evidence": {
+    "path": "docs/planning/evidence/edge_network_20261022_logs.tar.gz",
+    "sha256": "c9e8bbaeda82c0f4906f642e7dab5928a4a2bd80b012a64bcec6676cca97a134",
+    "bytes": 79807,
+    "files": 30,
+    "credentials_excluded": true
+  },
+  "probe_sha256": "56dc32bc2d0fb4b1c576321ff89cf5bd796fc57ee6b8dab745a3801d6e238c7f",
+  "cleanup": {
+    "remote": {
+      "test_processes": [],
+      "tunnel_listener_closed": true,
+      "remote_runtime_removed": true,
+      "routes_unchanged": true
+    },
+    "temporary_ssh_closed": true,
+    "tunnel_removed": true,
+    "local_runtime_removed": true,
+    "local_test_processes": [],
+    "local_routes_unchanged": true,
+    "authentication_helpers_removed": true,
+    "credential_scan": "PASS"
+  },
+  "remaining": [
+    "Provide shared camera Ethernet switch/network connecting A, B and CCTV; retain camera and A addresses, allocate verified unused B address without replacing Wi-Fi default route.",
+    "Cabling transition needs a separately arranged maintenance window; current direct A-CCTV cable was not changed.",
+    "B SDK/engine compatibility remains unresolved from previous inspection.",
+    "Independent takeover with A stopped, long-duration reception and camera session capacity not verified."
+  ],
+  "final_checks": {
+    "wbs_json_rows": 37,
+    "counts": {
+      "DONE": 9,
+      "BLOCKED": 3,
+      "PLANNED": 16,
+      "VERIFY": 7,
+      "IN_PROGRESS": 2
+    },
+    "local_markdown_links": 69,
+    "baseline_non_document_files": 1156,
+    "non_document_changes": [
+      "scripts/ops/progress_snapshot_template.html",
+      "scripts/ops/render_progress_snapshot.py"
+    ],
+    "raw_archive_sha256_matches": true,
+    "local_runtime_removed": true,
+    "ruff": "PASS",
+    "render": "PASS",
+    "pdf_first_page_visual_check": "PASS",
+    "online": [
+      {
+        "file": "index.html",
+        "status": 200,
+        "matches_local": true,
+        "bytes": 145327,
+        "sha256": "916c9b5b0dd37d07511da058445564e9a887ccc1c00fd92601bdeff35223f579"
+      },
+      {
+        "file": "CCTV_project_progress.pdf",
+        "status": 200,
+        "matches_local": true,
+        "bytes": 156655,
+        "sha256": "79b99c9fdaa9ea0f8223c84b183d6f5812f76dcd281ea71c10c5cbf1d6a87d4c"
+      }
+    ],
+    "server_restarted": false
+  }
+}

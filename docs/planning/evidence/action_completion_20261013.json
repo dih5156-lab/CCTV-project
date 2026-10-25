@@ -1,0 +1,161 @@
+{
+  "updated_at": "2026-10-13T13:30:46.194541+09:00",
+  "wbs_id": "P3.3",
+  "state": "LOCAL_VERIFIED_SIGNBOARD_COMPLETION_AND_RECONCILIATION",
+  "scope": "전광판 완료 근거 저장/발행·Action/장치3종 보존 이력 대조. 물리 출력 없음.",
+  "changes": {
+    "product_files": [
+      "src/devices/signboard.py",
+      "src/edgex/dabit_device_service.py",
+      "src/edgex/request_idempotency.py",
+      "src/edgex/command_contract.py",
+      "src/services/action_device_queue.py",
+      "src/services/action_mqtt_intake.py",
+      "src/services/_action_bridge_repo.py",
+      "runners/run_signboard_device_service.py",
+      "runners/run_speaker_device_service.py",
+      "runners/run_siren_device_service.py"
+    ],
+    "new_tests": [
+      "tests/test_action_completion.py",
+      "tests/test_action_completion_integration.py"
+    ],
+    "database_schema_changes": 0,
+    "new_dependencies": 0,
+    "mqtt_api": "같은 명령 토픽의 action=request_status를 출력 실행 없이 lookup으로 처리",
+    "result_json_extension": [
+      "execution_completed",
+      "resource_idle",
+      "completion_evidence"
+    ],
+    "signboard_proof": "경보 전체+유휴 화면 전체의 등록된 Dabit 정상 응답, dabit_idle_frame_ack. LED 가시성 증명 아님.",
+    "completion_order": "장치 DB commit → MQTT 결과; Action DB 결과가 저장되고 큐 갱신이 실패한 경우 저장 결과로 대조",
+    "reconciliation": "물리 큐 ON일 때 5초마다 active만 조회. Action 저장 완료 증거 → 장치 request_status. 출력 재발행/자동 stop 없음."
+  },
+  "validation": {
+    "regression_first_pass": 388,
+    "regression_additional_unique": 1,
+    "regression_unique_passed": 389,
+    "real_mqtt_passed": 9,
+    "unique_passed": 398,
+    "new_unique_tests": 36,
+    "final_subset_rerun_not_added": 34,
+    "junit": {
+      "mqtt": {
+        "tests": 9,
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0
+      },
+      "completion-final": {
+        "tests": 34,
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0
+      }
+    },
+    "regression_log": "data/runtime/action_completion_20261013/regression.log",
+    "completion_final_log": "data/runtime/action_completion_20261013/completion-final.log",
+    "mqtt_log": "data/runtime/action_completion_20261013/mqtt.log",
+    "ruff": "제품10/시험2/진행판 렌더러1 PASS",
+    "mypy": "action_device_queue/action_expiry/action_mqtt_intake 3파일 --follow-imports=silent PASS. 전체 프로젝트 검사 아님.",
+    "syntax": "제품10 UTF-8 BOM 고려 AST PASS",
+    "wbs_consistency": "33개 ID/상태/경로 일치",
+    "whitespace": "대상 git diff --check PASS",
+    "cases": [
+      "미등록/빈/불완전/F 응답·일부 ACK·타이머만으로 완료 금지",
+      "다른 출력/clear/power 개입 시 원래 소유 콜백 폐기",
+      "완료 commit 실패·최초 ACK 전 빠른 유휴·완료 저장 전 재시작은 점유 유지",
+      "완료 commit 뒤 MQTT 유실/재시작은 보존 이력으로 조회, 모의 경보 재출력0",
+      "장치3종 조회의 DB 내용 보존·실행0·기록 없음은 재시도 불가",
+      "Action 결과 저장 뒤 큐 갱신 실패/재시작의 로컬 대조",
+      "조회 주기 제한·active만 조회·잘못된 상관관계 거부·Action DB 소실 시 파일 재생성0",
+      "격리 실제 MQTT에서 완료 발행 및 의도적 결과 유실→조회→다음 경보 2경로 PASS"
+    ]
+  },
+  "fixture": {
+    "broker": "eclipse-mosquitto:2.0",
+    "network": "none",
+    "cpus": 0.25,
+    "memory": "64m",
+    "read_only": true,
+    "socket": "/tmp/cctv-p22-mqtt-completion-20261013/mqtt.sock",
+    "removed": true,
+    "physical_device": "모의 클라이언트만 사용"
+  },
+  "protocol_evidence": {
+    "source": "data/runtime/signboard_wire_timing_20261008/retry/capture.json",
+    "sha256": "f105c6aa8f88b91e07ee42ee89a40ba2630f44e9d3765e71e3dd7cf94699daa4",
+    "recognized_responses": [
+      "![00500!]",
+      "![0000!]"
+    ],
+    "scope": "과거 실장비 관측 프레임. 제조사 전체 규격/현재 실물 시험은 아님."
+  },
+  "code_review": {
+    "graph_report": "data/runtime/action_completion_20261013/graph_0.json",
+    "affected_flows": "data/runtime/action_completion_20261013/graph_1.json",
+    "scope": "code-review-graph 사용 후 현재 단위 이전 스냅샷과 diff 검토. HEAD 대비 누적 미커밋 변경/구형 flow 포함, 그래프47 test gap을 신규 결함 수로 세지 않음.",
+    "unit_diff": "data/runtime/action_completion_20261013/change.diff"
+  },
+  "web": {
+    "index.html": {
+      "http_status": 200,
+      "bytes": 80160,
+      "sha256": "7b0850630d00349fff9b38639456d847c64eeadf4318dff26135b54513780a98",
+      "local_matches": true
+    },
+    "CCTV_project_progress.pdf": {
+      "http_status": 200,
+      "bytes": 150563,
+      "sha256": "66a3572e9697433062d75015ee8319089a8648fc9aa8ab21df15dca8f891393f",
+      "local_matches": true
+    }
+  },
+  "pdf_first_page_visual_check": "PASS",
+  "browser_interaction": "미실행",
+  "module_graph": "앞선 정적 스냅샷 유지, 이번 완료 흐름 재생성 아님",
+  "operations": {
+    "deployed": false,
+    "candidate_rebuilt": false,
+    "physical_outputs": 0,
+    "runtime_containers_unchanged": 5,
+    "after": "data/runtime/action_completion_20261013/runtime_after.txt",
+    "baseline": "data/runtime/action_queue_20261013/operating_before.txt (이번 시작 도구 조회와도 동일)",
+    "comparison": "5개 ID/image/StartedAt 동일"
+  },
+  "limits": [
+    "전광판 컨트롤러 응답 기반, 실제 LED 표시·복귀 미검증",
+    "스피커/사이렌 종료 증거 생산 미연결: ACK만으로 점유 해제 불가",
+    "완료 저장 전 서비스 종료는 자동 복원/재출력 금지",
+    "단일 제어 주체와 동일 Action DB 범위; 외부 수동 출력/다중 Jetson 분산 점유 보장 아님",
+    "구버전 dataclass는 새 result_json 필드를 읽지 못해 uncertain 보류 가능; 후보/복귀 호환 검증 잔여",
+    "장치별 독립 작업자·시간 제한, 장기 대기/선점·큐 부하·REST 영속화·현장 TTL/시계 미완료"
+  ],
+  "wbs": {
+    "counts": {
+      "DONE": 9,
+      "IN_PROGRESS": 1,
+      "VERIFY": 7,
+      "BLOCKED": 3,
+      "PLANNED": 13
+    },
+    "whole_task_status": "PLANNED",
+    "remaining_rows": 24,
+    "next": "P3.2 장치별 작업자 분리·느린 장치 격리",
+    "poc_month": "2026-12",
+    "readiness_target": "2026-11-27"
+  },
+  "artifacts_sha256": {
+    "src/devices/signboard.py": "121e7a2aeefe984744270255dc996a6539467475331448fc48c3ec337e42f424",
+    "src/edgex/dabit_device_service.py": "329fb87ce573cd18ed683ec5da624cd64aef0e34002a17c5e8adaca43614cf57",
+    "src/edgex/request_idempotency.py": "7342eb08935e03c450fcb6df5f9734080cdfce588ac443b0db32ab75b5e1b769",
+    "src/edgex/command_contract.py": "986805c6ec9247ccf404f28c4a3886df3bdab6f4772dc7d8d6fe9cdc14299763",
+    "src/services/action_device_queue.py": "cd922be3d683b48dba3743e002e75b57837cf379678a352b80c03407ede90dd4",
+    "src/services/action_mqtt_intake.py": "9adf055ccff4d4cdad684d062b432db0f95b3c7d6852e4e24a1e14812601d718",
+    "src/services/_action_bridge_repo.py": "f2962cb0388187a5d808662e7a6853bf220c03aeb149da24c43be1e65ae2c60d",
+    "runners/run_signboard_device_service.py": "49ac2bfb892423f234a5b83226173f216a2c11fec650a2505c754cb89da910f5",
+    "runners/run_speaker_device_service.py": "143359209afcc1f1971c019085a87712ec1d64b195ae053123c7cda62f04592e",
+    "runners/run_siren_device_service.py": "4cdc739503cda0d3771e4e477935190943a2876152d367e07955b52e652019f3"
+  }
+}

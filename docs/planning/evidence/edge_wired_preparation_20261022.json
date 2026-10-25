@@ -1,0 +1,319 @@
+{
+  "date": "2026-10-22",
+  "wbs_task": "O1",
+  "status": "WIRED_PROFILE_PREPARED_AWAITING_SWITCH",
+  "candidate_ip": "192.168.0.20",
+  "duplicate_check": {
+    "scope": "A eno1 / existing direct A-CCTV link only",
+    "ping_requests": 3,
+    "ping_responses": 0,
+    "arp_final": "FAILED",
+    "observed_conflict": false,
+    "final_available_address_confirmed": false,
+    "limitation": "Target switch is not connected; switch management address and other devices must be checked before activation/cabling cutover.",
+    "raw": [
+      {
+        "cmd": [
+          "ip",
+          "-j",
+          "address",
+          "show",
+          "eno1"
+        ],
+        "rc": 0,
+        "output": "[{\"ifindex\":5,\"ifname\":\"eno1\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"mq\",\"operstate\":\"UP\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"48:b0:2d:ec:44:d4\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"addr_info\":[{\"family\":\"inet\",\"local\":\"192.168.0.10\",\"prefixlen\":24,\"broadcast\":\"192.168.0.255\",\"scope\":\"global\",\"noprefixroute\":true,\"label\":\"eno1\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295},{\"family\":\"inet6\",\"local\":\"fe80::601d:4bcb:3c72:6941\",\"prefixlen\":64,\"scope\":\"link\",\"noprefixroute\":true,\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]}]\n"
+      },
+      {
+        "cmd": [
+          "ip",
+          "-j",
+          "route",
+          "show",
+          "table",
+          "main"
+        ],
+        "rc": 0,
+        "output": "[{\"dst\":\"default\",\"gateway\":\"192.168.2.1\",\"dev\":\"wlP1p1s0\",\"protocol\":\"dhcp\",\"metric\":600,\"flags\":[]},{\"dst\":\"169.254.0.0/16\",\"dev\":\"eno1\",\"scope\":\"link\",\"metric\":1000,\"flags\":[]},{\"dst\":\"172.17.0.0/16\",\"dev\":\"docker0\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"172.17.0.1\",\"flags\":[]},{\"dst\":\"172.18.0.0/16\",\"dev\":\"br-2cf1cb81c56f\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"172.18.0.1\",\"flags\":[]},{\"dst\":\"172.19.0.0/16\",\"dev\":\"br-cafa8d05e14a\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"172.19.0.1\",\"flags\":[\"linkdown\"]},{\"dst\":\"172.20.0.0/16\",\"dev\":\"br-c8bcecc2ba19\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"172.20.0.1\",\"flags\":[\"linkdown\"]},{\"dst\":\"172.21.0.0/16\",\"dev\":\"br-8cac26521742\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"172.21.0.1\",\"flags\":[\"linkdown\"]},{\"dst\":\"172.22.0.0/16\",\"dev\":\"br-151960e8ed8c\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"172.22.0.1\",\"flags\":[]},{\"dst\":\"192.168.0.0/24\",\"dev\":\"eno1\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"192.168.0.10\",\"metric\":100,\"flags\":[]},{\"dst\":\"192.168.2.0/24\",\"dev\":\"wlP1p1s0\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"192.168.2.141\",\"metric\":600,\"flags\":[]}]\n"
+      },
+      {
+        "cmd": [
+          "ip",
+          "route",
+          "get",
+          "192.168.0.20"
+        ],
+        "rc": 0,
+        "output": "192.168.0.20 dev eno1 src 192.168.0.10 uid 1000 \n    cache \n"
+      },
+      {
+        "cmd": [
+          "ip",
+          "neigh",
+          "show",
+          "to",
+          "192.168.0.20",
+          "dev",
+          "eno1"
+        ],
+        "rc": 0,
+        "output": ""
+      },
+      {
+        "cmd": [
+          "ping",
+          "-n",
+          "-I",
+          "eno1",
+          "-c",
+          "3",
+          "-W",
+          "1",
+          "192.168.0.20"
+        ],
+        "rc": 1,
+        "output": "PING 192.168.0.20 (192.168.0.20) from 192.168.0.10 eno1: 56(84) bytes of data.\n\n--- 192.168.0.20 ping statistics ---\n3 packets transmitted, 0 received, 100% packet loss, time 2052ms\n\n"
+      },
+      {
+        "cmd": [
+          "ip",
+          "neigh",
+          "show",
+          "to",
+          "192.168.0.20",
+          "dev",
+          "eno1"
+        ],
+        "rc": 0,
+        "output": "192.168.0.20  INCOMPLETE\n"
+      }
+    ],
+    "arp_after": {
+      "rc": 0,
+      "output": "192.168.0.20  FAILED\n"
+    }
+  },
+  "b_profile": {
+    "connection.uuid": "a23983f3-3a41-4dcf-99bf-8ddf7ef9cbe1",
+    "connection.interface-name": "eth0",
+    "connection.autoconnect": "no",
+    "ipv4.method": "manual",
+    "ipv4.addresses": "192.168.0.20/24",
+    "ipv4.gateway": "",
+    "ipv4.dns": "",
+    "ipv4.never-default": "yes",
+    "ipv4.dad-timeout": "3000",
+    "ipv6.method": "disabled",
+    "active": false
+  },
+  "profile_creation": {
+    "returncode": 0,
+    "activation_requested": false
+  },
+  "b_before": [
+    {
+      "cmd": [
+        "nmcli",
+        "--version"
+      ],
+      "rc": 0,
+      "output": "nmcli 도구, 버전 1.22.10\n"
+    },
+    {
+      "cmd": [
+        "ip",
+        "-j",
+        "address"
+      ],
+      "rc": 0,
+      "output": "[{\"ifindex\":1,\"ifname\":\"lo\",\"flags\":[\"LOOPBACK\",\"UP\",\"LOWER_UP\"],\"mtu\":65536,\"qdisc\":\"noqueue\",\"operstate\":\"UNKNOWN\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"loopback\",\"address\":\"00:00:00:00:00:00\",\"broadcast\":\"00:00:00:00:00:00\",\"addr_info\":[{\"family\":\"inet\",\"local\":\"127.0.0.1\",\"prefixlen\":8,\"scope\":\"host\",\"label\":\"lo\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295},{\"family\":\"inet6\",\"local\":\"::1\",\"prefixlen\":128,\"scope\":\"host\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":2,\"ifname\":\"dummy0\",\"flags\":[\"BROADCAST\",\"NOARP\"],\"mtu\":1500,\"qdisc\":\"noop\",\"operstate\":\"DOWN\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"06:5e:5a:15:8a:63\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"addr_info\":[]},{\"ifindex\":3,\"ifname\":\"eth0\",\"flags\":[\"NO-CARRIER\",\"BROADCAST\",\"MULTICAST\",\"UP\"],\"mtu\":1500,\"qdisc\":\"mq\",\"operstate\":\"DOWN\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"48:b0:2d:ec:4a:2e\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"addr_info\":[]},{\"ifindex\":4,\"ifname\":\"wlan0\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"mq\",\"operstate\":\"UP\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"cc:47:40:6f:c8:e3\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"altnames\":[\"wlP1p1s0\"],\"addr_info\":[{\"family\":\"inet\",\"local\":\"192.168.2.203\",\"prefixlen\":24,\"broadcast\":\"192.168.2.255\",\"scope\":\"global\",\"dynamic\":true,\"noprefixroute\":true,\"label\":\"wlan0\",\"valid_life_time\":30140,\"preferred_life_time\":30140},{\"family\":\"inet6\",\"local\":\"fe80::d9a:db2a:9b4:bafe\",\"prefixlen\":64,\"scope\":\"link\",\"noprefixroute\":true,\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":5,\"ifname\":\"l4tbr0\",\"flags\":[\"BROADCAST\",\"MULTICAST\"],\"mtu\":1500,\"qdisc\":\"noop\",\"operstate\":\"DOWN\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"7e:bf:98:b8:e5:a5\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"addr_info\":[]},{\"ifindex\":6,\"ifname\":\"rndis0\",\"flags\":[\"NO-CARRIER\",\"BROADCAST\",\"MULTICAST\",\"UP\"],\"mtu\":1500,\"qdisc\":\"pfifo_fast\",\"master\":\"l4tbr0\",\"operstate\":\"DOWN\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"7e:bf:98:b8:e5:a5\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"addr_info\":[]},{\"ifindex\":7,\"ifname\":\"usb0\",\"flags\":[\"NO-CARRIER\",\"BROADCAST\",\"MULTICAST\",\"UP\"],\"mtu\":1500,\"qdisc\":\"pfifo_fast\",\"master\":\"l4tbr0\",\"operstate\":\"DOWN\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"7e:bf:98:b8:e5:a7\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"addr_info\":[]},{\"ifindex\":8,\"ifname\":\"docker0\",\"flags\":[\"NO-CARRIER\",\"BROADCAST\",\"MULTICAST\",\"UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"operstate\":\"DOWN\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"02:42:a6:39:e1:70\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"addr_info\":[{\"family\":\"inet\",\"local\":\"172.17.0.1\",\"prefixlen\":16,\"broadcast\":\"172.17.255.255\",\"scope\":\"global\",\"label\":\"docker0\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]}]\n"
+    },
+    {
+      "cmd": [
+        "ip",
+        "-j",
+        "route",
+        "show",
+        "table",
+        "main"
+      ],
+      "rc": 0,
+      "output": "[{\"dst\":\"default\",\"gateway\":\"192.168.2.1\",\"dev\":\"wlan0\",\"protocol\":\"dhcp\",\"metric\":600,\"flags\":[]},{\"dst\":\"169.254.0.0/16\",\"dev\":\"docker0\",\"scope\":\"link\",\"metric\":1000,\"flags\":[\"linkdown\"]},{\"dst\":\"172.17.0.0/16\",\"dev\":\"docker0\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"172.17.0.1\",\"flags\":[\"linkdown\"]},{\"dst\":\"192.168.2.0/24\",\"dev\":\"wlan0\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"192.168.2.203\",\"metric\":600,\"flags\":[]}]\n"
+    },
+    {
+      "cmd": [
+        "nmcli",
+        "-t",
+        "-f",
+        "NAME,UUID,TYPE,DEVICE",
+        "connection",
+        "show"
+      ],
+      "rc": 0,
+      "output": "SAWWAVE_5GX_Y:463a2b81-a701-4a95-a3e1-5fb658ac0994:802-11-wireless:wlan0\ndocker0:da25399c-b441-4d36-aef8-eac87f6915fa:bridge:docker0\nSAW_DV_AX_5G:8733e6c0-4a6f-407a-b7f0-2bdb3370c65f:802-11-wireless:\n유선 연결 1:b5238228-9135-3e65-99b6-392b9979a801:802-3-ethernet:\n"
+    },
+    {
+      "cmd": [
+        "nmcli",
+        "-g",
+        "NAME",
+        "connection",
+        "show"
+      ],
+      "rc": 0,
+      "output": "SAWWAVE_5GX_Y\ndocker0\nSAW_DV_AX_5G\n유선 연결 1\n"
+    },
+    {
+      "cmd": [
+        "nmcli",
+        "-f",
+        "connection,ipv4,ipv6",
+        "connection",
+        "show",
+        "cctv-b-test"
+      ],
+      "rc": 10,
+      "output": "오류: cctv-b-test - 해당 연결 프로파일이 없습니다.\n"
+    }
+  ],
+  "b_after": [
+    {
+      "cmd": [
+        "nmcli",
+        "--version"
+      ],
+      "rc": 0,
+      "output": "nmcli 도구, 버전 1.22.10\n"
+    },
+    {
+      "cmd": [
+        "ip",
+        "-j",
+        "address"
+      ],
+      "rc": 0,
+      "output": "[{\"ifindex\":1,\"ifname\":\"lo\",\"flags\":[\"LOOPBACK\",\"UP\",\"LOWER_UP\"],\"mtu\":65536,\"qdisc\":\"noqueue\",\"operstate\":\"UNKNOWN\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"loopback\",\"address\":\"00:00:00:00:00:00\",\"broadcast\":\"00:00:00:00:00:00\",\"addr_info\":[{\"family\":\"inet\",\"local\":\"127.0.0.1\",\"prefixlen\":8,\"scope\":\"host\",\"label\":\"lo\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295},{\"family\":\"inet6\",\"local\":\"::1\",\"prefixlen\":128,\"scope\":\"host\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":2,\"ifname\":\"dummy0\",\"flags\":[\"BROADCAST\",\"NOARP\"],\"mtu\":1500,\"qdisc\":\"noop\",\"operstate\":\"DOWN\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"06:5e:5a:15:8a:63\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"addr_info\":[]},{\"ifindex\":3,\"ifname\":\"eth0\",\"flags\":[\"NO-CARRIER\",\"BROADCAST\",\"MULTICAST\",\"UP\"],\"mtu\":1500,\"qdisc\":\"mq\",\"operstate\":\"DOWN\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"48:b0:2d:ec:4a:2e\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"addr_info\":[]},{\"ifindex\":4,\"ifname\":\"wlan0\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"mq\",\"operstate\":\"UP\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"cc:47:40:6f:c8:e3\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"altnames\":[\"wlP1p1s0\"],\"addr_info\":[{\"family\":\"inet\",\"local\":\"192.168.2.203\",\"prefixlen\":24,\"broadcast\":\"192.168.2.255\",\"scope\":\"global\",\"dynamic\":true,\"noprefixroute\":true,\"label\":\"wlan0\",\"valid_life_time\":30082,\"preferred_life_time\":30082},{\"family\":\"inet6\",\"local\":\"fe80::d9a:db2a:9b4:bafe\",\"prefixlen\":64,\"scope\":\"link\",\"noprefixroute\":true,\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":5,\"ifname\":\"l4tbr0\",\"flags\":[\"BROADCAST\",\"MULTICAST\"],\"mtu\":1500,\"qdisc\":\"noop\",\"operstate\":\"DOWN\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"7e:bf:98:b8:e5:a5\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"addr_info\":[]},{\"ifindex\":6,\"ifname\":\"rndis0\",\"flags\":[\"NO-CARRIER\",\"BROADCAST\",\"MULTICAST\",\"UP\"],\"mtu\":1500,\"qdisc\":\"pfifo_fast\",\"master\":\"l4tbr0\",\"operstate\":\"DOWN\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"7e:bf:98:b8:e5:a5\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"addr_info\":[]},{\"ifindex\":7,\"ifname\":\"usb0\",\"flags\":[\"NO-CARRIER\",\"BROADCAST\",\"MULTICAST\",\"UP\"],\"mtu\":1500,\"qdisc\":\"pfifo_fast\",\"master\":\"l4tbr0\",\"operstate\":\"DOWN\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"7e:bf:98:b8:e5:a7\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"addr_info\":[]},{\"ifindex\":8,\"ifname\":\"docker0\",\"flags\":[\"NO-CARRIER\",\"BROADCAST\",\"MULTICAST\",\"UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"operstate\":\"DOWN\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"02:42:a6:39:e1:70\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"addr_info\":[{\"family\":\"inet\",\"local\":\"172.17.0.1\",\"prefixlen\":16,\"broadcast\":\"172.17.255.255\",\"scope\":\"global\",\"label\":\"docker0\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]}]\n"
+    },
+    {
+      "cmd": [
+        "ip",
+        "-j",
+        "route",
+        "show",
+        "table",
+        "main"
+      ],
+      "rc": 0,
+      "output": "[{\"dst\":\"default\",\"gateway\":\"192.168.2.1\",\"dev\":\"wlan0\",\"protocol\":\"dhcp\",\"metric\":600,\"flags\":[]},{\"dst\":\"169.254.0.0/16\",\"dev\":\"docker0\",\"scope\":\"link\",\"metric\":1000,\"flags\":[\"linkdown\"]},{\"dst\":\"172.17.0.0/16\",\"dev\":\"docker0\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"172.17.0.1\",\"flags\":[\"linkdown\"]},{\"dst\":\"192.168.2.0/24\",\"dev\":\"wlan0\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"192.168.2.203\",\"metric\":600,\"flags\":[]}]\n"
+    },
+    {
+      "cmd": [
+        "nmcli",
+        "-t",
+        "-f",
+        "NAME,UUID,TYPE,DEVICE",
+        "connection",
+        "show"
+      ],
+      "rc": 0,
+      "output": "SAWWAVE_5GX_Y:463a2b81-a701-4a95-a3e1-5fb658ac0994:802-11-wireless:wlan0\ndocker0:da25399c-b441-4d36-aef8-eac87f6915fa:bridge:docker0\nSAW_DV_AX_5G:8733e6c0-4a6f-407a-b7f0-2bdb3370c65f:802-11-wireless:\ncctv-b-test:a23983f3-3a41-4dcf-99bf-8ddf7ef9cbe1:802-3-ethernet:\n유선 연결 1:b5238228-9135-3e65-99b6-392b9979a801:802-3-ethernet:\n"
+    },
+    {
+      "cmd": [
+        "nmcli",
+        "-g",
+        "NAME",
+        "connection",
+        "show"
+      ],
+      "rc": 0,
+      "output": "SAWWAVE_5GX_Y\ndocker0\nSAW_DV_AX_5G\ncctv-b-test\n유선 연결 1\n"
+    },
+    {
+      "cmd": [
+        "nmcli",
+        "-f",
+        "connection,ipv4,ipv6",
+        "connection",
+        "show",
+        "cctv-b-test"
+      ],
+      "rc": 0,
+      "output": "connection.id:                          cctv-b-test\nconnection.uuid:                        a23983f3-3a41-4dcf-99bf-8ddf7ef9cbe1\nconnection.stable-id:                   --\nconnection.type:                        802-3-ethernet\nconnection.interface-name:              eth0\nconnection.autoconnect:                 아니요\nconnection.autoconnect-priority:        0\nconnection.autoconnect-retries:         -1 (default)\nconnection.multi-connect:               0 (default)\nconnection.auth-retries:                -1\nconnection.timestamp:                   0\nconnection.read-only:                   아니요\nconnection.permissions:                 --\nconnection.zone:                        --\nconnection.master:                      --\nconnection.slave-type:                  --\nconnection.autoconnect-slaves:          -1 (default)\nconnection.secondaries:                 --\nconnection.gateway-ping-timeout:        0\nconnection.metered:                     알 수 없음\nconnection.lldp:                        default\nconnection.mdns:                        -1 (default)\nconnection.llmnr:                       -1 (default)\nconnection.wait-device-timeout:         -1\nipv4.method:                            manual\nipv4.dns:                               --\nipv4.dns-search:                        --\nipv4.dns-options:                       --\nipv4.dns-priority:                      0\nipv4.addresses:                         192.168.0.20/24\nipv4.gateway:                           --\nipv4.routes:                            --\nipv4.route-metric:                      -1\nipv4.route-table:                       0 (unspec)\nipv4.routing-rules:                     --\nipv4.ignore-auto-routes:                아니요\nipv4.ignore-auto-dns:                   아니요\nipv4.dhcp-client-id:                    --\nipv4.dhcp-iaid:                         --\nipv4.dhcp-timeout:                      0 (default)\nipv4.dhcp-send-hostname:                예\nipv4.dhcp-hostname:                     --\nipv4.dhcp-fqdn:                         --\nipv4.dhcp-hostname-flags:               0x0 (none)\nipv4.never-default:                     예\nipv4.may-fail:                          예\nipv4.dad-timeout:                       3000\nipv6.method:                            disabled\nipv6.dns:                               --\nipv6.dns-search:                        --\nipv6.dns-options:                       --\nipv6.dns-priority:                      0\nipv6.addresses:                         --\nipv6.gateway:                           --\nipv6.routes:                            --\nipv6.route-metric:                      -1\nipv6.route-table:                       0 (unspec)\nipv6.routing-rules:                     --\nipv6.ignore-auto-routes:                아니요\nipv6.ignore-auto-dns:                   아니요\nipv6.never-default:                     아니요\nipv6.may-fail:                          예\nipv6.ip6-privacy:                       -1 (unknown)\nipv6.addr-gen-mode:                     stable-privacy\nipv6.ra-timeout:                        0 (default)\nipv6.dhcp-duid:                         --\nipv6.dhcp-iaid:                         --\nipv6.dhcp-timeout:                      0 (default)\nipv6.dhcp-send-hostname:                예\nipv6.dhcp-hostname:                     --\nipv6.dhcp-hostname-flags:               0x0 (none)\nipv6.token:                             --\n"
+    },
+    {
+      "cmd": [
+        "nmcli",
+        "-t",
+        "-f",
+        "NAME,UUID,TYPE,DEVICE",
+        "connection",
+        "show",
+        "--active"
+      ],
+      "rc": 0,
+      "output": "SAWWAVE_5GX_Y:463a2b81-a701-4a95-a3e1-5fb658ac0994:802-11-wireless:wlan0\ndocker0:da25399c-b441-4d36-aef8-eac87f6915fa:bridge:docker0\n"
+    }
+  ],
+  "validation": {
+    "profile_properties_match": true,
+    "profile_inactive": true,
+    "existing_profiles_preserved": true,
+    "only_one_new_profile": true,
+    "b_addresses_unchanged": true,
+    "b_routes_unchanged": true,
+    "containers_unchanged": 37,
+    "error_restart_deltas": {
+      "cctv_processor_source_error_identified_total": 0.0,
+      "cctv_processor_source_error_unidentified_total": 0.0,
+      "cctv_processor_pipeline_restart_executed_total": 0.0
+    },
+    "a_routes_unchanged": true
+  },
+  "changes": {
+    "b_new_inactive_networkmanager_profile": 1,
+    "a_configuration": 0,
+    "camera_configuration": 0,
+    "product_code": 0,
+    "packages": 0,
+    "cabling": 0
+  },
+  "pending": [
+    "Confirm intended switch model, readiness and current management IP.",
+    "Connect B only to an isolated prepared switch; retain A-CCTV direct connection.",
+    "Check target switch address conflicts and then activate B profile under observation.",
+    "Arrange A-CCTV cable cutover separately; no cutover has been requested in this preparation step."
+  ],
+  "cleanup": {
+    "persistent_b_profile_kept": true,
+    "temporary_ssh_closed": true,
+    "authentication_helpers_removed": true,
+    "local_runtime_removed": true
+  },
+  "final_checks": {
+    "wbs_rows": 37,
+    "done_rows": 9,
+    "local_markdown_links": 70,
+    "baseline_files": 1156,
+    "non_document_changes": [
+      "scripts/ops/progress_snapshot_template.html",
+      "scripts/ops/render_progress_snapshot.py"
+    ],
+    "ruff": "PASS",
+    "render": "PASS",
+    "online": [
+      {
+        "file": "index.html",
+        "status": 200,
+        "matches_local": true,
+        "sha256": "c0ae9f68300d290c300ad3342efe6dcdec3d015c650f464a143f7fb76474c02d"
+      },
+      {
+        "file": "CCTV_project_progress.pdf",
+        "status": 200,
+        "matches_local": true,
+        "sha256": "9fb3a67213f77dc9b5ca3b430341900c4787d6d06b62984f6d240c2390629228"
+      }
+    ],
+    "pdf_first_page_visual_check": "PASS"
+  }
+}

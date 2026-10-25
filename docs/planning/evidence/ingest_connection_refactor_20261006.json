@@ -1,0 +1,500 @@
+{
+  "version": "0.112",
+  "date": "2026-10-06 KST",
+  "wbs": "P5.1 IN_PROGRESS",
+  "issue": "I45 OPEN: local contention mitigated; historical failures not all attributed, sustained/inter-process validation remains",
+  "scope": "Shared same-process connection coordination in IngestStore; separate behavior-preserving closing() refactor. No schema, journal, sync, model, deployment change.",
+  "tests": {
+    "red": {
+      "tests": 4,
+      "failures": 3,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 1,
+      "failed_cases": [
+        "tests.test_ingest_concurrency.test_video_receipt_waits_for_local_writer_without_using_sqlite_retry[False]",
+        "tests.test_ingest_concurrency.test_video_receipt_waits_for_local_writer_without_using_sqlite_retry[True]",
+        "tests.test_ingest_concurrency.test_busy_local_connection_is_bounded_and_other_database_can_progress"
+      ],
+      "mixed_results": []
+    },
+    "green": {
+      "tests": 44,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 44,
+      "failed_cases": [],
+      "mixed_results": [
+        {
+          "accepted_video_records": 20,
+          "elapsed_seconds": 5.234329039929435,
+          "monitoring_write_statements_during_producers": 105,
+          "offered_video_records": 20,
+          "preloaded_video_records": 8,
+          "sensor_records": 20,
+          "sensor_test_producer_retries": 0,
+          "service_failed_cycles": 0,
+          "stored_and_matched_records": 48,
+          "transport": "in-process test model",
+          "video_busy_retry_logs": 0,
+          "video_intake_max_seconds": 0.058525872183963656,
+          "video_test_producer_retries": 0
+        }
+      ]
+    },
+    "related": {
+      "tests": 131,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 130,
+      "failed_cases": [
+        "tests.test_record_delivery.test_atomic_claim_excludes_other_worker_and_stale_completion"
+      ],
+      "mixed_results": [
+        {
+          "accepted_video_records": 20,
+          "elapsed_seconds": 5.316228843061253,
+          "monitoring_write_statements_during_producers": 103,
+          "offered_video_records": 20,
+          "preloaded_video_records": 8,
+          "sensor_records": 20,
+          "sensor_test_producer_retries": 0,
+          "service_failed_cycles": 0,
+          "stored_and_matched_records": 48,
+          "transport": "in-process test model",
+          "video_busy_retry_logs": 0,
+          "video_intake_max_seconds": 0.0725204749032855,
+          "video_test_producer_retries": 0
+        }
+      ]
+    },
+    "fallback_red": {
+      "tests": 5,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 4,
+      "failed_cases": [
+        "tests.test_ingest_concurrency.test_idle_local_connection_does_not_reject_writes_to_available_database"
+      ],
+      "mixed_results": []
+    },
+    "related_final": {
+      "tests": 132,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 132,
+      "failed_cases": [],
+      "mixed_results": [
+        {
+          "accepted_video_records": 20,
+          "elapsed_seconds": 5.206098465947434,
+          "monitoring_write_statements_during_producers": 103,
+          "offered_video_records": 20,
+          "preloaded_video_records": 8,
+          "sensor_records": 20,
+          "sensor_test_producer_retries": 0,
+          "service_failed_cycles": 0,
+          "stored_and_matched_records": 48,
+          "transport": "in-process test model",
+          "video_busy_retry_logs": 0,
+          "video_intake_max_seconds": 0.03583362698554993,
+          "video_test_producer_retries": 0
+        }
+      ]
+    },
+    "full_final": {
+      "tests": 2847,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 52,
+      "passed": 2795,
+      "failed_cases": [],
+      "mixed_results": [
+        {
+          "accepted_video_records": 20,
+          "elapsed_seconds": 5.428001322085038,
+          "monitoring_write_statements_during_producers": 105,
+          "offered_video_records": 20,
+          "preloaded_video_records": 8,
+          "sensor_records": 20,
+          "sensor_test_producer_retries": 0,
+          "service_failed_cycles": 0,
+          "stored_and_matched_records": 48,
+          "transport": "in-process test model",
+          "video_busy_retry_logs": 0,
+          "video_intake_max_seconds": 0.07312402501702309,
+          "video_test_producer_retries": 0
+        }
+      ]
+    },
+    "mixed_final": {
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 6,
+      "failed_cases": [],
+      "mixed_results": [
+        {
+          "accepted_video_records": 20,
+          "elapsed_seconds": 5.553149063838646,
+          "monitoring_write_statements_during_producers": 101,
+          "offered_video_records": 20,
+          "preloaded_video_records": 8,
+          "sensor_records": 20,
+          "sensor_test_producer_retries": 0,
+          "service_failed_cycles": 0,
+          "stored_and_matched_records": 48,
+          "transport": "in-process test model",
+          "video_busy_retry_logs": 0,
+          "video_intake_max_seconds": 0.0805271549616009,
+          "video_test_producer_retries": 0
+        },
+        {
+          "accepted_video_records": 20,
+          "elapsed_seconds": 5.430647836998105,
+          "monitoring_write_statements_during_producers": 103,
+          "offered_video_records": 20,
+          "preloaded_video_records": 8,
+          "sensor_records": 20,
+          "sensor_test_producer_retries": 0,
+          "service_failed_cycles": 0,
+          "stored_and_matched_records": 48,
+          "transport": "in-process test model",
+          "video_busy_retry_logs": 0,
+          "video_intake_max_seconds": 0.04325137217529118,
+          "video_test_producer_retries": 0
+        },
+        {
+          "accepted_video_records": 20,
+          "elapsed_seconds": 5.508458666037768,
+          "monitoring_write_statements_during_producers": 107,
+          "offered_video_records": 20,
+          "preloaded_video_records": 8,
+          "sensor_records": 20,
+          "sensor_test_producer_retries": 0,
+          "service_failed_cycles": 0,
+          "stored_and_matched_records": 48,
+          "transport": "in-process test model",
+          "video_busy_retry_logs": 0,
+          "video_intake_max_seconds": 0.051440684124827385,
+          "video_test_producer_retries": 0
+        },
+        {
+          "accepted_video_records": 20,
+          "elapsed_seconds": 5.644072951981798,
+          "monitoring_write_statements_during_producers": 103,
+          "offered_video_records": 20,
+          "preloaded_video_records": 8,
+          "sensor_records": 20,
+          "sensor_test_producer_retries": 0,
+          "service_failed_cycles": 0,
+          "stored_and_matched_records": 48,
+          "transport": "in-process test model",
+          "video_busy_retry_logs": 0,
+          "video_intake_max_seconds": 0.03575347177684307,
+          "video_test_producer_retries": 0
+        },
+        {
+          "accepted_video_records": 20,
+          "elapsed_seconds": 5.491784224053845,
+          "monitoring_write_statements_during_producers": 105,
+          "offered_video_records": 20,
+          "preloaded_video_records": 8,
+          "sensor_records": 20,
+          "sensor_test_producer_retries": 0,
+          "service_failed_cycles": 0,
+          "stored_and_matched_records": 48,
+          "transport": "in-process test model",
+          "video_busy_retry_logs": 0,
+          "video_intake_max_seconds": 0.04399721510708332,
+          "video_test_producer_retries": 0
+        },
+        {
+          "accepted_video_records": 20,
+          "elapsed_seconds": 5.907099958974868,
+          "monitoring_write_statements_during_producers": 107,
+          "offered_video_records": 20,
+          "preloaded_video_records": 8,
+          "sensor_records": 20,
+          "sensor_test_producer_retries": 0,
+          "service_failed_cycles": 0,
+          "stored_and_matched_records": 48,
+          "transport": "in-process test model",
+          "video_busy_retry_logs": 0,
+          "video_intake_max_seconds": 0.03216426307335496,
+          "video_test_producer_retries": 0
+        }
+      ]
+    }
+  },
+  "sql_before": {
+    "errors": [
+      {
+        "connection": 48,
+        "db": "source.db",
+        "thread": "ThreadPoolExecutor-0_1",
+        "operation": "execute",
+        "start": 1742843.523653808,
+        "transaction_before": false,
+        "sql": "BEGIN IMMEDIATE",
+        "caller": "_record_payload",
+        "error": "OperationalError: database is locked",
+        "end": 1742843.779863067,
+        "transaction_after": false,
+        "duration_ms": 256.2092589214444,
+        "other_completed_transactions": 14
+      },
+      {
+        "connection": 94,
+        "db": "source.db",
+        "thread": "ThreadPoolExecutor-0_0",
+        "operation": "execute",
+        "start": 1742844.034667387,
+        "transaction_before": false,
+        "sql": "PRAGMA journal_mode",
+        "caller": "_connect",
+        "error": "OperationalError: database is locked",
+        "end": 1742844.290454507,
+        "transaction_after": false,
+        "duration_ms": 255.7871202006936,
+        "other_completed_transactions": 16
+      },
+      {
+        "connection": 134,
+        "db": "source.db",
+        "thread": "MonitoringDelivery",
+        "operation": "execute",
+        "start": 1742844.457894662,
+        "transaction_before": false,
+        "sql": "BEGIN IMMEDIATE",
+        "caller": "finish_publish",
+        "error": "OperationalError: database is locked",
+        "end": 1742844.713524761,
+        "transaction_after": false,
+        "duration_ms": 255.6300989817828,
+        "other_completed_transactions": 17
+      },
+      {
+        "connection": 836,
+        "db": "source.db",
+        "thread": "MonitoringDelivery",
+        "operation": "execute",
+        "start": 1742850.0877356,
+        "transaction_before": false,
+        "sql": "BEGIN IMMEDIATE",
+        "caller": "finish_publish",
+        "error": "OperationalError: database is locked",
+        "end": 1742850.344758248,
+        "transaction_after": false,
+        "duration_ms": 257.0226478856057,
+        "other_completed_transactions": 19
+      },
+      {
+        "connection": 837,
+        "db": "source.db",
+        "thread": "ThreadPoolExecutor-1_0",
+        "operation": "execute",
+        "start": 1742850.114423564,
+        "transaction_before": false,
+        "sql": "INSERT INTO ingest_receipts (ingest_id, source_namespace, received_at, raw_format, raw_payload, raw_sha256) VALUES (?, ?, ?, ?, ?, ?)",
+        "caller": "_accept_event_raw",
+        "error": "OperationalError: database is locked",
+        "end": 1742850.374334455,
+        "transaction_after": true,
+        "duration_ms": 259.910891065374,
+        "other_completed_transactions": 20
+      },
+      {
+        "connection": 1096,
+        "db": "source.db",
+        "thread": "MainThread",
+        "operation": "execute",
+        "start": 1742852.378727677,
+        "transaction_before": false,
+        "sql": "BEGIN IMMEDIATE",
+        "caller": "_record_payload",
+        "error": "OperationalError: database is locked",
+        "end": 1742852.630501894,
+        "transaction_after": false,
+        "duration_ms": 251.7742170020938,
+        "other_completed_transactions": 15
+      },
+      {
+        "connection": 1617,
+        "db": "source.db",
+        "thread": "ThreadPoolExecutor-2_0",
+        "operation": "execute",
+        "start": 1742856.503856126,
+        "transaction_before": false,
+        "sql": "INSERT INTO ingest_receipts (ingest_id, source_namespace, received_at, raw_format, raw_payload, raw_sha256) VALUES (?, ?, ?, ?, ?, ?)",
+        "caller": "_accept_event_raw",
+        "error": "OperationalError: database is locked",
+        "end": 1742856.758475958,
+        "transaction_after": true,
+        "duration_ms": 254.61983191780746,
+        "other_completed_transactions": 21
+      },
+      {
+        "connection": 1707,
+        "db": "source.db",
+        "thread": "MonitoringDelivery",
+        "operation": "execute",
+        "start": 1742857.285014742,
+        "transaction_before": false,
+        "sql": "BEGIN IMMEDIATE",
+        "caller": "claim_monitoring",
+        "error": "OperationalError: database is locked",
+        "end": 1742857.545940139,
+        "transaction_after": false,
+        "duration_ms": 260.9253970440477,
+        "other_completed_transactions": 18
+      },
+      {
+        "connection": 2372,
+        "db": "source.db",
+        "thread": "MonitoringDelivery",
+        "operation": "execute",
+        "start": 1742862.385348721,
+        "transaction_before": false,
+        "sql": "BEGIN IMMEDIATE",
+        "caller": "finish_publish",
+        "error": "OperationalError: database is locked",
+        "end": 1742862.638193921,
+        "transaction_after": false,
+        "duration_ms": 252.84520001150668,
+        "other_completed_transactions": 20
+      },
+      {
+        "connection": 2424,
+        "db": "source.db",
+        "thread": "ThreadPoolExecutor-3_1",
+        "operation": "execute",
+        "start": 1742862.863962716,
+        "transaction_before": false,
+        "sql": "BEGIN IMMEDIATE",
+        "caller": "_record_payload",
+        "error": "OperationalError: database is locked",
+        "end": 1742863.123918331,
+        "transaction_after": false,
+        "duration_ms": 259.9556150380522,
+        "other_completed_transactions": 14
+      },
+      {
+        "connection": 2492,
+        "db": "source.db",
+        "thread": "ThreadPoolExecutor-3_1",
+        "operation": "execute",
+        "start": 1742863.57236816,
+        "transaction_before": false,
+        "sql": "BEGIN IMMEDIATE",
+        "caller": "_record_payload",
+        "error": "OperationalError: database is locked",
+        "end": 1742863.827112369,
+        "transaction_after": false,
+        "duration_ms": 254.74420911632478,
+        "other_completed_transactions": 16
+      },
+      {
+        "connection": 2566,
+        "db": "source.db",
+        "thread": "ThreadPoolExecutor-3_1",
+        "operation": "execute",
+        "start": 1742864.221137838,
+        "transaction_before": false,
+        "sql": "BEGIN IMMEDIATE",
+        "caller": "_record_payload",
+        "error": "OperationalError: database is locked",
+        "end": 1742864.47286635,
+        "transaction_after": false,
+        "duration_ms": 251.7285121139139,
+        "other_completed_transactions": 18
+      },
+      {
+        "connection": 2641,
+        "db": "source.db",
+        "thread": "MonitoringDelivery",
+        "operation": "execute",
+        "start": 1742864.842154321,
+        "transaction_before": false,
+        "sql": "SELECT t.endpoint,m.consumer_id,m.reader_endpoint FROM record_delivery_targets t LEFT JOIN monitoring_targets m USING(destination) WHERE t.destination=?",
+        "caller": "_monitoring_bound",
+        "error": "OperationalError: database is locked",
+        "end": 1742865.09439124,
+        "transaction_after": false,
+        "duration_ms": 252.2369190119207,
+        "other_completed_transactions": 17
+      }
+    ],
+    "transaction_count": 1632,
+    "max_observed_write_interval_ms": 269.4609658792615
+  },
+  "sql_final_mixed": {
+    "statements_and_boundaries": 34558,
+    "errors": 0,
+    "runs": 6,
+    "stored_and_matched_per_run": 48
+  },
+  "implementation": [
+    "Shared weakly held RLock per canonical path, independent database paths unaffected.",
+    "Up to250ms local coordination wait, then native SQLite fallback; no artificial SQLITE_BUSY on admission timeout.",
+    "Existing SQLite250ms busy timeout, video one-retry policy, DELETE/EXTRA and commit-before-ack remain.",
+    "New registry and registry mutex after fork; no inherited instance lock.",
+    "After initial44PASS, replaced nested try/close with stdlib closing; acquired lock released in finally."
+  ],
+  "rejected_intermediate": "Strict admission timeout created new BUSY despite available SQLite. related130PASS/1FAIL atomic claim preserved; independent controlled regression1FAIL/4PASS reproduced wrong rejection; final fallback corrected it without altering original claim/contention tests.",
+  "review": "Independent final source/test review: no Critical/Important findings. Initial strict admission risk identified and corrected.",
+  "limits": [
+    "Best-effort coordination, not guaranteed FIFO or complete serialization; fallback permits native contention.",
+    "Not shared across processes; resolved symlink paths share locks, hard-link aliases do not.",
+    "Local wait adds latency; no total500ms limit, throughput or operational-load approval claimed.",
+    "Synthetic native-timeout0 boundary tests isolate internal contention; actual tests also use unchanged SQLite250ms.",
+    "Before probe3PASS/1FAIL ended in pending sensor retry timeout, not reproduced original video retry exhaustion.",
+    "Current operational GPU/model pipelines and image unchanged; v111 image does not contain this new storage change.",
+    "Existing I45 remains OPEN pending remaining conditions; I37/original I40/I34 and deployment remain."
+  ],
+  "sqlite_references": [
+    "https://www.sqlite.org/lockingv3.html",
+    "https://www.sqlite.org/c3ref/busy_timeout.html"
+  ],
+  "private_artifacts": "data/runtime/i45_store_refactor_20261006_v112",
+  "artifacts_sha256": {
+    "red.xml": "c3bf1f257801d5900d863b706fb4b753c9e9448b093a2ecec6693a223154aa99",
+    "fallback_red.xml": "c546ae17d937471965785a20d9f650f85d4781e4d231dfd010be6efd3adca5ae",
+    "related.xml": "2f283ae16d444c3c43f2494548c3d689eb71b55bb11c6ab24efee7b414b292e7",
+    "related_final.xml": "7bef98d9cedb3cccccd9019adb5333e4bb9e4961230d2cea9ad55dc397cadb67",
+    "full_final.xml": "dd10a97aeadbbb2f295a200d074729b7f7cc765ebb981bb9b48c5056116187ed",
+    "mixed_final.xml": "883b42f734ca281f7bba122a445a4185776dcc44c8c9c33ae363ff1b9e246843",
+    "sql_analysis.json": "b6baed2876dd9a31bef3aa668abb76255bb707f31f0688233906e3de1566133b",
+    "source_test_manifest.json": "0bc83ca415a7b5d7e06a7557a0ad19c8e39632a7f19686740705db65cc9b902f",
+    "full_observed.xml": "89b9fd61d8a595ef8f0cd420f4093f0031a5e2743fcfaf37a5df6c168e39a1a2"
+  },
+  "full_suite_observed_sql": {
+    "rows": 5874,
+    "errors": 0
+  },
+  "publication": {
+    "index.html": {
+      "bytes": 24190,
+      "sha256": "1bba96071051a9c078a25b053643fd2ada8bf07c25803862652eb9a2747ea6ab",
+      "status": 200,
+      "served_matches": true
+    },
+    "CCTV_project_progress.pdf": {
+      "bytes": 129705,
+      "sha256": "18d199b670124d75321c0c6219ea8dabdd35e4393d54e46861ccec10f01a53cd",
+      "status": 200,
+      "served_matches": true
+    }
+  },
+  "validation_checks": {
+    "ruff": "PASS",
+    "git_diff_check": "PASS",
+    "wbs_33_ids_statuses_counts": "PASS",
+    "pdf_first_page_visual": "PASS"
+  }
+}

@@ -1,0 +1,295 @@
+{
+  "date": "2026-10-13",
+  "request": "개발 단위 종료 후 code-review-graph로 현재 모듈 관계를 웹에서 확인",
+  "state": "PUBLISHED_STATIC_SNAPSHOT",
+  "url": "http://192.168.2.141:18081/module_flow.html",
+  "graph": {
+    "tool": "code-review-graph 2.3.7",
+    "stats": {
+      "total_nodes": 7564,
+      "total_edges": 68808,
+      "nodes_by_kind": {
+        "Class": 561,
+        "File": 700,
+        "Function": 3819,
+        "Test": 2484
+      },
+      "edges_by_kind": {
+        "CALLS": 43634,
+        "CONTAINS": 6949,
+        "IMPORTS_FROM": 4085,
+        "INHERITS": 101,
+        "REFERENCES": 568,
+        "TESTED_BY": 13471
+      },
+      "languages": [
+        "bash",
+        "python",
+        "sql"
+      ],
+      "files_count": 700,
+      "last_updated": "2026-10-13T09:51:13"
+    },
+    "detected_flows": 454,
+    "detected_communities": 36,
+    "display_groups": 37,
+    "community_method": "file-based fallback; igraph unavailable; includes one unclassified group",
+    "untracked_python_files_included": [
+      "scripts/ops/seed_legacy_device_requests.py",
+      "src/services/action_mqtt_intake.py",
+      "tests/test_action_mqtt_intake.py",
+      "tests/test_action_mqtt_intake_integration.py",
+      "tests/test_action_response_timeout.py",
+      "tests/test_action_target_results.py",
+      "tests/test_device_request_concurrency.py",
+      "tests/test_device_request_durability.py",
+      "tests/test_device_request_status.py",
+      "tests/test_event_debouncer_time_basis.py",
+      "tests/test_legacy_device_requests.py",
+      "tests/test_run_kuiper_rules.py",
+      "tests/test_track_id_contract.py"
+    ],
+    "snapshot_head": "fefa4ab04ee2ca26bbc0ee433381e4b7648265e7",
+    "working_tree_included": true,
+    "raw_mcp_evidence": "data/runtime/module_graph_20261013/mcp_results.json",
+    "relationships_checked": [
+      "ActionMqttIntake.accept -> accept_mqtt",
+      "ActionMqttIntake._process -> prepare/complete/quarantine",
+      "ActionBridge._process_mqtt_payload -> _dispatch_command/_handle_edgex_result/_handle_event"
+    ],
+    "dynamic_limit": "handler 연결·MQTT/HTTP 통신은 정적 그래프만으로 완전 복원되지 않아 실제 코드/설정/시험으로 보완"
+  },
+  "parser_issue": {
+    "initial_incremental_nodes": 0,
+    "initial_full_nodes": 1,
+    "reproduction": "/usr/bin/python3 -I cannot import tree_sitter_language_pack; non-isolated interpreter succeeds",
+    "cause": "code-review-graph 2.3.7 native parser probe uses -I; dependency lives in user site-packages",
+    "workaround": "project-local tooling-env with existing user tools path in .pth; no package installation or global MCP change",
+    "remaining": "global MCP build retains old environment; rebuild with documented local interpreter"
+  },
+  "diagrams": [
+    {
+      "diagram_type": "architecture",
+      "specification": "docs/architecture/archify/05-module-flow.architecture.json",
+      "specification_sha256": "1dfe41b1c82d9e584d7b095be42ed7f41f7c35dd27f8a85d9a86810dfb2546c7",
+      "artifact": "docs/planning/online/system_module_flow.html",
+      "artifact_sha256": "be320adeba50b3ed3923a4487153c0e007138a3cd9fc4f2ff501530c7f806d4d",
+      "validation": {
+        "showcase_checks": 9,
+        "errors": 0,
+        "warnings": 0
+      },
+      "browser_evidence": "skipped: Chrome/Chromium unavailable",
+      "visual_review": "not_performed: browser unavailable",
+      "correction_rounds": 1
+    },
+    {
+      "diagram_type": "architecture",
+      "specification": "docs/architecture/archify/04-action-intake.architecture.json",
+      "specification_sha256": "e15fc63969ab1fe790d8e823812e207134fde0d36f1f9b30b81ee0ad61e806d7",
+      "artifact": "docs/planning/online/action_intake_flow.html",
+      "artifact_sha256": "d305d9d75bd536674862167512abf82fe26ba0a0bc96f0dee2260bac23c6753a",
+      "validation": {
+        "showcase_checks": 9,
+        "errors": 0,
+        "warnings": 0
+      },
+      "browser_evidence": "skipped: Chrome/Chromium unavailable",
+      "visual_review": "not_performed: browser unavailable",
+      "correction_rounds": 1
+    }
+  ],
+  "checks": {
+    "module_flow.html": {
+      "js": 1,
+      "json": 0
+    },
+    "code_review_graph.html": {
+      "js": 1,
+      "json": 0
+    },
+    "action_intake_flow.html": {
+      "js": 2,
+      "json": 2
+    },
+    "system_module_flow.html": {
+      "js": 2,
+      "json": 2
+    },
+    "action_manifest_match": 22
+  },
+  "review": {
+    "tool_result": {
+      "status": "ok",
+      "summary": "Analyzed 4 changed file(s):\n  - 214 changed function(s)/class(es)\n  - 9 affected flow(s)\n  - 101 test gap(s)\n  - Overall risk score: 0.90\n  - Untested: video_case, sensor_attempt, sensor_cases, batch_case, external_cases",
+      "risk_score": 0.9,
+      "changed_file_count": 4,
+      "test_gap_count": 101,
+      "review_priorities": [
+        "handle_request_status",
+        "_execute_device_command",
+        "handle_command_request"
+      ],
+      "_hints": {
+        "next_steps": [
+          {
+            "tool": "get_review_context",
+            "suggestion": "Build a full review context with source snippets"
+          },
+          {
+            "tool": "get_impact_radius",
+            "suggestion": "Expand the blast radius analysis"
+          },
+          {
+            "tool": "refactor",
+            "suggestion": "Look for refactoring opportunities in changed code"
+          }
+        ],
+        "related": [],
+        "warnings": [
+          "High risk score (0.90) — review carefully"
+        ]
+      },
+      "context_savings": {
+        "estimated": true,
+        "saved_tokens": 14864,
+        "saved_percent": 99
+      },
+      "_graph": {
+        "updated_at": "2026-10-13T09:52:55",
+        "age_seconds": 3,
+        "built_on_branch": "260907-260911-9월2주차",
+        "built_at_sha": "fefa4ab04ee2ca26bbc0ee433381e4b7648265e7",
+        "head_sha": "fefa4ab04ee2ca26bbc0ee433381e4b7648265e7",
+        "head_matches_build": true
+      }
+    },
+    "interpretation": "파일 전체/간접 영향의 구조적 위험 후보이며 101 test gap을 실제 미시험 결함으로 단정하지 않는다. 입력 단위의 실행 시험은 고유306 PASS. 처음 노드0 결과를 무영향 근거로 쓰지 않음."
+  },
+  "web": {
+    "d3_version": "7.9.0",
+    "d3_source": "https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js",
+    "d3_sri_matches_tool": true,
+    "license": "vendor/D3-LICENSE.txt",
+    "external_script_fetches": false,
+    "raw_source_and_parameter_defaults_in_export": false,
+    "node_syntax_checks": "PASS",
+    "nginx_config": "PASS",
+    "compose_config": "PASS",
+    "browser_interaction": "NOT_RUN",
+    "other_pc_access": "NOT_TESTED"
+  },
+  "publication": {
+    "base_url": "http://192.168.2.141:18081/",
+    "observed_at": "2026-10-13T10:02:45.702996+09:00",
+    "files": [
+      {
+        "path": "index.html",
+        "status": 200,
+        "bytes": 72733,
+        "sha256": "6cbfbc18227fb8be8cad282b16e40933d53e4ffc61d904ee528d136148b8bcbd"
+      },
+      {
+        "path": "CCTV_project_progress.pdf",
+        "status": 200,
+        "bytes": 148142,
+        "sha256": "ae896c3f53889e5e603706526c0ae6f9aed4a2c9928119e9a84f125717316340"
+      },
+      {
+        "path": "module_flow.html",
+        "status": 200,
+        "bytes": 11357,
+        "sha256": "152db089dbc3e8e3dcc475cd33a5403f35cdaa00588a91b9f79906aa1470ed7b"
+      },
+      {
+        "path": "code_review_graph.html",
+        "status": 200,
+        "bytes": 7334245,
+        "sha256": "eef163763011ef6ab5fa00f072cb4d429abde5a7e083581d2aa0d3f36da01dd6"
+      },
+      {
+        "path": "action_intake_flow.html",
+        "status": 200,
+        "bytes": 802238,
+        "sha256": "d305d9d75bd536674862167512abf82fe26ba0a0bc96f0dee2260bac23c6753a"
+      },
+      {
+        "path": "system_module_flow.html",
+        "status": 200,
+        "bytes": 808931,
+        "sha256": "be320adeba50b3ed3923a4487153c0e007138a3cd9fc4f2ff501530c7f806d4d"
+      },
+      {
+        "path": "vendor/d3.v7.min.js",
+        "status": 200,
+        "bytes": 279706,
+        "sha256": "f2094bbf6141b359722c4fe454eb6c4b0f0e42cc10cc7af921fc158fceb86539"
+      },
+      {
+        "path": "vendor/D3-LICENSE.txt",
+        "status": 200,
+        "bytes": 731,
+        "sha256": "3e6849627f74ff73c257a3ae1efb574015d94fc1035c05ec3c15805165efcbc4"
+      }
+    ],
+    "non_public_paths": {
+      "action_intake_flow.visual-check.json": 404,
+      "../evidence/action_intake_20261013.json": 400,
+      "vendor/": 404
+    },
+    "cctv_operating_unchanged": true,
+    "operating": {
+      "cctv-action-layer": {
+        "id": "74deaeb0b5bdd64c8f2e2a141daa25c193a75cf235b214fee6ef8b4dcdceedeb",
+        "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+        "started_at": "2026-10-12T23:35:15.475740705Z",
+        "status": "running"
+      },
+      "cctv-device-signboard": {
+        "id": "29aeb393bd52e7a9f8241be9214b970e82e8442253fdfe2e73dbbf5d153feaa8",
+        "image": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+        "started_at": "2026-10-12T23:35:15.45875226Z",
+        "status": "running"
+      },
+      "cctv-kuiper-rule-loader": {
+        "id": "6bb51352f9dc42b80a9d41e9b5bbea55c2f7747f6e17b6317f2dcb8f14c0cc7b",
+        "image": "sha256:2f22e8c91de618d6e9378ca55f8f7ce0980de6bccffdf37f6cd7363be3a51ff8",
+        "started_at": "0001-01-01T00:00:00Z",
+        "status": "created"
+      },
+      "cctv-ai-engine": {
+        "id": "c8a71163c84b458197b98a4bde8e0e06719afc5cf5964e6fbd0b716109ce0377",
+        "image": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+        "started_at": "2026-10-12T23:35:33.679490726Z",
+        "status": "running"
+      },
+      "edgex-kuiper": {
+        "id": "6249a0c22b5712d01242c176abfce736685579514bfb389952062c3fd9392576",
+        "image": "sha256:7f4962946a721ece5ec630150e47614c4a461ee2c29600f24d96ef5e35a9d4da",
+        "started_at": "2026-10-12T23:35:15.016557364Z",
+        "status": "running"
+      }
+    }
+  },
+  "operating": {
+    "cctv_containers_unchanged": true,
+    "documentation_container_recreated": true,
+    "documentation_old_ip": "192.168.2.242",
+    "documentation_current_ip": "192.168.2.141",
+    "physical_output_commands": 0
+  },
+  "progress": {
+    "done": 9,
+    "total": 33,
+    "wbs_rows_unchanged": true,
+    "model_rows_unchanged": true
+  },
+  "next": "P3.1 위험 우선순위·만료·장치별 대기/안전 재개; 운영/실물 검증 별도",
+  "initial_attempts": [
+    "Archify renderer sandbox EPERM: same local validation succeeded after escalation",
+    "D3 official host HTTP403: identical version from jsDelivr matched packaged SRI",
+    "JS check initially treated application/json as JavaScript: parser corrected, all JS/JSON checks passed",
+    "Old LAN IP had no route; document bind updated to observed address",
+    "Traversal negative check returns HTTP400, not404; both treated as refusal"
+  ]
+}

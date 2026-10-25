@@ -1,0 +1,698 @@
+{
+  "version": "0.115",
+  "date": "2026-10-06 KST",
+  "wbs": "P5.1 IN_PROGRESS",
+  "issue_status": "I51 input retention FIXED_LOCAL; FIFO latency remains OPEN as a separate remaining condition.",
+  "change": "Snapshot same-camera/generation/person past Pose records at bounded queue admission, consume only inside verifier. Preserve generation checks before/after prediction, original alerts and serialized schema.",
+  "related_tests": {
+    "tests": 282,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 2,
+    "passed": 280
+  },
+  "red": {
+    "failed": 2,
+    "passed": 1,
+    "artifact": "red.xml"
+  },
+  "review": {
+    "reviewer": "candidate_verification_review",
+    "blocking_findings": 0,
+    "conclusion": "No critical/important findings. Scope-bound snapshot, empty input, generation before/after checks, original alert and direct verify/cache preserved. FIFO delay and I37 not fixed. Final new no-backfill test and defensive object/frame filter reviewed.",
+    "changes": {
+      "src/core/ai/_falldata_aux.py": {
+        "sha256": "c4703a6d6d9711e3981a32f1ae42ce5a49ea4bb44c4528a6f60a6227a98758f2",
+        "added": 45,
+        "removed": 21
+      },
+      "src/core/_fall_shadow_review.py": {
+        "sha256": "23732d2e5d3369469b913efccc08b11a0ec9d3f9eec9150aa921204f488335e8",
+        "added": 13,
+        "removed": 2
+      },
+      "tests/test_falldata_pose_tracks.py": {
+        "sha256": "32ef63a1e18c3ae277466ca4c1c2099f44988f064a213c117fa76014bc39c314",
+        "added": 66,
+        "removed": 0
+      }
+    }
+  },
+  "candidate_image": "sha256:57250f1d24d22732c0ceace8f4b82846ab50c15bc8cc5b315de098ab69271fac",
+  "source_files_matched": 206,
+  "queue_comparison": {
+    "baseline": [
+      {
+        "scope": {
+          "camera_id": "replay_1",
+          "object_id": 5470309423245164544,
+          "generation": 1,
+          "frame_index": 76
+        },
+        "enqueue_monotonic": 1749848.570747607,
+        "dequeue_monotonic": 1749863.223282629,
+        "verify_start_monotonic": 1749863.22361386,
+        "result_monotonic": 1749873.681749137,
+        "queue_wait_seconds": 14.652535022003576,
+        "present_at_admission": true,
+        "present_at_dequeue": true,
+        "oldest_at_dequeue": 0,
+        "result": "incompatible_feature_contract",
+        "preceding_work": [
+          {
+            "type": "fall_shadow_window",
+            "duration": 18.993359044892713,
+            "verify_seconds": 18.941126275109127,
+            "review_seconds": 0.052232769783586264
+          }
+        ]
+      },
+      {
+        "scope": {
+          "camera_id": "replay_1",
+          "object_id": 6648787387717517312,
+          "generation": 3,
+          "frame_index": 60
+        },
+        "enqueue_monotonic": 1749987.882955868,
+        "dequeue_monotonic": 1750042.123871609,
+        "verify_start_monotonic": 1750042.125029985,
+        "result_monotonic": 1750042.126127917,
+        "queue_wait_seconds": 54.24091574107297,
+        "present_at_admission": true,
+        "present_at_dequeue": false,
+        "oldest_at_dequeue": 476,
+        "result": "no_pose_records",
+        "preceding_work": [
+          {
+            "type": "fall_shadow_window",
+            "duration": 24.74244024208747,
+            "verify_seconds": 19.049085959093645,
+            "review_seconds": 5.693354282993823
+          },
+          {
+            "type": "fall_shadow_window",
+            "duration": 13.382335645146668,
+            "verify_seconds": 6.770421819994226,
+            "review_seconds": 6.611913825152442
+          },
+          {
+            "type": "fall_shadow_window",
+            "duration": 12.114470669999719,
+            "verify_seconds": 6.663748478051275,
+            "review_seconds": 5.450722191948444
+          },
+          {
+            "type": "fall_shadow_window",
+            "duration": 13.270421118009835,
+            "verify_seconds": 7.0288138198666275,
+            "review_seconds": 6.241607298143208
+          }
+        ]
+      }
+    ],
+    "candidate": [
+      {
+        "scope": {
+          "camera_id": "replay_1",
+          "object_id": 15509011255271620608,
+          "generation": 1,
+          "frame_index": 112
+        },
+        "enqueue_monotonic": 1750239.08365504,
+        "dequeue_monotonic": 1750244.977164409,
+        "verify_start_monotonic": 1750244.97739918,
+        "result_monotonic": 1750250.9246628,
+        "queue_wait_seconds": 5.893509368877858,
+        "present_at_admission": true,
+        "present_at_dequeue": true,
+        "oldest_at_dequeue": 0,
+        "result": "incompatible_feature_contract",
+        "preceding_work": [
+          {
+            "type": "fall_shadow_window",
+            "duration": 10.189218669198453,
+            "verify_seconds": 10.171619757078588,
+            "review_seconds": 0.017598912119865417
+          }
+        ]
+      },
+      {
+        "scope": {
+          "camera_id": "replay_1",
+          "object_id": 4623679937939767296,
+          "generation": 3,
+          "frame_index": 124
+        },
+        "enqueue_monotonic": 1750372.741616286,
+        "dequeue_monotonic": 1750387.475375369,
+        "verify_start_monotonic": 1750387.475665595,
+        "result_monotonic": 1750387.478465521,
+        "queue_wait_seconds": 14.733759082853794,
+        "present_at_admission": true,
+        "present_at_dequeue": true,
+        "oldest_at_dequeue": 0,
+        "result": "incompatible_feature_contract",
+        "preceding_work": [
+          {
+            "type": "fall_shadow_window",
+            "duration": 21.908928571036085,
+            "verify_seconds": 15.941944464109838,
+            "review_seconds": 5.9669841069262475
+          }
+        ]
+      }
+    ],
+    "limits": "Baseline/candidate are sequential instrumented runs, not controlled latency benchmarks. Candidate live scope remained present at dequeue; eviction preservation is proven by deterministic regression tests."
+  },
+  "integration": {
+    "runner_pass": true,
+    "operating_unchanged": true,
+    "videos": {
+      "result.mkv": {
+        "probe_exit": 0,
+        "probe_error_empty": true,
+        "metadata": {
+          "programs": [],
+          "streams": [
+            {
+              "codec_name": "h264",
+              "width": 1920,
+              "height": 1080
+            }
+          ],
+          "format": {
+            "duration": "60.355000"
+          }
+        },
+        "decode_exit": 0,
+        "decoded_frames": 1630,
+        "decode_error_empty": true,
+        "sha256": "78e38b7af23a50816c1d4274bf423efd1a772a68ee0c296da74b976995d239f4",
+        "passed": true
+      },
+      "result-after.mkv": {
+        "probe_exit": 0,
+        "probe_error_empty": true,
+        "metadata": {
+          "programs": [],
+          "streams": [
+            {
+              "codec_name": "h264",
+              "width": 1920,
+              "height": 1080
+            }
+          ],
+          "format": {
+            "duration": "60.021000"
+          }
+        },
+        "decode_exit": 0,
+        "decoded_frames": 1590,
+        "decode_error_empty": true,
+        "sha256": "3b9214c1afa36ac33dbae4e967c17f3b223a2c4a98a26c8036b0786d53fe5bdf",
+        "passed": true
+      }
+    },
+    "databases": {
+      "appearances.db": {
+        "integrity": "ok",
+        "counts": {
+          "search_conditions": 0,
+          "appearance_log": 532501
+        },
+        "row_deltas": {
+          "search_conditions": 0,
+          "appearance_log": 55
+        }
+      },
+      "mqtt_event_outbox.db": {
+        "integrity": "ok",
+        "counts": {
+          "mqtt_event_outbox": 174683
+        },
+        "row_deltas": {
+          "mqtt_event_outbox": 64
+        }
+      },
+      "commercial_faces.db": {
+        "integrity": "ok",
+        "counts": {
+          "face_persons": 1,
+          "face_samples": 1
+        },
+        "row_deltas": {
+          "face_persons": 0,
+          "face_samples": 0
+        }
+      }
+    },
+    "generations": {
+      "1": {
+        "primary": 1361,
+        "pose": 0,
+        "attributes": 1361,
+        "helmet": 1361
+      },
+      "3": {
+        "primary": 1352,
+        "pose": 0,
+        "attributes": 1352,
+        "helmet": 1352
+      }
+    },
+    "model_counts": {
+      "event.person": 8167,
+      "pose_events": 2723,
+      "pose_scope_assigned": 2723,
+      "face_request.calls": 319,
+      "face_opencv.calls": 319,
+      "tcn_verify.calls": 16,
+      "face_opencv.returned": 319,
+      "face_opencv.no_face_returned": 319,
+      "face_request.returned": 319,
+      "face_request.no_face_returned": 319,
+      "color_result.calls": 494,
+      "color_runtime.calls": 494,
+      "color_runtime.returned": 494,
+      "color_result.returned": 494,
+      "color_result.color": 375,
+      "python_attribute.calls": 319,
+      "python_attribute.returned": 319,
+      "python_attribute.empty": 319,
+      "color_result.below_threshold": 119,
+      "synthetic_fall.attempts": 59,
+      "synthetic_fall.accepted": 2,
+      "tcn_verify.returned": 16,
+      "tcn_verify.insufficient_pose_frames": 1,
+      "rf_verify.calls": 2,
+      "rf_verify.returned": 2,
+      "rf_verify.incompatible_feature_contract": 2,
+      "tcn_verify.ok": 15
+    },
+    "rf_verify_calls": 2,
+    "final_stats": {
+      "frames_processed": 5444,
+      "events_detected": 64,
+      "events_failed": 64,
+      "inference_errors": 0,
+      "context_tasks_failed": 0,
+      "model_metrics_errors": 0,
+      "primary_metrics_errors": 0
+    },
+    "after_recovery_model_deltas": {
+      "event.person": 3842,
+      "pose_events": 1281,
+      "pose_scope_assigned": 1281,
+      "face_request.calls": 151,
+      "face_opencv.calls": 151,
+      "tcn_verify.calls": 5,
+      "face_opencv.returned": 151,
+      "face_opencv.no_face_returned": 151,
+      "face_request.returned": 151,
+      "face_request.no_face_returned": 151,
+      "color_result.calls": 233,
+      "color_runtime.calls": 233,
+      "color_runtime.returned": 233,
+      "color_result.returned": 233,
+      "color_result.color": 185,
+      "python_attribute.calls": 151,
+      "python_attribute.returned": 151,
+      "python_attribute.empty": 151,
+      "color_result.below_threshold": 48,
+      "synthetic_fall.attempts": 31,
+      "synthetic_fall.accepted": 1,
+      "tcn_verify.returned": 5,
+      "tcn_verify.insufficient_pose_frames": 0,
+      "rf_verify.calls": 1,
+      "rf_verify.returned": 1,
+      "rf_verify.incompatible_feature_contract": 1,
+      "tcn_verify.ok": 5
+    },
+    "after_recovery_db_deltas": {
+      "appearance_log": 27,
+      "mqtt_event_outbox": 31
+    },
+    "observed_model_gate": true,
+    "storage_gate": true,
+    "shadow_rf": {
+      "injections": [
+        {
+          "camera": "replay_1",
+          "scope": {
+            "camera_id": "replay_1",
+            "object_id": 15509011255271620608,
+            "generation": 1,
+            "frame_index": 112
+          },
+          "audit_id": "replay_1:1",
+          "monotonic": 1750239.083909969,
+          "original_has_shadow_marker": false,
+          "model_generation": 1
+        },
+        {
+          "camera": "replay_1",
+          "scope": {
+            "camera_id": "replay_1",
+            "object_id": 4623679937939767296,
+            "generation": 3,
+            "frame_index": 124
+          },
+          "audit_id": "replay_1:3",
+          "monotonic": 1750372.741827443,
+          "original_has_shadow_marker": false,
+          "model_generation": 3
+        }
+      ],
+      "outbox_count_by_audit_id": {
+        "replay_1:1": 1,
+        "replay_1:3": 1
+      },
+      "original_payload_has_shadow_marker": false,
+      "verify_calls": 2,
+      "verify_returned": 2,
+      "incompatible_results": 2,
+      "metrics": {
+        "enabled": true,
+        "cameras": {
+          "replay_1": {
+            "requests": 2,
+            "unavailable_results": 2,
+            "cache_hits": 0
+          }
+        }
+      },
+      "review_results": [
+        {
+          "status": "incompatible_feature_contract",
+          "scope": {
+            "camera_id": "replay_1",
+            "frame_index": 112,
+            "generation": 1,
+            "object_id": 15509011255271620608
+          }
+        },
+        {
+          "status": "incompatible_feature_contract",
+          "scope": {
+            "camera_id": "replay_1",
+            "frame_index": 124,
+            "generation": 3,
+            "object_id": 4623679937939767296
+          }
+        }
+      ]
+    },
+    "shadow_rf_recording_gate": true,
+    "source_files_match": true,
+    "passed": true
+  },
+  "recovery_seconds": 15.334750531008467,
+  "stop_seconds": 5.6525320638902485,
+  "baseline_validation": {
+    "runner_pass": true,
+    "operating_unchanged": true,
+    "videos": {
+      "result.mkv": {
+        "probe_exit": 0,
+        "probe_error_empty": true,
+        "metadata": {
+          "programs": [],
+          "streams": [
+            {
+              "codec_name": "h264",
+              "width": 1920,
+              "height": 1080
+            }
+          ],
+          "format": {
+            "duration": "60.650000"
+          }
+        },
+        "decode_exit": 0,
+        "decoded_frames": 1353,
+        "decode_error_empty": true,
+        "sha256": "4acf47dc46eb684d29ecf8d434c56872b4b3b98eaa2a5ff2466785396d4884b9",
+        "passed": true
+      },
+      "result-after.mkv": {
+        "probe_exit": 0,
+        "probe_error_empty": true,
+        "metadata": {
+          "programs": [],
+          "streams": [
+            {
+              "codec_name": "h264",
+              "width": 1920,
+              "height": 1080
+            }
+          ],
+          "format": {
+            "duration": "59.978000"
+          }
+        },
+        "decode_exit": 0,
+        "decoded_frames": 1569,
+        "decode_error_empty": true,
+        "sha256": "2be8f8ae396d0c37ca083c8de24832ecacdd41c1bfdb108bdc95c8ca775e9eda",
+        "passed": true
+      }
+    },
+    "databases": {
+      "appearances.db": {
+        "integrity": "ok",
+        "counts": {
+          "search_conditions": 0,
+          "appearance_log": 532502
+        },
+        "row_deltas": {
+          "search_conditions": 0,
+          "appearance_log": 56
+        }
+      },
+      "mqtt_event_outbox.db": {
+        "integrity": "ok",
+        "counts": {
+          "mqtt_event_outbox": 174683
+        },
+        "row_deltas": {
+          "mqtt_event_outbox": 64
+        }
+      },
+      "commercial_faces.db": {
+        "integrity": "ok",
+        "counts": {
+          "face_persons": 1,
+          "face_samples": 1
+        },
+        "row_deltas": {
+          "face_persons": 0,
+          "face_samples": 0
+        }
+      }
+    },
+    "generations": {
+      "1": {
+        "primary": 1056,
+        "pose": 0,
+        "attributes": 1056,
+        "helmet": 1056
+      },
+      "3": {
+        "primary": 1304,
+        "pose": 0,
+        "attributes": 1304,
+        "helmet": 1304
+      }
+    },
+    "model_counts": {
+      "event.person": 7136,
+      "pose_events": 2379,
+      "pose_scope_assigned": 2379,
+      "face_request.calls": 320,
+      "face_opencv.calls": 320,
+      "tcn_verify.calls": 13,
+      "face_opencv.returned": 320,
+      "face_opencv.no_face_returned": 320,
+      "face_request.returned": 320,
+      "face_request.no_face_returned": 320,
+      "color_result.calls": 498,
+      "color_runtime.calls": 498,
+      "color_runtime.returned": 498,
+      "color_result.returned": 498,
+      "color_result.below_threshold": 131,
+      "color_result.color": 367,
+      "python_attribute.calls": 320,
+      "python_attribute.returned": 320,
+      "python_attribute.empty": 320,
+      "synthetic_fall.attempts": 41,
+      "synthetic_fall.accepted": 2,
+      "tcn_verify.returned": 13,
+      "tcn_verify.insufficient_pose_frames": 1,
+      "rf_verify.calls": 2,
+      "rf_verify.returned": 2,
+      "rf_verify.incompatible_feature_contract": 1,
+      "tcn_verify.ok": 12,
+      "rf_verify.no_pose_records": 1
+    },
+    "rf_verify_calls": 2,
+    "final_stats": {
+      "frames_processed": 4757,
+      "events_detected": 64,
+      "events_failed": 64,
+      "inference_errors": 0,
+      "context_tasks_failed": 0,
+      "model_metrics_errors": 0,
+      "primary_metrics_errors": 0
+    },
+    "after_recovery_model_deltas": {
+      "event.person": 3776,
+      "pose_events": 1259,
+      "pose_scope_assigned": 1259,
+      "face_request.calls": 153,
+      "face_opencv.calls": 153,
+      "tcn_verify.calls": 5,
+      "face_opencv.returned": 153,
+      "face_opencv.no_face_returned": 153,
+      "face_request.returned": 153,
+      "face_request.no_face_returned": 153,
+      "color_result.calls": 237,
+      "color_runtime.calls": 237,
+      "color_runtime.returned": 237,
+      "color_result.returned": 237,
+      "color_result.below_threshold": 65,
+      "color_result.color": 172,
+      "python_attribute.calls": 153,
+      "python_attribute.returned": 153,
+      "python_attribute.empty": 153,
+      "synthetic_fall.attempts": 22,
+      "synthetic_fall.accepted": 1,
+      "tcn_verify.returned": 6,
+      "tcn_verify.insufficient_pose_frames": 0,
+      "rf_verify.calls": 1,
+      "rf_verify.returned": 1,
+      "rf_verify.incompatible_feature_contract": 0,
+      "tcn_verify.ok": 6,
+      "rf_verify.no_pose_records": 1
+    },
+    "after_recovery_db_deltas": {
+      "appearance_log": 27,
+      "mqtt_event_outbox": 31
+    },
+    "observed_model_gate": true,
+    "storage_gate": true,
+    "shadow_rf": {
+      "injections": [
+        {
+          "camera": "replay_1",
+          "scope": {
+            "camera_id": "replay_1",
+            "object_id": 5470309423245164544,
+            "generation": 1,
+            "frame_index": 76
+          },
+          "audit_id": "replay_1:1",
+          "monotonic": 1749848.571026842,
+          "original_has_shadow_marker": false,
+          "model_generation": 1
+        },
+        {
+          "camera": "replay_1",
+          "scope": {
+            "camera_id": "replay_1",
+            "object_id": 6648787387717517312,
+            "generation": 3,
+            "frame_index": 60
+          },
+          "audit_id": "replay_1:3",
+          "monotonic": 1749987.883178473,
+          "original_has_shadow_marker": false,
+          "model_generation": 3
+        }
+      ],
+      "outbox_count_by_audit_id": {
+        "replay_1:3": 1,
+        "replay_1:1": 1
+      },
+      "original_payload_has_shadow_marker": false,
+      "verify_calls": 2,
+      "verify_returned": 2,
+      "incompatible_results": 1,
+      "metrics": {
+        "enabled": true,
+        "cameras": {
+          "replay_1": {
+            "requests": 2,
+            "unavailable_results": 2,
+            "cache_hits": 0
+          }
+        }
+      },
+      "review_results": [
+        {
+          "status": "incompatible_feature_contract",
+          "scope": {
+            "camera_id": "replay_1",
+            "frame_index": 76,
+            "generation": 1,
+            "object_id": 5470309423245164544
+          }
+        }
+      ]
+    },
+    "shadow_rf_recording_gate": false,
+    "source_files_match": false,
+    "passed": false
+  },
+  "baseline_note": "Old v114 image matches its saved206-source manifest. Baseline validator compares current modified root and correctly reports source_files_match=false. Its no_pose_records/RF gate failure is preserved.",
+  "private_artifacts": "data/runtime/p51_rf_retention_20261006_v115",
+  "limits": [
+    "No operating deployment, external delivery or physical outputs; isolated copied databases and network none.",
+    "Actual Pose references with synthetic fall injection; not a fall accuracy evaluation.",
+    "Candidate scope remained present at dequeue; eviction retention is validated by deterministic regression, not repeated GPU eviction.",
+    "Queue wait remains; snapshot preserves input but is not a latency optimization. Default bounded queue4 plus active worker1 retain up to buffer_frames records per candidate.",
+    "Selected RF still incompatible_feature_contract, predict0. I37 remains OPEN.",
+    "Original encoder I40/CUDA I34 and I45 remaining conditions are not resolved.",
+    "Targeted280PASS/2SKIP, not a new full-suite run. Previous v113 full2797PASS/52SKIP is historical."
+  ],
+  "sha256": {
+    "red.xml": "420337e7ddf32c490dd65827b95751d023a917feb604b0412a8913989fa0a6f4",
+    "related.xml": "260d3838f296ed94b1fab6f50f5df8674ff951745e54abbed04692bbf4cfaee9",
+    "review.json": "02e59228d3cc4490a9a20b75a84a84e54a4d7b1603cf58700183bacf618c1849",
+    "queue_analysis.json": "4ebdcaaf71f9731cc2319c4724d94bbe3965024c75e62f19994e709c1eb0817d",
+    "candidate/source_manifest.json": "23303e8679ea67f9a324fe61e06593e5f7f743403c69b99924da9a869a6b0725",
+    "candidate/new_image_manifest.json": "23303e8679ea67f9a324fe61e06593e5f7f743403c69b99924da9a869a6b0725",
+    "candidate/validation.json": "9066256adb68570b03dfa5229ddd8d871798a1cbd5f442c961d51bf8da081b2e",
+    "candidate/trial_results.json": "81732c2d098d4bac09caaf151ec0713748584cb538027551d9ebf22d621ba3bc",
+    "baseline/validation.json": "300bb89d0de2d00a7690c0f5f634b698e5d5bd01188c4f0ed5eec8b2dfb3a58e"
+  },
+  "publication": {
+    "index.html": {
+      "status": 200,
+      "bytes": 24220,
+      "sha256": "a17512fc93ce17bad86134a546cb9388f7505d3b5dd3e798576bd260518f190d",
+      "local_matches": true
+    },
+    "CCTV_project_progress.pdf": {
+      "status": 200,
+      "bytes": 129157,
+      "sha256": "81bcddae87c9d6774b9ff4392f4ae2bb97dfd216ebe769e06cf72482ec2e9c7e",
+      "local_matches": true
+    }
+  },
+  "document_validation": {
+    "version": "0.115",
+    "wbs_rows": 33,
+    "counts": {
+      "DONE": 9,
+      "BLOCKED": 3,
+      "PLANNED": 13,
+      "VERIFY": 7,
+      "IN_PROGRESS": 1
+    },
+    "p51": "IN_PROGRESS",
+    "source_tests_match": 3,
+    "evidence_hashes_match": true
+  },
+  "first_page_visual_check": "PASS"
+}

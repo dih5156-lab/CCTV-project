@@ -1,0 +1,147 @@
+{
+  "checked_at": "2026-10-08T14:27:04.367591+09:00",
+  "scope": "스마트폴 AI→EdgeX→장치 경로의 읽기 전용 점검과 작업 순서 결정. 장치 출력·설정 변경·컨테이너 재시작 없음.",
+  "hardware_user_confirmed": {
+    "cctv_connected": 1,
+    "signboard_available": 1,
+    "speaker_available": 1,
+    "temperature_humidity_available": true,
+    "inclination_available": true,
+    "sensor_counts": null,
+    "siren_available": false,
+    "physical_actuation_verified": false
+  },
+  "video": {
+    "evidence": "docs/planning/evidence/live_refresh_20261008.json",
+    "unchanged_30min_frame_fps": 29.972,
+    "unchanged_30min_tensor_per_second": 14.986,
+    "focused_input_queue_to_mux_ms": {
+      "median": 209.847,
+      "p95": 787.265
+    },
+    "focused_mux_to_metadata_ms": {
+      "median": 108.441,
+      "p95": 180.388
+    },
+    "focused_encoder_ms": {
+      "median": 29.473,
+      "p95": 113.791
+    },
+    "limitations": [
+      "각 구간 값은 버퍼·하류 대기를 포함한다",
+      "서로 다른 구간의 중앙값/P95를 더해 종단 지연으로 계산하지 않는다",
+      "계측 부하·단기 표본 한계가 있으며 체감2–3초 전체 원인을 확정하지 않는다",
+      "모델 크기·중복 후처리·SDK 자체 결함으로 원인 확정 불가"
+    ],
+    "next_candidate": "disable-dpb 단일 조건 비교 준비. 아직 적용/개선 검증 안 됨."
+  },
+  "edgex": {
+    "mode": "edgex",
+    "core_data_camera_events": 3,
+    "camera_device": "camera-camera_1",
+    "core_data_status": 200,
+    "runtime_registry": {
+      "path": "/app/config/output_devices.json",
+      "resolved": {
+        "camera_1": {
+          "signboard": [],
+          "speaker": [],
+          "siren": []
+        },
+        "sample_eval": {
+          "signboard": [
+            "cctv-signboard-01"
+          ],
+          "speaker": [
+            "cctv-speaker-01"
+          ],
+          "siren": [
+            "cctv-siren-01"
+          ]
+        }
+      }
+    },
+    "latest_command_result": {
+      "request_id": "uat-edgex-signboard-20260917-0914:signboard:cctv-signboard-01",
+      "event_id": "uat-edgex-signboard-20260917-0914",
+      "device_id": "cctv-signboard-01",
+      "status": "acknowledged",
+      "error_code": null,
+      "received_at": "2026-09-17T00:14:40.566147+00:00"
+    },
+    "recent_action_command_statuses": [
+      "failed",
+      "failed",
+      "failed"
+    ],
+    "route_block_confirmed": true,
+    "physical_success_confirmed": false,
+    "command_path": "Action Layer → 프로젝트 MQTT 명령 계약 → Device Service → 장치 → 결과 MQTT/DB/관제. Core Data 저장 경로와 구분한다.",
+    "ack_caveat": "EdgeXCommandTransport.send의 acknowledged는 MQTT 발행 성공으로도 반환된다. 장치 결과 메시지와 실제 출력 증거를 별도로 대조한다."
+  },
+  "passive_mqtt": {
+    "duration_seconds": 20.017751067178324,
+    "connected": true,
+    "counts": {
+      "ai_event": 19
+    },
+    "sensor_device_ids": [],
+    "published_messages": 0
+  },
+  "observability": {
+    "adapter_metrics": "9105 연결 reset 재확인. AIOT_COMMANDS_ENABLED=false이면 메트릭 서버가 시작되지 않는 소스 조건과 일치. 이벤트 전달 실패의 증거로 세지 않는다.",
+    "mqtt_pending_sample": [],
+    "historical_http_pending_sample": [
+      {
+        "id": 247653,
+        "event_id": "evt_171e8685274444ac",
+        "status": "pending",
+        "created_at_ms": 1783990587442,
+        "sent_at_ms": null,
+        "retry_count": 3,
+        "last_error": "HTTPConnectionPool(host='cctv-alert-api', port=8000): Max retries exceeded with url: /api/alerts (Caused by ConnectTimeoutError(<HTTPConnection(host='cctv-alert-api', port=8000) at 0xffff80587820>, 'Connection to cctv-alert-api timed out. (connect timeout=5)'))"
+      }
+    ],
+    "limits": "상태 인덱스 기반 표본과 최근4행만 조회. 큰 DB 전체 점검·보관량 합격 아님. 센서20초 미수신은 고장/미연결 확정 아님."
+  },
+  "decision": {
+    "next_wbs_unit": "P3.3 카메라 대상·명령 결과 사전검증, P3.1/P3.2 미완료는 유지",
+    "next_deliverable": "camera_1→전광판1대의 대상·request/event/device ID와 반환 상태를 모형에서 검증하고, 실물1회 시험안/원복안을 준비한다.",
+    "ordered_followups": [
+      "허용된 전광판1회 실제 표시와 결과DB/관제 대조(P3.4 제한 시험, 선행 WBS 완료로 계산하지 않음)",
+      "센서 원본 수신·ID/종류/주기 확인 후 규칙→전광판 연계(P4.1~P4.3)",
+      "스피커1대 명령·응답·중복·중단 검증(P3.5)",
+      "영상 지연 단일 조건 비교·고정 데이터 품질 평가(P5.1~P5.3)",
+      "전체 구성의 녹화2채널→실물 확보 후2/4채널·장시간·재시작 검증(P6)"
+    ],
+    "stop_rules": "영상 조사 단위60분, 새 근거 없는 동일 가설2회 실패 시 보류. 기능 연동 사전검증을 영상 원인 확정까지 대기시키지 않는다.",
+    "unchanged": "DONE9/33, P5.1 IN_PROGRESS, I54 OPEN. 기능 전체/실물 통합/4카메라 완료 아님."
+  },
+  "sha256": {
+    "data/runtime/smartpole_direction_20261008/action_health.txt": "f610ca7fb81bfe6d60086e0088a74b1aada0145ded5164c9c8763d5e0179366e",
+    "data/runtime/smartpole_direction_20261008/camera_events.json": "e821074902382c4cc595eb4b198f7dee12f524db7c8e1db89a4c8a0e5c2bf9a5",
+    "data/runtime/smartpole_direction_20261008/containers.json": "c0df90645dd742e7ba3d0a734938473827c666aff079e29764e3a1c562b95f42",
+    "data/runtime/smartpole_direction_20261008/database_summary.json": "37ddff066b48efd888e8a6aeaa17d4dc114005d6629a688bb0f8fa033558e90c",
+    "data/runtime/smartpole_direction_20261008/devices.json": "ad47dac7a5e2a8e59f1533260239f0a1fa7772d2ad8457169e555f64ec5df3c2",
+    "data/runtime/smartpole_direction_20261008/edgex_core_command_ping.txt": "826a43aeac16b4bfc37dec52ec60ea2b5d3a1edae4f25136e811630cda688cbd",
+    "data/runtime/smartpole_direction_20261008/edgex_core_data_ping.txt": "f6d5b2685417cafa820e9f0058ed423f1429dd8a3d4b9ef61ca571ad7ed7f652",
+    "data/runtime/smartpole_direction_20261008/edgex_metadata_ping.txt": "b6ac87ab95059c90699f00fdd1695a50e8fa7992c48276f98b20377ab6db90ed",
+    "data/runtime/smartpole_direction_20261008/events.json": "0e2bc6e3b5b66687b7fac850563bd3f882f34b1c3f267f39306aa502880c9943",
+    "data/runtime/smartpole_direction_20261008/passive_sensor_check.json": "4460c33c818cf9134a4b15a4e5620410612a2464ad00428f714a26f7f8635472",
+    "data/runtime/smartpole_direction_20261008/read_only_checks.json": "1a7f739bb63c2bc8f1a3593b7b9e50882d65c96b1276347904056bc9e06f03ff",
+    "data/runtime/smartpole_direction_20261008/routing_check.json": "e60156fe157df1a2baa569fbaf79d8aafe57a56c5179884131d5598ab1fc747c",
+    "data/runtime/smartpole_direction_20261008/runtime.json": "640b83cd103965a8b7db0a03ac7acbf94f4a02b581a719334d8f9d75fde39c22",
+    "data/runtime/smartpole_direction_20261008/signboard.json": "08fa2b698925ac62bba63e77ca7c50b3deba17af9f86993442007ec47714fe68",
+    "data/runtime/smartpole_direction_20261008/siren.json": "93bbc8d0b9966b380bbb1fd55fdcc116376f993b772fecead588d8a4e117276d",
+    "data/runtime/smartpole_direction_20261008/speaker.json": "b513b9a41d36942d15f3475b1f281e09e2362b6fc74859d998be65be20e0f7da"
+  },
+  "validation": {
+    "command": "python3 -m pytest tests/test_device_registry.py tests/test_device_command_transport.py tests/test_edgex_result_handler.py -q",
+    "result": "13 passed in 0.38s",
+    "scope": "로컬 대상 조회·명령 전송·결과 처리 계약 회귀. 실물 출력/운영 배포 검증 아님.",
+    "document_diff_check": "PASS",
+    "evidence_hashes_verified": 16,
+    "wbs_rows": 33,
+    "done_rows": 9
+  }
+}

@@ -1,0 +1,2143 @@
+{
+  "date": "2026-10-15",
+  "wbs_id": "P5.7",
+  "status": "CANDIDATE_POOL_LOCKED_NOT_FINAL_INDEPENDENT_SET",
+  "archive": {
+    "dataset": 171,
+    "filekey": 49753,
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/x-tar",
+      "Transfer-Encoding": "chunked",
+      "Date": "Thu, 15 Oct 2026 04:15:14 GMT",
+      "Connection": "close",
+      "Server": "Server"
+    },
+    "result": "downloaded_zip_verified_with_tar_envelope_warning",
+    "bytes": 30793386153,
+    "path": "data/datasets/aihub171/49753/outsidedoor_01.zip",
+    "initial_stream_result": {
+      "result": "incomplete",
+      "error": "AssertionError:Missing/reordered/duplicate TAR part",
+      "bytes": 30793386153
+    },
+    "sha256": "79b7f1ba7e7d957e6236795ee5f742befa3d52915f06c62a7fdda8f1defe44d6",
+    "zip_crc_all_members": "PASS",
+    "zip_members": 93,
+    "videos": 41,
+    "labels": 41,
+    "validation_elapsed_s": 868.21,
+    "transport_warning": "목록과 동일한 전체 ZIP bytes 수신 뒤 추가 TAR 항목 순서 검사 실패. 실패 항목 원문은 미수집하여 상세 원인 미확정. 완성 ZIP의 크기·전체CRC·고유목록·디스크SHA를 별도로 검증했으며 추가 bytes는 파일에 덧붙이지 않음."
+  },
+  "counts": {
+    "downloaded_video_files": 41,
+    "xml_files": 41,
+    "candidate_videos": 38,
+    "quarantined_pairs": 3,
+    "filename_scene_groups": 11,
+    "exact_duplicate_groups": 0,
+    "visual_duplicate_candidate_pairs": 3,
+    "final_independent_scene_groups": 0
+  },
+  "constraints": {
+    "processing_resolution": "1920x1080 full frame",
+    "person_pose_confidence": 0.5,
+    "source_resolution": "3840x2160",
+    "source_fps": "30000/1001 for 38 probed candidates",
+    "source_unchanged": true
+  },
+  "split_policy": "38후보 전체를 독립 평가 후보 예약 풀로 보관. 배우/세션 및 유사3쌍 관계 확인 전 train/validation/test에 나누지 않는다. 아직 학습 경로에 연결하지 않았음.",
+  "grouping_limit": "11은 파일명 접두어 그룹 수이며 검증된 독립 사건/배우 수가 아니다. 동일 배경/촬영 연계 가능성이 있고 전역 배우/세션 자료 없음.",
+  "coverage": {
+    "positive_event": "fight",
+    "one_sided_assault_verified_groups": 0,
+    "independent_normal_groups": 0,
+    "independent_lookalike_groups": 0,
+    "separate_normal_seconds": 0,
+    "target_scene_groups": 200,
+    "target_extra_normal_seconds": 7200
+  },
+  "checks": {
+    "zip_crc_all_members": "PASS",
+    "video_sha256_files": 41,
+    "label_sha256_files": 41,
+    "xml_structural_valid": 39,
+    "ffprobe_and_three_frames_valid_pairs": 38,
+    "preview_visual_review": "38영상×3표본114장 확인: 거리/골목/지하통로. 크로마키 표본 없음. 전체 구간 디코딩/사건 onset-end 수동 판정과는 구분.",
+    "temporal_mapping": "38개 모두 라벨30/실제29.97FPS 차이. 7개 마지막 행동 프레임은 PTS 대응 확인 필요, 손상으로 단정하지 않음.",
+    "normal_segment_policy": "싸움 영상의 전후 구간을 별도 독립 정상 장면으로 세지 않음. 다른 이상행동도 자동 정상 처리하지 않음.",
+    "duplicate_scope": "SHA 정확 중복 검사는 확보 실외41개 내부. 기존 학습 자료 전체/미확보 묶음과의 대조는 미실시. 3표본 시각 비교는 재편집/재인코딩 중복 완전 검출을 보장하지 않음."
+  },
+  "remaining": [
+    "독립 정상/유사 행동100그룹 및 별도 정상2시간 확보",
+    "상호 싸움70·일방 폭행30 목표 대비 사건 다양성/수량 보강",
+    "전역 배우·촬영 세션 연계 및 3시각유사쌍 검토",
+    "실제 PTS-행동 프레임 대응과 사건 시작/종료 전구간 검수",
+    "목록 잠금 후 학습/Jetson GPU1080p 평가"
+  ],
+  "duplicate_review": {
+    "exact_duplicate_groups": [],
+    "scene_groups": {
+      "nia2019:fight:1-1": [
+        "data/datasets/aihub171/49753/outsidedoor_01.zip::1-1/1-1_cam01_fight04_place02_night_spring.mp4",
+        "data/datasets/aihub171/49753/outsidedoor_01.zip::1-1/1-1_cam01_fight04_place02_night_summer.mp4",
+        "data/datasets/aihub171/49753/outsidedoor_01.zip::1-1/1-1_cam02_fight04_place02_night_spring.mp4",
+        "data/datasets/aihub171/49753/outsidedoor_01.zip::1-1/1-1_cam02_fight04_place02_night_summer.mp4"
+      ],
+      "nia2019:fight:1-2": [
+        "data/datasets/aihub171/49753/outsidedoor_01.zip::1-2/1-2_cam01_fight04_place02_night_spring.mp4",
+        "data/datasets/aihub171/49753/outsidedoor_01.zip::1-2/1-2_cam02_fight04_place02_night_spring.mp4",
+        "data/datasets/aihub171/49753/outsidedoor_01.zip::1-2/1-2_cam02_fight04_place02_night_summer.mp4"
+      ],
+      "nia2019:fight:1-3": [
+        "data/datasets/aihub171/49753/outsidedoor_01.zip::1-3/1-3_cam01_fight04_place02_night_spring.mp4",
+        "data/datasets/aihub171/49753/outsidedoor_01.zip::1-3/1-3_cam01_fight04_place02_night_summer.mp4",
+        "data/datasets/aihub171/49753/outsidedoor_01.zip::1-3/1-3_cam02_fight04_place02_night_spring.mp4",
+        "data/datasets/aihub171/49753/outsidedoor_01.zip::1-3/1-3_cam02_fight04_place02_night_summer.mp4"
+      ],
+      "nia2019:fight:1-4": [
+        "data/datasets/aihub171/49753/outsidedoor_01.zip::1-4/1-4_cam01_fight04_place02_night_spring.mp4",
+        "data/datasets/aihub171/49753/outsidedoor_01.zip::1-4/1-4_cam01_fight04_place02_night_summer.mp4",
+        "data/datasets/aihub171/49753/outsidedoor_01.zip::1-4/1-4_cam02_fight04_place02_night_spring.mp4",
+        "data/datasets/aihub171/49753/outsidedoor_01.zip::1-4/1-4_cam02_fight04_place02_night_summer.mp4"
+      ],
+      "nia2019:fight:11-1": [
+        "data/datasets/aihub171/49753/outsidedoor_01.zip::11-1/11-1_cam01_fight01_place08_night_summer.mp4",
+        "data/datasets/aihub171/49753/outsidedoor_01.zip::11-1/11-1_cam02_fight01_place08_night_spring.mp4",
+        "data/datasets/aihub171/49753/outsidedoor_01.zip::11-1/11-1_cam02_fight01_place08_night_summer.mp4"
+      ],
+      "nia2019:fight:11-3": [
+        "data/datasets/aihub171/49753/outsidedoor_01.zip::11-3/11-3_cam01_fight01_place08_night_summer.mp4",
+        "data/datasets/aihub171/49753/outsidedoor_01.zip::11-3/11-3_cam02_fight01_place08_night_summer.mp4"
+      ],
+      "nia2019:fight:14-1": [
+        "data/datasets/aihub171/49753/outsidedoor_01.zip::14-1/14-1_cam01_fight02_place06_night_spring.mp4",
+        "data/datasets/aihub171/49753/outsidedoor_01.zip::14-1/14-1_cam01_fight02_place06_night_summer.mp4",
+        "data/datasets/aihub171/49753/outsidedoor_01.zip::14-1/14-1_cam02_fight02_place06_night_spring.mp4",
+        "data/datasets/aihub171/49753/outsidedoor_01.zip::14-1/14-1_cam02_fight02_place06_night_summer.mp4"
+      ],
+      "nia2019:fight:14-2": [
+        "data/datasets/aihub171/49753/outsidedoor_01.zip::14-2/14-2_cam01_fight02_place06_night_spring.mp4",
+        "data/datasets/aihub171/49753/outsidedoor_01.zip::14-2/14-2_cam01_fight02_place06_night_summer.mp4",
+        "data/datasets/aihub171/49753/outsidedoor_01.zip::14-2/14-2_cam02_fight02_place06_night_spring.mp4",
+        "data/datasets/aihub171/49753/outsidedoor_01.zip::14-2/14-2_cam02_fight02_place06_night_summer.mp4"
+      ],
+      "nia2019:fight:14-3": [
+        "data/datasets/aihub171/49753/outsidedoor_01.zip::14-3/14-3_cam01_fight02_place06_night_spring.mp4",
+        "data/datasets/aihub171/49753/outsidedoor_01.zip::14-3/14-3_cam01_fight02_place06_night_summer.mp4",
+        "data/datasets/aihub171/49753/outsidedoor_01.zip::14-3/14-3_cam02_fight02_place06_night_spring.mp4",
+        "data/datasets/aihub171/49753/outsidedoor_01.zip::14-3/14-3_cam02_fight02_place06_night_summer.mp4"
+      ],
+      "nia2019:fight:14-4": [
+        "data/datasets/aihub171/49753/outsidedoor_01.zip::14-4/14-4_cam01_fight02_place06_night_spring.mp4",
+        "data/datasets/aihub171/49753/outsidedoor_01.zip::14-4/14-4_cam02_fight02_place06_night_spring.mp4",
+        "data/datasets/aihub171/49753/outsidedoor_01.zip::14-4/14-4_cam02_fight02_place06_night_summer.mp4"
+      ],
+      "nia2019:fight:14-5": [
+        "data/datasets/aihub171/49753/outsidedoor_01.zip::14-5/14-5_cam01_fight02_place06_night_spring.mp4",
+        "data/datasets/aihub171/49753/outsidedoor_01.zip::14-5/14-5_cam01_fight02_place06_night_summer.mp4",
+        "data/datasets/aihub171/49753/outsidedoor_01.zip::14-5/14-5_cam02_fight02_place06_night_spring.mp4",
+        "data/datasets/aihub171/49753/outsidedoor_01.zip::14-5/14-5_cam02_fight02_place06_night_summer.mp4"
+      ]
+    },
+    "visual_duplicate_candidates": [
+      {
+        "left": "data/datasets/aihub171/49753/outsidedoor_01.zip::1-2/1-2_cam01_fight04_place02_night_spring.mp4",
+        "right": "data/datasets/aihub171/49753/outsidedoor_01.zip::1-3/1-3_cam01_fight04_place02_night_spring.mp4",
+        "distances": [
+          5,
+          8,
+          4
+        ],
+        "status": "REVIEW_REQUIRED"
+      },
+      {
+        "left": "data/datasets/aihub171/49753/outsidedoor_01.zip::14-2/14-2_cam02_fight02_place06_night_summer.mp4",
+        "right": "data/datasets/aihub171/49753/outsidedoor_01.zip::14-4/14-4_cam02_fight02_place06_night_summer.mp4",
+        "distances": [
+          4,
+          5,
+          4
+        ],
+        "status": "REVIEW_REQUIRED"
+      },
+      {
+        "left": "data/datasets/aihub171/49753/outsidedoor_01.zip::14-3/14-3_cam02_fight02_place06_night_summer.mp4",
+        "right": "data/datasets/aihub171/49753/outsidedoor_01.zip::14-5/14-5_cam02_fight02_place06_night_summer.mp4",
+        "distances": [
+          5,
+          14,
+          6
+        ],
+        "status": "REVIEW_REQUIRED"
+      }
+    ],
+    "visual_method": "시작 전/사건 중간/종료 후3표본 dHash,2표본 이상 Hamming<=8·길이 차<=1초. 전 프레임 대조 아님."
+  },
+  "rows": [
+    {
+      "video_member": "1-1/1-1_cam01_fight04_place02_night_spring.mp4",
+      "video_sha256": "597c915b73c83338473edbd702e784d95200848392680b4f9eb604650da59628",
+      "video_bytes": 508656804,
+      "label_member": "1-1/1-1_cam01_fight04_place02_night_spring.xml",
+      "label_sha256": "b8900bd338bec614d9374622aae1f239458977830a6d464c7f7f1f415a0f7c74",
+      "event_type": "fight",
+      "event_start_s": 274.1,
+      "event_end_s": 319.0,
+      "label_time_text": {
+        "video_duration": "00:05:42.2",
+        "event_start": "00:04:34.1",
+        "event_duration": "00:00:44.9"
+      },
+      "participants": [
+        "person_01",
+        "person_02"
+      ],
+      "scene_group": "nia2019:fight:1-1",
+      "location": "PLACE02",
+      "time_of_day": "NIGHT",
+      "fps": 30.0,
+      "frames": 10265,
+      "last_action_frame": 9570,
+      "width": 3840,
+      "height": 2160,
+      "duration_s": 342.2,
+      "status": "REVIEW_REQUIRED",
+      "issues": [],
+      "warnings": [
+        "label_media_frame_count_difference",
+        "nominal_fps_requires_frame_pts_mapping"
+      ],
+      "media_probe": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "avg_frame_rate": "30000/1001",
+            "duration": "342.208533",
+            "nb_frames": "10256"
+          }
+        ],
+        "format": {
+          "duration": "342.208533"
+        }
+      },
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "1-1/1-1_cam01_fight04_place02_night_summer.mp4",
+      "video_sha256": "b83cab5219058aee29932118476848865a62b0f4298b5fcdfc4d11ec6ab75903",
+      "video_bytes": 474574639,
+      "label_member": "1-1/1-1_cam01_fight04_place02_night_summer.xml",
+      "label_sha256": "c4bc44f32d70896090b449b9c307fdaec9e7df4ca2b05cdd169b8191b697bd4c",
+      "event_type": "fight",
+      "event_start_s": 82.1,
+      "event_end_s": 284.2,
+      "label_time_text": {
+        "video_duration": "00:05:16.0",
+        "event_start": "00:01:22.1",
+        "event_duration": "00:03:22.1"
+      },
+      "participants": [
+        "person_01",
+        "person_02"
+      ],
+      "scene_group": "nia2019:fight:1-1",
+      "location": "PLACE02",
+      "time_of_day": "NIGHT",
+      "fps": 30.0,
+      "frames": 9479,
+      "last_action_frame": 8525,
+      "width": 3840,
+      "height": 2160,
+      "duration_s": 316.0,
+      "status": "REVIEW_REQUIRED",
+      "issues": [],
+      "warnings": [
+        "label_media_frame_count_difference",
+        "nominal_fps_requires_frame_pts_mapping"
+      ],
+      "media_probe": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "avg_frame_rate": "30000/1001",
+            "duration": "316.015700",
+            "nb_frames": "9471"
+          }
+        ],
+        "format": {
+          "duration": "316.015700"
+        }
+      },
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "1-1/1-1_cam02_fight04_place02_night_spring.mp4",
+      "video_sha256": "2883d3a4df56849d8acf29cdfdcab4bd6fabba4aab7611e5fa5a2c750444f307",
+      "video_bytes": 481046176,
+      "label_member": "1-1/1-1_cam02_fight04_place02_night_spring.xml",
+      "label_sha256": "2abd3bc0b85f86c637d8a8f681972f4194dd413589c698dfb7e192307df469bf",
+      "event_type": "fight",
+      "event_start_s": 202.2,
+      "event_end_s": 320.29999999999995,
+      "label_time_text": {
+        "video_duration": "00:05:37.2",
+        "event_start": "00:03:22.2",
+        "event_duration": "00:01:58.1"
+      },
+      "participants": [
+        "person_01",
+        "person_02"
+      ],
+      "scene_group": "nia2019:fight:1-1",
+      "location": "PLACE02",
+      "time_of_day": "NIGHT",
+      "fps": 30.0,
+      "frames": 10117,
+      "last_action_frame": 9609,
+      "width": 3840,
+      "height": 2160,
+      "duration_s": 337.2,
+      "status": "REVIEW_REQUIRED",
+      "issues": [],
+      "warnings": [
+        "label_media_frame_count_difference",
+        "nominal_fps_requires_frame_pts_mapping"
+      ],
+      "media_probe": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "avg_frame_rate": "30000/1001",
+            "duration": "337.270267",
+            "nb_frames": "10108"
+          }
+        ],
+        "format": {
+          "duration": "337.270267"
+        }
+      },
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "1-1/1-1_cam02_fight04_place02_night_summer.mp4",
+      "video_sha256": "ad3e37fdd775dc341ca1695936240ee8162f95cdb537b127544ad0d7daa4b79f",
+      "video_bytes": 81920,
+      "label_member": "1-1/1-1_cam02_fight04_place02_night_summer.xml",
+      "label_sha256": "1894293de72d23467c3ea409fd8cafe0e3a3313aba1680e9e2d5d7069f7470ba",
+      "event_type": "fight",
+      "event_start_s": 83.3,
+      "event_end_s": 284.8,
+      "label_time_text": {
+        "video_duration": "00:05:11.7",
+        "event_start": "00:01:23.3",
+        "event_duration": "00:03:21.5"
+      },
+      "participants": [
+        "person_01",
+        "person_02"
+      ],
+      "scene_group": "nia2019:fight:1-1",
+      "location": "PLACE02",
+      "time_of_day": "NIGHT",
+      "fps": 30.0,
+      "frames": 9350,
+      "last_action_frame": 8543,
+      "width": 3840,
+      "height": 2160,
+      "duration_s": 311.7,
+      "status": "QUARANTINE",
+      "issues": [
+        "CalledProcessError:Command '['ffprobe', '-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=width,height,avg_frame_rate,nb_frames,duration:format=duration', '-of', 'json', '/media/sawwave/Learning11/CCTV-project/data/runtime/p57_fight_access_20261015/inspected_49753/tmpcu15tgnq.mp4']' returned non-zero exit status 1."
+      ],
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "1-2/1-2_cam01_fight04_place02_night_spring.mp4",
+      "video_sha256": "a097b43bb466d0b59bd4ed85bd331b85c5797e1506503ff46f1fa1991279cf1c",
+      "video_bytes": 395616862,
+      "label_member": "1-2/1-2_cam01_fight04_place02_night_spring.xml",
+      "label_sha256": "456f5504709bd8c0b27a6bbd63be4799c300b60b504e5fbe8eca919267850516",
+      "event_type": "fight",
+      "event_start_s": 251.4,
+      "event_end_s": 304.4,
+      "label_time_text": {
+        "video_duration": "00:05:16.1",
+        "event_start": "00:04:11.4",
+        "event_duration": "00:00:53.0"
+      },
+      "participants": [
+        "person_01",
+        "person_02"
+      ],
+      "scene_group": "nia2019:fight:1-2",
+      "location": "PLACE02",
+      "time_of_day": "NIGHT",
+      "fps": 30.0,
+      "frames": 9484,
+      "last_action_frame": 9131,
+      "width": 3840,
+      "height": 2160,
+      "duration_s": 316.1,
+      "status": "REVIEW_REQUIRED",
+      "issues": [],
+      "warnings": [
+        "label_media_frame_count_difference",
+        "nominal_fps_requires_frame_pts_mapping"
+      ],
+      "media_probe": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "avg_frame_rate": "30000/1001",
+            "duration": "316.182533",
+            "nb_frames": "9476"
+          }
+        ],
+        "format": {
+          "duration": "316.182533"
+        }
+      },
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "1-2/1-2_cam01_fight04_place02_night_summer.mp4",
+      "video_sha256": "0727754c1ddcbead591992d092b960400817791cfc2f32b0346617c08f45b52c",
+      "video_bytes": 789786613,
+      "label_member": "1-2/1-2_cam01_fight04_place02_night_summer.xml",
+      "status": "QUARANTINE",
+      "issues": [
+        "ValueError:invalid_event_interval_or_class"
+      ],
+      "label_sha256": "f966eb29c8a193c1c2d60d2e9506702c91d05f9680d754a774d9134cbf6a069a",
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "1-2/1-2_cam02_fight04_place02_night_spring.mp4",
+      "video_sha256": "9670876bbbfb331e226f6e4e75e40537a3af7e2c7f10679ee76ef47b59e750f9",
+      "video_bytes": 402278365,
+      "label_member": "1-2/1-2_cam02_fight04_place02_night_spring.xml",
+      "label_sha256": "cde08212f863a4fc99823f2f27f4ec78ccaecc80ee6e979de309285792332f04",
+      "event_type": "fight",
+      "event_start_s": 280.6,
+      "event_end_s": 304.5,
+      "label_time_text": {
+        "video_duration": "00:05:21.3",
+        "event_start": "00:04:40.6",
+        "event_duration": "00:00:23.9"
+      },
+      "participants": [
+        "person_01",
+        "person_02"
+      ],
+      "scene_group": "nia2019:fight:1-2",
+      "location": "PLACE02",
+      "time_of_day": "NIGHT",
+      "fps": 30.0,
+      "frames": 9638,
+      "last_action_frame": 9135,
+      "width": 3840,
+      "height": 2160,
+      "duration_s": 321.3,
+      "status": "REVIEW_REQUIRED",
+      "issues": [],
+      "warnings": [
+        "label_media_frame_count_difference",
+        "nominal_fps_requires_frame_pts_mapping"
+      ],
+      "media_probe": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "avg_frame_rate": "30000/1001",
+            "duration": "321.321000",
+            "nb_frames": "9630"
+          }
+        ],
+        "format": {
+          "duration": "321.321000"
+        }
+      },
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "1-2/1-2_cam02_fight04_place02_night_summer.mp4",
+      "video_sha256": "c491d3c977a0b9f62af52d2d510118faab52d7cde3a53998b68fa51f417bb99c",
+      "video_bytes": 796102097,
+      "label_member": "1-2/1-2_cam02_fight04_place02_night_summer.xml",
+      "label_sha256": "b643c1809dc429b838fa65b36c9109b79248f53e1e6582ff0d1256e6bf0810f6",
+      "event_type": "fight",
+      "event_start_s": 289.8,
+      "event_end_s": 295.3,
+      "label_time_text": {
+        "video_duration": "00:05:13.2",
+        "event_start": "00:04:49.8",
+        "event_duration": "00:00:05.5"
+      },
+      "participants": [
+        "person_01",
+        "person_02"
+      ],
+      "scene_group": "nia2019:fight:1-2",
+      "location": "PLACE02",
+      "time_of_day": "NIGHT",
+      "fps": 30.0,
+      "frames": 9396,
+      "last_action_frame": 8858,
+      "width": 3840,
+      "height": 2160,
+      "duration_s": 313.2,
+      "status": "REVIEW_REQUIRED",
+      "issues": [],
+      "warnings": [
+        "label_media_frame_count_difference",
+        "nominal_fps_requires_frame_pts_mapping"
+      ],
+      "media_probe": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "avg_frame_rate": "30000/1001",
+            "duration": "313.212900",
+            "nb_frames": "9387"
+          }
+        ],
+        "format": {
+          "duration": "313.258667"
+        }
+      },
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "1-3/1-3_cam01_fight04_place02_night_spring.mp4",
+      "video_sha256": "9244845bf4b46c0a79fdc47a0f03879937852c9abf7975ef6af1270b98be4aba",
+      "video_bytes": 802916077,
+      "label_member": "1-3/1-3_cam01_fight04_place02_night_spring.xml",
+      "label_sha256": "cd36ec3d46a286effe4a7e6becccf7eff31490c68d225c6cae0fa53dda62ec6c",
+      "event_type": "fight",
+      "event_start_s": 232.4,
+      "event_end_s": 293.1,
+      "label_time_text": {
+        "video_duration": "00:05:15.7",
+        "event_start": "00:03:52.4",
+        "event_duration": "00:01:00.7"
+      },
+      "participants": [
+        "person_1",
+        "person_2"
+      ],
+      "scene_group": "nia2019:fight:1-3",
+      "location": "PLACE02",
+      "time_of_day": "NIGHT",
+      "fps": 30.0,
+      "frames": 9470,
+      "last_action_frame": 8792,
+      "width": 3840,
+      "height": 2160,
+      "duration_s": 315.7,
+      "status": "REVIEW_REQUIRED",
+      "issues": [],
+      "warnings": [
+        "label_media_frame_count_difference",
+        "nominal_fps_requires_frame_pts_mapping"
+      ],
+      "media_probe": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "avg_frame_rate": "30000/1001",
+            "duration": "315.682033",
+            "nb_frames": "9461"
+          }
+        ],
+        "format": {
+          "duration": "315.733333"
+        }
+      },
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "1-3/1-3_cam01_fight04_place02_night_summer.mp4",
+      "video_sha256": "87744861e514b3186e9960311c864afa04f382f364715a3a9b53d6a5a27013f0",
+      "video_bytes": 818727908,
+      "label_member": "1-3/1-3_cam01_fight04_place02_night_summer.xml",
+      "label_sha256": "7fffb84f7ac37f189eae54a536f6fcea9083d80d9fc5eb6c43f0dfc780446235",
+      "event_type": "fight",
+      "event_start_s": 285.7,
+      "event_end_s": 309.4,
+      "label_time_text": {
+        "video_duration": "00:05:22.0",
+        "event_start": "00:04:45.7",
+        "event_duration": "00:00:23.7"
+      },
+      "participants": [
+        "person_1",
+        "person_2"
+      ],
+      "scene_group": "nia2019:fight:1-3",
+      "location": "PLACE02",
+      "time_of_day": "NIGHT",
+      "fps": 30.0,
+      "frames": 9660,
+      "last_action_frame": 9283,
+      "width": 3840,
+      "height": 2160,
+      "duration_s": 322.0,
+      "status": "REVIEW_REQUIRED",
+      "issues": [],
+      "warnings": [
+        "label_media_frame_count_difference",
+        "nominal_fps_requires_frame_pts_mapping"
+      ],
+      "media_probe": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "avg_frame_rate": "30000/1001",
+            "duration": "322.021700",
+            "nb_frames": "9651"
+          }
+        ],
+        "format": {
+          "duration": "322.069333"
+        }
+      },
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "1-3/1-3_cam02_fight04_place02_night_spring.mp4",
+      "video_sha256": "4272b5eee395b87af7d48ab125a703df33bf6bd0545c258099a6f0f9849c25ca",
+      "video_bytes": 801277191,
+      "label_member": "1-3/1-3_cam02_fight04_place02_night_spring.xml",
+      "label_sha256": "7447ea424d7aea05dca37d456e9dc1d508910679ff9068dada633f06c9af5651",
+      "event_type": "fight",
+      "event_start_s": 232.7,
+      "event_end_s": 285.59999999999997,
+      "label_time_text": {
+        "video_duration": "00:05:15.2",
+        "event_start": "00:03:52.7",
+        "event_duration": "00:00:52.9"
+      },
+      "participants": [
+        "person_1",
+        "person_2"
+      ],
+      "scene_group": "nia2019:fight:1-3",
+      "location": "PLACE02",
+      "time_of_day": "DAY",
+      "fps": 30.0,
+      "frames": 9455,
+      "last_action_frame": 8569,
+      "width": 3840,
+      "height": 2160,
+      "duration_s": 315.2,
+      "status": "REVIEW_REQUIRED",
+      "issues": [],
+      "warnings": [
+        "label_media_frame_count_difference",
+        "nominal_fps_requires_frame_pts_mapping"
+      ],
+      "media_probe": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "avg_frame_rate": "30000/1001",
+            "duration": "315.181533",
+            "nb_frames": "9446"
+          }
+        ],
+        "format": {
+          "duration": "315.221333"
+        }
+      },
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "1-3/1-3_cam02_fight04_place02_night_summer.mp4",
+      "video_sha256": "add4856f7b1901759c00ba53c93d1eafb90cbe338e631d8b14008c718f1608da",
+      "video_bytes": 975005997,
+      "label_member": "1-3/1-3_cam02_fight04_place02_night_summer.xml",
+      "label_sha256": "a9b2670258cac8dda02a3e6ee423fff527f11c5a59b57992edfd6667cb9d3340",
+      "event_type": "fight",
+      "event_start_s": 286.2,
+      "event_end_s": 309.9,
+      "label_time_text": {
+        "video_duration": "00:06:23.6",
+        "event_start": "00:04:46.2",
+        "event_duration": "00:00:23.7"
+      },
+      "participants": [
+        "person_1",
+        "person_2"
+      ],
+      "scene_group": "nia2019:fight:1-3",
+      "location": "PLACE01",
+      "time_of_day": "NIGHT",
+      "fps": 30.0,
+      "frames": 11508,
+      "last_action_frame": 9297,
+      "width": 3840,
+      "height": 2160,
+      "duration_s": 383.6,
+      "status": "REVIEW_REQUIRED",
+      "issues": [],
+      "warnings": [
+        "label_media_frame_count_difference",
+        "nominal_fps_requires_frame_pts_mapping"
+      ],
+      "media_probe": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "avg_frame_rate": "30000/1001",
+            "duration": "383.616567",
+            "nb_frames": "11497"
+          }
+        ],
+        "format": {
+          "duration": "383.658667"
+        }
+      },
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "1-4/1-4_cam01_fight04_place02_night_spring.mp4",
+      "video_sha256": "8b3cf53f08c23aef1c482c63b28e8989d9e2189d909c219cccb09c255d7e0d12",
+      "video_bytes": 793578299,
+      "label_member": "1-4/1-4_cam01_fight04_place02_night_spring.xml",
+      "label_sha256": "cccadd5e726889ee7d616e414c990add955b7f694f40fd356d8699ba0dfa01ef",
+      "event_type": "fight",
+      "event_start_s": 243.2,
+      "event_end_s": 284.8,
+      "label_time_text": {
+        "video_duration": "00:05:12.1",
+        "event_start": "00:04:03.2",
+        "event_duration": "00:00:41.6"
+      },
+      "participants": [
+        "person_1",
+        "person_2"
+      ],
+      "scene_group": "nia2019:fight:1-4",
+      "location": "PLACE01",
+      "time_of_day": "NIGHT",
+      "fps": 30.0,
+      "frames": 9363,
+      "last_action_frame": 8543,
+      "width": 3840,
+      "height": 2160,
+      "duration_s": 312.1,
+      "status": "REVIEW_REQUIRED",
+      "issues": [],
+      "warnings": [
+        "label_media_frame_count_difference",
+        "nominal_fps_requires_frame_pts_mapping"
+      ],
+      "media_probe": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "avg_frame_rate": "30000/1001",
+            "duration": "312.111800",
+            "nb_frames": "9354"
+          }
+        ],
+        "format": {
+          "duration": "312.149333"
+        }
+      },
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "1-4/1-4_cam01_fight04_place02_night_summer.mp4",
+      "video_sha256": "4ce4dabb546e3383c6d5fc6143e4dbf6bb9210f01a7e26c96b499686136e4731",
+      "video_bytes": 796184254,
+      "label_member": "1-4/1-4_cam01_fight04_place02_night_summer.xml",
+      "label_sha256": "d9a9810a5e075f247bae09e423542edcb3d219b4d74b52e684d6df756adbc177",
+      "event_type": "fight",
+      "event_start_s": 236.7,
+      "event_end_s": 288.4,
+      "label_time_text": {
+        "video_duration": "00:05:13.1",
+        "event_start": "00:03:56.7",
+        "event_duration": "00:00:51.7"
+      },
+      "participants": [
+        "person_1",
+        "person_2"
+      ],
+      "scene_group": "nia2019:fight:1-4",
+      "location": "PLACE02",
+      "time_of_day": "NIGHT",
+      "fps": 30.0,
+      "frames": 9393,
+      "last_action_frame": 8653,
+      "width": 3840,
+      "height": 2160,
+      "duration_s": 313.1,
+      "status": "REVIEW_REQUIRED",
+      "issues": [],
+      "warnings": [
+        "label_media_frame_count_difference",
+        "nominal_fps_requires_frame_pts_mapping"
+      ],
+      "media_probe": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "avg_frame_rate": "30000/1001",
+            "duration": "313.112800",
+            "nb_frames": "9384"
+          }
+        ],
+        "format": {
+          "duration": "313.152000"
+        }
+      },
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "1-4/1-4_cam02_fight04_place02_night_spring.mp4",
+      "video_sha256": "4dd5187773c6be3c7f6397b09168fdf7e5ab2ca7bae6ac02431b1aa42e51e261",
+      "video_bytes": 789829629,
+      "label_member": "1-4/1-4_cam02_fight04_place02_night_spring.xml",
+      "label_sha256": "8ab0c7477d027779c0045c7bb6f7e53783195c7bb3878d544f212a242abe7d28",
+      "event_type": "fight",
+      "event_start_s": 241.7,
+      "event_end_s": 280.5,
+      "label_time_text": {
+        "video_duration": "00:05:10.6",
+        "event_start": "00:04:01.7",
+        "event_duration": "00:00:38.8"
+      },
+      "participants": [
+        "person_1",
+        "person_2"
+      ],
+      "scene_group": "nia2019:fight:1-4",
+      "location": "PLACE02",
+      "time_of_day": "NIGHT",
+      "fps": 30.0,
+      "frames": 9319,
+      "last_action_frame": 8415,
+      "width": 3840,
+      "height": 2160,
+      "duration_s": 310.6,
+      "status": "REVIEW_REQUIRED",
+      "issues": [],
+      "warnings": [
+        "label_media_frame_count_difference",
+        "nominal_fps_requires_frame_pts_mapping"
+      ],
+      "media_probe": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "avg_frame_rate": "30000/1001",
+            "duration": "310.643667",
+            "nb_frames": "9310"
+          }
+        ],
+        "format": {
+          "duration": "310.677333"
+        }
+      },
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "1-4/1-4_cam02_fight04_place02_night_summer.mp4",
+      "video_sha256": "5307393176736c711b08adaa9f8268e9503909bc53ee50078803c3d6ebc7e6d1",
+      "video_bytes": 844098241,
+      "label_member": "1-4/1-4_cam02_fight04_place02_night_summer.xml",
+      "label_sha256": "3dd9c48a887d5196fe56c89771069e2e85dff65e4d44e158cb22acb3dec7c833",
+      "event_type": "fight",
+      "event_start_s": 216.7,
+      "event_end_s": 288.0,
+      "label_time_text": {
+        "video_duration": "00:05:32.0",
+        "event_start": "00:03:36.7",
+        "event_duration": "00:01:11.3"
+      },
+      "participants": [
+        "person_1",
+        "person_2"
+      ],
+      "scene_group": "nia2019:fight:1-4",
+      "location": "PLACE02",
+      "time_of_day": "NIGHT",
+      "fps": 30.0,
+      "frames": 9958,
+      "last_action_frame": 8639,
+      "width": 3840,
+      "height": 2160,
+      "duration_s": 332.0,
+      "status": "REVIEW_REQUIRED",
+      "issues": [],
+      "warnings": [
+        "label_media_frame_count_difference",
+        "nominal_fps_requires_frame_pts_mapping"
+      ],
+      "media_probe": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "avg_frame_rate": "30000/1001",
+            "duration": "331.964967",
+            "nb_frames": "9949"
+          }
+        ],
+        "format": {
+          "duration": "332.010667"
+        }
+      },
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "11-1/11-1_cam01_fight01_place08_night_spring.mp4",
+      "video_sha256": "932b4bff32f280bf0fc0bfc67f15aa4aeb1921f85c73a2282330032385f4922e",
+      "video_bytes": 752616989,
+      "label_member": "11-1/11-1_cam01_fight01_place08_night_spring.xml",
+      "status": "QUARANTINE",
+      "issues": [
+        "ValueError:invalid_event_interval_or_class"
+      ],
+      "label_sha256": "e52de7528fa8fdac53d3859f52bf288632f953e369fa59d6e4aa8418f2149e5d",
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "11-1/11-1_cam01_fight01_place08_night_summer.mp4",
+      "video_sha256": "6c7bac68a601b7ae1dc6080ac79283bd308ab41618a249633a08ba072e09763b",
+      "video_bytes": 738653921,
+      "label_member": "11-1/11-1_cam01_fight01_place08_night_summer.xml",
+      "label_sha256": "368fc9a7d5145d781e052534abea0c031fc8587471bb5308ef1d1ad9ecc0b2eb",
+      "event_type": "fight",
+      "event_start_s": 108.2,
+      "event_end_s": 290.2,
+      "label_time_text": {
+        "video_duration": "00:04:53.1",
+        "event_start": "00:01:48.2",
+        "event_duration": "00:03:02.0"
+      },
+      "participants": [
+        "person_1",
+        "person_2"
+      ],
+      "scene_group": "nia2019:fight:11-1",
+      "location": "PLACE08",
+      "time_of_day": "NIGHT",
+      "fps": 30.0,
+      "frames": 8791,
+      "last_action_frame": 8707,
+      "width": 3840,
+      "height": 2160,
+      "duration_s": 293.1,
+      "status": "REVIEW_REQUIRED",
+      "issues": [],
+      "warnings": [
+        "label_media_frame_count_difference",
+        "nominal_fps_requires_frame_pts_mapping"
+      ],
+      "media_probe": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "avg_frame_rate": "30000/1001",
+            "duration": "293.059433",
+            "nb_frames": "8783"
+          }
+        ],
+        "format": {
+          "duration": "293.098667"
+        }
+      },
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "11-1/11-1_cam02_fight01_place08_night_spring.mp4",
+      "video_sha256": "d4b04a0072c890d74d1d7d8bb455633b7b865d5647bcc338ccfa476a1dfbc393",
+      "video_bytes": 752169188,
+      "label_member": "11-1/11-1_cam02_fight01_place08_night_spring.xml",
+      "label_sha256": "ec24cf8053c0f259967d62e0db3013dfd7043745f7bc3511e0685fe90b81f823",
+      "event_type": "fight",
+      "event_start_s": 69.6,
+      "event_end_s": 294.4,
+      "label_time_text": {
+        "video_duration": "00:04:58.4",
+        "event_start": "00:01:09.6",
+        "event_duration": "00:03:44.8"
+      },
+      "participants": [
+        "person_1",
+        "person_2"
+      ],
+      "scene_group": "nia2019:fight:11-1",
+      "location": "PLACE08",
+      "time_of_day": "NIGHT",
+      "fps": 30.0,
+      "frames": 8950,
+      "last_action_frame": 8833,
+      "width": 3840,
+      "height": 2160,
+      "duration_s": 298.4,
+      "status": "REVIEW_REQUIRED",
+      "issues": [],
+      "warnings": [
+        "label_media_frame_count_difference",
+        "nominal_fps_requires_frame_pts_mapping"
+      ],
+      "media_probe": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "avg_frame_rate": "30000/1001",
+            "duration": "298.364733",
+            "nb_frames": "8942"
+          }
+        ],
+        "format": {
+          "duration": "298.410667"
+        }
+      },
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "11-1/11-1_cam02_fight01_place08_night_summer.mp4",
+      "video_sha256": "0f3dc47d92b16f9ce8bf4cc9f47f61503b3b205da6ad45958fb2931cec8bad90",
+      "video_bytes": 740370817,
+      "label_member": "11-1/11-1_cam02_fight01_place08_night_summer.xml",
+      "label_sha256": "822084f5f0af153970915cfbcfe351c2597767fcab066dcc5735c91bd0b96fac",
+      "event_type": "fight",
+      "event_start_s": 28.0,
+      "event_end_s": 291.7,
+      "label_time_text": {
+        "video_duration": "00:04:53.7",
+        "event_start": "00:00:28.0",
+        "event_duration": "00:04:23.7"
+      },
+      "participants": [
+        "person_1",
+        "person_2"
+      ],
+      "scene_group": "nia2019:fight:11-1",
+      "location": "PLACE08",
+      "time_of_day": "NIGHT",
+      "fps": 30.0,
+      "frames": 8811,
+      "last_action_frame": 8751,
+      "width": 3840,
+      "height": 2160,
+      "duration_s": 293.7,
+      "status": "REVIEW_REQUIRED",
+      "issues": [],
+      "warnings": [
+        "label_media_frame_count_difference",
+        "nominal_fps_requires_frame_pts_mapping"
+      ],
+      "media_probe": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "avg_frame_rate": "30000/1001",
+            "duration": "293.726767",
+            "nb_frames": "8803"
+          }
+        ],
+        "format": {
+          "duration": "293.781333"
+        }
+      },
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "11-3/11-3_cam01_fight01_place08_night_summer.mp4",
+      "video_sha256": "600da75f50a3671fd5663fafcbe160b8e1131bca674aaf00dae112a43ee15889",
+      "video_bytes": 770155071,
+      "label_member": "11-3/11-3_cam01_fight01_place08_night_summer.xml",
+      "label_sha256": "4f6703ad488a1f85aac608fe4347f1f2fd9daa3f3ecd9f1a6259aee94ba7e6f8",
+      "event_type": "fight",
+      "event_start_s": 85.1,
+      "event_end_s": 305.6,
+      "label_time_text": {
+        "video_duration": "00:05:05.6",
+        "event_start": "00:01:25.1",
+        "event_duration": "00:03:40.5"
+      },
+      "participants": [
+        "person_1",
+        "person_2"
+      ],
+      "scene_group": "nia2019:fight:11-3",
+      "location": "PLACE08",
+      "time_of_day": "NIGHT",
+      "fps": 30.0,
+      "frames": 9167,
+      "last_action_frame": 9167,
+      "width": 3840,
+      "height": 2160,
+      "duration_s": 305.6,
+      "status": "REVIEW_REQUIRED",
+      "issues": [],
+      "warnings": [
+        "action_frame_requires_pts_validation",
+        "label_media_frame_count_difference",
+        "nominal_fps_requires_frame_pts_mapping"
+      ],
+      "media_probe": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "avg_frame_rate": "30000/1001",
+            "duration": "305.571933",
+            "nb_frames": "9158"
+          }
+        ],
+        "format": {
+          "duration": "305.621333"
+        }
+      },
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "11-3/11-3_cam02_fight01_place08_night_summer.mp4",
+      "video_sha256": "c1ba95f23a650be772b7bb7268c882f0c40190957aed961eb6a6139c10a0b246",
+      "video_bytes": 757966254,
+      "label_member": "11-3/11-3_cam02_fight01_place08_night_summer.xml",
+      "label_sha256": "17eeecc6451fab531ad4c55e35db992fa1b009af209ca7335c43dee7509edb64",
+      "event_type": "fight",
+      "event_start_s": 77.1,
+      "event_end_s": 300.7,
+      "label_time_text": {
+        "video_duration": "00:05:00.7",
+        "event_start": "00:01:17.1",
+        "event_duration": "00:03:43.6"
+      },
+      "participants": [
+        "person_1",
+        "person_2"
+      ],
+      "scene_group": "nia2019:fight:11-3",
+      "location": "PLACE08",
+      "time_of_day": "NIGHT",
+      "fps": 30.0,
+      "frames": 9022,
+      "last_action_frame": 9022,
+      "width": 3840,
+      "height": 2160,
+      "duration_s": 300.7,
+      "status": "REVIEW_REQUIRED",
+      "issues": [],
+      "warnings": [
+        "action_frame_requires_pts_validation",
+        "label_media_frame_count_difference",
+        "nominal_fps_requires_frame_pts_mapping"
+      ],
+      "media_probe": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "avg_frame_rate": "30000/1001",
+            "duration": "300.733767",
+            "nb_frames": "9013"
+          }
+        ],
+        "format": {
+          "duration": "300.778667"
+        }
+      },
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "14-1/14-1_cam01_fight02_place06_night_spring.mp4",
+      "video_sha256": "ec38856fdb8d33d1fb7482b2536b985dd5cae28a64707488a401590e7b208f0c",
+      "video_bytes": 714256969,
+      "label_member": "14-1/14-1_cam01_fight02_place06_night_spring.xml",
+      "label_sha256": "89d8d5afe89545cfb9820f76ebbeffa780bff4e365bf10fd230494f3d7edf208",
+      "event_type": "fight",
+      "event_start_s": 22.3,
+      "event_end_s": 240.5,
+      "label_time_text": {
+        "video_duration": "00:04:41.0",
+        "event_start": "00:00:22.3",
+        "event_duration": "00:03:38.2"
+      },
+      "participants": [
+        "person_2",
+        "person_1"
+      ],
+      "scene_group": "nia2019:fight:14-1",
+      "location": "PLACE06",
+      "time_of_day": "NIGHT",
+      "fps": 30.0,
+      "frames": 8429,
+      "last_action_frame": 7216,
+      "width": 3840,
+      "height": 2160,
+      "duration_s": 281.0,
+      "status": "REVIEW_REQUIRED",
+      "issues": [],
+      "warnings": [
+        "label_media_frame_count_difference",
+        "nominal_fps_requires_frame_pts_mapping"
+      ],
+      "media_probe": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "avg_frame_rate": "30000/1001",
+            "duration": "280.980700",
+            "nb_frames": "8421"
+          }
+        ],
+        "format": {
+          "duration": "281.024000"
+        }
+      },
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "14-1/14-1_cam01_fight02_place06_night_summer.mp4",
+      "video_sha256": "5fe85c3b11139f78013e68eed1eaa4de2353fa35e4ae54c01fa6cbd4134bd768",
+      "video_bytes": 755924194,
+      "label_member": "14-1/14-1_cam01_fight02_place06_night_summer.xml",
+      "label_sha256": "1e4bf5b29e45aa49a39b68fb70e8f3bbb48f7f52ad872d05d9909ab194e07612",
+      "event_type": "fight",
+      "event_start_s": 40.6,
+      "event_end_s": 293.40000000000003,
+      "label_time_text": {
+        "video_duration": "00:04:57.4",
+        "event_start": "00:00:40.6",
+        "event_duration": "00:04:12.8"
+      },
+      "participants": [
+        "person_1",
+        "person_2"
+      ],
+      "scene_group": "nia2019:fight:14-1",
+      "location": "PLACE06",
+      "time_of_day": "NIGHT",
+      "fps": 30.0,
+      "frames": 8921,
+      "last_action_frame": 8802,
+      "width": 3840,
+      "height": 2160,
+      "duration_s": 297.4,
+      "status": "REVIEW_REQUIRED",
+      "issues": [],
+      "warnings": [
+        "label_media_frame_count_difference",
+        "nominal_fps_requires_frame_pts_mapping"
+      ],
+      "media_probe": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "avg_frame_rate": "30000/1001",
+            "duration": "297.397100",
+            "nb_frames": "8913"
+          }
+        ],
+        "format": {
+          "duration": "297.450667"
+        }
+      },
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "14-1/14-1_cam02_fight02_place06_night_spring.mp4",
+      "video_sha256": "ba577eb21988a80bb30aa5a1c65e162ad38869ee9ee3102f6499f53575a4af84",
+      "video_bytes": 791777773,
+      "label_member": "14-1/14-1_cam02_fight02_place06_night_spring.xml",
+      "label_sha256": "70b1cd65ca2dbf38fb73d9a01a1cab28783a03fedfd8be6bdb968756edc3ce99",
+      "event_type": "fight",
+      "event_start_s": 52.8,
+      "event_end_s": 268.9,
+      "label_time_text": {
+        "video_duration": "00:05:11.4",
+        "event_start": "00:00:52.8",
+        "event_duration": "00:03:36.1"
+      },
+      "participants": [
+        "person_1",
+        "person_2"
+      ],
+      "scene_group": "nia2019:fight:14-1",
+      "location": "PLACE06",
+      "time_of_day": "NIGHT",
+      "fps": 30.0,
+      "frames": 9341,
+      "last_action_frame": 8066,
+      "width": 3840,
+      "height": 2160,
+      "duration_s": 311.4,
+      "status": "REVIEW_REQUIRED",
+      "issues": [],
+      "warnings": [
+        "label_media_frame_count_difference",
+        "nominal_fps_requires_frame_pts_mapping"
+      ],
+      "media_probe": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "avg_frame_rate": "30000/1001",
+            "duration": "311.377733",
+            "nb_frames": "9332"
+          }
+        ],
+        "format": {
+          "duration": "311.424000"
+        }
+      },
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "14-1/14-1_cam02_fight02_place06_night_summer.mp4",
+      "video_sha256": "26b3fb5942a3c7d1cfc0025e9b405018fca869d5f1c8d55f74b0e9a92e04ad30",
+      "video_bytes": 851028752,
+      "label_member": "14-1/14-1_cam02_fight02_place06_night_summer.xml",
+      "label_sha256": "f6babd4b9adfbfa251324e5545607b3850d66c98e9cbeec53d9844f5cfdebecd",
+      "event_type": "fight",
+      "event_start_s": 78.6,
+      "event_end_s": 334.5,
+      "label_time_text": {
+        "video_duration": "00:05:34.7",
+        "event_start": "00:01:18.6",
+        "event_duration": "00:04:15.9"
+      },
+      "participants": [
+        "person_1",
+        "person_2"
+      ],
+      "scene_group": "nia2019:fight:14-1",
+      "location": "PLACE06",
+      "time_of_day": "NIGHT",
+      "fps": 30.0,
+      "frames": 10041,
+      "last_action_frame": 10034,
+      "width": 3840,
+      "height": 2160,
+      "duration_s": 334.7,
+      "status": "REVIEW_REQUIRED",
+      "issues": [],
+      "warnings": [
+        "action_frame_requires_pts_validation",
+        "label_media_frame_count_difference",
+        "nominal_fps_requires_frame_pts_mapping"
+      ],
+      "media_probe": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "avg_frame_rate": "30000/1001",
+            "duration": "334.701033",
+            "nb_frames": "10031"
+          }
+        ],
+        "format": {
+          "duration": "334.741333"
+        }
+      },
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "14-2/14-2_cam01_fight02_place06_night_spring.mp4",
+      "video_sha256": "3c7fb9b48b06ba0013296950f589428047e910fc19f7d332f6f9027805951c85",
+      "video_bytes": 812633222,
+      "label_member": "14-2/14-2_cam01_fight02_place06_night_spring.xml",
+      "label_sha256": "a88e17c28d6b84178bb8d9ea9ae330619caff55d0ea918af311ada8c89c37eb1",
+      "event_type": "fight",
+      "event_start_s": 65.5,
+      "event_end_s": 318.6,
+      "label_time_text": {
+        "video_duration": "00:05:19.6",
+        "event_start": "00:01:05.5",
+        "event_duration": "00:04:13.1"
+      },
+      "participants": [
+        "person_1",
+        "person_2"
+      ],
+      "scene_group": "nia2019:fight:14-2",
+      "location": "PLACE06",
+      "time_of_day": "NIGHT",
+      "fps": 30.0,
+      "frames": 9588,
+      "last_action_frame": 9559,
+      "width": 3840,
+      "height": 2160,
+      "duration_s": 319.6,
+      "status": "REVIEW_REQUIRED",
+      "issues": [],
+      "warnings": [
+        "label_media_frame_count_difference",
+        "nominal_fps_requires_frame_pts_mapping"
+      ],
+      "media_probe": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "avg_frame_rate": "30000/1001",
+            "duration": "319.619300",
+            "nb_frames": "9579"
+          }
+        ],
+        "format": {
+          "duration": "319.658667"
+        }
+      },
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "14-2/14-2_cam01_fight02_place06_night_summer.mp4",
+      "video_sha256": "16efd66e4fb0c2a4405126cd8f35d0880c66274d3b1128adb2a545e4dee14f56",
+      "video_bytes": 828368225,
+      "label_member": "14-2/14-2_cam01_fight02_place06_night_summer.xml",
+      "label_sha256": "e91afe0a86660894bb98a84b46d1f4b3ee063f9e31037d44c38d5362337f65f6",
+      "event_type": "fight",
+      "event_start_s": 87.7,
+      "event_end_s": 323.5,
+      "label_time_text": {
+        "video_duration": "00:05:25.8",
+        "event_start": "00:01:27.7",
+        "event_duration": "00:03:55.8"
+      },
+      "participants": [
+        "person_1",
+        "person_2"
+      ],
+      "scene_group": "nia2019:fight:14-2",
+      "location": "PLACE06",
+      "time_of_day": "NIGHT",
+      "fps": 30.0,
+      "frames": 9774,
+      "last_action_frame": 9703,
+      "width": 3840,
+      "height": 2160,
+      "duration_s": 325.8,
+      "status": "REVIEW_REQUIRED",
+      "issues": [],
+      "warnings": [
+        "label_media_frame_count_difference",
+        "nominal_fps_requires_frame_pts_mapping"
+      ],
+      "media_probe": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "avg_frame_rate": "30000/1001",
+            "duration": "325.825500",
+            "nb_frames": "9765"
+          }
+        ],
+        "format": {
+          "duration": "325.866667"
+        }
+      },
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "14-2/14-2_cam02_fight02_place06_night_spring.mp4",
+      "video_sha256": "e09c2d10a62c29ffd512aee42aff09e9f1e9b61eaf21467fbfef45fafef4dd2e",
+      "video_bytes": 934706999,
+      "label_member": "14-2/14-2_cam02_fight02_place06_night_spring.xml",
+      "label_sha256": "fe24322c7fb9d531605ae297cf494d003698c1a3349479c76175777904edb072",
+      "event_type": "fight",
+      "event_start_s": 82.8,
+      "event_end_s": 322.6,
+      "label_time_text": {
+        "video_duration": "00:06:07.7",
+        "event_start": "00:01:22.8",
+        "event_duration": "00:03:59.8"
+      },
+      "participants": [
+        "person_1",
+        "person_2"
+      ],
+      "scene_group": "nia2019:fight:14-2",
+      "location": "PLACE06",
+      "time_of_day": "NIGHT",
+      "fps": 30.0,
+      "frames": 11030,
+      "last_action_frame": 9679,
+      "width": 3840,
+      "height": 2160,
+      "duration_s": 367.7,
+      "status": "REVIEW_REQUIRED",
+      "issues": [],
+      "warnings": [
+        "label_media_frame_count_difference",
+        "nominal_fps_requires_frame_pts_mapping"
+      ],
+      "media_probe": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "avg_frame_rate": "30000/1001",
+            "duration": "367.667300",
+            "nb_frames": "11019"
+          }
+        ],
+        "format": {
+          "duration": "367.701333"
+        }
+      },
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "14-2/14-2_cam02_fight02_place06_night_summer.mp4",
+      "video_sha256": "d89c065aad35ce2a0fca894ac01a9cf562ed79f88f73e348293c412bc99b894e",
+      "video_bytes": 827977467,
+      "label_member": "14-2/14-2_cam02_fight02_place06_night_summer.xml",
+      "label_sha256": "f440f0814ce2f096cfbd6d7a8595244ade681b03c44ccb85c6c0177b900803c5",
+      "event_type": "fight",
+      "event_start_s": 87.7,
+      "event_end_s": 323.0,
+      "label_time_text": {
+        "video_duration": "00:05:25.6",
+        "event_start": "00:01:27.7",
+        "event_duration": "00:03:55.3"
+      },
+      "participants": [
+        "person_1",
+        "person_2"
+      ],
+      "scene_group": "nia2019:fight:14-2",
+      "location": "PLACE06",
+      "time_of_day": "NIGHT",
+      "fps": 30.0,
+      "frames": 9766,
+      "last_action_frame": 9686,
+      "width": 3840,
+      "height": 2160,
+      "duration_s": 325.6,
+      "status": "REVIEW_REQUIRED",
+      "issues": [],
+      "warnings": [
+        "label_media_frame_count_difference",
+        "nominal_fps_requires_frame_pts_mapping"
+      ],
+      "media_probe": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "avg_frame_rate": "30000/1001",
+            "duration": "325.558567",
+            "nb_frames": "9757"
+          }
+        ],
+        "format": {
+          "duration": "325.610667"
+        }
+      },
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "14-3/14-3_cam01_fight02_place06_night_spring.mp4",
+      "video_sha256": "783e463b5771695f9851590a742ff0d28adb2e1af6b5391c209ea324dd906ecf",
+      "video_bytes": 967675266,
+      "label_member": "14-3/14-3_cam01_fight02_place06_night_spring.xml",
+      "label_sha256": "5ac5e10990c3340f4f14941366380236fb720d441975d5889f0c3c45d32e2517",
+      "event_type": "fight",
+      "event_start_s": 84.8,
+      "event_end_s": 321.1,
+      "label_time_text": {
+        "video_duration": "00:06:20.7",
+        "event_start": "00:01:24.8",
+        "event_duration": "00:03:56.3"
+      },
+      "participants": [
+        "person_1",
+        "person_2"
+      ],
+      "scene_group": "nia2019:fight:14-3",
+      "location": "PLACE06",
+      "time_of_day": "NIGHT",
+      "fps": 30.0,
+      "frames": 11420,
+      "last_action_frame": 9632,
+      "width": 3840,
+      "height": 2160,
+      "duration_s": 380.7,
+      "status": "REVIEW_REQUIRED",
+      "issues": [],
+      "warnings": [
+        "label_media_frame_count_difference",
+        "nominal_fps_requires_frame_pts_mapping"
+      ],
+      "media_probe": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "avg_frame_rate": "30000/1001",
+            "duration": "380.680300",
+            "nb_frames": "11409"
+          }
+        ],
+        "format": {
+          "duration": "380.714667"
+        }
+      },
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "14-3/14-3_cam01_fight02_place06_night_summer.mp4",
+      "video_sha256": "0733740f9fe7dfeb67806fe8e4fd5f2546889d84cddc481a019f9bfe26127fa6",
+      "video_bytes": 820773200,
+      "label_member": "14-3/14-3_cam01_fight02_place06_night_summer.xml",
+      "label_sha256": "c58d5393b1d89a637c8dc2e1fdd15fb1865717ad9bfaf24bf38c35a807f2302c",
+      "event_type": "fight",
+      "event_start_s": 87.8,
+      "event_end_s": 313.7,
+      "label_time_text": {
+        "video_duration": "00:05:22.8",
+        "event_start": "00:01:27.8",
+        "event_duration": "00:03:45.9"
+      },
+      "participants": [
+        "person_1",
+        "person_2"
+      ],
+      "scene_group": "nia2019:fight:14-3",
+      "location": "PLACE06",
+      "time_of_day": "NIGHT",
+      "fps": 30.0,
+      "frames": 9684,
+      "last_action_frame": 9411,
+      "width": 3840,
+      "height": 2160,
+      "duration_s": 322.8,
+      "status": "REVIEW_REQUIRED",
+      "issues": [],
+      "warnings": [
+        "label_media_frame_count_difference",
+        "nominal_fps_requires_frame_pts_mapping"
+      ],
+      "media_probe": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "avg_frame_rate": "30000/1001",
+            "duration": "322.822500",
+            "nb_frames": "9675"
+          }
+        ],
+        "format": {
+          "duration": "322.858667"
+        }
+      },
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "14-3/14-3_cam02_fight02_place06_night_spring.mp4",
+      "video_sha256": "efc965fc506117b1df01b3cf7a988883eaedaba83647b54e0045cda0e3c31cd6",
+      "video_bytes": 818046809,
+      "label_member": "14-3/14-3_cam02_fight02_place06_night_spring.xml",
+      "label_sha256": "affe8fa2ba73986d64394c22974a68286f0df72b427f16df351edd82c3c2036b",
+      "event_type": "fight",
+      "event_start_s": 28.0,
+      "event_end_s": 321.6,
+      "label_time_text": {
+        "video_duration": "00:05:21.6",
+        "event_start": "00:00:28.0",
+        "event_duration": "00:04:53.6"
+      },
+      "participants": [
+        "person_1",
+        "person_2"
+      ],
+      "scene_group": "nia2019:fight:14-3",
+      "location": "PLACE06",
+      "time_of_day": "NIGHT",
+      "fps": 30.0,
+      "frames": 9648,
+      "last_action_frame": 9648,
+      "width": 3840,
+      "height": 2160,
+      "duration_s": 321.6,
+      "status": "REVIEW_REQUIRED",
+      "issues": [],
+      "warnings": [
+        "action_frame_requires_pts_validation",
+        "label_media_frame_count_difference",
+        "nominal_fps_requires_frame_pts_mapping"
+      ],
+      "media_probe": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "avg_frame_rate": "30000/1001",
+            "duration": "321.621300",
+            "nb_frames": "9639"
+          }
+        ],
+        "format": {
+          "duration": "321.664000"
+        }
+      },
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "14-3/14-3_cam02_fight02_place06_night_summer.mp4",
+      "video_sha256": "62ea7d6144e9182a0e697f457df4a6b29c2aedda04fd14fa28b4a5bb42de8767",
+      "video_bytes": 843017691,
+      "label_member": "14-3/14-3_cam02_fight02_place06_night_summer.xml",
+      "label_sha256": "ae4c059b51fd9508dccda0e60c44f32e74db9c7944fdcf71c9a6e717a50c51a3",
+      "event_type": "fight",
+      "event_start_s": 96.4,
+      "event_end_s": 321.70000000000005,
+      "label_time_text": {
+        "video_duration": "00:05:31.6",
+        "event_start": "00:01:36.4",
+        "event_duration": "00:03:45.3"
+      },
+      "participants": [
+        "person_1",
+        "person_2"
+      ],
+      "scene_group": "nia2019:fight:14-3",
+      "location": "PLACE06",
+      "time_of_day": "NIGHT",
+      "fps": 30.0,
+      "frames": 9946,
+      "last_action_frame": 9652,
+      "width": 3840,
+      "height": 2160,
+      "duration_s": 331.6,
+      "status": "REVIEW_REQUIRED",
+      "issues": [],
+      "warnings": [
+        "label_media_frame_count_difference",
+        "nominal_fps_requires_frame_pts_mapping"
+      ],
+      "media_probe": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "avg_frame_rate": "30000/1001",
+            "duration": "331.564567",
+            "nb_frames": "9937"
+          }
+        ],
+        "format": {
+          "duration": "331.605333"
+        }
+      },
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "14-4/14-4_cam01_fight02_place06_night_spring.mp4",
+      "video_sha256": "0ce20e5424e3414db61f3b61bd102850af642363759eb6dc374c46f6d0edb67b",
+      "video_bytes": 835143872,
+      "label_member": "14-4/14-4_cam01_fight02_place06_night_spring.xml",
+      "label_sha256": "9fbdeb9597e66eb2825456ef2c686293a5bd728c2a68f34fd417db5021aecacf",
+      "event_type": "fight",
+      "event_start_s": 114.6,
+      "event_end_s": 328.6,
+      "label_time_text": {
+        "video_duration": "00:05:28.6",
+        "event_start": "00:01:54.6",
+        "event_duration": "00:03:34.0"
+      },
+      "participants": [
+        "person_1",
+        "person_2"
+      ],
+      "scene_group": "nia2019:fight:14-4",
+      "location": "PLACE06",
+      "time_of_day": "NIGHT",
+      "fps": 30.0,
+      "frames": 9856,
+      "last_action_frame": 9856,
+      "width": 3840,
+      "height": 2160,
+      "duration_s": 328.6,
+      "status": "REVIEW_REQUIRED",
+      "issues": [],
+      "warnings": [
+        "action_frame_requires_pts_validation",
+        "label_media_frame_count_difference",
+        "nominal_fps_requires_frame_pts_mapping"
+      ],
+      "media_probe": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "avg_frame_rate": "30000/1001",
+            "duration": "328.561567",
+            "nb_frames": "9847"
+          }
+        ],
+        "format": {
+          "duration": "328.597333"
+        }
+      },
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "14-4/14-4_cam02_fight02_place06_night_spring.mp4",
+      "video_sha256": "05ee40aad0691967035a830338fe52c29c201597380e768501934cfbbd41e6df",
+      "video_bytes": 837739481,
+      "label_member": "14-4/14-4_cam02_fight02_place06_night_spring.xml",
+      "label_sha256": "7026f08f3678b94841566e73121378cb56119dc30f28e39b36bd06c62fe27098",
+      "event_type": "fight",
+      "event_start_s": 117.7,
+      "event_end_s": 329.4,
+      "label_time_text": {
+        "video_duration": "00:05:29.4",
+        "event_start": "00:01:57.7",
+        "event_duration": "00:03:31.7"
+      },
+      "participants": [
+        "person_1",
+        "person_2"
+      ],
+      "scene_group": "nia2019:fight:14-4",
+      "location": "PLACE06",
+      "time_of_day": "NIGHT",
+      "fps": 30.0,
+      "frames": 9881,
+      "last_action_frame": 9881,
+      "width": 3840,
+      "height": 2160,
+      "duration_s": 329.4,
+      "status": "REVIEW_REQUIRED",
+      "issues": [],
+      "warnings": [
+        "action_frame_requires_pts_validation",
+        "label_media_frame_count_difference",
+        "nominal_fps_requires_frame_pts_mapping"
+      ],
+      "media_probe": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "avg_frame_rate": "30000/1001",
+            "duration": "329.395733",
+            "nb_frames": "9872"
+          }
+        ],
+        "format": {
+          "duration": "329.429333"
+        }
+      },
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "14-4/14-4_cam02_fight02_place06_night_summer.mp4",
+      "video_sha256": "cf3a9adcb2848ceee9446d79b14781c848162a3a20bc475e4143e3ea12ac14da",
+      "video_bytes": 826056816,
+      "label_member": "14-4/14-4_cam02_fight02_place06_night_summer.xml",
+      "label_sha256": "86b89ea70e692963f0eee07318da42d249085562afff128daf7277d51f6db310",
+      "event_type": "fight",
+      "event_start_s": 70.4,
+      "event_end_s": 324.4,
+      "label_time_text": {
+        "video_duration": "00:05:24.8",
+        "event_start": "00:01:10.4",
+        "event_duration": "00:04:14.0"
+      },
+      "participants": [
+        "person_1",
+        "person_2"
+      ],
+      "scene_group": "nia2019:fight:14-4",
+      "location": "PLACE06",
+      "time_of_day": "NIGHT",
+      "fps": 30.0,
+      "frames": 9744,
+      "last_action_frame": 9744,
+      "width": 3840,
+      "height": 2160,
+      "duration_s": 324.8,
+      "status": "REVIEW_REQUIRED",
+      "issues": [],
+      "warnings": [
+        "action_frame_requires_pts_validation",
+        "label_media_frame_count_difference",
+        "nominal_fps_requires_frame_pts_mapping"
+      ],
+      "media_probe": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "avg_frame_rate": "30000/1001",
+            "duration": "324.824500",
+            "nb_frames": "9735"
+          }
+        ],
+        "format": {
+          "duration": "324.864000"
+        }
+      },
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "14-5/14-5_cam01_fight02_place06_night_spring.mp4",
+      "video_sha256": "0824b8717438e601ae6d2e71ff89a3b274575d69966afc229100d14ac49557c5",
+      "video_bytes": 861908301,
+      "label_member": "14-5/14-5_cam01_fight02_place06_night_spring.xml",
+      "label_sha256": "29809277618b3e262eafc027b865be2e4f401eb3f836a906e443979c953cf902",
+      "event_type": "fight",
+      "event_start_s": 118.8,
+      "event_end_s": 337.6,
+      "label_time_text": {
+        "video_duration": "00:05:39.0",
+        "event_start": "00:01:58.8",
+        "event_duration": "00:03:38.8"
+      },
+      "participants": [
+        "person_1",
+        "person_2"
+      ],
+      "scene_group": "nia2019:fight:14-5",
+      "location": "PLACE06",
+      "time_of_day": "NIGHT",
+      "fps": 30.0,
+      "frames": 10170,
+      "last_action_frame": 10129,
+      "width": 3840,
+      "height": 2160,
+      "duration_s": 339.0,
+      "status": "REVIEW_REQUIRED",
+      "issues": [],
+      "warnings": [
+        "label_media_frame_count_difference",
+        "nominal_fps_requires_frame_pts_mapping"
+      ],
+      "media_probe": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "avg_frame_rate": "30000/1001",
+            "duration": "339.005333",
+            "nb_frames": "10160"
+          }
+        ],
+        "format": {
+          "duration": "339.050667"
+        }
+      },
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "14-5/14-5_cam01_fight02_place06_night_summer.mp4",
+      "video_sha256": "5cfdfd976029d52cf07be3d809387e9b3985c2c5c69f7f90ce221bc0fd0e9508",
+      "video_bytes": 852626669,
+      "label_member": "14-5/14-5_cam01_fight02_place06_night_summer.xml",
+      "label_sha256": "d7bc0caa12e61cbd8674e7bc87fe6b4d5b50e9992493bdbc0186d848b55bc53f",
+      "event_type": "fight",
+      "event_start_s": 160.7,
+      "event_end_s": 324.7,
+      "label_time_text": {
+        "video_duration": "00:05:35.4",
+        "event_start": "00:02:40.7",
+        "event_duration": "00:02:44.0"
+      },
+      "participants": [
+        "person_1",
+        "person_2"
+      ],
+      "scene_group": "nia2019:fight:14-5",
+      "location": "PLACE06",
+      "time_of_day": "NIGHT",
+      "fps": 30.0,
+      "frames": 10061,
+      "last_action_frame": 9738,
+      "width": 3840,
+      "height": 2160,
+      "duration_s": 335.4,
+      "status": "REVIEW_REQUIRED",
+      "issues": [],
+      "warnings": [
+        "label_media_frame_count_difference",
+        "nominal_fps_requires_frame_pts_mapping"
+      ],
+      "media_probe": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "avg_frame_rate": "30000/1001",
+            "duration": "335.368367",
+            "nb_frames": "10051"
+          }
+        ],
+        "format": {
+          "duration": "335.402667"
+        }
+      },
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "14-5/14-5_cam02_fight02_place06_night_spring.mp4",
+      "video_sha256": "e53ad6963e681914fb8f8c8f5b94f1de70fc202ccd78bb6edc324d7945259869",
+      "video_bytes": 866900007,
+      "label_member": "14-5/14-5_cam02_fight02_place06_night_spring.xml",
+      "label_sha256": "a0b4fab961c780824d37aec90d50d022ecb0225fad7461ce812538da458a5e92",
+      "event_type": "fight",
+      "event_start_s": 120.1,
+      "event_end_s": 339.0,
+      "label_time_text": {
+        "video_duration": "00:05:40.9",
+        "event_start": "02:00.1",
+        "event_duration": "00:03:38.9"
+      },
+      "participants": [
+        "person_1",
+        "person_2"
+      ],
+      "scene_group": "nia2019:fight:14-5",
+      "location": "PLACE06",
+      "time_of_day": "NIGHT",
+      "fps": 30.0,
+      "frames": 10227,
+      "last_action_frame": 10171,
+      "width": 3840,
+      "height": 2160,
+      "duration_s": 340.9,
+      "status": "REVIEW_REQUIRED",
+      "issues": [],
+      "warnings": [
+        "label_media_frame_count_difference",
+        "nominal_fps_requires_frame_pts_mapping"
+      ],
+      "media_probe": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "avg_frame_rate": "30000/1001",
+            "duration": "340.907233",
+            "nb_frames": "10217"
+          }
+        ],
+        "format": {
+          "duration": "340.949333"
+        }
+      },
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "14-5/14-5_cam02_fight02_place06_night_summer.mp4",
+      "video_sha256": "4e06545e5a9cd08d0f563ab4634ebee48bc5239e16358334fea3086832cc69ed",
+      "video_bytes": 842489434,
+      "label_member": "14-5/14-5_cam02_fight02_place06_night_summer.xml",
+      "label_sha256": "80e3ab5f2586703add7291e0b805d50a9a913971db319dc503d1ca3274a1a56a",
+      "event_type": "fight",
+      "event_start_s": 156.6,
+      "event_end_s": 320.1,
+      "label_time_text": {
+        "video_duration": "00:05:31.3",
+        "event_start": "00:02:36.6",
+        "event_duration": "00:02:43.5"
+      },
+      "participants": [
+        "person_1",
+        "person_2"
+      ],
+      "scene_group": "nia2019:fight:14-5",
+      "location": "PLACE06",
+      "time_of_day": "NIGHT",
+      "fps": 30.0,
+      "frames": 9938,
+      "last_action_frame": 9600,
+      "width": 3840,
+      "height": 2160,
+      "duration_s": 331.3,
+      "status": "REVIEW_REQUIRED",
+      "issues": [],
+      "warnings": [
+        "label_media_frame_count_difference",
+        "nominal_fps_requires_frame_pts_mapping"
+      ],
+      "media_probe": {
+        "programs": [],
+        "streams": [
+          {
+            "width": 3840,
+            "height": 2160,
+            "avg_frame_rate": "30000/1001",
+            "duration": "331.297633",
+            "nb_frames": "9929"
+          }
+        ],
+        "format": {
+          "duration": "331.349333"
+        }
+      },
+      "actor_session_verified": false
+    }
+  ]
+}

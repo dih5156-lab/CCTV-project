@@ -1,0 +1,488 @@
+{
+  "version": "0.131",
+  "date": "2026-10-07",
+  "wbs": "P5.3",
+  "plan": {
+    "version": "0.131",
+    "wbs": "P5.3",
+    "conditions": [
+      {
+        "trial": "person_upper_roi"
+      }
+    ],
+    "image_count": 100,
+    "ground_truth": {
+      "helmet": 281,
+      "head": 71
+    },
+    "person": {
+      "model": "models/person/yolov8n.engine",
+      "size": 640,
+      "confidence": 0.4
+    },
+    "helmet": {
+      "model": "models/head/helmet_model.engine",
+      "size": 320,
+      "confidence": [
+        0.35,
+        0.7
+      ]
+    },
+    "head_region_ratio": 0.35,
+    "iou_nms_and_match": 0.5,
+    "baseline": "data/runtime/p53_helmet_parity_20261007_v130/case_0/output/report.json",
+    "limits": [
+      "동일100장 재사용·학습 중복 여부 미확인",
+      "정답은ROI 생성에 사용하지 않으며 사람 미검출 이미지도 전체 분모에 유지",
+      "사람 정답박스가 없어 사람 검출 P/R 및 사람별 착용 정확도는 산정 불가",
+      "OpenCV 사람 상단35% 좌표 규칙 재사용·PIL 전처리의 오프라인 진단으로 DeepStream 전체 사람ROI·필터·최종 경보와 다름",
+      "사람conf0.4·NMS0.5 고정; 운영 설정 최적화/배포 아님",
+      "이미지별 독립 추론으로 시간 누적/추적/다중카메라 속도 미검증"
+    ],
+    "sha256": {
+      "data/eval/helmet/images/005298_jpg.rf.647d148af5d961d8bbc041f172247170.jpg": "94328b0ace9b059edd80955cd92a101227552d8e560de90eebe5f40a9f871bdf",
+      "data/eval/helmet/images/005299_jpg.rf.71165960b763340fddc7e7cd0e448cb5.jpg": "1c5bc0868c7db7329dd665fed3d414adabdd37dc483c1a97fe9dfec30524948a",
+      "data/eval/helmet/images/005300_jpg.rf.1670526983a03ed2ccc2ff28c90e0040.jpg": "63c250f6b3e54555b44001d334bc5cd345acb8b3c765bcb6503d70d1e6205fed",
+      "data/eval/helmet/images/005301_jpg.rf.2c59fae9c52694ed1895a795c23da613.jpg": "fe2a25ef47217eac0c4fbaa9746002f924ffbd2219eb241dcb5d4b5e5fc98553",
+      "data/eval/helmet/images/005302_jpg.rf.d378ca349a23d7c1099acdd1617eeeed.jpg": "0341f7b0bb63f8064e264889575bd7ef0e5e9706bbb6ae7c452eefe7db997ffe",
+      "data/eval/helmet/images/005303_jpg.rf.336d9f3f085ab79ab3d26e48dffb0274.jpg": "f6d13eb34a5ecd93f39c8f45ff0f03fd6cf91f6c5fefba75b6eea4de33199bb4",
+      "data/eval/helmet/images/005304_jpg.rf.68023ed553bb1d711826d6e1f185ea39.jpg": "43ceb30cd70198a042d2e490c8ff65136361242dd2757a59dbae75dadcbae7ed",
+      "data/eval/helmet/images/005305_jpg.rf.4bfbcf630358ee01c2a6a2c1da620f63.jpg": "3e0193755e96a08c11c80312e55529a549a1e5a4c6f79554b753e2547dd5253a",
+      "data/eval/helmet/images/005306_jpg.rf.99ad10b15eec3e38011b1b292ce1fae3.jpg": "90a825bdc8860932c605fbac080e4f582d691f3d1119f88f86d4c05cc5520d36",
+      "data/eval/helmet/images/005307_jpg.rf.4e4a0559c0186ba6ca5673ccf5b9fc34.jpg": "815a17b4b9b4807e98d55c657ef7164232cb363ba40629529127b4e410f7058d",
+      "data/eval/helmet/images/005308_jpg.rf.4403a2f5f05f7715de6bdd234a24f8e3.jpg": "7daae213cd4b5c995dc76af15b9bf008bb24ea12bdad3592ec38c08e8e9ec4af",
+      "data/eval/helmet/images/005309_jpg.rf.7857830095f72844b36a8bda9f820a12.jpg": "ff9ac5a8193cac2a4d4a8defaab69f99895316c2ed606d0144d2b55a4ccbf9ee",
+      "data/eval/helmet/images/005310_jpg.rf.96dd2e4fbbe72f9761829db58e0f058b.jpg": "ce438d515b0c99cb1f6dc481e34ab1d5f770edc1df116d88f3eb741e662c3543",
+      "data/eval/helmet/images/005311_jpg.rf.6c16e0d1052d37c4df5501a7c7b7d3b4.jpg": "46cf23685a8448d474294d4942a500be49dee3b3c89a2125cbebd922ecdf3228",
+      "data/eval/helmet/images/005312_jpg.rf.2a028a462ee82f38ae6bc8dfdf9dbb60.jpg": "6958a48491b2a12e1a410c52d5410ec7538bb1ef341bb07b999cc074d226a24d",
+      "data/eval/helmet/images/005313_jpg.rf.8268dd5f74c93be1a401b9a3cac1eb98.jpg": "85b1de4417cacbbd433fc81c9d0c77539c511e8283e5f052fd4cb7bc0a9ed624",
+      "data/eval/helmet/images/005314_jpg.rf.08536d6c97e260ba6f876f4411ae408a.jpg": "bddba07948eb043220103632a35a4177a9cde62847d63ee23fab15c9d373b27b",
+      "data/eval/helmet/images/005315_jpg.rf.4fdcc0e63e92be506ac178d2f6595499.jpg": "d1177ddd9352850b5418b69a48a382d4b143cd7942f83bd04a7613642775c1e1",
+      "data/eval/helmet/images/005316_jpg.rf.45c8dd29cadc2f60f46a4ce0a4f9b9b9.jpg": "27f0cf4a73dcb9b6dc4bb9d23cd646843adbbab4974e0d808b8ce628b69f25c8",
+      "data/eval/helmet/images/005317_jpg.rf.426b1986b640d1eb913bd589805f2ddf.jpg": "0fc99195584bb990d89483dd0ca0438253828dc6d3567bc5b6d7b4c6ffb95d5f",
+      "data/eval/helmet/images/005318_jpg.rf.0d498661bcf0bbaa958b91cc6a2f2f27.jpg": "8b0ea2dc97bbb0a35c455bc70b1224ab5ebba0943642b8d2602ac6b1f34b4e55",
+      "data/eval/helmet/images/005319_jpg.rf.563beb6078cfab7bcf311291b8b1124a.jpg": "51d26213522ee00e9e6d41287961b1b69536300e9aeb20aca1c81b6a2947bd9b",
+      "data/eval/helmet/images/005320_jpg.rf.f664b5f00bbca9858b244b4f0b810f6b.jpg": "009bfd437a986e1880e51f479d0bb4f41c7c02d6671846e77cc79948d559d798",
+      "data/eval/helmet/images/005321_jpg.rf.b5f0e98c15af5be7f4e08b30d977da11.jpg": "f972eb23aa879e3352025ecf50f51b5007e97afd1fc44f38aaef8b947489ec69",
+      "data/eval/helmet/images/005322_jpg.rf.38c87c9a9999606bd5936d6ddb6915b2.jpg": "34cc23d65e976c742892e422165a0555c5eb234358d6da0fccd843f6569019a3",
+      "data/eval/helmet/images/005323_jpg.rf.15a423f0458bd62c2c98431cb50b05b8.jpg": "cc0c8f0c7395e2e79ba2aad46135ca085d390354fb0692d13cf5ca46e92b5b77",
+      "data/eval/helmet/images/005324_jpg.rf.226f04b937eb57a903d93fecc61f39fe.jpg": "30e89287f1ecb5b1c6532ba653c1568cb5210ade728384946745046d4a07c6b1",
+      "data/eval/helmet/images/005325_jpg.rf.45a2fcd397555b21cb09401d1a044d25.jpg": "c5dbb1ab0763f4e2e62b1b423441dc0dd2f86645abe9e1e460566f71129340f1",
+      "data/eval/helmet/images/005326_jpg.rf.8ffda053c92d9c229342601dc7da084f.jpg": "6afe7120cc509402dbaaa55ae01a7d36a01be3d8a795ce82f9fd851a73f61c45",
+      "data/eval/helmet/images/005327_jpg.rf.7ac2e444fcb36d45bed1585055b3d53c.jpg": "075847c27e9b268d3252a56ddfdf8e123834de0ada2b54f2b389c4ae417067db",
+      "data/eval/helmet/images/005328_jpg.rf.ed0cbdb140a976ea04a2ffa39f4c82f1.jpg": "d74a6ab68a55f57e206ec4ab5d94407500b48fd8ad88fcb5868a88343858a8b0",
+      "data/eval/helmet/images/005329_jpg.rf.78fa54f030de5bdd33eab3b7425595fa.jpg": "998a64fd3a038043866159a792bf930ed5dd4b4c88346737c2385dc024723eaa",
+      "data/eval/helmet/images/005330_jpg.rf.1ed1652556d198b9f2cb06da0064857e.jpg": "c1fe68958e8e573fedd970221cb5f3f5b1336644922e55c335e5125b30baf5d6",
+      "data/eval/helmet/images/005331_jpg.rf.662d6a4a732a30ac82b2071bc953baaa.jpg": "893f90e292217402b3a11f99166d3bd18c69c9d0c503de7e9f3910cbd311f416",
+      "data/eval/helmet/images/005332_jpg.rf.a6bd08fb3835fd674f74a516b3516563.jpg": "dde9a6918650a453d57cee6b197218871cba0352555881e294234f8327f3251d",
+      "data/eval/helmet/images/005333_jpg.rf.41ecee9b4043e0274097e2f44b6d11f1.jpg": "4720fa61a46fc06093952a2cacb95d4d200774d819a114882c1803945e1768c7",
+      "data/eval/helmet/images/005334_jpg.rf.6f6803db9bbc52b791025b568cc0b083.jpg": "5912314fff8254903e56630c4df8e9b42e27bc0f8411a6c46c912aa989967177",
+      "data/eval/helmet/images/005335_jpg.rf.747d6f6b89717d5f35d0b785c27bb6d8.jpg": "100ec3a2cf59ecd5ca6baccf9bdf66d35dc899c1adfa442c72b6e2fdc8d39d05",
+      "data/eval/helmet/images/005336_jpg.rf.aca59abc9a6f604c2850712aad51f172.jpg": "645c7b7b6198da58bf7567882da87f4b021e9ff3aa0075f690e7f198ae997743",
+      "data/eval/helmet/images/005337_jpg.rf.2fa22926b53bf1c1e9dddb65bee01a90.jpg": "f02af18d24d541f62b6b1542ca7d60c3b776d95db5887d3ecfe2157b87535476",
+      "data/eval/helmet/images/005338_jpg.rf.e84a0c3ab9d1e434c5ad30c3bfba91ec.jpg": "1fec677e6363b9ffaea3030f28c6031d74be8a292247c0d70932723900a3c5ce",
+      "data/eval/helmet/images/005339_jpg.rf.547220c442b0bcfdea7e6895c66d7039.jpg": "1aa37b72ca1f7287ac0264ff3fe60c73da3a5853ccb54e1cb61718e1559f3100",
+      "data/eval/helmet/images/005340_jpg.rf.ef8f13ee38e0734f4bf604f6237628fc.jpg": "0cb6d4e477a61e02ace23bbe807ef63536f70ea41128849764c65132dd9ea212",
+      "data/eval/helmet/images/005341_jpg.rf.ce8b261793ba2b9db3a526d36581920f.jpg": "c0577ff88003bc7c900be2bd088215fd291b860a63c29070bc1f508c3a36fd90",
+      "data/eval/helmet/images/005342_jpg.rf.0b57e9bad07ceb6bf086f7e23e1e1224.jpg": "28b914bba0d86447210159c88238755951aeef57dc802f29726870e71e25ff4c",
+      "data/eval/helmet/images/005343_jpg.rf.895a7b267aacfe87b7548dae58e752ac.jpg": "a28257d01f240a8da1003a17178ad679772969407477a7227c3e8af1bfe417db",
+      "data/eval/helmet/images/005344_jpg.rf.544d70e7c48df8b4aa396e3dacd7cf57.jpg": "6fdc061b7a417a2bb6f826003080a4e7c33fe23d967749a2d4517d9c124a839b",
+      "data/eval/helmet/images/005345_jpg.rf.8b594f8b30f1b5881959f4a41ba37288.jpg": "3d7b001b4c0d44dbd8c73a708b9881e49290ce6cfc4f2a409929f8d67c43f406",
+      "data/eval/helmet/images/005346_jpg.rf.8bd69fbd424d324d18fe1474a91261ab.jpg": "d50940dc6e7d7b0265042a85fa1918c417574b2deed158fd6d1e590497e1b499",
+      "data/eval/helmet/images/005347_jpg.rf.316cc55645840f1529684e73536caa4c.jpg": "b1f23adfeef6bbf836616b2ecb91780a82de72670b1cc2ed4232c4e08c4a5bd4",
+      "data/eval/helmet/images/005348_jpg.rf.fe5c35e067b60bdf75d8bb5f9ce17817.jpg": "e9891587104d54df9b4b22676a406ba5b2912bb5506ca2d1ccf8a48c710a2ba2",
+      "data/eval/helmet/images/005349_jpg.rf.0fe50f22e22fc4d04dc35a351e9afa4f.jpg": "1340297d37be27f8f8bfdf3ca971251b2da4a11135bde11f7253859a12c16c3e",
+      "data/eval/helmet/images/005350_jpg.rf.0d25c4f9740b4334088797fc3243dd1a.jpg": "1b2a62898e1ae4a06ce806f7893cbfbf3671dffdb332c8b9a1214587c91676bb",
+      "data/eval/helmet/images/005351_jpg.rf.ed2d454b2e059fc13f901bcc62947bfa.jpg": "4fce356666a1924fa282603ded08d3f44d6e2583e17917ba9160b3e0c816b719",
+      "data/eval/helmet/images/005352_jpg.rf.d88db95cea2986e4f4b11d1afdd3b3e4.jpg": "4ab0f388b84959a72c41482b65f9000197cd90968f207a0e3f4a975f6d0c93fb",
+      "data/eval/helmet/images/005353_jpg.rf.5d9af6cb4587438d64957bd7192e39de.jpg": "687505302f5200ad5c46787414f78202e02327746e9e458aab4267ec7f624bd0",
+      "data/eval/helmet/images/005354_jpg.rf.66ac8412f01e08a6146d5bc63bbb158c.jpg": "f16cd82c4e69051baa34746fdf461159062fdb807b7bba634ae0a4b6696d8b45",
+      "data/eval/helmet/images/005355_jpg.rf.12db1f111d72bbbd5619fb7bb392ba22.jpg": "97fd38a1099838f289f78068b5c8c0f169ce704bd7e2a4cc96dc81b11a9eecc4",
+      "data/eval/helmet/images/005356_jpg.rf.dd15fd06b6d5851d6dd4eddb78f4651f.jpg": "4affd3ba1d6dfc461d44f97f04e265dd327e0e2dfc4f485f141f5196470cccbd",
+      "data/eval/helmet/images/005357_jpg.rf.df51ca15e87c9aa7faace47e8ee5a572.jpg": "c871c8420718ec7ac930b261bb426c903c41365398ea186f1ff9e5cec348a6cf",
+      "data/eval/helmet/images/005358_jpg.rf.8529a6fd49e7f907817f667a038095be.jpg": "44917d201ffef76e6adf5fdce44fb556848c29df97d369c533e208bd2589e8ea",
+      "data/eval/helmet/images/005359_jpg.rf.17354e91cf65f9ab3587415dd31d2f48.jpg": "df9a054bcfc8c14516d49471f32308d5d9ae6d80e781b4ce065aef80947fa8e5",
+      "data/eval/helmet/images/005360_jpg.rf.75fc39584c00492f09ac369bbfc2f105.jpg": "4ca92a6467bf4f47031a3909e856f889d53f9439afa3ebd3af935875eef5585c",
+      "data/eval/helmet/images/005361_jpg.rf.e37d7954e38e9ab2a17aa43d39ac7a7b.jpg": "ce2be51a944b92043d884e9331c77c99bed496dcd841442f68afd49c72d394f1",
+      "data/eval/helmet/images/005362_jpg.rf.162fd8254a194a1e0198bc1861287e46.jpg": "03901646bb511049ad243b95747c07443d6de2d2cf3258fd79c407decdb10f7b",
+      "data/eval/helmet/images/005363_jpg.rf.b6104e4bdaf80defdf9e72f69722ba1b.jpg": "eff5f49a345405ba37e6970d29b11c21eaed189e247aa900c72b05bb10b49489",
+      "data/eval/helmet/images/005364_jpg.rf.b8e3dae81d80ac55f9bec424a2fc33e2.jpg": "6f8055cbe4619b4be53afb19a4cc70734e65beb339d45cf3eaebad460bf63cbb",
+      "data/eval/helmet/images/005365_jpg.rf.10b71063ca52946d889bbadd73b80ec5.jpg": "81beee9a823597f84c753337ec0cac864b6f321571bc3e5fcbd818f7e3705bae",
+      "data/eval/helmet/images/005366_jpg.rf.82e5b1fb137bb3607d8ce98838ac2e03.jpg": "ec2132d4fc59cc8f99b2ede56db0003926096079b89ee66d4e8248e99c29ca53",
+      "data/eval/helmet/images/005367_jpg.rf.cfd8e51a002cbe97a681c2e9beb4eaac.jpg": "e41f96fa21a90882bb10b428aa370b5d2218e9c04a818e97f58d38c8e1f11d15",
+      "data/eval/helmet/images/005368_jpg.rf.32fe6ce8f83ce1a34a38f3613e703033.jpg": "a7a1020d118964bcbe7c5f051ed16493c8ca9ed5128a33c886b6fb1c6c8f9baa",
+      "data/eval/helmet/images/005369_jpg.rf.3d685ccd73bd2bd6576a110cc7a079a7.jpg": "aa0e71dcb0f8ed365d79bed7565f504f27384e587072afd8a67cee6e3df4daee",
+      "data/eval/helmet/images/005370_jpg.rf.ea60e2a060fa57af9b93722c45add200.jpg": "511eff680af6cdd564ad72714471c5712a0d1cd9b63e41bf5f48442798ce7aa4",
+      "data/eval/helmet/images/005371_jpg.rf.477c8ed24f562deb664ff098e9a09df6.jpg": "bb26f231302a0b20a7f291f4b5218594e0b6d919e9e31a866d53fb2e60b3849d",
+      "data/eval/helmet/images/005372_jpg.rf.4809d0a8b99b8ad46967380676ef1ff3.jpg": "e0c5e66d4afc148d5ddf7e07765f298b7857f1b718f4641483c1eb2596564fa0",
+      "data/eval/helmet/images/005373_jpg.rf.d141221dad87e6a6a30cc016fa0d07e5.jpg": "ca0e32578441c5055099a926db91b647251cf701605644a86538ca87e4f80c79",
+      "data/eval/helmet/images/005374_jpg.rf.ecef5686e5c7e32a253d47cb7ef720d2.jpg": "2fe742b23f73f745a5539e7df8b9d00e926614aa0e2a3328357bed6b757f06b3",
+      "data/eval/helmet/images/005375_jpg.rf.44f4df2d90ee26ecdab495150ab4e158.jpg": "4a1a9ddbde2e310386df47c69b999f101b910a64c2d502b71130fe9289fc842d",
+      "data/eval/helmet/images/005376_jpg.rf.b2c505a82aa99aaeb6ad630e1d964953.jpg": "a15ae11c67bf099479558f9385645c11bcc9917adc4a51ef2664aabd4db8e08f",
+      "data/eval/helmet/images/005377_jpg.rf.07395f9bb00674b13e06dc1ab1c63fa1.jpg": "6a00685905f9ea6ffe36c60330c8768db09425401eef128ccc7b3d00929e37fa",
+      "data/eval/helmet/images/005378_jpg.rf.57adab7cd85dcd41427b845638aeede2.jpg": "49d9b622ed9aabf7654fb4aef018eaa7840e1b79713c37fadf78a255febdc86e",
+      "data/eval/helmet/images/005379_jpg.rf.da0d790368f19b85eaef616935338591.jpg": "691188a772cdafed20424513fa76e36455c1e1f85d9b017b0e33c131983fa5d1",
+      "data/eval/helmet/images/005380_jpg.rf.243e3d51db8ebaf13bd7c6402369f5c9.jpg": "846fccda4f728750e0d4b880aaa59f3688ad67a19fd8a5d696b323a1e918f0be",
+      "data/eval/helmet/images/005381_jpg.rf.be7a0d23f9a13d1e0321014db768002f.jpg": "f7390d29c99fe7ab1e650568e98d1b9433ee1c561bcf2961e3ea2ab08fe71f3b",
+      "data/eval/helmet/images/005382_jpg.rf.bad5f80a3fa19ab150532b976adaa2f1.jpg": "c103d0b4817aeeb8cf6c44660289cb13488f245f04e98ee300fb58f2b8e7332e",
+      "data/eval/helmet/images/005383_jpg.rf.4834f8d42c6b0d07962d8612caf09651.jpg": "a74a138771e4cb1b9462b5629875a630629d392a894a0d39665f20b52031051c",
+      "data/eval/helmet/images/005384_jpg.rf.34ab47f3859c29a33df2780579333dc1.jpg": "dc43ca8c6a3c791cfdf2f22cde8bb10d33195b20d39e9ce1419acb8e5e57fae6",
+      "data/eval/helmet/images/005385_jpg.rf.aa3ca01ed31ce9c709f480c7b4293342.jpg": "61c0783f8159ee0d29b7984f10021d44931e0a2067c9f58582d3cc889dee3e23",
+      "data/eval/helmet/images/005386_jpg.rf.fd587ee7b6b0091c4ac6dfdffe68a5e8.jpg": "b957e5c179cdc551afab13cccd0cd729719b46ef6eab530a01ad48270d0d2dc7",
+      "data/eval/helmet/images/005387_jpg.rf.bc13b67718ce1875ba463efef1281b7e.jpg": "0cc9308c625cd06f7acb1debbeb3225a61b9361e54dd0bbe98c1c9279b0aa88e",
+      "data/eval/helmet/images/005388_jpg.rf.23e8d14b21e417062207e580d8edb64f.jpg": "3ea1b5d60a20c75b5e680d4fa08b5fbee42108ee4fedaf2def542a6d602cdc6a",
+      "data/eval/helmet/images/005389_jpg.rf.c5eaffbb36d23fd054e553d08dfc131a.jpg": "48e7333da4fe4a6d807fa55904dbbab36217db4e72e48d4e688c0720ed7dd5e3",
+      "data/eval/helmet/images/005390_jpg.rf.f660b8bd6237e8e0515abc9518b85dce.jpg": "f6b69bc0937b5eb463f3629d01002feaa4f4d90c0127c90c234a680b80dd0193",
+      "data/eval/helmet/images/005391_jpg.rf.5e0fc2567a2d119bd49f400c9be91f4b.jpg": "102b29114c69c1fac55fc7cdaea7e7215ff8eb94bf5deed40519c3643279f2ec",
+      "data/eval/helmet/images/005392_jpg.rf.c36c61c68b683c46afadf00930450a85.jpg": "eb8fcab42c99fa497e368dd17fc138e43650f48b1c66c8290e5e2a2c2491793d",
+      "data/eval/helmet/images/005393_jpg.rf.e15cf21d63ce700797e4aaed67389aa9.jpg": "d1e6c5f5153b15fe7cc5eadf1d62f0dbf99e5646bca67c7dd46fd323fbf1ca0e",
+      "data/eval/helmet/images/005394_jpg.rf.6abe6588fd8ea5082de932aa857fcdd7.jpg": "58bc1254b813045e2e6c742d4b73a793ed17a13713fa14f3a99dd930a7d22594",
+      "data/eval/helmet/images/005395_jpg.rf.a38830389c0d26e139ba81b2e1a813a3.jpg": "363cf0c6f33bd3a37d31430f3bcfcf26f982a958209b05a47fd65e5cefbc071b",
+      "data/eval/helmet/images/005396_jpg.rf.eea1d76dbbfafcfce4679882b0bf06ce.jpg": "a6f1ac4fad9dac022e715947df65efc228384a77aafd36024ed91841c0663d28",
+      "data/eval/helmet/images/005397_jpg.rf.eb518c5ace162681763b07ddc5f5fbee.jpg": "1af0415b7c7925b86d0e3e16099c22e2a3a56108aa14308a404b0dd31bc0caa7",
+      "data/eval/helmet/labels/005298_jpg.rf.647d148af5d961d8bbc041f172247170.txt": "144879aab657d0ca6a413bfc56a852e348e8a9025041007e1fccd9a1166417fe",
+      "data/eval/helmet/labels/005299_jpg.rf.71165960b763340fddc7e7cd0e448cb5.txt": "d1e63ad31f5e2998a9623c076240777ae4066a6b7e5973055b0a56b0436a90c4",
+      "data/eval/helmet/labels/005300_jpg.rf.1670526983a03ed2ccc2ff28c90e0040.txt": "caf7133a7081ad405d9f424a0df65d5462bc9ea3d40e0140058eab174ae91bd4",
+      "data/eval/helmet/labels/005301_jpg.rf.2c59fae9c52694ed1895a795c23da613.txt": "02f6d27bd38ffb8b5a28c91bc340e30dd8dd5be7807e0a56037c34d0ca4ffe5f",
+      "data/eval/helmet/labels/005302_jpg.rf.d378ca349a23d7c1099acdd1617eeeed.txt": "eba0862770274f427f4c6ff0ca492bd4ce2777746d1dbe19f7d949b48abd1d87",
+      "data/eval/helmet/labels/005303_jpg.rf.336d9f3f085ab79ab3d26e48dffb0274.txt": "766c151e88bba7e7e694def1f52b70f7cd4016c32216ce9f53856ea82443ac99",
+      "data/eval/helmet/labels/005304_jpg.rf.68023ed553bb1d711826d6e1f185ea39.txt": "5604aea0ac778e83f9dd694d130a3286511f28df9f9e6339b743d3984f691c62",
+      "data/eval/helmet/labels/005305_jpg.rf.4bfbcf630358ee01c2a6a2c1da620f63.txt": "333fbc943bac4291723acdf5b25185fcc046673b726d8060080cc560407be1b6",
+      "data/eval/helmet/labels/005306_jpg.rf.99ad10b15eec3e38011b1b292ce1fae3.txt": "c63d2ac8db79e14138f35f936cbe0c9cf7b36f5c90dbca09585641cc097bfde6",
+      "data/eval/helmet/labels/005307_jpg.rf.4e4a0559c0186ba6ca5673ccf5b9fc34.txt": "aed03b626a5fe6347698c17aa480f67846fd40ba06101a2a37b23b46563a1b08",
+      "data/eval/helmet/labels/005308_jpg.rf.4403a2f5f05f7715de6bdd234a24f8e3.txt": "1b0c8dfb8ec0de6fb4f8dad5fbf9fbc78d4e6ca2a4bd279c230de0e10ba9b544",
+      "data/eval/helmet/labels/005309_jpg.rf.7857830095f72844b36a8bda9f820a12.txt": "96efdd8fb360eeec1b5b3d81cc5d2011de1b6da3a404534bb1068cede3508c8b",
+      "data/eval/helmet/labels/005310_jpg.rf.96dd2e4fbbe72f9761829db58e0f058b.txt": "6660d8724807096ef9764239f8f8448e7d1e7365f24bcfdbeddabc43dad62b38",
+      "data/eval/helmet/labels/005311_jpg.rf.6c16e0d1052d37c4df5501a7c7b7d3b4.txt": "b696753d0b0e4afe2053b04c7cb227b03ead6c908f388f38c182c3ec296f0932",
+      "data/eval/helmet/labels/005312_jpg.rf.2a028a462ee82f38ae6bc8dfdf9dbb60.txt": "dbf1f2c4a07ff722b2c3e1b9dc57272cd0b10a904b968cb315eb137eec4a5b2c",
+      "data/eval/helmet/labels/005313_jpg.rf.8268dd5f74c93be1a401b9a3cac1eb98.txt": "2fada05f2ab5dc36d4e6d5daafbcb1b00ac3214d117d5f0855284470c6581a50",
+      "data/eval/helmet/labels/005314_jpg.rf.08536d6c97e260ba6f876f4411ae408a.txt": "412da289ce1fa7603faf3ff87e4e92f78cab8e655477b1a8aec2cc519811585c",
+      "data/eval/helmet/labels/005315_jpg.rf.4fdcc0e63e92be506ac178d2f6595499.txt": "a3c7dab2ba0dd5e7f8cd5c73527baaeda297c4eec68a946042aac39bbe7c4d7b",
+      "data/eval/helmet/labels/005316_jpg.rf.45c8dd29cadc2f60f46a4ce0a4f9b9b9.txt": "ec697185ed2423561ed96b693088157ae201383376fde790d508145dacb879d1",
+      "data/eval/helmet/labels/005317_jpg.rf.426b1986b640d1eb913bd589805f2ddf.txt": "feb7febf8c1fcb5d179a40ef988e67d419c95a6abed5394bb56d6ccd61252749",
+      "data/eval/helmet/labels/005318_jpg.rf.0d498661bcf0bbaa958b91cc6a2f2f27.txt": "f3e5a3240503e0736831be082c82bc86db46941de5c8ca95f10a60a6b9969696",
+      "data/eval/helmet/labels/005319_jpg.rf.563beb6078cfab7bcf311291b8b1124a.txt": "09d6d0a0df51415aaf388971aad2adf6f1bbf291b0fd8f97f21a9f20ec41be07",
+      "data/eval/helmet/labels/005320_jpg.rf.f664b5f00bbca9858b244b4f0b810f6b.txt": "dc166f3c7511854b01d93f65d4d522e01d6131b7b00922054ee45cf4f88c40fa",
+      "data/eval/helmet/labels/005321_jpg.rf.b5f0e98c15af5be7f4e08b30d977da11.txt": "943e7565144654e3e4859a29827c7dced8fde5d0f4c1980ad39f3001639eb5eb",
+      "data/eval/helmet/labels/005322_jpg.rf.38c87c9a9999606bd5936d6ddb6915b2.txt": "eab4e4b483ce51aa4cb97e1a7b6b798c3b0048f274bf0bd848c6e80e43880b50",
+      "data/eval/helmet/labels/005323_jpg.rf.15a423f0458bd62c2c98431cb50b05b8.txt": "d5a52bdfd82f9f82796cd59bdd6f3c96259ada46d3d0a920d2e7b14ed65c6836",
+      "data/eval/helmet/labels/005324_jpg.rf.226f04b937eb57a903d93fecc61f39fe.txt": "c06c5d9b862b944778ebaf7d5ea963a8be68202dece96b5b09edad7b5f61b4cf",
+      "data/eval/helmet/labels/005325_jpg.rf.45a2fcd397555b21cb09401d1a044d25.txt": "9dcb810244a2e100f0df814476852c0e30b6dd8af1c090722c8236bf4343517e",
+      "data/eval/helmet/labels/005326_jpg.rf.8ffda053c92d9c229342601dc7da084f.txt": "c16995c8a1078cef40b6e9de8cc4320342f5373c0bbb9c2381b15a6ec66fd435",
+      "data/eval/helmet/labels/005327_jpg.rf.7ac2e444fcb36d45bed1585055b3d53c.txt": "9d4121ea86af4305dbcbae47c8f10ac516319bbf25f35d99055b2b40532aad09",
+      "data/eval/helmet/labels/005328_jpg.rf.ed0cbdb140a976ea04a2ffa39f4c82f1.txt": "a114741b512fb1b03928c21d8d2b345c31d160550752a13515808b3ad4339ad2",
+      "data/eval/helmet/labels/005329_jpg.rf.78fa54f030de5bdd33eab3b7425595fa.txt": "9e098687763f6b87ef949bf5e316c3804aa74b26c69dc2d00a8c555ab7663e4e",
+      "data/eval/helmet/labels/005330_jpg.rf.1ed1652556d198b9f2cb06da0064857e.txt": "b95f09038eb935ad03433324706b6cbd88435750846fabba45078cf7a9ca45b6",
+      "data/eval/helmet/labels/005331_jpg.rf.662d6a4a732a30ac82b2071bc953baaa.txt": "da48f84e92f94aa2f508f56c0a9a1f53d98f3331eedfa1b352be63b80e0d2d4e",
+      "data/eval/helmet/labels/005332_jpg.rf.a6bd08fb3835fd674f74a516b3516563.txt": "028839628fbcc14fc80fca281ee726803c58601dbc8013e115667d8d956b088c",
+      "data/eval/helmet/labels/005333_jpg.rf.41ecee9b4043e0274097e2f44b6d11f1.txt": "4556472e0b8539a3fd6861eecae251860aa204ab166b6f28d175c302e1b04a27",
+      "data/eval/helmet/labels/005334_jpg.rf.6f6803db9bbc52b791025b568cc0b083.txt": "9da673baac4212c1b91c5740bbdc4a3464bc3946321e66637989f874dadcafd3",
+      "data/eval/helmet/labels/005335_jpg.rf.747d6f6b89717d5f35d0b785c27bb6d8.txt": "e608015042ab4716f4ea04a4dc542dd7e435089cb653aed38a66cca49532d6b8",
+      "data/eval/helmet/labels/005336_jpg.rf.aca59abc9a6f604c2850712aad51f172.txt": "8809a1fbb6693325e447ddc7280fea11aba2ad528885417cfe6377d5e190f8e6",
+      "data/eval/helmet/labels/005337_jpg.rf.2fa22926b53bf1c1e9dddb65bee01a90.txt": "d53702f1faabe75213e3c56b931121d6842b8ff4db56ee388bb95783afa081c5",
+      "data/eval/helmet/labels/005338_jpg.rf.e84a0c3ab9d1e434c5ad30c3bfba91ec.txt": "661401357e15fd073248f6b77a55ec64e3ee31342d18aafd6e9793a51f8ccbc1",
+      "data/eval/helmet/labels/005339_jpg.rf.547220c442b0bcfdea7e6895c66d7039.txt": "2fa05fa7a8371a93c56beca2f3b2be779987390b0d196ac6561e56a63bc75afa",
+      "data/eval/helmet/labels/005340_jpg.rf.ef8f13ee38e0734f4bf604f6237628fc.txt": "0bdb68a114ce2357a81f43d2de4a151b122bda24b1b2983e6348db33f66d9a5d",
+      "data/eval/helmet/labels/005341_jpg.rf.ce8b261793ba2b9db3a526d36581920f.txt": "0a344f9ec02fbba878758b6e8ed67e1931d063893264c1af3736c87de4a377b6",
+      "data/eval/helmet/labels/005342_jpg.rf.0b57e9bad07ceb6bf086f7e23e1e1224.txt": "5ab322a11c9f423d8514c86d7dd42ddd2f671825cef8edbbedf313671f7b659d",
+      "data/eval/helmet/labels/005343_jpg.rf.895a7b267aacfe87b7548dae58e752ac.txt": "46dfef6d867ed6a27ce1919a9ac49763424f9b7a0265e75e8e26d35783e74a5d",
+      "data/eval/helmet/labels/005344_jpg.rf.544d70e7c48df8b4aa396e3dacd7cf57.txt": "825e128aeecc83883686d5d6c8091a35ce602206513ce0b5d3745c4891175732",
+      "data/eval/helmet/labels/005345_jpg.rf.8b594f8b30f1b5881959f4a41ba37288.txt": "eff68c7ff062be7a3973ecfb291d267ee0b1f8e8a9bacd8b937171a3e9d8f129",
+      "data/eval/helmet/labels/005346_jpg.rf.8bd69fbd424d324d18fe1474a91261ab.txt": "27b1d46dfa5825d6d3fa86666508f53f2b43119375e2279a479eed0f98a5e74c",
+      "data/eval/helmet/labels/005347_jpg.rf.316cc55645840f1529684e73536caa4c.txt": "1b82d96b0b80e42562ba7849a97a96a3c1213079e21f592808765591577192a8",
+      "data/eval/helmet/labels/005348_jpg.rf.fe5c35e067b60bdf75d8bb5f9ce17817.txt": "f7a6b7884655248da2ce657ae33d4ed39da08f20371e5f89537901cb6ab58305",
+      "data/eval/helmet/labels/005349_jpg.rf.0fe50f22e22fc4d04dc35a351e9afa4f.txt": "9064b538126c79f31e1d0ce2f874e353594c9b2ac4fb9876d8dd77143ca00f3e",
+      "data/eval/helmet/labels/005350_jpg.rf.0d25c4f9740b4334088797fc3243dd1a.txt": "6cbde071d8ece81f098cdb56e00dd2eb7dafe4970e4bed9da3e6b24826f0359d",
+      "data/eval/helmet/labels/005351_jpg.rf.ed2d454b2e059fc13f901bcc62947bfa.txt": "e769dea6ee8278cf9fe9c710bfbf46caacee93fc79717a0b02fbb6c7883116b6",
+      "data/eval/helmet/labels/005352_jpg.rf.d88db95cea2986e4f4b11d1afdd3b3e4.txt": "09c32ee7c7ad29f24933c293b392d056bf87d465b6900a2218269349efcf8e09",
+      "data/eval/helmet/labels/005353_jpg.rf.5d9af6cb4587438d64957bd7192e39de.txt": "39cac7dbb38381ef91f61b24b1d9c851aa1bdd40730c9d92d93865fc78210b93",
+      "data/eval/helmet/labels/005354_jpg.rf.66ac8412f01e08a6146d5bc63bbb158c.txt": "fc0581b3fd78671d4019e84592870c298cf68bdd37cb05f9ee79325a8afedaa8",
+      "data/eval/helmet/labels/005355_jpg.rf.12db1f111d72bbbd5619fb7bb392ba22.txt": "1e342db4fc73bc5b6718cd2eb048b9b07f313d57342269b280a890cbf91d591c",
+      "data/eval/helmet/labels/005356_jpg.rf.dd15fd06b6d5851d6dd4eddb78f4651f.txt": "5e5d3e902218a7ed2eab9ba26860f8d41380601f70f44e3ac8fcd0c0b6792783",
+      "data/eval/helmet/labels/005357_jpg.rf.df51ca15e87c9aa7faace47e8ee5a572.txt": "7b17fc01c66e068772fb7c146644bcefddffc618fa7b1c5ec9b36225964e1b2c",
+      "data/eval/helmet/labels/005358_jpg.rf.8529a6fd49e7f907817f667a038095be.txt": "e563c7d66698fee5d04cc2e0ce05ac167814cb20dbc8173ea938ebc715f0719b",
+      "data/eval/helmet/labels/005359_jpg.rf.17354e91cf65f9ab3587415dd31d2f48.txt": "4ec9af1652fa850019ebb903ae70e229701496ddbd9b838521da6464bfb46a9c",
+      "data/eval/helmet/labels/005360_jpg.rf.75fc39584c00492f09ac369bbfc2f105.txt": "4a17c7a3f9f6210f5c21000f1005e2e4bfebe6719bdac0de212dbbf4be5c23d7",
+      "data/eval/helmet/labels/005361_jpg.rf.e37d7954e38e9ab2a17aa43d39ac7a7b.txt": "45f13e03aa195b4f62bcd92746a4f3bb89974e75ad25c4a39342e62293c77936",
+      "data/eval/helmet/labels/005362_jpg.rf.162fd8254a194a1e0198bc1861287e46.txt": "6a606420ed1e9fab3778c00624506cdbd8be8ded3cd62f8944e5ef238596a939",
+      "data/eval/helmet/labels/005363_jpg.rf.b6104e4bdaf80defdf9e72f69722ba1b.txt": "23672227302ae99053df01b1aa1190f63880a8390aec56887620cc5724e25122",
+      "data/eval/helmet/labels/005364_jpg.rf.b8e3dae81d80ac55f9bec424a2fc33e2.txt": "1184a2a690e174dcd84e7472cb177d438696a28de59b852e7556f5ca0115caeb",
+      "data/eval/helmet/labels/005365_jpg.rf.10b71063ca52946d889bbadd73b80ec5.txt": "83d364cabd039f8181d48ebc832916aee5d8c177955285a8a932c92ea72a4268",
+      "data/eval/helmet/labels/005366_jpg.rf.82e5b1fb137bb3607d8ce98838ac2e03.txt": "9b354e05cceac94332759e9a7c49e52b7137ae6f0756fd0f1983ce14c05b52b3",
+      "data/eval/helmet/labels/005367_jpg.rf.cfd8e51a002cbe97a681c2e9beb4eaac.txt": "a62e450ff9b4736c823b4f74ff11ade7590d4fd2f1d745194ff6b1ea6fa68f4f",
+      "data/eval/helmet/labels/005368_jpg.rf.32fe6ce8f83ce1a34a38f3613e703033.txt": "af182284d628204a16b73ac731fa0272fb531973edd1deae90841b9382db9589",
+      "data/eval/helmet/labels/005369_jpg.rf.3d685ccd73bd2bd6576a110cc7a079a7.txt": "882a499cfa2623215408e3e3d667773dec0892d8fc08646ecf7f713117ef62f5",
+      "data/eval/helmet/labels/005370_jpg.rf.ea60e2a060fa57af9b93722c45add200.txt": "b789e930b8399131733ad8e48f65637639935c51439857497e749a8ab2069f78",
+      "data/eval/helmet/labels/005371_jpg.rf.477c8ed24f562deb664ff098e9a09df6.txt": "9e09f8364d3d817f83fff80a66e6b9068b3e0bdf9d183a844eaf29c2a972900b",
+      "data/eval/helmet/labels/005372_jpg.rf.4809d0a8b99b8ad46967380676ef1ff3.txt": "1844cf275a8066297f40a7adb2b9859d6599bd44a64f813464a22e6592c9f9fc",
+      "data/eval/helmet/labels/005373_jpg.rf.d141221dad87e6a6a30cc016fa0d07e5.txt": "f6168409b8e56f894ad64c2268f2bf3d1267e7f0feb7fd8c3ea8353bf754e8ca",
+      "data/eval/helmet/labels/005374_jpg.rf.ecef5686e5c7e32a253d47cb7ef720d2.txt": "3c1676ffe9f2f3a37ea8b575d7ce5471e1fc6cda8126aa0ce583f1e27d2eca71",
+      "data/eval/helmet/labels/005375_jpg.rf.44f4df2d90ee26ecdab495150ab4e158.txt": "5126f9a45ed81026d31403c18f40b0e77bfaa5ce02707163a99da69645ab68a1",
+      "data/eval/helmet/labels/005376_jpg.rf.b2c505a82aa99aaeb6ad630e1d964953.txt": "bd019f425fa05e38e8f911791a210da2c7f983e8d707dd82e7c130dda1f4607b",
+      "data/eval/helmet/labels/005377_jpg.rf.07395f9bb00674b13e06dc1ab1c63fa1.txt": "de3a8be701f671dd6959ae1c71a0406b73e7c1ae8017cbdb4656d64daa188a1b",
+      "data/eval/helmet/labels/005378_jpg.rf.57adab7cd85dcd41427b845638aeede2.txt": "3bb864fcb012a70dbafc31f46992fa5fb4249cb9e04e0a1047e7d352a48ae613",
+      "data/eval/helmet/labels/005379_jpg.rf.da0d790368f19b85eaef616935338591.txt": "6e23d6b0d978537825ea49a50bcdb2a9bc2f5b9e2d199e026da8cfb2056c5e42",
+      "data/eval/helmet/labels/005380_jpg.rf.243e3d51db8ebaf13bd7c6402369f5c9.txt": "3995a5853022fa00ad08735704515cf7a3d610f8125869fea249835e6d3641db",
+      "data/eval/helmet/labels/005381_jpg.rf.be7a0d23f9a13d1e0321014db768002f.txt": "5c195686b68f7bfef56ecdc060931e2f89c35fd37b3e12cfa1bab508794fe584",
+      "data/eval/helmet/labels/005382_jpg.rf.bad5f80a3fa19ab150532b976adaa2f1.txt": "a670a4b31dd6f6d594228f2c2cdb73b3fcfb86be1f29776018d3d18c236a7399",
+      "data/eval/helmet/labels/005383_jpg.rf.4834f8d42c6b0d07962d8612caf09651.txt": "c31e74c97f82a4c6a1de281a935a4009520bf9e17d067a62e584bc1c0aae3db2",
+      "data/eval/helmet/labels/005384_jpg.rf.34ab47f3859c29a33df2780579333dc1.txt": "cf0de63b93d5f0dd26cb32215fa4f3c92e6ca65d8c05e09083300a552aa7ef7a",
+      "data/eval/helmet/labels/005385_jpg.rf.aa3ca01ed31ce9c709f480c7b4293342.txt": "b15c6a25146597c5aca3b3dc0551a9185100b56621f724d81871d42b282a86bd",
+      "data/eval/helmet/labels/005386_jpg.rf.fd587ee7b6b0091c4ac6dfdffe68a5e8.txt": "22b411d4646e437539d92b98839faad507b4d45ea0620c4a7f680bfbdd515e43",
+      "data/eval/helmet/labels/005387_jpg.rf.bc13b67718ce1875ba463efef1281b7e.txt": "0ded8a53006b6b3439789f9276eaed2e06ff3739c347cc9a1cf52edcd9f937c0",
+      "data/eval/helmet/labels/005388_jpg.rf.23e8d14b21e417062207e580d8edb64f.txt": "8ec2952b81637c57347ff57fed1c41a84a8cc88fbc7e05efc389a5d0766de83e",
+      "data/eval/helmet/labels/005389_jpg.rf.c5eaffbb36d23fd054e553d08dfc131a.txt": "2deed5246977e647ba1c9cde727cb927086f7ca72e316f2b44ff82b9050e3e54",
+      "data/eval/helmet/labels/005390_jpg.rf.f660b8bd6237e8e0515abc9518b85dce.txt": "4746aa4edaf6a6d031c868aaecc6097dd144501deeb9170ed866237896db07cb",
+      "data/eval/helmet/labels/005391_jpg.rf.5e0fc2567a2d119bd49f400c9be91f4b.txt": "b1fd2dc5ef03c496793fae5922dc07745de56cfc750ab46855a9119875129b91",
+      "data/eval/helmet/labels/005392_jpg.rf.c36c61c68b683c46afadf00930450a85.txt": "b726076225a258eeb4195289cc9f5095d8755d00e027a7535b1e850349cc1ec4",
+      "data/eval/helmet/labels/005393_jpg.rf.e15cf21d63ce700797e4aaed67389aa9.txt": "64428dfc632ab66fcde177ccd9e5f9ddecf0ec6f04545b8e7250da9adc3839a4",
+      "data/eval/helmet/labels/005394_jpg.rf.6abe6588fd8ea5082de932aa857fcdd7.txt": "0826eece0f2d88be0fc5f789b467af232306991b6a2935bbcf803ffcd94f69c6",
+      "data/eval/helmet/labels/005395_jpg.rf.a38830389c0d26e139ba81b2e1a813a3.txt": "8066b50d9ce22a0a3181fb0df29a29ff7cc348b0238b28cc05207ef670afb452",
+      "data/eval/helmet/labels/005396_jpg.rf.eea1d76dbbfafcfce4679882b0bf06ce.txt": "3726308565bbc93cf59de3d2be6dac54b6e03a838381e58080fcee636f6a1cec",
+      "data/eval/helmet/labels/005397_jpg.rf.eb518c5ace162681763b07ddc5f5fbee.txt": "a69fae979f796a2fff77789f172fc706e0583d6c2f49f70398974485cf02929e",
+      "data/eval/helmet/classes.txt": "33b535fda913a6103494eba940e8d0c1262c449fa127a24a2ab32001ae51b22d",
+      "data/eval/helmet/labels_original_with_class2/005304_jpg.rf.68023ed553bb1d711826d6e1f185ea39.txt": "0afd43dcaa46f7f79a8a05e4574a44d71b4555543f79c16a2cd100dda95f9976",
+      "data/eval/helmet/labels_original_with_class2/005335_jpg.rf.747d6f6b89717d5f35d0b785c27bb6d8.txt": "e09181de7d8612373b1f13860a1d6ef8660a8b8daada9bc911831cc2635c83ce",
+      "data/eval/helmet/labels_original_with_class2/005363_jpg.rf.b6104e4bdaf80defdf9e72f69722ba1b.txt": "d3fb885af3d7233f40709f932b1cd94df274a492cc68c7cc2f1b697fa34c8e66",
+      "models/person/yolov8n.engine": "c2075ac595d71e22701f5c586665228dbd7b935683fb2c27499384cc6694bb96",
+      "models/head/helmet_model.engine": "618c54a48d43844662fb3635d9fed3dc3bdf6e2c6018e6de09a52265a6ea19f6",
+      "src/core/ai/analyzer.py": "6a5d477c0221c5f18568bbad235ce1bf68df1e4c0d96a04d02d6aa1aada12bc4",
+      "src/core/ai/_constants.py": "ddab4ad781999b27de0fbe3909406ca3a3cf09ba93926e4a4ce4e838d10d9b46",
+      "src/core/_yolo_postprocess.py": "858a0786b4e247726df7780be12e4af016408aaa731ba2c5b3bdadd8dca07f9a",
+      "scripts/ops/evaluate_detection.py": "b3c536d78ca4c95b4299dec3e55af7770f96d477aa56911412931d81e5526682",
+      "data/runtime/p53_helmet_parity_20261007_v130/case_0/output/report.json": "d5137c7e6b1544cac2bfb2c5a44a5cf8dd64e56fbc2f81e0feaace1fdf61a044",
+      "data/runtime/p53_helmet_parity_20261007_v130/case_0/output/raw_outputs.npz": "2929ac9ced225b1fae9047d5e78ee46c2065b410ae58a292177e59801c4d5615"
+    }
+  },
+  "baseline": {
+    "0.35": {
+      "overall": {
+        "tp": 306,
+        "fp": 14,
+        "fn": 46,
+        "precision": 0.9563,
+        "recall": 0.8693,
+        "f1": 0.9107
+      },
+      "by_class": {
+        "head": {
+          "tp": 61,
+          "fp": 4,
+          "fn": 10,
+          "precision": 0.9385,
+          "recall": 0.8592,
+          "f1": 0.8971
+        },
+        "helmet": {
+          "tp": 245,
+          "fp": 10,
+          "fn": 36,
+          "precision": 0.9608,
+          "recall": 0.8719,
+          "f1": 0.9142
+        }
+      }
+    },
+    "0.7": {
+      "overall": {
+        "tp": 244,
+        "fp": 3,
+        "fn": 108,
+        "precision": 0.9879,
+        "recall": 0.6932,
+        "f1": 0.8147
+      },
+      "by_class": {
+        "head": {
+          "tp": 40,
+          "fp": 1,
+          "fn": 31,
+          "precision": 0.9756,
+          "recall": 0.5634,
+          "f1": 0.7143
+        },
+        "helmet": {
+          "tp": 204,
+          "fp": 2,
+          "fn": 77,
+          "precision": 0.9903,
+          "recall": 0.726,
+          "f1": 0.8378
+        }
+      }
+    }
+  },
+  "profiles": {
+    "0.35": {
+      "metrics": {
+        "overall": {
+          "tp": 253,
+          "fp": 50,
+          "fn": 99,
+          "precision": 0.835,
+          "recall": 0.7188,
+          "f1": 0.7725
+        },
+        "by_class": {
+          "head": {
+            "tp": 49,
+            "fp": 8,
+            "fn": 22,
+            "precision": 0.8596,
+            "recall": 0.6901,
+            "f1": 0.7656
+          },
+          "helmet": {
+            "tp": 204,
+            "fp": 42,
+            "fn": 77,
+            "precision": 0.8293,
+            "recall": 0.726,
+            "f1": 0.7742
+          }
+        }
+      },
+      "states": {
+        "unknown": 84,
+        "helmet_evidence": 147,
+        "head_evidence": 31,
+        "ambiguous": 67
+      }
+    },
+    "0.7": {
+      "metrics": {
+        "overall": {
+          "tp": 217,
+          "fp": 17,
+          "fn": 135,
+          "precision": 0.9274,
+          "recall": 0.6165,
+          "f1": 0.7406
+        },
+        "by_class": {
+          "head": {
+            "tp": 31,
+            "fp": 4,
+            "fn": 40,
+            "precision": 0.8857,
+            "recall": 0.4366,
+            "f1": 0.5849
+          },
+          "helmet": {
+            "tp": 186,
+            "fp": 13,
+            "fn": 95,
+            "precision": 0.9347,
+            "recall": 0.6619,
+            "f1": 0.775
+          }
+        }
+      },
+      "states": {
+        "unknown": 124,
+        "helmet_evidence": 145,
+        "ambiguous": 42,
+        "head_evidence": 18
+      }
+    }
+  },
+  "roi_count": 329,
+  "images_without_people": 2,
+  "coverage": {
+    "helmet": {
+      "total": 281,
+      "center_in_person": 265,
+      "center_in_roi": 258,
+      "fully_in_roi": 43
+    },
+    "head": {
+      "total": 71,
+      "center_in_person": 70,
+      "center_in_roi": 69,
+      "fully_in_roi": 18
+    }
+  },
+  "coverage_limit": "정답 머리 중심/전체 박스의 영역 포함 여부이며 사람 검출 재현율이나 착용 판정 정확도가 아니다",
+  "operating_unchanged": true,
+  "product_source_unchanged": 206,
+  "raw_recalculation": {
+    "person_images": 100,
+    "helmet_crops": 329,
+    "image_conditions": 200,
+    "mapping_check": true
+  },
+  "latency_limit": "최초 초기화·두 임계값 후처리·계측 포함 공유GPU 단회 진단. 현장FPS나 전체 화면과의 속도 비교에 사용하지 않는다",
+  "limits": [
+    "동일100장 재사용·학습 중복 여부 미확인",
+    "정답은ROI 생성에 사용하지 않으며 사람 미검출 이미지도 전체 분모에 유지",
+    "사람 정답박스가 없어 사람 검출 P/R 및 사람별 착용 정확도는 산정 불가",
+    "OpenCV 사람 상단35% 좌표 규칙 재사용·PIL 전처리의 오프라인 진단으로 DeepStream 전체 사람ROI·필터·최종 경보와 다름",
+    "사람conf0.4·NMS0.5 고정; 운영 설정 최적화/배포 아님",
+    "이미지별 독립 추론으로 시간 누적/추적/다중카메라 속도 미검증"
+  ],
+  "runner_failure": "초기 실행기의 ID 길이 상수 오타로 평가 결과 생성 전 실행기 assertion 실패. 소유 시험 컨테이너 제거·운영 불변 확인 후 수정 실행 성공. 원본 보존",
+  "sha256": {
+    "data/runtime/p53_helmet_roi_20261007_v131/plan.json": "1c8c068ffe6f072cd48b614163aa5049427d98c2cd55ed02c9a34d62e06b1060",
+    "data/runtime/p53_helmet_roi_20261007_v131/roi.py": "feb07f982de13b6b956436c67ebdb3d8c442626937f1889bfd720d43d4604917",
+    "data/runtime/p53_helmet_roi_20261007_v131/run.py": "92d39cec363111531eb52ce8898eef345b611a42fbd218fa0d9196d225c21c2d",
+    "data/runtime/p53_helmet_roi_20261007_v131/analyze.py": "37a3c36854a9b67a8a622766d03e8b26df129ca5cb12d86d851dfa62afada1dc",
+    "data/runtime/p53_helmet_roi_20261007_v131/operating_before.json": "b112264b68f921a0adf41b80ef84e7ac8d016c354e1308f7482c6cf1e965051e",
+    "data/runtime/p53_helmet_roi_20261007_v131/operating_after.json": "b112264b68f921a0adf41b80ef84e7ac8d016c354e1308f7482c6cf1e965051e",
+    "data/runtime/p53_helmet_roi_20261007_v131/trial_results.json": "2bd858806c432e5a71d54ff2afa4570acc0a7143e4e9040cd9124d32722fa7cc",
+    "data/runtime/p53_helmet_roi_20261007_v131/case_0/compose.json": "1cbbf11c31ec819948f8e890d3d7e4dab2f1ae5d56c48a47425416e92c764126",
+    "data/runtime/p53_helmet_roi_20261007_v131/case_0/exit.json": "124fd50cb6d223cdd18fedc166d00af7254199b6e6dedf9be82f71db87af6d01",
+    "data/runtime/p53_helmet_roi_20261007_v131/case_0/run.log": "0d1ee0e4d9cec120920acdeaf0b706d097dd9dc30920add902cb5b53114a07ab",
+    "data/runtime/p53_helmet_roi_20261007_v131/case_0/output/report.json": "281c0ea66f35f4c9faac387385a16761e1a54a4898ccc5c80429bd2759958e95",
+    "data/runtime/p53_helmet_roi_20261007_v131/case_0/output/raw_outputs.npz": "082aa5b49fe626dc7bf5d9683b4a36a813e057f1b871eecac8bc152550d5ebcd",
+    "data/runtime/p53_helmet_roi_20261007_v131/initial_runner_failure/failure.json": "5c687e1b1f6c5703c12e58816e288aa74fad54902cae58554465780cf6c9be8e",
+    "data/runtime/p53_helmet_roi_20261007_v131/initial_runner_failure/run.py": "e32a7a90db8568371a42254c7083dd6b9a36cea840f2c440e6fba9824ddfe643",
+    "data/runtime/p53_helmet_roi_20261007_v131/initial_runner_failure/run.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "data/runtime/p53_helmet_roi_20261007_v131/initial_runner_failure/operating_before.json": "b112264b68f921a0adf41b80ef84e7ac8d016c354e1308f7482c6cf1e965051e",
+    "data/runtime/p53_helmet_roi_20261007_v131/initial_runner_failure/operating_after.json": "b112264b68f921a0adf41b80ef84e7ac8d016c354e1308f7482c6cf1e965051e"
+  },
+  "decision": "상단35% ROI는 두 임계값 모두 전체 화면보다 악화해 보류. 현재엔진/운영 유지, 다음은 P5.1 평가·배포 구성과 복귀 조건 대조",
+  "verification": {
+    "documents": {
+      "passed": true,
+      "models": 8,
+      "wbs_rows": 33,
+      "wbs_status_unchanged": true,
+      "csv_rows": 8,
+      "html_escaped": true,
+      "evidence_artifacts": 17,
+      "other_seven_model_rows_retained": true,
+      "unique_helmet_images": 100,
+      "conditions": 2
+    },
+    "publication": [
+      {
+        "file": "index.html",
+        "status": 200,
+        "bytes": 40025,
+        "sha256": "e74057a61d1b81901730ade7ba5b98e65ae90290958a8621658ac41226068a94",
+        "local_match": true
+      },
+      {
+        "file": "CCTV_project_progress.pdf",
+        "status": 200,
+        "bytes": 148078,
+        "sha256": "4e45e2895d30ea3feea7c3633d3d4d1801e9bb129b2be3e94540ae86253fc96d",
+        "local_match": true
+      }
+    ],
+    "ruff": "passed",
+    "diff_check": "passed",
+    "pdf_visual_pages": [
+      1,
+      4
+    ],
+    "independent_review": {
+      "reviewer": "helmet_roi_review",
+      "unresolved_critical": 0,
+      "unresolved_important": 0,
+      "unresolved_minor": 0,
+      "scope": "ROI 좌표·전체GT분모·NMS/매칭·원자료/입력/제품 해시·운영 불변·문서 수치와 일정",
+      "excluded": "DeepStream 전체 경로·실시간·사람별 미착용 경보·현장 합격"
+    }
+  }
+}

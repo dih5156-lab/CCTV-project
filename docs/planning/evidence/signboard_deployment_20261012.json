@@ -1,0 +1,372 @@
+{
+  "checked_date_kst": "2026-10-12",
+  "scope": "P3.4 / I59 전광판 단독 재배포·복귀·재적용 검증",
+  "compose_config": "PASS",
+  "effective_setting_count": 23,
+  "effective_settings_mismatched_keys": [],
+  "command_matches": true,
+  "build_target": "action",
+  "restart_matches": true,
+  "operating_started_at": "2026-10-12T00:24:13.961853201Z",
+  "operating_health": "healthy",
+  "runtime_recreated": true,
+  "image_built": true,
+  "physical_output_tested": true,
+  "regression": "96 PASS",
+  "lint": "Ruff PASS",
+  "remaining": [
+    "기본 Dockerfile 새 베이스부터 의존성 설치를 포함한 전체 빌드와 별도 Jetson 설치 재현",
+    "전광판 상시 camera_1 매핑·유지시간 운영 기준·통신 장애/장기 복구 검증",
+    "실제 AI/센서 입력과 출력 장치 상시 연결의 통합 검증은 별도"
+  ],
+  "sha256": {
+    "docker-compose.jetson.yml": "cbe567d7a238317f015d3a9a538d5031187773ccdbbf0180daddbb24d82ffc2f",
+    "tests/test_check_compose_runtime_assumptions.py": "39db796a9a6eeb1c94e69782d196bb116d0b79dde65e5e5aaa151f841041704e"
+  },
+  "regression_after_final_compose_change": "60 PASS (이번 재배포 턴에서 재실행)",
+  "before_fix_regression": "1 FAIL: 전광판 Compose 서비스 블록 없음",
+  "effective_config_fix": "공용 env_file의 EDGEX_DEVICE_REGISTRY_PATH 유입을 명시적 빈 값으로 차단해 현재 단일 전광판 구성 유지",
+  "rollback": "기존 기반 이미지와 운영 signboard.py를 함께 보존한3e3153d9 이미지로 실제 재생성·HTTP health·고정 이벤트 display/clear ACK 확인. 이후5d6457f5 이미지로 기본 Compose 최종 재적용.",
+  "storage": {
+    "root_available_initial_mib": 67,
+    "root_available_lowest_mib": 0,
+    "root_available_latest_mib": 4819.3,
+    "project_available_gib": 162.3,
+    "sandbox_failure": "ENOSPC",
+    "deleted_files": false,
+    "largest_home_directories_mib": {
+      ".vscode": 8178,
+      ".codegraph": 5946,
+      ".config": 5521,
+      ".local": 4476,
+      ".codex": 1865
+    },
+    "system_log_mib": 1326,
+    "sandbox_recheck": "PASS: 일반 샌드박스에서 문서/모의 검증 실행",
+    "recovery_cause": "미확정; 이 작업에서 사용자 파일 정리·삭제하지 않음"
+  },
+  "image_build": {
+    "base_image_id": "sha256:7146fd550900b6e967e6a23606920762165035120b44b2e50c43390a7cf8f65e",
+    "tag": "cctv-signboard:validation-20261012-01",
+    "recipe": "FROM edgex-jetson-cctv-device-signboard:latest\nCOPY --chown=2002:2001 src /app/src\nCOPY --chown=2002:2001 runners /app/runners\n",
+    "strategy": "기존 운영 이미지의 의존성을 유지하고 현재 src/runners만 포함한 검증 후보",
+    "clean_build": "FAIL: --network=none에서 새 Python 베이스의 curl 의존성을 설치할 수 없음. 운영 이미지 재사용 후보와 구분"
+  },
+  "image_validation": {
+    "source_files_matched": 220,
+    "runner_import": "PASS",
+    "network": "none",
+    "physical_output": false,
+    "image_id": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+    "operating_started_at_after": "2026-10-08T06:59:15.853135065Z",
+    "operating_health_after": "healthy"
+  },
+  "isolation_preflight": {
+    "checks": [
+      {
+        "case": "45초 표시 후 clear",
+        "passed": true
+      },
+      {
+        "case": "표시 실패 후 clear",
+        "passed": true
+      },
+      {
+        "case": "성공 후 unpause",
+        "passed": true
+      },
+      {
+        "case": "실패 후 unpause",
+        "passed": true
+      }
+    ],
+    "physical_calls": 0,
+    "script_sha256": "32539c64bcf24bbebfc5c082bbcbaae21945894d2d09b261c6d36269d4284e0e",
+    "previous_plan_sha256": "e5af1627850853056f2039ccac73d18362eafcac17d67320278861032430f869",
+    "operating_container_unchanged": true,
+    "approval": "대기·실물 미실행"
+  },
+  "subsequent_work": {
+    "evidence": "docs/planning/evidence/signboard_isolation_20261012.json",
+    "I58": "45초 격리 및 정상 운영 경로 경고 실물 표시·원복 확인 완료",
+    "I60": "공간 회복은 같은 워크스페이스 후속 작업의 썸네일/npm 다운로드/VSIX 캐시 SSD 보존 이동에 따른 것임. 설치된 패키지·사용자 원본·서비스 변경 없음. 캐시 이동 근거는 별도 기록 참조."
+  },
+  "preparation_snapshot": {
+    "scope": "P3.4 / I59 배포 정의 로컬 복구",
+    "runtime_recreated": false,
+    "physical_output_tested": false,
+    "operating_started_at": "2026-10-08T06:59:15.853135065Z",
+    "operating_health": "healthy",
+    "rollback": "다음 배포 전까지 운영 컨테이너를 유지한다. 로컬 구성 복귀는 이번에 추가한 cctv-device-signboard 블록만 제거하며 기존 사용자 변경은 보존한다. 실제 재생성 복귀안은 이미지/현재 컨테이너 변경분 보존 후 확정한다.",
+    "remaining": [
+      "I58 동일 경고45초 실물 비교 승인·관찰",
+      "검증 이미지 지정 후 전광판 단독 재생성/복귀 시험",
+      "기본 Dockerfile 새 베이스의 의존성 설치를 포함한 전체 빌드 검증"
+    ],
+    "sha256": {
+      "docker-compose.jetson.yml": "cbe567d7a238317f015d3a9a538d5031187773ccdbbf0180daddbb24d82ffc2f",
+      "tests/test_check_compose_runtime_assumptions.py": "39db796a9a6eeb1c94e69782d196bb116d0b79dde65e5e5aaa151f841041704e"
+    }
+  },
+  "physical_display_confirmed": true,
+  "runtime_verification": {
+    "state": "REDEPLOY_ROLLBACK_REAPPLY_PASS_FINAL_PHYSICAL_CONFIRMED",
+    "containers": {
+      "cctv-device-signboard": {
+        "id": "29aeb393bd52e7a9f8241be9214b970e82e8442253fdfe2e73dbbf5d153feaa8",
+        "image": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+        "started": "2026-10-12T00:24:13.961853201Z",
+        "status": "running",
+        "paused": false,
+        "health": "healthy",
+        "restart": {
+          "Name": "always",
+          "MaximumRetryCount": 0
+        },
+        "restart_count": 0
+      },
+      "cctv-device-dabit": {
+        "id": "f51a40001b1cdd706b69941702a76e10044002740582f2da9c20c8648aa36a0d",
+        "image": "sha256:bb0f35eee47d16c4bc8b30417717bc04b9d2c40ce6f2556d97d081f736a006fd",
+        "started": "2026-10-01T23:40:25.229113157Z",
+        "status": "exited",
+        "paused": false,
+        "health": "unhealthy",
+        "restart": {
+          "Name": "no",
+          "MaximumRetryCount": 0
+        },
+        "restart_count": 0
+      },
+      "cctv-action-layer": {
+        "id": "4583fc9fcd71816b7cdc1f20900901cf8cfcbbd669401c8b9fe3d66e99a9bbf6",
+        "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+        "started": "2026-10-08T06:15:40.114979171Z",
+        "status": "running",
+        "paused": false,
+        "health": "healthy",
+        "restart": {
+          "Name": "always",
+          "MaximumRetryCount": 0
+        },
+        "restart_count": 0
+      },
+      "cctv-ai-engine": {
+        "id": "db65cceb6390ae7eae0b02db9403a46dba9053adbeca5cb27cb4e67c92d0e4f0",
+        "image": "sha256:294e52234fc170904e2a09b180b422e0562d6e11b5aa28ebcf287a1b47c9ed55",
+        "started": "2026-10-08T04:59:47.634961746Z",
+        "status": "running",
+        "paused": false,
+        "health": "healthy",
+        "restart": {
+          "Name": "always",
+          "MaximumRetryCount": 0
+        },
+        "restart_count": 0
+      },
+      "cctv-media-server": {
+        "id": "a2b1369a3598485980000d1e6da5ef09d79145da54b220cc37baaa00b7376c03",
+        "image": "sha256:f8628851106cc053f9175b248050bb5f362a6e65abd72297c167a1cb5a9a3be2",
+        "started": "2026-10-01T23:40:25.266992541Z",
+        "status": "running",
+        "paused": false,
+        "health": null,
+        "restart": {
+          "Name": "always",
+          "MaximumRetryCount": 0
+        },
+        "restart_count": 0
+      }
+    },
+    "unchanged_services": [
+      "cctv-device-dabit",
+      "cctv-action-layer",
+      "cctv-ai-engine",
+      "cctv-media-server"
+    ],
+    "source_files_matched": 220,
+    "writable_layer_diff": [],
+    "output_mapping_unchanged": true,
+    "trials": {
+      "candidate": {
+        "actions": [
+          "display",
+          "clear"
+        ],
+        "acknowledged": 2,
+        "errors": [],
+        "input_count": 3,
+        "physical_confirmation": null
+      },
+      "rollback": {
+        "actions": [
+          "display",
+          "clear"
+        ],
+        "acknowledged": 2,
+        "errors": [],
+        "input_count": 3,
+        "physical_confirmation": null
+      },
+      "final": {
+        "actions": [
+          "display",
+          "clear"
+        ],
+        "acknowledged": 2,
+        "errors": [],
+        "input_count": 3,
+        "physical_confirmation": {
+          "answer": "경고가 보였다가 시간으로 돌아옴",
+          "recorded_at_utc": "2026-10-12T00:28:14.905230+00:00",
+          "scope": "최종 검증 이미지5d6457f5, 고정 낙상 이벤트1회 경고 표시/시간 복귀"
+        }
+      }
+    },
+    "signboard_error_log_patterns": {
+      "Traceback": 0,
+      "처리 실패": 0,
+      "timed out": 0,
+      "Connection refused": 0
+    },
+    "root_free_gib": 4.69,
+    "config_regression": "60 PASS",
+    "compose_image_pinned": "cctv-signboard:validation-20261012-01",
+    "plan": "data/runtime/signboard_deployment_20261012/plan.json",
+    "candidate_image": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+    "rollback_image": "sha256:3e3153d98d41c6fa473668507f7f8454c81c5ca041f19de08947f100dd562165",
+    "config_preflight": {
+      "effective_setting_count": 23,
+      "effective_setting_keys": [
+        "EDGEX_COMMAND_TOPIC_PREFIX",
+        "EDGEX_DEVICE_REGISTRY_PATH",
+        "EDGEX_JETSON_ID",
+        "EDGEX_RESULT_TOPIC_PREFIX",
+        "MQTT_BROKER",
+        "MQTT_PASSWORD",
+        "MQTT_PORT",
+        "MQTT_USER",
+        "PYTHONPATH",
+        "PYTHONUNBUFFERED",
+        "SIGNBOARD_BACK_COLOR",
+        "SIGNBOARD_BRIGHTNESS",
+        "SIGNBOARD_DEVICE_ID",
+        "SIGNBOARD_DRY_RUN",
+        "SIGNBOARD_HOST",
+        "SIGNBOARD_IDLE_REFRESH_INTERVAL",
+        "SIGNBOARD_PORT",
+        "SIGNBOARD_SERVICE_HOST",
+        "SIGNBOARD_SERVICE_PORT",
+        "SIGNBOARD_TEXT_COLOR",
+        "SIGNBOARD_TEXT_SIZE",
+        "SIGNBOARD_TEXT_SPEED",
+        "TZ"
+      ],
+      "mismatched_keys": [],
+      "image": "cctv-signboard:validation-20261012-01",
+      "image_id": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+      "compose_sha256": "cbe567d7a238317f015d3a9a538d5031187773ccdbbf0180daddbb24d82ffc2f",
+      "compared": "환경변수 미지정 항목은 runner의 실제 기본값을 적용",
+      "unrelated_environment_changed_keys": [
+        "APPEARANCE_COLOR_MODEL_PATH",
+        "APPEARANCE_MODEL_PATH",
+        "EDGEX_ALLOWED_DEVICES",
+        "EDGEX_COMMAND_MODE",
+        "FALLDATA_AUX_CLIP_BUFFER_ENABLED",
+        "FALLDATA_AUX_CLIP_BUFFER_HEIGHT",
+        "FALLDATA_AUX_CLIP_BUFFER_WIDTH",
+        "FALLDATA_AUX_COMPARE_MODEL_KIND",
+        "FALLDATA_AUX_COMPARE_MODEL_PATH",
+        "FALLDATA_AUX_COMPARE_THRESHOLD",
+        "FALLDATA_AUX_INLINE_POSE_RF",
+        "FALLDATA_AUX_MIN_POSE_FRAMES",
+        "FALLDATA_AUX_SHADOW_ALL_WINDOWS",
+        "FALLDATA_AUX_SHADOW_WINDOW_INTERVAL_SEC",
+        "MEDIA_BIND_HOST",
+        "MEDIA_WEBRTC_ADDITIONAL_HOSTS",
+        "PUBLIC_DEMO_BIND_HOST"
+      ]
+    },
+    "transitions": {
+      "candidate": {
+        "elapsed_seconds": 8.34,
+        "id": "40f741d797582c3dfab2bea0114f575ec42cb1576367938fccbbd0d7d1d9b6b5",
+        "image": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+        "started": "2026-10-12T00:18:17.043859822Z",
+        "status": "running",
+        "health": "healthy",
+        "http_health": {
+          "service": "cctv-device-signboard",
+          "status": "up"
+        },
+        "restart_count": 0
+      },
+      "rollback": {
+        "elapsed_seconds": 9.75,
+        "id": "85664666adeff204f109b6dedbc0ef7b2ede2f9a126513f1c2b44bef605596f1",
+        "image": "sha256:3e3153d98d41c6fa473668507f7f8454c81c5ca041f19de08947f100dd562165",
+        "started": "2026-10-12T00:20:31.217851138Z",
+        "health": "healthy",
+        "http_health": {
+          "service": "cctv-device-signboard",
+          "status": "up"
+        },
+        "restart_count": 0
+      },
+      "final": {
+        "elapsed_seconds": 9.99,
+        "id": "29aeb393bd52e7a9f8241be9214b970e82e8442253fdfe2e73dbbf5d153feaa8",
+        "image": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+        "started": "2026-10-12T00:24:13.961853201Z",
+        "health": "healthy",
+        "http_health": {
+          "service": "cctv-device-signboard",
+          "status": "up"
+        },
+        "restart_count": 0
+      }
+    },
+    "authorization": "사용자 진행시켜줘. 전광판만 후보→복귀→재적용 안내 후 수행; 실물 관찰 지금 확인 가능 확인.",
+    "artifacts_sha256": {
+      "data/runtime/signboard_deployment_20261012/verification.json": "05d55f12c1ce4554968a10afda1efbb0ef416d91795d57252297f7032711d353",
+      "data/runtime/signboard_deployment_20261012/rollback.compose.json": "100038b29f130806e221cfd8caa81a6eb3890d12708d8aca2daf2079f6b8aa9c",
+      "data/runtime/signboard_deployment_20261012/candidate.compose.json": "c02672b0a5c075fac33a879b882a2c697a3ad92780ade8500008139816331ebb",
+      "data/runtime/signboard_deployment_20261012/candidate_sources.json": "ea4e7047c682a35dbdfa379ddd036354b4d6e2bbf62aee47ae8fb07e650fab04",
+      "data/runtime/signboard_deployment_20261012/candidate_apply.json": "58578d45220953280891f607dffa6176aa62f100afaabfa0073a3f9aef070ec6",
+      "data/runtime/signboard_deployment_20261012/final_config_preflight.json": "74c815634ac709ccf571dc146aad8e18711c1611b44af690a07ae34758444d34",
+      "data/runtime/signboard_deployment_20261012/rollback_apply.json": "3ba14e1e2e43813546ab171be80365b909ebb629987cf6525a332a075abfd429",
+      "data/runtime/signboard_deployment_20261012/baseline.json": "e5ef57181d055526e580ec997e178b7f6d57a997c8fc81dbe7eb10204e53cabf",
+      "data/runtime/signboard_deployment_20261012/final_apply.json": "09eb5866a95add66e2402898d808f5b86aaf38cb4f4a2f2acb4851be51877f99",
+      "data/runtime/signboard_deployment_20261012/plan.json": "50495fd1f7d7adfca9a6514928e0e9615bc483d3c1b0ce21c1a72426fb0fcbf3",
+      "data/runtime/signboard_deployment_20261012/rollback/signboard.py": "c9bd2e9b4717c41d9c6c8bbadd51861654f067be350af905da2a461749647840",
+      "data/runtime/signboard_deployment_20261012/rollback/Dockerfile": "d89f2cf595daf62d00e54d048009b3ab3ad46482966163bc43369afcce4195ce",
+      "data/runtime/signboard_deployment_20261012/event_candidate/event.json": "c5819d04224a4ce1c0b7fa1e90fea53c6e012856fc0d5c5afb9e2a12bd6cd452",
+      "data/runtime/signboard_deployment_20261012/event_candidate/output_devices.json": "e57bfe2e2da9e9228b06da481b16bcf16b33f950968acc675606f3da5036db6a",
+      "data/runtime/signboard_deployment_20261012/event_candidate/trial.json": "05ac292c2304c3a55c8321f3151ed37d280b3fd20fd0653620525397b69038c5",
+      "data/runtime/signboard_deployment_20261012/event_candidate/plan.json": "36909cf55476c29507a87d952dfbc1bcea6214d88ac774b8d98d26306f74c62f",
+      "data/runtime/signboard_deployment_20261012/event_final/event.json": "5559cb0c53203a96c366fb47c2dffda2bf0bdbb7b71a5c763bd530c03c2a473f",
+      "data/runtime/signboard_deployment_20261012/event_final/output_devices.json": "e57bfe2e2da9e9228b06da481b16bcf16b33f950968acc675606f3da5036db6a",
+      "data/runtime/signboard_deployment_20261012/event_final/trial.json": "4e3dc87ee3c382a7ce93b2d69d5b9b1e49f260bf3d68585e0bae8070343488de",
+      "data/runtime/signboard_deployment_20261012/event_final/plan.json": "034360ba22d89e7af80648abff79d079140f9d25ab01b3cbada4634a637520da",
+      "data/runtime/signboard_deployment_20261012/event_rollback/event.json": "ea140174d948634133ee7b354b54cb8d4ec07cf05fcd0513e3fa3f674696ce29",
+      "data/runtime/signboard_deployment_20261012/event_rollback/output_devices.json": "e57bfe2e2da9e9228b06da481b16bcf16b33f950968acc675606f3da5036db6a",
+      "data/runtime/signboard_deployment_20261012/event_rollback/trial.json": "6f745f41c6fa891612ae590cfda7c2a77e24b93f5a53c1f34a70838dc8ea1ed4",
+      "data/runtime/signboard_deployment_20261012/event_rollback/plan.json": "cb6dece4abe29d8afebd5e828ba26632ef08812a9a41b4c8904cde852acc0b89"
+    },
+    "issue_result": "I59 RESOLVED: 현재 장비에서 배포 정의 누락/수정 이미지 소실 방지·재생성/복귀 검증에 한정",
+    "next": "P4.1~P4.3 센서 ID·수신 주기·값/단위 읽기 전용 사전검증"
+  },
+  "rule_engine_followup": {
+    "observed_at_utc": "2026-10-12T01:10:02.293456+00:00",
+    "registered_rules": 8,
+    "stopped_rules": 8,
+    "test_path": "고정 시험 토픽→격리 ActionBridge→운영 EdgeX 전광판 서비스→실물",
+    "kuiper_in_test_path": false,
+    "test_message_source": "event.display_message = 낙상 연동 시험",
+    "production_rule_start_changed": false,
+    "reason_for_stopped": "미확인",
+    "evidence_path": "data/runtime/signboard_deployment_20261012/kuiper_rule_status.json",
+    "sha256": "11e3ccbb6618592d1ec43c3ae19fdbde91700ce79ca2cc087147d18333d8a48c",
+    "subsequent_resolution": "evidence/kuiper_restore_20261012.json: 정지 원인 확인·8규칙 복구·규칙 경유 실물 표시 확인. 본 항목은 복구 전 관측 기록으로 보존"
+  }
+}

@@ -1,0 +1,1572 @@
+{
+  "version": "0.132",
+  "wbs": "P5.1",
+  "date": "2026-10-07",
+  "deployed": false,
+  "profiles": {
+    "operating": {
+      "name": "/cctv-ai-engine",
+      "image": "sha256:1ace5b7832a50d6675b66146b0edc307021795732fc7c9a770e2cd628d7fd261",
+      "started_at": "2026-10-02T01:33:58.362007997Z",
+      "status": "running",
+      "health": "healthy",
+      "restart_count": 0,
+      "config_sha256": "de96a947510003e1f15a458fbef13f911fc481b2392e4a541d6cd517c6db38f5",
+      "mounts": [
+        {
+          "Type": "bind",
+          "Source": "/media/sawwave/Learning11/CCTV-project/.venv-jetson-train",
+          "Destination": "/app/.venv-jetson-train",
+          "RW": false
+        },
+        {
+          "Type": "bind",
+          "Source": "/media/sawwave/Learning11/CCTV-project/Sample",
+          "Destination": "/app/Sample",
+          "RW": false
+        },
+        {
+          "Type": "bind",
+          "Source": "/media/sawwave/Learning11/CCTV-project/cameras.json",
+          "Destination": "/app/cameras.json",
+          "RW": true
+        },
+        {
+          "Type": "bind",
+          "Source": "/media/sawwave/Learning11/CCTV-project/data",
+          "Destination": "/app/data",
+          "RW": true
+        },
+        {
+          "Type": "bind",
+          "Source": "/media/sawwave/Learning11/CCTV-project/known_faces",
+          "Destination": "/app/known_faces",
+          "RW": true
+        },
+        {
+          "Type": "bind",
+          "Source": "/media/sawwave/Learning11/CCTV-project/known_faces.json",
+          "Destination": "/app/known_faces.json",
+          "RW": true
+        },
+        {
+          "Type": "bind",
+          "Source": "/media/sawwave/Learning11/CCTV-project/models",
+          "Destination": "/app/models",
+          "RW": true
+        },
+        {
+          "Type": "bind",
+          "Source": "/media/sawwave/Learning11/CCTV-project/scripts",
+          "Destination": "/app/scripts",
+          "RW": false
+        },
+        {
+          "Type": "bind",
+          "Source": "/media/sawwave/Learning11/CCTV-project/src",
+          "Destination": "/app/src",
+          "RW": false
+        },
+        {
+          "Type": "bind",
+          "Source": "/media/sawwave/Learning11/CCTV-project/zones_config.json",
+          "Destination": "/app/zones_config.json",
+          "RW": false
+        },
+        {
+          "Type": "bind",
+          "Source": "/media/sawwave/Learning11/낙상학습데이터",
+          "Destination": "/app/낙상학습데이터",
+          "RW": false
+        },
+        {
+          "Type": "bind",
+          "Source": "/media/sawwave/Learning11/CCTV-project/data/insightface",
+          "Destination": "/root/.insightface",
+          "RW": true
+        },
+        {
+          "Type": "bind",
+          "Source": "/tmp/.X11-unix",
+          "Destination": "/tmp/.X11-unix",
+          "RW": true
+        },
+        {
+          "Type": "bind",
+          "Source": "/media/sawwave/Learning11/CCTV-project/config/appearance_color_labels.json",
+          "Destination": "/app/config/appearance_color_labels.json",
+          "RW": false
+        },
+        {
+          "Type": "bind",
+          "Source": "/media/sawwave/Learning11/CCTV-project/config/appearance_pa100k_labels.json",
+          "Destination": "/app/config/appearance_pa100k_labels.json",
+          "RW": false
+        },
+        {
+          "Type": "bind",
+          "Source": "/media/sawwave/Learning11/CCTV-project/config/deepstream",
+          "Destination": "/app/config/deepstream",
+          "RW": false
+        },
+        {
+          "Type": "volume",
+          "Source": "/media/sawwave/Learning11/docker/volumes/edgex-jetson_trt-cache/_data",
+          "Destination": "/app/models/trt_cache",
+          "RW": true
+        },
+        {
+          "Type": "bind",
+          "Source": "/opt/nvidia/deepstream",
+          "Destination": "/opt/nvidia/deepstream",
+          "RW": false
+        },
+        {
+          "Type": "bind",
+          "Source": "/usr/lib/aarch64-linux-gnu/nvidia",
+          "Destination": "/usr/lib/aarch64-linux-gnu/nvidia",
+          "RW": false
+        }
+      ],
+      "environment": {
+        "DS_OUTPUT_MODE": "rtsp-publish",
+        "DS_PRIMARY_INTERVAL": "1",
+        "DS_YOLO_TASK": "pose",
+        "DS_YOLO_CONFIDENCE": "0.50",
+        "DS_POSE_CONFIDENCE": "0.50",
+        "DS_HELMET_ENABLED": "1",
+        "DS_FACE_ENABLED": "1",
+        "DS_APPEARANCE_ENABLED": "1",
+        "DS_PPHUMAN_SGIE_ENABLED": "1",
+        "APPEARANCE_ENABLED": "true",
+        "FALLDATA_AUX_ENABLED": "true",
+        "FALLDATA_AUX_TEMPORAL_WORKER_ENABLED": null,
+        "FALLDATA_AUX_CLIP_BUFFER_ENABLED": "true",
+        "FALLDATA_AUX_TEMPORAL_NEAR_MISS_SHADOW_ENABLED": "true",
+        "DS_FALL_ENABLE_FOLDED_POSE": "false",
+        "DS_PREVIEW_ENABLED": "1",
+        "DS_OSD_PROCESS_MODE": null,
+        "STREAM_API_ENABLED": "0",
+        "EDGEX_COMMAND_MODE": null,
+        "EDGEX_ALLOWED_DEVICES": null,
+        "APPEARANCES_DB": "/app/data/runtime/appearances.db",
+        "MQTT_EVENT_OUTBOX_DB": "/app/data/runtime/mqtt_event_outbox.db",
+        "COMMERCIAL_FACE_DATABASE": "data/runtime/commercial_faces.db"
+      }
+    },
+    "base_compose": {
+      "image": null,
+      "build_present": true,
+      "environment": {
+        "DS_OUTPUT_MODE": "rtsp-publish",
+        "DS_PRIMARY_INTERVAL": "1",
+        "DS_YOLO_TASK": "pose",
+        "DS_YOLO_CONFIDENCE": "0.50",
+        "DS_POSE_CONFIDENCE": "0.50",
+        "DS_HELMET_ENABLED": "1",
+        "DS_FACE_ENABLED": "1",
+        "DS_APPEARANCE_ENABLED": "1",
+        "DS_PPHUMAN_SGIE_ENABLED": "1",
+        "APPEARANCE_ENABLED": "true",
+        "FALLDATA_AUX_ENABLED": "true",
+        "FALLDATA_AUX_TEMPORAL_WORKER_ENABLED": "false",
+        "FALLDATA_AUX_CLIP_BUFFER_ENABLED": "true",
+        "FALLDATA_AUX_TEMPORAL_NEAR_MISS_SHADOW_ENABLED": "true",
+        "DS_FALL_ENABLE_FOLDED_POSE": "false",
+        "DS_PREVIEW_ENABLED": "1",
+        "DS_OSD_PROCESS_MODE": "",
+        "STREAM_API_ENABLED": "0",
+        "EDGEX_COMMAND_MODE": "edgex",
+        "EDGEX_ALLOWED_DEVICES": "speaker,signboard,siren",
+        "APPEARANCES_DB": "/app/data/runtime/appearances.db",
+        "MQTT_EVENT_OUTBOX_DB": "/app/data/runtime/mqtt_event_outbox.db",
+        "COMMERCIAL_FACE_DATABASE": "data/runtime/commercial_faces.db"
+      },
+      "mounts": [
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/src",
+          "target": "/app/src",
+          "read_only": true
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/scripts",
+          "target": "/app/scripts",
+          "read_only": true
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/cameras.json",
+          "target": "/app/cameras.json",
+          "read_only": null
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/zones_config.json",
+          "target": "/app/zones_config.json",
+          "read_only": true
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/models",
+          "target": "/app/models",
+          "read_only": null
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/config/deepstream",
+          "target": "/app/config/deepstream",
+          "read_only": true
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/config/appearance_pa100k_labels.json",
+          "target": "/app/config/appearance_pa100k_labels.json",
+          "read_only": true
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/config/appearance_color_labels.json",
+          "target": "/app/config/appearance_color_labels.json",
+          "read_only": true
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/data",
+          "target": "/app/data",
+          "read_only": null
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/Sample",
+          "target": "/app/Sample",
+          "read_only": true
+        },
+        {
+          "source": "/media/sawwave/Learning11/낙상학습데이터",
+          "target": "/app/낙상학습데이터",
+          "read_only": true
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/falldata",
+          "target": "/app/falldata",
+          "read_only": true
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/.venv-mediapipe",
+          "target": "/app/.venv-mediapipe",
+          "read_only": true
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/.venv-falldata",
+          "target": "/app/.venv-falldata",
+          "read_only": true
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/.venv-jetson-train",
+          "target": "/app/.venv-jetson-train",
+          "read_only": true
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/data/insightface",
+          "target": "/root/.insightface",
+          "read_only": null
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/known_faces.json",
+          "target": "/app/known_faces.json",
+          "read_only": null
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/known_faces",
+          "target": "/app/known_faces",
+          "read_only": null
+        },
+        {
+          "source": "/opt/nvidia/deepstream",
+          "target": "/opt/nvidia/deepstream",
+          "read_only": true
+        },
+        {
+          "source": "/usr/lib/aarch64-linux-gnu/nvidia",
+          "target": "/usr/lib/aarch64-linux-gnu/nvidia",
+          "read_only": true
+        },
+        {
+          "source": "/tmp/.X11-unix",
+          "target": "/tmp/.X11-unix",
+          "read_only": null
+        },
+        {
+          "source": "trt-cache",
+          "target": "/app/models/trt_cache",
+          "read_only": null
+        }
+      ]
+    },
+    "legacy_candidate": {
+      "image": "sha256:0c11b835eb42cd245f4dda0b8bc8088733c0323bf75a2f4fefe9e7705d8dbf34",
+      "build_present": false,
+      "environment": {
+        "DS_OUTPUT_MODE": "rtsp-publish",
+        "DS_PRIMARY_INTERVAL": "1",
+        "DS_YOLO_TASK": "pose",
+        "DS_YOLO_CONFIDENCE": "0.50",
+        "DS_POSE_CONFIDENCE": "0.50",
+        "DS_HELMET_ENABLED": "1",
+        "DS_FACE_ENABLED": "1",
+        "DS_APPEARANCE_ENABLED": "1",
+        "DS_PPHUMAN_SGIE_ENABLED": "1",
+        "APPEARANCE_ENABLED": "true",
+        "FALLDATA_AUX_ENABLED": "true",
+        "FALLDATA_AUX_TEMPORAL_WORKER_ENABLED": "true",
+        "FALLDATA_AUX_CLIP_BUFFER_ENABLED": "true",
+        "FALLDATA_AUX_TEMPORAL_NEAR_MISS_SHADOW_ENABLED": "true",
+        "DS_FALL_ENABLE_FOLDED_POSE": "false",
+        "DS_PREVIEW_ENABLED": "1",
+        "DS_OSD_PROCESS_MODE": "0",
+        "STREAM_API_ENABLED": "0",
+        "EDGEX_COMMAND_MODE": "edgex",
+        "EDGEX_ALLOWED_DEVICES": "speaker,signboard,siren",
+        "APPEARANCES_DB": "/app/data/runtime/appearances.db",
+        "MQTT_EVENT_OUTBOX_DB": "/app/data/runtime/mqtt_event_outbox.db",
+        "COMMERCIAL_FACE_DATABASE": "/app/data/runtime/commercial_faces.db"
+      },
+      "mounts": [
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/cameras.json",
+          "target": "/app/cameras.json",
+          "read_only": null
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/zones_config.json",
+          "target": "/app/zones_config.json",
+          "read_only": true
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/data/runtime/p51_restore_20261001_v092/bundle/models",
+          "target": "/app/models",
+          "read_only": true
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/data",
+          "target": "/app/data",
+          "read_only": null
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/.venv-mediapipe",
+          "target": "/app/.venv-mediapipe",
+          "read_only": true
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/.venv-falldata",
+          "target": "/app/.venv-falldata",
+          "read_only": true
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/.venv-jetson-train",
+          "target": "/app/.venv-jetson-train",
+          "read_only": true
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/data/insightface",
+          "target": "/root/.insightface",
+          "read_only": null
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/known_faces.json",
+          "target": "/app/known_faces.json",
+          "read_only": null
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/known_faces",
+          "target": "/app/known_faces",
+          "read_only": null
+        },
+        {
+          "source": "/opt/nvidia/deepstream",
+          "target": "/opt/nvidia/deepstream",
+          "read_only": true
+        },
+        {
+          "source": "/usr/lib/aarch64-linux-gnu/nvidia",
+          "target": "/usr/lib/aarch64-linux-gnu/nvidia",
+          "read_only": true
+        },
+        {
+          "source": "/tmp/.X11-unix",
+          "target": "/tmp/.X11-unix",
+          "read_only": null
+        },
+        {
+          "source": "trt-cache",
+          "target": "/app/models/trt_cache",
+          "read_only": null
+        }
+      ]
+    },
+    "minimal_evaluation": {
+      "image": "sha256:294e52234fc170904e2a09b180b422e0562d6e11b5aa28ebcf287a1b47c9ed55",
+      "build_present": false,
+      "environment": {
+        "DS_OUTPUT_MODE": "rtsp-publish",
+        "DS_PRIMARY_INTERVAL": "1",
+        "DS_YOLO_TASK": "pose",
+        "DS_YOLO_CONFIDENCE": "0.50",
+        "DS_POSE_CONFIDENCE": "0.50",
+        "DS_HELMET_ENABLED": "0",
+        "DS_FACE_ENABLED": "0",
+        "DS_APPEARANCE_ENABLED": "0",
+        "DS_PPHUMAN_SGIE_ENABLED": "0",
+        "APPEARANCE_ENABLED": "false",
+        "FALLDATA_AUX_ENABLED": "false",
+        "FALLDATA_AUX_TEMPORAL_WORKER_ENABLED": "false",
+        "FALLDATA_AUX_CLIP_BUFFER_ENABLED": "false",
+        "FALLDATA_AUX_TEMPORAL_NEAR_MISS_SHADOW_ENABLED": "false",
+        "DS_FALL_ENABLE_FOLDED_POSE": "false",
+        "DS_PREVIEW_ENABLED": "1",
+        "DS_OSD_PROCESS_MODE": "0",
+        "STREAM_API_ENABLED": "0",
+        "EDGEX_COMMAND_MODE": null,
+        "EDGEX_ALLOWED_DEVICES": null,
+        "APPEARANCES_DB": "/app/data/runtime/appearances.db",
+        "MQTT_EVENT_OUTBOX_DB": "/app/data/runtime/mqtt_event_outbox.db",
+        "COMMERCIAL_FACE_DATABASE": "/app/data/runtime/commercial_faces.db"
+      },
+      "mounts": [
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/data/runtime/p51_restore_20261001_v092/bundle/venvs/jetson-train",
+          "target": "/app/.venv-jetson-train",
+          "read_only": true
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/data/runtime/p51_restore_20261001_v092/bundle/venvs/mediapipe",
+          "target": "/app/.venv-mediapipe",
+          "read_only": true
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/data/runtime/p51_restore_20261001_v092/bundle/venvs/falldata",
+          "target": "/app/.venv-falldata",
+          "read_only": true
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/data/runtime/p51_restore_20261001_v092/bundle/sdk/deepstream",
+          "target": "/opt/nvidia/deepstream",
+          "read_only": true
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/data/runtime/p51_restore_20261001_v092/bundle/sdk/nvidia",
+          "target": "/usr/lib/aarch64-linux-gnu/nvidia",
+          "read_only": true
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/data/runtime/p51_restore_20261001_v092/bundle/models",
+          "target": "/app/models",
+          "read_only": true
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/data/runtime/p51_minimal_20261007_v123/minimal/data",
+          "target": "/app/data",
+          "read_only": false
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/data/runtime/p51_minimal_20261007_v123/minimal/cache",
+          "target": "/app/models/trt_cache",
+          "read_only": false
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/data/runtime/p51_restore_20261001_v092/bundle/insightface",
+          "target": "/root/.insightface",
+          "read_only": true
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/data/runtime/p51_restore_20261001_v092/restored_settings/known_faces",
+          "target": "/app/known_faces",
+          "read_only": true
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/data/runtime/p51_restore_20261001_v092/restored_settings/known_faces.json",
+          "target": "/app/known_faces.json",
+          "read_only": true
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/data/runtime/p51_restore_20261001_v092/restored_settings/zones_config.json",
+          "target": "/app/zones_config.json",
+          "read_only": true
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/data/runtime/p51_minimal_20261007_v123/cameras.json",
+          "target": "/app/cameras.json",
+          "read_only": true
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/data/runtime/p51_minimal_20261007_v123/minimal/output",
+          "target": "/output",
+          "read_only": false
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/data/runtime/p51_transition_20261001_v093",
+          "target": "/audit",
+          "read_only": true
+        },
+        {
+          "source": "/tmp/.X11-unix",
+          "target": "/tmp/.X11-unix",
+          "read_only": true
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/data/runtime/p51_app_20260928_v039",
+          "target": "/experiment",
+          "read_only": true
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/data/runtime/p51_tcn_loaded_20260930_v074",
+          "target": "/harness",
+          "read_only": true
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/data/runtime/p51_camera_20260928_v050",
+          "target": "/baseline",
+          "read_only": true
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/data/runtime/p51_startup_delay_20261002_v097",
+          "target": "/reason",
+          "read_only": true
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/data/runtime/p51_minimal_20261007_v123",
+          "target": "/verification",
+          "read_only": true
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/data/runtime/p51_camera_20260928_v050/camera_1_capture.mkv",
+          "target": "/inputs/camera.mkv",
+          "read_only": true
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/data/runtime/p51_camera_rate_20261007_v121/inputs/scene_0_1080p2997.mp4",
+          "target": "/inputs/fall.mp4",
+          "read_only": true
+        },
+        {
+          "source": "/media/sawwave/Learning11/CCTV-project/data/runtime/p51_pose_gap_20261006_v119/config_infer_medium.txt",
+          "target": "/app/config/deepstream/config_infer_primary.txt",
+          "read_only": true
+        }
+      ]
+    }
+  },
+  "checks": {
+    "deployment": [
+      {
+        "name": "default compose architecture",
+        "passed": true,
+        "detail": "Jetson target selected; deployment uses docker-compose.jetson.yml"
+      },
+      {
+        "name": "TensorRT CUDA binding alignment",
+        "passed": true,
+        "detail": ""
+      },
+      {
+        "name": "aiot parser database config",
+        "passed": true,
+        "detail": "parser .env uses localhost, but docker-compose.yml overrides DB_HOST to aiot-parser-db"
+      },
+      {
+        "name": "runtime secret source",
+        "passed": true,
+        "detail": ".env provides MQTT and AIoT DB secrets"
+      },
+      {
+        "name": "aiot database secret wiring",
+        "passed": true,
+        "detail": ""
+      },
+      {
+        "name": "runtime path convergence",
+        "passed": true,
+        "detail": "runtime artifacts use /app/data/runtime and logs use /app/data/logs"
+      },
+      {
+        "name": "appearance model wiring",
+        "passed": true,
+        "detail": "PP-Human/PA100K model paths, label maps, and runtimes are wired"
+      },
+      {
+        "name": "falldata aux safety wiring",
+        "passed": true,
+        "detail": "fail-open policy and Jetson inline pose RF are wired"
+      },
+      {
+        "name": "H.264 WebRTC compatibility wiring",
+        "passed": true,
+        "detail": "Jetson NVENC POC guard is wired"
+      },
+      {
+        "name": "network exposure defaults",
+        "passed": true,
+        "detail": "externally reachable services bind to localhost by default"
+      },
+      {
+        "name": "public API shared secret alignment",
+        "passed": true,
+        "detail": ""
+      },
+      {
+        "name": "mqtt authentication config",
+        "passed": true,
+        "detail": ""
+      },
+      {
+        "name": "EdgeX outbox path isolation",
+        "passed": true,
+        "detail": ""
+      },
+      {
+        "name": "EdgeX deployment mode contract",
+        "passed": true,
+        "detail": ""
+      }
+    ],
+    "direct_rollback": [
+      {
+        "name": "default compose architecture",
+        "passed": true,
+        "detail": "Jetson target selected; deployment uses docker-compose.jetson.yml"
+      },
+      {
+        "name": "TensorRT CUDA binding alignment",
+        "passed": true,
+        "detail": ""
+      },
+      {
+        "name": "aiot parser database config",
+        "passed": true,
+        "detail": "parser .env uses localhost, but docker-compose.yml overrides DB_HOST to aiot-parser-db"
+      },
+      {
+        "name": "runtime secret source",
+        "passed": true,
+        "detail": ".env provides MQTT and AIoT DB secrets"
+      },
+      {
+        "name": "aiot database secret wiring",
+        "passed": true,
+        "detail": ""
+      },
+      {
+        "name": "runtime path convergence",
+        "passed": true,
+        "detail": "runtime artifacts use /app/data/runtime and logs use /app/data/logs"
+      },
+      {
+        "name": "appearance model wiring",
+        "passed": true,
+        "detail": "PP-Human/PA100K model paths, label maps, and runtimes are wired"
+      },
+      {
+        "name": "falldata aux safety wiring",
+        "passed": true,
+        "detail": "fail-open policy and Jetson inline pose RF are wired"
+      },
+      {
+        "name": "H.264 WebRTC compatibility wiring",
+        "passed": true,
+        "detail": "Jetson NVENC POC guard is wired"
+      },
+      {
+        "name": "network exposure defaults",
+        "passed": true,
+        "detail": "externally reachable services bind to localhost by default"
+      },
+      {
+        "name": "public API shared secret alignment",
+        "passed": true,
+        "detail": ""
+      },
+      {
+        "name": "mqtt authentication config",
+        "passed": true,
+        "detail": ""
+      },
+      {
+        "name": "EdgeX outbox path isolation",
+        "passed": true,
+        "detail": ""
+      },
+      {
+        "name": "EdgeX mode rollback contract",
+        "passed": false,
+        "detail": "docker-compose.jetson.yml EDGEX_COMMAND_MODE must default to empty, docker-compose.jetson.yml EDGEX_ALLOWED_DEVICES must default to empty, .env.jetson must not override EDGEX_COMMAND_MODE during Direct rollback, .env.jetson must not override EDGEX_ALLOWED_DEVICES during Direct rollback"
+      }
+    ],
+    "legacy_candidate": {
+      "name": "candidate profile contract",
+      "passed": true,
+      "detail": ""
+    },
+    "evaluation_image_only": {
+      "name": "candidate profile contract",
+      "passed": false,
+      "detail": "tested image required; build must be absent"
+    }
+  },
+  "models": {
+    "fall/yolov8n-pose.engine": {
+      "project_sha256": "cc6cd0ee490e4f2ae46acf853989cf8c8806aadab47853e39c1e97cdf6732a74",
+      "candidate_root_sha256": "cc6cd0ee490e4f2ae46acf853989cf8c8806aadab47853e39c1e97cdf6732a74"
+    },
+    "fall/yolov8m-pose.engine": {
+      "project_sha256": "29c1f210e88971df79b7f6001944aabf4714975d6d572d830347a135d0a98275",
+      "candidate_root_sha256": "29c1f210e88971df79b7f6001944aabf4714975d6d572d830347a135d0a98275"
+    },
+    "head/helmet_model.engine": {
+      "project_sha256": "618c54a48d43844662fb3635d9fed3dc3bdf6e2c6018e6de09a52265a6ea19f6",
+      "candidate_root_sha256": "618c54a48d43844662fb3635d9fed3dc3bdf6e2c6018e6de09a52265a6ea19f6"
+    }
+  },
+  "image_primary": {
+    "sha256:0c11b835eb42cd245f4dda0b8bc8088733c0323bf75a2f4fefe9e7705d8dbf34": {
+      "primary": {
+        "model-engine-file": "../../models/fall/yolov8n-pose.engine",
+        "infer-dims": "3;640;640"
+      },
+      "primary_sha256": "277ab2e76c826804b82fa7c56b9e8edc4a59037fbfe01c23b014c3263e2fa2ae"
+    },
+    "sha256:294e52234fc170904e2a09b180b422e0562d6e11b5aa28ebcf287a1b47c9ed55": {
+      "primary": {
+        "model-engine-file": "../../models/fall/yolov8n-pose.engine",
+        "infer-dims": "3;640;640"
+      },
+      "primary_sha256": "277ab2e76c826804b82fa7c56b9e8edc4a59037fbfe01c23b014c3263e2fa2ae"
+    }
+  },
+  "evaluation_source_matches": 206,
+  "operating_unchanged": true,
+  "deployment_files_unchanged": true,
+  "systemd": {
+    "installed_matches_repository": true,
+    "unit": {
+      "ActiveState": "failed",
+      "FragmentPath": "/etc/systemd/system/cctv-jetson-stack.service",
+      "DropInPaths": "",
+      "UnitFileState": "enabled"
+    },
+    "uses_base_compose": true,
+    "uses_candidate_override": false
+  },
+  "camera_detection_sets": [
+    [
+      "fall",
+      "person",
+      "helmet",
+      "face",
+      "appearance"
+    ]
+  ],
+  "evaluation_reference": "data/runtime/p51_minimal_20261007_v123/minimal/compose.json",
+  "medium_config": {
+    "path": "data/runtime/p51_pose_gap_20261006_v119/config_infer_medium.txt",
+    "sha256": "04883db5eb781292312279feda1edfd8e30459d6f65ed216ad3953acab76ae90"
+  },
+  "autostart": {
+    "properties": {
+      "Result": "exit-code",
+      "ExecMainCode": "0",
+      "ExecMainStatus": "0",
+      "StateChangeTimestamp": "Thu 2026-10-01 17:33:47 KST",
+      "ActiveEnterTimestamp": "Wed 2026-09-16 09:29:29 KST",
+      "InactiveEnterTimestamp": "Thu 2026-10-01 17:33:47 KST",
+      "preflight_status": [
+        "path=/usr/bin/python3",
+        "code=(null)",
+        "status=0/0"
+      ]
+    },
+    "recent_filtered_messages": [
+      {
+        "timestamp_us": "1790843627398370",
+        "message": "/usr/bin/xhost:  unable to open display \":1\""
+      },
+      {
+        "timestamp_us": "1790843627401459",
+        "message": "cctv-jetson-stack.service: Control process exited, code=exited, status=1/FAILURE"
+      },
+      {
+        "timestamp_us": "1790843627401757",
+        "message": "cctv-jetson-stack.service: Failed with result 'exit-code'."
+      },
+      {
+        "timestamp_us": "1790843627401838",
+        "message": "Failed to start CCTV Jetson stack with X11/EGL preparation."
+      }
+    ]
+  },
+  "decision": "구성 대조·복귀 조건 정리 완료, 운영 전환 보류. 다음은 medium 설정과 최소 활성 모델을 묶은 고정 후보의 격리 단일 채널 검증",
+  "intended_next_profile": {
+    "status": "requirements_only_not_deployable",
+    "base_evaluation_image": "sha256:294e52234fc170904e2a09b180b422e0562d6e11b5aa28ebcf287a1b47c9ed55",
+    "primary_config_sha256": "04883db5eb781292312279feda1edfd8e30459d6f65ed216ad3953acab76ae90",
+    "primary_model": "fall/yolov8m-pose.engine",
+    "primary_model_sha256": "29c1f210e88971df79b7f6001944aabf4714975d6d572d830347a135d0a98275",
+    "camera_detections": [
+      "fall",
+      "person"
+    ],
+    "environment": {
+      "DS_HELMET_ENABLED": "0",
+      "DS_FACE_ENABLED": "0",
+      "DS_APPEARANCE_ENABLED": "0",
+      "DS_PPHUMAN_SGIE_ENABLED": "0",
+      "APPEARANCE_ENABLED": "false",
+      "FALLDATA_AUX_ENABLED": "false",
+      "FALLDATA_AUX_TEMPORAL_WORKER_ENABLED": "false",
+      "FALLDATA_AUX_CLIP_BUFFER_ENABLED": "false",
+      "FALLDATA_AUX_TEMPORAL_NEAR_MISS_SHADOW_ENABLED": "false",
+      "DS_PRIMARY_INTERVAL": "1",
+      "DS_FALL_ENABLE_FOLDED_POSE": "false",
+      "DS_OSD_PROCESS_MODE": "0",
+      "DS_OUTPUT_MODE": "rtsp-publish",
+      "DS_PREVIEW_ENABLED": "1",
+      "STREAM_API_ENABLED": "0"
+    },
+    "required_packaging": "medium config를 이미지 안에 고정하고 새 이미지ID를 검증 후 등록. 기존 후보의 코드/config 마운트 금지 계약을 우회하지 않는다"
+  },
+  "rollback": {
+    "existing_evidence": "docs/planning/evidence/transition_rollback_20261001.json",
+    "previous_tested_pair": [
+      "sha256:809693da4ed0c288e68744235f4ff0156612d73ca59f5e6282ffcedf3e9aee49",
+      "sha256:1ace5b7832a50d6675b66146b0edc307021795732fc7c9a770e2cd628d7fd261"
+    ],
+    "scope": "같은 격리DB의 과거 후보→이전 이미지·v088 보존 코드; 현재294e 최소구성의 전환시험 아님",
+    "before_switch": [
+      "현재 실행 이미지·디스크 코드·모델·config·비밀설정·카메라·systemd의 함께 동작하는 조합 보존",
+      "전환 직전 일관된 DB 백업과 행/ID/스키마 기준선 확보·복사본에서 먼저복원",
+      "고정 후보의 입력/출력/저장·입력 단절/송출 복구/종료 검증",
+      "부팅서비스의 고정 후보 호출과 디스플레이 사전점검·재부팅 검증",
+      "운영 중단 범위·관찰시간·복귀 한도를 정한 뒤 사용자 승인"
+    ],
+    "triggers": [
+      "합의한 기동/복구 한도 초과 또는 라이브 미복구",
+      "CUDA700·반복 종료/재시작·지연 지속 누적",
+      "DB 무결성 오류·원본 행/ID 유실·이벤트 기록 중단",
+      "승인한 모델·설정 해시와 실제 실행 불일치"
+    ],
+    "preservation": [
+      "현재DB를 과거 백업으로 덮어쓰거나 docker compose down -v를 실행하지 않는다",
+      "후보가 쓴 새 행을 보존하고 구버전이 현재 스키마를 읽는지 복사본에서 확인",
+      "호환 안 되면 쓰기를 멈추고 현재데이터를 보존·복제한 뒤 이행 절차를 마련한다",
+      "과거 Direct모드로 자동 변경하지 않는다. 현재EdgeX 정책/장치 승인과 별도검증 필요"
+    ]
+  },
+  "blockers": [
+    "평가와 기존 배포 후보의 이미지·활성 모델·카메라 항목이 다름",
+    "294e 이미지 내장 nano 설정과 평가에 연결한 medium 설정이 다름",
+    "기존 후보 검사기는0c11 고정 계약이므로294e 이미지 번호만 바꾼 구성은 거부됨",
+    "자동 시작은기본Compose만사용·10-01 xhost실패상태;수정된서비스의재부팅성공미검증",
+    "현재최소구성의고정패키지 통합·운영전환/복귀 미시험",
+    "I40/I34/I45·I54 및 모델품질/현장·실물2/4대·장시간검증 잔여"
+  ],
+  "limits": [
+    "이번은읽기전용구성/이미지파일/정적검사;추론성능시험없음",
+    "운영컨테이너·배포설정·카메라·systemd 변경없음",
+    "운영에마운트된디스크파일과 이미메모리에로딩된코드의동일성은보장하지않음",
+    "14PASS는현재배포구성연결검사이며최소후보/Direct복귀/실물장치합격이아님",
+    "10-01서비스실패는과거기록이며현재디스플레이장애로단정하지않음",
+    "별도Jetson설치재현은사용자요청대로기능완성후정식배포전"
+  ],
+  "sha256": {
+    "data/runtime/p51_operating_readiness_20261007_v132/collect.py": "004e86c74d94f57ef40bd5342a783f0ca169d67deb74c0a59c483f36cc5a6818",
+    "data/runtime/p51_operating_readiness_20261007_v132/comparison.json": "c4ac44bb7f3a0f1137418b9160feeaedfec8f5cf4d1c366ca9b89f8595ebb9dd",
+    "data/runtime/p51_operating_readiness_20261007_v132/static_checks.json": "0732bffe708d52b29357804f79c85e38d11205ee5114d0e365aa1ce23b887536",
+    "data/runtime/p51_operating_readiness_20261007_v132/image_files.json": "5326dc287503e49573596c0d3f4ae8aa63952e7d5d16db31f9e54030fb6afd27",
+    "data/runtime/p51_operating_readiness_20261007_v132/operating_before.json": "db7f73fd78b60eeaa56137aeb9c07856d6b6bc0c7b6fe8ca3569b024fcc51733",
+    "data/runtime/p51_operating_readiness_20261007_v132/operating_after.json": "db7f73fd78b60eeaa56137aeb9c07856d6b6bc0c7b6fe8ca3569b024fcc51733",
+    "data/runtime/p51_operating_readiness_20261007_v132/autostart_status.json": "2581cf8516f0b7768ccfa9fa3d916bfe5a36a954955ae0234394cbb641c04f37"
+  },
+  "source_evidence_sha256": {
+    "docker-compose.jetson.yml": "0bce5a38058a6062b1f6c5d8a8b972a8ef5e9686caecbf505e9fe802e76f6564",
+    "docker-compose.jetson-candidate.yml": "35a3a21276dead4a5d72f4dbe5426d1e669995b0b9fed44a9ed20306d33612b7",
+    "deploy/systemd/cctv-jetson-stack.service": "7271bfdb6d22019594dad60d1cdd7f8ba2edbeb0768e2cb2e6a14a12e41a36e2",
+    "config/deepstream/config_infer_primary.txt": "277ab2e76c826804b82fa7c56b9e8edc4a59037fbfe01c23b014c3263e2fa2ae",
+    "scripts/health/check_compose_runtime_assumptions.py": "58ad7ad12dabf7f743cdc2d1e59e2630bf688661739a1103004ee206494ab5d6",
+    "data/runtime/p51_minimal_20261007_v123/minimal/compose.json": "17ab8a5064793fe15d1778b64f037de00ab992495116ca9081c0c71d268f289e",
+    "data/runtime/p51_pose_gap_20261006_v119/config_infer_medium.txt": "04883db5eb781292312279feda1edfd8e30459d6f65ed216ad3953acab76ae90",
+    "data/runtime/p51_output_rate_20261007_v124/new_image_manifest.json": "a25de9211f0dcc28509b3e3eb57ce29783a5bd11b4b24d08551dcdb04d01d0cd",
+    "docs/planning/evidence/transition_rollback_20261001.json": "d835add71ff4b188de1cae524057c2657a6cfe50d0b7a80924e698a03fc725f3"
+  },
+  "verification": {
+    "documents": {
+      "passed": true,
+      "models": 8,
+      "wbs_rows": 33,
+      "wbs_status_unchanged": true,
+      "csv_rows": 8,
+      "html_escaped": true,
+      "evidence_artifacts": 7,
+      "all_eight_model_rows_retained": true,
+      "deployment_checks": 14,
+      "legacy_candidate_pass": true,
+      "image_only_replacement_rejected": true,
+      "deployed": false
+    },
+    "publication": [
+      {
+        "file": "index.html",
+        "status": 200,
+        "bytes": 41693,
+        "sha256": "9fc72b5edb7159625a612416a8022f6f8fcd5db46d0642da828e528917da80c6",
+        "local_match": true
+      },
+      {
+        "file": "CCTV_project_progress.pdf",
+        "status": 200,
+        "bytes": 148774,
+        "sha256": "64ac545dc2fc9d766e870df379e7861e724a29680edcfa71eb2ea1e3beeaba2c",
+        "local_match": true
+      }
+    ],
+    "ruff": "passed",
+    "diff_check": "passed",
+    "pdf_first_page_visual": "passed",
+    "independent_review": {
+      "reviewer": "operating_readiness_review",
+      "critical": 0,
+      "important": 0,
+      "minor": 1,
+      "minor_resolution": "신규 v132 문서·최신 요약의 띄어쓰기 정리 후 문서 검사 재통과",
+      "scope": "읽기 전용 구성/해시/소스/모델·문서 주장 대조",
+      "excluded": "새 후보 실행·운영 전환·재부팅·현재 후보 복귀·현장 품질"
+    }
+  },
+  "live_profile_20261012": {
+    "date": "2026-10-12",
+    "wbs": "P5.1 IN_PROGRESS / I43 VERIFY",
+    "status": "PREPARED_NOT_INSTALLED",
+    "manifest": {
+      "date": "2026-10-12",
+      "purpose": "현재 nano 운영 구성의 동일 장비 재현·복귀 준비. 미검증 시간 후보는 제외.",
+      "runtime_files": {
+        "/app/src/core/event_debouncer.py": {
+          "exists": true,
+          "sha256": "3bb53ac70a747daeb8fdd6710e38a3688e252abfe2608339ae1ad1cd7a62a4f8"
+        },
+        "/app/config/deepstream/config_infer_primary.txt": {
+          "exists": true,
+          "sha256": "277ab2e76c826804b82fa7c56b9e8edc4a59037fbfe01c23b014c3263e2fa2ae",
+          "engine": {
+            "path": "/app/config/deepstream/../../models/fall/yolov8n-pose.engine",
+            "exists": true,
+            "sha256": "cc6cd0ee490e4f2ae46acf853989cf8c8806aadab47853e39c1e97cdf6732a74"
+          }
+        },
+        "/app/config/deepstream/config_infer_helmet.txt": {
+          "exists": true,
+          "sha256": "74ec560b96f0306cd91501ed38b30c7d9892f176ef8b08d0dad6ccc1a55fd960",
+          "engine": {
+            "path": "/app/config/deepstream/../../models/head/helmet_model.engine",
+            "exists": true,
+            "sha256": "618c54a48d43844662fb3635d9fed3dc3bdf6e2c6018e6de09a52265a6ea19f6"
+          }
+        }
+      },
+      "file_sha256": {
+        "docker-compose.jetson.yml": "82d3d94fa770b0b24b9e6d35e340b6aa5cf9874dd74f50006f3a16852b835fb4",
+        "data/runtime/live_refresh_20261008/candidate.yml": "13a0aec970827bd631d7d04e8b667c9233dabbea71971121c29c53593890e7d5",
+        "data/runtime/live_refresh_20261008/candidate_up.sh": "b164629cef49eb4a14f933009cc4050680ad2fc2edc50df88a2537aab242010b",
+        "data/runtime/live_refresh_20261008/rollback.yml": "0bff0be029b95810feac9d9d711db5d027b3636fa341d73976b56ae3e51d8adc",
+        "data/runtime/live_refresh_20261008/rollback_up.sh": "65410678d41dd17bafde28e38cc889949b1a2f17a75b7372f3b687408e595b0e",
+        "deploy/systemd/cctv-jetson-stack.service": "7271bfdb6d22019594dad60d1cdd7f8ba2edbeb0768e2cb2e6a14a12e41a36e2",
+        "deploy/systemd/cctv-jetson-stack.service.d/10-live-profile.conf": "8a0fbd70f71be48f67f09de6c4c84ead3f4c7de0c83ae1ef1ae40974f3d466c5"
+      },
+      "systemd_dropin_installed": false,
+      "reboot_tested": false,
+      "fresh_jetson_install_tested": false,
+      "rollback_semantics": "향후 후보에서 복귀할 대상은 현재294e+candidate.yml이다. 기존rollback.yml은 그보다 이전 구성으로 이번 복귀안에 사용하지 않는다.",
+      "deployed_time_basis_candidate": false
+    },
+    "current_profile_comparison": {
+      "image": "sha256:294e52234fc170904e2a09b180b422e0562d6e11b5aa28ebcf287a1b47c9ed55",
+      "image_matches": true,
+      "command_matches": true,
+      "environment_key_count": 243,
+      "environment_difference_keys": [],
+      "runtime_environment_extra_keys": [],
+      "mount_count": 18,
+      "mounts_match": true,
+      "command": [
+        "python3",
+        "main.py",
+        "--cameras",
+        "/app/cameras.json",
+        "--mqtt-broker",
+        "edgex-mqtt-broker",
+        "--mqtt-port",
+        "1883",
+        "--mqtt-topic-prefix",
+        "cctv/ai/events",
+        "--device",
+        "cuda",
+        "--confidence",
+        "0.5",
+        "--pose-confidence",
+        "0.5",
+        "--frame-skip",
+        "2",
+        "--fps",
+        "30",
+        "--debounce",
+        "3.0",
+        "--zone-detection",
+        "--zones-config",
+        "/app/zones_config.json",
+        "--api-port",
+        "8765"
+      ],
+      "container_started_at": "2026-10-08T04:59:47.634961746Z",
+      "working_directory_matches": true,
+      "status": "running",
+      "secrets": "value redacted; names/count only"
+    },
+    "boot_prerequisites": {
+      "cctv-ai-engine": {
+        "image_present": true,
+        "image_id": "sha256:294e52234fc170904e2a09b180b422e0562d6e11b5aa28ebcf287a1b47c9ed55",
+        "missing_bind_sources": []
+      },
+      "cctv-public-api": {
+        "image_present": true,
+        "image_id": "sha256:ca4376b086a99f2ad42d2132cb21b1cf75178571fae530ec464c1ed071f3175c",
+        "missing_bind_sources": []
+      },
+      "public-demo-ui": {
+        "image_present": true,
+        "image_id": "sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10",
+        "missing_bind_sources": []
+      }
+    },
+    "checks": {
+      "jetson_static_passed": 14,
+      "jetson_static_total": 14,
+      "regression_passed": 60,
+      "regression_failed": 0,
+      "systemd_syntax_exit_code": 0,
+      "systemd_warning": "watch descriptor / sandbox connection and unrelated host unit warnings",
+      "initial_default_target_check": "13/14 passed; generic compose ARM64 warning. Re-ran documented Jetson target; no check weakening."
+    },
+    "boundaries": [
+      "/etc install, daemon-reload, operating restart and reboot not performed",
+      "same-host preparation uses private existing profile/artifacts; not portable fresh-device package",
+      "time-basis candidate remains undeployed",
+      "integration attempt stopped before evaluation; operational throughput temporarily fell and recovered; single cause unknown"
+    ],
+    "next": "점검 시간 확보 후 현행 프로필의 자동 시작 보완 설치·재부팅 복구 확인.",
+    "sha256": {
+      "data/runtime/operating_profile_20261012/boot_prerequisites.json": "74c53be099939a3ecd4e9caefbb4414d3aafad9fb470af63234722f1faadc138",
+      "data/runtime/operating_profile_20261012/deployment_checks.json": "f60f46ce23120c63b00e6088b2242de4719df42ec3e82adf2c92efa289931eac",
+      "data/runtime/operating_profile_20261012/systemd_verify.json": "875a0cb681404db0c02bed14672dea8da51f66765148ac145715f41eaa0f3116",
+      "data/runtime/operating_profile_20261012/current_profile_comparison.json": "dd6e9158caffbff110f58cfe0d4f7bb9a3e0660b15d36e69f12d31b0dac7748e",
+      "data/runtime/operating_profile_20261012/manifest.json": "7beda26e70a321f3593010ae3e918793a9be6e970d8fab5b5ed14f9fcce72efb",
+      "data/runtime/operating_profile_20261012/deployment_tests.xml": "2bd1230d22e37d2366ce6453e92d3fe62be3ae23ef341ce418a39f41fab2566e",
+      "data/runtime/operating_profile_20261012/publication_verification.json": "f10496fe6b974d83339ac897019a82f6c69ee5b318f46f4e6b7737a118146552",
+      "data/runtime/operating_profile_20261012/final_operating_state.json": "8d303cacc5d0bbf4f43da60e5bfa9b6828f666eed4761eb727bf7e1fe25bccb1"
+    },
+    "publication_verification": {
+      "docs/planning/online/index.html": {
+        "http_status": 200,
+        "bytes": 56254,
+        "sha256": "d49401e49d8a2628e4e4f42f4974f59be921fcec668ee791038874b1ad8737c1",
+        "matches_local": true
+      },
+      "docs/planning/online/CCTV_project_progress.pdf": {
+        "http_status": 200,
+        "bytes": 147088,
+        "sha256": "62235aaa532294948f948eb5aedba72c9ba6f51f661957a6268ef6dfa32a41c6",
+        "matches_local": true
+      },
+      "wbs_rows_unchanged": 33,
+      "model_rows_unchanged": 8,
+      "done": 9,
+      "pdf_page_1_visually_checked": true
+    },
+    "final_operating_state": {
+      "checked_at_utc": "2026-10-12T03:57:56.409178+00:00",
+      "runtime": [
+        {
+          "name": "/cctv-ai-engine",
+          "id": "db65cceb6390ae7eae0b02db9403a46dba9053adbeca5cb27cb4e67c92d0e4f0",
+          "image": "sha256:294e52234fc170904e2a09b180b422e0562d6e11b5aa28ebcf287a1b47c9ed55",
+          "status": "running",
+          "started_at": "2026-10-08T04:59:47.634961746Z",
+          "restarts": 0
+        },
+        {
+          "name": "/cctv-media-server",
+          "id": "a2b1369a3598485980000d1e6da5ef09d79145da54b220cc37baaa00b7376c03",
+          "image": "sha256:f8628851106cc053f9175b248050bb5f362a6e65abd72297c167a1cb5a9a3be2",
+          "status": "running",
+          "started_at": "2026-10-01T23:40:25.266992541Z",
+          "restarts": 0
+        }
+      ],
+      "trial_containers_remaining": 0,
+      "installed_unit_matches_repository": true,
+      "dropin_installed": false
+    }
+  },
+  "autostart_20261012": {
+    "status": "AUTOSTART_VIDEO_PASS_RULE_INPUT_FAILED",
+    "checked_at_utc": "2026-10-12T04:05:48.450264+00:00",
+    "before_boot_id": "7d48772c-9fcd-45d2-81bb-0fd14f212aba",
+    "configuration_matches": {
+      "environment_count": 243,
+      "mount_count": 18
+    },
+    "checks": {
+      "ssd_mount_required": true,
+      "display_auth_passed": true,
+      "host_sdk_passed": 6,
+      "container_sdk_passed": 6,
+      "legacy_signboard_restart_policy": "no"
+    },
+    "observation": {
+      "metric_samples": 10,
+      "metric_errors": 0,
+      "probe_errors": "",
+      "observer_is_packet_timing_not_decode_or_unique_frame_fps": true,
+      "metric_seconds": 27.375515481922776,
+      "rates": {
+        "cctv_processor_frames_processed_total": 30.538237738465476,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 15.232589876722612
+      },
+      "max_frame_age": 0.05779383983463049,
+      "output": {
+        "packets": 708,
+        "seconds": 24.98797192191705,
+        "packets_per_second": 28.293612711317618,
+        "max_observed_arrival_gap": 0.236243505962193,
+        "max_pts_step": 0.16583299999999923,
+        "pts_steps_over_100ms": 12,
+        "negative_pts_steps": 0
+      }
+    },
+    "dropin_installed": true,
+    "reboot_performed": true,
+    "next": "I63: AI 규칙의 큰 추적 ID 정수 범위 오류를 격리 재현하고, ID 보존·기존 수신자 호환을 확인해 최소 수정 범위를 정한다. 운영 출력·공유 GPU 시험은 수행하지 않는다.",
+    "sha256": {
+      "data/runtime/operating_profile_20261012/autostart/install_verification.json": "f9815575931ba1caabf27860167c7d31cc8b53e81010db598e0589c3721e8bfa",
+      "data/runtime/operating_profile_20261012/autostart/preboot_observation.json": "07ce6228a4553fa74f0c992d8e79856009a2b4986dc72632088ebbd95a6c476d",
+      "data/runtime/operating_profile_20261012/autostart/preboot_observation_summary.json": "3ea380836e8f1bbf9315479a051be0f814970bd865f476d5fd494d241318cc20",
+      "data/runtime/operating_profile_20261012/autostart/before.json": "741575c4c624d34c7fcd1af0cbbd2500152a805412c0b2f740fecb22d4c03fbe",
+      "data/runtime/operating_profile_20261012/autostart/restart_policies.json": "f8b2c2630f10770c7df89f5f6fea088dfdc1c501e64729fa674f06b2d2dbbdf5",
+      "data/runtime/operating_profile_20261012/autostart/reboot_plan.json": "e5876c92b31830af6ec327067c460e55505d6b0ec8e7dbbd627e9ab47d029599",
+      "data/runtime/operating_profile_20261012/autostart/preboot_checks.json": "fbe0c14aebbd234c98e7dae31b8021b20033c32ec425919af96373c1bd189f62",
+      "data/runtime/operating_profile_20261012/autostart/install_publication.json": "96a1e85150fba22471c0d98387081c7407382d2e6cfe8512637e395477081612"
+    },
+    "daemon_reload_verified": true,
+    "install_verification": {
+      "checked_at_utc": "2026-10-12T04:10:37.086810+00:00",
+      "status": "INSTALLED_RELOADED_REBOOT_PENDING",
+      "dropin_sha256": "8a0fbd70f71be48f67f09de6c4c84ead3f4c7de0c83ae1ef1ae40974f3d466c5",
+      "dropin_matches_prepared": true,
+      "systemd_loaded": {
+        "ExecStartPre": "{ path=/usr/bin/bash ; argv[]=/usr/bin/bash scripts/ops/prepare_jetson_display.sh ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }\n{ path=/usr/bin/python3 ; argv[]=/usr/bin/python3 scripts/health/check_deepstream_env.py --native-only --timeout 15 ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }\n{ path=/usr/bin/test ; argv[]=/usr/bin/test -r /media/sawwave/Learning11/CCTV-project/data/runtime/live_refresh_20261008/candidate.yml ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }",
+        "ExecStart": "{ path=/usr/bin/docker ; argv[]=/usr/bin/docker compose --env-file .env.jetson -p edgex-jetson -f docker-compose.jetson.yml -f data/runtime/live_refresh_20261008/candidate.yml up -d --no-build --pull never --force-recreate --timeout 60 cctv-ai-engine cctv-public-api public-demo-ui ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }",
+        "ExecStartPost": "{ path=/usr/bin/docker ; argv[]=/usr/bin/docker exec cctv-ai-engine python /app/scripts/health/check_deepstream_env.py --native-only --timeout 15 ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }",
+        "RequiresMountsFor": "/media/sawwave/Learning11/CCTV-project",
+        "ActiveState": "failed",
+        "SubState": "failed",
+        "DropInPaths": "/etc/systemd/system/cctv-jetson-stack.service.d/10-live-profile.conf",
+        "UnitFileState": "enabled",
+        "NeedDaemonReload": "no"
+      },
+      "boot_id": "7d48772c-9fcd-45d2-81bb-0fd14f212aba",
+      "operating_unchanged": true,
+      "reboot_performed": false,
+      "sudo_check": {
+        "exit_code": 1,
+        "stderr": "sudo: 암호가 필요합니다"
+      },
+      "verification_note": "ExecStartPre가 반복 출력되므로 모든 항목을 보존해 확인함. 단일 사전검사만 남기는 최초 점검 파서의 실패는 서비스 결함이 아님."
+    },
+    "initial_sudo_error": "sudo: 암호가 필요합니다",
+    "reboot_sudo_error": "sudo: 암호가 필요합니다",
+    "publication": {
+      "docs/planning/online/index.html": {
+        "status": 200,
+        "bytes": 56291,
+        "sha256": "6e43c0af8ecc1039edf50f8b90b7771645d8bb79299bd1a9b4684bfd1f853cf2",
+        "matches_local": true
+      },
+      "docs/planning/online/CCTV_project_progress.pdf": {
+        "status": 200,
+        "bytes": 147921,
+        "sha256": "be9e5944ea539de5ce14871e69b9c43b53644b0fb92eba4476d8f6bd28886fb7",
+        "matches_local": true
+      }
+    },
+    "postboot_evidence": "data/runtime/operating_profile_20261012/autostart/postboot_summary.json"
+  },
+  "postboot_20261012": {
+    "checked_at_utc": "2026-10-12T04:43:47.796911+00:00",
+    "scope": "P5.1/I43 현재 장비 재부팅 뒤 동일 구성·영상·서비스·규칙 읽기 전용 검증",
+    "status": "AUTOSTART_VIDEO_PASS_RULE_INPUT_FAILED",
+    "boot_id_changed": true,
+    "boot_id": "c3bcc47f-842e-4d16-8b7f-89f0cf8d6e34",
+    "service": {
+      "Result": "success",
+      "ExecMainStartTimestamp": "Mon 2026-10-12 13:27:41 KST",
+      "ExecMainExitTimestamp": "Mon 2026-10-12 13:29:00 KST",
+      "ExecMainStatus": "0",
+      "ExecStart": "{ path=/usr/bin/docker ; argv[]=/usr/bin/docker compose --env-file .env.jetson -p edgex-jetson -f docker-compose.jetson.yml -f data/runtime/live_refresh_20261008/candidate.yml up -d --no-build --pull never --force-recreate --timeout 60 cctv-ai-engine cctv-public-api public-demo-ui ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }",
+      "RequiresMountsFor": "/media/sawwave/Learning11/CCTV-project",
+      "ActiveState": "active",
+      "SubState": "exited",
+      "DropInPaths": "/etc/systemd/system/cctv-jetson-stack.service.d/10-live-profile.conf",
+      "UnitFileState": "enabled",
+      "NeedDaemonReload": "no"
+    },
+    "host_sdk_passed": 6,
+    "container_sdk_passed": 6,
+    "profile": {
+      "image_matches_preboot": true,
+      "environment_count": 243,
+      "environment_difference_keys": [],
+      "command_matches": true,
+      "mount_count": 18,
+      "mounts_match": true,
+      "working_directory_matches": true,
+      "runtime_files": {
+        "/app/src/core/event_debouncer.py": {
+          "expected": {
+            "exists": true,
+            "sha256": "3bb53ac70a747daeb8fdd6710e38a3688e252abfe2608339ae1ad1cd7a62a4f8"
+          },
+          "actual": "3bb53ac70a747daeb8fdd6710e38a3688e252abfe2608339ae1ad1cd7a62a4f8"
+        },
+        "/app/config/deepstream/config_infer_primary.txt": {
+          "expected": {
+            "exists": true,
+            "sha256": "277ab2e76c826804b82fa7c56b9e8edc4a59037fbfe01c23b014c3263e2fa2ae",
+            "engine": {
+              "path": "/app/config/deepstream/../../models/fall/yolov8n-pose.engine",
+              "exists": true,
+              "sha256": "cc6cd0ee490e4f2ae46acf853989cf8c8806aadab47853e39c1e97cdf6732a74"
+            }
+          },
+          "actual": "277ab2e76c826804b82fa7c56b9e8edc4a59037fbfe01c23b014c3263e2fa2ae"
+        },
+        "/app/config/deepstream/config_infer_helmet.txt": {
+          "expected": {
+            "exists": true,
+            "sha256": "74ec560b96f0306cd91501ed38b30c7d9892f176ef8b08d0dad6ccc1a55fd960",
+            "engine": {
+              "path": "/app/config/deepstream/../../models/head/helmet_model.engine",
+              "exists": true,
+              "sha256": "618c54a48d43844662fb3635d9fed3dc3bdf6e2c6018e6de09a52265a6ea19f6"
+            }
+          },
+          "actual": "74ec560b96f0306cd91501ed38b30c7d9892f176ef8b08d0dad6ccc1a55fd960"
+        }
+      },
+      "mount_differences": {
+        "unexpected": [],
+        "missing": []
+      },
+      "runtime_files_match": true,
+      "engine_matches": {
+        "/app/config/deepstream/config_infer_primary.txt": true,
+        "/app/config/deepstream/config_infer_helmet.txt": true
+      }
+    },
+    "observation": {
+      "metric_samples": 10,
+      "metric_errors": 0,
+      "probe_errors": "",
+      "observer_is_packet_timing_not_decode_or_unique_frame_fps": true,
+      "metric_seconds": 27.56132430899993,
+      "rates": {
+        "cctv_processor_frames_processed_total": 30.114663239493545,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 14.984766166157632
+      },
+      "max_frame_age": 0.060487999999963904,
+      "output": {
+        "packets": 716,
+        "seconds": 25.018998799000087,
+        "packets_per_second": 28.57828187867277,
+        "max_observed_arrival_gap": 0.2698889580000241,
+        "max_pts_step": 0.1600109999999999,
+        "pts_steps_over_100ms": 12,
+        "negative_pts_steps": 0
+      }
+    },
+    "health": {
+      "ai": {
+        "url": "http://127.0.0.1:8765/health",
+        "status": 200,
+        "body": {
+          "service": "cctv-zone-api",
+          "status": "ok",
+          "checked_at": "2026-10-12T13:41:51.091401+09:00",
+          "camera_count": 1,
+          "preset_count": 0,
+          "video_ready": true
+        }
+      },
+      "public": {
+        "url": "http://127.0.0.1:9000/api/v1/readiness",
+        "status": 200,
+        "body": {
+          "success": true,
+          "data": {
+            "status": "ready",
+            "service": "cctv-public-api",
+            "checked_at": "2026-10-12T13:41:51.097174+09:00",
+            "dependencies": [
+              {
+                "name": "action-layer",
+                "url": "http://cctv-action-layer:8080/health",
+                "status": "up",
+                "status_code": 200
+              },
+              {
+                "name": "alert-api",
+                "url": "http://cctv-alert-api:8000/health",
+                "status": "up",
+                "status_code": 200
+              },
+              {
+                "name": "ai-engine-zone-api",
+                "url": "http://cctv-ai-engine:8765/health",
+                "status": "up",
+                "status_code": 200
+              },
+              {
+                "name": "ai-engine-model-api",
+                "url": "http://cctv-ai-engine:8766/health",
+                "status": "up",
+                "status_code": 200
+              },
+              {
+                "name": "ai-engine-face-api",
+                "url": "http://cctv-ai-engine:8767/health",
+                "status": "up",
+                "status_code": 200
+              },
+              {
+                "name": "ai-engine-stream-api",
+                "url": "http://cctv-ai-engine:8769/health",
+                "status": "up",
+                "status_code": 200
+              }
+            ],
+            "resources": {
+              "file_descriptors": {
+                "status": "ok",
+                "open": 15,
+                "soft_limit": 65536,
+                "hard_limit": 65536,
+                "usage_ratio": 0.0002,
+                "remaining": 65521
+              }
+            }
+          },
+          "error": null,
+          "timestamp": "2026-10-12T13:41:51.097174+09:00"
+        }
+      },
+      "signboard": {
+        "url": "http://127.0.0.1:59993/health",
+        "status": 200,
+        "body": {
+          "service": "cctv-device-signboard",
+          "status": "up"
+        }
+      }
+    },
+    "action_mqtt": "connected",
+    "rules": {
+      "intrusion_5s_persist": {
+        "status": "running",
+        "source_exceptions": {
+          "source_ai_events_stream_0_exceptions_total": 421
+        },
+        "source_exception_increase": {
+          "source_ai_events_stream_0_exceptions_total": 62
+        },
+        "errors": [
+          "decode failed: strconv.ParseInt: parsing \"12123278610165399591\": value out of range"
+        ]
+      },
+      "intrusion_confidence_filter": {
+        "status": "running",
+        "source_exceptions": {
+          "source_ai_events_stream_0_exceptions_total": 421
+        },
+        "source_exception_increase": {
+          "source_ai_events_stream_0_exceptions_total": 62
+        },
+        "errors": [
+          "decode failed: strconv.ParseInt: parsing \"12123278610165399591\": value out of range"
+        ]
+      },
+      "intrusion_high_confidence_routing": {
+        "status": "running",
+        "source_exceptions": {
+          "source_ai_events_stream_0_exceptions_total": 421
+        },
+        "source_exception_increase": {
+          "source_ai_events_stream_0_exceptions_total": 62
+        },
+        "errors": [
+          "decode failed: strconv.ParseInt: parsing \"12123278610165399591\": value out of range"
+        ]
+      },
+      "sensor_temperature_alert": {
+        "status": "running",
+        "source_exceptions": {
+          "source_aiot_tilt_temp_stream_0_exceptions_total": 0
+        },
+        "source_exception_increase": {
+          "source_aiot_tilt_temp_stream_0_exceptions_total": 0
+        },
+        "errors": []
+      },
+      "sensor_tilt_alert_t34955": {
+        "status": "running",
+        "source_exceptions": {
+          "source_aiot_tilt_stream_0_exceptions_total": 0
+        },
+        "source_exception_increase": {
+          "source_aiot_tilt_stream_0_exceptions_total": 0
+        },
+        "errors": []
+      },
+      "sensor_tilt_alert_t34957": {
+        "status": "running",
+        "source_exceptions": {
+          "source_aiot_tilt_temp_stream_0_exceptions_total": 0
+        },
+        "source_exception_increase": {
+          "source_aiot_tilt_temp_stream_0_exceptions_total": 0
+        },
+        "errors": []
+      },
+      "sensor_vibration_alert_t34957": {
+        "status": "running",
+        "source_exceptions": {
+          "source_aiot_tilt_temp_stream_0_exceptions_total": 0
+        },
+        "source_exception_increase": {
+          "source_aiot_tilt_temp_stream_0_exceptions_total": 0
+        },
+        "errors": []
+      },
+      "sensor_vibration_alert_t34958": {
+        "status": "running",
+        "source_exceptions": {
+          "source_aiot_imu_stream_0_exceptions_total": 0
+        },
+        "source_exception_increase": {
+          "source_aiot_imu_stream_0_exceptions_total": 0
+        },
+        "errors": []
+      }
+    },
+    "new_issue": {
+      "id": "I63",
+      "status": "OPEN",
+      "input_analysis": {
+        "event_id": "evt_010ccd96bffd8952",
+        "event_type": "person",
+        "id_fields": {
+          "object_id": 12123278610165399591,
+          "raw.object_id": 12123278610165399591,
+          "observation.track_id.value": 12123278610165399591
+        },
+        "signed_int64_max": 9223372036854775807,
+        "all_exceed_signed_int64": true,
+        "all_within_uint64": true,
+        "same_id_at_all_paths": true,
+        "note": "실제 수신 실패 로그의 JSON과 정수 경계 대조. 변환 후보·장치 출력 시험은 미실행."
+      },
+      "impact": "AI 규칙3개에서 해당 큰 ID를 포함한 입력의 decode 실패. 규칙 running만으로 실시간 경보 처리 성공을 보장하지 않음. 센서5규칙의 입력0건은 실물 합격 아님.",
+      "preexisting_or_reboot_caused": "미확정. 재부팅 후 관측했으나 재부팅이 원인임을 입증하지 않음."
+    },
+    "signboard": {
+      "restart_count_after_boot": 1,
+      "startup_error": "ConnectionRefusedError 2026-10-12T04:26:32Z",
+      "recovered_started_at": "2026-10-12T04:27:09.237102198Z",
+      "status": "healthy; /health HTTP200",
+      "physical_output_checked": false
+    },
+    "limits": [
+      "30초 지표/RTSP 패킷 진행은 종단 지연·고유 프레임 디코드 품질·장시간 합격이 아님",
+      "AI 기동 로그의 TRT 호환 경고·Argus 연결 경고를 보존함; 모든 오류0으로 보고하지 않음",
+      "재부팅 때 Compose가 AI/API/UI와 의존 media/alert/action 총6서비스를 재생성함",
+      "이번 재연결 뒤 수동 운영 재시작·장치 출력·모델/운영 설정 변경 없음",
+      "I43 VERIFY·P5.1 IN_PROGRESS·DONE9/33 유지; 별도 Jetson 설치·로그인 세션 변경·장시간 미검증"
+    ],
+    "next": "I63: AI 규칙의 큰 추적 ID 정수 범위 오류를 격리 재현하고, ID 보존·기존 수신자 호환을 확인해 최소 수정 범위를 정한다. 운영 출력·공유 GPU 시험은 수행하지 않는다.",
+    "sha256": {
+      "data/runtime/operating_profile_20261012/autostart/postboot_health_logs.json": "5185ea66bf49287e295b60810c06e92ea88a6e75f5fb4ad2bbe019a9dcdc409e",
+      "data/runtime/operating_profile_20261012/autostart/postboot_observation.json": "1b54c1f9e3cb852334ea856bf1792f1b4214c643d5c21e1581e69db0cfc5e2f0",
+      "data/runtime/operating_profile_20261012/autostart/postboot_observation_summary.json": "575d372c3c823bdddd0649826c9e5cd2ba15a5f1a4d54e1bd24667bee323c23f",
+      "data/runtime/operating_profile_20261012/autostart/postboot_rules_followup.json": "78662dba816af858dbe32b569312ae5c0c3a6fab2046dd0734381bed07bd63e1",
+      "data/runtime/operating_profile_20261012/autostart/postboot_services.json": "96352960a9bad1c2b713482f73abdf3471c4ad1b0320128accf621d9ebbe94dc",
+      "data/runtime/operating_profile_20261012/autostart/postboot_state.json": "c4da00f3fef835434003c7e53c355038f620397359f2b66c8ae329c3d95f9540",
+      "data/runtime/operating_profile_20261012/autostart/postboot_summary.json": "308010496a0a0df41b57654ea6ee8057fab1467f3a290c75737797b5f44e1042",
+      "data/runtime/operating_profile_20261012/autostart/postboot_systemd.log": "8550895f69dc080fc989f9bf1e07ac727fe0fbd26580c1ea07cfba5aaf77a50e",
+      "data/runtime/operating_profile_20261012/autostart/postboot_document_validation.json": "efa9c812a036321950d8a8bb2138be0aa2f6933cdf2160e934244ee075c32cfd",
+      "data/runtime/operating_profile_20261012/autostart/postboot_publication.json": "aef4d0e29517e3b0866b08ee1033ce162597e436f84281fb0632a7cf93d23290"
+    },
+    "publication": {
+      "checked_at_utc": "2026-10-12T04:46:11.221465+00:00",
+      "url": "http://192.168.2.242:18081/",
+      "files": {
+        "docs/planning/online/index.html": {
+          "status": 200,
+          "bytes": 56667,
+          "sha256": "72cf940b2c82af0f83a4b66db2ab43720925dc02fce718f99e5e92ff64df0dd0",
+          "matches_local": true
+        },
+        "docs/planning/online/CCTV_project_progress.pdf": {
+          "status": 200,
+          "bytes": 150235,
+          "sha256": "1dc774a9e3bd8ea9c450a199ed9249ba3c435bee7e61e3e012cfb300b5a829cb",
+          "matches_local": true
+        }
+      },
+      "operating_unchanged_during_readonly_work": {
+        "/cctv-ai-engine": true,
+        "/cctv-public-api": true,
+        "/cctv-public-demo-ui": true,
+        "/cctv-media-server": true,
+        "/cctv-action-layer": true,
+        "/cctv-device-signboard": true,
+        "/cctv-device-dabit": true,
+        "/edgex-kuiper": true,
+        "/cctv-sensor-rule-bridge": true
+      },
+      "pdf_first_page_visual": "PASS: 글자 잘림/겹침 없음",
+      "document_validation": {
+        "wbs_rows": 33,
+        "done": 9,
+        "states_preserved": true,
+        "model_rows_preserved": 8,
+        "deployment_file_hashes_preserved": 7,
+        "changed_document_links_checked": 11,
+        "html_current_summary": true,
+        "ruff": "PASS",
+        "diff_check": "PASS",
+        "full_tests": "NOT_RUN: 문서·기존 렌더 요약 문구만 수정; 런타임 제품 동작 변경 없음"
+      },
+      "remote_pc_access": "NOT_CHECKED"
+    }
+  },
+  "track_id_deployment_20261012": {
+    "image": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+    "previous_image": "sha256:294e52234fc170904e2a09b180b422e0562d6e11b5aa28ebcf287a1b47c9ed55",
+    "startup_profile": "data/runtime/live_refresh_20261008/candidate.yml",
+    "profile_sha256": "f19766ac0f900a404dae8634ce0a3b556304dcb675d947746e6cc9a78255ddb7",
+    "I63": "RESOLVED",
+    "I43": "VERIFY",
+    "reboot_after_new_image": false,
+    "evidence": "docs/planning/evidence/track_id_contract_20261012.json#deployment_20261012"
+  }
+}

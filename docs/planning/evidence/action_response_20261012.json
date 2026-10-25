@@ -1,0 +1,220 @@
+{
+  "date": "2026-10-12 KST",
+  "wbs": "P3.3",
+  "status": "FIXED_LOCAL",
+  "summary": "응답 기한·늦은 응답·실행 이력 조회·재시도 금지 기준",
+  "product_files": [
+    {
+      "path": "src/edgex/request_idempotency.py",
+      "before_sha256": "baf58b684c7b4ec6b08d15379ab9cc294eb90f663333abd2742aa79d4f8b2b98",
+      "after_sha256": "4f6b2473c3be4844482b8562a346dc13ae7616e494d22a98711a17296708eea2"
+    },
+    {
+      "path": "src/edgex/command_http.py",
+      "before_sha256": "ede9d4064d8fad5d6c69032937c6abdf63f22bb9a16db1cf057ed7edc432ca59",
+      "after_sha256": "5c8df2b915574a967c21fbbdb6e25c1a37f4a808b5f88d80d5508ac1d63e5312"
+    },
+    {
+      "path": "src/edgex/dabit_device_service.py",
+      "before_sha256": "ccaedd3aa5fb03a7a957c3123037dfc06817831cb160e4a9d346f4dbc7dbfc87",
+      "after_sha256": "57775a1412f11b0b6c690a113aa08b41a47571b296e90f84fcc1361ad77f681e"
+    },
+    {
+      "path": "src/edgex/speaker_device_service.py",
+      "before_sha256": "411b4ddb8c92fd83003f0a26a4e146273fb71a21f604fff542ae1aad07279304",
+      "after_sha256": "a723d2533eaf633c0518a5b440e1e92f6e9d677676d4387d19bff0bacd82f5af"
+    },
+    {
+      "path": "src/edgex/siren_device_service.py",
+      "before_sha256": "6652282372fd23dc42be413c23e0ce5e3d27fbf300e34927e7f2f150ddafca3f",
+      "after_sha256": "645a5be2fcfae577e48ea49e35a1852f0c5662b5d4d2981c70eea7be69d5d122"
+    },
+    {
+      "path": "runners/run_signboard_device_service.py",
+      "before_sha256": "02048dff8bd8c9e8523123151571bc2d3f2e95c99efed543409545d78194c40a",
+      "after_sha256": "4559dd7e9de919b604c36cfe46fdbdb4c75020f49ef7dfeb6a910bf006aa2fc4"
+    },
+    {
+      "path": "runners/run_speaker_device_service.py",
+      "before_sha256": "e9bd78e1c5ce3d2a11ca4cd4da682f20fce20baef12309582e02796e66b993e3",
+      "after_sha256": "c9c1bc55186c5c60b3266b080170beca6f357a4c92e55533ef1907fd011ecc2f"
+    },
+    {
+      "path": "runners/run_siren_device_service.py",
+      "before_sha256": "6bcd64d8496c634ff439514db6595e18088d7d7f2d887c4a26902a61ef0d6f14",
+      "after_sha256": "6fe9948461bb276b7d267a696f4daa883abcf834010f352b0c12d10c55ef1fa3"
+    },
+    {
+      "path": "runners/run_action_bridge.py",
+      "before_sha256": "6a0d65c84eaddcbda5c6f9442090718fd1c9a3dbfaf1806ad456b5db0b60d9eb",
+      "after_sha256": "30eda7491c2d0e9baea8b174a5d10e3f013ec2e6e0e782453cd8189a5c2ef693"
+    },
+    {
+      "path": "src/services/action_bridge.py",
+      "before_sha256": "7d45972c407ad0d8752bd8fde988bcecb5983bbdcbcfab181c7d1b1658530190",
+      "after_sha256": "8a9a2c091c60f28dbea767c249f7265b643d6fc006442d8126b54e0160212a90"
+    },
+    {
+      "path": "src/services/_action_bridge_repo.py",
+      "before_sha256": "4c2abffd88b16d9236ce8bee3d3cb2cb3ebef768f5df786e138a021e40c626a1",
+      "after_sha256": "1a612b2e786ecf57f22107234167225ef0c18fb8423c12e21d72b2baab249d5f"
+    }
+  ],
+  "validation": {
+    "reports": [
+      {
+        "report": "before.xml",
+        "name": "pytest",
+        "errors": "0",
+        "failures": "3",
+        "skipped": "0",
+        "tests": "3",
+        "time": "0.739",
+        "timestamp": "2026-10-12T16:23:12.886792+09:00",
+        "hostname": "ubuntu"
+      },
+      {
+        "report": "first.xml",
+        "name": "pytest",
+        "errors": "0",
+        "failures": "1",
+        "skipped": "0",
+        "tests": "63",
+        "time": "6.603",
+        "timestamp": "2026-10-12T16:25:30.856255+09:00",
+        "hostname": "ubuntu"
+      },
+      {
+        "report": "second.xml",
+        "name": "pytest",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "tests": "56",
+        "time": "5.458",
+        "timestamp": "2026-10-12T16:27:50.654069+09:00",
+        "hostname": "ubuntu"
+      },
+      {
+        "report": "fd_before.xml",
+        "name": "pytest",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "tests": "1",
+        "time": "0.398",
+        "timestamp": "2026-10-12T16:29:36.073175+09:00",
+        "hostname": "ubuntu"
+      },
+      {
+        "report": "regression.xml",
+        "name": "pytest",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "tests": "282",
+        "time": "15.071",
+        "timestamp": "2026-10-12T16:30:08.626285+09:00",
+        "hostname": "ubuntu"
+      }
+    ],
+    "passed": 282,
+    "new_tests": 26,
+    "lint": "PASS",
+    "diff_check": "PASS",
+    "first_failure_explained": "기존 별도 서비스 시험이 완료 Future를 기다리기 전에 재조회해 생긴 비교 순서 경합. 완료 commit 후 비교하도록 시험 동기화 수정. 실행 중 uncertain 동작은 유지.",
+    "fd_test": "PASS before explicit connection closing and after; not counted as reproduced leak fix.",
+    "graph_review": "Graph returned0nodes; used actual diff, call sites and regression tests instead."
+  },
+  "database": {
+    "added_column": "action_commands.response_deadline REAL (UTC epoch seconds)",
+    "added_index": "idx_action_commands_deadline partial non-null index",
+    "migration": "기존 유효 시각과 장치별 미응답 기록의 requested_at을 기준으로 기한을 복원; 기존 행/ID 보존",
+    "new_dependencies": 0,
+    "polling": "existing service loop every1s and command list query; no new worker thread"
+  },
+  "timeout": {
+    "default_seconds": 30,
+    "configuration": "COMMAND_RESPONSE_TIMEOUT_SECONDS / --command-response-timeout",
+    "field_sla_confirmed": false,
+    "cancels_physical_execution": false,
+    "extends_on_retry_or_restart": false
+  },
+  "query": {
+    "route": "GET /requests/{URL-encoded request_id}",
+    "scope": "persisted device execution result, not live physical state",
+    "unknown_http": 404,
+    "store_error_http": 503,
+    "read_only": true,
+    "creates_database": false,
+    "executes_device": false,
+    "retry_allowed": false
+  },
+  "deployment": {
+    "applied": false,
+    "physical_output_tests": false,
+    "observed_containers": [
+      {
+        "name": "cctv-ai-engine",
+        "id": "3ced24f40fc9897300c306d94f5a450a689dc86b9c62e5fac98db06c63c1ab6b",
+        "image": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+        "started_at": "2026-10-12T05:38:00.846787756Z"
+      },
+      {
+        "name": "edgex-kuiper",
+        "id": "6249a0c22b5712d01242c176abfce736685579514bfb389952062c3fd9392576",
+        "image": "sha256:7f4962946a721ece5ec630150e47614c4a461ee2c29600f24d96ef5e35a9d4da",
+        "started_at": "2026-10-12T04:25:27.149894272Z"
+      },
+      {
+        "name": "cctv-action-layer",
+        "id": "74deaeb0b5bdd64c8f2e2a141daa25c193a75cf235b214fee6ef8b4dcdceedeb",
+        "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+        "started_at": "2026-10-12T04:28:54.273675553Z"
+      },
+      {
+        "name": "cctv-device-signboard",
+        "id": "29aeb393bd52e7a9f8241be9214b970e82e8442253fdfe2e73dbbf5d153feaa8",
+        "image": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+        "started_at": "2026-10-12T04:27:09.237102198Z"
+      }
+    ],
+    "identity_image_start_matches_previous": true
+  },
+  "schedule": {
+    "confirmed_by_user": "POC in December 2026",
+    "exact_date": null,
+    "internal_readiness_target": "2026-11-27",
+    "overall_completion_target": "2026-12-31",
+    "existing_wbs_states_preserved": true
+  },
+  "remaining": [
+    "Build candidate image; preserve/migrate existing requests and databases; concrete transition/rollback plan",
+    "Remote automatic reconciliation, live physical state query and approved replay not implemented",
+    "Attempt accounting and predecessor P3.1/P3.2 policies remain",
+    "Timeout depends on host clock and DB availability; invalid legacy records need inspection",
+    "No operating deployment, hardware/power-cut test or exactly-once claim"
+  ],
+  "next": "P3.3 누적 수정의 적용 이미지·기존 요청/DB 보존·전환 및 복귀안을 준비한다. 운영 반영 전 대상과 중단 범위를 구체화하며 선행 P3.1/P3.2·실물 시험은 별도로 남긴다.",
+  "publication": {
+    "url": "http://192.168.2.242:18081/",
+    "files": [
+      {
+        "local": "docs/planning/online/index.html",
+        "downloaded": "/tmp/cctv_action_response_progress.html",
+        "bytes": 64433,
+        "sha256": "19474c9249aae80ab09102bf4e388f7b8fdc4e82f6ccc63bf3276f4624073b9a",
+        "matches": true
+      },
+      {
+        "local": "docs/planning/online/CCTV_project_progress.pdf",
+        "downloaded": "/tmp/cctv_action_response_progress.pdf",
+        "bytes": 149806,
+        "sha256": "255491b54bc48a19c3db573c77afaf843e928176131b5dec628f1790e10b3ab6",
+        "matches": true
+      }
+    ],
+    "pdf_first_page_visually_checked": true,
+    "wbs_33_rows_and_8_models_unchanged": true
+  }
+}

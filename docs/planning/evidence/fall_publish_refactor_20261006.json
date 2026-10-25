@@ -1,0 +1,170 @@
+{
+  "version": "0.113",
+  "date": "2026-10-06 KST",
+  "wbs": "P5.1 IN_PROGRESS",
+  "issue": "I50 FIXED_LOCAL: confirm-mode aux queue submission failure was debounced twice, suppressing the fallback alert.",
+  "scope": "One product file: fix fail-open publication, then extract shared enqueue/review handling for already-admitted events. No mode, model, score, schema, dependency or deployment change.",
+  "tests": {
+    "red": {
+      "tests": 13,
+      "failures": 2,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 11,
+      "failed_cases": [
+        "tests.test_deepstream_shadow_rf.test_confirm_aux_full_queue_attempts_fail_open_once[False]",
+        "tests.test_deepstream_shadow_rf.test_confirm_aux_full_queue_attempts_fail_open_once[True]"
+      ]
+    },
+    "green_before_refactor": {
+      "tests": 13,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 13,
+      "failed_cases": []
+    },
+    "related": {
+      "tests": 282,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 2,
+      "passed": 280,
+      "failed_cases": []
+    },
+    "main_suite": {
+      "tests": 2764,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 24,
+      "passed": 2740,
+      "failed_cases": []
+    },
+    "parser_suite": {
+      "tests": 85,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 28,
+      "passed": 57,
+      "failed_cases": []
+    },
+    "full": {
+      "tests": 2849,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 52,
+      "passed": 2797,
+      "failed_cases": []
+    }
+  },
+  "full_suite_scope": "Combined two sequential invocations of both configured testpaths: tests and parser-python/tests. main_suite.xml + parser_suite.xml; not a single pytest-process result.",
+  "collection_note": "Initial related command named nonexistent test_event_debouncer.py; collection exited4 with zero tests. Corrected paths; result retained as collection_error.xml.",
+  "environment_probe": {
+    "sandbox_full": {
+      "exit_code": 130,
+      "interrupted": true,
+      "junit_emitted": false,
+      "location": "Estimated from progress count as monitoring API; original full-run stack unavailable. Separately reproduced API startup wait."
+    },
+    "sandbox_api_probe": {
+      "exit_code": 137,
+      "timeout_seconds": 45,
+      "kill_grace_seconds": 5,
+      "trace": "Main thread waiting in AnyIO run_sync_from_thread during Starlette TestClient.__enter__; portal thread asyncio selector waiting.",
+      "junit_emitted": false
+    },
+    "unrestricted_api_probe": {
+      "passed": 3,
+      "seconds": 1.22,
+      "junit": "api_unrestricted.xml"
+    },
+    "conclusion": "Same existing API tests completed outside sandbox; no API product change needed. Full run repeated in isolated source copy outside sandbox."
+  },
+  "implementation": [
+    "Remove pending marker after aux submission fails.",
+    "Avoid a second state-consuming EventDebouncer check for an admitted fallback.",
+    "Keep normal publication guard; both paths reuse _enqueue_accepted_event for durable intake, queue insertion and successful-enqueue review logging."
+  ],
+  "regression_coverage": [
+    "Real EventDebouncer and queues; confirm aux queue full with free/full final queue.",
+    "Free final queue: one original alert, one review record, pending marker absent.",
+    "Full final queue: original queue retained, one drop recorded, no false successful-enqueue review.",
+    "Repeated same fall remains suppressed by cooldown.",
+    "Existing shadow, confirm score boundaries, Pose scope, veto and near-miss tests remain unchanged."
+  ],
+  "review": {
+    "reviewer": "candidate_verification_review",
+    "critical": 0,
+    "important": 0,
+    "scope": "before baseline vs final processor and regression tests",
+    "findings": "Already-admitted confirm fallback skips duplicate debounce; pending cleared, normal guard and shadow-only protection preserved. New real-debouncer queue boundaries cover publication, dropped count, review and cooldown. Fresh image integration and operating deployment remain.",
+    "independent_test_execution": false,
+    "evidence_inspected": [
+      "red.xml",
+      "green_before_refactor.xml",
+      "related.xml"
+    ]
+  },
+  "limits": [
+    "Local Python checks; no GPU replay, operating restart, model quality claim or deployment in this unit.",
+    "Latest v111 candidate image excludes v112 storage and v113 publication changes; fresh candidate integration is next.",
+    "I37 model contract, original I40/I34, I45 sustained/inter-process contention remain open."
+  ],
+  "private_artifacts": "data/runtime/p51_fall_publish_refactor_20261006_v113",
+  "source_test_files_matched": 510,
+  "artifacts_sha256": {
+    "red.xml": "2919358431da506d13ac51ddac344f79369fe4ab1c448d17abbedb871e1d9630",
+    "green_before_refactor.xml": "07db4e0fb00c9623d46e91371221bbe28bba0c3b9c834df9fac054653e041d07",
+    "related.xml": "038cc07fe23495c934d29777ef9b939cabf72d49fafd56e36317060c7f0cc39b",
+    "full.xml": "16f0fe86b1224908230bbb09c8ad234ffa3126f365b6395185e83fb4872faac0",
+    "source_test_manifest.json": "b1809efec2aae21fcf625ebc0f6a9d11409c47c2e64814768ab3643c2c239105",
+    "main_suite.xml": "3218b38b9d402ea50a0ab93f4761d8939e7d0be1db822cc2b1eea5b0d9be281c",
+    "parser_suite.xml": "83b86d71edd8733579a016accaa4c20c3dbe1c543f716efc93661dacb32ead0d",
+    "environment_probe.json": "cbed8f6f5f5bccf2acd50d345c593dae3bb14d9e4ae3fb9f08f31b20e03c6670",
+    "scope_check.json": "066f3a58b2e193a214f42b92f20af54897eac1d53ae0866dec6cd52eb8c50aea",
+    "publication.json": "a0758080cd7f6538bd9e27eee47a2d8ec35917bd04553a3091fe07fe477fade1",
+    "review.json": "80c044d473b0fc1f0c5a31a0b3d56b035c86412e01242d92dbdc4bc550e62362"
+  },
+  "publication": [
+    {
+      "file": "index.html",
+      "status": 200,
+      "bytes": 24173,
+      "sha256": "d2ec73b97da468b9fce0188350ff147acc685605e4600f7be7fbcc2a6eefa2d1",
+      "remote_matches_local": true
+    },
+    {
+      "file": "CCTV_project_progress.pdf",
+      "status": 200,
+      "bytes": 126869,
+      "sha256": "13e4996b363635d041c69a56e2dae5fb5cabc89ecd3b54f861c4ea448167aa90",
+      "remote_matches_local": true
+    }
+  ],
+  "scope_check": {
+    "version": "0.113",
+    "wbs_rows": 33,
+    "counts": {
+      "DONE": 9,
+      "BLOCKED": 3,
+      "PLANNED": 13,
+      "VERIFY": 7,
+      "IN_PROGRESS": 1
+    },
+    "tests_missing_from_previous": 0,
+    "new_cases": [
+      "tests.test_deepstream_shadow_rf.test_confirm_aux_full_queue_attempts_fail_open_once[False]",
+      "tests.test_deepstream_shadow_rf.test_confirm_aux_full_queue_attempts_fail_open_once[True]"
+    ],
+    "configured_testpaths": [
+      "tests",
+      "parser-python/tests"
+    ]
+  },
+  "lint": "Ruff PASS",
+  "pdf_first_page": "visually checked; no clipping",
+  "changed_product_test_files": [
+    "src/core/deepstream_processor.py",
+    "tests/test_deepstream_shadow_rf.py"
+  ]
+}

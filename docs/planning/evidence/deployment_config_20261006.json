@@ -1,0 +1,453 @@
+{
+  "date": "2026-10-06 KST",
+  "version": "0.107",
+  "wbs": "P5.1",
+  "issue": "I46 FIXED_LOCAL (configuration); not deployed",
+  "changes": [
+    "Corrected unused HSV backend model path to models/appearance in Compose and local .env.jetson.",
+    "Made inline RF, compare model kind/path and disabled feature capture defaults explicit.",
+    "Separated current env_file deployment wiring from historical Direct rollback contract; UAT remains signboard only."
+  ],
+  "validation": {
+    "jetson_before": {
+      "passed": false,
+      "checks": [
+        {
+          "name": "default compose architecture",
+          "passed": true,
+          "detail": "Jetson target selected; deployment uses docker-compose.jetson.yml"
+        },
+        {
+          "name": "TensorRT CUDA binding alignment",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "aiot parser database config",
+          "passed": true,
+          "detail": "parser .env uses localhost, but docker-compose.yml overrides DB_HOST to aiot-parser-db"
+        },
+        {
+          "name": "runtime secret source",
+          "passed": true,
+          "detail": ".env provides MQTT and AIoT DB secrets"
+        },
+        {
+          "name": "aiot database secret wiring",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "runtime path convergence",
+          "passed": true,
+          "detail": "runtime artifacts use /app/data/runtime and logs use /app/data/logs"
+        },
+        {
+          "name": "appearance model wiring",
+          "passed": false,
+          "detail": "missing: docker-compose.jetson.yml missing APPEARANCE_MODEL_PATH: ${APPEARANCE_MODEL_PATH:-models/appearance/pa100k_resnet50_attr.engine}"
+        },
+        {
+          "name": "falldata aux safety wiring",
+          "passed": false,
+          "detail": "missing: docker-compose.jetson.yml missing FALLDATA_AUX_INLINE_POSE_RF: ${FALLDATA_AUX_INLINE_POSE_RF:-true}, docker-compose.jetson.yml missing FALLDATA_AUX_COMPARE_MODEL_PATH: ${FALLDATA_AUX_COMPARE_MODEL_PATH:-models/experiments/yolo_pose_fall_cam2_continuous_200_80_640.pkl}, docker-compose.jetson.yml missing FALLDATA_AUX_COMPARE_MODEL_KIND: ${FALLDATA_AUX_COMPARE_MODEL_KIND:-yolo_pose_rf}, docker-compose.jetson.yml missing FALLDATA_AUX_INLINE_FEATURE_CAPTURE_PATH: ${FALLDATA_AUX_INLINE_FEATURE_CAPTURE_PATH:-}"
+        },
+        {
+          "name": "H.264 WebRTC compatibility wiring",
+          "passed": true,
+          "detail": "Jetson NVENC POC guard is wired"
+        },
+        {
+          "name": "network exposure defaults",
+          "passed": true,
+          "detail": "externally reachable services bind to localhost by default"
+        },
+        {
+          "name": "public API shared secret alignment",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "mqtt authentication config",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "EdgeX outbox path isolation",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "EdgeX mode rollback contract",
+          "passed": false,
+          "detail": "docker-compose.jetson.yml EDGEX_COMMAND_MODE must default to empty, docker-compose.jetson.yml EDGEX_ALLOWED_DEVICES must default to empty, .env.jetson must not override EDGEX_COMMAND_MODE during Direct rollback, .env.jetson must not override EDGEX_ALLOWED_DEVICES during Direct rollback"
+        }
+      ]
+    },
+    "jetson_after": {
+      "passed": true,
+      "checks": [
+        {
+          "name": "default compose architecture",
+          "passed": true,
+          "detail": "Jetson target selected; deployment uses docker-compose.jetson.yml"
+        },
+        {
+          "name": "TensorRT CUDA binding alignment",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "aiot parser database config",
+          "passed": true,
+          "detail": "parser .env uses localhost, but docker-compose.yml overrides DB_HOST to aiot-parser-db"
+        },
+        {
+          "name": "runtime secret source",
+          "passed": true,
+          "detail": ".env provides MQTT and AIoT DB secrets"
+        },
+        {
+          "name": "aiot database secret wiring",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "runtime path convergence",
+          "passed": true,
+          "detail": "runtime artifacts use /app/data/runtime and logs use /app/data/logs"
+        },
+        {
+          "name": "appearance model wiring",
+          "passed": true,
+          "detail": "PP-Human/PA100K model paths, label maps, and runtimes are wired"
+        },
+        {
+          "name": "falldata aux safety wiring",
+          "passed": true,
+          "detail": "fail-open policy and Jetson inline pose RF are wired"
+        },
+        {
+          "name": "H.264 WebRTC compatibility wiring",
+          "passed": true,
+          "detail": "Jetson NVENC POC guard is wired"
+        },
+        {
+          "name": "network exposure defaults",
+          "passed": true,
+          "detail": "externally reachable services bind to localhost by default"
+        },
+        {
+          "name": "public API shared secret alignment",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "mqtt authentication config",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "EdgeX outbox path isolation",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "EdgeX deployment mode contract",
+          "passed": true,
+          "detail": ""
+        }
+      ]
+    },
+    "direct_rollback_after": {
+      "passed": false,
+      "checks": [
+        {
+          "name": "default compose architecture",
+          "passed": true,
+          "detail": "Jetson target selected; deployment uses docker-compose.jetson.yml"
+        },
+        {
+          "name": "TensorRT CUDA binding alignment",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "aiot parser database config",
+          "passed": true,
+          "detail": "parser .env uses localhost, but docker-compose.yml overrides DB_HOST to aiot-parser-db"
+        },
+        {
+          "name": "runtime secret source",
+          "passed": true,
+          "detail": ".env provides MQTT and AIoT DB secrets"
+        },
+        {
+          "name": "aiot database secret wiring",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "runtime path convergence",
+          "passed": true,
+          "detail": "runtime artifacts use /app/data/runtime and logs use /app/data/logs"
+        },
+        {
+          "name": "appearance model wiring",
+          "passed": true,
+          "detail": "PP-Human/PA100K model paths, label maps, and runtimes are wired"
+        },
+        {
+          "name": "falldata aux safety wiring",
+          "passed": true,
+          "detail": "fail-open policy and Jetson inline pose RF are wired"
+        },
+        {
+          "name": "H.264 WebRTC compatibility wiring",
+          "passed": true,
+          "detail": "Jetson NVENC POC guard is wired"
+        },
+        {
+          "name": "network exposure defaults",
+          "passed": true,
+          "detail": "externally reachable services bind to localhost by default"
+        },
+        {
+          "name": "public API shared secret alignment",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "mqtt authentication config",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "EdgeX outbox path isolation",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "EdgeX mode rollback contract",
+          "passed": false,
+          "detail": "docker-compose.jetson.yml EDGEX_COMMAND_MODE must default to empty, docker-compose.jetson.yml EDGEX_ALLOWED_DEVICES must default to empty, .env.jetson must not override EDGEX_COMMAND_MODE during Direct rollback, .env.jetson must not override EDGEX_ALLOWED_DEVICES during Direct rollback"
+        }
+      ]
+    },
+    "candidate": {
+      "passed": true,
+      "checks": [
+        {
+          "name": "candidate profile contract",
+          "passed": true,
+          "detail": ""
+        }
+      ]
+    },
+    "regression": {
+      "passed": 2779,
+      "skipped": 52,
+      "failed": 0,
+      "seconds": 241.174,
+      "related_passed_in_full": 68,
+      "new_cases": 12,
+      "ruff": "PASS"
+    },
+    "snapshot": "Credential-free /tmp tree; only changed nonsecret files copied. Three source hashes match.",
+    "baseline_note": "Initial untargeted invocation used generic Compose and failed 4 checks; Jetson-targeted baseline failed 3 of 14."
+  },
+  "effective_settings": {
+    "base": {
+      "cctv-ai-engine": {
+        "APPEARANCE_BACKEND": "hsv",
+        "APPEARANCE_MODEL_PATH": "models/appearance/pa100k_resnet50_attr.engine",
+        "DS_PPHUMAN_SGIE_ENABLED": "1",
+        "DS_PPHUMAN_INFER_CONFIG": "config/deepstream/config_infer_pa100k.txt",
+        "FALLDATA_AUX_INLINE_POSE_RF": "true",
+        "FALLDATA_AUX_COMPARE_MODEL_KIND": "yolo_pose_rf",
+        "FALLDATA_AUX_COMPARE_MODEL_PATH": "models/experiments/yolo_pose_fall_cam2_continuous_200_80_640.pkl",
+        "FALLDATA_AUX_INLINE_FEATURE_CAPTURE_PATH": "",
+        "EDGEX_COMMAND_MODE": "edgex",
+        "EDGEX_ALLOWED_DEVICES": "speaker,signboard,siren"
+      },
+      "cctv-action-layer": {
+        "APPEARANCE_BACKEND": "hsv",
+        "APPEARANCE_MODEL_PATH": "models/appearance/pa100k_resnet50_attr.engine",
+        "DS_PPHUMAN_SGIE_ENABLED": "1",
+        "DS_PPHUMAN_INFER_CONFIG": "config/deepstream/config_infer_pa100k.txt",
+        "FALLDATA_AUX_INLINE_POSE_RF": "true",
+        "FALLDATA_AUX_COMPARE_MODEL_KIND": "yolo_pose_rf",
+        "FALLDATA_AUX_COMPARE_MODEL_PATH": "models/experiments/yolo_pose_fall_cam2_continuous_200_80_640.pkl",
+        "FALLDATA_AUX_INLINE_FEATURE_CAPTURE_PATH": null,
+        "EDGEX_COMMAND_MODE": "edgex",
+        "EDGEX_ALLOWED_DEVICES": "speaker,signboard,siren"
+      }
+    },
+    "candidate": {
+      "cctv-ai-engine": {
+        "APPEARANCE_BACKEND": "hsv",
+        "APPEARANCE_MODEL_PATH": "/app/models/appearance/pa100k_resnet50_attr.engine",
+        "DS_PPHUMAN_SGIE_ENABLED": "1",
+        "DS_PPHUMAN_INFER_CONFIG": "config/deepstream/config_infer_pa100k.txt",
+        "FALLDATA_AUX_INLINE_POSE_RF": "true",
+        "FALLDATA_AUX_COMPARE_MODEL_KIND": "yolo_pose_rf",
+        "FALLDATA_AUX_COMPARE_MODEL_PATH": "models/experiments/yolo_pose_fall_cam2_continuous_200_80_640.pkl",
+        "FALLDATA_AUX_INLINE_FEATURE_CAPTURE_PATH": "",
+        "EDGEX_COMMAND_MODE": "edgex",
+        "EDGEX_ALLOWED_DEVICES": "speaker,signboard,siren"
+      },
+      "cctv-action-layer": {
+        "APPEARANCE_BACKEND": "hsv",
+        "APPEARANCE_MODEL_PATH": "models/appearance/pa100k_resnet50_attr.engine",
+        "DS_PPHUMAN_SGIE_ENABLED": "1",
+        "DS_PPHUMAN_INFER_CONFIG": "config/deepstream/config_infer_pa100k.txt",
+        "FALLDATA_AUX_INLINE_POSE_RF": "true",
+        "FALLDATA_AUX_COMPARE_MODEL_KIND": "yolo_pose_rf",
+        "FALLDATA_AUX_COMPARE_MODEL_PATH": "models/experiments/yolo_pose_fall_cam2_continuous_200_80_640.pkl",
+        "FALLDATA_AUX_INLINE_FEATURE_CAPTURE_PATH": null,
+        "EDGEX_COMMAND_MODE": "edgex",
+        "EDGEX_ALLOWED_DEVICES": "speaker,signboard,siren"
+      }
+    }
+  },
+  "models": {
+    "host": [
+      {
+        "path": "/media/sawwave/Learning11/CCTV-project/models/pa100k_resnet50_attr.engine",
+        "is_file": false
+      },
+      {
+        "path": "/media/sawwave/Learning11/CCTV-project/models/appearance/pa100k_resnet50_attr.engine",
+        "is_file": true,
+        "size": 60557540,
+        "sha256": "151d44ea5e120b6b703c3605f2ea807eb892031190c43c26be9fb368dd8ecd0a"
+      },
+      {
+        "path": "/media/sawwave/Learning11/CCTV-project/models/experiments/yolo_pose_fall_cam2_continuous_200_80_640.pkl",
+        "is_file": true,
+        "size": 2545406,
+        "sha256": "0fd6610ee86d9263e402b82e6607da0ff361a39ab0487a7cb0f6edd019195397"
+      }
+    ],
+    "candidate": [
+      {
+        "path": "/media/sawwave/Learning11/CCTV-project/data/runtime/p51_rollback_20261001_v089/candidate_models/pa100k_resnet50_attr.engine",
+        "is_file": false
+      },
+      {
+        "path": "/media/sawwave/Learning11/CCTV-project/data/runtime/p51_rollback_20261001_v089/candidate_models/appearance/pa100k_resnet50_attr.engine",
+        "is_file": true,
+        "size": 60557540,
+        "sha256": "151d44ea5e120b6b703c3605f2ea807eb892031190c43c26be9fb368dd8ecd0a"
+      },
+      {
+        "path": "/media/sawwave/Learning11/CCTV-project/data/runtime/p51_rollback_20261001_v089/candidate_models/experiments/yolo_pose_fall_cam2_continuous_200_80_640.pkl",
+        "is_file": true,
+        "size": 2545406,
+        "sha256": "0fd6610ee86d9263e402b82e6607da0ff361a39ab0487a7cb0f6edd019195397"
+      }
+    ]
+  },
+  "operating_sgie_model": {
+    "config": "/app/config/deepstream/config_infer_pa100k.txt",
+    "model_engine_file": "../../models/appearance/pa100k_resnet50_attr.engine",
+    "resolved_path": "/app/models/appearance/pa100k_resnet50_attr.engine",
+    "is_file": true,
+    "size": 60557540,
+    "sha256": "151d44ea5e120b6b703c3605f2ea807eb892031190c43c26be9fb368dd8ecd0a"
+  },
+  "operating_before_equals_after": true,
+  "operating": [
+    {
+      "name": "/cctv-ai-engine",
+      "image": "sha256:1ace5b7832a50d6675b66146b0edc307021795732fc7c9a770e2cd628d7fd261",
+      "started_at": "2026-10-02T01:33:58.362007997Z",
+      "status": "running",
+      "health": "healthy",
+      "environment": {
+        "APPEARANCE_MODEL_PATH": "models/pa100k_resnet50_attr.engine",
+        "DS_PPHUMAN_SGIE_ENABLED": "1",
+        "FALLDATA_AUX_INLINE_FEATURE_CAPTURE_PATH": "",
+        "DS_PPHUMAN_INFER_CONFIG": "config/deepstream/config_infer_pa100k.txt",
+        "FALLDATA_AUX_COMPARE_MODEL_KIND": "yolo_pose_rf",
+        "FALLDATA_AUX_COMPARE_MODEL_PATH": "models/experiments/yolo_pose_fall_cam2_continuous_200_80_640.pkl",
+        "APPEARANCE_BACKEND": "hsv",
+        "FALLDATA_AUX_INLINE_POSE_RF": "true"
+      },
+      "models_mount": [
+        {
+          "Type": "bind",
+          "Source": "/media/sawwave/Learning11/CCTV-project/models",
+          "Destination": "/app/models",
+          "Mode": "rw",
+          "RW": true,
+          "Propagation": "rprivate"
+        }
+      ]
+    },
+    {
+      "name": "/cctv-action-layer",
+      "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+      "started_at": "2026-10-01T23:40:25.091637764Z",
+      "status": "running",
+      "health": "healthy",
+      "environment": {
+        "EDGEX_ALLOWED_DEVICES": "speaker,signboard,siren",
+        "EDGEX_COMMAND_MODE": "edgex",
+        "FALLDATA_AUX_COMPARE_MODEL_PATH": "models/experiments/yolo_pose_fall_cam2_continuous_200_80_640.pkl",
+        "APPEARANCE_MODEL_PATH": "models/pa100k_resnet50_attr.engine",
+        "DS_PPHUMAN_SGIE_ENABLED": "1",
+        "APPEARANCE_BACKEND": "hsv",
+        "DS_PPHUMAN_INFER_CONFIG": "config/deepstream/config_infer_pa100k.txt"
+      },
+      "models_mount": []
+    }
+  ],
+  "candidate_image": "sha256:0c11b835eb42cd245f4dda0b8bc8088733c0323bf75a2f4fefe9e7705d8dbf34",
+  "limitations": [
+    "14 PASS is the current deployment configuration profile, not a Direct rollback or physical output approval.",
+    "Operating containers still retain the old unused APPEARANCE_MODEL_PATH until an approved recreation.",
+    "Pinned candidate predates local v0.102/v0.105/v0.106 source fixes; no new image build or integration run in this unit.",
+    "Model presence/hash comparison does not establish inference accuracy or compatibility on another Jetson.",
+    "I06 physical devices/Direct recovery, original I40/I45, CUDA and remaining model/operating gates stay open.",
+    "Separate Jetson installation rehearsal remains deferred until features are complete, before formal release."
+  ],
+  "private_artifacts": "data/runtime/i46_deployment_20261006_v107",
+  "files_sha256": {
+    "source_hashes.json": "a0367fdd49c7869f6825ecb6eecb2013edcd7908ab5a4ba781b7b06cebec7a73",
+    "red.xml": "28c067a1f2c1c6f25c440c86034ceafbc9e84b3aae1443a0d785d028809fe3bd",
+    "checks_jetson_before.json": "f6a091fdb58d52dfcad7ec6bad3ea5cb92bcd72dc17ef108461b2a6a5bc5db50",
+    "checks_deployment_after.json": "f60f46ce23120c63b00e6088b2242de4719df42ec3e82adf2c92efa289931eac",
+    "targeted.xml": "d888a6cd744421e16fa12e25946fc75653fde06e3a05b2b0dd5c2f7472aeaf97",
+    "full.xml": "3f4603108a4cd5b4f93f06f998bd707a12b0cb046530863685681f5d48658675",
+    "checks_before.json": "d5e68ef388e7b2e28bf229c3176f4647fe1ccb6dfa16615b024e25bb7c16ed40",
+    "checks_direct-rollback_after.json": "d0bf85ab12a68398ae03440e9c6f8eb8afdc02a65e65b40f52f295679a786d79",
+    "operating_before.json": "6624b5f49fde62ec7c9b241d9bd2393ea9139aa31853d7d21a86ac7b4191c0ba",
+    "operating_sgie_model.json": "55fbfa91e0e6c960d9ad973c4e1c5e1c398d5a781a0fe8e8a0d0acb5d49365a7",
+    "audit_before.json": "911667902be2aab7d5eb650d44b121c4663b67b3a7518370befc175c8c20c4b1",
+    "full.log": "f94455f316a57368f4ad19bfc294958f7e2e358dde1166fa089b302e03893043",
+    "audit_after.json": "09ec19471e49d57c5bb4f3a5ddce801bdb1f5c512698eaa12e80ab083d52c5fc"
+  },
+  "publication": {
+    "url": "http://192.168.2.141:18081/",
+    "files": [
+      {
+        "name": "index.html",
+        "bytes": 24213,
+        "sha256": "c93e55376067d8f68ee488e8dea171187c705d564d41bc613e93e7dc421011f4",
+        "http_matches": true
+      },
+      {
+        "name": "CCTV_project_progress.pdf",
+        "bytes": 128103,
+        "sha256": "472cc3ab792393bcee0d14e317d13440fc62bffa523ba025cb96d0d16b6a6b67",
+        "http_matches": true
+      }
+    ],
+    "wbs_33_ids_and_counts": "PASS",
+    "pdf_first_page_visual": "PASS; no clipping",
+    "source_hashes": "3 match tested snapshot",
+    "ruff": "PASS",
+    "git_diff_check": "PASS"
+  }
+}

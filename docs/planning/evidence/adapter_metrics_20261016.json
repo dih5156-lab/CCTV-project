@@ -1,0 +1,580 @@
+{
+  "checked_at": "2026-10-16T12:12:09.851376+00:00",
+  "wbs": "P6.3",
+  "issue": "I64",
+  "state": "IMAGE_AND_BACKUP_VERIFIED_NOT_DEPLOYED",
+  "scope": "낙상 GPU 진단 승인 대기 중 운영 관측 준비의 독립 선행 결함을 보완함. P6.3의 전체AI/다중/장기/알림 검증을 대체하지 않음.",
+  "root_cause": "운영 runner와 작업 소스 해시가 같음. AIOT_COMMANDS_ENABLED=false이면 start_http_server를 호출하지 않는 조건 때문에 healthy 컨테이너의 9105 수집이 연결 거부됨.",
+  "source_comparison": {
+    "operating_sha256": "8c562e4e66669955b83cabf7c35852b3231df5a183feb78b4faba2a5664acb6e",
+    "workspace_sha256_before": "8c562e4e66669955b83cabf7c35852b3231df5a183feb78b4faba2a5664acb6e",
+    "exact_match": true,
+    "conditional_metrics_start": true
+  },
+  "implementation": {
+    "file": "runners/run_edgex_adapter.py",
+    "changed_functions": [
+      "main"
+    ],
+    "helper_functions_unchanged": true,
+    "metric": "cctv_edgex_adapter_aiot_commands_enabled",
+    "metric_values": [
+      0,
+      1
+    ],
+    "metric_labels": [],
+    "port_environment_unchanged": "AIOT_METRICS_PORT",
+    "default_port": 9105,
+    "command_enabling_changed": false,
+    "transport_code_changed": false,
+    "model_confidence_or_resolution_changed": false,
+    "new_dependencies": 0,
+    "configuration_changes": 0
+  },
+  "validation": {
+    "regression_before": {
+      "failed": 2,
+      "disabled_failure": "start_http_server called0 rather than1",
+      "enabled_failure": "activation metric absent"
+    },
+    "tests_pass": 8,
+    "test_files": [
+      "tests/test_edgex_adapter_aiot_commands.py",
+      "tests/test_aiot_metrics.py"
+    ],
+    "ruff_pass": true,
+    "git_diff_check_pass": true,
+    "host_http": {
+      "checked_at": "2026-10-16T12:06:06.756290+00:00",
+      "http_status": 200,
+      "metrics_port_argument": 9105,
+      "commands_enabled_gauge": 0,
+      "command_service_created": false,
+      "normal_adapter_start_called": 1,
+      "process_metrics_present": true,
+      "metrics_samples": 11,
+      "external_network_calls": 0,
+      "real_transport_started": false,
+      "operating_changed": false,
+      "runner_sha256": "a96b9471bdedc41368dd9617f03ba0ef45b96bcc61aaee8a39f3f3d0fa4a616f"
+    },
+    "isolated_operating_image_http": {
+      "checked_at": "2026-10-16T12:09:05.894108+00:00",
+      "http_status": 200,
+      "metrics_port_argument": 9105,
+      "commands_enabled_gauge": 0,
+      "command_service_created": false,
+      "normal_adapter_start_called": 1,
+      "process_metrics_present": true,
+      "metrics_samples": 11,
+      "external_network_calls": 0,
+      "real_transport_started": false,
+      "operating_changed": false,
+      "runner_sha256": "a96b9471bdedc41368dd9617f03ba0ef45b96bcc61aaee8a39f3f3d0fa4a616f"
+    },
+    "isolated_image": "sha256:b146c351ec53303c7c57dc0836b81b4dc86df13d351055c0a4d50f40f1a83c10",
+    "isolated_network": "none",
+    "isolated_gpu": false,
+    "isolated_real_mqtt_edgex_started": false,
+    "isolated_warning": "이미지의 event_type_map.json 미포함으로 기본값 사용 로그. 실제 설정을 포함한 MQTT/EdgeX 전달 검증은 하지 않음.",
+    "graph_review": "지정2파일에도 detect_changes가 다른122함수/42gap을 포함해 범위 근거로 사용하지 않음. main 호출 흐름·직접diff·AST·실패재현/회귀/실제HTTP로 대조함."
+  },
+  "operating_after": {
+    "checked_at": "2026-10-16T12:10:38.985634+00:00",
+    "same_operating_states": true,
+    "containers_checked": 6,
+    "states": [
+      {
+        "name": "/cctv-edgex-adapter",
+        "id": "64c16ac5a15eb14697be4327f593658f0fca95fd3cb3794ff376f01aac763033",
+        "image": "sha256:b146c351ec53303c7c57dc0836b81b4dc86df13d351055c0a4d50f40f1a83c10",
+        "status": "running",
+        "health": "healthy",
+        "started_at": "2026-10-12T23:35:15.447174177Z",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-prometheus",
+        "id": "1d13831d072018233fcd22305be7e7b6fca7062191364a0cd4a355986196110f",
+        "image": "sha256:4f6c47e39a9064028766e8c95890ed15690c30f00c4ba14e7ce6ae1ded0295b1",
+        "status": "running",
+        "health": "healthy",
+        "started_at": "2026-10-12T23:35:15.131679103Z",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-ai-engine",
+        "id": "c8a71163c84b458197b98a4bde8e0e06719afc5cf5964e6fbd0b716109ce0377",
+        "image": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+        "status": "running",
+        "health": "healthy",
+        "started_at": "2026-10-16T11:32:09.766810602Z",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-action-layer",
+        "id": "74deaeb0b5bdd64c8f2e2a141daa25c193a75cf235b214fee6ef8b4dcdceedeb",
+        "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+        "status": "running",
+        "health": "healthy",
+        "started_at": "2026-10-12T23:35:15.475740705Z",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-device-signboard",
+        "id": "29aeb393bd52e7a9f8241be9214b970e82e8442253fdfe2e73dbbf5d153feaa8",
+        "image": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+        "status": "running",
+        "health": "healthy",
+        "started_at": "2026-10-12T23:35:15.45875226Z",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-device-speaker",
+        "id": "a8ff5823d34ad72dd2c5b236cc88f210b16feb05ef53532e6549601d2beafb7a",
+        "image": "sha256:4daca5e8c9865c5f19dde37d7dbdfcc37ea5c413fa8375802e80c7f8185bba30",
+        "status": "running",
+        "health": "healthy",
+        "started_at": "2026-10-12T23:35:15.455773133Z",
+        "restart_count": 0
+      }
+    ],
+    "targets": {
+      "cctv-action-layer": "up",
+      "cctv-ai-engine": "up",
+      "cctv-alert-api": "up",
+      "cctv-edgex-adapter": "down",
+      "cctv-public-api": "up"
+    },
+    "operating_changed": false,
+    "operating_stops": 0,
+    "physical_outputs": 0
+  },
+  "remaining": [
+    "실제 어댑터 전환·원래 이미지 복귀·부팅 override 설치/재부팅 확인",
+    "운영 Prometheus up=1·명령기능0·실제 시계열/MQTT/Outbox/알림 확인",
+    "sent 기록의 장기 보관량·정기 백업 범위 검증",
+    "P6.3 선행 전체AI/다중 및 지속운전 충족"
+  ],
+  "artifact_sha256": {
+    "data/runtime/p63_adapter_metrics_20261016/after.json": "e7f634b9826eee097b6a1327623cfa628a2ce8f9d64c740ec3d869357d324170",
+    "data/runtime/p63_adapter_metrics_20261016/before.json": "ccb57e7bb14d4758186214954e02aa99422b42565ffc4598f8184d4a3016187b",
+    "data/runtime/p63_adapter_metrics_20261016/candidate_runner.py": "a96b9471bdedc41368dd9617f03ba0ef45b96bcc61aaee8a39f3f3d0fa4a616f",
+    "data/runtime/p63_adapter_metrics_20261016/check_http.py": "45b3dcdce5e91d94b4a25a6aedc707f7a8e0e2ef168643007f23abcf4491a1ed",
+    "data/runtime/p63_adapter_metrics_20261016/http_check.json": "14cc5538cc27e1b4bf2ba00cdd21cbe7cfdc08650f8bd0997f63660539418b59",
+    "data/runtime/p63_adapter_metrics_20261016/isolated_check.log": "1c73439e42b37498f01597deac7cd0ec91be6c54e7bfaa0be1880794937c3586",
+    "data/runtime/p63_adapter_metrics_20261016/isolated_output/http_check.json": "617db12ff0bae3c5ec45913c43b9601b80f076a6dc0781bf0dc6d421d0120dbc",
+    "data/runtime/p63_adapter_metrics_20261016/operating_runner.py": "8c562e4e66669955b83cabf7c35852b3231df5a183feb78b4faba2a5664acb6e",
+    "data/runtime/p63_adapter_metrics_20261016/source_comparison.json": "20413f915b9dd2640e599359490ce281de006191f5a498da6212f1c3a682d3ac",
+    "runners/run_edgex_adapter.py": "a96b9471bdedc41368dd9617f03ba0ef45b96bcc61aaee8a39f3f3d0fa4a616f",
+    "tests/test_edgex_adapter_aiot_commands.py": "89a38bda57851fbbeff695df3f1c61f1f6f2c786524216bd296909be3f4f79b4"
+  },
+  "wbs_status": "PLANNED",
+  "issue_status": "OPEN",
+  "goal_reset_pass_used": 0,
+  "publication": {
+    "checked_at": "2026-10-16T12:14:23.382673+00:00",
+    "rows_exact": 37,
+    "counts": {
+      "DONE": 9,
+      "BLOCKED": 3,
+      "PLANNED": 16,
+      "VERIFY": 7,
+      "IN_PROGRESS": 2
+    },
+    "local_links_checked": 66,
+    "artifact_hashes_checked": 11,
+    "http": [
+      {
+        "url": "http://192.168.2.141:18081/",
+        "status": 200,
+        "sha256": "e0d0079f0b79be57d8ef55ee0a99c71a74d2ea32e5feb9af22760b9ff031a754",
+        "bytes": 128884
+      },
+      {
+        "url": "http://192.168.2.141:18081/CCTV_project_progress.pdf",
+        "status": 200,
+        "sha256": "a43065d4f591ba42e9322ad2957e328266e5b8d60dfad899a618ab633fa7b859",
+        "bytes": 154870
+      }
+    ],
+    "first_page_visually_checked": true,
+    "ruff_pass": true,
+    "git_diff_check_pass": true
+  },
+  "release_package": {
+    "checked_at": "2026-10-16T12:46:40.029861+00:00",
+    "state": "IMAGE_AND_BACKUP_VERIFIED_NOT_DEPLOYED",
+    "candidate_image": "sha256:ab366dd32c3a0598ffb8435b7a8f74f05b211e5090187399bc1cf13dd5586cc4",
+    "rollback_image": "sha256:b146c351ec53303c7c57dc0836b81b4dc86df13d351055c0a4d50f40f1a83c10",
+    "image": {
+      "checked_at": "2026-10-16T12:19:02.772526+00:00",
+      "image": "sha256:ab366dd32c3a0598ffb8435b7a8f74f05b211e5090187399bc1cf13dd5586cc4",
+      "candidate_tag": "cctv-edgex-adapter:i64-metrics-20261016",
+      "base_image": "sha256:b146c351ec53303c7c57dc0836b81b4dc86df13d351055c0a4d50f40f1a83c10",
+      "base_layers_unchanged": 17,
+      "added_layers": 1,
+      "runtime_config_identical": true,
+      "architecture": "arm64",
+      "size_bytes": 288297426,
+      "runner_sha256": "a96b9471bdedc41368dd9617f03ba0ef45b96bcc61aaee8a39f3f3d0fa4a616f",
+      "production_changed": false
+    },
+    "runtime_root": "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release",
+    "compose_baseline": {
+      "checked_at": "2026-10-16T12:19:50.131733+00:00",
+      "service": "cctv-edgex-adapter",
+      "checks": {
+        "environment": true,
+        "command": true,
+        "entrypoint": true,
+        "user": true,
+        "working_dir": true,
+        "mounts": true,
+        "ports": true,
+        "restart": true,
+        "network_names": true
+      },
+      "all_match": true,
+      "environment_diff_keys": [],
+      "environment_values_recorded": false,
+      "environment_sha256": "7b24530cbaa0191177a548184e68dbf1d58d2537b8d099f2e3e3119b5bf9ce2f",
+      "service_config_sha256": "f6d6d92eb4682993d50916a5b8dd4e759dd8e03a705aa684ee01473c14b3ab99",
+      "input_sha256": {
+        "/media/sawwave/Learning11/CCTV-project/.env.jetson": "fc967045a9f7b4f5a485a390ece3e887d727747898f18b5671acd8403638da68",
+        "/media/sawwave/Learning11/CCTV-project/docker-compose.jetson.yml": "0c67afdf038e79118f40d219dc4eb153f3a1dfd7d99371c48f354a6182f4cee2"
+      },
+      "production_changed": false
+    },
+    "profile_validation": {
+      "checked_at": "2026-10-16T12:23:12.359086+00:00",
+      "profiles": [
+        {
+          "profile": "candidate",
+          "changed_fields": [
+            "build",
+            "image",
+            "pull_policy"
+          ],
+          "image": "sha256:ab366dd32c3a0598ffb8435b7a8f74f05b211e5090187399bc1cf13dd5586cc4",
+          "other_services_unchanged": true,
+          "environment_command_mounts_ports_unchanged": true,
+          "build_disabled": true,
+          "pull_policy": "never"
+        },
+        {
+          "profile": "rollback",
+          "changed_fields": [
+            "build",
+            "image",
+            "pull_policy"
+          ],
+          "image": "sha256:b146c351ec53303c7c57dc0836b81b4dc86df13d351055c0a4d50f40f1a83c10",
+          "other_services_unchanged": true,
+          "environment_command_mounts_ports_unchanged": true,
+          "build_disabled": true,
+          "pull_policy": "never"
+        }
+      ],
+      "production_changed": false
+    },
+    "candidate_image_http": {
+      "checked_at": "2026-10-16T12:21:25.454758+00:00",
+      "http_status": 200,
+      "metrics_port_argument": 9105,
+      "commands_enabled_gauge": 0,
+      "command_service_created": false,
+      "normal_adapter_start_called": 1,
+      "process_metrics_present": true,
+      "metrics_samples": 11,
+      "external_network_calls": 0,
+      "real_transport_started": false,
+      "operating_changed": false,
+      "runner_sha256": "a96b9471bdedc41368dd9617f03ba0ef45b96bcc61aaee8a39f3f3d0fa4a616f",
+      "image": "sha256:ab366dd32c3a0598ffb8435b7a8f74f05b211e5090187399bc1cf13dd5586cc4",
+      "image_default_user_preserved": true,
+      "runner_mounted": false,
+      "result_transport": "stdout JSON after /tmp write; host output folder not mounted"
+    },
+    "candidate_dry_run_state": {
+      "compose_version": "5.6.0",
+      "containers": [
+        {
+          "name": "/cctv-edgex-adapter",
+          "same_id_image_started": true,
+          "healthy": "healthy"
+        },
+        {
+          "name": "/cctv-prometheus",
+          "same_id_image_started": true,
+          "healthy": "healthy"
+        },
+        {
+          "name": "/cctv-ai-engine",
+          "same_id_image_started": true,
+          "healthy": "healthy"
+        },
+        {
+          "name": "/cctv-action-layer",
+          "same_id_image_started": true,
+          "healthy": "healthy"
+        },
+        {
+          "name": "/cctv-device-signboard",
+          "same_id_image_started": true,
+          "healthy": "healthy"
+        },
+        {
+          "name": "/cctv-device-speaker",
+          "same_id_image_started": true,
+          "healthy": "healthy"
+        }
+      ],
+      "same_operating_states": true
+    },
+    "rollback_dry_run": {
+      "state": "AUTO_REVIEW_BLOCKED",
+      "reason": "자동 검토가 Compose5.6.0 dry-run 출력의 Recreated/Started를 운영 변경 위험으로 해석하여 복귀 모의 실행을 차단",
+      "candidate_dry_run_actual_state_check": "운영6컨테이너 ID/이미지/시작시각 불변 확인",
+      "rollback_compose_config_only": "PASS",
+      "rollback_dry_run_executed": false,
+      "real_activation_executed": false
+    },
+    "startup": {
+      "boot_selected_services": [
+        "cctv-ai-engine",
+        "cctv-public-api",
+        "public-demo-ui"
+      ],
+      "boot_no_deps": false,
+      "adapter_is_transitive_dependency": true,
+      "current_compose_files": [
+        "docker-compose.jetson.yml",
+        "data/runtime/live_refresh_20261008/candidate.yml"
+      ],
+      "additional_compose_file": "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/candidate.yml",
+      "unit_draft": "20-i64-adapter.conf.draft",
+      "installed": false,
+      "working_directory_assumption": "/media/sawwave/Learning11/CCTV-project",
+      "reason": "부팅 명령은 의존 서비스를 함께 처리하므로 일회성 adapter override만 적용하면 다음 부팅에서 원래 이미지를 선택할 수 있음. 실제 재부팅 결과가 아닌 구성에서 도출한 위험."
+    },
+    "unit_syntax": {
+      "syntax_pass": true,
+      "installed": false,
+      "daemon_reloaded": false,
+      "unit_started": false,
+      "scope": "기존ExecStart에 Compose override1개를 추가한 초안의 문법 확인",
+      "warnings_present": true,
+      "warning_scope": "호스트 watch 생성·샌드박스 연결·기존 snapd/nvs 유닛 경고. 실제 부팅 검증 아님.",
+      "target_unit_error_reported": false
+    },
+    "backup": {
+      "checked_at": "2026-10-16T12:38:48.352388+00:00",
+      "entries": [
+        {
+          "database": "event_outbox.db",
+          "backup_path": "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/private_backups/event_outbox.db",
+          "bytes": 3674955776,
+          "sha256": "dd09d63f879481c366baf689c8a3c612e4e6edb942a509c6f7b04e5be684a08b",
+          "file_mode": "0o600",
+          "quick_check": "ok",
+          "status_counts": {
+            "sent": 861538
+          },
+          "tables": [
+            "event_outbox"
+          ],
+          "elapsed_seconds": 138.9062147299992,
+          "source_opened_read_only": true
+        },
+        {
+          "database": "aiot_commands.db",
+          "backup_path": "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/private_backups/aiot_commands.db",
+          "bytes": 12288,
+          "sha256": "b03bcc8b521a5fe272cfa1e86c8a45f4c4fe64efca62b326e9eb8e35d925083d",
+          "file_mode": "0o600",
+          "quick_check": "ok",
+          "status_counts": {},
+          "tables": [
+            "aiot_command_inbox"
+          ],
+          "elapsed_seconds": 10.661739148024935,
+          "source_opened_read_only": true
+        }
+      ],
+      "original_rows_deleted": 0,
+      "source_sql_writes": 0,
+      "service_stops": 0,
+      "helper": "scripts/ops/backup_runtime_databases.sh SQLite backup block with bounded progress",
+      "source_restored_or_replaced": false,
+      "snapshot_reopened_read_only": true
+    },
+    "backup_helper_validation": {
+      "normal_backup_pass": true,
+      "forced_deadline_preserves_source_and_removes_partial": true,
+      "tests_pass": 2,
+      "new_backup_seconds": 300,
+      "basis": "128MiB /5.83초의 실측에서 전체3.67GB 복사만 약160초 예상; 최초120초 한도 실패 원인의 유력 후보. 원래 stderr 미보존으로 확정 원인과 구분함."
+    },
+    "outbox_observation": {
+      "checked_at": "2026-10-16T12:25:05.365960+00:00",
+      "db_bytes": 3674955776,
+      "page_size": 4096,
+      "pages": 897206,
+      "free_pages": 1,
+      "free_page_bytes": 4096,
+      "status_counts": {
+        "sent": 861538
+      },
+      "insertion_endpoints": [
+        {
+          "status": "sent",
+          "first_inserted": [
+            "2026-07-08T09:40:30.103492+09:00",
+            "2026-07-08T09:40:30.126523+09:00",
+            0
+          ],
+          "last_inserted": [
+            "2026-10-16T19:46:11.504076+09:00",
+            "2026-10-16T19:46:11.533110+09:00",
+            0
+          ]
+        }
+      ],
+      "query_only": true,
+      "payloads_read": false
+    },
+    "operating_after": {
+      "checked_at": "2026-10-16T12:42:21.387276+00:00",
+      "observation_seconds": 30.044421540980693,
+      "rates": {
+        "cctv_processor_frames_processed_total": 29.9556441375447,
+        "cctv_processor_frames_dropped_total": 0.0,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_camera_primary_frames_inferred_total:camera_1": 14.97782206877235
+      },
+      "states": [
+        {
+          "name": "/cctv-edgex-adapter",
+          "id": "64c16ac5a15eb14697be4327f593658f0fca95fd3cb3794ff376f01aac763033",
+          "image": "sha256:b146c351ec53303c7c57dc0836b81b4dc86df13d351055c0a4d50f40f1a83c10",
+          "started_at": "2026-10-12T23:35:15.447174177Z",
+          "healthy": true,
+          "same_as_before": true
+        },
+        {
+          "name": "/cctv-prometheus",
+          "id": "1d13831d072018233fcd22305be7e7b6fca7062191364a0cd4a355986196110f",
+          "image": "sha256:4f6c47e39a9064028766e8c95890ed15690c30f00c4ba14e7ce6ae1ded0295b1",
+          "started_at": "2026-10-12T23:35:15.131679103Z",
+          "healthy": true,
+          "same_as_before": true
+        },
+        {
+          "name": "/cctv-ai-engine",
+          "id": "c8a71163c84b458197b98a4bde8e0e06719afc5cf5964e6fbd0b716109ce0377",
+          "image": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+          "started_at": "2026-10-16T11:32:09.766810602Z",
+          "healthy": true,
+          "same_as_before": true
+        },
+        {
+          "name": "/cctv-action-layer",
+          "id": "74deaeb0b5bdd64c8f2e2a141daa25c193a75cf235b214fee6ef8b4dcdceedeb",
+          "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+          "started_at": "2026-10-12T23:35:15.475740705Z",
+          "healthy": true,
+          "same_as_before": true
+        },
+        {
+          "name": "/cctv-device-signboard",
+          "id": "29aeb393bd52e7a9f8241be9214b970e82e8442253fdfe2e73dbbf5d153feaa8",
+          "image": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+          "started_at": "2026-10-12T23:35:15.45875226Z",
+          "healthy": true,
+          "same_as_before": true
+        },
+        {
+          "name": "/cctv-device-speaker",
+          "id": "a8ff5823d34ad72dd2c5b236cc88f210b16feb05ef53532e6549601d2beafb7a",
+          "image": "sha256:4daca5e8c9865c5f19dde37d7dbdfcc37ea5c413fa8375802e80c7f8185bba30",
+          "started_at": "2026-10-12T23:35:15.455773133Z",
+          "healthy": true,
+          "same_as_before": true
+        }
+      ],
+      "targets": {
+        "cctv-action-layer": "up",
+        "cctv-ai-engine": "up",
+        "cctv-alert-api": "up",
+        "cctv-edgex-adapter": "down",
+        "cctv-public-api": "up"
+      },
+      "operating_changes": 0,
+      "operating_stops": 0,
+      "free_disk_bytes": 68168724480
+    },
+    "new_dependencies": 0,
+    "database_migrations": 0,
+    "original_rows_deleted": 0,
+    "known_limits": [
+      "첫 백업은exit1·stderr미보존. 이후128MiB/5.83초 측정과300초 한도로2개 성공; 최초 실패 원인은 단정하지 않음.",
+      "후보 모의 출력의 DRY-RUN 문자열 검사만 실패했고 실제6컨테이너불변 확인. 복귀 모의 재요청은 자동검토 차단; 복귀는Compose 구성 검증까지.",
+      "systemd 초안은문법exit0지만호스트/watch/기존유닛 경고가 있으며 설치·재부팅 검증하지 않음.",
+      "실제운영 전환·MQTT/Outbox 전달·Prometheus 시계열/알림은미검증. 운영은4up/1down 유지.",
+      "백업후 여유68.17GB(사용률약97%); sent86만건의 장기 보관 정책과 정기백업 범위는P2.4/P6.3 잔여. 원본삭제0."
+    ],
+    "artifact_sha256": {
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/.dockerignore": "7639d4a76f34a39950f2124f7c665cdd3644ab4426967c868b6245ed2a8f2e23",
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/20-i64-adapter.conf.draft": "25d2cee1ac91dff3c1b2295f0c9fa5c28dbf1e27cc0e5e11ea5bb4c439bf5778",
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/Dockerfile": "dbf02d9f6b0e1b56c78eb00b9044738ed2f1154e048f354a7c9f533d2943109b",
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/aiot_commands.db.backup.stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/aiot_commands.db.backup.stdout.log": "daa2bc35a03d41bf215928c85e1583571ada1a957ba3f7d7e7c66820e98b6f30",
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/backup_helper.py": "3c329f28c6d1127edf66403de70a85786090cce45c9387eb8d2120560f1d2a33",
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/backup_helper_120s.py": "7978ad413621b90298c89f30c172001f006d0b987a1fcb23747d0ce5f21bd5e7",
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/backup_helper_check.json": "028c285b68b64b5238bd6d1e008a00708a826ba2dddcbd7312546d3593faf8cc",
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/backup_measurement.json": "06849b127ef565fd5786130fc8255d28b7787f0b7f53724449043a04bae7d936",
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/backup_measurement_stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/backup_measurement_stdout.log": "35d63ae358ccdb00e6098f41c5b5aedceb0661e4d95f635abfc33529bacb4fb1",
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/backup_progress_results.json": "225761fd400e07a8ab3a334ba97f3281a5a90abcb80af6c71655d70e7ccccab7",
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/backup_result.json": "1258e0a3c40f8ecd6f8056fb3987221da897b5f35f07e7f41e4e0021595e10fe",
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/backup_status.json": "1d3b94b0724a597ca6d72caf67ace3753311f7b562d6005b5593d3a4830fbc46",
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/build.log": "2c3cdfbcbbad31c0bb181ee7e96afe0683831282667ac398402df9640755b1a4",
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/candidate.yml": "4c7d8b7d6b7a73c6874069db9cc25482bc13490a4254edd8553ae6aeafe97e5d",
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/candidate_dry_run.log": "23956185063e424fad7a34084040050f900e819c4ed08e035588758d79bd6197",
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/commands.json": "46f8d6722408dc75ff7bddebe58da1a816970bff25fcf9be1ef713fa6d597e9d",
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/compose_baseline_check.json": "7ac062c548c370fb6e19e5cb0bc91867959901fb37f3255b850ca56e2de98202",
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/dry_run_state_check.json": "8429cabd61a00c31c378174af62dc36f683545aa5bedcdd3364ca393a71a7f17",
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/event_outbox.db.backup.stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/event_outbox.db.backup.stdout.log": "7102f98e953c063679c595357402e9fb7c6cfabe0eb53b60fffd4cfadfa6a787",
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/i64-unit-check.service": "d6e8d8e88246f936507bc5ffb55a8931c95b8f7b7ca7a6a9a006468ff0bad5a2",
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/image.json": "793b4d6455819c960b528fe6932dc98b4ad0c424ed65468ed42205be361fabad",
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/isolated_check.log": "577574b011a467b53d20155f33979a4712fb75ef8cc580fceba4500d85e04fac",
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/isolated_check_initial.log": "f94cc74534ce8d1d493036e2d9d3f6e59b613cc7a6ee540b6cf2b7ad6188e45e",
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/isolated_output/http_check.json": "3c7094464eefc1594b397ef9a6b52ffd221ccbdab325c69ad735038530573588",
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/operating_after.json": "b24ad49957e4494f725ebe4ad2b8f0bcd0c32c4152919bbee44a8738949d7dc3",
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/outbox_precheck.json": "d673ab8a83f5add8f25ae4629192a4b24f03581c8bb880c9753c85289d559fcf",
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/plan.json": "931b2f730a5a3832d42f8944bcf1318bd054b2aae77b803358c9c1d094582fd0",
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/profiles_check.json": "6dedc28ac38954a0f05472bf7f24f55bb1c947e8816988e4137fb28c235ff319",
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/rollback.yml": "35c7ee17bcb6ff8e673dae2fd84cf322edcc2c678cb8101beb2967c799faa908",
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/rollback_dry_run_block.json": "b96c06b6da6191c4b9ac027d6693e509f64b853dac1d17637527524bfe90cdbc",
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/run_edgex_adapter.py": "a96b9471bdedc41368dd9617f03ba0ef45b96bcc61aaee8a39f3f3d0fa4a616f",
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/startup_followup.json": "7e4d701da58ffd217aa3766ff00af9c6c82cd2593a99b265fb50ceec06ed43b1",
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/startup_inventory.json": "57eb25ae5de936217cc455ac7bae39e44ec04983bd6904d49e31e28402a85792",
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/unit_check.json": "89bc2bb90425cf2e314cfde03a009053454b8203d1722980f0dec7dd6004bc62",
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/p63_adapter_metrics_20261016/release/unit_verify.log": "02b4597ca9f15b68a5183b48a3ed6faef1948fff6219bed68fa17a383f50c376"
+    }
+  },
+  "release_publication": {
+    "evidence_path": "data/runtime/p63_adapter_metrics_20261016/release/publication_check.json",
+    "artifact_hashes_pass": 38,
+    "online_wbs_rows": 37,
+    "html_http": 200,
+    "pdf_http": 200,
+    "html_local_match": true,
+    "pdf_local_match": true,
+    "pdf_first_page_visual_check": "PASS",
+    "ruff": "PASS",
+    "diff_check": "PASS"
+  }
+}

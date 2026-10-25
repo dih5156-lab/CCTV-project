@@ -1,0 +1,60 @@
+{
+  "date_kst": "2026-10-22",
+  "task": "P6.2-O2",
+  "scope": "모형 2노드 등록·주기 상태 보고만",
+  "simulation": true,
+  "source_sha256": {
+    "src/services/edge_orchestrator.py": "ef7b6850cd7b1ffe2277650f36815f6dc9bbc7d761c3877340e1f8519711b4db",
+    "src/services/edge_node_agent.py": "b3abd083417de07cb30cf937c6dd38905fc636e64f6c3b0e310c5a08909ebd15",
+    "runners/run_edge_orchestration_demo.py": "05fdca86bff5928d3461db623aa7834d7f1462f8df1501f8097c482a50551b4f",
+    "tests/test_edge_orchestrator.py": "29f3598b1d237efb0beebbd94fd3d38a338216a2047c7d1a9ad2bf2d452f9aa9",
+    "tests/test_edge_orchestration_integration.py": "f4084d107bda72e13ccd74ca975e5c22e8e46f3dbdb477c0d3fbd0c7e1de0f42"
+  },
+  "validation": {
+    "pytest_command": "rtk proxy .venv/bin/python -m pytest -q tests/test_edge_orchestrator.py tests/test_edge_orchestration_integration.py",
+    "passed": 42,
+    "failed": 0,
+    "skipped": 0,
+    "elapsed_seconds": 3.2,
+    "ruff": "PASS",
+    "sandbox_note": "최초 소켓 생성 차단; 127.0.0.1 시험을 허용 환경에서 재실행하여 PASS",
+    "cli_command": "rtk proxy .venv/bin/python -m runners.run_edge_orchestration_demo --interval 1 --reports 3"
+  },
+  "demo_nodes": [
+    {
+      "node_id": "mock-jetson-a",
+      "simulation": true,
+      "freshness": "online",
+      "report_count": 3,
+      "last_sequence": 3,
+      "mock_service_status": "running",
+      "elapsed_seconds": 2.0464717999857385
+    },
+    {
+      "node_id": "mock-jetson-b",
+      "simulation": true,
+      "freshness": "online",
+      "report_count": 3,
+      "last_sequence": 3,
+      "mock_service_status": "standby",
+      "elapsed_seconds": 2.040843861992471
+    }
+  ],
+  "isolation": {
+    "host": "127.0.0.1",
+    "port": "OS가 배정한 임의 포트",
+    "database": "실행마다 새 임시 디렉터리, 데모 종료 후 삭제",
+    "existing_product_config_files_unchanged": 540,
+    "operating_deployment": false,
+    "docker_calls": false,
+    "gpu_work": false,
+    "camera_access": false,
+    "device_output": false
+  },
+  "not_validated": [
+    "실제 Jetson 2대와 자원 계측",
+    "AI 서비스 시작/중지·재배치",
+    "ROS 2/DDS·기관 gRPC",
+    "전체 제품 회귀·실물 출력"
+  ]
+}

@@ -1,0 +1,299 @@
+{
+  "version": "0.136",
+  "date": "2026-10-07",
+  "deployed": false,
+  "analysis": {
+    "trial_pass": false,
+    "decision": "TWO_CHANNEL_STARTUP_REJECTED_BATCH_CONTRACT",
+    "deployed": false,
+    "engine_contract": {
+      "image": "sha256:d5a223fd222a1d06b57e55b2a5fad8fc3ca37c3f40076fc0f0559aeccc36e0be",
+      "engine_sha256": "29c1f210e88971df79b7f6001944aabf4714975d6d572d830347a135d0a98275",
+      "tensors": [
+        {
+          "name": "input",
+          "mode": "TensorIOMode.INPUT",
+          "shape": [
+            1,
+            3,
+            640,
+            640
+          ],
+          "profiles": [
+            [
+              [
+                1,
+                3,
+                640,
+                640
+              ],
+              [
+                1,
+                3,
+                640,
+                640
+              ],
+              [
+                1,
+                3,
+                640,
+                640
+              ]
+            ]
+          ]
+        },
+        {
+          "name": "output",
+          "mode": "TensorIOMode.OUTPUT",
+          "shape": [
+            1,
+            56,
+            8400
+          ]
+        },
+        {
+          "name": "onnx::Shape_978",
+          "mode": "TensorIOMode.OUTPUT",
+          "shape": [
+            1,
+            64,
+            8400
+          ]
+        },
+        {
+          "name": "onnx::Sigmoid_1021",
+          "mode": "TensorIOMode.OUTPUT",
+          "shape": [
+            1,
+            1,
+            8400
+          ]
+        },
+        {
+          "name": "onnx::Conv_841",
+          "mode": "TensorIOMode.OUTPUT",
+          "shape": [
+            1,
+            192,
+            80,
+            80
+          ]
+        },
+        {
+          "name": "onnx::Conv_885",
+          "mode": "TensorIOMode.OUTPUT",
+          "shape": [
+            1,
+            384,
+            40,
+            40
+          ]
+        },
+        {
+          "name": "onnx::Conv_929",
+          "mode": "TensorIOMode.OUTPUT",
+          "shape": [
+            1,
+            576,
+            20,
+            20
+          ]
+        },
+        {
+          "name": "onnx::Slice_1068",
+          "mode": "TensorIOMode.OUTPUT",
+          "shape": [
+            1,
+            51,
+            8400
+          ]
+        }
+      ],
+      "inference_executed": false
+    },
+    "static_batch_one": true,
+    "requested_batch": 2,
+    "observed_primary_batch": 2,
+    "input_publishers_observed": {
+      "replay_1": true,
+      "replay_2": true
+    },
+    "batch_mismatch_occurrences": 8,
+    "config_failure_occurrences": 8,
+    "model_rebuild_failure_occurrences": 8,
+    "outcome": {
+      "codec_mode": "rtsp",
+      "completed": false,
+      "scope": "v136 actual app shared mux two channels, static batch1 compatibility check; no operating rollout",
+      "scenario": "two_channel",
+      "error": "RuntimeError: progress timeout during startup",
+      "elapsed_seconds": 156.03159441286698,
+      "transitions": [],
+      "sample_count": 147
+    },
+    "runner_exit": 1,
+    "runner_stop_reason": null,
+    "cameras": {
+      "replay_1": {
+        "metric_samples": 136,
+        "maximum_observed_frames": 0.0,
+        "fps": null,
+        "latency": null,
+        "reason": "two-channel startup not achieved"
+      },
+      "replay_2": {
+        "metric_samples": 136,
+        "maximum_observed_frames": 0.0,
+        "fps": null,
+        "latency": null,
+        "reason": "two-channel startup not achieved"
+      }
+    },
+    "databases": {
+      "appearances.db": {
+        "integrity": "ok",
+        "counts": {
+          "search_conditions": 0,
+          "appearance_log": 532473
+        },
+        "counts_unchanged": true,
+        "source_unchanged": true
+      },
+      "mqtt_event_outbox.db": {
+        "integrity": "ok",
+        "counts": {
+          "mqtt_event_outbox": 174964
+        },
+        "counts_unchanged": true,
+        "source_unchanged": true
+      },
+      "commercial_faces.db": {
+        "integrity": "ok",
+        "counts": {
+          "face_persons": 1,
+          "face_samples": 1
+        },
+        "counts_unchanged": true,
+        "source_unchanged": true
+      }
+    },
+    "operating_samples": 6,
+    "operating_unchanged": true,
+    "source_unchanged": true,
+    "engine_unchanged": true,
+    "deployment_files_unchanged": true,
+    "receiver_started": false,
+    "configured_output_paths": [
+      "rtsp://127.0.0.1:18555/result"
+    ],
+    "limits": [
+      "no two-channel FPS or latency measured",
+      "single-output/preview batch2 limitation is static code/test evidence, not reached by this run",
+      "two replay decoders in one app; independent apps were not substituted",
+      "no per-camera recording or event success",
+      "no claim of fixing original native encoder stall"
+    ],
+    "evidence_validated": true
+  },
+  "plan": {
+    "image": "sha256:d5a223fd222a1d06b57e55b2a5fad8fc3ca37c3f40076fc0f0559aeccc36e0be",
+    "input": "data/runtime/p51_camera_20260928_v050/camera_1_capture.mkv",
+    "input_sha256": "c7df52d9b46939c1f7d7439354793969ae3dac8663cf2f8bbeab2b72fe916202",
+    "database_source": "data/runtime/p51_soak_20261007_v135/data/runtime",
+    "scope": "actual app two input decoders -> shared mux/infer -> existing single output, not per-camera RTSP delivery; fixed static batch1 image; no model rebuild",
+    "channels": 2,
+    "expected_constraint": "engine input/profile fixed batch1 while product configures batch2",
+    "startup_limit_seconds": 150,
+    "observation_if_started_seconds": 60,
+    "receiver_if_started_seconds": 60
+  },
+  "checks": {
+    "contract_tests": {
+      "passed": 17,
+      "failed": 0
+    },
+    "ruff": "PASS",
+    "git_diff_check": "PASS",
+    "pdf_first_page": "visually_checked"
+  },
+  "sha256": {
+    "data/runtime/p62_multichannel_20261007_v136/plan.json": "9bef4be9a74734b0eee5357e7b6eed162dcba53ebd12fcc32b097083e9dc5989",
+    "data/runtime/p62_multichannel_20261007_v136/engine_contract.json": "51a98f5c14690634e1ed1a94c5391391e656b4bdb6ca9ee3703e31d6d652cb3c",
+    "data/runtime/p62_multichannel_20261007_v136/inspect_engine.py": "94a157515a7c425e8decbb565869ac8c8213b0b94ca36c4f2ca2f0fa22695641",
+    "data/runtime/p62_multichannel_20261007_v136/inspect_compose.json": "c01a2b980aacc3a737f36255d855d2ba19133cf3eb281270b8a603f799dc2266",
+    "data/runtime/p62_multichannel_20261007_v136/compose.json": "838684bfe24cd4efe826bb4606a5d9384c0ad21c234d2bf6a789916720abf94e",
+    "data/runtime/p62_multichannel_20261007_v136/command.json": "0b28d6ff778bf5679f67bef5a6cb682a65f51edbd2db89f06065f8b760b57e87",
+    "data/runtime/p62_multichannel_20261007_v136/cameras.json": "df9d8ab19eae281bfa33e9da1310ef220f89d0633bb476aca2b9bdf05ab56206",
+    "data/runtime/p62_multichannel_20261007_v136/run.py": "fdc4506748cc6be239d07aef31d0a9c72b13de0b303c7236456497d62e9f300c",
+    "data/runtime/p62_multichannel_20261007_v136/run_two_channel.py": "868c6298ece06beacd6053cf7ec2fb1625fffe38259dd2920c54ae5273a545a7",
+    "data/runtime/p62_multichannel_20261007_v136/observe_models.py": "8e36a311c5f561bee404cca70f11413656cb9a9f2d3e546e2a835fb02bd55e85",
+    "data/runtime/p62_multichannel_20261007_v136/analyze.py": "2aa066453e5a5d30272749a0ebe15d47616d61c36ea2508ee28eb1426bd5642f",
+    "data/runtime/p62_multichannel_20261007_v136/analysis.json": "73cd30a890a38ad75993dd2d0accaca47f2256bab94abc81485ba290f8919747",
+    "data/runtime/p62_multichannel_20261007_v136/image_verification.json": "f3fe2b6e74c847299ec2ad7da067646ccd79da41e28c60b83d8a0d148ce2339a",
+    "data/runtime/p62_multichannel_20261007_v136/operating_file_hashes.json": "030194d038aa37c6535baa6a620f60563605fa1a1c716315974fb23a7c52b9a6",
+    "data/runtime/p62_multichannel_20261007_v136/database_before.json": "32f348a77c5041d7aaed5d81588f9b4512ffb4e7dfe997260e66c46019ffb194",
+    "data/runtime/p62_multichannel_20261007_v136/trial_results.json": "4a61a5c0405c68a3348c552bc46028cfeb6d71dea92eefb2c9b09cc8c4db493f",
+    "data/runtime/p62_multichannel_20261007_v136/operating_before.json": "112a123eac71df356a30bc2de214f99db23f70a1a476daa39ef95e6650c4aa31",
+    "data/runtime/p62_multichannel_20261007_v136/operating_after.json": "112a123eac71df356a30bc2de214f99db23f70a1a476daa39ef95e6650c4aa31",
+    "data/runtime/p62_multichannel_20261007_v136/operating_samples.jsonl": "c5028365af169d14ab21a39259c50c1856d5073262e2e189d494942a2db2dbcc",
+    "data/runtime/p62_multichannel_20261007_v136/contract_tests.xml": "4f48dfb1ed76c38c5a5dfd3a5e42c9b4768fa0f367480328713228331aa6cad8",
+    "data/runtime/p62_multichannel_20261007_v136/output/app.log": "e82f6a2a71e17bb56d61bd1bffad2ccd73f14a36263164dbf430188089c2a7b9",
+    "data/runtime/p62_multichannel_20261007_v136/output/experiment.json": "6d6611cc2a017d13eca880d1aa0d3482cf4aa04f3e835479992bc86e3c262957",
+    "data/runtime/p62_multichannel_20261007_v136/output/samples.jsonl": "b7f9ea1856c36e61d39826a10a9d71cc837e211c1c5a6137a4e6fc9d0cba8b10",
+    "data/runtime/p62_multichannel_20261007_v136/output/resources.jsonl": "53753bec70ad780b77c81b1291099396562117823f0cd142625cf93fc9033db4",
+    "data/runtime/p62_multichannel_20261007_v136/output/mediamtx.log": "cffa844a1fb38bea2fd9feac73a90523f81c02a9c598d6ae55d4489454daefb6",
+    "data/runtime/p62_multichannel_20261007_v136/output/publisher-1-initial.log": "e715adcd7d82d5b8a5de9b55f1f5842426a1c6f31450579100c5f1598ed346f6",
+    "data/runtime/p62_multichannel_20261007_v136/output/publisher-2-initial.log": "051bed9d1343abd71cd13d76c29ed19b8e274eebd7c4726995f092073e5ea324",
+    "data/runtime/p62_multichannel_20261007_v136/output/final_model_audit.json": "dc5eea09991831bb3e20a990f96b6cc44d00403cfa38214a5475ba6215d5e503",
+    "data/runtime/p62_multichannel_20261007_v136/publish.py": "8b3a89e2bd3323c404340c9f5215da8676a3a8aee66eda798b829417235a2946",
+    "data/runtime/p62_multichannel_20261007_v136/check_documents.py": "3fca042a11e73006bae8486eacfa5df8efe379543a897fac2458787871f26a01",
+    "data/runtime/p62_multichannel_20261007_v136/review.json": "a36ea52c74a1f4e752dea7791e1e7bdd1affa35e723a27d54fb58752b8f95b2e",
+    "data/runtime/p62_multichannel_20261007_v136/http_validation.json": "7d3d24bcda05c6b71d9573e55eb60764b217699e4234f9aeeb751bddb87129cb"
+  },
+  "source_evidence_sha256": {
+    "docs/planning/evidence/soak_validation_20261007.json": "d5fb3ba9b0144d2851ea8fd029f02f84892ddcf42934b44948527b245c8628f4",
+    "src/core/_deepstream_element_config.py": "b530da40295dcb627d547b490ba7072e1a61d431e68ef97612032408b8961ad7",
+    "src/core/_deepstream_pipeline_builder.py": "781804ae3283c6d78413e58dbdfdc75a13f5137702f216cff93257a5d6262d71",
+    "src/core/_preview_frame_store.py": "83751f6764c17d0e0223aa9bc56ba90c633fb25c1f68a9087d2c32896a2e7063",
+    "tests/test_deepstream_element_config.py": "f6cde2bd3f93c6c3970e865216061bfd122a394835ec3484e23b30613fb1b423",
+    "tests/test_preview_frame_store.py": "c28879bb921a98b8bc0e0f8121e31ac5a2f24d58cebe0ff1e24b88b751f7392b",
+    "data/runtime/p51_tcn_loaded_20260930_v074/run_trial.py": "056fca3666093f5aad6657d62eff8f0cb1cbb879c55c5afcdfbee9def222dcf3"
+  },
+  "review": {
+    "reviewer": "/root/two_channel_review",
+    "critical": 0,
+    "important": 0,
+    "scope": "failure evidence, measured/unmeasured separation, raw hashes, model rows and WBS state",
+    "minor_resolved": "historical operating-readiness card explicitly labeled",
+    "trial_pass": false,
+    "deployed": false
+  },
+  "http_validation": {
+    "index.html": {
+      "status": 200,
+      "bytes": 48549,
+      "sha256": "b2e0d79add4d5f081a17a25353f4241143f3ef5a0fdc5f9276c0d51f97fc0b37",
+      "local_match": true
+    },
+    "CCTV_project_progress.pdf": {
+      "status": 200,
+      "bytes": 150314,
+      "sha256": "a6ba9f05be56663d2692da9348728b1e03457d8e2521094359df07624457bdf8",
+      "local_match": true
+    }
+  },
+  "document_validation": {
+    "passed": true,
+    "models": 8,
+    "wbs_rows": 33,
+    "wbs_status_unchanged": true,
+    "csv_rows": 8,
+    "html_escaped": true,
+    "evidence_artifacts": 39,
+    "all_eight_model_rows_retained": true,
+    "source_files": 206,
+    "operating_unchanged": true,
+    "trial_failed_and_unmeasured_scope_separated": true,
+    "deployed": false
+  }
+}

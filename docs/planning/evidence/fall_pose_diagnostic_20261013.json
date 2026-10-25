@@ -1,0 +1,233 @@
+{
+  "date": "2026-10-13",
+  "updated_at_utc": "2026-10-13T08:25:09.468773+00:00",
+  "wbs": "P5.2",
+  "issue": "I56",
+  "status": "DIAGNOSTIC_COMPLETE_THRESHOLD_REDUCTION_NOT_ADOPTED",
+  "operating_deployed": false,
+  "approval": {
+    "user_reply": "20회 GPU 진단·운영 중단 승인",
+    "gpu_trials": 20,
+    "test_limit_seconds": 900,
+    "recovery_reserve_seconds": 300
+  },
+  "gpu": {
+    "trials": 20,
+    "frames": 12002,
+    "gpu_tensor_frames": 3001,
+    "raw_frames": 3001,
+    "inference_errors": 0,
+    "camera_errors": 0,
+    "source_files_per_trial": 206,
+    "pose_and_queue_identical_to_previous_20": true,
+    "input_hashes_unchanged": 992
+  },
+  "actual_gpu_confidence_threshold": 0.5,
+  "actual_gpu_quality": {
+    "TP": 8,
+    "FN": 2,
+    "FP": 0,
+    "TN": 10,
+    "early_alerts": 0,
+    "duplicate_alerts": 0
+  },
+  "replay": {
+    "method": "GPU 보존 출력의 기존 CPU 후처리·추적 ID·지속 판정 재생. CPU 모델 추론/새 GPU 후보 실행 아님.",
+    "baseline_validation": "0.5에서20영상의 bbox/자세점수/사람신뢰도·준비후보 프레임/ID·경보 큐 프레임을 실제 GPU 실행과 assert 대조 통과.",
+    "object_confidence_thresholds": {
+      "0.5": {
+        "TP": 8,
+        "FN": 2,
+        "FP": 0,
+        "TN": 10,
+        "early_alerts": 0,
+        "duplicate_alerts": 0
+      },
+      "0.35": {
+        "TP": 8,
+        "FN": 2,
+        "FP": 0,
+        "TN": 10,
+        "early_alerts": 0,
+        "duplicate_alerts": 0
+      },
+      "0.25": {
+        "TP": 9,
+        "FN": 1,
+        "FP": 0,
+        "TN": 10,
+        "early_alerts": 0,
+        "duplicate_alerts": 0
+      }
+    },
+    "keypoint_thresholds_unchanged": true,
+    "model_inference_on_cpu": false,
+    "limit": "추가 검출 프레임의 수신시각은 보존 source 시각으로 추정. 부하·전체 앱·RF/TCN·실물 전달 검증 아님."
+  },
+  "decision": {
+    "operating_confidence_threshold": 0.5,
+    "global_025_adopted": false,
+    "reason": "정상10영상100.1초의 사후 재생만으로 오경보 안전성을 입증할 수 없음. 후면 미탐과5.322초 지연도 미해결.",
+    "user_concern": "신뢰도0.25는 너무 낮은 것 아닌가",
+    "next": "0.5 유지. 측면은 신뢰도/인물 크기와 추적 ROI 입력 연속성, 후면/지연은 자세 투영·시간 변화 근거를 각각 검증. 미사용80영상은 후보 고정 후 평가."
+  },
+  "remaining_scenes": [
+    {
+      "scene": "00709_H_D_BY_C4",
+      "finding": "0.5/0.35/0.25 모두150프레임 검출·낙상후보0. 사람 검출 필터보다 자세 점수/투영 문제."
+    },
+    {
+      "scene": "00610_H_D_SY_C5",
+      "finding": "0.5 후보18개·1.600초 후 검출이 끊겨 지속2초 미달. 0.25 사후 재생만 경보 발생.",
+      "replay_025_first_queue_pts": 7.333333333,
+      "annotation_onset_pts": 4.75,
+      "replay_025_delay_seconds": 2.583333333
+    },
+    {
+      "scene": "00898_O_E_FY_C7",
+      "finding": "세 임계값 모두 동일24후보·첫 경보588프레임. 점수2.5 구간/후보 간격으로 지연; 단순 검출 기준 하향 효과 없음.",
+      "first_queue_pts": 9.826483333,
+      "delay_seconds": 5.321983333
+    }
+  ],
+  "crop_pose_assessment": {
+    "existing_path": "DeepStreamProcessor._emit_crop_pose_events",
+    "ready_to_adopt": false,
+    "prior_evidence": "docs/planning/MODEL_INFERENCE_METRICS.md#v0119--누운-사람-pose-누락-원인기존-모델-후보-비교-2026-10-06",
+    "prior_limit": "00837의 nano Person→crop Pose도0.5에서 후반0/137. 이미 실패한 조합을 해결책으로 재채택하지 않음.",
+    "required_before_trial": [
+      "실제 Person/Pose 엔진 profile·batch 대조",
+      "설정 파일0.35와 실제 stage0.5 구분·실행 기준 명시",
+      "눕는 사람 ROI 연속성·좌표 복원·추가 GPU 비용 평가"
+    ],
+    "new_gpu_trial_executed": false
+  },
+  "operating_recovery": {
+    "checked_at_utc": "2026-10-13T08:06:28.910581+00:00",
+    "duration_seconds": 30.071847907995107,
+    "before_metrics": {
+      "cctv_processor_frames_processed_total": 1001.0,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 502.0,
+      "cctv_camera_primary_last_frame_age_seconds{camera_id=\"camera_1\"}": 0.03244220800115727
+    },
+    "after_metrics": {
+      "cctv_processor_frames_processed_total": 1870.0,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 937.0,
+      "cctv_camera_primary_last_frame_age_seconds{camera_id=\"camera_1\"}": 0.044621601002290845
+    },
+    "rates": {
+      "cctv_processor_frames_processed_total": 28.89745926684345,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 14.465356479950403
+    },
+    "snapshot": [
+      {
+        "name": "/cctv-ai-engine",
+        "id": "c8a71163c84b458197b98a4bde8e0e06719afc5cf5964e6fbd0b716109ce0377",
+        "image": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+        "started_at": "2026-10-13T08:05:18.226591476Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-media-server",
+        "id": "957101f7ab7336585817a176154f7711de977caee7cfbf34257f2fb68810dea4",
+        "image": "sha256:f8628851106cc053f9175b248050bb5f362a6e65abd72297c167a1cb5a9a3be2",
+        "started_at": "2026-10-12T23:35:15.324861031Z",
+        "status": "running",
+        "health": null,
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-action-layer",
+        "id": "74deaeb0b5bdd64c8f2e2a141daa25c193a75cf235b214fee6ef8b4dcdceedeb",
+        "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+        "started_at": "2026-10-12T23:35:15.475740705Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-device-signboard",
+        "id": "29aeb393bd52e7a9f8241be9214b970e82e8442253fdfe2e73dbbf5d153feaa8",
+        "image": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+        "started_at": "2026-10-12T23:35:15.45875226Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-device-speaker",
+        "id": "a8ff5823d34ad72dd2c5b236cc88f210b16feb05ef53532e6549601d2beafb7a",
+        "image": "sha256:4daca5e8c9865c5f19dde37d7dbdfcc37ea5c413fa8375802e80c7f8185bba30",
+        "started_at": "2026-10-12T23:35:15.455773133Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      }
+    ],
+    "same_ai_container_and_image": true,
+    "other_four_containers_unchanged": true,
+    "healthy": true,
+    "monitor_container_stable": true,
+    "trial_containers_remaining": 0,
+    "maintenance_start_to_ai_started_seconds": 439.92236495018005
+  },
+  "validation": {
+    "recovery_runner_tests_passed": 13,
+    "product_source_changes_this_unit": 0,
+    "new_dependencies": 0,
+    "physical_outputs": 0,
+    "ruff": "PASS: raw_capture.py, replay_raw.py, render_progress_snapshot.py",
+    "diff_check": "PASS",
+    "wbs_33_statuses_and_model_8_rows": "PASS"
+  },
+  "coverage": {
+    "unique_clips_seen": 20,
+    "target_clips": 100,
+    "unseen_clips": 80,
+    "normal_seconds": 100.1,
+    "new_unseen_clips_this_unit": 0,
+    "wbs_done": 9,
+    "wbs_total": 33,
+    "p52_status": "VERIFY",
+    "i56_status": "OPEN",
+    "two_source_passed": false
+  },
+  "raw_root": "data/runtime/p52_pose_followup_20261013",
+  "artifacts": {
+    "data/runtime/p52_pose_followup_20261013/approval.json": "b756861134a044d7e1c256acad5361a180126fe92730cba6f8fe99651980a6e1",
+    "data/runtime/p52_pose_followup_20261013/plan.json": "41b85115be1f1773ca5d5dfcee950b749ed6b690aecf980918f7a9652b4bb6cf",
+    "data/runtime/p52_pose_followup_20261013/diagnostic_validation.json": "934e8775cc61d4e76f820ee06c1f4d46a314787c7e6761d92c46890ed05e2102",
+    "data/runtime/p52_pose_followup_20261013/raw_replay_summary.json": "d8f43ebe3ce719a54edfca0025fe9ac3cee55bc780014dbe99795a5754d85e4b",
+    "data/runtime/p52_pose_followup_20261013/operating_after_batch_00.json": "de622f879f38f76c118ad04c00c7189622b79ede0d795c2aac61250249327791",
+    "data/runtime/p52_pose_followup_20261013/batch_00_results.json": "fa5335cdd3b2025ad9465fca3ad70615c853fe3a96ad446f89fdf893216fd167",
+    "data/runtime/p52_pose_followup_20261013/replay_raw.py": "6c28548b82fb415b3d840a50ef9d96cbdd91790384f518919f25d466420691ec",
+    "data/runtime/p52_pose_followup_20261013/raw_capture.py": "f409c6601fee0548817ee861c5dc3e9c467b71c694e843bbe6ff75f7cdc84239",
+    "data/runtime/p52_pose_followup_20261013/runner_tests.xml": "118afcc781919e66ad520a48bdd8e7fb6760f91e3dcc25e730fd4efb00f463ea",
+    "data/runtime/p52_pose_followup_20261013/online_validation.json": "81a4516ac2c4a68501d5d9b9905a342b615433aa9d60ad4bac8207aeb8008373"
+  },
+  "online_validation": {
+    "http_checks": [
+      {
+        "file": "docs/planning/online/index.html",
+        "http_status": 200,
+        "bytes": 86322,
+        "sha256": "f8e518b8de3cfe2f2b8e0d2dca0b943e49c2934584d1ee4140a038681d5f5f86",
+        "local_matches_http": true
+      },
+      {
+        "file": "docs/planning/online/CCTV_project_progress.pdf",
+        "http_status": 200,
+        "bytes": 148578,
+        "sha256": "4701fed79a8b72f296d0a540bc37dd77908305f6e18d537d34850b5cf6965b93",
+        "local_matches_http": true
+      }
+    ],
+    "pdf_page_1_visual_check": "PASS",
+    "browser_interaction_checked": false
+  }
+}

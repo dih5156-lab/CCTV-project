@@ -1,0 +1,572 @@
+{
+  "version": "0.103",
+  "date": "2026-10-06 KST",
+  "wbs": "P5.1",
+  "issue": "I40",
+  "status": "OPEN",
+  "operating_applied": false,
+  "scope": "Encoder buffer queue/stop observation and pre-signal historical timing comparison; no product or SDK change",
+  "raw_artifacts": "data/runtime/p51_encoder_queues_20261006_v103",
+  "image": "sha256:0c11b835eb42cd245f4dda0b8bc8088733c0323bf75a2f4fefe9e7705d8dbf34",
+  "isolation": {
+    "network": "none",
+    "cpus": 2,
+    "memory": "8g",
+    "restart": "no",
+    "input": "previous real-camera recording replay",
+    "database": "independent SQLite backup per case; no operating DB mounts",
+    "other_load": "existing operating AI remained running; legacy DB preparation overlapped second trial; timing not a controlled performance comparison"
+  },
+  "historical_timing": {
+    "source": "data/runtime/p51_native_stop_20261002_v098/output_ioctl_no_flush",
+    "classification": "inferred conservative timing bound; no common absolute start timestamp was recorded",
+    "assumptions": [
+      "primary frames counter is monotonically increasing; verified in all sampled values",
+      "stats timestamp is taken before get_stats snapshot; verified observer source",
+      "sample calls are serial; next sample elapsed bounds preceding response completion"
+    ],
+    "last_stats_monotonic": 1401720.53742186,
+    "last_stats_frames_seen": 2636,
+    "later_metric_sample_elapsed": 104.393,
+    "later_metric_frames_seen": 2638.0,
+    "following_sample_elapsed": 105.603,
+    "encoder_streamoff_monotonic": 1401720.918844702,
+    "encoder_streamoff_elapsed_upper_bound": 105.98442284180783,
+    "sigterm_elapsed": 121.882,
+    "minimum_seconds_before_sigterm": 15.897577158192178,
+    "conclusion": "This observed native wait began before the controller SIGTERM; that later signal reentry cannot explain the onset of this particular hang.",
+    "limit": "Does not identify native trigger or exclude different signals/cases; a timing inference, not a new failing trial."
+  },
+  "trials": [
+    {
+      "case": "control",
+      "outcome": {
+        "codec_mode": "rtsp",
+        "completed": true,
+        "scope": "p51_v103_encoder_queues_control",
+        "scenario": "output_loss",
+        "loaded_rtsp_plugin": [
+          "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstrtspclientsink.so"
+        ],
+        "receiver_exit": 0,
+        "output_bytes": 38055097,
+        "last_frames": 2740.0,
+        "output_server_exit": -9,
+        "input_server_alive": true,
+        "input_publisher_alive": true,
+        "frames_after_output_loss": 0.0,
+        "app_exit_before_sigint": null,
+        "app_exit": 0,
+        "stop_seconds": 20.52179870288819,
+        "elapsed_seconds": 142.67247680900618,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 13.738
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 14.357
+          },
+          {
+            "name": "output_server_killed",
+            "elapsed": 104.724
+          },
+          {
+            "name": "sigterm_requested",
+            "elapsed": 122.101
+          }
+        ],
+        "sample_count": 117
+      },
+      "buffer_counts": {
+        "QBUF.9": 2539,
+        "QBUF.10": 2536,
+        "DQBUF.error.11": 5778,
+        "DQBUF.9": 2536,
+        "DQBUF.10": 2533,
+        "DQBUF.error.32": 1
+      },
+      "streamoff": [
+        {
+          "fd": 66,
+          "type": 10,
+          "device": "encoder",
+          "call": 15936,
+          "at_ns": 1729277325863686,
+          "input_balance": {
+            "0": 0,
+            "1": 1,
+            "2": 1,
+            "3": 1
+          },
+          "output_balance": {
+            "0": 1,
+            "1": 1,
+            "2": 1
+          },
+          "in_flight": [],
+          "last_buffer_success_age_ms": 26.786777
+        },
+        {
+          "fd": 66,
+          "type": 9,
+          "device": "encoder",
+          "call": 15938,
+          "at_ns": 1729277326308098,
+          "input_balance": {},
+          "output_balance": {
+            "0": 1,
+            "1": 1,
+            "2": 1
+          },
+          "in_flight": [],
+          "last_buffer_success_age_ms": 27.231189
+        },
+        {
+          "fd": 94,
+          "type": 10,
+          "device": "decoder",
+          "call": 15940,
+          "at_ns": 1729277412346642,
+          "input_balance": {},
+          "output_balance": {},
+          "in_flight": [],
+          "last_buffer_success_age_ms": null
+        },
+        {
+          "fd": 94,
+          "type": 9,
+          "device": "decoder",
+          "call": 15941,
+          "at_ns": 1729277412734986,
+          "input_balance": {},
+          "output_balance": {},
+          "in_flight": [],
+          "last_buffer_success_age_ms": null
+        }
+      ],
+      "streamoff_returns": [
+        {
+          "call": 15936,
+          "device": "encoder",
+          "type": 10,
+          "result": 0,
+          "duration_ms": 0.108327
+        },
+        {
+          "call": 15938,
+          "device": "encoder",
+          "type": 9,
+          "result": 0,
+          "duration_ms": 0.15729
+        },
+        {
+          "call": 15940,
+          "device": "decoder",
+          "type": 10,
+          "result": 0,
+          "duration_ms": 0.22731
+        },
+        {
+          "call": 15941,
+          "device": "decoder",
+          "type": 9,
+          "result": 0,
+          "duration_ms": 0.265265
+        }
+      ],
+      "unfinished_calls": [],
+      "max_stop_depth": 1,
+      "stop_threads": [
+        "MainThread"
+      ]
+    },
+    {
+      "case": "no_flush",
+      "outcome": {
+        "codec_mode": "rtsp",
+        "completed": true,
+        "scope": "p51_v103_encoder_queues_no_flush",
+        "scenario": "output_loss",
+        "loaded_rtsp_plugin": [
+          "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstrtspclientsink.so"
+        ],
+        "receiver_exit": 0,
+        "output_bytes": 31510062,
+        "last_frames": 2326.0,
+        "output_server_exit": -9,
+        "input_server_alive": true,
+        "input_publisher_alive": true,
+        "frames_after_output_loss": 0.0,
+        "app_exit_before_sigint": null,
+        "app_exit": 0,
+        "stop_seconds": 16.150316202780232,
+        "elapsed_seconds": 136.86575571703725,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 11.725
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 12.342
+          },
+          {
+            "name": "output_server_killed",
+            "elapsed": 103.329
+          },
+          {
+            "name": "sigterm_requested",
+            "elapsed": 120.675
+          }
+        ],
+        "sample_count": 105
+      },
+      "buffer_counts": {
+        "QBUF.9": 1937,
+        "QBUF.10": 1934,
+        "DQBUF.error.11": 4808,
+        "DQBUF.9": 1934,
+        "DQBUF.10": 1931
+      },
+      "streamoff": [
+        {
+          "fd": 66,
+          "type": 10,
+          "device": "encoder",
+          "call": 12557,
+          "at_ns": 1729436249575201,
+          "input_balance": {
+            "0": 1,
+            "1": 1,
+            "2": 0,
+            "3": 1
+          },
+          "output_balance": {
+            "0": 1,
+            "1": 1,
+            "2": 1
+          },
+          "in_flight": [],
+          "last_buffer_success_age_ms": 2.96589
+        },
+        {
+          "fd": 66,
+          "type": 9,
+          "device": "encoder",
+          "call": 12559,
+          "at_ns": 1729436249980274,
+          "input_balance": {},
+          "output_balance": {
+            "0": 1,
+            "1": 1,
+            "2": 1
+          },
+          "in_flight": [],
+          "last_buffer_success_age_ms": 3.370963
+        },
+        {
+          "fd": 94,
+          "type": 10,
+          "device": "decoder",
+          "call": 12561,
+          "at_ns": 1729436319662198,
+          "input_balance": {},
+          "output_balance": {},
+          "in_flight": [],
+          "last_buffer_success_age_ms": null
+        },
+        {
+          "fd": 94,
+          "type": 9,
+          "device": "decoder",
+          "call": 12562,
+          "at_ns": 1729436320767686,
+          "input_balance": {},
+          "output_balance": {},
+          "in_flight": [],
+          "last_buffer_success_age_ms": null
+        }
+      ],
+      "streamoff_returns": [
+        {
+          "call": 12557,
+          "device": "encoder",
+          "type": 10,
+          "result": 0,
+          "duration_ms": 0.137062
+        },
+        {
+          "call": 12559,
+          "device": "encoder",
+          "type": 9,
+          "result": 0,
+          "duration_ms": 0.494262
+        },
+        {
+          "call": 12561,
+          "device": "decoder",
+          "type": 10,
+          "result": 0,
+          "duration_ms": 0.887334
+        },
+        {
+          "call": 12562,
+          "device": "decoder",
+          "type": 9,
+          "result": 0,
+          "duration_ms": 3.90049
+        }
+      ],
+      "unfinished_calls": [],
+      "max_stop_depth": 1,
+      "stop_threads": [
+        "MainThread"
+      ]
+    },
+    {
+      "case": "legacy_no_flush",
+      "outcome": {
+        "codec_mode": "rtsp",
+        "completed": true,
+        "scope": "p51_v103_legacy_no_flush",
+        "scenario": "output_loss",
+        "loaded_rtsp_plugin": [
+          "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstrtspclientsink.so"
+        ],
+        "receiver_exit": 0,
+        "output_bytes": 38061843,
+        "last_frames": 2762.0,
+        "output_server_exit": -9,
+        "input_server_alive": true,
+        "input_publisher_alive": true,
+        "frames_after_output_loss": 2782.0,
+        "app_exit_before_sigint": null,
+        "app_exit": 0,
+        "stop_seconds": 2.63283209502697,
+        "elapsed_seconds": 125.4137048930861,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 13.938
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 14.552
+          },
+          {
+            "name": "output_server_killed",
+            "elapsed": 105.305
+          },
+          {
+            "name": "sigterm_requested",
+            "elapsed": 122.74
+          }
+        ],
+        "sample_count": 116
+      },
+      "buffer_counts": {
+        "QBUF.9": 2566,
+        "DQBUF.error.11": 5933,
+        "QBUF.10": 2565,
+        "DQBUF.9": 2563,
+        "DQBUF.10": 2562
+      },
+      "streamoff": [
+        {
+          "fd": 66,
+          "type": 10,
+          "device": "encoder",
+          "call": 16202,
+          "at_ns": 1729591142981796,
+          "input_balance": {
+            "0": 1,
+            "1": 0,
+            "2": 1,
+            "3": 1
+          },
+          "output_balance": {
+            "0": 1,
+            "1": 1,
+            "2": 1
+          },
+          "in_flight": [],
+          "last_buffer_success_age_ms": 99.04007
+        },
+        {
+          "fd": 66,
+          "type": 9,
+          "device": "encoder",
+          "call": 16204,
+          "at_ns": 1729591143393009,
+          "input_balance": {},
+          "output_balance": {
+            "0": 1,
+            "1": 1,
+            "2": 1
+          },
+          "in_flight": [],
+          "last_buffer_success_age_ms": 99.451283
+        },
+        {
+          "fd": 94,
+          "type": 10,
+          "device": "decoder",
+          "call": 16206,
+          "at_ns": 1729591417661915,
+          "input_balance": {},
+          "output_balance": {},
+          "in_flight": [],
+          "last_buffer_success_age_ms": null
+        },
+        {
+          "fd": 94,
+          "type": 9,
+          "device": "decoder",
+          "call": 16207,
+          "at_ns": 1729591418886815,
+          "input_balance": {},
+          "output_balance": {},
+          "in_flight": [],
+          "last_buffer_success_age_ms": null
+        }
+      ],
+      "streamoff_returns": [
+        {
+          "call": 16202,
+          "device": "encoder",
+          "type": 10,
+          "result": 0,
+          "duration_ms": 0.154885
+        },
+        {
+          "call": 16204,
+          "device": "encoder",
+          "type": 9,
+          "result": 0,
+          "duration_ms": 1.548334
+        },
+        {
+          "call": 16206,
+          "device": "decoder",
+          "type": 10,
+          "result": 0,
+          "duration_ms": 0.971005
+        },
+        {
+          "call": 16207,
+          "device": "decoder",
+          "type": 9,
+          "result": 0,
+          "duration_ms": 1.568175
+        }
+      ],
+      "unfinished_calls": [],
+      "max_stop_depth": 1,
+      "stop_threads": [
+        "MainThread"
+      ]
+    }
+  ],
+  "media_db_validation": {
+    "control": {
+      "decode_exit": 0,
+      "frames": 1678,
+      "decode_stderr": "",
+      "db_quick_check": {
+        "mqtt_event_outbox.db": "ok",
+        "appearances.db": "ok",
+        "commercial_faces.db": "ok"
+      }
+    },
+    "no_flush": {
+      "decode_exit": 0,
+      "frames": 1423,
+      "decode_stderr": "",
+      "db_quick_check": {
+        "mqtt_event_outbox.db": "ok",
+        "appearances.db": "ok",
+        "commercial_faces.db": "ok"
+      }
+    },
+    "legacy_no_flush": {
+      "decode_exit": 0,
+      "frames": 1706,
+      "decode_stderr": "",
+      "db_quick_check": {
+        "mqtt_event_outbox.db": "ok",
+        "appearances.db": "ok",
+        "commercial_faces.db": "ok"
+      }
+    }
+  },
+  "product_source": {
+    "checked": 206,
+    "changed": []
+  },
+  "legacy_source": {
+    "src/bootstrap/runtime.py": {
+      "sha256": "aac0eba5868725bdd8c0743c35f6b6175cab87acf4c80c441cb3a72f50e9f7ec",
+      "matches_committed_HEAD": true
+    },
+    "src/core/deepstream_processor.py": {
+      "sha256": "4007c3564908da69de28999106d3ec78d06237d14f7ee6be235aef56d69237dc",
+      "matches_committed_HEAD": true
+    }
+  },
+  "validation": {
+    "diagnostic_c_build": "gcc -shared -fPIC -Wall -Wextra -Werror -O2; PASS after local variable name collision was corrected",
+    "diagnostic_python_compile": "PASS",
+    "hardware_cases_completed": 3,
+    "streamoff_returns": 12,
+    "decoded_frames": 4807,
+    "databases_quick_check_ok": 9,
+    "product_tests": "not repeated; no product edits in this unit; v0.102 full suite remains 2745 PASS/52 SKIP/1 FAIL (I45)"
+  },
+  "operating": {
+    "container": "cctv-ai-engine",
+    "status_before_after": "running/healthy",
+    "started_at": "2026-10-02T01:33:58.362007997Z",
+    "image": "sha256:1ace5b7832a50d6675b66146b0edc307021795732fc7c9a770e2cd628d7fd261",
+    "test_container": "exited 0, OOM false, removed without force"
+  },
+  "limits": [
+    "Original native hang did not recur; healthy old-code trial means new-code passes are not causal proof of a fix.",
+    "3 un-dequeued encoder input indices at each STREAMOFF entered; all returned in 0.108-0.155ms. Queue residence alone is not sufficient explanation; internal buffer ownership unknown.",
+    "QBUF/DQBUF instrumentation changes timing. EAGAIN/EPIPE trace returns are retained, not counted as application failure.",
+    "Historical 15.898-second lower bound is inference from monotonic counters and serial sampling, not a new failing run or a shared controller absolute timestamp.",
+    "Failure-only Python/native/task capture is prepared but was not exercised by these successful trials.",
+    "No SDK change, operating deployment, P5.1 completion or general failure-rate/performance claim."
+  ],
+  "next": "I45 local SSD DB contention unit; native I40 follow-up requires failing buffer trace and corresponding encoder-worker wait/signal comparison, not repeated passing runs.",
+  "diagnostic_sha256": {
+    "summarize_queues.py": "04d43bea27c0e0e4c4fcd52734edbf55c80a489fbfa481bd24db4b99a01efc5a",
+    "deepstream_processor.py": "533752443e8bd8ea07ac11f20e1939c92c51303a49dc16fb36b5a1d7e3873402",
+    "trace_v4l2.so": "2a997cdc98d84de8381d34eb9e45a47c2c684b1e074cd236fb11def872a709c5",
+    "trace_v4l2.c": "127e6e42198a4b67e781f52f826ca059e6512c3ccd361021ef23250d632f5464",
+    "run_trial.py": "f4c7ff8f04044b8f6fbe28ac0dd920513b7b8967984cb87d5109770deecc7e01",
+    "observe_boundaries.py": "33636dd474a269f18cb273770c1b41e2cdb6899df0b756d6ee44287cfb3e4f97",
+    "runtime.py": "93eb6bdf2755b2d6346707870cb065e5e8d208590eb45e856f8b99d66038daca"
+  },
+  "publication": {
+    "version": "0.104",
+    "url": "http://192.168.2.141:18081/",
+    "files": {
+      "index.html": {
+        "bytes": 24459,
+        "sha256": "8c8f8ce4ff812daa3027116e66952ca7d5d75df45134b90730b9835fbc7daeae",
+        "http_matches": true
+      },
+      "CCTV_project_progress.pdf": {
+        "bytes": 130444,
+        "sha256": "9cdd7a7bfbb18a69f1bbe2db4542233180b2da3bfbf6ab08a065b4c5350fc077",
+        "http_matches": true
+      }
+    },
+    "visual_check": "first-page PNG inspected; no clipping",
+    "wbs_check": "33 IDs/states/counts match WBS source",
+    "ruff": "PASS render_progress_snapshot.py",
+    "diff_check": "PASS"
+  }
+}

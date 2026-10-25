@@ -1,0 +1,3816 @@
+{
+  "date": "2026-10-15",
+  "completed_at": "2026-10-15T17:10:17.922124+09:00",
+  "wbs_id": "P5.7",
+  "status": "REPRESENTATIVE_CONTEXT_TRIAGE_COMPLETE_GROUND_TRUTH_PENDING",
+  "reviewer": "Codex 이미지 관측; 독립된 사람 검수 승인 아님",
+  "source_artifacts": {
+    "docs/planning/evidence/fight_candidate_pool_20261015.json": "4adaaf0c0f5eb2c19f06da9edbb2b16b52140a427ece8de621a3db95deb3db43",
+    "docs/planning/evidence/fight_annotation_review_20261015.json": "43bfe95eb0da7178d57135262206497fc62d14e111df883fad1a3a78c4750a57",
+    "docs/planning/evidence/fight_boundary_review_20261015.json": "274335bef2e45bbcf0c858a9c07e178c349c637a0c4f341d7aa191e479b27ce0",
+    "docs/planning/evidence/fight_contiguous_review_20261015.json": "1fb6cfb398c2f0fb1177306085c4e9bed6561fd95c9e1cbdf0143e883f84dcf3",
+    "docs/planning/evidence/fight_end_review_20261015.json": "8ac944e09501c493138d437f09327b9fe399b5457a4c2df91ec2c9c7222fa158"
+  },
+  "counts": {
+    "reviewed_windows": 27,
+    "unique_frames": 1614,
+    "ordered_sheets": 54,
+    "fullframe_context_references": 54,
+    "finding_counts": {
+      "UNRESOLVED": 10,
+      "DISPLACEMENT_CANDIDATE": 11,
+      "STRIKE_MOTION_CANDIDATE": 6
+    },
+    "location_metadata_conflicts": 2,
+    "candidate_videos_with_local_review": 38,
+    "candidate_videos_without_local_review": 0,
+    "full_video_reviews_completed": 0,
+    "independent_evaluation_scenes_approved": 0,
+    "normal_controls_approved": 0
+  },
+  "rows": [
+    {
+      "video_member": "1-1/1-1_cam01_fight04_place02_night_summer.mp4",
+      "video_sha256": "b83cab5219058aee29932118476848865a62b0f4298b5fcdfc4d11ec6ab75903",
+      "label_sha256": "c4bc44f32d70896090b449b9c307fdaec9e7df4ca2b05cdd169b8191b697bd4c",
+      "scene_group": "nia2019:fight:1-1",
+      "selected_annotation": {
+        "participant": "person_01",
+        "action_name": "pushing",
+        "kind": "contact_candidate",
+        "start_frame": 2464,
+        "end_frame": 2655
+      },
+      "reviewed_window_s": [
+        84.316667,
+        86.316667
+      ],
+      "actual_first_last_pts_s": [
+        84.31756666666666,
+        86.2862
+      ],
+      "frame_count": 60,
+      "finding": "UNRESOLVED",
+      "review_notes": "근접 대치와 손 움직임은 보이나 이 2초에서 큰 변위나 타격 전환은 분명하지 않다.",
+      "observation_anchors": [
+        {
+          "index": 1,
+          "pts": 2529527,
+          "actual_pts_s": 84.31756666666666,
+          "path": "data/runtime/p57_fight_context27_20261015/1-1_cam01_fight04_place02_night_summer/frame_0001.jpg",
+          "sha256": "dc7226a6ad169e40c022d1024060e82afb514ab8bc5f7a0a7d1ea6357ec65923"
+        },
+        {
+          "index": 60,
+          "pts": 2588586,
+          "actual_pts_s": 86.2862,
+          "path": "data/runtime/p57_fight_context27_20261015/1-1_cam01_fight04_place02_night_summer/frame_0060.jpg",
+          "sha256": "b6364741cd1fa165ae96e4bc423112a2df5d8977d34d5fdba874bc2ed862a6d5"
+        }
+      ],
+      "viewed_sheets": [
+        {
+          "video_member": "1-1/1-1_cam01_fight04_place02_night_summer.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/1-1_cam01_fight04_place02_night_summer/sheet_01.jpg",
+          "crop_xyxy_1080p": [
+            1520,
+            520,
+            1900,
+            950
+          ],
+          "frame_indices": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "sha256": "9a935814186274b2e68ff7bf70581c03bc28b6f9e77860063cb77216e19ac578"
+        },
+        {
+          "video_member": "1-1/1-1_cam01_fight04_place02_night_summer.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/1-1_cam01_fight04_place02_night_summer/sheet_02.jpg",
+          "crop_xyxy_1080p": [
+            1520,
+            520,
+            1900,
+            950
+          ],
+          "frame_indices": [
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            58,
+            59,
+            60
+          ],
+          "sha256": "3fff412f07996eaedfba3b535bea77b8d116b393e83143669b0758746074926f"
+        }
+      ],
+      "event_start_pts_s": null,
+      "event_end_pts_s": null,
+      "normal_intervals": [],
+      "approved_for_training_or_scoring": false,
+      "full_video_review_completed": false,
+      "human_verified": false,
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "1-1/1-1_cam02_fight04_place02_night_spring.mp4",
+      "video_sha256": "2883d3a4df56849d8acf29cdfdcab4bd6fabba4aab7611e5fa5a2c750444f307",
+      "label_sha256": "2abd3bc0b85f86c637d8a8f681972f4194dd413589c698dfb7e192307df469bf",
+      "scene_group": "nia2019:fight:1-1",
+      "selected_annotation": {
+        "participant": "person_01",
+        "action_name": "pushing",
+        "kind": "contact_candidate",
+        "start_frame": 6088,
+        "end_frame": 6132
+      },
+      "reviewed_window_s": [
+        202.666667,
+        204.666667
+      ],
+      "actual_first_last_pts_s": [
+        202.66913333333332,
+        204.63776666666666
+      ],
+      "frame_count": 60,
+      "finding": "DISPLACEMENT_CANDIDATE",
+      "review_notes": "상체·어깨 부근에 팔을 뻗은 뒤 상대가 뒤로 발을 옮긴다. 타격으로 단정하지 않는다.",
+      "observation_anchors": [
+        {
+          "index": 16,
+          "pts": 6095089,
+          "actual_pts_s": 203.16963333333334,
+          "path": "data/runtime/p57_fight_context27_20261015/1-1_cam02_fight04_place02_night_spring/frame_0016.jpg",
+          "sha256": "31b2909f6105f6400fb1e29c2aa3de4697e3d8b524d41db4190519f4c3f245d4"
+        },
+        {
+          "index": 45,
+          "pts": 6124118,
+          "actual_pts_s": 204.13726666666668,
+          "path": "data/runtime/p57_fight_context27_20261015/1-1_cam02_fight04_place02_night_spring/frame_0045.jpg",
+          "sha256": "f543534cb9608c87cbb558eeba7ed8d77b979b3bd22b5b4bb4ab80fdc8470b6e"
+        }
+      ],
+      "viewed_sheets": [
+        {
+          "video_member": "1-1/1-1_cam02_fight04_place02_night_spring.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/1-1_cam02_fight04_place02_night_spring/sheet_01.jpg",
+          "crop_xyxy_1080p": [
+            260,
+            350,
+            680,
+            830
+          ],
+          "frame_indices": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "sha256": "5b58a2d5f89e18bc8721533c8b57b260fc9b2d50fc70fecce4c836a6d7e2dce7"
+        },
+        {
+          "video_member": "1-1/1-1_cam02_fight04_place02_night_spring.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/1-1_cam02_fight04_place02_night_spring/sheet_02.jpg",
+          "crop_xyxy_1080p": [
+            260,
+            350,
+            680,
+            830
+          ],
+          "frame_indices": [
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            58,
+            59,
+            60
+          ],
+          "sha256": "65a1020c9106e12d6505d5bdcc9742ca127f6979b381eb73ac721dc4b0f62ea8"
+        }
+      ],
+      "event_start_pts_s": null,
+      "event_end_pts_s": null,
+      "normal_intervals": [],
+      "approved_for_training_or_scoring": false,
+      "full_video_review_completed": false,
+      "human_verified": false,
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "1-2/1-2_cam01_fight04_place02_night_spring.mp4",
+      "video_sha256": "a097b43bb466d0b59bd4ed85bd331b85c5797e1506503ff46f1fa1991279cf1c",
+      "label_sha256": "456f5504709bd8c0b27a6bbd63be4799c300b60b504e5fbe8eca919267850516",
+      "scene_group": "nia2019:fight:1-2",
+      "selected_annotation": {
+        "participant": "person_02",
+        "action_name": "pushing",
+        "kind": "contact_candidate",
+        "start_frame": 7544,
+        "end_frame": 7601
+      },
+      "reviewed_window_s": [
+        251.416667,
+        253.416667
+      ],
+      "actual_first_last_pts_s": [
+        251.41783333333333,
+        253.38646666666668
+      ],
+      "frame_count": 60,
+      "finding": "DISPLACEMENT_CANDIDATE",
+      "review_notes": "얼굴·목/상체 쪽 손 접촉 뒤 상대 상체가 뒤로 기울고 발 위치가 변한다.",
+      "observation_anchors": [
+        {
+          "index": 39,
+          "pts": 7580573,
+          "actual_pts_s": 252.68576666666667,
+          "path": "data/runtime/p57_fight_context27_20261015/1-2_cam01_fight04_place02_night_spring/frame_0039.jpg",
+          "sha256": "5db815fc1c3210e980562ad83a8af248c0f789ed748afde2d52529baa2855d90"
+        },
+        {
+          "index": 60,
+          "pts": 7601594,
+          "actual_pts_s": 253.38646666666668,
+          "path": "data/runtime/p57_fight_context27_20261015/1-2_cam01_fight04_place02_night_spring/frame_0060.jpg",
+          "sha256": "9907145c35b2da2e24388d61287fbdc31000d848eaaabb51730c1b92ff6fb602"
+        }
+      ],
+      "viewed_sheets": [
+        {
+          "video_member": "1-2/1-2_cam01_fight04_place02_night_spring.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/1-2_cam01_fight04_place02_night_spring/sheet_01.jpg",
+          "crop_xyxy_1080p": [
+            1080,
+            450,
+            1420,
+            900
+          ],
+          "frame_indices": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "sha256": "f998e28ffa6e2247bdb793971eadcf00bb32701070bcb7acca2baecbc4c4cce9"
+        },
+        {
+          "video_member": "1-2/1-2_cam01_fight04_place02_night_spring.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/1-2_cam01_fight04_place02_night_spring/sheet_02.jpg",
+          "crop_xyxy_1080p": [
+            1080,
+            450,
+            1420,
+            900
+          ],
+          "frame_indices": [
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            58,
+            59,
+            60
+          ],
+          "sha256": "a797256d0f3ae19cc197e2de1f353191a34ab24a0c8d547aecda36f5d51a8c4a"
+        }
+      ],
+      "event_start_pts_s": null,
+      "event_end_pts_s": null,
+      "normal_intervals": [],
+      "approved_for_training_or_scoring": false,
+      "full_video_review_completed": false,
+      "human_verified": false,
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "1-3/1-3_cam01_fight04_place02_night_spring.mp4",
+      "video_sha256": "9244845bf4b46c0a79fdc47a0f03879937852c9abf7975ef6af1270b98be4aba",
+      "label_sha256": "cd36ec3d46a286effe4a7e6becccf7eff31490c68d225c6cae0fa53dda62ec6c",
+      "scene_group": "nia2019:fight:1-3",
+      "selected_annotation": {
+        "participant": "person_1",
+        "action_name": "pushing",
+        "kind": "contact_candidate",
+        "start_frame": 6974,
+        "end_frame": 7044
+      },
+      "reviewed_window_s": [
+        232.633333,
+        234.633333
+      ],
+      "actual_first_last_pts_s": [
+        232.66576666666666,
+        234.60103333333333
+      ],
+      "frame_count": 59,
+      "finding": "DISPLACEMENT_CANDIDATE",
+      "review_notes": "상체 부근 접촉과 팔 뻗기 뒤 상대가 뒤로 물러난다. 역광으로 손의 세부 접촉은 제한된다.",
+      "observation_anchors": [
+        {
+          "index": 28,
+          "pts": 7007000,
+          "actual_pts_s": 233.56666666666666,
+          "path": "data/runtime/p57_fight_context27_20261015/1-3_cam01_fight04_place02_night_spring/frame_0028.jpg",
+          "sha256": "f97c0c5b95d0bc22c84ecef8706318448d7af7f70bdb4b6967c0064068d35ae6"
+        },
+        {
+          "index": 48,
+          "pts": 7027020,
+          "actual_pts_s": 234.234,
+          "path": "data/runtime/p57_fight_context27_20261015/1-3_cam01_fight04_place02_night_spring/frame_0048.jpg",
+          "sha256": "b5405d9e20fc17bb30081bfae2a1ebd9c2c185dd6265c4e2c314f777c637665b"
+        }
+      ],
+      "viewed_sheets": [
+        {
+          "video_member": "1-3/1-3_cam01_fight04_place02_night_spring.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/1-3_cam01_fight04_place02_night_spring/sheet_01.jpg",
+          "crop_xyxy_1080p": [
+            730,
+            400,
+            1150,
+            900
+          ],
+          "frame_indices": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "sha256": "99e1e41bb089586e1bac3fb720e6c3d5311d4e40c4e4602187b64b503757b8cc"
+        },
+        {
+          "video_member": "1-3/1-3_cam01_fight04_place02_night_spring.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/1-3_cam01_fight04_place02_night_spring/sheet_02.jpg",
+          "crop_xyxy_1080p": [
+            730,
+            400,
+            1150,
+            900
+          ],
+          "frame_indices": [
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            58,
+            59
+          ],
+          "sha256": "a5e1e59c5b5a38e64351d08b0a8a9b5ddc8ff42b0cfa1cfb272f7eb071a43cc1"
+        }
+      ],
+      "event_start_pts_s": null,
+      "event_end_pts_s": null,
+      "normal_intervals": [],
+      "approved_for_training_or_scoring": false,
+      "full_video_review_completed": false,
+      "human_verified": false,
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "1-3/1-3_cam01_fight04_place02_night_summer.mp4",
+      "video_sha256": "87744861e514b3186e9960311c864afa04f382f364715a3a9b53d6a5a27013f0",
+      "label_sha256": "7fffb84f7ac37f189eae54a536f6fcea9083d80d9fc5eb6c43f0dfc780446235",
+      "scene_group": "nia2019:fight:1-3",
+      "selected_annotation": {
+        "participant": "person_1",
+        "action_name": "pushing",
+        "kind": "contact_candidate",
+        "start_frame": 8570,
+        "end_frame": 8622
+      },
+      "reviewed_window_s": [
+        285.533333,
+        287.533333
+      ],
+      "actual_first_last_pts_s": [
+        285.55193333333335,
+        287.52056666666664
+      ],
+      "frame_count": 60,
+      "finding": "DISPLACEMENT_CANDIDATE",
+      "review_notes": "상체 접촉 뒤 팔이 펴지고 회색 상의 사람이 크게 물러나 몸을 낮춘다.",
+      "observation_anchors": [
+        {
+          "index": 44,
+          "pts": 8609601,
+          "actual_pts_s": 286.9867,
+          "path": "data/runtime/p57_fight_context27_20261015/1-3_cam01_fight04_place02_night_summer/frame_0044.jpg",
+          "sha256": "6a6de5636b81b716986580bb4d097e4ade23ea47fafbfee2a2a4c9d7e446e112"
+        },
+        {
+          "index": 60,
+          "pts": 8625617,
+          "actual_pts_s": 287.52056666666664,
+          "path": "data/runtime/p57_fight_context27_20261015/1-3_cam01_fight04_place02_night_summer/frame_0060.jpg",
+          "sha256": "fbafcf2ea65c2d96b649033449ec00b64e51894e84820443868977ad81a5ee05"
+        }
+      ],
+      "viewed_sheets": [
+        {
+          "video_member": "1-3/1-3_cam01_fight04_place02_night_summer.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/1-3_cam01_fight04_place02_night_summer/sheet_01.jpg",
+          "crop_xyxy_1080p": [
+            1000,
+            430,
+            1440,
+            940
+          ],
+          "frame_indices": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "sha256": "5a9248e454538efbb13bb4855e5e94bfd99a2c3f27583194825b6222a70a8700"
+        },
+        {
+          "video_member": "1-3/1-3_cam01_fight04_place02_night_summer.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/1-3_cam01_fight04_place02_night_summer/sheet_02.jpg",
+          "crop_xyxy_1080p": [
+            1000,
+            430,
+            1440,
+            940
+          ],
+          "frame_indices": [
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            58,
+            59,
+            60
+          ],
+          "sha256": "5fd755810c61653c8ca32b393e064452adc0a3eb937cc079fe11a42ac4e40909"
+        }
+      ],
+      "event_start_pts_s": null,
+      "event_end_pts_s": null,
+      "normal_intervals": [],
+      "approved_for_training_or_scoring": false,
+      "full_video_review_completed": false,
+      "human_verified": false,
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "1-3/1-3_cam02_fight04_place02_night_spring.mp4",
+      "video_sha256": "4272b5eee395b87af7d48ab125a703df33bf6bd0545c258099a6f0f9849c25ca",
+      "label_sha256": "7447ea424d7aea05dca37d456e9dc1d508910679ff9068dada633f06c9af5651",
+      "scene_group": "nia2019:fight:1-3",
+      "selected_annotation": {
+        "participant": "person_1",
+        "action_name": "pushing",
+        "kind": "contact_candidate",
+        "start_frame": 6981,
+        "end_frame": 7035
+      },
+      "reviewed_window_s": [
+        232.6,
+        234.6
+      ],
+      "actual_first_last_pts_s": [
+        232.6324,
+        234.56766666666667
+      ],
+      "frame_count": 59,
+      "finding": "DISPLACEMENT_CANDIDATE",
+      "review_notes": "상체 쪽 팔 뻗기 뒤 서로 간격이 벌어지고 한 사람이 뒤로 발을 옮긴다.",
+      "observation_anchors": [
+        {
+          "index": 27,
+          "pts": 7004998,
+          "actual_pts_s": 233.49993333333333,
+          "path": "data/runtime/p57_fight_context27_20261015/1-3_cam02_fight04_place02_night_spring/frame_0027.jpg",
+          "sha256": "ec7e563369d3408a338b39671112bf13f2f9e1b6af5e6e4aa2b1392d9401bb65"
+        },
+        {
+          "index": 49,
+          "pts": 7027020,
+          "actual_pts_s": 234.234,
+          "path": "data/runtime/p57_fight_context27_20261015/1-3_cam02_fight04_place02_night_spring/frame_0049.jpg",
+          "sha256": "964797b133624d21b87f5b8eb1942361227f217073a3444e888a29fd8f69a07f"
+        }
+      ],
+      "viewed_sheets": [
+        {
+          "video_member": "1-3/1-3_cam02_fight04_place02_night_spring.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/1-3_cam02_fight04_place02_night_spring/sheet_01.jpg",
+          "crop_xyxy_1080p": [
+            270,
+            230,
+            620,
+            660
+          ],
+          "frame_indices": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "sha256": "1fee78463912598601a6ea3083e91c04ab3f30f3449e27f143a0e938c37553a7"
+        },
+        {
+          "video_member": "1-3/1-3_cam02_fight04_place02_night_spring.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/1-3_cam02_fight04_place02_night_spring/sheet_02.jpg",
+          "crop_xyxy_1080p": [
+            270,
+            230,
+            620,
+            660
+          ],
+          "frame_indices": [
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            58,
+            59
+          ],
+          "sha256": "a4349990bc61190df2658edb22bb763e71007aac862534a98af9a495c4b159ba"
+        }
+      ],
+      "event_start_pts_s": null,
+      "event_end_pts_s": null,
+      "normal_intervals": [],
+      "approved_for_training_or_scoring": false,
+      "full_video_review_completed": false,
+      "human_verified": false,
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "1-3/1-3_cam02_fight04_place02_night_summer.mp4",
+      "video_sha256": "add4856f7b1901759c00ba53c93d1eafb90cbe338e631d8b14008c718f1608da",
+      "label_sha256": "a9b2670258cac8dda02a3e6ee423fff527f11c5a59b57992edfd6667cb9d3340",
+      "scene_group": "nia2019:fight:1-3",
+      "selected_annotation": {
+        "participant": "person_1",
+        "action_name": "pushing",
+        "kind": "contact_candidate",
+        "start_frame": 8586,
+        "end_frame": 8638
+      },
+      "reviewed_window_s": [
+        286.066667,
+        288.066667
+      ],
+      "actual_first_last_pts_s": [
+        286.0858,
+        288.05443333333335
+      ],
+      "frame_count": 60,
+      "finding": "DISPLACEMENT_CANDIDATE",
+      "review_notes": "서로 상체에 접촉한 뒤 팔이 펴지고 회색 상의 사람이 물러나며 몸을 낮춘다.",
+      "observation_anchors": [
+        {
+          "index": 30,
+          "pts": 8611603,
+          "actual_pts_s": 287.0534333333333,
+          "path": "data/runtime/p57_fight_context27_20261015/1-3_cam02_fight04_place02_night_summer/frame_0030.jpg",
+          "sha256": "8f098a761a5062df135f3b0ed0d4703192896660c76791f1a559dcc661c493a4"
+        },
+        {
+          "index": 60,
+          "pts": 8641633,
+          "actual_pts_s": 288.05443333333335,
+          "path": "data/runtime/p57_fight_context27_20261015/1-3_cam02_fight04_place02_night_summer/frame_0060.jpg",
+          "sha256": "8fac813f5332dafd3a48d1c2fad7270f4268ad967a0e7c83cbd2eb7c2a36bc52"
+        }
+      ],
+      "viewed_sheets": [
+        {
+          "video_member": "1-3/1-3_cam02_fight04_place02_night_summer.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/1-3_cam02_fight04_place02_night_summer/sheet_01.jpg",
+          "crop_xyxy_1080p": [
+            280,
+            250,
+            740,
+            750
+          ],
+          "frame_indices": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "sha256": "b72af1fde0b2a72e1a16d87d69dfc0bd984b24d304a9060823433a3a381f8088"
+        },
+        {
+          "video_member": "1-3/1-3_cam02_fight04_place02_night_summer.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/1-3_cam02_fight04_place02_night_summer/sheet_02.jpg",
+          "crop_xyxy_1080p": [
+            280,
+            250,
+            740,
+            750
+          ],
+          "frame_indices": [
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            58,
+            59,
+            60
+          ],
+          "sha256": "d34bb20e6d6796a7b565d5d3b4c466c3efefff9d819739b80e7fb195962c5347"
+        }
+      ],
+      "event_start_pts_s": null,
+      "event_end_pts_s": null,
+      "normal_intervals": [],
+      "approved_for_training_or_scoring": false,
+      "full_video_review_completed": false,
+      "human_verified": false,
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "1-4/1-4_cam01_fight04_place02_night_spring.mp4",
+      "video_sha256": "8b3cf53f08c23aef1c482c63b28e8989d9e2189d909c219cccb09c255d7e0d12",
+      "label_sha256": "cccadd5e726889ee7d616e414c990add955b7f694f40fd356d8699ba0dfa01ef",
+      "scene_group": "nia2019:fight:1-4",
+      "selected_annotation": {
+        "participant": "person_1",
+        "action_name": "punching",
+        "kind": "contact_candidate",
+        "start_frame": 8131,
+        "end_frame": 8226
+      },
+      "reviewed_window_s": [
+        271.616667,
+        273.616667
+      ],
+      "actual_first_last_pts_s": [
+        271.63803333333334,
+        273.6066666666667
+      ],
+      "frame_count": 60,
+      "finding": "UNRESOLVED",
+      "review_notes": "목·어깨 부근을 잡은 근접 동작과 상체 젖힘·이동이 보인다. 선택한 punching 라벨에 해당하는 명확한 주먹 왕복은 이 구간에서 미확정이다.",
+      "observation_anchors": [
+        {
+          "index": 1,
+          "pts": 8149141,
+          "actual_pts_s": 271.63803333333334,
+          "path": "data/runtime/p57_fight_context27_20261015/1-4_cam01_fight04_place02_night_spring/frame_0001.jpg",
+          "sha256": "0df5c8ad7ae8986874e74e93dcc127724dce85e3f91bd3a033f81cf6ff8f675d"
+        },
+        {
+          "index": 60,
+          "pts": 8208200,
+          "actual_pts_s": 273.6066666666667,
+          "path": "data/runtime/p57_fight_context27_20261015/1-4_cam01_fight04_place02_night_spring/frame_0060.jpg",
+          "sha256": "3d61cea2e5372eca4ed07336112d9466a2cbaa315d6caf11fa541efa53f2af38"
+        }
+      ],
+      "viewed_sheets": [
+        {
+          "video_member": "1-4/1-4_cam01_fight04_place02_night_spring.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/1-4_cam01_fight04_place02_night_spring/sheet_01.jpg",
+          "crop_xyxy_1080p": [
+            1080,
+            480,
+            1470,
+            980
+          ],
+          "frame_indices": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "sha256": "96da9bfadd6cd6e321cd52dc19c3611fd5a2af63da5085d354268980c30ea219"
+        },
+        {
+          "video_member": "1-4/1-4_cam01_fight04_place02_night_spring.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/1-4_cam01_fight04_place02_night_spring/sheet_02.jpg",
+          "crop_xyxy_1080p": [
+            1080,
+            480,
+            1470,
+            980
+          ],
+          "frame_indices": [
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            58,
+            59,
+            60
+          ],
+          "sha256": "d628d0cf57ca20d2d92ccdcff875cb362192af96e45408a2bcea4378e1eaeed4"
+        }
+      ],
+      "event_start_pts_s": null,
+      "event_end_pts_s": null,
+      "normal_intervals": [],
+      "approved_for_training_or_scoring": false,
+      "full_video_review_completed": false,
+      "human_verified": false,
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "1-4/1-4_cam01_fight04_place02_night_summer.mp4",
+      "video_sha256": "4ce4dabb546e3383c6d5fc6143e4dbf6bb9210f01a7e26c96b499686136e4731",
+      "label_sha256": "d9a9810a5e075f247bae09e423542edcb3d219b4d74b52e684d6df756adbc177",
+      "scene_group": "nia2019:fight:1-4",
+      "selected_annotation": {
+        "participant": "person_1",
+        "action_name": "pushing",
+        "kind": "contact_candidate",
+        "start_frame": 7100,
+        "end_frame": 7120
+      },
+      "reviewed_window_s": [
+        236.0,
+        238.0
+      ],
+      "actual_first_last_pts_s": [
+        236.00243333333333,
+        237.97106666666667
+      ],
+      "frame_count": 60,
+      "finding": "DISPLACEMENT_CANDIDATE",
+      "review_notes": "상체 접촉이 풀린 뒤 회색 상의 사람이 뒤로 이동하고 쪼그린 뒤 손을 바닥에 댄다.",
+      "observation_anchors": [
+        {
+          "index": 22,
+          "pts": 7101094,
+          "actual_pts_s": 236.70313333333334,
+          "path": "data/runtime/p57_fight_context27_20261015/1-4_cam01_fight04_place02_night_summer/frame_0022.jpg",
+          "sha256": "b0447315fc041f9421ae4871d50f97ab8ba84bcfabda80840e6c0491bb6fa668"
+        },
+        {
+          "index": 60,
+          "pts": 7139132,
+          "actual_pts_s": 237.97106666666667,
+          "path": "data/runtime/p57_fight_context27_20261015/1-4_cam01_fight04_place02_night_summer/frame_0060.jpg",
+          "sha256": "95fbcea6478930b611227a21467f98e7e66a4f52494322c69a3d48c510716019"
+        }
+      ],
+      "viewed_sheets": [
+        {
+          "video_member": "1-4/1-4_cam01_fight04_place02_night_summer.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/1-4_cam01_fight04_place02_night_summer/sheet_01.jpg",
+          "crop_xyxy_1080p": [
+            980,
+            480,
+            1570,
+            1010
+          ],
+          "frame_indices": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "sha256": "2b604366f4db2ce96bc1aef04718de774bac0694a8aa7101546b4b6cf3cabf4a"
+        },
+        {
+          "video_member": "1-4/1-4_cam01_fight04_place02_night_summer.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/1-4_cam01_fight04_place02_night_summer/sheet_02.jpg",
+          "crop_xyxy_1080p": [
+            980,
+            480,
+            1570,
+            1010
+          ],
+          "frame_indices": [
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            58,
+            59,
+            60
+          ],
+          "sha256": "29b5abfe1bfd995bc1cfd41827dd04c214355c66856eb23c198772706fee4a8a"
+        }
+      ],
+      "event_start_pts_s": null,
+      "event_end_pts_s": null,
+      "normal_intervals": [],
+      "approved_for_training_or_scoring": false,
+      "full_video_review_completed": false,
+      "human_verified": false,
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "1-4/1-4_cam02_fight04_place02_night_spring.mp4",
+      "video_sha256": "4dd5187773c6be3c7f6397b09168fdf7e5ab2ca7bae6ac02431b1aa42e51e261",
+      "label_sha256": "8ab0c7477d027779c0045c7bb6f7e53783195c7bb3878d544f212a242abe7d28",
+      "scene_group": "nia2019:fight:1-4",
+      "selected_annotation": {
+        "participant": "person_1",
+        "action_name": "punching",
+        "kind": "contact_candidate",
+        "start_frame": 7424,
+        "end_frame": 7494
+      },
+      "reviewed_window_s": [
+        247.633333,
+        249.633333
+      ],
+      "actual_first_last_pts_s": [
+        247.6474,
+        249.61603333333332
+      ],
+      "frame_count": 60,
+      "finding": "UNRESOLVED",
+      "review_notes": "한 손은 상대 상체 쪽에 두고 다른 팔을 뒤로 들어 올렸다 내린다. 전방 타격·실제 접촉은 이 구간에서 미확정이다.",
+      "observation_anchors": [
+        {
+          "index": 30,
+          "pts": 7458451,
+          "actual_pts_s": 248.61503333333334,
+          "path": "data/runtime/p57_fight_context27_20261015/1-4_cam02_fight04_place02_night_spring/frame_0030.jpg",
+          "sha256": "0a7fbf8bca8a527095d72a76f6165ca3c45b452508ad9623651263c3e18dba17"
+        },
+        {
+          "index": 57,
+          "pts": 7485478,
+          "actual_pts_s": 249.51593333333332,
+          "path": "data/runtime/p57_fight_context27_20261015/1-4_cam02_fight04_place02_night_spring/frame_0057.jpg",
+          "sha256": "177fa83b9109701a80523226c7793b57fcb31a85328f74d4be3e697cb4c8489a"
+        }
+      ],
+      "viewed_sheets": [
+        {
+          "video_member": "1-4/1-4_cam02_fight04_place02_night_spring.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/1-4_cam02_fight04_place02_night_spring/sheet_01.jpg",
+          "crop_xyxy_1080p": [
+            290,
+            320,
+            690,
+            830
+          ],
+          "frame_indices": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "sha256": "7be2a38de7118a207777519e1d920f07d9d54d2d819adf985f46b3af6d91a716"
+        },
+        {
+          "video_member": "1-4/1-4_cam02_fight04_place02_night_spring.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/1-4_cam02_fight04_place02_night_spring/sheet_02.jpg",
+          "crop_xyxy_1080p": [
+            290,
+            320,
+            690,
+            830
+          ],
+          "frame_indices": [
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            58,
+            59,
+            60
+          ],
+          "sha256": "e4f8566c791f00008a014b79febf501b6a17336536797a2af93c97586b63292a"
+        }
+      ],
+      "event_start_pts_s": null,
+      "event_end_pts_s": null,
+      "normal_intervals": [],
+      "approved_for_training_or_scoring": false,
+      "full_video_review_completed": false,
+      "human_verified": false,
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "1-4/1-4_cam02_fight04_place02_night_summer.mp4",
+      "video_sha256": "5307393176736c711b08adaa9f8268e9503909bc53ee50078803c3d6ebc7e6d1",
+      "label_sha256": "3dd9c48a887d5196fe56c89771069e2e85dff65e4d44e158cb22acb3dec7c833",
+      "scene_group": "nia2019:fight:1-4",
+      "selected_annotation": {
+        "participant": "person_1",
+        "action_name": "pushing",
+        "kind": "contact_candidate",
+        "start_frame": 6502,
+        "end_frame": 6532
+      },
+      "reviewed_window_s": [
+        216.233333,
+        218.233333
+      ],
+      "actual_first_last_pts_s": [
+        216.24936666666667,
+        218.218
+      ],
+      "frame_count": 60,
+      "finding": "DISPLACEMENT_CANDIDATE",
+      "review_notes": "먼 거리의 두 사람이 팔을 뻗어 접촉하고 뒤로 발을 옮겨 간격이 벌어진다. 작은 영상 크기로 손 위치 판정은 제한된다.",
+      "observation_anchors": [
+        {
+          "index": 19,
+          "pts": 6505499,
+          "actual_pts_s": 216.84996666666666,
+          "path": "data/runtime/p57_fight_context27_20261015/1-4_cam02_fight04_place02_night_summer/frame_0019.jpg",
+          "sha256": "010f1a86724415f878df6b9e43b1f13f98dfc3c06ace860e4926148b9830192f"
+        },
+        {
+          "index": 45,
+          "pts": 6531525,
+          "actual_pts_s": 217.7175,
+          "path": "data/runtime/p57_fight_context27_20261015/1-4_cam02_fight04_place02_night_summer/frame_0045.jpg",
+          "sha256": "47252c254f4d1eda10bf637a500266ceb2acb53abca62d82b5976fbf883b55d9"
+        }
+      ],
+      "viewed_sheets": [
+        {
+          "video_member": "1-4/1-4_cam02_fight04_place02_night_summer.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/1-4_cam02_fight04_place02_night_summer/sheet_01.jpg",
+          "crop_xyxy_1080p": [
+            60,
+            200,
+            400,
+            650
+          ],
+          "frame_indices": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "sha256": "bed25bc824fdbecf39eae0c49fff2a223e035a86c02310bb713955b3e0df7c41"
+        },
+        {
+          "video_member": "1-4/1-4_cam02_fight04_place02_night_summer.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/1-4_cam02_fight04_place02_night_summer/sheet_02.jpg",
+          "crop_xyxy_1080p": [
+            60,
+            200,
+            400,
+            650
+          ],
+          "frame_indices": [
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            58,
+            59,
+            60
+          ],
+          "sha256": "0ba3e8e07f14b77abf005abd80a1d77c761541d98d0d02a96b9ab201773db7ea"
+        }
+      ],
+      "event_start_pts_s": null,
+      "event_end_pts_s": null,
+      "normal_intervals": [],
+      "approved_for_training_or_scoring": false,
+      "full_video_review_completed": false,
+      "human_verified": false,
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "11-1/11-1_cam01_fight01_place08_night_summer.mp4",
+      "video_sha256": "6c7bac68a601b7ae1dc6080ac79283bd308ab41618a249633a08ba072e09763b",
+      "label_sha256": "368fc9a7d5145d781e052534abea0c031fc8587471bb5308ef1d1ad9ecc0b2eb",
+      "scene_group": "nia2019:fight:11-1",
+      "selected_annotation": {
+        "participant": "person_1",
+        "action_name": "punching",
+        "kind": "contact_candidate",
+        "start_frame": 5292,
+        "end_frame": 5349
+      },
+      "reviewed_window_s": [
+        176.35,
+        178.35
+      ],
+      "actual_first_last_pts_s": [
+        176.3762,
+        178.34483333333333
+      ],
+      "frame_count": 60,
+      "finding": "STRIKE_MOTION_CANDIDATE",
+      "review_notes": "팔을 뒤로 당긴 후 상대 머리·상체 방향으로 휘두르고 상대가 몸을 돌리며 물러난다. 충격 세기·의도는 확정하지 않는다.",
+      "observation_anchors": [
+        {
+          "index": 14,
+          "pts": 5304299,
+          "actual_pts_s": 176.80996666666667,
+          "path": "data/runtime/p57_fight_context27_20261015/11-1_cam01_fight01_place08_night_summer/frame_0014.jpg",
+          "sha256": "fd238cf3706ae47774915a9a2ff044e19887174810aa507e575c76e1ec9a1128"
+        },
+        {
+          "index": 47,
+          "pts": 5337332,
+          "actual_pts_s": 177.91106666666667,
+          "path": "data/runtime/p57_fight_context27_20261015/11-1_cam01_fight01_place08_night_summer/frame_0047.jpg",
+          "sha256": "11e433ee0ed320b2defe76d92d7da7d0b082bf59be0c0228a019b992e0d8d98e"
+        }
+      ],
+      "viewed_sheets": [
+        {
+          "video_member": "11-1/11-1_cam01_fight01_place08_night_summer.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/11-1_cam01_fight01_place08_night_summer/sheet_01.jpg",
+          "crop_xyxy_1080p": [
+            0,
+            350,
+            500,
+            850
+          ],
+          "frame_indices": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "sha256": "b9255e28b6941b173442ab81a159ea047e55f954c6f063103dedb5ca0ea33002"
+        },
+        {
+          "video_member": "11-1/11-1_cam01_fight01_place08_night_summer.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/11-1_cam01_fight01_place08_night_summer/sheet_02.jpg",
+          "crop_xyxy_1080p": [
+            0,
+            350,
+            500,
+            850
+          ],
+          "frame_indices": [
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            58,
+            59,
+            60
+          ],
+          "sha256": "7d737c126ca526b68b023ba0f842df91d2f412a8087252fd0cf6ecf8ec29830b"
+        }
+      ],
+      "event_start_pts_s": null,
+      "event_end_pts_s": null,
+      "normal_intervals": [],
+      "approved_for_training_or_scoring": false,
+      "full_video_review_completed": false,
+      "human_verified": false,
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "11-1/11-1_cam02_fight01_place08_night_spring.mp4",
+      "video_sha256": "d4b04a0072c890d74d1d7d8bb455633b7b865d5647bcc338ccfa476a1dfbc393",
+      "label_sha256": "ec24cf8053c0f259967d62e0db3013dfd7043745f7bc3511e0685fe90b81f823",
+      "scene_group": "nia2019:fight:11-1",
+      "selected_annotation": {
+        "participant": "person_1",
+        "action_name": "punching",
+        "kind": "contact_candidate",
+        "start_frame": 4641,
+        "end_frame": 4794
+      },
+      "reviewed_window_s": [
+        156.25,
+        158.25
+      ],
+      "actual_first_last_pts_s": [
+        156.2561,
+        158.22473333333335
+      ],
+      "frame_count": 60,
+      "finding": "UNRESOLVED",
+      "review_notes": "팔을 굽혀 들고 얼굴·상체 가까이에 유지하며 몸이 겹친다. 이 2초에서 명확한 타격 전환은 미확정이다.",
+      "observation_anchors": [
+        {
+          "index": 1,
+          "pts": 4687683,
+          "actual_pts_s": 156.2561,
+          "path": "data/runtime/p57_fight_context27_20261015/11-1_cam02_fight01_place08_night_spring/frame_0001.jpg",
+          "sha256": "b27bf3f8bf0619bf5c3b98786bcb6bf2d423ff3f13db37fde609856e4f4a0e58"
+        },
+        {
+          "index": 60,
+          "pts": 4746742,
+          "actual_pts_s": 158.22473333333335,
+          "path": "data/runtime/p57_fight_context27_20261015/11-1_cam02_fight01_place08_night_spring/frame_0060.jpg",
+          "sha256": "e3c7bf776eed5d856f615f306a5c3df490ac772513a4e9f7d5297c00416eb5b7"
+        }
+      ],
+      "viewed_sheets": [
+        {
+          "video_member": "11-1/11-1_cam02_fight01_place08_night_spring.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/11-1_cam02_fight01_place08_night_spring/sheet_01.jpg",
+          "crop_xyxy_1080p": [
+            1500,
+            400,
+            1920,
+            970
+          ],
+          "frame_indices": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "sha256": "5d1fd5b30ce25d93256405a073aec725a7b48e6150931ebf4a74d48503b28ce0"
+        },
+        {
+          "video_member": "11-1/11-1_cam02_fight01_place08_night_spring.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/11-1_cam02_fight01_place08_night_spring/sheet_02.jpg",
+          "crop_xyxy_1080p": [
+            1500,
+            400,
+            1920,
+            970
+          ],
+          "frame_indices": [
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            58,
+            59,
+            60
+          ],
+          "sha256": "9cfb451b0cf089db9af429bdd9330dd4a8adc425a6d08fa50126b2a4aff361a5"
+        }
+      ],
+      "event_start_pts_s": null,
+      "event_end_pts_s": null,
+      "normal_intervals": [],
+      "approved_for_training_or_scoring": false,
+      "full_video_review_completed": false,
+      "human_verified": false,
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "14-1/14-1_cam01_fight02_place06_night_spring.mp4",
+      "video_sha256": "ec38856fdb8d33d1fb7482b2536b985dd5cae28a64707488a401590e7b208f0c",
+      "label_sha256": "89d8d5afe89545cfb9820f76ebbeffa780bff4e365bf10fd230494f3d7edf208",
+      "scene_group": "nia2019:fight:14-1",
+      "selected_annotation": {
+        "participant": "person_2",
+        "action_name": "punching",
+        "kind": "contact_candidate",
+        "start_frame": 4906,
+        "end_frame": 5091
+      },
+      "reviewed_window_s": [
+        165.616667,
+        167.616667
+      ],
+      "actual_first_last_pts_s": [
+        165.63213333333334,
+        167.60076666666666
+      ],
+      "frame_count": 60,
+      "finding": "UNRESOLVED",
+      "review_notes": "한 사람이 머리 부근을 가린 채 숙였다 펴고 상대가 가방을 들어 접근한다. 가방이 실제로 닿는 순간은 이 구간에서 미확정이다.",
+      "observation_anchors": [
+        {
+          "index": 1,
+          "pts": 4968964,
+          "actual_pts_s": 165.63213333333334,
+          "path": "data/runtime/p57_fight_context27_20261015/14-1_cam01_fight02_place06_night_spring/frame_0001.jpg",
+          "sha256": "da97c189d314711506b60b7b81e5a06a75131344daa7b6cf062ca06128c91c03"
+        },
+        {
+          "index": 60,
+          "pts": 5028023,
+          "actual_pts_s": 167.60076666666666,
+          "path": "data/runtime/p57_fight_context27_20261015/14-1_cam01_fight02_place06_night_spring/frame_0060.jpg",
+          "sha256": "2ff771e2f630b3bc3370e35e33a3fa21d57e4681f1ede0f30f63f80c7e8b0b2c"
+        }
+      ],
+      "viewed_sheets": [
+        {
+          "video_member": "14-1/14-1_cam01_fight02_place06_night_spring.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/14-1_cam01_fight02_place06_night_spring/sheet_01.jpg",
+          "crop_xyxy_1080p": [
+            210,
+            240,
+            620,
+            620
+          ],
+          "frame_indices": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "sha256": "4e491ae087567360d34f7fc54f5d882d30b9ef51aad0656c1d810fb3e8ac0f93"
+        },
+        {
+          "video_member": "14-1/14-1_cam01_fight02_place06_night_spring.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/14-1_cam01_fight02_place06_night_spring/sheet_02.jpg",
+          "crop_xyxy_1080p": [
+            210,
+            240,
+            620,
+            620
+          ],
+          "frame_indices": [
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            58,
+            59,
+            60
+          ],
+          "sha256": "a4ba9edf094920ec35cf443e43a35d7945612567035309c0036883837378e58c"
+        }
+      ],
+      "event_start_pts_s": null,
+      "event_end_pts_s": null,
+      "normal_intervals": [],
+      "approved_for_training_or_scoring": false,
+      "full_video_review_completed": false,
+      "human_verified": false,
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "14-1/14-1_cam01_fight02_place06_night_summer.mp4",
+      "video_sha256": "5fe85c3b11139f78013e68eed1eaa4de2353fa35e4ae54c01fa6cbd4134bd768",
+      "label_sha256": "1e4bf5b29e45aa49a39b68fb70e8f3bbb48f7f52ad872d05d9909ab194e07612",
+      "scene_group": "nia2019:fight:14-1",
+      "selected_annotation": {
+        "participant": "person_2",
+        "action_name": "pushing",
+        "kind": "contact_candidate",
+        "start_frame": 2491,
+        "end_frame": 2532
+      },
+      "reviewed_window_s": [
+        82.716667,
+        84.716667
+      ],
+      "actual_first_last_pts_s": [
+        82.74933333333334,
+        84.6846
+      ],
+      "frame_count": 59,
+      "finding": "DISPLACEMENT_CANDIDATE",
+      "review_notes": "벽 쪽 사람이 두 팔을 상대 상체에 뻗은 뒤 상대가 뒤로 여러 발 물러난다.",
+      "observation_anchors": [
+        {
+          "index": 4,
+          "pts": 2485483,
+          "actual_pts_s": 82.84943333333334,
+          "path": "data/runtime/p57_fight_context27_20261015/14-1_cam01_fight02_place06_night_summer/frame_0004.jpg",
+          "sha256": "0dab783fa8d2c4aee2295a5d83c67306e32aa0c912574e7fbfbaa240e2d4fed0"
+        },
+        {
+          "index": 43,
+          "pts": 2524522,
+          "actual_pts_s": 84.15073333333333,
+          "path": "data/runtime/p57_fight_context27_20261015/14-1_cam01_fight02_place06_night_summer/frame_0043.jpg",
+          "sha256": "d32a87bdb18784c3090a083e77b7152fa6b31b1cc8ffc2c273e69489295b4c60"
+        }
+      ],
+      "viewed_sheets": [
+        {
+          "video_member": "14-1/14-1_cam01_fight02_place06_night_summer.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/14-1_cam01_fight02_place06_night_summer/sheet_01.jpg",
+          "crop_xyxy_1080p": [
+            290,
+            220,
+            720,
+            750
+          ],
+          "frame_indices": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "sha256": "aa9acd524752db4a6ff9b262ddaca0cf86c6054160eabff1752b0fe830d9945b"
+        },
+        {
+          "video_member": "14-1/14-1_cam01_fight02_place06_night_summer.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/14-1_cam01_fight02_place06_night_summer/sheet_02.jpg",
+          "crop_xyxy_1080p": [
+            290,
+            220,
+            720,
+            750
+          ],
+          "frame_indices": [
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            58,
+            59
+          ],
+          "sha256": "40e74ad1d7dd0fa8543c76582f809fd959fbfb667ab12a2d46a8918fe9ba128d"
+        }
+      ],
+      "event_start_pts_s": null,
+      "event_end_pts_s": null,
+      "normal_intervals": [],
+      "approved_for_training_or_scoring": false,
+      "full_video_review_completed": false,
+      "human_verified": false,
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "14-1/14-1_cam02_fight02_place06_night_spring.mp4",
+      "video_sha256": "ba577eb21988a80bb30aa5a1c65e162ad38869ee9ee3102f6499f53575a4af84",
+      "label_sha256": "70b1cd65ca2dbf38fb73d9a01a1cab28783a03fedfd8be6bdb968756edc3ce99",
+      "scene_group": "nia2019:fight:14-1",
+      "selected_annotation": {
+        "participant": "person_2",
+        "action_name": "punching",
+        "kind": "contact_candidate",
+        "start_frame": 5846,
+        "end_frame": 5986
+      },
+      "reviewed_window_s": [
+        196.2,
+        198.2
+      ],
+      "actual_first_last_pts_s": [
+        196.22936666666666,
+        198.198
+      ],
+      "frame_count": 60,
+      "finding": "UNRESOLVED",
+      "review_notes": "머리 부근을 가린 자세에서 일어서고 가방을 든 상대가 접근한다. 타격 전환은 구간 끝과 겹쳐 미확정이다.",
+      "observation_anchors": [
+        {
+          "index": 1,
+          "pts": 5886881,
+          "actual_pts_s": 196.22936666666666,
+          "path": "data/runtime/p57_fight_context27_20261015/14-1_cam02_fight02_place06_night_spring/frame_0001.jpg",
+          "sha256": "5821b8552fc0e68c9472596194aff70384e48ace485593751581a91d718d37dd"
+        },
+        {
+          "index": 60,
+          "pts": 5945940,
+          "actual_pts_s": 198.198,
+          "path": "data/runtime/p57_fight_context27_20261015/14-1_cam02_fight02_place06_night_spring/frame_0060.jpg",
+          "sha256": "44cdcc5debd8c59dd21bdedd18d63dd762c57045a17e52c85bddad78a9feb387"
+        }
+      ],
+      "viewed_sheets": [
+        {
+          "video_member": "14-1/14-1_cam02_fight02_place06_night_spring.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/14-1_cam02_fight02_place06_night_spring/sheet_01.jpg",
+          "crop_xyxy_1080p": [
+            1150,
+            300,
+            1650,
+            820
+          ],
+          "frame_indices": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "sha256": "e9bccb5d58844415ab2f6926187664943bb51cf18f5da416ed8e985690851628"
+        },
+        {
+          "video_member": "14-1/14-1_cam02_fight02_place06_night_spring.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/14-1_cam02_fight02_place06_night_spring/sheet_02.jpg",
+          "crop_xyxy_1080p": [
+            1150,
+            300,
+            1650,
+            820
+          ],
+          "frame_indices": [
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            58,
+            59,
+            60
+          ],
+          "sha256": "fa185ece7812441fc1343e4ec926bfb06efa46c85dc6fe075a6729d4916612a1"
+        }
+      ],
+      "event_start_pts_s": null,
+      "event_end_pts_s": null,
+      "normal_intervals": [],
+      "approved_for_training_or_scoring": false,
+      "full_video_review_completed": false,
+      "human_verified": false,
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "14-1/14-1_cam02_fight02_place06_night_summer.mp4",
+      "video_sha256": "26b3fb5942a3c7d1cfc0025e9b405018fca869d5f1c8d55f74b0e9a92e04ad30",
+      "label_sha256": "f6babd4b9adfbfa251324e5545607b3850d66c98e9cbeec53d9844f5cfdebecd",
+      "scene_group": "nia2019:fight:14-1",
+      "selected_annotation": {
+        "participant": "person_2",
+        "action_name": "pushing",
+        "kind": "contact_candidate",
+        "start_frame": 3622,
+        "end_frame": 3650
+      },
+      "reviewed_window_s": [
+        120.2,
+        122.2
+      ],
+      "actual_first_last_pts_s": [
+        120.2201,
+        122.18873333333333
+      ],
+      "frame_count": 60,
+      "finding": "DISPLACEMENT_CANDIDATE",
+      "review_notes": "벽 쪽 사람이 팔을 뻗어 상대 상체에 접촉한 뒤 상대가 뒤로 이동한다.",
+      "observation_anchors": [
+        {
+          "index": 18,
+          "pts": 3623620,
+          "actual_pts_s": 120.78733333333334,
+          "path": "data/runtime/p57_fight_context27_20261015/14-1_cam02_fight02_place06_night_summer/frame_0018.jpg",
+          "sha256": "582a2b71fd3974f87d446773b8b02d4db6e78ecfcbda29ec9734c373562904e0"
+        },
+        {
+          "index": 51,
+          "pts": 3656653,
+          "actual_pts_s": 121.88843333333334,
+          "path": "data/runtime/p57_fight_context27_20261015/14-1_cam02_fight02_place06_night_summer/frame_0051.jpg",
+          "sha256": "7759ff4ef182d82f41708fea7ada0849bba94c7b883883b594bd251481b3fa0d"
+        }
+      ],
+      "viewed_sheets": [
+        {
+          "video_member": "14-1/14-1_cam02_fight02_place06_night_summer.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/14-1_cam02_fight02_place06_night_summer/sheet_01.jpg",
+          "crop_xyxy_1080p": [
+            1320,
+            280,
+            1800,
+            790
+          ],
+          "frame_indices": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "sha256": "2b2c60a4551115989be748cad837f2f254218489de0a60f4db0394f61e39edbb"
+        },
+        {
+          "video_member": "14-1/14-1_cam02_fight02_place06_night_summer.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/14-1_cam02_fight02_place06_night_summer/sheet_02.jpg",
+          "crop_xyxy_1080p": [
+            1320,
+            280,
+            1800,
+            790
+          ],
+          "frame_indices": [
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            58,
+            59,
+            60
+          ],
+          "sha256": "76f7933567d6d2b52d58634fbd824782c1f491fae7304c9a0d8358bd62710924"
+        }
+      ],
+      "event_start_pts_s": null,
+      "event_end_pts_s": null,
+      "normal_intervals": [],
+      "approved_for_training_or_scoring": false,
+      "full_video_review_completed": false,
+      "human_verified": false,
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "14-2/14-2_cam01_fight02_place06_night_summer.mp4",
+      "video_sha256": "16efd66e4fb0c2a4405126cd8f35d0880c66274d3b1128adb2a545e4dee14f56",
+      "label_sha256": "e91afe0a86660894bb98a84b46d1f4b3ee063f9e31037d44c38d5362337f65f6",
+      "scene_group": "nia2019:fight:14-2",
+      "selected_annotation": {
+        "participant": "person_2",
+        "action_name": "punching",
+        "kind": "contact_candidate",
+        "start_frame": 6360,
+        "end_frame": 6485
+      },
+      "reviewed_window_s": [
+        213.083333,
+        215.083333
+      ],
+      "actual_first_last_pts_s": [
+        213.1129,
+        215.08153333333334
+      ],
+      "frame_count": 60,
+      "finding": "UNRESOLVED",
+      "review_notes": "두 사람이 가까이 이동·대치하며 앞사람이 손·몸을 가린다. 이 구간에서 타격 동작을 확정할 수 없다.",
+      "observation_anchors": [
+        {
+          "index": 1,
+          "pts": 6393387,
+          "actual_pts_s": 213.1129,
+          "path": "data/runtime/p57_fight_context27_20261015/14-2_cam01_fight02_place06_night_summer/frame_0001.jpg",
+          "sha256": "b4d9fb8a25b01ee411b86c53b399344158e9f2ff5e4ff29bc4c38a35f6732300"
+        },
+        {
+          "index": 60,
+          "pts": 6452446,
+          "actual_pts_s": 215.08153333333334,
+          "path": "data/runtime/p57_fight_context27_20261015/14-2_cam01_fight02_place06_night_summer/frame_0060.jpg",
+          "sha256": "bfcfd42d7a4f215eb8e198dacf54ec58ea500be78268ac573a66695bf0676eb8"
+        }
+      ],
+      "viewed_sheets": [
+        {
+          "video_member": "14-2/14-2_cam01_fight02_place06_night_summer.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/14-2_cam01_fight02_place06_night_summer/sheet_01.jpg",
+          "crop_xyxy_1080p": [
+            150,
+            240,
+            480,
+            700
+          ],
+          "frame_indices": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "sha256": "ee35d08d3a504b2a4c404e3cd86787d6d37116a5a71a483dfd6ce16fc8cd5c67"
+        },
+        {
+          "video_member": "14-2/14-2_cam01_fight02_place06_night_summer.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/14-2_cam01_fight02_place06_night_summer/sheet_02.jpg",
+          "crop_xyxy_1080p": [
+            150,
+            240,
+            480,
+            700
+          ],
+          "frame_indices": [
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            58,
+            59,
+            60
+          ],
+          "sha256": "30821382b009965fba00e32a3e2bda6be964a4c6cf0f92e983147f112733d888"
+        }
+      ],
+      "event_start_pts_s": null,
+      "event_end_pts_s": null,
+      "normal_intervals": [],
+      "approved_for_training_or_scoring": false,
+      "full_video_review_completed": false,
+      "human_verified": false,
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "14-2/14-2_cam02_fight02_place06_night_summer.mp4",
+      "video_sha256": "d89c065aad35ce2a0fca894ac01a9cf562ed79f88f73e348293c412bc99b894e",
+      "label_sha256": "f440f0814ce2f096cfbd6d7a8595244ade681b03c44ccb85c6c0177b900803c5",
+      "scene_group": "nia2019:fight:14-2",
+      "selected_annotation": {
+        "participant": "person_2",
+        "action_name": "punching",
+        "kind": "contact_candidate",
+        "start_frame": 6347,
+        "end_frame": 6479
+      },
+      "reviewed_window_s": [
+        212.766667,
+        214.766667
+      ],
+      "actual_first_last_pts_s": [
+        212.77923333333334,
+        214.74786666666665
+      ],
+      "frame_count": 60,
+      "finding": "UNRESOLVED",
+      "review_notes": "간격을 두고 대치·발 이동을 하다가 끝부분에 한 팔을 뻗는다. punching 라벨의 타격 전환은 미확정이다.",
+      "observation_anchors": [
+        {
+          "index": 1,
+          "pts": 6383377,
+          "actual_pts_s": 212.77923333333334,
+          "path": "data/runtime/p57_fight_context27_20261015/14-2_cam02_fight02_place06_night_summer/frame_0001.jpg",
+          "sha256": "da02c38601472670152d111a3731ba4818525c560d35be4e7a3c7d6f69c48047"
+        },
+        {
+          "index": 60,
+          "pts": 6442436,
+          "actual_pts_s": 214.74786666666665,
+          "path": "data/runtime/p57_fight_context27_20261015/14-2_cam02_fight02_place06_night_summer/frame_0060.jpg",
+          "sha256": "ce0639b88881d90c7181f752283c6880b2ca3d3a1d8dd752bbc9c479cb48d1b0"
+        }
+      ],
+      "viewed_sheets": [
+        {
+          "video_member": "14-2/14-2_cam02_fight02_place06_night_summer.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/14-2_cam02_fight02_place06_night_summer/sheet_01.jpg",
+          "crop_xyxy_1080p": [
+            1200,
+            300,
+            1740,
+            900
+          ],
+          "frame_indices": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "sha256": "b67c279670de65fd79309cb7778d654eb3b2dabd1df876918d55e979f20cfb04"
+        },
+        {
+          "video_member": "14-2/14-2_cam02_fight02_place06_night_summer.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/14-2_cam02_fight02_place06_night_summer/sheet_02.jpg",
+          "crop_xyxy_1080p": [
+            1200,
+            300,
+            1740,
+            900
+          ],
+          "frame_indices": [
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            58,
+            59,
+            60
+          ],
+          "sha256": "dbf0f4ccacf3b3955affa06f93195be81bab335393a7aabe8ccbbeee49ea00ae"
+        }
+      ],
+      "event_start_pts_s": null,
+      "event_end_pts_s": null,
+      "normal_intervals": [],
+      "approved_for_training_or_scoring": false,
+      "full_video_review_completed": false,
+      "human_verified": false,
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "14-3/14-3_cam01_fight02_place06_night_spring.mp4",
+      "video_sha256": "783e463b5771695f9851590a742ff0d28adb2e1af6b5391c209ea324dd906ecf",
+      "label_sha256": "5ac5e10990c3340f4f14941366380236fb720d441975d5889f0c3c45d32e2517",
+      "scene_group": "nia2019:fight:14-3",
+      "selected_annotation": {
+        "participant": "person_2",
+        "action_name": "punching",
+        "kind": "contact_candidate",
+        "start_frame": 5919,
+        "end_frame": 6151
+      },
+      "reviewed_window_s": [
+        200.166667,
+        202.166667
+      ],
+      "actual_first_last_pts_s": [
+        200.2,
+        202.13526666666667
+      ],
+      "frame_count": 59,
+      "finding": "STRIKE_MOTION_CANDIDATE",
+      "review_notes": "가방을 뒤로 들어 상대 머리·상체 방향으로 휘두르고 상대가 팔을 올리고 몸을 숙인다.",
+      "observation_anchors": [
+        {
+          "index": 20,
+          "pts": 6025019,
+          "actual_pts_s": 200.83396666666667,
+          "path": "data/runtime/p57_fight_context27_20261015/14-3_cam01_fight02_place06_night_spring/frame_0020.jpg",
+          "sha256": "ce5179bcf2ce6bd5d9754d8785d8529404c8485b1c8163226e2889ad61690334"
+        },
+        {
+          "index": 54,
+          "pts": 6059053,
+          "actual_pts_s": 201.96843333333334,
+          "path": "data/runtime/p57_fight_context27_20261015/14-3_cam01_fight02_place06_night_spring/frame_0054.jpg",
+          "sha256": "2659c2f5da4c2cd1cd8bb33f69491ac0ffe72eb265f72881e5d103d1043b94bc"
+        }
+      ],
+      "viewed_sheets": [
+        {
+          "video_member": "14-3/14-3_cam01_fight02_place06_night_spring.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/14-3_cam01_fight02_place06_night_spring/sheet_01.jpg",
+          "crop_xyxy_1080p": [
+            180,
+            200,
+            680,
+            820
+          ],
+          "frame_indices": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "sha256": "f5334dabba10cee6a36a676ee2acbda823e07a16cd009fceb5bf8e808b3ccbe0"
+        },
+        {
+          "video_member": "14-3/14-3_cam01_fight02_place06_night_spring.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/14-3_cam01_fight02_place06_night_spring/sheet_02.jpg",
+          "crop_xyxy_1080p": [
+            180,
+            200,
+            680,
+            820
+          ],
+          "frame_indices": [
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            58,
+            59
+          ],
+          "sha256": "7501f59a191b3f79af9ec871d347454006b1bee8228aba2ad2aad37ab3b229bb"
+        }
+      ],
+      "event_start_pts_s": null,
+      "event_end_pts_s": null,
+      "normal_intervals": [],
+      "approved_for_training_or_scoring": false,
+      "full_video_review_completed": false,
+      "human_verified": false,
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "14-3/14-3_cam01_fight02_place06_night_summer.mp4",
+      "video_sha256": "0733740f9fe7dfeb67806fe8e4fd5f2546889d84cddc481a019f9bfe26127fa6",
+      "label_sha256": "c58d5393b1d89a637c8dc2e1fdd15fb1865717ad9bfaf24bf38c35a807f2302c",
+      "scene_group": "nia2019:fight:14-3",
+      "selected_annotation": {
+        "participant": "person_2",
+        "action_name": "punching",
+        "kind": "contact_candidate",
+        "start_frame": 7130,
+        "end_frame": 7354
+      },
+      "reviewed_window_s": [
+        240.4,
+        242.4
+      ],
+      "actual_first_last_pts_s": [
+        240.40683333333334,
+        242.37546666666665
+      ],
+      "frame_count": 60,
+      "finding": "STRIKE_MOTION_CANDIDATE",
+      "review_notes": "가방을 올린 뒤 상대 등·상체 쪽으로 휘두르며 접근하고 상대가 앞으로 기울어 이동한다.",
+      "observation_anchors": [
+        {
+          "index": 4,
+          "pts": 7215208,
+          "actual_pts_s": 240.50693333333334,
+          "path": "data/runtime/p57_fight_context27_20261015/14-3_cam01_fight02_place06_night_summer/frame_0004.jpg",
+          "sha256": "949051684403e711e58ae4351314d31b8fe072e97f7102b37d207ddecfc37508"
+        },
+        {
+          "index": 39,
+          "pts": 7250243,
+          "actual_pts_s": 241.67476666666667,
+          "path": "data/runtime/p57_fight_context27_20261015/14-3_cam01_fight02_place06_night_summer/frame_0039.jpg",
+          "sha256": "e6fe7dbfe73bb46e964735e3d65c26368746e35cea1bf4fea73988b7b86de4a7"
+        }
+      ],
+      "viewed_sheets": [
+        {
+          "video_member": "14-3/14-3_cam01_fight02_place06_night_summer.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/14-3_cam01_fight02_place06_night_summer/sheet_01.jpg",
+          "crop_xyxy_1080p": [
+            110,
+            180,
+            470,
+            680
+          ],
+          "frame_indices": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "sha256": "cd12145341da62d873058a91f3e230bbb3fdc1e4610d8eb853e7ad8adf3c2880"
+        },
+        {
+          "video_member": "14-3/14-3_cam01_fight02_place06_night_summer.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/14-3_cam01_fight02_place06_night_summer/sheet_02.jpg",
+          "crop_xyxy_1080p": [
+            110,
+            180,
+            470,
+            680
+          ],
+          "frame_indices": [
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            58,
+            59,
+            60
+          ],
+          "sha256": "befe325e1b134cc16e45c73190a5e7563a8b568496d34ca53b0a3646d2b5a9a8"
+        }
+      ],
+      "event_start_pts_s": null,
+      "event_end_pts_s": null,
+      "normal_intervals": [],
+      "approved_for_training_or_scoring": false,
+      "full_video_review_completed": false,
+      "human_verified": false,
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "14-3/14-3_cam02_fight02_place06_night_summer.mp4",
+      "video_sha256": "62ea7d6144e9182a0e697f457df4a6b29c2aedda04fd14fa28b4a5bb42de8767",
+      "label_sha256": "ae4c059b51fd9508dccda0e60c44f32e74db9c7944fdcf71c9a6e717a50c51a3",
+      "scene_group": "nia2019:fight:14-3",
+      "selected_annotation": {
+        "participant": "person_2",
+        "action_name": "punching",
+        "kind": "contact_candidate",
+        "start_frame": 7381,
+        "end_frame": 7638
+      },
+      "reviewed_window_s": [
+        249.316667,
+        251.316667
+      ],
+      "actual_first_last_pts_s": [
+        249.3491,
+        251.28436666666667
+      ],
+      "frame_count": 59,
+      "finding": "UNRESOLVED",
+      "review_notes": "뒤쪽 사람이 상대 어깨·등 가까이에 손을 둔 뒤 함께 이동한다. 몸 겹침으로 타격 궤적은 미확정이다.",
+      "observation_anchors": [
+        {
+          "index": 1,
+          "pts": 7480473,
+          "actual_pts_s": 249.3491,
+          "path": "data/runtime/p57_fight_context27_20261015/14-3_cam02_fight02_place06_night_summer/frame_0001.jpg",
+          "sha256": "a8115279cd8ae6abd8e11406b8366800a760256c747ebede89cfbc762ff33d2d"
+        },
+        {
+          "index": 59,
+          "pts": 7538531,
+          "actual_pts_s": 251.28436666666667,
+          "path": "data/runtime/p57_fight_context27_20261015/14-3_cam02_fight02_place06_night_summer/frame_0059.jpg",
+          "sha256": "1389283f1a8d2dd56bf71d49f51ff972d53547ea1d9d06b3eb78d64e29a11394"
+        }
+      ],
+      "viewed_sheets": [
+        {
+          "video_member": "14-3/14-3_cam02_fight02_place06_night_summer.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/14-3_cam02_fight02_place06_night_summer/sheet_01.jpg",
+          "crop_xyxy_1080p": [
+            1180,
+            280,
+            1730,
+            980
+          ],
+          "frame_indices": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "sha256": "10740a8bc4df9c37f0a98a01ea29df21cef9a61a9be1d962683dcb9ef52107c8"
+        },
+        {
+          "video_member": "14-3/14-3_cam02_fight02_place06_night_summer.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/14-3_cam02_fight02_place06_night_summer/sheet_02.jpg",
+          "crop_xyxy_1080p": [
+            1180,
+            280,
+            1730,
+            980
+          ],
+          "frame_indices": [
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            58,
+            59
+          ],
+          "sha256": "e9f77f733e8123739c9a8c1a82335f267a03ed43a6766fb4e07688fd6630d1aa"
+        }
+      ],
+      "event_start_pts_s": null,
+      "event_end_pts_s": null,
+      "normal_intervals": [],
+      "approved_for_training_or_scoring": false,
+      "full_video_review_completed": false,
+      "human_verified": false,
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "14-4/14-4_cam02_fight02_place06_night_summer.mp4",
+      "video_sha256": "cf3a9adcb2848ceee9446d79b14781c848162a3a20bc475e4143e3ea12ac14da",
+      "label_sha256": "86b89ea70e692963f0eee07318da42d249085562afff128daf7277d51f6db310",
+      "scene_group": "nia2019:fight:14-4",
+      "selected_annotation": {
+        "participant": "person_2",
+        "action_name": "pushing",
+        "kind": "contact_candidate",
+        "start_frame": 3931,
+        "end_frame": 3990
+      },
+      "reviewed_window_s": [
+        131.016667,
+        133.016667
+      ],
+      "actual_first_last_pts_s": [
+        131.0309,
+        132.99953333333335
+      ],
+      "frame_count": 60,
+      "finding": "DISPLACEMENT_CANDIDATE",
+      "review_notes": "한 사람이 두 팔을 뻗어 상대 상체에 접촉하고 상대가 뒤로 이동하면서 접촉이 풀린다.",
+      "observation_anchors": [
+        {
+          "index": 14,
+          "pts": 3943940,
+          "actual_pts_s": 131.46466666666666,
+          "path": "data/runtime/p57_fight_context27_20261015/14-4_cam02_fight02_place06_night_summer/frame_0014.jpg",
+          "sha256": "47287523c142d8aed20645b90553b9f9cace2776e484627b5c179e053a883166"
+        },
+        {
+          "index": 46,
+          "pts": 3975972,
+          "actual_pts_s": 132.5324,
+          "path": "data/runtime/p57_fight_context27_20261015/14-4_cam02_fight02_place06_night_summer/frame_0046.jpg",
+          "sha256": "b6b26acfff9ff9c84adc6ae62a235f731a47fbd2696c914a4d2c92bfe041bb17"
+        }
+      ],
+      "viewed_sheets": [
+        {
+          "video_member": "14-4/14-4_cam02_fight02_place06_night_summer.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/14-4_cam02_fight02_place06_night_summer/sheet_01.jpg",
+          "crop_xyxy_1080p": [
+            1150,
+            300,
+            1770,
+            960
+          ],
+          "frame_indices": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "sha256": "0c362b1db1ebbdde2fff2df9067ce10e962e1e351fa5eee702db98e72fa8e29a"
+        },
+        {
+          "video_member": "14-4/14-4_cam02_fight02_place06_night_summer.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/14-4_cam02_fight02_place06_night_summer/sheet_02.jpg",
+          "crop_xyxy_1080p": [
+            1150,
+            300,
+            1770,
+            960
+          ],
+          "frame_indices": [
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            58,
+            59,
+            60
+          ],
+          "sha256": "ec317d9ffe120c83be103c73528feb727aef3939ccf44bb71ccf96ad85ba124a"
+        }
+      ],
+      "event_start_pts_s": null,
+      "event_end_pts_s": null,
+      "normal_intervals": [],
+      "approved_for_training_or_scoring": false,
+      "full_video_review_completed": false,
+      "human_verified": false,
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "14-5/14-5_cam01_fight02_place06_night_spring.mp4",
+      "video_sha256": "0824b8717438e601ae6d2e71ff89a3b274575d69966afc229100d14ac49557c5",
+      "label_sha256": "29809277618b3e262eafc027b865be2e4f401eb3f836a906e443979c953cf902",
+      "scene_group": "nia2019:fight:14-5",
+      "selected_annotation": {
+        "participant": "person_1",
+        "action_name": "punching",
+        "kind": "contact_candidate",
+        "start_frame": 3919,
+        "end_frame": 4005
+      },
+      "reviewed_window_s": [
+        131.066667,
+        133.066667
+      ],
+      "actual_first_last_pts_s": [
+        131.09763333333333,
+        133.06626666666668
+      ],
+      "frame_count": 60,
+      "finding": "UNRESOLVED",
+      "review_notes": "앞사람 뒤로 가방·팔이 보이고 머리 젖힘·이동이 있으나 앞사람 몸에 가려 실제 타격 궤적과 접촉은 미확정이다.",
+      "observation_anchors": [
+        {
+          "index": 1,
+          "pts": 3932929,
+          "actual_pts_s": 131.09763333333333,
+          "path": "data/runtime/p57_fight_context27_20261015/14-5_cam01_fight02_place06_night_spring/frame_0001.jpg",
+          "sha256": "a4e6b65ec68fb2b08293697764d5c1fe635a6c789ff2d9b2ca00a43960deface"
+        },
+        {
+          "index": 60,
+          "pts": 3991988,
+          "actual_pts_s": 133.06626666666668,
+          "path": "data/runtime/p57_fight_context27_20261015/14-5_cam01_fight02_place06_night_spring/frame_0060.jpg",
+          "sha256": "71c0bfdb574748364ed92c2b5b1835e130dcc842b31146b759155b92674b3457"
+        }
+      ],
+      "viewed_sheets": [
+        {
+          "video_member": "14-5/14-5_cam01_fight02_place06_night_spring.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/14-5_cam01_fight02_place06_night_spring/sheet_01.jpg",
+          "crop_xyxy_1080p": [
+            220,
+            200,
+            700,
+            900
+          ],
+          "frame_indices": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "sha256": "e5e0b9fd579d0d8c7671884ae0f564d84e9c8811f9cec806402443d71899bc2a"
+        },
+        {
+          "video_member": "14-5/14-5_cam01_fight02_place06_night_spring.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/14-5_cam01_fight02_place06_night_spring/sheet_02.jpg",
+          "crop_xyxy_1080p": [
+            220,
+            200,
+            700,
+            900
+          ],
+          "frame_indices": [
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            58,
+            59,
+            60
+          ],
+          "sha256": "94faa09a60277a250b6906435fdaf9f482ffcc1023352104bf3d4b6e9d93b867"
+        }
+      ],
+      "event_start_pts_s": null,
+      "event_end_pts_s": null,
+      "normal_intervals": [],
+      "approved_for_training_or_scoring": false,
+      "full_video_review_completed": false,
+      "human_verified": false,
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "14-5/14-5_cam01_fight02_place06_night_summer.mp4",
+      "video_sha256": "5cfdfd976029d52cf07be3d809387e9b3985c2c5c69f7f90ce221bc0fd0e9508",
+      "label_sha256": "d7bc0caa12e61cbd8674e7bc87fe6b4d5b50e9992493bdbc0186d848b55bc53f",
+      "scene_group": "nia2019:fight:14-5",
+      "selected_annotation": {
+        "participant": "person_2",
+        "action_name": "punching",
+        "kind": "contact_candidate",
+        "start_frame": 6606,
+        "end_frame": 6687
+      },
+      "reviewed_window_s": [
+        220.55,
+        222.55
+      ],
+      "actual_first_last_pts_s": [
+        220.55366666666666,
+        222.5223
+      ],
+      "frame_count": 60,
+      "finding": "STRIKE_MOTION_CANDIDATE",
+      "review_notes": "서 있는 사람이 가방을 뒤로 들었다 무릎 꿇은 사람 머리·상체 방향으로 휘두른다. 이후 상대가 몸을 낮추고 바닥에 손을 댄다.",
+      "observation_anchors": [
+        {
+          "index": 7,
+          "pts": 6622616,
+          "actual_pts_s": 220.75386666666665,
+          "path": "data/runtime/p57_fight_context27_20261015/14-5_cam01_fight02_place06_night_summer/frame_0007.jpg",
+          "sha256": "adb95de4a8e307bd1652543abbe3ca74e6acfdc928fcedcf284eb27668456151"
+        },
+        {
+          "index": 59,
+          "pts": 6674668,
+          "actual_pts_s": 222.48893333333334,
+          "path": "data/runtime/p57_fight_context27_20261015/14-5_cam01_fight02_place06_night_summer/frame_0059.jpg",
+          "sha256": "99feb8ad11e4619f342babe551c5862df878650ff8ec5e5d912fa877ac40c000"
+        }
+      ],
+      "viewed_sheets": [
+        {
+          "video_member": "14-5/14-5_cam01_fight02_place06_night_summer.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/14-5_cam01_fight02_place06_night_summer/sheet_01.jpg",
+          "crop_xyxy_1080p": [
+            150,
+            230,
+            460,
+            650
+          ],
+          "frame_indices": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "sha256": "815a64936f9b0306f7d9767f2ca48c6fa1ec90aef40ff0a65bc3573d013154d6"
+        },
+        {
+          "video_member": "14-5/14-5_cam01_fight02_place06_night_summer.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/14-5_cam01_fight02_place06_night_summer/sheet_02.jpg",
+          "crop_xyxy_1080p": [
+            150,
+            230,
+            460,
+            650
+          ],
+          "frame_indices": [
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            58,
+            59,
+            60
+          ],
+          "sha256": "291faeb78e46957c6a87eb4688f4df9bec17358059bc86d36bbb8397db67ec1f"
+        }
+      ],
+      "event_start_pts_s": null,
+      "event_end_pts_s": null,
+      "normal_intervals": [],
+      "approved_for_training_or_scoring": false,
+      "full_video_review_completed": false,
+      "human_verified": false,
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "14-5/14-5_cam02_fight02_place06_night_spring.mp4",
+      "video_sha256": "e53ad6963e681914fb8f8c8f5b94f1de70fc202ccd78bb6edc324d7945259869",
+      "label_sha256": "a0b4fab961c780824d37aec90d50d022ecb0225fad7461ce812538da458a5e92",
+      "scene_group": "nia2019:fight:14-5",
+      "selected_annotation": {
+        "participant": "person_1",
+        "action_name": "punching",
+        "kind": "contact_candidate",
+        "start_frame": 3973,
+        "end_frame": 4036
+      },
+      "reviewed_window_s": [
+        132.483333,
+        134.483333
+      ],
+      "actual_first_last_pts_s": [
+        132.49903333333333,
+        134.46766666666667
+      ],
+      "frame_count": 60,
+      "finding": "STRIKE_MOTION_CANDIDATE",
+      "review_notes": "가방을 뒤로 든 뒤 앞서 가는 사람 등·어깨 방향으로 휘두르고 상체 가까이에 닿는 동작이 보인다.",
+      "observation_anchors": [
+        {
+          "index": 7,
+          "pts": 3980977,
+          "actual_pts_s": 132.69923333333332,
+          "path": "data/runtime/p57_fight_context27_20261015/14-5_cam02_fight02_place06_night_spring/frame_0007.jpg",
+          "sha256": "7b46fcbabf3505646ff987b7adec7d1ae043f75d30e01599e5e55f32bb0aee85"
+        },
+        {
+          "index": 45,
+          "pts": 4019015,
+          "actual_pts_s": 133.96716666666666,
+          "path": "data/runtime/p57_fight_context27_20261015/14-5_cam02_fight02_place06_night_spring/frame_0045.jpg",
+          "sha256": "90a113af77d09a6bf689a583c9e15aa94c416dca285104cee4063f880c586b3c"
+        }
+      ],
+      "viewed_sheets": [
+        {
+          "video_member": "14-5/14-5_cam02_fight02_place06_night_spring.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/14-5_cam02_fight02_place06_night_spring/sheet_01.jpg",
+          "crop_xyxy_1080p": [
+            1360,
+            400,
+            1900,
+            850
+          ],
+          "frame_indices": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "sha256": "6d942ef358c6768e381f61f489e1a3eeacab5f26739eeb6763cee8d54e2fea24"
+        },
+        {
+          "video_member": "14-5/14-5_cam02_fight02_place06_night_spring.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/14-5_cam02_fight02_place06_night_spring/sheet_02.jpg",
+          "crop_xyxy_1080p": [
+            1360,
+            400,
+            1900,
+            850
+          ],
+          "frame_indices": [
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            58,
+            59,
+            60
+          ],
+          "sha256": "80736aeaa87fdc252bb5af7da1955052ff087f403cd5d6f2dd3f9813c5bef9fe"
+        }
+      ],
+      "event_start_pts_s": null,
+      "event_end_pts_s": null,
+      "normal_intervals": [],
+      "approved_for_training_or_scoring": false,
+      "full_video_review_completed": false,
+      "human_verified": false,
+      "actor_session_verified": false
+    },
+    {
+      "video_member": "14-5/14-5_cam02_fight02_place06_night_summer.mp4",
+      "video_sha256": "4e06545e5a9cd08d0f563ab4634ebee48bc5239e16358334fea3086832cc69ed",
+      "label_sha256": "80e3ab5f2586703add7291e0b805d50a9a913971db319dc503d1ca3274a1a56a",
+      "scene_group": "nia2019:fight:14-5",
+      "selected_annotation": {
+        "participant": "person_2",
+        "action_name": "punching",
+        "kind": "contact_candidate",
+        "start_frame": 6482,
+        "end_frame": 6555
+      },
+      "reviewed_window_s": [
+        216.283333,
+        218.283333
+      ],
+      "actual_first_last_pts_s": [
+        216.3161,
+        218.25136666666666
+      ],
+      "frame_count": 59,
+      "finding": "STRIKE_MOTION_CANDIDATE",
+      "review_notes": "가방을 뒤로 들었다 무릎 꿇은 사람 상체 쪽으로 휘두른 후 앞으로 밀착하며 상대가 뒤로 몸을 낮춘다.",
+      "observation_anchors": [
+        {
+          "index": 6,
+          "pts": 6494488,
+          "actual_pts_s": 216.48293333333334,
+          "path": "data/runtime/p57_fight_context27_20261015/14-5_cam02_fight02_place06_night_summer/frame_0006.jpg",
+          "sha256": "b94fbd683881516cf7e1fbd9dd5218393b174cb5b2b2122ce662b89cebf6d9c4"
+        },
+        {
+          "index": 59,
+          "pts": 6547541,
+          "actual_pts_s": 218.25136666666666,
+          "path": "data/runtime/p57_fight_context27_20261015/14-5_cam02_fight02_place06_night_summer/frame_0059.jpg",
+          "sha256": "80527e32f912126aa920b1ce22e557b636bf65432842f12ed2f1aff6350e39e1"
+        }
+      ],
+      "viewed_sheets": [
+        {
+          "video_member": "14-5/14-5_cam02_fight02_place06_night_summer.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/14-5_cam02_fight02_place06_night_summer/sheet_01.jpg",
+          "crop_xyxy_1080p": [
+            1120,
+            400,
+            1700,
+            950
+          ],
+          "frame_indices": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "sha256": "eae447b97ec6adeebc84503f4a05c7e0a2acfefe0fa6e2bac2532beef61d28a7"
+        },
+        {
+          "video_member": "14-5/14-5_cam02_fight02_place06_night_summer.mp4",
+          "path": "data/runtime/p57_fight_context27_20261015/14-5_cam02_fight02_place06_night_summer/sheet_02.jpg",
+          "crop_xyxy_1080p": [
+            1120,
+            400,
+            1700,
+            950
+          ],
+          "frame_indices": [
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            58,
+            59
+          ],
+          "sha256": "a9bde31a0c9bcaf48a59bab95f71e5f262735a3d2cbfb5fa88f78cc866377fa4"
+        }
+      ],
+      "event_start_pts_s": null,
+      "event_end_pts_s": null,
+      "normal_intervals": [],
+      "approved_for_training_or_scoring": false,
+      "full_video_review_completed": false,
+      "human_verified": false,
+      "actor_session_verified": false
+    }
+  ],
+  "metadata_conflicts": [
+    {
+      "video_member": "1-3/1-3_cam02_fight04_place02_night_summer.mp4",
+      "filename_location": "PLACE02",
+      "xml_location": "PLACE01",
+      "resolved": false
+    },
+    {
+      "video_member": "1-4/1-4_cam01_fight04_place02_night_spring.mp4",
+      "filename_location": "PLACE02",
+      "xml_location": "PLACE01",
+      "resolved": false
+    }
+  ],
+  "review_policy": [
+    "각 영상 첫 punching/kicking, 없으면 첫 pushing, 없으면 첫 contact 라벨의 명목 중간±1초를 선택했다. 원본 라벨은 탐색용이며 정답이 아니다.",
+    "54시트의 인접1614프레임을 순서대로 관측했다. 전체화면 문맥은 각 구간 첫/끝54개; 전영상 재생·모든 사건 검수가 아니다.",
+    "원본29.97fps 실제PTS를 보존한1920x1080 프레임이다. 확대 crop은 검수용이며 운영1080p30 전체화면/신뢰도0.5는 불변이다.",
+    "타격/변위 후보는 보이는 움직임의 해석이다. 힘·고의·폭행 또는 정상 여부를 확정하지 않으며 공격 강도 점수를 만들지 않았다.",
+    "한 구간에서 타격이 안 보인다는 이유로 원본 라벨 오류나 정상 대조로 확정하지 않는다. 보류10개는 채점 정답에서 미승인으로 보존한다.",
+    "38영상 일부 구간 관측 완료는38독립 사건이나 독립 평가셋 확정이 아니다. 동일 장소·인물·카메라 연관 가능성을 해소하기 전 분리 사용 금지다.",
+    "파일명/XML 장소 불일치2개는 양쪽 값을 보존하고 미해결로 둔다. 어느 쪽도 단독 분리 키로 쓰거나 원본을 자동 교정하지 않는다."
+  ],
+  "implementation_status": {
+    "production_changes": 0,
+    "ai_stops": 0,
+    "gpu_trials": 0,
+    "training_runs": 0,
+    "new_dependencies": 0,
+    "processing_standard": "1080p30 전체화면·사람/Pose 신뢰도0.5 유지",
+    "review_preview_size": [
+      1920,
+      1080
+    ],
+    "runtime_file_sha256": {
+      "src/core/ai/fall_temporal_model.py": "9537b4c935496f98e2cd5d4916cab3a36d2c272b0a1d3cd9ad32bfea26ae2e96",
+      "src/core/ai/_temporal_worker.py": "7e33f3323c89cf8119888e013a1dd38cafa6b99aaf3807ca1390e61ed9d7c35a",
+      "src/core/video_event_ingest.py": "7158836647b520c8ac84872fe6752bf9c610abe740e5a6c8945be8a68c6b4163",
+      "src/core/events.py": "9d8d1f01c4b53b216c4c9cddab63cee0d4938a04724d401f73607f88279fad09",
+      "config/event_type_map.json": "1213c8dff21bcb9ef17d7ce934b0f2cf14f7f1be42924f4c40e8199dd0cd7a63",
+      "models/model_manifest.json": "2ae31f3969fed58b831e959c9c3a06a4aa398d1b9580af0ed74c93f65df682a2"
+    }
+  },
+  "validation": {
+    "source_video_xml_hash_pairs": 27,
+    "continuous_pts": "PASS: 인접1001/30000초; 추출창 경계/순서 일치",
+    "frame_hashes": "PASS: 1614 JPEG / 1920x1080",
+    "sheet_hashes_and_coverage": "PASS: 54시트·1614프레임",
+    "source_manifests_unchanged": 5,
+    "runtime_file_pins_unchanged": 6,
+    "preparation_recovery": {
+      "interrupted_exit_codes": [
+        143,
+        143
+      ],
+      "signal_sender": "unknown",
+      "excluded_partial_frames": 34,
+      "excluded_folder": "data/runtime/p57_fight_context27_20261015/interrupted/14-5_cam02_fight02_place06_night_summer",
+      "temporary_copies": [
+        {
+          "path": "data/runtime/p57_fight_context27_20261015/interrupted/tmpmok8_evb.mp4",
+          "bytes": 842489434,
+          "action": "interrupted_temporary_copy_preserved_not_used"
+        },
+        {
+          "path": "data/runtime/p57_fight_context27_20261015/interrupted/tmpz4b8d2qf.mp4",
+          "bytes": 541065216,
+          "action": "interrupted_temporary_copy_preserved_not_used"
+        }
+      ],
+      "note": "중단 임시 원본은 검증 완료 자료와 분리 보존; 최종27개는 재추출 후 원본 해시와 PTS 검증"
+    },
+    "board_checks": {
+      "wbs_json_html_rows": 37,
+      "counts": {
+        "DONE": 9,
+        "BLOCKED": 3,
+        "PLANNED": 15,
+        "VERIFY": 8,
+        "IN_PROGRESS": 2
+      },
+      "ids_status_dependencies_p57_paths": "PASS",
+      "html_unique_ids_resolved_placeholders_current_summary": "PASS",
+      "ruff": "PASS: renderer + 4 offline review utilities",
+      "pdf_pages": 5,
+      "browser_interaction": "NOT_CHECKED",
+      "pytest": "NOT_RUN: product logic unchanged; source/hash/PTS/coverage assertions and board checks applied",
+      "graph_review_limit": "detect_changes 지정2파일 결과에 무관한122함수/42시험 갭 혼입. 이번 위험도 근거로 쓰지 않고 before 스냅샷 직접 대조로 범위 확인.",
+      "affected_flows_reported": 0,
+      "direct_renderer_review": "PASS: before snapshot diff limited to current summary comment and 4 text literals",
+      "pdf_first_page_visual": "PASS",
+      "scoped_diff_check": "PASS"
+    }
+  },
+  "runtime_evidence_dir": "data/runtime/p57_fight_context27_20261015",
+  "runtime_artifact_sha256": {
+    "data/runtime/p57_fight_context27_20261015/windows.json": "55b5be11fdf5a1c199677f95b4ef3ab6b294886420ed02167ae0533d48ba01ae",
+    "data/runtime/p57_fight_context27_20261015/media_review.json": "e744dd4b2670dcec4d64aec764d25956db19d5af0ac6dfd1fe0d9e82f875434e",
+    "data/runtime/p57_fight_context27_20261015/sheets.json": "57d3af492ccf0e26b0d1f3f4f5891ea9018e1958eb0e14c1cff58887d5a1d3c5",
+    "data/runtime/p57_fight_context27_20261015/contexts.json": "b31c996f5a0d76c182380524e652b16e8df67d08ebcbbbd4b4dde7a9cd89d493",
+    "data/runtime/p57_fight_context27_20261015/boxes.json": "62a920f2fe7f26cb01f2ce9848d5ee600afd08ed808f1983c2b2cb209e6f9bd5",
+    "data/runtime/p57_fight_context27_20261015/recovery.json": "ddd7280a253360f9f52076c6a534bda4dd6424aa40205cef9d3e1660df727ab2",
+    "data/runtime/p57_fight_context27_20261015/board_checks.json": "2aed0eceb3e0dbff6f91a191f5ef5f8dfa7fe6b1d56733272daa37055f6d829d",
+    "data/runtime/p57_fight_context27_20261015/http_checks.json": "400be82303ed962d63ab598827ce6205d0f837555fd05680d20fa3ae18b76ef5",
+    "data/runtime/p57_fight_context27_20261015/prepare_contiguous.py": "2ca5c79c1f16d6358b4446df00deb7d43ccc3cb78131bd183f14ce2dcced7ef9",
+    "data/runtime/p57_fight_context27_20261015/make_sheets.py": "8cdedd5ef5c995b7b3b29819151444871f07369174203052b647a6fcb1db826f",
+    "data/runtime/p57_fight_context27_20261015/make_context.py": "16700e2f5a0a4ce26e140c194aa4b2fd1a437e6842aa9e8f6693ad512fa14257",
+    "data/runtime/p57_fight_context27_20261015/record_review.py": "45428c41053c2b53b9ceff1ce4121302311d5638d782ec22e2ff84540a7a1951"
+  },
+  "next": "38후보의 대표 구간 분류를 마침. 다음은 정상/유사 행동 자료와 배우·촬영 세션 근거 보강, 전체 사건 문맥·정답 승인 후 독립 목록 고정. 같은2초 구간 반복 검수는 진행률로 추가 계산하지 않음.",
+  "progress_board": {
+    "verified_at": "2026-10-15T17:17:43.352081+09:00",
+    "http_checks": [
+      {
+        "url": "http://192.168.2.141:18081/index.html",
+        "http_status": 200,
+        "bytes": 107343,
+        "sha256": "7571e9909f702cdf10ff724be35b02b24c87685f576a56e410f2aa35d6144222",
+        "local_match": true
+      },
+      {
+        "url": "http://192.168.2.141:18081/CCTV_project_progress.pdf",
+        "http_status": 200,
+        "bytes": 157034,
+        "sha256": "96631b47840ff08770fa2c81f06f5bb3abac1f88cad458f37003f948721a72b6",
+        "local_match": true
+      }
+    ]
+  },
+  "artifact_sha256": {
+    "docs/planning/README.md": "54a8dce86274a4c913f7650ab2af619a1cb2b39402472defae90525450042e35",
+    "docs/planning/PROGRESS.md": "eff4b40ca8e78e594d62ad9d3675db6ad0a3fab4624691a44ac84103ac79c9fb",
+    "docs/planning/WBS.md": "947a3860f51bf2437de9a6bedf106929cf095bfe0cd02ddb69f52ccd7824ab1b",
+    "docs/planning/STATUS.md": "157dafd96233a2bd09adacd6bedec0019b1873efd6195188b7ea60f8cd924dd5",
+    "docs/planning/POC_SCOPE.md": "095964972f0a75ae5ebedf892646ecd4b38bbf0c789859057af8eca653b189bf",
+    "docs/planning/OBSERVATION_CONTRACT.md": "73523d87880acd6a25e0f5c221005817b4e522f627384780a13d98670aee680c",
+    "docs/planning/MODEL_INFERENCE_METRICS.md": "13cc8084f19d260a761e6513fe6243cc900ff86ed3b58494f84d41863fddb5e4",
+    "docs/planning/ONLINE_PROGRESS.md": "155d28e10923fe25ab3df996ee9d3442e034f5a054c16561a61d90090f48955b",
+    "docs/planning/figma_exports/progress_v138.json": "2e6e0d5a981fa59f620039e3cf1fe8d4877ff7bb35517a7fc32d2f20882e0566",
+    "scripts/ops/progress_snapshot_template.html": "0dfbfd1f52a71c571805c147c1710a08578d926751b4b2afe5cacc91b2563581",
+    "scripts/ops/render_progress_snapshot.py": "8886fbc13f21a0a9180af8c68040793dc2eb527675391f83ece4a33a1b2c754a",
+    "docs/planning/online/index.html": "7571e9909f702cdf10ff724be35b02b24c87685f576a56e410f2aa35d6144222",
+    "docs/planning/online/CCTV_project_progress.pdf": "96631b47840ff08770fa2c81f06f5bb3abac1f88cad458f37003f948721a72b6"
+  }
+}

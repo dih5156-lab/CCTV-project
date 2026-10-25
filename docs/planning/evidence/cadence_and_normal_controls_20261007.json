@@ -1,0 +1,486 @@
+{
+  "version": "0.127",
+  "date": "2026-10-07",
+  "wbs_units": [
+    "P5.1 cadence pilot",
+    "P5.2 normal controls"
+  ],
+  "approved_target": "사람/Pose 약15 actual tensor FPS; 영상 FPS·지연 누적·품질 구분, 최대4카메라 유지",
+  "cadence": {
+    "plan": {
+      "wbs": "P5.1 cadence pilot; P6.2 preliminary replay only",
+      "image": "sha256:294e52234fc170904e2a09b180b422e0562d6e11b5aa28ebcf287a1b47c9ed55",
+      "input_fps": 29.97002997002997,
+      "target_tensor_fps": 14.985014985014985,
+      "decoder_drop_interval": 2,
+      "primary_interval": 0,
+      "thresholds": {
+        "tensor_fps_min": 14.235764235764234,
+        "source_to_wall_min": 0.95,
+        "source_to_wall_max": 1.05,
+        "output_lag_growth_max_seconds": 0.5
+      },
+      "threshold_scope": "이번30초 탐색 시험의 수치 오차 허용 기준; 현장 최종 인수 기준 아님",
+      "channels": [
+        1,
+        2
+      ],
+      "duration_seconds": 30,
+      "warmup_seconds": 5,
+      "deadline": "1 candidate per channel count; record outcome and move to P5.2",
+      "limits": [
+        "독립 batch1 디코더/Primary 경로",
+        "출력 프레임 수 감소는 영상/분석 품질 재검증 필요",
+        "고정 간격 선택은 과부하 최신 프레임 보장 기능 아님",
+        "운영GPU 공유·CPU2·실물1대",
+        "기존30FPS 시험 실패 기록을 새 기준으로 소급 합격 처리하지 않음"
+      ]
+    },
+    "trials": [
+      {
+        "scope": "decode_and_primary_only",
+        "commercial_acceptance": "NOT_EVALUATED",
+        "finished": true,
+        "errors": [],
+        "channels": 1,
+        "decoder_drop_interval": 2,
+        "interval": 0,
+        "mux_resolution": [
+          1920,
+          1080
+        ],
+        "topology": "independent",
+        "inference_batch_size": 1,
+        "observed_decode_caps": {
+          "replay_1": "video/x-raw(memory:NVMM), format=(string){ I420, NV12, P010_10LE, BGRx, RGBA, GRAY8 }, width=(int)[ 1, 2147483647 ], height=(int)[ 1, 2147483647 ], framerate=(fraction)[ 0/1, 2147483647/1 ]"
+        },
+        "metric_evidence": "primary_tensor_meta",
+        "elapsed_seconds": 30.018696655053645,
+        "cameras": {
+          "replay_1": {
+            "frames_seen": 450,
+            "frames_inferred": 450,
+            "frames_skipped": 0,
+            "frames_inference_unknown": 0,
+            "tensor_frames": 450,
+            "seen_fps": 14.990657494926333,
+            "inferred_fps": 14.990657494926333,
+            "tensor_fps": 14.990657494926333,
+            "last_frame_age_seconds": 0.0162319871596992,
+            "replay_timing": {
+              "source_timeline_seconds": 30.029999999999998,
+              "source_to_wall_ratio": 1.0003765434947507,
+              "output_lag_start_seconds": 0.00930740799999974,
+              "output_lag_end_seconds": -0.011636838000001148,
+              "output_lag_change_seconds": -0.020944246000000888,
+              "scope": "source_pts_vs_pipeline_clock_not_end_to_end"
+            },
+            "pilot_pass": true
+          }
+        }
+      },
+      {
+        "scope": "decode_and_primary_only",
+        "commercial_acceptance": "NOT_EVALUATED",
+        "finished": true,
+        "errors": [],
+        "channels": 2,
+        "decoder_drop_interval": 2,
+        "interval": 0,
+        "mux_resolution": [
+          1920,
+          1080
+        ],
+        "topology": "independent",
+        "inference_batch_size": 1,
+        "observed_decode_caps": {
+          "replay_1": "video/x-raw(memory:NVMM), format=(string){ I420, NV12, P010_10LE, BGRx, RGBA, GRAY8 }, width=(int)[ 1, 2147483647 ], height=(int)[ 1, 2147483647 ], framerate=(fraction)[ 0/1, 2147483647/1 ]",
+          "replay_2": "video/x-raw(memory:NVMM), format=(string){ I420, NV12, P010_10LE, BGRx, RGBA, GRAY8 }, width=(int)[ 1, 2147483647 ], height=(int)[ 1, 2147483647 ], framerate=(fraction)[ 0/1, 2147483647/1 ]"
+        },
+        "metric_evidence": "primary_tensor_meta",
+        "elapsed_seconds": 30.021097292890772,
+        "cameras": {
+          "replay_1": {
+            "frames_seen": 279,
+            "frames_inferred": 279,
+            "frames_skipped": 0,
+            "frames_inference_unknown": 0,
+            "tensor_frames": 279,
+            "seen_fps": 9.29346443529462,
+            "inferred_fps": 9.29346443529462,
+            "tensor_fps": 9.29346443529462,
+            "last_frame_age_seconds": 0.1038356029894203,
+            "replay_timing": {
+              "source_timeline_seconds": 18.6186,
+              "source_to_wall_ratio": 0.6201838599819943,
+              "output_lag_start_seconds": 2.8470689929999997,
+              "output_lag_end_seconds": 14.185373180000003,
+              "output_lag_change_seconds": 11.338304187000002,
+              "scope": "source_pts_vs_pipeline_clock_not_end_to_end"
+            },
+            "pilot_pass": false
+          },
+          "replay_2": {
+            "frames_seen": 278,
+            "frames_inferred": 278,
+            "frames_skipped": 0,
+            "frames_inference_unknown": 0,
+            "tensor_frames": 278,
+            "seen_fps": 9.260154526924389,
+            "inferred_fps": 9.260154526924389,
+            "tensor_fps": 9.260154526924389,
+            "last_frame_age_seconds": 0.0747239519841969,
+            "replay_timing": {
+              "source_timeline_seconds": 18.551866666000002,
+              "source_to_wall_ratio": 0.6179609787412144,
+              "output_lag_start_seconds": 2.490439611,
+              "output_lag_end_seconds": 13.975411681999997,
+              "output_lag_change_seconds": 11.484972070999998,
+              "scope": "source_pts_vs_pipeline_clock_not_end_to_end"
+            },
+            "pilot_pass": false
+          }
+        }
+      }
+    ],
+    "decision": "2채널 실패로 제품 설정 추가/적용 안 함; 단일채널 기존 interval1 약15Hz 평가로 진행",
+    "native_property_reference": "https://docs.nvidia.com/metropolis/deepstream/7.1/text/DS_plugin_gst-nvurisrcbin.html",
+    "limits": [
+      "고정 간격 선택은 과부하 시 최신 프레임 보장이 아님",
+      "독립 batch1 디코더/Primary만 시험; 제품 송출·실물2/4대·장시간 제외",
+      "운영 GPU 공유·CPU2; CPU/GPU 단일 원인으로 확정하지 않음"
+    ]
+  },
+  "normal_controls": {
+    "plan": {
+      "wbs": "P5.2",
+      "scene_order": [
+        "00495_H_D_N_C1",
+        "00889_O_E_N_C1",
+        "00495_H_D_N_C1",
+        "00889_O_E_N_C1"
+      ],
+      "folded_enabled": [
+        false,
+        false,
+        true,
+        true
+      ],
+      "primary_interval": 1,
+      "purpose": "지팡이 정상동작00889(과거RF 오경보)과00495 대조; 기존에 사용한 진단 영상이며 새 외부 일반화시험 아님",
+      "frozen_before_replay": true,
+      "no_retuning": true,
+      "normal_seconds_per_profile": 20.02,
+      "decoder_candidate": "미채택; 기존 단일카메라 약15Hz 추론 구성 유지"
+    },
+    "profiles": [
+      {
+        "profile": "baseline",
+        "trials": [
+          {
+            "scene": "00495_H_D_N_C1",
+            "label": "not_fall",
+            "result": "TN",
+            "all_frames_processed": true,
+            "frames": 300,
+            "tensor_frames": 150,
+            "pose_frames": 150,
+            "candidate_count": 0,
+            "first_candidate_pts": null,
+            "source_first_pts": 0.066733333,
+            "time_reference": "source PTS minus first frame PTS; frame0=0",
+            "alarm_count": 0,
+            "alarm_pts": [],
+            "early_alarm_count": 0,
+            "fall_start_seconds": null,
+            "fall_end_seconds": null,
+            "first_alarm_delay_from_start": null,
+            "first_alarm_delay_from_end": null,
+            "source_pts_span": 9.976633333,
+            "source_wall_span": 9.97671999502927,
+            "policy": {
+              "debounce_enabled": true,
+              "fall_sustained_seconds": 2.0,
+              "fall_gap_reset_seconds": 5.0,
+              "fall_resend_cooldown": 60.0
+            },
+            "normal_exit": true,
+            "stop_latency_seconds": null,
+            "database_copies_integrity": {
+              "mqtt_event_outbox.db": "ok"
+            }
+          },
+          {
+            "scene": "00889_O_E_N_C1",
+            "label": "not_fall",
+            "result": "TN",
+            "all_frames_processed": true,
+            "frames": 300,
+            "tensor_frames": 150,
+            "pose_frames": 150,
+            "candidate_count": 6,
+            "first_candidate_pts": 1.7350666670000001,
+            "source_first_pts": 0.066733333,
+            "time_reference": "source PTS minus first frame PTS; frame0=0",
+            "alarm_count": 0,
+            "alarm_pts": [],
+            "early_alarm_count": 0,
+            "fall_start_seconds": null,
+            "fall_end_seconds": null,
+            "first_alarm_delay_from_start": null,
+            "first_alarm_delay_from_end": null,
+            "source_pts_span": 9.976633333,
+            "source_wall_span": 10.393743983004242,
+            "policy": {
+              "debounce_enabled": true,
+              "fall_sustained_seconds": 2.0,
+              "fall_gap_reset_seconds": 5.0,
+              "fall_resend_cooldown": 60.0
+            },
+            "normal_exit": true,
+            "stop_latency_seconds": null,
+            "database_copies_integrity": {
+              "mqtt_event_outbox.db": "ok"
+            }
+          }
+        ],
+        "false_positive_clips": 0,
+        "alarm_count": 0
+      },
+      {
+        "profile": "folded",
+        "trials": [
+          {
+            "scene": "00495_H_D_N_C1",
+            "label": "not_fall",
+            "result": "TN",
+            "all_frames_processed": true,
+            "frames": 300,
+            "tensor_frames": 150,
+            "pose_frames": 150,
+            "candidate_count": 0,
+            "first_candidate_pts": null,
+            "source_first_pts": 0.066733333,
+            "time_reference": "source PTS minus first frame PTS; frame0=0",
+            "alarm_count": 0,
+            "alarm_pts": [],
+            "early_alarm_count": 0,
+            "fall_start_seconds": null,
+            "fall_end_seconds": null,
+            "first_alarm_delay_from_start": null,
+            "first_alarm_delay_from_end": null,
+            "source_pts_span": 9.976633333,
+            "source_wall_span": 9.98716980800964,
+            "policy": {
+              "debounce_enabled": true,
+              "fall_sustained_seconds": 2.0,
+              "fall_gap_reset_seconds": 5.0,
+              "fall_resend_cooldown": 60.0
+            },
+            "normal_exit": true,
+            "stop_latency_seconds": null,
+            "database_copies_integrity": {
+              "mqtt_event_outbox.db": "ok"
+            }
+          },
+          {
+            "scene": "00889_O_E_N_C1",
+            "label": "not_fall",
+            "result": "TN",
+            "all_frames_processed": true,
+            "frames": 300,
+            "tensor_frames": 150,
+            "pose_frames": 150,
+            "candidate_count": 6,
+            "first_candidate_pts": 1.7350666670000001,
+            "source_first_pts": 0.066733333,
+            "time_reference": "source PTS minus first frame PTS; frame0=0",
+            "alarm_count": 0,
+            "alarm_pts": [],
+            "early_alarm_count": 0,
+            "fall_start_seconds": null,
+            "fall_end_seconds": null,
+            "first_alarm_delay_from_start": null,
+            "first_alarm_delay_from_end": null,
+            "source_pts_span": 9.976633333,
+            "source_wall_span": 10.924956395989284,
+            "policy": {
+              "debounce_enabled": true,
+              "fall_sustained_seconds": 2.0,
+              "fall_gap_reset_seconds": 5.0,
+              "fall_resend_cooldown": 60.0
+            },
+            "normal_exit": true,
+            "stop_latency_seconds": null,
+            "database_copies_integrity": {
+              "mqtt_event_outbox.db": "ok"
+            }
+          }
+        ],
+        "false_positive_clips": 0,
+        "alarm_count": 0
+      }
+    ],
+    "limits": [
+      "기존 RF 평가에 사용했던2정상영상; 미관측 외부 일반화 시험 아님",
+      "정상20.02초/조건 추가, 기존4영상의 낙상 결과와 재생 횟수 구분",
+      "실제 추론 경로의 경보 큐이며 외부 전달 성공 아님",
+      "영상별 양성은 오경보 클립으로 집계; 사건 수·시간당 오경보율과 다름",
+      "00889 약9.98초 입력이 기본10.39/후보10.92초 소요; 전체 앱 실시간 성능 합격 아님"
+    ]
+  },
+  "bbox_diagnosis": {
+    "132_to_134": {
+      "old_bbox": [
+        613,
+        495,
+        328,
+        189
+      ],
+      "new_bbox": [
+        613,
+        492,
+        115,
+        174
+      ],
+      "iou": 0.31546272679147214,
+      "center_ratio": 0.32626937161713965,
+      "area_delta": 0.677216415021293,
+      "match_score": -1.0
+    },
+    "134_to_136": {
+      "old_bbox": [
+        613,
+        492,
+        115,
+        174
+      ],
+      "new_bbox": [
+        620,
+        487,
+        320,
+        199
+      ],
+      "iou": 0.2895620820364264,
+      "center_ratio": 0.34298921493612594,
+      "area_delta": 0.6857726130653267,
+      "match_score": -1.0
+    },
+    "132_to_136": {
+      "old_bbox": [
+        613,
+        495,
+        328,
+        189
+      ],
+      "new_bbox": [
+        620,
+        487,
+        320,
+        199
+      ],
+      "iou": 0.9277211927843907,
+      "center_ratio": 0.012934880143656355,
+      "area_delta": 0.02650753768844221,
+      "match_score": 0.9251023278856029
+    },
+    "decision": "136프레임 재연결 거절과 면적 변화 제한의 일치. 다른 인물 병합 방지 제한을 완화하지 않고 후보 품질 평가를 확대한다."
+  },
+  "operating_unchanged": true,
+  "product_source_unchanged": 206,
+  "sha256": {
+    "data/runtime/p51_cadence_20261007_v127/operating_after.json": "b112264b68f921a0adf41b80ef84e7ac8d016c354e1308f7482c6cf1e965051e",
+    "data/runtime/p51_cadence_20261007_v127/bbox_analysis.json": "7f64aef325dfa9b889ad2632d1d5c240ae033ee852e8c88f401703883f25854d",
+    "data/runtime/p51_cadence_20261007_v127/trial_results.json": "daf70bbf00a5d6cceae040d8abc6349f4c88cd59553d962effe42e1f2a39196b",
+    "data/runtime/p51_cadence_20261007_v127/summarize.py": "3518e4b7d6c07577f6de534a51bbe382a3c99c8379ee96e2fdc02d2316f929b1",
+    "data/runtime/p51_cadence_20261007_v127/operating_before.json": "b112264b68f921a0adf41b80ef84e7ac8d016c354e1308f7482c6cf1e965051e",
+    "data/runtime/p51_cadence_20261007_v127/benchmark.py": "0738048f7ad91660b098c1004dbc59054887d697fce4d6d34095c7ccbd4d6170",
+    "data/runtime/p51_cadence_20261007_v127/run.py": "a09c937702640ab994ebd899c20f1ce8f99a1d381fbae49a00e67e9866929a71",
+    "data/runtime/p51_cadence_20261007_v127/prepare_normal_controls.py": "ee4a67f8fcefa500b7685a981d3094971bb0f537e5a11352e620657e2a5017dd",
+    "data/runtime/p51_cadence_20261007_v127/plan.json": "e936ec1102256e9421a264da30a5ad6ba5c8a35d274391717bf5c5d879bafbfa",
+    "data/runtime/p51_cadence_20261007_v127/scene_1/compose.json": "2f343bc94de01d5c7f07504c42e243232009da04edbb1cf3f40d42e3b96410ff",
+    "data/runtime/p51_cadence_20261007_v127/scene_1/run.log": "7d4dda6eb090850b3f4a650579179a8a0b385ebcd33c601d3653c55b95f7926b",
+    "data/runtime/p51_cadence_20261007_v127/scene_1/exit.json": "124fd50cb6d223cdd18fedc166d00af7254199b6e6dedf9be82f71db87af6d01",
+    "data/runtime/p51_cadence_20261007_v127/scene_1/output/result/report.json": "d8c1309f04fcb34a89ea6e36475b6da11e7d7bc58028c0d53b55c63e8ac68f18",
+    "data/runtime/p51_cadence_20261007_v127/scene_2/compose.json": "11627106e4a01ff9457f4348717368aebcf61e2253694a16210cbacf8f312039",
+    "data/runtime/p51_cadence_20261007_v127/scene_2/run.log": "ef7fd0ba121d462211bcb394024347cd79a460655700312293ca41c548051d9c",
+    "data/runtime/p51_cadence_20261007_v127/scene_2/exit.json": "124fd50cb6d223cdd18fedc166d00af7254199b6e6dedf9be82f71db87af6d01",
+    "data/runtime/p51_cadence_20261007_v127/scene_2/output/result/report.json": "e7838d5e4decbbd77c91284537c09eae3ef33b4f7a52296222b4c63101036cd5",
+    "data/runtime/p52_normal_controls_20261007_v127/operating_after.json": "b112264b68f921a0adf41b80ef84e7ac8d016c354e1308f7482c6cf1e965051e",
+    "data/runtime/p52_normal_controls_20261007_v127/analyze.py": "8d0012284e4eaaf8fdb99872b1649e5708400189ac2ac971027be3687c97cdba",
+    "data/runtime/p52_normal_controls_20261007_v127/trial_results.json": "34e47099d1df8c1702866e158d12d0c5093437846e027288bf0f184eb1c76a1a",
+    "data/runtime/p52_normal_controls_20261007_v127/comparison.json": "9b765f72ea10ea02fa9f41d19159c82a5ac7db2966adb782036008f84dbf6490",
+    "data/runtime/p52_normal_controls_20261007_v127/operating_before.json": "b112264b68f921a0adf41b80ef84e7ac8d016c354e1308f7482c6cf1e965051e",
+    "data/runtime/p52_normal_controls_20261007_v127/run.py": "9f45d6da7b0a44649f39dcbe3a0a33b9746338d995a5889263b2d8d3923312af",
+    "data/runtime/p52_normal_controls_20261007_v127/plan.json": "8a703ab23b67bd7ba3f0f3e052de3209b721fab98276436671555e857726da1c",
+    "data/runtime/p52_normal_controls_20261007_v127/verified_report.json": "d22e947dc4146106e8719cb982a414edb039b1fd0d43469018768155448eac51",
+    "data/runtime/p52_normal_controls_20261007_v127/observe.py": "5d9caa256c36a95cd606dedc0616a5b9ae44fdff74d53cc215f607b97d9a5268",
+    "data/runtime/p52_normal_controls_20261007_v127/scene_0/compose.json": "54c6d3d92b9e55e702b5fe5b10b1df2852d459e2e1e58f84d45fb0c7648bcb22",
+    "data/runtime/p52_normal_controls_20261007_v127/scene_0/run.log": "fe3b27904e67cb2bcd1dbe4301dc6a8e98ebb69199de6d077699f8d58951855b",
+    "data/runtime/p52_normal_controls_20261007_v127/scene_0/exit.json": "124fd50cb6d223cdd18fedc166d00af7254199b6e6dedf9be82f71db87af6d01",
+    "data/runtime/p52_normal_controls_20261007_v127/scene_0/manifest.json": "74fe8abcc73a297703d821c5d907b52c9e6bf15b2a39147e47c9d2f6325e6517",
+    "data/runtime/p52_normal_controls_20261007_v127/scene_0/output/delay_detail.json": "ca80378ca98d05ae1cc561af5f99d625962c7d6f56bd6b865fb28b672a0e5e2f",
+    "data/runtime/p52_normal_controls_20261007_v127/scene_0/output/capture.json": "108215491458c991fe69d11e6d1ace905885f469fbfd50c43b1309321c535bfb",
+    "data/runtime/p52_normal_controls_20261007_v127/scene_3/compose.json": "95c73c54bf5a19c06521d04e0ced2927638e551bce0a7ae6744290ec14cf49e9",
+    "data/runtime/p52_normal_controls_20261007_v127/scene_3/run.log": "6bc92a71d43f01a40744d85f74651e199c74b68f28981fe7bd74abc76dafbb74",
+    "data/runtime/p52_normal_controls_20261007_v127/scene_3/exit.json": "124fd50cb6d223cdd18fedc166d00af7254199b6e6dedf9be82f71db87af6d01",
+    "data/runtime/p52_normal_controls_20261007_v127/scene_3/manifest.json": "4e8c45411dc0b469c2041349d207d6df463efc893e72e950d7df38ad908299af",
+    "data/runtime/p52_normal_controls_20261007_v127/scene_3/output/delay_detail.json": "07eb5844beaf3ed00b3454c92bd3fb2121d41c3e46371231b05d497c725a2a3b",
+    "data/runtime/p52_normal_controls_20261007_v127/scene_3/output/capture.json": "dd9b1e239ebc8832849282a08a2e170b560ad1f0ee1779d012b5d177615c3008",
+    "data/runtime/p52_normal_controls_20261007_v127/scene_1/compose.json": "3676ee1e5ae2d1ad65fa4c7359bf05d65e4ad261d4895d8c3232ce591ef3171c",
+    "data/runtime/p52_normal_controls_20261007_v127/scene_1/run.log": "79c6065a1f72fbcc2990329accf170c46fb64daf81cb49e4ad8f12fa067240cc",
+    "data/runtime/p52_normal_controls_20261007_v127/scene_1/exit.json": "124fd50cb6d223cdd18fedc166d00af7254199b6e6dedf9be82f71db87af6d01",
+    "data/runtime/p52_normal_controls_20261007_v127/scene_1/manifest.json": "4e8c45411dc0b469c2041349d207d6df463efc893e72e950d7df38ad908299af",
+    "data/runtime/p52_normal_controls_20261007_v127/scene_1/output/delay_detail.json": "a1060d0e8f0345f5462bd9dd09071a289415b3707cc9b03528f215cdc0f65e55",
+    "data/runtime/p52_normal_controls_20261007_v127/scene_1/output/capture.json": "f5ff1fba26c060a927240a6f559fd17eaaaba4b85255f90559dc53ff8569c3d3",
+    "data/runtime/p52_normal_controls_20261007_v127/scene_2/compose.json": "a4aa860294c73180e064a31ad737457f2c9cc27450769dd184a700a7718fcb2b",
+    "data/runtime/p52_normal_controls_20261007_v127/scene_2/run.log": "d4fa22bc7a5d424810e180326d497a9cde6a012c5ae3d045708afae96e406495",
+    "data/runtime/p52_normal_controls_20261007_v127/scene_2/exit.json": "124fd50cb6d223cdd18fedc166d00af7254199b6e6dedf9be82f71db87af6d01",
+    "data/runtime/p52_normal_controls_20261007_v127/scene_2/manifest.json": "74fe8abcc73a297703d821c5d907b52c9e6bf15b2a39147e47c9d2f6325e6517",
+    "data/runtime/p52_normal_controls_20261007_v127/scene_2/output/delay_detail.json": "257884a21736ae9c2e9e7e9d564ded6cb7c7a7a7506df6d12b335844aac4c983",
+    "data/runtime/p52_normal_controls_20261007_v127/scene_2/output/capture.json": "ac83b827900b4508729e314eb56c5a8c4ec4cbe816282ed7864840bb5f24de78"
+  },
+  "verification": {
+    "documents": {
+      "passed": true,
+      "models": 8,
+      "wbs_rows": 33,
+      "wbs_status_unchanged": true,
+      "p62_criteria_updated": true,
+      "csv_rows": 8,
+      "html_escaped": true,
+      "evidence_artifacts": 50,
+      "prior_model_rows_retained": true,
+      "new_normal_scenes": 2,
+      "normal_conditions": 2
+    },
+    "publication": [
+      {
+        "file": "index.html",
+        "status": 200,
+        "bytes": 33601,
+        "sha256": "45dbdecfb128d2891883712aab4c7029b0b06cccb2aa9b007e59e80e42cce702",
+        "local_match": true
+      },
+      {
+        "file": "CCTV_project_progress.pdf",
+        "status": 200,
+        "bytes": 147243,
+        "sha256": "5a0eda9ffc826e498091888550f0d0d75b1382014e05006a95fb0eec431ac824",
+        "local_match": true
+      }
+    ],
+    "ruff": "passed",
+    "diff_check": "passed",
+    "pdf_first_page_visual_check": "passed",
+    "independent_review": {
+      "agent": "cadence_scope_review",
+      "critical": 0,
+      "important": 0,
+      "scope": "원자료50개 해시·처리율/지연 재계산·정상4회 결과·WBS/문서 범위 대조",
+      "excluded": "GPU 재실행·제품 전체 검토·현장/외부 전달·HTTP/시각 검증",
+      "nonblocking_note": "134→136 bbox는 면적 변화뿐 아니라 IoU·중심거리 기준도 벗어남. 단일 원인으로 확정하지 않음."
+    },
+    "limits": "문서·시험 근거 검증이며 실물 다중 카메라·현장 정확도·운영 배포 승인이 아님"
+  }
+}

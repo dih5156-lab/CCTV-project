@@ -1,0 +1,466 @@
+{
+  "version": "0.123",
+  "date": "2026-10-07",
+  "raw_directory": "data/runtime/p51_minimal_20261007_v123",
+  "decision": "HOLD_WITH_NAMED_BLOCKER",
+  "named_blocker": "I54: receiver 23.50 frames/media-second below predeclared 26.97; loss/throttle/recording stage not established",
+  "scope": "One isolated minimal-configuration trial; no product edits or production rollout",
+  "plan_before_run": {
+    "version": "0.123",
+    "scope": "single minimal configuration trial then keep/hold decision",
+    "keep": [
+      "medium Pose/person",
+      "preview and RTSP output",
+      "heuristic events and durable outbox"
+    ],
+    "disabled_in_trial": [
+      "helmet",
+      "PA100K",
+      "color",
+      "face",
+      "RF",
+      "TCN"
+    ],
+    "deferred": [
+      "TCN offline quality",
+      "helmet separate labeled test",
+      "appearance/color/face quality",
+      "large refactor"
+    ],
+    "input_sha256": "e7ae7b26befd4c397f92271bc1b3e2f09125fd7a0df1399de7c3be9e98907e4c",
+    "input_fps": 29.97002997002997,
+    "observation_seconds": 60,
+    "receiver_media_seconds": 40,
+    "outer_timeout_seconds": 150,
+    "candidate_image": "sha256:294e52234fc170904e2a09b180b422e0562d6e11b5aa28ebcf287a1b47c9ed55",
+    "baseline_image": "sha256:57250f1d24d22732c0ceace8f4b82846ab50c15bc8cc5b315de098ab69271fac",
+    "image_difference": "only existing I53 None ROI guard; all other205product files identical",
+    "acceptance_before_run": {
+      "primary_observed_rate_ratio_min": 0.95,
+      "sample_no_progress_seconds_max": 5,
+      "receiver_frames_per_media_second_ratio_min": 0.9,
+      "stop_seconds_max": 30,
+      "callback_tracebacks": 0,
+      "aux_inference_calls": 0,
+      "outbox_integrity": "ok",
+      "new_event_rows_match": true
+    },
+    "limits": [
+      "short instrumented observation; provisional evaluation gate, not production SLO",
+      "baseline v122 full trial is reused, not contemporaneous repeated control",
+      "combined disabled features do not identify individual bottleneck",
+      "no operating mutation/model deletion/production promotion"
+    ],
+    "decision": "PENDING"
+  },
+  "gates": {
+    "primary_rate": true,
+    "sample_progress": true,
+    "receiver_rate": false,
+    "stop": true,
+    "callback_tracebacks": true,
+    "auxiliary_disabled": true,
+    "event_storage": true
+  },
+  "configuration_diff": {
+    "environment_changes": {
+      "APPEARANCE_ENABLED": {
+        "old": "true",
+        "new": "false"
+      },
+      "DS_APPEARANCE_ENABLED": {
+        "old": "1",
+        "new": "0"
+      },
+      "DS_FACE_ENABLED": {
+        "old": "1",
+        "new": "0"
+      },
+      "DS_HELMET_ENABLED": {
+        "old": "1",
+        "new": "0"
+      },
+      "DS_PPHUMAN_SGIE_ENABLED": {
+        "old": "1",
+        "new": "0"
+      },
+      "FALLDATA_AUX_CLIP_BUFFER_ENABLED": {
+        "old": "true",
+        "new": "false"
+      },
+      "FALLDATA_AUX_ENABLED": {
+        "old": "true",
+        "new": "false"
+      },
+      "FALLDATA_AUX_TEMPORAL_NEAR_MISS_SHADOW_ENABLED": {
+        "old": "true",
+        "new": "false"
+      },
+      "FALLDATA_AUX_TEMPORAL_WORKER_ENABLED": {
+        "old": "true",
+        "new": "false"
+      },
+      "AUDIT_SCENARIO": {
+        "old": "fall",
+        "new": "minimal"
+      },
+      "AUDIT_SCOPE": {
+        "old": "p51_v122_fall; new image, no source bind, isolated database",
+        "new": "p51_v123_minimal; new image, no source bind, isolated database"
+      }
+    },
+    "image_difference": "existing I53 ROI None guard only",
+    "camera_detections": [
+      "fall",
+      "person"
+    ],
+    "same_input_model_limits": true
+  },
+  "validation": {
+    "trials": {
+      "minimal": {
+        "runner_pass": true,
+        "video": {
+          "metadata": {
+            "programs": [],
+            "streams": [
+              {
+                "codec_name": "h264",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "format": {
+              "duration": "40.209000"
+            }
+          },
+          "decode_exit": 0,
+          "decode_error_bytes": 0,
+          "decoded_frames": 945,
+          "sha256": "95be5d3464bd0dc528f254752221cd1fd6dbd3d020d4a9315e115339391714ad"
+        },
+        "databases": {
+          "appearances.db": {
+            "integrity": "ok",
+            "new_rows": {
+              "search_conditions": 0,
+              "appearance_log": 0
+            }
+          },
+          "mqtt_event_outbox.db": {
+            "integrity": "ok",
+            "new_rows": {
+              "mqtt_event_outbox": 30
+            }
+          },
+          "commercial_faces.db": {
+            "integrity": "ok",
+            "new_rows": {
+              "face_persons": 0,
+              "face_samples": 0
+            }
+          }
+        },
+        "stats": {
+          "frames_processed": 1860,
+          "frames_dropped": 0,
+          "events_detected": 30,
+          "events_sent": 0,
+          "events_failed": 30,
+          "inference_errors": 0,
+          "context_tasks_failed": 0,
+          "model_metrics_errors": 0,
+          "primary_metrics_errors": 0,
+          "pipeline_restart_executed": 0
+        },
+        "models": {
+          "primary": {
+            "enabled": true,
+            "properties": {
+              "unique-id": 1,
+              "process-mode": 1,
+              "batch-size": 1,
+              "interval": 1,
+              "output-tensor-meta": true
+            },
+            "frames_seen": 1860,
+            "frames_tensor_output": 930,
+            "frames_no_objects": 0,
+            "frames_classifier_only": 0,
+            "frames_unobserved": 930,
+            "frames_unknown": 0,
+            "objects_with_tensor": 0,
+            "objects_classifier_only": 0,
+            "last_frame_age_seconds": 0.2347693699412048,
+            "last_tensor_age_seconds": 0.2505182260647416
+          },
+          "pose": {
+            "enabled": false,
+            "properties": {
+              "unique-id": null,
+              "process-mode": null,
+              "batch-size": null,
+              "interval": null,
+              "output-tensor-meta": null
+            },
+            "frames_seen": 0,
+            "frames_tensor_output": 0,
+            "frames_no_objects": 0,
+            "frames_classifier_only": 0,
+            "frames_unobserved": 0,
+            "frames_unknown": 0,
+            "objects_with_tensor": 0,
+            "objects_classifier_only": 0,
+            "last_frame_age_seconds": null,
+            "last_tensor_age_seconds": null
+          },
+          "attributes": {
+            "enabled": false,
+            "properties": {
+              "unique-id": null,
+              "process-mode": null,
+              "batch-size": null,
+              "interval": null,
+              "output-tensor-meta": null
+            },
+            "frames_seen": 0,
+            "frames_tensor_output": 0,
+            "frames_no_objects": 0,
+            "frames_classifier_only": 0,
+            "frames_unobserved": 0,
+            "frames_unknown": 0,
+            "objects_with_tensor": 0,
+            "objects_classifier_only": 0,
+            "last_frame_age_seconds": null,
+            "last_tensor_age_seconds": null
+          },
+          "helmet": {
+            "enabled": false,
+            "properties": {
+              "unique-id": null,
+              "process-mode": null,
+              "batch-size": null,
+              "interval": null,
+              "output-tensor-meta": null
+            },
+            "frames_seen": 0,
+            "frames_tensor_output": 0,
+            "frames_no_objects": 0,
+            "frames_classifier_only": 0,
+            "frames_unobserved": 0,
+            "frames_unknown": 0,
+            "objects_with_tensor": 0,
+            "objects_classifier_only": 0,
+            "last_frame_age_seconds": null,
+            "last_tensor_age_seconds": null
+          }
+        },
+        "audit": {
+          "counts": {
+            "event.person": 882,
+            "pose_events": 1130,
+            "event.fall_detected": 248
+          },
+          "capabilities": {
+            "face_enabled": true,
+            "face_backend": "opencv_haar_baseline",
+            "attribute_backend": "NullAttributeBackend",
+            "color_backend": "NullColorClassificationBackend",
+            "color_runtime": null,
+            "color_labels": 0,
+            "color_input_size": null,
+            "rf_enabled": false,
+            "rf_mode": "shadow",
+            "camera_flags": {
+              "replay_1": {
+                "use_helmet": false,
+                "use_pose": true,
+                "use_person": false,
+                "use_face": false,
+                "use_appearance": false
+              }
+            }
+          }
+        },
+        "temporal": {},
+        "inline_rf": {
+          "enabled": false,
+          "cameras": {}
+        },
+        "observed_rate": {
+          "window_seconds": 59.782000000000004,
+          "frame_delta": 1778.0,
+          "fps": 29.741393730554346,
+          "input_fps": 29.97002997002997,
+          "ratio": 0.9923711708094967
+        },
+        "callback_tracebacks": 0,
+        "loaded_engines": [
+          "fall/yolov8m-pose.engine"
+        ],
+        "aux_calls": {
+          "rf_verify": 0,
+          "tcn_verify": 0,
+          "color_runtime": 0,
+          "python_attribute": 0,
+          "face_request": 0
+        },
+        "aux_disabled": true,
+        "bounded_path_pass": true,
+        "max_sample_progress_gap_seconds": 1.2680000000000007,
+        "receiver_media_fps": 23.502200999776168,
+        "evaluation_rate_gate": false,
+        "stop_seconds": 2.29491851083003
+      }
+    },
+    "operating_unchanged": true,
+    "source_files_match": true,
+    "bounded_integration_pass": true,
+    "accuracy_pass": false,
+    "operating_promotion": false,
+    "decision": "HOLD_WITH_NAMED_BLOCKER",
+    "comparison": {
+      "observed_rate": {
+        "baseline_full": {
+          "window_seconds": 59.009,
+          "frame_delta": 1220.0,
+          "fps": 20.674812316765237,
+          "input_fps": 29.97002997002997,
+          "ratio": 0.6898495709694001
+        },
+        "minimal": {
+          "window_seconds": 59.782000000000004,
+          "frame_delta": 1778.0,
+          "fps": 29.741393730554346,
+          "input_fps": 29.97002997002997,
+          "ratio": 0.9923711708094967
+        }
+      },
+      "video": {
+        "baseline_full": {
+          "metadata": {
+            "programs": [],
+            "streams": [
+              {
+                "codec_name": "h264",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "format": {
+              "duration": "40.235000"
+            }
+          },
+          "decode_exit": 0,
+          "decode_error_bytes": 0,
+          "decoded_frames": 696,
+          "sha256": "9cd769d778c6743936026f79f288a756b727f8d2b5265d4782ae63a831b4f1f2"
+        },
+        "minimal": {
+          "metadata": {
+            "programs": [],
+            "streams": [
+              {
+                "codec_name": "h264",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "format": {
+              "duration": "40.209000"
+            }
+          },
+          "decode_exit": 0,
+          "decode_error_bytes": 0,
+          "decoded_frames": 945,
+          "sha256": "95be5d3464bd0dc528f254752221cd1fd6dbd3d020d4a9315e115339391714ad"
+        }
+      },
+      "stop_seconds": {
+        "baseline_full": 3.541117020882666,
+        "minimal": 2.29491851083003
+      }
+    }
+  },
+  "baseline_evidence": "all_models_validation_20261007.json",
+  "baseline_evidence_sha256": "1f2abc600f6304e47eedeca8a59497944e9f22c9ccc487368ed1e7ed57285706",
+  "artifacts_sha256": {
+    "plan.json": "ac4b28f67d3424fa15cd468a0f4915ada85eb38fe2a3d006540e32f595cbf979",
+    "configuration_diff.json": "ee2590308ddaa75962db991159282dd8354a7838a3b8e9b7630dfb0f06c0cd34",
+    "validation.json": "2a864427c9b2e07d5f989e0c0c345ca6f964202cfdb5ed2b777a23eb4617bade",
+    "preflight.json": "104d764db11a3ca26432820b28ef022702a01cb8fbe2ec1b0a0ef54c6ec5bc8b",
+    "trial_results.json": "2cf8f898fded26877ddba3475f3ac1b11b792ccb452b29aebccd82412c601a92",
+    "operating_before.json": "bc5b8ba4e7914c08cb98072e9bb523dc651e6c1c3b67f1cb04c16d234dd873f1",
+    "operating_after.json": "bc5b8ba4e7914c08cb98072e9bb523dc651e6c1c3b67f1cb04c16d234dd873f1",
+    "source_manifest.json": "a25de9211f0dcc28509b3e3eb57ce29783a5bd11b4b24d08551dcdb04d01d0cd",
+    "new_image_manifest.json": "a25de9211f0dcc28509b3e3eb57ce29783a5bd11b4b24d08551dcdb04d01d0cd",
+    "image.id": "170aebbcfba0514e15216b8927c25e5a3ad65f6729beee8b8bbf95aa67058e60",
+    "run.py": "fc43dfb2eb6e962d7c939719515b7af2ee20e469e5c7add122da9af265866ac9",
+    "run_integration.py": "7492a6c17ccf96cabccc42f8677221c0569f81469553f43ec6c275ad16b9c218",
+    "prepare.py": "ef9aa4b6201cf7c96b117042a606d7d38182ce8b48e91ddec3917b79941aceea",
+    "observe_models.py": "8e36a311c5f561bee404cca70f11413656cb9a9f2d3e546e2a835fb02bd55e85",
+    "validate.py": "5fab339f99b602912caa65bfbafbe7225b003d018b4662a1c60cad61a702231c",
+    "cameras.json": "2dcef1e0b75caf4dea6bddbff685d077b7f0229ba6cb9ab72dd8dcf9fce55acb",
+    "models_command.json": "0b28d6ff778bf5679f67bef5a6cb682a65f51edbd2db89f06065f8b760b57e87",
+    "minimal/compose.json": "17ab8a5064793fe15d1778b64f037de00ab992495116ca9081c0c71d268f289e",
+    "minimal/output/final_model_audit.json": "8616571e2252745a5b89979d6d36dd4d2a48039eec9b9f858f53e71a8d8d8115",
+    "minimal/output/samples.jsonl": "77cf5df4889ba9109217e1882aef5dab984f19fc13a0b1096b646d822be28728",
+    "minimal/output/stats.jsonl": "0000bcf1e2952fe8a7ce93474ea85357ce490aa4e640767c8d7aec89695a1ee1",
+    "minimal/output/experiment.json": "497f663664141aedeb504d68ae4c88f3b91bded7b7c8b3642de8e52733ec27b6",
+    "minimal/output/result.mkv": "95be5d3464bd0dc528f254752221cd1fd6dbd3d020d4a9315e115339391714ad",
+    "minimal/output/decode.progress": "2bf13f08a77fcd17bc4ca5bb660c9ebe6788840ef66536350734b49a3869df26",
+    "minimal/output/decode.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "limitations": [
+    "One repeated 10.01-second source, not independent quality samples",
+    "CPU2/8GB, running beside unchanged operating stack; no device-capacity claim",
+    "Primary rate is counter delta/wall time; received rate is decoded frames/media duration, not end-to-end latency",
+    "Previous full-model trial reused; images differ by existing I53 None ROI guard, all other205sources identical",
+    "No assertion of specific auxiliary-model bottleneck or native encoder fault",
+    "MQTT intentionally disconnected:30events persisted to outbox, external delivery not tested",
+    "Minimal evaluation scope fixed; stability acceptance and operating promotion held; P5.1 IN_PROGRESS and accuracy unapproved"
+  ],
+  "document_validation": {
+    "passed": true,
+    "models": 8,
+    "wbs_rows": 33,
+    "wbs_status_unchanged": true,
+    "csv_rows": 8,
+    "html_escaped": true,
+    "evidence_artifacts": 25,
+    "prior_model_rows_retained": true,
+    "decision": "HOLD_WITH_NAMED_BLOCKER"
+  },
+  "publication": {
+    "index.html": {
+      "http_status": 200,
+      "bytes": 31459,
+      "sha256": "860bcf8da7659981f8e49f01ef9b1b8996c8338ae32e5bf29d36a720628ca2d8",
+      "local_equal": true
+    },
+    "CCTV_project_progress.pdf": {
+      "http_status": 200,
+      "bytes": 149495,
+      "sha256": "7a9a8848828a43e6e9a2fec1a8e2e5f79d0223894ff0608e672b9813f81a19ee",
+      "local_equal": true
+    },
+    "inline_csv": {
+      "bytes": 1587,
+      "local_equal": true
+    },
+    "first_attempt": "sandbox denied socket, no request sent"
+  },
+  "checks": {
+    "ruff": "PASS (renderer and trial validator)",
+    "git_diff_check": "PASS",
+    "pdf_pages_1_and_4_visual": "PASS",
+    "product_tests": "not rerun: product source unchanged for this trial"
+  },
+  "independent_review": {
+    "reviewer": "/root/minimal_trial_review",
+    "critical": 0,
+    "important": 0,
+    "scope": "Raw counters and ffprobe frame count; read-only database counts/integrity; gates; artifact hashes; configuration and206source manifests; operating snapshots; documented limits",
+    "result": "HOLD decision supported; no important defects found"
+  }
+}

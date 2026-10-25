@@ -1,0 +1,155 @@
+{
+  "updated_at": "2026-10-12T15:24:27.625463+09:00",
+  "wbs": "P3.3 선행 작업 사전보완",
+  "status": "FIXED_LOCAL",
+  "issues": [
+    "I06 일부",
+    "I61 후속"
+  ],
+  "scope": [
+    "camera_1은 실물 확인된 cctv-signboard-01에만 매핑",
+    "단건 필터/고신뢰 규칙의 원본 event_id 보존",
+    "직접/규칙 경유 순차 재수신의 요청·결과·DB 동일성"
+  ],
+  "implementation": {
+    "product_files": [
+      "config/output_devices.json",
+      "kuiper/rules/cctv_intrusion_rules.json"
+    ],
+    "new_dependencies": 0,
+    "new_product_python_logic": false,
+    "database_schema_changed": false,
+    "existing_database_rewritten": false,
+    "event_contract": "단건 출력에 원본 event_id STRING 추가; object_id STRING/null 유지",
+    "mapping": "기존 cam-01/sample_eval 유지, camera_1 스피커/사이렌/타 카메라 연결 없음"
+  },
+  "validation": {
+    "regression": {
+      "passed": 130,
+      "failed": 0,
+      "new_cases": 4
+    },
+    "recheck": "DB 1행 검증 추가 후 도착 순서 2조건 재검증; 130건과 중복",
+    "reference": {
+      "lost_event_id_rows": 2,
+      "regenerated_different_id": true
+    },
+    "isolated_ekuiper": {
+      "version": "1.11.4-alpine",
+      "inputs": 6,
+      "filtered_outputs": 5,
+      "critical_outputs": 3,
+      "exception_totals": 0,
+      "stream_and_rule_creation": "기존/후보 각 스트림1·규칙3 생성 성공",
+      "network": "none / 임시 컨테이너끼리만 공유",
+      "gpu": false,
+      "action": {
+        "routes": 3,
+        "commands": 3,
+        "unique_request_ids": 1,
+        "mock_device_calls": 1,
+        "event_db_rows": 1,
+        "command_db_rows": 1,
+        "event_id": "source-0",
+        "status": "acknowledged"
+      }
+    },
+    "failed_attempts": [
+      "수정 전 신규4건 FAIL로 대상 누락/stream ID 미선언 재현",
+      "시험 작성 중 존재하지 않는 list_events 호출을 list_recent_events로 정정",
+      "샌드박스 Docker 접근 거부 후 승인된 권한으로 재실행",
+      "실제 DB는 event_id UNIQUE/INSERT OR IGNORE이므로 시험 기대값 3행을 1행으로 정정; 제품 DB 변경 없음",
+      "게시 확인에서 샌드박스 HTTP 거부 후 읽기 권한으로 재시도",
+      "localhost 접속 거부: 진행판은 192.168.2.242에만 bind; 실제 게시 주소에서 HTML/PDF 일치 확인"
+    ],
+    "ruff": "PASS / 수정 테스트3파일·진행판 렌더러",
+    "git_diff_check": "PASS",
+    "unchanged_contracts": [
+      "집계 규칙 원문",
+      "MQTT sink 정의",
+      "스피커/사이렌 설정"
+    ]
+  },
+  "production": {
+    "deployed": false,
+    "physical_output": false,
+    "container_identity_image_started_unchanged": true,
+    "observed_containers": [
+      "/cctv-ai-engine",
+      "/edgex-kuiper",
+      "/cctv-action-layer",
+      "/cctv-device-signboard"
+    ],
+    "config_activation": "운영 Action의 매핑은 이미지 내 파일이며 해당 소스 파일 bind mount 없음; 규칙 로더/운영 SQL도 미교체"
+  },
+  "completed": [
+    "전광판 대상 소스 설정",
+    "단건 원본 ID 보존",
+    "같은 이벤트의 순차 재수신·모의 장치 1회·DB 1행"
+  ],
+  "remaining_internal": [
+    "동일 요청 동시 처리",
+    "응답 유실·부분 실패와 발행 접수/장치 결과 구분",
+    "운영 Action/규칙 로더 이미지·스트림 갱신과 복귀 준비",
+    "P3.1/P3.2 선행·기존 Direct 복귀 계약"
+  ],
+  "remaining_external": [
+    "운영 적용 후 실물 출력 확인",
+    "센서 현장 접근·스피커 전원 가동"
+  ],
+  "limits": [
+    "동시 처리/프로세스 재시작 뒤 동일 요청 억제는 이번 합격 범위가 아님",
+    "장치 캐시는 최대4096개인 프로세스 메모리 내 성공 결과이며 영속 exactly-once 보장 아님",
+    "5초 집계는 여러 이벤트의 별도 결과로 원본 단건 event_id 부여하지 않음",
+    "event_id 없는 구형 입력의 경로 간 동일성 미보장",
+    "운영 영상 FPS/장시간/실제 표시/관제 화면 미시험"
+  ],
+  "progress": {
+    "completed": 9,
+    "total": 33,
+    "completed_task_percent": 27.3,
+    "statuses_unchanged": true,
+    "model_rows_unchanged": true,
+    "p33": "PLANNED / 선행 미완료 상태에서 독립 사전보완"
+  },
+  "next": "P3.3 동일 요청 동시 처리·응답 유실/부분 실패를 모의 장치로 재현·보완한다. 대상 매핑·원본 ID·순차 재수신은 로컬 완료, 운영 반영·실물 시험과 P3.1/P3.2 선행은 잔여다.",
+  "artifacts_sha256": {
+    "config/output_devices.json": "5fa00adc0fccc0ba4fbded72b20245ff7e04dd786a5b5d7993528cbd77d04b49",
+    "kuiper/rules/cctv_intrusion_rules.json": "36219f45814a768bc7f304b4d3455d5bc7fe8818b56c6a029825335fe237f579",
+    "tests/test_device_registry.py": "4e256587d329f71746473432dbeb795cd7ac544c2fd296de547609614f96f230",
+    "tests/test_integration_action_pipeline.py": "fc4564f0598d06480e291aa86ff8c90e9e95d8074d057ebd80ed95145a2c350f",
+    "tests/test_run_kuiper_rules.py": "5722322e1289438ab9dbd6431ea1a2ef55aa839e3d843979fed5779d59d4126a",
+    "data/runtime/action_identity_20261012/regression.xml": "7cccf299d4323c153451fdcb150727a6427b70be29acfdd5a3cb40061f74c3b8",
+    "data/runtime/action_identity_20261012/identity_recheck.xml": "83ef05b3a74580dca1b5fd9f3ff3e85ec41e388e1716122fae874a2b88429f4c",
+    "data/runtime/action_identity_20261012/validate_ekuiper.py": "f67cfb01e519766f14447fc47da90d2aca0e2c7e859abe814d32ff586d2c2c56",
+    "data/runtime/action_identity_20261012/ekuiper_validation.json": "a69dff8b36cef7eee7e3fd3a924c3ec65836f971e5afd447f5e9a5864321d7c8",
+    "data/runtime/action_identity_20261012/ekuiper_first_harness_error.json": "1dae8eea4f461cdb2846be7feca3b1905927d40379d089c8efcc6bbb96699639",
+    "scripts/ops/render_progress_snapshot.py": "dc9d045d3d665a28c4fc3e425d0f57d9faf4a8eac67e4e183cd2d5e1552b818f",
+    "scripts/ops/progress_snapshot_template.html": "8708546eb1fecde02b84cd6741a14d5105f6bf1a4e59b76cb0e904bfad13f754",
+    "docs/features/EVENT_SCHEMA_STANDARD.md": "fbb7fa2efb1e9704bdbe2d75795c99ceaf945506b8d33d0ebeccb44800833223",
+    "docs/devices/EVENT_PAYLOADS.md": "2e2f2fa337ff8394083b1890b4d81b21c5a33c1c4617c7d4f34a91b73eb32dc0",
+    "docs/planning/figma_exports/progress_v138.json": "734be738b9b6adc9f49d9db61e3d65975af6e3a9eff0ddbb506767caad5406ad"
+  },
+  "publication": {
+    "artifacts": [
+      {
+        "path": "docs/planning/online/index.html",
+        "url": "http://192.168.2.242:18081/index.html",
+        "curl_fail_on_http_error_exit": 0,
+        "bytes": 59804,
+        "sha256": "67932600f1e6392490e7492a5c95bc1267fb0dbee06647339858c10b1cf09d06",
+        "download_matches_local": true
+      },
+      {
+        "path": "docs/planning/online/CCTV_project_progress.pdf",
+        "url": "http://192.168.2.242:18081/CCTV_project_progress.pdf",
+        "curl_fail_on_http_error_exit": 0,
+        "bytes": 148125,
+        "sha256": "faedde8a96909ad91514f61632a24265aa28cc9fa42f43e7a38ed68f6dc9912d",
+        "download_matches_local": true
+      }
+    ],
+    "pdf_first_page_visual_check": "PASS / 최신 로컬 결과·내부 잔여 표시·잘림 없음",
+    "board_statuses_and_model_rows": "unchanged"
+  }
+}

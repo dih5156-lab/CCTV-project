@@ -1,0 +1,843 @@
+{
+  "date": "2026-10-15",
+  "updated_at_utc": "2026-10-15T00:07:08.585003+00:00",
+  "wbs": "P5.2",
+  "issue": "I56",
+  "status": "GPU_VERIFIED_DEVELOPMENT_SET_NOT_DEPLOYED",
+  "operating_deployed": false,
+  "confidence": 0.5,
+  "full_frame": true,
+  "change": {
+    "product_files": [
+      "src/core/ai/_fall_detector.py",
+      "src/core/_synthetic_object_ids.py",
+      "src/core/deepstream_processor.py"
+    ],
+    "tracking": "원본PTS·세대별 만료/초기화, 실제 저신뢰 검출을 복원하지 않음",
+    "pose": "고신뢰 선행 직립→높이/발 위치/양다리 투영, 기존 opt-in·지속2초 유지",
+    "dependencies_added": 0,
+    "config_changes": 0,
+    "db_changes": 0
+  },
+  "local_validation": {
+    "regression_pass": 324,
+    "regression_skip": 2,
+    "runner_pass": 13,
+    "tracking_before_fail": 12,
+    "tracking_before_pass": 4,
+    "tracking_after_pass": 16,
+    "new_transition_tests": 24,
+    "ruff": "PASS",
+    "diff_check": "PASS"
+  },
+  "replay": {
+    "scope": "기존 GPU 원시 출력의 CPU 후처리·실제 추적/자세 보완/지속 판정 재생. 새 모델 추론·GPU 앱 전체경로 시험이 아님",
+    "confidence_threshold": 0.5,
+    "videos": 20,
+    "new_unseen_videos": 0,
+    "summary": {
+      "TP": 9,
+      "FN": 1,
+      "FP": 0,
+      "TN": 10
+    },
+    "early_alerts": 0,
+    "duplicate_alerts": 0,
+    "tensor_frames": 3001,
+    "speed_invariance_cases": 60,
+    "normal_video_seconds": 100.1
+  },
+  "gpu_comparison": {
+    "completed_trials": 20,
+    "unique_videos": 20,
+    "new_unseen_videos": 0,
+    "confidence_threshold": 0.5,
+    "summary": {
+      "TP": 9,
+      "FN": 1,
+      "FP": 0,
+      "TN": 10
+    },
+    "frames": 12002,
+    "tensor_frames": 3001,
+    "time_basis_decisions": 435,
+    "early_alerts": 0,
+    "duplicate_alerts": 0,
+    "normal_video_seconds": 100.10000000000001,
+    "cpu_replay_matches_all_queues": true,
+    "trials": [
+      {
+        "index": 0,
+        "scene": "00772_O_E_FY_C3",
+        "is_fall": true,
+        "onset": 2.5025,
+        "verdict": "TP",
+        "delay_seconds": 3.586916666,
+        "early_alerts": 0,
+        "duplicate_alerts": 0,
+        "queue_frames": [
+          364
+        ],
+        "queue_pts": [
+          6.089416666
+        ],
+        "baseline": {
+          "verdict": "TP",
+          "delay_seconds": 3.586916666,
+          "early_alerts": 0,
+          "duplicate_alerts": 0
+        },
+        "cpu_replay_matches_queue": true,
+        "frames": 602,
+        "tensor_frames": 151,
+        "candidate_frames": 62,
+        "time_basis_decisions": 62,
+        "valid_pose_frames": 151,
+        "last_pose_pts": 10.026683333,
+        "max_pose_score": 5.0,
+        "source_delivery_fps": 59.9394382129872,
+        "video_seconds": 10.043367
+      },
+      {
+        "index": 1,
+        "scene": "00533_H_D_N_C8",
+        "is_fall": false,
+        "onset": null,
+        "verdict": "TN",
+        "delay_seconds": null,
+        "early_alerts": 0,
+        "duplicate_alerts": 0,
+        "queue_frames": [],
+        "queue_pts": [],
+        "baseline": {
+          "verdict": "TN",
+          "delay_seconds": null,
+          "early_alerts": 0,
+          "duplicate_alerts": 0
+        },
+        "cpu_replay_matches_queue": true,
+        "frames": 600,
+        "tensor_frames": 150,
+        "candidate_frames": 0,
+        "time_basis_decisions": 0,
+        "valid_pose_frames": 150,
+        "last_pose_pts": 9.95995,
+        "max_pose_score": 2.5,
+        "source_delivery_fps": 59.93881825473981,
+        "video_seconds": 10.01
+      },
+      {
+        "index": 2,
+        "scene": "00727_H_D_SY_C4",
+        "is_fall": true,
+        "onset": 5.622283333333334,
+        "verdict": "TP",
+        "delay_seconds": 2.252249999666666,
+        "early_alerts": 0,
+        "duplicate_alerts": 0,
+        "queue_frames": [
+          472
+        ],
+        "queue_pts": [
+          7.874533333
+        ],
+        "baseline": {
+          "verdict": "TP",
+          "delay_seconds": 2.252249999666666,
+          "early_alerts": 0,
+          "duplicate_alerts": 0
+        },
+        "cpu_replay_matches_queue": true,
+        "frames": 600,
+        "tensor_frames": 150,
+        "candidate_frames": 47,
+        "time_basis_decisions": 47,
+        "valid_pose_frames": 150,
+        "last_pose_pts": 9.943266666,
+        "max_pose_score": 6.0,
+        "source_delivery_fps": 59.892993448130824,
+        "video_seconds": 10.01
+      },
+      {
+        "index": 3,
+        "scene": "00762_O_E_N_C7",
+        "is_fall": false,
+        "onset": null,
+        "verdict": "TN",
+        "delay_seconds": null,
+        "early_alerts": 0,
+        "duplicate_alerts": 0,
+        "queue_frames": [],
+        "queue_pts": [],
+        "baseline": {
+          "verdict": "TN",
+          "delay_seconds": null,
+          "early_alerts": 0,
+          "duplicate_alerts": 0
+        },
+        "cpu_replay_matches_queue": true,
+        "frames": 600,
+        "tensor_frames": 150,
+        "candidate_frames": 0,
+        "time_basis_decisions": 0,
+        "valid_pose_frames": 150,
+        "last_pose_pts": 9.95995,
+        "max_pose_score": 2.0,
+        "source_delivery_fps": 59.93957409067868,
+        "video_seconds": 10.01
+      },
+      {
+        "index": 4,
+        "scene": "00903_O_E_BY_C1",
+        "is_fall": true,
+        "onset": 3.9873166666666666,
+        "verdict": "TP",
+        "delay_seconds": 2.5024999993333337,
+        "early_alerts": 0,
+        "duplicate_alerts": 0,
+        "queue_frames": [
+          388
+        ],
+        "queue_pts": [
+          6.489816666
+        ],
+        "baseline": {
+          "verdict": "TP",
+          "delay_seconds": 2.5024999993333337,
+          "early_alerts": 0,
+          "duplicate_alerts": 0
+        },
+        "cpu_replay_matches_queue": true,
+        "frames": 600,
+        "tensor_frames": 150,
+        "candidate_frames": 25,
+        "time_basis_decisions": 25,
+        "valid_pose_frames": 150,
+        "last_pose_pts": 9.95995,
+        "max_pose_score": 5.0,
+        "source_delivery_fps": 59.91177812836083,
+        "video_seconds": 10.01
+      },
+      {
+        "index": 5,
+        "scene": "00734_H_D_N_C1",
+        "is_fall": false,
+        "onset": null,
+        "verdict": "TN",
+        "delay_seconds": null,
+        "early_alerts": 0,
+        "duplicate_alerts": 0,
+        "queue_frames": [],
+        "queue_pts": [],
+        "baseline": {
+          "verdict": "TN",
+          "delay_seconds": null,
+          "early_alerts": 0,
+          "duplicate_alerts": 0
+        },
+        "cpu_replay_matches_queue": true,
+        "frames": 600,
+        "tensor_frames": 150,
+        "candidate_frames": 0,
+        "time_basis_decisions": 0,
+        "valid_pose_frames": 150,
+        "last_pose_pts": 9.943266666,
+        "max_pose_score": 2.5,
+        "source_delivery_fps": 59.893182784183026,
+        "video_seconds": 10.01
+      },
+      {
+        "index": 6,
+        "scene": "00933_O_E_FY_C2",
+        "is_fall": true,
+        "onset": 4.95495,
+        "verdict": "TP",
+        "delay_seconds": 3.4033999999999995,
+        "early_alerts": 0,
+        "duplicate_alerts": 0,
+        "queue_frames": [
+          500
+        ],
+        "queue_pts": [
+          8.35835
+        ],
+        "baseline": {
+          "verdict": "TP",
+          "delay_seconds": 3.4033999999999995,
+          "early_alerts": 0,
+          "duplicate_alerts": 0
+        },
+        "cpu_replay_matches_queue": true,
+        "frames": 600,
+        "tensor_frames": 150,
+        "candidate_frames": 12,
+        "time_basis_decisions": 12,
+        "valid_pose_frames": 150,
+        "last_pose_pts": 9.95995,
+        "max_pose_score": 4.5,
+        "source_delivery_fps": 59.93865197319937,
+        "video_seconds": 10.01
+      },
+      {
+        "index": 7,
+        "scene": "00811_O_E_N_C2",
+        "is_fall": false,
+        "onset": null,
+        "verdict": "TN",
+        "delay_seconds": null,
+        "early_alerts": 0,
+        "duplicate_alerts": 0,
+        "queue_frames": [],
+        "queue_pts": [],
+        "baseline": {
+          "verdict": "TN",
+          "delay_seconds": null,
+          "early_alerts": 0,
+          "duplicate_alerts": 0
+        },
+        "cpu_replay_matches_queue": true,
+        "frames": 600,
+        "tensor_frames": 150,
+        "candidate_frames": 0,
+        "time_basis_decisions": 0,
+        "valid_pose_frames": 148,
+        "last_pose_pts": 9.95995,
+        "max_pose_score": 0.0,
+        "source_delivery_fps": 59.93964355279283,
+        "video_seconds": 10.01
+      },
+      {
+        "index": 8,
+        "scene": "00847_O_E_SY_C7",
+        "is_fall": true,
+        "onset": 5.138466666666667,
+        "verdict": "TP",
+        "delay_seconds": 2.752749999333333,
+        "early_alerts": 0,
+        "duplicate_alerts": 0,
+        "queue_frames": [
+          472
+        ],
+        "queue_pts": [
+          7.891216666
+        ],
+        "baseline": {
+          "verdict": "TP",
+          "delay_seconds": 2.8194833333333333,
+          "early_alerts": 0,
+          "duplicate_alerts": 0
+        },
+        "cpu_replay_matches_queue": true,
+        "frames": 600,
+        "tensor_frames": 150,
+        "candidate_frames": 66,
+        "time_basis_decisions": 66,
+        "valid_pose_frames": 150,
+        "last_pose_pts": 9.95995,
+        "max_pose_score": 8.5,
+        "source_delivery_fps": 59.939556264898236,
+        "video_seconds": 10.01
+      },
+      {
+        "index": 9,
+        "scene": "00560_H_D_N_C3",
+        "is_fall": false,
+        "onset": null,
+        "verdict": "TN",
+        "delay_seconds": null,
+        "early_alerts": 0,
+        "duplicate_alerts": 0,
+        "queue_frames": [],
+        "queue_pts": [],
+        "baseline": {
+          "verdict": "TN",
+          "delay_seconds": null,
+          "early_alerts": 0,
+          "duplicate_alerts": 0
+        },
+        "cpu_replay_matches_queue": true,
+        "frames": 600,
+        "tensor_frames": 150,
+        "candidate_frames": 0,
+        "time_basis_decisions": 0,
+        "valid_pose_frames": 148,
+        "last_pose_pts": 9.95995,
+        "max_pose_score": 0.0,
+        "source_delivery_fps": 59.91984556071413,
+        "video_seconds": 10.01
+      },
+      {
+        "index": 10,
+        "scene": "00709_H_D_BY_C4",
+        "is_fall": true,
+        "onset": 4.587916666666667,
+        "verdict": "TP",
+        "delay_seconds": 3.953949999333334,
+        "early_alerts": 0,
+        "duplicate_alerts": 0,
+        "queue_frames": [
+          512
+        ],
+        "queue_pts": [
+          8.541866666
+        ],
+        "baseline": {
+          "verdict": "FN",
+          "delay_seconds": null,
+          "early_alerts": 0,
+          "duplicate_alerts": 0
+        },
+        "cpu_replay_matches_queue": true,
+        "frames": 600,
+        "tensor_frames": 150,
+        "candidate_frames": 39,
+        "time_basis_decisions": 39,
+        "valid_pose_frames": 150,
+        "last_pose_pts": 9.943266666,
+        "max_pose_score": 2.5,
+        "source_delivery_fps": 59.93914613051327,
+        "video_seconds": 10.01
+      },
+      {
+        "index": 11,
+        "scene": "00909_O_E_N_C6",
+        "is_fall": false,
+        "onset": null,
+        "verdict": "TN",
+        "delay_seconds": null,
+        "early_alerts": 0,
+        "duplicate_alerts": 0,
+        "queue_frames": [],
+        "queue_pts": [],
+        "baseline": {
+          "verdict": "TN",
+          "delay_seconds": null,
+          "early_alerts": 0,
+          "duplicate_alerts": 0
+        },
+        "cpu_replay_matches_queue": true,
+        "frames": 600,
+        "tensor_frames": 150,
+        "candidate_frames": 9,
+        "time_basis_decisions": 9,
+        "valid_pose_frames": 150,
+        "last_pose_pts": 9.95995,
+        "max_pose_score": 3.0,
+        "source_delivery_fps": 59.93653965202902,
+        "video_seconds": 10.01
+      },
+      {
+        "index": 12,
+        "scene": "00828_O_E_FY_C8",
+        "is_fall": true,
+        "onset": 4.65465,
+        "verdict": "TP",
+        "delay_seconds": 2.5024999999999995,
+        "early_alerts": 0,
+        "duplicate_alerts": 0,
+        "queue_frames": [
+          428
+        ],
+        "queue_pts": [
+          7.15715
+        ],
+        "baseline": {
+          "verdict": "TP",
+          "delay_seconds": 2.5024999999999995,
+          "early_alerts": 0,
+          "duplicate_alerts": 0
+        },
+        "cpu_replay_matches_queue": true,
+        "frames": 600,
+        "tensor_frames": 150,
+        "candidate_frames": 44,
+        "time_basis_decisions": 44,
+        "valid_pose_frames": 150,
+        "last_pose_pts": 9.95995,
+        "max_pose_score": 7.0,
+        "source_delivery_fps": 59.888751011985704,
+        "video_seconds": 10.01
+      },
+      {
+        "index": 13,
+        "scene": "00823_O_E_N_C5",
+        "is_fall": false,
+        "onset": null,
+        "verdict": "TN",
+        "delay_seconds": null,
+        "early_alerts": 0,
+        "duplicate_alerts": 0,
+        "queue_frames": [],
+        "queue_pts": [],
+        "baseline": {
+          "verdict": "TN",
+          "delay_seconds": null,
+          "early_alerts": 0,
+          "duplicate_alerts": 0
+        },
+        "cpu_replay_matches_queue": true,
+        "frames": 600,
+        "tensor_frames": 150,
+        "candidate_frames": 10,
+        "time_basis_decisions": 10,
+        "valid_pose_frames": 150,
+        "last_pose_pts": 9.95995,
+        "max_pose_score": 5.0,
+        "source_delivery_fps": 59.9394287196773,
+        "video_seconds": 10.01
+      },
+      {
+        "index": 14,
+        "scene": "00610_H_D_SY_C5",
+        "is_fall": true,
+        "onset": 4.75,
+        "verdict": "FN",
+        "delay_seconds": null,
+        "early_alerts": 0,
+        "duplicate_alerts": 0,
+        "queue_frames": [],
+        "queue_pts": [],
+        "baseline": {
+          "verdict": "FN",
+          "delay_seconds": null,
+          "early_alerts": 0,
+          "duplicate_alerts": 0
+        },
+        "cpu_replay_matches_queue": true,
+        "frames": 600,
+        "tensor_frames": 150,
+        "candidate_frames": 18,
+        "time_basis_decisions": 18,
+        "valid_pose_frames": 99,
+        "last_pose_pts": 6.933333333,
+        "max_pose_score": 6.0,
+        "source_delivery_fps": 59.99949169712854,
+        "video_seconds": 10.0
+      },
+      {
+        "index": 15,
+        "scene": "00547_H_D_N_C2",
+        "is_fall": false,
+        "onset": null,
+        "verdict": "TN",
+        "delay_seconds": null,
+        "early_alerts": 0,
+        "duplicate_alerts": 0,
+        "queue_frames": [],
+        "queue_pts": [],
+        "baseline": {
+          "verdict": "TN",
+          "delay_seconds": null,
+          "early_alerts": 0,
+          "duplicate_alerts": 0
+        },
+        "cpu_replay_matches_queue": true,
+        "frames": 600,
+        "tensor_frames": 150,
+        "candidate_frames": 0,
+        "time_basis_decisions": 0,
+        "valid_pose_frames": 150,
+        "last_pose_pts": 9.95995,
+        "max_pose_score": 2.5,
+        "source_delivery_fps": 59.93953734165609,
+        "video_seconds": 10.01
+      },
+      {
+        "index": 16,
+        "scene": "00925_O_E_BY_C5",
+        "is_fall": true,
+        "onset": 3.95395,
+        "verdict": "TP",
+        "delay_seconds": 3.2032,
+        "early_alerts": 0,
+        "duplicate_alerts": 0,
+        "queue_frames": [
+          428
+        ],
+        "queue_pts": [
+          7.15715
+        ],
+        "baseline": {
+          "verdict": "TP",
+          "delay_seconds": 3.2032,
+          "early_alerts": 0,
+          "duplicate_alerts": 0
+        },
+        "cpu_replay_matches_queue": true,
+        "frames": 600,
+        "tensor_frames": 150,
+        "candidate_frames": 38,
+        "time_basis_decisions": 38,
+        "valid_pose_frames": 150,
+        "last_pose_pts": 9.95995,
+        "max_pose_score": 3.0,
+        "source_delivery_fps": 59.93970881036493,
+        "video_seconds": 10.01
+      },
+      {
+        "index": 17,
+        "scene": "00874_O_E_N_C3",
+        "is_fall": false,
+        "onset": null,
+        "verdict": "TN",
+        "delay_seconds": null,
+        "early_alerts": 0,
+        "duplicate_alerts": 0,
+        "queue_frames": [],
+        "queue_pts": [],
+        "baseline": {
+          "verdict": "TN",
+          "delay_seconds": null,
+          "early_alerts": 0,
+          "duplicate_alerts": 0
+        },
+        "cpu_replay_matches_queue": true,
+        "frames": 600,
+        "tensor_frames": 150,
+        "candidate_frames": 0,
+        "time_basis_decisions": 0,
+        "valid_pose_frames": 150,
+        "last_pose_pts": 9.95995,
+        "max_pose_score": 2.5,
+        "source_delivery_fps": 59.9017577452151,
+        "video_seconds": 10.01
+      },
+      {
+        "index": 18,
+        "scene": "00898_O_E_FY_C7",
+        "is_fall": true,
+        "onset": 4.5045,
+        "verdict": "TP",
+        "delay_seconds": 2.585916666,
+        "early_alerts": 0,
+        "duplicate_alerts": 0,
+        "queue_frames": [
+          424
+        ],
+        "queue_pts": [
+          7.090416666
+        ],
+        "baseline": {
+          "verdict": "TP",
+          "delay_seconds": 5.321983333,
+          "early_alerts": 0,
+          "duplicate_alerts": 0
+        },
+        "cpu_replay_matches_queue": true,
+        "frames": 600,
+        "tensor_frames": 150,
+        "candidate_frames": 65,
+        "time_basis_decisions": 65,
+        "valid_pose_frames": 150,
+        "last_pose_pts": 9.95995,
+        "max_pose_score": 7.0,
+        "source_delivery_fps": 59.939591034929244,
+        "video_seconds": 10.01
+      },
+      {
+        "index": 19,
+        "scene": "00559_H_D_N_C8",
+        "is_fall": false,
+        "onset": null,
+        "verdict": "TN",
+        "delay_seconds": null,
+        "early_alerts": 0,
+        "duplicate_alerts": 0,
+        "queue_frames": [],
+        "queue_pts": [],
+        "baseline": {
+          "verdict": "TN",
+          "delay_seconds": null,
+          "early_alerts": 0,
+          "duplicate_alerts": 0
+        },
+        "cpu_replay_matches_queue": true,
+        "frames": 600,
+        "tensor_frames": 150,
+        "candidate_frames": 0,
+        "time_basis_decisions": 0,
+        "valid_pose_frames": 150,
+        "last_pose_pts": 9.95995,
+        "max_pose_score": 2.5,
+        "source_delivery_fps": 59.904981015406165,
+        "video_seconds": 10.01
+      }
+    ],
+    "scope": "고정20개 개발 관측 영상·전체화면 medium GPU→경보 큐. 운영nano·실물 전달·미사용80영상·장시간 합격이 아님"
+  },
+  "operating_recovery": {
+    "checked_at_utc": "2026-10-15T00:06:38.289275+00:00",
+    "duration_seconds": 30.0749301709875,
+    "before_metrics": {
+      "cctv_processor_frames_processed_total": 804.0,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 402.0,
+      "cctv_camera_primary_last_frame_age_seconds{camera_id=\"camera_1\"}": 0.03306302899727598
+    },
+    "after_metrics": {
+      "cctv_processor_frames_processed_total": 1704.0,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 853.0,
+      "cctv_camera_primary_last_frame_age_seconds{camera_id=\"camera_1\"}": 0.0031062259804457426
+    },
+    "rates": {
+      "cctv_processor_frames_processed_total": 29.925256513752657,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 14.99587854189161
+    },
+    "snapshot": [
+      {
+        "name": "/cctv-ai-engine",
+        "id": "c8a71163c84b458197b98a4bde8e0e06719afc5cf5964e6fbd0b716109ce0377",
+        "image": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+        "started_at": "2026-10-15T00:05:34.709043495Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-media-server",
+        "id": "957101f7ab7336585817a176154f7711de977caee7cfbf34257f2fb68810dea4",
+        "image": "sha256:f8628851106cc053f9175b248050bb5f362a6e65abd72297c167a1cb5a9a3be2",
+        "started_at": "2026-10-12T23:35:15.324861031Z",
+        "status": "running",
+        "health": null,
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-action-layer",
+        "id": "74deaeb0b5bdd64c8f2e2a141daa25c193a75cf235b214fee6ef8b4dcdceedeb",
+        "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+        "started_at": "2026-10-12T23:35:15.475740705Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-device-signboard",
+        "id": "29aeb393bd52e7a9f8241be9214b970e82e8442253fdfe2e73dbbf5d153feaa8",
+        "image": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+        "started_at": "2026-10-12T23:35:15.45875226Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-device-speaker",
+        "id": "a8ff5823d34ad72dd2c5b236cc88f210b16feb05ef53532e6549601d2beafb7a",
+        "image": "sha256:4daca5e8c9865c5f19dde37d7dbdfcc37ea5c413fa8375802e80c7f8185bba30",
+        "started_at": "2026-10-12T23:35:15.455773133Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      }
+    ],
+    "same_ai_container_and_image": true,
+    "other_four_containers_unchanged": true,
+    "healthy": true,
+    "monitor_container_stable": true,
+    "trial_containers_remaining": 0,
+    "maintenance_start_to_ai_started_seconds": 430.46435618400574
+  },
+  "authorization": {
+    "date": "2026-10-15",
+    "request": "신뢰도 0.5 유지하고 전체화면 기준으로 사람 검출 단절이랑 후면 자세 판정 보완 진행해줘. 끝나면 재검증하고 결과랑 WBS도 갱신해줘.",
+    "execution_review": "run.py --execute 도구 승인 검토 통과·프로세스 시작",
+    "scope": "기존20영상 전체화면 GPU·AI만 시험 최대15분 정지/복구5분·같은 컨테이너 복귀",
+    "production_deployment": false,
+    "physical_outputs": false
+  },
+  "coverage": {
+    "unique_observed_videos": 20,
+    "planned_videos": 100,
+    "unseen_remaining": 80,
+    "new_unseen_this_turn": 0,
+    "normal_seconds": 100.1
+  },
+  "remaining": [
+    "00610 실제0.5 미만 검출 단절",
+    "미사용80영상·의도적 바닥 착석·가림/사람 교차",
+    "실제2채널·운영nano·장시간·실물 경보 전달·배포"
+  ],
+  "review": {
+    "scope": "변경 전 보존본 대비 제품3파일 diff·호출/회귀 대조",
+    "rejected_hypothesis": "정적 다리 규칙 확대만 사용하면 예비 CPU 재생에서 정상00909 오경보1: 미채택",
+    "gpu_ablation_per_change": false,
+    "graph_limit": "code-review-graph 지정3파일 조회가 다른 변경136함수와 영향흐름0을 반환함. 영향 없음/시험 누락의 근거로 사용하지 않고 codebase-memory 호출 경로와 변경 전 보존본 diff·실제회귀/GPU로 보완."
+  },
+  "artifacts": {
+    "src/core/ai/_fall_detector.py": "5bd0e2b64d5c093ece0b9f751afc210ef4f5e83ec39d7d925a3087536d50c345",
+    "src/core/_synthetic_object_ids.py": "30c6677c3fa9a120e4300f2156a7c7e3186a56ea9bc41532c4b3f8f69ef0a0bb",
+    "src/core/deepstream_processor.py": "4daed02739615d3f2eebfa55315794ef40a7b25238451c0d9f986d0b8f5e4f1d",
+    "tests/test_synthetic_object_ids.py": "713bd56ecc867ea67446b55274484bc6ec4cf86b4411ed2b9dfa197630ebd9ee",
+    "tests/test_fall_transition.py": "7180415ca99eb5bc280ae171e5f1694a28a04e182dd1907a5c5f6e46978a5f64",
+    "tests/fixtures/fall_transition_20261015.json": "48a1f61d2671bfad12ce7cce3a2259480e69aaa07544a619991169c7ea3e13d0",
+    "data/runtime/p52_fullframe_20261015/analyze_gpu.py": "160f64bc837faa3de4d05374aca35f29e3e147e8f0ad992c1a8ce2e6fa5bafdc",
+    "data/runtime/p52_fullframe_20261015/authorization.json": "6bb7ffacb73e73965ae808bd2d7a8eaa4ed1689ef9ecabb09ecf457285f6eca1",
+    "data/runtime/p52_fullframe_20261015/batch_00_recovery.json": "1853f5379debf58ef2010d5b07ea28e6e17daba25c73caebf5560d2975bf0910",
+    "data/runtime/p52_fullframe_20261015/batch_00_results.json": "c041e61820c01cfe5d9d56ebb6b8bf90a6d34b2fcfc4a7b0fd857f29046b5408",
+    "data/runtime/p52_fullframe_20261015/batch_00_started.json": "24001a9aef6c6c5dd42c4c374c68afebc6cbf7771d1e8ae601ffcdbb5c9e5045",
+    "data/runtime/p52_fullframe_20261015/cameras.json": "345631948bde753e797d7c67aeeac01bf2263e33f768f4a0e95950fa2cde1adb",
+    "data/runtime/p52_fullframe_20261015/check_recovery.py": "fbac3c523d76d863ab4752489981db29d2f15c6dcab12fca17701138fa8b00f6",
+    "data/runtime/p52_fullframe_20261015/entry.py": "46c36b5b0791cea83ffe1569f27b30b5f8e70dc3ad938f97627f32190ab940a0",
+    "data/runtime/p52_fullframe_20261015/gpu_results.json": "777ada6c7b4206f84823dd99595019fc3b5455aabd33b009961aff83cc11a6f3",
+    "data/runtime/p52_fullframe_20261015/image_verification.json": "f3fe2b6e74c847299ec2ad7da067646ccd79da41e28c60b83d8a0d148ce2339a",
+    "data/runtime/p52_fullframe_20261015/input_hashes.json": "da02e516a626b7d6cc40c7a550fe73906a022c52af65304dc0acbff764a14ead",
+    "data/runtime/p52_fullframe_20261015/operating_after_batch_00.json": "b4d61f669ed08e3dfa531cd26d0fddca9745a94baa6d07bd2e0b75b988738bf5",
+    "data/runtime/p52_fullframe_20261015/operating_before.json": "24c845b2812116a06522f49e42b100deecc0d9939c870550147528daed3c516a",
+    "data/runtime/p52_fullframe_20261015/plan.json": "a881c6ef1c22b78d5d398ce4331c777c1f8cf3e55b3e71308fdaedfc3e89dae1",
+    "data/runtime/p52_fullframe_20261015/raw_capture.py": "a06e1d4d10a3b5d309d913134dc0aa5869545ff8a8691e039378b5977efcb5e1",
+    "data/runtime/p52_fullframe_20261015/rejected_static_hypothesis.json": "dbee308eaaab7a32890f5f6c097512d9b4433579e2a792fe197abc06b4023303",
+    "data/runtime/p52_fullframe_20261015/replay.py": "22dc8baf2516c28056e1cd8fff3422eeee74c53f6428b1ef2d89fb69390c6c1f",
+    "data/runtime/p52_fullframe_20261015/replay_results.json": "1ca3e83c74c8ca0af7df6e7fac1b1752036fafbaf272f127cafb0acc64f6d525",
+    "data/runtime/p52_fullframe_20261015/run.py": "26644b77f0ccbffad95e00479d37ca45a642bec4f183ba7e1f3a7f8911f1af49",
+    "data/runtime/p52_fullframe_20261015/runner_tests.xml": "3fd25221cc65485abc3fcddfaa848510df60cfab34756c8353ba59fcba7357c9",
+    "data/runtime/p52_fullframe_20261015/test_run.py": "0addf2fa373766d53f99e430190c977186b1379664401c41bc812a9dacebab48",
+    "data/runtime/p52_fullframe_20261015/tracking_after.xml": "574cd490f40ce865adc83be06679af1c0eedcf199ea528fe2982a94fdfbbccf4",
+    "data/runtime/p52_fullframe_20261015/tracking_before.xml": "fdf0fe8472d5cb32a1b53d09e6d8e971b177faad441b19731fe2b455b5d36199",
+    "data/runtime/p52_fullframe_20261015/transition_after.xml": "e2f1776c216156e3dec7e2b01d521bf8d368d4254875b21a85cb46f1872d7a13",
+    "data/runtime/p52_fullframe_20261015/transition_after_v2.xml": "d4849ed32c7080d038f272f0fb3d2615d3cc646236681e026753074b7e42b8d7",
+    "data/runtime/p52_fullframe_20261015/transition_before.xml": "fb8e5523a9bf8b2dccca73f0305650162fbfe2e51e9d7ba68377e7fa61e01301",
+    "data/runtime/p52_fullframe_20261015/unit_tests.xml": "f51944ca8ed26e7320f55b9a55d6191d9f722c1e7dc78da574970492f334b121",
+    "data/runtime/p52_fullframe_20261015/candidate/_fall_detector.py": "5bd0e2b64d5c093ece0b9f751afc210ef4f5e83ec39d7d925a3087536d50c345",
+    "data/runtime/p52_fullframe_20261015/candidate/_synthetic_object_ids.py": "30c6677c3fa9a120e4300f2156a7c7e3186a56ea9bc41532c4b3f8f69ef0a0bb",
+    "data/runtime/p52_fullframe_20261015/candidate/deepstream_processor.py": "4daed02739615d3f2eebfa55315794ef40a7b25238451c0d9f986d0b8f5e4f1d",
+    "data/runtime/p52_fullframe_20261015/candidate/event_debouncer.py": "2e1ddb98b4443fdd4874fd5bacd341a67862b1e5453c278ef201915174d11389",
+    "data/runtime/p52_fullframe_20261015/before/_fall_detector.py": "aa22a6a47b4fe7c707cb13fb9f0cc1c17e25e69765c724d3e32e2c12cc7c1adb",
+    "data/runtime/p52_fullframe_20261015/before/_synthetic_object_ids.py": "54408fdbcc8825cce77579fad534344604e245d8f27724df0683231beee9e443",
+    "data/runtime/p52_fullframe_20261015/before/deepstream_processor.py": "d88633c2e73825bdeeed5259b2efac8d6f5d2330b1e062112bb976784214975a",
+    "data/runtime/p52_fullframe_20261015/before/test_fall_projection.py": "556fae1cc0f8d16e26ece0c3bee6021b68ba219f6f1d7f435603a706ab8ae6e3",
+    "data/runtime/p52_fullframe_20261015/before/test_synthetic_object_ids.py": "0da8648ebc88cb406d69852964c4ae47b298d7ec4d4ee5c30679896683bd7921",
+    "data/runtime/p52_fullframe_20261015/online_validation.json": "28eaddd07a231c1c1dda74c3698402454dc8cb4acbe0dff824cf025e54933709"
+  },
+  "online_validation": {
+    "checked_at_utc": "2026-10-15T00:09:11.105528+00:00",
+    "checks": [
+      {
+        "file": "docs/planning/online/index.html",
+        "status": 200,
+        "bytes": 89691,
+        "sha256": "2c87f3c21f14ca9f19a617b2d7fcbc45daf13662e92c12a6c639c1058aee4358",
+        "local_matches_http": true
+      },
+      {
+        "file": "docs/planning/online/CCTV_project_progress.pdf",
+        "status": 200,
+        "bytes": 147900,
+        "sha256": "52a3f4adab8b7325cc466ee1d739763161f85f2a82797d8c4eb93d83f545ef38",
+        "local_matches_http": true
+      }
+    ],
+    "wbs_rows": 33,
+    "model_rows": 8,
+    "counts": {
+      "DONE": 9,
+      "BLOCKED": 3,
+      "PLANNED": 13,
+      "VERIFY": 7,
+      "IN_PROGRESS": 1
+    },
+    "browser_interaction_verified": false,
+    "pdf_first_page_visual_check": "PASS: 10-15·전체화면9/10·0.5·29.93FPS·WBS9/33 표시"
+  }
+}

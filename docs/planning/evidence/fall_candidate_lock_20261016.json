@@ -1,0 +1,223 @@
+{
+  "checked_at": "2026-10-16T17:20:10.361350+09:00",
+  "wbs": "P5.2",
+  "issue": "I56",
+  "state": "PREPARED_NOT_RUN",
+  "candidate_id": "fall-single-1080p05-20261016-r1",
+  "decision_due": "2026-10-21",
+  "timezone": "Asia/Seoul",
+  "user_confirmed_latency": {
+    "target_seconds": 3,
+    "maximum_seconds": 5,
+    "target_is_hard_gate": false,
+    "field_or_certification_sla": false,
+    "confirmation": "별도 기준 없음 — 내부 목표 3초·상한 5초로 준비"
+  },
+  "resolution": [
+    1920,
+    1080
+  ],
+  "input_fps": 30,
+  "person_pose_confidence": 0.5,
+  "engine_sha256": "68d8c70ef45e6c445d829d077badc8f901c11f95304f157e7ef55e7b9524b0bc",
+  "source_files": 211,
+  "fixed_files": 798,
+  "candidate_lock_path": "data/runtime/p52_candidate_lock_20261016/candidate_lock.json",
+  "criteria_path": "docs/testing/FALL_SINGLE_CAMERA_CANDIDATE_20261021.md",
+  "new_gpu_runs": 0,
+  "operating_stops": 0,
+  "operating_applied": false,
+  "new_dependencies": 0,
+  "training_or_engine_changes": false,
+  "approval_status": "PENDING",
+  "approved_batches": [],
+  "cpu_reference": {
+    "source": "docs/planning/evidence/fall_seating_gate_20261016.json",
+    "videos": 100,
+    "TP": 50,
+    "FN": 0,
+    "FP": 0,
+    "TN": 50,
+    "early": 0,
+    "duplicate": 0,
+    "latency_seconds": {
+      "median": 2.556216666333333,
+      "p95": 3.738312499333333,
+      "max": 4.4460500000000005,
+      "above_3s": 9,
+      "above_5s": 0
+    },
+    "scope": "저장 GPU 출력 CPU회귀; 독립 성적·신규 GPU 결과 아님"
+  },
+  "prepared_stages": [
+    {
+      "batch": 0,
+      "video_trials": 20,
+      "test_limit_minutes": 20,
+      "recovery_limit_minutes": 5
+    },
+    {
+      "batch": 1,
+      "video_trials": 40,
+      "test_limit_minutes": 35,
+      "recovery_limit_minutes": 5
+    },
+    {
+      "batch": 2,
+      "video_trials": 40,
+      "test_limit_minutes": 35,
+      "recovery_limit_minutes": 5
+    },
+    {
+      "batch": 3,
+      "video_trials": 1,
+      "test_limit_minutes": 38,
+      "recovery_limit_minutes": 5
+    }
+  ],
+  "soak": {
+    "observation_seconds": 1800,
+    "warmup_excluded_seconds": 300,
+    "input": "회귀 정상00932의1080p30 반복 RTSP",
+    "independent": false
+  },
+  "throughput": {
+    "target": 15,
+    "preexisting_minimum": 14.25,
+    "window_seconds": 30,
+    "maximum_lag_range_seconds": 0.5
+  },
+  "validation": {
+    "readiness_tests_passed": 34,
+    "readiness_tests_failed": 0,
+    "readiness_tests_skipped": 0,
+    "ruff": "PASS",
+    "compose_configs_passed": 101,
+    "final_fixed_hashes_passed": 798,
+    "same_workspace_source": true,
+    "cpu_import": "PASS",
+    "cuda_initialized": false,
+    "same_operating_containers": true,
+    "snapshot": [
+      {
+        "name": "/cctv-ai-engine",
+        "id": "c8a71163c84b458197b98a4bde8e0e06719afc5cf5964e6fbd0b716109ce0377",
+        "image": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+        "started_at": "2026-10-16T02:50:25.26180535Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-media-server",
+        "id": "957101f7ab7336585817a176154f7711de977caee7cfbf34257f2fb68810dea4",
+        "image": "sha256:f8628851106cc053f9175b248050bb5f362a6e65abd72297c167a1cb5a9a3be2",
+        "started_at": "2026-10-12T23:35:15.324861031Z",
+        "status": "running",
+        "health": null,
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-action-layer",
+        "id": "74deaeb0b5bdd64c8f2e2a141daa25c193a75cf235b214fee6ef8b4dcdceedeb",
+        "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+        "started_at": "2026-10-12T23:35:15.475740705Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-device-signboard",
+        "id": "29aeb393bd52e7a9f8241be9214b970e82e8442253fdfe2e73dbbf5d153feaa8",
+        "image": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+        "started_at": "2026-10-12T23:35:15.45875226Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-device-speaker",
+        "id": "a8ff5823d34ad72dd2c5b236cc88f210b16feb05ef53532e6549601d2beafb7a",
+        "image": "sha256:4daca5e8c9865c5f19dde37d7dbdfcc37ea5c413fa8375802e80c7f8185bba30",
+        "started_at": "2026-10-12T23:35:15.455773133Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      }
+    ],
+    "outputs_empty": true,
+    "documentation": {
+      "http": {
+        "index.html": {
+          "http_status": 200,
+          "matches_local_sha256": true,
+          "sha256": "ccc2db80dd802fe5c56bc7595a9f288352aeb475604c759fadb8b8402a770e4b"
+        },
+        "CCTV_project_progress.pdf": {
+          "http_status": 200,
+          "matches_local_sha256": true,
+          "sha256": "d630c117086efc759e36380618b2ec6dbcce726bb2cdcb10b93b80db61e564bd"
+        }
+      },
+      "wbs_board_html_rows": 37,
+      "early_completion_visible": true,
+      "cpu_import_container_removed": true,
+      "pdf_first_page": "visually_checked_no_clipping",
+      "current_local_links_checked": 65,
+      "renderer_ruff": "PASS",
+      "diff_check": "PASS"
+    }
+  },
+  "schedule": [
+    {
+      "date": "2026-10-16",
+      "task": "기준 확정·후보 고정·시험 준비",
+      "state": "DONE"
+    },
+    {
+      "date": "2026-10-19",
+      "task": "고정100영상 GPU20/40/40·각 복구 확인",
+      "state": "PLANNED_APPROVAL_PENDING"
+    },
+    {
+      "date": "2026-10-20",
+      "task": "영상 통과 후30분 연속 시험·분석",
+      "state": "PLANNED_APPROVAL_PENDING"
+    },
+    {
+      "date": "2026-10-21",
+      "task": "단일 개발 후보 채택/미달/미확인 판정 기록",
+      "state": "PLANNED"
+    }
+  ],
+  "remaining": [
+    "GPU100·30분 관측 실측 및 실행 창 승인",
+    "CPU3초 초과9건을 실제 GPU에서 확인; 5초 상한 유지",
+    "현장/독립 정상·유사 행동 평가",
+    "다중카메라·전체 AI·장시간·운영/관제 전달 검증"
+  ],
+  "wbs_counts": {
+    "DONE": 9,
+    "IN_PROGRESS": 2,
+    "VERIFY": 7,
+    "BLOCKED": 3,
+    "PLANNED": 16
+  },
+  "next": "승인 창 즉시 GPU100 → 단일30분 → 조기 후보 판정(늦어도10/21) → 다중 → 운영 준비; 싸움 보류",
+  "artifact_sha256": {
+    "data/runtime/p52_candidate_lock_20261016/candidate_lock.json": "de152172ee233cbb359300bc4f6f73c09088eb270f156dce7c227a5910d1826a",
+    "data/runtime/p52_candidate_lock_20261016/plan.json": "18b56cfc87fa0d3c86451ef2cf332849b56b33fd4a2c7d4f77d968eff1957137",
+    "data/runtime/p52_candidate_lock_20261016/acceptance.json": "23a61b0108ad45ae47b8b441f9fc4d8a9a17c855acd9466e80a334253494ba81",
+    "data/runtime/p52_candidate_lock_20261016/preflight.json": "cf0e944aaf7575bb0a7e6d5b5fb9199bb52eddfaf53d7fd2b9155e7e9f6632f4",
+    "data/runtime/p52_candidate_lock_20261016/final_preflight.json": "2f0d101af1b74a37414f322aa3b0023ad63a2fffbaae0f35a2aacf9d5dbb0aa9",
+    "data/runtime/p52_candidate_lock_20261016/release_readiness_tests.xml": "17d9bf114fdbab2eeef23479652b2fffb245aa3aa2d667495f0da603a639299a",
+    "data/runtime/p52_candidate_lock_20261016/cpu_import_check.json": "8fd1fc67ea9e0fca574d002213ef59e722379f87acb0c7986ad61cd17784aaa4",
+    "data/runtime/p52_candidate_lock_20261016/run.py": "774f8ed0170f8adde132b52280d35a4da44a85bb5ff99fe32e9e63e870c97ef8",
+    "data/runtime/p52_candidate_lock_20261016/evaluate.py": "3b3ce7ced1a606671c52a59554d1d619fd7b203b65ae03bb40bbe2e200fd1eaa",
+    "data/runtime/p52_candidate_lock_20261016/test_readiness.py": "be529dfb92763af37b14d3043de5e4e0988a01981cda989614149b6c5d7949a4",
+    "data/runtime/p52_candidate_lock_20261016/publication_check.json": "90e7a0b6084b3bcaea102edb2bbd4388d611b43a5f15593fd689e435dc9bcbb5"
+  },
+  "early_finish_confirmed_by_user": true,
+  "schedule_policy": "10/21은 마감. 승인 창 확보 즉시 GPU100→단일30분→분석, 완료 즉시 조기 판정. 10/19·10/20은 점검 계획이며 대기일 아님.",
+  "criteria_sha256": "165eb2eda2f628b9c1dd9b574a3d223a2d719f96831b98d1f7429826e09c7bf2"
+}

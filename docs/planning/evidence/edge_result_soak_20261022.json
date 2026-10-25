@@ -1,0 +1,922 @@
+{
+  "date": "2026-10-22",
+  "status": "PASS_DURABILITY_AND_FENCING_WITH_EXPIRED_RESULTS",
+  "scope": "O3 isolated continuous result path; simulated AI with actual intake/MQTT/HTTPS/SQLite",
+  "physical_jetson_b_tested": false,
+  "requested_seconds": 1800,
+  "source_sha256": {
+    "src/services/edge_service.py": "80db650bbf45b09cc0f2015b3fdc5b9c89c7b31efa93495e28d56d73d54f8781",
+    "tests/test_edge_service.py": "1d79762d22c557a383b92ae35d8dd251eedec818171d2df65911661053539ab1",
+    "tests/test_edge_full_pipeline.py": "64cc90f132392cb9dddfef35aa9164b54e6a22e4e639ae8636eb8df1a788ddc5",
+    "src/services/edge_node_agent.py": "deb4a4ba93b6e1bbfd5427e2218507daff4e75b746962ac65eae1a5e5c103d29",
+    "src/services/edge_orchestrator.py": "18ac8badb9500039a8146a587c0b132c65d2e47dcb53355f2e104f2563feb790",
+    "src/services/edge_controller_api.py": "9d34f49064abd0e9022ae7a244f2092ea6c24e5514cc0284cb17a432126b453c",
+    "tests/test_edge_orchestration_remote.py": "02c835cef75a5f8baede69b21d711e9b8ea55725e907f3ad987e1e3ba2994813",
+    "config/deepstream/edge-service-b.manifest.example.json": "d0c2b982dde767a0e69c485d27776db06faefe0f1ad613bd46b48a33c92ada62",
+    "tests/fixtures/edge_ai_process.py": "2f1d61575cccde50a068a715e588f5551206b1f549d746fbfb8ea810eecd1ecb",
+    "tests/test_edge_video_results.py": "072ae74df917117d7803a8730cfc3863e38af53388268f7966291dc5a5ac0bef"
+  },
+  "test_suites": [
+    {
+      "source": "edge-soak-preflight-20261022.xml",
+      "sha256": "4f1442ef27f9bc5ee7ff3cc5dd7a7d74b884bbf07a2b9186cdeca23a8d4dfa05",
+      "summary": {
+        "name": "pytest",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "tests": "1",
+        "time": "140.643",
+        "timestamp": "2026-10-22T21:42:49.495899+09:00",
+        "hostname": "ubuntu"
+      }
+    },
+    {
+      "source": "edge-service-recovery-red-20261022.xml",
+      "sha256": "7f2b4078c5f795f45a939dcb571a563ea31f9bc3db5e2c64f7eafc15d15ae261",
+      "summary": {
+        "name": "pytest",
+        "errors": "0",
+        "failures": "2",
+        "skipped": "0",
+        "tests": "2",
+        "time": "1.427",
+        "timestamp": "2026-10-22T22:01:52.017522+09:00",
+        "hostname": "ubuntu"
+      }
+    },
+    {
+      "source": "edge-service-recovery-green-20261022.xml",
+      "sha256": "8c617cdcbd7372d1b9c96a168886a2d2ea750c422d0edf1ee700533e96c88309",
+      "summary": {
+        "name": "pytest",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "tests": "55",
+        "time": "22.861",
+        "timestamp": "2026-10-22T22:03:10.828744+09:00",
+        "hostname": "ubuntu"
+      }
+    },
+    {
+      "source": "edge-read-retry-red-20261022.xml",
+      "sha256": "442a1f81e87eda682b186671d033cafc02de2420e18004780328fa6c6de7320d",
+      "summary": {
+        "name": "pytest",
+        "errors": "0",
+        "failures": "2",
+        "skipped": "0",
+        "tests": "6",
+        "time": "24.700",
+        "timestamp": "2026-10-22T22:42:34.653112+09:00",
+        "hostname": "ubuntu"
+      }
+    },
+    {
+      "source": "edge-read-retry-green-20261022.xml",
+      "sha256": "1fd7c98d8d82d06a7d56673ce708c8be18dbcd9cd16f613bebe44ce59eba30ec",
+      "summary": {
+        "name": "pytest",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "tests": "136",
+        "time": "21.418",
+        "timestamp": "2026-10-22T22:44:57.117816+09:00",
+        "hostname": "ubuntu"
+      }
+    },
+    {
+      "source": "edge-read-retry-transport-emmc-failed-20261022.xml",
+      "sha256": "09212eb13a2ff2a66016ceb642994fa44f7f998da52647b235b7053be8d778b2",
+      "summary": {
+        "name": "pytest",
+        "errors": "0",
+        "failures": "1",
+        "skipped": "0",
+        "tests": "17",
+        "time": "88.073",
+        "timestamp": "2026-10-22T22:46:35.699595+09:00",
+        "hostname": "ubuntu"
+      }
+    },
+    {
+      "source": "edge-read-retry-transport-external-20261022.xml",
+      "sha256": "a1cfcb2d5829c6c4cb5a2e9de22cf4c8ed5d0e8dad01fa5de0f85eb4cb340199",
+      "summary": {
+        "name": "pytest",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "tests": "17",
+        "time": "71.879",
+        "timestamp": "2026-10-22T22:48:59.094057+09:00",
+        "hostname": "ubuntu"
+      }
+    },
+    {
+      "source": "edge-publish-worker-green-20261022.xml",
+      "sha256": "73e9ee70e2859430e6482a7cad93037403bf0bac0be7fad91a4ed950a079930d",
+      "summary": {
+        "name": "pytest",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "tests": "71",
+        "time": "63.697",
+        "timestamp": "2026-10-22T22:59:12.701641+09:00",
+        "hostname": "ubuntu"
+      }
+    },
+    {
+      "source": "edge-publish-worker-drain-120-20261022.xml",
+      "sha256": "6d3e2c2dd20655759d8e44240859e46029a95c33b1ef38c67f7122d4ca50a2d2",
+      "summary": {
+        "name": "pytest",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "tests": "1",
+        "time": "141.550",
+        "timestamp": "2026-10-22T23:01:45.508742+09:00",
+        "hostname": "ubuntu"
+      }
+    }
+  ],
+  "first_run": {
+    "status": "ABORTED_AFTER_VERIFIED_AI_STOP",
+    "pytest_exit_code": 2,
+    "observed_seconds": 714.928629398346,
+    "last_consumed_event_after_seconds": 269.7392725944519,
+    "consumed_events": 745,
+    "agent_faults": [
+      {
+        "node": "jetson-a",
+        "kind": "agent_stop",
+        "at": 1792673477.428632
+      },
+      {
+        "node": "jetson-a",
+        "kind": "agent_restart",
+        "at": 1792673499.0304434
+      }
+    ],
+    "node_a_originals_committed": 933,
+    "service_error_observed": "readiness_timeout",
+    "initial_metrics_error_type": "UNKNOWN; original handler discarded details",
+    "root_cause_reproduced": "after startup grace has elapsed, one metrics failure compared to original start time immediately stops an already running AI child",
+    "red_regressions_failed": 2,
+    "first_run_harness_gap": "agent heartbeat and some delivery success did not enforce ongoing AI/delivery progress"
+  },
+  "correction": {
+    "product": "track continuous not-ready time separately; reset timer on verified recovery; log exception class without endpoint/secrets",
+    "readiness_safety_preserved": true,
+    "persistent_unhealthy_stops_owned_child": true,
+    "automatic_restart_added": false,
+    "new_dependencies": 0,
+    "tests": "same AI process survives transient failure; repeated healthy periods reset window; continuous failure still stops; actual soak checks service error and delivery stall"
+  },
+  "checks": {
+    "ruff": "PASS",
+    "python38_changed_product_and_fixture_syntax": "PASS",
+    "new_hardware_b_execution": false,
+    "git_diff_check": "PASS",
+    "archive_hashes_and_member_paths": "PASS"
+  },
+  "running_test": {
+    "exec_session_id": 20215,
+    "started_at": "2026-10-22T14:06:18.961035+00:00",
+    "xml": "/tmp/edge-result-soak-worker-1800-20261022.xml",
+    "basetemp": "/media/sawwave/Learning11/CCTV-project/.edge-soak-ttruictx/worker-recovery",
+    "seconds": 1800,
+    "completion": "passed",
+    "terminal_exit_code": 0
+  },
+  "limitations": [
+    "fixture AI and metrics are simulated",
+    "45s delivery-stall watchdog is a diagnostic test bound, not an agreed field latency acceptance criterion",
+    "underlying reason for first transient metrics read failure remains unknown",
+    "new integration not deployed to B or operating A"
+  ],
+  "operating_changes": {
+    "production_restart": false,
+    "ap_or_network_configuration": false,
+    "package_install": false
+  },
+  "documentation_checks": {
+    "index.html": {
+      "http": 200,
+      "matches_file": true,
+      "sha256": "6eebd6eb8b2ff148673d0dcc98d7f086905131fc7e4571c4689cbdbd2f6094cd"
+    },
+    "CCTV_project_progress.pdf": {
+      "http": 200,
+      "matches_file": true,
+      "sha256": "c39694b37a34c140034e70b5facc7274b54f6c64cf72d7d433214f45eb3f6b13"
+    }
+  },
+  "observed_recovery_warnings": {
+    "jetson-b-supervisor.stderr": {},
+    "jetson-a-supervisor.stderr": {
+      "ConnectionRefusedError": 1,
+      "TimeoutError": 8
+    }
+  },
+  "observed_capture_sessions": {
+    "jetson-b": 0,
+    "jetson-a": 1
+  },
+  "second_run": {
+    "status": "FAILED_STORAGE_503",
+    "summary": {
+      "name": "pytest",
+      "errors": "0",
+      "failures": "1",
+      "skipped": "0",
+      "tests": "1",
+      "time": "1025.323",
+      "timestamp": "2026-10-22T22:06:32.362418+09:00",
+      "hostname": "ubuntu"
+    },
+    "xml_sha256": "85321263d29894db7870088bb3267e5d7a38249a993a14cdb3d52f1d325e2a6c",
+    "successful_a_phase": [
+      {
+        "owner": "jetson-a",
+        "seconds": 900.4111010899651,
+        "consumed": 2413,
+        "stale_observed": true
+      }
+    ],
+    "last_sample": {
+      "at": 1792675410.4389443,
+      "owner": "jetson-b",
+      "nodes": {
+        "jetson-a": {
+          "freshness": "online",
+          "sequence": 2025,
+          "boot_id": "ff71404f-84eb-45cd-8e8a-fa4d2094a7cf",
+          "service_status": "running",
+          "service_ready": true,
+          "service_error": null
+        },
+        "jetson-b": {
+          "freshness": "online",
+          "sequence": 3881,
+          "boot_id": "a5c59034-fc18-4138-ba2d-157af22a0014",
+          "service_status": "running",
+          "service_ready": true,
+          "service_error": null
+        }
+      },
+      "consumed": 248
+    },
+    "faults": [
+      {
+        "node": "jetson-a",
+        "kind": "agent_stop",
+        "at": 1792674622.6733744
+      },
+      {
+        "node": "jetson-a",
+        "kind": "agent_restart",
+        "at": 1792674644.0996995
+      }
+    ],
+    "max_request_seconds": 2.0365192189929076,
+    "failure": "GET /v1/nodes -> 503 storage_unavailable",
+    "sqlite_error_detail": "not logged; actual SQLite error subtype unknown",
+    "final_reconciliation_performed": false
+  },
+  "storage_read_recovery": {
+    "scope": "GET only, retry once after 0.2s only on exact 503 storage_unavailable; no write retry change; persistent error remains failure",
+    "diagnosis": "Exclusive write lock reproduces the same 503; the original long-test SQLite subtype was not logged, so root cause remains unconfirmed",
+    "database_policy": "Existing journal and FULL synchronous remain unchanged; no SQLite/system upgrade",
+    "logging": "Sanitized database_locked/exception class only, no raw error or credentials",
+    "test_coverage": "real TLS lock/release + rollback preserves committed sequence, stale age; bounded persistent 503; no retries for POST/PUT/401/other 503",
+    "external_transport_tests": "17 PASS/0 SKIP",
+    "emmc_preflight": "1 FAIL/16 PASS: controller endpoint timeout and process termination timeout with /tmp state; no remaining owned failed controller found afterwards. Storage wait is suspected, no stack sample captured."
+  },
+  "b_manifest": {
+    "id": "b-trt85-pose-helmet-v2",
+    "change": "Launch preserved application/main.py directly so legacy wrapper does not overwrite supervisor-owned intake DB/metrics environment",
+    "cli_parser_validation": "PASS",
+    "deployed_to_b": false,
+    "sdk_model_downloads": 0
+  },
+  "third_run": {
+    "status": "FAILED_FIXTURE_BYPASSED_PRODUCTION_RECOVERY",
+    "summary": {
+      "name": "pytest",
+      "errors": "0",
+      "failures": "1",
+      "skipped": "0",
+      "tests": "1",
+      "time": "285.830",
+      "timestamp": "2026-10-22T22:50:29.164528+09:00",
+      "hostname": "ubuntu"
+    },
+    "source": "edge-result-soak-read-retry-1800-20261022.xml",
+    "sha256": "be64507a48dca3a6fc082d6d9d67e518b83812da178689d1afc3041054484bff",
+    "samples": 231,
+    "last_sample": {
+      "at": 1792677298.796777,
+      "owner": "jetson-a",
+      "nodes": {
+        "jetson-a": {
+          "freshness": "online",
+          "sequence": 38,
+          "boot_id": "184e5aae-8e73-419b-93ba-5c6d0cc46f8b",
+          "service_status": "unhealthy",
+          "service_ready": false,
+          "service_error": "metrics_unverified"
+        },
+        "jetson-b": {
+          "freshness": "online",
+          "sequence": 1121,
+          "boot_id": "9d9d7ffc-f5df-4f93-94e3-31ff4b66ef2c",
+          "service_status": "stopped",
+          "service_ready": false,
+          "service_error": null
+        }
+      },
+      "consumed": 776
+    },
+    "faults": [
+      {
+        "node": "jetson-a",
+        "kind": "agent_stop",
+        "at": 1792677260.3155758
+      },
+      {
+        "node": "jetson-a",
+        "kind": "agent_restart",
+        "at": 1792677282.1244462
+      }
+    ],
+    "diagnostics": {
+      "driver_storage_read_retries": 0,
+      "processes": {
+        "jetson-b-agent": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "jetson-b-supervisor": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "jetson-a-supervisor": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 1
+        },
+        "jetson-a-agent-restarted": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "jetson-a-agent": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "controller": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        }
+      }
+    },
+    "cause": "Fixture called VideoEventIngest.publish directly without production run_publish_loop error handling/recovery. Unhandled context DB locked error terminated fixture. Production publisher already catches and retries persisted receipts. Fixture metrics handling also shared the blocked intake thread.",
+    "correction": "Fixture uses existing production publish/recovery worker and a separate metrics server; intake-before-commit failure retains same input in memory for retry. No production event store change.",
+    "recovery_tests_passed": 71,
+    "reconciliation_scope": "Producer acknowledges input stop; persisted pending intake must drain before AI stop, then all canonical event IDs/hashes and node/central originals must reconcile."
+  },
+  "worker_short_preflight": {
+    "status": "PASS",
+    "requested_seconds": 120,
+    "phases": [
+      {
+        "owner": "jetson-a",
+        "seconds": 60.852908486966044,
+        "consumed": 239,
+        "stale_observed": true
+      },
+      {
+        "owner": "jetson-b",
+        "seconds": 60.06237455300288,
+        "consumed": 159,
+        "stale_observed": true
+      }
+    ],
+    "faults": [
+      {
+        "node": "jetson-a",
+        "kind": "agent_stop",
+        "at": 1792677725.6704156
+      },
+      {
+        "node": "jetson-a",
+        "kind": "agent_restart",
+        "at": 1792677747.6623142
+      },
+      {
+        "node": "jetson-b",
+        "kind": "agent_stop",
+        "at": 1792677790.587932
+      },
+      {
+        "node": "jetson-b",
+        "kind": "agent_restart",
+        "at": 1792677812.9459178
+      },
+      {
+        "kind": "broker_stop",
+        "at": 1792677814.4623156
+      },
+      {
+        "kind": "broker_restart",
+        "at": 1792677826.8866718
+      }
+    ],
+    "reconciliation": {
+      "jetson-a": {
+        "node_originals": 517,
+        "central_originals": 517,
+        "missing_or_changed": 0,
+        "accepted_video_records": 453,
+        "video_raw_states": {
+          "accepted": 453
+        }
+      },
+      "jetson-b": {
+        "node_originals": 231,
+        "central_originals": 231,
+        "missing_or_changed": 0,
+        "accepted_video_records": 205,
+        "video_raw_states": {
+          "accepted": 205
+        }
+      }
+    },
+    "diagnostics": {
+      "driver_storage_read_retries": 0,
+      "processes": {
+        "jetson-b-agent": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "jetson-b-supervisor": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "jetson-a-supervisor": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "jetson-a-agent-restarted": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "jetson-a-agent": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "controller": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "jetson-b-agent-restarted": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        }
+      }
+    },
+    "request_max_seconds": 0.20962205796968192,
+    "evidence_sha256": "8ae9aaac5a92a71e6a55035827ffb066a42f9cf2e1a1aeaa8a0df40e3c84f932"
+  },
+  "latest_operating_observation": {
+    "at": "2026-10-22T13:52:16.140222+00:00",
+    "same_37_container_ids_start_state_restart_count": true,
+    "metrics": {
+      "cctv_processor_frames_processed_total": 8323921.0,
+      "cctv_processor_source_error_identified_total": 0.0,
+      "cctv_processor_pipeline_restart_executed_total": 0.0
+    }
+  },
+  "b_source_bundle": {
+    "file": "edge_b_o3_sources_20261022.tar.gz",
+    "sha256": "0c3ce0a04b881a422e4584daca478d80ec7c56aae256bca5242863de9b8f7338",
+    "bytes": 92157,
+    "source_files": 22,
+    "changed_existing_files": [
+      "src/services/processor_metrics.py",
+      "src/services/edge_orchestrator.py",
+      "src/services/edge_node_agent.py",
+      "src/protocols/mqtt_subscriber.py",
+      "src/protocols/mqtt_publisher.py",
+      "src/core/deepstream_processor.py",
+      "src/core/video_event_ingest.py",
+      "src/core/base_processor.py",
+      "src/core/processor.py",
+      "src/core/_event_publish.py"
+    ],
+    "new_python_files": [
+      "runners/run_edge_orchestration.py",
+      "src/services/_edge_process.py",
+      "src/services/edge_controller_api.py",
+      "src/services/edge_ownership.py",
+      "src/services/edge_result_context.py",
+      "src/services/edge_result_transport.py",
+      "src/services/edge_service.py"
+    ],
+    "baseline_files_checked": 217,
+    "archive_hash_validation": "PASS",
+    "python38_syntax": "PASS",
+    "deployed_to_b": false,
+    "overlay_validation": {
+      "baseline_unchanged_files_verified": 206,
+      "changed_files_and_new_modules_from_archive": true,
+      "cli_help_and_runtime_imports": "PASS on Python 3.10.12; B Python 3.8 runtime remains unverified",
+      "temporary_tree_removed": true
+    }
+  },
+  "final_run": {
+    "status": "PASS",
+    "requested_seconds": 1800,
+    "phases": [
+      {
+        "owner": "jetson-a",
+        "seconds": 900.3904493859736,
+        "consumed": 3180,
+        "stale_observed": true
+      },
+      {
+        "owner": "jetson-b",
+        "seconds": 900.4222007270437,
+        "consumed": 2396,
+        "stale_observed": true
+      }
+    ],
+    "faults": [
+      {
+        "node": "jetson-a",
+        "kind": "agent_stop",
+        "at": 1792678145.3468108
+      },
+      {
+        "node": "jetson-a",
+        "kind": "agent_restart",
+        "at": 1792678166.7494442
+      },
+      {
+        "node": "jetson-b",
+        "kind": "agent_stop",
+        "at": 1792679051.2377887
+      },
+      {
+        "node": "jetson-b",
+        "kind": "agent_restart",
+        "at": 1792679072.6124473
+      },
+      {
+        "kind": "broker_stop",
+        "at": 1792679412.9461915
+      },
+      {
+        "kind": "broker_restart",
+        "at": 1792679425.9907184
+      }
+    ],
+    "request_max_seconds": 2.7449140709941275,
+    "reconciliation": {
+      "jetson-a": {
+        "node_originals": 6323,
+        "central_originals": 6323,
+        "missing_or_changed": 0,
+        "accepted_video_records": 5621,
+        "video_raw_states": {
+          "accepted": 5621
+        }
+      },
+      "jetson-b": {
+        "node_originals": 2727,
+        "central_originals": 2727,
+        "missing_or_changed": 0,
+        "accepted_video_records": 2456,
+        "video_raw_states": {
+          "accepted": 2456
+        }
+      }
+    },
+    "central_decisions": [
+      [
+        "jetson-a",
+        "event",
+        "accepted",
+        "current_owner",
+        3204
+      ],
+      [
+        "jetson-a",
+        "event",
+        "rejected",
+        "expired",
+        39
+      ],
+      [
+        "jetson-a",
+        "event",
+        "rejected",
+        "inactive_execution",
+        1
+      ],
+      [
+        "jetson-a",
+        "event",
+        "rejected",
+        "not_current_owner",
+        2377
+      ],
+      [
+        "jetson-a",
+        "observation",
+        "observed",
+        "preparation_sample",
+        425
+      ],
+      [
+        "jetson-a",
+        "observation",
+        "rejected",
+        "current_owner",
+        7
+      ],
+      [
+        "jetson-a",
+        "observation",
+        "rejected",
+        "expired",
+        4
+      ],
+      [
+        "jetson-a",
+        "observation",
+        "rejected",
+        "not_current_owner",
+        266
+      ],
+      [
+        "jetson-b",
+        "event",
+        "accepted",
+        "current_owner",
+        2412
+      ],
+      [
+        "jetson-b",
+        "event",
+        "rejected",
+        "expired",
+        37
+      ],
+      [
+        "jetson-b",
+        "event",
+        "rejected",
+        "inactive_execution",
+        3
+      ],
+      [
+        "jetson-b",
+        "event",
+        "rejected",
+        "not_current_owner",
+        4
+      ],
+      [
+        "jetson-b",
+        "observation",
+        "observed",
+        "preparation_sample",
+        254
+      ],
+      [
+        "jetson-b",
+        "observation",
+        "rejected",
+        "current_owner",
+        13
+      ],
+      [
+        "jetson-b",
+        "observation",
+        "rejected",
+        "expired",
+        4
+      ]
+    ],
+    "diagnostics": {
+      "driver_storage_read_retries": 1,
+      "processes": {
+        "jetson-b-agent": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "jetson-b-supervisor": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "jetson-a-supervisor": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "jetson-a-agent-restarted": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "jetson-a-agent": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "controller": {
+          "database_locked": 1,
+          "storage_failures": 1,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "jetson-b-agent-restarted": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        }
+      }
+    },
+    "pytest_seconds": 1869.838,
+    "source": "edge-result-soak-worker-1800-20261022.xml",
+    "source_sha256": "a4c65eb0083092580b9ccedfd157bb3255039a514a6a95a144d84b015f5b8081",
+    "deduplicated_log_counts": {
+      "edge-full-pipeline0/controller.stderr": {
+        "sha256": "11b602d88dd3aeab855b4d351474b331ca7aa57a071cf6ed8215194284473c13",
+        "bytes": 110,
+        "database_locked_mentions": 0,
+        "intake_retry_log_entries": 0,
+        "publish_error_log_entries": 0,
+        "storage_failure_log_entries": 1,
+        "metrics_timeout_mentions": 0
+      },
+      "edge-full-pipeline0/jetson-a/state/ai-94282041-f1d3-4074-b02b-ebeeef678364.log": {
+        "sha256": "fd84f88fa5ad9f334115401e91cdfaf89c2888e0d6f5761b2d778566f0418860",
+        "bytes": 1648,
+        "database_locked_mentions": 6,
+        "intake_retry_log_entries": 5,
+        "publish_error_log_entries": 6,
+        "storage_failure_log_entries": 0,
+        "metrics_timeout_mentions": 0
+      },
+      "edge-full-pipeline0/jetson-a-agent-restarted.stderr": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "database_locked_mentions": 0,
+        "intake_retry_log_entries": 0,
+        "publish_error_log_entries": 0,
+        "storage_failure_log_entries": 0,
+        "metrics_timeout_mentions": 0
+      },
+      "edge-full-pipeline0/jetson-a-agent.stderr": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "database_locked_mentions": 0,
+        "intake_retry_log_entries": 0,
+        "publish_error_log_entries": 0,
+        "storage_failure_log_entries": 0,
+        "metrics_timeout_mentions": 0
+      },
+      "edge-full-pipeline0/jetson-a-supervisor.stderr": {
+        "sha256": "f848f9d495ac5771b76c94b1c58fdd6c90a20f7209940a99dfdb01b9a3ad4c7a",
+        "bytes": 98,
+        "database_locked_mentions": 0,
+        "intake_retry_log_entries": 0,
+        "publish_error_log_entries": 0,
+        "storage_failure_log_entries": 0,
+        "metrics_timeout_mentions": 0
+      },
+      "edge-full-pipeline0/jetson-b/state/ai-cb5734c0-bda3-4e94-a2c0-82048cab8d78.log": {
+        "sha256": "561eacd0e97c41b7368a2fc5f32b322cb77595c192f559e59ab190324bba1440",
+        "bytes": 954,
+        "database_locked_mentions": 5,
+        "intake_retry_log_entries": 2,
+        "publish_error_log_entries": 5,
+        "storage_failure_log_entries": 0,
+        "metrics_timeout_mentions": 0
+      },
+      "edge-full-pipeline0/jetson-b-agent-restarted.stderr": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "database_locked_mentions": 0,
+        "intake_retry_log_entries": 0,
+        "publish_error_log_entries": 0,
+        "storage_failure_log_entries": 0,
+        "metrics_timeout_mentions": 0
+      },
+      "edge-full-pipeline0/jetson-b-agent.stderr": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "database_locked_mentions": 0,
+        "intake_retry_log_entries": 0,
+        "publish_error_log_entries": 0,
+        "storage_failure_log_entries": 0,
+        "metrics_timeout_mentions": 0
+      },
+      "edge-full-pipeline0/jetson-b-supervisor.stderr": {
+        "sha256": "51d8f581b9859c496810ac190aa7bbdf374ef7e50892f4c8702aeebd7549a442",
+        "bytes": 52,
+        "database_locked_mentions": 0,
+        "intake_retry_log_entries": 0,
+        "publish_error_log_entries": 0,
+        "storage_failure_log_entries": 0,
+        "metrics_timeout_mentions": 0
+      }
+    },
+    "agent_recovery": {
+      "jetson-a": {
+        "stop_to_stale_seconds": 10.966490745544434,
+        "stopped_seconds": 21.40263342857361,
+        "restart_to_online_seconds": 1.540536880493164
+      },
+      "jetson-b": {
+        "stop_to_stale_seconds": 10.88377857208252,
+        "stopped_seconds": 21.374658584594727,
+        "restart_to_online_seconds": 2.3702316284179688
+      }
+    },
+    "expired_events": {
+      "jetson-a": 39,
+      "jetson-b": 37,
+      "total": 76
+    },
+    "expired_observations": 8
+  },
+  "archive": {
+    "file": "edge_result_soak_20261022_telemetry.tar.gz",
+    "sha256": "867be6b2675c06ac1262f6940a9a197e109ac5071655600e095d5107c5528ad0",
+    "bytes": 73952,
+    "includes": "Synthetic telemetry, JUnit evidence, deduplicated log counts/hashes and operating counters only; no private credentials, model or image data"
+  },
+  "final_operating_observation": {
+    "at": "2026-10-22T14:39:09.153001+00:00",
+    "same_37_container_ids_start_times_states_restart_counts": true,
+    "metrics": {
+      "cctv_processor_frames_processed_total": 8408233.0,
+      "cctv_processor_source_error_identified_total": 0.0,
+      "cctv_processor_pipeline_restart_executed_total": 0.0
+    }
+  },
+  "cleanup": {
+    "own_controller_supervisor_agents_fixture_processes_remaining": [],
+    "labelled_test_broker_containers_remaining": [],
+    "private_test_root_removed": true,
+    "scope": "Only .edge-soak-ttruictx including fixture CA/keys/tokens, synthetic DBs and linked logs; source bundle/telemetry evidence retained."
+  },
+  "limits": [
+    "Synthetic AI/model/metrics; no new O2/O3 execution on physical Jetson B",
+    "All 9050 originals and hashes reconcile, including rejected originals. This is not proof all results arrived before expiry or were consumed.",
+    "76 event originals and 8 observations expired at central receive. Exact per-event queue/receive timing was not retained by this run.",
+    "Previous AI deliberately continued producing for old-owner fencing; stop-old-owner handoff belongs to O4. Do not assume this explains or resolves expiry.",
+    "Storage contention recovered, but disk latency/capacity and real AI performance remain unresolved.",
+    "No ROS 2/automatic handoff/physical output or A-independent camera route validation."
+  ]
+}

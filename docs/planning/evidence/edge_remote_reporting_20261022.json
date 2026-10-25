@@ -1,0 +1,319 @@
+{
+  "date": "2026-10-22",
+  "scope": "O2 HTTPS 원격 자원 보고",
+  "status": "REMOTE_REPORTING_TWO_JETSONS_VALIDATED",
+  "tests": {
+    "passed": 103,
+    "skipped": 0,
+    "seconds": 7.63,
+    "command": ".venv/bin/python -m pytest -q tests/test_jetson_resources.py tests/test_edge_orchestrator.py tests/test_edge_orchestration_integration.py tests/test_edge_orchestration_remote.py",
+    "ruff": "PASS",
+    "intermediate_failure": {
+      "passed": 102,
+      "failed": 1,
+      "test": "test_demo_uses_isolated_runtime_and_finishes",
+      "symptoms": [
+        "storage_unavailable",
+        "SQLite disk I/O during shutdown",
+        "reporting deadline exceeded"
+      ],
+      "single_test_retry_passed": true,
+      "final_full_retry_passed": true,
+      "root_cause_confirmed": false
+    }
+  },
+  "source_sha256": {
+    "src/services/edge_node_agent.py": "658d5ba889ae06e1b5bc38191eec1ffdb10203ecb91ac66e78c19fd349ebbe41",
+    "src/services/edge_orchestrator.py": "bb4f4ddfc5561828deee7bdbb1d153f8a91418e1237cbee9459de35a5c75c9ef",
+    "src/services/jetson_resources.py": "c702d6716913e07d2a78eee5c6027185c815f6ebd0483fa904dc8f9148781cac",
+    "runners/run_edge_orchestration.py": "2a210f1ade75266f2d40a5a180b9c037231b8c6cfc413c35b06e00eb0afa5ac3",
+    "runners/run_edge_orchestration_demo.py": "428489d145d3c54923c969f20f04e5ab50a790b68a88704479d7e0093cf5f725",
+    "tests/test_edge_orchestration_remote.py": "10c56c9197e90a701522d5a16ff4af8704346d04c858e144a3c1bea1d78deb6f",
+    "tests/test_edge_orchestration_integration.py": "d98b2ca8db915d31f2c83b83c64878ff384385bf4635e1eb622f1211d0a8bac7",
+    "tests/test_edge_orchestrator.py": "c2e7a2a8c2cc1528c4f2becd9b1104b8ea31fad2754eed1313ef8e33dd19038a",
+    "tests/test_jetson_resources.py": "02bc19e355832ab3e46e7922a85ed4ac2d866af8ab319d07e6ce4ad88d405fbd"
+  },
+  "lan_smoke": {
+    "physical_hosts": 1,
+    "agent_processes": 2,
+    "separate_physical_jetsons_tested": false,
+    "controller_bind": "192.168.2.141",
+    "controller_ready_seconds": 0.17836674701538868,
+    "controller_url": "https://192.168.2.141:43365",
+    "agent_exits": [
+      {
+        "exit_code": 0,
+        "node_id": "test-agent-a",
+        "last_sequence": 3,
+        "last_error": null
+      },
+      {
+        "exit_code": 0,
+        "node_id": "test-agent-b",
+        "last_sequence": 3,
+        "last_error": null
+      }
+    ],
+    "snapshot": {
+      "simulation": false,
+      "nodes": [
+        {
+          "boot_id": "1ca5acef-6e68-433d-bafc-c66dcf33e62a",
+          "capabilities": [
+            "jetson-resources",
+            "status-report"
+          ],
+          "ip": "192.168.2.141",
+          "node_id": "test-agent-a",
+          "node_type": "AEC-100",
+          "simulation": false,
+          "registered_at": "2026-10-22T01:03:13.346990+00:00",
+          "received_at": "2026-10-22T01:03:15.387815+00:00",
+          "age_seconds": 0.18848299980163574,
+          "freshness": "online",
+          "last_sequence": 3,
+          "report_count": 3,
+          "report": {
+            "boot_id": "1ca5acef-6e68-433d-bafc-c66dcf33e62a",
+            "resources": {
+              "cpu_percent": 40.05,
+              "gpu_percent": 80.9,
+              "memory_percent": 31.72,
+              "network_rx_bytes_per_second": null,
+              "network_tx_bytes_per_second": null
+            },
+            "sampled_at": "2026-10-22T01:03:15.380834+00:00",
+            "sequence": 3,
+            "service": null,
+            "simulation": false
+          }
+        },
+        {
+          "boot_id": "ffa68229-71b0-4321-865c-d5c74d9d9a3c",
+          "capabilities": [
+            "jetson-resources",
+            "status-report"
+          ],
+          "ip": "192.168.2.141",
+          "node_id": "test-agent-b",
+          "node_type": "AEC-100",
+          "simulation": false,
+          "registered_at": "2026-10-22T01:03:13.325292+00:00",
+          "received_at": "2026-10-22T01:03:15.375537+00:00",
+          "age_seconds": 0.2007608413696289,
+          "freshness": "online",
+          "last_sequence": 3,
+          "report_count": 3,
+          "report": {
+            "boot_id": "ffa68229-71b0-4321-865c-d5c74d9d9a3c",
+            "resources": {
+              "cpu_percent": 39.45,
+              "gpu_percent": 63.7,
+              "memory_percent": 31.74,
+              "network_rx_bytes_per_second": null,
+              "network_tx_bytes_per_second": null
+            },
+            "sampled_at": "2026-10-22T01:03:15.369757+00:00",
+            "sequence": 3,
+            "service": null,
+            "simulation": false
+          }
+        }
+      ]
+    },
+    "controller_exit_code": 0,
+    "listener_closed": true,
+    "temporary_state_removed": true
+  },
+  "operating_changes": false,
+  "not_tested": [
+    "long-running stability",
+    "AI lifecycle/failover",
+    "ROS 2/DDS",
+    "whole product regression",
+    "TensorRT engine compatibility"
+  ],
+  "initial_lan_startup_failure": {
+    "symptom": "controller readiness exceeded 10 seconds",
+    "mitigation": "isolated server avoids stdlib reverse-DNS name lookup",
+    "sole_root_cause_confirmed": false
+  },
+  "two_physical_jetsons_initial_attempts": {
+    "tested": false,
+    "node_a_ip": "192.168.2.141",
+    "node_b_ip": "192.168.2.203",
+    "blocker": "SSH authentication input needed in user terminal",
+    "manual_helper": "/tmp/jetson2.sh",
+    "helper_checks": [
+      "bash syntax",
+      "archive delivery to temporary directory",
+      "temporary directory cleanup"
+    ],
+    "waiting_agent_a_reports": 385,
+    "waiting_agent_b_reports": 0,
+    "waiting_run_transients": [
+      "HTTP503 storage_unavailable / SQLite locked",
+      "request timeout / TLS EOF",
+      "later online and normal reporting recovered"
+    ],
+    "waiting_run_cleanup": "A stopped; PTY controller unresponsive after signal, only its exact PID killed and port closed",
+    "root_cause_confirmed": false
+  },
+  "two_physical_jetsons": {
+    "physical_hosts": 2,
+    "separate_physical_jetsons_tested": true,
+    "node_a_ip": "192.168.2.141",
+    "node_b_ip": "192.168.2.203",
+    "controller_ready_seconds": 0.2297016509983223,
+    "remote_exit_code": 0,
+    "remote_stdout": "{\"python\": \"3.8.10 (default, Mar 18 2025, 20:04:55) \\n[GCC 9.4.0]\", \"hostname\": \"ubuntu\", \"board\": \"Jetson AGX Orin Developer Kit\"}\n{\"node_id\": \"jetson-b\", \"last_sequence\": 5, \"last_error\": null}\n",
+    "remote_stderr": "",
+    "snapshot": {
+      "simulation": false,
+      "nodes": [
+        {
+          "boot_id": "3be7a3f2-6b7f-43d4-bf14-e90f7042c72c",
+          "capabilities": [
+            "jetson-resources",
+            "status-report"
+          ],
+          "ip": "192.168.2.141",
+          "node_id": "jetson-a",
+          "node_type": "AEC-100",
+          "simulation": false,
+          "registered_at": "2026-10-22T01:30:37.709114+00:00",
+          "received_at": "2026-10-22T01:30:41.853629+00:00",
+          "age_seconds": 1.0024361610412598,
+          "freshness": "online",
+          "last_sequence": 5,
+          "report_count": 5,
+          "report": {
+            "boot_id": "3be7a3f2-6b7f-43d4-bf14-e90f7042c72c",
+            "resources": {
+              "cpu_percent": 94.29,
+              "gpu_percent": 81.2,
+              "memory_percent": 27.92,
+              "network_rx_bytes_per_second": null,
+              "network_tx_bytes_per_second": null
+            },
+            "sampled_at": "2026-10-22T01:30:41.840947+00:00",
+            "sequence": 5,
+            "service": null,
+            "simulation": false
+          }
+        },
+        {
+          "boot_id": "ce2380eb-18a5-485e-98f1-24c035bfa02e",
+          "capabilities": [
+            "jetson-resources",
+            "status-report"
+          ],
+          "ip": "192.168.2.203",
+          "node_id": "jetson-b",
+          "node_type": "AEC-100",
+          "simulation": false,
+          "registered_at": "2026-10-22T01:30:38.254380+00:00",
+          "received_at": "2026-10-22T01:30:42.647221+00:00",
+          "age_seconds": 0.20884418487548828,
+          "freshness": "online",
+          "last_sequence": 5,
+          "report_count": 5,
+          "report": {
+            "boot_id": "ce2380eb-18a5-485e-98f1-24c035bfa02e",
+            "resources": {
+              "cpu_percent": 30.41,
+              "gpu_percent": 24.2,
+              "memory_percent": 6.88,
+              "network_rx_bytes_per_second": null,
+              "network_tx_bytes_per_second": null
+            },
+            "sampled_at": "2026-10-22T01:30:42.633360+00:00",
+            "sequence": 5,
+            "service": null,
+            "simulation": false
+          }
+        }
+      ]
+    },
+    "elapsed_seconds": 5.575406080984976,
+    "local_agent_exit_code": 0,
+    "local_agent_stdout": "{\"node_id\": \"jetson-a\", \"last_sequence\": 6, \"last_error\": null}\n",
+    "local_agent_stderr": "",
+    "controller_exit_code": 0,
+    "controller_stderr": "",
+    "listener_closed": true,
+    "temporary_state_removed": true,
+    "temporary_ssh_closed": true,
+    "temporary_credentials_removed": true,
+    "remote_cleanup": {
+      "python": "3.8.10 (default, Mar 18 2025, 20:04:55) \n[GCC 9.4.0]",
+      "model": "Jetson AGX Orin Developer Kit",
+      "os_release": "NAME=\"Ubuntu\"\nVERSION=\"20.04.6 LTS (Focal Fossa)\"\nID=ubuntu\nID_LIKE=debian\nPRETTY_NAME=\"Ubuntu 20.04.6 LTS\"\nVERSION_ID=\"20.04\"\nHOME_URL=\"https://www.ubuntu.com/\"\nSUPPORT_URL=\"https://help.ubuntu.com/\"\nBUG_REPORT_URL=\"https://bugs.launchpad.net/ubuntu/\"\nPRIVACY_POLICY_URL=\"https://www.ubuntu.com/legal/terms-and-policies/privacy-policy\"\nVERSION_CODENAME=focal\nUBUNTU_CODENAME=focal\n",
+      "nvidia_release": "# R35 (release), REVISION: 6.5, GCID: 46196569, BOARD: t186ref, EABI: aarch64, DATE: Wed Jul  1 09:42:50 UTC 2026\n",
+      "python_modules_present": {
+        "numpy": true,
+        "cv2": true,
+        "tensorrt": true,
+        "rclpy": false,
+        "torch": false
+      },
+      "sdk_packages": [
+        "cuda-cudart-11-4 11.4.298-1",
+        "cuda-cudart-dev-11-4 11.4.298-1",
+        "libnvinfer-bin 8.5.2-1+cuda11.4",
+        "libnvinfer-dev 8.5.2-1+cuda11.4",
+        "libnvinfer-plugin-dev 8.5.2-1+cuda11.4",
+        "libnvinfer-plugin8 8.5.2-1+cuda11.4",
+        "libnvinfer-samples 8.5.2-1+cuda11.4",
+        "libnvinfer8 8.5.2-1+cuda11.4",
+        "nvidia-l4t-core 35.6.5-20260701022834",
+        "python3-libnvinfer 8.5.2-1+cuda11.4",
+        "python3-libnvinfer-dev 8.5.2-1+cuda11.4"
+      ],
+      "test_temporary_directories": [],
+      "test_processes": []
+    }
+  },
+  "python_compatibility": {
+    "controller": "3.10.12",
+    "remote_agent": "3.8.10",
+    "initial_failures": [
+      "manual wrapper Python3.10 guard",
+      "shared API tuple type annotation during import"
+    ],
+    "fix": "postponed annotations and controller-only import",
+    "shared_api_changed": false,
+    "installed_packages": []
+  },
+  "scope_check": {
+    "tracked_non_document_files": 1156,
+    "unchanged": 1154,
+    "changed": [
+      "scripts/ops/progress_snapshot_template.html",
+      "scripts/ops/render_progress_snapshot.py"
+    ],
+    "product_changes": "isolated untracked orchestration modules and CLI only",
+    "operating_services_changed": false,
+    "system_python_or_sdk_changed": false
+  },
+  "final_consistency": {
+    "source_hashes_match": 9,
+    "wbs_rows": 37,
+    "done_rows": 9,
+    "local_plan_links": 62,
+    "tracked_non_document_unchanged": 1154,
+    "summary_visual_checked": true
+  },
+  "progress_publication": {
+    "index.html": {
+      "http_status": 200,
+      "bytes": 141905,
+      "sha256": "2b8713819829201bec81cc74c8b11c5358ab05a32465b2b60b40bd335283d70a"
+    },
+    "CCTV_project_progress.pdf": {
+      "http_status": 200,
+      "bytes": 157461,
+      "sha256": "38d0bc8d7dacb9825d6e0ca6f14c32e840ae7e44f420ff25e448c6437bc547be"
+    }
+  }
+}

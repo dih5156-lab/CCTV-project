@@ -1,0 +1,1606 @@
+{
+  "date": "2026-10-22T10:37:20.051554+00:00",
+  "scope": "P6.2-O3 partial: central ownership/admission REST and node activation context; producer/MQTT integration remains",
+  "complete_o3": false,
+  "source_sha256": {
+    "src/services/edge_ownership.py": "39a26214181e598a6622f00d10847828186fbf5eca87ef6d0153f0f9642e60af",
+    "src/services/edge_controller_api.py": "6b6ac3b8bf830f30f0d350d8d9b3f434a89d9cd5f614d4ef90c3cd1c711bc052",
+    "src/services/edge_result_context.py": "c72e21661d41eab8304b4abf5613c32910030e01af4e3d179d81bb4e5868d60a",
+    "src/services/edge_service.py": "6488578b6573eeb1e476e0e3d56599ba650e664ae332abc14842111f03d6c760",
+    "src/services/edge_orchestrator.py": "ffe01ee20b8041ce45a02f620182b9a22deac5f23bcbf5741c818c07c9393abd",
+    "runners/run_edge_orchestration.py": "65a0f80bcb6da93c4840efcd98f819d1464f78f3c2b59d2657beb842c0b3d631",
+    "tests/test_edge_ownership.py": "2b478a816c3ead8d39da2746e62eed6c52a55bb0b6e16fca0eb73515837a9be9",
+    "tests/test_edge_result_context.py": "e77b25536df4e62c53bb0769d1fcdf6cd13f254e9e99ff7f8badd835d6fa28c1",
+    "tests/test_edge_service.py": "670d5d6a1afb7e809de6ff93bbd1ea4b23bdbd2c18c384b16a6274f8a3465dd7",
+    "tests/test_edge_orchestration_remote.py": "3ac600ba501e4ac8801cbb460cb25a868829377b96bcb99b837d3d61b34ba958"
+  },
+  "current_unique_tests": 122,
+  "test_suites": [
+    {
+      "file": "edge-ownership-core-final-20261022.xml",
+      "sha256": "a18df99339890ebe09d293c305f439c57b246f1a5f4cf8a6e322662ff3978158",
+      "summary": {
+        "name": "pytest",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "tests": "121",
+        "time": "22.283",
+        "timestamp": "2026-10-22T19:33:21.431959+09:00",
+        "hostname": "ubuntu"
+      },
+      "cases": [
+        {
+          "name": "tests.test_edge_ownership.test_preparation_has_no_owner_and_ack_never_promotes_queued_results",
+          "seconds": 0.158,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_ownership.test_handover_keeps_a_until_b_sample_activation_then_rejects_late_a",
+          "seconds": 0.198,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_ownership.test_prepare_retry_conflict_and_abort_preserve_epoch",
+          "seconds": 0.116,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_ownership.test_owner_cas_and_activation_retry",
+          "seconds": 0.111,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_ownership.test_activation_requires_observed_barrier_and_saved_sample",
+          "seconds": 0.102,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_ownership.test_result_retry_is_durable_and_conflicting_identity_does_not_overwrite",
+          "seconds": 0.129,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_ownership.test_storage_failure_returns_no_ack_and_does_not_lose_retry",
+          "seconds": 0.136,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_ownership.test_restart_requires_new_activation_and_sample_but_retains_saved_ack",
+          "seconds": 0.199,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_ownership.test_expired_result_and_accepted_queue_expiry_do_not_produce_output",
+          "seconds": 0.138,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_ownership.test_activation_boundary_and_wrong_node_never_accepted",
+          "seconds": 0.135,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_ownership.test_concurrent_prepare_has_exactly_one_pending_assignment",
+          "seconds": 0.094,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_ownership.test_exclusive_controller_and_foreign_database_guard",
+          "seconds": 0.09,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_ownership.test_ack_hash_matches_frozen_original_json",
+          "seconds": 0.103,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_ownership.test_http_roles_commit_receipt_and_consumer_revalidation",
+          "seconds": 0.658,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_ownership.test_pending_response_is_bounded_and_keeps_remaining_rows",
+          "seconds": 0.335,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_result_context.test_queued_snapshot_is_frozen_across_activation_and_reconciliation",
+          "seconds": 0.133,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_result_context.test_retired_session_cannot_capture_or_activate_and_sequence_survives_reconnect",
+          "seconds": 0.147,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_result_context.test_parallel_producer_connections_have_unique_monotonic_sequences",
+          "seconds": 0.843,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_result_context.test_no_snapshot_returned_before_commit_when_storage_fails",
+          "seconds": 0.084,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_result_context.test_bad_lifetime_never_allocates_sequence[0]",
+          "seconds": 0.078,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_result_context.test_bad_lifetime_never_allocates_sequence[-1]",
+          "seconds": 0.083,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_result_context.test_bad_lifetime_never_allocates_sequence[nan]",
+          "seconds": 0.084,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_result_context.test_bad_lifetime_never_allocates_sequence[inf]",
+          "seconds": 0.091,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_result_context.test_bad_lifetime_never_allocates_sequence[301]",
+          "seconds": 0.081,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_result_context.test_bad_lifetime_never_allocates_sequence[True]",
+          "seconds": 0.083,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_service.test_lifecycle_receipt_is_not_readiness_and_stop_restart",
+          "seconds": 0.542,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_service.test_command_validation[changes0-invalid_epoch]",
+          "seconds": 0.082,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_service.test_command_validation[changes1-invalid_epoch]",
+          "seconds": 0.07,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_service.test_command_validation[changes2-stale_supervisor_boot]",
+          "seconds": 0.079,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_service.test_command_validation[changes3-unknown_manifest]",
+          "seconds": 0.076,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_service.test_command_validation[changes4-invalid_fields]",
+          "seconds": 0.082,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_service.test_command_conflicts_fence_delayed_start",
+          "seconds": 0.1,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_service.test_restart_preserves_epoch_and_never_replays_start",
+          "seconds": 0.572,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_service.test_wrong_backend_identity_stall_and_malformed_metrics_fail_closed[cpu]",
+          "seconds": 0.407,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_service.test_wrong_backend_identity_stall_and_malformed_metrics_fail_closed[wrong-session]",
+          "seconds": 0.382,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_service.test_wrong_backend_identity_stall_and_malformed_metrics_fail_closed[stalled]",
+          "seconds": 0.359,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_service.test_wrong_backend_identity_stall_and_malformed_metrics_fail_closed[duplicate]",
+          "seconds": 0.361,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_service.test_model_tampering_prevents_execution",
+          "seconds": 0.085,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_service.test_publicly_writable_model_is_not_executed",
+          "seconds": 0.085,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_service.test_readiness_timeout_stops_only_owned_child",
+          "seconds": 0.119,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_service.test_unexpected_exit_not_automatically_restarted",
+          "seconds": 0.318,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_service.test_stop_kills_only_owned_process_even_when_term_ignored",
+          "seconds": 0.546,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_service.test_single_owner_lock_and_persistent_thread",
+          "seconds": 0.114,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_service.test_http_read_control_tokens_separate_and_no_remote_shell",
+          "seconds": 0.634,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_service.test_python38_syntax_and_no_ai_dependencies_required",
+          "seconds": 0.199,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_service.test_parent_crash_signals_owned_ai_and_inherited_lock_blocks_duplicate[False]",
+          "seconds": 0.568,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_service.test_parent_crash_signals_owned_ai_and_inherited_lock_blocks_duplicate[True]",
+          "seconds": 0.62,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_service.test_agent_reports_service_and_restart_does_not_restart_ai",
+          "seconds": 1.423,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_service.test_registry_rejects_inconsistent_service_observations[change0-inconsistent_readiness]",
+          "seconds": 0.105,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_service.test_registry_rejects_inconsistent_service_observations[change1-invalid_readiness]",
+          "seconds": 0.078,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_service.test_registry_rejects_inconsistent_service_observations[change2-unsupported_backend]",
+          "seconds": 0.08,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_service.test_registry_rejects_inconsistent_service_observations[change3-invalid_number]",
+          "seconds": 0.095,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_service.test_registry_rejects_inconsistent_service_observations[change4-invalid_epoch]",
+          "seconds": 0.082,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_service.test_bad_observation_never_blocks_resource_report[response0]",
+          "seconds": 0.002,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_service.test_bad_observation_never_blocks_resource_report[response1]",
+          "seconds": 0.002,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_service.test_bad_observation_never_blocks_resource_report[response2]",
+          "seconds": 0.002,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_service.test_state_directory_rejects_other_manifest",
+          "seconds": 0.127,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_service.test_result_activation_binds_running_session_and_is_reportable",
+          "seconds": 0.459,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_service.test_cli_tls_service_assignment_agent_and_shutdown",
+          "seconds": 1.721,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_two_nodes_and_report_ack_are_persisted",
+          "seconds": 0.127,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_duplicate_report_and_registration_do_not_refresh_liveness",
+          "seconds": 0.135,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_new_boot_fences_old_reports_and_old_registration_after_restart",
+          "seconds": 0.124,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_stale_conflicting_and_regressing_reports_leave_state_intact",
+          "seconds": 0.087,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_old_sample_and_clock_rollback_are_not_online",
+          "seconds": 0.086,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_concurrent_duplicate_report_commits_once",
+          "seconds": 0.1,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_invalid_registration_is_not_saved[node_id-../other]",
+          "seconds": 0.048,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_invalid_registration_is_not_saved[boot_id-]",
+          "seconds": 0.051,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_invalid_registration_is_not_saved[simulation-False]",
+          "seconds": 0.055,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_invalid_registration_is_not_saved[ip-192.168.2.141]",
+          "seconds": 0.05,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_invalid_registration_is_not_saved[capabilities-value4]",
+          "seconds": 0.067,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_invalid_registration_is_not_saved[capabilities-value5]",
+          "seconds": 0.064,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_invalid_report_is_not_saved[sequence-True]",
+          "seconds": 0.075,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_invalid_report_is_not_saved[sequence-0]",
+          "seconds": 0.082,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_invalid_report_is_not_saved[sequence-9223372036854775808]",
+          "seconds": 0.066,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_invalid_report_is_not_saved[simulation-False]",
+          "seconds": 0.084,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_invalid_report_is_not_saved[sampled_at-2026-01-01T00:00:00]",
+          "seconds": 0.089,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_invalid_report_is_not_saved[sampled_at-2030-01-01T00:00:00Z]",
+          "seconds": 0.096,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_invalid_report_is_not_saved[resources-value6]",
+          "seconds": 0.078,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_invalid_report_is_not_saved[service-None]",
+          "seconds": 0.098,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_bad_resource_numbers_are_rejected[True]",
+          "seconds": 0.103,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_bad_resource_numbers_are_rejected[-1]",
+          "seconds": 0.064,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_bad_resource_numbers_are_rejected[101]",
+          "seconds": 0.06,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_bad_resource_numbers_are_rejected[nan]",
+          "seconds": 0.065,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_bad_resource_numbers_are_rejected[inf]",
+          "seconds": 0.057,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_bad_resource_numbers_are_rejected[100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000]",
+          "seconds": 0.057,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_registration_conflict_and_unregistered_report",
+          "seconds": 0.103,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_foreign_database_is_never_modified",
+          "seconds": 0.023,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_database_contains_no_auth_tokens",
+          "seconds": 0.071,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_real_resource_mode_is_explicit_and_survives_reopen",
+          "seconds": 0.151,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_registered_mode_cannot_change_in_report[True]",
+          "seconds": 0.085,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_registered_mode_cannot_change_in_report[False]",
+          "seconds": 0.081,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_real_resources_cannot_claim_unobserved_ai_status",
+          "seconds": 0.084,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_real_mode_still_requires_boolean_flags[0]",
+          "seconds": 0.097,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_real_mode_still_requires_boolean_flags[1]",
+          "seconds": 0.077,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_real_mode_still_requires_boolean_flags[false]",
+          "seconds": 0.067,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_real_mode_still_requires_boolean_flags[None]",
+          "seconds": 0.07,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_agent_bundle_syntax_and_annotations_support_python38",
+          "seconds": 0.183,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_two_nodes_report_independent_values_and_liveness_over_tls",
+          "seconds": 0.745,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_tls_checks_ca_and_server_identity",
+          "seconds": 0.076,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_tls_node_credentials_cannot_impersonate_or_read",
+          "seconds": 0.077,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_idle_tls_connection_does_not_block_another_node",
+          "seconds": 0.118,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_tls_disconnect_restart_and_boot_fencing",
+          "seconds": 0.201,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_tls_lost_ack_keeps_sample_and_sequence",
+          "seconds": 0.121,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_remote_insecure_or_ambiguous_urls_are_rejected[http://192.0.2.10:18443]",
+          "seconds": 0.002,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_remote_insecure_or_ambiguous_urls_are_rejected[https://127.0.0.1:18443]",
+          "seconds": 0.001,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_remote_insecure_or_ambiguous_urls_are_rejected[http://127.0.0.1:80\\n]",
+          "seconds": 0.001,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_remote_insecure_or_ambiguous_urls_are_rejected[https://user:secret@host:443]",
+          "seconds": 0.002,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_remote_insecure_or_ambiguous_urls_are_rejected[http://127.0.0.1:80?token=x]",
+          "seconds": 0.002,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_remote_registration_rejects_unusable_addresses[0.0.0.0]",
+          "seconds": 0.108,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_remote_registration_rejects_unusable_addresses[224.0.0.1]",
+          "seconds": 0.113,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_remote_registration_rejects_unusable_addresses[255.255.255.255]",
+          "seconds": 0.115,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_remote_registration_rejects_unusable_addresses[::1]",
+          "seconds": 0.13,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_remote_registration_rejects_unusable_addresses[not-an-ip]",
+          "seconds": 0.149,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_remote_registration_rejects_unusable_addresses[2130706433]",
+          "seconds": 0.125,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_nonlocal_listener_cannot_open_without_tls[0.0.0.0]",
+          "seconds": 0.051,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_nonlocal_listener_cannot_open_without_tls[224.0.0.1]",
+          "seconds": 0.057,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_nonlocal_listener_cannot_open_without_tls[255.255.255.255]",
+          "seconds": 0.049,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_nonlocal_listener_cannot_open_without_tls[192.0.2.10]",
+          "seconds": 0.043,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_private_tokens_are_not_hardcoded_or_world_readable",
+          "seconds": 0.006,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_controller_start_does_not_depend_on_reverse_dns",
+          "seconds": 0.05,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_three_cli_processes_report_and_stop_without_operating_services",
+          "seconds": 0.996,
+          "result": "passed",
+          "failure": null
+        }
+      ]
+    },
+    {
+      "file": "edge-ownership-cli-20261022.xml",
+      "sha256": "2099c28cb0ba7e91eb07c182244b0aa06e56c02b182477afd74e46a518d38184",
+      "summary": {
+        "name": "pytest",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "tests": "2",
+        "time": "3.107",
+        "timestamp": "2026-10-22T19:35:33.691989+09:00",
+        "hostname": "ubuntu"
+      },
+      "cases": [
+        {
+          "name": "tests.test_edge_orchestration_remote.test_three_cli_processes_report_and_stop_without_operating_services[False]",
+          "seconds": 1.817,
+          "result": "passed",
+          "failure": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_three_cli_processes_report_and_stop_without_operating_services[True]",
+          "seconds": 1.079,
+          "result": "passed",
+          "failure": null
+        }
+      ]
+    }
+  ],
+  "earlier_failure": {
+    "file": "edge-ownership-core-20261022.xml",
+    "sha256": "2a049f4c2c5189dffc618340c806bdeadf9ed45036963f1c3bb42d5056df93a0",
+    "summary": {
+      "name": "pytest",
+      "errors": "0",
+      "failures": "1",
+      "skipped": "0",
+      "tests": "121",
+      "time": "40.685",
+      "timestamp": "2026-10-22T19:29:17.064684+09:00",
+      "hostname": "ubuntu"
+    },
+    "cases": [
+      {
+        "name": "tests.test_edge_ownership.test_preparation_has_no_owner_and_ack_never_promotes_queued_results",
+        "seconds": 0.165,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_ownership.test_handover_keeps_a_until_b_sample_activation_then_rejects_late_a",
+        "seconds": 0.196,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_ownership.test_prepare_retry_conflict_and_abort_preserve_epoch",
+        "seconds": 0.109,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_ownership.test_owner_cas_and_activation_retry",
+        "seconds": 0.112,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_ownership.test_activation_requires_observed_barrier_and_saved_sample",
+        "seconds": 0.096,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_ownership.test_result_retry_is_durable_and_conflicting_identity_does_not_overwrite",
+        "seconds": 0.137,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_ownership.test_storage_failure_returns_no_ack_and_does_not_lose_retry",
+        "seconds": 0.126,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_ownership.test_restart_requires_new_activation_and_sample_but_retains_saved_ack",
+        "seconds": 0.203,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_ownership.test_expired_result_and_accepted_queue_expiry_do_not_produce_output",
+        "seconds": 0.144,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_ownership.test_activation_boundary_and_wrong_node_never_accepted",
+        "seconds": 0.137,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_ownership.test_concurrent_prepare_has_exactly_one_pending_assignment",
+        "seconds": 0.091,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_ownership.test_exclusive_controller_and_foreign_database_guard",
+        "seconds": 0.09,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_ownership.test_ack_hash_matches_frozen_original_json",
+        "seconds": 0.106,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_ownership.test_http_roles_commit_receipt_and_consumer_revalidation",
+        "seconds": 0.682,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_ownership.test_pending_response_is_bounded_and_keeps_remaining_rows",
+        "seconds": 0.333,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_result_context.test_queued_snapshot_is_frozen_across_activation_and_reconciliation",
+        "seconds": 0.126,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_result_context.test_retired_session_cannot_capture_or_activate_and_sequence_survives_reconnect",
+        "seconds": 0.127,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_result_context.test_parallel_producer_connections_have_unique_monotonic_sequences",
+        "seconds": 0.835,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_result_context.test_no_snapshot_returned_before_commit_when_storage_fails",
+        "seconds": 0.09,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_result_context.test_bad_lifetime_never_allocates_sequence[0]",
+        "seconds": 0.079,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_result_context.test_bad_lifetime_never_allocates_sequence[-1]",
+        "seconds": 0.104,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_result_context.test_bad_lifetime_never_allocates_sequence[nan]",
+        "seconds": 0.084,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_result_context.test_bad_lifetime_never_allocates_sequence[inf]",
+        "seconds": 0.089,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_result_context.test_bad_lifetime_never_allocates_sequence[301]",
+        "seconds": 0.089,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_result_context.test_bad_lifetime_never_allocates_sequence[True]",
+        "seconds": 0.081,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_service.test_lifecycle_receipt_is_not_readiness_and_stop_restart",
+        "seconds": 0.603,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_service.test_command_validation[changes0-invalid_epoch]",
+        "seconds": 0.084,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_service.test_command_validation[changes1-invalid_epoch]",
+        "seconds": 0.075,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_service.test_command_validation[changes2-stale_supervisor_boot]",
+        "seconds": 0.075,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_service.test_command_validation[changes3-unknown_manifest]",
+        "seconds": 0.08,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_service.test_command_validation[changes4-invalid_fields]",
+        "seconds": 0.069,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_service.test_command_conflicts_fence_delayed_start",
+        "seconds": 0.092,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_service.test_restart_preserves_epoch_and_never_replays_start",
+        "seconds": 0.618,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_service.test_wrong_backend_identity_stall_and_malformed_metrics_fail_closed[cpu]",
+        "seconds": 0.479,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_service.test_wrong_backend_identity_stall_and_malformed_metrics_fail_closed[wrong-session]",
+        "seconds": 0.37,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_service.test_wrong_backend_identity_stall_and_malformed_metrics_fail_closed[stalled]",
+        "seconds": 0.377,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_service.test_wrong_backend_identity_stall_and_malformed_metrics_fail_closed[duplicate]",
+        "seconds": 0.377,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_service.test_model_tampering_prevents_execution",
+        "seconds": 0.107,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_service.test_publicly_writable_model_is_not_executed",
+        "seconds": 0.085,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_service.test_readiness_timeout_stops_only_owned_child",
+        "seconds": 0.111,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_service.test_unexpected_exit_not_automatically_restarted",
+        "seconds": 0.317,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_service.test_stop_kills_only_owned_process_even_when_term_ignored",
+        "seconds": 0.645,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_service.test_single_owner_lock_and_persistent_thread",
+        "seconds": 0.071,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_service.test_http_read_control_tokens_separate_and_no_remote_shell",
+        "seconds": 0.595,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_service.test_python38_syntax_and_no_ai_dependencies_required",
+        "seconds": 0.303,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_service.test_parent_crash_signals_owned_ai_and_inherited_lock_blocks_duplicate[False]",
+        "seconds": 0.513,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_service.test_parent_crash_signals_owned_ai_and_inherited_lock_blocks_duplicate[True]",
+        "seconds": 0.567,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_service.test_agent_reports_service_and_restart_does_not_restart_ai",
+        "seconds": 1.53,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_service.test_registry_rejects_inconsistent_service_observations[change0-inconsistent_readiness]",
+        "seconds": 0.077,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_service.test_registry_rejects_inconsistent_service_observations[change1-invalid_readiness]",
+        "seconds": 0.067,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_service.test_registry_rejects_inconsistent_service_observations[change2-unsupported_backend]",
+        "seconds": 0.072,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_service.test_registry_rejects_inconsistent_service_observations[change3-invalid_number]",
+        "seconds": 0.073,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_service.test_registry_rejects_inconsistent_service_observations[change4-invalid_epoch]",
+        "seconds": 0.067,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_service.test_bad_observation_never_blocks_resource_report[response0]",
+        "seconds": 0.001,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_service.test_bad_observation_never_blocks_resource_report[response1]",
+        "seconds": 0.001,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_service.test_bad_observation_never_blocks_resource_report[response2]",
+        "seconds": 0.001,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_service.test_state_directory_rejects_other_manifest",
+        "seconds": 0.077,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_service.test_result_activation_binds_running_session_and_is_reportable",
+        "seconds": 0.405,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_service.test_cli_tls_service_assignment_agent_and_shutdown",
+        "seconds": 1.701,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestrator.test_two_nodes_and_report_ack_are_persisted",
+        "seconds": 0.092,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestrator.test_duplicate_report_and_registration_do_not_refresh_liveness",
+        "seconds": 0.083,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestrator.test_new_boot_fences_old_reports_and_old_registration_after_restart",
+        "seconds": 0.105,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestrator.test_stale_conflicting_and_regressing_reports_leave_state_intact",
+        "seconds": 0.08,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestrator.test_old_sample_and_clock_rollback_are_not_online",
+        "seconds": 0.081,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestrator.test_concurrent_duplicate_report_commits_once",
+        "seconds": 0.09,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestrator.test_invalid_registration_is_not_saved[node_id-../other]",
+        "seconds": 0.047,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestrator.test_invalid_registration_is_not_saved[boot_id-]",
+        "seconds": 0.043,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestrator.test_invalid_registration_is_not_saved[simulation-False]",
+        "seconds": 0.048,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestrator.test_invalid_registration_is_not_saved[ip-192.168.2.141]",
+        "seconds": 0.042,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestrator.test_invalid_registration_is_not_saved[capabilities-value4]",
+        "seconds": 0.043,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestrator.test_invalid_registration_is_not_saved[capabilities-value5]",
+        "seconds": 0.041,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestrator.test_invalid_report_is_not_saved[sequence-True]",
+        "seconds": 0.058,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestrator.test_invalid_report_is_not_saved[sequence-0]",
+        "seconds": 0.057,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestrator.test_invalid_report_is_not_saved[sequence-9223372036854775808]",
+        "seconds": 0.064,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestrator.test_invalid_report_is_not_saved[simulation-False]",
+        "seconds": 0.063,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestrator.test_invalid_report_is_not_saved[sampled_at-2026-01-01T00:00:00]",
+        "seconds": 0.059,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestrator.test_invalid_report_is_not_saved[sampled_at-2030-01-01T00:00:00Z]",
+        "seconds": 0.06,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestrator.test_invalid_report_is_not_saved[resources-value6]",
+        "seconds": 0.06,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestrator.test_invalid_report_is_not_saved[service-None]",
+        "seconds": 0.059,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestrator.test_bad_resource_numbers_are_rejected[True]",
+        "seconds": 0.055,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestrator.test_bad_resource_numbers_are_rejected[-1]",
+        "seconds": 0.056,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestrator.test_bad_resource_numbers_are_rejected[101]",
+        "seconds": 0.056,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestrator.test_bad_resource_numbers_are_rejected[nan]",
+        "seconds": 0.058,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestrator.test_bad_resource_numbers_are_rejected[inf]",
+        "seconds": 0.059,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestrator.test_bad_resource_numbers_are_rejected[100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000]",
+        "seconds": 0.072,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestrator.test_registration_conflict_and_unregistered_report",
+        "seconds": 0.06,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestrator.test_foreign_database_is_never_modified",
+        "seconds": 0.02,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestrator.test_database_contains_no_auth_tokens",
+        "seconds": 0.048,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestrator.test_real_resource_mode_is_explicit_and_survives_reopen",
+        "seconds": 0.091,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestrator.test_registered_mode_cannot_change_in_report[True]",
+        "seconds": 0.076,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestrator.test_registered_mode_cannot_change_in_report[False]",
+        "seconds": 0.073,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestrator.test_real_resources_cannot_claim_unobserved_ai_status",
+        "seconds": 0.065,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestrator.test_real_mode_still_requires_boolean_flags[0]",
+        "seconds": 0.07,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestrator.test_real_mode_still_requires_boolean_flags[1]",
+        "seconds": 0.075,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestrator.test_real_mode_still_requires_boolean_flags[false]",
+        "seconds": 0.073,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestrator.test_real_mode_still_requires_boolean_flags[None]",
+        "seconds": 0.072,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestration_remote.test_agent_bundle_syntax_and_annotations_support_python38",
+        "seconds": 0.234,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestration_remote.test_two_nodes_report_independent_values_and_liveness_over_tls",
+        "seconds": 1.557,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestration_remote.test_tls_checks_ca_and_server_identity",
+        "seconds": 0.104,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestration_remote.test_tls_node_credentials_cannot_impersonate_or_read",
+        "seconds": 2.93,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestration_remote.test_idle_tls_connection_does_not_block_another_node",
+        "seconds": 14.488,
+        "result": "failed",
+        "failure": "tests/test_edge_orchestration_remote.py:238: report_once() returned False; Agent.last_error was not included in the original assertion. Original private XML hash retained."
+      },
+      {
+        "name": "tests.test_edge_orchestration_remote.test_tls_disconnect_restart_and_boot_fencing",
+        "seconds": 0.362,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestration_remote.test_tls_lost_ack_keeps_sample_and_sequence",
+        "seconds": 0.17,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestration_remote.test_remote_insecure_or_ambiguous_urls_are_rejected[http://192.0.2.10:18443]",
+        "seconds": 0.003,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestration_remote.test_remote_insecure_or_ambiguous_urls_are_rejected[https://127.0.0.1:18443]",
+        "seconds": 0.002,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestration_remote.test_remote_insecure_or_ambiguous_urls_are_rejected[http://127.0.0.1:80\\n]",
+        "seconds": 0.002,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestration_remote.test_remote_insecure_or_ambiguous_urls_are_rejected[https://user:secret@host:443]",
+        "seconds": 0.013,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestration_remote.test_remote_insecure_or_ambiguous_urls_are_rejected[http://127.0.0.1:80?token=x]",
+        "seconds": 0.002,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestration_remote.test_remote_registration_rejects_unusable_addresses[0.0.0.0]",
+        "seconds": 0.134,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestration_remote.test_remote_registration_rejects_unusable_addresses[224.0.0.1]",
+        "seconds": 0.131,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestration_remote.test_remote_registration_rejects_unusable_addresses[255.255.255.255]",
+        "seconds": 0.183,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestration_remote.test_remote_registration_rejects_unusable_addresses[::1]",
+        "seconds": 0.158,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestration_remote.test_remote_registration_rejects_unusable_addresses[not-an-ip]",
+        "seconds": 0.117,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestration_remote.test_remote_registration_rejects_unusable_addresses[2130706433]",
+        "seconds": 0.124,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestration_remote.test_nonlocal_listener_cannot_open_without_tls[0.0.0.0]",
+        "seconds": 0.045,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestration_remote.test_nonlocal_listener_cannot_open_without_tls[224.0.0.1]",
+        "seconds": 0.047,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestration_remote.test_nonlocal_listener_cannot_open_without_tls[255.255.255.255]",
+        "seconds": 0.047,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestration_remote.test_nonlocal_listener_cannot_open_without_tls[192.0.2.10]",
+        "seconds": 0.046,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestration_remote.test_private_tokens_are_not_hardcoded_or_world_readable",
+        "seconds": 0.004,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestration_remote.test_controller_start_does_not_depend_on_reverse_dns",
+        "seconds": 0.044,
+        "result": "passed",
+        "failure": null
+      },
+      {
+        "name": "tests.test_edge_orchestration_remote.test_three_cli_processes_report_and_stop_without_operating_services",
+        "seconds": 1.205,
+        "result": "passed",
+        "failure": null
+      }
+    ]
+  },
+  "tls_idle_rechecks": [
+    {
+      "index": 0,
+      "exit_code": 0,
+      "seconds": 1.764877847977914,
+      "tail": "tests/test_edge_orchestration_remote.py .                                [100%]\n\n----------------- generated xml file: /tmp/edge-tls-idle-0.xml -----------------\n============================== 1 passed in 0.68s ==============================="
+    },
+    {
+      "index": 1,
+      "exit_code": 0,
+      "seconds": 2.275256299006287,
+      "tail": "tests/test_edge_orchestration_remote.py .                                [100%]\n\n----------------- generated xml file: /tmp/edge-tls-idle-1.xml -----------------\n============================== 1 passed in 0.99s ==============================="
+    },
+    {
+      "index": 2,
+      "exit_code": 0,
+      "seconds": 1.9773769540479407,
+      "tail": "tests/test_edge_orchestration_remote.py .                                [100%]\n\n----------------- generated xml file: /tmp/edge-tls-idle-2.xml -----------------\n============================== 1 passed in 0.83s ==============================="
+    }
+  ],
+  "checks": {
+    "ruff": "PASS",
+    "python38_syntax": "6 runtime files PASS; B Python3.8 execution untested",
+    "owned_fixture_processes_remaining": []
+  },
+  "operating_observation": {
+    "a_frames_processed": 7966275,
+    "a_source_errors": 0,
+    "a_pipeline_restarts": 0,
+    "production_restart_commands": 0,
+    "ap_or_system_install_changes": 0
+  },
+  "implemented": [
+    "SQLite CAS prepare/abort/activate, monotonic epoch, request idempotency, private single-controller lock",
+    "Committed receipt ACK with original payload hash, event ID/sequence conflicts, retained rejected results",
+    "Fresh node service + central observation + activation boundary required before owner switch",
+    "Controller restart rotates activation tokens and suspends admission until fresh sample/barrier reconciliation",
+    "Pending and final mock consumption recheck owner/session/token/expiry in transaction",
+    "Node result context serializes capture and activation across SQLite connections; UUID/session frozen and sequence persistent",
+    "Optional controller --enable-ownership and node --enable-results; extra field activation accepted by existing Agent report validator"
+  ],
+  "remaining": [
+    "Actual AI first-enqueue/VideoEventIngest metadata stamping including deferred fall auxiliary queue",
+    "Durable raw MQTT publication and central application ACK retention/replay; existing PUBACK/submission semantics must not be reused as commit ACK",
+    "Broker node ACL and final mock subscriber verification; existing callbacks/HTTP/raw-output bypass checks",
+    "Complete two-node control/producer/collector integration and soak",
+    "Physical Jetson B new supervisor trial needs authenticated access",
+    "O4 handover orchestration, ROS2 contract/transport and independent CCTV path"
+  ],
+  "limitations": [
+    "Earlier full suite had one report_once failure in idle TLS test; original error detail was absent, isolated and 3 independent reruns and full rerun passed. Root cause unconfirmed; assertion now includes Agent.last_error. Do not label fixed.",
+    "Central REST ingress is a test/reference adapter. It does not replace the planned raw MQTT/ROS2 pipeline.",
+    "Final consume records a mock sink in the central transaction; it does not authorize or prove production Action/device execution."
+  ],
+  "documentation_checks": {
+    "version": "0.140",
+    "wbs_rows": 37,
+    "done": 9,
+    "local_links": 1972,
+    "missing": [],
+    "http": {
+      "index.html": {
+        "http": 200,
+        "matches_local": true,
+        "sha256": "ae0e391e961bfd05f517045b55b0f395e356701378a7951b8b53be912e09097e"
+      },
+      "CCTV_project_progress.pdf": {
+        "http": 200,
+        "matches_local": true,
+        "sha256": "792f78cc05a6fcf87d802905f6628ac810a01f5f34ceff2acee082beea488922"
+      }
+    },
+    "pdf_first_page_visual": "PASS"
+  }
+}

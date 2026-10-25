@@ -1,0 +1,522 @@
+{
+  "version": "0.135",
+  "date": "2026-10-07",
+  "deployed": false,
+  "validation": {
+    "runner_pass": true,
+    "deployed": false,
+    "observation": {
+      "seconds": 1800.4959644579794,
+      "transition_seconds": 1800.519,
+      "samples": 1754,
+      "metrics_errors": 0,
+      "sample_span_seconds": 1799.467,
+      "frame_delta": 53808.0,
+      "max_sample_no_progress_seconds": 1.2210000000000036,
+      "counter_resets": 0
+    },
+    "primary_observed_fps": 29.902187703358827,
+    "postprocess_observation": {
+      "passed": true,
+      "samples": 887,
+      "max_gap_seconds": 4.284639490960217,
+      "counter_resets": 0,
+      "span_seconds": 1798.5235422051046,
+      "delta": 53776,
+      "fps": 29.900081226663954,
+      "tensor_output_fps": 14.950040613331977,
+      "clock_uncertainty_seconds": 3,
+      "max_last_frame_age_seconds": 0.007055617170408368
+    },
+    "observed_error_maxima": {
+      "context_tasks_failed": 0,
+      "model_metrics_errors": 0,
+      "primary_metrics_errors": 0,
+      "source_error_identified": 0,
+      "source_error_unidentified": 0,
+      "source_unidentified_stop": 0,
+      "pipeline_restart_requested": 0,
+      "pipeline_restart_executed": 0,
+      "pipeline_restart_failed": 0,
+      "metadata_errors": 0
+    },
+    "windows": [
+      {
+        "minutes": [
+          0,
+          5
+        ],
+        "samples": 293,
+        "observed_seconds": 299.788,
+        "primary_fps": 30.06457896913819
+      },
+      {
+        "minutes": [
+          5,
+          10
+        ],
+        "samples": 292,
+        "observed_seconds": 298.58,
+        "primary_fps": 29.94507334717664
+      },
+      {
+        "minutes": [
+          10,
+          15
+        ],
+        "samples": 292,
+        "observed_seconds": 298.71900000000005,
+        "primary_fps": 30.081782544799623
+      },
+      {
+        "minutes": [
+          15,
+          20
+        ],
+        "samples": 293,
+        "observed_seconds": 299.75299999999993,
+        "primary_fps": 29.917965791835286
+      },
+      {
+        "minutes": [
+          20,
+          25
+        ],
+        "samples": 292,
+        "observed_seconds": 298.942,
+        "primary_fps": 29.671307477704705
+      },
+      {
+        "minutes": [
+          25,
+          30
+        ],
+        "samples": 292,
+        "observed_seconds": 298.55899999999997,
+        "primary_fps": 29.742864894375987
+      }
+    ],
+    "pipeline_generations": [
+      1
+    ],
+    "final_stats": {
+      "frames_processed": 53942,
+      "frames_dropped": 0,
+      "events_detected": 214,
+      "events_sent": 0,
+      "events_failed": 214,
+      "inference_errors": 0,
+      "context_tasks_failed": 0,
+      "model_metrics_errors": 0,
+      "primary_metrics_errors": 0,
+      "pipeline_restart_executed": 0
+    },
+    "aux_calls": {
+      "rf_verify": 0,
+      "tcn_verify": 0,
+      "color_runtime": 0,
+      "python_attribute": 0,
+      "face_request": 0
+    },
+    "aux_disabled": true,
+    "primary_tensor_frames": 26971,
+    "memory": {
+      "baseline_rss_median_bytes": 1619642368.0,
+      "final_rss_median_bytes": 1617051648.0,
+      "rss_growth_bytes": -2590720.0,
+      "rss_max_bytes": 1627295744,
+      "baseline_samples": 292,
+      "final_samples": 292,
+      "cgroup_first": {
+        "anon": 62357504,
+        "file": 177389568,
+        "file_mapped": 2916352
+      },
+      "cgroup_last": {
+        "anon": 717705216,
+        "file": 1439387648,
+        "file_mapped": 24068096
+      },
+      "oom": 0,
+      "oom_kill": 0,
+      "requires_followup": false,
+      "leak_free_proven": false,
+      "coverage": {
+        "passed": true,
+        "samples": 1754,
+        "max_gap_seconds": 1.2210000000000036,
+        "counter_resets": 0,
+        "span_seconds": 1799.467,
+        "delta": 1799.467
+      },
+      "windows_covered": true,
+      "cgroup_observed": true
+    },
+    "outbox_checkpoints": [
+      {
+        "elapsed": 2.44,
+        "rows": 174750
+      },
+      {
+        "elapsed": 63.069,
+        "rows": 174754
+      },
+      {
+        "elapsed": 123.709,
+        "rows": 174761
+      },
+      {
+        "elapsed": 184.419,
+        "rows": 174768
+      },
+      {
+        "elapsed": 245.037,
+        "rows": 174776
+      },
+      {
+        "elapsed": 305.247,
+        "rows": 174783
+      },
+      {
+        "elapsed": 365.775,
+        "rows": 174790
+      },
+      {
+        "elapsed": 426.173,
+        "rows": 174797
+      },
+      {
+        "elapsed": 486.639,
+        "rows": 174804
+      },
+      {
+        "elapsed": 547.131,
+        "rows": 174812
+      },
+      {
+        "elapsed": 608.127,
+        "rows": 174819
+      },
+      {
+        "elapsed": 669.067,
+        "rows": 174827
+      },
+      {
+        "elapsed": 729.555,
+        "rows": 174833
+      },
+      {
+        "elapsed": 790.173,
+        "rows": 174841
+      },
+      {
+        "elapsed": 850.607,
+        "rows": 174848
+      },
+      {
+        "elapsed": 910.923,
+        "rows": 174855
+      },
+      {
+        "elapsed": 971.492,
+        "rows": 174863
+      },
+      {
+        "elapsed": 1032.134,
+        "rows": 174870
+      },
+      {
+        "elapsed": 1092.72,
+        "rows": 174877
+      },
+      {
+        "elapsed": 1153.039,
+        "rows": 174884
+      },
+      {
+        "elapsed": 1213.527,
+        "rows": 174892
+      },
+      {
+        "elapsed": 1274.162,
+        "rows": 174899
+      },
+      {
+        "elapsed": 1334.837,
+        "rows": 174906
+      },
+      {
+        "elapsed": 1395.427,
+        "rows": 174913
+      },
+      {
+        "elapsed": 1455.819,
+        "rows": 174919
+      },
+      {
+        "elapsed": 1516.539,
+        "rows": 174927
+      },
+      {
+        "elapsed": 1577.115,
+        "rows": 174934
+      },
+      {
+        "elapsed": 1637.679,
+        "rows": 174940
+      },
+      {
+        "elapsed": 1698.226,
+        "rows": 174948
+      },
+      {
+        "elapsed": 1758.778,
+        "rows": 174955
+      },
+      {
+        "elapsed": 1819.383,
+        "rows": 174962
+      }
+    ],
+    "storage_observation": {
+      "passed": true,
+      "samples": 30,
+      "max_gap_seconds": 60.99599999999998,
+      "counter_resets": 0,
+      "span_seconds": 1756.314,
+      "delta": 208
+    },
+    "databases": {
+      "appearances.db": {
+        "integrity": "ok",
+        "counts": {
+          "search_conditions": 0,
+          "appearance_log": 532473
+        },
+        "new_rows": {
+          "search_conditions": 0,
+          "appearance_log": 0
+        },
+        "initial_counts_preserved": true,
+        "duplicate_groups": null
+      },
+      "mqtt_event_outbox.db": {
+        "integrity": "ok",
+        "counts": {
+          "mqtt_event_outbox": 174964
+        },
+        "new_rows": {
+          "mqtt_event_outbox": 214
+        },
+        "initial_counts_preserved": true,
+        "duplicate_groups": 0
+      },
+      "commercial_faces.db": {
+        "integrity": "ok",
+        "counts": {
+          "face_persons": 1,
+          "face_samples": 1
+        },
+        "new_rows": {
+          "face_persons": 0,
+          "face_samples": 0
+        },
+        "initial_counts_preserved": true,
+        "duplicate_groups": null
+      }
+    },
+    "video": {
+      "metadata": {
+        "programs": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "width": 1920,
+            "height": 1080
+          }
+        ],
+        "format": {
+          "duration": "1800.325000"
+        }
+      },
+      "sha256": "12b36116edf92384c1a71009ea49af4d5620c09fe4aeff6c2087d17dfb286b83",
+      "decoded_frames": 50238,
+      "duration_seconds": 1800.325,
+      "decode_exit": 0,
+      "decode_error_bytes": 0,
+      "passed": true,
+      "received_frames_per_media_second": 27.904961604154806
+    },
+    "source_unchanged": true,
+    "image_contract": true,
+    "deployment_files_unchanged": true,
+    "input_unchanged": true,
+    "operating_samples": 62,
+    "operating_observation": {
+      "passed": true,
+      "samples": 62,
+      "max_gap_seconds": 30.299672849942,
+      "counter_resets": 0,
+      "span_seconds": 1836.4908140131738,
+      "delta": 1836.4908140131738
+    },
+    "operating_unchanged": true,
+    "tracebacks": 0,
+    "log_errors": {
+      "expected_offline_mqtt": 35,
+      "unused_argus_startup": 2,
+      "unexpected": []
+    },
+    "startup_warnings": [
+      "WARNING ⚠️ user config directory '/root/.config/Ultralytics' is not writable, using '/tmp/Ultralytics'. Set YOLO_CONFIG_DIR to override.",
+      "WARNING: CUDA_ENABLE_CPU_COREDUMP_ON_EXCEPTION environment variable is deprecated, use CUDA_COREDUMP_GENERATION_FLAGS instead",
+      "WARNING: CUDA_ENABLE_LIGHTWEIGHT_COREDUMP environment variable is deprecated, use CUDA_COREDUMP_GENERATION_FLAGS instead",
+      "(gst-plugin-scanner:69): GStreamer-WARNING **: 06:56:24.071: Failed to load plugin '/opt/nvidia/deepstream/deepstream/lib/gst-plugins/libnvdsgst_udp.so': librivermax.so.0: cannot open shared object file: No such file or directory",
+      "(gst-plugin-scanner:69): GStreamer-WARNING **: 06:56:24.339: Failed to load plugin '/opt/nvidia/deepstream/deepstream/lib/gst-plugins/libnvdsgst_inferserver.so': libtritonserver.so: cannot open shared object file: No such file or directory",
+      "(gst-plugin-scanner:69): GStreamer-WARNING **: 06:56:25.121: Failed to load plugin '/opt/nvidia/deepstream/deepstream/lib/gst-plugins/libnvdsgst_deepstream_bins.so': libnvdsgst_msgconv.so: cannot open shared object file: No such file or directory",
+      "WARNING: [TRT]: Using an engine plan file across different models of devices is not recommended and is likely to affect performance or even cause errors."
+    ],
+    "expected_engine_loaded": true,
+    "stop_seconds": 3.0821239319629967,
+    "runtime_gate": true,
+    "storage_gate": true,
+    "bounded_continuity_pass": true,
+    "passed": true,
+    "decision": "BOUNDED_SOAK_PASS"
+  },
+  "plan": {
+    "image": "sha256:d5a223fd222a1d06b57e55b2a5fad8fc3ca37c3f40076fc0f0559aeccc36e0be",
+    "input": "data/runtime/p51_camera_20260928_v050/camera_1_capture.mkv",
+    "input_sha256": "c7df52d9b46939c1f7d7439354793969ae3dac8663cf2f8bbeab2b72fe916202",
+    "database_source": "data/runtime/p51_data_rollback_20261007_v134/trial_data/runtime",
+    "acceptance_before_run": {
+      "observation_seconds": 1800,
+      "receiver_target_seconds": 1800,
+      "receiver_duration_min_seconds": 1799,
+      "receiver_drain_seconds_max": 45,
+      "startup_seconds_max": 150,
+      "output_ready_seconds_max": 20,
+      "stop_seconds_max": 30,
+      "no_primary_progress_seconds_max": 30,
+      "pipeline_restarts_max": 0,
+      "inference_errors_max": 0,
+      "decode_errors_max": 0,
+      "database_integrity": "ok",
+      "detected_events_equal_new_outbox_rows": true,
+      "operating_unchanged": true
+    },
+    "memory_analysis_before_run": {
+      "warmup_seconds": 300,
+      "baseline_window_seconds": [
+        300,
+        600
+      ],
+      "final_window_seconds": [
+        1500,
+        1800
+      ],
+      "rss_growth_review_mib": 256,
+      "note": "초반5분 제외, 앱 RSS 중간값의 뒤5분-앞5분 차이를 기록. 256MiB 초과는 추가 조사 대상이며 미만도 누수 없음의 증명 아님. cgroup file cache는 앱 RSS와 구분."
+    },
+    "scope": "같은 CCTV 녹화 반복·1채널 최소 구성, GPU/X11 공유, 운영/실물다중/정확도/24시간 합격 아님"
+  },
+  "validation_policy": {
+    "review_additions": "2026-10-07, trial still running",
+    "postprocess_and_resource_coverage_max_gap_seconds": 30,
+    "outbox_checkpoint_max_gap_seconds": 65,
+    "rss_samples_per_300s_window_min": 270,
+    "error_evidence": "source/model/primary/metadata counters and actual logs, not default inference_errors/camera_errors",
+    "time_alignment": "distinct namespaces, both monotonic offsets zero; endpoint coverage conservatively expands by ±3s",
+    "operating_snapshot_max_gap_seconds": 35,
+    "cgroup_anon_file_oom_fields_required": true
+  },
+  "sha256": {
+    "data/runtime/p51_soak_20261007_v135/plan.json": "7c8ea0d08c6dff12fbc161af1b237625f8f1bae6792956c1378c6b3d7fafea1f",
+    "data/runtime/p51_soak_20261007_v135/validation_policy.json": "42f7eb74adec177ccc0f95c7c0c56460b3b9445ebd4b5fc3e3f081417dd94148",
+    "data/runtime/p51_soak_20261007_v135/clock_alignment.json": "9ccbde07bfbb61a45e26cd452c43f01bb4bdcbc727e6b0374764d4ded99adb85",
+    "data/runtime/p51_soak_20261007_v135/image_verification.json": "f3fe2b6e74c847299ec2ad7da067646ccd79da41e28c60b83d8a0d148ce2339a",
+    "data/runtime/p51_soak_20261007_v135/compose.json": "2ece4ddf34f2a135d98d037bad2d4af378533e3a655b493e172a68de26027cf1",
+    "data/runtime/p51_soak_20261007_v135/command.json": "0b28d6ff778bf5679f67bef5a6cb682a65f51edbd2db89f06065f8b760b57e87",
+    "data/runtime/p51_soak_20261007_v135/database_before.json": "a12263a7328335dc3ea88db697b5b4b4aa07263bb297de03fc3b04f18d5f99b5",
+    "data/runtime/p51_soak_20261007_v135/operating_file_hashes.json": "030194d038aa37c6535baa6a620f60563605fa1a1c716315974fb23a7c52b9a6",
+    "data/runtime/p51_soak_20261007_v135/run.py": "30012ab5889a420573c28e5bdc7b489ff0b205f0c9cf52b72eb5c9798dd66cf6",
+    "data/runtime/p51_soak_20261007_v135/run_soak.py": "bab419e2e215e0352e5cdd8fedc32c2d003f6d8d2413194d8fb43e5ed52e1324",
+    "data/runtime/p51_soak_20261007_v135/observe_models.py": "8e36a311c5f561bee404cca70f11413656cb9a9f2d3e546e2a835fb02bd55e85",
+    "data/runtime/p51_soak_20261007_v135/validate.py": "980746f1481e4dcd7dc3cc9f508692fb44c7c0e4de134b3a612b67f4b92caac6",
+    "data/runtime/p51_soak_20261007_v135/validator_selfcheck.json": "bb492c6e44e6db53bea6e6a75d133e406a9a2acb867ee3f531a6023e2e14e275",
+    "data/runtime/p51_soak_20261007_v135/trial_results.json": "ddc61cb74225d5c1cb2b6b2885c2bb3c8849235b7d2d2f35c7a0cb2bf25071db",
+    "data/runtime/p51_soak_20261007_v135/validation.json": "ccb52928133fd7a8a8462cf74174a6a2ba1c1ba767f97986cc278bdc24e4488e",
+    "data/runtime/p51_soak_20261007_v135/operating_before.json": "112a123eac71df356a30bc2de214f99db23f70a1a476daa39ef95e6650c4aa31",
+    "data/runtime/p51_soak_20261007_v135/operating_samples.jsonl": "62dc124f52268476654e2aaf9e0a22ebb8c088e62712bc5e60fa720e26c781fa",
+    "data/runtime/p51_soak_20261007_v135/operating_after.json": "112a123eac71df356a30bc2de214f99db23f70a1a476daa39ef95e6650c4aa31",
+    "data/runtime/p51_soak_20261007_v135/output/experiment.json": "e8a48dc310dfb0c2ab47d1177e987a15eef98f857eed9389ab3473aa3c1c6bc8",
+    "data/runtime/p51_soak_20261007_v135/output/samples.jsonl": "83ac4faa75fe00a14a1ce08e305ca7ef353f0e94d0c546e57711a2dbdf0cb872",
+    "data/runtime/p51_soak_20261007_v135/output/resources.jsonl": "a50ded2c5a6b9736e780db0d8d39e6423f5a556afb10e0d99cf42981628361ba",
+    "data/runtime/p51_soak_20261007_v135/output/stats.jsonl": "2dadbbb1b411228dbc7617e425bd8a2e62196e864a8d4da7a73ad2b36154b538",
+    "data/runtime/p51_soak_20261007_v135/output/final_model_audit.json": "4bc79911b0f1f7ba05471e57cd847e12a7e57ca0b186183b0134175986211c6f",
+    "data/runtime/p51_soak_20261007_v135/output/app.log": "2b2e6e8b0dc3cbae2cac1bb6860af0b5b4d6ee85c1c5aa84bf127775e3fc7be4",
+    "data/runtime/p51_soak_20261007_v135/output/receiver.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "data/runtime/p51_soak_20261007_v135/output/decode.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "data/runtime/p51_soak_20261007_v135/output/decode.progress": "eb77fad4589c217f26d2fbc9c528003b51805f79c7365364b9c2e053d358cfd3",
+    "data/runtime/p51_soak_20261007_v135/review.json": "2e225cfa73e11a6f1cfffb84abb8ed65763f6fe7502eb2c0ec73a508096b6e69",
+    "data/runtime/p51_soak_20261007_v135/check_documents.py": "fbb65ddb269709bd9b254802ff8997be4c479a40fa13c16acd586d9590bd3c7b",
+    "data/runtime/p51_soak_20261007_v135/publish_documents.py": "0ae3cf00dfa34f3e8c0eecccb15231b0a1234e85b54dc643c14075d17a8a4499",
+    "data/runtime/p51_soak_20261007_v135/http_validation.json": "274b3c1bd9fcaa70b374c41cfd6e2b2a0e8e8ff618767c8aea7462d63262f7f9"
+  },
+  "source_evidence_sha256": {
+    "docs/planning/evidence/fixed_candidate_20261007.json": "dfd933a0a64acfd44fbf77c27ef0daaa78ff9cf62769cd4cf6421928afc1ca0d",
+    "docs/planning/evidence/data_rollback_20261007.json": "6b506a34df66153098d130eb492a4d5cc9ab903828bafde88168f2245510f551",
+    "data/runtime/p51_tcn_loaded_20260930_v074/run_trial.py": "056fca3666093f5aad6657d62eff8f0cb1cbb879c55c5afcdfbee9def222dcf3"
+  },
+  "review": {
+    "reviewer": "/root/soak_review",
+    "critical": 0,
+    "important": 0,
+    "final": "completed raw data, validator and publication scope reviewed; video decode reused, no duplicate decoding",
+    "resolved": [
+      "actual error counters instead of default zero",
+      "postprocess and resource coverage",
+      "full recording duration and decode",
+      "cgroup/OOM fields required",
+      "operating snapshot coverage",
+      "initial table counts preserved",
+      "current progress block updated"
+    ],
+    "runtime_approved_within_scope": true,
+    "deployed": false
+  },
+  "http_validation": {
+    "index.html": {
+      "status": 200,
+      "bytes": 47032,
+      "sha256": "fc7814f379b7b48fd4099daf2413f011ef531909aa3df80711efee15ae1a4f2b",
+      "local_match": true
+    },
+    "CCTV_project_progress.pdf": {
+      "status": 200,
+      "bytes": 147853,
+      "sha256": "12f133572918a81a06dc2551d1f87c97278e465b261a3881029a01ba54084cb0",
+      "local_match": true
+    }
+  },
+  "document_validation": {
+    "passed": true,
+    "models": 8,
+    "wbs_rows": 33,
+    "wbs_status_unchanged": true,
+    "csv_rows": 8,
+    "html_escaped": true,
+    "evidence_artifacts": 34,
+    "all_eight_model_rows_retained": true,
+    "source_files": 206,
+    "operating_unchanged": true,
+    "soak_scope_separated": true,
+    "deployed": false
+  },
+  "checks": {
+    "ruff": "PASS",
+    "git_diff_check": "PASS",
+    "pdf_first_page": "visually_checked",
+    "validator_selfcheck": "7 PASS"
+  }
+}

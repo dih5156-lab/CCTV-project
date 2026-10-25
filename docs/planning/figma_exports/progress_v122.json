@@ -1,0 +1,409 @@
+{
+  "version": "0.122",
+  "updated_date": "2026-10-07 KST",
+  "file_key": "2GQKlBrmSVjZljX74IJLij",
+  "board_node_id": "9:53",
+  "counts": {
+    "DONE": 9,
+    "BLOCKED": 3,
+    "PLANNED": 13,
+    "VERIFY": 7,
+    "IN_PROGRESS": 1
+  },
+  "completed_task_percent": 27.3,
+  "next": "P5.1 medium 전체 구성의 낙상 영상 처리20.67/입력29.97FPS를 기준으로 보조 처리 부하를 제한 비교하고 후보 유지/경량화 여부를 판단한다. P5.2 낙상 품질·P5.3 헬멧 정답 재시험은 구분해 진행하며 사람 정답 데이터와 의상/색상/얼굴 기준을 보강한다. 원 I40/I34·I45·I51 대기·I52 재기동 검증은 잔여다.",
+  "new_issue": "I53 사람 ROI None 로컬 수정·157PASS/2SKIP·실제 사람 재시험 통과. 전체 모델 결과 표 추가·medium 통합20.67FPS로 실시간 승격 보류",
+  "rows": [
+    {
+      "id": "P0.1",
+      "title": "운영·작업 트리·검증 기준선",
+      "requirements": "R12",
+      "dependencies": "없음",
+      "criteria": "실행/로컬 버전 구분; 기존 실패 분리; 복구 기준과 증거 보존",
+      "paths": "Compose, `models/model_manifest.json`, `docs/reports/`",
+      "effort_days": "1–2",
+      "status": "DONE"
+    },
+    {
+      "id": "P0.2",
+      "title": "부하·지연·POC 범위 및 협력 일정",
+      "requirements": "R01,R07,R09,R10,R11",
+      "dependencies": "P0.1",
+      "criteria": "가용시간·장비/센서 부하 기록; 수치 기준 담당·결정일 확정; 현장 시나리오 초안",
+      "paths": "이 문서, `PROGRESS.md`, 기존 인수 기준",
+      "effort_days": "1–2",
+      "status": "BLOCKED"
+    },
+    {
+      "id": "P0.3",
+      "title": "4채널 성능·장비 확보 조기 판단",
+      "requirements": "R09,R11",
+      "dependencies": "P0.1",
+      "criteria": "기존 측정 한계 정리; 개선/추가 검증 경로 선정; 일정 위험과 장비 확보 결정일 기록",
+      "paths": "[성능 판단](PERFORMANCE_DECISION.md), 원자료 26개 재계산",
+      "effort_days": "0.5–1.5",
+      "status": "DONE"
+    },
+    {
+      "id": "P1.1",
+      "title": "공통 관측·이벤트·명령 계약",
+      "requirements": "R01,R02,R06",
+      "dependencies": "P0.1",
+      "criteria": "ID·시간·단위·버전 확정; 기존 payload 대응; 정상/오류 예제로 검증",
+      "paths": "[공통](COMMON_DATA_CONTRACT.md)·[관측](OBSERVATION_CONTRACT.md)·[실패 계약/판정](INGEST_FAILURE_CONTRACT.md), 명령 ID 계약",
+      "effort_days": "1–2",
+      "status": "DONE"
+    },
+    {
+      "id": "P1.2",
+      "title": "저장 책임·공통 조회·이행 설계",
+      "requirements": "R03,R06",
+      "dependencies": "P1.1",
+      "criteria": "DB/쓰기 주체 조사; 논리 데이터 관계/접수 경계 확정; 기존 데이터 이행·복구 검토",
+      "paths": "[저장 설계](STORAGE_DESIGN.md), `parser-python/database/`, `_action_bridge_repo.py`",
+      "effort_days": "1–2",
+      "status": "DONE"
+    },
+    {
+      "id": "P1.3",
+      "title": "우선순위·중복·실행 상태 계약",
+      "requirements": "R02,R05",
+      "dependencies": "P1.1",
+      "criteria": "장치별 경합/선점 규칙; 만료·장기 대기·중복 규칙; 결과 집계 예제 확정",
+      "paths": "[계약·14개 인수 예제·판정](ACTION_POLICY_CONTRACT.md), 현재 정책 87 PASS·I23 구현 차이",
+      "effort_days": "1–2",
+      "status": "DONE"
+    },
+    {
+      "id": "P1.4",
+      "title": "관제 전달·계측 내부 계약",
+      "requirements": "R04,R10",
+      "dependencies": "P1.1",
+      "criteria": "관제 ID/ACK·조회 규칙; 단계별 계측·지연 상한 결정 항목(D04); 누락 대조 예제",
+      "paths": "[관제 계약·완료 판정](MONITORING_DELIVERY_CONTRACT.md), 모형 DB 시험",
+      "effort_days": "1–2",
+      "status": "DONE"
+    },
+    {
+      "id": "P2.1",
+      "title": "센서 배치 저장 실패 복구",
+      "requirements": "R03,R06",
+      "dependencies": "P1.2",
+      "criteria": "저장 실패 시 배치 보존; 재시작·재시도 후 ID 대조; 중복 저장 방지",
+      "paths": "[구현·판정·적용 준비](SENSOR_RECOVERY.md), `src/ingest_store.py`, `parser-python/database/sensor_projection*.py`",
+      "effort_days": "1–2",
+      "status": "DONE"
+    },
+    {
+      "id": "P2.2",
+      "title": "공통 이벤트·전달 대기 영속화",
+      "requirements": "R03,R06",
+      "dependencies": "P2.1",
+      "criteria": "이벤트/전달 대기 일관성; 영속 접수 전 실패 응답; 중간 종료 후 복구",
+      "paths": "[완료 판정](TLV_RECORD_DELIVERY.md)·[외부 이벤트](EVENT_PERSISTENCE.md)·[영상 접수](VIDEO_INGEST_RECOVERY.md)·[기록 전달](RECORD_DELIVERY.md), 공통 저장소",
+      "effort_days": "2–3",
+      "status": "DONE"
+    },
+    {
+      "id": "P2.3",
+      "title": "관제 전달·조회 최소 흐름",
+      "requirements": "R04,R10",
+      "dependencies": "P2.2,P1.4",
+      "criteria": "모형 센서/AI→저장→관제; 재전송·중복 식별; 출력 장비 없이 지연 측정",
+      "paths": "[내부 완료 판정·서비스](MONITORING_SERVICE.md)·[대조/계측](MONITORING_RECONCILIATION.md), 외부/운영 조건은 별도",
+      "effort_days": "2–3",
+      "status": "DONE"
+    },
+    {
+      "id": "P2.4",
+      "title": "저장·관제 장애 및 용량 시험",
+      "requirements": "R03,R04,R10",
+      "dependencies": "P2.3",
+      "criteria": "DB/관제 단절 후 복구; 대기 용량·오래된 데이터 표시; 누락 ID 0건",
+      "paths": "[DB 잠금 복구](MONITORING_OUTAGE.md)·[경합 개선](MONITORING_CONTENTION.md)·[원격 ACK/패키지](MONITORING_REMOTE.md)·[용량 부족](MONITORING_CAPACITY.md)·[센서값 상태](MONITORING_FRESHNESS.md)·[영상 재시도/활성 쓰기](VIDEO_INTAKE_CONTENTION.md)·[혼합 적체/재시작](MONITORING_BACKLOG_RESTART.md)",
+      "effort_days": "1–2",
+      "status": "BLOCKED"
+    },
+    {
+      "id": "P3.1",
+      "title": "영속 우선순위·장치별 대기",
+      "requirements": "R03,R05",
+      "dependencies": "P2.4,P1.3",
+      "criteria": "동순위·고위험 순서; 만료/장기 대기 처리; 재시작 후 재개",
+      "paths": "`src/services/action_policy.py`, `_action_bridge_alarm.py`, 저장 계층",
+      "effort_days": "2–3",
+      "status": "PLANNED"
+    },
+    {
+      "id": "P3.2",
+      "title": "입력 수신·장치 실행 격리",
+      "requirements": "R02,R04,R10",
+      "dependencies": "P3.1",
+      "criteria": "수신 콜백이 장치 대기와 분리; 한 장치 장애 격리; 큐·지연 계측",
+      "paths": "`src/services/action_bridge.py`, `_action_bridge_executor.py`",
+      "effort_days": "1–2",
+      "status": "PLANNED"
+    },
+    {
+      "id": "P3.3",
+      "title": "대상·중복 실행·장치별 결과",
+      "requirements": "R02,R05,R06",
+      "dependencies": "P3.2",
+      "criteria": "물리 장치 ID 일치; 동일 요청 동시 처리 검증; 응답 유실·부분 실패 표시",
+      "paths": "`src/services/device_command_transport.py`, `src/edgex/`, 결과 수집기",
+      "effort_days": "1–2",
+      "status": "PLANNED"
+    },
+    {
+      "id": "P3.4",
+      "title": "전광판 1대 통합 검증",
+      "requirements": "R02,R11",
+      "dependencies": "P3.3",
+      "criteria": "고정 이벤트→EdgeX→실제 표시; 결과 DB/관제 대조; 실패·복구 확인",
+      "paths": "전광판 Device Service, 기존 UAT 도구",
+      "effort_days": "0.5–1",
+      "status": "VERIFY"
+    },
+    {
+      "id": "P3.5",
+      "title": "스피커 1대 통합 검증",
+      "requirements": "R02,R11",
+      "dependencies": "P3.4",
+      "criteria": "실제 음성 확인; 중복·중단 가능 여부 확인; 명령/결과/관제 대조",
+      "paths": "스피커 Device Service, 기존 UAT 도구",
+      "effort_days": "1–2",
+      "status": "PLANNED"
+    },
+    {
+      "id": "P3.6",
+      "title": "사이렌 1대 통합 검증",
+      "requirements": "R02,R11",
+      "dependencies": "P3.5",
+      "criteria": "작동·정지 확인; 시간 초과·복구 확인; 명령/결과/관제 대조",
+      "paths": "사이렌 Device Service, 기존 UAT 도구",
+      "effort_days": "1–2",
+      "status": "BLOCKED"
+    },
+    {
+      "id": "P4.1",
+      "title": "TLV 규격·온습도/기울기 재생",
+      "requirements": "R01,R06",
+      "dependencies": "P2.4",
+      "criteria": "타 부서 예제와 값·단위 일치; 잘못된/미지원 패킷 분리; 원본/시각 추적",
+      "paths": "`parser-python/tlv/`, `parser-python/service/sensor_service.py`",
+      "effort_days": "1–2",
+      "status": "VERIFY"
+    },
+    {
+      "id": "P4.2",
+      "title": "센서 관측·경보 규칙 연결",
+      "requirements": "R01,R05,R10",
+      "dependencies": "P4.1,P3.3",
+      "criteria": "관측과 경보 분리; 임계값 경계·복귀·중복 검증; 오래된 값 표시",
+      "paths": "센서 분류·규칙 경로, 공통 이벤트",
+      "effort_days": "1–2",
+      "status": "VERIFY"
+    },
+    {
+      "id": "P4.3",
+      "title": "실제 센서→장치→관제 검증",
+      "requirements": "R01,R02,R04,R11",
+      "dependencies": "P4.2,P3.4",
+      "criteria": "온습도·기울기 실물 대조; 단절·재접속; 저장/명령/관제 ID 연결",
+      "paths": "센서 수신·EdgeX·관제 경로",
+      "effort_days": "0.5–1",
+      "status": "PLANNED"
+    },
+    {
+      "id": "P5.1",
+      "title": "단일 영상 입력·추론 계약/계측",
+      "requirements": "R07,R09,R10",
+      "dependencies": "P1.1,P0.3",
+      "criteria": "전처리·인물/시각 계약; 실제 모델별 완료 계측; 입력 단절·품질 부족 처리",
+      "paths": "[입력 계약](VIDEO_INFERENCE_CONTRACT.md), [GIE 메타 계측](MODEL_INFERENCE_METRICS.md), [인물별 입력](POSE_TRACK_ISOLATION.md)",
+      "effort_days": "2–3",
+      "status": "IN_PROGRESS"
+    },
+    {
+      "id": "P5.2",
+      "title": "낙상 모듈 고정 평가·연동",
+      "requirements": "R07,R10",
+      "dependencies": "P5.1,P2.3",
+      "criteria": "사건별 미탐/오탐/지연; pose 부족·시간창 일치; 공통 이벤트→관제 연결",
+      "paths": "`src/core/ai/_fall_detector.py`, `_falldata_aux.py`, 낙상 평가 도구",
+      "effort_days": "1–3",
+      "status": "VERIFY"
+    },
+    {
+      "id": "P5.3",
+      "title": "헬멧 모듈 고정 평가·연동",
+      "requirements": "R07",
+      "dependencies": "P5.1,P2.3",
+      "criteria": "헬멧/미착용 정의·라벨 평가; ROI/원거리 검증; 결과·버전·지연 기록",
+      "paths": "객체 탐지 경로, helmet 설정·평가 도구",
+      "effort_days": "1–2",
+      "status": "VERIFY"
+    },
+    {
+      "id": "P5.4",
+      "title": "의상 분류 고정 평가·연동",
+      "requirements": "R07",
+      "dependencies": "P5.1,P2.3",
+      "criteria": "속성별 정답·성능; 미지원/판정 불가 처리; 관제 결과 확인",
+      "paths": "외형 분석 경로, PA100K/PP-Human 관련 설정",
+      "effort_days": "1–2",
+      "status": "VERIFY"
+    },
+    {
+      "id": "P5.5",
+      "title": "색상 분류 고정 평가·연동",
+      "requirements": "R07",
+      "dependencies": "P5.1,P2.3",
+      "criteria": "색상별 평가·조도 조건; 판정 불가 처리; 관제 결과 확인",
+      "paths": "외형·색상 분석과 평가 도구",
+      "effort_days": "1–2",
+      "status": "VERIFY"
+    },
+    {
+      "id": "P5.6",
+      "title": "동작 분류 확장 계약",
+      "requirements": "R08",
+      "dependencies": "P5.1,P1.1",
+      "criteria": "카메라/인물/시간창 계약; 모형 결과 연동; 새 학습 없이 기존 기능 회귀",
+      "paths": "AI 입력·결과 인터페이스 문서, 모형 테스트",
+      "effort_days": "0.5–1",
+      "status": "PLANNED"
+    },
+    {
+      "id": "P6.1",
+      "title": "영상·센서 동시 이벤트/장애",
+      "requirements": "R03,R04,R05,R10",
+      "dependencies": "P3.6,P4.3,P5.2,P5.3,P5.4,P5.5,P5.6",
+      "criteria": "다중 우선순위 검증; 장치/DB/관제 장애 격리; ID·지연·적체 대조",
+      "paths": "통합 시험과 원자료",
+      "effort_days": "1–2",
+      "status": "PLANNED"
+    },
+    {
+      "id": "P6.2",
+      "title": "전체 AI 1→2→4채널 부하",
+      "requirements": "R07,R09,R10",
+      "dependencies": "P6.1",
+      "criteria": "전체 운영 모델·카메라별 30FPS 근거; 지연·적체 합의 기준 충족; 재생/실물 검증 범위 명시",
+      "paths": "다중 카메라 인수 기준, DeepStream 계측·부하 도구",
+      "effort_days": "2–4",
+      "status": "PLANNED"
+    },
+    {
+      "id": "P6.3",
+      "title": "지속 운전·재시작 복구",
+      "requirements": "R03,R04,R10",
+      "dependencies": "P6.2",
+      "criteria": "합의 시간 동안 자원·큐 추이; 재시작 후 데이터 대조; 오래된 센서·장치 상태 확인",
+      "paths": "운영 점검·복구 시험",
+      "effort_days": "1–2",
+      "status": "PLANNED"
+    },
+    {
+      "id": "P6.4",
+      "title": "현장 POC 진입 판정·후보 고정",
+      "requirements": "R11,R12",
+      "dependencies": "P6.3",
+      "criteria": "모델·설정·버전 고정; 알려진 제한/복구·시나리오 확인; 현장팀 시험 일정 확인",
+      "paths": "POC 시험표·증거 목록·후보 기록",
+      "effort_days": "1–2",
+      "status": "PLANNED"
+    },
+    {
+      "id": "P7.1",
+      "title": "현장팀과 POC 실행",
+      "requirements": "R01,R02,R04,R07,R09,R11",
+      "dependencies": "P6.4",
+      "criteria": "실제 입력·출력·관제 확인; 환경별 모델 평가; 실패도 결함으로 기록",
+      "paths": "현장 시험표·영상·명령/DB/관제 증거",
+      "effort_days": "1–2",
+      "status": "PLANNED"
+    },
+    {
+      "id": "P7.2",
+      "title": "POC 결함 수정·재시험",
+      "requirements": "R11,R12",
+      "dependencies": "P7.1",
+      "criteria": "결함별 최소 수정; 해당 회귀·현장 재시험; 중요 미해결 결함 정리",
+      "paths": "결함별 모듈·테스트·재시험 기록",
+      "effort_days": "2–4",
+      "status": "PLANNED"
+    },
+    {
+      "id": "P7.3",
+      "title": "최종 판정·운영 인계",
+      "requirements": "R01,R02,R03,R04,R05,R06,R07,R08,R09,R10,R11,R12",
+      "dependencies": "P7.2",
+      "criteria": "합의 범위·수치 기준 증거; 현장팀 판정·미완료 명시; 실행/복구·유지관리 인계",
+      "paths": "최종 POC 보고·운영 문서",
+      "effort_days": "1–2",
+      "status": "PLANNED"
+    }
+  ],
+  "online_url": "http://192.168.2.141:18081/",
+  "p51_target_date": null,
+  "p51_remaining_estimate": "10-02 완료 목표 미달. 10-08까지 I40/I45 수정·후보 검증 목표이며 전체 P5.1 완료일은 미확정. 이번 주 약18시간은 가용시간 배정으로 전체 잔여 공수가 아님.",
+  "model_results": [
+    {
+      "name": "사람 YOLOv8n",
+      "scope": "별도 person_detector · CCTV 재생60초",
+      "runtime": "tensor 911프레임 · 오류0",
+      "quality": "과거 복원: P81.73 / R66.93 / F1 73.59%",
+      "remaining": "실행 확인. 현재 엔진의 정답 재시험 필요"
+    },
+    {
+      "name": "Pose medium",
+      "scope": "1080p29.97 · interval1 · 2영상 각60초",
+      "runtime": "tensor CCTV886 / 낙상637프레임",
+      "quality": "v121 후반Pose 66/68 관측 · 정확도 아님",
+      "remaining": "전체모델 실시간 성능 보류 · 경보 품질 별도"
+    },
+    {
+      "name": "헬멧 / 머리",
+      "scope": "기존 SGIE 320 · conf0.35 · 3조건",
+      "runtime": "tensor 1,424프레임 · 오류0",
+      "quality": "과거 helmet만: P90.14 / R91.10 / F1 90.62%",
+      "remaining": "과거 conf0.15 성적. 현재 head/helmet 정답 검증 필요"
+    },
+    {
+      "name": "낙상 RF",
+      "scope": "기존 선택 RF · shadow · threshold0.7",
+      "runtime": "3회 반환: Pose부족1 / 계약비호환2",
+      "quality": "이번 예측 성공0 · 정확도 산정 불가",
+      "remaining": "미통과. 호환 특징으로 재학습·검증 필요"
+    },
+    {
+      "name": "낙상 TCN",
+      "scope": "기존 same_split_resume 모델 · shadow",
+      "runtime": "20회 반환: 유효18 / Pose부족2",
+      "quality": "이번 정답 정확도 미측정",
+      "remaining": "실행 확인. 별도 TCN20 후보 성적과 구분"
+    },
+    {
+      "name": "의상 PA100K",
+      "scope": "ResNet50 SGIE · 3조건",
+      "runtime": "tensor 1,424프레임 · 오류0",
+      "quality": "현재 모델 정답 성적 없음",
+      "remaining": "실행 확인. 의상 라벨 검증 필요"
+    },
+    {
+      "name": "색상 YOLOv8n",
+      "scope": "TensorRT 160 · threshold0.75 · 3조건",
+      "runtime": "383회 반환 · 색상265 / 임계미달118",
+      "quality": "과거 요약: Top-1 88.49% · 표본수 미기록",
+      "remaining": "실행 확인. 현재 엔진/조명별 정답 검증 필요"
+    },
+    {
+      "name": "얼굴 Haar",
+      "scope": "OpenCV fallback · 3조건",
+      "runtime": "217회 반환 · 얼굴 결과0",
+      "quality": "신원 인식 정확도 미측정",
+      "remaining": "미검증. 얼굴 검출·등록자 인식 별도 시험"
+    }
+  ]
+}

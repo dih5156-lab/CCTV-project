@@ -1,0 +1,862 @@
+{
+  "checked_at_utc": "2026-10-12T02:17:52.827532+00:00",
+  "wbs": "P5.2 VERIFY",
+  "issue": "I56 OPEN",
+  "decision": "낙상 시간 기준 분리 후보 구현·CPU 검증 통과; 실제 전체 파이프라인·운영 반영 미실시",
+  "analysis": {
+    "scope": "기존6영상 CPU 사후 분석; 신규 모델 추론·운영 반영 없음",
+    "recorded_trials_reproduced": 12,
+    "source_clock_pairs_equal": 6,
+    "hypothetical_speed_replays": 48,
+    "trials": [
+      {
+        "index": 0,
+        "scene": "00800_O_E_BY_C1",
+        "variant": "reference",
+        "label": "fall",
+        "recorded_clock": [
+          {
+            "frame": 232,
+            "object_id": 5,
+            "source_pts": 7.741066667
+          }
+        ],
+        "source_clock": [
+          {
+            "frame": 232,
+            "object_id": 5,
+            "source_pts": 7.741066667
+          }
+        ],
+        "processing_seconds_per_video_second": {
+          "0.5": [
+            {
+              "frame": 232,
+              "object_id": 5,
+              "source_pts": 7.741066667
+            }
+          ],
+          "1.0": [
+            {
+              "frame": 232,
+              "object_id": 5,
+              "source_pts": 7.741066667
+            }
+          ],
+          "2.0": [
+            {
+              "frame": 132,
+              "object_id": 3,
+              "source_pts": 4.4044
+            },
+            {
+              "frame": 262,
+              "object_id": 5,
+              "source_pts": 8.742066667
+            }
+          ],
+          "4.0": [
+            {
+              "frame": 132,
+              "object_id": 3,
+              "source_pts": 4.4044
+            },
+            {
+              "frame": 248,
+              "object_id": 5,
+              "source_pts": 8.274933333
+            }
+          ]
+        },
+        "candidate_count": 30,
+        "first_candidate_seconds": 3.269933333,
+        "fall_start_seconds": 2.8194833333333333,
+        "candidate_delay_from_start": 0.45044999966666666,
+        "recorded_alarm_delay_from_start": 4.921583333666667,
+        "candidate_to_recorded_alarm": 4.471133334,
+        "longest_candidate_gap_seconds": 3.3366666670000003,
+        "source_clock_alarm_delay_from_start": 4.921583333666667
+      },
+      {
+        "index": 1,
+        "scene": "00800_O_E_BY_C1",
+        "variant": "candidate",
+        "label": "fall",
+        "recorded_clock": [
+          {
+            "frame": 132,
+            "object_id": 3,
+            "source_pts": 4.4044
+          },
+          {
+            "frame": 266,
+            "object_id": 5,
+            "source_pts": 8.875533333
+          }
+        ],
+        "source_clock": [
+          {
+            "frame": 232,
+            "object_id": 5,
+            "source_pts": 7.741066667
+          }
+        ],
+        "processing_seconds_per_video_second": {
+          "0.5": [
+            {
+              "frame": 232,
+              "object_id": 5,
+              "source_pts": 7.741066667
+            }
+          ],
+          "1.0": [
+            {
+              "frame": 232,
+              "object_id": 5,
+              "source_pts": 7.741066667
+            }
+          ],
+          "2.0": [
+            {
+              "frame": 132,
+              "object_id": 3,
+              "source_pts": 4.4044
+            },
+            {
+              "frame": 262,
+              "object_id": 5,
+              "source_pts": 8.742066667
+            }
+          ],
+          "4.0": [
+            {
+              "frame": 132,
+              "object_id": 3,
+              "source_pts": 4.4044
+            },
+            {
+              "frame": 248,
+              "object_id": 5,
+              "source_pts": 8.274933333
+            }
+          ]
+        },
+        "candidate_count": 30,
+        "first_candidate_seconds": 3.269933333,
+        "fall_start_seconds": 2.8194833333333333,
+        "candidate_delay_from_start": 0.45044999966666666,
+        "recorded_alarm_delay_from_start": 1.5849166666666665,
+        "candidate_to_recorded_alarm": 1.1344666669999999,
+        "longest_candidate_gap_seconds": 3.3366666670000003,
+        "source_clock_alarm_delay_from_start": 4.921583333666667
+      },
+      {
+        "index": 2,
+        "scene": "00837_O_E_BY_C1",
+        "variant": "candidate",
+        "label": "fall",
+        "recorded_clock": [
+          {
+            "frame": 180,
+            "object_id": 2,
+            "source_pts": 6.006
+          }
+        ],
+        "source_clock": [
+          {
+            "frame": 204,
+            "object_id": 2,
+            "source_pts": 6.8068
+          }
+        ],
+        "processing_seconds_per_video_second": {
+          "0.5": [
+            {
+              "frame": 268,
+              "object_id": 3,
+              "source_pts": 8.942266667
+            }
+          ],
+          "1.0": [
+            {
+              "frame": 204,
+              "object_id": 2,
+              "source_pts": 6.8068
+            }
+          ],
+          "2.0": [
+            {
+              "frame": 174,
+              "object_id": 2,
+              "source_pts": 5.8058
+            }
+          ],
+          "4.0": [
+            {
+              "frame": 160,
+              "object_id": 2,
+              "source_pts": 5.338666667
+            },
+            {
+              "frame": 284,
+              "object_id": 3,
+              "source_pts": 9.476133333
+            }
+          ]
+        },
+        "candidate_count": 46,
+        "first_candidate_seconds": 4.8048,
+        "fall_start_seconds": 4.070733333333333,
+        "candidate_delay_from_start": 0.7340666666666671,
+        "recorded_alarm_delay_from_start": 1.9352666666666671,
+        "candidate_to_recorded_alarm": 1.2012,
+        "longest_candidate_gap_seconds": 1.6016000000000004,
+        "source_clock_alarm_delay_from_start": 2.736066666666667
+      },
+      {
+        "index": 3,
+        "scene": "00837_O_E_BY_C1",
+        "variant": "reference",
+        "label": "fall",
+        "recorded_clock": [
+          {
+            "frame": 204,
+            "object_id": 2,
+            "source_pts": 6.8068
+          }
+        ],
+        "source_clock": [
+          {
+            "frame": 204,
+            "object_id": 2,
+            "source_pts": 6.8068
+          }
+        ],
+        "processing_seconds_per_video_second": {
+          "0.5": [
+            {
+              "frame": 268,
+              "object_id": 3,
+              "source_pts": 8.942266667
+            }
+          ],
+          "1.0": [
+            {
+              "frame": 204,
+              "object_id": 2,
+              "source_pts": 6.8068
+            }
+          ],
+          "2.0": [
+            {
+              "frame": 174,
+              "object_id": 2,
+              "source_pts": 5.8058
+            }
+          ],
+          "4.0": [
+            {
+              "frame": 160,
+              "object_id": 2,
+              "source_pts": 5.338666667
+            },
+            {
+              "frame": 284,
+              "object_id": 3,
+              "source_pts": 9.476133333
+            }
+          ]
+        },
+        "candidate_count": 46,
+        "first_candidate_seconds": 4.8048,
+        "fall_start_seconds": 4.070733333333333,
+        "candidate_delay_from_start": 0.7340666666666671,
+        "recorded_alarm_delay_from_start": 2.736066666666667,
+        "candidate_to_recorded_alarm": 2.002,
+        "longest_candidate_gap_seconds": 1.6016000000000004,
+        "source_clock_alarm_delay_from_start": 2.736066666666667
+      },
+      {
+        "index": 4,
+        "scene": "00657_H_D_N_C1",
+        "variant": "reference",
+        "label": "not_fall",
+        "recorded_clock": [],
+        "source_clock": [],
+        "processing_seconds_per_video_second": {
+          "0.5": [],
+          "1.0": [],
+          "2.0": [],
+          "4.0": []
+        },
+        "candidate_count": 0,
+        "first_candidate_seconds": null,
+        "fall_start_seconds": null,
+        "candidate_delay_from_start": null,
+        "recorded_alarm_delay_from_start": null,
+        "candidate_to_recorded_alarm": null,
+        "longest_candidate_gap_seconds": null,
+        "source_clock_alarm_delay_from_start": null
+      },
+      {
+        "index": 5,
+        "scene": "00657_H_D_N_C1",
+        "variant": "candidate",
+        "label": "not_fall",
+        "recorded_clock": [],
+        "source_clock": [],
+        "processing_seconds_per_video_second": {
+          "0.5": [],
+          "1.0": [],
+          "2.0": [],
+          "4.0": []
+        },
+        "candidate_count": 0,
+        "first_candidate_seconds": null,
+        "fall_start_seconds": null,
+        "candidate_delay_from_start": null,
+        "recorded_alarm_delay_from_start": null,
+        "candidate_to_recorded_alarm": null,
+        "longest_candidate_gap_seconds": null,
+        "source_clock_alarm_delay_from_start": null
+      },
+      {
+        "index": 6,
+        "scene": "00849_O_E_N_C1",
+        "variant": "candidate",
+        "label": "not_fall",
+        "recorded_clock": [],
+        "source_clock": [],
+        "processing_seconds_per_video_second": {
+          "0.5": [],
+          "1.0": [],
+          "2.0": [],
+          "4.0": [
+            {
+              "frame": 126,
+              "object_id": 2,
+              "source_pts": 4.2042
+            }
+          ]
+        },
+        "candidate_count": 2,
+        "first_candidate_seconds": 3.670333333,
+        "fall_start_seconds": null,
+        "candidate_delay_from_start": null,
+        "recorded_alarm_delay_from_start": null,
+        "candidate_to_recorded_alarm": null,
+        "longest_candidate_gap_seconds": 0.5338666670000003,
+        "source_clock_alarm_delay_from_start": null
+      },
+      {
+        "index": 7,
+        "scene": "00849_O_E_N_C1",
+        "variant": "reference",
+        "label": "not_fall",
+        "recorded_clock": [],
+        "source_clock": [],
+        "processing_seconds_per_video_second": {
+          "0.5": [],
+          "1.0": [],
+          "2.0": [],
+          "4.0": [
+            {
+              "frame": 126,
+              "object_id": 2,
+              "source_pts": 4.2042
+            }
+          ]
+        },
+        "candidate_count": 2,
+        "first_candidate_seconds": 3.670333333,
+        "fall_start_seconds": null,
+        "candidate_delay_from_start": null,
+        "recorded_alarm_delay_from_start": null,
+        "candidate_to_recorded_alarm": null,
+        "longest_candidate_gap_seconds": 0.5338666670000003,
+        "source_clock_alarm_delay_from_start": null
+      },
+      {
+        "index": 8,
+        "scene": "00495_H_D_N_C1",
+        "variant": "reference",
+        "label": "not_fall",
+        "recorded_clock": [],
+        "source_clock": [],
+        "processing_seconds_per_video_second": {
+          "0.5": [],
+          "1.0": [],
+          "2.0": [],
+          "4.0": []
+        },
+        "candidate_count": 0,
+        "first_candidate_seconds": null,
+        "fall_start_seconds": null,
+        "candidate_delay_from_start": null,
+        "recorded_alarm_delay_from_start": null,
+        "candidate_to_recorded_alarm": null,
+        "longest_candidate_gap_seconds": null,
+        "source_clock_alarm_delay_from_start": null
+      },
+      {
+        "index": 9,
+        "scene": "00495_H_D_N_C1",
+        "variant": "candidate",
+        "label": "not_fall",
+        "recorded_clock": [],
+        "source_clock": [],
+        "processing_seconds_per_video_second": {
+          "0.5": [],
+          "1.0": [],
+          "2.0": [],
+          "4.0": []
+        },
+        "candidate_count": 0,
+        "first_candidate_seconds": null,
+        "fall_start_seconds": null,
+        "candidate_delay_from_start": null,
+        "recorded_alarm_delay_from_start": null,
+        "candidate_to_recorded_alarm": null,
+        "longest_candidate_gap_seconds": null,
+        "source_clock_alarm_delay_from_start": null
+      },
+      {
+        "index": 10,
+        "scene": "00889_O_E_N_C1",
+        "variant": "candidate",
+        "label": "not_fall",
+        "recorded_clock": [],
+        "source_clock": [],
+        "processing_seconds_per_video_second": {
+          "0.5": [],
+          "1.0": [],
+          "2.0": [],
+          "4.0": [
+            {
+              "frame": 70,
+              "object_id": 2,
+              "source_pts": 2.335666667
+            }
+          ]
+        },
+        "candidate_count": 6,
+        "first_candidate_seconds": 1.7350666670000001,
+        "fall_start_seconds": null,
+        "candidate_delay_from_start": null,
+        "recorded_alarm_delay_from_start": null,
+        "candidate_to_recorded_alarm": null,
+        "longest_candidate_gap_seconds": 0.20020000000000016,
+        "source_clock_alarm_delay_from_start": null
+      },
+      {
+        "index": 11,
+        "scene": "00889_O_E_N_C1",
+        "variant": "reference",
+        "label": "not_fall",
+        "recorded_clock": [],
+        "source_clock": [],
+        "processing_seconds_per_video_second": {
+          "0.5": [],
+          "1.0": [],
+          "2.0": [],
+          "4.0": [
+            {
+              "frame": 70,
+              "object_id": 2,
+              "source_pts": 2.335666667
+            }
+          ]
+        },
+        "candidate_count": 6,
+        "first_candidate_seconds": 1.7350666670000001,
+        "fall_start_seconds": null,
+        "candidate_delay_from_start": null,
+        "recorded_alarm_delay_from_start": null,
+        "candidate_to_recorded_alarm": null,
+        "longest_candidate_gap_seconds": 0.20020000000000016,
+        "source_clock_alarm_delay_from_start": null
+      }
+    ],
+    "pairs": [
+      {
+        "scene": "00800_O_E_BY_C1",
+        "label": "fall",
+        "reference_alarm_count": 1,
+        "candidate_alarm_count": 2,
+        "source_clock_alarm_count_each": 1,
+        "source_clock_decisions_equal": true
+      },
+      {
+        "scene": "00837_O_E_BY_C1",
+        "label": "fall",
+        "reference_alarm_count": 1,
+        "candidate_alarm_count": 1,
+        "source_clock_alarm_count_each": 1,
+        "source_clock_decisions_equal": true
+      },
+      {
+        "scene": "00657_H_D_N_C1",
+        "label": "not_fall",
+        "reference_alarm_count": 0,
+        "candidate_alarm_count": 0,
+        "source_clock_alarm_count_each": 0,
+        "source_clock_decisions_equal": true
+      },
+      {
+        "scene": "00849_O_E_N_C1",
+        "label": "not_fall",
+        "reference_alarm_count": 0,
+        "candidate_alarm_count": 0,
+        "source_clock_alarm_count_each": 0,
+        "source_clock_decisions_equal": true
+      },
+      {
+        "scene": "00495_H_D_N_C1",
+        "label": "not_fall",
+        "reference_alarm_count": 0,
+        "candidate_alarm_count": 0,
+        "source_clock_alarm_count_each": 0,
+        "source_clock_decisions_equal": true
+      },
+      {
+        "scene": "00889_O_E_N_C1",
+        "label": "not_fall",
+        "reference_alarm_count": 0,
+        "candidate_alarm_count": 0,
+        "source_clock_alarm_count_each": 0,
+        "source_clock_decisions_equal": true
+      }
+    ],
+    "speed_sensitivity_unique_scenes": {
+      "0.5": {
+        "detected_fall_clips": 2,
+        "false_positive_normal_clips": 0,
+        "fall_alarm_count": 2
+      },
+      "1.0": {
+        "detected_fall_clips": 2,
+        "false_positive_normal_clips": 0,
+        "fall_alarm_count": 2
+      },
+      "2.0": {
+        "detected_fall_clips": 2,
+        "false_positive_normal_clips": 0,
+        "fall_alarm_count": 3
+      },
+      "4.0": {
+        "detected_fall_clips": 2,
+        "false_positive_normal_clips": 2,
+        "fall_alarm_count": 4
+      }
+    },
+    "selected_candidate": "낙상 지속/재연결 판정에 카메라별 영상시각 전달, 재알림/정리의 실시간 시계와 분리",
+    "production_implemented": false,
+    "evidence_verified": {
+      "data/runtime/p62_pose_decisions_20261008_v138/replay_clock.py": "375d689b365174f95200b8e9e86710e77b56750d1d248caefaa541b489958781",
+      "data/runtime/p62_pose_decisions_20261008_v138/plan.json": "764edfef6c16466c835b5fc56607b1c9eb2e9773565b1a4ec7f04545551d52d2",
+      "data/runtime/p62_pose_decisions_20261008_v138/trial_00/output/capture.json": "aa9c9f9cc1668038c7eaae3ac7dccac33df66d9b20531160d844c36c77c02c9a",
+      "data/runtime/p62_pose_decisions_20261008_v138/trial_00/output/delay_detail.json": "db2eac003694a73ba77c529d2c4a9b8a9f7ee85b3fe3a5e16f19a11cb0221bd1",
+      "data/runtime/p62_pose_decisions_20261008_v138/trial_01/output/capture.json": "eb68bdbef951bc054d5922f83606df58ff10411fd78e5d9f7017730329615091",
+      "data/runtime/p62_pose_decisions_20261008_v138/trial_01/output/delay_detail.json": "ac8c6d2cdf138a2af2ca3f65abc43da53a7f812a9474e62834ebd27d705080ba",
+      "data/runtime/p62_pose_decisions_20261008_v138/trial_02/output/capture.json": "e50b93ed53868a71f8c4f55627aef1c2b9fe7e517d3e1cc3931412701ce82939",
+      "data/runtime/p62_pose_decisions_20261008_v138/trial_02/output/delay_detail.json": "a6f18e326590b7a3f132dde252aad622c2ed37d6ce6f7ddc9834c863d2fd2feb",
+      "data/runtime/p62_pose_decisions_20261008_v138/trial_03/output/capture.json": "6d5b2cdf0bc12fabf5556720f0c57133c35c9189f1b62699e266569403e7f040",
+      "data/runtime/p62_pose_decisions_20261008_v138/trial_03/output/delay_detail.json": "479d2c74497659b2fa39b294efbeec079c603999e87498c266d8837c557c75b1",
+      "data/runtime/p62_pose_decisions_20261008_v138/trial_04/output/capture.json": "1b7acda2e3bdfddfb7bca75318bec867805fbb6fe0a6404530d908bef8ce1920",
+      "data/runtime/p62_pose_decisions_20261008_v138/trial_04/output/delay_detail.json": "7488bfcf281566370865c6f2eaf20637e3f71af0a305cc05c0da5b11c60c77f4",
+      "data/runtime/p62_pose_decisions_20261008_v138/trial_05/output/capture.json": "2e0aa06bdbabdbd1b3578d39752649220894e5b40e9d7bbaeed929d98f7558af",
+      "data/runtime/p62_pose_decisions_20261008_v138/trial_05/output/delay_detail.json": "2f48a7b81adf3792d91908d44c8b4991992e27fbfc391b773b934a18870e49cb",
+      "data/runtime/p62_pose_decisions_20261008_v138/trial_06/output/capture.json": "53b358b181090b6d9a192442f9939b07e48e4b418828bfee6671235bea14972f",
+      "data/runtime/p62_pose_decisions_20261008_v138/trial_06/output/delay_detail.json": "e0f6884cbadb7efc37a1c24d3051307cc6fcdc315e79b9b820adc213839aadf6",
+      "data/runtime/p62_pose_decisions_20261008_v138/trial_07/output/capture.json": "2c67c9409501e7298e6ad6c5862eaa89cb78ab9ff9bcf2ec4d791e95761eaeb4",
+      "data/runtime/p62_pose_decisions_20261008_v138/trial_07/output/delay_detail.json": "3fb2057b3afaae6768a54c8fa46654f6653af854a5cd23a076de6d82a04fe0b1",
+      "data/runtime/p62_pose_decisions_20261008_v138/trial_08/output/capture.json": "d8693687c32cce19e938efbd80adbe5c450859a8b0938ac8625a0d0a7a19a9a0",
+      "data/runtime/p62_pose_decisions_20261008_v138/trial_08/output/delay_detail.json": "78184328836091acaee46f67902c4be5cd8a9e822c11ef9195058c9f2849f87a",
+      "data/runtime/p62_pose_decisions_20261008_v138/trial_09/output/capture.json": "6817fa23102679851bc51a6d39f86a04f6d75c1952df07336744915c7f9f57a9",
+      "data/runtime/p62_pose_decisions_20261008_v138/trial_09/output/delay_detail.json": "03a93f25f158a2e0b0c5e8d4ca814d757f3bff8f52daa66d6d47d9381d3600c1",
+      "data/runtime/p62_pose_decisions_20261008_v138/trial_10/output/capture.json": "af845747f54d32a683a91e9208341032fb6626f9770ae33e810f07afeae2acc5",
+      "data/runtime/p62_pose_decisions_20261008_v138/trial_10/output/delay_detail.json": "ff8fa463fe9cb0fb03f4c9ef37809a4e4792b4f93df3428964ca96acd1f53d14",
+      "data/runtime/p62_pose_decisions_20261008_v138/trial_11/output/capture.json": "106de959ac87a3945ad4ff8cb84ac852fa9357649d84548101762faf075db2df",
+      "data/runtime/p62_pose_decisions_20261008_v138/trial_11/output/delay_detail.json": "43d94961a792a3d3debdec4c8b374caab5bdc4c73609ef5e243cda9c63640b88"
+    }
+  },
+  "code_trace": {
+    "shared_function": "src/core/event_debouncer.py:EventDebouncer._should_send_fall",
+    "clock": "time.time()로 지속2초·재연결5초·재알림60초 판정",
+    "callers": [
+      "src/core/deepstream_processor.py:DeepStreamProcessor._should_enqueue_event",
+      "src/core/_inference_pipeline.py:_InferencePipeline._enqueue"
+    ],
+    "timestamp_contract": "DetectionEvent.timestamp와 DeepStream timestamp_factory는 처리 시계이며 원본 영상시각으로 간주하지 않음",
+    "source_sha256": {
+      "src/core/event_debouncer.py": "3bb53ac70a747daeb8fdd6710e38a3688e252abfe2608339ae1ad1cd7a62a4f8",
+      "src/core/deepstream_processor.py": "d88633c2e73825bdeeed5259b2efac8d6f5d2330b1e062112bb976784214975a",
+      "src/core/_inference_pipeline.py": "4fb469761f2f2f1ba4108ef0c63697cc7374ee9581af49d447f3094863d4aeb4",
+      "src/core/_deepstream_event_factory.py": "15722df14fdb38edf422280ba6a1f624e79a6c2b202779b44357bad94ac27a33",
+      "src/core/events.py": "9d8d1f01c4b53b216c4c9cddab63cee0d4938a04724d401f73607f88279fad09"
+    }
+  },
+  "confirmed_example": {
+    "scene": "00800_O_E_BY_C1",
+    "frames": [
+      98,
+      132,
+      232
+    ],
+    "video_seconds": [
+      3.269933333,
+      4.4044,
+      7.741066667
+    ],
+    "video_elapsed_98_to_132": 1.134466667,
+    "recorded_slow_processing_elapsed_98_to_132": 2.0059235095977783,
+    "video_gap_132_to_232": 3.336666667,
+    "recorded_slow_processing_gap_132_to_232": 5.959273099899292,
+    "effect": "처리 지연으로 지속2초를 먼저 넘고 이후 공백5초도 넘어 ID 재연결·재알림 억제가 끊김",
+    "counterfactual": "같은 영상시각으로 재생 시 경보2→1; 실제 제품 수정 효과 측정 아님"
+  },
+  "candidate_contract": {
+    "scope": [
+      "입력 영상PTS의 프레임 정합성 확인·카메라별 세대와 함께 판정 경로에 전달",
+      "낙상 지속/재연결은 영상시각, 재알림/보존 만료는 실시간 기준으로 분리",
+      "기존 timestamp 의미와 모델/임계값/인물 재연결 공간 조건 유지"
+    ],
+    "acceptance": [
+      "기록6쌍 경보 프레임 일치·정상4영상 신규 경보0",
+      "처리 속도 변화로 지속/재연결 판정이 변하지 않음",
+      "누락/역행/중복/유효하지 않은PTS에서 허위 지속 누적 방지",
+      "입력 재접속 세대·카메라 사이 상태 격리",
+      "재알림60초·장시간 상태 정리·기존 시각 미제공 호출 호환 검증"
+    ],
+    "not_changed": [
+      "모델 크기·추론 간격·신뢰도 임계값",
+      "실물 출력·운영 컨테이너",
+      "실제 연속 자세 관측의 부재를 보간하거나 다른 인물 병합"
+    ]
+  },
+  "checks": {
+    "existing_record_replay": 12,
+    "same_source_clock_pairs": 6,
+    "hypothetical_processing_speed_runs": 48,
+    "unique_scenes": 6,
+    "source_artifact_sha256_count": 26,
+    "script_assertions": "PASS",
+    "ruff": "PASS",
+    "gpu_inference": 0,
+    "product_code_changes": 0,
+    "runtime_service_operations": 0,
+    "diff_check": "PASS"
+  },
+  "limits": [
+    "6영상은 기존 진단군(낙상2/정상4); 재현율100%·현장 품질 합격으로 일반화하지 않음",
+    "4배 가정의 정상2/4 경보는 CPU 시계 민감도 결과이며 실제 운영 오탐 측정 아님",
+    "전체 시계 치환 재생이므로 재알림/만료를 분리한 후보 구현의 합격은 아님",
+    "기존 경보 지연4.922/2.736초는 영상 속 낙상 시작→발행 큐 프레임 차이; 종단 지연 아님",
+    "00800 후보 공백3.337초와 자세 입력 부족은 별도 잔여; 시계 분리만으로 지연 감소를 보장하지 않음",
+    "고정 평가 medium 근거이며 현재 nano 운영의 새 성적이 아님"
+  ],
+  "next": "공유 호스트 GPU 시험을 보류하고 현행 운영 구성 재현·자동시작·복귀 준비를 진행한다.",
+  "artifacts": {
+    "data/runtime/p52_time_basis_20261012/plan.json": "7ff2066749e7bff7a4a6ff7c36a7822c3f541dfe2b7ecd79b2c8ddd3aa9f28c8",
+    "data/runtime/p52_time_basis_20261012/analyze.py": "78cbed9bde6e01683785db147996ee8fecdb3621a5c61f9cd9f031d3f38675b3",
+    "data/runtime/p52_time_basis_20261012/analysis.json": "088e4615215c854fb9e95306945b2ddaffa599654d32d90daba206ac0216a7b6",
+    "data/runtime/p52_time_basis_20261012/board_verification.json": "90f0a3fdd33978a90dca4d3297da148c556a59be8494f6410e38ced1e6c2dc49"
+  },
+  "publication": {
+    "checked_at_utc": "2026-10-12T02:20:25.343432+00:00",
+    "url": "http://192.168.2.242:18081/",
+    "files": {
+      "index.html": {
+        "status": 200,
+        "bytes": 54553,
+        "sha256": "f1ef5801bdfefcb4a728e2106eefc478f19cb7fca37c488f7546c1372d03cd10"
+      },
+      "CCTV_project_progress.pdf": {
+        "status": 200,
+        "bytes": 148760,
+        "sha256": "e9da8c27e1c2e8428bd85daf6f75f25dde925f6d5c06b5a1045aa7e762f4ccc2"
+      }
+    },
+    "pdf_first_page_visual_check": "PASS",
+    "wbs_rows_preserved": 33,
+    "model_rows_preserved": 8
+  },
+  "checks_scope": "checks와analysis는 수정 전 사전분석 결과이며 구현 검증은implementation 참조",
+  "implementation": {
+    "checked_at_utc": "2026-10-12T02:41:48.702994+00:00",
+    "production_source_changed": [
+      "src/core/event_debouncer.py"
+    ],
+    "operating_applied": false,
+    "new_gpu_inferences": 0,
+    "service_restarts": 0,
+    "contract": {
+      "sustained_and_reassociation": "기존 metadata.frame_identity의 카메라별 source_pts_ns; 0초 유효",
+      "cooldown_and_retention": "수신 epoch 시각; 재알림60초·마지막 유효 수신 기준 만료",
+      "external_timestamp": "변경 없음",
+      "legacy": "frame_identity 키를 제공하지 않는 기존 호출은 처리시계 유지; 시계 전환은 지속 누적 초기화",
+      "invalid": "식별자 None/손상·잘못된 PTS·카메라 불일치는 누적 초기화 후 거절; 처리시계 대체 금지",
+      "regression": "영상시각 역행은 누적 초기화·기존 재알림 유지",
+      "generation": "높은 세대는 해당 카메라 상태 초기화; 낮은 세대 결과는 거절; 명시 clear_camera는 해당 카메라만 정리",
+      "duplicates": "동일 객체/재연결 객체의 중복PTS 거절; bbox·재알림 상태 유지"
+    },
+    "checks": {
+      "pytest_passed": 275,
+      "pytest_skipped": 2,
+      "skip_reason": "DeepStream 설치 환경이므로 미설치/CPU 환경 오류 검사2건 제외",
+      "new_boundary_cases": 27,
+      "deepstream_event_paths": 3,
+      "recorded_receipt_replays": 12,
+      "hypothetical_speed_replays": 48,
+      "all_60_same_alarm_frames": true,
+      "ruff": "PASS",
+      "diff_check": "PASS"
+    },
+    "replay": {
+      "scope": "기존6영상/12실행 기록의 CPU 두 시계 재생; 모델 추론·운영 반영 없음",
+      "recorded_receipt_clock_replays": 12,
+      "hypothetical_speed_replays": 48,
+      "all_60_equal_to_video_clock_reference": true,
+      "unique_scenes": 6,
+      "fall_clips_detected": "2/2",
+      "normal_clips_without_alarm": "4/4",
+      "source_sha256": "2e1ddb98b4443fdd4874fd5bacd341a67862b1e5453c278ef201915174d11389",
+      "limits": [
+        "기존 후보·bbox 고정 재생이며 신규 모델 성능 측정이 아님",
+        "frame_identity는 기록된 PTS에서 구성; 실제 DeepStream 보존은 별도 검증 필요",
+        "2.74/4.92초 최초 알림 지연과 3.34초 후보 공백은 남음"
+      ]
+    },
+    "review": "그래프 도구는 변경 심볼0을 반환해 완전성 근거에서 제외; 실제 diff/두 공통 호출자·세 이벤트 생성 경로와 재접속/보존 흐름을 직접 대조",
+    "runtime_after": [
+      {
+        "name": "/cctv-ai-engine",
+        "id": "db65cceb6390ae7eae0b02db9403a46dba9053adbeca5cb27cb4e67c92d0e4f0",
+        "image": "sha256:294e52234fc170904e2a09b180b422e0562d6e11b5aa28ebcf287a1b47c9ed55",
+        "started_at": "2026-10-08T04:59:47.634961746Z",
+        "restart_count": 0,
+        "status": "running"
+      },
+      {
+        "name": "/cctv-action-layer",
+        "id": "4583fc9fcd71816b7cdc1f20900901cf8cfcbbd669401c8b9fe3d66e99a9bbf6",
+        "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+        "started_at": "2026-10-08T06:15:40.114979171Z",
+        "restart_count": 0,
+        "status": "running"
+      },
+      {
+        "name": "/cctv-media-server",
+        "id": "a2b1369a3598485980000d1e6da5ef09d79145da54b220cc37baaa00b7376c03",
+        "image": "sha256:f8628851106cc053f9175b248050bb5f362a6e65abd72297c167a1cb5a9a3be2",
+        "started_at": "2026-10-01T23:40:25.266992541Z",
+        "restart_count": 0,
+        "status": "running"
+      }
+    ],
+    "limits": [
+      "기존6영상 후보·bbox 고정 CPU 재생으로 모델 정확도/FPS 개선 측정이 아님",
+      "실제 DeepStream 입력PTS·generation 보존/전체 파이프라인 재시험 필요",
+      "기존 최초 알림 지연2.736/4.922초·최대3.337초 후보 공백은 남음",
+      "카메라 실물1대; 실제2/4카메라·현장 센서/스피커·운영 적용 미검증",
+      "기존 Python 경로의 원본PTS 수집 추가는 이번 범위 밖; 미제공 시 처리시계 호환 유지"
+    ],
+    "sha256": {
+      "src/core/event_debouncer.py": "2e1ddb98b4443fdd4874fd5bacd341a67862b1e5453c278ef201915174d11389",
+      "tests/test_event_debouncer_time_basis.py": "b944338c869903a42e3df4876ad3456363a364c6f58edf3791d5613be4e488db",
+      "tests/test_deepstream_coordinates.py": "de1836a44cf044662aa65495f4030cc54bd25c57bedb5357b949ad9ccf1ab8bd",
+      "data/runtime/p52_time_candidate_20261012/event_debouncer.before.py": "3bb53ac70a747daeb8fdd6710e38a3688e252abfe2608339ae1ad1cd7a62a4f8",
+      "data/runtime/p52_time_candidate_20261012/plan.json": "a3f267baeb3cc8844ff8f268ad39163d594c88da239fea54cf0eb88767d508aa",
+      "data/runtime/p52_time_candidate_20261012/replay_candidate.py": "d0ee3efb4526a1cf04a1b790e1792d23a3467f14c2f16f03d63a3068162cbe29",
+      "data/runtime/p52_time_candidate_20261012/replay_result.json": "66eb39341643954411bc40c9180403a4af9eec7bd7afcad5a55f35caacc6785c",
+      "data/runtime/p52_time_candidate_20261012/red.xml": "24d359ca80ec271267e72d341d7d897747bd019b6797b74e0db6cb34d3d4a4c2",
+      "data/runtime/p52_time_candidate_20261012/edge_red.xml": "2ec10146a195164a75f69c25a7cecf808321b0d5f052961e08d87c7285ad52b6",
+      "data/runtime/p52_time_candidate_20261012/metadata_red.xml": "e37146622b2155d879f6b2a80862e44f6ec80e4467e6db761c3f3335b6a9ed65",
+      "data/runtime/p52_time_candidate_20261012/related_tests.xml": "e22b57e26260eaa32dc65b47eef02d7844d067cc4c3584b01ec74dbbb878707b",
+      "data/runtime/p52_time_candidate_20261012/runtime_after.jsonl": "399064c016eee0082f2fbbdb419e32b9d20e335fa29b7b7f2d549a061311547e"
+    },
+    "publication": {
+      "checked_at_utc": "2026-10-12T02:45:00.648825+00:00",
+      "url": "http://192.168.2.242:18081/",
+      "files": {
+        "index.html": {
+          "status": 200,
+          "bytes": 54728,
+          "sha256": "0312f766be38a0d5174520cd1e880e71225ba862800f699cdbd830006bc7e06d"
+        },
+        "CCTV_project_progress.pdf": {
+          "status": 200,
+          "bytes": 146823,
+          "sha256": "30a71ebf70c625245e0b1a9ed243f69264b26eeff032563b3fcc39cae6c2d5bc"
+        }
+      },
+      "pdf_first_page_visual_check": "PASS",
+      "wbs_rows_preserved": 33,
+      "model_rows_preserved": 8
+    }
+  },
+  "integration_attempt": {
+    "checked_at_utc": "2026-10-12T03:43:27.169599+00:00",
+    "decision": "HOLD_SHARED_HOST_TRIAL",
+    "reason": "operating_rate_guard",
+    "phase": "첫 reference 컨테이너 준비 중, 모델 실행/입력 수집 증거 생성 전 중단",
+    "completed_trials": 0,
+    "planned_trials": 12,
+    "unique_clips": 6,
+    "candidate_executed": false,
+    "quality_result": "NO_RESULT",
+    "throughput_result": "NO_RESULT",
+    "baseline_operating_fps": 30.25079004078691,
+    "last_two_operating_fps": [
+      22.600817835474956,
+      23.121460810769356
+    ],
+    "guard_min_fps": 24.200632032629528,
+    "stop_exception": "docker stop --time 10 호출이25초 시간초과; finally에서 시험 kill 처리, 이후 시험 컨테이너 없음 확인",
+    "operating_recovery": {
+      "metric_samples": 10,
+      "metric_errors": 0,
+      "probe_errors": "",
+      "observer_is_packet_timing_not_decode_or_unique_frame_fps": true,
+      "metric_seconds": 27.426369530614465,
+      "rates": {
+        "cctv_processor_frames_processed_total": 29.861772229306464,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 14.949116744829853
+      },
+      "max_frame_age": 0.05366011802107096,
+      "output": {
+        "packets": 694,
+        "seconds": 25.005072221159935,
+        "packets_per_second": 27.714377062009266,
+        "max_observed_arrival_gap": 0.2526674121618271,
+        "max_pts_step": 0.18803300000000078,
+        "pts_steps_over_100ms": 16,
+        "negative_pts_steps": 0
+      }
+    },
+    "operating_state_unchanged": true,
+    "operating_restarts_during_recovery": 0.0,
+    "no_retry_this_unit": true,
+    "limits": [
+      "준비 중 성능 감소와 실행 시각은 일치하나 CPU/GPU/컨테이너 준비 중 단일 원인은 미확정",
+      "낙상 후보 품질 실패가 아닌 시험 중단·미평가",
+      "공유 호스트에서 추가 GPU 시험 중단; 별도 장비 또는 승인된 점검 시간 필요"
+    ],
+    "next": "현행 운영 구성의 재현·자동시작·복귀 준비로 이동",
+    "sha256": {
+      "data/runtime/p52_time_pipeline_20261012/input_hashes.json": "bcb5a7d80f67e54762a8b1f2f465363223afc2d0db963ebbf863dc259ec73b1b",
+      "data/runtime/p52_time_pipeline_20261012/source_before.json": "22e94e9bade347ed6f964a39637dffde9247f05341925e06d10103f0a7efc24b",
+      "data/runtime/p52_time_pipeline_20261012/metrics_before.json": "6a996b5774ed27ec1f65e50c091b7d69c70970dfce7a7df4e5a0f10cc65aeb95",
+      "data/runtime/p52_time_pipeline_20261012/operating_after.json": "26b823889ad38a40a51ae57d10af833a00de695fb4cc1aab9e113518785edd0d",
+      "data/runtime/p52_time_pipeline_20261012/operating_recovery.json": "3a299460dd20b07163f4d5783055e4b220c961b23ea512c37e2e81143e528027",
+      "data/runtime/p52_time_pipeline_20261012/image_verification.json": "f3fe2b6e74c847299ec2ad7da067646ccd79da41e28c60b83d8a0d148ce2339a",
+      "data/runtime/p52_time_pipeline_20261012/trial_interruption.json": "1efe4b7b95f4978635a8fa1f324471cd8865df42f55966ddaedca2be65cc01db",
+      "data/runtime/p52_time_pipeline_20261012/operating_samples.jsonl": "cc33e19e8b892fa59156b7cead9ea3aaa2de572c48da959975b047f0cd48ef30",
+      "data/runtime/p52_time_pipeline_20261012/operating_before.json": "26b823889ad38a40a51ae57d10af833a00de695fb4cc1aab9e113518785edd0d",
+      "data/runtime/p52_time_pipeline_20261012/operating_recovery_summary.json": "7c3c6c78517c79e6e6297ba768d06cc1a24d05de5fdf44b405f1ec8dcfe2e7c3",
+      "data/runtime/p52_time_pipeline_20261012/run_result.json": "553d6675e6c1e605a20c300de31e772bd2e7bbd042658829f240dbeaa300dee9",
+      "data/runtime/p52_time_pipeline_20261012/metrics_during.jsonl": "2c7018c8cb69db2c673b2f6ffc4047bba9efa5e30e92798409ef1b03eebcc148"
+    }
+  }
+}

@@ -1,0 +1,373 @@
+{
+  "version": "0.114",
+  "date": "2026-10-06 KST",
+  "wbs": "P5.1 IN_PROGRESS",
+  "scope": "Korean comment/docstring and dead-wrapper cleanup complete. Isolated candidate video/storage/recovery/shutdown pass; overall RF gate remains FAILED (I51 OPEN).",
+  "cleanup": {
+    "remaining_executable_ast_equal": true,
+    "removed_unused_wrapper": "DeepStreamProcessor._fall_shadow_event_id",
+    "preserved_callback": "_log_tensor_probe_waiting",
+    "updated_docstrings": [
+      "module",
+      "_on_pad_probe",
+      "_publish_loop"
+    ]
+  },
+  "removed_lines_net": 55,
+  "policy": "AGENTS.md: comments/docstrings written or updated in Korean; clean touched scope and check direct, callback and string references before deletion.",
+  "review": {
+    "reviewer": "candidate_verification_review",
+    "critical": 0,
+    "important": 0,
+    "comments": "호출 없는 래퍼 제거·기존 콜백 보존·설명 정확성 확인. 의도한 삭제와 docstring을 제외한 실행 AST 동일.",
+    "independent_tests_run": false,
+    "integration_review": "영상/저장·복구·종료는 통과, RF/전체 판정 false 유지가 타당. 67.05~69.05초는 원 경보 수락→RF 함수 진입의 관측 추정 구간이며 큐 대기/퇴거 원인 확정이 아님. no_pose_records는 참조한 인물·프레임 부재로 전체 버퍼가 비었다는 뜻이 아님."
+  },
+  "related_tests": {
+    "tests": 282,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 2,
+    "passed": 280
+  },
+  "prior_full_regression": {
+    "evidence": "fall_publish_refactor_20261006.json",
+    "passed": 2797,
+    "skipped": 52,
+    "note": "v113 two configured testpaths, not a new full run in v114."
+  },
+  "candidate_image": "sha256:6659d1b86db437f45ef52cb8235a6b63a38b11ef65ca043de9da04aca1206512",
+  "source_files_matched": 206,
+  "boundary_checks": {
+    "stored_and_id_hash_matched": 40,
+    "database_integrity": "ok",
+    "fall_queue_cases": [
+      {
+        "event_queue_full": false,
+        "detected": 1,
+        "dropped": 0,
+        "repeat_suppressed": true
+      },
+      {
+        "event_queue_full": true,
+        "detected": 0,
+        "dropped": 1,
+        "repeat_suppressed": true
+      }
+    ],
+    "external_transmission": false,
+    "passed": true
+  },
+  "integration": {
+    "runner_pass": true,
+    "operating_unchanged": true,
+    "videos": {
+      "result.mkv": {
+        "probe_exit": 0,
+        "probe_error_empty": true,
+        "metadata": {
+          "programs": [],
+          "streams": [
+            {
+              "codec_name": "h264",
+              "width": 1920,
+              "height": 1080
+            }
+          ],
+          "format": {
+            "duration": "60.200000"
+          }
+        },
+        "decode_exit": 0,
+        "decoded_frames": 1335,
+        "decode_error_empty": true,
+        "sha256": "8aaece4fb7e5ef1d1f1c661b98d2bf270de55fa5a88cca9b5cca46e83cf6391e",
+        "passed": true
+      },
+      "result-after.mkv": {
+        "probe_exit": 0,
+        "probe_error_empty": true,
+        "metadata": {
+          "programs": [],
+          "streams": [
+            {
+              "codec_name": "h264",
+              "width": 1920,
+              "height": 1080
+            }
+          ],
+          "format": {
+            "duration": "60.336000"
+          }
+        },
+        "decode_exit": 0,
+        "decoded_frames": 1389,
+        "decode_error_empty": true,
+        "sha256": "e0432c54cd402b81c8f6a7153493743d3965bbf81ed64b1b8b3666f4ba9bf998",
+        "passed": true
+      }
+    },
+    "databases": {
+      "appearances.db": {
+        "integrity": "ok",
+        "counts": {
+          "search_conditions": 0,
+          "appearance_log": 532503
+        },
+        "row_deltas": {
+          "search_conditions": 0,
+          "appearance_log": 57
+        }
+      },
+      "mqtt_event_outbox.db": {
+        "integrity": "ok",
+        "counts": {
+          "mqtt_event_outbox": 174683
+        },
+        "row_deltas": {
+          "mqtt_event_outbox": 64
+        }
+      },
+      "commercial_faces.db": {
+        "integrity": "ok",
+        "counts": {
+          "face_persons": 1,
+          "face_samples": 1
+        },
+        "row_deltas": {
+          "face_persons": 0,
+          "face_samples": 0
+        }
+      }
+    },
+    "generations": {
+      "1": {
+        "primary": 1060,
+        "pose": 0,
+        "attributes": 1060,
+        "helmet": 1060
+      },
+      "3": {
+        "primary": 1101,
+        "pose": 0,
+        "attributes": 1101,
+        "helmet": 1101
+      }
+    },
+    "model_counts": {
+      "event.person": 6506,
+      "pose_events": 2169,
+      "pose_scope_assigned": 2169,
+      "face_request.calls": 324,
+      "face_opencv.calls": 324,
+      "tcn_verify.calls": 12,
+      "face_opencv.returned": 324,
+      "face_opencv.no_face_returned": 324,
+      "face_request.returned": 324,
+      "face_request.no_face_returned": 324,
+      "color_result.calls": 529,
+      "color_runtime.calls": 529,
+      "color_runtime.returned": 529,
+      "color_result.returned": 529,
+      "color_result.color": 400,
+      "python_attribute.calls": 324,
+      "python_attribute.returned": 324,
+      "python_attribute.empty": 324,
+      "synthetic_fall.attempts": 52,
+      "color_result.below_threshold": 129,
+      "synthetic_fall.accepted": 2,
+      "tcn_verify.returned": 12,
+      "tcn_verify.insufficient_pose_frames": 1,
+      "rf_verify.calls": 2,
+      "rf_verify.returned": 2,
+      "rf_verify.incompatible_feature_contract": 1,
+      "tcn_verify.ok": 11,
+      "rf_verify.no_pose_records": 1
+    },
+    "rf_verify_calls": 2,
+    "final_stats": {
+      "frames_processed": 4337,
+      "events_detected": 64,
+      "events_failed": 64,
+      "inference_errors": 0,
+      "context_tasks_failed": 0,
+      "model_metrics_errors": 0,
+      "primary_metrics_errors": 0
+    },
+    "after_recovery_model_deltas": {
+      "event.person": 3123,
+      "pose_events": 1041,
+      "pose_scope_assigned": 1041,
+      "face_request.calls": 154,
+      "face_opencv.calls": 154,
+      "tcn_verify.calls": 3,
+      "face_opencv.returned": 154,
+      "face_opencv.no_face_returned": 154,
+      "face_request.returned": 154,
+      "face_request.no_face_returned": 154,
+      "color_result.calls": 258,
+      "color_runtime.calls": 258,
+      "color_runtime.returned": 258,
+      "color_result.returned": 258,
+      "color_result.color": 193,
+      "python_attribute.calls": 154,
+      "python_attribute.returned": 154,
+      "python_attribute.empty": 154,
+      "synthetic_fall.attempts": 22,
+      "color_result.below_threshold": 65,
+      "synthetic_fall.accepted": 1,
+      "tcn_verify.returned": 4,
+      "tcn_verify.insufficient_pose_frames": 0,
+      "rf_verify.calls": 1,
+      "rf_verify.returned": 1,
+      "rf_verify.incompatible_feature_contract": 0,
+      "tcn_verify.ok": 4,
+      "rf_verify.no_pose_records": 1
+    },
+    "after_recovery_db_deltas": {
+      "appearance_log": 27,
+      "mqtt_event_outbox": 31
+    },
+    "observed_model_gate": true,
+    "storage_gate": true,
+    "shadow_rf": {
+      "injections": [
+        {
+          "camera": "replay_1",
+          "scope": {
+            "camera_id": "replay_1",
+            "object_id": 250976654459928576,
+            "generation": 1,
+            "frame_index": 116
+          },
+          "audit_id": "replay_1:1",
+          "monotonic": 1747273.561767344,
+          "original_has_shadow_marker": false,
+          "model_generation": 1
+        },
+        {
+          "camera": "replay_1",
+          "scope": {
+            "camera_id": "replay_1",
+            "object_id": 2666115959902699520,
+            "generation": 3,
+            "frame_index": 104
+          },
+          "audit_id": "replay_1:3",
+          "monotonic": 1747415.185083977,
+          "original_has_shadow_marker": false,
+          "model_generation": 3
+        }
+      ],
+      "outbox_count_by_audit_id": {
+        "replay_1:1": 1,
+        "replay_1:3": 1
+      },
+      "original_payload_has_shadow_marker": false,
+      "verify_calls": 2,
+      "verify_returned": 2,
+      "incompatible_results": 1,
+      "metrics": {
+        "enabled": true,
+        "cameras": {
+          "replay_1": {
+            "requests": 2,
+            "unavailable_results": 2,
+            "cache_hits": 0
+          }
+        }
+      },
+      "review_results": [
+        {
+          "status": "incompatible_feature_contract",
+          "scope": {
+            "camera_id": "replay_1",
+            "frame_index": 116,
+            "generation": 1,
+            "object_id": 250976654459928576
+          }
+        }
+      ]
+    },
+    "shadow_rf_recording_gate": false,
+    "source_files_match": true,
+    "passed": false
+  },
+  "overall_candidate_verdict": "PARTIAL: original RF gate failed; not approved for deployment.",
+  "rf_delay_observation": {
+    "scope": "Post-recovery RF attempt after synthetic alert; original RF gate remains FAILED.",
+    "injected_at": 1747415.185083977,
+    "last_sample_before_rf_call": 1747482.234891914,
+    "first_sample_with_rf_call": 1747484.237907422,
+    "estimated_admission_delay_seconds": [
+      67.0498079371173,
+      69.05282344506122
+    ],
+    "result": "no_pose_records",
+    "original_alert_count": 1,
+    "rf_returned": true,
+    "possible_cause": "Shared FIFO worker processes temporal comparison and review/clip work ahead of RF; bounded Pose record may disappear before queued candidate is checked. Exact enqueue/dequeue timing and eviction not instrumented in this run.",
+    "product_changes_after_image_build": false
+  },
+  "recovery_seconds": 23.920211035991088,
+  "stop_seconds": 6.043197060935199,
+  "private_artifacts": "data/runtime/p51_cleanup_integration_20261006_v114",
+  "limits": [
+    "No operating deployment or physical output; network none, isolated seed database copies.",
+    "GPU replay uses legacy outbox; common IngestStore uses a separate in-image 40-record concurrency check.",
+    "Synthetic fall candidates retain real Pose scopes; not a fall accuracy evaluation.",
+    "Selected RF remains incompatible_feature_contract with predict0; I37 is not resolved.",
+    "Post-recovery RF call appears67.05–69.05s after accepted synthetic alert and returns no_pose_records. Exact queue entry/dequeue and record eviction were not instrumented; shared temporal/review work is a candidate cause (I51 OPEN).",
+    "Original I40/I34 and I45 sustained/inter-process conditions remain OPEN."
+  ],
+  "artifacts_sha256": {
+    "related.xml": "ea30a8e731f871db5e3715730cfe40c16893be5384fb573f6396024036066e54",
+    "cleanup_check.json": "34e1f71bc06ec2accb483979eae8c4f8fe8926ab1dd4eb540ed09878c55bfea8",
+    "source_manifest.json": "0c7341bfcdb1bb32db3d0e30184df629cfc2ca862aed921131fc4d988fcd2f18",
+    "new_image_manifest.json": "0c7341bfcdb1bb32db3d0e30184df629cfc2ca862aed921131fc4d988fcd2f18",
+    "trial_results.json": "1e406745d02b5c3e211cd97ae9ad12d73099c115f41168516d50146c52cec7a4",
+    "validation.json": "c7014a14eeef96c49abf539b5bfbf2d7247551619b73206f77c6b333b24c3cd3",
+    "preflight.json": "c31c4bb748f96b58ee187b42cf00282ca2fc7945de9a06d48fb82cd2205407aa",
+    "review.json": "2a436192ef729cc7ac396a20c2d7500709f5f61891209f0a5f010aefa57019e7",
+    "check_boundaries.py": "0b22001f4e15c3358f852d2775b638304aec580f22551c3c0d8c9b09819de4c1",
+    "rf_delay_observation.json": "81097c3c1c74cef6932c70982b139e43be4a40ea4ab64496f06bb664731e28e3",
+    "document_validation.json": "b93910afb1438fe4039ae3190ce13c5c1f045018bb09bbeb9b8de1d541d1cdbc",
+    "publication.json": "307e28cead0ae072d776be63c844e7ed5d68cd88e9dc8615070b9eceba169f03",
+    "output_recovery/output/boundary/result.json": "7d4f0fd271c0fe06e3b5c56570ece9425049dc1a42c4f4269877ac329217018a"
+  },
+  "publication": [
+    {
+      "file": "index.html",
+      "status": 200,
+      "bytes": 24283,
+      "sha256": "a3d7a6ccd9e30b69420b33caf830b8b3119878733a7610b291bc81bf914af061",
+      "remote_matches_local": true
+    },
+    {
+      "file": "CCTV_project_progress.pdf",
+      "status": 200,
+      "bytes": 128843,
+      "sha256": "051db84fc051bf95330a8bf18f769c4828e2491b0cd54a274e7409402e50ea69",
+      "remote_matches_local": true
+    }
+  ],
+  "document_validation": {
+    "changed_product_files": [
+      "src/core/deepstream_processor.py"
+    ],
+    "image_source_files_matched": 206,
+    "wbs_rows": 33,
+    "counts": {
+      "DONE": 9,
+      "BLOCKED": 3,
+      "PLANNED": 13,
+      "VERIFY": 7,
+      "IN_PROGRESS": 1
+    },
+    "candidate_overall_pass": false,
+    "rf_gate_pass": false,
+    "next_issue": "I51 OPEN"
+  },
+  "lint": "Ruff PASS",
+  "pdf_first_page": "visually checked; no clipping"
+}

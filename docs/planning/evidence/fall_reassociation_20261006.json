@@ -1,0 +1,342 @@
+{
+  "version": "0.106",
+  "date": "2026-10-06 KST",
+  "wbs": "P5.1",
+  "issues": {
+    "I47": "FIXED_LOCAL (test time dependency)",
+    "I48": "FIXED_LOCAL (DeepStream bbox forwarding); operating validation pending"
+  },
+  "operating_applied": false,
+  "raw_artifacts": "data/runtime/i47_debounce_clock_20261006_v106",
+  "scope": "Pass the existing DetectionEvent to common EventDebouncer in DeepStream. Freeze only the debouncer clock in fall tests; no runtime clock, thresholds, model, SDK, API or DB changes.",
+  "timing_reproduction": {
+    "original": {
+      "exit_code": 0,
+      "injected_min_sleep": 0.0,
+      "sleeps": [
+        {
+          "requested": 0.06,
+          "measured": 0.0601160591468215
+        }
+      ],
+      "calls": [
+        {
+          "result": false,
+          "last_seen": [
+            [
+              [
+                "cam1",
+                1
+              ],
+              1791249458.9230692
+            ]
+          ],
+          "first_seen": [
+            [
+              [
+                "cam1",
+                1
+              ],
+              1791249458.9230692
+            ]
+          ]
+        },
+        {
+          "result": true,
+          "last_seen": [
+            [
+              [
+                "cam1",
+                2
+              ],
+              1791249458.9837866
+            ]
+          ],
+          "first_seen": [
+            [
+              [
+                "cam1",
+                2
+              ],
+              1791249458.9230692
+            ]
+          ]
+        }
+      ],
+      "observed_call_gap_seconds": 0.06071734428405762
+    },
+    "delayed_original": {
+      "exit_code": 1,
+      "injected_min_sleep": 0.26,
+      "sleeps": [
+        {
+          "requested": 0.06,
+          "measured": 0.261431799037382
+        }
+      ],
+      "calls": [
+        {
+          "result": false,
+          "last_seen": [
+            [
+              [
+                "cam1",
+                1
+              ],
+              1791249485.5784492
+            ]
+          ],
+          "first_seen": [
+            [
+              [
+                "cam1",
+                1
+              ],
+              1791249485.5784492
+            ]
+          ]
+        },
+        {
+          "result": false,
+          "last_seen": [
+            [
+              [
+                "cam1",
+                1
+              ],
+              1791249485.5784492
+            ],
+            [
+              [
+                "cam1",
+                2
+              ],
+              1791249485.8405495
+            ]
+          ],
+          "first_seen": [
+            [
+              [
+                "cam1",
+                1
+              ],
+              1791249485.5784492
+            ],
+            [
+              [
+                "cam1",
+                2
+              ],
+              1791249485.8405495
+            ]
+          ]
+        }
+      ],
+      "observed_call_gap_seconds": 0.2621002197265625
+    },
+    "fixed_test_with_sleep_injector": {
+      "exit_code": 0,
+      "injected_min_sleep": 0.26,
+      "sleeps": [],
+      "calls": [
+        {
+          "result": false,
+          "last_seen": [
+            [
+              [
+                "cam1",
+                1
+              ],
+              1000000.0
+            ]
+          ],
+          "first_seen": [
+            [
+              [
+                "cam1",
+                1
+              ],
+              1000000.0
+            ]
+          ]
+        },
+        {
+          "result": true,
+          "last_seen": [
+            [
+              [
+                "cam1",
+                2
+              ],
+              1000000.06
+            ]
+          ],
+          "first_seen": [
+            [
+              [
+                "cam1",
+                2
+              ],
+              1000000.0
+            ]
+          ]
+        }
+      ],
+      "observed_call_gap_seconds": 0.060000000055879354
+    },
+    "caveat": "The fixed test does not call sleep: calls are at explicitly controlled times. The historical v0.104 failing call gap was not captured, so its exact timing remains unknown."
+  },
+  "validation": {
+    "normal_before": {
+      "passed": 1,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 5.429,
+      "failures": []
+    },
+    "delayed_before": {
+      "passed": 0,
+      "failed": 1,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 5.662,
+      "failures": [
+        {
+          "test": "tests.test_processor_stats.TestEventDebouncer::test_fall_detected_reassociates_changed_object_id_by_bbox",
+          "message": "AssertionError: assert False is True\n +  where False = observe('cam1', 'fall_detected', 2, event=DetectionEvent(type=fall_detected, bbox=(105,103,120,70), conf=0.90, id=2))\n +    where observe = <src.core.event_debouncer.EventDebouncer object at 0xfffefd085360>.should_send"
+        }
+      ]
+    },
+    "delayed_after": {
+      "passed": 1,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 5.531,
+      "failures": []
+    },
+    "new_boundaries_and_adapter_red": {
+      "passed": 14,
+      "failed": 1,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 23.115,
+      "failures": [
+        {
+          "test": "tests.test_deepstream_processor::test_deepstream_fall_reassociation_controls_queue_and_cooldown[near_new_id]",
+          "message": "AssertionError: assert False is True\n +  where False = _enqueue_event(DetectionEvent(type=fall_detected, bbox=(105,103,120,70), conf=0.90, id=2), 'fallback_cam')\n +    where _enqueue_event = <src.core.deepstream_processor.DeepStreamProcessor object at 0xffff14858790>._enqueue_event"
+        }
+      ]
+    },
+    "targeted": {
+      "passed": 190,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 2,
+      "seconds": 8.819,
+      "failures": []
+    },
+    "targeted_skips": "2 CPU/Windows-only absence-of-DeepStream tests skipped because DeepStream is installed",
+    "full": {
+      "passed": 2767,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 52,
+      "seconds": 246.906,
+      "failures": []
+    },
+    "ruff": "PASS product and three test files",
+    "review": "Same common gate covers normal queue and auxiliary-confirmation entry. Event forwarding restores existing bbox/cooldown behavior; no production timing policy changed."
+  },
+  "coverage": [
+    "same/changed ID: sustained below/equal/above and gap equal/exceeded (10 cases)",
+    "real DeepStream event queue: same ID, nearby changed ID, distant ID, expired candidate, other camera (5 cases)",
+    "after successful enqueue, another ID change preserves alert cooldown over a fresh sustained-duration window"
+  ],
+  "interpretation": [
+    "Original sleep(0.06) assumes the next call arrives before a 0.2s gap limit. Injected measured sleep >0.26s reproduces assertion failure while production reset behavior matches its configured policy.",
+    "DeepStream adapter omitted event=event; unlike OpenCV, common reassociation never received a bounding box. A real queue test fails with same-position changed ID before the fix.",
+    "Existing bbox matching and cooldown rules are reused. This does not establish real-video fall accuracy or an encoder/DB contention fix."
+  ],
+  "source_hashes": {
+    "src/core/deepstream_processor.py": {
+      "workspace": "c87267c9731246a937a4c7c6fede3788bfb14dcd88d92c21da7b205a43e96336",
+      "snapshot": "c87267c9731246a937a4c7c6fede3788bfb14dcd88d92c21da7b205a43e96336"
+    },
+    "src/core/event_debouncer.py": {
+      "workspace": "3bb53ac70a747daeb8fdd6710e38a3688e252abfe2608339ae1ad1cd7a62a4f8",
+      "snapshot": "3bb53ac70a747daeb8fdd6710e38a3688e252abfe2608339ae1ad1cd7a62a4f8"
+    },
+    "src/core/_inference_pipeline.py": {
+      "workspace": "4fb469761f2f2f1ba4108ef0c63697cc7374ee9581af49d447f3094863d4aeb4",
+      "snapshot": "4fb469761f2f2f1ba4108ef0c63697cc7374ee9581af49d447f3094863d4aeb4"
+    },
+    "tests/conftest.py": {
+      "workspace": "7e232a20d1023ca802f6ed9e4ad389ca606944b00b381e1841f64e693d289d6a",
+      "snapshot": "7e232a20d1023ca802f6ed9e4ad389ca606944b00b381e1841f64e693d289d6a"
+    },
+    "tests/test_processor_stats.py": {
+      "workspace": "844befb523fffc0eea2624e6e5b23c7a998c2db22452768f248acec6a119cb7d",
+      "snapshot": "844befb523fffc0eea2624e6e5b23c7a998c2db22452768f248acec6a119cb7d"
+    },
+    "tests/test_deepstream_processor.py": {
+      "workspace": "6c292f4ebca37c9eb71113779ee2cd6840fbb91ffa098f37a40a385802f8edfb",
+      "snapshot": "6c292f4ebca37c9eb71113779ee2cd6840fbb91ffa098f37a40a385802f8edfb"
+    },
+    "src/sensor_record.py": {
+      "workspace": "977871465e31d788b6aedcfbe9a65383cf467a823c7235b661db0752dda133a9",
+      "snapshot": "977871465e31d788b6aedcfbe9a65383cf467a823c7235b661db0752dda133a9"
+    },
+    "src/bootstrap/runtime.py": {
+      "workspace": "93eb6bdf2755b2d6346707870cb065e5e8d208590eb45e856f8b99d66038daca",
+      "snapshot": "93eb6bdf2755b2d6346707870cb065e5e8d208590eb45e856f8b99d66038daca"
+    }
+  },
+  "files_sha256": {
+    "delayed_before.json": "6ca07a49e93cd326604a07c4cbc022fb1aba9dd0a766a27e6d216fdb975f3194",
+    "delayed_after.log": "725c4dad32583c9a21789df2467cf1943ef78bd61e5470fdfbe05fe020f1e574",
+    "delayed_before.log": "5236b39a755b92a90404dd8e1e7c45a6b2eb720ab394b91acdf55e6121874420",
+    "source_hashes.json": "7001deed0bd9421a8a0c80f1886218ac4764a00b8040b3395a088de2c32e3fc6",
+    "red.xml": "1de2849a54ce0ad1fc4be3200089b391b8afc952c511dde13a1f4e8b6516238b",
+    "normal_before.xml": "7e594bcab5dbd71fdae7a8cea291c702c6743002f060f035163ed201edd04315",
+    "targeted.xml": "4815f6dc74e11e31a2a9893c6dfb17f8d147847ae8349cb7fdc6dfc2da01c716",
+    "delayed_after.json": "099c7918f578078d1be40b126cdd92298009b4e2ca69eac2eab33b8d0e14c2c2",
+    "delayed_before.xml": "05ea4ffa0b1f01b4fc893b95a742a9237e500aa3959eacc20cf23da5b7f9c751",
+    "observe_timing.py": "0b2885d938acd2a3d6c22a781196e17b31d6e02b49142cf3d60e36b3304aed12",
+    "delayed_after.xml": "74da763f87812cf51c202f7a7a026be2e922bd7a535174083b23411a58898cf3",
+    "normal_before.json": "efa13c32960e4f7386a9673a48d998631666b88fc9cf83206989c2747d922053",
+    "targeted.log": "615b67a85620d646181ac2e9f5be2e58caeb4ade63e206cdac636c7ef6b5d643",
+    "normal_before.log": "16837449b47392b49eaa92d117bcb66cdafdbf24ab67d2317c9c1355071a9711",
+    "red.log": "acd4b6be98ff86b400e9633c60da4003f1b5eda88b48c96805de0a407a491eb5",
+    "full.log": "4ccb929929be61f4c69115633c04472bf7e72b701e6e8df219c84b20b72d496b",
+    "full.xml": "683856cedacb68a823e7dfe81ba2dd3754120922c21986fce8fc7aa096fd36db"
+  },
+  "publication": {
+    "version": "0.106",
+    "url": "http://192.168.2.141:18081/",
+    "files": {
+      "index.html": {
+        "bytes": 24274,
+        "sha256": "e1aa6ca1ef85fc474e0d6697f2bcdbdd2177b8266ade3f44cee06237398f20ad",
+        "http_matches": true
+      },
+      "CCTV_project_progress.pdf": {
+        "bytes": 127607,
+        "sha256": "c0e8a5ba79361ff2ba14e30bf7d2e646886230724d7af0decc5e734baa62ae8e",
+        "http_matches": true
+      }
+    },
+    "visual_check": "first-page PNG inspected; no clipping",
+    "wbs_check": "33 WBS IDs/states/counts match",
+    "ruff": "PASS product/test/renderer",
+    "diff_check": "PASS"
+  },
+  "operating_check": {
+    "name": "cctv-ai-engine",
+    "status": "running/healthy",
+    "started_at": "2026-10-02T01:33:58.362007997Z",
+    "image": "sha256:1ace5b7832a50d6675b66146b0edc307021795732fc7c9a770e2cd628d7fd261",
+    "restarted": false
+  }
+}

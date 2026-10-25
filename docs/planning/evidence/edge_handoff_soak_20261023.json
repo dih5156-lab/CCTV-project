@@ -1,0 +1,628 @@
+{
+  "date": "2026-10-23",
+  "status": "PASS_DURABILITY_AND_FENCING_WITH_4_EXPIRED_RESULTS",
+  "scope": "O4 manual handoff plus 30-minute result timing/freshness and durable backlog observation",
+  "physical_jetson_b_tested": false,
+  "requested_seconds": 1800,
+  "source_sha256": {
+    "tests/test_edge_full_pipeline.py": "c2e5cf7b0f014b766f8fbb461835139dd5b2f32d3f55ee1eb09248c51a6dca5a"
+  },
+  "preflight": {
+    "seconds": 120,
+    "session_id": 6565,
+    "junit": "/tmp/edge-handoff-soak-preflight-20261023.xml",
+    "state": "PASS",
+    "suite": {
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "tests": "1",
+      "time": "183.849",
+      "timestamp": "2026-10-23T00:54:47.021394+09:00",
+      "hostname": "ubuntu"
+    },
+    "reconciliation": {
+      "jetson-a": {
+        "node_originals": 447,
+        "central_originals": 447,
+        "missing_or_changed": 0,
+        "accepted_video_records": 384,
+        "video_raw_states": {
+          "accepted": 384
+        }
+      },
+      "jetson-b": {
+        "node_originals": 393,
+        "central_originals": 393,
+        "missing_or_changed": 0,
+        "accepted_video_records": 349,
+        "video_raw_states": {
+          "accepted": 349
+        }
+      }
+    },
+    "phases": [
+      {
+        "owner": "jetson-a",
+        "seconds": 60.346434089995455,
+        "consumed": 261,
+        "stale_observed": true
+      },
+      {
+        "owner": "jetson-b",
+        "seconds": 61.27584559400566,
+        "consumed": 212,
+        "stale_observed": true
+      }
+    ],
+    "expired": 0,
+    "timing_records": 840,
+    "timing": {
+      "outside_recorded_broker_stop": {
+        "count": 778,
+        "p50": 0.8959701061248779,
+        "p95": 2.099315643310547,
+        "max": 16.33819580078125
+      },
+      "captured_during_recorded_broker_stop": {
+        "count": 62,
+        "p50": 10.375764608383179,
+        "p95": 13.481138229370117,
+        "max": 14.347643852233887
+      },
+      "scope": "Single-host fixture timing; includes preparation/retired-result decisions, not an end-to-end CCTV latency measurement"
+    }
+  },
+  "limits": [
+    "AI/engine/metrics are fixtures; not B GPU performance",
+    "Stored raw intake remaining on a stopped node is reported separately from central delivery",
+    "Short-run expiry absence does not resolve older 30-minute expiry observations"
+  ],
+  "started_at": "2026-10-22T15:57:07.800749+00:00",
+  "long_run": {
+    "started_at": "2026-10-22T15:59:56.458243+00:00",
+    "requested_seconds": 1800,
+    "root": "/media/sawwave/Learning11/CCTV-project/.edge-handoff-soak-ml5mhfdp/long",
+    "junit": "/tmp/edge-handoff-soak-long-20261023.xml",
+    "test_sha256": "22f12ab4c40da117e2147407fefe4ba568372f739a04fb39a5e4b19a03c4c987",
+    "session_id": 73626,
+    "pytest_pid": 3188479,
+    "pressure_monitor_session_id": 78864,
+    "last_observed_at": 1792685174.4147406,
+    "samples": 249,
+    "observer_notes": [
+      "Kernel /proc/pressure files unavailable; initial observer retained diskstats only",
+      "Switched to /proc/stat/loadavg/meminfo/diskstats; first stop attempt did not match resolved Python path and was corrected; record continuity must be checked"
+    ],
+    "state": "TERMINAL_EXIT_0",
+    "suite": {
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "tests": "1",
+      "time": "1882.755",
+      "timestamp": "2026-10-23T00:59:53.684040+09:00",
+      "hostname": "ubuntu"
+    },
+    "phases": [
+      {
+        "owner": "jetson-a",
+        "seconds": 900.8044324890361,
+        "consumed": 3129,
+        "stale_observed": true
+      },
+      {
+        "owner": "jetson-b",
+        "seconds": 900.1405629700166,
+        "consumed": 3150,
+        "stale_observed": true
+      }
+    ],
+    "faults": [
+      {
+        "node": "jetson-a",
+        "kind": "agent_stop",
+        "at": 1792685059.5112092
+      },
+      {
+        "node": "jetson-a",
+        "kind": "agent_restart",
+        "at": 1792685081.1253426
+      },
+      {
+        "node": "jetson-b",
+        "kind": "agent_stop",
+        "at": 1792685964.719001
+      },
+      {
+        "node": "jetson-b",
+        "kind": "agent_restart",
+        "at": 1792685987.0188944
+      },
+      {
+        "kind": "broker_stop",
+        "at": 1792686324.7526348
+      },
+      {
+        "kind": "broker_restart",
+        "at": 1792686337.122132
+      }
+    ],
+    "reconciliation": {
+      "jetson-a": {
+        "node_originals": 3722,
+        "central_originals": 3722,
+        "missing_or_changed": 0,
+        "accepted_video_records": 3293,
+        "video_raw_states": {
+          "accepted": 3293
+        }
+      },
+      "jetson-b": {
+        "node_originals": 3651,
+        "central_originals": 3651,
+        "missing_or_changed": 0,
+        "accepted_video_records": 3247,
+        "video_raw_states": {
+          "accepted": 3247
+        }
+      }
+    },
+    "diagnostics": {
+      "driver_storage_read_retries": 0,
+      "processes": {
+        "jetson-b-agent": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "handoff-1": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "handoff-repeat": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "handoff-failed": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "jetson-b-supervisor": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "jetson-a-supervisor": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "handoff-0": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "handoff-2": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "handoff-resumed": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "jetson-a-agent-restarted": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "jetson-a-agent": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "handoff-interrupted": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "controller": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        },
+        "jetson-b-agent-restarted": {
+          "database_locked": 0,
+          "storage_failures": 0,
+          "storage_read_retries": 0,
+          "metrics_timeouts": 0
+        }
+      }
+    },
+    "transitions": [
+      {
+        "target": "jetson-a",
+        "seconds": 14.954839051002637
+      },
+      {
+        "target": "jetson-b",
+        "seconds": 3.9382211880292743
+      },
+      {
+        "target": "jetson-a",
+        "seconds": 5.053268261021003
+      }
+    ],
+    "retained_intake_pending": 0
+  },
+  "live_retained_intake": {
+    "observed_at": 1792686147.462595,
+    "owner": "jetson-b",
+    "stopped_node": "jetson-a",
+    "handoff_completed_at": 1792685738.4544342,
+    "stop_previous_sent_at": 1792685738.1389012,
+    "pending": [
+      {
+        "ingest_id": "ing_a095a9bf5c4f4a82bf233e1ccae36507",
+        "received_at": "2026-10-22T16:15:38.336229+00:00",
+        "attempts": 0,
+        "last_error": null,
+        "event_id": "3d8e2f0c-8bb6-44cc-87ea-8df07f03f702",
+        "edge": {
+          "activation_id": "063ff16f-6d06-4096-a5cb-0a3e90888ce1",
+          "assignment_id": "0cbffd38-9c9d-4c00-bb4a-6eeb865a3f27",
+          "camera_id": "camera_1",
+          "captured_at": "2026-10-22T16:15:38.307761+00:00",
+          "epoch": 1,
+          "event_sequence": 3623,
+          "expires_at": "2026-10-22T16:16:08.307761+00:00",
+          "node_id": "jetson-a",
+          "session_id": "829a16ba-3566-467a-a6d6-2ae1511757de",
+          "supervisor_boot_id": "d1c8f35d-15d3-43ae-82ba-cefc41c6c6c7"
+        },
+        "in_node_outbox": 0
+      }
+    ]
+  },
+  "assignment_timeline_observed": [
+    {
+      "assignment_id": "0cbffd38-9c9d-4c00-bb4a-6eeb865a3f27",
+      "epoch": 1,
+      "node_id": "jetson-a",
+      "state": "retired",
+      "prepared_at": 1792684819.2256954,
+      "activated_at": 1792684832.5814164
+    },
+    {
+      "assignment_id": "dfe9fe4f-0727-41c9-bec9-6d0ba4c9b167",
+      "epoch": 2,
+      "node_id": "jetson-b",
+      "state": "active",
+      "prepared_at": 1792685735.0986147,
+      "activated_at": 1792685737.0365777
+    }
+  ],
+  "assignment_timeline_observed_at": 1792686333.83462,
+  "completed_at": "2026-10-22T16:37:21.276547+00:00",
+  "results": {
+    "central_originals": 7373,
+    "accepted_video_records": 6540,
+    "central_decisions": [
+      [
+        "jetson-a",
+        "event",
+        "accepted",
+        "current_owner",
+        3215
+      ],
+      [
+        "jetson-a",
+        "event",
+        "rejected",
+        "expired",
+        1
+      ],
+      [
+        "jetson-a",
+        "event",
+        "rejected",
+        "inactive_execution",
+        46
+      ],
+      [
+        "jetson-a",
+        "event",
+        "rejected",
+        "not_current_owner",
+        31
+      ],
+      [
+        "jetson-a",
+        "observation",
+        "observed",
+        "preparation_sample",
+        417
+      ],
+      [
+        "jetson-a",
+        "observation",
+        "rejected",
+        "current_owner",
+        6
+      ],
+      [
+        "jetson-a",
+        "observation",
+        "rejected",
+        "inactive_execution",
+        3
+      ],
+      [
+        "jetson-a",
+        "observation",
+        "rejected",
+        "not_current_owner",
+        3
+      ],
+      [
+        "jetson-b",
+        "event",
+        "accepted",
+        "current_owner",
+        3173
+      ],
+      [
+        "jetson-b",
+        "event",
+        "rejected",
+        "expired",
+        3
+      ],
+      [
+        "jetson-b",
+        "event",
+        "rejected",
+        "inactive_execution",
+        3
+      ],
+      [
+        "jetson-b",
+        "event",
+        "rejected",
+        "not_current_owner",
+        68
+      ],
+      [
+        "jetson-b",
+        "observation",
+        "observed",
+        "preparation_sample",
+        396
+      ],
+      [
+        "jetson-b",
+        "observation",
+        "rejected",
+        "current_owner",
+        7
+      ],
+      [
+        "jetson-b",
+        "observation",
+        "rejected",
+        "not_current_owner",
+        1
+      ]
+    ],
+    "expired": [
+      {
+        "event_id": "a3140f13-a224-4490-87f7-d0fa1b7b8d20",
+        "node_id": "jetson-b",
+        "assignment_id": "dfe9fe4f-0727-41c9-bec9-6d0ba4c9b167",
+        "session_id": "ffc22498-aab0-49b6-9f96-b163a7a42d30",
+        "kind": "event",
+        "captured_at": 1792686325.039436,
+        "received_at": 1792686355.5203998,
+        "expires_at": 1792686355.039436,
+        "capture_to_receive_seconds": 30.480963706970215,
+        "decision": "rejected",
+        "reason": "expired"
+      },
+      {
+        "event_id": "b3a753cc-d598-472f-9190-cc75f600e974",
+        "node_id": "jetson-b",
+        "assignment_id": "dfe9fe4f-0727-41c9-bec9-6d0ba4c9b167",
+        "session_id": "ffc22498-aab0-49b6-9f96-b163a7a42d30",
+        "kind": "event",
+        "captured_at": 1792686325.288002,
+        "received_at": 1792686355.5761569,
+        "expires_at": 1792686355.288002,
+        "capture_to_receive_seconds": 30.28815484046936,
+        "decision": "rejected",
+        "reason": "expired"
+      },
+      {
+        "event_id": "64532a41-7c97-4149-94c5-e1f04e252728",
+        "node_id": "jetson-b",
+        "assignment_id": "dfe9fe4f-0727-41c9-bec9-6d0ba4c9b167",
+        "session_id": "ffc22498-aab0-49b6-9f96-b163a7a42d30",
+        "kind": "event",
+        "captured_at": 1792686325.534088,
+        "received_at": 1792686355.6468637,
+        "expires_at": 1792686355.534088,
+        "capture_to_receive_seconds": 30.112775802612305,
+        "decision": "rejected",
+        "reason": "expired"
+      },
+      {
+        "event_id": "3d8e2f0c-8bb6-44cc-87ea-8df07f03f702",
+        "node_id": "jetson-a",
+        "assignment_id": "0cbffd38-9c9d-4c00-bb4a-6eeb865a3f27",
+        "session_id": "829a16ba-3566-467a-a6d6-2ae1511757de",
+        "kind": "event",
+        "captured_at": 1792685738.307761,
+        "received_at": 1792686639.9712996,
+        "expires_at": 1792685768.307761,
+        "capture_to_receive_seconds": 901.6635386943817,
+        "decision": "rejected",
+        "reason": "expired"
+      }
+    ],
+    "expired_stopped_old_assignment": 1,
+    "expired_during_broker_recovery": 3,
+    "inference_real_time_pass": false
+  },
+  "retained_intake_recovery": {
+    "tracked_event_id": "3d8e2f0c-8bb6-44cc-87ea-8df07f03f702",
+    "last_observation": {
+      "at": 1792686671.4542046,
+      "assignments": [
+        [
+          "0cbffd38-9c9d-4c00-bb4a-6eeb865a3f27",
+          1,
+          "jetson-a",
+          "retired",
+          1792684819.2256954,
+          1792684832.5814164
+        ],
+        [
+          "dfe9fe4f-0727-41c9-bec9-6d0ba4c9b167",
+          2,
+          "jetson-b",
+          "retired",
+          1792685735.0986147,
+          1792685737.0365777
+        ],
+        [
+          "afd417ad-3c7c-4f0b-b300-42f5d960de43",
+          3,
+          "jetson-a",
+          "retired",
+          1792686639.1736612,
+          1792686642.1380875
+        ],
+        [
+          "1811b57a-8f76-4dda-9563-3f8642f3951b",
+          4,
+          "jetson-b",
+          "aborted",
+          1792686644.4870832,
+          null
+        ],
+        [
+          "90408b8e-940c-450b-824a-35b52cf6bfa3",
+          5,
+          "jetson-b",
+          "active",
+          1792686666.7390528,
+          1792686668.900217
+        ]
+      ],
+      "central_receipt": [
+        "3d8e2f0c-8bb6-44cc-87ea-8df07f03f702",
+        "69d58d643352c26ee12079df2e83acaa9de70ade9fb0cf2073bdb871a503a420",
+        "rejected",
+        "expired",
+        1792686639.9712996,
+        1792685768.307761
+      ],
+      "intake": [
+        "accepted",
+        0,
+        null
+      ],
+      "outbox": [
+        "committed",
+        "69d58d643352c26ee12079df2e83acaa9de70ade9fb0cf2073bdb871a503a420",
+        null
+      ]
+    },
+    "same_node_central_sha256": true,
+    "explanation": "Captured after B became active but before A stopped; raw intake remained on stopped A, then same ID/hash was forwarded on A restart and rejected as expired. Not resurrected as a new assignment."
+  },
+  "observer_quality": {
+    "valid_rows": 354,
+    "malformed_rows_excluded": 1,
+    "cpu_memory_rows": 134,
+    "pressure_files_available": false,
+    "read_timeouts_in_lifecycle_observer": 18,
+    "limit": "Observers are read-only but add IO; CPU/memory fallback starts partway through B interval. One malformed row during observer replacement is retained raw and excluded from analysis."
+  },
+  "archive": {
+    "path": "docs/planning/evidence/edge_handoff_soak_20261023_telemetry.tar.gz",
+    "sha256": "b82a174d325d0110236021540ff43825ecdb9d791952267f1dc211df4dd58ff6",
+    "bytes": 569063
+  },
+  "source_bundle": {
+    "path": "docs/planning/evidence/edge_b_o4_sources_20261023.tar.gz",
+    "sha256": "ce5d861cc145fca559fda7478b4767a4bd56b45fa808153422472ee919182f8b",
+    "scope": "Product code fixed for this run; post-activation recovery fixes not applied yet"
+  },
+  "remaining": [
+    "Three current-owner video results expired during broker recovery; retry scheduling and reconnection timing need diagnosis; do not claim old 76-expiry issue solved",
+    "Post-activation cases corrected in edge_handoff_recovery_20261023.json (122PASS); corrected30-minute repeat pending",
+    "New B integrated GPU run and automatic decision/ROS2 remain unverified"
+  ],
+  "cleanup": {
+    "private_root_removed": true,
+    "test_brokers_remaining": 0,
+    "test_and_observer_pids_remaining": 0
+  },
+  "operating_observation": {
+    "at": "2026-10-22T16:38:16.544804+00:00",
+    "same_37_container_ids_start_times_states_restart_counts": true,
+    "metrics": {
+      "cctv_processor_frames_processed_total": 8622458.0,
+      "cctv_processor_source_error_identified_total": 0.0,
+      "cctv_processor_pipeline_restart_executed_total": 0.0
+    }
+  },
+  "documentation_checks": {
+    "wbs_rows": 37,
+    "done": 9,
+    "local_links": 1995,
+    "product_source_bundle_unchanged_during_soak": true,
+    "test_source_unchanged_during_soak": true,
+    "http": [
+      {
+        "file": "index.html",
+        "http": 200,
+        "sha256": "0589e94006832e164f34d0c4b709d7abdc51b3af3473551bfdda030bcb2e0af0"
+      },
+      {
+        "file": "CCTV_project_progress.pdf",
+        "http": 200,
+        "sha256": "555b8fb81675160359ee05547b4c1179a035b4240642a0ebff27238a5198ae9a"
+      }
+    ],
+    "ruff": "PASS",
+    "pdf_first_page_visual": "PASS"
+  },
+  "retry_scheduling_hypothesis": {
+    "status": "REPRODUCED_FIXED_ISOLATED_CAUSAL_ATTRIBUTION_OPEN",
+    "code": "edge_result_context.enqueue initializes last_attempt=0; pending orders last_attempt,rowid",
+    "hypothesis": "continuous new items may postpone retries of previously attempted items during broker recovery",
+    "next": "Repeat long run after retry correction; old expiry causes are not all proven",
+    "resolution": "docs/planning/evidence/edge_handoff_recovery_20261023.json"
+  }
+}

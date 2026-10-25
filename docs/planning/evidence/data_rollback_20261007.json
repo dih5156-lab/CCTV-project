@@ -1,0 +1,674 @@
+{
+  "version": "0.134",
+  "date": "2026-10-07",
+  "private_artifacts": "data/runtime/p51_data_rollback_20261007_v134",
+  "plan_before_run": {
+    "candidate_image": "sha256:d5a223fd222a1d06b57e55b2a5fad8fc3ca37c3f40076fc0f0559aeccc36e0be",
+    "rollback_image": "sha256:1ace5b7832a50d6675b66146b0edc307021795732fc7c9a770e2cd628d7fd261",
+    "rollback_code": "data/runtime/p51_restore_20261001_v092/bundle/code",
+    "database_source": "data/runtime/p51_fixed_candidate_20261007_v133/output_recovery/data/runtime",
+    "sequence": [
+      "before snapshot and new private DB",
+      "candidate 90s observation and 60s video",
+      "candidate snapshot",
+      "rollback on same DB 90s observation and 60s video",
+      "rollback snapshot",
+      "candidate event duplicate through rollback API"
+    ],
+    "acceptance_before_run": {
+      "startup_seconds_max": 150,
+      "output_ready_seconds_max": 20,
+      "stop_seconds_max": 30,
+      "existing_row_loss_max": 0,
+      "business_value_changes_max": 0,
+      "per_stage_new_outbox_rows_min": 1,
+      "decode_error_count_max": 0,
+      "integrity": "ok",
+      "operating_unchanged": true
+    },
+    "limitations": [
+      "보존된 v0.88 디스크 코드이며 현재 운영 메모리 코드 동등성 미검증",
+      "실제 운영 전환·장시간·새 Jetson 설치 시험 아님",
+      "EdgeX/외부 관제·장치 전달은 시험하지 않음"
+    ]
+  },
+  "validation": {
+    "stages": {
+      "candidate": {
+        "runner_pass": true,
+        "stop_seconds": 1.9706823828164488,
+        "elapsed_seconds": 108.409812833881,
+        "video": {
+          "metadata": {
+            "programs": [],
+            "streams": [
+              {
+                "codec_name": "h264",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "format": {
+              "duration": "60.359000"
+            }
+          },
+          "decode_exit": 0,
+          "decoded_frames": 1720,
+          "decode_error_bytes": 0,
+          "sha256": "06651b6571eaa9bbccc5d4084abb5fab011fb02da536d30a3417d1d8c5dcf41e",
+          "passed": true,
+          "duration_seconds": 60.359
+        },
+        "observed_seconds": 89.185,
+        "processed_frame_delta": 2684.0,
+        "progress_observed": true,
+        "cuda_errors": 0,
+        "callback_tracebacks": 0,
+        "expected_engine_loaded": true,
+        "new_rows": 11,
+        "passed": true
+      },
+      "rollback": {
+        "runner_pass": true,
+        "stop_seconds": 2.595642762957141,
+        "elapsed_seconds": 117.53753518499434,
+        "video": {
+          "metadata": {
+            "programs": [],
+            "streams": [
+              {
+                "codec_name": "h264",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "format": {
+              "duration": "60.487000"
+            }
+          },
+          "decode_exit": 0,
+          "decoded_frames": 1573,
+          "decode_error_bytes": 0,
+          "sha256": "5f33e8280d9225d420f15c6172e94e5d0504ae9920403b8651e40974fc848ffb",
+          "passed": true,
+          "duration_seconds": 60.487
+        },
+        "observed_seconds": 89.83399999999999,
+        "processed_frame_delta": 2349.0,
+        "progress_observed": true,
+        "cuda_errors": 0,
+        "callback_tracebacks": 0,
+        "expected_engine_loaded": true,
+        "new_rows": 32,
+        "passed": true
+      }
+    },
+    "deployed": false,
+    "operating_unchanged": true,
+    "databases": {
+      "before": {
+        "phase": "before",
+        "databases": {
+          "appearances.db": {
+            "integrity": "ok",
+            "tables": {
+              "appearance_log": {
+                "rows": 532446,
+                "all_rows_sha256": "f290ca675def3c575d12ccf5e42de2fc7d4daab671fb56ff4e07cafba993246c",
+                "columns": [
+                  "id",
+                  "event_id",
+                  "timestamp",
+                  "camera_id",
+                  "track_id",
+                  "upper_color",
+                  "lower_color",
+                  "has_helmet",
+                  "helmet_color",
+                  "has_backpack",
+                  "has_handbag",
+                  "has_suitcase",
+                  "gender",
+                  "age_group",
+                  "face_name",
+                  "attribute_backend",
+                  "crop_path",
+                  "bbox_x",
+                  "bbox_y",
+                  "bbox_w",
+                  "bbox_h",
+                  "attribute_metadata",
+                  "track_id_text"
+                ]
+              },
+              "search_conditions": {
+                "rows": 0,
+                "all_rows_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "columns": [
+                  "id",
+                  "name",
+                  "payload",
+                  "enabled",
+                  "created_at"
+                ]
+              }
+            }
+          },
+          "mqtt_event_outbox.db": {
+            "integrity": "ok",
+            "tables": {
+              "mqtt_event_outbox": {
+                "rows": 174707,
+                "all_rows_sha256": "62e8412f5bf173e7125e76e0593a2ddad70abec9c7d0d3a4c2bbb33b27eb65b7",
+                "columns": [
+                  "id",
+                  "event_id",
+                  "destination_name",
+                  "topic",
+                  "payload_json",
+                  "status",
+                  "created_at_ms",
+                  "last_attempt_ms",
+                  "sent_at_ms",
+                  "retry_count",
+                  "last_error"
+                ]
+              }
+            },
+            "status_counts": {
+              "pending": 972,
+              "sent": 173735
+            },
+            "duplicate_event_destination_groups": 0
+          },
+          "commercial_faces.db": {
+            "integrity": "ok",
+            "tables": {
+              "face_persons": {
+                "rows": 1,
+                "all_rows_sha256": "2305a0edfb22f656b9daf5fabe5cfbd349686fd02db27d787bd1be6cbe7d8609",
+                "columns": [
+                  "person_id",
+                  "name",
+                  "phone",
+                  "category",
+                  "active",
+                  "model_id",
+                  "created_at"
+                ]
+              },
+              "face_samples": {
+                "rows": 1,
+                "all_rows_sha256": "92fb587c6731124b35faa1ac79b6e45815b5b8bcf8fe6fedaf7700f1a480e8b1",
+                "columns": [
+                  "sample_id",
+                  "person_id",
+                  "image_path",
+                  "embedding",
+                  "dimension",
+                  "model_id",
+                  "created_at"
+                ]
+              }
+            }
+          }
+        },
+        "comparison": {},
+        "passed": true
+      },
+      "candidate": {
+        "phase": "candidate",
+        "databases": {
+          "appearances.db": {
+            "integrity": "ok",
+            "tables": {
+              "appearance_log": {
+                "rows": 532446,
+                "all_rows_sha256": "f290ca675def3c575d12ccf5e42de2fc7d4daab671fb56ff4e07cafba993246c",
+                "columns": [
+                  "id",
+                  "event_id",
+                  "timestamp",
+                  "camera_id",
+                  "track_id",
+                  "upper_color",
+                  "lower_color",
+                  "has_helmet",
+                  "helmet_color",
+                  "has_backpack",
+                  "has_handbag",
+                  "has_suitcase",
+                  "gender",
+                  "age_group",
+                  "face_name",
+                  "attribute_backend",
+                  "crop_path",
+                  "bbox_x",
+                  "bbox_y",
+                  "bbox_w",
+                  "bbox_h",
+                  "attribute_metadata",
+                  "track_id_text"
+                ]
+              },
+              "search_conditions": {
+                "rows": 0,
+                "all_rows_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "columns": [
+                  "id",
+                  "name",
+                  "payload",
+                  "enabled",
+                  "created_at"
+                ]
+              }
+            }
+          },
+          "mqtt_event_outbox.db": {
+            "integrity": "ok",
+            "tables": {
+              "mqtt_event_outbox": {
+                "rows": 174718,
+                "all_rows_sha256": "7f1a5bb453ae7015ef06b3e0c103837b6347eedea7b41bcebfb5fb17a3b41100",
+                "columns": [
+                  "id",
+                  "event_id",
+                  "destination_name",
+                  "topic",
+                  "payload_json",
+                  "status",
+                  "created_at_ms",
+                  "last_attempt_ms",
+                  "sent_at_ms",
+                  "retry_count",
+                  "last_error"
+                ]
+              }
+            },
+            "status_counts": {
+              "pending": 983,
+              "sent": 173735
+            },
+            "duplicate_event_destination_groups": 0
+          },
+          "commercial_faces.db": {
+            "integrity": "ok",
+            "tables": {
+              "face_persons": {
+                "rows": 1,
+                "all_rows_sha256": "2305a0edfb22f656b9daf5fabe5cfbd349686fd02db27d787bd1be6cbe7d8609",
+                "columns": [
+                  "person_id",
+                  "name",
+                  "phone",
+                  "category",
+                  "active",
+                  "model_id",
+                  "created_at"
+                ]
+              },
+              "face_samples": {
+                "rows": 1,
+                "all_rows_sha256": "92fb587c6731124b35faa1ac79b6e45815b5b8bcf8fe6fedaf7700f1a480e8b1",
+                "columns": [
+                  "sample_id",
+                  "person_id",
+                  "image_path",
+                  "embedding",
+                  "dimension",
+                  "model_id",
+                  "created_at"
+                ]
+              }
+            }
+          }
+        },
+        "comparison": {
+          "appearances.db": {
+            "search_conditions": {
+              "prior_rows_compared": 0,
+              "missing_or_reordered_rows": 0,
+              "changed_fields": {},
+              "forbidden_value_changes": 0,
+              "retry_count_decreases": 0,
+              "added_columns": [],
+              "new_rows": 0
+            },
+            "appearance_log": {
+              "prior_rows_compared": 532446,
+              "missing_or_reordered_rows": 0,
+              "changed_fields": {},
+              "forbidden_value_changes": 0,
+              "retry_count_decreases": 0,
+              "added_columns": [],
+              "new_rows": 0
+            }
+          },
+          "mqtt_event_outbox.db": {
+            "mqtt_event_outbox": {
+              "prior_rows_compared": 174707,
+              "missing_or_reordered_rows": 0,
+              "changed_fields": {},
+              "forbidden_value_changes": 0,
+              "retry_count_decreases": 0,
+              "added_columns": [],
+              "new_rows": 11
+            }
+          },
+          "commercial_faces.db": {
+            "face_persons": {
+              "prior_rows_compared": 1,
+              "missing_or_reordered_rows": 0,
+              "changed_fields": {},
+              "forbidden_value_changes": 0,
+              "retry_count_decreases": 0,
+              "added_columns": [],
+              "new_rows": 0
+            },
+            "face_samples": {
+              "prior_rows_compared": 1,
+              "missing_or_reordered_rows": 0,
+              "changed_fields": {},
+              "forbidden_value_changes": 0,
+              "retry_count_decreases": 0,
+              "added_columns": [],
+              "new_rows": 0
+            }
+          }
+        },
+        "passed": true
+      },
+      "rollback": {
+        "phase": "rollback",
+        "databases": {
+          "appearances.db": {
+            "integrity": "ok",
+            "tables": {
+              "appearance_log": {
+                "rows": 532473,
+                "all_rows_sha256": "cbc5b3ef8b9d57a35ccc186d5cb950b807503d68fdb28ce07d529d0b81025f27",
+                "columns": [
+                  "id",
+                  "event_id",
+                  "timestamp",
+                  "camera_id",
+                  "track_id",
+                  "upper_color",
+                  "lower_color",
+                  "has_helmet",
+                  "helmet_color",
+                  "has_backpack",
+                  "has_handbag",
+                  "has_suitcase",
+                  "gender",
+                  "age_group",
+                  "face_name",
+                  "attribute_backend",
+                  "crop_path",
+                  "bbox_x",
+                  "bbox_y",
+                  "bbox_w",
+                  "bbox_h",
+                  "attribute_metadata",
+                  "track_id_text"
+                ]
+              },
+              "search_conditions": {
+                "rows": 0,
+                "all_rows_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "columns": [
+                  "id",
+                  "name",
+                  "payload",
+                  "enabled",
+                  "created_at"
+                ]
+              }
+            }
+          },
+          "mqtt_event_outbox.db": {
+            "integrity": "ok",
+            "tables": {
+              "mqtt_event_outbox": {
+                "rows": 174750,
+                "all_rows_sha256": "b72988db94184bb8664d299675c4d0327c214c9c5ff110e66b2f70a2e39b92b3",
+                "columns": [
+                  "id",
+                  "event_id",
+                  "destination_name",
+                  "topic",
+                  "payload_json",
+                  "status",
+                  "created_at_ms",
+                  "last_attempt_ms",
+                  "sent_at_ms",
+                  "retry_count",
+                  "last_error"
+                ]
+              }
+            },
+            "status_counts": {
+              "pending": 1015,
+              "sent": 173735
+            },
+            "duplicate_event_destination_groups": 0
+          },
+          "commercial_faces.db": {
+            "integrity": "ok",
+            "tables": {
+              "face_persons": {
+                "rows": 1,
+                "all_rows_sha256": "2305a0edfb22f656b9daf5fabe5cfbd349686fd02db27d787bd1be6cbe7d8609",
+                "columns": [
+                  "person_id",
+                  "name",
+                  "phone",
+                  "category",
+                  "active",
+                  "model_id",
+                  "created_at"
+                ]
+              },
+              "face_samples": {
+                "rows": 1,
+                "all_rows_sha256": "92fb587c6731124b35faa1ac79b6e45815b5b8bcf8fe6fedaf7700f1a480e8b1",
+                "columns": [
+                  "sample_id",
+                  "person_id",
+                  "image_path",
+                  "embedding",
+                  "dimension",
+                  "model_id",
+                  "created_at"
+                ]
+              }
+            }
+          }
+        },
+        "comparison": {
+          "appearances.db": {
+            "search_conditions": {
+              "prior_rows_compared": 0,
+              "missing_or_reordered_rows": 0,
+              "changed_fields": {},
+              "forbidden_value_changes": 0,
+              "retry_count_decreases": 0,
+              "added_columns": [],
+              "new_rows": 0
+            },
+            "appearance_log": {
+              "prior_rows_compared": 532446,
+              "missing_or_reordered_rows": 0,
+              "changed_fields": {},
+              "forbidden_value_changes": 0,
+              "retry_count_decreases": 0,
+              "added_columns": [],
+              "new_rows": 27
+            }
+          },
+          "mqtt_event_outbox.db": {
+            "mqtt_event_outbox": {
+              "prior_rows_compared": 174718,
+              "missing_or_reordered_rows": 0,
+              "changed_fields": {},
+              "forbidden_value_changes": 0,
+              "retry_count_decreases": 0,
+              "added_columns": [],
+              "new_rows": 32
+            }
+          },
+          "commercial_faces.db": {
+            "face_persons": {
+              "prior_rows_compared": 1,
+              "missing_or_reordered_rows": 0,
+              "changed_fields": {},
+              "forbidden_value_changes": 0,
+              "retry_count_decreases": 0,
+              "added_columns": [],
+              "new_rows": 0
+            },
+            "face_samples": {
+              "prior_rows_compared": 1,
+              "missing_or_reordered_rows": 0,
+              "changed_fields": {},
+              "forbidden_value_changes": 0,
+              "retry_count_decreases": 0,
+              "added_columns": [],
+              "new_rows": 0
+            }
+          }
+        },
+        "passed": true
+      }
+    },
+    "duplicate": {
+      "same_returned_row": true,
+      "all_business_rows_unchanged": true,
+      "rows_before": 174750,
+      "rows_after": 174750,
+      "payload_sha256": "55d5165bef6b09871554d7f59595edc08170803e9733a2a738f5518694ad65d1",
+      "implementation_sha256": "7982bda5f635e1d3892d69b420cd7e4e25ee98b3ff72854e0623065aefdf438f",
+      "scope": "existing candidate-created event through rollback outbox API; no broker delivery"
+    },
+    "duplicate_pass": true,
+    "initial_rows": 707155,
+    "candidate_rows_preserved": 11,
+    "all_rows_compared_at_rollback": 707166,
+    "candidate_source_match": true,
+    "rollback_code_match": true,
+    "rollback_files": 351,
+    "rollback_entrypoint_match": true,
+    "duplicate_implementation_match": true,
+    "deployment_files_unchanged": true,
+    "same_db_path": true,
+    "passed": true
+  },
+  "total_video_frames": 3293,
+  "operating_unchanged": true,
+  "deployed": false,
+  "source_files": 206,
+  "next": "P5.1: 고정 최소 후보의 1채널 30분 격리 연속 운전으로 프레임 진행·이벤트 저장·메모리·재시작을 관찰한다. 운영 전환/재부팅·실물2/4대·모델 품질 검증은 별도로 유지한다.",
+  "validation_clarifications": [
+    "독립 검토 후 영상60초 목표의 조기 EOF를 막기 위해 실제 길이>=59초 확인",
+    "90초 관측의 표본 간격>=85초·프레임 증가 확인",
+    "이미지 안 app 진입점3개와 보존본 해시 대조"
+  ],
+  "limitations": [
+    "보존된 v0.88 디스크 코드 조합이며 현재 운영 메모리 코드 동등성 미검증",
+    "network:none이지만 Jetson GPU와 읽기 전용 X11 소켓은 호스트 공유",
+    "후보/복귀의 모델·환경이 달라 속도 인과 비교로 사용하지 않음",
+    "기존 AI DB3종만 검사; EdgeX/관제 DB·이미지 파일 보존은 별도",
+    "오프라인 MQTT의 outbox 저장·재접수이며 실제 전송/장치 exactly-once 미검증",
+    "정상 SIGTERM·짧은 재생이며 강제 크래시·장시간·운영 전환·새 장비 설치 합격 아님"
+  ],
+  "sha256": {
+    "data/runtime/p51_data_rollback_20261007_v134/audit_state.py": "e1abeb55455c41dbf776441ead6833584577cdfbffa6ca1564baa9332a8db11b",
+    "data/runtime/p51_data_rollback_20261007_v134/candidate/compose.json": "1f433baf3fba6d67c246a4ff8ff18bfaf41ac2ef82768e53d69440d7894bfdef",
+    "data/runtime/p51_data_rollback_20261007_v134/candidate/output/decode.progress": "4e1a74e3ebd20870f2521f168ca98d00d83ee5f8eed189775f211027ebcdcf28",
+    "data/runtime/p51_data_rollback_20261007_v134/candidate/output/decode.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "data/runtime/p51_data_rollback_20261007_v134/candidate/output/experiment.json": "b1cc5ddee343f268bc6ca1d9f28950c1d72b3331f8dc2274ebc1c8e4a20ee286",
+    "data/runtime/p51_data_rollback_20261007_v134/candidate/output/result.mkv": "06651b6571eaa9bbccc5d4084abb5fab011fb02da536d30a3417d1d8c5dcf41e",
+    "data/runtime/p51_data_rollback_20261007_v134/candidate/output/samples.jsonl": "c5f10738f49aa2e19cbe76f9681212842b816102fc8f8d447d976a2ff764d682",
+    "data/runtime/p51_data_rollback_20261007_v134/candidate_command.json": "0b28d6ff778bf5679f67bef5a6cb682a65f51edbd2db89f06065f8b760b57e87",
+    "data/runtime/p51_data_rollback_20261007_v134/candidate_image_verification.json": "f3fe2b6e74c847299ec2ad7da067646ccd79da41e28c60b83d8a0d148ce2339a",
+    "data/runtime/p51_data_rollback_20261007_v134/checker_selfcheck.json": "8ee463d25348f0a0aa50751f887af9f4458927852f02390b9d45ada1915c6c11",
+    "data/runtime/p51_data_rollback_20261007_v134/compose_probe.json": "e180c6a3b12c74a08212f34bff3b0e663deb46ae263a0fec0bb5570428c0b018",
+    "data/runtime/p51_data_rollback_20261007_v134/observe_models.py": "8e36a311c5f561bee404cca70f11413656cb9a9f2d3e546e2a835fb02bd55e85",
+    "data/runtime/p51_data_rollback_20261007_v134/operating_after.json": "112a123eac71df356a30bc2de214f99db23f70a1a476daa39ef95e6650c4aa31",
+    "data/runtime/p51_data_rollback_20261007_v134/operating_before.json": "112a123eac71df356a30bc2de214f99db23f70a1a476daa39ef95e6650c4aa31",
+    "data/runtime/p51_data_rollback_20261007_v134/operating_file_hashes.json": "030194d038aa37c6535baa6a620f60563605fa1a1c716315974fb23a7c52b9a6",
+    "data/runtime/p51_data_rollback_20261007_v134/plan.json": "47109abbf31c51f337c856081543bd3a3e31c32cd16beb74596c9479f004cae8",
+    "data/runtime/p51_data_rollback_20261007_v134/probe_duplicate.py": "93a2efb748860a7512d394709133dbd659b1b0172d3ac4702c9078904d1f38a5",
+    "data/runtime/p51_data_rollback_20261007_v134/reports/before_db.json": "538a3072e5f78eb2a649943501d88b5e614c2196e03b4b61ae3867b6c87f2675",
+    "data/runtime/p51_data_rollback_20261007_v134/reports/candidate_db.json": "24d00a3a6f3d06fd58fc4f95f5bf3c7d346417909f226e81993814da8056247a",
+    "data/runtime/p51_data_rollback_20261007_v134/reports/rollback_db.json": "4350e1ccb36a76db94cd5d70f56bf458d2636abb27ed65a9551852350738dab8",
+    "data/runtime/p51_data_rollback_20261007_v134/rollback/compose.json": "d613e8165d618589bfb16b5152f31c0901fa2f0cf72b3ca8721fdc59f81a0b8d",
+    "data/runtime/p51_data_rollback_20261007_v134/rollback/output/decode.progress": "ab2f3e3d2ed25d26d2958baab30328666ac5c7d10eccbc588471dadd6f78fd99",
+    "data/runtime/p51_data_rollback_20261007_v134/rollback/output/decode.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "data/runtime/p51_data_rollback_20261007_v134/rollback/output/duplicate_probe.json": "e1b0a296bcfb527cd0be0ab656b2743a7e3141a7919d7aeba7ad74dc440a2837",
+    "data/runtime/p51_data_rollback_20261007_v134/rollback/output/experiment.json": "21ac13b12df20a4b093c4c412d99a897dc8596b9b233ce51b6ff4ec13ef7b2ca",
+    "data/runtime/p51_data_rollback_20261007_v134/rollback/output/result.mkv": "5f33e8280d9225d420f15c6172e94e5d0504ae9920403b8651e40974fc848ffb",
+    "data/runtime/p51_data_rollback_20261007_v134/rollback/output/samples.jsonl": "cd4e1c5ab35401924b6b2b420d46da1f81e54b05148da09a51a86df713b2a3e7",
+    "data/runtime/p51_data_rollback_20261007_v134/rollback_app_image_check.json": "656313d3343579eb6d2f7685760bb024ad267072a21c410659aa25ad0db995cd",
+    "data/runtime/p51_data_rollback_20261007_v134/rollback_code_manifest.json": "a001c1af0bbfb1ddf9f8f67d5b9e3d573fd4bfefc21d2b070e6b475572b502a0",
+    "data/runtime/p51_data_rollback_20261007_v134/rollback_command.json": "3cf9c82d5f4a116b6bf33711a1f822410592f2c2ace918f834d3b3cb41c264b8",
+    "data/runtime/p51_data_rollback_20261007_v134/run.py": "6b4486a0bfecfa5d6754dd5ed825630aeae85a2e97d5e364a55cee029da6f53c",
+    "data/runtime/p51_data_rollback_20261007_v134/run_transition.py": "2e2ddeb2e175e78bf6b2b4c6780fad9a22aa8da5471aa8ee10440ca9fa18e8fd",
+    "data/runtime/p51_data_rollback_20261007_v134/trial_results.json": "bc7789f19f1a5a53a783eced7832933e1289e6c4f99caa22ad18bdf6398febd8",
+    "data/runtime/p51_data_rollback_20261007_v134/validate.py": "27aa764e1eb02d744f176aab882f582f0b22f26ab93adeed64ca6ee7957b8e5f",
+    "data/runtime/p51_data_rollback_20261007_v134/validation.json": "d0c4e60cc5712ade25038c1c6f096491d11a78668f2f1d034678bbbe8caec752",
+    "data/runtime/p51_data_rollback_20261007_v134/review.json": "5da6463961076cd99d2bb6d75d69b07b0bebe9a63a8ef06b772b03318347480e",
+    "data/runtime/p51_data_rollback_20261007_v134/check_documents.py": "5baae8af4963f72021361f3c1d867d9de8638757706fcf188fa7689f571473b8"
+  },
+  "source_evidence_sha256": {
+    "docs/planning/evidence/fixed_candidate_20261007.json": "dfd933a0a64acfd44fbf77c27ef0daaa78ff9cf62769cd4cf6421928afc1ca0d",
+    "docs/planning/evidence/transition_rollback_20261001.json": "d835add71ff4b188de1cae524057c2657a6cfe50d0b7a80924e698a03fc725f3"
+  },
+  "independent_review": {
+    "reviewer": "data_rollback_review",
+    "remaining_critical": 0,
+    "remaining_important": 0,
+    "resolved_findings": [
+      "단계별 신규 이벤트 저장 조건 강화",
+      "이전 이미지 app 진입점3개와 보존본 해시 확인",
+      "조기 EOF 방지 실제 영상길이 및 관측기간 검사"
+    ],
+    "final_evidence_and_docs_reviewed": true
+  },
+  "document_validation": {
+    "passed": true,
+    "models": 8,
+    "wbs_rows": 33,
+    "wbs_status_unchanged": true,
+    "csv_rows": 8,
+    "html_escaped": true,
+    "evidence_artifacts": 37,
+    "all_eight_model_rows_retained": true,
+    "candidate_trials_pass": 2,
+    "source_files": 206,
+    "operating_unchanged": true,
+    "rollback_scope_separated": true,
+    "deployed": false
+  },
+  "publication": {
+    "index.html": {
+      "http": 200,
+      "bytes": 45522,
+      "local_matches": true,
+      "sha256": "52690475960fd4217d7d0148d76db2a8bec00012c5c92d1d0faa886395808f76"
+    },
+    "CCTV_project_progress.pdf": {
+      "http": 200,
+      "bytes": 146961,
+      "local_matches": true,
+      "sha256": "65a523de53e5c467803988597733e28a2b5001b734d73ff71e75012bd81da978"
+    }
+  },
+  "checks": {
+    "ruff": "PASS",
+    "git_diff_check": "PASS",
+    "pdf_first_page_visual": "PASS",
+    "video_decode": "2 videos / 3293 frames / 0 errors",
+    "database_integrity": "3 databases x 3 snapshots PASS"
+  }
+}

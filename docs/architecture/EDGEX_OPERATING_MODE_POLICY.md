@@ -1,11 +1,31 @@
 # EdgeX 운영 모드 전환 정책
 
+10-12 로컬 후속: MQTT 발행 접수를 `accepted`, 장치 응답 대기를 `pending`으로 구분하고
+실제 장치 응답의 `acknowledged`와 분리했다. 대상별 부분 실패·불확실 상태를 보존하며
+Shadow도 발행 접수만으로 직접 출력과 일치했다고 표시하지 않는다. 관련162 PASS,
+운영 미반영이므로 아래10-08 운영 관측의 과거 `acknowledged` 의미와 구별한다.
+[상태 계약](../devices/EVENT_PAYLOADS.md#5-실행-결과-payload) · [검증 근거](../planning/evidence/action_concurrency_20261012.json)
+
+> **2026-10-08 현재 확인:** 실행 모드는 `edgex`다. AI 이벤트의 Core Data 저장은 확인했지만,
+> 운영 컨테이너에서 `camera_1`의 전광판/스피커/사이렌 대상을 조회하면 모두0개다.
+> 설정은 `cam-01`/`sample_eval`만 연결하며 최신 장치 결과는09-17 시험 기록이다.
+> 다음은 전광판1대의 대상·명령 결과 사전검증이다. 사용자 확인상 전광판·스피커 각1대와
+> 온습도·기울기 센서 시험이 가능하나, 실제 표시/음성·센서 유입은 별도 검증한다.
+> MQTT 발행 성공의 `acknowledged`와 장치 결과 메시지·실제 작동을 구분한다.
+> [현재 근거](../planning/evidence/smartpole_direction_20261008.json) · [작업 순서](../planning/README.md#smartpole-direction-20261008)
+
 > **2026-09-18 현행 대조:** 아래는 Direct 기본값을 전제로 작성된 정책·명령 예시다.
 > 현재 실행은 `edgex`이며 `speaker,signboard,siren`이 허용 목록에 있다.
 > 아래 재생성 명령을 현행 Direct 복구 명령으로 확인한 것은 아니다.
 > 정책·Compose·검사·테스트 정합성은 [I06](../planning/STATUS.md#3-미해결-이슈-대장)으로
 > 관리한다. 현행 계약과 복구 범위를 확인하기 전 이 과거 예시로 운영을 변경하지 않는다.
 > 이번 최신화는 운영 설정 변경이나 미검증 장치의 승인을 뜻하지 않는다.
+
+> **2026-10-06 검사 구분:** 배포 구성 검사의 기본 프로필은 현재 `env_file` 전달과
+> 기록된 `edgex`/`speaker,signboard,siren` 값의 일치 여부를 확인한다.
+> `--edgex-profile direct-rollback`은 아래 과거 Direct 계약을 계속 검사하며,
+> 현재 구성에서는 실패한다. 기본 검사 통과는 Direct 복구·실물 장치 합격을 뜻하지 않는다.
+> [I46 구성 대조 근거](../planning/VIDEO_INFERENCE_CONTRACT.md#deployment-config-v107).
 
 ## 1. 목적
 
@@ -20,9 +40,9 @@
 
 | 모드 | 장치 제어 경로 | 용도 | 현재 판단 |
 |---|---|---|---|
-| Direct | Action Layer → 장치 클라이언트 | 기존 운영 호환, 장애 시 복구 | 기본 운영 모드 |
+| Direct | Action Layer → 장치 클라이언트 | 기존 운영 호환, 장애 시 복구 | 과거 기본 정책. 현재 운영 아님·현행 복구 미검증 |
 | Shadow | Direct 실행 + EdgeX Command 비교 발행 | EdgeX payload·라우팅 사전 검증 | 제한된 시험용 |
-| EdgeX | Action Layer → EdgeX MQTT → Device Service → 장치 | 최종 Edge AIoT 제어 경로 | 전광판 canary 검증 가능 |
+| EdgeX | Action Layer → 프로젝트 MQTT 명령 계약 → Device Service → 장치 | 현재 실행 경로 | camera_1 대상 매핑 누락, 장치별 실물 검증 잔여. Core Data 저장 경로와 구분 |
 
 ## 3. 전환 조건
 

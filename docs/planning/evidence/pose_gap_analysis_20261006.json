@@ -1,0 +1,531 @@
+{
+  "version": "0.119",
+  "date": "2026-10-06 KST",
+  "wbs": "P5.1 IN_PROGRESS",
+  "issue": "I37 OPEN",
+  "decision": "누락 직접단계 확인·medium간격3에서입력개선. 남은지연/정상낙상후보/모델입력변경으로운영승격보류",
+  "scope": "제품코드/운영설정불변·기존2영상7회새격리재생+1회기존대조 재사용. 학습자료확대나새TCN학습아님",
+  "baseline": {
+    "source_frames": 600,
+    "tensor_frames": 300,
+    "pose_frames": 155,
+    "last_pose_frame": 324,
+    "late_tensor_frames": 137,
+    "late_above_threshold_frames": 0,
+    "late_person_validator_calls": 0,
+    "late_final_detections": 0,
+    "late_max_confidence_range": [
+      0.04885616898536682,
+      0.2727990746498108
+    ],
+    "root_cause_boundary": "Pose 모델의 사람 검출 confidence0.5 필터 이전 점수 부족. 후단 사람검증/TCN에서 삭제된 현상이 아님. 구체적 모델 점수 저하 원인은 별도.",
+    "inference_errors": 0,
+    "pipeline_restarts": 0,
+    "operating_unchanged": true
+  },
+  "comparison": {
+    "source_files_unchanged": 206,
+    "operating_unchanged": {
+      "": true,
+      "crop_": true,
+      "medium_": true,
+      "medium_sparse_": true
+    },
+    "trials": [
+      {
+        "mode": "nano_full",
+        "scene": "00837_O_E_BY_C1",
+        "index": 0,
+        "source_frames": 600,
+        "primary_tensor_unique_frames": 300,
+        "pose_unique_frames": 155,
+        "duplicate_pose_callbacks": 0,
+        "last_pose_frame": 324,
+        "late_tensor_frames": 137,
+        "late_pose_frames": 0,
+        "capture_windows": 10,
+        "heuristic_fall_unique_frames": 11,
+        "source_pts_span": 9.993316667,
+        "source_wall_span": 9.993612570222467,
+        "source_span_drift": 0.00029590322246697554,
+        "max_abs_pacing_lag": 0.5212545930708008,
+        "pose_wall_span": 5.001446485519409,
+        "max_pose_source_lag": 0.4678051099181175,
+        "queue_counts": {
+          "submitted": 11,
+          "verify.insufficient_pose_records": 1,
+          "verify.incompatible_feature_contract": 10
+        },
+        "inference_errors": 0,
+        "pipeline_restarts": 0,
+        "frame_drops": 0,
+        "capture_sha256": "fc94f3283093789a643f12fd063703789a55a1bf080012cfaaedda1444f2882a",
+        "timing_sha256": "d978eb490a38db269d6f89a675606b7f0e4cf81a9cd335e2c7dab02200329f05",
+        "provenance_sha256": "bf8df5ee6c50672372597714db7df81b47cbb8da0576d4b2cc7f80bb7e509884",
+        "stage_sha256": "c967e61d01874606ee132362858883318047e041b4d33f185eb1716c4a2d3013"
+      },
+      {
+        "mode": "nano_full",
+        "scene": "00849_O_E_N_C1",
+        "index": 1,
+        "source_frames": 600,
+        "primary_tensor_unique_frames": 300,
+        "pose_unique_frames": 300,
+        "duplicate_pose_callbacks": 0,
+        "last_pose_frame": 598,
+        "late_tensor_frames": 137,
+        "late_pose_frames": 137,
+        "capture_windows": 19,
+        "heuristic_fall_unique_frames": null,
+        "source_pts_span": 9.993316667,
+        "source_wall_span": 9.993391325930133,
+        "source_span_drift": 7.465893013325342e-05,
+        "max_abs_pacing_lag": 0.3080681920215488,
+        "pose_wall_span": 9.648566722869873,
+        "max_pose_source_lag": 0.3576218660455197,
+        "queue_counts": {
+          "submitted": 20,
+          "verify.insufficient_pose_records": 1,
+          "verify.incompatible_feature_contract": 19
+        },
+        "inference_errors": 0,
+        "pipeline_restarts": 0,
+        "frame_drops": 0,
+        "capture_sha256": "d8fd297ec6eb78e169c74d1aeac375c045648899ae3a5d551323a098c6629814",
+        "timing_sha256": "c8bf410228d72c9d4ad9af517c25b30c9c77fc2d778e752e13fd17c83f261d0c",
+        "provenance_sha256": "e4256b72924f492340fbdf8e1d85d3845890644d18dc304162831e16edb90e63",
+        "stage_sha256": null
+      },
+      {
+        "mode": "nano_crop",
+        "scene": "00837_O_E_BY_C1",
+        "index": 0,
+        "source_frames": 600,
+        "primary_tensor_unique_frames": 300,
+        "pose_unique_frames": 124,
+        "duplicate_pose_callbacks": 0,
+        "last_pose_frame": 266,
+        "late_tensor_frames": 137,
+        "late_pose_frames": 0,
+        "capture_windows": 8,
+        "heuristic_fall_unique_frames": 0,
+        "source_pts_span": 9.993316667,
+        "source_wall_span": 11.127081718994305,
+        "source_span_drift": 1.1337650519943043,
+        "max_abs_pacing_lag": 2.3630613341333158,
+        "pose_wall_span": 6.0873122215271,
+        "max_pose_source_lag": 0.29750992311164737,
+        "queue_counts": {
+          "submitted": 9,
+          "verify.insufficient_pose_records": 1,
+          "verify.incompatible_feature_contract": 8
+        },
+        "inference_errors": 0,
+        "pipeline_restarts": 0,
+        "frame_drops": 0,
+        "capture_sha256": "8a7817dd7de030a1bc1b4e37a9e566f496bf4a1623e2e2e02c9bc390bf25aefa",
+        "timing_sha256": "9f097a49753582e15b3da24377005459ae0d102326740b96cbd11f31828c9a4b",
+        "provenance_sha256": "7eed91ac04128ef3d0f068f4019c773bdd24c8295a40f633df9d0a7ff6ebb97f",
+        "stage_sha256": "331908184dee5817be630cc92b0a6500f5df01b6d1be46105c64589bb3abee4c"
+      },
+      {
+        "mode": "nano_crop",
+        "scene": "00849_O_E_N_C1",
+        "index": 1,
+        "source_frames": 600,
+        "primary_tensor_unique_frames": 300,
+        "pose_unique_frames": 266,
+        "duplicate_pose_callbacks": 0,
+        "last_pose_frame": 598,
+        "late_tensor_frames": 137,
+        "late_pose_frames": 137,
+        "capture_windows": 19,
+        "heuristic_fall_unique_frames": 0,
+        "source_pts_span": 9.993316667,
+        "source_wall_span": 14.942391831893474,
+        "source_span_drift": 4.949075164893474,
+        "max_abs_pacing_lag": 4.949075164893474,
+        "pose_wall_span": 14.660959720611572,
+        "max_pose_source_lag": 0.4500980710145086,
+        "queue_counts": {
+          "submitted": 20,
+          "verify.insufficient_pose_records": 1,
+          "verify.incompatible_feature_contract": 19
+        },
+        "inference_errors": 0,
+        "pipeline_restarts": 0,
+        "frame_drops": 0,
+        "capture_sha256": "3811cb5dbc756dcde61d874f7e2201f86f9d3cbd02425f9a9db37898ca97187f",
+        "timing_sha256": "4307df893e7ed688821a3b3e7fff4aeece67c794dc4fb09403e44ab42aac2f99",
+        "provenance_sha256": "c2569ff98319fdc05497474852ea819f99e57cbdd743a7ae2556ecfcf837a1ec",
+        "stage_sha256": "1048b8f252fa6ebb7911c5f19cdb071f444c4e0e818e05dd33eccf9c4cf454b4"
+      },
+      {
+        "mode": "medium_full",
+        "scene": "00837_O_E_BY_C1",
+        "index": 0,
+        "source_frames": 600,
+        "primary_tensor_unique_frames": 300,
+        "pose_unique_frames": 295,
+        "duplicate_pose_callbacks": 1,
+        "last_pose_frame": 598,
+        "late_tensor_frames": 137,
+        "late_pose_frames": 132,
+        "capture_windows": 20,
+        "heuristic_fall_unique_frames": 90,
+        "source_pts_span": 9.993316667,
+        "source_wall_span": 17.41184519394301,
+        "source_span_drift": 7.418528526943009,
+        "max_abs_pacing_lag": 7.418528526943009,
+        "pose_wall_span": 17.203367233276367,
+        "max_pose_source_lag": 0.3280542828142643,
+        "queue_counts": {
+          "submitted": 20,
+          "verify.insufficient_pose_records": 1,
+          "verify.incompatible_feature_contract": 20
+        },
+        "inference_errors": 0,
+        "pipeline_restarts": 0,
+        "frame_drops": 0,
+        "capture_sha256": "962690eec21abc9a6b196c149d818c772d694a5c9ddbe2fc13d72efbd684c5e6",
+        "timing_sha256": "72bf7b040487e24e12860556604657d55912228a21187b7ecb5d0d18a65fe568",
+        "provenance_sha256": "8ee8938b301d8027027528a44f3b2175b9b482c3c8e0a27aee6d39bc25d4392b",
+        "stage_sha256": "13b81d794156ecbc16235fc860b44ce33f64c17ff60c8c8f94abcfb31cc325f3"
+      },
+      {
+        "mode": "medium_full",
+        "scene": "00849_O_E_N_C1",
+        "index": 1,
+        "source_frames": 600,
+        "primary_tensor_unique_frames": 300,
+        "pose_unique_frames": 300,
+        "duplicate_pose_callbacks": 0,
+        "last_pose_frame": 598,
+        "late_tensor_frames": 137,
+        "late_pose_frames": 137,
+        "capture_windows": 19,
+        "heuristic_fall_unique_frames": 4,
+        "source_pts_span": 9.993316667,
+        "source_wall_span": 15.204645313089713,
+        "source_span_drift": 5.211328646089713,
+        "max_abs_pacing_lag": 5.212220492121949,
+        "pose_wall_span": 14.977028846740723,
+        "max_pose_source_lag": 0.32340276800096035,
+        "queue_counts": {
+          "submitted": 20,
+          "verify.insufficient_pose_records": 1,
+          "verify.incompatible_feature_contract": 19
+        },
+        "inference_errors": 0,
+        "pipeline_restarts": 0,
+        "frame_drops": 0,
+        "capture_sha256": "9feca3171788867f8f701f049753c517144544363d9af45be11ffe4de5be435b",
+        "timing_sha256": "d0e8873585b87cad72094cca1a0187c03b86b1cdb8056fd9ab938e3f5fd80cac",
+        "provenance_sha256": "7bc111c29b4e390b4bfc3955f8ea82c7a22fe366d45b5a15f57a5fb73e3cfeea",
+        "stage_sha256": "f21792ae99f1063758a3a14d9c6651cc4944914bb6cf95e9312076ee5083ac37"
+      },
+      {
+        "mode": "medium_sparse",
+        "scene": "00837_O_E_BY_C1",
+        "index": 0,
+        "source_frames": 600,
+        "primary_tensor_unique_frames": 150,
+        "pose_unique_frames": 148,
+        "duplicate_pose_callbacks": 0,
+        "last_pose_frame": 596,
+        "late_tensor_frames": 68,
+        "late_pose_frames": 66,
+        "capture_windows": 18,
+        "heuristic_fall_unique_frames": 44,
+        "source_pts_span": 9.993316667,
+        "source_wall_span": 11.078861708054319,
+        "source_span_drift": 1.0855450410543188,
+        "max_abs_pacing_lag": 1.0895384660878964,
+        "pose_wall_span": 10.744067907333374,
+        "max_pose_source_lag": 0.3804891852196306,
+        "queue_counts": {
+          "submitted": 19,
+          "verify.insufficient_pose_records": 2,
+          "verify.incompatible_feature_contract": 18
+        },
+        "inference_errors": 0,
+        "pipeline_restarts": 0,
+        "frame_drops": 0,
+        "capture_sha256": "d1fee833702ab5b8a634f82a478fa0ff4eecfc996ab72d1e87175378f98f65bd",
+        "timing_sha256": "5b5fb798d5f00ddba86dacf947ac43cc0a609d603a58a26d26fb0817791e0893",
+        "provenance_sha256": "0eebbb2c37411eb01eabdfae8edec22122d9e740ce563a077a1ebb798635dcdd",
+        "stage_sha256": "6f6bfe0a143c78acf17287cb0eeb901cff12a2087978f5369c4e4db40c58ecda"
+      },
+      {
+        "mode": "medium_sparse",
+        "scene": "00849_O_E_N_C1",
+        "index": 1,
+        "source_frames": 600,
+        "primary_tensor_unique_frames": 150,
+        "pose_unique_frames": 150,
+        "duplicate_pose_callbacks": 0,
+        "last_pose_frame": 596,
+        "late_tensor_frames": 68,
+        "late_pose_frames": 68,
+        "capture_windows": 17,
+        "heuristic_fall_unique_frames": 2,
+        "source_pts_span": 9.993316667,
+        "source_wall_span": 10.861345757031813,
+        "source_span_drift": 0.868029090031813,
+        "max_abs_pacing_lag": 0.8753182520635416,
+        "pose_wall_span": 10.5205979347229,
+        "max_pose_source_lag": 0.3719676670152694,
+        "queue_counts": {
+          "submitted": 19,
+          "verify.insufficient_pose_records": 2,
+          "verify.incompatible_feature_contract": 17
+        },
+        "inference_errors": 0,
+        "pipeline_restarts": 0,
+        "frame_drops": 0,
+        "capture_sha256": "cbf5fe2f42e8a8a2d4ac64e7d29fc41d92f38c2d7c2ece89eb126246edda84f1",
+        "timing_sha256": "9c300dbd28325e5574d19f732b6864877f598da08e3c777318d1ceb7448ec9f5",
+        "provenance_sha256": "24c0c63a6e9e36f784b87cce357d39c25c25ce206ca8f033b4897ca8acc74df3",
+        "stage_sha256": "d742114ffcf05445cf8ee9b6652032096ed9c2a0d79404465a6281d9db2b5647"
+      }
+    ],
+    "matched_frames": [
+      {
+        "scene_index": 0,
+        "common_frames": 150,
+        "late_common_frames": 68,
+        "models": {
+          "nano_full": {
+            "pose_frames": 78,
+            "late_pose_frames": 0
+          },
+          "nano_crop": {
+            "pose_frames": 63,
+            "late_pose_frames": 0
+          },
+          "medium_full": {
+            "pose_frames": 148,
+            "late_pose_frames": 66
+          },
+          "medium_sparse": {
+            "pose_frames": 148,
+            "late_pose_frames": 66
+          }
+        }
+      },
+      {
+        "scene_index": 1,
+        "common_frames": 150,
+        "late_common_frames": 68,
+        "models": {
+          "nano_full": {
+            "pose_frames": 150,
+            "late_pose_frames": 68
+          },
+          "nano_crop": {
+            "pose_frames": 133,
+            "late_pose_frames": 68
+          },
+          "medium_full": {
+            "pose_frames": 150,
+            "late_pose_frames": 68
+          },
+          "medium_sparse": {
+            "pose_frames": 150,
+            "late_pose_frames": 68
+          }
+        }
+      }
+    ],
+    "model_assets": {
+      "person/yolov8n.engine": {
+        "sha256": "c2075ac595d71e22701f5c586665228dbd7b935683fb2c27499384cc6694bb96",
+        "bytes": 8872124
+      },
+      "fall/yolov8n-pose.engine": {
+        "sha256": "cc6cd0ee490e4f2ae46acf853989cf8c8806aadab47853e39c1e97cdf6732a74",
+        "bytes": 8956700
+      },
+      "fall/yolov8m-pose.engine": {
+        "sha256": "29c1f210e88971df79b7f6001944aabf4714975d6d572d830347a135d0a98275",
+        "bytes": 56016548
+      }
+    },
+    "scope": "Pose 관측 복구/프레임 및 시각 대조. 관절 정답 정확도·RF/TCN 재학습·경보 품질·운영FPS 검증 아님."
+  },
+  "visual_review": {
+    "status": "대표3프레임 육안 대조 완료",
+    "frames": [
+      360,
+      448,
+      540
+    ],
+    "observation": "bbox와 신뢰도0.5이상 관절이 원본의 매트에 누운 동일 인물에 대응한다. 전수 관절 정답/정량 위치 정확도는 검증하지 않았다.",
+    "remaining_pose_gaps": [
+      {
+        "frame": 424,
+        "max_confidence": 0.4551987051963806,
+        "person_rejected": 0
+      },
+      {
+        "frame": 428,
+        "max_confidence": 0.2407766878604889,
+        "person_rejected": 0
+      }
+    ]
+  },
+  "plan": {
+    "scope": "P5.1/I37 00837 후반 Pose 부재의 단계를 계측하고 확인된 원인에 최소 보완",
+    "source_scene": "00837_O_E_BY_C1",
+    "hypotheses": [
+      "모델 confidence0.5 미달",
+      "사람 자세 검사에서 제거",
+      "후처리 이후 이벤트/Pose 저장에서 누락"
+    ],
+    "diagnostic": "동일 v115후보·원본단회·network none·원본/모델 RO·검출/필터 동작불변. 원시 top20 후보/대표프레임 원시텐서·단계 결과 저장",
+    "operating_change": false,
+    "limit": "원인을 확인하기 전 임계값을 낮추거나 관절을 보간하지 않는다",
+    "intervention": "기존 crop-Pose opt-in 구성만 격리 후보에서 활성·person/Pose confidence0.5 동일·기본30Hz 추론 간격 유지·별도person모델 포함·운영불변",
+    "controls": [
+      "00837 누운 사람 누락",
+      "00849 혼동 정상동작"
+    ],
+    "second_intervention": "기존 정확도 비교용 yolov8m-pose 엔진을 격리 full-frame 후보에서만 적용. 원본·640입력·confidence0.5·간격1·후처리 동일. 누락 영상과 기존 정상동작 대조·외부 재학습/임계값 탐색 없음",
+    "third_intervention": "medium모델이후 source600/10초 입력이17.41초까지늘어 DS_PRIMARY_INTERVAL1→3(약15Hz)만 변경. 동일2영상을분석해 재생시간·누운Pose 유지 확인, confidence0.5 고정"
+  },
+  "review": {
+    "reviewer": "pose_gap_review",
+    "critical": 0,
+    "important": 0,
+    "conclusion": "Pose 부재 직접단계와격리후보입력개선 근거유효·운영승격근거부족",
+    "verified": [
+      "baseline후반137회 전부maxconfidence0.5미만·person검증/최종탐지0",
+      "wrapper 원인자/반환/판정보존·206소스해시일치·모든운영전후불변",
+      "medium 실제엔진역직렬화로그/ROconfig/엔진해시일치",
+      "같은150프레임에서medium전체와간격3의Pose집합일치·148/150·후반66/68",
+      "sparse실제interval3·모든stage threshold0.5·정상150/150",
+      "대표360/448/540의bbox/관절이누운인물몸영역에대응·정량관절평가는아님",
+      "모든비교출력hash일치·추가재생시간1.0855/0.8680초 재계산"
+    ],
+    "minor_addressed": "실제stage threshold·runtime interval·공통프레임집합일치 assert를 audit에 추가",
+    "limits": [
+      "새RF/TCN/경보품질검증아님·기존RF incompatible_feature_contract지속",
+      "정상sparse에서220/252프레임 휴리스틱낙상판정·최종발행오탐과구분",
+      "원본59.94fps에서interval3은14.99회/s이며30fps운영에복사하면7.5회/s",
+      "상세계측/2CPU/8GB/단일모델/짧은2영상조건·운영FPS/다중카메라 미검증",
+      "248PASS/2SKIP 결과는상위실행이며리뷰어가재실행하지않음"
+    ]
+  },
+  "tests": {
+    "tests": 250,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 2,
+    "passed": 248,
+    "skip_reason": "DeepStream 설치환경이므로 미설치/CPU 거절 조건2시험은 적용되지 않음",
+    "audit": "PASS: 동일프레임·시각·출처·실제threshold/interval·Pose입력 대응"
+  },
+  "candidate_config": {
+    "model": "yolov8m-pose.engine",
+    "DS_PRIMARY_INTERVAL": 3,
+    "DS_POSE_CONFIDENCE": 0.5,
+    "input_size": 640,
+    "operating_applied": false
+  },
+  "private_artifacts": "data/runtime/p51_pose_gap_20261006_v119",
+  "limits": [
+    "회복은Pose관측기준이며정량관절정답·RF/TCN·최종경보품질개선아님",
+    "target후반424/428프레임누락2개남음·confidence0.4552/0.2408",
+    "sparse정상영상220/252프레임휴리스틱낙상후보2개·최종발행오탐여부미검증",
+    "약10초원본대비입력벽시각0.868~1.086초추가지연·상세계측포함·운영FPS아님",
+    "interval3≈15Hz는59.94fps원본기준·30fps에서는7.5Hz이므로실제카메라입력률기준재검증필요",
+    "기존RF출처비호환유지·새Pose모델의학습/검증특징분포재평가필요",
+    "원I40/I34/I45·I51지연등별도잔여유지"
+  ],
+  "sha256": {
+    "plan.json": "2775106e43efda0a83d53457f20c608844f9ae86dfae7ce69bb41f6e996d3104",
+    "product_source_manifest.json": "23303e8679ea67f9a324fe61e06593e5f7f743403c69b99924da9a869a6b0725",
+    "model_assets.json": "26d3febf6dcdf7f6ec3da07f7858cc4924106f6ed2fa56624a1f209b9e25407b",
+    "baseline_analysis.json": "319f67e64cf9779275478c5b0120bff81545c156e8039ce346ccd41aab4ee3dc",
+    "comparison.json": "e3f4ed9f72c9a2ea3e07d2c30671c84d92bb37c2b75d8d942f2d026ffc9e09ef",
+    "visual_samples.json": "14641a13bba0ca1e92fd4df0b507f9c67d3e53e1d4f9cbab86817d8054b922bf",
+    "visual_review.json": "05f9e36c2eef13484fc28a0dd358ab55c2c308e0bfb08ac13e264b000aae3e0a",
+    "pose_visual_check.png": "a7f0f0ff16237e73cd5c9f30f1c3693ca5d876918423433bf1332eb29c925284",
+    "review.json": "ba379818cf0a6107fae1a277d5283b40544715b226db49ea026581275e5ebcac",
+    "related.xml": "14d7b2fe3ff4850fdd9626eda75768afac3f80537f0d55680f7d134d23f9c793",
+    "capture.py": "d4908f54d6ae078cc300525d3becee1b5de821a10ae288ab469a0b9216b80bfa",
+    "trace_capture.py": "b9d15f0bfc891e6bdc05b520b5994c211af47459981b10a2b886c8633a7d586d",
+    "trace_crop.py": "e0a65c27f9039c4785a52c98ebd916dc274e24cf585cab4fc7447397aafcfe86",
+    "run_trace.py": "18bf463f9dd3bc630d78426985d6224d593852ca4e3915a3990dbbe425fe28ad",
+    "run_crop.py": "f3dbf918b1912151830df94423153938cd105e8670f2bbdb626ed0581f98aed0",
+    "run_medium.py": "5c13563326f71c3dbffde966ff2e8d878837ef23332f7d983ad76963686bc94a",
+    "run_medium_sparse.py": "1600c8a1016c40265acaef36fe08c68a1fbdfbc5899856d187e293387a2b447d",
+    "analyze_trials.py": "59677f498143e4ea332360d8d6eddd123f1cadb0f6accc4bcdb3d6d29eafb2b6",
+    "render_pose_check.py": "dbb63f37553bef1f93e2d8316568a239de0e92c2bd9d83e0951e91a7aff0cb0d",
+    "config_infer_medium.txt": "04883db5eb781292312279feda1edfd8e30459d6f65ed216ad3953acab76ae90",
+    "operating_before.json": "7e4f3b164849160be952fe7745e8d15e57344d83db1f321699f6ff15a53a342e",
+    "operating_after.json": "7e4f3b164849160be952fe7745e8d15e57344d83db1f321699f6ff15a53a342e",
+    "crop_operating_before.json": "7e4f3b164849160be952fe7745e8d15e57344d83db1f321699f6ff15a53a342e",
+    "crop_operating_after.json": "7e4f3b164849160be952fe7745e8d15e57344d83db1f321699f6ff15a53a342e",
+    "medium_operating_before.json": "7e4f3b164849160be952fe7745e8d15e57344d83db1f321699f6ff15a53a342e",
+    "medium_operating_after.json": "7e4f3b164849160be952fe7745e8d15e57344d83db1f321699f6ff15a53a342e",
+    "medium_sparse_operating_before.json": "7e4f3b164849160be952fe7745e8d15e57344d83db1f321699f6ff15a53a342e",
+    "medium_sparse_operating_after.json": "7e4f3b164849160be952fe7745e8d15e57344d83db1f321699f6ff15a53a342e",
+    "scene_0/compose.json": "a991cab7cc63dcbd18f68d0e7f34bb8bc4b3def006ddd87452908c8840694e69",
+    "scene_0/manifest.json": "f1dcf96bd9884702377cb1920dbd7f4168da89b401b59b9136d8d8d1e5649a62",
+    "scene_0/exit.json": "e89df0eae5ec7db81135aed16463968955c578bcc4f2ec43172eff351f080c17",
+    "scene_0/output/timing.json": "d978eb490a38db269d6f89a675606b7f0e4cf81a9cd335e2c7dab02200329f05",
+    "scene_0/output/provenance.json": "bf8df5ee6c50672372597714db7df81b47cbb8da0576d4b2cc7f80bb7e509884",
+    "scene_0/output/stages.json": "c967e61d01874606ee132362858883318047e041b4d33f185eb1716c4a2d3013",
+    "scene_0/output/capture.jsonl": "fc94f3283093789a643f12fd063703789a55a1bf080012cfaaedda1444f2882a",
+    "scene_0/output/raw_selected.npz": "41bc6dd098284ebb481687c66145b069b54cca743d3607aa9e25c1b40f332650",
+    "crop_scene_0/compose.json": "9823562191e0fbcc831c2decc8aae7e1836d4cc1699e3cdd6aa3f4dcc5b41000",
+    "crop_scene_0/manifest.json": "f1dcf96bd9884702377cb1920dbd7f4168da89b401b59b9136d8d8d1e5649a62",
+    "crop_scene_0/exit.json": "e89df0eae5ec7db81135aed16463968955c578bcc4f2ec43172eff351f080c17",
+    "crop_scene_0/output/timing.json": "9f097a49753582e15b3da24377005459ae0d102326740b96cbd11f31828c9a4b",
+    "crop_scene_0/output/provenance.json": "7eed91ac04128ef3d0f068f4019c773bdd24c8295a40f633df9d0a7ff6ebb97f",
+    "crop_scene_0/output/stages.json": "331908184dee5817be630cc92b0a6500f5df01b6d1be46105c64589bb3abee4c",
+    "crop_scene_0/output/capture.jsonl": "8a7817dd7de030a1bc1b4e37a9e566f496bf4a1623e2e2e02c9bc390bf25aefa",
+    "crop_scene_0/output/raw_selected.npz": "161e1d0b8ed4e424c91c51cbd718cea134400e2444420107e9f812364ed55a1c",
+    "crop_scene_1/compose.json": "9d8cebbfc935e9c9931a9a288bceaf8ec28d4482fbcddb46c6897a4e5a320dd1",
+    "crop_scene_1/manifest.json": "46b74e4703722941523fdde1cb19eb850bab014d03a25cd4c54624edc8b75439",
+    "crop_scene_1/exit.json": "e89df0eae5ec7db81135aed16463968955c578bcc4f2ec43172eff351f080c17",
+    "crop_scene_1/output/timing.json": "4307df893e7ed688821a3b3e7fff4aeece67c794dc4fb09403e44ab42aac2f99",
+    "crop_scene_1/output/provenance.json": "c2569ff98319fdc05497474852ea819f99e57cbdd743a7ae2556ecfcf837a1ec",
+    "crop_scene_1/output/stages.json": "1048b8f252fa6ebb7911c5f19cdb071f444c4e0e818e05dd33eccf9c4cf454b4",
+    "crop_scene_1/output/capture.jsonl": "3811cb5dbc756dcde61d874f7e2201f86f9d3cbd02425f9a9db37898ca97187f",
+    "crop_scene_1/output/raw_selected.npz": "c66fc285a942d65ad8a1c9c07d14e8f4c2ed40dd4d4453907ba834263c4662e3",
+    "medium_scene_0/compose.json": "0195f7c422b05f075662421059be6df610132dd3dc2f8c91b0d57480c9dd9d2c",
+    "medium_scene_0/manifest.json": "f1dcf96bd9884702377cb1920dbd7f4168da89b401b59b9136d8d8d1e5649a62",
+    "medium_scene_0/exit.json": "e89df0eae5ec7db81135aed16463968955c578bcc4f2ec43172eff351f080c17",
+    "medium_scene_0/output/timing.json": "72bf7b040487e24e12860556604657d55912228a21187b7ecb5d0d18a65fe568",
+    "medium_scene_0/output/provenance.json": "8ee8938b301d8027027528a44f3b2175b9b482c3c8e0a27aee6d39bc25d4392b",
+    "medium_scene_0/output/stages.json": "13b81d794156ecbc16235fc860b44ce33f64c17ff60c8c8f94abcfb31cc325f3",
+    "medium_scene_0/output/capture.jsonl": "962690eec21abc9a6b196c149d818c772d694a5c9ddbe2fc13d72efbd684c5e6",
+    "medium_scene_0/output/raw_selected.npz": "e9d2a69f32053302e0b0c42ed27fbb9e7e4e2b93b5955895a0bc84bf7c494cc9",
+    "medium_scene_1/compose.json": "af216e9a83f8e0f3c1bb130fbf9f125e9c42e8805998cb7d43bb5a8306ab2bda",
+    "medium_scene_1/manifest.json": "46b74e4703722941523fdde1cb19eb850bab014d03a25cd4c54624edc8b75439",
+    "medium_scene_1/exit.json": "e89df0eae5ec7db81135aed16463968955c578bcc4f2ec43172eff351f080c17",
+    "medium_scene_1/output/timing.json": "d0e8873585b87cad72094cca1a0187c03b86b1cdb8056fd9ab938e3f5fd80cac",
+    "medium_scene_1/output/provenance.json": "7bc111c29b4e390b4bfc3955f8ea82c7a22fe366d45b5a15f57a5fb73e3cfeea",
+    "medium_scene_1/output/stages.json": "f21792ae99f1063758a3a14d9c6651cc4944914bb6cf95e9312076ee5083ac37",
+    "medium_scene_1/output/capture.jsonl": "9feca3171788867f8f701f049753c517144544363d9af45be11ffe4de5be435b",
+    "medium_scene_1/output/raw_selected.npz": "d9b48eb0690edf948c1f07b708ba8cb36152715480bc3a240435b8cb2dc83302",
+    "medium_sparse_scene_0/compose.json": "d51b506c25e74f1b80e65c15ba04a6a6561580dbe8ed778e3020ad3b4736ee9b",
+    "medium_sparse_scene_0/manifest.json": "f1dcf96bd9884702377cb1920dbd7f4168da89b401b59b9136d8d8d1e5649a62",
+    "medium_sparse_scene_0/exit.json": "e89df0eae5ec7db81135aed16463968955c578bcc4f2ec43172eff351f080c17",
+    "medium_sparse_scene_0/output/timing.json": "5b5fb798d5f00ddba86dacf947ac43cc0a609d603a58a26d26fb0817791e0893",
+    "medium_sparse_scene_0/output/provenance.json": "0eebbb2c37411eb01eabdfae8edec22122d9e740ce563a077a1ebb798635dcdd",
+    "medium_sparse_scene_0/output/stages.json": "6f6bfe0a143c78acf17287cb0eeb901cff12a2087978f5369c4e4db40c58ecda",
+    "medium_sparse_scene_0/output/capture.jsonl": "d1fee833702ab5b8a634f82a478fa0ff4eecfc996ab72d1e87175378f98f65bd",
+    "medium_sparse_scene_0/output/raw_selected.npz": "00c74ed27fe0ac7c7a9b23d17b84aa0cae84a6722e4e5790204d47dbe481ee07",
+    "medium_sparse_scene_1/compose.json": "ae44d2cedb0bc25c093ae01d57d17e780f8c5d778262c4c7edbd27790b91d54f",
+    "medium_sparse_scene_1/manifest.json": "46b74e4703722941523fdde1cb19eb850bab014d03a25cd4c54624edc8b75439",
+    "medium_sparse_scene_1/exit.json": "e89df0eae5ec7db81135aed16463968955c578bcc4f2ec43172eff351f080c17",
+    "medium_sparse_scene_1/output/timing.json": "9c300dbd28325e5574d19f732b6864877f598da08e3c777318d1ceb7448ec9f5",
+    "medium_sparse_scene_1/output/provenance.json": "24c0c63a6e9e36f784b87cce357d39c25c25ce206ca8f033b4897ca8acc74df3",
+    "medium_sparse_scene_1/output/stages.json": "d742114ffcf05445cf8ee9b6652032096ed9c2a0d79404465a6281d9db2b5647",
+    "medium_sparse_scene_1/output/capture.jsonl": "cbf5fe2f42e8a8a2d4ac64e7d29fc41d92f38c2d7c2ece89eb126246edda84f1",
+    "medium_sparse_scene_1/output/raw_selected.npz": "4d1e322933e63e3fb2349aac5889686cb93fdffaf95c91bca91d31d5f2451461"
+  }
+}

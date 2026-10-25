@@ -1,0 +1,224 @@
+{
+  "version": "0.125",
+  "date": "2026-10-07",
+  "wbs": "P5.2",
+  "issue": "I37",
+  "decision": "DIAGNOSTIC_ONLY_NO_MODEL_PROMOTION",
+  "trials": [
+    {
+      "scene": "00800_O_E_BY_C1",
+      "label": "fall",
+      "result": "TP",
+      "all_frames_processed": true,
+      "frames": 300,
+      "tensor_frames": 150,
+      "pose_frames": 139,
+      "candidate_count": 30,
+      "first_candidate_pts": 3.269933333,
+      "source_first_pts": 0.066733333,
+      "time_reference": "source PTS minus first frame PTS; frame0=0",
+      "alarm_count": 1,
+      "alarm_pts": [
+        7.741066667
+      ],
+      "early_alarm_count": 0,
+      "fall_start_seconds": 2.8194833333333333,
+      "fall_end_seconds": 3.8204833333333332,
+      "first_alarm_delay_from_start": 4.921583333666667,
+      "first_alarm_delay_from_end": 3.920583333666667,
+      "source_pts_span": 9.976633333,
+      "source_wall_span": 9.976770085049793,
+      "policy": {
+        "debounce_enabled": true,
+        "fall_sustained_seconds": 2.0,
+        "fall_gap_reset_seconds": 5.0,
+        "fall_resend_cooldown": 60.0
+      },
+      "normal_exit": true,
+      "stop_latency_seconds": null,
+      "database_copies_integrity": {
+        "mqtt_event_outbox.db": "ok"
+      }
+    },
+    {
+      "scene": "00837_O_E_BY_C1",
+      "label": "fall",
+      "result": "TP",
+      "all_frames_processed": true,
+      "frames": 300,
+      "tensor_frames": 150,
+      "pose_frames": 149,
+      "candidate_count": 46,
+      "first_candidate_pts": 4.8048,
+      "source_first_pts": 0.066733333,
+      "time_reference": "source PTS minus first frame PTS; frame0=0",
+      "alarm_count": 1,
+      "alarm_pts": [
+        6.8068
+      ],
+      "early_alarm_count": 0,
+      "fall_start_seconds": 4.070733333333333,
+      "fall_end_seconds": 5.071733333333333,
+      "first_alarm_delay_from_start": 2.736066666666667,
+      "first_alarm_delay_from_end": 1.7350666666666665,
+      "source_pts_span": 9.976633333,
+      "source_wall_span": 9.97671250300482,
+      "policy": {
+        "debounce_enabled": true,
+        "fall_sustained_seconds": 2.0,
+        "fall_gap_reset_seconds": 5.0,
+        "fall_resend_cooldown": 60.0
+      },
+      "normal_exit": true,
+      "stop_latency_seconds": null,
+      "database_copies_integrity": {
+        "mqtt_event_outbox.db": "ok"
+      }
+    },
+    {
+      "scene": "00657_H_D_N_C1",
+      "label": "not_fall",
+      "result": "TN",
+      "all_frames_processed": true,
+      "frames": 301,
+      "tensor_frames": 151,
+      "pose_frames": 150,
+      "candidate_count": 0,
+      "first_candidate_pts": null,
+      "source_first_pts": 0.066733333,
+      "time_reference": "source PTS minus first frame PTS; frame0=0",
+      "alarm_count": 0,
+      "alarm_pts": [],
+      "early_alarm_count": 0,
+      "fall_start_seconds": null,
+      "fall_end_seconds": null,
+      "first_alarm_delay_from_start": null,
+      "first_alarm_delay_from_end": null,
+      "source_pts_span": 10.01,
+      "source_wall_span": 10.01008716900833,
+      "policy": {
+        "debounce_enabled": true,
+        "fall_sustained_seconds": 2.0,
+        "fall_gap_reset_seconds": 5.0,
+        "fall_resend_cooldown": 60.0
+      },
+      "normal_exit": true,
+      "stop_latency_seconds": null,
+      "database_copies_integrity": {
+        "mqtt_event_outbox.db": "ok"
+      }
+    },
+    {
+      "scene": "00849_O_E_N_C1",
+      "label": "not_fall",
+      "result": "TN",
+      "all_frames_processed": true,
+      "frames": 300,
+      "tensor_frames": 150,
+      "pose_frames": 150,
+      "candidate_count": 2,
+      "first_candidate_pts": 3.670333333,
+      "source_first_pts": 0.066733333,
+      "time_reference": "source PTS minus first frame PTS; frame0=0",
+      "alarm_count": 0,
+      "alarm_pts": [],
+      "early_alarm_count": 0,
+      "fall_start_seconds": null,
+      "fall_end_seconds": null,
+      "first_alarm_delay_from_start": null,
+      "first_alarm_delay_from_end": null,
+      "source_pts_span": 9.976633333,
+      "source_wall_span": 9.976702807936817,
+      "policy": {
+        "debounce_enabled": true,
+        "fall_sustained_seconds": 2.0,
+        "fall_gap_reset_seconds": 5.0,
+        "fall_resend_cooldown": 60.0
+      },
+      "normal_exit": true,
+      "stop_latency_seconds": null,
+      "database_copies_integrity": {
+        "mqtt_event_outbox.db": "ok"
+      }
+    }
+  ],
+  "counts": {
+    "TP": 2,
+    "TN": 2
+  },
+  "early_alarms": 0,
+  "precision": 1.0,
+  "recall": 1.0,
+  "operating_unchanged": true,
+  "product_source_unchanged": 206,
+  "plan": {
+    "wbs": "P5.2",
+    "scenes": [
+      "00800_O_E_BY_C1",
+      "00837_O_E_BY_C1",
+      "00657_H_D_N_C1",
+      "00849_O_E_N_C1"
+    ],
+    "selection": "v118에서 이미 관측한 주석4영상, 새 외부검증으로 주장하지 않는 고정 진단군",
+    "model": "medium Pose + 기존 낙상 규칙/지속조건",
+    "auxiliary_models": false,
+    "input": "1920x1080, 30000/1001fps, interval1, each clip once, no RTSP output",
+    "event_match": "원본 주석 시작 프레임/원본FPS 이후 영상 끝까지 발행 큐에 들어간 최초 경보",
+    "early_alarm": "주석 시작 전 경보는 별도 오경보로 기록; 정탐으로 계산하지 않음",
+    "no_alarm": "전체 프레임 처리/정상 종료를 확인한 경우에만 FN 또는 TN",
+    "limits": [
+      "이미 본 진단군4개이며 일반화/현장 합격 아님",
+      "약20초 정상영상으로 시간당 오경보 추정하지 않음",
+      "외부 MQTT·실물 장치·라이브 수신·RF/TCN 품질 시험 아님",
+      "주석 프레임 번호의 기준에 최대 원본1프레임 시간 오차 가능"
+    ]
+  },
+  "private_artifacts": "data/runtime/p52_labeled_baseline_20261007_v125",
+  "limits": [
+    "기존 관측4진단 영상의 클립 지표이며 일반화/현장 정확도 아님",
+    "종료는 EOS 정상 종료; capture의 stop_seconds는 SIGTERM 요청 전 종료해 무효이며 사용하지 않음",
+    "외부 MQTT/실물 출력 전달 성공 아님; 프레임/주석 시각 기준의 경보 큐 도달",
+    "정상 영상 약20초, 시간당 오경보 추정/합격은 하지 않음"
+  ],
+  "sha256": {
+    "data/runtime/p52_labeled_baseline_20261007_v125/operating_after.json": "b112264b68f921a0adf41b80ef84e7ac8d016c354e1308f7482c6cf1e965051e",
+    "data/runtime/p52_labeled_baseline_20261007_v125/prepare.py": "0499349352d150aac8450e1dc2114a4bd6974b54121a0f04d430882f67db562a",
+    "data/runtime/p52_labeled_baseline_20261007_v125/analyze.py": "462353dcc1302876abcbe1feca3fcaa1b586006d79ef6db969ac1fdbcb1341d2",
+    "data/runtime/p52_labeled_baseline_20261007_v125/trial_results.json": "24f23080970e93c2a14869ab6b36c322a52a9f96c0129498f8098014508a1082",
+    "data/runtime/p52_labeled_baseline_20261007_v125/comparison.json": "49f59bbc0e8e2c08944e56358d8c1f2e465f7b41228e6c70cd753003ed9b61ac",
+    "data/runtime/p52_labeled_baseline_20261007_v125/operating_before.json": "b112264b68f921a0adf41b80ef84e7ac8d016c354e1308f7482c6cf1e965051e",
+    "data/runtime/p52_labeled_baseline_20261007_v125/run.py": "2935ed5e48de13cfba063076544bd88dc76a26e24d8daab51d6f974ed188e6c1",
+    "data/runtime/p52_labeled_baseline_20261007_v125/plan.json": "fe023fdcdbf6ef1a9bd1413542ac9a5779c500e9f97250bd6fd476038514653d",
+    "data/runtime/p52_labeled_baseline_20261007_v125/capture.py": "5319beac44b524aa1f562178940ff0d1697b02bad2f77de63aca0501845505d0",
+    "data/runtime/p52_labeled_baseline_20261007_v125/scene_0/compose.json": "51d33810467a092bc6ad954819b971dc11a2d2abfb0e81f743d4092b287804e2",
+    "data/runtime/p52_labeled_baseline_20261007_v125/scene_0/run.log": "50f9858969c2a4f0f14365b735b9f7f5ec3b810d8c591f5d2bc443e70150d38c",
+    "data/runtime/p52_labeled_baseline_20261007_v125/scene_0/exit.json": "124fd50cb6d223cdd18fedc166d00af7254199b6e6dedf9be82f71db87af6d01",
+    "data/runtime/p52_labeled_baseline_20261007_v125/scene_0/manifest.json": "9e02f460324d0be07f2baefab6de6588b0a380edf8d17a5e24ab769dc844a059",
+    "data/runtime/p52_labeled_baseline_20261007_v125/scene_0/cameras.json": "345631948bde753e797d7c67aeeac01bf2263e33f768f4a0e95950fa2cde1adb",
+    "data/runtime/p52_labeled_baseline_20261007_v125/scene_0/output/capture.json": "f1e31693294be6c1029eb87337c8dfe8e0eb8a43c7aa8e1ab02e5d8292200c14",
+    "data/runtime/p52_labeled_baseline_20261007_v125/scene_3/compose.json": "1c4d5371472e2ce607de9e08bdd81ed8ca42abb4d85f588b9464ec0fe26758d8",
+    "data/runtime/p52_labeled_baseline_20261007_v125/scene_3/run.log": "dc7ed405924e4ae0e4bf92ccb6ccb7cc52d8d13506da8c22dba367a4b3682275",
+    "data/runtime/p52_labeled_baseline_20261007_v125/scene_3/exit.json": "124fd50cb6d223cdd18fedc166d00af7254199b6e6dedf9be82f71db87af6d01",
+    "data/runtime/p52_labeled_baseline_20261007_v125/scene_3/manifest.json": "e785f6a6bf651d26fe2f79c23fca3e8d17fcb0c5c862d6d8b6b7c72d098cfa26",
+    "data/runtime/p52_labeled_baseline_20261007_v125/scene_3/cameras.json": "345631948bde753e797d7c67aeeac01bf2263e33f768f4a0e95950fa2cde1adb",
+    "data/runtime/p52_labeled_baseline_20261007_v125/scene_3/output/capture.json": "f67577aaff3d9935d3a1d3d060f631261ef1f6f8c0698f0f12099c15b9519b8b",
+    "data/runtime/p52_labeled_baseline_20261007_v125/scene_1/compose.json": "c146e68692c2316cc11bc5b79ec4bf7a77664ae8986f744c4039c9ca65f91d6c",
+    "data/runtime/p52_labeled_baseline_20261007_v125/scene_1/run.log": "fb16d0739af4d5ab0871cfab1c1921369d8640b03ab044928635184977b89819",
+    "data/runtime/p52_labeled_baseline_20261007_v125/scene_1/exit.json": "124fd50cb6d223cdd18fedc166d00af7254199b6e6dedf9be82f71db87af6d01",
+    "data/runtime/p52_labeled_baseline_20261007_v125/scene_1/manifest.json": "97e5accd6de13c7fb27118b11f3ca82e8bd5063d0256885cd743f90579126d00",
+    "data/runtime/p52_labeled_baseline_20261007_v125/scene_1/cameras.json": "345631948bde753e797d7c67aeeac01bf2263e33f768f4a0e95950fa2cde1adb",
+    "data/runtime/p52_labeled_baseline_20261007_v125/scene_1/output/capture.json": "3b7dcddfd3be3b6996efb436be330cdd5c5c67b746190df33bfb1f4a577dcc0d",
+    "data/runtime/p52_labeled_baseline_20261007_v125/scene_2/compose.json": "62ce1942946faa93946455da265e7c1f826606c0b2e2c7e227974d926ab70606",
+    "data/runtime/p52_labeled_baseline_20261007_v125/scene_2/run.log": "cc5560eb5881b7031352403d36826d7dbbab2035492b18f23c25c696737ae440",
+    "data/runtime/p52_labeled_baseline_20261007_v125/scene_2/exit.json": "124fd50cb6d223cdd18fedc166d00af7254199b6e6dedf9be82f71db87af6d01",
+    "data/runtime/p52_labeled_baseline_20261007_v125/scene_2/manifest.json": "6956c6303a60cdb17926c794f7cf49b9c956e5f1a70ecb65837208fb2ff38cdd",
+    "data/runtime/p52_labeled_baseline_20261007_v125/scene_2/cameras.json": "345631948bde753e797d7c67aeeac01bf2263e33f768f4a0e95950fa2cde1adb",
+    "data/runtime/p52_labeled_baseline_20261007_v125/scene_2/output/capture.json": "22821865675d11130f812d0d19a1291b9814530f09d45398cffd44fab56bd23c"
+  },
+  "review": {
+    "agent": "split_and_labels_review",
+    "critical": 0,
+    "important": 0,
+    "time_basis": "video source PTS relative to first frame"
+  }
+}

@@ -1,0 +1,262 @@
+{
+  "date": "2026-10-13",
+  "wbs": "P3.2",
+  "state": "LOCAL_CANDIDATE_VERIFIED_NOT_DEPLOYED",
+  "summary": "MQTT 원본 commit 뒤 ACK·실행 작업자 분리·저장 전용 모드·재시작 보류를 구현하고 호스트/후보에서 검증했다. 장치별 우선순위/만료와 자동 재개는 잔여다.",
+  "changes": {
+    "product_files": [
+      "src/services/action_mqtt_intake.py",
+      "src/services/action_bridge.py",
+      "src/protocols/mqtt_subscriber.py",
+      "runners/run_action_bridge.py",
+      "scripts/ops/backup_runtime_databases.sh",
+      "kuiper/rules/cctv_intrusion_rules.json"
+    ],
+    "product_file_count": 6,
+    "new_tests": 25,
+    "new_dependencies": 0,
+    "schema": "새 수신 DB에서 기존 IngestStore 접수/단계 테이블 재사용; 기존 Action DB 변경 없음",
+    "configuration": [
+      "ACTION_MQTT_INTAKE_DB 선택 활성화",
+      "ACTION_MQTT_CLIENT_ID 고정·서비스별 유일 ID 필수",
+      "ACTION_MQTT_CAPTURE_ONLY=true 저장 전용(REST_ENABLED=false 필수)",
+      "영속 수신은 EdgeX 모드만 허용",
+      "후보 AI3규칙 sink QoS1·현재 운영 규칙은0 유지",
+      "표준 백업 대상12경로: action_mqtt_intake.db 추가"
+    ]
+  },
+  "validation": {
+    "host": {
+      "tests": 302,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "path": "data/runtime/action_intake_20261013/regression.xml"
+    },
+    "host_mqtt": {
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "path": "data/runtime/action_intake_20261013/mqtt.xml"
+    },
+    "candidate_action": {
+      "tests": 299,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "path": "data/runtime/action_intake_20261013/results/container_regression.xml"
+    },
+    "candidate_loader": {
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "path": "data/runtime/action_intake_20261013/results/loader_regression.xml"
+    },
+    "candidate_mqtt": {
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "path": "data/runtime/action_intake_20261013/results/container_mqtt.xml"
+    }
+  },
+  "regression_summary": "고유306시험(회귀302+MQTT4). 후보 Action299·로더3·MQTT4에서 동일 범위 통과. 재실행 수를 신규 시험 수로 합산하지 않는다.",
+  "cases": [
+    "설정 부재3 FAIL·QoS1 계약1 FAIL 확인 후 통과",
+    "느린 장치 실행 중 다음 원본 저장·수신 ACK 진행",
+    "실제 SQLite insert 실패에 ACK0·연결 종료·동일 세션/packet DUP 재전달",
+    "DB 선점 실패 무실행·완료 저장 실패 미확정 보류·자동 재호출0",
+    "실행 진입 뒤 별도 프로세스 강제 종료→ready 기록 보존/재시작 무출력",
+    "원본 bytes/잘못된 JSON 보존·고정 요청 ID/모의 전광판 실행1회",
+    "별도 프로세스의 동일 DB 작업자 진입 차단·연결 실패 자원 정리",
+    "오프라인 QoS1 입력 보존·QoS0 유실 대조(소급 복구 주장 없음)",
+    "기존 표준 백업/WAL/실행 이력8시험·신규 수신 DB 경로 포함"
+  ],
+  "images": {
+    "action": {
+      "tag": "cctv-action:prepared-20261013-01",
+      "id": "sha256:9c2722790279b7b293650157f60f0a1a8f04ed5fcd110a056d0241a2d9507195",
+      "overlay_files": 7,
+      "accumulated_manifest": 22,
+      "manifest": "data/runtime/action_intake_20261013/full_manifest.json",
+      "note": "기존 공통 수신 팩토리와 IngestStore도 후보에 포함; 코드 새 수정은 아님. 전용 로더 테스트는 별도 로더 이미지에서 실행."
+    },
+    "loader": {
+      "tag": "cctv-kuiper-loader:action-20261013-02",
+      "id": "sha256:3639f959d1e55def66f5a95da5ec07e233dc43812ac954d07a71bd14749fe705",
+      "overlay_files": 1
+    }
+  },
+  "test_environment": "후보 network none·CPU1·512MiB(로더256MiB)·UID1000·운영DB/장치/GPU 미연결. 실제MQTT는 임시 Unix socket·network none Mosquitto2.0(CPU0.25/64MiB)만 사용.",
+  "initial_attempts": [
+    "실제 MQTT 첫 실행은 시험 모듈 import 경로 보완, Unix socket sandbox 차단은 승인 후 실행.",
+    "호스트 MQTT 첫 허용 실행3시간초과/1통과; 제품 코드 수정 없이 기존 경로와 단독 비교2통과→신규4통과→후보4통과. 당시 다른 시험/빌드가 겹쳤으나 시간초과 원인은 미확정이며 부하 안정성 합격으로 세지 않음.",
+    "첫 Action 빌드는 Docker job not found로 실패, 단독 재시도 성공.",
+    "후보 첫 회귀는 tmp fixture 권한151ERROR와 전용 로더 시험1FAIL. UID1000 tmpfs 제공·실행 서비스별 이미지로 시험 분리 후 Action299/로더3 통과. 제품 코드 추가 수정 없음."
+  ],
+  "compose": {
+    "base_candidate_changed_fields": {
+      "cctv-action-layer": [
+        "image"
+      ],
+      "cctv-device-signboard": [
+        "image"
+      ],
+      "cctv-kuiper-rule-loader": [
+        "image"
+      ]
+    },
+    "capture_profile_environment_changes": [
+      "ACTION_MQTT_CAPTURE_ONLY",
+      "ACTION_MQTT_CLIENT_ID",
+      "ACTION_MQTT_INTAKE_DB",
+      "REST_ENABLED"
+    ],
+    "capture_rest_enabled": "false",
+    "non_target_services_unchanged": 23,
+    "operating_intake_db_created": false
+  },
+  "lint": "Ruff PASS·bash -n PASS",
+  "review": {
+    "initial": "code-review-graph6파일 심볼/흐름0. 결과0을 무위험 근거로 쓰지 않고 시작본 diff·호출 경로·실제 경계/후보 시험으로 검토 보완.",
+    "after_graph_recovery": {
+      "status": "ok",
+      "summary": "Analyzed 4 changed file(s):\n  - 214 changed function(s)/class(es)\n  - 9 affected flow(s)\n  - 101 test gap(s)\n  - Overall risk score: 0.90\n  - Untested: video_case, sensor_attempt, sensor_cases, batch_case, external_cases",
+      "risk_score": 0.9,
+      "changed_file_count": 4,
+      "test_gap_count": 101,
+      "review_priorities": [
+        "handle_request_status",
+        "_execute_device_command",
+        "handle_command_request"
+      ],
+      "_hints": {
+        "next_steps": [
+          {
+            "tool": "get_review_context",
+            "suggestion": "Build a full review context with source snippets"
+          },
+          {
+            "tool": "get_impact_radius",
+            "suggestion": "Expand the blast radius analysis"
+          },
+          {
+            "tool": "refactor",
+            "suggestion": "Look for refactoring opportunities in changed code"
+          }
+        ],
+        "related": [],
+        "warnings": [
+          "High risk score (0.90) — review carefully"
+        ]
+      },
+      "context_savings": {
+        "estimated": true,
+        "saved_tokens": 14864,
+        "saved_percent": 99
+      },
+      "_graph": {
+        "updated_at": "2026-10-13T09:52:55",
+        "age_seconds": 3,
+        "built_on_branch": "260907-260911-9월2주차",
+        "built_at_sha": "fefa4ab04ee2ca26bbc0ee433381e4b7648265e7",
+        "head_sha": "fefa4ab04ee2ca26bbc0ee433381e4b7648265e7",
+        "head_matches_build": true
+      }
+    },
+    "graph_web_evidence": "docs/planning/evidence/module_graph_20261013.json"
+  },
+  "operating": {
+    "deployment_commands": 0,
+    "physical_output": 0,
+    "intake_database_created": false,
+    "intake_default_enabled": false,
+    "rest_disabled_in_operating": false
+  },
+  "completed": [
+    "원본 저장 뒤 ACK",
+    "수신 콜백과 실행 분리",
+    "저장 전용 모드·복구 보류",
+    "실제MQTT/후보 검증·백업 연결"
+  ],
+  "remaining": [
+    "P3.1 위험 우선순위/만료/장치별 영속 대기·보존 입력의 정책 기반 재개",
+    "P3.2 장치별 독립 실행·REST 영속화·큐/지연 계측",
+    "브로커 보존 용량/만료·장기/부하 검증(초기 시간초과 원인 포함)",
+    "최종 백업·요청 이관·규칙 전환/복귀 리허설·운영/실물 재시험"
+  ],
+  "progress": {
+    "DONE": 9,
+    "IN_PROGRESS": 1,
+    "VERIFY": 7,
+    "BLOCKED": 3,
+    "PLANNED": 13
+  },
+  "next": "P3.1 위험 등급 우선순위·만료·장치별 영속 대기를 구현하고 보존 입력의 안전한 재개를 검증한다. 이번 작업 종료 후 code-review-graph 기반 모듈 흐름을 웹으로 제공한다.",
+  "artifacts_sha256": {
+    "src/services/action_mqtt_intake.py": "fb2ca07eaf4ddbfc88b7542f450edc108a39b5e445f4ce865753094879913285",
+    "src/services/action_bridge.py": "c59e5c83f039e07be9f9a042bcaee3dd7086e5fc11ff4024afd3202daa4b0fb2",
+    "src/protocols/mqtt_subscriber.py": "a9d69da94f317f04a391fe37ee5831c953f57fabdb7ad14fa622540db07e39f5",
+    "runners/run_action_bridge.py": "1b4f4b2fa7807ee6c9db338790d9fed7fcb681cb4f90d9e6fb5d272b61de5a65",
+    "scripts/ops/backup_runtime_databases.sh": "52c4fc606b601a83b69b2e13748c416e7c43f834c30e0d2aac4f8ff346e1f70c",
+    "kuiper/rules/cctv_intrusion_rules.json": "45b8ab144742324c3c55c0600434ed7fad95973f85cdaac856c2baf70b693653"
+  },
+  "operating_after": {
+    "observed_at": "2026-10-13T09:42:58.146247+09:00",
+    "operating": {
+      "cctv-action-layer": {
+        "id": "74deaeb0b5bdd64c8f2e2a141daa25c193a75cf235b214fee6ef8b4dcdceedeb",
+        "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+        "started_at": "2026-10-12T23:35:15.475740705Z",
+        "status": "running"
+      },
+      "cctv-device-signboard": {
+        "id": "29aeb393bd52e7a9f8241be9214b970e82e8442253fdfe2e73dbbf5d153feaa8",
+        "image": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+        "started_at": "2026-10-12T23:35:15.45875226Z",
+        "status": "running"
+      },
+      "cctv-kuiper-rule-loader": {
+        "id": "6bb51352f9dc42b80a9d41e9b5bbea55c2f7747f6e17b6317f2dcb8f14c0cc7b",
+        "image": "sha256:2f22e8c91de618d6e9378ca55f8f7ce0980de6bccffdf37f6cd7363be3a51ff8",
+        "started_at": "0001-01-01T00:00:00Z",
+        "status": "created"
+      },
+      "cctv-ai-engine": {
+        "id": "c8a71163c84b458197b98a4bde8e0e06719afc5cf5964e6fbd0b716109ce0377",
+        "image": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+        "started_at": "2026-10-12T23:35:33.679490726Z",
+        "status": "running"
+      },
+      "edgex-kuiper": {
+        "id": "6249a0c22b5712d01242c176abfce736685579514bfb389952062c3fd9392576",
+        "image": "sha256:7f4962946a721ece5ec630150e47614c4a461ee2c29600f24d96ef5e35a9d4da",
+        "started_at": "2026-10-12T23:35:15.016557364Z",
+        "status": "running"
+      }
+    },
+    "unchanged_since_preflight": true,
+    "test_broker_removed": true
+  },
+  "publication": {
+    "url": "http://192.168.2.141:18081/",
+    "files": [
+      {
+        "path": "index.html",
+        "status": 200,
+        "bytes": 72733,
+        "sha256": "6cbfbc18227fb8be8cad282b16e40933d53e4ffc61d904ee528d136148b8bcbd"
+      },
+      {
+        "path": "CCTV_project_progress.pdf",
+        "status": 200,
+        "bytes": 148142,
+        "sha256": "ae896c3f53889e5e603706526c0ae6f9aed4a2c9928119e9a84f125717316340"
+      }
+    ],
+    "pdf_page1_visual_review": "PASS",
+    "wbs_rows_and_model_results_preserved": true
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "date": "2026-10-15",
+  "wbs_id": "P5.6",
+  "status": "VERIFY",
+  "scope": "내부3종 사건·평가·JSON 계약 및 기존 로컬 저장/관제 직렬화 호환성",
+  "contract": "docs/planning/OBSERVATION_CONTRACT.md#behavior-contract-20261015",
+  "event_types": {
+    "fall_detected": "existing",
+    "fight_detected": "reserved_dict_fixture_only",
+    "fence_climb_detected": "reserved_dict_fixture_only"
+  },
+  "tests": {
+    "new_cases": 27,
+    "related_total_including_new": 186,
+    "passed": 186,
+    "failed": 0,
+    "skipped": 0,
+    "seconds": 99.333,
+    "junit": "docs/planning/evidence/behavior_contract_tests_20261015.xml",
+    "ruff": "PASS: tests/test_behavior_event_contract.py; scripts/ops/render_progress_snapshot.py",
+    "black": "PASS: tests/test_behavior_event_contract.py",
+    "formatted_new_cases_recheck": {
+      "passed": 27,
+      "seconds": 2.343,
+      "added_to_unique_total": false
+    }
+  },
+  "verified": [
+    "실제 임시 SQLite 원본·정규화·record 직렬화/parse_record 대조",
+    "event_id/metadata/카메라/시각/다인 참여자 보존",
+    "같은 ID/원본 중복 억제와 다른 내용 충돌 보관",
+    "재시작 미발행 held",
+    "큰 추적ID·0·미추적null",
+    "NaN 시각/미상 카메라 invalid"
+  ],
+  "not_verified": [
+    "실제 싸움/월담 모델·RTSP 영상 정확도",
+    "metadata.behavior 의미 검사 및 세션 생성의 런타임 구현",
+    "KISA 공식 매칭/SA·월담 항목/성능 확인서 수용",
+    "실제 MQTT/외부 관제 ACK·실물 출력",
+    "GPU·다중카메라·장시간/현장 품질"
+  ],
+  "evaluation": {
+    "normal_window_seconds_internal": 10,
+    "extra_match_tolerance_seconds_internal": 0,
+    "event_f1_separate_from_normal_window_specificity": true,
+    "missing_input_is_not_tn": true,
+    "official_certification_result": false
+  },
+  "operations": {
+    "runtime_code_changed": false,
+    "configuration_changed": false,
+    "gpu_trials": 0,
+    "ai_stops": 0,
+    "physical_outputs": 0,
+    "new_dependencies": 0,
+    "database_schema_changed": false,
+    "fresh_operating_fps_measured": false
+  },
+  "baseline_sha256": {
+    "src/core/video_event_ingest.py": "7158836647b520c8ac84872fe6752bf9c610abe740e5a6c8945be8a68c6b4163",
+    "src/core/_event_publish.py": "ca6b2a3672831c6cc66d927cb30bd6af0d9d2a10388b0a5bd895665c6e048e61",
+    "src/core/events.py": "9d8d1f01c4b53b216c4c9cddab63cee0d4938a04724d401f73607f88279fad09",
+    "src/canonical_event.py": "e01d8a72f3560348ded5f8469a4214eb6f7e9bf377b031b2d8af36c657063bc2",
+    "src/video_observation.py": "7746c27194bf4226ffb0e9a31244e07faadc28af847336afd05b31a5f8c90317",
+    "src/event_ingest_store.py": "57fa5d1d4084f79209295b94d9297a27f6f8c07be9f091be798179977b004810",
+    "src/record_delivery.py": "bcf12dc1c32b5b4cf7940fa89c66396524d20c35fc5815a7f637d39e3aa65164",
+    "src/monitoring_contract.py": "932ea70fcd4649eec55b9f625a623fcbccde27b4df1feec3fe53126309408e2f",
+    "config/event_type_map.json": "1213c8dff21bcb9ef17d7ce934b0f2cf14f7f1be42924f4c40e8199dd0cd7a63"
+  },
+  "runtime_sha256_unchanged": true,
+  "graph_review": {
+    "changed_files": [
+      "tests/test_behavior_event_contract.py"
+    ],
+    "affected_flows_reported": 0,
+    "limitation": "그래프 detect_changes 결과에 기존 작업 차이와 범위 밖 함수가 섞여 이번 변경만의 위험도로 해석하지 않음. 직접 호출 흐름·범위 회귀·운영 파일 SHA와 산출물을 함께 대조.",
+    "reviewed_files": [
+      "tests/test_behavior_event_contract.py",
+      "scripts/ops/render_progress_snapshot.py"
+    ]
+  },
+  "remaining": [
+    "현장 사건/라벨 지침·정답창 합의",
+    "P5.7/P5.8 실제 생산자 및 behavior 검사/평가 도구 연결",
+    "P7.4 공식 규칙/SA·P6.1 실제 수신 대조"
+  ],
+  "next": "P5.7 싸움 데이터·모델/라이선스 후보와 독립 평가셋 범위 고정",
+  "wbs_counts": {
+    "DONE": 9,
+    "IN_PROGRESS": 1,
+    "VERIFY": 8,
+    "BLOCKED": 3,
+    "PLANNED": 16
+  },
+  "artifact_sha256": {
+    "tests/test_behavior_event_contract.py": "92ee2a7e115a5cfffa459d733f3a077ec8ec7c696b6f8a594a50b2b6e7de32fc",
+    "tests/fixtures/behavior_event_contract.json": "8f05dbf464bb7f4621a52712237093cb5968134133e915fa87be50b95b90c1a4",
+    "docs/planning/OBSERVATION_CONTRACT.md": "f4a541c4545dde994cd4a1f8ebbf515fd59567f63dc96ba69524a654a0603373",
+    "docs/planning/evidence/behavior_contract_tests_20261015.xml": "3a6c4091986ea14358582d29e90c365cfff8074e9c08e4ba3d1369f1ba3e696d"
+  },
+  "progress_board": {
+    "source": "docs/planning/figma_exports/progress_v138.json",
+    "wbs_rows": 37,
+    "source_statuses_match": true,
+    "html_unique_ids_and_no_placeholders": true,
+    "pdf_pages": 5,
+    "visually_checked_pdf_pages": [
+      1,
+      3
+    ],
+    "http_checks": [
+      {
+        "path": "/",
+        "status": 200,
+        "local_matches": true,
+        "sha256": "69f964d74182d1ba48ad04ddff1ad66472accb9921c3e36044978f1f22fe6e98"
+      },
+      {
+        "path": "/CCTV_project_progress.pdf",
+        "status": 200,
+        "local_matches": true,
+        "sha256": "c324c2f6e86f56d23fe4dbd2121610d41bb3ebb313a948fbfbdd61ebf210ad3b"
+      }
+    ],
+    "browser_interaction_checked": false
+  }
+}

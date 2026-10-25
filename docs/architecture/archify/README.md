@@ -1,5 +1,25 @@
 # CCTV·AIoT 아키텍처·데이터 흐름·시퀀스
 
+## 2026-10-13 최신 모듈 보기
+
+**[사내 모듈 흐름 웹](http://192.168.2.141:18081/module_flow.html)** · [로컬 시작 화면](../../planning/online/module_flow.html)
+
+- 전체 모듈 구조: [명세](05-module-flow.architecture.json) → [HTML](../../planning/online/system_module_flow.html).
+- 운영 미반영 입력 보존 후보: [명세](04-action-intake.architecture.json) → [HTML](../../planning/online/action_intake_flow.html).
+- 실제 [code-review-graph 탐색](../../planning/online/code_review_graph.html): 7,564노드·68,808관계·454정적 흐름, 700파일. 36개 자동 그룹(파일 기반 대체 방식) + 미분류1개. 시험 포함, 모든 언어/동적 통신의 완전한 복원은 아니다.
+- 두 구조도는 각각 showcase9/9·오류0/경고0. JavaScript/JSON 문법과 웹 공개8파일 HTTP200/해시 일치 확인. Chrome/Chromium 부재로 브라우저 조작·반응형·시각 검토는 미실행이다. 고정 뷰어 UI와 생성 HTML lang은 영어다.
+- 운영 관측과 작업 소스/후보를 구분한다. 실시간 계측이 아니며 문서 nginx 외 CCTV5컨테이너는 불변이다. [근거·해시](../../planning/evidence/module_graph_20261013.json)
+
+code-review-graph 2.3.7의 `-I` 파서 검사에서 사용자 설치 모듈을 찾지 못했다. 프로젝트 내부의 작업용 Python 환경에서 기존 설치 경로를 사용해 다시 생성했고 전역 MCP 설정은 변경하지 않았다. 이후 그래프 재생성은 프로젝트 루트에서 다음 명령으로 한다. 전체 빌드가 빠뜨리는 미추적 Python 파일은 두 번째 명령에서 포함한다.
+
+```bash
+rtk proxy env CRG_PARSE_WORKERS=2 CRG_PARSE_EXECUTOR=thread data/runtime/module_graph_20261013/tooling-env/bin/python -m code_review_graph build --repo .
+rtk proxy env CRG_PARSE_WORKERS=2 CRG_PARSE_EXECUTOR=thread data/runtime/module_graph_20261013/tooling-env/bin/python data/runtime/module_graph_20261013/export_graph.py
+```
+
+재생성 후 시작 화면의 건수·관측일과 게시 해시를 갱신한다. D3 7.9.0은 도구에 지정된 SHA384를 대조한 로컬 파일이며 [라이선스](../../planning/online/vendor/D3-LICENSE.txt)를 함께 제공한다. 아래는 09-22 당시 구조도와 검증 이력이다.
+
+
 2026-09-22 · 현재 작업 소스와 계획 v0.26을 읽는 보조 자료.
 
 **[시작 페이지 열기](index.html)** → 원하는 그림을 선택한다. HTML을 브라우저로 직접 열 수 있고,

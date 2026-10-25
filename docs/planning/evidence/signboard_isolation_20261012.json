@@ -1,0 +1,295 @@
+{
+  "checked_at": "2026-10-12T09:03:52.101932+09:00",
+  "state": "ISOLATED_AND_NORMAL_PHYSICAL_PASS_RESTORED",
+  "authorization": "직전 구체 시험 계획 뒤 사용자 계속해서 업무 진행해줘, 실물 관찰 지금 확인 가능. 재확인 승인 요구 없이 해당 비교 실행.",
+  "scope": "P3.4/I58 전광판 표시 격리 비교와 원복. 전광판만 pause/unpause; 운영 설정/모델/상시 매핑 변경 없음.",
+  "disk_recovery": {
+    "checked_at": 1791763320.3467739,
+    "root_free_GiB": 4.706,
+    "backups": [
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/root_disk_recovery_20261012/thumbnails_backup",
+      "data/runtime/root_disk_recovery_20261012/npm_cache_backup",
+      "/media/sawwave/Learning11/CCTV-project/data/runtime/root_disk_recovery_20261012/vscode_vsix_cache_backup"
+    ],
+    "installed_packages_changed": false,
+    "remaining": "코드 검색 도구 daemon.log에 파일 감시 한도 초과·인덱스 DB malformed 기록 존재. 해당 DB나 확장 설정은 수정하지 않음. 여유 공간의 지속성은 별도 관측 필요.",
+    "user_documents_or_project_sources_deleted": false
+  },
+  "initial_isolation": {
+    "status": "ABORTED_BEFORE_TITLE",
+    "result": {
+      "responses": [
+        {
+          "at": 1791762904.2756176,
+          "sent_hex": "215b303035303130215d",
+          "reply_hex": "215b3030353030215d"
+        },
+        {
+          "at": 1791762904.323257,
+          "sent_hex": "215b3030363231215d",
+          "reply_hex": "215b3030363230215d"
+        }
+      ],
+      "restored": true,
+      "error": "[Errno 111] Connection refused",
+      "restore_error": ""
+    },
+    "reason": "밝기 응답 뒤 제목 연결 거부. 준비 스크립트가 운영 코드의 연결 재시도를 누락해 동일 오류 모의 FAIL로 재현. 시험 스크립트만 기존 _DabitClient._send 재사용으로 보완 후 PASS.",
+    "archived_script": "data/runtime/signboard_isolation_20261012/isolate_clock_before_retry.py"
+  },
+  "verification": {
+    "preflight": "4 모의 검증 PASS, 실제 장치 호출0",
+    "reconnect": "제목 연결1회 거부: 변경 전 FAIL → 기존 전송 재사용 뒤 PASS. 실제 장치 호출0.",
+    "wire_equivalence": "격리 재시험·정상 운영 비교의 밝기/제목/본문 바이트가 준비 패킷과 모두 일치.",
+    "recovery": {
+      "at": 1791763364.0509174,
+      "containers": [
+        {
+          "name": "/cctv-device-signboard",
+          "id": "fca78eeb63cf1846c523ff633d626b41e2b5b2274661c9a9dd0f1323a8345020",
+          "image": "sha256:7146fd550900b6e967e6a23606920762165035120b44b2e50c43390a7cf8f65e",
+          "status": "running",
+          "paused": false,
+          "started_at": "2026-10-08T06:59:15.853135065Z",
+          "health": "healthy"
+        },
+        {
+          "name": "/cctv-device-dabit",
+          "id": "f51a40001b1cdd706b69941702a76e10044002740582f2da9c20c8648aa36a0d",
+          "image": "sha256:bb0f35eee47d16c4bc8b30417717bc04b9d2c40ce6f2556d97d081f736a006fd",
+          "status": "exited",
+          "paused": false,
+          "started_at": "2026-10-01T23:40:25.229113157Z",
+          "health": "unhealthy"
+        },
+        {
+          "name": "/cctv-action-layer",
+          "id": "4583fc9fcd71816b7cdc1f20900901cf8cfcbbd669401c8b9fe3d66e99a9bbf6",
+          "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+          "status": "running",
+          "paused": false,
+          "started_at": "2026-10-08T06:15:40.114979171Z",
+          "health": "healthy"
+        },
+        {
+          "name": "/cctv-ai-engine",
+          "id": "db65cceb6390ae7eae0b02db9403a46dba9053adbeca5cb27cb4e67c92d0e4f0",
+          "image": "sha256:294e52234fc170904e2a09b180b422e0562d6e11b5aa28ebcf287a1b47c9ed55",
+          "status": "running",
+          "paused": false,
+          "started_at": "2026-10-08T04:59:47.634961746Z",
+          "health": "healthy"
+        },
+        {
+          "name": "/cctv-media-server",
+          "id": "a2b1369a3598485980000d1e6da5ef09d79145da54b220cc37baaa00b7376c03",
+          "image": "sha256:f8628851106cc053f9175b248050bb5f362a6e65abd72297c167a1cb5a9a3be2",
+          "status": "running",
+          "paused": false,
+          "started_at": "2026-10-01T23:40:25.266992541Z",
+          "health": null
+        }
+      ],
+      "runtime_restored": true,
+      "mapping_unchanged": true,
+      "capture_containers_remaining": []
+    }
+  },
+  "isolated_trial": {
+    "physical_confirmation": {
+      "visible": true,
+      "answer": "경고! / 낙상 연동 시험이 보임"
+    },
+    "timing": {
+      "body_at": "2026-10-11T23:58:11.992667+00:00",
+      "clear_at": "2026-10-11T23:58:57.090201+00:00",
+      "seconds_body_to_clear": 45.098,
+      "seconds_body_to_idle_body": null,
+      "intervening_payloads": 0,
+      "first_three_packet_hex": [
+        "215b303035303130215d",
+        "215b3030302f50303030302f59303030342f4337202020202020202020b0e6b0ed2120202020202020202020215d",
+        "215b3030302f50303030312f59303430382f46303030322f45303130302f53313030302f47302f4337b3abbbf320bfacb5bf20bdc3c7e8215d"
+      ]
+    },
+    "result": {
+      "responses": [
+        {
+          "at": 1791763091.9685888,
+          "sent_hex": "215b303035303130215d",
+          "reply_hex": "215b3030353030215d"
+        },
+        {
+          "at": 1791763091.9869606,
+          "sent_hex": "215b3030302f50303030302f59303030342f4337202020202020202020b0e6b0ed2120202020202020202020215d",
+          "reply_hex": "215b30303030215d"
+        },
+        {
+          "at": 1791763092.038372,
+          "sent_hex": "215b3030302f50303030312f59303430382f46303030322f45303130302f53313030302f47302f4337b3abbbf320bfacb5bf20bdc3c7e8215d",
+          "reply_hex": "215b30303030215d"
+        },
+        {
+          "at": 1791763137.1000197,
+          "sent_hex": "215b3030363231215d",
+          "reply_hex": "215b3030363230215d"
+        }
+      ],
+      "restored": true,
+      "restore_error": "",
+      "physical_confirmation": {
+        "visible": true,
+        "answer": "경고! / 낙상 연동 시험이 보임"
+      }
+    }
+  },
+  "normal_trial": {
+    "event_id": "signboard-normal-20261012",
+    "timing": {
+      "body_at": "2026-10-12T00:01:08.900917+00:00",
+      "clear_at": "2026-10-12T00:01:29.021596+00:00",
+      "seconds_body_to_clear": 20.121,
+      "seconds_body_to_idle_body": 13.69,
+      "intervening_payloads": 4,
+      "first_three_packet_hex": [
+        "215b303035303130215d",
+        "215b3030302f50303030302f59303030342f4337202020202020202020b0e6b0ed2120202020202020202020215d",
+        "215b3030302f50303030312f59303430382f46303030322f45303130302f53313030302f47302f4337b3abbbf320bfacb5bf20bdc3c7e8215d"
+      ]
+    },
+    "physical_confirmation": {
+      "visible": true,
+      "answer": "경고가 보였다가 시간으로 돌아옴"
+    },
+    "result": {
+      "commands": [
+        {
+          "version": "1",
+          "request_id": "signboard-normal-20261012:signboard:cctv-signboard-01",
+          "event_id": "signboard-normal-20261012",
+          "source": "cctv-action-layer",
+          "device": "signboard",
+          "device_id": "cctv-signboard-01",
+          "action": "display",
+          "issued_at": "2026-10-12T00:01:08.618886+00:00",
+          "payload": {
+            "event_type": "fall_detected",
+            "severity": "critical",
+            "camera_id": "camera_1",
+            "text": "낙상 연동 시험",
+            "title": "경고!",
+            "class_name": "fall_detected"
+          }
+        },
+        {
+          "request_id": "signboard-normal-20261012:signboard:clear:cctv-signboard-01",
+          "event_id": "signboard-normal-20261012",
+          "device": "signboard",
+          "device_id": "cctv-signboard-01",
+          "action": "clear",
+          "payload": {}
+        }
+      ],
+      "results": {
+        "signboard-normal-20261012:signboard:cctv-signboard-01": {
+          "command_id": "signboard-normal-20261012:signboard:cctv-signboard-01",
+          "device_id": "cctv-signboard-01",
+          "status": "acknowledged",
+          "error_code": null,
+          "event_id": "signboard-normal-20261012",
+          "request_id": "signboard-normal-20261012:signboard:cctv-signboard-01"
+        },
+        "signboard-normal-20261012:signboard:clear:cctv-signboard-01": {
+          "command_id": "signboard-normal-20261012:signboard:clear:cctv-signboard-01",
+          "device_id": "cctv-signboard-01",
+          "status": "acknowledged",
+          "error_code": null,
+          "event_id": "signboard-normal-20261012",
+          "request_id": "signboard-normal-20261012:signboard:clear:cctv-signboard-01"
+        }
+      },
+      "input_events": [
+        "signboard-normal-20261012-person",
+        "signboard-normal-20261012",
+        "signboard-normal-20261012"
+      ],
+      "errors": [],
+      "physical_confirmation": {
+        "visible": true,
+        "answer": "경고가 보였다가 시간으로 돌아옴"
+      },
+      "action_commands": [
+        {
+          "command_id": "signboard-normal-20261012:signboard:clear",
+          "topic": "edgex/results/cctv/jetson-01/signboard",
+          "status": "acknowledged",
+          "message": "",
+          "site_id": null,
+          "event_id": "signboard-normal-20261012",
+          "requested_at": "2026-10-12T09:01:29.060164+09:00",
+          "updated_at": "2026-10-12T09:01:29.060164+09:00",
+          "payload": {
+            "command_id": "signboard-normal-20261012:signboard:clear:cctv-signboard-01",
+            "device_id": "cctv-signboard-01",
+            "status": "acknowledged",
+            "error_code": null,
+            "event_id": "signboard-normal-20261012",
+            "request_id": "signboard-normal-20261012:signboard:clear:cctv-signboard-01"
+          }
+        },
+        {
+          "command_id": "signboard-normal-20261012:signboard",
+          "topic": "device/signboard",
+          "status": "acknowledged",
+          "message": "",
+          "site_id": null,
+          "event_id": "signboard-normal-20261012",
+          "requested_at": "2026-10-12T09:01:08.608943+09:00",
+          "updated_at": "2026-10-12T09:01:08.952042+09:00",
+          "payload": {
+            "command_id": "signboard-normal-20261012:signboard:cctv-signboard-01",
+            "device_id": "cctv-signboard-01",
+            "status": "acknowledged",
+            "error_code": null,
+            "event_id": "signboard-normal-20261012",
+            "request_id": "signboard-normal-20261012:signboard:cctv-signboard-01"
+          }
+        }
+      ]
+    }
+  },
+  "conclusion": "격리45초 및 정상 Action→EdgeX 경로 모두 기본 경고 실물 표시 확인. 바이트 동일로 제목/인코딩이 표시를 막는다는 가설은 채택하지 않는다. 정상 경로의 시간 화면 복귀는 본문 전송13.690초 뒤로 확인했다. 이전 관찰 타이밍의 영향은 가능성이며 과거 통신 시간 초과까지 단일 원인으로 확정하지 않는다. I58 제한 표시 검증 해결, P3.4 전체/장기 신뢰도/배포 재현 완료를 뜻하지 않는다.",
+  "remaining": [
+    "I59 로컬 배포 준비 결과와 실제 운영 재생성/복귀 비교",
+    "운영 유지시간 기준·camera_1 상시 매핑·통신 장애 복구 전체",
+    "I60 루트 디스크 지속성·코드 검색 도구 인덱스/로그 정비"
+  ],
+  "artifact_sha256": {
+    "data/runtime/signboard_isolation_20261012/baseline.json": "b07efdd3b18c6dd4007ebb4ac07008568ea09d2785a5392ab4be0f2c44316167",
+    "data/runtime/signboard_isolation_20261012/isolation_plan.json": "14b962cf8da7f233696c1f9e4c1d2ab45395ef26f0f65ebcb1bd2214d64212bf",
+    "data/runtime/signboard_isolation_20261012/isolate_clock_before_retry.py": "e5af1627850853056f2039ccac73d18362eafcac17d67320278861032430f869",
+    "data/runtime/signboard_isolation_20261012/isolation_result.json": "481f129ae504f40e07b8cd89b242a8ef9ebc1d0363b410a7b3dc55ef331a7eb6",
+    "data/runtime/signboard_isolation_20261012/capture.json": "de725fc3209620d6fb593d1094a2a4f5c009df2474cb40cd0006c7a2110f1c93",
+    "data/runtime/signboard_isolation_20261012/preflight_checks.json": "a0b273610988c2d29867df05a6e8fe0688200e754c66000833294ccbe3f94b61",
+    "data/runtime/signboard_isolation_20261012/check_reconnect.py": "a9ca9546f990a0ec5a994567addbc62dd819fae0e894ae023e59e76cac89f7fa",
+    "data/runtime/signboard_isolation_20261012/retry/isolation_plan.json": "582afaffd5ddad7346639bc0fb7d6089bb8ba9226188f386b36d5ec57092d21d",
+    "data/runtime/signboard_isolation_20261012/retry/isolation_result.json": "cb22ac1f32846da2a08d1bd734363dfada146c5fbbc6058797bdcf9201ff5c3c",
+    "data/runtime/signboard_isolation_20261012/retry/during.json": "5cea618dab160d87ad3e2303d8672ceb12ea94891aec687ef1483bfb5a61ba7f",
+    "data/runtime/signboard_isolation_20261012/retry/capture.json": "f5519106df6f7730cb0bab439d36e129b43663d5823b0d590245bb51081e186c",
+    "data/runtime/signboard_isolation_20261012/normal/plan.json": "62b61965f8b931bb4205f17ef1952927ee5c5e5b8eb1edfec35fa03718b955c4",
+    "data/runtime/signboard_isolation_20261012/normal/trial.json": "0948cf1922178cdda5fcf5676c1ae1ba0610451c98e8a1ada3706d2aa691db5d",
+    "data/runtime/signboard_isolation_20261012/normal/capture.json": "d96d53a2d4c12566497a7e2b48d559a0291d116f85f97fb0f1df28d89853ed14",
+    "data/runtime/signboard_isolation_20261012/after.json": "48ff3dfad72ce0064986545292947e807e8287f81db122536e9b1ac3e7c3c1ab",
+    "data/runtime/root_disk_recovery_20261012/recovery.json": "44f9d573bb9f6a5ba94efd1ef3773b4d2fbe89c33b54435db314c49a81b817a6",
+    "data/runtime/root_disk_recovery_20261012/vscode_cache_recovery.json": "a161689dfc2f2534d68b3addd0cf2cc4b595ac3253f721e728247fcf4f6b0133",
+    "data/runtime/root_disk_recovery_20261012/summary.json": "efd41ea1c8b5e069f0bfe52d74868001830f013383f6055aea8c573f3f4f6343",
+    "data/runtime/signboard_wire_timing_20261008/isolate_clock.py": "e5af1627850853056f2039ccac73d18362eafcac17d67320278861032430f869",
+    "data/runtime/signboard_isolation_20261012/isolate_clock.py": "32539c64bcf24bbebfc5c082bbcbaae21945894d2d09b261c6d36269d4284e0e"
+  },
+  "script_provenance": {
+    "initial_snapshot": "data/runtime/signboard_isolation_20261012/isolate_clock_before_retry.py",
+    "successful_snapshot": "data/runtime/signboard_isolation_20261012/isolate_clock.py",
+    "executed_successful_path": "data/runtime/signboard_wire_timing_20261008/isolate_clock.py",
+    "note": "성공 시험 후10-08 스크립트는 준비 시점 원본으로 복원하고 실제 성공 버전을10-12 스냅샷으로 보존했다."
+  }
+}

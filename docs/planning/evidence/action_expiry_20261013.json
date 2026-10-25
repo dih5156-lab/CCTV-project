@@ -1,0 +1,169 @@
+{
+  "date": "2026-10-13",
+  "scope": "P3.1 경보 만료·재시작 안전 재개",
+  "status": "VERIFIED_LOCAL_NOT_DEPLOYED",
+  "wbs": {
+    "P3.1": "PLANNED",
+    "counts": {
+      "DONE": 9,
+      "BLOCKED": 3,
+      "PLANNED": 13,
+      "VERIFY": 7,
+      "IN_PROGRESS": 1
+    },
+    "done": 9,
+    "total": 33,
+    "next": "물리 장치별 영속 우선순위·동순위 FIFO/경합"
+  },
+  "implementation": {
+    "python_files": 8,
+    "config_files": 1,
+    "new_dependencies": 0,
+    "schema": "기존 MQTT 수신 DB에 action_execution_windows 테이블 추가",
+    "opt_in": "ACTION_EXPIRY_POLICY_PATH 또는 --action-expiry-policy",
+    "default": "clock_verified=false / rules=[] / 미승인 TTL 기본값 없음",
+    "behavior": [
+      "원본·최초 기한/정책/물리 대상 commit 후 MQTT ACK",
+      "접수·실행·물리 대상별 발행 직전 now>=deadline 검사",
+      "동일 event_id 재수신/재시작 기한 유지·내용 충돌 보류",
+      "유효한 미실행 queued만 재개·dispatching/완료 저장 실패는 uncertain으로 재실행 금지",
+      "장치/물리 대상별 만료와 실제 ACK 별도 저장·complete는 처리 반환이며 실물 성공 아님"
+    ]
+  },
+  "validation": {
+    "junit": {
+      "regression_verified": {
+        "tests": 209,
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0
+      },
+      "mqtt_release": {
+        "tests": 6,
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0
+      }
+    },
+    "unique_passed": 215,
+    "new_tests": 47,
+    "ruff": "PASS: 제품8/시험2/진행판 렌더러1파일",
+    "mypy": "PASS: action_expiry.py / action_mqtt_intake.py, --follow-imports=silent; 전체 프로젝트 합격 아님",
+    "syntax": "제품 Python8 AST PASS",
+    "wbs_consistency": "원본/JSON 33개 ID·상태·경로 일치",
+    "cases": [
+      "만료 경계·재수신 첫 기한·정책/시계/대상 변경",
+      "실제 자식 프로세스 강제 종료 후 출력 재개0",
+      "SQLite 기한 commit 실패 무ACK·선점 commit 실패 출력0·완료 commit 실패 중복 재개0",
+      "물리 대상 발행 사이 지연·장치별 서로 다른 TTL·부분 만료 후 정상 ACK",
+      "실제 격리 브로커 오프라인 유효/만료 경보·DB독립 연결로 commit 후 ACK 확인",
+      "기존 영속 수신 재전달·느린 실행 중 수신 지속·QoS0 비보존 회귀"
+    ],
+    "whitespace": "git diff --check 대상 파일 PASS"
+  },
+  "test_setup_corrections": [
+    "최초 새 시험5건: fixture 이력 DB 초기화 누락 수정",
+    "확장 시험: 실제 DB 열·장치 응답 request_id 계약에 맞춰 fixture 수정",
+    "임시 브로커 기동 권한/소켓 UID 접근 오류 수정 후 실제MQTT6 PASS; 운영 브로커 불변"
+  ],
+  "review": {
+    "graph": "지정10파일 detect_changes가 누적 미커밋/정적 관계178심볼·82시험 공백 경고를 반환; 이번 신규 결함 수로 해석하지 않음",
+    "method": "작업 전 스냅샷 대비 저장·선점·발행 경계 검토 및 관련 회귀 실행",
+    "independent_review": false
+  },
+  "operations": {
+    "deployed": false,
+    "candidate_rebuilt": false,
+    "physical_output_commands": 0,
+    "operating_containers_id_image_started_at_unchanged": true,
+    "observed": [
+      "/cctv-ai-engine|c8a71163c84b458197b98a4bde8e0e06719afc5cf5964e6fbd0b716109ce0377|sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1|2026-10-12T23:35:33.679490726Z",
+      "/cctv-action-layer|74deaeb0b5bdd64c8f2e2a141daa25c193a75cf235b214fee6ef8b4dcdceedeb|sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c|2026-10-12T23:35:15.475740705Z",
+      "/cctv-device-signboard|29aeb393bd52e7a9f8241be9214b970e82e8442253fdfe2e73dbbf5d153feaa8|sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd|2026-10-12T23:35:15.45875226Z",
+      "/edgex-kuiper|6249a0c22b5712d01242c176abfce736685579514bfb389952062c3fd9392576|sha256:7f4962946a721ece5ec630150e47614c4a461ee2c29600f24d96ef5e35a9d4da|2026-10-12T23:35:15.016557364Z",
+      "/cctv-public-api|cac3e58c1fa022fbf246ecc4fb84edecbc7801f783228c1b38e32367e7298f9d|sha256:ca4376b086a99f2ad42d2132cb21b1cf75178571fae530ec464c1ed071f3175c|2026-10-12T23:35:32.676616581Z"
+    ],
+    "mqtt_fixture": {
+      "container_id": "e3a756aa41d6f36115a6df4f3ea45957970d3ee8843e4bbafdda48126e06a4b6",
+      "network": "none",
+      "cpu_limit": 0.25,
+      "memory": "64m",
+      "removed": true,
+      "device_output": "mocked"
+    }
+  },
+  "limitations": [
+    "물리 장치별 영속 위험 우선순위/FIFO·공유 장치 경합·장기 대기·선점 잔여",
+    "현장 TTL·서버/사건 시계 신뢰 미확정; config 플래그가 자동 NTP 검증은 아님",
+    "옵션 없는 운영 경로는 종전 동작·이번 보호가 적용됐다고 주장하지 않음",
+    "수동 승인 영속 재개·REST 영속화·다중 이벤트 배열 분리·통합 관제 조회/해제 잔여",
+    "발행 후 MQTT 체류 중 만료·실물 중단/교체·exactly-once 출력 미검증",
+    "후보 이미지 빌드·운영 전환/복귀·실물·장시간 부하 미실행",
+    "보관/용량·P2.4 외부 기준 선행조건 미완료"
+  ],
+  "product_sha256": {
+    "src/services/action_expiry.py": "afe73bd823063892a65e2566a4a7777487c44ec32835b09a4e17a946bf719549",
+    "src/services/action_mqtt_intake.py": "70bafb32af37dcf61dea259ca6ea38d135f896ece4b00aea06026b756bfd7e04",
+    "src/services/action_bridge.py": "bee35aa8b773b3576527fae281c386218063751ef807f4e1a306106ac872988c",
+    "src/services/_action_bridge_executor.py": "5e7de8a0c28589fdb3d84e4a75b76f3e46a354af6d3e7218b5846d9266670196",
+    "src/services/device_command_transport.py": "5c32f4357bbe94558d2dea4e31c76a7355e51ff46b76a2492e9ebf35805488e6",
+    "src/services/command_result_collector.py": "1db589c8a266d0f367b7b10fe42707410d564cdc6f69dde684b28e3f40096237",
+    "src/services/_action_bridge_repo.py": "59af8e5862cceb7a178ad6639ba5dcd72acaa4bc9c06dca4da4d63ad85693579",
+    "runners/run_action_bridge.py": "4a9bad0829dce12e80f1104fa8f4faf91a74770dfe9e54a4f470c25c681ba885",
+    "config/action_expiry_policy.json": "f1a6ac997cbeb8be0287fadefbcb37074b0572d685226ad2531bcef1ec8419fa"
+  },
+  "raw_evidence": {
+    "data/runtime/action_expiry_20261013/regression_verified.xml": "287409ace1ae1ef29a9b4c99822bf7fb9177cce71f81e48fa5ed96d00034d748",
+    "data/runtime/action_expiry_20261013/mqtt_fixture.json": "9bf031b74ff5053ada78e8cd79754bb45ba6ff9dc2cf15e3958b59530d601a7e",
+    "data/runtime/action_expiry_20261013/ruff.log": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+    "data/runtime/action_expiry_20261013/mqtt_final.log": "0f0384f69c7b4c3c1536b0617cdcac97e3e57fc1ce037f4da54cd7e135265bb2",
+    "data/runtime/action_expiry_20261013/web.json": "a8d1df535e1251183bf068c590430391f509ea1b4f4194259485f8171a1f4141",
+    "data/runtime/action_expiry_20261013/expiry_final.log": "fd1a85ce1ac6e50dfa24da99b022974c5bda2065210b7193a2a821dc37fd1394",
+    "data/runtime/action_expiry_20261013/expiry_final.xml": "0d9378d488b56a035b4027ca8f04a49a6b8432bffd6b9111f93a3e6ecabaa006",
+    "data/runtime/action_expiry_20261013/expiry_initial.xml": "c0906d239fa6374a7208c5463c89ad60a8996ba9b8738d797df5f8a455623495",
+    "data/runtime/action_expiry_20261013/expiry_extended.xml": "c0b674a85c0897eaa1ad43800c124cce8e58e77cda7ddf78d55a203c80db05d0",
+    "data/runtime/action_expiry_20261013/mqtt.log": "76b8f6cb97ba1e4a63aa0462cc6abc81cc7749a8e13ad2a04a838070ae9095e6",
+    "data/runtime/action_expiry_20261013/regression_final.log": "f734745e5e0784d9986383db62912bce0a278e51e1d2d50885f45b681d70fc1d",
+    "data/runtime/action_expiry_20261013/operating_after.txt": "7649f2d3fdab6118dcba75f77729ae1a1e2c22f8b46df2e264d772909f4bd5e1",
+    "data/runtime/action_expiry_20261013/mypy.log": "f9b031e5c45aa702cd4fef028d465551cb20a2c4698e0913c7b00766b20ac4d8",
+    "data/runtime/action_expiry_20261013/mqtt.xml": "d7cc2455fe8dcca959e6a8e7dd9a6714e126658f0edf0a67522aa1e05d9cec9f",
+    "data/runtime/action_expiry_20261013/expiry_extended.log": "cd3b7a78b9f1376c60a8189abcd15e4f355e29f3b2b2a0c2bf330528e3399a6a",
+    "data/runtime/action_expiry_20261013/expiry_fixed.log": "73e6760e11ed7f8f807e4433245a3d58febd5de9c63d71ac15c68ebc9e7fb34c",
+    "data/runtime/action_expiry_20261013/regression_initial.xml": "20fa97552e2a2fa10f19eb107c0d42ffbe866e12debd7cfbdb240f4bccf12bc9",
+    "data/runtime/action_expiry_20261013/regression_initial.log": "67bf9e42b1884f3b427aa69427a38baf44c25bae5a31797213d706db80a1261a",
+    "data/runtime/action_expiry_20261013/regression_verified.log": "095a56045ea190f777f8d69488501f1b52800f99285c682eac81b435af78c9a7",
+    "data/runtime/action_expiry_20261013/mqtt_final.xml": "6711dc7cf2acf0cde2662381d2598699ec20cdb91306e416b572e63ea6d7435a",
+    "data/runtime/action_expiry_20261013/expiry_initial.log": "e2db6388fa7276aeeb9f0ff814ead97c2f94982eff13e4d97b09d36d73f13bd4",
+    "data/runtime/action_expiry_20261013/render.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "data/runtime/action_expiry_20261013/mqtt_release.log": "fdf5fc80ab29afa0b263914267dc673962a8517a757170541258701f38b71317",
+    "data/runtime/action_expiry_20261013/mqtt_verified.xml": "f0fd5172e61da0c6e31c946e21e46b2921527901673bfd93888190f5b0059082",
+    "data/runtime/action_expiry_20261013/mqtt_release.xml": "28c4c8784939dc59e7d99f63888a9131d67363900b2ba69ea1120bb65bec23ce",
+    "data/runtime/action_expiry_20261013/collector_final.xml": "337444b283e19cb9b409f48d3cb47f6a7e4536c8085db8123c00e224832864be",
+    "data/runtime/action_expiry_20261013/expiry_fixed.xml": "e31400bef31813d8d2ecc65ac8888211c998cc6d4ae11d12654e08ab7bf00e56",
+    "data/runtime/action_expiry_20261013/regression_final.xml": "0fc5423ee9c12886f0499db796d762719fa3e5c676a35e1042a6a0e72b1756ba",
+    "data/runtime/action_expiry_20261013/mqtt_verified.log": "dc54d47a0bf6f89a559bb66f596164cf96b41ba2afb9d023175cb859dd1f6b2f",
+    "data/runtime/action_expiry_20261013/collector_final.log": "c8d5725d1e1111cb5bcdc8cb8f2f82e77daef58123c47717114bfbc2e1e9ea5e"
+  },
+  "web": {
+    "status": "HTTP200_LOCAL_BYTES_MATCH",
+    "files": [
+      {
+        "name": "index.html",
+        "http_status": 200,
+        "bytes": 77081,
+        "sha256": "9f84d4f7175ad8614cedc1572c1ca4a65866b82756d2881e2f28c4a1a4255421",
+        "matches_local": true
+      },
+      {
+        "name": "CCTV_project_progress.pdf",
+        "http_status": 200,
+        "bytes": 150371,
+        "sha256": "413e8402a1fb5a299d9bceebe0014b48a92dbd9534160beeeb099e0737afd3d3",
+        "matches_local": true
+      }
+    ],
+    "browser_interaction_tested": false,
+    "module_graph": "이전 정적 구조 스냅샷은 이번 구현으로 재생성하지 않음",
+    "pdf_first_page_visual": "PASS"
+  }
+}

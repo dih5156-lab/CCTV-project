@@ -1,5 +1,7 @@
 # 모듈 안정화 WBS와 2026년 목표 일정
 
+10-26 **누적 stage·미통합 소스 검토 후 코드204파일 통합**: `59624ed`에 저장·Action/EdgeX, 엣지 인계, 영상/배포 검사와 A/B3파일·ROI4파일을 기록했다. 원본 index·staged/unstaged patch와 수정 전 파일을 보존했고 타 worktree/운영 엔진/서비스는 변경하지 않았다. 저장·Action528 PASS/11 SKIP, 부분 회귀 포함 중복 제거772 PASS·비동기 플러그인 환경 실패1건/최신 전체 회귀 미완료를 구분한다. 10-26 새 사전점검 PASS 후26.536FPS/13.366Hz 보호중단·자체정리08:30:28.635836, 자동재시도0. camera-offload 수정본/싸움 개발·원시자료는 보존·미통합, 운영 반영0·DONE9/37 유지. [파일별 근거와 한계](evidence/integration_review_20261026.json).
+
 10-23 주간 마감: [이번 주 보고서(10-19~10-23)·다음 주 우선순위](WEEKLY_REPORT_20261023.md). H.264 보완 운영 반영·낙상 후보 보완·A/B/DDS 부분 실증·max4 raw batch1/2/4 검증을 정리했다. 엔진 정확도/영상4입력 유효결과0, ROI6결과 NOT_RUN, camera-offload 수정본 회귀 NOT_RUN, A/B 연속 왕복 미완료·미니PC 지문 불일치로 인증/전송 보류다. 모든 배정 반환·새 배정 없음, 최신 보존 운영 표본16:21:17은17.345FPS/8.870Hz 보호 실패이며 이후 회복 미관측. **DONE9/37(24.3%) 유지**, 아래 시각별 항목은 당시 이력이다.
 
 10-23 16:28 **camera-offload CPU재시험 반환 확정·새배정 없음**: 사전점검17.345155FPS/8.869682Hz 미달로pytest/모형자식0·수정본NOT_RUN.16:21:18 정리·16:21:39 독립잔여0·16:22:31 반환통보등록과 이후 담당인계를 확인했다. 과거24 PASS/1 FAIL/174 NOT_RUN은 별도 이력, 제품/운영 미반영·새시험/자동재시도0. 미니PC는 OpenSSH Running 사용자확인 후 정확한 키/신원 대조 준비와 새구간 대기. P6.2 PLANNED·O4 IN_PROGRESS·기존이슈/DONE9/37 유지. [현재 배정](../tooling/CODEX_SKILL_ADOPTION.md)·[저장 범위](POC_SCOPE.md#minipc-storage-20261023).

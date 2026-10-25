@@ -1,0 +1,911 @@
+{
+  "version": "0.124",
+  "date": "2026-10-07",
+  "scope": "I54 output-rate boundary observation and candidate decision",
+  "raw_directory": "data/runtime/p51_output_rate_20261007_v124",
+  "decision": "REJECT_CANDIDATE_KEEP_ORIGINAL_I54_OPEN",
+  "comparison": {
+    "baseline": {
+      "primary_fps": 29.664166497736336,
+      "primary_window_seconds": 59.196,
+      "primary_delta": 1756.0,
+      "receiver_frames": 1069,
+      "receiver_media_seconds": 40.217,
+      "receiver_fps": 26.58079916453241,
+      "ffprobe_errors": 0,
+      "stop_seconds": 2.52668472006917,
+      "completed": true,
+      "image": "sha256:294e52234fc170904e2a09b180b422e0562d6e11b5aa28ebcf287a1b47c9ed55",
+      "boundary_available": true,
+      "counts": {
+        "output-queue.sink": 1832,
+        "output-queue.src": 1767,
+        "h264-nvvidconv.sink": 1767,
+        "h264-nvvidconv.src": 1767,
+        "h264-videorate.sink": 1767,
+        "h264-videorate.src": 1623,
+        "h264-encoder.sink": 1623,
+        "h264-encoder.src": 1621,
+        "h264-parser.sink": 1621,
+        "h264-parser.src": 1621,
+        "poc-fix-identity.sink": 1621,
+        "poc-fix-identity.src": 1620
+      },
+      "properties": {
+        "output-queue": {
+          "leaky": 2,
+          "max-size-buffers": 2,
+          "current-level-buffers": 0
+        },
+        "h264-videorate": {
+          "in": 0,
+          "out": 0,
+          "drop": 0,
+          "duplicate": 0,
+          "drop-only": false,
+          "max-duplication-time": 100000000
+        },
+        "h264-encoder": {
+          "copy-timestamp": false
+        }
+      },
+      "steady_boundaries": {
+        "output-queue.sink": {
+          "buffers": 1488,
+          "wall_window_seconds": 49.87398386700079,
+          "fps": 29.835194316300406,
+          "pts_gap_max_ms": 205.294231,
+          "pts_nonincreasing": 0
+        },
+        "output-queue.src": {
+          "buffers": 1449,
+          "wall_window_seconds": 49.87398386700079,
+          "fps": 29.053223497526403,
+          "pts_gap_max_ms": 217.438463,
+          "pts_nonincreasing": 0
+        },
+        "h264-videorate.src": {
+          "buffers": 1333,
+          "wall_window_seconds": 49.87398386700079,
+          "fps": 26.727361575019113,
+          "pts_gap_max_ms": 236.05643,
+          "pts_nonincreasing": 0
+        },
+        "poc-fix-identity.src": {
+          "buffers": 1334,
+          "wall_window_seconds": 49.87398386700079,
+          "fps": 26.74741210883383,
+          "pts_gap_max_ms": 236.05643,
+          "pts_nonincreasing": 0
+        }
+      }
+    },
+    "source_trace_failed": {
+      "primary_fps": 28.524967816247717,
+      "primary_window_seconds": 59.035999999999994,
+      "primary_delta": 1684.0,
+      "receiver_frames": 936,
+      "receiver_media_seconds": 40.108,
+      "receiver_fps": 23.336990126658026,
+      "ffprobe_errors": 0,
+      "stop_seconds": 30.000189717160538,
+      "completed": false,
+      "image": "sha256:294e52234fc170904e2a09b180b422e0562d6e11b5aa28ebcf287a1b47c9ed55",
+      "boundary_available": false
+    },
+    "source_trace": {
+      "primary_fps": 29.233786479373755,
+      "primary_window_seconds": 59.657,
+      "primary_delta": 1744.0,
+      "receiver_frames": 1066,
+      "receiver_media_seconds": 40.367,
+      "receiver_fps": 26.407709267470956,
+      "ffprobe_errors": 0,
+      "stop_seconds": 2.428567558992654,
+      "completed": true,
+      "image": "sha256:294e52234fc170904e2a09b180b422e0562d6e11b5aa28ebcf287a1b47c9ed55",
+      "boundary_available": true,
+      "counts": {
+        "src-replay_1.rtph264depay.src": 2032,
+        "src-replay_1.nvv4l2decoder.sink": 2032,
+        "src-replay_1.nvv4l2decoder.src": 1830,
+        "src-replay_1.vsrc_0": 1830,
+        "streammux.src": 1830,
+        "output-queue.sink": 1827,
+        "output-queue.src": 1786,
+        "h264-nvvidconv.sink": 1786,
+        "h264-nvvidconv.src": 1785,
+        "h264-videorate.sink": 1785,
+        "h264-videorate.src": 1604,
+        "h264-encoder.sink": 1604,
+        "h264-encoder.src": 1604,
+        "h264-parser.sink": 1604,
+        "h264-parser.src": 1604,
+        "poc-fix-identity.sink": 1604,
+        "poc-fix-identity.src": 1604
+      },
+      "properties": {
+        "output-queue": {
+          "leaky": 2,
+          "max-size-buffers": 2,
+          "current-level-buffers": 0
+        },
+        "h264-videorate": {
+          "in": 1785,
+          "out": 1604,
+          "drop": 303,
+          "duplicate": 170,
+          "drop-only": false,
+          "max-duplication-time": 100000000
+        },
+        "h264-encoder": {
+          "copy-timestamp": false
+        }
+      },
+      "steady_boundaries": {
+        "src-replay_1.vsrc_0": {
+          "buffers": 1483,
+          "wall_window_seconds": 50.46775739104487,
+          "fps": 29.38509806388083,
+          "pts_gap_max_ms": 166.855251,
+          "pts_nonincreasing": 31
+        },
+        "streammux.src": {
+          "buffers": 1485,
+          "wall_window_seconds": 50.46775739104487,
+          "fps": 29.424727326273114,
+          "pts_gap_max_ms": 195.289669,
+          "pts_nonincreasing": 0
+        },
+        "output-queue.sink": {
+          "buffers": 1486,
+          "wall_window_seconds": 50.46775739104487,
+          "fps": 29.44454195746926,
+          "pts_gap_max_ms": 195.289669,
+          "pts_nonincreasing": 0
+        },
+        "output-queue.src": {
+          "buffers": 1466,
+          "wall_window_seconds": 50.46775739104487,
+          "fps": 29.04824933354639,
+          "pts_gap_max_ms": 493.557243,
+          "pts_nonincreasing": 0
+        },
+        "h264-videorate.src": {
+          "buffers": 1340,
+          "wall_window_seconds": 50.46775739104487,
+          "fps": 26.551605802832306,
+          "pts_gap_max_ms": 512.061649,
+          "pts_nonincreasing": 0
+        },
+        "poc-fix-identity.src": {
+          "buffers": 1339,
+          "wall_window_seconds": 50.46775739104487,
+          "fps": 26.53179117163616,
+          "pts_gap_max_ms": 512.061649,
+          "pts_nonincreasing": 0
+        }
+      }
+    },
+    "sync_only": {
+      "primary_fps": 25.049948791994762,
+      "primary_window_seconds": 59.561,
+      "primary_delta": 1492.0,
+      "receiver_frames": 1115,
+      "receiver_media_seconds": 40.166,
+      "receiver_fps": 27.75979684310113,
+      "ffprobe_errors": 0,
+      "stop_seconds": 2.3277073139324784,
+      "completed": true,
+      "image": "sha256:294e52234fc170904e2a09b180b422e0562d6e11b5aa28ebcf287a1b47c9ed55",
+      "boundary_available": true,
+      "counts": {
+        "src-replay_1.rtph264depay.src": 1871,
+        "src-replay_1.nvv4l2decoder.sink": 1871,
+        "src-replay_1.nvv4l2decoder.src": 1855,
+        "src-replay_1.vsrc_0": 1855,
+        "streammux.src": 1560,
+        "output-queue.sink": 1558,
+        "output-queue.src": 1542,
+        "h264-nvvidconv.sink": 1542,
+        "h264-nvvidconv.src": 1541,
+        "h264-videorate.sink": 1541,
+        "h264-videorate.src": 1705,
+        "h264-encoder.sink": 1705,
+        "h264-encoder.src": 1704,
+        "h264-parser.sink": 1704,
+        "h264-parser.src": 1704,
+        "poc-fix-identity.sink": 1704,
+        "poc-fix-identity.src": 1704
+      },
+      "properties": {
+        "streammux": {
+          "live-source": true,
+          "sync-inputs": true
+        },
+        "output-queue": {
+          "leaky": 2,
+          "max-size-buffers": 2,
+          "current-level-buffers": 0
+        },
+        "h264-videorate": {
+          "in": 1541,
+          "out": 1705,
+          "drop": 3,
+          "duplicate": 195,
+          "drop-only": false,
+          "max-duplication-time": 100000000
+        },
+        "h264-encoder": {
+          "copy-timestamp": false
+        }
+      },
+      "steady_boundaries": {
+        "src-replay_1.vsrc_0": {
+          "buffers": 1483,
+          "wall_window_seconds": 50.06808296497911,
+          "fps": 29.61966810347636,
+          "pts_gap_max_ms": 166.83326,
+          "pts_nonincreasing": 5
+        },
+        "streammux.src": {
+          "buffers": 1237,
+          "wall_window_seconds": 50.06808296497911,
+          "fps": 24.706358357383856,
+          "pts_gap_max_ms": 199.998,
+          "pts_nonincreasing": 0
+        },
+        "output-queue.sink": {
+          "buffers": 1238,
+          "wall_window_seconds": 50.06808296497911,
+          "fps": 24.726331161229762,
+          "pts_gap_max_ms": 199.998,
+          "pts_nonincreasing": 0
+        },
+        "output-queue.src": {
+          "buffers": 1238,
+          "wall_window_seconds": 50.06808296497911,
+          "fps": 24.726331161229762,
+          "pts_gap_max_ms": 199.998,
+          "pts_nonincreasing": 0
+        },
+        "h264-videorate.src": {
+          "buffers": 1375,
+          "wall_window_seconds": 50.06808296497911,
+          "fps": 27.462605288118677,
+          "pts_gap_max_ms": 233.099667,
+          "pts_nonincreasing": 0
+        },
+        "poc-fix-identity.src": {
+          "buffers": 1374,
+          "wall_window_seconds": 50.06808296497911,
+          "fps": 27.44263248427277,
+          "pts_gap_max_ms": 233.099667,
+          "pts_nonincreasing": 0
+        }
+      }
+    },
+    "sync_latency": {
+      "primary_fps": 28.889263441766392,
+      "primary_window_seconds": 59.33,
+      "primary_delta": 1714.0,
+      "receiver_frames": 1180,
+      "receiver_media_seconds": 40.2,
+      "receiver_fps": 29.35323383084577,
+      "ffprobe_errors": 0,
+      "stop_seconds": 2.72887898189947,
+      "completed": true,
+      "image": "sha256:294e52234fc170904e2a09b180b422e0562d6e11b5aa28ebcf287a1b47c9ed55",
+      "boundary_available": true,
+      "counts": {
+        "src-replay_1.rtph264depay.src": 1873,
+        "src-replay_1.nvv4l2decoder.sink": 1872,
+        "src-replay_1.nvv4l2decoder.src": 1852,
+        "src-replay_1.vsrc_0": 1852,
+        "streammux.src": 1800,
+        "output-queue.sink": 1796,
+        "output-queue.src": 1772,
+        "h264-nvvidconv.sink": 1772,
+        "h264-nvvidconv.src": 1772,
+        "h264-videorate.sink": 1772,
+        "h264-videorate.src": 1802,
+        "h264-encoder.sink": 1802,
+        "h264-encoder.src": 1801,
+        "h264-parser.sink": 1801,
+        "h264-parser.src": 1801,
+        "poc-fix-identity.sink": 1801,
+        "poc-fix-identity.src": 1800
+      },
+      "properties": {
+        "streammux": {
+          "live-source": true,
+          "sync-inputs": true,
+          "max-latency": 200000000
+        },
+        "output-queue": {
+          "leaky": 2,
+          "max-size-buffers": 2,
+          "current-level-buffers": 0
+        },
+        "h264-videorate": {
+          "in": 1772,
+          "out": 1802,
+          "drop": 0,
+          "duplicate": 38,
+          "drop-only": false,
+          "max-duplication-time": 100000000
+        },
+        "h264-encoder": {
+          "copy-timestamp": false
+        }
+      },
+      "steady_boundaries": {
+        "src-replay_1.vsrc_0": {
+          "buffers": 1482,
+          "wall_window_seconds": 49.97512222197838,
+          "fps": 29.654754888187878,
+          "pts_gap_max_ms": 133.467405,
+          "pts_nonincreasing": 4
+        },
+        "streammux.src": {
+          "buffers": 1456,
+          "wall_window_seconds": 49.97512222197838,
+          "fps": 29.13449603050037,
+          "pts_gap_max_ms": 133.332,
+          "pts_nonincreasing": 0
+        },
+        "output-queue.sink": {
+          "buffers": 1457,
+          "wall_window_seconds": 49.97512222197838,
+          "fps": 29.154505986565276,
+          "pts_gap_max_ms": 133.332,
+          "pts_nonincreasing": 0
+        },
+        "output-queue.src": {
+          "buffers": 1457,
+          "wall_window_seconds": 49.97512222197838,
+          "fps": 29.154505986565276,
+          "pts_gap_max_ms": 133.332,
+          "pts_nonincreasing": 0
+        },
+        "h264-videorate.src": {
+          "buffers": 1480,
+          "wall_window_seconds": 49.97512222197838,
+          "fps": 29.61473497605807,
+          "pts_gap_max_ms": 166.406,
+          "pts_nonincreasing": 0
+        },
+        "poc-fix-identity.src": {
+          "buffers": 1480,
+          "wall_window_seconds": 49.97512222197838,
+          "fps": 29.61473497605807,
+          "pts_gap_max_ms": 166.406,
+          "pts_nonincreasing": 0
+        }
+      }
+    },
+    "actual_image": {
+      "primary_fps": 26.118019748593,
+      "primary_window_seconds": 59.346,
+      "primary_delta": 1550.0,
+      "receiver_frames": 1112,
+      "receiver_media_seconds": 40.233,
+      "receiver_fps": 27.639002808639678,
+      "ffprobe_errors": 0,
+      "stop_seconds": 2.4521089950576425,
+      "completed": true,
+      "image": "sha256:ff175ac58f12ea25563ca98c8fccb4d2b41e1fac64ee76ae1057ed6c44994996",
+      "boundary_available": true,
+      "counts": {
+        "src-replay_1.rtph264depay.src": 1879,
+        "src-replay_1.nvv4l2decoder.sink": 1879,
+        "src-replay_1.nvv4l2decoder.src": 1842,
+        "src-replay_1.vsrc_0": 1842,
+        "streammux.src": 1626,
+        "output-queue.sink": 1622,
+        "output-queue.src": 1567,
+        "h264-nvvidconv.sink": 1567,
+        "h264-nvvidconv.src": 1567,
+        "h264-videorate.sink": 1567,
+        "h264-videorate.src": 1610,
+        "h264-encoder.sink": 1610,
+        "h264-encoder.src": 1608,
+        "h264-parser.sink": 1608,
+        "h264-parser.src": 1608,
+        "poc-fix-identity.sink": 1608,
+        "poc-fix-identity.src": 1608
+      },
+      "properties": {
+        "streammux": {
+          "live-source": true,
+          "sync-inputs": true,
+          "max-latency": 200000000
+        },
+        "output-queue": {
+          "leaky": 2,
+          "max-size-buffers": 2,
+          "current-level-buffers": 0
+        },
+        "h264-videorate": {
+          "in": 1567,
+          "out": 1610,
+          "drop": 5,
+          "duplicate": 72,
+          "drop-only": false,
+          "max-duplication-time": 100000000
+        },
+        "h264-encoder": {
+          "copy-timestamp": false
+        }
+      },
+      "steady_boundaries": {
+        "src-replay_1.vsrc_0": {
+          "buffers": 1482,
+          "wall_window_seconds": 49.74976419308223,
+          "fps": 29.789085919045906,
+          "pts_gap_max_ms": 164.371362,
+          "pts_nonincreasing": 129
+        },
+        "streammux.src": {
+          "buffers": 1287,
+          "wall_window_seconds": 49.74976419308223,
+          "fps": 25.869469350750393,
+          "pts_gap_max_ms": 466.662,
+          "pts_nonincreasing": 0
+        },
+        "output-queue.sink": {
+          "buffers": 1286,
+          "wall_window_seconds": 49.74976419308223,
+          "fps": 25.84936875296426,
+          "pts_gap_max_ms": 466.662,
+          "pts_nonincreasing": 0
+        },
+        "output-queue.src": {
+          "buffers": 1257,
+          "wall_window_seconds": 49.74976419308223,
+          "fps": 25.266451417166465,
+          "pts_gap_max_ms": 466.662,
+          "pts_nonincreasing": 0
+        },
+        "h264-videorate.src": {
+          "buffers": 1288,
+          "wall_window_seconds": 49.74976419308223,
+          "fps": 25.889569948536522,
+          "pts_gap_max_ms": 499.814334,
+          "pts_nonincreasing": 0
+        },
+        "poc-fix-identity.src": {
+          "buffers": 1289,
+          "wall_window_seconds": 49.74976419308223,
+          "fps": 25.909670546322655,
+          "pts_gap_max_ms": 499.814334,
+          "pts_nonincreasing": 0
+        }
+      }
+    }
+  },
+  "final_candidate_validation": {
+    "trials": {
+      "source_trace": {
+        "runner_pass": true,
+        "video": {
+          "metadata": {
+            "programs": [],
+            "streams": [
+              {
+                "codec_name": "h264",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "format": {
+              "duration": "40.233000"
+            }
+          },
+          "decode_exit": 0,
+          "decode_error_bytes": 0,
+          "decoded_frames": 1112,
+          "sha256": "3abca085375170d472e8fd940e5fa8fc6f8fe04de8de47809e5ec3196df98de5"
+        },
+        "databases": {
+          "appearances.db": {
+            "integrity": "ok",
+            "new_rows": {
+              "search_conditions": 0,
+              "appearance_log": 0
+            }
+          },
+          "mqtt_event_outbox.db": {
+            "integrity": "ok",
+            "new_rows": {
+              "mqtt_event_outbox": 26
+            }
+          },
+          "commercial_faces.db": {
+            "integrity": "ok",
+            "new_rows": {
+              "face_persons": 0,
+              "face_samples": 0
+            }
+          }
+        },
+        "stats": {
+          "frames_processed": 1624,
+          "frames_dropped": 0,
+          "events_detected": 26,
+          "events_sent": 0,
+          "events_failed": 26,
+          "inference_errors": 0,
+          "context_tasks_failed": 0,
+          "model_metrics_errors": 0,
+          "primary_metrics_errors": 0,
+          "pipeline_restart_executed": 0
+        },
+        "models": {
+          "primary": {
+            "enabled": true,
+            "properties": {
+              "unique-id": 1,
+              "process-mode": 1,
+              "batch-size": 1,
+              "interval": 1,
+              "output-tensor-meta": true
+            },
+            "frames_seen": 1624,
+            "frames_tensor_output": 812,
+            "frames_no_objects": 0,
+            "frames_classifier_only": 0,
+            "frames_unobserved": 812,
+            "frames_unknown": 0,
+            "objects_with_tensor": 0,
+            "objects_classifier_only": 0,
+            "last_frame_age_seconds": 0.16228177212178707,
+            "last_tensor_age_seconds": 0.2018922499846667
+          },
+          "pose": {
+            "enabled": false,
+            "properties": {
+              "unique-id": null,
+              "process-mode": null,
+              "batch-size": null,
+              "interval": null,
+              "output-tensor-meta": null
+            },
+            "frames_seen": 0,
+            "frames_tensor_output": 0,
+            "frames_no_objects": 0,
+            "frames_classifier_only": 0,
+            "frames_unobserved": 0,
+            "frames_unknown": 0,
+            "objects_with_tensor": 0,
+            "objects_classifier_only": 0,
+            "last_frame_age_seconds": null,
+            "last_tensor_age_seconds": null
+          },
+          "attributes": {
+            "enabled": false,
+            "properties": {
+              "unique-id": null,
+              "process-mode": null,
+              "batch-size": null,
+              "interval": null,
+              "output-tensor-meta": null
+            },
+            "frames_seen": 0,
+            "frames_tensor_output": 0,
+            "frames_no_objects": 0,
+            "frames_classifier_only": 0,
+            "frames_unobserved": 0,
+            "frames_unknown": 0,
+            "objects_with_tensor": 0,
+            "objects_classifier_only": 0,
+            "last_frame_age_seconds": null,
+            "last_tensor_age_seconds": null
+          },
+          "helmet": {
+            "enabled": false,
+            "properties": {
+              "unique-id": null,
+              "process-mode": null,
+              "batch-size": null,
+              "interval": null,
+              "output-tensor-meta": null
+            },
+            "frames_seen": 0,
+            "frames_tensor_output": 0,
+            "frames_no_objects": 0,
+            "frames_classifier_only": 0,
+            "frames_unobserved": 0,
+            "frames_unknown": 0,
+            "objects_with_tensor": 0,
+            "objects_classifier_only": 0,
+            "last_frame_age_seconds": null,
+            "last_tensor_age_seconds": null
+          }
+        },
+        "audit": {
+          "counts": {
+            "event.person": 791,
+            "pose_events": 1014,
+            "event.fall_detected": 223
+          },
+          "capabilities": {
+            "face_enabled": true,
+            "face_backend": "opencv_haar_baseline",
+            "attribute_backend": "NullAttributeBackend",
+            "color_backend": "NullColorClassificationBackend",
+            "color_runtime": null,
+            "color_labels": 0,
+            "color_input_size": null,
+            "rf_enabled": false,
+            "rf_mode": "shadow",
+            "camera_flags": {
+              "replay_1": {
+                "use_helmet": false,
+                "use_pose": true,
+                "use_person": false,
+                "use_face": false,
+                "use_appearance": false
+              }
+            }
+          }
+        },
+        "temporal": {},
+        "inline_rf": {
+          "enabled": false,
+          "cameras": {}
+        },
+        "observed_rate": {
+          "window_seconds": 59.346,
+          "frame_delta": 1550.0,
+          "fps": 26.118019748593,
+          "input_fps": 29.97002997002997,
+          "ratio": 0.8714712589447198
+        },
+        "callback_tracebacks": 0,
+        "loaded_engines": [
+          "fall/yolov8m-pose.engine"
+        ],
+        "aux_calls": {
+          "rf_verify": 0,
+          "tcn_verify": 0,
+          "color_runtime": 0,
+          "python_attribute": 0,
+          "face_request": 0
+        },
+        "aux_disabled": true,
+        "bounded_path_pass": true,
+        "max_sample_progress_gap_seconds": 1.2829999999999977,
+        "receiver_media_fps": 27.639002808639678,
+        "evaluation_rate_gate": false,
+        "stop_seconds": 2.4521089950576425
+      }
+    },
+    "operating_unchanged": true,
+    "source_files_match": true,
+    "bounded_integration_pass": true,
+    "accuracy_pass": false,
+    "operating_promotion": false,
+    "decision": "HOLD_WITH_NAMED_BLOCKER",
+    "comparison": {
+      "observed_rate": {
+        "baseline_full": {
+          "window_seconds": 59.009,
+          "frame_delta": 1220.0,
+          "fps": 20.674812316765237,
+          "input_fps": 29.97002997002997,
+          "ratio": 0.6898495709694001
+        },
+        "minimal": {
+          "window_seconds": 59.346,
+          "frame_delta": 1550.0,
+          "fps": 26.118019748593,
+          "input_fps": 29.97002997002997,
+          "ratio": 0.8714712589447198
+        }
+      },
+      "video": {
+        "baseline_full": {
+          "metadata": {
+            "programs": [],
+            "streams": [
+              {
+                "codec_name": "h264",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "format": {
+              "duration": "40.235000"
+            }
+          },
+          "decode_exit": 0,
+          "decode_error_bytes": 0,
+          "decoded_frames": 696,
+          "sha256": "9cd769d778c6743936026f79f288a756b727f8d2b5265d4782ae63a831b4f1f2"
+        },
+        "minimal": {
+          "metadata": {
+            "programs": [],
+            "streams": [
+              {
+                "codec_name": "h264",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "format": {
+              "duration": "40.233000"
+            }
+          },
+          "decode_exit": 0,
+          "decode_error_bytes": 0,
+          "decoded_frames": 1112,
+          "sha256": "3abca085375170d472e8fd940e5fa8fc6f8fe04de8de47809e5ec3196df98de5"
+        }
+      },
+      "stop_seconds": {
+        "baseline_full": 3.541117020882666,
+        "minimal": 2.4521089950576425
+      }
+    }
+  },
+  "rollback": {
+    "source_files_restored": 206,
+    "candidate_applied_to_operating": false,
+    "candidate_regression": {
+      "red_failed": 2,
+      "red_passed": 2,
+      "related_passed": 218,
+      "related_skipped": 2,
+      "ruff": "PASS"
+    },
+    "candidate_decision": "REJECT_NOT_REPRODUCIBLE",
+    "reason": "fixed actual image primary26.118<28.4715; prior prototype28.889 pass not reproduced; receiver improvements alone insufficient",
+    "only_this_turn_test_block_restored": true
+  },
+  "artifacts_sha256": {
+    "comparison.json": "2cbbb58a3cf172ec4877c1686c8d6c26759251421cdee49ef808b58aafc983ba",
+    "plan.json": "ee57a71d79088e8979832091b655c3aaad9362d4933e76f4c953a6eccbbfe006",
+    "sync_plan.json": "801577abe5916047abb4c3d6c9156b9ab36d1a037706814ef6e5ac10163abbdd",
+    "sync_latency_plan.json": "f5c46705609227200adce1aa151ac9aeeb57850b0206f59673ad2b734a15e72d",
+    "rollback.json": "9133351a47b69029b907d323d634fc46dad78f351b51e5f2188642319a41936c",
+    "validation.json": "8041e4e50de2113ac510cda87ef6000d5f2e2b175416c27b5575aba20c2c90ba",
+    "preserved_validation_sync.json": "a6d0044eecfc9e6fd3263c0d7540dabe1d469c7f9ca5ac6b2ccad3acac240145",
+    "validation_sync_latency.json": "a2bdabcb7550348ee02b1ef1abed4c58dadb8e011d74452bcfb42dec2c5af112",
+    "validation_fixed.json": "871887285430e6e9053b68bba4d7ba155838bc31780707ed44849cd39ff6c145",
+    "source_trial_results_failed.json": "7c0c5654a7a381efbb62b31d474b93920a7aae98f64852ceda3e2baf7106d637",
+    "preserved_source_trial_results.json": "9a6961b2a534af1cf3394a5c4e608b03edfe780382ab7ea869f0674a69d7fa30",
+    "fixed_trial_results.json": "b4ad76c6d2f93a2df44e4f75b3a30d25639e694e3de18b180b10d879d2be2610",
+    "sync_latency_trial_results.json": "2256e406499eb4fb05eef0159cb61aa5c6f11d8a9450f4a292824ce39df9f6bc",
+    "preserved_sync_trial_results.json": "595652ac7a7df77e191072a16803ee1aa5230e30b41549db8babb80cfdfe560a",
+    "trial_results.json": "2f278e242a2b9cce413607199bbad6699d374023b49aee474f529835b507a931",
+    "image.id": "170aebbcfba0514e15216b8927c25e5a3ad65f6729beee8b8bbf95aa67058e60",
+    "fixed_image.id": "5e39c428f359786e63f7d9f9a934a3fa44777befb2e864cf988c01d24d211257",
+    "new_image_manifest.json": "a25de9211f0dcc28509b3e3eb57ce29783a5bd11b4b24d08551dcdb04d01d0cd",
+    "fixed_image_manifest.json": "2ed88b630dfe34142b6f5e2ecc4a13e3599632b740d83178df8fea7940663168",
+    "fixed_source_manifest.json": "2ed88b630dfe34142b6f5e2ecc4a13e3599632b740d83178df8fea7940663168",
+    "preflight.json": "f2c57d1486ae476a0c2b01542b20b2ddccb97d93bba74576cf01f2feaab01a29",
+    "preflight_retry.json": "455d63390e1dd5719a6d7b9afa40e4509f42f5ae451e8017c34c8be11f50b0d7",
+    "preflight_sync.json": "2bc67beb877e663aadce1ac5aa6eeb70be64053a588a6b7f6a055523ef36e729",
+    "preflight_sync_latency.json": "b6fb3d598bb355046894f71d0aded0a0e8daf1d4847608f6a968b5c89aca0af5",
+    "preflight_fixed.json": "dcb069aa3e8e5d3375dd49cfe593f97dc16f98ae0f11f33f7198d3b6cb2fb65a",
+    "observe_boundaries.py": "827f40e5f910b93b9515a46e5365fc4fdac8964c1deb893a916633c93cf39720",
+    "observe_source.py": "39197c4036d8252748d4918d789d3f0ab23995c7b5c9728de445852636da3909",
+    "observe_source_retry.py": "15a85c10a35f6cdab2a130dbab5ddff24f92e87009e019f0b341d96aefd5256c",
+    "observe_sync.py": "871d7b4675e779c455efdbe6c689a43aac9a728054b87464911f6ffbeb24b953",
+    "observe_sync_latency.py": "53308b2840f4440faa43a13a58fce7a60e95737140d70a507137c9a604f5443e",
+    "observe_fixed.py": "6458595fa5555526f9a8bc0c13e86ef0bbbbd98c871ff4600b82132f97a32cce",
+    "validate_fixed.py": "907689ed7ec8cf07908f97e6dfe50e7bbef17ed08702d0893b304ec258d2bca7",
+    "build/_deepstream_element_config.py": "95a30d17051492aa9d1fe12c4365ec0b351ea99b715e8fd8c551d6ac1111535a",
+    "candidate_test.txt": "cad50682800b8cc8a5b66e37aeb9130848fc3c5c9fa3efdecf3f90e1b17b9f5a",
+    "operating_before.json": "bc5b8ba4e7914c08cb98072e9bb523dc651e6c1c3b67f1cb04c16d234dd873f1",
+    "operating_after.json": "bc5b8ba4e7914c08cb98072e9bb523dc651e6c1c3b67f1cb04c16d234dd873f1",
+    "source_failed_operating_before.json": "bc5b8ba4e7914c08cb98072e9bb523dc651e6c1c3b67f1cb04c16d234dd873f1",
+    "source_failed_operating_after.json": "bc5b8ba4e7914c08cb98072e9bb523dc651e6c1c3b67f1cb04c16d234dd873f1",
+    "preserved_source_operating_before.json": "bc5b8ba4e7914c08cb98072e9bb523dc651e6c1c3b67f1cb04c16d234dd873f1",
+    "preserved_source_operating_after.json": "bc5b8ba4e7914c08cb98072e9bb523dc651e6c1c3b67f1cb04c16d234dd873f1",
+    "sync_operating_before.json": "bc5b8ba4e7914c08cb98072e9bb523dc651e6c1c3b67f1cb04c16d234dd873f1",
+    "sync_operating_after.json": "bc5b8ba4e7914c08cb98072e9bb523dc651e6c1c3b67f1cb04c16d234dd873f1",
+    "sync_latency_operating_before.json": "bc5b8ba4e7914c08cb98072e9bb523dc651e6c1c3b67f1cb04c16d234dd873f1",
+    "sync_latency_operating_after.json": "bc5b8ba4e7914c08cb98072e9bb523dc651e6c1c3b67f1cb04c16d234dd873f1",
+    "fixed_operating_before.json": "bc5b8ba4e7914c08cb98072e9bb523dc651e6c1c3b67f1cb04c16d234dd873f1",
+    "fixed_operating_after.json": "bc5b8ba4e7914c08cb98072e9bb523dc651e6c1c3b67f1cb04c16d234dd873f1",
+    "minimal/output/boundaries.json": "9afe9d203f5d945dbbc82df3bc17d4a3de477c5a67cbf1235f115ab0cadddd7f",
+    "minimal/output/stats.jsonl": "2e710daae7f0cbc57f621e0f1d7dbe9be8d0327a9c7c84342f78d599abb2a7cf",
+    "minimal/output/samples.jsonl": "994047bd1858fb5f4ab600fcc6dacc87f9e3c8aeb669c237afa9d3fb457f35d3",
+    "minimal/output/final_model_audit.json": "77f5aefdd381e597c703d8def8df4d3d76711b366495b9d049c497204d7f0929",
+    "minimal/output/experiment.json": "e158ceb6db4c48865917498ce9feef6ccd76525242cdb5b7343da0882c6195a5",
+    "minimal/output/result.mkv": "77d0fd5e552f4e020026c2dfb9b29a6409988b23307e1f9ce9ec225c8a6579dd",
+    "source_trace/output_failed/stats.jsonl": "b6dc2ab608bd94b9e65688abc414f83c5829474f1b5a15488ce502c39246deb7",
+    "source_trace/output_failed/samples.jsonl": "f4b12e9cd0ef05db4bae0e9dc9528ace9fbda5de5aa251d14bda0aa7fc494f66",
+    "source_trace/output_failed/experiment.json": "19f249af4ff9218df4eab77c6dd2b4ea5321cf98fc2de66d88927f2a04e38438",
+    "source_trace/output_failed/result.mkv": "d23039711fa43164f7f749db77bea8f73a555a39b2159f79aa632bfcc093d37b",
+    "source_trace/output_source/boundaries.json": "5df2ab006b264270e5c68a332bf41aa4ccbb9670eee887391cdb213c99a19644",
+    "source_trace/output_source/stats.jsonl": "7ae6d75e07da8b595b89370cba11a75bcd39eb61ad175758b6edbbf149bb54aa",
+    "source_trace/output_source/samples.jsonl": "97d86dbab4bc02ce212141b51147a42835425ae5e727bb8c6c1a7cd69c8f7fe8",
+    "source_trace/output_source/final_model_audit.json": "ba4b232dfde6a3920d92715677fc15f7411c6626b7e8a3fd1a009b29c8544c03",
+    "source_trace/output_source/experiment.json": "fbc5a9d52ab8221bc911cc0745823a0771d1b1d478f3bbbcb23b993958c44d73",
+    "source_trace/output_source/result.mkv": "90a3255dd2ebe67bbdbc48a21a2d6e4913ce7480d60a0fae1ee8eaa429df2f05",
+    "source_trace/output_sync_only/boundaries.json": "1060d7bd092318b578b49587ec96b1578cb8ecaa9d549ff31d5aa9227e94da4f",
+    "source_trace/output_sync_only/stats.jsonl": "df15a9ca11e17774d9bbcb14c2d9315fbb1a648b05d319344493a4ee87a1ef6f",
+    "source_trace/output_sync_only/samples.jsonl": "cdfa0ade54e7b13918ce7d13da139745720cc96e44cc13113ee0bbc825695b36",
+    "source_trace/output_sync_only/final_model_audit.json": "5a03e3b8cdc53e84674dc63902a6e2fd11adc9abd99eb2231cb5e6ee3772656c",
+    "source_trace/output_sync_only/experiment.json": "b4922ebabf7bd771c209af350b360c9bf9f1c0981b99552e53cd28ae4eb23d70",
+    "source_trace/output_sync_only/result.mkv": "746145f8f45d90660d4782b413964c0eb2438ab083ef6979f347ff2198ae293e",
+    "source_trace/output_sync_latency/boundaries.json": "006505d5d0e51566efd80c401601f104ec8ccfbd21bc408e1d69eb23781a9c47",
+    "source_trace/output_sync_latency/stats.jsonl": "fdbc7baad8161dc2c06b845c4700dce54e02aaa9c8737c56429b260538cca451",
+    "source_trace/output_sync_latency/samples.jsonl": "261a7c230bbd9204523d03a409d5f43dfe0b84bf23925534b14b17c7cc99960e",
+    "source_trace/output_sync_latency/final_model_audit.json": "662e5da6b80873a30dd5415805c87642ad4bbf0bf130d1542bcd09797491d3a3",
+    "source_trace/output_sync_latency/experiment.json": "fb9081c5261e67e6e2ba3e652cd026c6830e178b79766750cc3feeb193ee444b",
+    "source_trace/output_sync_latency/result.mkv": "db3518132300acc9468945d100245bab78d560c03196a0d6c575a3b5c7d40443",
+    "source_trace/output/boundaries.json": "4c7d303d25fcbf901aed9f149b1cd31e3b4f6d9c3a5961233a7478c9da1b7527",
+    "source_trace/output/stats.jsonl": "70af65e70bef400ed3de7dbf21e84bb83755d9f7cdcda5c51efc1d2b8c67dde5",
+    "source_trace/output/samples.jsonl": "af7f1a1518336be5def122dd868da740baec7a40aa28c40bcd7d466d95983e31",
+    "source_trace/output/final_model_audit.json": "6f18280f781579d3ccff87dc856db9376f6d61330c17e753f10625f3dca88274",
+    "source_trace/output/experiment.json": "84cdb416f72e5d222e2c8f2a2d4fb444967dc05ba310c69356b9728e64764aa3",
+    "source_trace/output/result.mkv": "3abca085375170d472e8fd940e5fa8fc6f8fe04de8de47809e5ec3196df98de5"
+  },
+  "findings": [
+    "Output queue and videorate reduce buffer counts before encoder; not evidence of encoder capacity failure",
+    "Source and mux PTS differ; segment/running-time normalization not recorded, so difference alone does not establish an SDK timestamp bug",
+    "Sync only reduced primary rate; sync plus200ms passed once then failed primary gate in actual image",
+    "One diagnostic trial exceeded30second shutdown; kept separately, original I40 root cause not proven",
+    "Final product206sources restored; prior uncommitted work preserved; no operating deployment"
+  ],
+  "limitations": [
+    "six bounded instrumented trials, not failure-rate statistics",
+    "same short fall recording loops, not independent accuracy samples",
+    "CPU2/8GB includes input replay, servers, receiver, AI and observer in one container; shared resource/timing impact remains unseparated",
+    "No end-to-end latency measurement or no-drop guarantee",
+    "Camera/file input may differ; no live physical-camera or multicamera performance conclusion",
+    "218PASS/2SKIP are rejected candidate regression results, not final performance acceptance"
+  ],
+  "next": "minimal source->mux reproduction without AI to separate timestamp conversion and shared replay load; no more model/config expansion",
+  "references": [
+    "https://docs.nvidia.com/metropolis/deepstream/7.1/text/DS_plugin_gst-nvstreammux.html",
+    "https://docs.nvidia.com/metropolis/deepstream/7.1/text/DS_ref_app_deepstream.html"
+  ],
+  "independent_review": {
+    "reviewer": "/root/output_rate_review",
+    "critical": 0,
+    "important": 0,
+    "verdict": "Candidate rejection and rollback justified; prototype pass and actual image failure are separate trials; PTS difference not proven root cause",
+    "documents_reviewed": true
+  },
+  "publication": {
+    "index.html": {
+      "http_status": 200,
+      "bytes": 31574,
+      "sha256": "dc93926b279a7f2a37f55ebd415fd792ad2a189472f0f1e72bed360139f4f670",
+      "local_equal": true
+    },
+    "CCTV_project_progress.pdf": {
+      "http_status": 200,
+      "bytes": 148397,
+      "sha256": "db01195a886988a2280416386b0cceeef41ff82b1334be177216e9740b1327ee",
+      "local_equal": true
+    },
+    "inline_csv": {
+      "bytes": 1587,
+      "local_equal": true
+    }
+  },
+  "document_validation": {
+    "passed": true,
+    "models": 8,
+    "wbs_rows": 33,
+    "wbs_status_unchanged": true,
+    "csv_rows": 8,
+    "html_escaped": true,
+    "evidence_artifacts": 80,
+    "prior_model_rows_retained": true,
+    "decision": "REJECT_CANDIDATE_KEEP_ORIGINAL_I54_OPEN"
+  },
+  "final_checks": {
+    "ruff": "PASS",
+    "git_diff_check": "PASS",
+    "pdf_page1_visual": "PASS",
+    "product_source_restored": 206
+  }
+}

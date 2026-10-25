@@ -1,0 +1,425 @@
+{
+  "version": "0.133",
+  "date": "2026-10-07",
+  "private_artifacts": "data/runtime/p51_fixed_candidate_20261007_v133",
+  "image": "sha256:d5a223fd222a1d06b57e55b2a5fad8fc3ca37c3f40076fc0f0559aeccc36e0be",
+  "base_image": "sha256:294e52234fc170904e2a09b180b422e0562d6e11b5aa28ebcf287a1b47c9ed55",
+  "plan_before_run": {
+    "base_image": "sha256:294e52234fc170904e2a09b180b422e0562d6e11b5aa28ebcf287a1b47c9ed55",
+    "tag": "cctv-ai-candidate:p51-v133-minimal-medium",
+    "fixed_environment": {
+      "DS_HELMET_ENABLED": "0",
+      "DS_FACE_ENABLED": "0",
+      "DS_APPEARANCE_ENABLED": "0",
+      "DS_PPHUMAN_SGIE_ENABLED": "0",
+      "APPEARANCE_ENABLED": "false",
+      "FALLDATA_AUX_ENABLED": "false",
+      "FALLDATA_AUX_TEMPORAL_WORKER_ENABLED": "false",
+      "FALLDATA_AUX_CLIP_BUFFER_ENABLED": "false",
+      "FALLDATA_AUX_TEMPORAL_NEAR_MISS_SHADOW_ENABLED": "false",
+      "DS_PRIMARY_INTERVAL": "1",
+      "DS_FALL_ENABLE_FOLDED_POSE": "false",
+      "DS_OSD_PROCESS_MODE": "0",
+      "DS_OUTPUT_MODE": "rtsp-publish",
+      "DS_PREVIEW_ENABLED": "1",
+      "STREAM_API_ENABLED": "0"
+    },
+    "scenario": "output_recovery",
+    "acceptance_before_run": {
+      "startup_seconds_max": 150,
+      "output_loss_seconds": 25,
+      "recovery_seconds_max": 90,
+      "stop_seconds_max": 30,
+      "video_decode_errors_max": 0,
+      "database_integrity": "ok",
+      "operating_unchanged": true
+    },
+    "scope": "격리 1채널 영상·저장·출력 단절 복구; 운영 배포·새 장비 재현·모델 정확도 합격 아님"
+  },
+  "results": {
+    "input": {
+      "runner_pass": true,
+      "operating_unchanged": true,
+      "videos": {
+        "result.mkv": {
+          "probe_exit": 0,
+          "probe_error_empty": true,
+          "metadata": {
+            "programs": [],
+            "streams": [
+              {
+                "codec_name": "h264",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "format": {
+              "duration": "60.201000"
+            }
+          },
+          "decode_exit": 0,
+          "decoded_frames": 1545,
+          "decode_error_empty": true,
+          "sha256": "0106514f2da860765f679307f957647d00a728df9dc43d3649686a49bb2be168",
+          "passed": true
+        },
+        "result-after.mkv": {
+          "probe_exit": 0,
+          "probe_error_empty": true,
+          "metadata": {
+            "programs": [],
+            "streams": [
+              {
+                "codec_name": "h264",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "format": {
+              "duration": "60.205000"
+            }
+          },
+          "decode_exit": 0,
+          "decoded_frames": 1667,
+          "decode_error_empty": true,
+          "sha256": "247308d6a573dd8c558f6db64e6c695ed5b585075bbbec15cd59707bb48b9050",
+          "passed": true
+        }
+      },
+      "databases": {
+        "appearances.db": {
+          "integrity": "ok",
+          "counts": {
+            "search_conditions": 0,
+            "appearance_log": 532446
+          },
+          "row_deltas": {
+            "search_conditions": 0,
+            "appearance_log": 0
+          }
+        },
+        "mqtt_event_outbox.db": {
+          "integrity": "ok",
+          "counts": {
+            "mqtt_event_outbox": 174712
+          },
+          "row_deltas": {
+            "mqtt_event_outbox": 93
+          }
+        },
+        "commercial_faces.db": {
+          "integrity": "ok",
+          "counts": {
+            "face_persons": 1,
+            "face_samples": 1
+          },
+          "row_deltas": {
+            "face_persons": 0,
+            "face_samples": 0
+          }
+        }
+      },
+      "generations": {
+        "1": {
+          "primary": 2723,
+          "pose": 0,
+          "attributes": 0,
+          "helmet": 0
+        }
+      },
+      "model_counts": {
+        "event.person": 2568,
+        "pose_events": 3274,
+        "event.fall_detected": 706
+      },
+      "rf_verify_calls": 0,
+      "final_stats": {
+        "frames_processed": 5445,
+        "events_detected": 93,
+        "events_failed": 93,
+        "inference_errors": 0,
+        "context_tasks_failed": 0,
+        "model_metrics_errors": 0,
+        "primary_metrics_errors": 0
+      },
+      "after_recovery_model_deltas": {
+        "event.person": 1293,
+        "pose_events": 1646,
+        "event.fall_detected": 353
+      },
+      "after_recovery_db_deltas": {
+        "appearance_log": 0,
+        "mqtt_event_outbox": 49
+      },
+      "observed_model_gate": true,
+      "storage_gate": true,
+      "source_files_match": true,
+      "deployment_files_unchanged": true,
+      "recovery_seconds": 11.194423268083483,
+      "stop_seconds": 2.6980153219774365,
+      "image": "sha256:d5a223fd222a1d06b57e55b2a5fad8fc3ca37c3f40076fc0f0559aeccc36e0be",
+      "image_contract_verified": true,
+      "medium_engine_loaded": true,
+      "callback_tracebacks": 0,
+      "operating_promotion": false,
+      "fresh_tensor_at_recovery": true,
+      "passed": true
+    },
+    "output": {
+      "runner_pass": true,
+      "operating_unchanged": true,
+      "videos": {
+        "result.mkv": {
+          "probe_exit": 0,
+          "probe_error_empty": true,
+          "metadata": {
+            "programs": [],
+            "streams": [
+              {
+                "codec_name": "h264",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "format": {
+              "duration": "60.211000"
+            }
+          },
+          "decode_exit": 0,
+          "decoded_frames": 1612,
+          "decode_error_empty": true,
+          "sha256": "3cc323059ef98278698a520ef4c9c82e35032cc0ce6472e0b2f53f008c2107d9",
+          "passed": true
+        },
+        "result-after.mkv": {
+          "probe_exit": 0,
+          "probe_error_empty": true,
+          "metadata": {
+            "programs": [],
+            "streams": [
+              {
+                "codec_name": "h264",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "format": {
+              "duration": "60.302000"
+            }
+          },
+          "decode_exit": 0,
+          "decoded_frames": 1353,
+          "decode_error_empty": true,
+          "sha256": "d5ae2e4bfd1db69551699289ccae4374670597aefc252f0933d9c80a72445369",
+          "passed": true
+        }
+      },
+      "databases": {
+        "appearances.db": {
+          "integrity": "ok",
+          "counts": {
+            "search_conditions": 0,
+            "appearance_log": 532446
+          },
+          "row_deltas": {
+            "search_conditions": 0,
+            "appearance_log": 0
+          }
+        },
+        "mqtt_event_outbox.db": {
+          "integrity": "ok",
+          "counts": {
+            "mqtt_event_outbox": 174707
+          },
+          "row_deltas": {
+            "mqtt_event_outbox": 88
+          }
+        },
+        "commercial_faces.db": {
+          "integrity": "ok",
+          "counts": {
+            "face_persons": 1,
+            "face_samples": 1
+          },
+          "row_deltas": {
+            "face_persons": 0,
+            "face_samples": 0
+          }
+        }
+      },
+      "generations": {
+        "1": {
+          "primary": 1325,
+          "pose": 0,
+          "attributes": 0,
+          "helmet": 0
+        },
+        "4": {
+          "primary": 1254,
+          "pose": 0,
+          "attributes": 0,
+          "helmet": 0
+        }
+      },
+      "model_counts": {
+        "event.person": 2428,
+        "pose_events": 3098,
+        "event.fall_detected": 670
+      },
+      "rf_verify_calls": 0,
+      "final_stats": {
+        "frames_processed": 5189,
+        "events_detected": 88,
+        "events_failed": 88,
+        "inference_errors": 0,
+        "context_tasks_failed": 0,
+        "model_metrics_errors": 0,
+        "primary_metrics_errors": 0
+      },
+      "after_recovery_model_deltas": {
+        "event.person": 1124,
+        "pose_events": 1426,
+        "event.fall_detected": 302
+      },
+      "after_recovery_db_deltas": {
+        "appearance_log": 0,
+        "mqtt_event_outbox": 43
+      },
+      "observed_model_gate": true,
+      "storage_gate": true,
+      "source_files_match": true,
+      "deployment_files_unchanged": true,
+      "recovery_seconds": 15.124822014942765,
+      "stop_seconds": 2.831758431857452,
+      "image": "sha256:d5a223fd222a1d06b57e55b2a5fad8fc3ca37c3f40076fc0f0559aeccc36e0be",
+      "image_contract_verified": true,
+      "medium_engine_loaded": true,
+      "callback_tracebacks": 0,
+      "operating_promotion": false,
+      "passed": true
+    }
+  },
+  "optimization_historical_v123": {
+    "processing_fps": {
+      "baseline_full": 20.674812316765237,
+      "minimal": 29.741393730554346,
+      "increase_percent": 43.85327070871161
+    },
+    "received_media_fps": {
+      "baseline_full": 17.298372064123274,
+      "minimal": 23.502200999776168,
+      "increase_percent": 35.86365764741295
+    }
+  },
+  "source_files": 206,
+  "operating_unchanged": true,
+  "deployment_files_unchanged": true,
+  "deployed": false,
+  "total_video_frames": 6177,
+  "total_local_events": 181,
+  "next": "P5.1: 고정 후보 d5a223fd의 시험 중 새로 저장한 행을 보존하면서 이전 구성으로 복귀하는 격리 호환 검증을 진행한다. 이후 장시간 시험과 운영 전환·재부팅 검증을 구분한다.",
+  "limitations": [
+    "짧은 단일 채널 재생 시험이며 실물 다중 카메라·장시간 합격 아님",
+    "MQTT 없는 격리 환경의 로컬 outbox 저장이며 외부 전송 성공 아님",
+    "과거 최적화 비교는 보조 모델 비활성 조건이며 정확도·전체 완료율 아님",
+    "이전 구성 복귀·운영 전환·재부팅·새 Jetson 설치 재현 미검증",
+    "모델/SDK 읽기 전용 외부 연결이 필요하며 독립 설치 패키지 완성 아님"
+  ],
+  "sha256": {
+    "data/runtime/p51_fixed_candidate_20261007_v133/build.log": "8a8a4a56f7e9cf2fb1fc7a0f3325b6cd97aec1583475ee32cadccc2242696eb7",
+    "data/runtime/p51_fixed_candidate_20261007_v133/cameras.json": "2dcef1e0b75caf4dea6bddbff685d077b7f0229ba6cb9ab72dd8dcf9fce55acb",
+    "data/runtime/p51_fixed_candidate_20261007_v133/image.id": "917c02f6a89ea308703c882cb9e040365a3751fb631b75bfdb6f91361cd411bd",
+    "data/runtime/p51_fixed_candidate_20261007_v133/image_context/Dockerfile": "3a1c446a5a1ce7938c2b03c97ca1df673485012d15c65e0026a8c4b1c9687e74",
+    "data/runtime/p51_fixed_candidate_20261007_v133/image_context/config_infer_primary.txt": "04883db5eb781292312279feda1edfd8e30459d6f65ed216ad3953acab76ae90",
+    "data/runtime/p51_fixed_candidate_20261007_v133/image_verification.json": "f3fe2b6e74c847299ec2ad7da067646ccd79da41e28c60b83d8a0d148ce2339a",
+    "data/runtime/p51_fixed_candidate_20261007_v133/input_hashes.json": "8ed5b116779794cc1ae56c60117a90331a08c455abf69a687c167f82ba5422b4",
+    "data/runtime/p51_fixed_candidate_20261007_v133/input_operating_after.json": "bc5b8ba4e7914c08cb98072e9bb523dc651e6c1c3b67f1cb04c16d234dd873f1",
+    "data/runtime/p51_fixed_candidate_20261007_v133/input_operating_before.json": "bc5b8ba4e7914c08cb98072e9bb523dc651e6c1c3b67f1cb04c16d234dd873f1",
+    "data/runtime/p51_fixed_candidate_20261007_v133/input_preflight.json": "0c2c214f89c13df9377849ea28ff556f2f5ccc3a0d9539b41b959104236693e0",
+    "data/runtime/p51_fixed_candidate_20261007_v133/input_recovery/compose.json": "14ab2097ebab710a45ac0baa79253303774ba3f737c9ed99f29c183fecbb3171",
+    "data/runtime/p51_fixed_candidate_20261007_v133/input_recovery/output/experiment.json": "ac7a4d600c48685cc0013357accafec730237a71db9df4e3acb6d65ddc214f6e",
+    "data/runtime/p51_fixed_candidate_20261007_v133/input_recovery/output/final_model_audit.json": "99c09ed72256fdb715f42f58272b7ad1d184762861d415a19f91fb1acbb711ab",
+    "data/runtime/p51_fixed_candidate_20261007_v133/input_recovery/output/samples.jsonl": "9e83cdd87bda83412439ac2da6fcb90f80d225c68da134324929f5ea051e9556",
+    "data/runtime/p51_fixed_candidate_20261007_v133/input_recovery/output/stats.jsonl": "6a5ced75960e5c83eb57729f5ff24872ae76116394e8192238b3a8dba12e7f92",
+    "data/runtime/p51_fixed_candidate_20261007_v133/input_trial_results.json": "da81ee5b019f2d07ca48e809b058498a94fdaa3a51c9baf2d029052fd14d8f86",
+    "data/runtime/p51_fixed_candidate_20261007_v133/input_validation.json": "ce15a2ecd368d7576c949c40a283812ddfce8dfd07064e886a176582063c87e4",
+    "data/runtime/p51_fixed_candidate_20261007_v133/models_command.json": "0b28d6ff778bf5679f67bef5a6cb682a65f51edbd2db89f06065f8b760b57e87",
+    "data/runtime/p51_fixed_candidate_20261007_v133/new_image_manifest.json": "a25de9211f0dcc28509b3e3eb57ce29783a5bd11b4b24d08551dcdb04d01d0cd",
+    "data/runtime/p51_fixed_candidate_20261007_v133/observe_models.py": "8e36a311c5f561bee404cca70f11413656cb9a9f2d3e546e2a835fb02bd55e85",
+    "data/runtime/p51_fixed_candidate_20261007_v133/operating_after.json": "bc5b8ba4e7914c08cb98072e9bb523dc651e6c1c3b67f1cb04c16d234dd873f1",
+    "data/runtime/p51_fixed_candidate_20261007_v133/operating_before.json": "bc5b8ba4e7914c08cb98072e9bb523dc651e6c1c3b67f1cb04c16d234dd873f1",
+    "data/runtime/p51_fixed_candidate_20261007_v133/operating_file_hashes.json": "030194d038aa37c6535baa6a620f60563605fa1a1c716315974fb23a7c52b9a6",
+    "data/runtime/p51_fixed_candidate_20261007_v133/output_recovery/compose.json": "0d512dfa502f31fce7e8888fa6693dad19a1364957aeb5ab94791f399016a5dd",
+    "data/runtime/p51_fixed_candidate_20261007_v133/output_recovery/output/experiment.json": "56c82cc67bd48f0f6533588bfc8ffc7732e1e9a77dfd787ee5407aa5f079962f",
+    "data/runtime/p51_fixed_candidate_20261007_v133/output_recovery/output/final_model_audit.json": "05583cb80f3d7caa8941f3ebef4878172eb679274f9a6c82e0bb69dde4052a7f",
+    "data/runtime/p51_fixed_candidate_20261007_v133/output_recovery/output/samples.jsonl": "439f6d375c7ef72ed0f9e2b7cfb9f202287ac5d0379f120e520cdb51a7476937",
+    "data/runtime/p51_fixed_candidate_20261007_v133/output_recovery/output/stats.jsonl": "3144a870007833c1aceb72fed5f5739ed9b6450b14f7572be0691002a74dddfe",
+    "data/runtime/p51_fixed_candidate_20261007_v133/plan.json": "577b34eefc5921798f41ef6a42486244a37ce5e7e356f3cbf4d036e46ae474ab",
+    "data/runtime/p51_fixed_candidate_20261007_v133/preflight.json": "8c100a5fc19c052dfe4eb5ece63b6f78484ebd03fa920625a217dd534f6e5417",
+    "data/runtime/p51_fixed_candidate_20261007_v133/prepare.py": "b8f202b91524e2a78b26bff742097269afc283a7a9749c1f7866add7b1b48334",
+    "data/runtime/p51_fixed_candidate_20261007_v133/prepare_input.py": "9a0b8a7ea2cb9677de492a9c97dc0dc63de0d6977a1a7979f4640f37387a126f",
+    "data/runtime/p51_fixed_candidate_20261007_v133/publish.py": "1d51619b556c5b54c05091982e5234d3408d6f066c8678a2f2d0170b4bab769c",
+    "data/runtime/p51_fixed_candidate_20261007_v133/run.py": "9c7e83bbd421f7ade6a9cc8de3b170ca096ccad452566e6fec462a8e288a84be",
+    "data/runtime/p51_fixed_candidate_20261007_v133/run_input.py": "be9dc9280f7d41695d320cff5ff56eb5de580ec2030bbd252057ad67e7151434",
+    "data/runtime/p51_fixed_candidate_20261007_v133/run_input_recovery.py": "f77ea0654bad43942795b87f6d9d6b1efbe861def324897a320acb539f619391",
+    "data/runtime/p51_fixed_candidate_20261007_v133/run_recovery.py": "27480079ba44baef508892778568ed1c3822f6682cff10e13015fe3e0c1f26db",
+    "data/runtime/p51_fixed_candidate_20261007_v133/source_manifest.json": "a25de9211f0dcc28509b3e3eb57ce29783a5bd11b4b24d08551dcdb04d01d0cd",
+    "data/runtime/p51_fixed_candidate_20261007_v133/trial_results.json": "b91c8ca2e1bb5633eb213b874276a15c453847e6cddef361856c242ce116559c",
+    "data/runtime/p51_fixed_candidate_20261007_v133/validate.py": "96646f69c44012651271ce72f14be98abd880e86dd8b830b2094803e44193ebb",
+    "data/runtime/p51_fixed_candidate_20261007_v133/validate_input.py": "af3a80e49efa845ecf50aec5b71563acd7def9fe80d42dc0b9055b7097c56cb1",
+    "data/runtime/p51_fixed_candidate_20261007_v133/validation.json": "235a14c61e69d284936ca5300cec283b912a1c36625b89984cbd1d4a30ab209f",
+    "data/runtime/p51_fixed_candidate_20261007_v133/check_documents.py": "44b952d42740b731a6f7b62e7e8d082c51ac673d3348089398283f7efec7865f",
+    "data/runtime/p51_fixed_candidate_20261007_v133/review.json": "97bce6d6cadedea90bb8989c3785b9cc3c1931d22da8521b5883f0d85fe77206"
+  },
+  "source_evidence_sha256": {
+    "docs/planning/evidence/minimal_configuration_20261007.json": "a9797faacc137f9f7d1aec2cb4f8ad19cbdb1efbbf201202b2d9b92ccf2038df",
+    "docs/planning/evidence/operating_readiness_20261007.json": "b1d26db43cd8b4839062f6dc1cefaa890c13555cb280be340a26e9212ae255c3"
+  },
+  "document_validation": {
+    "passed": true,
+    "models": 8,
+    "wbs_rows": 33,
+    "wbs_status_unchanged": true,
+    "csv_rows": 8,
+    "html_escaped": true,
+    "evidence_artifacts": 44,
+    "all_eight_model_rows_retained": true,
+    "candidate_trials_pass": 2,
+    "source_files": 206,
+    "operating_unchanged": true,
+    "optimization_scope_separated": true,
+    "deployed": false
+  },
+  "publication": {
+    "index.html": {
+      "http": 200,
+      "bytes": 43979,
+      "local_matches": true,
+      "sha256": "056b5e62247315f92d4be30350f0d85e214a79a0166dfa463ee5e857e939f765"
+    },
+    "CCTV_project_progress.pdf": {
+      "http": 200,
+      "bytes": 147703,
+      "local_matches": true,
+      "sha256": "5b9416a4ec2de195cd841dc58871d81c82fedfeba4c1a4dcd0fe914dbf54a981"
+    }
+  },
+  "checks": {
+    "ruff": "PASS",
+    "git_diff_check": "PASS",
+    "pdf_page_1_visual": "PASS",
+    "isolated_trials": 2,
+    "video_decode_error_frames": 0,
+    "sqlite_integrity_checks": 6
+  },
+  "input_plan_note": "입력 시험은 최초 plan의 동일한 25초 단절·90초 복구·30초 종료 예산과 각90초 전후 관측을 재사용했다. 최초 plan의 scenario 표기는 output_recovery로 보존한다.",
+  "independent_review": {
+    "reviewer": "fixed_candidate_review",
+    "remaining_critical": 0,
+    "remaining_important": 0,
+    "resolved_important": 1,
+    "resolved_issue": "같은 세대 입력 복구에서 재연결 직전 텐서보다 증가해야 복구로 인정하도록 보강",
+    "final_results_reviewed": true,
+    "scope": "후보·격리·검증/원자료·문서·WBS33상태·모델8행"
+  }
+}

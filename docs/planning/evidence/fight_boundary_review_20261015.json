@@ -1,0 +1,621 @@
+{
+  "date": "2026-10-15",
+  "completed_at": "2026-10-15T15:26:19.395251+09:00",
+  "wbs_id": "P5.7",
+  "status": "PRIORITY_BOUNDARY_SAMPLE_REVIEW_COMPLETE_GROUND_TRUTH_PENDING",
+  "reviewer": "Codex 시각 표본 검수; 사람 검수자 승인 아님",
+  "source_artifacts": {
+    "docs/planning/evidence/fight_candidate_pool_20261015.json": "4adaaf0c0f5eb2c19f06da9edbb2b16b52140a427ece8de621a3db95deb3db43",
+    "docs/planning/evidence/fight_annotation_review_20261015.json": "43bfe95eb0da7178d57135262206497fc62d14e111df883fad1a3a78c4750a57"
+  },
+  "counts": {
+    "priority_videos_reviewed": 11,
+    "frame_references_reviewed": 315,
+    "unique_decoded_frames_reviewed": 293,
+    "contact_transition_candidates": 8,
+    "onset_unresolved": 3,
+    "end_findings": {
+      "INTERVENTION_REQUIRES_PARTICIPANT_REVIEW": 3,
+      "POST_EVENT_CONTINUITY_UNVERIFIED": 3,
+      "EXIT_WHILE_CONTACT_UNRESOLVED": 4,
+      "CLIP_END_CONTACT_UNRESOLVED": 1
+    },
+    "approved_event_intervals": 0,
+    "independent_frozen_scenes": 0,
+    "other_candidate_videos_pending": 27
+  },
+  "rows": [
+    {
+      "video_member": "1-1/1-1_cam01_fight04_place02_night_spring.mp4",
+      "video_sha256": "597c915b73c83338473edbd702e784d95200848392680b4f9eb604650da59628",
+      "label_sha256": "b8900bd338bec614d9374622aae1f239458977830a6d464c7f7f1f415a0f7c74",
+      "scene_group": "nia2019:fight:1-1",
+      "source_event_interval_s": [
+        274.1,
+        319.0
+      ],
+      "contact_transition_candidate_pts_s": [
+        201.86833333333334,
+        202.36883333333333
+      ],
+      "onset_evidence": [
+        {
+          "group": "contact",
+          "requested_s": 201.86666666666667,
+          "pts": 6056050,
+          "time_base": "1/30000",
+          "actual_pts_s": 201.86833333333334,
+          "path": "data/runtime/p57_fight_boundary_20261015/1-1_cam01_fight04_place02_night_spring/contact_03.jpg",
+          "sha256": "4933b77633b63e5cc3cdae0013f26c1f3ef2ebd29ee2cd5f05ce8723a09e491e"
+        },
+        {
+          "group": "contact",
+          "requested_s": 202.36666666666667,
+          "pts": 6071065,
+          "time_base": "1/30000",
+          "actual_pts_s": 202.36883333333333,
+          "path": "data/runtime/p57_fight_boundary_20261015/1-1_cam01_fight04_place02_night_spring/contact_04.jpg",
+          "sha256": "fe846f8c8544bd25c05cfe33d9091f5adf37304a74c556e57d9fb06871b36cb8"
+        }
+      ],
+      "start_finding": "EARLIER_CONTACT_THAN_HEADER",
+      "end_status": "INTERVENTION_REQUIRES_PARTICIPANT_REVIEW",
+      "review_notes": "201.868초에는 손을 내린 근접 자세,202.369~203.370초에는 상체를 두 손으로 미는 동작. 헤더274.1초 전 접촉이 존재하며238.238초 중간 표본은 서로 서 있는 상태.316~319초에는 접촉 중 제3/4인 개입,320초 이후에는 원래 두 사람이 떨어지는 장면. 마지막 접촉과 제지 동작의 참여자 구분이 필요하여 종료 정답은 확정하지 않음.",
+      "reviewed_frame_references": 28,
+      "unique_reviewed_pts": 28,
+      "viewed_groups": [
+        "header",
+        "contact",
+        "end",
+        "context"
+      ],
+      "reviewed_event_intervals": [],
+      "approved_for_training_or_scoring": false,
+      "normal_intervals": [],
+      "full_video_review_completed": false,
+      "human_verified": false
+    },
+    {
+      "video_member": "1-2/1-2_cam02_fight04_place02_night_spring.mp4",
+      "video_sha256": "9670876bbbfb331e226f6e4e75e40537a3af7e2c7f10679ee76ef47b59e750f9",
+      "label_sha256": "cde08212f863a4fc99823f2f27f4ec78ccaecc80ee6e979de309285792332f04",
+      "scene_group": "nia2019:fight:1-2",
+      "source_event_interval_s": [
+        280.6,
+        304.5
+      ],
+      "contact_transition_candidate_pts_s": null,
+      "onset_evidence": null,
+      "start_finding": "OCCLUDED_CONTACT_UNRESOLVED",
+      "end_status": "INTERVENTION_REQUIRES_PARTICIPANT_REVIEW",
+      "review_notes": "248.882~252.886초에 두 사람의 몸이 겹치고 손 접촉이 명확하지 않음.253.887초부터 간격 변화가 있으나 첫 접촉 시각은 표본으로 확정 불가.279.613~280.614초 상체 접촉과281.615초 쓰러짐을 확인.302~304초 제3인이 끼어들고305초 이후 원래 두 사람은 분리. 종료는 제지 동작과 구분 필요.",
+      "reviewed_frame_references": 28,
+      "unique_reviewed_pts": 28,
+      "viewed_groups": [
+        "header",
+        "contact",
+        "end",
+        "context"
+      ],
+      "reviewed_event_intervals": [],
+      "approved_for_training_or_scoring": false,
+      "normal_intervals": [],
+      "full_video_review_completed": false,
+      "human_verified": false
+    },
+    {
+      "video_member": "1-2/1-2_cam02_fight04_place02_night_summer.mp4",
+      "video_sha256": "c491d3c977a0b9f62af52d2d510118faab52d7cde3a53998b68fa51f417bb99c",
+      "label_sha256": "b643c1809dc429b838fa65b36c9109b79248f53e1e6582ff0d1256e6bf0810f6",
+      "scene_group": "nia2019:fight:1-2",
+      "source_event_interval_s": [
+        289.8,
+        295.3
+      ],
+      "contact_transition_candidate_pts_s": [
+        213.5133,
+        214.5143
+      ],
+      "onset_evidence": [
+        {
+          "group": "contact",
+          "requested_s": 213.5,
+          "pts": 6405399,
+          "time_base": "1/30000",
+          "actual_pts_s": 213.5133,
+          "path": "data/runtime/p57_fight_boundary_20261015/1-2_cam02_fight04_place02_night_summer/contact_02.jpg",
+          "sha256": "4a2871e6cab4bcc4fdf4d060250a72c22ce1ba6661c2350cc84d174fae13618e"
+        },
+        {
+          "group": "contact",
+          "requested_s": 214.5,
+          "pts": 6435429,
+          "time_base": "1/30000",
+          "actual_pts_s": 214.5143,
+          "path": "data/runtime/p57_fight_boundary_20261015/1-2_cam02_fight04_place02_night_summer/contact_04.jpg",
+          "sha256": "2749ad62edd75ab2b29ec7017adfb2135e3be62387ea40c2b4ce5916f6f513c7"
+        }
+      ],
+      "start_finding": "EARLIER_CONTACT_THAN_HEADER",
+      "end_status": "INTERVENTION_REQUIRES_PARTICIPANT_REVIEW",
+      "review_notes": "213.513초 접근 후214.514~217.517초 상체 접촉/밀림,219.519초 분리. 헤더289.8초보다 먼저 별도 접촉 장면이 존재.288.822초에도 상체 접촉 중이며293~295초 제3인이 개입,295.796초 이후 원래 두 사람은 떨어짐. 개입 동작을 포함한 종료 시각과 사건 병합 기준은 재검수 필요.",
+      "reviewed_frame_references": 28,
+      "unique_reviewed_pts": 28,
+      "viewed_groups": [
+        "header",
+        "contact",
+        "end",
+        "context"
+      ],
+      "reviewed_event_intervals": [],
+      "approved_for_training_or_scoring": false,
+      "normal_intervals": [],
+      "full_video_review_completed": false,
+      "human_verified": false
+    },
+    {
+      "video_member": "11-1/11-1_cam02_fight01_place08_night_summer.mp4",
+      "video_sha256": "0f3dc47d92b16f9ce8bf4cc9f47f61503b3b205da6ad45958fb2931cec8bad90",
+      "label_sha256": "822084f5f0af153970915cfbcfe351c2597767fcab066dcc5735c91bd0b96fac",
+      "scene_group": "nia2019:fight:11-1",
+      "source_event_interval_s": [
+        28.0,
+        291.7
+      ],
+      "contact_transition_candidate_pts_s": [
+        107.57413333333334,
+        108.07463333333334
+      ],
+      "onset_evidence": [
+        {
+          "group": "contact",
+          "requested_s": 107.56666666666666,
+          "pts": 3227224,
+          "time_base": "1/30000",
+          "actual_pts_s": 107.57413333333334,
+          "path": "data/runtime/p57_fight_boundary_20261015/11-1_cam02_fight01_place08_night_summer/contact_04.jpg",
+          "sha256": "a979052c41bfcf75f6371a4ee9ff7259915d65447f6165cb05ed2995c69a22bd"
+        },
+        {
+          "group": "contact",
+          "requested_s": 108.06666666666666,
+          "pts": 3242239,
+          "time_base": "1/30000",
+          "actual_pts_s": 108.07463333333334,
+          "path": "data/runtime/p57_fight_boundary_20261015/11-1_cam02_fight01_place08_night_summer/contact_05.jpg",
+          "sha256": "f0567ec8e93164bb9e7a640b918b5559a7d1dc763429ffd1b92b24c6ae84708e"
+        }
+      ],
+      "start_finding": "HEADER_PRECONTACT_ENTRY",
+      "end_status": "POST_EVENT_CONTINUITY_UNVERIFIED",
+      "review_notes": "헤더27~31초는 한 사람이 이동하는 장면이며 접촉 없음.107.574초 손을 내린 상태에서108.075초 상대 어깨/상체에 손을 뻗고108.575초 밀림.288~290초에는 한 사람이 바닥에 눕는 접촉,291초 이후 상대 곁에 서 있으며293.627초 영상 끝 인근까지 안전한 분리/종료의 지속은 확인되지 않음.",
+      "reviewed_frame_references": 28,
+      "unique_reviewed_pts": 26,
+      "viewed_groups": [
+        "header",
+        "contact",
+        "end",
+        "context"
+      ],
+      "reviewed_event_intervals": [],
+      "approved_for_training_or_scoring": false,
+      "normal_intervals": [],
+      "full_video_review_completed": false,
+      "human_verified": false
+    },
+    {
+      "video_member": "11-3/11-3_cam01_fight01_place08_night_summer.mp4",
+      "video_sha256": "600da75f50a3671fd5663fafcbe160b8e1131bca674aaf00dae112a43ee15889",
+      "label_sha256": "4f6703ad488a1f85aac608fe4347f1f2fd9daa3f3ecd9f1a6259aee94ba7e6f8",
+      "scene_group": "nia2019:fight:11-3",
+      "source_event_interval_s": [
+        85.1,
+        305.6
+      ],
+      "contact_transition_candidate_pts_s": [
+        92.82606666666666,
+        93.32656666666666
+      ],
+      "onset_evidence": [
+        {
+          "group": "contact",
+          "requested_s": 92.8,
+          "pts": 2784782,
+          "time_base": "1/30000",
+          "actual_pts_s": 92.82606666666666,
+          "path": "data/runtime/p57_fight_boundary_20261015/11-3_cam01_fight01_place08_night_summer/contact_04.jpg",
+          "sha256": "6c1e591c812712fc9ef485d628801403878486a24908405bac58df124eeefc3a"
+        },
+        {
+          "group": "contact",
+          "requested_s": 93.3,
+          "pts": 2799797,
+          "time_base": "1/30000",
+          "actual_pts_s": 93.32656666666666,
+          "path": "data/runtime/p57_fight_boundary_20261015/11-3_cam01_fight01_place08_night_summer/contact_05.jpg",
+          "sha256": "cdb1e743533047c98d35ad75b0100ae21b708ff16cff1d6e47c1efa78ff54916"
+        }
+      ],
+      "start_finding": "HEADER_PRECONTACT_GESTURE",
+      "end_status": "POST_EVENT_CONTINUITY_UNVERIFIED",
+      "review_notes": "헤더84~88초에는 팔을 움직이거나 떨어져 걷는 상태.92.826초 접근 후93.327~93.827초 어깨/상체를 밀고94.828초 떨어짐.299~303초에는 바닥에 누운 상대의 다리를 잡아 움직이고304~305초에는 곁에 서 있음. 파일 끝과 종료 헤더가 겹치므로 이후 재개 여부·안정된 종료는 미검증.",
+      "reviewed_frame_references": 28,
+      "unique_reviewed_pts": 27,
+      "viewed_groups": [
+        "header",
+        "contact",
+        "end",
+        "context"
+      ],
+      "reviewed_event_intervals": [],
+      "approved_for_training_or_scoring": false,
+      "normal_intervals": [],
+      "full_video_review_completed": false,
+      "human_verified": false
+    },
+    {
+      "video_member": "11-3/11-3_cam02_fight01_place08_night_summer.mp4",
+      "video_sha256": "c1ba95f23a650be772b7bb7268c882f0c40190957aed961eb6a6139c10a0b246",
+      "label_sha256": "17eeecc6451fab531ad4c55e35db992fa1b009af209ca7335c43dee7509edb64",
+      "scene_group": "nia2019:fight:11-3",
+      "source_event_interval_s": [
+        77.1,
+        300.7
+      ],
+      "contact_transition_candidate_pts_s": null,
+      "onset_evidence": null,
+      "start_finding": "OCCLUDED_CONTACT_UNRESOLVED",
+      "end_status": "POST_EVENT_CONTINUITY_UNVERIFIED",
+      "review_notes": "헤더76~80초 몸짓/접근 후84~87초에 가까워지며 접촉 후보가 보이지만 등 쪽 인물에 손이 가려 최초 접촉 경계는 확정 불가.동일 파일명 그룹 cam01은 측면 손 동작이 보이나 두 영상 PTS 동기화는 미확정이므로 시각을 복사하지 않음.291~294초 바닥 인물의 다리를 잡는 동작,299~300초 일으키는 듯한 접촉으로 바뀌므로 마지막 접촉을 모두 공격으로 간주하지 않음.",
+      "reviewed_frame_references": 28,
+      "unique_reviewed_pts": 28,
+      "viewed_groups": [
+        "header",
+        "contact",
+        "end",
+        "context"
+      ],
+      "reviewed_event_intervals": [],
+      "approved_for_training_or_scoring": false,
+      "normal_intervals": [],
+      "full_video_review_completed": false,
+      "human_verified": false
+    },
+    {
+      "video_member": "14-2/14-2_cam01_fight02_place06_night_spring.mp4",
+      "video_sha256": "3c7fb9b48b06ba0013296950f589428047e910fc19f7d332f6f9027805951c85",
+      "label_sha256": "a88e17c28d6b84178bb8d9ea9ae330619caff55d0ea918af311ada8c89c37eb1",
+      "scene_group": "nia2019:fight:14-2",
+      "source_event_interval_s": [
+        65.5,
+        318.6
+      ],
+      "contact_transition_candidate_pts_s": null,
+      "onset_evidence": null,
+      "start_finding": "CONTACT_DEFINITION_UNRESOLVED",
+      "end_status": "EXIT_WHILE_CONTACT_UNRESOLVED",
+      "review_notes": "65~72초 상대 머리 옆 벽 쪽으로 팔을 뻗는 자세와 실제 신체 접촉을 분리해야 함.73~76초에는 지나가는 자전거로 가림과 시선/자세 전환이 있어 pulling 시작을 표본만으로 확정 불가.315~318초 두 사람이 화면 왼쪽으로 함께 이동한 뒤 시야 이탈,319초 빈 화면은 사건이 끝났다는 증거가 아님.",
+      "reviewed_frame_references": 28,
+      "unique_reviewed_pts": 24,
+      "viewed_groups": [
+        "header",
+        "contact",
+        "end",
+        "context"
+      ],
+      "reviewed_event_intervals": [],
+      "approved_for_training_or_scoring": false,
+      "normal_intervals": [],
+      "full_video_review_completed": false,
+      "human_verified": false
+    },
+    {
+      "video_member": "14-2/14-2_cam02_fight02_place06_night_spring.mp4",
+      "video_sha256": "e09c2d10a62c29ffd512aee42aff09e9f1e9b61eaf21467fbfef45fafef4dd2e",
+      "label_sha256": "fe24322c7fb9d531605ae297cf494d003698c1a3349479c76175777904edb072",
+      "scene_group": "nia2019:fight:14-2",
+      "source_event_interval_s": [
+        82.8,
+        322.6
+      ],
+      "contact_transition_candidate_pts_s": [
+        80.61386666666667,
+        81.61486666666667
+      ],
+      "onset_evidence": [
+        {
+          "group": "contact",
+          "requested_s": 80.6,
+          "pts": 2418416,
+          "time_base": "1/30000",
+          "actual_pts_s": 80.61386666666667,
+          "path": "data/runtime/p57_fight_boundary_20261015/14-2_cam02_fight02_place06_night_spring/contact_03.jpg",
+          "sha256": "87841fc373c559b1968b52d0bb1c9535b3a34f697a8153e63128eae990df48c1"
+        },
+        {
+          "group": "contact",
+          "requested_s": 81.6,
+          "pts": 2448446,
+          "time_base": "1/30000",
+          "actual_pts_s": 81.61486666666667,
+          "path": "data/runtime/p57_fight_boundary_20261015/14-2_cam02_fight02_place06_night_spring/contact_05.jpg",
+          "sha256": "0b1b0482a99b7b5f883ad6af8e85fb9dc304aebb6ca9aef2b29554a2ce64b17b"
+        }
+      ],
+      "start_finding": "CONTACT_TRANSITION_BEFORE_HEADER",
+      "end_status": "EXIT_WHILE_CONTACT_UNRESOLVED",
+      "review_notes": "80.614초 벽 쪽에 팔을 뻗은 자세에서81.114~81.615초 상대가 벽에서 벗어나며 팔/상체를 당기는 전환 후보. 헤더82.8초에는 이미 가까운 접촉이 보임. 최초 신체 접촉과 강제적 당김의 정의는 구분 필요.319~322초 손/팔을 잡은 채 화면 밖으로 이동하므로 시야 이탈을 실제 사건 종료로 바꾸지 않음.366.700초에는 두 사람이 다시 화면에 보임.",
+      "reviewed_frame_references": 28,
+      "unique_reviewed_pts": 28,
+      "viewed_groups": [
+        "header",
+        "contact",
+        "end",
+        "context"
+      ],
+      "reviewed_event_intervals": [],
+      "approved_for_training_or_scoring": false,
+      "normal_intervals": [],
+      "full_video_review_completed": false,
+      "human_verified": false
+    },
+    {
+      "video_member": "14-3/14-3_cam02_fight02_place06_night_spring.mp4",
+      "video_sha256": "efc965fc506117b1df01b3cf7a988883eaedaba83647b54e0045cda0e3c31cd6",
+      "label_sha256": "affe8fa2ba73986d64394c22974a68286f0df72b427f16df351edd82c3c2036b",
+      "scene_group": "nia2019:fight:14-3",
+      "source_event_interval_s": [
+        28.0,
+        321.6
+      ],
+      "contact_transition_candidate_pts_s": [
+        82.21546666666667,
+        82.71596666666667
+      ],
+      "onset_evidence": [
+        {
+          "group": "contact",
+          "requested_s": 82.2,
+          "pts": 2466464,
+          "time_base": "1/30000",
+          "actual_pts_s": 82.21546666666667,
+          "path": "data/runtime/p57_fight_boundary_20261015/14-3_cam02_fight02_place06_night_spring/contact_04.jpg",
+          "sha256": "06814b562acdcc4133721bc43d9e0ad4f2199317cb4231fb65218b158436408f"
+        },
+        {
+          "group": "contact",
+          "requested_s": 82.7,
+          "pts": 2481479,
+          "time_base": "1/30000",
+          "actual_pts_s": 82.71596666666667,
+          "path": "data/runtime/p57_fight_boundary_20261015/14-3_cam02_fight02_place06_night_spring/contact_05.jpg",
+          "sha256": "1d9d70a5dee0db9075c82228a0104c3da8f2bf80aac34485f84d2407a5bf75b0"
+        }
+      ],
+      "start_finding": "HEADER_PRECONTACT_GESTURE",
+      "end_status": "CLIP_END_CONTACT_UNRESOLVED",
+      "review_notes": "헤더27~31초에는 간격을 두고 서 있거나 손짓하는 상태.82.215초 접근 후82.716초 손/팔을 잡고83.216~85.218초 끌어 이동하는 모습.318~321.521초 먼 출입구 쪽에서 두 사람이 몸을 굽히거나 팔을 잡는 상태로 파일이 끝나므로 종료 시각은 관찰 범위 밖으로 둠.",
+      "reviewed_frame_references": 28,
+      "unique_reviewed_pts": 23,
+      "viewed_groups": [
+        "header",
+        "contact",
+        "end",
+        "context"
+      ],
+      "reviewed_event_intervals": [],
+      "approved_for_training_or_scoring": false,
+      "normal_intervals": [],
+      "full_video_review_completed": false,
+      "human_verified": false
+    },
+    {
+      "video_member": "14-4/14-4_cam01_fight02_place06_night_spring.mp4",
+      "video_sha256": "0ce20e5424e3414db61f3b61bd102850af642363759eb6dc374c46f6d0edb67b",
+      "label_sha256": "9fbdeb9597e66eb2825456ef2c686293a5bd728c2a68f34fd417db5021aecacf",
+      "scene_group": "nia2019:fight:14-4",
+      "source_event_interval_s": [
+        114.6,
+        328.6
+      ],
+      "contact_transition_candidate_pts_s": [
+        119.48603333333334,
+        119.98653333333333
+      ],
+      "onset_evidence": [
+        {
+          "group": "contact",
+          "requested_s": 119.46666666666667,
+          "pts": 3584581,
+          "time_base": "1/30000",
+          "actual_pts_s": 119.48603333333334,
+          "path": "data/runtime/p57_fight_boundary_20261015/14-4_cam01_fight02_place06_night_spring/contact_04.jpg",
+          "sha256": "956c0a2b40db1c59ae2a9d8b7ec4ec982cbfd61fc3d277b1b9aa46e48d2e7a78"
+        },
+        {
+          "group": "contact",
+          "requested_s": 119.96666666666667,
+          "pts": 3599596,
+          "time_base": "1/30000",
+          "actual_pts_s": 119.98653333333333,
+          "path": "data/runtime/p57_fight_boundary_20261015/14-4_cam01_fight02_place06_night_spring/contact_05.jpg",
+          "sha256": "283e5559db187511408cbcbb6e4d7a99c1a51e6abef554db98e4f2f5c78471cd"
+        }
+      ],
+      "start_finding": "HEADER_PRECONTACT_GESTURE",
+      "end_status": "EXIT_WHILE_CONTACT_UNRESOLVED",
+      "review_notes": "헤더114~117초에는 접근/손짓,119.486초 손이 내려간 상태에서119.987초 상대 손/팔을 잡고120~124초 당겨 이동하는 모습.325~327초 두 사람이 함께 왼쪽 끝으로 이동하고328초 시야에서 사라짐. 실제 접촉 종료를 관찰한 것은 아니므로 종료 시각을 확정하지 않음.",
+      "reviewed_frame_references": 28,
+      "unique_reviewed_pts": 23,
+      "viewed_groups": [
+        "header",
+        "contact",
+        "end",
+        "context"
+      ],
+      "reviewed_event_intervals": [],
+      "approved_for_training_or_scoring": false,
+      "normal_intervals": [],
+      "full_video_review_completed": false,
+      "human_verified": false
+    },
+    {
+      "video_member": "14-4/14-4_cam02_fight02_place06_night_spring.mp4",
+      "video_sha256": "05ee40aad0691967035a830338fe52c29c201597380e768501934cfbbd41e6df",
+      "label_sha256": "7026f08f3678b94841566e73121378cb56119dc30f28e39b36bd06c62fe27098",
+      "scene_group": "nia2019:fight:14-4",
+      "source_event_interval_s": [
+        117.7,
+        329.4
+      ],
+      "contact_transition_candidate_pts_s": [
+        122.2221,
+        122.7226
+      ],
+      "onset_evidence": [
+        {
+          "group": "contact",
+          "requested_s": 122.2,
+          "pts": 3666663,
+          "time_base": "1/30000",
+          "actual_pts_s": 122.2221,
+          "path": "data/runtime/p57_fight_boundary_20261015/14-4_cam02_fight02_place06_night_spring/contact_04.jpg",
+          "sha256": "046c4838285f1aa628b7126561d73a2b2a6e874819d3abd033b535bcb6d6305b"
+        },
+        {
+          "group": "contact",
+          "requested_s": 122.7,
+          "pts": 3681678,
+          "time_base": "1/30000",
+          "actual_pts_s": 122.7226,
+          "path": "data/runtime/p57_fight_boundary_20261015/14-4_cam02_fight02_place06_night_spring/contact_05.jpg",
+          "sha256": "943d3310c0dc8812d89638a5f72ef99815fd70ea90d9fbad38fe433940346791"
+        }
+      ],
+      "start_finding": "HEADER_PRECONTACT_GESTURE",
+      "end_status": "EXIT_WHILE_CONTACT_UNRESOLVED",
+      "review_notes": "헤더116~120초에는 접근/몸짓,122.222초 손이 내려간 상태에서122.723초 상대 손/팔을 잡고123~127초 당겨 이동. 마지막 pulling 라벨은329.367초까지지만326.393~329.296초 표본에는 두 사람이 없으므로 그 시각을 실제 공격 종료로 확정할 수 없음. 추가315~326초 검수:320.020~325.025초 상대 팔/상체를 잡아 이동하고326.026초 화면 밖으로 이탈. 실제 종료는 확인되지 않아 시야 이탈로 분류.",
+      "reviewed_frame_references": 35,
+      "unique_reviewed_pts": 30,
+      "viewed_groups": [
+        "header",
+        "contact",
+        "end",
+        "context",
+        "end_followup"
+      ],
+      "reviewed_event_intervals": [],
+      "approved_for_training_or_scoring": false,
+      "normal_intervals": [],
+      "full_video_review_completed": false,
+      "human_verified": false
+    }
+  ],
+  "review_policy": {
+    "original_labels_unchanged": true,
+    "candidate_manifest_unchanged": true,
+    "candidate_onset_definition": "첫 접촉 원본 라벨 인근의 시각 표본에서 좁힌 접촉/당김 전환 후보. 전영상 최초 공격·공식 정답·연속 재생 검수로 해석하지 않음.",
+    "end_definition": "제지/도움·시야 이탈·파일 종료를 공격 종료로 자동 치환하지 않음. 종료가 불명확하면 정답 구간을 만들지 않음.",
+    "negative_definition": "위협·무라벨·시야 이탈 후 빈 화면을 독립 정상 정답으로 자동 추출하지 않음.",
+    "multicamera_definition": "카메라별 PTS 동기화 전 정답 시각 복사 금지. 같은 장면 그룹을 독립 사건으로 중복 계산하지 않음.",
+    "adoption_scope": "검수용 sidecar에만 기록; 학습/평가 코드 연결·원본 덮어쓰기 없음"
+  },
+  "implementation_status": {
+    "production_changes": 0,
+    "ai_stops": 0,
+    "gpu_trials": 0,
+    "training_runs": 0,
+    "new_dependencies": 0,
+    "processing_standard": "1080p30 전체화면·사람/Pose 신뢰도0.5 유지",
+    "review_preview_size": [
+      960,
+      540
+    ],
+    "runtime_file_sha256": {
+      "src/core/ai/fall_temporal_model.py": "9537b4c935496f98e2cd5d4916cab3a36d2c272b0a1d3cd9ad32bfea26ae2e96",
+      "src/core/ai/_temporal_worker.py": "7e33f3323c89cf8119888e013a1dd38cafa6b99aaf3807ca1390e61ed9d7c35a",
+      "src/core/video_event_ingest.py": "7158836647b520c8ac84872fe6752bf9c610abe740e5a6c8945be8a68c6b4163",
+      "src/core/events.py": "9d8d1f01c4b53b216c4c9cddab63cee0d4938a04724d401f73607f88279fad09",
+      "config/event_type_map.json": "1213c8dff21bcb9ef17d7ce934b0f2cf14f7f1be42924f4c40e8199dd0cd7a63",
+      "models/model_manifest.json": "2ae31f3969fed58b831e959c9c3a06a4aa398d1b9580af0ed74c93f65df682a2"
+    }
+  },
+  "validation": {
+    "video_and_xml_hashes": "PASS:11쌍, 추가1쌍 재대조",
+    "decoded_pts_and_preview_hashes": "PASS:315표본;293고유PTS",
+    "review_rows": "PASS:11영상·후보8/보류3·모든 정답 승격false",
+    "source_immutability": "PASS:원본 후보 manifest/선행 감사 JSON 불변",
+    "temporary_mp4_remaining": 0,
+    "runtime_pins": "PASS:6/6",
+    "scope": "원본 전체 연속 디코딩/전구간 행동 검수·사람 간 라벨 합의·모델 성능 시험은 이번 범위 밖.",
+    "board": {
+      "status": "PASS",
+      "wbs_rows": 37,
+      "counts": {
+        "DONE": 9,
+        "BLOCKED": 3,
+        "PLANNED": 15,
+        "VERIFY": 8,
+        "IN_PROGRESS": 2
+      },
+      "p57_paths_match": true,
+      "html_unique_ids": true,
+      "html_wbs_status_match": true,
+      "pdf_pages": 5,
+      "ruff_renderer": "PASS",
+      "initial_tooling_errors": "일회성 갱신/정합 검사에서 snapshot rows 객체·HTML3열 구조를 배열/8열로 가정한 오류. 실제 구조에 맞춰 수정 후 원문/생성물 재대조 통과. 제품 코드 변경 없음."
+    }
+  },
+  "next": [
+    "8시작 후보와 보류3개를 연속 영상으로 재검수하고 제지/도움·관찰 종료 정책을 적용한 사건별 정답을 승인한다.",
+    "나머지27후보의 사건 경계와 다인 참여자 검수, 정상/유사 영상 및 배우/세션 독립성 근거를 확보한다.",
+    "원본 라벨을 그대로 GPU 평가에 넣지 않고 승인된 버전 정답과 독립 목록을 고정한 뒤 첫 모델 비교로 진행한다."
+  ],
+  "runtime_evidence_dir": "data/runtime/p57_fight_boundary_20261015",
+  "runtime_artifact_sha256": {
+    "data/runtime/p57_fight_boundary_20261015/prepare_review.py": "85b051775dab360a8850d5027ee9bab0a52c8fbf6dc246642014d33fede0c5a1",
+    "data/runtime/p57_fight_boundary_20261015/prepare_followup.py": "823df044527c5a5041ff22845b33c1c9a1453d171393ad1fcf324174bf9774f5",
+    "data/runtime/p57_fight_boundary_20261015/media_review.json": "05926c947704a7c18420b3f0ebb52856ba21f0c006c99bfb253650582297c2fe",
+    "data/runtime/p57_fight_boundary_20261015/media_followup.json": "1c82b64acf8e65e44fdb3be9954fc52c8ee473446a0163ddbc3503f865b0c64a",
+    "data/runtime/p57_fight_boundary_20261015/review_notes.json": "0f756746105f5d6c80ef9d2daf745e954904968291951dc7f22850ebff92f23d",
+    "data/runtime/p57_fight_boundary_20261015/board_validation.json": "912468e0e243e061d96c39c5d00c4f878327991664b8b09ed6c63983d9c55da0",
+    "data/runtime/p57_fight_boundary_20261015/http_validation.json": "7f289dcfb1be8c8513d869efd8c83a6372936393244610bdfb181edc81d64cac",
+    "data/runtime/p57_fight_boundary_20261015/progress_page1.png": "f8de9197c4750852273a2a703a1e0e84a75fc3e1b214687d8356aa4705907af0"
+  },
+  "progress_board": {
+    "status": "PASS",
+    "base_url": "http://192.168.2.141:18081/",
+    "checks": [
+      {
+        "artifact": "index.html",
+        "http_status": 200,
+        "bytes": 102217,
+        "sha256": "933b86dffdbfa2b93f6ea6a6d7a083896c4b98d8f4d234ae12f3eb54cd5a35d3",
+        "local_hash_match": true
+      },
+      {
+        "artifact": "CCTV_project_progress.pdf",
+        "http_status": 200,
+        "bytes": 156398,
+        "sha256": "339ca8b5611ffc3e65c501353c3b15d39d4508875136558d0be691150d15a145",
+        "local_hash_match": true
+      }
+    ],
+    "pdf_pages": 5,
+    "html_content_checks": "PASS:37행 상태·315표본/293고유PTS·시작 후보8/보류3·최종 정답 미승인",
+    "pdf_visual_check": "PASS:첫 쪽 최신 경계 검수/수치·미승인 표기, 잘림 없음",
+    "scope": "로컬 생성물과 HTTP 제공 파일 대조. 브라우저 상호작용 미검증."
+  },
+  "artifact_sha256": {
+    "docs/planning/README.md": "0aa5632e4df3875ad195722ff3a505fc0fc9083842b6f0869c879ee9ca5574b8",
+    "docs/planning/PROGRESS.md": "86d1a0f34d0793b74f7761d643af5e69ae134377a654f6f247952677eae9e0f1",
+    "docs/planning/WBS.md": "5098a9da49814c88ccd865ce564975181426acb0c7c13dac780716bec6a4b969",
+    "docs/planning/STATUS.md": "263bed25b6adf87f36bc6128f3bd5d6e825c70cb2b6fa3e7f7c5ea429b8b9031",
+    "docs/planning/POC_SCOPE.md": "801c70180a17803fa850b6976fdbe66b877e34a0b493617448ef79f254d3f4dc",
+    "docs/planning/MODEL_INFERENCE_METRICS.md": "4435ee97094fd3c62287b75df43edc5ddd51c6ad5eb1517516fff2116bfc1064",
+    "docs/planning/ONLINE_PROGRESS.md": "213f9e34af429aafa1117cb8efaeff9396abffa2abc69cbee69997251b9879d0",
+    "docs/planning/figma_exports/progress_v138.json": "120dcb4a50446bbdc95dd0b61cbebfc0d1ecee71d5f19e2b443093f94ad42217",
+    "scripts/ops/progress_snapshot_template.html": "135638ce04836fd672706d49a94c86d66e5966c596c05702aaa839344e0cd653",
+    "scripts/ops/render_progress_snapshot.py": "0838c278dd2c2573b8c731350b9c93f8767077714db9d004a20584da3b654238"
+  }
+}

@@ -1,0 +1,370 @@
+{
+  "created_at": "2026-10-22T22:45:52.146904+00:00",
+  "status": "PASS_SCOPED_OWNER_BOUND_SYNTHETIC_JPEG_PREVIEW",
+  "scope": "기존 DeepStream 프레임 저장소→인증된 노드 소스→현재 담당 중앙 릴레이→POC 브라우저 미리보기",
+  "tests": {
+    "python": {
+      "tests": 134,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "time": 53.183
+    },
+    "browser": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "time": 59.255
+    },
+    "javascript": {
+      "tests": 7,
+      "passed": 7,
+      "failures": 0
+    },
+    "ruff": "PASS"
+  },
+  "browser": {
+    "status": "PASS",
+    "browser": "157.0.1",
+    "layouts": [
+      {
+        "requested_width": 320,
+        "width": 320,
+        "scroll": 308
+      },
+      {
+        "requested_width": 768,
+        "width": 768,
+        "scroll": 756
+      },
+      {
+        "requested_width": 1024,
+        "width": 1024,
+        "scroll": 1012
+      },
+      {
+        "requested_width": 1440,
+        "width": 1440,
+        "scroll": 1428
+      }
+    ],
+    "real_gpu_test": false,
+    "media_verified": false,
+    "cases": [
+      "owner_bound_preview",
+      "jpeg_decode_640",
+      "stale_image_cleared",
+      "keyboard_focus",
+      "no_token_persistence",
+      "owner_a_to_b",
+      "pending_owner_preserved",
+      "result_wait",
+      "stale_status",
+      "auth_failure",
+      "network_failure",
+      "no_page_overflow"
+    ]
+  },
+  "synthetic_preview_verified": true,
+  "continuous_video_verified": false,
+  "camera_rtsp_or_gpu_used_in_this_test": false,
+  "new_integration_deployed_to_B": false,
+  "preview": {
+    "poll_interval_seconds": 2,
+    "maximum_frame_age_seconds": 2,
+    "maximum_width": 640,
+    "maximum_jpeg_bytes": 524288,
+    "source_loopback_only": true,
+    "source_bearer_required": true,
+    "controller_reader_role": true,
+    "opt_in_flag": "--preview-config"
+  },
+  "checks": [
+    "post_activation_frame",
+    "current_session_activation",
+    "current_native_generation",
+    "atomic_image_identity_copy",
+    "real_JPEG_decode_640",
+    "two_HTTP_nodes_A_to_B",
+    "owner_changed_during_fetch_rejected",
+    "repeated_frame_token_rejected",
+    "stale_image_cleared",
+    "private_config_and_secret_permissions",
+    "remote_plain_http_rejected",
+    "readonly_result_context_no_sequence_or_capture_writes"
+  ],
+  "source_sha256": {
+    "config/deepstream/edge-auto-policy.example.json": "0f00e56c2282d0daa61e6017a6a855862443f068652f14ea58b67caae8f980e9",
+    "config/deepstream/edge-dds-controller.example.json": "7f096895d94791913b004a5bf5ae3d0d1fa23e905838d7a23522a6dd418632fc",
+    "config/deepstream/edge-dds-node.example.json": "034ddaba22710197d8742e366535146ac827b8dcb222ec2047f575f3226f5e46",
+    "config/deepstream/edge-handoff.example.json": "f2bd0e0a469f2f2117195811f40e31d63f0d3fc7ed7f4024526c5e7840a540c3",
+    "config/deepstream/edge-preview.example.json": "31f59e6df55e3d516678ba6b611d536b27f41ef08a787ecd5b4d3dfeaeab80cb",
+    "config/deepstream/edge-result-broker.acl.example": "11445a607a153593d26264d941c02ac5a54f3895046c45d5d1ecf7ecadae3ceb",
+    "config/deepstream/edge-result-controller.example.json": "ed9fda60417ba9a4f4c0a1d8c66b341f06edf6189020f4cd0549149bdc7d4190",
+    "config/deepstream/edge-result-node.example.json": "904a8b019b13e9da4a98ef8bfeda571f28f0cfd1601cfe953cfaade86ece98f0",
+    "config/deepstream/edge-service-b.manifest.example.json": "d0c2b982dde767a0e69c485d27776db06faefe0f1ad613bd46b48a33c92ada62",
+    "runners/run_edge_orchestration.py": "bb57123c5180e4fcba56beda8a00acb9d9208aac6828ba8c9f99c6d1d431491a",
+    "scripts/ops/create_edge_dds_keystore.py": "ef4160bbd5c33995838b8c8ad70d44c57748dc34add49650437619994bfa3ae7",
+    "src/core/_deepstream_context_worker.py": "6a3981fc1bcedc8f0c1251a6c1e6f1bdd955c93005e255fc791a796f3b97eafb",
+    "src/core/_event_publish.py": "3705dbf451bff5917c3ec9898805df49dd781a1be92a38511ee1b6dcb53e31b3",
+    "src/core/_preview_frame_store.py": "af21b8e4ead71eafd733db356887b81a2b6799786500a8a4cbd5f23ce6906b98",
+    "src/core/base_processor.py": "67eb8d04b2e18b082cc2adbb045ce2e7216ed7794aedb8d80fe4d4a809de7d7d",
+    "src/core/deepstream_processor.py": "e66a53be9f33bb288cecc9de728461fa3f6dfb2a2eb7586ea79413302230edf0",
+    "src/core/processor.py": "3b8ca611b16f12737511976d847fc6d2953e83c77edd75d000fa0463434d2e8e",
+    "src/core/video_event_ingest.py": "c40c6447f78251cdbf9f0bbc5b8c03088941adc8e1eb4ba688837867eb6612e1",
+    "src/protocols/mqtt_publisher.py": "5c8d783541cad8513f60717aab91a2e7b0d56aeb1ef10e37af3facf5dc7c15ef",
+    "src/protocols/mqtt_subscriber.py": "95569c97c60d352006abe4778a3a124c2ae0dc08b8244bebb221fe081e83dfff",
+    "src/services/_edge_process.py": "d910498dbce7b27d4d43110a7fbde86837d53405aaf152f5fc8e8ab098d53dc4",
+    "src/services/edge_auto_handoff.py": "ef7a0e4407e03d6e4d26d440882fa780547003bbed93cc928bbaacf7d6da16ea",
+    "src/services/edge_controller_api.py": "a77d8f20714d2126fc5704df94b7a7de7564ef16575d6d56876afea58ad10c6d",
+    "src/services/edge_handoff.py": "9214a29880e6f3c8fe8149bd6031e8432757b5aa742a6212ac1a5d804baf37f4",
+    "src/services/edge_node_agent.py": "deb4a4ba93b6e1bbfd5427e2218507daff4e75b746962ac65eae1a5e5c103d29",
+    "src/services/edge_orchestrator.py": "18ac8badb9500039a8146a587c0b132c65d2e47dcb53355f2e104f2563feb790",
+    "src/services/edge_ownership.py": "572c4b3de100c21a83c524e06e5f2f3dc48229828b72d023563ed21c7efa55d5",
+    "src/services/edge_preview.py": "47bb4d5576f1c36f7743fdfc0a71dd729dacae62e05b827e409f2f404a27c847",
+    "src/services/edge_result_context.py": "76c8014f95fc9dac5a0c3fe2dffc06237391380efc847c2758f627f1879ac6fe",
+    "src/services/edge_result_dds.py": "5fefa0904b509f2d0693d6e4eb7a7bc8e645cdfa7aabbe8b904b53771df4172c",
+    "src/services/edge_result_delivery.py": "295f413ccd53edc8d7a9a4f287fa1e7d75a7525952fa9948ea7aa01d8f73f5de",
+    "src/services/edge_result_transport.py": "545fbc55cf3e7196f23db4cc01e4d7c90ec371d7112571786d2ed5be48317376",
+    "src/services/edge_service.py": "80db650bbf45b09cc0f2015b3fdc5b9c89c7b31efa93495e28d56d73d54f8781",
+    "src/services/jetson_resources.py": "c702d6716913e07d2a78eee5c6027185c815f6ebd0483fa904dc8f9148781cac",
+    "src/services/processor_metrics.py": "0189324adc85d6cfd1caf8eb5647f63b05b1033c817e92dfce98c7cae710f332",
+    "src/services/stream_api.py": "71aba8aeb32f38e3ef0feff705c24b1967eb76f3ab6cf3c57f935db6e9cfbbac",
+    "tests/test_deepstream_context_worker.py": "b4b094f6c28eeeee0f62b4282ebde33895bfcb7fd4bf38a75116838b6cb81897",
+    "tests/test_edge_full_pipeline.py": "3c00f2b8c75f140227de65a35faa0b5f838565b154cc7a7d33b9281196929c81",
+    "tests/test_edge_ownership.py": "dbd23d02bcf8d79d6f76668ab1777bc00d0a1e1427fd1bdedb8330e7313409c0",
+    "tests/test_edge_preview.py": "1f49a3a93eb2ee757210f95a9f27dd4d3591c8e4775204934632cbed42ace2e2",
+    "tests/test_edge_result_context.py": "937803d329c6c8434a3856f5acd89ea7223dde53db7e3ac28b5fcc90daa834de",
+    "tests/test_edge_view.py": "8bcd1545b0aa79c77efcd1725e5ff04d87fadc1eaa5d7b4816047cf22a8154cb",
+    "tests/test_edge_view_browser.py": "f98e8d2b21ce846a5473ac03ddbff5719167e9f6961a6027a73d36d6837014a3",
+    "tests/test_edge_viewer.cjs": "b4e894448e098abce8bfab2f2f0ecb2496e105c92425753798a3faedb41ac47b",
+    "tests/test_preview_frame_store.py": "c28879bb921a98b8bc0e0f8121e31ac5a2f24d58cebe0ff1e24b88b751f7392b",
+    "tests/test_stream_api.py": "cee4179834c92700c926cab33f412c1c144a94c2ea4b70e244a4b4470d181f7a",
+    "web/edge-viewer.html": "5e8f1fce209c570f97441ff487a988b10105252099139229c80822859b34b527",
+    "web/edge-viewer.js": "47e387da41cfd21072eef852bf84d08de381dff293fffa9844451eaa2ed154f1"
+  },
+  "source_bundle": {
+    "path": "docs/planning/evidence/edge_integrated_preview_sources_20261023.tar.gz",
+    "sha256": "0754e5a01508afce8fea5b4066e9e5b403f8c7c7f55a1511499f02fc316cac83",
+    "members": 51,
+    "source_files": 48,
+    "not_standalone": true,
+    "deployed_to_B": false
+  },
+  "evidence_archive": {
+    "path": "docs/planning/evidence/edge_owner_preview_20261023_telemetry.tar.gz",
+    "sha256": "d52800e9c0d6272498d614775ddb3a324ff39d2427f38a739e29e947d354e080",
+    "members": 14
+  },
+  "operating": {
+    "compared": 37,
+    "changes": [],
+    "metrics": [
+      "cctv_processor_frames_processed_total 9.276702e+06",
+      "cctv_processor_source_error_identified_total 0.0",
+      "cctv_processor_source_error_unidentified_total 0.0",
+      "cctv_processor_pipeline_restart_requested_total 0.0",
+      "cctv_processor_pipeline_restart_rejected_total 0.0",
+      "cctv_processor_pipeline_restart_executed_total 0.0",
+      "cctv_processor_pipeline_restart_failed_total 0.0",
+      "cctv_processor_pipeline_restart_seconds_total 0.0"
+    ],
+    "observed_at": "2026-10-22T22:42:31.324576+00:00"
+  },
+  "additional_installations": 0,
+  "production_or_ap_settings_changed": false,
+  "cleanup_complete": true,
+  "python38_syntax_files": 26,
+  "python38_runtime_tested": false,
+  "failures_preserved": [
+    "Firefox session creation exceeded45s; dedicated profile retained, startup-only timeout120s; complete retry59.26s PASS, root cause unconfirmed",
+    "An incorrect optional browser environment flag caused one skipped run; corrected CCTV_EDGE_FIREFOX_TEST=1; not counted as a pass"
+  ],
+  "limitations": [
+    "2초 JPEG POC 미리보기이며 연속 RTSP/HLS 재생은 아님",
+    "새 통합본 B GPU·두 보드 무선 DDS·실제 영상 공백/지연 미검증",
+    "B 격리 환경의 DS_PREVIEW_ENABLED/STREAM_API_ENABLED는 기존에0; 별도 활성화/부하 시험 필요",
+    "현재 담당은 응답 전후에 확인하지만 다음2초 조회 이전의 실제 담당 변경을 즉시 감지하지는 못함",
+    "최근20개 배정 상태이며 자동 판단 사유 전체 감사 이력은 잔여",
+    "A 경유 SSH는 A 전체 장애의 독립 영상 경로가 아님"
+  ],
+  "previous_dds_evidence": "docs/planning/evidence/edge_owner_view_20261023.json",
+  "previous_30min_evidence": "docs/planning/evidence/edge_automatic_handoff_20261023.json",
+  "planning_validation": {
+    "local_links": 2054,
+    "wbs_rows": 37,
+    "done_rows": 9,
+    "p62_paths_match": true,
+    "source_hashes_match": 48
+  },
+  "dedicated_runtime_directories_removed": [
+    ".edge-preview-browser-20261023",
+    ".edge-preview-browser-final-20261023"
+  ],
+  "browser_processes_remaining": 0,
+  "known_profiles_remaining": 0,
+  "visual_inspection": {
+    "browser_widths": [
+      320,
+      1440
+    ],
+    "pdf_cover": "PASS"
+  },
+  "published_progress": {
+    "index.html": {
+      "http_status": 200,
+      "sha256": "4df9e77ed77e0e9722c47c8ef0303fbbc25f2abd7b80fd3a4efa22e4eea4bc0c",
+      "bytes": 160589
+    },
+    "CCTV_project_progress.pdf": {
+      "http_status": 200,
+      "sha256": "a1515f85477538392175b2b531ffa37afc45cef3327de9ab97f9a8f2a997764f",
+      "bytes": 156452
+    }
+  },
+  "cli_preview_option_verified": true,
+  "archive_member_hashes_verified": true,
+  "browser_result_note": "실제 Firefox 합성 JPEG 디코딩/전환은 PASS. 기존 media_verified=false 필드는 연속 영상/실장비 검증을 뜻하지 않으며 synthetic_preview_verified를 별도로 기록한다.",
+  "closing_operating_observation": {
+    "scope": "기존 운영의 마감 전 읽기 전용 관측; 새 통합 기능/AI 인계 시험 아님",
+    "observations": [
+      {
+        "at": "2026-10-22T22:55:31.639805+00:00",
+        "metrics": [
+          "cctv_processor_frames_processed_total 9.300075e+06",
+          "cctv_processor_source_error_identified_total 0.0",
+          "cctv_processor_source_error_unidentified_total 0.0",
+          "cctv_processor_pipeline_restart_requested_total 0.0",
+          "cctv_processor_pipeline_restart_rejected_total 0.0",
+          "cctv_processor_pipeline_restart_executed_total 0.0",
+          "cctv_processor_pipeline_restart_failed_total 0.0",
+          "cctv_processor_pipeline_restart_seconds_total 0.0"
+        ]
+      },
+      {
+        "at": "2026-10-22T22:56:01.690004+00:00",
+        "metrics": [
+          "cctv_processor_frames_processed_total 9.300975e+06",
+          "cctv_processor_source_error_identified_total 0.0",
+          "cctv_processor_source_error_unidentified_total 0.0",
+          "cctv_processor_pipeline_restart_requested_total 0.0",
+          "cctv_processor_pipeline_restart_rejected_total 0.0",
+          "cctv_processor_pipeline_restart_executed_total 0.0",
+          "cctv_processor_pipeline_restart_failed_total 0.0",
+          "cctv_processor_pipeline_restart_seconds_total 0.0"
+        ]
+      },
+      {
+        "at": "2026-10-22T22:56:31.737409+00:00",
+        "metrics": [
+          "cctv_processor_frames_processed_total 9.301874e+06",
+          "cctv_processor_source_error_identified_total 0.0",
+          "cctv_processor_source_error_unidentified_total 0.0",
+          "cctv_processor_pipeline_restart_requested_total 0.0",
+          "cctv_processor_pipeline_restart_rejected_total 0.0",
+          "cctv_processor_pipeline_restart_executed_total 0.0",
+          "cctv_processor_pipeline_restart_failed_total 0.0",
+          "cctv_processor_pipeline_restart_seconds_total 0.0"
+        ]
+      },
+      {
+        "at": "2026-10-22T22:57:01.773999+00:00",
+        "metrics": [
+          "cctv_processor_frames_processed_total 9.302776e+06",
+          "cctv_processor_source_error_identified_total 0.0",
+          "cctv_processor_source_error_unidentified_total 0.0",
+          "cctv_processor_pipeline_restart_requested_total 0.0",
+          "cctv_processor_pipeline_restart_rejected_total 0.0",
+          "cctv_processor_pipeline_restart_executed_total 0.0",
+          "cctv_processor_pipeline_restart_failed_total 0.0",
+          "cctv_processor_pipeline_restart_seconds_total 0.0"
+        ]
+      },
+      {
+        "at": "2026-10-22T22:57:31.809990+00:00",
+        "metrics": [
+          "cctv_processor_frames_processed_total 9.303674e+06",
+          "cctv_processor_source_error_identified_total 0.0",
+          "cctv_processor_source_error_unidentified_total 0.0",
+          "cctv_processor_pipeline_restart_requested_total 0.0",
+          "cctv_processor_pipeline_restart_rejected_total 0.0",
+          "cctv_processor_pipeline_restart_executed_total 0.0",
+          "cctv_processor_pipeline_restart_failed_total 0.0",
+          "cctv_processor_pipeline_restart_seconds_total 0.0"
+        ]
+      },
+      {
+        "at": "2026-10-22T22:58:01.843625+00:00",
+        "metrics": [
+          "cctv_processor_frames_processed_total 9.30455e+06",
+          "cctv_processor_source_error_identified_total 0.0",
+          "cctv_processor_source_error_unidentified_total 0.0",
+          "cctv_processor_pipeline_restart_requested_total 0.0",
+          "cctv_processor_pipeline_restart_rejected_total 0.0",
+          "cctv_processor_pipeline_restart_executed_total 0.0",
+          "cctv_processor_pipeline_restart_failed_total 0.0",
+          "cctv_processor_pipeline_restart_seconds_total 0.0"
+        ]
+      },
+      {
+        "at": "2026-10-22T22:58:31.966002+00:00",
+        "metrics": [
+          "cctv_processor_frames_processed_total 9.305478e+06",
+          "cctv_processor_source_error_identified_total 0.0",
+          "cctv_processor_source_error_unidentified_total 0.0",
+          "cctv_processor_pipeline_restart_requested_total 0.0",
+          "cctv_processor_pipeline_restart_rejected_total 0.0",
+          "cctv_processor_pipeline_restart_executed_total 0.0",
+          "cctv_processor_pipeline_restart_failed_total 0.0",
+          "cctv_processor_pipeline_restart_seconds_total 0.0"
+        ]
+      },
+      {
+        "at": "2026-10-22T22:59:01.998107+00:00",
+        "metrics": [
+          "cctv_processor_frames_processed_total 9.306377e+06",
+          "cctv_processor_source_error_identified_total 0.0",
+          "cctv_processor_source_error_unidentified_total 0.0",
+          "cctv_processor_pipeline_restart_requested_total 0.0",
+          "cctv_processor_pipeline_restart_rejected_total 0.0",
+          "cctv_processor_pipeline_restart_executed_total 0.0",
+          "cctv_processor_pipeline_restart_failed_total 0.0",
+          "cctv_processor_pipeline_restart_seconds_total 0.0"
+        ]
+      },
+      {
+        "at": "2026-10-22T22:59:32.034019+00:00",
+        "metrics": [
+          "cctv_processor_frames_processed_total 9.307278e+06",
+          "cctv_processor_source_error_identified_total 0.0",
+          "cctv_processor_source_error_unidentified_total 0.0",
+          "cctv_processor_pipeline_restart_requested_total 0.0",
+          "cctv_processor_pipeline_restart_rejected_total 0.0",
+          "cctv_processor_pipeline_restart_executed_total 0.0",
+          "cctv_processor_pipeline_restart_failed_total 0.0",
+          "cctv_processor_pipeline_restart_seconds_total 0.0"
+        ]
+      },
+      {
+        "at": "2026-10-22T23:00:00.026100+00:00",
+        "metrics": [
+          "cctv_processor_frames_processed_total 9.308118e+06",
+          "cctv_processor_source_error_identified_total 0.0",
+          "cctv_processor_source_error_unidentified_total 0.0",
+          "cctv_processor_pipeline_restart_requested_total 0.0",
+          "cctv_processor_pipeline_restart_rejected_total 0.0",
+          "cctv_processor_pipeline_restart_executed_total 0.0",
+          "cctv_processor_pipeline_restart_failed_total 0.0",
+          "cctv_processor_pipeline_restart_seconds_total 0.0"
+        ]
+      }
+    ],
+    "container_count": 37,
+    "container_changes": [],
+    "span_seconds": 268.386295,
+    "frames_increased": 8043,
+    "read_errors": 0,
+    "source_errors_and_pipeline_restarts": 0
+  }
+}

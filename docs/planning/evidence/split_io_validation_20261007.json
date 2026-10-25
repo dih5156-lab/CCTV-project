@@ -1,0 +1,1399 @@
+{
+  "version": "0.125",
+  "date": "2026-10-07",
+  "wbs": "P5.1",
+  "issue": "I54",
+  "decision": "HOLD_AND_MOVE_TO_INDEPENDENT_P52",
+  "private_artifacts": "data/runtime/p51_split_io_20261007_v125",
+  "plan": {
+    "started_utc": "2026-10-07T02:08:51Z",
+    "investigation_deadline_utc": "2026-10-07T03:38:51Z",
+    "scope": "IO CPU1 + app CPU2, isolated loopback, no-AI versus medium Pose",
+    "input_fps": 29.97002997002997,
+    "processing_min_fps": 28.47152847152847,
+    "received_min_fps": 26.973026973026972,
+    "stop_max_seconds": 30,
+    "steady_window": "first source monotonic + 10 seconds through last source - 2 seconds",
+    "unique_frames": "frame_num before/after videorate; duplication never counts toward real processing",
+    "decision_if_unresolved": "I54 OPEN; stop configuration experiments; begin P5.2 independent labeled recordings",
+    "production_change": false
+  },
+  "comparison": {
+    "trials": {
+      "no_ai": {
+        "runner": {
+          "completed": true,
+          "app_exit": 0,
+          "stop_seconds": 3.2868847539648414,
+          "io_exit": 0
+        },
+        "steady_seconds": 50.434623892,
+        "stages": {
+          "src-replay_1.vsrc_0": {
+            "all_buffers": 1811,
+            "window_buffers": 1463,
+            "wall_fps": 29.00784990749307,
+            "unique_frame_ids": null,
+            "unique_fps": null,
+            "step_ms_min_median_max": [
+              0.0,
+              33.366667,
+              184.395787
+            ],
+            "pts_backwards": 0,
+            "same_pts": 15
+          },
+          "streammux.src": {
+            "all_buffers": 1811,
+            "window_buffers": 1462,
+            "wall_fps": 28.98802225888918,
+            "unique_frame_ids": 1462,
+            "unique_fps": 28.98802225888918,
+            "step_ms_min_median_max": [
+              3.177573,
+              23.508422,
+              160.795757
+            ],
+            "pts_backwards": 0,
+            "same_pts": 0
+          },
+          "output-queue.sink": {
+            "all_buffers": 1811,
+            "window_buffers": 1461,
+            "wall_fps": 28.968194610285288,
+            "unique_frame_ids": null,
+            "unique_fps": null,
+            "step_ms_min_median_max": [
+              3.177573,
+              23.501264,
+              160.795757
+            ],
+            "pts_backwards": 0,
+            "same_pts": 0
+          },
+          "output-queue.src": {
+            "all_buffers": 1781,
+            "window_buffers": 1457,
+            "wall_fps": 28.888884015869724,
+            "unique_frame_ids": 1457,
+            "unique_fps": 28.888884015869724,
+            "step_ms_min_median_max": [
+              3.177573,
+              23.538575,
+              160.795757
+            ],
+            "pts_backwards": 0,
+            "same_pts": 0
+          },
+          "h264-videorate.sink": {
+            "all_buffers": 1781,
+            "window_buffers": 1457,
+            "wall_fps": 28.888884015869724,
+            "unique_frame_ids": 1457,
+            "unique_fps": 28.888884015869724,
+            "step_ms_min_median_max": [
+              3.177573,
+              23.538575,
+              160.795757
+            ],
+            "pts_backwards": 0,
+            "same_pts": 0
+          },
+          "h264-videorate.src": {
+            "all_buffers": 1639,
+            "window_buffers": 1330,
+            "wall_fps": 26.37077264317552,
+            "unique_frame_ids": 1067,
+            "unique_fps": 21.15610106035209,
+            "step_ms_min_median_max": [
+              33.333333,
+              33.333333,
+              184.840999
+            ],
+            "pts_backwards": 0,
+            "same_pts": 0
+          },
+          "h264-encoder.sink": {
+            "all_buffers": 1639,
+            "window_buffers": 1330,
+            "wall_fps": 26.37077264317552,
+            "unique_frame_ids": null,
+            "unique_fps": null,
+            "step_ms_min_median_max": [
+              33.333333,
+              33.333333,
+              184.840999
+            ],
+            "pts_backwards": 0,
+            "same_pts": 0
+          },
+          "h264-encoder.src": {
+            "all_buffers": 1639,
+            "window_buffers": 1332,
+            "wall_fps": 26.410427940383304,
+            "unique_frame_ids": null,
+            "unique_fps": null,
+            "step_ms_min_median_max": [
+              33.333333,
+              33.333333,
+              184.840999
+            ],
+            "pts_backwards": 0,
+            "same_pts": 0
+          },
+          "poc-fix-identity.src": {
+            "all_buffers": 1639,
+            "window_buffers": 1332,
+            "wall_fps": 26.410427940383304,
+            "unique_frame_ids": null,
+            "unique_fps": null,
+            "step_ms_min_median_max": [
+              33.333333,
+              33.333333,
+              184.840999
+            ],
+            "pts_backwards": 0,
+            "same_pts": 0
+          }
+        },
+        "segment_parameters": {
+          "streammux.src": [
+            {
+              "start": 0,
+              "stop": 18446744073709551615,
+              "time": 0,
+              "base": 0,
+              "offset": 0,
+              "rate": 1.0,
+              "applied_rate": 1.0
+            }
+          ],
+          "output-queue.sink": [
+            {
+              "start": 0,
+              "stop": 18446744073709551615,
+              "time": 0,
+              "base": 0,
+              "offset": 0,
+              "rate": 1.0,
+              "applied_rate": 1.0
+            }
+          ],
+          "output-queue.src": [
+            {
+              "start": 0,
+              "stop": 18446744073709551615,
+              "time": 0,
+              "base": 0,
+              "offset": 0,
+              "rate": 1.0,
+              "applied_rate": 1.0
+            }
+          ],
+          "h264-videorate.sink": [
+            {
+              "start": 0,
+              "stop": 18446744073709551615,
+              "time": 0,
+              "base": 0,
+              "offset": 0,
+              "rate": 1.0,
+              "applied_rate": 1.0
+            }
+          ],
+          "h264-videorate.src": [
+            {
+              "start": 0,
+              "stop": 18446744073709551615,
+              "time": 0,
+              "base": 0,
+              "offset": 0,
+              "rate": 1.0,
+              "applied_rate": 1.0
+            }
+          ],
+          "h264-encoder.sink": [
+            {
+              "start": 0,
+              "stop": 18446744073709551615,
+              "time": 0,
+              "base": 0,
+              "offset": 0,
+              "rate": 1.0,
+              "applied_rate": 1.0
+            }
+          ],
+          "src-replay_1.vsrc_0": [
+            {
+              "start": 0,
+              "stop": 18446744073709551615,
+              "time": 0,
+              "base": 0,
+              "offset": 0,
+              "rate": 1.0,
+              "applied_rate": 1.0
+            }
+          ],
+          "h264-encoder.src": [
+            {
+              "start": 0,
+              "stop": 18446744073709551615,
+              "time": 0,
+              "base": 0,
+              "offset": 0,
+              "rate": 1.0,
+              "applied_rate": 1.0
+            }
+          ],
+          "poc-fix-identity.src": [
+            {
+              "start": 0,
+              "stop": 18446744073709551615,
+              "time": 0,
+              "base": 0,
+              "offset": 0,
+              "rate": 1.0,
+              "applied_rate": 1.0
+            }
+          ]
+        },
+        "properties": {
+          "streammux": {
+            "live-source": true,
+            "sync-inputs": false,
+            "max-latency": 0
+          },
+          "h264-videorate": {
+            "in": 1781,
+            "out": 1639,
+            "drop": 417,
+            "duplicate": 330,
+            "max-duplication-time": 100000000
+          },
+          "h264-encoder": {
+            "copy-timestamp": false
+          }
+        },
+        "source_pts_meta_matches": 1811,
+        "mux_buffers": 1811,
+        "source_to_mux_running_shift_ms_min_median_max": [
+          -375.237518,
+          -37.513282,
+          240.545934
+        ],
+        "primary_fps": 0.0,
+        "app_cgroup_delta": {
+          "usage_usec": 43619504,
+          "user_usec": 35691091,
+          "system_usec": 7928413,
+          "nr_periods": 715,
+          "nr_throttled": 0,
+          "throttled_usec": 0
+        },
+        "io_cgroup_delta": {
+          "usage_usec": 4280790,
+          "user_usec": 2489661,
+          "system_usec": 1791129,
+          "nr_periods": 613,
+          "nr_throttled": 1,
+          "throttled_usec": 131027
+        },
+        "app_cpu_max": "200000 100000\n",
+        "audit": {
+          "counts": {},
+          "capabilities": {
+            "face_enabled": true,
+            "face_backend": "opencv_haar_baseline",
+            "attribute_backend": "NullAttributeBackend",
+            "color_backend": "NullColorClassificationBackend",
+            "color_runtime": null,
+            "color_labels": 0,
+            "color_input_size": null,
+            "rf_enabled": false,
+            "rf_mode": "shadow",
+            "camera_flags": {
+              "replay_1": {
+                "use_helmet": false,
+                "use_pose": false,
+                "use_person": false,
+                "use_face": false,
+                "use_appearance": false
+              }
+            }
+          }
+        },
+        "inference_errors": 0,
+        "model_metrics": {
+          "pipeline_generation": 1,
+          "metadata_errors": 0,
+          "models": {
+            "primary": {
+              "enabled": false,
+              "properties": {
+                "unique-id": null,
+                "process-mode": null,
+                "batch-size": null,
+                "interval": null,
+                "output-tensor-meta": null
+              },
+              "property_observed_at": "pipeline_build",
+              "cameras": {
+                "replay_1": {
+                  "frames_seen": 0,
+                  "frames_tensor_output": 0,
+                  "frames_no_objects": 0,
+                  "frames_classifier_only": 0,
+                  "frames_unobserved": 0,
+                  "frames_unknown": 0,
+                  "objects_with_tensor": 0,
+                  "objects_classifier_only": 0,
+                  "last_frame_age_seconds": null,
+                  "last_tensor_age_seconds": null
+                }
+              },
+              "unique_id_conflict": false
+            },
+            "pose": {
+              "enabled": false,
+              "properties": {
+                "unique-id": null,
+                "process-mode": null,
+                "batch-size": null,
+                "interval": null,
+                "output-tensor-meta": null
+              },
+              "property_observed_at": "pipeline_build",
+              "cameras": {
+                "replay_1": {
+                  "frames_seen": 0,
+                  "frames_tensor_output": 0,
+                  "frames_no_objects": 0,
+                  "frames_classifier_only": 0,
+                  "frames_unobserved": 0,
+                  "frames_unknown": 0,
+                  "objects_with_tensor": 0,
+                  "objects_classifier_only": 0,
+                  "last_frame_age_seconds": null,
+                  "last_tensor_age_seconds": null
+                }
+              },
+              "unique_id_conflict": false
+            },
+            "attributes": {
+              "enabled": false,
+              "properties": {
+                "unique-id": null,
+                "process-mode": null,
+                "batch-size": null,
+                "interval": null,
+                "output-tensor-meta": null
+              },
+              "property_observed_at": "pipeline_build",
+              "cameras": {
+                "replay_1": {
+                  "frames_seen": 0,
+                  "frames_tensor_output": 0,
+                  "frames_no_objects": 0,
+                  "frames_classifier_only": 0,
+                  "frames_unobserved": 0,
+                  "frames_unknown": 0,
+                  "objects_with_tensor": 0,
+                  "objects_classifier_only": 0,
+                  "last_frame_age_seconds": null,
+                  "last_tensor_age_seconds": null
+                }
+              },
+              "unique_id_conflict": false
+            },
+            "helmet": {
+              "enabled": false,
+              "properties": {
+                "unique-id": null,
+                "process-mode": null,
+                "batch-size": null,
+                "interval": null,
+                "output-tensor-meta": null
+              },
+              "property_observed_at": "pipeline_build",
+              "cameras": {
+                "replay_1": {
+                  "frames_seen": 0,
+                  "frames_tensor_output": 0,
+                  "frames_no_objects": 0,
+                  "frames_classifier_only": 0,
+                  "frames_unobserved": 0,
+                  "frames_unknown": 0,
+                  "objects_with_tensor": 0,
+                  "objects_classifier_only": 0,
+                  "last_frame_age_seconds": null,
+                  "last_tensor_age_seconds": null
+                }
+              },
+              "unique_id_conflict": false
+            }
+          }
+        },
+        "decoded_frames": 1070,
+        "video_seconds": 40.202,
+        "received_fps": 26.615591264116215,
+        "decode_errors": 0,
+        "databases": {
+          "appearances.db": "ok",
+          "mqtt_event_outbox.db": "ok",
+          "commercial_faces.db": "ok"
+        }
+      },
+      "pose": {
+        "runner": {
+          "completed": true,
+          "app_exit": 0,
+          "stop_seconds": 3.905098450835794,
+          "io_exit": 0
+        },
+        "steady_seconds": 51.241543433,
+        "stages": {
+          "src-replay_1.vsrc_0": {
+            "all_buffers": 1816,
+            "window_buffers": 1466,
+            "wall_fps": 28.6095988095449,
+            "unique_frame_ids": null,
+            "unique_fps": null,
+            "step_ms_min_median_max": [
+              0.19602,
+              33.366666,
+              168.400656
+            ],
+            "pts_backwards": 0,
+            "same_pts": 0
+          },
+          "streammux.src": {
+            "all_buffers": 1812,
+            "window_buffers": 1467,
+            "wall_fps": 28.629114224831085,
+            "unique_frame_ids": 1467,
+            "unique_fps": 28.629114224831085,
+            "step_ms_min_median_max": [
+              0.429553,
+              24.853423499999998,
+              186.612572
+            ],
+            "pts_backwards": 0,
+            "same_pts": 0
+          },
+          "output-queue.sink": {
+            "all_buffers": 1808,
+            "window_buffers": 1467,
+            "wall_fps": 28.629114224831085,
+            "unique_frame_ids": null,
+            "unique_fps": null,
+            "step_ms_min_median_max": [
+              0.429553,
+              24.868212,
+              186.612572
+            ],
+            "pts_backwards": 0,
+            "same_pts": 0
+          },
+          "output-queue.src": {
+            "all_buffers": 1790,
+            "window_buffers": 1466,
+            "wall_fps": 28.6095988095449,
+            "unique_frame_ids": 1466,
+            "unique_fps": 28.6095988095449,
+            "step_ms_min_median_max": [
+              0.429553,
+              24.86782,
+              186.612572
+            ],
+            "pts_backwards": 0,
+            "same_pts": 0
+          },
+          "h264-videorate.sink": {
+            "all_buffers": 1790,
+            "window_buffers": 1466,
+            "wall_fps": 28.6095988095449,
+            "unique_frame_ids": 1466,
+            "unique_fps": 28.6095988095449,
+            "step_ms_min_median_max": [
+              0.429553,
+              24.86782,
+              186.612572
+            ],
+            "pts_backwards": 0,
+            "same_pts": 0
+          },
+          "h264-videorate.src": {
+            "all_buffers": 1682,
+            "window_buffers": 1389,
+            "wall_fps": 27.106911832508775,
+            "unique_frame_ids": 1245,
+            "unique_fps": 24.296692031298363,
+            "step_ms_min_median_max": [
+              33.333333,
+              33.333333,
+              216.669958
+            ],
+            "pts_backwards": 0,
+            "same_pts": 0
+          },
+          "h264-encoder.sink": {
+            "all_buffers": 1682,
+            "window_buffers": 1389,
+            "wall_fps": 27.106911832508775,
+            "unique_frame_ids": null,
+            "unique_fps": null,
+            "step_ms_min_median_max": [
+              33.333333,
+              33.333333,
+              216.669958
+            ],
+            "pts_backwards": 0,
+            "same_pts": 0
+          },
+          "h264-encoder.src": {
+            "all_buffers": 1682,
+            "window_buffers": 1389,
+            "wall_fps": 27.106911832508775,
+            "unique_frame_ids": null,
+            "unique_fps": null,
+            "step_ms_min_median_max": [
+              33.333333,
+              33.333333,
+              216.669958
+            ],
+            "pts_backwards": 0,
+            "same_pts": 0
+          },
+          "poc-fix-identity.src": {
+            "all_buffers": 1682,
+            "window_buffers": 1388,
+            "wall_fps": 27.087396417222593,
+            "unique_frame_ids": null,
+            "unique_fps": null,
+            "step_ms_min_median_max": [
+              33.333333,
+              33.333333,
+              216.669958
+            ],
+            "pts_backwards": 0,
+            "same_pts": 0
+          }
+        },
+        "segment_parameters": {
+          "streammux.src": [
+            {
+              "start": 0,
+              "stop": 18446744073709551615,
+              "time": 0,
+              "base": 0,
+              "offset": 0,
+              "rate": 1.0,
+              "applied_rate": 1.0
+            }
+          ],
+          "output-queue.sink": [
+            {
+              "start": 0,
+              "stop": 18446744073709551615,
+              "time": 0,
+              "base": 0,
+              "offset": 0,
+              "rate": 1.0,
+              "applied_rate": 1.0
+            }
+          ],
+          "output-queue.src": [
+            {
+              "start": 0,
+              "stop": 18446744073709551615,
+              "time": 0,
+              "base": 0,
+              "offset": 0,
+              "rate": 1.0,
+              "applied_rate": 1.0
+            }
+          ],
+          "h264-videorate.sink": [
+            {
+              "start": 0,
+              "stop": 18446744073709551615,
+              "time": 0,
+              "base": 0,
+              "offset": 0,
+              "rate": 1.0,
+              "applied_rate": 1.0
+            }
+          ],
+          "h264-videorate.src": [
+            {
+              "start": 0,
+              "stop": 18446744073709551615,
+              "time": 0,
+              "base": 0,
+              "offset": 0,
+              "rate": 1.0,
+              "applied_rate": 1.0
+            }
+          ],
+          "h264-encoder.sink": [
+            {
+              "start": 0,
+              "stop": 18446744073709551615,
+              "time": 0,
+              "base": 0,
+              "offset": 0,
+              "rate": 1.0,
+              "applied_rate": 1.0
+            }
+          ],
+          "src-replay_1.vsrc_0": [
+            {
+              "start": 1024671044,
+              "stop": 18446744073709551615,
+              "time": 0,
+              "base": 1024671044,
+              "offset": 0,
+              "rate": 1.0,
+              "applied_rate": 1.0
+            }
+          ],
+          "h264-encoder.src": [
+            {
+              "start": 0,
+              "stop": 18446744073709551615,
+              "time": 0,
+              "base": 0,
+              "offset": 0,
+              "rate": 1.0,
+              "applied_rate": 1.0
+            }
+          ],
+          "poc-fix-identity.src": [
+            {
+              "start": 0,
+              "stop": 18446744073709551615,
+              "time": 0,
+              "base": 0,
+              "offset": 0,
+              "rate": 1.0,
+              "applied_rate": 1.0
+            }
+          ]
+        },
+        "properties": {
+          "streammux": {
+            "live-source": true,
+            "sync-inputs": false,
+            "max-latency": 0
+          },
+          "h264-videorate": {
+            "in": 1790,
+            "out": 1682,
+            "drop": 248,
+            "duplicate": 175,
+            "max-duplication-time": 100000000
+          },
+          "h264-encoder": {
+            "copy-timestamp": false
+          }
+        },
+        "source_pts_meta_matches": 1812,
+        "mux_buffers": 1812,
+        "source_to_mux_running_shift_ms_min_median_max": [
+          -130.720515,
+          602.4557615,
+          984.552789
+        ],
+        "primary_fps": 28.743196035421235,
+        "app_cgroup_delta": {
+          "usage_usec": 58947184,
+          "user_usec": 47853533,
+          "system_usec": 11093652,
+          "nr_periods": 727,
+          "nr_throttled": 0,
+          "throttled_usec": 0
+        },
+        "io_cgroup_delta": {
+          "usage_usec": 4503769,
+          "user_usec": 2580514,
+          "system_usec": 1923256,
+          "nr_periods": 615,
+          "nr_throttled": 2,
+          "throttled_usec": 409626
+        },
+        "app_cpu_max": "200000 100000\n",
+        "audit": {
+          "counts": {
+            "event.person": 725,
+            "pose_events": 909,
+            "event.fall_detected": 184
+          },
+          "capabilities": {
+            "face_enabled": true,
+            "face_backend": "opencv_haar_baseline",
+            "attribute_backend": "NullAttributeBackend",
+            "color_backend": "NullColorClassificationBackend",
+            "color_runtime": null,
+            "color_labels": 0,
+            "color_input_size": null,
+            "rf_enabled": false,
+            "rf_mode": "shadow",
+            "camera_flags": {
+              "replay_1": {
+                "use_helmet": false,
+                "use_pose": true,
+                "use_person": false,
+                "use_face": false,
+                "use_appearance": false
+              }
+            }
+          }
+        },
+        "inference_errors": 0,
+        "model_metrics": {
+          "pipeline_generation": 1,
+          "metadata_errors": 0,
+          "models": {
+            "primary": {
+              "enabled": true,
+              "properties": {
+                "unique-id": 1,
+                "process-mode": 1,
+                "batch-size": 1,
+                "interval": 1,
+                "output-tensor-meta": true
+              },
+              "property_observed_at": "pipeline_build",
+              "cameras": {
+                "replay_1": {
+                  "frames_seen": 1811,
+                  "frames_tensor_output": 906,
+                  "frames_no_objects": 0,
+                  "frames_classifier_only": 0,
+                  "frames_unobserved": 905,
+                  "frames_unknown": 0,
+                  "objects_with_tensor": 0,
+                  "objects_classifier_only": 0,
+                  "last_frame_age_seconds": 0.3717677970416844,
+                  "last_tensor_age_seconds": 0.3717677970416844
+                }
+              },
+              "unique_id_conflict": false
+            },
+            "pose": {
+              "enabled": false,
+              "properties": {
+                "unique-id": null,
+                "process-mode": null,
+                "batch-size": null,
+                "interval": null,
+                "output-tensor-meta": null
+              },
+              "property_observed_at": "pipeline_build",
+              "cameras": {
+                "replay_1": {
+                  "frames_seen": 0,
+                  "frames_tensor_output": 0,
+                  "frames_no_objects": 0,
+                  "frames_classifier_only": 0,
+                  "frames_unobserved": 0,
+                  "frames_unknown": 0,
+                  "objects_with_tensor": 0,
+                  "objects_classifier_only": 0,
+                  "last_frame_age_seconds": null,
+                  "last_tensor_age_seconds": null
+                }
+              },
+              "unique_id_conflict": false
+            },
+            "attributes": {
+              "enabled": false,
+              "properties": {
+                "unique-id": null,
+                "process-mode": null,
+                "batch-size": null,
+                "interval": null,
+                "output-tensor-meta": null
+              },
+              "property_observed_at": "pipeline_build",
+              "cameras": {
+                "replay_1": {
+                  "frames_seen": 0,
+                  "frames_tensor_output": 0,
+                  "frames_no_objects": 0,
+                  "frames_classifier_only": 0,
+                  "frames_unobserved": 0,
+                  "frames_unknown": 0,
+                  "objects_with_tensor": 0,
+                  "objects_classifier_only": 0,
+                  "last_frame_age_seconds": null,
+                  "last_tensor_age_seconds": null
+                }
+              },
+              "unique_id_conflict": false
+            },
+            "helmet": {
+              "enabled": false,
+              "properties": {
+                "unique-id": null,
+                "process-mode": null,
+                "batch-size": null,
+                "interval": null,
+                "output-tensor-meta": null
+              },
+              "property_observed_at": "pipeline_build",
+              "cameras": {
+                "replay_1": {
+                  "frames_seen": 0,
+                  "frames_tensor_output": 0,
+                  "frames_no_objects": 0,
+                  "frames_classifier_only": 0,
+                  "frames_unobserved": 0,
+                  "frames_unknown": 0,
+                  "objects_with_tensor": 0,
+                  "objects_classifier_only": 0,
+                  "last_frame_age_seconds": null,
+                  "last_tensor_age_seconds": null
+                }
+              },
+              "unique_id_conflict": false
+            }
+          }
+        },
+        "decoded_frames": 1088,
+        "video_seconds": 40.223,
+        "received_fps": 27.049200706063697,
+        "decode_errors": 0,
+        "databases": {
+          "appearances.db": "ok",
+          "mqtt_event_outbox.db": "ok",
+          "commercial_faces.db": "ok"
+        }
+      },
+      "source_pts": {
+        "runner": {
+          "completed": true,
+          "app_exit": 0,
+          "stop_seconds": 3.553211738122627,
+          "io_exit": 0
+        },
+        "steady_seconds": 51.072655765,
+        "stages": {
+          "src-replay_1.vsrc_0": {
+            "all_buffers": 1777,
+            "window_buffers": 1446,
+            "wall_fps": 28.312606390657702,
+            "unique_frame_ids": null,
+            "unique_fps": null,
+            "step_ms_min_median_max": [
+              0.0,
+              33.366667,
+              177.610608
+            ],
+            "pts_backwards": 0,
+            "same_pts": 30
+          },
+          "streammux.src": {
+            "all_buffers": 1776,
+            "window_buffers": 1446,
+            "wall_fps": 28.312606390657702,
+            "unique_frame_ids": 1446,
+            "unique_fps": 28.312606390657702,
+            "step_ms_min_median_max": [
+              0.195386,
+              27.609488,
+              215.808601
+            ],
+            "pts_backwards": 0,
+            "same_pts": 0
+          },
+          "output-queue.sink": {
+            "all_buffers": 1772,
+            "window_buffers": 1446,
+            "wall_fps": 28.312606390657702,
+            "unique_frame_ids": null,
+            "unique_fps": null,
+            "step_ms_min_median_max": [
+              0.195386,
+              27.685382,
+              215.808601
+            ],
+            "pts_backwards": 0,
+            "same_pts": 0
+          },
+          "output-queue.src": {
+            "all_buffers": 1740,
+            "window_buffers": 1445,
+            "wall_fps": 28.293026441563196,
+            "unique_frame_ids": 1445,
+            "unique_fps": 28.293026441563196,
+            "step_ms_min_median_max": [
+              0.195386,
+              27.7060075,
+              215.808601
+            ],
+            "pts_backwards": 0,
+            "same_pts": 0
+          },
+          "h264-videorate.sink": {
+            "all_buffers": 1740,
+            "window_buffers": 1445,
+            "wall_fps": 28.293026441563196,
+            "unique_frame_ids": 1445,
+            "unique_fps": 28.293026441563196,
+            "step_ms_min_median_max": [
+              0.0,
+              33.366667,
+              177.610608
+            ],
+            "pts_backwards": 0,
+            "same_pts": 30
+          },
+          "h264-videorate.src": {
+            "all_buffers": 1730,
+            "window_buffers": 1430,
+            "wall_fps": 27.999327205145583,
+            "unique_frame_ids": 1370,
+            "unique_fps": 26.82453025947514,
+            "step_ms_min_median_max": [
+              33.333333,
+              33.333333,
+              209.251709
+            ],
+            "pts_backwards": 0,
+            "same_pts": 0
+          },
+          "h264-encoder.sink": {
+            "all_buffers": 1730,
+            "window_buffers": 1430,
+            "wall_fps": 27.999327205145583,
+            "unique_frame_ids": null,
+            "unique_fps": null,
+            "step_ms_min_median_max": [
+              33.333333,
+              33.333333,
+              209.251709
+            ],
+            "pts_backwards": 0,
+            "same_pts": 0
+          },
+          "h264-encoder.src": {
+            "all_buffers": 1727,
+            "window_buffers": 1431,
+            "wall_fps": 28.018907154240093,
+            "unique_frame_ids": null,
+            "unique_fps": null,
+            "step_ms_min_median_max": [
+              33.333333,
+              33.333333,
+              209.251709
+            ],
+            "pts_backwards": 0,
+            "same_pts": 0
+          },
+          "poc-fix-identity.src": {
+            "all_buffers": 1726,
+            "window_buffers": 1430,
+            "wall_fps": 27.999327205145583,
+            "unique_frame_ids": null,
+            "unique_fps": null,
+            "step_ms_min_median_max": [
+              33.333333,
+              33.333333,
+              209.251709
+            ],
+            "pts_backwards": 0,
+            "same_pts": 0
+          }
+        },
+        "segment_parameters": {
+          "streammux.src": [
+            {
+              "start": 0,
+              "stop": 18446744073709551615,
+              "time": 0,
+              "base": 0,
+              "offset": 0,
+              "rate": 1.0,
+              "applied_rate": 1.0
+            }
+          ],
+          "output-queue.sink": [
+            {
+              "start": 0,
+              "stop": 18446744073709551615,
+              "time": 0,
+              "base": 0,
+              "offset": 0,
+              "rate": 1.0,
+              "applied_rate": 1.0
+            }
+          ],
+          "output-queue.src": [
+            {
+              "start": 0,
+              "stop": 18446744073709551615,
+              "time": 0,
+              "base": 0,
+              "offset": 0,
+              "rate": 1.0,
+              "applied_rate": 1.0
+            }
+          ],
+          "h264-videorate.sink": [
+            {
+              "start": 0,
+              "stop": 18446744073709551615,
+              "time": 0,
+              "base": 0,
+              "offset": 0,
+              "rate": 1.0,
+              "applied_rate": 1.0
+            }
+          ],
+          "h264-videorate.src": [
+            {
+              "start": 0,
+              "stop": 18446744073709551615,
+              "time": 0,
+              "base": 0,
+              "offset": 0,
+              "rate": 1.0,
+              "applied_rate": 1.0
+            }
+          ],
+          "h264-encoder.sink": [
+            {
+              "start": 0,
+              "stop": 18446744073709551615,
+              "time": 0,
+              "base": 0,
+              "offset": 0,
+              "rate": 1.0,
+              "applied_rate": 1.0
+            }
+          ],
+          "src-replay_1.vsrc_0": [
+            {
+              "start": 1020673025,
+              "stop": 18446744073709551615,
+              "time": 0,
+              "base": 1020673025,
+              "offset": 0,
+              "rate": 1.0,
+              "applied_rate": 1.0
+            }
+          ],
+          "h264-encoder.src": [
+            {
+              "start": 0,
+              "stop": 18446744073709551615,
+              "time": 0,
+              "base": 0,
+              "offset": 0,
+              "rate": 1.0,
+              "applied_rate": 1.0
+            }
+          ],
+          "poc-fix-identity.src": [
+            {
+              "start": 0,
+              "stop": 18446744073709551615,
+              "time": 0,
+              "base": 0,
+              "offset": 0,
+              "rate": 1.0,
+              "applied_rate": 1.0
+            }
+          ]
+        },
+        "properties": {
+          "streammux": {
+            "live-source": true,
+            "sync-inputs": false,
+            "max-latency": 0
+          },
+          "h264-videorate": {
+            "in": 1740,
+            "out": 1730,
+            "drop": 73,
+            "duplicate": 78,
+            "max-duplication-time": 100000000
+          },
+          "h264-encoder": {
+            "copy-timestamp": false
+          }
+        },
+        "source_pts_meta_matches": 1776,
+        "mux_buffers": 1776,
+        "source_to_mux_running_shift_ms_min_median_max": [
+          -310.595005,
+          37.248631,
+          576.449328
+        ],
+        "primary_fps": 28.186234015133994,
+        "app_cgroup_delta": {
+          "usage_usec": 58916588,
+          "user_usec": 47646054,
+          "system_usec": 11270534,
+          "nr_periods": 710,
+          "nr_throttled": 0,
+          "throttled_usec": 0
+        },
+        "io_cgroup_delta": {
+          "usage_usec": 4401859,
+          "user_usec": 2563337,
+          "system_usec": 1838522,
+          "nr_periods": 605,
+          "nr_throttled": 1,
+          "throttled_usec": 8146
+        },
+        "app_cpu_max": "200000 100000\n",
+        "audit": {
+          "counts": {
+            "event.person": 645,
+            "pose_events": 801,
+            "event.fall_detected": 156
+          },
+          "capabilities": {
+            "face_enabled": true,
+            "face_backend": "opencv_haar_baseline",
+            "attribute_backend": "NullAttributeBackend",
+            "color_backend": "NullColorClassificationBackend",
+            "color_runtime": null,
+            "color_labels": 0,
+            "color_input_size": null,
+            "rf_enabled": false,
+            "rf_mode": "shadow",
+            "camera_flags": {
+              "replay_1": {
+                "use_helmet": false,
+                "use_pose": true,
+                "use_person": false,
+                "use_face": false,
+                "use_appearance": false
+              }
+            }
+          }
+        },
+        "inference_errors": 0,
+        "model_metrics": {
+          "pipeline_generation": 1,
+          "metadata_errors": 0,
+          "models": {
+            "primary": {
+              "enabled": true,
+              "properties": {
+                "unique-id": 1,
+                "process-mode": 1,
+                "batch-size": 1,
+                "interval": 1,
+                "output-tensor-meta": true
+              },
+              "property_observed_at": "pipeline_build",
+              "cameras": {
+                "replay_1": {
+                  "frames_seen": 1776,
+                  "frames_tensor_output": 888,
+                  "frames_no_objects": 0,
+                  "frames_classifier_only": 0,
+                  "frames_unobserved": 888,
+                  "frames_unknown": 0,
+                  "objects_with_tensor": 0,
+                  "objects_classifier_only": 0,
+                  "last_frame_age_seconds": 0.15513431187719107,
+                  "last_tensor_age_seconds": 0.18327834689989686
+                }
+              },
+              "unique_id_conflict": false
+            },
+            "pose": {
+              "enabled": false,
+              "properties": {
+                "unique-id": null,
+                "process-mode": null,
+                "batch-size": null,
+                "interval": null,
+                "output-tensor-meta": null
+              },
+              "property_observed_at": "pipeline_build",
+              "cameras": {
+                "replay_1": {
+                  "frames_seen": 0,
+                  "frames_tensor_output": 0,
+                  "frames_no_objects": 0,
+                  "frames_classifier_only": 0,
+                  "frames_unobserved": 0,
+                  "frames_unknown": 0,
+                  "objects_with_tensor": 0,
+                  "objects_classifier_only": 0,
+                  "last_frame_age_seconds": null,
+                  "last_tensor_age_seconds": null
+                }
+              },
+              "unique_id_conflict": false
+            },
+            "attributes": {
+              "enabled": false,
+              "properties": {
+                "unique-id": null,
+                "process-mode": null,
+                "batch-size": null,
+                "interval": null,
+                "output-tensor-meta": null
+              },
+              "property_observed_at": "pipeline_build",
+              "cameras": {
+                "replay_1": {
+                  "frames_seen": 0,
+                  "frames_tensor_output": 0,
+                  "frames_no_objects": 0,
+                  "frames_classifier_only": 0,
+                  "frames_unobserved": 0,
+                  "frames_unknown": 0,
+                  "objects_with_tensor": 0,
+                  "objects_classifier_only": 0,
+                  "last_frame_age_seconds": null,
+                  "last_tensor_age_seconds": null
+                }
+              },
+              "unique_id_conflict": false
+            },
+            "helmet": {
+              "enabled": false,
+              "properties": {
+                "unique-id": null,
+                "process-mode": null,
+                "batch-size": null,
+                "interval": null,
+                "output-tensor-meta": null
+              },
+              "property_observed_at": "pipeline_build",
+              "cameras": {
+                "replay_1": {
+                  "frames_seen": 0,
+                  "frames_tensor_output": 0,
+                  "frames_no_objects": 0,
+                  "frames_classifier_only": 0,
+                  "frames_unobserved": 0,
+                  "frames_unknown": 0,
+                  "objects_with_tensor": 0,
+                  "objects_classifier_only": 0,
+                  "last_frame_age_seconds": null,
+                  "last_tensor_age_seconds": null
+                }
+              },
+              "unique_id_conflict": false
+            }
+          }
+        },
+        "decoded_frames": 1106,
+        "video_seconds": 40.216,
+        "received_fps": 27.501491943505073,
+        "decode_errors": 0,
+        "databases": {
+          "appearances.db": "ok",
+          "mqtt_event_outbox.db": "ok",
+          "commercial_faces.db": "ok"
+        }
+      }
+    },
+    "window": "source first +10s to last -2s",
+    "operating_unchanged": true
+  },
+  "operating_unchanged": true,
+  "product_source_unchanged": 206,
+  "limits": [
+    "동일10.01초 영상 반복3조건, 독립 영상3개가 아님",
+    "AI CPU2·IO CPU1의 별도 cgroup, 호스트와GPU는 운영과 공유",
+    "AI 구간 CPU throttling0이나 모든 호스트/GPU 부하 원인 배제는 아님",
+    "세 조건 모두 관측 PTS→running-time 변환값은 같음. no-AI segment 필드는 원점0, Pose 조건 source는 start=base 약1.02초로 상쇄됨. batch PTS와 원본PTS는 별개로 달랐음",
+    "원본PTS 보존 임시관측기: unique 출력24.30→26.82FPS이나 처리28.19<28.47로 채택하지 않음",
+    "서로 다른 출력프레임은 frame_num으로 계수, 수신 디코드 FPS와 평가 구간이 다름",
+    "신규 운영 반영·I54 해결·원 I40 종료 멈춤 해결 근거 아님"
+  ],
+  "sources": [
+    "https://docs.nvidia.com/metropolis/deepstream/7.1/text/DS_plugin_gst-nvstreammux.html",
+    "https://docs.nvidia.com/metropolis/deepstream/7.1/text/DS_plugin_gst-nvstreamdemux.html"
+  ],
+  "sha256": {
+    "data/runtime/p51_split_io_20261007_v125/operating_after.json": "b112264b68f921a0adf41b80ef84e7ac8d016c354e1308f7482c6cf1e965051e",
+    "data/runtime/p51_split_io_20261007_v125/prepare.py": "520c5e795ed66f736400d70eb30ff97a5114f7dff4de85757fbcc11eca04a1a9",
+    "data/runtime/p51_split_io_20261007_v125/analyze.py": "ab509cb0025283732f2caa7ffdcc77b36ed812eb36592a574501c6eaed157719",
+    "data/runtime/p51_split_io_20261007_v125/operating_before_source_pts.json": "b112264b68f921a0adf41b80ef84e7ac8d016c354e1308f7482c6cf1e965051e",
+    "data/runtime/p51_split_io_20261007_v125/io.py": "f42e0acbabad299b90cc1ae242c3e99e90ffd645adf455848c76f18532f84fc7",
+    "data/runtime/p51_split_io_20261007_v125/preflight.json": "b30fd5d7d75de415b4a5c723fd64fb5373148f0b9cecf1448b7f0c05f969a1b3",
+    "data/runtime/p51_split_io_20261007_v125/observe_source_pts.py": "288e9c62cfb688a1720f1cfb115bd51f70f343836c27b10895a220d14ef0ab08",
+    "data/runtime/p51_split_io_20261007_v125/trial_results.json": "3b11a26361e1182f22840a193bb44de329c242c7a7e19aec4ef055949955ca73",
+    "data/runtime/p51_split_io_20261007_v125/comparison.json": "7bb4df2cf7851b836bc9cebc0f428abb0d8d7ad9516a6407271da20564b9ff2b",
+    "data/runtime/p51_split_io_20261007_v125/operating_before.json": "b112264b68f921a0adf41b80ef84e7ac8d016c354e1308f7482c6cf1e965051e",
+    "data/runtime/p51_split_io_20261007_v125/run.py": "a3ebe135c1913fba705bbd77912ba6b014e4ca783b4974d395fc830adab7cac9",
+    "data/runtime/p51_split_io_20261007_v125/operating_after_source_pts.json": "b112264b68f921a0adf41b80ef84e7ac8d016c354e1308f7482c6cf1e965051e",
+    "data/runtime/p51_split_io_20261007_v125/plan.json": "d3762ea7a1e87b9287e2ebbb17fa3de54453da7f15705bd307611a1fb56a0e64",
+    "data/runtime/p51_split_io_20261007_v125/observe.py": "8fc12c6e55ab6e265c2250799cdf50bc98f0339dc2aedead46147821653fadae",
+    "data/runtime/p51_split_io_20261007_v125/pose/compose.json": "5d55c2292c448e47457d8879316dbed36eb03bd154b83662d9a415c27afa6099",
+    "data/runtime/p51_split_io_20261007_v125/pose/cameras.json": "6fa6df8aca26c20df172cc82cc69e4663ee419fed87aeff684c1f0d14cff8e3e",
+    "data/runtime/p51_split_io_20261007_v125/pose/output/final_model_audit.json": "808eaae56f2d738f31d15b5460ec0ea1fed68c8a6b0095d430bd7f6ee38b78a2",
+    "data/runtime/p51_split_io_20261007_v125/pose/output/boundaries.json": "ff77d8960b1e9142bb424aba9b289d11fb6e47701c1be4b4230e0dfedde86ef1",
+    "data/runtime/p51_split_io_20261007_v125/pose/output/io_result.json": "2af296b1e47cd2965894a20175812fe44870deb9857027cd3bd07e4fc3f2c10c",
+    "data/runtime/p51_split_io_20261007_v125/pose/output/app_state.txt": "8a5f3b819b12c6f3cf9e23adb6e968ce01511cf840e9e0ed2615a7dc1c277327",
+    "data/runtime/p51_split_io_20261007_v125/pose/output/output-server.log": "ffeaee5dc9430ed4734524b552ca9264188d391f11bc99cf2944e6d25cd49061",
+    "data/runtime/p51_split_io_20261007_v125/pose/output/decode.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "data/runtime/p51_split_io_20261007_v125/pose/output/receiver.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "data/runtime/p51_split_io_20261007_v125/pose/output/publisher-1-split.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "data/runtime/p51_split_io_20261007_v125/pose/output/last.prom": "648b61c2e11b2ae6f9035937de384ceb2da1b18a2e36402be76a4dc78234b6a8",
+    "data/runtime/p51_split_io_20261007_v125/pose/output/samples.jsonl": "016f3080ac6761eb120c295cb9ec4346738e1dc2c9e4b68810c182ec08ea8f5c",
+    "data/runtime/p51_split_io_20261007_v125/pose/output/io_state.txt": "737f97857a3157b197f1319528e7492921cf134f26b6599ddc4f5ae049192f02",
+    "data/runtime/p51_split_io_20261007_v125/pose/output/app.log": "0738a431048fd010afd67088cbf34b1f8d3511e3876d4b9a7cd4e205a934fe97",
+    "data/runtime/p51_split_io_20261007_v125/pose/output/decode.progress": "be9adc7f6011f57f845935dd8d87c20d1666003011dd14cff6e6520cea806664",
+    "data/runtime/p51_split_io_20261007_v125/pose/output/stats.jsonl": "5391f8d0bc55274e846255f31fa46899c900033570ed2e2ff6f6368dc870eff7",
+    "data/runtime/p51_split_io_20261007_v125/pose/output/input-server.log": "a41c2017d55aba2091cf1edc21e8da22d988b20e56d4186e5857cfacdde3eb3d",
+    "data/runtime/p51_split_io_20261007_v125/pose/output/io.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "data/runtime/p51_split_io_20261007_v125/no_ai/compose.json": "ec4c055322daffef6156e3a3fe76e5d80168a4d7dbb54b05ec300b3fc83a81cc",
+    "data/runtime/p51_split_io_20261007_v125/no_ai/cameras.json": "bc7179ed9564538d17a570ac2124bf66a7fcbcac04a0dff362907aa37ebee3be",
+    "data/runtime/p51_split_io_20261007_v125/no_ai/output/final_model_audit.json": "9901a85abca6202f88c68d48c83b109a33879bf88b7bc8c60c2a2e90923b94a4",
+    "data/runtime/p51_split_io_20261007_v125/no_ai/output/boundaries.json": "0f55af392c0579e03a5d25cb303d6feab2f4cb4e3819082010434fd4d918c64b",
+    "data/runtime/p51_split_io_20261007_v125/no_ai/output/io_result.json": "2af296b1e47cd2965894a20175812fe44870deb9857027cd3bd07e4fc3f2c10c",
+    "data/runtime/p51_split_io_20261007_v125/no_ai/output/app_state.txt": "898d6d5a4fb8e3b1cb57bc6d052763f21ee8e77e7b1ce1f768e9d84e9f4425a0",
+    "data/runtime/p51_split_io_20261007_v125/no_ai/output/output-server.log": "ea2de53e45a3bdca7e726471f9b1bbedfadfc5021faf104e28d6ce0ca7956f04",
+    "data/runtime/p51_split_io_20261007_v125/no_ai/output/decode.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "data/runtime/p51_split_io_20261007_v125/no_ai/output/receiver.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "data/runtime/p51_split_io_20261007_v125/no_ai/output/publisher-1-split.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "data/runtime/p51_split_io_20261007_v125/no_ai/output/last.prom": "08db568a03bf2308829da04c02649ba188d9dcccc9f79b11350d274c78073615",
+    "data/runtime/p51_split_io_20261007_v125/no_ai/output/samples.jsonl": "1c93b125f2906ff4ca6e5ad70e1b8b67fcbd1922f1706e5ddef8627d1d3368e3",
+    "data/runtime/p51_split_io_20261007_v125/no_ai/output/io_state.txt": "737f97857a3157b197f1319528e7492921cf134f26b6599ddc4f5ae049192f02",
+    "data/runtime/p51_split_io_20261007_v125/no_ai/output/app.log": "28bba5e89a1a2d71bcaad8057fed246be2218e43b73aaacf6a7da307385631c1",
+    "data/runtime/p51_split_io_20261007_v125/no_ai/output/decode.progress": "95bd949bd25f99f405c415bb2f1f1ce87b261b1ccbc7485da22aec4e27da82fe",
+    "data/runtime/p51_split_io_20261007_v125/no_ai/output/stats.jsonl": "c2a99cab01327e803747cc2a0d656597129eaf8e62264a2a58dc4a27132caf89",
+    "data/runtime/p51_split_io_20261007_v125/no_ai/output/input-server.log": "e4d22a0dde2c1d457742c6cd17c375b301d62c669a156881d38c6137ba0ccf09",
+    "data/runtime/p51_split_io_20261007_v125/no_ai/output/io.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "data/runtime/p51_split_io_20261007_v125/source_pts/compose.json": "8d5ec6f85ea0a4116b5dfc38aaa41f6fe54f605cf844dc508a76d5e40e03e22c",
+    "data/runtime/p51_split_io_20261007_v125/source_pts/cameras.json": "6fa6df8aca26c20df172cc82cc69e4663ee419fed87aeff684c1f0d14cff8e3e",
+    "data/runtime/p51_split_io_20261007_v125/source_pts/output/final_model_audit.json": "c9d9ae00cc8078b997548733f4bc9771ed0cf6750615f8bbbdcf2db338279204",
+    "data/runtime/p51_split_io_20261007_v125/source_pts/output/boundaries.json": "3383fcee18969998edb74f4c1dd65826b9d09df883e96d0d7da7aed75cd92ef8",
+    "data/runtime/p51_split_io_20261007_v125/source_pts/output/io_result.json": "2af296b1e47cd2965894a20175812fe44870deb9857027cd3bd07e4fc3f2c10c",
+    "data/runtime/p51_split_io_20261007_v125/source_pts/output/app_state.txt": "895b1d38fe652e3540aeb9cef2784bc0d6d19a9feffab19b834c4c6059d021e9",
+    "data/runtime/p51_split_io_20261007_v125/source_pts/output/pts_hypothesis.json": "94aec546cae7ef8f341f3052e3fb54a0012e44609ccd5c98a57d127559543d57",
+    "data/runtime/p51_split_io_20261007_v125/source_pts/output/output-server.log": "16819f227851ec8cced790a53c9dae9a6166c26b18d74cba62f9f81d7edc7dd7",
+    "data/runtime/p51_split_io_20261007_v125/source_pts/output/decode.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "data/runtime/p51_split_io_20261007_v125/source_pts/output/receiver.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "data/runtime/p51_split_io_20261007_v125/source_pts/output/publisher-1-split.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "data/runtime/p51_split_io_20261007_v125/source_pts/output/last.prom": "12dec6f13a5e7d2bd6ccc3001000fee5b293b75e00548d7ba7a205e28e15a540",
+    "data/runtime/p51_split_io_20261007_v125/source_pts/output/samples.jsonl": "d16979a81255c97324bcdb0cd8c3df7983891a4cd24da14cc2c3956b66a395a4",
+    "data/runtime/p51_split_io_20261007_v125/source_pts/output/io_state.txt": "737f97857a3157b197f1319528e7492921cf134f26b6599ddc4f5ae049192f02",
+    "data/runtime/p51_split_io_20261007_v125/source_pts/output/app.log": "bf343e50540aca088d7ba891a34f1edfd2879874fd78f5b928dc36ae05235b17",
+    "data/runtime/p51_split_io_20261007_v125/source_pts/output/decode.progress": "1df9c1ca2ad74e92550cfecbe6835529a8e029362d74fa1a22168842f8be8f0c",
+    "data/runtime/p51_split_io_20261007_v125/source_pts/output/stats.jsonl": "899acc1e25a51d5cd9dfaa83b385b9d8e3bab72817f19fd52b3983e163fcb438",
+    "data/runtime/p51_split_io_20261007_v125/source_pts/output/input-server.log": "94a2d1a0725dc0d3f3521f92232e6f729a09aa826f9974fbc69b1c594d7f0291",
+    "data/runtime/p51_split_io_20261007_v125/source_pts/output/io.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "review": {
+    "agent": "split_and_labels_review",
+    "critical": 0,
+    "important": 0,
+    "clarifications_applied": [
+      "no-AI 원점0과 전체조건 시간 변환 동일을 구분",
+      "경보 지연은 영상 시각 기준으로 명시"
+    ]
+  }
+}

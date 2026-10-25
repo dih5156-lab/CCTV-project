@@ -1,0 +1,327 @@
+{
+  "date": "2026-10-08 KST",
+  "wbs": "P5.1",
+  "deployed": false,
+  "client": "별도 PC·노트북, 사용자 확인",
+  "decision": "LIVE_STUTTER_UNRESOLVED_NO_RECENT_CANDIDATE_DEPLOYMENT_FOUND",
+  "operating": [
+    {
+      "name": "/cctv-ai-engine",
+      "image": "sha256:1ace5b7832a50d6675b66146b0edc307021795732fc7c9a770e2cd628d7fd261",
+      "started": "2026-10-02T01:33:58.362007997Z",
+      "restarts": 0,
+      "status": "running",
+      "health": "healthy",
+      "bind_targets": [
+        "/app/.venv-jetson-train",
+        "/app/Sample",
+        "/app/cameras.json",
+        "/app/data",
+        "/app/known_faces",
+        "/app/known_faces.json",
+        "/app/models",
+        "/app/scripts",
+        "/app/src",
+        "/app/zones_config.json",
+        "/app/낙상학습데이터",
+        "/root/.insightface",
+        "/tmp/.X11-unix",
+        "/app/config/appearance_color_labels.json",
+        "/app/config/appearance_pa100k_labels.json",
+        "/app/config/deepstream",
+        "/opt/nvidia/deepstream",
+        "/usr/lib/aarch64-linux-gnu/nvidia"
+      ]
+    },
+    {
+      "name": "/cctv-media-server",
+      "image": "sha256:f8628851106cc053f9175b248050bb5f362a6e65abd72297c167a1cb5a9a3be2",
+      "started": "2026-10-01T23:40:25.266992541Z",
+      "restarts": 0,
+      "status": "running",
+      "health": null,
+      "bind_targets": [
+        "/mediamtx.yml"
+      ]
+    },
+    {
+      "name": "/cctv-progress-web",
+      "image": "sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10",
+      "started": "2026-10-01T23:40:25.242793769Z",
+      "restarts": 0,
+      "status": "running",
+      "health": null,
+      "bind_targets": [
+        "/etc/nginx/nginx.conf",
+        "/usr/share/nginx/html"
+      ]
+    }
+  ],
+  "operating_compared_with_v138": [
+    "/cctv-ai-engine",
+    "/cctv-media-server"
+  ],
+  "operating_identity_unchanged": true,
+  "source": {
+    "checked": 206,
+    "changed": [],
+    "baseline": "v138 image_verification.source"
+  },
+  "baseline_files_checked": 11,
+  "baseline_files_changed": [],
+  "models_match_v132": {
+    "fall/yolov8n-pose.engine": true,
+    "fall/yolov8m-pose.engine": true,
+    "head/helmet_model.engine": true
+  },
+  "primary_config_model": "models/fall/yolov8n-pose.engine",
+  "running_experiment_containers_observed": 0,
+  "metrics": {
+    "seconds": 30.02247248706408,
+    "rates": {
+      "cctv_processor_frames_processed_total": 30.04416109927818,
+      "cctv_processor_frames_dropped_total": 0.0,
+      "cctv_processor_preview_frames_stored_total": 7.86077829205061,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 14.988772167045655
+    },
+    "primary_max_last_frame_age_seconds": 0.07268181093968451
+  },
+  "local_rtsp": {
+    "warmup_excluded_seconds": 5,
+    "sample_packets": 563,
+    "sample_wall_seconds": 18.99578591180034,
+    "video_packets_per_wall_second": 29.58550926028709,
+    "max_observed_arrival_gap_seconds": 0.24577371287159622,
+    "arrival_gaps_over_0_2_seconds": 1,
+    "pts_gaps_over_0_1_seconds": 4,
+    "negative_pts_deltas_after_warmup": 0,
+    "probe_error_bytes": 0
+  },
+  "resource_observation": {
+    "tegrastats_window_kst": "09:13:10–09:13:18",
+    "active_cpu_cores": 8,
+    "sampled_cpu_percent_range": [
+      80,
+      99
+    ],
+    "sampled_gpu_percent_range": [
+      29,
+      93
+    ],
+    "codegraph_cpu_percent_over_8_seconds": 90.8,
+    "cpu_percentage_process_convention": "100% = CPU 코어 1개",
+    "causality_proven": false
+  },
+  "limits": [
+    "평균 프레임 진행은 고유 영상 프레임·종단 지연·브라우저 부드러움의 증명이 아니다.",
+    "로컬 TCP RTSP 관측이며 원격 PC의 UDP/WebRTC 패킷 손실·재생 통계는 미확인이다.",
+    "ffprobe 출력 관측 시각은 네트워크 패킷 캡처 시각과 같지 않으며 초기5초를 제외했다.",
+    "MediaMTX API는401, 컨테이너 내부 조회는wget 부재로 미수행. 인증·서비스 설정을 바꾸지 않았다.",
+    "운영 src/models/config 바인드 마운트와 CPU/GPU 공유가 있어 컨테이너 이름·이미지가 다르다는 사실만으로 개발 영향 없음을 보장하지 않는다.",
+    "최근 기준 해시 일치는 과거 전체 변경 이력이나 실행 중 메모리 내용의 동등성을 증명하지 않는다."
+  ],
+  "next": "추가 GPU 시험을 보류하고 원격 PC의 WebRTC 수신·디코드·재생 통계와 서버 자원 부하를 대조한다. 운영 변경은 승인된 배포 단위로 분리한다.",
+  "raw_sha256": {
+    "data/runtime/live_stutter_20261008/process_cpu_sample.json": "e295d84e3e97d6bb52d0cb3b8feff449b7a58b73bfd413e157577c8535fa465e",
+    "data/runtime/live_stutter_20261008/operating.json": "7ffe3057ee15c5c3fee145fbdd233d87a4f3ab0c9f5be7faec016d4a83ad7ca9",
+    "data/runtime/live_stutter_20261008/source_comparison.json": "aea9020a1fa2ccd2cfdc5c455137d219e3ab887967d54109c2c6ef7e1661d5a2",
+    "data/runtime/live_stutter_20261008/metrics_samples.json": "d5fed36c1c68a74056baee27f99c95991190875f3a4bff6a1ccb21c9cd15dd77",
+    "data/runtime/live_stutter_20261008/rtsp_packets.json": "2e97bf5d34506bce3b75a596e2372efba088139af0dee28f05ae933249f8e433"
+  },
+  "followup": {
+    "updated_kst": "2026-10-08T10:21:53+09:00",
+    "plan": {
+      "start_kst": "2026-10-08T09:35:43+09:00",
+      "deadline_kst": "2026-10-08T10:35:43+09:00",
+      "question": "원격 PC의 끊김이 서버 송출 전후 어느 구간에서 발생하는가",
+      "constraints": [
+        "운영 재시작/설정/모델 변경 없음",
+        "추가 GPU 시험 없음",
+        "원격 PC 직접 접근 도구 없음",
+        "기존 관측 도구 재사용 우선"
+      ],
+      "completion": [
+        "서버/원격 동시 관측 또는 조회 불가 사유",
+        "문제 구간과 미확인 항목",
+        "다음 조치 하나"
+      ],
+      "user_confirmed_live_url": "http://192.168.2.141:7000/",
+      "client_stats_status": "NOT_OBTAINED_CHROME_SELF_XSS_PASTE_PROTECTION",
+      "client_test": {
+        "method": "7000 라이브 탭 종료 후 8889/camera_1 영상 전용 페이지 30초 육안 비교",
+        "status": "USER_CONFIRMED_CONNECTED_SAME_STUTTER",
+        "limits": "새 WebRTC 연결이라 페이지 효과와 재연결 효과를 단독 분리하지 못함; 사용자 육안 비교는 브라우저 계측값이 아님",
+        "observation": "처음에는 열리지 않는다고 답했으나 이후 영상 연결 성공·동일 끊김으로 정정",
+        "inference": "7000 관제 페이지에만 한정된 문제라는 가설을 지지하지 않음. 서버/네트워크/PC 디코드 중 원인은 아직 미확정."
+      }
+    },
+    "status": "HOLD_CLIENT_STATISTICS_REQUIRED_FOR_CAUSE_ISOLATION",
+    "operating_changed": false,
+    "additional_gpu_test": false,
+    "initial_3_minute_window": {
+      "start_kst": "2026-10-08T09:51:10.750659+09:00",
+      "end_kst": "2026-10-08T09:54:07.891330+09:00",
+      "seconds": 177.14087204704992,
+      "samples": 60,
+      "frame_rate": 28.186606186932526,
+      "inference_rate": 14.090480481190383,
+      "three_second_frame_rate_min": 13.975729822019,
+      "three_second_frame_rate_max": 34.298518017463635,
+      "primary_last_frame_age_max_seconds": 0.11436455813236535,
+      "pipeline_restart_delta": 0.0,
+      "client_overlap_verified": false
+    },
+    "simultaneous_60_second_window": {
+      "start_utc": "2026-10-08T01:01:01.991124+00:00",
+      "end_utc": "2026-10-08T01:02:02.040201+00:00",
+      "seconds": 60.04907471407205,
+      "frames_per_second": 30.025441833785333,
+      "tensor_per_second": 15.004394393921567,
+      "host_cpu_busy_percent_range": [
+        46.77692960135708,
+        72.50628667225482
+      ],
+      "container_rx_mbps_range": [
+        4.310828740332504,
+        4.5101765313599875
+      ],
+      "udp_counter_changes": {
+        "InDatagrams": 23599,
+        "NoPorts": 0,
+        "InErrors": 0,
+        "OutDatagrams": 29,
+        "RcvbufErrors": 0,
+        "SndbufErrors": 0,
+        "InCsumErrors": 0,
+        "IgnoredMulti": 0,
+        "MemErrors": 0
+      },
+      "rtsp_tcp_queue_max_bytes": 0
+    },
+    "local_rtsp_during_direct_view_comparison": {
+      "packet_count": 862,
+      "wall_span_seconds": 29.981906017987058,
+      "pts_span_seconds": 29.908022000000003,
+      "pts_to_wall_ratio": 0.9975357131083418,
+      "pts_minus_wall_growth_seconds": -0.07388401798705502,
+      "packet_rate_wall": 28.71732035593267,
+      "packet_rate_pts": 28.788262894817983,
+      "pts_step_median": 0.03333300000000072,
+      "pts_step_min": 0.03333299999999895,
+      "pts_step_max": 0.15062200000000203,
+      "pts_steps_over_100ms": 11,
+      "negative_pts_steps": 0,
+      "start_utc": "2026-10-08T01:10:25.565202+00:00",
+      "end_utc": "2026-10-08T01:11:00.587049+00:00",
+      "max_observed_arrival_gap_seconds": 0.2388862909283489,
+      "observation_errors": ""
+    },
+    "stream": [
+      {
+        "codec_name": "h264",
+        "profile": "Constrained Baseline",
+        "width": 1920,
+        "height": 1080,
+        "has_b_frames": 0,
+        "pix_fmt": "yuvj420p",
+        "r_frame_rate": "30/1",
+        "avg_frame_rate": "30/1"
+      }
+    ],
+    "client_view_result": {
+      "method": "7000 라이브 탭 종료 후 8889/camera_1 영상 전용 페이지 30초 육안 비교",
+      "status": "USER_CONFIRMED_CONNECTED_SAME_STUTTER",
+      "limits": "새 WebRTC 연결이라 페이지 효과와 재연결 효과를 단독 분리하지 못함; 사용자 육안 비교는 브라우저 계측값이 아님",
+      "observation": "처음에는 열리지 않는다고 답했으나 이후 영상 연결 성공·동일 끊김으로 정정",
+      "inference": "7000 관제 페이지에만 한정된 문제라는 가설을 지지하지 않음. 서버/네트워크/PC 디코드 중 원인은 아직 미확정."
+    },
+    "browser_statistics": {
+      "status": "NOT_OBTAINED",
+      "console_failure": "Chrome self-XSS paste protection. Did not request disabling it.",
+      "builtin_statistics_request": "chrome://webrtc-internals: framesPerSecond / packetsLost / freezeCount requested; no reply yet"
+    },
+    "file_verification": {
+      "source_files": 206,
+      "baseline_files": 11,
+      "changed": []
+    },
+    "collector_checks": {
+      "node_syntax": "PASS",
+      "mock_existing_connection_video_only_missing_value_privacy_checks": "PASS",
+      "remote_browser_execution": "NOT_VERIFIED"
+    },
+    "limits": [
+      "Counter/frame rate observations are not unique-frame or browser presentation measurements.",
+      "Container receive bytes include non-camera traffic; TCP receive queue zero does not prove RTP media is lossless.",
+      "UDP error deltas cover the AI network namespace, not the complete Wi-Fi/WebRTC route.",
+      "Three-second sample rates can be affected by counter update timing. A low sample does not prove a continuous freeze of that duration.",
+      "Direct player test changes page and connection together; user observation is not quantitative browser telemetry.",
+      "The shared path still includes server output, network and PC decoding/rendering; root cause is not determined."
+    ],
+    "next": "요청한 chrome://webrtc-internals 수신 통계 확보 시 서버 관측과 대조한다. 통계 확보 전 근본 원인·복구·P5.1 완료를 선언하지 않는다.",
+    "sha256": {
+      "data/runtime/live_stutter_20261008/followup/collect_webrtc.js": "fa09485cfb79caeac9096ebb3549d23bcf616e279bec74fcff969c165d603db6",
+      "data/runtime/live_stutter_20261008/followup/webrtc_reader.js": "21afdb6c0ddc4a5ef05387f259288f61454d16c94e9adc077528255ed975dad5",
+      "data/runtime/live_stutter_20261008/followup/webrtc_reader.html": "5c034217046ef2b731a5cb8c6a16efe6d436184f7160dacfd14bab89a3f638b4",
+      "data/runtime/live_stutter_20261008/followup/server_overlap.jsonl": "08c6a29d08b67c764cde37367bf07d12bc55c5bdaeb66046348e6f32064d1801",
+      "data/runtime/live_stutter_20261008/followup/output_timing_summary.json": "0e1cda7fca3d6bf90cd678dbb83aa369b3d8bd5b3a68aef818d059cb60abf78a",
+      "data/runtime/live_stutter_20261008/followup/wifi_and_metrics.json": "ced7ecbc1e8d00e50442e754b48629ad27748fcea3364c4a0849d42b6cf6e9c3",
+      "data/runtime/live_stutter_20261008/followup/final_file_check.json": "346bd8255f651ea0b7a4139f84792eb76ead8eab40eb7f0ec6a5c17b98c45123",
+      "data/runtime/live_stutter_20261008/followup/server_link.json": "ba130dcb2efaef41e564d9348d9d83054de25f269b5620211f4ae945c99a77fe",
+      "data/runtime/live_stutter_20261008/followup/cpu_network_metrics.json": "dc07954d4ca41f363a3c3b102ee4e38c9d54ea8f3fd1dda0046e31fb28805cd6",
+      "data/runtime/live_stutter_20261008/followup/stream_info.json": "8ad3981e515db8df454f676044537e081b88367fec3a0b0f1873a75751e25f99",
+      "data/runtime/live_stutter_20261008/followup/media_sessions.json": "d57e409bfd4c03a0cfab19e48a2ecd2d7bb1b55c7ba574f5db2f5b5cc87c3226",
+      "data/runtime/live_stutter_20261008/followup/server_summary.json": "533666860cde0f40f03d3f6ac8b4f30b7e01f86453bed40ac2131fa1fc74b0d2",
+      "data/runtime/live_stutter_20261008/followup/direct_view_rtsp_packets.json": "34d0593a859c7af0dd91221a12477c921a7e40d89742e609e6ea58a6a164c7bb"
+    },
+    "server_observation_closed_kst": "2026-10-08T10:21:53+09:00",
+    "closure_reason": "서버 관측과 페이지 비교를 마쳤으나 클라이언트 수신·디코드 계측이 없어 원인 분리를 보류한다. 60분 상한 전 중단하며 같은 서버 표본·콘솔 시도를 반복하지 않는다."
+  },
+  "label_review": {
+    "updated_kst": "2026-10-08T10:32:05+09:00",
+    "status": "DISPLAY_PATH_IDENTIFIED_STUTTER_CAUSALITY_UNMEASURED",
+    "user_observation": "각 사람에 person 신뢰도와 (null) 추적 ID 두 줄이 보이며 이중 탐지를 의심함",
+    "attachment_sha256": "366241dc02c3bf3b20ffa7705731f44a86a516d21ef08950e8ee65f5d0620fec",
+    "visual_findings": [
+      "전경·배경 사람 각각에 별도 박스가 있고 각 박스에 라벨 두 줄이 보임",
+      "한 사람의 같은 위치에 탐지 박스 두 개가 겹쳤다고 이 이미지로 확정할 수 없음"
+    ],
+    "display_path": [
+      "deepstream_processor.py:_inject_primary_person_object_meta는 obj_label과 bbox를 채우지만 text_params.display_text를 초기화하지 않음",
+      "configure_tracker는 display-tracking-id를 덮어쓰지 않음. 운영 컨테이너 gst-inspect-1.0 nvtracker 결과 Boolean Default true",
+      "설치된 nvtracker_proc.cpp:1704-1708은 기존 display_text를 %s로 복사한 뒤 object_id를 추가함. 비어 있는 표시 문구와 (null) ID 현상이 일치함",
+      "_deepstream_osd.py:add_osd_overlays는 별도 display_meta에 label confidence를 추가함"
+    ],
+    "processing_path": [
+      "DS_CROP_POSE_ENABLED=0, DS_HELMET_ENABLED=1. 보조 추론 요소가 있으면 primary-tensor-queue에 추적 객체 등록 probe가 연결됨",
+      "객체 등록과 emit_tensor_events에서 같은 _detections_from_tensor 후처리를 호출하는 경로를 정적 확인함. YOLO TensorRT 엔진 두 번 실행이라는 뜻은 아님",
+      "process_batch_frames는 tensor 이벤트 처리 뒤 object_meta 이벤트도 처리함. 실제 중복 알림/저장은 하위 필터를 포함한 추가 검증이 필요함"
+    ],
+    "verification": {
+      "gst_inspect_exit": 0,
+      "installed_tracker_source_read": true,
+      "production_restart_count": 0,
+      "crop_pose_enabled": "0",
+      "helmet_enabled": "1",
+      "gpu_trial_run": false,
+      "product_code_or_config_changed": false
+    },
+    "source_sha256": {
+      "src/core/deepstream_processor.py": "d88633c2e73825bdeeed5259b2efac8d6f5d2330b1e062112bb976784214975a",
+      "src/core/_deepstream_event_factory.py": "15722df14fdb38edf422280ba6a1f624e79a6c2b202779b44357bad94ac27a33",
+      "src/core/_deepstream_osd.py": "5b74dda4901be1947ca8930236d4e83439b2c13b0c8e10c29271b199b0534a46",
+      "src/core/_deepstream_element_config.py": "b530da40295dcb627d547b490ba7072e1a61d431e68ef97612032408b8961ad7",
+      "src/core/_deepstream_pipeline_builder.py": "781804ae3283c6d78413e58dbdfdc75a13f5137702f216cff93257a5d6262d71"
+    },
+    "limits": [
+      "실행 중 Python 메모리와 현재 바인드 소스의 완전 일치 검증은 아님",
+      "후처리 중복의 CPU 비용과 끊김 인과관계는 미측정",
+      "표시만 고쳐도 FPS가 개선된다고 판단하지 않음"
+    ],
+    "next": "운영 변경 없이 후처리 중복 제거 후보의 회귀 범위를 확인한다. 자동 추적 ID 표시는 사용자 정의 라벨과 겹치지 않게 정리하되 추적 ID 자체는 유지한다. 라이브 인과관계는 별도 계측이 필요하다.",
+    "reference": "https://docs.nvidia.com/metropolis/deepstream/7.1/text/DS_plugin_gst-nvtracker.html"
+  },
+  "subsequent_operating_refresh": "docs/planning/evidence/live_refresh_20261008.json",
+  "observation_scope": "이 파일의 운영 불변/미배포 기록은10-08 11:12 KST 교체 이전 관측이다. 이후 상태는 subsequent_operating_refresh를 참조한다."
+}

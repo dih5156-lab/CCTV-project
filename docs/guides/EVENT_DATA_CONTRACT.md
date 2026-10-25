@@ -1,5 +1,9 @@
 # 이벤트 데이터 계약
 
+10-15 필수3종의 사건·시간창·참여자·평가 단위는 [P5.6 내부 계약](../planning/OBSERVATION_CONTRACT.md#behavior-contract-20261015)을 따른다. `fall_detected`를 유지하고 `fight_detected`/`fence_climb_detected`는 신규 생산자 연결 전 예약 유형으로 둔다. 합성 dict 입력의 저장/관제 직렬화 검증이며 현재 Enum·실제 모델/출력 지원을 뜻하지 않는다.
+
+10-12 추적 ID 계약 개정: 신규 AI 이벤트의 `object_id`와 중첩 추적 참조는 10진 문자열/null을 사용한다. 내부 정수·기존 DB/조회 호환 필드는 유지하며, 생성 방식·미추적 값·적용 범위는 [공통 ID 규격](../features/EVENT_SCHEMA_STANDARD.md#추적-id-계약--2026-10-12--i63)을 따른다. 운영 반영 여부는 진행 기록과 구분한다.
+
 이 문서는 카메라 AI 이벤트가 MQTT, Canonical Event, EdgeX, Public API, Action Layer를 통과할 때 유지해야 하는 필드와 변환 규칙을 설명합니다.
 
 ## 전체 흐름
@@ -25,7 +29,7 @@ AI 엔진은 기존 소비자 호환을 위해 top-level 필드를 유지합니�
   "confidence": 0.86,
   "timestamp": 1770000000.0,
   "bbox": {"x": 100, "y": 80, "width": 220, "height": 380},
-  "object_id": 12,
+  "object_id": "12",
   "metadata": {
     "fall_score": 5.2,
     "fall_reasons": ["torso_horizontal:142.1"],
@@ -65,7 +69,7 @@ AI 엔진은 기존 소비자 호환을 위해 top-level 필드를 유지합니�
   "bbox": {"x": 100, "y": 80, "width": 220, "height": 380},
   "confidence": 0.93,
   "timestamp": 1770000000.0,
-  "object_id": 12,
+  "object_id": "12",
   "class_name": "helmet",
   "metadata": {
     "backend": "deepstream",
@@ -85,7 +89,7 @@ AI 엔진은 기존 소비자 호환을 위해 top-level 필드를 유지합니�
   "type": "fall_detected",
   "severity": "critical",
   "confidence": 0.86,
-  "object_id": 12,
+  "object_id": "12",
   "keypoints": [[120, 90, 0.98], [130, 110, 0.95]],
   "metadata": {
     "fall_score": 5.2,
@@ -106,9 +110,9 @@ AI 엔진은 기존 소비자 호환을 위해 top-level 필드를 유지합니�
   "type": "face_recognized",
   "severity": "normal",
   "confidence": 0.91,
-  "object_id": 12,
+  "object_id": "12",
   "metadata": {
-    "person_object_id": 12,
+    "person_object_id": "12",
     "face_name": "등록 사용자",
     "face_score": 0.91,
     "face_person_id": "worker-001",
@@ -127,7 +131,7 @@ AI 엔진은 기존 소비자 호환을 위해 top-level 필드를 유지합니�
   "type": "danger_zone",
   "severity": "critical",
   "confidence": 0.88,
-  "object_id": 12,
+  "object_id": "12",
   "metadata": {
     "zone_id": "zone-a",
     "zone_name": "위험구역 A",
@@ -148,6 +152,7 @@ AI 엔진은 기존 소비자 호환을 위해 top-level 필드를 유지합니�
   "event_id": "appearance:cam01:12:1770000000000",
   "camera_id": "cam01",
   "track_id": 12,
+  "track_id_text": "12",
   "upper_color": "blue",
   "lower_color": "black",
   "has_helmet": true,
@@ -308,7 +313,7 @@ Kuiper 스트림은 `cctv/ai/events/+/+`를 구독하고, 결과는 `cctv/rules/
 - AI 원본 JSON: 기존 MQTT 소비자와 Action Layer가 즉시 읽는 평평한 레거시 형식
 - Canonical Event: 여러 생산자(AI·센서·외부 MQTT)를 Public API와 EdgeX에서 공통 처리하기 위한 표준 봉투
 
-따라서 `type`과 `event.event_type`, `timestamp`와 `occurred_at`, `camera_id`와 `device.camera_id`처럼 값이 겹칩니다. Canonical 변환은 원본을 새로 생성하거나 버리는 작업이 아니라, 원본 필드를 보존하면서 표준 위치와 `schema_version`, `message_type`, `source`, `raw`를 추가하는 보강(enrichment)입니다. 이 중복이 있어야 기존 구독자는 계속 동작하고, 새 소비자는 표준 필드만 사용해 AI·센서 이벤트를 동일하게 처리할 수 있습니다.
+따라서 `type`과 `event.event_type`, `timestamp`와 `occurred_at`, `camera_id`와 `device.camera_id`처럼 값이 겹칩니다. Canonical 변환은 표준 위치와 `schema_version`, `message_type`, `source`, `raw`를 보강합니다. 추적 ID는 I63 계약에 따라 `raw` 안의 참조까지 문자열/null로 바뀌며, 변경 전 원본은 영속 접수 기록에서 보존합니다. 이 중복이 있어야 기존 구독자는 계속 동작하고, 새 소비자는 표준 필드만 사용해 AI·센서 이벤트를 동일하게 처리할 수 있습니다.
 
 ## 6. EdgeX v3 이벤트
 

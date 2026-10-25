@@ -1,0 +1,364 @@
+{
+  "version": "0.137",
+  "date": "2026-10-07",
+  "deployed": false,
+  "analysis": {
+    "evidence_verified": true,
+    "build_success": true,
+    "comparison_execution_success": true,
+    "batch_consistency": true,
+    "reference_numerical_equivalence": false,
+    "comparison_scope": "Only primary Pose tensor output is numerically compared; the other six output names are retained but their values are not compared.",
+    "input_samples": 32,
+    "comparisons": {
+      "reference_b1_vs_candidate_b1": {
+        "shape": [
+          32,
+          56,
+          8400
+        ],
+        "max_abs": 6.0,
+        "mean_abs": 0.04530739759124513,
+        "p99_abs": 0.5,
+        "person_score_max_abs": 0.087177574634552,
+        "foreground_proposals": 318,
+        "foreground_max_abs": 0.5,
+        "numerically_close": false,
+        "tolerance": {
+          "atol": 0.001,
+          "rtol": 0.001
+        }
+      },
+      "candidate_b1_vs_b2": {
+        "shape": [
+          32,
+          56,
+          8400
+        ],
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "p99_abs": 0.0,
+        "person_score_max_abs": 0.0,
+        "foreground_proposals": 318,
+        "foreground_max_abs": 0.0,
+        "numerically_close": true,
+        "tolerance": {
+          "atol": 0.001,
+          "rtol": 0.001
+        }
+      },
+      "candidate_b1_vs_b2_reversed": {
+        "shape": [
+          32,
+          56,
+          8400
+        ],
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "p99_abs": 0.0,
+        "person_score_max_abs": 0.0,
+        "foreground_proposals": 318,
+        "foreground_max_abs": 0.0,
+        "numerically_close": true,
+        "tolerance": {
+          "atol": 0.001,
+          "rtol": 0.001
+        }
+      },
+      "candidate_b1_after_b2_shape_switch": {
+        "shape": [
+          1,
+          56,
+          8400
+        ],
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "p99_abs": 0.0,
+        "person_score_max_abs": 0.0,
+        "foreground_proposals": 9,
+        "foreground_max_abs": 0.0,
+        "numerically_close": true,
+        "tolerance": {
+          "atol": 0.001,
+          "rtol": 0.001
+        }
+      }
+    },
+    "postprocess": {
+      "confidence_threshold": 0.5,
+      "count_agreement_images": 32,
+      "single_person_pairs": 31,
+      "maximum_absolute_differences": {
+        "box_components_pixels": 2.0,
+        "confidence": 0.0023148059844970703,
+        "keypoint_xy_pixels": 11.25,
+        "keypoint_confidence": 0.07763671875
+      },
+      "multi_person_association": "NOT_EVALUATED",
+      "largest_joint_difference": {
+        "sample": 28,
+        "input": {
+          "scene": "fall1",
+          "requested_seconds": 6,
+          "decoded_frame_position": 181.0,
+          "decoded_time_msec": 6006.0,
+          "size": [
+            1920,
+            1080
+          ],
+          "sha256": "dd201571c0a02ff0aaf3b855ff7406ba78897675030ed0e5a8075b2005494abd"
+        },
+        "joint_index": 15,
+        "reference": [
+          997.5,
+          657.75,
+          0.97314453125
+        ],
+        "candidate": [
+          999.75,
+          669.0,
+          0.97607421875
+        ],
+        "max_xy_pixels": 11.25
+      }
+    },
+    "stages": {
+      "build": {
+        "phase": "build",
+        "exit_code": 0,
+        "stop_reason": null,
+        "elapsed_seconds": 67.31643845699728,
+        "operating_unchanged": true,
+        "original_files_unchanged": true,
+        "source_unchanged": true,
+        "stage_pass": true,
+        "operating_samples": 3,
+        "maximum_observation_gap_seconds": 30.113052852917463
+      },
+      "compare": {
+        "phase": "compare",
+        "exit_code": 0,
+        "stop_reason": null,
+        "elapsed_seconds": 91.32071934314445,
+        "operating_unchanged": true,
+        "original_files_unchanged": true,
+        "source_unchanged": true,
+        "stage_pass": true,
+        "operating_samples": 4,
+        "maximum_observation_gap_seconds": 30.07943530404009
+      }
+    },
+    "source_files_unchanged": 206,
+    "original_files_unchanged": true,
+    "operating_container_state_unchanged": true,
+    "operating_fps_latency_impact": "NOT_MEASURED; shared GPU",
+    "tests_passed": 5,
+    "quality_acceptance": "NOT_EVALUATED",
+    "throughput_acceptance": "NOT_EVALUATED",
+    "two_channel_application": "NOT_EVALUATED",
+    "deployed": false
+  },
+  "plan": {
+    "image": "sha256:d5a223fd222a1d06b57e55b2a5fad8fc3ca37c3f40076fc0f0559aeccc36e0be",
+    "onnx": {
+      "sha256": "53e9514c3fd900b32702f95d696689d031feb4603141941ca45fbf194b3cce40",
+      "nodes": 829,
+      "initializers": 185,
+      "checker_pass": true,
+      "inputs": [
+        {
+          "name": "input",
+          "shape": [
+            "batch_size",
+            3,
+            "height",
+            "width"
+          ]
+        }
+      ],
+      "outputs": [
+        "output",
+        "onnx::Shape_978",
+        "onnx::Sigmoid_1021",
+        "onnx::Conv_841",
+        "onnx::Conv_885",
+        "onnx::Conv_929",
+        "onnx::Slice_1068"
+      ],
+      "modified": false
+    },
+    "scope": "medium dynamic batch1~2 raw output consistency only; no full application, camera output, quality, throughput acceptance or deployment",
+    "build_timeout_seconds": 600,
+    "builder_optimization_level": 0,
+    "profile": {
+      "min": [
+        1,
+        3,
+        640,
+        640
+      ],
+      "opt": [
+        2,
+        3,
+        640,
+        640
+      ],
+      "max": [
+        2,
+        3,
+        640,
+        640
+      ]
+    },
+    "outputs_retained": 7,
+    "tensor_comparison_scope": "Only primary Pose tensor output is numerically compared; the other six output names are retained but their values are not compared.",
+    "cpu_limit": 2,
+    "memory_limit_gib": 8,
+    "gpu_shared_with_operating": true,
+    "raw_tolerance": {
+      "atol": 0.001,
+      "rtol": 0.001
+    },
+    "input_samples": {
+      "camera": [
+        0,
+        2,
+        4,
+        6,
+        8,
+        10,
+        12,
+        14,
+        16,
+        18,
+        20,
+        22
+      ],
+      "fall0": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "fall1": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ]
+    },
+    "batch_comparisons": [
+      "reference_b1_vs_candidate_b1",
+      "candidate_b1_vs_b2",
+      "candidate_b1_vs_b2_reversed",
+      "candidate_b1_after_b2_shape_switch"
+    ],
+    "confidence_threshold": 0.5,
+    "quality_acceptance": "NOT_EVALUATED",
+    "deployment": false,
+    "input_duration_seconds": {
+      "camera": 24.989
+    }
+  },
+  "checks": {
+    "comparison_tests": {
+      "passed": 5,
+      "failed": 0
+    },
+    "ruff": "PASS",
+    "diff_check": "PASS",
+    "pdf_first_page": "VISUALLY_CHECKED",
+    "review": {
+      "reviewer": "/root/pose_batch_review",
+      "critical": 0,
+      "important": 0,
+      "read_only": true,
+      "scope": [
+        "compare harness pairing and isolation",
+        "raw results and gate separation",
+        "published docs and evidence"
+      ],
+      "resolved_notes": [
+        "Primary output only; other six output values not compared",
+        "Execution success separate from numerical equality",
+        "High-confidence joint difference retained; count agreement not accuracy",
+        "Next fixed six-video fall decision comparison; no promotion yet"
+      ]
+    },
+    "http": {
+      "/": {
+        "status": 200,
+        "bytes": 50075,
+        "local_match": true,
+        "sha256": "04151a47433e6ffccac25a3f014c89a7335791987e51003e742944e85e4ebf76"
+      },
+      "/CCTV_project_progress.pdf": {
+        "status": 200,
+        "bytes": 147895,
+        "local_match": true,
+        "sha256": "51ee91203c23885795b2de86aff4c06cbdcdc86619363133c8df4bfaf2ffb415"
+      }
+    },
+    "documents": {
+      "passed": true,
+      "wbs_rows": 33,
+      "models": 8,
+      "csv_rows": 8,
+      "wbs_status_unchanged": true,
+      "all_eight_model_rows_retained": true,
+      "html_escaped": true,
+      "evidence_artifacts": 32,
+      "source_files": 206,
+      "execution_and_numeric_gates_separated": true,
+      "deployed": false
+    }
+  },
+  "sha256": {
+    "data/runtime/p62_pose_batch_20261007_v137/plan.json": "376f3947ce253c13b0023a172cb89978d36fb487f6179fccfd8ce0dcb0c0324f",
+    "data/runtime/p62_pose_batch_20261007_v137/onnx_contract.json": "e48a620b9430230d27bddcc3c7d69b598de6445a93771200fd1a4b1d1e3cc6a6",
+    "data/runtime/p62_pose_batch_20261007_v137/original_hashes.json": "afc110003830b49945c1981ca726007171da26e67b13c069e2bd7118c38a2e9b",
+    "data/runtime/p62_pose_batch_20261007_v137/input_hashes.json": "29945c6d8772c1b2ca0771673b108a69e362665df3b2b00dea0a068e96d0dd2e",
+    "data/runtime/p62_pose_batch_20261007_v137/image_verification.json": "f3fe2b6e74c847299ec2ad7da067646ccd79da41e28c60b83d8a0d148ce2339a",
+    "data/runtime/p62_pose_batch_20261007_v137/build_compose.json": "6676e136ea6c37f6837c21abef71e70e23530a4866016497a2f3057f5d51966c",
+    "data/runtime/p62_pose_batch_20261007_v137/compare_compose.json": "3d53b4cc0f87e893260317c2a129c6c4d927b6281463e634915d55543b3a1d20",
+    "data/runtime/p62_pose_batch_20261007_v137/run_stage.py": "9c4062ea6396f490eefdcf5560ca19975517a44535a828e950f6b1e5aa217c3b",
+    "data/runtime/p62_pose_batch_20261007_v137/compare.py": "7f55c064966d237dc16bfc71fa98976925792ec97bd9f9d00bddde73c4c1bd26",
+    "data/runtime/p62_pose_batch_20261007_v137/analyze.py": "703d4e9ccd3b8356d9b100f9b7cb7a15f85e790679a7edc4c51fc3479664e008",
+    "data/runtime/p62_pose_batch_20261007_v137/analysis.json": "b93598fa663cefe4e70e429b21280be089674a0a91bf0b0f4ec0aa3c4310bac5",
+    "data/runtime/p62_pose_batch_20261007_v137/comparison_tests.xml": "5537ab9683bb7c0f68b80e396eeb426145db883e16b795ae0b5d5ca6acb99a12",
+    "data/runtime/p62_pose_batch_20261007_v137/output/medium_b1_2_fp16_l0.engine": "6da2cc4929aa030dceb48deec5f1cbe3bd4f07c614761cc0984b40af6bfc7678",
+    "data/runtime/p62_pose_batch_20261007_v137/output/layers.json": "34bbade6d164e0556f4289a218b8e487cd4f66d91a93253c110e87493cc9782c",
+    "data/runtime/p62_pose_batch_20261007_v137/output/comparison.json": "69f3fc9dbb227dc435098473447aed146eb6859ef425187c15fa356e3676415d",
+    "data/runtime/p62_pose_batch_20261007_v137/output/paired_outputs.npz": "5f2e504730bea10908585d44bacdd94f4895f8368185273665d0b34ec7134dda",
+    "data/runtime/p62_pose_batch_20261007_v137/build.log": "302ebefec127c55063ecffd77d023cad565099fcc22ab7b30475a8cb0b861abb",
+    "data/runtime/p62_pose_batch_20261007_v137/build_result.json": "262c8c5249d1da981a472196b70f476cdd914c2af9e15bbfd29b6405e8ccff1a",
+    "data/runtime/p62_pose_batch_20261007_v137/build_operating_before.json": "112a123eac71df356a30bc2de214f99db23f70a1a476daa39ef95e6650c4aa31",
+    "data/runtime/p62_pose_batch_20261007_v137/build_operating_after.json": "112a123eac71df356a30bc2de214f99db23f70a1a476daa39ef95e6650c4aa31",
+    "data/runtime/p62_pose_batch_20261007_v137/build_operating_samples.jsonl": "cfb7edd4a779ade9e2c450a46fcd543f6ed73f33204fb3dbc20de0e75258c80e",
+    "data/runtime/p62_pose_batch_20261007_v137/compare.log": "66b4090b9b83116bffa736305f35a8b6287e4b0dcc79df129a68482ca3b6cd4a",
+    "data/runtime/p62_pose_batch_20261007_v137/compare_result.json": "3ad9358c544d34ebb06ab2f48a3cf681cf0de37afe88230001fb08175d897d28",
+    "data/runtime/p62_pose_batch_20261007_v137/compare_operating_before.json": "112a123eac71df356a30bc2de214f99db23f70a1a476daa39ef95e6650c4aa31",
+    "data/runtime/p62_pose_batch_20261007_v137/compare_operating_after.json": "112a123eac71df356a30bc2de214f99db23f70a1a476daa39ef95e6650c4aa31",
+    "data/runtime/p62_pose_batch_20261007_v137/compare_operating_samples.jsonl": "4bb02326d4bf3a518becb0d94a2ec3c1ef693a9ebc68032420b289384e0c55d7",
+    "data/runtime/p62_pose_batch_20261007_v137/check_documents.py": "73dd33e85c71c2537f2b8017da4e5128ca430f90e3de92d4a309bb9bcf9050b6",
+    "data/runtime/p62_pose_batch_20261007_v137/http_validation.json": "9892431e73062649be91666739df82d4e189bb7905ac85a435c1e32e00a06ad7",
+    "data/runtime/p62_pose_batch_20261007_v137/review.json": "64d4695fe5314ede75ceefbd4ffc0358eeacb8492c19c2cc50f659614a183a30"
+  },
+  "source_evidence_sha256": {
+    "scripts/ops/compare_tensorrt_pose_candidate.py": "d891fb70335a12315eb39819f197360178630d17ee42912067a0c2b1ef424b94",
+    "src/core/_yolo_postprocess.py": "858a0786b4e247726df7780be12e4af016408aaa731ba2c5b3bdadd8dca07f9a",
+    "docs/planning/evidence/two_channel_preflight_20261007.json": "445ce3bb0f3d59c129d0cafe0a0edfe96160085f3f6b6f19239f88831ca8023b"
+  }
+}

@@ -16002,5 +16002,15 @@
     "source_code_committed_by_weekly_closeout": false,
     "gpu_or_live_device_validation_during_closeout": false,
     "summary": "영상 보완 운영 반영·낙상 후보 개선·A/B/DDS 부분 실증·max4 raw 검증. 엔진 품질/4입력·ROI·최신camera 회귀·자동 왕복·미니PC 저장은 미완료."
+  },
+  "source_integration_review": {
+    "date": "2026-10-26",
+    "code_commit": "59624ed47624f5831a66be894d55dd5897b39aad",
+    "files": 204,
+    "evidence": "evidence/integration_review_20261026.json",
+    "new_full_regression_complete": false,
+    "production_deployed": false,
+    "snapshot_rerendered": false,
+    "wbs_counts_unchanged": true
   }
 }

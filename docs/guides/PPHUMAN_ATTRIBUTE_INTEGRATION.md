@@ -45,7 +45,7 @@ Jetson Orin 권장 순서:
 
 ## TensorRT / DeepStream 전환 메모
 
-`models/pphuman_attribute.onnx`는 ONNX Runtime CPU 세션에서 네이티브 크래시가
+`models/appearance/pphuman_attribute.onnx`는 ONNX Runtime CPU 세션에서 네이티브 크래시가
 발생할 수 있으므로 운영 경로로 사용하지 않는다. Jetson에서는 TensorRT 엔진을
 만들어 DeepStream secondary GIE로 붙이는 방향을 우선한다.
 
@@ -54,11 +54,18 @@ Jetson Orin 권장 순서:
 - 입력: `x`, `1x3x256x192`
 - 출력: `fetch_name_0`, `1x26`
 
-엔진 생성:
+엔진 생성 준비(프로젝트 루트에서 실행, `onnx`가 설치된 변환 환경 필요):
 
 ```bash
-python scripts/convert/convert_onnx_to_engine.py
+rtk proxy .venv/bin/python scripts/convert/convert_onnx_to_engine.py \
+  --onnx data/deploy/orin-nx16/models/appearance/pphuman_attribute.onnx \
+  --engine data/deploy/orin-nx16/models/appearance/pphuman_attribute.engine \
+  --sha256 4051af1eedbcf00b2879a8aecf9a35031b2c3de806eaa6922592b165164f61f4 \
+  --input-name x --min-shape 1x3x256x192 \
+  --opt-shape 8x3x256x192 --max-shape 8x3x256x192
 ```
+
+기본은 SHA·입력 shape 검사와 명령 출력만 한다. 위 SHA는 10-19 준비 원본 기준이며 다른 원본을 사용하면 고정 후보 목록과 대조한다. **대상 NX에서만 같은 명령에 `--build`를 추가**하여 FP16 엔진을 생성한다. 기존 엔진은 덮어쓰지 않으며 인자 없는 일괄 변환·`TRT_*_IMGSZ` 환경변수는 더 이상 사용하지 않는다. batch1~8은 기본 설정에 맞춘 생성 계획으로, TensorRT 파싱·정확도·NX 성능은 실제 생성/로드/파이프라인에서 확인한다.
 
 PP-Human용 DeepStream 설정 템플릿:
 

@@ -1,0 +1,841 @@
+{
+  "checked_at": "2026-10-16T11:54:27.123461+09:00",
+  "wbs": "P5.2",
+  "issue": "I56",
+  "state": "EVALUATION_COMPLETE_QUALITY_GAPS_OPERATING_RECOVERED",
+  "input_resolution": [
+    1920,
+    1080
+  ],
+  "confidence": 0.5,
+  "selected": {
+    "unique_videos": 80,
+    "fall": 40,
+    "normal": 40,
+    "unique_scene_groups": 80,
+    "overlap_with_development20": 0,
+    "overlap_with_known_training_groups": 0,
+    "duplicate_video_sha256": 0,
+    "runtime_proofs_checked": 191,
+    "overlap_with_runtime_proof_scenes": 0,
+    "original_and_label_pairs_verified": 100,
+    "minimum_post_onset_seconds": 4.504499999999999,
+    "strata": {
+      "camera": {
+        "6": 12,
+        "4": 10,
+        "8": 9,
+        "3": 9,
+        "1": 11,
+        "5": 10,
+        "7": 10,
+        "2": 9
+      },
+      "scene_category": {
+        "측면낙상": 13,
+        "비낙상": 40,
+        "후면낙상": 14,
+        "전면낙상": 13
+      },
+      "scene_location": {
+        "병원": 42,
+        "집": 38
+      },
+      "actor_age": {
+        "adult1(청소년청년)": 38,
+        "adult2(중장년노년)": 42
+      },
+      "actor_sex": {
+        "m": 41,
+        "w": 39
+      }
+    },
+    "actor_codes_overlap_with_seen20": [
+      "E",
+      "F",
+      "G",
+      "H",
+      "I"
+    ],
+    "actor_independence_proven": false,
+    "all_past_training_nonuse_proven": false,
+    "source_selected_manifest_sha256": "bebfa7b180696e759397518d60ec6b6eaf25023912d2f328a799ccbe8ae045da",
+    "new_gpu_inferences": 0,
+    "operating_ai_stops": 0,
+    "limits": [
+      "같은 실내 공개 자료이며 배우/현장 독립 평가를 보증하지 않음",
+      "기존20개·보존 실행 증명·고정 학습 분할과 대조했으며 모든 과거 학습의 미사용은 보증하지 않음"
+    ]
+  },
+  "derived_inputs_prepared": 80,
+  "derived_inputs_remaining": 0,
+  "source_and_derived_full_pts_checked": 11,
+  "decoded_derived_frames": 24004,
+  "new_gpu_evaluations": 80,
+  "operating_ai_stops": 2,
+  "operating_applied": false,
+  "cpu_preparation_attempts": 3,
+  "cpu_protective_stops": 2,
+  "cpu_guards": {
+    "preparation_monitor.jsonl": {
+      "windows": 12,
+      "failed_windows": 1,
+      "minimum_fps": 24.639784311144012,
+      "last": {
+        "at": 1792114249.6280572,
+        "seconds": 30.073315198009368,
+        "rates": {
+          "cctv_processor_frames_processed_total": 24.639784311144012,
+          "cctv_processor_pipeline_restart_executed_total": 0.0,
+          "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 12.336518190869674
+        },
+        "passed": false
+      }
+    },
+    "preparation_monitor_02.jsonl": {
+      "windows": 4,
+      "failed_windows": 0,
+      "minimum_fps": 25.203294124920752,
+      "last": {
+        "at": 1792114662.151731,
+        "seconds": 30.020265821018256,
+        "rates": {
+          "cctv_processor_frames_processed_total": 30.31285616941062,
+          "cctv_processor_pipeline_restart_executed_total": 0.0,
+          "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 15.15642808470531
+        },
+        "passed": true
+      }
+    },
+    "preparation_monitor_03.jsonl": {
+      "windows": 4,
+      "failed_windows": 1,
+      "minimum_fps": 24.86348646083842,
+      "last": {
+        "at": 1792114842.0300765,
+        "seconds": 30.08427644200856,
+        "rates": {
+          "cctv_processor_frames_processed_total": 24.86348646083842,
+          "cctv_processor_pipeline_restart_executed_total": 0.0,
+          "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 12.43174323041921
+        },
+        "passed": false
+      }
+    }
+  },
+  "operating_recovery": {
+    "same_ai_container_and_image": true,
+    "other_four_containers_unchanged": true,
+    "healthy": true,
+    "rates": {
+      "cctv_processor_frames_processed_total": 29.983705910435333,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 14.975213828741287
+    },
+    "trial_containers_remaining": 0,
+    "pipeline_restart_increase": 0,
+    "passed": true
+  },
+  "maintenance_plan": {
+    "image": "sha256:d5a223fd222a1d06b57e55b2a5fad8fc3ca37c3f40076fc0f0559aeccc36e0be",
+    "operating_ai_id": "c8a71163c84b458197b98a4bde8e0e06719afc5cf5964e6fbd0b716109ce0377",
+    "operating_ai_image": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+    "operating_ai_name": "cctv-ai-engine",
+    "approval_status": "APPROVED",
+    "scope": "남은69영상의1080p CPU 변환과 고정 후보80영상 GPU 평가를40개씩2묶음으로 수행. 각 시험45분/복구5분, 변환은묶음당최대1000초·운영AI정지중CPU4개. 두 번째 중단은 첫 묶음의 운영 처리율 복구 확인 후. 재빌드/재학습/운영 모델 교체/다중 입력 없음.",
+    "maintenance_budget_seconds": 2700,
+    "preparation_timeout_seconds": 1000,
+    "preparation_cpu_affinity": "0-3",
+    "derived_videos_already_prepared": 11,
+    "derived_videos_remaining": 69,
+    "recovery_budget_seconds": 300,
+    "batches": 2,
+    "trials_per_batch": 40,
+    "worst_case_trial_subprocess_seconds_per_batch": 2650,
+    "engine": "/media/sawwave/Learning11/CCTV-project/data/runtime/p52_pose_export_20261016/build/candidate.engine",
+    "engine_sha256": "68d8c70ef45e6c445d829d077badc8f901c11f95304f157e7ef55e7b9524b0bc",
+    "input_resolution": [
+      1920,
+      1080
+    ],
+    "confidence": 0.5,
+    "primary_interval": 1,
+    "internal_model_input": [
+      1,
+      3,
+      960,
+      960
+    ],
+    "engine_builds": 0,
+    "gpu_video_trials": 80,
+    "operating_applied": false,
+    "no_retuning_between_batches": true,
+    "approval": {
+      "at": "2026-10-16T11:00:23.225994+09:00",
+      "source": "user_reply_call_3ed64bee8cd045e3835cc0260a0fcd93",
+      "text": "45분 시험·5분 복구 × 2묶음 승인"
+    }
+  },
+  "preflight": {
+    "checked_at": 1792115577.411888,
+    "batches": [
+      {
+        "batch": 0,
+        "trials": 40,
+        "fixed_hashes": 391,
+        "passed": true
+      },
+      {
+        "batch": 1,
+        "trials": 40,
+        "fixed_hashes": 391,
+        "passed": true
+      }
+    ],
+    "compose_configs": 80,
+    "new_gpu_inferences": 0,
+    "operating_ai_stops": 0,
+    "derived_inputs_ready": 11,
+    "derived_inputs_created_only_during_approved_maintenance": 69,
+    "approval_status": "PENDING",
+    "passed": true
+  },
+  "validation": {
+    "preparation_tests": "6_PASS",
+    "maintenance_tests": "21_PASS",
+    "total_tests": 27,
+    "ruff": "PASS",
+    "pinned_input_files": 391,
+    "compose_preflight_configs": 80,
+    "partial_conversion_preserved": "data/runtime/p52_remaining80_20261016/preparation_failed_attempt_03/trial_011",
+    "gpu_contract": "80_PASS",
+    "all_frames": 24004,
+    "tensor_frames": 12004,
+    "pts_decisions": 1949,
+    "inference_errors": 0,
+    "camera_errors": 0,
+    "frames_dropped": 0,
+    "pinned_input_hashes_after_run": 391,
+    "materialized_hashes_after_run": 320,
+    "both_budgets": "PASS",
+    "visual_review": "12 diagnostic frames from 6 exceptional videos; not all frames or independent human ground truth review",
+    "documentation": {
+      "checked_at": "2026-10-16T11:58:58.028043+09:00",
+      "urls": [
+        {
+          "url": "http://192.168.2.141:18081/index.html",
+          "status": 200,
+          "sha256": "621b1ed715662531c3aa0002d2a43e38265c41f280f2bc6be644cc14dcc0785b",
+          "local_matches": true
+        },
+        {
+          "url": "http://192.168.2.141:18081/CCTV_project_progress.pdf",
+          "status": 200,
+          "sha256": "0a51bca23ef7d91bc2a3e08c64db55573ae8fe0be6510071f893e4d4896a6276",
+          "local_matches": true
+        }
+      ],
+      "wbs_board_html_rows": 37,
+      "status_counts": {
+        "DONE": 9,
+        "IN_PROGRESS": 2,
+        "VERIFY": 7,
+        "BLOCKED": 3,
+        "PLANNED": 16
+      },
+      "evidence_board_match": true,
+      "evidence_artifact_hashes": "PASS",
+      "pinned_input_hashes": 391,
+      "materialized_hashes": 320,
+      "ruff": "PASS",
+      "diff_check": "PASS",
+      "passed": true,
+      "pdf_first_page_visual_check": "PASS: current results visible, no clipping",
+      "first_start_to_final_rate_check_seconds": 2982.5521097183228
+    }
+  },
+  "next": "P5.2: 저장 GPU 출력으로 정상 착석/숙임 조기경보와 미탐5건·후면 지연5.212초의 공통 판정 조건 보완 및 회귀. 이후 다중 카메라 검증→운영 적용 준비. 1080p/0.5 유지·싸움 보류.",
+  "limitations": [
+    "배우 코드5종이 기존20개와 겹치며 배우/현장 독립 또는 모든 과거 학습 미사용을 보증하지 않음",
+    "원본/라벨 계약 대조와 대표12프레임 확인이며 독립 검수자의 전체80영상 정답 재검수는 아님",
+    "영상 단위F1이며 조기경보1건은FN에 포함하고 별도 보고; KISA 인증 성적 아님",
+    "정상 영상400.066666초의1건 오탐으로 장시간 현장 오경보율을 확정할 수 없음",
+    "처리 중앙29.6366FPS/14.8409회로 지속30FPS/15회 여유·실물 다중/장시간/운영 승격 미검증",
+    "이번80결과를 보고 보완하면 이후 재사용은 회귀 평가이며 새로운 독립 평가로 세지 않음"
+  ],
+  "artifact_sha256": {
+    "data/runtime/p52_remaining80_20261016/selection.json": "12e761a08898054cdce1b8830096877bbe24923d7056db667d7cd6648aadf942",
+    "data/runtime/p52_remaining80_20261016/selected_manifest.jsonl": "852e36e33883f270f4b27ec0788fe61931fad46a671a54fcdf95d0bcfeb67b2a",
+    "data/runtime/p52_remaining80_20261016/plan.json": "ad248bd2ea31bb0bd8e347514eb6c7851b9d91858c2296ca9af3ea6a2fc0c6ac",
+    "data/runtime/p52_remaining80_20261016/preflight.json": "e192cd5c74e9d9d0773fd32903b2f25d13617fcb905459a369d51bee70805d66",
+    "data/runtime/p52_remaining80_20261016/prepare.py": "7b23f1a87acafe5da540dc3fe3d99b40ba9e7075e1767c5e82a876b3630d7bea",
+    "data/runtime/p52_remaining80_20261016/test_prepare.py": "9cf0e6ed6246e280ab768cc03d0b7eab1518af696086a5c58a0e25f571aa236e",
+    "data/runtime/p52_remaining80_20261016/run.py": "937e637a9c1bf87410b454009d49d69864435979dc0786e364fe4ee1e6b030ac",
+    "data/runtime/p52_remaining80_20261016/test_run.py": "4e79f486f6152f4b691986eef496dd0ef088195fb3762951e93a8cbeb34447b1",
+    "data/runtime/p52_remaining80_20261016/convert_pending.py": "8c2c221e5a80a002afee187364e512e762a7325c7e52cf08b355913f77be1513",
+    "data/runtime/p52_remaining80_20261016/setup.py": "de5846eb208f167c42b2fe9eebbbd4c9792bba7516047caf759b899709bebd0c",
+    "data/runtime/p52_remaining80_20261016/observe_runtime.py": "5cfa4bbf4cdcb0ba18426086c58293ebf47607753d6742edf9cc53d51333f89c",
+    "data/runtime/p52_remaining80_20261016/analyze_gpu.py": "e5e8062f6c1ea3a2fc2fe67b3f2a09b47e8894a26291d5005c6d01e4d109d071",
+    "data/runtime/p52_remaining80_20261016/tests.xml": "3c15eca5f1154e8493f4c65ac0e9d9b5872e799701a5edd1fed6f446da92244e",
+    "data/runtime/p52_remaining80_20261016/preparation_attempt_01.json": "8427b446538a3eb1f8efdd648e1aeeb51afe7c463ae54056bf59141b135dd544",
+    "data/runtime/p52_remaining80_20261016/preparation_attempt_02.json": "d1a48f503614ec3c4398bb43e68a52e45d75d930b6856ec5085963f14f53471d",
+    "data/runtime/p52_remaining80_20261016/preparation_attempt_03.json": "bc0736bc4430ec2751f049835b6c776c2944273d6443bd5d1acfd23603158c8c",
+    "data/runtime/p52_remaining80_20261016/preparation_stop_recovery.json": "c4db8a1752cc768909ef142d74852451fe8f444966f3a461e58d21fb9f773163",
+    "data/runtime/p52_remaining80_20261016/preparation_stop_recovery_03.json": "16c3664f196aa5b49d22df8042056d418f3fc91bfcc5edc8448cd3fba12aa14a",
+    "data/runtime/p52_remaining80_20261016/preparation_monitor.jsonl": "4d19ed20b599ea28caf34192a657c8b19e0c71d8f23c2769fd034b430973f60e",
+    "data/runtime/p52_remaining80_20261016/preparation_monitor_02.jsonl": "97f4f75da38c4534a04899f86e5cc906f2ae7e6c3f8cebc40f2b35e9bfe6812b",
+    "data/runtime/p52_remaining80_20261016/preparation_monitor_03.jsonl": "c8eb6ac64beaf9e0d65598723f0de978527e86c6a625c25f7c2cb77642872bc8",
+    "data/runtime/p52_remaining80_20261016/gpu_results.json": "072140a2b0bbbc6cd52b78bc4fa7d75fbb7f5a3bfc7b22bba28486b3f50778ff",
+    "data/runtime/p52_remaining80_20261016/materialized_batch_00.json": "a37d79eeab9f7d9952dec29a0e708bb04667f152e97995e794df17c054aae51e",
+    "data/runtime/p52_remaining80_20261016/materialized_batch_01.json": "f8fe8ccec9c2d0c842e4809ea33a5c0205db4c58a088b21f23aea5433914da93",
+    "data/runtime/p52_remaining80_20261016/batch_00_started.json": "02ee948770e1c64509df1150d926b1eb60a8ee5901800053116174833d7a841d",
+    "data/runtime/p52_remaining80_20261016/batch_00_result.json": "4ac89415f58932ea8ff72ad8695a73bb4e5b46e8e34ca786195391ad6a82ebf4",
+    "data/runtime/p52_remaining80_20261016/batch_00_results.json": "f7e281836ec463f49f8ab8d60537f88bb4b1e45e3032e682aba51e6a32921874",
+    "data/runtime/p52_remaining80_20261016/batch_00_recovery.json": "4bdbb02fd7315f3bcbf8157937fa62c5fb596572cac475fbb2b22bb324426183",
+    "data/runtime/p52_remaining80_20261016/batch_00_operating_before.json": "46dc67b627ab1858eae19387d321805051b25b544fa90e3f80a1ccfc4420007f",
+    "data/runtime/p52_remaining80_20261016/batch_00_operating_after.json": "019ad1ba1da25e4638e9b80df5484d1dd14dc38cb777510f3217afe273976942",
+    "data/runtime/p52_remaining80_20261016/batch_01_started.json": "c7431c21ad8607aac73fc0d42ae8f643b4f18b5c35b9ae2e1d7a9f78a2a82b03",
+    "data/runtime/p52_remaining80_20261016/batch_01_result.json": "0db53a3b0afc457e031cc267655a63cac0f96725ff5c0dac912606e825f8b342",
+    "data/runtime/p52_remaining80_20261016/batch_01_results.json": "5f12fb27e4de390f61db1540211d0b1148fc10e24aab6b38f9a80e1f238d87e8",
+    "data/runtime/p52_remaining80_20261016/batch_01_recovery.json": "c7c56bdc2fcfdae394b988792b31799012e64d97b4c9692e4eb3f79869cfba55",
+    "data/runtime/p52_remaining80_20261016/batch_01_operating_before.json": "c7577e49fa3245bdc9f4d1f95f1fb951b3edb77c32945968bfa54f2de717277c",
+    "data/runtime/p52_remaining80_20261016/batch_01_operating_after.json": "d4620531dcd65dd353f3d081aa9fe744e9868c156319c70d2c3c32fe4d4ef97f",
+    "data/runtime/p52_remaining80_20261016/diagnostic_frames/trial_000_7s.png": "359a063f7870c789f48da0d5c2375cc7299c543b59b3346872df1096bd6ce24f",
+    "data/runtime/p52_remaining80_20261016/diagnostic_frames/trial_019_2s.png": "5cfa87cbeb457bdb9d14a5a8261d27bf870f9b4f7737f59f89a73880e3181c41",
+    "data/runtime/p52_remaining80_20261016/diagnostic_frames/trial_019_4.66667s.png": "525008f20f154709d73763186f61de8b501bae737093e92dd98f733af518bbdd",
+    "data/runtime/p52_remaining80_20261016/diagnostic_frames/trial_019_8s.png": "78d278dff3c5eae4ccd54bdb005e9b4cd3916fb6db2adbcbd41e809aff4751bc",
+    "data/runtime/p52_remaining80_20261016/diagnostic_frames/trial_022_7s.png": "7adab75c754f4f9203d30835a45b91cd9e810723d4f3cd9a0ab956342037ad5c",
+    "data/runtime/p52_remaining80_20261016/diagnostic_frames/trial_026_7s.png": "6454fba241713b4247503c1d2de56ef81d84465b36795e8694f2430850fe5398",
+    "data/runtime/p52_remaining80_20261016/diagnostic_frames/trial_046_5s.png": "f8c623738c58df20ce34d24e30d805768c70d803a538b55452bb3071c2ada6a0",
+    "data/runtime/p52_remaining80_20261016/diagnostic_frames/trial_046_6.5s.png": "203771a41f9452d30d9f0a35e42718b8c693c602b1e424d80cf401d33b924c31",
+    "data/runtime/p52_remaining80_20261016/diagnostic_frames/trial_074_0s.png": "0a43c713ac97dde7a5e608a8309ae891aa637c7772d92560d280325943829593",
+    "data/runtime/p52_remaining80_20261016/diagnostic_frames/trial_074_2s.png": "dbc0d77c20fecb389bd617c9996bba8c723548f70b455b14233b4148b17f70f7",
+    "data/runtime/p52_remaining80_20261016/diagnostic_frames/trial_074_5s.png": "12e9030c8ed2b49d5fd2daa86b639aba67c256958283f5fd092192ab384c715f",
+    "data/runtime/p52_remaining80_20261016/diagnostic_frames/trial_074_8s.png": "8a2e86a0b08aaa901484871353774673532a876753e44c8d3f734bebce94b3af",
+    "data/runtime/p52_remaining80_20261016/online_validation.json": "c9df52e04edc08503c3b17f4594b31d18814fdb5acf6a2b5ac1622177ca7bcef",
+    "data/runtime/p52_remaining80_20261016/progress_firstpage.png": "5ee0cd67b7c56fea08d67f1ad90ebec9d62ca3183a7f701217f52cc4ea33073f"
+  },
+  "batch_results": [
+    {
+      "batch": 0,
+      "gpu_evaluations": 40,
+      "summary": {
+        "FN": 3,
+        "TN": 19,
+        "TP": 17,
+        "FP": 1
+      },
+      "test_seconds": 1327.7059857845306,
+      "result_to_healthy_seconds": 13.120925903320312,
+      "recovery_and_rate_check_seconds": 51.54430603981018,
+      "within_approved_budget": true,
+      "operating_after": {
+        "checked_at": "2026-10-16T11:24:30.533568+09:00",
+        "duration_seconds": 30.092794700991362,
+        "snapshot": [
+          {
+            "name": "/cctv-ai-engine",
+            "id": "c8a71163c84b458197b98a4bde8e0e06719afc5cf5964e6fbd0b716109ce0377",
+            "image": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+            "started_at": "2026-10-16T02:23:39.066312783Z",
+            "status": "running",
+            "health": "healthy",
+            "restart_count": 0
+          },
+          {
+            "name": "/cctv-media-server",
+            "id": "957101f7ab7336585817a176154f7711de977caee7cfbf34257f2fb68810dea4",
+            "image": "sha256:f8628851106cc053f9175b248050bb5f362a6e65abd72297c167a1cb5a9a3be2",
+            "started_at": "2026-10-12T23:35:15.324861031Z",
+            "status": "running",
+            "health": null,
+            "restart_count": 0
+          },
+          {
+            "name": "/cctv-action-layer",
+            "id": "74deaeb0b5bdd64c8f2e2a141daa25c193a75cf235b214fee6ef8b4dcdceedeb",
+            "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+            "started_at": "2026-10-12T23:35:15.475740705Z",
+            "status": "running",
+            "health": "healthy",
+            "restart_count": 0
+          },
+          {
+            "name": "/cctv-device-signboard",
+            "id": "29aeb393bd52e7a9f8241be9214b970e82e8442253fdfe2e73dbbf5d153feaa8",
+            "image": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+            "started_at": "2026-10-12T23:35:15.45875226Z",
+            "status": "running",
+            "health": "healthy",
+            "restart_count": 0
+          },
+          {
+            "name": "/cctv-device-speaker",
+            "id": "a8ff5823d34ad72dd2c5b236cc88f210b16feb05ef53532e6549601d2beafb7a",
+            "image": "sha256:4daca5e8c9865c5f19dde37d7dbdfcc37ea5c413fa8375802e80c7f8185bba30",
+            "started_at": "2026-10-12T23:35:15.455773133Z",
+            "status": "running",
+            "health": "healthy",
+            "restart_count": 0
+          }
+        ],
+        "before_metrics": {
+          "cctv_processor_frames_processed_total": 414.0,
+          "cctv_processor_pipeline_restart_executed_total": 0.0,
+          "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 208.0,
+          "cctv_camera_primary_last_frame_age_seconds{camera_id=\"camera_1\"}": 0.06252048502210528
+        },
+        "after_metrics": {
+          "cctv_processor_frames_processed_total": 1304.0,
+          "cctv_processor_pipeline_restart_executed_total": 0.0,
+          "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 654.0,
+          "cctv_camera_primary_last_frame_age_seconds{camera_id=\"camera_1\"}": 0.03864434402203187
+        },
+        "rates": {
+          "cctv_processor_frames_processed_total": 29.57518598200121,
+          "cctv_processor_pipeline_restart_executed_total": 0.0,
+          "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 14.820823537047797
+        },
+        "same_ai_container_and_image": true,
+        "healthy": true,
+        "passed": true,
+        "other_four_containers_unchanged": true,
+        "trial_containers_remaining": 0,
+        "maintenance_start_to_check_seconds": 1379.2502918243408
+      }
+    },
+    {
+      "batch": 1,
+      "gpu_evaluations": 40,
+      "summary": {
+        "TP": 18,
+        "TN": 20,
+        "FN": 2
+      },
+      "test_seconds": 1491.13649392128,
+      "result_to_healthy_seconds": 13.168751001358032,
+      "recovery_and_rate_check_seconds": 48.64791011810303,
+      "within_approved_budget": true,
+      "operating_after": {
+        "checked_at": "2026-10-16T11:51:13.835496+09:00",
+        "duration_seconds": 30.049654392001685,
+        "snapshot": [
+          {
+            "name": "/cctv-ai-engine",
+            "id": "c8a71163c84b458197b98a4bde8e0e06719afc5cf5964e6fbd0b716109ce0377",
+            "image": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+            "started_at": "2026-10-16T02:50:25.26180535Z",
+            "status": "running",
+            "health": "healthy",
+            "restart_count": 0
+          },
+          {
+            "name": "/cctv-media-server",
+            "id": "957101f7ab7336585817a176154f7711de977caee7cfbf34257f2fb68810dea4",
+            "image": "sha256:f8628851106cc053f9175b248050bb5f362a6e65abd72297c167a1cb5a9a3be2",
+            "started_at": "2026-10-12T23:35:15.324861031Z",
+            "status": "running",
+            "health": null,
+            "restart_count": 0
+          },
+          {
+            "name": "/cctv-action-layer",
+            "id": "74deaeb0b5bdd64c8f2e2a141daa25c193a75cf235b214fee6ef8b4dcdceedeb",
+            "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+            "started_at": "2026-10-12T23:35:15.475740705Z",
+            "status": "running",
+            "health": "healthy",
+            "restart_count": 0
+          },
+          {
+            "name": "/cctv-device-signboard",
+            "id": "29aeb393bd52e7a9f8241be9214b970e82e8442253fdfe2e73dbbf5d153feaa8",
+            "image": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+            "started_at": "2026-10-12T23:35:15.45875226Z",
+            "status": "running",
+            "health": "healthy",
+            "restart_count": 0
+          },
+          {
+            "name": "/cctv-device-speaker",
+            "id": "a8ff5823d34ad72dd2c5b236cc88f210b16feb05ef53532e6549601d2beafb7a",
+            "image": "sha256:4daca5e8c9865c5f19dde37d7dbdfcc37ea5c413fa8375802e80c7f8185bba30",
+            "started_at": "2026-10-12T23:35:15.455773133Z",
+            "status": "running",
+            "health": "healthy",
+            "restart_count": 0
+          }
+        ],
+        "before_metrics": {
+          "cctv_processor_frames_processed_total": 365.0,
+          "cctv_processor_pipeline_restart_executed_total": 0.0,
+          "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 183.0,
+          "cctv_camera_primary_last_frame_age_seconds{camera_id=\"camera_1\"}": 0.0199756640358828
+        },
+        "after_metrics": {
+          "cctv_processor_frames_processed_total": 1266.0,
+          "cctv_processor_pipeline_restart_executed_total": 0.0,
+          "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 633.0,
+          "cctv_camera_primary_last_frame_age_seconds{camera_id=\"camera_1\"}": 0.011826075962744653
+        },
+        "rates": {
+          "cctv_processor_frames_processed_total": 29.983705910435333,
+          "cctv_processor_pipeline_restart_executed_total": 0.0,
+          "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 14.975213828741287
+        },
+        "same_ai_container_and_image": true,
+        "healthy": true,
+        "passed": true,
+        "other_four_containers_unchanged": true,
+        "trial_containers_remaining": 0,
+        "maintenance_start_to_check_seconds": 1539.784404039383
+      }
+    }
+  ],
+  "gpu_results": {
+    "completed_trials": 80,
+    "unique_videos": 80,
+    "new_to_recorded_development_runs": 80,
+    "actor_independence_proven": false,
+    "all_past_training_nonuse_proven": false,
+    "confidence_threshold": 0.5,
+    "summary": {
+      "TP": 35,
+      "FN": 5,
+      "FP": 1,
+      "TN": 39
+    },
+    "frames": 24004,
+    "tensor_frames": 12004,
+    "time_basis_decisions": 1949,
+    "early_alerts": 1,
+    "duplicate_alerts": 0,
+    "normal_video_seconds": 400.066666,
+    "model_input_size": 960,
+    "scope": "기존20개와 겹치지 않는 고정80영상·1080p30/0.5·interval1·960 FP16/L1 GPU→경보 큐. 동일 배우 코드가 포함된 실내 공개 자료로 배우/현장 독립 평가나 장시간/다중/실물 합격이 아님",
+    "metrics": {
+      "precision": 0.9722222222222222,
+      "recall": 0.875,
+      "specificity": 0.975,
+      "f1": 0.9210526315789473
+    },
+    "pipeline_rates": {
+      "source_delivery_fps": {
+        "min": 27.994920293720774,
+        "median": 29.636584665357905,
+        "max": 29.99966001060469
+      },
+      "inferences_per_wall_second": {
+        "min": 14.020722840441206,
+        "median": 14.840938357104603,
+        "max": 14.999847234666884
+      }
+    },
+    "delay_seconds": {
+      "min": 1.5134499996666668,
+      "median": 2.5999999996666663,
+      "max": 5.2123499996666665
+    },
+    "full_operating_gate_passed": false
+  },
+  "evaluation_complete": true,
+  "quality_issues_resolved": false,
+  "online_preparation_recovery": {
+    "attempt": 3,
+    "at": 1792115116.448173,
+    "rates": {
+      "cctv_processor_frames_processed_total": 29.80935041820354,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 14.87140584479574
+    },
+    "snapshot_unchanged": true,
+    "new_stops": 0,
+    "passed": true
+  },
+  "by_direction": {
+    "측면낙상": {
+      "FN": 1,
+      "TP": 12
+    },
+    "비낙상": {
+      "TN": 39,
+      "FP": 1
+    },
+    "후면낙상": {
+      "TP": 12,
+      "FN": 2
+    },
+    "전면낙상": {
+      "TP": 11,
+      "FN": 2
+    }
+  },
+  "diagnostic_cases": [
+    {
+      "index": 0,
+      "scene": "00571_H_D_SY_C6",
+      "verdict": "FN",
+      "onset": 3.4367666666666667,
+      "queue_pts": [],
+      "delay_seconds": null,
+      "early_alerts": 0,
+      "post_onset_tensor_frames": 98,
+      "post_onset_raw_max_confidence_below_0_5": 2,
+      "post_onset_valid_pose_frames": 96,
+      "post_onset_static_score_max": 3.0,
+      "candidate_pts": [
+        4.333333333333333,
+        4.4,
+        4.466666666666667,
+        4.533333333333333
+      ],
+      "observed": "측면 미탐: 후보4회·4.333–4.533초의0.2초 구간만 형성. 이후 착좌 자세에서 점수 부족.",
+      "diagnostic_frames": [
+        "data/runtime/p52_remaining80_20261016/diagnostic_frames/trial_000_7s.png"
+      ]
+    },
+    {
+      "index": 19,
+      "scene": "00932_O_E_N_C3",
+      "verdict": "FP",
+      "onset": null,
+      "queue_pts": [
+        4.666666666
+      ],
+      "delay_seconds": null,
+      "early_alerts": 0,
+      "post_onset_tensor_frames": 150,
+      "post_onset_raw_max_confidence_below_0_5": 0,
+      "post_onset_valid_pose_frames": 183,
+      "post_onset_static_score_max": 3.5,
+      "candidate_pts": [
+        2.6,
+        3.466666666666667,
+        3.533333333333333,
+        3.6,
+        4.066666666666666,
+        4.133333333333334,
+        4.2,
+        4.266666666666667,
+        4.333333333333333,
+        4.4,
+        4.466666666666667,
+        4.6,
+        4.666666666666667,
+        4.733333333333333,
+        4.8,
+        4.866666666666666,
+        4.933333333333334,
+        5.0,
+        5.066666666666666,
+        5.133333333333334,
+        5.2,
+        5.266666666666667,
+        5.333333333333333,
+        5.466666666666667,
+        5.533333333333333,
+        5.6,
+        6.333333333333333,
+        6.4,
+        6.466666666666667,
+        6.533333333333333,
+        6.6,
+        6.666666666666667,
+        6.733333333333333,
+        6.8,
+        6.866666666666666,
+        6.933333333333334,
+        7.0,
+        7.133333333333334,
+        7.2,
+        7.266666666666667,
+        7.333333333333333,
+        7.533333333333333,
+        7.866666666666666,
+        7.933333333333334,
+        8.0,
+        9.666666666666666,
+        9.933333333333334
+      ],
+      "observed": "정상 오탐: 영상2초 직립/숙임→4.667초 바닥 착석→8초 착석 표본 확인. 4.667초 경보, 정적 점수0에 folded_floor_pose 근거와 전환 판정이 결합.",
+      "diagnostic_frames": [
+        "data/runtime/p52_remaining80_20261016/diagnostic_frames/trial_019_2s.png",
+        "data/runtime/p52_remaining80_20261016/diagnostic_frames/trial_019_4.66667s.png",
+        "data/runtime/p52_remaining80_20261016/diagnostic_frames/trial_019_8s.png"
+      ]
+    },
+    {
+      "index": 22,
+      "scene": "00920_O_E_FY_C4",
+      "verdict": "FN",
+      "onset": 4.087416666666667,
+      "queue_pts": [],
+      "delay_seconds": null,
+      "early_alerts": 0,
+      "post_onset_tensor_frames": 88,
+      "post_onset_raw_max_confidence_below_0_5": 0,
+      "post_onset_valid_pose_frames": 88,
+      "post_onset_static_score_max": 2.5,
+      "candidate_pts": [],
+      "observed": "전면 미탐: 낙상 이후88추론 모두0.5 이상 사람 출력/유효pose, 정적 점수최대2.5·경보 후보0. 7초 몸을 접고 무릎을 댄 표본.",
+      "diagnostic_frames": [
+        "data/runtime/p52_remaining80_20261016/diagnostic_frames/trial_022_7s.png"
+      ]
+    },
+    {
+      "index": 26,
+      "scene": "00737_H_D_BY_C3",
+      "verdict": "FN",
+      "onset": 5.25525,
+      "queue_pts": [],
+      "delay_seconds": null,
+      "early_alerts": 0,
+      "post_onset_tensor_frames": 71,
+      "post_onset_raw_max_confidence_below_0_5": 0,
+      "post_onset_valid_pose_frames": 71,
+      "post_onset_static_score_max": 0.0,
+      "candidate_pts": [],
+      "observed": "후면 미탐: 낙상 이후71추론 모두0.5 이상 사람 출력/유효pose, 정적 점수0·후보0. 7초 바닥 착좌 표본.",
+      "diagnostic_frames": [
+        "data/runtime/p52_remaining80_20261016/diagnostic_frames/trial_026_7s.png"
+      ]
+    },
+    {
+      "index": 46,
+      "scene": "00683_H_D_FY_C8",
+      "verdict": "FN",
+      "onset": 4.866666666666666,
+      "queue_pts": [],
+      "delay_seconds": null,
+      "early_alerts": 0,
+      "post_onset_tensor_frames": 77,
+      "post_onset_raw_max_confidence_below_0_5": 0,
+      "post_onset_valid_pose_frames": 77,
+      "post_onset_static_score_max": 5.0,
+      "candidate_pts": [
+        5.6,
+        5.666666666666667,
+        5.733333333333333,
+        5.8,
+        5.933333333333334,
+        6.0,
+        6.6,
+        6.666666666666667,
+        6.733333333333333,
+        6.8,
+        6.866666666666666,
+        6.933333333333334,
+        7.0,
+        7.066666666666666,
+        7.133333333333334,
+        7.2,
+        7.266666666666667,
+        7.333333333333333,
+        7.4,
+        7.466666666666667,
+        7.533333333333333
+      ],
+      "observed": "전면 미탐: 낙상 이후77추론 모두0.5 이상 사람 출력/유효pose. 후보21회·5.6–7.533초(1.933초 범위)로2초 자격 기간 미충족. 5/6.5초 하강·몸을 접은 표본.",
+      "diagnostic_frames": [
+        "data/runtime/p52_remaining80_20261016/diagnostic_frames/trial_046_5s.png",
+        "data/runtime/p52_remaining80_20261016/diagnostic_frames/trial_046_6.5s.png"
+      ]
+    },
+    {
+      "index": 74,
+      "scene": "00795_O_E_BY_C4",
+      "verdict": "FN",
+      "onset": 4.187516666666666,
+      "queue_pts": [
+        2.0
+      ],
+      "delay_seconds": null,
+      "early_alerts": 1,
+      "post_onset_tensor_frames": 87,
+      "post_onset_raw_max_confidence_below_0_5": 0,
+      "post_onset_valid_pose_frames": 87,
+      "post_onset_static_score_max": 2.5,
+      "candidate_pts": [
+        0.0,
+        0.06666666666666667,
+        0.13333333333333333,
+        0.2,
+        0.26666666666666666,
+        0.3333333333333333,
+        0.4,
+        0.4666666666666667,
+        0.5333333333333333,
+        0.6,
+        0.6666666666666666,
+        0.7333333333333333,
+        0.8,
+        0.8666666666666667,
+        0.9333333333333333,
+        1.0,
+        1.0666666666666667,
+        1.1333333333333333,
+        1.2,
+        1.2666666666666666,
+        1.3333333333333333,
+        1.4,
+        1.4666666666666666,
+        1.5333333333333334,
+        1.6,
+        1.6666666666666667,
+        1.7333333333333334,
+        1.8,
+        1.8666666666666667,
+        1.9333333333333333,
+        2.0,
+        2.066666666666667,
+        2.1333333333333333,
+        2.2,
+        2.2666666666666666,
+        2.3333333333333335,
+        2.4,
+        2.466666666666667,
+        2.533333333333333,
+        2.6,
+        3.0,
+        3.466666666666667,
+        3.6
+      ],
+      "observed": "후면 미탐/조기경보: 몸을 숙여 청소하는0/2초 표본에서 정적 점수5.0 시작,2초 경보. 정답4.1875초 이전 경보만 있어FN이며 조기1건 별도. 정답 이후87추론 모두0.5 이상 사람 출력/유효pose·후보0.",
+      "diagnostic_frames": [
+        "data/runtime/p52_remaining80_20261016/diagnostic_frames/trial_074_0s.png",
+        "data/runtime/p52_remaining80_20261016/diagnostic_frames/trial_074_2s.png",
+        "data/runtime/p52_remaining80_20261016/diagnostic_frames/trial_074_5s.png",
+        "data/runtime/p52_remaining80_20261016/diagnostic_frames/trial_074_8s.png"
+      ]
+    },
+    {
+      "index": 56,
+      "scene": "00952_O_E_BY_C8",
+      "verdict": "TP",
+      "onset": 4.320983333333333,
+      "queue_pts": [
+        9.533333333
+      ],
+      "delay_seconds": 5.2123499996666665,
+      "early_alerts": 0,
+      "post_onset_tensor_frames": 85,
+      "post_onset_raw_max_confidence_below_0_5": 0,
+      "post_onset_valid_pose_frames": 85,
+      "post_onset_static_score_max": 2.0,
+      "candidate_pts": [
+        5.533333333333333,
+        5.6,
+        5.666666666666667,
+        9.533333333333333,
+        9.6,
+        9.666666666666666,
+        9.733333333333333,
+        9.8,
+        9.866666666666667,
+        9.933333333333334
+      ],
+      "observed": "최장 지연: 후면00952, 정답4.321초→경보9.533초(5.212초). 사람 출력85/85 유지, 후보5.533–5.667초 뒤9.533초까지3.867초 공백. 정적 점수최대2.0.",
+      "diagnostic_frames": []
+    }
+  ]
+}

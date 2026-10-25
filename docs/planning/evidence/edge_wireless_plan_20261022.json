@@ -1,0 +1,333 @@
+{
+  "date": "2026-10-22",
+  "collected_until_utc": "2026-10-22T04:59:05.864260+00:00",
+  "scope": "읽기 전용 AP/네트워크 조사 및 스마트폴 간 무선 직접 수신 계획 수정",
+  "result": "PLAN_UPDATED_AP_CONFIGURATION_UNCONFIRMED",
+  "a_wifi": {
+    "ip": "192.168.2.141/24",
+    "interface": "wlP1p1s0",
+    "ssid": "SAWWAVE_5GX_Y",
+    "bssid": "50:20:65:D8:89:71",
+    "frequency_mhz": 5745,
+    "channel": 149,
+    "signal_dbm": -54,
+    "rx_phy_mbps": 702.0,
+    "tx_phy_mbps": 263.3
+  },
+  "b_wifi": {
+    "ip": "192.168.2.203/24",
+    "interface": "wlan0",
+    "ssid": "SAWWAVE_5GX_Y",
+    "bssid": "50:20:65:D8:89:71",
+    "frequency_mhz": 5745,
+    "channel": 149,
+    "signal_dbm": -53,
+    "rx_phy_mbps": 585.0,
+    "tx_phy_mbps": 292.5
+  },
+  "same_bssid": true,
+  "phy_rate_is_measured_throughput": false,
+  "gateway_dns_dhcp": "192.168.2.1",
+  "gateway_mac": "50:20:65:53:89:71",
+  "gateway_is_ap": null,
+  "ap_model": null,
+  "ap_firmware": null,
+  "ap_backhaul_mode": null,
+  "ap_management_address": null,
+  "wifi_security_display": "-- (cached nmcli; actual AP security mode unconfirmed)",
+  "camera": {
+    "ip": "192.168.0.100",
+    "a_interface": "eno1",
+    "a_ip": "192.168.0.10/24",
+    "a_connected_route": "192.168.0.0/24 dev eno1",
+    "b_route": "192.168.0.100 via 192.168.2.1 dev wlan0 src 192.168.2.203",
+    "direct_cable_user_confirmed": true
+  },
+  "tcp554_connect_only": {
+    "a": {
+      "tcp554": "connected",
+      "seconds": 0.003956915024900809
+    },
+    "b": {
+      "tcp554": "timed out",
+      "seconds": 4.004228889998558
+    }
+  },
+  "b_wired_profile": {
+    "name": "cctv-b-test",
+    "uuid": "a23983f3-3a41-4dcf-99bf-8ddf7ef9cbe1",
+    "address": "192.168.0.20/24",
+    "active": false,
+    "autoconnect": false,
+    "eth0_ipv4": null,
+    "role": "L2 laboratory candidate; no activation before actual topology decision"
+  },
+  "plan": {
+    "same_physical_switch_required": false,
+    "video_path_depends_on_jetson_a": false,
+    "path": "CCTV A → A pole switch/router/AP → wireless backhaul → B pole network → Jetson B",
+    "alternatives": [
+      "existing transparent camera L2/VLAN if supported",
+      "existing routed backhaul with camera return route"
+    ],
+    "independent_rtsp_verified": false,
+    "pole_to_pole_wireless_link_verified": false
+  },
+  "preservation": {
+    "a_container_count": 37,
+    "a_containers_id_image_status_started_at_unchanged": true,
+    "a_routes_unchanged": true,
+    "b_routes_unchanged": true,
+    "b_profile_still_inactive": true,
+    "configuration_changes": 0,
+    "cabling_changes": 0,
+    "installations": 0,
+    "wifi_rescan_performed": false,
+    "new_rtsp_streams": 0,
+    "ssh_cleanup_complete": true,
+    "temporary_auth_files_removed": true
+  },
+  "prior_evidence": [
+    "edge_network_20261022.json",
+    "edge_wired_preparation_20261022.json",
+    "edge_sdk_rtsp_20261022.json"
+  ],
+  "manufacturer_sources": [
+    "https://sawwave.kr/products.html",
+    "https://sawwave.kr/b2b.html"
+  ],
+  "raw_readonly": {
+    "a": [
+      {
+        "cmd": [
+          "ip",
+          "-j",
+          "address"
+        ],
+        "rc": 0,
+        "output": "[{\"ifindex\":1,\"ifname\":\"lo\",\"flags\":[\"LOOPBACK\",\"UP\",\"LOWER_UP\"],\"mtu\":65536,\"qdisc\":\"noqueue\",\"operstate\":\"UNKNOWN\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"loopback\",\"address\":\"00:00:00:00:00:00\",\"broadcast\":\"00:00:00:00:00:00\",\"addr_info\":[{\"family\":\"inet\",\"local\":\"127.0.0.1\",\"prefixlen\":8,\"scope\":\"host\",\"label\":\"lo\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295},{\"family\":\"inet6\",\"local\":\"::1\",\"prefixlen\":128,\"scope\":\"host\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":2,\"ifname\":\"can0\",\"flags\":[\"NOARP\",\"ECHO\"],\"mtu\":16,\"qdisc\":\"noop\",\"operstate\":\"DOWN\",\"group\":\"default\",\"txqlen\":10,\"link_type\":\"can\",\"addr_info\":[]},{\"ifindex\":3,\"ifname\":\"can1\",\"flags\":[\"NOARP\",\"ECHO\"],\"mtu\":16,\"qdisc\":\"noop\",\"operstate\":\"DOWN\",\"group\":\"default\",\"txqlen\":10,\"link_type\":\"can\",\"addr_info\":[]},{\"ifindex\":4,\"ifname\":\"wlP1p1s0\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"mq\",\"operstate\":\"UP\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"cc:47:40:6f:ca:d9\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"addr_info\":[{\"family\":\"inet\",\"local\":\"192.168.2.141\",\"prefixlen\":24,\"broadcast\":\"192.168.2.255\",\"scope\":\"global\",\"dynamic\":true,\"noprefixroute\":true,\"label\":\"wlP1p1s0\",\"valid_life_time\":22842,\"preferred_life_time\":22842},{\"family\":\"inet6\",\"local\":\"fe80::4d32:54e2:a1e8:3432\",\"prefixlen\":64,\"scope\":\"link\",\"noprefixroute\":true,\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":5,\"ifname\":\"eno1\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"mq\",\"operstate\":\"UP\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"48:b0:2d:ec:44:d4\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"addr_info\":[{\"family\":\"inet\",\"local\":\"192.168.0.10\",\"prefixlen\":24,\"broadcast\":\"192.168.0.255\",\"scope\":\"global\",\"noprefixroute\":true,\"label\":\"eno1\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295},{\"family\":\"inet6\",\"local\":\"fe80::601d:4bcb:3c72:6941\",\"prefixlen\":64,\"scope\":\"link\",\"noprefixroute\":true,\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":6,\"ifname\":\"enx00e04c68026a\",\"flags\":[\"NO-CARRIER\",\"BROADCAST\",\"MULTICAST\",\"UP\"],\"mtu\":1500,\"qdisc\":\"pfifo_fast\",\"operstate\":\"DOWN\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"00:e0:4c:68:02:6a\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"addr_info\":[]},{\"ifindex\":7,\"ifname\":\"l4tbr0\",\"flags\":[\"BROADCAST\",\"MULTICAST\"],\"mtu\":1500,\"qdisc\":\"noop\",\"operstate\":\"DOWN\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"a2:27:d8:4f:19:83\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"addr_info\":[]},{\"ifindex\":8,\"ifname\":\"usb0\",\"flags\":[\"NO-CARRIER\",\"BROADCAST\",\"MULTICAST\",\"UP\"],\"mtu\":1500,\"qdisc\":\"pfifo_fast\",\"master\":\"l4tbr0\",\"operstate\":\"DOWN\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"1a:22:5e:64:c9:11\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"addr_info\":[]},{\"ifindex\":9,\"ifname\":\"usb1\",\"flags\":[\"NO-CARRIER\",\"BROADCAST\",\"MULTICAST\",\"UP\"],\"mtu\":1500,\"qdisc\":\"pfifo_fast\",\"master\":\"l4tbr0\",\"operstate\":\"DOWN\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"1a:22:5e:64:c9:13\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"addr_info\":[]},{\"ifindex\":10,\"ifname\":\"br-2cf1cb81c56f\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"operstate\":\"UP\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"66:75:e5:a2:00:af\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"addr_info\":[{\"family\":\"inet\",\"local\":\"172.18.0.1\",\"prefixlen\":16,\"broadcast\":\"172.18.255.255\",\"scope\":\"global\",\"label\":\"br-2cf1cb81c56f\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295},{\"family\":\"inet6\",\"local\":\"fe80::6475:e5ff:fea2:af\",\"prefixlen\":64,\"scope\":\"link\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":11,\"ifname\":\"docker0\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"operstate\":\"UP\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"a6:5e:9b:b2:3f:48\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"addr_info\":[{\"family\":\"inet\",\"local\":\"172.17.0.1\",\"prefixlen\":16,\"broadcast\":\"172.17.255.255\",\"scope\":\"global\",\"label\":\"docker0\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295},{\"family\":\"inet6\",\"local\":\"fe80::a45e:9bff:feb2:3f48\",\"prefixlen\":64,\"scope\":\"link\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":12,\"ifname\":\"br-8cac26521742\",\"flags\":[\"NO-CARRIER\",\"BROADCAST\",\"MULTICAST\",\"UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"operstate\":\"DOWN\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"7a:18:de:21:bc:6d\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"addr_info\":[{\"family\":\"inet\",\"local\":\"172.21.0.1\",\"prefixlen\":16,\"broadcast\":\"172.21.255.255\",\"scope\":\"global\",\"label\":\"br-8cac26521742\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":13,\"ifname\":\"br-c8bcecc2ba19\",\"flags\":[\"NO-CARRIER\",\"BROADCAST\",\"MULTICAST\",\"UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"operstate\":\"DOWN\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"b2:ca:f5:c8:fd:87\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"addr_info\":[{\"family\":\"inet\",\"local\":\"172.20.0.1\",\"prefixlen\":16,\"broadcast\":\"172.20.255.255\",\"scope\":\"global\",\"label\":\"br-c8bcecc2ba19\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":14,\"ifname\":\"br-cafa8d05e14a\",\"flags\":[\"NO-CARRIER\",\"BROADCAST\",\"MULTICAST\",\"UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"operstate\":\"DOWN\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"82:ec:e5:7f:17:dd\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"addr_info\":[{\"family\":\"inet\",\"local\":\"172.19.0.1\",\"prefixlen\":16,\"broadcast\":\"172.19.255.255\",\"scope\":\"global\",\"label\":\"br-cafa8d05e14a\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":15,\"ifname\":\"br-151960e8ed8c\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"operstate\":\"UP\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"6e:ba:9a:4e:1e:88\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"addr_info\":[{\"family\":\"inet\",\"local\":\"172.22.0.1\",\"prefixlen\":16,\"broadcast\":\"172.22.255.255\",\"scope\":\"global\",\"label\":\"br-151960e8ed8c\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295},{\"family\":\"inet6\",\"local\":\"fe80::6cba:9aff:fe4e:1e88\",\"prefixlen\":64,\"scope\":\"link\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":18,\"link_index\":2,\"ifname\":\"vethb0bf1c4\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"master\":\"br-2cf1cb81c56f\",\"operstate\":\"UP\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"aa:79:62:8f:da:b5\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":2,\"addr_info\":[{\"family\":\"inet6\",\"local\":\"fe80::a879:62ff:fe8f:dab5\",\"prefixlen\":64,\"scope\":\"link\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":19,\"link_index\":2,\"ifname\":\"veth4e43ad0\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"master\":\"br-151960e8ed8c\",\"operstate\":\"UP\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"5a:07:c6:b3:0d:06\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":3,\"addr_info\":[{\"family\":\"inet6\",\"local\":\"fe80::5807:c6ff:feb3:d06\",\"prefixlen\":64,\"scope\":\"link\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":22,\"link_index\":2,\"ifname\":\"veth3d01c22\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"master\":\"br-2cf1cb81c56f\",\"operstate\":\"UP\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"16:69:44:f0:7d:cc\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":6,\"addr_info\":[{\"family\":\"inet6\",\"local\":\"fe80::1469:44ff:fef0:7dcc\",\"prefixlen\":64,\"scope\":\"link\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":23,\"link_index\":2,\"ifname\":\"veth1ad3191\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"master\":\"br-2cf1cb81c56f\",\"operstate\":\"UP\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"ca:ef:8d:66:6a:74\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":7,\"addr_info\":[{\"family\":\"inet6\",\"local\":\"fe80::c8ef:8dff:fe66:6a74\",\"prefixlen\":64,\"scope\":\"link\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":25,\"link_index\":2,\"ifname\":\"vethee1b26a\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"master\":\"docker0\",\"operstate\":\"UP\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"ae:c3:be:f3:91:75\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":9,\"addr_info\":[{\"family\":\"inet6\",\"local\":\"fe80::acc3:beff:fef3:9175\",\"prefixlen\":64,\"scope\":\"link\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":26,\"link_index\":2,\"ifname\":\"veth0e31cde\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"master\":\"br-2cf1cb81c56f\",\"operstate\":\"UP\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"32:a1:bc:21:83:3b\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":10,\"addr_info\":[{\"family\":\"inet6\",\"local\":\"fe80::30a1:bcff:fe21:833b\",\"prefixlen\":64,\"scope\":\"link\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":27,\"link_index\":2,\"ifname\":\"vethd5d8e2c\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"master\":\"br-2cf1cb81c56f\",\"operstate\":\"UP\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"a6:a9:63:35:c2:15\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":11,\"addr_info\":[{\"family\":\"inet6\",\"local\":\"fe80::a4a9:63ff:fe35:c215\",\"prefixlen\":64,\"scope\":\"link\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":28,\"link_index\":2,\"ifname\":\"veth84f499a\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"master\":\"br-2cf1cb81c56f\",\"operstate\":\"UP\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"62:8a:15:5c:5a:4f\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":12,\"addr_info\":[{\"family\":\"inet6\",\"local\":\"fe80::608a:15ff:fe5c:5a4f\",\"prefixlen\":64,\"scope\":\"link\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":30,\"link_index\":2,\"ifname\":\"vetha95ecb1\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"master\":\"br-2cf1cb81c56f\",\"operstate\":\"UP\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"2a:ab:0d:89:b6:fd\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":14,\"addr_info\":[{\"family\":\"inet6\",\"local\":\"fe80::28ab:dff:fe89:b6fd\",\"prefixlen\":64,\"scope\":\"link\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":31,\"link_index\":2,\"ifname\":\"vetha5bbe11\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"master\":\"br-2cf1cb81c56f\",\"operstate\":\"UP\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"c2:45:ac:5d:0d:42\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":15,\"addr_info\":[{\"family\":\"inet6\",\"local\":\"fe80::c045:acff:fe5d:d42\",\"prefixlen\":64,\"scope\":\"link\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":32,\"link_index\":2,\"ifname\":\"veth184e2d8\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"master\":\"br-2cf1cb81c56f\",\"operstate\":\"UP\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"b6:65:f4:1b:ca:18\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":16,\"addr_info\":[{\"family\":\"inet6\",\"local\":\"fe80::b465:f4ff:fe1b:ca18\",\"prefixlen\":64,\"scope\":\"link\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":33,\"link_index\":2,\"ifname\":\"veth3694328\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"master\":\"br-2cf1cb81c56f\",\"operstate\":\"UP\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"6e:54:89:b8:b1:d6\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":17,\"addr_info\":[{\"family\":\"inet6\",\"local\":\"fe80::6c54:89ff:feb8:b1d6\",\"prefixlen\":64,\"scope\":\"link\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":36,\"link_index\":2,\"ifname\":\"veth8cbc5db\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"master\":\"br-2cf1cb81c56f\",\"operstate\":\"UP\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"42:27:3e:82:da:d0\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":20,\"addr_info\":[{\"family\":\"inet6\",\"local\":\"fe80::4027:3eff:fe82:dad0\",\"prefixlen\":64,\"scope\":\"link\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":37,\"link_index\":2,\"ifname\":\"veth9be6776\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"master\":\"br-2cf1cb81c56f\",\"operstate\":\"UP\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"0e:09:2c:e4:98:1b\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":21,\"addr_info\":[{\"family\":\"inet6\",\"local\":\"fe80::c09:2cff:fee4:981b\",\"prefixlen\":64,\"scope\":\"link\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":39,\"link_index\":2,\"ifname\":\"veth01c9267\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"master\":\"br-2cf1cb81c56f\",\"operstate\":\"UP\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"8e:57:6a:5f:d0:5b\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":22,\"addr_info\":[{\"family\":\"inet6\",\"local\":\"fe80::8c57:6aff:fe5f:d05b\",\"prefixlen\":64,\"scope\":\"link\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":40,\"link_index\":2,\"ifname\":\"veth4eb14d6\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"master\":\"br-2cf1cb81c56f\",\"operstate\":\"UP\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"8a:87:35:ec:52:d1\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":23,\"addr_info\":[{\"family\":\"inet6\",\"local\":\"fe80::8887:35ff:feec:52d1\",\"prefixlen\":64,\"scope\":\"link\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":41,\"link_index\":2,\"ifname\":\"vethc699c1f\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"master\":\"br-2cf1cb81c56f\",\"operstate\":\"UP\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"b2:6d:b2:ea:16:e4\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":4,\"addr_info\":[{\"family\":\"inet6\",\"local\":\"fe80::b06d:b2ff:feea:16e4\",\"prefixlen\":64,\"scope\":\"link\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":42,\"link_index\":2,\"ifname\":\"veth9f9f369\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"master\":\"br-2cf1cb81c56f\",\"operstate\":\"UP\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"66:f7:26:e1:2b:75\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":24,\"addr_info\":[{\"family\":\"inet6\",\"local\":\"fe80::64f7:26ff:fee1:2b75\",\"prefixlen\":64,\"scope\":\"link\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":43,\"link_index\":2,\"ifname\":\"vethcde59aa\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"master\":\"br-2cf1cb81c56f\",\"operstate\":\"UP\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"5a:43:f3:5d:40:f4\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":25,\"addr_info\":[{\"family\":\"inet6\",\"local\":\"fe80::5843:f3ff:fe5d:40f4\",\"prefixlen\":64,\"scope\":\"link\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":44,\"link_index\":2,\"ifname\":\"veth3582132\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"master\":\"br-2cf1cb81c56f\",\"operstate\":\"UP\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"b2:d0:37:9b:77:05\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":26,\"addr_info\":[{\"family\":\"inet6\",\"local\":\"fe80::b0d0:37ff:fe9b:7705\",\"prefixlen\":64,\"scope\":\"link\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":46,\"link_index\":2,\"ifname\":\"vethc2bcd60\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"master\":\"br-2cf1cb81c56f\",\"operstate\":\"UP\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"9e:13:8e:9c:a4:bf\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":28,\"addr_info\":[{\"family\":\"inet6\",\"local\":\"fe80::9c13:8eff:fe9c:a4bf\",\"prefixlen\":64,\"scope\":\"link\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":54,\"link_index\":2,\"ifname\":\"vethe974d2d\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"master\":\"br-2cf1cb81c56f\",\"operstate\":\"UP\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"e6:b3:f4:e5:92:61\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":1,\"addr_info\":[{\"family\":\"inet6\",\"local\":\"fe80::e4b3:f4ff:fee5:9261\",\"prefixlen\":64,\"scope\":\"link\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":55,\"link_index\":2,\"ifname\":\"vethb0eddab\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"master\":\"br-2cf1cb81c56f\",\"operstate\":\"UP\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"1a:e0:6c:1f:06:af\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":8,\"addr_info\":[{\"family\":\"inet6\",\"local\":\"fe80::18e0:6cff:fe1f:6af\",\"prefixlen\":64,\"scope\":\"link\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":56,\"link_index\":2,\"ifname\":\"veth55e53dd\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"master\":\"br-2cf1cb81c56f\",\"operstate\":\"UP\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"6a:5f:9e:cd:70:81\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":13,\"addr_info\":[{\"family\":\"inet6\",\"local\":\"fe80::685f:9eff:fecd:7081\",\"prefixlen\":64,\"scope\":\"link\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":58,\"link_index\":2,\"ifname\":\"vethdea4db7\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"master\":\"br-2cf1cb81c56f\",\"operstate\":\"UP\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"6a:06:68:f8:c2:22\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":19,\"addr_info\":[{\"family\":\"inet6\",\"local\":\"fe80::6806:68ff:fef8:c222\",\"prefixlen\":64,\"scope\":\"link\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":59,\"link_index\":2,\"ifname\":\"veth8a79e04\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"master\":\"br-2cf1cb81c56f\",\"operstate\":\"UP\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"2e:ba:2c:9b:12:7e\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":29,\"addr_info\":[{\"family\":\"inet6\",\"local\":\"fe80::2cba:2cff:fe9b:127e\",\"prefixlen\":64,\"scope\":\"link\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":60,\"link_index\":2,\"ifname\":\"vethe02f3a1\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"master\":\"br-2cf1cb81c56f\",\"operstate\":\"UP\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"72:fd:d3:49:df:5b\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":30,\"addr_info\":[{\"family\":\"inet6\",\"local\":\"fe80::70fd:d3ff:fe49:df5b\",\"prefixlen\":64,\"scope\":\"link\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":62,\"link_index\":2,\"ifname\":\"vethc8e64a8\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"master\":\"br-2cf1cb81c56f\",\"operstate\":\"UP\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"ce:16:bf:10:d6:bc\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":18,\"addr_info\":[{\"family\":\"inet6\",\"local\":\"fe80::cc16:bfff:fe10:d6bc\",\"prefixlen\":64,\"scope\":\"link\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":66,\"link_index\":2,\"ifname\":\"vethd721acb\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"master\":\"br-2cf1cb81c56f\",\"operstate\":\"UP\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"16:35:b4:72:8d:c9\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":0,\"addr_info\":[{\"family\":\"inet6\",\"local\":\"fe80::1435:b4ff:fe72:8dc9\",\"prefixlen\":64,\"scope\":\"link\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":67,\"link_index\":2,\"ifname\":\"veth0659f9c\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"master\":\"br-2cf1cb81c56f\",\"operstate\":\"UP\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"8e:b2:28:e7:ae:62\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":5,\"addr_info\":[{\"family\":\"inet6\",\"local\":\"fe80::8cb2:28ff:fee7:ae62\",\"prefixlen\":64,\"scope\":\"link\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":74,\"link_index\":2,\"ifname\":\"veth1fba129\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"master\":\"br-2cf1cb81c56f\",\"operstate\":\"UP\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"ae:87:8a:77:3b:35\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":27,\"addr_info\":[{\"family\":\"inet6\",\"local\":\"fe80::ac87:8aff:fe77:3b35\",\"prefixlen\":64,\"scope\":\"link\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]}]\n"
+      },
+      {
+        "cmd": [
+          "ip",
+          "-j",
+          "route",
+          "show",
+          "table",
+          "main"
+        ],
+        "rc": 0,
+        "output": "[{\"dst\":\"default\",\"gateway\":\"192.168.2.1\",\"dev\":\"wlP1p1s0\",\"protocol\":\"dhcp\",\"metric\":600,\"flags\":[]},{\"dst\":\"169.254.0.0/16\",\"dev\":\"eno1\",\"scope\":\"link\",\"metric\":1000,\"flags\":[]},{\"dst\":\"172.17.0.0/16\",\"dev\":\"docker0\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"172.17.0.1\",\"flags\":[]},{\"dst\":\"172.18.0.0/16\",\"dev\":\"br-2cf1cb81c56f\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"172.18.0.1\",\"flags\":[]},{\"dst\":\"172.19.0.0/16\",\"dev\":\"br-cafa8d05e14a\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"172.19.0.1\",\"flags\":[\"linkdown\"]},{\"dst\":\"172.20.0.0/16\",\"dev\":\"br-c8bcecc2ba19\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"172.20.0.1\",\"flags\":[\"linkdown\"]},{\"dst\":\"172.21.0.0/16\",\"dev\":\"br-8cac26521742\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"172.21.0.1\",\"flags\":[\"linkdown\"]},{\"dst\":\"172.22.0.0/16\",\"dev\":\"br-151960e8ed8c\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"172.22.0.1\",\"flags\":[]},{\"dst\":\"192.168.0.0/24\",\"dev\":\"eno1\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"192.168.0.10\",\"metric\":100,\"flags\":[]},{\"dst\":\"192.168.2.0/24\",\"dev\":\"wlP1p1s0\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"192.168.2.141\",\"metric\":600,\"flags\":[]}]\n"
+      },
+      {
+        "cmd": [
+          "ip",
+          "neigh",
+          "show"
+        ],
+        "rc": 0,
+        "output": "172.18.0.21 dev br-2cf1cb81c56f lladdr 52:ab:5b:52:ec:ed STALE\n192.168.0.20 dev eno1  FAILED\n192.168.2.215 dev wlP1p1s0 lladdr 9c:67:d6:c9:3b:a0 REACHABLE\n172.18.0.20 dev br-2cf1cb81c56f lladdr 76:b8:50:0e:50:21 REACHABLE\n172.18.0.27 dev br-2cf1cb81c56f lladdr 72:15:e8:f6:12:ff REACHABLE\n172.18.0.26 dev br-2cf1cb81c56f lladdr 82:12:bf:1b:c9:72 STALE\n192.168.2.108 dev wlP1p1s0  FAILED\n192.168.2.203 dev wlP1p1s0 lladdr cc:47:40:6f:c8:e3 STALE\n172.18.0.30 dev br-2cf1cb81c56f lladdr 0e:9d:20:3c:db:99 STALE\n169.254.169.254 dev eno1  FAILED\n192.168.2.1 dev wlP1p1s0 lladdr 50:20:65:53:89:71 REACHABLE\n172.22.0.2 dev br-151960e8ed8c lladdr 3a:68:ff:9a:2d:42 STALE\n192.168.0.100 dev eno1 lladdr 40:04:0c:04:9e:16 DELAY\n"
+      },
+      {
+        "cmd": [
+          "iw",
+          "dev",
+          "wlP1p1s0",
+          "link"
+        ],
+        "rc": 0,
+        "output": "Connected to 50:20:65:d8:89:71 (on wlP1p1s0)\n\tSSID: SAWWAVE_5GX_Y\n\tfreq: 5745\n\tRX: 2275209848 bytes (1660140 packets)\n\tTX: 827906490 bytes (8767149 packets)\n\tsignal: -54 dBm\n\trx bitrate: 702.0 MBit/s VHT-MCS 8 80MHz VHT-NSS 2\n\ttx bitrate: 263.3 MBit/s VHT-MCS 6 80MHz VHT-NSS 1\n"
+      },
+      {
+        "cmd": [
+          "iw",
+          "dev",
+          "wlP1p1s0",
+          "station",
+          "dump"
+        ],
+        "rc": 0,
+        "output": ""
+      },
+      {
+        "cmd": [
+          "nmcli",
+          "-f",
+          "ACTIVE,SSID,BSSID,CHAN,FREQ,RATE,SIGNAL,SECURITY",
+          "device",
+          "wifi",
+          "list",
+          "ifname",
+          "wlP1p1s0",
+          "--rescan",
+          "no"
+        ],
+        "rc": 0,
+        "output": "ACTIVE  SSID           BSSID              CHAN  FREQ      RATE        SIGNAL  SECURITY \n예      SAWWAVE_5GX_Y  50:20:65:D8:89:71  149   5745 MHz  270 Mbit/s  74      --       \n"
+      },
+      {
+        "cmd": [
+          "nmcli",
+          "-g",
+          "IP4.ADDRESS,IP4.GATEWAY,IP4.DNS,DHCP4.OPTION",
+          "device",
+          "show",
+          "wlP1p1s0"
+        ],
+        "rc": 0,
+        "output": "192.168.2.141/24\n192.168.2.1\n192.168.2.1\nbroadcast_address = 192.168.2.255 | dhcp_lease_time = 43200 | dhcp_server_identifier = 192.168.2.1 | domain_name = lan | domain_name_servers = 192.168.2.1 | expiry = 1792667378 | host_name = ubuntu | ip_address = 192.168.2.141 | next_server = 192.168.2.1 | requested_broadcast_address = 1 | requested_domain_name = 1 | requested_domain_name_servers = 1 | requested_domain_search = 1 | requested_host_name = 1 | requested_interface_mtu = 1 | requested_ms_classless_static_routes = 1 | requested_nis_domain = 1 | requested_nis_servers = 1 | requested_ntp_servers = 1 | requested_rfc3442_classless_static_routes = 1 | requested_root_path = 1 | requested_routers = 1 | requested_static_routes = 1 | requested_subnet_mask = 1 | requested_time_offset = 1 | requested_wpad = 1 | routers = 192.168.2.1 | subnet_mask = 255.255.255.0\n"
+      },
+      {
+        "cmd": [
+          "nmcli",
+          "-t",
+          "-f",
+          "NAME,UUID,TYPE,DEVICE",
+          "connection",
+          "show",
+          "--active"
+        ],
+        "rc": 0,
+        "output": "SAWWAVE_5GX_Y:20125fd4-1ff4-418e-8068-948f435dd758:802-11-wireless:wlP1p1s0\nWired connection 1:d8af71ef-bf46-32a9-b79f-79400c656b46:802-3-ethernet:eno1\nbr-151960e8ed8c:8dc524fa-3bf2-458b-9ac0-ef149f461aa2:bridge:br-151960e8ed8c\nbr-2cf1cb81c56f:729c2997-6236-459b-bd29-24252cac197e:bridge:br-2cf1cb81c56f\ndocker0:33e9c239-c243-4e45-9928-54cde20deb5e:bridge:docker0\nbr-8cac26521742:87327082-4c57-4dfb-bb00-6eee1bce89dc:bridge:br-8cac26521742\nbr-c8bcecc2ba19:bebd5674-8ab9-4199-8800-8e792205c0d8:bridge:br-c8bcecc2ba19\nbr-cafa8d05e14a:301c63cd-3208-4605-8b28-db90725b268b:bridge:br-cafa8d05e14a\n"
+      }
+    ],
+    "b": {
+      "time_utc": "2026-10-22T04:56:18.205644Z",
+      "commands": [
+        {
+          "cmd": [
+            "ip",
+            "-j",
+            "address"
+          ],
+          "rc": 0,
+          "output": "[{\"ifindex\":1,\"ifname\":\"lo\",\"flags\":[\"LOOPBACK\",\"UP\",\"LOWER_UP\"],\"mtu\":65536,\"qdisc\":\"noqueue\",\"operstate\":\"UNKNOWN\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"loopback\",\"address\":\"00:00:00:00:00:00\",\"broadcast\":\"00:00:00:00:00:00\",\"addr_info\":[{\"family\":\"inet\",\"local\":\"127.0.0.1\",\"prefixlen\":8,\"scope\":\"host\",\"label\":\"lo\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295},{\"family\":\"inet6\",\"local\":\"::1\",\"prefixlen\":128,\"scope\":\"host\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":2,\"ifname\":\"dummy0\",\"flags\":[\"BROADCAST\",\"NOARP\"],\"mtu\":1500,\"qdisc\":\"noop\",\"operstate\":\"DOWN\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"06:5e:5a:15:8a:63\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"addr_info\":[]},{\"ifindex\":3,\"ifname\":\"eth0\",\"flags\":[\"NO-CARRIER\",\"BROADCAST\",\"MULTICAST\",\"UP\"],\"mtu\":1500,\"qdisc\":\"mq\",\"operstate\":\"DOWN\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"48:b0:2d:ec:4a:2e\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"addr_info\":[]},{\"ifindex\":4,\"ifname\":\"wlan0\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"mq\",\"operstate\":\"UP\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"cc:47:40:6f:c8:e3\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"altnames\":[\"wlP1p1s0\"],\"addr_info\":[{\"family\":\"inet\",\"local\":\"192.168.2.203\",\"prefixlen\":24,\"broadcast\":\"192.168.2.255\",\"scope\":\"global\",\"dynamic\":true,\"noprefixroute\":true,\"label\":\"wlan0\",\"valid_life_time\":29112,\"preferred_life_time\":29112},{\"family\":\"inet6\",\"local\":\"fe80::d9a:db2a:9b4:bafe\",\"prefixlen\":64,\"scope\":\"link\",\"noprefixroute\":true,\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]},{\"ifindex\":5,\"ifname\":\"l4tbr0\",\"flags\":[\"BROADCAST\",\"MULTICAST\"],\"mtu\":1500,\"qdisc\":\"noop\",\"operstate\":\"DOWN\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"7e:bf:98:b8:e5:a5\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"addr_info\":[]},{\"ifindex\":6,\"ifname\":\"rndis0\",\"flags\":[\"NO-CARRIER\",\"BROADCAST\",\"MULTICAST\",\"UP\"],\"mtu\":1500,\"qdisc\":\"pfifo_fast\",\"master\":\"l4tbr0\",\"operstate\":\"DOWN\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"7e:bf:98:b8:e5:a5\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"addr_info\":[]},{\"ifindex\":7,\"ifname\":\"usb0\",\"flags\":[\"NO-CARRIER\",\"BROADCAST\",\"MULTICAST\",\"UP\"],\"mtu\":1500,\"qdisc\":\"pfifo_fast\",\"master\":\"l4tbr0\",\"operstate\":\"DOWN\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"7e:bf:98:b8:e5:a7\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"addr_info\":[]},{\"ifindex\":8,\"ifname\":\"docker0\",\"flags\":[\"NO-CARRIER\",\"BROADCAST\",\"MULTICAST\",\"UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"operstate\":\"DOWN\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"02:42:a6:39:e1:70\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"addr_info\":[{\"family\":\"inet\",\"local\":\"172.17.0.1\",\"prefixlen\":16,\"broadcast\":\"172.17.255.255\",\"scope\":\"global\",\"label\":\"docker0\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]}]\n"
+        },
+        {
+          "cmd": [
+            "ip",
+            "-j",
+            "route",
+            "show",
+            "table",
+            "main"
+          ],
+          "rc": 0,
+          "output": "[{\"dst\":\"default\",\"gateway\":\"192.168.2.1\",\"dev\":\"wlan0\",\"protocol\":\"dhcp\",\"metric\":600,\"flags\":[]},{\"dst\":\"169.254.0.0/16\",\"dev\":\"docker0\",\"scope\":\"link\",\"metric\":1000,\"flags\":[\"linkdown\"]},{\"dst\":\"172.17.0.0/16\",\"dev\":\"docker0\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"172.17.0.1\",\"flags\":[\"linkdown\"]},{\"dst\":\"192.168.2.0/24\",\"dev\":\"wlan0\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"192.168.2.203\",\"metric\":600,\"flags\":[]}]\n"
+        },
+        {
+          "cmd": [
+            "ip",
+            "route",
+            "get",
+            "192.168.0.100"
+          ],
+          "rc": 0,
+          "output": "192.168.0.100 via 192.168.2.1 dev wlan0 src 192.168.2.203 uid 1000 \n    cache \n"
+        },
+        {
+          "cmd": [
+            "iw",
+            "dev",
+            "wlan0",
+            "link"
+          ],
+          "rc": 0,
+          "output": "Connected to 50:20:65:d8:89:71 (on wlan0)\n\tSSID: SAWWAVE_5GX_Y\n\tfreq: 5745\n\tRX: 1558673354 bytes (455652 packets)\n\tTX: 34558930 bytes (219922 packets)\n\tsignal: -53 dBm\n\trx bitrate: 585.0 MBit/s VHT-MCS 7 80MHz VHT-NSS 2\n\ttx bitrate: 292.5 MBit/s VHT-MCS 7 80MHz VHT-NSS 1\n"
+        },
+        {
+          "cmd": [
+            "nmcli",
+            "-f",
+            "ACTIVE,SSID,BSSID,CHAN,FREQ,RATE,SIGNAL,SECURITY",
+            "device",
+            "wifi",
+            "list",
+            "ifname",
+            "wlan0",
+            "--rescan",
+            "no"
+          ],
+          "rc": 0,
+          "output": "ACTIVE  SSID           BSSID              CHAN  FREQ      RATE        SIGNAL  SECURITY \n예      SAWWAVE_5GX_Y  50:20:65:D8:89:71  149   5745 MHz  270 Mbit/s  68      --       \n"
+        },
+        {
+          "cmd": [
+            "nmcli",
+            "-g",
+            "IP4.ADDRESS,IP4.GATEWAY,IP4.DNS,DHCP4.OPTION",
+            "device",
+            "show",
+            "wlan0"
+          ],
+          "rc": 0,
+          "output": "192.168.2.203/24\n192.168.2.1\n192.168.2.1\ndhcp_lease_time = 43200 | domain_name = lan | domain_name_servers = 192.168.2.1 | expiry = 43392 | host_name = ubuntu | ip_address = 192.168.2.203 | next_server = 192.168.2.1 | requested_broadcast_address = 1 | requested_domain_name = 1 | requested_domain_name_servers = 1 | requested_domain_search = 1 | requested_host_name = 1 | requested_interface_mtu = 1 | requested_ms_classless_static_routes = 1 | requested_nis_domain = 1 | requested_nis_servers = 1 | requested_ntp_servers = 1 | requested_rfc3442_classless_static_routes = 1 | requested_root_path = 1 | requested_routers = 1 | requested_static_routes = 1 | requested_subnet_mask = 1 | requested_time_offset = 1 | requested_wpad = 1 | routers = 192.168.2.1 | subnet_mask = 255.255.255.0\n"
+        },
+        {
+          "cmd": [
+            "nmcli",
+            "-t",
+            "-f",
+            "NAME,UUID,TYPE,DEVICE",
+            "connection",
+            "show",
+            "--active"
+          ],
+          "rc": 0,
+          "output": "SAWWAVE_5GX_Y:463a2b81-a701-4a95-a3e1-5fb658ac0994:802-11-wireless:wlan0\ndocker0:da25399c-b441-4d36-aef8-eac87f6915fa:bridge:docker0\n"
+        },
+        {
+          "cmd": [
+            "nmcli",
+            "-g",
+            "connection.id,connection.uuid,connection.interface-name,connection.autoconnect,ipv4.method,ipv4.addresses,ipv4.gateway,ipv4.dns,ipv4.never-default,ipv4.dad-timeout,ipv6.method",
+            "connection",
+            "show",
+            "cctv-b-test"
+          ],
+          "rc": 0,
+          "output": "cctv-b-test\na23983f3-3a41-4dcf-99bf-8ddf7ef9cbe1\neth0\nno\nmanual\n192.168.0.20/24\n\n\nyes\n3000\ndisabled\n"
+        }
+      ]
+    },
+    "gateway_http": {
+      "http://192.168.2.1/": {
+        "error": "<urlopen error [Errno 111] Connection refused>"
+      }
+    },
+    "gateway_https443": "connection refused"
+  },
+  "validation": {
+    "wbs_statuses_unchanged": true,
+    "wbs_rows": 37,
+    "done": 9,
+    "local_markdown_links": 1923,
+    "missing_links": 0,
+    "tracked_non_doc_baseline_files": 1156,
+    "changed_non_doc_files": [
+      "scripts/ops/progress_snapshot_template.html",
+      "scripts/ops/render_progress_snapshot.py"
+    ],
+    "product_configuration_changes": 0,
+    "ruff": "PASS",
+    "render_html_pdf": "PASS",
+    "http": [
+      {
+        "endpoint": "/",
+        "http_status": 200,
+        "sha256": "3bb887e64311a4ca331cd3c0fef9f21a2406f256418cd89895854c1848929eb6",
+        "matches_local": true,
+        "bytes": 147837
+      },
+      {
+        "endpoint": "/CCTV_project_progress.pdf",
+        "http_status": 200,
+        "sha256": "2a2d62e668ab8a2616601607ca700c0185bc6fb11971662bcd376a8ed21da0b8",
+        "matches_local": true,
+        "bytes": 159548
+      }
+    ],
+    "pdf_first_page_visual_check": "PASS",
+    "browser_interaction_tested": false
+  }
+}

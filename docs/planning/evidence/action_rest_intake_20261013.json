@@ -1,0 +1,186 @@
+{
+  "updated_at": "2026-10-13T14:46:31.939962+09:00",
+  "wbs_id": "P3.2",
+  "state": "LOCAL_VERIFIED_REST_DURABLE_INTAKE",
+  "scope": "Action REST 이벤트 접수/조회, MQTT와 공통 저장·실행·복구, 기존 공개 API 중계 호출부의 ID/시각 보존",
+  "changes": {
+    "product_python_files": [
+      "src/ingest_store.py",
+      "src/services/action_mqtt_intake.py",
+      "src/services/action_bridge.py",
+      "src/protocols/rest.py",
+      "src/services/_action_bridge_rest_queue.py",
+      "src/api/_event_forwarding.py",
+      "src/api/v1/sensor_readings.py",
+      "src/api/schemas/event.py"
+    ],
+    "test_files": [
+      "tests/test_action_rest_intake.py",
+      "tests/test_action_rest_intake_integration.py",
+      "tests/test_action_expiry.py",
+      "tests/test_action_mqtt_intake.py",
+      "tests/test_event_forwarding.py",
+      "tests/test_public_api.py"
+    ],
+    "new_dependencies": 0,
+    "schema_changes": 0,
+    "new_database_paths": 0,
+    "compose_changed": false,
+    "api": [
+      "영속 모드 POST /events는 HTTP202와 ingest_id/event_id 반환",
+      "GET /receipts/{ingest_id} 내부 인증·처리/보류 조회",
+      "공개 AlertIn 선택 event_id 추가·기존 생산자 ID 보존",
+      "센서 중계 원본 ID/시각 전달·기존 ID 생성 함수 재사용"
+    ],
+    "source_diff": "data/runtime/action_rest_intake_20261013/product.diff"
+  },
+  "validation": {
+    "regression_unique_passed": 392,
+    "real_http_passed": 2,
+    "unique_passed": 394,
+    "new_unique_tests": 33,
+    "count_method": "기본 회귀325 + 호출부95 중 중복28 제외=392; loopback HTTP2 추가. 신규 파일32사례+기존 센서 시험의 추가 매개변수1사례=33.",
+    "junit": {
+      "regression": {
+        "tests": 325,
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "unique_additions": 325
+      },
+      "callers": {
+        "tests": 95,
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "unique_additions": 67
+      },
+      "http": {
+        "tests": 2,
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "unique_additions": 2
+      }
+    },
+    "logs": [
+      "data/runtime/action_rest_intake_20261013/regression.log",
+      "data/runtime/action_rest_intake_20261013/callers.log",
+      "data/runtime/action_rest_intake_20261013/http.log"
+    ],
+    "ruff": "제품8/시험6/렌더러1 PASS",
+    "mypy": {
+      "all_changed_files_passed": false,
+      "checked_files": 8,
+      "errors_before": 16,
+      "errors_after": 16,
+      "normalized_error_messages_identical": true,
+      "new_errors": 0,
+      "focused": "action_mqtt_intake / _action_bridge_rest_queue 2파일 --follow-imports=silent PASS",
+      "baseline_method": "mypy --shadow-file로 이번 수정 직전8파일과 현재8파일 비교; 기존 오류의 줄 번호만 정규화"
+    },
+    "syntax": "제품8 AST PASS",
+    "wbs_consistency": "33개 ID/상태/경로/집계 일치",
+    "whitespace": "변경 범위 git diff --check PASS",
+    "initial_findings": [
+      "초기 신규 시험1 FAIL: 빈 배열 topic이 or 기본값을 통해 접수됨. 타입을 확인하도록 수정 후 PASS.",
+      "초기 실제HTTP2는 샌드박스 소켓 생성 PermissionError로 실행 불가. 허용된 임시 loopback 환경에서2 PASS.",
+      "호출부 검토에서 공개 API2경로의 event_id 누락 발견. 원본 ID/시각 보존 추가. 기존 정확한 payload 비교 기대값1건을 추가된 ID 계약에 맞춰 갱신 후95 PASS."
+    ],
+    "cases": [
+      "원본 바이트/접수 namespace 보존·commit 뒤202·접수 조회에 원본 미노출",
+      "잘못된 JSON/ID/topic, MQTT 제어/결과 topic 위조, 부분/과대/chunked 본문 거부",
+      "실제 SQLite 원본/계획 commit 실패503·실행0·재시도/부분 원본 보존",
+      "느린 실행 중 REST/MQTT 접수·상태 조회 진행과 실제 접수 순서 유지",
+      "REST/MQTT 동시 중복의 최초 기한 동일·모의 출력1회",
+      "미실행/유효 정책만 재시작 재개, 만료·구형 입력·미확정 보류",
+      "자식 프로세스 실행 중 os._exit(23) 후 같은 요청 재전달 재출력0",
+      "저장 전용에서 메모리 소비자/직접 접수/수동 승인 우회 차단·종료 후503",
+      "인증 실패401·다른 namespace/없는 접수404·조회 저장소 장애503",
+      "비영속 HTTP200 계약·공개 API202 처리·원본 ID/시각 보존·동일 재전달 ID"
+    ]
+  },
+  "fixture": {
+    "http": "임시 127.0.0.1 동적 포트·임시 DB·모의 실행",
+    "operating_service_called": false,
+    "mqtt_broker_test_this_unit": false,
+    "physical_outputs": 0
+  },
+  "code_review": {
+    "tools": [
+      "codebase-memory-mcp search/trace/snippet",
+      "code-review-graph detect_changes/get_affected_flows"
+    ],
+    "reports": [
+      "data/runtime/action_rest_intake_20261013/graph_final.json",
+      "data/runtime/action_rest_intake_20261013/graph_flows.json"
+    ],
+    "limit": "HEAD 기준 누적 미커밋 변경 포함132심볼/45시험공백/위험0.85는 이번 단위 결함 개수가 아님. 동적 HTTP 호출 누락은 실제 호출부와 수정 직전 복사본 diff·시험으로 추가 확인."
+  },
+  "web": [
+    {
+      "url": "http://192.168.2.141:18081/",
+      "status": 200,
+      "bytes": 82556,
+      "sha256": "f0aaf98a060ade36abf88386f1de22dc8e8a45b6e91b06043b41f97a573456d4",
+      "local_matches": true
+    },
+    {
+      "url": "http://192.168.2.141:18081/CCTV_project_progress.pdf",
+      "status": 200,
+      "bytes": 151427,
+      "sha256": "683523351094e8bab56c873b26a8dd9c987bcf12442d26355bfb3c93e69d5a39",
+      "local_matches": true
+    }
+  ],
+  "pdf_first_page_visual_check": "PASS",
+  "browser_interaction": "not checked",
+  "module_graph": "기존 정적 모듈 그래프 유지; 이번 코드로 다시 게시한 런타임 그래프 아님",
+  "operations": {
+    "deployed": false,
+    "candidate_rebuilt": false,
+    "physical_outputs": 0,
+    "containers_checked": [
+      "cctv-ai-engine",
+      "cctv-action-layer",
+      "cctv-device-signboard",
+      "edgex-kuiper",
+      "cctv-public-api"
+    ],
+    "id_image_started_at_unchanged": true,
+    "compared_baseline": "data/runtime/device_workers_20261013/operating_before.txt"
+  },
+  "limits": [
+    "HTTP202/receipt complete는 접수/입력 처리이며 장치 ACK나 실물 완료가 아님.",
+    "영속 수신 DB를 설정한 REST 경로만 적용. 같은 DB의 단일 작업자 범위.",
+    "원본 센서 ID·시각 모두 없으면 현재 시각/새 ID를 만들어 재시도하지 않고 영속 REST에서400. 원본 센서 저장은 공개 API의 기존 경로.",
+    "REST 본문1MiB/Content-Length 필요; chunked 미지원. 승인된 topic별 TTL/시계 정책이 없으면 보류.",
+    "영속 수동 승인·큐 계측/보관 한계·외부 API의 접수 조회 프록시/운영자 통합 조회는 후속.",
+    "준비 이미지/운영 전환·복귀·실물/장시간 검증 미실행. 변경8파일의 기존 타입16오류 잔여."
+  ],
+  "wbs": {
+    "row_status": "PLANNED",
+    "local_subtask": "verified",
+    "done": 9,
+    "total": 33,
+    "remaining": 24,
+    "next": "P3.2 큐 길이·최장 대기·지연 계측",
+    "poc": "12월 필수·11/27 내부 준비·12/31 최종 목표 유지"
+  },
+  "artifacts_sha256": {
+    "src/ingest_store.py": "1299e26e992589a7f21e7e6912b94551a5693039d6964a9fb58cd139798ebcbd",
+    "src/services/action_mqtt_intake.py": "857198265f72298f8991f90006f23eb0bb84e2ca621e14ad887cb9aacb4ab196",
+    "src/services/action_bridge.py": "0bfec969468128ecfb8e341d4896a231d16cce47eb2c8d22e4878269fd4105d9",
+    "src/protocols/rest.py": "823a9513ac8cd47123bc81cffde0f8416f2c4669575dabd2f3c1f7361f07503d",
+    "src/services/_action_bridge_rest_queue.py": "50fabb9dd70fe1589809a73da3a5d88a59cbc024e4df8182a661f2f0ffb9abcd",
+    "src/api/_event_forwarding.py": "e033816d21f7d06dcd41874b68167f2efd4ef0de33ad7246d5f1fb9c0e4a1a36",
+    "src/api/v1/sensor_readings.py": "ca04950e76c1297705eef392a80ae7278ca15490117253bb318ac771afc640f5",
+    "src/api/schemas/event.py": "d2f9b1ec3f9d3d93628a89d3d7df7a57a2bc87639d77767a661d0fc141dcbdc2",
+    "tests/test_action_rest_intake.py": "86fb651200061ffc49047de622bef53bd0eea569f9d6360daced81f17315a440",
+    "tests/test_action_rest_intake_integration.py": "3e22ddd80383b6b7f275dc0a32c3b837ea4c1e0073c6f06367e0fb51c1c19227",
+    "tests/test_action_expiry.py": "6110036ec2734d759f61563b72153620fd0e70bda3124b6da43d51b2984d87ae",
+    "tests/test_action_mqtt_intake.py": "c37e9703f3dc65366f14055429dbd094c860d9e0d211c5b5b965544fda53b616",
+    "tests/test_event_forwarding.py": "4c976bca95a0f6f8e32dcc88d8ec2eae7bab949f5df1181fabe521c3d6f7840b",
+    "tests/test_public_api.py": "9a6b1fc691b378f440ea1dccbb387c6b28241a1a2c102591dba793eece3c062b"
+  }
+}

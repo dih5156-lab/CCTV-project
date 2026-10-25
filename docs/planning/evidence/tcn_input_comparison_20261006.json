@@ -1,0 +1,591 @@
+{
+  "version": "0.118",
+  "date": "2026-10-06 KST",
+  "wbs": "P5.1 IN_PROGRESS",
+  "issue": "I37 OPEN",
+  "decision": "실패12창 대조·기존TCN3입력 비교 완료. 움직임 특징 개선 단서 있으나 오탐 악화·주석 전 양성·Pose 부재로 승격 보류.",
+  "comparison": {
+    "threshold": 0.7,
+    "promotion": false,
+    "rf53": {
+      "observed": {
+        "TP": 17,
+        "FN": 8,
+        "FP": 6,
+        "TN": 51,
+        "unlabeled": 33,
+        "unlabeled_positive": 5
+      },
+      "fresh": {
+        "TP": 1,
+        "FN": 8,
+        "FP": 4,
+        "TN": 34,
+        "unlabeled": 18,
+        "unlabeled_positive": 3
+      }
+    },
+    "ordered15": {
+      "observed": {
+        "TP": 14,
+        "FN": 11,
+        "FP": 7,
+        "TN": 50,
+        "unlabeled": 33,
+        "unlabeled_positive": 5
+      },
+      "fresh": {
+        "TP": 1,
+        "FN": 8,
+        "FP": 0,
+        "TN": 38,
+        "unlabeled": 18,
+        "unlabeled_positive": 3
+      },
+      "epochs": 59,
+      "best_holdout_loss": 0.12231932580471039,
+      "parameters": 4641,
+      "seconds": 8.097601277055219,
+      "model_sha256": "55042b2c573f362df93d7478a9e1829ba76f0edb81f10f06422596dc322ff036",
+      "reload_exact": true,
+      "nonempty_slot_fraction": 0.9403935185185185
+    },
+    "pts15": {
+      "observed": {
+        "TP": 14,
+        "FN": 11,
+        "FP": 6,
+        "TN": 51,
+        "unlabeled": 33,
+        "unlabeled_positive": 5
+      },
+      "fresh": {
+        "TP": 1,
+        "FN": 8,
+        "FP": 0,
+        "TN": 38,
+        "unlabeled": 18,
+        "unlabeled_positive": 2
+      },
+      "epochs": 59,
+      "best_holdout_loss": 0.13101552426815033,
+      "parameters": 4641,
+      "seconds": 6.931889394996688,
+      "model_sha256": "499a9de3d5b0a25d6731d41baa9ea512c99413df288fa8b40889fd5702bb468b",
+      "reload_exact": true,
+      "nonempty_slot_fraction": 0.8563657407407408
+    },
+    "pts_motion20": {
+      "observed": {
+        "TP": 22,
+        "FN": 3,
+        "FP": 10,
+        "TN": 47,
+        "unlabeled": 33,
+        "unlabeled_positive": 8
+      },
+      "fresh": {
+        "TP": 8,
+        "FN": 1,
+        "FP": 3,
+        "TN": 35,
+        "unlabeled": 18,
+        "unlabeled_positive": 7
+      },
+      "epochs": 59,
+      "best_holdout_loss": 0.08595360070466995,
+      "parameters": 5121,
+      "seconds": 7.970367246074602,
+      "model_sha256": "5d2c81834d01b206c23f2803212d441b35b884953f8aa1fee4861054a9d7695a",
+      "reload_exact": true,
+      "nonempty_slot_fraction": 0.8563657407407408
+    },
+    "fresh_checks": [
+      {
+        "scene": "00800_O_E_BY_C1",
+        "source_frames": 600,
+        "raw_windows": 17,
+        "labeled_windows": 7,
+        "max_source_pacing_lag": 0.28448996801637116,
+        "full_span_difference": 6.318200921562322e-05,
+        "capture_sha256": "7a9f19c06711d774fab2b864d164aee74cb94cf3ff2e63d4a30c3b158c39a845",
+        "inference_errors": 0,
+        "pipeline_restarts": 0
+      },
+      {
+        "scene": "00837_O_E_BY_C1",
+        "source_frames": 600,
+        "raw_windows": 10,
+        "labeled_windows": 2,
+        "max_source_pacing_lag": 0.2862251090515405,
+        "full_span_difference": 9.577015025463709e-05,
+        "capture_sha256": "3d5e0663c810bc9d016b7b3db832ae1b80e7b194860b1408952c6e9f47694823",
+        "inference_errors": 0,
+        "pipeline_restarts": 0
+      },
+      {
+        "scene": "00657_H_D_N_C1",
+        "source_frames": 601,
+        "raw_windows": 19,
+        "labeled_windows": 19,
+        "max_source_pacing_lag": 0.299907288902998,
+        "full_span_difference": 0.003370387023315047,
+        "capture_sha256": "8ac69aadfb0967634079deca6f79d956a1b5f82be022dcd969876a0e54bd4eaf",
+        "inference_errors": 0,
+        "pipeline_restarts": 0
+      },
+      {
+        "scene": "00849_O_E_N_C1",
+        "source_frames": 600,
+        "raw_windows": 19,
+        "labeled_windows": 19,
+        "max_source_pacing_lag": 0.3080681920215488,
+        "full_span_difference": 7.465893013325342e-05,
+        "capture_sha256": "d8fd297ec6eb78e169c74d1aeac375c045648899ae3a5d551323a098c6629814",
+        "inference_errors": 0,
+        "pipeline_restarts": 0
+      }
+    ],
+    "raw_external_windows": 180,
+    "training_rows": 164,
+    "fit_rows": 117,
+    "internal_rows": 47,
+    "external_labeled_rows": 129,
+    "operating_unchanged": true
+  },
+  "input_coverage": {
+    "positive_rows": 84,
+    "positive_rows_without_annotation_after_resampling": [
+      {
+        "scene": "01033_O_E_FY_C1",
+        "scope_frame": 510,
+        "cohort": "training",
+        "original_annotation_frames": 1
+      }
+    ],
+    "external_positive_rows": 34,
+    "external_positive_rows_preserving_annotation": 34,
+    "note": "기존 행/라벨을 고정했다. 재표본화가 드물게 주석 표본을 제거할 수 있어 학습 한계로 보존한다. 신체크기는 bbox높이 대용치이며 실제 뼈 길이 아님."
+  },
+  "plan": {
+    "scope": "P5.1/I37 실패12창 원인 대조·시간 입력/TCN 비교",
+    "authorization": "사용자가 논문 기반 입력 점검·기존 TCN 비교·혼동 정상동작 보강 방향에 동의",
+    "fixed_split": {
+      "fit": [
+        "00953_O_E_N",
+        "01018_O_E_BY",
+        "01033_O_E_FY",
+        "01194_O_E_N",
+        "01836_Y_A_N",
+        "01860_Y_A_N",
+        "01873_Y_A_SY",
+        "01935_Y_A_SY",
+        "02623_H_A_BY"
+      ],
+      "internal_holdout": [
+        "00942_O_E_N",
+        "02260_H_A_SY",
+        "02549_H_D_N"
+      ],
+      "observed_external_groups": 6,
+      "fresh_external_groups": 4
+    },
+    "training": {
+      "epochs": 100,
+      "patience": 15,
+      "batch_size": 16,
+      "channels": 32,
+      "learning_rate": 0.001,
+      "weight_decay": 0.0001,
+      "random_state": 42,
+      "device": "cpu",
+      "threads": 2,
+      "threshold": 0.7
+    },
+    "variants": [
+      "기존15특징/순서 패딩",
+      "동일15특징/원본PTS3초48칸 인과적 재표본화",
+      "PTS15특징+몸통각도·신체크기 정규화 엉덩이 상대높이/속도/변위·유효성5특징"
+    ],
+    "sequence_contract": {
+      "length": 48,
+      "rate_hz": 16,
+      "max_past_age_seconds": 0.25,
+      "future_samples": false,
+      "missing": "0으로 채우고 특징/유효성으로 구별. 누락 구간 보간하지 않음",
+      "velocity_clip_body_lengths_s": 4,
+      "displacement_clip_body_lengths": 3
+    },
+    "evaluation": "이전6외부는 이미 관측한 비교군, 추가4영상은 시드118로 점수 확인 전에 고정. 내부 holdout loss로만 epoch 선택; 외부 threshold sweep 비활성; 파라미터 재조정 없음.",
+    "limits": [
+      "원본 관절좌표가 없는 현재 수집본에서 얻는 특징 실험이며 ST-GCN/TCNTE 재현 아님",
+      "PTS 재표본화는 수집 이전 누락 Pose를 복원하지 않음",
+      "운영 모델·설정·제품 소스 변경 없음",
+      "짧은 클립의 분석 창 비교이며 시간당 오경보/현장 지연 합격 아님"
+    ],
+    "sources": [
+      "https://pure.kaist.ac.kr/en/publications/a-real-time-skeleton-based-fall-detection-algorithm-based-on-temp/",
+      "https://arxiv.org/abs/1803.01271",
+      "https://arxiv.org/abs/1801.07455"
+    ],
+    "triage_preliminary": {
+      "nonfall_scene": "00889_O_E_N_C1: 원본 격자에서 소파를 짚고 바닥에 앉는 동작 확인. 오탐6창 모두 낙상 점수 최대5.0. 관절좌표가 없어 Pose 정확성은 미판정.",
+      "positive_scenes": "00636/00924 전면낙상 원본 전후 동작을 확인. 각270프레임은 주석 초기이며 max_fall_score0, 나머지00924 미탐4창의 max_fall_score2.0.",
+      "clock": "미탐6창의 샘플 간 상대 처리시각-PTS 오차 최대0.0411초. 비낙상 오탐의 초기4창에는0.279–0.338초 지연 영향이 있으나 뒤2창은0.0277초 이내에서도 오탐.",
+      "interpretation": "시작 지연만으로 전체 실패를 설명하지 못한다. 움직임 혼동/점수 특징과 사건 단위 평가의 영향을 분리한다. 라벨을 임의 수정하지 않는다."
+    }
+  },
+  "triage": {
+    "failed_v117_windows": [
+      {
+        "scene_id": "00636_H_D_FY_C1",
+        "frame": 270,
+        "label": 1,
+        "probability": 0.24312516493880512,
+        "sampled_frames": 48,
+        "annotated_frames": 8,
+        "relative_clock_error_max": 0.021401428428833302,
+        "max_fall_score": 0.0,
+        "mean_fall_score": 0.0,
+        "mean_torso_angle": 0.07760792225599289,
+        "min_keypoints": 16.0,
+        "pose_hip_available": 48,
+        "first_frame": 90,
+        "last_frame": 270,
+        "category": "주석 시작 구간·낙상 점수0"
+      },
+      {
+        "scene_id": "00924_O_E_FY_C1",
+        "frame": 270,
+        "label": 1,
+        "probability": 0.3842145588433925,
+        "sampled_frames": 48,
+        "annotated_frames": 1,
+        "relative_clock_error_max": 0.04080558298474113,
+        "max_fall_score": 0.0,
+        "mean_fall_score": 0.0,
+        "mean_torso_angle": 0.024580061435699463,
+        "min_keypoints": 13.0,
+        "pose_hip_available": 48,
+        "first_frame": 92,
+        "last_frame": 270,
+        "category": "주석 시작 구간·낙상 점수0"
+      },
+      {
+        "scene_id": "00924_O_E_FY_C1",
+        "frame": 360,
+        "label": 1,
+        "probability": 0.6537915669827165,
+        "sampled_frames": 48,
+        "annotated_frames": 15,
+        "relative_clock_error_max": 0.03945099733715818,
+        "max_fall_score": 2.0,
+        "mean_fall_score": 0.125,
+        "mean_torso_angle": 0.13913385570049286,
+        "min_keypoints": 10.0,
+        "pose_hip_available": 48,
+        "first_frame": 182,
+        "last_frame": 360,
+        "category": "낙상 후 중첩 창·낙상 점수 최대2"
+      },
+      {
+        "scene_id": "00924_O_E_FY_C1",
+        "frame": 390,
+        "label": 1,
+        "probability": 0.6449770431214958,
+        "sampled_frames": 48,
+        "annotated_frames": 15,
+        "relative_clock_error_max": 0.02725981407165534,
+        "max_fall_score": 2.0,
+        "mean_fall_score": 0.2083333283662796,
+        "mean_torso_angle": 0.19194716215133667,
+        "min_keypoints": 10.0,
+        "pose_hip_available": 48,
+        "first_frame": 210,
+        "last_frame": 390,
+        "category": "낙상 후 중첩 창·낙상 점수 최대2"
+      },
+      {
+        "scene_id": "00924_O_E_FY_C1",
+        "frame": 450,
+        "label": 1,
+        "probability": 0.6818291168537814,
+        "sampled_frames": 48,
+        "annotated_frames": 14,
+        "relative_clock_error_max": 0.04108866559619173,
+        "max_fall_score": 2.0,
+        "mean_fall_score": 0.1666666716337204,
+        "mean_torso_angle": 0.2955711781978607,
+        "min_keypoints": 11.0,
+        "pose_hip_available": 48,
+        "first_frame": 272,
+        "last_frame": 450,
+        "category": "낙상 후 중첩 창·낙상 점수 최대2"
+      },
+      {
+        "scene_id": "00924_O_E_FY_C1",
+        "frame": 480,
+        "label": 1,
+        "probability": 0.5514124033569563,
+        "sampled_frames": 48,
+        "annotated_frames": 6,
+        "relative_clock_error_max": 0.033399883857910595,
+        "max_fall_score": 2.0,
+        "mean_fall_score": 0.2083333283662796,
+        "mean_torso_angle": 0.3272005319595337,
+        "min_keypoints": 10.0,
+        "pose_hip_available": 48,
+        "first_frame": 302,
+        "last_frame": 480,
+        "category": "낙상 후 중첩 창·낙상 점수 최대2"
+      },
+      {
+        "scene_id": "00889_O_E_N_C1",
+        "frame": 120,
+        "label": 0,
+        "probability": 0.9268161480251854,
+        "sampled_frames": 48,
+        "annotated_frames": 0,
+        "relative_clock_error_max": 0.32477132395153796,
+        "max_fall_score": 5.0,
+        "mean_fall_score": 1.34375,
+        "mean_torso_angle": 0.29074615240097046,
+        "min_keypoints": 13.0,
+        "pose_hip_available": 48,
+        "first_frame": 0,
+        "last_frame": 120,
+        "category": "정상 앉기/소파 지지 동작 혼동"
+      },
+      {
+        "scene_id": "00889_O_E_N_C1",
+        "frame": 150,
+        "label": 0,
+        "probability": 0.9506657473465446,
+        "sampled_frames": 48,
+        "annotated_frames": 0,
+        "relative_clock_error_max": 0.3293907201612547,
+        "max_fall_score": 5.0,
+        "mean_fall_score": 1.4375,
+        "mean_torso_angle": 0.341489315032959,
+        "min_keypoints": 13.0,
+        "pose_hip_available": 48,
+        "first_frame": 0,
+        "last_frame": 150,
+        "category": "정상 앉기/소파 지지 동작 혼동"
+      },
+      {
+        "scene_id": "00889_O_E_N_C1",
+        "frame": 180,
+        "label": 0,
+        "probability": 0.887580081640951,
+        "sampled_frames": 48,
+        "annotated_frames": 0,
+        "relative_clock_error_max": 0.338107339652832,
+        "max_fall_score": 5.0,
+        "mean_fall_score": 1.53125,
+        "mean_torso_angle": 0.3875460624694824,
+        "min_keypoints": 12.0,
+        "pose_hip_available": 48,
+        "first_frame": 0,
+        "last_frame": 180,
+        "category": "정상 앉기/소파 지지 동작 혼동"
+      },
+      {
+        "scene_id": "00889_O_E_N_C1",
+        "frame": 210,
+        "label": 0,
+        "probability": 0.8973046997794932,
+        "sampled_frames": 48,
+        "annotated_frames": 0,
+        "relative_clock_error_max": 0.278924336036499,
+        "max_fall_score": 5.0,
+        "mean_fall_score": 1.4895833730697632,
+        "mean_torso_angle": 0.4189992845058441,
+        "min_keypoints": 13.0,
+        "pose_hip_available": 48,
+        "first_frame": 14,
+        "last_frame": 210,
+        "category": "정상 앉기/소파 지지 동작 혼동"
+      },
+      {
+        "scene_id": "00889_O_E_N_C1",
+        "frame": 240,
+        "label": 0,
+        "probability": 0.8779001355075075,
+        "sampled_frames": 48,
+        "annotated_frames": 0,
+        "relative_clock_error_max": 0.01959085044860842,
+        "max_fall_score": 5.0,
+        "mean_fall_score": 1.7395833730697632,
+        "mean_torso_angle": 0.4623911380767822,
+        "min_keypoints": 12.0,
+        "pose_hip_available": 48,
+        "first_frame": 62,
+        "last_frame": 240,
+        "category": "정상 앉기/소파 지지 동작 혼동"
+      },
+      {
+        "scene_id": "00889_O_E_N_C1",
+        "frame": 270,
+        "label": 0,
+        "probability": 0.869360659182604,
+        "sampled_frames": 48,
+        "annotated_frames": 0,
+        "relative_clock_error_max": 0.027662070846557363,
+        "max_fall_score": 5.0,
+        "mean_fall_score": 1.4270833730697632,
+        "mean_torso_angle": 0.40660014748573303,
+        "min_keypoints": 12.0,
+        "pose_hip_available": 48,
+        "first_frame": 90,
+        "last_frame": 270,
+        "category": "정상 앉기/소파 지지 동작 혼동"
+      }
+    ],
+    "raw_pose_joints_available": false,
+    "visual_check": "원본 프레임 격자 수동 대조이며 관절 좌표 품질 판정 아님",
+    "timing_conclusion": "초기 지연은 일부 창에 영향이 있으나 늦은 오탐과 모든 미탐도 존재해 전체 원인으로 볼 수 없다",
+    "fresh_pose_coverage": [
+      {
+        "scene_index": 0,
+        "pose_frames": 231,
+        "pose_first_frame": 0,
+        "pose_last_frame": 582,
+        "primary_inferred": 300,
+        "captured_requests": {
+          "submitted": 18,
+          "verify.insufficient_pose_records": 1,
+          "verify.incompatible_feature_contract": 17
+        },
+        "generation_count": 1,
+        "object_count": 1
+      },
+      {
+        "scene_index": 1,
+        "pose_frames": 155,
+        "pose_first_frame": 0,
+        "pose_last_frame": 324,
+        "primary_inferred": 300,
+        "captured_requests": {
+          "submitted": 11,
+          "verify.insufficient_pose_records": 1,
+          "verify.incompatible_feature_contract": 10
+        },
+        "generation_count": 1,
+        "object_count": 1
+      },
+      {
+        "scene_index": 2,
+        "pose_frames": 300,
+        "pose_first_frame": 0,
+        "pose_last_frame": 598,
+        "primary_inferred": 301,
+        "captured_requests": {
+          "submitted": 20,
+          "verify.insufficient_pose_records": 1,
+          "verify.incompatible_feature_contract": 19
+        },
+        "generation_count": 1,
+        "object_count": 1
+      },
+      {
+        "scene_index": 3,
+        "pose_frames": 300,
+        "pose_first_frame": 0,
+        "pose_last_frame": 598,
+        "primary_inferred": 300,
+        "captured_requests": {
+          "submitted": 20,
+          "verify.insufficient_pose_records": 1,
+          "verify.incompatible_feature_contract": 19
+        },
+        "generation_count": 1,
+        "object_count": 1
+      }
+    ],
+    "fresh_visual_observation": {
+      "00837_O_E_BY_C1": "330~540프레임에서도 사람이 매트에 누워 화면에 보인다. 후반 Pose 관측 부재의 상세 단계/원인은 미확정. 원본관절·후처리 이전 점수 계측 필요.",
+      "00849_O_E_N_C1": "몸굽힘·손바닥 지지·다시 일어서기 정상 동작에서 motion TCN양성3창",
+      "00800_O_E_BY_C1": "motion TCN의 주석 전90/120프레임 양성2창은 라벨 제외창이다. 전체 오탐률/조기경보 합격으로 해석하지 않는다"
+    },
+    "next": "00837의 사람이 보이는 후반 구간에서 사람/Pose 검출과 후처리 조건을 먼저 분리 계측. 별도 train 그룹의 앉기/굽히기/지지 동작 보강과 사건 단위 평가를 후속으로 진행."
+  },
+  "tests": {
+    "tests": 67,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "passed": 67,
+    "input_behavior_check": "PASS: 미래 표본/결측/크기/시간/입력 거부",
+    "warning": "CUDA 가용성 조회 경고1; 학습/검증 장치는 명시적CPU"
+  },
+  "review": {
+    "reviewer": "tcn_input_review",
+    "critical": 0,
+    "important": 0,
+    "conclusion": "격리 입력 비교 기록에 차단 결함 없음·운영 승격 근거 부족",
+    "verified": [
+      "RF와 학습9그룹117창/내부3그룹47창 동일·외부10그룹분리",
+      "내부holdout 손실로만 best44/stop59 선택·외부 임계값 탐색 없음",
+      "4모델180창 혼동행렬·비라벨 양성·외부 라벨129창 독립 재집계 일치",
+      "PTS 미래표본 차단·0.25초 초과 결측 차단·bbox높이 좌표단위 일치"
+    ],
+    "limits": [
+      "00837 마지막Pose324·마지막평가창302; 입력존재창 한정",
+      "5특징 묶음과 파라미터 수가 함께 변해 구조/속도 특징 하나의 개선 효과로 단정 불가; 전체FP10→13",
+      "주석 이후 PTS차이는 경보 지연 아님; 주석 전양성2창",
+      "학습01033/510창의 유일 주석표본330은3.003초 전으로 PTS3초 밖; 원행/라벨 고정 한계 기록·외부양성34창 모두 주석유지",
+      "신체크기는 bbox높이 대용치"
+    ],
+    "not_verified": [
+      "제품 로더/운영 입력 호환",
+      "실시간 경보 지연",
+      "후반Pose 부재의 상류원인",
+      "논문 재현"
+    ]
+  },
+  "product_source_unchanged": 206,
+  "private_artifacts": "data/runtime/p51_tcn_comparison_20261006_v118",
+  "limits": [
+    "원본22장면·학습12/외부10그룹. 인물/배경 완전 분리·현장 품질 미검증",
+    "같은 학습9그룹117창/내부3그룹47창·seed42·임계값0.7, 외부 결과 재튜닝 없음. 최적 보정된 각 모델 성능 비교는 아님",
+    "새 외부47개 라벨창은 Pose 입력이 있던 중첩 창의 조건부 비교이며 독립 사건/전체 경보 지표가 아님",
+    "외부 비라벨51창 보존. 움직임TCN 양성15창 중 새00800 주석 전 양성2창. 전체 오탐 감소로 해석하지 않음",
+    "00837은 추론300프레임 중 Pose 관측155프레임·마지막324/마지막 수집302. 원본330~540에 사람이 보이나 후반 입력이 없어 모델 비교에서 제외됨",
+    "영상PTS를 사용한 격리 입력이며 운영 시각·제품 로더/전처리 호환·GPU전체재생·실시간 속도는 미검증",
+    "새 원본2401프레임의 시작 지연 최대0.309초·전체 구간 차이 최대0.0034초. 원래 누락Pose는 복원하지 않음",
+    "전체 관절좌표/Transformer를 쓰지 않은 기존 경량TCN 실험이며 TCNTE/ST-GCN 논문 재현 아님",
+    "운영 선택모델·설정·제품206소스 불변; I37·I51 지연·원 I40/I34/I45 잔여 유지"
+  ],
+  "sha256": {
+    "plan.json": "e465372ad694824dfb128a2b3832e97b2ef828b6c24008f5e40b928833b9e820",
+    "fresh_manifest.jsonl": "023e252685f49dc43b6bbea9fa8487b9723847eaf4d7785fb9535f25a401360d",
+    "source_manifest.json": "778289446c5a3462edfe8ffbeab137f65161fc5ed46e108d875ad41c8b7bfb24",
+    "product_source_manifest.json": "23303e8679ea67f9a324fe61e06593e5f7f743403c69b99924da9a869a6b0725",
+    "run_captures.py": "73e0321174e30b61909c2fb20573b06a75deb3cd2e7af8e803b025919faa0c1f",
+    "capture.py": "d4908f54d6ae078cc300525d3becee1b5de821a10ae288ab469a0b9216b80bfa",
+    "sequence_input.py": "945b3543b4cbd28c490e5e5abdc2b7fe43aab42c48592d276c3b564ef465be14",
+    "check_sequence_input.py": "86ac2ae8fa49274ce8ee5f50486fcbe58f81eb89f7bc6c389152d2139c65fe63",
+    "run_comparison.py": "39531257d9ec8b7a780ecec46c49f35eae308d1cffaac5a735f58c7ce3a2e796",
+    "fresh_capture_checks.json": "2709beab89ec7b17a5a99a19794eeb40ccb60d4848c61a5c92d10f2ac389c29c",
+    "fresh_validation.jsonl": "a889b94c3dd6b31c1821ce0063d37b148a37cfbed711020fb95da9c4e61aa816",
+    "comparison.json": "131a66be9efea91b74ec7222a7e36f6aec2f43b749d11048215ad7eaf52e21e2",
+    "input_coverage.json": "4872a7d438f6f61ddcabcf2d282719f551a60ad2f78608ede0fc572d3dcb605c",
+    "window_predictions.json": "f120be8fd2521564bb81445c81156c23f7c590ede3caa4d39a7d99f792db5db1",
+    "scene_diagnostics.json": "e970dbaaf861d075bcb3197ea4c5535d23ff0a53f13f9dd7f4e953bfcc8731f7",
+    "triage/window_analysis.json": "407a2d3991edb5f22c3918c00ad72d163a4f49d1f0d8f64a1aa0e852ef074255",
+    "triage/summary.json": "4a600731ce3b426e93807c72bb97fe8923edd2ca99f0ed113b6336a5be4377f8",
+    "triage/frame_grid.json": "2e8c5564c075110de81f4fa07961f5809d0d34c7e558470d778f61757b9ef10b",
+    "triage/fresh_grid.json": "5cdb1fe8d523f8e5adb1f62de23e24959b955c80bd19678428e29cdb02472041",
+    "ordered15.pt": "55042b2c573f362df93d7478a9e1829ba76f0edb81f10f06422596dc322ff036",
+    "pts15.pt": "499a9de3d5b0a25d6731d41baa9ea512c99413df288fa8b40889fd5702bb468b",
+    "pts_motion20.pt": "5d2c81834d01b206c23f2803212d441b35b884953f8aa1fee4861054a9d7695a",
+    "ordered15_metrics.json": "26aaf99b00b25d2351a5bb937749895ef2064f9805e76dca981aa7f05cee9db0",
+    "pts15_metrics.json": "bce95134d45d234fe120d31339533602a06fc8d805fd1b37a615dc17eb66b1cf",
+    "pts_motion20_metrics.json": "a7b7ce64308e224b0bac74173edfd5ea46e507e27e4ef49fb0a2c6c4aef4b788",
+    "related.xml": "dfe605beb59f7a88da4df7864766a5773a6af055cf48cd8bd4d77a6317ebd05e",
+    "review.json": "8209f28379b62bcb2bca15e5b9a3c4666b860087e3a5d9bb62c3ba07230de943",
+    "operating_before.json": "7e4f3b164849160be952fe7745e8d15e57344d83db1f321699f6ff15a53a342e",
+    "operating_after.json": "7e4f3b164849160be952fe7745e8d15e57344d83db1f321699f6ff15a53a342e"
+  }
+}

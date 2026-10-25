@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CCTV·AIoT 모듈 흐름</title>
+<style>
+:root{color-scheme:light;--ink:#172b45;--muted:#52647c;--line:#dce5f0;--blue:#245ec7}*{box-sizing:border-box}body{margin:0;background:#f3f6fb;color:var(--ink);font:16px/1.65 system-ui,-apple-system,"Malgun Gothic",sans-serif}main{max-width:1400px;padding:28px 24px 48px;margin:auto}h1{font-size:clamp(26px,4vw,38px);margin:6px 0;letter-spacing:-.04em}h2{font-size:21px;margin:0 0 12px}p{margin:8px 0}a{color:var(--blue)}header{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:20px}.eyebrow{font-weight:700;font-size:13px;color:var(--blue)}.muted,small{color:var(--muted)}.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:18px}.notice{border-left:4px solid #cc8b25}.stats{display:flex;gap:32px;flex-wrap:wrap;margin:16px 0}.stats strong{font-size:26px;display:block}.stats span{font-size:13px;color:var(--muted)}button,.button{display:inline-block;font:inherit;color:var(--blue);border:1px solid var(--line);background:#fff;border-radius:8px;padding:9px 14px;text-decoration:none;cursor:pointer}button[aria-pressed="true"]{background:var(--blue);color:#fff;border-color:var(--blue)}button:focus-visible,a:focus-visible{outline:3px solid #e29c21;outline-offset:3px}nav{display:flex;flex-wrap:wrap;gap:8px}.viewer{padding:0;overflow:hidden}.toolbar{padding:18px 20px;border-bottom:1px solid var(--line)}iframe{display:block;width:100%;height:800px;border:0;background:#fff}.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.grid .card{margin-bottom:0}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:14px;text-align:left}th,td{padding:12px;border-bottom:1px solid var(--line);vertical-align:top}th{background:#f4f7fa}code{font-size:13px;overflow-wrap:anywhere}ul,ol{padding-left:22px}li{margin:7px 0}.status{color:#21613d;font-weight:650}.pending{color:#92610c;font-weight:650}footer{font-size:13px;color:var(--muted);margin-top:24px}.path{font-size:14px;font-weight:600;color:var(--blue)}@media(max-width:800px){main{padding:18px 12px}header{align-items:flex-start;flex-direction:column}.grid{grid-template-columns:1fr}.card{padding:16px}.viewer{padding:0}iframe{height:690px}.stats{gap:20px}th,td{padding:10px 8px}}
+</style>
+</head>
+<body><main>
+<header><div><p class="eyebrow">CCTV · AIoT / MODULE MAP</p><h1>모듈들이 연결되는 흐름</h1><p class="muted">2026-10-13 작업 소스 · code-review-graph 2.3.7</p></div><a class="button" href="index.html">WBS 진행판으로</a></header>
+<section class="card notice"><strong>코드 구조와 운영 관측을 함께 보는 스냅샷입니다.</strong><p>연결선은 데이터가 이동하는 경로입니다. 현재 메시지 수·지연·장치 성공 여부를 실시간으로 측정하지 않습니다. 새로고침은 게시된 화면을 다시 읽으며 운영 상태를 재수집하지 않습니다.</p><div class="stats"><div><strong>7,564</strong><span>코드 노드 · 시험 포함</span></div><div><strong>68,808</strong><span>정적 관계 · 실행 횟수 아님</span></div><div><strong>454</strong><span>정적 호출 흐름</span></div><div><strong>700</strong><span>그래프에 포함된 파일</span></div></div></section>
+<section class="card viewer" aria-label="모듈 연결 시각화"><div class="toolbar"><nav aria-label="그림 선택"><button type="button" data-view="system" aria-pressed="true">전체 모듈 흐름</button><button type="button" data-view="candidate" aria-pressed="false">입력 보존 후보</button><button type="button" data-view="graph" aria-pressed="false">code-review-graph 탐색</button><a id="open-view" href="system_module_flow.html" target="_blank" rel="noopener">그림만 크게 열기 ↗</a></nav><p id="view-note" class="muted" aria-live="polite">한국어 요약도입니다. 상자를 선택해 연결을 확인하고 확대할 수 있습니다.</p></div><iframe id="diagram" title="전체 모듈 흐름도" src="system_module_flow.html"></iframe></section>
+<div class="grid">
+<section class="card"><h2>이벤트 한 건은 이렇게 이동합니다</h2><ol><li><strong>영상·센서 입력:</strong> DeepStream이 AI 이벤트를 만들고, TLV 파서는 센서값을 해석합니다.</li><li><strong>MQTT 전달·규칙:</strong> Action의 직접 구독과 eKuiper를 거치는 경로가 함께 있습니다. 모든 AI 이벤트가 규칙을 통과하는 구조는 아닙니다.</li><li><strong>Action 판단:</strong> 입력 정규화·사이트/정책 적용 후 장치별 명령을 생성하고 실행 이력을 기록합니다.</li><li><strong>장치 명령·결과:</strong> Device Service가 장치 프로토콜로 출력하고, 결과 MQTT를 Action이 받아 상태를 갱신합니다.</li></ol><p class="path">저장 ACK → 입력 처리 완료 → 장치 결과 → 실물 확인은 각각 다른 확인 단계입니다.</p></section>
+<section class="card"><h2>이번 후보에서 바뀐 구간</h2><p><strong>MQTT 수신 → SQLite 원본 저장 → ACK</strong>를 먼저 끝내고, 별도 작업자가 기존 Action 처리를 호출합니다.</p><ul><li>느린 장치 처리 중에도 후속 입력을 저장합니다.</li><li>재시작 잔여 입력·실행 결과가 불명확한 입력은 보류합니다.</li><li>수신 전용 모드는 장치 명령과 HTTP 전달을 실행하지 않습니다.</li><li>자동 재개는 P3.1 우선순위·만료·장치별 순서 검증 후 결정합니다.</li></ul><p class="pending">운영 기본 OFF · 후보 시험 통과 · 실제 전환/실물 검증 남음</p></section>
+</div>
+<section class="card" style="margin-top:18px"><h2>운영 관측과 적용 상태</h2><p class="muted">컨테이너 확인: 2026-10-13 09:42 KST. 앞선 대조 이후 아래 5개의 ID·이미지·시작 시각이 동일했습니다. running은 프로세스 상태이며 전체 기능 합격을 뜻하지 않습니다.</p><div class="table-wrap"><table><thead><tr><th>모듈</th><th>관측 상태</th><th>확인할 점</th></tr></thead><tbody>
+<tr><td>cctv-ai-engine</td><td class="status">running</td><td>영상 입력·추론·이벤트 발행. 현재 연결 1대와 목표 실물 4대는 구분합니다.</td></tr>
+<tr><td>edgex-kuiper</td><td class="status">running</td><td>08:49 규칙 대조: AI 3개 출력 QoS0, 센서 5개 QoS1. 후보 AI 3개는 QoS1로 변경했습니다.</td></tr>
+<tr><td>cctv-action-layer</td><td class="status">running</td><td>운영 영속 입력 옵션 미활성. 현재 작업 소스·후보 이미지와 운영 실행 상태는 다릅니다.</td></tr>
+<tr><td>cctv-device-signboard</td><td class="status">running</td><td>새 장치 이력 후보 전환·최종 이관·실물 재시험은 별도 작업입니다.</td></tr>
+<tr><td>cctv-kuiper-rule-loader</td><td class="pending">created · 미실행</td><td>현재 자동 실행하지 않았습니다. 규칙 전환·복귀 절차는 별도 검증이 필요합니다.</td></tr>
+</tbody></table></div><p class="muted">센서는 현장 접근·게이트웨이 전원·장치 ID 확인 대기, 스피커는 전원·현장 청취 대기, 사이렌은 미보유입니다. 이 화면에서 장치를 제어하는 기능은 없습니다.</p></section>
+<section class="card"><h2>코드에서 직접 찾아보기</h2><p>세 번째 탭은 code-review-graph가 생성한 실제 탐색 화면입니다. 36개 자동 그룹과 미분류 1개를 먼저 표시하며, <strong>그룹을 더블클릭</strong>하면 내부 함수·클래스 관계를 볼 수 있습니다. 검색·종류/관계 필터로 범위를 좁혀 보세요.</p><div class="table-wrap"><table><thead><tr><th>찾을 모듈</th><th>관련 파일</th><th>관계의 근거</th></tr></thead><tbody>
+<tr><td>AI 이벤트 발행</td><td><code>src/core/deepstream_processor.py</code><br><code>src/canonical_event.py</code></td><td>코드 그래프 + 이벤트 계약</td></tr>
+<tr><td>Action 입력 분기</td><td><code>src/services/action_bridge.py</code><br><code>_process_mqtt_payload → _dispatch_command / _handle_edgex_result / _handle_event</code></td><td>code-review-graph의 callees_of 확인</td></tr>
+<tr><td>새 입력 보존</td><td><code>src/services/action_mqtt_intake.py</code><br><code>accept → accept_mqtt / _process → prepare·complete·quarantine</code></td><td>그래프 + 실제 코드/회귀/MQTT 시험. 동적 handler 연결은 코드로 보완</td></tr>
+<tr><td>명령·결과</td><td><code>src/services/device_command_transport.py</code><br><code>src/services/edgex_result_handler.py</code></td><td>호출/의존 관계 + 명령/응답 시험</td></tr>
+<tr><td>센서 병렬 전달</td><td><code>parser-python/mqtt/edgex_forwarder.py</code></td><td>MQTT와 Core Data HTTP가 갈라짐. 전체 그림에서 HTTP 저장 가지는 생략</td></tr>
+</tbody></table></div><p class="muted">정적 분석은 MQTT·HTTP의 실제 전송이나 동적 콜백 호출을 모두 복원하지 못합니다. 한국어 요약도는 그래프에 코드·설정 근거를 보완해 작성했습니다. 시험 관계나 그래프 위험 점수만으로 실행 성공·미시험 결함을 판정하지 않습니다.</p></section>
+<footer><p>구조도 2개: Archify showcase 검사 각각 9/9, 오류·경고 0. Chrome/Chromium 부재로 실제 브라우저 조작·화면 크기별 검증은 미실행입니다. 고정 뷰어 메뉴는 영어입니다.</p><p>그래프의 파서 격리 환경 문제를 작업용 환경으로 우회해 다시 생성했습니다. 전역 MCP 실행 환경 수정은 하지 않았으므로 이후 재생성은 기록된 작업용 명령을 사용합니다. D3는 도구의 SHA384와 일치하는 로컬 파일을 사용합니다.</p><p>WBS 완료 9/33 유지 · 다음 개발: P3.1 우선순위·만료 정책 · 2026년 12월 POC 필수</p></footer>
+</main><script>
+// 후보 기능을 운영 중인 경로로 오해하지 않도록 그림별 설명과 제목을 함께 바꾼다.
+const views = {
+  system: {file: 'system_module_flow.html', title: '전체 모듈 흐름도', note: '한국어 요약도입니다. 상자를 선택해 연결을 확인하고 확대할 수 있습니다.'},
+  candidate: {file: 'action_intake_flow.html', title: '운영 미반영 입력 보존 후보', note: '로컬·후보 시험을 통과한 변경 구간입니다. 운영 적용과 보류 입력 자동 재개는 아직 남아 있습니다.'},
+  graph: {file: 'code_review_graph.html', title: 'code-review-graph 코드 관계 탐색', note: '36개 자동 그룹 + 미분류 1개. 그룹을 더블클릭해 내부 관계를 펼치세요. 약 7.3MB의 정적 그래프이며 실시간 실행 추적은 아닙니다.'}
+};
+document.querySelectorAll('[data-view]').forEach(button => button.addEventListener('click', () => {
+  const view = views[button.dataset.view];
+  document.querySelectorAll('[data-view]').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+  const frame = document.getElementById('diagram');
+  frame.src = view.file; frame.title = view.title;
+  document.getElementById('open-view').href = view.file;
+  document.getElementById('view-note').textContent = view.note;
+}));
+</script></body></html>

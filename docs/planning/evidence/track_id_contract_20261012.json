@@ -1,0 +1,766 @@
+{
+  "updated_at": "2026-10-12T14:12:49.014635+09:00",
+  "wbs": "P5.1",
+  "issue": "I63",
+  "status": "RESOLVED",
+  "plan": {
+    "wbs": "P5.1/I63",
+    "question": "큰 추적 ID를 보존하는 전송 규격으로 eKuiper 입력 오류를 제거할 수 있는가",
+    "change": "내부 정수 유지·외부 ID만 정규 10진 문자열/null, eKuiper object_id STRING",
+    "acceptance": [
+      "0/큰 ID/인접 ID/미추적·잘못된 값의 계약 및 재전송·수신 회귀",
+      "독립 broker/eKuiper에서 기존 오류 재현·문자열 후보 입력/출력 대조",
+      "운영 미변경·기존 기록 ID와 DB 원본 보존"
+    ],
+    "time_limit_minutes": 60,
+    "deployment": "미승인 단계: 로컬 규격·코드·격리 검증만; 운영 스택/규칙/장치 변경 없음"
+  },
+  "contract": "docs/features/EVENT_SCHEMA_STANDARD.md#추적-id-계약--2026-10-12--i63",
+  "cause": {
+    "observed_id": "12123278610165399591",
+    "hex": "0xA83E89AA00000027",
+    "upper32_random": 2822670762,
+    "lower32_sequence": 39,
+    "tracker": "config_tracker_iou.yml / useUniqueID: 1",
+    "int64_max": "9223372036854775807",
+    "official_reference": "https://docs.nvidia.com/metropolis/deepstream/7.1/text/DS_plugin_gst-nvtracker.html",
+    "reference_error": [
+      "decode failed: strconv.ParseInt: parsing \"12123278610165399591\": value out of range"
+    ]
+  },
+  "implementation": {
+    "files": [
+      "src/video_observation.py",
+      "src/canonical_event.py",
+      "src/protocols/mqtt_publisher.py",
+      "src/edgex/_payload_mixin.py",
+      "kuiper/rules/cctv_intrusion_rules.json",
+      "tests/test_track_id_contract.py",
+      "tests/test_video_observation.py",
+      "tests/test_event_publish.py"
+    ],
+    "external_track_id": "정규 ASCII 10진 문자열/null; 0..18446744073709551614",
+    "internal_track_id": "정수 유지",
+    "canonical_conversion": "기존 event_id 계산 뒤 알려진 추적 ID 필드만 재귀 변환",
+    "mqtt_outbox": "이전 숫자 메시지도 발행 직전 변환; 저장된 event_id 유지",
+    "kuiper": "object_id STRING; 중첩 raw/observation/metadata 참조도 송신 측 변환",
+    "schema_version": "외곽1.0 유지; 숫자 전용 소비자에는 필드 타입 호환 변경이 아니므로 함께 반영",
+    "db_migration": false,
+    "dependencies_added": 0
+  },
+  "validation": {
+    "final_pytest": [
+      {
+        "artifact": "data/runtime/track_id_contract_20261012/final_regression.xml",
+        "tests": 150,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      {
+        "artifact": "data/runtime/track_id_contract_20261012/ingest_consumer_regression.xml",
+        "tests": 45,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    ],
+    "total_passed": 195,
+    "ruff": "PASS",
+    "isolated_ekuiper": {
+      "version": "1.11.4",
+      "status": "PASS",
+      "cases": [
+        {
+          "input_id": "0",
+          "output_id": "0",
+          "passed": true
+        },
+        {
+          "input_id": "39",
+          "output_id": "39",
+          "passed": true
+        },
+        {
+          "input_id": "9007199254740992",
+          "output_id": "9007199254740992",
+          "passed": true
+        },
+        {
+          "input_id": "9223372036854775808",
+          "output_id": "9223372036854775808",
+          "passed": true
+        },
+        {
+          "input_id": "12123278610165399591",
+          "output_id": "12123278610165399591",
+          "passed": true
+        },
+        {
+          "input_id": "12123278610165399592",
+          "output_id": "12123278610165399592",
+          "passed": true
+        },
+        {
+          "input_id": "18446744073709551614",
+          "output_id": "18446744073709551614",
+          "passed": true
+        },
+        {
+          "input_id": "None",
+          "output_id": null,
+          "passed": true
+        },
+        {
+          "input_id": "18446744073709551615",
+          "output_id": null,
+          "passed": true
+        }
+      ],
+      "counters": {
+        "source_i63_candidate_0_records_in_total": 9,
+        "source_i63_candidate_0_records_out_total": 9,
+        "source_i63_candidate_0_exceptions_total": 0,
+        "op_2_project_0_records_in_total": 9,
+        "op_2_project_0_records_out_total": 9,
+        "op_2_project_0_exceptions_total": 0,
+        "sink_mqtt_0_0_records_in_total": 9,
+        "sink_mqtt_0_0_records_out_total": 9,
+        "sink_mqtt_0_0_exceptions_total": 0
+      },
+      "network": "none / shared only by two disposable containers",
+      "gpu": false,
+      "cleanup": {
+        "652bf0c46cf4cfc763ba74be431a5282a82a279058a1a30e91a0100d40d628e4": 0,
+        "92ce7544369bd3eada6108951c7ad6641c4cc76ca5fa913c79b9c7f0005df6dc": 0
+      }
+    },
+    "prior_attempts": [
+      {
+        "artifact": "data/runtime/track_id_contract_20261012/regression.xml",
+        "result": "167 PASS/3 FAIL; 센서 object_id까지 문자열로 기대한 시험 수정 오류. 기대값을 원복하고 최종195 PASS 확인; 제품 센서 계약 변경 없음"
+      },
+      {
+        "artifact": "data/runtime/track_id_contract_20261012/ekuiper_first_harness_error.json",
+        "result": "관찰기에서 MQTT sink의 단일행 배열을 객체로 잘못 가정. 배열 행을 읽도록 수정"
+      },
+      {
+        "artifact": "data/runtime/track_id_contract_20261012/ekuiper_second_harness_error.json",
+        "result": "관찰기에서 기존5필드 스트림이 event_id도 전달한다고 잘못 가정. 원본 스키마 투영 범위로 검증; 기존 I61 잔여를 별도로 보존"
+      }
+    ],
+    "git_diff_check": "PASS"
+  },
+  "production": {
+    "deployed": false,
+    "containers_unchanged": true,
+    "before": {
+      "/cctv-ai-engine": {
+        "id": "a6ae82976cadfc0b022124a59f9b3834a286b14794c49aab1e7b35e4d571e0bf",
+        "image": "sha256:294e52234fc170904e2a09b180b422e0562d6e11b5aa28ebcf287a1b47c9ed55",
+        "started_at": "2026-10-12T04:28:54.631579965Z"
+      },
+      "/edgex-kuiper": {
+        "id": "6249a0c22b5712d01242c176abfce736685579514bfb389952062c3fd9392576",
+        "image": "sha256:7f4962946a721ece5ec630150e47614c4a461ee2c29600f24d96ef5e35a9d4da",
+        "started_at": "2026-10-12T04:25:27.149894272Z"
+      },
+      "/cctv-action-layer": {
+        "id": "74deaeb0b5bdd64c8f2e2a141daa25c193a75cf235b214fee6ef8b4dcdceedeb",
+        "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+        "started_at": "2026-10-12T04:28:54.273675553Z"
+      },
+      "/cctv-device-signboard": {
+        "id": "29aeb393bd52e7a9f8241be9214b970e82e8442253fdfe2e73dbbf5d153feaa8",
+        "image": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+        "started_at": "2026-10-12T04:27:09.237102198Z"
+      }
+    },
+    "after": {
+      "/cctv-ai-engine": {
+        "id": "a6ae82976cadfc0b022124a59f9b3834a286b14794c49aab1e7b35e4d571e0bf",
+        "image": "sha256:294e52234fc170904e2a09b180b422e0562d6e11b5aa28ebcf287a1b47c9ed55",
+        "started_at": "2026-10-12T04:28:54.631579965Z"
+      },
+      "/edgex-kuiper": {
+        "id": "6249a0c22b5712d01242c176abfce736685579514bfb389952062c3fd9392576",
+        "image": "sha256:7f4962946a721ece5ec630150e47614c4a461ee2c29600f24d96ef5e35a9d4da",
+        "started_at": "2026-10-12T04:25:27.149894272Z"
+      },
+      "/cctv-action-layer": {
+        "id": "74deaeb0b5bdd64c8f2e2a141daa25c193a75cf235b214fee6ef8b4dcdceedeb",
+        "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+        "started_at": "2026-10-12T04:28:54.273675553Z"
+      },
+      "/cctv-device-signboard": {
+        "id": "29aeb393bd52e7a9f8241be9214b970e82e8442253fdfe2e73dbbf5d153feaa8",
+        "image": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+        "started_at": "2026-10-12T04:27:09.237102198Z"
+      }
+    },
+    "writes": false,
+    "physical_output": false,
+    "new_gpu_run": false,
+    "latency_or_throughput_improvement_measured": false,
+    "scope": "앞선 로컬 규격·격리 검증 시점"
+  },
+  "limits": [
+    "운영 AI 이미지/스트림 미반영: 운영 입력 오류 해결 및 전체 경로 합격 아님",
+    "eKuiper 기존 스키마5필드 투영은 event_id/raw/observation을 출력하지 않음; I61 잔여",
+    "기존 DB/모니터링 wire와 해시·검색API legacy track_id 정수는 유지; 정확한 검색 ID는 track_id_text",
+    "카메라/세대/실행 안의 추적 참조이며 영속 세션ID 및 실행 간 동일인 병합 미지원",
+    "전체 테스트/빌드·GPU 성능·장시간/실물 시험 미실행"
+  ],
+  "next": "P3.3 상시 대상 매핑·규칙 이벤트 식별자 전달·중복 실행 결과의 미완료 범위 확인",
+  "artifacts_sha256": {
+    "src/video_observation.py": "7746c27194bf4226ffb0e9a31244e07faadc28af847336afd05b31a5f8c90317",
+    "src/canonical_event.py": "e01d8a72f3560348ded5f8469a4214eb6f7e9bf377b031b2d8af36c657063bc2",
+    "src/protocols/mqtt_publisher.py": "2bdfe3dcdac76d4d5119ef9f9c9ef6b70f65ec2001b8bbce70ebf37b16d4193d",
+    "src/edgex/_payload_mixin.py": "a234afd2d56444f528f926e0ad271f2a9f1dbb6582e81c9afdd947c005470e48",
+    "kuiper/rules/cctv_intrusion_rules.json": "98983917301c9c01844f1aa63eda51a0dd452979ec34e68e6f1bea0334d67894",
+    "tests/test_track_id_contract.py": "2509d0ff0f18ccbea5010198232b9f961b569908ae1da9cd4b6918ff78d1b382",
+    "tests/test_video_observation.py": "88818df8f1e7d1330b06786c1617c90ee23bb4a1785d1d2df4cbeedb38fc96b4",
+    "tests/test_event_publish.py": "edcc3357b46e5217093ac2ea93a090a5f7b38052747031b11d2f068a766486a5",
+    "data/runtime/track_id_contract_20261012/final_regression.xml": "33469494fbe728cb9185169ba308d627c5e961761326135859fc74fdfe9f7683",
+    "data/runtime/track_id_contract_20261012/ingest_consumer_regression.xml": "104c7ab3cba80bdf250f5a4c7c8f1afb05edff94febc825e8386330c022a0b53",
+    "data/runtime/track_id_contract_20261012/ekuiper_validation.json": "1dd101346567b10ae82bad6ebe7afd7f2f92fcdf7cc56dc0184bd5227404d951",
+    "data/runtime/track_id_contract_20261012/validate_ekuiper.py": "f321b6bd3ce1a6165232d7c636471cdb1f7f9832202ae137041da95f809d813f",
+    "data/runtime/track_id_contract_20261012/regression.xml": "ae9a75cfb34e3701f825d538d6413e2e765c7f5d761575dcb974c30acb8fbdc0",
+    "data/runtime/track_id_contract_20261012/canonical_recheck.xml": "81a48ca86227a3b29a62482286bc61b576b2bb0a5f29662a71b681f55c5e4247",
+    "data/runtime/track_id_contract_20261012/ekuiper_first_harness_error.json": "1a7dc15802b06161f044ba9fc1165dad1c7eced707b770dc470c695583f31829",
+    "data/runtime/track_id_contract_20261012/ekuiper_second_harness_error.json": "6b73cc1544cc9e93d709a8bd15649cf5b647c734cbe6b184f072baecc0ff41f6"
+  },
+  "progress": {
+    "wbs_done": 9,
+    "wbs_total": 33,
+    "wbs_status_changes": false,
+    "model_results_rows": 8,
+    "publication": [
+      {
+        "url": "http://192.168.2.242:18081/index.html",
+        "status": 200,
+        "matches_local": true,
+        "sha256": "bd86fd45b9828687ce1eb0b682dfeff644c76ccead43ce63fc8afd479f50bf02"
+      },
+      {
+        "url": "http://192.168.2.242:18081/CCTV_project_progress.pdf",
+        "status": 200,
+        "matches_local": true,
+        "sha256": "a1fa56a038d7186cf86daa291bd094f62057f32d265377bff1e0ba4f12641395"
+      }
+    ],
+    "visual_check": "첫 PNG 레이아웃·한글·최신 규격/미배포 표기 확인"
+  },
+  "deployment_20261012": {
+    "completed_at": "2026-10-12T14:54:25.649345+09:00",
+    "user_authorized": true,
+    "status": "PASS",
+    "deployed": true,
+    "issue_status": "RESOLVED",
+    "plan": {
+      "started_at": "2026-10-12T14:18:07.508338+09:00",
+      "user_authorized": true,
+      "wbs": "P5.1/I63",
+      "question": "현재 운영 구성에서 추적 ID를 보존하고 AI 규칙의 decode 오류를 해소하는가",
+      "change": "기존294e 기반 AI 제품4파일 및 STRING 스트림/로더 이미지",
+      "acceptance": [
+        "제품4파일만 차이·환경/명령/마운트 유지·기동 프로필/복귀안 보존",
+        "AI healthy·영상 처리/추론 복구·운영 이벤트 ID 문자열·AI3규칙 입력 예외 증가0",
+        "실제 새 입력 처리와 DB 기록 지속·관제 readiness·비대상 서비스 유지"
+      ],
+      "time_limit_minutes": 60,
+      "rollback": "기존294e 이미지/프로필 및 BIGINT 스트림 정의; DB 되감기 없음",
+      "physical_test_output": false
+    },
+    "apply": {
+      "steps": [
+        {
+          "at": "2026-10-12T14:37:53.279819+09:00",
+          "step": "preconditions_passed"
+        },
+        {
+          "at": "2026-10-12T14:37:57.301184+09:00",
+          "step": "previous_ai_stopped"
+        },
+        {
+          "at": "2026-10-12T14:37:57.425967+09:00",
+          "step": "string_stream_and_three_rules_running"
+        },
+        {
+          "at": "2026-10-12T14:38:13.901222+09:00",
+          "step": "candidate_ai_ready",
+          "image": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+          "id": "3ced24f40fc9897300c306d94f5a450a689dc86b9c62e5fac98db06c63c1ab6b",
+          "started_at": "2026-10-12T05:38:00.846787756Z",
+          "health": {
+            "service": "cctv-zone-api",
+            "status": "ok",
+            "checked_at": "2026-10-12T14:38:13.844193+09:00",
+            "camera_count": 1,
+            "preset_count": 0,
+            "video_ready": true
+          }
+        }
+      ],
+      "status": "APPLIED_READY_FOR_OBSERVATION",
+      "rollback_attempted": false
+    },
+    "transition_to_video_ready_seconds": 20.621403,
+    "image": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+    "previous_image": "sha256:294e52234fc170904e2a09b180b422e0562d6e11b5aa28ebcf287a1b47c9ed55",
+    "ai_source_files_compared": 206,
+    "ai_source_files_changed": [
+      "canonical_event.py",
+      "video_observation.py",
+      "protocols/mqtt_publisher.py",
+      "edgex/_payload_mixin.py"
+    ],
+    "loader": {
+      "id": "6bb51352f9dc42b80a9d41e9b5bbea55c2f7747f6e17b6317f2dcb8f14c0cc7b",
+      "image": "sha256:2f22e8c91de618d6e9378ca55f8f7ce0980de6bccffdf37f6cd7363be3a51ff8",
+      "status": "created",
+      "executed": false,
+      "other_containers_unchanged": true,
+      "stream_type": "string"
+    },
+    "loader_files_compared": 172,
+    "configuration": {
+      "checks": {
+        "image": true,
+        "environment": true,
+        "command": true,
+        "working_dir": true,
+        "no_build": true,
+        "mounts": true
+      },
+      "env_count": 243,
+      "mount_count": 18,
+      "image": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+      "loader_image": "cctv-kuiper-loader:track-id-20261012-01",
+      "working_dir_source": "unchanged image Config.WorkingDir=/app; Compose inherits it"
+    },
+    "validation": {
+      "local_contract_tests": 195,
+      "local_contract_source": "local validation in this same evidence file",
+      "deployment_regression": {
+        "passed": 61,
+        "artifact": "data/runtime/track_id_deployment_20261012/compose_regression.xml"
+      },
+      "image_boundary_cases": [
+        "0",
+        "39",
+        "9007199254740992",
+        "9223372036854775808",
+        "12123278610165399591",
+        "12123278610165399592",
+        "18446744073709551614"
+      ],
+      "image_contains_pytest": false,
+      "rollback_simulation": [
+        {
+          "case": "successful_apply",
+          "passed": true
+        },
+        {
+          "case": "startup_failure_rollback",
+          "passed": true
+        }
+      ],
+      "before_video": {
+        "metric_samples": 10,
+        "metric_errors": 0,
+        "probe_errors": "",
+        "observer_is_packet_timing_not_decode_or_unique_frame_fps": true,
+        "metric_seconds": 27.49970561100008,
+        "rates": {
+          "cctv_processor_frames_processed_total": 29.963957129431744,
+          "cctv_processor_pipeline_restart_executed_total": 0.0,
+          "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 15.018342590358387
+        },
+        "max_frame_age": 0.0483070109999062,
+        "output": {
+          "packets": 720,
+          "seconds": 24.974516920000042,
+          "packets_per_second": 28.789345647931707,
+          "max_observed_arrival_gap": 0.20295570500002214,
+          "max_pts_step": 0.1413109999999982,
+          "pts_steps_over_100ms": 10,
+          "negative_pts_steps": 0
+        }
+      },
+      "after_video": {
+        "metric_samples": 59,
+        "metric_errors": 0,
+        "probe_errors": "",
+        "observer_is_packet_timing_not_decode_or_unique_frame_fps": true,
+        "metric_seconds": 177.08024027100055,
+        "rates": {
+          "cctv_processor_frames_processed_total": 29.958170329345158,
+          "cctv_processor_pipeline_restart_executed_total": 0.0,
+          "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 14.98190874340296
+        },
+        "max_frame_age": 0.08213533899925096,
+        "output": {
+          "packets": 5043,
+          "seconds": 175.01897419600027,
+          "packets_per_second": 28.80830506041913,
+          "max_observed_arrival_gap": 0.2517175089997181,
+          "max_pts_step": 0.1875220000000013,
+          "pts_steps_over_100ms": 60,
+          "negative_pts_steps": 0
+        }
+      },
+      "rules": {
+        "seconds": 562.0358033180237,
+        "rules_running": 8,
+        "rules_unchanged": true,
+        "ai_rules": {
+          "intrusion_5s_persist": {
+            "input_before": 82,
+            "input_after": 235,
+            "new_inputs": 153,
+            "exceptions": 0
+          },
+          "intrusion_confidence_filter": {
+            "input_before": 82,
+            "input_after": 235,
+            "new_inputs": 153,
+            "exceptions": 0
+          },
+          "intrusion_high_confidence_routing": {
+            "input_before": 82,
+            "input_after": 235,
+            "new_inputs": 153,
+            "exceptions": 0
+          }
+        },
+        "sensor_inputs": 0
+      },
+      "mqtt": {
+        "messages": 40,
+        "ai_messages": 28,
+        "filtered_messages": 12,
+        "matched_source_and_filtered": 12,
+        "unique_track_ids": [
+          "9364595414860300288",
+          "9364595414860300294",
+          "9364595414860300295",
+          "9364595414860300296",
+          "9364595414860300297",
+          "9364595414860300298",
+          "9364595414860300299",
+          "9364595414860300300",
+          "9364595414860300301"
+        ],
+        "all_ids_string_or_null": true,
+        "valid_observation_ids_are_strings": true,
+        "synthetic_input": false
+      },
+      "db_backup": {
+        "appearances.db": {
+          "quick_check": "ok",
+          "tables": {
+            "search_conditions": 0,
+            "appearance_log": 638484
+          },
+          "bytes": 873885696,
+          "snapshot_rows_match": null,
+          "seconds": 1.2682986680001704,
+          "validation_scope": "앞선 완료 백업의 quick_check·행 수 확인. 원본 동시 시점 행 수를 별도 비교하지 않음"
+        },
+        "mqtt_event_outbox.db": {
+          "quick_check": "ok",
+          "tables": {
+            "mqtt_event_outbox": 77301
+          },
+          "bytes": 3103817728,
+          "snapshot_rows_match": true,
+          "seconds": 99.45972825599983
+        },
+        "commercial_faces.db": {
+          "quick_check": "ok",
+          "tables": {
+            "face_persons": 1,
+            "face_samples": 1
+          },
+          "bytes": 28672,
+          "snapshot_rows_match": true,
+          "seconds": 0.014173853000102099
+        }
+      },
+      "db_after": {
+        "mqtt_event_outbox.db": {
+          "preserved_identity_or_payload_samples": 20,
+          "current_rows": 77567,
+          "new_id_advanced": true,
+          "backup_latest_id": 1152858,
+          "latest_id": 1153124,
+          "quick_check": "ok",
+          "captured_event_ids_and_track_ids_matched": 28
+        },
+        "appearances.db": {
+          "preserved_identity_or_payload_samples": 20,
+          "current_rows": 639002,
+          "new_id_advanced": true,
+          "backup_latest_id": 638484,
+          "latest_id": 639002,
+          "quick_check": "ok"
+        }
+      },
+      "runtime": {
+        "containers": {
+          "/cctv-ai-engine": {
+            "id": "3ced24f40fc9897300c306d94f5a450a689dc86b9c62e5fac98db06c63c1ab6b",
+            "image": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+            "started_at": "2026-10-12T05:38:00.846787756Z",
+            "health": "healthy",
+            "restart_count": 0
+          },
+          "/edgex-kuiper": {
+            "id": "6249a0c22b5712d01242c176abfce736685579514bfb389952062c3fd9392576",
+            "image": "sha256:7f4962946a721ece5ec630150e47614c4a461ee2c29600f24d96ef5e35a9d4da",
+            "started_at": "2026-10-12T04:25:27.149894272Z",
+            "health": null,
+            "restart_count": 0
+          },
+          "/cctv-action-layer": {
+            "id": "74deaeb0b5bdd64c8f2e2a141daa25c193a75cf235b214fee6ef8b4dcdceedeb",
+            "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+            "started_at": "2026-10-12T04:28:54.273675553Z",
+            "health": "healthy",
+            "restart_count": 0
+          },
+          "/cctv-media-server": {
+            "id": "957101f7ab7336585817a176154f7711de977caee7cfbf34257f2fb68810dea4",
+            "image": "sha256:f8628851106cc053f9175b248050bb5f362a6e65abd72297c167a1cb5a9a3be2",
+            "started_at": "2026-10-12T04:28:53.455342218Z",
+            "health": null,
+            "restart_count": 0
+          },
+          "/cctv-device-signboard": {
+            "id": "29aeb393bd52e7a9f8241be9214b970e82e8442253fdfe2e73dbbf5d153feaa8",
+            "image": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+            "started_at": "2026-10-12T04:27:09.237102198Z",
+            "health": "healthy",
+            "restart_count": 1
+          },
+          "/cctv-public-api": {
+            "id": "28d279243701d04222733fa664e92f436953a02e2d4e4d3b39a6a4dedf81335e",
+            "image": "sha256:ca4376b086a99f2ad42d2132cb21b1cf75178571fae530ec464c1ed071f3175c",
+            "started_at": "2026-10-12T04:29:00.056079487Z",
+            "health": "healthy",
+            "restart_count": 0
+          }
+        },
+        "non_target_containers_unchanged": true,
+        "ai_configuration_unchanged": {
+          "Cmd": true,
+          "WorkingDir": true,
+          "Env": true,
+          "Mounts": true
+        },
+        "env_count": 243,
+        "mount_count": 18,
+        "source_files_matched": 206,
+        "health": {
+          "ai": {
+            "http": 200,
+            "body": {
+              "service": "cctv-zone-api",
+              "status": "ok",
+              "checked_at": "2026-10-12T14:51:30.830962+09:00",
+              "camera_count": 1,
+              "preset_count": 0,
+              "video_ready": true
+            }
+          },
+          "public": {
+            "http": 200,
+            "body": {
+              "success": true,
+              "data": {
+                "status": "ready",
+                "service": "cctv-public-api",
+                "checked_at": "2026-10-12T14:51:30.838692+09:00",
+                "dependencies": [
+                  {
+                    "name": "action-layer",
+                    "url": "http://cctv-action-layer:8080/health",
+                    "status": "up",
+                    "status_code": 200
+                  },
+                  {
+                    "name": "alert-api",
+                    "url": "http://cctv-alert-api:8000/health",
+                    "status": "up",
+                    "status_code": 200
+                  },
+                  {
+                    "name": "ai-engine-zone-api",
+                    "url": "http://cctv-ai-engine:8765/health",
+                    "status": "up",
+                    "status_code": 200
+                  },
+                  {
+                    "name": "ai-engine-model-api",
+                    "url": "http://cctv-ai-engine:8766/health",
+                    "status": "up",
+                    "status_code": 200
+                  },
+                  {
+                    "name": "ai-engine-face-api",
+                    "url": "http://cctv-ai-engine:8767/health",
+                    "status": "up",
+                    "status_code": 200
+                  },
+                  {
+                    "name": "ai-engine-stream-api",
+                    "url": "http://cctv-ai-engine:8769/health",
+                    "status": "up",
+                    "status_code": 200
+                  }
+                ],
+                "resources": {
+                  "file_descriptors": {
+                    "status": "ok",
+                    "open": 16,
+                    "soft_limit": 65536,
+                    "hard_limit": 65536,
+                    "usage_ratio": 0.0002,
+                    "remaining": 65520
+                  }
+                }
+              },
+              "error": null,
+              "timestamp": "2026-10-12T14:51:30.838692+09:00"
+            }
+          },
+          "signboard": {
+            "http": 200,
+            "body": {
+              "service": "cctv-device-signboard",
+              "status": "up"
+            }
+          }
+        },
+        "autostart": {
+          "same_profile_path": true,
+          "profile_sha256": "f19766ac0f900a404dae8634ce0a3b556304dcb675d947746e6cc9a78255ddb7",
+          "loaded_service": "Result=success\nExecStart={ path=/usr/bin/docker ; argv[]=/usr/bin/docker compose --env-file .env.jetson -p edgex-jetson -f docker-compose.jetson.yml -f data/runtime/live_refresh_20261008/candidate.yml up -d --no-build --pull never --force-recreate --timeout 60 cctv-ai-engine cctv-public-api public-demo-ui ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }\nActiveState=active\nNeedDaemonReload=no\n"
+        },
+        "new_reboot_tested": false,
+        "log_error_counts": {
+          "Traceback": 0,
+          "Segmentation fault": 0,
+          "Fatal Python error": 0,
+          "decode failed": 0,
+          "value out of range": 0
+        }
+      },
+      "ruff": "PASS",
+      "git_diff_check": "PASS"
+    },
+    "schema_update_reference": "https://ekuiper.org/docs/en/v1.11/api/restapi/streams.html",
+    "production_changes": [
+      "AI image 294e→d95f with four I63 source files only",
+      "ai_events_stream object_id BIGINT→STRING; existing AI three rules stop/start; definitions unchanged",
+      "current startup profile same path now points to d95f",
+      "Compose loader image 2f22 and stopped loader container recreated without executing"
+    ],
+    "rollback": {
+      "ai_profile": "data/runtime/track_id_deployment_20261012/rollback.yml",
+      "ai_only_command": "data/runtime/track_id_deployment_20261012/rollback_up.sh",
+      "coupled_stream_procedure": "data/runtime/track_id_deployment_20261012/apply.py switch_stream(old_sql) / activate(rollback.yml)",
+      "rule_definitions": "data/runtime/track_id_deployment_20261012/kuiper_before.json",
+      "db_restore_required": false,
+      "tested": "success/failure rollback simulation only; live rollback not executed"
+    },
+    "preparation_issues": [
+      {
+        "stage": "first_image_build",
+        "error": "Dockerfile FROM sha256:ID가 로컬 이미지 ID가 아닌 원격 저장소명으로 해석돼 빌드 실패",
+        "correction": "검증한 기존 이미지 ID에 전용 로컬 태그를 붙이고 FROM에서 사용; 운영 변경 없음"
+      },
+      {
+        "stage": "compose_preflight",
+        "error": "검사기가 Compose 생략 working_dir를 이미지 상속값과 다르게 판단",
+        "correction": "실제 이미지 Config.WorkingDir=/app까지 해석하여 현재 운영과 동일함 확인; 실행 설정 변경 없음"
+      },
+      {
+        "stage": "online_db_backup",
+        "error": "지속 쓰기 중 mqtt_event_outbox.db 온라인 복사가 길어져 해당 백업 프로세스만 종료",
+        "correction": "원본 WAL 읽기 트랜잭션을 고정하는 스냅샷 복사로 전환; 미완성 복사본은 .incomplete로 분리; 운영 프로세스 유지"
+      },
+      {
+        "stage": "mqtt_readonly_capture",
+        "error": "첫 관찰기는 운영 브로커 인증을 지정하지 않아 연결 거부(exit5), 메시지0",
+        "correction": "기존 공통 MQTT 클라이언트와 운영 인증값을 메모리에서 재사용. 인증값 출력/파일 추가 없음; 운영 설정 변경 없음"
+      },
+      {
+        "stage": "small_database_backup",
+        "error": "얼굴 등록 DB의 기존 DELETE journal 모드를 WAL로 가정한 검사 실패",
+        "correction": "1MiB 미만 DB에는 기존 journal 모드 허용; 이미 검증한 대형 DB 복사본은 재복사하지 않고 3개 백업 완료"
+      },
+      {
+        "stage": "runtime_configuration_comparison",
+        "error": "환경 배열 순서까지 비교해 불일치로 판단",
+        "correction": "중복 키 없음·243개 키/값 동일 확인. 환경 값 변경 없음"
+      }
+    ],
+    "limitations": [
+      "three-minute video observation, not long-duration or multicamera acceptance",
+      "same input shared by AI three rules: 153 new inputs are not summed as 459",
+      "no injected alert/physical output test; normal operating processing resumed",
+      "sensor five rules input0: physical sensor acceptance not demonstrated",
+      "existing rule event_id projection and permanent target mapping are I61/P3.3 remaining",
+      "new image reboot and full physical rollback not exercised; loaded startup path and profile verified",
+      "DB preservation compared 40 recent identity/payload samples and 28 captured event IDs; not a full historical row comparison",
+      "3GB online backup first attempted without fixed read snapshot and was terminated; partial copy marked incomplete"
+    ],
+    "sha256": {
+      "data/runtime/track_id_deployment_20261012/apply_result.json": "31eb6039193e354113a5ac3321b33c54c515a399013f48d0d02580e4e74474d8",
+      "data/runtime/track_id_deployment_20261012/image_validation.json": "ff3d876abf7328d339c181021691e5eaf28c20a9f0f830ff9048d41d15adfa23",
+      "data/runtime/track_id_deployment_20261012/loader_validation.json": "378e9646341f7dcfcea1b6dd55cf451f63637b43896f0146a0556444192c6767",
+      "data/runtime/track_id_deployment_20261012/loader_recreated.json": "52bf08ba3ea4f19a3f4dcfa4ab05abd66f566ab723c221da618dadad1364658a",
+      "data/runtime/track_id_deployment_20261012/compose_validation.json": "c22805c058a147b063214589bf6744facf46e65af4e9e1491fb2bb2ab534545f",
+      "data/runtime/track_id_deployment_20261012/compose_regression.xml": "1381923acfbd67e2ca2659a788764b51c86184e8dcbd874b28b782d49228d6cb",
+      "data/runtime/track_id_deployment_20261012/apply_self_check.json": "ddbb3985915d98f3538864b2d2b196c1fbcd9b911a544f3cd459914696401cd6",
+      "data/runtime/track_id_deployment_20261012/db_backup_report.json": "c5242ed80e6dd67c55a72bd07111cc4dcb9327023760307d77f8344da1a18b84",
+      "data/runtime/track_id_deployment_20261012/db_after_validation.json": "e5c82e4f3f7955576abcbaa069a6c66a721dbd3f6af7ea930963aeb8deb6541c",
+      "data/runtime/track_id_deployment_20261012/before_observation_summary.json": "ace1dd5354117390d00d972392f34e79ff25c2dd502e450722df8c7009861678",
+      "data/runtime/track_id_deployment_20261012/after_observation_summary.json": "e00a627037548d28efa2a399495446c2f554eae9a45c463e2319d446695e8e3d",
+      "data/runtime/track_id_deployment_20261012/rules_validation.json": "6ef5596d504c3b5ba12c6fad64e65ce9634d9acd1c14d4ded297a1a135b79a18",
+      "data/runtime/track_id_deployment_20261012/runtime_verification.json": "977b3b8a9738b62a039d4fb9ae297d4b80df3bf95c40317c9c4afe20fb3f4bc4",
+      "data/runtime/track_id_deployment_20261012/mqtt_validation.json": "a11748e97d16f9406a178e5ce7678de3df10460ad0f24bd17150f2487287e33a",
+      "data/runtime/track_id_deployment_20261012/preparation_issues.json": "b0a48f5c8e9dd6abf898786673f5170abba4d231f766d1ac30310182edd462dc",
+      "data/runtime/track_id_deployment_20261012/apply.py": "8f9bb4199551fe0a84f9cc5a3d72c1cfcd0e6c2dafbc3443a3d6a01d7b2d8f52",
+      "data/runtime/track_id_deployment_20261012/finish_backup.py": "a8434c00545299c3d999fe670d75b3f3c75931c12dccc1d450b0f4286d025ced"
+    },
+    "progress": {
+      "counts": {
+        "DONE": 9,
+        "IN_PROGRESS": 1,
+        "VERIFY": 7,
+        "BLOCKED": 3,
+        "PLANNED": 13
+      },
+      "completed_task_percent": 27.3,
+      "publication": [
+        {
+          "url": "http://192.168.2.242:18081/index.html",
+          "http": 200,
+          "matches_local": true,
+          "sha256": "8eb3f274e369ef7eadba0a79ce22984ea824a0c1c0ce88b493f9084163837bfd"
+        },
+        {
+          "url": "http://192.168.2.242:18081/CCTV_project_progress.pdf",
+          "http": 200,
+          "matches_local": true,
+          "sha256": "bed3cfc151065577207e874eef19702e89a720732f989ee7f0b6685208f2e386"
+        }
+      ],
+      "visual_check": "첫 PDF 페이지 PNG의 한글/레이아웃·운영 반영·완료 수와 잔여 구분 확인",
+      "wbs_states_and_model_rows_unchanged": true
+    }
+  }
+}

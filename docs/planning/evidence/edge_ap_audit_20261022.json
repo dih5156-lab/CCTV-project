@@ -1,0 +1,217 @@
+{
+  "date": "2026-10-22",
+  "status": "MANAGEMENT_ENDPOINT_FOUND_AUTH_REJECTED_MODEL_CAPABILITIES_UNCONFIRMED",
+  "scope": "읽기 전용 AP 식별 및 브리지/라우팅 지원 여부 조사",
+  "management_endpoint": {
+    "ip": "192.168.2.1",
+    "dns_name": "Sawwave.lan",
+    "ssh_port": 22,
+    "ssh_banner": "SSH-2.0-dropbear_2019.78",
+    "same_device_as_wifi_bssid": null,
+    "role_confirmed": "Wi-Fi default gateway, DHCP and DNS server",
+    "ap_management_ip_confirmed": false
+  },
+  "ap": {
+    "associated_bssid": "50:20:65:D8:89:71",
+    "gateway_mac": "50:20:65:53:89:71",
+    "ssid": "SAWWAVE_5GX_Y",
+    "model": null,
+    "firmware": null,
+    "cached_beacon_model_present": false,
+    "cached_beacon_age_ms": 2415076,
+    "cached_beacon_contains": [
+      "HT",
+      "VHT",
+      "HE"
+    ],
+    "model_inferred_from_ssid_or_chipset": false
+  },
+  "capability_verdict": {
+    "existing_upstream_routing": "OBSERVED_IN_PRIOR_TTL_TEST",
+    "camera_subnet_routing_configurability": "UNCONFIRMED_AUTH_REQUIRED",
+    "local_ethernet_wifi_bridge": "UNCONFIRMED_AUTH_REQUIRED",
+    "inter_ap_transparent_bridge_wds_mesh": "UNCONFIRMED_AUTH_REQUIRED",
+    "selected_mode": null
+  },
+  "checks": {
+    "gateway_tcp": [
+      {
+        "port": 22,
+        "status": "open",
+        "banner": "SSH-2.0-dropbear_2019.78"
+      },
+      {
+        "port": 23,
+        "status": "[Errno 111] Connection refused"
+      },
+      {
+        "port": 80,
+        "status": "[Errno 111] Connection refused"
+      },
+      {
+        "port": 81,
+        "status": "[Errno 111] Connection refused"
+      },
+      {
+        "port": 443,
+        "status": "[Errno 111] Connection refused"
+      },
+      {
+        "port": 8000,
+        "status": "[Errno 111] Connection refused"
+      },
+      {
+        "port": 8080,
+        "status": "[Errno 111] Connection refused"
+      },
+      {
+        "port": 8081,
+        "status": "[Errno 111] Connection refused"
+      },
+      {
+        "port": 8443,
+        "status": "[Errno 111] Connection refused"
+      },
+      {
+        "port": 8888,
+        "status": "[Errno 111] Connection refused"
+      }
+    ],
+    "dns_ptr": {
+      "rc": 0,
+      "output": "192.168.2.1     Sawwave.lan\n"
+    },
+    "extra_discovery": {
+      "ieee_oui": {
+        "error": "HTTP Error 418: Unknown Code"
+      },
+      "gateway_ssdp": []
+    },
+    "provided_documents": "원문 PDF/HWPX에 현재 설치 AP 모델/관리IP 명세를 찾지 못함; 일반 AP/브릿지 기술 서술과 구분"
+  },
+  "read_only_network": [
+    {
+      "cmd": [
+        "ip",
+        "-j",
+        "route",
+        "show",
+        "table",
+        "main"
+      ],
+      "rc": 0,
+      "output": "[{\"dst\":\"default\",\"gateway\":\"192.168.2.1\",\"dev\":\"wlP1p1s0\",\"protocol\":\"dhcp\",\"metric\":600,\"flags\":[]},{\"dst\":\"169.254.0.0/16\",\"dev\":\"eno1\",\"scope\":\"link\",\"metric\":1000,\"flags\":[]},{\"dst\":\"172.17.0.0/16\",\"dev\":\"docker0\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"172.17.0.1\",\"flags\":[]},{\"dst\":\"172.18.0.0/16\",\"dev\":\"br-2cf1cb81c56f\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"172.18.0.1\",\"flags\":[]},{\"dst\":\"172.19.0.0/16\",\"dev\":\"br-cafa8d05e14a\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"172.19.0.1\",\"flags\":[\"linkdown\"]},{\"dst\":\"172.20.0.0/16\",\"dev\":\"br-c8bcecc2ba19\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"172.20.0.1\",\"flags\":[\"linkdown\"]},{\"dst\":\"172.21.0.0/16\",\"dev\":\"br-8cac26521742\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"172.21.0.1\",\"flags\":[\"linkdown\"]},{\"dst\":\"172.22.0.0/16\",\"dev\":\"br-151960e8ed8c\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"172.22.0.1\",\"flags\":[]},{\"dst\":\"192.168.0.0/24\",\"dev\":\"eno1\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"192.168.0.10\",\"metric\":100,\"flags\":[]},{\"dst\":\"192.168.2.0/24\",\"dev\":\"wlP1p1s0\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"192.168.2.141\",\"metric\":600,\"flags\":[]}]\n",
+      "error": ""
+    },
+    {
+      "cmd": [
+        "ip",
+        "neigh",
+        "show"
+      ],
+      "rc": 0,
+      "output": "172.18.0.21 dev br-2cf1cb81c56f lladdr 52:ab:5b:52:ec:ed DELAY\n192.168.0.20 dev eno1  FAILED\n192.168.2.215 dev wlP1p1s0 lladdr 9c:67:d6:c9:3b:a0 REACHABLE\n172.18.0.20 dev br-2cf1cb81c56f lladdr 76:b8:50:0e:50:21 REACHABLE\n172.18.0.27 dev br-2cf1cb81c56f lladdr 72:15:e8:f6:12:ff DELAY\n172.18.0.26 dev br-2cf1cb81c56f lladdr 82:12:bf:1b:c9:72 REACHABLE\n192.168.2.108 dev wlP1p1s0  FAILED\n192.168.2.203 dev wlP1p1s0 lladdr cc:47:40:6f:c8:e3 STALE\n172.18.0.30 dev br-2cf1cb81c56f lladdr 0e:9d:20:3c:db:99 REACHABLE\n169.254.169.254 dev eno1  FAILED\n192.168.2.1 dev wlP1p1s0 lladdr 50:20:65:53:89:71 REACHABLE\n172.22.0.2 dev br-151960e8ed8c lladdr 3a:68:ff:9a:2d:42 STALE\n192.168.0.100 dev eno1 lladdr 40:04:0c:04:9e:16 REACHABLE\n",
+      "error": ""
+    },
+    {
+      "cmd": [
+        "iw",
+        "dev",
+        "wlP1p1s0",
+        "link"
+      ],
+      "rc": 0,
+      "output": "Connected to 50:20:65:d8:89:71 (on wlP1p1s0)\n\tSSID: SAWWAVE_5GX_Y\n\tfreq: 5745\n\tRX: 2287658901 bytes (1678803 packets)\n\tTX: 847793883 bytes (8796495 packets)\n\tsignal: -54 dBm\n\trx bitrate: 585.0 MBit/s VHT-MCS 7 80MHz VHT-NSS 2\n\ttx bitrate: 234.0 MBit/s VHT-MCS 3 80MHz VHT-NSS 2\n",
+      "error": ""
+    },
+    {
+      "cmd": [
+        "iw",
+        "dev",
+        "wlP1p1s0",
+        "scan",
+        "dump"
+      ],
+      "rc": 0,
+      "output": "BSS 50:20:65:d8:89:71(on wlP1p1s0) -- associated\n\tTSF: 258747681265 usec (2d, 23:52:27)\n\tfreq: 5745\n\tbeacon interval: 100 TUs\n\tcapability: ESS ShortPreamble SpectrumMgmt ShortSlotTime RadioMeasure (0x1521)\n\tsignal: -55.00 dBm\n\tlast seen: 2415076 ms ago\n\tInformation elements from Probe Response frame:\n\tSSID: SAWWAVE_5GX_Y\n\tSupported rates: 6.0* 9.0 12.0* 18.0 24.0* 36.0 48.0 54.0 \n\tCountry: KR\tEnvironment: bogus\n\t\tChannels [36 - 64] @ 23 dBm\n\t\tChannels [100 - 144] @ 23 dBm\n\t\tChannels [149 - 165] @ 23 dBm\n\tPower constraint: 0 dB\n\tSupported operating classes:\n\t\t * current operating class: 128\n\t\t * operating class: 83\n\t\t * operating class: 84\n\t\t * operating class: 125\n\t\t * operating class: 129\n\tHT capabilities:\n\t\tCapabilities: 0x1ef\n\t\t\tRX LDPC\n\t\t\tHT20/HT40\n\t\t\tSM Power Save disabled\n\t\t\tRX HT20 SGI\n\t\t\tRX HT40 SGI\n\t\t\tTX STBC\n\t\t\tRX STBC 1-stream\n\t\t\tMax AMSDU length: 3839 bytes\n\t\t\tNo DSSS/CCK HT40\n\t\tMaximum RX AMPDU length 65535 bytes (exponent: 0x003)\n\t\tMinimum RX AMPDU time spacing: 2 usec (0x04)\n\t\tHT RX MCS rate indexes supported: 0-15\n\t\tHT TX MCS rate indexes are undefined\n\tHT operation:\n\t\t * primary channel: 149\n\t\t * secondary channel offset: above\n\t\t * STA channel width: any\n\t\t * RIFS: 0\n\t\t * HT protection: nonmember\n\t\t * non-GF present: 1\n\t\t * OBSS non-GF present: 1\n\t\t * dual beacon: 0\n\t\t * dual CTS protection: 0\n\t\t * STBC beacon: 0\n\t\t * L-SIG TXOP Prot: 0\n\t\t * PCO active: 0\n\t\t * PCO phase: 0\n\tWMM:\t * Parameter version 1\n\t\t * u-APSD\n\t\t * BE: CW 15-1023, AIFSN 3\n\t\t * BK: CW 15-1023, AIFSN 7\n\t\t * VI: CW 7-15, AIFSN 2, TXOP 3008 usec\n\t\t * VO: CW 3-7, AIFSN 2, TXOP 1504 usec\n\tVHT capabilities:\n\t\tVHT Capabilities (0x338001b2):\n\t\t\tMax MPDU length: 11454\n\t\t\tSupported Channel Width: neither 160 nor 80+80\n\t\t\tRX LDPC\n\t\t\tshort GI (80 MHz)\n\t\t\tTX STBC\n\t\t\tRX antenna pattern consistency\n\t\t\tTX antenna pattern consistency\n\t\tVHT RX MCS set:\n\t\t\t1 streams: MCS 0-9\n\t\t\t2 streams: MCS 0-9\n\t\t\t3 streams: not supported\n\t\t\t4 streams: not supported\n\t\t\t5 streams: not supported\n\t\t\t6 streams: not supported\n\t\t\t7 streams: not supported\n\t\t\t8 streams: not supported\n\t\tVHT RX highest supported: 866 Mbps\n\t\tVHT TX MCS set:\n\t\t\t1 streams: MCS 0-9\n\t\t\t2 streams: MCS 0-9\n\t\t\t3 streams: not supported\n\t\t\t4 streams: not supported\n\t\t\t5 streams: not supported\n\t\t\t6 streams: not supported\n\t\t\t7 streams: not supported\n\t\t\t8 streams: not supported\n\t\tVHT TX highest supported: 866 Mbps\n\tVHT operation:\n\t\t * channel width: 1 (80 MHz)\n\t\t * center freq segment 1: 155\n\t\t * center freq segment 2: 0\n\t\t * VHT basic MCS set: 0xfffa\n\tExtended capabilities:\n\t\t * HT Information Exchange Supported\n\t\t * Extended Channel Switching\n\t\t * SSID List\n\t\t * UTF-8 SSID\n\t\t * Operating Mode Notification\n\t\t * Max Number Of MSDUs In A-MSDU is unlimited\n\tHE capabilities:\n\t\tHE MAC Capabilities (0x010182000840):\n\t\t\t+HTC HE Supported\n\t\t\tMinimum Payload size of 128 bytes: 1\n\t\t\tOM Control\n\t\t\tRX Control Frame to MultiBSS\n\t\t\tA-MSDU in A-MPDU\n\t\t\tUL 2x996-Tone RU\n\t\tHE PHY Capabilities: (0x04334c09000080c8020c00):\n\t\t\tHE40/HE80/5GHz\n\t\t\tPunctured Preamble RX: 3\n\t\t\tDevice Class: 1\n\t\t\tLDPC Coding in Payload\n\t\t\tSTBC Tx <= 80MHz\n\t\t\tSTBC Rx <= 80MHz\n\t\t\tFull Bandwidth UL MU-MIMO\n\t\t\tDCM Max Constellation: 1\n\t\t\tDCM Max Constellation Rx: 1\n\t\t\tPPE Threshold Present\n\t\t\tMax NC: 1\n\t\t\tSTBC Tx > 80MHz\n\t\t\tSTBC Rx > 80MHz\n\t\t\t20MHz in 40MHz HE PPDU 2.4GHz\n\t\t\tTX 1024-QAM\n\t\t\tRX 1024-QAM\n\t\tHE RX MCS and NSS set <= 80 MHz\n\t\t\t1 streams: MCS 0-11\n\t\t\t2 streams: MCS 0-11\n\t\t\t3 streams: not supported\n\t\t\t4 streams: not supported\n\t\t\t5 streams: not supported\n\t\t\t6 streams: not supported\n\t\t\t7 streams: not supported\n\t\t\t8 streams: not supported\n\t\tHE TX MCS and NSS set <= 80 MHz\n\t\t\t1 streams: MCS 0-11\n\t\t\t2 streams: MCS 0-11\n\t\t\t3 streams: not supported\n\t\t\t4 streams: not supported\n\t\t\t5 streams: not supported\n\t\t\t6 streams: not supported\n\t\t\t7 streams: not supported\n\t\t\t8 streams: not supported\n\t\tPPE Threshold 0x79 0x1c 0xc7 0x71 0x1c 0xc7 0x71 \n",
+      "error": ""
+    },
+    {
+      "cmd": [
+        "nmcli",
+        "-g",
+        "IP4.ADDRESS,IP4.GATEWAY,IP4.DNS,DHCP4.OPTION",
+        "device",
+        "show",
+        "wlP1p1s0"
+      ],
+      "rc": 0,
+      "output": "192.168.2.141/24\n192.168.2.1\n192.168.2.1\nbroadcast_address = 192.168.2.255 | dhcp_lease_time = 43200 | dhcp_server_identifier = 192.168.2.1 | domain_name = lan | domain_name_servers = 192.168.2.1 | expiry = 1792688485 | host_name = ubuntu | ip_address = 192.168.2.141 | next_server = 192.168.2.1 | requested_broadcast_address = 1 | requested_domain_name = 1 | requested_domain_name_servers = 1 | requested_domain_search = 1 | requested_host_name = 1 | requested_interface_mtu = 1 | requested_ms_classless_static_routes = 1 | requested_nis_domain = 1 | requested_nis_servers = 1 | requested_ntp_servers = 1 | requested_rfc3442_classless_static_routes = 1 | requested_root_path = 1 | requested_routers = 1 | requested_static_routes = 1 | requested_subnet_mask = 1 | requested_time_offset = 1 | requested_wpad = 1 | routers = 192.168.2.1 | subnet_mask = 255.255.255.0\n",
+      "error": ""
+    }
+  ],
+  "limits": [
+    "SSH 배너로 모델·OpenWrt 여부·WDS 지원을 확정할 수 없음",
+    "현재 gateway와 Wi-Fi BSSID가 같은 하드웨어인지는 내부 인터페이스 MAC 대조 필요",
+    "기존 상위망 라우팅 성공은 CCTV망 연결·정적 경로 편집 권한·RTSP 수신 성공을 뜻하지 않음",
+    "무선 백홀/AP 내부 설정/직접 RTSP/AI 인계 미검증"
+  ],
+  "next_required": "장비 라벨 모델명 또는 관리 담당자의 읽기 전용 구성 정보/정상 SSH 계정 확보",
+  "configuration_changes": 0,
+  "cabling_changes": 0,
+  "installations": 0,
+  "wifi_rescan_performed": false,
+  "camera_connections_this_audit": 0,
+  "authentication_attempted_by_agent": true,
+  "prior_network_evidence": "edge_network_20261022.json",
+  "prior_wireless_evidence": "edge_wireless_plan_20261022.json",
+  "authentication": {
+    "attempts": 1,
+    "account": "admin",
+    "credential_source": "user supplied candidate",
+    "result": "Permission denied (publickey,password)",
+    "ssh_exit_code": 255,
+    "reason_not_disambiguated": true,
+    "password_in_command_line_files_or_report": false,
+    "other_accounts_attempted": false,
+    "user_knows_alternative_account_or_model": false
+  },
+  "preservation": {
+    "a_container_count": 37,
+    "a_containers_id_image_status_started_at_unchanged": true,
+    "a_routes_unchanged": true,
+    "ap_configuration_commands_executed": 0,
+    "active_ap_ssh_master": false,
+    "b_access_this_audit": false,
+    "temporary_auth_helper_and_files_removed": true
+  },
+  "validation": {
+    "wbs_rows": 37,
+    "done": 9,
+    "wbs_statuses_unchanged": true,
+    "local_links_valid": 1936,
+    "baseline_non_doc_tracked_files": 1156,
+    "changed_non_doc_files": [
+      "scripts/ops/progress_snapshot_template.html",
+      "scripts/ops/render_progress_snapshot.py"
+    ],
+    "ruff": "PASS",
+    "html_pdf_render": "PASS",
+    "http": [
+      {
+        "endpoint": "/",
+        "http_status": 200,
+        "local_bytes_equal": true,
+        "sha256": "5c19cb5a016834472a69b61ab02a7ffcca21dd069bb513b8f34b949d4dbaae66"
+      },
+      {
+        "endpoint": "/CCTV_project_progress.pdf",
+        "http_status": 200,
+        "local_bytes_equal": true,
+        "sha256": "2b48b6225e44951361a699b6a61fdd183389095456746ee86d96cab3e7359802"
+      }
+    ],
+    "pdf_first_page_visual_check": "PASS",
+    "browser_interaction_tested": false
+  }
+}

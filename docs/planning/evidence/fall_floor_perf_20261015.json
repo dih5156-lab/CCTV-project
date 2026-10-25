@@ -1,0 +1,268 @@
+{
+  "date": "2026-10-15",
+  "task": "P5.2",
+  "issue": "I56",
+  "state": "VERIFY",
+  "operating_applied": false,
+  "unique_seen_videos": 20,
+  "new_unseen_videos": 0,
+  "unseen_remaining": 80,
+  "confidence_threshold": 0.5,
+  "source_validation_baseline": "1080p30 fullframe",
+  "final_gpu": {
+    "TP": 10,
+    "FN": 0,
+    "FP": 0,
+    "TN": 10
+  },
+  "frames": 6001,
+  "tensor_frames": 1501,
+  "tests": {
+    "related_pass": 350,
+    "related_skip": 2,
+    "runner_pass": 13,
+    "ruff": "PASS"
+  },
+  "cpu_replay": {
+    "960": {
+      "TP": 10,
+      "TN": 10
+    }
+  },
+  "interval3_replay": {
+    "960": {
+      "TP": 10,
+      "TN": 10
+    }
+  },
+  "source_primary_interval": 3,
+  "target_inferences_per_video_second": 7.5,
+  "cpu_delay_changes": [
+    {
+      "index": 11,
+      "scene": "00909_O_E_N_C6",
+      "old": [
+        2.333333333
+      ],
+      "new": [],
+      "delay_before": null,
+      "delay_after": null
+    },
+    {
+      "index": 16,
+      "scene": "00925_O_E_BY_C5",
+      "old": [
+        7.333333333
+      ],
+      "new": [
+        8.4
+      ],
+      "delay_before": 3.379383333,
+      "delay_after": 4.4460500000000005
+    }
+  ],
+  "performance": {
+    "description": "같은 L0 엔진의 GPU 단독 평균129.338/129.493ms(두 차례 측정). 엔진 최적화 L3/L1 생성은각300/180초 한도로 종료돼 미채택했다. 대신 추론 간격1→3(영상초당15→7.5회)으로 조정한 진단 처리율 중앙값은 15.19→25.61FPS(1.69배)다. 새 엔진의 속도 향상이 아니며, 30FPS 입력의 지속 처리 여유는 확보되지 않았다.",
+    "engine_unchanged": true,
+    "engine_builder_level": 0,
+    "builder_attempts": {
+      "level3": "timeout300s",
+      "level1": "timeout180s"
+    },
+    "microbenchmark": {
+      "build": {
+        "samples": 59,
+        "mean_gpu_compute_ms": 129.33815254237288,
+        "median_gpu_compute_ms": 130.126
+      },
+      "build_l1": {
+        "samples": 59,
+        "mean_gpu_compute_ms": 129.49296610169492,
+        "median_gpu_compute_ms": 130.806
+      }
+    },
+    "primary_interval_before": 1,
+    "primary_interval_after": 3,
+    "target_inferences_per_video_second_before": 15,
+    "target_inferences_per_video_second_after": 7.5,
+    "pipeline_median_fps_before": 15.18792583569575,
+    "pipeline_median_fps_after": 25.607152425986055,
+    "pipeline_speedup": 1.6860203758568726,
+    "sustained_30fps_proven": false,
+    "gpu_cpu_queue_frame_mismatches": []
+  },
+  "recovery": {
+    "checked_at_utc": "2026-10-15T01:47:13.332755+00:00",
+    "duration_seconds": 30.061907761002658,
+    "before_metrics": {
+      "cctv_processor_frames_processed_total": 850.0,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 425.0,
+      "cctv_camera_primary_last_frame_age_seconds{camera_id=\"camera_1\"}": 0.03972448399872519
+    },
+    "after_metrics": {
+      "cctv_processor_frames_processed_total": 1751.0,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 876.0,
+      "cctv_camera_primary_last_frame_age_seconds{camera_id=\"camera_1\"}": 0.01601832199958153
+    },
+    "rates": {
+      "cctv_processor_frames_processed_total": 29.97148441686087,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 15.00237455272392
+    },
+    "snapshot": [
+      {
+        "name": "/cctv-ai-engine",
+        "id": "c8a71163c84b458197b98a4bde8e0e06719afc5cf5964e6fbd0b716109ce0377",
+        "image": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+        "started_at": "2026-10-15T01:46:08.467590004Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-media-server",
+        "id": "957101f7ab7336585817a176154f7711de977caee7cfbf34257f2fb68810dea4",
+        "image": "sha256:f8628851106cc053f9175b248050bb5f362a6e65abd72297c167a1cb5a9a3be2",
+        "started_at": "2026-10-12T23:35:15.324861031Z",
+        "status": "running",
+        "health": null,
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-action-layer",
+        "id": "74deaeb0b5bdd64c8f2e2a141daa25c193a75cf235b214fee6ef8b4dcdceedeb",
+        "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+        "started_at": "2026-10-12T23:35:15.475740705Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-device-signboard",
+        "id": "29aeb393bd52e7a9f8241be9214b970e82e8442253fdfe2e73dbbf5d153feaa8",
+        "image": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+        "started_at": "2026-10-12T23:35:15.45875226Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-device-speaker",
+        "id": "a8ff5823d34ad72dd2c5b236cc88f210b16feb05ef53532e6549601d2beafb7a",
+        "image": "sha256:4daca5e8c9865c5f19dde37d7dbdfcc37ea5c413fa8375802e80c7f8185bba30",
+        "started_at": "2026-10-12T23:35:15.455773133Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      }
+    ],
+    "same_ai_container_and_image": true,
+    "other_four_containers_unchanged": true,
+    "healthy": true,
+    "monitor_container_stable": true,
+    "trial_containers_remaining": 0,
+    "maintenance_start_to_ai_started_seconds": 458.4622356891632
+  },
+  "limitations": [
+    "동일20개 개발 표본 재사용·새 독립 표본0",
+    "후면 지연 회귀·초기 접힌 자세·자발적 착석/눕기 일반화 미검증",
+    "미사용80·검출 연속성·2채널·장시간·실물/운영 미검증",
+    "그래프 검토가 범위 밖 함수들을 반환해 실제 함수/호출부/회귀로 보완"
+  ],
+  "artifact_sha256": {
+    "data/runtime/p52_floor_perf_20261015/build_l1_started.json": "6de39ec862dfe6ad0ba29073cf0a632b0d6fabaf08ae278c9410bdde37556674",
+    "data/runtime/p52_floor_perf_20261015/setup.py": "27b82b869ec08385c9ad1a39b8dc8da4e4334f9e8e23f52a1ae6c7463a5e606f",
+    "data/runtime/p52_floor_perf_20261015/operating_after_batch_00.json": "84c2500fe85d54f822660c15e341794d993db202896253fce9f23741e4e5b19b",
+    "data/runtime/p52_floor_perf_20261015/build_l1_failure.json": "4139dce70a34cd8ac7c742f0e8f5fd870c3a0d301791786dd2c77c035a27a78d",
+    "data/runtime/p52_floor_perf_20261015/benchmark_build_l1.py": "d398655af1bff259d9184efb1b889035c9c47d368244813e28ad1c531d47f6d0",
+    "data/runtime/p52_floor_perf_20261015/benchmark_build.py": "6712764d81ac79d8b724683215974305e7b12361caade1a036b8e079a9cb6e05",
+    "data/runtime/p52_floor_perf_20261015/input_hashes.json": "2f2314e3687a268a11aa12243efbccb647778d261f9e419ae9c29b298f4267d3",
+    "data/runtime/p52_floor_perf_20261015/build_l1_plan.json": "45bb683ebaed858a78fe463fadf04176924bfb2ea26d044b1a525bc5515fb30e",
+    "data/runtime/p52_floor_perf_20261015/batch_00_results.json": "a1e337964ee0589e551d791e30bf9e788cdf60ed71d7dd99301ad61422b8043a",
+    "data/runtime/p52_floor_perf_20261015/summarize_performance.py": "cb4a8710b17c81096753a21c60172faf387a74519a1a6a324bd05e82d2fcd21c",
+    "data/runtime/p52_floor_perf_20261015/operating_after_build.json": "75ef9130649098a6181e78c27ae34c49ee0eaade86bdd7ad8e1dd54349a44677",
+    "data/runtime/p52_floor_perf_20261015/red.xml": "241fcadfd7ed413ccacdf5cac24048f10e08c41a530d3e2e423fa00ed0437b02",
+    "data/runtime/p52_floor_perf_20261015/rf_tests.xml": "42355f364c9c76cdb490447dc783e105cfbbf132782c6650218d90ab865ad3b4",
+    "data/runtime/p52_floor_perf_20261015/replay.py": "dbee930e4908eb7a92bbd9f73c797f6be16e39915cde1f7601f84b3e31b86e72",
+    "data/runtime/p52_floor_perf_20261015/analyze_gpu.py": "db38cab7a12bd19c6d14cd17b648c87e1f2f8cff377751af11c988fceb7ca48e",
+    "data/runtime/p52_floor_perf_20261015/performance_summary.json": "f0b6f096ccfecf67ef6b2457a24cb80ea68f6be8d26278306517c84af1a84783",
+    "data/runtime/p52_floor_perf_20261015/build_recovery.json": "291ed3a066dbc72d9e9fb95d3d651b5416f6a5e4ba26eca0e4e5196d42d434e9",
+    "data/runtime/p52_floor_perf_20261015/gpu_results.json": "b44691641031c3c7e50683059ffde35854a6f9a4192db238c93d733f12e49bcd",
+    "data/runtime/p52_floor_perf_20261015/build_plan.json": "ab5059c04d3f5360f2608f81b4a305ab2069ed2d385ed001c6a6d5fa287b5836",
+    "data/runtime/p52_floor_perf_20261015/test_run.py": "4ed4ff2e697a6ed29a6fb0ee28aa5dc8c5e3c33db84ca1ddbe603ce451ed1a6c",
+    "data/runtime/p52_floor_perf_20261015/image_verification.json": "20b623ca2604743f65948b775ec7f38b6d4917b6fb11ecd326479a14fea05aac",
+    "data/runtime/p52_floor_perf_20261015/probe_history.py": "dcef4ae1ec30e9c6d5b8ae85a8f786c23146f835165fb125b3a1784c266f7f59",
+    "data/runtime/p52_floor_perf_20261015/replay_results.json": "677c234bea026f242f0e953407e7ee23f210451d863499d22cfb67f0349eaec0",
+    "data/runtime/p52_floor_perf_20261015/batch_00_started.json": "ab06daac3cdb584c5e310ec5663a34f2aa952ae176c82146e9018a003bae2242",
+    "data/runtime/p52_floor_perf_20261015/interval3_replay_results.json": "976c65f44a380410c77032fb551ce30937bca5c87054835de7c222d673de1a92",
+    "data/runtime/p52_floor_perf_20261015/check_recovery.py": "549bcef1bd475a34927cb0dbcd5386a4e08f2bbb38b4cba79e2e11cb1c2e1d46",
+    "data/runtime/p52_floor_perf_20261015/replay_interval3.py": "ee6cda8774f1a210eba08e66ec8adbed1d2c4c68fbf42afa65c991e62d09b0d0",
+    "data/runtime/p52_floor_perf_20261015/build_l1_recovery.json": "291ed3a066dbc72d9e9fb95d3d651b5416f6a5e4ba26eca0e4e5196d42d434e9",
+    "data/runtime/p52_floor_perf_20261015/probe_candidate.py": "f301b2099c32a82d62dc752507de3a963cfa9e9d53a09ac26434370d63caaeb8",
+    "data/runtime/p52_floor_perf_20261015/build_l1_compose.json": "25bd06fb15764bef7ee25db0b05cce90e5c699b1667a683db23e73ba83106f80",
+    "data/runtime/p52_floor_perf_20261015/check_build_l1_recovery.py": "b52d961b66274cc89f5f022bea6fd744e4c87da76b50dd20d529ef8a9ac567b8",
+    "data/runtime/p52_floor_perf_20261015/operating_after_build_l1.json": "061b6bf8752a90cc8f84c2ac95ce0dfeb3376fcebbe9788d697a2e318fdd63d7",
+    "data/runtime/p52_floor_perf_20261015/cpu_changes.json": "9aa7811e6156d7b93ca82f9881ebb19e700ff55cb6c6591d64ba5c2c249120c7",
+    "data/runtime/p52_floor_perf_20261015/batch_00_recovery.json": "1853f5379debf58ef2010d5b07ea28e6e17daba25c73caebf5560d2975bf0910",
+    "data/runtime/p52_floor_perf_20261015/operating_before.json": "959d5b31e9f34cd6205f7e9c76bf0320113704c2e81ff0bcebcf194409c4b254",
+    "data/runtime/p52_floor_perf_20261015/build_started.json": "8d5b10712cc6a3b0c1cc601aaca673beae6b05dfc353523b35d48c35efd67b5d",
+    "data/runtime/p52_floor_perf_20261015/runner_tests.xml": "ef9a550f14ea22973ef51f3bac036ca8ab0082427ffd40f4a778b99622245eba",
+    "data/runtime/p52_floor_perf_20261015/build_failure.json": "3af5da53ffc13ec487396ac33fa0dbda87c1dc60a6762ca1d3616b6ab92158f6",
+    "data/runtime/p52_floor_perf_20261015/run.py": "6662f739d99dfbc353379c2091d4d0c5b067c8c132fbb8901fced61367cd392d",
+    "data/runtime/p52_floor_perf_20261015/entry.py": "5119064fd99818c6fd34483e7030879ecebd9373daec26be6ad6ca8d441db8f6",
+    "data/runtime/p52_floor_perf_20261015/build_candidate_l1.py": "3a7476d633681867a8246851ec0c0eb161ba93a937d67229468cd6aa40a8a7b7",
+    "data/runtime/p52_floor_perf_20261015/candidate_probe.json": "0b2d9e3d74c0ac7eac705594ccd7916818a776bf8e29db87b49e95ae6a5e993d",
+    "data/runtime/p52_floor_perf_20261015/raw_capture.py": "262fb5823a81dfc3c2d52e2f82177d406d817379f76e2f00ddfdc238f1293a3a",
+    "data/runtime/p52_floor_perf_20261015/history_probe.json": "dd3824db6b8585842a4f029d9bed3685d52d7c065035fad9fabcfd572df53b72",
+    "data/runtime/p52_floor_perf_20261015/plan.json": "34d116a040ea83153c788b3fc674a2799c28d458462d6ea25eb18cf90375bcc3",
+    "data/runtime/p52_floor_perf_20261015/check_build_recovery.py": "50d9da7b175d52fa90838187b4d36ad8bfa23785747bfc09415e4d35784c2992",
+    "data/runtime/p52_floor_perf_20261015/graph_review.json": "76348da0b674b9904e60b9cb4981a089cf290b6f296b1f6677e4d3502227de45",
+    "data/runtime/p52_floor_perf_20261015/cameras.json": "345631948bde753e797d7c67aeeac01bf2263e33f768f4a0e95950fa2cde1adb",
+    "data/runtime/p52_floor_perf_20261015/build_candidate.py": "f5918f67e540cad1d4def950f799ba68cdd15b79b07b51e2bd5ee71a76df6367",
+    "data/runtime/p52_floor_perf_20261015/tests.xml": "1ff5e95c5277f58f95ea76556438ada84428c0dc4b44d40431c9dfd4b663d0f9",
+    "data/runtime/p52_floor_perf_20261015/build_compose.json": "fbab7f942f9cd18b85f452916591ec50b040cc77104fbf972aa19ca2e94b0e36",
+    "data/runtime/p52_floor_perf_20261015/build.log": "db76237023d9dcef36a83815071c567dd8978cb26f82755e84757b8ed8d56118",
+    "data/runtime/p52_floor_perf_20261015/build_l1.log": "ed659f5ff32a01ac1932a7c73952ca82658110013bb31b401bb95d881ba599df",
+    "data/runtime/p52_floor_perf_20261015/build/baseline.log": "a5d67183a38dfd10cbcc37809ac0882296a76781c5bec2213b99ef66efe0f438",
+    "data/runtime/p52_floor_perf_20261015/build/baseline_times.json": "c68ec480cb4b617095f37b05fe0ad71e86e556951c5b8649f51a25ddb37031b2",
+    "data/runtime/p52_floor_perf_20261015/build/optimized_build.log": "a84f021b9d089b765d177f6272c748a82391c31754098885cf7bfde31f14d7d8",
+    "data/runtime/p52_floor_perf_20261015/build_l1/baseline.log": "bfe0eb436b1c46b0c238e7b637dd5084756e83c3c78b0dc403d2bb75798d9b61",
+    "data/runtime/p52_floor_perf_20261015/build_l1/baseline_times.json": "ecf2691f7b06f7ad3a44ca0a14a7e5725366cbbf02e378ab9ea916505d08cc49",
+    "data/runtime/p52_floor_perf_20261015/build_l1/optimized_build.log": "d2eddacc60bb7f4ee12e06a624298e006a431673dcfd3f9193d45da39286c8ed",
+    "src/core/ai/_fall_detector.py": "a2da7d2844c49c14a695be82deb9b5731bc07f983a1965a797a2fb249ea80da0",
+    "tests/test_fall_transition.py": "6f64d9bfddf8bc213f6d2b0cdde672046d301f8eb477811a96d8e67544465d87",
+    "tests/test_fall_projection.py": "c4d8395a061d5a049062d7876a61fa9cc463abff87796e23de527754666d91fa",
+    "tests/test_ai_analysis.py": "79e04aaa9efa21d688ca14ab09b4f5add0231a7529bfa54c6aa8570cbf97d67b",
+    "tests/fixtures/fall_transition_20261015.json": "a6185b69932c0c128f4d2324c2219030d3536b7500757202c29ea309f5a88999",
+    "data/runtime/p52_floor_perf_20261015/online_validation.json": "5adcaa565fd4ad20df1914525b469c50dc4c5d50ca63a94ce922ca6a65f2da02",
+    "data/runtime/p52_floor_perf_20261015/progress_firstpage.png": "520e820cd843dea153bf594055a493f6bba11975ae45f6dd5eaa4f35d81f1194",
+    "scripts/ops/render_progress_snapshot.py": "dbe6f6de42624b90647b1f7eff39d53373df14445712adee9655160423efb24b",
+    "scripts/ops/progress_snapshot_template.html": "d86748825050511d187315bbc2ec21b84567ed7aff4a789a3ab00fcb388a8258",
+    "docs/planning/figma_exports/progress_v138.json": "e5c188729a574c720e2e7c9ffc41580d642adb921c48e2e21137687abaa0e523"
+  },
+  "online_validation": {
+    "files": [
+      {
+        "path": "docs/planning/online/index.html",
+        "http_status": 200,
+        "bytes": 91889,
+        "sha256": "6c8abc3a998a3afff5618b4bf1897764940700a8d4c39c59b26756fd6d71e1cb"
+      },
+      {
+        "path": "docs/planning/online/CCTV_project_progress.pdf",
+        "http_status": 200,
+        "bytes": 148696,
+        "sha256": "dd9cb02c290e0eda5b3009afa5507051d8dd189619edb740de78ca91e8a9de0c"
+      }
+    ],
+    "wbs_rows": 33,
+    "model_rows": 8,
+    "gpu_results_match": true,
+    "browser_interaction_checked": false,
+    "pdf_first_page_visual_checked": true,
+    "remaining_performance_visible": true,
+    "pdf_first_page_image": "data/runtime/p52_floor_perf_20261015/progress_firstpage.png"
+  }
+}

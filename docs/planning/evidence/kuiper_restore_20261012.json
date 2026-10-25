@@ -1,0 +1,451 @@
+{
+  "checked_date_kst": "2026-10-12",
+  "scope": "I61 eKuiper 규칙 정지 복구·규칙 경유 전광판 확인, P4 센서 입력 사전검증",
+  "root_cause": {
+    "stopped_rules": 8,
+    "observed_error": "2026-10-02 08:40:26 KST MQTT connect: connection refused",
+    "rule_restart_policy_before": "미설정",
+    "global_restart_policy_before": "미설정",
+    "interpretation": "스택 기동 중 브로커 연결 실패 뒤 규칙 정지. 로더의 start 호출 누락으로 해석하지 않음"
+  },
+  "change": {
+    "files": [
+      "runners/run_kuiper_rules.py",
+      "tests/test_run_kuiper_rules.py",
+      "docker-compose.jetson.yml"
+    ],
+    "policy": {
+      "attempts": 20,
+      "delay": 1000,
+      "maxDelay": 30000,
+      "multiplier": 2,
+      "jitter": 0.1
+    },
+    "rules_updated": 8,
+    "sql_and_topics_preserved": true,
+    "loader_image": {
+      "image": "sha256:5b6721099758bf01fa21e274abb118bea45e7be78e28337a019ec667e897aa2e",
+      "tag": "cctv-kuiper-loader:20261012-01",
+      "base_image": "cctv-signboard:validation-20261012-01",
+      "strategy": "검증된 운영 의존성 재사용, 수정 로더1파일 포함"
+    },
+    "loader_container_recreated": false,
+    "runtime_application": "기존8규칙 정의를 백업 후 REST로 정책 반영·시작. 다음 배포용 로더 이미지 고정"
+  },
+  "validation": {
+    "regression": "1 FAIL(KeyError restartStrategy) → 9 PASS: tests/test_run_kuiper_rules.py + tests/test_sensor_rule_bridge.py",
+    "lint": "Ruff PASS",
+    "loader_image": "네트워크 없는 import·호스트 로더 SHA256 일치",
+    "compose": "로더 이미지 고정 해석 PASS",
+    "first_attempt": "API start 뒤 옵션 정규화 차이로 첫 판정 실패. 8규칙 원본 정의·stopped 상태로 복귀한 뒤 실제 필드 jitter로 수정·재적용",
+    "native_retry_probe": "시험 브로커 지연 기동 후 추가 start 없이 stopped→running 관측, 임시 규칙·브로커 제거. sink 1건은 유효 이벤트 내용을 검증하지 않아 정상 입력 처리 근거로 사용하지 않음. 무정책 대조·20회 소진·전체 스택 재부팅 미시험"
+  },
+  "rule_to_signboard_trial": {
+    "input": "시험 camera의 person 0.95 / fall_detected 0.89 / fall_detected 0.95",
+    "production_rule": "intrusion_high_confidence_routing",
+    "negative_controls": 2,
+    "positive_rule_outputs": 1,
+    "display_and_clear_acknowledged": true,
+    "duplicate_event_additional_output": 0,
+    "physical_confirmation": "사용자: 시험 문구가 보였다가 시간으로 돌아옴",
+    "test_text": "경고! / eKuiper 연동 시험",
+    "first_trial_physical_confirmation": "사용자가 다시 요청해 새ID로 재시험",
+    "metadata_limit": "기존 SQL은 event_id/display_message를 전달하지 않는다. 실제 규칙 결과 확인 후 격리 ActionBridge에 시험ID·시험문구를 추가했다. 원본ID 보존의 종단 합격이 아님"
+  },
+  "sensor_preflight": {
+    "user_power_state": "현재 상태 모름",
+    "physical_access": "지금은 현장 확인 어려움",
+    "mqtt_observation": "20초 센서 입력0건; 고장 판정 아님",
+    "latest_real_tilt_db": "2026-06-24",
+    "temperature_humidity_t34954": "7행 모두 test-dev-eui. 실물 수신 근거 없음",
+    "existing_temperature_rule": "온도·기울기 복합센서 t34957용; 온습도 t34954 경로와 구분",
+    "existing_issue": "I15: t34954 Core Data 매핑 미지원",
+    "boundary_replay": {
+      "state": "PASS",
+      "cases": [
+        {
+          "kind": "tilt",
+          "input": 9.9,
+          "received_at": 1791769452232,
+          "expected": 0,
+          "actual": 0,
+          "pass": true
+        },
+        {
+          "kind": "tilt",
+          "input": 10.0,
+          "received_at": 1791769452233,
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        },
+        {
+          "kind": "tilt",
+          "input": 10.1,
+          "received_at": 1791769452234,
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        },
+        {
+          "kind": "tilt",
+          "input": -10.0,
+          "received_at": 1791769452235,
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        },
+        {
+          "kind": "tilt",
+          "input": 9.9,
+          "received_at": 1791769452236,
+          "expected": 0,
+          "actual": 0,
+          "pass": true
+        },
+        {
+          "kind": "temperature",
+          "input": 59.9,
+          "received_at": 1791769452237,
+          "expected": 0,
+          "actual": 0,
+          "pass": true
+        },
+        {
+          "kind": "temperature",
+          "input": 60.0,
+          "received_at": 1791769452238,
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        },
+        {
+          "kind": "temperature",
+          "input": 60.1,
+          "received_at": 1791769452239,
+          "expected": 1,
+          "actual": 1,
+          "pass": true
+        },
+        {
+          "kind": "temperature",
+          "input": 59.9,
+          "received_at": 1791769452240,
+          "expected": 0,
+          "actual": 0,
+          "pass": true
+        }
+      ],
+      "errors": [],
+      "cleanup_errors": [],
+      "production_definitions_unchanged": true,
+      "remaining_rule_ids": [
+        "intrusion_5s_persist",
+        "intrusion_confidence_filter",
+        "intrusion_high_confidence_routing",
+        "sensor_temperature_alert",
+        "sensor_tilt_alert_t34955",
+        "sensor_tilt_alert_t34957",
+        "sensor_vibration_alert_t34957",
+        "sensor_vibration_alert_t34958"
+      ],
+      "streams_restored": true,
+      "production_rule_status": {
+        "intrusion_5s_persist": "running",
+        "intrusion_confidence_filter": "running",
+        "intrusion_high_confidence_routing": "running",
+        "sensor_temperature_alert": "running",
+        "sensor_tilt_alert_t34955": "running",
+        "sensor_tilt_alert_t34957": "running",
+        "sensor_vibration_alert_t34957": "running",
+        "sensor_vibration_alert_t34958": "running"
+      }
+    },
+    "limits": [
+      "게이트웨이 전원·현재 센서ID·대수·송신 주기 단위 미확인",
+      "과거 약90도 각도는 설치 기준 보정 없이 이상 판정하지 않음",
+      "복합센서 재생 event_code는 정수0; 실물 boolean 계약 호환은 미검증",
+      "시험 정상값 복귀는 추가 경보0 확인이며 실제 경보 해제·실물 출력 시험 아님"
+    ]
+  },
+  "final_verification": {
+    "state": "RULES_RUNNING_TRIAL_PHYSICAL_PASS",
+    "rules": [
+      {
+        "id": "intrusion_5s_persist",
+        "status": "running",
+        "retry": {
+          "attempts": 20,
+          "delay": 1000,
+          "multiplier": 2,
+          "maxDelay": 30000,
+          "jitter": 0.1
+        },
+        "exception_count": 0
+      },
+      {
+        "id": "intrusion_confidence_filter",
+        "status": "running",
+        "retry": {
+          "attempts": 20,
+          "delay": 1000,
+          "multiplier": 2,
+          "maxDelay": 30000,
+          "jitter": 0.1
+        },
+        "exception_count": 0
+      },
+      {
+        "id": "intrusion_high_confidence_routing",
+        "status": "running",
+        "retry": {
+          "attempts": 20,
+          "delay": 1000,
+          "multiplier": 2,
+          "maxDelay": 30000,
+          "jitter": 0.1
+        },
+        "exception_count": 0
+      },
+      {
+        "id": "sensor_temperature_alert",
+        "status": "running",
+        "retry": {
+          "attempts": 20,
+          "delay": 1000,
+          "multiplier": 2,
+          "maxDelay": 30000,
+          "jitter": 0.1
+        },
+        "exception_count": 0
+      },
+      {
+        "id": "sensor_tilt_alert_t34955",
+        "status": "running",
+        "retry": {
+          "attempts": 20,
+          "delay": 1000,
+          "multiplier": 2,
+          "maxDelay": 30000,
+          "jitter": 0.1
+        },
+        "exception_count": 0
+      },
+      {
+        "id": "sensor_tilt_alert_t34957",
+        "status": "running",
+        "retry": {
+          "attempts": 20,
+          "delay": 1000,
+          "multiplier": 2,
+          "maxDelay": 30000,
+          "jitter": 0.1
+        },
+        "exception_count": 0
+      },
+      {
+        "id": "sensor_vibration_alert_t34957",
+        "status": "running",
+        "retry": {
+          "attempts": 20,
+          "delay": 1000,
+          "multiplier": 2,
+          "maxDelay": 30000,
+          "jitter": 0.1
+        },
+        "exception_count": 0
+      },
+      {
+        "id": "sensor_vibration_alert_t34958",
+        "status": "running",
+        "retry": {
+          "attempts": 20,
+          "delay": 1000,
+          "multiplier": 2,
+          "maxDelay": 30000,
+          "jitter": 0.1
+        },
+        "exception_count": 0
+      }
+    ],
+    "unchanged_containers": [
+      "cctv-device-signboard",
+      "cctv-device-dabit",
+      "cctv-action-layer",
+      "cctv-ai-engine",
+      "cctv-media-server"
+    ],
+    "output_mapping_sha256": "e8edc1b18b945118541933bd6d5523e4a7386814acd59b2a440c0562d6727880",
+    "temporary_brokers": "",
+    "verified_at_utc": "2026-10-12T01:45:50.567289+00:00",
+    "containers": {
+      "cctv-device-signboard": {
+        "id": "29aeb393bd52e7a9f8241be9214b970e82e8442253fdfe2e73dbbf5d153feaa8",
+        "image": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+        "started": "2026-10-12T00:24:13.961853201Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      "cctv-device-dabit": {
+        "id": "f51a40001b1cdd706b69941702a76e10044002740582f2da9c20c8648aa36a0d",
+        "image": "sha256:bb0f35eee47d16c4bc8b30417717bc04b9d2c40ce6f2556d97d081f736a006fd",
+        "started": "2026-10-01T23:40:25.229113157Z",
+        "status": "exited",
+        "restart_count": 0
+      },
+      "cctv-action-layer": {
+        "id": "4583fc9fcd71816b7cdc1f20900901cf8cfcbbd669401c8b9fe3d66e99a9bbf6",
+        "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+        "started": "2026-10-08T06:15:40.114979171Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      "cctv-ai-engine": {
+        "id": "db65cceb6390ae7eae0b02db9403a46dba9053adbeca5cb27cb4e67c92d0e4f0",
+        "image": "sha256:294e52234fc170904e2a09b180b422e0562d6e11b5aa28ebcf287a1b47c9ed55",
+        "started": "2026-10-08T04:59:47.634961746Z",
+        "status": "running",
+        "restart_count": 0
+      },
+      "cctv-media-server": {
+        "id": "a2b1369a3598485980000d1e6da5ef09d79145da54b220cc37baaa00b7376c03",
+        "image": "sha256:f8628851106cc053f9175b248050bb5f362a6e65abd72297c167a1cb5a9a3be2",
+        "started": "2026-10-01T23:40:25.266992541Z",
+        "status": "running",
+        "restart_count": 0
+      }
+    },
+    "compose_loader_image": "cctv-kuiper-loader:20261012-01",
+    "loader_container_recreated": false,
+    "loader_container_status": "exited",
+    "sensor_boundary_cases_passed": 9,
+    "temporary_rule_count": 0
+  },
+  "remaining": [
+    "상시 camera_1 출력 대상 매핑·실제 AI 발생 이벤트 종단 시험",
+    "Action Layer 원시 AI 경보 경로와 sensor-rule-bridge 병존; 모든 출력이 eKuiper 단일 경로인 것은 아님",
+    "실행했던 구형 로더는 AI/센서 팩을 각각 적재하지만 기본 Compose 명령은 AI 팩만 지정. 기존 센서 규칙은 보존되며 새 장비 전체 프로비저닝은 별도 검증",
+    "유한20회 재시도 소진 이후 복구·전체 재부팅·장기 장애 복구",
+    "센서 실물 입력·기준 각도·ID/단위·관제 대조"
+  ],
+  "next": "P5.2 낙상 고정 평가의 기존 영상·로그에서 미탐/오탐/탐지 지연을 대조하고 보완 후보1개를 정한다. 이번 사전분석은 추가 GPU 추론·운영 설정 변경 없이 진행하며 P5.1/P2.3 선행 완료나 운영 승격으로 세지 않는다.",
+  "wbs": {
+    "P3.4": "VERIFY",
+    "P4.1": "VERIFY",
+    "P4.2": "VERIFY",
+    "P4.3": "PLANNED",
+    "done": 9,
+    "total": 33
+  },
+  "sources": [
+    "https://ekuiper.org/docs/en/v1.11/api/restapi/rules.html",
+    "https://ekuiper.org/docs/en/v1.11/getting_started/debug_rules.html",
+    "https://ekuiper.org/docs/en/v1.11/guide/rules/overview.html"
+  ],
+  "artifacts": {
+    "data/runtime/kuiper_restore_20261012/plan.json": "9f300b5cf54913d6b8833102e693ce13262385d09eaf2fac73056e48b6a22e21",
+    "data/runtime/kuiper_restore_20261012/restore_first_attempt.json": "fc282837e3df624d6b7a23bc1f854e396f63579d1f052657d599e2ab8bed556e",
+    "data/runtime/kuiper_restore_20261012/restore_result.json": "cf5e79a8dc18688dbefddfb799ff17625c0bfa6260ac8050c8bf4d70d3032da9",
+    "data/runtime/kuiper_restore_20261012/native_retry_probe.json": "b021db1f8e5097fb10cadca2a0f63759395117660cc4d2b62e5b9a858e703d33",
+    "data/runtime/kuiper_restore_20261012/trial/result.json": "7f4ad6d7ac4666372f6f79d60e3405873a38657f3dcd369bcae53a072585eed9",
+    "data/runtime/kuiper_restore_20261012/trial_repeat/result.json": "00c73827cc89e42fc400d5e841d679f3d68a1405a6805e0e84c5f8a93350ed1e",
+    "data/runtime/kuiper_restore_20261012/sensor_db_preflight.json": "548c045818ae3055cb18080876afbee7985d4132ba29cf13fafeced7837d83c5",
+    "data/runtime/kuiper_restore_20261012/sensor_boundary_replay.json": "b0620134ba21f0017b747696d01b41e5dcbc46342d048c79d73ec3af7928c036",
+    "data/runtime/kuiper_restore_20261012/final_verification.json": "509b7a8e492012a5c0e49f2123c08957001fe686692652a807e222941915c13c",
+    "data/runtime/kuiper_restore_20261012/loader_image/result.json": "fdb6591693b27ff8678627f6a7f493322bf9b0052b12eb2342ac643f93e528d2",
+    "data/runtime/kuiper_restore_20261012/board_verification.json": "b9fe9e033302f7e537913f957d2f79a07cca39b52474b1140e7fba4f0ff5ed1d",
+    "data/runtime/kuiper_restore_20261012/speaker_preflight.json": "0d088b85946240887c43b18ea57a28b7a1076880c220268a132e07fb821410b4",
+    "data/runtime/kuiper_restore_20261012/speaker_board_verification.json": "b551dbf724cf9a5b3fa0034cfdb0df38b0f42924bc44832b07d5b01a4bdec387"
+  },
+  "progress_board": {
+    "verified_at_utc": "2026-10-12T01:54:27.334423+00:00",
+    "url": "http://192.168.2.242:18081/",
+    "previous_address": "192.168.2.141:18081: No route to host; 당시 컨테이너가 이전IP에만 바인딩",
+    "scope": "진행판 nginx만 재생성. 서버 HTTP 확인이며 다른 PC 접속은 미검증",
+    "files": {
+      "index.html": {
+        "http": 200,
+        "bytes": 52419,
+        "sha256": "081268bcf7fced2fc38b53d2acca736f089677ded2bde5e3c1fe0e36d82d9494"
+      },
+      "CCTV_project_progress.pdf": {
+        "http": 200,
+        "bytes": 149675,
+        "sha256": "5e1712637caee6cc5fea908f75c1daf6189ec80323ddd2f827e5a23c0af95733"
+      }
+    },
+    "unchanged_operating_services": [
+      "cctv-device-signboard",
+      "cctv-device-dabit",
+      "cctv-action-layer",
+      "cctv-ai-engine",
+      "cctv-media-server"
+    ],
+    "progress_web": {
+      "id": "e625a10a74e9bc69b33063cf7d1a880f3018f845895b847a4dc0386f3d677d8d",
+      "image": "sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10",
+      "status": "running",
+      "ports": {
+        "80/tcp": null,
+        "8080/tcp": [
+          {
+            "HostIp": "192.168.2.242",
+            "HostPort": "18081"
+          }
+        ]
+      }
+    },
+    "wbs_states_preserved": 33,
+    "model_rows_preserved": 8,
+    "pdf_first_page_visual_check": "PASS",
+    "lint": "Ruff PASS"
+  },
+  "speaker_followup": {
+    "checked_at_utc": "2026-10-12T02:02:53.857702+00:00",
+    "user_constraint": "지금 스피커는 장비를 켤 수 없음",
+    "scope": "기존 모의시험을 이용한 P3.5 사전검증; 실물 출력 없음",
+    "command": ".venv/bin/python -m pytest -q tests/test_speaker_device_service.py tests/test_speaker.py::TestParamBuilders::test_param_stop tests/test_action_command_components.py::test_command_builder_creates_speaker_alarm_command",
+    "result": "9 passed in 0.22s",
+    "coverage": [
+      "재생 명령 변환",
+      "지원하지 않는 명령 거절",
+      "중단 실패 응답 변환",
+      "명령 결과 ID/직렬화",
+      "dry_run 장치 호출0",
+      "동일 요청 중복 재생 억제",
+      "요청 장치 분기",
+      "중단 패킷 형식",
+      "경보 명령 생성"
+    ],
+    "not_verified": [
+      "실물 음성/정지/음량",
+      "실제 네트워크 연결/장애 복구",
+      "실물 명령 결과 DB/관제 대조"
+    ],
+    "runtime_operations": 0,
+    "product_code_changed": false,
+    "wbs": "P3.5 PLANNED 유지; 실물 시험 가동 대기",
+    "next": "P5.2 낙상 고정 평가의 기존 영상·로그에서 미탐/오탐/탐지 지연을 대조하고 보완 후보1개를 정한다. 이번 사전분석은 추가 GPU 추론·운영 설정 변경 없이 진행하며 P5.1/P2.3 선행 완료나 운영 승격으로 세지 않는다.",
+    "board_verification": {
+      "checked_at_utc": "2026-10-12T02:04:21.400870+00:00",
+      "url": "http://192.168.2.242:18081/",
+      "scope": "스피커 가동 대기·낙상 자료 대조 선행 반영; 서버 HTTP 검증",
+      "files": {
+        "index.html": {
+          "status": 200,
+          "bytes": 52856,
+          "sha256": "bc7a6d0e01f96808b5a07cac153cbb732b5683bf8b5b5ae358900d062d6dfca4"
+        },
+        "CCTV_project_progress.pdf": {
+          "status": 200,
+          "bytes": 148734,
+          "sha256": "2ed3e37f541a3a8d851b6da8068ec04c201064111d56c435e97842e431bedc16"
+        }
+      },
+      "pdf_first_page_visual_check": "PASS",
+      "wbs_states_unchanged": 33,
+      "model_rows_unchanged": 8,
+      "lint": "Ruff PASS"
+    }
+  }
+}

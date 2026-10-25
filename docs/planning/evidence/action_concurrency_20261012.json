@@ -1,0 +1,171 @@
+{
+  "updated_at": "2026-10-12T15:54:35.259471+09:00",
+  "wbs": "P3.3 독립 사전보완",
+  "issue": "I03 일부",
+  "status": "FIXED_LOCAL",
+  "cause": [
+    "캐시 조회/get와 실행/put 사이 경쟁으로 같은 요청의 물리 호출 중복",
+    "명령 ID 1행에 마지막 장치 결과가 이전 실패/미응답을 덮음",
+    "MQTT 발행 성공을 acknowledged로 오인",
+    "HTTP 경로의 물리 device_id 전달 누락·사이렌 예외에서 기본 대상 ID 사용"
+  ],
+  "implementation": {
+    "product_files": [
+      "src/edgex/request_idempotency.py",
+      "src/edgex/dabit_device_service.py",
+      "src/edgex/speaker_device_service.py",
+      "src/edgex/siren_device_service.py",
+      "src/edgex/command_http.py",
+      "src/services/device_command_transport.py",
+      "src/services/command_result_collector.py",
+      "src/services/_action_bridge_executor.py",
+      "src/services/_action_bridge_repo.py",
+      "src/services/edgex_result_handler.py"
+    ],
+    "database_schema_changed": false,
+    "schema_init_ast_unchanged": true,
+    "dependencies_added": 0,
+    "cache": "Future로 동일 ID 실행/실패를 공유, 성공 결과 LRU4096 유지·다른 요청 진행 허용",
+    "result_storage": "기존 action_commands.payload_json에 고정 대상/결과 벡터, BEGIN IMMEDIATE에서 read/merge/write",
+    "status_change": "전송 accepted; 미응답 pending; 혼합 실패 partial_failure; 전달 여부 불명 uncertain; 실제 장치 ACK만 acknowledged",
+    "result_validation": "요청/이벤트/장치/토픽 대조, 미등록 대상·잘못된 상태·집계 필드 주입 차단",
+    "dispatch_guard": "전체 대상 저장 실패 시 발행 차단; 일부 발행 예외 후 나머지 대상 계속"
+  },
+  "validation": {
+    "environment": "인프로세스·임시 SQLite·모의 장치; 실제 장비/운영 브로커 시험 아님",
+    "regression": {
+      "passed": 162,
+      "new_cases": 24,
+      "failed": 0,
+      "skipped": 0
+    },
+    "before_failed_cases": 9,
+    "concurrent_device_cases": "전광판/스피커/사이렌 각 성공·실패 2조건의 동시 실행1회",
+    "lost_reply": "장치 서비스 성공 처리 뒤 결과 메시지 유실 재수신은 캐시 반환; 제조사 ACK 자체 유실 복구 시험 아님",
+    "other_cases": [
+      "독립 요청 진행·예외 후 잠금 해제·캐시 상한",
+      "명시적 실패 복구 재시도",
+      "역순/동시/발행 반환 전 장치 응답",
+      "발행 예외·대상 저장 실패·응답 누락",
+      "위조된 대상/상태/집계 필드 거절",
+      "DB 저장소 객체 재생성 뒤 상태 유지",
+      "HTTP 2번째 장치 지정·사이렌 예외 대상 보존"
+    ],
+    "ruff": "PASS",
+    "git_diff_check": "PASS",
+    "intermediate_failures": [
+      "첫 결과 회귀4실패: 변경된 상태 기대값/테스트 저장소 반환값·Shadow 비교 수정",
+      "장치 ID 불일치 응답을 새 논리 명령으로 만드는 경계1실패 추가 확인 후 상관관계 검증으로 수정"
+    ],
+    "graph_review": "지정10파일 graph detect 결과 함수0; JSON/동적 경계 포함 실제 diff·회귀로 대조, graph 점수를 품질 합격 근거로 사용하지 않음"
+  },
+  "production": {
+    "deployed": false,
+    "physical_output": false,
+    "gpu_test": false,
+    "manual_restart": false,
+    "observed_containers": {
+      "/cctv-ai-engine": {
+        "id": "3ced24f40fc9897300c306d94f5a450a689dc86b9c62e5fac98db06c63c1ab6b",
+        "image": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+        "started_at": "2026-10-12T05:38:00.846787756Z"
+      },
+      "/edgex-kuiper": {
+        "id": "6249a0c22b5712d01242c176abfce736685579514bfb389952062c3fd9392576",
+        "image": "sha256:7f4962946a721ece5ec630150e47614c4a461ee2c29600f24d96ef5e35a9d4da",
+        "started_at": "2026-10-12T04:25:27.149894272Z"
+      },
+      "/cctv-action-layer": {
+        "id": "74deaeb0b5bdd64c8f2e2a141daa25c193a75cf235b214fee6ef8b4dcdceedeb",
+        "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+        "started_at": "2026-10-12T04:28:54.273675553Z"
+      },
+      "/cctv-device-signboard": {
+        "id": "29aeb393bd52e7a9f8241be9214b970e82e8442253fdfe2e73dbbf5d153feaa8",
+        "image": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+        "started_at": "2026-10-12T04:27:09.237102198Z"
+      }
+    },
+    "matches_prior_observation": true,
+    "prior_evidence": "data/runtime/action_identity_20261012/ekuiper_validation.json",
+    "scope": "컨테이너 ID/이미지/기동 시각 대조; 이번 영상 성능/장시간 검증은 아님"
+  },
+  "limits": [
+    "장치 실행 중복 캐시는 프로세스 메모리·같은 서비스 인스턴스 안의 동일 요청 ID에 한정",
+    "재시작/캐시 축출 뒤 영속 중복 및 같은 ID·다른 명령 내용 hash 충돌 차단은 잔여",
+    "제조사 ACK 자체 유실·실행/결과 저장 사이 프로세스 종료는 영속 uncertain 처리 후속",
+    "응답 제한시간/attempt 구분·상태 조회/자동 재시도 미구현; 응답 없으면 pending 보존",
+    "기존 운영 DB의 과거 acknowledged 기록은 소급 수정하지 않음",
+    "미등록된 과거 결과에는 전체 대상 집합을 복원할 수 없음",
+    "P3.1/P3.2 선행·운영 반영·실물 품질 합격은 별도"
+  ],
+  "progress": {
+    "completed": 9,
+    "total": 33,
+    "completed_task_percent": 27.3,
+    "wbs_states_unchanged": true,
+    "model_rows_unchanged": true
+  },
+  "next": "P3.3 요청 내용 충돌·재시작 경계의 영속 중복 방지와 불확실 실행 보류를 보완한다. 프로세스 내 동시 중복·미응답/부분 실패는 로컬 완료, 운영 반영·실물 시험·선행 P3.1/P3.2는 별도다.",
+  "artifacts_sha256": {
+    "src/edgex/request_idempotency.py": "18dad5b53a10808eb42fa3587514ad099e0f055cf62af72d9afaad476092436c",
+    "src/edgex/dabit_device_service.py": "3c520b89e64a47ff3ff441027876fd1ce802c1871b8303e99df1298b50ae28f4",
+    "src/edgex/speaker_device_service.py": "b8db7db726932448211ba5c9c8328893569fae3fbbb6bf6f1524cd6dd1516a89",
+    "src/edgex/siren_device_service.py": "6a0931ac5c2be21bd27c1526dc0fd13516ec6c49fbbcc10e188bc489dd574b3c",
+    "src/edgex/command_http.py": "fecf297a7a6ef34b4756670b7463e3d3bfa06281eabfe45e638025832d53a429",
+    "src/services/device_command_transport.py": "df5d4d434c31249a6822e4102b2120d1311aab5478a8df0f92956a905e9521b0",
+    "src/services/command_result_collector.py": "dde12746b5aa888dbe7d1058e324038269bfbdb3a2e54e8ccf53375747409dde",
+    "src/services/_action_bridge_executor.py": "7b5c37ccb5852177b117080740678479dd8baac23397d1fdcf50fb9b024ad2b5",
+    "src/services/_action_bridge_repo.py": "4c2abffd88b16d9236ce8bee3d3cb2cb3ebef768f5df786e138a021e40c626a1",
+    "src/services/edgex_result_handler.py": "fc4f072cf22997a59bea31cfcb349dd47e837d090df9d20877ae588448a9d888",
+    "tests/test_device_request_concurrency.py": "9a4ec2b9db5b936498b0b3265252d6bfefaa0f8028270a6c81e7c7dbc3d944de",
+    "tests/test_action_target_results.py": "ef6533d7f3c3b0ccd45fee6d8fef599c5cacdd472a56bfe00ca91d6ff79411de",
+    "tests/test_device_command_transport.py": "7b3bf69dba33e75604ef163c28d45013a35a9e5469e2d143bc87ea03288f01cc",
+    "tests/test_edgex_result_handler.py": "4cf1d13523e46648576484e8e33a161b043cf1d8ae37eb5960252a4c4c43c5c4",
+    "tests/test_action_bridge.py": "d785534eca14d7b3bf093c4d64e81cdef83be6dbae1bb99b85955143b2033d64",
+    "tests/test_command_http.py": "3cf2bd0f9589f4a4d55018df73635ea8ce605108bbbe6660a3ef57bc8086f99d",
+    "data/runtime/action_concurrency_20261012/before.xml": "7eea21f2fc93faa42ad3b443250e7b065a8c65120d9574f38b14365d8409db6b",
+    "data/runtime/action_concurrency_20261012/target_boundaries_before.xml": "f0361bbd95a408caedc14e589245bfcb904da18d214e56b2aac61d04c3f700b6",
+    "data/runtime/action_concurrency_20261012/concurrency.xml": "32d6a9a8d0b8f19f0f19e6365773524857ac0b1b317317ea3c8f01088f4eda9a",
+    "data/runtime/action_concurrency_20261012/results_first.xml": "3315a80b637eb5d376a966bb84482b2a0d22029010b7925afe9e4d9738fa757c",
+    "data/runtime/action_concurrency_20261012/results_second.xml": "db663a5abe20e620271d54c0f87eda192bfba2cd8f68f2b85d4ad05f9c0ffe14",
+    "data/runtime/action_concurrency_20261012/regression.xml": "6d3609c748e6445a37a2110f5056946a7bc78e79962e1cb9b72960dbeade4f3a",
+    "scripts/ops/render_progress_snapshot.py": "cc53eae117b5495c1a7eb1bf58bdf5f0017a3e1813a709166d1cdb6daa5e753b",
+    "scripts/ops/progress_snapshot_template.html": "2b849f188cadbbddbcae27e698e239bc3c56b9f6527d4f37df65f6035f57fe0e",
+    "docs/devices/EVENT_PAYLOADS.md": "8d154ac8612b23ee302c0381963c191db6b1e25e5f983794b8fd35c8f58fb624",
+    "docs/features/EVENT_SCHEMA_STANDARD.md": "b1ed1692d679a5dc0fa30d740f4eb1409c41ca05cbe67baa4253aac632f82d69",
+    "docs/planning/figma_exports/progress_v138.json": "d775f838e9f5c2cf12ecf5b5fac3f60ac3a9ec3872da87f8c73811114c58ff40"
+  },
+  "source_before_sha256": {
+    "src/edgex/request_idempotency.py": "a1ca813a6a5b69418b4c3fe854bca37dc84ae83d876a6a679df487f73aa41fa2",
+    "src/edgex/dabit_device_service.py": "cbb0696d4e02fa38124bfda6be0d838eeae305459dec4e77ac0f03d00223c17a",
+    "src/edgex/speaker_device_service.py": "8d8de0ce5e391c37764c1743f6ef4ce1ffe681ba84f21aeef4dde959d5d88acf",
+    "src/edgex/siren_device_service.py": "49514fbcafc65c02bae336960ec6c9ceab09846b0b534240f632bd8b22a6124e",
+    "src/edgex/command_http.py": "840fd05c2c74b9707e4432eb81408005f11a2c452e9907236c8af51eb61cdd9c",
+    "src/services/device_command_transport.py": "ea659231956a92272b53adacfed4d7775c6e69c1724ea5c581d1530fd2ff8d9c",
+    "src/services/command_result_collector.py": "57f2c757a9e1482dbe61fe88d50ec036332261357c8db79d3af5766e4c584c54",
+    "src/services/_action_bridge_executor.py": "44409aa4a9873b684e2b21e3a1c319dd80686985eb8c84398145877cee98bef8",
+    "src/services/_action_bridge_repo.py": "0b63ce99f139a3f6da9d8d57dcbafb514b252ef59650c8d5b1560bceb8ca7882",
+    "src/services/edgex_result_handler.py": "16f3f31fd082cfc19c136822fefb16e27292da537a88ee3d4edbfc4316434e1a"
+  },
+  "publication": {
+    "artifacts": [
+      {
+        "url": "http://192.168.2.242:18081/index.html",
+        "curl_exit_code": 0,
+        "bytes": 61304,
+        "sha256": "6d2870c636fe8e26efce5aabcfbd51f6f47cb2496e83775a94b2fd33a8f193ab",
+        "matches_local": true
+      },
+      {
+        "url": "http://192.168.2.242:18081/CCTV_project_progress.pdf",
+        "curl_exit_code": 0,
+        "bytes": 147646,
+        "sha256": "e1af837fe1186469632c5b8563ebff494677edd0ab8c25b320e6489f26b9481d",
+        "matches_local": true
+      }
+    ],
+    "pdf_first_page_visual_check": "PASS / 이번 결과·다음 작업 표시, 잘림 없음",
+    "wbs_and_model_rows_unchanged": true
+  }
+}

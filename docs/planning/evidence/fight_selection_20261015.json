@@ -1,0 +1,1662 @@
+{
+  "date": "2026-10-15",
+  "wbs_id": "P5.7",
+  "status": "PLANNED",
+  "selection_status": "CANDIDATE_POOL_LOCKED_NOT_FINAL_INDEPENDENT_SET",
+  "fixed_constraints": {
+    "frame_size": [
+      1920,
+      1080
+    ],
+    "source_fps": 30,
+    "fullframe": true,
+    "person_pose_confidence": 0.5,
+    "target_pose_inferences_per_second": 15,
+    "native_1080p_verified": false
+  },
+  "data_selection": {
+    "primary": "AI Hub171 이상행동 CCTV 영상",
+    "user_download_approval_confirmed": true,
+    "catalog_observed_files": 189,
+    "catalog_total_compressed_bytes": 5330413924340,
+    "catalog_raw_sha256": "f260d4f1af4842e7f766a3c84ac7479fe34c52da0735e847d52e9da2b53d05d4",
+    "catalog_snapshot": "data/runtime/p57_fight_selection_20261015/file_inventory.json",
+    "first_batch": [
+      {
+        "filekey": 49850,
+        "path": "19.이상행동CCTV/02.싸움(fight)/실내(원본)/insidedoor_01.zip",
+        "bytes": 22751187328,
+        "role": "싸움 실내 원본: 원본/라벨 구조와 정상 전후 구간 확인",
+        "downloaded": false,
+        "content_verified": false,
+        "review_status": "HOLD_CHROMAKEY_SAMPLE",
+        "note": "첫 실제 표본이 녹색 크로마키 스튜디오라 독립 평가 제외. 추가 수신 중단, 전체 묶음은 미검증."
+      },
+      {
+        "filekey": 49753,
+        "path": "19.이상행동CCTV/02.싸움(fight)/실외/outsidedoor_01.zip",
+        "bytes": 30793386153,
+        "role": "싸움 실외 원본: 실내와 다른 배경/장면 확보",
+        "downloaded": true,
+        "content_verified": false,
+        "review_status": "CANDIDATE_POOL_LOCKED_38_QUARANTINED_3",
+        "sha256": "79b7f1ba7e7d957e6236795ee5f742befa3d52915f06c62a7fdda8f1defe44d6",
+        "content_inspection_complete": true,
+        "note": "전체 압축 CRC 통과와 미디어 적격성을 구분:41쌍 검사 완료·38후보/3격리, PTS/사건 경계·독립성 검수 잔여."
+      }
+    ],
+    "first_batch_compressed_bytes": 53544573481,
+    "deferred_assault_batch": [
+      {
+        "filekey": 49825,
+        "path": "19.이상행동CCTV/01.폭행(assault)/실내(원본)/insidedoor_01.zip",
+        "bytes": 19073961691,
+        "role": "폭행 실내: 일방적 공격 보강",
+        "downloaded": false,
+        "content_verified": false
+      },
+      {
+        "filekey": 49841,
+        "path": "19.이상행동CCTV/01.폭행(assault)/실외/outsidedoor_01.zip",
+        "bytes": 29457440699,
+        "role": "폭행 실외: 일방적 공격 보강",
+        "downloaded": false,
+        "content_verified": false
+      }
+    ],
+    "exclude_from_independent_evaluation": [
+      "크로마키/합성 배경",
+      "기존 낙상 보정20영상 및 파생물",
+      "기존 모델 선택/임계값 조정에 사용된 영상",
+      "원본/장면/라벨/사용 권리 불명 표본"
+    ],
+    "rwf2000": "제공자 승인 없는 상업적 이용 제한·공식 영상 배포 중단으로 현재 도입 제외",
+    "field_source": "허가된 새 현장1080p 정상/유사 행동 및 연출 싸움; 아직 확보0",
+    "quality_observations": [
+      {
+        "filekey": 49850,
+        "video_member": "10-4/10-4_cam01_fight03_place07_night_summer.mp4",
+        "finding": "녹색 크로마키 스튜디오. 독립 평가 제외. 묶음 전체 미판정."
+      },
+      {
+        "filekey": 49753,
+        "video_member": "1-1/1-1_cam02_fight04_place02_night_spring.mp4",
+        "finding": "실제 거리 촬영·압축CRC/미디어 헤더/3표본 확인. 라벨30FPS·영상29.97FPS/프레임수 차이는 기록 유지."
+      },
+      {
+        "filekey": 49753,
+        "video_member": "1-1/1-1_cam02_fight04_place02_night_summer.mp4",
+        "finding": "ZIP CRC는 일치하나81,920bytes MP4 헤더 손상. ffprobe EOF."
+      }
+    ],
+    "archive_quality": {
+      "downloaded_video_files": 41,
+      "xml_files": 41,
+      "candidate_videos": 38,
+      "quarantined_pairs": 3,
+      "filename_scene_groups": 11,
+      "exact_duplicate_groups": 0,
+      "visual_duplicate_candidate_pairs": 3,
+      "final_independent_scene_groups": 0,
+      "zip_crc_all_members": "PASS",
+      "video_sha256_files": 41,
+      "label_sha256_files": 41,
+      "xml_structural_valid": 39,
+      "ffprobe_and_three_frames_valid_pairs": 38,
+      "preview_visual_review": "38영상×3표본114장 확인: 거리/골목/지하통로. 크로마키 표본 없음. 전체 구간 디코딩/사건 onset-end 수동 판정과는 구분.",
+      "temporal_mapping": "38개 모두 라벨30/실제29.97FPS 차이. 7개 마지막 행동 프레임은 PTS 대응 확인 필요, 손상으로 단정하지 않음.",
+      "normal_segment_policy": "싸움 영상의 전후 구간을 별도 독립 정상 장면으로 세지 않음. 다른 이상행동도 자동 정상 처리하지 않음.",
+      "inspection_report": "data/runtime/p57_fight_access_20261015/inspection_49753.json",
+      "candidate_manifest": "docs/planning/evidence/fight_candidate_pool_20261015.json",
+      "candidate_manifest_sha256": "4adaaf0c0f5eb2c19f06da9edbb2b16b52140a427ece8de621a3db95deb3db43"
+    }
+  },
+  "model_candidates": [
+    {
+      "rank": 1,
+      "id": "pair_pose_tcn",
+      "decision": "FIRST_BASELINE",
+      "description": "기존 COCO17 Pose/추적을 입력으로 두 사람 상호작용 특징을 학습하는 소형 TCN",
+      "reuse": "src/core/ai/fall_temporal_model.py의 Conv1D 구조·기존 GPU Pose/이벤트 경로",
+      "needs": [
+        "싸움 전용 상호작용 특징·결측 mask/영상PTS 창",
+        "새 학습 가중치·정상 대조·관제 연결",
+        "ONNX/TensorRT 출력 일치·실제GPU 지연 검증"
+      ],
+      "limits": [
+        "낙상 encode_frame_sequence는 낙상 점수/사유 전용이라 직접 재사용 불가",
+        "낙상 가중치는 싸움 학습/정확도 근거가 아님",
+        "추가 연산이 적을 것이라는 설계 추정이며 품질/속도 실측 없음"
+      ],
+      "weights_selected": false
+    },
+    {
+      "rank": 2,
+      "id": "stgcn_coco17",
+      "decision": "COMPARISON_BASELINE",
+      "description": "MMAction2 ST-GCN COCO17·2인 입력 구성",
+      "license": "코드 Apache-2.0; 데이터/가중치 이용 조건은 별도",
+      "needs": [
+        "싸움 전용 재학습·개별 인물 정규화로 지워지는 상대 위치 보존",
+        "최종 설정/commit·ONNX 변환 확인",
+        "다인 pooling만으로 상호작용 학습을 보장하지 않으므로 1순위와 비교"
+      ],
+      "weights_selected": false
+    },
+    {
+      "rank": 3,
+      "id": "tao_rgb_resnet18",
+      "decision": "POSE_LIMIT_COMPARATOR",
+      "description": "TAO ActionRecognitionNet ResNet18 RGB-only",
+      "license": "NVIDIA 모델/도구 약관 별도 확인; 이번 다운로드/도입0",
+      "needs": [
+        "싸움 재학습",
+        "DeepStream 시퀀스 배칭·1080p 좌표 연동",
+        "추가 GPU/메모리 측정"
+      ],
+      "limits": [
+        "공식 예제 push 라벨은 싸움 사건 판정과 동일하지 않음",
+        "32프레임/224입력 예제는 모델 내부 입력이며1080p 원본 기준 유지"
+      ],
+      "weights_selected": false
+    },
+    {
+      "rank": 4,
+      "id": "tao_pose_3d_pretrained",
+      "decision": "DO_NOT_USE_DIRECTLY",
+      "description": "NVIDIA 배포 PoseClassificationNet",
+      "reason": "NGC 배포 예제는34관절3D·단일 인물 가정·일상6종; 기존COCO17 2D/싸움으로 바로 대체 불가",
+      "weights_selected": false
+    }
+  ],
+  "independent_evaluation": {
+    "status": "CANDIDATE_POOL_LOCKED_FINAL_INDEPENDENT_SET_BLOCKED_BY_DATA_GAPS",
+    "target_unique_scene_groups": 200,
+    "target_positive_groups": 100,
+    "target_negative_groups": 100,
+    "positive_mix": {
+      "mutual_fight": 70,
+      "one_sided_assault": 30
+    },
+    "negative_mix": {
+      "ordinary": 50,
+      "lookalike": 50
+    },
+    "extra_normal_seconds_target": 7200,
+    "normal_window_seconds": 10,
+    "actual_downloaded_videos": 41,
+    "actual_labeled_videos": 39,
+    "actual_frozen_scene_groups": 0,
+    "locked_manifest_sha256": null,
+    "selected_video_ids": [],
+    "development_partition": "개발 풀의 train/validation은 원본/장면/인물 연계 그룹 단위80/20; 독립200그룹을 먼저 제외. 수량 부족 시 기준을 몰래 완화하지 않음",
+    "grouping": "동일 원본·사건·동시다시점·파생물·배우/촬영세션 연계를 연결 그룹으로 묶음; 근거 없으면 독립성 미확정",
+    "selection_seed": 20261015,
+    "preprocessing": "원본 전체화면을 종횡비 보존1080p로 처리. 원래1080p와 확대본을 분리 기록; 원본PTS/프레임 대응 보존·보간 프레임은 관측으로 세지 않음",
+    "label_policy": "파일명이fight라고 전체 프레임 양성으로 세지 않고 XML 사건 시각/참여자와 영상 확인; 다른 이상행동을 자동 정상 취급하지 않음",
+    "reporting": "P5.6 사건F1/정상창 특이도·최초 경보 지연/오경보시간당·실제FPS와 자원. 누락NO_RESULT·유사 행동별 성적·표본 신뢰구간 분리; KISA 성적 아님",
+    "additional_data_user_reply": "별도 자료 없음 (정상·유사 행동 영상 및 배우/촬영세션 구분 자료)",
+    "freeze_blockers": [
+      "독립 정상/유사 행동100그룹 및 별도 정상2시간 확보",
+      "상호 싸움70·일방 폭행30 목표 대비 사건 다양성/수량 보강",
+      "전역 배우·촬영 세션 연계 및 3시각유사쌍 검토",
+      "실제 PTS-행동 프레임 대응과 사건 시작/종료 전구간 검수"
+    ],
+    "actual_candidate_videos": 38,
+    "actual_quarantined_pairs": 3,
+    "actual_filename_scene_groups": 11,
+    "candidate_manifest": "docs/planning/evidence/fight_candidate_pool_20261015.json",
+    "candidate_manifest_sha256": "4adaaf0c0f5eb2c19f06da9edbb2b16b52140a427ece8de621a3db95deb3db43"
+  },
+  "access": {
+    "api_credentials_supplied": true,
+    "api_credentials_persisted": false,
+    "credential_validity_verified": true,
+    "public_catalog_web_status": 200,
+    "public_api_list_statuses": [
+      502,
+      502
+    ],
+    "manual_pdf_obtained": true,
+    "note": "I66 원인 확인: 데이터셋171 다운로드 승인 만료. 사용자 재승인 후 실제200 수신으로 접근 복구. 키는 비저장.",
+    "initial_probe": {
+      "dataset": 171,
+      "filekey": 49850,
+      "requested_max_read_bytes": 1024,
+      "status": 502,
+      "error": "HTTPError"
+    },
+    "diagnosis": {
+      "cause": "dataset_download_approval_expired",
+      "confirmed_by": "동일 키/파일의 재승인 전 일반·Range 요청 모두 승인 만료 본문/502, 사용자 재승인 직후200 및 TAR 수신",
+      "download_error_body": "데이터 승인 유효기간이 도래하였습니다. 홈페이지(https://aihub.or.kr)에서 다시 신청 및 승인 후 이용 가능 합니다.",
+      "reauthorized_by_user": true,
+      "reapproval_status": 200,
+      "list_http_status": 502,
+      "list_valid_body_files": 189,
+      "list_matches_web_catalog": true,
+      "range_resume_supported": false,
+      "unused_key_validate_endpoint_status": 404,
+      "evidence_dir": "data/runtime/p57_fight_access_20261015"
+    },
+    "download_probe": {
+      "dataset": 171,
+      "filekey": 49850,
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/x-tar",
+        "Transfer-Encoding": "chunked",
+        "Date": "Thu, 15 Oct 2026 03:59:49 GMT",
+        "Connection": "close",
+        "Server": "Server"
+      }
+    },
+    "issue_status": "RESOLVED_ACCESS_ONLY",
+    "archive_result": {
+      "dataset": 171,
+      "filekey": 49753,
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/x-tar",
+        "Transfer-Encoding": "chunked",
+        "Date": "Thu, 15 Oct 2026 04:15:14 GMT",
+        "Connection": "close",
+        "Server": "Server"
+      },
+      "result": "downloaded_zip_verified_with_tar_envelope_warning",
+      "bytes": 30793386153,
+      "path": "data/datasets/aihub171/49753/outsidedoor_01.zip",
+      "initial_stream_result": {
+        "result": "incomplete",
+        "error": "AssertionError:Missing/reordered/duplicate TAR part",
+        "bytes": 30793386153
+      },
+      "sha256": "79b7f1ba7e7d957e6236795ee5f742befa3d52915f06c62a7fdda8f1defe44d6",
+      "zip_crc_all_members": "PASS",
+      "zip_members": 93,
+      "videos": 41,
+      "labels": 41,
+      "validation_elapsed_s": 868.21,
+      "transport_warning": "목록과 동일한 전체 ZIP bytes 수신 뒤 추가 TAR 항목 순서 검사 실패. 실패 항목 원문은 미수집하여 상세 원인 미확정. 완성 ZIP의 크기·전체CRC·고유목록·디스크SHA를 별도로 검증했으며 추가 bytes는 파일에 덧붙이지 않음."
+    },
+    "manual_pdf_source": "official_combined_2019_guide_chapter10; dataset-specific8317/8318 still HTML error"
+  },
+  "storage": {
+    "free_bytes_at_check": 155820961792,
+    "reserve_bytes": 30000000000,
+    "policy": "전체/병렬 다운로드 금지. 한 묶음씩 수신·해시/압축 검증 후 필요한 라벨/영상만 추출. ZIP목록의 실제 해제 크기와 tar/zip 임시 중복 공간 확인; 임의 기존 데이터 삭제 없음",
+    "free_bytes_after_archive": 114988900352
+  },
+  "implementation_status": {
+    "training_runs": 0,
+    "gpu_trials": 6,
+    "ai_stops": 2,
+    "production_changes": 0,
+    "new_dependencies": 0,
+    "runtime_file_sha256": {
+      "src/core/ai/fall_temporal_model.py": "9537b4c935496f98e2cd5d4916cab3a36d2c272b0a1d3cd9ad32bfea26ae2e96",
+      "src/core/ai/_temporal_worker.py": "7e33f3323c89cf8119888e013a1dd38cafa6b99aaf3807ca1390e61ed9d7c35a",
+      "src/core/video_event_ingest.py": "7158836647b520c8ac84872fe6752bf9c610abe740e5a6c8945be8a68c6b4163",
+      "src/core/events.py": "9d8d1f01c4b53b216c4c9cddab63cee0d4938a04724d401f73607f88279fad09",
+      "config/event_type_map.json": "1213c8dff21bcb9ef17d7ce934b0f2cf14f7f1be42924f4c40e8199dd0cd7a63",
+      "models/model_manifest.json": "2ae31f3969fed58b831e959c9c3a06a4aa398d1b9580af0ed74c93f65df682a2"
+    },
+    "synthetic_cli_runs": 1,
+    "gpu_initialization_failures": 1,
+    "gpu_container_attempts": 7
+  },
+  "sources": {
+    "aihub171": "https://www.aihub.or.kr/aihubdata/data/view.do?dataSetSn=171",
+    "aihub_policy": "https://www.aihub.or.kr/intrcn/guid/usagepolicy.do?currMenu=151&topMenu=105",
+    "aihub_catalog": "https://www.aihub.or.kr/aihubdata/data/aJaxS3FileList.do?dataSetSn=171&dataPckageSn=",
+    "rwf2000": "https://github.com/mchengny/RWF2000-Video-Database-for-Violence-Detection",
+    "mmaction2_license": "https://github.com/open-mmlab/mmaction2/blob/main/LICENSE",
+    "stgcn_coco": "https://github.com/open-mmlab/mmaction2/blob/main/configs/skeleton/stgcn/stgcn_8xb16-joint-u100-80e_ntu60-xsub-keypoint-2d.py",
+    "stgcn_person_pooling": "https://github.com/open-mmlab/mmaction2/blob/main/mmaction/models/heads/gcn_head.py",
+    "tao_pose": "https://docs.nvidia.com/tao/tao-toolkit/latest/text/cv_finetuning/pytorch/pose_classification/pose_classification.html",
+    "tao_pose_model_card": "https://catalog.ngc.nvidia.com/orgs/nvidia/teams/tao/models/poseclassificationnet",
+    "tao_rgb": "https://docs.nvidia.com/tao/tao-toolkit/latest/text/cv_finetuning/pytorch/action_recognition_net.html",
+    "deepstream_action": "https://docs.nvidia.com/metropolis/deepstream/dev-guide/text/DS_3D_Action.html"
+  },
+  "next": "사용자 재개 지시 전 신규 싸움 작업 보류; 기존 자료/라벨/GPU6회 기록 보존",
+  "candidate_selection_validation": {
+    "status": "PASS",
+    "checks": [
+      "official_catalog189_unique_ids",
+      "selected4_files_match_source",
+      "first_batch_exact_bytes",
+      "positive_negative_and_normal_targets",
+      "no_false_frozen_manifest",
+      "1080p_and_confidence05",
+      "model_priority4_and_no_weights",
+      "api502_not_auth_success",
+      "runtime6_sha_unchanged",
+      "WBS37_and_board_counts",
+      "latest3_documents_and_I66"
+    ],
+    "scope": "선정 산출물 정합성. 실제 데이터·모델 성능 시험이 아님.",
+    "ruff_renderer": "PASS",
+    "diff_check": "PASS",
+    "model_performance_tests_run": false,
+    "graph_review_note": "detect_changes는 기존 작업 차이/범위 밖 함수를 함께 반환해 이번 문자열 변경의 독립 위험도로 해석하지 않음."
+  },
+  "prior_selection_artifact_sha256": {
+    "docs/planning/MODEL_INFERENCE_METRICS.md": "2ac54f09e63a9e40760fe0cbcc52309e38700aee92eced894a904d9e9f55fb42",
+    "docs/planning/figma_exports/progress_v138.json": "9906714903c3fff2b79e46b899afcdda4046c894b7ee5b45a3ec4ad4f4e7ddca",
+    "data/runtime/p57_fight_selection_20261015/file_inventory.json": "48971343a1d530d37fdeda32348296b8c44b666da28cb19cb358458d7b94d9e0",
+    "data/runtime/p57_fight_selection_20261015/auth_probe.json": "f53737cde14639293b3a89e809cb4e83cb477b9aedd6a0004df4b9f160b1c2e1",
+    "docs/planning/online/index.html": "4816d1fae92a08ebb440bdf2408d439c837f220b16bb16f6ef76dcebde3032c6",
+    "docs/planning/online/CCTV_project_progress.pdf": "5dbe2863275a28d1d518d809526dc4d159dc8bf871951400450e04d19c7e08dc"
+  },
+  "validation": {
+    "status": "PASS_WITH_DOCUMENTED_DATA_GAPS",
+    "scope": "승인 갱신/실제 원본 라벨·중복 검사",
+    "inspection_tests": {
+      "passed": 18,
+      "failed": 0,
+      "skipped": 0,
+      "junit": "data/runtime/p57_fight_access_20261015/inspection_tests.xml"
+    },
+    "ruff_inspector": "PASS",
+    "download_and_archive_complete": true,
+    "model_performance_tests_run": false,
+    "graph_limit": "새 검사기는 codebase-memory 검색 미포함. 직접 CLI/시험 호출 대조·18시험 수행; code-review-graph의 무관한 기존 변경 혼입 결과는 위험도로 쓰지 않음.",
+    "runtime_pins_rechecked": "PASS: 6/6 unchanged",
+    "timing_boundary_regression": {
+      "before": "1 FAIL / 2 PASS: nominal FPS last frame misclassified",
+      "after": "18 PASS / 0 FAIL / 0 SKIP",
+      "change": "분류 검사만 수정, 라벨 시각·프레임·운영 모델 불변"
+    },
+    "full_inspection_videos": 41,
+    "inspection_report": "data/runtime/p57_fight_access_20261015/inspection_49753.json",
+    "classification_replay": {
+      "scope": "저장된 ffprobe 정보와 3표본 PNG로 최신 공통 검사 함수만 재실행; 원본 재디코딩/GT 보정 아님",
+      "rows": 38,
+      "changed_status_members": [
+        "11-3/11-3_cam01_fight01_place08_night_summer.mp4",
+        "11-3/11-3_cam02_fight01_place08_night_summer.mp4",
+        "14-1/14-1_cam02_fight02_place06_night_summer.mp4",
+        "14-3/14-3_cam02_fight02_place06_night_spring.mp4",
+        "14-4/14-4_cam01_fight02_place06_night_spring.mp4",
+        "14-4/14-4_cam02_fight02_place06_night_spring.mp4",
+        "14-4/14-4_cam02_fight02_place06_night_summer.mp4"
+      ],
+      "reason": "진행 중 검사 프로세스는 FPS 보완 전 함수를 이미 읽었음. 초기 결과를 별도 보존하고 검증된 최신 분류 적용.",
+      "inspector_sha256": "238dea64372d7d6ebefda5c8c3d529679cc2c72139320f701a268cc32457e3d5"
+    },
+    "ruff_inspector_renderer": "PASS",
+    "duplicate_scope": "실외41개 내부 SHA; 기존 학습 자료 전체와의 대조는 미실시",
+    "artifact_consistency": "PASS: WBS37/상태·후보38/격리3/SHA/독립0·HTML 정합",
+    "scope_check_note": "최초 ad-hoc WBS 검증은 하단 설명 표까지 상태로 읽어 실패. 8열 현재 작업 표로 제한 후 통과; WBS 상태를 바꾼 것은 아님.",
+    "diff_check": "PASS: 작업 범위 git diff --check",
+    "pdf_visual_check": "PASS: 1/3쪽 검토",
+    "inspection_source_sha256": "238dea64372d7d6ebefda5c8c3d529679cc2c72139320f701a268cc32457e3d5"
+  },
+  "latest_annotation_review": {
+    "path": "docs/planning/evidence/fight_annotation_review_20261015.json",
+    "status": "ANNOTATION_AUDIT_COMPLETED_FINAL_LABELS_NOT_APPROVED",
+    "counts": {
+      "candidate_videos": 38,
+      "action_spans": 551,
+      "kind_counts": {
+        "contact_candidate": 379,
+        "fall": 39,
+        "threat": 133
+      },
+      "header_precedes_contact_over_1_second": 7,
+      "header_precedes_contact_over_30_seconds": 2,
+      "source_labels_modified": 0,
+      "final_independent_scene_groups": 0,
+      "header_follows_contact_over_1_second": 4,
+      "header_follows_contact_over_30_seconds": 2,
+      "boundary_priority_videos": 11,
+      "packet_checked_videos": 4,
+      "packet_count": 36987,
+      "packet_gap_or_overlap_count": 0
+    },
+    "source_manifest_unchanged": true,
+    "sha256": "43bfe95eb0da7178d57135262206497fc62d14e111df883fad1a3a78c4750a57"
+  },
+  "acquisition_snapshot_sha256": {
+    "docs/planning/README.md": "dda25e2eddb247eec5887fa39b8ba21ea07d2a9ef28198dd50483c039af22db4",
+    "docs/planning/PROGRESS.md": "86458d01ebbf3cf655c63537836fac090e2c3d2e8123d002f962eac8b0873b63",
+    "docs/planning/STATUS.md": "62d4bc3ff40ba0270d3f98fbada960bc117482a61ef838ed1b150df7fc9d16f7",
+    "docs/planning/WBS.md": "d3fad4d30be351f491919f3311b8254082ed0b4b3b6a091ee7485bedd8c0cb29",
+    "docs/planning/POC_SCOPE.md": "ff58540f20dbf42e9ff32aadf8193aeed4150fedfab2909567d891727640ddd7",
+    "docs/planning/MODEL_INFERENCE_METRICS.md": "2e370dd420a9abdc6ac95947d08f49936c1bdb73290e013015273211723ac79f",
+    "docs/planning/ONLINE_PROGRESS.md": "5b345880d51fbe24efa7b0cb5f39db190505067d2bd0f4b23aec58829894498c",
+    "docs/planning/figma_exports/progress_v138.json": "3d796048967ea64aa62281eb3a73450404d48a999e637284d2d29f6b006be76e",
+    "docs/planning/evidence/fight_candidate_pool_20261015.json": "4adaaf0c0f5eb2c19f06da9edbb2b16b52140a427ece8de621a3db95deb3db43",
+    "scripts/datasets/inspect_aihub_behavior_dataset.py": "238dea64372d7d6ebefda5c8c3d529679cc2c72139320f701a268cc32457e3d5",
+    "tests/test_inspect_aihub_behavior_dataset.py": "eafc4a02b3289932cb31477a9ecd216a7299c78f140eef6825fc4c2942afe11e",
+    "scripts/ops/render_progress_snapshot.py": "e5a41f6224d0a60db398ff1da97375a8f43da9adb16af70e790b61cf20880722",
+    "scripts/ops/progress_snapshot_template.html": "379cd31437891c975dfd777e66358e2e5aa0de3185b7543f652c5c0d5c8311fe",
+    "docs/planning/online/index.html": "68b14706cf57a3ab0efc8b17611a77d66ed41e599175ad4f74c0eed98ba9e56a",
+    "docs/planning/online/CCTV_project_progress.pdf": "b3cd902d33ae404e34b39f3a2608e983baa74c35a2c3993f1d25825eb8448d9d",
+    "data/runtime/p57_fight_access_20261015/inspection_tests.xml": "a43480e650f0c77ead0be3d10f8134bbd8d44a19fed54ba611a37e5b57566d17",
+    "data/runtime/p57_fight_access_20261015/inspection_49753.json": "8fec8c576cb465df297ae168d4b2357b3f01fe71bfc6f4a2130ff5fc8418fa00",
+    "data/runtime/p57_fight_access_20261015/download_49753.json": "234daeb6d77072b6104ae945143bc5b10243d042dc82d2d55a0bd6ba3b4388f6"
+  },
+  "acquisition_progress_board": {
+    "status": "PASS",
+    "base_url": "http://192.168.2.141:18081/",
+    "checks": [
+      {
+        "artifact": "index.html",
+        "http_status": 200,
+        "bytes": 98576,
+        "sha256": "68b14706cf57a3ab0efc8b17611a77d66ed41e599175ad4f74c0eed98ba9e56a",
+        "local_hash_match": true
+      },
+      {
+        "artifact": "CCTV_project_progress.pdf",
+        "http_status": 200,
+        "bytes": 156393,
+        "sha256": "b3cd902d33ae404e34b39f3a2608e983baa74c35a2c3993f1d25825eb8448d9d",
+        "local_hash_match": true
+      }
+    ],
+    "pdf_pages": 5,
+    "html_content_checks": "PASS: WBS37/상태·I66해결·41쌍/38후보/3격리·독립평가 미확정·18 PASS·중복ID/미치환 없음",
+    "pdf_visual_check": "PASS: 1·3쪽 최신 요약과 P5.7 IN_PROGRESS, 잘림 없음 확인",
+    "scope": "생성물 및 HTTP 제공 파일 확인. 브라우저 상호작용 시험은 미실시."
+  },
+  "progress_board": {
+    "verified_at": "2026-10-16T08:46:10.145307+09:00",
+    "http_checks": [
+      {
+        "url": "http://192.168.2.141:18081/index.html",
+        "http_status": 200,
+        "sha256": "d29e7f8514a2df48a0fa0fb6d0ddf2f4d9a55f7915e2262911b333b3403baff5",
+        "local_match": true
+      },
+      {
+        "url": "http://192.168.2.141:18081/CCTV_project_progress.pdf",
+        "http_status": 200,
+        "sha256": "3ad696585e524c01c87ac2b2687c68dc9738a4901f7b88ce65d60904f2a7d728",
+        "local_match": true
+      }
+    ],
+    "scope": "P5.7 IN_PROGRESS·DONE9/37·진행2/검증8/대기3/계획15; WBS/JSON/HTML37행 정합·PDF첫쪽 시각 확인·렌더러 Ruff/공백 검사·HTTP SHA PASS. 브라우저 상호작용 미실시.",
+    "visual_verified_at": "2026-10-16T08:47:15.960261+09:00"
+  },
+  "artifact_sha256": {
+    "docs/planning/evidence/fight_annotation_review_20261015.json": "43bfe95eb0da7178d57135262206497fc62d14e111df883fad1a3a78c4750a57",
+    "docs/planning/evidence/fight_boundary_review_20261015.json": "274335bef2e45bbcf0c858a9c07e178c349c637a0c4f341d7aa191e479b27ce0",
+    "docs/planning/evidence/fight_contiguous_review_20261015.json": "1fb6cfb398c2f0fb1177306085c4e9bed6561fd95c9e1cbdf0143e883f84dcf3",
+    "docs/planning/README.md": "38f058711e2d6f6050ebf5babe5b1b0c69f9d70a616e92688703b281f51bd061",
+    "docs/planning/PROGRESS.md": "cd9f0f6ca0083a50dcc14934d380d8440f6f85c6d119a25c18607692e53c74b2",
+    "docs/planning/WBS.md": "93beb4580fce55d41dc00e4f7ead37f6272cdbd196de36a13ad89e3abf37954a",
+    "docs/planning/STATUS.md": "ffecca2271c4561566ec6ca012d0cf11db2da5163e6647866da13aa1c5af716f",
+    "docs/planning/POC_SCOPE.md": "095964972f0a75ae5ebedf892646ecd4b38bbf0c789859057af8eca653b189bf",
+    "docs/planning/OBSERVATION_CONTRACT.md": "9036959d0360a1a78d3ab03ee890fd25cf8b8f365a3f595576fe49c4664658d5",
+    "docs/planning/MODEL_INFERENCE_METRICS.md": "a3f3f32da3372a05eb50c97481403637fb1d0464ac2d21db073dc78462d81d7e",
+    "docs/planning/ONLINE_PROGRESS.md": "fcfbace759820a3f90b6c400d532d99189d1cb80d2c25873728f6ec89deffcde",
+    "docs/planning/figma_exports/progress_v138.json": "60fc2febaa3286128d00606624ba93a13a6b084274bb882e547898abd4964fd6",
+    "scripts/ops/progress_snapshot_template.html": "1e8b6ca5f3049e28124494685783e95626bdbad07fa048ed3fa2d9c8e517bb09",
+    "scripts/ops/render_progress_snapshot.py": "620e0a54ca78608ef6d3ccf7b38f854f22babc063fe14a04038465611631c9c1",
+    "docs/planning/online/index.html": "d29e7f8514a2df48a0fa0fb6d0ddf2f4d9a55f7915e2262911b333b3403baff5",
+    "docs/planning/online/CCTV_project_progress.pdf": "3ad696585e524c01c87ac2b2687c68dc9738a4901f7b88ce65d60904f2a7d728",
+    "docs/planning/evidence/fight_end_review_20261015.json": "8ac944e09501c493138d437f09327b9fe399b5457a4c2df91ec2c9c7222fa158",
+    "docs/planning/evidence/fight_context_review_20261015.json": "c98deb3dfcf48f1f3a97fc13ee09a6ad091ef2b9673441145f776e04375bdde3"
+  },
+  "latest_boundary_review": {
+    "path": "docs/planning/evidence/fight_boundary_review_20261015.json",
+    "sha256": "274335bef2e45bbcf0c858a9c07e178c349c637a0c4f341d7aa191e479b27ce0",
+    "status": "PRIORITY_BOUNDARY_SAMPLE_REVIEW_COMPLETE_GROUND_TRUTH_PENDING",
+    "counts": {
+      "priority_videos_reviewed": 11,
+      "frame_references_reviewed": 315,
+      "unique_decoded_frames_reviewed": 293,
+      "contact_transition_candidates": 8,
+      "onset_unresolved": 3,
+      "end_findings": {
+        "INTERVENTION_REQUIRES_PARTICIPANT_REVIEW": 3,
+        "POST_EVENT_CONTINUITY_UNVERIFIED": 3,
+        "EXIT_WHILE_CONTACT_UNRESOLVED": 4,
+        "CLIP_END_CONTACT_UNRESOLVED": 1
+      },
+      "approved_event_intervals": 0,
+      "independent_frozen_scenes": 0,
+      "other_candidate_videos_pending": 27
+    }
+  },
+  "latest_contiguous_review": {
+    "path": "docs/planning/evidence/fight_contiguous_review_20261015.json",
+    "status": "LOCAL_CONTIGUOUS_BOUNDARY_REVIEW_COMPLETE_GROUND_TRUTH_PENDING",
+    "counts": {
+      "videos_reviewed": 11,
+      "contiguous_windows_reviewed": 11,
+      "decoded_unique_frames_reviewed": 514,
+      "sheets_reviewed": 27,
+      "existing_transition_candidates_refined": 8,
+      "ambiguous_videos_with_visible_anchor": 3,
+      "first_contact_boundary_unresolved": 3,
+      "approved_event_intervals": 0,
+      "independent_frozen_scenes": 0,
+      "other_candidate_videos_pending": 27
+    },
+    "sha256": "1fb6cfb398c2f0fb1177306085c4e9bed6561fd95c9e1cbdf0143e883f84dcf3"
+  },
+  "latest_end_review": {
+    "path": "docs/planning/evidence/fight_end_review_20261015.json",
+    "sha256": "8ac944e09501c493138d437f09327b9fe399b5457a4c2df91ec2c9c7222fa158",
+    "status": "LOCAL_END_WINDOW_REVIEW_COMPLETE_GROUND_TRUTH_PENDING",
+    "counts": {
+      "reviewed_windows": 11,
+      "unique_frames": 879,
+      "ordered_sheets": 49,
+      "fullframe_context_references": 22,
+      "separation_during_intervention": 3,
+      "near_body_action_unresolved_at_eof": 2,
+      "rising_with_back_contact_unresolved": 1,
+      "exit_with_event_end_unobserved": 4,
+      "distant_pair_at_eof_end_unobserved": 1,
+      "approved_event_end_ground_truth": 0,
+      "independent_evaluation_scenes_approved": 0,
+      "other_candidates_not_reviewed": 27
+    }
+  },
+  "latest_context_review": {
+    "path": "docs/planning/evidence/fight_context_review_20261015.json",
+    "sha256": "c98deb3dfcf48f1f3a97fc13ee09a6ad091ef2b9673441145f776e04375bdde3",
+    "status": "REPRESENTATIVE_CONTEXT_TRIAGE_COMPLETE_GROUND_TRUTH_PENDING",
+    "counts": {
+      "reviewed_windows": 27,
+      "unique_frames": 1614,
+      "ordered_sheets": 54,
+      "fullframe_context_references": 54,
+      "finding_counts": {
+        "UNRESOLVED": 10,
+        "DISPLACEMENT_CANDIDATE": 11,
+        "STRIKE_MOTION_CANDIDATE": 6
+      },
+      "location_metadata_conflicts": 2,
+      "candidate_videos_with_local_review": 38,
+      "candidate_videos_without_local_review": 0,
+      "full_video_reviews_completed": 0,
+      "independent_evaluation_scenes_approved": 0,
+      "normal_controls_approved": 0
+    }
+  },
+  "training_readiness": {
+    "checked_at": "2026-10-16T08:42:31.267246+09:00",
+    "status": "NOT_READY_FOR_TRAINING",
+    "training_runs": 0,
+    "new_fight_checkpoint_count": 1,
+    "current_stage": "GPU6회/운영 복구 완료·6680영상/3341관절 프레임·7668검출 확보. 실제 사람쌍 ID/연속성·회차/배우 그룹 검수 전으로 실영상학습0.",
+    "reserved_evaluation_candidates": 38,
+    "reserved_pool_used_for_training": false,
+    "catalog_audit": {
+      "path": "data/runtime/p57_fight_selection_20261015/file_inventory.json",
+      "sha256": "48971343a1d530d37fdeda32348296b8c44b666da28cb19cb358458d7b94d9e0",
+      "files": 189,
+      "category_counts": {
+        "01.폭행(assault)": 25,
+        "02.싸움(fight)": 28,
+        "03.절도(burglary)": 17,
+        "04.기물파손(vandalism)": 10,
+        "05.실신(swoon)": 22,
+        "06.배회(wander)": 15,
+        "07.침입(trespass)": 5,
+        "08.투기(dump)": 12,
+        "09.강도(robbery)": 9,
+        "10.데이트폭력및추행(datefight)": 15,
+        "11.납치(kidnap)": 8,
+        "12.주취행동(drunken)": 23
+      },
+      "separate_normal_category_count": 0,
+      "limit": "별도 정상 분류가 없다는 뜻이며 이상행동 영상 안에 정상 구간이 없다는 뜻은 아님. 무라벨 전후 구간을 정상 정답으로 자동 사용하지 않음."
+    },
+    "group_metadata_audit": {
+      "xml_files": 83,
+      "tag_names": [
+        "action",
+        "actionname",
+        "annotation",
+        "character",
+        "database",
+        "depth",
+        "duration",
+        "end",
+        "event",
+        "eventname",
+        "filename",
+        "folder",
+        "fps",
+        "frame",
+        "frames",
+        "header",
+        "height",
+        "inout",
+        "keyframe",
+        "keypoint",
+        "location",
+        "object",
+        "objectname",
+        "population",
+        "position",
+        "season",
+        "size",
+        "source",
+        "start",
+        "starttime",
+        "time",
+        "weather",
+        "width",
+        "x",
+        "y"
+      ],
+      "explicit_global_actor_or_session_field_found": false,
+      "limit": "공식 통합 가이드북의 회차/씬 예시·person/character 규격과 XML83개 대조. 전역 배우/세션 항목·실제 두 원본의 회차/배우 연결표 미확보. 파일명·성별/연령대 차이로 독립성을 승인하지 않음.",
+      "archive_xml_counts": {
+        "49753": 41,
+        "49754": 42
+      },
+      "official_group_review": "data/runtime/p57_development_acquisition_20261015/group_metadata_review.json",
+      "official_pdf_obtained": true
+    },
+    "normal_data_lead": {
+      "dataset_id": 62,
+      "title": "사람동작 영상",
+      "url": "https://aihub.or.kr/aihubdata/data/view.do?aihubDataSe=data&currMenu=115&dataSetSn=62&topMenu=",
+      "official_description_classes": [
+        "걷기",
+        "달리기",
+        "인사(악수)",
+        "포옹",
+        "태권도"
+      ],
+      "decision": "공식 설명상의 학습 대조 후보만 확인; 채택/수신0",
+      "pending": [
+        "계정의 데이터셋별 다운로드 승인·이용 조건",
+        "원본 영상·2인 상호작용/촬영 그룹·해상도 표본 검수",
+        "CCTV 시점/거리 차이에 따른 편향 검증"
+      ],
+      "final_cctv_evaluation_replacement": false,
+      "catalog": {
+        "files": 100,
+        "total_bytes": 2697055183841,
+        "path": "data/runtime/p57_development_acquisition_20261015/dataset62_catalog.json"
+      }
+    },
+    "initial_training_gates": [
+      "평가 예약38후보·유사/동일촬영 파생본을 제외한 개발 자료 확보",
+      "싸움/비싸움 양쪽의 검수된 라벨과 PTS·유사 행동 대조 확보",
+      "개발 train/validation 간 원본·배우/세션 연결 그룹 분리; 불명확 자료는 양쪽 배치 금지",
+      "2인 Pose 특징/결측 처리·학습 경로의 작은 재현 시험·실행 환경/자원 범위 고정"
+    ],
+    "requires_final_200_scene_evaluation_set_before_initial_training": false,
+    "final_evaluation_gate": "별도 미사용200장면+정상7200초·정답/그룹 검수 후 고정; 초기 개발 성적을 운영/인증 성적으로 표시하지 않음",
+    "stage_status": {
+      "data_review": "IN_PROGRESS",
+      "initial_training": "PIPELINE_CHECK_PASSED_REAL_DATA_NOT_STARTED",
+      "development_model_evaluation": "NOT_STARTED",
+      "independent_evaluation": "NOT_READY",
+      "production_promotion": "NOT_STARTED"
+    },
+    "sources": [
+      "https://www.aihub.or.kr/aihubdata/data/view.do?dataSetSn=171",
+      "https://aihub.or.kr/aihubdata/data/view.do?aihubDataSe=data&currMenu=115&dataSetSn=62&topMenu="
+    ],
+    "unchanged_evidence_sha256": {
+      "docs/planning/evidence/fight_annotation_review_20261015.json": "43bfe95eb0da7178d57135262206497fc62d14e111df883fad1a3a78c4750a57",
+      "docs/planning/evidence/fight_end_review_20261015.json": "8ac944e09501c493138d437f09327b9fe399b5457a4c2df91ec2c9c7222fa158",
+      "docs/planning/evidence/fight_boundary_review_20261015.json": "274335bef2e45bbcf0c858a9c07e178c349c637a0c4f341d7aa191e479b27ce0",
+      "docs/planning/evidence/fight_context_review_20261015.json": "c98deb3dfcf48f1f3a97fc13ee09a6ad091ef2b9673441145f776e04375bdde3",
+      "docs/planning/evidence/fight_contiguous_review_20261015.json": "1fb6cfb398c2f0fb1177306085c4e9bed6561fd95c9e1cbdf0143e883f84dcf3",
+      "docs/planning/evidence/fight_candidate_pool_20261015.json": "4adaaf0c0f5eb2c19f06da9edbb2b16b52140a427ece8de621a3db95deb3db43"
+    },
+    "validation": {
+      "wbs_snapshot_html": "PASS",
+      "renderer_logic_unchanged": "PASS",
+      "ruff": "PASS",
+      "http_local_sha_match": "PASS",
+      "runtime_six_hashes_unchanged": true,
+      "training_run": false
+    },
+    "synthetic_checkpoint_count": 1,
+    "real_video_checkpoint_count": 0,
+    "checkpoint_scope": "합성 기능 검사 CLI 후보1개, 실영상 학습/운영 승격0"
+  },
+  "initial_training_pipeline": {
+    "status": "OFFLINE_PIPELINE_VERIFIED_REAL_DATA_PENDING",
+    "feature_schema": "fight_pair_pose_v1",
+    "input_features": 139,
+    "sequence_length": 48,
+    "max_pts_gap_s": 0.5,
+    "parameters": 16545,
+    "code_sha256": {
+      "src/core/ai/fight_temporal_model.py": "7fb4d3bd5f4be03fa99d1ab98ca4a43467c06a6ec50006752d78a6399f2815b0",
+      "scripts/datasets/train_fight_pair_tcn.py": "52f6de8218e316ae8aff9fbba7e462490e15a9c9dc006bf6bd770c3881f1734d",
+      "tests/test_fight_pair_tcn.py": "15fc02683ce0c45698230c30a2e5d9b4981189a875211ba8d786f6558df275ce"
+    },
+    "reuse": "FallTemporalTCN 구조만 재사용; 낙상 입력/가중치 재사용0",
+    "tests_passed": 41,
+    "test_scope": "새28+기존낙상모델13; 40개 본시험 뒤 추가 입력 보호1개 별도 실행",
+    "test_evidence": [
+      "data/runtime/p57_fight_tcn_20261015/p57_fight_tcn_guard_test.xml",
+      "data/runtime/p57_fight_tcn_20261015/p57_fight_tcn_tests.xml"
+    ],
+    "synthetic_cli": {
+      "report": "data/runtime/p57_fight_tcn_20261015/synthetic_smoke/report.json",
+      "report_sha256": "a8f7fe0496c6c1839fa60e31d18537aa425cfdea99623ac6cce6c96e1f19d8a6",
+      "checkpoint_sha256": "e04e367cbe822c2b4afdd03e5120d832bd4865f9d13c481d51a60a15c7d496dd",
+      "device": "cpu",
+      "epochs": 3,
+      "training_windows": 2,
+      "validation_windows": 2,
+      "output_overwrite_blocked": true,
+      "purpose": "optimizer/저장/재로딩 기능 검사; 실제 싸움 정확도·일반화 근거 아님"
+    },
+    "real_video_training_runs": 0,
+    "real_fight_weights": 0,
+    "gpu_training_runs": 0,
+    "production_changes": 0,
+    "gpu_validation": "미실시; Jetson Torch CPU 역전파 중 CUDA/NvRm 초기화 경고 발생. CPU 시험은 통과했으나 GPU 정상성 근거가 아님.",
+    "validation": {
+      "ruff": "PASS",
+      "reserved_evidence_unchanged": true,
+      "runtime_six_unchanged": true,
+      "wbs_snapshot_html": "PASS",
+      "renderer_logic_unchanged": "PASS",
+      "git_diff_check": "PASS",
+      "graph_scope_limit": "지정3파일 외122함수/42시험공백 반환으로 이번 위험 근거에서 제외; 코드 직접검토·관련시험·운영6파일 해시로 범위 확인",
+      "http_local_sha_match": "PASS",
+      "first_pdf_page_visual": "PASS"
+    },
+    "remaining": [
+      "실영상 싸움/정상·유사 개발 자료 확보·라벨/그룹 검수",
+      "GPU Pose 추출 결과를 새 JSONL 입력 계약으로 연결",
+      "실영상 초기 학습/개발 검증·GPU 자원 시험",
+      "최종 독립 평가200장면+정상2시간 및 운영 승격 검증"
+    ],
+    "normal_dataset_62_approval": "사용자에게 승인 보유 여부 질문 중; 승인/수신으로 간주하지 않음"
+  },
+  "pose_capture_bridge": {
+    "status": "OFFLINE_CAPTURE_ADAPTER_AND_TRACKER_FIX_VERIFIED_NOT_DEPLOYED",
+    "code_sha256": {
+      "src/core/_synthetic_object_ids.py": "97a68b588d2c6a8c1a15ec30b31908484f7c746d18f42f874cf3dc3036a6be77",
+      "scripts/datasets/export_fight_pose_capture.py": "76f241622893797bae200b662d127943278f51d3e6ad6b17bdd84b396d28cd33",
+      "tests/test_synthetic_object_ids.py": "b9570a6bbdf5a82f65390656ee0c6bfc6451fc104ac40aaa8f850c6cf89117af",
+      "tests/test_export_fight_pose_capture.py": "ad55b8227cab7f085ced1578b613137e8bfdb79be1c47d71b18c44a87bc9c88c"
+    },
+    "tracker_before_sha256": "30c6677c3fa9a120e4300f2156a7c7e3186a56ea9bc41532c4b3f8f69ef0a0bb",
+    "tracker_defect": "동일 프레임에서 신규/기존 임시ID를 두 사람에 중복 배정하고 기존 제공ID와 신규 할당ID도 충돌 가능",
+    "tracker_fix": "직전 프레임의 미사용 트랙만1회 대응; 제공ID 예약 후 할당",
+    "issue": "I67 VERIFY_LOCAL_NOT_DEPLOYED",
+    "red_tests_failed": 4,
+    "tests_passed": 169,
+    "test_evidence": [
+      "data/runtime/p57_pose_capture_20261015/tracker_red.xml",
+      "data/runtime/p57_pose_capture_20261015/tracker_green.xml",
+      "data/runtime/p57_pose_capture_20261015/export_tests.xml"
+    ],
+    "capture_check": {
+      "scope": "기존 낙상GPU캡처1개의 좌표/PTS/ID→싸움 특징 인터페이스 검사; 싸움 학습 자료 승격 아님",
+      "frames": 76,
+      "detections": 143,
+      "multi_detection_frames": 67,
+      "pts_frame_match": true,
+      "all_confidence_ge_0_5": true,
+      "duplicate_ids": 0,
+      "feature_window_observations": 48,
+      "feature_shape": [
+        48,
+        139
+      ],
+      "feature_finite": true,
+      "labels_created": 0,
+      "training_runs": 0,
+      "operating_changes": 0,
+      "capture_sha256": "8a378c78a2c1670ef9d05e35ce70a60299be60db5497fca799b8944fddee8930"
+    },
+    "fall_regression": {
+      "videos": 20,
+      "tensor_frames": 1501,
+      "same_alert_queue_videos": 20,
+      "evidence": "data/runtime/p57_pose_capture_20261015/fall_replay_regression.json",
+      "sha256": "a5ce31218dbb36de4872ceabdd0d6684fd53623625d44174443643d6abfc9db5"
+    },
+    "capture_output": "data/runtime/p57_pose_capture_20261015/capture_000",
+    "capture_report_sha256": "98c11ae23208e187ab309900726816fbb8efa731c65cf39eca9f15358c4c5ce3",
+    "new_gpu_runs": 0,
+    "real_video_training_runs": 0,
+    "production_deployments": 0,
+    "validation": {
+      "ruff": "PASS",
+      "runtime_six_unchanged": true,
+      "reserved_pool_and_reviews_unchanged": true,
+      "wbs_snapshot_html": "PASS",
+      "renderer_logic_unchanged": "PASS",
+      "git_diff_check": "PASS",
+      "graph_scope_limit": "지정2파일 외122함수/42시험공백 반환; 직접 변경 전 대조·호출 확인·관련169시험/저장20영상 회귀로 판단",
+      "http_local_sha_match": "PASS",
+      "first_pdf_page_visual": "PASS"
+    },
+    "limits": [
+      "IoU 임시ID는 가림/교차에서 동일인 정확도를 보장하지 않음",
+      "출력은 라벨 없는 fight_pose_capture_v1; 자동 정상/싸움 지정·학습 승격 금지",
+      "낙상 저장GPU자료는 연결/회귀 확인 전용, 싸움 학습/독립 평가로 전용하지 않음",
+      "GPU신규추출·실영상싸움학습·운영배포 미실시"
+    ],
+    "next": [
+      "별도 개발 자료 확보·라벨/촬영 그룹 검수",
+      "GPU 신규 Pose 캡처·임시 인물 연결 검수와 2인 창 선택",
+      "검수 후 fight_pair_pose_v1 학습 입력 승격·초기 학습"
+    ]
+  },
+  "development_data_acquisition": {
+    "checked_at": "2026-10-15T21:00:07.591894+09:00",
+    "status": {
+      "state": "ARCHIVE_VERIFIED_MEDIA_REVIEW_REQUIRED",
+      "dataset": 171,
+      "filekey": 49754,
+      "bytes": 32257774227,
+      "expected_bytes": 32257774227,
+      "path": "data/datasets/aihub171/49754/outsidedoor_02.zip",
+      "percent": 100.0,
+      "sha256": "07798fd9e1f153499b7d1a324e63c79a1ba4c5724fddd6f4bc44c2d43dc1c26f",
+      "key_persisted": false
+    },
+    "session_id": 41903,
+    "session_observation": "download41903 exit0; full inspection87749 exit0",
+    "partial_inspection": {
+      "checked_at": "2026-10-15T19:12:36.183228+09:00",
+      "dataset": 171,
+      "filekey": 49754,
+      "archive_complete": false,
+      "received_bytes_snapshot": 9906946048,
+      "complete_videos": 13,
+      "complete_xml": 13,
+      "complete_video_names": [
+        "14-6/14-6_cam02_fight02_place06_night_summer.mp4",
+        "14-6/14-6_cam02_fight02_place06_night_spring.mp4",
+        "14-6/14-6_cam01_fight02_place06_night_spring.mp4",
+        "14-6/14-6_cam01_fight02_place06_night_summer.mp4",
+        "1-5/1-5_cam02_fight04_place02_night_spring.mp4",
+        "1-5/1-5_cam02_fight04_place02_night_summer.mp4",
+        "1-5/1-5_cam01_fight04_place02_night_spring.mp4",
+        "1-5/1-5_cam01_fight04_place02_night_summer.mp4",
+        "15-1/15-1_cam02_fight02_place04_night_spring.mp4",
+        "15-1/15-1_cam01_fight02_place04_night_spring.mp4",
+        "15-1/15-1_cam01_fight02_place04_night_summer.mp4",
+        "15-1/15-1_cam02_fight02_place04_night_summer.mp4",
+        "15-2/15-2_cam02_fight02_place04_night_spring.mp4"
+      ],
+      "groups": [
+        "nia2019:fight:1-5",
+        "nia2019:fight:14-6",
+        "nia2019:fight:15-1",
+        "nia2019:fight:15-2"
+      ],
+      "reserved_basename_overlap": [],
+      "reserved_filename_group_overlap": [],
+      "first_video_sha256": "4846ffcd47efc504022ec31bf9fda8d7d1d213a37f9dd3baa7f3ef8c5aea5adc",
+      "first_video_exact_match_reserved": false,
+      "first_pair_media_issues": [],
+      "first_pair_media_warnings": [
+        "label_media_frame_count_difference",
+        "nominal_fps_requires_frame_pts_mapping"
+      ],
+      "first_pair_visual_review": {
+        "frames_reviewed": 3,
+        "scope": "표본3프레임에서 두 사람의 접촉 및 주변 인물 관측. 전체 구간/정상 정답/사건 경계 승인은 아님."
+      },
+      "ready_for_training": false,
+      "limits": [
+        "수신 완료 ZIP 전체 CRC/중앙 디렉터리 검증 대기",
+        "파일명/단일영상 SHA 비교만으로 배우·촬영 독립성 또는 시각 중복 배제 불가",
+        "무라벨 구간은 정상 정답으로 자동 지정하지 않음"
+      ]
+    },
+    "partial_audit_path": "data/runtime/p57_development_acquisition_20261015/partial_label_audit.json",
+    "partial_audit_sha256": "4232fd49ccb5b5d37f9e825edfc884d39abe027f271576cd9dd48e7a12404a07",
+    "dataset62_catalog": {
+      "files": 100,
+      "total_bytes": 2697055183841,
+      "path": "data/runtime/p57_development_acquisition_20261015/dataset62_catalog.json",
+      "approval": "AWAITING_USER_CONFIRMATION",
+      "video_downloads": 0
+    },
+    "real_video_training_runs": 0,
+    "synthetic_cpu_epochs_completed": 3,
+    "production_changes": 0,
+    "new_gpu_runs": 6,
+    "next": [
+      "GPU 관절의 실제 인물ID·검수 사람쌍 연결 및 연속성 확인; 원본→촬영 회차→익명 배우 연결 근거로 개발 train/validation 분리 후 첫 실영상 학습",
+      "정상/유사 행동·맨손/일방 폭행 다양성 및 최종 독립 평가 근거 보강"
+    ],
+    "limits": [
+      "우선6개의 총203초 구간만1080p 전 프레임 디코드/PTS 대응 확인; 원본6전편 정답 검수는 아님",
+      "같은장소/180계열·도구를 든 행동 편중; 독립6사건/배우나 일반 싸움 성능을 뜻하지 않음",
+      "GPU 추출 실행·실영상 학습/가중치0; 정상 대조/촬영 그룹·정답 승인 잔여"
+    ],
+    "validation": {
+      "ruff": "PASS",
+      "wbs_json_html_37_rows": "PASS",
+      "reserved_evidence_unchanged": true,
+      "html_pdf_http_sha": "PASS",
+      "http_evidence": "data/runtime/p57_development_pose_20261015/label_windows/http_checks.json",
+      "full_archive_crc": "PASS_95_MEMBERS",
+      "real_training": "NOT_STARTED",
+      "actual_xml42": "PASS",
+      "inspector_27_tests": "PASS",
+      "window239_pts_hashes": "PASS",
+      "first_pdf_page_visual": "PASS",
+      "git_diff_check": "PASS",
+      "disk_stream_sha_match": "PASS",
+      "video_probe_and_three_frames": "PASS_42_VIDEOS",
+      "all_frames_decoded": false,
+      "cross_archive_exact_hashes": "PASS_83_VIDEOS_NO_DUPLICATES",
+      "candidate_training_approval": false,
+      "candidate_manifest42": "PASS",
+      "inspector27_test_source_unchanged": true,
+      "pose_inputs_6080_pts": "PASS",
+      "gpu_plan_readonly_preflight": "PASS",
+      "recovery_mock_tests": 15,
+      "gpu_actual_execution": "AWAITING_APPROVAL"
+    },
+    "prior_download_snapshot": {
+      "dataset": 171,
+      "filekey": 49754,
+      "expected_bytes": 32257774227,
+      "path": "data/datasets/aihub171/49754/outsidedoor_02.zip.partial",
+      "state": "downloading",
+      "bytes": 12331253760,
+      "resuming_disk_bytes": 1073741824,
+      "key_persisted": false,
+      "purpose": "development_candidate_not_reserved_evaluation",
+      "http_status": 200,
+      "content_type": "application/x-tar",
+      "elapsed_s": 877.94,
+      "percent": 38.23
+    },
+    "download_percent_from_bytes": 100.0,
+    "download_process_exit_code": 0,
+    "validation_job": {
+      "session_id": 87749,
+      "state": "COMPLETED",
+      "started_from": "complete .partial ZIP, source kept until full CRC/disk SHA pass",
+      "evidence": "data/runtime/p57_development_acquisition_20261015/archive_verification.json",
+      "report": "data/runtime/p57_development_acquisition_20261015/inspection_49754.json",
+      "exit_code": 0
+    },
+    "label_audit": {
+      "path": "data/runtime/p57_development_acquisition_20261015/label_audit_complete.json",
+      "sha256": "db7d362edb279993520e340563e0a2d3e28b39c40ce3a03d53f8c3e342efac15",
+      "xml": 42,
+      "parse_errors": 0,
+      "location_conflicts": 24,
+      "video_media_complete": true
+    },
+    "window_review": {
+      "path": "data/runtime/p57_development_acquisition_20261015/development_window_review/review_notes.json",
+      "sha256": "c66d229ba338facfaf925a35fa1fd17a1a5c40ea2dc8a01946397251e1325607",
+      "videos": 1,
+      "windows": 2,
+      "frames": 239,
+      "provisional_nonfight": 1,
+      "provisional_push": 1,
+      "training_ready": false,
+      "independent_evaluation_ready": false
+    },
+    "inspection_code_change": {
+      "files": {
+        "scripts/datasets/inspect_aihub_behavior_dataset.py": "0edc37e3b61698ecbfefc7d7dfe0ddbc5744357e7a323491888fecbfb2e86ddc",
+        "tests/test_inspect_aihub_behavior_dataset.py": "266f0c9fbac8ea6a6a4bea99cdf937abebb0abbcc53cb05482d8cd4087c8f6fb"
+      },
+      "red": 4,
+      "green": 27,
+      "junit": "data/runtime/p57_development_acquisition_20261015/inspection_tests.xml",
+      "ruff": "PASS",
+      "scope": "파일명/라벨 장소 충돌을 양쪽 원본 값과 경고로 보존; 자동 장소 덮어쓰기/독립성 승인 없음",
+      "graph_limit": "지정2파일 외122함수/42공백을 반환하므로 호출 검색·직접 수정 검토·27시험으로 판단"
+    },
+    "manual_fetch": {
+      "path": "data/runtime/p57_development_acquisition_20261015/manual_fetch.json",
+      "pdf_obtained": false,
+      "result": "정상 페이지 세션/Referer 경로도 HTML 오류 응답; 촬영 그룹 설명서 근거 미확보",
+      "scope": "과거 데이터셋별8317/8318 직접 링크 시도 기록; 통합 가이드북 수신은 official_group_review 참조"
+    },
+    "download_result_path": "data/runtime/p57_development_acquisition_20261015/download_status.json",
+    "archive_validation": {
+      "started_at": "2026-10-15T19:40:45.461709+09:00",
+      "state": "ARCHIVE_VERIFIED_MEDIA_REVIEW_REQUIRED",
+      "bytes": 32257774227,
+      "source": "data/datasets/aihub171/49754/outsidedoor_02.zip.partial",
+      "target": "data/datasets/aihub171/49754/outsidedoor_02.zip",
+      "stream_sha256": "07798fd9e1f153499b7d1a324e63c79a1ba4c5724fddd6f4bc44c2d43dc1c26f",
+      "zip_crc_all_members": "PASS",
+      "disk_sha256": "07798fd9e1f153499b7d1a324e63c79a1ba4c5724fddd6f4bc44c2d43dc1c26f",
+      "tar_envelope": "closed_after_selected_file_size; remaining TAR envelope not validated",
+      "zip_members": 95,
+      "videos": 42,
+      "labels": 42,
+      "media_statuses": {
+        "REVIEW_REQUIRED": 42
+      },
+      "elapsed_s": 1228.28,
+      "completed_at": "2026-10-15T20:01:13.688801+09:00"
+    },
+    "candidate_pool": {
+      "path": "data/runtime/p57_development_acquisition_20261015/development_candidates.json",
+      "sha256": "02f2adbeaa9eae628a86c57858cbdcd3c848f00ed7a8aa33ab40aa6607fbc83e",
+      "counts": {
+        "videos": 42,
+        "xml": 42,
+        "filename_groups": 11,
+        "priorities": {
+          "RESERVED_RELATION_HOLD": 12,
+          "LOCATION_REVIEW": 24,
+          "FIRST_POSE_REVIEW": 6
+        },
+        "exact_duplicates_across_83": 0,
+        "cross_archive_visual_candidates": 2,
+        "within_new_visual_candidates": 1,
+        "approved_training_windows": 0
+      }
+    },
+    "duplicate_review": {
+      "path": "data/runtime/p57_development_acquisition_20261015/cross_archive_duplicates.json",
+      "sha256": "091c6aaba081939c687d891d3deb2d6ad5aa3d438016f91fae57a77275566c56",
+      "notes": "data/runtime/p57_development_acquisition_20261015/duplicate_review/notes.json",
+      "comparison_videos": 83,
+      "exact_duplicate_groups": 0,
+      "visual_total_including_prior": 6,
+      "new_cross_archive_pairs": 2,
+      "new_within_archive_pairs": 1,
+      "reviewed_pairs": 3,
+      "reviewed_preview_images": 18,
+      "confirmed_visual_duplicate": false
+    },
+    "pose_inputs": {
+      "state": "INPUTS_VERIFIED_LABEL_GROUP_REVIEW_REQUIRED",
+      "path": "data/runtime/p57_development_pose_20261015/preparation.json",
+      "sha256": "d427cb3c36330d04238a1a72d2a67abb331b47059c6f4ccb8e6fb9caccee396d",
+      "videos": 6,
+      "source_interval_seconds": 203,
+      "decoded_1080p_frames": 6080,
+      "source_frame_rate": "30000/1001",
+      "confidence": 0.5,
+      "duplicate_or_dropped_frames": 0,
+      "max_pts_mapping_error_s": 1.0000000401078069e-06,
+      "source_pts_basis": "H.264 packet PTS",
+      "derived_pts_basis": "decoded frame PTS",
+      "reviewed_context_samples": 54,
+      "review_notes": "data/runtime/p57_development_pose_20261015/visual_review/notes.json",
+      "review_notes_sha256": "f18e5abceae335eb522f594fecd229f9c8061c6880d5618c9265efa1c36b9003",
+      "training_ready": false,
+      "historical_scope": "original_revision1_family180_six_inputs",
+      "current_capture_selection": "data/runtime/p57_development_pose_20261015/capture_selection.json"
+    },
+    "gpu_capture_plan": {
+      "state": "EXECUTED_WITH_EGL_MOUNT_FIX",
+      "plan_path": "data/runtime/p57_development_pose_20261015/plan.json",
+      "plan_sha256": "f4eb5c483e2b0578ef18dbb9d2dd85bf7a3be81a9e422f9f4e64647b70ff332b",
+      "trials": 6,
+      "maintenance_budget_seconds": 1200,
+      "recovery_budget_seconds": 300,
+      "preflight": "data/runtime/p57_development_pose_20261015/preflight.json",
+      "preflight_sha256": "e656c94b4a5143238e8830198844593014629d84dfb7f5354127170e99c33cef",
+      "pinned_files": 50,
+      "input_hashes_sha256": "91d4cae1ac20ad03a7c065b623d96478e00207a27129c208a3240d4a1482668e",
+      "runner_tests_passed": 15,
+      "runner_tests": "data/runtime/p57_development_pose_20261015/runner_tests_revision2.xml",
+      "ruff": "PASS",
+      "executed": true,
+      "real_training": false,
+      "operating_before": "data/runtime/p57_development_pose_20261015/operating_before.json",
+      "validation": {
+        "input_mounts_and_manifest_agree": "PASS_6",
+        "preflight": "PASS_50_PINNED_FILES",
+        "recovery_simulation": "PASS_15",
+        "reserved_six_and_operating_six_unchanged": true,
+        "reviewed_labels_unchanged": true,
+        "wbs_json_html_37_rows": "PASS",
+        "pdf_first_page_visual": "PASS",
+        "html_pdf_http_sha": "PASS",
+        "renderer_ruff": "PASS",
+        "git_diff_check": "PASS",
+        "read_only_x11_socket_mount": "PASS_6_AFTER_INITIALIZATION_FAILURE"
+      },
+      "revision": 2,
+      "runner_tests_sha256": "fca3b82ebd9a2aed37b9372d901561aa89666d7385418d14db9cc42134357c6b",
+      "input_selection": "data/runtime/p57_development_pose_20261015/capture_selection.json",
+      "input_selection_sha256": "a2cdc300e586d098e89bd145ff5b7d81f3ded18930521038a15f908556cb6ede",
+      "source_interval_seconds": 223,
+      "decoded_1080p_frames": 6680,
+      "day_videos": 5,
+      "night_videos": 1,
+      "reviewed_label_sources_included": 2,
+      "input_revision": "data/runtime/p57_development_pose_20261015/gpu6_input_revision.json",
+      "input_revision_sha256": "dd7dffeaff43c264f3b446f7be18e660445e766cb682d8752e72d552fbef8fde",
+      "operating_revision2": "data/runtime/p57_development_pose_20261015/operating_revision2.json",
+      "grouping_verified": false,
+      "approval_status": "APPROVED_AND_EXECUTED_20261016",
+      "approval_record": "data/runtime/p57_development_pose_20261015/approval_20261016.json",
+      "execution_evidence": "gpu_capture_execution",
+      "historical_preflight_scope": "개정2 최초 구성의 파일/Compose 검사; EGL 소켓 누락은 실행 시 발견·수정",
+      "original_input_hashes_sha256": "8be037af2a35f69a059bc90c6b434352f446c901896190aa63d60687d6da7365"
+    },
+    "pair_label_review": {
+      "status": "DEVELOPMENT_PAIR_LABELS_REVIEWED_POSE_BINDING_PENDING",
+      "manifest": "data/runtime/p57_development_pose_20261015/label_windows/windows.json",
+      "manifest_sha256": "c89266aae64c5d0f75d4c5eca2bbe778bf8b5c9a79bb8d71cb5c7b28a4d8f7b6",
+      "validation": "data/runtime/p57_development_pose_20261015/label_windows/validation.json",
+      "validation_sha256": "b36091135694c21f84f55fbfac877b5349dec096e1781450687516743a8c2472",
+      "videos": 1,
+      "temporal_windows": 2,
+      "unique_frames": 239,
+      "pair_windows": 3,
+      "positive_pair_windows": 1,
+      "negative_pair_windows": 2,
+      "sheets_reviewed": 24,
+      "same_frame_positive_and_negative_pairs": true,
+      "label_scope": "development_pair_window_only",
+      "reviewer": "codex_visual_review",
+      "pose_ids_bound": false,
+      "grouping_verified": false,
+      "training_ready": false,
+      "independent_evaluation_ready": false,
+      "validation_result": {
+        "frame_sha256_and_contiguous_pts": "PASS_239",
+        "sheet_sha256": "PASS_24",
+        "pair_labels_and_references": "PASS_3",
+        "wbs_json_html": "PASS_37_ROWS",
+        "pdf_first_page": "PASS",
+        "html_pdf_http_sha": "PASS",
+        "renderer_ruff": "PASS",
+        "git_diff_check": "PASS",
+        "gpu_plan_pins_unchanged": true,
+        "reserved_six_and_operating_six_unchanged": true
+      }
+    },
+    "pair_dataset_bridge": {
+      "status": "OFFLINE_LABEL_POSE_JOIN_VERIFIED_REAL_CAPTURE_PENDING",
+      "code_sha256": {
+        "scripts/datasets/build_fight_pair_dataset.py": "123ada1174072e640ae46f4294fd452f4b1861b474dc2a62d4109fdbf1b871cb",
+        "scripts/datasets/train_fight_pair_tcn.py": "2ddf83511a23b967cc5cf17ddce1e57bb43a5427b347af1f75c3671949de0863",
+        "tests/test_build_fight_pair_dataset.py": "5cc2763e7ed7c8ae10dd811c8c2d82ea7ad137135128d76e514cee71138a8b75"
+      },
+      "related_unique_tests_passed": 71,
+      "new_bridge_tests_passed": 31,
+      "test_runs": [
+        {
+          "path": "data/runtime/p57_development_pose_20261015/pair_dataset_tests.xml",
+          "passed": 68,
+          "scope": "bridge28 + trainer28 + exporter12",
+          "sha256": "c02b6fbf1f62ce64f19d827d6ae26619dc45dfd0f9b2adc2427f76d07f8ad41f"
+        },
+        {
+          "path": "data/runtime/p57_development_pose_20261015/pair_dataset_final_tests.xml",
+          "passed": 31,
+          "scope": "final bridge31 after overlap/serialization checks; previous28 are reruns",
+          "sha256": "78208519472dad9cda97bfa65f6f150ec30cafd3e332a42920adfbce2eb257b7"
+        }
+      ],
+      "ruff": "PASS",
+      "real_video_training_runs": 0,
+      "actual_fight_training_inputs_created": 0,
+      "new_gpu_runs": 0,
+      "production_changes": 0,
+      "new_dependencies": 0,
+      "current_labels_promoted": false,
+      "contracts": [
+        "fullframe1080p",
+        "person_pose_confidence0.5",
+        "source/derived/capture/label/mapping hash agreement",
+        "pair identity and continuity review",
+        "original PTS preserved without interpolation",
+        "48 observations plus retained remainder",
+        "reserved source exclusion and reviewed group split",
+        "duplicate IDs/overlapping pair windows/PTS gaps rejected",
+        "no output overwrite"
+      ],
+      "remaining": [
+        "GPU6 capture approval and same-container recovery",
+        "actual pose ID continuity review",
+        "reviewed separate train/validation groups and both classes",
+        "initial real-video training and independent evaluation"
+      ],
+      "limits": [
+        "synthetic test inputs only; no real fight accuracy evidence",
+        "CPU training test emitted CUDA initialization warning; GPU health not checked",
+        "graph detect_changes returned unrelated122 functions/42 gaps for specified3 files; not used as scoped coverage evidence"
+      ],
+      "validation": {
+        "wbs_json_html_37_rows": "PASS",
+        "pdf_first_page_visual": "PASS",
+        "http_local_sha": "PASS",
+        "git_diff_check": "PASS",
+        "direct_callers": "offline dataset scripts and tests only",
+        "graph_tests_for": "not_found; explicit source review and tests used",
+        "unchanged_hash_checks": {
+          "runtime_six": {
+            "checked": 6,
+            "mismatches": []
+          },
+          "reserved_six": {
+            "checked": 6,
+            "mismatches": []
+          },
+          "gpu_plan_50": {
+            "checked": 50,
+            "mismatches": []
+          }
+        }
+      }
+    },
+    "location15_pair_review": {
+      "status": "DEVELOPMENT_PAIR_LABELS_REVIEWED_ID_GROUP_PENDING",
+      "manifest": "data/runtime/p57_development_pose_20261015/location15_review/label_windows/windows.json",
+      "manifest_sha256": "d5792a41c55363a9ae9f43271a2be2fe55e31259a526fc7b00eefa76744ce2b1",
+      "validation": "data/runtime/p57_development_pose_20261015/location15_review/label_windows/validation.json",
+      "validation_sha256": "20a5447779f90d0ff060fb9e1b931f5afce0ed4b5295d9d18a04b85b6ed28bd9",
+      "input_manifest": "data/runtime/p57_development_pose_20261015/location15_review/manifest.json",
+      "input_manifest_sha256": "50c689b056d646d46772473b29637ac17ab9519d697e581b1edc78c6fd2d769f",
+      "video_member": "15-6/15-6_cam01_fight02_place04_night_spring.mp4",
+      "source_sha256": "49ed0c131da7876cd5977043619eef5d9890cad775142cb899881e688e491df7",
+      "videos": 1,
+      "prepared_interval_seconds": 42,
+      "prepared_frames": 1259,
+      "resolution": [
+        1920,
+        1080
+      ],
+      "person_pose_confidence": 0.5,
+      "unique_frames_reviewed": 240,
+      "sheets_reviewed": 20,
+      "positive_pair_windows": 1,
+      "negative_pair_windows": 1,
+      "held_pair_windows": 1,
+      "unique_approved_frames": 120,
+      "label_scope": "development_pair_window_only",
+      "reviewer": "codex_visual_review",
+      "pose_ids_bound": false,
+      "grouping_verified": false,
+      "training_ready": false,
+      "independent_evaluation_ready": false,
+      "included_in_gpu6_plan": true,
+      "group_review": {
+        "filename_location": "PLACE04",
+        "xml_location": "PLACE02",
+        "location_conflict_resolved": false,
+        "filename_family": "15",
+        "independent_actor_or_session_verified": false,
+        "reason": "XML character=M30,M30 및 person_1/person_2는 전역 배우/촬영 세션 식별자가 아니다. 다른 파일명 계열/장소를 배우 독립성으로 간주하지 않음.",
+        "official_schema_url": "https://www.aihub.or.kr/aihubdata/data/view.do?dataSetSn=171",
+        "official_schema_observation": "공개 XML 구조에는 장소/시각/이벤트/영상 내 object 위치·action 항목이 있으나 전역 배우/촬영 세션 식별 규격은 확인되지 않음.",
+        "manual_download_result": "데이터셋별8317/8318은 HTML 오류; 공식 자료실 통합 가이드북69,793,358바이트 확보. 회차/씬 예시는 있으나 두 원본의 실제 배우/세션 대응은 없음."
+      },
+      "validation_result": {
+        "frame_sha256_and_contiguous_pts": "PASS_240",
+        "sheet_sha256_and_coverage": "PASS_20",
+        "direct_original_decode_samples": "PASS_2",
+        "reserved_hash_and_filename_exclusion": true,
+        "previous_labels_reserved6_runtime6_and_gpu_pin_manifest_unchanged": true,
+        "wbs_json_html_37_rows": "PASS",
+        "cumulative_label_counts": "PASS_5_LABELS_479_REVIEWED_359_LABELED",
+        "pdf_first_page_visual": "PASS",
+        "html_pdf_http_sha": "PASS",
+        "renderer_ruff": "PASS",
+        "git_diff_check": "PASS"
+      },
+      "limitations": [
+        "172–176초는 정상/싸움 모두 보류",
+        "독립 촬영/배우 미확정",
+        "실제 GPU 관절 ID와 연결 전이며 학습 실행0"
+      ],
+      "gpu_trial_index": 5,
+      "gpu_plan_revision": 2
+    },
+    "development_label_totals": {
+      "source_videos": 2,
+      "reviewed_pair_labels": 5,
+      "positive_pair_labels": 2,
+      "negative_pair_labels": 3,
+      "held_pair_windows": 1,
+      "unique_frames_reviewed": 479,
+      "unique_frames_with_reviewed_pair_labels": 359,
+      "sheets_reviewed": 44,
+      "independent_evaluation_scenes_frozen": 0,
+      "actual_training_inputs_promoted": 0,
+      "real_video_training_runs": 0
+    },
+    "official_group_review": {
+      "status": "OFFICIAL_GUIDE_OBTAINED_GROUP_MAPPING_STILL_MISSING",
+      "evidence": "data/runtime/p57_development_acquisition_20261015/group_metadata_review.json",
+      "evidence_sha256": "2c1f9004c20ecae6e0e84b8026891b5698f479a4b4f35f0399dcdd44105d4322",
+      "official_pdf": {
+        "downloaded_at": "2026-10-15T22:11:43.248947+09:00",
+        "url": "https://aihub.or.kr/web-nas/aihub21/files/sample/intro/%EC%9D%B8%EA%B3%B5%EC%A7%80%EB%8A%A5%20%EB%8D%B0%EC%9D%B4%ED%84%B0%EC%85%8B%20%EA%B5%AC%EC%B6%95%20%EA%B0%80%EC%9D%B4%EB%93%9C%EB%B6%81_2%EC%87%84.pdf",
+        "index_url": "https://aihub.or.kr/aihubnews/qlityguidance/view.do?nttSn=10038",
+        "http_status": 200,
+        "content_type": "application/pdf",
+        "path": "data/runtime/p57_development_acquisition_20261015/official_guide_2019.pdf",
+        "bytes": 69793358,
+        "sha256": "8c46b7023bcb73dadd0fba208958557f7a1e809f0478f2debbdd5ad793210786",
+        "pdf_header_valid": true
+      },
+      "xml_files": 83,
+      "archive_xml_counts": {
+        "49753": 41,
+        "49754": 42
+      },
+      "pages_visually_reviewed": 5,
+      "grouping_verified": false,
+      "training_ready": false,
+      "required_group_evidence": [
+        "파일 또는 씬 번호→실제 촬영 회차/세션의 대응",
+        "회차 사이 반복 출연자를 연결할 익명 배우 코드 또는 동일 출연 묶음",
+        "장소 코드 충돌24건의 원본 촬영/시나리오 정보"
+      ],
+      "coverage_gap": "프로젝트 fight_detected는 일방적 공격도 포함하므로 AI Hub assault/fight 두 분류를 개발/평가에서 검수해야 함",
+      "assault_outdoor_catalog_candidates": 9,
+      "assault_downloaded": false,
+      "labels_changed": false,
+      "gpu_executed": false,
+      "training_executed": false,
+      "operating_changed": false,
+      "validation": {
+        "official_pdf_sha": "PASS",
+        "relied_on_pdf_pages_visually_checked": 5,
+        "xml_records_parsed": 83,
+        "selected_xml_sha_match": 2,
+        "reserved6_runtime6_labels2_gpu_pins_unchanged": true,
+        "wbs_json_html_37_rows": "PASS",
+        "pdf_first_page_visual": "PASS",
+        "html_pdf_http_sha": "PASS",
+        "renderer_ruff": "PASS",
+        "git_diff_check": "PASS",
+        "training_run": false
+      }
+    }
+  },
+  "execution_blockers": {
+    "checked_at": "2026-10-16T08:42:31.267246+09:00",
+    "previous_goal_turn": "progress_official_guide_and_group_metadata_review",
+    "state": "IN_PROGRESS_ID_REVIEW_GROUP_PENDING",
+    "observed_in_steps": [
+      "야간 개발 라벨 검수",
+      "GPU6 추출안 개정2",
+      "공식 가이드/XML83개 대조"
+    ],
+    "live_training_processes": [],
+    "live_gpu_runner_processes": [],
+    "running_gpu_trial_containers": [],
+    "trial_output_file_counts": [
+      4,
+      4,
+      4,
+      4,
+      4,
+      4
+    ],
+    "prepared_plan_revision": 2,
+    "plan_hash_verified": true,
+    "pending_inputs": [
+      "원본 파일→촬영 회차→익명 배우 연결 근거"
+    ],
+    "available_preparation_completed": [
+      "주간5/야간1 입력·50해시/Compose 검증·복구15시험",
+      "실영상 라벨5건·라벨/Pose 연결 코드71검증",
+      "공식 가이드5쪽·보유XML83개 그룹 규격 대조",
+      "GPU6회 실제 추출·운영 복구 및 처리율 검증"
+    ],
+    "resume_gpu_on_approval": false,
+    "approval_alone_makes_training_ready": false,
+    "production_changed": false,
+    "reason": "GPU6회 승인/추출/복구 완료. 실제 ID/연속성 검수는 진행 가능하며 train/validation 분리를 위한 회차/배우 연결 근거는 미확보.",
+    "project_rule": "AGENTS.md:22 계획 문서는 운영 중지·배포·실물 출력의 포괄 승인을 뜻하지 않는다.",
+    "validation": {
+      "wbs_json_html_rows": 37,
+      "pdf_first_page_visual": "PASS",
+      "http_sha_match": "PASS",
+      "renderer_ruff": "PASS",
+      "git_diff_check": "PASS",
+      "reserved6_runtime6_unchanged": true,
+      "all_six_full_video_and_tensor_counts": "PASS",
+      "pts_1080p_confidence_engine": "PASS",
+      "same_frame_duplicate_ids": 0,
+      "trial_external_events_sent": 0,
+      "gpu_critical_log_errors_after_fix": 0,
+      "reserved_pool_exact_hash_overlap": 0,
+      "reserved6_operating6_hashes_unchanged": true,
+      "two_reviewed_label_manifests_unchanged": true,
+      "read_only_x11_mount_checked": 6,
+      "input_hashes_verified": 50,
+      "changed_input_pins_only_six_compose_files": true
+    },
+    "approval_resolved": true,
+    "prior_approval_blocker_recurred_at_least_three_goal_turns": true
+  },
+  "gpu_capture_execution": {
+    "checked_at": "2026-10-16T08:42:31.267246+09:00",
+    "status": "GPU_EXTRACTION_COMPLETE_NOT_TRAINING",
+    "scope": "approved_six_development_clips_1080p_confidence_0_5",
+    "successful_gpu_extractions": 6,
+    "initialization_failures": 1,
+    "container_attempts": 7,
+    "operating_ai_stop_count": 2,
+    "training_runs": 0,
+    "production_changes": 0,
+    "video_frames": 6680,
+    "gpu_pose_frames": 3341,
+    "detections_at_0_5": 7668,
+    "frames_with_two_or_more_people": 2600,
+    "trials": [
+      {
+        "index": 0,
+        "scene": "180-4_cam01_fight01_place09_day_spring",
+        "video_frames": 1198,
+        "gpu_pose_frames": 599,
+        "detections_at_0_5": 1370,
+        "frames_with_two_or_more_people": 470,
+        "capture_processing_fps": 15.16,
+        "all_frames_processed": true,
+        "pts_verified": true,
+        "events_sent": 0,
+        "export": "data/runtime/p57_development_pose_20261015/trial_000/pose_export/report.json",
+        "capture_sha256": "82d77a3c647c063d30cc6581af383f503f72967d63bf8b8b1386c2aaa108b013"
+      },
+      {
+        "index": 1,
+        "scene": "180-4_cam01_fight01_place09_day_summer",
+        "video_frames": 1198,
+        "gpu_pose_frames": 599,
+        "detections_at_0_5": 969,
+        "frames_with_two_or_more_people": 406,
+        "capture_processing_fps": 15.387,
+        "all_frames_processed": true,
+        "pts_verified": true,
+        "events_sent": 0,
+        "export": "data/runtime/p57_development_pose_20261015/trial_001/pose_export/report.json",
+        "capture_sha256": "ccca2cb50b751c3d9e8b00d8256b0e544e9d354efa05f867d197f9e7a6a57569"
+      },
+      {
+        "index": 2,
+        "scene": "180-4_cam02_fight01_place09_day_spring",
+        "video_frames": 1198,
+        "gpu_pose_frames": 599,
+        "detections_at_0_5": 1993,
+        "frames_with_two_or_more_people": 599,
+        "capture_processing_fps": 15.474,
+        "all_frames_processed": true,
+        "pts_verified": true,
+        "events_sent": 0,
+        "export": "data/runtime/p57_development_pose_20261015/trial_002/pose_export/report.json",
+        "capture_sha256": "542a3c47f85ccc52504531f7898d9972faeb16ab0e9fcd6cef65848aae480a8c"
+      },
+      {
+        "index": 3,
+        "scene": "180-4_cam02_fight01_place09_day_summer",
+        "video_frames": 1228,
+        "gpu_pose_frames": 614,
+        "detections_at_0_5": 864,
+        "frames_with_two_or_more_people": 387,
+        "capture_processing_fps": 15.631,
+        "all_frames_processed": true,
+        "pts_verified": true,
+        "events_sent": 0,
+        "export": "data/runtime/p57_development_pose_20261015/trial_003/pose_export/report.json",
+        "capture_sha256": "c621e02a3d8a79bc4b13148db9827ae01efd6f5fe62a933f61692880ce79dd45"
+      },
+      {
+        "index": 4,
+        "scene": "180-5_cam01_fight01_place09_day_spring",
+        "video_frames": 599,
+        "gpu_pose_frames": 300,
+        "detections_at_0_5": 411,
+        "frames_with_two_or_more_people": 134,
+        "capture_processing_fps": 15.748,
+        "all_frames_processed": true,
+        "pts_verified": true,
+        "events_sent": 0,
+        "export": "data/runtime/p57_development_pose_20261015/trial_004/pose_export/report.json",
+        "capture_sha256": "4e0bb546d691090c4f899cf7554d24c31c1f16d9ad221dc8bf135217f7d1ea3b"
+      },
+      {
+        "index": 5,
+        "scene": "15-6_cam01_fight02_place04_night_spring",
+        "video_frames": 1259,
+        "gpu_pose_frames": 630,
+        "detections_at_0_5": 2061,
+        "frames_with_two_or_more_people": 604,
+        "capture_processing_fps": 15.388,
+        "all_frames_processed": true,
+        "pts_verified": true,
+        "events_sent": 0,
+        "export": "data/runtime/p57_development_pose_20261015/trial_005/pose_export/report.json",
+        "capture_sha256": "73975dad39dd8d474d5d8f08170ea3cce9fa31f686c5ccc35d6c182cfd1d5482"
+      }
+    ],
+    "reviewed_window_coverage": [
+      {
+        "trial": 2,
+        "window": "pre_event_seated_pair",
+        "source_interval_s": [
+          233,
+          237
+        ],
+        "pose_frames": 60,
+        "frames_with_two_or_more_people": 60,
+        "identity_bound": false,
+        "training_ready": false
+      },
+      {
+        "trial": 2,
+        "window": "event_active_pair",
+        "source_interval_s": [
+          246,
+          250
+        ],
+        "pose_frames": 60,
+        "frames_with_two_or_more_people": 60,
+        "identity_bound": false,
+        "training_ready": false
+      },
+      {
+        "trial": 5,
+        "window": "later_contact",
+        "source_interval_s": [
+          196,
+          200
+        ],
+        "pose_frames": 60,
+        "frames_with_two_or_more_people": 60,
+        "identity_bound": false,
+        "training_ready": false
+      },
+      {
+        "trial": 5,
+        "window": "passing_pair",
+        "source_interval_s": [
+          198,
+          200
+        ],
+        "pose_frames": 30,
+        "frames_with_two_or_more_people": 30,
+        "identity_bound": false,
+        "training_ready": false
+      }
+    ],
+    "before_rates": {
+      "cctv_processor_frames_processed_total": 30.009403949470297,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 15.004701974735148
+    },
+    "after_rates": {
+      "cctv_processor_frames_processed_total": 29.431252774030398,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 14.715626387015199
+    },
+    "recovery": {
+      "observed_at": "2026-10-16T08:40:16.711992+09:00",
+      "elapsed_s": 30.03609825199237,
+      "rates": {
+        "cctv_processor_frames_processed_total": 29.431252774030398,
+        "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 14.715626387015199
+      },
+      "stable_during_sample": true,
+      "same_container_and_image": true,
+      "non_target_four_unchanged": true,
+      "maintenance_start_to_ai_started_s": 838.3756203651428,
+      "maintenance_start_to_healthy_record_s": 851.3797914981842,
+      "last_result_to_healthy_s": 14.881221771240234,
+      "last_result_to_throughput_verified_s": 45.236695766448975,
+      "recovery_timing_basis": "last result file mtime to healthy observation / throughput sample end",
+      "remaining_trial_containers": [],
+      "passed": true
+    },
+    "initial_failure": {
+      "reason": "DISPLAY=:1에서 /tmp/.X11-unix 마운트 누락으로 EGL 초기화 실패",
+      "gpu_frames": 0,
+      "resolved": "기존 성공 시험과 동일한 읽기 전용 소켓 연결 복원; 호스트 접근 제어/운영 구성 변경 없음",
+      "archive": "data/runtime/p57_development_pose_20261015/failed_initialization_20261016",
+      "fix": "data/runtime/p57_development_pose_20261015/egl_mount_fix_20261016.json",
+      "official_reference": "https://docs.nvidia.com/metropolis/deepstream/7.1/text/DS_troubleshooting.html"
+    },
+    "validation": {
+      "all_six_full_video_and_tensor_counts": "PASS",
+      "pts_1080p_confidence_engine": "PASS",
+      "same_frame_duplicate_ids": 0,
+      "trial_external_events_sent": 0,
+      "gpu_critical_log_errors_after_fix": 0,
+      "reserved_pool_exact_hash_overlap": 0,
+      "reserved6_operating6_hashes_unchanged": true,
+      "two_reviewed_label_manifests_unchanged": true,
+      "read_only_x11_mount_checked": 6,
+      "input_hashes_verified": 50,
+      "changed_input_pins_only_six_compose_files": true,
+      "wbs_json_html_rows": 37,
+      "pdf_first_page_visual": "PASS",
+      "renderer_ruff": "PASS",
+      "git_diff_check": "PASS",
+      "http_sha_match": "PASS"
+    },
+    "limitations": [
+      "기존 Pose 추론이며 싸움 모델 학습/정확도 평가 아님",
+      "다인 검출은 실제 정답 사람쌍의 ID/연속성 합격을 뜻하지 않음",
+      "촬영 회차/익명 배우 연결·정상/유사 다양성·최종 독립 평가 잔여",
+      "2CPU/8GB·원자료 저장을 포함한 오프라인 추출 처리율은 운영 실시간 성능 합격 근거가 아님"
+    ],
+    "artifacts": {
+      "data/runtime/p57_development_pose_20261015/approval_20261016.json": "4a66cf39dbb608ee3c3101f28d8780f689694287781933356e5e03bc39370dc0",
+      "data/runtime/p57_development_pose_20261015/input_hashes.json": "91d4cae1ac20ad03a7c065b623d96478e00207a27129c208a3240d4a1482668e",
+      "data/runtime/p57_development_pose_20261015/retry_execution_plan_20261016.json": "3ae12f9964f1642da46495ed4f2912ebced178b89a3804f0e3c73692b3299a6f",
+      "data/runtime/p57_development_pose_20261015/egl_mount_fix_20261016.json": "195e062b280e2f04b35da06f9410bd643ac695a97d07dde294fb7fe3938d65bd",
+      "data/runtime/p57_development_pose_20261015/batch_00_results.json": "91a6f6ec30a1298d4623d95457121ca00c249dac3591172b94953cb4c73da9a0",
+      "data/runtime/p57_development_pose_20261015/batch_00_recovery.json": "1853f5379debf58ef2010d5b07ea28e6e17daba25c73caebf5560d2975bf0910",
+      "data/runtime/p57_development_pose_20261015/operating_before_execution_20261016.json": "8695691d692f9ddf76cb9c59a497f10f8936cbbc772076333f94f98adba43b28",
+      "data/runtime/p57_development_pose_20261015/operating_after_execution_20261016.json": "783ec7719d7bf2289d3307d2b964ad01e38a22cbc15a69305bfec292b1d5077a",
+      "data/runtime/p57_development_pose_20261015/pose_export_summary_20261016.json": "7cb8025d2e900cb6c01949147aa45fbff34a5e603b64a0a3624ef004f392b77b"
+    }
+  },
+  "updated_at": "2026-10-16T08:42:31.267246+09:00",
+  "user_hold_20261016": {
+    "state": "PAUSED_BY_USER",
+    "resume_requires_user_direction": true,
+    "preserve_data_and_gpu6_results": true,
+    "priority": "P5.2 낙상 처리 성능 보완(1080p/0.5·실제 추론15회/초 목표) → 미사용80영상 재평가 → 배치 지원2채널/4채널 검증 → 운영 적용 준비; P5.7 싸움은 사용자 지시로 보류"
+  }
+}

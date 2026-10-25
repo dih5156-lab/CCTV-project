@@ -1,0 +1,6416 @@
+{
+  "date": "2026-10-15",
+  "wbs_id": "P5.7",
+  "status": "ANNOTATION_AUDIT_COMPLETED_FINAL_LABELS_NOT_APPROVED",
+  "candidate_manifest": "docs/planning/evidence/fight_candidate_pool_20261015.json",
+  "candidate_manifest_sha256": "4adaaf0c0f5eb2c19f06da9edbb2b16b52140a427ece8de621a3db95deb3db43",
+  "counts": {
+    "candidate_videos": 38,
+    "action_spans": 551,
+    "kind_counts": {
+      "contact_candidate": 379,
+      "fall": 39,
+      "threat": 133
+    },
+    "header_precedes_contact_over_1_second": 7,
+    "header_precedes_contact_over_30_seconds": 2,
+    "source_labels_modified": 0,
+    "final_independent_scene_groups": 0,
+    "header_follows_contact_over_1_second": 4,
+    "header_follows_contact_over_30_seconds": 2,
+    "boundary_priority_videos": 11,
+    "packet_checked_videos": 4,
+    "packet_count": 36987,
+    "packet_gap_or_overlap_count": 0
+  },
+  "rows": [
+    {
+      "video_member": "1-1/1-1_cam01_fight04_place02_night_spring.mp4",
+      "video_sha256": "597c915b73c83338473edbd702e784d95200848392680b4f9eb604650da59628",
+      "label_sha256": "b8900bd338bec614d9374622aae1f239458977830a6d464c7f7f1f415a0f7c74",
+      "scene_group": "nia2019:fight:1-1",
+      "event_start_s": 274.1,
+      "event_end_s": 319.0,
+      "first_labeled_action_nominal_s_range": [
+        202.36666666666667,
+        202.4
+      ],
+      "actions": [
+        {
+          "participant": "person_01",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 8224,
+          "end_frame": 8305
+        },
+        {
+          "participant": "person_01",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 9041,
+          "end_frame": 9570
+        },
+        {
+          "participant": "person_01",
+          "action_name": "falldown",
+          "kind": "fall",
+          "start_frame": 8326,
+          "end_frame": 8504
+        },
+        {
+          "participant": "person_02",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 6072,
+          "end_frame": 6118
+        },
+        {
+          "participant": "person_02",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 8296,
+          "end_frame": 8314
+        },
+        {
+          "participant": "person_02",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 8967,
+          "end_frame": 8991
+        }
+      ],
+      "action_audit": {
+        "kind_counts": {
+          "contact_candidate": 5,
+          "fall": 1
+        },
+        "first_contact_frame": 6072,
+        "first_contact_nominal_s_range": [
+          202.36666666666667,
+          202.4
+        ],
+        "header_to_contact_delay_s_range": [
+          -71.73333333333335,
+          -71.70000000000002
+        ],
+        "frame_index_base_verified": false,
+        "ready_for_training_or_scoring": false,
+        "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+      },
+      "boundary_review_priority": true
+    },
+    {
+      "video_member": "1-1/1-1_cam01_fight04_place02_night_summer.mp4",
+      "video_sha256": "b83cab5219058aee29932118476848865a62b0f4298b5fcdfc4d11ec6ab75903",
+      "label_sha256": "c4bc44f32d70896090b449b9c307fdaec9e7df4ca2b05cdd169b8191b697bd4c",
+      "scene_group": "nia2019:fight:1-1",
+      "event_start_s": 82.1,
+      "event_end_s": 284.2,
+      "first_labeled_action_nominal_s_range": [
+        82.1,
+        82.13333333333334
+      ],
+      "actions": [
+        {
+          "participant": "person_01",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 2464,
+          "end_frame": 2655
+        },
+        {
+          "participant": "person_01",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 4035,
+          "end_frame": 4062
+        },
+        {
+          "participant": "person_01",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 4154,
+          "end_frame": 4240
+        },
+        {
+          "participant": "person_01",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 6607,
+          "end_frame": 6758
+        },
+        {
+          "participant": "person_01",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 2466,
+          "end_frame": 2512
+        },
+        {
+          "participant": "person_01",
+          "action_name": "falldown",
+          "kind": "fall",
+          "start_frame": 3581,
+          "end_frame": 3713
+        },
+        {
+          "participant": "person_01",
+          "action_name": "falldown",
+          "kind": "fall",
+          "start_frame": 6781,
+          "end_frame": 7029
+        },
+        {
+          "participant": "person_01",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 8415,
+          "end_frame": 8525
+        },
+        {
+          "participant": "person_02",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 3546,
+          "end_frame": 3581
+        },
+        {
+          "participant": "person_02",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 3899,
+          "end_frame": 3923
+        },
+        {
+          "participant": "person_02",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 6052,
+          "end_frame": 6065
+        },
+        {
+          "participant": "person_02",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 6546,
+          "end_frame": 6561
+        },
+        {
+          "participant": "person_02",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 6743,
+          "end_frame": 6760
+        },
+        {
+          "participant": "person_02",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 7797,
+          "end_frame": 7812
+        },
+        {
+          "participant": "person_02",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 8082,
+          "end_frame": 8152
+        },
+        {
+          "participant": "person_02",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 7808,
+          "end_frame": 7835
+        }
+      ],
+      "action_audit": {
+        "kind_counts": {
+          "contact_candidate": 13,
+          "fall": 2,
+          "threat": 1
+        },
+        "first_contact_frame": 2464,
+        "first_contact_nominal_s_range": [
+          82.1,
+          82.13333333333334
+        ],
+        "header_to_contact_delay_s_range": [
+          0.0,
+          0.03333333333334565
+        ],
+        "frame_index_base_verified": false,
+        "ready_for_training_or_scoring": false,
+        "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+      },
+      "boundary_review_priority": false
+    },
+    {
+      "video_member": "1-1/1-1_cam02_fight04_place02_night_spring.mp4",
+      "video_sha256": "2883d3a4df56849d8acf29cdfdcab4bd6fabba4aab7611e5fa5a2c750444f307",
+      "label_sha256": "2abd3bc0b85f86c637d8a8f681972f4194dd413589c698dfb7e192307df469bf",
+      "scene_group": "nia2019:fight:1-1",
+      "event_start_s": 202.2,
+      "event_end_s": 320.29999999999995,
+      "first_labeled_action_nominal_s_range": [
+        202.9,
+        202.93333333333334
+      ],
+      "actions": [
+        {
+          "participant": "person_01",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 6088,
+          "end_frame": 6132
+        },
+        {
+          "participant": "person_01",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 8318,
+          "end_frame": 8325
+        },
+        {
+          "participant": "person_01",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 8993,
+          "end_frame": 9017
+        },
+        {
+          "participant": "person_01",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 9304,
+          "end_frame": 9328
+        },
+        {
+          "participant": "person_02",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 8239,
+          "end_frame": 8317
+        },
+        {
+          "participant": "person_02",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 9056,
+          "end_frame": 9261
+        },
+        {
+          "participant": "person_02",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 9373,
+          "end_frame": 9609
+        },
+        {
+          "participant": "person_02",
+          "action_name": "falldown",
+          "kind": "fall",
+          "start_frame": 8342,
+          "end_frame": 8522
+        }
+      ],
+      "action_audit": {
+        "kind_counts": {
+          "contact_candidate": 7,
+          "fall": 1
+        },
+        "first_contact_frame": 6088,
+        "first_contact_nominal_s_range": [
+          202.9,
+          202.93333333333334
+        ],
+        "header_to_contact_delay_s_range": [
+          0.700000000000017,
+          0.7333333333333485
+        ],
+        "frame_index_base_verified": false,
+        "ready_for_training_or_scoring": false,
+        "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+      },
+      "boundary_review_priority": false
+    },
+    {
+      "video_member": "1-2/1-2_cam01_fight04_place02_night_spring.mp4",
+      "video_sha256": "a097b43bb466d0b59bd4ed85bd331b85c5797e1506503ff46f1fa1991279cf1c",
+      "label_sha256": "456f5504709bd8c0b27a6bbd63be4799c300b60b504e5fbe8eca919267850516",
+      "scene_group": "nia2019:fight:1-2",
+      "event_start_s": 251.4,
+      "event_end_s": 304.4,
+      "first_labeled_action_nominal_s_range": [
+        251.43333333333334,
+        251.46666666666667
+      ],
+      "actions": [
+        {
+          "participant": "person_01",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 7579,
+          "end_frame": 7601
+        },
+        {
+          "participant": "person_01",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 8401,
+          "end_frame": 8421
+        },
+        {
+          "participant": "person_01",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 9010,
+          "end_frame": 9066
+        },
+        {
+          "participant": "person_02",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 7544,
+          "end_frame": 7601
+        },
+        {
+          "participant": "person_02",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 8173,
+          "end_frame": 8409
+        },
+        {
+          "participant": "person_02",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 9073,
+          "end_frame": 9131
+        },
+        {
+          "participant": "person_02",
+          "action_name": "falldown",
+          "kind": "fall",
+          "start_frame": 8409,
+          "end_frame": 8520
+        }
+      ],
+      "action_audit": {
+        "kind_counts": {
+          "contact_candidate": 6,
+          "fall": 1
+        },
+        "first_contact_frame": 7544,
+        "first_contact_nominal_s_range": [
+          251.43333333333334,
+          251.46666666666667
+        ],
+        "header_to_contact_delay_s_range": [
+          0.03333333333333144,
+          0.06666666666666288
+        ],
+        "frame_index_base_verified": false,
+        "ready_for_training_or_scoring": false,
+        "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+      },
+      "boundary_review_priority": false
+    },
+    {
+      "video_member": "1-2/1-2_cam02_fight04_place02_night_spring.mp4",
+      "video_sha256": "9670876bbbfb331e226f6e4e75e40537a3af7e2c7f10679ee76ef47b59e750f9",
+      "label_sha256": "cde08212f863a4fc99823f2f27f4ec78ccaecc80ee6e979de309285792332f04",
+      "scene_group": "nia2019:fight:1-2",
+      "event_start_s": 280.6,
+      "event_end_s": 304.5,
+      "first_labeled_action_nominal_s_range": [
+        251.86666666666667,
+        251.9
+      ],
+      "actions": [
+        {
+          "participant": "person_01",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 8419,
+          "end_frame": 8425
+        },
+        {
+          "participant": "person_01",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 9013,
+          "end_frame": 9084
+        },
+        {
+          "participant": "person_02",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 7557,
+          "end_frame": 7650
+        },
+        {
+          "participant": "person_02",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 8348,
+          "end_frame": 8419
+        },
+        {
+          "participant": "person_02",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 9084,
+          "end_frame": 9135
+        },
+        {
+          "participant": "person_02",
+          "action_name": "falldown",
+          "kind": "fall",
+          "start_frame": 8438,
+          "end_frame": 8710
+        }
+      ],
+      "action_audit": {
+        "kind_counts": {
+          "contact_candidate": 5,
+          "fall": 1
+        },
+        "first_contact_frame": 7557,
+        "first_contact_nominal_s_range": [
+          251.86666666666667,
+          251.9
+        ],
+        "header_to_contact_delay_s_range": [
+          -28.73333333333335,
+          -28.700000000000017
+        ],
+        "frame_index_base_verified": false,
+        "ready_for_training_or_scoring": false,
+        "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+      },
+      "boundary_review_priority": true
+    },
+    {
+      "video_member": "1-2/1-2_cam02_fight04_place02_night_summer.mp4",
+      "video_sha256": "c491d3c977a0b9f62af52d2d510118faab52d7cde3a53998b68fa51f417bb99c",
+      "label_sha256": "b643c1809dc429b838fa65b36c9109b79248f53e1e6582ff0d1256e6bf0810f6",
+      "scene_group": "nia2019:fight:1-2",
+      "event_start_s": 289.8,
+      "event_end_s": 295.3,
+      "first_labeled_action_nominal_s_range": [
+        214.5,
+        214.53333333333333
+      ],
+      "actions": [
+        {
+          "participant": "person_01",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 8695,
+          "end_frame": 8728
+        },
+        {
+          "participant": "person_01",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 8168,
+          "end_frame": 8198
+        },
+        {
+          "participant": "person_01",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 7740,
+          "end_frame": 7860
+        },
+        {
+          "participant": "person_02",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 6436,
+          "end_frame": 6532
+        },
+        {
+          "participant": "person_02",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 8094,
+          "end_frame": 8168
+        },
+        {
+          "participant": "person_02",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 8525,
+          "end_frame": 8669
+        },
+        {
+          "participant": "person_02",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 8780,
+          "end_frame": 8858
+        },
+        {
+          "participant": "person_02",
+          "action_name": "falldown",
+          "kind": "fall",
+          "start_frame": 8182,
+          "end_frame": 8475
+        }
+      ],
+      "action_audit": {
+        "kind_counts": {
+          "threat": 1,
+          "contact_candidate": 6,
+          "fall": 1
+        },
+        "first_contact_frame": 6436,
+        "first_contact_nominal_s_range": [
+          214.5,
+          214.53333333333333
+        ],
+        "header_to_contact_delay_s_range": [
+          -75.30000000000001,
+          -75.26666666666668
+        ],
+        "frame_index_base_verified": false,
+        "ready_for_training_or_scoring": false,
+        "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+      },
+      "boundary_review_priority": true
+    },
+    {
+      "video_member": "1-3/1-3_cam01_fight04_place02_night_spring.mp4",
+      "video_sha256": "9244845bf4b46c0a79fdc47a0f03879937852c9abf7975ef6af1270b98be4aba",
+      "label_sha256": "cd36ec3d46a286effe4a7e6becccf7eff31490c68d225c6cae0fa53dda62ec6c",
+      "scene_group": "nia2019:fight:1-3",
+      "event_start_s": 232.4,
+      "event_end_s": 293.1,
+      "first_labeled_action_nominal_s_range": [
+        232.43333333333334,
+        232.46666666666667
+      ],
+      "actions": [
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 6974,
+          "end_frame": 7044
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 7050,
+          "end_frame": 7126
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 7467,
+          "end_frame": 7533
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 7557,
+          "end_frame": 7636
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 7716,
+          "end_frame": 7783
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 8020,
+          "end_frame": 8079
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 8572,
+          "end_frame": 8792
+        },
+        {
+          "participant": "person_2",
+          "action_name": "falldown",
+          "kind": "fall",
+          "start_frame": 8046,
+          "end_frame": 8253
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 8254,
+          "end_frame": 8576
+        }
+      ],
+      "action_audit": {
+        "kind_counts": {
+          "contact_candidate": 8,
+          "fall": 1
+        },
+        "first_contact_frame": 6974,
+        "first_contact_nominal_s_range": [
+          232.43333333333334,
+          232.46666666666667
+        ],
+        "header_to_contact_delay_s_range": [
+          0.03333333333333144,
+          0.06666666666666288
+        ],
+        "frame_index_base_verified": false,
+        "ready_for_training_or_scoring": false,
+        "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+      },
+      "boundary_review_priority": false
+    },
+    {
+      "video_member": "1-3/1-3_cam01_fight04_place02_night_summer.mp4",
+      "video_sha256": "87744861e514b3186e9960311c864afa04f382f364715a3a9b53d6a5a27013f0",
+      "label_sha256": "7fffb84f7ac37f189eae54a536f6fcea9083d80d9fc5eb6c43f0dfc780446235",
+      "scene_group": "nia2019:fight:1-3",
+      "event_start_s": 285.7,
+      "event_end_s": 309.4,
+      "first_labeled_action_nominal_s_range": [
+        285.6333333333333,
+        285.6666666666667
+      ],
+      "actions": [
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 8570,
+          "end_frame": 8622
+        },
+        {
+          "participant": "person_2",
+          "action_name": "falldown",
+          "kind": "fall",
+          "start_frame": 8570,
+          "end_frame": 8822
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 8831,
+          "end_frame": 8960
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 8962,
+          "end_frame": 9283
+        }
+      ],
+      "action_audit": {
+        "kind_counts": {
+          "contact_candidate": 3,
+          "fall": 1
+        },
+        "first_contact_frame": 8570,
+        "first_contact_nominal_s_range": [
+          285.6333333333333,
+          285.6666666666667
+        ],
+        "header_to_contact_delay_s_range": [
+          -0.06666666666666288,
+          -0.03333333333330302
+        ],
+        "frame_index_base_verified": false,
+        "ready_for_training_or_scoring": false,
+        "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+      },
+      "boundary_review_priority": false
+    },
+    {
+      "video_member": "1-3/1-3_cam02_fight04_place02_night_spring.mp4",
+      "video_sha256": "4272b5eee395b87af7d48ab125a703df33bf6bd0545c258099a6f0f9849c25ca",
+      "label_sha256": "7447ea424d7aea05dca37d456e9dc1d508910679ff9068dada633f06c9af5651",
+      "scene_group": "nia2019:fight:1-3",
+      "event_start_s": 232.7,
+      "event_end_s": 285.59999999999997,
+      "first_labeled_action_nominal_s_range": [
+        232.66666666666666,
+        232.7
+      ],
+      "actions": [
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 6981,
+          "end_frame": 7035
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 7071,
+          "end_frame": 7118
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 7458,
+          "end_frame": 7528
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 7540,
+          "end_frame": 7649
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 8023,
+          "end_frame": 8069
+        },
+        {
+          "participant": "person_2",
+          "action_name": "falldown",
+          "kind": "fall",
+          "start_frame": 8039,
+          "end_frame": 8238
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 8238,
+          "end_frame": 8569
+        }
+      ],
+      "action_audit": {
+        "kind_counts": {
+          "contact_candidate": 6,
+          "fall": 1
+        },
+        "first_contact_frame": 6981,
+        "first_contact_nominal_s_range": [
+          232.66666666666666,
+          232.7
+        ],
+        "header_to_contact_delay_s_range": [
+          -0.03333333333333144,
+          0.0
+        ],
+        "frame_index_base_verified": false,
+        "ready_for_training_or_scoring": false,
+        "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+      },
+      "boundary_review_priority": false
+    },
+    {
+      "video_member": "1-3/1-3_cam02_fight04_place02_night_summer.mp4",
+      "video_sha256": "add4856f7b1901759c00ba53c93d1eafb90cbe338e631d8b14008c718f1608da",
+      "label_sha256": "a9b2670258cac8dda02a3e6ee423fff527f11c5a59b57992edfd6667cb9d3340",
+      "scene_group": "nia2019:fight:1-3",
+      "event_start_s": 286.2,
+      "event_end_s": 309.9,
+      "first_labeled_action_nominal_s_range": [
+        286.1666666666667,
+        286.2
+      ],
+      "actions": [
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 8586,
+          "end_frame": 8638
+        },
+        {
+          "participant": "person_2",
+          "action_name": "falldown",
+          "kind": "fall",
+          "start_frame": 8586,
+          "end_frame": 8837
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 8837,
+          "end_frame": 8970
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 8970,
+          "end_frame": 9297
+        }
+      ],
+      "action_audit": {
+        "kind_counts": {
+          "contact_candidate": 3,
+          "fall": 1
+        },
+        "first_contact_frame": 8586,
+        "first_contact_nominal_s_range": [
+          286.1666666666667,
+          286.2
+        ],
+        "header_to_contact_delay_s_range": [
+          -0.03333333333330302,
+          0.0
+        ],
+        "frame_index_base_verified": false,
+        "ready_for_training_or_scoring": false,
+        "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+      },
+      "boundary_review_priority": false
+    },
+    {
+      "video_member": "1-4/1-4_cam01_fight04_place02_night_spring.mp4",
+      "video_sha256": "8b3cf53f08c23aef1c482c63b28e8989d9e2189d909c219cccb09c255d7e0d12",
+      "label_sha256": "cccadd5e726889ee7d616e414c990add955b7f694f40fd356d8699ba0dfa01ef",
+      "scene_group": "nia2019:fight:1-4",
+      "event_start_s": 243.2,
+      "event_end_s": 284.8,
+      "first_labeled_action_nominal_s_range": [
+        243.16666666666666,
+        243.2
+      ],
+      "actions": [
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 7296,
+          "end_frame": 7604
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 7865,
+          "end_frame": 8543
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 7632,
+          "end_frame": 7725
+        },
+        {
+          "participant": "person_1",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 8131,
+          "end_frame": 8226
+        },
+        {
+          "participant": "person_1",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 8426,
+          "end_frame": 8460
+        },
+        {
+          "participant": "person_2",
+          "action_name": "falldown",
+          "kind": "fall",
+          "start_frame": 7691,
+          "end_frame": 7810
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 7865,
+          "end_frame": 8442
+        }
+      ],
+      "action_audit": {
+        "kind_counts": {
+          "contact_candidate": 6,
+          "fall": 1
+        },
+        "first_contact_frame": 7296,
+        "first_contact_nominal_s_range": [
+          243.16666666666666,
+          243.2
+        ],
+        "header_to_contact_delay_s_range": [
+          -0.03333333333333144,
+          0.0
+        ],
+        "frame_index_base_verified": false,
+        "ready_for_training_or_scoring": false,
+        "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+      },
+      "boundary_review_priority": false
+    },
+    {
+      "video_member": "1-4/1-4_cam01_fight04_place02_night_summer.mp4",
+      "video_sha256": "4ce4dabb546e3383c6d5fc6143e4dbf6bb9210f01a7e26c96b499686136e4731",
+      "label_sha256": "d9a9810a5e075f247bae09e423542edcb3d219b4d74b52e684d6df756adbc177",
+      "scene_group": "nia2019:fight:1-4",
+      "event_start_s": 236.7,
+      "event_end_s": 288.4,
+      "first_labeled_action_nominal_s_range": [
+        236.63333333333333,
+        236.66666666666666
+      ],
+      "actions": [
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 7100,
+          "end_frame": 7120
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 7585,
+          "end_frame": 7654
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 8282,
+          "end_frame": 8353
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 8459,
+          "end_frame": 8653
+        },
+        {
+          "participant": "person_2",
+          "action_name": "falldown",
+          "kind": "fall",
+          "start_frame": 7100,
+          "end_frame": 7352
+        },
+        {
+          "participant": "person_2",
+          "action_name": "falldown",
+          "kind": "fall",
+          "start_frame": 8309,
+          "end_frame": 8435
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 7385,
+          "end_frame": 7472
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 7494,
+          "end_frame": 7587
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 7648,
+          "end_frame": 7733
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 8459,
+          "end_frame": 8653
+        }
+      ],
+      "action_audit": {
+        "kind_counts": {
+          "contact_candidate": 8,
+          "fall": 2
+        },
+        "first_contact_frame": 7100,
+        "first_contact_nominal_s_range": [
+          236.63333333333333,
+          236.66666666666666
+        ],
+        "header_to_contact_delay_s_range": [
+          -0.06666666666666288,
+          -0.03333333333333144
+        ],
+        "frame_index_base_verified": false,
+        "ready_for_training_or_scoring": false,
+        "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+      },
+      "boundary_review_priority": false
+    },
+    {
+      "video_member": "1-4/1-4_cam02_fight04_place02_night_spring.mp4",
+      "video_sha256": "4dd5187773c6be3c7f6397b09168fdf7e5ab2ca7bae6ac02431b1aa42e51e261",
+      "label_sha256": "8ab0c7477d027779c0045c7bb6f7e53783195c7bb3878d544f212a242abe7d28",
+      "scene_group": "nia2019:fight:1-4",
+      "event_start_s": 241.7,
+      "event_end_s": 280.5,
+      "first_labeled_action_nominal_s_range": [
+        241.6,
+        241.63333333333333
+      ],
+      "actions": [
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 7249,
+          "end_frame": 7559
+        },
+        {
+          "participant": "person_1",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 7424,
+          "end_frame": 7494
+        },
+        {
+          "participant": "person_1",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 8086,
+          "end_frame": 8178
+        },
+        {
+          "participant": "person_1",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 8387,
+          "end_frame": 8415
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 7592,
+          "end_frame": 7663
+        },
+        {
+          "participant": "person_2",
+          "action_name": "falldown",
+          "kind": "fall",
+          "start_frame": 7606,
+          "end_frame": 7760
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 7814,
+          "end_frame": 8387
+        }
+      ],
+      "action_audit": {
+        "kind_counts": {
+          "contact_candidate": 6,
+          "fall": 1
+        },
+        "first_contact_frame": 7249,
+        "first_contact_nominal_s_range": [
+          241.6,
+          241.63333333333333
+        ],
+        "header_to_contact_delay_s_range": [
+          -0.09999999999999432,
+          -0.06666666666666288
+        ],
+        "frame_index_base_verified": false,
+        "ready_for_training_or_scoring": false,
+        "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+      },
+      "boundary_review_priority": false
+    },
+    {
+      "video_member": "1-4/1-4_cam02_fight04_place02_night_summer.mp4",
+      "video_sha256": "5307393176736c711b08adaa9f8268e9503909bc53ee50078803c3d6ebc7e6d1",
+      "label_sha256": "3dd9c48a887d5196fe56c89771069e2e85dff65e4d44e158cb22acb3dec7c833",
+      "scene_group": "nia2019:fight:1-4",
+      "event_start_s": 216.7,
+      "event_end_s": 288.0,
+      "first_labeled_action_nominal_s_range": [
+        216.7,
+        216.73333333333332
+      ],
+      "actions": [
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 6502,
+          "end_frame": 6532
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 6554,
+          "end_frame": 6617
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 7056,
+          "end_frame": 7104
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 7565,
+          "end_frame": 7626
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 8282,
+          "end_frame": 8334
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 8441,
+          "end_frame": 8639
+        },
+        {
+          "participant": "person_2",
+          "action_name": "falldown",
+          "kind": "fall",
+          "start_frame": 7056,
+          "end_frame": 7330
+        },
+        {
+          "participant": "person_2",
+          "action_name": "falldown",
+          "kind": "fall",
+          "start_frame": 8282,
+          "end_frame": 8414
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 7483,
+          "end_frame": 7564
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 8441,
+          "end_frame": 8639
+        }
+      ],
+      "action_audit": {
+        "kind_counts": {
+          "contact_candidate": 8,
+          "fall": 2
+        },
+        "first_contact_frame": 6502,
+        "first_contact_nominal_s_range": [
+          216.7,
+          216.73333333333332
+        ],
+        "header_to_contact_delay_s_range": [
+          0.0,
+          0.03333333333333144
+        ],
+        "frame_index_base_verified": false,
+        "ready_for_training_or_scoring": false,
+        "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+      },
+      "boundary_review_priority": false
+    },
+    {
+      "video_member": "11-1/11-1_cam01_fight01_place08_night_summer.mp4",
+      "video_sha256": "6c7bac68a601b7ae1dc6080ac79283bd308ab41618a249633a08ba072e09763b",
+      "label_sha256": "368fc9a7d5145d781e052534abea0c031fc8587471bb5308ef1d1ad9ecc0b2eb",
+      "scene_group": "nia2019:fight:11-1",
+      "event_start_s": 108.2,
+      "event_end_s": 290.2,
+      "first_labeled_action_nominal_s_range": [
+        108.13333333333334,
+        108.16666666666667
+      ],
+      "actions": [
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 3245,
+          "end_frame": 3285
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 3512,
+          "end_frame": 3574
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 3917,
+          "end_frame": 3973
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 5205,
+          "end_frame": 5349
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 5382,
+          "end_frame": 5447
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 5748,
+          "end_frame": 5940
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 5952,
+          "end_frame": 6193
+        },
+        {
+          "participant": "person_1",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 5292,
+          "end_frame": 5349
+        },
+        {
+          "participant": "person_1",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 5537,
+          "end_frame": 5726
+        },
+        {
+          "participant": "person_1",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 5820,
+          "end_frame": 5940
+        },
+        {
+          "participant": "person_1",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 6084,
+          "end_frame": 6140
+        },
+        {
+          "participant": "person_1",
+          "action_name": "kicking",
+          "kind": "contact_candidate",
+          "start_frame": 5437,
+          "end_frame": 5484
+        },
+        {
+          "participant": "person_1",
+          "action_name": "kicking",
+          "kind": "contact_candidate",
+          "start_frame": 6712,
+          "end_frame": 6781
+        },
+        {
+          "participant": "person_1",
+          "action_name": "falldown",
+          "kind": "fall",
+          "start_frame": 6142,
+          "end_frame": 6221
+        },
+        {
+          "participant": "person_1",
+          "action_name": "falldown",
+          "kind": "fall",
+          "start_frame": 7179,
+          "end_frame": 7257
+        },
+        {
+          "participant": "person_2",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 3679,
+          "end_frame": 3720
+        },
+        {
+          "participant": "person_2",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 7565,
+          "end_frame": 7614
+        },
+        {
+          "participant": "person_2",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 7622,
+          "end_frame": 7707
+        },
+        {
+          "participant": "person_2",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 8121,
+          "end_frame": 8167
+        },
+        {
+          "participant": "person_2",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 8469,
+          "end_frame": 8538
+        },
+        {
+          "participant": "person_2",
+          "action_name": "falldown",
+          "kind": "fall",
+          "start_frame": 5446,
+          "end_frame": 5491
+        },
+        {
+          "participant": "person_2",
+          "action_name": "falldown",
+          "kind": "fall",
+          "start_frame": 6709,
+          "end_frame": 6750
+        },
+        {
+          "participant": "person_2",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 6143,
+          "end_frame": 6193
+        },
+        {
+          "participant": "person_2",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 6225,
+          "end_frame": 6289
+        },
+        {
+          "participant": "person_2",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 6324,
+          "end_frame": 6420
+        },
+        {
+          "participant": "person_2",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 7714,
+          "end_frame": 7853
+        },
+        {
+          "participant": "person_2",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 8235,
+          "end_frame": 8323
+        },
+        {
+          "participant": "person_2",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 8596,
+          "end_frame": 8707
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 6420,
+          "end_frame": 6781
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 7180,
+          "end_frame": 7328
+        },
+        {
+          "participant": "person_2",
+          "action_name": "kicking",
+          "kind": "contact_candidate",
+          "start_frame": 7357,
+          "end_frame": 7436
+        },
+        {
+          "participant": "person_2",
+          "action_name": "kicking",
+          "kind": "contact_candidate",
+          "start_frame": 7853,
+          "end_frame": 7945
+        },
+        {
+          "participant": "person_2",
+          "action_name": "kicking",
+          "kind": "contact_candidate",
+          "start_frame": 8343,
+          "end_frame": 8438
+        }
+      ],
+      "action_audit": {
+        "kind_counts": {
+          "contact_candidate": 24,
+          "fall": 4,
+          "threat": 5
+        },
+        "first_contact_frame": 3245,
+        "first_contact_nominal_s_range": [
+          108.13333333333334,
+          108.16666666666667
+        ],
+        "header_to_contact_delay_s_range": [
+          -0.06666666666666288,
+          -0.03333333333333144
+        ],
+        "frame_index_base_verified": false,
+        "ready_for_training_or_scoring": false,
+        "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+      },
+      "boundary_review_priority": false
+    },
+    {
+      "video_member": "11-1/11-1_cam02_fight01_place08_night_spring.mp4",
+      "video_sha256": "d4b04a0072c890d74d1d7d8bb455633b7b865d5647bcc338ccfa476a1dfbc393",
+      "label_sha256": "ec24cf8053c0f259967d62e0db3013dfd7043745f7bc3511e0685fe90b81f823",
+      "scene_group": "nia2019:fight:11-1",
+      "event_start_s": 69.6,
+      "event_end_s": 294.4,
+      "first_labeled_action_nominal_s_range": [
+        69.56666666666666,
+        69.6
+      ],
+      "actions": [
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 2088,
+          "end_frame": 2134
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 2269,
+          "end_frame": 2314
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 2491,
+          "end_frame": 2632
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 3339,
+          "end_frame": 3456
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 3619,
+          "end_frame": 3661
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 2977,
+          "end_frame": 3028
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 3132,
+          "end_frame": 3204
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 4368,
+          "end_frame": 4510
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 4369,
+          "end_frame": 4511
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 4523,
+          "end_frame": 4758
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 5778,
+          "end_frame": 5964
+        },
+        {
+          "participant": "person_1",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 4641,
+          "end_frame": 4794
+        },
+        {
+          "participant": "person_1",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 5348,
+          "end_frame": 5432
+        },
+        {
+          "participant": "person_1",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 5854,
+          "end_frame": 5964
+        },
+        {
+          "participant": "person_1",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 8090,
+          "end_frame": 8145
+        },
+        {
+          "participant": "person_1",
+          "action_name": "kicking",
+          "kind": "contact_candidate",
+          "start_frame": 5499,
+          "end_frame": 5583
+        },
+        {
+          "participant": "person_1",
+          "action_name": "falldown",
+          "kind": "fall",
+          "start_frame": 8561,
+          "end_frame": 8603
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 3698,
+          "end_frame": 3770
+        },
+        {
+          "participant": "person_2",
+          "action_name": "falldown",
+          "kind": "fall",
+          "start_frame": 5347,
+          "end_frame": 5431
+        },
+        {
+          "participant": "person_2",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 5972,
+          "end_frame": 6004
+        },
+        {
+          "participant": "person_2",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 6247,
+          "end_frame": 6526
+        },
+        {
+          "participant": "person_2",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 6862,
+          "end_frame": 6985
+        },
+        {
+          "participant": "person_2",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 7514,
+          "end_frame": 7690
+        },
+        {
+          "participant": "person_2",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 8160,
+          "end_frame": 8266
+        },
+        {
+          "participant": "person_2",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 8546,
+          "end_frame": 8610
+        },
+        {
+          "participant": "person_2",
+          "action_name": "kicking",
+          "kind": "contact_candidate",
+          "start_frame": 6074,
+          "end_frame": 6114
+        },
+        {
+          "participant": "person_2",
+          "action_name": "kicking",
+          "kind": "contact_candidate",
+          "start_frame": 7691,
+          "end_frame": 7905
+        },
+        {
+          "participant": "person_2",
+          "action_name": "kicking",
+          "kind": "contact_candidate",
+          "start_frame": 7981,
+          "end_frame": 8038
+        },
+        {
+          "participant": "person_2",
+          "action_name": "kicking",
+          "kind": "contact_candidate",
+          "start_frame": 8480,
+          "end_frame": 8541
+        },
+        {
+          "participant": "person_2",
+          "action_name": "kicking",
+          "kind": "contact_candidate",
+          "start_frame": 8679,
+          "end_frame": 8725
+        },
+        {
+          "participant": "person_2",
+          "action_name": "kicking",
+          "kind": "contact_candidate",
+          "start_frame": 8781,
+          "end_frame": 8833
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 7338,
+          "end_frame": 7905
+        }
+      ],
+      "action_audit": {
+        "kind_counts": {
+          "contact_candidate": 27,
+          "threat": 3,
+          "fall": 2
+        },
+        "first_contact_frame": 2088,
+        "first_contact_nominal_s_range": [
+          69.56666666666666,
+          69.6
+        ],
+        "header_to_contact_delay_s_range": [
+          -0.03333333333333144,
+          0.0
+        ],
+        "frame_index_base_verified": false,
+        "ready_for_training_or_scoring": false,
+        "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+      },
+      "boundary_review_priority": false
+    },
+    {
+      "video_member": "11-1/11-1_cam02_fight01_place08_night_summer.mp4",
+      "video_sha256": "0f3dc47d92b16f9ce8bf4cc9f47f61503b3b205da6ad45958fb2931cec8bad90",
+      "label_sha256": "822084f5f0af153970915cfbcfe351c2597767fcab066dcc5735c91bd0b96fac",
+      "scene_group": "nia2019:fight:11-1",
+      "event_start_s": 28.0,
+      "event_end_s": 291.7,
+      "first_labeled_action_nominal_s_range": [
+        107.56666666666666,
+        107.6
+      ],
+      "actions": [
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 3228,
+          "end_frame": 3293
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 3658,
+          "end_frame": 3711
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 3916,
+          "end_frame": 3966
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 7229,
+          "end_frame": 7371
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 3711,
+          "end_frame": 3778
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 7616,
+          "end_frame": 7763
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 8169,
+          "end_frame": 8266
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 8554,
+          "end_frame": 8596
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 4203,
+          "end_frame": 4376
+        },
+        {
+          "participant": "person_1",
+          "action_name": "falldown",
+          "kind": "fall",
+          "start_frame": 5501,
+          "end_frame": 5550
+        },
+        {
+          "participant": "person_1",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 6189,
+          "end_frame": 6243
+        },
+        {
+          "participant": "person_1",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 6280,
+          "end_frame": 6489
+        },
+        {
+          "participant": "person_1",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 7804,
+          "end_frame": 7906
+        },
+        {
+          "participant": "person_1",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 8292,
+          "end_frame": 8388
+        },
+        {
+          "participant": "person_1",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 8666,
+          "end_frame": 8751
+        },
+        {
+          "participant": "person_1",
+          "action_name": "kicking",
+          "kind": "contact_candidate",
+          "start_frame": 7415,
+          "end_frame": 7497
+        },
+        {
+          "participant": "person_1",
+          "action_name": "kicking",
+          "kind": "contact_candidate",
+          "start_frame": 7931,
+          "end_frame": 8022
+        },
+        {
+          "participant": "person_1",
+          "action_name": "kicking",
+          "kind": "contact_candidate",
+          "start_frame": 8388,
+          "end_frame": 8485
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 3292,
+          "end_frame": 3335
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 3969,
+          "end_frame": 4027
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 5291,
+          "end_frame": 5396
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 5485,
+          "end_frame": 5523
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 5798,
+          "end_frame": 6012
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 6020,
+          "end_frame": 6243
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 6580,
+          "end_frame": 6821
+        },
+        {
+          "participant": "person_2",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 5345,
+          "end_frame": 5402
+        },
+        {
+          "participant": "person_2",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 5597,
+          "end_frame": 5788
+        },
+        {
+          "participant": "person_2",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 5798,
+          "end_frame": 6012
+        },
+        {
+          "participant": "person_2",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 6135,
+          "end_frame": 6180
+        },
+        {
+          "participant": "person_2",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 6760,
+          "end_frame": 6824
+        },
+        {
+          "participant": "person_2",
+          "action_name": "kicking",
+          "kind": "contact_candidate",
+          "start_frame": 5486,
+          "end_frame": 5523
+        },
+        {
+          "participant": "person_2",
+          "action_name": "kicking",
+          "kind": "contact_candidate",
+          "start_frame": 6665,
+          "end_frame": 6726
+        },
+        {
+          "participant": "person_2",
+          "action_name": "falldown",
+          "kind": "fall",
+          "start_frame": 6220,
+          "end_frame": 6273
+        },
+        {
+          "participant": "person_2",
+          "action_name": "falldown",
+          "kind": "fall",
+          "start_frame": 7228,
+          "end_frame": 7310
+        }
+      ],
+      "action_audit": {
+        "kind_counts": {
+          "contact_candidate": 27,
+          "threat": 4,
+          "fall": 3
+        },
+        "first_contact_frame": 3228,
+        "first_contact_nominal_s_range": [
+          107.56666666666666,
+          107.6
+        ],
+        "header_to_contact_delay_s_range": [
+          79.56666666666666,
+          79.6
+        ],
+        "frame_index_base_verified": false,
+        "ready_for_training_or_scoring": false,
+        "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+      },
+      "boundary_review_priority": true
+    },
+    {
+      "video_member": "11-3/11-3_cam01_fight01_place08_night_summer.mp4",
+      "video_sha256": "600da75f50a3671fd5663fafcbe160b8e1131bca674aaf00dae112a43ee15889",
+      "label_sha256": "4f6703ad488a1f85aac608fe4347f1f2fd9daa3f3ecd9f1a6259aee94ba7e6f8",
+      "scene_group": "nia2019:fight:11-3",
+      "event_start_s": 85.1,
+      "event_end_s": 305.6,
+      "first_labeled_action_nominal_s_range": [
+        85.1,
+        85.13333333333334
+      ],
+      "actions": [
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 2554,
+          "end_frame": 2591
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 5531,
+          "end_frame": 5569
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 7332,
+          "end_frame": 7380
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 8420,
+          "end_frame": 8459
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 4176,
+          "end_frame": 4258
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 5248,
+          "end_frame": 5292
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 5350,
+          "end_frame": 5383
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 6532,
+          "end_frame": 6840
+        },
+        {
+          "participant": "person_1",
+          "action_name": "kicking",
+          "kind": "contact_candidate",
+          "start_frame": 6226,
+          "end_frame": 6276
+        },
+        {
+          "participant": "person_1",
+          "action_name": "kicking",
+          "kind": "contact_candidate",
+          "start_frame": 7422,
+          "end_frame": 7477
+        },
+        {
+          "participant": "person_1",
+          "action_name": "kicking",
+          "kind": "contact_candidate",
+          "start_frame": 7494,
+          "end_frame": 7551
+        },
+        {
+          "participant": "person_1",
+          "action_name": "kicking",
+          "kind": "contact_candidate",
+          "start_frame": 7838,
+          "end_frame": 8011
+        },
+        {
+          "participant": "person_1",
+          "action_name": "kicking",
+          "kind": "contact_candidate",
+          "start_frame": 8014,
+          "end_frame": 8076
+        },
+        {
+          "participant": "person_1",
+          "action_name": "kicking",
+          "kind": "contact_candidate",
+          "start_frame": 8465,
+          "end_frame": 8602
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 5618,
+          "end_frame": 5752
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 5780,
+          "end_frame": 5860
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 6096,
+          "end_frame": 6176
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 6450,
+          "end_frame": 6550
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 7048,
+          "end_frame": 7175
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 8710,
+          "end_frame": 8787
+        },
+        {
+          "participant": "person_1",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 5659,
+          "end_frame": 5693
+        },
+        {
+          "participant": "person_1",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 5710,
+          "end_frame": 5752
+        },
+        {
+          "participant": "person_1",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 6893,
+          "end_frame": 6939
+        },
+        {
+          "participant": "person_1",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 6972,
+          "end_frame": 7029
+        },
+        {
+          "participant": "person_1",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 7145,
+          "end_frame": 7199
+        },
+        {
+          "participant": "person_1",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 8318,
+          "end_frame": 8361
+        },
+        {
+          "participant": "person_1",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 8742,
+          "end_frame": 8787
+        },
+        {
+          "participant": "person_1",
+          "action_name": "throwing",
+          "kind": "contact_candidate",
+          "start_frame": 7672,
+          "end_frame": 7711
+        },
+        {
+          "participant": "person_1",
+          "action_name": "throwing",
+          "kind": "contact_candidate",
+          "start_frame": 9039,
+          "end_frame": 9085
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 2785,
+          "end_frame": 2863
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 3384,
+          "end_frame": 3466
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 4088,
+          "end_frame": 4257
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 5551,
+          "end_frame": 5593
+        },
+        {
+          "participant": "person_2",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 3127,
+          "end_frame": 3178
+        },
+        {
+          "participant": "person_2",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 5097,
+          "end_frame": 5141
+        },
+        {
+          "participant": "person_2",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 5338,
+          "end_frame": 5366
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 4467,
+          "end_frame": 4724
+        },
+        {
+          "participant": "person_2",
+          "action_name": "falldown",
+          "kind": "fall",
+          "start_frame": 5859,
+          "end_frame": 6102
+        },
+        {
+          "participant": "person_2",
+          "action_name": "falldown",
+          "kind": "fall",
+          "start_frame": 6124,
+          "end_frame": 6550
+        },
+        {
+          "participant": "person_2",
+          "action_name": "falldown",
+          "kind": "fall",
+          "start_frame": 7059,
+          "end_frame": 9167
+        }
+      ],
+      "action_audit": {
+        "kind_counts": {
+          "threat": 7,
+          "contact_candidate": 30,
+          "fall": 3
+        },
+        "first_contact_frame": 2785,
+        "first_contact_nominal_s_range": [
+          92.8,
+          92.83333333333333
+        ],
+        "header_to_contact_delay_s_range": [
+          7.700000000000003,
+          7.733333333333334
+        ],
+        "frame_index_base_verified": false,
+        "ready_for_training_or_scoring": false,
+        "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+      },
+      "boundary_review_priority": true
+    },
+    {
+      "video_member": "11-3/11-3_cam02_fight01_place08_night_summer.mp4",
+      "video_sha256": "c1ba95f23a650be772b7bb7268c882f0c40190957aed961eb6a6139c10a0b246",
+      "label_sha256": "17eeecc6451fab531ad4c55e35db992fa1b009af209ca7335c43dee7509edb64",
+      "scene_group": "nia2019:fight:11-3",
+      "event_start_s": 77.1,
+      "event_end_s": 300.7,
+      "first_labeled_action_nominal_s_range": [
+        77.03333333333333,
+        77.06666666666666
+      ],
+      "actions": [
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 2312,
+          "end_frame": 2349
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 4432,
+          "end_frame": 4473
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 4861,
+          "end_frame": 4897
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 5298,
+          "end_frame": 5339
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 8182,
+          "end_frame": 8219
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 3953,
+          "end_frame": 4015
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 4995,
+          "end_frame": 5055
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 5108,
+          "end_frame": 5148
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 4220,
+          "end_frame": 4484
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 5384,
+          "end_frame": 5515
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 5522,
+          "end_frame": 5628
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 6269,
+          "end_frame": 6438
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 8454,
+          "end_frame": 8547
+        },
+        {
+          "participant": "person_1",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 5416,
+          "end_frame": 5515
+        },
+        {
+          "participant": "person_1",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 6660,
+          "end_frame": 6692
+        },
+        {
+          "participant": "person_1",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 6743,
+          "end_frame": 6783
+        },
+        {
+          "participant": "person_1",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 6917,
+          "end_frame": 6951
+        },
+        {
+          "participant": "person_1",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 8082,
+          "end_frame": 8117
+        },
+        {
+          "participant": "person_1",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 8513,
+          "end_frame": 8547
+        },
+        {
+          "participant": "person_1",
+          "action_name": "kicking",
+          "kind": "contact_candidate",
+          "start_frame": 7098,
+          "end_frame": 7137
+        },
+        {
+          "participant": "person_1",
+          "action_name": "kicking",
+          "kind": "contact_candidate",
+          "start_frame": 7180,
+          "end_frame": 7227
+        },
+        {
+          "participant": "person_1",
+          "action_name": "kicking",
+          "kind": "contact_candidate",
+          "start_frame": 7259,
+          "end_frame": 7313
+        },
+        {
+          "participant": "person_1",
+          "action_name": "kicking",
+          "kind": "contact_candidate",
+          "start_frame": 7599,
+          "end_frame": 7770
+        },
+        {
+          "participant": "person_1",
+          "action_name": "kicking",
+          "kind": "contact_candidate",
+          "start_frame": 7778,
+          "end_frame": 7831
+        },
+        {
+          "participant": "person_1",
+          "action_name": "kicking",
+          "kind": "contact_candidate",
+          "start_frame": 8235,
+          "end_frame": 8276
+        },
+        {
+          "participant": "person_1",
+          "action_name": "kicking",
+          "kind": "contact_candidate",
+          "start_frame": 8307,
+          "end_frame": 8341
+        },
+        {
+          "participant": "person_1",
+          "action_name": "throwing",
+          "kind": "contact_candidate",
+          "start_frame": 7419,
+          "end_frame": 7477
+        },
+        {
+          "participant": "person_1",
+          "action_name": "throwing",
+          "kind": "contact_candidate",
+          "start_frame": 8787,
+          "end_frame": 8835
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 2550,
+          "end_frame": 2613
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 3144,
+          "end_frame": 3211
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 3842,
+          "end_frame": 4001
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 4521,
+          "end_frame": 4573
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 5330,
+          "end_frame": 5360
+        },
+        {
+          "participant": "person_2",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 4097,
+          "end_frame": 4136
+        },
+        {
+          "participant": "person_2",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 4474,
+          "end_frame": 4521
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 4153,
+          "end_frame": 4265
+        },
+        {
+          "participant": "person_2",
+          "action_name": "kicking",
+          "kind": "contact_candidate",
+          "start_frame": 4838,
+          "end_frame": 4885
+        },
+        {
+          "participant": "person_2",
+          "action_name": "falldown",
+          "kind": "fall",
+          "start_frame": 5614,
+          "end_frame": 5867
+        },
+        {
+          "participant": "person_2",
+          "action_name": "falldown",
+          "kind": "fall",
+          "start_frame": 7179,
+          "end_frame": 9022
+        }
+      ],
+      "action_audit": {
+        "kind_counts": {
+          "threat": 7,
+          "contact_candidate": 30,
+          "fall": 2
+        },
+        "first_contact_frame": 2550,
+        "first_contact_nominal_s_range": [
+          84.96666666666667,
+          85.0
+        ],
+        "header_to_contact_delay_s_range": [
+          7.866666666666674,
+          7.900000000000006
+        ],
+        "frame_index_base_verified": false,
+        "ready_for_training_or_scoring": false,
+        "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+      },
+      "boundary_review_priority": true
+    },
+    {
+      "video_member": "14-1/14-1_cam01_fight02_place06_night_spring.mp4",
+      "video_sha256": "ec38856fdb8d33d1fb7482b2536b985dd5cae28a64707488a401590e7b208f0c",
+      "label_sha256": "89d8d5afe89545cfb9820f76ebbeffa780bff4e365bf10fd230494f3d7edf208",
+      "scene_group": "nia2019:fight:14-1",
+      "event_start_s": 22.3,
+      "event_end_s": 240.5,
+      "first_labeled_action_nominal_s_range": [
+        22.3,
+        22.333333333333332
+      ],
+      "actions": [
+        {
+          "participant": "person_2",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 4906,
+          "end_frame": 5091
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 670,
+          "end_frame": 761
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 3520,
+          "end_frame": 3869
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 4073,
+          "end_frame": 4900
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 2790,
+          "end_frame": 2814
+        },
+        {
+          "participant": "person_1",
+          "action_name": "falldown",
+          "kind": "fall",
+          "start_frame": 5057,
+          "end_frame": 5167
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 5340,
+          "end_frame": 5622
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 7045,
+          "end_frame": 7216
+        }
+      ],
+      "action_audit": {
+        "kind_counts": {
+          "contact_candidate": 5,
+          "fall": 1,
+          "threat": 2
+        },
+        "first_contact_frame": 670,
+        "first_contact_nominal_s_range": [
+          22.3,
+          22.333333333333332
+        ],
+        "header_to_contact_delay_s_range": [
+          0.0,
+          0.03333333333333144
+        ],
+        "frame_index_base_verified": false,
+        "ready_for_training_or_scoring": false,
+        "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+      },
+      "boundary_review_priority": false
+    },
+    {
+      "video_member": "14-1/14-1_cam01_fight02_place06_night_summer.mp4",
+      "video_sha256": "5fe85c3b11139f78013e68eed1eaa4de2353fa35e4ae54c01fa6cbd4134bd768",
+      "label_sha256": "1e4bf5b29e45aa49a39b68fb70e8f3bbb48f7f52ad872d05d9909ab194e07612",
+      "scene_group": "nia2019:fight:14-1",
+      "event_start_s": 40.6,
+      "event_end_s": 293.40000000000003,
+      "first_labeled_action_nominal_s_range": [
+        40.733333333333334,
+        40.766666666666666
+      ],
+      "actions": [
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 1223,
+          "end_frame": 1285
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 1901,
+          "end_frame": 2353
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 2913,
+          "end_frame": 2997
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 3130,
+          "end_frame": 3239
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 4906,
+          "end_frame": 5018
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 5653,
+          "end_frame": 6148
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 6207,
+          "end_frame": 6527
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 8514,
+          "end_frame": 8802
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 2491,
+          "end_frame": 2532
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 5497,
+          "end_frame": 5554
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 6132,
+          "end_frame": 6147
+        }
+      ],
+      "action_audit": {
+        "kind_counts": {
+          "contact_candidate": 9,
+          "threat": 2
+        },
+        "first_contact_frame": 1223,
+        "first_contact_nominal_s_range": [
+          40.733333333333334,
+          40.766666666666666
+        ],
+        "header_to_contact_delay_s_range": [
+          0.13333333333333286,
+          0.1666666666666643
+        ],
+        "frame_index_base_verified": false,
+        "ready_for_training_or_scoring": false,
+        "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+      },
+      "boundary_review_priority": false
+    },
+    {
+      "video_member": "14-1/14-1_cam02_fight02_place06_night_spring.mp4",
+      "video_sha256": "ba577eb21988a80bb30aa5a1c65e162ad38869ee9ee3102f6499f53575a4af84",
+      "label_sha256": "70b1cd65ca2dbf38fb73d9a01a1cab28783a03fedfd8be6bdb968756edc3ce99",
+      "scene_group": "nia2019:fight:14-1",
+      "event_start_s": 52.8,
+      "event_end_s": 268.9,
+      "first_labeled_action_nominal_s_range": [
+        52.8,
+        52.833333333333336
+      ],
+      "actions": [
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 1585,
+          "end_frame": 1683
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 4427,
+          "end_frame": 4761
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 4976,
+          "end_frame": 5846
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 3710,
+          "end_frame": 3738
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 3809,
+          "end_frame": 3885
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 6154,
+          "end_frame": 6750
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 7967,
+          "end_frame": 8066
+        },
+        {
+          "participant": "person_1",
+          "action_name": "falldown",
+          "kind": "fall",
+          "start_frame": 5971,
+          "end_frame": 6078
+        },
+        {
+          "participant": "person_2",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 5846,
+          "end_frame": 5986
+        }
+      ],
+      "action_audit": {
+        "kind_counts": {
+          "contact_candidate": 6,
+          "threat": 2,
+          "fall": 1
+        },
+        "first_contact_frame": 1585,
+        "first_contact_nominal_s_range": [
+          52.8,
+          52.833333333333336
+        ],
+        "header_to_contact_delay_s_range": [
+          0.0,
+          0.033333333333338544
+        ],
+        "frame_index_base_verified": false,
+        "ready_for_training_or_scoring": false,
+        "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+      },
+      "boundary_review_priority": false
+    },
+    {
+      "video_member": "14-1/14-1_cam02_fight02_place06_night_summer.mp4",
+      "video_sha256": "26b3fb5942a3c7d1cfc0025e9b405018fca869d5f1c8d55f74b0e9a92e04ad30",
+      "label_sha256": "f6babd4b9adfbfa251324e5545607b3850d66c98e9cbeec53d9844f5cfdebecd",
+      "scene_group": "nia2019:fight:14-1",
+      "event_start_s": 78.6,
+      "event_end_s": 334.5,
+      "first_labeled_action_nominal_s_range": [
+        78.53333333333333,
+        78.56666666666666
+      ],
+      "actions": [
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 2357,
+          "end_frame": 2409
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 3018,
+          "end_frame": 3494
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 4049,
+          "end_frame": 4138
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 4266,
+          "end_frame": 4364
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 6029,
+          "end_frame": 6180
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 6782,
+          "end_frame": 7280
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 7341,
+          "end_frame": 7617
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 9725,
+          "end_frame": 10034
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 3622,
+          "end_frame": 3650
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 6640,
+          "end_frame": 6670
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 7270,
+          "end_frame": 7280
+        }
+      ],
+      "action_audit": {
+        "kind_counts": {
+          "contact_candidate": 9,
+          "threat": 2
+        },
+        "first_contact_frame": 2357,
+        "first_contact_nominal_s_range": [
+          78.53333333333333,
+          78.56666666666666
+        ],
+        "header_to_contact_delay_s_range": [
+          -0.06666666666666288,
+          -0.03333333333333144
+        ],
+        "frame_index_base_verified": false,
+        "ready_for_training_or_scoring": false,
+        "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+      },
+      "boundary_review_priority": false
+    },
+    {
+      "video_member": "14-2/14-2_cam01_fight02_place06_night_spring.mp4",
+      "video_sha256": "3c7fb9b48b06ba0013296950f589428047e910fc19f7d332f6f9027805951c85",
+      "label_sha256": "a88e17c28d6b84178bb8d9ea9ae330619caff55d0ea918af311ada8c89c37eb1",
+      "scene_group": "nia2019:fight:14-2",
+      "event_start_s": 65.5,
+      "event_end_s": 318.6,
+      "first_labeled_action_nominal_s_range": [
+        65.46666666666667,
+        65.5
+      ],
+      "actions": [
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 1965,
+          "end_frame": 2202
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 2853,
+          "end_frame": 2892
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 5800,
+          "end_frame": 5824
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 6456,
+          "end_frame": 6717
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 8587,
+          "end_frame": 8839
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 9040,
+          "end_frame": 9195
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 2217,
+          "end_frame": 2394
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 4164,
+          "end_frame": 4307
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 6125,
+          "end_frame": 6456
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 8270,
+          "end_frame": 8574
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 9206,
+          "end_frame": 9559
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 5687,
+          "end_frame": 5713
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 5980,
+          "end_frame": 6049
+        },
+        {
+          "participant": "person_2",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 5917,
+          "end_frame": 5980
+        }
+      ],
+      "action_audit": {
+        "kind_counts": {
+          "threat": 6,
+          "contact_candidate": 8
+        },
+        "first_contact_frame": 2217,
+        "first_contact_nominal_s_range": [
+          73.86666666666666,
+          73.9
+        ],
+        "header_to_contact_delay_s_range": [
+          8.36666666666666,
+          8.400000000000006
+        ],
+        "frame_index_base_verified": false,
+        "ready_for_training_or_scoring": false,
+        "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+      },
+      "boundary_review_priority": true
+    },
+    {
+      "video_member": "14-2/14-2_cam01_fight02_place06_night_summer.mp4",
+      "video_sha256": "16efd66e4fb0c2a4405126cd8f35d0880c66274d3b1128adb2a545e4dee14f56",
+      "label_sha256": "e91afe0a86660894bb98a84b46d1f4b3ee063f9e31037d44c38d5362337f65f6",
+      "scene_group": "nia2019:fight:14-2",
+      "event_start_s": 87.7,
+      "event_end_s": 323.5,
+      "first_labeled_action_nominal_s_range": [
+        87.8,
+        87.83333333333333
+      ],
+      "actions": [
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 2635,
+          "end_frame": 2808
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 4069,
+          "end_frame": 4191
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 4598,
+          "end_frame": 4828
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 6548,
+          "end_frame": 6801
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 9447,
+          "end_frame": 9703
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 6801,
+          "end_frame": 6915
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 6915,
+          "end_frame": 6958
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 7106,
+          "end_frame": 7419
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 7419,
+          "end_frame": 8177
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 8515,
+          "end_frame": 9434
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 6227,
+          "end_frame": 6332
+        },
+        {
+          "participant": "person_2",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 6360,
+          "end_frame": 6485
+        }
+      ],
+      "action_audit": {
+        "kind_counts": {
+          "contact_candidate": 7,
+          "threat": 5
+        },
+        "first_contact_frame": 2635,
+        "first_contact_nominal_s_range": [
+          87.8,
+          87.83333333333333
+        ],
+        "header_to_contact_delay_s_range": [
+          0.09999999999999432,
+          0.13333333333332575
+        ],
+        "frame_index_base_verified": false,
+        "ready_for_training_or_scoring": false,
+        "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+      },
+      "boundary_review_priority": false
+    },
+    {
+      "video_member": "14-2/14-2_cam02_fight02_place06_night_spring.mp4",
+      "video_sha256": "e09c2d10a62c29ffd512aee42aff09e9f1e9b61eaf21467fbfef45fafef4dd2e",
+      "label_sha256": "fe24322c7fb9d531605ae297cf494d003698c1a3349479c76175777904edb072",
+      "scene_group": "nia2019:fight:14-2",
+      "event_start_s": 82.8,
+      "event_end_s": 322.6,
+      "first_labeled_action_nominal_s_range": [
+        73.26666666666667,
+        73.3
+      ],
+      "actions": [
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 2434,
+          "end_frame": 2619
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 4394,
+          "end_frame": 4526
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 6353,
+          "end_frame": 6691
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 7912,
+          "end_frame": 8027
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 8492,
+          "end_frame": 9024
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 9444,
+          "end_frame": 9679
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 2199,
+          "end_frame": 2434
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 3089,
+          "end_frame": 3155
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 6019,
+          "end_frame": 6045
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 6691,
+          "end_frame": 6736
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 8027,
+          "end_frame": 8243
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 9283,
+          "end_frame": 9444
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 6736,
+          "end_frame": 6824
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 5930,
+          "end_frame": 5946
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 6095,
+          "end_frame": 6278
+        }
+      ],
+      "action_audit": {
+        "kind_counts": {
+          "contact_candidate": 8,
+          "threat": 7
+        },
+        "first_contact_frame": 2434,
+        "first_contact_nominal_s_range": [
+          81.1,
+          81.13333333333334
+        ],
+        "header_to_contact_delay_s_range": [
+          -1.7000000000000028,
+          -1.6666666666666572
+        ],
+        "frame_index_base_verified": false,
+        "ready_for_training_or_scoring": false,
+        "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+      },
+      "boundary_review_priority": true
+    },
+    {
+      "video_member": "14-2/14-2_cam02_fight02_place06_night_summer.mp4",
+      "video_sha256": "d89c065aad35ce2a0fca894ac01a9cf562ed79f88f73e348293c412bc99b894e",
+      "label_sha256": "f440f0814ce2f096cfbd6d7a8595244ade681b03c44ccb85c6c0177b900803c5",
+      "scene_group": "nia2019:fight:14-2",
+      "event_start_s": 87.7,
+      "event_end_s": 323.0,
+      "first_labeled_action_nominal_s_range": [
+        87.73333333333333,
+        87.76666666666667
+      ],
+      "actions": [
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 2633,
+          "end_frame": 2805
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 4062,
+          "end_frame": 4203
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 4592,
+          "end_frame": 4818
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 6540,
+          "end_frame": 6794
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 9448,
+          "end_frame": 9686
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 6794,
+          "end_frame": 6945
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 7104,
+          "end_frame": 7413
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 7418,
+          "end_frame": 8005
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 8052,
+          "end_frame": 8145
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 8353,
+          "end_frame": 8560
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 8560,
+          "end_frame": 9543
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 6223,
+          "end_frame": 6325
+        },
+        {
+          "participant": "person_2",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 6347,
+          "end_frame": 6479
+        }
+      ],
+      "action_audit": {
+        "kind_counts": {
+          "contact_candidate": 7,
+          "threat": 6
+        },
+        "first_contact_frame": 2633,
+        "first_contact_nominal_s_range": [
+          87.73333333333333,
+          87.76666666666667
+        ],
+        "header_to_contact_delay_s_range": [
+          0.03333333333333144,
+          0.06666666666666288
+        ],
+        "frame_index_base_verified": false,
+        "ready_for_training_or_scoring": false,
+        "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+      },
+      "boundary_review_priority": false
+    },
+    {
+      "video_member": "14-3/14-3_cam01_fight02_place06_night_spring.mp4",
+      "video_sha256": "783e463b5771695f9851590a742ff0d28adb2e1af6b5391c209ea324dd906ecf",
+      "label_sha256": "5ac5e10990c3340f4f14941366380236fb720d441975d5889f0c3c45d32e2517",
+      "scene_group": "nia2019:fight:14-3",
+      "event_start_s": 84.8,
+      "event_end_s": 321.1,
+      "first_labeled_action_nominal_s_range": [
+        84.7,
+        84.73333333333333
+      ],
+      "actions": [
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 2542,
+          "end_frame": 2796
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 4454,
+          "end_frame": 4782
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 7849,
+          "end_frame": 8108
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 9514,
+          "end_frame": 9632
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 3751,
+          "end_frame": 3792
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 6219,
+          "end_frame": 6449
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 6520,
+          "end_frame": 6946
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 7144,
+          "end_frame": 7179
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 8311,
+          "end_frame": 8360
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 8438,
+          "end_frame": 8772
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 8993,
+          "end_frame": 9222
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 9253,
+          "end_frame": 9287
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 9466,
+          "end_frame": 9495
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 5866,
+          "end_frame": 5919
+        },
+        {
+          "participant": "person_2",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 5919,
+          "end_frame": 6151
+        }
+      ],
+      "action_audit": {
+        "kind_counts": {
+          "contact_candidate": 6,
+          "threat": 9
+        },
+        "first_contact_frame": 2542,
+        "first_contact_nominal_s_range": [
+          84.7,
+          84.73333333333333
+        ],
+        "header_to_contact_delay_s_range": [
+          -0.09999999999999432,
+          -0.06666666666666288
+        ],
+        "frame_index_base_verified": false,
+        "ready_for_training_or_scoring": false,
+        "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+      },
+      "boundary_review_priority": false
+    },
+    {
+      "video_member": "14-3/14-3_cam01_fight02_place06_night_summer.mp4",
+      "video_sha256": "0733740f9fe7dfeb67806fe8e4fd5f2546889d84cddc481a019f9bfe26127fa6",
+      "label_sha256": "c58d5393b1d89a637c8dc2e1fdd15fb1865717ad9bfaf24bf38c35a807f2302c",
+      "scene_group": "nia2019:fight:14-3",
+      "event_start_s": 87.8,
+      "event_end_s": 313.7,
+      "first_labeled_action_nominal_s_range": [
+        87.7,
+        87.73333333333333
+      ],
+      "actions": [
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 2632,
+          "end_frame": 2773
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 3428,
+          "end_frame": 3741
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 6140,
+          "end_frame": 6275
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 7015,
+          "end_frame": 7067
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 7763,
+          "end_frame": 7886
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 2822,
+          "end_frame": 2868
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 4748,
+          "end_frame": 4809
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 7457,
+          "end_frame": 7618
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 8655,
+          "end_frame": 8689
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 8921,
+          "end_frame": 8970
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 9357,
+          "end_frame": 9411
+        },
+        {
+          "participant": "person_2",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 4803,
+          "end_frame": 4859
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 6450,
+          "end_frame": 6524
+        },
+        {
+          "participant": "person_2",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 7130,
+          "end_frame": 7354
+        }
+      ],
+      "action_audit": {
+        "kind_counts": {
+          "contact_candidate": 7,
+          "threat": 7
+        },
+        "first_contact_frame": 2632,
+        "first_contact_nominal_s_range": [
+          87.7,
+          87.73333333333333
+        ],
+        "header_to_contact_delay_s_range": [
+          -0.09999999999999432,
+          -0.06666666666666288
+        ],
+        "frame_index_base_verified": false,
+        "ready_for_training_or_scoring": false,
+        "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+      },
+      "boundary_review_priority": false
+    },
+    {
+      "video_member": "14-3/14-3_cam02_fight02_place06_night_spring.mp4",
+      "video_sha256": "efc965fc506117b1df01b3cf7a988883eaedaba83647b54e0045cda0e3c31cd6",
+      "label_sha256": "affe8fa2ba73986d64394c22974a68286f0df72b427f16df351edd82c3c2036b",
+      "scene_group": "nia2019:fight:14-3",
+      "event_start_s": 28.0,
+      "event_end_s": 321.6,
+      "first_labeled_action_nominal_s_range": [
+        82.2,
+        82.23333333333333
+      ],
+      "actions": [
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 2467,
+          "end_frame": 2721
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 4394,
+          "end_frame": 4696
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 7748,
+          "end_frame": 8032
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 9436,
+          "end_frame": 9648
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 6173,
+          "end_frame": 6364
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 6444,
+          "end_frame": 6868
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 8237,
+          "end_frame": 8284
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 8354,
+          "end_frame": 8688
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 8917,
+          "end_frame": 9135
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 9189,
+          "end_frame": 9205
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 9390,
+          "end_frame": 9417
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 5784,
+          "end_frame": 5842
+        },
+        {
+          "participant": "person_2",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 5842,
+          "end_frame": 6048
+        }
+      ],
+      "action_audit": {
+        "kind_counts": {
+          "contact_candidate": 6,
+          "threat": 7
+        },
+        "first_contact_frame": 2467,
+        "first_contact_nominal_s_range": [
+          82.2,
+          82.23333333333333
+        ],
+        "header_to_contact_delay_s_range": [
+          54.2,
+          54.233333333333334
+        ],
+        "frame_index_base_verified": false,
+        "ready_for_training_or_scoring": false,
+        "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+      },
+      "boundary_review_priority": true
+    },
+    {
+      "video_member": "14-3/14-3_cam02_fight02_place06_night_summer.mp4",
+      "video_sha256": "62ea7d6144e9182a0e697f457df4a6b29c2aedda04fd14fa28b4a5bb42de8767",
+      "label_sha256": "ae4c059b51fd9508dccda0e60c44f32e74db9c7944fdcf71c9a6e717a50c51a3",
+      "scene_group": "nia2019:fight:14-3",
+      "event_start_s": 96.4,
+      "event_end_s": 321.70000000000005,
+      "first_labeled_action_nominal_s_range": [
+        96.36666666666666,
+        96.4
+      ],
+      "actions": [
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 2892,
+          "end_frame": 3024
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 3673,
+          "end_frame": 4005
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 6393,
+          "end_frame": 6556
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 3082,
+          "end_frame": 3125
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 4996,
+          "end_frame": 5038
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 7722,
+          "end_frame": 7877
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 8156,
+          "end_frame": 8290
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 8907,
+          "end_frame": 8946
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 9178,
+          "end_frame": 9231
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 9622,
+          "end_frame": 9652
+        },
+        {
+          "participant": "person_2",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 5064,
+          "end_frame": 5120
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 6714,
+          "end_frame": 6780
+        },
+        {
+          "participant": "person_2",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 7381,
+          "end_frame": 7638
+        }
+      ],
+      "action_audit": {
+        "kind_counts": {
+          "contact_candidate": 5,
+          "threat": 8
+        },
+        "first_contact_frame": 2892,
+        "first_contact_nominal_s_range": [
+          96.36666666666666,
+          96.4
+        ],
+        "header_to_contact_delay_s_range": [
+          -0.03333333333334565,
+          0.0
+        ],
+        "frame_index_base_verified": false,
+        "ready_for_training_or_scoring": false,
+        "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+      },
+      "boundary_review_priority": false
+    },
+    {
+      "video_member": "14-4/14-4_cam01_fight02_place06_night_spring.mp4",
+      "video_sha256": "0ce20e5424e3414db61f3b61bd102850af642363759eb6dc374c46f6d0edb67b",
+      "label_sha256": "9fbdeb9597e66eb2825456ef2c686293a5bd728c2a68f34fd417db5021aecacf",
+      "scene_group": "nia2019:fight:14-4",
+      "event_start_s": 114.6,
+      "event_end_s": 328.6,
+      "first_labeled_action_nominal_s_range": [
+        114.56666666666666,
+        114.6
+      ],
+      "actions": [
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 3438,
+          "end_frame": 3498
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 5381,
+          "end_frame": 5412
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 7204,
+          "end_frame": 7355
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 7879,
+          "end_frame": 7923
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 8013,
+          "end_frame": 8191
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 9207,
+          "end_frame": 9250
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 9360,
+          "end_frame": 9473
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 3585,
+          "end_frame": 3759
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 4523,
+          "end_frame": 4580
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 5547,
+          "end_frame": 5788
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 7482,
+          "end_frame": 7843
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 8204,
+          "end_frame": 8322
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 9473,
+          "end_frame": 9856
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 4804,
+          "end_frame": 4859
+        },
+        {
+          "participant": "person_2",
+          "action_name": "kicking",
+          "kind": "contact_candidate",
+          "start_frame": 6145,
+          "end_frame": 6175
+        },
+        {
+          "participant": "person_2",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 6234,
+          "end_frame": 6380
+        }
+      ],
+      "action_audit": {
+        "kind_counts": {
+          "threat": 7,
+          "contact_candidate": 9
+        },
+        "first_contact_frame": 3585,
+        "first_contact_nominal_s_range": [
+          119.46666666666667,
+          119.5
+        ],
+        "header_to_contact_delay_s_range": [
+          4.866666666666674,
+          4.900000000000006
+        ],
+        "frame_index_base_verified": false,
+        "ready_for_training_or_scoring": false,
+        "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+      },
+      "boundary_review_priority": true
+    },
+    {
+      "video_member": "14-4/14-4_cam02_fight02_place06_night_spring.mp4",
+      "video_sha256": "05ee40aad0691967035a830338fe52c29c201597380e768501934cfbbd41e6df",
+      "label_sha256": "7026f08f3678b94841566e73121378cb56119dc30f28e39b36bd06c62fe27098",
+      "scene_group": "nia2019:fight:14-4",
+      "event_start_s": 117.7,
+      "event_end_s": 329.4,
+      "first_labeled_action_nominal_s_range": [
+        117.63333333333334,
+        117.66666666666667
+      ],
+      "actions": [
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 3530,
+          "end_frame": 3570
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 5453,
+          "end_frame": 5484
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 7273,
+          "end_frame": 7436
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 7951,
+          "end_frame": 7996
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 8084,
+          "end_frame": 8287
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 9165,
+          "end_frame": 9242
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 9283,
+          "end_frame": 9328
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 9436,
+          "end_frame": 9556
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 3667,
+          "end_frame": 3855
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 4598,
+          "end_frame": 4670
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 5617,
+          "end_frame": 5843
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 8287,
+          "end_frame": 8400
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 9556,
+          "end_frame": 9881
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 7330,
+          "end_frame": 7691
+        },
+        {
+          "participant": "person_2",
+          "action_name": "kicking",
+          "kind": "contact_candidate",
+          "start_frame": 6225,
+          "end_frame": 6256
+        },
+        {
+          "participant": "person_2",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 6314,
+          "end_frame": 6447
+        }
+      ],
+      "action_audit": {
+        "kind_counts": {
+          "threat": 8,
+          "contact_candidate": 8
+        },
+        "first_contact_frame": 3667,
+        "first_contact_nominal_s_range": [
+          122.2,
+          122.23333333333333
+        ],
+        "header_to_contact_delay_s_range": [
+          4.5,
+          4.533333333333331
+        ],
+        "frame_index_base_verified": false,
+        "ready_for_training_or_scoring": false,
+        "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+      },
+      "boundary_review_priority": true
+    },
+    {
+      "video_member": "14-4/14-4_cam02_fight02_place06_night_summer.mp4",
+      "video_sha256": "cf3a9adcb2848ceee9446d79b14781c848162a3a20bc475e4143e3ea12ac14da",
+      "label_sha256": "86b89ea70e692963f0eee07318da42d249085562afff128daf7277d51f6db310",
+      "scene_group": "nia2019:fight:14-4",
+      "event_start_s": 70.4,
+      "event_end_s": 324.4,
+      "first_labeled_action_nominal_s_range": [
+        70.33333333333333,
+        70.36666666666666
+      ],
+      "actions": [
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 2111,
+          "end_frame": 2283
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 3123,
+          "end_frame": 3265
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 7735,
+          "end_frame": 7891
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 8065,
+          "end_frame": 8179
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 9174,
+          "end_frame": 9744
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 4086,
+          "end_frame": 4116
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 7358,
+          "end_frame": 7548
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 7628,
+          "end_frame": 7715
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 8740,
+          "end_frame": 8803
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 3931,
+          "end_frame": 3990
+        }
+      ],
+      "action_audit": {
+        "kind_counts": {
+          "contact_candidate": 6,
+          "threat": 4
+        },
+        "first_contact_frame": 2111,
+        "first_contact_nominal_s_range": [
+          70.33333333333333,
+          70.36666666666666
+        ],
+        "header_to_contact_delay_s_range": [
+          -0.06666666666667709,
+          -0.03333333333334565
+        ],
+        "frame_index_base_verified": false,
+        "ready_for_training_or_scoring": false,
+        "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+      },
+      "boundary_review_priority": false
+    },
+    {
+      "video_member": "14-5/14-5_cam01_fight02_place06_night_spring.mp4",
+      "video_sha256": "0824b8717438e601ae6d2e71ff89a3b274575d69966afc229100d14ac49557c5",
+      "label_sha256": "29809277618b3e262eafc027b865be2e4f401eb3f836a906e443979c953cf902",
+      "scene_group": "nia2019:fight:14-5",
+      "event_start_s": 118.8,
+      "event_end_s": 337.6,
+      "first_labeled_action_nominal_s_range": [
+        118.73333333333333,
+        118.76666666666667
+      ],
+      "actions": [
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 3563,
+          "end_frame": 3622
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 5526,
+          "end_frame": 5581
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 7142,
+          "end_frame": 7188
+        },
+        {
+          "participant": "person_1",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 3919,
+          "end_frame": 4005
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 6192,
+          "end_frame": 6404
+        },
+        {
+          "participant": "person_1",
+          "action_name": "falldown",
+          "kind": "fall",
+          "start_frame": 8817,
+          "end_frame": 8968
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 4213,
+          "end_frame": 4377
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 5273,
+          "end_frame": 5402
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 7893,
+          "end_frame": 8005
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 8402,
+          "end_frame": 8504
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 8600,
+          "end_frame": 8938
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 9457,
+          "end_frame": 9554
+        },
+        {
+          "participant": "person_2",
+          "action_name": "falldown",
+          "kind": "fall",
+          "start_frame": 7141,
+          "end_frame": 7349
+        },
+        {
+          "participant": "person_2",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 7420,
+          "end_frame": 7469
+        },
+        {
+          "participant": "person_2",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 7619,
+          "end_frame": 7863
+        },
+        {
+          "participant": "person_2",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 7954,
+          "end_frame": 8005
+        },
+        {
+          "participant": "person_2",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 8074,
+          "end_frame": 8221
+        },
+        {
+          "participant": "person_2",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 8501,
+          "end_frame": 8617
+        },
+        {
+          "participant": "person_2",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 9421,
+          "end_frame": 9457
+        },
+        {
+          "participant": "person_2",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 9624,
+          "end_frame": 9823
+        },
+        {
+          "participant": "person_2",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 10078,
+          "end_frame": 10129
+        },
+        {
+          "participant": "person_2",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 7469,
+          "end_frame": 7619
+        }
+      ],
+      "action_audit": {
+        "kind_counts": {
+          "contact_candidate": 12,
+          "fall": 2,
+          "threat": 8
+        },
+        "first_contact_frame": 3563,
+        "first_contact_nominal_s_range": [
+          118.73333333333333,
+          118.76666666666667
+        ],
+        "header_to_contact_delay_s_range": [
+          -0.06666666666666288,
+          -0.03333333333333144
+        ],
+        "frame_index_base_verified": false,
+        "ready_for_training_or_scoring": false,
+        "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+      },
+      "boundary_review_priority": false
+    },
+    {
+      "video_member": "14-5/14-5_cam01_fight02_place06_night_summer.mp4",
+      "video_sha256": "5cfdfd976029d52cf07be3d809387e9b3985c2c5c69f7f90ce221bc0fd0e9508",
+      "label_sha256": "d7bc0caa12e61cbd8674e7bc87fe6b4d5b50e9992493bdbc0186d848b55bc53f",
+      "scene_group": "nia2019:fight:14-5",
+      "event_start_s": 160.7,
+      "event_end_s": 324.7,
+      "first_labeled_action_nominal_s_range": [
+        160.76666666666668,
+        160.8
+      ],
+      "actions": [
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 4824,
+          "end_frame": 5011
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 6001,
+          "end_frame": 6096
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 6196,
+          "end_frame": 6272
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 6472,
+          "end_frame": 6561
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 6860,
+          "end_frame": 6990
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 7530,
+          "end_frame": 7682
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 8012,
+          "end_frame": 8210
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 9451,
+          "end_frame": 9738
+        },
+        {
+          "participant": "person_1",
+          "action_name": "falldown",
+          "kind": "fall",
+          "start_frame": 6643,
+          "end_frame": 6836
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 6860,
+          "end_frame": 7031
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 7064,
+          "end_frame": 7113
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 7149,
+          "end_frame": 7464
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 8047,
+          "end_frame": 8139
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 6323,
+          "end_frame": 6396
+        },
+        {
+          "participant": "person_2",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 6606,
+          "end_frame": 6687
+        }
+      ],
+      "action_audit": {
+        "kind_counts": {
+          "contact_candidate": 10,
+          "fall": 1,
+          "threat": 4
+        },
+        "first_contact_frame": 4824,
+        "first_contact_nominal_s_range": [
+          160.76666666666668,
+          160.8
+        ],
+        "header_to_contact_delay_s_range": [
+          0.0666666666666913,
+          0.10000000000002274
+        ],
+        "frame_index_base_verified": false,
+        "ready_for_training_or_scoring": false,
+        "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+      },
+      "boundary_review_priority": false
+    },
+    {
+      "video_member": "14-5/14-5_cam02_fight02_place06_night_spring.mp4",
+      "video_sha256": "e53ad6963e681914fb8f8c8f5b94f1de70fc202ccd78bb6edc324d7945259869",
+      "label_sha256": "a0b4fab961c780824d37aec90d50d022ecb0225fad7461ce812538da458a5e92",
+      "scene_group": "nia2019:fight:14-5",
+      "event_start_s": 120.1,
+      "event_end_s": 339.0,
+      "first_labeled_action_nominal_s_range": [
+        120.03333333333333,
+        120.06666666666666
+      ],
+      "actions": [
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 3602,
+          "end_frame": 3663
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 5571,
+          "end_frame": 5622
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 7188,
+          "end_frame": 7227
+        },
+        {
+          "participant": "person_1",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 3973,
+          "end_frame": 4036
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 6230,
+          "end_frame": 6448
+        },
+        {
+          "participant": "person_1",
+          "action_name": "falldown",
+          "kind": "fall",
+          "start_frame": 8898,
+          "end_frame": 9589
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 4264,
+          "end_frame": 4409
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 5319,
+          "end_frame": 5442
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 7757,
+          "end_frame": 7852
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 7929,
+          "end_frame": 8046
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 8445,
+          "end_frame": 8545
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 8649,
+          "end_frame": 8940
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 9012,
+          "end_frame": 9093
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 9497,
+          "end_frame": 9589
+        },
+        {
+          "participant": "person_2",
+          "action_name": "falldown",
+          "kind": "fall",
+          "start_frame": 7195,
+          "end_frame": 7384
+        },
+        {
+          "participant": "person_2",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 7465,
+          "end_frame": 7514
+        },
+        {
+          "participant": "person_2",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 7657,
+          "end_frame": 7902
+        },
+        {
+          "participant": "person_2",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 7992,
+          "end_frame": 8051
+        },
+        {
+          "participant": "person_2",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 8121,
+          "end_frame": 8258
+        },
+        {
+          "participant": "person_2",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 8551,
+          "end_frame": 8649
+        },
+        {
+          "participant": "person_2",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 9683,
+          "end_frame": 9860
+        },
+        {
+          "participant": "person_2",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 10138,
+          "end_frame": 10171
+        },
+        {
+          "participant": "person_2",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 7514,
+          "end_frame": 7657
+        }
+      ],
+      "action_audit": {
+        "kind_counts": {
+          "contact_candidate": 14,
+          "fall": 2,
+          "threat": 7
+        },
+        "first_contact_frame": 3602,
+        "first_contact_nominal_s_range": [
+          120.03333333333333,
+          120.06666666666666
+        ],
+        "header_to_contact_delay_s_range": [
+          -0.06666666666666288,
+          -0.03333333333333144
+        ],
+        "frame_index_base_verified": false,
+        "ready_for_training_or_scoring": false,
+        "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+      },
+      "boundary_review_priority": false
+    },
+    {
+      "video_member": "14-5/14-5_cam02_fight02_place06_night_summer.mp4",
+      "video_sha256": "4e06545e5a9cd08d0f563ab4634ebee48bc5239e16358334fea3086832cc69ed",
+      "label_sha256": "80e3ab5f2586703add7291e0b805d50a9a913971db319dc503d1ca3274a1a56a",
+      "scene_group": "nia2019:fight:14-5",
+      "event_start_s": 156.6,
+      "event_end_s": 320.1,
+      "first_labeled_action_nominal_s_range": [
+        156.63333333333333,
+        156.66666666666666
+      ],
+      "actions": [
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 4700,
+          "end_frame": 4884
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 6066,
+          "end_frame": 6141
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 6344,
+          "end_frame": 6426
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 6732,
+          "end_frame": 6859
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 7394,
+          "end_frame": 7549
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 7880,
+          "end_frame": 8092
+        },
+        {
+          "participant": "person_1",
+          "action_name": "pulling",
+          "kind": "contact_candidate",
+          "start_frame": 9326,
+          "end_frame": 9600
+        },
+        {
+          "participant": "person_1",
+          "action_name": "falldown",
+          "kind": "fall",
+          "start_frame": 6518,
+          "end_frame": 6712
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 6711,
+          "end_frame": 6896
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 6932,
+          "end_frame": 7011
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 7024,
+          "end_frame": 7277
+        },
+        {
+          "participant": "person_1",
+          "action_name": "threaten",
+          "kind": "threat",
+          "start_frame": 7295,
+          "end_frame": 7336
+        },
+        {
+          "participant": "person_2",
+          "action_name": "pushing",
+          "kind": "contact_candidate",
+          "start_frame": 6201,
+          "end_frame": 6257
+        },
+        {
+          "participant": "person_2",
+          "action_name": "punching",
+          "kind": "contact_candidate",
+          "start_frame": 6482,
+          "end_frame": 6555
+        }
+      ],
+      "action_audit": {
+        "kind_counts": {
+          "contact_candidate": 9,
+          "fall": 1,
+          "threat": 4
+        },
+        "first_contact_frame": 4700,
+        "first_contact_nominal_s_range": [
+          156.63333333333333,
+          156.66666666666666
+        ],
+        "header_to_contact_delay_s_range": [
+          0.03333333333333144,
+          0.06666666666666288
+        ],
+        "frame_index_base_verified": false,
+        "ready_for_training_or_scoring": false,
+        "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+      },
+      "boundary_review_priority": false
+    }
+  ],
+  "limitations": [
+    "0/1 프레임 시작 번호와 명목FPS→원본PTS 대응은 미확정",
+    "접촉 후보도 공격 강도/맥락을 확인해야 하며 원본 사건 헤더를 자동 수정하지 않음",
+    "미라벨/위협/쓰러짐 구간을 독립 정상 자료로 전환하지 않음"
+  ],
+  "runtime_evidence_dir": "data/runtime/p57_fight_timeline_20261015",
+  "media_checks": [
+    {
+      "video_member": "1-2/1-2_cam02_fight04_place02_night_summer.mp4",
+      "video_sha256": "c491d3c977a0b9f62af52d2d510118faab52d7cde3a53998b68fa51f417bb99c",
+      "label": {
+        "filename": "1-2_cam02_fight04_place02_night_summer.mp4",
+        "event_type": "fight",
+        "event_start_s": 289.8,
+        "event_end_s": 295.3,
+        "label_time_text": {
+          "video_duration": "00:05:13.2",
+          "event_start": "00:04:49.8",
+          "event_duration": "00:00:05.5"
+        },
+        "duration_s": 313.2,
+        "fps": 30.0,
+        "frames": 9396,
+        "width": 3840,
+        "height": 2160,
+        "participants": [
+          "person_01",
+          "person_02"
+        ],
+        "last_action_frame": 8858,
+        "actions": [
+          {
+            "participant": "person_01",
+            "action_name": "threaten",
+            "kind": "threat",
+            "start_frame": 8695,
+            "end_frame": 8728
+          },
+          {
+            "participant": "person_01",
+            "action_name": "pushing",
+            "kind": "contact_candidate",
+            "start_frame": 8168,
+            "end_frame": 8198
+          },
+          {
+            "participant": "person_01",
+            "action_name": "pushing",
+            "kind": "contact_candidate",
+            "start_frame": 7740,
+            "end_frame": 7860
+          },
+          {
+            "participant": "person_02",
+            "action_name": "pushing",
+            "kind": "contact_candidate",
+            "start_frame": 6436,
+            "end_frame": 6532
+          },
+          {
+            "participant": "person_02",
+            "action_name": "pushing",
+            "kind": "contact_candidate",
+            "start_frame": 8094,
+            "end_frame": 8168
+          },
+          {
+            "participant": "person_02",
+            "action_name": "pushing",
+            "kind": "contact_candidate",
+            "start_frame": 8525,
+            "end_frame": 8669
+          },
+          {
+            "participant": "person_02",
+            "action_name": "pushing",
+            "kind": "contact_candidate",
+            "start_frame": 8780,
+            "end_frame": 8858
+          },
+          {
+            "participant": "person_02",
+            "action_name": "falldown",
+            "kind": "fall",
+            "start_frame": 8182,
+            "end_frame": 8475
+          }
+        ],
+        "action_audit": {
+          "kind_counts": {
+            "threat": 1,
+            "contact_candidate": 6,
+            "fall": 1
+          },
+          "first_contact_frame": 6436,
+          "first_contact_nominal_s_range": [
+            214.5,
+            214.53333333333333
+          ],
+          "header_to_contact_delay_s_range": [
+            -75.30000000000001,
+            -75.26666666666668
+          ],
+          "frame_index_base_verified": false,
+          "ready_for_training_or_scoring": false,
+          "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+        },
+        "scene_group": "nia2019:fight:1-2",
+        "location": "PLACE02",
+        "time_of_day": "NIGHT",
+        "actor_identity_verified": false,
+        "label_sha256": "b643c1809dc429b838fa65b36c9109b79248f53e1e6582ff0d1256e6bf0810f6"
+      },
+      "probe": {
+        "codec_name": "h264",
+        "time_base": "1/30000",
+        "start_pts": 0,
+        "duration_ts": 9396387,
+        "nb_frames": "9387"
+      },
+      "packet_timeline": {
+        "count": 9387,
+        "first_pts_ticks": 0,
+        "last_pts_ticks": 9395386,
+        "time_base": "1/30000",
+        "relative_last_pts_s": 313.1795333333333,
+        "relative_end_s": 313.2129,
+        "min_step_s": 0.03336666666666667,
+        "max_step_s": 0.03336666666666667,
+        "gap_or_overlap_count": 0,
+        "max_nominal30_vs_native_clock_difference_s": 0.3128666666666973
+      },
+      "previews": [
+        {
+          "requested_time_s": 288.8,
+          "path": "data/runtime/p57_fight_timeline_20261015/1-2_cam02_fight04_place02_night_summer/boundary_0.png"
+        },
+        {
+          "requested_time_s": 289.8,
+          "path": "data/runtime/p57_fight_timeline_20261015/1-2_cam02_fight04_place02_night_summer/boundary_1.png"
+        },
+        {
+          "requested_time_s": 290.8,
+          "path": "data/runtime/p57_fight_timeline_20261015/1-2_cam02_fight04_place02_night_summer/boundary_2.png"
+        },
+        {
+          "requested_time_s": 292.8,
+          "path": "data/runtime/p57_fight_timeline_20261015/1-2_cam02_fight04_place02_night_summer/boundary_3.png"
+        },
+        {
+          "requested_time_s": 213.5,
+          "path": "data/runtime/p57_fight_timeline_20261015/1-2_cam02_fight04_place02_night_summer/boundary_4.png"
+        },
+        {
+          "requested_time_s": 214.5,
+          "path": "data/runtime/p57_fight_timeline_20261015/1-2_cam02_fight04_place02_night_summer/boundary_5.png"
+        },
+        {
+          "requested_time_s": 215.5,
+          "path": "data/runtime/p57_fight_timeline_20261015/1-2_cam02_fight04_place02_night_summer/boundary_6.png"
+        },
+        {
+          "requested_time_s": 217.5,
+          "path": "data/runtime/p57_fight_timeline_20261015/1-2_cam02_fight04_place02_night_summer/boundary_7.png"
+        }
+      ],
+      "scope": "전체 packet PTS·8경계 표본 CPU 확인. 원본/정답·모델 변경 없음.",
+      "annotation_basis_limit": "명목30FPS의 0/1 시작 번호는 진단 가설이며 원본 PTS 매핑 확정 아님."
+    },
+    {
+      "video_member": "11-1/11-1_cam02_fight01_place08_night_summer.mp4",
+      "video_sha256": "0f3dc47d92b16f9ce8bf4cc9f47f61503b3b205da6ad45958fb2931cec8bad90",
+      "label": {
+        "filename": "11-1_cam02_fight01_place08_night_summer.mp4",
+        "event_type": "fight",
+        "event_start_s": 28.0,
+        "event_end_s": 291.7,
+        "label_time_text": {
+          "video_duration": "00:04:53.7",
+          "event_start": "00:00:28.0",
+          "event_duration": "00:04:23.7"
+        },
+        "duration_s": 293.7,
+        "fps": 30.0,
+        "frames": 8811,
+        "width": 3840,
+        "height": 2160,
+        "participants": [
+          "person_1",
+          "person_2"
+        ],
+        "last_action_frame": 8751,
+        "actions": [
+          {
+            "participant": "person_1",
+            "action_name": "pushing",
+            "kind": "contact_candidate",
+            "start_frame": 3228,
+            "end_frame": 3293
+          },
+          {
+            "participant": "person_1",
+            "action_name": "pushing",
+            "kind": "contact_candidate",
+            "start_frame": 3658,
+            "end_frame": 3711
+          },
+          {
+            "participant": "person_1",
+            "action_name": "pushing",
+            "kind": "contact_candidate",
+            "start_frame": 3916,
+            "end_frame": 3966
+          },
+          {
+            "participant": "person_1",
+            "action_name": "pushing",
+            "kind": "contact_candidate",
+            "start_frame": 7229,
+            "end_frame": 7371
+          },
+          {
+            "participant": "person_1",
+            "action_name": "threaten",
+            "kind": "threat",
+            "start_frame": 3711,
+            "end_frame": 3778
+          },
+          {
+            "participant": "person_1",
+            "action_name": "threaten",
+            "kind": "threat",
+            "start_frame": 7616,
+            "end_frame": 7763
+          },
+          {
+            "participant": "person_1",
+            "action_name": "threaten",
+            "kind": "threat",
+            "start_frame": 8169,
+            "end_frame": 8266
+          },
+          {
+            "participant": "person_1",
+            "action_name": "threaten",
+            "kind": "threat",
+            "start_frame": 8554,
+            "end_frame": 8596
+          },
+          {
+            "participant": "person_1",
+            "action_name": "pulling",
+            "kind": "contact_candidate",
+            "start_frame": 4203,
+            "end_frame": 4376
+          },
+          {
+            "participant": "person_1",
+            "action_name": "falldown",
+            "kind": "fall",
+            "start_frame": 5501,
+            "end_frame": 5550
+          },
+          {
+            "participant": "person_1",
+            "action_name": "punching",
+            "kind": "contact_candidate",
+            "start_frame": 6189,
+            "end_frame": 6243
+          },
+          {
+            "participant": "person_1",
+            "action_name": "punching",
+            "kind": "contact_candidate",
+            "start_frame": 6280,
+            "end_frame": 6489
+          },
+          {
+            "participant": "person_1",
+            "action_name": "punching",
+            "kind": "contact_candidate",
+            "start_frame": 7804,
+            "end_frame": 7906
+          },
+          {
+            "participant": "person_1",
+            "action_name": "punching",
+            "kind": "contact_candidate",
+            "start_frame": 8292,
+            "end_frame": 8388
+          },
+          {
+            "participant": "person_1",
+            "action_name": "punching",
+            "kind": "contact_candidate",
+            "start_frame": 8666,
+            "end_frame": 8751
+          },
+          {
+            "participant": "person_1",
+            "action_name": "kicking",
+            "kind": "contact_candidate",
+            "start_frame": 7415,
+            "end_frame": 7497
+          },
+          {
+            "participant": "person_1",
+            "action_name": "kicking",
+            "kind": "contact_candidate",
+            "start_frame": 7931,
+            "end_frame": 8022
+          },
+          {
+            "participant": "person_1",
+            "action_name": "kicking",
+            "kind": "contact_candidate",
+            "start_frame": 8388,
+            "end_frame": 8485
+          },
+          {
+            "participant": "person_2",
+            "action_name": "pushing",
+            "kind": "contact_candidate",
+            "start_frame": 3292,
+            "end_frame": 3335
+          },
+          {
+            "participant": "person_2",
+            "action_name": "pushing",
+            "kind": "contact_candidate",
+            "start_frame": 3969,
+            "end_frame": 4027
+          },
+          {
+            "participant": "person_2",
+            "action_name": "pulling",
+            "kind": "contact_candidate",
+            "start_frame": 5291,
+            "end_frame": 5396
+          },
+          {
+            "participant": "person_2",
+            "action_name": "pulling",
+            "kind": "contact_candidate",
+            "start_frame": 5485,
+            "end_frame": 5523
+          },
+          {
+            "participant": "person_2",
+            "action_name": "pulling",
+            "kind": "contact_candidate",
+            "start_frame": 5798,
+            "end_frame": 6012
+          },
+          {
+            "participant": "person_2",
+            "action_name": "pulling",
+            "kind": "contact_candidate",
+            "start_frame": 6020,
+            "end_frame": 6243
+          },
+          {
+            "participant": "person_2",
+            "action_name": "pulling",
+            "kind": "contact_candidate",
+            "start_frame": 6580,
+            "end_frame": 6821
+          },
+          {
+            "participant": "person_2",
+            "action_name": "punching",
+            "kind": "contact_candidate",
+            "start_frame": 5345,
+            "end_frame": 5402
+          },
+          {
+            "participant": "person_2",
+            "action_name": "punching",
+            "kind": "contact_candidate",
+            "start_frame": 5597,
+            "end_frame": 5788
+          },
+          {
+            "participant": "person_2",
+            "action_name": "punching",
+            "kind": "contact_candidate",
+            "start_frame": 5798,
+            "end_frame": 6012
+          },
+          {
+            "participant": "person_2",
+            "action_name": "punching",
+            "kind": "contact_candidate",
+            "start_frame": 6135,
+            "end_frame": 6180
+          },
+          {
+            "participant": "person_2",
+            "action_name": "punching",
+            "kind": "contact_candidate",
+            "start_frame": 6760,
+            "end_frame": 6824
+          },
+          {
+            "participant": "person_2",
+            "action_name": "kicking",
+            "kind": "contact_candidate",
+            "start_frame": 5486,
+            "end_frame": 5523
+          },
+          {
+            "participant": "person_2",
+            "action_name": "kicking",
+            "kind": "contact_candidate",
+            "start_frame": 6665,
+            "end_frame": 6726
+          },
+          {
+            "participant": "person_2",
+            "action_name": "falldown",
+            "kind": "fall",
+            "start_frame": 6220,
+            "end_frame": 6273
+          },
+          {
+            "participant": "person_2",
+            "action_name": "falldown",
+            "kind": "fall",
+            "start_frame": 7228,
+            "end_frame": 7310
+          }
+        ],
+        "action_audit": {
+          "kind_counts": {
+            "contact_candidate": 27,
+            "threat": 4,
+            "fall": 3
+          },
+          "first_contact_frame": 3228,
+          "first_contact_nominal_s_range": [
+            107.56666666666666,
+            107.6
+          ],
+          "header_to_contact_delay_s_range": [
+            79.56666666666666,
+            79.6
+          ],
+          "frame_index_base_verified": false,
+          "ready_for_training_or_scoring": false,
+          "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+        },
+        "scene_group": "nia2019:fight:11-1",
+        "location": "PLACE08",
+        "time_of_day": "NIGHT",
+        "actor_identity_verified": false,
+        "label_sha256": "822084f5f0af153970915cfbcfe351c2597767fcab066dcc5735c91bd0b96fac"
+      },
+      "probe": {
+        "codec_name": "h264",
+        "time_base": "1/30000",
+        "start_pts": 0,
+        "duration_ts": 8811803,
+        "nb_frames": "8803"
+      },
+      "packet_timeline": {
+        "count": 8803,
+        "first_pts_ticks": 0,
+        "last_pts_ticks": 8810802,
+        "time_base": "1/30000",
+        "relative_last_pts_s": 293.6934,
+        "relative_end_s": 293.72676666666666,
+        "min_step_s": 0.03336666666666667,
+        "max_step_s": 0.03336666666666667,
+        "gap_or_overlap_count": 0,
+        "boundaries": {
+          "event_start": {
+            "requested_s": 28.0,
+            "packet_index_zero_based": 840,
+            "nearest_at_or_after_pts_s": 28.028
+          },
+          "contact_nominal_1based": {
+            "requested_s": 107.56666666666666,
+            "packet_index_zero_based": 3224,
+            "nearest_at_or_after_pts_s": 107.57413333333334
+          },
+          "contact_nominal_0based": {
+            "requested_s": 107.6,
+            "packet_index_zero_based": 3225,
+            "nearest_at_or_after_pts_s": 107.6075
+          }
+        },
+        "last_action_serial_frame_hypotheses_s": {
+          "0": 291.9917,
+          "1": 291.9583333333333
+        },
+        "max_nominal30_vs_native_clock_difference_s": 0.29340000000002875
+      },
+      "previews": [
+        {
+          "requested_time_s": 27.0,
+          "path": "data/runtime/p57_fight_timeline_20261015/11-1_cam02_fight01_place08_night_summer/boundary_0.png"
+        },
+        {
+          "requested_time_s": 28.0,
+          "path": "data/runtime/p57_fight_timeline_20261015/11-1_cam02_fight01_place08_night_summer/boundary_1.png"
+        },
+        {
+          "requested_time_s": 29.0,
+          "path": "data/runtime/p57_fight_timeline_20261015/11-1_cam02_fight01_place08_night_summer/boundary_2.png"
+        },
+        {
+          "requested_time_s": 31.0,
+          "path": "data/runtime/p57_fight_timeline_20261015/11-1_cam02_fight01_place08_night_summer/boundary_3.png"
+        },
+        {
+          "requested_time_s": 106.56666666666666,
+          "path": "data/runtime/p57_fight_timeline_20261015/11-1_cam02_fight01_place08_night_summer/boundary_4.png"
+        },
+        {
+          "requested_time_s": 107.56666666666666,
+          "path": "data/runtime/p57_fight_timeline_20261015/11-1_cam02_fight01_place08_night_summer/boundary_5.png"
+        },
+        {
+          "requested_time_s": 108.56666666666666,
+          "path": "data/runtime/p57_fight_timeline_20261015/11-1_cam02_fight01_place08_night_summer/boundary_6.png"
+        },
+        {
+          "requested_time_s": 110.56666666666666,
+          "path": "data/runtime/p57_fight_timeline_20261015/11-1_cam02_fight01_place08_night_summer/boundary_7.png"
+        }
+      ],
+      "scope": "전체 video packet PTS 대조·8개 경계 표본 CPU 디코딩. 전체 프레임 디코딩/정답 수정/모델 추론 아님.",
+      "annotation_basis_limit": "명목30FPS의 0/1 시작 번호는 진단 가설이며 원본 PTS 매핑 확정 아님."
+    },
+    {
+      "video_member": "11-3/11-3_cam01_fight01_place08_night_summer.mp4",
+      "video_sha256": "600da75f50a3671fd5663fafcbe160b8e1131bca674aaf00dae112a43ee15889",
+      "label": {
+        "filename": "11-3_cam01_fight01_place08_night_summer.mp4",
+        "event_type": "fight",
+        "event_start_s": 85.1,
+        "event_end_s": 305.6,
+        "label_time_text": {
+          "video_duration": "00:05:05.6",
+          "event_start": "00:01:25.1",
+          "event_duration": "00:03:40.5"
+        },
+        "duration_s": 305.6,
+        "fps": 30.0,
+        "frames": 9167,
+        "width": 3840,
+        "height": 2160,
+        "participants": [
+          "person_1",
+          "person_2"
+        ],
+        "last_action_frame": 9167,
+        "actions": [
+          {
+            "participant": "person_1",
+            "action_name": "threaten",
+            "kind": "threat",
+            "start_frame": 2554,
+            "end_frame": 2591
+          },
+          {
+            "participant": "person_1",
+            "action_name": "threaten",
+            "kind": "threat",
+            "start_frame": 5531,
+            "end_frame": 5569
+          },
+          {
+            "participant": "person_1",
+            "action_name": "threaten",
+            "kind": "threat",
+            "start_frame": 7332,
+            "end_frame": 7380
+          },
+          {
+            "participant": "person_1",
+            "action_name": "threaten",
+            "kind": "threat",
+            "start_frame": 8420,
+            "end_frame": 8459
+          },
+          {
+            "participant": "person_1",
+            "action_name": "pushing",
+            "kind": "contact_candidate",
+            "start_frame": 4176,
+            "end_frame": 4258
+          },
+          {
+            "participant": "person_1",
+            "action_name": "pushing",
+            "kind": "contact_candidate",
+            "start_frame": 5248,
+            "end_frame": 5292
+          },
+          {
+            "participant": "person_1",
+            "action_name": "pushing",
+            "kind": "contact_candidate",
+            "start_frame": 5350,
+            "end_frame": 5383
+          },
+          {
+            "participant": "person_1",
+            "action_name": "pushing",
+            "kind": "contact_candidate",
+            "start_frame": 6532,
+            "end_frame": 6840
+          },
+          {
+            "participant": "person_1",
+            "action_name": "kicking",
+            "kind": "contact_candidate",
+            "start_frame": 6226,
+            "end_frame": 6276
+          },
+          {
+            "participant": "person_1",
+            "action_name": "kicking",
+            "kind": "contact_candidate",
+            "start_frame": 7422,
+            "end_frame": 7477
+          },
+          {
+            "participant": "person_1",
+            "action_name": "kicking",
+            "kind": "contact_candidate",
+            "start_frame": 7494,
+            "end_frame": 7551
+          },
+          {
+            "participant": "person_1",
+            "action_name": "kicking",
+            "kind": "contact_candidate",
+            "start_frame": 7838,
+            "end_frame": 8011
+          },
+          {
+            "participant": "person_1",
+            "action_name": "kicking",
+            "kind": "contact_candidate",
+            "start_frame": 8014,
+            "end_frame": 8076
+          },
+          {
+            "participant": "person_1",
+            "action_name": "kicking",
+            "kind": "contact_candidate",
+            "start_frame": 8465,
+            "end_frame": 8602
+          },
+          {
+            "participant": "person_1",
+            "action_name": "pulling",
+            "kind": "contact_candidate",
+            "start_frame": 5618,
+            "end_frame": 5752
+          },
+          {
+            "participant": "person_1",
+            "action_name": "pulling",
+            "kind": "contact_candidate",
+            "start_frame": 5780,
+            "end_frame": 5860
+          },
+          {
+            "participant": "person_1",
+            "action_name": "pulling",
+            "kind": "contact_candidate",
+            "start_frame": 6096,
+            "end_frame": 6176
+          },
+          {
+            "participant": "person_1",
+            "action_name": "pulling",
+            "kind": "contact_candidate",
+            "start_frame": 6450,
+            "end_frame": 6550
+          },
+          {
+            "participant": "person_1",
+            "action_name": "pulling",
+            "kind": "contact_candidate",
+            "start_frame": 7048,
+            "end_frame": 7175
+          },
+          {
+            "participant": "person_1",
+            "action_name": "pulling",
+            "kind": "contact_candidate",
+            "start_frame": 8710,
+            "end_frame": 8787
+          },
+          {
+            "participant": "person_1",
+            "action_name": "punching",
+            "kind": "contact_candidate",
+            "start_frame": 5659,
+            "end_frame": 5693
+          },
+          {
+            "participant": "person_1",
+            "action_name": "punching",
+            "kind": "contact_candidate",
+            "start_frame": 5710,
+            "end_frame": 5752
+          },
+          {
+            "participant": "person_1",
+            "action_name": "punching",
+            "kind": "contact_candidate",
+            "start_frame": 6893,
+            "end_frame": 6939
+          },
+          {
+            "participant": "person_1",
+            "action_name": "punching",
+            "kind": "contact_candidate",
+            "start_frame": 6972,
+            "end_frame": 7029
+          },
+          {
+            "participant": "person_1",
+            "action_name": "punching",
+            "kind": "contact_candidate",
+            "start_frame": 7145,
+            "end_frame": 7199
+          },
+          {
+            "participant": "person_1",
+            "action_name": "punching",
+            "kind": "contact_candidate",
+            "start_frame": 8318,
+            "end_frame": 8361
+          },
+          {
+            "participant": "person_1",
+            "action_name": "punching",
+            "kind": "contact_candidate",
+            "start_frame": 8742,
+            "end_frame": 8787
+          },
+          {
+            "participant": "person_1",
+            "action_name": "throwing",
+            "kind": "contact_candidate",
+            "start_frame": 7672,
+            "end_frame": 7711
+          },
+          {
+            "participant": "person_1",
+            "action_name": "throwing",
+            "kind": "contact_candidate",
+            "start_frame": 9039,
+            "end_frame": 9085
+          },
+          {
+            "participant": "person_2",
+            "action_name": "pushing",
+            "kind": "contact_candidate",
+            "start_frame": 2785,
+            "end_frame": 2863
+          },
+          {
+            "participant": "person_2",
+            "action_name": "pushing",
+            "kind": "contact_candidate",
+            "start_frame": 3384,
+            "end_frame": 3466
+          },
+          {
+            "participant": "person_2",
+            "action_name": "pushing",
+            "kind": "contact_candidate",
+            "start_frame": 4088,
+            "end_frame": 4257
+          },
+          {
+            "participant": "person_2",
+            "action_name": "pushing",
+            "kind": "contact_candidate",
+            "start_frame": 5551,
+            "end_frame": 5593
+          },
+          {
+            "participant": "person_2",
+            "action_name": "threaten",
+            "kind": "threat",
+            "start_frame": 3127,
+            "end_frame": 3178
+          },
+          {
+            "participant": "person_2",
+            "action_name": "threaten",
+            "kind": "threat",
+            "start_frame": 5097,
+            "end_frame": 5141
+          },
+          {
+            "participant": "person_2",
+            "action_name": "threaten",
+            "kind": "threat",
+            "start_frame": 5338,
+            "end_frame": 5366
+          },
+          {
+            "participant": "person_2",
+            "action_name": "pulling",
+            "kind": "contact_candidate",
+            "start_frame": 4467,
+            "end_frame": 4724
+          },
+          {
+            "participant": "person_2",
+            "action_name": "falldown",
+            "kind": "fall",
+            "start_frame": 5859,
+            "end_frame": 6102
+          },
+          {
+            "participant": "person_2",
+            "action_name": "falldown",
+            "kind": "fall",
+            "start_frame": 6124,
+            "end_frame": 6550
+          },
+          {
+            "participant": "person_2",
+            "action_name": "falldown",
+            "kind": "fall",
+            "start_frame": 7059,
+            "end_frame": 9167
+          }
+        ],
+        "action_audit": {
+          "kind_counts": {
+            "threat": 7,
+            "contact_candidate": 30,
+            "fall": 3
+          },
+          "first_contact_frame": 2785,
+          "first_contact_nominal_s_range": [
+            92.8,
+            92.83333333333333
+          ],
+          "header_to_contact_delay_s_range": [
+            7.700000000000003,
+            7.733333333333334
+          ],
+          "frame_index_base_verified": false,
+          "ready_for_training_or_scoring": false,
+          "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+        },
+        "scene_group": "nia2019:fight:11-3",
+        "location": "PLACE08",
+        "time_of_day": "NIGHT",
+        "actor_identity_verified": false,
+        "label_sha256": "4f6703ad488a1f85aac608fe4347f1f2fd9daa3f3ecd9f1a6259aee94ba7e6f8"
+      },
+      "probe": {
+        "codec_name": "h264",
+        "time_base": "1/30000",
+        "start_pts": 0,
+        "duration_ts": 9167158,
+        "nb_frames": "9158"
+      },
+      "packet_timeline": {
+        "count": 9158,
+        "first_pts_ticks": 0,
+        "last_pts_ticks": 9166157,
+        "time_base": "1/30000",
+        "relative_last_pts_s": 305.53856666666667,
+        "relative_end_s": 305.57193333333333,
+        "min_step_s": 0.03336666666666667,
+        "max_step_s": 0.03336666666666667,
+        "gap_or_overlap_count": 0,
+        "boundaries": {
+          "event_start": {
+            "requested_s": 85.1,
+            "packet_index_zero_based": 2551,
+            "nearest_at_or_after_pts_s": 85.11836666666666
+          },
+          "contact_nominal_1based": {
+            "requested_s": 92.8,
+            "packet_index_zero_based": 2782,
+            "nearest_at_or_after_pts_s": 92.82606666666666
+          },
+          "contact_nominal_0based": {
+            "requested_s": 92.83333333333333,
+            "packet_index_zero_based": 2783,
+            "nearest_at_or_after_pts_s": 92.85943333333333
+          }
+        },
+        "last_action_serial_frame_hypotheses_s": {
+          "0": null,
+          "1": null
+        },
+        "max_nominal30_vs_native_clock_difference_s": 0.3052333333333633
+      },
+      "previews": [
+        {
+          "requested_time_s": 84.1,
+          "path": "data/runtime/p57_fight_timeline_20261015/11-3_cam01_fight01_place08_night_summer/boundary_0.png"
+        },
+        {
+          "requested_time_s": 85.1,
+          "path": "data/runtime/p57_fight_timeline_20261015/11-3_cam01_fight01_place08_night_summer/boundary_1.png"
+        },
+        {
+          "requested_time_s": 86.1,
+          "path": "data/runtime/p57_fight_timeline_20261015/11-3_cam01_fight01_place08_night_summer/boundary_2.png"
+        },
+        {
+          "requested_time_s": 88.1,
+          "path": "data/runtime/p57_fight_timeline_20261015/11-3_cam01_fight01_place08_night_summer/boundary_3.png"
+        },
+        {
+          "requested_time_s": 91.8,
+          "path": "data/runtime/p57_fight_timeline_20261015/11-3_cam01_fight01_place08_night_summer/boundary_4.png"
+        },
+        {
+          "requested_time_s": 92.8,
+          "path": "data/runtime/p57_fight_timeline_20261015/11-3_cam01_fight01_place08_night_summer/boundary_5.png"
+        },
+        {
+          "requested_time_s": 93.8,
+          "path": "data/runtime/p57_fight_timeline_20261015/11-3_cam01_fight01_place08_night_summer/boundary_6.png"
+        },
+        {
+          "requested_time_s": 95.8,
+          "path": "data/runtime/p57_fight_timeline_20261015/11-3_cam01_fight01_place08_night_summer/boundary_7.png"
+        }
+      ],
+      "scope": "전체 video packet PTS 대조·8개 경계 표본 CPU 디코딩. 전체 프레임 디코딩/정답 수정/모델 추론 아님.",
+      "annotation_basis_limit": "명목30FPS의 0/1 시작 번호는 진단 가설이며 원본 PTS 매핑 확정 아님."
+    },
+    {
+      "video_member": "14-3/14-3_cam02_fight02_place06_night_spring.mp4",
+      "video_sha256": "efc965fc506117b1df01b3cf7a988883eaedaba83647b54e0045cda0e3c31cd6",
+      "label": {
+        "filename": "14-3_cam02_fight02_place06_night_spring.mp4",
+        "event_type": "fight",
+        "event_start_s": 28.0,
+        "event_end_s": 321.6,
+        "label_time_text": {
+          "video_duration": "00:05:21.6",
+          "event_start": "00:00:28.0",
+          "event_duration": "00:04:53.6"
+        },
+        "duration_s": 321.6,
+        "fps": 30.0,
+        "frames": 9648,
+        "width": 3840,
+        "height": 2160,
+        "participants": [
+          "person_1",
+          "person_2"
+        ],
+        "last_action_frame": 9648,
+        "actions": [
+          {
+            "participant": "person_1",
+            "action_name": "pulling",
+            "kind": "contact_candidate",
+            "start_frame": 2467,
+            "end_frame": 2721
+          },
+          {
+            "participant": "person_1",
+            "action_name": "pulling",
+            "kind": "contact_candidate",
+            "start_frame": 4394,
+            "end_frame": 4696
+          },
+          {
+            "participant": "person_1",
+            "action_name": "pulling",
+            "kind": "contact_candidate",
+            "start_frame": 7748,
+            "end_frame": 8032
+          },
+          {
+            "participant": "person_1",
+            "action_name": "pulling",
+            "kind": "contact_candidate",
+            "start_frame": 9436,
+            "end_frame": 9648
+          },
+          {
+            "participant": "person_1",
+            "action_name": "threaten",
+            "kind": "threat",
+            "start_frame": 6173,
+            "end_frame": 6364
+          },
+          {
+            "participant": "person_1",
+            "action_name": "threaten",
+            "kind": "threat",
+            "start_frame": 6444,
+            "end_frame": 6868
+          },
+          {
+            "participant": "person_1",
+            "action_name": "threaten",
+            "kind": "threat",
+            "start_frame": 8237,
+            "end_frame": 8284
+          },
+          {
+            "participant": "person_1",
+            "action_name": "threaten",
+            "kind": "threat",
+            "start_frame": 8354,
+            "end_frame": 8688
+          },
+          {
+            "participant": "person_1",
+            "action_name": "threaten",
+            "kind": "threat",
+            "start_frame": 8917,
+            "end_frame": 9135
+          },
+          {
+            "participant": "person_1",
+            "action_name": "threaten",
+            "kind": "threat",
+            "start_frame": 9189,
+            "end_frame": 9205
+          },
+          {
+            "participant": "person_1",
+            "action_name": "threaten",
+            "kind": "threat",
+            "start_frame": 9390,
+            "end_frame": 9417
+          },
+          {
+            "participant": "person_2",
+            "action_name": "pushing",
+            "kind": "contact_candidate",
+            "start_frame": 5784,
+            "end_frame": 5842
+          },
+          {
+            "participant": "person_2",
+            "action_name": "punching",
+            "kind": "contact_candidate",
+            "start_frame": 5842,
+            "end_frame": 6048
+          }
+        ],
+        "action_audit": {
+          "kind_counts": {
+            "contact_candidate": 6,
+            "threat": 7
+          },
+          "first_contact_frame": 2467,
+          "first_contact_nominal_s_range": [
+            82.2,
+            82.23333333333333
+          ],
+          "header_to_contact_delay_s_range": [
+            54.2,
+            54.233333333333334
+          ],
+          "frame_index_base_verified": false,
+          "ready_for_training_or_scoring": false,
+          "policy": "위협·쓰러짐·접촉 후보를 구분. 미라벨 구간은 정상으로 간주하지 않으며 PTS/행동 경계 검수 전 자동 학습·채점 금지."
+        },
+        "scene_group": "nia2019:fight:14-3",
+        "location": "PLACE06",
+        "time_of_day": "NIGHT",
+        "actor_identity_verified": false,
+        "label_sha256": "affe8fa2ba73986d64394c22974a68286f0df72b427f16df351edd82c3c2036b"
+      },
+      "probe": {
+        "codec_name": "h264",
+        "time_base": "1/30000",
+        "start_pts": 0,
+        "duration_ts": 9648639,
+        "nb_frames": "9639"
+      },
+      "packet_timeline": {
+        "count": 9639,
+        "first_pts_ticks": 0,
+        "last_pts_ticks": 9647638,
+        "time_base": "1/30000",
+        "relative_last_pts_s": 321.58793333333335,
+        "relative_end_s": 321.6213,
+        "min_step_s": 0.03336666666666667,
+        "max_step_s": 0.03336666666666667,
+        "gap_or_overlap_count": 0,
+        "boundaries": {
+          "event_start": {
+            "requested_s": 28.0,
+            "packet_index_zero_based": 840,
+            "nearest_at_or_after_pts_s": 28.028
+          },
+          "contact_nominal_1based": {
+            "requested_s": 82.2,
+            "packet_index_zero_based": 2464,
+            "nearest_at_or_after_pts_s": 82.21546666666667
+          },
+          "contact_nominal_0based": {
+            "requested_s": 82.23333333333333,
+            "packet_index_zero_based": 2465,
+            "nearest_at_or_after_pts_s": 82.24883333333334
+          }
+        },
+        "last_action_serial_frame_hypotheses_s": {
+          "0": null,
+          "1": null
+        },
+        "max_nominal30_vs_native_clock_difference_s": 0.3212666666666982
+      },
+      "previews": [
+        {
+          "requested_time_s": 27.0,
+          "path": "data/runtime/p57_fight_timeline_20261015/14-3_cam02_fight02_place06_night_spring/boundary_0.png"
+        },
+        {
+          "requested_time_s": 28.0,
+          "path": "data/runtime/p57_fight_timeline_20261015/14-3_cam02_fight02_place06_night_spring/boundary_1.png"
+        },
+        {
+          "requested_time_s": 29.0,
+          "path": "data/runtime/p57_fight_timeline_20261015/14-3_cam02_fight02_place06_night_spring/boundary_2.png"
+        },
+        {
+          "requested_time_s": 31.0,
+          "path": "data/runtime/p57_fight_timeline_20261015/14-3_cam02_fight02_place06_night_spring/boundary_3.png"
+        },
+        {
+          "requested_time_s": 81.2,
+          "path": "data/runtime/p57_fight_timeline_20261015/14-3_cam02_fight02_place06_night_spring/boundary_4.png"
+        },
+        {
+          "requested_time_s": 82.2,
+          "path": "data/runtime/p57_fight_timeline_20261015/14-3_cam02_fight02_place06_night_spring/boundary_5.png"
+        },
+        {
+          "requested_time_s": 83.2,
+          "path": "data/runtime/p57_fight_timeline_20261015/14-3_cam02_fight02_place06_night_spring/boundary_6.png"
+        },
+        {
+          "requested_time_s": 85.2,
+          "path": "data/runtime/p57_fight_timeline_20261015/14-3_cam02_fight02_place06_night_spring/boundary_7.png"
+        }
+      ],
+      "scope": "전체 video packet PTS 대조·8개 경계 표본 CPU 디코딩. 전체 프레임 디코딩/정답 수정/모델 추론 아님.",
+      "annotation_basis_limit": "명목30FPS의 0/1 시작 번호는 진단 가설이며 원본 PTS 매핑 확정 아님."
+    }
+  ],
+  "visual_review": {
+    "previews_generated": 32,
+    "previews_inspected": 20,
+    "scope": "3영상에서 헤더/접촉 전후4표본씩12장 및 음의 차이 영상8장 확인. 원본 전체 구간 정답 검수 아님.",
+    "observations": [
+      "11-1 cam02 summer: 헤더28초 표본은 진입/비접촉 상태, 약107.6초 표본에 근접 신체 상호작용이 보여 헤더를 첫 접촉으로 자동 사용할 수 없음.",
+      "14-3 cam02 spring: 헤더28초는 떨어져 선 상태, 약82.2초 전후에는 근접 상호작용 후보. 공격 강도/정확한 시작은 전구간 검수 필요.",
+      "1-2 cam02 summer: 약214.5초 접촉 후보가 헤더289.8초보다 먼저 존재. 파일의 앞뒤 사건 범위를 헤더 하나만으로 판정하지 않음.",
+      "11-3 cam01 summer: 위협 라벨과 후속 접촉 후보의 구분을 표본에서 확인. 마지막 라벨 프레임9167은 실제패킷9158의 0/1 serial index 범위를 모두 넘음."
+    ]
+  },
+  "decision": {
+    "runtime_changed": false,
+    "source_labels_modified": 0,
+    "processing_resolution": "1080p full frame",
+    "person_pose_confidence": 0.5,
+    "training_runs": 0,
+    "gpu_trials": 0,
+    "ai_stops": 0,
+    "first_alarm_delay_can_be_scored": false,
+    "automatic_positive_or_negative_generation": false,
+    "priority_review_videos": [
+      "1-1/1-1_cam01_fight04_place02_night_spring.mp4",
+      "1-2/1-2_cam02_fight04_place02_night_spring.mp4",
+      "1-2/1-2_cam02_fight04_place02_night_summer.mp4",
+      "11-1/11-1_cam02_fight01_place08_night_summer.mp4",
+      "11-3/11-3_cam01_fight01_place08_night_summer.mp4",
+      "11-3/11-3_cam02_fight01_place08_night_summer.mp4",
+      "14-2/14-2_cam01_fight02_place06_night_spring.mp4",
+      "14-2/14-2_cam02_fight02_place06_night_spring.mp4",
+      "14-3/14-3_cam02_fight02_place06_night_spring.mp4",
+      "14-4/14-4_cam01_fight02_place06_night_spring.mp4",
+      "14-4/14-4_cam02_fight02_place06_night_spring.mp4"
+    ],
+    "next": "11개 우선 경계의 사건별 시작/종료·참여자 검수와 나머지27개의 정답 승인; 전역 배우/세션·정상/유사 행동 자료 보강 후 독립 목록 고정. 임의 FPS 보정/헤더 덮어쓰기 금지."
+  },
+  "validation": {
+    "inspection_tests": {
+      "passed": 23,
+      "failed": 0,
+      "skipped": 0,
+      "junit": "data/runtime/p57_fight_timeline_20261015/inspection_tests.xml"
+    },
+    "ruff": "PASS",
+    "test_notes": "신규5시험 실패 재현 후 구현. 첫 전체 실행은 기존 실제영상 fixture 생성30초 timeout1건/22PASS; fixture/timeout 변경 없이 재실행23PASS.",
+    "scope": "신규5개+기존18개. 패킷 확인은 디코딩 전 시간축이며 전체 영상 프레임 무결성/행동 정답 검수와 다름.",
+    "graph": "두 그래프 검색에서 신규 검사기0. 2파일 지정 detect_changes는 무관한122함수/42시험갭까지 섞여 반환해 실제 위험도로 사용하지 않음. 직접 호출·백업 대비 read_label/시험 diff·23시험 대조.",
+    "inspector_sha256": "f5d20c668dc75d18aec934d9db174a0deaf36dbbe04a3d4a9b2ce5add50898db",
+    "artifact_consistency": "PASS: WBS37/상태·38후보 SHA 불변·551/11/4/36987·원본/모델/설정6파일 불변·임시MP4 0",
+    "diff_check": "PASS: 범위 내 git diff --check 및 신규 산출물 공백 검사"
+  },
+  "sources": [
+    {
+      "url": "https://ffmpeg.org/ffprobe.html",
+      "checked": "2026-10-15",
+      "used_for": "show_packets/show_entries로 미디어 패킷 시간축 확인. read_intervals seek는 부정확할 수 있어 전체 패킷 목록을 읽음."
+    }
+  ],
+  "progress_board": {
+    "status": "PASS",
+    "base_url": "http://192.168.2.141:18081/",
+    "checks": [
+      {
+        "artifact": "index.html",
+        "http_status": 200,
+        "bytes": 100605,
+        "sha256": "ec90aa9a2b0f8e635951dbeac7a31f816609f79906a0de6c76fe6b7eff081c30",
+        "local_hash_match": true
+      },
+      {
+        "artifact": "CCTV_project_progress.pdf",
+        "http_status": 200,
+        "bytes": 156888,
+        "sha256": "1b9624e81ad493d65f2cdd41aad986d56db7d6751ddffa3c0bb488531d8ad94e",
+        "local_hash_match": true
+      }
+    ],
+    "pdf_pages": 5,
+    "html_content_checks": "PASS:37행/상태·551구간/11영상·4영상36987PTS·23 PASS·최종 정답/독립 미확정",
+    "pdf_visual_check": "PASS: 첫 쪽 최신551구간/11영상/4영상36987패킷/23 PASS·미확정 표기, 잘림 없음",
+    "scope": "로컬 생성물과 HTTP 제공 파일 대조. 브라우저 상호작용 미검증."
+  },
+  "artifact_sha256": {
+    "scripts/datasets/inspect_aihub_behavior_dataset.py": "f5d20c668dc75d18aec934d9db174a0deaf36dbbe04a3d4a9b2ce5add50898db",
+    "tests/test_inspect_aihub_behavior_dataset.py": "8b45e687d46d8e055d06e09285d536f376ca00346cbb3ba0555d48b625a79675",
+    "scripts/ops/render_progress_snapshot.py": "622fcc23be358c6b071e6f6258f4d83e8769f4c1af19d9491a5f0ecec0da9bbc",
+    "scripts/ops/progress_snapshot_template.html": "5cac15d98fcba232a76e515a792f9308ad7811310c74103ef531bef0ba4dee20",
+    "docs/planning/README.md": "20d11951706ccd4aa8d4bdf464cd612a624e9c95377a6478706a486154cc4108",
+    "docs/planning/PROGRESS.md": "455dbcadf9f8c85b7728935a195572015648f14507c404b3a8dd032b53cfb031",
+    "docs/planning/STATUS.md": "c51b03de4f5cbf31f52c6eb2de23b81003de91d71a040f31978f8a1dc42381ac",
+    "docs/planning/WBS.md": "2b05199aa4a5f2ade6cdcc906373bb73274fbf3e7fafbb19ad5fa25539188a13",
+    "docs/planning/POC_SCOPE.md": "81cd8ed3535c2ad487f1bccb2f22300dd5f02b87e8234a1f7119893ad5ccf21d",
+    "docs/planning/MODEL_INFERENCE_METRICS.md": "f878324fae705ab9c9041f18933d878c57e9a5f7703c1b08ff859b5081c45949",
+    "docs/planning/ONLINE_PROGRESS.md": "cccb077db2802751b11d6451c46186e592a2b75626e989f7810c9bdfce955219",
+    "docs/planning/figma_exports/progress_v138.json": "783c058c4742b63323b39ad4b9a5ca41ba3d0021be40e4f7793198b330915947",
+    "docs/planning/evidence/fight_candidate_pool_20261015.json": "4adaaf0c0f5eb2c19f06da9edbb2b16b52140a427ece8de621a3db95deb3db43",
+    "docs/planning/online/index.html": "ec90aa9a2b0f8e635951dbeac7a31f816609f79906a0de6c76fe6b7eff081c30",
+    "docs/planning/online/CCTV_project_progress.pdf": "1b9624e81ad493d65f2cdd41aad986d56db7d6751ddffa3c0bb488531d8ad94e",
+    "data/runtime/p57_fight_timeline_20261015/inspection_tests.xml": "2644961f892323cf735d20d6fbbbd4a05924b67d82e6787cd8e3471b102290c6",
+    "data/runtime/p57_fight_timeline_20261015/media_checks.json": "591f3faa3371d679dfc1c0e4c39e525f67f30a58f49ce0cfdf0d17277b96b6fe",
+    "data/runtime/p57_fight_timeline_20261015/1-2_cam02_fight04_place02_night_summer/packets.json": "97dc29b7f2a1a6c6eaaf97e8c0a74204199f422b5c9c4d634d18f0c52d1e42ac",
+    "data/runtime/p57_fight_timeline_20261015/11-1_cam02_fight01_place08_night_summer/packets.json": "2da0982a7ea29bff5b434c765fffe06a21c70583f73ac6e2f3011e785de37ff1",
+    "data/runtime/p57_fight_timeline_20261015/11-3_cam01_fight01_place08_night_summer/packets.json": "c4fc41aec714c74bd14de05be5cd4541582a8aecb0cdac45a0e4de8c53a257d1",
+    "data/runtime/p57_fight_timeline_20261015/14-3_cam02_fight02_place06_night_spring/packets.json": "04f7bb73cac5146de51ccda94d6aa0aebe8f655518fb196323f1f789f2d9bfde"
+  }
+}

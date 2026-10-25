@@ -1,0 +1,766 @@
+{
+  "date": "2026-10-23",
+  "status": "PASS_ISOLATED_POST_ACTIVATION_RECOVERY_AND_RETRY_FAIRNESS",
+  "physical_jetson_b_tested": false,
+  "operating_changes": false,
+  "scope": "O4 handoff errors during active transition; O3 retry admission; no ongoing overload monitor or ROS2 added",
+  "changes": [
+    "src/services/edge_handoff.py",
+    "src/services/edge_result_context.py",
+    "tests/test_edge_handoff.py",
+    "tests/test_edge_full_pipeline.py",
+    "tests/test_edge_result_transport.py"
+  ],
+  "source_sha256": {
+    "config/deepstream/edge-handoff.example.json": "f2bd0e0a469f2f2117195811f40e31d63f0d3fc7ed7f4024526c5e7840a540c3",
+    "config/deepstream/edge-result-broker.acl.example": "11445a607a153593d26264d941c02ac5a54f3895046c45d5d1ecf7ecadae3ceb",
+    "config/deepstream/edge-result-controller.example.json": "ed9fda60417ba9a4f4c0a1d8c66b341f06edf6189020f4cd0549149bdc7d4190",
+    "config/deepstream/edge-result-node.example.json": "904a8b019b13e9da4a98ef8bfeda571f28f0cfd1601cfe953cfaade86ece98f0",
+    "config/deepstream/edge-service-b.manifest.example.json": "d0c2b982dde767a0e69c485d27776db06faefe0f1ad613bd46b48a33c92ada62",
+    "runners/run_edge_orchestration.py": "7ae10d5eebf2e7c6bb7e5a53269440eed8561c49e2e4810ab7c47706515f470a",
+    "src/core/_event_publish.py": "3705dbf451bff5917c3ec9898805df49dd781a1be92a38511ee1b6dcb53e31b3",
+    "src/core/base_processor.py": "67eb8d04b2e18b082cc2adbb045ce2e7216ed7794aedb8d80fe4d4a809de7d7d",
+    "src/core/deepstream_processor.py": "814dd0cf03d5bdae93a1f70c7046ce3082573bb3d022d99a292fe67a6630b0f9",
+    "src/core/processor.py": "3b8ca611b16f12737511976d847fc6d2953e83c77edd75d000fa0463434d2e8e",
+    "src/core/video_event_ingest.py": "c40c6447f78251cdbf9f0bbc5b8c03088941adc8e1eb4ba688837867eb6612e1",
+    "src/protocols/mqtt_publisher.py": "5c8d783541cad8513f60717aab91a2e7b0d56aeb1ef10e37af3facf5dc7c15ef",
+    "src/protocols/mqtt_subscriber.py": "95569c97c60d352006abe4778a3a124c2ae0dc08b8244bebb221fe081e83dfff",
+    "src/services/_edge_process.py": "d910498dbce7b27d4d43110a7fbde86837d53405aaf152f5fc8e8ab098d53dc4",
+    "src/services/edge_controller_api.py": "c4ad9ec36d58191079a0faa2bb403a6c9515c194b165d5982d6a659112886e86",
+    "src/services/edge_handoff.py": "26c69f6c942b73b6a436a56431e705844473748dbc77a8d499646362eed4cfce",
+    "src/services/edge_node_agent.py": "deb4a4ba93b6e1bbfd5427e2218507daff4e75b746962ac65eae1a5e5c103d29",
+    "src/services/edge_orchestrator.py": "18ac8badb9500039a8146a587c0b132c65d2e47dcb53355f2e104f2563feb790",
+    "src/services/edge_ownership.py": "4ab1851d7b2be005f2c8a0966ae64d4567a1bb98e2d2c306923cf68878bdffc4",
+    "src/services/edge_result_context.py": "b14d5fbc54328134f0315785332eb92b61d4398c845187d4a563b42d21230c94",
+    "src/services/edge_result_transport.py": "3efa2c4a40dff5258ebb82d42dbcbad9fbf425c299c8ae097975fde00d171dc9",
+    "src/services/edge_service.py": "80db650bbf45b09cc0f2015b3fdc5b9c89c7b31efa93495e28d56d73d54f8781",
+    "src/services/jetson_resources.py": "c702d6716913e07d2a78eee5c6027185c815f6ebd0483fa904dc8f9148781cac",
+    "src/services/processor_metrics.py": "0189324adc85d6cfd1caf8eb5647f63b05b1033c817e92dfce98c7cae710f332"
+  },
+  "test_source_sha256": {
+    "tests/test_edge_handoff.py": "54d3a5d431d149653b9c4e703bfd222ec08ed91f84b9b3906c18621bfb9d003c",
+    "tests/test_edge_full_pipeline.py": "115aba0d532ff3edc04a0708330726f176a1321ceb48ed4ef26110a9d22f642b",
+    "tests/test_edge_result_transport.py": "12d35ab31425eda743ae7b282c33322430a8e1fcc4b950e540c3271ffb21b641"
+  },
+  "junit": {
+    "edge-handoff-post-activation-red-20261023.xml": {
+      "tests": 2,
+      "failures": 2,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 3.363,
+      "sha256": "e9bf3b4a4f5a2ade0f574c101d5143fae9e6b1b5fcc3710ef69bdfc9a77b9a84"
+    },
+    "edge-handoff-recovery-unit-20261023.xml": {
+      "tests": 41,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 15.762,
+      "sha256": "6eb71c7d256f66268ab5f40cfc23c82245f12caff3ce98aa49b6fc54e698e72e"
+    },
+    "edge-handoff-recovery-process-20261023.xml": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 51.052,
+      "sha256": "953fedda1ffd7a0fba8088f5f1203c03891ce7630b08046a8b33f73a54e4287a"
+    },
+    "edge-result-retry-fairness-red-20261023.xml": {
+      "tests": 1,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.826,
+      "sha256": "7f0bff3d27d292b9854dc0a8c52425c9cc2c8260d8e8c96f1f2649312f409138"
+    },
+    "edge-result-retry-fairness-green-20261023.xml": {
+      "tests": 24,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 3.688,
+      "sha256": "da165903f4fedbb344546e3833af0e29bc4e7939b35a969df3f1d8eb58b7b9f6"
+    },
+    "edge-result-retry-fairness-final-20261023.xml": {
+      "tests": 24,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 4.446,
+      "sha256": "506ce8fc4bd95acc34b78c692ba948ee1cd7c356d038919b5999694725a1c57d"
+    },
+    "edge-handoff-recovery-final-20261023.xml": {
+      "tests": 122,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 118.111,
+      "sha256": "4d8c08936fd070b1f7e5ab8125b2de0947d1314f61e76aeada6cbb645126b650"
+    }
+  },
+  "final_suite": {
+    "tests": 122,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 118.111,
+    "sha256": "4d8c08936fd070b1f7e5ab8125b2de0947d1314f61e76aeada6cbb645126b650"
+  },
+  "ruff": "PASS",
+  "python38_ast": {
+    "files": 19,
+    "result": "PASS_SYNTAX_ONLY"
+  },
+  "process_results": {
+    "status": "PASS",
+    "ai": "fixture_no_gpu_inference",
+    "transitions": [
+      {
+        "target": "jetson-a",
+        "elapsed_seconds": 3.2163872339879163,
+        "outcome": {
+          "operation_id": "9326a432-e05e-4136-a49c-cfa46b8a029f",
+          "intent": {
+            "camera_id": "camera_1",
+            "target_node": "jetson-a",
+            "manifest_id": "lab-v1"
+          },
+          "effective_intent": null,
+          "rollback": null,
+          "status": "complete",
+          "last_error": null,
+          "proof": {
+            "event_id": "6fb2e12b-deef-4750-88a3-34faf8131283",
+            "sha256": "40bdb760ffa24d0803397e80381f6a8a7f893afb3a7ddf506bf2c617b2f4a4d4",
+            "kind": "observation",
+            "event_sequence": 9,
+            "captured_at": "2026-10-22T16:57:20.260017+00:00",
+            "received_at": "2026-10-22T16:57:20.604903+00:00",
+            "expires_at": "2026-10-22T16:57:50.260017+00:00",
+            "capture_to_receive_seconds": 0.34488558769226074
+          },
+          "previous_stop": null,
+          "candidate_stop": null,
+          "started_at": 1792688237.8226824,
+          "completed_at": 1792688240.6787636,
+          "history": [
+            {
+              "status": "preparing",
+              "at": 1792688237.984813
+            },
+            {
+              "status": "starting_target",
+              "at": 1792688238.151606
+            },
+            {
+              "status": "waiting_for_ready",
+              "at": 1792688238.1912801
+            },
+            {
+              "status": "activating_target",
+              "at": 1792688239.3181155
+            },
+            {
+              "status": "waiting_for_activation_report",
+              "at": 1792688239.3636887
+            },
+            {
+              "status": "activating_controller",
+              "at": 1792688239.661871
+            },
+            {
+              "status": "waiting_for_result",
+              "at": 1792688239.8821976
+            },
+            {
+              "status": "complete",
+              "at": 1792688240.6787813
+            }
+          ]
+        }
+      },
+      {
+        "target": "jetson-b",
+        "elapsed_seconds": 3.2244406869867817,
+        "outcome": {
+          "operation_id": "17536e6e-437c-4b6d-b6f6-a34493d316e7",
+          "intent": {
+            "camera_id": "camera_1",
+            "target_node": "jetson-b",
+            "manifest_id": "lab-v1"
+          },
+          "effective_intent": null,
+          "rollback": null,
+          "status": "complete",
+          "last_error": null,
+          "proof": {
+            "event_id": "6e74f98d-174d-45b3-8469-f8efc507c465",
+            "sha256": "39647f3284edb586de0bf9e7dc7f4f4eceb50ab4ecfe66bfb7879183ed2c6364",
+            "kind": "observation",
+            "event_sequence": 9,
+            "captured_at": "2026-10-22T16:57:23.526674+00:00",
+            "received_at": "2026-10-22T16:57:23.728062+00:00",
+            "expires_at": "2026-10-22T16:57:53.526674+00:00",
+            "capture_to_receive_seconds": 0.20138788223266602
+          },
+          "previous_stop": "stopped",
+          "candidate_stop": null,
+          "started_at": 1792688241.1043913,
+          "completed_at": 1792688243.9602337,
+          "history": [
+            {
+              "status": "preparing",
+              "at": 1792688241.2801151
+            },
+            {
+              "status": "starting_target",
+              "at": 1792688241.473105
+            },
+            {
+              "status": "waiting_for_ready",
+              "at": 1792688241.5384657
+            },
+            {
+              "status": "activating_target",
+              "at": 1792688242.5402641
+            },
+            {
+              "status": "waiting_for_activation_report",
+              "at": 1792688242.5737207
+            },
+            {
+              "status": "activating_controller",
+              "at": 1792688242.7049117
+            },
+            {
+              "status": "waiting_for_result",
+              "at": 1792688242.876775
+            },
+            {
+              "status": "stopping_previous",
+              "at": 1792688243.7711434
+            },
+            {
+              "status": "complete",
+              "at": 1792688243.9602404
+            }
+          ]
+        }
+      },
+      {
+        "target": "jetson-a",
+        "elapsed_seconds": 3.407341922982596,
+        "outcome": {
+          "operation_id": "e563934c-43f0-41b6-93af-010746da720a",
+          "intent": {
+            "camera_id": "camera_1",
+            "target_node": "jetson-a",
+            "manifest_id": "lab-v1"
+          },
+          "effective_intent": null,
+          "rollback": null,
+          "status": "complete",
+          "last_error": null,
+          "proof": {
+            "event_id": "b7c9d1ac-0ca9-4cb5-8c73-de10c72ccf3b",
+            "sha256": "c4786eb9d38a0d8dc1b8ad9d234e2ed6f1f90675d976b44f8a79616410eebe11",
+            "kind": "event",
+            "event_sequence": 8,
+            "captured_at": "2026-10-22T16:57:26.510260+00:00",
+            "received_at": "2026-10-22T16:57:27.091255+00:00",
+            "expires_at": "2026-10-22T16:57:56.510260+00:00",
+            "capture_to_receive_seconds": 0.5809950828552246
+          },
+          "previous_stop": "stopped",
+          "candidate_stop": null,
+          "started_at": 1792688244.2162063,
+          "completed_at": 1792688247.3767188,
+          "history": [
+            {
+              "status": "preparing",
+              "at": 1792688244.370673
+            },
+            {
+              "status": "starting_target",
+              "at": 1792688244.5474563
+            },
+            {
+              "status": "waiting_for_ready",
+              "at": 1792688244.602074
+            },
+            {
+              "status": "activating_target",
+              "at": 1792688245.8815334
+            },
+            {
+              "status": "waiting_for_activation_report",
+              "at": 1792688245.9292045
+            },
+            {
+              "status": "activating_controller",
+              "at": 1792688246.096146
+            },
+            {
+              "status": "waiting_for_result",
+              "at": 1792688246.3279202
+            },
+            {
+              "status": "stopping_previous",
+              "at": 1792688247.1519027
+            },
+            {
+              "status": "complete",
+              "at": 1792688247.3767264
+            }
+          ]
+        }
+      }
+    ],
+    "capture_to_receive_seconds": {
+      "jetson-a:event:rejected:not_current_owner": {
+        "count": 27,
+        "min": 0.23378968238830566,
+        "max": 1.3381521701812744,
+        "p50": 0.8045635223388672,
+        "p95": 1.3196110725402832
+      },
+      "jetson-a:observation:observed:preparation_sample": {
+        "count": 22,
+        "min": 0.14373087882995605,
+        "max": 0.5587458610534668,
+        "p50": 0.33527660369873047,
+        "p95": 0.5175702571868896
+      },
+      "jetson-a:event:rejected:inactive_execution": {
+        "count": 5,
+        "min": 1.0735750198364258,
+        "max": 1.2939951419830322,
+        "p50": 1.199385404586792,
+        "p95": 1.21995210647583
+      },
+      "jetson-a:event:accepted:current_owner": {
+        "count": 113,
+        "min": 0.36064887046813965,
+        "max": 1.5409166812896729,
+        "p50": 0.9822103977203369,
+        "p95": 1.4069361686706543
+      },
+      "jetson-b:event:rejected:not_current_owner": {
+        "count": 112,
+        "min": 0.10834717750549316,
+        "max": 1.4719221591949463,
+        "p50": 0.8984706401824951,
+        "p95": 1.344153881072998
+      },
+      "jetson-b:observation:observed:preparation_sample": {
+        "count": 8,
+        "min": 0.09621334075927734,
+        "max": 0.416292667388916,
+        "p50": 0.21715521812438965,
+        "p95": 0.29256534576416016
+      },
+      "jetson-a:observation:rejected:not_current_owner": {
+        "count": 2,
+        "min": 0.3409736156463623,
+        "max": 0.44328856468200684,
+        "p50": 0.3409736156463623,
+        "p95": 0.3409736156463623
+      },
+      "jetson-b:event:accepted:current_owner": {
+        "count": 23,
+        "min": 0.2147512435913086,
+        "max": 1.2258288860321045,
+        "p50": 0.6996290683746338,
+        "p95": 1.0632672309875488
+      },
+      "jetson-b:observation:rejected:not_current_owner": {
+        "count": 2,
+        "min": 0.2781972885131836,
+        "max": 0.4657912254333496,
+        "p50": 0.2781972885131836,
+        "p95": 0.2781972885131836
+      },
+      "jetson-b:event:rejected:inactive_execution": {
+        "count": 3,
+        "min": 1.1139826774597168,
+        "max": 1.2660675048828125,
+        "p50": 1.1263227462768555,
+        "p95": 1.1263227462768555
+      }
+    },
+    "target_failure": {
+      "elapsed_seconds": 21.326949273992795,
+      "outcome": {
+        "operation_id": "59f791df-33d3-475d-bf47-15f82e95b162",
+        "intent": {
+          "camera_id": "camera_1",
+          "target_node": "jetson-b",
+          "manifest_id": "lab-v1"
+        },
+        "effective_intent": null,
+        "rollback": null,
+        "status": "aborted",
+        "last_error": "target_start_failed",
+        "proof": null,
+        "previous_stop": null,
+        "candidate_stop": "stopped",
+        "started_at": 1792688247.9008105,
+        "completed_at": null,
+        "history": [
+          {
+            "status": "preparing",
+            "at": 1792688248.0523934
+          },
+          {
+            "status": "starting_target",
+            "at": 1792688248.2537165
+          },
+          {
+            "status": "waiting_for_ready",
+            "at": 1792688248.3089416
+          },
+          {
+            "status": "aborting",
+            "at": 1792688268.6867287
+          },
+          {
+            "status": "aborted",
+            "at": 1792688268.979322
+          }
+        ]
+      }
+    },
+    "runner_resume": {
+      "interruption": {
+        "operation_id": "56b2a2dd-207b-4268-bd7d-ca8fbe276564",
+        "intent": {
+          "camera_id": "camera_1",
+          "target_node": "jetson-b",
+          "manifest_id": "lab-v1"
+        },
+        "effective_intent": null,
+        "rollback": null,
+        "status": "waiting_for_ready",
+        "last_error": "interrupted",
+        "proof": null,
+        "previous_stop": null,
+        "candidate_stop": null,
+        "started_at": 1792688269.2298348,
+        "completed_at": null,
+        "history": [
+          {
+            "status": "preparing",
+            "at": 1792688269.4162242
+          },
+          {
+            "status": "starting_target",
+            "at": 1792688269.6051714
+          },
+          {
+            "status": "waiting_for_ready",
+            "at": 1792688269.6603708
+          }
+        ]
+      },
+      "recovery": {
+        "operation_id": "56b2a2dd-207b-4268-bd7d-ca8fbe276564",
+        "intent": {
+          "camera_id": "camera_1",
+          "manifest_id": "lab-v1",
+          "target_node": "jetson-b"
+        },
+        "effective_intent": null,
+        "rollback": null,
+        "status": "complete",
+        "last_error": null,
+        "proof": {
+          "event_id": "32a60202-ad8f-405a-a4b1-feb9f76945f2",
+          "sha256": "98c0a0aeaa1ce27c26e16ca7cb65d2f01fb1442e6caba0ed8973017eb672593b",
+          "kind": "event",
+          "event_sequence": 7,
+          "captured_at": "2026-10-22T16:57:51.249964+00:00",
+          "received_at": "2026-10-22T16:57:51.735303+00:00",
+          "expires_at": "2026-10-22T16:58:21.249964+00:00",
+          "capture_to_receive_seconds": 0.4853389263153076
+        },
+        "previous_stop": "stopped",
+        "candidate_stop": null,
+        "started_at": 1792688269.2298348,
+        "completed_at": 1792688271.9958434,
+        "history": [
+          {
+            "at": 1792688269.4162242,
+            "status": "preparing"
+          },
+          {
+            "at": 1792688269.6051714,
+            "status": "starting_target"
+          },
+          {
+            "at": 1792688269.6603708,
+            "status": "waiting_for_ready"
+          },
+          {
+            "status": "activating_target",
+            "at": 1792688270.6344538
+          },
+          {
+            "status": "waiting_for_activation_report",
+            "at": 1792688270.6915581
+          },
+          {
+            "status": "activating_controller",
+            "at": 1792688270.8337607
+          },
+          {
+            "status": "waiting_for_result",
+            "at": 1792688271.0411499
+          },
+          {
+            "status": "stopping_previous",
+            "at": 1792688271.7800622
+          },
+          {
+            "status": "complete",
+            "at": 1792688271.9958494
+          }
+        ]
+      },
+      "same_ai_session": true
+    },
+    "active_process_failure": {
+      "elapsed_seconds": 5.193475609994493,
+      "terminated_fixture_pid": 3329558,
+      "outcome": {
+        "operation_id": "661848d9-f937-49ec-bd2a-e395e4153ae1",
+        "intent": {
+          "camera_id": "camera_1",
+          "target_node": "jetson-a",
+          "manifest_id": "lab-v1"
+        },
+        "effective_intent": {
+          "camera_id": "camera_1",
+          "target_node": "jetson-b",
+          "manifest_id": "lab-v1"
+        },
+        "rollback": {
+          "reason": "active_target_failed",
+          "failed_assignment": {
+            "assignment_id": "47656b98-f8f4-466d-a02e-e9c52dcf7868",
+            "camera_id": "camera_1",
+            "epoch": 6,
+            "node_id": "jetson-a",
+            "supervisor_boot_id": "6c526c9e-fb05-4f9d-966d-b9156fcd4c75",
+            "manifest_id": "lab-v1",
+            "session_id": "47ff7cec-4365-4e25-b132-6a9e5f2f98b9",
+            "activation_id": "afc52ba3-c9ed-4407-b997-cbb8ec7d6ce2",
+            "sequence_floor": 5,
+            "state": "active",
+            "expected_id": "5a772cd1-064e-457a-8069-2064b349d6cc",
+            "expected_epoch": 5,
+            "verified_run": "4a494484-8aac-4c61-9ed1-692c76204567",
+            "prepared_at": 1792688272.3285856,
+            "activated_at": 1792688273.8411222,
+            "sample_id": "9e1a7bec-e299-43c3-97c3-2ae141699070",
+            "sample_at": 1792688273.550894
+          },
+          "started_at": 1792688274.2874064
+        },
+        "status": "rolled_back",
+        "last_error": null,
+        "proof": {
+          "event_id": "99ea075b-9fc0-4ff8-bb77-959c070808ad",
+          "sha256": "cf19552b06a359799500a71c7a18da3551b6003ca2c7fa4f27222f4dad6d2369",
+          "kind": "event",
+          "event_sequence": 8,
+          "captured_at": "2026-10-22T16:57:56.548029+00:00",
+          "received_at": "2026-10-22T16:57:57.057496+00:00",
+          "expires_at": "2026-10-22T16:58:26.548029+00:00",
+          "capture_to_receive_seconds": 0.5094668865203857
+        },
+        "previous_stop": "stopped",
+        "candidate_stop": null,
+        "started_at": 1792688272.1180553,
+        "completed_at": 1792688277.2990797,
+        "history": [
+          {
+            "status": "preparing",
+            "at": 1792688272.2810855
+          },
+          {
+            "status": "starting_target",
+            "at": 1792688272.4619825
+          },
+          {
+            "status": "waiting_for_ready",
+            "at": 1792688272.5178826
+          },
+          {
+            "status": "activating_target",
+            "at": 1792688273.59889
+          },
+          {
+            "status": "waiting_for_activation_report",
+            "at": 1792688273.6744428
+          },
+          {
+            "status": "activating_controller",
+            "at": 1792688273.8105814
+          },
+          {
+            "status": "rolling_back",
+            "at": 1792688274.287421
+          },
+          {
+            "status": "preparing",
+            "at": 1792688274.5673444
+          },
+          {
+            "status": "starting_target",
+            "at": 1792688274.7688975
+          },
+          {
+            "status": "waiting_for_ready",
+            "at": 1792688274.8111029
+          },
+          {
+            "status": "activating_target",
+            "at": 1792688275.8970737
+          },
+          {
+            "status": "waiting_for_activation_report",
+            "at": 1792688275.9568133
+          },
+          {
+            "status": "activating_controller",
+            "at": 1792688276.2043355
+          },
+          {
+            "status": "waiting_for_result",
+            "at": 1792688276.3610013
+          },
+          {
+            "status": "stopping_previous",
+            "at": 1792688277.1205552
+          },
+          {
+            "status": "rolled_back",
+            "at": 1792688277.2990866
+          }
+        ]
+      }
+    }
+  },
+  "corrections": [
+    {
+      "case": "active target fails before handoff completes",
+      "red_cases": 1,
+      "fix": "Reuse durable state machine once with new assignment/epoch and rollback-scoped command IDs; preserve original intent; rolled_back is terminal and CLI exits2",
+      "checks": "A->B failure restores A; actual subprocess failure A->B recovery; all five rollback write boundaries lose response/crash and resume; failed rollback does not ping-pong; observed replaced old execution/concurrent central owner are preserved"
+    },
+    {
+      "case": "target session/activation changed after central activation",
+      "red_cases": 1,
+      "fix": "Current observed target session and activation barrier must match central active assignment before previous AI stop",
+      "checks": "activation and session changes return reconcile_required without old-node stop"
+    },
+    {
+      "case": "fresh outbox rows always outrank pending retries",
+      "red_cases": 1,
+      "fix": "Initialize existing last_attempt scheduling column with enqueue time; INSERT OR IGNORE preserves duplicate/restart identity and ordering; no schema change",
+      "checks": "Advancing fake clock, 20 new rows before each of3 retry batches, restart and duplicate enqueue; old result retried with unchanged body",
+      "test_refinement": "First green attempt failed because test required oldest result first in every batch. Other earlier pending rows may precede it; changed assertion to inclusion within the batch. This preserves the reproduced starvation failure condition.",
+      "relation_to_long_run": "Reproduced code defect; causal attribution of all three expired long-run results remains unproven"
+    }
+  ],
+  "operating_observation": {
+    "at": "2026-10-22T16:51:02.020449+00:00",
+    "containers_checked": 37,
+    "container_changes": [],
+    "metrics": {
+      "cctv_processor_source_error_identified_total": 0.0,
+      "cctv_processor_source_error_unidentified_total": 0.0,
+      "cctv_processor_pipeline_restart_requested_total": 0.0,
+      "cctv_processor_pipeline_restart_rejected_total": 0.0,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_processor_pipeline_restart_failed_total": 0.0,
+      "cctv_processor_pipeline_restart_seconds_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 4323503.0
+    },
+    "metrics_at": "2026-10-22T16:51:55.523335+00:00",
+    "metrics_note": "Exact observed names; replaces an initial unmatched-name query whose zero totals were invalid."
+  },
+  "source_bundle": {
+    "path": "docs/planning/evidence/edge_b_o4_recovery_sources_20261023.tar.gz",
+    "files": 24,
+    "sha256": "b5ed58002382499acb1f858ba08126afac446acaff901958ec5ac95f91f54574",
+    "deployed": false,
+    "members_hash_verified": true
+  },
+  "telemetry_archive": {
+    "path": "docs/planning/evidence/edge_handoff_recovery_20261023_telemetry.tar.gz",
+    "sha256": "3362e188c881188b2d0ba3cccb1ea2c0c50fdfaaed08fb66e40b272e0687e0b4"
+  },
+  "cleanup": {
+    "status": "COMPLETE",
+    "owned_processes_remaining": [],
+    "labelled_brokers_remaining": [],
+    "private_roots_removed": 2
+  },
+  "limits": [
+    "Follow-up30-minute/retained-intake restart results are in edge_handoff_recovery_soak_20261023.json; historical122 suite and source hashes remain unchanged.",
+    "Actual AI/model metrics in new orchestration tests are fixtures; new B integration/GPU not tested",
+    "Not a background failover monitor; rollback is limited to one attempt while handoff is active",
+    "ROS2/DDS and automatic overload policy not implemented",
+    "No full-A-host-independent RTSP path; AP/network/production unchanged",
+    "Wall-clock capture-to-receive timing is not camera-to-operator end-to-end latency or a hardware SLA"
+  ],
+  "operating_final": {
+    "at": "2026-10-22T17:01:04.432767+00:00",
+    "containers_checked": 37,
+    "container_changes": [],
+    "metrics": {
+      "cctv_processor_source_error_identified_total": 0.0,
+      "cctv_processor_source_error_unidentified_total": 0.0,
+      "cctv_processor_pipeline_restart_requested_total": 0.0,
+      "cctv_processor_pipeline_restart_rejected_total": 0.0,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_processor_pipeline_restart_failed_total": 0.0,
+      "cctv_processor_pipeline_restart_seconds_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 4331728.0
+    }
+  },
+  "documentation_checks": {
+    "wbs_rows": 37,
+    "done": 9,
+    "wbs_board_status_match": true,
+    "local_links": 1999,
+    "source_hashes_match": true,
+    "renderer_ruff": "PASS",
+    "html_pdf_generated": true,
+    "http": [
+      {
+        "file": "index.html",
+        "status": 200,
+        "sha256": "ac74a46b49e70a7702878c4c223c4b74192a123bc25f405a028763bf72340b04"
+      },
+      {
+        "file": "CCTV_project_progress.pdf",
+        "status": 200,
+        "sha256": "3063ebc12ed072d36b2313c32d00cad3d1adb5fc869b5730a193a964d1a1e7ca"
+      }
+    ],
+    "pdf_first_page_visual": "PASS_AFTER_STALE_PDF_SUMMARY_CORRECTION",
+    "initial_document_check": "WBS parser initially included historical tables; scoped to current work breakdown,37 rows/DONE9 matched."
+  },
+  "post_fix_soak": {
+    "status": "PASS_SCOPED_LONG_RUN_AND_SEPARATE_CRASH_RESTART",
+    "evidence": "docs/planning/evidence/edge_handoff_recovery_soak_20261023.json",
+    "forwarded_originals": 7666,
+    "expired": 0,
+    "raw_intake_pending_at_long_end": 1,
+    "separate_deterministic_restart_pass": true
+  }
+}

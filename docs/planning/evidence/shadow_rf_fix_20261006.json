@@ -1,0 +1,324 @@
+{
+  "version": "0.111",
+  "date": "2026-10-06 KST",
+  "wbs": "P5.1 IN_PROGRESS",
+  "issue": "I49 FIXED_LOCAL",
+  "candidate_image": "sha256:eb1edf89fb107876ba0a65f448728d6240931b46197a563c75c827d9d2076352",
+  "scope": "Shadow FALL asynchronous RF comparison and no repeated alert; recorded camera input with synthetic FALL candidates retaining real scoped poses. No fall accuracy evaluation.",
+  "product_changes": [
+    "src/core/deepstream_processor.py: enqueue original first; submit copied metadata to existing worker after successful enqueue; record shadow results without republishing"
+  ],
+  "tests": {
+    "red": {
+      "tests": 11,
+      "failures": 5,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 6,
+      "failed_cases": [
+        "tests.test_deepstream_shadow_rf.test_shadow_rf_queues_scoped_comparison_after_original_alert",
+        "tests.test_deepstream_shadow_rf.test_shadow_rf_debounced_fall_does_not_repeat_comparison",
+        "tests.test_deepstream_shadow_rf.test_shadow_rf_worker_records_without_republishing[ok-True]",
+        "tests.test_deepstream_shadow_rf.test_shadow_rf_worker_records_without_republishing[incompatible_feature_contract-False]",
+        "tests.test_deepstream_shadow_rf.test_shadow_rf_worker_records_without_republishing[error-False]"
+      ]
+    },
+    "related": {
+      "tests": 280,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 2,
+      "passed": 278,
+      "failed_cases": []
+    },
+    "full": {
+      "tests": 2842,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 52,
+      "passed": 2789,
+      "failed_cases": [
+        "tests.test_monitoring_active_contention.test_video_and_sensor_intake_during_monitoring_writes"
+      ]
+    }
+  },
+  "validation": {
+    "runner_pass": true,
+    "operating_unchanged": true,
+    "videos": {
+      "result.mkv": {
+        "probe_exit": 0,
+        "probe_error_empty": true,
+        "metadata": {
+          "programs": [],
+          "streams": [
+            {
+              "codec_name": "h264",
+              "width": 1920,
+              "height": 1080
+            }
+          ],
+          "format": {
+            "duration": "60.219000"
+          }
+        },
+        "decode_exit": 0,
+        "decoded_frames": 1665,
+        "decode_error_empty": true,
+        "sha256": "e42da6af763681388ce6cec6daf53c7ba5acab384e04e07486d518ecd98591ed",
+        "passed": true
+      },
+      "result-after.mkv": {
+        "probe_exit": 0,
+        "probe_error_empty": true,
+        "metadata": {
+          "programs": [],
+          "streams": [
+            {
+              "codec_name": "h264",
+              "width": 1920,
+              "height": 1080
+            }
+          ],
+          "format": {
+            "duration": "60.223000"
+          }
+        },
+        "decode_exit": 0,
+        "decoded_frames": 1596,
+        "decode_error_empty": true,
+        "sha256": "d673b228271d457bc2c7b93ea3f6d4b08565c8da62bb57c277fe825df9074b16",
+        "passed": true
+      }
+    },
+    "databases": {
+      "appearances.db": {
+        "integrity": "ok",
+        "counts": {
+          "search_conditions": 0,
+          "appearance_log": 532502
+        },
+        "row_deltas": {
+          "search_conditions": 0,
+          "appearance_log": 56
+        }
+      },
+      "mqtt_event_outbox.db": {
+        "integrity": "ok",
+        "counts": {
+          "mqtt_event_outbox": 174683
+        },
+        "row_deltas": {
+          "mqtt_event_outbox": 64
+        }
+      },
+      "commercial_faces.db": {
+        "integrity": "ok",
+        "counts": {
+          "face_persons": 1,
+          "face_samples": 1
+        },
+        "row_deltas": {
+          "face_persons": 0,
+          "face_samples": 0
+        }
+      }
+    },
+    "generations": {
+      "1": {
+        "primary": 1368,
+        "pose": 0,
+        "attributes": 1368,
+        "helmet": 1368
+      },
+      "3": {
+        "primary": 1356,
+        "pose": 0,
+        "attributes": 1356,
+        "helmet": 1356
+      }
+    },
+    "model_counts": {
+      "event.person": 8249,
+      "pose_events": 2750,
+      "pose_scope_assigned": 2750,
+      "face_request.calls": 323,
+      "face_opencv.calls": 323,
+      "tcn_verify.calls": 16,
+      "face_opencv.returned": 323,
+      "face_opencv.no_face_returned": 323,
+      "face_request.returned": 323,
+      "face_request.no_face_returned": 323,
+      "color_result.calls": 499,
+      "color_runtime.calls": 499,
+      "color_runtime.returned": 499,
+      "color_result.returned": 499,
+      "color_result.color": 357,
+      "python_attribute.calls": 323,
+      "python_attribute.returned": 323,
+      "python_attribute.empty": 323,
+      "synthetic_fall.attempts": 60,
+      "color_result.below_threshold": 142,
+      "synthetic_fall.accepted": 2,
+      "tcn_verify.returned": 16,
+      "tcn_verify.insufficient_pose_frames": 1,
+      "rf_verify.calls": 2,
+      "rf_verify.returned": 2,
+      "rf_verify.incompatible_feature_contract": 2,
+      "tcn_verify.ok": 15
+    },
+    "rf_verify_calls": 2,
+    "final_stats": {
+      "frames_processed": 5499,
+      "events_detected": 64,
+      "events_failed": 64,
+      "inference_errors": 0,
+      "context_tasks_failed": 0,
+      "model_metrics_errors": 0,
+      "primary_metrics_errors": 0
+    },
+    "after_recovery_model_deltas": {
+      "event.person": 3919,
+      "pose_events": 1306,
+      "pose_scope_assigned": 1306,
+      "face_request.calls": 154,
+      "face_opencv.calls": 154,
+      "tcn_verify.calls": 5,
+      "face_opencv.returned": 154,
+      "face_opencv.no_face_returned": 154,
+      "face_request.returned": 154,
+      "face_request.no_face_returned": 154,
+      "color_result.calls": 235,
+      "color_runtime.calls": 235,
+      "color_runtime.returned": 235,
+      "color_result.returned": 235,
+      "color_result.color": 171,
+      "python_attribute.calls": 154,
+      "python_attribute.returned": 154,
+      "python_attribute.empty": 154,
+      "synthetic_fall.attempts": 30,
+      "color_result.below_threshold": 64,
+      "synthetic_fall.accepted": 1,
+      "tcn_verify.returned": 6,
+      "tcn_verify.insufficient_pose_frames": 0,
+      "rf_verify.calls": 1,
+      "rf_verify.returned": 1,
+      "rf_verify.incompatible_feature_contract": 1,
+      "tcn_verify.ok": 6
+    },
+    "after_recovery_db_deltas": {
+      "appearance_log": 27,
+      "mqtt_event_outbox": 31
+    },
+    "observed_model_gate": true,
+    "storage_gate": true,
+    "shadow_rf": {
+      "injections": [
+        {
+          "camera": "replay_1",
+          "scope": {
+            "camera_id": "replay_1",
+            "object_id": 7969319273791225856,
+            "generation": 1,
+            "frame_index": 110
+          },
+          "audit_id": "replay_1:1",
+          "monotonic": 1741981.85134764,
+          "original_has_shadow_marker": false,
+          "model_generation": 1
+        },
+        {
+          "camera": "replay_1",
+          "scope": {
+            "camera_id": "replay_1",
+            "object_id": 17238810772549664768,
+            "generation": 3,
+            "frame_index": 122
+          },
+          "audit_id": "replay_1:3",
+          "monotonic": 1742118.401420371,
+          "original_has_shadow_marker": false,
+          "model_generation": 3
+        }
+      ],
+      "outbox_count_by_audit_id": {
+        "replay_1:1": 1,
+        "replay_1:3": 1
+      },
+      "original_payload_has_shadow_marker": false,
+      "verify_calls": 2,
+      "verify_returned": 2,
+      "incompatible_results": 2,
+      "metrics": {
+        "enabled": true,
+        "cameras": {
+          "replay_1": {
+            "requests": 2,
+            "unavailable_results": 2,
+            "cache_hits": 0
+          }
+        }
+      },
+      "review_results": [
+        {
+          "status": "incompatible_feature_contract",
+          "scope": {
+            "camera_id": "replay_1",
+            "frame_index": 110,
+            "generation": 1,
+            "object_id": 7969319273791225856
+          }
+        },
+        {
+          "status": "incompatible_feature_contract",
+          "scope": {
+            "camera_id": "replay_1",
+            "frame_index": 122,
+            "generation": 3,
+            "object_id": 17238810772549664768
+          }
+        }
+      ]
+    },
+    "shadow_rf_recording_gate": true,
+    "source_files_match": true,
+    "passed": true
+  },
+  "recovery_seconds": 18.437080232892185,
+  "stop_seconds": 6.310167604126036,
+  "review": "Independent product/test review: no Critical/Important remaining. Integration gate corrected to require actual recovered generation RF after output server restart, not merely two generations.",
+  "limits": [
+    "Full regression failed: existing I45 concurrent SQLite video receipt INSERT exhausted bounded busy retry. Failure preserved; not a full-suite pass.",
+    "Selected RF remains incompatible_feature_contract with zero predict calls (I37). Observation path works; prediction quality not validated.",
+    "Synthetic fall candidates are not real fall accuracy evidence. External MQTT delivery, live multi-camera and long-duration performance are unverified.",
+    "No operating deployment/model selection/configuration change. Original I40, I45, I34 remain OPEN. P5.1 remains IN_PROGRESS."
+  ],
+  "private_artifacts": "data/runtime/p51_shadow_rf_20261006_v111",
+  "artifacts_sha256": {
+    "red.xml": "d8f9d9014f387920c9dcf14bdd7d883271bc507fc2bebde9611593e2f1d0344b",
+    "related.xml": "e7e76185ed6f79f1e115e400071cf13a8a3973fbdfc89a9c77a7d2f060de27ea",
+    "full.xml": "c28dd98c1afea87167860994382fc6f5b15b116fc690a5a2ce4b44a5977176b3",
+    "validation.json": "7d7034e474cad1414bb1e04cb5d2748da9855b337996d2f514516d79c1aafbeb",
+    "source_manifest.json": "ff88d4837c7fa2a5c630cc12d7fbfbd751099d9b3e492492cea1ca6772bc0303",
+    "new_image_manifest.json": "ff88d4837c7fa2a5c630cc12d7fbfbd751099d9b3e492492cea1ca6772bc0303"
+  },
+  "publication": {
+    "index.html": {
+      "bytes": 24181,
+      "sha256": "f9b48701f79a3b901355e4c3ef6afde0beef9b2361623b15a50e57f7dee44563",
+      "served_matches": true
+    },
+    "CCTV_project_progress.pdf": {
+      "bytes": 129630,
+      "sha256": "61f2cc4f43b10ee78fc33a1a23eb97daac0f91ab3ae87b5e7f03fa99c9ae8fd4",
+      "served_matches": true
+    }
+  },
+  "validation_checks": {
+    "ruff": "PASS",
+    "git_diff_check": "PASS",
+    "wbs_33_ids_statuses_counts": "PASS",
+    "pdf_first_page_visual": "PASS",
+    "recovered_generation_gate_cases": 3
+  }
+}

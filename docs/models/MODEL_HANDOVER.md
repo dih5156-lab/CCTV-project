@@ -109,6 +109,8 @@ manifest 기준은 Precision 0.85 이상, Recall 0.90 이상, latency 50ms 이�
 
 ### 5.7 Falldata RF 낙상 보조
 
+2026-10-06 v0.111: shadow RF 비교 연결 I49는 로컬 수정·새 후보 검증을 마쳤다. 원 경보는 즉시 내부 큐로 전달하고 RF 결과는 기록만 한다. 선택 RF의 입력 출처 비호환(I37)은 남아 예측0이며, 모델 품질 합격·운영 반영은 아니다. [수정·검증](../planning/MODEL_INFERENCE_METRICS.md#shadow-rf-fix-v111).
+
 현재 후보 예시는 `models/experiments/yolo_pose_fall_cam2_continuous_200_80_640.pkl`이다. 기록 실험 중 fall Precision `0.6727`, Recall `0.9487`인 결과가 있다. 미탐은 적지만 오탐 가능성이 높아 바로 confirm 차단 모델로 쓰지 않는다.
 
 운영 정책은 먼저 `FALLDATA_AUX_MODE=shadow`로 비교하고, scene 단위 holdout·현장 라벨·false positive 기준을 확인하는 것이다. `models/legacy/falldata_mediapipe` 모델과 현재 YOLO-pose feature RF를 같은 모델로 취급하지 않는다.

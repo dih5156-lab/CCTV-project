@@ -1,0 +1,437 @@
+{
+  "version": "0.120",
+  "date": "2026-10-07 KST",
+  "wbs": "P5.1 IN_PROGRESS",
+  "issues": [
+    "I37 OPEN",
+    "I52 라이브복구·재기동재검증잔여"
+  ],
+  "decision": "라이브복구확인·모델후보 지연/시간기준한계로승격보류",
+  "live_patch": {
+    "patch_status": 200,
+    "before_hosts": [
+      "192.168.88.137",
+      "192.168.2.242",
+      "192.168.0.10"
+    ],
+    "after_hosts": [
+      "192.168.88.137",
+      "192.168.2.242",
+      "192.168.0.10",
+      "192.168.2.141"
+    ],
+    "before_path": {
+      "name": "camera_1",
+      "ready": true,
+      "readyTime": "2026-10-02T01:34:12.894077868Z",
+      "bytesReceived": 297663089691,
+      "bytesSent": 2807958,
+      "tracks": [
+        "H264"
+      ]
+    },
+    "after_path": {
+      "name": "camera_1",
+      "ready": true,
+      "readyTime": "2026-10-02T01:34:12.894077868Z",
+      "bytesReceived": 297664866265,
+      "bytesSent": 2807958,
+      "tracks": [
+        "H264"
+      ]
+    },
+    "rtsp_ready_time_unchanged": true,
+    "rtsp_bytes_increased": true,
+    "operating_before": [
+      {
+        "name": "/cctv-ai-engine",
+        "image": "sha256:1ace5b7832a50d6675b66146b0edc307021795732fc7c9a770e2cd628d7fd261",
+        "started_at": "2026-10-02T01:33:58.362007997Z",
+        "status": "running",
+        "restarts": 0
+      },
+      {
+        "name": "/cctv-media-server",
+        "image": "sha256:f8628851106cc053f9175b248050bb5f362a6e65abd72297c167a1cb5a9a3be2",
+        "started_at": "2026-10-01T23:40:25.266992541Z",
+        "status": "running",
+        "restarts": 0
+      },
+      {
+        "name": "/cctv-action-layer",
+        "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+        "started_at": "2026-10-01T23:40:25.091637764Z",
+        "status": "running",
+        "restarts": 0
+      }
+    ],
+    "operating_after": [
+      {
+        "name": "/cctv-ai-engine",
+        "image": "sha256:1ace5b7832a50d6675b66146b0edc307021795732fc7c9a770e2cd628d7fd261",
+        "started_at": "2026-10-02T01:33:58.362007997Z",
+        "status": "running",
+        "restarts": 0
+      },
+      {
+        "name": "/cctv-media-server",
+        "image": "sha256:f8628851106cc053f9175b248050bb5f362a6e65abd72297c167a1cb5a9a3be2",
+        "started_at": "2026-10-01T23:40:25.266992541Z",
+        "status": "running",
+        "restarts": 0
+      },
+      {
+        "name": "/cctv-action-layer",
+        "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+        "started_at": "2026-10-01T23:40:25.091637764Z",
+        "status": "running",
+        "restarts": 0
+      }
+    ],
+    "containers_unchanged": true
+  },
+  "live_validation": {
+    "compose_current_wifi_included": true,
+    "compose_hosts": "192.168.2.141,192.168.0.10,192.168.88.137,192.168.2.242",
+    "rtsp_after_decoded_frames": 30,
+    "rtsp_after_decode_exit": 0,
+    "browser_user_confirmation": "영상이 나옴",
+    "browser_verified_by": "user",
+    "operating_model_changed": false,
+    "limitation": "실행 중 설정은 API에 반영. Compose 재생성용 환경 파일도 보완. 기존 컨테이너 단순 restart는 이전 환경을 유지하여 API 변경을 잃을 수 있음."
+  },
+  "whep_after": {
+    "whep_status": 201,
+    "candidate_addresses": [
+      "127.0.0.1",
+      "172.18.0.27",
+      "192.168.0.10",
+      "192.168.2.141",
+      "192.168.2.242",
+      "192.168.88.137"
+    ],
+    "current_wifi_advertised": true,
+    "cleanup_status": 200,
+    "browser_decode_verified": false
+  },
+  "comparison": {
+    "source_files_unchanged": 206,
+    "trial_count": 4,
+    "operating_ai_action_unchanged": true,
+    "trials": [
+      {
+        "mode": "lean",
+        "scene": "00837_O_E_BY_C1",
+        "source_frames": 600,
+        "pose_frames": 148,
+        "late_pose_frames": 66,
+        "source_pts_span": 9.993316667,
+        "source_wall_span": 14.307105498155579,
+        "source_span_drift": 4.313788831155579,
+        "prepared_fall_count": 44,
+        "prepared_fall_frames": [
+          288,
+          292,
+          296,
+          300,
+          304,
+          308,
+          312,
+          316,
+          320,
+          324,
+          328,
+          332,
+          336,
+          340,
+          344,
+          348,
+          352,
+          356,
+          360,
+          364,
+          368,
+          372,
+          376,
+          388,
+          400,
+          408,
+          432,
+          436,
+          440,
+          540,
+          544,
+          548,
+          552,
+          556,
+          560,
+          564,
+          568,
+          572,
+          576,
+          580,
+          584,
+          588,
+          592,
+          596
+        ],
+        "publish_queue_count": 1,
+        "publish_queue_events": [
+          {
+            "stage": "publish_queue",
+            "object_id": 2,
+            "timestamp": 1791330334.8494267,
+            "monotonic": 1813351.695971502,
+            "frame_index": 376,
+            "fall_score": 4.5,
+            "accepted": true,
+            "since_first_candidate_wall_seconds": 2.0400611080694944,
+            "since_first_candidate_pts_seconds": 1.468133333
+          }
+        ],
+        "aux_counts": {
+          "submitted": 19,
+          "verify.insufficient_pose_records": 2,
+          "verify.incompatible_feature_contract": 18
+        },
+        "inference_errors": 0,
+        "frames_dropped": 0,
+        "external_delivery_verified": false
+      },
+      {
+        "mode": "lean",
+        "scene": "00849_O_E_N_C1",
+        "source_frames": 600,
+        "pose_frames": 150,
+        "late_pose_frames": 68,
+        "source_pts_span": 9.993316667,
+        "source_wall_span": 14.628387599019334,
+        "source_span_drift": 4.6350709320193335,
+        "prepared_fall_count": 2,
+        "prepared_fall_frames": [
+          220,
+          252
+        ],
+        "publish_queue_count": 0,
+        "publish_queue_events": [],
+        "aux_counts": {
+          "submitted": 19,
+          "verify.insufficient_pose_records": 2,
+          "verify.incompatible_feature_contract": 17
+        },
+        "inference_errors": 0,
+        "frames_dropped": 0,
+        "external_delivery_verified": false
+      },
+      {
+        "mode": "trace",
+        "scene": "00837_O_E_BY_C1",
+        "source_frames": 600,
+        "pose_frames": 148,
+        "late_pose_frames": 66,
+        "source_pts_span": 9.993316667,
+        "source_wall_span": 13.857989873038605,
+        "source_span_drift": 3.8646732060386046,
+        "prepared_fall_count": 44,
+        "prepared_fall_frames": [
+          288,
+          292,
+          296,
+          300,
+          304,
+          308,
+          312,
+          316,
+          320,
+          324,
+          328,
+          332,
+          336,
+          340,
+          344,
+          348,
+          352,
+          356,
+          360,
+          364,
+          368,
+          372,
+          376,
+          388,
+          400,
+          408,
+          432,
+          436,
+          440,
+          540,
+          544,
+          548,
+          552,
+          556,
+          560,
+          564,
+          568,
+          572,
+          576,
+          580,
+          584,
+          588,
+          592,
+          596
+        ],
+        "publish_queue_count": 1,
+        "publish_queue_events": [
+          {
+            "stage": "publish_queue",
+            "object_id": 2,
+            "timestamp": 1791330433.404895,
+            "monotonic": 1813450.251807162,
+            "frame_index": 376,
+            "fall_score": 4.5,
+            "accepted": true,
+            "since_first_candidate_wall_seconds": 2.0814312831498682,
+            "since_first_candidate_pts_seconds": 1.468133333
+          }
+        ],
+        "aux_counts": {
+          "submitted": 19,
+          "verify.insufficient_pose_records": 2,
+          "verify.incompatible_feature_contract": 18
+        },
+        "inference_errors": 0,
+        "frames_dropped": 0,
+        "external_delivery_verified": false
+      },
+      {
+        "mode": "trace",
+        "scene": "00849_O_E_N_C1",
+        "source_frames": 600,
+        "pose_frames": 150,
+        "late_pose_frames": 68,
+        "source_pts_span": 9.993316667,
+        "source_wall_span": 14.103704391978681,
+        "source_span_drift": 4.110387724978681,
+        "prepared_fall_count": 2,
+        "prepared_fall_frames": [
+          220,
+          252
+        ],
+        "publish_queue_count": 0,
+        "publish_queue_events": [],
+        "aux_counts": {
+          "submitted": 19,
+          "verify.insufficient_pose_records": 2,
+          "verify.incompatible_feature_contract": 17
+        },
+        "inference_errors": 0,
+        "frames_dropped": 0,
+        "external_delivery_verified": false
+      }
+    ]
+  },
+  "review": {
+    "reviewer": "pose_gap_review",
+    "critical": 0,
+    "important_interpretation_limit": "time.time 지속2.040/2.081초와 원본PTS1.468초 차이. 품질합격 주장을 배제하고 근거에 기록함",
+    "minor_resolved": [
+      "실제 runtime interval3 assert",
+      "medium 엔진 성공 deserialize 정확문구 assert",
+      "허용 debounce와 발행큐(frame_index,object_id) 집합 대응 assert"
+    ],
+    "audit_after_review": "PASS",
+    "operating_promotion": false
+  },
+  "next": "P5.1/I37 카메라의 실제 해상도·FPS에 맞춘 격리 재생으로 medium 후보의 입력/추론 병목을 분리하고 원본 PTS 기준 경보 조건을 대조한다. 입력 후보 고정 뒤 별도 train 정상 동작 보강·특징 재수집. 외부군 학습 제외·운영 모델 전환 보류, I51 FIFO 지연·원 I40/I34·I45 잔여 유지.",
+  "private_artifacts": "data/runtime/p51_live_pose_20261007_v120",
+  "limits": [
+    "기존컨테이너 단순restart는 구환경유지. 다음 승인된Compose재생성에서영속반영검증",
+    "계측제거효과와지연원인분리못함·기존RF수집남음·운영FPS아님",
+    "처리시계2.040/2.081초와원본PTS1.468초상이·정상속도경보품질합격아님",
+    "외부MQTT/실물출력미검증·RF비호환유지·제품회귀신규실행없음"
+  ],
+  "sha256": {
+    "environment_change.json": "534a59472b9ab1f2ba6f4917eecd133d032098c5d62c644c77fe500f2a812d0f",
+    "live_patch.json": "76fd118e2a9949074872f385505fb008691f51d65ab51ea72c2ec69de4f9cded",
+    "whep_after.json": "d618d5186735a518217fc96dc7deb3249e126a9a6ed53742afc19562454a5b91",
+    "live_validation.json": "b27ff975459615cd9136eef2871573f0fa7ef5c84227503d4b74410cfc1006e5",
+    "comparison.json": "9ed2bb18f43b040993e439898301ae041982d426174ae619f7dec1eb06e94c1c",
+    "review.json": "a7f509910b309011cebbd034734e032c1197fcc224f7c2ec51282cb4e5dc8c5a",
+    "product_source_manifest.json": "23303e8679ea67f9a324fe61e06593e5f7f743403c69b99924da9a869a6b0725",
+    "lean_capture.py": "8ce41e3f2c91d44784cc4b001d611e24a5ac10c51f8634320151ba557c2a1105",
+    "trace_capture.py": "d8cef939218b780fc2c038d6784e3536911469aa1c53851e164232d695e87f1e",
+    "run_lean.py": "4097761069c662c128bbb3f07dc48a34ae40637660a66ba21605f06d26be4e9d",
+    "run_trace.py": "d54db71bd04772da409e47dbd60b669fbc0ca9a93dfd5023950732af9afdfc71",
+    "analyze_trials.py": "7a79f31e32a41751f4aebbf21db481ef4abed48a290d53c3250a1aa081112f0e",
+    "lean_operating_before.json": "7e4f3b164849160be952fe7745e8d15e57344d83db1f321699f6ff15a53a342e",
+    "lean_operating_after.json": "7e4f3b164849160be952fe7745e8d15e57344d83db1f321699f6ff15a53a342e",
+    "lean_scene_0/compose.json": "e6e0ea406727bbb99a58922e4241a0c207bde0deceb042961a10d0abc48a6b57",
+    "lean_scene_0/manifest.json": "f1dcf96bd9884702377cb1920dbd7f4168da89b401b59b9136d8d8d1e5649a62",
+    "lean_scene_0/exit.json": "e89df0eae5ec7db81135aed16463968955c578bcc4f2ec43172eff351f080c17",
+    "lean_scene_0/output/timing.json": "710636934ac5d94b0f212cdb59407880e9fc24eed992fcba5af9ae145ad5736d",
+    "lean_scene_0/output/provenance.json": "e333df7826e3be6ea2cb245a1df6c8cc0cb4e839ff05e01752e713604b6d7553",
+    "lean_scene_0/output/fall_events.json": "3937dad101fca29b7e24451ee802007c9c63c83a8766513ac39b12c11b08a827",
+    "lean_scene_0/output/capture.jsonl": "0798ead941a43e98118ccd11fe4f0ce429ca92f0105104a9f37aab4f8ddfbb90",
+    "lean_scene_1/compose.json": "3b4a503c451a01cae309ba84e669e92aec7b02efedb6221598c0059cc8bdcad6",
+    "lean_scene_1/manifest.json": "46b74e4703722941523fdde1cb19eb850bab014d03a25cd4c54624edc8b75439",
+    "lean_scene_1/exit.json": "e89df0eae5ec7db81135aed16463968955c578bcc4f2ec43172eff351f080c17",
+    "lean_scene_1/output/timing.json": "fa25efd394aa00edb8bf3541a444751e04c0a22950643a9db1cedbc3972692ad",
+    "lean_scene_1/output/provenance.json": "174b45ec5ec9d4601b63fcaa69efc39bb1834ee67be6e9c44764d6c20cc0400f",
+    "lean_scene_1/output/fall_events.json": "bf4e2d7aca1e2dc92a8f4683a4bf906cb68decd93b4d6a50b9852ef41271a5dc",
+    "lean_scene_1/output/capture.jsonl": "c523d1c99b1054d9577a244f93c16e23118ba05f2ca2d0d3c91df6894ff54f42",
+    "trace_operating_before.json": "7e4f3b164849160be952fe7745e8d15e57344d83db1f321699f6ff15a53a342e",
+    "trace_operating_after.json": "7e4f3b164849160be952fe7745e8d15e57344d83db1f321699f6ff15a53a342e",
+    "trace_scene_0/compose.json": "bdd8a30d4932d23a838b7a8281b8047e40732c8d370863ab5a8737b497b5eaa2",
+    "trace_scene_0/manifest.json": "f1dcf96bd9884702377cb1920dbd7f4168da89b401b59b9136d8d8d1e5649a62",
+    "trace_scene_0/exit.json": "e89df0eae5ec7db81135aed16463968955c578bcc4f2ec43172eff351f080c17",
+    "trace_scene_0/output/timing.json": "8d267ab592756997f36cbc84106ff88d990be3a02ad01c928ba46ec3e02cb63b",
+    "trace_scene_0/output/provenance.json": "64bf75b125a4f22dde166a226c2217a8875b0b04c2b91d695222de111b2c25db",
+    "trace_scene_0/output/fall_events.json": "287d8f2269217e9a0a2d9d5e7f5eb6226c646f7c167e35c2bc06f6bab462de0f",
+    "trace_scene_0/output/capture.jsonl": "790d9c3a0aca252f875c647686d087af1b39ecf8ef7c81b0191882705e79e1f9",
+    "trace_scene_1/compose.json": "8d38588ca22d63fc3e85ffdb88a4c5730acd4a37acceb226beed042f41701d0a",
+    "trace_scene_1/manifest.json": "46b74e4703722941523fdde1cb19eb850bab014d03a25cd4c54624edc8b75439",
+    "trace_scene_1/exit.json": "e89df0eae5ec7db81135aed16463968955c578bcc4f2ec43172eff351f080c17",
+    "trace_scene_1/output/timing.json": "a96c19e14d18899f2f957a3f21d609dc708fa2c85e217b5b4eec8d2f238203d1",
+    "trace_scene_1/output/provenance.json": "bf3d4706f606b6196e6907846f90ae51cc15995a1f4d0a62bd0790d41959692a",
+    "trace_scene_1/output/fall_events.json": "f360b9be782597def2d4210a5372a9161678e111baabb282995ec38dca9d6f44",
+    "trace_scene_1/output/capture.jsonl": "d78ca6d354471601e6ebdf297037802f4a654e3271514c4ade01db2eb57ab397"
+  },
+  "format_only_after_replay": {
+    "file": "lean_capture.py",
+    "executed_sha256": "9e176782086bb990a141d9235585bf4371ea66746489318620e44159347c51de",
+    "ast_unchanged": true
+  },
+  "document_validation": {
+    "version": "0.120",
+    "artifact_hashes_verified": 44,
+    "source_files_unchanged": 206,
+    "wbs_rows": 33,
+    "done_count": 9,
+    "wbs_rows_unchanged": true,
+    "ruff": "PASS (lean observer blank-line fix only, AST unchanged)",
+    "git_diff_check": "PASS",
+    "pdf_first_page_visual": "PASS",
+    "publication_http_local_match": true,
+    "new_product_pytest_run": false,
+    "experimental_audit": "PASS: 4 isolated replays, original PTS/model/queue match",
+    "browser_live_confirmation": "user confirmed video visible"
+  },
+  "publication": {
+    "version": "0.120",
+    "files": [
+      {
+        "file": "index.html",
+        "status": 200,
+        "bytes": 24273,
+        "sha256": "8bdc61aca5dfedf86ede120076f7f943768f89314b0562ce16331b4528c29eb4",
+        "local_match": true
+      },
+      {
+        "file": "CCTV_project_progress.pdf",
+        "status": 200,
+        "bytes": 128429,
+        "sha256": "a30fde880cc60c5d1a24d276905b7c852528dbf8a448d6453f55625074b7578c",
+        "local_match": true
+      }
+    ]
+  }
+}

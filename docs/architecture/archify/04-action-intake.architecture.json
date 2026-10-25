@@ -1,0 +1,149 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Action 입력 보존 후보 · 운영 미반영",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1160,
+      680
+    ]
+  },
+  "components": [
+    {
+      "id": "incoming",
+      "type": "messagebus",
+      "label": "MQTT 수신",
+      "sublabel": "QoS1 · 고정 client ID",
+      "pos": [
+        40,
+        80
+      ],
+      "size": [
+        200,
+        78
+      ]
+    },
+    {
+      "id": "receipt",
+      "type": "database",
+      "label": "입력 원본 저장",
+      "sublabel": "SQLite 커밋 후 ACK",
+      "pos": [
+        450,
+        80
+      ],
+      "size": [
+        200,
+        78
+      ]
+    },
+    {
+      "id": "worker",
+      "type": "backend",
+      "label": "실행 작업자",
+      "sublabel": "수신 콜백과 분리",
+      "pos": [
+        860,
+        80
+      ],
+      "size": [
+        200,
+        78
+      ]
+    },
+    {
+      "id": "hold",
+      "type": "database",
+      "label": "미확정 입력 보류",
+      "sublabel": "재시작 · 예외 · 결과 불명",
+      "pos": [
+        450,
+        450
+      ],
+      "size": [
+        200,
+        78
+      ]
+    },
+    {
+      "id": "dispatch",
+      "type": "backend",
+      "label": "기존 Action 처리",
+      "sublabel": "정책 → 장치 명령",
+      "pos": [
+        860,
+        450
+      ],
+      "size": [
+        200,
+        78
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "incoming-receipt",
+      "from": "incoming",
+      "to": "receipt",
+      "label": "accept()",
+      "variant": "default"
+    },
+    {
+      "id": "receipt-worker",
+      "from": "receipt",
+      "to": "worker",
+      "label": "pending 조회",
+      "variant": "default"
+    },
+    {
+      "id": "worker-dispatch",
+      "from": "worker",
+      "to": "dispatch",
+      "label": "handler 호출",
+      "variant": "default",
+      "labelDy": 80
+    },
+    {
+      "id": "receipt-hold",
+      "from": "receipt",
+      "to": "hold",
+      "label": "재시작 보류",
+      "variant": "default",
+      "labelDy": 80
+    },
+    {
+      "id": "worker-hold",
+      "from": "worker",
+      "to": "hold",
+      "label": "실패 보류",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "확인한 범위",
+      "items": [
+        "원본 보존 · 실행 지연 중 후속 수신",
+        "실제 MQTT 재전달 · 후보 이미지 검증"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "아직 적용 전",
+      "items": [
+        "운영 기본 OFF · capture-only는 출력 없음",
+        "보류 해제는 P3.1 우선순위·만료 검증 후"
+      ]
+    },
+    {
+      "dot": "slate",
+      "title": "그림의 의미",
+      "items": [
+        "정적 코드 흐름 · 실시간 계측 아님",
+        "처리 완료와 실물 장치 성공은 별도"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,242 @@
+{
+  "date": "2026-10-12",
+  "wbs": "P3.3",
+  "state": "PREPARED_NOT_RELEASE_READY",
+  "summary": "누적17파일 후보 이미지·DB 표본 이관·전환/복귀안 준비, 새 장치 이력3종의 백업 누락 수정",
+  "image": {
+    "tag": "cctv-action:prepared-20261012-01",
+    "id": "sha256:28789d9e71443047c08100bf7488d5fe0287569ce2eee8ff3ebde575ef95efb1",
+    "base_image": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+    "files": {
+      "config/output_devices.json": "5fa00adc0fccc0ba4fbded72b20245ff7e04dd786a5b5d7993528cbd77d04b49",
+      "kuiper/rules/cctv_intrusion_rules.json": "36219f45814a768bc7f304b4d3455d5bc7fe8818b56c6a029825335fe237f579",
+      "runners/run_action_bridge.py": "30eda7491c2d0e9baea8b174a5d10e3f013ec2e6e0e782453cd8189a5c2ef693",
+      "runners/run_signboard_device_service.py": "4559dd7e9de919b604c36cfe46fdbdb4c75020f49ef7dfeb6a910bf006aa2fc4",
+      "runners/run_siren_device_service.py": "6fe9948461bb276b7d267a696f4daa883abcf834010f352b0c12d10c55ef1fa3",
+      "runners/run_speaker_device_service.py": "c9c1bc55186c5c60b3266b080170beca6f357a4c92e55533ef1907fd011ecc2f",
+      "src/edgex/command_http.py": "5c8df2b915574a967c21fbbdb6e25c1a37f4a808b5f88d80d5508ac1d63e5312",
+      "src/edgex/dabit_device_service.py": "57775a1412f11b0b6c690a113aa08b41a47571b296e90f84fcc1361ad77f681e",
+      "src/edgex/request_idempotency.py": "4f6b2473c3be4844482b8562a346dc13ae7616e494d22a98711a17296708eea2",
+      "src/edgex/siren_device_service.py": "645a5be2fcfae577e48ea49e35a1852f0c5662b5d4d2981c70eea7be69d5d122",
+      "src/edgex/speaker_device_service.py": "a723d2533eaf633c0518a5b440e1e92f6e9d677676d4387d19bff0bacd82f5af",
+      "src/services/_action_bridge_executor.py": "7b5c37ccb5852177b117080740678479dd8baac23397d1fdcf50fb9b024ad2b5",
+      "src/services/_action_bridge_repo.py": "1a612b2e786ecf57f22107234167225ef0c18fb8423c12e21d72b2baab249d5f",
+      "src/services/action_bridge.py": "8a9a2c091c60f28dbea767c249f7265b643d6fc006442d8126b54e0160212a90",
+      "src/services/command_result_collector.py": "dde12746b5aa888dbe7d1058e324038269bfbdb3a2e54e8ccf53375747409dde",
+      "src/services/device_command_transport.py": "df5d4d434c31249a6822e4102b2120d1311aab5478a8df0f92956a905e9521b0",
+      "src/services/edgex_result_handler.py": "fc4f072cf22997a59bea31cfcb349dd47e837d090df9d20877ae588448a9d888"
+    },
+    "recipe": "data/runtime/action_release_20261012/context/Dockerfile",
+    "strategy": "기존 action 기반 전광판 이미지에 누적 수정17파일만 추가; 새 의존성/다운로드 없음. 네트워크 비연결 시험; GPU 미사용"
+  },
+  "validation": {
+    "candidate": {
+      "files_matched": 17,
+      "runner_imports": 5,
+      "preserved_rows": {
+        "action_events": 40,
+        "action_commands": 5775
+      },
+      "schema_init_repeated": 2,
+      "integrity": "ok",
+      "network": "none",
+      "physical_output": false
+    },
+    "container_regression": {
+      "passed": 222,
+      "failed": 0,
+      "errors": 0,
+      "junit": "data/runtime/action_release_20261012/container_regression.xml",
+      "conditions": "UID1000:1000·network none·CPU1·512MiB·장치/운영 데이터 미연결, 기존 event_type_map만 읽기 전용 사용; pytest만 외부 마운트, 제품 src/runners는 이미지 내장"
+    },
+    "backup_regression": {
+      "before": "장치3종 누락3 FAIL",
+      "after": "8 PASS(신규3)",
+      "junit": "data/runtime/action_release_20261012/backup_after.xml"
+    },
+    "compose": {
+      "compose_config": "PASS",
+      "non_target_services_unchanged": 23,
+      "targets": {
+        "cctv-action-layer": {
+          "changed_fields": [
+            "image",
+            "volumes",
+            "environment"
+          ],
+          "changed_environment_keys": [
+            "COMMAND_RESPONSE_TIMEOUT_SECONDS"
+          ],
+          "mount_targets": [
+            "/app/data",
+            "/app/config/event_type_map.json"
+          ]
+        },
+        "cctv-device-signboard": {
+          "changed_fields": [
+            "image"
+          ],
+          "changed_environment_keys": [],
+          "mount_targets": [
+            "/app/data/device_requests"
+          ]
+        },
+        "cctv-kuiper-rule-loader": {
+          "changed_fields": [
+            "image"
+          ],
+          "changed_environment_keys": [],
+          "mount_targets": []
+        }
+      },
+      "comparison": "current local compose + live_refresh override versus adding candidate; operating env drift not yet reconciled"
+    },
+    "lint": "Ruff PASS, bash -n PASS, git diff --check PASS",
+    "initial_attempts": [
+      "FROM 이미지ID 표기 오해석으로 메타데이터 조회 실패; 검증된 로컬 tag와 실제digest 대조 후 빌드 성공",
+      "시험 도구 py 누락 보완; 첫 실행133 PASS/1 FAIL/88 ERROR는 시험 tmp 권한·기존 event_type_map 마운트 누락. 운영 조건의 설정/쓰기 경로를 제공한 뒤222 PASS. 제품 코드는 추가 수정하지 않음."
+    ],
+    "graph_review": "2파일 분석에서 심볼/흐름0; 실제 변경 diff와 백업 스크립트 실행8시험으로 보완"
+  },
+  "changes": [
+    {
+      "path": "scripts/ops/backup_runtime_databases.sh",
+      "before_sha256": "fe1a2799fd0ad6d06697b02a4f02da90f1c49637df3603a582d81b67ef774983",
+      "after_sha256": "f91436f496d1cb22400afab4193f79c36e029ae21ca0d516514b894e37170be4"
+    },
+    {
+      "path": "tests/test_runtime_database_backup.py",
+      "before_sha256": "93df89d0a015c30b9b145975f1e883afe4a02609aad1c450f772ca7049a2934e",
+      "after_sha256": "9cbf804cfeb30bf0a1aa3f9c0bb93085b4357fdd071e1c182a51107bf8045af5"
+    }
+  ],
+  "database": {
+    "action_db_bytes": 3589455872,
+    "commands_snapshot_rows": 5775,
+    "event_sample_rows": 40,
+    "legacy_rows_with_request_id": 58,
+    "full_operating_backup_performed": false,
+    "device_journals_present": false,
+    "standard_backup_script": "scripts/ops/backup_runtime_databases.sh",
+    "new_backup_paths": [
+      "data/device_requests/signboard.sqlite3",
+      "data/device_requests/speaker.sqlite3",
+      "data/device_requests/siren.sqlite3"
+    ],
+    "restore_rule": "원래 runtime/ 또는 device_requests/ 경로와 UID1000 권한으로 복원. 신규 실행 뒤 과거 DB를 덮어쓰거나 이력을 삭제하지 않는다."
+  },
+  "plan": "data/runtime/action_release_20261012/plan.json",
+  "remaining_wbs": {
+    "basis_date": "2026-10-12",
+    "unit_hours_per_D": 4,
+    "counts": {
+      "DONE": 9,
+      "BLOCKED": 3,
+      "PLANNED": 13,
+      "VERIFY": 7,
+      "IN_PROGRESS": 1
+    },
+    "remaining_tasks": 24,
+    "phases": {
+      "P0": {
+        "tasks": 1,
+        "original_hours_min": 4.0,
+        "original_hours_max": 8.0
+      },
+      "P2": {
+        "tasks": 1,
+        "original_hours_min": 4.0,
+        "original_hours_max": 8.0
+      },
+      "P3": {
+        "tasks": 6,
+        "original_hours_min": 26.0,
+        "original_hours_max": 48.0
+      },
+      "P4": {
+        "tasks": 3,
+        "original_hours_min": 10.0,
+        "original_hours_max": 20.0
+      },
+      "P5": {
+        "tasks": 6,
+        "original_hours_min": 26.0,
+        "original_hours_max": 52.0
+      },
+      "P6": {
+        "tasks": 4,
+        "original_hours_min": 20.0,
+        "original_hours_max": 40.0
+      },
+      "P7": {
+        "tasks": 3,
+        "original_hours_min": 16.0,
+        "original_hours_max": 32.0
+      }
+    },
+    "remaining_rows_original_hours": [
+      106,
+      208
+    ],
+    "before_poc_original_hours": [
+      90,
+      176
+    ],
+    "poc_and_followup_original_hours": [
+      16,
+      32
+    ],
+    "before_poc_with_20_percent_hours": [
+      108,
+      211.2
+    ],
+    "all_with_20_percent_hours": [
+      127.2,
+      249.6
+    ],
+    "assumed_hours_per_week": 30,
+    "confirmed_hours_scope": "10-12~10-16의30시간만 확정, 이후주5일은 가정",
+    "available_weekdays_oct13_nov27": 34,
+    "gross_capacity_hours": 204,
+    "limitations": [
+      "완료되지 않은 행의 최초 공수를 합산했으며 일부 구현/시험 완료를 차감한 실제 잔여 예측이 아니다.",
+      "이미 완료한 부분은 과대 산정될 수 있으나 성능 미달/재학습/추가 장비/미정 현장 재시험은 기존 범위를 넘을 수 있다.",
+      "달력 대기·휴무·다른 업무 미차감. 원래148~286시간 전체 초기공수와 구분."
+    ]
+  },
+  "operating": {
+    "deployed": false,
+    "physical_output": false,
+    "full_backup": false,
+    "observed_ids_images_started_at_match_previous": [
+      "cctv-ai-engine",
+      "edgex-kuiper",
+      "cctv-action-layer",
+      "cctv-device-signboard"
+    ],
+    "claim_limit": "기동/이미지 불변만 확인; 운영 FPS/종단 지연 무영향 시험은 수행하지 않음"
+  },
+  "remaining": [
+    "과거 요청 재수신 차단/안전한 이력 전환",
+    "실행 환경과 후보 설정 대조·장치 이력 볼륨 UID/쓰기·전체 백업",
+    "운영 전환/실물 출력·실제 복귀",
+    "attempt/자동 대조·승인 재시도·선행 우선순위/입력 격리"
+  ],
+  "next": "P3.3 과거 명령이 새 실행 이력 DB에서 재출력되지 않도록 전환 시 재수신 차단을 구현·검증한다. 이후 실행 환경 대조·전체 백업·운영 전환/실물 재시험을 진행하며 P3.1/P3.2 선행은 유지한다.",
+  "publication": {
+    "url": "http://192.168.2.242:18081/",
+    "artifacts": {
+      "docs/planning/online/index.html": {
+        "sha256": "383a4be6fa846b6ba28294dd9d512f9eb214320c7e36e9f782095f2a67cb3f17",
+        "served_bytes_equal": true
+      },
+      "docs/planning/online/CCTV_project_progress.pdf": {
+        "sha256": "66b93c492d84860330ef53bd09bed5973c251d06ff9d5a52e46f4131c5a16e2f",
+        "served_bytes_equal": true
+      }
+    },
+    "first_pdf_page_visually_checked": true,
+    "WBS33_model8_states_unchanged": true,
+    "estimated_weekdays_recomputed": 34
+  }
+}

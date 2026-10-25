@@ -1,0 +1,3006 @@
+{
+  "date": "2026-10-22T09:48:16.224864+00:00",
+  "scope": "P6.2-O2 isolated service supervisor + existing resource Agent integration",
+  "hardware_scope": "Local subprocess/TLS tests with explicitly simulated inference metrics; not a new Jetson B AI trial",
+  "source_sha256": {
+    "src/services/edge_service.py": "7750b1042180ad49b17f2c37a9c7ff6c53f415a902863927de823681f38befa8",
+    "src/services/_edge_process.py": "d910498dbce7b27d4d43110a7fbde86837d53405aaf152f5fc8e8ab098d53dc4",
+    "src/services/edge_node_agent.py": "4ed3e3313e571383984c3773b73856983965e0f36ced067d06017272e3745fcd",
+    "src/services/edge_orchestrator.py": "5b114a0a212b9041572a5fb6f97a3cb32e996b32063b9081214db366fc74cd49",
+    "src/services/processor_metrics.py": "0189324adc85d6cfd1caf8eb5647f63b05b1033c817e92dfce98c7cae710f332",
+    "src/core/base_processor.py": "db814d446f3323592c894c2ea3c59fdca90473e7bf069d0e3b5e78a8eff345db",
+    "src/core/deepstream_processor.py": "c2934df11ccabd491720cbbf946b65bc4375d826fa8895d4e6dbdb62e4df8712",
+    "src/core/processor.py": "3b8ca611b16f12737511976d847fc6d2953e83c77edd75d000fa0463434d2e8e",
+    "runners/run_edge_orchestration.py": "4837a5041298b953eae6027020662543d532ed3be8bc67374a27ac47a58eeef2",
+    "tests/test_edge_service.py": "93a5e8904d2ec9bf2978d199d1b8352a852a7a59a8dc81919f6d32e4e57e29ce",
+    "tests/fixtures/edge_ai_process.py": "2bd1fe8e06040fd8c6747ce818d0c8c53a2a098657b1b0965b6cc58a97e37f66",
+    "tests/test_deepstream_primary_metrics.py": "11ae14274e536b4be777ab76a0124c415700645d21ee53be2ce1041ed5a6ae6b",
+    "config/deepstream/edge-service-b.manifest.example.json": "b9201006997baa7dc75603680b62f9a61069d917e295630aa9f9937a36c455b2"
+  },
+  "test_suites": [
+    {
+      "file": "edge-service-tests-20261022.xml",
+      "sha256": "0096775311b5f29e3e744876310f468747e18915e06a624f39f751f1cef21b02",
+      "summary": {
+        "name": "pytest",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "2",
+        "tests": "454",
+        "time": "37.204",
+        "timestamp": "2026-10-22T18:44:34.555220+09:00",
+        "hostname": "ubuntu"
+      },
+      "cases": [
+        {
+          "name": "tests.test_edge_service.test_lifecycle_receipt_is_not_readiness_and_stop_restart",
+          "seconds": 0.691,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_service.test_command_validation[changes0-invalid_epoch]",
+          "seconds": 0.204,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_service.test_command_validation[changes1-invalid_epoch]",
+          "seconds": 1.471,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_service.test_command_validation[changes2-stale_supervisor_boot]",
+          "seconds": 0.124,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_service.test_command_validation[changes3-unknown_manifest]",
+          "seconds": 4.521,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_service.test_command_validation[changes4-invalid_fields]",
+          "seconds": 0.077,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_service.test_command_conflicts_fence_delayed_start",
+          "seconds": 0.091,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_service.test_restart_preserves_epoch_and_never_replays_start",
+          "seconds": 0.536,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_service.test_wrong_backend_identity_stall_and_malformed_metrics_fail_closed[cpu]",
+          "seconds": 0.345,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_service.test_wrong_backend_identity_stall_and_malformed_metrics_fail_closed[wrong-session]",
+          "seconds": 0.341,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_service.test_wrong_backend_identity_stall_and_malformed_metrics_fail_closed[stalled]",
+          "seconds": 0.355,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_service.test_wrong_backend_identity_stall_and_malformed_metrics_fail_closed[duplicate]",
+          "seconds": 0.347,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_service.test_model_tampering_prevents_execution",
+          "seconds": 0.084,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_service.test_unexpected_exit_not_automatically_restarted",
+          "seconds": 0.306,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_service.test_stop_kills_only_owned_process_even_when_term_ignored",
+          "seconds": 0.559,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_service.test_single_owner_lock_and_persistent_thread",
+          "seconds": 0.071,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_service.test_http_read_control_tokens_separate_and_no_remote_shell",
+          "seconds": 0.59,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_service.test_python38_syntax_and_no_ai_dependencies_required",
+          "seconds": 0.184,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_service.test_parent_crash_signals_owned_ai_and_inherited_lock_blocks_duplicate[False]",
+          "seconds": 0.487,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_service.test_parent_crash_signals_owned_ai_and_inherited_lock_blocks_duplicate[True]",
+          "seconds": 0.564,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_service.test_agent_reports_service_and_restart_does_not_restart_ai",
+          "seconds": 1.434,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_service.test_registry_rejects_inconsistent_service_observations[change0-inconsistent_readiness]",
+          "seconds": 0.067,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_service.test_registry_rejects_inconsistent_service_observations[change1-invalid_readiness]",
+          "seconds": 0.064,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_service.test_registry_rejects_inconsistent_service_observations[change2-unsupported_backend]",
+          "seconds": 0.064,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_service.test_registry_rejects_inconsistent_service_observations[change3-invalid_number]",
+          "seconds": 0.066,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_service.test_registry_rejects_inconsistent_service_observations[change4-invalid_epoch]",
+          "seconds": 0.06,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_service.test_bad_observation_never_blocks_resource_report[response0]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_service.test_bad_observation_never_blocks_resource_report[response1]",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_service.test_bad_observation_never_blocks_resource_report[response2]",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_service.test_state_directory_rejects_other_manifest",
+          "seconds": 0.078,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_service.test_cli_tls_service_assignment_agent_and_shutdown",
+          "seconds": 2.138,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_two_nodes_and_report_ack_are_persisted",
+          "seconds": 0.094,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_duplicate_report_and_registration_do_not_refresh_liveness",
+          "seconds": 0.08,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_new_boot_fences_old_reports_and_old_registration_after_restart",
+          "seconds": 0.105,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_stale_conflicting_and_regressing_reports_leave_state_intact",
+          "seconds": 0.07,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_old_sample_and_clock_rollback_are_not_online",
+          "seconds": 0.075,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_concurrent_duplicate_report_commits_once",
+          "seconds": 0.089,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_invalid_registration_is_not_saved[node_id-../other]",
+          "seconds": 0.044,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_invalid_registration_is_not_saved[boot_id-]",
+          "seconds": 0.047,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_invalid_registration_is_not_saved[simulation-False]",
+          "seconds": 0.064,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_invalid_registration_is_not_saved[ip-192.168.2.141]",
+          "seconds": 0.044,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_invalid_registration_is_not_saved[capabilities-value4]",
+          "seconds": 0.044,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_invalid_registration_is_not_saved[capabilities-value5]",
+          "seconds": 0.046,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_invalid_report_is_not_saved[sequence-True]",
+          "seconds": 0.06,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_invalid_report_is_not_saved[sequence-0]",
+          "seconds": 0.062,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_invalid_report_is_not_saved[sequence-9223372036854775808]",
+          "seconds": 0.053,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_invalid_report_is_not_saved[simulation-False]",
+          "seconds": 0.051,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_invalid_report_is_not_saved[sampled_at-2026-01-01T00:00:00]",
+          "seconds": 0.055,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_invalid_report_is_not_saved[sampled_at-2030-01-01T00:00:00Z]",
+          "seconds": 0.059,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_invalid_report_is_not_saved[resources-value6]",
+          "seconds": 0.053,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_invalid_report_is_not_saved[service-None]",
+          "seconds": 0.065,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_bad_resource_numbers_are_rejected[True]",
+          "seconds": 0.057,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_bad_resource_numbers_are_rejected[-1]",
+          "seconds": 0.055,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_bad_resource_numbers_are_rejected[101]",
+          "seconds": 0.052,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_bad_resource_numbers_are_rejected[nan]",
+          "seconds": 0.053,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_bad_resource_numbers_are_rejected[inf]",
+          "seconds": 0.054,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_bad_resource_numbers_are_rejected[100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000]",
+          "seconds": 0.055,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_registration_conflict_and_unregistered_report",
+          "seconds": 0.055,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_foreign_database_is_never_modified",
+          "seconds": 0.016,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_database_contains_no_auth_tokens",
+          "seconds": 0.047,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_real_resource_mode_is_explicit_and_survives_reopen",
+          "seconds": 0.083,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_registered_mode_cannot_change_in_report[True]",
+          "seconds": 0.059,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_registered_mode_cannot_change_in_report[False]",
+          "seconds": 0.073,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_real_resources_cannot_claim_unobserved_ai_status",
+          "seconds": 0.06,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_real_mode_still_requires_boolean_flags[0]",
+          "seconds": 0.057,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_real_mode_still_requires_boolean_flags[1]",
+          "seconds": 0.058,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_real_mode_still_requires_boolean_flags[false]",
+          "seconds": 0.062,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestrator.test_real_mode_still_requires_boolean_flags[None]",
+          "seconds": 0.058,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_integration.test_two_nodes_report_periodically_over_http",
+          "seconds": 0.21,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_integration.test_node_token_cannot_register_or_report_as_another_node",
+          "seconds": 0.067,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_integration.test_lost_report_ack_retries_identical_payload_once",
+          "seconds": 0.171,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_integration.test_transport_failure_recovers_without_changing_boot",
+          "seconds": 0.097,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_integration.test_database_failure_returns_503_and_agent_retries",
+          "seconds": 0.085,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_integration.test_agent_restart_uses_new_boot_and_old_agent_is_fenced",
+          "seconds": 0.128,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_integration.test_invalid_http_body_and_unknown_endpoint",
+          "seconds": 0.059,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_integration.test_nonlocal_or_ambiguous_endpoint_is_rejected[http://192.168.2.141:80]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_integration.test_nonlocal_or_ambiguous_endpoint_is_rejected[http://localhost:80]",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_integration.test_nonlocal_or_ambiguous_endpoint_is_rejected[https://127.0.0.1:80]",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_integration.test_nonlocal_or_ambiguous_endpoint_is_rejected[http://127.0.0.1:80/path]",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_integration.test_stop_interrupts_long_report_wait",
+          "seconds": 0.08,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_integration.test_demo_uses_isolated_runtime_and_finishes",
+          "seconds": 0.142,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_integration.test_real_resource_agent_reports_periodically_and_persists",
+          "seconds": 0.175,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_integration.test_real_agent_ack_retry_does_not_resample_or_claim_ai",
+          "seconds": 0.102,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_integration.test_real_demo_uses_one_local_host_and_keeps_default_mock_mode",
+          "seconds": 0.281,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_agent_bundle_syntax_and_annotations_support_python38",
+          "seconds": 0.178,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_two_nodes_report_independent_values_and_liveness_over_tls",
+          "seconds": 0.848,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_tls_checks_ca_and_server_identity",
+          "seconds": 0.073,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_tls_node_credentials_cannot_impersonate_or_read",
+          "seconds": 0.071,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_idle_tls_connection_does_not_block_another_node",
+          "seconds": 0.093,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_tls_disconnect_restart_and_boot_fencing",
+          "seconds": 0.184,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_tls_lost_ack_keeps_sample_and_sequence",
+          "seconds": 0.1,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_remote_insecure_or_ambiguous_urls_are_rejected[http://192.0.2.10:18443]",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_remote_insecure_or_ambiguous_urls_are_rejected[https://127.0.0.1:18443]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_remote_insecure_or_ambiguous_urls_are_rejected[http://127.0.0.1:80\\n]",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_remote_insecure_or_ambiguous_urls_are_rejected[https://user:secret@host:443]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_remote_insecure_or_ambiguous_urls_are_rejected[http://127.0.0.1:80?token=x]",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_remote_registration_rejects_unusable_addresses[0.0.0.0]",
+          "seconds": 0.136,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_remote_registration_rejects_unusable_addresses[224.0.0.1]",
+          "seconds": 0.179,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_remote_registration_rejects_unusable_addresses[255.255.255.255]",
+          "seconds": 0.102,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_remote_registration_rejects_unusable_addresses[::1]",
+          "seconds": 0.105,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_remote_registration_rejects_unusable_addresses[not-an-ip]",
+          "seconds": 0.098,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_remote_registration_rejects_unusable_addresses[2130706433]",
+          "seconds": 0.109,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_nonlocal_listener_cannot_open_without_tls[0.0.0.0]",
+          "seconds": 0.04,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_nonlocal_listener_cannot_open_without_tls[224.0.0.1]",
+          "seconds": 0.041,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_nonlocal_listener_cannot_open_without_tls[255.255.255.255]",
+          "seconds": 0.037,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_nonlocal_listener_cannot_open_without_tls[192.0.2.10]",
+          "seconds": 0.037,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_private_tokens_are_not_hardcoded_or_world_readable",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_controller_start_does_not_depend_on_reverse_dns",
+          "seconds": 0.042,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_orchestration_remote.test_three_cli_processes_report_and_stop_without_operating_services",
+          "seconds": 0.996,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_jetson_resources.test_units_warmup_guest_exclusion_and_available_memory",
+          "seconds": 0.009,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_jetson_resources.test_bad_cpu_does_not_hide_memory_or_gpu[]",
+          "seconds": 0.011,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_jetson_resources.test_bad_cpu_does_not_hide_memory_or_gpu[cpu 1 2]",
+          "seconds": 0.01,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_jetson_resources.test_bad_cpu_does_not_hide_memory_or_gpu[cpu0 1 2 3 4 5 6 7 8]",
+          "seconds": 0.01,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_jetson_resources.test_bad_cpu_does_not_hide_memory_or_gpu[cpu x 2 3 4 5 6 7 8]",
+          "seconds": 0.008,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_jetson_resources.test_bad_cpu_does_not_hide_memory_or_gpu[cpu -1 2 3 4 5 6 7 8]",
+          "seconds": 0.008,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_jetson_resources.test_cpu_no_progress_and_reset_recover",
+          "seconds": 0.006,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_jetson_resources.test_invalid_memory_is_unknown[]",
+          "seconds": 0.005,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_jetson_resources.test_invalid_memory_is_unknown[MemTotal: 10000 kB\\n]",
+          "seconds": 0.004,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_jetson_resources.test_invalid_memory_is_unknown[MemTotal: 0 kB\\nMemAvailable: 0 kB\\n]",
+          "seconds": 0.004,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_jetson_resources.test_invalid_memory_is_unknown[MemTotal: 10 kB\\nMemAvailable: 11 kB\\n]",
+          "seconds": 0.004,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_jetson_resources.test_invalid_memory_is_unknown[MemTotal: 10 kB\\nMemAvailable: -1 kB\\n]",
+          "seconds": 0.004,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_jetson_resources.test_invalid_memory_is_unknown[MemTotal: 10 MB\\nMemAvailable: 1 MB\\n]",
+          "seconds": 0.004,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_jetson_resources.test_invalid_memory_is_unknown[MemTotal: invalid kB\\nMemAvailable: 1 kB\\n]",
+          "seconds": 0.004,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_jetson_resources.test_gpu_permille_boundaries_and_no_cached_success[0-0]",
+          "seconds": 0.004,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_jetson_resources.test_gpu_permille_boundaries_and_no_cached_success[1000-100]",
+          "seconds": 0.004,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_jetson_resources.test_gpu_permille_boundaries_and_no_cached_success[-1-None]",
+          "seconds": 0.005,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_jetson_resources.test_gpu_permille_boundaries_and_no_cached_success[1001-None]",
+          "seconds": 0.004,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_jetson_resources.test_gpu_permille_boundaries_and_no_cached_success[nan-None]",
+          "seconds": 0.005,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_jetson_resources.test_gpu_permille_boundaries_and_no_cached_success[-None]",
+          "seconds": 0.004,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_jetson_resources.test_orin_kernel_path_fallback[devices/platform/bus@0/17000000.gpu/load]",
+          "seconds": 0.004,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_jetson_resources.test_orin_kernel_path_fallback[devices/platform/17000000.ga10b/load]",
+          "seconds": 0.004,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_jetson_resources.test_orin_kernel_path_fallback[devices/platform/bus@0/17000000.ga10b/load]",
+          "seconds": 0.004,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_jetson_resources.test_permission_failure_and_missing_files_are_unknown",
+          "seconds": 0.004,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_jetson_resources.test_permission_failure_on_gpu_preserves_other_resources",
+          "seconds": 0.004,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_primary_metrics.test_edge_identity_uses_actual_processor_class[deepstream]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_primary_metrics.test_edge_identity_uses_actual_processor_class[video_processor]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_primary_metrics.test_metrics_server_can_be_restricted_to_loopback",
+          "seconds": 0.506,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_primary_metrics.test_raw_tensor_completion_is_not_lost_when_inference_flag_is_false",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_primary_metrics.test_tensor_count_is_per_frame_and_uses_actual_primary_component_id",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_primary_metrics.test_unobservable_tensor_configuration_is_unknown_even_with_true_flag[None]",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_primary_metrics.test_unobservable_tensor_configuration_is_unknown_even_with_true_flag[primary1]",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_primary_metrics.test_unobservable_tensor_configuration_is_unknown_even_with_true_flag[primary2]",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_primary_metrics.test_malformed_tensor_metadata_is_unknown_without_discarding_next_frame",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_primary_metrics.test_primary_property_failure_is_unknown_not_a_video_processing_failure",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_primary_metrics.test_inference_counts_are_per_camera_not_batch_or_detection_counts",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_primary_metrics.test_missing_tensor_list_is_unknown_regardless_of_inference_flag[None]",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_primary_metrics.test_missing_tensor_list_is_unknown_regardless_of_inference_flag[1]",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_primary_metrics.test_missing_tensor_list_is_unknown_regardless_of_inference_flag[2]",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_primary_metrics.test_missing_tensor_list_is_unknown_regardless_of_inference_flag[-1]",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_primary_metrics.test_missing_tensor_list_is_unknown_regardless_of_inference_flag[0.5]",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_primary_metrics.test_inactive_camera_is_present_with_zero_counts_and_no_false_freshness",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_primary_metrics.test_unmapped_sources_do_not_create_or_pollute_camera_labels",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_primary_metrics.test_snapshot_does_not_expose_mutable_internal_counters",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_primary_metrics.test_rebuild_resets_counters_and_removes_old_camera_labels",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_primary_metrics.test_metrics_export_inference_counters_with_camera_labels",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_primary_metrics.test_metrics_export_remains_compatible_with_other_processors",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_primary_metrics.test_measurement_probe_is_before_secondary_inference[False]",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_primary_metrics.test_measurement_probe_is_before_secondary_inference[True]",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_primary_metrics.test_processor_probe_records_real_metadata_without_creating_events",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_primary_metrics.test_observation_failure_does_not_stop_video_and_is_counted",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_model_metrics.test_secondary_observations_do_not_conflate_frames_objects_or_cached_labels[sample0-expected0]",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_model_metrics.test_secondary_observations_do_not_conflate_frames_objects_or_cached_labels[sample1-expected1]",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_model_metrics.test_secondary_observations_do_not_conflate_frames_objects_or_cached_labels[sample2-expected2]",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_model_metrics.test_secondary_observations_do_not_conflate_frames_objects_or_cached_labels[sample3-expected3]",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_model_metrics.test_secondary_observations_do_not_conflate_frames_objects_or_cached_labels[sample4-expected4]",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_model_metrics.test_secondary_observations_do_not_conflate_frames_objects_or_cached_labels[sample5-expected5]",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_model_metrics.test_secondary_observations_do_not_conflate_frames_objects_or_cached_labels[sample6-expected6]",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_model_metrics.test_secondary_observations_do_not_conflate_frames_objects_or_cached_labels[sample7-expected7]",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_model_metrics.test_secondary_observations_do_not_conflate_frames_objects_or_cached_labels[sample8-expected8]",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_model_metrics.test_primary_uses_frame_scope_and_never_object_scope",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_model_metrics.test_missing_configuration_is_unknown_not_skipped[overrides0]",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_model_metrics.test_missing_configuration_is_unknown_not_skipped[overrides1]",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_model_metrics.test_missing_configuration_is_unknown_not_skipped[overrides2]",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_model_metrics.test_missing_configuration_is_unknown_not_skipped[overrides3]",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_model_metrics.test_missing_configuration_is_unknown_not_skipped[overrides4]",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_model_metrics.test_missing_configuration_is_unknown_not_skipped[overrides5]",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_model_metrics.test_malformed_metadata_is_unknown_even_after_an_earlier_valid_result",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_model_metrics.test_classifier_only_does_not_refresh_last_tensor_time",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_model_metrics.test_gobject_enum_and_integer_properties_are_json_values",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_model_metrics.test_frame_states_partition_observations_without_inflating_disabled_or_inactive_models",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_model_metrics.test_bad_frame_and_bad_object_do_not_discard_next_camera",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_model_metrics.test_build_properties_unknown_values_and_duplicate_ids_are_not_completion_evidence",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_model_metrics.test_snapshot_is_detached_and_pipeline_rebuild_resets_generation_and_freshness",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_model_metrics.test_prometheus_exports_models_even_without_legacy_primary_counters",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_model_metrics.test_final_probe_observes_before_event_mutation_and_metrics_failure_does_not_stop_events[False]",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_model_metrics.test_final_probe_observes_before_event_mutation_and_metrics_failure_does_not_stop_events[True]",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_model_metrics.test_pipeline_build_captures_configured_elements_before_installing_runtime_hooks",
+          "seconds": 0.007,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_model_metrics.test_processor_stats_carries_model_snapshot_to_exporter_without_native_bindings",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_tracker_uses_low_level_iou_yaml",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_video_surface_copy_hardware_is_explicit[-None]",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_video_surface_copy_hardware_is_explicit[1-1]",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_video_surface_copy_hardware_is_explicit[2-2]",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_invalid_video_copy_mode_fails_before_allocating_element[0]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_invalid_video_copy_mode_fails_before_allocating_element[3]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_invalid_video_copy_mode_fails_before_allocating_element[vic]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_invalid_video_copy_mode_fails_before_allocating_element[-1]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_video_copy_mode_does_not_change_inference_elements",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_available_is_bool",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_module_probe_does_not_import_native_bindings",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_native_bindings_load_only_when_ensured",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_not_available_on_windows_ci",
+          "seconds": 0.001,
+          "result": "skipped",
+          "skip_reason": "Jetson 환경 — DeepStream 설치됨"
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_processor_raises_on_cpu",
+          "seconds": 0.0,
+          "result": "skipped",
+          "skip_reason": "DeepStream 설치됨 — RuntimeError 테스트 불필요"
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_processor_is_subclass_of_base",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_video_processor_is_subclass_of_base",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_get_camera_frame_can_skip_copy_for_internal_postprocessing",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_get_camera_status_uses_common_fields_without_runtime",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_marks_failed_source_with_backoff",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_build_source_entries_skips_backoff_camera",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_next_source_retry_delay_returns_nearest_backoff",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_camera_id_from_error_debug",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_retry_camera_clears_backoff_and_attaches_dynamically",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_retry_camera_falls_back_to_restart_when_dynamic_attach_fails",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_retry_camera_registers_missing_camera_before_restart",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_get_stats_uses_common_fields_without_runtime",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_frame_freshness_tracks_processed_batches",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_context_miss_reasons_reach_stats_and_prometheus",
+          "seconds": 0.004,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_frame_capture_stays_enabled_for_face_when_public_preview_is_disabled",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_frame_capture_stays_enabled_for_camera_appearance_override",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_frame_capture_can_be_disabled_when_no_consumer_needs_frames",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_read_preview_max_fps_defaults_to_stream_fps",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_read_preview_max_fps_clamps_high_values",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_preview_sample_is_pulled_even_when_throttled",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_build_source_entries_skips_integer_sources_without_runtime",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_model_flags_do_not_force_pose",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_filter_events_respects_all_off",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_context_event_store_merges_recent_non_person_events_without_duplicates",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_context_event_store_drops_stale_cached_events",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_fall_detector_uses_env_thresholds",
+          "seconds": 0.007,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_falldata_aux_operational_settings_from_env",
+          "seconds": 0.005,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_fall_pose_returns_score_metadata",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_person_pose_validator_keeps_horizontal_fall_pose",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_fall_pose_reports_folded_floor_near_miss",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_fall_pose_reports_low_score_near_miss",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_yolo_postprocess_mode_defaults_to_vectorized",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_yolo_postprocess_mode_rejects_unknown_value",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_yolo_postprocess_metrics_report_average_and_maximum",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_cumulative_filter_does_not_gate_fall_events",
+          "seconds": 0.005,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_osd_draws_skeleton_for_fall_detection",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_filter_events_respects_one_model_off",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_should_enqueue_event_uses_common_debouncer",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_fall_reassociation_controls_queue_and_cooldown[same_id]",
+          "seconds": 0.005,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_fall_reassociation_controls_queue_and_cooldown[near_new_id]",
+          "seconds": 0.005,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_fall_reassociation_controls_queue_and_cooldown[distant_new_id]",
+          "seconds": 0.006,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_fall_reassociation_controls_queue_and_cooldown[expired]",
+          "seconds": 0.004,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_fall_reassociation_controls_queue_and_cooldown[other_camera]",
+          "seconds": 0.004,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_event_queue_full_counts_event_drop_not_frame_drop",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_event_queue_success_counts_detected_event",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_detection_event_enqueue_uses_common_queue_stats",
+          "seconds": 0.004,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_falldata_aux_submission_only_for_fall_events",
+          "seconds": 0.004,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_falldata_aux_submission_prefers_pending_borderline_fall",
+          "seconds": 0.004,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_falldata_aux_submission_reports_queue_full",
+          "seconds": 0.004,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_falldata_aux_submission_ignored_when_disabled",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_borderline_fall_can_require_aux_before_publish",
+          "seconds": 0.005,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_shadow_aux_never_delays_fall_publish",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_fall_aux_confirm_max_score_can_extend_pending_window",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_borderline_fall_is_deferred_to_aux_queue",
+          "seconds": 0.005,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_repeated_borderline_fall_is_debounced_before_aux_queue",
+          "seconds": 0.005,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_clear_high_score_fall_bypasses_aux_defer",
+          "seconds": 0.005,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_aux_confirmed_borderline_fall_is_enqueued",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_shadow_window_never_enqueues_confirmed_fall",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_aux_rejected_borderline_fall_is_not_enqueued",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_aux_unavailable_fallback_fall_is_enqueued",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_shadow_window_never_uses_fail_open_fallback",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_compare_veto_can_drop_aux_confirmed_high_score_fall",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_compare_veto_ignores_scores_below_minimum",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_pa100k_sgie_backend_name_is_explicit",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_uses_configured_pphuman_infer_config",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_sgie_injected_person_meta_has_label[False-False]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_sgie_injected_person_meta_has_label[False-True]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_sgie_injected_person_meta_has_label[True-False]",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_sgie_injected_person_meta_has_label[True-True]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_primary_probe_registers_people_before_sgie[False]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_primary_probe_registers_people_before_sgie[True]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_tracker_detection_done_requires_current_primary_tensor[None]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_tracker_detection_done_requires_current_primary_tensor[1]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_tracker_detection_done_requires_current_primary_tensor[2]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_sgie_shrinks_oversized_person_roi",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_fall_shadow_review_record_writes_jsonl",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_fall_shadow_review_record_can_save_clip",
+          "seconds": 0.004,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_enqueue_fall_event_writes_review_record",
+          "seconds": 0.004,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_fall_near_miss_writes_review_record",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_event_pipeline_writes_fall_near_miss_record",
+          "seconds": 0.022,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_publish_loop_success_counts_sent_not_detected",
+          "seconds": 0.006,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[False-rtsp://example/stream-None-False-None-None]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[False-rtsp://example/stream-None-False-None-false]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[False-rtsp://example/stream-None-False-None-true]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[False-rtsp://example/stream-3-False-3-None]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[False-rtsp://example/stream-3-False-3-false]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[False-rtsp://example/stream-3-False-3-true]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[False-rtsp://example/stream-0-False-None-None]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[False-rtsp://example/stream-0-False-None-false]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[False-rtsp://example/stream-0-False-None-true]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[False-rtsp://example/stream--1-False-None-None]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[False-rtsp://example/stream--1-False-None-false]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[False-rtsp://example/stream--1-False-None-true]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[False-rtsp://example/stream-bad-False-None-None]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[False-rtsp://example/stream-bad-False-None-false]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[False-rtsp://example/stream-bad-False-None-true]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[False-file:///tmp/input.mp4-3-False-None-None]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[False-file:///tmp/input.mp4-3-False-None-false]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[False-file:///tmp/input.mp4-3-False-None-true]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[False-rtsp://example/stream-3-True-None-None]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[False-rtsp://example/stream-3-True-None-false]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[False-rtsp://example/stream-3-True-None-true]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[True-rtsp://example/stream-None-False-None-None]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[True-rtsp://example/stream-None-False-None-false]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[True-rtsp://example/stream-None-False-None-true]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[True-rtsp://example/stream-3-False-3-None]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[True-rtsp://example/stream-3-False-3-false]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[True-rtsp://example/stream-3-False-3-true]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[True-rtsp://example/stream-0-False-None-None]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[True-rtsp://example/stream-0-False-None-false]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[True-rtsp://example/stream-0-False-None-true]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[True-rtsp://example/stream--1-False-None-None]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[True-rtsp://example/stream--1-False-None-false]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[True-rtsp://example/stream--1-False-None-true]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[True-rtsp://example/stream-bad-False-None-None]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[True-rtsp://example/stream-bad-False-None-false]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[True-rtsp://example/stream-bad-False-None-true]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[True-file:///tmp/input.mp4-3-False-None-None]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[True-file:///tmp/input.mp4-3-False-None-false]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[True-file:///tmp/input.mp4-3-False-None-true]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[True-rtsp://example/stream-3-True-None-None]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[True-rtsp://example/stream-3-True-None-false]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_adds_source_and_updates_pad_map[True-rtsp://example/stream-3-True-None-true]",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_attach_camera_source_to_pipeline_detaches_existing_source",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_add_camera_to_pipeline_uses_restart_when_batch_size_would_grow",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_add_camera_to_pipeline_allows_same_camera_reconnect_with_existing_pad",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_configure_streammux_sets_batch_and_frame_properties",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_configure_output_queue_sets_leaky_low_latency_properties",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_create_preview_elements_can_downscale_preview_caps",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_create_output_elements_can_stream_h264_mpegts",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_create_output_elements_can_enable_h264_poc_fix",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_create_output_elements_can_enable_h264_poc_fix_for_rtsp_publish",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_link_or_raise_raises_when_gstreamer_link_fails",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_link_preview_branch_links_output_and_preview_paths",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_recognized_face_snapshot_disabled_by_default",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_recognized_face_snapshot_enabled_respects_cooldown",
+          "seconds": 0.018,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_add_camera",
+          "seconds": 0.013,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_add_camera_duplicate",
+          "seconds": 0.01,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_remove_camera",
+          "seconds": 0.009,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_get_stats_returns_dict",
+          "seconds": 0.009,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_deepstream_get_camera_status",
+          "seconds": 0.01,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_create_processor_default_returns_video_processor",
+          "seconds": 0.017,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_create_processor_deepstream_fallback_when_unavailable",
+          "seconds": 0.01,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_source_bus_metrics_follow_restart_or_stop[True-ERROR]",
+          "seconds": 0.005,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_source_bus_metrics_follow_restart_or_stop[True-EOS]",
+          "seconds": 0.005,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_source_bus_metrics_follow_restart_or_stop[False-ERROR]",
+          "seconds": 0.005,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_source_bus_metrics_follow_restart_or_stop[False-EOS]",
+          "seconds": 0.004,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_restart_request_metrics_count_gate_decisions[True-False-0.0-True]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_restart_request_metrics_count_gate_decisions[False-False-0.0-False]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_restart_request_metrics_count_gate_decisions[True-True-0.0-False]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_restart_request_metrics_count_gate_decisions[True-False-99.0-False]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_restart_metrics_use_explicit_result_and_clear_pending[None]",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_restart_metrics_use_explicit_result_and_clear_pending[stop]",
+          "seconds": 0.004,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_restart_metrics_use_explicit_result_and_clear_pending[start]",
+          "seconds": 0.005,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_restart_metrics_use_explicit_result_and_clear_pending[not_running]",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_source_metrics_prometheus_exports_counters_without_primary_frames",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_native_stream_reset_only_resets_identified_camera[0-True-103454]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_native_stream_reset_only_resets_identified_camera[1-True-103454]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_native_stream_reset_only_resets_identified_camera[99-True-103454]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_native_stream_reset_only_resets_identified_camera[0-False-103454]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_native_stream_reset_only_resets_identified_camera[0-True-10254]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_native_stream_reset_only_resets_identified_camera[0-True-None]",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_reset_camera_tracking_state_preserves_other_camera_and_registration",
+          "seconds": 0.008,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_missing_camera_frame_never_uses_another_cameras_preview",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_reset_invalidates_only_target_camera_preview",
+          "seconds": 0.008,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_deepstream_processor.test_shared_aux_clip_buffer_never_mixes_multiple_cameras",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestCameraRegistryRegister.test_register_adds_to_cameras",
+          "seconds": 0.005,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestCameraRegistryRegister.test_register_creates_frame_queue",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestCameraRegistryRegister.test_register_creates_stop_flag",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestCameraRegistryRegister.test_initial_count_zero",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestCameraRegistryRegister.test_count_increments_on_register",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestCameraRegistryRegister.test_register_multiple_cameras",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestCameraRegistryUnregister.test_unregister_removes_camera",
+          "seconds": 0.004,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestCameraRegistryUnregister.test_unregister_removes_frame_queue",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestCameraRegistryUnregister.test_unregister_calls_release",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestCameraRegistryUnregister.test_unregister_nonexistent_does_not_raise",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestCameraRegistryUnregister.test_count_decrements_on_unregister",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestCameraRegistryStopFlag.test_stop_flag_none_for_unknown",
+          "seconds": 0.004,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestCameraRegistryStopFlag.test_ensure_stop_flag_creates_event",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestCameraRegistryStopFlag.test_ensure_stop_flag_initially_not_set",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestCameraRegistryStopFlag.test_ensure_stop_flag_clears_existing_set_flag",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestCameraRegistryRetry.test_enqueue_adds_pending",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestCameraRegistryRetry.test_dequeue_not_ready_returns_empty",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestCameraRegistryRetry.test_dequeue_ready_returns_item",
+          "seconds": 0.012,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestCameraRegistryRetry.test_dequeue_removes_item_from_pending",
+          "seconds": 0.013,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestCameraRegistryRetry.test_enqueue_same_camera_replaces_old_entry",
+          "seconds": 0.004,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestCameraRegistryRetry.test_multiple_cameras_in_queue",
+          "seconds": 0.014,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestParseDetections.test_none_enables_all",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestParseDetections.test_empty_list_enables_all",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestParseDetections.test_fall_enables_pose_and_person_not_helmet",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestParseDetections.test_helmet_enables_helmet_and_pose",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestParseDetections.test_intrusion_enables_pose_only",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestParseDetections.test_person_enables_pose_only",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestParseDetections.test_fall_and_helmet_enables_all",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestCameraStatusContract.test_get_camera_status_uses_common_fields",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestProcessorStatsContract.test_get_stats_uses_common_fields",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestProcessorStatsContract.test_case_insensitive",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestProcessorStatsContract.test_model_settings_mapping_supported",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestProcessorStatsContract.test_unknown_mode_treated_as_person",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestModelSettingsHelpers.test_flags_to_detection_modes",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestModelSettingsHelpers.test_update_camera_model_settings_updates_memory",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestModelSettingsHelpers.test_update_camera_model_settings_allows_all_off",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestModelSettingsHelpers.test_update_camera_model_settings_persists_json",
+          "seconds": 0.004,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestVideoProcessorStats.test_increment_stat_increments_field",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestVideoProcessorStats.test_increment_stat_with_custom_delta",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestVideoProcessorStats.test_increment_stat_returns_new_value",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestVideoProcessorStats.test_add_inference_metrics",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestVideoProcessorStats.test_add_inference_metrics_accumulates",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestUpdateZonesNoManager.test_returns_false_when_no_zone_manager",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestBuildDisplayEvents.test_person_in_danger_zone_is_recolored",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestBuildDisplayEvents.test_person_in_object_watch_zone_maps_to_zone_object",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestBuildDisplayEvents.test_returns_true_with_zone_manager",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestBuildDisplayEvents.test_returns_false_on_exception",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestProcessInferenceErrorHandling.test_consecutive_errors_trigger_retry_and_break",
+          "seconds": 0.01,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestProcessInferenceErrorHandling.test_error_counter_resets_on_success",
+          "seconds": 0.01,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_unit.TestProcessInferenceErrorHandling.test_inference_error_stat_incremented",
+          "seconds": 0.007,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_stats.TestProcessorStats.test_get_fps_returns_zero_at_start",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_stats.TestProcessorStats.test_get_fps_nonzero",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_stats.TestProcessorStats.test_get_avg_inference_time_zero_count",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_stats.TestProcessorStats.test_get_avg_inference_time",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_stats.TestProcessorStats.test_snapshot_is_dict",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_stats.TestProcessorStats.test_with_derived_stats_adds_fps",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_stats.TestProcessorStats.test_with_derived_stats_avg_inference",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_stats.TestProcessorStats.test_to_dict_includes_derived",
+          "seconds": 0.001,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_stats.TestEventDebouncer.test_should_send_when_debounce_disabled",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_stats.TestEventDebouncer.test_should_send_first_call",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_stats.TestEventDebouncer.test_should_not_send_within_debounce_window",
+          "seconds": 0.005,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_stats.TestEventDebouncer.test_should_send_after_debounce_window",
+          "seconds": 0.053,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_stats.TestEventDebouncer.test_head_event_state_change_sends_immediately",
+          "seconds": 0.034,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_stats.TestEventDebouncer.test_head_event_resend_cooldown",
+          "seconds": 0.034,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_stats.TestEventDebouncer.test_fall_detected_requires_sustained_duration",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_stats.TestEventDebouncer.test_fall_detected_resend_cooldown",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_stats.TestEventDebouncer.test_fall_detected_timer_resets_on_gap",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_stats.TestEventDebouncer.test_fall_detected_reassociates_changed_object_id_by_bbox",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_stats.TestEventDebouncer.test_fall_detected_distant_new_object_id_starts_new_timer",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_stats.TestEventDebouncer.test_fall_duration_and_gap_boundaries[0.125-False-same_id]",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_stats.TestEventDebouncer.test_fall_duration_and_gap_boundaries[0.125-False-changed_id]",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_stats.TestEventDebouncer.test_fall_duration_and_gap_boundaries[0.25-True-same_id]",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_stats.TestEventDebouncer.test_fall_duration_and_gap_boundaries[0.25-True-changed_id]",
+          "seconds": 0.005,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_stats.TestEventDebouncer.test_fall_duration_and_gap_boundaries[0.5-True-same_id]",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_stats.TestEventDebouncer.test_fall_duration_and_gap_boundaries[0.5-True-changed_id]",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_stats.TestEventDebouncer.test_fall_duration_and_gap_boundaries[1.0-True-same_id]",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_stats.TestEventDebouncer.test_fall_duration_and_gap_boundaries[1.0-True-changed_id]",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_stats.TestEventDebouncer.test_fall_duration_and_gap_boundaries[1.125-False-same_id]",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_stats.TestEventDebouncer.test_fall_duration_and_gap_boundaries[1.125-False-changed_id]",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_stats.TestEventDebouncer.test_different_cameras_independent",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_stats.TestEventDebouncer.test_different_object_ids_independent",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_stats.TestEventDebouncer.test_cleanup_removes_expired_keys",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_stats.TestEventDebouncer.test_cleanup_keeps_recent_keys",
+          "seconds": 0.002,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_stats.TestEventDebouncer.test_stat_callback_called_on_filter",
+          "seconds": 0.003,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_processor_stats.TestEventDebouncer.test_save_locally_creates_file",
+          "seconds": 0.004,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_service_compatibility.test_deepstream_service_import_does_not_require_torch",
+          "seconds": 1.141,
+          "result": "passed",
+          "skip_reason": null
+        }
+      ]
+    },
+    {
+      "file": "edge-service-guards-20261022.xml",
+      "sha256": "9290dbca5b3e751d683e9e3369df76b3968661a4109149082184832299db71bc",
+      "summary": {
+        "name": "pytest",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "tests": "2",
+        "time": "0.422",
+        "timestamp": "2026-10-22T18:46:14.638129+09:00",
+        "hostname": "ubuntu"
+      },
+      "cases": [
+        {
+          "name": "tests.test_edge_service.test_publicly_writable_model_is_not_executed",
+          "seconds": 0.082,
+          "result": "passed",
+          "skip_reason": null
+        },
+        {
+          "name": "tests.test_edge_service.test_readiness_timeout_stops_only_owned_child",
+          "seconds": 0.118,
+          "result": "passed",
+          "skip_reason": null
+        }
+      ]
+    }
+  ],
+  "checks": {
+    "ruff": "PASS",
+    "python38": "AST checks PASS; new supervisor not executed on B Python 3.8 yet",
+    "owned_fixture_processes_remaining": [],
+    "final_ruff": "PASS"
+  },
+  "production": {
+    "initial_observation": {
+      "frames": 7866994,
+      "source_errors": 0,
+      "pipeline_restarts": 0
+    },
+    "final_metrics": {
+      "cctv_processor_frames_processed_total": 7885080.0,
+      "cctv_processor_source_error_identified_total": 0.0,
+      "cctv_processor_pipeline_restart_executed_total": 0.0
+    },
+    "containers": [
+      {
+        "id": "c6aac881db6d",
+        "identity_state": "\"/cctv-ai-engine\" \"2026-10-19T08:40:12.347649183Z\" \"running\""
+      },
+      {
+        "id": "922d80edd866",
+        "identity_state": "\"/cctv-public-api\" \"2026-10-19T04:35:34.121987945Z\" \"running\""
+      },
+      {
+        "id": "a1c5702a5439",
+        "identity_state": "\"/cctv-public-demo-ui\" \"2026-10-19T04:35:33.544644097Z\" \"running\""
+      },
+      {
+        "id": "8314d05912aa",
+        "identity_state": "\"/cctv-progress-web\" \"2026-10-19T04:31:54.255910016Z\" \"running\""
+      },
+      {
+        "id": "6bb51352f9dc",
+        "identity_state": "\"/cctv-kuiper-rule-loader\" \"0001-01-01T00:00:00Z\" \"created\""
+      },
+      {
+        "id": "74deaeb0b5bd",
+        "identity_state": "\"/cctv-action-layer\" \"2026-10-19T04:31:54.718149472Z\" \"running\""
+      },
+      {
+        "id": "8e3b45eaa7c6",
+        "identity_state": "\"/cctv-alert-api\" \"2026-10-19T04:31:54.706187136Z\" \"running\""
+      },
+      {
+        "id": "957101f7ab73",
+        "identity_state": "\"/cctv-media-server\" \"2026-10-19T04:31:54.529492192Z\" \"running\""
+      },
+      {
+        "id": "29aeb393bd52",
+        "identity_state": "\"/cctv-device-signboard\" \"2026-10-19T04:31:54.818044288Z\" \"running\""
+      },
+      {
+        "id": "ecac3c50c98a",
+        "identity_state": "\"/aiot-parser\" \"2026-10-19T04:33:35.034096532Z\" \"running\""
+      },
+      {
+        "id": "64c16ac5a15e",
+        "identity_state": "\"/cctv-edgex-adapter\" \"2026-10-19T04:31:54.617063968Z\" \"running\""
+      },
+      {
+        "id": "589787a68cd5",
+        "identity_state": "\"/cctv-edgex-command-result\" \"2026-10-19T04:31:54.66473168Z\" \"running\""
+      },
+      {
+        "id": "a8ff5823d34a",
+        "identity_state": "\"/cctv-device-speaker\" \"2026-10-19T04:31:54.744499456Z\" \"running\""
+      },
+      {
+        "id": "9bdc877613d8",
+        "identity_state": "\"/cctv-device-siren\" \"2026-10-19T04:31:54.526276928Z\" \"running\""
+      },
+      {
+        "id": "2ee109f4f7b8",
+        "identity_state": "\"/cctv-sensor-rule-bridge\" \"2026-10-19T04:31:54.777103168Z\" \"running\""
+      },
+      {
+        "id": "6709ebb4de57",
+        "identity_state": "\"/cctv-grafana\" \"2026-10-19T04:31:54.68607424Z\" \"running\""
+      },
+      {
+        "id": "2f1c7751643d",
+        "identity_state": "\"/edgex-mqtt-broker\" \"2026-10-19T04:31:54.70201472Z\" \"running\""
+      },
+      {
+        "id": "3f72e5aa05a9",
+        "identity_state": "\"/edgex-ui-go\" \"2026-10-19T04:31:54.7746584Z\" \"running\""
+      },
+      {
+        "id": "6249a0c22b57",
+        "identity_state": "\"/edgex-kuiper\" \"2026-10-19T04:31:54.290632608Z\" \"running\""
+      },
+      {
+        "id": "1d13831d0720",
+        "identity_state": "\"/cctv-prometheus\" \"2026-10-19T04:31:54.539839392Z\" \"running\""
+      },
+      {
+        "id": "118472f5aeed",
+        "identity_state": "\"/aiot-parser-db\" \"2026-10-19T04:31:54.698492Z\" \"running\""
+      },
+      {
+        "id": "ac9d4613800f",
+        "identity_state": "\"/edgex-app-rules-engine\" \"2026-10-19T04:33:34.972463195Z\" \"running\""
+      },
+      {
+        "id": "2026a3b6bb0a",
+        "identity_state": "\"/edgex-core-common-config-bootstrapper\" \"2026-09-16T00:14:02.853614493Z\" \"exited\""
+      },
+      {
+        "id": "746e673415b9",
+        "identity_state": "\"/edgex-support-notifications\" \"2026-10-19T04:33:34.991080063Z\" \"running\""
+      },
+      {
+        "id": "c7448aca4f7d",
+        "identity_state": "\"/edgex-support-scheduler\" \"2026-10-19T04:31:54.750586368Z\" \"running\""
+      },
+      {
+        "id": "5d7049bb56d0",
+        "identity_state": "\"/edgex-device-virtual\" \"2026-10-19T04:33:35.0647887Z\" \"running\""
+      },
+      {
+        "id": "f51a40001b1c",
+        "identity_state": "\"/cctv-device-dabit\" \"2026-10-01T23:40:25.229113157Z\" \"exited\""
+      },
+      {
+        "id": "3a534e8a4831",
+        "identity_state": "\"/edgex-device-rest\" \"2026-10-19T04:33:37.210225867Z\" \"running\""
+      },
+      {
+        "id": "135a0431ddbf",
+        "identity_state": "\"/edgex-core-command\" \"2026-10-19T04:33:35.060441837Z\" \"running\""
+      },
+      {
+        "id": "fa3e84dfbabf",
+        "identity_state": "\"/edgex-core-data\" \"2026-10-19T04:31:54.71103136Z\" \"running\""
+      },
+      {
+        "id": "2e7b3da73a54",
+        "identity_state": "\"/edgex-core-metadata\" \"2026-10-19T04:33:35.054281881Z\" \"running\""
+      },
+      {
+        "id": "ecb7e55482d1",
+        "identity_state": "\"/edgex-core-consul\" \"2026-10-19T04:31:54.579229952Z\" \"running\""
+      },
+      {
+        "id": "b646e206b366",
+        "identity_state": "\"/edgex-redis\" \"2026-10-19T04:31:54.465489792Z\" \"running\""
+      },
+      {
+        "id": "0ceb741184f8",
+        "identity_state": "\"/cctv-appearance-review\" \"2026-10-19T04:31:54.6870952Z\" \"running\""
+      },
+      {
+        "id": "052f94f81510",
+        "identity_state": "\"/cctv-appearance-rapv2-color-train\" \"2026-08-28T04:04:36.563214246Z\" \"exited\""
+      },
+      {
+        "id": "37a781537f86",
+        "identity_state": "\"/appearance-training-jetson-appearance-multitask-train-1\" \"2026-08-26T23:34:15.546369346Z\" \"exited\""
+      },
+      {
+        "id": "a49749b1d574",
+        "identity_state": "\"/cctv-fall-training\" \"2026-07-27T02:29:31.59916121Z\" \"exited\""
+      }
+    ],
+    "restart_or_deploy_commands": 0,
+    "ap_or_os_package_changes": 0
+  },
+  "fixes": [
+    {
+      "stage": "initial_test",
+      "cause": "The reboot test reused a command ID with a changed expected_boot_id; conflict was correctly rejected. The test now uses a new ID when checking stale epoch."
+    },
+    {
+      "stage": "guard_test",
+      "cause": "Test umask created group-writable 0664 model fixtures; the model safety gate correctly refused them. Only test fixtures were changed to 0600 and explicit unsafe-mode rejection added."
+    }
+  ],
+  "limits": [
+    "Real B supervisor/API trial pending a new authenticated connection; existing B SDK/main.py test evidence is separate.",
+    "Model hashes verify approved files before launch, not a GPU engine identity measurement; local deployment files must remain immutable during a run.",
+    "Foreground Linux processes only; daemonizing or closing inherited lock FD is outside the supervisor contract.",
+    "SSH camera relay still depends on A; central ownership/result fencing and automatic handoff are not yet implemented.",
+    "Private per-session AI logs require retention management before long-term deployment."
+  ],
+  "documentation_checks": {
+    "version": "0.139",
+    "rows": 37,
+    "counts": {
+      "DONE": 9,
+      "BLOCKED": 3,
+      "PLANNED": 16,
+      "VERIFY": 7,
+      "IN_PROGRESS": 2
+    },
+    "local_links_checked": 1695,
+    "missing_links": [],
+    "http_html_pdf_match": true,
+    "pdf_first_page_visual": "PASS"
+  },
+  "final_targeted_recheck": {
+    "scope": "test harness PID identity guard; parent crash 2 cases",
+    "summary": {
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "0",
+      "tests": "2",
+      "time": "1.321",
+      "timestamp": "2026-10-22T18:55:36.976566+09:00",
+      "hostname": "ubuntu"
+    },
+    "sha256": "a5cdd4b7646510d42406a626855248a9eacef33c896d3787145a56763a6e55fa"
+  }
+}

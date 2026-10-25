@@ -1,0 +1,1632 @@
+{
+  "date": "2026-10-15",
+  "status": "BUILD_TIMEOUT_OPERATING_RESTORED_SPEC_MAPPED",
+  "runtime_root": "data/runtime/p52_1080_standard_20261015",
+  "confidence": 0.5,
+  "input_standard": "1920x1080 fullframe30; internal implementation standard",
+  "inference_target_per_camera_fps": 15,
+  "new_video_gpu_trials": 0,
+  "builder": {
+    "optimization_level": 3,
+    "cpus": 4,
+    "memory_gib": 16,
+    "timeout_seconds": 720,
+    "same_onnx_fp16_input960": true,
+    "result": "TimeoutExpired",
+    "engine_created": false,
+    "last_tactic_layer": "/model.22/Sigmoid",
+    "retry_without_new_evidence": false
+  },
+  "baseline_gpu_only_ms": {
+    "count": 60,
+    "mean": 130.68591666666666,
+    "median": 130.051,
+    "min": 120.469,
+    "max": 171.068
+  },
+  "recovery_harness_tests_pass": 5,
+  "product_source_hashes_unchanged": {
+    "src/core/ai/_fall_detector.py": "a2da7d2844c49c14a695be82deb9b5731bc07f983a1965a797a2fb249ea80da0",
+    "src/core/_synthetic_object_ids.py": "30c6677c3fa9a120e4300f2156a7c7e3186a56ea9bc41532c4b3f8f69ef0a0bb",
+    "src/core/deepstream_processor.py": "03d2a20adeb2a3ecd2bfd407133c860e918d19bef0d2f7a684c2346b18de12d8",
+    "src/core/event_debouncer.py": "2e1ddb98b4443fdd4874fd5bacd341a67862b1e5453c278ef201915174d11389"
+  },
+  "operating_recovery": {
+    "checked_at_utc": "2026-10-15T02:20:39.839996+00:00",
+    "duration_seconds": 30.048709360009525,
+    "before_metrics": {
+      "cctv_processor_frames_processed_total": 1190.0,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 596.0,
+      "cctv_camera_primary_last_frame_age_seconds{camera_id=\"camera_1\"}": 0.01191133601241745
+    },
+    "after_metrics": {
+      "cctv_processor_frames_processed_total": 2090.0,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 1046.0,
+      "cctv_camera_primary_last_frame_age_seconds{camera_id=\"camera_1\"}": 0.016724426997825503
+    },
+    "rates": {
+      "cctv_processor_frames_processed_total": 29.95136959851492,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 14.97568479925746
+    },
+    "snapshot": [
+      {
+        "name": "/cctv-ai-engine",
+        "id": "c8a71163c84b458197b98a4bde8e0e06719afc5cf5964e6fbd0b716109ce0377",
+        "image": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+        "started_at": "2026-10-15T02:19:23.143925744Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-media-server",
+        "id": "957101f7ab7336585817a176154f7711de977caee7cfbf34257f2fb68810dea4",
+        "image": "sha256:f8628851106cc053f9175b248050bb5f362a6e65abd72297c167a1cb5a9a3be2",
+        "started_at": "2026-10-12T23:35:15.324861031Z",
+        "status": "running",
+        "health": null,
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-action-layer",
+        "id": "74deaeb0b5bdd64c8f2e2a141daa25c193a75cf235b214fee6ef8b4dcdceedeb",
+        "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+        "started_at": "2026-10-12T23:35:15.475740705Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-device-signboard",
+        "id": "29aeb393bd52e7a9f8241be9214b970e82e8442253fdfe2e73dbbf5d153feaa8",
+        "image": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+        "started_at": "2026-10-12T23:35:15.45875226Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-device-speaker",
+        "id": "a8ff5823d34ad72dd2c5b236cc88f210b16feb05ef53532e6549601d2beafb7a",
+        "image": "sha256:4daca5e8c9865c5f19dde37d7dbdfcc37ea5c413fa8375802e80c7f8185bba30",
+        "started_at": "2026-10-12T23:35:15.455773133Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      }
+    ],
+    "same_ai_container_and_image": true,
+    "other_four_containers_unchanged": true,
+    "healthy": true,
+    "monitor_container_stable": true,
+    "trial_containers_remaining": 0,
+    "maintenance_start_to_ai_started_seconds": 735.1271209716797
+  },
+  "operating_applied": false,
+  "spec_source": "evidence/ai_model_spec_20261015.png",
+  "spec_sha256": "46558c9c03f452592cc2a52c98b14fa39b06adfa663c19c183038595ac996e4e",
+  "certification_due_date": null,
+  "certification_schedule_user_reply": "인증 일정은 아직 미정",
+  "official_notice": "https://www.ksecurity.or.kr/user/bbs/kisis/26/95/bbsDataView/36981.do",
+  "official_pdf": "https://www.ksecurity.or.kr/common/proc/kisis/bbs/26/fileDownLoad/3840.do",
+  "official_pdf_sha256": "a5ccb3d622d4f0d26d487f08288e097111d56e1f4c6b5fb468305c9777f2a84f",
+  "official_new_criteria": {
+    "f1_percent_min": 90,
+    "specificity_percent_min": 90
+  },
+  "certification_scheme_and_deliverable_acceptance": "UNCONFIRMED",
+  "wbs_added": [
+    "P5.7",
+    "P5.8",
+    "P5.9",
+    "P7.4"
+  ],
+  "limitations": [
+    "엔진 전후 비교/새 영상 GPU 평가 미실행",
+    "낙상 기존20영상은 개발 표본",
+    "신규 시험 사건 매칭/정상 표본 단위/SA 형식 미확정",
+    "싸움·월담 실제 구현/품질 미검증",
+    "추가4행 공수 미산정; 이전 견적으로 납기 보장 불가"
+  ],
+  "artifacts": {
+    "build_plan.json": "4af8364becd7bb1ed1f9cd1d3815a3f9727876c36b38c21a9ae6594fc076c8f5",
+    "build_failure.json": "aaca73ebd039e8caa1ad2896084c6e281fa78aae7f766c19ea39ae1d2fa280b5",
+    "build_recovery.json": "291ed3a066dbc72d9e9fb95d3d651b5416f6a5e4ba26eca0e4e5196d42d434e9",
+    "operating_after_build.json": "ad1a17bb5c71d00b71fb4a3d1142502f8510452e86067ac40590c16342b82edd",
+    "build_tests.xml": "f17bd0aee6299f9e938632cb1b26732e4804c0e4ee5a7a6c2ffc5ac255fe0644",
+    "build.log": "5d298389815dbe4b723e311e8a5c119466fdf0c98af2fad92c29d7a763809c36",
+    "build/optimized_build.log": "86a9879688be0add9720dbc83eb3e29f53aabc4fea4e5808413d4bd3962b231c",
+    "build/baseline_times.json": "d553409f4ca179beb673da7f3bf8fc2b6f7ba8d02481731789d044bcd21fea0f",
+    "online_validation.json": "96cafbc8a34c2665a4b49735b85c935b1f1073749d7ca2fe1d69e2a39c38f7e7"
+  },
+  "online_validation": {
+    "wbs_rows": 37,
+    "pdf_pages": 5,
+    "counts_match": true,
+    "all_wbs_ids_in_html": true,
+    "criteria_match": true,
+    "http": {
+      "index.html": {
+        "http_status": 200,
+        "bytes": 94820,
+        "sha256": "1c0500c06eaefcf9006550a260af5327fa662613ddf6106ce71862705928807e"
+      },
+      "CCTV_project_progress.pdf": {
+        "http_status": 200,
+        "bytes": 154226,
+        "sha256": "1052ddfcd1c653f94722d55288067e88303440ce450a1b42929a8071f4f8bee3"
+      }
+    },
+    "renderer_invalid_input_checks_pass": 4,
+    "ruff_pass": true,
+    "browser_interaction_tested": false,
+    "pdf_text_extraction_reliable": false,
+    "pdf_visual_firstpage_checked": true,
+    "wbs_last_page_png_checked": true
+  },
+  "performance_followup_20261016": {
+    "checked_at": "2026-10-16T10:09:08.332797+09:00",
+    "state": "GPU20_REGRESSION_COMPLETE_OPERATIONS_RESTORED_FULL_GATE_PENDING",
+    "wbs": "P5.2",
+    "priority": "P5.2 낙상 처리 성능 보완(1080p/0.5·실제 추론15회/초 목표) → 미사용80영상 재평가 → 배치 지원2채널/4채널 검증 → 운영 적용 준비; P5.7 싸움은 사용자 지시로 보류",
+    "input_resolution": [
+      1920,
+      1080
+    ],
+    "confidence": 0.5,
+    "target_actual_inferences_per_second": 15,
+    "current_gpu_bottleneck_ms": {
+      "count": 60,
+      "mean": 130.68591666666666,
+      "median": 130.051,
+      "min": 120.469,
+      "max": 171.068
+    },
+    "source_outputs": [
+      "output",
+      "onnx::Shape_978",
+      "onnx::Sigmoid_1021",
+      "onnx::Conv_841",
+      "onnx::Conv_885",
+      "onnx::Conv_929",
+      "onnx::Slice_1068"
+    ],
+    "candidate_outputs": [
+      "output"
+    ],
+    "cpu_parity": {
+      "scope": "CPU_FINAL_OUTPUT_EQUIVALENCE_NOT_GPU_PERFORMANCE",
+      "source_sha256": "53e9514c3fd900b32702f95d696689d031feb4603141941ca45fbf194b3cce40",
+      "candidate_sha256": "71e4b89aab4416860e594517a5659c27ebde5c4ed01c6f4b3aafc2f12b4871df",
+      "source_outputs": [
+        "output",
+        "onnx::Shape_978",
+        "onnx::Sigmoid_1021",
+        "onnx::Conv_841",
+        "onnx::Conv_885",
+        "onnx::Conv_929",
+        "onnx::Slice_1068"
+      ],
+      "candidate_outputs": [
+        "output"
+      ],
+      "nodes_unchanged": 829,
+      "initializers_unchanged": 185,
+      "source_unchanged": true,
+      "samples": [
+        {
+          "scene": "00772_O_E_FY_C3",
+          "frame_index": 180,
+          "video_sha256": "b597949d0ba9894fcfb7122d4f8f81c08e648e9b4269844933a050dc3c1cd464",
+          "input_sha256": "8bc48833f729b7b58d41f4f68ca1409b1e5fcdd17742a33bf4c62e297fc29248",
+          "max_absolute_error": 0.0,
+          "confidence_0_5_mask_identical": true,
+          "reference_seconds": 5.496770898986142,
+          "candidate_seconds": 5.5368136140168644
+        },
+        {
+          "scene": "00610_H_D_SY_C5",
+          "frame_index": 180,
+          "video_sha256": "23af1eb9d8be78eb3f84c356229e230f0e4a81c754783f2daeeee1ecdefef7be",
+          "input_sha256": "c9ad56ad9340ffbf494063acf057174573b0b9ef62797fc8db1418fc7996dcce",
+          "max_absolute_error": 0.0,
+          "confidence_0_5_mask_identical": true,
+          "reference_seconds": 6.055211191007402,
+          "candidate_seconds": 5.816047748958226
+        },
+        {
+          "scene": "00925_O_E_BY_C5",
+          "frame_index": 180,
+          "video_sha256": "9ea15da133380cae9e9a364555b850e8693ff9205dd1f221daeef681dcafb80b",
+          "input_sha256": "c38d60ae875a10001e95404ae6a004c48397ac37a28748f3615aeda5c4a99cfe",
+          "max_absolute_error": 0.0,
+          "confidence_0_5_mask_identical": true,
+          "reference_seconds": 5.376599895011168,
+          "candidate_seconds": 5.840491155977361
+        },
+        {
+          "scene": "00909_O_E_N_C6",
+          "frame_index": 150,
+          "video_sha256": "121ff5c58614247f4777ba2b7370cde6a69508a73000d014ab8eeff4dd56dad8",
+          "input_sha256": "3b4652b110ec398fb29d5f7fc7e996f8723a063ccc12e1ed21e5318bbe7a3aec",
+          "max_absolute_error": 0.0,
+          "confidence_0_5_mask_identical": true,
+          "reference_seconds": 7.568089840991888,
+          "candidate_seconds": 5.450026231002994
+        }
+      ],
+      "new_unseen_videos": 0,
+      "gpu_trials": 0,
+      "operating_ai_stops": 0,
+      "operating_applied": false
+    },
+    "tests": {
+      "before": "1_FAILED_1_PASSED",
+      "after": "3_PASSED",
+      "ruff": "PASS"
+    },
+    "new_gpu_trials": 3,
+    "operating_ai_stops": 2,
+    "operating_applied": false,
+    "code_paths": [
+      "scripts/convert/convert_pt_to_onnx.py",
+      "tests/test_convert_pt_to_onnx.py"
+    ],
+    "scope": "초기 출력 정리 비교와 최신 Pose 배포 모드 비교를 단계별 보존. 상위 new_gpu_trials/operating_ai_stops는 초기3벤치마크/2중단이며 최신20영상·1중단은 pose_export_followup 참조. 최신 후보64.69ms·20개 TP10/TN10·전체 지속30FPS/15회 여유는 미확정.",
+    "gpu_comparison": {
+      "checked_at": "2026-10-16T09:21:49.625815+09:00",
+      "state": "GPU_ENGINE_FASTER_TARGET_NOT_MET",
+      "approval": {
+        "confirmed_at": "2026-10-16T09:12:35.298392+09:00",
+        "message": "15분 시험·5분 복구 승인",
+        "trial_seconds": 900,
+        "recovery_seconds": 300,
+        "operating_model_replacement": false
+      },
+      "successful_engine_builds": 1,
+      "failed_engine_builds": 1,
+      "successful_gpu_benchmarks": 3,
+      "operating_ai_stops": 2,
+      "benchmarks": {
+        "baseline_before": {
+          "samples": 60,
+          "mean_ms": 124.77765,
+          "median_ms": 125.715,
+          "p95_ms": 130.0707,
+          "min_ms": 117.227,
+          "max_ms": 137.194,
+          "execution_environment": "container"
+        },
+        "candidate": {
+          "samples": 59,
+          "mean_ms": 113.08852542372881,
+          "median_ms": 112.671,
+          "p95_ms": 119.0777,
+          "min_ms": 104.821,
+          "max_ms": 123.146,
+          "execution_environment": "host"
+        },
+        "baseline_after": {
+          "samples": 60,
+          "mean_ms": 126.43723333333334,
+          "median_ms": 126.2485,
+          "p95_ms": 142.41965,
+          "min_ms": 113.975,
+          "max_ms": 168.312,
+          "execution_environment": "host"
+        }
+      },
+      "candidate_mean_reduction_percent": 10.557576718254037,
+      "gpu_single_inference_target_ms": 66.66666666666667,
+      "target_met": false,
+      "candidate_engine_sha256": "919b1bc10d541be3602a413e989041bfae34421259178a9d11f0ec41becdeb5c",
+      "candidate_engine_path": "data/runtime/p52_output_contract_20261016/host_retry/medium_960_fp16.engine",
+      "engine_bindings": [
+        "input",
+        "output"
+      ],
+      "precision": "FP16",
+      "internal_model_input": [
+        1,
+        3,
+        960,
+        960
+      ],
+      "builder_optimization_level": 0,
+      "video_resolution": [
+        1920,
+        1080
+      ],
+      "confidence": 0.5,
+      "input_weights_or_threshold_changed": false,
+      "before_rates": {
+        "cctv_processor_frames_processed_total": 30.018235790317977,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 14.959363913186086
+      },
+      "after_rates": {
+        "cctv_processor_frames_processed_total": 29.97937604264083,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 15.006324744984477
+      },
+      "recovery": {
+        "same_container_and_image": true,
+        "healthy": true,
+        "other_four_containers_unchanged": true,
+        "trial_containers_remaining": 0,
+        "first_start_to_healthy_seconds": 435.7711136341095,
+        "last_result_to_healthy_seconds": 14.215077638626099,
+        "last_result_to_throughput_checked_seconds": 73.16153264045715,
+        "first_start_to_throughput_checked_seconds": 494.71756863594055
+      },
+      "failure_analysis": {
+        "observed": "TensorRT 10.3 container: insufficient tactic memory, then wtsEngineUtils.cpp::buildWtsEngine::122 Assertion engine failed",
+        "memory_tactic_rejections_container": 470,
+        "memory_tactic_rejections_host": 0,
+        "cause_status": "Container memory accounting/limit environment is the leading cause; exact version-specific root cause not isolated",
+        "confirmed_workaround": "Same installed TensorRT 10.3.0.30, CPU affinity 0-3, same ONNX/960/FP16/L0, host build succeeds",
+        "source": "https://forums.developer.nvidia.com/t/jetson-orin-32g-trtexec-onnx-trt-inside-container/335641/6"
+      },
+      "limitations": [
+        "GPU compute only; noDataTransfers; not full DeepStream pipeline FPS",
+        "One candidate measurement and two baseline measurements; candidate 59 samples, baseline 60 each",
+        "Build environment changed together with output contract; 10.6% reduction cannot be attributed solely to output pruning",
+        "FP16 GPU output parity and fall event accuracy not re-evaluated",
+        "No unseen80 video or multi-camera trial in this maintenance window",
+        "Operating engine/settings not replaced; installed package versions unchanged"
+      ],
+      "new_video_trials": 0,
+      "operating_applied": false,
+      "validation": {
+        "converter_tests": 3,
+        "reused_recovery_tests": 5,
+        "benchmark_command_test": 1,
+        "host_recovery_mock_cases": 3,
+        "ruff": "PASS",
+        "cpu_equivalence_samples": 4
+      },
+      "artifacts_sha256": {
+        "data/runtime/p52_output_contract_20261016/build_plan.json": "6981ef95a050f724f71ab99a9450740587509eef995f72ed8cd5d4f4a566f5c5",
+        "data/runtime/p52_output_contract_20261016/cpu_output_parity.json": "4c7fa1c8ddc487afaa1d93697452b0a16849e6cf053bf6fbfbc06c7690b10a13",
+        "data/runtime/p52_output_contract_20261016/build_started.json": "ac40fba12a371f8d27294b117f4ba93caef346f2ef3f3595b40debe7acdba795",
+        "data/runtime/p52_output_contract_20261016/build_failure.json": "fff80c48c5cd447d4a4db8a3c4c1750e3ce240fbd5302d7c132b410d7e253a00",
+        "data/runtime/p52_output_contract_20261016/build_recovery.json": "291ed3a066dbc72d9e9fb95d3d651b5416f6a5e4ba26eca0e4e5196d42d434e9",
+        "data/runtime/p52_output_contract_20261016/build/baseline_times.json": "274afce4f78ab3365a1d56f6c37fb4a6e16ffe506aefff35cde2800f401f3e2d",
+        "data/runtime/p52_output_contract_20261016/build/optimized_build.log": "b60f701d05c5ad25ec941ca3edd751659b08f223dc07a3b428727cfd3bfa3378",
+        "data/runtime/p52_output_contract_20261016/host_retry.py": "411798be9c7ef6a5d7f921455d19929b35d6edca91b2564a032ece992ac1dedf",
+        "data/runtime/p52_output_contract_20261016/host_retry/result.json": "110df75f48a66d5efc07933c954a219400d82e83e8249e7ace776ecc28dcb275",
+        "data/runtime/p52_output_contract_20261016/host_retry/recovery.json": "92aa31c76084e39853744c01390826796aec8ae66963b950120170b3282f3d84",
+        "data/runtime/p52_output_contract_20261016/host_retry/build.log": "a760e7366da0b1b3cd6967ea8ce664ef87b4a8d929703bc32a962297c766dcbb",
+        "data/runtime/p52_output_contract_20261016/host_retry/layers.json": "74958a60c224b8463065e9745f3812a342662c73586ffa01d0c690478eba04fb",
+        "data/runtime/p52_output_contract_20261016/host_retry/optimized_times.json": "3aed835c7316795279d5355d57cc844092109d5057dbbecc48f333fa7bed6496",
+        "data/runtime/p52_output_contract_20261016/host_retry/baseline_after_times.json": "c4039da100cf05d2c2af20998278bd154b1b9944e9d1423e28fc2b4242abb778",
+        "data/runtime/p52_output_contract_20261016/operating_before.json": "9841bb865e964bfc2c272936b69f6b4ab3817a29d233df6ac4c72dc734933008",
+        "data/runtime/p52_output_contract_20261016/operating_after.json": "a9fce680e96244d5afd78e6bba65a4d78c5b0b73f1eefb0a8b7a9ea61571a972",
+        "data/runtime/p52_output_contract_20261016/operating_final.json": "593a5b948394682343a755acc506d663c9dfaa27c0bee05324f26445a1a50a4b"
+      }
+    },
+    "next": "고정 후보(새 Pose ONNX·FP16/L1·960·interval1·1080p/0.5)로 미사용80영상 재평가 준비 → 배치 지원 다중 입력 → 운영 준비. 실제15회/초의 지속 여유·후면00925 자세 후보 공백·정상/유사 행동 대조는 잔여로 병행 관리.",
+    "documentation_validation": {
+      "http": [
+        {
+          "file": "index.html",
+          "status": 200,
+          "sha256": "9b228de63b2aeee7a4efccc9ce593437fcb3dabbea2caa3a400ad1830f42d829",
+          "bytes": 112023,
+          "local_matches": true
+        },
+        {
+          "file": "CCTV_project_progress.pdf",
+          "status": 200,
+          "sha256": "cb8869e39defff392313c539003339467944b978cef406bdb3e3664da512062e",
+          "bytes": 154655,
+          "local_matches": true
+        }
+      ],
+      "passed": true,
+      "checked_at": "2026-10-16T10:14:14.093902+09:00",
+      "wbs_rows_equal": 37,
+      "html_status_rows_equal": 37,
+      "counts": {
+        "DONE": 9,
+        "IN_PROGRESS": 2,
+        "VERIFY": 7,
+        "BLOCKED": 3,
+        "PLANNED": 16
+      },
+      "evidence_board_equal": true,
+      "artifact_hashes_verified": 25,
+      "pdf_first_page_visual_check": "PASS",
+      "ruff": "PASS",
+      "git_diff_check": "PASS"
+    },
+    "pose_export_followup": {
+      "checked_at": "2026-10-16T10:09:08.332797+09:00",
+      "state": "GPU20_REGRESSION_COMPLETE_OPERATIONS_RESTORED_FULL_GATE_PENDING",
+      "scope": "후보1개 생성·GPU 성능3회/레이어2회·고정4표본×두 엔진·기존20영상 회귀 완료, 후보 운영 미반영",
+      "code_paths": [
+        "scripts/convert/convert_pt_to_onnx.py",
+        "tests/test_convert_pt_to_onnx.py"
+      ],
+      "cpu_parity": {
+        "source_sha256": "53e9514c3fd900b32702f95d696689d031feb4603141941ca45fbf194b3cce40",
+        "candidate_sha256": "7e0f596d588980b8be5eed86934e8e35e0913fd85f9293d4c0948d74c7471752",
+        "weights_identical": true,
+        "source_node_count": 829,
+        "candidate_node_count": 669,
+        "source_scatter_count": 3,
+        "candidate_scatter_count": 0,
+        "samples": [
+          {
+            "scene": "00772_O_E_FY_C3",
+            "frame_index": 180,
+            "input_sha256": "8bc48833f729b7b58d41f4f68ca1409b1e5fcdd17742a33bf4c62e297fc29248",
+            "sample_path": "data/runtime/p52_pose_export_20261016/sample_000.npz",
+            "sample_sha256": "1b479e7f549cbb15066cfeecb9571f3db453b2255dfc67fb3b82218dbd6f796a",
+            "max_absolute_error": 0.0,
+            "confidence_max_absolute_error": 0.0,
+            "allclose_rtol_1e_5_atol_1e_4": true,
+            "confidence_0_5_mask_identical": true
+          },
+          {
+            "scene": "00610_H_D_SY_C5",
+            "frame_index": 180,
+            "input_sha256": "c9ad56ad9340ffbf494063acf057174573b0b9ef62797fc8db1418fc7996dcce",
+            "sample_path": "data/runtime/p52_pose_export_20261016/sample_014.npz",
+            "sample_sha256": "4a46cb1da6db28eb5ef8a06c42f54d31103d5bc1f212d8075bf67947c8e6d7be",
+            "max_absolute_error": 0.0,
+            "confidence_max_absolute_error": 0.0,
+            "allclose_rtol_1e_5_atol_1e_4": true,
+            "confidence_0_5_mask_identical": true
+          },
+          {
+            "scene": "00925_O_E_BY_C5",
+            "frame_index": 180,
+            "input_sha256": "c38d60ae875a10001e95404ae6a004c48397ac37a28748f3615aeda5c4a99cfe",
+            "sample_path": "data/runtime/p52_pose_export_20261016/sample_016.npz",
+            "sample_sha256": "39ab10a0b0b91133d8ab57262768e3205e7f1dccd059c61a97d7e135acd7e8bc",
+            "max_absolute_error": 0.0,
+            "confidence_max_absolute_error": 0.0,
+            "allclose_rtol_1e_5_atol_1e_4": true,
+            "confidence_0_5_mask_identical": true
+          },
+          {
+            "scene": "00909_O_E_N_C6",
+            "frame_index": 150,
+            "input_sha256": "3b4652b110ec398fb29d5f7fc7e996f8723a063ccc12e1ed21e5318bbe7a3aec",
+            "sample_path": "data/runtime/p52_pose_export_20261016/sample_011.npz",
+            "sample_sha256": "405f4e545dd5f6ee48f2b8d818056097dc005fa66152f3aaeccf8232e4808e34",
+            "max_absolute_error": 0.0,
+            "confidence_max_absolute_error": 0.0,
+            "allclose_rtol_1e_5_atol_1e_4": true,
+            "confidence_0_5_mask_identical": true
+          }
+        ],
+        "passed": true,
+        "new_video_trials": 0,
+        "new_gpu_trials": 0,
+        "operating_applied": false
+      },
+      "export": {
+        "export_seconds": 13.794458373973612,
+        "onnx_sha256": "7e0f596d588980b8be5eed86934e8e35e0913fd85f9293d4c0948d74c7471752",
+        "pt_sha256": "dbe539ea268db2534390942cfdf206e521f376f19e5415967a57f6a2ddfa3c90",
+        "node_counts": {
+          "Conv": 93,
+          "Sigmoid": 85,
+          "Mul": 107,
+          "Shape": 26,
+          "Constant": 142,
+          "Gather": 20,
+          "Add": 30,
+          "Div": 10,
+          "Slice": 20,
+          "Concat": 49,
+          "MaxPool": 3,
+          "Resize": 2,
+          "Unsqueeze": 25,
+          "Reshape": 28,
+          "Cast": 6,
+          "Range": 6,
+          "Expand": 6,
+          "ConstantOfShape": 3,
+          "Transpose": 4,
+          "Softmax": 1,
+          "Sub": 3
+        },
+        "node_count": 669,
+        "inputs": [
+          "input"
+        ],
+        "outputs": [
+          "output"
+        ],
+        "new_gpu_runs": 0
+      },
+      "validation": {
+        "regression_before": "1_FAILED",
+        "converter_after": "4_PASSED",
+        "maintenance_recovery": "9_PASSED",
+        "ruff": "PASS",
+        "input_hashes": 106,
+        "compose_preflight": 20,
+        "system_tensorrt_binding_import": "10.3.0 PASS",
+        "input_hashes_after": 106,
+        "video_pts_and_proofs": "20_PASS",
+        "raw_frames": 6001,
+        "tensor_frames": 3001,
+        "accepted_event_queue_and_pts_decisions": 478,
+        "analysis_assertions": "PASS",
+        "operating_recovery": "PASS",
+        "documentation": "WBS/HTML37행·HTTP200/해시 일치·PDF1쪽·Ruff/diff PASS"
+      },
+      "gpu_plan": {
+        "path": "data/runtime/p52_pose_export_20261016/plan.json",
+        "approval_status": "APPROVED_AND_EXECUTED",
+        "maintenance_seconds": 1500,
+        "recovery_seconds": 300,
+        "engine_builds": 1,
+        "benchmarks": 3,
+        "layer_profiles": 2,
+        "gpu_frame_inferences": 8,
+        "development_video_trials": 20,
+        "unseen_video_trials": 0,
+        "builder_level": 1,
+        "primary_interval": 1,
+        "approval": {
+          "at": "2026-10-16T09:46:15.038555+09:00",
+          "message": "25분 시험·5분 복구 승인",
+          "maintenance_seconds": 1500,
+          "recovery_seconds": 300
+        }
+      },
+      "new_gpu_trials": {
+        "benchmarks": 3,
+        "fixed_frame_inferences": 8,
+        "development_video_trials": 20,
+        "unseen_video_trials": 0
+      },
+      "operating_ai_stops": 1,
+      "operating_applied": false,
+      "source_reference": "https://docs.ultralytics.com/modes/export/",
+      "next": "고정 후보(새 Pose ONNX·FP16/L1·960·interval1·1080p/0.5)로 미사용80영상 재평가 준비 → 배치 지원 다중 입력 → 운영 준비. 실제15회/초의 지속 여유·후면00925 자세 후보 공백·정상/유사 행동 대조는 잔여로 병행 관리.",
+      "artifact_sha256": {
+        "data/runtime/p52_pose_export_20261016/plan.json": "190da5e4e5df24802d00cff521e974e0220c345d70fee61208095aa87a55bdbe",
+        "data/runtime/p52_pose_export_20261016/cpu_parity.json": "cf6d26705c9b06b14ffd7474c8c22df2b39e8d1336f1780ba99ed18ccaf1dd7b",
+        "data/runtime/p52_pose_export_20261016/export_result.json": "ad8b75c27ffd290ee8477a41a224c09e2d79cf750bec13a67dde59c2c272c8dd",
+        "data/runtime/p52_pose_export_20261016/run.py": "9365c3844547b5710cb050ffa042d7cb924a95223b9bcebd00afb193b9ccc465",
+        "data/runtime/p52_pose_export_20261016/capture_gpu_samples.py": "8bb1ff27e33ad0628afbb08901f562efa8dddf9b35cb8f7e334481b1e32d856b",
+        "data/runtime/p52_pose_export_20261016/observe_runtime.py": "e5a380c68b73df2cc1e4efa89346419c19ad241a2e0e08bd065e0a082691dc6e",
+        "scripts/convert/convert_pt_to_onnx.py": "323ac0668cdadc2a47102a5f53d18bcbd581e5499a6e9472c3387dd49554e397",
+        "tests/test_convert_pt_to_onnx.py": "0556c70c46c4518a873707ee4fbbb9b2db19b48a35a8a4c1a25b868df6325ea6",
+        "data/runtime/p52_pose_export_20261016/performance_summary.json": "a985c3311d4f2732db3806eb021d0ff879eaec8d7b8ae2c27c7b1f7f68c58df6",
+        "data/runtime/p52_pose_export_20261016/gpu_results.json": "b7b1a1229f55dd777500ee1399f111b2b0d83fe4756ebde5e199fb4943a8d0f9",
+        "data/runtime/p52_pose_export_20261016/video_results.json": "fed963f6d8fd2762cc060dccd4fc2afac6922f5d67b6100886bd3782f10d772d",
+        "data/runtime/p52_pose_export_20261016/result.json": "b19521ebb34afd8f2117c63dfda3603f18265a6e478396c99cdb02b8e961d1f9",
+        "data/runtime/p52_pose_export_20261016/recovery.json": "b6d7cd7f17dbe3485465b658bd4e5cc2238f50757a02e7b296e8e27b54878730",
+        "data/runtime/p52_pose_export_20261016/operating_before.json": "e17e00c25fac3456ae6fd58db11186e95895b3f5ab517ba728f39235421191b2",
+        "data/runtime/p52_pose_export_20261016/operating_after.json": "5f966c2a8efdf1e3685a4449012157529ace2ec8496102e59037d9d1ba231543",
+        "data/runtime/p52_pose_export_20261016/started.json": "f198d4cefb94b90fe0286c0dc636f8c4a65f4157ebeab1b6269c17cf62dc2a9f",
+        "data/runtime/p52_pose_export_20261016/analyze_gpu.py": "29c28b16f8161af0065311e3764d9b47d5b00063a19c02a7f558e3ae59de33bc",
+        "data/runtime/p52_pose_export_20261016/build/gpu_samples.json": "cb5bfe0729f2d32fc9ea509ee936f0d5c153456f0ba2ac7941435556c6f85fec",
+        "data/runtime/p52_pose_export_20261016/build/baseline_before_times.json": "064f16cee3916192433aadad503813dc05e8df6da521ca0f9f91025a262968d5",
+        "data/runtime/p52_pose_export_20261016/build/baseline_after_times.json": "59519984e952dea5f21a542f261d3b463af8e5354325d599911af2226efc7517",
+        "data/runtime/p52_pose_export_20261016/build/candidate_times.json": "676ab72723e47efbf5ddab5ee9bac0ca3cfa1005281c21a1111b395e8f1ecd34",
+        "data/runtime/p52_pose_export_20261016/build/baseline_before_profile.json": "9b39f1f54c0331b2972133b009dfe42c1cf371501371e477076720a1afbd4409",
+        "data/runtime/p52_pose_export_20261016/build/candidate_profile.json": "5933b0506e4802bf9c64ebd4ed39c73b503a0b9a4c88d4e3abdabdf46d051eee",
+        "data/runtime/p52_pose_export_20261016/build/layers.json": "dda96bbc3424e0b47e5b4b9fd2df553c18d7bd3d8be83e00a9310d589c0a1529",
+        "data/runtime/p52_pose_export_20261016/test_run.py": "8343b0d0b98cbe9d8877cd6a536636bab962dca6a79677683085de27dd819bea"
+      },
+      "performance": {
+        "benchmarks": {
+          "baseline_before": {
+            "samples": 59,
+            "mean_gpu_ms": 114.82587118644068,
+            "median_gpu_ms": 111.952,
+            "p95_gpu_ms": 124.01689999999982
+          },
+          "candidate": {
+            "samples": 59,
+            "mean_gpu_ms": 64.69257966101694,
+            "median_gpu_ms": 64.8964,
+            "p95_gpu_ms": 70.48223999999999
+          },
+          "baseline_after": {
+            "samples": 60,
+            "mean_gpu_ms": 120.31404999999998,
+            "median_gpu_ms": 116.0435,
+            "p95_gpu_ms": 158.7151
+          }
+        },
+        "candidate_reduction_percent_vs_before": 43.66027534337034,
+        "candidate_reduction_percent_vs_after": 46.23023689999884,
+        "layer_profiles": {
+          "baseline_before": {
+            "layer_count": 244,
+            "sum_layer_average_ms": 118.41032449999999,
+            "softmax": [
+              {
+                "name": "/model.22/dfl/Softmax",
+                "timeMs": 899.655,
+                "averageMs": 14.0571,
+                "medianMs": 13.1269,
+                "percentage": 11.8715
+              }
+            ],
+            "top_five": [
+              {
+                "name": "/model.22/dfl/Softmax",
+                "timeMs": 899.655,
+                "averageMs": 14.0571,
+                "medianMs": 13.1269,
+                "percentage": 11.8715
+              },
+              {
+                "name": "/model.1/conv/Conv + PWN(PWN(/model.1/act/Sigmoid), PWN(/model.1/act/Mul))",
+                "timeMs": 489.577,
+                "averageMs": 7.64964,
+                "medianMs": 6.61197,
+                "percentage": 6.46028
+              },
+              {
+                "name": "/model.22/cv2.0/cv2.0.0/conv/Conv || /model.22/cv3.0/cv3.0.0/conv/Conv || /model.22/cv4.0/cv4.0.0/conv/Conv",
+                "timeMs": 217.098,
+                "averageMs": 3.39216,
+                "medianMs": 2.37928,
+                "percentage": 2.86475
+              },
+              {
+                "name": "/model.0/conv/Conv",
+                "timeMs": 187.851,
+                "averageMs": 2.93517,
+                "medianMs": 2.12518,
+                "percentage": 2.47882
+              },
+              {
+                "name": "/model.2/m.0/cv1/conv/Conv + PWN(PWN(/model.2/m.0/cv1/act/Sigmoid), PWN(/model.2/m.0/cv1/act/Mul))",
+                "timeMs": 183.526,
+                "averageMs": 2.86759,
+                "medianMs": 2.03296,
+                "percentage": 2.42174
+              }
+            ]
+          },
+          "candidate": {
+            "layer_count": 301,
+            "sum_layer_average_ms": 65.72490797999997,
+            "softmax": [
+              {
+                "name": "/model/model.22/dfl/Softmax",
+                "timeMs": 181.837,
+                "averageMs": 2.67407,
+                "medianMs": 1.99646,
+                "percentage": 4.06858
+              }
+            ],
+            "top_five": [
+              {
+                "name": "/model/model.2/m.1/cv1/conv/Conv + PWN(PWN(/model/model.2/m.1/cv1/act/Sigmoid), PWN(/model/model.2/m.1/cv1/act/Mul))",
+                "timeMs": 205.445,
+                "averageMs": 3.02125,
+                "medianMs": 2.07779,
+                "percentage": 4.59681
+              },
+              {
+                "name": "/model/model.22/cv2.0/cv2.0.0/conv/Conv || /model/model.22/cv3.0/cv3.0.0/conv/Conv || /model/model.22/cv4.0/cv4.0.0/conv/Conv",
+                "timeMs": 185.156,
+                "averageMs": 2.72289,
+                "medianMs": 1.93166,
+                "percentage": 4.14286
+              },
+              {
+                "name": "/model/model.22/dfl/Softmax",
+                "timeMs": 181.837,
+                "averageMs": 2.67407,
+                "medianMs": 1.99646,
+                "percentage": 4.06858
+              },
+              {
+                "name": "/model/model.2/m.0/cv1/conv/Conv + PWN(PWN(/model/model.2/m.0/cv1/act/Sigmoid), PWN(/model/model.2/m.0/cv1/act/Mul))",
+                "timeMs": 180.355,
+                "averageMs": 2.65227,
+                "medianMs": 2.09914,
+                "percentage": 4.03542
+              },
+              {
+                "name": "/model/model.1/conv/Conv + PWN(PWN(/model/model.1/act/Sigmoid), PWN(/model/model.1/act/Mul))",
+                "timeMs": 141.601,
+                "averageMs": 2.08236,
+                "medianMs": 1.374,
+                "percentage": 3.1683
+              }
+            ]
+          }
+        },
+        "fixed_frame_comparisons": [
+          {
+            "scene": "00772_O_E_FY_C3",
+            "detections_before": 1,
+            "detections_after": 1,
+            "box_component_max_difference_pixels": 0.0,
+            "confidence_absolute_difference": 0.0003554821014404297,
+            "keypoint_coordinate_max_difference_pixels": 0.5625,
+            "keypoint_visible_confidence_0_5_masks_equal": true,
+            "raw_confidence_0_5_masks_equal": true,
+            "raw_outputs_equal": false,
+            "raw_max_absolute_difference": 5.125,
+            "raw_allclose_rtol_1e_3_atol_1e_3": false
+          },
+          {
+            "scene": "00610_H_D_SY_C5",
+            "detections_before": 1,
+            "detections_after": 1,
+            "box_component_max_difference_pixels": 1.0,
+            "confidence_absolute_difference": 0.0004826784133911133,
+            "keypoint_coordinate_max_difference_pixels": 0.640625,
+            "keypoint_visible_confidence_0_5_masks_equal": true,
+            "raw_confidence_0_5_masks_equal": true,
+            "raw_outputs_equal": false,
+            "raw_max_absolute_difference": 6.5625,
+            "raw_allclose_rtol_1e_3_atol_1e_3": false
+          },
+          {
+            "scene": "00925_O_E_BY_C5",
+            "detections_before": 1,
+            "detections_after": 1,
+            "box_component_max_difference_pixels": 0.0,
+            "confidence_absolute_difference": 0.0003592967987060547,
+            "keypoint_coordinate_max_difference_pixels": 0.5625,
+            "keypoint_visible_confidence_0_5_masks_equal": true,
+            "raw_confidence_0_5_masks_equal": true,
+            "raw_outputs_equal": false,
+            "raw_max_absolute_difference": 7.171875,
+            "raw_allclose_rtol_1e_3_atol_1e_3": false
+          },
+          {
+            "scene": "00909_O_E_N_C6",
+            "detections_before": 1,
+            "detections_after": 1,
+            "box_component_max_difference_pixels": 0.0,
+            "confidence_absolute_difference": 0.0005449652671813965,
+            "keypoint_coordinate_max_difference_pixels": 0.375,
+            "keypoint_visible_confidence_0_5_masks_equal": true,
+            "raw_confidence_0_5_masks_equal": true,
+            "raw_outputs_equal": false,
+            "raw_max_absolute_difference": 3.9375,
+            "raw_allclose_rtol_1e_3_atol_1e_3": false
+          }
+        ],
+        "fp16_bitwise_identical": false,
+        "pipeline_fps_evaluated_here": false,
+        "sample_count": 4,
+        "gpu_frame_inferences": 8,
+        "engine_sha256": "68d8c70ef45e6c445d829d077badc8f901c11f95304f157e7ef55e7b9524b0bc",
+        "engine_bytes": 56046404,
+        "builder_level": 1,
+        "build_reported_seconds": 411.593,
+        "scope": "같은 호스트 앞뒤 기준 측정. 새 Pose export와 L0→L1 빌드가 동시에 바뀌어 효과를 개별 분리하지 않음. 전송/디코드/추적/판정 제외. 레이어 합계는 병렬 실행으로 전체 지연과 다를 수 있음.",
+        "softmax_formats": {
+          "baseline": [
+            {
+              "Name": "/model.22/dfl/Softmax",
+              "LayerType": "CaskSoftMaxV2",
+              "Inputs": [
+                {
+                  "Name": "(Unnamed Layer* 1166) [Shuffle]_output",
+                  "Location": "Device",
+                  "Dimensions": [
+                    75600,
+                    16
+                  ],
+                  "Format/Datatype": "Row major linear FP16 format"
+                }
+              ],
+              "Outputs": [
+                {
+                  "Name": "(Unnamed Layer* 1167) [Softmax]_output",
+                  "Location": "Device",
+                  "Dimensions": [
+                    75600,
+                    16
+                  ],
+                  "Format/Datatype": "Row major linear FP16 format"
+                }
+              ]
+            }
+          ],
+          "candidate": [
+            {
+              "Name": "/model/model.22/dfl/Softmax",
+              "LayerType": "CaskSoftMaxV2",
+              "Inputs": [
+                {
+                  "Name": "(Unnamed Layer* 1166) [Shuffle]_output",
+                  "Location": "Device",
+                  "Dimensions": [
+                    75600,
+                    16
+                  ],
+                  "Format/Datatype": "Row major linear FP32"
+                }
+              ],
+              "Outputs": [
+                {
+                  "Name": "(Unnamed Layer* 1167) [Softmax]_output",
+                  "Location": "Device",
+                  "Dimensions": [
+                    75600,
+                    16
+                  ],
+                  "Format/Datatype": "Row major linear FP32"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "video_regression": {
+        "completed_trials": 20,
+        "unique_videos": 20,
+        "new_unseen_videos": 0,
+        "confidence_threshold": 0.5,
+        "summary": {
+          "TP": 10,
+          "FN": 0,
+          "FP": 0,
+          "TN": 10
+        },
+        "frames": 6001,
+        "tensor_frames": 3001,
+        "time_basis_decisions": 478,
+        "early_alerts": 0,
+        "duplicate_alerts": 0,
+        "normal_video_seconds": 100.0,
+        "model_input_size": 960,
+        "scope": "고정20개 개발 관측 영상·1080p30 전체화면·interval1·새960 medium GPU→경보 큐, 직전interval3 동일20개 TP10/FN0/FP0/TN10과 비교. 엔진과 추론 간격이 함께 바뀌었으므로 원인 분리 비교 아님. 신규 독립/운영nano/장시간/실물 합격 아님",
+        "pipeline_rates": {
+          "source_delivery_fps": {
+            "min": 27.377062265750116,
+            "median": 29.630903930956812,
+            "max": 29.904317340230346
+          },
+          "inferences_per_wall_second": {
+            "min": 13.712354142273124,
+            "median": 14.835080026393696,
+            "max": 14.973630823185056
+          }
+        },
+        "delay_seconds": {
+          "min": 2.3621666660000002,
+          "median": 2.5456833331666666,
+          "max": 4.4460500000000005
+        },
+        "delay_improved": 6,
+        "delay_unchanged": 4,
+        "delay_worsened": 0,
+        "trials": [
+          {
+            "index": 14,
+            "scene": "00610_H_D_SY_C5",
+            "is_fall": true,
+            "onset": 4.75,
+            "verdict": "TP",
+            "delay_seconds": 2.6500000000000004,
+            "early_alerts": 0,
+            "duplicate_alerts": 0,
+            "queue_frames": [
+              222
+            ],
+            "queue_pts": [
+              7.4
+            ],
+            "baseline": {
+              "verdict": "TP",
+              "delay_seconds": 2.716666666,
+              "early_alerts": 0,
+              "duplicate_alerts": 0
+            },
+            "queue_pts_match_previous_1080": false,
+            "frames": 300,
+            "tensor_frames": 150,
+            "candidate_frames": 29,
+            "time_basis_decisions": 29,
+            "valid_pose_frames": 110,
+            "last_pose_pts": 7.466666666,
+            "max_pose_score": 3.0,
+            "source_delivery_fps": 27.377062265750116,
+            "inferences_per_wall_second": 13.712354142273124,
+            "pipeline_wall_seconds": 10.92155166604789,
+            "baseline_source_delivery_fps": 26.511136839155757,
+            "video_seconds": 10.0
+          },
+          {
+            "index": 0,
+            "scene": "00772_O_E_FY_C3",
+            "is_fall": true,
+            "onset": 2.5025,
+            "verdict": "TP",
+            "delay_seconds": 2.4975,
+            "early_alerts": 0,
+            "duplicate_alerts": 0,
+            "queue_frames": [
+              150
+            ],
+            "queue_pts": [
+              5.0
+            ],
+            "baseline": {
+              "verdict": "TP",
+              "delay_seconds": 2.6975000000000002,
+              "early_alerts": 0,
+              "duplicate_alerts": 0
+            },
+            "queue_pts_match_previous_1080": false,
+            "frames": 301,
+            "tensor_frames": 151,
+            "candidate_frames": 69,
+            "time_basis_decisions": 69,
+            "valid_pose_frames": 285,
+            "last_pose_pts": 10.0,
+            "max_pose_score": 5.0,
+            "source_delivery_fps": 29.664732339477,
+            "inferences_per_wall_second": 14.8323661697385,
+            "pipeline_wall_seconds": 10.113018940028269,
+            "baseline_source_delivery_fps": 25.19363042505472,
+            "video_seconds": 10.033333
+          },
+          {
+            "index": 1,
+            "scene": "00533_H_D_N_C8",
+            "is_fall": false,
+            "onset": null,
+            "verdict": "TN",
+            "delay_seconds": null,
+            "early_alerts": 0,
+            "duplicate_alerts": 0,
+            "queue_frames": [],
+            "queue_pts": [],
+            "baseline": {
+              "verdict": "TN",
+              "delay_seconds": null,
+              "early_alerts": 0,
+              "duplicate_alerts": 0
+            },
+            "queue_pts_match_previous_1080": true,
+            "frames": 300,
+            "tensor_frames": 150,
+            "candidate_frames": 0,
+            "time_basis_decisions": 0,
+            "valid_pose_frames": 150,
+            "last_pose_pts": 9.933333333,
+            "max_pose_score": 2.5,
+            "source_delivery_fps": 29.629904437097345,
+            "inferences_per_wall_second": 14.837793883048892,
+            "pipeline_wall_seconds": 10.091156407026574,
+            "baseline_source_delivery_fps": 25.778462733655275,
+            "video_seconds": 10.0
+          },
+          {
+            "index": 2,
+            "scene": "00727_H_D_SY_C4",
+            "is_fall": true,
+            "onset": 5.622283333333334,
+            "verdict": "TP",
+            "delay_seconds": 2.5110499996666658,
+            "early_alerts": 0,
+            "duplicate_alerts": 0,
+            "queue_frames": [
+              244
+            ],
+            "queue_pts": [
+              8.133333333
+            ],
+            "baseline": {
+              "verdict": "TP",
+              "delay_seconds": 2.5110499996666658,
+              "early_alerts": 0,
+              "duplicate_alerts": 0
+            },
+            "queue_pts_match_previous_1080": true,
+            "frames": 300,
+            "tensor_frames": 150,
+            "candidate_frames": 30,
+            "time_basis_decisions": 30,
+            "valid_pose_frames": 150,
+            "last_pose_pts": 9.933333333,
+            "max_pose_score": 3.0,
+            "source_delivery_fps": 29.565383866519888,
+            "inferences_per_wall_second": 14.80265439773349,
+            "pipeline_wall_seconds": 10.113178349041846,
+            "baseline_source_delivery_fps": 25.537490332733185,
+            "video_seconds": 10.0
+          },
+          {
+            "index": 3,
+            "scene": "00762_O_E_N_C7",
+            "is_fall": false,
+            "onset": null,
+            "verdict": "TN",
+            "delay_seconds": null,
+            "early_alerts": 0,
+            "duplicate_alerts": 0,
+            "queue_frames": [],
+            "queue_pts": [],
+            "baseline": {
+              "verdict": "TN",
+              "delay_seconds": null,
+              "early_alerts": 0,
+              "duplicate_alerts": 0
+            },
+            "queue_pts_match_previous_1080": true,
+            "frames": 300,
+            "tensor_frames": 150,
+            "candidate_frames": 0,
+            "time_basis_decisions": 0,
+            "valid_pose_frames": 150,
+            "last_pose_pts": 9.933333333,
+            "max_pose_score": 2.0,
+            "source_delivery_fps": 28.52410532259907,
+            "inferences_per_wall_second": 14.292015278961737,
+            "pipeline_wall_seconds": 10.482362080016173,
+            "baseline_source_delivery_fps": 25.560470718269784,
+            "video_seconds": 10.0
+          },
+          {
+            "index": 4,
+            "scene": "00903_O_E_BY_C1",
+            "is_fall": true,
+            "onset": 3.9873166666666666,
+            "verdict": "TP",
+            "delay_seconds": 2.5460166663333332,
+            "early_alerts": 0,
+            "duplicate_alerts": 0,
+            "queue_frames": [
+              196
+            ],
+            "queue_pts": [
+              6.533333333
+            ],
+            "baseline": {
+              "verdict": "TP",
+              "delay_seconds": 2.6793499993333336,
+              "early_alerts": 0,
+              "duplicate_alerts": 0
+            },
+            "queue_pts_match_previous_1080": false,
+            "frames": 300,
+            "tensor_frames": 150,
+            "candidate_frames": 17,
+            "time_basis_decisions": 17,
+            "valid_pose_frames": 150,
+            "last_pose_pts": 9.933333333,
+            "max_pose_score": 2.5,
+            "source_delivery_fps": 28.149938792717467,
+            "inferences_per_wall_second": 14.097975837072473,
+            "pipeline_wall_seconds": 10.621692722022999,
+            "baseline_source_delivery_fps": 25.647823875959414,
+            "video_seconds": 10.0
+          },
+          {
+            "index": 5,
+            "scene": "00734_H_D_N_C1",
+            "is_fall": false,
+            "onset": null,
+            "verdict": "TN",
+            "delay_seconds": null,
+            "early_alerts": 0,
+            "duplicate_alerts": 0,
+            "queue_frames": [],
+            "queue_pts": [],
+            "baseline": {
+              "verdict": "TN",
+              "delay_seconds": null,
+              "early_alerts": 0,
+              "duplicate_alerts": 0
+            },
+            "queue_pts_match_previous_1080": true,
+            "frames": 300,
+            "tensor_frames": 150,
+            "candidate_frames": 0,
+            "time_basis_decisions": 0,
+            "valid_pose_frames": 150,
+            "last_pose_pts": 9.933333333,
+            "max_pose_score": 2.5,
+            "source_delivery_fps": 29.631903424816276,
+            "inferences_per_wall_second": 14.83927408304807,
+            "pipeline_wall_seconds": 10.090475650969893,
+            "baseline_source_delivery_fps": 25.722484967879378,
+            "video_seconds": 10.0
+          },
+          {
+            "index": 6,
+            "scene": "00933_O_E_FY_C2",
+            "is_fall": true,
+            "onset": 4.95495,
+            "verdict": "TP",
+            "delay_seconds": 2.3783833329999995,
+            "early_alerts": 0,
+            "duplicate_alerts": 0,
+            "queue_frames": [
+              220
+            ],
+            "queue_pts": [
+              7.333333333
+            ],
+            "baseline": {
+              "verdict": "TP",
+              "delay_seconds": 2.3783833329999995,
+              "early_alerts": 0,
+              "duplicate_alerts": 0
+            },
+            "queue_pts_match_previous_1080": true,
+            "frames": 300,
+            "tensor_frames": 150,
+            "candidate_frames": 70,
+            "time_basis_decisions": 70,
+            "valid_pose_frames": 150,
+            "last_pose_pts": 9.933333333,
+            "max_pose_score": 3.0,
+            "source_delivery_fps": 29.716646410498747,
+            "inferences_per_wall_second": 14.886740594514661,
+            "pipeline_wall_seconds": 10.061700633028522,
+            "baseline_source_delivery_fps": 25.44821597675273,
+            "video_seconds": 10.0
+          },
+          {
+            "index": 7,
+            "scene": "00811_O_E_N_C2",
+            "is_fall": false,
+            "onset": null,
+            "verdict": "TN",
+            "delay_seconds": null,
+            "early_alerts": 0,
+            "duplicate_alerts": 0,
+            "queue_frames": [],
+            "queue_pts": [],
+            "baseline": {
+              "verdict": "TN",
+              "delay_seconds": null,
+              "early_alerts": 0,
+              "duplicate_alerts": 0
+            },
+            "queue_pts_match_previous_1080": true,
+            "frames": 300,
+            "tensor_frames": 150,
+            "candidate_frames": 0,
+            "time_basis_decisions": 0,
+            "valid_pose_frames": 150,
+            "last_pose_pts": 9.933333333,
+            "max_pose_score": 0.0,
+            "source_delivery_fps": 29.663834484577933,
+            "inferences_per_wall_second": 14.85782950984355,
+            "pipeline_wall_seconds": 10.079613954003435,
+            "baseline_source_delivery_fps": 25.49744424976912,
+            "video_seconds": 10.0
+          },
+          {
+            "index": 8,
+            "scene": "00847_O_E_SY_C7",
+            "is_fall": true,
+            "onset": 5.138466666666667,
+            "verdict": "TP",
+            "delay_seconds": 2.661533333333333,
+            "early_alerts": 0,
+            "duplicate_alerts": 0,
+            "queue_frames": [
+              234
+            ],
+            "queue_pts": [
+              7.8
+            ],
+            "baseline": {
+              "verdict": "TP",
+              "delay_seconds": 2.7281999993333335,
+              "early_alerts": 0,
+              "duplicate_alerts": 0
+            },
+            "queue_pts_match_previous_1080": false,
+            "frames": 300,
+            "tensor_frames": 150,
+            "candidate_frames": 67,
+            "time_basis_decisions": 67,
+            "valid_pose_frames": 150,
+            "last_pose_pts": 9.933333333,
+            "max_pose_score": 8.5,
+            "source_delivery_fps": 28.610346009826106,
+            "inferences_per_wall_second": 14.335166304767618,
+            "pipeline_wall_seconds": 10.45076490502106,
+            "baseline_source_delivery_fps": 25.734258646575153,
+            "video_seconds": 10.0
+          },
+          {
+            "index": 9,
+            "scene": "00560_H_D_N_C3",
+            "is_fall": false,
+            "onset": null,
+            "verdict": "TN",
+            "delay_seconds": null,
+            "early_alerts": 0,
+            "duplicate_alerts": 0,
+            "queue_frames": [],
+            "queue_pts": [],
+            "baseline": {
+              "verdict": "TN",
+              "delay_seconds": null,
+              "early_alerts": 0,
+              "duplicate_alerts": 0
+            },
+            "queue_pts_match_previous_1080": true,
+            "frames": 300,
+            "tensor_frames": 150,
+            "candidate_frames": 0,
+            "time_basis_decisions": 0,
+            "valid_pose_frames": 150,
+            "last_pose_pts": 9.933333333,
+            "max_pose_score": 0.0,
+            "source_delivery_fps": 29.904317340230346,
+            "inferences_per_wall_second": 14.973630823185056,
+            "pipeline_wall_seconds": 9.998556281963829,
+            "baseline_source_delivery_fps": 25.433193109352516,
+            "video_seconds": 10.0
+          },
+          {
+            "index": 10,
+            "scene": "00709_H_D_BY_C4",
+            "is_fall": true,
+            "onset": 4.587916666666667,
+            "verdict": "TP",
+            "delay_seconds": 3.8787499993333334,
+            "early_alerts": 0,
+            "duplicate_alerts": 0,
+            "queue_frames": [
+              254
+            ],
+            "queue_pts": [
+              8.466666666
+            ],
+            "baseline": {
+              "verdict": "TP",
+              "delay_seconds": 3.945416666333333,
+              "early_alerts": 0,
+              "duplicate_alerts": 0
+            },
+            "queue_pts_match_previous_1080": false,
+            "frames": 300,
+            "tensor_frames": 150,
+            "candidate_frames": 53,
+            "time_basis_decisions": 53,
+            "valid_pose_frames": 150,
+            "last_pose_pts": 9.933333333,
+            "max_pose_score": 2.5,
+            "source_delivery_fps": 28.22486016322794,
+            "inferences_per_wall_second": 14.13833441439025,
+            "pipeline_wall_seconds": 10.593498011003248,
+            "baseline_source_delivery_fps": 25.72312761950395,
+            "video_seconds": 10.0
+          },
+          {
+            "index": 11,
+            "scene": "00909_O_E_N_C6",
+            "is_fall": false,
+            "onset": null,
+            "verdict": "TN",
+            "delay_seconds": null,
+            "early_alerts": 0,
+            "duplicate_alerts": 0,
+            "queue_frames": [],
+            "queue_pts": [],
+            "baseline": {
+              "verdict": "TN",
+              "delay_seconds": null,
+              "early_alerts": 0,
+              "duplicate_alerts": 0
+            },
+            "queue_pts_match_previous_1080": true,
+            "frames": 300,
+            "tensor_frames": 150,
+            "candidate_frames": 0,
+            "time_basis_decisions": 0,
+            "valid_pose_frames": 150,
+            "last_pose_pts": 9.933333333,
+            "max_pose_score": 0.0,
+            "source_delivery_fps": 29.785692582436273,
+            "inferences_per_wall_second": 14.923733187554708,
+            "pipeline_wall_seconds": 10.038376618991606,
+            "baseline_source_delivery_fps": 25.731776484047504,
+            "video_seconds": 10.0
+          },
+          {
+            "index": 12,
+            "scene": "00828_O_E_FY_C8",
+            "is_fall": true,
+            "onset": 4.65465,
+            "verdict": "TP",
+            "delay_seconds": 2.54535,
+            "early_alerts": 0,
+            "duplicate_alerts": 0,
+            "queue_frames": [
+              216
+            ],
+            "queue_pts": [
+              7.2
+            ],
+            "baseline": {
+              "verdict": "TP",
+              "delay_seconds": 2.54535,
+              "early_alerts": 0,
+              "duplicate_alerts": 0
+            },
+            "queue_pts_match_previous_1080": true,
+            "frames": 300,
+            "tensor_frames": 150,
+            "candidate_frames": 65,
+            "time_basis_decisions": 65,
+            "valid_pose_frames": 150,
+            "last_pose_pts": 9.933333333,
+            "max_pose_score": 7.0,
+            "source_delivery_fps": 29.634214023725498,
+            "inferences_per_wall_second": 14.846982637964391,
+            "pipeline_wall_seconds": 10.089688890031539,
+            "baseline_source_delivery_fps": 25.041008524841047,
+            "video_seconds": 10.0
+          },
+          {
+            "index": 13,
+            "scene": "00823_O_E_N_C5",
+            "is_fall": false,
+            "onset": null,
+            "verdict": "TN",
+            "delay_seconds": null,
+            "early_alerts": 0,
+            "duplicate_alerts": 0,
+            "queue_frames": [],
+            "queue_pts": [],
+            "baseline": {
+              "verdict": "TN",
+              "delay_seconds": null,
+              "early_alerts": 0,
+              "duplicate_alerts": 0
+            },
+            "queue_pts_match_previous_1080": true,
+            "frames": 300,
+            "tensor_frames": 150,
+            "candidate_frames": 0,
+            "time_basis_decisions": 0,
+            "valid_pose_frames": 150,
+            "last_pose_pts": 9.933333333,
+            "max_pose_score": 2.5,
+            "source_delivery_fps": 28.520119287973696,
+            "inferences_per_wall_second": 14.271540935114079,
+            "pipeline_wall_seconds": 10.483827118005138,
+            "baseline_source_delivery_fps": 25.713466776889813,
+            "video_seconds": 10.0
+          },
+          {
+            "index": 15,
+            "scene": "00547_H_D_N_C2",
+            "is_fall": false,
+            "onset": null,
+            "verdict": "TN",
+            "delay_seconds": null,
+            "early_alerts": 0,
+            "duplicate_alerts": 0,
+            "queue_frames": [],
+            "queue_pts": [],
+            "baseline": {
+              "verdict": "TN",
+              "delay_seconds": null,
+              "early_alerts": 0,
+              "duplicate_alerts": 0
+            },
+            "queue_pts_match_previous_1080": true,
+            "frames": 300,
+            "tensor_frames": 150,
+            "candidate_frames": 0,
+            "time_basis_decisions": 0,
+            "valid_pose_frames": 150,
+            "last_pose_pts": 9.933333333,
+            "max_pose_score": 2.5,
+            "source_delivery_fps": 29.84926919703401,
+            "inferences_per_wall_second": 14.956670911368034,
+            "pipeline_wall_seconds": 10.016995659971144,
+            "baseline_source_delivery_fps": 25.785944773479603,
+            "video_seconds": 10.0
+          },
+          {
+            "index": 16,
+            "scene": "00925_O_E_BY_C5",
+            "is_fall": true,
+            "onset": 3.95395,
+            "verdict": "TP",
+            "delay_seconds": 4.4460500000000005,
+            "early_alerts": 0,
+            "duplicate_alerts": 0,
+            "queue_frames": [
+              252
+            ],
+            "queue_pts": [
+              8.4
+            ],
+            "baseline": {
+              "verdict": "TP",
+              "delay_seconds": 4.4460500000000005,
+              "early_alerts": 0,
+              "duplicate_alerts": 0
+            },
+            "queue_pts_match_previous_1080": true,
+            "frames": 300,
+            "tensor_frames": 150,
+            "candidate_frames": 14,
+            "time_basis_decisions": 14,
+            "valid_pose_frames": 150,
+            "last_pose_pts": 9.933333333,
+            "max_pose_score": 0.0,
+            "source_delivery_fps": 28.720005436583072,
+            "inferences_per_wall_second": 14.387352519603166,
+            "pipeline_wall_seconds": 10.41086153901415,
+            "baseline_source_delivery_fps": 25.960981180344938,
+            "video_seconds": 10.0
+          },
+          {
+            "index": 17,
+            "scene": "00874_O_E_N_C3",
+            "is_fall": false,
+            "onset": null,
+            "verdict": "TN",
+            "delay_seconds": null,
+            "early_alerts": 0,
+            "duplicate_alerts": 0,
+            "queue_frames": [],
+            "queue_pts": [],
+            "baseline": {
+              "verdict": "TN",
+              "delay_seconds": null,
+              "early_alerts": 0,
+              "duplicate_alerts": 0
+            },
+            "queue_pts_match_previous_1080": true,
+            "frames": 300,
+            "tensor_frames": 150,
+            "candidate_frames": 0,
+            "time_basis_decisions": 0,
+            "valid_pose_frames": 300,
+            "last_pose_pts": 9.933333333,
+            "max_pose_score": 2.5,
+            "source_delivery_fps": 28.857435176763452,
+            "inferences_per_wall_second": 14.453201473652262,
+            "pipeline_wall_seconds": 10.361281179997604,
+            "baseline_source_delivery_fps": 24.358184311595988,
+            "video_seconds": 10.0
+          },
+          {
+            "index": 18,
+            "scene": "00898_O_E_FY_C7",
+            "is_fall": true,
+            "onset": 4.5045,
+            "verdict": "TP",
+            "delay_seconds": 2.3621666660000002,
+            "early_alerts": 0,
+            "duplicate_alerts": 0,
+            "queue_frames": [
+              206
+            ],
+            "queue_pts": [
+              6.866666666
+            ],
+            "baseline": {
+              "verdict": "TP",
+              "delay_seconds": 2.8288333329999995,
+              "early_alerts": 0,
+              "duplicate_alerts": 0
+            },
+            "queue_pts_match_previous_1080": false,
+            "frames": 300,
+            "tensor_frames": 150,
+            "candidate_frames": 64,
+            "time_basis_decisions": 64,
+            "valid_pose_frames": 150,
+            "last_pose_pts": 9.933333333,
+            "max_pose_score": 5.0,
+            "source_delivery_fps": 29.815289571428334,
+            "inferences_per_wall_second": 14.932800093964902,
+            "pipeline_wall_seconds": 10.028411741019227,
+            "baseline_source_delivery_fps": 25.377682724440312,
+            "video_seconds": 10.0
+          },
+          {
+            "index": 19,
+            "scene": "00559_H_D_N_C8",
+            "is_fall": false,
+            "onset": null,
+            "verdict": "TN",
+            "delay_seconds": null,
+            "early_alerts": 0,
+            "duplicate_alerts": 0,
+            "queue_frames": [],
+            "queue_pts": [],
+            "baseline": {
+              "verdict": "TN",
+              "delay_seconds": null,
+              "early_alerts": 0,
+              "duplicate_alerts": 0
+            },
+            "queue_pts_match_previous_1080": true,
+            "frames": 300,
+            "tensor_frames": 150,
+            "candidate_frames": 0,
+            "time_basis_decisions": 0,
+            "valid_pose_frames": 150,
+            "last_pose_pts": 9.933333333,
+            "max_pose_score": 2.5,
+            "source_delivery_fps": 29.831930172875285,
+            "inferences_per_wall_second": 14.95198349068717,
+            "pipeline_wall_seconds": 10.022817775025032,
+            "baseline_source_delivery_fps": 25.566480976012695,
+            "video_seconds": 10.0
+          }
+        ],
+        "sustained_30fps_15_inferences_proven": false,
+        "operating_delivery_tested": false
+      },
+      "rear_delay_remaining": {
+        "scene": "00925_O_E_BY_C5",
+        "delay_seconds": 4.44605,
+        "previous_delay_seconds": 4.44605,
+        "onset_pts": 3.95395,
+        "first_candidate_pts": 4.333333333333333,
+        "last_candidate_before_gap_pts": 5.933333333333334,
+        "first_accepted_pts": 8.4,
+        "gap_sample_pts": [
+          6.333333333333333,
+          8.333333333333334
+        ],
+        "gap_person_detections": 31,
+        "gap_confidence_min": 0.8936814069747925,
+        "gap_confidence_max": 0.9222040176391602,
+        "static_pose_score_in_gap": 0,
+        "finding": "해당 구간은 사람 검출 유지·낙상 후보 생성 공백. 2초 지속 기준 도달 뒤에도 유효 후보가8.4초까지 다시 나오지 않아 지연이 남음. 판정부 수정/새 정확도 합격으로 세지 않음."
+      },
+      "recovery": {
+        "ai_stops": 1,
+        "same_container": true,
+        "same_image": true,
+        "healthy": true,
+        "other_four_containers_unchanged": true,
+        "trial_containers_remaining": 0,
+        "trial_seconds": 906.4276120662689,
+        "start_to_healthy_seconds": 919.5339908599854,
+        "last_result_to_healthy_seconds": 13.10637879371643,
+        "last_result_to_rate_check_seconds": 58.63025164604187,
+        "rates_before": {
+          "cctv_processor_frames_processed_total": 26.839470037101588,
+          "cctv_processor_pipeline_restart_executed_total": 0.0,
+          "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 13.403146965375823
+        },
+        "rates_after": {
+          "cctv_processor_frames_processed_total": 30.071479077395978,
+          "cctv_processor_pipeline_restart_executed_total": 0.0,
+          "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 15.019125461859648
+        },
+        "snapshot_path": "data/runtime/p52_pose_export_20261016/operating_after.json"
+      }
+    },
+    "latest_stage": "pose_export_followup",
+    "latest_gpu_mean_ms": 64.69257966101694,
+    "documentation_validation_history": [
+      {
+        "checked_at": "2026-10-16T09:26:56.246482+09:00",
+        "WBS_JSON_HTML_identical_rows": 37,
+        "counts_match": true,
+        "HTML_HTTP_200_hash_match": true,
+        "PDF_HTTP_200_hash_match": true,
+        "first_page_visual_check": "PASS",
+        "diff_check": "PASS",
+        "current_source_ruff": "PASS",
+        "evidence_artifact_hashes_verified": 17
+      }
+    ]
+  }
+}

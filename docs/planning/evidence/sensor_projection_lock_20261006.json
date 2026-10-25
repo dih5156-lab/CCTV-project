@@ -1,0 +1,258 @@
+{
+  "version": "0.105",
+  "date": "2026-10-06 KST",
+  "wbs": "P2.4",
+  "issue": "I45",
+  "status": "OPEN; redundant terminal/pending state writes fixed locally",
+  "operating_applied": false,
+  "scope": "SensorRecordStore skips state INSERT for existing states and returns on terminal states; no API/schema/journal/timeout/retry/SDK changes. Original initial-projection concurrency test unchanged.",
+  "raw_artifacts": "data/runtime/i45_sensor_projection_20261006_v105",
+  "validation_tree": "/tmp/cctv-p51-shutdown-20261006/tree",
+  "database_root": "/media/sawwave/Learning11/CCTV-project/.pytest_workspace_tmp/p51_shutdown_20261006",
+  "correction": "v0.104 reported four threads, but the original test has two stores/two threads.",
+  "baseline": {
+    "unmodified_concurrency_trials": 40,
+    "failures": 0,
+    "sql_events": 3972,
+    "max_observed_operation_ms": 39.88727298565209,
+    "full": {
+      "passed": 2746,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 52,
+      "seconds": 252.708,
+      "failures": []
+    },
+    "full_target_sql_events": 96,
+    "full_target_sql_errors": 0,
+    "full_target_max_operation_ms": 33.85277511551976
+  },
+  "real_lock_boundaries_before_change": [
+    {
+      "phase": "state_write",
+      "error": "database is locked",
+      "before_recovery": {
+        "ingest_receipts": 1,
+        "event_ingest_state": 0,
+        "canonical_records": 0,
+        "ingest_revisions": 0
+      },
+      "after_recovery": {
+        "ingest_receipts": 1,
+        "event_ingest_state": 1,
+        "canonical_records": 1,
+        "ingest_revisions": 1
+      },
+      "raw_equal": true,
+      "db_quick_check": "ok"
+    },
+    {
+      "phase": "state_commit",
+      "error": "database is locked",
+      "before_recovery": {
+        "ingest_receipts": 1,
+        "event_ingest_state": 0,
+        "canonical_records": 0,
+        "ingest_revisions": 0
+      },
+      "after_recovery": {
+        "ingest_receipts": 1,
+        "event_ingest_state": 1,
+        "canonical_records": 1,
+        "ingest_revisions": 1
+      },
+      "raw_equal": true,
+      "db_quick_check": "ok"
+    },
+    {
+      "phase": "canonical_write",
+      "error": "database is locked",
+      "before_recovery": {
+        "ingest_receipts": 1,
+        "event_ingest_state": 1,
+        "canonical_records": 0,
+        "ingest_revisions": 0
+      },
+      "after_recovery": {
+        "ingest_receipts": 1,
+        "event_ingest_state": 1,
+        "canonical_records": 1,
+        "ingest_revisions": 1
+      },
+      "raw_equal": true,
+      "db_quick_check": "ok"
+    },
+    {
+      "phase": "canonical_commit",
+      "error": "database is locked",
+      "before_recovery": {
+        "ingest_receipts": 1,
+        "event_ingest_state": 1,
+        "canonical_records": 0,
+        "ingest_revisions": 0
+      },
+      "after_recovery": {
+        "ingest_receipts": 1,
+        "event_ingest_state": 1,
+        "canonical_records": 1,
+        "ingest_revisions": 1
+      },
+      "raw_equal": true,
+      "db_quick_check": "ok"
+    }
+  ],
+  "validation": {
+    "red": {
+      "passed": 4,
+      "failed": 2,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 3.424,
+      "failures": [
+        {
+          "test": "tests.test_sensor_record::test_finished_projection_does_not_need_another_write_lock[t34954-accepted]",
+          "message": "sqlite3.OperationalError: database is locked"
+        },
+        {
+          "test": "tests.test_sensor_record::test_finished_projection_does_not_need_another_write_lock[t99999-invalid]",
+          "message": "sqlite3.OperationalError: database is locked"
+        }
+      ]
+    },
+    "targeted": {
+      "passed": 62,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 5,
+      "seconds": 34.636,
+      "failures": []
+    },
+    "targeted_skips": "5 MQTT integration tests require an explicitly configured disposable local broker",
+    "targeted_warnings": "2 pytest JUnit xunit2/record_property format warnings; final full uses xunit1",
+    "full_after": {
+      "passed": 2752,
+      "skipped": 52,
+      "failed": 0,
+      "errors": 0,
+      "seconds": 298.729,
+      "failures": []
+    },
+    "ruff": "PASS src/sensor_record.py tests/test_sensor_record.py",
+    "mixed_input_result": {
+      "active_contention_result": {
+        "accepted_video_records": 20,
+        "elapsed_seconds": 6.601392559939995,
+        "monitoring_write_statements_during_producers": 25,
+        "offered_video_records": 20,
+        "preloaded_video_records": 8,
+        "sensor_records": 20,
+        "sensor_test_producer_retries": 0,
+        "service_failed_cycles": 2,
+        "stored_and_matched_records": 48,
+        "transport": "in-process test model",
+        "video_busy_retry_logs": 2,
+        "video_intake_max_seconds": 0.4677458999212831,
+        "video_test_producer_retries": 0
+      }
+    },
+    "format": "PASS src/sensor_record.py tests/test_sensor_record.py",
+    "review": "Terminal and pending state handling preserves original receipt validation; initial race retains INSERT OR IGNORE and atomic canonical recheck. Existing concurrent test unchanged.",
+    "full_mixed_input_result": {
+      "active_contention_result": {
+        "accepted_video_records": 20,
+        "elapsed_seconds": 5.836616622982547,
+        "monitoring_write_statements_during_producers": 33,
+        "offered_video_records": 20,
+        "preloaded_video_records": 8,
+        "sensor_records": 20,
+        "sensor_test_producer_retries": 0,
+        "service_failed_cycles": 0,
+        "stored_and_matched_records": 48,
+        "transport": "in-process test model",
+        "video_busy_retry_logs": 1,
+        "video_intake_max_seconds": 0.27565891901031137,
+        "video_test_producer_retries": 0
+      }
+    }
+  },
+  "interpretation": [
+    "Terminal duplicate calls previously required a writer reservation through INSERT OR IGNORE despite needing no changes. Two real reserved-lock cases failed before the fix; both pass after it.",
+    "Four actual SQLite lock boundary tests show original receipt preservation, rollback of canonical/revision work and exactly one record after recovery with a new store. Existing recovery already passed before this change.",
+    "The historical initial two-thread projection failure, video retry exhaustion and status SELECT failures were not reproduced by the baseline observations. The local optimization is not proof of fixing those faults.",
+    "I40 native encoder wait and I47 timing-sensitive ID reassociation remain OPEN. No operating deployment/restart."
+  ],
+  "source_hashes": {
+    "src/sensor_record.py": {
+      "workspace": "977871465e31d788b6aedcfbe9a65383cf467a823c7235b661db0752dda133a9",
+      "snapshot": "977871465e31d788b6aedcfbe9a65383cf467a823c7235b661db0752dda133a9"
+    },
+    "tests/test_sensor_record.py": {
+      "workspace": "0cc3c213f2a605e89173405641d5b6ad1334c1f3791b10e555270ab5f9bb7f68",
+      "snapshot": "0cc3c213f2a605e89173405641d5b6ad1334c1f3791b10e555270ab5f9bb7f68"
+    },
+    "src/ingest_store.py": {
+      "workspace": "05c35c33de6cc0f2ed934e0f73bb2e34e6532fe40fc492f52fb709305cae5a77",
+      "snapshot": "05c35c33de6cc0f2ed934e0f73bb2e34e6532fe40fc492f52fb709305cae5a77"
+    },
+    "src/event_ingest_store.py": {
+      "workspace": "57fa5d1d4084f79209295b94d9297a27f6f8c07be9f091be798179977b004810",
+      "snapshot": "57fa5d1d4084f79209295b94d9297a27f6f8c07be9f091be798179977b004810"
+    },
+    "src/core/video_event_ingest.py": {
+      "workspace": "7158836647b520c8ac84872fe6752bf9c610abe740e5a6c8945be8a68c6b4163",
+      "snapshot": "7158836647b520c8ac84872fe6752bf9c610abe740e5a6c8945be8a68c6b4163"
+    },
+    "src/bootstrap/runtime.py": {
+      "workspace": "93eb6bdf2755b2d6346707870cb065e5e8d208590eb45e856f8b99d66038daca",
+      "snapshot": "93eb6bdf2755b2d6346707870cb065e5e8d208590eb45e856f8b99d66038daca"
+    },
+    "src/core/deepstream_processor.py": {
+      "workspace": "533752443e8bd8ea07ac11f20e1939c92c51303a49dc16fb36b5a1d7e3873402",
+      "snapshot": "533752443e8bd8ea07ac11f20e1939c92c51303a49dc16fb36b5a1d7e3873402"
+    }
+  },
+  "raw_sha256": {
+    "red.xml": "a68334fec194076bcbe6afee9c865df794381f104e3aa8d0d9b5b98bd7198f70",
+    "boundary_existing.json": "fd53403a6bbc8721381289aa695ce500ebe4d1776e241e40432b94c840813850",
+    "baseline_full_observed.xml": "411d3605873694d19cc5dcc049028189b6282f2dfc05c317a5aaa578a85663f6",
+    "targeted.xml": "3e9a3d5f358c29fb46b5c6ab6d6935fa33e3b0dc69749e181ed06fe91e17895b",
+    "observe_sensor.py": "3aae038cbf738f6d4e1f1ff26c4bf97327af27e3bbb7589ef1993931d308cc5e",
+    "observe_sensor_full.py": "98848658d7fea06d21ac851d23d3e31b5784afad679928ccb6ca4947e04db3f5",
+    "probe_boundaries.py": "dd6d746b8f4abe8c869fc088692ca3e4e2886ff52a41821e3372e4bb8ec7295f",
+    "baseline_sql_trace.json": "80491839f3240d1cac4be878fc94a67677745b6d90dce933150435e251296ec8",
+    "baseline_full_sql_trace.json": "e56b74a69070bcc333b6317f59048bdb774d69c04ecf66119b6b29c67e64681f",
+    "baseline_trials.json": "95755e5243039c97a6955cd9b582386367ce8647a060010d76f49174a94f5416",
+    "full_baseline.log": "da37275d5b4a1fa1c0bf842eca0d167d90ab7af686d7a9c11ddb6e2c97b0b82c",
+    "targeted.log": "e8de727af0977e850cd7b0c88319c6b161431d451045985ee6431f519ea29d02",
+    "red.log": "d6149ca5592b6c5eda42932364f493cae884b36cde0fc6fa5ad78f4e98596248",
+    "full_after.xml": "258cb9d7a23e5e65f68dab82ad9dfdbe648c2c2fed5c5f008edbf76a0a7b52b8",
+    "full_after.log": "f7df687b4f749bea95743de08942d9fadf841e87de8cd69bb57e6881267e1897"
+  },
+  "publication": {
+    "version": "0.105",
+    "url": "http://192.168.2.141:18081/",
+    "files": {
+      "index.html": {
+        "bytes": 24446,
+        "sha256": "57a1eabcb08aba7fcc6288d1f9671c1fdb941aa6bb3668ea9d1e654ddc38781d",
+        "http_matches": true
+      },
+      "CCTV_project_progress.pdf": {
+        "bytes": 128738,
+        "sha256": "52973d6a11a3c6a89368f95b876f6b66c727c87fd862316b09b8ec59f1bcc8a5",
+        "http_matches": true
+      }
+    },
+    "visual_check": "first-page PNG inspected; no clipping",
+    "wbs_check": "33 IDs/statuses/counts match WBS",
+    "ruff": "PASS product/test/renderer",
+    "diff_check": "PASS"
+  },
+  "operating_check": {
+    "name": "cctv-ai-engine",
+    "status": "running/healthy",
+    "started_at": "2026-10-02T01:33:58.362007997Z",
+    "image": "sha256:1ace5b7832a50d6675b66146b0edc307021795732fc7c9a770e2cd628d7fd261",
+    "restarted": false
+  }
+}

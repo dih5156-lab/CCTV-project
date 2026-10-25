@@ -1,0 +1,693 @@
+{
+  "version": "0.126",
+  "date": "2026-10-07",
+  "decision": "진척 단위 완료; 후보 승격·실물 다중카메라 합격·운영 배포 보류",
+  "physical_camera_available": 1,
+  "fall": {
+    "baseline": [
+      {
+        "scene": "00800_O_E_BY_C1",
+        "label": "fall",
+        "result": "TP",
+        "all_frames_processed": true,
+        "frames": 300,
+        "tensor_frames": 150,
+        "pose_frames": 139,
+        "candidate_count": 30,
+        "first_candidate_pts": 3.269933333,
+        "source_first_pts": 0.066733333,
+        "time_reference": "source PTS minus first frame PTS; frame0=0",
+        "alarm_count": 1,
+        "alarm_pts": [
+          7.741066667
+        ],
+        "early_alarm_count": 0,
+        "fall_start_seconds": 2.8194833333333333,
+        "fall_end_seconds": 3.8204833333333332,
+        "first_alarm_delay_from_start": 4.921583333666667,
+        "first_alarm_delay_from_end": 3.920583333666667,
+        "source_pts_span": 9.976633333,
+        "source_wall_span": 9.976697050035,
+        "policy": {
+          "debounce_enabled": true,
+          "fall_sustained_seconds": 2.0,
+          "fall_gap_reset_seconds": 5.0,
+          "fall_resend_cooldown": 60.0
+        },
+        "normal_exit": true,
+        "stop_latency_seconds": null,
+        "database_copies_integrity": {
+          "mqtt_event_outbox.db": "ok"
+        }
+      },
+      {
+        "scene": "00837_O_E_BY_C1",
+        "label": "fall",
+        "result": "TP",
+        "all_frames_processed": true,
+        "frames": 300,
+        "tensor_frames": 150,
+        "pose_frames": 149,
+        "candidate_count": 46,
+        "first_candidate_pts": 4.8048,
+        "source_first_pts": 0.066733333,
+        "time_reference": "source PTS minus first frame PTS; frame0=0",
+        "alarm_count": 1,
+        "alarm_pts": [
+          7.073733333
+        ],
+        "early_alarm_count": 0,
+        "fall_start_seconds": 4.070733333333333,
+        "fall_end_seconds": 5.071733333333333,
+        "first_alarm_delay_from_start": 3.0029999996666668,
+        "first_alarm_delay_from_end": 2.0019999996666664,
+        "source_pts_span": 9.976633333,
+        "source_wall_span": 10.090267902007326,
+        "policy": {
+          "debounce_enabled": true,
+          "fall_sustained_seconds": 2.0,
+          "fall_gap_reset_seconds": 5.0,
+          "fall_resend_cooldown": 60.0
+        },
+        "normal_exit": true,
+        "stop_latency_seconds": null,
+        "database_copies_integrity": {
+          "mqtt_event_outbox.db": "ok"
+        }
+      },
+      {
+        "scene": "00657_H_D_N_C1",
+        "label": "not_fall",
+        "result": "TN",
+        "all_frames_processed": true,
+        "frames": 301,
+        "tensor_frames": 151,
+        "pose_frames": 150,
+        "candidate_count": 0,
+        "first_candidate_pts": null,
+        "source_first_pts": 0.066733333,
+        "time_reference": "source PTS minus first frame PTS; frame0=0",
+        "alarm_count": 0,
+        "alarm_pts": [],
+        "early_alarm_count": 0,
+        "fall_start_seconds": null,
+        "fall_end_seconds": null,
+        "first_alarm_delay_from_start": null,
+        "first_alarm_delay_from_end": null,
+        "source_pts_span": 10.01,
+        "source_wall_span": 10.010074091143906,
+        "policy": {
+          "debounce_enabled": true,
+          "fall_sustained_seconds": 2.0,
+          "fall_gap_reset_seconds": 5.0,
+          "fall_resend_cooldown": 60.0
+        },
+        "normal_exit": true,
+        "stop_latency_seconds": null,
+        "database_copies_integrity": {
+          "mqtt_event_outbox.db": "ok"
+        }
+      },
+      {
+        "scene": "00849_O_E_N_C1",
+        "label": "not_fall",
+        "result": "TN",
+        "all_frames_processed": true,
+        "frames": 300,
+        "tensor_frames": 150,
+        "pose_frames": 150,
+        "candidate_count": 2,
+        "first_candidate_pts": 3.670333333,
+        "source_first_pts": 0.066733333,
+        "time_reference": "source PTS minus first frame PTS; frame0=0",
+        "alarm_count": 0,
+        "alarm_pts": [],
+        "early_alarm_count": 0,
+        "fall_start_seconds": null,
+        "fall_end_seconds": null,
+        "first_alarm_delay_from_start": null,
+        "first_alarm_delay_from_end": null,
+        "source_pts_span": 9.976633333,
+        "source_wall_span": 10.030716757988557,
+        "policy": {
+          "debounce_enabled": true,
+          "fall_sustained_seconds": 2.0,
+          "fall_gap_reset_seconds": 5.0,
+          "fall_resend_cooldown": 60.0
+        },
+        "normal_exit": true,
+        "stop_latency_seconds": null,
+        "database_copies_integrity": {
+          "mqtt_event_outbox.db": "ok"
+        }
+      }
+    ],
+    "folded_candidate": [
+      {
+        "scene": "00800_O_E_BY_C1",
+        "label": "fall",
+        "result": "TP",
+        "all_frames_processed": true,
+        "frames": 300,
+        "tensor_frames": 150,
+        "pose_frames": 139,
+        "candidate_count": 73,
+        "first_candidate_pts": 2.8028,
+        "source_first_pts": 0.066733333,
+        "time_reference": "source PTS minus first frame PTS; frame0=0",
+        "alarm_count": 1,
+        "alarm_pts": [
+          6.6733333329999995
+        ],
+        "early_alarm_count": 0,
+        "fall_start_seconds": 2.8194833333333333,
+        "fall_end_seconds": 3.8204833333333332,
+        "first_alarm_delay_from_start": 3.853849999666666,
+        "first_alarm_delay_from_end": 2.8528499996666663,
+        "source_pts_span": 9.976633333,
+        "source_wall_span": 9.976682374952361,
+        "policy": {
+          "debounce_enabled": true,
+          "fall_sustained_seconds": 2.0,
+          "fall_gap_reset_seconds": 5.0,
+          "fall_resend_cooldown": 60.0
+        },
+        "normal_exit": true,
+        "stop_latency_seconds": null,
+        "database_copies_integrity": {
+          "mqtt_event_outbox.db": "ok"
+        }
+      },
+      {
+        "scene": "00837_O_E_BY_C1",
+        "label": "fall",
+        "result": "TP",
+        "all_frames_processed": true,
+        "frames": 300,
+        "tensor_frames": 150,
+        "pose_frames": 149,
+        "candidate_count": 52,
+        "first_candidate_pts": 4.2042,
+        "source_first_pts": 0.066733333,
+        "time_reference": "source PTS minus first frame PTS; frame0=0",
+        "alarm_count": 1,
+        "alarm_pts": [
+          6.139466667
+        ],
+        "early_alarm_count": 0,
+        "fall_start_seconds": 4.070733333333333,
+        "fall_end_seconds": 5.071733333333333,
+        "first_alarm_delay_from_start": 2.0687333336666667,
+        "first_alarm_delay_from_end": 1.0677333336666663,
+        "source_pts_span": 9.976633333,
+        "source_wall_span": 10.06477436912246,
+        "policy": {
+          "debounce_enabled": true,
+          "fall_sustained_seconds": 2.0,
+          "fall_gap_reset_seconds": 5.0,
+          "fall_resend_cooldown": 60.0
+        },
+        "normal_exit": true,
+        "stop_latency_seconds": null,
+        "database_copies_integrity": {
+          "mqtt_event_outbox.db": "ok"
+        }
+      },
+      {
+        "scene": "00657_H_D_N_C1",
+        "label": "not_fall",
+        "result": "TN",
+        "all_frames_processed": true,
+        "frames": 301,
+        "tensor_frames": 151,
+        "pose_frames": 150,
+        "candidate_count": 0,
+        "first_candidate_pts": null,
+        "source_first_pts": 0.066733333,
+        "time_reference": "source PTS minus first frame PTS; frame0=0",
+        "alarm_count": 0,
+        "alarm_pts": [],
+        "early_alarm_count": 0,
+        "fall_start_seconds": null,
+        "fall_end_seconds": null,
+        "first_alarm_delay_from_start": null,
+        "first_alarm_delay_from_end": null,
+        "source_pts_span": 10.01,
+        "source_wall_span": 10.080219677882269,
+        "policy": {
+          "debounce_enabled": true,
+          "fall_sustained_seconds": 2.0,
+          "fall_gap_reset_seconds": 5.0,
+          "fall_resend_cooldown": 60.0
+        },
+        "normal_exit": true,
+        "stop_latency_seconds": null,
+        "database_copies_integrity": {
+          "mqtt_event_outbox.db": "ok"
+        }
+      },
+      {
+        "scene": "00849_O_E_N_C1",
+        "label": "not_fall",
+        "result": "TN",
+        "all_frames_processed": true,
+        "frames": 300,
+        "tensor_frames": 150,
+        "pose_frames": 150,
+        "candidate_count": 2,
+        "first_candidate_pts": 3.670333333,
+        "source_first_pts": 0.066733333,
+        "time_reference": "source PTS minus first frame PTS; frame0=0",
+        "alarm_count": 0,
+        "alarm_pts": [],
+        "early_alarm_count": 0,
+        "fall_start_seconds": null,
+        "fall_end_seconds": null,
+        "first_alarm_delay_from_start": null,
+        "first_alarm_delay_from_end": null,
+        "source_pts_span": 9.976633333,
+        "source_wall_span": 10.313059302978218,
+        "policy": {
+          "debounce_enabled": true,
+          "fall_sustained_seconds": 2.0,
+          "fall_gap_reset_seconds": 5.0,
+          "fall_resend_cooldown": 60.0
+        },
+        "normal_exit": true,
+        "stop_latency_seconds": null,
+        "database_copies_integrity": {
+          "mqtt_event_outbox.db": "ok"
+        }
+      }
+    ],
+    "baseline_counts": {
+      "TP": 2,
+      "TN": 2
+    },
+    "folded_counts": {
+      "TP": 2,
+      "TN": 2
+    },
+    "baseline_00800_candidate_gap_seconds": 3.336666666666667,
+    "baseline_00800_first_seen_preserved": true,
+    "candidate_00800_first_seen_reset_at_frame": 136,
+    "overlapping_replay_intervals": [],
+    "limits": [
+      "기존4진단영상 단회 비교, 정상 약20초/조건; 현장 정확도 미검증",
+      "지연은 원본PTS 정규화 기준이며 외부 경보 전달시간 아님",
+      "입력 재생 구간 겹침0, 컨테이너 기동/생존 일부 겹침·운영 GPU 공유: 단회 탐색 관측이며 확정 효과 아님",
+      "지속시간2초는 유지; 새 경보 규칙을 운영에 적용하지 않음"
+    ]
+  },
+  "multichannel": {
+    "plan": {
+      "scope": "decode_and_primary_only",
+      "topology": "two independent batch1 pipelines; not shared mux product",
+      "source": "same 10.01 sec diagnostic clip repeated to90sec, not independent camera content",
+      "measurement_seconds": 30,
+      "warmup_seconds": 5,
+      "channels": [
+        1,
+        2
+      ],
+      "interval": 1,
+      "cpu_limit": 2,
+      "operating_shared_gpu": true,
+      "physical_camera_count": 1,
+      "commercial_acceptance": "NOT_EVALUATED",
+      "minimum_seen_fps": 28.47152847152847,
+      "maximum_last_frame_age_seconds": 0.5
+    },
+    "trials": [
+      {
+        "scope": "decode_and_primary_only",
+        "commercial_acceptance": "NOT_EVALUATED",
+        "finished": true,
+        "errors": [],
+        "channels": 1,
+        "interval": 1,
+        "mux_resolution": [
+          1920,
+          1080
+        ],
+        "topology": "independent",
+        "inference_batch_size": 1,
+        "observed_decode_caps": {
+          "replay_1": "video/x-raw(memory:NVMM), format=(string){ I420, NV12, P010_10LE, BGRx, RGBA, GRAY8 }, width=(int)[ 1, 2147483647 ], height=(int)[ 1, 2147483647 ], framerate=(fraction)[ 0/1, 2147483647/1 ]"
+        },
+        "metric_evidence": "primary_tensor_meta",
+        "elapsed_seconds": 30.038451694184914,
+        "cameras": {
+          "replay_1": {
+            "frames_seen": 906,
+            "frames_inferred": 453,
+            "frames_skipped": 453,
+            "frames_inference_unknown": 0,
+            "tensor_frames": 453,
+            "seen_fps": 30.1613415106675,
+            "inferred_fps": 15.08067075533375,
+            "tensor_fps": 15.08067075533375,
+            "last_frame_age_seconds": 0.04458480607718229,
+            "replay_timing": {
+              "source_timeline_seconds": 30.230199999999996,
+              "source_to_wall_ratio": 1.0063834284059388,
+              "output_lag_start_seconds": 0.496509187,
+              "output_lag_end_seconds": 0.2678835120000045,
+              "output_lag_change_seconds": -0.22862567499999553,
+              "scope": "source_pts_vs_pipeline_clock_not_end_to_end"
+            },
+            "throughput_pass": true
+          }
+        }
+      },
+      {
+        "scope": "decode_and_primary_only",
+        "commercial_acceptance": "NOT_EVALUATED",
+        "finished": true,
+        "errors": [],
+        "channels": 2,
+        "interval": 1,
+        "mux_resolution": [
+          1920,
+          1080
+        ],
+        "topology": "independent",
+        "inference_batch_size": 1,
+        "observed_decode_caps": {
+          "replay_1": "video/x-raw(memory:NVMM), format=(string){ I420, NV12, P010_10LE, BGRx, RGBA, GRAY8 }, width=(int)[ 1, 2147483647 ], height=(int)[ 1, 2147483647 ], framerate=(fraction)[ 0/1, 2147483647/1 ]",
+          "replay_2": "video/x-raw(memory:NVMM), format=(string){ I420, NV12, P010_10LE, BGRx, RGBA, GRAY8 }, width=(int)[ 1, 2147483647 ], height=(int)[ 1, 2147483647 ], framerate=(fraction)[ 0/1, 2147483647/1 ]"
+        },
+        "metric_evidence": "primary_tensor_meta",
+        "elapsed_seconds": 30.044930645031855,
+        "cameras": {
+          "replay_1": {
+            "frames_seen": 520,
+            "frames_inferred": 260,
+            "frames_skipped": 260,
+            "frames_inference_unknown": 0,
+            "tensor_frames": 260,
+            "seen_fps": 17.307412226827214,
+            "inferred_fps": 8.653706113413607,
+            "tensor_fps": 8.653706113413607,
+            "last_frame_age_seconds": 0.09618497500196099,
+            "replay_timing": {
+              "source_timeline_seconds": 17.350666667,
+              "source_to_wall_ratio": 0.5774906546462292,
+              "output_lag_start_seconds": 3.0259062209999996,
+              "output_lag_end_seconds": 15.686915121000002,
+              "output_lag_change_seconds": 12.661008900000002,
+              "scope": "source_pts_vs_pipeline_clock_not_end_to_end"
+            },
+            "throughput_pass": false
+          },
+          "replay_2": {
+            "frames_seen": 528,
+            "frames_inferred": 264,
+            "frames_skipped": 264,
+            "frames_inference_unknown": 0,
+            "tensor_frames": 264,
+            "seen_fps": 17.57368010723994,
+            "inferred_fps": 8.78684005361997,
+            "tensor_fps": 8.78684005361997,
+            "last_frame_age_seconds": 0.10492482781410217,
+            "replay_timing": {
+              "source_timeline_seconds": 17.6176,
+              "source_to_wall_ratio": 0.5863751262449061,
+              "output_lag_start_seconds": 2.681700033,
+              "output_lag_end_seconds": 15.026097831000001,
+              "output_lag_change_seconds": 12.344397798000001,
+              "scope": "source_pts_vs_pipeline_clock_not_end_to_end"
+            },
+            "throughput_pass": false
+          }
+        }
+      }
+    ],
+    "physical_camera": {
+      "initial_host_request": "401; default API loopback access",
+      "namespace_readonly_samples": [
+        {
+          "name": "camera_1",
+          "ready": true,
+          "readyTime": "2026-10-02T01:34:12.894077868Z",
+          "tracks": [
+            "H264"
+          ],
+          "bytesReceived": 307795436702,
+          "bytesSent": 586454506
+        },
+        {
+          "name": "camera_1",
+          "ready": true,
+          "readyTime": "2026-10-02T01:34:12.894077868Z",
+          "tracks": [
+            "H264"
+          ],
+          "bytesReceived": 307796971094,
+          "bytesSent": 586454506
+        }
+      ],
+      "scope": "MediaMTX intake only; not decoded FPS"
+    },
+    "limits": [
+      "독립 batch1 디코더/Primary 분기이며 제품 shared mux·추적·송출·DB 경로 시험 아님",
+      "30초씩 단회, 동일영상 반복; 실물2/4대와 장시간 안정화 미검증",
+      "CPU2·운영과 GPU 공유, 병목을 CPU/GPU 한쪽으로 확정하지 않음",
+      "정상 프로세스 종료만 확인; 별도 종료지연·송출 큐는 미측정"
+    ]
+  },
+  "deployment": {
+    "static_checks": {
+      "passed": true,
+      "checks": [
+        {
+          "name": "default compose architecture",
+          "passed": true,
+          "detail": "Jetson target selected; deployment uses docker-compose.jetson.yml"
+        },
+        {
+          "name": "TensorRT CUDA binding alignment",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "aiot parser database config",
+          "passed": true,
+          "detail": "parser .env uses localhost, but docker-compose.yml overrides DB_HOST to aiot-parser-db"
+        },
+        {
+          "name": "runtime secret source",
+          "passed": true,
+          "detail": ".env provides MQTT and AIoT DB secrets"
+        },
+        {
+          "name": "aiot database secret wiring",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "runtime path convergence",
+          "passed": true,
+          "detail": "runtime artifacts use /app/data/runtime and logs use /app/data/logs"
+        },
+        {
+          "name": "appearance model wiring",
+          "passed": true,
+          "detail": "PP-Human/PA100K model paths, label maps, and runtimes are wired"
+        },
+        {
+          "name": "falldata aux safety wiring",
+          "passed": true,
+          "detail": "fail-open policy and Jetson inline pose RF are wired"
+        },
+        {
+          "name": "H.264 WebRTC compatibility wiring",
+          "passed": true,
+          "detail": "Jetson NVENC POC guard is wired"
+        },
+        {
+          "name": "network exposure defaults",
+          "passed": true,
+          "detail": "externally reachable services bind to localhost by default"
+        },
+        {
+          "name": "public API shared secret alignment",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "mqtt authentication config",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "EdgeX outbox path isolation",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "EdgeX deployment mode contract",
+          "passed": true,
+          "detail": ""
+        }
+      ]
+    },
+    "candidate_profile_check": {
+      "passed": true,
+      "checks": [
+        {
+          "name": "candidate profile contract",
+          "passed": true,
+          "detail": ""
+        }
+      ]
+    },
+    "candidate_profile": {
+      "image": "sha256:0c11b835eb42cd245f4dda0b8bc8088733c0323bf75a2f4fefe9e7705d8dbf34",
+      "environment": {
+        "DS_OUTPUT_MODE": "rtsp-publish",
+        "DS_PRIMARY_INTERVAL": "1",
+        "DS_HELMET_ENABLED": "1",
+        "DS_FACE_ENABLED": "1",
+        "DS_APPEARANCE_ENABLED": "1",
+        "DS_PPHUMAN_SGIE_ENABLED": "1",
+        "DS_FALL_ENABLE_FOLDED_POSE": "false",
+        "FALLDATA_AUX_ENABLED": "true",
+        "FALLDATA_AUX_TEMPORAL_WORKER_ENABLED": "true"
+      }
+    },
+    "evaluation_image": "sha256:294e52234fc170904e2a09b180b422e0562d6e11b5aa28ebcf287a1b47c9ed55",
+    "model_sha256": "29c1f210e88971df79b7f6001944aabf4714975d6d572d830347a135d0a98275",
+    "rollback_evidence": "docs/planning/evidence/transition_rollback_20261001.json",
+    "blockers": [
+      "배포용 Compose의0c11 이미지·보조모델 활성 구성과294e 최소 평가 구성 불일치",
+      "낙상 지연/혼동 정상동작·2채널 처리율 미달·I54 송출 감소·원 I40 미해결",
+      "현재294e 후보의 운영 프로필 통합 및 해당 후보→복구 전체 전환 미시험"
+    ],
+    "deployed": false
+  },
+  "operating_unchanged": true,
+  "product_source_unchanged": 206,
+  "sha256": {
+    "data/runtime/p52_delay_20261007_v126/operating_after.json": "b112264b68f921a0adf41b80ef84e7ac8d016c354e1308f7482c6cf1e965051e",
+    "data/runtime/p52_delay_20261007_v126/analyze.py": "f7f558c7a931a4526dcf123137e1120eb5353ec60fb85998410bad48ba627426",
+    "data/runtime/p52_delay_20261007_v126/trial_results.json": "24f23080970e93c2a14869ab6b36c322a52a9f96c0129498f8098014508a1082",
+    "data/runtime/p52_delay_20261007_v126/comparison.json": "15c56f09b84981dd6126592517a156da7e5bff39fa9f89fd12a6aae413fc8d7d",
+    "data/runtime/p52_delay_20261007_v126/operating_before.json": "b112264b68f921a0adf41b80ef84e7ac8d016c354e1308f7482c6cf1e965051e",
+    "data/runtime/p52_delay_20261007_v126/run.py": "b7498e85963ded1ed5df08cdc324a2af00c961029a6757946979a3dd2474f4d7",
+    "data/runtime/p52_delay_20261007_v126/plan.json": "4255e5d65af28c5ceb635f9eb44c18f97f83721170a30a767edf07a50adc173a",
+    "data/runtime/p52_delay_20261007_v126/verified_report.json": "3a7d24011cb17235ac24b25dc6e0f24027f9bf3fa40e16b3d2b24b6b1750ce94",
+    "data/runtime/p52_delay_20261007_v126/observe.py": "5d9caa256c36a95cd606dedc0616a5b9ae44fdff74d53cc215f607b97d9a5268",
+    "data/runtime/p52_delay_20261007_v126/scene_0/compose.json": "d0be7615254b631ad90d1f7ccecb85062b56e8aa07647cb938c699c28aa398e1",
+    "data/runtime/p52_delay_20261007_v126/scene_0/run.log": "d75cc9a00042f6c2410ed26245ca727939ed552027aa3776879f6164893f3662",
+    "data/runtime/p52_delay_20261007_v126/scene_0/exit.json": "124fd50cb6d223cdd18fedc166d00af7254199b6e6dedf9be82f71db87af6d01",
+    "data/runtime/p52_delay_20261007_v126/scene_0/manifest.json": "9e02f460324d0be07f2baefab6de6588b0a380edf8d17a5e24ab769dc844a059",
+    "data/runtime/p52_delay_20261007_v126/scene_0/output/delay_detail.json": "f5c982e8e95a61c2603d50ade94cdf7fbb7bc1dcfa854d0140c903ae707d003a",
+    "data/runtime/p52_delay_20261007_v126/scene_0/output/capture.json": "0babeb468d593d1afb76818b04d8f324a3c6afe77ede56b7aa1638f4fdfad180",
+    "data/runtime/p52_delay_20261007_v126/scene_3/compose.json": "a0109348fd045c5bbc5ee29b27bc32a1d3b4bc7833e8e08fbfb06da21a414308",
+    "data/runtime/p52_delay_20261007_v126/scene_3/run.log": "bb21398a60dc4fdb356c3b33db1576f654271c7f860bbbd13bec6bdf438f558e",
+    "data/runtime/p52_delay_20261007_v126/scene_3/exit.json": "124fd50cb6d223cdd18fedc166d00af7254199b6e6dedf9be82f71db87af6d01",
+    "data/runtime/p52_delay_20261007_v126/scene_3/manifest.json": "e785f6a6bf651d26fe2f79c23fca3e8d17fcb0c5c862d6d8b6b7c72d098cfa26",
+    "data/runtime/p52_delay_20261007_v126/scene_3/output/delay_detail.json": "8382ba37ee06ca423cd2a46a1220a75f18f5076f5aa06becd7cd4921d2e60d70",
+    "data/runtime/p52_delay_20261007_v126/scene_3/output/capture.json": "66a84ec3ca2957d0496c0fc762563509349ab5b5782160f74476637d618bbcd2",
+    "data/runtime/p52_delay_20261007_v126/scene_1/compose.json": "6772b539d2cb1ba9dcd8fa0f424bf53631cc3c4a2c3f0b0ac89a0e9b417ff61f",
+    "data/runtime/p52_delay_20261007_v126/scene_1/run.log": "cfb3f83cf66de13b1a8719fd82a821c7bb95dbf4fad04ce1a8e4d7c8aa49ffe7",
+    "data/runtime/p52_delay_20261007_v126/scene_1/exit.json": "124fd50cb6d223cdd18fedc166d00af7254199b6e6dedf9be82f71db87af6d01",
+    "data/runtime/p52_delay_20261007_v126/scene_1/manifest.json": "97e5accd6de13c7fb27118b11f3ca82e8bd5063d0256885cd743f90579126d00",
+    "data/runtime/p52_delay_20261007_v126/scene_1/output/delay_detail.json": "00138d700fb1924ebfaaa66e1b79909e2f0e1b21c8089be5560d6a535dfe6b93",
+    "data/runtime/p52_delay_20261007_v126/scene_1/output/capture.json": "b900beb0108e9907ff1ba801081ca3913455ab797879b26d96e044b8f0cf378a",
+    "data/runtime/p52_delay_20261007_v126/scene_2/compose.json": "26533eb16a81fd88d217e2e89fed91d1a7d9572ad65d38f2f7e2569b51bd1273",
+    "data/runtime/p52_delay_20261007_v126/scene_2/run.log": "2edb7cab4a3e69f81e4b602913132567bd96eed5d37c864139187942af164f69",
+    "data/runtime/p52_delay_20261007_v126/scene_2/exit.json": "124fd50cb6d223cdd18fedc166d00af7254199b6e6dedf9be82f71db87af6d01",
+    "data/runtime/p52_delay_20261007_v126/scene_2/manifest.json": "6956c6303a60cdb17926c794f7cf49b9c956e5f1a70ecb65837208fb2ff38cdd",
+    "data/runtime/p52_delay_20261007_v126/scene_2/output/delay_detail.json": "704c1bfa762e0b96dc72c6ec85afd2913a634489edea60874081011056a8653f",
+    "data/runtime/p52_delay_20261007_v126/scene_2/output/capture.json": "ad4d1df7b8c09fe47e3eca06ff5b97b028084e00440b66049354dc5ac62264bc",
+    "data/runtime/p52_folded_20261007_v126/operating_after.json": "b112264b68f921a0adf41b80ef84e7ac8d016c354e1308f7482c6cf1e965051e",
+    "data/runtime/p52_folded_20261007_v126/analyze.py": "f7f558c7a931a4526dcf123137e1120eb5353ec60fb85998410bad48ba627426",
+    "data/runtime/p52_folded_20261007_v126/trial_results.json": "24f23080970e93c2a14869ab6b36c322a52a9f96c0129498f8098014508a1082",
+    "data/runtime/p52_folded_20261007_v126/comparison.json": "e98a04116f327dd5fe196345cae0dccdb0a7803c54a76a643ff5fda26dbb7e5a",
+    "data/runtime/p52_folded_20261007_v126/operating_before.json": "b112264b68f921a0adf41b80ef84e7ac8d016c354e1308f7482c6cf1e965051e",
+    "data/runtime/p52_folded_20261007_v126/run.py": "7c93d8c678eb45b3c8d092c63fa31d685e78d8a76470e8c3d7d1ee82798804bf",
+    "data/runtime/p52_folded_20261007_v126/plan.json": "dc46a469d9355f81e23104cba41616307f26c0135b276f6ff26e84aa6b732c46",
+    "data/runtime/p52_folded_20261007_v126/verified_report.json": "ecfb335e030d97ee18e27ebd597c131e55f2523e1d12ce21b3a4140078255802",
+    "data/runtime/p52_folded_20261007_v126/scene_0/compose.json": "ca651c9f0b1c21862e1a629d3e0a87ea8da4fab885b548d15ddd9051b3d122a1",
+    "data/runtime/p52_folded_20261007_v126/scene_0/run.log": "23d276f8aace5500b32010aa814442f83c8c690ed0c72f4348e48e1a40d2cdc4",
+    "data/runtime/p52_folded_20261007_v126/scene_0/exit.json": "124fd50cb6d223cdd18fedc166d00af7254199b6e6dedf9be82f71db87af6d01",
+    "data/runtime/p52_folded_20261007_v126/scene_0/manifest.json": "9e02f460324d0be07f2baefab6de6588b0a380edf8d17a5e24ab769dc844a059",
+    "data/runtime/p52_folded_20261007_v126/scene_0/output/delay_detail.json": "454fe7a17a492891aac55cb16f551a38b5562711e75124e8f2aff14d36561a4d",
+    "data/runtime/p52_folded_20261007_v126/scene_0/output/capture.json": "25c4a47307d6556d53fe69291c6f68810f4d918292b4dff33c9dd86397ed1e21",
+    "data/runtime/p52_folded_20261007_v126/scene_3/compose.json": "b330247ad8a0808d5c4b917a4961aad31004f79f04492b2878834da218bcdb0a",
+    "data/runtime/p52_folded_20261007_v126/scene_3/run.log": "8b5bbb6ed06a40a87dc86131bd4095d1ac2157fe264e730866e9465ce9072772",
+    "data/runtime/p52_folded_20261007_v126/scene_3/exit.json": "124fd50cb6d223cdd18fedc166d00af7254199b6e6dedf9be82f71db87af6d01",
+    "data/runtime/p52_folded_20261007_v126/scene_3/manifest.json": "e785f6a6bf651d26fe2f79c23fca3e8d17fcb0c5c862d6d8b6b7c72d098cfa26",
+    "data/runtime/p52_folded_20261007_v126/scene_3/output/delay_detail.json": "9e0b64ab97ea1ab6ac01706b2b0f4c1be78373186655f28c26b1a642a55b811b",
+    "data/runtime/p52_folded_20261007_v126/scene_3/output/capture.json": "6290f0ce8866e07b432f66ee4c95c3dea4eb75f3509c7514d2dff9dee4d2dfaf",
+    "data/runtime/p52_folded_20261007_v126/scene_1/compose.json": "655f357fe7c8ecec85d7714282d3cdbd5b6decc39e800b8449844093fe3435df",
+    "data/runtime/p52_folded_20261007_v126/scene_1/run.log": "d6f10ba2111adaa55ce3f622b6d5166b2de931547ee353906decf6834c98d0e3",
+    "data/runtime/p52_folded_20261007_v126/scene_1/exit.json": "124fd50cb6d223cdd18fedc166d00af7254199b6e6dedf9be82f71db87af6d01",
+    "data/runtime/p52_folded_20261007_v126/scene_1/manifest.json": "97e5accd6de13c7fb27118b11f3ca82e8bd5063d0256885cd743f90579126d00",
+    "data/runtime/p52_folded_20261007_v126/scene_1/output/delay_detail.json": "ad44eec2e69225ffbc8828ce833856c33b3f0617d6d9232c6388f0a10340f4e3",
+    "data/runtime/p52_folded_20261007_v126/scene_1/output/capture.json": "1c8d7bc15b369bd7c7967d64f8ec8edead4d75995f9745a1a9cda1c64ebf2133",
+    "data/runtime/p52_folded_20261007_v126/scene_2/compose.json": "46f0a701ca33e5a7c6517d2986dd20629cafb93437d43759479346e187bf0455",
+    "data/runtime/p52_folded_20261007_v126/scene_2/run.log": "4ffdc322295d7a160b801ab0e238cba08c68c93e1d46d9433f9e9a7d6ff4827c",
+    "data/runtime/p52_folded_20261007_v126/scene_2/exit.json": "124fd50cb6d223cdd18fedc166d00af7254199b6e6dedf9be82f71db87af6d01",
+    "data/runtime/p52_folded_20261007_v126/scene_2/manifest.json": "6956c6303a60cdb17926c794f7cf49b9c956e5f1a70ecb65837208fb2ff38cdd",
+    "data/runtime/p52_folded_20261007_v126/scene_2/output/delay_detail.json": "6c857c5553b921638f7e810c71bdc555dbc3ef6de8d8ecf0a717912069744bfc",
+    "data/runtime/p52_folded_20261007_v126/scene_2/output/capture.json": "4668ce1ab4121fe7beb478f6cc9fc963d22f635282d709a50cb786624e1f5b9c",
+    "data/runtime/p62_replay_20261007_v126/deployment_checks.json": "f60f46ce23120c63b00e6088b2242de4719df42ec3e82adf2c92efa289931eac",
+    "data/runtime/p62_replay_20261007_v126/operating_after.json": "b112264b68f921a0adf41b80ef84e7ac8d016c354e1308f7482c6cf1e965051e",
+    "data/runtime/p62_replay_20261007_v126/physical_camera_readonly.json": "789291aaa650e937a4f0ade1e1928cc803b1d5a0d9a16892cf73f9edf7952fa2",
+    "data/runtime/p62_replay_20261007_v126/candidate_profile_check.json": "1caddbca09cf6c3901aee8e2b999323e59d508014f172348997cb59cf7345938",
+    "data/runtime/p62_replay_20261007_v126/trial_results.json": "daf70bbf00a5d6cceae040d8abc6349f4c88cd59553d962effe42e1f2a39196b",
+    "data/runtime/p62_replay_20261007_v126/summarize.py": "20b81a4c05be70eaf42a506e4328258e504cdee9a5958ca99c562102249fb58d",
+    "data/runtime/p62_replay_20261007_v126/operating_before.json": "b112264b68f921a0adf41b80ef84e7ac8d016c354e1308f7482c6cf1e965051e",
+    "data/runtime/p62_replay_20261007_v126/run.py": "86bd49f474f74734d49745b1bc5b4aa51e814cfc5602a011de05d5867d784f00",
+    "data/runtime/p62_replay_20261007_v126/candidate_profile_allowlist.json": "68340280a5f6993655b72acfe4fae363c94a1f2d56accd1979e13225f04223ba",
+    "data/runtime/p62_replay_20261007_v126/plan.json": "e5bda2cdcafdde0281e5f9b0c9504a0f0077bb44ef362d0653eeefffd3ab9826",
+    "data/runtime/p62_replay_20261007_v126/scene_1/compose.json": "9ecbc6c9528acf622e6b40eea44946f6bae6f0324df277799411f7cbcd9eeda8",
+    "data/runtime/p62_replay_20261007_v126/scene_1/run.log": "302ceb304839675f4993f3e904c7f333adf0fe81f984daff18f3b5696e554bee",
+    "data/runtime/p62_replay_20261007_v126/scene_1/exit.json": "124fd50cb6d223cdd18fedc166d00af7254199b6e6dedf9be82f71db87af6d01",
+    "data/runtime/p62_replay_20261007_v126/scene_1/output/result/report.json": "bf1ab32fd42913e3b12d32ccea978aed033e9a2de4129b80725540496db1c38b",
+    "data/runtime/p62_replay_20261007_v126/scene_2/compose.json": "5430a7cce6c3b7640664b4fc0f21a9c1bba6f6b8941a87dc5f595cb89da5ea49",
+    "data/runtime/p62_replay_20261007_v126/scene_2/run.log": "1252cfd383dd301535c800f8a21e1659b784160ee987805d4388d9b8630b39fc",
+    "data/runtime/p62_replay_20261007_v126/scene_2/exit.json": "124fd50cb6d223cdd18fedc166d00af7254199b6e6dedf9be82f71db87af6d01",
+    "data/runtime/p62_replay_20261007_v126/scene_2/output/result/report.json": "e5042fc68f1d1814db31de648add2273d8795429192b2f5703b016f7016c7128"
+  },
+  "verification": {
+    "documents": {
+      "passed": true,
+      "models": 8,
+      "wbs_rows": 33,
+      "wbs_status_unchanged": true,
+      "csv_rows": 8,
+      "html_escaped": true,
+      "evidence_artifacts": 83,
+      "prior_model_rows_retained": true,
+      "new_labeled_conditions": 2,
+      "clips_per_condition": 4
+    },
+    "http": [
+      {
+        "file": "index.html",
+        "status": 200,
+        "bytes": 33785,
+        "sha256": "aa400511dda6fe69d8a4a985371766fc5a501b77b96534442080b6d3fc9bdcf0",
+        "local_match": true
+      },
+      {
+        "file": "CCTV_project_progress.pdf",
+        "status": 200,
+        "bytes": 148651,
+        "sha256": "e7f4eb08ac76d3b8bf816d3ab946e236a3e80b61f42c36ecfa2c14091cae00a3",
+        "local_match": true
+      }
+    ],
+    "independent_review": {
+      "critical": 0,
+      "important": 0,
+      "scope": "numbers and claim limits; not field acceptance"
+    },
+    "lint": "ruff pass; changed renderer and private harnesses",
+    "pdf_first_page": "visually checked"
+  }
+}

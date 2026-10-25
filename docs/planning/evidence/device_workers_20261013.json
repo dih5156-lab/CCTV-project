@@ -1,0 +1,163 @@
+{
+  "updated_at": "2026-10-13T14:15:15.350523+09:00",
+  "wbs_id": "P3.2",
+  "state": "LOCAL_VERIFIED_MQTT_ISOLATION",
+  "scope": "Action 물리 대상별 발행/대조와 장치3종 MQTT 수신/실행 격리. REST와 직접 장치 HTTP는 후속 범위.",
+  "changes": {
+    "product_python_files": [
+      "src/services/action_device_queue.py",
+      "src/services/action_mqtt_intake.py",
+      "src/edgex/request_idempotency.py",
+      "runners/run_signboard_device_service.py",
+      "runners/run_speaker_device_service.py",
+      "runners/run_siren_device_service.py",
+      "src/edgex/device_mqtt_workers.py"
+    ],
+    "test_files": [
+      "tests/test_device_workers.py",
+      "tests/test_device_workers_integration.py",
+      "tests/test_action_completion_integration.py"
+    ],
+    "new_dependencies": 0,
+    "new_database_paths": 0,
+    "schema": "옵션 활성화 시 기존 장치 요청 DB마다 device_mqtt_inbox 테이블1개/명시 인덱스2개 추가",
+    "defaults": {
+      "DEVICE_WORKERS_ENABLED": false,
+      "DEVICE_WORKER_TIMEOUT_SECONDS": 30
+    },
+    "compose_changed": false,
+    "api_payload_changed": false,
+    "source_diff": "data/runtime/device_workers_20261013/product.diff"
+  },
+  "validation": {
+    "regression_unique_passed": 413,
+    "real_mqtt_passed": 11,
+    "unique_passed": 424,
+    "new_unique_tests": 26,
+    "shutdown_subset_rerun_not_added": 22,
+    "junit": {
+      "regression": {
+        "tests": 413,
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0
+      },
+      "mqtt": {
+        "tests": 11,
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0
+      },
+      "shutdown": {
+        "tests": 22,
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0
+      }
+    },
+    "regression_log": "data/runtime/device_workers_20261013/regression.log",
+    "mqtt_log": "data/runtime/device_workers_20261013/mqtt.log",
+    "shutdown_log": "data/runtime/device_workers_20261013/shutdown.log",
+    "ruff": "제품7/시험3/진행판 렌더러1 PASS",
+    "mypy": "action_device_queue/action_expiry/action_mqtt_intake/device_mqtt_workers 4파일 --follow-imports=silent PASS; 전체 프로젝트 검사 아님",
+    "syntax": "제품7/시험3 AST PASS",
+    "wbs_consistency": "WBS/진행판 33개 ID·상태·경로·개수 일치",
+    "whitespace": "대상 git diff --check PASS",
+    "initial_test_failure": "초기 신규23개 중1개가 10ms 시험 기한 안에 빠른 호출의 결과 commit을 기다리지 않아 실패. 빠른 결과 commit을 기다리도록 fixture 수정 후 통과. 제품 장애로 판정하지 않음.",
+    "cases": [
+      "장치3종: 느린 물리 RPC 중 같은 종류의 다른 물리 장치/읽기 전용 상태 조회 진행",
+      "동일 물리 대상 호출 직렬화, 동일 request_id 재수신의 모의 실행1회",
+      "제한시간 초과1회 기록/발행, 실행 중 작업자·원래 점유 유지",
+      "재시작 pending/running 보류 및 같은 요청 재전달 재출력0",
+      "실제 자식 프로세스를 모의 장치 호출 중 os._exit(19)로 종료한 뒤 재출력0",
+      "종료 대기 상한·미종료 시 소유 잠금 유지·새 대기 출력 시작 금지",
+      "원본 저장 실제 SQLite 오류 시 무ACK/실행0, 격리 브로커 동일 packet 재전달 후1회 실행",
+      "Action 느린 발행 중 다른 물리 대상 진행·입력 저장 지속",
+      "잘못된 입력 원본 보존·유한 양수 timeout 검증·3러너 선택 옵션 연결",
+      "기존 완료 유실/재시작 통합시험은 실제 stop/start 복구 경계로 검증"
+    ]
+  },
+  "fixture": {
+    "broker": "cached eclipse-mosquitto:2.0; isolated Unix socket /tmp/cctv-p22-mqtt-workers-20261013/mqtt.sock",
+    "container": "cctv-workers-mqtt-test-20261013",
+    "isolation": "--network none, read-only, non-root 1883:1883, cap-drop ALL, no-new-privileges, cpus .25, memory 64m",
+    "removed_after_test": true,
+    "physical_device_calls": "mocked",
+    "operating_broker_used": false
+  },
+  "code_review": {
+    "tools": [
+      "codebase-memory-mcp",
+      "code-review-graph detect_changes",
+      "code-review-graph get_affected_flows"
+    ],
+    "graph_reports": [
+      "data/runtime/device_workers_20261013/graph_0.json",
+      "data/runtime/device_workers_20261013/graph_1.json"
+    ],
+    "graph_limit": "HEAD부터 누적 미커밋 변경이 포함돼136심볼/47시험공백/위험0.85를 이번 단위 결함 개수로 해석하지 않음. 흐름은 과거 스냅샷을 포함하므로 이번 시작 전 복사본과 실제 코드·회귀시험으로 추가 대조.",
+    "reviewed": "입력 commit/ACK, 물리 단위 호출·조회, 미종료 잠금, 재시작 보류, timeout의 비취소 의미, 기본 OFF, 기존 완료/중복 계약",
+    "unresolved_unit_defects": []
+  },
+  "web": [
+    {
+      "url": "http://192.168.2.141:18081/",
+      "status": 200,
+      "bytes": 81400,
+      "sha256": "bb6b41c0103aa14d955b6c21ac125df9ae259065b9c3500afb2ec348e0dc1ed3",
+      "local_matches": true
+    },
+    {
+      "url": "http://192.168.2.141:18081/CCTV_project_progress.pdf",
+      "status": 200,
+      "bytes": 152121,
+      "sha256": "3cd76afea1f4db65a790c31a0ee31f8341ba14d83d5cebf96b6dfa1f5bd3270e",
+      "local_matches": true
+    }
+  ],
+  "pdf_first_page_visual_check": "PASS",
+  "browser_interaction": "not checked",
+  "module_graph": "앞선 정적 스냅샷 유지; 현재 런타임 시각화 아님",
+  "operations": {
+    "deployed": false,
+    "candidate_rebuilt": false,
+    "physical_outputs": 0,
+    "operating_containers_checked": [
+      "cctv-ai-engine",
+      "cctv-action-layer",
+      "cctv-device-signboard",
+      "edgex-kuiper",
+      "cctv-public-api"
+    ],
+    "id_image_started_at_unchanged": true,
+    "baseline": "data/runtime/device_workers_20261013/operating_before.txt"
+  },
+  "limits": [
+    "시간초과는 미확정 통지이며 Python 스레드/물리 실행을 강제 중단하지 않음. 멈춘 장치의 소유는 유지됨.",
+    "같은 DB/단일 소유자 MQTT 경로. 별도 DB·외부 제어·직접 장치 HTTP 경합의 전역 잠금 아님.",
+    "REST 영속 접수·큐 길이/최장 대기/지연 계측·보관 한계와 운영자 해제 절차 잔여.",
+    "스피커/사이렌 실제 출력 종료 신호, 승인된 TTL/시계·장시간/실물/운영 전환 및 복귀 검증 잔여.",
+    "장치 옵션 기본 OFF. 운영에 켜기 전에 고정 client ID 유일성·DB 백업·MQTT/Action 계약의 동시 반영 필요."
+  ],
+  "wbs": {
+    "row_status": "PLANNED",
+    "local_subtask": "verified",
+    "done": 9,
+    "total": 33,
+    "remaining": 24,
+    "next": "P3.2 REST 영속 접수·실행 분리",
+    "poc": "2026-12 필수; 내부 준비11/27·최종12/31 유지"
+  },
+  "artifacts_sha256": {
+    "src/services/action_device_queue.py": "25194091c8769b15788ea653511ba3d366c9f7d0185d00895e273ed12677b4e2",
+    "src/services/action_mqtt_intake.py": "6ec82134de3b44ce5172d3aa1991dfb20d5cb7d847dc0314468de91fbf94b8f2",
+    "src/edgex/request_idempotency.py": "ecab34c91cdc34aadb4a2d25588b02bd9df281b1aa57870698449d20cc898b4a",
+    "runners/run_signboard_device_service.py": "3b8fc2351c18b7b2a44ca1a8ee26ea31863ebfa3d1075a37ad3bc6bc127d3cb5",
+    "runners/run_speaker_device_service.py": "7d3d04044a5d4edfadc0c8225bb51a7e5532d6dc15cc6ae7e385c401a22bbda9",
+    "runners/run_siren_device_service.py": "204c3b7f676b90ac9a49af7185c5afeb10d4bf4486bccf302dc4e22264579064",
+    "src/edgex/device_mqtt_workers.py": "150e9916eedbe58ad6b08005b7f9876ef823d4ed87ac0f77626ef4980e22c6aa",
+    "tests/test_device_workers.py": "8dc02dacb9d01b3823ce8808cce14cbc2ab042a12e997ef6944135d4d7d58c88",
+    "tests/test_device_workers_integration.py": "d169b0d324d5ff0f8f6f0cb7c3b475df1911c32b8d956754f10f2a173dcb8952",
+    "tests/test_action_completion_integration.py": "b9f99aa275fa210ee6f147d867ce1cb1c34e3f705cb7de9b86cfd1d06b928999"
+  }
+}

@@ -1,0 +1,621 @@
+{
+  "checked_at": "2026-10-08T15:26:47.355436+09:00",
+  "state": "FIX_APPLIED_PHYSICAL_DISPLAY_CONFIRMED",
+  "scope": "P3.3 사전검증과 전광판1대 제한 명령 시험. 자동 AI 경보 활성화/전체 WBS 완료 아님.",
+  "configuration": {
+    "original_camera_1_targets": 0,
+    "candidate_signboard_targets": 1,
+    "candidate_other_output_targets": 0,
+    "registry_applied": false
+  },
+  "physical_trial": {
+    "requests": [
+      {
+        "request_id": "signboard-preflight-20261008:signboard:cctv-signboard-01",
+        "action": "display"
+      },
+      {
+        "request_id": "signboard-preflight-20261008:signboard:clear:cctv-signboard-01",
+        "action": "clear"
+      }
+    ],
+    "results": {
+      "signboard-preflight-20261008:signboard:cctv-signboard-01": {
+        "command_id": "signboard-preflight-20261008:signboard:cctv-signboard-01",
+        "device_id": "cctv-signboard-01",
+        "status": "acknowledged",
+        "error_code": null,
+        "event_id": "signboard-preflight-20261008",
+        "request_id": "signboard-preflight-20261008:signboard:cctv-signboard-01"
+      },
+      "signboard-preflight-20261008:signboard:clear:cctv-signboard-01": {
+        "command_id": "signboard-preflight-20261008:signboard:clear:cctv-signboard-01",
+        "device_id": "cctv-signboard-01",
+        "status": "acknowledged",
+        "error_code": null,
+        "event_id": "signboard-preflight-20261008",
+        "request_id": "signboard-preflight-20261008:signboard:clear:cctv-signboard-01"
+      }
+    },
+    "errors": [],
+    "physical_confirmation": {
+      "visible": false,
+      "source": "user",
+      "answer": "문구가 안 보임"
+    }
+  },
+  "user_observations": {
+    "device_ip_confirmed": true,
+    "device_ip": "192.168.88.91",
+    "current_screen": "현재 시간이 계속 갱신됨",
+    "trial_text_visible": false,
+    "source": "사용자 확인"
+  },
+  "result_database": {
+    "command_results": [
+      {
+        "request_id": "signboard-preflight-20261008:signboard:cctv-signboard-01",
+        "event_id": "signboard-preflight-20261008",
+        "device_id": "cctv-signboard-01",
+        "status": "acknowledged",
+        "error_code": null,
+        "received_at": "2026-10-08T05:46:00.121842+00:00"
+      },
+      {
+        "request_id": "signboard-preflight-20261008:signboard:clear:cctv-signboard-01",
+        "event_id": "signboard-preflight-20261008",
+        "device_id": "cctv-signboard-01",
+        "status": "acknowledged",
+        "error_code": null,
+        "received_at": "2026-10-08T05:46:20.416575+00:00"
+      }
+    ],
+    "action_commands": [
+      {
+        "command_id": "signboard-preflight-20261008:signboard",
+        "event_id": "signboard-preflight-20261008",
+        "status": "acknowledged",
+        "message": "",
+        "updated_at": "2026-10-08T14:46:00.121843+09:00"
+      },
+      {
+        "command_id": "signboard-preflight-20261008:signboard:clear",
+        "event_id": "signboard-preflight-20261008",
+        "status": "acknowledged",
+        "message": "",
+        "updated_at": "2026-10-08T14:46:20.417279+09:00"
+      }
+    ]
+  },
+  "control_api": {
+    "exit": 0,
+    "result": {
+      "status": 200,
+      "success": true,
+      "data": {
+        "request_id": "signboard-preflight-20261008:signboard:cctv-signboard-01",
+        "event_id": "signboard-preflight-20261008",
+        "device_id": "cctv-signboard-01",
+        "status": "acknowledged",
+        "error_code": null
+      }
+    },
+    "error": ""
+  },
+  "connectivity": {
+    "at": "2026-10-08T14:36:15.635081+09:00",
+    "endpoint": "192.168.88.91:5000",
+    "protocol_payload_bytes_sent": 0,
+    "tcp_connected": true,
+    "route": [
+      {
+        "dst": "192.168.88.91",
+        "gateway": "192.168.2.1",
+        "dev": "wlP1p1s0",
+        "prefsrc": "192.168.2.141",
+        "flags": [],
+        "uid": 1000,
+        "cache": []
+      }
+    ],
+    "health_only_uat": {
+      "exit": 0,
+      "result": [
+        {
+          "device": "signboard",
+          "health_code": 200,
+          "health_status": "up",
+          "command_code": null,
+          "command_status": "not_sent",
+          "expected_status": "not_sent",
+          "passed": true
+        }
+      ]
+    }
+  },
+  "candidate_contract": {
+    "status": "PASS",
+    "original_camera_targets": 0,
+    "candidate_camera_targets": 1,
+    "speaker_siren_camera_targets": 0,
+    "serial_duplicate_physical_calls": 1,
+    "wrong_device": "rejected",
+    "device_failure": "failed",
+    "result_store_duplicate_rows": 1,
+    "logical_command_id": "signboard-preflight-20261008:signboard",
+    "network_publishes": 0,
+    "physical_output": false,
+    "trial_cleanup_after_publish_failure": "PASS",
+    "limits": "모형·순차 중복 검증. 동시 실행·재시작·응답 유실·실물 검증은 별도."
+  },
+  "idle_conflict": {
+    "writers": [
+      "cctv-action-layer",
+      "cctv-device-dabit",
+      "cctv-device-signboard"
+    ],
+    "passive_response_counts": {
+      "cctv-action-layer": 6,
+      "cctv-device-dabit": 3,
+      "cctv-device-signboard": 6
+    },
+    "response_examples": [
+      "![00500!]",
+      "![0000!]"
+    ],
+    "source": "각 프로세스의 SignboardDevice 생성 경로·주기 갱신 코드와 별도 네트워크 네임스페이스의 동일 장치 응답을 대조",
+    "legacy_service_absent_from_current_compose": true,
+    "limits": "동일 장치를 갱신하는 세 경로를 확인한 뒤 중복 두 경로 제거와 재시험에서 실제 표시 성공. 최초 시험 시각의 원시 TCP 응답은 없으며 장시간·재부팅 검증은 별도."
+  },
+  "fix_candidate": {
+    "files": [
+      "src/devices/signboard.py",
+      "src/services/action_bridge.py"
+    ],
+    "directory": "data/runtime/signboard_preflight_20261008/candidate",
+    "patch": "data/runtime/signboard_preflight_20261008/idle_owner.patch",
+    "behavior": "EdgeX 모드 Action Layer 로컬 유휴 갱신 비활성화, Direct 모드 유지. 구형 Dabit 삭제 없이 중지 및 자동 재시작 해제. 동일 코드 프로젝트 반영.",
+    "verification": {
+      "contract_regression": "28 PASS",
+      "before_fix": "유휴 주체 중복 1 FAIL / Direct 1 PASS",
+      "after_fix": "107 PASS in 2.98s",
+      "operating_python": "PASS, no network",
+      "compose": "PASS; image/environment/ports/old mounts preserved",
+      "project_regression": "107 PASS in 3.52s"
+    },
+    "applied": true,
+    "approval": "사용자: 적용하고 전광판 재시험"
+  },
+  "limitations": [
+    "순차 중복 시험이며 동시 요청·프로세스 재시작 뒤 중복 방지 합격 아님",
+    "첫 실물 미표시 기록 보존. 수정 후 별도 고유 ID의 제한 재시험에서 사용자 실제 표시 확인",
+    "상시 camera_1 매핑 미적용: 입력 원본 이벤트→Action 정책→전광판 전체 자동 동작은 미시험",
+    "서비스 재기동 뒤 이벤트 접수·출력·결과 복구 확인. 호스트 재부팅·장시간 무충돌 운전·모든 통신 장애 복구는 미시험"
+  ],
+  "sha256": {
+    "data/runtime/signboard_preflight_20261008/api_result.json": "841a2dde3129a3f7945ac1f18541bf41f5ff14cba0951d01168b75504da0b007",
+    "data/runtime/signboard_preflight_20261008/before.json": "89f6e8da98870b1504349162671faf1ed5b5ac433572723871b9e3190b2ea766",
+    "data/runtime/signboard_preflight_20261008/cctv-device-dabit_trial.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "data/runtime/signboard_preflight_20261008/cctv-device-signboard_trial.log": "f5a9f5a56d9e8ac1f65c31039f2651c6e2ce9ac5b0c0945d9da42b708cabdaa3",
+    "data/runtime/signboard_preflight_20261008/check.json": "4c8572409e9aad5d7c1b05be5ffa679e0005ffcfdd205e73a5e52dc7e5adc274",
+    "data/runtime/signboard_preflight_20261008/check.py": "27e537ee5e6bb8f3902379f6b4e8d17a4d7bf2873789542901367161fcddbefd",
+    "data/runtime/signboard_preflight_20261008/code_parity.json": "bb7281ecaeb9cb032242241a9f87db88f226644f81b7c353fd5ade0ad1d0b373",
+    "data/runtime/signboard_preflight_20261008/connectivity.json": "8ea86f6c15ccc1428b42881d7f8bf28854a4e7e0e6ccdcae48a8dde673889ccd",
+    "data/runtime/signboard_preflight_20261008/db_results.json": "242a4391ec563922944a71a0017cf4856176c0b4b91549abacc67a4dd5a0547b",
+    "data/runtime/signboard_preflight_20261008/deployment_comparison.json": "5cf8e9b36974331271b8f13d77e68b4f2388e129a353d120663a00198bfd0a1c",
+    "data/runtime/signboard_preflight_20261008/idle_owner.patch": "64a4f7ff094cf7d1be0dd7996b29b7ed9b7cbcc4584c84644064ca26042b2070",
+    "data/runtime/signboard_preflight_20261008/idle_owner_plan.json": "79c5ada99b5e91ae62cdbab78126cfdbfb0641e92a258a55269b0c756b57f9e2",
+    "data/runtime/signboard_preflight_20261008/idle_owner_red.log": "84d8aa2490bebd6540c2b50954dd7a3ab567b88058d7f5250f487ae4c089176e",
+    "data/runtime/signboard_preflight_20261008/observations.json": "8b0058c0503070b2b6b82cae7f7212a703c13e7ac10166bd542c33c83f30efb2",
+    "data/runtime/signboard_preflight_20261008/other_writers.json": "309f88cff9728820a9a468553fb11b66b027b47faf708fb38302bf0ebabdc32a",
+    "data/runtime/signboard_preflight_20261008/output_devices.candidate.json": "1fc3f45f0154831dcb49dfcdeb6df5ada6d67124e745187d8531775c4854e464",
+    "data/runtime/signboard_preflight_20261008/output_devices.original.json": "e8edc1b18b945118541933bd6d5523e4a7386814acd59b2a440c0562d6727880",
+    "data/runtime/signboard_preflight_20261008/passive_dabit_ip_packets.json": "f4f85b14ed30859caf1f447c01fc75b062339e357a3d59be57d73bedeff23926",
+    "data/runtime/signboard_preflight_20261008/passive_dabit_responses.json": "adc7d7530e6656246a92e772d48a26ec1706256e06ae49962ff311fe77ee6e8d",
+    "data/runtime/signboard_preflight_20261008/passive_dabit_responses_sidecar.json": "ddcab304214745d0eed36e648bee2088c3caea159e523a187bbadf9b631ba216",
+    "data/runtime/signboard_preflight_20261008/plan.json": "7d3a3265bb08027f8fa595a9eaaa6f4949365cb9890b57fd45dfb88004dcaacb",
+    "data/runtime/signboard_preflight_20261008/process_mode.json": "6edbde049a84abeb436d56f6cfb76a4ad41cf4319e046f561aa9941a4373e4ae",
+    "data/runtime/signboard_preflight_20261008/requests.json": "4bd2a4b4b44670f24ed5ae0ca86ebc350c802996b83a7fa87fd23cf9bc879036",
+    "data/runtime/signboard_preflight_20261008/run_trial.py": "9c3e70e6784106a528cbc59460f8ad37d23e7124c2db8be3a80790a495292164",
+    "data/runtime/signboard_preflight_20261008/runner_check.json": "cfd2ad728a3e6f5c202220e9842f50484268fbb6f2335969368378add47ed568",
+    "data/runtime/signboard_preflight_20261008/trial.json": "0b13e2df7eac86680a6537851b856507447354695381972961b5e4cc68e27f1d",
+    "data/runtime/signboard_preflight_20261008/idle_owner_apply.json": "eb852001ad2ff8896cc49d05c4a134d8e99d7c259ae8fef7335a4df90e4c3c0d",
+    "data/runtime/signboard_single_owner_20261008/trial.json": "e2c69217735b9bcfd6de872661e17995f7d17290d5ae877c2a8d7dfca1bfc8a3",
+    "data/runtime/signboard_single_owner_20261008/verification.json": "283eeb9c9d3bee2f46407e03f7bfb77d61856613b795fd67fa09fede1b07b438",
+    "data/runtime/signboard_single_owner_20261008/api_result.json": "b9f384fa40956de43eba5b2ec25ee4c671a00da4187b48db2bab856da2f74f15"
+  },
+  "operational_apply": {
+    "approved": "적용하고 전광판 재시험",
+    "start": "2026-10-08T15:15:25.323646+09:00",
+    "before": [
+      {
+        "name": "cctv-action-layer",
+        "id": "f8cc0cae0b006f493bbc71da5093e30fdc1a37f192d57a62fc04c41af4786ce3",
+        "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+        "started": "2026-10-01T23:40:25.091637764Z",
+        "status": "running",
+        "health": "healthy",
+        "restarts": 0
+      },
+      {
+        "name": "cctv-device-dabit",
+        "id": "f51a40001b1cdd706b69941702a76e10044002740582f2da9c20c8648aa36a0d",
+        "image": "sha256:bb0f35eee47d16c4bc8b30417717bc04b9d2c40ce6f2556d97d081f736a006fd",
+        "started": "2026-10-01T23:40:25.229113157Z",
+        "status": "running",
+        "health": "healthy",
+        "restarts": 0
+      },
+      {
+        "name": "cctv-device-signboard",
+        "id": "fca78eeb63cf1846c523ff633d626b41e2b5b2274661c9a9dd0f1323a8345020",
+        "image": "sha256:7146fd550900b6e967e6a23606920762165035120b44b2e50c43390a7cf8f65e",
+        "started": "2026-10-01T23:40:25.241821111Z",
+        "status": "running",
+        "health": "healthy",
+        "restarts": 0
+      },
+      {
+        "name": "cctv-ai-engine",
+        "id": "db65cceb6390ae7eae0b02db9403a46dba9053adbeca5cb27cb4e67c92d0e4f0",
+        "image": "sha256:294e52234fc170904e2a09b180b422e0562d6e11b5aa28ebcf287a1b47c9ed55",
+        "started": "2026-10-08T04:59:47.634961746Z",
+        "status": "running",
+        "health": "healthy",
+        "restarts": 0
+      },
+      {
+        "name": "cctv-media-server",
+        "id": "a2b1369a3598485980000d1e6da5ef09d79145da54b220cc37baaa00b7376c03",
+        "image": "sha256:f8628851106cc053f9175b248050bb5f362a6e65abd72297c167a1cb5a9a3be2",
+        "started": "2026-10-01T23:40:25.266992541Z",
+        "status": "running",
+        "health": null,
+        "restarts": 0
+      },
+      {
+        "name": "cctv-public-api",
+        "id": "1b39a4ff7ee4d0d9bc7580418c51f5d880e320707bb5b00060af08ff4580a4a0",
+        "image": "sha256:ca4376b086a99f2ad42d2132cb21b1cf75178571fae530ec464c1ed071f3175c",
+        "started": "2026-10-01T23:40:24.611743744Z",
+        "status": "running",
+        "health": "healthy",
+        "restarts": 0
+      },
+      {
+        "name": "cctv-public-demo-ui",
+        "id": "0ce21ff0428bc2e0b8498c13d5b59a2ef87b4510b462691ef44b0549ff33c553",
+        "image": "sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10",
+        "started": "2026-10-01T23:40:25.101996726Z",
+        "status": "running",
+        "health": null,
+        "restarts": 0
+      }
+    ],
+    "commands": [
+      {
+        "command": [
+          "docker",
+          "stop",
+          "--time",
+          "10",
+          "cctv-device-dabit"
+        ],
+        "returncode": 0
+      },
+      {
+        "command": [
+          "docker",
+          "compose",
+          "-p",
+          "edgex-jetson",
+          "-f",
+          "data/runtime/signboard_preflight_20261008/idle_owner.fixed.json",
+          "up",
+          "-d",
+          "--no-deps",
+          "--no-build",
+          "--pull",
+          "never",
+          "--force-recreate",
+          "cctv-action-layer"
+        ],
+        "returncode": 0
+      }
+    ],
+    "rollback": false,
+    "action_health": {
+      "service": "cctv-action-layer",
+      "status": "up",
+      "checked_at": "2026-10-08T15:15:42.477638+09:00",
+      "mqtt": "connected",
+      "mode": "auto",
+      "sites": 0,
+      "pending": 0
+    },
+    "state": "APPLIED_HEALTHY",
+    "after": [
+      {
+        "name": "cctv-action-layer",
+        "id": "4583fc9fcd71816b7cdc1f20900901cf8cfcbbd669401c8b9fe3d66e99a9bbf6",
+        "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+        "started": "2026-10-08T06:15:40.114979171Z",
+        "status": "running",
+        "health": "starting",
+        "restarts": 0
+      },
+      {
+        "name": "cctv-device-dabit",
+        "id": "f51a40001b1cdd706b69941702a76e10044002740582f2da9c20c8648aa36a0d",
+        "image": "sha256:bb0f35eee47d16c4bc8b30417717bc04b9d2c40ce6f2556d97d081f736a006fd",
+        "started": "2026-10-01T23:40:25.229113157Z",
+        "status": "exited",
+        "health": "unhealthy",
+        "restarts": 0
+      },
+      {
+        "name": "cctv-device-signboard",
+        "id": "fca78eeb63cf1846c523ff633d626b41e2b5b2274661c9a9dd0f1323a8345020",
+        "image": "sha256:7146fd550900b6e967e6a23606920762165035120b44b2e50c43390a7cf8f65e",
+        "started": "2026-10-01T23:40:25.241821111Z",
+        "status": "running",
+        "health": "healthy",
+        "restarts": 0
+      },
+      {
+        "name": "cctv-ai-engine",
+        "id": "db65cceb6390ae7eae0b02db9403a46dba9053adbeca5cb27cb4e67c92d0e4f0",
+        "image": "sha256:294e52234fc170904e2a09b180b422e0562d6e11b5aa28ebcf287a1b47c9ed55",
+        "started": "2026-10-08T04:59:47.634961746Z",
+        "status": "running",
+        "health": "healthy",
+        "restarts": 0
+      },
+      {
+        "name": "cctv-media-server",
+        "id": "a2b1369a3598485980000d1e6da5ef09d79145da54b220cc37baaa00b7376c03",
+        "image": "sha256:f8628851106cc053f9175b248050bb5f362a6e65abd72297c167a1cb5a9a3be2",
+        "started": "2026-10-01T23:40:25.266992541Z",
+        "status": "running",
+        "health": null,
+        "restarts": 0
+      },
+      {
+        "name": "cctv-public-api",
+        "id": "1b39a4ff7ee4d0d9bc7580418c51f5d880e320707bb5b00060af08ff4580a4a0",
+        "image": "sha256:ca4376b086a99f2ad42d2132cb21b1cf75178571fae530ec464c1ed071f3175c",
+        "started": "2026-10-01T23:40:24.611743744Z",
+        "status": "running",
+        "health": "healthy",
+        "restarts": 0
+      },
+      {
+        "name": "cctv-public-demo-ui",
+        "id": "0ce21ff0428bc2e0b8498c13d5b59a2ef87b4510b462691ef44b0549ff33c553",
+        "image": "sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10",
+        "started": "2026-10-01T23:40:25.101996726Z",
+        "status": "running",
+        "health": null,
+        "restarts": 0
+      }
+    ],
+    "end": "2026-10-08T15:15:42.536842+09:00"
+  },
+  "retrial": {
+    "trial": {
+      "requests": [
+        {
+          "request_id": "signboard-single-owner-20261008:signboard:cctv-signboard-01",
+          "action": "display"
+        },
+        {
+          "request_id": "signboard-single-owner-20261008:signboard:clear:cctv-signboard-01",
+          "action": "clear"
+        }
+      ],
+      "results": {
+        "signboard-single-owner-20261008:signboard:cctv-signboard-01": {
+          "command_id": "signboard-single-owner-20261008:signboard:cctv-signboard-01",
+          "device_id": "cctv-signboard-01",
+          "status": "acknowledged",
+          "error_code": null,
+          "event_id": "signboard-single-owner-20261008",
+          "request_id": "signboard-single-owner-20261008:signboard:cctv-signboard-01"
+        },
+        "signboard-single-owner-20261008:signboard:clear:cctv-signboard-01": {
+          "command_id": "signboard-single-owner-20261008:signboard:clear:cctv-signboard-01",
+          "device_id": "cctv-signboard-01",
+          "status": "acknowledged",
+          "error_code": null,
+          "event_id": "signboard-single-owner-20261008",
+          "request_id": "signboard-single-owner-20261008:signboard:clear:cctv-signboard-01"
+        }
+      },
+      "errors": [],
+      "physical_confirmation": {
+        "visible": true,
+        "source": "user",
+        "answer": "시험 문구가 보임"
+      }
+    },
+    "verification": {
+      "at": "2026-10-08T15:23:54.541735+09:00",
+      "health": {
+        "service": "cctv-action-layer",
+        "status": "up",
+        "checked_at": "2026-10-08T15:23:54.539733+09:00",
+        "mqtt": "connected",
+        "mode": "auto",
+        "sites": 0,
+        "pending": 0
+      },
+      "containers": [
+        {
+          "name": "cctv-action-layer",
+          "id": "4583fc9fcd71816b7cdc1f20900901cf8cfcbbd669401c8b9fe3d66e99a9bbf6",
+          "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+          "started": "2026-10-08T06:15:40.114979171Z",
+          "status": "running",
+          "health": "healthy",
+          "restarts": 0,
+          "restart_policy": {
+            "Name": "always",
+            "MaximumRetryCount": 0
+          }
+        },
+        {
+          "name": "cctv-device-dabit",
+          "id": "f51a40001b1cdd706b69941702a76e10044002740582f2da9c20c8648aa36a0d",
+          "image": "sha256:bb0f35eee47d16c4bc8b30417717bc04b9d2c40ce6f2556d97d081f736a006fd",
+          "started": "2026-10-01T23:40:25.229113157Z",
+          "status": "exited",
+          "health": "unhealthy",
+          "restarts": 0,
+          "restart_policy": {
+            "Name": "no",
+            "MaximumRetryCount": 0
+          }
+        },
+        {
+          "name": "cctv-device-signboard",
+          "id": "fca78eeb63cf1846c523ff633d626b41e2b5b2274661c9a9dd0f1323a8345020",
+          "image": "sha256:7146fd550900b6e967e6a23606920762165035120b44b2e50c43390a7cf8f65e",
+          "started": "2026-10-01T23:40:25.241821111Z",
+          "status": "running",
+          "health": "healthy",
+          "restarts": 0,
+          "restart_policy": {
+            "Name": "always",
+            "MaximumRetryCount": 0
+          }
+        },
+        {
+          "name": "cctv-ai-engine",
+          "id": "db65cceb6390ae7eae0b02db9403a46dba9053adbeca5cb27cb4e67c92d0e4f0",
+          "image": "sha256:294e52234fc170904e2a09b180b422e0562d6e11b5aa28ebcf287a1b47c9ed55",
+          "started": "2026-10-08T04:59:47.634961746Z",
+          "status": "running",
+          "health": "healthy",
+          "restarts": 0,
+          "restart_policy": {
+            "Name": "always",
+            "MaximumRetryCount": 0
+          }
+        },
+        {
+          "name": "cctv-media-server",
+          "id": "a2b1369a3598485980000d1e6da5ef09d79145da54b220cc37baaa00b7376c03",
+          "image": "sha256:f8628851106cc053f9175b248050bb5f362a6e65abd72297c167a1cb5a9a3be2",
+          "started": "2026-10-01T23:40:25.266992541Z",
+          "status": "running",
+          "health": null,
+          "restarts": 0,
+          "restart_policy": {
+            "Name": "always",
+            "MaximumRetryCount": 0
+          }
+        },
+        {
+          "name": "cctv-public-api",
+          "id": "1b39a4ff7ee4d0d9bc7580418c51f5d880e320707bb5b00060af08ff4580a4a0",
+          "image": "sha256:ca4376b086a99f2ad42d2132cb21b1cf75178571fae530ec464c1ed071f3175c",
+          "started": "2026-10-01T23:40:24.611743744Z",
+          "status": "running",
+          "health": "healthy",
+          "restarts": 0,
+          "restart_policy": {
+            "Name": "always",
+            "MaximumRetryCount": 0
+          }
+        },
+        {
+          "name": "cctv-public-demo-ui",
+          "id": "0ce21ff0428bc2e0b8498c13d5b59a2ef87b4510b462691ef44b0549ff33c553",
+          "image": "sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10",
+          "started": "2026-10-01T23:40:25.101996726Z",
+          "status": "running",
+          "health": null,
+          "restarts": 0,
+          "restart_policy": {
+            "Name": "always",
+            "MaximumRetryCount": 0
+          }
+        }
+      ],
+      "command_results": [
+        {
+          "request_id": "signboard-single-owner-20261008:signboard:cctv-signboard-01",
+          "event_id": "signboard-single-owner-20261008",
+          "device_id": "cctv-signboard-01",
+          "status": "acknowledged",
+          "error_code": null,
+          "received_at": "2026-10-08T06:20:12.097586+00:00"
+        },
+        {
+          "request_id": "signboard-single-owner-20261008:signboard:clear:cctv-signboard-01",
+          "event_id": "signboard-single-owner-20261008",
+          "device_id": "cctv-signboard-01",
+          "status": "acknowledged",
+          "error_code": null,
+          "received_at": "2026-10-08T06:20:32.133907+00:00"
+        }
+      ],
+      "action_commands": [
+        {
+          "command_id": "signboard-single-owner-20261008:signboard",
+          "event_id": "signboard-single-owner-20261008",
+          "status": "acknowledged",
+          "message": "",
+          "updated_at": "2026-10-08T15:20:12.098139+09:00"
+        },
+        {
+          "command_id": "signboard-single-owner-20261008:signboard:clear",
+          "event_id": "signboard-single-owner-20261008",
+          "status": "acknowledged",
+          "message": "",
+          "updated_at": "2026-10-08T15:20:32.134056+09:00"
+        }
+      ],
+      "latest_events": [
+        {
+          "id": 1035796,
+          "event_id": "evt_6891f97b4c724dd2",
+          "camera_id": "camera_1",
+          "event_type": "person",
+          "received_at": "2026-10-08T15:23:52.493176+09:00"
+        },
+        {
+          "id": 1035795,
+          "event_id": "evt_4559e31b800d2026",
+          "camera_id": "camera_1",
+          "event_type": "person",
+          "received_at": "2026-10-08T15:23:51.520128+09:00"
+        },
+        {
+          "id": 1035794,
+          "event_id": "evt_325d28560f4d7c91",
+          "camera_id": "camera_1",
+          "event_type": "person",
+          "received_at": "2026-10-08T15:23:51.350764+09:00"
+        }
+      ]
+    },
+    "control_api": {
+      "status": 200,
+      "success": true,
+      "data": {
+        "request_id": "signboard-single-owner-20261008:signboard:cctv-signboard-01",
+        "event_id": "signboard-single-owner-20261008",
+        "device_id": "cctv-signboard-01",
+        "status": "acknowledged",
+        "error_code": null
+      }
+    }
+  },
+  "rollback_plan": "data/runtime/signboard_preflight_20261008/idle_owner_plan.json",
+  "source_files_sha256": {
+    "src/devices/signboard.py": "196defc0d5295d5716381ef868d1af3f0c386228bcd385606b71c93905cfc259",
+    "src/services/action_bridge.py": "7d45972c407ad0d8752bd8fde988bcecb5983bbdcbcfab181c7d1b1658530190",
+    "tests/test_signboard_idle_owner.py": "fbe817d7058aaf0c78c95c109f249a74c2b398448ce959d1940c4bf9b7c08a0b"
+  }
+}

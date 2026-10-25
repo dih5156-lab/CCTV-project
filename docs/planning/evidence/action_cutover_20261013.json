@@ -1,0 +1,289 @@
+{
+  "date": "2026-10-13",
+  "wbs": "P3.3",
+  "state": "PREFLIGHT_PASS_NOT_RELEASE_READY",
+  "summary": "운영 환경·마운트 대조, 음량 drift 제거·전용 로더 수정 후보 검증, 최종 보존/전환/복귀 범위 고정. 입력 영속 보존 선행은 미완료.",
+  "changes": {
+    "product_source_edits": 0,
+    "candidate_compose": "data/runtime/action_release_20261012/candidate.yml",
+    "speaker_environment": "운영30/30 보존; 기존 후보10/1 drift 제거",
+    "loader": {
+      "tag": "cctv-kuiper-loader:action-20261013-01",
+      "id": "sha256:71cb3c3d86ed50fd1b595101eae5bdde668c5d9b859161ae46db8c74955f540d",
+      "files": {
+        "runners/run_kuiper_rules.py": "ffd472655d0c6045b3ebb71c53b4aceb3f066c9b422a2624a7791e847682a6b4",
+        "kuiper/rules/cctv_intrusion_rules.json": "36219f45814a768bc7f304b4d3455d5bc7fe8818b56c6a029825335fe237f579"
+      }
+    },
+    "new_dependencies": 0,
+    "database_schema_changes": 0
+  },
+  "validation": {
+    "effective_environment": {
+      "cctv-action-layer": {
+        "candidate_image": "sha256:0f27de36c0c3ae58b9e32b5e5c9fba006c1f4948a4d436be15c5734099d5c9bd",
+        "environment_count": 224,
+        "changed_environment_keys": [
+          "COMMAND_RESPONSE_TIMEOUT_SECONDS"
+        ],
+        "removed_mounts": [
+          "/app/runners",
+          "/app/src"
+        ],
+        "added_mounts": [],
+        "command_user_restart_network_ports_match": true
+      },
+      "cctv-device-signboard": {
+        "candidate_image": "sha256:0f27de36c0c3ae58b9e32b5e5c9fba006c1f4948a4d436be15c5734099d5c9bd",
+        "environment_count": 213,
+        "changed_environment_keys": [
+          "DEVICE_REQUEST_DB_PATH"
+        ],
+        "removed_mounts": [],
+        "added_mounts": [
+          "/app/data/device_requests"
+        ],
+        "command_user_restart_network_ports_match": true
+      },
+      "cctv-kuiper-rule-loader": {
+        "candidate_image": "sha256:71cb3c3d86ed50fd1b595101eae5bdde668c5d9b859161ae46db8c74955f540d",
+        "environment_count": 13,
+        "changed_environment_keys": [],
+        "removed_mounts": [],
+        "added_mounts": [],
+        "command_user_restart_network_ports_match": true
+      }
+    },
+    "non_target_services_unchanged": 23,
+    "compose_config": "PASS (.env.jetson / edgex-jetson 명시 조합 포함)",
+    "loader_before": {
+      "failed": 2,
+      "reason": [
+        "restartStrategy 누락",
+        "event_id 스트림/단건 투영 누락"
+      ],
+      "junit": "data/runtime/action_cutover_20261013/results/loader_before.xml"
+    },
+    "loader_after": {
+      "passed": 2,
+      "failed": 0,
+      "junit": "data/runtime/action_cutover_20261013/results/loader_after.xml",
+      "conditions": "network none·CPU1·512MiB·UID1000. 테스트 도구만 연결, 제품 소스/규칙은 이미지 내장. 운영 DB/장치/GPU 미연결"
+    },
+    "loader_manifest": "2/2 SHA-256 일치",
+    "rule_payload_scope": "단건 SQL2개만 변경·집계1개 SQL 불변·AI3규칙 기존 sink/options/restartStrategy20 유지. 운영 적용/격리 API 리허설 미실행.",
+    "operating_read_only_rules": {
+      "streams": 4,
+      "rules": 8,
+      "ai_fields": [
+        {
+          "FieldType": "string",
+          "Name": "camera_id"
+        },
+        {
+          "FieldType": "string",
+          "Name": "type"
+        },
+        {
+          "FieldType": "float",
+          "Name": "confidence"
+        },
+        {
+          "FieldType": "string",
+          "Name": "timestamp"
+        },
+        {
+          "FieldType": "string",
+          "Name": "object_id"
+        }
+      ],
+      "ai_dependent_rules": [
+        "intrusion_5s_persist",
+        "intrusion_confidence_filter",
+        "intrusion_high_confidence_routing"
+      ],
+      "source_config_read": "NOT_VERIFIED: GET metadata returned 405/404; preserve mounted configuration at cutover",
+      "sink_qos": {
+        "intrusion_5s_persist": [
+          0
+        ],
+        "intrusion_confidence_filter": [
+          0
+        ],
+        "intrusion_high_confidence_routing": [
+          0
+        ],
+        "sensor_temperature_alert": [
+          1
+        ],
+        "sensor_tilt_alert_t34955": [
+          1
+        ],
+        "sensor_tilt_alert_t34957": [
+          1
+        ],
+        "sensor_vibration_alert_t34957": [
+          1
+        ],
+        "sensor_vibration_alert_t34958": [
+          1
+        ]
+      },
+      "status": {
+        "intrusion_5s_persist": "running",
+        "intrusion_confidence_filter": "running",
+        "intrusion_high_confidence_routing": "running",
+        "sensor_temperature_alert": "running",
+        "sensor_tilt_alert_t34955": "running",
+        "sensor_tilt_alert_t34957": "running",
+        "sensor_vibration_alert_t34957": "running",
+        "sensor_vibration_alert_t34958": "running"
+      }
+    },
+    "local_checks": {
+      "wbs_rows_preserved": 33,
+      "model_rows_preserved": 8,
+      "counts_preserved": {
+        "DONE": 9,
+        "BLOCKED": 3,
+        "PLANNED": 13,
+        "VERIFY": 7,
+        "IN_PROGRESS": 1
+      },
+      "junit_expected_before_failures": 2,
+      "junit_candidate_passed": 2,
+      "plan_gated": true,
+      "html_latest_card": true,
+      "changed_existing_files": [
+        "docs/planning/PROGRESS.md",
+        "docs/planning/README.md",
+        "docs/planning/STATUS.md",
+        "docs/planning/WBS.md",
+        "docs/planning/ONLINE_PROGRESS.md",
+        "docs/planning/figma_exports/progress_v138.json",
+        "data/runtime/action_release_20261012/candidate.yml",
+        "data/runtime/action_release_20261012/plan.json",
+        "scripts/ops/render_progress_snapshot.py",
+        "scripts/ops/progress_snapshot_template.html"
+      ],
+      "ruff": "PASS",
+      "git_diff_check": "PASS"
+    },
+    "pdf_first_page": "시각 확인 PASS: 최신 결과·다음 작업·WBS 수치 표시, 겹침 없음",
+    "review": "그래프2파일 변경 분석은 심볼/흐름0이라 범위 증거로 사용하지 않았다. 시작본 대비 Compose/렌더러 diff·운영 대조 assertions·이미지 시험/해시·WBS33/모델8행 보존·PDF 시각 확인으로 보완."
+  },
+  "backup": {
+    "standard_script_entries": 11,
+    "existing_files_bytes": {
+      "runtime/appearances.db": 885694464,
+      "runtime/action_events.db": 3610333184,
+      "runtime/event_reviews.db": 28672,
+      "runtime/commercial_faces.db": 28672,
+      "runtime/mqtt_event_outbox.db": 3103817728,
+      "runtime/action_http_outbox.db": 2138353664,
+      "runtime/event_outbox.db": 24576,
+      "runtime/edgex_command_results.db": 40960
+    },
+    "total_bytes": 9738321920,
+    "absent": [
+      "device_requests/signboard.sqlite3",
+      "device_requests/speaker.sqlite3",
+      "device_requests/siren.sqlite3"
+    ],
+    "wal_bytes": {
+      "runtime/appearances.db": 4169472,
+      "runtime/event_outbox.db": 0
+    },
+    "full_backup_performed": false
+  },
+  "operating": {
+    "writes_by_this_unit": false,
+    "physical_output_by_this_unit": false,
+    "observed": {
+      "cctv-action-layer": {
+        "id": "74deaeb0b5bdd64c8f2e2a141daa25c193a75cf235b214fee6ef8b4dcdceedeb",
+        "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+        "started_at": "2026-10-12T23:35:15.475740705Z",
+        "status": "running"
+      },
+      "cctv-device-signboard": {
+        "id": "29aeb393bd52e7a9f8241be9214b970e82e8442253fdfe2e73dbbf5d153feaa8",
+        "image": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+        "started_at": "2026-10-12T23:35:15.45875226Z",
+        "status": "running"
+      },
+      "cctv-kuiper-rule-loader": {
+        "id": "6bb51352f9dc42b80a9d41e9b5bbea55c2f7747f6e17b6317f2dcb8f14c0cc7b",
+        "image": "sha256:2f22e8c91de618d6e9378ca55f8f7ce0980de6bccffdf37f6cd7363be3a51ff8",
+        "started_at": "0001-01-01T00:00:00Z",
+        "status": "created"
+      },
+      "cctv-ai-engine": {
+        "id": "c8a71163c84b458197b98a4bde8e0e06719afc5cf5964e6fbd0b716109ce0377",
+        "image": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+        "started_at": "2026-10-12T23:35:33.679490726Z",
+        "status": "running"
+      },
+      "edgex-kuiper": {
+        "id": "6249a0c22b5712d01242c176abfce736685579514bfb389952062c3fd9392576",
+        "image": "sha256:7f4962946a721ece5ec630150e47614c4a461ee2c29600f24d96ef5e35a9d4da",
+        "started_at": "2026-10-12T23:35:15.016557364Z",
+        "status": "running"
+      }
+    },
+    "previous_unit_comparison": "직전 기록과 일부 기동 시각·AI 컨테이너 ID가 다르다. 이번 작업에서 운영 재기동 명령은 실행하지 않았으며 변경 원인/재부팅 합격은 판정하지 않았다. Action 호스트 코드 바인드의 실제 메모리 내용 동등성도 미검증.",
+    "unchanged_during_preflight_to_finish": true
+  },
+  "plan": "data/runtime/action_release_20261012/plan.json",
+  "remaining": [
+    "Action 입력 영속 보존과 출력 중단/재개 격리(P3.1/P3.2)",
+    "전체 DB 백업/복원 부하·소요시간, 최종 명령 재이관",
+    "좁힌 AI3규칙/스트림 전환·복귀 격리 리허설 및 최종 구성 재조회",
+    "구체적인 운영 중단/전광판1대 실물 시험 창 확정 후 적용"
+  ],
+  "limits": [
+    "실행 로더 main은 전역 MQTT 소스 PUT·기존 스트림/규칙 DELETE/POST를 수행하므로 현장 전환에 그대로 실행하지 않는다.",
+    "Action MQTT는 기본 비지속 세션; AI규칙 출력QoS0. 생산자 outbox만으로 Action 정지 중 전달을 보장하지 않는다.",
+    "GET MQTT metadata 설정 조회405/404; 소스 설정은 미검증. 적용 전 마운트 설정을 비공개 보존해야 한다.",
+    "첫 빌드는 FROM sha256: 표기를 저장소명으로 해석해 실패; 로컬 기반 태그/ID 대조 후 재빌드 성공. 검증기의 빈 Entrypoint 처리 보완 후 환경 비교 통과."
+  ],
+  "progress": {
+    "counts": {
+      "DONE": 9,
+      "IN_PROGRESS": 1,
+      "VERIFY": 7,
+      "BLOCKED": 3,
+      "PLANNED": 13
+    },
+    "remaining": 24,
+    "poc_month": "2026-12",
+    "poc_readiness_target": "2026-11-27"
+  },
+  "next": "P3.1/P3.2 기존 영속 수신 구성요소의 Action 재사용 범위를 확인하고, 수신 중단·재개·재전달을 모의 장치로 검증한다. 입력 보존 검증 뒤 최종 백업/이관·운영 전환·전광판 실물 재시험으로 진행한다.",
+  "publication": {
+    "url": "http://192.168.2.242:18081/",
+    "files": {
+      "index.html": {
+        "http": 200,
+        "bytes": 71122,
+        "sha256": "b48e53ae708f232b288e0d3264b633e491561b6dcceda81a6e10f97926da55bb",
+        "local_match": true
+      },
+      "CCTV_project_progress.pdf": {
+        "http": 200,
+        "bytes": 147083,
+        "sha256": "4c6873bb6c5f51c64882381ddf751bb83f3bef531016c24d113726a46a2dfcf0",
+        "local_match": true
+      }
+    }
+  },
+  "artifacts_sha256": {
+    "data/runtime/action_release_20261012/candidate.yml": "ec19497981665d4fa4a2bae3d2345df0714bd7def9890cf717929480fc46f452",
+    "data/runtime/action_release_20261012/plan.json": "1f2f71c5b40b4838fb669c2609f2cfa73c3a286557c2bd35a49a9f30f8c55bc3",
+    "data/runtime/action_cutover_20261013/preflight.json": "8982b3f5e861d0a424c42c79e4726737179234363b1501c3db99c29dbc9acbc2",
+    "data/runtime/action_cutover_20261013/backup_scope.json": "b5cf5ed3ba8290a0af00fe09920c1db7fa2a9bdab9e18f5c5c27674dbf5ed53d",
+    "data/runtime/action_cutover_20261013/loader_manifest.json": "1b1a3569f65ca7d32eabdd075bd8a507d1dd8c8a0caa0f165db163c6f8d39ab6",
+    "data/runtime/action_cutover_20261013/results/loader_before.xml": "c39b5e7d521a365d53b3a40868711b7a2842448c296a2d346feb94e3a7aa982e",
+    "data/runtime/action_cutover_20261013/results/loader_after.xml": "056e393655db2942c564d01d5477d6813d192af7acae7f557395c54828a9e439"
+  }
+}

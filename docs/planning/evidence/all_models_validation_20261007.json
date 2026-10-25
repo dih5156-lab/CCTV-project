@@ -1,0 +1,838 @@
+{
+  "version": "0.122",
+  "date": "2026-10-07 KST",
+  "wbs": "P5.1 IN_PROGRESS",
+  "issue": "I53 FIXED_LOCAL / operating deployment pending",
+  "validation": {
+    "trials": {
+      "camera": {
+        "runner_pass": true,
+        "video": {
+          "metadata": {
+            "programs": [],
+            "streams": [
+              {
+                "codec_name": "h264",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "format": {
+              "duration": "40.217000"
+            }
+          },
+          "decode_exit": 0,
+          "decode_error_bytes": 0,
+          "decoded_frames": 1040,
+          "sha256": "f5e0f76e0f11017d5558c5c92583e0da735a365e652e8aa64a6ddfe77c7444b0"
+        },
+        "databases": {
+          "appearances.db": {
+            "integrity": "ok",
+            "new_rows": {
+              "search_conditions": 0,
+              "appearance_log": 6
+            }
+          },
+          "mqtt_event_outbox.db": {
+            "integrity": "ok",
+            "new_rows": {
+              "mqtt_event_outbox": 7
+            }
+          },
+          "commercial_faces.db": {
+            "integrity": "ok",
+            "new_rows": {
+              "face_persons": 0,
+              "face_samples": 0
+            }
+          }
+        },
+        "stats": {
+          "frames_processed": 1772,
+          "frames_dropped": 0,
+          "events_detected": 7,
+          "events_sent": 0,
+          "events_failed": 7,
+          "inference_errors": 0,
+          "context_tasks_failed": 0,
+          "model_metrics_errors": 0,
+          "primary_metrics_errors": 0,
+          "pipeline_restart_executed": 0
+        },
+        "models": {
+          "primary": {
+            "enabled": true,
+            "properties": {
+              "unique-id": 1,
+              "process-mode": 1,
+              "batch-size": 1,
+              "interval": 1,
+              "output-tensor-meta": true
+            },
+            "frames_seen": 1772,
+            "frames_tensor_output": 886,
+            "frames_no_objects": 0,
+            "frames_classifier_only": 0,
+            "frames_unobserved": 886,
+            "frames_unknown": 0,
+            "objects_with_tensor": 0,
+            "objects_classifier_only": 0,
+            "last_frame_age_seconds": 4.853078498039395,
+            "last_tensor_age_seconds": 4.8609502338804305
+          },
+          "pose": {
+            "enabled": false,
+            "properties": {
+              "unique-id": null,
+              "process-mode": null,
+              "batch-size": null,
+              "interval": null,
+              "output-tensor-meta": null
+            },
+            "frames_seen": 0,
+            "frames_tensor_output": 0,
+            "frames_no_objects": 0,
+            "frames_classifier_only": 0,
+            "frames_unobserved": 0,
+            "frames_unknown": 0,
+            "objects_with_tensor": 0,
+            "objects_classifier_only": 0,
+            "last_frame_age_seconds": null,
+            "last_tensor_age_seconds": null
+          },
+          "attributes": {
+            "enabled": true,
+            "properties": {
+              "unique-id": 3,
+              "process-mode": 2,
+              "batch-size": 1,
+              "interval": 4,
+              "output-tensor-meta": true
+            },
+            "frames_seen": 1772,
+            "frames_tensor_output": 29,
+            "frames_no_objects": 1714,
+            "frames_classifier_only": 0,
+            "frames_unobserved": 29,
+            "frames_unknown": 0,
+            "objects_with_tensor": 29,
+            "objects_classifier_only": 0,
+            "last_frame_age_seconds": 4.853078498039395,
+            "last_tensor_age_seconds": 12.395758026046678
+          },
+          "helmet": {
+            "enabled": true,
+            "properties": {
+              "unique-id": 2,
+              "process-mode": 2,
+              "batch-size": 1,
+              "interval": 1,
+              "output-tensor-meta": true
+            },
+            "frames_seen": 1772,
+            "frames_tensor_output": 29,
+            "frames_no_objects": 1714,
+            "frames_classifier_only": 0,
+            "frames_unobserved": 29,
+            "frames_unknown": 0,
+            "objects_with_tensor": 29,
+            "objects_classifier_only": 0,
+            "last_frame_age_seconds": 4.853078498039395,
+            "last_tensor_age_seconds": 12.395758026046678
+          }
+        },
+        "audit": {
+          "counts": {
+            "tcn_verify.calls": 7,
+            "event.person": 87,
+            "pose_events": 29,
+            "pose_scope_assigned": 29,
+            "face_request.calls": 8,
+            "face_opencv.calls": 8,
+            "face_opencv.returned": 8,
+            "face_opencv.no_face_returned": 8,
+            "face_request.returned": 8,
+            "face_request.no_face_returned": 8,
+            "color_result.calls": 8,
+            "color_runtime.calls": 8,
+            "color_runtime.returned": 8,
+            "color_result.returned": 8,
+            "color_result.below_threshold": 3,
+            "python_attribute.calls": 8,
+            "python_attribute.returned": 8,
+            "python_attribute.empty": 8,
+            "tcn_verify.returned": 7,
+            "tcn_verify.insufficient_pose_frames": 1,
+            "color_result.color": 5,
+            "tcn_verify.ok": 6
+          },
+          "capabilities": {
+            "face_enabled": true,
+            "face_backend": "opencv_haar_baseline",
+            "attribute_backend": "NullAttributeBackend",
+            "color_backend": "OnnxColorClassificationBackend",
+            "color_runtime": "TensorRTAttributeRuntime",
+            "color_labels": 11,
+            "color_input_size": 160,
+            "rf_enabled": true,
+            "rf_mode": "shadow",
+            "camera_flags": {
+              "replay_1": {
+                "use_helmet": true,
+                "use_pose": true,
+                "use_person": false,
+                "use_face": true,
+                "use_appearance": true
+              }
+            }
+          }
+        },
+        "temporal": {
+          "requests": 7,
+          "worker_calls": 7,
+          "worker_completed": 7,
+          "worker_seconds": 27.525658864993602,
+          "parsed_results": 7,
+          "unparsed_results": 0,
+          "insufficient_pose_results": 1,
+          "insufficient_window_results": 0,
+          "window_reports_missing": 0,
+          "window_inferences": 7
+        },
+        "inline_rf": {
+          "enabled": true,
+          "cameras": {}
+        },
+        "observed_rate": {
+          "window_seconds": 59.952,
+          "frame_delta": 1674.0,
+          "fps": 27.92233787029624,
+          "input_fps": 29.97002997002997,
+          "ratio": 0.9316753402722179
+        },
+        "callback_tracebacks": 0,
+        "loaded_engines": [
+          "fall/yolov8m-pose.engine",
+          "head/helmet_model.engine",
+          "appearance/pa100k_resnet50_attr.engine"
+        ],
+        "bounded_path_pass": true,
+        "stop_seconds": 6.761267624795437
+      },
+      "fall": {
+        "runner_pass": true,
+        "video": {
+          "metadata": {
+            "programs": [],
+            "streams": [
+              {
+                "codec_name": "h264",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "format": {
+              "duration": "40.235000"
+            }
+          },
+          "decode_exit": 0,
+          "decode_error_bytes": 0,
+          "decoded_frames": 696,
+          "sha256": "9cd769d778c6743936026f79f288a756b727f8d2b5265d4782ae63a831b4f1f2"
+        },
+        "databases": {
+          "appearances.db": {
+            "integrity": "ok",
+            "new_rows": {
+              "search_conditions": 0,
+              "appearance_log": 22
+            }
+          },
+          "mqtt_event_outbox.db": {
+            "integrity": "ok",
+            "new_rows": {
+              "mqtt_event_outbox": 26
+            }
+          },
+          "commercial_faces.db": {
+            "integrity": "ok",
+            "new_rows": {
+              "face_persons": 0,
+              "face_samples": 0
+            }
+          }
+        },
+        "stats": {
+          "frames_processed": 1274,
+          "frames_dropped": 0,
+          "events_detected": 26,
+          "events_sent": 0,
+          "events_failed": 26,
+          "inference_errors": 0,
+          "context_tasks_failed": 0,
+          "model_metrics_errors": 0,
+          "primary_metrics_errors": 0,
+          "pipeline_restart_executed": 0
+        },
+        "models": {
+          "primary": {
+            "enabled": true,
+            "properties": {
+              "unique-id": 1,
+              "process-mode": 1,
+              "batch-size": 1,
+              "interval": 1,
+              "output-tensor-meta": true
+            },
+            "frames_seen": 1274,
+            "frames_tensor_output": 637,
+            "frames_no_objects": 0,
+            "frames_classifier_only": 0,
+            "frames_unobserved": 637,
+            "frames_unknown": 0,
+            "objects_with_tensor": 0,
+            "objects_classifier_only": 0,
+            "last_frame_age_seconds": 1.509063364006579,
+            "last_tensor_age_seconds": 1.5541179170832038
+          },
+          "pose": {
+            "enabled": false,
+            "properties": {
+              "unique-id": null,
+              "process-mode": null,
+              "batch-size": null,
+              "interval": null,
+              "output-tensor-meta": null
+            },
+            "frames_seen": 0,
+            "frames_tensor_output": 0,
+            "frames_no_objects": 0,
+            "frames_classifier_only": 0,
+            "frames_unobserved": 0,
+            "frames_unknown": 0,
+            "objects_with_tensor": 0,
+            "objects_classifier_only": 0,
+            "last_frame_age_seconds": null,
+            "last_tensor_age_seconds": null
+          },
+          "attributes": {
+            "enabled": true,
+            "properties": {
+              "unique-id": 3,
+              "process-mode": 2,
+              "batch-size": 1,
+              "interval": 4,
+              "output-tensor-meta": true
+            },
+            "frames_seen": 1274,
+            "frames_tensor_output": 484,
+            "frames_no_objects": 306,
+            "frames_classifier_only": 0,
+            "frames_unobserved": 484,
+            "frames_unknown": 0,
+            "objects_with_tensor": 506,
+            "objects_classifier_only": 0,
+            "last_frame_age_seconds": 1.509063364006579,
+            "last_tensor_age_seconds": 1.5541179170832038
+          },
+          "helmet": {
+            "enabled": true,
+            "properties": {
+              "unique-id": 2,
+              "process-mode": 2,
+              "batch-size": 1,
+              "interval": 1,
+              "output-tensor-meta": true
+            },
+            "frames_seen": 1274,
+            "frames_tensor_output": 484,
+            "frames_no_objects": 306,
+            "frames_classifier_only": 0,
+            "frames_unobserved": 484,
+            "frames_unknown": 0,
+            "objects_with_tensor": 506,
+            "objects_classifier_only": 0,
+            "last_frame_age_seconds": 1.509063364006579,
+            "last_tensor_age_seconds": 1.5541179170832038
+          }
+        },
+        "audit": {
+          "counts": {
+            "event.person": 1518,
+            "pose_events": 589,
+            "pose_scope_assigned": 589,
+            "face_request.calls": 99,
+            "face_opencv.calls": 99,
+            "tcn_verify.calls": 13,
+            "face_opencv.returned": 99,
+            "face_opencv.no_face_returned": 99,
+            "face_request.returned": 99,
+            "face_request.no_face_returned": 99,
+            "color_result.calls": 155,
+            "color_runtime.calls": 155,
+            "color_runtime.returned": 155,
+            "color_result.returned": 155,
+            "color_result.below_threshold": 101,
+            "python_attribute.calls": 99,
+            "python_attribute.returned": 99,
+            "python_attribute.empty": 99,
+            "color_result.color": 54,
+            "event.fall_detected": 83,
+            "tcn_verify.returned": 13,
+            "tcn_verify.insufficient_pose_frames": 1,
+            "tcn_verify.ok": 12,
+            "rf_verify.calls": 3,
+            "rf_verify.returned": 3,
+            "rf_verify.insufficient_pose_records": 1,
+            "rf_verify.incompatible_feature_contract": 2
+          },
+          "capabilities": {
+            "face_enabled": true,
+            "face_backend": "opencv_haar_baseline",
+            "attribute_backend": "NullAttributeBackend",
+            "color_backend": "OnnxColorClassificationBackend",
+            "color_runtime": "TensorRTAttributeRuntime",
+            "color_labels": 11,
+            "color_input_size": 160,
+            "rf_enabled": true,
+            "rf_mode": "shadow",
+            "camera_flags": {
+              "replay_1": {
+                "use_helmet": true,
+                "use_pose": true,
+                "use_person": false,
+                "use_face": true,
+                "use_appearance": true
+              }
+            }
+          }
+        },
+        "temporal": {
+          "requests": 13,
+          "worker_calls": 13,
+          "worker_completed": 13,
+          "worker_seconds": 29.842767149675637,
+          "parsed_results": 13,
+          "unparsed_results": 0,
+          "insufficient_pose_results": 1,
+          "insufficient_window_results": 0,
+          "window_reports_missing": 0,
+          "window_inferences": 13
+        },
+        "inline_rf": {
+          "enabled": true,
+          "cameras": {
+            "replay_1": {
+              "requests": 3,
+              "unavailable_results": 3,
+              "cache_hits": 0
+            }
+          }
+        },
+        "observed_rate": {
+          "window_seconds": 59.009,
+          "frame_delta": 1220.0,
+          "fps": 20.674812316765237,
+          "input_fps": 29.97002997002997,
+          "ratio": 0.6898495709694001
+        },
+        "callback_tracebacks": 0,
+        "loaded_engines": [
+          "fall/yolov8m-pose.engine",
+          "head/helmet_model.engine",
+          "appearance/pa100k_resnet50_attr.engine"
+        ],
+        "bounded_path_pass": true,
+        "stop_seconds": 3.541117020882666
+      },
+      "person": {
+        "runner_pass": true,
+        "video": {
+          "metadata": {
+            "programs": [],
+            "streams": [
+              {
+                "codec_name": "h264",
+                "width": 1920,
+                "height": 1080
+              }
+            ],
+            "format": {
+              "duration": "40.204000"
+            }
+          },
+          "decode_exit": 0,
+          "decode_error_bytes": 0,
+          "decoded_frames": 1163,
+          "sha256": "da8d5a6e2a441854f3f2c80b8201a54e01b1d1018ec25f9d338754bbb36dbc63"
+        },
+        "databases": {
+          "appearances.db": {
+            "integrity": "ok",
+            "new_rows": {
+              "appearance_log": 19,
+              "search_conditions": 0
+            }
+          },
+          "mqtt_event_outbox.db": {
+            "integrity": "ok",
+            "new_rows": {
+              "mqtt_event_outbox": 21
+            }
+          },
+          "commercial_faces.db": {
+            "integrity": "not_applicable",
+            "new_rows": {}
+          }
+        },
+        "stats": {
+          "frames_processed": 1822,
+          "frames_dropped": 0,
+          "events_detected": 21,
+          "events_sent": 0,
+          "events_failed": 21,
+          "inference_errors": 0,
+          "context_tasks_failed": 0,
+          "model_metrics_errors": 0,
+          "primary_metrics_errors": 0,
+          "pipeline_restart_executed": 0
+        },
+        "models": {
+          "primary": {
+            "enabled": true,
+            "properties": {
+              "unique-id": 1,
+              "process-mode": 1,
+              "batch-size": 1,
+              "interval": 1,
+              "output-tensor-meta": true
+            },
+            "frames_seen": 1822,
+            "frames_tensor_output": 911,
+            "frames_no_objects": 0,
+            "frames_classifier_only": 0,
+            "frames_unobserved": 911,
+            "frames_unknown": 0,
+            "objects_with_tensor": 0,
+            "objects_classifier_only": 0,
+            "last_frame_age_seconds": 2.698775049066171,
+            "last_tensor_age_seconds": 2.7194595660548657
+          },
+          "pose": {
+            "enabled": false,
+            "properties": {
+              "unique-id": null,
+              "process-mode": null,
+              "batch-size": null,
+              "interval": null,
+              "output-tensor-meta": null
+            },
+            "frames_seen": 0,
+            "frames_tensor_output": 0,
+            "frames_no_objects": 0,
+            "frames_classifier_only": 0,
+            "frames_unobserved": 0,
+            "frames_unknown": 0,
+            "objects_with_tensor": 0,
+            "objects_classifier_only": 0,
+            "last_frame_age_seconds": null,
+            "last_tensor_age_seconds": null
+          },
+          "attributes": {
+            "enabled": true,
+            "properties": {
+              "unique-id": 3,
+              "process-mode": 2,
+              "batch-size": 1,
+              "interval": 4,
+              "output-tensor-meta": true
+            },
+            "frames_seen": 1822,
+            "frames_tensor_output": 911,
+            "frames_no_objects": 0,
+            "frames_classifier_only": 0,
+            "frames_unobserved": 911,
+            "frames_unknown": 0,
+            "objects_with_tensor": 911,
+            "objects_classifier_only": 0,
+            "last_frame_age_seconds": 2.698775049066171,
+            "last_tensor_age_seconds": 2.7194595660548657
+          },
+          "helmet": {
+            "enabled": true,
+            "properties": {
+              "unique-id": 2,
+              "process-mode": 2,
+              "batch-size": 1,
+              "interval": 1,
+              "output-tensor-meta": true
+            },
+            "frames_seen": 1822,
+            "frames_tensor_output": 911,
+            "frames_no_objects": 0,
+            "frames_classifier_only": 0,
+            "frames_unobserved": 911,
+            "frames_unknown": 0,
+            "objects_with_tensor": 911,
+            "objects_classifier_only": 0,
+            "last_frame_age_seconds": 2.698775049066171,
+            "last_tensor_age_seconds": 2.7194595660548657
+          }
+        },
+        "audit": {
+          "counts": {
+            "event.person": 2733,
+            "face_request.calls": 110,
+            "face_opencv.calls": 110,
+            "face_opencv.returned": 110,
+            "face_opencv.no_face_returned": 110,
+            "face_request.returned": 110,
+            "face_request.no_face_returned": 110,
+            "color_result.calls": 220,
+            "color_runtime.calls": 220,
+            "color_runtime.returned": 220,
+            "color_result.returned": 220,
+            "color_result.color": 206,
+            "python_attribute.calls": 110,
+            "python_attribute.returned": 110,
+            "python_attribute.empty": 110,
+            "color_result.below_threshold": 14
+          },
+          "capabilities": {
+            "face_enabled": true,
+            "face_backend": "opencv_haar_baseline",
+            "attribute_backend": "NullAttributeBackend",
+            "color_backend": "OnnxColorClassificationBackend",
+            "color_runtime": "TensorRTAttributeRuntime",
+            "color_labels": 11,
+            "color_input_size": 160,
+            "rf_enabled": false,
+            "rf_mode": "shadow",
+            "camera_flags": {
+              "replay_1": {
+                "use_helmet": true,
+                "use_pose": false,
+                "use_person": true,
+                "use_face": true,
+                "use_appearance": true
+              }
+            }
+          }
+        },
+        "temporal": {},
+        "inline_rf": {
+          "enabled": false,
+          "cameras": {}
+        },
+        "observed_rate": {
+          "window_seconds": 58.983999999999995,
+          "frame_delta": 1724.0,
+          "fps": 29.228265292282657,
+          "input_fps": 29.97002997002997,
+          "ratio": 0.9752497852524981
+        },
+        "callback_tracebacks": 0,
+        "loaded_engines": [
+          "person/yolov8n.engine",
+          "head/helmet_model.engine",
+          "appearance/pa100k_resnet50_attr.engine"
+        ],
+        "bounded_path_pass": true,
+        "stop_seconds": 5.153017689008266
+      }
+    },
+    "operating_unchanged": true,
+    "source_files_match": true,
+    "bounded_integration_pass": true,
+    "accuracy_pass": false,
+    "realtime_all_models_pass": false,
+    "operating_promotion": false
+  },
+  "models_table": [
+    {
+      "name": "사람 YOLOv8n",
+      "scope": "별도 person_detector · CCTV 재생60초",
+      "runtime": "tensor 911프레임 · 오류0",
+      "quality": "과거 복원: P81.73 / R66.93 / F1 73.59%",
+      "remaining": "실행 확인. 현재 엔진의 정답 재시험 필요"
+    },
+    {
+      "name": "Pose medium",
+      "scope": "1080p29.97 · interval1 · 2영상 각60초",
+      "runtime": "tensor CCTV886 / 낙상637프레임",
+      "quality": "v121 후반Pose 66/68 관측 · 정확도 아님",
+      "remaining": "전체모델 실시간 성능 보류 · 경보 품질 별도"
+    },
+    {
+      "name": "헬멧 / 머리",
+      "scope": "기존 SGIE 320 · conf0.35 · 3조건",
+      "runtime": "tensor 1,424프레임 · 오류0",
+      "quality": "과거 helmet만: P90.14 / R91.10 / F1 90.62%",
+      "remaining": "과거 conf0.15 성적. 현재 head/helmet 정답 검증 필요"
+    },
+    {
+      "name": "낙상 RF",
+      "scope": "기존 선택 RF · shadow · threshold0.7",
+      "runtime": "3회 반환: Pose부족1 / 계약비호환2",
+      "quality": "이번 예측 성공0 · 정확도 산정 불가",
+      "remaining": "미통과. 호환 특징으로 재학습·검증 필요"
+    },
+    {
+      "name": "낙상 TCN",
+      "scope": "기존 same_split_resume 모델 · shadow",
+      "runtime": "20회 반환: 유효18 / Pose부족2",
+      "quality": "이번 정답 정확도 미측정",
+      "remaining": "실행 확인. 별도 TCN20 후보 성적과 구분"
+    },
+    {
+      "name": "의상 PA100K",
+      "scope": "ResNet50 SGIE · 3조건",
+      "runtime": "tensor 1,424프레임 · 오류0",
+      "quality": "현재 모델 정답 성적 없음",
+      "remaining": "실행 확인. 의상 라벨 검증 필요"
+    },
+    {
+      "name": "색상 YOLOv8n",
+      "scope": "TensorRT 160 · threshold0.75 · 3조건",
+      "runtime": "383회 반환 · 색상265 / 임계미달118",
+      "quality": "과거 요약: Top-1 88.49% · 표본수 미기록",
+      "remaining": "실행 확인. 현재 엔진/조명별 정답 검증 필요"
+    },
+    {
+      "name": "얼굴 Haar",
+      "scope": "OpenCV fallback · 3조건",
+      "runtime": "217회 반환 · 얼굴 결과0",
+      "quality": "신원 인식 정확도 미측정",
+      "remaining": "미검증. 얼굴 검출·등록자 인식 별도 시험"
+    }
+  ],
+  "original_candidate": "sha256:57250f1d24d22732c0ceace8f4b82846ab50c15bc8cc5b315de098ab69271fac",
+  "person_fixed_candidate": "sha256:294e52234fc170904e2a09b180b422e0562d6e11b5aa28ebcf287a1b47c9ed55",
+  "tests": {
+    "red_failed": 1,
+    "red_passed": 3,
+    "related_passed": 157,
+    "related_skipped": 2
+  },
+  "old_report_sha256": {
+    "data/eval/reports/helmet_model_pt_cpu_2026-06-04_rerun.json": "c52e24f6fca9532059139073c553f2d9a9283e1a39ef7a359635c2d45a5fb79d",
+    "data/eval/reports/helmet_model_pt_cpu_conf030_2026-06-04_rerun.json": "169c234b44fb303fdf76a8f009aa33f50dc1157672f65e75cb6d4f27993c49d7",
+    "data/eval/reports/helmet_model_trt.json": "dc9f40bf0d4ea0737c896317d2d9091124bee147208e0b8c2196e0fcba74bc8f",
+    "data/eval/reports/helmet_model_trt_320.json": "5c65289c3d9d9260bcf55bba80c51286355d58eae5a4179355fffe31bb664588",
+    "data/eval/reports/helmet_model_trt_320_conf015.json": "3290e57fc8137f88fabc85f4cbe5f263e7929420c519d89365003248190ca5ac",
+    "data/eval/reports/helmet_model_trt_640.json": "97121529325b11b6c8a96cc3df2a8b2f2e3156ef0bd5b17715eb36bf1c0b1d8a",
+    "data/eval/reports/helmet_model_ver0.5_pt_cpu_2026-06-04_rerun.json": "180d25b8e43fe6943d1fe6bc8a845b5616c2ddd4ccdb67db4fcf262bd7621c17",
+    "data/eval/reports/helmet_model_ver0.5_trt.json": "f5c152c3e2e884d5bc5466e7af3dae7f10645487a65e511fc9e5cf543fca1999",
+    "data/eval/reports/helmet_model_ver0.5_trt_recheck_320.json": "b37d0d79ab0370513c867963b23a4f5a3b3b7675e2cc6835a93d6dc9921f7124",
+    "data/eval/reports/helmet_model_ver0.5_trt_recheck_320_cleanlabels.json": "611d2c2cd10fd90fa6b3362786e45ca7aa01918cf144b7a55b4bb82bbbbd599e",
+    "data/eval/reports/helmet_model_ver0.5_trt_recheck_320_validclasses.json": "d2bfeb9ceca81e7b90bd494e2c6c361e062d283fad59d73e98752e20b1845668",
+    "data/eval/reports/helmet_model_ver0.5_trt_recheck_640.json": "15b5d15d8ecc78fd8d6fbd7957b51e26ab65034559455b1a842efd8bf1c9b721",
+    "data/eval/reports/yolov8m-pose_trt.json": "7128d29b5b7d3b6a347995b73bf83df7a24e03bed43886d2db55d979047200eb",
+    "data/eval/reports/yolov8n-pose_trt.json": "a703cbbd747fac68a78f363217b77d8d740a2d9441f881e65da72148aeb19c96",
+    "data/eval/reports/yolov8n_trt.json": "f12d8e1a49264b551dcf2cf1e28663989c55f761a7d44ee743a0864cead81398"
+  },
+  "private_artifacts": "data/runtime/p51_all_models_20261007_v122",
+  "limits": [
+    "camera/fall pre-fix candidate, person fixed candidate; not one-image full qualification",
+    "short instrumented looped playback, not end-to-end latency/long-run/multicamera",
+    "RF predictions failed; TCN returns are not accuracy",
+    "old model report SHA does not prove identity of current engines",
+    "no production promotion or external device output"
+  ],
+  "review": {
+    "skill": "superpowers:requesting-code-review",
+    "reviewer": "model_evidence_review",
+    "critical": 0,
+    "important": 0,
+    "initial_important": "person flags and unhandled None ROI rejected",
+    "resolution": "explicit person_detector, shared None guard, red1fail3pass then157pass2skip, real person tensor911 and tracebacks0",
+    "limits": "Final aggregate, public evidence, model table, snapshot and15old report hashes reviewed; accuracy/realtime/promotion not approved",
+    "minor_addressed": [
+      "F1 spacing",
+      "preserve existing height limit in ROI description"
+    ]
+  },
+  "artifacts_sha256": {
+    "camera/compose.json": "491ac4ca153c7e1aee1ee9caa7bb1eab4f09cd1e180236953b8e10304a126932",
+    "camera/output/experiment.json": "112817448d62104c585c4d12d23a4ab7e2b38ef36949c513f2cfd5cd7181cc75",
+    "camera/output/final_model_audit.json": "ac94acbdb4f0f1707659d1c77e20184226d2ad39d6bd4907c873d27c8c73ee24",
+    "fall/compose.json": "ff2a75940036d8d4b5a32040b93b5d65b50c3941d13173b5ffa1b254955b92a5",
+    "fall/output/experiment.json": "cc9aed1d603657660c3da642e95d6bc6a02a3a55e06b5373fffa057a7d2e91bc",
+    "fall/output/final_model_audit.json": "ac6f3f8f6a9d814dc61fd85bea4a1e094fde001c48ab324ca20787e28c59323f",
+    "finalize.py": "2b40da7e4a0fb7b327b29e8ccc7d3e27e7e8d2bd17a4f6dc05e418872bc43c5c",
+    "fixed_image_manifest.json": "a25de9211f0dcc28509b3e3eb57ce29783a5bd11b4b24d08551dcdb04d01d0cd",
+    "fixed_source_manifest.json": "a25de9211f0dcc28509b3e3eb57ce29783a5bd11b4b24d08551dcdb04d01d0cd",
+    "image_context/Dockerfile": "6fb9535104a93b5ab8313250de444ab10f46af2c7c0962b0a302cb907016ab56",
+    "image_context/deepstream_processor.py": "d88633c2e73825bdeeed5259b2efac8d6f5d2330b1e062112bb976784214975a",
+    "live_after.json": "daf4ad2c754613c9403ac712186a81f26fef90bad2e90594429126720703c932",
+    "models_command.json": "0b28d6ff778bf5679f67bef5a6cb682a65f51edbd2db89f06065f8b760b57e87",
+    "new_image_manifest.json": "23303e8679ea67f9a324fe61e06593e5f7f743403c69b99924da9a869a6b0725",
+    "observe_models.py": "8e36a311c5f561bee404cca70f11413656cb9a9f2d3e546e2a835fb02bd55e85",
+    "operating_after.json": "bc5b8ba4e7914c08cb98072e9bb523dc651e6c1c3b67f1cb04c16d234dd873f1",
+    "operating_before.json": "bc5b8ba4e7914c08cb98072e9bb523dc651e6c1c3b67f1cb04c16d234dd873f1",
+    "person/cameras.json": "0e9badcfac3c263c5624cd2f388ff75788e1916d7f27634744e2199eec7c9e2f",
+    "person/compose.json": "cce8ace16f4894f84d06bb7356f8a3ab19c0cd5f1b6d6d3e0ebc0c4262b54e57",
+    "person/output/experiment.json": "5f9e504ecb1b739eccb3449bc49ba58c0e1120bd1580f7ba17e98269ef8a1f8e",
+    "person/output/final_model_audit.json": "623907da15689ba74b0b6804ff8d5ff1d05c4133a11df1e6b372a4f58ca47695",
+    "person_initial/cameras.json": "ca48d613b7d1410e3e04aa5148cac5454c80a20fd7f7c2e9e08e7363d1fb842b",
+    "person_initial/compose.json": "77a642e6ab3f5fab749d30c1976ba66e1590810d2767f95ae2930c597207edf6",
+    "person_initial/output/experiment.json": "a4f2fb7209efbc3498aa0b8206153921209cf7972651a7a52d39eb661be4f3fb",
+    "person_initial/output/final_model_audit.json": "f61d00f052dbaebf91eb4b2d2689f2208e47ff5a8f76898d2e281969c883a9f4",
+    "person_initial_config_failure.json": "47a36bbe9f5e23e9f3f224b18352eae1d80e21c4952417ff5b5d7eb9d0fd066b",
+    "person_initial_operating_after.json": "bc5b8ba4e7914c08cb98072e9bb523dc651e6c1c3b67f1cb04c16d234dd873f1",
+    "person_initial_operating_before.json": "bc5b8ba4e7914c08cb98072e9bb523dc651e6c1c3b67f1cb04c16d234dd873f1",
+    "person_initial_trial_results.json": "0a41941681c357cc28722456ad0f1cfa5b1798cbfe25c427929c97eabb84ee8f",
+    "person_operating_after.json": "bc5b8ba4e7914c08cb98072e9bb523dc651e6c1c3b67f1cb04c16d234dd873f1",
+    "person_operating_before.json": "bc5b8ba4e7914c08cb98072e9bb523dc651e6c1c3b67f1cb04c16d234dd873f1",
+    "person_trial_results.json": "c716321188329f070347694a9a159c999bfba4505fc04d90bd8b39b5bf65d086",
+    "preflight.json": "0c32ac14db9cc3e4f0fe425e47e7a336d15bbf17bc0a5da2c95ad479713b13ca",
+    "prepare.py": "028987dca6269eb069c74cf0976ba604fe56a1f8512004c59789a4913e2039ed",
+    "red.xml": "0cb07cc9c7e189acd68e7b49b8b34255e6f0e23646fc71c30a7ce948404d3f28",
+    "red_bounded.xml": "5c0404586effe5d18d1e6aae421516508a7342476ad30a80f1ec1dbed487f70b",
+    "related.xml": "3c9f66f0eaf2994254ca5bd7215300c0f9eb1db43c5159fbc57cac3a112dd407",
+    "review.json": "95f7b9f9a8e77c0cff38a01898173ab3d70622fa2ad5e7399f39b4287d2c42a9",
+    "run.py": "ae06aae93eb98d2a27c1c85ee867095733bc0adad23cd2ed8dbd3e806df1a458",
+    "run_integration.py": "7492a6c17ccf96cabccc42f8677221c0569f81469553f43ec6c275ad16b9c218",
+    "run_person.py": "e6c4d3b18dfb679f206800f0c74ac02f190e9409b64b032c46b2f9e59c9f4748",
+    "source_manifest.json": "23303e8679ea67f9a324fe61e06593e5f7f743403c69b99924da9a869a6b0725",
+    "trial_results.json": "bf9937a43404881ae5601b242d7828195137b0230ff3b22ccc0c4aa4c741b643",
+    "validate.py": "ce7843f6656c7d5b6399c155773857ced0de9a22b2f406dc98d237fa6e878b87",
+    "validation.json": "8e08b110d1e805ebd41ff3bab5a62be3370ef83df4be50b227267933f0dca4e0"
+  },
+  "live_after": {
+    "exit_code": 0,
+    "decoded_frames": 30,
+    "error_bytes": 0
+  },
+  "document_validation": {
+    "passed": true,
+    "models": 8,
+    "wbs_rows": 33,
+    "wbs_status_unchanged": true,
+    "csv_rows": 8,
+    "html_escaped": true,
+    "evidence_artifacts": 45,
+    "old_reports": 15,
+    "pdf_page4_visual": "PASS"
+  },
+  "publication": {
+    "index.html": {
+      "status": 200,
+      "bytes": 31158,
+      "same_as_local": true,
+      "sha256": "cf40bcf9c651352490729655e312390ab854d1b97be4c73f7f18fd11f351f4e6"
+    },
+    "CCTV_project_progress.pdf": {
+      "status": 200,
+      "bytes": 148845,
+      "same_as_local": true,
+      "sha256": "b99b3586e265c26ba8607670d25f2b48ade7b87fc5119be20bdd8121e65c1460"
+    },
+    "csv": {
+      "delivery": "inline data download",
+      "bytes": 1587,
+      "same_as_local": true
+    }
+  }
+}

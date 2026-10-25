@@ -1,0 +1,244 @@
+{
+  "created_at": "2026-10-22T22:09:56.700509+00:00",
+  "status": "PASS_SCOPED_OWNER_VIEW_API_UI_AND_DDS_INTEGRATION",
+  "scope": "읽기 전용 현재 담당/실행/최근 저장/최근20개 배정 상태 조회",
+  "tests": {
+    "view_and_ownership": {
+      "tests": 32,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "time": 4.492
+    },
+    "handoff_and_auto": {
+      "tests": 74,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "time": 22.611
+    },
+    "browser": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "time": 22.798
+    },
+    "dds_pipeline": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "time": 94.225
+    },
+    "javascript": {
+      "tests": 6,
+      "passed": 6,
+      "failures": 0
+    },
+    "ruff": "PASS"
+  },
+  "browser": {
+    "status": "PASS",
+    "browser": "157.0.1",
+    "layouts": [
+      {
+        "requested_width": 320,
+        "width": 320,
+        "scroll": 308
+      },
+      {
+        "requested_width": 768,
+        "width": 768,
+        "scroll": 756
+      },
+      {
+        "requested_width": 1024,
+        "width": 1024,
+        "scroll": 1012
+      },
+      {
+        "requested_width": 1440,
+        "width": 1440,
+        "scroll": 1428
+      }
+    ],
+    "real_gpu_test": false,
+    "media_verified": false,
+    "cases": [
+      "keyboard_focus",
+      "no_token_persistence",
+      "owner_a_to_b",
+      "pending_owner_preserved",
+      "result_wait",
+      "stale_status",
+      "auth_failure",
+      "network_failure",
+      "no_page_overflow"
+    ]
+  },
+  "dds": {
+    "view_checks": [
+      {
+        "node_id": "jetson-a",
+        "epoch": 1,
+        "status": "running",
+        "history_count": 1,
+        "result_kind": "event",
+        "media_verified": false
+      },
+      {
+        "node_id": "jetson-b",
+        "epoch": 2,
+        "status": "running",
+        "history_count": 2,
+        "result_kind": "event",
+        "media_verified": false
+      },
+      {
+        "node_id": "jetson-a",
+        "epoch": 3,
+        "status": "running",
+        "history_count": 3,
+        "result_kind": "observation",
+        "media_verified": false
+      }
+    ],
+    "reconciliation": {
+      "jetson-a": {
+        "node_originals": 333,
+        "central_originals": 333,
+        "missing_or_changed": 0,
+        "accepted_video_records": 274,
+        "video_raw_states": {
+          "accepted": 274
+        }
+      },
+      "jetson-b": {
+        "node_originals": 222,
+        "central_originals": 222,
+        "missing_or_changed": 0,
+        "accepted_video_records": 193,
+        "video_raw_states": {
+          "accepted": 193
+        }
+      }
+    },
+    "originals": 555,
+    "video_records": 467,
+    "pending": 0
+  },
+  "failures_preserved": [
+    "DDS 시험 PYTHONPATH 없음: 시험 환경 기본 경로 보완 후 PASS",
+    "Firefox geckodriver 시작20초 초과: 정확한 원인 미확정, 후속 시작 정상",
+    "BiDi 시험 클라이언트 Origin 헤더 거절: 비브라우저 클라이언트 헤더 생략 후 연결",
+    "Firefox 세션 시작45초 초과: /tmp 대신 별도 디스크 전용 프로필에서22.80초 전체 시험 PASS; 근본 IO 원인 미확정"
+  ],
+  "source_sha256": {
+    "config/deepstream/edge-auto-policy.example.json": "0f00e56c2282d0daa61e6017a6a855862443f068652f14ea58b67caae8f980e9",
+    "config/deepstream/edge-dds-controller.example.json": "7f096895d94791913b004a5bf5ae3d0d1fa23e905838d7a23522a6dd418632fc",
+    "config/deepstream/edge-dds-node.example.json": "034ddaba22710197d8742e366535146ac827b8dcb222ec2047f575f3226f5e46",
+    "config/deepstream/edge-handoff.example.json": "f2bd0e0a469f2f2117195811f40e31d63f0d3fc7ed7f4024526c5e7840a540c3",
+    "config/deepstream/edge-result-broker.acl.example": "11445a607a153593d26264d941c02ac5a54f3895046c45d5d1ecf7ecadae3ceb",
+    "config/deepstream/edge-result-controller.example.json": "ed9fda60417ba9a4f4c0a1d8c66b341f06edf6189020f4cd0549149bdc7d4190",
+    "config/deepstream/edge-result-node.example.json": "904a8b019b13e9da4a98ef8bfeda571f28f0cfd1601cfe953cfaade86ece98f0",
+    "config/deepstream/edge-service-b.manifest.example.json": "d0c2b982dde767a0e69c485d27776db06faefe0f1ad613bd46b48a33c92ada62",
+    "runners/run_edge_orchestration.py": "99f6e0f04292fc99a50fa6e154f36c7a82bc821f7c36ce0a4e004b379e6e04d0",
+    "scripts/ops/create_edge_dds_keystore.py": "ef4160bbd5c33995838b8c8ad70d44c57748dc34add49650437619994bfa3ae7",
+    "src/core/_event_publish.py": "3705dbf451bff5917c3ec9898805df49dd781a1be92a38511ee1b6dcb53e31b3",
+    "src/core/base_processor.py": "67eb8d04b2e18b082cc2adbb045ce2e7216ed7794aedb8d80fe4d4a809de7d7d",
+    "src/core/deepstream_processor.py": "814dd0cf03d5bdae93a1f70c7046ce3082573bb3d022d99a292fe67a6630b0f9",
+    "src/core/processor.py": "3b8ca611b16f12737511976d847fc6d2953e83c77edd75d000fa0463434d2e8e",
+    "src/core/video_event_ingest.py": "c40c6447f78251cdbf9f0bbc5b8c03088941adc8e1eb4ba688837867eb6612e1",
+    "src/protocols/mqtt_publisher.py": "5c8d783541cad8513f60717aab91a2e7b0d56aeb1ef10e37af3facf5dc7c15ef",
+    "src/protocols/mqtt_subscriber.py": "95569c97c60d352006abe4778a3a124c2ae0dc08b8244bebb221fe081e83dfff",
+    "src/services/_edge_process.py": "d910498dbce7b27d4d43110a7fbde86837d53405aaf152f5fc8e8ab098d53dc4",
+    "src/services/edge_auto_handoff.py": "ef7a0e4407e03d6e4d26d440882fa780547003bbed93cc928bbaacf7d6da16ea",
+    "src/services/edge_controller_api.py": "2aef081485fae9e1cd78eb650299b43bf6de14eb1c70f3be41d7dd6cfa0b885b",
+    "src/services/edge_handoff.py": "9214a29880e6f3c8fe8149bd6031e8432757b5aa742a6212ac1a5d804baf37f4",
+    "src/services/edge_node_agent.py": "deb4a4ba93b6e1bbfd5427e2218507daff4e75b746962ac65eae1a5e5c103d29",
+    "src/services/edge_orchestrator.py": "18ac8badb9500039a8146a587c0b132c65d2e47dcb53355f2e104f2563feb790",
+    "src/services/edge_ownership.py": "572c4b3de100c21a83c524e06e5f2f3dc48229828b72d023563ed21c7efa55d5",
+    "src/services/edge_result_context.py": "b14d5fbc54328134f0315785332eb92b61d4398c845187d4a563b42d21230c94",
+    "src/services/edge_result_dds.py": "5fefa0904b509f2d0693d6e4eb7a7bc8e645cdfa7aabbe8b904b53771df4172c",
+    "src/services/edge_result_delivery.py": "295f413ccd53edc8d7a9a4f287fa1e7d75a7525952fa9948ea7aa01d8f73f5de",
+    "src/services/edge_result_transport.py": "545fbc55cf3e7196f23db4cc01e4d7c90ec371d7112571786d2ed5be48317376",
+    "src/services/edge_service.py": "80db650bbf45b09cc0f2015b3fdc5b9c89c7b31efa93495e28d56d73d54f8781",
+    "src/services/jetson_resources.py": "c702d6716913e07d2a78eee5c6027185c815f6ebd0483fa904dc8f9148781cac",
+    "src/services/processor_metrics.py": "0189324adc85d6cfd1caf8eb5647f63b05b1033c817e92dfce98c7cae710f332",
+    "web/edge-viewer.html": "6748ab71f8c5497c4b801ac35198365ba608959fdae7d87b7ed7492105d360dc",
+    "web/edge-viewer.js": "688072a2a87a4eb4e0040eacb3c8690c786cdb2632a77d3cbe33ee22abf0fa1b",
+    "tests/test_edge_view.py": "8bcd1545b0aa79c77efcd1725e5ff04d87fadc1eaa5d7b4816047cf22a8154cb",
+    "tests/test_edge_view_browser.py": "702d8ff995f6e3d09dd3a395b59d2c9fefc48371d0a73709ba62c063db6d86cf",
+    "tests/test_edge_viewer.cjs": "bc8a29fc4c80ff15660dcc42c329a0b4ab2af867fea0e6e7159d0cec69c6b600",
+    "tests/test_edge_full_pipeline.py": "3c00f2b8c75f140227de65a35faa0b5f838565b154cc7a7d33b9281196929c81"
+  },
+  "source_bundle": {
+    "path": "docs/planning/evidence/edge_integrated_view_sources_20261023.tar.gz",
+    "sha256": "c0dd488e98b0568d5abfc93a5a0c30cba6653df955624b61f45ef5cebc8b5235",
+    "members": 40,
+    "source_files": 37,
+    "not_standalone": true,
+    "deployed_to_B": false
+  },
+  "evidence_archive": {
+    "path": "docs/planning/evidence/edge_owner_view_20261023_telemetry.tar.gz",
+    "sha256": "48179dde313460df9d71fd563c59823227ee7e1411eb82b47bd1f8dbefc12b38",
+    "members": 19
+  },
+  "operating": {
+    "compared": 37,
+    "changes": [],
+    "metrics": [
+      "cctv_processor_frames_processed_total 9.216944e+06",
+      "cctv_processor_source_error_identified_total 0.0",
+      "cctv_processor_source_error_unidentified_total 0.0",
+      "cctv_processor_pipeline_restart_requested_total 0.0",
+      "cctv_processor_pipeline_restart_rejected_total 0.0",
+      "cctv_processor_pipeline_restart_executed_total 0.0",
+      "cctv_processor_pipeline_restart_failed_total 0.0",
+      "cctv_processor_pipeline_restart_seconds_total 0.0"
+    ],
+    "observed_at": "2026-10-22T22:09:16.535774+00:00"
+  },
+  "limitations": [
+    "O5 전체 완료 아님: 영상 재연결/프레임 갱신 검증 미구현",
+    "최근20개 배정의 현재 상태이며 모든 상태 전이/자동 판단 사유 감사 이력은 아님",
+    "API/UI와 실제 DDS는 동일 A 호스트의 격리 시험; AI 지표/이벤트는 모형",
+    "새 통합본 B GPU/2보드 무선 DDS 미검증; B 미배포",
+    "SSH 영상 경로는 A 호스트에 의존"
+  ],
+  "additional_installations": 0,
+  "production_or_ap_settings_changed": false,
+  "cleanup_complete": true,
+  "dedicated_runtime_directories_removed": [
+    ".edge-view-dds-u17uk4x5",
+    ".edge-view-dds-kxh0vzju",
+    ".edge-view-browser-20261023",
+    ".edge-view-browser-final-20261023"
+  ],
+  "dds_containers_remaining": 0,
+  "planning_validation": {
+    "local_links": 2038,
+    "wbs_rows": 37,
+    "done_rows": 9,
+    "p62_paths_match": true,
+    "source_hashes_match": 37,
+    "python38_syntax": 2,
+    "python38_runtime_tested": false
+  },
+  "known_snap_profiles_remaining": 0,
+  "published_progress": {
+    "index.html": {
+      "http_status": 200,
+      "sha256": "3f293c0232c0bda6df19ed4dd2e97981a9e1b0eff742ebb977dff4f3c0433354",
+      "bytes": 159577
+    },
+    "CCTV_project_progress.pdf": {
+      "http_status": 200,
+      "sha256": "43094dd7517ce70d61c3897826ddf8e625276000fa03918abfbee2fd99d76a52",
+      "bytes": 157105
+    },
+    "pdf_first_page_visual": "PASS"
+  }
+}

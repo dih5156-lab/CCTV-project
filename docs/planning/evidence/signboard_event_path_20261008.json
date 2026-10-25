@@ -1,0 +1,613 @@
+{
+  "checked_at": "2026-10-08T16:20:20.054214+09:00",
+  "state": "LIMITED_EVENT_PATH_PASSED_DEFAULT_TITLE_OPEN",
+  "scope": "P3.3 사전검증/P3.4 고정 이벤트 한 종류의 제한 연동. 임시 입력 토픽·별도 ActionBridge 프로세스/DB 사용; 실시간 모델 탐지나 운영 상시 매핑 활성화 아님.",
+  "trials": [
+    {
+      "directory": "data/runtime/signboard_event_path_20261008",
+      "event_path": true,
+      "event_id": "signboard-event-path-20261008",
+      "title": "경고!",
+      "text": "낙상 연동 시험",
+      "actions": [
+        "display",
+        "clear"
+      ],
+      "statuses": [
+        "acknowledged",
+        "acknowledged"
+      ],
+      "user_confirmation": {
+        "visible": false,
+        "source": "user",
+        "answer": "시간만 보임"
+      },
+      "input_events": [
+        "signboard-event-path-20261008-person",
+        "signboard-event-path-20261008",
+        "signboard-event-path-20261008"
+      ],
+      "errors": []
+    },
+    {
+      "directory": "data/runtime/signboard_event_path_retry_20261008",
+      "event_path": true,
+      "event_id": "signboard-event-path-20261008-retry-01",
+      "title": "경고!",
+      "text": "낙상 연동 시험",
+      "actions": [
+        "display",
+        "clear"
+      ],
+      "statuses": [
+        "acknowledged",
+        "acknowledged"
+      ],
+      "user_confirmation": {
+        "visible": false,
+        "source": "user",
+        "answer": "시간만 보임"
+      },
+      "input_events": [
+        "signboard-event-path-20261008-retry-01-person",
+        "signboard-event-path-20261008-retry-01",
+        "signboard-event-path-20261008-retry-01"
+      ],
+      "errors": []
+    },
+    {
+      "directory": "data/runtime/signboard_control_replay_20261008",
+      "event_path": false,
+      "event_id": "signboard-control-replay-20261008",
+      "title": "연동 점검",
+      "text": "스마트폴 연동 시험",
+      "actions": [
+        "display",
+        "clear"
+      ],
+      "statuses": [
+        "acknowledged",
+        "acknowledged"
+      ],
+      "user_confirmation": {
+        "visible": true,
+        "source": "user",
+        "answer": "문구가 보이고 잠시 유지됨"
+      },
+      "input_events": [],
+      "errors": []
+    },
+    {
+      "directory": "data/runtime/signboard_body_compare_20261008",
+      "event_path": false,
+      "event_id": "signboard-body-compare-20261008",
+      "title": "연동 점검",
+      "text": "낙상 연동 시험",
+      "actions": [
+        "display",
+        "clear"
+      ],
+      "statuses": [
+        "acknowledged",
+        "acknowledged"
+      ],
+      "user_confirmation": {
+        "visible": true,
+        "source": "user",
+        "answer": "문구가 보임"
+      },
+      "input_events": [],
+      "errors": []
+    },
+    {
+      "directory": "data/runtime/signboard_title_compare_20261008",
+      "event_path": true,
+      "event_id": "signboard-title-compare-20261008",
+      "title": "경고",
+      "text": "낙상 연동 시험",
+      "actions": [
+        "display",
+        "clear"
+      ],
+      "statuses": [
+        "acknowledged",
+        "acknowledged"
+      ],
+      "user_confirmation": {
+        "visible": false,
+        "source": "user",
+        "answer": "시간만 보임"
+      },
+      "input_events": [
+        "signboard-title-compare-20261008-person",
+        "signboard-title-compare-20261008",
+        "signboard-title-compare-20261008"
+      ],
+      "errors": []
+    },
+    {
+      "directory": "data/runtime/signboard_event_control_20261008",
+      "event_path": true,
+      "event_id": "signboard-event-control-20261008",
+      "title": "연동 점검",
+      "text": "낙상 연동 시험",
+      "actions": [
+        "display",
+        "clear"
+      ],
+      "statuses": [
+        "acknowledged",
+        "acknowledged"
+      ],
+      "user_confirmation": {
+        "visible": true,
+        "source": "user",
+        "answer": "문구가 보이고 잠시 유지됨"
+      },
+      "input_events": [
+        "signboard-event-control-20261008-person",
+        "signboard-event-control-20261008",
+        "signboard-event-control-20261008"
+      ],
+      "errors": []
+    }
+  ],
+  "timer_fix": {
+    "files": [
+      "src/devices/signboard.py",
+      "tests/test_signboard.py"
+    ],
+    "reproduced": [
+      "느린 전송 전에 표시 유지 시간을 계산",
+      "전송 잠금 대기 후 유휴 조건 재확인 누락",
+      "실패한 전송을 쿨다운 성공으로 기록"
+    ],
+    "before": "3 FAIL",
+    "after": "관련137 PASS in 10.13s; 만료 뒤 시간 복귀 검증 추가 후3 PASS",
+    "behavior": "전송 완료 후 유지 시간 시작, 잠금 안에서 중복/유휴 재확인, 성공 시각만 저장",
+    "applied": {
+      "at": "2026-10-08T15:58:58.075908+09:00",
+      "before": [
+        {
+          "name": "cctv-device-signboard",
+          "id": "fca78eeb63cf1846c523ff633d626b41e2b5b2274661c9a9dd0f1323a8345020",
+          "started": "2026-10-01T23:40:25.241821111Z",
+          "health": "healthy",
+          "status": "running"
+        },
+        {
+          "name": "cctv-action-layer",
+          "id": "4583fc9fcd71816b7cdc1f20900901cf8cfcbbd669401c8b9fe3d66e99a9bbf6",
+          "started": "2026-10-08T06:15:40.114979171Z",
+          "health": "healthy",
+          "status": "running"
+        },
+        {
+          "name": "cctv-ai-engine",
+          "id": "db65cceb6390ae7eae0b02db9403a46dba9053adbeca5cb27cb4e67c92d0e4f0",
+          "started": "2026-10-08T04:59:47.634961746Z",
+          "health": "healthy",
+          "status": "running"
+        },
+        {
+          "name": "cctv-media-server",
+          "id": "a2b1369a3598485980000d1e6da5ef09d79145da54b220cc37baaa00b7376c03",
+          "started": "2026-10-01T23:40:25.266992541Z",
+          "health": null,
+          "status": "running"
+        }
+      ],
+      "commands": [
+        {
+          "command": [
+            "docker",
+            "cp",
+            "src/devices/signboard.py",
+            "cctv-device-signboard:/app/src/devices/signboard.py"
+          ],
+          "returncode": 0
+        },
+        {
+          "command": [
+            "docker",
+            "restart",
+            "--time",
+            "10",
+            "cctv-device-signboard"
+          ],
+          "returncode": 0
+        }
+      ],
+      "rollback": false,
+      "after": [
+        {
+          "name": "cctv-device-signboard",
+          "id": "fca78eeb63cf1846c523ff633d626b41e2b5b2274661c9a9dd0f1323a8345020",
+          "started": "2026-10-08T06:59:15.853135065Z",
+          "health": "healthy",
+          "status": "running"
+        },
+        {
+          "name": "cctv-action-layer",
+          "id": "4583fc9fcd71816b7cdc1f20900901cf8cfcbbd669401c8b9fe3d66e99a9bbf6",
+          "started": "2026-10-08T06:15:40.114979171Z",
+          "health": "healthy",
+          "status": "running"
+        },
+        {
+          "name": "cctv-ai-engine",
+          "id": "db65cceb6390ae7eae0b02db9403a46dba9053adbeca5cb27cb4e67c92d0e4f0",
+          "started": "2026-10-08T04:59:47.634961746Z",
+          "health": "healthy",
+          "status": "running"
+        },
+        {
+          "name": "cctv-media-server",
+          "id": "a2b1369a3598485980000d1e6da5ef09d79145da54b220cc37baaa00b7376c03",
+          "started": "2026-10-01T23:40:25.266992541Z",
+          "health": null,
+          "status": "running"
+        }
+      ],
+      "state": "APPLIED_HEALTHY"
+    },
+    "rollback_plan": "data/runtime/signboard_event_path_20261008/display_timer_plan.json",
+    "causality_limit": "이 결함을 고친 뒤에도 경고!/경고 제목 미표시가 재현되어 실제 미표시의 단독 원인으로 확정하지 않음"
+  },
+  "integration_checks": {
+    "regression": "30 PASS in 1.91s (후속137개에도 포함)",
+    "normal_person_commands": 0,
+    "low_confidence_commands": 0,
+    "unregistered_camera_commands": 0,
+    "fall_command_count": 1,
+    "sequential_duplicate_physical_calls": 1,
+    "simulated_device_failure_and_recovery": "PASS",
+    "runner_error_cleanup": "PASS, network 0",
+    "limits": "동일 입력 재수신/순차 request 중복을 검증. 동시 요청·프로세스 재시작 후 중복 방지는 미검증."
+  },
+  "successful_event_path_verification": {
+    "command_results": [
+      {
+        "request_id": "signboard-event-control-20261008:signboard:cctv-signboard-01",
+        "event_id": "signboard-event-control-20261008",
+        "device_id": "cctv-signboard-01",
+        "status": "acknowledged",
+        "error_code": null,
+        "received_at": "2026-10-08T07:15:31.402259+00:00"
+      },
+      {
+        "request_id": "signboard-event-control-20261008:signboard:clear:cctv-signboard-01",
+        "event_id": "signboard-event-control-20261008",
+        "device_id": "cctv-signboard-01",
+        "status": "acknowledged",
+        "error_code": null,
+        "received_at": "2026-10-08T07:15:51.476146+00:00"
+      }
+    ],
+    "action_commands": [
+      {
+        "command_id": "signboard-event-control-20261008:signboard",
+        "event_id": "signboard-event-control-20261008",
+        "status": "acknowledged",
+        "updated_at": "2026-10-08T16:15:31.402338+09:00"
+      },
+      {
+        "command_id": "signboard-event-control-20261008:signboard:clear",
+        "event_id": "signboard-event-control-20261008",
+        "status": "acknowledged",
+        "updated_at": "2026-10-08T16:15:51.476147+09:00"
+      }
+    ],
+    "api": {
+      "status": 200,
+      "request_id": "signboard-event-control-20261008:signboard:cctv-signboard-01",
+      "event_id": "signboard-event-control-20261008",
+      "device_id": "cctv-signboard-01",
+      "result_status": "acknowledged"
+    }
+  },
+  "runtime": {
+    "at": "2026-10-08T16:16:58.338002+09:00",
+    "containers": [
+      {
+        "name": "cctv-action-layer",
+        "id": "4583fc9fcd71816b7cdc1f20900901cf8cfcbbd669401c8b9fe3d66e99a9bbf6",
+        "started": "2026-10-08T06:15:40.114979171Z",
+        "status": "running",
+        "health": "healthy",
+        "restarts": 0,
+        "restart_policy": "always"
+      },
+      {
+        "name": "cctv-device-signboard",
+        "id": "fca78eeb63cf1846c523ff633d626b41e2b5b2274661c9a9dd0f1323a8345020",
+        "started": "2026-10-08T06:59:15.853135065Z",
+        "status": "running",
+        "health": "healthy",
+        "restarts": 0,
+        "restart_policy": "always"
+      },
+      {
+        "name": "cctv-device-dabit",
+        "id": "f51a40001b1cdd706b69941702a76e10044002740582f2da9c20c8648aa36a0d",
+        "started": "2026-10-01T23:40:25.229113157Z",
+        "status": "exited",
+        "health": "unhealthy",
+        "restarts": 0,
+        "restart_policy": "no"
+      },
+      {
+        "name": "cctv-ai-engine",
+        "id": "db65cceb6390ae7eae0b02db9403a46dba9053adbeca5cb27cb4e67c92d0e4f0",
+        "started": "2026-10-08T04:59:47.634961746Z",
+        "status": "running",
+        "health": "healthy",
+        "restarts": 0,
+        "restart_policy": "always"
+      },
+      {
+        "name": "cctv-media-server",
+        "id": "a2b1369a3598485980000d1e6da5ef09d79145da54b220cc37baaa00b7376c03",
+        "started": "2026-10-01T23:40:25.266992541Z",
+        "status": "running",
+        "health": null,
+        "restarts": 0,
+        "restart_policy": "always"
+      },
+      {
+        "name": "cctv-public-api",
+        "id": "1b39a4ff7ee4d0d9bc7580418c51f5d880e320707bb5b00060af08ff4580a4a0",
+        "started": "2026-10-01T23:40:24.611743744Z",
+        "status": "running",
+        "health": "healthy",
+        "restarts": 0,
+        "restart_policy": "always"
+      },
+      {
+        "name": "cctv-public-demo-ui",
+        "id": "0ce21ff0428bc2e0b8498c13d5b59a2ef87b4510b462691ef44b0549ff33c553",
+        "started": "2026-10-01T23:40:25.101996726Z",
+        "status": "running",
+        "health": null,
+        "restarts": 0,
+        "restart_policy": "always"
+      }
+    ],
+    "action_health": {
+      "service": "cctv-action-layer",
+      "status": "up",
+      "checked_at": "2026-10-08T16:16:57.969773+09:00",
+      "mqtt": "connected",
+      "mode": "auto",
+      "sites": 0,
+      "pending": 0
+    },
+    "signboard_source_sha256": "c9bd2e9b4717c41d9c6c8bbadd51861654f067be350af905da2a461749647840",
+    "compose_services": [
+      "aiot-parser",
+      "aiot-parser-db",
+      "app-rules-engine",
+      "cctv-action-layer",
+      "cctv-ai-engine",
+      "cctv-alert-api",
+      "cctv-edgex-adapter",
+      "cctv-kuiper-rule-loader",
+      "cctv-media-server",
+      "cctv-public-api",
+      "cctv-sensor-rule-bridge",
+      "consul",
+      "core-command",
+      "core-common-config-bootstrapper",
+      "core-data",
+      "core-metadata",
+      "database",
+      "device-rest",
+      "device-virtual",
+      "edgex-mqtt-broker",
+      "public-demo-ui",
+      "rules-engine",
+      "support-notifications",
+      "support-scheduler",
+      "ui"
+    ],
+    "signboard_in_compose": false,
+    "registry_sha256": "e8edc1b18b945118541933bd6d5523e4a7386814acd59b2a440c0562d6727880"
+  },
+  "remaining": [
+    "I58: 같은 본문에서 경고!/경고 미표시, 연동 점검 표시. 제목/표시 영역과 장치 프로토콜 확인 필요; 느낌표 원인 가설은 경고도 실패하여 채택하지 않음. 제품 기본 제목은 변경하지 않음.",
+    "I59: 현재 전광판 컨테이너가 기본 Compose의 모든 프로필 목록에 없음. 수정은 기존 컨테이너 파일과 프로젝트에 반영했으며 새 이미지/정식 배포 구성/재생성 재현은 미완료.",
+    "camera_1 운영 대상 매핑은 여전히0. 고정 시험 후보만1대 연결. 상시 AI 경보 활성화는 미적용.",
+    "장치 ACK와 실제 표시는 분리 판정. 실물3실패/3성공을 전체 신뢰도나 정확도 수치로 해석하지 않음."
+  ],
+  "wire_capture_limit": "제어 재생 시험에서 정상 형식 장치 응답13개 확보. 이 캡처는 송신 본문을 얻지 못해 명령 전송 시각이나 덮어쓰기 부재를 증명하지 않음.",
+  "source_sha256": {
+    "src/devices/signboard.py": "c9bd2e9b4717c41d9c6c8bbadd51861654f067be350af905da2a461749647840",
+    "tests/test_signboard.py": "fa0c5c7d210a3f0f11c1a2b49b55758aaa308334754831851bae6f8b48eeb308",
+    "tests/test_integration_action_pipeline.py": "8b81b0cb19a303aee30be868adf73522be6fb4ac77a167bd199679a071f37054"
+  },
+  "sha256": {
+    "data/runtime/signboard_event_path_20261008/signboard.operating.before.py": "5b9e9690463348c4a0481bf00e9cc990a6b856128a8c68672e4e29be0ecc01ad",
+    "data/runtime/signboard_event_path_20261008/event.json": "2b1faaea5e003db932584e2598b545db84228da1c875922ef662618b427a048e",
+    "data/runtime/signboard_event_path_20261008/run_trial.py": "1c615d887c14495e100d6194ef60a294f799d74bf04bbd8140e6c35121b96821",
+    "data/runtime/signboard_event_path_20261008/result_verification.json": "87aa256ce85317b54f52ce214436c5a6d7791221dcf5979b1ae5f2a8b55b4b33",
+    "data/runtime/signboard_event_path_20261008/output_devices.json": "1fc3f45f0154831dcb49dfcdeb6df5ada6d67124e745187d8531775c4854e464",
+    "data/runtime/signboard_event_path_20261008/signboard.before.py": "196defc0d5295d5716381ef868d1af3f0c386228bcd385606b71c93905cfc259",
+    "data/runtime/signboard_event_path_20261008/operating_dabit_device_service.py": "cbb0696d4e02fa38124bfda6be0d838eeae305459dec4e77ac0f03d00223c17a",
+    "data/runtime/signboard_event_path_20261008/before.json": "ca230f1cc885aee90c9a9d15cd50298b8436a8988e581aa3466e2af78f0c73e8",
+    "data/runtime/signboard_event_path_20261008/display_timer_plan.json": "8a181753e9f87116bfa58b4d800a71a817e9fc61d52176a293fd721ef10884c3",
+    "data/runtime/signboard_event_path_20261008/trial.json": "f72859767cb45786c950072a34a9dcc7f11dc8a70fbe99455d779c93ac9c38ac",
+    "data/runtime/signboard_event_path_20261008/operating_run_signboard_device_service.py": "b9962374ba399e702488e462cdbf6ab0d981c4adf842b758d61f96d9940a3d11",
+    "data/runtime/signboard_event_path_20261008/final_runtime.json": "8fce5f27d8fe52109f7aee2d0e0f3f4222f55e32827569af5f9ba111469d0b09",
+    "data/runtime/signboard_event_path_20261008/display_timer_apply.json": "bc6154b42f4c8f793734946e859530f2010a00044d7d82a931ef513fdad32a97",
+    "data/runtime/signboard_event_path_20261008/plan.json": "4d6572668757fa84349e40516f9317c8cb969b687b8145f12ad299a0fcb5db80",
+    "data/runtime/signboard_event_path_retry_20261008/event.json": "7f00333d908f2f506b255820d2c0e0f45d2508eb641a81f9e0e1c4800040d32f",
+    "data/runtime/signboard_event_path_retry_20261008/run_trial.py": "1c615d887c14495e100d6194ef60a294f799d74bf04bbd8140e6c35121b96821",
+    "data/runtime/signboard_event_path_retry_20261008/output_devices.json": "1fc3f45f0154831dcb49dfcdeb6df5ada6d67124e745187d8531775c4854e464",
+    "data/runtime/signboard_event_path_retry_20261008/trial.json": "b18c474aad2126fd582ac2c3fd33031d6efd782e2616bb12c5f98079b0fd165c",
+    "data/runtime/signboard_event_path_retry_20261008/plan.json": "30d0c042b3093a549444fe2bdf3e0fa9bbf0957ccd516331309abac8e8155aab",
+    "data/runtime/signboard_control_replay_20261008/requests.json": "aafdc9baa8d2a53427338def8e79dc443ff5a2fb2c5f6e02b46234439d408649",
+    "data/runtime/signboard_control_replay_20261008/run_trial.py": "9c3e70e6784106a528cbc59460f8ad37d23e7124c2db8be3a80790a495292164",
+    "data/runtime/signboard_control_replay_20261008/wire_capture.json": "a85ca2853236abf322248565fe8899531e6cd32aa5adcc1913767eccebf51486",
+    "data/runtime/signboard_control_replay_20261008/trial.json": "c33b6d1da69cc4239fd6dfc2b355d12a73c2bf9da4b32bf278afba5c15350622",
+    "data/runtime/signboard_control_replay_20261008/plan.json": "78aa2de1c97e2a063157a4e68778981548f5dc8c849dc8964633e432360371e8",
+    "data/runtime/signboard_control_replay_20261008/capture.py": "c75542a6131118def9e7fa738daf5dc21b6f2e1977c85d0930ed86f325c04c82",
+    "data/runtime/signboard_body_compare_20261008/requests.json": "0af62afc162ef883333ee85a912d63ace49855b47be4e43a09fe48287c5787eb",
+    "data/runtime/signboard_body_compare_20261008/run_trial.py": "9c3e70e6784106a528cbc59460f8ad37d23e7124c2db8be3a80790a495292164",
+    "data/runtime/signboard_body_compare_20261008/trial.json": "edbe7cb661eaf3f34019bc72d7b508ad6ada79b6d74cd12c9c68e83417f9fa98",
+    "data/runtime/signboard_body_compare_20261008/plan.json": "a7bc4ba3f4066c5b610247db52975655b088ca15a0bb9eb15fcc2f42e1f63f36",
+    "data/runtime/signboard_title_compare_20261008/event.json": "783919eccb0d4feb6dfdd6abfd6950bcab6c6eb65968ee14ee15683b0179e55a",
+    "data/runtime/signboard_title_compare_20261008/run_trial.py": "47725da4112792646587ee281df12c660a216298a96e0acbea9ee104a1a2890e",
+    "data/runtime/signboard_title_compare_20261008/output_devices.json": "1fc3f45f0154831dcb49dfcdeb6df5ada6d67124e745187d8531775c4854e464",
+    "data/runtime/signboard_title_compare_20261008/trial.json": "a6cae90e2f81452cc4e135c3f64449414d5c34e2abd4bd75734d25678e0a6602",
+    "data/runtime/signboard_title_compare_20261008/plan.json": "f1e8cf58c6dd440d34f14bee79c65105952368278694cb14ad56286b84382904",
+    "data/runtime/signboard_event_control_20261008/verification.json": "19e2951937ce63a89d46d32dd5375d26b4357e06027f79c6c0e1fedd07f426ff",
+    "data/runtime/signboard_event_control_20261008/event.json": "f362ba7db40230df497625c1e5904310e88aa3a7e887b88c0297d92ac39e20d9",
+    "data/runtime/signboard_event_control_20261008/run_trial.py": "7c32e76e50b30d988f36c7f8209987035fdd05ca451438257538d1ddd18692c2",
+    "data/runtime/signboard_event_control_20261008/output_devices.json": "1fc3f45f0154831dcb49dfcdeb6df5ada6d67124e745187d8531775c4854e464",
+    "data/runtime/signboard_event_control_20261008/trial.json": "74e6cc91c7df6fc2e361cb9da456ea9bf02694f01f93ef34cad15a6ecda3cf72",
+    "data/runtime/signboard_event_control_20261008/plan.json": "25826fefbb0faeab851a5bf047387f2f840929441fae946490bd2176faaa9f9b"
+  },
+  "code_history_audit": {
+    "checked_at": "2026-10-08T16:35:03.081226+09:00",
+    "request": "이전 정상 동작과 WBS 중 변경 여부를 코드·Git 이력·인수인계 원본으로 확인",
+    "scope": "읽기 전용 조사 및 기존 기록 갱신. 제품 코드·운영 설정·컨테이너·실물 출력 변경 없음.",
+    "findings": [
+      {
+        "item": "제목 직렬화",
+        "result": "인수인계 원본의 EUC-KR·/P0000/Y0004·흰색7·폭24 공백 정렬이 현재와 같다. 제목 경고!/경고/연동 점검/현재 시간/CCTV 알림을 13c5748,7d132c0,419d756,HEAD와 대조한20건 모두 바이트 동일. 최근 WBS 제목 인코딩 회귀의 증거 없음."
+      },
+      {
+        "item": "기본 경고 제목",
+        "result": "7d132c0(2026-03-12)의 src/services/action_bridge.py에 이미 title=경고!가 있다. 09-04 전달 계층 분리와09-09 CommandBuilder 이동이 기본 제목을 새로 바꾼 것은 아니다."
+      },
+      {
+        "item": "본문 표시 효과",
+        "result": "13c5748(03-09) 및 인수인계 원본은 /E0606, 7d132c0(03-12)부터 현재는 /E0100. 같은 폰트/속도/배경/색상과 본문3종에서 효과 코드만 차이. 최근 WBS 도입 전의 차이이며 이번 미표시 원인으로 확정하지 않음."
+      },
+      {
+        "item": "신구 서비스 병존",
+        "result": "7914ff6(08-28) 기본 Compose에는 cctv-device-dabit가 있고, 0ed1a71(09-04)은 cctv-device-signboard를 추가하면서 Dabit 정의도 유지했다. 앞선 실운영 조사에서 확인한 유휴 갱신3주체 문제와 관련된 배포 이력이며, 정의 병존만으로 당시의 실제 실행 상태를 추정하지 않음."
+      },
+      {
+        "item": "배포 정의 삭제",
+        "result": "4d9f854(10-02)부터 기본 Compose에서 두 서비스 정의가 빠졌다. 현재 jetson-candidate/edgex-uat 및 deploy 설정에서도 해당 서비스 정의를 찾지 못했다. 실행 중 컨테이너 존재와 새 배포 재현을 구분한다(I59)."
+      }
+    ],
+    "verification": {
+      "title_byte_equivalence": {
+        "cases": 20,
+        "passed": 20
+      },
+      "body_only_effect_difference": {
+        "cases": 3,
+        "passed": 3
+      },
+      "method": "ast로 순수 버퍼 생성 함수와 상수만 추출하여 실행; 인수인계 원본·Git 4시점·현재 코드 비교. 네트워크/장치 함수 실행 없음.",
+      "new_hardware_test": false
+    },
+    "protocol_reference": {
+      "path": "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/다빛솔루션_전광판_API.pdf",
+      "pages": [
+        3,
+        4,
+        5,
+        7,
+        12,
+        14
+      ],
+      "notes": [
+        "응답은 수신 데이터 처리 결과이며 실제 화면 관찰과 구분한다.",
+        "06은 좌로 이동,01은 방향 없는 정지,00은 효과 없음으로 문서의 효과 표에 기재된다. /E0100을 곧바로 불법 코드로 단정하지 않는다.",
+        "/S 뒤 두 자리는 장치 유지시간(0.5초 단위)이며 현재 본문은00이다. Python display_time10과 다른 설정이다.",
+        "621 clear는 실시간 메시지와 섹션 표시 속성을 초기화한다. 제목 속성 일부 생략·폭24 가정은 원본부터 존재하므로 최근 회귀나 미표시 원인으로 확정할 수 없다."
+      ]
+    },
+    "conclusion": "최근 전송/배포 구조 변경은 확인됐지만 제목 문자열 자체의 결함은 입증되지 않았다. 제목별 성공/실패는 수동 관찰 결과이며, 모든 시험의 실제 발신 패킷과 덮어쓰기 타이밍을 확보하지 못해 제목만을 직접 원인으로 단정하지 않는다. I58 OPEN/P3.4 VERIFY/DONE9/33 유지.",
+    "next": "기본 경고 문구의 실패 구간에서 발신 패킷·idle/clear 시점을 같은 시간축으로 확보하고 동일 관찰 시간으로 재현. 본문 효과 원본/현재 차이는 그 후 단일 변수 비교 후보이며 운영에 즉시 복원하지 않음.",
+    "git_revisions": {
+      "13c5748": "13c5748d71e710df8516de04da1611d1da54bbd0",
+      "7d132c0": "7d132c0ef29a8d3eeb0a8f9ab00e372c5867927d",
+      "7914ff6": "7914ff6c7d9183ed935f6ad62b032233c1d55628",
+      "0ed1a71": "0ed1a717e2d4fd3d7339b0a89b53b43556300b9c",
+      "419d756": "419d75611ae7a51c574fb759333fa7b5fe0fcc84",
+      "4d9f854": "4d9f854a4080c4472a64b2b445d93848bc3c7638",
+      "HEAD": "fefa4ab04ee2ca26bbc0ee433381e4b7648265e7"
+    },
+    "source_sha256": {
+      "src/devices/signboard.py": "c9bd2e9b4717c41d9c6c8bbadd51861654f067be350af905da2a461749647840",
+      "src/services/action_bridge.py": "7d45972c407ad0d8752bd8fde988bcecb5983bbdcbcfab181c7d1b1658530190",
+      "src/services/action_command_components.py": "adbda3f89191ef28708194cdb4320103280832aac8a7f6ad039d5d691d58eed3",
+      "AIoT개발팀_오세영_인수인계자료/디바이스 연동 소스코드/Control-Metrix/parameter.py": "4e2b5cdc0cdf8bc25600cf21ae4141031bc79a118db2032f5518e499d359ec60",
+      "AIoT개발팀_오세영_인수인계자료/엣지 플랫폼/SEdge-Platform/devices/metrix/parameter.py": "bf9ac67f6fddfc62b40abac02d65958b9bda98fc967fbec023098d67cfd6a864",
+      "AIoT개발팀_오세영_인수인계자료/연동 디바이스/2. 디바이스 교체 예정 (2025년 논의)/전광판_다빛솔루션(하늘전광)/다빛솔루션_전광판_API.pdf": "36931100f22c3723011f686129b4ec4e38e6807e4e99d6cd7aaf31aa33f0e154"
+    }
+  },
+  "wire_timing_followup": {
+    "checked_at": "2026-10-08T17:03:01.604709+09:00",
+    "state": "MEASURED_DEFAULT_WARNING_STILL_NOT_VISIBLE",
+    "scope": "운영 서비스 재시작/설정 변경 없이 기존 시험 runner와 대상 IP/포트의 수동 캡처 사용. 고정 이벤트2회, 두 번째는 사용자 재시험 요청.",
+    "capture_preflight": {
+      "initial": "일반 이미지 사용자에서 raw socket 권한 오류; 장치 명령0",
+      "retry": "임시 컨테이너만 root/NET_RAW·읽기 전용·host network.25초 계측 발신9/응답9 확인 후 자동 제거. 기존 IPv4 전용 캡처와 달리 ETH_P_ALL로 발신도 관측."
+    },
+    "first_trial": {
+      "event_id": "signboard-wire-timing-20261008",
+      "results": "display/clear 모두 failed/device_unreachable",
+      "service_error": "timed out",
+      "physical": "다시한번해줘; 장치 전송 실패로 표시 합격 판정 제외",
+      "capture": "경고 제목/본문 페이로드 없음. 늦게 시간 화면 명령3개/정상 응답3개. 연결 단계 패킷은 이 계측에서 저장하지 않아 connect/send/recv 중 시간 초과 위치는 미확정."
+    },
+    "retry_trial": {
+      "event_id": "signboard-wire-timing-retry-20261008",
+      "results": "display/clear acknowledged, runner errors0",
+      "physical_confirmation": {
+        "visible": false,
+        "answer": "시간만 보임"
+      },
+      "wire_summary": {
+        "state": "WIRE_ORDER_CONFIRMED_PHYSICAL_FAILED",
+        "command_payloads": 16,
+        "reply_payloads": 16,
+        "raw_packets": 110,
+        "fall_body_sent_at": "2026-10-08T07:54:38.614934+00:00",
+        "fall_body_ack_at": "2026-10-08T07:54:38.627343+00:00",
+        "first_idle_title_at": "2026-10-08T07:54:51.298175+00:00",
+        "first_idle_body_at": "2026-10-08T07:54:51.523009+00:00",
+        "clear_at": "2026-10-08T07:54:59.090467+00:00",
+        "seconds_ack_to_idle_title": 12.671,
+        "seconds_ack_to_idle_body": 12.896,
+        "seconds_ack_to_clear": 20.463,
+        "scope": "같은 Jetson 인터페이스의 대상192.168.88.91:5000 발신/응답. 다른 호스트 발신이나 실제 LED 화면 자체는 계측하지 않음.",
+        "failed_first_attempt": "display/clear 모두 device_unreachable; 실제 서비스 로그는 timed out. 캡처 구간에서 경고 본문 발신0. 사전 연결 확인 단계라는 초기 설명은 수정.",
+        "physical_confirmation": {
+          "visible": false,
+          "answer": "시간만 보임"
+        }
+      }
+    },
+    "conclusion": "실제 경고 패킷과 정상 응답,12.671초 뒤 시간 제목·12.896초 뒤 시간 본문 덮어쓰기,20.463초 뒤 clear를 확인했다. Python 표시 유지 기본10초와 시험 clear20초가 달라 관찰 가능 시간이20초보다 짧다. 그러나 사용자 미표시가 계속돼 시간만으로 직접 원인을 확정하지 않는다. 이번 첫 시도의 통신 시간 초과도 이전 모든 미표시를 설명하지 않는다.",
+    "runtime": "운영5컨테이너 ID/기동/상태 동일, 운영 출력 매핑 파일 해시 동일. 계측 컨테이너는 자동 제거. 제품 코드 변경 없음.",
+    "next_isolation": {
+      "state": "PREPARED_AWAITING_APPROVAL",
+      "plan": "data/runtime/signboard_wire_timing_20261008/isolation_plan.json",
+      "checks": "4 모의 검증 PASS, 실제 장치/Docker 호출0",
+      "scope": "전광판 서비스만 일시정지하고 관측된 동일 경고 패킷45초 표시 후 clear/재개. 운영 명령 공백이 있어 사용자 확인 대기.",
+      "not_yet_executed": true
+    },
+    "artifacts_sha256": {
+      "data/runtime/signboard_wire_timing_20261008/passive.json": "55a2fb13901ba7b7c8c73c7a07d6087335d0ce8a6b407cc893f1ae86da737ba1",
+      "data/runtime/signboard_wire_timing_20261008/baseline.json": "8798d20f1cc2dd6cd3209451429dbcdacc8a73e5f8273a1f3e8d63e790467845",
+      "data/runtime/signboard_wire_timing_20261008/trial.json": "78335a1def640405f2d2738302a82b51dd44c205501fd3309421dc98df7d573d",
+      "data/runtime/signboard_wire_timing_20261008/event_capture.json": "4f6379c8a16f59076105f173f78e603ddbfbd578e92f190a161e72c71234a4ba",
+      "data/runtime/signboard_wire_timing_20261008/retry/trial.json": "ec380f886a950f33a8dd254a3f81ec7f045ab87360ac3d7316fdff75e244dad9",
+      "data/runtime/signboard_wire_timing_20261008/retry/capture.json": "f105c6aa8f88b91e07ee42ee89a40ba2630f44e9d3765e71e3dd7cf94699daa4",
+      "data/runtime/signboard_wire_timing_20261008/timing_summary.json": "54b2b36a79b058a536a3fea29876f629d36637878348731ebdadf4ebaa44b57a",
+      "data/runtime/signboard_wire_timing_20261008/measured_display.log": "5080404839bfecbc30bf6a85e72063828d39e24adae971eea9b6a782fc06d6fe",
+      "data/runtime/signboard_wire_timing_20261008/after.json": "3536b063cece3ca327d343dd966bca7e4bc69076bb6dfbb585db6f5010cfcb59",
+      "data/runtime/signboard_wire_timing_20261008/capture.py": "23b3ba666cd9ef7afeb6437f00935d8b0e558b197e8011d8dca235aac8bdfe65",
+      "data/runtime/signboard_wire_timing_20261008/isolate_clock.py": "e5af1627850853056f2039ccac73d18362eafcac17d67320278861032430f869",
+      "data/runtime/signboard_wire_timing_20261008/isolation_plan.json": "2781ba75e78144785389e3ab933e00074cdb3eefd3a6e011414501f273e37f85",
+      "data/runtime/signboard_wire_timing_20261008/isolation_checks.json": "0c434d91cdb1130e5525baeb642e6a53c4f1ef7cc2c0a22026800eb26bcddbac"
+    }
+  }
+}

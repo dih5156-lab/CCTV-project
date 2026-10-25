@@ -1,0 +1,241 @@
+{
+  "date": "2026-10-13 KST",
+  "scope": "장기 운영 리뷰의 WBS 반영 + 추천 도구8개 확인/필요 도구 설치 + P3.1/I23 작은 로컬 수정",
+  "wbs": {
+    "updated_criteria": [
+      "P0.2",
+      "P2.4",
+      "P3.1",
+      "P3.2",
+      "P3.3",
+      "P5.1",
+      "P6.1",
+      "P6.2",
+      "P6.3",
+      "P6.4",
+      "P7.3"
+    ],
+    "rows": 33,
+    "done": 9,
+    "remaining": 24,
+    "criteria_md_json_match": true,
+    "poc": "2026-12 필수, 정확한 날짜 미정",
+    "effort": "기존106–208h는 이번 운영 보완 전체를 포함해 재산정한 견적이 아님"
+  },
+  "tools": {
+    "nsight_systems": {
+      "version": "2024.5.4.34-245434855735v0",
+      "mode": "공식 Jetson arm64 DEB 해시 검증 후 프로젝트 SSD에 추출한 로컬 CLI",
+      "system_install": "sudo -n 암호 필요로 시스템 패키지 설치 미실행",
+      "path": "data/tooling/nsight-systems-2024.5.4/root/opt/nvidia/nsight-systems/2024.5.4/bin/nsys",
+      "package_sha256": "404b1d921366d94f60a027298523e295c5484ee6f6e3b8a27da304ad4fd92bad",
+      "smoke_report": "data/runtime/tools_priority_20261013/nsys_smoke.nsys-rep",
+      "smoke_bytes": 79030,
+      "smoke": "trace/sample/cpuctxsw off, 독립 sleep0.05 프로세스, sandbox socket 제한 후 허용 환경에서 종료0/보고서 생성",
+      "gpu_profiling": false,
+      "gui_verified": false
+    },
+    "pytest": "기존8.4.2",
+    "pytest_benchmark": "개발 .venv에5.2.3 + py-cpuinfo9.0.0 설치, dev 요구사항 반영",
+    "ruff": "기존0.15.16 재사용",
+    "mypy": "기존1.20.1 재사용; python -m mypy 실행",
+    "basedpyright": "기존 mypy 중복으로 미설치/보류",
+    "memray": "공식 Linux aarch64 지원 확인; 증가 재현 전 미설치/보류",
+    "compute_sanitizer": "CUDA12.6의2024.3.0.0 --version 확인; 실제 CUDA 검사 이번 미실행",
+    "deepstream": "7.1 내장 계측; 이번 커스텀 파이프라인 활성화/측정 미실행",
+    "actions": "기존 .github/workflows/ci.yml 확인, 원격 실행/러너 등록 미실행",
+    "monitoring": {
+      "grafana_version": "10.4.2",
+      "grafana_database": "ok",
+      "prometheus_version": "2.51.2",
+      "targets": [
+        {
+          "job": "cctv-action-layer",
+          "health": "up",
+          "error": ""
+        },
+        {
+          "job": "cctv-ai-engine",
+          "health": "up",
+          "error": ""
+        },
+        {
+          "job": "cctv-alert-api",
+          "health": "up",
+          "error": ""
+        },
+        {
+          "job": "cctv-edgex-adapter",
+          "health": "down",
+          "error": "Get \"http://cctv-edgex-adapter:9105/metrics\": dial tcp 172.18.0.16:9105: connect: connection refused"
+        },
+        {
+          "job": "cctv-public-api",
+          "health": "up",
+          "error": ""
+        }
+      ],
+      "persistence": "실제 /prometheus named volume 확인; 재생성/복구 미시험"
+    }
+  },
+  "implementation": {
+    "issue": "I23 FIXED_LOCAL",
+    "cause": "위험 기본값과 유형 순서의 숫자 구간 중첩, severity 별칭이 다른 기본값을 사용",
+    "fix": "기본 구간0/10/20/30/40 + 설정 간격>=10 검증/기본값 복귀 + emergency/warn/error 공통 정규화",
+    "api_change": "priority 정수/낮은 값 우선 유지. head warning2→10, temperature4→12, critical zone_dwelling3 유지",
+    "product_changes": [
+      {
+        "path": "src/config/event_type_map.py",
+        "before_sha256": "0c8c15938b574e52623e9f774053029af3d4334dbf7d82fffff86dab85b32bc4",
+        "after_sha256": "c85a6e6b3c2620146216754d422c755327bc1c4dbe91bff25cd48ef65bfc69b3"
+      },
+      {
+        "path": "config/event_type_map.json",
+        "before_sha256": "39d600746b3e523cb7005faeef9bce533613354c8b5867dc15d50e95f90a057d",
+        "after_sha256": "1213c8dff21bcb9ef17d7ce934b0f2cf14f7f1be42924f4c40e8199dd0cd7a63"
+      }
+    ],
+    "before": {
+      "tests": 14,
+      "failures": 11,
+      "errors": 0,
+      "skipped": 0
+    },
+    "after": {
+      "tests": 140,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "new_tests": 14,
+    "test_scope": [
+      "위험 순서/별칭/설정13",
+      "성능 도구 확인1",
+      "event_priority/Action/Control API/Public API 기존126"
+    ],
+    "ruff": "PASS",
+    "mypy": {
+      "status": "FAIL (기존 오류 동일)",
+      "before_errors": 2,
+      "after_errors": 2,
+      "location": "EventTypeEntry(**_BUILTIN_DEFAULTS), line48",
+      "new_errors": 0
+    },
+    "benchmark": {
+      "before": {
+        "mean": 8.450635024928487e-06,
+        "median": 5.805200053146109e-06,
+        "rounds": 10
+      },
+      "after": {
+        "mean": 7.782052998663857e-06,
+        "median": 6.678454956272617e-06,
+        "rounds": 10
+      }
+    },
+    "benchmark_verdict": "단회 평균과 중앙값 방향이 달라 개선/회귀 판정 없음; GPU 성능 대체 아님",
+    "graph_review": "callers_of 5개 소비자 확인. detect_changes는 기존 누적 diff/영향 후보208개·test gap96개를 반환하므로 이번 변경/새 결함 수로 집계하지 않음. 작업 전 사본과 실제 변경 대조 및 관련 회귀로 검토"
+  },
+  "operating": {
+    "explicit_deployment": false,
+    "physical_output_commands": 0,
+    "verified_containers": [
+      {
+        "name": "cctv-ai-engine",
+        "id": "c8a71163c84b458197b98a4bde8e0e06719afc5cf5964e6fbd0b716109ce0377",
+        "image": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+        "started": "2026-10-12T23:35:33.679490726Z",
+        "matches_observed_before": true
+      },
+      {
+        "name": "cctv-action-layer",
+        "id": "74deaeb0b5bdd64c8f2e2a141daa25c193a75cf235b214fee6ef8b4dcdceedeb",
+        "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+        "started": "2026-10-12T23:35:15.475740705Z",
+        "matches_observed_before": true
+      },
+      {
+        "name": "cctv-device-signboard",
+        "id": "29aeb393bd52e7a9f8241be9214b970e82e8442253fdfe2e73dbbf5d153feaa8",
+        "image": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+        "started": "2026-10-12T23:35:15.45875226Z",
+        "matches_observed_before": true
+      },
+      {
+        "name": "edgex-kuiper",
+        "id": "6249a0c22b5712d01242c176abfce736685579514bfb389952062c3fd9392576",
+        "image": "sha256:7f4962946a721ece5ec630150e47614c4a461ee2c29600f24d96ef5e35a9d4da",
+        "started": "2026-10-12T23:35:15.016557364Z",
+        "matches_observed_before": true
+      },
+      {
+        "name": "cctv-prometheus",
+        "id": "1d13831d072018233fcd22305be7e7b6fca7062191364a0cd4a355986196110f",
+        "image": "sha256:4f6c47e39a9064028766e8c95890ed15690c30f00c4ba14e7ce6ae1ded0295b1",
+        "started": "2026-10-12T23:35:15.131679103Z",
+        "matches_observed_before": true
+      },
+      {
+        "name": "cctv-grafana",
+        "id": "6709ebb4de578bb55684d06e81fd0189998c733471fc1f06a923c331a80597c1",
+        "image": "sha256:7d5faae481a4c6f436c99e98af11534f7fd5e8d3e35213552dd1dd02bc393d2e",
+        "started": "2026-10-12T23:35:15.484839873Z",
+        "matches_observed_before": true
+      }
+    ],
+    "candidate_rebuilt": false,
+    "note": "기존 준비 이미지에는 이번 소스/설정 변경을 넣어 다시 검증해야 함"
+  },
+  "publication": {
+    "index.html": {
+      "http_status": 200,
+      "bytes": 75527,
+      "sha256": "c9c56397284bbb2163df1682f5c8a813ba42836514ab295d31cba04e4b72a3bc"
+    },
+    "CCTV_project_progress.pdf": {
+      "http_status": 200,
+      "bytes": 150158,
+      "sha256": "d8aa70ce74fd0ced901a05c8a1160938a647fe1a3d7e4becd8e41833c051ebe9"
+    },
+    "module_flow.html": {
+      "http_status": 200,
+      "bytes": 11357,
+      "sha256": "152db089dbc3e8e3dcc475cd33a5403f35cdaa00588a91b9f79906aa1470ed7b"
+    },
+    "prometheus_targets": [
+      {
+        "job": "cctv-action-layer",
+        "health": "up",
+        "error": ""
+      },
+      {
+        "job": "cctv-ai-engine",
+        "health": "up",
+        "error": ""
+      },
+      {
+        "job": "cctv-alert-api",
+        "health": "up",
+        "error": ""
+      },
+      {
+        "job": "cctv-edgex-adapter",
+        "health": "down",
+        "error": "Get \"http://cctv-edgex-adapter:9105/metrics\": dial tcp 172.18.0.16:9105: connect: connection refused"
+      },
+      {
+        "job": "cctv-public-api",
+        "health": "up",
+        "error": ""
+      }
+    ]
+  },
+  "remaining": [
+    "P3.1 영속 장치별 큐·동순위 FIFO·TTL/시각 검증·안전 재개",
+    "위험 표시/정렬·영속 정책 버전의 통합 정합 및 미지원/불명 입력 보류",
+    "실물 선점·상태조회/재시도·운영 배포/복귀",
+    "I64 어댑터 지표 수집 연결 거부 해결·수집/알림/장기 보관 시험",
+    "Nsight GPU 실제 측정·DeepStream 계측 연결·새 Jetson 인수"
+  ],
+  "raw": "data/runtime/tools_priority_20261013"
+}

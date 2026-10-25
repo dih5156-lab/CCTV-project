@@ -1,0 +1,351 @@
+{
+  "version": "0.102",
+  "date": "2026-10-06",
+  "wbs": "P5.1",
+  "status": "IN_PROGRESS",
+  "issue": "I40 OPEN; signal-handler cleanup reentry FIXED_LOCAL; I45 OPEN",
+  "operating_applied": false,
+  "sdk_changed": false,
+  "raw_artifacts": "data/runtime/p51_shutdown_signal_20261006_v102",
+  "root_cause": "SIGTERM/SIGHUP handler synchronously released the processor and raised SystemExit while the runtime finally block could already be stopping it. This reentered cleanup and interrupted the outer cleanup.",
+  "fix": "Handler records a shutdown request and clears running without locks or cleanup. Runtime finishes its existing finally cleanup and suppresses restart; startup/idle/retry waits observe the request. DeepStream background starts also reject a pending shutdown.",
+  "source_sha256": {
+    "src/bootstrap/runtime.py": "93eb6bdf2755b2d6346707870cb065e5e8d208590eb45e856f8b99d66038daca",
+    "src/core/deepstream_processor.py": "533752443e8bd8ea07ac11f20e1939c92c51303a49dc16fb36b5a1d7e3873402",
+    "tests/test_deepstream_shutdown.py": "4fdc4768d853107aac5cd54faaa1b0567826ce26103def3ca1631b5714d18109",
+    "tests/test_bootstrap_runtime.py": "134d981cede12e1e0e123ba14079ee4edb376e60ad257d6cfed4cc335dfb0245"
+  },
+  "diagnostic_sha256": "2809655308b31d815b0d133767f7dc4373d29f44a39a0a9efcaeb3b4eb260402",
+  "validation": {
+    "red_reproduction": {
+      "failed": 3,
+      "stages": [
+        "pipeline shutdown",
+        "auxiliary worker join",
+        "model close"
+      ]
+    },
+    "new_regression_cases": 8,
+    "targeted": {
+      "passed": 196,
+      "skipped": 2
+    },
+    "full": {
+      "passed": 2745,
+      "skipped": 52,
+      "failed": 1,
+      "duration_seconds": 400.08,
+      "failed_test": "tests/test_monitoring_active_contention.py::test_video_and_sensor_intake_during_monitoring_writes",
+      "error": "sqlite3.OperationalError: database is locked",
+      "failure_location": "tests/test_monitoring_outage_mqtt.py:75 SELECT * FROM monitoring_delivery",
+      "log": "data/runtime/p51_shutdown_signal_20261006_v102/full-pytest.log"
+    },
+    "ruff": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "isolation": {
+    "image": "sha256:0c11b835eb42cd245f4dda0b8bc8088733c0323bf75a2f4fefe9e7705d8dbf34",
+    "source_overrides": [
+      "src/bootstrap/runtime.py",
+      "src/core/deepstream_processor.py"
+    ],
+    "network": "none",
+    "cpus": 2,
+    "memory_gb": 8,
+    "database_seed": "Read-only SQLite backups of preserved v0.101 full_data; separate copies per trial",
+    "serial_gpu_trials": true,
+    "production_service_restarted": false
+  },
+  "trials": [
+    {
+      "name": "normal",
+      "outcome": {
+        "codec_mode": "rtsp",
+        "completed": true,
+        "scope": "p51_v102_shutdown_signal_normal",
+        "scenario": "normal",
+        "loaded_rtsp_plugin": [
+          "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstrtspclientsink.so"
+        ],
+        "receiver_exit": 0,
+        "output_bytes": 37113561,
+        "last_frames": 2769.0,
+        "app_exit": 0,
+        "stop_seconds": 5.335620471043512,
+        "elapsed_seconds": 148.95740455109626,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 51.468
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 52.756
+          },
+          {
+            "name": "sigterm_requested",
+            "elapsed": 143.459
+          }
+        ],
+        "sample_count": 124
+      },
+      "stop_calls_including_atexit": 2,
+      "max_stop_depth": 1,
+      "native_streamoff_returns": 4,
+      "max_native_streamoff_ms": 0.348758,
+      "final_counts": {
+        "metadata_callback.entered": 2768,
+        "metadata_callback.exited": 2768,
+        "preview_callback.entered": 2748,
+        "frame.accepted_callback": 706,
+        "frame.owns_data": 706,
+        "frame.no_base": 706,
+        "context.entered": 158,
+        "preview_callback.exited": 2748,
+        "temporal.entered": 9,
+        "context.exited": 158,
+        "temporal.exited": 9,
+        "stop.entered": 2,
+        "stop.exited": 2
+      },
+      "injection": {
+        "stage": "inside_processor_stop",
+        "thread": "MainThread",
+        "at": 1727594.846729505,
+        "signals_returned": [
+          "SIGTERM",
+          "SIGHUP"
+        ]
+      },
+      "injection_to_last_stop_return_seconds": 2.912705597933382
+    },
+    {
+      "name": "output_loss",
+      "outcome": {
+        "codec_mode": "rtsp",
+        "completed": true,
+        "scope": "p51_v102_shutdown_signal_output_loss",
+        "scenario": "output_loss",
+        "loaded_rtsp_plugin": [
+          "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstrtspclientsink.so"
+        ],
+        "receiver_exit": 0,
+        "output_bytes": 38191942,
+        "last_frames": 2730.0,
+        "output_server_exit": -9,
+        "input_server_alive": true,
+        "input_publisher_alive": true,
+        "frames_after_output_loss": 0,
+        "app_exit_before_sigint": 0,
+        "app_exit": 0,
+        "stop_seconds": 0.0002808880526572466,
+        "elapsed_seconds": 110.57603656197898,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 11.758
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 12.37
+          },
+          {
+            "name": "output_server_killed",
+            "elapsed": 103.421
+          },
+          {
+            "name": "sigterm_requested",
+            "elapsed": 110.527
+          }
+        ],
+        "sample_count": 106
+      },
+      "stop_calls_including_atexit": 2,
+      "max_stop_depth": 1,
+      "native_streamoff_returns": 4,
+      "max_native_streamoff_ms": 16.376614,
+      "final_counts": {
+        "metadata_callback.entered": 2734,
+        "metadata_callback.exited": 2734,
+        "preview_callback.entered": 2707,
+        "frame.accepted_callback": 726,
+        "frame.owns_data": 726,
+        "frame.no_base": 726,
+        "context.entered": 165,
+        "preview_callback.exited": 2707,
+        "temporal.entered": 9,
+        "context.exited": 165,
+        "temporal.exited": 9,
+        "stop.entered": 2,
+        "stop.exited": 2
+      },
+      "injection": {
+        "stage": "inside_processor_stop",
+        "thread": "MainThread",
+        "at": 1727749.422701552,
+        "signals_returned": [
+          "SIGTERM",
+          "SIGHUP"
+        ]
+      },
+      "injection_to_last_stop_return_seconds": 4.067785685881972
+    },
+    {
+      "name": "output_loss_unforced",
+      "outcome": {
+        "codec_mode": "rtsp",
+        "completed": true,
+        "scope": "p51_v102_shutdown_signal_output_loss_unforced",
+        "scenario": "output_loss",
+        "loaded_rtsp_plugin": [
+          "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstrtspclientsink.so"
+        ],
+        "receiver_exit": 0,
+        "output_bytes": 38066502,
+        "last_frames": 2760.0,
+        "output_server_exit": -9,
+        "input_server_alive": true,
+        "input_publisher_alive": true,
+        "frames_after_output_loss": 0.0,
+        "app_exit_before_sigint": null,
+        "app_exit": 0,
+        "stop_seconds": 15.1537004141137,
+        "elapsed_seconds": 136.87917587091215,
+        "transitions": [
+          {
+            "name": "input_ready",
+            "elapsed": 12.731
+          },
+          {
+            "name": "output_ready",
+            "elapsed": 13.552
+          },
+          {
+            "name": "output_server_killed",
+            "elapsed": 104.348
+          },
+          {
+            "name": "sigterm_requested",
+            "elapsed": 121.685
+          }
+        ],
+        "sample_count": 118
+      },
+      "stop_calls_including_atexit": 3,
+      "max_stop_depth": 1,
+      "native_streamoff_returns": 4,
+      "max_native_streamoff_ms": 0.34332,
+      "final_counts": {
+        "metadata_callback.entered": 2768,
+        "metadata_callback.exited": 2768,
+        "preview_callback.entered": 2738,
+        "frame.accepted_callback": 747,
+        "frame.owns_data": 747,
+        "frame.no_base": 747,
+        "context.entered": 164,
+        "preview_callback.exited": 2738,
+        "temporal.entered": 10,
+        "context.exited": 164,
+        "temporal.exited": 10,
+        "stop.entered": 3,
+        "stop.exited": 3
+      }
+    }
+  ],
+  "media_db_validation": {
+    "normal": {
+      "decoded_frames": 1624,
+      "decode_exit": 0,
+      "decode_stderr": "",
+      "databases": [
+        {
+          "path": "normal_data/runtime/mqtt_event_outbox.db",
+          "quick_check": "ok"
+        },
+        {
+          "path": "normal_data/runtime/appearances.db",
+          "quick_check": "ok"
+        },
+        {
+          "path": "normal_data/runtime/commercial_faces.db",
+          "quick_check": "ok"
+        }
+      ]
+    },
+    "output_loss": {
+      "decoded_frames": 1686,
+      "decode_exit": 0,
+      "decode_stderr": "",
+      "databases": [
+        {
+          "path": "output_loss_data/runtime/mqtt_event_outbox.db",
+          "quick_check": "ok"
+        },
+        {
+          "path": "output_loss_data/runtime/appearances.db",
+          "quick_check": "ok"
+        },
+        {
+          "path": "output_loss_data/runtime/commercial_faces.db",
+          "quick_check": "ok"
+        }
+      ]
+    },
+    "output_loss_unforced": {
+      "decoded_frames": 1706,
+      "decode_exit": 0,
+      "decode_stderr": "",
+      "databases": [
+        {
+          "path": "output_loss_unforced_data/runtime/mqtt_event_outbox.db",
+          "quick_check": "ok"
+        },
+        {
+          "path": "output_loss_unforced_data/runtime/appearances.db",
+          "quick_check": "ok"
+        },
+        {
+          "path": "output_loss_unforced_data/runtime/commercial_faces.db",
+          "quick_check": "ok"
+        }
+      ]
+    }
+  },
+  "summary": {
+    "trials": 3,
+    "successful_exits": 3,
+    "max_stop_depth": 1,
+    "native_streamoff_returns": 12,
+    "decoded_frames": 5016,
+    "database_checks": 9
+  },
+  "operating": {
+    "before_started_at": "2026-10-02T01:33:58.362007997Z",
+    "after_started_at": "2026-10-02T01:33:58.362007997Z",
+    "before_health": "healthy",
+    "after_health": "healthy",
+    "test_container_exit": 0,
+    "test_container_removed": true
+  },
+  "limits": [
+    "Original intermittent native encoder STREAMOFF hang was not reproduced; three exits do not establish its root cause or resolution.",
+    "Injected output-loss trial exited before the controller sent its planned SIGTERM; its near-zero stop_seconds is not a shutdown performance measurement.",
+    "Unforced output-loss control retained output failure followed by 17 seconds before SIGTERM; exit was 15.154 seconds after that signal.",
+    "Operating AI stayed active and the first trial overlapped full-suite CPU work; timings are not controlled performance comparisons.",
+    "STOP entry totals include sequential atexit cleanup, which is permitted. Reentry depth remained one.",
+    "Model quality, CUDA700 root cause, deployment acceptance, reboot and long-run validation remain separate."
+  ],
+  "next": "I45: reproduce concurrent SQLite writes and delivery-state reads on an SSD temporary DB; establish where locks are held before a minimal fix. Keep I40 original native hang and other P5.1 completion conditions open.",
+  "publication": {
+    "index.html": {
+      "bytes": 24285,
+      "sha256": "30900d863f320f698b2bf6f4180a4b584b190d335531437c27fc4712e67c2908",
+      "http_matches_local": true
+    },
+    "CCTV_project_progress.pdf": {
+      "bytes": 129344,
+      "sha256": "a75783dc95a9272c6e0ed2b1116316bf0f80b670150c4a5d5f5a55081772cd48",
+      "http_matches_local": true
+    }
+  }
+}

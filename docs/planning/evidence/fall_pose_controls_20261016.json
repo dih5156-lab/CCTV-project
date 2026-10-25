@@ -1,0 +1,696 @@
+{
+  "checked_at": "2026-10-16T13:25:26.379578+09:00",
+  "wbs": "P5.2",
+  "issue": "I56",
+  "state": "LOCAL_CANDIDATE_WITH_LATENCY_TRADEOFF_AND_RESIDUAL_QUALITY_GAPS",
+  "resolution": "1920x1080@30",
+  "person_pose_confidence": 0.5,
+  "new_gpu_runs": 0,
+  "operating_stops": 0,
+  "operating_applied": false,
+  "model_training_or_engine_changes": 0,
+  "new_dependencies": 0,
+  "implementation": [
+    "최근 충분한 직립 관측이 있으면 숙이는 중 시작한 하강도 연결해 전방 미탐00683을 보완",
+    "하체6관절0.5·bbox와 관절 위치 일치·발목/무릎/머리 관계가 지지형 숙임일 때 몸통과 머리/넓이의 중복 가산을 억제",
+    "착석 오탐 억제를 위한 접힘 경로 속도 제한은 실제 낙상을 놓쳐 철회; 기존 접힘 경로 보존"
+  ],
+  "scope": "보존 GPU 출력100개의 CPU 후처리 회귀; 보완에 사용한 자료로 새 독립 성적/실제 GPU 재시험이 아님",
+  "before": {
+    "summary": {
+      "development20": {
+        "TP": 10,
+        "TN": 10
+      },
+      "expanded80": {
+        "TP": 38,
+        "TN": 39,
+        "FP": 1,
+        "FN": 2
+      }
+    },
+    "early_alerts": 1
+  },
+  "after": {
+    "summary": {
+      "development20": {
+        "TP": 10,
+        "TN": 10
+      },
+      "expanded80": {
+        "TP": 39,
+        "TN": 39,
+        "FP": 1,
+        "FN": 1
+      }
+    },
+    "early_alerts": 0,
+    "duplicate_alerts": 0,
+    "expanded80_detected_delay_seconds": {
+      "minimum": 1.9778499993333334,
+      "median": 2.5792499993333333,
+      "maximum": 4.312983333333333,
+      "detected_count": 39
+    }
+  },
+  "changes": [
+    {
+      "partition": "expanded80",
+      "index": 2,
+      "scene": "00839_O_E_BY_C8",
+      "before_verdict": "TP",
+      "after_verdict": "TP",
+      "before_queue_pts": [
+        6.866666666
+      ],
+      "after_queue_pts": [
+        7.4
+      ],
+      "before_delay_seconds": 2.579049999333334,
+      "after_delay_seconds": 3.1123833333333337
+    },
+    {
+      "partition": "expanded80",
+      "index": 4,
+      "scene": "00846_O_E_FY_C3",
+      "before_verdict": "TP",
+      "after_verdict": "TP",
+      "before_queue_pts": [
+        5.4
+      ],
+      "after_queue_pts": [
+        6.4
+      ],
+      "before_delay_seconds": 2.230166666666667,
+      "after_delay_seconds": 3.230166666666667
+    },
+    {
+      "partition": "expanded80",
+      "index": 6,
+      "scene": "00886_O_E_SY_C5",
+      "before_verdict": "TP",
+      "after_verdict": "TP",
+      "before_queue_pts": [
+        4.733333333
+      ],
+      "after_queue_pts": [
+        5.8
+      ],
+      "before_delay_seconds": 1.5134499996666668,
+      "after_delay_seconds": 2.5801166666666666
+    },
+    {
+      "partition": "expanded80",
+      "index": 12,
+      "scene": "00697_H_D_SY_C8",
+      "before_verdict": "TP",
+      "after_verdict": "TP",
+      "before_queue_pts": [
+        6.8
+      ],
+      "after_queue_pts": [
+        7.6
+      ],
+      "before_delay_seconds": 2.216666666666667,
+      "after_delay_seconds": 3.0166666666666666
+    },
+    {
+      "partition": "expanded80",
+      "index": 19,
+      "scene": "00932_O_E_N_C3",
+      "before_verdict": "FP",
+      "after_verdict": "FP",
+      "before_queue_pts": [
+        4.666666666
+      ],
+      "after_queue_pts": [
+        5.466666666
+      ],
+      "before_delay_seconds": null,
+      "after_delay_seconds": null
+    },
+    {
+      "partition": "expanded80",
+      "index": 28,
+      "scene": "00552_H_D_FY_C3",
+      "before_verdict": "TP",
+      "after_verdict": "TP",
+      "before_queue_pts": [
+        5.8
+      ],
+      "after_queue_pts": [
+        5.733333333
+      ],
+      "before_delay_seconds": 2.54675,
+      "after_delay_seconds": 2.480083333
+    },
+    {
+      "partition": "expanded80",
+      "index": 36,
+      "scene": "00567_H_D_SY_C6",
+      "before_verdict": "TP",
+      "after_verdict": "TP",
+      "before_queue_pts": [
+        6.866666666
+      ],
+      "after_queue_pts": [
+        5.533333333
+      ],
+      "before_delay_seconds": 4.113916666,
+      "after_delay_seconds": 2.7805833329999996
+    },
+    {
+      "partition": "expanded80",
+      "index": 46,
+      "scene": "00683_H_D_FY_C8",
+      "before_verdict": "FN",
+      "after_verdict": "TP",
+      "before_queue_pts": [],
+      "after_queue_pts": [
+        7.266666666
+      ],
+      "before_delay_seconds": null,
+      "after_delay_seconds": 2.3999999993333336
+    },
+    {
+      "partition": "expanded80",
+      "index": 54,
+      "scene": "00645_H_D_SY_C4",
+      "before_verdict": "TP",
+      "after_verdict": "TP",
+      "before_queue_pts": [
+        6.4
+      ],
+      "after_queue_pts": [
+        6.133333333
+      ],
+      "before_delay_seconds": 2.7129833333333337,
+      "after_delay_seconds": 2.446316666333334
+    },
+    {
+      "partition": "expanded80",
+      "index": 58,
+      "scene": "00814_O_E_FY_C3",
+      "before_verdict": "TP",
+      "after_verdict": "TP",
+      "before_queue_pts": [
+        5.933333333
+      ],
+      "after_queue_pts": [
+        7.2
+      ],
+      "before_delay_seconds": 1.562299999666667,
+      "after_delay_seconds": 2.828966666666667
+    },
+    {
+      "partition": "expanded80",
+      "index": 74,
+      "scene": "00795_O_E_BY_C4",
+      "before_verdict": "FN",
+      "after_verdict": "FN",
+      "before_queue_pts": [
+        2.0
+      ],
+      "after_queue_pts": [],
+      "before_delay_seconds": null,
+      "after_delay_seconds": null
+    }
+  ],
+  "latency_regressions": [
+    {
+      "partition": "expanded80",
+      "index": 2,
+      "scene": "00839_O_E_BY_C8",
+      "before_seconds": 2.579049999333334,
+      "after_seconds": 3.1123833333333337,
+      "delta_seconds": 0.5333333339999999
+    },
+    {
+      "partition": "expanded80",
+      "index": 4,
+      "scene": "00846_O_E_FY_C3",
+      "before_seconds": 2.230166666666667,
+      "after_seconds": 3.230166666666667,
+      "delta_seconds": 1.0
+    },
+    {
+      "partition": "expanded80",
+      "index": 6,
+      "scene": "00886_O_E_SY_C5",
+      "before_seconds": 1.5134499996666668,
+      "after_seconds": 2.5801166666666666,
+      "delta_seconds": 1.0666666669999998
+    },
+    {
+      "partition": "expanded80",
+      "index": 12,
+      "scene": "00697_H_D_SY_C8",
+      "before_seconds": 2.216666666666667,
+      "after_seconds": 3.0166666666666666,
+      "delta_seconds": 0.7999999999999998
+    },
+    {
+      "partition": "expanded80",
+      "index": 58,
+      "scene": "00814_O_E_FY_C3",
+      "before_seconds": 1.562299999666667,
+      "after_seconds": 2.828966666666667,
+      "delta_seconds": 1.266666667
+    }
+  ],
+  "latency_improvements": [
+    {
+      "partition": "expanded80",
+      "index": 28,
+      "scene": "00552_H_D_FY_C3",
+      "before_seconds": 2.54675,
+      "after_seconds": 2.480083333,
+      "delta_seconds": -0.06666666699999979
+    },
+    {
+      "partition": "expanded80",
+      "index": 36,
+      "scene": "00567_H_D_SY_C6",
+      "before_seconds": 4.113916666,
+      "after_seconds": 2.7805833329999996,
+      "delta_seconds": -1.3333333330000001
+    },
+    {
+      "partition": "expanded80",
+      "index": 54,
+      "scene": "00645_H_D_SY_C4",
+      "before_seconds": 2.7129833333333337,
+      "after_seconds": 2.446316666333334,
+      "delta_seconds": -0.26666666699999997
+    }
+  ],
+  "remaining": [
+    {
+      "partition": "expanded80",
+      "index": 19,
+      "scene": "00932_O_E_N_C3",
+      "is_fall": false,
+      "onset": null,
+      "verdict": "FP",
+      "queue_pts": [
+        5.466666666
+      ],
+      "queue_frames": [
+        164
+      ],
+      "candidate_frames": 46,
+      "transition_frames": [
+        122,
+        124,
+        126,
+        128,
+        130,
+        132,
+        134,
+        138,
+        140,
+        142,
+        144,
+        146,
+        148,
+        150,
+        152,
+        154,
+        156,
+        158,
+        160,
+        164,
+        166,
+        168,
+        190,
+        192,
+        194,
+        196,
+        198,
+        200,
+        202,
+        204,
+        206,
+        208,
+        210,
+        214,
+        216,
+        218,
+        220,
+        226,
+        236,
+        238,
+        240,
+        290,
+        298
+      ],
+      "delay_seconds": null,
+      "early_alerts": 0,
+      "duplicate_alerts": 0
+    },
+    {
+      "partition": "expanded80",
+      "index": 74,
+      "scene": "00795_O_E_BY_C4",
+      "is_fall": true,
+      "onset": 4.187516666666666,
+      "verdict": "FN",
+      "queue_pts": [],
+      "queue_frames": [],
+      "candidate_frames": 0,
+      "transition_frames": [],
+      "delay_seconds": null,
+      "early_alerts": 0,
+      "duplicate_alerts": 0
+    }
+  ],
+  "validation": {
+    "tests_passed": 421,
+    "tests_skipped": 2,
+    "skip_reason": "DeepStream 미설치/CPU 예외 전용2건; 현재 Jetson에는 DeepStream 설치됨",
+    "ruff": "PASS",
+    "speed_invariance_cases": 300,
+    "unchanged_input_hashes": 400,
+    "source_hashes_verified": true,
+    "existing_tp_tn_losses": 0,
+    "new_false_positives": 0,
+    "initial_negative_cases": "4 FAIL 재현: 청소3건 수정, 착석1건은 미해결·폐기안 기록에 보존",
+    "front_motion_comparison": {
+      "before": {
+        "first_pts": null,
+        "last_pts": null,
+        "candidate_span": 0,
+        "frames": 0
+      },
+      "after": {
+        "first_pts": 5.266666666666667,
+        "last_pts": 8.133333333333333,
+        "candidate_span": 2.8666666666666663,
+        "frames": 41
+      },
+      "scope": "observe_floor_transition 경로만 비교; 기존 단일 자세 후보21프레임/1.933초와 구분"
+    },
+    "graph_review": "제한된 파일 요청에도 무관한 기호가 섞여 실제 변경 diff·직접 호출 경로와 관련421시험으로 보완 확인",
+    "documentation": {
+      "checked_at": "2026-10-16T13:29:23.427370+09:00",
+      "urls": [
+        {
+          "url": "http://192.168.2.141:18081/index.html",
+          "status": 200,
+          "sha256": "1046612372ff88461a94fdd1ecd5b6cfc93e50866d40808966c512714a92bc3a",
+          "local_matches": true
+        },
+        {
+          "url": "http://192.168.2.141:18081/CCTV_project_progress.pdf",
+          "status": 200,
+          "sha256": "a5ae79d892a917048d55b1a28aaded7f27639356c03f0f96bd7b0da3ded4b375",
+          "local_matches": true
+        }
+      ],
+      "wbs_board_html_rows": 37,
+      "evidence_board_match": true,
+      "artifact_hashes": 34,
+      "passed": true,
+      "pdf_first_page_visual_check": "PASS: current result and latency limitation visible; no clipping",
+      "ruff": "PASS",
+      "diff_check": "PASS"
+    }
+  },
+  "rejected_candidates": [
+    {
+      "artifact": "folded_replay.json",
+      "summary": {
+        "development20": {
+          "TP": 9,
+          "TN": 10,
+          "FN": 1
+        },
+        "expanded80": {
+          "TP": 37,
+          "TN": 40,
+          "FN": 3
+        }
+      },
+      "decision": "착석 오탐을 제거하지만 기존 낙상을 놓쳐 미채택"
+    },
+    {
+      "artifact": "combined_replay.json",
+      "summary": {
+        "development20": {
+          "TP": 9,
+          "TN": 10,
+          "FN": 1
+        },
+        "expanded80": {
+          "TP": 37,
+          "TN": 40,
+          "FN": 3
+        }
+      },
+      "decision": "기존 탐지 손실이 남아 접힘 제한 철회; bbox 불일치 관절의 숙임 억제도 제한"
+    }
+  ],
+  "operating_during_replay": {
+    "checked_at": "2026-10-16T13:22:07.397411+09:00",
+    "phase": "CPU 재생 중 읽기 전용 관측",
+    "elapsed_seconds": 30.04391059098998,
+    "snapshot": [
+      {
+        "name": "/cctv-ai-engine",
+        "id": "c8a71163c84b458197b98a4bde8e0e06719afc5cf5964e6fbd0b716109ce0377",
+        "image": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+        "started_at": "2026-10-16T02:50:25.26180535Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-media-server",
+        "id": "957101f7ab7336585817a176154f7711de977caee7cfbf34257f2fb68810dea4",
+        "image": "sha256:f8628851106cc053f9175b248050bb5f362a6e65abd72297c167a1cb5a9a3be2",
+        "started_at": "2026-10-12T23:35:15.324861031Z",
+        "status": "running",
+        "health": null,
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-action-layer",
+        "id": "74deaeb0b5bdd64c8f2e2a141daa25c193a75cf235b214fee6ef8b4dcdceedeb",
+        "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+        "started_at": "2026-10-12T23:35:15.475740705Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-device-signboard",
+        "id": "29aeb393bd52e7a9f8241be9214b970e82e8442253fdfe2e73dbbf5d153feaa8",
+        "image": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+        "started_at": "2026-10-12T23:35:15.45875226Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-device-speaker",
+        "id": "a8ff5823d34ad72dd2c5b236cc88f210b16feb05ef53532e6549601d2beafb7a",
+        "image": "sha256:4daca5e8c9865c5f19dde37d7dbdfcc37ea5c413fa8375802e80c7f8185bba30",
+        "started_at": "2026-10-12T23:35:15.455773133Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      }
+    ],
+    "before_metrics": {
+      "cctv_processor_frames_processed_total": 160290.0,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 80147.0,
+      "cctv_camera_primary_last_frame_age_seconds{camera_id=\"camera_1\"}": 0.011788863048423082
+    },
+    "after_metrics": {
+      "cctv_processor_frames_processed_total": 161198.0,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 80599.0,
+      "cctv_camera_primary_last_frame_age_seconds{camera_id=\"camera_1\"}": 0.013164139003492892
+    },
+    "rates": {
+      "cctv_processor_frames_processed_total": 30.222430507175876,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 15.04464602339592
+    },
+    "same_ai_and_other_four_containers": true,
+    "operating_stops_this_followup": 0,
+    "operating_deployments_this_followup": 0,
+    "state_checks_passed": true
+  },
+  "operating_after_replay": {
+    "checked_at": "2026-10-16T13:23:56.912923+09:00",
+    "phase": "CPU 재생 종료 후 읽기 전용 관측",
+    "elapsed_seconds": 30.03785197599791,
+    "snapshot": [
+      {
+        "name": "/cctv-ai-engine",
+        "id": "c8a71163c84b458197b98a4bde8e0e06719afc5cf5964e6fbd0b716109ce0377",
+        "image": "sha256:d95f47a5ebd2699ff714c07043b283c7789ce7120e7fb13c7a996a40d2cfa2c1",
+        "started_at": "2026-10-16T02:50:25.26180535Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-media-server",
+        "id": "957101f7ab7336585817a176154f7711de977caee7cfbf34257f2fb68810dea4",
+        "image": "sha256:f8628851106cc053f9175b248050bb5f362a6e65abd72297c167a1cb5a9a3be2",
+        "started_at": "2026-10-12T23:35:15.324861031Z",
+        "status": "running",
+        "health": null,
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-action-layer",
+        "id": "74deaeb0b5bdd64c8f2e2a141daa25c193a75cf235b214fee6ef8b4dcdceedeb",
+        "image": "sha256:0d575c42f97a15f47aa8aa6a14c1aa172d0a514b46ad5834171b06eccce6190c",
+        "started_at": "2026-10-12T23:35:15.475740705Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-device-signboard",
+        "id": "29aeb393bd52e7a9f8241be9214b970e82e8442253fdfe2e73dbbf5d153feaa8",
+        "image": "sha256:5d6457f51fa2ac3c6b74bf2b14215eeecebc834d2b54a298d1d001651becb3bd",
+        "started_at": "2026-10-12T23:35:15.45875226Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      },
+      {
+        "name": "/cctv-device-speaker",
+        "id": "a8ff5823d34ad72dd2c5b236cc88f210b16feb05ef53532e6549601d2beafb7a",
+        "image": "sha256:4daca5e8c9865c5f19dde37d7dbdfcc37ea5c413fa8375802e80c7f8185bba30",
+        "started_at": "2026-10-12T23:35:15.455773133Z",
+        "status": "running",
+        "health": "healthy",
+        "restart_count": 0
+      }
+    ],
+    "before_metrics": {
+      "cctv_processor_frames_processed_total": 163580.0,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 81791.0,
+      "cctv_camera_primary_last_frame_age_seconds{camera_id=\"camera_1\"}": 0.010587719967588782
+    },
+    "after_metrics": {
+      "cctv_processor_frames_processed_total": 164480.0,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 82241.0,
+      "cctv_camera_primary_last_frame_age_seconds{camera_id=\"camera_1\"}": 0.003779611026402563
+    },
+    "rates": {
+      "cctv_processor_frames_processed_total": 29.962195722888417,
+      "cctv_processor_pipeline_restart_executed_total": 0.0,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 14.981097861444209
+    },
+    "same_ai_and_other_four_containers": true,
+    "operating_stops_this_followup": 0,
+    "operating_deployments_this_followup": 0,
+    "state_checks_passed": true
+  },
+  "limitations": [
+    "정상 착석00932 오탐1·청소 후 실제 낙상00795 미탐1 잔여",
+    "기존TP5개의 경보가0.533~1.267초 늦어짐; 손 짚은 낙상과 숙임의2D 자세 중첩. 품질 최종 승인/운영 적용 근거로 사용하지 않음",
+    "현재100개는 보완에 사용한 회귀 자료; 독립 배우/촬영/현장 대조와 장시간 정상 노출 필요",
+    "신규 GPU 전체 경로·처리 비용·다중 카메라·운영 배포 미검증"
+  ],
+  "next": "남은 착석/청소 낙상과 지연5건의 시간적 구분 근거를 검토하고 고정 후보 GPU 재검증·다중 입력 시험 범위를 구체화한다. P5.2 미완료·싸움 보류·다중→운영 준비 순서 유지.",
+  "artifact_sha256": {
+    "data/runtime/p52_pose_controls_20261016/combined_bbox_candidate.py": "4972c108287f8c826f7e0ec8acc3e3c4ebe195fa891a578b2d691e2f2ec5088d",
+    "data/runtime/p52_pose_controls_20261016/folded_reference_probe.json": "8a4a0c5d54c54607d2ba597535d756c89e8ac5cf8762ecf2dc470fc820c23fc5",
+    "data/runtime/p52_pose_controls_20261016/regression_tests.xml": "123e4718422a2ec22a99727cd6055c7242a5405fd748c4be9de0825a4e776ba7",
+    "data/runtime/p52_pose_controls_20261016/case19_2.jpg": "742507609fcc82c92c8e8fdcd70e1665190c57554fc269f2f9d2875dde08ef57",
+    "data/runtime/p52_pose_controls_20261016/final_fall_detector.py": "9f8e27fccf69414d5627e5bf3cfe7d11102043398d4941b766128fce8533c817",
+    "data/runtime/p52_pose_controls_20261016/before_tests.xml": "6f23e5872a253e2001c40197b9737d261c31c11d0dd78fdfec6fd7b9cf7f6732",
+    "data/runtime/p52_pose_controls_20261016/case74_8.5.jpg": "09e16e2fb43c1a74870157124b4fd64e1a19e5d7ca93661224ac7d72c61c823e",
+    "data/runtime/p52_pose_controls_20261016/case46_8.0.jpg": "403673696539b6c829579fc97f637e7e65b306f7aaf3d83f46f4b8892f4d5cf0",
+    "data/runtime/p52_pose_controls_20261016/final_replay.json": "f8bb36aeec76f9ac650613f77564d8b5feff4e2ae143957e1a897571c7d84679",
+    "data/runtime/p52_pose_controls_20261016/combined_replay.json": "65d28313391d25b258532a13a966fb9f8afc3409fc743b5ce7d93c66e82969ca",
+    "data/runtime/p52_pose_controls_20261016/cleaning_support_probe.json": "8aae92968e608e6f0e23d75f14e9faee237972d84b1e20a3ed4398b6b40f7113",
+    "data/runtime/p52_pose_controls_20261016/folded_tests.xml": "ea56086f1d460a299e50c235d739717d93dc807c4c64c87b84be3c834f90f451",
+    "data/runtime/p52_pose_controls_20261016/case19_4.5.jpg": "508d936da8a3b6389c99ab02a3bfcdea5c27207670d165c5d4593f62ae76705c",
+    "data/runtime/p52_pose_controls_20261016/case2_5.jpg": "aa66d72ebc1dc6316634473040d65ea83b156444b1882720dce82e1fd36b1907",
+    "data/runtime/p52_pose_controls_20261016/operating_after_replay.json": "a5ebc84fd85ed2d28d128b0c1463ce250e21692646d67828a20b5c24b58bbf9d",
+    "data/runtime/p52_pose_controls_20261016/operating_during_replay.json": "dbdf71e0e11a734a223a42f2b7447b978be1ec1a0ea9f5404b9b4cce4d615aed",
+    "data/runtime/p52_pose_controls_20261016/simultaneous_drop_probe.json": "1ddbaa42e7f39bbfc089d6370b1156bd35ce2374f259f1be4ca77c670a0617a8",
+    "data/runtime/p52_pose_controls_20261016/case74_6.jpg": "a4d56554c2fd788261549bdf40e22f7eae923fc08a47aa5b06969201dbd48aea",
+    "data/runtime/p52_pose_controls_20261016/folded_replay.json": "1273ee5150ec537fb460f0bedc460ed1cddf65b32afd0e71478c9d212375c494",
+    "data/runtime/p52_pose_controls_20261016/case74_0.jpg": "fa7903261debf412df6d2ad2cc49c92fe1bb8ac40e9428b289ab5ff3523957b6",
+    "data/runtime/p52_pose_controls_20261016/combined_candidate.py": "28be71438ae7b9234a2cf595c5fdf10b803a519b286fa8065b9f72002151dd1a",
+    "data/runtime/p52_pose_controls_20261016/case74_4.5.jpg": "660f0bbf055824f36c2a1fa900bbbf145e22abb0c3fc40f729154f242b09a183",
+    "data/runtime/p52_pose_controls_20261016/folded_candidate.py": "840926fc91ef2ff14c6e1efa50aa3628b17220c6203fe6acbcd87ecee140ec45",
+    "data/runtime/p52_pose_controls_20261016/rejected_controls_tests.py": "fce4394eca820f9e1cb72145666acc604b3f18a72245ef6be16c78b42eb01787",
+    "data/runtime/p52_pose_controls_20261016/bent_descent_probe.json": "4fac4ffb3442dc6c568cd190c32bea4cb81ac436d6223acb3cefa6c1f5ed9b04",
+    "data/runtime/p52_pose_controls_20261016/baseline_fall_detector.py": "66c7995aa5fcf3521570801bef507e25d3d5c3502b11edf914b212dd6390958c",
+    "data/runtime/p52_pose_controls_20261016/combined_tests.xml": "e858ee21c3cb90f0d6f4fb1e9c4b420e3e756d0d5260a6e1361f473f8f9397d2",
+    "data/runtime/p52_pose_controls_20261016/refined_replay.json": "10b583476cc4edcaa711361da0f454e021c638f1ecbf603936dc90cdfcdfd014",
+    "data/runtime/p52_pose_controls_20261016/refined_tests.xml": "e1c5477a8c31d96e080e2580d80700071635bb1e7d55f6f8bb842d09c02240ee",
+    "data/runtime/p52_pose_controls_20261016/baseline_replay.json": "3cc4b86d040eaeb171b27390cb3a80c81d30acec848a57b2cc2e868b0b6001b3",
+    "data/runtime/p52_pose_controls_20261016/case46_5.5.jpg": "30b8123830ba07a4a55c0bf78422ae2fc3c241c73d59df50066d1c066e8aa80b",
+    "data/runtime/p52_pose_controls_20261016/front_transition_comparison.json": "1421ed6547d65ff46a64cb3bc3a3719da325bfc443a0089783d31287b16a6016",
+    "src/core/ai/_fall_detector.py": "9f8e27fccf69414d5627e5bf3cfe7d11102043398d4941b766128fce8533c817",
+    "tests/test_fall_motion.py": "28aeeedc0e6c42c2d6e9382561e48dfcd0a0a26f82e311d1af657887e8c3d697"
+  },
+  "latency_cause_followup": {
+    "checked_at": "2026-10-16T14:07:07.304215+09:00",
+    "state": "CAUSE_CONFIRMED_SIMPLE_REMOVAL_REJECTED",
+    "paired_videos": 9,
+    "latency_regressions_reproduced": 5,
+    "unchanged_current_replay_cases": 9,
+    "input_and_source_hashes_verified": 43,
+    "clock_traced_cases": 2,
+    "prior_clocks_before_onset": 2,
+    "removed_filter_reintroduces_early_cleaning_alert": true,
+    "product_source_changed": false,
+    "new_gpu_runs": 0,
+    "operating_stops": 0,
+    "operating_applied": false,
+    "ruff": "PASS",
+    "decision": "숙임 억제 단순 제거 미채택. 정상 동작의 사전 누적을 복원하지 않고 하강/지지 변화 이후 근거를 보완한다. 품질 해결 아님.",
+    "artifact_sha256": {
+      "data/runtime/p52_pose_controls_20261016/latency_probe.py": "cc6e7685d9582bdc96c8622618f5cbb2ee37d8c7f06d91aea4dae8775e5a4697",
+      "data/runtime/p52_pose_controls_20261016/latency_probe.json": "ceb09547d867e5eaed214533ad02b7ca2cf8fed8e6b12d3bf51784fb20b2e80f",
+      "data/runtime/p52_pose_controls_20261016/latency_clock_probe.json": "5c83337119fd3b4c8ba5b06d12277b4154f35164927b6ff6080b7c6da541d5cc",
+      "data/runtime/p52_pose_controls_20261016/weekly_followup_validation.json": "1b58562b10f7653a809ccb365bc450933032bb42feb80cc67d895b4709d19b87"
+    },
+    "operating_after_analysis": {
+      "checked_at": "2026-10-16T14:08:11.207033+09:00",
+      "seconds": 30.12758968799608,
+      "rates": {
+        "cctv_processor_frames_processed_total": 29.839758484170876,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 14.903283158390126
+      },
+      "same_operating_containers": true,
+      "new_gpu_runs": 0,
+      "operating_stops": 0
+    },
+    "documentation_validation": {
+      "wbs_board_html_rows": 37,
+      "report_local_links_checked": 11,
+      "pdf_first_page": "visually_checked",
+      "ruff": "PASS",
+      "git_diff_check": "PASS",
+      "http": {
+        "index.html": {
+          "status": 200,
+          "sha256": "f1dcdb1a5cf8770a56224c86c2ecb4d46aad75106826ffbd3e21c4a3b49320cb",
+          "matches_local": true
+        },
+        "CCTV_project_progress.pdf": {
+          "status": 200,
+          "sha256": "73785a8ae62178109605f2ba5254b18cc96561ce753c68ca961bd6915c9495d3",
+          "matches_local": true
+        }
+      }
+    }
+  }
+}
