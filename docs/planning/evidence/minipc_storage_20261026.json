@@ -1,0 +1,84 @@
+{
+  "status": "RETURNED_STORAGE_ROUNDTRIP_PASS",
+  "verified_at": "2026-10-26T09:58:05.146497+09:00",
+  "source_directory": "/tmp/minipc-20261026c-n3pkxwt0",
+  "preserved_directory": "/media/sawwave/Learning11/CCTV-project/data/runtime/gpu_coordination_20261023_ksweql0f/minipc_attempt3_evidence",
+  "preserved_sha256": {
+    "manifest.json": "6232e265c48adbfe609f09bf7b8e950284cc048e7f15b120d7a2c6eb07e30429",
+    "cleanup.json": "6776046d59c82cf3aa9fbd9e136de3557a8402d97a3c5744242513f6c67bf110",
+    "remote-read.stdout.bin": "55780782759bb50658d80e80cefa927513ebe653c85cdbcbcb4a1dc2fead984f",
+    "control-check.stdout.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "control-exit.stdout.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "create-poc-directory.stdout.bin": "60abf76fb2f54c56c87dd0d964c90f312cd03cc2046f595b3d4db6556cf9a5c6",
+    "sftp-readback.stdout.bin": "0590399cac0ef8b30db2ee8c9231ffa89cbb2d6b0848f8c04b60323a6e65dcb0",
+    "sftp-upload.stdout.bin": "60dd4d05d333b3e09a23404cbcf42d7eb662e7f3ce65bdeb2d9db3bbc649d222",
+    "remote-hashes.stdout.bin": "812ee1fc39312ff7ecc210dad632579f3869d53c5acd0f1d3a3739c3469157ba",
+    "control-exit.stderr.bin": "f221bc2585c4efebca01f34f20087bcddc8e9389f57abc26d57eab159b7d1b2b",
+    "keyscan.stderr.bin": "7f6d449ecc707be4599a1659f548feb79664fed95107f54ff768a0617d046268",
+    "remote-read.stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "sftp-readback.stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "control-check.stderr.bin": "d3a8433fe68f4eac9bf1b2964872ccb9c4d2932e2d710ad56ad59b119a8d7218",
+    "remote-hashes.stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "sftp-upload.stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "create-poc-directory.stderr.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "readback/detections.jsonl": "624df2a59675dae9d0ca4c16c71c02639473dfb291717e7fcc3a2d38c01984c3",
+    "readback/images/storage_test.jpg": "4e8125abe5a9ee2965c5081f47adce665ec25718a2747fcd56eaddbd4f7a69c9",
+    "readback/sensors.jsonl": "8b0a4f6b0b38b223d4deff78aa52d9d244e668744fdacb2caaccf7a3e6f302ec"
+  },
+  "actual_started_at": "2026-10-26T00:50:11.981678+00:00",
+  "authenticated_at": "2026-10-26T00:54:56.860535+00:00",
+  "finished_at": "2026-10-26T00:55:04.897200+00:00",
+  "cleanup_checked_at": "2026-10-26T00:55:35.084380+00:00",
+  "return_recorded_at": "2026-10-26T00:56:14.607459+00:00",
+  "identity": {
+    "host": "192.168.0.20",
+    "mac": "00:e2:69:98:60:a6",
+    "host_key": "SHA256:7cUq1ai7u1Hon31bz+6CL+zWLIwMIB29EwsAANIt9G4",
+    "reference_match": true
+  },
+  "remote_info": {
+    "user": "DESKTOP-ML1IJLU\\JECS",
+    "machine": "DESKTOP-ML1IJLU",
+    "profile": "C:\\Users\\JECS",
+    "os": "Microsoft Windows 10 IoT Enterprise LTSC",
+    "version": "10.0.19044",
+    "drive": "C",
+    "free_bytes": 95617433600,
+    "used_bytes": 31611531264
+  },
+  "remote_poc_path": "C:\\Users\\JECS\\cctv-storage-poc-20261026-n3pkxwt0",
+  "files": [
+    {
+      "path": "detections.jsonl",
+      "bytes": 278,
+      "sha256": "624df2a59675dae9d0ca4c16c71c02639473dfb291717e7fcc3a2d38c01984c3"
+    },
+    {
+      "path": "images/storage_test.jpg",
+      "bytes": 2871,
+      "sha256": "4e8125abe5a9ee2965c5081f47adce665ec25718a2747fcd56eaddbd4f7a69c9"
+    },
+    {
+      "path": "sensors.jsonl",
+      "bytes": 199,
+      "sha256": "8b0a4f6b0b38b223d4deff78aa52d9d244e668744fdacb2caaccf7a3e6f302ec"
+    }
+  ],
+  "total_bytes_each_direction": 3348,
+  "upload_and_readback": "3_OF_3_SHA256_MATCH",
+  "all_steps_exit0": true,
+  "cleanup": {
+    "own_processes": [],
+    "control_socket_exists": false,
+    "control_exit_code": 0
+  },
+  "verification": "saved manifest + remote hash output list + local readback bytes/SHA and cleanup checked; no new network query",
+  "scope": "single synthetic JSONL2+JPEG1 POC, files retained in unique Windows directory",
+  "limits": [
+    "actual production data automatic collection not implemented/validated",
+    "retention policy and recovery/long-term storage not tested",
+    "operating stability and extra load headroom not assessed"
+  ],
+  "operating_changes": false,
+  "automatic_retry": false
+}
