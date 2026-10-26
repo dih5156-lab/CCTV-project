@@ -2449,5 +2449,35 @@
     "no_operating_changes": true,
     "finished_at": "2026-10-26T13:13:12.488334+09:00",
     "return_acknowledged_at": "2026-10-26T13:15:48.509284+09:00"
+  },
+  "model_scope_private_comparison_preparation_20261026": {
+    "status": "PRIVATE_SNAPSHOTS_PREPARED_COMPARATOR_NOT_EXECUTED_OPERATING_UNCHANGED",
+    "recorded_at": "2026-10-26T14:56:59.311688+09:00",
+    "source_directory": "/media/sawwave/Learning11/CCTV-project/data/runtime/gpu_coordination_20261023_ksweql0f/model-maintenance-precheck-c573zk7d",
+    "private_source_not_published": true,
+    "logging": "Current live json-file/empty options explicitly pinned on both frozen configurations",
+    "roundtrip": "26-service baseline and target each exactly match rendered configuration",
+    "allowed_delta": "10 approved AI environment keys and camera_1 face/appearance only; actual comparator still NOT_RUN",
+    "bundle_sha256": "412eb7a983120b55093e0c1a875e3d85f3a79089e66519e55f109ad7824b8c34",
+    "comparator_ready_sha256": "8d09f32b2564451fa91bd847d31b959f785c7f4d90dac5b941483b3cefee7358",
+    "mock_allocation": {
+      "status": "ALLOCATED_NOT_STARTED",
+      "owner": "01a16614-0692-7512-b98a-45d253a29e3a",
+      "start": "2026-10-26T15:02:00+09:00",
+      "end": "2026-10-26T15:05:00+09:00",
+      "stop_new_commands": "2026-10-26T15:04:00+09:00",
+      "ready_sha256": "8d09f32b2564451fa91bd847d31b959f785c7f4d90dac5b941483b3cefee7358",
+      "scope": "fresh30s operating guard; 19 pure comparator tests and Ruff only; CPU0/nice19; per-command timeout30; final guard/owned cleanup",
+      "guard": "27FPS/13.5Hz, age1s, RAM8GiB, temperature<80C, error/restart/drop increase0; first failure stop; max5s monitoring",
+      "actual_private_bundle_comparison": false,
+      "operating_changes": false,
+      "gpu_allowed": false,
+      "automatic_retry": false,
+      "automatic_extension": false,
+      "previous_owner_return": "2026-10-26T14:47:55.800296+09:00",
+      "notice_delivery_confirmed": false
+    },
+    "operating_changes": 0,
+    "gpu_start_allowed": false
   }
 }

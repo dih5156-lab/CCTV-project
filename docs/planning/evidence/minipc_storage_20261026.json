@@ -498,5 +498,48 @@
     "real_data_or_timer_started": false,
     "current_recovery": "NOT_OBSERVED_AFTER_RETURN",
     "cause": "UNCONFIRMED; install did not start"
+  },
+  "install_retry_20261026_1430": {
+    "status": "RETURNED_PREFLIGHT_PASS_AUTH_NOT_STARTED",
+    "integrator_ack_at": "2026-10-26T14:54:48.796763+09:00",
+    "actual_return": "2026-10-26T14:47:55.800296+09:00",
+    "preserved": "/media/sawwave/Learning11/CCTV-project/data/runtime/gpu_coordination_20261023_ksweql0f/minipc_install_retry_20261026",
+    "sha256": {
+      "READY.json": "019c571fed0dfd73e066c8f5313939b8418b2fe94a9aef328b2b95904dbc9455",
+      "return.json": "6cf1aef0c461165758a68debb77dd2383e72958cb561b5f44e2aaa33610656e9",
+      "identity_result.json": "9829fa78561118132410e803061e0b8191c916e239eef0366882745173b2d7f1",
+      "preflight-guard/preflight.json": "8518968f4f545c23aa384451b2467dc6a9541392803d986a4425d8f9044c46e3",
+      "preflight-guard/operating_check.json": "8518968f4f545c23aa384451b2467dc6a9541392803d986a4425d8f9044c46e3",
+      "preflight-guard/result.json": "b6551893920b7ea492de85703313e16c1fd1114dbeb973801abe18d5961e77ea",
+      "preflight-guard/auth-deadline-tests.log": "0c6c4e160bc908c236fe8e5da17e8fe1d811a9096e69950f21cefa5fd9736fc6"
+    },
+    "result": {
+      "status": "RETURNED_PREFLIGHT_PASS_AUTH_NOT_STARTED",
+      "returned_at": "2026-10-26T14:47:55.800296+09:00",
+      "own_pids": [],
+      "socket_exists": false,
+      "authentication_started": false,
+      "authentication_completed": false,
+      "installer_started": false,
+      "synthetic_started": false,
+      "deployment_directory_exists": false,
+      "remote_writes": 0,
+      "key_generation": 0,
+      "execution_retries": 0,
+      "permission_review_timeout_before_process_creation": 1,
+      "permission_review_retry": 1
+    },
+    "preflight": {
+      "start": "2026-10-26T14:39:12.770993+09:00",
+      "end": "2026-10-26T14:39:43.027930+09:00",
+      "seconds": 30.250645236985292,
+      "fps": 29.94977439001198,
+      "primary_hz": 14.97488719500599,
+      "windows": 6,
+      "all_windows_pass": true,
+      "long_term_recovery": "NOT_ESTABLISHED"
+    },
+    "authentication_deadline_mocks": "2 PASS in 0.016s; synthetic only",
+    "new_root_live_observations": 0
   }
 }

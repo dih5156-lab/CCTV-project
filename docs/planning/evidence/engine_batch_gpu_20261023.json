@@ -2182,5 +2182,18 @@
       "post-cleanup-result.json": "d63a47418e50afdfa2f8ece0d24b87f415fef28a30cbcdc5da30d4d2f8767433",
       "post-cleanup-summary.json": "97780e4a1845e0ac930d231c972e8e041a478f7c3afcf7c3feb560d3383197f1"
     }
+  },
+  "attempt5_native_static_review_20261026": {
+    "status": "CAUSE_UNCONFIRMED",
+    "source": "/home/sawwave/.codex/worktrees/multicamera-engine-batch/CCTV-project/data/runtime/engine_quality_four_input_20261026_attempt5/native_crash_static_review.json",
+    "sha256": "56b9c110a2cb19f0accde22351823c83d7daa75f94d3054f1f4077829d8b4fb5",
+    "facts": [
+      "Trial omits FACE_RECOGNITION_BACKEND while disabling DS_FACE_ENABLED; saved image sources instantiate FaceRecognitionEngine independently.",
+      "Stored image-inspect collected by integration contains none of FACE_RECOGNITION_BACKEND/FACE_DEVICE/DS_FACE_ENABLED defaults. This narrows a configuration hypothesis without proving runtime backend or native crash cause.",
+      "Same PYTHONPATH/LD_LIBRARY_PATH and read-only venv overlay are present in saved operating and trial configurations.",
+      "Trial instrumentation changes import order; native backtrace and exact loaded module/ABI evidence are absent."
+    ],
+    "minimal_candidate": "Future trial only: explicit FACE_RECOGNITION_BACKEND=disabled; NOT_APPLIED, no repro or new GPU allocation",
+    "operating_changes": 0
   }
 }
