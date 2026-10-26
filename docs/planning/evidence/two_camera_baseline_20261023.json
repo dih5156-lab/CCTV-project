@@ -1025,5 +1025,147 @@
     "guard_raw_recalculation": "PASS",
     "recovery_after_stop": "NOT_OBSERVED",
     "new_gpu_allocation": false
+  },
+  "process_cpu_observation_20261026": {
+    "status": "CPU_CONSUMERS_IDENTIFIED_CAUSAL_PROCESS_NOT_ESTABLISHED",
+    "whole": {
+      "from": "2026-10-26T10:12:18.747498+09:00",
+      "to": "2026-10-26T10:17:15.947959+09:00",
+      "seconds": 297.19487182301236,
+      "frames_delta": 8908.0,
+      "primary_delta": 4454.0,
+      "fps": 29.97359929314311,
+      "primary_hz": 14.986799646571555
+    },
+    "comparison": {
+      "low": {
+        "windows": 4,
+        "host_cpu_percent_median": 43.11559948431457,
+        "node_cores_median": 1.016507377249547,
+        "operating_cores_median": 0.7096575117861408
+      },
+      "normal_27_to_33_fps": {
+        "windows": 140,
+        "host_cpu_percent_median": 43.26218366263548,
+        "node_cores_median": 1.0107572408116652,
+        "operating_cores_median": 1.063745312059206
+      }
+    },
+    "last_30_seconds": {
+      "from": "2026-10-26T10:16:45.828009+09:00",
+      "to": "2026-10-26T10:17:15.947959+09:00",
+      "seconds": 30.104312379000476,
+      "frames_delta": 904.0,
+      "primary_delta": 450.0,
+      "fps": 30.028920395823192,
+      "primary_hz": 14.948024533319067,
+      "all_15_windows_pass": true
+    },
+    "codebase_or_index_name_processes_max_cores": 0.014970724766144475,
+    "observer_one_core_average_percent": 4.162796929876917,
+    "limitations": [
+      "Process stat snapshots are sequential; short-lived or exiting processes can be unaccounted.",
+      "Executable identity of operating/root-owned processes may be inaccessible; comm/PPID/start ticks remain recorded.",
+      "No per-core affinity/scheduler-wait/GPU/input packet capture in this observation; primary age is end-of-processing freshness, not an input-stage measure.",
+      "Low windows have similar host and Node CPU to normal windows; consuming CPU does not establish causation.",
+      "No whole command lines or environment variables saved; no process stopped, reprioritized, or configured.",
+      "The codebase/index name comparison does not certify worker count or exclude unseen short-lived workers.",
+      "Final30-second recovery is a short observation, not authorization or headroom for new load."
+    ],
+    "source_directory": "/home/sawwave/.codex/worktrees/edge-auto-failback/CCTV-project/edge-auto-failback-trial/process-cpu-20261026-101218",
+    "evidence_sha256": {
+      "samples.jsonl": "871e0ca90e406fc63a2911aa0263eef893f2fcd97ad3476334de1fb8eda7f1e7",
+      "summary.json": "8632d6abf10b45f0a5134a7caa409da7f00e296e3db089dc453e6e73665423ba",
+      "return.json": "0c2f6a2e656e3c91f6cd3608844739a1aeb4eecdc8c0b10881fcbb01cf1a3d7f",
+      "analysis.json": "7aedff419d3184c75ca763ec056b2fa2d558c7459f85111f465b9f8049f08e11",
+      "verification.json": "034d90893a0c61af7055ce3597b721b6bbd7a95da1c335602e2be1f4eabaad7b"
+    },
+    "actual_started_at": "2026-10-26T10:12:18.747160+09:00",
+    "actual_finished_at": "2026-10-26T10:17:16.044723+09:00",
+    "cleanup": {
+      "observed_at": "2026-10-26T10:17:37.382505+09:00",
+      "observer_pid": 1004921,
+      "absent": true,
+      "exit_code": 0,
+      "child_processes_created": 0,
+      "extra_live_reads": "only own observer PID absence"
+    },
+    "samples": 149,
+    "windows": 148,
+    "integrator_saved_counter_recalculation": "PASS_148_FPS_PRIMARY_HOST_CPU_WINDOWS",
+    "owner_process_sum_top12_recalculation": "PASS_PER_VERIFICATION_JSON",
+    "integrator_verified_at": "2026-10-26T10:24:31.949857+09:00",
+    "low_windows": [
+      {
+        "from": "2026-10-26T10:12:54.891930+09:00",
+        "to": "2026-10-26T10:12:56.900016+09:00",
+        "seconds": 2.0141510909888893,
+        "fps": 23.831379986708644,
+        "primary_hz": 11.915689993354322,
+        "host_cpu_percent": 44.6927374301676,
+        "primary_age_seconds": 0.01915087501402013,
+        "node_cores": 1.02103182414476,
+        "operating_cores": 0.6547434300161001
+      },
+      {
+        "from": "2026-10-26T10:13:18.991924+09:00",
+        "to": "2026-10-26T10:13:21.000020+09:00",
+        "seconds": 2.024730998004088,
+        "fps": 14.322890314114431,
+        "primary_hz": 7.408391541783327,
+        "host_cpu_percent": 36.9727047146402,
+        "primary_age_seconds": 1.053022587992018,
+        "node_cores": 1.0119829303543342,
+        "operating_cores": 0.5283737258669302
+      },
+      {
+        "from": "2026-10-26T10:14:31.291970+09:00",
+        "to": "2026-10-26T10:14:33.300190+09:00",
+        "seconds": 2.0294469280052,
+        "fps": 21.680783760750437,
+        "primary_hz": 10.840391880375218,
+        "host_cpu_percent": 41.53846153846154,
+        "primary_age_seconds": 0.6168947599944659,
+        "node_cores": 1.4544909521221028,
+        "operating_cores": 0.7645715935561815
+      },
+      {
+        "from": "2026-10-26T10:15:05.428123+09:00",
+        "to": "2026-10-26T10:15:07.435919+09:00",
+        "seconds": 2.0139476619951893,
+        "fps": 24.330324429313322,
+        "primary_hz": 12.909968064533599,
+        "host_cpu_percent": 53.54676710608914,
+        "primary_age_seconds": 0.008492288994602859,
+        "node_cores": 1.0053394038673338,
+        "operating_cores": 0.9053632684878147
+      }
+    ],
+    "new_live_query_by_integrator": false,
+    "full_operating_guard_pass": false,
+    "identity_followup": {
+      "started_at": "2026-10-26T10:24:28.364618+09:00",
+      "observer_pid": 1022183,
+      "target_pid": 826678,
+      "expected_start_ticks": 24250533,
+      "status": "IDENTIFIED_ALLOWED_LABELS",
+      "raw_argv_saved": false,
+      "env_read": false,
+      "other_pid_reads": false,
+      "automatic_retry": false,
+      "allowed_labels": [
+        {
+          "script_basename": "codegraph.js"
+        }
+      ],
+      "finished_at": "2026-10-26T10:24:28.365654+09:00",
+      "read_seconds": 0.0009085180063266307,
+      "child_processes_created": 0,
+      "sha256": "822f1d998f70645e16f12f6e36b0ddec36b1cb01f03143c4b7bc32e90bfee93b",
+      "starttick_before_after_match_owner_report": true,
+      "exit_code_owner_report": 0,
+      "return_acknowledged_at": "2026-10-26T10:26:03.361535+09:00",
+      "causal_or_chat_ownership_established": false
+    }
   }
 }
