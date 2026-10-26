@@ -2479,5 +2479,45 @@
     },
     "operating_changes": 0,
     "gpu_start_allowed": false
+  },
+  "model_scope_comparator_1502_not_started_20261026": {
+    "status": "NOT_STARTED_ALLOCATION_EXPIRED_PREPARATION_APPROVAL_TIMEOUT",
+    "integrator_ack_at": "2026-10-26T15:11:09.520711+09:00",
+    "source": "/tmp/cctv-roi-comparator-1502-not-started-20261026.json",
+    "preserved": "/media/sawwave/Learning11/CCTV-project/data/runtime/gpu_coordination_20261023_ksweql0f/roi_comparator_1502_not_started.json",
+    "sha256": "004ec2ef2d1ad44b12cdb6022b35b8fb2d2c363b7e4f7358cd54ee5cf4d662c8",
+    "report": {
+      "status": "NOT_STARTED_ALLOCATION_EXPIRED_PREPARATION_APPROVAL_TIMEOUT",
+      "allocation": {
+        "start": "2026-10-26T15:02:00+09:00",
+        "work_cutoff": "2026-10-26T15:04:00+09:00",
+        "end": "2026-10-26T15:05:00+09:00"
+      },
+      "first_post_timeout_clock": "2026-10-26T15:07:25+09:00",
+      "prepared_folder_exists": false,
+      "preflight": "NOT_RUN",
+      "unittest": "19_NOT_RUN",
+      "ruff": "NOT_RUN",
+      "test_child_processes_started": 0,
+      "own_test_children_remaining": 0,
+      "remaining_basis": "no validator or tests ever launched; preparation process creation rejected on automatic review deadline",
+      "operating_changes": false,
+      "private_snapshot_cli": false,
+      "docker_gpu_conversion_indexing": false,
+      "automatic_retry": false,
+      "old_evidence_modified": false,
+      "source_sha256": {
+        "comparator_ready.json": "8d09f32b2564451fa91bd847d31b959f785c7f4d90dac5b941483b3cefee7358",
+        "compare_model_scope.py": "ed7641536db8af997d55fed7bd8e37b9c660e2cb01a264b44c84c3ddd07a748b",
+        "test_compare_model_scope.py": "22ad96e742c9e6146804460a316991eebdc01176682090ddd133a40c631f27ea",
+        "COMPARATOR_REVIEW.md": "8ab663c22359852ecd2e3a242287a186e0925c78bef4319ee49487806f6764c7"
+      },
+      "source_unchanged": true,
+      "returned_at": "2026-10-26T15:08:08.036565+09:00",
+      "approval_result": "automatic permission review deadline exceeded, not a safety rejection"
+    },
+    "source_four_hashes_reverified": true,
+    "new_integrator_live_observations": 0,
+    "next_step": "Prepare and freeze accessible execution command/guardian before requesting a new allocation; no retry under expired slot"
   }
 }
