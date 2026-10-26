@@ -1244,5 +1244,218 @@
     "post_return_recovery": "NOT_MEASURED",
     "gpu_allocation": null,
     "limits": "pure mocks and rate/resource guards only; two-channel performance/accuracy not measured"
+  },
+  "gpu_attempt2_result_20261026": {
+    "status": "RETURNED_PREFLIGHT_BLOCKED_GPU_NOT_RUN",
+    "owner": "ROI",
+    "start_at": "2026-10-26T10:58:00+09:00",
+    "end_at": "2026-10-26T11:13:00+09:00",
+    "stop_new_work_at": "2026-10-26T11:08:00+09:00",
+    "ready_sha256": "369caf8752dd0768e40b6f990949088a84bd947180b9a11d3a365ef9f143775e",
+    "plan_sha256": "64cf1d2030e9b0d4d5ef5498e1142c2b52de3376012ab280b76bf1abdc1c25f1",
+    "actual_start": "2026-10-26T10:58:26.052547+09:00",
+    "finished_at": "2026-10-26T10:59:07.336527+09:00",
+    "cleanup_verified_at": "2026-10-26T11:00:03.799321+09:00",
+    "actual_return": "2026-10-26T11:00:03.799925+09:00",
+    "return_acknowledged_at": "2026-10-26T11:02:12.154843+09:00",
+    "scope": "2 completed24FPS videos; independent2channels12/8/6Hz; existingbatch1; conversion0",
+    "gpu_trials_started": 0,
+    "camera_results": {
+      "NOT_RUN": 6
+    },
+    "preflight_complete": false,
+    "failed_sample": {
+      "observed_at": "2026-10-26T10:59:07.321151+09:00",
+      "guard_passed": false,
+      "window": {
+        "duration_seconds": 5.0148030709824525,
+        "frames_delta": 122.0,
+        "inferred_delta": 62.0,
+        "fps": 24.3279742540516,
+        "primary_hz": 12.36339675205901,
+        "error_deltas": {
+          "cctv_processor_source_error_identified_total": 0.0,
+          "cctv_processor_source_error_unidentified_total": 0.0,
+          "cctv_processor_pipeline_restart_executed_total": 0.0,
+          "cctv_processor_frames_dropped_total": 0.0
+        }
+      },
+      "at": 251738.586080733,
+      "values": {
+        "cctv_processor_frames_processed_total": 7495322.0,
+        "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 3683885.0,
+        "cctv_camera_primary_last_frame_age_seconds{camera_id=\"camera_1\"}": 0.872224927006755,
+        "cctv_processor_source_error_identified_total": 2.0,
+        "cctv_processor_source_error_unidentified_total": 0.0,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_processor_frames_dropped_total": 0.0
+      },
+      "memory_available_kib": 40190896,
+      "temperatures_c": [
+        52.156,
+        48.812,
+        49.593,
+        48.093,
+        52.343,
+        48.562
+      ],
+      "max_temperature_c": 52.343,
+      "reason": "운영 처리율 미달: 24.327974 FPS / 12.363397 Hz (최소 27 / 13.5)"
+    },
+    "raw_four_windows_recomputed": "PASS",
+    "own_remaining": [],
+    "operating_identity_unchanged": true,
+    "recovery_observed_after_cleanup": false,
+    "automatic_retry": false,
+    "source": "/home/sawwave/.codex/worktrees/two-camera-baseline/CCTV-project/data/runtime/two_camera_cadence_20261026_attempt2",
+    "sha256": {
+      "return.json": "0ebef07fdb77e2ec2ddbabe2e2204bbd5a9d7fa9843c4409148e89936e77ea2f",
+      "initial_preflight.json": "1ea459d81c271dd4a05e140fbd04f07d42079df6c05d3a99a1976b2dbc1aad4f",
+      "comparison.json": "1cf89ee3eeb16479251d92e7c3afa757312bc193155e8744e622080562380602"
+    }
+  },
+  "codegraph_static_report_20261026": {
+    "status": "IDENTITY_AND_REPEATED_ERRORS_CONFIRMED_CPU_PATH_LIKELY_FPS_CAUSALITY_UNRESOLVED",
+    "source": "/home/sawwave/.codex/worktrees/edge-auto-failback/CCTV-project/edge-auto-failback-trial/codegraph-diagnosis-20261026",
+    "preserved": "/media/sawwave/Learning11/CCTV-project/data/runtime/gpu_coordination_20261023_ksweql0f/codegraph_diagnosis_20261026",
+    "sha256": {
+      "analysis.json": "7db28d48d5c377a6b548a50fe8c29cf6505db26167df670d189f9180cc2b3492",
+      "log-evidence.json": "22a504f3cb5e09d26e134a261ea1cb4d86ca98651dfdc7cd2f4ef73c534dbe71",
+      "source-evidence.json": "a18a40571f6981a206417d63ba9edb4426e1229a185207c17c6c0cebaf66a5d3",
+      "live-identity.json": "e400de4e608c513de14c95ccc251b4f7eeccdadc056395d4c645c82fe12b5447",
+      "REPORT.md": "56e826eaa919587cd41f6c3dba33ef3182cc7b25e6801aceccc32d2a6b5fdc37"
+    },
+    "package": "@colbymchenry/codegraph0.9.9",
+    "separate_from_codebase_memory": true,
+    "identity": {
+      "started_at": "2026-10-26T11:04:36.295094+09:00",
+      "observer_pid": 1086551,
+      "target_pid": 826678,
+      "expected_start_ticks": 24250533,
+      "status": "IDENTITY_CONFIRMED",
+      "raw_argv_saved": false,
+      "env_read": false,
+      "other_pid_reads": false,
+      "new_metrics_or_network": false,
+      "retry": false,
+      "child_processes_created": 0,
+      "script_paths": [
+        "/home/sawwave/.codegraph/versions/v0.9.9/lib/dist/bin/codegraph.js"
+      ],
+      "role_flags": [
+        "serve",
+        "--mcp",
+        "--path"
+      ],
+      "allowed_project_paths": [
+        "/home/sawwave"
+      ],
+      "unrecorded_path_present": false,
+      "finished_at": "2026-10-26T11:04:36.296283+09:00",
+      "read_seconds": 0.0011461350077297539
+    },
+    "cpu_cause_candidate": "Broad home-directory watch, inotify limit errors, and repeated failed sync with malformed database. Code retains pending entries on failure and reschedules after default2s; profiling was not run, so exact CPU proportions/path remain unverified.",
+    "fps_relation": {
+      "prior_evidence": "/home/sawwave/.codex/worktrees/edge-auto-failback/CCTV-project/edge-auto-failback-trial/process-cpu-20261026-101218/analysis.json",
+      "prior_raw_sha256": "871e0ca90e406fc63a2911aa0263eef893f2fcd97ad3476334de1fb8eda7f1e7",
+      "comparison": {
+        "low": {
+          "windows": 4,
+          "host_cpu_percent_median": 43.11559948431457,
+          "node_cores_median": 1.016507377249547,
+          "operating_cores_median": 0.7096575117861408
+        },
+        "normal_27_to_33_fps": {
+          "windows": 140,
+          "host_cpu_percent_median": 43.26218366263548,
+          "node_cores_median": 1.0107572408116652,
+          "operating_cores_median": 1.063745312059206
+        }
+      },
+      "conclusion": "High CPU contributor observed, but no low-specific increase; direct causal effect not established. Log lines lack timestamps and sampled tail is later than FPS observation.",
+      "new_fps_or_cpu_observation": false
+    },
+    "log_scope": "fixed64KiB from each of2logs;241sync+241auto-sync are same failures logged twice;ENOSPC means watcher limit, not disk-full proof",
+    "logs": [
+      {
+        "path": "/home/sawwave/.codegraph/daemon.log",
+        "metadata_at_original_read": {
+          "bytes": 3279428094,
+          "mtime": "2026-10-26T10:57:19.315059+09:00"
+        },
+        "fixed_range_start": 3279362558,
+        "fixed_range_bytes": 65536,
+        "fixed_range_sha256": "a7cbff2e5bba03a86a05322af9a58c7d08af3124704b18cc26c6021ea74b104e",
+        "error_counts": {
+          "db_sync_failure": 241,
+          "db_auto_sync_failure": 241,
+          "watch_error_header": 140,
+          "inotify_limit": 140,
+          "socket_epipe": 7
+        },
+        "raw_saved": false,
+        "range_re_read_purpose": "preserve exact earlier byte range hash/counts; no latest-tail refresh",
+        "line_timestamps": false
+      },
+      {
+        "path": "/media/sawwave/Learning11/.codegraph/daemon.log",
+        "metadata_at_original_read": {
+          "bytes": 14640170607,
+          "mtime": "2026-10-26T08:48:14.827634+09:00"
+        },
+        "fixed_range_start": 14640105071,
+        "fixed_range_bytes": 65536,
+        "fixed_range_sha256": "a92f64850eb63f6cc371446be8bd17834a595f7c7cf6420e8d55c1f23c192a05",
+        "error_counts": {
+          "db_sync_failure": 0,
+          "db_auto_sync_failure": 0,
+          "watch_error_header": 273,
+          "inotify_limit": 273,
+          "socket_epipe": 0
+        },
+        "raw_saved": false,
+        "range_re_read_purpose": "preserve exact earlier byte range hash/counts; no latest-tail refresh",
+        "line_timestamps": false
+      }
+    ],
+    "settings_database_process_changes": false,
+    "new_indexing_or_root_live_reads": false,
+    "limitations": [
+      "No profiling, database integrity check, or environment read",
+      "No log timestamps matching FPS windows",
+      "Starting chat and FPS causal contribution unknown"
+    ]
+  },
+  "codegraph_identity_allocation_20261026": {
+    "status": "RETURNED_IDENTITY_CONFIRMED",
+    "owner": "A/B",
+    "start_at": "2026-10-26T11:04:00+09:00",
+    "end_at": "2026-10-26T11:05:00+09:00",
+    "maximum_read_seconds": 2,
+    "target_pid": 826678,
+    "expected_start_ticks": 24250533,
+    "scope": "one identity check: stat starttick before/after plus script absolute path and allowed role flags only; no raw argv/env/other PID/metrics",
+    "automatic_retry": false,
+    "process_or_settings_changes": false,
+    "actual_return": "2026-10-26T11:04:36.296283+09:00",
+    "finished_at": "2026-10-26T11:04:36.296283+09:00",
+    "return_time_basis": "owner reports immediate return at read completion; separate queue receipt time not supplied",
+    "return_acknowledged_at": "2026-10-26T11:08:24.256615+09:00",
+    "own_remaining": [],
+    "result_source": "/home/sawwave/.codex/worktrees/edge-auto-failback/CCTV-project/edge-auto-failback-trial/codegraph-diagnosis-20261026/live-identity.json"
+  },
+  "model_scope_request_20261026": {
+    "status": "ROI_STATIC_MINIMAL_CHANGE_PREPARATION",
+    "human_instruction_verified_in_thread": "01a16614-0692-7512-b98a-45d253a29e3a",
+    "requested_functions": [
+      "person",
+      "fall",
+      "helmet"
+    ],
+    "other_models": "prepare disable plan; no operating change applied",
+    "production_owner": "integration; operating window not allocated",
+    "roi_scope": "stored evidence/currentcode allowed keys, camera overrides, loading paths, restart need and rollback",
+    "current_live_model_state": "NOT_YET_VERIFIED",
+    "new_live_reads": false
   }
 }

@@ -265,5 +265,69 @@
     "first_failure": "save original evidence,stop only own children,return",
     "actual_return": null,
     "integrator_static_review": "7source hashes/runner AST and only sources-hash substitution verified; no new tests run"
+  },
+  "cpu20_result_20261026": {
+    "status": "RETURNED_CPU20_RUFF_PASS",
+    "started_at": "2026-10-26T10:52:18.671152+09:00",
+    "finished_at": "2026-10-26T10:53:04.418816+09:00",
+    "actual_return": "2026-10-26T10:53:35.605772+09:00",
+    "tests_passed": 20,
+    "ruff": "PASS",
+    "guard_windows_recomputed": 9,
+    "guard_windows_passed": 9,
+    "minimum_fps": 29.256360708485886,
+    "minimum_primary_hz": 14.825858467138117,
+    "source7_unchanged_at_test_end": true,
+    "current_source6_unchanged": true,
+    "post_test_documentation_change": [
+      "docs/ops/MINIPC_STORAGE.md"
+    ],
+    "release_manifest_sha256": "1aea11e3750dad8e1060670c850beb356a62d24b11800a4015190a14d7617bb4",
+    "own_remaining": [],
+    "installed_or_enabled": false,
+    "actual_remote_or_db_test": false,
+    "source": "/tmp/minipc-auto-20261026-g2hv7wy3",
+    "preserved": "/media/sawwave/Learning11/CCTV-project/data/runtime/gpu_coordination_20261023_ksweql0f/minipc_cpu_20261026",
+    "sha256": {
+      "cpu_result.json": "c9222749dc031c7fcda93b876b99294a4952329d899f5a4c5f65c2bf0b8a9695",
+      "cpu_return.json": "01e0bf6654bbc43c9f310a75536dace63203d374fa53909ca37ee7bb8a6a285c",
+      "sources.json": "102189a01a8773f36f10456587abc62a64499c9e0899481d43aae183ff28f742",
+      "cpu_check.py": "82e3be67d3f886d4728979a1893370c870a8001f7bbb400ad2943f39d169c3ab",
+      "initial_preflight.json": "8acefbebce2ad576c429ea9867a3a688e2d5a3751a39b6ca839009161600118f",
+      "operating_check.json": "b82580d9975ea084045d40d26e546f46c14c8736b4030bf66118238c1963f83f",
+      "unittest.log": "000304363f00d7004459daa3fc1ec66899cae3444fbc94143ec1078eebeb9fa0",
+      "ruff.log": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "release_sources.json": "1aea11e3750dad8e1060670c850beb356a62d24b11800a4015190a14d7617bb4",
+      "ruff.guard.json": "fcacdde0b392d85bf5055d11669ad778028ae73b2c27467a20cc3b1027202eee",
+      "unittest.guard.json": "6f2a633483e592f0094e214bdc7d4fbc229988a6e4ea3077c08de402207002cd"
+    }
+  },
+  "integrator_source_review_20261026": {
+    "scope": "7frozen source files and deployment/readiness drafts",
+    "result": "NO_BLOCKING_DEFECT_IDENTIFIED_IN_STATIC_REVIEW; WINDOWS_EXECUTION_UNVERIFIED",
+    "checks": [
+      "cursor advances only after validated ACK",
+      "pending reused after ACK loss",
+      "rotation mismatch fails without skipping",
+      "image root/hash/complete-file checks",
+      "private state and atomic cursor writes",
+      "Windows completed batch moves and receipt recovery"
+    ],
+    "remaining": [
+      "Actual PowerShell syntax/runtime and same-ID receipt retrieval",
+      "exact key installation/rollback review after readonly Windows readiness",
+      "small synthetic receiver validation then authorized realdata readback",
+      "timer and operating impact verification"
+    ],
+    "integration_or_installation": false
+  },
+  "sensor_followup_scope_20261026": {
+    "owner": "existing miniPC thread",
+    "requested": "historical real sensor sample storage/readback/deduplication; sensors currently disconnected",
+    "source_report": "sensor coordination thread01a175ec-d99a-7600-8f86-d6c5cf5080a4",
+    "new_db_query_or_source_scope": "not allocated; existingJSONL reuse considered first",
+    "original_event_time_preserved": true,
+    "destination_storage_time": "KST",
+    "replay_to_operating_MQTT_API": false
   }
 }
