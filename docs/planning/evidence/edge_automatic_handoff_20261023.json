@@ -1613,5 +1613,55 @@
     "P6.2_path_check": "PASS",
     "renderer_ruff": "PASS",
     "targeted_diff_whitespace_check": "PASS"
+  },
+  "roundtrip_evidence_cpu_validation_20261026": {
+    "status": "RETURNED_15_SYNTHETIC_TESTS_RUFF_FINAL_GUARD_PASS",
+    "source_ready_sha256": "aa7b29c2f32a85ca75036b27e327d813c2ea03f4c4184da3ae81a13077949373",
+    "prior_ready_ceba76": "NOT_RUN_SUPERSEDED_FOR_STOP_CONTRACT_FIX",
+    "baseline": "frozen single-camera worktree, not current integrated camera-offload variant",
+    "started_at": "2026-10-26T16:51:57.085777+09:00",
+    "finished_at": "2026-10-26T16:52:42.812806+09:00",
+    "returned_at": "2026-10-26T16:54:05.310106+09:00",
+    "command_exit_code": 0,
+    "tests": {
+      "passed": 15,
+      "seconds": 0.018
+    },
+    "ruff": "PASS",
+    "final_guard": "PASS",
+    "own_child_groups_remaining": [],
+    "source_hashes_unchanged": true,
+    "preflight": {
+      "start": "2026-10-26T16:51:57.238550+09:00",
+      "end": "2026-10-26T16:52:27.535936+09:00",
+      "seconds": 30.291517584002577,
+      "fps": 30.272501120388963,
+      "primary_hz": 15.119744289136472,
+      "passed": true
+    },
+    "guard": {
+      "samples": 13,
+      "windows": 9,
+      "all_pass": true,
+      "minimum_fps": 28.243900657641728,
+      "minimum_primary_hz": 14.220705226225206,
+      "maximum_age_seconds": 0.09876693901605904,
+      "minimum_memory_gib": 41.15742874145508,
+      "maximum_temperature_c": 53.5,
+      "error_restart_drop_increases": 0,
+      "last_sample_at": "2026-10-26T16:52:42.788520+09:00"
+    },
+    "raw_counter_recalculation": "PASS",
+    "post_cleanup_observation": "NOT_RUN",
+    "long_term_stability": "NOT_ESTABLISHED",
+    "physical_roundtrip_60s": "NOT_RUN",
+    "automatic_policy_DDS_preview_hardware_cleanup": "NOT_EVALUATED",
+    "operating_changes": 0,
+    "SSH_RTSP_GPU_Docker_indexing": 0,
+    "automatic_retry": false,
+    "source": "/tmp/cctv-ab-evidence-cpu-20261026-r8btld45/run",
+    "preserved": "/media/sawwave/Learning11/CCTV-project/data/runtime/gpu_coordination_20261023_ksweql0f/ab_roundtrip_evidence_cpu_20261026",
+    "summary_sha256": "d808774576aa84e7c9a83b31dbcdfbb1235e6cbcd50467e6d04af2312bdd15a9",
+    "raw_hashes_manifest": "/media/sawwave/Learning11/CCTV-project/data/runtime/gpu_coordination_20261023_ksweql0f/ab_roundtrip_evidence_cpu_20261026/summary.json"
   }
 }
