@@ -774,6 +774,18 @@
       }
     ],
     "further_live_observation": false,
-    "new_load_test_allocation": false
+    "new_load_test_allocation": false,
+    "bounded_saved_logs": {
+      "source": "/home/sawwave/.codex/worktrees/edge-auto-failback/CCTV-project/edge-auto-failback-trial/fps-post-roi-logs-20261026.json",
+      "sha256": "7303e2662f03073e7ce7dd995dd725baf3dff562099d375fec247ca5a6a8f31a",
+      "started_at": "2026-10-26T09:13:59.627567+09:00",
+      "finished_at": "2026-10-26T09:14:04.053571+09:00",
+      "exit_code": 0,
+      "lines": 0,
+      "limit_seconds": 15,
+      "cause": "UNCONFIRMED",
+      "limitations": "0 lines does not prove no errors or lost logs; no concurrent CPU/GPU/process samples; input-arrival and processing delays not distinguished",
+      "no_new_live_observation_planned": true
+    }
   }
 }
