@@ -24,6 +24,7 @@ STATUS = {
     "VERIFY": "재검증",
     "BLOCKED": "대기",
     "PLANNED": "계획",
+    "DEFERRED": "과제 후",
 }
 INK, MUTED, BLUE = "#16243A", "#526276", "#255CC2"
 
@@ -109,16 +110,16 @@ def render(model, output):
     font_manager.fontManager.addfont(
         "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc"
     )
-    plt.rcParams.update({"font.family": "Noto Sans CJK JP", "pdf.fonttype": 3})
+    plt.rcParams.update({"font.family": "Noto Sans CJK JP", "pdf.fonttype": 42})
     rows, counts = model["rows"], model["counts"]
     # 사양서 추가 작업도 집계하되 빈 작업판과 상태 합계 불일치는 거부한다.
     if not rows or sum(counts.values()) != len(rows):
         raise ValueError("WBS snapshot counts do not match")
     output.parent.mkdir(parents=True, exist_ok=True)
     render_html(model, output)
-    # 1차 범위는 확정했지만 앞당긴 현장 날짜는 제안이므로 확정 일정으로 표시하지 않는다.
+    # 과제 후 이관을 완료로 세지 않고 현재 범위와 과거 37행을 함께 보존한다.
     subtitle = (
-        f"{model['updated_date']}  ·  문서 v{model['version']}  ·  11월 1차 POC / 범위 확정·현장일 미정"
+        f"{model['updated_date']}  ·  문서 v{model['version']}  ·  batch4 안정화 우선 / 현장일 미정"
     )
     with PdfPages(output) as pdf:
         fig, ax = new_page("CCTV · AIoT 개발 진행 현황", subtitle, 1)
@@ -136,7 +137,7 @@ def render(model, output):
         ax.text(
             0.45,
             0.779,
-            "작업 수 기준입니다. 전체 구현률·남은 공수 비율은 아닙니다.",
+            "37행 이력 기준 · 과제 후 2행 포함 · 전체 구현률 아님",
             fontsize=9,
             color=MUTED,
             va="top",
@@ -154,22 +155,22 @@ def render(model, output):
         block(
             ax,
             0.657,
-            # 합성 미리보기 통합과 실제 B GPU·연속 영상 실측을 구분한다.
-            "O5 담당 영상 미리보기 통합 PASS",
+            # 영상 재생 사전검증과 실물 4대 인수를 구분한다.
+            "현재 1대 · 실물 4카메라 목표 유지",
             [
-                "Python134·JS7·Firefox1 PASS · 합성 JPEG",
-                "A→B 영상 전환·오래된 프레임/이전 실행 차단",
-                "2초 미리보기 · 연속 영상/B GPU·무선 잔여",
+                "1대 기준선 → 녹화영상 1→2→4입력 사전검증",
+                "추가 3대 확보 후 실물4대 최종 검증 · 연결일 미정",
+                "raw batch1/2/4 PASS ≠ 앱·정확도·실물 성능 합격",
             ],
         )
         block(
             ax,
             0.518,
-            "11월 1차 POC · 범위 확정/현장 일정 미정",
+            "현재 모델 고정 · Pose 사람/낙상부터",
             [
-                "11/20 준비 → 11/23~27 현장 제안 · 전체 요구사항 유지",
-                "준비150h 가정 중 작업120h·여유30h · 이후 가용시간 미확정",
-                "미완료28행 · 오케스트레이션 추가 공수 재배정 필요 · 12/31 목표 유지",
+                "추가 학습 보류 · RF/TCN/의상/색상/얼굴 제외 시험 준비",
+                "별도 사람 검출 의존성 확인 · 헬멧은 안정화 뒤 추가 비교",
+                "전광판/스피커 과제 후 · 센서/사이렌/저장·관제 범위 유지",
             ],
         )
         block(
@@ -177,12 +178,11 @@ def render(model, output):
             0.379,
             "주요 이슈·결정 대기",
             [
-                # 배포 설정의 로컬 검증을 실제 NX 설치·성능 합격으로 표시하지 않는다.
-                "I68: 새 B GPU·무선 DDS·실제 지연/패킷 손실·기관 계약",
-                "30W·systemd 정상 확인 · 부팅 timeout 재발 검증 I43 OPEN",
-                "I15 센서 실수신·실물 가동 대기 · 대상/ID 수정 운영 반영 잔여",
-                "AGX/NX 후보 구성·복구92시험 통과 · 실장비 전환/성능 대기",
-                "I56 CPU 보완·GPU 지연 개선 미확인 · I64 운영 미반영",
+                "I56: attempt5 초기화 native 오류·보호 중단, 유효결과0",
+                "ROI 저장 비교: 라벨2항목 해소·네트워크 재사용1 BLOCK",
+                "운영 backend/의존성 확인 후 최소 시험 구성 고정 필요",
+                "새 GPU/카메라 배정 없음 · 현재 FPS 새 관측 없음",
+                "모델 confidence·튜닝 회귀는 현장 정확도 보장이 아님",
             ],
             color="#9D3C22",
         )
@@ -191,10 +191,10 @@ def render(model, output):
             0.213,
             "최근 근거와 갱신 방식",
             [
-                "다음: 새 통합본 B GPU·무선 DDS/영상 인계 실측",
-                "기존 H264 3분29.97FPS · 원격/장기·낙상·센서 검증 잔여",
-                "매 작업 종료 시 원본 문서와 사내 HTML/PDF를 같은 주소로 갱신",
-                "실시간 자동 동기화는 아님. 기준일과 버전을 확인하세요",
+                "다음: 기존 설정 차단/초기화 경로 해결 → 최소구성 검증",
+                "카메라별 ID/PTS·저장·FPS/실추론Hz·지연·메모리 대조",
+                "12/31 목표 유지 · 변경 범위 공수/현장 일정 재산정 전",
+                "문서 갱신은 운영 배포/장비시험 실행과 별도입니다",
             ],
         )
         pdf.savefig(fig)
@@ -244,15 +244,16 @@ def render(model, output):
             fig.savefig(output.with_name(f"{output.stem}_page{page}.png"), dpi=130)
             plt.close(fig)
 
-        if model.get("model_results"):
-            # 사양서 반영으로 기존 모델 시험을 새로 통과한 것처럼 표시하지 않는다.
-            model_page = len(subsets) + 2
+        # 품질 조건과 한계가 셀 밖으로 겹치지 않도록 한 쪽에 5개 모델만 배치한다.
+        for page_offset, start in enumerate(range(0, len(model.get("model_results", [])), 5)):
+            model_page = len(subsets) + 2 + page_offset
             fig, ax = new_page("전체 모델 결과 · 기존 검증 이력", subtitle, model_page)
             ax.text(0.065, 0.835, "실행 확인과 정확도 합격은 별도입니다. P=정밀도, R=재현율, F1=조화평균.",
                     fontsize=9, color=MUTED)
-            values = [[fill(row[key], width=18) for key in ("name", "runtime", "quality", "remaining")]
-                      for row in model["model_results"]]
-            table = ax.table(cellText=values, colLabels=["모델", "실행·지연", "품질 근거", "판정·남은 일"],
+            values = [[fill(value, width=18) for value in
+                       (row["name"], row["scope"] + "\n" + row["runtime"], row["quality"], row["remaining"])]
+                      for row in model["model_results"][start:start + 5]]
+            table = ax.table(cellText=values, colLabels=["모델", "조건·실행·지연", "품질 근거", "판정·남은 일"],
                              cellLoc="left", colLoc="left", bbox=[0.06, 0.13, 0.88, 0.67],
                              colWidths=[0.18, 0.27, 0.29, 0.26])
             table.auto_set_font_size(False)
@@ -266,7 +267,6 @@ def render(model, output):
             pdf.savefig(fig)
             fig.savefig(output.with_name(f"{output.stem}_page{model_page}.png"), dpi=130)
             plt.close(fig)
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)

@@ -1,0 +1,114 @@
+{
+  "date": "2026-10-27",
+  "status": "PRIORITIES_UPDATED_NO_NEW_EXECUTION",
+  "human_source_thread": "01a1771c-9ce9-7550-9052-1b4970000b3c",
+  "human_scope_request_utc": "2026-10-26T23:33:39.776Z",
+  "human_camera_answer_utc": "2026-10-26T23:36:39.644Z",
+  "human_camera_answer": "1대 연결 가능",
+  "scope": {
+    "connected_physical_cameras": 1,
+    "physical_camera_target": 4,
+    "additional_cameras_required": 3,
+    "post_project_wbs": [
+      "P3.4",
+      "P3.5"
+    ],
+    "model_training_expansion": "ON_HOLD",
+    "historical_wbs_total": 37,
+    "current_scope_rows": 35,
+    "new_resource_allocation": false,
+    "evidence": "docs/planning/evidence/priority_scope_20261027.json",
+    "minimal_test_pipeline": [
+      "Pose person bbox/keypoints",
+      "tracker",
+      "fall heuristic",
+      "storage"
+    ],
+    "initial_optional_models_disabled": [
+      "separate person detector after dependency check",
+      "RF",
+      "TCN",
+      "attributes",
+      "color",
+      "face"
+    ],
+    "helmet": "COMPARE_AFTER_BASIC_FOUR_INPUT_STABILITY",
+    "operating_model_change_applied": false
+  },
+  "counts": {
+    "DONE": 9,
+    "BLOCKED": 3,
+    "PLANNED": 15,
+    "DEFERRED": 2,
+    "VERIFY": 6,
+    "IN_PROGRESS": 2
+  },
+  "model_quality_source": "docs/planning/MODEL_INFERENCE_METRICS.md#model-quality-20261027",
+  "engine_result_source": "docs/planning/evidence/engine_batch_gpu_20261023.json#attempt5_result_20261026",
+  "runtime_change": false,
+  "new_gpu_or_camera_test": false,
+  "publication_validation": {
+    "status": "PASS",
+    "wbs_rows": 37,
+    "done": 9,
+    "deferred": 2,
+    "model_rows": 10,
+    "pdf_pages": 6,
+    "pdf_unicode_text": true,
+    "html_ids_unique": true,
+    "ruff": "PASS",
+    "operating_or_gpu_test": false,
+    "artifacts": {
+      "model_test_results.csv": "bae19b3e0d892435d936259acdfa1c0f36875f0fd7c2c2d12914feadcbb0d106",
+      "CCTV_project_progress_page6.png": "9db28fc3f4d81af37d8231d1ef9e175dc1084cd08a336252af04a315febd1100",
+      "CCTV_project_progress_page5.png": "9efbfc0bee86569b2c624d9cf3be9cb9f90ae046edaed5f17b87140a2f082fcb",
+      "index.html": "3df41df29a902f0af0dae7be3b38d6b568e6df51a4fe06565040ffd19bc4af94",
+      "CCTV_project_progress_page3.png": "0d3df32f77776c626ec6046247734280b60bfefc8430036570cc1c6d91b0bf6f",
+      "CCTV_project_progress.png": "206e3acc416b82d48444f5ab510faf11770e668f8eb9f594040bbb8e31a9c63c",
+      "CCTV_project_progress_page2.png": "8f3d41f7b4318109da7c818af1b4176fb2e5e6385dfb6f908e9340b7d73d3a46",
+      "CCTV_project_progress_page4.png": "141015900d23a2789d6f1699fb64f71cea444842ea71a0b58de3e75e7edf1a85",
+      "CCTV_project_progress.pdf": "f428f140fa171ea89ea2e06f918a827b85d6d8c5c9778f86adaf869dec8c6ea3"
+    },
+    "http": [
+      {
+        "url": "http://192.168.88.146:18081/",
+        "status": 200,
+        "sha256": "3df41df29a902f0af0dae7be3b38d6b568e6df51a4fe06565040ffd19bc4af94",
+        "local_bytes_equal": true
+      },
+      {
+        "url": "http://192.168.88.146:18081/CCTV_project_progress.pdf",
+        "status": 200,
+        "sha256": "f428f140fa171ea89ea2e06f918a827b85d6d8c5c9778f86adaf869dec8c6ea3",
+        "local_bytes_equal": true
+      },
+      {
+        "url": "http://192.168.88.146:18081/module_flow.html",
+        "status": 200,
+        "sha256": "aea7418a21d65d99cdc7b53989f8bc01b81746d1087947b1476730c8c84793e3",
+        "local_bytes_equal": true
+      },
+      {
+        "url": "http://192.168.2.242:18081/",
+        "status": 200,
+        "sha256": "3df41df29a902f0af0dae7be3b38d6b568e6df51a4fe06565040ffd19bc4af94",
+        "local_bytes_equal": true
+      },
+      {
+        "url": "http://192.168.2.242:18081/CCTV_project_progress.pdf",
+        "status": 200,
+        "sha256": "f428f140fa171ea89ea2e06f918a827b85d6d8c5c9778f86adaf869dec8c6ea3",
+        "local_bytes_equal": true
+      },
+      {
+        "url": "http://192.168.2.242:18081/module_flow.html",
+        "status": 200,
+        "sha256": "aea7418a21d65d99cdc7b53989f8bc01b81746d1087947b1476730c8c84793e3",
+        "local_bytes_equal": true
+      }
+    ],
+    "verified_at": "2026-10-27T08:45:35.862332+09:00",
+    "service_restart": false
+  },
+  "minimal_model_approval_utc": "2026-10-26T23:40:10.936Z"
+}

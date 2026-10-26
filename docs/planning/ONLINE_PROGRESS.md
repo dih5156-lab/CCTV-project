@@ -1,5 +1,9 @@
 # 사내 개발 진행판
 
+10-27 **v0.141 게시 검증 PASS**: WBS37행/완료9/과제후2·모델10행·PDF6쪽·Unicode 텍스트 대조, 렌더러 Ruff·diff 검사 PASS. 두 주소의 HTML/PDF/포털6건 HTTP200·로컬 바이트 일치, 서비스 재시작0. 현재 운영 처리율/실장비 시험은 별도 미관측이다. [검증](evidence/priority_scope_20261027.json).
+
+10-27 **v0.141 범위 재정렬**: 모델별 성적/한계를 정리하고 현재1대→영상4입력→실물4대 순서의 batch4 안정화를 우선한다. 전광판/스피커2행은 과제 후로 분리하고 DONE9/37 이력 집계를 유지한다. HTML/PDF·모델 CSV·포털의 현재 안내를 같은 기준으로 갱신한다. 구조도 그림 자체는10-26 16:55 스냅샷으로 보존한다. [10-27 우선순위·범위](POC_SCOPE.md#scope-20261027) · [유선 진행판](http://192.168.88.146:18081/) · [Wi-Fi](http://192.168.2.242:18081/).
+
 10-26 17:42 **최신 모듈 흐름·Jetson 인계 구조도 게시**: [유선 모듈 화면](http://192.168.88.146:18081/module_flow.html)·[Wi-Fi](http://192.168.2.242:18081/module_flow.html). 원본 Compose로 문서 서비스만 같은 이미지/두 주소에 재생성해 새 edge 구조도 경로를 반영했다. 구조도2개·포털·기존2탭·D3/라이선스·진행판/PDF의18건 HTTP200/바이트 일치, 차단경로6건404·nginx PASS. 다른36컨테이너 불변. 구조도는16:55 스냅샷이며10/13 그래프/후보 탭은 과거 참고본이다. [검증·브라우저 범위](../architecture/archify/module-refresh-20261026-receipt.json).
 
 10-26 **진행판 주소 복구**: [유선](http://192.168.88.146:18081/)·[Wi-Fi](http://192.168.2.242:18081/) 두 확인 주소만 문서 서버에 연결했다. 담당의 저장 검증에서 각 HTML/PDF/모듈 페이지 총6건 HTTP200·로컬 바이트 일치, 다른36컨테이너 ID/StartedAt/running 불변. 통합은 원본 Compose의 두 바인딩과 현재 안내 링크만 영구 반영했다. 주소 복구 당시 문서 컨테이너의 Compose 라벨은 임시 복구용 파일을 가리켰다. 이후 원본 Compose로의 문서 전용 재생성은 위17:42 게시 기록을 따른다. 사용자 PC 직접 접속은 미확인이고 과거 게시물/과거 IP 근거는 보존했다. 저장 근거: `data/runtime/gpu_coordination_20261023_ksweql0f/progress_network_restore_20261026/verification.json`.
@@ -875,7 +879,7 @@ WBS 원본 33개 ID/상태·집계 일치, 렌더러 Ruff·문법·문서 공백
 | 구분 | 위치/값 |
 |---|---|
 | 원본 | [WBS](WBS.md), [진행 기록](PROGRESS.md), [이슈](STATUS.md) |
-| 렌더링 데이터 | [progress_v140.json](figma_exports/progress_v140.json) |
+| 렌더링 데이터 | [progress_v141.json](figma_exports/progress_v141.json) |
 | 생성 도구 | [render_progress_snapshot.py](../../scripts/ops/render_progress_snapshot.py) |
 | HTML 요약·서식 | [progress_snapshot_template.html](../../scripts/ops/progress_snapshot_template.html) |
 | 게시물 | [HTML](online/index.html), [PDF](online/CCTV_project_progress.pdf) |
@@ -885,7 +889,7 @@ WBS 원본 33개 ID/상태·집계 일치, 렌더러 Ruff·문법·문서 공백
 | 네트워크 | 유선 `192.168.88.146:18081`, Wi-Fi `192.168.2.242:18081` → 전용 nginx `8080` |
 | 재시작 설정 | `unless-stopped`; 운영 CCTV Compose와 분리 |
 
-서버는 진행판 폴더를 읽기 전용으로 마운트하며 `/`, `/index.html`, PDF만 응답한다. 모델 CSV는 HTML에 포함된 데이터를 브라우저에서 다운로드하며 서버 허용 경로는 늘리지 않았다.
+서버는 진행판 폴더를 읽기 전용으로 마운트하며 진행판/PDF와 승인된 모듈 HTML·D3 자원 경로만 응답한다. 모델 CSV는 HTML에 포함된 데이터를 브라우저에서 다운로드하며 서버 허용 경로는 늘리지 않았다.
 프로젝트 전체·DB·영상·비밀 설정은 마운트하지 않는다. CPU 0.25개·메모리 64MiB 제한을 적용했다.
 기존 CCTV 컨테이너를 재기동하거나 장치 명령을 실행하지 않았다.
 
@@ -902,7 +906,7 @@ WBS 원본 33개 ID/상태·집계 일치, 렌더러 Ruff·문법·문서 공백
    실패하면 게시본을 최신이라고 표시하지 않는다.
 
 ```bash
-rtk proxy env MPLCONFIGDIR=/tmp/cctv-progress-mpl .venv/bin/python scripts/ops/render_progress_snapshot.py --data docs/planning/figma_exports/progress_v140.json --output docs/planning/online/CCTV_project_progress.pdf
+rtk proxy env MPLCONFIGDIR=/tmp/cctv-progress-mpl .venv/bin/python scripts/ops/render_progress_snapshot.py --data docs/planning/figma_exports/progress_v141.json --output docs/planning/online/CCTV_project_progress.pdf
 rtk proxy curl --noproxy '*' --max-time 5 -I http://192.168.2.242:18081/
 ```
 
