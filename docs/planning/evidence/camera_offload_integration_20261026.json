@@ -1,0 +1,254 @@
+{
+  "date": "2026-10-26",
+  "status": "REVIEWED_SELECTED_REGRESSION_PASS_SOURCE_INTEGRATION",
+  "base_commit": "1176bbd78826b1291627a4dc231b1958ee1fb3a1",
+  "worker_worktree": "/home/sawwave/.codex/worktrees/camera-offload/CCTV-project",
+  "before_backup": "/media/sawwave/Learning11/CCTV-project/data/runtime/camera_offload_integration_20261026_bl9g2v8u/before",
+  "source_files": {
+    "src/services/edge_orchestrator.py": {
+      "before": "18ac8badb9500039a8146a587c0b132c65d2e47dcb53355f2e104f2563feb790",
+      "after": "367a5839adfd4ff454db1e4505d48a2d4587fb2108b9dbb5cef4918fef240011",
+      "scope_status": "assigned_or_ab_coordinated"
+    },
+    "src/services/edge_node_agent.py": {
+      "before": "deb4a4ba93b6e1bbfd5427e2218507daff4e75b746962ac65eae1a5e5c103d29",
+      "after": "5998b4061b940842e9e9e44d73d26636b24ef14d3029c926e2fe51b8c80ec47c",
+      "scope_status": "assigned_or_ab_coordinated"
+    },
+    "src/services/edge_ownership.py": {
+      "before": "572c4b3de100c21a83c524e06e5f2f3dc48229828b72d023563ed21c7efa55d5",
+      "after": "a612aaf842e86fbd683f66cb7341ecc6f06e74fa5fa8e6d30064e1efa0ba5c7a",
+      "scope_status": "assigned_limited_scope_by_integrator",
+      "reason": "선택 카메라 상태로 소유권 검증 및 동일 대상 병행 준비 차단",
+      "current_original_matches_base": true,
+      "assignment_recorded_at": "2026-10-23T15:30:48.058958+09:00",
+      "assignment_basis": "통합 담당이 before/after 해시와 중복 담당을 대조한 뒤 사용자 메시지로 한정 개발 배정을 확정함"
+    },
+    "src/services/edge_handoff.py": {
+      "before": "9214a29880e6f3c8fe8149bd6031e8432757b5aa742a6212ac1a5d804baf37f4",
+      "after": "98b71e9a6af16a38719649fe254546c0ec94a1e50847cdbcf60fa470e207efd8",
+      "scope_status": "assigned_or_ab_coordinated"
+    },
+    "src/services/edge_auto_handoff.py": {
+      "before": "03aa9b2750fc4ef13dfa44f7a2d7a73513ce42b2c3132bd223e53a7b04fb19cc",
+      "after": "c42a832af098bcc487f0d95fc442f3232c00960750db9e51687736ffccf27864",
+      "scope_status": "assigned_or_ab_coordinated"
+    },
+    "src/services/edge_preview.py": {
+      "before": "47bb4d5576f1c36f7743fdfc0a71dd729dacae62e05b827e409f2f404a27c847",
+      "after": "5aebf823ca12917e3da6ab4ee346c327505d96098cc00afce3ef27251fa72131",
+      "scope_status": "assigned_limited_scope_by_integrator",
+      "reason": "현재 담당의 카메라별 영상 주소 선택",
+      "current_original_matches_base": true,
+      "assignment_recorded_at": "2026-10-23T15:30:48.058958+09:00",
+      "assignment_basis": "통합 담당이 before/after 해시와 중복 담당을 대조한 뒤 사용자 메시지로 한정 개발 배정을 확정함"
+    },
+    "runners/run_edge_orchestration.py": {
+      "before": "bb57123c5180e4fcba56beda8a00acb9d9208aac6828ba8c9f99c6d1d431491a",
+      "after": "326c79cbcabc959c63542982f4bb0cb559b540cffab23222f9a5453cd55f591f",
+      "scope_status": "assigned_limited_scope_by_integrator",
+      "reason": "노드 Agent 하나에 카메라별 감독자 설정 연결",
+      "current_original_matches_base": true,
+      "assignment_recorded_at": "2026-10-23T15:30:48.058958+09:00",
+      "assignment_basis": "통합 담당이 before/after 해시와 중복 담당을 대조한 뒤 사용자 메시지로 한정 개발 배정을 확정함"
+    },
+    "src/services/edge_service.py": {
+      "before": "80db650bbf45b09cc0f2015b3fdc5b9c89c7b31efa93495e28d56d73d54f8781",
+      "after": "a1079629bf6b479d8c84d896b874832593e9e8d77ff2cdc249d8e770e6713e8d",
+      "scope_status": "assigned_or_ab_coordinated"
+    },
+    "src/core/base_processor.py": {
+      "before": "67eb8d04b2e18b082cc2adbb045ce2e7216ed7794aedb8d80fe4d4a809de7d7d",
+      "after": "ff0f0f01528fc9013bec8954dfcfaeda4c3fb6cfa1ecd76ab475374639329c57",
+      "scope_status": "assigned_limited_scope_by_integrator",
+      "reason": "관리되는 카메라 ID 검증 함수",
+      "current_original_matches_base": true,
+      "assignment_recorded_at": "2026-10-23T15:30:48.058958+09:00",
+      "assignment_basis": "통합 담당이 before/after 해시와 중복 담당을 대조한 뒤 사용자 메시지로 한정 개발 배정을 확정함"
+    },
+    "src/core/deepstream_processor.py": {
+      "before": "e66a53be9f33bb288cecc9de728461fa3f6dfb2a2eb7586ea79413302230edf0",
+      "after": "43c7b02777d4b6baf3ce7834ec080d6da8e4402f805786bbebe4a7a8dd0977aa",
+      "scope_status": "assigned_limited_scope_by_integrator",
+      "reason": "add_camera 시작에서 관리 ID 검사, 다른 흐름 변경 없음",
+      "current_original_matches_base": true,
+      "assignment_recorded_at": "2026-10-23T15:30:48.058958+09:00",
+      "assignment_basis": "통합 담당이 before/after 해시와 중복 담당을 대조한 뒤 사용자 메시지로 한정 개발 배정을 확정함"
+    },
+    "src/core/processor.py": {
+      "before": "3b8ca611b16f12737511976d847fc6d2953e83c77edd75d000fa0463434d2e8e",
+      "after": "e7041b73b767e493f581dc5624ce439aaf9a8a68f8212f6d5ae2d19474b2575e",
+      "scope_status": "assigned_limited_scope_by_integrator",
+      "reason": "add_camera 시작에서 관리 ID 검사, 다른 흐름 변경 없음",
+      "current_original_matches_base": true,
+      "assignment_recorded_at": "2026-10-23T15:30:48.058958+09:00",
+      "assignment_basis": "통합 담당이 before/after 해시와 중복 담당을 대조한 뒤 사용자 메시지로 한정 개발 배정을 확정함"
+    },
+    "src/bootstrap/runtime.py": {
+      "before": "93eb6bdf2755b2d6346707870cb065e5e8d208590eb45e856f8b99d66038daca",
+      "after": "638c27b5bb8942237ce177fb910e4cbba4175019574be50fa6c8b61a15f8b689",
+      "scope_status": "assigned_limited_scope_by_integrator",
+      "reason": "관리되는 프로세스의 초기 활성 입력 1개/ID 검사",
+      "current_original_matches_base": true,
+      "assignment_recorded_at": "2026-10-23T15:30:48.058958+09:00",
+      "assignment_basis": "통합 담당이 before/after 해시와 중복 담당을 대조한 뒤 사용자 메시지로 한정 개발 배정을 확정함"
+    },
+    "tests/fixtures/edge_ai_process.py": {
+      "before": "a2f4333730a66409badce36b24978951b0348ef141b8da530cd9d09d6e9f83f0",
+      "after": "d7ec29a53479a78587562b30177016c28a3510894f653d464cdadc329828ffe4",
+      "scope_status": "assigned_or_ab_coordinated"
+    },
+    "tests/test_edge_camera_offload.py": {
+      "before": null,
+      "after": "6eeaba9abc9b8100553bf121dca7273b828ab0c77a47214a220806da2e88a6bd",
+      "scope_status": "assigned_or_ab_coordinated"
+    }
+  },
+  "source_file_count": 14,
+  "product_file_count": 12,
+  "test_file_count": 2,
+  "ready_sha256": "050731d2c46f36cd7ced3312775a81eb088b1d52999abbee269df57dd81a1fd1",
+  "fixed_files_verified": 614,
+  "patch_sha256": "542e63d2d7be4e468dbef83913a4b6649c4f185e4d5c78bd8b2e03962dffa271",
+  "worker_summary": "/home/sawwave/.codex/worktrees/camera-offload/CCTV-project/camera-offload-trial/final-attempt-20261026T085013/summary.json",
+  "worker_summary_sha256": "c3c0cf3361617298bbd36de8049ecadd2d3eab4bf7f7943df5de754c6e4b6a72",
+  "worker_review": "/home/sawwave/.codex/worktrees/camera-offload/CCTV-project/camera-offload-trial/source-integration-review-20261026.json",
+  "worker_review_sha256": "7cbdbb01aa67f6b2628ccdfe14eba6fd70d0007ab36ee0740deab0e3b6dfaa60",
+  "pytest": {
+    "status": "PASS",
+    "started": true,
+    "collected": 199,
+    "passed": 199,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "not_run_in_selected_scope": 0,
+    "elapsed_seconds": 103.65,
+    "junit_suite_seconds": [
+      103.648
+    ],
+    "exit_code": 0,
+    "targets": [
+      "camera-offload-trial/test_guarded_runner.py",
+      "tests/test_edge_camera_offload.py",
+      "tests/test_edge_orchestrator.py",
+      "tests/test_edge_ownership.py",
+      "tests/test_edge_handoff.py",
+      "tests/test_edge_auto_handoff.py",
+      "tests/test_edge_view.py",
+      "tests/test_edge_preview.py"
+    ],
+    "reruns": 0
+  },
+  "guard": {
+    "precheck_passed": true,
+    "requested_precheck_seconds": 30,
+    "precheck_elapsed_sample_seconds": 30.26575224401313,
+    "sample_count": 29,
+    "window_count": 28,
+    "all_samples_passed": true,
+    "raw_counter_recalculation": "PASS",
+    "fps_min": 29.39104564763895,
+    "fps_max": 30.6387383360402,
+    "primary_hz_min": 14.795492366838657,
+    "primary_hz_max": 15.220534528226422,
+    "age_seconds_max": 0.041909104998921975,
+    "memory_available_gib_min": 36.195499420166016,
+    "temperature_c_max": 52.937,
+    "all_error_restart_drop_deltas_zero": true,
+    "last_window": {
+      "duration_seconds": 4.988186009984929,
+      "frames_delta": 150.0,
+      "inferred_delta": 75.0,
+      "fps": 30.07105182119165,
+      "primary_hz": 15.035525910595824,
+      "error_deltas": {
+        "cctv_processor_source_error_identified_total": 0.0,
+        "cctv_processor_source_error_unidentified_total": 0.0,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_processor_frames_dropped_total": 0.0
+      }
+    },
+    "post_cleanup_operating_observation": "NOT_RUN",
+    "forced_kill_live_path": "NOT_VALIDATED_BY_INDUCED_LIVE_FAILURE; 정상 완료·잔여0 확인, 강제중단/정리는 실행기 모의시험 범위"
+  },
+  "cleanup": {
+    "checked_at": "2026-10-26T08:53:00.050097+09:00",
+    "marker": "06848dc0919243aeb06866838acde1cb",
+    "pytest_pid": 870806,
+    "pytest_pid_exists": false,
+    "owned_remaining_pids": [],
+    "unattributed_candidate_pids": [],
+    "runner_exit_code": 0,
+    "scope": "자체 pytest PID/전용 fixture 경로/고유 basetemp 후보의 실행 UUID만 대조. 운영 계측 없음."
+  },
+  "return_notice": {
+    "send_started_at": "2026-10-26T08:53:17+09:00",
+    "send_completed_at": "2026-10-26T08:53:23+09:00",
+    "tool": "mcp__codex_app__send_message_to_thread",
+    "thread_id": "01a1661c-05e7-7112-a4d3-a8de0930f0ef",
+    "tool_is_error": false,
+    "integrator_ack": "CONFIRMED; source integration evidence records receipt, worker snapshot preserved"
+  },
+  "raw_sha256": {
+    "operating_check.json": "277c2e969efb569b8bcdd847031a0daa15198c9684d9bd6b64ce2d1bb8457259",
+    "execution.guard.json": "b35ba3efe0966a3eb6598d6ad800ce3047fd353135ddced9344f0bd89f13854d",
+    "result.json": "89770693df679bf809989cdbcd23f4d463c7c42cb08679f65da48932397e30a2",
+    "cleanup-check.json": "84c451d05f02b782252794a1089ad5c4efc777b9cf9e8730d5555d8249532bb2",
+    "pytest.log": "7d02323abf46ad837e78562bf90cc04f7e55aecc52122993558b908f424ee94b",
+    "junit.xml": "20ed63469dd9cb8ebc2d75bbf9a2ba5095e0f0f7d5216802ec585fede3543959",
+    "tested-ready-manifest.json": "050731d2c46f36cd7ced3312775a81eb088b1d52999abbee269df57dd81a1fd1"
+  },
+  "integration_checks": {
+    "before_after_files": 14,
+    "raw_counter_windows_recalculated": 28,
+    "raw_evidence_hashes": "PASS",
+    "ab_policy_and_existing_tests": "UNCHANGED",
+    "auto_handoff_hunks": [
+      "observed_camera_service import",
+      "_fresh camera selection",
+      "_candidate services lookup"
+    ],
+    "unchanged_dependency_exception": {
+      "path": "tests/test_signboard.py",
+      "change": "import order only; non-import AST identical; not a selected test dependency",
+      "preserved": true
+    },
+    "repeat_pytest": "NOT_RUN; exact validated source and dependencies reused",
+    "ast_files": 14,
+    "ruff_files": 14,
+    "ruff": "PASS",
+    "diff_check": "PASS",
+    "json_parse": "PASS"
+  },
+  "deployment": false,
+  "operating_changes": 0,
+  "not_verified": [
+    "전체 edge_service/bootstrap 회귀",
+    "실제 Jetson ROS2/DDS·카메라 이전·4+4 구성",
+    "실제 GPU 추론 및 공유4입력 hot 분할",
+    "운영 반영·장기 안정성·추가 부하 여유",
+    "실부하 보호실패를 유도한 pidfd 강제정리 경로"
+  ],
+  "preservation": {
+    "prior_attempts": [
+      "camera-offload-trial/final-attempt-20261023T154227/summary.json",
+      "camera-offload-trial/final-attempt-20261023T162107/summary.json"
+    ],
+    "other_worktrees_written": false,
+    "requirements_dev_sha256": "9efc5e041968f8abb8132cc5d48ffe52d6704fe800ea86a5f9d766eb030cf829",
+    "fight_and_raw_artifacts": "PRESERVED_NOT_COMMITTED"
+  },
+  "git_hooks": "Command-only bypass of graph update/full Ruff --fix/full pytest; shared hooks and config unchanged",
+  "later_resource_coordination": {
+    "roi_returned_at": "2026-10-26T09:08:03.180563+09:00",
+    "roi_operating_guard_failure_fps": 24.411882915490647,
+    "roi_operating_guard_failure_primary_hz": 12.37546842243623,
+    "roi_valid_results": 0,
+    "roi_actual_gpu_inference": "UNCONFIRMED",
+    "ab_only_readonly_observation": "2026-10-26T09:10:00+09:00/2026-10-26T09:12:00+09:00",
+    "source_integration_is_not_current_headroom_approval": true
+  },
+  "code_commit": "d5521d5f7b87d3ed80a19ddc6d3e3e94fd66cf0a",
+  "committed_files_sha_verified": 14
+}

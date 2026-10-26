@@ -2059,5 +2059,13 @@
     "reason": "Rule routes must preserve event_id and uint64-compatible string object_id; QoS1 matches durable intake. Paired with committed Action/EdgeX changes.",
     "validation": "exact current hash in prior 302+4 host/candidate evidence; same bytes present in fresh 528 PASS/11 SKIP snapshot; JSON parse/diff review PASS",
     "live_rule_reload": false
+  },
+  "subsequent_camera_offload_integration": {
+    "date": "2026-10-26",
+    "status": "SELECTED_REGRESSION_199_PASS_SOURCE_14_FILES_INTEGRATED",
+    "evidence": "camera_offload_integration_20261026.json",
+    "deployment": false,
+    "historical_held_back_record_preserved": true,
+    "code_commit": "d5521d5f7b87d3ed80a19ddc6d3e3e94fd66cf0a"
   }
 }

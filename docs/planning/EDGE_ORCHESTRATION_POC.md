@@ -15,6 +15,12 @@
 
 ## 카메라 한 대 추론 이전 후속 개발 범위 — 10-23
 
+### 10-26 최신 소스 통합 결과
+
+10-26 **camera-offload 선택 회귀199 PASS·소스14파일 선별 통합** (`d5521d5`): 독립 카메라 감독자/노드 Agent service map·카메라별 인계/미리보기·초기/동적1입력 보호를 반영했다. 원본13파일 before와 신규시험 부재·후보14파일 after를 대조하고 수정 전 사본을 보존했다. A/B 자동복귀는 허용3지점만 결합, 기존 시험/정책은 그대로다. 08:50~08:52 CPU 모형 회귀199 PASS·보호28구간 PASS·자체잔여0이며 운영 반영0이다. 전체 edge_service/bootstrap 회귀·실물 카메라/ROS2/DDS·공유4입력 hot분할은 미검증/범위 밖으로 유지한다. **P6.2 PLANNED·O4 IN_PROGRESS·I68 OPEN·DONE9/37 유지**. [소스·실행·보존 근거](evidence/camera_offload_integration_20261026.json).
+
+아래 10-23 미통합·검증 대기 항목은 당시 이력이다. 최신 통합은 READY `050731d2…81a1fd1`·614파일과 patch `542e63d2…fa271`을 기준으로 하며, worker의 기존 미커밋 소스와 실패 자료를 보존했다. `edge_auto_handoff.py`는 카메라별 상태 선택3지점 외 기존 복귀 조건을 바꾸지 않았다. 운영 엔진·컨테이너·카메라 연결은 변경하지 않았다.
+
 사용자 지시에 따라 `camera-offload` 전용 worktree에서 **독립 카메라 프로세스별 감독자와 노드당1개 Agent service map**을 기준으로 카메라별 서비스 선택/인계 경계를 개발한다. 다른 카메라와 운영 엔진을 유지하며 공유4입력 파이프라인의 hot분할과 새 자동복귀 정책은 이번 범위에서 제외한다. 실제4카메라 중1개 이전·나머지3개 지속·다중 service 보고는 미검증이다.
 
 A/B 완성본3파일은HEAD에 없는 미커밋 결과이므로 현재 원본12파일 고정 사본과 별도로 after SHA를 대조했다. A/B는3파일 본문을 동결하고 소유권을 유지한다. camera-offload는 자기 변경을 보존한 뒤 완성본을 기준으로 `observed_camera_service` import·`_fresh` 카메라 선택·`_candidate` services 조회3지점과 대응 회귀시험만 결합한다. failback 기본동작·지속회복/cooldown·CAS·최신 소유권/실행ID·새 결과 확인 후 이전 실행 중지 및 정책JSON을 보존한다. 추가 수정 범위는 통합/A/B와 먼저 조율한다.

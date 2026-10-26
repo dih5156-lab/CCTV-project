@@ -16012,5 +16012,28 @@
     "production_deployed": false,
     "snapshot_rerendered": false,
     "wbs_counts_unchanged": true
+  },
+  "camera_offload_source_integration_20261026": {
+    "date": "2026-10-26",
+    "source_files": 14,
+    "selected_regression_passed": 199,
+    "ready_sha256": "050731d2c46f36cd7ced3312775a81eb088b1d52999abbee269df57dd81a1fd1",
+    "evidence": "evidence/camera_offload_integration_20261026.json",
+    "production_deployed": false,
+    "full_product_regression_complete": false,
+    "snapshot_rerendered": false,
+    "wbs_counts_unchanged": true,
+    "code_commit": "d5521d5f7b87d3ed80a19ddc6d3e3e94fd66cf0a"
+  },
+  "roi_attempt_20261026": {
+    "status": "RETURNED_GUARD_STOP_NOT_EVALUATED",
+    "returned_at": "2026-10-26T09:08:03.180563+09:00",
+    "valid_results": 0,
+    "normal_conversion_complete": true,
+    "reused_fall_video": true,
+    "first_condition_invalid": true,
+    "actual_gpu_inference": "UNCONFIRMED",
+    "evidence": "evidence/two_camera_baseline_20261023.json",
+    "wbs_counts_unchanged": true
   }
 }

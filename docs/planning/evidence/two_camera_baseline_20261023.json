@@ -544,5 +544,236 @@
       "return_ack_previously_recorded": true,
       "new_host_observations_or_tests": 0
     }
+  },
+  "roi_20261026_attempt1_result": {
+    "source_result": "/home/sawwave/.codex/worktrees/two-camera-baseline/CCTV-project/data/runtime/two_camera_cadence_20261026_attempt1/result_0905.json",
+    "sha256": "06e32b65b4c5a24832986907c31e92d839f351839db3e1cc67039945ea1733e0",
+    "raw_hashes_verified": 14,
+    "recorded_at": "2026-10-26T09:10:01.488354+09:00",
+    "status": "RETURNED_GUARD_STOP_NOT_EVALUATED",
+    "preflight": {
+      "path": "/home/sawwave/.codex/worktrees/two-camera-baseline/CCTV-project/data/runtime/two_camera_cadence_20261026_attempt1/allocation_0905_preflight.json",
+      "sha256": "9254cc2956e5f3d8ba40e218d5933fb15e7562cf4fa6f98e9c9a16fc5ae06c4e",
+      "start_at": "2026-10-26T09:05:47.419390+09:00",
+      "end_at": "2026-10-26T09:06:17.523927+09:00",
+      "duration_seconds": 30.10028940398479,
+      "frames_start": 7293712.0,
+      "frames_end": 7294616.0,
+      "primary_start": 3583079.0,
+      "primary_end": 3583530.0,
+      "fps": 30.032933832201795,
+      "primary_hz": 14.983244644162621,
+      "min_window_fps": 29.886530747119902,
+      "min_window_hz": 14.945192258621848,
+      "max_age_seconds": 0.03497771700494923,
+      "min_memory_gib": 36.59100341796875,
+      "max_temperature_c": 51.937,
+      "error_deltas": {
+        "cctv_processor_source_error_identified_total": 0.0,
+        "cctv_processor_source_error_unidentified_total": 0.0,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_processor_frames_dropped_total": 0.0
+      },
+      "all_guard_passed": true
+    },
+    "normal_conversion": {
+      "passed": true,
+      "first_sample_at": "2026-10-26T09:06:17.597185+09:00",
+      "last_sample_at": "2026-10-26T09:06:52.731917+09:00",
+      "sample_duration_seconds": 35.13974215899361,
+      "returncode": 0,
+      "video": {
+        "sha256": "ffd69771de3f8b26280743e5c15a6c96e0f8edd574e93e92c0145761811977d6",
+        "probe": {
+          "width": 1920,
+          "height": 1080,
+          "avg_frame_rate": "24/1",
+          "duration": "10.000000",
+          "nb_frames": "240"
+        }
+      },
+      "new_valid_videos": 1,
+      "reused_valid_videos": 1
+    },
+    "trial": {
+      "first_condition_hz": 12,
+      "execution_valid": false,
+      "two_containers_created": true,
+      "completed_conditions": [],
+      "conditions_8_6_started": false,
+      "captures": 0,
+      "comparison_rows_not_run": 6,
+      "gpu_inference": "UNCONFIRMED",
+      "collector_started": true,
+      "collector_residual": 0,
+      "container_logs_bytes": [
+        0,
+        0
+      ],
+      "failed_window_before": {
+        "observed_at": "2026-10-26T09:07:03.437215+09:00",
+        "guard_passed": true,
+        "window": null,
+        "at": 245014.708884674,
+        "values": {
+          "cctv_processor_frames_processed_total": 7295992.0,
+          "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 3584218.0,
+          "cctv_camera_primary_last_frame_age_seconds{camera_id=\"camera_1\"}": 0.03845635399920866,
+          "cctv_processor_source_error_identified_total": 2.0,
+          "cctv_processor_source_error_unidentified_total": 0.0,
+          "cctv_processor_pipeline_restart_executed_total": 0.0,
+          "cctv_processor_frames_dropped_total": 0.0
+        },
+        "memory_available_kib": 38788524,
+        "temperatures_c": [
+          51.937,
+          47.843,
+          48.281,
+          47.156,
+          51.937,
+          47.343
+        ],
+        "max_temperature_c": 51.937
+      },
+      "failed_window_after": {
+        "observed_at": "2026-10-26T09:07:09.328090+09:00",
+        "guard_passed": false,
+        "window": {
+          "duration_seconds": 5.898766616999637,
+          "frames_delta": 144.0,
+          "inferred_delta": 73.0,
+          "fps": 24.411882915490647,
+          "primary_hz": 12.37546842243623,
+          "error_deltas": {
+            "cctv_processor_source_error_identified_total": 0.0,
+            "cctv_processor_source_error_unidentified_total": 0.0,
+            "cctv_processor_pipeline_restart_executed_total": 0.0,
+            "cctv_processor_frames_dropped_total": 0.0
+          }
+        },
+        "at": 245020.607651291,
+        "values": {
+          "cctv_processor_frames_processed_total": 7296136.0,
+          "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 3584291.0,
+          "cctv_camera_primary_last_frame_age_seconds{camera_id=\"camera_1\"}": 0.02767248300369829,
+          "cctv_processor_source_error_identified_total": 2.0,
+          "cctv_processor_source_error_unidentified_total": 0.0,
+          "cctv_processor_pipeline_restart_executed_total": 0.0,
+          "cctv_processor_frames_dropped_total": 0.0
+        },
+        "memory_available_kib": 38029260,
+        "temperatures_c": [
+          51.625,
+          47.687,
+          48.406,
+          47.281,
+          51.625,
+          47.343
+        ],
+        "max_temperature_c": 51.625,
+        "reason": "운영 처리율 미달: 24.411883 FPS / 12.375468 Hz (최소 27 / 13.5)"
+      },
+      "cleanup_errors": [],
+      "raw_window_recalculation": "PASS",
+      "fall_miss_evaluation": "NOT_EVALUATED",
+      "performance_evaluation": "NOT_EVALUATED",
+      "causality": "startup overlapped guard failure; sole cause and GPU activity not established"
+    },
+    "cleanup": {
+      "verified_at": "2026-10-26T09:08:03.165122+09:00",
+      "own_containers": 0,
+      "own_processes": 0,
+      "own_collectors": 0,
+      "operating_identity_unchanged": true,
+      "engine_sha_unchanged": true,
+      "fixed41_sha_unchanged": true,
+      "prior_evidence_sha_unchanged": true
+    },
+    "return": {
+      "returned_at": "2026-10-26T09:08:03.180563+09:00",
+      "status": "RETURNED_GUARD_STOP_NOT_EVALUATED",
+      "cleanup_verified_at": "2026-10-26T09:08:03.165122+09:00",
+      "pilot_finished_at": "2026-10-26T09:07:15.073411+09:00",
+      "remaining_resources": 0,
+      "completed_conditions": [],
+      "case_12hz": "STARTED_GUARD_STOP_INVALID",
+      "case_8hz": "NOT_RUN",
+      "case_6hz": "NOT_RUN",
+      "actual_gpu_inference": "UNCONFIRMED",
+      "captured_channel_results": 0,
+      "fall_miss_evaluation": "NOT_EVALUATED",
+      "performance_evaluation": "NOT_EVALUATED",
+      "additional_work": false,
+      "automatic_retry": false,
+      "slot_released": true,
+      "post_cleanup_recovery_observed": false
+    },
+    "post_cleanup_operating_observation": false,
+    "integration_return_ack": {
+      "recorded_at": "2026-10-26T09:10:34.846197+09:00",
+      "basis": "integration owner direct message after reading return_0905.json and execution.json",
+      "status": "ACKNOWLEDGED_CLOSED_NO_ALLOCATION",
+      "returned_at": "2026-10-26T09:08:03.180563+09:00",
+      "cleanup_verified_at": "2026-10-26T09:08:03.165122+09:00",
+      "remaining_slot_released": true,
+      "additional_observation_by_roi": false,
+      "automatic_retry": false
+    }
+  },
+  "post_roi_readonly_recovery_20261026": {
+    "source": "/home/sawwave/.codex/worktrees/edge-auto-failback/CCTV-project/edge-auto-failback-trial/fps-post-roi-observation-20261026.json",
+    "sha256": "356afcd2d003a76f246f9a12ed3aa9943b43a3cd631998ac6ce7a0cb2a378017",
+    "status": "STABLE_RECOVERY_NOT_CONFIRMED",
+    "actual_finished": "2026-10-26T09:11:57.564336+09:00",
+    "read_only_process_exit": 0,
+    "duration_seconds": 30.298139145976165,
+    "fps": 28.153544212410324,
+    "primary_hz": 14.027264115210302,
+    "windows": [
+      {
+        "from": "2026-10-26T09:11:27.266144+09:00",
+        "to": "2026-10-26T09:11:32.296885+09:00",
+        "seconds": 5.030745398980798,
+        "fps": 30.015432709155146,
+        "primary_hz": 14.908327504547257
+      },
+      {
+        "from": "2026-10-26T09:11:32.296885+09:00",
+        "to": "2026-10-26T09:11:37.332250+09:00",
+        "seconds": 5.035363253002288,
+        "fps": 18.469372580925445,
+        "primary_hz": 9.333983992510708
+      },
+      {
+        "from": "2026-10-26T09:11:37.332250+09:00",
+        "to": "2026-10-26T09:11:42.368509+09:00",
+        "seconds": 5.0362577110063285,
+        "fps": 30.578260453877416,
+        "primary_hz": 15.090570094121322
+      },
+      {
+        "from": "2026-10-26T09:11:42.368509+09:00",
+        "to": "2026-10-26T09:11:47.421131+09:00",
+        "seconds": 5.052624461008236,
+        "fps": 29.09379098613369,
+        "primary_hz": 14.645853965808795
+      },
+      {
+        "from": "2026-10-26T09:11:47.421131+09:00",
+        "to": "2026-10-26T09:11:52.534613+09:00",
+        "seconds": 5.113474600977497,
+        "fps": 29.529823023103447,
+        "primary_hz": 14.667130640614294
+      },
+      {
+        "from": "2026-10-26T09:11:52.534613+09:00",
+        "to": "2026-10-26T09:11:57.564277+09:00",
+        "seconds": 5.029673721001018,
+        "fps": 31.214748452659766,
+        "primary_hz": 15.507964199410583
+      }
+    ],
+    "further_live_observation": false,
+    "new_load_test_allocation": false
   }
 }
