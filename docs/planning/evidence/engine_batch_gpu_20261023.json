@@ -1857,5 +1857,44 @@
     "latest_retry_result_not_replaced": true,
     "source_integration": false,
     "deployment": false
+  },
+  "cpu_instrumentation_retry_20261026": {
+    "status": "RETURNED_CPU_MOCK_16_PASS_GPU_NOT_RUN",
+    "source": "/home/sawwave/.codex/worktrees/multicamera-engine-batch/CCTV-project/data/runtime/engine_quality_four_input_20261026_preparation/cpu_validation_retry1",
+    "evidence_sha256": {
+      "result.json": "b7331052706f455fdee9a5e4a6ae1af3c4607c8f60ed82dfdffb079d2c1348d1",
+      "operating_samples.json": "6744434912057642d4cb55b53c553073dd4ff86477f483e676076ce9a5e561e8",
+      "junit.xml": "d60383eda6e2f758f317a6201930720ebb498d22aa64d99dbf6fb6b8553b2e5e",
+      "command_0.log": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "command_1.log": "9f3ecd772031255c9c2d5ea0addfd37fa87971e85c2bbd8ceca037b4d3ff2613"
+    },
+    "actual_started": "2026-10-26T09:59:40.176695+09:00",
+    "actual_finished": "2026-10-26T10:00:20.571756+09:00",
+    "cleanup_checked_at_owner_report": "2026-10-26T10:00:41.785095+09:00",
+    "process_groups_absent_owner_report": [
+      986245,
+      986417
+    ],
+    "return_declaration": "explicit owner notice received; exact declaration timestamp not supplied",
+    "passed": 16,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "ruff_exit_code": 0,
+    "preflight_seconds": 30.246840537001844,
+    "preflight_fps": 29.95354172253673,
+    "preflight_primary_hz": 14.976770861268365,
+    "guard_samples": 9,
+    "guard_windows": 8,
+    "guard_raw_recalculation": "PASS",
+    "fixed_sha256": {
+      "scripts/ops/capture_engine_batch.py": "e6808371f6107ee42d0472b88108a18d62ac1f44104f097922c5f6164c404857",
+      "scripts/ops/validate_engine_batch_runtime.py": "192817c860616ac854145aac920b83cd15564bc5f4a3898f201375f4ae27bcc8",
+      "tests/test_engine_batch_runtime.py": "d57825c650908e00dfa8e1658aa201e649c0092e1b2ec8eb0e3a1de9f6ad0381"
+    },
+    "own_child_running": false,
+    "operating_changes": false,
+    "actual_gpu_trials": 0,
+    "limits": "pure instrumentation/guard mocks only; not accuracy/four-input runtime acceptance; product/source integration not performed"
   }
 }

@@ -987,5 +987,43 @@
       "마지막30초회복은장기안정/후속부하시험PASS가아니다."
     ],
     "saved_recovery_window_recalculation": "PASS_127_AND_15_WINDOWS_NO_LIVE_QUERY"
+  },
+  "sequential_initialization_cpu_v3_20261026": {
+    "status": "RETURNED_PREFLIGHT_BLOCKED_NO_MOCK_STARTED",
+    "source": "/home/sawwave/.codex/worktrees/two-camera-baseline/CCTV-project/data/runtime/roi_sequential_mock_20261026_v3",
+    "sha256": {
+      "result.json": "5b12889bb30d16a08fbaa46cae46773f4ecf947425326cfd26f11e015f24418b",
+      "initial_preflight.json": "a1cbfbaa066c1baf468ff54d2710eb617fe95f4444c2c2d2cb1b50e15f28ebb4",
+      "return.json": "acad17e3a1360f7f2cede5d97247dc1b9a103524c2a4c417bc33cd88322f7050"
+    },
+    "started_at": "2026-10-26T10:07:17.699583+09:00",
+    "finished_at": "2026-10-26T10:07:33.339346+09:00",
+    "cleanup_verified_at": "2026-10-26T10:08:21.687638+09:00",
+    "returned_at": "2026-10-26T10:08:21.688042+09:00",
+    "first_failed_window": {
+      "duration_seconds": 5.442435446020681,
+      "frames_delta": 86.0,
+      "inferred_delta": 44.0,
+      "fps": 15.801749208229966,
+      "primary_hz": 8.084615873978121,
+      "error_deltas": {
+        "cctv_processor_source_error_identified_total": 0.0,
+        "cctv_processor_source_error_unidentified_total": 0.0,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_processor_frames_dropped_total": 0.0
+      }
+    },
+    "frame_age_seconds": 0.0034254490165039897,
+    "memory_available_kib": 39394232,
+    "max_temperature_c": 51.843,
+    "preflight_completed": false,
+    "pytest_started": false,
+    "ruff_started": false,
+    "own_pid_exists": false,
+    "source_hashes_unchanged": true,
+    "old_failure_preserved": true,
+    "guard_raw_recalculation": "PASS",
+    "recovery_after_stop": "NOT_OBSERVED",
+    "new_gpu_allocation": false
   }
 }
