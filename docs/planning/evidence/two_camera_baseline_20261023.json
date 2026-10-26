@@ -1534,7 +1534,7 @@
     "actual_finish_time": "not supplied; no reads started"
   },
   "codegraph_metadata_retry_allocation_20261026": {
-    "status": "ALLOCATED_READONLY_DAEMON_METADATA",
+    "status": "RETURNED_READ_COMPLETE",
     "owner": "A/B",
     "start_at": "2026-10-26T11:32:00+09:00",
     "end_at": "2026-10-26T11:35:00+09:00",
@@ -1545,10 +1545,120 @@
     "guard": "aware allocation;1second before end; one exclusiveattempt; outputnooverwrite",
     "scope": "same2saveddaemonPID/configallowedkeys/DBlogstat/socketrelated metadata; noDBopen/newconnection/signals/restarts/indexing",
     "automatic_retry": false,
-    "actual_return": null
+    "actual_return": "2026-10-26T11:32:14.563515+09:00",
+    "source": "/home/sawwave/.codex/worktrees/edge-auto-failback/CCTV-project/edge-auto-failback-trial/codegraph-fix-20261026",
+    "preserved": "/media/sawwave/Learning11/CCTV-project/data/runtime/gpu_coordination_20261023_ksweql0f/codegraph_prechange_20261026",
+    "sha256": {
+      "prechange-read.json": "ab6f4892e382265223e9e3a4559275220885f5e85bd6771422ca5f1bf890b088",
+      "prechange-attempt.json": "79756b1bae195f40868856e97f6b6bfdd3ad09a872d340ca27c25561ccbfd4d9",
+      "read_prechange.py": "c124a710928f6a95b8bc623d75223ade75024dc4ed71216312da97ae5e00e0d3"
+    },
+    "started_at": "2026-10-26T11:32:14.550780+09:00",
+    "finished_at": "2026-10-26T11:32:14.563515+09:00",
+    "elapsed_seconds": 0.011992151994490996,
+    "observer_pid": 1129482,
+    "own_command_exit_owner_report": 0,
+    "children_created": 0,
+    "targets": [
+      {
+        "root": "/home/sawwave",
+        "pid": 826678,
+        "start_ticks": 24250533,
+        "same_start_after": true,
+        "cwd": "/home/sawwave/.codex",
+        "roles": [
+          "serve",
+          "--mcp",
+          "--path"
+        ],
+        "path_values": [
+          "/home/sawwave"
+        ],
+        "files": [
+          {
+            "name": "codegraph.db",
+            "bytes": 4898951168,
+            "mtime_ns": 1792101319959059255,
+            "mode": "0o644"
+          },
+          {
+            "name": "codegraph.db-wal",
+            "bytes": 0,
+            "mtime_ns": 1792970714441505026,
+            "mode": "0o644"
+          },
+          {
+            "name": "codegraph.db-shm",
+            "bytes": 32768,
+            "mtime_ns": 1792970714445504992,
+            "mode": "0o644"
+          },
+          {
+            "name": "daemon.log",
+            "bytes": 3279462062,
+            "mtime_ns": 1792981930941894805,
+            "mode": "0o664"
+          }
+        ],
+        "socket_fd_count": 2,
+        "inotify_fd_count": 1,
+        "socket_details_in_raw_evidence": true
+      },
+      {
+        "root": "/media/sawwave/Learning11",
+        "pid": 827268,
+        "start_ticks": 24251570,
+        "same_start_after": true,
+        "cwd": "/media/sawwave/Learning11/CCTV-project",
+        "roles": [
+          "serve",
+          "--mcp",
+          "--path"
+        ],
+        "path_values": [
+          "/media/sawwave/Learning11"
+        ],
+        "files": [
+          {
+            "name": "codegraph.db",
+            "bytes": 739491840,
+            "mtime_ns": 1792971546336047878,
+            "mode": "0o644"
+          },
+          {
+            "name": "codegraph.db-wal",
+            "bytes": 5331312,
+            "mtime_ns": 1792971546308048084,
+            "mode": "0o644"
+          },
+          {
+            "name": "codegraph.db-shm",
+            "bytes": 32768,
+            "mtime_ns": 1792971546304048114,
+            "mode": "0o644"
+          },
+          {
+            "name": "daemon.log",
+            "bytes": 14640170607,
+            "mtime_ns": 1792972094827633882,
+            "mode": "0o664"
+          }
+        ],
+        "socket_fd_count": 19,
+        "inotify_fd_count": 1,
+        "socket_details_in_raw_evidence": true
+      }
+    ],
+    "new_cpu_fps_samples": false,
+    "db_open": false,
+    "configuration_changes": false,
+    "new_connections": false,
+    "socket_count_is_not_active_call_or_thread_attribution": true,
+    "return_acknowledged_at": "2026-10-26T11:34:32.186989+09:00",
+    "return_time_basis": "owner immediate return at command completion; no separate receipt timestamp supplied"
   },
   "codegraph_remediation_coordination_20261026": {
-    "status": "READONLY_METADATA_ALLOCATED_NO_SETTINGS_CHANGES",
+    "status": "CANDIDATE_PATCH_AND_RECONNECTION_PLAN_PREPARATION",
     "owner_thread": "01a160c8-885d-77d3-90ba-02c9528e9ad7",
     "scope": "codegraph entry only in Codex config and dedicated launcher; project-scoped graphs; preserve home/parent database and logs",
     "root_codegraph_outstanding_calls": 0,
@@ -1565,6 +1675,194 @@
       "miniPC": 0,
       "camera_offload": 0
     },
-    "new_codegraph_calls_held_by_all_listed": true
+    "new_codegraph_calls_held_by_all_listed": true,
+    "candidate_scope": [
+      "Codex codegraph block",
+      "dedicated cctv-codegraph launcher",
+      "installed directory.js checkout-boundary guard",
+      "installed watcher.js unrecoverable retry guard",
+      "installed engine.js explicit unavailable state"
+    ],
+    "installation_or_patch_application_allocated": false,
+    "metadata_result": {
+      "status": "RETURNED_READ_COMPLETE",
+      "reference_key": "codegraph_metadata_retry_allocation_20261026"
+    }
+  },
+  "codegraph_project_selection_20261026": {
+    "default_project": "/media/sawwave/Learning11/CCTV-project",
+    "worktree_selection": "explicit projectPath; same resolved Git common directory; only requested checkout READY healthy DB",
+    "unready_behavior": "explicit NOT_READY/error, never empty success",
+    "ancestor_or_original_fallback": false,
+    "per_worktree_mcp_override_added": false,
+    "checkout_sync_requires_allocation": true,
+    "extra_candidate_file": "lib/dist/extraction/index.js buildDefaultIgnore conditional on CODEGRAPH_GIT_COMMON_DIR",
+    "extra_excludes_scope": "root data/models/videos/datasets/.codex/.agents, explicit trial artifacts and secret environment files; preserve product source/tests/config",
+    "actual_application_allowed": false
+  },
+  "roi_image_source_read_allocation_20261026": {
+    "status": "RETURNED_MOCK5_AND_IMAGE_READ_PASS",
+    "owner": "ROI",
+    "thread_id": "01a16614-0692-7512-b98a-45d253a29e3a",
+    "start_at": "2026-10-26T11:45:00+09:00",
+    "end_at": "2026-10-26T11:47:00+09:00",
+    "ready_path": "/home/sawwave/.codex/worktrees/two-camera-baseline/CCTV-project/data/runtime/model_scope_20261026/image_reader_ready.json",
+    "ready_sha256": "db995139abbe71ca37ebe1fc8f95b33b1f6d199e315c4b3a1dc88934c570e0c5",
+    "reader_sha256": "4d18f07be54056e8cb9681eadcb6a135ca1139f8bdae5dc25f92b397339e594b",
+    "test_sha256": "279965cc59d464b1f70d5cbf34281d9df54e0bda1bd201039bb40d78fa37167b",
+    "scope": "5 pure mocks <=5s; only if PASS, 6 fixed operating-image source copies <=30s; allowlisted identity inspect before/after; CPU0/nice19; no source execution/models/metrics/config/restarts",
+    "automatic_retry": false,
+    "requires_actual_return": true,
+    "actual_return": "2026-10-26T11:46:05.213805+09:00",
+    "result_reference_key": "roi_image_source_read_result_20261026"
+  },
+  "roi_image_source_read_result_20261026": {
+    "status": "RETURNED_MOCK5_AND_IMAGE_READ_PASS",
+    "source": "/home/sawwave/.codex/worktrees/two-camera-baseline/CCTV-project/data/runtime/model_scope_20261026",
+    "preserved": "/media/sawwave/Learning11/CCTV-project/data/runtime/gpu_coordination_20261023_ksweql0f/roi_model_image_read_20261026",
+    "sha256": {
+      "image_read_return.json": "5e9089366c9de16f51871e99f2806afd24e9bc78aaa4e34ac7ec540ddbd1c767",
+      "image_reader_validation.json": "7d47bd62e99bad747be7392bb3ad33e4f3c9ce9835963724f3457f6880636a71",
+      "image_reader_test.log": "40c0e3d6a85f496192c4c04ccff7a8f0ba590147b75b17ba0ddc84e9a29ac634",
+      "image_reader_ready.json": "db995139abbe71ca37ebe1fc8f95b33b1f6d199e315c4b3a1dc88934c570e0c5",
+      "result.json": "27f3613cf8ff3d8871edb8d03d3a319b9ab2c561545e881ce568e1f91f1482af"
+    },
+    "validation": {
+      "status": "PASS",
+      "own_pid": 1147555,
+      "started_at": "2026-10-26T11:45:24.657188+09:00",
+      "finished_at": "2026-10-26T11:45:25.176588+09:00",
+      "returncode": 0,
+      "tests": 5,
+      "gpu_docker_model_started": false,
+      "fixed_sha256": {
+        "image_reader_ready.json": "db995139abbe71ca37ebe1fc8f95b33b1f6d199e315c4b3a1dc88934c570e0c5",
+        "read_image_sources.py": "4d18f07be54056e8cb9681eadcb6a135ca1139f8bdae5dc25f92b397339e594b",
+        "test_read_image_sources.py": "279965cc59d464b1f70d5cbf34281d9df54e0bda1bd201039bb40d78fa37167b"
+      },
+      "log_sha256": "40c0e3d6a85f496192c4c04ccff7a8f0ba590147b75b17ba0ddc84e9a29ac634",
+      "automatic_retry": false
+    },
+    "source_read": {
+      "status": "READ_COMPLETE",
+      "started_at": "2026-10-26T11:45:39.101749+09:00",
+      "own_pid": 1147947,
+      "files": {
+        "src/core/deepstream_processor.py": {
+          "bytes": 132863,
+          "sha256": "d88633c2e73825bdeeed5259b2efac8d6f5d2330b1e062112bb976784214975a"
+        },
+        "src/core/_fall_aux_policy.py": {
+          "bytes": 1816,
+          "sha256": "b1170bdfb9921d2127a930df865a45c77573be9b8938216142b28b9c828a1c50"
+        },
+        "src/core/_deepstream_topology.py": {
+          "bytes": 1804,
+          "sha256": "733a776c7a4d504ded4465af4a897798b0e5a8a621ada3dec733d5b00efa3a94"
+        },
+        "src/core/_deepstream_model_flags.py": {
+          "bytes": 1289,
+          "sha256": "faaae2acbaa757d8ce77ec5f1db75b8879a12ad92c5fe0a624a43472cbd15b9a"
+        },
+        "src/utils/face_recognition.py": {
+          "bytes": 19557,
+          "sha256": "4c3524106a0414a57efaec48f69c6934f187ef8266eeb6ab12019b7273821692"
+        },
+        "src/core/ai/_falldata_aux.py": {
+          "bytes": 60144,
+          "sha256": "c4703a6d6d9711e3981a32f1ae42ce5a49ea4bb44c4528a6f60a6227a98758f2"
+        }
+      },
+      "source_bytes": 217473,
+      "production_changes": false,
+      "automatic_retry": false,
+      "before": {
+        "id": "c6aac881db6d7beb390b23a34b974338c7a6aed996caa7636c2b9b130f766e0c",
+        "image": "sha256:ccbfe02abcbffe212c3ca09a2d08dd09983ee20fcfd7bf7b1ae7cda52a76cfe5",
+        "started_at": "2026-10-23T04:04:48.011112903Z",
+        "restart_count": "0"
+      },
+      "after": {
+        "id": "c6aac881db6d7beb390b23a34b974338c7a6aed996caa7636c2b9b130f766e0c",
+        "image": "sha256:ccbfe02abcbffe212c3ca09a2d08dd09983ee20fcfd7bf7b1ae7cda52a76cfe5",
+        "started_at": "2026-10-23T04:04:48.011112903Z",
+        "restart_count": "0"
+      },
+      "finished_at": "2026-10-26T11:45:39.526152+09:00",
+      "elapsed_seconds": 0.4244527550181374,
+      "owned_commands_reaped": true,
+      "child_exits": [
+        {
+          "pid": 1147948,
+          "returncode": 0
+        },
+        {
+          "pid": 1147954,
+          "returncode": 0
+        },
+        {
+          "pid": 1147960,
+          "returncode": 0
+        },
+        {
+          "pid": 1147965,
+          "returncode": 0
+        },
+        {
+          "pid": 1147970,
+          "returncode": 0
+        },
+        {
+          "pid": 1147975,
+          "returncode": 0
+        },
+        {
+          "pid": 1147981,
+          "returncode": 0
+        },
+        {
+          "pid": 1147987,
+          "returncode": 0
+        }
+      ]
+    },
+    "return": {
+      "status": "RETURNED_MOCK5_AND_IMAGE_READ_PASS",
+      "mock_finished_at": "2026-10-26T11:45:25.176588+09:00",
+      "read_finished_at": "2026-10-26T11:45:39.526152+09:00",
+      "cleanup_verified_at": "2026-10-26T11:46:05.213583+09:00",
+      "pids_absent": [
+        1147947,
+        1147555,
+        1147948,
+        1147954,
+        1147960,
+        1147965,
+        1147970,
+        1147975,
+        1147981,
+        1147987
+      ],
+      "source_count": 6,
+      "source_bytes": 217473,
+      "operating_identity_unchanged": true,
+      "production_changes": false,
+      "model_metrics_exec": false,
+      "automatic_retry": false,
+      "result_sha256": "27f3613cf8ff3d8871edb8d03d3a319b9ab2c561545e881ce568e1f91f1482af",
+      "validation_sha256": "7d47bd62e99bad747be7392bb3ad33e4f3c9ce9835963724f3457f6880636a71",
+      "returned_at": "2026-10-26T11:46:05.213805+09:00"
+    },
+    "integration_verified": "source6 hashes/size, mock5 pass, before-after identity equality, all8 CLI exits0; no new host inspection"
+  },
+  "codegraph_candidate_review_20261026": {
+    "status": "STATIC_REVIEW_CHANGES_REQUESTED_NOT_APPLIED",
+    "findings": [
+      "projectPath resolver must reject graph/DB symlink escape like launcher",
+      "watcher changes must be conditioned on CCTV scoped environment",
+      "terminal-error reconnect must not restart failed automatic sync indefinitely"
+    ],
+    "actual_codegraph_calls": 0,
+    "actual_configuration_changes": 0
   }
 }
