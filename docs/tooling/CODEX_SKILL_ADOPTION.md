@@ -117,7 +117,7 @@ Codex를 재시작하고 새 대화에서 `@ponytail-review`로 리뷰 기능을
 
 ### A GPU 사용 순서 요청 — 2026-10-23
 
-확인 시각: `2026-10-26T09:48:00+09:00` 배정 갱신. 상태: **`AB_OBSERVATION_RETURNED_MINIPC_ATTEMPT3_ALLOCATED_LOAD_HELD` — A/B 09:45:21 실제 반환·CPU 대기 동반 저하 재현. 미니PC만 소량 저장 새 구간, 엔진/ROI 부하·중복계측 보류.**
+확인 시각: `2026-10-26T09:52:00+09:00`. 상태: **`MINIPC_ATTEMPT3_STARTED_AUTH_PENDING_OTHER_LOAD_HELD` — 미니PC 키/MAC 대조 PASS·직접 인증 대기. A/B 최종 분석은 CPU 경합 근거 및255초 단기 회복이며 후속 부하시험 합격과 구분한다.**
 
 | 항목 | 현재 배정·조건 |
 | --- | --- |

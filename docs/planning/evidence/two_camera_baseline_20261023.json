@@ -789,7 +789,7 @@
     }
   },
   "synchronized_resource_observation_20261026": {
-    "status": "RETURNED_CPU_SCHEDULING_DELAY_EVIDENCE_NO_LOAD_ALLOCATION",
+    "status": "CPU_CONTENTION_SUPPORTED_INPUT_INTERRUPTION_NOT_OBSERVED",
     "first_sample": "2026-10-26T09:40:24.091345+09:00",
     "finished_at": "2026-10-26T09:45:21.347971+09:00",
     "samples": 149,
@@ -862,7 +862,130 @@
       "GPU 순간값으로 지속 GPU 포화 판정 불가",
       "종료는 운영 장기안정/새 부하시험 사전점검 PASS가 아님"
     ],
-    "final_owner_analysis": "PENDING_SAVED_DATA_ONLY",
-    "integrator_live_queries": 0
+    "final_owner_analysis": "COMPLETE_SAVED_DATA_ONLY",
+    "integrator_live_queries": 0,
+    "analysis_source": "/home/sawwave/.codex/worktrees/edge-auto-failback/CCTV-project/edge-auto-failback-trial/synchronized-20261026-094024/analysis.json",
+    "analysis_sha256": "b311ade1259966057f0eb034cdf92244c4145d87f372f20f8b1193dd9aa1bf07",
+    "return_source": "/home/sawwave/.codex/worktrees/edge-auto-failback/CCTV-project/edge-auto-failback-trial/synchronized-20261026-094024/return.json",
+    "return_sha256": "14282d8bedb4c1bd45399e25cf390fd37a1711b24d1b7dd9c6612520634d3101",
+    "return_notice": {
+      "cleanup_finished_at": "2026-10-26T09:45:21.347971+09:00",
+      "server_delivery_at": "2026-10-26T09:46:04.683778+09:00",
+      "note": "읽기·프로세스종료는배정기한내이며반환통보는09:46보다4.684초뒤서버수신됐다. 종료후새계측은없다."
+    },
+    "observed_seconds": 297.2196955239924,
+    "low_group": {
+      "interval_count": 4,
+      "seconds": 7.985294503974728,
+      "fps": 18.53406908490753,
+      "primary_hz": 9.141804345934117,
+      "cpu_min": 70.46599496221663,
+      "cpu_max": 97.60056457304164,
+      "cpu_median": 91.10773855982424,
+      "operating_cpu_cores_median": 1.0291736137872678,
+      "namespace_receive_Mbps_range": [
+        4.105606359140957,
+        4.572980275239595
+      ],
+      "gpu_snapshot_range": [
+        0.0,
+        88.6
+      ],
+      "metadata_wait_seconds_median": 0.5109629440000001
+    },
+    "normal_group": {
+      "interval_count": 142,
+      "seconds": 285.22360941400984,
+      "fps": 29.955444493369942,
+      "primary_hz": 14.977722246684971,
+      "cpu_min": 25.015832805573147,
+      "cpu_max": 81.95342820181112,
+      "cpu_median": 47.25013403807269,
+      "operating_cpu_cores_median": 1.3417537690246695,
+      "namespace_receive_Mbps_range": [
+        4.168642823280314,
+        4.640896617480314
+      ],
+      "gpu_snapshot_range": [
+        0.0,
+        99.5
+      ],
+      "metadata_wait_seconds_median": 0.020266064
+    },
+    "after_last_low": {
+      "start": "2026-10-26T09:41:06.261726+09:00",
+      "end": "2026-10-26T09:45:21.300202+09:00",
+      "seconds": 255.05006411700742,
+      "interval_count": 127,
+      "fps": 30.12741842117267,
+      "primary_hz": 15.059788411728816,
+      "all_intervals_passed": true
+    },
+    "final_30_seconds": {
+      "start": "2026-10-26T09:44:51.179937+09:00",
+      "end": "2026-10-26T09:45:21.300202+09:00",
+      "interval_count": 15,
+      "seconds": 30.136466374999145,
+      "fps": 29.996881145625874,
+      "primary_hz": 14.96525818216512,
+      "cpu_min": 25.015832805573147,
+      "cpu_max": 42.81190626979101,
+      "cpu_median": 35.14195583596214,
+      "operating_cpu_cores_median": 1.165218568575187,
+      "namespace_receive_Mbps_range": [
+        4.277685703619874,
+        4.507631654471483
+      ],
+      "gpu_snapshot_range": [
+        0.0,
+        78.3
+      ],
+      "metadata_wait_seconds_median": 0.003024576,
+      "all_intervals_passed": true
+    },
+    "error_deltas": {
+      "cctv_processor_frames_dropped_total": 0.0,
+      "cctv_processor_source_error_identified_total": 0.0,
+      "cctv_processor_source_error_unidentified_total": 0.0,
+      "cctv_processor_pipeline_restart_executed_total": 0.0
+    },
+    "network_error_deltas": {
+      "eno1_rx_errors": 0,
+      "eno1_rx_dropped": 0,
+      "eno1_tx_errors": 0,
+      "udp_InErrors": 0,
+      "udp_RcvbufErrors": 0,
+      "udp_SndbufErrors": 0,
+      "tcp_retransmits": 0
+    },
+    "cpu_calculation_basis": {
+      "formula": "100 * (sum(delta first8 ticks) - delta idle - delta iowait) / sum(delta first8 ticks)",
+      "raw_cpu_first_two_low": [
+        92.728297632469,
+        97.60056457304164
+      ],
+      "earlier_collector_first_two_low": [
+        92.77,
+        97.44
+      ],
+      "difference": "기존collector가 먼저 /proc/stat을 읽고 다음에 원시cpu_ticks를 별도로 읽었다. 읽기시각과반올림 차이가 있으므로 최종분석은 raw cpu_ticks를 사용한다."
+    },
+    "observer_average_one_core_percent": 1.2251439103254376,
+    "findings": [
+      "메타데이터 처리 스레드의 CPU 실행 대기가 늘고, 호스트CPU 포화 시 운영AI 프로세스가 실제로 사용한 CPU시간이 줄었다. 저하창의 CPU 경합에 따른 처리 지연을 뒷받침한다.",
+      "같은 저하창에도 eno1/운영 네트워크namespace 수신 및 UDP 데이터그램 수신은 계속됐다. 카메라 입력의 완전한 단절을 뒷받침하는 증거는 이번 관측에 없다.",
+      "운영 프로세스에서 udpsrc/rtpjitterbuffer 스레드와 UDP수신을 확인했다. TCP554제어연결만으로 영상 전달 상태를 판단하지 않는다.",
+      "GPU 사용률은 순간표본이며 정상창에서도 높은 값이 나타난다. 지속 GPU 포화를 이번자료로 확정하지 않는다.",
+      "입력 카메라단독 RTP 패킷의 손실/지터/디코딩별 지연은 측정하지 않았다. namespace/인터페이스 RX를 카메라 단독 정상수신 증거로 사용하지 않는다.",
+      "호스트CPU 대부분을 소비한 개별프로세스 전체를 조회하지 않아 점유 주체는 미확정이며 인덱서 재발·특정채팅책임으로 단정하지 않는다."
+    ],
+    "limits": [
+      "읽기 단계별 시각차와최대0.465초내표본수집기간이있다. 완전동시 원자표본이아니다.",
+      "GPU는2초간격순간값이며구간평균이아니다.",
+      "운영동일성은시작inspect1회및전체관측동안PID/starttime·누적카운터연속으로확인했다. 종료inspect는반복하지않았다.",
+      "관측자는약1개코어의1.2%를평균사용했다. 관측비용0을주장하지않으며의도적부하/새RTSP접속은0이다.",
+      "마지막30초회복은장기안정/후속부하시험PASS가아니다."
+    ],
+    "saved_recovery_window_recalculation": "PASS_127_AND_15_WINDOWS_NO_LIVE_QUERY"
   }
 }
