@@ -125,6 +125,26 @@ def validate_service_status(service, now):
         raise RegistryError(400, "inconsistent_readiness")
 
 
+def observed_camera_service(node, camera_id):
+    """물리 노드의 다른 카메라가 보고한 준비 상태를 대신 사용하지 않는다."""
+    report = node.get("report") or {}
+    if "services" in report:
+        service = report["services"].get(camera_id)
+        freshness = (node.get("services_freshness") or {}).get(camera_id)
+    else:
+        service = report.get("service")
+        freshness = node.get("service_freshness")
+    if (
+        node.get("simulation") is not False
+        or node.get("freshness") != "online"
+        or freshness != "online"
+        or not service
+        or service.get("camera_id") != camera_id
+    ):
+        raise RegistryError(409, "node_not_observed")
+    return service
+
+
 class NodeRegistry:
     """별도 SQLite에 최신 보고와 재부팅 세대를 보존한다."""
 
@@ -260,7 +280,8 @@ class NodeRegistry:
         _identifier(node_id)
         _fields(
             payload,
-            {"boot_id", "sequence", "sampled_at", "resources", "service", "simulation"},
+            {"boot_id", "sequence", "sampled_at", "resources", "service", "simulation"}
+            | ({"services"} if isinstance(payload, dict) and "services" in payload else set()),
         )
         _identifier(payload["boot_id"])
         sequence = payload["sequence"]
@@ -279,6 +300,19 @@ class NodeRegistry:
             if value is not None:
                 _number(value, 100 if key.endswith("percent") else 1e15)
         service = payload["service"]
+        services = payload.get("services")
+        if "services" in payload:
+            # 단일 보고와 다중 보고를 섞으면 어느 실행이 실제 담당인지 모호해진다.
+            if payload["simulation"] or service is not None or not self.allow_real_services:
+                raise RegistryError(400, "invalid_services_report")
+            if not isinstance(services, dict) or not 1 <= len(services) <= 32:
+                raise RegistryError(400, "invalid_services_report")
+            for camera_id, observed in services.items():
+                _identifier(camera_id)
+                if observed is not None:
+                    validate_service_status(observed, now)
+                    if observed["camera_id"] != camera_id:
+                        raise RegistryError(400, "service_camera_mismatch")
         if not payload["simulation"]:
             # 실측 자원과 가상 AI 상태가 한 보고에 섞이지 않게 한다.
             if service is not None and not self.allow_real_services:
@@ -308,7 +342,7 @@ class NodeRegistry:
                 raise RegistryError(409, "retired_boot")
             if json.loads(row["registration"])["simulation"] != payload["simulation"]:
                 raise RegistryError(409, "report_mode_conflict")
-            if not payload["simulation"] and service is not None and "ai-service-status" not in json.loads(row["registration"])["capabilities"]:
+            if not payload["simulation"] and (service is not None or services is not None) and "ai-service-status" not in json.loads(row["registration"])["capabilities"]:
                 raise RegistryError(409, "service_capability_required")
             if sequence <= row["last_sequence"]:
                 if sequence == row["last_sequence"] and encoded == row["report"]:
@@ -355,6 +389,13 @@ class NodeRegistry:
             if report and not report["simulation"] and report["service"] is not None:
                 observed_age = now - _sample_time(report["service"]["observed_at"])
                 node["service_freshness"] = "online" if fresh and -5 <= observed_age < self.stale_after else "stale"
+            if report and "services" in report:
+                node["services_freshness"] = {
+                    camera: "online" if fresh and observed is not None
+                    and -5 <= now - _sample_time(observed["observed_at"]) < self.stale_after
+                    else "stale"
+                    for camera, observed in report["services"].items()
+                }
             nodes.append(node)
         return nodes
 
@@ -386,7 +427,9 @@ class EdgeRegistryHandler(BaseApiHandler):
             length = int(self.headers.get("Content-Length", "0"))
         except ValueError:
             raise RegistryError(400, "invalid_content_length") from None
-        if self.headers.get("Transfer-Encoding") or not 0 < length <= 16384:
+        # 모델 목록을 포함한 카메라별 보고만 기존 명령보다 큰 제한을 사용한다.
+        limit = 262144 if re.fullmatch(r"/v1/nodes/[A-Za-z0-9_.-]+/reports", self.path) else 16384
+        if self.headers.get("Transfer-Encoding") or not 0 < length <= limit:
             raise RegistryError(400, "invalid_content_length")
         value = self._read_json()
         if not isinstance(value, dict):

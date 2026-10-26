@@ -198,18 +198,13 @@ class EdgeOwnershipStore:
                 os.close(self.lock_fd)
             raise
 
-    def _service(self, node_id, *, fresh_run=False):
+    def _service(self, node_id, camera_id, *, fresh_run=False):
         for node in self.registry.list_nodes():
             if node["node_id"] != node_id:
                 continue
-            service = (node.get("report") or {}).get("service")
-            if (
-                node.get("simulation") is not False
-                or node.get("freshness") != "online"
-                or node.get("service_freshness") != "online"
-                or not service
-            ):
-                raise RegistryError(409, "node_not_observed")
+            from src.services.edge_orchestrator import observed_camera_service
+
+            service = observed_camera_service(node, camera_id)
             now = self.clock()
             if not -5 <= now - _sample_time(service["observed_at"]) < self.stale_after:
                 raise RegistryError(409, "node_observation_stale")
@@ -305,7 +300,13 @@ class EdgeOwnershipStore:
                 raise RegistryError(409, "owner_changed")
             if current["pending"]:
                 raise RegistryError(409, "preparation_in_progress")
-            service = self._service(payload["node_id"])
+            # 다른 카메라의 준비가 끝나기 전 같은 노드에 추가 인계를 겹치지 않는다.
+            if self.db.execute(
+                "SELECT 1 FROM assignments WHERE node_id=? AND state='preparing' AND camera_id<>?",
+                (payload["node_id"], camera_id),
+            ).fetchone():
+                raise RegistryError(409, "target_preparation_in_progress")
+            service = self._service(payload["node_id"], camera_id)
             if (
                 service["camera_id"],
                 service["manifest_id"],
@@ -403,7 +404,7 @@ class EdgeOwnershipStore:
                 current["reason"] = "controller_reconciling"
                 if current["accepting_results"]:
                     try:
-                        service = self._service(owner["node_id"], fresh_run=True)
+                        service = self._service(owner["node_id"], camera_id, fresh_run=True)
                         if (
                             service.get("status") != "running"
                             or service.get("ready") is not True
@@ -469,7 +470,7 @@ class EdgeOwnershipStore:
             _epoch(payload["sequence_floor"], zero=True)
             if assignment["state"] not in ("preparing", "active"):
                 raise RegistryError(409, "assignment_not_prepared")
-            service = self._service(assignment["node_id"], fresh_run=True)
+            service = self._service(assignment["node_id"], assignment["camera_id"], fresh_run=True)
             activation = service.get("activation")
             if (
                 not service["ready"]
@@ -626,7 +627,7 @@ class EdgeOwnershipStore:
             if payload["kind"] == "observation" and expires > self.clock():
                 try:
                     assignment = self._assignment(edge["assignment_id"])
-                    service = self._service(node_id, fresh_run=True)
+                    service = self._service(node_id, edge["camera_id"], fresh_run=True)
                     if (
                         assignment["state"] in ("active", "preparing")
                         and service["ready"]

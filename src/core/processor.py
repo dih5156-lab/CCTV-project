@@ -42,7 +42,7 @@ from ._display_grid import _DisplayGrid
 from ._inference_pipeline import _InferencePipeline
 from .ai._yolo_helpers import has_dynamic_input_shape
 from .ai.analyzer import AIAnalyzer
-from .base_processor import BaseProcessor
+from .base_processor import BaseProcessor, validate_managed_camera
 from .detection_snapshot_store import DetectionSnapshotStore
 from .event_debouncer import EventDebouncer
 from .event_dispatcher import EventDispatcher
@@ -642,6 +642,7 @@ class VideoProcessor(BaseProcessor):
         zones_data: Optional[List[Dict]] = None,
     ) -> bool:
         """처리 파이프라인에 카메라를 추가한다."""
+        validate_managed_camera(camera_id)
         if camera_id in self._cams.cameras:
             logger.warning("[%s] 이미 등록된 카메라입니다", camera_id)
             return False

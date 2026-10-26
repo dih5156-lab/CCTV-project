@@ -71,9 +71,19 @@ class EdgeHandoff:
                 )
             return clients
 
-        nodes = {
-            _identifier(name): peer(value) for name, value in settings["nodes"].items()
-        }
+        nodes = {}
+        for name, value in settings["nodes"].items():
+            _identifier(name)
+            if isinstance(value, dict) and "cameras" in value:
+                _fields(value, {"cameras"})
+                if not isinstance(value["cameras"], dict) or not 1 <= len(value["cameras"]) <= 32:
+                    raise ValueError("1-32 camera endpoints are required")
+                nodes[name] = {"cameras": {
+                    _identifier(camera): peer(item)
+                    for camera, item in value["cameras"].items()
+                }}
+            else:
+                nodes[name] = peer(value)
         # 인증값은 기록하지 않되 다른 접속 설정으로 같은 작업 기록을 재사용하지 않는다.
         config_id = hashlib.sha256(_encode(settings).encode()).hexdigest()
         return peer(settings["controller"]), nodes, config_id
@@ -181,7 +191,7 @@ class EdgeHandoff:
         client = (
             self.controller["control"]
             if peer == "controller"
-            else self.nodes[peer]["control"]
+            else self._peer(peer, state["intent"]["camera_id"])["control"]
         )
         code, response = client.request(method, path, body)
         if not isinstance(response, dict):
@@ -194,17 +204,24 @@ class EdgeHandoff:
         self._save()
         return response
 
+    def _peer(self, node, camera_id):
+        if node not in self.nodes:
+            raise ValueError("handoff node is not configured")
+        peer = self.nodes[node]
+        if "cameras" in peer:
+            # 카메라 주소 누락을 다른 감독자로 대체하면 무관한 AI를 중지할 수 있다.
+            peer = peer["cameras"].get(camera_id)
+            if peer is None:
+                raise ValueError("camera endpoint is not configured")
+        return peer
+
     def _service(self, node):
         entries = self._read(self.controller["reader"], "/v1/nodes")["nodes"]
         for entry in entries:
             if entry["node_id"] == node:
-                if (
-                    entry.get("simulation") is not False
-                    or entry.get("freshness") != "online"
-                    or entry.get("service_freshness") != "online"
-                ):
-                    raise RegistryError(409, "node_not_observed")
-                return entry["report"]["service"]
+                from src.services.edge_orchestrator import observed_camera_service
+
+                return observed_camera_service(entry, self.state["intent"]["camera_id"])
         raise RegistryError(404, "node_not_registered")
 
     @staticmethod
@@ -222,7 +239,7 @@ class EdgeHandoff:
 
     def _stop_execution(self, name, assignment):
         node = assignment["node_id"]
-        snapshot = self._read(self.nodes[node]["reader"], "/v1/node/status")
+        snapshot = self._read(self._peer(node, assignment["camera_id"])["reader"], "/v1/node/status")
         if snapshot["node_id"] != node:
             raise ValueError("handoff node identity changed")
         service = snapshot["service"]
@@ -265,6 +282,10 @@ class EdgeHandoff:
         )
         if state["controller_boot_id"] is None:
             active = current["active"]
+            # 준비 예약 전에 양쪽 카메라 주소를 확인해 종료 불가능한 이전을 막는다.
+            self._peer(node, camera_id)
+            if active is not None:
+                self._peer(active["node_id"], camera_id)
             # 판단 뒤 담당이 바뀌었다면 준비 명령을 만들기 전에 중단한다.
             if expected is not None and (
                 expected["controller_boot_id"] != current["controller_boot_id"]
@@ -277,7 +298,7 @@ class EdgeHandoff:
                 return True
             if expected is not None:
                 snapshot = self._read(
-                    self.nodes[active["node_id"]]["reader"], "/v1/node/status"
+                    self._peer(active["node_id"], camera_id)["reader"], "/v1/node/status"
                 )
                 service = snapshot["service"]
                 if (

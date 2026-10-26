@@ -115,18 +115,28 @@ class EdgePreviewRelay:
         _fields(settings, {"nodes"})
         if not isinstance(settings["nodes"], dict) or not settings["nodes"]:
             raise ValueError("preview nodes are required")
-        clients = {}
-        for node, item in settings["nodes"].items():
-            _identifier(node)
+        def peer(item):
             _fields(item, {"url", "ca_file", "credentials_file"})
             secret = _private_json(item["credentials_file"])
             _fields(secret, {"stream_token"})
             token = secret["stream_token"]
-            if not isinstance(token, str) or not re.fullmatch(
-                r"[A-Za-z0-9_-]{32,128}", token
-            ):
+            if not isinstance(token, str) or not re.fullmatch(r"[A-Za-z0-9_-]{32,128}", token):
                 raise ValueError("invalid preview token")
-            clients[node] = RegistryClient(item["url"], token, ca_file=item["ca_file"])
+            return RegistryClient(item["url"], token, ca_file=item["ca_file"])
+
+        clients = {}
+        for node, item in settings["nodes"].items():
+            _identifier(node)
+            if isinstance(item, dict) and "cameras" in item:
+                _fields(item, {"cameras"})
+                if not isinstance(item["cameras"], dict) or not 1 <= len(item["cameras"]) <= 32:
+                    raise ValueError("1-32 camera preview endpoints are required")
+                clients[node] = {"cameras": {
+                    _identifier(camera): peer(value)
+                    for camera, value in item["cameras"].items()
+                }}
+            else:
+                clients[node] = peer(item)
         return cls(store, clients)
 
     def __init__(self, store, clients):
@@ -138,6 +148,8 @@ class EdgePreviewRelay:
         if not view["inference_ready"] or owner["assignment_id"] != expected_assignment:
             raise RegistryError(409, "preview_owner_unverified")
         client = self.clients.get(owner["node_id"])
+        if isinstance(client, dict):
+            client = client["cameras"].get(camera_id)
         if client is None:
             raise RegistryError(503, "preview_endpoint_missing")
         started = time.monotonic()

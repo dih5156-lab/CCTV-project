@@ -21,6 +21,7 @@ from src.services.edge_orchestrator import (
     _identifier,
     _number,
     _sample_time,
+    observed_camera_service,
 )
 from src.services.edge_ownership import _encode
 from src.services.edge_service import _private_json
@@ -206,12 +207,14 @@ class EdgeAutoHandoff:
 
     def _fresh(self, node, now):
         report = node.get("report") or {}
-        service = report.get("service") or {}
+        try:
+            service = observed_camera_service(node, self.policy["camera_id"])
+        except RegistryError:
+            return False
         if (
             node.get("simulation") is not False
             or report.get("simulation") is not False
             or node.get("freshness") != "online"
-            or node.get("service_freshness") != "online"
             or not isinstance(node.get("boot_id"), str)
             or report.get("boot_id") != node["boot_id"]
             or type(node.get("last_sequence")) is not int
@@ -258,7 +261,10 @@ class EdgeAutoHandoff:
         if not all(self._fresh(by_id[name], now) for name in names):
             return self._wait("report_not_fresh")
         reports = {name: by_id[name]["report"] for name in names}
-        services = {name: reports[name]["service"] for name in names}
+        services = {
+            name: observed_camera_service(by_id[name], self.policy["camera_id"])
+            for name in names
+        }
         source_service = services[source]
         if (
             not EdgeHandoff._matches(source_service, owner)

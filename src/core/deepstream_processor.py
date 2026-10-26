@@ -137,7 +137,7 @@ from .ai._appearance_pipeline import AppearancePipeline
 from .ai._attribute_backends import decode_pphuman_scores
 from .ai._fall_detector import FallDetector
 from .ai._falldata_aux import FallDataAuxVerifier
-from .base_processor import BaseProcessor
+from .base_processor import BaseProcessor, validate_managed_camera
 from .event_debouncer import EventDebouncer
 from .event_filters import CumulativeViolationFilter, TrackManager
 from .events import DetectionEvent, EventType
@@ -866,6 +866,7 @@ class DeepStreamProcessor(BaseProcessor):
           - start() 전에 호출하면 nvstreammux 소스 패드에 정적으로 추가
           - start() 후에 호출하면 nvurisrcbin 을 동적으로 추가(STEP 1)
         """
+        validate_managed_camera(camera_id)
         if camera_id in self._cameras:
             logger.warning("[%s] 이미 등록된 카메라입니다.", camera_id)
             return False

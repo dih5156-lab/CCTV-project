@@ -427,6 +427,8 @@ class EdgeServiceSupervisor:
         environment.update(self.manifest.environment())
         self.session_id = str(uuid.uuid4())
         environment["EDGE_SERVICE_SESSION_ID"] = self.session_id
+        # 감독자 종료가 다른 카메라까지 멈추지 않도록 프로젝트 런타임을 한 입력으로 제한한다.
+        environment["EDGE_SERVICE_CAMERA_ID"] = self.manifest.data["camera_id"]
         environment["METRICS_HOST"] = "127.0.0.1"
         environment["METRICS_PORT"] = str(self.manifest.port)
         environment.pop("EDGE_RESULT_CONTEXT_DB", None)

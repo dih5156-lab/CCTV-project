@@ -10,6 +10,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from queue import Queue
 
+camera_id = os.environ.get("EDGE_SERVICE_CAMERA_ID", "camera_1")
 started = time.monotonic()
 mode_path = Path(os.environ["FIXTURE_MODE_PATH"])
 if os.environ.get("FIXTURE_IGNORE_TERM") == "1":
@@ -40,7 +41,7 @@ class Handler(BaseHTTPRequestHandler):
             f'cctv_edge_service_info{{backend="{backend}",session_id="{session}"}} 1'
         ]
         for name in ("primary", "helmet"):
-            labels = f'camera_id="camera_1",model="{name}"'
+            labels = f'camera_id="{camera_id}",model="{name}"'
             tensor = 0 if name == "helmet" else count
             empty = count if name == "helmet" else 0
             rows += [
@@ -117,10 +118,10 @@ if os.environ.get("FIXTURE_EMIT_EVENTS") == "1":
                 40,
                 0.8,
                 time.time(),
-                metadata={"camera_id": "camera_1"},
+                metadata={"camera_id": camera_id},
             )
         try:
-            event_queue.put(intake.accept(event, "camera_1"))
+            event_queue.put(intake.accept(event, camera_id))
             event = None
         except sqlite3.Error as error:
             # 접수 전 실패는 같은 입력을 보유해 재시도하며 저장 성공으로 세지 않는다.

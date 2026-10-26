@@ -70,6 +70,7 @@ def build_parser() -> argparse.ArgumentParser:
     agent.add_argument("--service-url", help="별도 감독자의 http(s)://주소:포트")
     agent.add_argument("--service-token-file", type=Path)
     agent.add_argument("--service-ca-file", type=Path)
+    agent.add_argument("--services-config", type=Path, help="카메라별 감독자 접속 설정(단일 service 설정과 배타적)")
     status = commands.add_parser("status", help="별도 조회 토큰으로 두 노드 상태 조회")
     for client in (agent, status):
         client.add_argument(
@@ -404,6 +405,23 @@ def main(argv=None) -> None:
                 and not args.service_url
             ):
                 raise ValueError("service URL and read token must be supplied together")
+            service_clients = None
+            if args.services_config:
+                if args.service_url or args.service_token_file or args.service_ca_file:
+                    raise ValueError("single and multiple service settings are mutually exclusive")
+                from src.services.edge_orchestrator import _fields, _identifier
+                from src.services.edge_service import _private_json
+
+                settings = _private_json(args.services_config)
+                if not isinstance(settings, dict) or not 1 <= len(settings) <= 32:
+                    raise ValueError("1-32 camera endpoints are required")
+                service_clients = {}
+                for camera, item in settings.items():
+                    _identifier(camera)
+                    _fields(item, {"url", "ca_file", "token_file"})
+                    service_clients[camera] = RegistryClient(
+                        item["url"], read_token(item["token_file"]), ca_file=item["ca_file"], timeout=1
+                    )
             service_client = (
                 RegistryClient(
                     args.service_url,
@@ -419,6 +437,7 @@ def main(argv=None) -> None:
                 node_ip=args.node_ip,
                 interval=args.interval,
                 service_client=service_client,
+                service_clients=service_clients,
             )
             agent.run(stop, report_limit=args.reports)
             print(

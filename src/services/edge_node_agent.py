@@ -11,6 +11,7 @@ import math
 import ssl
 import time
 import uuid
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -23,7 +24,7 @@ logger = logging.getLogger(__name__)
 class RegistryClient:
     """로컬 HTTP 또는 명시적으로 신뢰한 인증서의 HTTPS 제어기에 접속한다."""
 
-    def __init__(self, base_url: str, token: str, *, ca_file: str | Path | None = None):
+    def __init__(self, base_url: str, token: str, *, ca_file: str | Path | None = None, timeout=3):
         address = urlsplit(base_url)
         if (
             any(ord(character) <= 32 or ord(character) == 127 for character in base_url)
@@ -53,6 +54,7 @@ class RegistryClient:
         self.host = address.hostname
         self.port = address.port
         self.token = token
+        self.timeout = timeout
 
     def request(
         self, method: str, path: str, payload: dict | None = None
@@ -60,10 +62,10 @@ class RegistryClient:
         for attempt in range(2):
             connection = (
                 http.client.HTTPSConnection(
-                    self.host, self.port, timeout=3, context=self.context
+                    self.host, self.port, timeout=self.timeout, context=self.context
                 )
                 if self.context is not None
-                else http.client.HTTPConnection(self.host, self.port, timeout=3)
+                else http.client.HTTPConnection(self.host, self.port, timeout=self.timeout)
             )
             try:
                 connection.request(
@@ -78,7 +80,12 @@ class RegistryClient:
                     },
                 )
                 response = connection.getresponse()
-                code, result = response.status, json.loads(response.read(65536))
+                # 다중 카메라 노드 목록도 끝까지 읽되 무제한 응답은 허용하지 않는다.
+                limit = 2097152 if method == "GET" and path == "/v1/nodes" else 65536
+                body = response.read(limit + 1)
+                if len(body) > limit:
+                    raise ValueError("registry response exceeds size limit")
+                code, result = response.status, json.loads(body)
             finally:
                 connection.close()
             # 일시 저장소 오류의 읽기만 한 번 복구하고 쓰기 재전송 판단은 기존 호출자에 맡긴다.
@@ -206,7 +213,7 @@ class JetsonNodeAgent(MockNodeAgent):
 
     def __init__(
         self, client, node_id, *, interval=1, collector=None, node_ip="127.0.0.1",
-        service_client=None,
+        service_client=None, service_clients=None,
     ):
         address = ipaddress.IPv4Address(node_ip)
         if address.is_unspecified or address.is_multicast or address.is_reserved:
@@ -216,12 +223,23 @@ class JetsonNodeAgent(MockNodeAgent):
         self.collector = (
             collector if collector is not None else JetsonResourceCollector()
         )
+        if service_client is not None and service_clients is not None:
+            raise ValueError("single and multiple service clients are mutually exclusive")
+        if service_clients is not None:
+            from src.services.edge_orchestrator import _identifier
+
+            if not isinstance(service_clients, dict) or not 1 <= len(service_clients) <= 32:
+                raise ValueError("1-32 camera service clients are required")
+            for camera_id in service_clients:
+                _identifier(camera_id)
         self.service_client = service_client
-        if service_client is not None:
+        self.service_clients = service_clients
+        if service_client is not None or service_clients is not None:
             self.capabilities = [*self.capabilities, "ai-service-status"]
 
-    def _service_status(self):
-        if self.service_client is None:
+    def _service_status(self, client=None, camera_id=None):
+        client = client if client is not None else self.service_client
+        if client is None:
             return None
         # 자원 전용 Agent에는 서버 의존성을 추가하지 않고 명시적으로 연결한 경우만 검사한다.
         from src.services.edge_orchestrator import (
@@ -231,20 +249,32 @@ class JetsonNodeAgent(MockNodeAgent):
         )
 
         try:
-            code, result = self.service_client.request("GET", "/v1/node/status")
+            code, result = client.request("GET", "/v1/node/status")
             if code != 200 or not isinstance(result, dict) or set(result) != {"node_id", "boot_id", "service"} or result.get("node_id") != self.node_id:
                 return None
             service = result["service"]
             validate_service_status(service, time.time())
             if result["boot_id"] != service["supervisor_boot_id"] or time.time() - _sample_time(service["observed_at"]) >= 5:
                 return None
+            if camera_id is not None and service["camera_id"] != camera_id:
+                return None
             return service
         except (OSError, http.client.HTTPException, ValueError, KeyError, RegistryError):
             return None
 
     def _sample(self) -> dict:
-        resources = self.collector.sample()
         service = self._service_status()
+        services = {}
+        if self.service_clients:
+            # 한 감독자의 지연이 다른 카메라 표본을 순차적으로 늦추지 않게 한다.
+            with ThreadPoolExecutor(max_workers=len(self.service_clients)) as pool:
+                pending = {
+                    camera: pool.submit(self._service_status, client, camera)
+                    for camera, client in self.service_clients.items()
+                }
+                services = {camera: future.result() for camera, future in pending.items()}
+        # 접속을 기다리기 전의 과거 자원을 현재 여유 용량으로 보고하지 않는다.
+        resources = self.collector.sample()
         return {
             "boot_id": self.boot_id,
             "sequence": self.sequence + 1,
@@ -253,4 +283,5 @@ class JetsonNodeAgent(MockNodeAgent):
             "resources": resources,
             # 자원 계측만으로 실제 AI 실행 여부를 추정하지 않는다.
             "service": service,
+            **({"services": services} if self.service_clients is not None else {}),
         }

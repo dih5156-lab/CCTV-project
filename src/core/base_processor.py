@@ -42,6 +42,13 @@ from ..config import AppConfig
 from ..utils.zone_drawer import ZoneDrawer
 
 
+def validate_managed_camera(camera_id):
+    """카메라별 감독자가 실행한 프로세스에는 다른 입력을 연결하지 않는다."""
+    expected = os.environ.get("EDGE_SERVICE_CAMERA_ID")
+    if expected is not None and (not expected or camera_id != expected):
+        raise ValueError("managed service must contain only its assigned camera")
+
+
 class BaseProcessor(ABC):
     """모든 프로세서 구현체가 따라야 하는 추상 기반 클래스."""
 

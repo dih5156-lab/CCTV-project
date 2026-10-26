@@ -18,7 +18,7 @@ from urllib.parse import unquote, urlparse
 
 from ..config import AppConfig
 from ..core import VideoProcessor
-from ..core.base_processor import BaseProcessor
+from ..core.base_processor import BaseProcessor, validate_managed_camera
 from ..services.camera_model_api import start_camera_model_api_server
 from ..services.face_api import start_face_api_server
 from ..services.processor_metrics import start_processor_metrics_server
@@ -321,6 +321,12 @@ def start_processor_runtime(
     processor_refs: Optional[list] = None,
 ) -> None:
     """프로세서를 생성하고 카메라 연결부터 실행 루프까지 담당한다."""
+    if "EDGE_SERVICE_CAMERA_ID" in os.environ:
+        # 모델 적재·카메라 연결 전에 잘못된 다중 입력 manifest를 거부한다.
+        enabled = [camera for camera in camera_list if camera.get("enabled", True)]
+        if len(enabled) != 1:
+            raise ValueError("managed service requires exactly one enabled camera")
+        validate_managed_camera(enabled[0].get("id"))
     processor = create_processor(cfg)
     processor._shutdown_requested = False
     if processor_refs is not None:
