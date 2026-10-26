@@ -1983,6 +1983,11 @@
     "quality": "NOT_EVALUATED",
     "candidate_batch1_and_shared4": "NOT_RUN",
     "recovery_after_cleanup": "NOT_OBSERVED",
-    "automatic_retry": false
+    "automatic_retry": false,
+    "final_handoff_sha256": {
+      "data/runtime/engine_quality_four_input_20261026_attempt4/comparison.json": "343d2521c7c21ac63ef47731bfffbe20db38d0629d590b6b6200224b3cc727a5",
+      "data/runtime/engine_quality_four_input_20261026_attempt4/coordination.json": "f051138a899deefc458ea2478983324c917caec01ceefb3a346d2ca9a6f81fa6",
+      "docs/planning/handoffs/engine_batch_20261023.md": "7918e47d591fc202882fbbc4e9ecca0f1314e1cd844d2bb75c576b780aa60d67"
+    }
   }
 }

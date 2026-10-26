@@ -129,5 +129,141 @@
     "automatic_retry": false,
     "start_at": null,
     "end_at": null
+  },
+  "appearance_readonly_allocation_20261026": {
+    "status": "RETURNED_READ_COMPLETE",
+    "owner": "miniPC",
+    "start_at": "2026-10-26T10:47:00+09:00",
+    "end_at": "2026-10-26T10:49:00+09:00",
+    "stop_new_work_at": "2026-10-26T10:48:30+09:00",
+    "runner": "/tmp/minipc-auto-20261026-g2hv7wy3/db_read.py",
+    "runner_sha256": "a4fd13e2132a385e70645731dbb485b5f25b325a2acb60dccfea80778d2c1c34",
+    "cpu_affinity": [
+      0
+    ],
+    "nice": 19,
+    "runner_timeout_seconds": 30,
+    "read_deadline_seconds": 1,
+    "sql_limit": 3,
+    "row_limit": 2,
+    "database": "/media/sawwave/Learning11/CCTV-project/data/runtime/appearances.db",
+    "read_only": true,
+    "query_only": true,
+    "busy_timeout_ms": 100,
+    "scope": "appearance_log column names then latest2 id/timestamp/crop_path internal comparison; output column names,count,latest time,path type/allowlist and crop2 lstat only",
+    "forbidden": "raw rows/IDs/face/device names/full paths/image contents/recursive scans/backups/network/Docker/GPU/CPU tests/indexing/writes",
+    "first_failure": "save sanitized result,close own connection,return; no retry",
+    "automatic_retry": false,
+    "extension": false,
+    "actual_return": null,
+    "integrator_review": "AST/hash/time120sec/previous-result-refusal/SIGALRM1sec/lexical-root-before-resolve verified; not executed"
+  },
+  "appearance_readonly_result_20261026": {
+    "status": "RETURNED_READ_COMPLETE",
+    "source": "/tmp/minipc-auto-20261026-g2hv7wy3",
+    "preserved": "/media/sawwave/Learning11/CCTV-project/data/runtime/gpu_coordination_20261023_ksweql0f/minipc_appearance_read_20261026",
+    "sha256": {
+      "db_inventory.json": "b1246ce586f8a222e1238b6bfb77e3879d84cc8aa7fa846788b587cd074c77b3",
+      "db_return.json": "6945c5c66f3e7ffa183d817b5f4c295fecb12cd569583edd45ff9daa764ae90e"
+    },
+    "started_at": "2026-10-26T10:47:08.240705+09:00",
+    "ended_at": "2026-10-26T10:47:08.251202+09:00",
+    "cleanup_verified_at": "2026-10-26T10:47:31.773775+09:00",
+    "actual_return_owner_report": "2026-10-26T10:47:31.773775+09:00",
+    "sql_count": 3,
+    "rows_read": 2,
+    "id_integer_primary_key": true,
+    "latest_timestamp_kst": "2026-10-26T10:47:07.938557+09:00",
+    "crops": [
+      {
+        "has_reference": true,
+        "path_kind": "app_data",
+        "within_crop_root": true,
+        "exists": true,
+        "regular": true,
+        "symlink": false,
+        "bytes": 42493,
+        "extension": ".jpg"
+      },
+      {
+        "has_reference": true,
+        "path_kind": "app_data",
+        "within_crop_root": true,
+        "exists": true,
+        "regular": true,
+        "symlink": false,
+        "bytes": 10512,
+        "extension": ".jpg"
+      }
+    ],
+    "raw_identifying_values_saved": false,
+    "network_calls": 0,
+    "image_bytes_read": 0,
+    "db_connection_closed": true,
+    "remaining_processes": [],
+    "exit_code_owner_report": 0,
+    "limits": "schema and2referenced image metadata only; no actual image transfer/decode/retention/recovery validation"
+  },
+  "cpu_mock20_allocation_20261026": {
+    "status": "ALLOCATED_PREFLIGHT_REQUIRED",
+    "owner": "miniPC",
+    "start_at": "2026-10-26T10:52:00+09:00",
+    "end_at": "2026-10-26T10:55:00+09:00",
+    "stop_running_commands_at": "2026-10-26T10:54:30+09:00",
+    "runner": "/tmp/minipc-auto-20261026-g2hv7wy3/cpu_check.py",
+    "runner_sha256": "82e3be67d3f886d4728979a1893370c870a8001f7bbb400ad2943f39d169c3ab",
+    "sources_manifest": "/tmp/minipc-auto-20261026-g2hv7wy3/sources.json",
+    "sources_manifest_sha256": "102189a01a8773f36f10456587abc62a64499c9e0899481d43aae183ff28f742",
+    "source_files": {
+      "scripts/ops/sync_minipc_storage.py": {
+        "bytes": 20288,
+        "sha256": "1962ded8df57aa3d5e739748aa8ddf20bbf2b0735366f7247342c72f1209768a"
+      },
+      "deploy/minipc-storage/receive.ps1": {
+        "bytes": 7632,
+        "sha256": "20365f92a6ba328b61537e790e1fc4d685802f38014463554b285ef732601093"
+      },
+      "deploy/minipc-storage/config.example.json": {
+        "bytes": 917,
+        "sha256": "5eedfe1ce66d47778633346456bedc6e7052411f23d3bdab22f7f5d2baf18cbd"
+      },
+      "deploy/minipc-storage/cctv-minipc-storage.service": {
+        "bytes": 339,
+        "sha256": "bf8b84ffb285cdef7640b470eacaf048a8a41e3bc476fd1c41e9a8b02ee9d519"
+      },
+      "deploy/minipc-storage/cctv-minipc-storage.timer": {
+        "bytes": 179,
+        "sha256": "235806f6f83047574bc24d67d7d359e313a18c2ff1d056a713566c53b031c081"
+      },
+      "tests/test_minipc_storage.py": {
+        "bytes": 13020,
+        "sha256": "1accfe3d2f1967c3579bad0feee3b9dd0f83ab9f0dd861216576cc8d4db8fa81"
+      },
+      "docs/ops/MINIPC_STORAGE.md": {
+        "bytes": 7771,
+        "sha256": "2de10405e6b76baa55e4d33cc37bdce2068c14860cbafa8d15b4024e2553a659"
+      }
+    },
+    "workdir": "/home/sawwave/.codex/worktrees/minipc-storage/CCTV-project",
+    "scope": "CPU0/nice19 new30sec protection preflight -> unittest20 pure tempfile/memory receiver -> Ruff2Pythonfiles -> final5sec protection",
+    "combined_test_limit_seconds": 60,
+    "per_command_limit_seconds": 25,
+    "guard_interval_seconds": 5,
+    "guard": {
+      "minimum_fps": 27,
+      "minimum_primary_hz": 13.5,
+      "maximum_age_seconds": 1,
+      "minimum_memory_gib": 8,
+      "temperature_stop_c": 80,
+      "error_restart_drop_increase": 0
+    },
+    "actual_db_images_ssh_reads": false,
+    "remote_or_camera_network": false,
+    "gpu_docker_conversion_indexing": false,
+    "automatic_retry": false,
+    "extension": false,
+    "first_failure": "save original evidence,stop only own children,return",
+    "actual_return": null,
+    "integrator_static_review": "7source hashes/runner AST and only sources-hash substitution verified; no new tests run"
   }
 }

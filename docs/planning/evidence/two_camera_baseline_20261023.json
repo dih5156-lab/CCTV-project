@@ -1169,7 +1169,7 @@
     }
   },
   "sequential_initialization_cpu_v4_allocation_20261026": {
-    "status": "ALLOCATED_PREFLIGHT_REQUIRED",
+    "status": "RETURNED_MOCK59_RUFF_PASS",
     "owner": "ROI",
     "start_at": "2026-10-26T10:38:00+09:00",
     "end_at": "2026-10-26T10:41:00+09:00",
@@ -1197,5 +1197,52 @@
     "extension": false,
     "actual_return": null,
     "basis": "engine actual cleanup and return verified; latest failed guard remains historical and not recovered; fresh in-slot preflight mandatory"
+  },
+  "sequential_initialization_cpu_v4_result_20261026": {
+    "status": "RETURNED_MOCK59_RUFF_PASS",
+    "source": "/home/sawwave/.codex/worktrees/two-camera-baseline/CCTV-project/data/runtime/roi_sequential_mock_20261026_v4",
+    "sha256": {
+      "readiness.json": "86a592b36f373fc36298ac9ec2a11b0b06910d46725af60a999e64c8fb82437e",
+      "validate.py": "df9a8c409322cf937b579cfd5c761157093a430e7ff41713f4c9abce95fc92db",
+      "result.json": "771a8084591e8e204872c37e5b5fc2c92833e8288ae08955fe48b8e5cd2385ca",
+      "initial_preflight.json": "83d50fe513fb0516f6c8df97fa1bb29bcf1b991e91dcee02c6b239b124978530",
+      "operating_check.json": "be0b60a4c8eca20aeda5a28f5bf44315f8f76bbb6570a563158aa19f93e6b503",
+      "pytest.log": "a58e0e27407acd191b4714960d9112ca06dbe591d12ec7b24d266a1b0e162605",
+      "ruff.log": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "return.json": "fa059f2ce3acae8602b29555297e58879c695d772a32c15a3f48587410f3cd03"
+    },
+    "actual_started_at": "2026-10-26T10:38:17.360938+09:00",
+    "actual_finished_at": "2026-10-26T10:39:02.948448+09:00",
+    "cleanup_verified_at": "2026-10-26T10:40:39.541402+09:00",
+    "actual_return": "2026-10-26T10:40:39.541986+09:00",
+    "return_acknowledged_at": "2026-10-26T10:42:32.721636+09:00",
+    "mock_passed": 59,
+    "ruff_passed": true,
+    "guard_raw_recalculation": "PASS",
+    "unique_guard_windows": 9,
+    "own_pid_absent": true,
+    "owned_commands_returncode": {
+      "ruff.guard.json": 0,
+      "pytest.guard.json": 0
+    },
+    "fixed_source_unchanged": true,
+    "last_window": {
+      "duration_seconds": 5.0600403909920715,
+      "frames_delta": 150.0,
+      "inferred_delta": 76.0,
+      "fps": 29.644032143899747,
+      "primary_hz": 15.019642952909203,
+      "error_deltas": {
+        "cctv_processor_source_error_identified_total": 0.0,
+        "cctv_processor_source_error_unidentified_total": 0.0,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_processor_frames_dropped_total": 0.0
+      }
+    },
+    "operating_changes": false,
+    "gpu_rtsp_docker_conversion_collectors": 0,
+    "post_return_recovery": "NOT_MEASURED",
+    "gpu_allocation": null,
+    "limits": "pure mocks and rate/resource guards only; two-channel performance/accuracy not measured"
   }
 }
