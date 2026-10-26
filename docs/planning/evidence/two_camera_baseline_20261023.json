@@ -1457,5 +1457,114 @@
     "roi_scope": "stored evidence/currentcode allowed keys, camera overrides, loading paths, restart need and rollback",
     "current_live_model_state": "NOT_YET_VERIFIED",
     "new_live_reads": false
+  },
+  "model_scope_read_20261026": {
+    "status": "RETURNED_SETTINGS_ONLY_READ",
+    "source": "/home/sawwave/.codex/worktrees/two-camera-baseline/CCTV-project/data/runtime/model_scope_20261026",
+    "inventory_sha256": "0f37d627ea2d46f937db75b7cbe409b2c9d58eda6dd38ed27c837015a1acf6b3",
+    "return_sha256": "14f7714dc5ef169f800aab547d5d364467169e40702026ce84788f8ecbd6a19a",
+    "finished_at": "2026-10-26T11:12:57.459145+09:00",
+    "returned_at": "2026-10-26T11:13:32.412431+09:00",
+    "environment": {
+      "USE_DEEPSTREAM": "1",
+      "DS_YOLO_TASK": "pose",
+      "DS_CROP_POSE_ENABLED": "0",
+      "DS_HELMET_ENABLED": "1",
+      "DS_PPHUMAN_SGIE_ENABLED": "1",
+      "DS_FACE_ENABLED": "1",
+      "DS_APPEARANCE_ENABLED": "1",
+      "APPEARANCE_ENABLED": "true",
+      "APPEARANCE_BACKEND": "hsv",
+      "APPEARANCE_RUNTIME": "tensorrt",
+      "FACE_RECOGNITION_BACKEND": "opencv",
+      "FACE_DEVICE": "cuda:0",
+      "FACE_SNAPSHOT_ENABLED": "false",
+      "FALLDATA_AUX_ENABLED": "true",
+      "FALLDATA_AUX_MODE": "shadow",
+      "FALLDATA_AUX_INLINE_POSE_RF": "true",
+      "FALLDATA_AUX_CLIP_BUFFER_ENABLED": "true",
+      "FALLDATA_AUX_TEMPORAL_WORKER_ENABLED": null,
+      "FALLDATA_AUX_CONFIRM_BORDERLINE": "true",
+      "FALLDATA_AUX_COMPARE_VETO_ENABLED": "false",
+      "FALLDATA_AUX_TEMPORAL_NEAR_MISS_SHADOW_ENABLED": "true",
+      "FALLDATA_AUX_NEAR_MISS_PROMOTE_ENABLED": "false"
+    },
+    "camera_settings": [
+      {
+        "id": "camera_1",
+        "enabled": true,
+        "detections": [
+          "fall",
+          "person",
+          "helmet",
+          "face",
+          "appearance"
+        ],
+        "unlisted_detection_count": 0,
+        "model_settings": {
+          "use_helmet": true,
+          "use_pose": true,
+          "use_person": false,
+          "use_face": true,
+          "use_appearance": true
+        }
+      }
+    ],
+    "current_inference_volume": "NOT_MEASURED",
+    "operating_changes": false,
+    "next": "ROI prepare minimal off plan and operatingimage6file comparison; implementation window after codegraph before/after verification"
+  },
+  "codegraph_metadata_read_allocation_20261026": {
+    "status": "RETURNED_NOT_RUN_EXPIRED_BEFORE_ENTRY",
+    "owner": "A/B",
+    "start_at": "2026-10-26T11:15:00+09:00",
+    "end_at": "2026-10-26T11:16:00+09:00",
+    "maximum_read_seconds": 10,
+    "cpu": "CPU0/nice19",
+    "scope": "two saved daemonPID identity/starttime/cwd/allowedroleargv, ownfd matchingcodegraph sockets, filtered unixsocket table; twoDB/wal/shm/log metadata only; configcodegraph commandargs/keynames, noenvsecretvalues",
+    "database_open_copy_integrity_indexing": false,
+    "new_socket_connection": false,
+    "signals_restart_config_changes": false,
+    "automatic_retry": false,
+    "actual_return": null,
+    "exit_code_owner_report": 1,
+    "reads_started": 0,
+    "own_remaining": [],
+    "return_acknowledged_at": "2026-10-26T11:18:02.282080+09:00",
+    "actual_finish_time": "not supplied; no reads started"
+  },
+  "codegraph_metadata_retry_allocation_20261026": {
+    "status": "ALLOCATED_READONLY_DAEMON_METADATA",
+    "owner": "A/B",
+    "start_at": "2026-10-26T11:32:00+09:00",
+    "end_at": "2026-10-26T11:35:00+09:00",
+    "helper": "/home/sawwave/.codex/worktrees/edge-auto-failback/CCTV-project/edge-auto-failback-trial/codegraph-fix-20261026/read_prechange.py",
+    "helper_sha256": "c124a710928f6a95b8bc623d75223ade75024dc4ed71216312da97ae5e00e0d3",
+    "internal_deadline_seconds": 8,
+    "outer_deadline_seconds": 10,
+    "guard": "aware allocation;1second before end; one exclusiveattempt; outputnooverwrite",
+    "scope": "same2saveddaemonPID/configallowedkeys/DBlogstat/socketrelated metadata; noDBopen/newconnection/signals/restarts/indexing",
+    "automatic_retry": false,
+    "actual_return": null
+  },
+  "codegraph_remediation_coordination_20261026": {
+    "status": "READONLY_METADATA_ALLOCATED_NO_SETTINGS_CHANGES",
+    "owner_thread": "01a160c8-885d-77d3-90ba-02c9528e9ad7",
+    "scope": "codegraph entry only in Codex config and dedicated launcher; project-scoped graphs; preserve home/parent database and logs",
+    "root_codegraph_outstanding_calls": 0,
+    "root_new_codegraph_calls_on_hold": true,
+    "actual_settings_changes": false,
+    "global_mcp_reload_allowed": false,
+    "indexing_or_graph_rebuild_allocated": false,
+    "operating_model_change_deferred_for_comparison": true,
+    "next_live_read_requires_concrete_plan_and_allocation": true,
+    "client_idle_confirmations": {
+      "integration": 0,
+      "engine": 0,
+      "ROI": 0,
+      "miniPC": 0,
+      "camera_offload": 0
+    },
+    "new_codegraph_calls_held_by_all_listed": true
   }
 }

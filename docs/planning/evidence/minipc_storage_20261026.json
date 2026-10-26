@@ -329,5 +329,62 @@
     "original_event_time_preserved": true,
     "destination_storage_time": "KST",
     "replay_to_operating_MQTT_API": false
+  },
+  "windows_readiness_allocation_20261026": {
+    "status": "RETURNED_WINDOWS_READINESS_COMPLETE",
+    "owner": "miniPC",
+    "start_at": "2026-10-26T11:20:00+09:00",
+    "end_at": "2026-10-26T11:30:00+09:00",
+    "auth_cutoff": "2026-10-26T11:27:00+09:00",
+    "master_term_at": "2026-10-26T11:29:55+09:00",
+    "master_kill_latest": "2026-10-26T11:29:57+09:00",
+    "source": "/tmp/minipc-auto-20261026-g2hv7wy3/windows-ready",
+    "ready_sha256": "80c86f3fd1692020e9772f5f58e0cf756b07cd2ab9667fe8229dda12748dffab",
+    "file_sha256": {
+      "connect.sh": "20f6c6d21b81786c5712978ca51f9db02bea8833795390b8adf101cf325fbeef",
+      "read_windows.py": "4804b02b235bcb1253240b07860581d522fb1726e6575a839ffb767a186b610d",
+      "check_identity.py": "7f611fcbdaa83f5aa45f700ce334b9c714be88502f48aa7d4c9f571c82dc3910",
+      "slot_proposal.json": "943857789b4dfa583621badb6ca7d6f004f8e9e71c2bbef896ead67dfe645fbf",
+      "known_hosts": "f37688e7868bc787fdc88e41964f04970b5b020e76dcc6346d197912abc9dbc1"
+    },
+    "windows_readiness_sha256": "ad129c7fe156a424ceded1e82d87e7fa3bb5967541c3e0dd355c648d79432a35",
+    "scope": "one pinnedhost identity check, one direct user password auth, same controlmaster readonly Windows account/sshd keypath/ACL/policies/freecapacity; no keycreation/upload/install/operatingDB/GPU",
+    "actual_return": "2026-10-26T11:24:49.152306+09:00",
+    "remote_writes": false,
+    "automatic_retry": false,
+    "confirmation": "AB unusedslot actual return acknowledged; ROI modelread actual return11:13:32.412431; allothershold",
+    "authentication_status": "CORRECTED_SHELL_EPOCH_CHECK_PASS_USER_DIRECT_AUTH_ALLOWED",
+    "review_correction": "connect.sh upper epoch was11:30, must equal11:27authcutoff; identity/read scope remains allocated, userconnect withheld until corrected SHA",
+    "auth_cutoff_shell_epoch_verified": 1792981620,
+    "preserved": "/media/sawwave/Learning11/CCTV-project/data/runtime/gpu_coordination_20261023_ksweql0f/minipc_windows_readiness_20261026",
+    "sha256": {
+      "identity_result.json": "073078989e01d2d99e6a353dfa8800ac6745fc3a1d6017746f87d6f09747685e",
+      "windows_result.json": "73a3554ea7938a4f67ae8158b5a85cf4dee4ae6fb5199057bd5bc05431b1914b",
+      "return.json": "77c3502421c9c09bcad02310ee071a72a5a4438611d3b0ab8d1739944eb827d6",
+      "READY_V3.json": "80c86f3fd1692020e9772f5f58e0cf756b07cd2ab9667fe8229dda12748dffab",
+      "slot_proposal.json": "943857789b4dfa583621badb6ca7d6f004f8e9e71c2bbef896ead67dfe645fbf",
+      "connect.sh": "20f6c6d21b81786c5712978ca51f9db02bea8833795390b8adf101cf325fbeef",
+      "read_windows.py": "4804b02b235bcb1253240b07860581d522fb1726e6575a839ffb767a186b610d",
+      "check_identity.py": "7f611fcbdaa83f5aa45f700ce334b9c714be88502f48aa7d4c9f571c82dc3910"
+    },
+    "started_at": "2026-10-26T11:23:56.541823+09:00",
+    "finished_at": "2026-10-26T11:24:01.644530+09:00",
+    "own_remaining": [],
+    "socket_exists": false,
+    "key_generation": 0,
+    "new_installation": false,
+    "summary": {
+      "identity_route_key_mac": "PASS",
+      "account": "DESKTOP-ML1IJLU\\JECS",
+      "admin_membership": true,
+      "authorized_keys_path": "C:/ProgramData/ssh/administrators_authorized_keys",
+      "authorized_keys_exists": false,
+      "public_key_authentication": true,
+      "strict_modes": true,
+      "GPO_execution_policy": "Undefined",
+      "free_bytes": 95617048576,
+      "storage_and_data_directories_exist": false
+    },
+    "remaining": "exact key/receiver installation review; synthetic receiver and ACK retry checks; real sensor/detection/image readback; separate timer validation"
   }
 }
