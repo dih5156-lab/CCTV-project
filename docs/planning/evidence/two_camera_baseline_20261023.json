@@ -1658,7 +1658,7 @@
     "return_time_basis": "owner immediate return at command completion; no separate receipt timestamp supplied"
   },
   "codegraph_remediation_coordination_20261026": {
-    "status": "CANDIDATE_PATCH_AND_RECONNECTION_PLAN_PREPARATION",
+    "status": "MOCK_PASS_SHARED_APPLICATION_PROCEDURE_REVIEW",
     "owner_thread": "01a160c8-885d-77d3-90ba-02c9528e9ad7",
     "scope": "codegraph entry only in Codex config and dedicated launcher; project-scoped graphs; preserve home/parent database and logs",
     "root_codegraph_outstanding_calls": 0,
@@ -1681,13 +1681,16 @@
       "dedicated cctv-codegraph launcher",
       "installed directory.js checkout-boundary guard",
       "installed watcher.js unrecoverable retry guard",
-      "installed engine.js explicit unavailable state"
+      "installed engine.js explicit unavailable state",
+      "installed extraction/index.js scoped default ignore hunk",
+      "installed mcp/tools.js explicit scoped failure setter and execute guard"
     ],
     "installation_or_patch_application_allocated": false,
     "metadata_result": {
       "status": "RETURNED_READ_COMPLETE",
       "reference_key": "codegraph_metadata_retry_allocation_20261026"
-    }
+    },
+    "mock_reference_key": "codegraph_mock_validation_20261026"
   },
   "codegraph_project_selection_20261026": {
     "default_project": "/media/sawwave/Learning11/CCTV-project",
@@ -1856,13 +1859,209 @@
     "integration_verified": "source6 hashes/size, mock5 pass, before-after identity equality, all8 CLI exits0; no new host inspection"
   },
   "codegraph_candidate_review_20261026": {
-    "status": "STATIC_REVIEW_CHANGES_REQUESTED_NOT_APPLIED",
+    "status": "JS_8_GROUPS_WRAPPER_7_TESTS_PASS_SHARED_APPLICATION_NOT_RUN",
     "findings": [
       "projectPath resolver must reject graph/DB symlink escape like launcher",
       "watcher changes must be conditioned on CCTV scoped environment",
       "terminal-error reconnect must not restart failed automatic sync indefinitely"
     ],
     "actual_codegraph_calls": 0,
-    "actual_configuration_changes": 0
+    "actual_configuration_changes": 0,
+    "resolved": [
+      "projectPath graph/DB realpath guard",
+      "CCTV-only failure handling without self-restart",
+      "cold initialization failure latched",
+      "status read/hash scoped ignore and symlink boundaries"
+    ]
+  },
+  "codegraph_mock_validation_20261026": {
+    "status": "MOCK_PASS_SHARED_APPLICATION_NOT_RUN",
+    "ready_sha256": "24481af3942f162159f228657efa1518f170361774442b0877ed819a426d6334",
+    "attempts": [
+      {
+        "status": "RETURNED_LAUNCH_PATH_FAILURE_ALL_TESTS_NOT_RUN",
+        "source": "/home/sawwave/.codex/worktrees/edge-auto-failback/CCTV-project/edge-auto-failback-trial/codegraph-fix-20261026/revisions/64075fc",
+        "preserved": "/media/sawwave/Learning11/CCTV-project/data/runtime/gpu_coordination_20261023_ksweql0f/codegraph_mock_20261026",
+        "ready_sha256": "64075fc79bbae43e563f402971db677ca634989ddd1a7418e8881d63cb39db27",
+        "result": {
+          "started_at": "2026-10-26T12:17:17.917271+09:00",
+          "tests": [],
+          "status": "FAIL",
+          "live_db": false,
+          "real_signals": false,
+          "live_watchers": false,
+          "error_type": "FileNotFoundError",
+          "finished_at": "2026-10-26T12:17:17.924305+09:00",
+          "elapsed_seconds": 0.006334671983495355
+        },
+        "evidence_sha256": {
+          "mock-attempt.json": "c8627364d5009033eaaa2bb8dff9c0374fb32deaa86a54f27fe17c8502bd64b3",
+          "mock-result.json": "3b590106bfa263ed83652752e8087ecc17756af9c27797848047e1da2468f659"
+        },
+        "own_children_started_reported": 0,
+        "owner_return_notice_received": true,
+        "return_declaration_exact_time_not_supplied": true,
+        "integration_ack_at": "2026-10-26T12:18:50.641674+09:00",
+        "shared_changes": false,
+        "automatic_retry": false
+      },
+      {
+        "status": "RETURNED_JS_FIXTURE_OR_CANDIDATE_FAILURE_PYTHON_NOT_RUN",
+        "ready_sha256": "5dcac1291c25fe4100a0c9ea184a9173d039e3a5a20cd7c602c275586fb0b62c",
+        "result": {
+          "started_at": "2026-10-26T12:22:07.112522+09:00",
+          "tests": [
+            {
+              "command_name": "check_candidate.cjs",
+              "exit_code": 1,
+              "stdout": "",
+              "stderr": "Error: CodeGraph NOT_READY: /repo/CCTV-project\n    at Object.findNearestCodeGraphRoot (evalmachine.<anonymous>:116:27)\n    at directoryTests (/home/sawwave/.codex/worktrees/edge-auto-failback/CCTV-project/edge-auto-failback-trial/codegraph-fix-20261026/check_candidate.cjs:33:18)\n    at /home/sawwave/.codex/worktrees/edge-auto-failback/CCTV-project/edge-auto-failback-trial/codegraph-fix-20261026/check_candidate.cjs:173:30\n    at Object.<anonymous> (/home/sawwave/.codex/worktrees/edge-auto-failback/CCTV-project/edge-auto-failback-trial/codegraph-fix-20261026/check_candidate.cjs:173:269)\n    at Module._compile (node:internal/modules/cjs/loader:1854:14)\n    at Object..js (node:internal/modules/cjs/loader:1985:10)\n    at Module.load (node:internal/modules/cjs/loader:1577:32)\n    at Module._load (node:internal/modules/cjs/loader:1379:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\n"
+            }
+          ],
+          "status": "FAIL",
+          "live_db": false,
+          "real_signals": false,
+          "live_watchers": false,
+          "finished_at": "2026-10-26T12:22:07.216158+09:00",
+          "elapsed_seconds": 0.10315993000403978
+        },
+        "evidence_sha256": {
+          "mock-attempt.json": "f3997b58193753a7bb40bf41f083097663e45eb785e5a5bf158261009446e351",
+          "mock-result.json": "d6063372a45ad0cb157955244aa6dd112a3c56db48be8d0744241783fa5b4add"
+        },
+        "preserved": "/media/sawwave/Learning11/CCTV-project/data/runtime/gpu_coordination_20261023_ksweql0f/codegraph_mock_attempt2_20261026",
+        "owner_report_children_reaped": true,
+        "automatic_retry": false,
+        "shared_application": false,
+        "integration_ack_at": "2026-10-26T12:22:38.131423+09:00"
+      },
+      {
+        "status": "NOT_RUN_RETURNED_SLOT_MISSED_DURING_STATIC_PREPARATION",
+        "allocation": {
+          "status": "NOT_RUN_RETURNED",
+          "owner": "A/B",
+          "thread_id": "01a160c8-885d-77d3-90ba-02c9528e9ad7",
+          "start_at": "2026-10-26T12:26:00+09:00",
+          "end_at": "2026-10-26T12:28:00+09:00",
+          "ready_path": "/home/sawwave/.codex/worktrees/edge-auto-failback/CCTV-project/edge-auto-failback-trial/codegraph-fix-20261026/ready-manifest.json",
+          "ready_sha256": "24481af3942f162159f228657efa1518f170361774442b0877ed819a426d6334",
+          "files": 13,
+          "runner_sha256": "00ad4276d2e2b9fd4e8a5cdb62dbf98389dceeb602aa75954d56a1f7e5160800",
+          "scope": "one sequential pure JS and Python mock run; CPU0/nice19; aggregate8s/external10s; fake filesystem/DB/watch/signal and temp fixtures only",
+          "live_metrics": false,
+          "real_db_open": false,
+          "new_network_or_signal": false,
+          "shared_installation_or_config": false,
+          "indexing": false,
+          "automatic_retry": false,
+          "requires_actual_return": true,
+          "allocated_at": "2026-10-26T12:23:58.828661+09:00",
+          "attempt": 3
+        },
+        "new_attempt_or_result_created": false,
+        "owner_report_children": 0,
+        "shared_application": false,
+        "automatic_extension": false,
+        "return_ack_at": "2026-10-26T12:36:25.128256+09:00"
+      },
+      {
+        "status": "NOT_RUN_RETURNED_MESSAGE_DELAY_DURING_CONTEXT_RECOVERY",
+        "allocation": {
+          "status": "NOT_RUN_RETURNED",
+          "owner": "A/B",
+          "thread_id": "01a160c8-885d-77d3-90ba-02c9528e9ad7",
+          "start_at": "2026-10-26T12:32:00+09:00",
+          "end_at": "2026-10-26T12:35:00+09:00",
+          "ready_path": "/home/sawwave/.codex/worktrees/edge-auto-failback/CCTV-project/edge-auto-failback-trial/codegraph-fix-20261026/ready-manifest.json",
+          "ready_sha256": "24481af3942f162159f228657efa1518f170361774442b0877ed819a426d6334",
+          "files": 13,
+          "runner_sha256": "00ad4276d2e2b9fd4e8a5cdb62dbf98389dceeb602aa75954d56a1f7e5160800",
+          "scope": "one sequential pure JS and Python mock run; CPU0/nice19; aggregate8s/external10s; fake filesystem/DB/watch/signal and temp fixtures only",
+          "live_metrics": false,
+          "real_db_open": false,
+          "new_network_or_signal": false,
+          "shared_installation_or_config": false,
+          "indexing": false,
+          "automatic_retry": false,
+          "requires_actual_return": true,
+          "allocated_at": "2026-10-26T12:36:25.128256+09:00",
+          "attempt": 4
+        },
+        "new_attempt_or_result_created": false,
+        "owner_report_children": 0,
+        "shared_application": false,
+        "automatic_extension": false,
+        "return_ack_at": "2026-10-26T12:40:13.641661+09:00"
+      },
+      {
+        "status": "RETURNED_JS_8_GROUPS_AND_PYTHON_7_TESTS_PASS",
+        "source": "/home/sawwave/.codex/worktrees/edge-auto-failback/CCTV-project/edge-auto-failback-trial/codegraph-fix-20261026",
+        "preserved": "/media/sawwave/Learning11/CCTV-project/data/runtime/gpu_coordination_20261023_ksweql0f/codegraph_mock_attempt5_20261026",
+        "ready_sha256": "24481af3942f162159f228657efa1518f170361774442b0877ed819a426d6334",
+        "result": {
+          "started_at": "2026-10-26T12:40:37.419214+09:00",
+          "tests": [
+            {
+              "command_name": "check_candidate.cjs",
+              "exit_code": 0,
+              "stdout": "{\"groups\":[{\"name\":\"projectPathTest\",\"status\":\"PASS\"},{\"name\":\"directoryTests\",\"status\":\"PASS\"},{\"name\":\"watcherTests\",\"status\":\"PASS\"},{\"name\":\"engineTests\",\"status\":\"PASS\"},{\"name\":\"executionErrorTests\",\"status\":\"PASS\"},{\"name\":\"unscopedTests\",\"status\":\"PASS\"},{\"name\":\"ignoreTests\",\"status\":\"PASS\"},{\"name\":\"changedScopeTests\",\"status\":\"PASS\"}],\"live_watchers\":0,\"db_open\":0,\"real_signals\":0,\"network\":0}\n",
+              "stderr": ""
+            },
+            {
+              "command_name": "check_wrapper.py",
+              "exit_code": 0,
+              "stdout": "",
+              "stderr": ".......\n----------------------------------------------------------------------\nRan 7 tests in 0.039s\n\nOK\n"
+            }
+          ],
+          "status": "PASS",
+          "live_db": false,
+          "real_signals": false,
+          "live_watchers": false,
+          "finished_at": "2026-10-26T12:40:37.823131+09:00",
+          "elapsed_seconds": 0.4032028900110163
+        },
+        "sha256": {
+          "mock-attempt.json": "03f8aada84653393067c32982fc17cdda21273410ec7c8a63102c42e0b78f12f",
+          "mock-result.json": "29c23b3b86be67ef19860fb55d1fe27179bedd88afc57a69437bdad9b4ff6bd5",
+          "ready-manifest.json": "24481af3942f162159f228657efa1518f170361774442b0877ed819a426d6334"
+        },
+        "fixed_hashes_verified": 13,
+        "children_remaining_owner_report": 0,
+        "owner_reports_immediate_return": true,
+        "exact_return_notice_time_not_separately_supplied": true,
+        "integration_ack_at": "2026-10-26T12:41:11.938496+09:00",
+        "shared_changes": false,
+        "real_db_watch_signal_network": false,
+        "new_operating_observation": false
+      }
+    ],
+    "product_candidate_five_files_unchanged_since_64075fc": true,
+    "shared_application_review": {
+      "status": "DEADLINE_RECHECK_AND_TRANSACTION_SIGNAL_MOCKS_REQUIRED",
+      "apply_shared_sha256": "5ac4e2b1d1c8889af4ff2fa1ad33c4814ab350b93b74a92de91ea0060424c264",
+      "stop_legacy_sha256": "e17c81def3de9036af3c26c134de95cee59a1e586bd7e93fb713d315f0937bb9",
+      "findings": [
+        "recheck allocation and rollback reserve after backups and before each replacement; reject preexisting result before mutations",
+        "config-string self-check does not exercise atomic replacement/CAS/rollback or stale-PID/no-signal safety; add bounded temporary/fake-signal tests"
+      ],
+      "shared_application": false,
+      "legacy_signals": false,
+      "original_graph_created": false,
+      "reload": false
+    },
+    "reconnection_semantics": {
+      "basis": "A/B reported static inspection of official rust-v0.163.0 matching installed CLI version; root has not independently verified running app-server binary identity",
+      "reusable_client_conditions": [
+        "same connection config",
+        "startup complete",
+        "connection not closed"
+      ],
+      "other_mcp_preservation": "conditional; verify before/after, not assumed",
+      "startup_failure_tool_call_can_background_reconnect": true,
+      "codegraph_calls_held_until_ready_and_validation": true,
+      "global_reload_server_or_thread_selector": false,
+      "actual_reload": false
+    }
   }
 }
