@@ -2657,5 +2657,211 @@
       "delivery_confirmed": false,
       "scope": "Only two import-order fixes, old evidence preservation and new immutable package; no automatic test or operating change"
     }
+  },
+  "model_scope_comparator_import_order_cpu_20261026": {
+    "status": "RETURNED_19_TESTS_RUFF_FINAL_GUARD_PASS",
+    "allocation": {
+      "owner": "01a1661c-05e7-7112-a4d3-a8de0930f0ef",
+      "status": "ALLOCATED_VALIDATOR_START_PENDING",
+      "start_at": "2026-10-26T16:28:47.155088+09:00",
+      "end_at": "2026-10-26T16:31:47.155088+09:00",
+      "work_cutoff": "2026-10-26T16:30:47.155088+09:00",
+      "maximum_seconds": 180,
+      "nonce": "79eccb98614c4927ac95470050420b70",
+      "own_pid": 1554502,
+      "approval_completed_before_start": true,
+      "validator_sha256": "1eac29b294487c71aea7c04d3336117efc639616f93992f807017829ad75932f",
+      "output": "/tmp/cctv-roi-comparator-import-order-20261026-oiu1_hse/run",
+      "scope": "fresh30s guard,19 pure unittest,Ruff,final5s guard; no actual private bundle/GPU/operating changes",
+      "automatic_retry": false
+    },
+    "started_at": "2026-10-26T16:28:47.643320+09:00",
+    "finished_at": "2026-10-26T16:29:33.613759+09:00",
+    "returned_at": "2026-10-26T16:30:39.969981+09:00",
+    "command_exit_code": 0,
+    "own_child_groups_remaining": [],
+    "source_hashes_unchanged": true,
+    "tests": {
+      "passed": 19,
+      "seconds": 0.049
+    },
+    "ruff": "PASS",
+    "preflight": {
+      "start": "2026-10-26T16:28:48.128259+09:00",
+      "end": "2026-10-26T16:29:18.415937+09:00",
+      "seconds": 30.231868884991854,
+      "fps": 30.03453089368096,
+      "primary_hz": 14.984187769644796,
+      "windows": 6,
+      "passed": true
+    },
+    "guard": {
+      "samples": 13,
+      "windows": 9,
+      "all_pass": true,
+      "minimum_fps": 29.791888204799562,
+      "minimum_primary_hz": 14.881060188883808,
+      "maximum_age_seconds": 0.06140129698906094,
+      "minimum_memory_gib": 41.31773376464844,
+      "maximum_temperature_c": 53.937,
+      "error_restart_drop_increases": 0,
+      "last_sample_at": "2026-10-26T16:29:33.595934+09:00"
+    },
+    "final_guard": "PASS",
+    "raw_counter_recalculation": "PASS",
+    "post_cleanup_observation": "NOT_RUN",
+    "long_term_stability": "NOT_ESTABLISHED",
+    "actual_private_comparison": "NOT_RUN",
+    "operating_changes": 0,
+    "GPU_Docker_conversion_indexing": 0,
+    "automatic_retry": false,
+    "source": "/tmp/cctv-roi-comparator-import-order-20261026-oiu1_hse/run",
+    "preserved": "/media/sawwave/Learning11/CCTV-project/data/runtime/gpu_coordination_20261023_ksweql0f/roi_comparator_import_order_cpu_20261026",
+    "sha256": {
+      "final_check.json": "abc644ea57d1cfbe505a24ff115fec872afa141c51eae950b0e56147a100a9ad",
+      "initial_preflight.json": "60927e281324c1c3c380a4509e4cf16eb77ddb7ce05e55886037a6032fe01d47",
+      "operating_check.json": "abc644ea57d1cfbe505a24ff115fec872afa141c51eae950b0e56147a100a9ad",
+      "result.json": "234950c080e4c8473d02f2b2190b440d0a20e15131433b923dfc8de72f8ac045",
+      "ruff.guard.json": "ebb97a508f6e6c927ff2bcbfae748e30be9da0ad57995cd25fc28f990e78e7cc",
+      "unittest.guard.json": "af965c09fc6d84d6175cea891bf4a38dbfac51b1b1640ded8ca4d3f6bd1f67a3",
+      "ruff.log": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "unittest.log": "e11f479acb9a6444ea690210cb068d4ae8f1d1d9f5edfb18c20cd386e6aee16b",
+      "validate.py": "1eac29b294487c71aea7c04d3336117efc639616f93992f807017829ad75932f",
+      "readiness.json": "30a0bc324b871aa62a488892e8f1fca7c5e417c1d1e03f736fc119454f25a4dd",
+      "preparation.json": "7448632018d453ff4c83c4082d6231fa6d099001f87f7eaa923d4020ceab43ed",
+      "preservation.json": "dedcf64cec70b9ce928ce3144e5a3d542d1236ba3f2fd7f697af60e4fdb1e7cf"
+    },
+    "fixed_sources": {
+      "/home/sawwave/.codex/worktrees/two-camera-baseline/CCTV-project/data/runtime/model_scope_20261026/comparator_ready.json": "9818a585546699872bad863bf9f09506d7a252012bfb6c37753e89de1206f7ef",
+      "/home/sawwave/.codex/worktrees/two-camera-baseline/CCTV-project/data/runtime/model_scope_20261026/compare_model_scope.py": "5c532376b1343189ab1c6ec703f879522a3ef34699e0d8e2af4c139c54bdb411",
+      "/home/sawwave/.codex/worktrees/two-camera-baseline/CCTV-project/data/runtime/model_scope_20261026/test_compare_model_scope.py": "a53b322e71dd35a2d71508eefd365ae74c0c23de51a2b464ac8ba11e422c7567",
+      "/home/sawwave/.codex/worktrees/two-camera-baseline/CCTV-project/data/runtime/model_scope_20261026/COMPARATOR_REVIEW.md": "8ab663c22359852ecd2e3a242287a186e0925c78bef4319ee49487806f6764c7"
+    }
+  },
+  "model_scope_saved_private_comparison_20261026": {
+    "status": "SAVED_BASELINE_MATCH_BLOCKED_OTHER_THREE_GATES_PASS",
+    "execution": {
+      "started_at": "2026-10-26T16:31:48.565588+09:00",
+      "scope": "one frozen saved private JSON comparison only; no host metrics/network/operating writes",
+      "input_sha256": "412eb7a983120b55093e0c1a875e3d85f3a79089e66519e55f109ad7824b8c34",
+      "source_sha256": "5c532376b1343189ab1c6ec703f879522a3ef34699e0d8e2af4c139c54bdb411",
+      "cpu": 0,
+      "nice": 19,
+      "max_cli_seconds": 5,
+      "automatic_retry": false,
+      "exit_code": 2,
+      "result": {
+        "status": "BLOCK",
+        "gates": {
+          "BEFORE_EQUALS_LIVE": {
+            "status": "BLOCK",
+            "fields": [
+              "config.AttachStderr",
+              "config.AttachStdout",
+              "config.labels",
+              "host.missing_fields",
+              "image.argv_escape",
+              "network.ipam",
+              "network.single_ipv4_subnet_only"
+            ]
+          },
+          "ONLY_APPROVED_DELTA": {
+            "status": "PASS",
+            "fields": []
+          },
+          "CAMERA_DELTA": {
+            "status": "PASS",
+            "fields": []
+          },
+          "FROZEN_ROUNDTRIP": {
+            "status": "PASS",
+            "fields": []
+          }
+        }
+      },
+      "status": "BLOCK",
+      "finished_at": "2026-10-26T16:31:48.714310+09:00",
+      "duration_seconds": 0.12586309504695237,
+      "input_hash_unchanged": true,
+      "source_hash_unchanged": true,
+      "host_queries": 0,
+      "operating_changes": 0,
+      "own_group_remaining": false,
+      "returned_at": "2026-10-26T16:31:48.715286+09:00"
+    },
+    "redacted_diagnostic": {
+      "status": "SAVED_DATA_ONLY_DIAGNOSTIC_NOT_A_PASS",
+      "recorded_at": "2026-10-26T16:33:56.918492+09:00",
+      "private_input_sha256": "412eb7a983120b55093e0c1a875e3d85f3a79089e66519e55f109ad7824b8c34",
+      "config_attach": {
+        "AttachStdin": false,
+        "AttachStdout": true,
+        "AttachStderr": true,
+        "StdinOnce": false,
+        "OpenStdin": false,
+        "Tty": false
+      },
+      "image_args_escaped": {
+        "present": true,
+        "value": true,
+        "image_os": "linux",
+        "compose_command_type": "list",
+        "compose_entrypoint_type": "NoneType"
+      },
+      "missing_host_fields": {
+        "default_fields": [],
+        "empty_fields": [
+          "Annotations",
+          "StorageOpt",
+          "Sysctls",
+          "Tmpfs"
+        ]
+      },
+      "labels": {
+        "extra_keys": [
+          "com.docker.compose.replace"
+        ],
+        "missing_keys": [
+          "com.docker.compose.project",
+          "com.docker.compose.service",
+          "com.docker.compose.version"
+        ],
+        "value_mismatch_keys": [],
+        "values_not_exported": true
+      },
+      "network": {
+        "compose_ipam_present": true,
+        "compose_ipam_keys": [],
+        "compose_ipam_driver": null,
+        "compose_ipam_options_keys": [],
+        "compose_ipam_config_count": 0,
+        "inspect_ipam_driver": "default",
+        "inspect_ipam_options_empty": true,
+        "inspect_config_count": 1,
+        "inspect_config_keys": [
+          [
+            "Gateway",
+            "Subnet"
+          ]
+        ],
+        "ipv6": false,
+        "actual_addresses_exported": false,
+        "observed_subnet_version": 4,
+        "observed_subnet_prefixlen": 16,
+        "attachment_ipv4_in_observed_subnet": true,
+        "attachment_prefix_matches": true,
+        "attachment_gateway_matches_observed": true
+      },
+      "host_queries": 0,
+      "operating_changes": 0,
+      "next_rule": "Evidence-backed Docker representation handling or baseline correction only; no blanket skip. Freeze and regression-test before private rerun or maintenance."
+    },
+    "not_current_live_snapshot": true,
+    "followup_notice": {
+      "queue_id": "01a17722-74e1-77d0-b005-580074ceef48",
+      "registered": true,
+      "delivery_confirmed": false,
+      "scope": "Comparator/test only, evidence-backed representation rules and negative drift regressions; no automatic execution"
+    }
   }
 }
