@@ -2559,5 +2559,103 @@
     "seven_fixed_hashes_reverified": true,
     "new_integrator_live_queries": 0,
     "next_execution_gate": "Approval for the exact command first; only an idle input-waiting session before allocation; no test or metrics until an explicitly allocated ISO pair is supplied. This uses normal approval and does not guarantee successful authorization."
+  },
+  "model_scope_comparator_1600_session_failure_20261026": {
+    "status": "NOT_STARTED_SESSION_HANDLE_LOST",
+    "old_session": 16385,
+    "old_pid": 1495923,
+    "pid_check": {
+      "started_at": "2026-10-26T16:03:17.405887+09:00",
+      "pid": 1495923,
+      "tool_session_id": 16385,
+      "scope": "one host PID and known output only",
+      "signals_sent": 0,
+      "metrics_queries": 0,
+      "processes_started_for_tests": 0,
+      "pid_present": false,
+      "known_output_entries": [
+        "tmp"
+      ],
+      "validator_result_present": false,
+      "operating_check_present": false,
+      "status": "READ_COMPLETE",
+      "finished_at": "2026-10-26T16:03:17.406230+09:00",
+      "duration_seconds": 0.00039166200440376997
+    },
+    "pid_check_sha256": "b220b39325364e30f3722e14b6aaaeabb7d02040531f3cee8317b83fc9acaa00",
+    "process_end_and_session_loss_cause": "UNKNOWN"
+  },
+  "model_scope_comparator_integrator_cpu_20261026": {
+    "status": "RETURNED_19_TESTS_PASS_RUFF_I001_FAILED",
+    "source": "/tmp/cctv-roi-comparator-cpu-ready-20261026-hay7rf3v/run",
+    "preserved": "/media/sawwave/Learning11/CCTV-project/data/runtime/gpu_coordination_20261023_ksweql0f/roi_comparator_integrator_cpu_20261026",
+    "validator_finished_at": "2026-10-26T16:11:57.916808+09:00",
+    "command_exit_code": 1,
+    "returned_at": "2026-10-26T16:15:49.827464+09:00",
+    "own_child_groups_remaining": [],
+    "source_hashes_unchanged": true,
+    "tests": {
+      "passed": 19,
+      "seconds": 0.046
+    },
+    "ruff": {
+      "exit_code": 1,
+      "issues": [
+        {
+          "file": "compare_model_scope.py",
+          "code": "I001"
+        },
+        {
+          "file": "test_compare_model_scope.py",
+          "code": "I001"
+        }
+      ]
+    },
+    "preflight": {
+      "start": "2026-10-26T16:11:17.371699+09:00",
+      "end": "2026-10-26T16:11:47.703641+09:00",
+      "seconds": 30.32285222201608,
+      "fps": 30.0433479453019,
+      "primary_hz": 15.005184758630477,
+      "windows": 6,
+      "passed": true
+    },
+    "guard": {
+      "samples": 11,
+      "windows": 8,
+      "all_pass": true,
+      "minimum_fps": 28.287916676513923,
+      "minimum_primary_hz": 14.242867137825193,
+      "maximum_age_seconds": 0.08731807302683592,
+      "minimum_memory_gib": 42.431392669677734,
+      "maximum_temperature_c": 53.875,
+      "error_restart_drop_increases": 0,
+      "last_sample_at": "2026-10-26T16:11:57.891994+09:00"
+    },
+    "final_separate_five_second_check": "NOT_RUN_DUE_TO_LINT_FAILURE",
+    "post_return_operating_recovery": "NOT_MEASURED",
+    "raw_counter_recalculation": "PASS",
+    "actual_private_comparison": "NOT_RUN",
+    "operating_changes": 0,
+    "GPU_Docker_conversion_indexing": 0,
+    "automatic_retry": false,
+    "sha256": {
+      "ruff.guard.json": "ba103db779a0accf89d52de628473027da9747f153fb95d453e9a237b692b312",
+      "operating_check.json": "0880c16004136bb3539a2f46a51ce2bb593258557419846a41a9c529d8d422ea",
+      "unittest.guard.json": "64c1360a0599e660da1ba51e046ebb5c702cbc58dcca5aa5a76044ff1ceba8a8",
+      "result.json": "1eb8da73ea985bf46cf981c9d29761619a5eb6d61a22d0ef7d8eddf02509c846",
+      "initial_preflight.json": "0880c16004136bb3539a2f46a51ce2bb593258557419846a41a9c529d8d422ea",
+      "unittest.log": "aae4a5a7b9dc33c857c1fc35ad57ff9490259af62c782dede86a81cfcb709196",
+      "ruff.log": "0342f751214ba24ada9e343d9ac50c7f8768bd295a191999aad8bf381abf21b7",
+      "validate.py": "1eac29b294487c71aea7c04d3336117efc639616f93992f807017829ad75932f",
+      "readiness.json": "5a0a54ef757f65798fe3d520e125bf43ae7fb6ea9eefdc5104615b60e83be99b",
+      "preparation.json": "de5a0312e2c7a22ed0fe6ae0a9075761c80f65f8c81b4760d4b9922d16e7ea0e"
+    },
+    "followup_notice": {
+      "queue_id": "01a17715-15e8-7bb3-8710-83b67a286e30",
+      "registered": true,
+      "delivery_confirmed": false,
+      "scope": "Only two import-order fixes, old evidence preservation and new immutable package; no automatic test or operating change"
+    }
   }
 }
