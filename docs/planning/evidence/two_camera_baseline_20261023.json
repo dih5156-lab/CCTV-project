@@ -2998,5 +2998,124 @@
       "/home/sawwave/.codex/worktrees/two-camera-baseline/CCTV-project/data/runtime/model_scope_20261026/test_compare_model_scope.py": "6f240bf6ce21020c3a7acf609d649f0fbe192e5b53130b48ad902c3d5084b5df",
       "/tmp/cctv-roi-comparator-label-precedence-20261026-odpkvnes/PIN_CONTRACT.md": "308633ee3f5758f2bad6de09a08aa9e75758f1cb3feb5b7c0320ebd61d7e003e"
     }
+  },
+  "model_scope_private_resume_20261027": {
+    "status": "LABEL_BLOCKS_RESOLVED_NETWORK_PIN_PENDING_NO_ALLOCATION",
+    "date": "2026-10-27",
+    "updated_at": "2026-10-27T08:31:03.966091+09:00",
+    "private_comparison": {
+      "started_at": "2026-10-27T08:24:23.185623+09:00",
+      "finished_at": "2026-10-27T08:24:23.379658+09:00",
+      "returned_at": "2026-10-27T08:24:23.381135+09:00",
+      "duration_seconds": 0.17093959799967706,
+      "exit_code": 2,
+      "comparison": {
+        "status": "BLOCK",
+        "gates": {
+          "BEFORE_EQUALS_LIVE": {
+            "status": "BLOCK",
+            "fields": [
+              "network.reuse_evidence"
+            ]
+          },
+          "ONLY_APPROVED_DELTA": {
+            "status": "PASS",
+            "fields": []
+          },
+          "CAMERA_DELTA": {
+            "status": "PASS",
+            "fields": []
+          },
+          "FROZEN_ROUNDTRIP": {
+            "status": "PASS",
+            "fields": []
+          }
+        }
+      },
+      "source_sha256": "287b57a104528dd678fd0a0ac8c7330308f1acb401f75a60ec9fb23902698d88",
+      "input_sha256": "412eb7a983120b55093e0c1a875e3d85f3a79089e66519e55f109ad7824b8c34",
+      "source_and_input_unchanged": true,
+      "own_group_remaining": false
+    },
+    "private_cli_cleanup_scope": "Exited/reaped comparator child and its process group in execution sandbox; no claim about unrelated host processes",
+    "network_read": {
+      "started_at": "2026-10-27T08:25:50.290658+09:00",
+      "read_count": 1,
+      "operating_changed": false,
+      "automatic_retry": false,
+      "exit_code": 0,
+      "labels_key_present": true,
+      "target_id_matches": true,
+      "historical_projection_equal": true,
+      "labels_object": true,
+      "project_network_identity_matches": true,
+      "hash_label_present": true,
+      "hash_label_valid_shape": true,
+      "supplement_sha256": "c078c8b631192641ba2edf10efd8fba30824bd551d815a1d8cdcfa9702cba08f",
+      "status": "READ_COMPLETE_HASH_REVIEW_REQUIRED",
+      "finished_at": "2026-10-27T08:25:50.337960+09:00",
+      "duration_seconds": 0.046806150989141315,
+      "returned_at": "2026-10-27T08:25:50.337987+09:00"
+    },
+    "hash_review": {
+      "status": "SOURCE_DERIVED_MATCH_PENDING_BYTE_CONTRACT_REVIEW",
+      "scope": "only exact name/driver=bridge/ipam={} with restricted ASCII name",
+      "definition_keys": [
+        "name",
+        "driver",
+        "ipam"
+      ],
+      "source_versions": {
+        "docker_compose": "v5.6.0",
+        "compose_go": "v2.16.1",
+        "go_json": "go1.26.8"
+      },
+      "type_field_order": [
+        "Name",
+        "Driver",
+        "DriverOpts",
+        "Ipam",
+        "External",
+        "Internal",
+        "Attachable",
+        "Labels",
+        "CustomLabels",
+        "EnableIPv4",
+        "EnableIPv6",
+        "Extensions"
+      ],
+      "omitted_fields_are_zero": true,
+      "custom_labels_and_extensions_json_ignored": true,
+      "struct_ipam_not_empty_for_omitempty": true,
+      "source_derived_hash_matches_collected_label": true,
+      "go_program_executed": false,
+      "go_available_in_checked_locations": false,
+      "network_pin_created": false,
+      "raw_bytes_saved_privately": true,
+      "official_sources": [
+        "https://github.com/docker/compose/blob/v5.6.0/pkg/compose/hash.go#L211",
+        "https://github.com/docker/compose/blob/v5.6.0/go.mod#L8",
+        "https://github.com/compose-spec/compose-go/blob/v2.16.1/types/types.go#L697",
+        "https://github.com/golang/go/blob/go1.26.8/src/encoding/json/encode.go"
+      ],
+      "note": "This is a narrow source-derived byte calculation; it does not establish current installed CLI identity or an actual lifecycle plan. No pin or derived bundle is published."
+    },
+    "no_new_pin_or_derived_bundle": true,
+    "operating_model_container_changes": 0,
+    "new_gpu_camera_rtsp_metrics_queries": 0,
+    "current_operating_fps": "NOT_OBSERVED; previous-day preflight is historical",
+    "next_scope": [
+      "Review/verify exact official NetworkConfig byte representation for fixed name/bridge/empty IPAM; no arbitrary sorted JSON hash",
+      "Build private pin/provenance and separate Labels-only/intermediate then pin-only/final bundle after proof",
+      "One final saved comparison; preserve original and all failures",
+      "Before any operation, new runtime identity/CAS, lifecycle plan excluding network recreation, and operating protection are separate"
+    ],
+    "limits": [
+      "Network supplement is later than original container snapshot, not one simultaneous snapshot",
+      "Source-derived byte hash matches but no Go program or current CLI lifecycle plan was executed",
+      "No operating change/GPU authorization follows from stored comparison"
+    ],
+    "evidence": "/media/sawwave/Learning11/CCTV-project/data/runtime/gpu_coordination_20261023_ksweql0f/roi_private_resume_20261027/summary.json",
+    "evidence_sha256": "1201f3b98b49d2bb3c8f7a9bedcbdd39a3ad035196769ff0a9ff4cc690dbec2d"
   }
 }

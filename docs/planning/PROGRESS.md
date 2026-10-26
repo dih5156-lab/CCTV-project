@@ -1,5 +1,7 @@
 # 개발 진행 기록
 
+10-27 **ROI 실제 저장 사본 재대조:3 BLOCK→네트워크1 BLOCK**: 전날36모의 PASS 소스와 원본 bundle 해시를 재확인해08:24:23 비공개 CLI1회(exit2,0.171초) 실행했다. 이미지/생성 라벨2항목은 해소됐고 허용설정·카메라·복원3단계 PASS, network.reuse_evidence만 잔여다. 별도08:25:50 저장 network ID1개 조회1회/0.047초에서 기존11필드 타입·값 및 project/network 라벨 일치, config-hash 존재를 확인했다. 공식 타입/인코딩 규칙에서 도출한 제한 바이트 해시는 일치했으나 Go 직접 실행·현재 CLI 계획은 미검증이다. pin/파생 bundle 미생성·원본 보존·운영/모델/GPU 변경0·새 배정 없음, DONE9/37 유지. [근거·다음 경계](evidence/two_camera_baseline_20261023.json).
+
 10-26 17:51 **ROI 라벨 우선순위 보완36모의·Ruff·최종 보호 PASS**: container_labels 한 함수의 이미지 빌드 버전/Compose 생성 버전 구분을 검증했다. 새30.262초 30.004FPS/14.969Hz 사전점검과 보호9창 통과,36모의0.247초·17:50:28 종료·17:51:02 반환/자체PID3개·그룹 잔여0. 이전32PASS 원시16개와 고정 소스를 보존했다. **새 소스의 실제 비공개 사본 비교·네트워크 보충 조회는 NOT_RUN**으로 이전3 BLOCK 해소를 주장하지 않는다. 네트워크 Labels 미수집은 UNKNOWN/BLOCK·pin 생성/운영/GPU 변경0, DONE9/37 유지. [검증·한계](evidence/two_camera_baseline_20261023.json).
 
 10-26 17:42 **모듈 흐름·A/B 구조도 선별 통합·게시 완료**: 담당 커밋1268e25의 문서/정적8파일을4a13b7c로 통합했다. 영상·센서·저장·출력 연결과 제어/DDS/JPEG 통로를 구분했으며 구조도 기준시각은16:55다. 문서 서비스만 같은 이미지·유선/Wi-Fi 바인딩으로 재생성해18건 HTTP200/원본 바이트 일치·차단경로6건404·nginx 검증 PASS, 다른36컨테이너 식별/이미지/시작시각/실행상태 불변. 이후 ROI32모의 PASS/저장대조3 BLOCK과 DONE9/37은 유지한다. [게시·브라우저 검증과 한계](../architecture/archify/module-refresh-20261026-receipt.json)·[모듈 화면](http://192.168.88.146:18081/module_flow.html).
