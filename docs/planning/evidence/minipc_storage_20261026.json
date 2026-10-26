@@ -101,5 +101,33 @@
     "finding": "active detection JSONL; sensor JSONL last modification2026-09-07; last2 records each without image reference, not whole-log absence proof; appearance crops directory and DB exist only, no SQL",
     "actual_return": "explicit owner notice received",
     "return_acknowledged_at": "2026-10-26T10:29:57.801072+09:00"
+  },
+  "sensor_connection_confirmation_20261026": {
+    "status": "USER_CONFIRMED_NOT_CONNECTED",
+    "confirmed_date": "2026-10-26",
+    "source_thread_id": "01a16768-1af3-7073-89ab-66375066d5ca",
+    "source_user_message_id": "01a175d5-f370-7b21-b356-bc6f370fcbde",
+    "source_text": "아직 센서는 연결하지 않음",
+    "integrator_verified_at": "2026-10-26T10:34:09.272121+09:00",
+    "interpretation": "old sensor JSONL is not evidence of an active collection fault; existing record delivery and future connected-sensor live validation remain separate",
+    "sensor_live_inspection_request": "WITHDRAWN"
+  },
+  "appearance_readonly_followup_20261026": {
+    "status": "SCOPE_ACCEPTED_TIME_NOT_ALLOCATED",
+    "after": "engine actual return then already queued ROI CPU actual return",
+    "database": "/media/sawwave/Learning11/CCTV-project/data/runtime/appearances.db",
+    "read_only": true,
+    "query_only": true,
+    "busy_timeout_ms": 100,
+    "sql_timeout_seconds": 1,
+    "runner_timeout_seconds": 30,
+    "sql_limit": 3,
+    "row_limit": 2,
+    "scope": "appearance_log columns then latest id/timestamp/crop_path internal comparison; sanitized column names,row count,latest time,path type/allowed-root and referenced image stat only",
+    "no_raw_rows_ids_devices_faces_or_full_paths": true,
+    "no_image_content_backup_recursive_scan_or_network": true,
+    "automatic_retry": false,
+    "start_at": null,
+    "end_at": null
   }
 }

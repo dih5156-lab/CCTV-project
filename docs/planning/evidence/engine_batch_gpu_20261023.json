@@ -1898,7 +1898,7 @@
     "limits": "pure instrumentation/guard mocks only; not accuracy/four-input runtime acceptance; product/source integration not performed"
   },
   "attempt4_allocation_20261026": {
-    "status": "ALLOCATED_PREFLIGHT_REQUIRED",
+    "status": "RETURNED_GUARD_STOP_FIRST_TRIAL_INVALID",
     "owner": "engine",
     "start_at": "2026-10-26T10:32:00+09:00",
     "end_at": "2026-10-26T10:47:00+09:00",
@@ -1926,5 +1926,63 @@
     "first_failure": "save raw counters/times/resources/reason before stopping own trial, cleanup only own processes/containers, immediate return",
     "actual_return": null,
     "basis": "engine16CPU mocks/Ruff PASS; fixed3source and plan hash checked; A/B and miniPC actual returns confirmed; other tasks held; saved30sec rate does not replace fresh full protection preflight"
+  },
+  "attempt4_result_20261026": {
+    "status": "RETURNED_GUARD_STOP_FIRST_TRIAL_INVALID",
+    "source": "/home/sawwave/.codex/worktrees/multicamera-engine-batch/CCTV-project/data/runtime/engine_quality_four_input_20261026_attempt4",
+    "sha256": {
+      "run.json": "c20e227bccc36cd7320217b6c97d92bd5327db29ad869ab19eabe71e371885db",
+      "operating_samples.json": "f71f67b31b5522817a7fc99ec6de09a79f347ff2da369c700b3a784817d8ba1e",
+      "allocation_readiness.json": "bc6f94199364cb0c3a504c8ddad2ea74665b6b6c846ba890619ff22bc119505e",
+      "trial_00_reference/output/startup.jsonl": "dfd652ba97d8681f63e69e2941f1c6b667fe55ef5530da37020bfdeda81f71b8",
+      "trial_00_reference/run.log": "a91502d08bfc923450d3554e49a76a8889861794937222f3e71d13a178920d96"
+    },
+    "actual_started_at": "2026-10-26T10:32:31.342830+09:00",
+    "actual_finished_at": "2026-10-26T10:33:13.448408+09:00",
+    "first_trial_requested_at": "2026-10-26T10:33:01.690525+09:00",
+    "return_declaration": "explicit owner report received; exact declaration time not supplied",
+    "return_acknowledged_at": "2026-10-26T10:36:29.841383+09:00",
+    "preflight": {
+      "samples": 7,
+      "windows": 6,
+      "seconds": 30.23432251700433,
+      "fps": 29.96594348990123,
+      "primary_hz": 14.949896752136153,
+      "all_guard_windows_pass": true
+    },
+    "failed_window": {
+      "from": "2026-10-26T10:33:06.728698+09:00",
+      "to": "2026-10-26T10:33:11.770238+09:00",
+      "seconds": 5.041540414997144,
+      "frames_before": 7448982.0,
+      "frames_after": 7449081.0,
+      "primary_before": 3660715.0,
+      "primary_after": 3660764.0,
+      "fps": 19.63685537569098,
+      "primary_hz": 9.719251650594526,
+      "host_cpu_percent": 52.80140070035017,
+      "memory_available_gib": 37.09718704223633,
+      "temperature_max_c": 53.125,
+      "age_seconds": 0.03399768201052211,
+      "error_restart_drop_delta": 0
+    },
+    "raw_recalculation": "PASS_8_WINDOWS",
+    "trials_started": 1,
+    "trials_completed": 0,
+    "invalid_trials": 1,
+    "not_run_trials": 8,
+    "valid_results": 0,
+    "actual_gpu_inference": "UNCONFIRMED",
+    "last_stage": "deepstream_import_begin",
+    "causality": "Python/import start is near end of failed5sec window; import/container/CPU sole cause not established",
+    "cleanup_returncode": 0,
+    "remaining_trial_containers": [],
+    "runner_exit_code_owner_report": 1,
+    "operating_identity_unchanged": true,
+    "fixed177_unchanged": true,
+    "quality": "NOT_EVALUATED",
+    "candidate_batch1_and_shared4": "NOT_RUN",
+    "recovery_after_cleanup": "NOT_OBSERVED",
+    "automatic_retry": false
   }
 }

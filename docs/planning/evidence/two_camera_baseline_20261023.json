@@ -1167,5 +1167,35 @@
       "return_acknowledged_at": "2026-10-26T10:26:03.361535+09:00",
       "causal_or_chat_ownership_established": false
     }
+  },
+  "sequential_initialization_cpu_v4_allocation_20261026": {
+    "status": "ALLOCATED_PREFLIGHT_REQUIRED",
+    "owner": "ROI",
+    "start_at": "2026-10-26T10:38:00+09:00",
+    "end_at": "2026-10-26T10:41:00+09:00",
+    "stop_running_commands_at": "2026-10-26T10:40:30+09:00",
+    "readiness_path": "/home/sawwave/.codex/worktrees/two-camera-baseline/CCTV-project/data/runtime/roi_sequential_mock_20261026_v4/readiness.json",
+    "readiness_sha256": "86a592b36f373fc36298ac9ec2a11b0b06910d46725af60a999e64c8fb82437e",
+    "validator_sha256": "df9a8c409322cf937b579cfd5c761157093a430e7ff41713f4c9abce95fc92db",
+    "scope": "CPU0/nice19 pure pytest/Ruff only after new30sec preflight,5sec guards and final5sec sample; no GPU/RTSP/Docker/conversion/indexing",
+    "source_sha256": {
+      "scripts/ops/capture_fall_cadence.py": "13079f19f2885060247371a988a4895c5344bbce90eedb51f0e6f70060a036cc",
+      "scripts/ops/run_two_camera_cadence.py": "789cd6ecaa22aee8a98c04211e0a9fc321d51cd478ca8528c74331c71d2b8f1b",
+      "tests/test_two_camera_cadence.py": "5720135fe7a9dee3820c924cb128a9e5abb0e611b6fca9febbfaf851dd4ea7f5"
+    },
+    "guard": {
+      "fps_min": 27,
+      "primary_hz_min": 13.5,
+      "age_max_seconds": 1,
+      "ram_min_gib": 8,
+      "temperature_max_exclusive_c": 80,
+      "errors_drops_restarts_increase": 0
+    },
+    "command_timeout_seconds": 40,
+    "first_failure": "save raw evidence,stop only own children,return immediately",
+    "automatic_retry": false,
+    "extension": false,
+    "actual_return": null,
+    "basis": "engine actual cleanup and return verified; latest failed guard remains historical and not recovered; fresh in-slot preflight mandatory"
   }
 }
