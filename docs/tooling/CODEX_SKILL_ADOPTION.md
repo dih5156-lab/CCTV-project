@@ -1,5 +1,7 @@
 # Codex Skill 도입 기준
 
+10-26 17:42 문서 게시 배정 반환: 모듈8파일 통합·문서 nginx1개 갱신 완료, 다른36컨테이너 동일. 두 IP의18 HTTP/6 차단경로 검증 PASS. GPU/CPU 시험의 새 배정은 없으며 ROI32모의 PASS/저장비교3 BLOCK·A/B 후속11모의 NOT_RUN 유지. [게시 근거](../architecture/archify/module-refresh-20261026-receipt.json).
+
 10-26 17:17 통합 배정 반환: ROI 비교기32모의/Ruff/보호 PASS, 별도 저장대조3 BLOCK(이미지/생성 관리라벨·네트워크 Labels 미수집). 새 부하/운영 변경 배정 없음. A/B 후속 명령계획11모의는 정적 READY·NOT_RUN으로 별도 보류하며 기존15PASS와 합산하지 않는다.
 
 이 문서는 OpenAI의 기존 `openai/skills` 저장소를 참고해, CCTV AIoT 프로젝트에서 반복 업무를 skill로 관리하는 기준을 정의한다.

@@ -1,6 +1,8 @@
 # 사내 개발 진행판
 
-10-26 **진행판 주소 복구**: [유선](http://192.168.88.146:18081/)·[Wi-Fi](http://192.168.2.242:18081/) 두 확인 주소만 문서 서버에 연결했다. 담당의 저장 검증에서 각 HTML/PDF/모듈 페이지 총6건 HTTP200·로컬 바이트 일치, 다른36컨테이너 ID/StartedAt/running 불변. 통합은 원본 Compose의 두 바인딩과 현재 안내 링크만 영구 반영했다. 현재 문서 컨테이너의 Compose 라벨은 복구용 `/tmp/cctv-progress-wired-repair-8n85yzzp/compose.yml`을 가리키며 추가 재생성은 하지 않았다. 사용자 PC 직접 접속은 미확인이고 과거 게시물/과거 IP 근거는 보존했다. 저장 근거: `data/runtime/gpu_coordination_20261023_ksweql0f/progress_network_restore_20261026/verification.json`.
+10-26 17:42 **최신 모듈 흐름·Jetson 인계 구조도 게시**: [유선 모듈 화면](http://192.168.88.146:18081/module_flow.html)·[Wi-Fi](http://192.168.2.242:18081/module_flow.html). 원본 Compose로 문서 서비스만 같은 이미지/두 주소에 재생성해 새 edge 구조도 경로를 반영했다. 구조도2개·포털·기존2탭·D3/라이선스·진행판/PDF의18건 HTTP200/바이트 일치, 차단경로6건404·nginx PASS. 다른36컨테이너 불변. 구조도는16:55 스냅샷이며10/13 그래프/후보 탭은 과거 참고본이다. [검증·브라우저 범위](../architecture/archify/module-refresh-20261026-receipt.json).
+
+10-26 **진행판 주소 복구**: [유선](http://192.168.88.146:18081/)·[Wi-Fi](http://192.168.2.242:18081/) 두 확인 주소만 문서 서버에 연결했다. 담당의 저장 검증에서 각 HTML/PDF/모듈 페이지 총6건 HTTP200·로컬 바이트 일치, 다른36컨테이너 ID/StartedAt/running 불변. 통합은 원본 Compose의 두 바인딩과 현재 안내 링크만 영구 반영했다. 주소 복구 당시 문서 컨테이너의 Compose 라벨은 임시 복구용 파일을 가리켰다. 이후 원본 Compose로의 문서 전용 재생성은 위17:42 게시 기록을 따른다. 사용자 PC 직접 접속은 미확인이고 과거 게시물/과거 IP 근거는 보존했다. 저장 근거: `data/runtime/gpu_coordination_20261023_ksweql0f/progress_network_restore_20261026/verification.json`.
 
 10-23 **O5 현재 담당 영상 미리보기 통합 PASS(격리)**: 기존 프레임 저장소→노드 영상 API→담당 검증 릴레이→조회 화면을 연결했다. **Python134·JS7·Firefox1 PASS**, 합성 영상 A→B·JPEG640px·오래된 프레임/이전 실행 차단·실제320/768/1024/1440px 확인. 2초 간격 POC 미리보기이며 연속 영상·새 B GPU/무선은 미검증이다. 운영37컨테이너 유지·AP/운영 설정/추가 설치0. **O5 IN_PROGRESS·I68 OPEN·DONE9/37 유지**. [범위/실행법](EDGE_ORCHESTRATION_POC.md#owner-preview-20261023)·[근거](evidence/edge_owner_preview_20261023.json).
 

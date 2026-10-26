@@ -209,5 +209,203 @@
     "포털768/1440너비와탭선택검증;320px미검증",
     "과거탭의실제자산로딩은게시후HTTP로별도확인;로컬시험은링크선택검증만",
     "독립구조도4크기light containment검증;dark는최대크기육안만확인"
-  ]
+  ],
+  "publication": {
+    "verified_at": "2026-10-26T17:41:47.133519+09:00",
+    "source_commit": "1268e25",
+    "integration_commit": "4a13b7cb0b5bacad1812a234972f1b4576a3b6b8",
+    "document_service_recreated": true,
+    "reason": "단일 nginx 설정 bind mount가 cherry-pick 전 inode를 유지하여 문서 서비스만 재생성",
+    "same_image_and_two_ip_bindings": true,
+    "other_container_identity_image_started_running_unchanged": 36,
+    "nginx_syntax_and_mounted_config": "PASS",
+    "http_checks": [
+      {
+        "ip": "192.168.88.146",
+        "path": "/",
+        "status": 200,
+        "bytes": 167744,
+        "sha256": "494277efd43cdb70bf138b6395b8cf903625a737e99924a7625b651c66b2e61c",
+        "matches_local": true
+      },
+      {
+        "ip": "192.168.88.146",
+        "path": "/module_flow.html",
+        "status": 200,
+        "bytes": 12797,
+        "sha256": "00f3c15a645a24f5ff2929944f99f7f3ea78ac46a94fa04ba6c35f0e91b70175",
+        "matches_local": true
+      },
+      {
+        "ip": "192.168.88.146",
+        "path": "/system_module_flow.html",
+        "status": 200,
+        "bytes": 806869,
+        "sha256": "5af7216e6efec95ff0a4f9be3170542f1de63d502566f124c60e722d66cc9623",
+        "matches_local": true
+      },
+      {
+        "ip": "192.168.88.146",
+        "path": "/edge_module_flow.html",
+        "status": 200,
+        "bytes": 806297,
+        "sha256": "57e3eb99165220f0f6b5d463c01601c116fc15fda5e6bda4d55a01babbe34783",
+        "matches_local": true
+      },
+      {
+        "ip": "192.168.88.146",
+        "path": "/action_intake_flow.html",
+        "status": 200,
+        "bytes": 802238,
+        "sha256": "d305d9d75bd536674862167512abf82fe26ba0a0bc96f0dee2260bac23c6753a",
+        "matches_local": true
+      },
+      {
+        "ip": "192.168.88.146",
+        "path": "/code_review_graph.html",
+        "status": 200,
+        "bytes": 7334245,
+        "sha256": "eef163763011ef6ab5fa00f072cb4d429abde5a7e083581d2aa0d3f36da01dd6",
+        "matches_local": true
+      },
+      {
+        "ip": "192.168.88.146",
+        "path": "/vendor/d3.v7.min.js",
+        "status": 200,
+        "bytes": 279706,
+        "sha256": "f2094bbf6141b359722c4fe454eb6c4b0f0e42cc10cc7af921fc158fceb86539",
+        "matches_local": true
+      },
+      {
+        "ip": "192.168.88.146",
+        "path": "/vendor/D3-LICENSE.txt",
+        "status": 200,
+        "bytes": 731,
+        "sha256": "3e6849627f74ff73c257a3ae1efb574015d94fc1035c05ec3c15805165efcbc4",
+        "matches_local": true
+      },
+      {
+        "ip": "192.168.88.146",
+        "path": "/CCTV_project_progress.pdf",
+        "status": 200,
+        "bytes": 156452,
+        "sha256": "52b1c7fe80efc7a0f3ccd5f12f3f24b0a13bd1a0c09cb81da88420d095741e48",
+        "matches_local": true
+      },
+      {
+        "ip": "192.168.88.146",
+        "path": "/.env",
+        "status": 404,
+        "expected": 404
+      },
+      {
+        "ip": "192.168.88.146",
+        "path": "/nginx.conf",
+        "status": 404,
+        "expected": 404
+      },
+      {
+        "ip": "192.168.88.146",
+        "path": "/evidence/",
+        "status": 404,
+        "expected": 404
+      },
+      {
+        "ip": "192.168.2.242",
+        "path": "/",
+        "status": 200,
+        "bytes": 167744,
+        "sha256": "494277efd43cdb70bf138b6395b8cf903625a737e99924a7625b651c66b2e61c",
+        "matches_local": true
+      },
+      {
+        "ip": "192.168.2.242",
+        "path": "/module_flow.html",
+        "status": 200,
+        "bytes": 12797,
+        "sha256": "00f3c15a645a24f5ff2929944f99f7f3ea78ac46a94fa04ba6c35f0e91b70175",
+        "matches_local": true
+      },
+      {
+        "ip": "192.168.2.242",
+        "path": "/system_module_flow.html",
+        "status": 200,
+        "bytes": 806869,
+        "sha256": "5af7216e6efec95ff0a4f9be3170542f1de63d502566f124c60e722d66cc9623",
+        "matches_local": true
+      },
+      {
+        "ip": "192.168.2.242",
+        "path": "/edge_module_flow.html",
+        "status": 200,
+        "bytes": 806297,
+        "sha256": "57e3eb99165220f0f6b5d463c01601c116fc15fda5e6bda4d55a01babbe34783",
+        "matches_local": true
+      },
+      {
+        "ip": "192.168.2.242",
+        "path": "/action_intake_flow.html",
+        "status": 200,
+        "bytes": 802238,
+        "sha256": "d305d9d75bd536674862167512abf82fe26ba0a0bc96f0dee2260bac23c6753a",
+        "matches_local": true
+      },
+      {
+        "ip": "192.168.2.242",
+        "path": "/code_review_graph.html",
+        "status": 200,
+        "bytes": 7334245,
+        "sha256": "eef163763011ef6ab5fa00f072cb4d429abde5a7e083581d2aa0d3f36da01dd6",
+        "matches_local": true
+      },
+      {
+        "ip": "192.168.2.242",
+        "path": "/vendor/d3.v7.min.js",
+        "status": 200,
+        "bytes": 279706,
+        "sha256": "f2094bbf6141b359722c4fe454eb6c4b0f0e42cc10cc7af921fc158fceb86539",
+        "matches_local": true
+      },
+      {
+        "ip": "192.168.2.242",
+        "path": "/vendor/D3-LICENSE.txt",
+        "status": 200,
+        "bytes": 731,
+        "sha256": "3e6849627f74ff73c257a3ae1efb574015d94fc1035c05ec3c15805165efcbc4",
+        "matches_local": true
+      },
+      {
+        "ip": "192.168.2.242",
+        "path": "/CCTV_project_progress.pdf",
+        "status": 200,
+        "bytes": 156452,
+        "sha256": "52b1c7fe80efc7a0f3ccd5f12f3f24b0a13bd1a0c09cb81da88420d095741e48",
+        "matches_local": true
+      },
+      {
+        "ip": "192.168.2.242",
+        "path": "/.env",
+        "status": 404,
+        "expected": 404
+      },
+      {
+        "ip": "192.168.2.242",
+        "path": "/nginx.conf",
+        "status": 404,
+        "expected": 404
+      },
+      {
+        "ip": "192.168.2.242",
+        "path": "/evidence/",
+        "status": 404,
+        "expected": 404
+      }
+    ],
+    "first_postcheck": "포트 목록 순서만 달라 원문 목록 비교가 실패했다. protocol/IP/port 집합은 동일하며 재생성 재시도는 하지 않았다.",
+    "client_pc_access": "NOT_CHECKED",
+    "runtime_evidence": "/media/sawwave/Learning11/CCTV-project/data/runtime/gpu_coordination_20261023_ksweql0f/module_flow_publication_20261026/verification.json",
+    "ai_or_camera_or_gpu_change": false,
+    "completion_count": "DONE9/37 unchanged",
+    "snapshot_cutoff_note": "구조도는16:55 기준. 이후 ROI32모의 PASS/저장대조3 BLOCK은 공통 진행 기록을 따른다."
+  }
 }
