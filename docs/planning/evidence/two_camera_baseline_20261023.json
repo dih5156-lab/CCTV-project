@@ -2951,5 +2951,52 @@
     "diagnostic": "/media/sawwave/Learning11/CCTV-project/data/runtime/gpu_coordination_20261023_ksweql0f/roi_comparator_schema_cpu_20261026/saved-block-diagnostic.json",
     "interpretation": "32 synthetic checks PASS; saved private comparison BLOCK on three evidence/representation checks; no operating model deployment",
     "next": "review image-vs-generated labels; explicitly recover missing network metadata under a separate coordinated read; new READY/tests before rerun"
+  },
+  "model_scope_label_precedence_validation_20261026": {
+    "summary": "/media/sawwave/Learning11/CCTV-project/data/runtime/gpu_coordination_20261023_ksweql0f/roi_comparator_label_cpu_20261026/summary.json",
+    "summary_sha256": "6f3a608299c7985b0329d788803f7b77c2d69d8993a5d341e9b307b2cb13f0b7",
+    "status": "CPU_VALIDATION_PASS_RETURNED_PRIVATE_COMPARISON_NOT_RUN",
+    "execution_started_at": "2026-10-26T17:49:43.239259+09:00",
+    "execution_finished_at": "2026-10-26T17:50:28.858298+09:00",
+    "returned_at": "2026-10-26T17:51:02.653161+09:00",
+    "unittest": {
+      "passed": 36,
+      "seconds": 0.247
+    },
+    "ruff": "PASS",
+    "preflight": {
+      "seconds": 30.262422763975337,
+      "fps": 30.004207101385532,
+      "primary_hz": 14.969059269744104,
+      "samples": 7
+    },
+    "protection": {
+      "samples": 13,
+      "windows": 9,
+      "minimum_fps": 29.73387121377794,
+      "minimum_primary_hz": 14.859212477432571,
+      "maximum_age_seconds": 0.041070986015256494,
+      "minimum_available_gib": 43.65626525878906,
+      "maximum_temperature_c": 51.281,
+      "error_restart_drop_increase": 0,
+      "raw_counter_recalculation": "PASS",
+      "nominal_poll_limitation": "5-second sleep plus HTTP duration; not strict max5-second polling"
+    },
+    "source_hashes_unchanged": true,
+    "private_comparison": "NOT_RUN_FOR_THIS_REVISION; previous32-source3BLOCK kept",
+    "network_supplement_read": "NOT_RUN",
+    "network_pin": "NOT_CREATED",
+    "gpu_or_operating_change": false,
+    "limitations": [
+      "Short guarded CPU test is not long-term stability or deployment acceptance",
+      "Network labels absent from old collection remain UNKNOWN/BLOCK; proposed supplement not executed",
+      "One comparator function changed; owner worktree stays uncommitted; no integration of tool source into product"
+    ],
+    "source_sha256": {
+      "/tmp/cctv-roi-comparator-label-precedence-20261026-odpkvnes/comparator_ready.json": "be162e4110439ad5f5d1dc15407f650bcbc707e001556c213a601b972dd15c75",
+      "/home/sawwave/.codex/worktrees/two-camera-baseline/CCTV-project/data/runtime/model_scope_20261026/compare_model_scope.py": "287b57a104528dd678fd0a0ac8c7330308f1acb401f75a60ec9fb23902698d88",
+      "/home/sawwave/.codex/worktrees/two-camera-baseline/CCTV-project/data/runtime/model_scope_20261026/test_compare_model_scope.py": "6f240bf6ce21020c3a7acf609d649f0fbe192e5b53130b48ad902c3d5084b5df",
+      "/tmp/cctv-roi-comparator-label-precedence-20261026-odpkvnes/PIN_CONTRACT.md": "308633ee3f5758f2bad6de09a08aa9e75758f1cb3feb5b7c0320ebd61d7e003e"
+    }
   }
 }

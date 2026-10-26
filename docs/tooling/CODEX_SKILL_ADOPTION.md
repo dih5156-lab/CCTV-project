@@ -1,5 +1,7 @@
 # Codex Skill 도입 기준
 
+10-26 17:51 통합 ROI 라벨 CPU 배정 반환: 승인 뒤17:49:43~17:52:43 구간을 기록해36모의/Ruff/새30초·최종5초 PASS,17:50:28 종료·17:51:02 자체잔여0 반환. 네트워크 inspect/비공개 비교/GPU/운영변경은 범위 제외·미실행. 새 배정 없음, A/B 후속11모의는 별도 NOT_RUN 유지.
+
 10-26 17:42 문서 게시 배정 반환: 모듈8파일 통합·문서 nginx1개 갱신 완료, 다른36컨테이너 동일. 두 IP의18 HTTP/6 차단경로 검증 PASS. GPU/CPU 시험의 새 배정은 없으며 ROI32모의 PASS/저장비교3 BLOCK·A/B 후속11모의 NOT_RUN 유지. [게시 근거](../architecture/archify/module-refresh-20261026-receipt.json).
 
 10-26 17:17 통합 배정 반환: ROI 비교기32모의/Ruff/보호 PASS, 별도 저장대조3 BLOCK(이미지/생성 관리라벨·네트워크 Labels 미수집). 새 부하/운영 변경 배정 없음. A/B 후속 명령계획11모의는 정적 READY·NOT_RUN으로 별도 보류하며 기존15PASS와 합산하지 않는다.
