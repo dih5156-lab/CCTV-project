@@ -787,5 +787,82 @@
       "limitations": "0 lines does not prove no errors or lost logs; no concurrent CPU/GPU/process samples; input-arrival and processing delays not distinguished",
       "no_new_live_observation_planned": true
     }
+  },
+  "synchronized_resource_observation_20261026": {
+    "status": "RETURNED_CPU_SCHEDULING_DELAY_EVIDENCE_NO_LOAD_ALLOCATION",
+    "first_sample": "2026-10-26T09:40:24.091345+09:00",
+    "finished_at": "2026-10-26T09:45:21.347971+09:00",
+    "samples": 149,
+    "read_errors": 0,
+    "cleanup_remaining_owner_report": 0,
+    "observer_pid_absent_owner_report": 953816,
+    "low_fps_windows": [
+      {
+        "start": "2026-10-26T09:40:58.227980+09:00",
+        "end": "2026-10-26T09:41:00.235974+09:00",
+        "seconds": 2.1887800509866793,
+        "frames": 30.0,
+        "inferred": 15.0,
+        "fps": 13.706265271595614,
+        "primary_hz": 6.853132635797807,
+        "cpu_percent_excluding_iowait": 92.728297632469,
+        "metadata_runnable_wait_seconds": 0.615109664
+      },
+      {
+        "start": "2026-10-26T09:41:00.235974+09:00",
+        "end": "2026-10-26T09:41:02.245586+09:00",
+        "seconds": 1.8119262660038657,
+        "frames": 25.0,
+        "inferred": 12.0,
+        "fps": 13.797470939662764,
+        "primary_hz": 6.622786051038126,
+        "cpu_percent_excluding_iowait": 97.60056457304164,
+        "metadata_runnable_wait_seconds": 0.54105776
+      },
+      {
+        "start": "2026-10-26T09:41:02.245586+09:00",
+        "end": "2026-10-26T09:41:04.252416+09:00",
+        "seconds": 1.9765070730063599,
+        "frames": 44.0,
+        "inferred": 22.0,
+        "fps": 22.261493824595295,
+        "primary_hz": 11.130746912297647,
+        "cpu_percent_excluding_iowait": 89.48717948717949,
+        "metadata_runnable_wait_seconds": 0.480868128
+      },
+      {
+        "start": "2026-10-26T09:41:04.252416+09:00",
+        "end": "2026-10-26T09:41:06.261726+09:00",
+        "seconds": 2.0080811139778234,
+        "frames": 49.0,
+        "inferred": 24.0,
+        "fps": 24.401404733564533,
+        "primary_hz": 11.951708440929567,
+        "cpu_percent_excluding_iowait": 70.46599496221663,
+        "metadata_runnable_wait_seconds": 0.191504768
+      }
+    ],
+    "raw_counter_recalculation": "PASS",
+    "max_sample_read_seconds": 0.4653291029972024,
+    "observer_cpu_seconds": 3.641369,
+    "evidence": {
+      "summary.json": {
+        "path": "/home/sawwave/.codex/worktrees/edge-auto-failback/CCTV-project/edge-auto-failback-trial/synchronized-20261026-094024/summary.json",
+        "sha256": "6cb0db4464283b47493f0cf36fe13548358090b0627f29b790481ad0f85a140c"
+      },
+      "samples.jsonl": {
+        "path": "/home/sawwave/.codex/worktrees/edge-auto-failback/CCTV-project/edge-auto-failback-trial/synchronized-20261026-094024/samples.jsonl",
+        "sha256": "95bfab00ec21b032d3df383cbc354ecd5f15c142115413f3471267b17f01f9ae"
+      }
+    },
+    "interpretation": "CPU 경합에 따른 처리 지연을 뒷받침하며 단독 원인·프로세스 기여율은 미확정",
+    "limitations": [
+      "namespace/eno1 수신량은 카메라 단독 수신품질 증거가 아님",
+      "별도 netns여서 per-TCP bytes 미지원",
+      "GPU 순간값으로 지속 GPU 포화 판정 불가",
+      "종료는 운영 장기안정/새 부하시험 사전점검 PASS가 아님"
+    ],
+    "final_owner_analysis": "PENDING_SAVED_DATA_ONLY",
+    "integrator_live_queries": 0
   }
 }
