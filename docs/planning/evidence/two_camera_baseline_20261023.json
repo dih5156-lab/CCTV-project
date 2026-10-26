@@ -1658,12 +1658,12 @@
     "return_time_basis": "owner immediate return at command completion; no separate receipt timestamp supplied"
   },
   "codegraph_remediation_coordination_20261026": {
-    "status": "MOCK_PASS_SHARED_APPLICATION_PROCEDURE_REVIEW",
+    "status": "COMPLETED_SCOPED_SEARCH_RESTORED_LIMITED_VALIDATION",
     "owner_thread": "01a160c8-885d-77d3-90ba-02c9528e9ad7",
     "scope": "codegraph entry only in Codex config and dedicated launcher; project-scoped graphs; preserve home/parent database and logs",
     "root_codegraph_outstanding_calls": 0,
-    "root_new_codegraph_calls_on_hold": true,
-    "actual_settings_changes": false,
+    "root_new_codegraph_calls_on_hold": false,
+    "actual_settings_changes": true,
     "global_mcp_reload_allowed": false,
     "indexing_or_graph_rebuild_allocated": false,
     "operating_model_change_deferred_for_comparison": true,
@@ -1675,7 +1675,7 @@
       "miniPC": 0,
       "camera_offload": 0
     },
-    "new_codegraph_calls_held_by_all_listed": true,
+    "new_codegraph_calls_held_by_all_listed": false,
     "candidate_scope": [
       "Codex codegraph block",
       "dedicated cctv-codegraph launcher",
@@ -1701,7 +1701,8 @@
     "checkout_sync_requires_allocation": true,
     "extra_candidate_file": "lib/dist/extraction/index.js buildDefaultIgnore conditional on CODEGRAPH_GIT_COMMON_DIR",
     "extra_excludes_scope": "root data/models/videos/datasets/.codex/.agents, explicit trial artifacts and secret environment files; preserve product source/tests/config",
-    "actual_application_allowed": false
+    "actual_application_allowed": false,
+    "application_status": "APPLIED_AND_VERIFIED; future modification requires separate coordination"
   },
   "roi_image_source_read_allocation_20261026": {
     "status": "RETURNED_MOCK5_AND_IMAGE_READ_PASS",
@@ -2063,5 +2064,390 @@
       "global_reload_server_or_thread_selector": false,
       "actual_reload": false
     }
+  },
+  "codegraph_shared_transition_20261026": {
+    "status": "SHARED_FILES_APPLIED_LEGACY_STOPPED_GRAPH_NOT_READY",
+    "source": "/home/sawwave/.codex/worktrees/edge-auto-failback/CCTV-project/edge-auto-failback-trial/codegraph-fix-20261026",
+    "preserved": "/media/sawwave/Learning11/CCTV-project/data/runtime/gpu_coordination_20261023_ksweql0f/codegraph_shared_transition_stage1_20261026",
+    "sha256": {
+      "phase1-result.json": "1d6f9faa8d32f8a878948f9f7c5decb29b34e1fa630f907362dac65aa5b6519f",
+      "apply-result.json": "466dabc051a49f21a4a1cea1ed82580eff96cd4586671df581f2b665b5a38b36",
+      "stop-result.json": "dc8d430270e212725ef6677116122088adaef3c2c35e2f4a618020afdcc6ce2f"
+    },
+    "installed_seven_hashes_reverified": true,
+    "actual_return": "2026-10-26T12:51:32.304942+09:00",
+    "original_graph_created": false,
+    "reload": false,
+    "gpu_allocation": false,
+    "phase1": {
+      "status": "PHASE1_RETURNED_APPLIED_LEGACY_EXIT_OBSERVED_NO_RELOAD",
+      "returned_at": "2026-10-26T12:51:32.304942+09:00",
+      "observations": [
+        {
+          "directory": "/home/sawwave/.codex/worktrees/edge-auto-failback/CCTV-project/edge-auto-failback-trial/process-cpu-20261026-124822",
+          "first_at": "2026-10-26T12:48:22.745417+09:00",
+          "last_at": "2026-10-26T12:49:18.967960+09:00",
+          "elapsed": 56.182791082013864,
+          "samples": 29,
+          "counter_rates": {
+            "cctv_processor_frames_processed_total": 30.115983336072993,
+            "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 15.040192623511631
+          },
+          "host_cpu_percent": 47.01191649493773,
+          "median_window_cpu": 44.80440381025322,
+          "min_window_fps": 27.125202897621122,
+          "low_windows_below_27": 0,
+          "legacy_codegraph": {
+            "826678": {
+              "samples_present": 29,
+              "cores": 0.9138455701980408
+            },
+            "827268": {
+              "samples_present": 29,
+              "cores": 0.0
+            }
+          },
+          "observer_cpu_one_core_percent": 4.137364764874814,
+          "summary_sha": "1e2687bdbbc0b01d7f79b0f260fab8e24ad4f48876c919c7410c793a40dd0c41",
+          "samples_sha": "2a3a59cd3c675d9658e0d2f342c5bef9abac16ff004234d70c83fedddc9b2803"
+        },
+        {
+          "directory": "/home/sawwave/.codex/worktrees/edge-auto-failback/CCTV-project/edge-auto-failback-trial/process-cpu-20261026-124957",
+          "first_at": "2026-10-26T12:49:57.920309+09:00",
+          "last_at": "2026-10-26T12:50:54.144064+09:00",
+          "elapsed": 56.223668262013234,
+          "samples": 29,
+          "counter_rates": {
+            "cctv_processor_frames_processed_total": 28.58226881446204,
+            "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 14.300027459133466
+          },
+          "host_cpu_percent": 41.270943463847324,
+          "median_window_cpu": 40.41080875165316,
+          "min_window_fps": 13.537773746213663,
+          "low_windows_below_27": 6,
+          "legacy_codegraph": {
+            "826678": {
+              "samples_present": 0,
+              "cores": null
+            },
+            "827268": {
+              "samples_present": 0,
+              "cores": null
+            }
+          },
+          "observer_cpu_one_core_percent": 4.203746132834427,
+          "summary_sha": "d1322d3f0834ccd9aa912c28b6461b2ac8008213ff137714bde7bddb958a1ddf",
+          "samples_sha": "311ac41fc1130e1aeed8172e6c94a1c28fe4058ba21058403e15c18cf58b0ced"
+        }
+      ],
+      "other_config_bytes_preserved": true,
+      "applied_hashes": {
+        "/home/sawwave/.codegraph/versions/v0.9.9/lib/dist/directory.js": true,
+        "/home/sawwave/.codegraph/versions/v0.9.9/lib/dist/sync/watcher.js": true,
+        "/home/sawwave/.codegraph/versions/v0.9.9/lib/dist/mcp/engine.js": true,
+        "/home/sawwave/.codegraph/versions/v0.9.9/lib/dist/extraction/index.js": true,
+        "/home/sawwave/.codegraph/versions/v0.9.9/lib/dist/mcp/tools.js": true,
+        "/home/sawwave/.local/bin/cctv-codegraph": true,
+        "/home/sawwave/.codex/config.toml": true
+      },
+      "broad_daemon_lock_present": {
+        "/home/sawwave/.codegraph/daemon.pid": false,
+        "/media/sawwave/Learning11/.codegraph/daemon.pid": false
+      },
+      "identity_limitation": "Process-name subset only; includes non-MCP processes. PID persistence does not verify MCP connection health.",
+      "own_observers_exit0": true,
+      "own_children_remaining": 0,
+      "original_db_created": false,
+      "reload": false,
+      "production_changes": false,
+      "causality": "Short passive windows; FPS improvement or sole-cause conclusion not established."
+    },
+    "interpretation": {
+      "updated_at": "2026-10-26T12:58:42.317892+09:00",
+      "confirmed": "PID826678 used about0.914core before transition; both fixed legacy PID absent after; FPS variation persisted after",
+      "limits": "CodeGraph를 FPS 저하의 단독 원인으로 확정할 수 없음. 두 짧은 구간은 외부 작업/입력 변동을 통제하지 않아 CPU 차이의 기여율도 미확정.",
+      "tests": "JS8그룹+Python7시험+전환경계10시험; 단순 합산 합격률로 표시하지 않음",
+      "upgrade_risk": "CodeGraph vendor 업데이트가 로컬 패치를 덮어쓸 수 있음"
+    }
+  },
+  "codegraph_transition_mock_20261026": {
+    "result": "/media/sawwave/Learning11/CCTV-project/data/runtime/gpu_coordination_20261023_ksweql0f/codegraph_transition_mock_20261026/transition-result.json",
+    "sha256": "a4b4b016c5c4d67d989bfc04b94639c07b9fb14d9bf059d63c0578b6754eff76",
+    "tests": 10,
+    "status": "PASS",
+    "live_shared_db_process_signal": false
+  },
+  "codegraph_original_graph_20261026": {
+    "status": "RETURNED_READY_NOT_RELOADED",
+    "returned_at": "2026-10-26T13:02:11.538692+09:00",
+    "execution": {
+      "status": "PASS_READY_NOT_RELOADED",
+      "started_at": "2026-10-26T12:59:44.129017+09:00",
+      "automatic_retry": false,
+      "ready_published": true,
+      "finished_at": "2026-10-26T13:01:35.298372+09:00"
+    },
+    "own_pid": 1253109,
+    "own_group_remaining": false,
+    "observations": {
+      "preflight": {
+        "first_at": "2026-10-26T12:59:44.227717+09:00",
+        "last_at": "2026-10-26T13:00:14.467934+09:00",
+        "samples": 7,
+        "seconds": 30.23042586899828,
+        "fps": 30.035964558844224,
+        "hz": 14.984903023300037,
+        "min_fps": 29.751315548576564,
+        "min_hz": 14.886737130710568,
+        "max_age": 0.03791877900948748
+      },
+      "index": {
+        "first_at": "2026-10-26T13:00:14.485931+09:00",
+        "last_at": "2026-10-26T13:01:30.208195+09:00",
+        "samples": 16,
+        "seconds": 75.72947230900172,
+        "fps": 29.961914837353106,
+        "hz": 14.987559867957593,
+        "min_fps": 29.70743157577656,
+        "min_hz": 14.755346809160544,
+        "max_age": 0.061001659982139245
+      },
+      "postflight": {
+        "first_at": "2026-10-26T13:01:30.233951+09:00",
+        "last_at": "2026-10-26T13:01:35.273409+09:00",
+        "samples": 2,
+        "seconds": 5.038753309985623,
+        "fps": 29.76926846224746,
+        "hz": 15.083096020872047,
+        "min_fps": 29.76926846224746,
+        "min_hz": 15.083096020872047,
+        "max_age": 0.028706898010568693
+      }
+    },
+    "graph": {
+      "status": "READY",
+      "root": "/media/sawwave/Learning11/CCTV-project",
+      "finished_at": "2026-10-26T04:01:29.439Z",
+      "source_count": 896,
+      "source_manifest_sha256": "474a1056349a664694e2082238d0a7f54886c1b9758b58463e94204eb568ccd0",
+      "stats": {
+        "nodeCount": 14698,
+        "edgeCount": 35050,
+        "fileCount": 896,
+        "nodesByKind": {
+          "class": 615,
+          "constant": 5,
+          "file": 872,
+          "function": 4532,
+          "import": 4792,
+          "method": 2887,
+          "route": 2,
+          "variable": 993
+        },
+        "edgesByKind": {
+          "calls": 16033,
+          "contains": 13824,
+          "decorates": 3,
+          "extends": 28,
+          "imports": 2599,
+          "instantiates": 2561,
+          "references": 2
+        },
+        "filesByLanguage": {
+          "javascript": 2,
+          "python": 746,
+          "xml": 124,
+          "yaml": 24
+        },
+        "dbSizeBytes": 31879168,
+        "lastUpdated": 1792987289357
+      },
+      "quick_check": "ok",
+      "query": "main",
+      "query_hits": 3,
+      "files_errored": 0,
+      "watch_started": false,
+      "automatic_retry": false,
+      "note": "READY는 외부 감독의 마지막 FPS 보호 PASS와 실제 index 종료 확인 후 통합 담당이 생성한다.",
+      "guard_passed": true,
+      "published_at": "2026-10-26T13:01:35.289942+09:00"
+    },
+    "hashes": {
+      "data/runtime/gpu_coordination_20261023_ksweql0f/codegraph_initialization_20261026/attempt1/result.json": "83b942a82e21a548214e57192c8457532375d08ea1f2358177327c2c1a6bc242",
+      "data/runtime/gpu_coordination_20261023_ksweql0f/codegraph_initialization_20261026/attempt1/index.guard.json": "b96e94fedf684152721805384e76b5ea0a3a4ad6e2ec7fc6a03f00f6925f68a0",
+      "data/runtime/gpu_coordination_20261023_ksweql0f/codegraph_initialization_20261026/attempt1/preflight/operating_check.json": "f66f67898b5c8950907f8ef2936c1b3dc6d1d64fe7e8936b2cfa3dafc497b9af",
+      "data/runtime/gpu_coordination_20261023_ksweql0f/codegraph_initialization_20261026/attempt1/postflight/operating_check.json": "90009f254e38c6bcf3df49111e31c81d1185b97b70de6560153c8d52b377ccb9",
+      ".codegraph/project-ready.json": "419300c5c0344f3b4cc2bdd3ccebfe9e70c75f71251c101df59255a80ea6b8a9",
+      ".codegraph/project-validated.json": "75f275be9efe522e8dfa7ad6148a347858200223cf4fcac1b429a75ef4c45530"
+    },
+    "limits": [
+      "fresh protected build only; not long-term FPS stability",
+      "global reload, app MCP query and other-MCP continuity not yet verified",
+      "no operating changes; no automatic retry"
+    ]
+  },
+  "codegraph_reconnect_allocation_20261026": {
+    "status": "RETURNED_SEARCH_AND_FINAL_OBSERVATION_PASS_OTHER_MCP_EVIDENCE_INCOMPLETE",
+    "owner": "A/B",
+    "thread_id": "01a160c8-885d-77d3-90ba-02c9528e9ad7",
+    "start_at": "2026-10-26T13:03:31.339337+09:00",
+    "end_at": "2026-10-26T13:18:31.339337+09:00",
+    "minimum_remaining_at_start_seconds": 300,
+    "scope": "READY and7installedSHA read; two named MCP status/PID before; selectorless config/mcpServer/reload once; original status/main3search once each; unprepared worktree NOT_READY once after original success; two MCP status/PID after; new original daemon scope2keys/DBfd; one60s CPU/FPS observation; cleanup/return",
+    "rpc_timeout_seconds": 20,
+    "automatic_retry": false,
+    "automatic_extension": false,
+    "operating_changes": false,
+    "other_workers_held": true,
+    "other_mcp_guarantee": "selected cached-status/PID evidence only; not all MCP continuity guarantee",
+    "not_ready_worktree": "/home/sawwave/.codex/worktrees/edge-auto-failback/CCTV-project",
+    "extra_index_or_rebuild_allowed": false,
+    "bounded_followup": {
+      "authorized_at": "2026-10-26T13:07:46.664773+09:00",
+      "reason": "new daemon argv assertion failed; scoped identity unconfirmed",
+      "reads": 1,
+      "maximum_seconds": 2,
+      "same_original_daemon_pid_only": true,
+      "scope": "daemon.pid/PID starttick before-after; codegraph script/root allowed argv forms; scope2env keys only; own DB fd if already in original agreed scope",
+      "repeat_status_reload_query": false,
+      "final_observation_condition": "confirmed original root/scope and adequate slot remaining; otherwise return without observation"
+    },
+    "actual_return": "2026-10-26T13:10:49.843030+09:00"
+  },
+  "codegraph_reconnection_final_20261026": {
+    "status": "SCOPED_CODEGRAPH_SEARCH_RESTORED_FINAL_SHORT_OBSERVATION_PASS",
+    "returned_at": "2026-10-26T13:10:49.843030+09:00",
+    "first_at": "2026-10-26T13:09:07.493533+09:00",
+    "last_at": "2026-10-26T13:10:03.715940+09:00",
+    "samples": 29,
+    "elapsed": 56.218018954998115,
+    "counter_rates": {
+      "cctv_processor_frames_processed_total": 30.061535988182467,
+      "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 14.995192211856699
+    },
+    "host_cpu_percent": 38.96063133351269,
+    "median_window_cpu": 38.1954810237468,
+    "min_window_fps": 28.34120568416445,
+    "low_windows_below_27": 0,
+    "new_codegraph": {
+      "pid": 1259554,
+      "start_ticks": 25927954,
+      "cores": 0.0,
+      "samples_present": 29
+    },
+    "legacy_pids_samples_present": {
+      "826678": 0,
+      "827268": 0
+    },
+    "observer_cpu_one_core_percent": 4.042163317946059,
+    "mcp_post_status_limitation": "Two post status RPCs ran but results were lost before write due to local NUL parser assertion. No automatic repeat; PID preservation is not connection or call health proof.",
+    "broad_daemon_lock_present": {
+      "/home/sawwave/.codegraph/daemon.pid": false,
+      "/media/sawwave/Learning11/.codegraph/daemon.pid": false
+    },
+    "shared_hash_checks": {
+      "/home/sawwave/.codegraph/versions/v0.9.9/lib/dist/directory.js": true,
+      "/home/sawwave/.codegraph/versions/v0.9.9/lib/dist/sync/watcher.js": true,
+      "/home/sawwave/.codegraph/versions/v0.9.9/lib/dist/mcp/engine.js": true,
+      "/home/sawwave/.codegraph/versions/v0.9.9/lib/dist/extraction/index.js": true,
+      "/home/sawwave/.codegraph/versions/v0.9.9/lib/dist/mcp/tools.js": true,
+      "/home/sawwave/.local/bin/cctv-codegraph": true,
+      "/home/sawwave/.codex/config.toml": true
+    },
+    "worktree_graph_created": false,
+    "reload_calls": 1,
+    "own_children_remaining": 0,
+    "new_codegraph_daemon_intentionally_running": true,
+    "production_changes": false,
+    "samples_sha": "b5dce9cbf19ad92b1923460f22c25fbbd028bd2b250aeea8ccd793d3a760d992",
+    "summary_sha": "eb1d035681df65f395da116c2fb4dcbe277e57e7d04af4599fc976a4b383212b",
+    "causality": "Short passive intervals; no proof of sustained FPS improvement or sole cause; intermediate FPS dip preserved.",
+    "selected_mcp_followup": {
+      "started_at": "2026-10-26T13:13:12.354086+09:00",
+      "servers": {
+        "codebase-memory-mcp": [
+          {
+            "name": "codebase-memory-mcp",
+            "runtimeStatus": "connected",
+            "toolsError": null,
+            "tool_count": 13,
+            "tool_names_sha": "07cd80caf13cbefc58e3725f5b55d344710b0029f5da4ba83acecab81d96d15d"
+          }
+        ],
+        "code-review-graph": [
+          {
+            "name": "code-review-graph",
+            "runtimeStatus": "connected",
+            "toolsError": null,
+            "tool_count": 30,
+            "tool_names_sha": "509190623e73d4d958a2aeb62f92bec01a031b73a99121606eee25b819d4c464"
+          }
+        ]
+      },
+      "status": "SELECTED_SERVERS_CURRENTLY_CONNECTED_SAME_TOOL_CATALOG",
+      "identity_read_seconds": 0.07389892300125211,
+      "selected_status_same_as_before": true,
+      "finished_at": "2026-10-26T13:13:12.488334+09:00",
+      "limitation": "Selected current runtime states and catalogs only; no historical connection continuity or missing PID cause/thread attribution inferred.",
+      "preserved_pid_count": 16,
+      "missing_previously_observed_pids": [
+        1216719,
+        1216738,
+        1217549,
+        1217565
+      ],
+      "new_role_pid_count": 0
+    },
+    "source_directory": "/media/sawwave/Learning11/CCTV-project/data/runtime/gpu_coordination_20261023_ksweql0f/codegraph_reconnection_final_20261026",
+    "sha256": {
+      "reload-result.json": "dbe8b8b1f1458e499f1ccf08cb75b98981135d8387f6baf536ccc5ec42838469",
+      "search-query-result.json": "1339c5a0bcbf7123d352515ec116ca956cc489a611e8d9602d38fdd82e1f6ce8",
+      "final-verification.json": "2e55e1c0fa43b6e4c8fd4321c7da3f75cc4e10ebb1e12b527a9a2a7d285f9eaf",
+      "mcp-followup-result.json": "c834800de8163169d7f0e55c9682a49bc28156880c14927d5d3c199b72d55cff",
+      "status-query-result.json": "ba9189c6ee02e734ae16a8a0451bf4522016e65791213112ff1a1fb06f2764a3",
+      "integration-verification.json": "11bb5647d00681ceffdf7c584e08c2f3696d7587d928df085892f08a4a495905",
+      "HANDOFF.md": "1e97370b22bc4652581c95f410acd7eb74c8241b12d00ba0fbf19742a55bb89f",
+      "daemon-followup-result.json": "54774d0cb666287367fce3a754b618f866296755daf71e93396e884de21fbdc1",
+      "worktree-query-result.json": "73c10825fae556ee5ce4ce352929504a8bcc6f09f1c9a1251abe54a5a31872ad",
+      "post-reload-verification-failure.json": "7ffc53f8d425535603c0cb31bfff1c227499c7fd9ce0738955704bc8c3c25ff8",
+      "final-preservation.json": "3c769bd8f4c56cabdf673e7f7bc88e90ddf3e371f0867afce5ef0c27f46aafe4"
+    },
+    "integration_saved_counter_verification": {
+      "status": "PASS_SAVED_COUNTER_AND_SOURCE_HASH_RECALCULATION",
+      "samples": 29,
+      "windows": 28,
+      "elapsed": 56.218018954998115,
+      "fps": 30.061535988182467,
+      "min_window_fps": 28.34120568416445,
+      "samples_sha256": "b5dce9cbf19ad92b1923460f22c25fbbd028bd2b250aeea8ccd793d3a760d992",
+      "copied_sha256": {
+        "reload-result.json": "dbe8b8b1f1458e499f1ccf08cb75b98981135d8387f6baf536ccc5ec42838469",
+        "status-query-result.json": "ba9189c6ee02e734ae16a8a0451bf4522016e65791213112ff1a1fb06f2764a3",
+        "search-query-result.json": "1339c5a0bcbf7123d352515ec116ca956cc489a611e8d9602d38fdd82e1f6ce8",
+        "worktree-query-result.json": "73c10825fae556ee5ce4ce352929504a8bcc6f09f1c9a1251abe54a5a31872ad",
+        "daemon-followup-result.json": "54774d0cb666287367fce3a754b618f866296755daf71e93396e884de21fbdc1",
+        "post-reload-verification-failure.json": "7ffc53f8d425535603c0cb31bfff1c227499c7fd9ce0738955704bc8c3c25ff8"
+      },
+      "new_live_reads": 0
+    },
+    "call_policy": "원본 명시 projectPath 검색 허용. worktree는 자체 READY 없으면 NOT_READY, 실제 파일 대조. 신규 index/rebuild/공유설정 변경은 별도 배정.",
+    "known_limitations": [
+      "짧은 관측이며 장기 안정/부하여유/FPS 단독원인/전체CPU차이 기여율을 확정하지 않음",
+      "선택2MCP 현재 connected와 도구목록은 확인; 누락4PID 원인/귀속/과거연속성 및 모든MCP무영향은 미확인",
+      "CodeGraph vendor 업데이트 시 로컬 패치 덮어쓰기 가능: 해시/경계/오류처리 재검증 필요"
+    ]
+  },
+  "codegraph_other_mcp_followup_allocation_20261026": {
+    "owner": "A/B",
+    "status": "RETURNED_CURRENT_SELECTED_SERVERS_CONNECTED",
+    "start_at": "2026-10-26T13:12:07.203030+09:00",
+    "end_at": "2026-10-26T13:17:07.203030+09:00",
+    "scope": "codebase-memory-mcp and code-review-graph runtimeStatus/tool-nameSHA once each; role-limited PID/starttick list once; no metrics/tool/query/reload",
+    "maximum_local_read_seconds": 10,
+    "rpc_timeout_seconds": 20,
+    "automatic_retry": false,
+    "no_operating_changes": true,
+    "finished_at": "2026-10-26T13:13:12.488334+09:00",
+    "return_acknowledged_at": "2026-10-26T13:15:48.509284+09:00"
   }
 }
