@@ -2519,5 +2519,45 @@
     "source_four_hashes_reverified": true,
     "new_integrator_live_observations": 0,
     "next_step": "Prepare and freeze accessible execution command/guardian before requesting a new allocation; no retry under expired slot"
+  },
+  "model_scope_comparator_1530_not_started_20261026": {
+    "status": "NOT_STARTED_APPROVAL_REVIEW_TIMEOUT_RETURNED",
+    "integrator_ack_at": "2026-10-26T15:52:02.709058+09:00",
+    "source": "/tmp/cctv-roi-comparator-1530-not-started-20261026.json",
+    "preserved": "/media/sawwave/Learning11/CCTV-project/data/runtime/gpu_coordination_20261023_ksweql0f/roi_comparator_1530_not_started.json",
+    "sha256": "da9c02aa4423f7933fc5097852b566e9cbed7bc841915e135544ebae89af7686",
+    "report": {
+      "status": "NOT_STARTED_APPROVAL_REVIEW_TIMEOUT_RETURNED",
+      "allocation_start": "2026-10-26T15:30:00+09:00",
+      "allocation_end": "2026-10-26T15:33:00+09:00",
+      "cutoff": "2026-10-26T15:32:00+09:00",
+      "request_clock": "2026-10-26T15:30:01+09:00",
+      "tool_error": "CreateProcess Rejected: automatic permission approval review did not finish before deadline; not a safety rejection",
+      "processes_created": 0,
+      "preflight": "NOT_RUN",
+      "unittest_19": "NOT_RUN",
+      "ruff": "NOT_RUN",
+      "private_cli": "NOT_RUN",
+      "automatic_retry": false,
+      "own_children_remaining": 0,
+      "remaining_basis": "CreateProcess rejection before process creation; no launcher output; no live process query",
+      "output_entries": [
+        "tmp"
+      ],
+      "hashes": {
+        "/tmp/cctv-roi-comparator-cpu-ready-20261026-hay7rf3v/validate.py": "1eac29b294487c71aea7c04d3336117efc639616f93992f807017829ad75932f",
+        "/tmp/cctv-roi-comparator-cpu-ready-20261026-hay7rf3v/readiness.json": "5a0a54ef757f65798fe3d520e125bf43ae7fb6ea9eefdc5104615b60e83be99b",
+        "/tmp/cctv-roi-comparator-cpu-ready-20261026-hay7rf3v/preparation.json": "de5a0312e2c7a22ed0fe6ae0a9075761c80f65f8c81b4760d4b9922d16e7ea0e",
+        "/home/sawwave/.codex/worktrees/two-camera-baseline/CCTV-project/data/runtime/model_scope_20261026/comparator_ready.json": "8d09f32b2564451fa91bd847d31b959f785c7f4d90dac5b941483b3cefee7358",
+        "/home/sawwave/.codex/worktrees/two-camera-baseline/CCTV-project/data/runtime/model_scope_20261026/compare_model_scope.py": "ed7641536db8af997d55fed7bd8e37b9c660e2cb01a264b44c84c3ddd07a748b",
+        "/home/sawwave/.codex/worktrees/two-camera-baseline/CCTV-project/data/runtime/model_scope_20261026/test_compare_model_scope.py": "22ad96e742c9e6146804460a316991eebdc01176682090ddd133a40c631f27ea",
+        "/home/sawwave/.codex/worktrees/two-camera-baseline/CCTV-project/data/runtime/model_scope_20261026/COMPARATOR_REVIEW.md": "8ab663c22359852ecd2e3a242287a186e0925c78bef4319ee49487806f6764c7"
+      },
+      "operating_changes": false,
+      "actual_return_at": "2026-10-26T15:42:23.291059+09:00"
+    },
+    "seven_fixed_hashes_reverified": true,
+    "new_integrator_live_queries": 0,
+    "next_execution_gate": "Approval for the exact command first; only an idle input-waiting session before allocation; no test or metrics until an explicitly allocated ISO pair is supplied. This uses normal approval and does not guarantee successful authorization."
   }
 }
