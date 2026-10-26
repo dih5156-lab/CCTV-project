@@ -2111,5 +2111,76 @@
     "operating_database_or_settings_moved": false,
     "native_crash_or_fps_causality": "UNCONFIRMED; filesystem checked only after trial",
     "original_head_sync": "PENDING_DISK_SPACE"
+  },
+  "storage_recovery_20261026": {
+    "recorded_at": "2026-10-26T14:08:00.909104+09:00",
+    "status": "STORAGE_RESTORED_SHORT_RECOVERY_PASS_NO_TEST_ALLOCATION",
+    "authorized_removal": {
+      "path": "/media/sawwave/Learning11/.Trash-1000/files/download.tar",
+      "bytes": 67914621424,
+      "finished_at": "2026-10-26T14:02:44.226895+09:00",
+      "other_trash_entries_changed": false
+    },
+    "cache_cleanup": {
+      "files": 149,
+      "backup": "/tmp/cctv-cache-preservation-20261026-g7mruayh",
+      "sha_verified": true
+    },
+    "vsix_copy": {
+      "status": "GUARD_STOPPED_SOURCE_PRESERVED",
+      "files_removed": 0,
+      "failed_fps": 26.602856694664833,
+      "failed_primary_hz": 13.597015643939804,
+      "sole_cause": "NOT_ESTABLISHED"
+    },
+    "post_cleanup_observation": {
+      "status": "POST_CLEANUP_SHORT_RECOVERY_PASS",
+      "source": "/tmp/cctv-post-cleanup-recovery-20261026-o3ho8i9q/operating_check.json",
+      "raw_sha256": "ad4098e70bca1373504bc58aa8b8a8fd96d3c484d414e539ee9c0fc72a4c3d00",
+      "observed_start": "2026-10-26T14:05:15.525863+09:00",
+      "observed_end": "2026-10-26T14:05:45.779995+09:00",
+      "duration_seconds": 30.262832556967624,
+      "samples": 7,
+      "windows": 6,
+      "frames_delta": 906.0,
+      "primary_delta": 453.0,
+      "fps": 29.9377131434911,
+      "primary_hz": 14.96885657174555,
+      "minimum_window_fps": 29.851893924658867,
+      "minimum_window_primary_hz": 14.869234052665467,
+      "max_age_seconds": 0.041066617995966226,
+      "minimum_memory_gib": 40.96068572998047,
+      "maximum_temperature_c": 51.75,
+      "error_restart_drop_deltas": {
+        "cctv_processor_source_error_identified_total": 0.0,
+        "cctv_processor_source_error_unidentified_total": 0.0,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_processor_frames_dropped_total": 0.0
+      },
+      "command_exit_code": 0,
+      "finished_at": "2026-10-26T14:05:45.811683+09:00",
+      "available_bytes": 67647643648,
+      "raw_recalculation": "PASS",
+      "long_term_stability": "NOT_ESTABLISHED",
+      "test_or_model_allocation": null
+    },
+    "git": {
+      "synchronized_commit": "ce27716bd3e07f4737d5287dc7bfd144e7745e63",
+      "staged_paths": 0,
+      "user_requirements_preserved": true
+    },
+    "operating_model_applied": false,
+    "engine_roi_gpu_allocation": null,
+    "evidence_directory": "/media/sawwave/Learning11/CCTV-project/data/runtime/gpu_coordination_20261023_ksweql0f/storage_recovery_20261026",
+    "artifacts_sha256": {
+      "cache-preservation.json": "d01b23e8356c577b40239cbec5e1aec8a0025d8112c516e4e7aed182c18087b3",
+      "vsix-preservation.json": "e36a8986412fe57dc90858c9d7a4b6f67fd1ddeac607727ab9c7232681660871",
+      "vsix-guard.json": "7fb4b4e3e2bf11afe02a7049493b525ac8a2983e0ae440338aba9fd5c4cd56ac",
+      "approved-trash-removal.json": "613f757e04cb67047afca3345d6eda3e7772a7d77d20c00ab2a03fb4a448149b",
+      "original-head-sync.json": "dffce47f904766d6c08e8df6862f6820c48e118d45392a02c0a1be0169356535",
+      "post-cleanup-operating-check.json": "ad4098e70bca1373504bc58aa8b8a8fd96d3c484d414e539ee9c0fc72a4c3d00",
+      "post-cleanup-result.json": "d63a47418e50afdfa2f8ece0d24b87f415fef28a30cbcdc5da30d4d2f8767433",
+      "post-cleanup-summary.json": "97780e4a1845e0ac930d231c972e8e041a478f7c3afcf7c3feb560d3383197f1"
+    }
   }
 }
