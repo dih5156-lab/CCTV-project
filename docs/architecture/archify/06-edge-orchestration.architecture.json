@@ -1,0 +1,177 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Jetson 작업 이전·결과 전달 · 2026-10-26",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1380,
+      640
+    ]
+  },
+  "components": [
+    {
+      "id": "agent",
+      "type": "backend",
+      "label": "A/B 노드 Agent",
+      "sublabel": "자원·실행 상태 보고",
+      "pos": [
+        30,
+        70
+      ],
+      "size": [
+        230,
+        80
+      ]
+    },
+    {
+      "id": "controller",
+      "type": "backend",
+      "label": "오케스트레이터",
+      "sublabel": "과부하 판단 · 전환/복귀",
+      "pos": [
+        390,
+        70
+      ],
+      "size": [
+        230,
+        80
+      ]
+    },
+    {
+      "id": "ownership",
+      "type": "backend",
+      "label": "카메라 담당·인계",
+      "sublabel": "assignment / epoch / session",
+      "pos": [
+        750,
+        70
+      ],
+      "size": [
+        230,
+        80
+      ]
+    },
+    {
+      "id": "ai",
+      "type": "backend",
+      "label": "노드별 AI 실행",
+      "sublabel": "카메라별 감독 · RTSP 입력",
+      "pos": [
+        1110,
+        70
+      ],
+      "size": [
+        230,
+        80
+      ]
+    },
+    {
+      "id": "relay",
+      "type": "messagebus",
+      "label": "결과 Relay",
+      "sublabel": "영속 대기 · 재전송",
+      "pos": [
+        30,
+        440
+      ],
+      "size": [
+        230,
+        80
+      ]
+    },
+    {
+      "id": "collector",
+      "type": "backend",
+      "label": "중앙 결과 수집",
+      "sublabel": "DDS 또는 MQTT 경로",
+      "pos": [
+        390,
+        440
+      ],
+      "size": [
+        230,
+        80
+      ]
+    },
+    {
+      "id": "store",
+      "type": "database",
+      "label": "중앙 저장·ACK",
+      "sublabel": "원본 ID·해시 대조",
+      "pos": [
+        750,
+        440
+      ],
+      "size": [
+        230,
+        80
+      ]
+    },
+    {
+      "id": "preview",
+      "type": "frontend",
+      "label": "현재 담당 미리보기",
+      "sublabel": "JPEG 조회 · 연속 영상과 별도",
+      "pos": [
+        1110,
+        440
+      ],
+      "size": [
+        230,
+        80
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "from": "agent",
+      "to": "controller",
+      "label": "HTTPS 보고"
+    },
+    {
+      "from": "controller",
+      "to": "ownership",
+      "label": "이전 판단"
+    },
+    {
+      "from": "ownership",
+      "to": "ai",
+      "label": "시작·중지"
+    },
+    {
+      "from": "relay",
+      "to": "collector",
+      "label": "분석 결과"
+    },
+    {
+      "from": "collector",
+      "to": "store",
+      "label": "영속 저장"
+    },
+    {
+      "from": "ai",
+      "to": "preview",
+      "label": "조회",
+      "labelDy": 80
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "서로 다른 통로",
+      "items": [
+        "위: 노드 보고·작업 제어 / 아래: AI 결과 전달",
+        "AI 결과는 Relay로 전달 · DDS는 영상 전송이 아님"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "부분 실증 · 전체 합격 아님",
+      "items": [
+        "A→B→A 연속 왕복·복귀60초 검증 잔여",
+        "B의 A 경유 입력은 A 전체 장애 대응을 보장하지 않음"
+      ]
+    }
+  ]
+}

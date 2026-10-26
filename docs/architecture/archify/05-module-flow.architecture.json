@@ -2,209 +2,181 @@
   "schema_version": 1,
   "diagram_type": "architecture",
   "meta": {
-    "title": "CCTV·AIoT 모듈 연결 · 10월 13일 스냅샷",
+    "title": "영상·센서·장치 연결 · 2026-10-26",
     "quality_profile": "showcase",
     "viewBox": [
-      1320,
-      650
+      1380,
+      640
     ]
   },
   "components": [
     {
-      "id": "video",
+      "id": "vision",
       "type": "backend",
-      "label": "카메라·영상 AI",
-      "sublabel": "RTSP → DeepStream 이벤트",
+      "label": "영상 AI · DeepStream",
+      "sublabel": "RTSP 입력 · 탐지/추적/낙상",
       "pos": [
         30,
-        75
+        70
       ],
       "size": [
-        210,
-        78
+        230,
+        80
       ]
     },
     {
-      "id": "bus",
+      "id": "mqtt",
       "type": "messagebus",
-      "label": "MQTT 브로커",
-      "sublabel": "발행·구독 · 비동기 전달",
+      "label": "MQTT 이벤트",
+      "sublabel": "AI 직접 구독 · 센서 발행",
       "pos": [
-        370,
-        75
+        390,
+        70
       ],
       "size": [
-        210,
-        78
+        230,
+        80
       ]
     },
     {
-      "id": "policy",
+      "id": "action",
       "type": "backend",
-      "label": "Action Layer",
-      "sublabel": "수신 → 정책 → 명령",
+      "label": "Action Bridge",
+      "sublabel": "정책 · 영속 입력/장치별 큐",
       "pos": [
-        710,
-        75
+        750,
+        70
       ],
       "size": [
-        210,
-        78
+        230,
+        80
       ]
     },
     {
-      "id": "device",
+      "id": "output",
       "type": "backend",
-      "label": "Device Service",
-      "sublabel": "전광판·스피커·사이렌",
+      "label": "EdgeX · 장치 서비스",
+      "sublabel": "명령 전달 · 결과 수집",
       "pos": [
-        1050,
-        75
+        1110,
+        70
       ],
       "size": [
-        210,
-        78
+        230,
+        80
       ]
     },
     {
       "id": "sensor",
       "type": "backend",
-      "label": "센서·TLV 파서",
-      "sublabel": "실물 연결 조건 대기",
+      "label": "센서 · TLV 파서",
+      "sublabel": "MQTT / Core Data 병렬 전달",
       "pos": [
         30,
         440
       ],
       "size": [
-        210,
-        78
+        230,
+        80
       ]
     },
     {
       "id": "rules",
       "type": "backend",
-      "label": "eKuiper 규칙",
-      "sublabel": "AI 필터·센서 임계값",
+      "label": "센서 규칙 · eKuiper",
+      "sublabel": "임계값 판단 · 선택 규칙 경로",
       "pos": [
-        370,
+        390,
         440
       ],
       "size": [
-        210,
-        78
+        230,
+        80
       ]
     },
     {
-      "id": "history",
+      "id": "storage",
       "type": "database",
-      "label": "결과·이력·관제",
-      "sublabel": "Action DB / HTTP 전달",
+      "label": "기록 · 관제",
+      "sublabel": "기존 DB / 선택형 공통 저장",
       "pos": [
-        710,
+        750,
         440
       ],
       "size": [
-        210,
-        78
+        230,
+        80
       ]
     },
     {
-      "id": "physical",
+      "id": "devices",
       "type": "external",
-      "label": "실제 출력 장치",
-      "sublabel": "전광판·스피커 / 사이렌 없음",
+      "label": "전광판 · 스피커 · 사이렌",
+      "sublabel": "실물 합격은 장치별 별도",
       "pos": [
-        1050,
+        1110,
         440
       ],
       "size": [
-        210,
-        78
+        230,
+        80
       ]
     }
   ],
   "connections": [
     {
-      "id": "video-bus",
-      "from": "video",
-      "to": "bus",
-      "label": "AI 이벤트"
+      "to": "mqtt",
+      "label": "AI 이벤트",
+      "from": "vision"
     },
     {
-      "id": "bus-policy",
-      "from": "bus",
-      "to": "policy",
-      "label": "직접 구독"
+      "to": "action",
+      "label": "구독",
+      "from": "mqtt"
     },
     {
-      "id": "policy-device",
-      "from": "policy",
-      "to": "device",
-      "label": "MQTT / HTTP"
+      "to": "output",
+      "label": "명령",
+      "from": "action"
     },
     {
-      "id": "sensor-bus",
-      "from": "sensor",
-      "to": "bus",
-      "label": "센서 MQTT"
-    },
-    {
-      "id": "bus-rules",
-      "from": "bus",
-      "to": "rules",
-      "label": "규칙 입력",
-      "labelDy": 80
-    },
-    {
-      "id": "rules-policy",
-      "from": "rules",
-      "to": "policy",
-      "label": "MQTT 규칙 출력"
-    },
-    {
-      "id": "policy-history",
-      "from": "policy",
-      "to": "history",
-      "label": "이벤트·명령 저장",
-      "labelDy": 80
-    },
-    {
-      "id": "device-history",
-      "from": "device",
-      "to": "history",
-      "label": "MQTT 결과"
-    },
-    {
-      "id": "device-physical",
-      "from": "device",
-      "to": "physical",
+      "to": "devices",
       "label": "장치 프로토콜",
+      "from": "output",
+      "labelDy": 80
+    },
+    {
+      "to": "rules",
+      "label": "센서 MQTT",
+      "from": "sensor"
+    },
+    {
+      "to": "mqtt",
+      "label": "경보 발행",
+      "from": "rules"
+    },
+    {
+      "to": "storage",
+      "label": "명령·결과 기록",
+      "from": "action",
       "labelDy": 80
     }
   ],
   "cards": [
     {
       "dot": "cyan",
-      "title": "실행 상태와 코드 구조",
+      "title": "수집·저장 분리",
       "items": [
-        "AI·Action·전광판·규칙 엔진 running 관측",
-        "실선은 연결 구조 · 실시간 메시지 추적 아님"
+        "센서 Core Data HTTP와 MQTT는 병렬 경로",
+        "영상 영속 접수·관제 재전송은 별도 저장 경로"
       ]
     },
     {
       "dot": "amber",
-      "title": "운영과 후보의 차이",
+      "title": "검증 범위",
       "items": [
-        "운영 AI규칙 QoS0 · 입력 보존 기능 OFF",
-        "후보 영속 수신·미확정 보류는 별도 그림"
-      ]
-    },
-    {
-      "dot": "slate",
-      "title": "모듈 묶음과 생략",
-      "items": [
-        "결과 수집·이력·HTTP 전달을 한 상자로 묶음",
-        "센서 Core Data 병렬 저장은 상세 설명 참고"
+        "소스 구조이며 모든 옵션의 운영 활성화를 뜻하지 않음",
+        "P5.1/P5.2 진행 · WBS 완료 9/37"
       ]
     }
   ]

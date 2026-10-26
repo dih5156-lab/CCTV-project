@@ -1,0 +1,213 @@
+{
+  "date": "2026-10-26",
+  "base_commit": "98ce5313c11f2a645c089bd48f337b8e1139ede1",
+  "progress_cutoff": "2026-10-26T16:55:00+09:00",
+  "diagram_type": "architecture",
+  "artifacts": {
+    "system": {
+      "specification_sha256": "9db378e8947b3a8b5a6ffa765dffd50c198e09abe68f9f2fba9985133f5f8021",
+      "artifact_sha256": "5af7216e6efec95ff0a4f9be3170542f1de63d502566f124c60e722d66cc9623",
+      "artifact_bytes": 806869
+    },
+    "edge": {
+      "specification_sha256": "671f2c956797ce289df73fd12f0f4122f4f7277428e1f1a4ffce54dbb5281fbc",
+      "artifact_sha256": "57e3eb99165220f0f6b5d463c01601c116fc15fda5e6bda4d55a01babbe34783",
+      "artifact_bytes": 806297
+    }
+  },
+  "validation": "각9/9 showcase, 오류0/경고0",
+  "browser_evidence": "skipped (Chrome/Chromium unavailable)",
+  "manual_browser": {
+    "browser": "158.0.1",
+    "measurements": [
+      {
+        "file": "system_module_flow.html",
+        "viewport": [
+          1440,
+          900
+        ],
+        "w": 1440,
+        "h": 900,
+        "sw": 1440,
+        "sh": 900,
+        "title": "영상·센서·장치 연결 · 2026-10-26 Diagram",
+        "svg": 2,
+        "horizontal_ok": true,
+        "vertical_ok": true
+      },
+      {
+        "file": "system_module_flow.html",
+        "viewport": [
+          1600,
+          1000
+        ],
+        "w": 1600,
+        "h": 1000,
+        "sw": 1600,
+        "sh": 1000,
+        "title": "영상·센서·장치 연결 · 2026-10-26 Diagram",
+        "svg": 2,
+        "horizontal_ok": true,
+        "vertical_ok": true
+      },
+      {
+        "file": "system_module_flow.html",
+        "viewport": [
+          1920,
+          1080
+        ],
+        "w": 1920,
+        "h": 1080,
+        "sw": 1920,
+        "sh": 1080,
+        "title": "영상·센서·장치 연결 · 2026-10-26 Diagram",
+        "svg": 2,
+        "horizontal_ok": true,
+        "vertical_ok": true
+      },
+      {
+        "file": "system_module_flow.html",
+        "viewport": [
+          2048,
+          1320
+        ],
+        "w": 2048,
+        "h": 1320,
+        "sw": 2048,
+        "sh": 1320,
+        "title": "영상·센서·장치 연결 · 2026-10-26 Diagram",
+        "svg": 2,
+        "horizontal_ok": true,
+        "vertical_ok": true
+      },
+      {
+        "file": "edge_module_flow.html",
+        "viewport": [
+          1440,
+          900
+        ],
+        "w": 1440,
+        "h": 900,
+        "sw": 1440,
+        "sh": 900,
+        "title": "Jetson 작업 이전·결과 전달 · 2026-10-26 Diagram",
+        "svg": 2,
+        "horizontal_ok": true,
+        "vertical_ok": true
+      },
+      {
+        "file": "edge_module_flow.html",
+        "viewport": [
+          1600,
+          1000
+        ],
+        "w": 1600,
+        "h": 1000,
+        "sw": 1600,
+        "sh": 1000,
+        "title": "Jetson 작업 이전·결과 전달 · 2026-10-26 Diagram",
+        "svg": 2,
+        "horizontal_ok": true,
+        "vertical_ok": true
+      },
+      {
+        "file": "edge_module_flow.html",
+        "viewport": [
+          1920,
+          1080
+        ],
+        "w": 1920,
+        "h": 1080,
+        "sw": 1920,
+        "sh": 1080,
+        "title": "Jetson 작업 이전·결과 전달 · 2026-10-26 Diagram",
+        "svg": 2,
+        "horizontal_ok": true,
+        "vertical_ok": true
+      },
+      {
+        "file": "edge_module_flow.html",
+        "viewport": [
+          2048,
+          1320
+        ],
+        "w": 2048,
+        "h": 1320,
+        "sw": 2048,
+        "sh": 1320,
+        "title": "Jetson 작업 이전·결과 전달 · 2026-10-26 Diagram",
+        "svg": 2,
+        "horizontal_ok": true,
+        "vertical_ok": true
+      },
+      {
+        "file": "module_flow.html",
+        "viewport": [
+          768,
+          900
+        ],
+        "w": 768,
+        "h": 900,
+        "sw": 756,
+        "sh": 4043,
+        "title": "CCTV·AIoT 모듈 흐름",
+        "svg": 0,
+        "horizontal_ok": true,
+        "vertical_ok": false
+      },
+      {
+        "file": "module_flow.html",
+        "viewport": [
+          1440,
+          900
+        ],
+        "w": 1440,
+        "h": 900,
+        "sw": 1428,
+        "sh": 3458,
+        "title": "CCTV·AIoT 모듈 흐름",
+        "svg": 0,
+        "horizontal_ok": true,
+        "vertical_ok": false
+      },
+      {
+        "tab": "edge",
+        "src": "edge_module_flow.html",
+        "selected": 1,
+        "note": "제어·분석 결과·JPEG 미리보기는 별도 통로입니다. DDS는 CCTV 영상 전송 경로가 아닙니다."
+      },
+      {
+        "tab": "system",
+        "src": "system_module_flow.html",
+        "selected": 1,
+        "note": "AI 직접 구독과 센서 규칙 경로를 구분한 요약입니다. 저장 상세는 아래 표에서 확인하세요."
+      },
+      {
+        "tab": "candidate",
+        "src": "action_intake_flow.html",
+        "selected": 1,
+        "note": "10/13 당시 후보 설명입니다. 이 그림의 시험 수치·운영 상태를 현재 상태로 읽지 마세요."
+      },
+      {
+        "tab": "graph",
+        "src": "code_review_graph.html",
+        "selected": 1,
+        "note": "10/13 보존본 · 36개 자동 그룹과 미분류1개. 이번에 재인덱싱하지 않았으며 최신 소스 전체를 반영하지 않습니다."
+      }
+    ],
+    "artifacts": {
+      "module_flow.html": "00f3c15a645a24f5ff2929944f99f7f3ea78ac46a94fa04ba6c35f0e91b70175",
+      "system_module_flow.html": "5af7216e6efec95ff0a4f9be3170542f1de63d502566f124c60e722d66cc9623",
+      "edge_module_flow.html": "57e3eb99165220f0f6b5d463c01601c116fc15fda5e6bda4d55a01babbe34783"
+    }
+  },
+  "visual_review": "passed (Firefox light/dark 2048x1320 screenshots inspected)",
+  "correction_rounds": 1,
+  "limitations": [
+    "구조도는논리요약,배포완료나실시간운영검증아님",
+    "기존10/13그래프및입력후보는재생성하지않음",
+    "포털768/1440너비와탭선택검증;320px미검증",
+    "과거탭의실제자산로딩은게시후HTTP로별도확인;로컬시험은링크선택검증만",
+    "독립구조도4크기light containment검증;dark는최대크기육안만확인"
+  ]
+}

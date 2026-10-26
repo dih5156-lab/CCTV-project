@@ -1,5 +1,19 @@
 # CCTV·AIoT 아키텍처·데이터 흐름·시퀀스
 
+## 2026-10-26 최신 요약도
+
+[모듈 흐름 웹](../../planning/online/module_flow.html)은 기준 소스 `98ce531`과 10-26 16:55까지의 진행 기록을 반영한다.
+기존 10-13 코드 그래프/입력 보존 후보는 날짜를 명시한 과거 탭으로 유지한다. 재인덱싱하지 않았으며 기존 그래프 건수를 최신 코드 통계로 표시하지 않는다.
+
+- 영상·센서·장치: [명세](05-module-flow.architecture.json), [HTML](../../planning/online/system_module_flow.html).
+- A/B 제어·DDS 결과·미리보기: [명세](06-edge-orchestration.architecture.json), [HTML](../../planning/online/edge_module_flow.html).
+- SQLite 원본·PostgreSQL 투영·Action DB·관제 ACK·미니PC 자동보관의 경계, WBS9/37, 구현/통합/운영/실물 미검증을 구분한다.
+- 센서의 MQTT/Core Data HTTP 분기와 AI 결과 Relay 연결은 그림의 설명 카드 및 포털 본문에 명시했다. 모든 함수 호출·역방향 ACK를 그린 배포도는 아니다.
+- 고정 뷰어 메뉴와 HTML lang은 영어다. [검증 영수증](module-refresh-20261026-receipt.json)에 명세/산출물 SHA와 브라우저 확인 범위를 기록한다.
+- 정적 페이지 게시와 신규 `/edge_module_flow.html` 허용에는 문서 nginx만 reload가 필요하다. GPU·AI 서비스·모델 설정·WBS 상태는 변경하지 않는다.
+
+아래 10-13 절은 과거 게시 당시 근거다.
+
 ## 2026-10-13 최신 모듈 보기
 
 **[사내 모듈 흐름 웹](http://192.168.2.141:18081/module_flow.html)** · [로컬 시작 화면](../../planning/online/module_flow.html)

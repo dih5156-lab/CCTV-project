@@ -8,41 +8,48 @@
 </style>
 </head>
 <body><main>
-<header><div><p class="eyebrow">CCTV · AIoT / MODULE MAP</p><h1>모듈들이 연결되는 흐름</h1><p class="muted">2026-10-13 작업 소스 · code-review-graph 2.3.7</p></div><a class="button" href="index.html">WBS 진행판으로</a></header>
-<section class="card notice"><strong>코드 구조와 운영 관측을 함께 보는 스냅샷입니다.</strong><p>연결선은 데이터가 이동하는 경로입니다. 현재 메시지 수·지연·장치 성공 여부를 실시간으로 측정하지 않습니다. 새로고침은 게시된 화면을 다시 읽으며 운영 상태를 재수집하지 않습니다.</p><div class="stats"><div><strong>7,564</strong><span>코드 노드 · 시험 포함</span></div><div><strong>68,808</strong><span>정적 관계 · 실행 횟수 아님</span></div><div><strong>454</strong><span>정적 호출 흐름</span></div><div><strong>700</strong><span>그래프에 포함된 파일</span></div></div></section>
-<section class="card viewer" aria-label="모듈 연결 시각화"><div class="toolbar"><nav aria-label="그림 선택"><button type="button" data-view="system" aria-pressed="true">전체 모듈 흐름</button><button type="button" data-view="candidate" aria-pressed="false">입력 보존 후보</button><button type="button" data-view="graph" aria-pressed="false">code-review-graph 탐색</button><a id="open-view" href="system_module_flow.html" target="_blank" rel="noopener">그림만 크게 열기 ↗</a></nav><p id="view-note" class="muted" aria-live="polite">한국어 요약도입니다. 상자를 선택해 연결을 확인하고 확대할 수 있습니다.</p></div><iframe id="diagram" title="전체 모듈 흐름도" src="system_module_flow.html"></iframe></section>
-<div class="grid">
-<section class="card"><h2>이벤트 한 건은 이렇게 이동합니다</h2><ol><li><strong>영상·센서 입력:</strong> DeepStream이 AI 이벤트를 만들고, TLV 파서는 센서값을 해석합니다.</li><li><strong>MQTT 전달·규칙:</strong> Action의 직접 구독과 eKuiper를 거치는 경로가 함께 있습니다. 모든 AI 이벤트가 규칙을 통과하는 구조는 아닙니다.</li><li><strong>Action 판단:</strong> 입력 정규화·사이트/정책 적용 후 장치별 명령을 생성하고 실행 이력을 기록합니다.</li><li><strong>장치 명령·결과:</strong> Device Service가 장치 프로토콜로 출력하고, 결과 MQTT를 Action이 받아 상태를 갱신합니다.</li></ol><p class="path">저장 ACK → 입력 처리 완료 → 장치 결과 → 실물 확인은 각각 다른 확인 단계입니다.</p></section>
-<section class="card"><h2>이번 후보에서 바뀐 구간</h2><p><strong>MQTT 수신 → SQLite 원본 저장 → ACK</strong>를 먼저 끝내고, 별도 작업자가 기존 Action 처리를 호출합니다.</p><ul><li>느린 장치 처리 중에도 후속 입력을 저장합니다.</li><li>재시작 잔여 입력·실행 결과가 불명확한 입력은 보류합니다.</li><li>수신 전용 모드는 장치 명령과 HTTP 전달을 실행하지 않습니다.</li><li>자동 재개는 P3.1 우선순위·만료·장치별 순서 검증 후 결정합니다.</li></ul><p class="pending">운영 기본 OFF · 후보 시험 통과 · 실제 전환/실물 검증 남음</p></section>
-</div>
-<section class="card" style="margin-top:18px"><h2>운영 관측과 적용 상태</h2><p class="muted">컨테이너 확인: 2026-10-13 09:42 KST. 앞선 대조 이후 아래 5개의 ID·이미지·시작 시각이 동일했습니다. running은 프로세스 상태이며 전체 기능 합격을 뜻하지 않습니다.</p><div class="table-wrap"><table><thead><tr><th>모듈</th><th>관측 상태</th><th>확인할 점</th></tr></thead><tbody>
-<tr><td>cctv-ai-engine</td><td class="status">running</td><td>영상 입력·추론·이벤트 발행. 현재 연결 1대와 목표 실물 4대는 구분합니다.</td></tr>
-<tr><td>edgex-kuiper</td><td class="status">running</td><td>08:49 규칙 대조: AI 3개 출력 QoS0, 센서 5개 QoS1. 후보 AI 3개는 QoS1로 변경했습니다.</td></tr>
-<tr><td>cctv-action-layer</td><td class="status">running</td><td>운영 영속 입력 옵션 미활성. 현재 작업 소스·후보 이미지와 운영 실행 상태는 다릅니다.</td></tr>
-<tr><td>cctv-device-signboard</td><td class="status">running</td><td>새 장치 이력 후보 전환·최종 이관·실물 재시험은 별도 작업입니다.</td></tr>
-<tr><td>cctv-kuiper-rule-loader</td><td class="pending">created · 미실행</td><td>현재 자동 실행하지 않았습니다. 규칙 전환·복귀 절차는 별도 검증이 필요합니다.</td></tr>
-</tbody></table></div><p class="muted">센서는 현장 접근·게이트웨이 전원·장치 ID 확인 대기, 스피커는 전원·현장 청취 대기, 사이렌은 미보유입니다. 이 화면에서 장치를 제어하는 기능은 없습니다.</p></section>
-<section class="card"><h2>코드에서 직접 찾아보기</h2><p>세 번째 탭은 code-review-graph가 생성한 실제 탐색 화면입니다. 36개 자동 그룹과 미분류 1개를 먼저 표시하며, <strong>그룹을 더블클릭</strong>하면 내부 함수·클래스 관계를 볼 수 있습니다. 검색·종류/관계 필터로 범위를 좁혀 보세요.</p><div class="table-wrap"><table><thead><tr><th>찾을 모듈</th><th>관련 파일</th><th>관계의 근거</th></tr></thead><tbody>
-<tr><td>AI 이벤트 발행</td><td><code>src/core/deepstream_processor.py</code><br><code>src/canonical_event.py</code></td><td>코드 그래프 + 이벤트 계약</td></tr>
-<tr><td>Action 입력 분기</td><td><code>src/services/action_bridge.py</code><br><code>_process_mqtt_payload → _dispatch_command / _handle_edgex_result / _handle_event</code></td><td>code-review-graph의 callees_of 확인</td></tr>
-<tr><td>새 입력 보존</td><td><code>src/services/action_mqtt_intake.py</code><br><code>accept → accept_mqtt / _process → prepare·complete·quarantine</code></td><td>그래프 + 실제 코드/회귀/MQTT 시험. 동적 handler 연결은 코드로 보완</td></tr>
-<tr><td>명령·결과</td><td><code>src/services/device_command_transport.py</code><br><code>src/services/edgex_result_handler.py</code></td><td>호출/의존 관계 + 명령/응답 시험</td></tr>
-<tr><td>센서 병렬 전달</td><td><code>parser-python/mqtt/edgex_forwarder.py</code></td><td>MQTT와 Core Data HTTP가 갈라짐. 전체 그림에서 HTTP 저장 가지는 생략</td></tr>
-</tbody></table></div><p class="muted">정적 분석은 MQTT·HTTP의 실제 전송이나 동적 콜백 호출을 모두 복원하지 못합니다. 한국어 요약도는 그래프에 코드·설정 근거를 보완해 작성했습니다. 시험 관계나 그래프 위험 점수만으로 실행 성공·미시험 결함을 판정하지 않습니다.</p></section>
-<footer><p>구조도 2개: Archify showcase 검사 각각 9/9, 오류·경고 0. Chrome/Chromium 부재로 실제 브라우저 조작·화면 크기별 검증은 미실행입니다. 고정 뷰어 메뉴는 영어입니다.</p><p>그래프의 파서 격리 환경 문제를 작업용 환경으로 우회해 다시 생성했습니다. 전역 MCP 실행 환경 수정은 하지 않았으므로 이후 재생성은 기록된 작업용 명령을 사용합니다. D3는 도구의 SHA384와 일치하는 로컬 파일을 사용합니다.</p><p>WBS 완료 9/33 유지 · 다음 개발: P3.1 우선순위·만료 정책 · 2026년 12월 POC 필수</p></footer>
+<header><div><p class="eyebrow">CCTV · AIoT / MODULE MAP</p><h1>모듈 흐름과 현재 개발 상태</h1><p class="muted">2026-10-26 · 코드 기준 98ce531 · 진행 기록 16:55 KST 기준</p></div><a class="button" href="index.html">WBS 진행판으로</a></header>
+<section class="card notice"><strong>구현·통합과 운영 합격은 다릅니다.</strong><p>최신 코드와 저장된 검증 기록을 대조한 구조도입니다. 실시간 장비 감시가 아니며, 연결선은 논리 경로를 나타냅니다. 컨테이너 running이나 모의시험 PASS만으로 현장 합격을 표시하지 않습니다.</p><div class="stats"><div><strong>9 / 37</strong><span>WBS 완료 · 기능 완성도 비율 아님</span></div><div><strong>P5.1 → P5.2</strong><span>단일 영상 안정화 → 낙상 고정 평가</span></div><div><strong>11월 1차 POC</strong><span>낙상·영상·센서/출력 중심 · 현장 일정 미확정</span></div></div></section>
+<section class="card viewer" aria-label="모듈 연결 시각화"><div class="toolbar"><nav aria-label="그림 선택"><button type="button" data-view="system" aria-pressed="true">영상·센서·장치</button><button type="button" data-view="edge" aria-pressed="false">A/B 작업 이전·DDS</button><button type="button" data-view="candidate" aria-pressed="false">입력 보존 · 10/13 자료</button><button type="button" data-view="graph" aria-pressed="false">코드 그래프 · 10/13 자료</button><a id="open-view" href="system_module_flow.html" target="_blank" rel="noopener">그림만 크게 열기 ↗</a></nav><p id="view-note" class="muted" aria-live="polite">AI 직접 구독과 센서 규칙 경로를 구분한 요약입니다. 저장 상세는 아래 표에서 확인하세요.</p></div><iframe id="diagram" title="영상·센서·장치 흐름도" src="system_module_flow.html"></iframe></section>
+<div class="grid"><section class="card"><h2>입력에서 실제 출력까지</h2><ol><li><strong>영상:</strong> CCTV의 RTSP → Jetson DeepStream → 사람 탐지·추적·낙상 등 → 이벤트 발행. 분석 모델의 실행 여부와 품질 합격은 별도입니다.</li><li><strong>센서:</strong> 게이트웨이 MQTT → TLV 파서 → 센서 MQTT 발행과 EdgeX Core Data HTTP 전송으로 분기합니다. 센서 규칙은 MQTT를 구독하며 Core Data 뒤의 필수 단계가 아닙니다.</li><li><strong>판단:</strong> Action Bridge는 AI 직접 구독과 규칙 이벤트를 처리합니다. 정책·만료·물리 장치별 대기·미확정 보류 구현은 운영 적용 여부와 구분합니다.</li><li><strong>출력:</strong> EdgeX·Device Service → 장치 명령 → 결과 수집. 전광판 실물 확인과 스피커·사이렌 검증을 하나의 합격으로 묶지 않습니다.</li></ol></section>
+<section class="card"><h2>A/B 작업 이전의 범위</h2><ul><li>Agent의 자원·실행 보고 → 오케스트레이터 판단 → 카메라별 담당·실행 세대 관리 → 시작/중지 인계입니다.</li><li>AI 결과는 Relay → DDS 또는 MQTT → 중앙 원본 저장으로 전달합니다. 저장 ACK 확인과 재전송은 영상 전송과 별도입니다.</li><li>현재 담당 미리보기는 2초 간격·최대640px JPEG POC입니다. 연속 RTSP/HLS 재생 합격을 뜻하지 않습니다.</li><li>B가 A의 SSH 터널을 통해 입력받은 실증은 A 전체 장애 시 독립 입력을 보장하지 않습니다.</li></ul><p class="pending">연속 A→B→A·복귀60초·실물4카메라·장기 안정 검증 잔여</p></section></div>
+<section class="card" style="margin-top:18px"><h2>저장과 관제는 여러 경로가 병존합니다</h2><div class="table-wrap"><table><thead><tr><th>경로</th><th>현재 구조</th><th>확인 경계</th></tr></thead><tbody>
+<tr><td>영상·센서 공통 기록</td><td>영속 접수 → 원본/정규화 기록 → 전달 대기 → 관제 수신 저장</td><td>선택형 공통 저장과 기존 DB 경로가 병존합니다. 모든 운영 서비스의 전환 완료가 아닙니다.</td></tr>
+<tr><td>센서 DB</td><td>SQLite 원본·전달 대기 / PostgreSQL 센서 투영</td><td>원본 저장·투영·EdgeX 전달의 성공 여부는 각각 확인합니다.</td></tr>
+<tr><td>장치 명령 이력</td><td>Action DB → 장치별 명령/결과 → 통합 조회</td><td>브로커 ACK ≠ 관제 저장 ACK ≠ 실제 장치 작동 성공</td></tr>
+<tr><td>미니PC 보관</td><td>기존 기록·이미지 내보내기/전송 경로 재사용</td><td>합성3파일 저장·회수 SHA 일치. 실데이터 자동수집·보존정책·상주 적용 미완료.</td></tr>
+</tbody></table></div></section>
+<section class="card"><h2>확인된 성과와 남은 검증</h2><p class="muted">기준: PROGRESS/WBS 및 해당 인계 기록. 아래는 최근 저장된 결과이며 현재 장비 상태를 새로 측정한 값이 아닙니다.</p><div class="table-wrap"><table><thead><tr><th>모듈</th><th>확인된 범위</th><th>잔여 / 운영 상태</th></tr></thead><tbody>
+<tr><td>P5.1 영상</td><td>H.264 보완 운영 반영·당시 3분 관측</td><td>이후 처리율 재저하 기록 존재. 장기 안정 미확정.</td></tr>
+<tr><td>P5.2 낙상</td><td>r4 CPU100 TP50/TN50·GPU9·정상30분 오경보0</td><td>추론률·지연 변동 기준 미달. 최신 보완본 GPU100/30분·독립 평가 잔여.</td></tr>
+<tr><td>카메라별 이전</td><td>소스14파일 통합·선택 회귀199 PASS</td><td>운영 미반영. 공유4입력 중 일부 분리와 실물 시험은 별도.</td></tr>
+<tr><td>A/B 자동복귀</td><td>10/26 저장 관측 판정기15합성·Ruff·보호 PASS</td><td>실제 연속 왕복·복귀60초 합격이 아님.</td></tr>
+<tr><td>엔진 배치</td><td>후보 raw batch1/2/4 시험 PASS</td><td>초기화 오류·운영 보호중단. 영상4입력 정확도/성능 유효 결과 없음.</td></tr>
+<tr><td>ROI·설정 비교</td><td>비교기19모의·Ruff·보호 PASS</td><td>저장 설정대조7항목 BLOCK. 보완본 시험은 별도이며 운영 모델 변경 미적용.</td></tr>
+<tr><td>출력·센서</td><td>전광판 일부 실물 표시·복귀 확인 / 파서·규칙 구현</td><td>현재 실수신·상시 매핑·실물 스피커·사이렌 등 완료 조건 잔여.</td></tr>
+</tbody></table></div></section>
+<section class="card"><h2>개발은 이렇게 통합합니다</h2><p class="path">전용 worktree의 작은 수정 → 담당 검증 → 통합 검토 → 장비 순차 시험 → WBS·근거 갱신</p><p>ROI·엔진·A/B 자동복귀·카메라 이전/DDS·미니PC 담당을 분리합니다. 통합 담당만 공통 작업판을 갱신하며 GPU·카메라·Docker는 worktree로 격리되지 않으므로 시험을 순서대로 배정합니다.</p><p>전체 요구는 유지합니다. 11월 제한 POC를 P6 전체 완료나 실물4대 합격으로 표시하지 않습니다.</p></section>
+<section class="card"><h2>코드 근거와 과거 그래프</h2><div class="table-wrap"><table><thead><tr><th>구간</th><th>관련 코드</th></tr></thead><tbody>
+<tr><td>영상·이벤트</td><td><code>src/core/deepstream_processor.py · _event_publish.py · video_event_ingest.py</code></td></tr>
+<tr><td>센서 병렬 전달</td><td><code>parser-python/mqtt/edgex_forwarder.py · src/services/sensor_rule_bridge.py</code></td></tr>
+<tr><td>장치 제어·입력 보존</td><td><code>src/services/action_bridge.py · action_mqtt_intake.py · action_device_queue.py · edgex_result_handler.py</code></td></tr>
+<tr><td>기록·전달</td><td><code>src/ingest_store.py · event_ingest_store.py · parser-python/database/sensor_projection_worker.py</code></td></tr>
+<tr><td>노드 제어·카메라 인계</td><td><code>src/services/edge_node_agent.py · edge_orchestrator.py · edge_service.py · edge_handoff.py · edge_ownership.py · edge_auto_handoff.py</code></td></tr>
+<tr><td>결과·미리보기</td><td><code>src/services/edge_result_transport.py · edge_result_dds.py · edge_preview.py</code></td></tr>
+</tbody></table></div><p>요약도는 MCP 코드 탐색과 코드·진행 기록을 대조했습니다. 기존 그래프 탭은 <strong>2026-10-13 보존본</strong>(7,564노드·68,808관계·700파일)이며 이번에 재생성하지 않았습니다. 최신 코드 건수로 사용하지 마세요. 정적 그래프만으로 MQTT·HTTP·동적 콜백 전체를 복원할 수는 없습니다.</p></section>
+<footer><p>2026-10-26 요약도 2개 · Archify 고정 뷰어 메뉴/HTML lang은 영어. 10/13 입력 보존 후보와 코드 그래프는 과거 자료로 유지합니다.</p><p>검증 기록은 docs/architecture/archify/module-refresh-20261026-receipt.json에 보관합니다. 웹 게시 시 파일 응답과 원본 일치를 별도로 확인합니다.</p></footer>
 </main><script>
-// 후보 기능을 운영 중인 경로로 오해하지 않도록 그림별 설명과 제목을 함께 바꾼다.
+// 과거 검증과 최신 요약을 혼동하지 않도록 탭별 기준일과 범위를 명시한다.
 const views = {
-  system: {file: 'system_module_flow.html', title: '전체 모듈 흐름도', note: '한국어 요약도입니다. 상자를 선택해 연결을 확인하고 확대할 수 있습니다.'},
-  candidate: {file: 'action_intake_flow.html', title: '운영 미반영 입력 보존 후보', note: '로컬·후보 시험을 통과한 변경 구간입니다. 운영 적용과 보류 입력 자동 재개는 아직 남아 있습니다.'},
-  graph: {file: 'code_review_graph.html', title: 'code-review-graph 코드 관계 탐색', note: '36개 자동 그룹 + 미분류 1개. 그룹을 더블클릭해 내부 관계를 펼치세요. 약 7.3MB의 정적 그래프이며 실시간 실행 추적은 아닙니다.'}
+ system:{file:'system_module_flow.html',title:'영상·센서·장치 흐름도',note:'AI 직접 구독과 센서 규칙 경로를 구분한 요약입니다. 저장 상세는 아래 표에서 확인하세요.'},
+ edge:{file:'edge_module_flow.html',title:'A/B 작업 이전·결과 전달',note:'제어·분석 결과·JPEG 미리보기는 별도 통로입니다. DDS는 CCTV 영상 전송 경로가 아닙니다.'},
+ candidate:{file:'action_intake_flow.html',title:'입력 보존 후보 · 2026-10-13 보존본',note:'10/13 당시 후보 설명입니다. 이 그림의 시험 수치·운영 상태를 현재 상태로 읽지 마세요.'},
+ graph:{file:'code_review_graph.html',title:'코드 그래프 · 2026-10-13 보존본',note:'10/13 보존본 · 36개 자동 그룹과 미분류1개. 이번에 재인덱싱하지 않았으며 최신 소스 전체를 반영하지 않습니다.'}
 };
-document.querySelectorAll('[data-view]').forEach(button => button.addEventListener('click', () => {
-  const view = views[button.dataset.view];
-  document.querySelectorAll('[data-view]').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
-  const frame = document.getElementById('diagram');
-  frame.src = view.file; frame.title = view.title;
-  document.getElementById('open-view').href = view.file;
-  document.getElementById('view-note').textContent = view.note;
+document.querySelectorAll('[data-view]').forEach(button=>button.addEventListener('click',()=>{
+ const view=views[button.dataset.view];
+ document.querySelectorAll('[data-view]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));
+ const frame=document.getElementById('diagram');frame.src=view.file;frame.title=view.title;
+ document.getElementById('open-view').href=view.file;document.getElementById('view-note').textContent=view.note;
 }));
 </script></body></html>
