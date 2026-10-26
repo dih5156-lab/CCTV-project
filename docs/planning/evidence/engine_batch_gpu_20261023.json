@@ -1896,5 +1896,35 @@
     "operating_changes": false,
     "actual_gpu_trials": 0,
     "limits": "pure instrumentation/guard mocks only; not accuracy/four-input runtime acceptance; product/source integration not performed"
+  },
+  "attempt4_allocation_20261026": {
+    "status": "ALLOCATED_PREFLIGHT_REQUIRED",
+    "owner": "engine",
+    "start_at": "2026-10-26T10:32:00+09:00",
+    "end_at": "2026-10-26T10:47:00+09:00",
+    "stop_new_trials_at": "2026-10-26T10:44:00+09:00",
+    "plan_path": "/home/sawwave/.codex/worktrees/multicamera-engine-batch/CCTV-project/data/runtime/engine_quality_four_input_20261026_attempt4/plan.json",
+    "plan_sha256": "232d37a7e482b6ab85c610600f52f9936a12568286181716934cb289028dec5f",
+    "scope": "reference batch1 x4 -> candidate batch1 x4 -> candidate shared batch4 x1; same4 videos/labels, no conversion, operating engine unchanged",
+    "preflight_seconds": 30,
+    "guard_interval_seconds": 5,
+    "guard": {
+      "minimum_fps": 27,
+      "minimum_primary_hz": 13.5,
+      "maximum_age_seconds": 1,
+      "minimum_memory_gib": 8,
+      "temperature_stop_c": 80,
+      "error_restart_drop_increase": 0
+    },
+    "trial_timeout_seconds": 120,
+    "automatic_retry": false,
+    "extension": false,
+    "fixed_files_recheck_before_start": 177,
+    "video_label_hashes": 8,
+    "isolated_compose": 9,
+    "isolation": "network none, no ports, private DB/output, models/libraries readonly, pull never/restart no, cpus2/mem8g, fakesink",
+    "first_failure": "save raw counters/times/resources/reason before stopping own trial, cleanup only own processes/containers, immediate return",
+    "actual_return": null,
+    "basis": "engine16CPU mocks/Ruff PASS; fixed3source and plan hash checked; A/B and miniPC actual returns confirmed; other tasks held; saved30sec rate does not replace fresh full protection preflight"
   }
 }
