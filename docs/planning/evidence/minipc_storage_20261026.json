@@ -386,5 +386,117 @@
       "storage_and_data_directories_exist": false
     },
     "remaining": "exact key/receiver installation review; synthetic receiver and ACK retry checks; real sensor/detection/image readback; separate timer validation"
+  },
+  "install_synthetic_allocation_20261026": {
+    "status": "RETURNED_PREFLIGHT_BLOCKED",
+    "owner": "miniPC",
+    "thread_id": "01a16768-1af3-7073-89ab-66375066d5ca",
+    "start_at": "2026-10-26T11:55:00+09:00",
+    "auth_cutoff": "2026-10-26T12:05:00+09:00",
+    "work_cutoff": "2026-10-26T12:09:30+09:00",
+    "end_at": "2026-10-26T12:10:00+09:00",
+    "master_term_at": "2026-10-26T12:09:55+09:00",
+    "master_kill_at": "2026-10-26T12:09:57+09:00",
+    "ready_path": "/tmp/minipc-auto-20261026-g2hv7wy3/install-ready/READY.json",
+    "ready_sha256": "d6a10e356d053137ac23b98dca11106e9e83d1b28935db4296ec3c869372b3a0",
+    "fixed_files": 24,
+    "scope": "identity/one direct password auth; new dedicated key and receiver only after fresh30s protection,2auth pure mocks and unchanged Windows missing destinations; key-only auth; fresh guarded synthetic twoJSONL+image roundtrip/status/commit/dedup/readback; <=1KiB; no real data/timer/linger",
+    "guard": "27FPS/13.5Hz,age1s,8GiB,80C,error/restart/drop increments0; CPU0/nice19; first failure stop own work; partial remote changes retained and uncertainty recorded",
+    "automatic_retry": false,
+    "actual_source_read": false,
+    "timer_activation_allowed": false,
+    "operating_model_change_allowed": false,
+    "codegraph_change_allowed": false,
+    "requires_actual_return": true,
+    "actual_return": "2026-10-26T12:05:26.733355+09:00",
+    "result_reference_key": "install_preflight_stop_20261026"
+  },
+  "install_preflight_stop_20261026": {
+    "status": "RETURNED_PREFLIGHT_BLOCKED_INSTALL_AND_SYNTHETIC_NOT_RUN",
+    "source": "/tmp/minipc-auto-20261026-g2hv7wy3/install-ready",
+    "preserved": "/media/sawwave/Learning11/CCTV-project/data/runtime/gpu_coordination_20261023_ksweql0f/minipc_install_guard_stop_20261026",
+    "sha256": {
+      "READY.json": "d6a10e356d053137ac23b98dca11106e9e83d1b28935db4296ec3c869372b3a0",
+      "identity_result.json": "67f39399252ffdb2aadbb764891052e68afe170cda251b64e195a9506104eb42",
+      "auth_result.json": "4abb7ca15f941bf752aa9909de85606ee5a3f6b108f356d2708fa242fd614b51",
+      "master_result.json": "8f8cd55877b05d1df7ae36d44c82c6edda8f98a26941223e9ace54185a5b47dc",
+      "preflight.json": "fcbe7d5216592b290cd702f4f312e2ad83fc9b7d2d357712823a697a43226c12",
+      "result.json": "c8338e9c5e15ae7f393d745aafc1d062ea3610834a3109650f46076c13821dd9",
+      "return.json": "e911de41b8ecad8bcd51bd212f0c556caceb43448c4ecd4dd996249d46ab47bc"
+    },
+    "run": {
+      "status": "STOPPED",
+      "started_at": "2026-10-26T12:04:37.162671+09:00",
+      "stage": "install",
+      "automatic_retries": 0,
+      "reason": "운영 처리율 미달: 18.885206 FPS / 9.442603 Hz (최소 27 / 13.5); 운영 프레임 정체: 2.470550초",
+      "finished_at": "2026-10-26T12:04:59.028778+09:00"
+    },
+    "return": {
+      "status": "RETURNED_PREFLIGHT_BLOCKED",
+      "returned_at": "2026-10-26T12:05:26.733355+09:00",
+      "own_pids": [],
+      "socket_exists": false,
+      "master": {
+        "status": "MASTER_EXITED",
+        "started_at": "2026-10-26T12:03:53.150604+09:00",
+        "authenticated_at": "2026-10-26T12:03:57.114805+09:00",
+        "ssh_returncode": 255,
+        "finished_at": "2026-10-26T12:05:12.770088+09:00"
+      },
+      "installer_started": false,
+      "synthetic_started": false,
+      "deployment_directory_exists": false,
+      "remote_writes": 0,
+      "key_generation": 0,
+      "automatic_retries": 0
+    },
+    "samples": 5,
+    "windows": 4,
+    "first_three_windows": "PASS",
+    "failure_sample": {
+      "observed_at": "2026-10-26T12:04:57.359583+09:00",
+      "guard_passed": false,
+      "window": {
+        "duration_seconds": 6.671888926008251,
+        "frames_delta": 126.0,
+        "inferred_delta": 63.0,
+        "fps": 18.88520648310388,
+        "primary_hz": 9.44260324155194,
+        "error_deltas": {
+          "cctv_processor_source_error_identified_total": 0.0,
+          "cctv_processor_source_error_unidentified_total": 0.0,
+          "cctv_processor_pipeline_restart_executed_total": 0.0,
+          "cctv_processor_frames_dropped_total": 0.0
+        }
+      },
+      "at": 255690.277412436,
+      "values": {
+        "cctv_processor_frames_processed_total": 7612264.0,
+        "cctv_camera_primary_frames_inferred_total{camera_id=\"camera_1\"}": 3742355.0,
+        "cctv_camera_primary_last_frame_age_seconds{camera_id=\"camera_1\"}": 2.470550310012186,
+        "cctv_processor_source_error_identified_total": 2.0,
+        "cctv_processor_source_error_unidentified_total": 0.0,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_processor_frames_dropped_total": 0.0
+      },
+      "memory_available_kib": 42541356,
+      "temperatures_c": [
+        51.968,
+        48.0,
+        48.75,
+        51.781,
+        47.968
+      ],
+      "max_temperature_c": 51.968,
+      "reason": "운영 처리율 미달: 18.885206 FPS / 9.442603 Hz (최소 27 / 13.5); 운영 프레임 정체: 2.470550초"
+    },
+    "integration_raw_counter_recalculation": "4windows PASS using monotonic not observed_at string",
+    "installation_auth_tests": "NOT_RUN",
+    "private_key_created": false,
+    "receiver_installed": false,
+    "real_data_or_timer_started": false,
+    "current_recovery": "NOT_OBSERVED_AFTER_RETURN",
+    "cause": "UNCONFIRMED; install did not start"
   }
 }
