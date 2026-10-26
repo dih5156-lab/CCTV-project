@@ -1,5 +1,7 @@
 # 사내 개발 진행판
 
+10-26 **진행판 주소 복구**: [유선](http://192.168.88.146:18081/)·[Wi-Fi](http://192.168.2.242:18081/) 두 확인 주소만 문서 서버에 연결했다. 담당의 저장 검증에서 각 HTML/PDF/모듈 페이지 총6건 HTTP200·로컬 바이트 일치, 다른36컨테이너 ID/StartedAt/running 불변. 통합은 원본 Compose의 두 바인딩과 현재 안내 링크만 영구 반영했다. 현재 문서 컨테이너의 Compose 라벨은 복구용 `/tmp/cctv-progress-wired-repair-8n85yzzp/compose.yml`을 가리키며 추가 재생성은 하지 않았다. 사용자 PC 직접 접속은 미확인이고 과거 게시물/과거 IP 근거는 보존했다. 저장 근거: `data/runtime/gpu_coordination_20261023_ksweql0f/progress_network_restore_20261026/verification.json`.
+
 10-23 **O5 현재 담당 영상 미리보기 통합 PASS(격리)**: 기존 프레임 저장소→노드 영상 API→담당 검증 릴레이→조회 화면을 연결했다. **Python134·JS7·Firefox1 PASS**, 합성 영상 A→B·JPEG640px·오래된 프레임/이전 실행 차단·실제320/768/1024/1440px 확인. 2초 간격 POC 미리보기이며 연속 영상·새 B GPU/무선은 미검증이다. 운영37컨테이너 유지·AP/운영 설정/추가 설치0. **O5 IN_PROGRESS·I68 OPEN·DONE9/37 유지**. [범위/실행법](EDGE_ORCHESTRATION_POC.md#owner-preview-20261023)·[근거](evidence/edge_owner_preview_20261023.json).
 
 10-23 **O5 담당 조회 API·POC 화면·DDS 연결 PASS(격리)**: 기존 제어기에 현재 담당/실행·최근 저장·최근20개 배정 상태 조회를 연결했다. **조회/담당32·인계74·JS6·Firefox1·DDS 통합1 PASS**, 실제320/768/1024/1440px·키보드/인증/통신 실패 검증. DDS 원본555건 ID/해시 일치·영상 접수467건·미처리0, A→B→A 배정1/2/3 조회 확인. 운영37컨테이너 유지·AP/운영 설정/추가 설치0. **영상 재연결·자동 판단 사유 전체 이력·새 B GPU/무선은 잔여**이며 O5 IN_PROGRESS·I68 OPEN·DONE9/37 유지. [범위/사용법](EDGE_ORCHESTRATION_POC.md#owner-view-20261023)·[근거](evidence/edge_owner_view_20261023.json).
@@ -229,9 +231,9 @@
 
 10-12 게시 검증: 진행판이 이전IP192.168.2.141에만 바인딩돼 접속이 불가했다. 문서 서버만 현재IP192.168.2.242로 재생성했고 HTML52,419bytes·PDF149,675bytes HTTP200/로컬 일치, PDF1쪽 육안 확인·WBS33상태/모델8행 보존·Ruff PASS. AI/영상/Action/장치 컨테이너 식별·기동 불변. 다른 PC 접속은 미검증이며, 현재 주소는 http://192.168.2.242:18081/ 이다.
 
-**열람 주소: <http://192.168.2.141:18081/>**
+**유선 열람: <http://192.168.88.146:18081/> · Wi-Fi 열람: <http://192.168.2.242:18081/>**
 
-**[모듈 흐름·code-review-graph 탐색](http://192.168.2.141:18081/module_flow.html)**
+**[모듈 흐름·code-review-graph 탐색(유선)](http://192.168.88.146:18081/module_flow.html)**
 
 같은 회사 네트워크의 Windows/노트북 브라우저에서 위 주소를 연다.
 Jetson과 Docker가 실행 중이어야 하며, IP가 바뀌면 서버의 바인딩 주소와 안내를 함께 수정한다.
@@ -286,7 +288,7 @@ v0.124 게시 대조: HTML31,574bytes·PDF148,397bytes HTTP200/로컬 일치, �
 
 v0.123 게시 대조: HTML31,459bytes·PDF149,495bytes HTTP200/로컬 일치, 인라인 CSV8행·WBS33개 상태 유지·근거25개 해시 대조·Ruff/공백 검사 통과. PDF1/4쪽 표시 확인. 최소 구성의 처리 개선과 수신 기준 미달을 함께 기록했다. [근거](evidence/minimal_configuration_20261007.json)
 
-전체 모델 표: [사내 열람](http://192.168.2.141:18081/#model-results) · [CSV](online/model_test_results.csv) · PDF4쪽. 8개 모델 항목과15개 과거 검출 보고서의 근거 수준을 구분한다.
+전체 모델 표: [사내 열람](http://192.168.2.242:18081/#model-results) · [CSV](online/model_test_results.csv) · PDF4쪽. 8개 모델 항목과15개 과거 검출 보고서의 근거 수준을 구분한다.
 
 v0.117 게시 대조: HTML24,231bytes·PDF132,184bytes가 기존 사내 주소의 HTTP200 응답과 일치했다. WBS33개 ID/상태·집계, Ruff·공백 검사 통과·PDF 첫 페이지 확인. 독립 검토 Critical/Important 지적0건이며 새 외부 검증 악화·확대 후보 승격 기각·시작 지연/실시간 검증 한계를 함께 기록했다. [게시·검증 근거](evidence/rf_training_expansion_20261006.json)
 
@@ -878,7 +880,7 @@ WBS 원본 33개 ID/상태·집계 일치, 렌더러 Ruff·문법·문서 공백
 | 별도 Compose | [deploy/progress/compose.yml](../../deploy/progress/compose.yml) |
 | 서버 설정 | [nginx.conf](../../deploy/progress/nginx.conf) |
 | 컨테이너 | `cctv-progress-web`, 기존 로컬 `nginx:1.27-alpine` 재사용 |
-| 네트워크 | `192.168.2.141:18081` → 전용 nginx `8080` |
+| 네트워크 | 유선 `192.168.88.146:18081`, Wi-Fi `192.168.2.242:18081` → 전용 nginx `8080` |
 | 재시작 설정 | `unless-stopped`; 운영 CCTV Compose와 분리 |
 
 서버는 진행판 폴더를 읽기 전용으로 마운트하며 `/`, `/index.html`, PDF만 응답한다. 모델 CSV는 HTML에 포함된 데이터를 브라우저에서 다운로드하며 서버 허용 경로는 늘리지 않았다.
@@ -899,7 +901,7 @@ WBS 원본 33개 ID/상태·집계 일치, 렌더러 Ruff·문법·문서 공백
 
 ```bash
 rtk proxy env MPLCONFIGDIR=/tmp/cctv-progress-mpl .venv/bin/python scripts/ops/render_progress_snapshot.py --data docs/planning/figma_exports/progress_v140.json --output docs/planning/online/CCTV_project_progress.pdf
-rtk proxy curl --noproxy '*' --max-time 5 -I http://192.168.2.141:18081/
+rtk proxy curl --noproxy '*' --max-time 5 -I http://192.168.2.242:18081/
 ```
 
 문서 내용 변경에는 컨테이너 재시작이 필요 없다. 시작/상태 확인/중지는 프로젝트 루트에서:

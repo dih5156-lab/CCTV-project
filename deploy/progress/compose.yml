@@ -14,8 +14,9 @@ services:
     mem_limit: 64m
     cpus: 0.25
     ports:
-      # 현재 Wi-Fi 주소로 문서 서버만 연결한다. 주소 변경 시 안내 링크도 갱신한다.
-      - "192.168.2.141:18081:8080"
+      # 확인된 유선/Wi-Fi 주소로 문서 서버만 연결한다. 주소 변경 시 안내도 갱신한다.
+      - "192.168.88.146:18081:8080"
+      - "192.168.2.242:18081:8080"
     volumes:
       - ../../docs/planning/online:/usr/share/nginx/html:ro
       - ./nginx.conf:/etc/nginx/nginx.conf:ro

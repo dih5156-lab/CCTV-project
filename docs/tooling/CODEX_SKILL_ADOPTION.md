@@ -1,5 +1,7 @@
 # Codex Skill 도입 기준
 
+10-26 17:17 통합 배정 반환: ROI 비교기32모의/Ruff/보호 PASS, 별도 저장대조3 BLOCK(이미지/생성 관리라벨·네트워크 Labels 미수집). 새 부하/운영 변경 배정 없음. A/B 후속 명령계획11모의는 정적 READY·NOT_RUN으로 별도 보류하며 기존15PASS와 합산하지 않는다.
+
 이 문서는 OpenAI의 기존 `openai/skills` 저장소를 참고해, CCTV AIoT 프로젝트에서 반복 업무를 skill로 관리하는 기준을 정의한다.
 
 ## 결론
@@ -76,7 +78,7 @@ Codex를 재시작하고 새 대화에서 `@ponytail-review`로 리뷰 기능을
 - `data/runtime/module_graph_20261013/tooling-env`를 system-site-packages/without-pip로 만들고 `.pth`로 기존 사용자 도구 경로를 연결했다. 새 패키지 설치·전역 설정 변경 없이 실제 파서 검사를 유지했다. 전체 빌드 뒤 미추적 제품/시험 파일도 기존 API로 추가했다.
 - 결과: 그래프7,564노드/68,808관계/454정적 흐름·700파일. igraph가 없어 그룹은 파일 기반 대체 방식이며 PowerShell 파서는 사용 불가였다. 모든 언어/동적 콜백/프로세스 간 통신을 완전하게 추적한다고 해석하지 않는다.
 - MCP `query_graph_tool`에서 새 ActionMqttIntake의 관계와 Action 입력 분기를 확인했다. 전역 MCP build 환경은 그대로이므로 재생성은 [작업용 명령](../architecture/archify/README.md)을 사용한다. 향후 전역 설정 정비는 별도다.
-- [모듈 웹](http://192.168.2.141:18081/module_flow.html)은 Archify 요약2개와 code-review-graph 자체 탐색 화면을 연결한다. 외부 CDN 요청을 없애기 위해 같은 D3 7.9.0의 고정 SRI와 라이선스를 확인해 문서 자산으로 제공했다. CCTV 실행 이미지의 의존성은 바꾸지 않았다.
+- [모듈 웹](http://192.168.88.146:18081/module_flow.html)은 Archify 요약2개와 code-review-graph 자체 탐색 화면을 연결한다. 외부 CDN 요청을 없애기 위해 같은 D3 7.9.0의 고정 SRI와 라이선스를 확인해 문서 자산으로 제공했다. CCTV 실행 이미지의 의존성은 바꾸지 않았다.
 - 문서 IP 재정합·허용 경로 추가 후8파일 HTTP200/해시 일치, 구조도 각각9/9·JS/JSON 검사 통과. Chrome/Chromium 미설치로 브라우저 조작·시각 검토는 미실행. [검증 근거](../planning/evidence/module_graph_20261013.json)
 
 ## 2026-10-13 Jetson 검증 도구 정리

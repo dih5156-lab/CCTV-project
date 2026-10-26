@@ -2863,5 +2863,93 @@
       "delivery_confirmed": false,
       "scope": "Comparator/test only, evidence-backed representation rules and negative drift regressions; no automatic execution"
     }
+  },
+  "model_scope_schema_validation_20261026": {
+    "cpu_validation": {
+      "status": "PASS_RETURNED",
+      "started_at": "2026-10-26T17:07:53.934992+09:00",
+      "finished_at": "2026-10-26T17:08:39.581056+09:00",
+      "returned_at": "2026-10-26T17:10:07.449057+09:00",
+      "unittest": {
+        "passed": 32,
+        "seconds": 0.191
+      },
+      "ruff": "PASS",
+      "source_hashes_unchanged": true,
+      "own_child_groups_remaining": [],
+      "preflight": {
+        "start": "2026-10-26T17:07:54.072229+09:00",
+        "end": "2026-10-26T17:08:24.380022+09:00",
+        "seconds": 30.297974599001464,
+        "fps": 30.03501098815995,
+        "primary_hz": 14.984499987499579
+      },
+      "guard": {
+        "samples": 13,
+        "windows": 9,
+        "all_pass": true,
+        "minimum_fps": 29.742696822270037,
+        "minimum_primary_hz": 14.856364581839207,
+        "maximum_age_seconds": 0.0414283309946768,
+        "minimum_memory_gib": 42.443359375,
+        "maximum_temperature_c": 53.812,
+        "error_restart_drop_increases": 0,
+        "last_sample_at": "2026-10-26T17:08:39.564163+09:00"
+      },
+      "raw_counter_recalculation": "PASS",
+      "private_snapshot_cli": "NOT_RUN",
+      "operating_changes": false,
+      "post_cleanup_observation": "NOT_RUN",
+      "long_term_stability": "NOT_ESTABLISHED",
+      "document_server_repair": "Other owner repaired document-only bindings during this interval; this was not an isolated performance experiment",
+      "source": "/tmp/cctv-roi-comparator-compose560-20261026-7lrn788o/run",
+      "package": "/tmp/cctv-roi-comparator-compose560-20261026-7lrn788o"
+    },
+    "saved_private_comparison": {
+      "status": "BLOCK",
+      "comparison": {
+        "status": "BLOCK",
+        "gates": {
+          "BEFORE_EQUALS_LIVE": {
+            "status": "BLOCK",
+            "fields": [
+              "compose.managed_expected",
+              "compose.replace_version_evidence",
+              "network.reuse_evidence"
+            ]
+          },
+          "ONLY_APPROVED_DELTA": {
+            "status": "PASS",
+            "fields": []
+          },
+          "CAMERA_DELTA": {
+            "status": "PASS",
+            "fields": []
+          },
+          "FROZEN_ROUNDTRIP": {
+            "status": "PASS",
+            "fields": []
+          }
+        }
+      },
+      "exit_code": 2,
+      "own_pid": 7,
+      "finished_at": "2026-10-26T17:17:39.623749+09:00",
+      "duration_seconds": 0.1318518560146913,
+      "source_sha256": "1a505727ed31d88acb78e8dd012976c899a7c7fccc5cc3d802f3681af46c3c40",
+      "input_sha256": "412eb7a983120b55093e0c1a875e3d85f3a79089e66519e55f109ad7824b8c34",
+      "source_and_input_unchanged": true,
+      "network_pin_created": false,
+      "network_labels": "NOT_COLLECTED_IN_STORED_NETWORK_SNAPSHOT; absence cannot prove absent labels",
+      "operating_changed": false,
+      "new_live_queries": 0,
+      "automatic_retry": false,
+      "started_at": "2026-10-26T17:17:39.471102+09:00",
+      "returned_at": "2026-10-26T17:17:39.625408+09:00",
+      "own_group_remaining": false
+    },
+    "diagnostic": "/media/sawwave/Learning11/CCTV-project/data/runtime/gpu_coordination_20261023_ksweql0f/roi_comparator_schema_cpu_20261026/saved-block-diagnostic.json",
+    "interpretation": "32 synthetic checks PASS; saved private comparison BLOCK on three evidence/representation checks; no operating model deployment",
+    "next": "review image-vs-generated labels; explicitly recover missing network metadata under a separate coordinated read; new READY/tests before rerun"
   }
 }

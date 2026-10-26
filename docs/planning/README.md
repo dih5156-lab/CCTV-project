@@ -330,7 +330,7 @@ v0.83: [종료 시간 초과 재현·순서 보완](TRACKER_VALIDATION.md#shutdo
 | [Figma·시각화 보드](figma_exports/README.md) | 온라인 간트 차트, 로드맵·WBS·모듈 흐름/SDLC의 SVG·PNG 스냅샷 |
 | [Archify 구조 보기](../architecture/archify/index.html) · [근거/사용법](../architecture/archify/README.md) | 09-22 기존 장치 제어·선택 공통 저장 데이터 흐름·관제 저장 ACK 시퀀스, 독립 HTML 3종 |
 
-[사내 온라인 진행판](http://192.168.2.141:18081/)에서 현재 상태·전체 WBS·최근 검증·대기 이슈를 본다.
+[사내 온라인 진행판(유선)](http://192.168.88.146:18081/) · [Wi-Fi](http://192.168.2.242:18081/)에서 현재 상태·전체 WBS·최근 검증·대기 이슈를 본다.
 사용자는 09-22 같은 회사 네트워크에서 브라우저로 열람하는 방식을 선택했다.
 세부 작업 상태는 WBS가 원본이다. 매 작업 종료 시 원본과 게시본을 함께 갱신하고
 HTTP 재조회로 확인한다. 실시간 자동 동기화는 아니며 [갱신 절차](ONLINE_PROGRESS.md)를 따른다.
