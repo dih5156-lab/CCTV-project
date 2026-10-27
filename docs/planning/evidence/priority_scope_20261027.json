@@ -110,5 +110,21 @@
     "verified_at": "2026-10-27T08:45:35.862332+09:00",
     "service_restart": false
   },
-  "minimal_model_approval_utc": "2026-10-26T23:40:10.936Z"
+  "minimal_model_approval_utc": "2026-10-26T23:40:10.936Z",
+  "latest_execution_at": "2026-10-27T09:17:19.679538+09:00",
+  "current_priority_order": [
+    "Pose1→2→4 recorded inputs",
+    "A/B delivery/storage ACK/manual roundtrip",
+    "student shadow judgment",
+    "existing handoff automation",
+    "final deployment"
+  ],
+  "current_scope_result": {
+    "single_input": "NOT_PASSED",
+    "engine_inference": "OBSERVED_150",
+    "private_storage": "NOT_VERIFIED",
+    "ROI39": "NOT_RUN_PREFLIGHT_BLOCKED",
+    "operating_changed": false,
+    "new_allocation": false
+  }
 }

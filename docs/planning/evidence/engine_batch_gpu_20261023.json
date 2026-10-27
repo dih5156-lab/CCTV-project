@@ -2195,5 +2195,189 @@
     ],
     "minimal_candidate": "Future trial only: explicit FACE_RECOGNITION_BACKEND=disabled; NOT_APPLIED, no repro or new GPU allocation",
     "operating_changes": 0
+  },
+  "minimal_pose_reference1_20261027": {
+    "recorded_at": "2026-10-27T09:08:45.841158+09:00",
+    "status": "RUN_COMPLETED_ACCEPTANCE_NOT_PASSED",
+    "single_input_acceptance": "NOT_PASSED",
+    "operating_transition_ready": false,
+    "scope": "reference batch1/recorded1/minimal_pose",
+    "run_status": "COMPLETED_REVIEW_REQUIRED",
+    "execution_started_at": "2026-10-27T09:04:26.166954+09:00",
+    "execution_finished_at": "2026-10-27T09:05:27.048833+09:00",
+    "trial_summary": {
+      "launched": 1,
+      "completed": 1,
+      "container_exit_code": 0
+    },
+    "operating_protection": {
+      "status": "PASS",
+      "samples": 13,
+      "windows": 12,
+      "preflight": {
+        "from": "2026-10-27T09:04:26.266570+09:00",
+        "to": "2026-10-27T09:04:56.399594+09:00",
+        "seconds": 30.13302502199076,
+        "frames_delta": 903.0,
+        "primary_delta": 451.0,
+        "fps": 29.967120770018948,
+        "primary_hz": 14.96696729488211
+      },
+      "all_observed": {
+        "from": "2026-10-27T09:04:26.266570+09:00",
+        "to": "2026-10-27T09:05:26.597366+09:00",
+        "seconds": 60.33079687895952,
+        "frames_delta": 1808.0,
+        "primary_delta": 904.0,
+        "fps": 29.968110708488645,
+        "primary_hz": 14.984055354244322
+      },
+      "min_window_fps": 29.820840137717347,
+      "min_window_primary_hz": 14.906398146844378,
+      "max_age_seconds": 0.05071778397541493,
+      "min_ram_gib": 41.73493194580078,
+      "max_temperature_c": 50.5,
+      "error_deltas": {
+        "cctv_processor_source_error_identified_total": 0.0,
+        "cctv_processor_source_error_unidentified_total": 0.0,
+        "cctv_processor_pipeline_restart_executed_total": 0.0,
+        "cctv_processor_frames_dropped_total": 0.0
+      },
+      "raw_recalculation": "PASS"
+    },
+    "model_load": {
+      "reference_engine_deserialized": true,
+      "actual_primary_tensor": "OBSERVED",
+      "first_tensor_utc": "2026-10-27T00:05:11.152824+00:00",
+      "frames_seen": 300,
+      "frames_inferred": 150,
+      "frames_skipped": 150,
+      "frames_unknown": 0,
+      "inference_errors": 0,
+      "runtime_flags": {
+        "replay_1": {
+          "use_helmet": false,
+          "use_pose": true,
+          "use_person": false,
+          "use_face": false,
+          "use_appearance": false
+        }
+      },
+      "topology_note": "Primary가 Pose bbox/관절 모델이며 별도 pose SGIE disabled는 Primary Pose 비활성화를 뜻하지 않음",
+      "face_disabled_log": true,
+      "native_crash_recurred": false,
+      "attempt5_crash_root_cause": "UNCONFIRMED; 설정/시점 등 차이가 있어 이번 성공을 단독인과 증명으로 사용하지 않음"
+    },
+    "frame_evidence": {
+      "source_frames": 300,
+      "processed_frames": 300,
+      "batch_histogram": {
+        "1": 300
+      },
+      "source_first": {
+        "frame_index": 0,
+        "pts": 0.0,
+        "monotonic": 331301.200641483
+      },
+      "source_last": {
+        "frame_index": 299,
+        "pts": 9.966666666,
+        "monotonic": 331311.167241514
+      },
+      "processed_first": {
+        "frame_index": 0,
+        "pts": 0.0,
+        "monotonic": 331302.447175504
+      },
+      "processed_last": {
+        "frame_index": 299,
+        "pts": 9.966666666,
+        "monotonic": 331311.169252534
+      },
+      "source_fps": 30.000200576896585,
+      "first_processing_delay_seconds": 1.246534020989202,
+      "last_processing_delay_seconds": 0.0020110199693590403
+    },
+    "tracking": {
+      "tracker_initialized_log": true,
+      "tracker_deinitialized_log": true,
+      "object_ids_in_fall_capture": [],
+      "trajectory_continuity": "NOT_EVALUATED"
+    },
+    "fall": {
+      "scorer_verdict": "FN",
+      "capture_fall_events": 0,
+      "aggregate_events_detected": 2,
+      "aggregate_events_filtered": 95,
+      "aggregate_events_failed": 2,
+      "aggregate_events_sent": 0,
+      "aggregate_event_types": "UNRECORDED",
+      "model_false_negative_causality": "UNCONFIRMED",
+      "limitation": "최종 낙상 알람 근거0이나 aggregate2의 종류/상위필터/계측누락 여부 미확인"
+    },
+    "storage": {
+      "capture_json_saved": true,
+      "expected_private_database": "/home/sawwave/.codex/worktrees/multicamera-engine-batch/CCTV-project/data/runtime/minimal_pose_reference1_20261027_attempt1/trial_00_reference/data/runtime/events.db",
+      "expected_private_database_exists": false,
+      "product_event_storage": "NOT_VERIFIED",
+      "mqtt": "격리된127.0.0.1:9 connection refused2. 실제운영전송 없음",
+      "other_database_search": false
+    },
+    "trial_performance": {
+      "scene_id": "00610_H_D_SY_C5",
+      "camera_id": "replay_1",
+      "verdict": "FN",
+      "early_count": 0,
+      "duplicate_count": 0,
+      "alarm_count": 0,
+      "pts_delay_seconds": null,
+      "wall_delay_seconds": null,
+      "processed_fps": 34.28082542402652,
+      "inference_hz": 17.13226379752042,
+      "lag_growth_seconds": -1.2445896360099677,
+      "processing_delay_p95_seconds": 0.03735862299799919,
+      "frames": 300,
+      "primary": {
+        "frames_seen": 300,
+        "frames_inferred": 150,
+        "frames_skipped": 150,
+        "frames_inference_unknown": 0,
+        "last_frame_age_seconds": 0.4282515099621378
+      },
+      "performance_pass": false,
+      "interpretation": "출력 처음의 지연이 약1.247초에서0.002초로 줄어 출력관측기간이 입력PTS보다 짧음. 처리율 부족으로 단정하지 않으나 기존 Hz상한/lag기준 미달을 PASS로 변경하지 않음"
+    },
+    "file_eos": {
+      "unidentified_eos": 1,
+      "unidentified_stop": 1,
+      "note": "모든300프레임완료 후 파일 EOS 기록, 운영RTSP 실패로 해석하지 않음"
+    },
+    "trial_containers_remaining": [],
+    "operating_identity_unchanged": true,
+    "fixed25_unchanged": true,
+    "attempt5_fixed177_preserved": true,
+    "operating_changes": false,
+    "return_notice_completed_by": "2026-10-27T09:05:54+09:00",
+    "return_notice_limit": "반환 메시지 완료 직후 시계상한, 정확서버수신시각미제공",
+    "return_acknowledged": false,
+    "automatic_retry": false,
+    "post_return_recovery": "NOT_MEASURED",
+    "raw_evidence_sha256": {
+      "READY.json": "3c15737caedf07a513ce5a12e231a3e6f7913ef66931c973af6cb2b4a382c3e4",
+      "plan.json": "2ac90bbd8f639baa383c369f168ff14144b6a7e49a51de4bc7b54fa122b389fc",
+      "run.json": "36805f626e89cc5f10c7e02b8b6f6465fa0a5371be922a08e86618c073cafc69",
+      "operating_samples.json": "95bde19941086e47423e482ee00eb5e868d3cf84149bafc2e0d36a68f67db51a",
+      "trial_00_reference/run.log": "b28c701f9b0cab291eb14a9d089b1cabe86d9ac9eafdc3a32cc93861ea652e53",
+      "trial_00_reference/output/startup.jsonl": "3fd1dd4b1dabdec3bcc2639bedbd59bc687c3623d48e1d1e3d2ddb76f110b1a9",
+      "trial_00_reference/output/capture.json": "320bfd0a92a8265c2af01e197d60ee02d09b9fc77b5f028208aaf88b1117c700"
+    },
+    "next_needed": [
+      "저장 자료/고정 소스로 낙상계측과 전체이벤트2의 경로 구분",
+      "추적ID 연속성·제품 저장경로를 실제 검증하는 최소 계측/격리 수신 계획 조율",
+      "기동버퍼 따라잡기와 정상상태 처리율을 분리하는 성능판정 검토",
+      "새 준비와 배정 전 운영전환/2·4입력 확대 금지"
+    ],
+    "integration_acknowledged_at": "2026-10-27T09:11:47.536224+09:00",
+    "source": "/home/sawwave/.codex/worktrees/multicamera-engine-batch/CCTV-project/data/runtime/minimal_pose_reference1_20261027_attempt1/comparison.json"
   }
 }

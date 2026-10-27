@@ -12,7 +12,7 @@
     "IN_PROGRESS": 2
   },
   "completed_task_percent": 24.3,
-  "next": "모델 근거 고정→1대 기준선→영상4입력 batch4 안정화→추가3대 확보 후 실물4대",
+  "next": "낙상→저장 근거 보완→Pose1→2→4입력→A/B전달·수동왕복→학생shadow→자동제어→최종배포",
   "new_issue": "I56 OPEN: attempt5 초기화 오류·보호 중단/유효결과0; 현재1대 연결 가능·추가3대 일정 미정; 네트워크 재사용 근거1 BLOCK",
   "rows": [
     {
@@ -320,7 +320,7 @@
       "title": "전체 AI 1→2→4채널 부하·엣지 인계 POC",
       "requirements": "R07,R09,R10",
       "dependencies": "사전검증 P5.1; 전체 인수 P6.1",
-      "criteria": "10-27 우선: 1실물 기준선→독립 녹화4입력→추가3대 확보 후 실물4대. 모델/설정 고정·camera/frame/PTS/추적·이벤트/DB 격리·처리FPS/실추론Hz/p95지연·메모리/온도/드롭·복구/정리 검증. 1080p30·카메라별15Hz 우선 목표 유지. 기존 raw batch1/2/4 PASS는 앱/품질/실물 합격 아님. 최신 attempt5 초기화 native crash·보호 중단/유효결과0; 네트워크 재사용1 BLOCK 해소가 선행. 전체 인수 P6.1 및 엣지 인계 O1~O8 조건 유지.",
+      "criteria": "10-27 우선: 1실물 기준선→독립 녹화4입력→추가3대 확보 후 실물4대. 모델/설정 고정·camera/frame/PTS/추적·이벤트/DB 격리·처리FPS/실추론Hz/p95지연·메모리/온도/드롭·복구/정리 검증. 1080p30·카메라별15Hz 우선 목표 유지. 기존 raw batch1/2/4 PASS는 앱/품질/실물 합격 아님. 최소Pose1입력300프레임/추론150·정상종료/보호PASS, 낙상·추적연속성·DB저장 인수 미통과. 기존10키 저장비교4PASS, 새11키 ROI39는 사전점검 차단/NOT_RUN. 현재 새 배정 없음. 전체 인수 P6.1 및 엣지 인계 O1~O8 조건 유지.",
       "paths": "다중 카메라 인수 기준·DeepStream 계측; 선행 P6.1 충족 후 최종 판정. [NX 대응](../guides/JETSON_EDGEX_FIELD_CHECKLIST.md#orin-nx16-compatibility); [B 실장비 통합](EDGE_ORCHESTRATION_POC.md#b-integrated-20261023): 301.2446초 B8,887프레임·DDS555원본 중앙 ID/해시 일치·실영상 미리보기 실증. 소비 종료경계2건 만료·후속161건 재전송 ACK 완료·최종1,962원본 일치/대기0·운영 보존/시험 정리 완료. 자동 A→B 실추론 인계·연속 영상·장기/전체 모델 정확도·기관 계약 잔여. O1/O2/O3/O4/O5/O7 IN_PROGRESS·I68 OPEN. [근거](evidence/edge_b_integrated_20261023.json). [엔진 배치 사전점검 통합](handoffs/engine_batch_20261023.md): 원본77 PASS·Ruff PASS·기존 변경/index 보존·운영 미반영. [max4 GPU 결과](evidence/engine_batch_gpu_20261023.json): 생성52.14초·정확도 NOT_EVALUATED·원본 해시/운영 보존·11:51:15 GPU 반환·운영 미반영. [ROI pilot 조기 반환](VIDEO_INFERENCE_CONTRACT.md#two-camera-pilot-20261023):12:35:02 반환·운영 보존·정확도/성능 미평가. [카메라1대 이전 범위](EDGE_ORCHESTRATION_POC.md#camera-offload-20261023): 실제4입력 중1개 이전/나머지 유지 미검증.",
       "effort_days": "2–4 + 인계8–13 + 확장 재산정",
       "status": "PLANNED"
@@ -16079,6 +16079,10 @@
       "face"
     ],
     "helmet": "COMPARE_AFTER_BASIC_FOUR_INPUT_STABILITY",
-    "operating_model_change_applied": false
+    "operating_model_change_applied": false,
+    "latest_result_at": "2026-10-27T09:17:19.679538+09:00",
+    "single_input": "EXECUTION_COMPLETE_ACCEPTANCE_NOT_PASSED",
+    "ROI39": "NOT_RUN_PREFLIGHT_BLOCKED",
+    "B_role": "TEST_NODE_BEFORE_FINAL_DEPLOYMENT"
   }
 }

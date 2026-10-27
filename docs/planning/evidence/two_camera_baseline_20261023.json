@@ -1,7 +1,7 @@
 {
   "date": "2026-10-23",
   "wbs": "P6.2 preliminary baseline; P5.1/I56 cross-reference",
-  "state": "BLOCKED_CURRENT_TWO_CHANNEL_MEASUREMENT",
+  "state": "OLD_TEN_KEY_SAVED_COMPARISON_PASS_POSE39_PREFLIGHT_BLOCKED_NO_ALLOCATION",
   "observations": [
     {
       "observation": "idle",
@@ -3117,5 +3117,62 @@
     ],
     "evidence": "/media/sawwave/Learning11/CCTV-project/data/runtime/gpu_coordination_20261023_ksweql0f/roi_private_resume_20261027/summary.json",
     "evidence_sha256": "1201f3b98b49d2bb3c8f7a9bedcbdd39a3ad035196769ff0a9ff4cc690dbec2d"
+  },
+  "pose_minimum_comparator_cpu_20261027": {
+    "status": "RETURNED_PREFLIGHT_BLOCKED_TESTS_NOT_RUN",
+    "selected": "ROI39",
+    "source": "/tmp/cctv-roi-comparator-pose-minimal-20261027-toco8kuk",
+    "started_at": "2026-10-27T09:12:18.371277+09:00",
+    "finished_at": "2026-10-27T09:12:23.969244+09:00",
+    "returned_at": "2026-10-27T09:13:31.092022+09:00",
+    "reason": "운영 처리율 미달: 25.110914 FPS / 12.555457 Hz (최소 27 / 13.5)",
+    "unittest": "NOT_RUN_39",
+    "ruff": "NOT_RUN",
+    "own_children": [],
+    "own_pid_absent": true,
+    "source_hashes_unchanged": true,
+    "raw_hashes": {
+      "operating_check.json": "290c8a0e2f27dd9d125d0de4e15cbb8541182ee8495ff5f74cd1a55b296f5e7d",
+      "result.json": "cd7abd3e3728621d1dbafed04e206240098fb19c16bb9d4368cf13b4fc62244b",
+      "initial_preflight.json": "290c8a0e2f27dd9d125d0de4e15cbb8541182ee8495ff5f74cd1a55b296f5e7d"
+    },
+    "automatic_retry": false,
+    "operating_changes": false,
+    "GPU": false,
+    "post_return_recovery": "NOT_OBSERVED"
+  },
+  "model_scope_network_pin_20261027": {
+    "status": "PASS",
+    "started_at": "2026-10-27T08:54:01.238887+09:00",
+    "finished_at": "2026-10-27T08:54:01.362088+09:00",
+    "seconds": 0.12089821801055223,
+    "exit_code": 0,
+    "result": {
+      "status": "PASS",
+      "gates": {
+        "BEFORE_EQUALS_LIVE": {
+          "status": "PASS",
+          "fields": []
+        },
+        "ONLY_APPROVED_DELTA": {
+          "status": "PASS",
+          "fields": []
+        },
+        "CAMERA_DELTA": {
+          "status": "PASS",
+          "fields": []
+        },
+        "FROZEN_ROUNDTRIP": {
+          "status": "PASS",
+          "fields": []
+        }
+      }
+    },
+    "source_sha256": "287b57a104528dd678fd0a0ac8c7330308f1acb401f75a60ec9fb23902698d88",
+    "derived_bundle_sha256": "7dd0db012e83f91d2cb7292193840621c325900503f8f61bb86b07226e0db9d7",
+    "network_hash_proof": "official source-equivalent restricted three-field bytes; no Go program execution",
+    "scope": "OLD_APPROVED_TEN_KEYS_HELMET_ON; new Pose-only eleven-key target pending",
+    "runtime_or_live_query": false,
+    "parent_unchanged": true
   }
 }
