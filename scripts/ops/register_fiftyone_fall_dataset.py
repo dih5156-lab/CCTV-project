@@ -11,7 +11,6 @@ from typing import Any, Iterable
 
 import fiftyone as fo
 
-
 HOST_DATASET_ROOT = Path("/media/sawwave/Learning11/낙상학습데이터")
 CONTAINER_DATASET_ROOT = "/app/낙상학습데이터"
 DEFAULT_TRAIN_MANIFEST = Path("data/fall_eval/auto/train_manifest.jsonl")

@@ -9,7 +9,6 @@ from collections import Counter
 from pathlib import Path
 from statistics import mean
 
-
 NUMERIC_FIELDS = (
     "max_fall_score",
     "max_compare_fall_probability",
