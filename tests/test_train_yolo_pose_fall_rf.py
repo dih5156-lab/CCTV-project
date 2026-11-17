@@ -1,6 +1,7 @@
 from types import SimpleNamespace
 
 import numpy as np
+
 from scripts.datasets import train_yolo_pose_fall_rf
 from scripts.datasets.train_yolo_pose_fall_rf import (
     _build_model_bundle,
