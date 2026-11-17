@@ -1,8 +1,29 @@
-# CCTV AIoT 안전관리 시스템
+# 스마트폴 CCTV AIoT 안전관리 시스템
 
-YOLO/YOLO-Pose 기반의 헬멧·사람·낙상 감지 시스템입니다. 일반 PC에서는 OpenCV 기반으로 기능을 확인하고, NVIDIA Jetson Orin에서는 DeepStream/TensorRT 파이프라인으로 운영합니다.
+스마트폴에 설치된 CCTV 영상을 분석해 사람, 안전모 착용 여부, 낙상 및 위험구역 이벤트를 감지하는 시스템입니다. 일반 PC에서는 OpenCV로 기능을 개발·확인하고, NVIDIA Jetson Orin에서는 DeepStream/TensorRT로 영상 추론을 수행합니다.
 
-## 현재 상태
+## 시스템 구성
+
+| 구성 | 역할 |
+|---|---|
+| CCTV | RTSP 영상 입력 |
+| Jetson Orin | 카메라 영상 수신, 객체·자세 추론, 안전 이벤트 생성 |
+| MQTT / EdgeX 및 경보 서비스 | 감지 이벤트 전달과 스피커·전광판·경광등 등 출력 연동 |
+| 미니PC / 운영 웹 | PoC에서 이벤트 저장·조회와 운영 상태 확인을 맡는 구성 |
+
+기본 흐름은 **CCTV → Jetson 추론 → 이벤트 전달 → 경보 출력·이력 조회**입니다. 이벤트 필드와 MQTT 연동은 [이벤트 데이터 계약](docs/guides/EVENT_DATA_CONTRACT.md), 운영·점검 절차는 [운영 Runbook](docs/guides/OPERATIONS_RUNBOOK.md)을 참고하세요.
+
+## PoC 검증 범위
+
+아래는 2026년 11월 13일까지의 PoC 개발·검증 기록을 요약한 것입니다. 별도 개발본에서 시험한 기능이 현재 `main`에 포함되었거나 현장에 배포되었다는 뜻은 아닙니다.
+
+| 항목 | 상태와 남은 확인 |
+|---|---|
+| 다중 카메라 | 4채널 동시 영상 수신이 개발 기록에 보고되었습니다. 4채널 동시 추론의 성능과 장시간 안정성은 별도 검증 항목입니다. |
+| Jetson 간 자동 인계 | 2대·1채널 시험에서 부하에 따라 영상 처리 담당을 넘기는 동작을 확인했습니다. 4대 분산 운영, 무선 부하 및 장애 복구는 별도 검증 항목입니다. |
+| 운영 웹·미니PC | 라이브 영상과 이벤트, 장비 상태 화면의 개발본이 있습니다. 실제 장비 지표 연동과 미니PC 저장·조회는 현장 통합 검증 항목입니다. |
+
+## 저장소에 기록된 낙상 처리 방식
 
 - 낙상 이벤트 타입은 `fall_detected`로 통합합니다.
 - 스피커·전광판에는 방향과 관계없이 통합 낙상 문구를 출력합니다.
@@ -211,10 +232,24 @@ pytest -q
 ### 2026-08-26
 
 - helmet/head TensorRT 입력 크기(`320x320`)에 맞춰 DeepStream bbox 좌표 복원 로직을 수정했습니다. 라이브 화면에서 head 박스가 사람 머리 위치와 일치하는 것을 확인했습니다.
-- 외형 색상 검수 라벨 `appearance_color_review_labels0825.json`을 반영한 재학습 파이프라인을 구성했습니다. 현재 batch size 32로 GPU 학습 중이며, 완료 후 성능 게이트를 확인합니다.
-- 모델 정리 기준을 `models/head`, `models/fall`, `models/color`, `models/appearance`, `models/legacy`, `models/manifests`로 정의했습니다. 운영 중인 학습·서비스 경로 보호를 위해 실제 이동은 학습 완료 후 진행합니다.
+- 외형 색상 검수 라벨 `appearance_color_review_labels0825.json`을 반영한 재학습 파이프라인을 구성했습니다. 당시 batch size 32로 GPU 학습을 진행했으며, 이 기록은 현재 학습 상태를 뜻하지 않습니다.
+- 모델 정리 기준을 `models/head`, `models/fall`, `models/color`, `models/appearance`, `models/legacy`, `models/manifests`로 정의했습니다. 이 기록에서는 운영 중인 학습·서비스 경로를 보호하기 위해 실제 이동을 보류했습니다.
 - 모델 현황과 정리 계획을 [model_inventory_20260826.md](docs/operations/model_inventory_20260826.md)에 기록했습니다.
 - GitHub Actions CI/CD workflow(`.github/workflows/ci.yml`)에서 테스트·Compose 검증·보안 검사·Docker 빌드를 수행하도록 유지합니다.
+
+## 버전과 릴리스
+
+배포 버전은 [Semantic Versioning 2.0.0 한국어 명세](https://semver.org/lang/ko/spec/v2.0.0.html)를 따릅니다. 버전 판단 기준은 외부 연동 시스템이 사용하는 REST API와 MQTT 이벤트 계약입니다.
+
+| 구분 | 올리는 기준 (1.0.0 이후) |
+|---|---|
+| `MAJOR` | 기존 연동과 호환되지 않는 API 또는 이벤트 계약 변경 |
+| `MINOR` | 기존 연동과 호환되는 기능 추가 또는 공개 인터페이스 폐기 예정 표시 |
+| `PATCH` | 기존 연동과 호환되는 버그 수정 |
+
+초기 PoC는 기존 릴리스 이력이 없다면 `0.1.0`부터 시작할 수 있습니다. `0.x.y`는 안정된 외부 계약을 뜻하지 않으며, 안정된 계약을 명시하고 지원할 때 `1.0.0`을 고려합니다. 배포 태그는 `v0.1.0`과 같이 쓰며, 이 번호는 예시입니다. 실제 버전은 기존 태그·릴리스 이력을 확인한 뒤 정합니다.
+
+작업은 `feat/…`, `fix/…`, `docs/…` 브랜치에서 진행하고 PR로 `main`에 반영합니다. README만 바꾸는 PR에서는 새 배포 태그를 만들지 않습니다. 실제 배포에 사용할 커밋은 별도로 검증한 뒤 태그를 붙입니다. 이미 배포한 버전의 내용은 덮어쓰지 않습니다.
 
 ## Git 관리 원칙
 
