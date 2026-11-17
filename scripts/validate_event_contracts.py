@@ -20,7 +20,6 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from src.canonical_event import canonicalize_event_payload, get_payload_event_type  # noqa: E402
 
-
 EVENT_TYPES = {
     "person",
     "helmet",

@@ -1,11 +1,10 @@
 from types import SimpleNamespace
 
 import numpy as np
-
 from scripts.datasets import train_yolo_pose_fall_rf
 from scripts.datasets.train_yolo_pose_fall_rf import (
-    _dataset_summary,
     _build_model_bundle,
+    _dataset_summary,
     _extract_video_features,
     _group_holdout_indices,
     _hard_case_sample_weights,
