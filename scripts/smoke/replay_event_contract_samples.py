@@ -17,7 +17,6 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from scripts.validate_event_contracts import _sample_payloads, validate_payload  # noqa: E402
 
-
 CRITICAL_TYPES = {"fall_detected", "danger_zone", "intrusion", "unsafe_behavior"}
 
 
